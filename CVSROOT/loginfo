@@ -25,5 +25,5 @@
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
 
-#ALL	Mail -s %s vrowley@ucsd.edu
-ALL	Mail -s %s srb@sdsc.edu
+ALL	Mail -s %s vrowley@ucsd.edu,roman2u@sdsc.edu
+#SRB2_0_0rel	Mail -s %s srb@sdsc.edu
