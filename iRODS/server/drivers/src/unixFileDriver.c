@@ -1,0 +1,414 @@
+/*** Copyright (c), The Regents of the University of California            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
+
+/* unixFileDriver.c - The UNIX file driver
+ */
+
+
+#include "unixFileDriver.h"
+
+int
+unixFileCreate (rsComm_t *rsComm, char *fileName, int mode)
+{
+    int fd;
+    mode_t myMask;
+
+    myMask = umask((mode_t) 0000);
+    fd = open (fileName, O_RDWR|O_CREAT|O_EXCL, mode);
+    /* reset the old mask */
+    (void) umask((mode_t) myMask);
+    
+    if (fd == 0) {
+        close (fd);
+	rodsLog (LOG_NOTICE, "unixFileCreate: 0 descriptor");
+        open ("/dev/null", O_RDWR, 0);
+        fd = open (fileName, O_RDWR|O_CREAT|O_EXCL, mode);
+    }
+
+    if (fd < 0) {
+	fd = UNIX_FILE_CREATE_ERR - errno;
+	if (errno == EEXIST) {
+	    rodsLog (LOG_DEBUG, 
+	     "unixFileCreate: open error for %s, status = %d",
+              fileName, fd);
+	} else {
+	    rodsLog (LOG_DEBUG, 
+	     "unixFileCreate: open error for %s, status = %d",
+	     fileName, fd);
+	}
+    }
+
+    return (fd);
+}
+
+int
+unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode)
+{
+    int fd;
+
+#if defined(osx_platform)
+    /* handle a situation where for osx, O_TRUNC = 0x0400,
+     * but O_TRUNC = 0x200 for other system */
+    if (flags & 0x200) {
+        flags = flags ^ 0x200;
+        flags = flags | O_TRUNC;
+    }
+#endif
+
+    fd = open (fileName, flags, mode);
+
+    if (fd == 0) {
+        close (fd);
+        rodsLog (LOG_NOTICE, "unixFileOpen: 0 descriptor");
+        open ("/dev/null", O_RDWR, 0);
+        fd = open (fileName, flags, mode);
+    }
+
+    if (fd < 0) {
+        fd = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_NOTICE, "unixFileOpen: open error for %s, status = %d",
+          fileName, fd);
+    }
+
+    return (fd);
+}
+
+int
+unixFileRead (rsComm_t *rsComm, int fd, void *buf, int len)
+{
+    int status;
+
+    status = read (fd, buf, len);
+
+    if (status < 0) {
+        status = UNIX_FILE_READ_ERR - errno;
+        rodsLog (LOG_NOTICE, "unixFileRead: read error fd = %d, status = %d",
+         fd, status);
+    }
+    return (status);
+}
+
+int
+unixFileWrite (rsComm_t *rsComm, int fd, void *buf, int len)
+{
+    int status;
+
+    status = write (fd, buf, len);
+
+    if (status < 0) {
+        status = UNIX_FILE_WRITE_ERR - errno;
+        rodsLog (LOG_NOTICE, "unixFileWrite: open write fd = %d, status = %d",
+         fd, status);
+    }
+    return (status);
+
+}
+
+int
+unixFileClose (rsComm_t *rsComm, int fd)
+{
+    int status;
+
+    status = close (fd);
+
+    if (fd == 0) {
+        rodsLog (LOG_NOTICE, "unixFileClose: 0 descriptor");
+        open ("/dev/null", O_RDWR, 0);
+    }
+    if (status < 0) {
+        status = UNIX_FILE_CLOSE_ERR - errno;
+        rodsLog (LOG_NOTICE, "unixFileClose: open write fd = %d, status = %d",
+         fd, status);
+    }
+    return (status);
+}
+
+int
+unixFileUnlink (rsComm_t *rsComm, char *filename)
+{
+    int status;
+
+    status = unlink (filename);
+
+    if (status < 0) {
+        status = UNIX_FILE_UNLINK_ERR - errno;
+        rodsLog (LOG_NOTICE, "unixFileUnlink: unlink of %s error, status = %d",
+         filename, status);
+    }
+
+    return (status);
+}
+
+int
+unixFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
+{
+    int status;
+
+    status = stat (filename, statbuf);
+
+    if (status < 0) {
+        status = UNIX_FILE_STAT_ERR - errno;
+        rodsLog (LOG_DEBUG, "unixFileStat: stat of %s error, status = %d",
+         filename, status);
+    }
+    
+    return (status);
+}
+
+int
+unixFileFstat (rsComm_t *rsComm, int fd, struct stat *statbuf)
+{
+    int status;
+
+    status = fstat (fd, statbuf);
+
+    if (status < 0) {
+        status = UNIX_FILE_FSTAT_ERR - errno;
+        rodsLog (LOG_DEBUG, "unixFileFstat: stat of fd %d error, status = %d",
+         fd, status);
+    }
+   
+    return (status);
+}
+
+rodsLong_t
+unixFileLseek (rsComm_t *rsComm, int fd, rodsLong_t offset, int whence)
+{
+    rodsLong_t  status;
+
+    status = lseek (fd, offset, whence);
+
+    if (status < 0) {
+        status = UNIX_FILE_LSEEK_ERR - errno;
+        rodsLog (LOG_NOTICE, 
+	  "unixFileLseek: lseek of fd %d error, status = %d", fd, status);
+    }
+
+    return (status);
+}
+
+int
+unxiFileFsync (rsComm_t *rsComm, int fd)
+{
+    int status;
+
+    status = fsync (fd);
+
+    if (status < 0) {
+        status = UNIX_FILE_FSYNC_ERR - errno;
+        rodsLog (LOG_NOTICE, 
+          "unxiFileFsync: fsync of fd %d error, status = %d", fd, status);
+    }
+    return (status);
+}
+
+int
+unixFileMkdir (rsComm_t *rsComm, char *filename, int mode)
+{
+    int status;
+
+    status = mkdir (filename, mode);
+
+    if (status < 0) {
+        status = UNIX_FILE_MKDIR_ERR - errno;
+        rodsLog (LOG_NOTICE,
+          "unixFileMkdir: mkdir of %s error, status = %d", 
+	  filename, status);
+    }
+
+    return (status);
+}       
+
+int
+unixFileChmod (rsComm_t *rsComm, char *filename, int mode)
+{
+    int status;
+
+    status = chmod (filename, mode);
+
+    if (status < 0) {
+        status = UNIX_FILE_CHMOD_ERR - errno;
+        rodsLog (LOG_NOTICE,
+          "unixFileChmod: chmod of %s error, status = %d", 
+          filename, status);
+    }
+
+    return (status);
+}
+
+int
+unixFileRmdir (rsComm_t *rsComm, char *filename)
+{
+    int status;
+
+    status = rmdir (filename);
+
+    if (status < 0) {
+        status = UNIX_FILE_RMDIR_ERR - errno;
+        rodsLog (LOG_NOTICE,
+          "unixFileRmdir: rmdir of %s error, status = %d",
+          filename, status);
+    }
+
+    return (status);
+}
+
+int
+unixFileOpendir (rsComm_t *rsComm, char *dirname, void **outDirPtr)
+{
+    int status;
+    DIR *dirPtr;
+
+
+    dirPtr = opendir (dirname);
+    if (dirPtr != NULL) {
+        *outDirPtr = (void *) dirPtr;
+	status = 0;
+        return (0);
+    } else {
+        status = UNIX_FILE_OPENDIR_ERR - errno;
+        rodsLog (LOG_NOTICE,
+          "unixFileOpendir: opendir of %s error, status = %d",
+          dirname, status);
+    }
+    return (status);
+}
+
+int
+unixFileClosedir (rsComm_t *rsComm, void *dirPtr)
+{
+    int status;
+
+    status = closedir ((DIR *) dirPtr);
+
+    if (status < 0) {
+        status = UNIX_FILE_CLOSEDIR_ERR - errno;
+        rodsLog (LOG_NOTICE, 
+          "unixFileClosedir: closedir error, status = %d", status);
+    }
+    return (status);
+}
+
+int
+unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent **direntPtr)
+{
+    int status;
+
+    errno = 0;
+    *direntPtr = readdir (dirPtr);
+
+    if (*direntPtr == NULL) {
+	if (errno == 0) {
+	    /* just the end */
+	    status = -1;
+	} else {
+            status = UNIX_FILE_READDIR_ERR - errno;
+             rodsLog (LOG_NOTICE,
+               "unixFileReaddir: readdir error, status = %d", status);
+	}
+    } else {
+	status = 0;
+    }
+    return (status);
+}
+
+int
+unixFileStage (rsComm_t *rsComm, char *path, int flag)
+{
+#ifdef SAMFS_STAGE
+    int status;
+    status = sam_stage (path, "i");
+
+    if (status < 0) {
+        status = UNIX_FILE_STAGE_ERR - errno;
+        rodsLog (LOG_NOTICE,
+         "unixFileStage: sam_stage error, status = %d\n",
+         status);
+    }
+
+    return (status);
+#else
+    return (0);
+#endif
+}
+
+int
+unixFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName)
+{
+    int status;
+    status = rename (oldFileName, newFileName);
+
+    if (status < 0) {
+        status = UNIX_FILE_RENAME_ERR - errno;
+        rodsLog (LOG_NOTICE,
+         "unixFileRename: rename error, status = %d\n",
+         status);
+    }
+
+    return (status);
+}
+
+int
+unixFileTruncate (rsComm_t *rsComm, char *filename, rodsLong_t dataSize)
+{
+    int status;
+
+    status = truncate (filename, dataSize);
+
+    if (status < 0) {
+        status = UNIX_FILE_TRUNCATE_ERR - errno;
+        rodsLog (LOG_NOTICE, 
+	  "unixFileTruncate: truncate of %s error, status = %d",
+         filename, status);
+    }
+
+    return (status);
+}
+
+rodsLong_t
+unixFileGetFsFreeSpace (rsComm_t *rsComm, char *path, int flag)
+{
+    int status;
+    rodsLong_t fssize = USER_NO_SUPPORT_ERR;
+#if defined(solaris_platform)
+    struct statvfs statbuf;
+#else
+    struct statfs statbuf;
+#endif
+#if defined(solaris_platform) || defined(sgi_platform) || defined(aix_platform) || defined(linux_platform) || defined(osx_platform)
+#if defined(solaris_platform)
+    status = statvfs (path, &statbuf);
+#else
+#if defined(sgi_platform)
+    status = statfs (path, &statbuf, sizeof (struct statfs), 0);
+#else
+    status = statfs (path, &statbuf);
+#endif
+#endif
+    if (status < 0) {
+        status = UNIX_FILE_GET_FS_FREESPACE_ERR - errno;
+        rodsLog (LOG_NOTICE,
+        "UNIX statfs error for %s. errorCode = %d", path, status);
+        return (status);
+    }
+#if defined(sgi_platform)
+    if (statbuf.f_frsize > 0) {
+        fssize = statbuf.f_frsize;
+    } else {
+        fssize = statbuf.f_bsize;
+    }
+    fssize *= statbuf.f_bavail;
+#endif
+
+#if defined(aix_platform) || defined(osx_platform) || (linux_platform)
+   fssize = statbuf.f_bavail * statbuf.f_bsize;
+#endif
+#if defined(sgi_platform)
+    fssize = statbuf.f_bfree * statbuf.f_bsize;
+#endif
+
+#endif /* solaris_platform, sgi_platform .... */
+
+    return (fssize);
+}
+

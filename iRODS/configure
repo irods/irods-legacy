@@ -1,0 +1,353 @@
+#!/bin/bash
+
+# This is the configure script for the iRODS system.  It determines a
+# couple parameters (host OS type and 64 bit addressing), accepts
+# others on the commandline and updates the config/config.mk file based on
+# those values.
+#
+# This is a much simplier system than the standard configure, but
+# does everything we need for iRODS, and presents a standard configure
+# interface.
+#
+# Users can run configure or edit the config/config.mk file by hand.
+#
+# Currently, this script always starts with the existing config.mk
+# file, so each configure execution will reset the defaults.  For now,
+# this is OK, but we may want to change this at some point.  But
+# either way we do it, it will confuse some people.
+#
+# The config/replines.pl script replaces lines in file arg1 that contain
+# arg2 with the line arg3.
+
+PERL="perl"
+CONFIG_DIR="config"
+
+
+
+
+#
+# Build a list of available modules.  Each module has a command-line
+# argument that can be used to enable/disable it.  The default is
+# to enable it.
+#
+AVAILABLE_MODULES=
+ENABLED_MODULES=
+DISABLED_MODULES=
+if [ -d modules ]; then
+    cd modules
+    for i in *; do
+	# A module must have an 'info.txt' file describing the
+	# module in order for it to be configurable by this script
+        if [ -f $i/info.txt ]; then
+		AVAILABLE_MODULES="$AVAILABLE_MODULES $i"
+		en=`$PERL ../$CONFIG_DIR/getinfo.pl $i/info.txt enabled lowercase`
+		if [ "$en" == "yes" ]; then
+			ENABLED_MODULES="$ENABLED_MODULES $i"
+		fi
+	fi
+    done
+    cd ..
+fi
+
+
+#
+# Check for command line argument(s) 
+#
+set -e
+
+if [ ! -f $CONFIG_DIR/config.mk ]; then
+    echo "Creating default config.mk from config.mk.in..."
+    cp $CONFIG_DIR/config.mk.in $CONFIG_DIR/config.mk
+fi
+
+i=0
+for arg in $* 
+  do
+  i=`expr $i + 1`
+  if [ "$arg" == "--disable-psgcat" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PSQICAT= PSQICAT=
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk RODS_CAT= RODS_CAT=
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--disable-oricat" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ORAICAT= ORAICAT=
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk RODS_CAT= RODS_CAT=
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--disable-icat" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PSQICAT= PSQICAT=
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ORAICAT= ORAICAT=
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk RODS_CAT= RODS_CAT=
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--disable-parallel" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PARA_OPR= PARA_OPR=
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--disable-file64bit" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk FILE_64BITS= FILE_64BITS=
+      valid[$i]=1
+  fi
+  for module in $AVAILABLE_MODULES; do
+      if [ "$arg" == "--disable-$module" ]; then
+          DISABLED_MODULES="$DISABLED_MODULES $module"
+          valid[$i]=1
+      fi
+  done
+  if [ "$arg" == "--help" ]; then
+      echo "Configures iRODS"
+      echo "    This script provides command-line options to enable or disable"
+      echo "    features in iRODS."
+      echo " "
+      echo "    Options include:"
+      echo "        --enable-psgcat             Enable Postgres database catalog"
+      echo "        --disable-psgcat            Disable Postgres database catalog"
+      echo "        --enable-psghome=<DIR>      Set the Postgres directory"
+      echo " "
+      echo "        --enable-oracat             Enable Oracle database catalog"
+      echo "        --disable-oracat            Disable Oracle database catalog"
+      echo " "
+      echo "        --enable-parallel           Enable parallel computation"
+      echo "        --disable-parallel          Disable parallel computation"
+      echo " "
+      echo "        --enable-file64bit          Enable large files"
+      echo "        --disable-file64bit         Disable large files"
+      echo " "
+      echo "        --enable-icat               Enable iRODS metadata catalog files"
+      echo "        --disable-icat              Disable iRODS metadata catalog files"
+      echo " "
+      echo "        --enable-newodbc            Use the new ODBC interface"
+      echo "        --enable-oldodbc            Use the old ODBC interface"
+      echo " "
+      for module in $AVAILABLE_MODULES; do
+	      brief=`$PERL $CONFIG_DIR/getinfo.pl modules/$module/info.txt brief`
+	      echo "        --enable-$module	    $brief"
+	      echo "        --disable-$module	    $brief"
+      done
+      echo " "
+      echo "    This script also automatically determines the OS platform type"
+      echo "    and 32/64-bit addressing types."
+      echo " "
+      echo "For more information, see the script itself."
+      exit 0
+  fi
+done
+
+i=0
+for arg in $* 
+  do
+  i=`expr $i + 1`
+  if [ "$arg" == "--enable-icat" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PSQICAT= PSQICAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk RODS_CAT= RODS_CAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ORAICAT= ORAICAT=
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--enable-psgcat" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PSQICAT= PSQICAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk RODS_CAT= RODS_CAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ORAICAT= ORAICAT=
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--enable-oracat" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ORAICAT= ORAICAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk RODS_CAT= RODS_CAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PSQICAT= PSQICAT=
+      valid[$i]=1
+  fi
+  beg=${arg:0:17}
+  if [ "$beg" == "--enable-psghome=" ]; then
+      lastPart=${arg:17};
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PSQICAT= PSQICAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk RODS_CAT= RODS_CAT=1
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk POSTGRES_HOME= POSTGRES_HOME=$lastPart
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ORAICAT= ORAICAT=
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--enable-parallel" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk PARA_OPR= PARA_OPR=1
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--enable-file64bit" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk FILE_64BITS= FILE_64BITS=1
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--enable-addr64bit" ]; then
+      addrLine="ADDR_64BITS=1";
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ADDR_64BITS= $addrLine;
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--enable-oldodbc" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk NEW_ODBC= NEW_ODBC=;
+      valid[$i]=1
+  fi
+  if [ "$arg" == "--enable-newodbc" ]; then
+      $PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk NEW_ODBC= NEW_ODBC=1;
+      valid[$i]=1
+  fi
+  for module in $AVAILABLE_MODULES; do
+      if [ "$arg" == "--enable-$module" ]; then
+          ENABLED_MODULES="$ENABLED_MODULES $module"
+          valid[$i]=1
+      fi
+  done
+done
+
+i=0
+for arg in $* 
+  do
+  i=`expr $i + 1`
+  if [ "${valid[$i]}" != 1 ]; then
+      echo "Invalid argument: $arg"
+      exit -1
+  fi
+done
+
+
+#
+# Assemble a list of enabled modules.
+#
+# For each explicitly disabled module, make sure it isn't on
+# the enabled list.  Modules on the enabled list may come from
+# being explicitly enabled or from being enabled by default.
+#
+echo "Building list of enabled modules..."
+TMP_MODULES=
+for module in $ENABLED_MODULES; do
+	disableit=0
+	for dis in $DISABLED_MODULES; do
+	    if [ $module == $dis ]; then
+		    disableit=1
+		    break
+	    fi
+	done
+	if [ $disableit == 0 ]; then
+		TMP_MODULES="$TMP_MODULES $module"
+		echo "    $module"
+	fi
+done
+ENABLED_MODULES=$TMP_MODULES
+
+
+#
+# Check module dependencies.
+#
+# For each enabled module, make sure all of the modules it
+# depends upon are also enabled.
+#
+echo "Checking module dependencies..."
+DEPENDS_NOT_FOUND=
+for module in $ENABLED_MODULES; do
+	DEPENDS=`$PERL $CONFIG_DIR/getinfo.pl modules/$module/info.txt dependencies`
+	for depend in $DEPENDS; do
+		found=0
+		for m in $ENABLED_MODULES; do
+			if [ $m == $depend ]; then
+				found=1
+			fi
+		done
+		if [ $found == 0 ]; then
+			DEPENDS_NOT_FOUND="$DEPENDS_NOT_FOUND $depend"
+		fi
+	done
+done
+if [ "$DEPENDS_NOT_FOUND" != "" ]; then
+	echo "    The following modules are depended upon by enabled modules"
+	echo "    but were not enabled:"
+	for module in $DEPENDS_NOT_FOUND; do
+		echo "        $module"
+	done
+	echo "    Please review your configuration and either enable these"
+	echo "    modules, or disable the ones that require them."
+	exit 1
+fi
+
+# Update the MODULES line in config.mk
+$PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk MODULES= "MODULES=$ENABLED_MODULES"
+
+
+
+#
+# Run the GNU config.guess and set the platform type based on that.
+#
+echo "Checking host system type... "
+host=`sh install/config.guess`
+
+case "$host" in
+    *-linux*)
+	platform=linux_platform
+	echo "    Host system is Linux.";;
+    *-solaris*)
+        case "$host" in
+	   *sparc*)
+	       platform=solaris_platform
+               echo "    Host system is Solaris (Sparc)";;
+	   *-pc-*)
+	       platform=solaris_pc_platform
+               echo "    Host system is Solaris (PC)"
+        esac ;;
+    *-sunos*)
+	platform=sunos_platform
+	echo "    Host system is SunOS.";;
+    *-aix*)
+	platform=aix_platform
+	echo "    Host system is AIX.";;
+    *alpha*)
+	platform=alpha_platform
+	echo "    Host system is Alpha.";;
+    *-sgi*)
+	platform=sgi_platform
+	echo "    Host system is SGI.";;
+    *-darwin*)
+	platform=osx_platform
+	echo "    Host system is OSX.";;
+    *)
+	echo "    Unknown system type.";
+	exit -1;
+esac
+echo "    Platform is: $platform"
+
+# update the platform line in the config.mk file
+$PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk OS_platform= OS_platform=$platform;
+
+# If --enable-addr64bit was used (manually selecting 64-bit
+# addressing), we're done.
+if [ $addrLine ]; then
+	exit 0;
+fi
+
+#
+# Check for 64 bit addressing.
+# Build and run a simple program which has an exit value that 
+# indicates if the address variable is 8 bytes.
+#
+echo "Checking for 64 bit addressing..."
+rm -f conftest64.c a.out
+cat >>conftest64.c <<_ACEOF
+
+#include <stdlib.h>
+int
+main(int argc, char *argv[]) {
+char *foo;
+if (sizeof(foo)==8) exit(1);
+exit(0);
+}
+
+_ACEOF
+cc conftest64.c
+set +e
+./a.out
+status64=$?
+set -e
+if [ $status64 = "1" ]; then
+    echo "yes"
+    addrLine="ADDR_64BITS=1";
+else
+    echo "no"
+    addrLine="ADDR_64BITS=";
+fi
+rm -f a.out conftest64.c
+
+# patch $CONFIG_DIR/config.mk
+$PERL $CONFIG_DIR/replines.pl $CONFIG_DIR/config.mk ADDR_64BITS= $addrLine;
+exit 0

@@ -1,0 +1,231 @@
+/*** Copyright (c), The Regents of the University of California            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
+/* This is script-generated code (for the most part).  */ 
+/* See dataObjGet.h for a description of this API call.*/
+
+#include "dataObjGet.h"
+#include "rodsLog.h"
+#include "dataGet.h"
+#include "fileGet.h"
+#include "dataObjOpen.h"
+#include "rsGlobalExtern.h"
+#include "rcGlobalExtern.h"
+#include "rsApiHandler.h"
+
+int
+rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
+{
+    int status;
+
+    status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
+      dataObjOutBBuf, BRANCH_MSG);
+
+    return (status);
+}
+
+int
+_rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
+{
+    int status;
+    dataObjInfo_t *dataObjInfo;
+    int l1descInx;
+    char *chksumStr = NULL;
+    int retval;
+    dataObjCloseInp_t dataObjCloseInp;
+
+    l1descInx = _rsDataObjOpen (rsComm, dataObjInp, PHYOPEN_BY_SIZE);
+
+    if (l1descInx < 0)
+        return l1descInx;
+
+    L1desc[l1descInx].oprType = GET_OPR;
+
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+    if (getValByKey (&dataObjInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
+        if (strlen (dataObjInfo->chksum) > 0) {
+            /* a chksum already exists */
+	    chksumStr = strdup (dataObjInfo->chksum);
+        } else {
+
+            status = dataObjChksumAndReg (rsComm, dataObjInfo, &chksumStr);
+            if (status < 0) {
+                return status;
+            }
+	    rstrcpy (dataObjInfo->chksum, chksumStr, NAME_LEN);
+        }
+    }
+
+    if (L1desc[l1descInx].l3descInx <= 2) {
+	/* no physical file was opened */
+        status = l3DataGetSingleBuf (rsComm, l1descInx, dataObjOutBBuf,
+	  portalOprOut);
+	if (status >= 0) {
+	    status = 0;
+            if (chksumStr != NULL) {
+                rstrcpy ((*portalOprOut)->chksum, chksumStr, NAME_LEN);
+                free (chksumStr);
+	    }
+        }
+	return (status);
+    }
+
+
+    status = l2DataObjGet (rsComm, l1descInx, portalOprOut);
+
+    if (status < 0) {
+        memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+         dataObjCloseInp.l1descInx = l1descInx;
+         rsDataObjClose (rsComm, &dataObjCloseInp);
+	if (chksumStr != NULL) {
+	    free (chksumStr);
+	}
+        return (status);
+    }
+
+#if 0
+        if (dataObjOutBBuf->len > 0) {
+	    status = 0;
+        } else {
+            status = l1descInx;
+        }
+#endif
+
+    status = l1descInx;		/* means file no included */
+    if (chksumStr != NULL) {
+        rstrcpy ((*portalOprOut)->chksum, chksumStr, NAME_LEN);
+        free (chksumStr);
+    }
+
+    retval = sendAndRecvBranchMsg (rsComm, rsComm->apiInx, status,
+      (void *) *portalOprOut, dataObjOutBBuf);
+
+    if (retval < 0) {
+        memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+        dataObjCloseInp.l1descInx = l1descInx;
+        rsDataObjClose (rsComm, &dataObjCloseInp);
+    }
+
+    if (handlerFlag & INTERNAL_SVR_CALL) {
+        /* internal call. want to know the real status */
+        return (retval);
+    } else {
+        /* already send the client the status */
+        return (SYS_NO_HANDLER_REPLY_MSG);
+    }
+}
+
+int
+l2DataObjGet (rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut)
+{
+    int l3descInx;
+    int status;
+    dataObjInp_t *dataObjInp;
+    dataOprInp_t dataOprInp;
+
+    dataObjInp = L1desc[l1descInx].dataObjInp;
+    l3descInx = L1desc[l1descInx].l3descInx;
+
+    initDataOprInp (&dataOprInp, l1descInx, GET_OPR);
+    status =  rsDataGet (rsComm, &dataOprInp, portalOprOut);
+
+    if (status >= 0) {
+        (*portalOprOut)->l1descInx = l1descInx;
+    }
+
+    return (status);
+}
+
+int
+l3DataGetSingleBuf (rsComm_t *rsComm, int l1descInx,
+bytesBuf_t *dataObjOutBBuf, portalOprOut_t **portalOprOut)
+{
+    int status = 0;
+    int bytesRead;
+    dataObjCloseInp_t dataObjCloseInp;
+    dataObjInfo_t *dataObjInfo;
+
+    /* just malloc an empty portalOprOut */
+
+    *portalOprOut = malloc (sizeof (portalOprOut_t));
+    memset (*portalOprOut, 0, sizeof (portalOprOut_t));
+
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+    if (dataObjInfo->dataSize > 0) { 
+        dataObjOutBBuf->buf = malloc (dataObjInfo->dataSize);
+        bytesRead = l3FileGetSingleBuf (rsComm, l1descInx, dataObjOutBBuf);
+    } else {
+	bytesRead = 0;
+    }
+
+    if (bytesRead != dataObjInfo->dataSize) {
+	free (dataObjOutBBuf->buf);
+	memset (dataObjOutBBuf, 0, sizeof (bytesBuf_t));
+	if (bytesRead >= 0) { 
+            rodsLog (LOG_NOTICE,
+              "l3DataGetSingleBuf:Bytes toread %d don't match read %d",
+              dataObjInfo->dataSize, bytesRead);
+            bytesRead = SYS_COPY_LEN_ERR - errno;
+	}
+    }
+
+    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+    dataObjCloseInp.l1descInx = l1descInx;
+    status = rsDataObjClose (rsComm, &dataObjCloseInp);
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+          "l3DataGetSingleBuf: rsDataObjClose of %d error, status = %d",
+            l1descInx, status);
+    }
+
+    if (bytesRead < 0)
+        return (bytesRead);
+    else
+	return status;
+}
+
+/* l3FileGetSingleBuf - Get the content of a small file into a single buffer 
+ * in dataObjOutBBuf->buf for an opened data obj in l1descInx. 
+ * Return value - int - number of bytes read. 
+ */
+
+int
+l3FileGetSingleBuf (rsComm_t *rsComm, int l1descInx,  
+bytesBuf_t *dataObjOutBBuf)
+{
+    dataObjInfo_t *dataObjInfo;
+    int rescTypeInx;
+    fileOpenInp_t fileGetInp;
+    int bytesRead;
+    dataObjInp_t *dataObjInp;
+
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+    rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+
+    switch (RescTypeDef[rescTypeInx].rescCat) {
+      case FILE_CAT:
+        memset (&fileGetInp, 0, sizeof (fileGetInp));
+        dataObjInp = L1desc[l1descInx].dataObjInp;
+        fileGetInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileGetInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
+          NAME_LEN);
+        rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
+        fileGetInp.mode = getFileMode (l1descInx);
+        fileGetInp.flags = O_RDONLY;
+	fileGetInp.dataSize = dataObjInfo->dataSize;
+        bytesRead = rsFileGet (rsComm, &fileGetInp, dataObjOutBBuf);
+        break;
+      default:
+        rodsLog (LOG_NOTICE,
+          "l3Open: rescCat type %d is not recognized",
+          RescTypeDef[rescTypeInx].rescCat);
+        bytesRead = SYS_INVALID_RESC_TYPE;
+        break;
+    }
+    return (bytesRead);
+}
+

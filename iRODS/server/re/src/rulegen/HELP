@@ -1,0 +1,5 @@
+flex wfintrpr.l 
+bison -t -y -d wfintrpr.y
+gcc -c -g y.tab.c lex.yy.c wfintrpr.c
+gcc -g y.tab.o lex.yy.o wfintrpr.o -o wfintrpr
+wfintrpr -s test1.r

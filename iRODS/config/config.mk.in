@@ -1,0 +1,140 @@
+#
+# config/config.mk
+#
+# This is the iRODS configuration Makefile included in all other
+# Makefiles used to build the servers and clients.
+#
+# The iRODS configuration script copies config/config.mk.in to
+# config/config.mk, filling in its best guesses on the OS platform
+# and its features.  You can edit this file by hand to modify
+# those guesses.
+#
+# Values filled in by the configure script:
+# 	OS_platform	The OS for this build.  Platforms supported:
+#				alpha_platform
+#				sgi_platform
+#				solaris_platform
+#				sunos_platform
+#				aix_platform
+#				osx_platform
+#				linux_platform
+#
+#	ADDR_64BITS	Whether 64-bit addressing is supported.
+#
+#	MODULES		The list of modules enabled during configuration.
+#			Module names are the names of directories in
+#			the 'modules' subdirectory.
+#
+OS_platform=linux_platform
+
+# FILE_64BITS - defines whether 64 bits file is supported.
+FILE_64BITS=1
+
+# ADDR_64BITS defines whether this host uses 64 bit addressing.
+ADDR_64BITS=
+
+# MODULES lists the modules to be built into the system.
+MODULES=
+
+# PARA_OPR - defines whether parallel operation is supported.
+PARA_OPR=1  
+
+# RULE_ENGINE defines whether the Rule Engine is enabled. 
+# Enable this normally unless you are debugging some 
+# particular module and dont want the rule engine to mess up the flow.
+RULE_ENGINE=1
+
+# RODS_CAT defines whether the RODS ICAT is enabled
+#RODS_CAT=1
+
+# PSQICAT - It is a postgres ICAT
+#PSQICAT=1
+
+# NEW_ODBC - using libiodbc with postgres
+#NEW_ODBC=1
+
+# ORAICAT - It is an Oracle ICAT
+#ORAICAT=1
+
+
+ifdef RODS_CAT
+
+# Postgres
+ifdef PSQICAT
+PSQ_DBMS =  1
+endif
+
+# Oracle
+ifdef ORAICAT
+ORA_DBMS =  1
+endif
+endif
+
+
+ifdef PSQICAT
+RODS_CAT = 1
+PSQ_DBMS = 1
+DBMS_INCLUDE+= -DPSQICAT
+endif
+
+
+ifdef ORAICAT
+RODS_CAT = 1
+ORA_DBMS = 1
+endif
+
+ifdef PSQ_DBMS
+POSTGRES_HOME=/scratch/slocal/rods/RODS/../iRodsPostgres/pgsql
+ifeq ($(OS_platform), osx_platform)
+NSL=
+else
+NSL=-lnsl
+endif
+PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
+PSQ_HDR_DIR = $(POSTGRES_HOME)/include
+ifdef NEW_ODBC
+DBMS_LIB+= -L$(PSQ_LIB_DIR) -lodbc $(NSL) -lm
+else
+DBMS_LIB+= -L$(PSQ_LIB_DIR) -lpsqlodbc $(NSL) -lm
+endif
+DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
+endif
+
+
+ifdef ORA_DBMS
+ifndef ORACLE_HOME
+ORACLE_HOME=/usr/local/apps/oracle/home_102
+endif
+ifdef ADDR_64BITS
+ORA_LIB_DIR = $(ORACLE_HOME)/lib
+else
+ifeq ($(OS_platform), osx_platform)
+ORA_LIB_DIR = $(ORACLE_HOME)/lib32
+else
+ORA_LIB_DIR = $(ORACLE_HOME)/lib
+endif
+endif
+
+ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
+DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
+DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
+endif
+
+# CCMALLOC - specify whether mem leak checking CCMALLOC should be run
+# CCMALLOC = 1
+ifdef CCMALLOC
+CCMALLOC_DIR=/data/mwan/rods/ccmalloc/ccmalloc-0.4.0
+endif
+
+
+# Defines whether GeneralQuery Access Control is enabled
+# (Normally not set)
+# GEN_QUERY_AC = 1
+
+# IRODS_FS - specify that irodsFuse should be built
+# The latest version is 26 for release 2.7. It default to 21 if not defined
+# IRODS_FS = 1
+ifdef IRODS_FS
+fuseHomeDir=/home/mwan/adil/fuse-2.7.0
+endif
+

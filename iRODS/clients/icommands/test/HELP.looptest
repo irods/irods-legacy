@@ -1,0 +1,158 @@
+/*** needs nvoReplResc, tgReplResc apart from default resource ***/
+
+
+/* SETUP */
+iinit
+icd
+ils
+ilsresc
+irm -rf loopTest
+irm -rf loopTest2
+imkdir  loopTest
+imkdir loopTest2
+icd loopTest
+iput ../src/ipwd.c
+iput ../src/iquest.c
+iput ../src/ils.c
+ils -l 
+
+/* LISTING AND CHECKSUM */
+irule -F ../test/listColl.ir
+irule -F ../test/showicatchksumColl.ir
+ichksum -r .
+irule -F ../test/showicatchksumColl.ir
+   /** use the following to change a file under iRODS
+           iquest "select DATA_PATH where DATA_NAME = 'iquest.c'"
+           vi 
+    **/
+irule -F ../test/showicatchksumColl.ir
+irule -F ../test/verifychksumColl.ir
+irule -F ../test/forcechksumColl.ir
+
+/* COPYING */
+irm -f iquest.c
+iput ../src/iquest.c
+
+ils -l 
+ils -l ../loopTest2
+irule -F ../test/copyColl.ir
+ils -l ../loopTest2
+
+/* REPLICATING AND TRIMMING */
+ils -l 
+irule -F ../test/replColl.ir
+ils -l 
+irule -F ../test/trimColl.ir
+ils -l
+
+/* SEND EMAIL     IMPORTANT - modify *MailTo variable appropriately  --  sends checksums*/
+ichksum -r .
+irule -F ../test/sendMailColl.ir
+
+
+/* periodically verify the checksums of files in loopTest and send it via email */
+
+irule -F ../test/periodicChksumColl.ir
+iqstat -l
+iqstat
+iqdel "<id>"
+
+
+
+/* purging files that are past a dead line
+needs to change the expiry-time for a file
+
+
+irule -F ../test/purgeCollAndEmail.ir
+
+
+/* iput rule example */
+
+
+irule -F ../test/showCore.ir|more
+icd
+irm -f tg/imkdir.c
+irm -f nvo/imkdir.c
+ils -l tg
+iput ../src/imkdir.c tg
+ils -l tg
+
+ils -l nvo
+iput ../src/imkdir.c nvo
+ils -l nvo
+iqstat -l
+iqstat
+ils -l nvo
+
+/* irule tests */
+more        ../test/ruleTest1.ir
+irule -v -F ../test/ruleTest1.ir
+
+more        ../test/ruleTest2.ir
+irule -v -F ../test/ruleTest2.ir
+
+more        ../test/ruleTest3.ir
+irule -v -F ../test/ruleTest3.ir
+
+more        ../test/ruleTest4.ir
+irule -v -F ../test/ruleTest4.ir
+
+more        ../test/ruleTest5.ir
+irule -v -F ../test/ruleTest5.ir
+
+more        ../test/ruleTest6.ir
+irule -v -F ../test/ruleTest6.ir
+
+more        ../test/ruleTest7.ir
+irule -v -F ../test/ruleTest7.ir
+
+more        ../test/ruleTest8.ir
+irule -v -F ../test/ruleTest8.ir
+
+more        ../test/ruleTest9.ir
+irule -v -F ../test/ruleTest9.ir
+
+more        ../test/ruleTest10.ir
+irule -v -F ../test/ruleTest10.ir
+
+more        ../test/ruleTest11.ir
+irule -v -F ../test/ruleTest11.ir
+
+more        ../test/ruleTest12.ir
+irule -v -F ../test/ruleTest12.ir
+
+more        ../test/ruleTest13.ir
+irule -v -F ../test/ruleTest13.ir
+
+more        ../test/ruleTest14.ir
+irule -v -F ../test/ruleTest14.ir
+
+more        ../test/ruleTest15.ir
+irule -v -F ../test/ruleTest15.ir
+
+more        ../test/ruleTest16.ir
+irule -v -F ../test/ruleTest16.ir
+
+more        ../test/ruleTest17.ir
+irule  -F ../test/ruleTest17.ir
+
+more        ../test/ruleTest18.ir
+irule  -F ../test/ruleTest18.ir
+
+more        ../test/ruleTest19.ir
+irule  -F ../test/ruleTest19.ir
+
+
+more        ../test/ruleTest.ir
+irule -v -F ../test/ruleTest.ir
+
+more        ../test/ruleTest.ir
+irule -v -F ../test/ruleTest.ir
+
+
+
+
+/* END */
+
+iexit
+

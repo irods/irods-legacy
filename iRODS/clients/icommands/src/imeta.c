@@ -1,0 +1,1316 @@
+/*** Copyright (c), The Regents of the University of California            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
+
+/* 
+  This is an interface to the Attribute-Value-Units type of metadata.
+*/
+
+#include "rods.h"
+#include "rodsClient.h"
+
+#define MAX_SQL 300
+#define BIG_STR 200
+
+char cwd[BIG_STR];
+
+int debug=0;
+int testMode=0; /* some some particular internal tests */
+
+rcComm_t *Conn;
+rodsEnv myEnv;
+
+int lastCommandStatus=0;
+int printCount=0;
+
+int usage(char *subOpt);
+
+/* 
+ print the results of a general query.
+ */
+void
+printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, 
+		     char *descriptions[])
+{
+   int i, j;
+   lastCommandStatus = status;
+   if (status == CAT_NO_ROWS_FOUND) lastCommandStatus = 0;
+   if (status!=0 && status != CAT_NO_ROWS_FOUND) {
+      printError(Conn, status, "rcGenQuery");
+   }
+   else {
+      if (status == CAT_NO_ROWS_FOUND) {
+	 if (printCount==0) printf("No rows found\n");
+      }
+      else {
+	 for (i=0;i<genQueryOut->rowCnt;i++) {
+	    if (i>0) printf("----\n");
+	    for (j=0;j<genQueryOut->attriCnt;j++) {
+	       char *tResult;
+	       tResult = genQueryOut->sqlResult[j].value;
+	       tResult += i*genQueryOut->sqlResult[j].len;
+	       printf("%s: %s\n", descriptions[j], tResult);
+	       printCount++;
+	    }
+	 }
+      }
+   }
+
+}
+
+/*
+ Via a general query and show the AVUs for a dataobject.
+ */
+int
+showDataObj(char *name, char *attrName, int wild) 
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char v3[BIG_STR];
+   char fullName[LONG_NAME_LEN];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   /* "id" only used in testMode :*/
+   char *columnNames[]={"attribute", "value", "units", "id"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printf("AVUs defined for dataObj %s:\n",name);
+   printCount=0;
+   i1a[0]=COL_META_DATA_ATTR_NAME;
+   i1b[0]=0;
+   i1a[1]=COL_META_DATA_ATTR_VALUE;
+   i1b[1]=0;
+   i1a[2]=COL_META_DATA_ATTR_UNITS;
+   i1b[2]=0;
+   if (testMode) {
+      i1a[3]=COL_META_DATA_ATTR_ID;
+      i1b[3]=0;
+   }
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 3;
+   if (testMode) {
+      genQueryInp.selectInp.len = 4;
+   }
+
+   i2a[0]=COL_COLL_NAME;
+   sprintf(v1,"='%s'",cwd);
+   condVal[0]=v1;
+
+   i2a[1]=COL_DATA_NAME;
+   sprintf(v2,"='%s'",name);
+   condVal[1]=v2;
+
+   strncpy(fullName, cwd, LONG_NAME_LEN);
+   rstrcat(fullName, "/", LONG_NAME_LEN);
+   rstrcat(fullName, name, LONG_NAME_LEN);
+   if (strstr(name, "/") != NULL) {
+      /* reset v1 and v2 for when full path or relative path entered */
+      if (*name=='/') {
+	 strncpy(fullName, name, LONG_NAME_LEN);
+      }
+      status = splitPathByKey(fullName, 
+			      myDirName, myFileName, '/');
+      sprintf(v1,"='%s'",myDirName);
+      sprintf(v2,"='%s'",myFileName);
+   }
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   if (attrName != NULL && *attrName!='\0') {
+      i2a[2]=COL_META_DATA_ATTR_NAME;
+      if (wild) {
+	 sprintf(v3,"like '%s'",attrName);
+      }
+      else {
+	 sprintf(v3,"= '%s'",attrName);
+      }
+      condVal[2]=v3;
+      genQueryInp.sqlCondInp.len++;
+   }
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_D_DATA_PATH;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("None\n");
+	 return(0);
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("Dataobject %s does not exist.\n", fullName);
+	 return(0);
+      }
+      printGenQueryResults(Conn, status, genQueryOut, columnNames);
+   }
+   else {
+      printGenQueryResults(Conn, status, genQueryOut, columnNames);
+   }
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+/*
+Via a general query, show the AVUs for a collection
+*/
+int
+showColl(char *name, char *attrName, int wild) 
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char fullName[LONG_NAME_LEN];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   char *columnNames[]={"attribute", "value", "unit"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printf("AVUs defined for dataObj %s:\n",name);
+   printCount=0;
+   i1a[0]=COL_META_COLL_ATTR_NAME;
+   i1b[0]=0; /* currently unused */
+   i1a[1]=COL_META_COLL_ATTR_VALUE;
+   i1b[1]=0;
+   i1a[2]=COL_META_COLL_ATTR_UNITS;
+   i1b[2]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 3;
+
+   strncpy(fullName, cwd, LONG_NAME_LEN);
+   if (strlen(name)>0) {
+      if (*name=='/') {
+	 strncpy(fullName, name, LONG_NAME_LEN);
+      }
+      else {
+	 rstrcat(fullName, "/", LONG_NAME_LEN);
+	 rstrcat(fullName, name, LONG_NAME_LEN);
+      }
+   }
+   i2a[0]=COL_COLL_NAME;
+   sprintf(v1,"='%s'",fullName);
+   condVal[0]=v1;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   if (attrName != NULL && *attrName!='\0') {
+      i2a[1]=COL_META_COLL_ATTR_NAME;
+      if (wild) {
+	 sprintf(v2,"like '%s'",attrName);
+      }
+      else {
+	 sprintf(v2,"= '%s'",attrName);
+      }
+      condVal[1]=v2;
+      genQueryInp.sqlCondInp.len++;
+   }
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_COLL_COMMENTS;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("None\n");
+	 return(0);
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("Collection %s does not exist.\n", fullName);
+	 return(0);
+      }
+   }
+
+   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+/*
+Via a general query, show the AVUs for a resource
+*/
+int
+showResc(char *name, char *attrName, int wild) 
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   char *columnNames[]={"attribute", "value", "unit"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printf("AVUs defined for resource %s:\n",name);
+   printCount=0;
+   i1a[0]=COL_META_RESC_ATTR_NAME;
+   i1b[0]=0; /* currently unused */
+   i1a[1]=COL_META_RESC_ATTR_VALUE;
+   i1b[1]=0;
+   i1a[2]=COL_META_RESC_ATTR_UNITS;
+   i1b[2]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 3;
+
+   i2a[0]=COL_R_RESC_NAME;
+   sprintf(v1,"='%s'",name);
+   condVal[0]=v1;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   if (attrName != NULL && *attrName!='\0') {
+      i2a[1]=COL_META_RESC_ATTR_NAME;
+      if (wild) {
+	 sprintf(v2,"like '%s'",attrName);
+      }
+      else {
+	 sprintf(v2,"= '%s'",attrName);
+      }
+      condVal[1]=v2;
+      genQueryInp.sqlCondInp.len++;
+   }
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_R_RESC_INFO;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("None\n");
+	 return(0);
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("Resource %s does not exist.\n", name);
+	 return(0);
+      }
+   }
+
+   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+/*
+Via a general query, show the AVUs for a user
+*/
+int
+showUser(char *name, char *attrName, int wild)
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   char *columnNames[]={"attribute", "value", "unit"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printf("AVUs defined for user %s:\n",name);
+   printCount=0;
+   i1a[0]=COL_META_USER_ATTR_NAME;
+   i1b[0]=0; /* currently unused */
+   i1a[1]=COL_META_USER_ATTR_VALUE;
+   i1b[1]=0;
+   i1a[2]=COL_META_USER_ATTR_UNITS;
+   i1b[2]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 3;
+
+   i2a[0]=COL_USER_NAME;
+   sprintf(v1,"='%s'",name);
+   condVal[0]=v1;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   if (attrName != NULL && *attrName!='\0') {
+      i2a[1]=COL_META_USER_ATTR_NAME;
+      if (wild) {
+	 sprintf(v2,"like '%s'",attrName);
+      }
+      else {
+	 sprintf(v2,"= '%s'",attrName);
+      }
+      condVal[1]=v2;
+      genQueryInp.sqlCondInp.len++;
+   }
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_USER_COMMENT;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("None\n");
+	 return(0);
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("User %s does not exist.\n", name);
+	 return(0);
+      }
+   }
+
+   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+/*
+Do a query on AVUs for dataobjs and show the results
+ */
+int queryDataObj(char *attribute, char *op, char *value) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char fullName[LONG_NAME_LEN];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   char *columnNames[]={"collection", "dataObj"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printCount=0;
+   i1a[0]=COL_COLL_NAME;
+   i1b[0]=0;  /* (unused) */
+   i1a[1]=COL_DATA_NAME;
+   i1b[1]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 2;
+
+   i2a[0]=COL_META_DATA_ATTR_NAME;
+   sprintf(v1,"='%s'",attribute);
+   condVal[0]=v1;
+
+   i2a[1]=COL_META_DATA_ATTR_VALUE;
+   sprintf(v2, "%s '%s'", op, value);
+   condVal[1]=v2;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+/*
+Do a query on AVUs for collections and show the results
+ */
+int queryCollection(char *attribute, char *op, char *value) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char fullName[LONG_NAME_LEN];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   char *columnNames[]={"collection"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printCount=0;
+   i1a[0]=COL_COLL_NAME;
+   i1b[0]=0;  /* (unused) */
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 1;
+
+   i2a[0]=COL_META_COLL_ATTR_NAME;
+   sprintf(v1,"='%s'",attribute);
+   condVal[0]=v1;
+
+   i2a[1]=COL_META_COLL_ATTR_VALUE;
+   sprintf(v2, "%s '%s'", op, value);
+   condVal[1]=v2;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+/*
+Do a query on AVUs for resources and show the results
+ */
+int queryResc(char *attribute, char *op, char *value) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char fullName[LONG_NAME_LEN];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   char *columnNames[]={"resource"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printCount=0;
+   i1a[0]=COL_R_RESC_NAME;
+   i1b[0]=0;  /* (unused) */
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 1;
+
+   i2a[0]=COL_META_RESC_ATTR_NAME;
+   sprintf(v1,"='%s'",attribute);
+   condVal[0]=v1;
+
+   i2a[1]=COL_META_RESC_ATTR_VALUE;
+   sprintf(v2, "%s '%s'", op, value);
+   condVal[1]=v2;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+/*
+Do a query on AVUs for users and show the results
+ */
+int queryUser(char *attribute, char *op, char *value) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   char fullName[LONG_NAME_LEN];
+   char myDirName[LONG_NAME_LEN];
+   char myFileName[LONG_NAME_LEN];
+   int i, status;
+   char *columnNames[]={"user"};
+
+   printCount=0;
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   i1a[0]=COL_USER_NAME;
+   i1b[0]=0;  /* (unused) */
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 1;
+
+   i2a[0]=COL_META_USER_ATTR_NAME;
+   sprintf(v1,"='%s'",attribute);
+   condVal[0]=v1;
+
+   i2a[1]=COL_META_USER_ATTR_VALUE;
+   sprintf(v2, "%s '%s'", op, value);
+   condVal[1]=v2;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+
+   printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+					columnNames);
+   }
+
+   return (0);
+}
+
+
+/*
+ Modify (copy) AVUs
+ */
+int
+modCopyAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3, 
+	     char *arg4, char *arg5, char *arg6, char *arg7) {
+   modAVUMetadataInp_t modAVUMetadataInp;
+   int status;
+   char *mySubName;
+   char *myName;
+   char fullName1[LONG_NAME_LEN];
+   char fullName2[LONG_NAME_LEN];
+
+   strncpy(fullName1, cwd, LONG_NAME_LEN);
+   if (strcmp(arg1,"-R")==0 || strcmp(arg1,"-r")==0 || strcmp(arg1,"-u")==0) {
+      strncpy(fullName1, arg3, LONG_NAME_LEN);
+   }
+   else {
+      if (strlen(arg3)>0) {
+	 if (*arg3=='/') {
+	    strncpy(fullName1, arg3, LONG_NAME_LEN);
+	 }
+	 else {
+	    rstrcat(fullName1, "/", LONG_NAME_LEN);
+	    rstrcat(fullName1, arg3, LONG_NAME_LEN);
+	 }
+      }
+   }
+
+   strncpy(fullName2, cwd, LONG_NAME_LEN);
+   if (strcmp(arg2,"-R")==0 || strcmp(arg2,"-r")==0 || strcmp(arg2,"-u")==0) {
+      strncpy(fullName2, arg4, LONG_NAME_LEN);
+   }
+   else {
+      if (strlen(arg4)>0) {
+	 if (*arg4=='/') {
+	    strncpy(fullName2, arg4, LONG_NAME_LEN);
+	 }
+	 else {
+	    rstrcat(fullName2, "/", LONG_NAME_LEN);
+	    rstrcat(fullName2, arg4, LONG_NAME_LEN);
+	 }
+      }
+   }
+
+   modAVUMetadataInp.arg0 = arg0;
+   modAVUMetadataInp.arg1 = arg1;
+   modAVUMetadataInp.arg2 = arg2;
+   modAVUMetadataInp.arg3 = fullName1;
+   modAVUMetadataInp.arg4 = fullName2;
+   modAVUMetadataInp.arg5 = arg5;
+   modAVUMetadataInp.arg6 = arg6;
+   modAVUMetadataInp.arg7 = arg7;
+   modAVUMetadataInp.arg8 ="";
+   modAVUMetadataInp.arg9 ="";
+
+   status = rcModAVUMetadata(Conn, &modAVUMetadataInp);
+   lastCommandStatus = status;
+
+   if (status < 0 ) {
+      if (Conn->rError) {
+	 rError_t *Err;
+         rErrMsg_t *ErrMsg;
+	 int i, len;
+	 Err = Conn->rError;
+	 len = Err->len;
+	 for (i=0;i<len;i++) {
+	    ErrMsg = Err->errMsg[i];
+	    rodsLog(LOG_ERROR, "Level %d: %s",i, ErrMsg->msg);
+	 }
+      }
+      myName = rodsErrorName(status, &mySubName);
+      rodsLog (LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
+	       status, myName, mySubName);
+   }
+   return(status);
+}
+
+/*
+ Modify (add or remove) AVUs
+ */
+int
+modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3, 
+	     char *arg4, char *arg5, char *arg6, char *arg7) {
+   modAVUMetadataInp_t modAVUMetadataInp;
+   int status;
+   char *mySubName;
+   char *myName;
+   char fullName[LONG_NAME_LEN];
+
+   strncpy(fullName, cwd, LONG_NAME_LEN);
+   if (strcmp(arg1,"-R")==0 || strcmp(arg1,"-r")==0 || strcmp(arg1,"-u")==0) {
+      strncpy(fullName, arg2, LONG_NAME_LEN);
+   }
+   else {
+      if (strlen(arg2)>0) {
+	 if (*arg2=='/') {
+	    strncpy(fullName, arg2, LONG_NAME_LEN);
+	 }
+	 else {
+	    rstrcat(fullName, "/", LONG_NAME_LEN);
+	    rstrcat(fullName, arg2, LONG_NAME_LEN);
+	 }
+      }
+   }
+
+   modAVUMetadataInp.arg0 = arg0;
+   modAVUMetadataInp.arg1 = arg1;
+   modAVUMetadataInp.arg2 = fullName;
+   modAVUMetadataInp.arg3 = arg3;
+   modAVUMetadataInp.arg4 = arg4;
+   modAVUMetadataInp.arg5 = arg5;
+   modAVUMetadataInp.arg6 = arg6;
+   modAVUMetadataInp.arg7 = arg7;
+   modAVUMetadataInp.arg8 ="";
+   modAVUMetadataInp.arg9 ="";
+
+   status = rcModAVUMetadata(Conn, &modAVUMetadataInp);
+   lastCommandStatus = status;
+
+   if (status < 0 ) {
+      if (Conn->rError) {
+	 rError_t *Err;
+         rErrMsg_t *ErrMsg;
+	 int i, len;
+	 Err = Conn->rError;
+	 len = Err->len;
+	 for (i=0;i<len;i++) {
+	    ErrMsg = Err->errMsg[i];
+	    rodsLog(LOG_ERROR, "Level %d: %s",i, ErrMsg->msg);
+	 }
+      }
+      myName = rodsErrorName(status, &mySubName);
+      rodsLog (LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
+	       status, myName, mySubName);
+   }
+   return(status);
+}
+
+/* 
+ Prompt for input and parse into tokens
+*/
+int
+getInput(char *cmdToken[], int maxTokens) {
+   int lenstr, i;
+   static char ttybuf[BIG_STR];
+   int nTokens;
+   int tokenFlag; /* 1: start reg, 2: start ", 3: start ' */
+   char *cpTokenStart;
+
+   memset(ttybuf, 0, BIG_STR);
+   fputs("imeta>",stdout);
+   fgets(ttybuf, BIG_STR, stdin);
+   lenstr=strlen(ttybuf);
+   for (i=0;i<maxTokens;i++) {
+      cmdToken[i]="";
+   }
+   cpTokenStart = ttybuf;
+   nTokens=0;
+   tokenFlag=0;
+   for (i=0;i<lenstr;i++) {
+      if (ttybuf[i]=='\n') {
+	 ttybuf[i]='\0';
+	 cmdToken[nTokens++]=cpTokenStart;
+	 return(0);
+      }
+      if (tokenFlag==0) {
+	 if (ttybuf[i]=='\'') {
+	    tokenFlag=3;
+	    cpTokenStart++;
+	 }
+	 else if (ttybuf[i]=='"') {
+	    tokenFlag=2;
+	    cpTokenStart++;
+	 }
+	 else if (ttybuf[i]==' ') {
+	    cpTokenStart++;
+	 }
+	 else {
+	    tokenFlag=1;
+	 }
+      }
+      else if (tokenFlag == 1) {
+	 if (ttybuf[i]==' ') {
+	    ttybuf[i]='\0';
+	    cmdToken[nTokens++]=cpTokenStart;
+	    cpTokenStart = &ttybuf[i+1];
+	    tokenFlag=0;
+	 }
+      }
+      else if (tokenFlag == 2) {
+	 if (ttybuf[i]=='"') {
+	    ttybuf[i]='\0';
+	    cmdToken[nTokens++]=cpTokenStart;
+	    cpTokenStart = &ttybuf[i+1];
+	    tokenFlag=0;
+	 }
+      }
+      else if (tokenFlag == 3) {
+	 if (ttybuf[i]=='\'') {
+	    ttybuf[i]='\0';
+	    cmdToken[nTokens++]=cpTokenStart;
+	    cpTokenStart = &ttybuf[i+1];
+	    tokenFlag=0;
+	 }
+      }
+   }
+}
+
+/* handle a command,
+   return code is 0 if the command was (at least partially) valid,
+   -1 for quitting,
+   -2 for if invalid
+   -3 if empty.
+ */
+int
+doCommand(char *cmdToken[]) {
+   int OK;
+   char buf0[MAX_PASSWORD_LEN+10];
+   char buf1[MAX_PASSWORD_LEN+10];
+   char buf2[MAX_PASSWORD_LEN+10];
+   int wild, doLs;
+   if (strcmp(cmdToken[0],"help")==0 ||
+	      strcmp(cmdToken[0],"h") == 0) {
+      usage(cmdToken[1]);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"quit")==0 ||
+	      strcmp(cmdToken[0],"q") == 0) {
+      return(-1);
+   }
+
+   if (strcmp(cmdToken[1],"-C")==0) cmdToken[1][1]='c';
+   if (strcmp(cmdToken[1],"-D")==0) cmdToken[1][1]='d';
+   if (strcmp(cmdToken[1],"-R")==0) cmdToken[1][1]='r';
+   if (strcmp(cmdToken[2],"-C")==0) cmdToken[2][1]='c';
+   if (strcmp(cmdToken[2],"-D")==0) cmdToken[2][1]='d';
+   if (strcmp(cmdToken[2],"-R")==0) cmdToken[2][1]='r';
+
+   if (strcmp(cmdToken[0],"add") == 0) {
+      modAVUMetadata("add", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7]);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"rmw") == 0) {
+      modAVUMetadata("rmw", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7]);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"rm") == 0) {
+      modAVUMetadata("rm", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7]);
+      return(0);
+   }
+   if (testMode) {
+      if (strcmp(cmdToken[0],"rmi") == 0) {
+	 modAVUMetadata("rmi", cmdToken[1], cmdToken[2], 
+			cmdToken[3], cmdToken[4], cmdToken[5],
+			cmdToken[6], cmdToken[7]);
+	 return(0);
+      }
+   }
+   doLs=0;
+   if (strcmp(cmdToken[0],"lsw") == 0) {
+      doLs=1;
+      wild=1;
+   }
+   if (strcmp(cmdToken[0],"ls") == 0) {
+      doLs=1;
+      wild=0;
+   }
+   if (doLs) {
+      if (strcmp(cmdToken[1],"-d")==0) {
+	 showDataObj(cmdToken[2], cmdToken[3], wild);
+	 return(0);
+      }
+      if (strcmp(cmdToken[1],"-C")==0 || strcmp(cmdToken[1],"-c")==0) {
+	 showColl(cmdToken[2], cmdToken[3], wild);
+	 return(0);
+      }
+      if (strcmp(cmdToken[1],"-R")==0 || strcmp(cmdToken[1],"-r")==0) {
+	 showResc(cmdToken[2], cmdToken[3], wild);
+	 return(0);
+      }
+      if (strcmp(cmdToken[1],"-u")==0) {
+	 showUser(cmdToken[2], cmdToken[3], wild);
+	 return(0);
+      }
+   }
+
+   if (strcmp(cmdToken[0],"qu") == 0) {
+      if (strcmp(cmdToken[1],"-d")==0) {
+	 queryDataObj(cmdToken[2], cmdToken[3], cmdToken[4]);
+	 return(0);
+      }
+      if (strcmp(cmdToken[1],"-C")==0 || strcmp(cmdToken[1],"-c")==0) {
+	 queryCollection(cmdToken[2], cmdToken[3], cmdToken[4]);
+	 return(0);
+      }
+      if (strcmp(cmdToken[1],"-R")==0 || strcmp(cmdToken[1],"-r")==0) {
+	 queryResc(cmdToken[2], cmdToken[3], cmdToken[4]);
+	 return(0);
+      }
+      if (strcmp(cmdToken[1],"-u")==0) {
+	 queryUser(cmdToken[2], cmdToken[3], cmdToken[4]);
+	 return(0);
+      }
+   }
+
+   if (strcmp(cmdToken[0],"cp") == 0) {
+      modCopyAVUMetadata("cp", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7]);
+      return(0);
+   }
+
+   if (strcmp(cmdToken[0],"test") == 0) {
+      if (testMode) {
+	 testMode=0;
+	 printf("testMode is now off\n");
+      }
+      else {
+	 testMode=1;
+	 printf("testMode is now on\n");
+      }
+      return(0);
+   }
+
+   if (*cmdToken[0] != '\0') {
+      printf("unrecognized command, try 'help'\n");
+      return(-2);
+   }
+   return(-3);
+}
+
+
+main(int argc, char **argv) {
+   int status, i, j;
+   rErrMsg_t errMsg;
+
+   rodsArguments_t myRodsArgs;
+
+   char *mySubName;
+   char *myName;
+
+   int argOffset;
+
+   int maxCmdTokens=20;
+   char *cmdToken[20];
+   int keepGoing;
+   int firstTime;
+
+   rodsLogLevel(LOG_ERROR);
+
+   status = parseCmdLineOpt (argc, argv, "vVhrcRCdu", 0, &myRodsArgs);
+   if (status) {
+      printf("Use -h for help.\n");
+      exit(1);
+   }
+   if (myRodsArgs.help==True) {
+      usage("");
+      exit(0);
+   }
+   argOffset = myRodsArgs.optind;
+   if (argOffset > 1) argOffset=1; /* Ignore the parseCmdLineOpt parsing 
+				      as -d etc handled  below*/
+
+   status = getRodsEnv (&myEnv);
+   if (status < 0) {
+      rodsLog (LOG_ERROR, "main: getRodsEnv error. status = %d",
+	       status);
+      exit (1);
+   }
+   strncpy(cwd,myEnv.rodsCwd,BIG_STR);
+   if (strlen(cwd)==0) {
+      strcpy(cwd,"/");
+   }
+
+   for (i=0;i<maxCmdTokens;i++) {
+      cmdToken[i]="";
+   }
+   j=0;
+   for (i=argOffset;i<argc;i++) {
+      cmdToken[j++]=argv[i];
+   }
+
+#if defined(linux_platform)
+   /*
+     imeta cp -d TestFile1 -d TestFile3
+     comes in as:     -d -d cp TestFile1 TestFile3
+     so switch it to: cp -d -d TestFile1 TestFile3
+   */
+   if (cmdToken[0]!=NULL && *cmdToken[0]=='-') {
+      /* args were toggled, switch them back */
+      if (cmdToken[1]!=NULL && *cmdToken[1]=='-') {
+	 cmdToken[0]=argv[3];
+	 cmdToken[1]=argv[1];
+	 cmdToken[2]=argv[2];
+      }
+      else {
+	 cmdToken[0]=argv[2];
+	 cmdToken[1]=argv[1];
+      }
+   }
+#else
+   /* tested on Solaris, not sure other than Linux/Solaris */
+   /*
+     imeta cp -d TestFile1 -d TestFile3
+     comes in as:     cp -d TestFile1 -d TestFile3
+     so switch it to: cp -d -d TestFile1 TestFile3
+   */
+   if (cmdToken[0]!=NULL && cmdToken[1]!=NULL && *cmdToken[1]=='-' &&
+       cmdToken[2]!=NULL && cmdToken[3]!=NULL && *cmdToken[3]=='-') {
+      /* two args */
+      cmdToken[2]=argv[4];
+      cmdToken[3]=argv[3];
+   }
+
+#endif
+
+   if (strcmp(cmdToken[0],"help")==0 ||
+	      strcmp(cmdToken[0],"h") == 0) {
+      usage(cmdToken[1]);
+      exit(0);
+   }
+
+   if (strcmp(cmdToken[0],"spass") ==0) {
+      char scrambled[MAX_PASSWORD_LEN+100];
+      if (strlen(cmdToken[1])>MAX_PASSWORD_LEN-2) {
+	 printf("Password exceeds maximum length\n");
+      }
+      else {
+	 obfEncodeByKey(cmdToken[1], cmdToken[2], scrambled);
+	 printf("Scrambled form is:%s\n", scrambled);
+      }
+      exit(0);
+   }
+
+   Conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+                     myEnv.rodsZone, 0, &errMsg);
+
+   if (Conn == NULL) {
+      myName = rodsErrorName(errMsg.status, &mySubName);
+      rodsLogError(LOG_ERROR, errMsg.status, "rcConnect failure");
+
+      rodsLog(LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
+	      myName,
+	      mySubName,
+	      errMsg.status,
+	      errMsg.msg);
+
+      exit (2);
+   }
+
+   status = clientLogin(Conn);
+   if (status != 0) {
+      if (!debug) exit (3);
+   }
+
+   keepGoing=1;
+   firstTime=1;
+   while (keepGoing) {
+      int status;
+      status=doCommand(cmdToken);
+      if (status==-1) keepGoing=0;
+      if (firstTime) {
+	 if (status==0) keepGoing=0;
+	 if (status==-2) {
+	    keepGoing=0;
+	    lastCommandStatus=-1;
+	 }
+	 firstTime=0;
+      }
+      if (keepGoing) {
+	 getInput(cmdToken, maxCmdTokens);
+      }
+   }
+
+   rcDisconnect(Conn);
+
+   if (lastCommandStatus != 0) exit(4);
+   exit(0);
+}
+
+/*
+Print the main usage/help information.
+ */
+int usageMain()
+{
+   char *msgs[]={
+"Usage: imeta [-vVh] [command]", 
+"Commands are:", 
+" add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triplet)", 
+" rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)", 
+" rmw -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)", 
+" ls  -d|C|R|u Name [AttName] (List existing AVUs for item Name)", 
+" lsw -d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)", 
+" qu -d|C|R|u AttName Op AttVal  (Query objects with matching AVUs)", 
+" cp -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)", 
+" ", 
+"Metadata attribute-value-units triplets (AVUs) consist of an Attribute-Name,", 
+"Attribute-Value, and an optional Attribute-Units.  They can be added", 
+"via the 'add' command (and in other ways (eventually)), and", 
+"then queried to find matching objects.",
+" ", 
+"For each command, -d, -C, -R or -u is used to specify which type of", 
+"object to work with: dataobjs (irods files), collections, resources,",
+"or users. (Within imeta -c and -r can be used, but -C and -R are the", 
+"iRODS standard options for collections and resources.)",
+" ", 
+"Fields represented with upper case, such as Name, are entered values.  For", 
+"example, 'Name' is the name of a dataobject, collection, resource,", 
+"or user.", 
+" ",
+"For rmw and lsw, the % and _ wildcard characters (as defined for SQL) can",
+"be used for matching attribute values.",
+" ", 
+"A blank execute line invokes the interactive mode, where imeta", 
+"prompts and executes commands until 'quit' or 'q' is entered.", 
+"Like other unix utilities, a series of commands can be piped into it:",
+"'cat file1 | imeta' (maintaining one connection for all commands).",
+" ",
+"Single or double quotes can be used to enter items with blanks.", 
+" ",
+"Try 'help command' for more help on a specific command.",
+""};
+   int i;
+   for (i=0;;i++) {
+      if (strlen(msgs[i])==0) return(0);
+      printf("%s\n",msgs[i]);
+   }
+}
+
+/*
+Print either main usage/help information, or some more specific
+information on particular commands.
+ */
+int
+usage(char *subOpt)
+{
+   int i;
+   if (*subOpt=='\0') {
+      usageMain();
+   }
+   else {
+      if (strcmp(subOpt,"add")==0) {
+	 char *msgs[]={
+" add -d|C|R|u Name AttName AttValue [AttUnits]  (Add new AVU triplet)", 
+"Add an AVU to a dataobj (-d), collection(-C), resource(-R) or user(-u)",
+"Example: add -d file1 distance 12 miles",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      if (strcmp(subOpt,"rm")==0) {
+	 char *msgs[]={
+" rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)", 
+"Remove an AVU from a dataobj (-d), collection(-C), resource(-R) or user(-u)",
+"Example: rm -d file1 distance 12 miles",
+"An AttUnits value must be included if it was when the AVU was added.",
+"Also see rmw for use of wildcard characters.",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      if (strcmp(subOpt,"rmw")==0) {
+	 char *msgs[]={
+" rmw  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcard)", 
+"Remove an AVU from a dataobj (-d), collection(-C), resource(-R) or user(-u)",
+"An AttUnits value must be included if it was when the AVU was added.",
+"rmw is very similar to rm but using SQL wildcard characters, _ and %.",
+"The _ matches any single character and % matches any number of any",
+"characters.  Examples:",
+"  rmw -d file1 distance % %",
+" or ",
+"  rmw -d file1 distance % m% ",
+" ",
+"Note that if the attributes contain the characters '%' or '_', ",
+"the rmw command still do matching using them as wildcards, so you may",
+"need to use rm instead.",
+"Also see lsw.",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      if (strcmp(subOpt,"ls")==0) {
+	 char *msgs[]={
+" ls -d|C|R|u Name [AttName] (List existing AVUs for item Name)", 
+"List defined AVUs for the specified item",
+"Example: ls -d file1",
+"If the optional AttName is included, it is the attribute name",
+"you wish to list and only those will be listed.",
+"Also see lsw.",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+
+      if (strcmp(subOpt,"lsw")==0) {
+	 char *msgs[]={
+" lsw -d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)", 
+"List defined AVUs for the specified item",
+"Example: lsw -d file1",
+"If the optional AttName is included, it is the attribute name",
+"you wish to list, doing so using wildcard matching.",
+"For example: ls -d file1 attr%",
+"Also see rmw and ls.",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      if (strcmp(subOpt,"qu")==0) {
+	 char *msgs[]={
+" qu -d|C|R|u AttName Op AttVal  (Query objects with matching AVUs)", 
+"Query across AVUs for the specified type of item",
+"Example: qu -d distance '<=' 12",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      if (strcmp(subOpt,"cp")==0) {
+	 char *msgs[]={
+" cp -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)", 
+"Example: cp -d -C file1 dir1",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      printf("Sorry, either %s is an invalid command or the help has not been written yet\n",
+	     subOpt);
+   }
+}

@@ -1,0 +1,129 @@
+/*** Copyright (c), The Regents of the University of California            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
+#include "reGlobalsExtern.h"
+#include "icatHighLevelRoutines.h"
+
+
+int msiCreateUser(ruleExecInfo_t *rei)
+{
+  int i;
+  /**** This is Just a Test Stub  ****/
+  if (reTestFlag > 0 ) {
+    if (reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1) {
+      print_uoi(rei->uoio);
+    }
+    else {
+      rodsLog (LOG_NOTICE,"   Calling msiCreateUser For \n");
+      print_uoi(rei->uoio);
+    }
+    if (reLoopBackFlag > 0)
+      return(0);
+  }
+  /**** This is Just a Test Stub  ****/
+#ifdef RODS_CAT
+  i =  chlRegUserRE(rei->rsComm, rei->uoio);
+#else
+  i =  SYS_NO_ICAT_SERVER_ERR;
+#endif
+  return(i);
+}
+
+int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
+{
+    int i;
+    collInfo_t collInfo;
+  char *parColl;
+  char *childName;
+
+  parColl = (char *) xparColl->inOutStruct;
+  childName = (char *) xchildName->inOutStruct;
+  /**** This is Just a Test Stub  ****/
+  if (reTestFlag > 0 ) {
+    if (reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1) {
+      fprintf(stdout,"  NewCollection =%s/%s\n",
+	       parColl,childName);
+    }
+    else {
+      rodsLog (LOG_NOTICE,"   Calling msiCreateCollByAdmin Coll: %s/%s\n",
+	       parColl,childName);
+    }
+    if (reLoopBackFlag > 0)
+      return(0);
+  }
+  /**** This is Just a Test Stub  ****/
+
+  snprintf(collInfo.collName,MAX_NAME_LEN, "%s/%s",parColl,childName);
+  snprintf(collInfo.collOwnerName,MAX_NAME_LEN, "%s",rei->uoio->userName);
+  snprintf(collInfo.collOwnerZone,MAX_NAME_LEN, "%s",rei->uoio->rodsZone);
+#ifdef RODS_CAT
+  i =  chlRegCollByAdmin(rei->rsComm, &collInfo );
+#else
+  i =  SYS_NO_RCAT_SERVER_ERR;
+#endif
+  return(i);
+}
+
+int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
+{
+   int i;
+   collInfo_t collInfo;
+  char *parColl;
+  char *childName;
+
+  parColl = (char *) xparColl->inOutStruct;
+  childName = (char *) xchildName->inOutStruct;
+   /**** This is Just a Test Stub  ****/
+   if (reTestFlag > 0 ) {
+      if (reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1) {
+	 fprintf(stdout,"  NewCollection =%s/%s\n",
+		 parColl,childName);
+      }
+      else {
+	 rodsLog (LOG_NOTICE,"   Calling msiDeleteCallByAdmin Coll: %s/%s\n",
+		  parColl,childName);
+      }
+      return(0);
+   }
+   /**** End of Test Stub  ****/
+
+
+   snprintf(collInfo.collName,MAX_NAME_LEN, "%s/%s",parColl,childName);
+   snprintf(collInfo.collOwnerName,MAX_NAME_LEN, "%s",rei->uoio->userName);
+   snprintf(collInfo.collOwnerZone,MAX_NAME_LEN, "%s",rei->uoio->rodsZone);
+#ifdef RODS_CAT
+   i = chlDelCollByAdmin(rei->rsComm, &collInfo );
+#else
+   i = SYS_NO_RCAT_SERVER_ERR;
+#endif
+   if (i == CAT_UNKNOWN_COLLECTION) {
+      /* Not sure where this kind of logic belongs, chl, rules,
+         or here; but for now it's here.  */
+      /* If the error is that it does not exist, return OK. */
+      freeRErrorContent(&rei->rsComm->rError); /* remove suberrors if any */
+      return(0); 
+   }
+   return(i);
+}
+
+int 
+msiDeleteUser(ruleExecInfo_t *rei) {
+  int i;
+  /**** This is Just a Test Stub  ****/
+  if (reTestFlag > 0 ) {
+    if (reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1) {
+      print_uoi(rei->uoio);
+    }
+    else {
+      rodsLog (LOG_NOTICE,"   Calling chlDeleteUser For \n");
+      print_uoi(rei->uoio);
+    }
+    return(0);
+  }
+  /**** End of Test Stub  ****/
+#ifdef RODS_CAT
+  i =  chlDelUserRE(rei->rsComm, rei->uoio);
+#else
+  i = SYS_NO_RCAT_SERVER_ERR;
+#endif
+  return(i);
+}

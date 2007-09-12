@@ -1,0 +1,305 @@
+<?php
+/**
+ * PRODS file class
+ * @author Sifang Lu <sifang@sdsc.edu>
+ * @copyright Copyright &copy; 2007, TBD
+ * @package Prods
+ */
+
+require_once("autoload.inc.php");
+
+class ProdsFile extends ProdsPath
+{
+  public  $stats;
+  
+  private $rodsconn;  //real RODS connection
+  private $l1desc;    //lvl 1 descriptor on RODS server
+  private $conn;      //the connection to RODS agent l1desc lives on.
+  private $rescname;  //resource name.
+  private $openmode;  //open mode used if file is opened
+  private $position;  //current position of the file, if opened.
+  
+ /**
+	* The class constructor
+	*/
+	public function __construct(RODSAccount $account, $path_str, 
+	  $verify=false, RODSFileStats $stats=NULL)
+	{
+	  $this->l1desc=-1;
+	  $this->stats=$stats;
+	  
+	  if ($path_str{strlen($path_str)-1}=='/')
+	  {
+	    throw new RODSException("Invalid file name '$path_str' ",
+          'PERR_USER_INPUT_PATH_ERROR');
+	  }
+	  
+	  parent::__construct($account, $path_str);
+    if ($verify===true)
+    {
+      if ($this->exists()===false)
+      {
+        throw new RODSException("File '$this' does not exist",
+          'PERR_PATH_DOES_NOT_EXISTS');
+      } 
+    }
+  }
+  
+ /**
+	* Create a new ProdsFile object from URI string.
+	* @param string $path the URI Sting
+	* @param boolean $verify whether verify if the path exsits
+	* @return a new ProdsDir
+	*/
+  public static function fromURI($path, $verify=false)
+  {
+    if (0!=strncmp($path,"rods://",7))
+      $path="rods://".$path;
+    $url=parse_url($path);
+    
+    $host=isset($url['host'])?$url['host']:''; 
+    $port=isset($url['port'])?$url['port']:'';   
+    
+    $user='';
+    $zone='';
+    if (isset($url['user']))
+    {
+      if (strstr($url['user'],".")!==false)
+        list($user,$zone)=@explode(".",$url['user']);
+      else
+        $user=$url['user'];
+    }  
+    
+    $pass=isset($url['pass'])?$url['pass']:'';
+    
+    $account=new RODSAccount($host, $port, $user, $pass, $zone);
+    
+    $path_str=isset($url['path'])?$url['path']:''; 
+    if (empty($path_str))
+      $path_str='/'; 
+      
+    return (new ProdsFile($account,$path_str,$verify));
+  }  
+  
+ /**
+	* Verify if this file exist with server.
+	*/
+  public function verify()
+  {
+    $conn = RODSConnManager::getConn($this->account);
+    $this->path_exists= $conn -> fileExists ($this->path_str);
+    RODSConnManager::releaseConn($conn);  
+  }
+  
+ /**
+  * Open a file path (string) exists on RODS server.
+  *
+  * @param string $mode open mode. Supported modes are: 
+  *   'r'	 Open for reading only; place the file pointer at the beginning of the file.
+  *   'r+'	Open for reading and writing; place the file pointer at the beginning of the file.
+  *   'w'	Open for writing only; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it.
+  *   'w+'	Open for reading and writing; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it.
+  *   'a'	Open for writing only; place the file pointer at the end of the file. If the file does not exist, attempt to create it.
+  *   'a+'	Open for reading and writing; place the file pointer at the end of the file. If the file does not exist, attempt to create it.
+  *   'x'	Create and open for writing only; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning FALSE and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
+  *   'x+'	Create and open for reading and writing; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning FALSE and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
+  * @param string $rescname. Note that this parameter is required only if the file does not exists (create mode). If the file already exists, and if file resource is unknown or unique or you-dont-care for that file, leave the field, or pass NULL. 
+  * @param boolean $assum_file_exists. This parameter specifies whether file exists. If the value is false, this mothod will check with RODS server to make sure. If value is true, the check will NOT be done. Default value is false.
+  * @param string $filetype. This parameter only make sense when you want to specify the file type, if file does not exists (create mode). If not specified, it defaults to "generic"
+  * @param integer $cmode. This parameter is only used for "createmode". It specifies the file mode on physical storage system (RODS vault), in octal 4 digit format. For instance, 0644 is owner readable/writeable, and nothing else. 0777 is all readable, writable, and excutable. If not specified, and the open flag requirs create mode, it defaults to 0644.
+  */
+  public function open($mode, $rescname=NULL, 
+    $assum_file_exists=false, $filetype='generic', $cmode=0644)
+  {
+    if ($this->l1desc >= 0)
+      return;
+    
+    if (!empty($rescname))
+      $this->rescname=$rescname;
+    
+    $this->conn = RODSConnManager::getConn($this->account);
+    $this->l1desc= $this->conn -> openFileDesc($this->path_str,$mode,
+      $this->postion,$rescname,$assum_file_exists, $filetype, $cmode);
+    $this->openmode=$mode;
+    RODSConnManager::releaseConn($this->conn);  
+  }
+  
+ /**
+  * get the file open mode, if opened previously
+  * @return string open mode, if not opened, it return NULL
+  */
+  public function getOpenmode()
+  {
+    return $this->openmode;
+  }
+  
+ /**
+  * get the file current position, if opened previously
+  * @return string open mode, if not opened, it return NULL
+  */
+  public function tell()
+  {
+    return $this->position;
+  }
+  
+ /**
+  * unlink the file on server
+  * @param string $rescname resource name. Not required if there is no other replica.
+  * @param boolean $force flag (true or false) indicating whether force delete or not.
+  */
+  public function unlink($rescname=NULL, $force=false)
+  {
+    $conn = RODSConnManager::getConn($this->account);
+    $conn->fileUnlink($this->path_str,$rescname,$force);
+    RODSConnManager::releaseConn($conn); 
+  }
+  
+ /**
+  * get the file stats
+  */
+  public function getStats()
+  {
+    if ( ($this->usecache===true) && (isset($this->stats)) )
+	  { 
+      return $this->stats;
+    }
+    
+    $conn = RODSConnManager::getConn($this->account);
+    $stats=$conn->getFileStats($this->path_str);
+    RODSConnManager::releaseConn($conn); 
+    
+    if ($stats===false) $this->stats=NULL;
+    else $this->stats=$stats;
+    return $this->stats;
+  }
+  
+ /**
+	* close the file descriptor (private) made from RODS server earlier.
+	*/
+  public function close()
+  {
+	  if ($this->l1desc >= 0)
+    {
+      while($this->conn->isIdle()===false)
+      {
+        trigger_error("The connection is not available! sleep for a while and retry...",
+            E_USER_WARNING);  
+        usleep(50);    
+      }
+      $this->conn->lock();
+      $this->conn->closeFileDesc($this->l1desc);
+      $this->conn->unlock();
+      $this->l1desc=-1;
+    }
+  }
+  
+ /**
+  * reads up to length bytes from the file. Reading stops when up to length bytes have been read, EOF (end of file) is reached
+  *
+  * @param int $length up to how many bytes to read.
+  * @return the read string.
+  */
+  public function read($length)
+  {
+    if ($this->l1desc < 0)
+    {
+      throw new RODSException("File '$this' is not opened! l1desc=$this->l1desc",
+          'PERR_USER_INPUT_ERROR');
+    }
+    
+    while($this->conn->isIdle()===false)
+    {
+      trigger_error("The connection is not available! sleep for a while and retry...",
+          E_USER_WARNING);  
+      usleep(50);    
+    }
+    
+    $this->conn->lock();
+    $retval=$this->conn->fileRead($this->l1desc,$length);
+    $this->position=$this->position+strlen($retval);
+    $this->conn->unlock();
+    return $retval;
+  }
+  
+  /**
+  * write up to length bytes to the server. this function is binary safe.
+  * @param string $string contents to be written.
+  * @param int $length up to how many bytes to write.
+  * @return the number of bytes written.
+  */
+  public function write($string, $length=NULL)
+  {
+    if ($this->l1desc < 0)
+    {
+      throw new RODSException("File '$this' is not opened! l1desc=$this->l1desc",
+          'PERR_USER_INPUT_ERROR');
+    }
+    
+    while($this->conn->isIdle()===false)
+    {
+      trigger_error("The connection is not available! sleep for a while and retry...",
+          E_USER_WARNING);  
+      usleep(50);    
+    }
+    
+    $this->conn->lock();
+    $retval=$this->conn->fileWrite($this->l1desc,$string,$length);
+    $this->position=$this->position+(int)$retval;
+    $this->conn->unlock();
+    return $retval;
+  }
+  
+ /**
+  *  Sets the file position for the file. The new position, measured in bytes from the beginning of the file, is obtained by adding offset to the position specified by whence, whose values are defined as follows:
+  *  SEEK_SET - Set position equal to offset bytes.
+  *  SEEK_CUR - Set position to current location plus offset.
+  *  SEEK_END - Set position to end-of-file plus offset. (To move to a position before the end-of-file, you need to pass a negative value in offset.)
+  *  If whence is not specified, it is assumed to be SEEK_SET.
+  *  @return int the current offset
+  */
+  public function seek($offset, $whence=SEEK_SET)
+  {
+    if ($this->l1desc < 0)
+    {
+      throw new RODSException("File '$this' is not opened! l1desc=$this->l1desc",
+          'PERR_USER_INPUT_ERROR');
+    }
+    
+    while($this->conn->isIdle()===false)
+    {
+      trigger_error("The connection is not available! sleep for a while and retry...",
+          E_USER_WARNING);  
+      usleep(50);    
+    }
+    
+    $this->conn->lock();
+    $retval=$this->conn->fileSeek($this->l1desc,$offset,$whence);
+    $this->position=(int)$retval;
+    $this->conn->unlock();
+    return $retval;
+  }
+  
+ /**
+  * Sets the file position to the beginning of the file stream.
+  */
+  public function rewind()
+  {
+    while($this->conn->isIdle()===false)
+    {
+      trigger_error("The connection is not available! sleep for a while and retry...",
+          E_USER_WARNING);  
+      usleep(50);    
+    }
+    
+    $this->seek(0,SEEK_SET);
+    $this->position=0;
+  }
+  
+ /**
+	* get the file descriptor (private) made from RODS server earlier.
+	*/
+  public function getL1desc()
+  {
+    return $this->l1desc;
+  }
+}

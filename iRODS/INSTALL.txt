@@ -1,0 +1,8 @@
+iRODS Installation
+
+To install iRODS, cd to the top level directory and run
+
+	install.pl
+
+This Perl script will prompt you for information it needs, then
+build the distribution.

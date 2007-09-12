@@ -1,0 +1,216 @@
+# iRODS Rule Base
+# Each rule consists of four parts separated by  |
+# The four parts are: name, conditions, function calls, and recovery.
+# The calls and recoveries can be multiple ones, separated by ##.
+# For each rule, the number recovery calls should match the calls;
+# for example, if the 2nd call fails, the 2nd recover call is made.
+#
+#Test Rules
+msitest(*A,*B,*E)||msitest1(*A,*B,*C)##msitest2(*C,*D,*E)##msitest3(*A,*D,*E)|nop
+printHello||print_hello|nop
+## 
+##
+## These are sys admin rules for creating and deleting users
+acCreateUser||msiCreateUser##acCreateDefaultCollections##msiCommit|msiRollback##msiRollback##nop
+acVacuum(*arg1)||delayExec(*arg1,msiVacuum,nop)|nop
+acCreateDefaultCollections||acCreateUserZoneCollections|nop
+acCreateUserZoneCollections||acCreateCollByAdmin(/$rodsZoneProxy/home,$otherUserName)##acCreateCollByAdmin(/$rodsZoneProxy/trash/home,$otherUserName)|nop##nop
+#acCreateCollByAdmin||msiCreateCollByAdmin($ARG[0],$ARG[1])|nop
+acCreateCollByAdmin(*parColl,*childColl)||msiCreateCollByAdmin(*parColl,*childColl)|nop
+#
+#
+acDeleteUser||acDeleteDefaultCollections##msiDeleteUser##msiCommit|msiRollback##msiRollback##nop
+acDeleteDefaultCollections||acDeleteUserZoneCollections|nop
+acDeleteUserZoneCollections||acDeleteCollByAdmin(/$rodsZoneProxy/home,$otherUserName)##acDeleteCollByAdmin(/$rodsZoneProxy/trash/home,$otherUserName)|nop##nop
+#acDeleteCollByAdmin||msiDeleteCollByAdmin($ARG[0],$ARG[1])|nop
+acDeleteCollByAdmin(*parColl,*childColl)||msiDeleteCollByAdmin(*parColl,*childColl)|nop
+# --------------------------------------------------------------------------
+# The following are rules for data object operation
+# 1) acSetRescSchemeForCreate - This is the preprossing rule for setting
+# the resource selection scheme when creating a data object which is used 
+# by the put, copy and replicate operations. Currently, three preprocessing 
+# functions can be used by this rule:
+#    msiSetNoDirectRescInp(rescList) - sets a list of resources that cannot
+#      be used by a normal user directly. More than one resources can be 
+#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.  
+#      This function is optional, but if used, should be the first function
+#      to execute because it screens the resource input. 
+#    msiSetDefaultResc(defaultRescList, optionStr) - sets the default resource
+#      and query resource metadata for the subsequent use. This function
+#      is mandatory even no defaultResc is specified (null) and should be
+#      executed right after the screening function msiSetNoDirectRescInp.
+#      defaultResc - the resource to use if no resource is input. A "null"
+#        means there is no defaultResc. More than one resources can be
+#      input using the character "%" as seperator.
+#      optionStr - Can be "forced", "preferred" or "null". A "forced" input 
+#      means the defaultResc will be used regardless of the user input. 
+#      The forced action only apply to to users with normal privilege.
+#    msiSetRescSortScheme(sortScheme) - set the scheme for 
+#      for selecting the best resource to use when creating a data object.  
+#      sortScheme - The sorting scheme. Valid scheme are "default", 
+#        "random" and "byRescType". The "byRescType" scheme will put the
+#        cache class of resource on the top of the list. The scheme 
+#        "random" and "byRescType" can be applied in sequence. e.g.,
+#        msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)
+#        will select randomly a cache class resource and put it on the
+#        top of the list.
+# acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
+# acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)|nop##nop##nop
+# acSetRescSchemeForCreate||msiSetDefaultResc(demoResc7%demoResc8,preferred)|nop
+acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
+#acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,noForce)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)|nop##nop##nop|nop
+#
+# 2) acPreprocForDataObjOpen - Preprocess rule for opening an existing
+# data object which is used by the get, copy and replicate operations. 
+# Currently, four preprocessing functions can be used individually or
+# in sequence by this rule.
+#    msiSetDataObjPreferredResc(preferredRescList) - set the preferred 
+#      resources of the opened object. The copy stored in this preferred 
+#      resource will be picked if it exists. More than one resources can be
+#      input using the character "%" as seperator. e.g., resc1%resc2%resc3.
+#      The most preferred resource should be at the top of the list.
+#    msiSetDataObjAvoidResc(avoidResc) - set the resource to avoid when
+#      opening an object. The copy stored in this resource will not be picked
+#      unless this is the only copy.
+#    msiSortDataObj(sortingScheme) - Sort the copies of the data object using
+#      this scheme. Currently, "random" sorting scheme is supported.
+#    msiStageDataObj(cacheResc) - stage a copy of the data object in the 
+#      cacheResc before opening the data object. 
+# acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
+# acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
+acPreprocForDataObjOpen||msiSortDataObj(random)|nop
+# 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
+# data object. Currently, one preprocessing function can be used 
+# by this rule. 
+#     msiSetMultiReplPerResc - By default, the system allows one copy per
+#       resource. This micro-service sets the number of copies per resource
+#       to unlimited.   
+acSetMultiReplPerResc||nop|nop
+#
+# 4) acPostProcForPut - Rule for post processing the put operation.
+# 5) acPostProcForCopy - Rule for post processing the copy operation.
+# Currently, three post processing functions can be used individually or
+# in sequence by these rules. 
+#    msiExtractNaraMetadata - extract and register metadata from the just 
+#     upload NARA files.
+#    msiSysReplDataObj(replResc, allFlag) - can be used to replicate a copy of 
+#    the file just uploaded or copied data object to the specified replResc 
+#    The allFlag is only meaningful if the replResc is a resource group. In
+#    this case, setting allFlag to "all" means a copy will be made in all 
+#    the resources in the resource group. A "null" input means a single
+#    will be made in one of the resource in the resource group   
+#
+#    msiSysChksumDataObj - checksum the just uploaded or copied data object.
+# acPostProcForPut||msiSysChksumDataObj##msiSysReplDataObj(demoResc8,all)|nop
+# acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
+# acPostProcForPut||msiSysChksumDataObj|nop
+# acPostProcForPut||delayExec(<A></A>,msiSysReplDataObj(demoResc8,all),nop)|nop
+# acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
+#acPostProcForPut||msiSetDataTypeFromExt|nop
+acPostProcForPut||nop|nop
+acPostProcForCopy||nop|nop
+# 6) acSetNumThreads - Rule to set the number of threads for a data transfer
+# Only one function can be used for this rule
+#    msiSetNumThreads(sizePerThrInMb, maxNumThr, windowSize) - set the number 
+#      of threads and the tcp window size. The number of threads is based 
+#      the two input parameters
+#      sizePerThrInMb - The number of threads is computed using:
+#        numThreads = fileSizeInMb / sizePerThrInMb + 1
+#        where sizePerThrInMb is an integer value in MBytes. It also accepts
+#        the word "default" which sets sizePerThrInMb to a default value of 32
+#      maxNumThr - The maximum number of threads to use. It accepts integer
+#        value up to 16. It also accepts the word "default" which sets 
+#        maxNumThr to a default value of 4.
+#    windowSize - the tcp window size in Bytes for the parallel transfer. 
+#      A value of 0 or "dafault" means a default size of 1,048,576 Bytes.
+# The msiSetNumThreads function must be present or no thread will be used
+# for all transfer 
+# acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
+acSetNumThreads||msiSetNumThreads(default,default,default)|nop  
+# 7) acDataDeletePolicy - This rule set the policy for deleting data objects.
+# Only one function can be called:
+#    msiDeleteDisallowed() - Disallow the deletion of the data object. 
+# Examples:
+#    acDataDeletePolicy|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
+#      this rule prevents the deletion of any data objects or collections
+#      beneath the collection /foo/bar/
+#    acDataDeletePolicy|$rescName == demoResc8|msiDeleteDisallowed|nop
+#      this rule prevents the deletion of any data objects that are stored
+#      in the demoResc8 resource.
+# acDataDeletePolicy|$objPath like /temp/home/rods/*|msiDeleteDisallowed|nop
+acDataDeletePolicy||nop|nop
+#
+# 8) acNoChkFilePathPerm - This rule set the policy for checking the
+# file path permission when registering physical file path using commands
+# such as ireg. Only one function can be called:
+#    msiNoChkFilePathPerm() - Do not check file path permission when registering
+#    a file. WARNING - This function can create a security problem if used.
+acNoChkFilePathPerm||nop|nop
+#
+# 9) acTrashPolicy - This rule set the policy for whether the trash can
+# should be used. The default policy is the trash can will be used. Only
+# one function can be called.
+#    msiNoTrashCan() - Set the policy to no trash can.
+acTrashPolicy||nop|nop
+# acTrashPolicy||msiNoTrashCan|nop
+#
+# 10) acSetPublicUserPolicy - This rule set the policy for the set of 
+# operations that are allowable for the user "public" Only one function can 
+# be called.
+#    msiSetPublicUserOpr(oprList) - Sets a list of operations that can
+#      be performed by the user "public". Only 2 operations are allowed -
+#      "read" - read files; "query" - browse some system level metadata. More 
+#      than one operation can be input using the character "%" as seperator. 
+#      e.g., read%query.
+# acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
+acSetPublicUserPolicy||nop|nop
+# 11) acChkHostAccessControl - This rule checks the access control by host
+# and user based on the the policy given in the HostAccessControl file.
+# The msi is developed by Jean-Yves Nief of IN2P3. Only one function can
+# be called.
+#   msiCheckHostAccessControl() -  checks the access control by host and user
+#     based on the the policy given in the HostAccessControl file.
+# acChkHostAccessControl||msiCheckHostAccessControl|nop
+acChkHostAccessControl||nop|nop
+# 12) acSetVaultPathPolicy - This rule set the policy for creating the physical
+# path in the iRods resource vault. Two functions can be called:
+#    msiSetGraftPathScheme(addUserName,trimDirCnt) - Set the VaultPath scheme
+#      to GRAFT_PATH - graft (add) the logical path to the vault path of the
+#      resource when generating the physical path for a data object. The first
+#      argument (addUserName) specifies whether the userName should be added
+#      to the physical path. e.g. $vaultPath/$userName/$logicalPath. 
+#      "addUserName" can have two values - yes or no. The second argument
+#      (trimDirCnt) specifies the number of leading directory elements of
+#      of the logical path to trim. Sometimes it may not be desirable to graft 
+#      the entire logical path. e.g.,for a logicalPath /myZone/home/me/foo/bar, 
+#      it may be desirable to graft just the part "foo/bar" to the vaultPath.
+#      "trimDirCnt" should be set to 3 in this case.
+#    msiSetRandomScheme() - Set the VaultPath scheme to RANDOM meaning a
+#      randomly generated path is appended to the vaultPath when generating
+#      the physical path. e.g., $vaultPath/$userName/$randomPath.
+#      The advantage with the RANDOM scheme is renaming operations (imv, irm)
+#      are much faster because there is no need to rename the 
+#      corresponding physical path. 
+# This default is GRAFT_PATH scheme with addUserName == yes and trimDirCnt == 1.
+# acSetVaultPathPolicy||msiSetRandomScheme|nop
+acSetVaultPathPolicy||msiSetGraftPathScheme(no,2)|nop
+#      
+# ----------------------------------------------------------------------------
+# These rules are for testing only
+#acDataObjCreate||acSetCreateConditions##acDOC|nop##null
+acSetCreateConditions||msiGetNewObjDescriptor##acSetResourceList|recover_msiGetNewObjDescriptornop##nop
+acDOC||msiPhyDataObjCreate##acRegisterData##msiCommit|recover_msiPhyDataObjCreate##msiRollback##nop
+acSetResourceList||msiSetResourceList|nop
+acSetCopyNumber||msiSetCopyNumber|nop
+acRegisterData||msiRegisterData|msiRollback
+#
+#These are actions for getting iCAT results for performing iRODS operations.
+#These rules generate the genQueryOut_ structure for each action for the given condition
+#
+acGetIcatResults(*Action,*Condition,*GenQOut)|(*Action == replicate) %% (*Action == trim) %% (*Action == chksum) %% (*Action == copy) %% (*Action == remove) |msiMakeQuery("DATA_NAME, COLL_NAME",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
+acGetIcatResults(*Action,*Condition,*GenQOut)|*Action == list|msiMakeQuery("DATA_NAME, COLL_NAME, DATA_RESC_NAME, DATA_REPL_NUM, DATA_SIZE",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
+##
+##rules for purging a file which have expired
+##
+acPurgeFiles(*Condition)|(*Condition == null) %% (*Condition == '')|msiGetIcatTime(*Time,unix)##acGetIcatResults(remove,DATA_EXPIRY < '*Time',*List)##forEachExec(*List,msiDataObjUnlink(*List,*Status)##msiGetValByKey(*List,DATA_NAME,*D)##msiGetValByKey(*List,COLL_NAME,*E)##writeLine(stdout,Purged File *E/*D at *Time ),nop)|nop##nop
+acPurgeFiles(*Condition)||msiGetIcatTime(*Time,unix)##acGetIcatResults(remove,DATA_EXPIRY < '*Time' AND *Condition,*List)##forEachExec(*List,msiDataObjUnlink(*List,*Status)##msiGetValByKey(*List,DATA_NAME,*D)##msiGetValByKey(*List,COLL_NAME,*E)##writeLine(stdout,Purged File *E/*D at *Time ),nop)|nop##nop

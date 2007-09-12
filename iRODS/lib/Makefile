@@ -1,0 +1,179 @@
+#
+# lib/Makefile
+#
+# Build the iRODS API and utility library.
+#
+# The principal targets include:
+#
+# 	all		build the library objects and .a archive
+#	lib		build the library objects and .a archive
+# 	clean		clean out all object files
+#
+
+ifndef buildDir
+buildDir =	$(CURDIR)/..
+endif
+
+include $(buildDir)/config/config.mk
+include $(buildDir)/config/platform.mk
+include $(buildDir)/config/directories.mk
+include $(buildDir)/config/common.mk
+
+
+
+
+
+#
+# Source files
+#	core	utility functions
+#	md5	MD5 hash generation functions
+#	api	client API functions (LIB_API_OBJS is set by api.mk)
+#
+# Core
+LIB_CORE_OBJS =	\
+		$(libCoreObjDir)/base64.o \
+		$(libCoreObjDir)/chksumUtil.o \
+		$(libCoreObjDir)/clientLogin.o \
+		$(libCoreObjDir)/cpUtil.o \
+		$(libCoreObjDir)/getRodsEnv.o \
+		$(libCoreObjDir)/getUtil.o \
+		$(libCoreObjDir)/lsUtil.o \
+		$(libCoreObjDir)/miscUtil.o \
+		$(libCoreObjDir)/mkdirUtil.o \
+		$(libCoreObjDir)/msParam.o \
+		$(libCoreObjDir)/mvUtil.o \
+		$(libCoreObjDir)/obf.o \
+		$(libCoreObjDir)/packStruct.o \
+		$(libCoreObjDir)/parseCommandLine.o \
+		$(libCoreObjDir)/phymvUtil.o \
+		$(libCoreObjDir)/procApiRequest.o \
+		$(libCoreObjDir)/putUtil.o \
+		$(libCoreObjDir)/rcConnect.o \
+		$(libCoreObjDir)/rcMisc.o \
+		$(libCoreObjDir)/rcPortalOpr.o \
+		$(libCoreObjDir)/regUtil.o \
+		$(libCoreObjDir)/replUtil.o \
+		$(libCoreObjDir)/rmUtil.o \
+		$(libCoreObjDir)/rmtrashUtil.o \
+		$(libCoreObjDir)/rodsLog.o \
+		$(libCoreObjDir)/rodsPath.o \
+		$(libCoreObjDir)/rsyncUtil.o \
+		$(libCoreObjDir)/sockComm.o \
+		$(libCoreObjDir)/stringOpr.o \
+		$(libCoreObjDir)/trimUtil.o
+INCLUDES +=	-I$(libCoreIncDir)
+
+
+# Logging (automatically generated source)
+LOG_SRC =	$(libCoreSrcDir)/rodsLog.c
+
+
+# MD5
+LIB_MD5_OBJS =	\
+		$(libMd5ObjDir)/md5c.o \
+		$(libMd5ObjDir)/md5Checksum.o
+INCLUDES +=	-I$(libMd5IncDir)
+
+
+# API (see api.mk, which is automatically generated)
+include $(buildDir)/config/api.mk
+INCLUDES +=	-I$(libApiIncDir)
+
+
+# All objects
+OBJS =		$(LIB_CORE_OBJS) $(LIB_API_OBJS) $(LIB_MD5_OBJS)
+
+
+# Server configuration
+CONFIG =	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
+
+
+# Compilation flags
+CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(SVR_INCLUDES)
+LDFLAGS +=	$(LDADD)
+
+
+
+
+
+#
+# Princpal Targets
+#
+.PHONY:	all lib libs clean
+vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir)
+
+
+
+
+
+# Build everything
+all:	libs
+	@true
+
+
+
+
+
+
+# Build the library
+lib:	libs
+	@true
+
+libs:	$(CONFIG) $(LOG_SRC) $(LIBRARY)
+	@true
+
+$(LIBRARY): $(OBJS)
+	@echo "Building lib$(LIBRARY_NAME).a"
+	@$(AR) $(AROPT) $(LIBRARY) $^
+	@$(RANLIB) $(LIBRARY)
+
+
+
+
+
+# Server configuration
+$(svrConfigDir)/irodsHost:
+	@$(MAKE) --no-print-directory -C .. config
+
+$(svrConfigDir)/server.config:
+	@$(MAKE) --no-print-directory -C .. config
+
+
+
+
+
+# Clean
+clean:
+	@echo "Cleaning library..."
+	@rm -f $(OBJS)
+	@rm -f $(LIBRARY)
+
+
+
+
+#
+# Compilation Targets
+#
+# Build core
+$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.c $(DEPEND)
+	@echo "Compile core `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
+# Build API
+$(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND)
+	@echo "Compile api `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
+# Build MD5
+#	Requires -O3 for optimization
+$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk)
+	@echo "Compile md5 `basename $@`..."
+	@$(CC) -c $(CFLAGS) -O3 -o $@ $<
+
+
+# Build logging source
+rodslog:  $(libCoreSrcDir)/rodsLog.c
+	@true
+
+$(libCoreSrcDir)/rodsLog.c:  $(libCoreIncDir)/rodsErrorTable.h
+	@perl $(configDir)/updateRodsLog.pl

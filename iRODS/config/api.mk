@@ -1,0 +1,266 @@
+# defines the client api request and server api handling routines 
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetMiscSvrInfo.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetMiscSvrInfo.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileCreate.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileCreate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileOpen.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileOpen.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileWrite.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileWrite.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileClose.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileClose.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileLseek.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileLseek.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileRead.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileRead.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileUnlink.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileUnlink.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileMkdir.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileMkdir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileChmod.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileChmod.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileRmdir.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileRmdir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileStat.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileStat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileFstat.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileFstat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileFsync.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileFsync.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileStage.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileStage.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileGetFsFreeSpace.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileGetFsFreeSpace.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileOpendir.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileOpendir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileClosedir.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileClosedir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileReaddir.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileReaddir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjCreate.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjCreate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjOpen.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjOpen.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjRead.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjRead.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjWrite.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjWrite.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjClose.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjClose.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjPut.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjPut.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataPut.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataPut.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjGet.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjGet.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataGet.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataGet.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjRepl.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjRepl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFilePut.o
+LIB_API_OBJS += $(libApiObjDir)/rcFilePut.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileGet.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileGet.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataCopy.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataCopy.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjLseek.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjLseek.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjCopy.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjCopy.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSimpleQuery.o
+LIB_API_OBJS += $(libApiObjDir)/rcSimpleQuery.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjUnlink.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjUnlink.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsCollCreate.o
+LIB_API_OBJS += $(libApiObjDir)/rcCollCreate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGeneralAdmin.o
+LIB_API_OBJS += $(libApiObjDir)/rcGeneralAdmin.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileChksum.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileChksum.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsChkNVPathPerm.o
+LIB_API_OBJS += $(libApiObjDir)/rcChkNVPathPerm.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGenQuery.o
+LIB_API_OBJS += $(libApiObjDir)/rcGenQuery.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsAuthRequest.o
+LIB_API_OBJS += $(libApiObjDir)/rcAuthRequest.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsAuthResponse.o
+LIB_API_OBJS += $(libApiObjDir)/rcAuthResponse.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsAuthCheck.o
+LIB_API_OBJS += $(libApiObjDir)/rcAuthCheck.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRmColl.o
+LIB_API_OBJS += $(libApiObjDir)/rcRmColl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRegColl.o
+LIB_API_OBJS += $(libApiObjDir)/rcRegColl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRegDataObj.o
+LIB_API_OBJS += $(libApiObjDir)/rcRegDataObj.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsUnregDataObj.o
+LIB_API_OBJS += $(libApiObjDir)/rcUnregDataObj.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRegReplica.o
+LIB_API_OBJS += $(libApiObjDir)/rcRegReplica.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsModDataObjMeta.o
+LIB_API_OBJS += $(libApiObjDir)/rcModDataObjMeta.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsModAVUMetadata.o
+LIB_API_OBJS += $(libApiObjDir)/rcModAVUMetadata.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileRename.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileRename.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsModAccessControl.o
+LIB_API_OBJS += $(libApiObjDir)/rcModAccessControl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRuleExecSubmit.o
+LIB_API_OBJS += $(libApiObjDir)/rcRuleExecSubmit.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRuleExecDel.o
+LIB_API_OBJS += $(libApiObjDir)/rcRuleExecDel.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRuleExecMod.o
+LIB_API_OBJS += $(libApiObjDir)/rcRuleExecMod.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsExecMyRule.o
+LIB_API_OBJS += $(libApiObjDir)/rcExecMyRule.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsOprComplete.o
+LIB_API_OBJS += $(libApiObjDir)/rcOprComplete.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjRename.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjRename.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjRsync.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjRsync.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjChksum.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjChksum.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsPhyPathReg.o
+LIB_API_OBJS += $(libApiObjDir)/rcPhyPathReg.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjPhymv.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjPhymv.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjTrim.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjTrim.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsObjStat.o
+LIB_API_OBJS += $(libApiObjDir)/rcObjStat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsExecCmd.o
+LIB_API_OBJS += $(libApiObjDir)/rcExecCmd.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubCreate.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubCreate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubOpen.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubOpen.o
+
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubRead.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubRead.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubWrite.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubWrite.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubClose.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubClose.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubUnlink.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubUnlink.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubStat.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubStat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubFstat.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubFstat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubLseek.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubLseek.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubRename.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubRename.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsQuerySpecColl.o
+LIB_API_OBJS += $(libApiObjDir)/rcQuerySpecColl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetTempPassword.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetTempPassword.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsModColl.o
+LIB_API_OBJS += $(libApiObjDir)/rcModColl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubMkdir.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubMkdir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubRmdir.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubRmdir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubOpendir.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubOpendir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubReaddir.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubReaddir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubClosedir.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubClosedir.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjTruncate.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjTruncate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsFileTruncate.o
+LIB_API_OBJS += $(libApiObjDir)/rcFileTruncate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBunSubTruncate.o
+LIB_API_OBJS += $(libApiObjDir)/rcBunSubTruncate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGeneralUpdate.o
+LIB_API_OBJS += $(libApiObjDir)/rcGeneralUpdate.o

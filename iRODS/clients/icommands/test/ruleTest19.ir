@@ -1,0 +1,3 @@
+myTest||admShowFNM(*A)##admAddAppRuleStruct(*B,*B,*B)##admShowFNM(*C)|nop
+*B=core2
+*A%*B%*C%ruleExecOut

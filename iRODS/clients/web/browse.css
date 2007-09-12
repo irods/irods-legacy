@@ -1,0 +1,108 @@
+
+	html, body {
+        font:normal 12px verdana;
+        margin:0;
+        padding:0;
+        border:0 none;
+        overflow:hidden;
+        height:100%;
+    }
+	.x-layout-panel-north {
+	    border:0px none;
+	    background-color:#c3daf9;	 
+	}
+	#nav {
+	}
+	
+	#north, #south{
+	    font:normal 8pt arial, helvetica;
+	    padding:4px;
+	}
+	.x-layout-panel-center p {
+	    margin:5px;
+	}
+	
+	.x-grid-col-objtype-dir {
+    font-family:tahoma, verdana;
+    color:#333;
+    display:block;
+    padding-left:20px;
+    padding-right:0px;
+    line-height:18px;
+    vertical-align:middle;
+    background:transparent url(images/folder.gif) no-repeat left 1px;
+  }
+  
+  .x-grid-col-objtype-generic-file {
+    font-family:tahoma, verdana;
+    color:#333;
+    display:block;
+    padding-left:20px;
+    line-height:18px;
+    vertical-align:middle;
+    background:transparent url(images/file.png) no-repeat left 1px;
+  }
+  
+  .x-tree-node-leaf .x-tree-node-icon{
+	  background-image:url(images/folder.gif);
+  }
+  
+  .x-layout-collapsed-west{
+   background-image: url(images/collapse-bg.gif);
+   background-repeat:no-repeat;
+   background-position:center;
+  }
+  
+  #loading{
+  	position:absolute;
+  	left:45%;
+  	top:40%;
+  	border:1px solid #6593cf;
+  	padding:2px;
+  	background:#c3daf9;
+  	width:150px;
+  	text-align:center;
+  	z-index:20001;
+  }
+  #loading .loading-indicator{
+  	border:1px solid #a3bad9;
+  	background:white url(ext-1.0/docs/resources/block-bg.gif) repeat-x;
+  	color:#003366;
+  	font:bold 13px tahoma,arial,helvetica;
+  	padding:10px;
+  	margin:0;
+  }
+  
+  .system-metadata-title {
+    font:bold 13px tahoma,arial,helvetica;
+  }   
+  
+  #basic, #animated {
+      border:1px solid #c3daf9;
+      color:#1e4e8f;
+      font:bold 14px tahoma,verdana,helvetica;
+      text-align:center;
+      padding-top:20px;
+  }
+  #snap {
+      border:1px solid #c3daf9;
+      overflow:hidden;
+  }
+  #custom {
+      cursor:move;
+  }
+  #custom-rzwrap{
+      z-index: 100;
+  }
+  #custom-rzwrap .x-resizable-handle{
+      width:11px;
+      height:11px;
+      background:transparent url(../../resources/images/sizer/square.gif) no-repeat;
+      margin:0px;
+  }
+  #custom-rzwrap .x-resizable-handle-east, #custom-rzwrap .x-resizable-handle-west{
+      top:45%;
+  }
+  #custom-rzwrap .x-resizable-handle-north, #custom-rzwrap .x-resizable-handle-south{
+      left:45%;
+  }
