@@ -13,6 +13,7 @@
 # 	clean		clean out all object and library files
 #
 
+include config/config.mk
 include config/platform.mk
 include config/directories.mk
 include config/common.mk
@@ -116,11 +117,13 @@ cleanmodules:
 
 # Get LDFLAGS added by all the modules for the servers
 server_ldflags:
+	@touch $(SERVER_LDFLAGS_TMP)
 	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i server_ldflags; done | \
 		perl $(configDir)/joinlines.pl > $(SERVER_LDFLAGS_TMP)
 
 # Get LDFLAGS added by all the modules for the clients
 client_ldflags:
+	@touch $(CLIENT_LDFLAGS_TMP)
 	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i client_ldflags; done | \
 		perl $(configDir)/joinlines.pl > $(CLIENT_LDFLAGS_TMP)
 else
@@ -128,10 +131,10 @@ cleanmodules:
 	@true
 
 server_ldflags:
-	@true
+	@touch $(SERVER_LDFLAGS_TMP)
 
 client_ldflags:
-	@true
+	@touch $(CLIENT_LDFLAGS_TMP)
 endif
 
 
@@ -193,13 +196,11 @@ cleanclients:
 
 distclean:	clean
 	@echo "Cleaning configuration files..."
-	@rm -f config/config.mk config/config.mk.orig
+	@rm -f config/config.mk
 	@rm -f server/config/server.config
 	@echo "Cleaning logs..."
 	@rm -f installLogs/*
 	@rm -f server/log/*
-	@echo "Cleaning vault..."
-	@rm -rf Vault
 
 mostlyclean:	clean
 	@true
