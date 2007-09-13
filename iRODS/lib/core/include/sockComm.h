@@ -1,0 +1,79 @@
+/*** Copyright (c), The Regents of the University of California            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
+/* sockComm.h - header file for sockComm.c
+ */
+
+#ifndef SOCK_COMM_H
+#define SOCK_COMM_H
+
+#include "rodsDef.h"
+#include "rcConnect.h"
+#include "rodsPackInstruct.h"
+
+#define MAX_LISTEN_QUE	50
+#define SOCK_WINDOW_SIZE	(1*1024*1024)   /* sock window size = 1 Mb */
+#define MIN_SOCK_WINDOW_SIZE	(16*1024)   /* min sock window size = 16 kb */
+#define MAX_SOCK_WINDOW_SIZE	(16*1024*1024) /* max window size = 16 Mb */
+#define DEF_NUMBER_SVR_PORT	200	/* default number of of server ports */
+#define CONNECT_TIMEOUT_TIME    10	/* connection timeout time in sec */
+#define RECONNECT_TIMEOUT_TIME  10	/* re-connection timeout time in sec */
+#define RECONNECT_SLEEP_TIME  3		/* re-connection sleep time in sec */
+#define MAX_RECONN_RETRY_CNT 4		/* max connect retry count */
+#define MAX_CONN_RETRY_CNT 3	/* max connect retry count */
+#define  CONNECT_SLEEP_TIME 200000	/* connect sleep time in uSec */
+
+/* definition for socket close function */
+#ifdef _WIN32
+#define CLOSE_SOCK       closesocket
+#else
+#define CLOSE_SOCK       close
+#endif
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+int sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr);
+int rodsSetSockOpt (int sock, int windowSize);
+int readMsgHeader (int sock, msgHeader_t *myHeader);
+int writeMsgHeader (int sock, msgHeader_t *myHeader);
+int readStartupPack (int sock, startupPack_t **startupPack);
+int readVersion (int sock, version_t **myVersion);
+int myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
+int *bytesRead);
+int myWrite (int sock, void *buf, int len, irodsDescType_t irodsDescType,
+int *bytesWritten);
+int connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag);
+int connectToRhostWithRaddr (struct sockaddr_in *remoteAddr, int windowSize,
+int timeoutFlag);
+int connectToRhostWithTout (int sock, struct sockaddr *sin);
+int rodsSleep (int sec, int microSec);
+int setConnAddr (rcComm_t *conn);
+int setRemoteAddr (int sock, struct sockaddr_in *remoteAddr);
+int setLocalAddr (int sock, struct sockaddr_in *localAddr);
+int sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag);
+int sendRodsMsg (int sock, char *msgType, bytesBuf_t *msgBBuf, 
+bytesBuf_t *byteStreamBBuf, bytesBuf_t *errorBBuf, int intInfo,
+irodsProt_t irodsProt);
+int
+sendVersion (int sock, int versionStatus, int reconnPort, 
+char *reconnAddr, int cookie);
+int
+readMsgBody (int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
+bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt);
+int
+connectToRhostPortal (char *rodsHost, int rodsPort, int cookie,
+int windowSize);
+int
+rsAcceptConn (rsComm_t *svrComm);
+char *
+rods_inet_ntoa (struct in_addr in);
+int
+irodsCloseSock (int sock);
+int
+readReconMsg (int sock, reconnMsg_t **reconnMsg);
+#ifdef  __cplusplus
+}
+#endif
+
+#endif	/* SOCK_COMM_H */
