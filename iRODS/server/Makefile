@@ -69,6 +69,9 @@ SVR_DRIVERS_OBJS = \
 INCLUDES +=	-I$(svrDriversIncDir)
 
 
+# XXXXX add svrIcatIncDir for now. needed by non-icat server. mw
+INCLUDES +=	-I$(svrIcatIncDir)
+
 # icat
 ifdef RODS_CAT
 CFLAGS +=	-DRODS_CAT
@@ -85,6 +88,7 @@ ifdef NEW_ODBC
 # Use the 'new' database handling
 CFLAGS +=	-DNEW_ODBC
 endif
+
 
 ifdef PSQICAT
 # Support Postgres
