@@ -63,12 +63,12 @@ INCLUDES +=	-I$(incDir)
 #endif
 
 ifdef IRODS_FS
-CFLAGS +=	-D_REENTRANT -I$(fuseHomeDir)
+CFLAGS +=	-D_REENTRANT -I$(fuseHomeDir)/include
 endif
 
 CFLAGS +=	-g $(MY_CFLAG) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES)
 LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS)
-LDFLAGS +=	-L$(fuseHomeDir)/lib/.libs -lfuse
+LDFLAGS +=	-L$(fuseHomeDir)/lib -lfuse -ldl -lrt
 
 # for checking memleak
 # LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib
@@ -96,14 +96,11 @@ $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
 
 $(binDir)/%:	$(objDir)/%.o
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS) $(LIBRARY)
-
-
-
+	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS) $(LIBRARY)
 
 
 # Clean
 clean:
 	@echo "Cleaning fuse..."
-	@rm -f $(BINS) $(OBJS)
+	@rm -f $(BINS) $(OBJS) $(LIB_OBJS)
 
