@@ -3,4 +3,6 @@ DIRECTORY
 
 DESCRIPTION
 	This directory contains functions for the ICAT metadata
-	catalog that tracks the location of data objects in iRODS.
+	catalog which manages persistent-state information for
+        the IRODS system: system and user-defined metadata on
+        data objects, collections, resources, users, etc.
