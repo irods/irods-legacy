@@ -146,7 +146,8 @@ SERVER_BINS +=	$(serverBinDir)/irodsReServer
 endif
 
 
-# Tests
+# icat Tests
+ifdef RODS_CAT
 TEST_OBJS =	\
 		$(svrTestObjDir)/test_chl.o \
 		$(svrTestObjDir)/test_cll.o \
@@ -158,6 +159,7 @@ TEST_BINS =	\
 		$(svrTestBinDir)/test_cll \
 		$(svrTestBinDir)/test_genq \
 		$(svrTestBinDir)/test_genu
+endif
 
 # reTest only works on Solaris
 #TEST_OBJS +=	$(svrTestObjDir)/reTest.o
