@@ -34,7 +34,7 @@ MSIncDir =	$(modulesDir)/image/microservices/include
 #
 IMAGEMAGICK =	$(buildDir)/../ImageMagick-6.3.5
 OBJECTS =	$(MSObjDir)/imageMS.o $(MSObjDir)/imageMSutil.o
-INCLUDES +=	-I$(MSIncDir) -I$(IMAGEMAGICK)/include
+INCLUDE_FLAGS = -I$(MSIncDir) -I$(IMAGEMAGICK)/include
 LIBS =		-L$(IMAGEMAGICK)/lib -lMagick
 
 
@@ -44,15 +44,15 @@ LIBS =		-L$(IMAGEMAGICK)/lib -lMagick
 #
 # Compile and link flags
 #
-INCLUDES +=	$(LIB_INCLUDES) $(SVR_INCLUDES)
-CFLAGS +=	$(MY_CFLAG) $(INCLUDES)
+INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES)
+CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(MODULE_CFLAGS)
 
 
 
 
 
-.PHONY: all server microservices clean
-.PHONY: server_ldflags client_ldflags
+.PHONY: all server client microservices clean
+.PHONY: server_ldflags client_ldflags server_cflags client_cflags
 
 # Build everytying
 all:	microservices
@@ -62,12 +62,24 @@ all:	microservices
 client_ldflags:
 	@true
 
+# List module's includes for inclusion in the clients
+client_cflags:
+	@true
+
 # List module's objects and needed libs for inclusion in the server
 server_ldflags:
 	@echo $(OBJECTS) $(LIBS)
 
+# List module's includes for inclusion in the server
+server_cflags:
+	@echo $(INCLUDE_FLAGS)
+
 # Build microservices
 microservices:	$(OBJECTS)
+	@true
+
+# Build client additions
+client:
 	@true
 
 # Build server additions

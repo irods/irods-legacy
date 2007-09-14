@@ -33,7 +33,7 @@ MSIncDir =	$(modulesDir)/properties/microservices/include
 # Source files
 #
 OBJECTS =	$(MSObjDir)/propertiesMS.o
-INCLUDES +=	-I$(MSIncDir)
+INCLUDE_FLAGS =	-I$(MSIncDir)
 
 
 
@@ -42,15 +42,15 @@ INCLUDES +=	-I$(MSIncDir)
 #
 # Compile and link flags
 #
-INCLUDES +=	$(LIB_INCLUDES) $(SVR_INCLUDES)
-CFLAGS +=	$(MY_CFLAG) $(INCLUDES)
+INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES)
+CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(MODULE_CFLAGS)
 
 
 
 
 
-.PHONY: all rules microservices server clean
-.PHONY: server_ldflags client_ldflags
+.PHONY: all rules microservices server client clean
+.PHONY: server_ldflags client_ldflags server_cflags client_cflags
 
 # Build everything
 all:	microservices
@@ -60,12 +60,24 @@ all:	microservices
 client_ldflags:
 	@true
 
+# List module's includes for inclusion in the clients
+client_cflags:
+	@true
+
 # List module's objects for inclusion in the server
 server_ldflags:
 	@echo $(OBJECTS)
 
+# List module's includes for inclusion in the server
+server_cflags:
+	@echo $(INCLUDE_FLAGS)
+
 # Build microservices
 microservices:	$(OBJECTS)
+	@true
+
+# Build client additions
+client:
 	@true
 
 # Build server additions
