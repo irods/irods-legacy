@@ -66,7 +66,7 @@ ifdef IRODS_FS
 CFLAGS +=	-D_REENTRANT -I$(fuseHomeDir)/include
 endif
 
-CFLAGS +=	-g $(MY_CFLAG) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES)
+CFLAGS +=	-g $(MY_CFLAG) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS)
 LDFLAGS +=	-L$(fuseHomeDir)/lib -lfuse -ldl -lrt
 

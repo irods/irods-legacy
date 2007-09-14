@@ -117,7 +117,7 @@ BINS =		\
 #CC =		gcc
 #endif
 
-CFLAGS +=	-g $(MY_CFLAG) $(LIB_INCLUDES) $(SVR_INCLUDES)
+CFLAGS +=	-g $(MY_CFLAG) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS)
 
 # for checking memleak
