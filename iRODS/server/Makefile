@@ -178,8 +178,8 @@ CONFIG +=	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
 
 
 # Compilation and link flags
-CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(LIB_INCLUDES)
-LDFLAGS +=	$(LDADD) $(LIBRARY)
+CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
+LDFLAGS +=	$(LDADD) $(LIBRARY) $(MODULE_LDFLAGS)
 
 
 
@@ -306,7 +306,7 @@ $(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRA
 
 $(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS)
 	@echo "Link agent server `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 # Rule engine
 $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
@@ -315,7 +315,7 @@ $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(L
 
 $(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS)
 	@echo "Link rule engine server `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 # RODS
 $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
@@ -324,7 +324,7 @@ $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBR
 
 $(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS)
 	@echo "Link rods server `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 
 
@@ -340,25 +340,25 @@ $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.c $(DEPEND)
 # reTest
 $(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 # cll and chl
 $(svrTestBinDir)/test_cll: $(svrTestObjDir)/test_cll.o $(SVR_ICAT_OBJS)
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 $(svrTestBinDir)/test_chl: $(svrTestObjDir)/test_chl.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 # genq and genu
 $(svrTestBinDir)/test_genq: $(svrTestObjDir)/test_genq.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 $(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(svrCoreObjDir)/readServerConfig.o
 	@echo "Link server test `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS) $(MODULE_LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 
 
