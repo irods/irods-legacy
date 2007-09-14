@@ -28,6 +28,18 @@ include config/common.mk
 # the installed modules.
 SERVER_LDFLAGS_TMP =	.server_ldflags
 CLIENT_LDFLAGS_TMP =	.client_ldflags
+SERVER_CFLAGS_TMP =	.server_cflags
+CLIENT_CFLAGS_TMP =	.client_cflags
+REACTION_TMP =		.reaction
+
+# reAction.h is automatically built by concatenating the main
+# header, each module's header, the main table, each module's
+# table, and the main footer.
+REACTION_MASTERS =	$(svrReIncDir)/reAction.header \
+			$(svrReIncDir)/reAction.table \
+			$(svrReIncDir)/reAction.footer
+REACTION_MODULE_HEADER = microservices/include/microservices.header
+REACTION_MODULE_TABLE = microservices/include/microservices.table
 
 
 
@@ -36,10 +48,10 @@ CLIENT_LDFLAGS_TMP =	.client_ldflags
 #
 # Principal Targets
 #
-.PHONY: all lib libs modules server clients $(MODULES) icommands fuse
+.PHONY: all lib libs modules server clients $(MODULES) reAction.h icommands fuse
 .PHONY: clean distclean mostlyclean maintainer-clean
 .PHONY: cleanlib cleanclients cleanserver cleanmodules
-.PHONY: config server_ldflags client_ldflags
+.PHONY: config server_ldflags client_ldflags server_cflags client_cflags
 .PHONY: dist check test tests
 .PHONY: install install-html install-dvi install-pdf install-ps
 .PHONY: install-strip uninstall
@@ -73,10 +85,12 @@ libs:	modules
 
 
 # Build the servers
-server:	server_ldflags libs modules
+server:	reaction server_ldflags server_cflags libs modules
 	@echo "Server"
 	@echo "------------------------------------------------------------------------"
-	@MODULE_LDFLAGS=`cat $(SERVER_LDFLAGS_TMP)` && export MODULE_LDFLAGS && $(MAKE) -C server all
+	@MODULE_LDFLAGS=`cat $(SERVER_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
+		MODULE_CFLAGS=`cat $(SERVER_CFLAGS_TMP)` && export MODULE_CFLAGS && \
+		$(MAKE) -C server all
 	@echo " "
 
 
@@ -86,16 +100,20 @@ server:	server_ldflags libs modules
 # Build the clients
 clients: icommands
 
-icommands: client_ldflags libs modules
+icommands: client_ldflags client_cflags libs modules
 	@echo "I-Commands"
 	@echo "------------------------------------------------------------------------"
-	@MODULE_LDFLAGS=`cat $(CLIENT_LDFLAGS_TMP)` && export MODULE_LDFLAGS && $(MAKE) -C clients/icommands all
+	@MODULE_LDFLAGS=`cat $(CLIENT_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
+		MODULE_CFLAGS=`cat $(CLIENT_CFLAGS_TMP)` && export MODULE_CFLAGS && \
+		$(MAKE) -C clients/icommands all
 	@echo " "
 
-fuse:	client_ldflags libs modules
+fuse:	client_ldflags client_cflags libs modules
 	@echo "Fuse"
 	@echo "------------------------------------------------------------------------"
-	@MODULE_LDFLAGS=`cat $(CLIENT_LDFLAGS_TMP)` && export MODULE_LDFLAGS && $(MAKE) -C clients/fuse all
+	@MODULE_LDFLAGS=`cat $(CLIENT_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
+		MODULE_CFLAGS=`cat $(CLIENT_CFLAGS_TMP)` && export MODULE_CFLAGS && \
+		$(MAKE) -C clients/fuse all
 	@echo " "
 
 
@@ -103,13 +121,21 @@ fuse:	client_ldflags libs modules
 
 
 # Build the modules
-modules: $(MODULES)
+modules: client_ldflags server_ldflags client_cflags server_cflags $(MODULES)
+
+reAction.h:	reaction
+	@true
 
 ifdef MODULES
 $(MODULES):
 	@echo "Module $@"
 	@echo "------------------------------------------------------------------------"
-	@$(MAKE) -C modules/$@ server microservices
+	@MODULE_LDFLAGS=`cat $(SERVER_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
+		MODULE_CFLAGS=`cat $(SERVER_CFLAGS_TMP)` && export MODULE_CFLAGS && \
+		$(MAKE) -C modules/$@ server microservices
+	@MODULE_LDFLAGS=`cat $(CLIENT_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
+		MODULE_CFLAGS=`cat $(CLIENT_CFLAGS_TMP)` && export MODULE_CFLAGS && \
+		$(MAKE) -C modules/$@ client
 	@echo " "
 
 cleanmodules:
@@ -126,6 +152,49 @@ client_ldflags:
 	@touch $(CLIENT_LDFLAGS_TMP)
 	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i client_ldflags; done | \
 		perl $(configDir)/joinlines.pl > $(CLIENT_LDFLAGS_TMP)
+
+# Get CFLAGS flags added by all the modules for the servers
+server_cflags: 
+	@touch $(SERVER_CFLAGS_TMP)
+	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i server_cflags; done | \
+		perl $(configDir)/joinlines.pl > $(SERVER_CFLAGS_TMP)
+
+# Get CFLAGS flags added by all the modules for the clients
+client_cflags: 
+	@touch $(CLIENT_CFLAGS_TMP)
+	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i client_cflags; done | \
+		perl $(configDir)/joinlines.pl > $(CLIENT_CFLAGS_TMP)
+
+# Build the microservices table based upon enabled modules
+reaction:	$(REACTION_MASTERS) $(DEPEND)
+	@echo "Build reAction.h"
+	@echo "------------------------------------------------------------------------"
+	@echo "  Header..."
+	@cat $(svrReIncDir)/reAction.header >> $(REACTION_TMP)
+	@echo "" >> $(REACTION_TMP)
+	@for i in $(MODULES); do \
+		if [ -f modules/$$i/$(REACTION_MODULE_HEADER) ]; then \
+			echo "    $$i"; \
+			echo "" >> $(REACTION_TMP); \
+			cat modules/$$i/$(REACTION_MODULE_HEADER) >> $(REACTION_TMP); \
+		fi; \
+	done
+	@echo "  Table..."
+	@cat $(svrReIncDir)/reAction.table >> $(REACTION_TMP)
+	@echo "" >> $(REACTION_TMP)
+	@for i in $(MODULES); do \
+		if [ -f modules/$$i/$(REACTION_MODULE_TABLE) ]; then \
+			echo "    $$i"; \
+			echo "" >> $(REACTION_TMP); \
+			cat modules/$$i/$(REACTION_MODULE_TABLE) >> $(REACTION_TMP); \
+		fi; \
+	done
+	@echo "  Footer..."
+	@echo "" >> $(REACTION_TMP)
+	@cat $(svrReIncDir)/reAction.footer >> $(REACTION_TMP)
+	@mv $(REACTION_TMP) $(svrReIncDir)/reAction.h
+	@echo " "
+
 else
 cleanmodules:
 	@true
@@ -135,6 +204,25 @@ server_ldflags:
 
 client_ldflags:
 	@touch $(CLIENT_LDFLAGS_TMP)
+
+server_cflags: 
+	@touch $(SERVER_CFLAGS_TMP)
+
+client_cflags: 
+	@touch $(CLIENT_CFLAGS_TMP)
+
+reaction:	$(REACTION_MASTERS) $(DEPEND)
+	@echo "Build reAction.h"
+	@echo "------------------------------------------------------------------------"
+	@echo "  Header..."
+	@cat $(svrReIncDir)/reAction.header >> $(REACTION_TMP)
+	@echo "  Table..."
+	@cat $(svrReIncDir)/reAction.table  >> $(REACTION_TMP)
+	@echo "  Footer..."
+	@cat $(svrReIncDir)/reAction.footer >> $(REACTION_TMP)
+	@mv $(REACTION_TMP) $(svrReIncDir)/reAction.h
+	@echo " "
+
 endif
 
 
@@ -179,7 +267,8 @@ TAGS:
 clean:
 	@echo "Clean"
 	@echo "------------------------------------------------------------------------"
-	@rm -f $(SERVER_LDFLAGS_TMP) $(CLIENT_LDFLAGS_TMP)
+	@rm -f $(SERVER_LDFLAGS_TMP) $(CLIENT_LDFLAGS_TMP) $(REACTION_TMP)
+	@rm -f $(SERVER_CFLAGS_TMP) $(CLIENT_CFLAGS_TMP)
 	@$(MAKE) cleanlib
 	@$(MAKE) cleanclients
 	@$(MAKE) cleanserver
@@ -196,7 +285,9 @@ cleanclients:
 
 distclean:	clean
 	@echo "Cleaning configuration files..."
+	@rm -f $(svrReIncDir)/reAction.h
 	@rm -f config/config.mk
+	@rm -f config/config.mk.orig
 	@rm -f server/config/server.config
 	@echo "Cleaning logs..."
 	@rm -f installLogs/*
