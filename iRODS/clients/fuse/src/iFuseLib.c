@@ -48,7 +48,7 @@ allocIFuseDesc ()
     pthread_mutex_unlock (&DescLock);
 
     rodsLog (LOG_ERROR, 
-      "%s: Out of iFuseDesc", __FUNCTION__);
+      "allocIFuseDesc: Out of iFuseDesc");
 
     return (SYS_OUT_OF_FILE_DESC);
 }
@@ -72,7 +72,7 @@ freeIFuseDesc (int descInx)
 
     if (descInx < 3 || descInx >= MAX_IFUSE_DESC) {
         rodsLog (LOG_ERROR,
-         "%s: descInx %d out of range", __FUNCTION__, descInx);
+         "freeIFuseDesc: descInx %d out of range", descInx);
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
@@ -93,13 +93,13 @@ checkFuseDesc (int descInx)
 {
     if (descInx < 3 || descInx >= MAX_IFUSE_DESC) {
         rodsLog (LOG_ERROR,
-         "%s: descInx %d out of range", __FUNCTION__, descInx);
+         "checkFuseDesc: descInx %d out of range", descInx);
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
     if (IFuseDesc[descInx].inuseFlag != FD_INUSE) {
         rodsLog (LOG_ERROR,
-         "%s: descInx %d is not inuse", __FUNCTION__, descInx);
+         "checkFuseDesc: descInx %d is not inuse", descInx);
         return (SYS_BAD_FILE_DESCRIPTOR);
     }
     return (0);
@@ -134,7 +134,7 @@ ifuseLseek (const char *path, int descInx, off_t offset)
 
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "%s: rcDataObjLseek of %s error", __FUNCTION__, path);
+              "ifuseLseek: rcDataObjLseek of %s error", path);
             return status;
         } else {
             free (dataObjLseekOut);
@@ -159,7 +159,7 @@ getIFuseConn (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
 
         if (DefConn.conn == NULL) {
             rodsLogError (LOG_ERROR, errMsg.status, 
-	      "%s: rcConnect failure %s", __FUNCTION__, errMsg.msg);
+	      "getIFuseConn: rcConnect failure %s", errMsg.msg);
 	    if (errMsg.status < 0) {
 		return (errMsg.status);
 	    } else {

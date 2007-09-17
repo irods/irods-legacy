@@ -60,6 +60,7 @@
 #define COLLECTION_INFO2_KW    "collectionInfo2"
 #define SEL_OBJ_TYPE_KW    "selObjType"
 #define BUNDLE_OPR_KW    	"bundleOpr"
+#define ALL_MS_PARAM_KW    	"allMsParam"
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

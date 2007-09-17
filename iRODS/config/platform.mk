@@ -109,13 +109,15 @@ endif
 ifeq ($(FILE_64BITS), 1)
 ifeq ($(OS_platform), solaris_platform)
 MY_CFLAG+=-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
-else
-ifeq ($(OS_platform), aix_platform)
-MY_CFLAG+=-D_LARGE_FILES 
 endif
+ifeq ($(OS_platform), aix_platform)
+MY_CFLAG+=-D_LARGE_FILES
 endif
 ifeq ($(OS_platform), linux_platform)
 MY_CFLAG+=-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE
+endif
+ifeq ($(OS_platform), osx_platform)
+MY_CFLAG+=-D_FILE_OFFSET_BITS=64
 endif
 endif
 

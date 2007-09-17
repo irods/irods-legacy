@@ -18,12 +18,13 @@
 
 typedef struct {
     char myRule[META_STR_LEN];
+    rodsHostAddr_t addr;
     keyValPair_t condInput;
     char outParamDesc[LONG_NAME_LEN];  /* output labels seperated by "%" */  
     msParamArray_t *inpParamArray;
 } execMyRuleInp_t;
 
-#define ExecMyRuleInp_PI "str myRule[META_STR_LEN]; struct KeyValPair_PI; str outParamDesc[LONG_NAME_LEN]; struct *MsParamArray_PI;"
+#define ExecMyRuleInp_PI "str myRule[META_STR_LEN]; struct RHostAddr_PI; struct KeyValPair_PI; str outParamDesc[LONG_NAME_LEN]; struct *MsParamArray_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_EXEC_MY_RULE rsExecMyRule
@@ -31,6 +32,9 @@ typedef struct {
 int
 rsExecMyRule (rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp, 
 msParamArray_t **outParamArray);
+int
+remoteExecMyRule (rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
+msParamArray_t **outParamArray, rodsServerHost_t *rodsServerHost);
 #else
 #define RS_EXEC_MY_RULE NULL
 #endif

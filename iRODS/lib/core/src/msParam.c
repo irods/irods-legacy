@@ -9,18 +9,36 @@
 #include "modDataObjMeta.h"
 #include "rcGlobalExtern.h"
 
+/* addMsParam - This is for backward compatibility only.
+ *  addMsParamToArray should be used for all new functions
+ */
 
-/* addMsParam - Add a msParam_t to the msParamArray.
+int
+addMsParam (msParamArray_t *msParamArray, char *label,
+char *type, void *inOutStruct, bytesBuf_t *inpOutBuf)
+{
+    int status = addMsParamToArray (msParamArray, label, type,
+      inOutStruct, inpOutBuf, 0);
+
+    return (status);
+}
+
+
+/* addMsParamToArray - Add a msParam_t to the msParamArray.
  * Input char *label - an element of the msParam_t. This input must be 
  *            non null.
  *       char *type - can be NULL 
  *       void *inOutStruct - can be NULL;
  *       bytesBuf_t *inpOutBuf - can be NULL
+ *	 int replFlag - label and type will be automatically replicated
+ *         (strdup). If replFlag == 0, only the pointers of inOutStruct
+ *         and inpOutBuf will be passed. If replFlag == 1, the inOutStruct
+ *         and inpOutBuf will be replicated.
  */
 
 int
-addMsParam (msParamArray_t *msParamArray, char *label, 
-char *type, void *inOutStruct, bytesBuf_t *inpOutBuf)
+addMsParamToArray (msParamArray_t *msParamArray, char *label, 
+char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag)
 {
     msParam_t **newParam;
     int len, newLen;
@@ -70,11 +88,151 @@ char *type, void *inOutStruct, bytesBuf_t *inpOutBuf)
 
     msParamArray->msParam[len] = (msParam_t *) malloc (sizeof (msParam_t));
     memset (msParamArray->msParam[len], 0, sizeof (msParam_t));
-    fillMsParam (msParamArray->msParam[len], label, type, inOutStruct,
-      inpOutBuf);
-
+    if (replFlag == 0) {
+        fillMsParam (msParamArray->msParam[len], label, type, inOutStruct,
+          inpOutBuf);
+    } else {
+	msParam_t inMsParam;
+	inMsParam.label = label;
+	inMsParam.type = type;
+	inMsParam.inOutStruct = inOutStruct;
+	inMsParam.inpOutBuf = inpOutBuf;
+	replMsParam (&inMsParam, msParamArray->msParam[len]);
+    }
     msParamArray->len++;
 
+    return (0);
+}
+
+int
+replMsParamArray (msParamArray_t *msParamArray, 
+msParamArray_t *outMsParamArray) 
+{
+    int newLen;
+    int i;
+    int status = 0;
+
+    memset (outMsParamArray, 0, sizeof (msParamArray_t));
+ 
+    newLen = (msParamArray->len / PTR_ARRAY_MALLOC_LEN + 1) * 
+      PTR_ARRAY_MALLOC_LEN;
+
+    outMsParamArray->msParam = 
+      (msParam_t **) malloc (newLen * sizeof (outMsParamArray->msParam));
+    memset (outMsParamArray->msParam, 0, 
+      newLen * sizeof (outMsParamArray->msParam));
+
+    outMsParamArray->len = msParamArray->len;
+    for (i = 0; i < msParamArray->len; i++) {
+	msParam_t *outMsParam;
+
+	outMsParam = outMsParamArray->msParam[i] = 
+	  (msParam_t *) malloc (sizeof (msParam_t));
+	memset (outMsParamArray->msParam[i], 0, sizeof (msParam_t));
+	status = replMsParam (msParamArray->msParam[i], 
+	  outMsParamArray->msParam[i]);
+    }
+    return (status);
+}
+
+int
+replMsParam (msParam_t *msParam, msParam_t *outMsParam)
+{
+    char *label, *type;
+    void *inOutStruct;
+    bytesBuf_t *inpOutBuf;
+    int status;
+
+    label = msParam->label;
+    type = msParam->type;
+    inOutStruct = msParam->inOutStruct;
+    inpOutBuf = msParam->inpOutBuf;
+
+    if (label != NULL) {
+        outMsParam->label = strdup (label);
+    }
+
+    if (type != NULL) {
+        outMsParam->type = strdup (type);
+    }
+
+    status = replInOutStruct (inOutStruct, &outMsParam->inOutStruct, type);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+           "replMsParamArray: replInOutStruct error for type %s", type);
+	return status;
+    }
+
+#if 0
+    if (inOutStruct != NULL && type != NULL) {
+        if (strcmp (type, STR_MS_T) == 0) {
+            outMsParam->inOutStruct = (void *) strdup ((char *)inOutStruct);
+        } else {
+            bytesBuf_t *packedResult;
+            status = packStruct (inOutStruct, &packedResult, type,
+              NULL, 0, NATIVE_PROT);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                   "replMsParamArray: packStruct error for type %s", type);
+                return (status);
+            }
+            status = unpackStruct (packedResult->buf,
+              (void **) &outMsParam->inOutStruct, type, NULL, NATIVE_PROT);
+            freeBBuf (packedResult);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                   "replMsParamArray: unpackStruct error for type %s",
+                  type);
+                return (status);
+            }
+        }
+    }
+#endif
+
+    if (inpOutBuf != NULL && inpOutBuf->len > 0) {
+        outMsParam->inpOutBuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+        outMsParam->inpOutBuf->len = inpOutBuf->len;
+        outMsParam->inpOutBuf->buf = malloc (inpOutBuf->len + 100);
+        memcpy (outMsParam->inpOutBuf->buf, inpOutBuf->buf, inpOutBuf->len);
+    }
+    return (0);
+}
+
+int
+replInOutStruct (void *inStruct, void **outStruct, char *type)
+{
+    int status;
+
+    if (outStruct == NULL) {
+	return SYS_INTERNAL_NULL_INPUT_ERR;
+    } else {
+	*outStruct = NULL;
+    }
+
+    if (inStruct != NULL && type != NULL) {
+        if (strcmp (type, STR_MS_T) == 0) {
+            *outStruct = (void *) strdup ((char *)inStruct);
+        } else {
+            bytesBuf_t *packedResult;
+            status = packStruct (inStruct, &packedResult, type,
+              NULL, 0, NATIVE_PROT);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                   "replInOutStruct: packStruct error for type %s", type);
+                return (status);
+            }
+            status = unpackStruct (packedResult->buf,
+              (void **) outStruct, type, NULL, NATIVE_PROT);
+            freeBBuf (packedResult);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                   "replInOutStruct: unpackStruct error for type %s",
+                  type);
+                return (status);
+            }
+        }
+    }
     return (0);
 }
 
@@ -326,6 +484,11 @@ trimMsParamArray (msParamArray_t *msParamArray, char *outParamDesc)
     msParam = msParamArray->msParam;
     value = strArray.value;
 
+    if (strArray.len == 1 && strcmp (value, ALL_MS_PARAM_KW) == 0) {
+	/* retain all msParam */
+	return 0;
+    }
+
     i = 0;
     while (i < msParamArray->len) {
 	int match;
@@ -363,9 +526,24 @@ trimMsParamArray (msParamArray_t *msParamArray, char *outParamDesc)
     return (0);
 }
 
+/* parseMspForDataObjInp - This is a rather convoluted subroutine because
+ * it tries to parse DataObjInp that have different types of msParam
+ * in inpParam and different modes of output.
+ *
+ * If outputToCache == 0 and inpParam is DataObjInp_MS_T, *outDataObjInp
+ *    will be set to the pointer given by inpParam->inOutStruct.
+ * If inpParam is STR_MS_T or KeyValPair_MS_T, regardles of the value of
+ *    outputToCache, the dataObjInpCache will be used to contain the output 
+ *    if it is not NULL. Otherwise, one will be malloc'ed (be sure to free
+ *    it after your are done). 
+ * If outputToCache == 1, the dataObjInpCache will be used to contain the 
+ *    output if it is not NULL. Otherwise, one will be malloc'ed (be sure to 
+ *    free it after your are done).
+ */
+
 int
 parseMspForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInpCache, 
-dataObjInp_t **outDataObjInp, int writeToCache)
+dataObjInp_t **outDataObjInp, int outputToCache)
 {
     *outDataObjInp = NULL;
 
@@ -378,6 +556,9 @@ dataObjInp_t **outDataObjInp, int writeToCache)
     if (strcmp (inpParam->type, STR_MS_T) == 0) {
         /* str input */
 	if (strcmp ((char *) inpParam->inOutStruct, "null") != 0) {
+	    if (dataObjInpCache == NULL) {
+		dataObjInpCache = malloc (sizeof (dataObjInp_t));
+	    }
             memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
             rstrcpy (dataObjInpCache->objPath, (char*)inpParam->inOutStruct, 
 	      MAX_NAME_LEN);
@@ -385,9 +566,12 @@ dataObjInp_t **outDataObjInp, int writeToCache)
 	}
         return (0);
     } else if (strcmp (inpParam->type, DataObjInp_MS_T) == 0) {
-	if (writeToCache == 1) {
+	if (outputToCache == 1) {
 	    dataObjInp_t *tmpDataObjInp;
 	    tmpDataObjInp = (dataObjInp_t *)inpParam->inOutStruct;
+            if (dataObjInpCache == NULL) {
+                dataObjInpCache = malloc (sizeof (dataObjInp_t));
+            }
 	    *dataObjInpCache = *tmpDataObjInp;
 	    /* zero out the condition of the original because it has been
 	     * moved */
@@ -398,18 +582,23 @@ dataObjInp_t **outDataObjInp, int writeToCache)
 	}
 	return (0);
     } else if (strcmp (inpParam->type, KeyValPair_MS_T) == 0) {
-      /* key-val pair input needs ketwords "DATA_NAME" and  "COLL_NAME" */
-      char *dVal, *cVal;
-      keyValPair_t *kW;
-      kW = (keyValPair_t *)inpParam->inOutStruct;
-      if ((dVal = getValByKey (kW,"DATA_NAME")) == NULL)
-	return(USER_PARAM_TYPE_ERR);
-      if ((cVal = getValByKey (kW,"COLL_NAME")) == NULL)
-	return(USER_PARAM_TYPE_ERR);
-      memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
-      snprintf (dataObjInpCache->objPath, MAX_NAME_LEN, "%s/%s", cVal,dVal);
-      *outDataObjInp = dataObjInpCache;
-      return(0);
+        /* key-val pair input needs ketwords "DATA_NAME" and  "COLL_NAME" */
+        char *dVal, *cVal;
+        keyValPair_t *kW;
+        kW = (keyValPair_t *)inpParam->inOutStruct;
+        if ((dVal = getValByKey (kW,"DATA_NAME")) == NULL)
+	    return(USER_PARAM_TYPE_ERR);
+        if ((cVal = getValByKey (kW,"COLL_NAME")) == NULL)
+	    return(USER_PARAM_TYPE_ERR);
+
+        if (dataObjInpCache == NULL) {
+            dataObjInpCache = malloc (sizeof (dataObjInp_t));
+        }
+
+        memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
+        snprintf (dataObjInpCache->objPath, MAX_NAME_LEN, "%s/%s", cVal,dVal);
+        *outDataObjInp = dataObjInpCache;
+        return(0);
     } else {
         rodsLog (LOG_ERROR,
           "parseMspForDataObjInp: Unsupported input Param1 type %s",
@@ -418,9 +607,12 @@ dataObjInp_t **outDataObjInp, int writeToCache)
     }
 }
 
+/* parseMspForCollInp - see the explanation given for parseMspForDataObjInp
+ */
+
 int
 parseMspForCollInp (msParam_t *inpParam, collInp_t *collInpCache, 
-collInp_t **outCollInp, int writeToCache)
+collInp_t **outCollInp, int outputToCache)
 {
     *outCollInp = NULL;
 
@@ -433,6 +625,9 @@ collInp_t **outCollInp, int writeToCache)
     if (strcmp (inpParam->type, STR_MS_T) == 0) {
         /* str input */
 	if (strcmp ((char *) inpParam->inOutStruct, "null") != 0) {
+            if (collInpCache == NULL) {
+                collInpCache = malloc (sizeof (collInpCache));
+            }
             memset (collInpCache, 0, sizeof (collInp_t));
             rstrcpy (collInpCache->collName, (char*)inpParam->inOutStruct, 
 	      MAX_NAME_LEN);
@@ -440,9 +635,12 @@ collInp_t **outCollInp, int writeToCache)
 	}
         return (0);
     } else if (strcmp (inpParam->type, CollInp_MS_T) == 0) {
-	if (writeToCache == 1) {
+	if (outputToCache == 1) {
 	    collInp_t *tmpCollInp;
 	    tmpCollInp = (collInp_t *)inpParam->inOutStruct;
+            if (collInpCache == NULL) {
+                collInpCache = malloc (sizeof (collInpCache));
+            }
 	    *collInpCache = *tmpCollInp;
 	    /* zero out the condition of the original because it has been
 	     * moved */
@@ -576,7 +774,7 @@ parseMspForPosInt (msParam_t *inpParam)
         return (USER_PARAM_TYPE_ERR);
     }
     if (myInt < 0) {
-        rodsLog (LOG_ERROR, 
+        rodsLog (LOG_DEBUG, 
           "parseMspForPosInt: parsed int %d is negative", myInt);
     }
     return (myInt);

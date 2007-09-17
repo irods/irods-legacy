@@ -1427,8 +1427,8 @@ strToXmlStr (char *inStr, char **outXmlStr)
 	    cpLen = tmpPtr - inPtr;
 	    strncpy (outPtr, inPtr, cpLen);
 	    outPtr += cpLen;
-	    strcat (outPtr, "&amp");
-	    outPtr += 4;
+	    strcat (outPtr, "&amp;");
+	    outPtr += 5;
 	    inPtr += cpLen + 1;
 	} else if (*tmpPtr == '<') {
             if (*outXmlStr == NULL) {
@@ -1437,8 +1437,8 @@ strToXmlStr (char *inStr, char **outXmlStr)
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&lt");
-            outPtr += 3;
+            strcat (outPtr, "&lt;");
+            outPtr += 4;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '>') {
             if (*outXmlStr == NULL) {
@@ -1447,8 +1447,8 @@ strToXmlStr (char *inStr, char **outXmlStr)
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&gt");
-            outPtr += 3;
+            strcat (outPtr, "&gt;");
+            outPtr += 4;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '"') {
             if (*outXmlStr == NULL) {
@@ -1457,8 +1457,8 @@ strToXmlStr (char *inStr, char **outXmlStr)
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&quot");
-            outPtr += 5;
+            strcat (outPtr, "&quot;");
+            outPtr += 6;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '`') {
             if (*outXmlStr == NULL) {
@@ -1467,8 +1467,8 @@ strToXmlStr (char *inStr, char **outXmlStr)
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&apos");
-            outPtr += 5;
+            strcat (outPtr, "&apos;");
+            outPtr += 6;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '\0') {
 	    break;
@@ -1517,31 +1517,31 @@ xmlStrToStr (char *inStr, int myLen)
 	    break;
 	}
 
-        if (strncmp (tmpPtr, "&amp", 4) == 0) {
+        if (strncmp (tmpPtr, "&amp;", 5) == 0) {
 	    inPtr = tmpPtr;
 	    *inPtr = '&';
 	    inPtr ++;
-	    strcpy (inPtr, tmpPtr + 4);
-        } else if (strncmp (tmpPtr, "&lt", 3) == 0) {
+	    strcpy (inPtr, tmpPtr + 5);
+        } else if (strncmp (tmpPtr, "&lt;", 4) == 0) {
             inPtr = tmpPtr;
             *inPtr = '<';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 3);
-        } else if (strncmp (tmpPtr, "&gt", 3) == 0) {
+            strcpy (inPtr, tmpPtr + 4);
+        } else if (strncmp (tmpPtr, "&gt;", 4) == 0) {
             inPtr = tmpPtr;
             *inPtr = '>';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 3);
-        } else if (strncmp (tmpPtr, "&quot", 5) == 0) {
+            strcpy (inPtr, tmpPtr + 4);
+        } else if (strncmp (tmpPtr, "&quot;", 6) == 0) {
             inPtr = tmpPtr;
             *inPtr = '"';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 5);
-        } else if (strncmp (tmpPtr, "&apos", 5) == 0) {
+            strcpy (inPtr, tmpPtr + 6);
+        } else if (strncmp (tmpPtr, "&apos;", 6) == 0) {
             inPtr = tmpPtr;
             *inPtr = '`';
             inPtr ++;
-            strcpy (inPtr, tmpPtr + 5);
+            strcpy (inPtr, tmpPtr + 6);
         } else {
             break;
         }
@@ -1711,8 +1711,8 @@ int freePointer, irodsProt_t irodsProt, char *packInstructInp)
     }
 
     for (i = 0; i < numElement; i++) {
-	packItemHead = NULL;
 	int doubleInStruct;
+	packItemHead = NULL;
 
 	status = parsePackInstruct ((char*)packInstruct, &packItemHead);
         if (status < 0) {
@@ -2491,8 +2491,8 @@ irodsProt_t irodsProt, char *packInstructInp)
     }
 
     for (i = 0; i < numElement; i++) {
-        unpackItemHead = NULL;
         void *outPtr1, *outPtr2;
+        unpackItemHead = NULL;
 
         status = parsePackInstruct ((char*)packInstruct, &unpackItemHead);
         if (status < 0) {

@@ -21,14 +21,14 @@ irodsGetattr (const char *path, struct stat *stbuf)
     dataObjInp_t dataObjInp;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsGetattr: ");
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv, 
       dataObjInp.objPath);
     if (status < 0) {
-	rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-	  __FUNCTION__, path);
+	rodsLogError (LOG_ERROR, status, 
+	  "irodsGetattr: parseRodsPathStr of %s error", path);
 	/* use ENOTDIR for this type of error */
 	return -ENOTDIR;
     }
@@ -38,7 +38,7 @@ irodsGetattr (const char *path, struct stat *stbuf)
     if (status < 0) {
 	if (status != USER_FILE_DOES_NOT_EXIST) {
             rodsLogError (LOG_ERROR, status, 
-	      "%s: rcObjStat of %s error", __FUNCTION__, path);
+	      "irodsGetattr: rcObjStat of %s error", path);
 	}
 	return -ENOENT;
     }
@@ -69,7 +69,7 @@ irodsGetattr (const char *path, struct stat *stbuf)
 int 
 irodsReadlink (const char *path, char *buf, size_t size)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsReadlink: ");
     return (0);
 }
 
@@ -86,15 +86,15 @@ off_t offset, struct fuse_file_info *fi)
     sqlResult_t *tmpResult;
     int len;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsReaddir: ");
 
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
 
     status = parseRodsPathStr ((char *) (path + 1), &MyRodsEnv, collPath);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, path);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsReaddir: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -106,7 +106,7 @@ off_t offset, struct fuse_file_info *fi)
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
         rodsLogError (LOG_ERROR, status,
-          "%s: queryDataObjInColl error for %s", __FUNCTION__, collPath);
+          "irodsReaddir: queryDataObjInColl error for %s", collPath);
 	return -ENOTDIR;
     }
 
@@ -114,8 +114,8 @@ off_t offset, struct fuse_file_info *fi)
         if ((tmpResult = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == 
 	  NULL) {
             rodsLog (LOG_ERROR,
-              "%s: getSqlResultByInx for COL_DATA_NAME failed for %s",
-	      __FUNCTION__, collPath);
+              "irodsReaddir: getSqlResultByInx for COL_DATA_NAME failed for %s",
+	      collPath);
             return -ENOTDIR;
 	} else {
 	    dataName = tmpResult->value;
@@ -146,7 +146,7 @@ off_t offset, struct fuse_file_info *fi)
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
         rodsLogError (LOG_ERROR, status,
-          "%s: queryCollInColl error for %s", __FUNCTION__, collPath);
+          "irodsReaddir: queryCollInColl error for %s", collPath);
 	return -ENOTDIR;
     }
 
@@ -154,8 +154,8 @@ off_t offset, struct fuse_file_info *fi)
         if ((tmpResult = getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == 
 	  NULL) {
             rodsLog (LOG_ERROR,
-              "%s: getSqlResultByInx for COL_COLL_NAME failed for %s",
-	      __FUNCTION__, collPath);
+              "irodsReaddir: getSqlResultByInx for COL_COLL_NAME failed for %s",
+	      collPath);
             return -ENOTDIR;
         } else {
             collName = tmpResult->value;
@@ -193,14 +193,14 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     dataObjCloseInp_t dataObjCloseInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsMknod: ");
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
       dataObjInp.objPath);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, path);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsMknod: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -223,7 +223,7 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "%s: rcDataObjCreate of %s error", __FUNCTION__, path);
+          "irodsMknod: rcDataObjCreate of %s error", path);
         return -ENOENT;
     }
 
@@ -237,20 +237,20 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 }
 
 int 
-irodsMkdir(const char *path, mode_t mode)
+irodsMkdir (const char *path, mode_t mode)
 {
     collInp_t collCreateInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsMkdir: ");
 
     memset (&collCreateInp, 0, sizeof (collCreateInp));
 
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
       collCreateInp.collName);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, path);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsMkdir: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -261,7 +261,7 @@ irodsMkdir(const char *path, mode_t mode)
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "%s: rcCollCreate of %s error", __FUNCTION__, path);
+          "irodsMkdir: rcCollCreate of %s error", path);
         return -ENOENT;
     }
 
@@ -269,20 +269,20 @@ irodsMkdir(const char *path, mode_t mode)
 }
 
 int 
-irodsUnlink(const char *path)
+irodsUnlink (const char *path)
 {
     dataObjInp_t dataObjInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsUnlink: ");
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
 
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
       dataObjInp.objPath);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, path);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsUnlink: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -297,7 +297,7 @@ irodsUnlink(const char *path)
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "%s: rcDataObjUnlink of %s error", __FUNCTION__, path);
+          "irodsUnlink: rcDataObjUnlink of %s error", path);
         return -ENOENT;
     }
 
@@ -305,20 +305,20 @@ irodsUnlink(const char *path)
 }
 
 int 
-irodsRmdir(const char *path)
+irodsRmdir (const char *path)
 {
     collInp_t collInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsRmdir: ");
 
     memset (&collInp, 0, sizeof (collInp));
 
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
       collInp.collName);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, path);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsRmdir: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -333,7 +333,7 @@ irodsRmdir(const char *path)
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "%s: rcRmColl of %s error", __FUNCTION__, path);
+          "irodsRmdir: rcRmColl of %s error", path);
         return -ENOENT;
     }
 
@@ -343,7 +343,7 @@ irodsRmdir(const char *path)
 int 
 irodsSymlink (const char *from, const char *to)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsSymlink: ");
     return (0);
 }
 
@@ -353,7 +353,7 @@ irodsRename (const char *from, const char *to)
     dataObjCopyInp_t dataObjRenameInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsRename: ");
 
     /* test rcDataObjRename */
 
@@ -362,8 +362,8 @@ irodsRename (const char *from, const char *to)
     status = parseRodsPathStr ((char *) (from + 1) , &MyRodsEnv,
       dataObjRenameInp.srcDataObjInp.objPath);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, from);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsRename: parseRodsPathStr of %s error", from);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -371,8 +371,8 @@ irodsRename (const char *from, const char *to)
     status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv,
       dataObjRenameInp.destDataObjInp.objPath);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, to);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsRename: parseRodsPathStr of %s error", to);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -392,7 +392,7 @@ irodsRename (const char *from, const char *to)
         relIFuseConn (&DefConn);
 	if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "%s: rcDataObjRename of %s to %s error", __FUNCTION__, from, to);
+              "irodsRename: rcDataObjRename of %s to %s error", from, to);
             return -ENOENT;
 	}
     }
@@ -403,38 +403,38 @@ irodsRename (const char *from, const char *to)
 int 
 irodsLink (const char *from, const char *to)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsLink: ");
     return (0);
 }
 
 int 
 irodsChmod (const char *path, mode_t mode)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsChmod: ");
     return (0);
 }
 
 int 
 irodsChown (const char *path, uid_t uid, gid_t gid)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsChown: ");
     return (0);
 }
 
 int 
-irodsTruncate(const char *path, off_t size)
+irodsTruncate (const char *path, off_t size)
 {
     dataObjInp_t dataObjInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsTruncate: ");
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
       dataObjInp.objPath);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, path);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsTruncate: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -447,7 +447,7 @@ irodsTruncate(const char *path, off_t size)
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
-          "%s: rcDataObjTruncate of %s error", __FUNCTION__, path);
+          "irodsTruncate: rcDataObjTruncate of %s error", path);
         return -ENOENT;
     }
 
@@ -457,14 +457,14 @@ irodsTruncate(const char *path, off_t size)
 int 
 irodsFlush (const char *path, struct fuse_file_info *fi)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsFlush: ");
     return (0);
 }
 
 int 
 irodsUtimens (const char *path, const struct timespec ts[2])
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsUtimens: ");
     return (0);
 }
 
@@ -476,14 +476,14 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
     int fd;
     int descInx;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsOpen: ");
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
       dataObjInp.objPath);
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "%s: parseRodsPathStr of %s error",
-          __FUNCTION__, path);
+        rodsLogError (LOG_ERROR, status, 
+	  "irodsOpen: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
         return -ENOTDIR;
     }
@@ -496,13 +496,13 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 
     if (fd < 0) {
         rodsLogError (LOG_ERROR, status,
-          "%s: rcDataObjOpen of %s error", __FUNCTION__, path);
+          "irodsOpen: rcDataObjOpen of %s error", path);
         return -ENOENT;
     } else {
 	descInx = allocIFuseDesc ();
         if (descInx < 0) {
             rodsLogError (LOG_ERROR, descInx,
-              "%s: allocIFuseDesc of %s error", __FUNCTION__, path);
+              "irodsOpen: allocIFuseDesc of %s error", path);
             return -ENOENT;
 	}
 	fillIFuseDesc (descInx, DefConn.conn, fd, dataObjInp.objPath);
@@ -521,7 +521,7 @@ struct fuse_file_info *fi)
     dataObjReadInp_t dataObjReadInp;
     bytesBuf_t dataObjReadOutBBuf;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsRead: ");
 
     descInx = fi->fh;
 
@@ -566,7 +566,7 @@ struct fuse_file_info *fi)
     dataObjWriteInp_t dataObjWriteInp;
     bytesBuf_t dataObjWriteInpBBuf;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsWrite: ");
 
     descInx = fi->fh;
 
@@ -599,8 +599,8 @@ struct fuse_file_info *fi)
         }
     } else if (status != size) {
         rodsLog (LOG_ERROR,
-          "%s: rcDataObjWrite of %s error, wrote %d, toWrite %d",
-           __FUNCTION__, path, status, size);
+          "irodsWrite: rcDataObjWrite of %s error, wrote %d, toWrite %d",
+           path, status, size);
         return -ENOENT;
     } else {
         IFuseDesc[descInx].offset += status;
@@ -611,7 +611,24 @@ struct fuse_file_info *fi)
 int 
 irodsStatfs (const char *path, struct statvfs *stbuf)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    int status;
+
+    rodsLog (LOG_DEBUG, "irodsStatfs: ");
+
+    if (stbuf == NULL)
+	return (0);
+
+    
+    /* just fake some number */
+    status = statvfs ("/", stbuf);
+
+    stbuf->f_blocks = 2000000000;
+    stbuf->f_bfree = stbuf->f_bavail = 1000000000;
+    stbuf->f_files = 200000000;
+    stbuf->f_ffree = stbuf->f_favail = 100000000;
+    stbuf->f_fsid = 777;
+    stbuf->f_namemax = MAX_NAME_LEN;
+
     return (0);
 }
 
@@ -622,7 +639,7 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     int status, myError;
     dataObjCloseInp_t dataObjCloseInp;
 
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsRelease: ");
 
     descInx = fi->fh;
 
@@ -653,7 +670,7 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 int 
 irodsFsync (const char *path, int isdatasync, struct fuse_file_info *fi)
 {
-    rodsLog (LOG_DEBUG, "%s: ", __FUNCTION__);
+    rodsLog (LOG_DEBUG, "irodsFsync: ");
     return (0);
 }
 

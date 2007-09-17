@@ -24,6 +24,10 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
 
     myHostAddr = addr->hostAddr;
 
+    if (strlen (myHostAddr) == 0) {
+        return LOCAL_HOST;
+    }
+
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
 	hostName_t *tmpName;

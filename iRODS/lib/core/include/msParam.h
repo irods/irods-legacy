@@ -66,6 +66,16 @@ int
 addMsParam (msParamArray_t *msParamArray, char *label,
 char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf);
 int
+addMsParamToArray (msParamArray_t *msParamArray, char *label,
+char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag);
+int
+replMsParamArray (msParamArray_t *msParamArray, 
+msParamArray_t *outMsParamArray);
+int
+replMsParam (msParam_t *msParam, msParam_t *outMsParam);
+int
+replInOutStruct (void *inStruct, void **outStruct, char *type);
+int
 fillMsParam (msParam_t *msParam, char *label,
 char *type, void *inOutStruct, bytesBuf_t *inpOutBuf);
 msParam_t *

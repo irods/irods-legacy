@@ -8,12 +8,22 @@ msParamArray_t **outParamArray)
     int status;
     ruleExecInfo_t rei;
     char *iFlag;
-    int         oldReTestFlag, oldReLoopBackFlag;
+    int oldReTestFlag, oldReLoopBackFlag;
+    rodsServerHost_t *rodsServerHost;
+    int remoteFlag;
 
     if (execMyRuleInp == NULL) { 
        rodsLog(LOG_NOTICE,
         "rsExecMyRule error. NULL input");
        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    remoteFlag = resolveHost (&execMyRuleInp->addr, &rodsServerHost);
+
+    if (remoteFlag == REMOTE_HOST) {
+        status = remoteExecMyRule (rsComm, execMyRuleInp, 
+	  outParamArray, rodsServerHost);
+	return status;
     }
 
     initReiWithDataObjInp (&rei, rsComm, NULL);
@@ -26,11 +36,12 @@ msParamArray_t **outParamArray)
     }
     rei.msParamArray = execMyRuleInp->inpParamArray;
 
-    if ((iFlag = getValByKey (rei.condInputData,"looptest")) != NULL && !strcmp(iFlag,"true")) {
-      oldReTestFlag = reTestFlag;
-      oldReLoopBackFlag = reLoopBackFlag;
-      reTestFlag = LOG_TEST_1;
-      reLoopBackFlag = LOOP_BACK_1;
+    if ((iFlag = getValByKey (rei.condInputData,"looptest")) != NULL && 
+      !strcmp(iFlag,"true")) {
+        oldReTestFlag = reTestFlag;
+        oldReLoopBackFlag = reLoopBackFlag;
+        reTestFlag = LOG_TEST_1;
+        reLoopBackFlag = LOOP_BACK_1;
     }
 
 
@@ -52,6 +63,27 @@ msParamArray_t **outParamArray)
     
     *outParamArray = rei.msParamArray;
     rei.msParamArray = NULL;
+
+    return (status);
+}
+
+int
+remoteExecMyRule (rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,
+msParamArray_t **outParamArray, rodsServerHost_t *rodsServerHost)
+{
+    int status;
+
+    if (rodsServerHost == NULL) {
+        rodsLog (LOG_ERROR,
+          "remoteExecMyRule: Invalid rodsServerHost");
+        return SYS_INVALID_SERVER_HOST;
+    }
+
+    if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+        return status;
+    }
+
+    status = rcExecMyRule (rodsServerHost->conn, execMyRuleInp, outParamArray);
 
     return (status);
 }
