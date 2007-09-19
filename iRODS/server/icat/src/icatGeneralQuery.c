@@ -1136,6 +1136,8 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
       if (needToGetNextRow) {
 	 status = cmlGetNextRowFromStatement(statementNum, icss);
 	 if (status == CAT_NO_ROWS_FOUND) {
+            int status2;
+            status2 = cmlFreeStatement(statementNum, icss);
 	    result->continueInx=0;
 	    if (result->rowCnt==0) return(status); /* NO ROWS; in this 
                        case a continuation call is finding no more rows */
