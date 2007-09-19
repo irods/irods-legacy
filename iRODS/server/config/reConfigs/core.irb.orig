@@ -208,6 +208,7 @@ acRegisterData||msiRegisterData|msiRollback
 #These rules generate the genQueryOut_ structure for each action for the given condition
 #
 acGetIcatResults(*Action,*Condition,*GenQOut)|(*Action == replicate) %% (*Action == trim) %% (*Action == chksum) %% (*Action == copy) %% (*Action == remove) |msiMakeQuery("DATA_NAME, COLL_NAME",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
+acGetIcatResults(*Action,*Condition,*GenQOut)|(*Action == chksumRescLoc) |msiMakeQuery("DATA_NAME, COLL_NAME, RESC_LOC",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
 acGetIcatResults(*Action,*Condition,*GenQOut)|*Action == list|msiMakeQuery("DATA_NAME, COLL_NAME, DATA_RESC_NAME, DATA_REPL_NUM, DATA_SIZE",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
 ##
 ##rules for purging a file which have expired
