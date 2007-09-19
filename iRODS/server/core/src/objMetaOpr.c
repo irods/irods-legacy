@@ -1829,7 +1829,7 @@ isData(rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
 {
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
-    char tmpStr[NAME_LEN];
+    char tmpStr[MAX_NAME_LEN];
     char logicalEndName[MAX_NAME_LEN];
     char logicalParentDirName[MAX_NAME_LEN];
     int status;
@@ -1837,13 +1837,13 @@ isData(rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
     status = splitPathByKey(objName,
 			    logicalParentDirName, logicalEndName, '/');
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-    snprintf (tmpStr, NAME_LEN, "='%s'", logicalEndName);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalEndName);
     addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, tmpStr);
     addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
-    snprintf (tmpStr, NAME_LEN, "='%s'", logicalParentDirName);
+    snprintf (tmpStr, MAX_NAME_LEN, "='%s'", logicalParentDirName);
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
     addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
-    genQueryInp.maxRows = 1;
+    genQueryInp.maxRows = 2;
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
     if (status >= 0) {
         sqlResult_t *dataIdRes;
@@ -1875,7 +1875,7 @@ isColl(rsComm_t *rsComm, char *objName, rodsLong_t *collId)
     snprintf (tmpStr, MAX_NAME_LEN, "='%s'", objName);
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
     addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
-    genQueryInp.maxRows = 1;
+    genQueryInp.maxRows = 2;
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
     if (status >= 0) {
         sqlResult_t *collIdRes;
@@ -1908,7 +1908,7 @@ isUser(rsComm_t *rsComm, char *objName)
     snprintf (tmpStr, NAME_LEN, "='%s'", objName);
     addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, tmpStr);
     addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
-    genQueryInp.maxRows = 1;
+    genQueryInp.maxRows = 2;
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
     clearGenQueryInp (&genQueryInp);
     return(status);
@@ -1927,7 +1927,7 @@ isResc(rsComm_t *rsComm, char *objName)
     snprintf (tmpStr, NAME_LEN, "='%s'", objName);
     addInxVal (&genQueryInp.sqlCondInp, COL_R_RESC_NAME, tmpStr);
     addInxIval (&genQueryInp.selectInp, COL_R_RESC_ID, 1);
-    genQueryInp.maxRows = 1;
+    genQueryInp.maxRows = 2;
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
     clearGenQueryInp (&genQueryInp);
     return(status);
