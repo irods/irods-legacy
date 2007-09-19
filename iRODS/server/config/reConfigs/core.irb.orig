@@ -6,7 +6,6 @@
 # for example, if the 2nd call fails, the 2nd recover call is made.
 #
 #Test Rules
-msitest(*A,*B,*E)||msitest1(*A,*B,*C)##msitest2(*C,*D,*E)##msitest3(*A,*D,*E)|nop
 printHello||print_hello|nop
 ## 
 ##
