@@ -35,7 +35,7 @@ function renderFmtSize(value,p,record){
 }
 function renderTime(value){
   try {
-    return value.dateFormat('F j, Y, g:i a T');
+    return value.dateFormat('F j, Y, g:i a');
   } catch (e) {
     return 'Invalid Time';
   }
@@ -43,8 +43,9 @@ function renderTime(value){
 
 function RODSFileSearchDialog()
 {
-  var result_dlg, gridpanel, grid, grid_view, ds, num_newrows, ruri, 
-    descendentOnly, partial_name;
+  var adv_search_dlg, file_viewer, adv_search_form, adv_search_flds, 
+    result_dlg, gridpanel, grid, grid_view, ds, num_newrows, ruri, 
+    descendantOnly, partial_name, metaname_store;
   
   function jsonErrorResponseHandler(conn, r, options) {
     
@@ -60,9 +61,11 @@ function RODSFileSearchDialog()
   }
   
   return {
-    init : function(dlg_container, grid_container) {  
+    init : function(adv_search_dlg_container,
+      result_dlg_container, result_grid_container, file_viewer) {  
       
-      this.descendentOnly=true;
+      this.file_viewer=file_viewer;
+      this.descendantOnly=false;
       
       // the column model has information about grid columns
       // dataIndex maps the column to the specific data field in
@@ -134,6 +137,7 @@ function RODSFileSearchDialog()
           }, [
               {name: 'name', mapping: 'name'},
               {name: 'dirname', mapping: 'dirname'},
+              {name: 'ruri', mapping: 'ruri'},
               {name: 'owner', mapping: 'owner'},
               {name: 'rescname', mapping: 'rescname'},
               {name: 'size', mapping: 'size', type: 'int'},
@@ -151,8 +155,8 @@ function RODSFileSearchDialog()
       
       this.ds.proxy.getConnection().on('requestcomplete', jsonErrorResponseHandler);
       
-      // create the editor grid
-      this.grid = new Ext.grid.Grid(grid_container, {
+      // create the search result grid
+      this.grid = new Ext.grid.Grid(result_grid_container, {
           ds: this.ds,
           cm: cm,
           selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
@@ -160,6 +164,12 @@ function RODSFileSearchDialog()
           autoWidth:true,
           autoExpandColumn:'dir_grid_col_name'
       });
+      
+      this.grid.addListener("rowdblclick",function (grid, rowIndex, e) {
+        var sm = grid.getSelectionModel();
+        var record = sm.getSelected();
+        this.file_viewer.view(record, e.getTarget());
+      },this);
       
       // render it
       this.grid.render();
@@ -177,7 +187,7 @@ function RODSFileSearchDialog()
       this.gridpanel = new Ext.GridPanel(this.grid, 
         {autoCreate: true, fitToFrame: true, autoScroll: true, title: 'Search Results'} );
       
-      this.result_dlg= new Ext.LayoutDialog(dlg_container, { 
+      this.result_dlg= new Ext.LayoutDialog(result_dlg_container, { 
               width:800,
               height:600,
               shadow:true,
@@ -198,7 +208,189 @@ function RODSFileSearchDialog()
       layout.beginUpdate();
       layout.add("center", this.gridpanel);
       layout.endUpdate();
+      this.result_dlg.addKeyListener(27, this.result_dlg.hide, this.result_dlg); // ESC can also close the dialog
       
+      this.adv_search_form=new Ext.form.Form();
+      this.adv_search_flds={};
+      this.adv_search_flds['name']=new Ext.form.TextField({
+                    width:400,
+                    name: 'name',
+                    fieldLabel: 'Name',
+                    emptyText: 'Name or Partial Name, case sensitive'
+                });
+      
+      this.adv_search_flds['mtime_since_now']=new Ext.form.ComboBox({
+                    width:200,
+                    name: 'mtime_since_now',
+                    fieldLabel: 'Modified Within',
+                    emptyText: 'Select one from the list',
+                    forceSelection:true,
+                    store: new Ext.data.SimpleStore({
+                        fields: ['name', 'val'],
+                        data : [  
+                                 ['24 hours', 24*3600], 
+                                 ['7 days',   7*24*3600], 
+                                 ['30 days',  30*24*3600],
+                                 ['3 month',  3*30*24*3600],
+                                 ['6 month',  6*30*24*3600],
+                                 ['One Year', 365*24*3600]
+                               ]  
+                    }),          
+                    displayField: 'name', 
+                    mode: 'local',
+                    triggerAction: 'all',
+                    editable: false         
+                });              
+      
+      this.adv_search_flds['owner']=new Ext.form.TextField({
+                    width:200,
+                    name: 'owner',
+                    fieldLabel: 'Owner',
+                    emptyText: 'Owner of the file'
+                });
+      
+      this.adv_search_flds['rsrc']=new Ext.form.TextField({
+                    width:200,
+                    name: 'rsrc',
+                    fieldLabel: 'Resource',
+                    emptyText: 'Resource of the file'
+                });
+      
+      this.adv_search_flds['descendentOnly']= new Ext.form.Checkbox ({
+         	fieldLabel: 'Only', checked: false, boxLabel: 'Under Current Collection'});
+      
+      this.adv_search_flds['cwd']= new Ext.form.TextField({
+                    width:400,
+                    name: 'cwd',
+                    fieldLabel: 'Current Collection',
+                    disabled: true
+                });
+      
+      this.adv_search_form.fieldset(
+        {legend:'Attributes', labelWidth:120},
+        this.adv_search_flds['name'],
+        this.adv_search_flds['mtime_since_now'],
+        this.adv_search_flds['owner'],
+        this.adv_search_flds['rsrc'],
+        this.adv_search_flds['descendentOnly'],
+        this.adv_search_flds['cwd']
+      );
+      
+      //Create meta data fields
+      this.metaname_store= new Ext.data.Store({
+            proxy: new Ext.data.HttpProxy({
+                url: 'services/serverQuery.php'
+            }),
+            
+            // create reader that reads the Topic records
+            reader: new Ext.data.JsonReader({
+                successProperty: 'success',
+                root: 'que_results',
+                totalProperty: 'totalCount'
+            }, [
+                {name: 'metaname', mapping: 'name'}
+            ]),
+  
+            // turn off remote sorting
+            remoteSort: false
+      });
+      this.metaname_store.on('beforeload', function() {
+          this.metaname_store.baseParams = {'ruri': this.ruri, 
+            'action':'metadataname_for_files'};
+      }, this);
+        
+      this.metaname_store.proxy.getConnection().
+          on('requestcomplete', jsonErrorResponseHandler);
+      
+      this.metaop_store = new Ext.data.SimpleStore({
+                        fields: ['opname', 'opval'],
+                        data : [  
+                                 ['=', '='], 
+                                 ['>', '>'], 
+                                 ['>=', '>='],
+                                 ['<',  '<'],
+                                 ['<=',  '<='],
+                                 ['like', 'like']
+                               ]  
+                    });          
+       
+      this.adv_search_flds['metaname']=Array();
+      this.adv_search_flds['metaop']=Array();
+      this.adv_search_flds['metaval']=Array();
+      
+      for (var i=0; i<5; i++)
+      {
+        this.adv_search_flds['metaname'][i]=new Ext.form.ComboBox({
+                    width:150,
+                    name: 'metaname'+i,
+                    fieldLabel: 'Name',
+                    emptyText: 'Name',
+                    store: this.metaname_store,
+                    displayField: 'metaname',
+                    triggerAction: 'all'
+                });
+        this.adv_search_flds['metaop'][i]=new Ext.form.ComboBox({
+                    width:80,
+                    name: 'metaop'+i,
+                    fieldLabel: 'Operator',
+                    emptyText: 'Op',
+                    store: this.metaop_store,
+                    displayField: 'opname',
+                    triggerAction: 'all'
+                });  
+        this.adv_search_flds['metaval'][i]=new Ext.form.TextField({
+                    width:150,
+                    name: 'metaval'+i,
+                    fieldLabel: 'Value',
+                    emptyText: 'Value'
+                });              
+      }
+      
+      this.adv_search_form.fieldset({legend:'Metadata', hideLabels:true}); // open filedset container for metadata
+      this.adv_search_form.column({width:170, hideLabels:true},
+        this.adv_search_flds['metaname'][0],
+        this.adv_search_flds['metaname'][1],
+        this.adv_search_flds['metaname'][2],
+        this.adv_search_flds['metaname'][3],
+        this.adv_search_flds['metaname'][4]
+      ); 
+      this.adv_search_form.column({width:100, hideLabels:true},
+        this.adv_search_flds['metaop'][0],
+        this.adv_search_flds['metaop'][1],
+        this.adv_search_flds['metaop'][2],
+        this.adv_search_flds['metaop'][3],
+        this.adv_search_flds['metaop'][4]
+      ); 
+      this.adv_search_form.column({width:170, hideLabels:true},
+        this.adv_search_flds['metaval'][0],
+        this.adv_search_flds['metaval'][1],
+        this.adv_search_flds['metaval'][2],
+        this.adv_search_flds['metaval'][3],
+        this.adv_search_flds['metaval'][4]
+      ); 
+      this.adv_search_form.end(); // close filedset container for metadata
+      
+      this.adv_search_dlg= new Ext.BasicDialog(adv_search_dlg_container, { 
+              width:600,
+              height:500,
+              shadow:true,
+              minButtonWidth:10,
+              minWidth:300,
+              minHeight:300,
+              proxyDrag: true,
+              modal: true,
+              autoScroll:true,
+    	        closeOnTab: true,
+    	        alwaysShowTabs: false,
+    	        titlebar: false
+    	});
+      this.adv_search_dlg.addButton("Search",function(){
+        this.adv_search_dlg.hide();
+        Ext.Msg.alert('In Progress', 'Searching Now (fake)...')
+      }, this);
+      this.adv_search_dlg.addKeyListener(27, this.result_dlg.hide, this.result_dlg); // ESC can also close the dialog
+      
+      this.adv_search_form.render(this.adv_search_dlg.body)
       
     }, // end of RODSFileSearchDialog::init()
     
@@ -207,9 +399,18 @@ function RODSFileSearchDialog()
       this.ruri=_ruri;
       this.result_dlg.show(html_elem);
       
-      this.ds.baseParams = {ruri:_ruri, 'descendentOnly': this.descendentOnly,
+      this.ds.baseParams = {ruri:_ruri, 'descendantOnly': this.descendantOnly,
+            'recursive': this.descendantOnly,
             'name': this.partial_name};
       this.ds.load({params:{start:0, limit:100}});
+    },
+    
+    showAdvSearchDialog: function (html_elem, _ruri)
+    {
+      this.ruri=_ruri;
+      this.adv_search_flds['cwd'].setValue(
+        _ruri.substr(_ruri.indexOf('/')));
+      this.adv_search_dlg.show(html_elem);
     },
     
     refresh: function()
@@ -217,7 +418,7 @@ function RODSFileSearchDialog()
       this.ds.reload();
     }
   }
-} // end of RODSMetadataViewer
+} // end of RODSFileSearchDialog
 
 function RODSMetadataGrid(grid_container)
 {
@@ -566,7 +767,7 @@ function RODSMetadataGrid(grid_container)
 
 function RODSFileViewer()
 {
-  var file_dlg, layout, panels, tab_main, tab_meta, ruri, record, col_ruri,
+  var file_dlg, layout, panels, tab_main, tab_meta, ruri, record, 
     permalink, isImage, metagrid;
   
   return {
@@ -630,10 +831,9 @@ function RODSFileViewer()
           
     },
     
-    view : function(_record, _col_ruri, html_el){
-      this.col_ruri=_col_ruri;
+    view : function(_record, html_el){
       this.record=_record;
-      this.ruri=this.col_ruri + '/' + this.record.data['name'];
+      this.ruri=this.record.data['ruri'];
       this.permalink=this.getPermaLink();
       this.isImage=this.isFileImage();
        
@@ -664,7 +864,7 @@ function RODSFileViewer()
                 '<span class="system-metadata-title">Size:     </span>'+ 
                     this.record.data['fmtsize'] + ' ('+this.record.data['size'] + ' Bytes)<br/>' +
                 '<span class="system-metadata-title">RODS URI: </span>'+ 
-                    this.col_ruri + '/' + this.record.data['name'] + '<br/>' +
+                    this.ruri + '<br/>' +
                 '<span class="system-metadata-title">Resource: </span>'+ 
                                      this.record.data['rescname'] + '<br/>' +
                 '<span class="system-metadata-title">Type: </span>'+ 
@@ -775,15 +975,18 @@ function RodsBrowser(inipath, _ssid)
       
       Ext.QuickTips.init();
       
+      this.file_viewer=new RODSFileViewer();
+	    this.file_viewer.init();
       this.file_search_dlg=new RODSFileSearchDialog();
-	    this.file_search_dlg.init('file-search-result-dlg','file-search-result-grid');
+	    this.file_search_dlg.init('search-dlg',
+	      'file-search-result-dlg','file-search-result-grid',
+	      this.file_viewer);
       
       //this.createRodsCollDataStore('browse.php?ruri=rods.tempZone:RODS@rt.sdsc.edu:1247/tempZone/home/rods');    
       this.createRodsCollDataStore();
       this.createRodsResourceDataStore();
       this.createRodsCollBrowseGrid(coll_list_data);         
       this.createRodsDirTree();
-      
       
       this.layout = new Ext.BorderLayout(document.body, {
 	      north: {
@@ -815,8 +1018,7 @@ function RodsBrowser(inipath, _ssid)
 	    this.layout.endUpdate();
 	    
 	    this.createLoginOutDiv();
-	    this.file_viewer=new RODSFileViewer();
-	    this.file_viewer.init();
+	    
 	    
 	  }, // end of RodsBrowser::init 
 	  
@@ -1139,6 +1341,7 @@ function RodsBrowser(inipath, _ssid)
               {name: 'name', mapping: 'name'},
               {name: 'owner', mapping: 'owner'},
               {name: 'rescname', mapping: 'rescname'},
+              {name: 'ruri', mapping: 'ruri'},
               {name: 'size', mapping: 'size', type: 'int'},
               {name: 'fmtsize', mapping: 'fmtsize'},
               {name: 'type', mapping: 'type'},
@@ -1169,31 +1372,7 @@ function RodsBrowser(inipath, _ssid)
 	  },
 	  createRodsCollBrowseGrid : function(ds) 
 	  {
-	    // pluggable renders
-      function renderName(value, p, record){
-        if (record.data['type']==0) 
-          return String.format(
-            '<span class="x-grid-col-objtype-dir">{0}</span>', value);
-        else
-        if (record.data['type']==1)
-          return String.format(
-            '<span class="x-grid-col-objtype-generic-file">{0}</span>', value);
-        else
-          return value;
-      }
-      
-      function renderFmtSize(value,p,record){
-         return record.data['fmtsize'];
-      }
-      function renderTime(value){
-        try {
-          return value.dateFormat('F j, Y, g:i a T');
-        } catch (e) {
-          return 'Invalid Time';
-        }
-      }
-
-      // the column model has information about grid columns
+	    // the column model has information about grid columns
       // dataIndex maps the column to the specific data field in
       // the data store
       var cm = new Ext.grid.ColumnModel([{
@@ -1301,11 +1480,8 @@ function RodsBrowser(inipath, _ssid)
           //alert ("file clicked! filename=" + record.data['name']); 
           //file_dlg.setTitle(record.data['name']);  
           //file_dlg.show(e.getTarget());
-          if (this.metagrid==null)
-          {
-            this.createMetadataGrid();
-          }
-          this.file_viewer.view(record,rpath_grid,e.getTarget(),this.metagrid);
+          
+          this.file_viewer.view(record, e.getTarget());
         }
       }
       grid.addListener("rowdblclick",rowdblclickHandler,this);
@@ -1450,18 +1626,25 @@ function RodsBrowser(inipath, _ssid)
                 this.menu=new Ext.menu.Menu();
                 this.menu.add(
                   new Ext.menu.CheckItem({
-                      text: 'Current Collection Only',
-                      score: this, // note the scope here is the TwinTriggerField
-                      checked: true,
+                      text: 'Under Current Collection Only',
+                      scope: this, // note the scope here is the TwinTriggerField
+                      checked: false,
                       checkHandler: function (item, checked){
                         if (checked==true)
-                          this.search_cur_col_only=true;
+                          this.fileSearchDlg.descendantOnly=true;
                         else 
-                          this.search_cur_col_only=false;    
+                          this.fileSearchDlg.descendantOnly=false;    
                       }
                   }),
-                  { text: 'Advance Search' }
-                ); 
+                  new Ext.menu.Item({ 
+                    text: 'Advance Search',
+                    scope: this,
+                    handler: function (evnt){
+                      this.fileSearchDlg.showAdvSearchDialog(
+                        this.getEl(), rpath_grid);
+                    }
+                  })
+                ) 
               }
               this.menu.show(evnt.getTarget());  
             }
@@ -1517,7 +1700,7 @@ function RodsBrowser(inipath, _ssid)
                  typeAhead: true,
                  store: resources.acct_str, 
                  displayField:'name',
-                 mode: 'local',
+                 //mode: 'local',
                  emptyText:'Select a Resource...',
                  selectOnFocus:true,
                  allowBlank:false,
@@ -1602,7 +1785,7 @@ function RodsBrowser(inipath, _ssid)
            shadow: true
           });
           Ext.get('upload-applet-dlg-bd-main').dom.innerHTML=
-            '<APPLET CODE="edu.sdsc.grid.gui.applet.UploadApplet.class" archive="applets/UploadApplet.jar,applets/jargon.jar" WIDTH="650" HEIGHT="300">'+
+            '<APPLET CODE="edu.sdsc.grid.gui.applet.UploadApplet.class" archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar" WIDTH="650" HEIGHT="300">'+
             '   <param name="ruri" value="irods://'+rpath_grid+'" />'+
             '   <param name="ssid" value="'+ssid+'" />'+
             '</APPLET>';

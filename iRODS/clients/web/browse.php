@@ -109,10 +109,16 @@
   </div>
   
   <div id="file-search-result-dlg" style="visibility:hidden;">
-    <div id= "file-search-result-dlg-hd" class="x-dlg-hd">Search Result</div>
+    <div id= "file-search-result-dlg-hd" class="x-dlg-hd">File Search Results</div>
     <div id= "file-search-result-dlg-bd" class="x-dlg-bd">
         <div id= "file-search-result-grid-center" class="x-layout-inactive-content" style="padding:10px;"></div> 
         <div id= "file-search-result-grid"></div>    
+    </div>
+  </div>
+  
+  <div id="search-dlg" style="visibility:hidden;">
+    <div id= "search-dlg-hd" class="x-dlg-hd">Advanced Search (Under developement!!!)</div>
+    <div id= "search-dlg-bd" class="x-dlg-bd" style="padding:10px;background:#c4d2e3;border:0 none;">
     </div>
   </div>
   
