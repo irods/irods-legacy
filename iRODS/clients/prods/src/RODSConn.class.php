@@ -270,47 +270,6 @@ class RODSConn
   }
   
  /**
-  * Get available resources
-  * @return array with fields: id, name, type, zone, class, loc, info, comment, ctime, mtime, vault_path, free_space. If user not found return empty array. 
-  */
-  public function getResources()
-  {
-    // set selected value
-    $select_val=array("COL_R_RESC_ID","COL_R_RESC_NAME","COL_R_ZONE_NAME",
-            "COL_R_TYPE_NAME","COL_R_CLASS_NAME","COL_R_LOC",
-            "COL_R_VAULT_PATH","COL_R_FREE_SPACE","COL_R_RESC_INFO",
-            "COL_R_RESC_COMMENT", "COL_R_CREATE_TIME", "COL_R_MODIFY_TIME");
-    $que_result= $this->genQuery($select_val); 
-    if (false===$que_result)
-    {
-      return array();
-    }
-    else
-    {
-      $retval=array();
-      for ($i=0; $i<count($que_result["COL_R_RESC_ID"]); $i++)
-      { 
-        $retval_row=array();
-        $retval_row['id']=$que_result["COL_R_RESC_ID"][$i];
-        $retval_row['name']=$que_result["COL_R_RESC_NAME"][$i];
-        $retval_row['type']=$que_result["COL_R_TYPE_NAME"][$i];
-        $retval_row['zone']=$que_result["COL_R_ZONE_NAME"][$i];
-        $retval_row['class']=$que_result["COL_R_CLASS_NAME"][$i];
-        $retval_row['loc']=$que_result["COL_R_LOC"][$i];
-        $retval_row['info']=$que_result["COL_R_RESC_INFO"][$i];
-        $retval_row['comment']=$que_result["COL_R_RESC_COMMENT"][$i];
-        $retval_row['ctime']=$que_result["COL_R_CREATE_TIME"][$i];
-        $retval_row['mtime']=$que_result["COL_R_MODIFY_TIME"][$i];
-        $retval_row['vault_path']=$que_result["COL_R_VAULT_PATH"][$i];
-        $retval_row['free_space']=$que_result["COL_R_FREE_SPACE"][$i];
-        $retval[]=$retval_row;
-      }  
-      return $retval;
-    }         
-  }
-  
-  
- /**
   * Get user information
   * @param string username, if not specified, it will use current username instead
   * @return array with fields: id, name, type, zone, dn, info, comment, ctime, mtime. If user not found return empty array. 
