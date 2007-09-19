@@ -28,10 +28,12 @@ irule -F ../test/showicatchksumColl.ir
 irule -F ../test/showicatchksumColl.ir
 irule -F ../test/verifychksumColl.ir
 irule -F ../test/forcechksumColl.ir
+irule -F ../test/showicatchksumColl.ir
 
-/* COPYING */
 irm -f iquest.c
 iput ../src/iquest.c
+
+/* COPYING */
 
 ils -l 
 ils -l ../loopTest2
@@ -85,67 +87,126 @@ iqstat
 ils -l nvo
 
 /* irule tests */
+/**  assign *A = 1 **/
 more        ../test/ruleTest1.ir
 irule -v -F ../test/ruleTest1.ir
 
+/** assign *A = 0 **/
 more        ../test/ruleTest2.ir
 irule -v -F ../test/ruleTest2.ir
 
+/** addition and assign *A = 500 **/
 more        ../test/ruleTest3.ir
 irule -v -F ../test/ruleTest3.ir
 
+/** assign for $var *A = tempZone, *B = rods **/
 more        ../test/ruleTest4.ir
 irule -v -F ../test/ruleTest4.ir
 
+/** assign for $var  *A = 0, *B = 500, *C = 500**/
 more        ../test/ruleTest5.ir
 irule -v -F ../test/ruleTest5.ir
 
+/** assign for $var   *A = 0, *B = 400, *C = 400 **/
 more        ../test/ruleTest6.ir
 irule -v -F ../test/ruleTest6.ir
 
+/** more assign  *A = *B = *D = *E rods, *C = alpha **/
 more        ../test/ruleTest7.ir
 irule -v -F ../test/ruleTest7.ir
 
+/** whileExec  A = 20 **/
 more        ../test/ruleTest8.ir
 irule -v -F ../test/ruleTest8.ir
 
+/** forExec -llop from 4,8,12,...,596 **/
 more        ../test/ruleTest9.ir
 irule -v -F ../test/ruleTest9.ir
 
+/** ifExec if *A==598 then *A = 598, *D = 598 **/
 more        ../test/ruleTest10.ir
 irule -v -F ../test/ruleTest10.ir
+/** ifExec if *A==198 then *D = 198*A = 598, *A = 598 **/
+irule -v -F ../test/ruleTest10.ir
 
+
+/** writeString  strerr = Error:blah, stdout = alpha beta gammaalpha beta gamma **/
 more        ../test/ruleTest11.ir
 irule -v -F ../test/ruleTest11.ir
 
+/** writeLine strerr = Error:blah\n, stdout = alpha beta gamma\nalpha beta delta\n **/
 more        ../test/ruleTest12.ir
 irule -v -F ../test/ruleTest12.ir
 
+/** sendMail  Subject: irods test, mail sent by an msi.did you get this**/
 more        ../test/ruleTest13.ir
 irule -v -F ../test/ruleTest13.ir
 
+/** print a given list  123\n345\n567\naa\nbb\n678\n**/
 more        ../test/ruleTest14.ir
 irule -v -F ../test/ruleTest14.ir
 
+/** icat query given a query  DATA_NAME = foo*  **/
 more        ../test/ruleTest15.ir
 irule -v -F ../test/ruleTest15.ir
 
+/** icat query for an operation COLL_NAME = '/tempZone/home/rods'  **/
 more        ../test/ruleTest16.ir
 irule -v -F ../test/ruleTest16.ir
 
+/** show rules, add something and show again  1000..., 0-4.., 1000...**/
 more        ../test/ruleTest17.ir
 irule  -F ../test/ruleTest17.ir
 
+/** show variable maps, add something and show again 1000..., 0-94.., 1000... **/
 more        ../test/ruleTest18.ir
 irule  -F ../test/ruleTest18.ir
 
+/** show function maps, add something and show again  1000..., 0-10.., 1000... **/
 more        ../test/ruleTest19.ir
 irule  -F ../test/ruleTest19.ir
 
+/** remoteExec  **/
+/****
+         begin
+         just write in srbbrick1
+         remote write in andal
+         remote write again in andal
+         remote write in srbbrick1
+         remote write again and again in andal
+         again remote write in srbbrick1
+         remote write third in andal
+         second remote write in srbbrick1
+         third remote write in srbbrick1
+         again just write in srbbrick1
+end
+****/
+more        ../test/ruleTest20.ir
+irule -v -F ../test/ruleTest20.ir
 
+/** remote remote remoteExec with sleep  and   **/
+/****  AFTER ABOUT 30 seconds
+         begin
+         open remote write in andal
+         remote of a remote write in srbbrick1
+         remote of a remote of a remote write in andal
+         close remote write in andal
+         end
+****/
+more        ../test/ruleTest21.ir
+irule -v -F ../test/ruleTest21.ir
+
+/** remote remote remoteExec inside forEach exec  and   **/
+more        ../test/ruleTest22.ir
+irule -v -F ../test/ruleTest22.ir
+
+
+
+/**   **/
 more        ../test/ruleTest.ir
 irule -v -F ../test/ruleTest.ir
 
+/**   **/
 more        ../test/ruleTest.ir
 irule -v -F ../test/ruleTest.ir
 
