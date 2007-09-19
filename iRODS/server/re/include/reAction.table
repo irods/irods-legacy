@@ -8,9 +8,6 @@ typedef struct {
 
 
 int print_hello(ruleExecInfo_t *c);
-int print_bye(ruleExecInfo_t *c);
-int print_eol(ruleExecInfo_t  *c);
-int print_hello_arg(msParam_t *s, ruleExecInfo_t  *c);  /* void * is always at the end!!! */
 int whileExec(msParam_t* condition, msParam_t* whileBody,
 	      msParam_t* recoverWhileBody, ruleExecInfo_t *rei);
 int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, 
@@ -21,8 +18,12 @@ int remoteExec(msParam_t* hostName, msParam_t* condition, msParam_t* workflow,
 	      msParam_t* recoverWorkFlow, ruleExecInfo_t *rei);
 int forEachExec(msParam_t* list, msParam_t* setOfWFS, msParam_t* recoverSetOfWFS,
 	      ruleExecInfo_t *rei);
+int msiSleep(msParam_t* sec, msParam_t* microsec, ruleExecInfo_t *rei);
 int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
 int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
+int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei);
+int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei);
+
 int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei);
 int sendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei);
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inKVPair,  ruleExecInfo_t *rei);
@@ -70,28 +71,16 @@ int msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 int msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int msiLoadMetadataFromFile(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei);
-int msiSaveBufferToLocalFile(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei);
 
-int msitest1(msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei);
-int msitest2(msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei);
-int msitest3(msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei);
+
 int recover_print_hello(ruleExecInfo_t *c);
-int recover_print_bye(ruleExecInfo_t *c);
-int recover_print_eol(ruleExecInfo_t *c);
-int recover_print_hello_arg(msParam_t *s, ruleExecInfo_t *c);
 
 int recover_msiCreateUser(ruleExecInfo_t *rei);
 int recover_msiCreateCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
-  {"print_bye", 0, (funcPtr) print_bye},
-  {"print_eol", 0, (funcPtr) print_eol},
-  {"print_hello_arg", 1, (funcPtr) print_hello_arg},
   {"msiVacuum", 0, (funcPtr) msiVacuum},
-  {"msitest1", 3, (funcPtr) msitest1},
-  {"msitest2", 3, (funcPtr) msitest2},
-  {"msitest3", 3, (funcPtr) msitest3},
   {"msiGoodFailure", 0, (funcPtr) msiGoodFailure},
   {"msiSetResource", 1,(funcPtr)  msiSetResource},
   {"msiCheckPermission", 1,(funcPtr)  msiCheckPermission},
@@ -100,9 +89,6 @@ microsdef_t MicrosTable[] = {
   {"msiCreateCollByAdmin",2, (funcPtr) msiCreateCollByAdmin},
   {"msiSendMail",3, (funcPtr) msiSendMail},
   {"recover_print_hello", 0, (funcPtr) recover_print_hello},
-  {"recover_print_bye", 0, (funcPtr) recover_print_bye},
-  {"recover_print_eol", 0, (funcPtr) recover_print_eol},
-  {"recover_print_hello_arg", 1, (funcPtr) recover_print_hello_arg},
   {"msiCommit", 0, (funcPtr) msiCommit},
   {"msiRollback", 0, (funcPtr) msiRollback},
   {"msiDeleteCollByAdmin",2, (funcPtr) msiDeleteCollByAdmin},
@@ -161,8 +147,11 @@ microsdef_t MicrosTable[] = {
   {"delayExec",3,(funcPtr) delayExec},
   {"remoteExec",4,(funcPtr) remoteExec},
   {"forEachExec",3,(funcPtr) forEachExec},
+  {"msiSleep",2,(funcPtr) msiSleep},
   {"writeString",2,(funcPtr) writeString},
   {"writeLine",2,(funcPtr) writeLine},
+  {"writeBytesBuf",2,(funcPtr) writeBytesBuf},
+  {"writePosInt",2,(funcPtr) writePosInt},
   {"sendStdoutAsEmail",2,(funcPtr) sendStdoutAsEmail},
   {"msiPrintKeyValPair",2,(funcPtr) msiPrintKeyValPair},
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},
@@ -182,5 +171,4 @@ microsdef_t MicrosTable[] = {
   {"msiGetDataObjAIP", 2, (funcPtr) msiGetDataObjAIP},
   {"msiLoadMetadataFromFile", 2, (funcPtr) msiLoadMetadataFromFile},
   {"msiExportRecursiveCollMeta", 2, (funcPtr) msiExportRecursiveCollMeta },
-  {"msiSaveBufferToLocalFile", 3, (funcPtr) msiSaveBufferToLocalFile },
 

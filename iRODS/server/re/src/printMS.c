@@ -91,3 +91,66 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
 
   return(0);
 }
+
+
+int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
+{
+	char *writeId;
+	char writeStr[LONG_NAME_LEN];
+	int status;
+
+	if (where->inOutStruct != NULL) {
+		writeId = where->inOutStruct;	
+	}
+	else {
+		writeId = where->label;
+	}
+
+	if (inInt->inOutStruct != NULL) {
+		sprintf(writeStr, "%d", parseMspForPosInt (inInt));
+	}
+	else {
+		snprintf(writeStr, LONG_NAME_LEN, "%s", inInt->label);
+	}
+
+	status = _writeString(writeId, writeStr, rei);
+
+	return (status);
+}
+
+
+int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
+{
+	char *writeId;
+	char *writeStr;
+	int status;
+	
+	if (where->inOutStruct != NULL) {
+		writeId = where->inOutStruct;	
+	}
+	else {
+		writeId = where->label;
+	}
+	
+	if (inBuf->inpOutBuf != NULL) {
+		writeStr = (char *) malloc(strlen(inBuf->inpOutBuf->buf) + MAX_COND_LEN);
+		strcpy(writeStr , inBuf->inpOutBuf->buf);
+	}
+	else {
+		writeStr = (char *) malloc(strlen(inBuf->label) + MAX_COND_LEN);
+		strcpy(writeStr , inBuf->label);
+	}
+
+	status = _writeString(writeId, writeStr, rei);
+	
+	if (writeStr != NULL) {
+		free(writeStr);
+	}
+
+	return (status);
+}
+
+
+
+
+

@@ -997,16 +997,34 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
 
   /* #ifdef AAAAA */
   for(i = 0; i < numOfStrArgs; i++) {
-    if (!strcmp(action,"whileExec")||!strcmp(action,"assign") || !strcmp(action,"forExec")
-	|| !strcmp(action,"ifExec") || !strcmp(action,"forEachExec") ) {
+    if (!strcmp(action,"whileExec")||
+	!strcmp(action,"remoteExec")||
+	!strcmp(action,"delayExec")||
+	!strcmp(action,"assign") || 
+	!strcmp(action,"forExec") || 
+	!strcmp(action,"ifExec") || 
+	!strcmp(action,"forEachExec") ) {
       if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) {
 	myArgv[i] = mP;
       }
       else {
+	/* RAJA Sep 19 2007 ***
 	addMsParam(inMsParamArray, args[i], STR_MS_T, strdup (args[i]),
 		   NULL);
 	mP = getMsParamByLabel (inMsParamArray, args[i]);
 	myArgv[i] = mP;
+	***/
+	if (isStarVariable(args[i]) == TRUE ) { 
+	  addMsParam(inMsParamArray, args[i], STR_MS_T, strdup (args[i]), NULL);
+	  mP = getMsParamByLabel (inMsParamArray, args[i]);
+	  myArgv[i] = mP;
+	}
+	else {
+	  getNewVarName(tmpVarName,inMsParamArray);
+	  addMsParam(inMsParamArray, tmpVarName, STR_MS_T, args[i], NULL);
+	  mP = getMsParamByLabel (inMsParamArray, tmpVarName);
+	  myArgv[i] = mP;
+	}
       }
     }
     else if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) {

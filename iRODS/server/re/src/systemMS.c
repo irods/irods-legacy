@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
+#include "execMyRule.h"
 
 int
 fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf, 
@@ -166,7 +167,7 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
 
 }
 
-int forEachExec(msParam_t* list, msParam_t* body, msParam_t* recoverBody,
+int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
 	      ruleExecInfo_t *rei)
 {
 
@@ -176,12 +177,15 @@ int forEachExec(msParam_t* list, msParam_t* body, msParam_t* recoverBody,
   void *value, *restPtr, *inPtr, *buf, *inStructPtr, *msParamStruct ;
   char *typ;
   char *bodyStr;
-  msParam_t *msParam;
+  msParam_t *msParam, *list;
   bytesBuf_t *inBufPtr, *msParamBuf;
   int first = 1;
   int inx;
   char *outtyp;
 
+  list = (msParam_t *) malloc (sizeof (msParam_t));
+  memset (list, 0, sizeof (msParam_t));
+  replMsParam (inlist,list);
   typ = strdup(list->type);
   label = list->label;
   inPtr = list->inOutStruct;
@@ -241,7 +245,10 @@ int forEachExec(msParam_t* list, msParam_t* body, msParam_t* recoverBody,
     msParam->inpOutBuf = msParamBuf;
     msParam->type = typ;
   }
-    
+  /*** 
+       clearMsParamArray (list,1);
+       free(list);
+  ***/
   if (i == NO_VALUES_FOUND)
     return(0);
   return(i);
@@ -350,21 +357,52 @@ int recover_delayExec(msParam_t *actionCall, msParam_t *delayCondition,  ruleExe
 int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
 {
   int i;
+  execMyRuleInp_t execMyRuleInp;
+  msParamArray_t *tmpParamArray, *aParamArray;
+  msParamArray_t *outParamArray = NULL;
+  char tmpStr[LONG_NAME_LEN];
+  /*
   char actionCall[MAX_ACTION_SIZE];  
   char recoveryActionCall[MAX_ACTION_SIZE];  
   char delayCondition[MAX_ACTION_SIZE]; 
   char hostName[MAX_ACTION_SIZE]; 
-
   rstrcpy(hostName, (char *) mPD->inOutStruct,MAX_ACTION_SIZE);
   rstrcpy(delayCondition, (char *) mPA->inOutStruct,MAX_ACTION_SIZE);
   rstrcpy(actionCall, (char *) mPB->inOutStruct,MAX_ACTION_SIZE);
   rstrcpy(recoveryActionCall, (char *) mPC->inOutStruct,MAX_ACTION_SIZE);
   i = _remoteExec(actionCall, recoveryActionCall, delayCondition, hostName, rei);
+  */
+  memset (&execMyRuleInp, 0, sizeof (execMyRuleInp));
+  execMyRuleInp.condInput.len=0;
+  rstrcpy (execMyRuleInp.outParamDesc, ALL_MS_PARAM_KW, LONG_NAME_LEN);
+  /*  rstrcpy (execMyRuleInp.addr.hostAddr, mPD->inOutStruct, LONG_NAME_LEN);*/
+  rstrcpy (tmpStr, (char *) mPD->inOutStruct, LONG_NAME_LEN);
+  i = evaluateExpression(tmpStr, execMyRuleInp.addr.hostAddr, rei);
+  if (i < 0)
+    return(i);
+  snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  mPB->inOutStruct,mPC->inOutStruct);
+  addKeyVal(&execMyRuleInp.condInput,"execCondition",mPA->inOutStruct);
+  
+  tmpParamArray =  (msParamArray_t *) malloc (sizeof (msParamArray_t));
+  memset (tmpParamArray, 0, sizeof (msParamArray_t));
+  i = replMsParamArray (rei->msParamArray,tmpParamArray);
+  if (i < 0) {
+    free(tmpParamArray);
+    return(i);
+  }
+  aParamArray = rei->msParamArray;
+  rei->msParamArray = tmpParamArray;
+  execMyRuleInp.inpParamArray = rei->msParamArray;
+  i = rsExecMyRule (rei->rsComm, &execMyRuleInp,  &outParamArray);
+  carryOverMsParam(outParamArray, aParamArray);
+  rei->msParamArray = aParamArray;
+  clearMsParamArray(tmpParamArray,0);
+  free(tmpParamArray);
   return(i);
 }
 
 
-
+/*****
 int _remoteExec(char *inActionCall, char *recoveryActionCall, 
 	       char *delayCondition,  char *hostName, ruleExecInfo_t *rei)
 {
@@ -414,9 +452,7 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
     return(i);
   }
   
-  /****
   i = rsRemoteRuleExecSubmit(rei->rsComm, ruleSubmitInfo, &ruleExecId);
-  ***/
   if (packedReiAndArgBBuf != NULL) {
     clearBBuf (packedReiAndArgBBuf);
     free (packedReiAndArgBBuf);
@@ -430,7 +466,7 @@ int _remoteExec(char *inActionCall, char *recoveryActionCall,
   i = pushStack(&delayStack,tmpStr);
   return(i);
 }
-
+******/
 int recover_remoteExec(msParam_t *actionCall, msParam_t *delayCondition, char *hostName, ruleExecInfo_t *rei)
 {
 
@@ -530,3 +566,15 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
 
 }
 
+int
+msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
+{
+
+  int sec, microsec;
+
+  sec = atoi(secPtr->inOutStruct);
+  microsec = atoi(microsecPtr->inOutStruct);
+
+  rodsSleep (sec, microsec);
+  return(0);
+}

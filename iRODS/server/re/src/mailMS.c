@@ -84,7 +84,7 @@ int sendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_
   if ((mP = getMsParamByLabel (rei->msParamArray, "ruleExecOut")) == NULL) 
     return(NO_VALUES_FOUND);
   myExecCmdOut = mP->inOutStruct;
-  getNewVarName(tmpVarName);
+  getNewVarName(tmpVarName,rei->msParamArray);
   addMsParam(rei->msParamArray, tmpVarName,  STR_MS_T,myExecCmdOut->stdoutBuf.buf , NULL);
   mP = getMsParamByLabel (rei->msParamArray, tmpVarName);
   i = msiSendMail(xtoAddr, xsubjectLine, mP, rei);
