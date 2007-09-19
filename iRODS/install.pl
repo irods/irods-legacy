@@ -1464,8 +1464,15 @@ sub test64Addr {
 }
 
 sub runTests {
+
 #
-# First run the clients/icommands/test scripts
+# Add the icommands bin directory to the path in case it is not there.
+#
+    $oldPath=$ENV{'PATH'};
+    $ENV{'PATH'}="$startDir/clients/icommands/bin:$oldPath";
+
+#
+# First, run the clients/icommands/test scripts
 #
     print "chdir'ing to: clients/icommands/test\n";
     chdir "clients/icommands/test" || 
