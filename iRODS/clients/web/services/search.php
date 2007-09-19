@@ -38,11 +38,11 @@ if (empty($parent->account->pass))
 $options=array();
 if ( (isset($_REQUEST['name'])) && (strlen(trim($_REQUEST['name']))>0) )
   $options['name']=$_REQUEST['name'];
-if ( isset($_REQUEST['descdentOnly']) && ($_REQUEST['descdentOnly']==true) ) 
-  $options['descendentOnly']=true;
+if ( isset($_REQUEST['descendantOnly']) && ($_REQUEST['descendantOnly']=='true') ) 
+  $options['descendantOnly']=true;
 else
-  $options['descendentOnly']=false;
-if ( isset($_REQUEST['recursive']) && ($_REQUEST['recursive']==true) ) 
+  $options['descendantOnly']=false;
+if ( isset($_REQUEST['recursive']) && ($_REQUEST['recursive']=='true') ) 
   $options['recursive']=true;
 else
   $options['recursive']=false;
@@ -77,6 +77,7 @@ try {
     $filestats['typename']=$file->stats->typename;
     $filestats['type']=1;
     $filestats['dirname']=$file->getParentPath();
+    $filestats['ruri']=$file->toURI();
     $arr['que_results'][]=$filestats;
   }
     

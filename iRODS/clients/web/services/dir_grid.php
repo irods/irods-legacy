@@ -64,6 +64,7 @@ function listFileJson($dir, $start=0, $limit=500, $orderby=array())
       $childstats['ctime']=$childdir->stats->ctime;
       $childstats['owner']=$childdir->stats->owner;
       $childstats['type']=0;
+      $childstats['ruri']=$childdir->toURI();
       $arr['que_results'][]=$childstats;
     }
     
@@ -83,6 +84,7 @@ function listFileJson($dir, $start=0, $limit=500, $orderby=array())
       $childstats['rescname']=$childfile->stats->rescname;
       $childstats['typename']=$childfile->stats->typename;
       $childstats['type']=1;
+      $childstats['ruri']=$childfile->toURI();
       $arr['que_results'][]=$childstats;
     }
     $_SESSION['acct_manager']->updateAcct($dir->account);

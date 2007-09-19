@@ -11,7 +11,8 @@ if (isset($_REQUEST['ruri']))
   $ruri=$_REQUEST['ruri'];
 else
 {
-  die('Expected RODS URI not found');
+  header("HTTP/1.0 404 Not Found");
+  die("Expected RODS URI not found!");
 } 
 
 $force_download=false;
@@ -107,7 +108,42 @@ try {
   
   
 } catch (Exception $e) {
-  die ("Exception Caught:".$e->getMessage());
+  if ($e instanceof RODSException)
+  {
+    header("HTTP/1.0 500 Internal Server Error");
+    header('Content-Type: text/html');
+    header("Content-Length: ");
+    echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">'.
+         '<HTML><HEAD>'.
+         '<TITLE>500 Internal Server Error (iRODS Error: '.
+            $e->getCode().' '.$e->getCodeAbbr().')</TITLE>'.
+         '</HEAD><BODY>'.
+         '<H1>iRODS Error:'.$e->getCode().'</H1>'.
+         "$e".'<P>'.
+         '<HR>'.
+         '<ADDRESS>'.
+             ' iRODS Server at '.$acct->host.
+             ' Port: '.$acct->port.
+             ' User: '.$acct->user.
+         '</ADDRESS>'.
+         '</BODY></HTML>';
+    die ();
+  }
+  else
+  {
+    header("HTTP/1.0 500 Internal Server Error");
+    header('Content-Type: text/html');
+    header("Content-Length: ");
+    echo '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">'.
+         '<HTML><HEAD>'.
+         '<TITLE>500 Internal Server Error</TITLE>'.
+         '</HEAD><BODY>'.
+         '<H1>Internal Server Error:'.$e->getCode().'</H1>'.
+         "$e".'<P>'.
+         '<HR>'.
+         '</BODY></HTML>';
+    die ();
+  }
 }
 
 function get_http_mdate($filestats)

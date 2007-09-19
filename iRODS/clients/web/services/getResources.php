@@ -28,6 +28,8 @@ if (empty($collection->account->pass))
 }  
 
 try {
+
+/*
 $conn= new RODSConn($collection->account);
 $conn->connect();
 $resources=$conn->getResources();
@@ -35,6 +37,13 @@ $response=array('success'=> true,'totalCount'=>count($resources),
   'que_results'=> $resources);
 echo json_encode($response);
 $conn->disconnect();
+*/
+
+$que=new ProdsQuery($collection->account);
+$resources=$que->getResources();
+$response=array('success'=> true,'totalCount'=>count($resources),
+  'que_results'=> $resources);
+echo json_encode($response);
 
 } catch (Exception $e) {
   $response=array('success'=> false,'errmsg'=> $e->getMessage(),'errcode'=> $e->getCode());
