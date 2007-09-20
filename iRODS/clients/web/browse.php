@@ -117,7 +117,7 @@
   </div>
   
   <div id="search-dlg" style="visibility:hidden;">
-    <div id= "search-dlg-hd" class="x-dlg-hd">Advanced Search (Under developement!!!)</div>
+    <div id= "search-dlg-hd" class="x-dlg-hd">Advanced Search</div>
     <div id= "search-dlg-bd" class="x-dlg-bd" style="padding:10px;background:#c4d2e3;border:0 none;">
     </div>
   </div>
