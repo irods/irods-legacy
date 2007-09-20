@@ -223,7 +223,7 @@ function RODSFileSearchDialog()
                     width:200,
                     name: 'mtime_since_now',
                     fieldLabel: 'Modified Within',
-                    emptyText: 'Select one from the list',
+                    emptyText: 'Any Time',
                     forceSelection:true,
                     store: new Ext.data.SimpleStore({
                         fields: ['name', 'val'],
@@ -236,7 +236,8 @@ function RODSFileSearchDialog()
                                  ['One Year', 365*24*3600]
                                ]  
                     }),          
-                    displayField: 'name', 
+                    displayField: 'name',
+                    valueField: 'val', 
                     mode: 'local',
                     triggerAction: 'all',
                     editable: false         
@@ -327,6 +328,7 @@ function RODSFileSearchDialog()
                     emptyText: 'Name',
                     store: this.metaname_store,
                     displayField: 'metaname',
+                    valueFiled: 'metaname',
                     triggerAction: 'all'
                 });
         this.adv_search_flds['metaop'][i]=new Ext.form.ComboBox({
@@ -336,6 +338,7 @@ function RODSFileSearchDialog()
                     emptyText: 'Op',
                     store: this.metaop_store,
                     displayField: 'opname',
+                    valueFiled: 'opname',
                     triggerAction: 'all'
                 });  
         this.adv_search_flds['metaval'][i]=new Ext.form.TextField({
@@ -386,7 +389,7 @@ function RODSFileSearchDialog()
     	});
       this.adv_search_dlg.addButton("Search",function(){
         this.adv_search_dlg.hide();
-        Ext.Msg.alert('In Progress', 'Searching Now (fake)...')
+        this.shwoAdvSearchResult(null, this.ruri);
       }, this);
       this.adv_search_dlg.addKeyListener(27, this.result_dlg.hide, this.result_dlg); // ESC can also close the dialog
       
@@ -411,6 +414,60 @@ function RODSFileSearchDialog()
       this.adv_search_flds['cwd'].setValue(
         _ruri.substr(_ruri.indexOf('/')));
       this.adv_search_dlg.show(html_elem);
+    },
+    
+    shwoAdvSearchResult: function (html_elem, _ruri)
+    {
+      this.ruri=_ruri;
+      this.result_dlg.show(html_elem);
+      
+      this.ds.baseParams = {ruri:_ruri};
+      
+      this.partial_name=Ext.util.Format.trim(this.adv_search_flds['name'].getValue());
+      if (this.partial_name.length > 0)
+        this.ds.baseParams.name=this.partial_name;
+      
+      if (this.adv_search_flds['mtime_since_now'].getValue())
+      {
+        var now_date=new Date();
+        var now=now_date.getTime()/1000;
+        this.ds.baseParams.smtime= now-this.adv_search_flds['mtime_since_now'].getValue();
+        this.ds.baseParams.emtime= now;
+      }
+      
+      var owner=Ext.util.Format.trim(this.adv_search_flds['owner'].getValue());
+      if (owner.length > 0) 
+        this.ds.baseParams.owner=owner; 
+      
+      var rsrc=Ext.util.Format.trim(this.adv_search_flds['rsrc'].getValue());
+      if (rsrc.length > 0) 
+        this.ds.baseParams.rsrcname=rsrc; 
+      
+      if (this.adv_search_flds['descendentOnly'].getValue()===true)
+      {
+        this.ds.baseParams.recursive=true;    
+        this.ds.baseParams.descendantOnly=true;
+      }
+      
+      var metadatas=new Array();
+      for (var i=0; i<this.adv_search_flds['metaname'].length; i++)
+      {
+        var meta={};
+        meta['name']=Ext.util.Format.trim(this.adv_search_flds['metaname'][i].getValue());
+        meta['op']=Ext.util.Format.trim(this.adv_search_flds['metaop'][i].getValue());
+        meta['val']=Ext.util.Format.trim(this.adv_search_flds['metaval'][i].getValue());
+        if ( (meta['name'].length>0) && (meta['op'].length>0) && 
+             (meta['val'].length>0) )
+        {
+          metadatas.push(meta);
+        }
+      }
+      if (metadatas.length>0)
+      {
+        this.ds.baseParams.metadata=escape(Ext.util.JSON.encode(metadatas));
+      }
+      
+      this.ds.load({params:{start:0, limit:100}});
     },
     
     refresh: function()
@@ -841,6 +898,7 @@ function RODSFileViewer()
       this.setTabMain();
       this.layout.getRegion("center").showPanel("fileviewer-tab-main");
       this.file_dlg.show(html_el);
+      this.file_dlg.toFront();
     },
     
     isFileImage : function ()
