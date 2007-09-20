@@ -140,7 +140,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/regExpMatch.o \
 		$(svrReObjDir)/ruleAdminMS.o \
 		$(svrReObjDir)/systemMS.o \
-		$(svrReObjDir)/testMS.o
+		$(svrReObjDir)/testMS.o \
+		$(svrReObjDir)/reDataRel.o
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 endif
