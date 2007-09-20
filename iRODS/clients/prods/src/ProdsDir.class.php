@@ -232,9 +232,13 @@ class ProdsDir extends ProdsPath
   * query metadata, and find matching files.
   * @param array $terms an assositive array of search conditions, supported ones are:
   *     'name' (string) - partial name of the target (file or dir)
-  *     'descendentOnly' (boolean) - whether to search among this directory's decendents. default is false.
-  *     'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendentOnly' is true
-  *     'meta' (array of RODSMeta) - array of metadata.
+  *     'descendantOnly' (boolean) - whether to search among this directory's decendents. default is false.
+  *     'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendantOnly' is true
+  *     'smtime'         (int)     - start last-modified-time in unix timestamp. The specified time is included in query, in other words the search can be thought was "mtime >= specified time"
+  *     'emtime'         (int)     - end last-modified-time in unix timestamp. The specified time is not included in query, in other words the search can be thought was "mtime < specified time"
+  *     'owner'          (string)  - owner name of the file
+  *     'rescname'       (string)  - resource name of the file
+  *     'metadata' (array of RODSMeta) - array of metadata.
   * @param int &$total_count This value (passed by reference) returns the total potential count of search results
   * @param int $start starting index of search results.
   * @param int $limit up to how many results to be returned. If negative, give all results back.
@@ -243,6 +247,7 @@ class ProdsDir extends ProdsPath
   *      'size'      - size of the file
   *      'mtime'     - last modified time
   *      'ctime'     - creation time
+  *      'owner'     - owner of the file
   *      'typename'  - file/data type 
   *      'rescname'  - resource name
   *      'dirname'   - directory/collection name for the file
@@ -328,7 +333,7 @@ class ProdsDir extends ProdsPath
     
     $select=new RODSGenQueSelFlds(array_keys($flds), array_values($flds));
     
-    $descendentOnly=false;
+    $descendantOnly=false;
     $recursive=false;
     $condition=new RODSGenQueConds();
     foreach($terms as $term_key => $term_val)
@@ -338,8 +343,18 @@ class ProdsDir extends ProdsPath
         case 'name':
           $condition->add('COL_DATA_NAME', 'like', '%'.$term_val.'%');
           break;
-        
-        case 'meta':
+        case 'smtime':
+          $condition->add('COL_D_MODIFY_TIME', '>=', $term_val);
+          break;
+        case 'emtime':
+          $condition->add('COL_D_MODIFY_TIME', '<', $term_val);
+          break;
+        case 'owner':
+          $condition->add('COL_D_OWNER_NAME', '=', $term_val);
+          break;  
+        case 'rescname':
+          $condition->add('COL_D_RESC_NAME', '=', $term_val);
+        case 'metadata':
           $meta_array=$term_val;
           foreach($meta_array as $meta)
           {
@@ -348,13 +363,17 @@ class ProdsDir extends ProdsPath
               $op=$meta->op;
             else
               $op='=';
-            $condition->add('COL_META_DATA_ATTR_VALUE', $op, $meta->value);
+            if ($op=='like')
+              $value='%'.$meta->value.'%';
+            else
+              $value=$meta->value;  
+            $condition->add('COL_META_DATA_ATTR_VALUE', $op, $value);
           }
           break;
         
-        case 'descendentOnly':
+        case 'descendantOnly':
           if (true===$term_val)
-            $descendentOnly=true;
+            $descendantOnly=true;
           break;
         
         case 'recursive':
@@ -369,7 +388,7 @@ class ProdsDir extends ProdsPath
       } 
     }
     
-    if ($descendentOnly===true) 
+    if ($descendantOnly===true) 
     {
       if ($recursive===true)
         $condition->add('COL_COLL_NAME', 'like', $this->path_str.'%');
@@ -405,203 +424,4 @@ class ProdsDir extends ProdsPath
     }
     return $found;
   }
-  
- /**
-  * This function is still under developement!!!!
-  * query metadata, and find matching directoris.
-  * @param array $terms an assositive array of search conditions, supported ones are:
-  *     'name' (string) - partial name of the target (file or dir)
-  *     'descendentOnly' (boolean) - whether to search among this directory's decendents. default is false.
-  *     'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendentOnly' is true
-  *     'meta' (array of RODSMeta) - array of metadata.
-  * @param int &$total_count This value (passed by reference) returns the total potential count of search results
-  * @param int $start starting index of search results.
-  * @param int $limit up to how many results to be returned. If negative, give all results back.
-  * @param array $sort_flds associative array with following keys:
-  *      'name'      - name of the file or dir
-  *      'mtime'     - last modified time
-  *      'ctime'     - creation time
-  *     The results are sorted by specified array keys.
-  *     The possible array value must be boolean: true stands for 'asc' and false stands for 'desc', default is 'asc'  
-  * @return array of ProdsPath objects (ProdsFile or ProdsDir).
-  */
-  public function findDirs(array $terms, &$total_count, $start=0, $limit=-1,
-    array $sort_flds=array())
-  {
-    $flds=array("COL_COLL_NAME"=>NULL,"COL_COLL_ID"=>NULL,
-        "COL_COLL_OWNER_NAME"=>NULL,"COL_COLL_OWNER_ZONE"=>NULL,
-        "COL_COLL_CREATE_TIME"=>NULL,"COL_COLL_MODIFY_TIME"=>NULL,
-        "COL_COLL_COMMENTS"=>NULL);
-    
-    foreach($sort_flds as $sort_fld_key => $sort_fld_val)
-    {
-      switch($sort_fld_key)
-      {
-        case 'name':
-          if ($sort_fld_val===false)
-            $flds['COL_COLL_NAME']='order_by_desc';
-          else
-            $flds['COL_COLL_NAME']='order_by_asc';
-          break;
-        
-        case 'mtime':
-          if ($sort_fld_val===false)
-            $flds['COL_COLL_MODIFY_TIME']='order_by_desc';
-          else
-            $flds['COL_COLL_MODIFY_TIME']='order_by_asc';
-          break; 
-        
-        case 'ctime':
-          if ($sort_fld_val===false)
-            $flds['COL_COLL_CREATE_TIME']='order_by_desc';
-          else
-            $flds['COL_COLL_CREATE_TIME']='order_by_asc';
-          break; 
-        
-        default:
-          throw new RODSException("Sort field name '$sort_fld_key' is not valid",
-            'PERR_USER_INPUT_ERROR');
-          break;
-      }
-    }    
-    
-    $select=new RODSGenQueSelFlds(array_keys($flds), array_values($flds));
-    
-    $descendentOnly=false;
-    $recursive=false;
-    $condition=new RODSGenQueConds();
-    foreach($terms as $term_key => $term_val)
-    {
-      switch ($term_key)
-      {
-        case 'name':
-          $condition->add('COL_DATA_NAME', 'like', '%'.$term_val.'%');
-          break;
-        
-        case 'meta':
-          $meta_array=$term_val;
-          foreach($meta_array as $meta)
-          {
-            $condition->add('COL_META_DATA_ATTR_NAME', '=', $meta->name);
-            if (isset($meta->op))
-              $op=$meta->op;
-            else
-              $op='=';
-            $condition->add('COL_META_DATA_ATTR_VALUE', $op, $meta->value);
-          }
-          break;
-        
-        case 'descendentOnly':
-          if (true===$term_val)
-            $descendentOnly=true;
-          break;
-        
-        case 'recursive':
-          if (true===$term_val)
-            $recursive=true;
-          break;
-          
-        default:
-          throw new RODSException("Term field name '$term_key' is not valid",
-            'PERR_USER_INPUT_ERROR');
-          break;
-      } 
-    }
-    
-    if ($descendentOnly===true) 
-    {
-      if ($recursive===true)
-        $condition->add('COL_COLL_NAME', 'like', $this->path_str.'%');
-      else
-        $condition->add('COL_COLL_NAME', '=', $this->path_str);    
-    }
-    
-    $conn = RODSConnManager::getConn($this->account);
-    $results = $conn->query($select, $condition, $start, $limit);
-    RODSConnManager::releaseConn($conn); 
-    
-    $total_count=$results->getTotalCount();
-    $result_values=$results->getValues();
-    $found=array();
-    for($i=0; $i<$results->getNumRow(); $i++)
-    {
-      $stats=new RODSFileStats(
-          $result_values['COL_DATA_NAME'][$i],
-          $result_values['COL_DATA_SIZE'][$i],
-          $result_values['COL_D_OWNER_NAME'][$i],
-          $result_values['COL_D_MODIFY_TIME'][$i],
-          $result_values['COL_D_CREATE_TIME'][$i],
-          $result_values['COL_D_DATA_ID'][$i],
-          $result_values['COL_DATA_TYPE_NAME'][$i],
-          $result_values['COL_D_RESC_NAME'][$i]);
-      
-      if ($result_values['COL_COLL_NAME'][$i]=='/')
-        $full_path='/'.$result_values['COL_DATA_NAME'][$i];
-      else
-        $full_path=$result_values['COL_COLL_NAME'][$i].'/'.
-          $result_values['COL_DATA_NAME'][$i];
-      $found[]=new ProdsFile($this->account, $full_path, false, $stats);
-    }
-    return $found;
-  }
-  
-  public function findDir(array $terms, $start=0, $limit=500,
-    array $sort_fld=array())
-  {
-    if ($type==0)
-      $select=array("COL_COLL_NAME");
-    else
-      $select=array("COL_COLL_NAME","COL_DATA_NAME");
-    
-    $condition=array();
-    foreach($terms as $term_key => $term_val)
-    {
-      switch ($term_key)
-      {
-        case 'name':
-          if ($type==0)
-            $condition[]=new RODSQueryCondition
-              ("COL_COLL_NAME",'%'.$term_val.'%', 'like');
-          else
-            $condition[]=new RODSQueryCondition
-              ("COL_DATA_NAME",'%'.$term_val.'%', 'like');
-          break;
-        
-        case 'meta':
-          $meta_array=$term_val;
-          foreach($meta_array as $meta)
-          {
-            $condition[]=new RODSQueryCondition
-              ("COL_META_DATA_ATTR_NAME",$meta->name);
-            $condition[]=new RODSQueryCondition
-              ("COL_META_DATA_ATTR_VALUE",$meta->value,$meta->op);
-          }
-          break;
-        
-        case 'descendentOnly':
-          if (false!==$term_val)
-          {
-            if ($type==0)
-              $condition[]=new RODSQueryCondition
-                ("COL_COLL_PARENT_NAME", $this->path_str.'%', 'like');
-            else
-              $condition[]=new RODSQueryCondition
-                ("COL_COLL_NAME", $this->path_str.'%', 'like');
-          }
-          break;
-          
-        default:
-          break;
-      } 
-    }
-    $conn = RODSConnManager::getConn($this->account);
-    $results = $conn->genQuery($select, $condition, array(), $start, $limit, 
-      false );
-    RODSConnManager::releaseConn($conn); 
-    
-    
-    
-    return $ret_val;
-  }
-  
 }
