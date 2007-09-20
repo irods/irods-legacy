@@ -388,7 +388,6 @@ function RODSFileSearchDialog()
     	        titlebar: false
     	});
       this.adv_search_dlg.addButton("Search",function(){
-        this.adv_search_dlg.hide();
         this.shwoAdvSearchResult(null, this.ruri);
       }, this);
       this.adv_search_dlg.addKeyListener(27, this.result_dlg.hide, this.result_dlg); // ESC can also close the dialog
@@ -408,45 +407,56 @@ function RODSFileSearchDialog()
       this.ds.load({params:{start:0, limit:100}});
     },
     
-    showAdvSearchDialog: function (html_elem, _ruri)
+    showAdvSearchDialog: function (html_elem, _ruri, _partial_name, _descendantOnly)
     {
       this.ruri=_ruri;
       this.adv_search_flds['cwd'].setValue(
         _ruri.substr(_ruri.indexOf('/')));
+        
+      this.adv_search_flds['name'].setValue(_partial_name);
+      this.adv_search_flds['descendentOnly'].setValue(_descendantOnly);  
       this.adv_search_dlg.show(html_elem);
     },
     
     shwoAdvSearchResult: function (html_elem, _ruri)
     {
+      var has_option=false;
       this.ruri=_ruri;
-      this.result_dlg.show(html_elem);
-      
-      this.ds.baseParams = {ruri:_ruri};
       
       this.partial_name=Ext.util.Format.trim(this.adv_search_flds['name'].getValue());
       if (this.partial_name.length > 0)
+      {
         this.ds.baseParams.name=this.partial_name;
-      
+        has_option=true;
+      }
       if (this.adv_search_flds['mtime_since_now'].getValue())
       {
         var now_date=new Date();
         var now=now_date.getTime()/1000;
         this.ds.baseParams.smtime= now-this.adv_search_flds['mtime_since_now'].getValue();
         this.ds.baseParams.emtime= now;
+        has_option=true;
       }
       
       var owner=Ext.util.Format.trim(this.adv_search_flds['owner'].getValue());
       if (owner.length > 0) 
+      {
         this.ds.baseParams.owner=owner; 
+        has_option=true;
+      }
       
       var rsrc=Ext.util.Format.trim(this.adv_search_flds['rsrc'].getValue());
       if (rsrc.length > 0) 
+      {
         this.ds.baseParams.rsrcname=rsrc; 
+        has_option=true;
+      }
       
       if (this.adv_search_flds['descendentOnly'].getValue()===true)
       {
         this.ds.baseParams.recursive=true;    
         this.ds.baseParams.descendantOnly=true;
+        has_option=true;
       }
       
       var metadatas=new Array();
@@ -465,9 +475,15 @@ function RODSFileSearchDialog()
       if (metadatas.length>0)
       {
         this.ds.baseParams.metadata=escape(Ext.util.JSON.encode(metadatas));
+        has_option=true;
       }
       
-      this.ds.load({params:{start:0, limit:100}});
+      if (has_option!=false)
+      {
+        this.result_dlg.show(html_elem);
+        this.ds.baseParams.ruri=_ruri;
+        this.ds.load({params:{start:0, limit:100}});
+      }
     },
     
     refresh: function()
@@ -1698,8 +1714,10 @@ function RodsBrowser(inipath, _ssid)
                     text: 'Advance Search',
                     scope: this,
                     handler: function (evnt){
+                      var partial_name=Ext.util.Format.trim(this.getRawValue());
                       this.fileSearchDlg.showAdvSearchDialog(
-                        this.getEl(), rpath_grid);
+                        this.getEl(), rpath_grid, partial_name, 
+                        this.fileSearchDlg.descendantOnly);
                     }
                   })
                 ) 
