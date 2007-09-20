@@ -47,6 +47,25 @@ if ( isset($_REQUEST['recursive']) && ($_REQUEST['recursive']=='true') )
 else
   $options['recursive']=false;
 
+if ( isset($_REQUEST['smtime']) ) 
+  $options['smtime']=(int)($_REQUEST['smtime']);
+if ( isset($_REQUEST['emtime']) ) 
+  $options['emtime']=(int)($_REQUEST['emtime']);
+if ( (isset($_REQUEST['owner'])) && (strlen($_REQUEST['owner'])>0) )
+  $options['owner']=($_REQUEST['owner']);
+if ( (isset($_REQUEST['rescname'])) && (strlen($_REQUEST['rescname'])>0) )
+  $options['rescname']=(int)($_REQUEST['rescname']);
+if ( (isset($_REQUEST['metadata'])) && (strlen($_REQUEST['metadata'])>0) )
+{
+  $metadata_arr=json_decode(urldecode($_REQUEST['metadata']),true);
+  $options['metadata']=array();
+  foreach($metadata_arr as $meta)
+  {
+    $options['metadata'][]=new RODSMeta(
+      $meta['name'],$meta['val'],NULL,NULL,$meta['op']);
+  }
+} 
+
 if (count($options)<=0)
 {
   $response=array('success'=> false,'log'=>'Search option not specified');
