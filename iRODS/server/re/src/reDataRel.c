@@ -6,7 +6,7 @@
 #include "reDataObjOpr.h"
 #include "reGlobalsExtern.h"
 #include "reDataRel.h"
-
+   
 #ifdef GJK3
 extern struct UserDefinedMetadata
 {
@@ -23,8 +23,9 @@ extern int countUserDefinedMetadata;
  * Gets pipe separated metadata AVUs for a data object.
  * 
  */
-int
-msiGetDataObjChksumsTimeStampsFromAVU(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+int msiGetDataObjChksumsTimeStampsFromAVU(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
+     // int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
+     // int msiGetDataObjChksumsTimeStampsFromAVU(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -63,17 +64,19 @@ msiGetDataObjChksumsTimeStampsFromAVU(msParam_t *inpParam, msParam_t *outParam, 
    
    printf ("GJK-P P.1.0.0. in msiGetDataObjChksumsTimeStampsFromAVU(), GJK msiGetDataObjChksumsTimeStampsFromAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU\n");  
    
+   return 0;
+
    // does NOT work !!! rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status, "GJK msiGetDataObjChksumsTimeStampsFromAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU");
    
    rsComm = rei->rsComm;
    
-   /* parse inpParam1 */
-   rei->status = parseMspForCollInp (inpParam, &collInpCache, &outCollInp, 0);
+   /* parse queryParam */
+   rei->status = parseMspForCollInp (queryParam, &collInpCache, &outCollInp, 0);
    
 
    if (rei->status < 0) {
      rodsLog (LOG_ERROR, &rsComm->rError, rei->status,
-	      "GJK msiGetDataObjChksumsTimeStampsFromAVU: input inpParam1 error. status = %d", rei->status);
+	      "GJK msiGetDataObjChksumsTimeStampsFromAVU: input queryParam error. status = %d", rei->status);
      return (rei->status);
    }
    
@@ -214,7 +217,7 @@ msiGetDataObjChksumsTimeStampsFromAVU(msParam_t *inpParam, msParam_t *outParam, 
    }
    
    //   sprintf(strOut, "#1\n#2\n\n#3 lines gjk\n");
-   i = fillStrInMsParam (outParam, strOut);  // MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+   i = fillStrInMsParam (genQueryOutParam, strOut);  // MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
    // fillBuffInParam
    
    //return(i);

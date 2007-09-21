@@ -115,7 +115,7 @@ endif
 
 # re
 ifdef RULE_ENGINE
-CFLAGS +=	-DRULE_ENGINE
+CFLAGS +=	-DRULE_ENGINE -Wall
 SVR_RE_OBJS =	\
 		$(svrReObjDir)/extractAvuMS.o \
 		$(svrReObjDir)/genQueryMS.o \

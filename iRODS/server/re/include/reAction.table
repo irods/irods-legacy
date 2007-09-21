@@ -1,5 +1,3 @@
-
-
 typedef struct {
   char action[MAX_ACTION_SIZE];
   int numberOfStringArgs;
@@ -32,6 +30,7 @@ int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
 int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
 	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
+int msiGetDataObjChksumsTimeStampsFromAVU(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 		 msParam_t* queryOutParam, ruleExecInfo_t *rei);
@@ -158,6 +157,7 @@ microsdef_t MicrosTable[] = {
   {"assign",2,(funcPtr) assign},
   {"ifExec",5,(funcPtr) ifExec},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
+  {"msiGetDataObjChksumsTimeStampsFromAVU",2,(funcPtr) msiGetDataObjChksumsTimeStampsFromAVU},
   {"msiExecGenQuery",2,(funcPtr) msiExecGenQuery},
   {"msiMakeQuery",3,(funcPtr) msiMakeQuery},
   {"msiExecCmd",6,(funcPtr) msiExecCmd},
@@ -170,5 +170,4 @@ microsdef_t MicrosTable[] = {
   {"msiGetCollectionPSmeta", 2, (funcPtr) msiGetCollectionPSmeta},
   {"msiGetDataObjAIP", 2, (funcPtr) msiGetDataObjAIP},
   {"msiLoadMetadataFromFile", 2, (funcPtr) msiLoadMetadataFromFile},
-  {"msiExportRecursiveCollMeta", 2, (funcPtr) msiExportRecursiveCollMeta },
-
+  {"msiExportRecursiveCollMeta", 2, (funcPtr) msiExportRecursiveCollMeta},
