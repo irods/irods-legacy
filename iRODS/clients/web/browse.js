@@ -1,3 +1,8 @@
+function getCurrentRURI()
+{
+  return browser.getCurrentRURI();
+}
+
 function removeLoadingMasks()
 {
   var loading = Ext.get('loading');
@@ -1043,6 +1048,10 @@ function RodsBrowser(inipath, _ssid)
     
     gotoRURI : function (new_ruri){
       this.allGoTo(new_ruri);
+    },
+    
+    getCurrentRURI : function () {
+      return rpath_grid;
     },
     
     init : function (){ 
