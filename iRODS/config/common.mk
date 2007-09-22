@@ -40,6 +40,7 @@ DEPEND +=	$(wildcard $(libCoreIncDir)/*.h) \
 		$(wildcard $(svrApiIncDir)/*.h) \
 		$(wildcard $(svrDriversIncDir)/*.h) \
 		$(wildcard $(svrIcatIncDir)/*.h) \
+		$(wildcard $(svrReIncDir)/*.h) \
 		$(wildcard $(buildDir)/modules/*/*/include/*.h)
 endif
 
