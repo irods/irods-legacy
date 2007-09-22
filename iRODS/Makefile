@@ -48,7 +48,7 @@ REACTION_MODULE_TABLE = microservices/include/microservices.table
 #
 # Principal Targets
 #
-.PHONY: all lib libs modules server clients $(MODULES) reAction.h icommands fuse
+.PHONY: all lib libs modules server clients $(MODULES) icommands fuse reaction
 .PHONY: clean distclean mostlyclean maintainer-clean
 .PHONY: cleanlib cleanclients cleanserver cleanmodules
 .PHONY: config server_ldflags client_ldflags server_cflags client_cflags
@@ -57,6 +57,7 @@ REACTION_MODULE_TABLE = microservices/include/microservices.table
 .PHONY: install-strip uninstall
 .PHONY: installdirs installcheck
 .PHONY: TAGS info dvi html pdf ps
+MAKEFLAGS += --no-print-directory
 
 
 
@@ -85,7 +86,7 @@ libs:	modules
 
 
 # Build the servers
-server:	reaction server_ldflags server_cflags libs modules
+server:	$(svrReIncDir)/reAction.h server_ldflags server_cflags libs modules
 	@echo "Server"
 	@echo "------------------------------------------------------------------------"
 	@MODULE_LDFLAGS=`cat $(SERVER_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
@@ -122,9 +123,6 @@ fuse:	client_ldflags client_cflags libs modules
 
 # Build the modules
 modules: client_ldflags server_ldflags client_cflags server_cflags $(MODULES)
-
-reAction.h:	reaction
-	@true
 
 ifdef MODULES
 $(MODULES):
@@ -166,7 +164,10 @@ client_cflags:
 		perl $(configDir)/joinlines.pl > $(CLIENT_CFLAGS_TMP)
 
 # Build the microservices table based upon enabled modules
-reaction:	$(REACTION_MASTERS) $(DEPEND)
+reaction:	$(svrReIncDir)/reAction.h
+	@true
+
+$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS)
 	@echo "Build reAction.h"
 	@echo "------------------------------------------------------------------------"
 	@echo "  Header..."
@@ -211,7 +212,10 @@ server_cflags:
 client_cflags: 
 	@touch $(CLIENT_CFLAGS_TMP)
 
-reaction:	$(REACTION_MASTERS) $(DEPEND)
+reaction:	$(svrReIncDir)/reAction.h
+	@true
+
+$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS)
 	@echo "Build reAction.h"
 	@echo "------------------------------------------------------------------------"
 	@echo "  Header..."
