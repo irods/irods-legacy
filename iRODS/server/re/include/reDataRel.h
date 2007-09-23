@@ -9,3 +9,4 @@ typedef struct
 
 int intGetDataObjChksumsTimeStampsFromAVU (collInp_t* outCollInp, UserDefinedMetadata_t* aAVUarray, int* countUserDefinedMetadata, char* strOut, ruleExecInfo_t *rei);
 int iFindChkSumDateAvuMetadata(int status, genQueryOut_t *genQueryOut, char *fullName, UserDefinedMetadata_t aAVUarray[], int *countUserDefinedMetadata);
+int iAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1, int *iStatus);

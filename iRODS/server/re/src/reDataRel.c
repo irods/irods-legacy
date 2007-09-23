@@ -8,41 +8,25 @@
 #include "reGlobalsExtern.h"
 #include "reDataRel.h"
 
-
 int
-iAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, int status)
+iAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1, int *iStatus)
 {
   modAVUMetadataInp_t modAVUMetadataInp;
-  char mytime[256];
-  time_t t1;
+  char mytime[256], *chrPtr1;
 
-  // mam check sum hodnotu
-  // nemam check sum cas
-  // insert check sum cas in Unix number
-  /*Call the function to insert metadata here. */
+  chrPtr1 = strrchr (objPath, '/');
+  printf
+    ("GJK-P P.1.0.1. in intGetDataObjChksumsTimeStampsFromAVU(), chrPtr1=(%s), objPath=(%s)\n",
+     chrPtr1, objPath);
+  if (chrPtr1 != NULL && *chrPtr1 == '/'
+      && ((chrPtr1 - objPath) <=
+	  (strlen (objPath - 1))))
+    *chrPtr1 = 0;		// replace '/' in /myzone/foo/'
+  printf
+    ("GJK-P P.1.0.2. in intGetDataObjChksumsTimeStampsFromAVU(), chrPtr1=(%s), objPath=(%s)\n",
+     chrPtr1, objPath);
 
   memset (&modAVUMetadataInp, 0, sizeof (modAVUMetadataInp));
-  /*
-     rstrcpy (dataObjInp.objPath, path, MAX_NAME_LEN);
-     objStatus = rsObjStat (rsComm, &dataObjInp, &rodsObjStatOut);
-
-     if (objStatus) {
-
-
-     switch (objStatus) {
-     case 1:
-     modAVUMetadataInp.arg1 = "-d"; // dsts == filr 
-     break;
-     case 2:
-     modAVUMetadataInp.arg1 = "-c"; // collection
-     break;
-     default:
-     rodsLog (LOG_ERROR, "loadMetadataFromFile error: Unsupported Object Type");
-     return (INVALID_OBJECT_TYPE);
-     break;
-     }
-   */
-
 
   modAVUMetadataInp.arg0 = "add";
   modAVUMetadataInp.arg1 = "-d";	// data
@@ -53,32 +37,30 @@ iAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, int status)
     printf
     ("GJK-P P.123.0.1. in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm\n",
      objPath);
-  (void) time (&t1);
   (void) snprintf (mytime, 255, "%d", (int) t1);
   modAVUMetadataInp.arg4 = mytime;
   modAVUMetadataInp.arg5 = "UnixTimeInSeconds";
-  status = rsModAVUMetadata (rsComm, &modAVUMetadataInp);
+  *iStatus = rsModAVUMetadata (rsComm, &modAVUMetadataInp);
   (void)
     printf
     ("GJK-P P.123.0.2. in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm\n",
      objPath);
-  if (0 > status)
+  if (0 > *iStatus)
     (void) rodsLog (LOG_ERROR,
 		    "iAddChkSumDateAvuMetadata() rsModAVUMetadata failed objPath=(%s)",
 		    objPath);
   else
     (void)
       printf
-      ("GJK-P P.10.0.3. in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), sComm, status=%d\n",
-       objPath, status);
+      ("GJK-P P.10.0.3. in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), sComm, *iStatus=%d\n",
+       objPath, *iStatus);
   (void)
     printf
-    ("GJK-P P.123.0.3. OK in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm, status=%d\n",
-     objPath, status);
+    ("GJK-P P.123.0.3. OK in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm, *iStatus=%d\n",
+     objPath, *iStatus);
 
-  return (0);
+  return (*iStatus);
 }
-
 
 int
 iFindChkSumDateAvuMetadata (int status, genQueryOut_t * genQueryOut,
@@ -186,6 +168,50 @@ iFindChkSumDateAvuMetadata (int status, genQueryOut_t * genQueryOut,
   return (iErr);
 }
 
+int
+msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
+				       msParam_t * outParam1,
+				       ruleExecInfo_t * rei)
+{
+  rsComm_t *rsComm;
+  time_t t1;
+  collInp_t collInpCache, *ptrInpColl;
+  int iErr = 0, i = 0, iStatus;
+  int iCountUserDefinedMetadata = 0;
+  char strOut[MAX_NAME_LEN * MAX_NAME_LEN];
+
+  /* For testing mode when used with irule --test */
+  RE_TEST_MACRO
+    ("RE_TEST_MACRO, begin of msiAddDataObjChksumsTimeStampsToAVU");
+
+  printf
+    ("GJK-P P.1.0.0. in msiAddDataObjChksumsTimeStampsToAVU(), GJK msiAddDataObjChksumsTimeStampsToAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU\n");
+
+  rsComm = rei->rsComm;
+
+  /* parse inpParam11 */
+  rei->status = parseMspForCollInp (inpParam1, &collInpCache, &ptrInpColl, 0);
+
+  if (rei->status < 0)
+    {
+      rodsLog (LOG_ERROR,
+	       "msiGetDataObjChksumsTimeStampsFromAVU(),  input inpParam1 error. status = %d",
+	       rei->status);
+      return (rei->status);
+    }
+
+  (void) time (&t1);
+  iErr = iAddChkSumDateAvuMetadata (rei->rsComm, ptrInpColl->collName, t1, &iStatus);
+  (void) snprintf(strOut, 255, "|MD5checkSumDataStamp|%d|UnixTimeInSeconds|\n", (int) t1);
+  i = fillStrInMsParam (outParam1, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+
+  printf
+    ("GJK-P P.111.0.7. in msiGetDataObjChksumsTimeStampsFromAVU(), GJK msiGetDataObjChksumsTimeStampsFromAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU, iErr=%d, iCountUserDefinedMetadata=%d\n",
+     iErr, iCountUserDefinedMetadata);
+
+  return (iErr);
+}
+
 /*
  * Get all Dates of Performed Checksum Operations from metadata AVUs for a given iRods data object.
  * 
@@ -268,8 +294,6 @@ intGetDataObjChksumsTimeStampsFromAVU (collInp_t * ptrInpColl,
   int i1a[10], i1b[10], i2a[10], iI = 0, iErr = 0, printCount = 0;
   genQueryOut_t *genQueryOut;
 
-
-  /* Make sure input is a collection */
   chrPtr1 = strrchr (ptrInpColl->collName, '/');
   printf
     ("GJK-P P.1.0.1. in intGetDataObjChksumsTimeStampsFromAVU(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
@@ -287,7 +311,6 @@ intGetDataObjChksumsTimeStampsFromAVU (collInp_t * ptrInpColl,
       rodsLog (LOG_NOTICE,
 	       "GJK intGetDataObjChksumsTimeStampsFromAVU: input (%s) is data.",
 	       ptrInpColl->collName);
-      //iI=iAddChkSumDateAvuMetadata (rei->rsComm, ptrInpColl->collName, v3, iI);
     }
   else
     {
