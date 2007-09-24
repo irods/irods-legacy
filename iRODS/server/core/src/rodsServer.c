@@ -196,16 +196,17 @@ serverMain (char *logDir)
     listen (svrComm.sock, MAX_LISTEN_QUE);
 
     FD_ZERO(&sockMask);
-    FD_SET(svrComm.sock, &sockMask);
 
     rodsLog (LOG_NOTICE, "rodsServer version %s is up", RODS_REL_VERSION);
 
     while (1) {		/* infinite loop */
+        FD_SET(svrComm.sock, &sockMask);
         while ((numSock = select (svrComm.sock + 1, &sockMask, 
 	  (fd_set *) NULL, (fd_set *) NULL, (struct timeval *) NULL)) < 0) {
 
             if (errno == EINTR) {
 		rodsLog (LOG_NOTICE, "serverMain: select() interrupted");
+                FD_SET(svrComm.sock, &sockMask);
 		continue;
 	    } else {
 		rodsLog (LOG_NOTICE, "serverMain: select() error, errno = %d",
