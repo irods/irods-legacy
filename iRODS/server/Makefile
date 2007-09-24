@@ -10,6 +10,7 @@
 #	server		build the servers
 # 	clean		clean out all object files
 #
+# To see the gcc command lines as executed, change "@$(CC)" to "$(CC)".
 
 ifndef buildDir
 buildDir =	$(CURDIR)/..
