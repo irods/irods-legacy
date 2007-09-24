@@ -1,5 +1,7 @@
 /* reDataRel.h */
 
+#define NAME_MAX	128 /* XXXXX take me out. just to get around compile error */
+
 typedef struct
 {
   char attribute[NAME_MAX+1];

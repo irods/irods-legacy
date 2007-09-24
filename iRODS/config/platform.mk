@@ -12,6 +12,11 @@ CC=cc
 LDR=cc
 PERL=perl
 
+ifeq ($(OS_platform), solaris_pc_platform)
+OS_platform=solaris_platform
+hardware_platform=i86_hardware
+endif
+
 ifeq ($(OS_platform), sunos_platform)
 # CC=gcc
 CC=gcc
@@ -126,9 +131,16 @@ MY_CFLAG+= -DADDR_64BITS
 endif
 
 MY_CFLAG+= -D$(OS_platform)
+ifdef hardware_platform
+MY_CFLAG+= -D$(hardware_platform)
+endif
 
 ifdef PARA_OPR
 MY_CFLAG+= -DPARA_OPR=1
+endif
+
+ifeq ($(CC), gcc)
+MY_CFLAG+=-Wall
 endif
 
 ifeq ($(OS_platform), solaris_platform)

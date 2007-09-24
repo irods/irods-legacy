@@ -945,7 +945,7 @@ int freePointer, irodsProt_t irodsProt)
 
       case PACK_DOUBLE_TYPE:
         /* align inPtr to 8 bytes boundary. Will not align outPtr */
-#if defined(osx_platform)
+#if defined(osx_platform) || (defined(solaris_platform) && defined(i86_hardware))
         /* osx does not align */
         *inPtr = alignInt (*inPtr);
 #else
@@ -2398,7 +2398,7 @@ unpackNatDoubleToOutPtr (void **inPtr, void **outPtr, int numElement)
     }
     /* align inPtr to 8 bytes boundary. Will not align outPtr */
 
-#if defined(osx_platform)
+#if defined(osx_platform) || (defined(solaris_platform) && defined(i86_hardware))
         /* osx does not align */
     *outPtr = alignInt (*outPtr);
 #else
@@ -2427,7 +2427,7 @@ packItem_t *myPackedItem)
 
     /* align inPtr to 8 bytes boundary. Will not align outPtr */
 
-#if defined(osx_platform)
+#if defined(osx_platform) || (defined(solaris_platform) && defined(i86_hardware))
         /* osx does not align */
     *outPtr = tmpDoublePtr = (rodsLong_t*)alignInt (*outPtr);
 #else

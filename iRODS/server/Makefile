@@ -116,11 +116,7 @@ endif
 
 # re
 ifdef RULE_ENGINE
-ifeq ($(CC), gcc)
-CFLAGS +=	-DRULE_ENGINE -Wall
-else
 CFLAGS +=       -DRULE_ENGINE
-endif
 
 SVR_RE_OBJS =	\
 		$(svrReObjDir)/extractAvuMS.o \
