@@ -29,6 +29,7 @@ SVR_INCLUDES =	-I$(svrCoreIncDir) -I$(svrReIncDir) -I$(svrIcatIncDir) \
 # change (in case it is needed); so 'gmake clean' shouldn't be needed
 configMk =	$(configDir)/config.mk
 DEPEND =	$(configMk)
+REACTION_DEPEND = $(configMk)
 
 ifndef IRODS_QUICK_BUILD
 # Depend upon configuration file changes and changes to any
@@ -42,5 +43,10 @@ DEPEND +=	$(wildcard $(libCoreIncDir)/*.h) \
 		$(wildcard $(svrIcatIncDir)/*.h) \
 		$(wildcard $(svrReIncDir)/*.h) \
 		$(wildcard $(buildDir)/modules/*/*/include/*.h)
+REACTION_DEPEND +=	 \
+		$(filter-out $(svrReIncDir)/reAction.h,$(wildcard $(svrReIncDir)/*.h)) \
+		$(wildcard $(buildDir)/modules/*/microservices/include/*.h) \
+		$(wildcard $(buildDir)/modules/*/microservices/include/microservices*.header) \
+		$(wildcard $(buildDir)/modules/*/microservices/include/microservices*.table)
 endif
 
