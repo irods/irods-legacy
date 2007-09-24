@@ -1,7 +1,11 @@
-		Function and file naming conventions in iRODS
-				Sept 2007
+Function and file naming conventions in iRODS
+Sept 2007
+------------------------------------------------------------------------
 
-All naming conventions are recommendations only.
+	** All naming conventions are recommendations only. **
+
+
+
 
 
 Function names
