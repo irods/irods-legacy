@@ -67,7 +67,7 @@ int testRename(rsComm_t *rsComm, char *id, char *newName) {
    return(chlCommit(rsComm));
 }
 
-int testLogin(rsComm_t *rsComm, char *User, char *pw) {
+int testLogin(rsComm_t *rsComm, char *User, char *pw, char *pw1) {
    int intId;
    int status, stat2;
    rcComm_t *Conn;
@@ -86,7 +86,7 @@ int testLogin(rsComm_t *rsComm, char *User, char *pw) {
      rstrcpy (Conn->clientUser.userName, privUser, NAME_LEN);
 #endif
 
-   status = clientLoginWithPassword(Conn, pw);  /* first login as self */
+   status = clientLoginWithPassword(Conn, pw1);  /* first login as self */
    if (status ==0) {
       rstrcpy (Conn->clientUser.userName, User, NAME_LEN);
       status = clientLoginWithPassword(Conn, pw);  /* then try other user */
@@ -723,7 +723,7 @@ main(int argc, char **argv) {
    }
 
    if (strcmp(argv[1],"login")==0) {
-      status = testLogin(Comm, argv[2], argv[3]);
+      status = testLogin(Comm, argv[2], argv[3], argv[4]);
       didOne=1;
    }
 
