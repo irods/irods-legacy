@@ -8,8 +8,197 @@
 #include "reGlobalsExtern.h"
 #include "reDataRel.h"
 
+int msiChkRechkRecompChkSum4DatObj (msParam_t * inpParam1,
+				       msParam_t * outParam1,
+				       ruleExecInfo_t * rei)
+{
+  rsComm_t *rsComm;
+  collInp_t collInpCache, *ptrInpColl;
+  int iErr = 0, i = 0;
+  int iCountUserDefinedMetadata = 0;
+  char strOut[MAX_NAME_LEN * MAX_NAME_LEN];
+
+  /* For testing mode when used with irule --test */
+  RE_TEST_MACRO
+    ("RE_TEST_MACRO, begin of msiAddDataObjChksumsTimeStampsToAVU");
+
+  printf
+    ("GJK-P P.1.0.0. in msiAddDataObjChksumsTimeStampsToAVU(), GJK msiAddDataObjChksumsTimeStampsToAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU\n");
+
+  rsComm = rei->rsComm;
+
+  (void) mamChksSumDatumNeboHodnotu (rsComm, "/tempZone/home/rods/loopTest/submit.pl", (time_t) i, rei); // test blbost sobota
+
+  printf
+    ("GJK-P P.991.0.0. in msiAddDataObjChksumsTimeStampsToAVU(), GJK msiAddDataObjChksumsTimeStampsToAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU\n");
+
+  /* parse inpParam11 */
+  rei->status = parseMspForCollInp (inpParam1, &collInpCache, &ptrInpColl, 0);
+
+  if (rei->status < 0)
+    {
+      rodsLog (LOG_ERROR,
+	       "msiGetDataObjChksumsTimeStampsFromAVU(),  input inpParam1 error. status = %d",
+	       rei->status);
+      return (rei->status);
+    }
+
+  //   sprintf(strOut, "#1\n#2\n\n#3 lines gjk\n");
+  i = fillStrInMsParam (outParam1, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+  // fillBuffInParam
+
+  printf
+    ("GJK-P P.111.0.9. in msiGetDataObjChksumsTimeStampsFromAVU(), GJK msiGetDataObjChksumsTimeStampsFromAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU, iCountUserDefinedMetadata=%d\n",
+     iCountUserDefinedMetadata);
+
+  return (iErr);
+}
+
+int mamChksSumDatumNeboHodnotu (rsComm_t * rsComm, char* strFullDataPath, time_t tTime, ruleExecInfo_t * rei)
+{
+  int iCountUserDefinedMetadata=0, iTotalAVUs=0;
+  long lMax=0;
+  UserDefinedMetadata_t aAVUarray[1024];
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut;
+  sqlResult_t *chksumStr, *modTimVal, *creaTimVal;
+  char *objPath;
+  bytesBuf_t *mybuf;
+  int status=0, i=0, iErr=0;
+  char *tmpChksumStr, *strModTime, *strCreaTime;
+  char collQCond[MAX_NAME_LEN];
+  char strOut[MAX_NAME_LEN * MAX_NAME_LEN];
+  time_t t1;
+
+  printf ("GJK-P P.994.0.1. in mamChksSumDatumNeboHodnotu(), strFullDataPath=(%s)\n", strFullDataPath);
+
+  iErr =
+    intGetDataObjChksumsTimeStampsFromAVU (strFullDataPath, aAVUarray,
+					   &iCountUserDefinedMetadata, strOut,
+					   rei);
+
+  iTotalAVUs = iCountUserDefinedMetadata;
+  for (i=0; i < iTotalAVUs; i++) {
+    if (lMax < aAVUarray[i].value) lMax = aAVUarray[i].value;
+  }
+  tTime = 0;
+  if (iTotalAVUs > 0 && ((tTime - lMax) <= 0)) {
+    // mam uz AVU a je novejsi
+    printf ("GJK-P P.994.7.1. in mamChksSumDatumNeboHodnotu(), iTotalAVUs=%d, lMax=%d, Time=%d\n", 
+	    iTotalAVUs, lMax, tTime);
+    return (0);
+  }
+  else {
+    // mam uz AVU a je starsi
+    // prepocti chksumu, porovnej a register novy cas
+    (void) time (&t1);
+    // CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME    
+    iErr = intAddChkSumDateAvuMetadata (rei->rsComm, strFullDataPath, t1, &status);
+    printf ("GJK-P P.994.7.1. in mamChksSumDatumNeboHodnotu(), iTotalAVUs=%d, lMax=%d, tTime=%ld, iErr=%d, t1=%ld\n",
+	    iTotalAVUs, lMax, tTime, iErr, (long) t1);
+    return (iErr);
+  }
+
+  /* Get all collections (recursively) under our input collection */
+  /* Prepare query */
+  memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+  genAllInCollQCond (strFullDataPath, collQCond);
+  
+  addInxIval (&genQueryInp.selectInp, COL_D_DATA_CHECKSUM, 1);
+  addInxIval (&genQueryInp.selectInp, COL_D_MODIFY_TIME, 1);
+  addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);
+  
+  genQueryInp.maxRows = MAX_SQL_ROWS;
+  
+  /* ICAT query for subcollections */
+  rei->status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+  
+  printf ("GJK-P P.994.0.2. in mamChksSumDatumNeboHodnotu(), rei->status=(%d), strFullDataPath=(%s), iCountUserDefinedMetadata=(%d)\n", rei->status, strFullDataPath, iCountUserDefinedMetadata);
+
+  if (rei->status != CAT_NO_ROWS_FOUND) {
+      printf ("GJK-P P.994.3.3. in mamChksSumDatumNeboHodnotu(), rei->status=(%d), genQueryOut->rowCnt=(%d), strFullDataPath=(%s)\n", rei->status, genQueryOut->rowCnt, strFullDataPath);
+
+    if (1 != genQueryOut->rowCnt) {
+      printf ("GJK-P P.994.4.4. in mamChksSumDatumNeboHodnotu(), rei->status=(%d), genQueryOut->rowCnt=(%d), strFullDataPath=(%s)\n", rei->status, genQueryOut->rowCnt, strFullDataPath);
+      // return(-1); // not enough lines);
+    }
+
+    if ((chksumStr = getSqlResultByInx (genQueryOut, COL_D_DATA_CHECKSUM))  == NULL) {
+      rodsLog (LOG_ERROR,
+	       "printLsLong: getSqlResultByInx for COL_D_DATA_CHECKSUM failed GJK-(%s)", objPath);
+      // return (UNMATCHED_KEY_OR_INDEX);
+    }
+    else {
+      tmpChksumStr = &chksumStr->value[chksumStr->len * i];
+      printf ("GJK-P P.994.5.5. in mamChksSumDatumNeboHodnotu(),  msiGJKExportRecursiveCollMeta(), objPath=(%s), tmpChksumStr=(%s)\n", objPath, tmpChksumStr);
+    }
+
+    if ((modTimVal = getSqlResultByInx (genQueryOut, COL_D_MODIFY_TIME))  == NULL) {
+      rodsLog (LOG_ERROR,
+	       "printLsLong: getSqlResultByInx for COL_D_MODIFY_TIME failed GJK-(%s)", objPath);
+      // return (UNMATCHED_KEY_OR_INDEX);
+    }
+    else {
+      strModTime = &modTimVal->value[modTimVal->len * i];
+      printf ("GJK-P P.994.5.5. in mamChksSumDatumNeboHodnotu(),  msiGJKExportRecursiveCollMeta(), objPath=(%s), tmpChksumStr=(%s)\n", objPath, tmpChksumStr);
+    }
+    
+    if ((creaTimVal = getSqlResultByInx (genQueryOut, COL_D_CREATE_TIME))  == NULL) {
+      rodsLog (LOG_ERROR,
+	       "printLsLong: getSqlResultByInx for COL_D_CREATE_TIME failed GJK-(%s)", objPath);
+      // return (UNMATCHED_KEY_OR_INDEX);
+    }
+    else {
+      strCreaTime = &creaTimVal->value[creaTimVal->len * i];
+      printf ("GJK-P P.994.5.5. in mamChksSumDatumNeboHodnotu(),  msiGJKExportRecursiveCollMeta(), objPath=(%s), tmpChksumStr=(%s)\n", objPath, tmpChksumStr);
+    }
+
+    printf ("GJK-P P.994.6.6. in mamChksSumDatumNeboHodnotu(), rei->status=(%d), genQueryOut->rowCnt=(%d), strFullDataPath=(%s)\n", rei->status, genQueryOut->rowCnt, strFullDataPath);
+    
+    if (iCountUserDefinedMetadata > 0)
+      { // mam check sum cas
+	// nedelej nic
+	// kdy rozdil casu neni moc velky
+	
+	printf
+	  ("GJK-P P.10.0.1. in mamChksSumDatumNeboHodnotu(), mam check sum cas a tedy nedelej nic, after GJKgetDataObjPSmeta((%s), (%s), rsComm\n",
+	   objPath, mybuf);
+      }
+    else
+      {	// nemam check sum cas
+	printf
+	  ("GJK-P P.10.0.2. in mamChksSumDatumNeboHodnotu(), after GJKgetDataObjPSmeta((%s), (%s), rsComm\n",
+	   objPath, mybuf);
+	if (strlen (tmpChksumStr) == strlen ("6d75827809277a1d50c0ed742764a82c")
+	    && 1 == 1)
+	  {
+	    // mam check sum hodnotu
+	    // nemam check sum cas
+	    // insert check sum cas in Unix number
+	    /*Call the function to insert metadata here. */
+	  }
+	else
+	  {				// nemam check sum hodnotu
+	    // vypocti check sum hodnotu
+	    // instert check sum hodnotu do iCat
+	    // insert check sum cas == ted
+	    printf
+	      ("GJK-P P.10.0.4. in mamChksSumDatumNeboHodnotu(), after GJKgetDataObjPSmeta((%s), (%s), rsComm\n",
+	       objPath, mybuf);
+	  }
+	printf
+	  ("GJK-P P.10.0.5. in mamChksSumDatumNeboHodnotu(), after GJKgetDataObjPSmeta((%s), (%s), rsComm\n",
+	   objPath, mybuf);
+      }
+    
+     printf ("GJK-P P.10.0.6. in mamChksSumDatumNeboHodnotu(), after GJKgetDataObjPSmeta((%s), (%s), rsComm\n", objPath, mybuf);  
+  }
+
+  printf ("GJK-P P.994.0.8. in mamChksSumDatumNeboHodnotu()\n");
+}
+
 int
-iAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1, int *iStatus)
+intAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1, int *iStatus)
 {
   modAVUMetadataInp_t modAVUMetadataInp;
   char mytime[256], *chrPtr1;
@@ -35,28 +224,36 @@ iAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1, int *iSt
 
   (void)
     printf
-    ("GJK-P P.123.0.1. in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm\n",
+    ("GJK-P P.123.0.1. in intAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm\n",
      objPath);
+
+  if ((long)t1 < 190509697L || (long)t1 > 9190509697L)
+    {
+      (void) rodsLog (LOG_ERROR,
+		      "The Unix time (%d) is out of reasonable bounds for intAddChkSumDateAvuMetadata() for iRods data object (%s) ",
+		      (int)t1, objPath);
+      return (-1);
+    }
   (void) snprintf (mytime, 255, "%d", (int) t1);
   modAVUMetadataInp.arg4 = mytime;
   modAVUMetadataInp.arg5 = "UnixTimeInSeconds";
   *iStatus = rsModAVUMetadata (rsComm, &modAVUMetadataInp);
   (void)
     printf
-    ("GJK-P P.123.0.2. in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm\n",
+    ("GJK-P P.123.0.2. in intAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm\n",
      objPath);
   if (0 > *iStatus)
     (void) rodsLog (LOG_ERROR,
-		    "iAddChkSumDateAvuMetadata() rsModAVUMetadata failed objPath=(%s)",
+		    "intAddChkSumDateAvuMetadata() rsModAVUMetadata failed objPath=(%s)",
 		    objPath);
   else
     (void)
       printf
-      ("GJK-P P.10.0.3. in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), sComm, *iStatus=%d\n",
+      ("GJK-P P.10.0.3. in intAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), sComm, *iStatus=%d\n",
        objPath, *iStatus);
   (void)
     printf
-    ("GJK-P P.123.0.3. OK in iAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm, *iStatus=%d\n",
+    ("GJK-P P.123.0.3. OK in intAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm, *iStatus=%d\n",
      objPath, *iStatus);
 
   return (*iStatus);
@@ -168,8 +365,7 @@ iFindChkSumDateAvuMetadata (int status, genQueryOut_t * genQueryOut,
   return (iErr);
 }
 
-int
-msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
+int msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
 				       msParam_t * outParam1,
 				       ruleExecInfo_t * rei)
 {
@@ -189,6 +385,11 @@ msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
 
   rsComm = rei->rsComm;
 
+  (void) mamChksSumDatumNeboHodnotu (rsComm, "/tempZone/home/rods/loopTest/submit.pl", (time_t) i, rei); // test blbost sobota
+
+  printf
+    ("GJK-P P.991.0.0. in msiAddDataObjChksumsTimeStampsToAVU(), GJK msiAddDataObjChksumsTimeStampsToAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU\n");
+
   /* parse inpParam11 */
   rei->status = parseMspForCollInp (inpParam1, &collInpCache, &ptrInpColl, 0);
 
@@ -201,7 +402,7 @@ msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
     }
 
   (void) time (&t1);
-  iErr = iAddChkSumDateAvuMetadata (rei->rsComm, ptrInpColl->collName, t1, &iStatus);
+  iErr = intAddChkSumDateAvuMetadata (rei->rsComm, ptrInpColl->collName, t1, &iStatus);
   (void) snprintf(strOut, 255, "|MD5checkSumDataStamp|%d|UnixTimeInSeconds|\n", (int) t1);
   i = fillStrInMsParam (outParam1, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
 
@@ -217,8 +418,7 @@ msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
  * 
  */
 
-int
-msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
+int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
 				       msParam_t * outParam1,
 				       ruleExecInfo_t * rei)
 {
@@ -433,8 +633,8 @@ intGetDataObjChksumsTimeStampsFromAVU (collInp_t * ptrInpColl,
     }
 
   printf
-    ("GJK-P P.14.1.15. in intGetDataObjChksumsTimeStampsFromAVU(), strAbsPath=(%s), ptrInpColl->collName=(%s), iErr=%d\n",
-     strAbsPath, ptrInpColl->collName, iErr);
+    ("GJK-P P.14.1.15. in intGetDataObjChksumsTimeStampsFromAVU(), strAbsPath=(%s), ptrInpColl->collName=(%s), iErr=%d, *iTotalAVUs=%d\n",
+     strAbsPath, ptrInpColl->collName, iErr, *iTotalAVUs);
 
-  return (iErr);
+  return (*iTotalAVUs);
 }
