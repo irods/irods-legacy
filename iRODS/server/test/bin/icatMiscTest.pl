@@ -81,6 +81,10 @@ sub mkfiles {
     }
 }
 
+# Set the environment variable for the config dir since
+# this is now one more level down.
+$ENV{'irodsConfigDir'}="../../config";
+
 # GenQuery options
 runCmd(0, "test_genq gen7 i");
 runCmd(0, "test_genq gen7 i 1 10");
@@ -138,7 +142,11 @@ runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
 runCmd(0, "iadmin moduser $User2 password 123");
 #$ENV{'irodsUserName'}=$User2; 
-runCmd(0, "test_chl login $User2 123");
+$TMP=`grep ADMIN_PW= ../../../install/install.config`;
+$ix = index($TMP,"\"");
+$ix2 = rindex($TMP, "\"");
+$APW=substr($TMP, $ix+1, $ix2-$ix-1);
+runCmd(0, "test_chl login $User2 123 $APW");
 #delete $ENV{'irodsUserName'};
 
 # Temporary password

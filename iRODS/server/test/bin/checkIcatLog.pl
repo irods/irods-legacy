@@ -14,11 +14,11 @@
 # DBMS, and anytime we make changes.
 
 $onlyZero=1;
-$srcFiles="../src/icat/icatHighLevelRoutines.c ../src/icat/icatGeneralQuery.c ../src/icat/icatMidLevelRoutines.c ../src/icat/icatGeneralUpdate.c";
+$srcFiles="../../icat/src/icatHighLevelRoutines.c ../../icat/src/icatGeneralQuery.c ../../icat/src/icatMidLevelRoutines.c ../../icat/src/icatGeneralUpdate.c";
 
 if ($#ARGV < 0) {
 # No filename, use default
-    $fileName=`ls -t -C1 ../log/rodsLog* | head -1`;
+    $fileName=`ls -t -C1 ../../log/rodsLog* | head -1`;
     chomp($fileName);
 }
 else {

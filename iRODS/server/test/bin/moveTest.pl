@@ -29,7 +29,6 @@ sub runCmd {
     }
 }
 
-
 runCmd(1, "ls > foo1");
 runCmd(1, "ls > foo1234");
 
@@ -46,6 +45,10 @@ runCmd(0, "imkdir t2");
 
 runCmd(1, "irm -f foo1234");
 runCmd(1, "irm -f foo_abcdefg");
+
+# Set the environment variable for the config dir since
+# this is now one more level down.
+$ENV{'irodsConfigDir'}="../../config";
 
 $testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /tempZone/home/rods/d1/d234 1 | grep -v NOTICE | grep -v Completed";
 runCmd(0, $testCmd);
