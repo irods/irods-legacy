@@ -69,35 +69,45 @@ to build server/re/include/reAction.h.  That file contains:
 	* The table entries for each microservice module.
 	* reAction.footer
 
-Each module that provides microservices must include two files in its
-microservices/include directory:
+There are two ways to add a microservice:
 
-	microservices.header
-	microservices.table
+	1. For system microservices:
+		* Edit reAction.header to add function prototypes
+		* Edit reAction.table to add table initializations
 
-The header file is typically one line with a #include of the module's own
-include file providing function prototypes for the microservice functions.
-Here's a typical microservices.header:
+	2.  For module microservices:
+		* Create MODNAME/microservices/include/microservices.header.
+		* Edit this to add function prototypes.
+		* Create MODNAME/microservices/include/microservices.table.
+		* Edit this to add table initializations.
+
+Function prototypes declare the C microservice function.  While these
+can be added to the above files directly, authors are encouraged to use
+a separate include file and just add a #include of that file.  For instance,
+here's a typical microservices.header file for a module:
 
 	// Sample module microservices
 	#include "sampleMS.h"
 
-The table file contains a C array initialization line for each of the
-module's microservice functions.  Here's a typical microservices.table:
+The reAction.table and each module's microservices.table file contains a
+C array initialization listing all available microservices.  Each line in
+the initialization looks like this:
 
 	// Sample module microservices
 	{ "sample", 2, (funcPtr) msiSample },
 
-Each line adds one microservice.  There are three values:  (1) the service
-name, (2) the number of arguments, and (3) the function name.
+There are three values, in order:
 
-The service name can be string using letters, numbers, and underbar.  It
-should be descriptive and need not match the microservice function name.
+	1.  The service name is the user-visible name of the microservice.
+	    It is a string using letters, numbers, and underbar.  It
+	    should be descriptive and need not match the microservice
+	    function name.
 
-The argument count is the number of msParam_t arguments for the function.
-It does not include the ruleExecInfo_t argument.
+	2.  The argument count is the number of msParam_t arguments for the
+	    function.  It does not include the ruleExecInfo_t argument.
 
-The function name is a pointer to the C function.
+	3.  The function name is a pointer to the C function for the
+	    microservice.
 
 
 
