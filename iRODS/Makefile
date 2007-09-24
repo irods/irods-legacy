@@ -21,6 +21,7 @@ include config/common.mk
 
 
 
+
 #
 # Varibles
 #
@@ -57,6 +58,8 @@ REACTION_MODULE_TABLE = microservices/include/microservices.table
 .PHONY: install-strip uninstall
 .PHONY: installdirs installcheck
 .PHONY: TAGS info dvi html pdf ps
+.PHONY: test_client_cflags test_client_ldflags
+.PHONY: test_server_cflags test_server_ldflags test_flags
 MAKEFLAGS += --no-print-directory
 
 
@@ -64,7 +67,7 @@ MAKEFLAGS += --no-print-directory
 
 
 # Build everything
-all:	libs modules server clients tests
+all:	reaction libs modules server clients tests
 	@true
 
 
@@ -86,7 +89,7 @@ libs:	modules
 
 
 # Build the servers
-server:	$(svrReIncDir)/reAction.h server_ldflags server_cflags libs modules
+server:	reaction server_ldflags server_cflags libs modules
 	@echo "Server"
 	@echo "------------------------------------------------------------------------"
 	@MODULE_LDFLAGS=`cat $(SERVER_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
@@ -137,7 +140,9 @@ $(MODULES):
 	@echo " "
 
 cleanmodules:
-	@for i in modules/*; do $(MAKE) -C $$i clean; done
+	@for i in modules/*; do \
+		if [ -f $$i/Makefile ]; then $(MAKE) -C $$i clean; fi; \
+	done
 
 # Get LDFLAGS added by all the modules for the servers
 server_ldflags:
@@ -167,7 +172,7 @@ client_cflags:
 reaction:	$(svrReIncDir)/reAction.h
 	@true
 
-$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS)
+$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS) $(REACTION_DEPEND)
 	@echo "Build reAction.h"
 	@echo "------------------------------------------------------------------------"
 	@echo "  Header..."
@@ -215,7 +220,7 @@ client_cflags:
 reaction:	$(svrReIncDir)/reAction.h
 	@true
 
-$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS)
+$(svrReIncDir)/reAction.h:	$(REACTION_MASTERS) $(REACTION_DEPEND)
 	@echo "Build reAction.h"
 	@echo "------------------------------------------------------------------------"
 	@echo "  Header..."
@@ -228,6 +233,45 @@ $(svrReIncDir)/reAction.h:	$(REACTION_MASTERS)
 	@echo " "
 
 endif
+
+test_server_ldflags:	server_ldflags
+	@echo "Server LDFLAGS"
+	@if [ -s $(SERVER_LDFLAGS_TMP) ]; then \
+		echo "    " `cat $(SERVER_LDFLAGS_TMP)`; \
+	else \
+		echo "    (none)"; \
+	fi
+	@echo " "
+
+test_server_cflags:	server_cflags
+	@echo "Server CFLAGS"
+	@if [ -s $(SERVER_CFLAGS_TMP) ]; then \
+		echo "    " `cat $(SERVER_CFLAGS_TMP)`; \
+	else \
+		echo "    (none)"; \
+	fi
+	@echo " "
+
+test_client_ldflags:	client_ldflags
+	@echo "Client LDLAGS"
+	@if [ -s $(CLIENT_LDFLAGS_TMP) ]; then \
+		echo "    " `cat $(CLIENT_LDFLAGS_TMP)`; \
+	else \
+		echo "    (none)"; \
+	fi
+	@echo " "
+
+test_client_cflags:	client_cflags
+	@echo "Client CFLAGS"
+	@if [ -s $(CLIENT_CFLAGS_TMP) ]; then \
+		echo "    " `cat $(CLIENT_CFLAGS_TMP)`; \
+	else \
+		echo "    (none)"; \
+	fi
+	@echo " "
+
+test_flags:	test_server_cflags test_server_ldflags test_client_cflags test_client_ldflags
+	@true
 
 
 
@@ -271,8 +315,11 @@ TAGS:
 clean:
 	@echo "Clean"
 	@echo "------------------------------------------------------------------------"
+	@echo "Cleaning temp files..."
 	@rm -f $(SERVER_LDFLAGS_TMP) $(CLIENT_LDFLAGS_TMP) $(REACTION_TMP)
 	@rm -f $(SERVER_CFLAGS_TMP) $(CLIENT_CFLAGS_TMP)
+	@echo "Cleaning reAction.h..."
+	@rm -f $(svrReIncDir)/reAction.h
 	@$(MAKE) cleanlib
 	@$(MAKE) cleanclients
 	@$(MAKE) cleanserver
@@ -289,7 +336,6 @@ cleanclients:
 
 distclean:	clean
 	@echo "Cleaning configuration files..."
-	@rm -f $(svrReIncDir)/reAction.h
 	@rm -f config/config.mk
 	@rm -f config/config.mk.orig
 	@rm -f server/config/server.config
