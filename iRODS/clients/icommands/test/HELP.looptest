@@ -200,6 +200,25 @@ irule -v -F ../test/ruleTest21.ir
 more        ../test/ruleTest22.ir
 irule -v -F ../test/ruleTest22.ir
 
+/**  remoteExec  for checksum where checksum is done at location of file **/
+more        ../test/ruleTest23.ir
+irule -v -F ../test/ruleTest23.ir
+
+/**  medata extraction through tag files **/
+icd
+imkdir MDtest
+icd MDtest
+iput ../test/sample.email
+iput ../test/email.tag
+ils -l
+iget email.tag -
+iget sample.email -
+imeta ls -d sample.email
+
+more        ../test/ruleTest24.ir
+irule -F ../test/ruleTest24.ir
+
+imeta ls -d sample.email
 
 
 /**   **/
