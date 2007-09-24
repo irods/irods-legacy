@@ -204,7 +204,7 @@ irule -v -F ../test/ruleTest22.ir
 more        ../test/ruleTest23.ir
 irule -v -F ../test/ruleTest23.ir
 
-/**  medata extraction through tag files **/
+/**  medata extraction through tag files - see onMicroServices.ppt for more info **/
 icd
 imkdir MDtest
 icd MDtest
