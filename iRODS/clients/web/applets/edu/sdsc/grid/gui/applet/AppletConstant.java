@@ -52,12 +52,15 @@ public interface AppletConstant {
     static String APPLET_LOG = IRODS_DIR + FILE_SEPARATOR + "log.txt";
     
     /* Column index for table */
+    // will need to change these when table model changes
+    // find a way to set these as columns are set by the table model
     static int ICON_COLUMN = 0;
-    static int LOCAL_COLUMN = 1;
-    static int REMOTE_COLUMN = 2;
+    static int SOURCE_COLUMN = 1;
+    static int DESTINATION_COLUMN = 2;
     static int FILE_SIZE_COLUMN = 3;
-    static int STATUS_COLUMN = 4;
+    static int STATUS_COLUMN = 3;
     
+    static String IN_PROGRESS_STATUS = "In Progress";
     static String DONE_STATUS = "Done";
     static String FAILED_STATUS = "Failed";
     

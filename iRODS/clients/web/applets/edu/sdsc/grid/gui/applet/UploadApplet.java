@@ -89,7 +89,6 @@ import javax.swing.JOptionPane;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.CookieHandler;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -122,6 +121,9 @@ import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.grid.io.irods.IRODSFile;
 import edu.sdsc.grid.io.irods.IRODSFileSystem;
 import edu.sdsc.grid.io.irods.IRODSAccount;
+
+import netscape.javascript.*;
+
 
 /**
  * Main Applet window. Creates and adds other JPanels to the main Container.
@@ -168,6 +170,9 @@ public class UploadApplet extends JApplet implements AppletConstant {
     //LogPanel logPanel;
     
     static Manager manager = Manager.getInstance();
+    //private JSObject jsWindow;
+    private String currentRuri;
+    
     
     /**
      * Initiation method.
@@ -196,6 +201,15 @@ public class UploadApplet extends JApplet implements AppletConstant {
         }
         */
         
+        JSObject jsWindow = JSObject.getWindow(this);
+        try {
+            Object result = jsWindow.call("getCurrentRURI", null); // call getCurrentRURI function with no arguments
+            currentRuri = result.toString();
+            logger.log("init.JS result.toString(): " + result);
+            //getRuriFromJavaScript();
+        } catch (Exception e) {
+            // no log
+        }
         
         // Get the base web host url which will be used to get the temporary password
         String documentBase = getDocumentBase().toString();
@@ -242,6 +256,7 @@ public class UploadApplet extends JApplet implements AppletConstant {
         if (ruri == null || ruri.trim().equals("")) {
             // what to do?
         }//if
+        logger.log("\n\nApplet init. RURI passed is : " + ruri +  "\n\n");
         
         // go ahead and set the account instance, even if values are null
         // will prompt for user input at end of init method
@@ -256,7 +271,9 @@ public class UploadApplet extends JApplet implements AppletConstant {
         content.setSize(new Dimension(300, 200));
         
         model = new UploadTableModel();
-        dragDropPanel = new DragDropPanel(model, account);
+        //dragDropPanel = new DragDropPanel(model, account);
+        //dragDropPanel = new DragDropPanel(jsWindow, model, account);
+        dragDropPanel = new DragDropPanel(this, model, account);
         optionsPanel = new OptionsPanel();
         
         // set background color
@@ -300,6 +317,8 @@ public class UploadApplet extends JApplet implements AppletConstant {
         
         }//if
         
+        
+
     }//init
 
     
@@ -332,7 +351,12 @@ public class UploadApplet extends JApplet implements AppletConstant {
         OVERWRITE_IF_FILE_SIZE = fileSizeRadio.isSelected();
     }
     
-
+    
+    public String getCurrentRuri() {
+        return currentRuri;
+    }
+    
+    
 }//UploadApplet
 
 

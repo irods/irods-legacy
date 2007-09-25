@@ -53,10 +53,13 @@ import javax.swing.JCheckBox;
 import javax.swing.ImageIcon;
 import javax.swing.JProgressBar;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.Icon;
+import javax.swing.JTextField;
 import java.net.MalformedURLException;
-
-
+import javax.swing.border.EmptyBorder;
+import java.awt.FlowLayout;
+import javax.swing.JTable;
 
 class UploadTableModel extends DefaultTableModel implements AppletConstant {
     private int directoryFileCount;
@@ -75,7 +78,7 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         this.addColumn("");// empty for file/folder icon
         this.addColumn("Local"); // local file or folder
         this.addColumn("Remote"); // local file or folder
-        this.addColumn("Size"); // size of file; folder will show sum of enclosed file sizes
+        //this.addColumn("Size"); // size of file; folder will show sum of enclosed file sizes
         this.addColumn("Status"); // Progress bar
         
         try {
@@ -88,6 +91,9 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     }
  
     public boolean isCellEditable(int row, int col) {
+        if (col == SOURCE_COLUMN || col == DESTINATION_COLUMN)
+            return true;
+        
         return false;
     }
     
@@ -102,6 +108,10 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
             return Icon.class;
         } else if (c == STATUS_COLUMN) {
             return JProgressBar.class;
+        } else if (c == SOURCE_COLUMN) {
+            return JTextField.class;
+        } else if (c == DESTINATION_COLUMN) {
+            return JTextField.class;  
         } else {
             return this.getValueAt(0, c).getClass();
         }
@@ -179,9 +189,14 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     
     public void removeFile(int[] selectedRows) {
         for (int k = selectedRows.length - 1; k >= 0; k--) {
+
+            //this.setValueAt(null, selectedRows[k], SOURCE_COLUMN);
             this.removeRow(selectedRows[k]);
+            
         }
         
+
+            
         // need to save upload queue to log file
         // delete queue log and save files currently in table
         File fileLog = new File(QUEUE_LOG);
@@ -190,8 +205,15 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         fileLog = new File(QUEUE_LOG);
         int rowCount = this.getRowCount();
         
+        JTextField tfSource = null;
+        JTextField tfDestination = null;
+        
         for (int k = 0; k < rowCount; k++) {
-            String filePath = this.getValueAt(k, 1).toString() + "\t" + this.getValueAt(k, 2);                
+            //String filePath = this.getValueAt(k, 1).toString() + "\t" + this.getValueAt(k, 2);                
+            tfSource = (JTextField) this.getValueAt(k, SOURCE_COLUMN);
+            tfDestination = (JTextField) this.getValueAt(k, DESTINATION_COLUMN);
+            String filePath = tfSource.getText() + "\t" + tfDestination.getText();                
+            
             FileOutputStream fos = null;
             
             try {
@@ -209,13 +231,45 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     }
     
     
+    private JTextFieldListener tfListener = new JTextFieldListener();
+    private JTextFieldMouseListener tfMouseListener = new JTextFieldMouseListener();
+     
     private void addFileToTable(File file, String destination) {
-        this.addRow(new Object[] { fileIcon, file.getAbsolutePath(), destination, file.length() + " Bytes", null});
+        JTextField tfSource = new JTextField(file.getAbsolutePath());
+        JTextField tfDestination = new JTextField(destination);
+        tfSource.addFocusListener(tfListener);
+        tfDestination.addFocusListener(tfListener);
+
+        //tfSource.addMouseListener(tfMouseListener);
+        //tfDestination.addMouseListener(tfMouseListener);
+        
+        tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
+        tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
+        tfSource.setDragEnabled(false);
+        tfDestination.setDragEnabled(false);
+        
+        this.addRow(new Object[] { fileIcon, tfSource, tfDestination, null});
     }
     
     private void addDirectoryToTable(File file, String destination) {
-        this.addRow(new Object[] { folderIcon, file.getAbsolutePath(), destination, "", null});
+        
+        JTextField tfSource = new JTextField(file.getAbsolutePath());
+        JTextField tfDestination = new JTextField(destination);
+
+        tfSource.addFocusListener(tfListener);
+        tfDestination.addFocusListener(tfListener);
+
+        //tfSource.addMouseListener(tfMouseListener);
+        //tfDestination.addMouseListener(tfMouseListener);
+        
+        tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
+        tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
+        tfSource.setDragEnabled(false);
+        tfDestination.setDragEnabled(false);
+        
+        this.addRow(new Object[] { folderIcon, tfSource, tfDestination, null});
     }
+    
     
     private void calculateFileCount(File file, int row, String folderName) {
         // recursive function to calculate total file count
@@ -233,6 +287,9 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         }//for
         
     }
+    
+ 
+
     
     // show content in the folder
     // recursive function

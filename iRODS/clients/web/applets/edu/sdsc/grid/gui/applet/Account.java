@@ -33,7 +33,8 @@ public class Account {
         setSessionId(sessionId);
     }
     */
-
+    
+    
     // This constructor is used at applet initialization
     public Account(String tempPassworServiceUrl, String ruri, String sessionId) {
         TEMP_PASSWORD_SERVICE_URL = tempPassworServiceUrl;
@@ -56,12 +57,14 @@ public class Account {
         if (ruri.indexOf(SCHEME_DELIMITER) == -1)
             buf.insert(0, "irods://");
         */
-        
+
         username = parseUsernameFromRuri(ruri);
         host = parseHostFromRuri(ruri);
         port = parsePortFromRuri(ruri);
         destination = parseDestinationFromRuri(ruri);
         setPassword(ruri);
+
+        
         
         //logger.log("* username : " + username);
         //logger.log("* scrubPasswordFromRuri: " + scrubPasswordFromRuri(ruri));
@@ -75,6 +78,12 @@ public class Account {
         if (isInit) {
             // destination value during upload process could be the file name
             destinationFolder = destination;
+            
+            // make sure destinationFolder ends with a forward slash
+            // may be a better way
+            if (!destinationFolder.endsWith("/"))
+                destinationFolder += "/";
+            
         }
         
         //logger.log("Account parseRuri(). username :  "  + username);
@@ -195,7 +204,7 @@ public class Account {
         if (map.containsKey((Object) ruri)) {
             result = (char[]) map.get(ruri);
         } else {
-            logger.log("No key in map.");
+            //logger.log("No key in map.");
         }
             
         return result;
@@ -268,12 +277,17 @@ public class Account {
             }
             
             
-
+        } catch (java.io.FileNotFoundException fe) {
+            logger.log("Could not find temporary password service. " + fe);
+            fe.printStackTrace();
         } catch (Exception e) {
             logger.log("Exception getting temporary password. " + e);
             e.printStackTrace();
         }
         
+        if (result == null)
+            return null;
+                    
         return result.toCharArray();
     }
     
@@ -307,7 +321,9 @@ public class Account {
         int k = ruri.indexOf("@");
         String password = ruri.substring(i, k); // including the : symbol
         //logger.log("password substring: " + password);
-        result = ruri.replace(password, "");
+        
+        result = ruri.replaceAll(password, ""); // jdk 1.4
+        //result = ruri.replace(password, ""); // jdk 1.5
         
         //logger.log("output: " + result);
         return result;
@@ -441,6 +457,7 @@ public class Account {
         }
         return result;
     }//parseDestinationFromRuri
+    
     
     private boolean containsPassword(String ruri) {
         ruri = scrubSchemeFromRuri(ruri);

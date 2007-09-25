@@ -81,11 +81,17 @@ public class Manager implements AppletConstant {
         // some files were not uploaded
         // once recovered, both log files should be cleared
         // AND the queue log be rewritten
-        if (appletCount != 1) return null;
+        //if (appletCount != 1) return null;
+        
+        // have any applet recover queue at the moment
+        // will need to create a file lock to determine if
+        // queue should be recovered or not
+        //
+        // a file lock will help in situations
+        // where a user opens applets on multiple browser vendors
         
         AppletLogger logger = AppletLogger.getInstance();
         return logger.recoverQueue();
-        
     }
     
 }
