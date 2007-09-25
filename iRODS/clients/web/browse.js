@@ -1869,11 +1869,32 @@ function RodsBrowser(inipath, _ssid)
            buttonAlign: "center",
            shadow: true
           });
+        }//if
+
+
+        if (upload_applet_dialog != null) {
+          Ext.get('upload-applet-dlg-bd-main').dom.innerHTML='';
+        }
+
+
+        if (Ext.get('upload-applet-dlg-bd-main').dom.innerHTML == '')
+        {
           Ext.get('upload-applet-dlg-bd-main').dom.innerHTML=
-            '<APPLET CODE="edu.sdsc.grid.gui.applet.UploadApplet.class" archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar" WIDTH="650" HEIGHT="300">'+
+            '<object classid="clsid:CAFEEFAC-0015-0000-0000-ABCDEFFEDCBA" WIDTH="650" HEIGHT="300">'+
+            '   <param name="mayscript" value="true">'+
+            '   <param name="code" value="edu.sdsc.grid.gui.applet.UploadApplet.class"> ' +
+            '   <param name="archive" value="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar">'+
             '   <param name="ruri" value="irods://'+rpath_grid+'" />'+
             '   <param name="ssid" value="'+ssid+'" />'+
-            '</APPLET>';
+            '   <comment>'+
+            '     <embed type="application/x-java-applet" code="edu.sdsc.grid.gui.applet.UploadApplet.class" WIDTH="650" HEIGHT="300" '+
+            '       mayscript="true" '+
+            '       archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar" '+
+            '       ruri="irods://'+rpath_grid+'" '+
+            '       ssid="'+ssid+'" >'+
+            '     </embed>'+
+            '   </comment>'+
+            '</object>';
           upload_applet_dialog.addKeyListener(27, upload_applet_dialog.hide, upload_applet_dialog); // ESC can also close the dialog
         }
         upload_applet_dialog.show(btn.getEl());
