@@ -2459,6 +2459,9 @@ irodsProt_t irodsProt, char *packInstructInp)
     packItem_t *unpackItemHead, *tmpItem;
     int skipLen;
     int doubleInStruct;
+#if defined(solaris_platform)
+    void *outPtr1, *outPtr2;
+#endif
 
     if (numElement == 0) {
         return 0;
