@@ -220,6 +220,13 @@ irule -F ../test/ruleTest24.ir
 
 imeta ls -d sample.email
 
+/** test for running all the rule definitions when applying a rule
+    normally only one rule definition succeeds   **/
+more        ../test/ruleTest25.ir
+irule -F ../test/ruleTest25.ir
+
+
+
 
 /**   **/
 more        ../test/ruleTest.ir
