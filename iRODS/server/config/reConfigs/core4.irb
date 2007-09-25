@@ -1,0 +1,5 @@
+#for testing all rule application
+aa||writeLine(stdout,doing Rule aa definition 1)|nop
+aa||writeLine(stdout,doing Rule aa definition 2)|nop
+aa|1 == 2|writeLine(stdout,doing Rule aa definition 3)|nop
+aa||writeLine(stdout,doing Rule aa definition 4)|nop
