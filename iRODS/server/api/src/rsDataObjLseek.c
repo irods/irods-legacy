@@ -8,6 +8,8 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "bunSubLseek.h"
+#include "objMetaOpr.h"
+#include "bunSubUnlink.h"
 
 
 int

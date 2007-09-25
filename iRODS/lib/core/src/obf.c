@@ -60,19 +60,6 @@ int timeVal=0;
 int isTemp=0;
 int doTemp=0;
 
-
-int obfGetPw(char *pw);
-int obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg);
-int obfRmPw();
-int obfTempOps(int tmpOpt);
-int obfiGetEnvKey();
-int obfiGetTv(char *fileName);
-int obfiDecode(char *in, char *out, int extra);
-int obfiGetPw(char *fileName, char *pw);
-int obfiOpenOutFile(char *fileName, int fileOpt);
-int obfiWritePw(int fd, char *pw);
-void obfiEncode(char *in, char *out, int extra);
-
 /* 
   What can be a main routine for some simple tests.
  */

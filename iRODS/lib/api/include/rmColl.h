@@ -39,6 +39,8 @@ svrRmSpecColl (rsComm_t *rsComm, collInp_t *rmCollInp,
 dataObjInfo_t *dataObjInfo);
 int
 svrRmSpecCollRecur (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+int
+l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 #else
 #define RS_RM_COLL NULL
 #endif

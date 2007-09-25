@@ -6,8 +6,21 @@
 extern "C" {
 #endif
 
-int obfGetPw(char *pw);
 void obfDecodeByKey(char *in, char *key, char *out);
+int
+obfRmPw(int opt);
+int obfGetPw(char *pw);
+int obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg);
+int obfTempOps(int tmpOpt);
+int obfiGetEnvKey();
+int obfiGetTv(char *fileName);
+int obfiDecode(char *in, char *out, int extra);
+int obfiGetPw(char *fileName, char *pw);
+int obfiOpenOutFile(char *fileName, int fileOpt);
+int obfiWritePw(int fd, char *pw);
+void obfiEncode(char *in, char *out, int extra);
+void
+obfEncodeByKey(char *in, char *key, char *out);
 
 #ifdef  __cplusplus
 }

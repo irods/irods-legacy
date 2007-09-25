@@ -63,13 +63,13 @@ bunSubMkdir (rsComm_t *rsComm, subFile_t *subFile);
 int
 bunSubRmdir (rsComm_t *rsComm, subFile_t *subFile);
 int
-bunOpendir (rsComm_t *rsComm, subFile_t *subFile);
-int
 bunSubReaddir (bunType_t myType, rsComm_t *rsComm, int fd, 
 rodsDirent_t *rodsDirent);
 int
 bunSubClosedir (bunType_t myType, rsComm_t *rsComm, int fd);
 int
 bunSubTruncate (rsComm_t *rsComm, subFile_t *subFile);
+int
+bunSubOpendir (rsComm_t *rsComm, subFile_t *subFile);
 
 #endif	/* BUNDLE_DRIVER_H */

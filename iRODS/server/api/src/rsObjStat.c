@@ -10,6 +10,7 @@
 #include "objMetaOpr.h"
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.h"
+#include "dataObjClose.h"
 
 int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

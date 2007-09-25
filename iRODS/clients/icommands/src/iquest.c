@@ -5,6 +5,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
+#include "rcMisc.h"
 #include "lsUtil.h"
 void usage ();
 
@@ -64,6 +65,7 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, char *selectCondit
 
 }
 
+int
 main(int argc, char **argv) {
     int status;
     rodsEnv myEnv;

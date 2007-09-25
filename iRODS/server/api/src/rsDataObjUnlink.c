@@ -15,6 +15,7 @@
 #include "reDefines.h"
 #include "rmColl.h"
 #include "dataObjRename.h"
+#include "bunSubUnlink.h"
 
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)

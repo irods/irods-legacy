@@ -1,5 +1,6 @@
 #include "reGlobalsExtern.h"
 #include "execMyRule.h"
+#include "miscServerFunct.h"
 
 int
 rsExecMyRule (rsComm_t *rsComm, execMyRuleInp_t *execMyRuleInp,

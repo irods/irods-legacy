@@ -173,6 +173,17 @@ freeRodsObjStat (rodsObjStat_t *rodsObjStatOut);
 
 int keyValToString( keyValPair_t* list, char** string );
 int keyValFromString( char* string, keyValPair_t** list );
+int
+convertDateFormat(char *s, char *currTime);
+int
+getNextRepeatTime(char *currTime, char *delayStr, char *nextTime);
+int
+printError(rcComm_t *Conn, int status, char *routineName);
+int
+fillGenQueryInpFromStrCond(char *str, genQueryInp_t *genQueryInp);
+int
+printGenQueryOut(FILE *fd, char *format, char *hint, 
+genQueryOut_t *genQueryOut);
 #ifdef  __cplusplus
 }
 #endif

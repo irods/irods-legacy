@@ -15,6 +15,8 @@
 #include "fileRmdir.h"
 #include "bunSubRmdir.h"
 #include "genQuery.h"
+#include "dataObjUnlink.h"
+#include "rmColl.h"
 
 int
 rsRmColl (rsComm_t *rsComm, collInp_t *rmCollInp)

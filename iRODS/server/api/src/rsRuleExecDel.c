@@ -58,18 +58,17 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         /* unregister it anyway */
 #ifdef RODS_CAT
         status = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
-#else
-       rodsLog(LOG_ERROR,
-         "_rsRuleExecDel: chlDelRuleExec only in ICAT host");
-       return (SYS_NO_RCAT_SERVER_ERR);
-#endif
-
-        if (status < 0) {
+	if (status < 0) {
             rodsLog (LOG_ERROR,
               "_rsRuleExecDel: chlDelRuleExec for %s error, status = %d",
               ruleExecDelInp->ruleExecId, status);
         }
-	return status;
+        return status;
+#else
+	rodsLog(LOG_ERROR,
+         "_rsRuleExecDel: chlDelRuleExec only in ICAT host");
+        return (SYS_NO_RCAT_SERVER_ERR);
+#endif
     }
 
     if ((reiFilePath = getSqlResultByInx (genQueryOut, 
@@ -95,11 +94,7 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         /* Try to unregister it anyway */
 #ifdef RODS_CAT
         status = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
-#else
-       rodsLog(LOG_ERROR,
-         "_rsRuleExecDel: chlDelRuleExec only in ICAT host");
-       return (SYS_NO_RCAT_SERVER_ERR);
-#endif
+
 	if (status) return(status);  /* that failed too, report it */
 
         /* Add a message to the error stack for the client user */
@@ -110,6 +105,11 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         freeGenQueryOut (&genQueryOut);
 
 	return (SYS_INVALID_FILE_PATH);
+#else
+       rodsLog(LOG_ERROR,
+         "_rsRuleExecDel: chlDelRuleExec only in ICAT host");
+       return (SYS_NO_RCAT_SERVER_ERR);
+#endif
     }
 
     status = unlink (reiFilePath->value);
@@ -131,11 +131,6 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
     /* unregister it */
 #ifdef RODS_CAT
     status = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
-#else
-       rodsLog(LOG_ERROR,
-         "_rsRuleExecDel: chlDelRuleExec only in ICAT host");
-       return (SYS_NO_RCAT_SERVER_ERR);
-#endif
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -157,9 +152,14 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
 					          no other error occurred */
 
     }
-
     freeGenQueryOut (&genQueryOut);
 
     return (status);
+#else
+   rodsLog(LOG_ERROR,
+     "_rsRuleExecDel: chlDelRuleExec only in ICAT host");
+   return (SYS_NO_RCAT_SERVER_ERR);
+#endif
+
 }
 

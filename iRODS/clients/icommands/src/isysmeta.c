@@ -315,7 +315,6 @@ printMsgs(char *msgs[]) {
       if (strlen(msgs[i])==0) return;
       printf("%s\n",msgs[i]);
    }
-   return;
 }
 
 void

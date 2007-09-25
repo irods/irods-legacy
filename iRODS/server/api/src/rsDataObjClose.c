@@ -11,6 +11,7 @@
 #include "regReplica.h"
 #include "modDataObjMeta.h"
 #include "dataObjOpr.h"
+#include "objMetaOpr.h"
 #include "dataObjUnlink.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
@@ -19,6 +20,7 @@
 #include "ruleExecSubmit.h"
 #include "bunSubRead.h"
 #include "bunSubStat.h"
+#include "bunSubClose.h"
 
 int
 rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)

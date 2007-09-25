@@ -49,6 +49,9 @@ int
 lsSpecDataObjUtilLong (rcComm_t *conn, rodsPath_t *srcPath, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs);
 int
+printSpecLs (rcComm_t *conn, rodsArguments_t *rodsArgs, rodsPath_t *srcPath,
+genQueryOut_t *genQueryOut);
+int
 printSpecLsLong (char *objPath, char *ownerName, char *objSize,
 char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs);
 void 

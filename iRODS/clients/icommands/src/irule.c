@@ -11,6 +11,7 @@ int
 parseMsInputParam (int argc, char **argv, int optInd, 
 		   execMyRuleInp_t *execMyRuleInp, char *inBuf);
 
+int
 main(int argc, char **argv) {
     int status;
     rodsEnv myEnv;

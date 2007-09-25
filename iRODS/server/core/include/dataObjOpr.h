@@ -160,5 +160,7 @@ int
 rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl);
 int
 isInVault (dataObjInfo_t *dataObjInfo);
+int
+initL1desc ();
 #endif	/* DATA_OBJ_OPR */
 

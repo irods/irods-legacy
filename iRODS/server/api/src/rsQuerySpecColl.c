@@ -8,6 +8,8 @@
 #include "fileOpendir.h"
 #include "fileReaddir.h"
 #include "fileClosedir.h"
+#include "objMetaOpr.h"
+#include "dataObjClose.h"
 #include "bunSubOpendir.h"
 #include "bunSubReaddir.h"
 #include "bunSubClosedir.h"

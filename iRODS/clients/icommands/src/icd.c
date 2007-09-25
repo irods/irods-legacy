@@ -4,6 +4,9 @@
 #include "rods.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
+#include "miscUtil.h"
+#include "rcMisc.h"
+#include "genQuery.h"
 
 void usage (char *prog);
 

@@ -92,7 +92,11 @@ CONFIG =	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
 CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(SVR_INCLUDES)
 LDFLAGS +=	$(LDADD)
 
+MD5_CFLAGS=$(CFLAGS)
 
+ifeq ($(CC), gcc)
+MD5_CFLAGS += -O3
+endif
 
 
 
@@ -168,7 +172,7 @@ $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND)
 #	Requires -O3 for optimization
 $(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk)
 	@echo "Compile md5 `basename $@`..."
-	@$(CC) -c $(CFLAGS) -O3 -o $@ $<
+	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
 
 
 # Build logging source

@@ -257,7 +257,7 @@ showRuleExecBrief(char *name, int allFlag)
 
 }
 
-
+int
 main(int argc, char **argv) {
    int status, nArgs;
    rErrMsg_t errMsg;

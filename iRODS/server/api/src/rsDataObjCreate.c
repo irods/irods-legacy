@@ -10,6 +10,7 @@
 #include "rodsLog.h"
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"
+#include "dataObjUnlink.h"
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

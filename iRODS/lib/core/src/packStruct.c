@@ -3133,7 +3133,7 @@ alignPackedOutput64 (packedOutput_t *packedOutput)
         extendPackedOutput (packedOutput, 8, &outPtr);
     }
     packedOutput->bBuf->len = packedOutput->bBuf->len + 8 -
-     (int) (alignedOutPtr - outPtr);
+     (int) ((char *) alignedOutPtr - (char *) outPtr);
 
     return (0);
 }

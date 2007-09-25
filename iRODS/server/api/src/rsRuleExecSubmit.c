@@ -92,19 +92,18 @@ _rsRuleExecSubmit (rsComm_t *rsComm, ruleExecSubmitInp_t *ruleExecSubmitInp)
   
     /* register the request */
 #ifdef RODS_CAT
-        status = chlRegRuleExec (rsComm, ruleExecSubmitInp);
-	if (status < 0) {
-           rodsLog(LOG_ERROR,
-             "_rsRuleExecSubmit: chlRegRuleExec error. status = %d", status);
-           return (status);
-	}
+    status = chlRegRuleExec (rsComm, ruleExecSubmitInp);
+    if (status < 0) {
+        rodsLog(LOG_ERROR,
+         "_rsRuleExecSubmit: chlRegRuleExec error. status = %d", status);
+    }
+    return (status);
 #else
        rodsLog(LOG_ERROR,
                "_rsRuleExecSubmit error. ICAT is not configured on this host");
        return (SYS_NO_ICAT_SERVER_ERR);
 #endif
 
-    return (status);
 }
 
 int 

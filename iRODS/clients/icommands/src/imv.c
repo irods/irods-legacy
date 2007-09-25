@@ -10,7 +10,7 @@
 #include "mvUtil.h"
 void usage (char *program);
 
-
+int
 main(int argc, char **argv) {
     int status;
     rodsEnv myEnv;

@@ -1003,7 +1003,7 @@ doCommand(char *cmdToken[]) {
    return(-3);
 }
 
-
+int
 main(int argc, char **argv) {
    int status, i, j;
    rErrMsg_t errMsg;

@@ -161,7 +161,7 @@ showUser(char *name)
    return (0);
 }
 
-
+int
 main(int argc, char **argv) {
    int status, nArgs;
    rErrMsg_t errMsg;

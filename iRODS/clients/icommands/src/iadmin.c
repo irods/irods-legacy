@@ -700,7 +700,7 @@ doCommand(char *cmdToken[]) {
    return(-3);
 }
 
-
+int
 main(int argc, char **argv) {
    int status, i, j;
    rErrMsg_t errMsg;
@@ -811,7 +811,6 @@ printMsgs(char *msgs[]) {
       if (strlen(msgs[i])==0) return;
       printf("%s\n",msgs[i]);
    }
-   return;
 }
 
 int usageMain()
@@ -1090,11 +1089,11 @@ usage(char *subOpt)
 	 if (strlen(subCmds[i])==0) break;
 	 if (strcmp(subOpt,subCmds[i])==0) {
 	    printMsgs(pMsgs[i]);
-	    return;
+	    return 0;
 	 }
       }
       printf("%s is an invalid command, try 'h'\n",
 	     subOpt);
    }
-   return;
+   return 0;
 }

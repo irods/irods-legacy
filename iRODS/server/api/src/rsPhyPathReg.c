@@ -21,6 +21,9 @@
 #include "collCreate.h"
 #include "dataObjClose.h"
 #include "fileMkdir.h"
+#include "modColl.h"
+#include "regColl.h"
+#include "dataObjCreate.h"
 
 int
 rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
