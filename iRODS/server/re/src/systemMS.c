@@ -578,3 +578,18 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
   rodsSleep (sec, microsec);
   return(0);
 }
+
+int
+msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, ruleExecInfo_t *rei)
+{
+  int i;
+  char *action;
+  int reiSaveFlag;
+
+  action = actionParam->inOutStruct;
+  reiSaveFlag = atoi(reiSaveFlagParam->inOutStruct);
+
+  i = applyAllRules(action, rei->msParamArray, rei, reiSaveFlag);
+  return(i);
+
+}

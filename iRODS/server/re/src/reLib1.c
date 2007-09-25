@@ -250,7 +250,8 @@ initializeMsParamNew(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int 
   }
   /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
   if ((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) 
-    if (getMsParamByLabel (outMsParamArray,"ruleExecOut") != NULL) 
+    /*    if (getMsParamByLabel (outMsParamArray,"ruleExecOut") != NULL)  RAJA CHANGED Sep 25 2007 ***/
+    if (getMsParamByLabel (outMsParamArray,"ruleExecOut") == NULL)
       addMsParam(outMsParamArray,"ruleExecOut",mP->type, mP->inOutStruct, mP->inpOutBuf);
   /* RAJA added July 11 2007 to make sure that ruleExecOut is apassed along */
 
@@ -447,6 +448,157 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
       rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, status);
   }
   return(status);
+}
+
+
+
+
+int
+applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
+	  ruleExecInfo_t *rei, int reiSaveFlag)
+{
+  int ruleInx, argc,i, status;
+  char *nextRule;
+  char ruleCondition[MAX_RULE_LENGTH * 3];
+  char ruleAction[MAX_RULE_LENGTH * 3];
+  char ruleRecovery[MAX_RULE_LENGTH * 3];
+  char ruleHead[MAX_RULE_LENGTH * 3]; 
+  char ruleBase[MAX_RULE_LENGTH * 3]; 
+  int  first = 0;
+  int  success = 0;
+  ruleExecInfo_t  *saveRei;
+  int reTryWithoutRecovery = 0;
+  funcPtr myFunc = NULL;
+  int actionInx;
+  int numOfStrArgs;
+  int ii;
+  char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+  char action[MAX_ACTION_SIZE];  
+  msParamArray_t *outMsParamArray;
+
+  ruleInx = -1; /* new rule */
+  outMsParamArray =  NULL;
+
+  if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
+    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    return(i);
+  }
+
+  i = parseAction(inAction,action,args, &argc);
+  if (i != 0)
+    return(i);
+
+  mapExternalFuncToInternalProc(action);
+
+  i = findNextRule (action,  &ruleInx);
+  if (i != 0) {
+    /* probably a microservice */
+#if 0
+    i = executeMicroServiceNew(action,inMsParamArray,rei);
+#endif
+    i = executeMicroServiceNew(inAction,inMsParamArray,rei);
+    return(i);
+  }
+
+  while (i == 0) {
+    getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
+
+    if (outMsParamArray == NULL) {
+      i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
+      if (i != 0)
+	return(i);
+      outMsParamArray = rei->msParamArray;
+      
+    }
+
+    /*****
+    i = checkRuleHead(ruleHead,args,argc);
+    freeRuleArgs (args, argc);
+    if (i == 0) {
+    ******/
+    if (reTestFlag > 0) {
+	  if (reTestFlag == COMMAND_TEST_1) 
+	    fprintf(stdout,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	  else if (reTestFlag == HTML_TEST_1)
+	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
+	  else if (rei != 0 && rei->rsComm != 0 && &(rei->rsComm->rError) != 0)
+	    rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	}
+
+      i = checkRuleConditionNew(action,  ruleCondition, outMsParamArray, rei, reiSaveFlag);
+      if (i == TRUE) {
+	if (reiSaveFlag == SAVE_REI) {
+	  if (first == 0 ) {
+	    saveRei = (ruleExecInfo_t  *) mallocAndZero(sizeof(ruleExecInfo_t));
+	    i = copyRuleExecInfo(rei,saveRei);
+	    first = 1;
+	  }
+	  else if (reTryWithoutRecovery == 0) {
+	    i = copyRuleExecInfo(saveRei,rei);
+	  }
+	}
+	if (reTestFlag > 0) {
+	  if (reTestFlag == COMMAND_TEST_1) 
+	    fprintf(stdout,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
+	  else if (reTestFlag == HTML_TEST_1)
+	    fprintf(stdout,"+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
+	  else
+	    rodsLog (LOG_NOTICE,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
+	}
+	status = 
+	   executeRuleBodyNew(action, ruleAction, ruleRecovery, outMsParamArray, rei, reiSaveFlag);
+	if ( status == 0) {
+	  if (reiSaveFlag == SAVE_REI)
+	    freeRuleExecInfoStruct(saveRei, 0);
+	  /**** finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
+		return(status); ***/
+	  success = 1;
+	}
+	else if ( status == CUT_ACTION_PROCESSED_ERR) {
+	  if (reiSaveFlag == SAVE_REI)
+	    freeRuleExecInfoStruct(saveRei, 0);
+	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);
+	  return(status);
+	}
+	else if ( status == RETRY_WITHOUT_RECOVERY_ERR) {
+	  reTryWithoutRecovery = 1;
+	  /*** finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,0);***/
+	}
+	/***  outMsParamArray = NULL; 	***/ /* set this since finalizeMsParamNew
+					 * freed it.
+					 */
+      }
+      else {/*** ADDED RAJA JUN 20, 2007 ***/
+	/*** finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,0); ***/
+      }
+      /*****
+    }
+      *****/
+    i = findNextRule (action,  &ruleInx);
+  }
+
+  if (first == 1) {
+    if (reiSaveFlag == SAVE_REI)
+      freeRuleExecInfoStruct(saveRei, 0);
+  }
+  if (i == NO_MORE_RULES_ERR) {
+    rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, i);
+    if (success == 1)
+      return(0);
+    else
+      return(i);
+  }
+
+  finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
+
+
+  if (status < 0) {
+      rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, status);
+  }
+  if (success == 1)
+    return(0);
+  else
+    return(status);
 }
 
 
