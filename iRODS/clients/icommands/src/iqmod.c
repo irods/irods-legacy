@@ -22,8 +22,6 @@ rodsEnv myEnv;
 int
 modDelayedRule(char *ruleId, char *fieldName, char *fieldValue) {
    int status;
-   char *mySubName;
-   char *myName;
 
    ruleExecModInp_t ruleExecModInp;
    memset(&ruleExecModInp, 0, sizeof(ruleExecModInp));

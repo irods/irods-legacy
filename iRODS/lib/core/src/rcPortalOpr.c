@@ -245,7 +245,6 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     void *buf;
     transStat_t *myTransStat;
     rodsLong_t curOffset = 0;
-    int bytesRead, bytesWritten;
 
 #ifdef PARA_DEBUG
     printf ("rcPartialDataPut: thread %d at start\n", myInput->threadNum);
@@ -639,7 +638,6 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     void *buf;
     transStat_t *myTransStat;
     rodsLong_t curOffset = 0;
-    int bytesRead, bytesWritten;
 
 #ifdef PARA_DEBUG
     printf ("rcPartialDataGet: thread %d at start\n", myInput->threadNum);

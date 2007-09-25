@@ -338,7 +338,6 @@ int
 msiSetDataTypeFromExt (ruleExecInfo_t *rei)
 {
     dataObjInfo_t *dataObjInfoHead;
-    char *chksumStr = NULL;
     int status;
     char logicalCollName[MAX_NAME_LEN];
     char logicalFileName[MAX_NAME_LEN]="";
@@ -450,10 +449,7 @@ msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xallFlag,
 ruleExecInfo_t *rei)
 {
     int writeFlag;
-    dataObjInfo_t *dataObjInfoHead, *tmpDataObjInfo, *myDataObjInfo;
-    dataObjInfo_t *nextDataObjInfo = NULL;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
-    int status;
+    dataObjInfo_t *dataObjInfoHead, *myDataObjInfo;
     transStat_t transStat;
     char *cacheResc;
     char *allFlag;
@@ -613,10 +609,6 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
 int
 msiDeleteDisallowed (ruleExecInfo_t *rei)
 {
-    dataObjInfo_t *dataObjInfoHead;
-    int l1descInx;
-    char *chksumStr = NULL;
-
     RE_TEST_MACRO ("    Calling msiDeleteDisallowed")
 
     rei->status = SYS_DELETE_DISALLOWED;

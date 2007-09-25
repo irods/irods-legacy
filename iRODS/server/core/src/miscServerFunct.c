@@ -24,9 +24,7 @@ char *__loc1;
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 {
-    int portNum;
     rErrMsg_t errMsg;
-    int status;
     int reconnFlag;
 
 
@@ -57,10 +55,7 @@ svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 int
 svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 {
-    int portNum;
-    rErrMsg_t errMsg;
     int status;
-    int remoteFlag;
 
     status = svrToSvrConnectNoLogin (rsComm, rodsServerHost);
 
@@ -84,9 +79,6 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
 {
     int lsock = -1;
     int lport = 0;
-    struct sockaddr_in sin;
-    int status;
-    int length = sizeof (sin);
     char *laddr = NULL;
 
     if ((lsock = sockOpenForInConn (rsComm, &lport, &laddr)) < 0) {
@@ -186,8 +178,8 @@ svrPortalPutGet (rsComm_t *rsComm)
     dataOprInp_t *dataOprInp;
     portList_t *thisPortList;
     rodsLong_t size0, size1, offset0;
-    int lsock, lport, portalFd;
-    int i, status;
+    int lsock, portalFd;
+    int i;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifdef PARA_OPR
@@ -366,7 +358,6 @@ partialDataPut (portalTransferInp_t *myInput)
 {
     int destL3descInx, srcFd, destRescTypeInx;
     char *buf;
-    int retryCnt = 0;
     int bytesWritten;
     rodsLong_t bytesToGet;
     rodsLong_t myOffset = 0;
@@ -413,7 +404,7 @@ partialDataPut (portalTransferInp_t *myInput)
     bytesToGet = myInput->size;
 
     while (bytesToGet > 0) {
-        int toread0, toread1;
+        int toread0;
         int bytesRead;
 
 #ifdef PARA_TIMING
@@ -516,7 +507,6 @@ partialDataGet (portalTransferInp_t *myInput)
 {
     int srcL3descInx, destFd, srcRescTypeInx;
     char *buf;
-    int retryCnt = 0;
     int bytesWritten;
     rodsLong_t bytesToGet;
     rodsLong_t myOffset = 0;
@@ -563,7 +553,7 @@ partialDataGet (portalTransferInp_t *myInput)
     bytesToGet = myInput->size;
 
     while (bytesToGet > 0) {
-        int toread0, toread1;
+        int toread0;
         int bytesRead;
 
 #ifdef PARA_TIMING
@@ -993,8 +983,6 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
         rodsLong_t myOffset = 0;
 
         for (i = 1; i < numThreads; i++) {
-            int l3descInx;
-
             myOffset += size0;
             if (i < numThreads - 1) {
                 mySize = size0;
@@ -1068,10 +1056,8 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 void
 sameHostPartialCopy (portalTransferInp_t *myInput)
 {
-    transferHeader_t myHeader;
     int destL3descInx, srcL3descInx, destRescTypeInx, srcRescTypeInx;
     void *buf;
-    rodsLong_t curOffset = 0;
     rodsLong_t myOffset = 0;
     rodsLong_t toCopy;
     int bytesRead, bytesWritten;

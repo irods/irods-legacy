@@ -38,6 +38,7 @@ rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 int
 _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
 {
+#ifdef RODS_CAT
     int status;
     dataObjInfo_t *dataObjInfo;
     keyValPair_t *regParam;
@@ -49,7 +50,6 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
         return (0);
     }
 
-#ifdef RODS_CAT
     status = chlModDataObjMeta (rsComm, dataObjInfo, regParam);
     return (status);
 #else

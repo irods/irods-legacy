@@ -212,7 +212,7 @@ obfRmPw(int opt)
 int
 obfiSetTimeFromFile(int fd) {
    struct stat statBuf;
-   int i, wval, fval, lval;  
+   int wval, fval, lval;  
    wval = write(fd," ",1);
    if (wval != 1) return FILE_WRITE_ERR;
    fval = fstat(fd, &statBuf);
@@ -760,9 +760,11 @@ obfiDecode(char *in, char *out, int extra)
 int
 obfiGetEnvKey()
 {
+#if 0
   char *envVar;
   char *chr;
   int i;
+#endif
   /* May want to do this someday, but at least not for now */
   return 0;
 }
@@ -781,7 +783,7 @@ obfEncodeByKey(char *in, char *key, char *out) {
    int wheel_len=26+26+10+15;
    int wheel[26+26+10+15];
 
-   int len, i, j;
+   int i, j;
    unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
    char keyBuf[100];
    char *cpIn, *cpOut;
@@ -858,7 +860,7 @@ obfDecodeByKey(char *in, char *key, char *out) {
    int wheel_len=26+26+10+15;
    int wheel[26+26+10+15];
 
-   int len, i, j;
+   int i, j;
    unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
    char keyBuf[100];
    char *cpIn, *cpOut;

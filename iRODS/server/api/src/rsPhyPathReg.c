@@ -309,7 +309,6 @@ rescInfo_t *rescInfo)
     collInp_t collCreateInp;
     int rescTypeInx;
     int status;
-    dataObjInp_t subPhyPathRegInp;
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
 

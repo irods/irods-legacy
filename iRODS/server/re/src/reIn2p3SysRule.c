@@ -20,7 +20,7 @@ int checkIPaddress(char *IP, unsigned char IPcomp[IPV4]) {
   i = atoi(strtok(IPclone, delimIP));
   if ( i < 0 || i > 255 ) return -1;
   IPcomp[0] = i;
-  while ( eltstrIP = strtok(NULL, delimIP) ) {
+  while ( (eltstrIP = strtok(NULL, delimIP)) ) {
     nelt++;
     i = atoi(eltstrIP);
     if ( i < 0 || i > 255 ) return -1;
@@ -56,7 +56,7 @@ int checkHostAccessControl (char *username, char *hostclient,
   /* parse the list of groups for the user from the groupsname char */
   nelt = 0;
   strncpy(grouplist[0], strtok(groupsname, delim), MAXSTR);
-  while ( eltstr = strtok(NULL, delim) ) {
+  while ( (eltstr = strtok(NULL, delim)) ) {
     nelt++;
     strncpy(grouplist[nelt], eltstr, MAXSTR);
   }
@@ -67,7 +67,7 @@ int checkHostAccessControl (char *username, char *hostclient,
       if ( line[0] != '#' && line[0] != '\n' ) {  /* Comment or empty line, ignore */
 	eltstr = strtok(line, delim);
 	strncpy(tempArr[indxc], eltstr, MAXSTR);
-	while ( eltstr = strtok(NULL, delim) ) {
+	while ( (eltstr = strtok(NULL, delim)) ) {
 	  indxc++;
 	  strncpy(tempArr[indxc], eltstr, MAXSTR);
 	}

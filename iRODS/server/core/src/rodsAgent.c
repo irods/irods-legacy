@@ -15,7 +15,6 @@ main(int argc, char *argv[])
     rsComm_t rsComm;
     struct allowedUser *allowedUserHead = NULL;
     char *tmpStr;
-    rodsServerHost_t *rodsServerHost = NULL;
 
     ProcessType = AGENT_PT;
 
@@ -102,6 +101,8 @@ main(int argc, char *argv[])
     status = agentMain (&rsComm);
 
     cleanupAndExit (status);
+
+    return (status);
 }
 
 int 
@@ -266,7 +267,6 @@ setAllowedUser (struct allowedUser **allowedUserHead)
     FILE *file;
     char buf[LONG_NAME_LEN * 5];
     int len; 
-    int i;
     char *bufPtr;
     int status;
 
@@ -293,7 +293,6 @@ setAllowedUser (struct allowedUser **allowedUserHead)
     free (conFile);
 
     while (fgets (buf, LONG_NAME_LEN * 5, file) != NULL) {
-	char *strPtr;
         char myuser[NAME_LEN];
         char myZone[NAME_LEN];
 	char myInput[NAME_LEN * 2];

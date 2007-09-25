@@ -33,6 +33,7 @@ rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
 int
 _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
 {
+#ifdef RODS_CAT
     int status;
     collInfo_t collInfo;
     char *tmpStr;
@@ -53,7 +54,6 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
             rstrcpy (collInfo.collInfo2, tmpStr, NAME_LEN);
         }
     }
-#ifdef RODS_CAT
     status = chlModColl (rsComm, &collInfo);
     /* XXXX need to commit */
     if (status >= 0) status = chlCommit(rsComm);

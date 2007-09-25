@@ -123,11 +123,9 @@ checkColl(rcComm_t *Conn, char *path) {
    int i1a[10];
    int i1b[10];
    int i2a[10];
-   int done;
-   int mode;
    char *condVal[2];
    char v1[MAX_NAME_LEN];
-   int i, status;
+   int status;
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 

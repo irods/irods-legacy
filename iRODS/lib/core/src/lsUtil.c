@@ -157,7 +157,7 @@ int
 printLsLong (rcComm_t *conn, rodsArguments_t *rodsArgs, 
 genQueryOut_t *genQueryOut)
 {
-    int i, status;
+    int i;
     sqlResult_t *dataName, *replNum, *dataSize, *rescName, 
       *replStatus, *dataModify, *dataOwnerName, *dataId;
     sqlResult_t *chksumStr, *dataPath;
@@ -298,7 +298,7 @@ int
 printLsShort (rcComm_t *conn,  rodsArguments_t *rodsArgs, 
 genQueryOut_t *genQueryOut)
 {
-    int i, status;
+    int i;
 
     sqlResult_t *dataName, *dataId;
     char *tmpDataName, *tmpDataId;
@@ -355,14 +355,12 @@ int
 lsCollUtil (rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv, 
 rodsArguments_t *rodsArgs)
 {
-    int status, i;
     int savedStatus = 0;
     genQueryInp_t genQueryInp;
-    struct dirent *myDirent;
-    char srcChildPath[MAX_NAME_LEN];
     genQueryOut_t *genQueryOut = NULL;
     int continueInx;
     char *srcColl;
+    int status;
 
     if (srcPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -521,7 +519,6 @@ printSpecLs (rcComm_t *conn, rodsArguments_t *rodsArgs, rodsPath_t *srcPath,
 genQueryOut_t *genQueryOut)
 {
     int i, status;
-    rodsPath_t tmpSrcPath;
     sqlResult_t *dataName, *collName, *dataSize, *createTime, *modifyTime;
     char *tmpDataName, *tmpCollName, *tmpCreateTime, *tmpModifyTime, 
       *tmpDataSize;

@@ -47,7 +47,6 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     dataObjInfo_t *destDataObjInfo = NULL;
     rescGrpInfo_t *myRescGrpInfo = NULL;
     ruleExecInfo_t rei;
-    int savedOopenFlags;
     int multiCopyFlag;
     char *accessPerm;
     int backupFlag;
@@ -452,7 +451,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 {
     int srcL1descInx, destL1descInx;
     int srcL3descInx, destL3descInx;
-    int numThreads, status;
+    int status;
     portalOprOut_t *portalOprOut = NULL;
     dataCopyInp_t dataCopyInp;
     dataOprInp_t *dataOprInp;

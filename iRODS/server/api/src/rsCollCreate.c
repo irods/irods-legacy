@@ -18,8 +18,6 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
-    dataObjInp_t dataObjInp;
-    dataObjInfo_t *dataObjInfo = NULL;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
                                 &rodsServerHost);
@@ -29,6 +27,9 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 
     if (rodsServerHost->localFlag == LOCAL_HOST) {
 #ifdef RODS_CAT
+        dataObjInp_t dataObjInp;
+        dataObjInfo_t *dataObjInfo = NULL;
+
         /* for BUNDLE_COLL to make a directory in the bundle, the
          * COLLECTION_TYPE_KW must be set */
 

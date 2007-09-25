@@ -25,8 +25,6 @@
 #include <fcntl.h>
 
 
-static time_t LogfileLastChkTime = 0;
-
 void
 getLogfileName (char **logFile, char *logDir, char *logFileName);
 

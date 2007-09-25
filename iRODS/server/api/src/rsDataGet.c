@@ -70,7 +70,6 @@ portalOprOut_t **portalOprOut)
         return 0;
     } else {
         portalOpr_t *myPortalOpr;
-        fileOpenInp_t *fileOpenInp;
 
         /* setup the portal */
         portalSock = createSrvPortal (rsComm, &myDataObjGetOut->portList);

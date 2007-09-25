@@ -3,7 +3,7 @@
 
 /* rcMisc.c - misc client routines
  */
-
+#include <sys/time.h>
 #include "rcMisc.h"
 #include "apiHeaderAll.h"
 #include "modDataObjMeta.h"
@@ -51,6 +51,7 @@ int freeBBuf (bytesBuf_t *myBBuf)
         free (myBBuf->buf);
     }
     free (myBBuf);
+    return (0);
 }
  
 int
@@ -115,6 +116,7 @@ freeRError (rError_t *myError)
 
     freeRErrorContent (myError);
     free (myError);
+    return (0);
 }
 
 int
@@ -955,14 +957,14 @@ clearTagStruct (tagStruct_t *condInput)
 int
 clearInxIval (inxIvalPair_t *inxIvalPair)
 {
-    int i;
-
     if (inxIvalPair == NULL || inxIvalPair->len <= 0)
         return (0);
 
     free (inxIvalPair->inx);
     free (inxIvalPair->value);
     memset (inxIvalPair, 0, sizeof (inxIvalPair_t));
+
+    return (0);
 }
 
 int
@@ -1066,14 +1068,12 @@ getUnixUid (char *userName)
 
 int get64RandomBytes(char *buf) {
     MD5_CTX context;
-    int len;
     char buffer[65]; /* each digest is 16 bytes, 4 of them */
-    int status;
     int ints[30];
     int pid;
     struct timeval tv;
     static int count=12348;
-    int i,j;
+    int i;
 
     gettimeofday(&tv, 0);
     pid = getpid();
@@ -1292,7 +1292,7 @@ getNowStr(char *timeStr)
     time_t myTime;
 
     myTime = time(NULL);
-    snprintf(timeStr, 15, "%011d", myTime);
+    snprintf(timeStr, 15, "%011d", (uint) myTime);
 }
 
 /*
@@ -1347,14 +1347,11 @@ void
 getOffsetTimeStr(char *timeStr, char *offSet) 
 {
     time_t myTime;
-    struct tm *mytm;
-    time_t newTime;
-    char s[50];
 
     myTime = time(NULL);
     myTime += atoi (offSet);
 
-    snprintf (timeStr, NAME_LEN, "%d", myTime);
+    snprintf (timeStr, NAME_LEN, "%d", (uint) myTime);
 #if 0
     mytm = localtime (&myTime);
     rstrcpy(s,offSet,49);
@@ -1504,7 +1501,7 @@ getNextRepeatTime(char *currTime, char *delayStr, char *nextTime)
 {
 
    rodsLong_t  it, dt, ct;
-   char *t, *s, *v;
+   char *t, *s;
    char u;
    char tstr[200];
    int n;
@@ -1741,9 +1738,9 @@ localToUnixTime (char *localTime, char *unixTime)
 
     newTime = mktime(mytm);
     if (sizeof (newTime) == 64) {
-      snprintf (unixTime, TIME_LEN, "%lld", newTime);
+      snprintf (unixTime, TIME_LEN, "%lld", (rodsLong_t) newTime);
     } else {
-      snprintf (unixTime, TIME_LEN, "%d", newTime);
+      snprintf (unixTime, TIME_LEN, "%d", (uint) newTime);
     }
     return (0);
 }
@@ -1811,9 +1808,8 @@ int
 checkDateFormat(char *s)
 {
   /* Note. The input *s is assumed to be TIME_LEN long */
-  int i, len;
+  int len;
   char t[] = "0000-00-00.00:00:00";
-  int isInt = 1;
   char outUnixTime[TIME_LEN]; 
   int status;
   int offset = 0;
@@ -1993,7 +1989,6 @@ int
 closeQueryOut (rcComm_t *conn, genQueryOut_t *genQueryOut)
 {
     genQueryInp_t genQueryInp;
-    char tmpStr[NAME_LEN];
     genQueryOut_t *junk = NULL;
     int status;
 
@@ -2026,7 +2021,7 @@ appendRandomToPath (char *trashPath)
 	return (SYS_INVALID_FILE_PATH);
     }
     tmpPtr = trashPath + len;
-    sprintf (tmpPtr, ".%d", random ());
+    sprintf (tmpPtr, ".%d", (uint) random ());
 
     return (0);
 }
@@ -2567,10 +2562,10 @@ appendToByteBuf(bytesBuf_t *bytesBuf, char *str) {
       bytesBuf->buf = tBuf;
     }
   }
-  /***     /
+  /*  
   printf("bytesBuf->len=%d  oldbufLen=%d  strlen=%d\n",bytesBuf->len,j,i);
   printf("bytesBuf->buf:%s\n",bytesBuf->buf);
-  /***/    
+  */    
   return(0);
 }
 
@@ -2593,6 +2588,7 @@ char *logSubPath, char *phySubPathOut)
     /* compose the physical path */
     snprintf (phySubPathOut, MAX_NAME_LEN, "%s%s", phyMountPoint,
       tmpPtr);
+    return (0);
 
 }
 

@@ -21,8 +21,6 @@ rodsEnv myEnv;
 int
 rmDelayedRule(char *ruleId) {
    int status;
-   char *mySubName;
-   char *myName;
 
    ruleExecDelInp_t ruleExecDelInp;
    

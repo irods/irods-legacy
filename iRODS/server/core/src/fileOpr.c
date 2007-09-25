@@ -242,7 +242,6 @@ int
 matchCliVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost)
 {
-    char myVaultPath[MAX_NAME_LEN];
     int len, count;
     char *tmpPath;
     char *outVaultPath = NULL;

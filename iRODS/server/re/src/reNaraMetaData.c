@@ -11,7 +11,6 @@ msiExtractNaraMetadata (ruleExecInfo_t *rei)
   int flag;
   char attr[100];
   char value[500];
-  char unit[100];
   modAVUMetadataInp_t modAVUMetadataInp;
   int status;
   /* specify the location of the metadata file here */

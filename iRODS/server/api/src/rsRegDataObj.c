@@ -42,8 +42,8 @@ dataObjInfo_t **outDataObjInfo)
 int
 _rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 {
-    int status;
 #ifdef RODS_CAT
+    int status;
     status = chlRegDataObj (rsComm, dataObjInfo);
     return (status);
 #else

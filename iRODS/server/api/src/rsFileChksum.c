@@ -104,7 +104,7 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     }
 
     MD5Init (&context);
-    while (len = fileRead (fileType, rsComm, fd, buffer, SVR_MD5_BUF_SZ)) {
+    while ((len = fileRead (fileType, rsComm, fd, buffer, SVR_MD5_BUF_SZ))) {
         MD5Update (&context, buffer, len);
     }
     MD5Final (digest, &context);

@@ -38,6 +38,7 @@ rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 int
 _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
 {
+#ifdef RODS_CAT
     int status;
     dataObjInfo_t *srcDataObjInfo;
     dataObjInfo_t *destDataObjInfo;
@@ -45,7 +46,6 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
     destDataObjInfo = regReplicaInp->destDataObjInfo;
 
-#ifdef RODS_CAT
     status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
       &regReplicaInp->condInput);
     return (status);

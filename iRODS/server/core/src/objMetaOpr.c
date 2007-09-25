@@ -235,7 +235,7 @@ int
 sortResc (rescGrpInfo_t **rescGrpInfo, keyValPair_t *condInput, 
 char *sortScheme)
 {
-    int i, j, tmpCnt, order;
+    int i, order;
     rescGrpInfo_t *tmpRescGrpInfo;
     rescInfo_t *tmpRescInfo;
     int numResc;
@@ -350,7 +350,6 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
     genQueryOut_t *genQueryOut = NULL;
     int i, status;
     dataObjInfo_t *dataObjInfo;
-    rescGrpInfo_t *myRescGrpInfo = NULL;
     char condStr[MAX_NAME_LEN]; 
     char *tmpStr;
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
@@ -567,8 +566,6 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 
 
    for (i = 0;i < genQueryOut->rowCnt; i++) {
-        rescGrpInfo_t *rescGrpInfo;
-
         dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
         memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
 
@@ -686,8 +683,6 @@ int writeFlag)
 {
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo, 
      *oldCacheInfo;
-    dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
-
     sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
       &oldArchInfo, &oldCacheInfo);
 
@@ -990,8 +985,6 @@ dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
 {
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
      *oldCacheInfo;
-    dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
-
     sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
       &oldArchInfo, &oldCacheInfo);
 
@@ -1103,8 +1096,6 @@ dataObjInfo_t *dataObjInfo)
     genQueryOut_t *genQueryOut = NULL;
     int status;
     char condStr[MAX_NAME_LEN];
-    char *tmpStr;
-
 
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
@@ -1161,7 +1152,6 @@ int
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)
 {
     genQueryInp_t genQueryInp;
-    char tmpStr[NAME_LEN];
     int status;
 
     *genQueryOut = NULL;
@@ -1324,7 +1314,7 @@ int startInx, ruleExecSubmitInp_t *queuedRuleExec, int statusFlag)
     }
 
     for (i = startInx; i < genQueryOut->rowCnt; i++) {
-	char thisTime[NAME_LEN], *exeStatusStr, *exeTimeStr, *ruleExecIdStr;
+	char *exeStatusStr, *exeTimeStr, *ruleExecIdStr;
         struct stat statbuf;
         int fd;
 	
@@ -1420,20 +1410,19 @@ modExeInfoForRepeat(rsComm_t *rsComm, char *ruleExecId, char* pastTime,
 		      char *delay, int opStatus) {
     keyValPair_t *regParam;
     int status, status1;
-    int iDelay;
     char myTimeNow[200];
     char myTimeNext[200];
-    rodsLong_t  rDelay;
     rstrcpy (myTimeNext, pastTime, 200);
     getOffsetTimeStr((char*)&myTimeNow, "                      ");
     ruleExecModInp_t ruleExecModInp;
     ruleExecDelInp_t ruleExecDelInp;
 
-    /****** RAJA Jul 06, 2007  changed this *********
+#if 0
+    /****** RAJA Jul 06, 2007  changed this *********/ 
 
     updateOffsetTimeStr((char*)&myTimeNext, iDelay);
     if (strcmp (myTimeNext, myTimeNow) < 0) {
-       /* delay is not into the future, try to make it so *      /
+       /* delay is not into the future, try to make it so */
        int i, iDelayOrig;
        iDelayOrig = iDelay;
        for (i=0;i<1000;i++) {
@@ -1442,7 +1431,8 @@ modExeInfoForRepeat(rsComm_t *rsComm, char *ruleExecId, char* pastTime,
 	  if (strcmp (myTimeNext, myTimeNow) > 0) break;
        }
     }
-    ****** RAJA Jul 06, 2007  changed this *********/
+    /****** RAJA Jul 06, 2007  changed this *********/
+#endif
     status1 = getNextRepeatTime(myTimeNow, delay,myTimeNext);
 
     /***
@@ -1680,7 +1670,6 @@ int
 svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut)
 {
     genQueryInp_t genQueryInp;
-    char tmpStr[NAME_LEN];
     genQueryOut_t *junk = NULL;
     int status;
 
@@ -1936,10 +1925,12 @@ isResc(rsComm_t *rsComm, char *objName)
 int
 isMeta(rsComm_t *rsComm, char *objName)
 {
+#if 0
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char tmpStr[NAME_LEN];
     int status;
+#endif
     /* needs to be filled in later */
     return(INVALID_OBJECT_TYPE);
 }
@@ -1947,10 +1938,12 @@ isMeta(rsComm_t *rsComm, char *objName)
 int
 isToken(rsComm_t *rsComm, char *objName)
 {
+#if 0
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     char tmpStr[NAME_LEN];
     int status;
+#endif
     /* needs to be filled in later */
     return(INVALID_OBJECT_TYPE);
 }
@@ -2381,8 +2374,7 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
 {
     specCollCache_t *specCollCache;
     specColl_t *cachedSpecColl;
-    int status, i;
-    rodsObjStat_t rodsObjStat;
+    int status;
     char *accessStr;
     specCollPerm_t specCollPerm;
 

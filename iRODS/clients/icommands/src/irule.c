@@ -145,9 +145,9 @@ main(int argc, char **argv) {
       if ((mP = getMsParamByLabel (outParamArray, "ruleExecOut")) != NULL) {
 	execCmdOut = (execCmdOut_t *) mP->inOutStruct;
 	if (execCmdOut->stdoutBuf.buf != NULL) 
-	  fprintf(stdout,"%s",execCmdOut->stdoutBuf.buf);
+	  fprintf(stdout,"%s", (char *) execCmdOut->stdoutBuf.buf);
 	if (execCmdOut->stderrBuf.buf != NULL) 
-	  fprintf(stderr,"%s",execCmdOut->stderrBuf.buf);
+	  fprintf(stderr,"%s",(char *) execCmdOut->stderrBuf.buf);
       }
 	rcDisconnect(conn);
 	exit (4);
@@ -163,9 +163,9 @@ main(int argc, char **argv) {
       if ((mP = getMsParamByLabel (outParamArray, "ruleExecOut")) != NULL) {
 	execCmdOut = (execCmdOut_t *) mP->inOutStruct;
 	if (execCmdOut->stdoutBuf.buf != NULL) 
-	  fprintf(stdout,"%s",execCmdOut->stdoutBuf.buf);
+	  fprintf(stdout,"%s",(char *) execCmdOut->stdoutBuf.buf);
 	if (execCmdOut->stderrBuf.buf != NULL) 
-	  fprintf(stderr,"%s",execCmdOut->stderrBuf.buf);
+	  fprintf(stderr,"%s", (char *) execCmdOut->stderrBuf.buf);
       }
     }
     rcDisconnect(conn);
@@ -258,7 +258,7 @@ parseMsInputParam (int argc, char **argv, int optInd,
 	      printf("Default %s=%s\n    New %s=",valPtr,tmpPtr+1,valPtr);
 	      if (fgets(line,NAME_LEN,stdin) == NULL)
 		return(CAT_INVALID_ARGUMENT);
-	      if (line[strlen(line)-1] = '\n') 
+	      if ((line[strlen(line)-1] = '\n')) 
 		line[strlen(line)-1] = '\0';
 	      if (strlen(line) == 0)
 		addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,
@@ -272,7 +272,7 @@ parseMsInputParam (int argc, char **argv, int optInd,
 	      printf("Current %s=%s\n    New %s=",valPtr,tmpPtr,valPtr);
 	      if (fgets(line,NAME_LEN,stdin) == NULL)
 		return(CAT_INVALID_ARGUMENT);
-	      if (line[strlen(line)-1] = '\n') 
+	      if ((line[strlen(line)-1] = '\n')) 
 		line[strlen(line)-1] = '\0';
 	      if (strlen(line) == 0)
 		addMsParam (execMyRuleInp->inpParamArray, valPtr,STR_MS_T,

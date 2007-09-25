@@ -25,10 +25,8 @@ transStat_t **transStat)
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
     dataObjInfo_t *oldDataObjInfoHead = NULL;
-    dataObjInfo_t *destDataObjInfo = NULL;
     rescGrpInfo_t *myRescGrpInfo = NULL;
     ruleExecInfo_t rei;
-    int savedOopenFlags;
     int multiCopyFlag;
     char *accessPerm;
 

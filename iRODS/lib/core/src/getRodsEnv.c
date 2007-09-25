@@ -136,7 +136,6 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
    FILE *file;
    char buf[LARGE_BUF_LEN];
    char *fchar;
-   int i;
    int envFileFound;
    char *key;
    int msgLevel;

@@ -1,5 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more inforeplation please refer to files in the COPYRIGHT directory ***/
+#include <sys/time.h>
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -99,7 +100,6 @@ int
 initCondForTrim (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjInp)
 {
-    char *myResc = NULL;
     char tmpStr[NAME_LEN];
 
     if (dataObjInp == NULL) {

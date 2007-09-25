@@ -33,8 +33,7 @@ readServerConfig(rodsServerConfig_t *rodsServerConfig) {
    FILE *fptr;
    char buf[BUF_LEN];
    char *fchar;
-   int i, len;
-   int envFileFound;
+   int len;
    char *key;
    char *serverConfigFile;
 

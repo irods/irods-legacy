@@ -43,7 +43,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
     dataObjInfo_t *tmpDataObjInfo; 
     int l1descInx;
     int writeFlag;
-    int condQueryFlag;
     ruleExecInfo_t rei;
 
     /* query rcat for dataObjInfo and sort it */

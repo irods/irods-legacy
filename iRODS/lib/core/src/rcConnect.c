@@ -240,7 +240,6 @@ freeRcComm (rcComm_t *conn)
 int 
 cleanRcComm (rcComm_t *conn)
 {
-    int status;
 
     if (conn == NULL) {
         return (0);

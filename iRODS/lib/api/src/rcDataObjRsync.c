@@ -17,11 +17,9 @@ rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
  
     while (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
 	/* it is a server request */
-	char *msiOpr;
 	char *locFilePath;
         msParam_t *myMsParam;
         dataObjInp_t *dataObjInp = NULL;
-        bytesBuf_t dataObjInpBBuf;
 
 
 	if ((myMsParam = getMsParamByLabel (outParamArray, CL_PUT_ACTION))

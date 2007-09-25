@@ -127,7 +127,6 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int l1descInx;
     int copiesNeeded;
     int failedCount = 0;
-    int savedStatus = 0;
     int rescCnt;
     ruleExecInfo_t rei;
 

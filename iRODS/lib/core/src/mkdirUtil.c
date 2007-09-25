@@ -13,8 +13,6 @@ rodsPathInp_t *rodsPathInp)
     int i;
     int status; 
     int savedStatus = 0;
-    collInp_t collInp;
-    dataObjInp_t dataObjInp;
 
 
     if (rodsPathInp == NULL) {

@@ -112,7 +112,6 @@ portalOprOut_t **portalOprOut)
 {
     int l3descInx;
     int status;
-    dataObjInp_t *dataObjInp;
     dataOprInp_t dataOprInp;
 
     l3descInx = L1desc[l1descInx].l3descInx;

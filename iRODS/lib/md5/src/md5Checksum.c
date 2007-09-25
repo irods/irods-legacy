@@ -49,7 +49,7 @@ chksumLocFile (char *fileName, char *chksumStr)
     }
 
     MD5Init (&context);
-    while (len = fread (buffer, 1, MD5_BUF_SZ, file)) {
+    while ((len = fread (buffer, 1, MD5_BUF_SZ, file))) {
         MD5Update (&context, buffer, len);
     }
     MD5Final (digest, &context);

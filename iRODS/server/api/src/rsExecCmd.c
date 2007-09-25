@@ -236,7 +236,6 @@ execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd)
 {
     char cmdPath[LONG_NAME_LEN];
     char *av[LONG_NAME_LEN];
-    int i;
     int status;
 
     snprintf (cmdPath, LONG_NAME_LEN, "%s/%s", CMD_DIR, execCmdInp->cmd); 

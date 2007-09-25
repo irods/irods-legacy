@@ -1,5 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#include <sys/time.h>
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -297,7 +298,6 @@ dataObjCopyInp_t *dataObjCopyInp)
     struct timeval startTime, endTime;
     int syncFlag = 0;
     int cpFlag = 0;
-    char *chksum;
  
     if (srcPath == NULL || targPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -836,7 +836,7 @@ dataObjCopyInp_t *dataObjCopyInp)
     int status = 0;
     int savedStatus = 0;
     char *srcColl, *targColl;
-    char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
+    char targChildPath[MAX_NAME_LEN];
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
     int collLen;

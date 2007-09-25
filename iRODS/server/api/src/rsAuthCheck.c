@@ -11,13 +11,13 @@ int
 rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp, 
 		authCheckOut_t **authCheckOut)
 {
+#ifdef RODS_CAT
    int status;
    char *bufp;
    int privLevel;
    int clientPrivLevel;
    authCheckOut_t *result;
 
-#ifdef RODS_CAT
    *authCheckOut = malloc(sizeof(authCheckOut_t));
    memset((char *)*authCheckOut, 0, sizeof(authCheckOut_t));
 

@@ -11,18 +11,15 @@ rcExecMyRule (rcComm_t *conn, execMyRuleInp_t *execMyRuleInp,
 msParamArray_t **outParamArray)
 {
     int status;
-    dataObjInp_t *dataObjInp;
 
     status = procApiRequest (conn, EXEC_MY_RULE_AN, execMyRuleInp, NULL, 
         (void **)outParamArray, NULL);
  
     while (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
 	/* it is a server request */
-	char *msiOpr;
 	char *locFilePath;
         msParam_t *myMsParam;
         dataObjInp_t *dataObjInp = NULL;
-        bytesBuf_t dataObjInpBBuf;
 
 
 	if ((myMsParam = getMsParamByLabel (*outParamArray, CL_PUT_ACTION))

@@ -14,7 +14,6 @@ int
 rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 {
     int status;
-    int remoteFlag;
     int l3descInx;
     rodsServerHost_t *rodsServerHost;
     dataOprInp_t *dataOprInp;

@@ -381,7 +381,7 @@ char *outPath)
 
     snprintf (outPath, MAX_NAME_LEN,
       "%s/%s/%d/%d/%s.%d", vaultPath, userName, dir1, dir2, 
-      logicalFileName, time (NULL));
+      logicalFileName, (uint) time (NULL));
     return (0);
 }
 
@@ -553,7 +553,6 @@ getWriteFlag (int openFlag)
 int
 getCondQuery (keyValPair_t *condInput)
 {
-    char *myValue;
     int i;
 
     if (condInput == NULL) {
@@ -617,7 +616,6 @@ dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam)
     int status;
 
     char *chksumStr = NULL;	/* computed chksum string */
-    char *verifyChsum = NULL;   /* the chksum str to verify against */
     dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
     int oprType = L1desc[l1descInx].oprType;
     int srcL1descInx;
@@ -732,6 +730,7 @@ dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam)
         }
 	return (0);
     }
+    return (0);
 }
 
 int 
@@ -825,7 +824,6 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 {
     dataObjInfo_t *dataObjInfo;
     dataObjInp_t  *dataObjInp;
-    int rescTypeInx;
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
     dataObjInp = L1desc[l1descInx].dataObjInp;
@@ -1080,7 +1078,6 @@ renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
 fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag)
 {
     int len, status;
-    int fileType;
     char *oldPtr, *newPtr;
     int rescTypeInx = rescInfo->rescTypeInx;
     char *filePath = fileRenameInp->oldFileName;
@@ -1105,7 +1102,7 @@ fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag)
     newPtr = fileRenameInp->newFileName + len;
 
     snprintf (newPtr, MAX_NAME_LEN - len, "/%s%s.%-d", newDir, oldPtr, 
-     random());
+     (uint) random());
     
     if (renameFlag > 0) {
         status = rsFileRename (rsComm, fileRenameInp);
@@ -1127,7 +1124,7 @@ syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *dataObjInfoHead)
 {
     dataObjInfo_t *tmpDataObjInfo;
-    int status, status1;
+    int status;
     int savedStatus = 0;
 
     tmpDataObjInfo = dataObjInfoHead;

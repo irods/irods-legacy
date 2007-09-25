@@ -66,7 +66,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 	 }
       }
    }
-
+   return (0);
 }
 
 /*
@@ -83,8 +83,6 @@ showRuleExec(char *name, char *ruleName, int allFlag)
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
    int i, status;
    int printCount;
    char *columnNames[]={"id", "name", "rei_file_path", "user_name", 
@@ -194,9 +192,6 @@ showRuleExecBrief(char *name, int allFlag)
    int i2a[20];
    char *condVal[10];
    char v1[BIG_STR];
-   char v2[BIG_STR];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
    int i, status;
    int printCount;
 
@@ -254,7 +249,7 @@ showRuleExecBrief(char *name, int allFlag)
       printCount+= printGenQueryResults(Conn, status, genQueryOut, 
 					NULL, 1);
    }
-
+   return (0);
 }
 
 int
@@ -268,7 +263,6 @@ main(int argc, char **argv) {
    char *myName;
 
    char userName[NAME_LEN];
-   char zoneName[NAME_LEN];
 
    rodsLogLevel(LOG_ERROR);
 

@@ -159,7 +159,6 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
      char *destChksumStr = NULL;
     dataObjInfo_t *srcDataObjInfoHead = NULL;
     dataObjInfo_t *destDataObjInfoHead = NULL;
-    msParamArray_t *myMsParamArray;
     dataObjCopyInp_t dataObjCopyInp;
     char *destObjPath;
     transStat_t *transStat = NULL;

@@ -84,6 +84,7 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
       "/%-s/%-s.", PACKED_REI_DIR, REI_FILE_NAME);
 
     if (strstr (reiFilePath->value, reiDir) == NULL) {
+#ifdef RODS_CAT
         int i;
         char errMsg[105];
 
@@ -92,7 +93,6 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
 		reiFilePath->value);
 
         /* Try to unregister it anyway */
-#ifdef RODS_CAT
         status = chlDelRuleExec(rsComm, ruleExecDelInp->ruleExecId);
 
 	if (status) return(status);  /* that failed too, report it */

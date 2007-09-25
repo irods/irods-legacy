@@ -1,5 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#include <sys/time.h>
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "miscUtil.h"
@@ -175,7 +176,6 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
     int status;
     int savedStatus = 0;
     genQueryInp_t genQueryInp;
-    struct dirent *myDirent;
     char srcChildPath[MAX_NAME_LEN];
     genQueryOut_t *genQueryOut = NULL;
     int collLen;

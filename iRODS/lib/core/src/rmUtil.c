@@ -1,5 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#include <sys/time.h>
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "miscUtil.h"
@@ -157,15 +158,7 @@ int
 rmCollUtil (rcComm_t *conn, char *srcColl, rodsEnv *myRodsEnv, 
 rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
 {
-    int status, i;
-    int savedStatus = 0;
-    genQueryInp_t genQueryInp;
-    struct dirent *myDirent;
-    char srcChildPath[MAX_NAME_LEN];
-    genQueryOut_t *genQueryOut = NULL;
-    int collLen;
-    int continueInx;
-    struct timeval startTime, endTime;
+    int status;
 
     if (srcColl == NULL) {
        rodsLog (LOG_ERROR,
@@ -242,7 +235,7 @@ mkTrashPath (rcComm_t *conn, dataObjInp_t *dataObjInp, char *trashPath)
     tmpStr ++;
 
     sprintf (trashPath, "%s/trash/%s.%d", dataObjInp->objPath, tmpStr,
-      random ());
+      (uint) random ());
 
     if (strncmp (tmpStr, "home/", 5) == 0) {
         /* from home collection */

@@ -31,7 +31,6 @@ mkCollR (rcComm_t *conn, char *startColl, char *destColl)
     int startLen;
     int pathLen, tmpLen;
     char tmpPath[MAX_NAME_LEN];
-    struct stat statbuf;
     rodsPath_t rodsPath;
 
     startLen = strlen (startColl);
@@ -600,7 +599,6 @@ getNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult, 
 int *rowInx, collMetaInfo_t *outCollMetaInfo)
 {
-    int continueInx;
     char *value;
     int len;
     char *collType, *collInfo1, *collInfo2;
@@ -818,7 +816,6 @@ genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
 int *rowInx, dataObjMetaInfo_t *outDataObjMetaInfo)
 {
     int status;
-    int continueInx;
     char *value;
     int len;
     int nextInx;

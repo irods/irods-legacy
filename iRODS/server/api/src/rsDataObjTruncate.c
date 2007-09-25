@@ -21,8 +21,6 @@ int
 rsDataObjTruncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp)
 {
     int status;
-    ruleExecInfo_t rei;
-    int trashPolicy;
     dataObjInfo_t *dataObjInfoHead = NULL;
 
     dataObjTruncateInp->openFlags = O_WRONLY;  /* set the permission checking */
@@ -68,8 +66,6 @@ dataObjTruncateS (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
 dataObjInfo_t *dataObjInfo)
 {
     int status;
-    int retVal = 0;
-    unregDataObj_t unregDataObjInp;
 
     status = l3Truncate (rsComm, dataObjInfo);
 

@@ -134,7 +134,6 @@ dataObjUnlinkS (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
 dataObjInfo_t *dataObjInfo)
 {
     int status;
-    int retVal = 0;
     unregDataObj_t unregDataObjInp;
     ruleExecInfo_t rei;
 
@@ -232,7 +231,6 @@ rsMvDataObjToTrash (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *dataObjInfoHead)
 {
     int status;
-    int retVal = 0;
     ruleExecInfo_t rei;
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;

@@ -72,7 +72,7 @@ parseRodsPath (rodsPath_t *rodsPath, rodsEnv *myRodsEnv)
 #endif
         return (0);
     } else if (strcmp (rodsPath->inPath, ".") == 0 || 
-      (rodsPath->inPath, "./" == 0)) {
+      strcmp (rodsPath->inPath, "./") == 0) {
 	/* '.' or './' */
 	rstrcpy (rodsPath->outPath, myRodsEnv->rodsCwd, MAX_NAME_LEN);
         rodsPath->objType = COLL_OBJ_T;
@@ -261,7 +261,6 @@ addSrcInPath (rodsPathInp_t *rodsPathInp, char *inPath)
 {
     rodsPath_t *newSrcPath, *newTargPath;
     int newNumSrc;
-    int i;
 
     if (rodsPathInp == NULL || inPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -473,7 +472,7 @@ rodsPathInp_t *rodsPathInp, int oprType)
                     targPath->objType = LOCAL_FILE_T;
                 }
 
-	        /* collect/* collection */
+	        /* collection */
 	        getLastPathElement (srcPath->inPath, srcElement);
 	        if (strlen (srcElement) > 0) {
 		    snprintf (targPath->outPath, MAX_NAME_LEN, "%s/%s",
@@ -618,7 +617,7 @@ int
 getLastPathElement (char *inPath, char *lastElement)
 {
     char mydir[MAX_NAME_LEN];
-    int status, len;
+    int len;
 
     if (inPath == NULL) {
         *lastElement = '\0';

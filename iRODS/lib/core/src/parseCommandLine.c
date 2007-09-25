@@ -33,7 +33,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 		 rodsArguments_t *rodsArgs) {
    char opt;
 
-   int i, j;
+   int i;
 
    char fullOpts[]="aAbc:C:dD:efFghH:ikK:lmn:N:p:P:qrR:s:S:t:T:u:vVzZxWY:";
    char *opts;

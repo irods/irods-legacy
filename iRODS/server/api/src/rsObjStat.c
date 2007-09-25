@@ -104,16 +104,12 @@ rodsObjStat_t **rodsObjStatOut)
     genQueryOut_t *genQueryOut = NULL;
     int status;
     char condStr[MAX_NAME_LEN];
-    sqlResult_t *dataSize;
-    sqlResult_t *replStatus;
     sqlResult_t *dataId;
-    sqlResult_t *chksum;
     sqlResult_t *ownerName;
     sqlResult_t *ownerZone;
     sqlResult_t *createTime;
     sqlResult_t *modifyTime;
     sqlResult_t *collType;
-    sqlResult_t *collection;
     sqlResult_t *collInfo1;
     sqlResult_t *collInfo2;
 
@@ -244,10 +240,6 @@ rodsObjStat_t **rodsObjStatOut)
     sqlResult_t *ownerZone;
     sqlResult_t *createTime;
     sqlResult_t *modifyTime;
-    sqlResult_t *collType;
-    sqlResult_t *collection;
-    sqlResult_t *collInfo1;
-    sqlResult_t *collInfo2;
 
     /* see if objPath is a dataObj */
 
@@ -419,7 +411,6 @@ querySubInSpecColl (rsComm_t *rsComm, char *objPath,
 int inCachOnly, rodsObjStat_t **rodsObjStatOut)
 {
     int status;
-    char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
     dataObjInfo_t *dataObjInfo = NULL;
     specColl_t *specColl;
     specCollCache_t *specCollCache;
@@ -516,8 +507,6 @@ int
 specCollSubStat (rsComm_t *rsComm, specColl_t *specColl, 
 char *subPath, dataObjInfo_t **dataObjInfo)
 {
-    char phySubPath[MAX_NAME_LEN];
-    char *tmpPtr;
     int status;
     int objType;
     rodsStat_t *rodsStat = NULL;
@@ -680,7 +669,7 @@ int
 queueSpecCollCache (genQueryOut_t *genQueryOut)
 {
     specCollCache_t *tmpSpecCollCache;
-    int i, status;
+    int status;
     sqlResult_t *dataId;
     sqlResult_t *ownerName;
     sqlResult_t *ownerZone;

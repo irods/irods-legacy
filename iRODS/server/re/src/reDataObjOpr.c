@@ -16,7 +16,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjCreate")
 
@@ -78,7 +77,6 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjOpen")
 
@@ -127,7 +125,6 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjCloseInp_t dataObjCloseInp, *myDataObjCloseInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjClose")
 
@@ -475,7 +472,6 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjUnlink")
 
@@ -524,7 +520,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
     transStat_t *transStat = NULL;
 
     RE_TEST_MACRO ("    Calling msiDataObjRepl")
@@ -596,7 +591,6 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
-    int status;
     dataObjInp_t *myDataObjInp;
     transStat_t *transStat = NULL;
 
@@ -693,7 +687,6 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm_t *rsComm;
     dataObjInp_t *dataObjInp, *myDataObjInp;
     msParamArray_t *myMsParamArray;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjPut")
 
@@ -794,7 +787,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm_t *rsComm;
     dataObjInp_t *dataObjInp, *myDataObjInp;
     msParamArray_t *myMsParamArray;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjGet")
 
@@ -885,7 +877,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
     char *chksum = NULL;
 
     RE_TEST_MACRO ("    Calling msiDataObjChksum")
@@ -967,7 +958,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
     transStat_t *transStat = NULL;
 
     RE_TEST_MACRO ("    Calling msiDataObjPhymv")
@@ -1071,9 +1061,7 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjCopyInp_t dataObjRenameInp, *myDataObjRenameInp;
-    int status;
     dataObjInp_t *myDataObjInp;
-    transStat_t *transStat = NULL;
 
     RE_TEST_MACRO ("    Calling msiDataObjRename")
 
@@ -1163,7 +1151,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjTrim")
 
@@ -1256,7 +1243,6 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     collInp_t collCreateInp, *myCollCreateInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiCollCreate")
 
@@ -1327,7 +1313,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     collInp_t rmCollInp, *myRmCollInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiRmColl")
 
@@ -1411,7 +1396,6 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiPhyPathReg")
 
@@ -1500,7 +1484,6 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
     RE_TEST_MACRO ("    Calling msiObjStat")
@@ -1574,8 +1557,6 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
-    msParamArray_t *myMsParamArray;
-    int status;
 
     RE_TEST_MACRO ("    Calling msiDataObjRsync")
 
@@ -1677,9 +1658,7 @@ ruleExecInfo_t *rei)
     rsComm_t *rsComm; 
     execCmd_t execCmdInp, *myExecCmdInp;
     execCmdOut_t *execCmdOut = NULL;
-    int status;
     char *tmpPtr;
-    int myInt;
 
     RE_TEST_MACRO ("    Calling msiExecCmd")
 

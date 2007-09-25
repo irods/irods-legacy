@@ -100,7 +100,7 @@ usage ()
 " -r  recursive - remove the whole subtree; the collection, all data-objects",
 "     in the collection, and any subcollections and sub-data-objects in the",
 "     collection.",
-" -u  user(???)",
+" -u  user",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",

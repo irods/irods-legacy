@@ -82,7 +82,7 @@ void *buf, int len)
     bytesBuf_t dataObjReadInpBBuf;
     int bytesRead;
 
-    dataObjReadInpBBuf,len = len;
+    dataObjReadInpBBuf.len = len;
     dataObjReadInpBBuf.buf = buf;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {

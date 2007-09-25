@@ -233,6 +233,7 @@ printZoneInfo ()
 	  tmpRodsServerHost->hostName->name, tmpRodsServerHost->portNum);
 	tmpZoneInfo = tmpZoneInfo->next;
     }
+    return (0);
 }
 
 int
@@ -280,7 +281,6 @@ initRcatServerHostByFile (rsComm_t *rsComm)
     int lineLen, bytesCopied, remoteFlag;
     char keyWdName[MAX_NAME_LEN];
     int gptRcatFlag = 0;
-    rodsEnv *myEnv = &rsComm->myEnv;
 
     rcatCongFile =  (char *) malloc((strlen (getConfigDir()) +
         strlen(RCAT_HOST_FILE) + 24));
@@ -919,7 +919,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 int 
 setExecArg (char *commandArgv, char *av[])
 {
-    char *inpPtr, *outPtr, envBuf[MAX_NAME_LEN];
+    char *inpPtr, *outPtr;
     int inx = 1;
     int c;
     int len = 0;
@@ -1116,7 +1116,7 @@ initHostConfigByFile (rsComm_t *rsComm)
     char inbuf[MAX_NAME_LEN];
     char hostBuf[LONG_NAME_LEN];
     rodsServerHost_t *tmpRodsServerHost;
-    int lineLen, bytesCopied, remoteFlag;
+    int lineLen, bytesCopied;
     int status;
 
     hostCongFile =  (char *) malloc((strlen (getConfigDir()) +
@@ -1233,7 +1233,6 @@ rodsServerHost_t *myRodsServerHost)
 int
 disconnectAllSvrToSvrConn ()
 {
-    int status;
     rodsServerHost_t *tmpRodsServerHost;
 
     /* check if host exist */

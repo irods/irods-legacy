@@ -6,6 +6,8 @@
 #include "rsLog.h"
 #include "rsGlobalExtern.h"
 
+static time_t LogfileLastChkTime = 0;
+
 void
 getLogfileName (char **logFile, char *logDir, char *logFileName)
 {
@@ -14,7 +16,6 @@ getLogfileName (char **logFile, char *logDir, char *logFileName)
     struct tm *mytm;
     char *logfileIntStr;
     int logfileInt;
-    int i;
     int tm_mday = 1;
 #endif
     char myLogDir[MAX_NAME_LEN];
@@ -55,7 +56,7 @@ chkLogfileName (char *logDir, char *logFileName)
 {
     time_t myTime;
     char *logFile = NULL;
-    int status, i;
+    int i;
 
     myTime = time (0);
     if (myTime < LogfileLastChkTime + LOGFILE_CHK_INT) {

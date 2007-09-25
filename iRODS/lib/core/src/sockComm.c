@@ -221,7 +221,6 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
 {
     int nbytes;
     int status;
-    char tmpStr[NAME_LEN];
     int myLen;
     bytesBuf_t *headerBBuf = NULL;
 
@@ -250,7 +249,7 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
 
     if (getRodsLogLevel () <= LOG_DEBUG3) {
         printf ("sending header: len = %d\n%s\n", headerBBuf->len, 
-	  headerBBuf->buf);
+	  (char *) headerBBuf->buf);
     }
 
     myLen = htonl (headerBBuf->len);
@@ -642,7 +641,6 @@ int timeoutFlag)
 {
     int sock;
     int status;
-    int flag;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -1054,7 +1052,7 @@ irodsProt_t irodsProt)
 
     if (msgHeader.msgLen > 0) {
         if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
-            printf ("sending msg: \n%s\n", msgBBuf->buf);
+            printf ("sending msg: \n%s\n", (char *) msgBBuf->buf);
         }
         status = myWrite (sock, msgBBuf->buf, msgBBuf->len, SOCK_TYPE, NULL);
         if (status < 0) 
@@ -1063,7 +1061,7 @@ irodsProt_t irodsProt)
 
     if (msgHeader.errorLen > 0) {
         if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
-            printf ("sending error msg: \n%s\n", errorBBuf->buf);
+            printf ("sending error msg: \n%s\n", (char *) errorBBuf->buf);
         }
         status = myWrite (sock, errorBBuf->buf, errorBBuf->len, SOCK_TYPE, 
 	  NULL);
@@ -1122,7 +1120,7 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
 	  SOCK_TYPE, NULL);
 
         if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
-            printf ("received msg: \n%s\n", inputStructBBuf->buf);
+            printf ("received msg: \n%s\n", (char *) inputStructBBuf->buf);
         }
 
         if (nbytes != myHeader->msgLen) {
@@ -1146,7 +1144,7 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
 	  SOCK_TYPE, NULL);
 
         if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
-            printf ("received error msg: \n%s\n", errorBBuf->buf);
+            printf ("received error msg: \n%s\n", (char *) errorBBuf->buf);
         }
 
         if (nbytes != myHeader->errorLen) {

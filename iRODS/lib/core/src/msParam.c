@@ -322,7 +322,7 @@ printMsParam (msParamArray_t *outParamArray)
 	if (msParam->inOutStruct != NULL) {
 	    if (strcmp (msParam->type, STR_MS_T) == 0) {
 	        /* print the string */
-	        printf ("    str content: %s\n", msParam->inOutStruct);  
+	        printf ("    str content: %s\n", (char *) msParam->inOutStruct);  
 	    } else if (strcmp (msParam->type, INT_MS_T) == 0) {
                /* print the int */
                 printf ("    int content: %d\n", *(int *) msParam->inOutStruct);
@@ -346,11 +346,12 @@ printMsParam (msParamArray_t *outParamArray)
 		execCmdOut = (execCmdOut_t *) msParam->inOutStruct;
 		printf ("       status = %d\n", execCmdOut->status);
         	if (execCmdOut->stdoutBuf.buf != NULL) {
-                    printf ("       stdout = %s", execCmdOut->stdoutBuf.buf);
+                    printf ("       stdout = %s", 
+		      (char *) execCmdOut->stdoutBuf.buf);
                 }
                 if (execCmdOut->stderrBuf.buf != NULL) {
                     fprintf (stderr, "       strerr = %s", 
-		      execCmdOut->stderrBuf.buf);
+		      (char *) execCmdOut->stderrBuf.buf);
                 }
 	    }
 	}
@@ -422,7 +423,7 @@ rmMsParamByLabel (msParamArray_t *msParamArray, char *label, int freeStruct)
 int
 clearMsParamArray (msParamArray_t *msParamArray, int freeStruct)
 {
-    int i, j;
+    int i;
 
     if (msParamArray == NULL) {
         return 0;

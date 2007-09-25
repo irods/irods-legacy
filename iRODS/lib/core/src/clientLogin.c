@@ -37,7 +37,6 @@ clientLogin(rcComm_t *Conn)
    int status, len, i;
    authRequestOut_t *authReqOut;
    authResponseInp_t authRespIn;
-   char pwBuf[MAX_PASSWORD_LEN+1];
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
    struct stat statbuf;
@@ -107,10 +106,8 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    int status, len, i;
    authRequestOut_t *authReqOut;
    authResponseInp_t authRespIn;
-   char pwBuf[MAX_PASSWORD_LEN+1];
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
-   struct stat statbuf;
    MD5_CTX context;
 
    if (Conn->loggedIn == 1) {

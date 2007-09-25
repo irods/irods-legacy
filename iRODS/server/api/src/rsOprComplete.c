@@ -6,7 +6,6 @@
 int rsOprComplete (rsComm_t *rsComm, int *retval)
 {
     dataObjCloseInp_t dataObjCloseInp;
-    int status;
 
     if (*retval >= 2) {
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));

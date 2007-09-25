@@ -87,7 +87,7 @@ void *buf, int len)
     bytesBuf_t dataObjWriteInpBBuf;
     int bytesWritten;
 
-    dataObjWriteInpBBuf,len = len;
+    dataObjWriteInpBBuf.len = len;
     dataObjWriteInpBBuf.buf = buf;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {

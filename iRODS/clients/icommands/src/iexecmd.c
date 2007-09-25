@@ -102,7 +102,7 @@ main(int argc, char **argv) {
         rodsLogError (LOG_ERROR, status, "rcExecCmd error. ");
 	printErrorStack (conn->rError); 
         if (execCmdOut != NULL && execCmdOut->stderrBuf.buf != NULL) {
-            fprintf (stderr, "%s", execCmdOut->stderrBuf.buf);
+            fprintf (stderr, "%s", (char *) execCmdOut->stderrBuf.buf);
         }
 
         rcDisconnect(conn);
@@ -117,10 +117,10 @@ main(int argc, char **argv) {
 
     if (execCmdOut != NULL) {
         if (execCmdOut->stdoutBuf.buf != NULL) {
-            printf ("%s", execCmdOut->stdoutBuf.buf);
+            printf ("%s", (char *) execCmdOut->stdoutBuf.buf);
 	}
         if (execCmdOut->stderrBuf.buf != NULL) {
-            fprintf (stderr, "%s", execCmdOut->stderrBuf.buf);
+            fprintf (stderr, "%s", (char *) execCmdOut->stderrBuf.buf);
         }
     }
 

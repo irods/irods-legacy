@@ -1,6 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***
-/
+ *** For more information please refer to files in the COPYRIGHT directory ***/
 /* rsDataObjRename.c - rename a data object.
  */
 #include "dataObjRename.h"
@@ -92,13 +91,13 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 int
 _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 {
+#ifdef RODS_CAT
     int status;
     char srcColl[MAX_NAME_LEN], srcObj[MAX_NAME_LEN];
     char destColl[MAX_NAME_LEN], destObj[MAX_NAME_LEN];
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
     dataObjInfo_t *dataObjInfoHead = NULL;
     rodsLong_t srcId, destId;
-    ruleExecInfo_t rei;
     int multiCopyFlag;
     int renameFlag = 0;
 
@@ -121,7 +120,6 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         return (status);
     }
 
-#ifdef RODS_CAT
     multiCopyFlag = getMultiCopyPerResc ();
 
     if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {

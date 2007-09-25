@@ -16,8 +16,6 @@ packStruct (void *inStruct, bytesBuf_t **packedResult, char *packInstName,
 packInstructArray_t *myPackTable, int freePointer, irodsProt_t irodsProt)
 {
     int status;
-    packItem_t *packItemHead = NULL;
-    packItem_t *myPackedItem;
     packItem_t rootPackedItem;
     packedOutput_t packedOutput;
     void *inPtr;
@@ -48,7 +46,7 @@ packInstructArray_t *myPackTable, int freePointer, irodsProt_t irodsProt)
 	extendPackedOutput (&packedOutput, 1, (void **) &outPtr);
 	*outPtr = '\0';
         if (getRodsLogLevel () <= LOG_DEBUG2) {
-	    printf ("packed XML: \n%s\n", packedOutput.bBuf->buf);
+	    printf ("packed XML: \n%s\n", (char *) packedOutput.bBuf->buf);
 	}
     }
     *packedResult = packedOutput.bBuf;
@@ -60,8 +58,6 @@ unpackStruct (void *inPackedStr, void **outStruct, char *packInstName,
 packInstructArray_t *myPackTable, irodsProt_t irodsProt)
 {
     int status;
-    packItem_t *packItemHead = NULL;
-    packItem_t *myPackedItem;
     packItem_t rootPackedItem;
     packedOutput_t unpackedOutput;
     void *inPtr;
@@ -212,7 +208,6 @@ copyStrFromPiBuf (char **inBuf, char *outBuf, int dependentFlag)
     char *inPtr, *outPtr;
     int outLen = 0;
     int c;
-    int pointerFlag = 0; 
 
     inPtr = *inBuf;
     outPtr = outBuf;
@@ -637,7 +632,6 @@ resolveStrInItem (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
     packItem_t *tmpPackedItem;
     char *name;
     int aPointer;
-    int i;
 
 #if 0
     if (myPackedItem->name[0] == '*') {
@@ -868,7 +862,6 @@ int freePointer, irodsProt_t irodsProt)
     int elementSz;
     int typeInx;
     int myTypeNum;
-    int newOutLen;
     int i, status;
 
     typeInx = myPackedItem->typeInx;
@@ -991,7 +984,6 @@ int freePointer, irodsProt_t irodsProt)
     int elementSz;
     int typeInx;
     int myTypeNum;
-    int newOutLen;
     int i, j, status;
     void **pointerArray;
     void *pointer; 	/* working pointer */
@@ -1810,7 +1802,6 @@ irodsProt_t irodsProt)
     int elementSz;
     int typeInx;
     int myTypeNum;
-    int newOutLen;
     int i, status = 0;
 
     typeInx = myPackedItem->typeInx;
@@ -2127,10 +2118,8 @@ unpackNullString (void **inPtr, packedOutput_t *unpackedOutput,
 packItem_t *myPackedItem, irodsProt_t irodsProt)
 {
     int myStrlen;
-    void *outPtr;
     int numElement, numPointer;
     int myDim;
-    char endTag[MAX_NAME_LEN];
     char *myPtr;
     int tagLen;
 
@@ -2331,7 +2320,6 @@ int
 unpackDouble (void **inPtr, packedOutput_t *unpackedOutput, int numElement,
 packItem_t *myPackedItem, irodsProt_t irodsProt)
 {
-    int i;
     void *outPtr;
 
     if (numElement == 0) {
@@ -2416,7 +2404,6 @@ unpackXmlDoubleToOutPtr (void **inPtr, void **outPtr, int numElement,
 packItem_t *myPackedItem)
 {
     rodsLong_t *tmpDoublePtr;
-    void *inDoublePtr;
     int i;
     int myStrlen;
     int endTagLen;      /* the length of end tag */
@@ -2491,7 +2478,6 @@ irodsProt_t irodsProt, char *packInstructInp)
     }
 
     for (i = 0; i < numElement; i++) {
-        void *outPtr1, *outPtr2;
         unpackItemHead = NULL;
 
         status = parsePackInstruct ((char*)packInstruct, &unpackItemHead);
@@ -2570,7 +2556,6 @@ irodsProt_t irodsProt)
     int elementSz;
     int typeInx;
     int myTypeNum;
-    int newOutLen;
     int i, j, status;
     void **pointerArray;
     void *outPtr;
@@ -3004,8 +2989,6 @@ int flag)
 int
 parseXmlValue (void **inPtr, packItem_t *myPackedItem, int *endTagLen)
 {
-    char *inStrPtr, *tmpPtr;
-    int nameLen;
     int status;
     int strLen = 0;
 
@@ -3113,7 +3096,6 @@ int
 alignPackedOutput64 (packedOutput_t *packedOutput)
 {
     void *outPtr, *alignedOutPtr;
-    int remaining;
 
     if (packedOutput->bBuf == NULL || packedOutput->bBuf->buf == NULL ||
       packedOutput->bBuf->len == 0) {

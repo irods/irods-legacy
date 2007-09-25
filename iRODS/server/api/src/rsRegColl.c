@@ -52,6 +52,7 @@ rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp)
 int
 _rsRegColl (rsComm_t *rsComm, collInp_t *collCreateInp)
 {
+#ifdef RODS_CAT
     int status;
     collInfo_t collInfo;
     char *tmpStr;
@@ -72,7 +73,6 @@ _rsRegColl (rsComm_t *rsComm, collInp_t *collCreateInp)
             rstrcpy (collInfo.collInfo2, tmpStr, NAME_LEN);
         }
     }
-#ifdef RODS_CAT
     status = chlRegColl (rsComm, &collInfo);
     return (status);
 #else

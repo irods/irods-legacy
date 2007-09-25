@@ -156,6 +156,7 @@ daemonize (int runMode, int logFd)
 int usage (char *prog)
 {
     fprintf(stderr, "Usage: %s [-scva] [-D logDir] \n",prog);
+    return 0;
 }
 
 int
@@ -193,7 +194,7 @@ initRsComm (rsComm_t *rsComm)
 int
 reServerMain (rsComm_t *rsComm)
 {
-    int i, status = 0;
+    int status = 0;
     genQueryOut_t *genQueryOut = NULL;
     time_t endTime;
     int runCnt;

@@ -25,7 +25,6 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 {
     int status;
     dataObjInfo_t *tmpDataObjInfo;
-    modDataObjMeta_t modDataObjMetaInp;
     int allFlag;
     int verifyFlag; 
     int forceFlag;

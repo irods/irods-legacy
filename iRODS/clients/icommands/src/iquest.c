@@ -73,7 +73,6 @@ main(int argc, char **argv) {
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
     char *optStr;
-    rodsPathInp_t rodsPathInp;
     
 
     optStr = "h";

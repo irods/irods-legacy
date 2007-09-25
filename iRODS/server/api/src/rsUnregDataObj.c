@@ -38,6 +38,7 @@ rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
 int
 _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
 {
+#ifdef RODS_CAT
     dataObjInfo_t *dataObjInfo;
     keyValPair_t *condInput;
     int status;
@@ -45,7 +46,6 @@ _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp)
     condInput = unregDataObjInp->condInput;
     dataObjInfo = unregDataObjInp->dataObjInfo;
 
-#ifdef RODS_CAT
     status = chlUnregDataObj (rsComm, dataObjInfo, condInput);
     return (status);
 #else

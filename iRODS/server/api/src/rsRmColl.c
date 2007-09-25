@@ -429,7 +429,7 @@ int
 rsMkTrashPath (rsComm_t *rsComm, char *objPath, char *trashPath)
 {
     int status;
-    char *tmpStr, *savedTmpStr;
+    char *tmpStr;
     char startTrashPath[MAX_NAME_LEN];
     char destTrashColl[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     char *trashPathPtr;

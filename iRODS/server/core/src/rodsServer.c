@@ -1,5 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include "rodsServer.h"
 
 uint ServerBootTime;
@@ -7,7 +11,6 @@ uint ServerBootTime;
 int
 main(int argc, char **argv)
 {
-    int status;
     int c;
     int uFlag = 0;
     char tmpStr1[100], tmpStr2[100];
@@ -65,7 +68,6 @@ main(int argc, char **argv)
 #else
     if (getenv ("reServerOnThisServer") != NULL) {
 #endif
-	char *reServerOption;
 
         if (RODS_FORK () == 0) {  /* child */
             char *reServerOption = NULL;
@@ -120,7 +122,6 @@ int
 serverize (char *logDir)
 {
     char *logFile = NULL;
-    int status;
 
     getLogfileName (&logFile, logDir, RODS_LOGFILE);
 
@@ -373,7 +374,6 @@ execAgent (int newSock, startupPack_t *startupPack)
     char *myArgv[2];
     char buf[NAME_LEN];
     char *myBuf;
-    int i = 0;
 
     myBuf = malloc (NAME_LEN * 2);
     snprintf (myBuf, NAME_LEN * 2, "%s=%d", SP_NEW_SOCK, newSock);

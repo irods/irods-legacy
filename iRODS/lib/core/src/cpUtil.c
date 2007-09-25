@@ -1,5 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#include <sys/time.h>
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -214,7 +215,6 @@ cpCollUtil (rcComm_t *conn, char *srcColl, char *targColl,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 {
-    int i;
     int status = 0;
     int savedStatus = 0;
     genQueryInp_t genQueryInp;

@@ -166,7 +166,6 @@ char* outStr2, int maxOutLen2, char* key)
 int
 copyStrFromBuf (char **buf, char *outStr, int maxOutLen)
 {
-    int c;
     char *bufPtr, *outPtr;
     int len;
     int gotSpace;
@@ -230,7 +229,6 @@ isAllDigit (char *myStr)
 int 
 splitPathByKey (char *srcPath, char *dir, char *file, char key)
 {
-    int c;
     int pathLen, dirLen, fileLen; 
     char *srcPtr;
 
@@ -289,7 +287,6 @@ splitPathByKey (char *srcPath, char *dir, char *file, char key)
 int
 trimWS(char *s) 
 {
-  int i;
   char *t;
 
   t = s;
@@ -306,7 +303,6 @@ trimWS(char *s)
 int
 trimQuotes(char *s) 
 {
-  int i;
   char *t;
 
   if (*s == '\'' ||*s == '"' ) {
