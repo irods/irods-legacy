@@ -1,6 +1,6 @@
-#myTestRule||admAddAppRuleStruct(*B,,)##writeLine(stdout,a test for all rule application)##aa##writeLine(stdout,a test for all rule end application)|nop
-myTestRule||admAddAppRuleStruct(*B,,)##writeLine(stdout,a test for all rule application)##applyAllRules(aa,0)##writeLine(stdout,a test for all rule end application)|nop
-*B=core4
+#myTestRule||admAddAppRuleStruct(*B,,)##writeLine(stdout,a test for all rule application - begin)##applyAllRules(aa,0)##writeLine(stdout,a test for all rule end application - end)|nop
+myTestRule||admAddAppRuleStruct(*B,,)##writeLine(stdout,a test for all rule application - begin)##applyAllRules(aa,0,*DepthAllRuleBinaryFlag)##writeLine(stdout,a test for all rule application - end)|nop
+*B=core4%*DepthAllRuleBinaryFlag=$1
 ruleExecOut
 
 
