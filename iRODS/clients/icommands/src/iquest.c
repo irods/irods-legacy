@@ -20,6 +20,7 @@ usage () {
 "condition is of the form: <attribute> <rel-op> <value>",
 "rel-op is a relational operator: eg. =, <>, >,<, like, not like, between, etc.,",
 "value is either a constant or a wild-carded expression.",
+"One can also use a few aggregation operatos such as sum,count,min,max and avg.",
 "Use % and _ as wild-cards, and use \\ to escape them",
 "Options are:",
 " -h  this help",
@@ -30,6 +31,7 @@ usage () {
 " iquest \"User %-6.6s has %-5.5s access to file %s\" \"SELECT USER_NAME,  DATA_ACCESS_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \" %-5.5s access has been given to user %-6.6s for the file %s\" \"SELECT DATA_ACCESS_NAME, USER_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \"SELECT RESC_NAME, RESC_LOC, RESC_VAULT_PATH, DATA_PATH WHERE DATA_NAME = 't2' AND COLL_NAME = '/tempZone/home/rods'\"",
+" iquest \"User %-9.9s uses %14.14s bytes in %8.8s files in '%s'\" \"SELECT USER_NAME, sum(DATA_SIZE),count(DATA_NAME),RESC_NAME\"",
 ""};
    int i;
    for (i=0;;i++) {
