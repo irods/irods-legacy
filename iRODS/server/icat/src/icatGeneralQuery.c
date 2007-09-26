@@ -630,15 +630,25 @@ handleCompoundCondition(char *condition, int prevWhereLen)
 void 
 setOrderBy(genQueryInp_t genQueryInp, int column) {
    int i, j;
+   int selectOpt, isAggregated;
    for (i=0;i<genQueryInp.selectInp.len;i++) { 
       if (genQueryInp.selectInp.inx[i] == column) {
-	 for (j=0;j<nColumns;j++) {
-	    if (Columns[j].defineValue == column) {
-	       if (strlen(orderBySQL)>10) {
-		  rstrcat(orderBySQL, ", ", MAX_SQL_SIZE);
+	 selectOpt = genQueryInp.selectInp.value[i]&0xf;
+	 isAggregated=0;
+	 if (selectOpt == SELECT_MIN) isAggregated=1;
+	 if (selectOpt == SELECT_MAX) isAggregated=1;
+	 if (selectOpt == SELECT_SUM) isAggregated=1;
+	 if (selectOpt == SELECT_AVG) isAggregated=1;
+	 if (selectOpt == SELECT_COUNT) isAggregated=1;
+	 if (isAggregated==0) {
+	    for (j=0;j<nColumns;j++) {
+	       if (Columns[j].defineValue == column) {
+		  if (strlen(orderBySQL)>10) {
+		     rstrcat(orderBySQL, ", ", MAX_SQL_SIZE);
+		  }
+		  rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE);
+		  break;
 	       }
-	       rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE);
-	       break;
 	    }
 	 }
       }
