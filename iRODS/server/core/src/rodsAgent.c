@@ -6,6 +6,7 @@
 
 #include "rodsAgent.h"
 #include "rsApiHandler.h"
+#include "icatHighLevelRoutines.h"
 
 #define SERVER_DEBUG 1
 int
