@@ -1067,7 +1067,6 @@ function RodsBrowser(inipath, _ssid)
       
       //this.createRodsCollDataStore('browse.php?ruri=rods.tempZone:RODS@rt.sdsc.edu:1247/tempZone/home/rods');    
       this.createRodsCollDataStore();
-      this.createRodsResourceDataStore();
       this.createRodsCollBrowseGrid(coll_list_data);         
       this.createRodsDirTree();
       
@@ -1345,66 +1344,6 @@ function RodsBrowser(inipath, _ssid)
       tree.expandPath('/'+rpath_tree);
       tree.selectPath('/'+rpath_tree);
     },
-	  
-	  createRodsResourceDataStore : function() 
-	  {
-	    if (!resources)
-        resources={ }; 
-      var acct_str=rpath_grid.substring(0,rpath_grid.indexOf('/'));
-    
-      if (!resources.acct_str)
-	    {
-	      // create the Data Store
-        resources.acct_str = new Ext.data.Store({
-            proxy: new Ext.data.HttpProxy({
-                url: 'services/getResources.php'
-            }),
-            
-            // create reader that reads the Topic records
-            reader: new Ext.data.JsonReader({
-                successProperty: 'success',
-                root: 'que_results',
-                totalProperty: 'totalCount',
-                id: 'id'
-            }, [
-                {name: 'id', mapping: 'id'},
-                {name: 'name', mapping: 'name'},
-                {name: 'type', mapping: 'type'},
-                {name: 'zone', mapping: 'zone'},
-                {name: 'class', mapping: 'class'},
-                {name: 'loc', mapping: 'loc'},
-                {name: 'info', mapping: 'info'},
-                {name: 'comment', mapping: 'comment'},
-                {name: 'vault_path', mapping: 'vault_path'},
-                {name: 'free_space', mapping: 'free_space'},
-                {name: 'ctime', mapping: 'ctime', type: 'date', dateFormat: 'timestamp'},
-                {name: 'mtime', mapping: 'mtime', type: 'date', dateFormat: 'timestamp'}
-            ]),
-  
-            // turn off remote sorting
-            remoteSort: false
-        });
-        resources.acct_str.setDefaultSort('mtime', 'desc'); 
-      
-        resources.acct_str.on('beforeload', function() {
-          resources.acct_str.baseParams = {'ruri': rpath_grid};
-        });
-        
-        /*
-        resources.acct_str.on('loadexception', function() {
-          //var resp=resources.acct_str.reader.read();
-          //alert("loading resource failed!"+resp.errors);
-          alert("loading resource failed!");
-        });
-        */
-      
-        resources.acct_str.proxy.getConnection().
-          on('requestcomplete', jsonErrorResponseHandler);
-        resources.acct_str.load();
-        
-      }
-      
-	  },
 	  
 	  createRodsCollDataStore : function() 
 	  {
@@ -1780,20 +1719,62 @@ function RodsBrowser(inipath, _ssid)
       
       function makeResourceBox()
       {
+        var resources = new Ext.data.Store({
+            proxy: new Ext.data.HttpProxy({
+                url: 'services/getResources.php'
+            }),
+            
+            // create reader that reads the Topic records
+            reader: new Ext.data.JsonReader({
+                successProperty: 'success',
+                root: 'que_results',
+                totalProperty: 'totalCount',
+                id: 'id'
+            }, [
+                {name: 'id', mapping: 'id'},
+                {name: 'name', mapping: 'name'},
+                {name: 'type', mapping: 'type'},
+                {name: 'zone', mapping: 'zone'},
+                {name: 'class', mapping: 'class'},
+                {name: 'loc', mapping: 'loc'},
+                {name: 'info', mapping: 'info'},
+                {name: 'comment', mapping: 'comment'},
+                {name: 'vault_path', mapping: 'vault_path'},
+                {name: 'free_space', mapping: 'free_space'},
+                {name: 'ctime', mapping: 'ctime', type: 'date', dateFormat: 'timestamp'},
+                {name: 'mtime', mapping: 'mtime', type: 'date', dateFormat: 'timestamp'}
+            ]),
+  
+            // turn off remote sorting
+            remoteSort: false
+        });
+        
+        resources.on('beforeload', function() {
+          this.baseParams = {'ruri': rpath_grid};
+        });
+        
+        resources.proxy.getConnection().
+          on('requestcomplete', jsonErrorResponseHandler);
+        
         var resource_box = new Ext.form.ComboBox({
                  fieldLabel: 'Resource',
-                 typeAhead: true,
-                 store: resources.acct_str, 
+                 store: resources, 
                  displayField:'name',
-                 //mode: 'local',
+                 valueFiled: 'name',
                  emptyText:'Select a Resource...',
                  selectOnFocus:true,
                  allowBlank:false,
                  hiddenName: 'resource',
-                 editable: false,
+                 //triggerAction: 'all',
                  forceSelection:true
-            });
-        
+        });
+        resource_box.on('beforerender', function(){
+          this.store.load();
+        });
+        resource_box.store.on("load",function(store){
+          this.clearValue();
+          this.setValue(store.getAt(0).data.name);
+        },resource_box);
         return resource_box;
       }
       
@@ -1841,6 +1822,22 @@ function RodsBrowser(inipath, _ssid)
           upload_dialog.uploadForm=uploadForm;
           upload_dialog.resourcebox=myRescBox;
           
+          upload_dialog.on('beforeshow',function(){
+            var cur_acct=rpath_grid.substring(0,rpath_grid.indexOf('/'));
+            if (!this.ruri_acct)
+              this.ruri_acct=cur_acct;
+            else
+            if (this.ruri_acct!=cur_acct) // if acct has changed
+            {
+              this.resourcebox.store.reload();
+              this.ruri_acct=cur_acct;
+            }
+            else
+            {
+              //do nothing if acct hasn't changed 
+            }
+          });
+          
           upload_dialog.addKeyListener(27, upload_dialog.hide, upload_dialog); // ESC can also close the dialog
           upload_dialog.addButton('OK', uploadHandler, upload_dialog);    // Could call a save function instead of hiding
           upload_dialog.addButton('Cancel', upload_dialog.hide, upload_dialog);
@@ -1851,7 +1848,7 @@ function RodsBrowser(inipath, _ssid)
           fileUploadField.setRawValue('');
         }
         
-        upload_dialog.resourcebox.setValue(resources.acct_str.getAt(0).data.name);
+        //upload_dialog.resourcebox.setValue(resources.acct_str.getAt(0).data.name);
         upload_dialog.show(btn.getEl());
       }
       
@@ -1991,12 +1988,27 @@ function RodsBrowser(inipath, _ssid)
           new_file_dialog.newFileForm=newFileForm;
           new_file_dialog.resourcebox=myRescBox;
           
+          new_file_dialog.on('beforeshow',function(){
+            var cur_acct=rpath_grid.substring(0,rpath_grid.indexOf('/'));
+            if (!this.ruri_acct)
+              this.ruri_acct=cur_acct;
+            else
+            if (this.ruri_acct!=cur_acct) // if acct has changed
+            {
+              this.resourcebox.store.reload();
+              this.ruri_acct=cur_acct;
+            }
+            else
+            {
+              //do nothing if acct hasn't changed 
+            }
+          });
+          
           new_file_dialog.addKeyListener(27, new_file_dialog.hide, new_file_dialog); // ESC can also close the dialog
           new_file_dialog.addButton('OK', newFileHandler, new_file_dialog);    // Could call a save function instead of hiding
           new_file_dialog.addButton('Cancel', new_file_dialog.hide, new_file_dialog);
        }
         
-         new_file_dialog.resourcebox.setValue(resources.acct_str.getAt(0).data.name);
          new_file_dialog.show(btn.getEl());
       }
       
