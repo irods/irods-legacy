@@ -12,6 +12,7 @@ print_hello(ruleExecInfo_t *rei)
   ***/
   RE_TEST_MACRO ("Test for print_hello\n");
   fprintf(stdout, "Hello\n");
+  _writeString("stdout", "Hello\n", rei);
   return(0);
 }
 int
