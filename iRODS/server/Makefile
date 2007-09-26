@@ -128,8 +128,6 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/miscMS.o \
 		$(svrReObjDir)/printMS.o \
 		$(svrReObjDir)/reDataObjOpr.o \
-		$(svrReObjDir)/reEraActions.o \
-		$(svrReObjDir)/reEraHelpers.o \
 		$(svrReObjDir)/reHelpers1.o \
 		$(svrReObjDir)/reHelpers2.o \
 		$(svrReObjDir)/reIn2p3SysRule.o \
