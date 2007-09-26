@@ -29,7 +29,8 @@ int msiGetValByKey(msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  r
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
 int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
 	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
-int msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, ruleExecInfo_t *rei);
+int msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, 
+	msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei);
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 int msiGetDataObjChksumsTimeStampsFromAVU(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 int msiAddDataObjChksumsTimeStampsToAVU(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
@@ -159,7 +160,7 @@ microsdef_t MicrosTable[] = {
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},
   {"assign",2,(funcPtr) assign},
   {"ifExec",5,(funcPtr) ifExec},
-  {"applyAllRules",2,(funcPtr) msiApplyAllRules},
+  {"applyAllRules",3,(funcPtr) msiApplyAllRules},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
   {"msiGetDataObjChksumsTimeStampsFromAVU",2,(funcPtr) msiGetDataObjChksumsTimeStampsFromAVU},
   {"msiAddDataObjChksumsTimeStampsToAVU",2,(funcPtr) msiAddDataObjChksumsTimeStampsToAVU},

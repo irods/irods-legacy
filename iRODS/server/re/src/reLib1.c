@@ -335,6 +335,13 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
 
+  if (GlobalAllRuleExecFlag != 0) {
+    ii = GlobalAllRuleExecFlag;
+    i = applyAllRules(inAction, inMsParamArray, rei, reiSaveFlag, GlobalAllRuleExecFlag);
+    GlobalAllRuleExecFlag = ii;
+    return(i);
+  }
+
   ruleInx = -1; /* new rule */
 
 
@@ -455,7 +462,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 
 int
 applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
-	  ruleExecInfo_t *rei, int reiSaveFlag)
+	  ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag)
 {
   int ruleInx, argc,i, status;
   char *nextRule;
@@ -479,14 +486,19 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
   ruleInx = -1; /* new rule */
   outMsParamArray =  NULL;
 
+  GlobalAllRuleExecFlag = allRuleExecFlag;
+
   if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
     i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    GlobalAllRuleExecFlag = 0;
     return(i);
   }
 
   i = parseAction(inAction,action,args, &argc);
-  if (i != 0)
+  if (i != 0) {
+    GlobalAllRuleExecFlag = 0;
     return(i);
+  }
 
   mapExternalFuncToInternalProc(action);
 
@@ -497,6 +509,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     i = executeMicroServiceNew(action,inMsParamArray,rei);
 #endif
     i = executeMicroServiceNew(inAction,inMsParamArray,rei);
+    GlobalAllRuleExecFlag = 0;
     return(i);
   }
 
@@ -505,8 +518,10 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
     if (outMsParamArray == NULL) {
       i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
-      if (i != 0)
+      if (i != 0) {
+	GlobalAllRuleExecFlag = 0;
 	return(i);
+      }
       outMsParamArray = rei->msParamArray;
       
     }
@@ -551,6 +566,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
 	  /**** finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
+		GlobalAllRuleExecFlag = 0;
 		return(status); ***/
 	  success = 1;
 	}
@@ -558,6 +574,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
 	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);
+	  GlobalAllRuleExecFlag = 0;
 	  return(status);
 	}
 	else if ( status == RETRY_WITHOUT_RECOVERY_ERR) {
@@ -583,6 +600,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
   }
   if (i == NO_MORE_RULES_ERR) {
     rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, i);
+    GlobalAllRuleExecFlag = 0;
     if (success == 1)
       return(0);
     else
@@ -591,10 +609,10 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
 
-
   if (status < 0) {
       rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, status);
   }
+  GlobalAllRuleExecFlag = 0;
   if (success == 1)
     return(0);
   else
@@ -713,6 +731,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   strcpy(r2,irbSet);
   coreRuleStrct.MaxNumOfRules = 0;
   appRuleStrct.MaxNumOfRules = 0;
+  GlobalAllRuleExecFlag = 0;
 
   while (strlen(r2) > 0) {
     i = rSplitStr(r2,r1,NAME_LEN,r3,RULE_SET_DEF_LENGTH,',');
