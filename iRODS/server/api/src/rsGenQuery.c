@@ -47,7 +47,6 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 	     genQueryOut_t **genQueryOut)
 {
     int status;
-    genQueryOut_t *result;
 
     /*  printGenQI(genQueryInp);  for debug */
 

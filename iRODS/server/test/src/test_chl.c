@@ -68,7 +68,6 @@ int testRename(rsComm_t *rsComm, char *id, char *newName) {
 }
 
 int testLogin(rsComm_t *rsComm, char *User, char *pw, char *pw1) {
-   int intId;
    int status, stat2;
    rcComm_t *Conn;
    rErrMsg_t errMsg;
@@ -119,7 +118,6 @@ int testTempPw(rsComm_t *rsComm) {
 }
 
 int testTempPwConvert(char *s1, char *s2) {
-   int status;
    char md5Buf[100];
    unsigned char digest[RESPONSE_LEN+2];
    char digestStr[100];
@@ -338,7 +336,6 @@ int testDelRule(rsComm_t *rsComm, char *name) {
 int testRegDataObj(rsComm_t *rsComm, char *name, 
 		   char *dataType, char *filePath) {
    dataObjInfo_t dataObjInfo;
-   userInfo_t userInfo;
 
    strcpy(dataObjInfo.objPath, name);
    dataObjInfo.replNum=1;
@@ -360,7 +357,7 @@ int testModDataObjMeta(rsComm_t *rsComm, char *name,
    int status;
    keyValPair_t regParam;
    char tmpStr[LONG_NAME_LEN], tmpStr2[LONG_NAME_LEN];
-   int replStatus;
+   /*   int replStatus; */
 
    memset(&dataObjInfo,0,sizeof(dataObjInfo_t));
 
@@ -403,7 +400,6 @@ int testModDataObjMeta2(rsComm_t *rsComm, char *name,
    int status;
    keyValPair_t regParam;
    char tmpStr[LONG_NAME_LEN], tmpStr2[LONG_NAME_LEN];
-   int replStatus;
 
    memset(&dataObjInfo,0,sizeof(dataObjInfo_t));
 
@@ -470,7 +466,7 @@ int testModRuleMeta(rsComm_t *rsComm, char *id,
    char ruleId[100];
    int status;
    keyValPair_t regParam;
-   char tmpStr[LONG_NAME_LEN], tmpStr2[LONG_NAME_LEN];
+   char tmpStr[LONG_NAME_LEN];
 
    /*   memset(&ruleInfo,0,sizeof(ruleExecSubmitInp_t)); */
 
@@ -505,8 +501,6 @@ int testRegReplica(rsComm_t *rsComm, char *srcPath, char *srcDataId,
    dataObjInfo_t dstDataObjInfo;
    keyValPair_t condInput;
    int status;
-   char tmpStr[LONG_NAME_LEN], tmpStr2[LONG_NAME_LEN];
-   int replStatus;
 
    memset(&srcDataObjInfo,0,sizeof(dataObjInfo_t));
    memset(&dstDataObjInfo,0,sizeof(dataObjInfo_t));
@@ -566,7 +560,7 @@ int
 main(int argc, char **argv) {
    int status;
    rsComm_t *Comm;
-   rErrMsg_t errMsg;
+   /*   rErrMsg_t errMsg;*/
    rodsArguments_t myRodsArgs;
    char *mySubName;
    char *myName;

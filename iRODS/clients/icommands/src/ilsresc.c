@@ -55,7 +55,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 	 }
       }
    }
-
+   return(printCount);
 }
 
 /*
@@ -234,7 +234,6 @@ showRescGroups(int longOption)
    int i1b[20]={0,0,0,0,0,0,0,0,0,0,0,0};
    int i2a[20];
    char *condVal[10];
-   char v1[BIG_STR];
    int i, status;
 
    memset(&genQueryInp, 0, sizeof(genQueryInp));
@@ -295,7 +294,7 @@ showRescGroups(int longOption)
 
 int
 main(int argc, char **argv) {
-   int status, i, j;
+   int status;
    rErrMsg_t errMsg;
 
    rodsArguments_t myRodsArgs;

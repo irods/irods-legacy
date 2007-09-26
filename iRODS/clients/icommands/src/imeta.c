@@ -75,7 +75,7 @@ showDataObj(char *name, char *attrName, int wild)
    char fullName[LONG_NAME_LEN];
    char myDirName[LONG_NAME_LEN];
    char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int status;
    /* "id" only used in testMode :*/
    char *columnNames[]={"attribute", "value", "units", "id"};
 
@@ -186,9 +186,7 @@ showColl(char *name, char *attrName, int wild)
    char v1[BIG_STR];
    char v2[BIG_STR];
    char fullName[LONG_NAME_LEN];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int  status;
    char *columnNames[]={"attribute", "value", "unit"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -280,9 +278,7 @@ showResc(char *name, char *attrName, int wild)
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int  status;
    char *columnNames[]={"attribute", "value", "unit"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -364,9 +360,7 @@ showUser(char *name, char *attrName, int wild)
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int status;
    char *columnNames[]={"attribute", "value", "unit"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -446,10 +440,7 @@ int queryDataObj(char *attribute, char *op, char *value) {
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char fullName[LONG_NAME_LEN];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int status;
    char *columnNames[]={"collection", "dataObj"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -505,10 +496,7 @@ int queryCollection(char *attribute, char *op, char *value) {
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char fullName[LONG_NAME_LEN];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int status;
    char *columnNames[]={"collection"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -562,10 +550,7 @@ int queryResc(char *attribute, char *op, char *value) {
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char fullName[LONG_NAME_LEN];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int status;
    char *columnNames[]={"resource"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -619,10 +604,7 @@ int queryUser(char *attribute, char *op, char *value) {
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
-   char fullName[LONG_NAME_LEN];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
-   int i, status;
+   int status;
    char *columnNames[]={"user"};
 
    printCount=0;
@@ -807,7 +789,7 @@ modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
 /* 
  Prompt for input and parse into tokens
 */
-int
+void
 getInput(char *cmdToken[], int maxTokens) {
    int lenstr, i;
    static char ttybuf[BIG_STR];
@@ -829,7 +811,7 @@ getInput(char *cmdToken[], int maxTokens) {
       if (ttybuf[i]=='\n') {
 	 ttybuf[i]='\0';
 	 cmdToken[nTokens++]=cpTokenStart;
-	 return(0);
+	 return;
       }
       if (tokenFlag==0) {
 	 if (ttybuf[i]=='\'') {
@@ -882,10 +864,6 @@ getInput(char *cmdToken[], int maxTokens) {
  */
 int
 doCommand(char *cmdToken[]) {
-   int OK;
-   char buf0[MAX_PASSWORD_LEN+10];
-   char buf1[MAX_PASSWORD_LEN+10];
-   char buf2[MAX_PASSWORD_LEN+10];
    int wild, doLs;
    if (strcmp(cmdToken[0],"help")==0 ||
 	      strcmp(cmdToken[0],"h") == 0) {
@@ -1313,4 +1291,5 @@ usage(char *subOpt)
       printf("Sorry, either %s is an invalid command or the help has not been written yet\n",
 	     subOpt);
    }
+   return(0);
 }

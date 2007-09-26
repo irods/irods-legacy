@@ -21,6 +21,8 @@
 #include "icatHighLevelRoutines.h"
 #include "icatLowLevel.h"
 
+extern int get64RandomBytes(char *buf);
+
 /* 
    Legal values for accessLevel in  chlModAccessControl (Access Parameter).
    Defined here since other code does not need them (except for help messages)
@@ -58,6 +60,7 @@ int chlDebug(char *debugMode) {
       chlDebugGenUpdate(0);
       cmlDebug(0);
    }
+   return(0);
 }
 
 int chlOpen(char *DBUser, char *DBpasswd) {
@@ -101,7 +104,6 @@ chlGetRcs()
 int
 getLocalZone()
 {
-   char tSQL[MAX_SQL_SIZE];
    int status;
    if (localZone[0]=='\0') {
       if (logSQL) rodsLog(LOG_SQL, "getLocalZone SQL 1 ");
@@ -139,7 +141,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 
    char logicalFileName[MAX_NAME_LEN];
    char logicalDirName[MAX_NAME_LEN];
-   char tSQL[MAX_SQL_SIZE];
    char *theVal;
    char replNum1[MAX_NAME_LEN];
 
@@ -499,7 +500,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    char myTime[50];
    char logicalFileName[MAX_NAME_LEN];
    char logicalDirName[MAX_NAME_LEN];
-   rodsLong_t seqNum, iVal;
+   rodsLong_t iVal;
    rodsLong_t status;
    char tSQL[MAX_SQL_SIZE];
    char *cVal[30];
@@ -567,9 +568,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    snprintf(replNumString, MAX_NAME_LEN, "%d", srcDataObjInfo->replNum);
    snprintf(tSQL, MAX_SQL_SIZE,
 	    "select %s from r_data_main where data_id = ? and data_repl_num = ?",
-	    theColls,
-	    srcDataObjInfo->dataId,
-	    srcDataObjInfo->replNum);
+	    theColls);
    if (logSQL) rodsLog(LOG_SQL, "chlRegReplica SQL 3");
    status = cmlGetOneRowFromSqlV2(tSQL, cVal, nColumns, 
 				   objIdString, replNumString, &icss);
@@ -733,8 +732,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       cllBindVarCount=2;
       if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 5");
       snprintf(tSQL, MAX_SQL_SIZE, 
-	    "delete from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?) and data_name=?",
-	    logicalDirName, logicalFileName);
+	    "delete from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?) and data_name=?");
    }
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
    if (status) {
@@ -783,7 +781,6 @@ int chlRegRuleExec(rsComm_t *rsComm,
    rodsLong_t seqNum;
    char ruleExecIdNum[MAX_NAME_LEN];
    int status;
-   char tSQL[MAX_SQL_SIZE];
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegRuleExec");
    if (!icss.status) {
@@ -850,20 +847,12 @@ int chlRegRuleExec(rsComm_t *rsComm,
  */
 int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
 		      keyValPair_t *regParam) {
-   int i, j, status, upCols;
-   int status2;
+   int i, j, status;
 
    char tSQL[MAX_SQL_SIZE];
    char *theVal;
 
-   char *selectCols[10];
-   char *selectConds[10];
-   char idVal[MAX_NAME_LEN];
-   int numConditions;
-
    int maxCols=90;
-   char *updateCols[90];
-   char *updateVals[90];
 
    /* regParamNames has the argument names (in regParam) that this
       routine understands and colNames has the corresponding column
@@ -936,7 +925,6 @@ int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
 int chlDelRuleExec(rsComm_t *rsComm, 
 	       char *ruleExecId) {
    int status;
-   char tSQL[MAX_SQL_SIZE];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelRuleExec");
 
@@ -984,7 +972,6 @@ int chlDelRuleExec(rsComm_t *rsComm,
  */
 int chlTest(rsComm_t *rsComm, char *name) {
    dataObjInfo_t dataObjInfo;
-   userInfo_t userInfo;
 
    strcpy(dataObjInfo.objPath, name);
    dataObjInfo.replNum=1;
@@ -1004,7 +991,6 @@ int chlTest(rsComm_t *rsComm, char *name) {
 /* register a Resource */
 int chlRegResc(rsComm_t *rsComm, 
 	       rescInfo_t *rescInfo) {
-   int i;
    rodsLong_t seqNum;
    char idNum[MAX_SQL_SIZE];
    int status;
@@ -1107,7 +1093,6 @@ int chlRegResc(rsComm_t *rsComm,
 int chlDelResc(rsComm_t *rsComm, 
 	       rescInfo_t *rescInfo) {
    int status;
-   char tSQL[MAX_SQL_SIZE];
    rodsLong_t iVal;
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc");
@@ -1207,7 +1192,6 @@ int chlCommit(rsComm_t *rsComm) {
 /* Delete a User, Rule Engine version */
 int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    int status;
-   collInfo_t collInfo;
    char iValStr[200];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE");
@@ -1278,12 +1262,8 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
    rodsLong_t iVal;
-   char dataIdNum[MAX_NAME_LEN];
    char collIdNum[MAX_NAME_LEN];
-   char dataSizeNum[MAX_NAME_LEN];
-   char dataStatusNum[MAX_NAME_LEN];
    char nextStr[MAX_NAME_LEN];
-   char nextStr2[MAX_SQL_SIZE];
    char currStr[MAX_NAME_LEN];
    char currStr2[MAX_SQL_SIZE];
    int status;
@@ -1432,12 +1412,8 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
    rodsLong_t iVal;
-   char dataIdNum[MAX_NAME_LEN];
    char collIdNum[MAX_NAME_LEN];
-   char dataSizeNum[MAX_NAME_LEN];
-   char dataStatusNum[MAX_NAME_LEN];
    char nextStr[MAX_NAME_LEN];
-   char nextStr2[MAX_SQL_SIZE];
    char currStr[MAX_NAME_LEN];
    char currStr2[MAX_SQL_SIZE];
    rodsLong_t status;
@@ -1473,7 +1449,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       }
       return(status);
    }
-   snprintf(collIdNum, MAX_NAME_LEN, "%d", status);
+   snprintf(collIdNum, MAX_NAME_LEN, "%lld", status);
 
    /* Check that the path is not already a dataObj */
    if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 2");
@@ -1677,8 +1653,6 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 		   int format, int *control,
 		   char *outBuf, int maxOutBuf) {
    int stmtNum, status, nCols, i, needToGet, didGet;
-   char tStr;
-   char tBuf[100];
    int rowSize;
    int rows;
 
@@ -1827,13 +1801,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    rodsLong_t iVal;
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
-   char dataIdNum[MAX_NAME_LEN];
-   char collIdNum[MAX_NAME_LEN];
-   char parentCollIdNum[MAX_NAME_LEN];
-   char dataSizeNum[MAX_NAME_LEN];
-   char dataStatusNum[MAX_NAME_LEN];
    int status;
-   char tSQL[MAX_SQL_SIZE];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin");
 
@@ -1940,10 +1908,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    char logicalParentDirName[MAX_NAME_LEN];
    char collIdNum[MAX_NAME_LEN];
    char parentCollIdNum[MAX_NAME_LEN];
-   char dataSizeNum[MAX_NAME_LEN];
-   char dataStatusNum[MAX_NAME_LEN];
    rodsLong_t status;
-   char tSQL[MAX_SQL_SIZE];
 
    if (logSQL) rodsLog(LOG_SQL, "_delColl");
 
@@ -1976,7 +1941,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       }
       return(status);
    }
-   snprintf(parentCollIdNum, MAX_NAME_LEN, "%d", status);
+   snprintf(parentCollIdNum, MAX_NAME_LEN, "%lld", status);
 
    /* Check that the collection exists and user has DELETE or better 
       permission */
@@ -2054,7 +2019,6 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    char *cpw;
    int nPasswords;
    char myTime[50];
-   char myTime2[50];
    time_t nowTime;
    time_t pwExpireMaxCreateTime;
    char expireStr[50];
@@ -2168,11 +2132,12 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       cllBindVars[cllBindVarCount++]=expireStr; 
 
       pwExpireMaxCreateTime = nowTime-TEMP_PASSWORD_TIME;
-      snprintf(expireStrCreate, 50, "%011d", pwExpireMaxCreateTime);
+      /* Not sure if casting to int is correct but seems OK & avoids warning:*/
+      snprintf(expireStrCreate, 50, "%011d", (int)pwExpireMaxCreateTime); 
       cllBindVars[cllBindVarCount++]=expireStrCreate;
 
       status =  cmlExecuteNoAnswerSql(
-	    "delete from r_user_password where pass_expiry_ts = ? and create_ts < ?",
+            "delete from r_user_password where pass_expiry_ts = ? and create_ts < ?",
 	    &icss);
       if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 rodsLog(LOG_NOTICE,
@@ -2249,17 +2214,14 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    char md5Buf[100];
    char digest[RESPONSE_LEN+2];
    MD5_CTX context;
-   char *cp;
-   int i, OK, k;
+   int i;
    char password[MAX_PASSWORD_LEN+10];
    char newPw[MAX_PASSWORD_LEN+10];
    char myTime[50];
    char myTimeExp[50];
-   rodsLong_t myTimeInt;
    char rBuf[200];
    char hashValue[50];
    int j=0;
-   char digestStr[100];
    char tSQL[MAX_SQL_SIZE];
 
    if (logSQL) rodsLog(LOG_SQL, "chlMakeTempPw");
@@ -2349,13 +2311,8 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
 
 int decodePw(rsComm_t *rsComm, char *in, char *out) {
    int status;
-   char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
-   char digest[RESPONSE_LEN+2];
-   MD5_CTX context;
    char *cp;
-   int i, OK;
    char password[MAX_PASSWORD_LEN];
-   char userType[MAX_NAME_LEN];
    char upassword[MAX_PASSWORD_LEN+10];
    char rand[]=
       "1gCBizHWbwIYyWLo";  /* must match clients */
@@ -2435,7 +2392,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    if (strcmp(option,"type")==0 ||
        strcmp(option,"user_type_name")==0) {
       char tsubSQL[MAX_SQL_SIZE];
-      snprintf(tsubSQL, MAX_SQL_SIZE, "(select token_name from r_tokn_main where token_namespace='user_type' and token_name=?)", newValue);
+      snprintf(tsubSQL, MAX_SQL_SIZE, "(select token_name from r_tokn_main where token_namespace='user_type' and token_name=?)");
       cllBindVars[cllBindVarCount++]=newValue;
       snprintf(tSQL, MAX_SQL_SIZE, form2,
 	       "user_type_name", tsubSQL);
@@ -2591,7 +2548,6 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    char myTime[50];
    char userId[MAX_NAME_LEN];
    char groupId[MAX_NAME_LEN];
-   rodsLong_t iVal;
 
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup");
 
@@ -2875,7 +2831,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 
 /* Add or substract to the resource free_space */
 int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
-   int status, OK;
+   int status;
    char myTime[50];
    char updateValueStr[MAX_NAME_LEN];
 
@@ -3016,9 +2972,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
 /* Register a User, RuleEngine version */
 int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    char myTime[50];
-   char str3[MAX_SQL_SIZE];
-   int status, status2;
-   collInfo_t collInfo;
+   int status;
    char seqStr[MAX_NAME_LEN];
 
    static char lastValidUserType[MAX_NAME_LEN]="";
@@ -3238,8 +3192,6 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
    rodsLong_t seqNum, iVal;
-   char dataSizeNum[MAX_NAME_LEN];
-   char dataStatusNum[MAX_NAME_LEN];
    char nextStr[MAX_NAME_LEN];
    rodsLong_t objId, status;
    char objIdStr[MAX_NAME_LEN];
@@ -3440,7 +3392,6 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
    rodsLong_t status;
    rodsLong_t objId;
    char objIdStr[MAX_NAME_LEN];
-   rodsLong_t iVal;
    int allowNullUnits;
 
    if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata");
@@ -3639,7 +3590,6 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 Copy an Attribute-Value [Units] pair/triple from one object to another  */
 int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2, 
 		  char *name1, char *name2) {
-   int itype1, itype2;
    char myTime[50];
    int status;
    rodsLong_t objId1, objId2;
@@ -3891,8 +3841,8 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       char errMsg[205];
 
       snprintf(errMsg, 200, 
-	       "Input path is not a collection and recursion was requested: ",
-	       pathName);
+            "Input path is not a collection and recursion was requested: %s",
+	    pathName);
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       return(CAT_INVALID_ARGUMENT);
    }
@@ -4423,7 +4373,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 
    /* Both collection and dataObj failed, go thru the sql in smaller
       steps to return a specific error */
-   snprintf(objIdString, MAX_NAME_LEN, "%d", objId);
+   snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 13");
    status = cmlGetIntegerValueFromSql(
 	      "select coll_id from r_data_main where data_id=?",

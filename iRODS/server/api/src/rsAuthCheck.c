@@ -13,7 +13,6 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
 {
 #ifdef RODS_CAT
    int status;
-   char *bufp;
    int privLevel;
    int clientPrivLevel;
    authCheckOut_t *result;

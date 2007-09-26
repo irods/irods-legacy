@@ -21,11 +21,10 @@ int doLs()
    int i1a[10];
    int i1b[10];
    int i2a[10];
-   int done;
-   int mode;
+   int status;
    char *condVal[2];
    char v1[BIG_STR];
-   int i, j;
+   int i;
    char cwd[]="/";
 
    i1a[0]=COL_DATA_NAME;
@@ -63,6 +62,7 @@ int doLs()
 	 }
       }
    }
+   return(status);
 }
 
 /* revised version of test that is similar to ls */
@@ -73,12 +73,9 @@ int doLs2()
    int i1a[10];
    int i1b[10];
    int i2a[10];
-   int done;
-   int mode;
    char *condVal[2];
    char v1[BIG_STR];
-   char v2[BIG_STR];
-   int i, j;
+   int i;
    char cwd[]="/tempZone/home/rods";
 
    memset ((char*)&genQueryInp, 0, sizeof (genQueryInp));
@@ -118,6 +115,7 @@ int doLs2()
 	 }
       }
    }
+   return(i);
 }
 
 int
@@ -145,6 +143,7 @@ doTest2() {
 
     status  = chlGenQuery(genQueryInp, &genQueryOut);
     printf("chlGenQuery status=%d\n",status);
+    return(status);
 }
 
 int
@@ -167,6 +166,7 @@ printGenQOut( genQueryOut_t *genQueryOut) {
       }
       printf("genQueryOut->continueInx=%d\n",genQueryOut->continueInx);
    }
+   return(0);
 }
 
 
@@ -190,7 +190,7 @@ doTest3() {
     /*    snprintf (condStr, MAX_NAME_LEN, "like '%s'", "e"); */
 
     /* compound condition test: */
-    snprintf (condStr, MAX_NAME_LEN, "like '%s' || like 's'", "e", "f");
+    snprintf (condStr, MAX_NAME_LEN, "like '%s' || like 's'", "e");
     addInxVal (&genQueryInp.sqlCondInp, COL_R_RESC_NAME, condStr);
 
     genQueryInp.maxRows=2;
@@ -200,7 +200,7 @@ doTest3() {
     if (status == 0) {
        printGenQOut(&genQueryOut);
     }
-
+    return(status);
 }
 
 int
@@ -229,7 +229,7 @@ doTest4() {
     if (status == 0) {
        printGenQOut(&genQueryOut);
     }
-
+    return(status);
 }
 
 int
@@ -266,7 +266,7 @@ doTest5() {
     if (status == 0) {
        printGenQOut(&genQueryOut);
     }
-
+    return(status);
 }
 
 int
@@ -300,7 +300,7 @@ doTest6(char *testString) {
     if (status == 0) {
        printGenQOut(&genQueryOut);
     }
-
+    return(status);
 }
 
 int
@@ -360,7 +360,7 @@ int
 doTest8(char *testString, char *testString2, char *testString3) {
     genQueryInp_t genQueryInp;
     genQueryOut_t genQueryOut;
-    char condStr1[MAX_NAME_LEN];
+    /*    char condStr1[MAX_NAME_LEN]; */
     char condStr2[MAX_NAME_LEN];
     int status, status2;
 
@@ -426,7 +426,6 @@ doTest9(char *testString, char *testString2) {
     genQueryInp_t genQueryInp;
     genQueryOut_t genQueryOut;
     char condStr1[MAX_NAME_LEN];
-    char condStr2[MAX_NAME_LEN];
     int status, status2;
     int type;
 
@@ -538,7 +537,6 @@ main(int argc, char **argv) {
    char *condVal[2];
    char v1[20];
    rodsServerConfig_t serverConfig;
-   int status;
 
    /* remove this call or change to LOG_NOTICE for more verbosity */
    rodsLogLevel(LOG_ERROR);

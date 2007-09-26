@@ -27,8 +27,7 @@ char *cmlArrToSepStr(char *str,
 		  int opt)
 {
   /* a[0] s a[1] s a[2] .... */
-  int i,j, l;
-  char *new;
+  int i;
 
   rstrcpy(str, preStr, maxLen);
 
@@ -74,8 +73,7 @@ char *cmlArr2ToSepStr(char *str,
 		   int  maxLen)
 {
   /* a[0] a2[0] s a[1] a2[1] s a[2] a2[2] .... */
-  int i,j, l;
-  char *new;
+  int i;
 
   rstrcpy(str, preStr, maxLen);
 
@@ -103,8 +101,7 @@ char *cmlArr2ToSep2Str(char *str,
 		   int  maxLen)
 {
   /* a[0] s  a2[0] s2 a[1] s a2[1] s2 a[2] s a2[2] .... */
-  int i,j, l;
-  char *new;
+  int i;
   int isText, hasQuote;
   char *cp;
 
@@ -145,10 +142,7 @@ char *cmlArraysToStrWithBind(char *str,
 		   char *sep2, 
 		   int  maxLen)
 {
-  int i,j, l;
-  char *new;
-  int isText, hasQuote;
-  char *cp;
+  int i;
 
   rstrcpy(str, preStr, maxLen);
 
@@ -178,7 +172,7 @@ int cmlGetOneRowFromSingleTableUnused (char *tableName,
 {
   char tsql[MAX_SQL_SIZE];
   int i;
-  char *new, *rsql;
+  char *rsql;
   char *tArr[2];
 
   tArr[0] = tableName;
@@ -209,7 +203,7 @@ int cmlDeleteFromSingleTableUnused (char *tableName,
 {
   char tsql[MAX_SQL_SIZE];
   int i, l;
-  char *new, *rsql;
+  char *rsql;
 
   snprintf(tsql, MAX_SQL_SIZE, "delete from %s ", tableName);
   l = strlen(tsql);
@@ -233,7 +227,7 @@ int cmlInsertIntoSingleTableUnused(char *tableName,
 {
   char tsql[MAX_SQL_SIZE];
   int i, len;
-  char *new, *rsql;
+  char *rsql;
 
   snprintf(tsql,  MAX_SQL_SIZE, "insert into %s (", tableName );
   len = strlen(tsql);
@@ -270,7 +264,7 @@ int cmlInsertIntoSingleTableV2Unused (char *tableName,
 {
   char tsql[MAX_SQL_SIZE];
   int i, l;
-  char *new, *rsql;
+  char *rsql;
 
   snprintf(tsql,  MAX_SQL_SIZE, "insert into %s (", tableName );
   l = strlen(tsql);
@@ -299,8 +293,7 @@ int cmlGetUserIdUnused( char *userName, icatSessionStruct *icss) {
     */
 
    snprintf(tsql, MAX_SQL_SIZE, 
-	    "select user_id from R_USER_MAIN where user_name = ?",
-	    userName);
+	    "select user_id from R_USER_MAIN where user_name = ?");
    status = cmlGetIntegerValueFromSql (tsql, &iVal, userName, 0, 0, 0, icss);
    if (status == 0) return(iVal);
 

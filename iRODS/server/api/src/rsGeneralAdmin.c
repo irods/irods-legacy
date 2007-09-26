@@ -47,7 +47,6 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
     userInfo_t userInfo;
     collInfo_t collInfo;
     rescInfo_t rescInfo;
-    char userType[NAME_LEN];
     ruleExecInfo_t rei;
 
     rodsLog (LOG_NOTICE,

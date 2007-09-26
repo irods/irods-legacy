@@ -43,11 +43,6 @@ _rsModAccessControl (rsComm_t *rsComm,
 		     modAccessControlInp_t *modAccessControlInp )
 {
     int status;
-    userInfo_t userInfo;
-    collInfo_t collInfo;
-    rescInfo_t rescInfo;
-    char userType[NAME_LEN];
-    ruleExecInfo_t rei;
 
     status = chlModAccessControl(rsComm, 
 				 modAccessControlInp->recursiveFlag,

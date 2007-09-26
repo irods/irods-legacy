@@ -17,9 +17,7 @@ int findCycles(int startTable);
 int
 doTest1(char *arg1, char *arg2, char *arg3, char *arg4) {
     generalUpdateInp_t generalUpdateInp;
-    char condStr[MAX_NAME_LEN];
     int status;
-    char accStr[LONG_NAME_LEN];
 
     printf("dotest1\n");
     rodsLogSqlReq(1);
@@ -41,9 +39,7 @@ doTest1(char *arg1, char *arg2, char *arg3, char *arg4) {
 int
 doTest2(char *arg1, char *arg2, char *arg3, char *arg4) {
     generalUpdateInp_t generalUpdateInp;
-    char condStr[MAX_NAME_LEN];
     int status;
-    char accStr[LONG_NAME_LEN];
 
     printf("dotest2\n");
     rodsLogSqlReq(1);

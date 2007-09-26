@@ -121,7 +121,6 @@ cllConnect(icatSessionStruct *icss) {
    SQLSMALLINT     length;
 
    HDBC myHdbc;
-   HENV myHenv;
 
    stat = SQLAllocConnect(icss->environPtr,
 			  &myHdbc);
@@ -265,7 +264,6 @@ cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql,
    HSTMT myHstmt;
    int result;
    char *status;
-   int i;
    SQLINTEGER rowCount;
 
    myHdbc = icss->connectPtr;
@@ -311,6 +309,8 @@ cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql,
 	 result = CAT_SUCCESS_BUT_WITH_NO_INFO;
       }
       if (rowCount==0) result = CAT_SUCCESS_BUT_WITH_NO_INFO;
+#else
+      rowCount=0; /* avoid compiler warning */
 #endif
    }
    else {
@@ -351,7 +351,6 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 
    icatStmtStrct *myStatement;
 
-   int result;
    int i;
    int statementNumber;
    char *status;
@@ -478,7 +477,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    For when an error occurs, log the bind variables which were used
    with the sql.
 */
-int
+void
 logBindVars(int level, char *bindVar1, char *bindVar2, char *bindVar3,
 		char *bindVar4, char *bindVar5, char *bindVar6) {
    if (bindVar1 != 0 && *bindVar1 != '\0') {
@@ -520,7 +519,6 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 
    icatStmtStrct *myStatement;
 
-   int result;
    int i;
    int statementNumber;
    char *status;
@@ -812,7 +810,6 @@ cllFreeStatement(icatSessionStruct *icss, int statementNumber) {
 int
 _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber) {
    HSTMT hstmt;
-   RETCODE stat;
    int i;
 
    icatStmtStrct *myStatement;

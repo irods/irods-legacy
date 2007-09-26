@@ -20,9 +20,12 @@
 extern int sGetColumnInfo(int defineVal, char **tableName, char **columnName);
 extern icatSessionStruct *chlGetRcs();
 
+extern int icatGeneralQuerySetup();
+
 int logSQLGenUpdate=0;
 char tSQL[MAX_SQL_SIZE];
 
+int
 generalInsert(generalUpdateInp_t generalUpdateInp) {
    int i, j;
    char *tableName, *columnName;
@@ -67,6 +70,7 @@ generalInsert(generalUpdateInp_t generalUpdateInp) {
    return(0);
 }
 
+int
 generalDelete(generalUpdateInp_t generalUpdateInp) {
    int i, j;
    char *tableName, *columnName;
@@ -159,4 +163,5 @@ chlGeneralUpdate(generalUpdateInp_t generalUpdateInp) {
 int
 chlDebugGenUpdate(int mode) {
    logSQLGenUpdate = mode;
+   return(0);
 }

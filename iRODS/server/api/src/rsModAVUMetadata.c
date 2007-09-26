@@ -42,11 +42,6 @@ int
 _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 {
     int status;
-    userInfo_t userInfo;
-    collInfo_t collInfo;
-    rescInfo_t rescInfo;
-    char userType[NAME_LEN];
-    ruleExecInfo_t rei;
 
     if (strcmp(modAVUMetadataInp->arg0,"add")==0) {
        status = chlAddAVUMetadata(rsComm, 

@@ -24,7 +24,7 @@ rodsEnv myEnv;
 
 int lastCommandStatus=0;
 
-int usage(char *subOpt);
+void usage(char *subOpt);
 
 /* print the results of a simple query, converting time values if 
    necessary.  Called recursively.
@@ -78,8 +78,6 @@ int
 doSimpleQuery(simpleQueryInp_t simpleQueryInp) {
    int status;
    simpleQueryOut_t *simpleQueryOut;
-   char *myOutBuf;
-   rErrMsg_t errMsg;
    char *mySubName;
    char *myName;
 
@@ -233,7 +231,6 @@ int
 showFile(char *file) 
 {
    simpleQueryInp_t simpleQueryInp;
-   int status;
 
    memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
    simpleQueryInp.control = 0;
@@ -457,6 +454,7 @@ getInput(char *cmdToken[], int maxTokens) {
 	 }
       }
    }
+   return(0);
 }
 
 /* handle a command,
@@ -467,7 +465,6 @@ getInput(char *cmdToken[], int maxTokens) {
  */
 int
 doCommand(char *cmdToken[]) {
-   int OK;
    char buf0[MAX_PASSWORD_LEN+10];
    char buf1[MAX_PASSWORD_LEN+10];
    char buf2[MAX_PASSWORD_LEN+10];
@@ -813,7 +810,7 @@ printMsgs(char *msgs[]) {
    }
 }
 
-int usageMain()
+void usageMain()
 {
    char *Msgs[]={
 "Usage: iadmin [-hvV] [command]",
@@ -856,7 +853,7 @@ int usageMain()
    printMsgs(Msgs);
 }
 
-int
+void
 usage(char *subOpt)
 {
    char *luMsgs[]={
@@ -1061,9 +1058,11 @@ usage(char *subOpt)
 " will be displayed.",
 ""};
 
+   /*
    char *noMsgs[]={
       "Help has not been written yet",
       ""};
+   */
 
    char *subCmds[]={"lu", "lt", "lr", "ls", "lz",
 		    "lg", "lgd", "lrg", "lf", "mkuser",
@@ -1089,11 +1088,9 @@ usage(char *subOpt)
 	 if (strlen(subCmds[i])==0) break;
 	 if (strcmp(subOpt,subCmds[i])==0) {
 	    printMsgs(pMsgs[i]);
-	    return 0;
 	 }
       }
       printf("%s is an invalid command, try 'h'\n",
 	     subOpt);
    }
-   return 0;
 }

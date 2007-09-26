@@ -88,5 +88,6 @@ int sColumn(int defineVal, char *tableName, char *columnName);
 
 int chlDebug(char *debugMode);
 int chlDebugGenQuery(int mode);
+int chlDebugGenUpdate(int mode);
 
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

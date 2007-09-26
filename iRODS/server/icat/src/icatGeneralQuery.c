@@ -119,6 +119,7 @@ sFklink(char *table1, char *table2, char *connectingSQL) {
 	  Links[nLinks].table1,
 	  Links[nLinks].table2);
    nLinks++;
+   return(0);
 }
 
 /*
@@ -159,6 +160,7 @@ sTable(char *tableName, char *tableAlias, int cycler) {
    Tables[nTables].cycler = cycler;
    if (debug>1) printf("table %d is %s\n", nTables, tableName);
    nTables++;
+   return(0);
 }
 
 int 
@@ -173,6 +175,7 @@ sColumn(int defineVal, char *tableName, char *columnName) {
    if (debug>1) printf("column %d is %d %s %s\n", 
 	  nColumns, defineVal, tableName, columnName);
    nColumns++;
+   return(0);
 }
 
 /* given a defineValue, return the table and column names;
@@ -291,7 +294,7 @@ tScan(int table, int link) {
 	 if (debug>1) printf("%d trying link %d forward\n", table, i);
 	 subKeep = tScan(Links[i].table2, i);
 	 if (debug>1) printf("subKeep %d, this table %d, link %d, table2 %d\n",
-			      subKeep, i, table, i, Links[i].table2);
+			      subKeep, table, i, Links[i].table2);
 	 if (subKeep) {
 	    thisKeep=1;
 	    if (debug>1) printf("%d use link %d\n", table, i);
@@ -320,7 +323,7 @@ tScan(int table, int link) {
 	 if (debug>1) printf("%d trying link %d backward\n", table, i);
 	 subKeep = tScan(Links[i].table1, i);
 	 if (debug>1) printf("subKeep %d, this table %d, link %d, table1 %d\n",
-			      subKeep, i, table, i, Links[i].table1);
+			      subKeep, table, i, Links[i].table1);
 	 if (subKeep) {
 	    thisKeep=1;
 	    if (debug>1) printf("%d use link %d\n", table, i);
@@ -371,6 +374,7 @@ sTest(int i1, int i2) {
    else {
       printf("SUCCESS linking %d to %d\n", i1, i2);
    }
+   return(0);
 }
 
 int sTest2(int i1, int i2, int i3) {
@@ -394,6 +398,7 @@ int sTest2(int i1, int i2, int i3) {
    else {
       printf("SUCCESS linking %d, %d, %d\n", i1, i2, i3);
    }
+   return(0);
 }
 
 
@@ -424,7 +429,8 @@ tCycleChk(int table, int link, int thisTreeNum) {
 	 subKeep = tCycleChk(Links[i].table2, i, thisTreeNum);
 	 if (subKeep) {
 	    thisKeep=1;
-	    if (debug>1) printf("%d use link %d\n", table, i, thisTreeNum);
+	    if (debug>1) printf("%d use link %d tree %d\n", table, i, 
+				thisTreeNum);
 	    return(thisKeep);
 	 }
       }
@@ -688,6 +694,7 @@ setBlank(char *string, int count) {
    for (cp=string,i=0;i<count;i++) {
       *cp++=' ';
    }
+   return(0);
 }
 
 /*
@@ -695,7 +702,6 @@ Verify that a condition is a valid SQL condition
  */
 int
 checkCondition(char *condition) {
-   int i;
    char tmpStr[25];
    char *cp;
 
@@ -737,7 +743,7 @@ int
 insertWhere(char *condition, int option) {
    static int bindIx=0;
    static char bindVars[MAX_SQL_SIZE+100];
-   char *cp1, *cp2, *cpFirstQuote, *cpSecondQuote;
+   char *cp1, *cpFirstQuote, *cpSecondQuote;
    char *cp;
    int i;
    char *thisBindVar;
@@ -860,7 +866,7 @@ Called by chlGenQuery to generate the SQL.
 */
 int
 generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
-   int i, j, k, table;
+   int i, table;
    int keepVal;
    char *condition;
    int status;
@@ -1028,9 +1034,9 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    if (dataIx<0 && collIx<0) return(CAT_INVALID_ARGUMENT);
 
    if (dataIx>=0) {
-      if (continueFlag=0) {
+      if (continueFlag==0) {
          if (strcmp(prevDataId, 
-	  	    icss->stmtPtr[statementNum]->resultValue[dataIx])==0) {
+                icss->stmtPtr[statementNum]->resultValue[dataIx])==0) {
  	    return(prevStatus);
          }
       }
@@ -1063,13 +1069,13 @@ chlGenQueryAccessControlSetup(char *user, char *zone, int priv) {
     rstrcpy(accessControlUserName, user, MAX_NAME_LEN);
     rstrcpy(accessControlZone, zone, MAX_NAME_LEN);
     accessControlPriv=priv;
+    return(0);
 }
 
 /* General Query */
 int
 chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
-   int i, j, k, table;
-   int keepVal;
+   int i, j, k;
    int needToGetNextRow;
 
    char combinedSQL[MAX_SQL_SIZE];
@@ -1081,7 +1087,6 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
    int maxColSize;
    int currentMaxColSize;
    char *tResult, *tResult2;
-   int rowCount;
 
    if (logSQLGenQuery) rodsLog(LOG_SQL, "chlGenQuery");
 
@@ -1095,7 +1100,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 
    icss = chlGetRcs();
    if (icss==NULL) return(CAT_NOT_OPEN);
-   if (debug) printf("icss=%d\n",icss);
+   if (debug) printf("icss=%d\n",(int)icss);
 
    if (genQueryInp.continueInx == 0) {
       status = generateSQL(genQueryInp, combinedSQL);
@@ -1249,4 +1254,5 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 int
 chlDebugGenQuery(int mode) {
    logSQLGenQuery = mode;
+   return(0);
 }

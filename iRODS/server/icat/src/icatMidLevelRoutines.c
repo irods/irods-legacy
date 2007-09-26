@@ -22,6 +22,7 @@ int logSQL_CML=0;
 
 int cmlDebug(int mode) {
    logSQL_CML = mode;
+   return(0);
 }
 
 int cmlOpen( icatSessionStruct *icss) {
@@ -185,7 +186,7 @@ int cmlGetFirstRowFromSql (char *sql,
 		   int skipCount,
 		   icatSessionStruct *icss)
 {
-    int i,j, stmtNum, ii;
+    int i, stmtNum, ii;
 
     *statement=0;
     
@@ -232,7 +233,7 @@ int cmlGetFirstRowFromSqlBV (char *sql,
 		   int *statement,
 		   icatSessionStruct *icss)
 {
-    int i,j, stmtNum, ii;
+    int i, stmtNum, ii;
 
     *statement=0;
     
@@ -260,7 +261,7 @@ int cmlGetFirstRowFromSqlBV (char *sql,
 int cmlGetNextRowFromStatement (int stmtNum, 
 		   icatSessionStruct *icss)
 {
-    int i,j, ii;
+    int i, ii;
     
     i = cllGetRow(icss,stmtNum);
     if (i != 0)  {
@@ -323,9 +324,8 @@ int cmlGetMultiRowStringValuesFromSql (char *sql,
 			      char *bindVar1,
 			      char *bindVar2,
  		              icatSessionStruct *icss) {
-    int totalGot;
 
-    int i,j, k, stmtNum, ii;
+    int i,j, stmtNum, ii;
     int tsg; /* total strings gotten */
     char *pString;
     
@@ -417,7 +417,7 @@ int cmlModifySingleTable (char *tableName,
 {
   char tsql[MAX_SQL_SIZE];
   int i, l;
-  char *new, *rsql;
+  char *rsql;
 
   if (logSQL_CML) rodsLog(LOG_SQL, "cmlModifySingleTable SQL 1 ");
 
@@ -474,7 +474,6 @@ cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss) {
    char nextStr[STR_LEN];
    char sql[STR_LEN];
    int status;
-   int iVal;
 
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlGetNextSeqStr SQL 1 ");
 
@@ -610,11 +609,8 @@ rodsLong_t
 cmlCheckDirOwn( char *dirName, char *userName, 
 			icatSessionStruct *icss)
 {
-   char tSQL[MAX_SQL_SIZE];
    int status; 
    rodsLong_t iVal; 
-   int collId;
-   char collIdStr[MAX_NAME_LEN];
 
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirOwn SQL 1 ");
 
@@ -635,7 +631,6 @@ rodsLong_t
 cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName, 
 		     char *accessLevel, icatSessionStruct *icss)
 {
-   char tSQL[MAX_SQL_SIZE];
    int status;
    rodsLong_t iVal; 
    rodsLong_t collId;
@@ -691,7 +686,6 @@ rodsLong_t
 cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName, 
 			icatSessionStruct *icss)
 {
-   char tSQL[MAX_SQL_SIZE];
    int status;
    rodsLong_t iVal, collId;
    char collIdStr[MAX_NAME_LEN];

@@ -46,6 +46,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 	 }
       }
    }
+   return(printCount);
 }
 
 

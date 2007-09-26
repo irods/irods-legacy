@@ -54,7 +54,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 	 }
       }
    }
-
+   return(printCount);
 }
 
 /*
@@ -70,16 +70,12 @@ showUser(char *name)
    int i2a[20];
    char *condVal[10];
    char v1[BIG_STR];
-   char v2[BIG_STR];
-   char myDirName[LONG_NAME_LEN];
-   char myFileName[LONG_NAME_LEN];
    int i, status;
    int printCount;
    char *columnNames[]={"name", "id", "type", "zone", "dn", "info", "comment",
                         "create time", "modify time"};
 
    char *columnNames2[]={"member of group"};
-   char *tResult;
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
    printCount=0;
@@ -170,9 +166,6 @@ main(int argc, char **argv) {
 
    char *mySubName;
    char *myName;
-
-   char userName[NAME_LEN];
-   char zoneName[NAME_LEN];
 
    rodsLogLevel(LOG_ERROR);
 
