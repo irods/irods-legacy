@@ -397,6 +397,24 @@ function RODSFileSearchDialog()
       }, this);
       this.adv_search_dlg.addKeyListener(27, this.result_dlg.hide, this.result_dlg); // ESC can also close the dialog
       
+      // make sure metadata store get reload when account changes
+      this.adv_search_dlg.on('beforeshow',function(){
+            var cur_acct=this.ruri.substring(0,this.ruri.indexOf('/'));
+            if (!this.ruri_acct)
+              this.ruri_acct=cur_acct;
+            else
+            if (this.ruri_acct!=cur_acct) // if acct has changed
+            {
+              this.metaname_store.reload();
+              this.ruri_acct=cur_acct;
+            }
+            else
+            {
+              //do nothing if acct hasn't changed 
+            }
+            return true;
+          }, this);
+      
       this.adv_search_form.render(this.adv_search_dlg.body)
       
     }, // end of RODSFileSearchDialog::init()
