@@ -56,6 +56,16 @@ try {
       exit(0);
       break;
     
+    case 'resources':
+      $que=new ProdsQuery($account);
+      $resources=$que->getResources();
+      $response=array('success'=> true,'totalCount'=>count($resources),
+        'que_results'=> $resources);
+      $str= json_encode($response);
+      echo "($str)";  
+      exit(0);
+      break;  
+    
     default:
       $response=array('success'=> false,'error'=>"Action type '$action' not supported");
       echo json_encode($response);
