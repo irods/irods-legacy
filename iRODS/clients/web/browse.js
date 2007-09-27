@@ -1739,7 +1739,7 @@ function RodsBrowser(inipath, _ssid)
       {
         var resources = new Ext.data.Store({
             proxy: new Ext.data.HttpProxy({
-                url: 'services/getResources.php'
+                url: 'services/serverQuery.php?action=resources'
             }),
             
             // create reader that reads the Topic records
@@ -1783,16 +1783,17 @@ function RodsBrowser(inipath, _ssid)
                  selectOnFocus:true,
                  allowBlank:false,
                  hiddenName: 'resource',
-                 //triggerAction: 'all',
+                 triggerAction: 'all',
                  forceSelection:true
         });
-        resource_box.on('beforerender', function(){
-          this.store.load();
-        });
+        
         resource_box.store.on("load",function(store){
           this.clearValue();
           this.setValue(store.getAt(0).data.name);
         },resource_box);
+        
+        resource_box.store.load();
+        
         return resource_box;
       }
       
@@ -1854,6 +1855,7 @@ function RodsBrowser(inipath, _ssid)
             {
               //do nothing if acct hasn't changed 
             }
+            return true;
           });
           
           upload_dialog.addKeyListener(27, upload_dialog.hide, upload_dialog); // ESC can also close the dialog
@@ -2020,6 +2022,7 @@ function RodsBrowser(inipath, _ssid)
             {
               //do nothing if acct hasn't changed 
             }
+            return true;
           });
           
           new_file_dialog.addKeyListener(27, new_file_dialog.hide, new_file_dialog); // ESC can also close the dialog
