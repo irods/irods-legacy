@@ -37,9 +37,6 @@ char testBindVar[]="a";
 #include <pwd.h>
 
 static OCIError         *p_err;
-static OCIStmt          *p_statement;
-static OCIDefine        *p_dfn    = (OCIDefine *) 0;
-static OCIBind          *p_bnd    = (OCIBind *) 0;
 
 OCIBind  *p_bind[20];
 
@@ -54,7 +51,6 @@ int
 logOraError(int level, OCIError *errhp, sword status)
 {
    text errbuf[512];
-   ub4 buflen;
    sb4 errcode;
    int errorVal=-1;
    if (status == OCI_SUCCESS) return(0);
@@ -227,7 +223,6 @@ cllConnect(icatSessionStruct *icss) {
 int
 cllDisconnect(icatSessionStruct *icss) {
    sword stat;
-   OCIError *errhp;
    OCISvcCtx *p_svc;
 
    p_svc = icss->connectPtr;
@@ -309,8 +304,6 @@ bindTheVariables(OCIStmt *p_statement, char *sql) {
    int myBindVarCount;
    int stat;
    int i;
-   char tmpStr[TMP_STR_LEN+2];
-
 
    for (i=0;i<20;i++) {
       p_bind[i]=NULL;
@@ -384,8 +377,6 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
    OCIEnv           *p_env;
    OCISvcCtx        *p_svc;
    static OCIStmt          *p_statement;
-   static OCIDefine        *p_dfn    = (OCIDefine *) 0;
-   static OCIBind          *p_bnd    = (OCIBind *) 0;
    char sql[MAX_SQL_SIZE];
    ub4 rows_affected;
    ub4 *pUb4;
@@ -486,8 +477,7 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
 int
 cllGetRow(icatSessionStruct *icss, int statementNumber) {
    static OCIStmt          *p_statement;
-   int nCols, i, stat;
-   static OCIDefine        *p_dfn    = (OCIDefine *) 0;
+   int nCols, stat;
 
    icatStmtStrct *myStatement;
 
@@ -524,7 +514,6 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    static OCIStmt          *p_statement;
    static OCIDefine        *p_dfn    = (OCIDefine *) 0;
    int stat, stat2, i;
-   ub4 num_err;
    char sqlConverted[MAX_SQL_SIZE];
 
    icatStmtStrct *myStatement;
