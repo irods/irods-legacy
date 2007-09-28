@@ -21,6 +21,8 @@ int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
 int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei);
 int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei);
 int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei);
+int msiGetDiffTime(msParam_t* inpParam1,  msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei);
+int msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *rei);
 
 int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei);
 int sendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei);
@@ -148,6 +150,8 @@ microsdef_t MicrosTable[] = {
   {"writeLine",2,(funcPtr) writeLine},
   {"writeBytesBuf",2,(funcPtr) writeBytesBuf},
   {"writePosInt",2,(funcPtr) writePosInt},
+  {"msiGetDiffTime", 4, (funcPtr) msiGetDiffTime},
+  {"msiGetSystemTime", 2, (funcPtr) msiGetSystemTime},
   {"sendStdoutAsEmail",2,(funcPtr) sendStdoutAsEmail},
   {"msiPrintKeyValPair",2,(funcPtr) msiPrintKeyValPair},
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},

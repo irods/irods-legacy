@@ -595,3 +595,121 @@ msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam,
   return(i);
 
 }
+
+
+/**
+ * \fn msiGetDiffTime
+ * \author  Antoine de Torcy
+ * \date   2007-09-19
+ * \brief This microservice returns the difference between two system times
+ * \note If we have arithmetic MSs in the future we should use DOUBLE_MS_T instead of strings
+ *       Default output format is in seconds, use 'human' as 3d input param for human readable format.
+ * \param[in] 
+ *    inpParam1 - Required - a STR_MS_T containing the start date (system time in seconds)
+ *    inpParam2 - Required - a STR_MS_T containing the end date (system time in seconds)
+ *    inpParam3 - Optional - a STR_MS_T containing the desired output format
+ * \param[out] 
+ *    outParam - a STR_MS_T containing the time elapsed between the two dates
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiGetDiffTime(msParam_t* inpParam1,  msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei)
+{
+	long hours, minutes, seconds;
+	char timeStr[TIME_LEN];
+	char *format;
+	int status;
+
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiGetDiffTime")
+	
+	/* Check for proper input */
+	if ((parseMspForStr(inpParam1) == NULL)) {
+		rodsLog (LOG_ERROR, "msiGetDiffTime: input inpParam1 is NULL");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	if ((parseMspForStr (inpParam2) == NULL)) {
+		rodsLog (LOG_ERROR, "msiGetDiffTime: input inpParam2 is NULL");
+		return (USER__NULL_INPUT_ERR);
+	}
+	
+	
+	/* get time values from strings */
+	seconds = atol(inpParam2->inOutStruct) - atol(inpParam1->inOutStruct);
+	
+	/* get desired output format */
+	format = inpParam3->inOutStruct;
+
+	
+	/* did they ask for human readable format? */
+	if (format && !strcmp(format, "human")) {
+		/* get hours-minutes-seconds */
+		hours = seconds / 3600;
+		seconds = seconds % 3600;
+		minutes = seconds / 60;
+		seconds = seconds % 60;
+		
+		snprintf(timeStr, TIME_LEN, "%ldh %ldm %lds", hours, minutes, seconds);
+	}
+	else {
+		snprintf(timeStr, TIME_LEN, "%011ld", seconds);
+	}
+	
+	
+	/* result goes to outParam */
+	status = fillStrInMsParam (outParam, timeStr);	
+	
+	return(status);
+}
+
+
+/**
+ * \fn msiGetSystemTime
+ * \author  Antoine de Torcy
+ * \date   2007-09-19
+ * \brief This microservice returns the local system time
+ * \note Default output format is system time in seconds, use 'human' as input param for human readable format.
+ * \param[in] 
+ *    inpParam - Optional - a STR_MS_T containing the desired output format
+ * \param[out] 
+ *    outParam - a STR_MS_T containing the time
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *rei)
+{
+	char *format;
+	char tStr0[TIME_LEN],tStr[TIME_LEN];
+	int status;
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiGetSystemTime")
+	
+	format =inpParam->inOutStruct;
+	
+	if (!format || strcmp(format, "human")) {
+		getNowStr(tStr);
+	}
+	else {
+		getNowStr(tStr0);
+		getLocalTimeFromRodsTime(tStr0,tStr);
+	}
+	
+	status = fillStrInMsParam (outParam,tStr);
+
+	return(status);
+}
+
+
