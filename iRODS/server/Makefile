@@ -43,7 +43,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/rsApiHandler.o \
 		$(svrCoreObjDir)/rsIcatOpr.o \
 		$(svrCoreObjDir)/rsLog.o \
-		$(svrCoreObjDir)/rsRe.o
+		$(svrCoreObjDir)/rsRe.o	\
+		$(svrCoreObjDir)/xmsgLib.o
 INCLUDES +=	-I$(svrCoreIncDir)
 
 
