@@ -681,6 +681,78 @@ class RODSConn
   }
   
   /**
+   * Replicate file to resources with options.
+   * @param string $path_src full path for the source file
+   * @param string $desc_resc destination resource
+   * @param array $options an assosive array of options:
+   *   - 'all'        (boolean): only meaningful if input resource is a resource group. Replicate to all the resources in the resource group.
+   *   - 'backupMode' (boolean): if a good copy already exists in this resource, don't make another copy.
+   *   - 'admin'      (boolean): admin user uses this option to backup/replicate other users files
+   *   - 'replNum'    (integer): the replica to copy, typically not needed 
+   *   - 'srcResc'    (string): specifies the source resource of the data object to be replicate, only copies stored in this resource will be replicated. Otherwise, one of the copy will be replicated 
+   * These options are all 'optional', if omitted, the server will try to do it anyway
+   * @return number of bytes written if success, in case of faliure, throw an exception
+   */
+  public function repl($path_src, $desc_resc, array $options=array())
+  {
+    require_once(dirname(__FILE__)."/RODSObjIOOpr.inc.php");
+    require_once(dirname(__FILE__)."/RodsGenQueryKeyWd.inc.php");
+    
+    $optype=REPLICATE_OPR;
+    
+    $opt_arr=array();
+    $opt_arr[$GLOBALS['PRODS_GENQUE_KEYWD']['DEST_RESC_NAME_KW']]=$desc_resc;
+    foreach ($options as $option_key => $option_val)
+    {
+      switch ($option_key)
+      {
+        case 'all':
+          if ($option_val===true)
+            $opt_arr[$GLOBALS['PRODS_GENQUE_KEYWD']['ALL_KW']]='';
+        break;
+        
+        case 'admin':
+          if ($option_val===true)
+            $opt_arr[$GLOBALS['PRODS_GENQUE_KEYWD']['IRODS_ADMIN_KW']]='';
+        break;
+        
+        case 'replNum':
+          $opt_arr[$GLOBALS['PRODS_GENQUE_KEYWD']['REPL_NUM_KW']]=$option_val;
+        break;
+        
+        case 'backupMode':
+          if ($option_val===true)
+            $opt_arr[$GLOBALS['PRODS_GENQUE_KEYWD']
+              ['BACKUP_RESC_NAME_KW']]=$desc_resc;
+        break;
+        
+        default:
+          throw new RODSException("Option '$option_key'=>'$option_val' is not supported",
+            'PERR_USER_INPUT_ERROR');
+      }  
+    }
+    
+    $keyvalpair=new RP_KeyValPair();
+    $keyvalpair->fromAssocArray($opt_arr);
+    
+    $inp_pk=new RP_DataObjInp($path_src,0,0,0,0,0,$optype,$keyvalpair);  
+    
+    $msg=new RODSMessage("RODS_API_REQ_T",$inp_pk,
+        $GLOBALS['PRODS_API_NUMS']['DATA_OBJ_REPL_AN']); 
+    fwrite($this->conn, $msg->pack());  // send it
+    $msg=new RODSMessage();
+    $intInfo=(int) $msg->unpack($this->conn); 
+    if ($intInfo<0)
+    {
+     throw new RODSException("RODSConn::repl has got an error from the server",
+        $GLOBALS['PRODS_ERR_CODES_REV']["$intInfo"]);
+    }
+    
+    $retpk=$msg->getBody();
+    return $retpk->bytesWritten;
+  }
+  
+  /**
    * Rename path_src to path_dest.
    * @param string $path_src 
    * @param string $path_dest

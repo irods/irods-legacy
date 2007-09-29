@@ -302,4 +302,25 @@ class ProdsFile extends ProdsPath
   {
     return $this->l1desc;
   }
+  
+  /**
+   * Replicate file to resources with options.
+   * @param string $desc_resc destination resource
+   * @param array $options an assosive array of options:
+   *   - 'all'        (boolean): only meaningful if input resource is a resource group. Replicate to all the resources in the resource group.
+   *   - 'backupMode' (boolean): if a good copy already exists in this resource, don't make another copy.
+   *   - 'admin'      (boolean): admin user uses this option to backup/replicate other users files
+   *   - 'replNum'    (integer): the replica to copy, typically not needed 
+   *   - 'srcResc'    (string): specifies the source resource of the data object to be replicate, only copies stored in this resource will be replicated. Otherwise, one of the copy will be replicated 
+   * These options are all 'optional', if omitted, the server will try to do it anyway
+   * @return number of bytes written if success, in case of faliure, throw an exception
+   */
+  public function repl($desc_resc, array $options=array())
+  {
+    $conn = RODSConnManager::getConn($this->account);
+    $bytesWritten=$conn->repl($this->path_str, $desc_resc, $options);
+    RODSConnManager::releaseConn($conn);   
+    
+    return $bytesWritten;
+  }
 }
