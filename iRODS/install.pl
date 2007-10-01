@@ -1489,6 +1489,10 @@ sub runTests {
 
 #   Check the log
     $simpleHostname = hostname();
+    if ( $simpleHostname =~ '.' ) {
+	@words = split( /\./, $simpleHostname );
+	$simpleHostname  = $words[0];
+    }
     $log = `cat testSurvey_$simpleHostname.log`;
     $ix = index($log, "List of failed tests:");
     $ix2 = index($log, "-", $ix);
