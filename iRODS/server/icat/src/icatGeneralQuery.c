@@ -845,7 +845,7 @@ genqAppendAccessCheck() {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
       cllBindVars[cllBindVarCount++]=accessControlUserName;
       cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "r_data_main.data_id in (select object_id from r_objt_access where user_id = (select user_id from r_user_main where user_name=? and zone_name=?) and access_type_id >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'read object'))", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "r_data_main.data_id in (select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = r_data_main.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
    }
 
    /* if an item in r_coll_main is being accessed, add a
@@ -854,9 +854,8 @@ genqAppendAccessCheck() {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
       cllBindVars[cllBindVarCount++]=accessControlUserName;
       cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "r_coll_main.coll_id in (select object_id from r_objt_access where user_id = (select user_id from r_user_main where user_name=? and zone_name=?) and access_type_id >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'read object'))", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "r_coll_main.coll_id in (select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = r_coll_main.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
    }
-
    return(0);
 }
 
@@ -873,7 +872,10 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
    int useGroupBy;
 
    char combinedSQL[MAX_SQL_SIZE];
+#if ORA_ICAT
+#else
    static char offsetStr[20];
+#endif
 
    if (firstCall) {
       icatGeneralQuerySetup(); /* initialize */

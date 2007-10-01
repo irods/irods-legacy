@@ -187,7 +187,9 @@ int cmlGetFirstRowFromSql (char *sql,
 		   icatSessionStruct *icss)
 {
     int i, stmtNum, ii;
-
+#ifdef ORA_ICAT
+    int j;
+#endif
     *statement=0;
     
     i = cllExecSqlWithResult(icss, &stmtNum, sql);
@@ -547,7 +549,7 @@ cmlCheckDir( char *dirName, char *userName, char *accessLevel,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDir SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-	    "select coll_id from R_COLL_MAIN where coll_name=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?)",
+  	        "select coll_id from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_name=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
 	      &iVal, dirName, userName, accessLevel, 0, icss);
    if (status) { 
       /* There was an error, so do another sql to see which 
@@ -582,8 +584,8 @@ cmlCheckDirId( char *dirId, char *userName, char *accessLevel,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirId SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-	    "select coll_id from R_COLL_MAIN where coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?)",
-	      &iVal, dirId, userName, accessLevel, 0, icss);
+  	        "select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+	      &iVal, userName, dirId, accessLevel, 0, icss);
    if (status) { 
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
@@ -633,42 +635,21 @@ cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
 {
    int status;
    rodsLong_t iVal; 
-   rodsLong_t collId;
-   char collIdStr[MAX_NAME_LEN];
 
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-	    "select coll_id from R_COLL_MAIN where coll_name=?",
-	    &iVal, dirName, 0, 0, 0, icss);
-   if (status < 0) return(status);
-   collId = iVal;
-   snprintf(collIdStr, MAX_NAME_LEN, "%lld", collId);
+  	        "select data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+		 &iVal, dataName, dirName, userName, accessLevel, icss);
 
-   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 2 ");
-
-   status = cmlGetIntegerValueFromSql(
-	         "select data_id from R_DATA_MAIN where data_name=? and coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = data_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?)",
-		 &iVal, dataName, collIdStr, userName, accessLevel, icss);
-
-   if (status) {
-      /* There was an error, so do another sql to see if the user has
-         group access.  Could try to combine this with the above sql
-         to be a bit faster in some cases, but for now do this
-         separate check. */
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 3 ");
-      status = cmlGetIntegerValueFromSql( 
-	       "select data_id from R_DATA_MAIN where data_name=? and coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = data_id and user_id = (select group_user_id from r_user_group where user_id = (select user_id from R_USER_MAIN where user_name=?))) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?)",
-	       &iVal, dataName, collIdStr, userName, accessLevel, icss);
-   }
    if (status) { 
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 4 ");
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 2 ");
 
       status = cmlGetIntegerValueFromSql(
-	    "select data_id from R_DATA_MAIN where data_name=? and coll_id=? ",
-	    &iVal, dataName, collIdStr, 0, 0, icss);
+         "select data_id from r_data_main DM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+	  &iVal, dataName, dirName, 0, 0, icss);
       if (status) {
 	 return(CAT_UNKNOWN_FILE);
       }
@@ -723,29 +704,13 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 
    iVal=0;
    status = cmlGetIntegerValueFromSql(
-	    "select object_id from r_objt_access where object_id=? and user_id = (select user_id from r_user_main where user_name=? and zone_name=?) and access_type_id >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?)",
+  	        "select object_id from r_objt_access OA, r_data_main DM, r_user_group UG, r_user_main UM, r_tokn_main TM where OA.object_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
 	    &iVal,
 	    dataId,
 	    userName,
 	    zoneName,
 	    accessLevel,
 	    icss);
-
-   if (status) {
-      /* There was an error, so do another sql to see if the user has
-         group access.  Could try to combine this with the above sql
-         to be a bit faster in some cases, but for now do this
-         separate check. */
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjId SQL 2 ");
-      status = cmlGetIntegerValueFromSql(
-	       "select object_id from r_objt_access where object_id=? and user_id = (select group_user_id from r_user_group where user_id = (select user_id from r_user_main where user_name=? and zone_name=?)) and access_type_id >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?)",
-	       &iVal, 
-	       dataId,
-	       userName,
-	       zoneName,
-	       accessLevel,
-	       icss);
-   }
    if (status != 0) return (CAT_NO_ACCESS_PERMISSION);
    if (iVal==0)  return (CAT_NO_ACCESS_PERMISSION);
    return(status);

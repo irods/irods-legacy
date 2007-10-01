@@ -253,13 +253,11 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       }
    }
    else {
-      if (logSQL) rodsLog(LOG_SQL, "chlModDataObjMeta SQL 3");
-      status = cmlGetIntegerValueFromSql(
-        "select access_type_id from r_objt_access where user_id = (select user_id from r_user_main where user_name=?) and object_id = ? and access_type_id >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?)",
-	&iVal, 
-	rsComm->clientUser.userName,
-	objIdString,
-	neededAccess, 0, &icss);
+      status = getLocalZone();
+      if (status) return(status);
+
+      status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
+				 localZone, neededAccess, &icss);
       if (status) {
 	 return(CAT_NO_ACCESS_PERMISSION);
       } 
@@ -359,7 +357,6 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    char dataSizeNum[MAX_NAME_LEN];
    char dataStatusNum[MAX_NAME_LEN];
    int status;
-   char tSQL[MAX_SQL_SIZE];
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj");
    if (!icss.status) {
@@ -381,33 +378,22 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
 
 
    /* Check that collection exists and user has write permission */
-   snprintf(tSQL, MAX_SQL_SIZE, 
-	    "select coll_id from R_COLL_MAIN where coll_name=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= %s%s%s",
-	    "(select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = '",
-	    ACCESS_MODIFY_OBJECT,
-	    "')");
-   if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 2");
-   status = cmlGetIntegerValueFromSql(tSQL, &iVal, 
-	    logicalDirName,
-	    rsComm->clientUser.userName,0, 0, &icss);
-
-   if (status) {  /* error, so do another sql to see which is problem */
+   iVal = cmlCheckDir(logicalDirName, rsComm->clientUser.userName,
+			ACCESS_MODIFY_OBJECT, &icss);
+   if (iVal < 0) {
       int i;
       char errMsg[105];
-      if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 3");
-      status = cmlGetIntegerValueFromSql(
-               "select coll_id from R_COLL_MAIN where coll_name=?",
-	       &iVal, logicalDirName, 0, 0, 0, &icss);
-      if (status) {
+      if (iVal==CAT_UNKNOWN_COLLECTION) {
 	 snprintf(errMsg, 100, "collection '%s' is unknown", 
 	       logicalDirName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-	 return(CAT_UNKNOWN_COLLECTION);
       }
-      snprintf(errMsg, 100, "no permission to update collection '%s'", 
-	       logicalDirName);
-      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-      return (CAT_NO_ACCESS_PERMISSION);
+      if (iVal==CAT_NO_ACCESS_PERMISSION) {
+	 snprintf(errMsg, 100, "no permission to update collection '%s'", 
+		  logicalDirName);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      }
+      return (iVal);
    }
    snprintf(collIdNum, MAX_NAME_LEN, "%lld", iVal);
 
@@ -1252,6 +1238,24 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       return(status);
    }
+
+   /* Remove both the special user_id = group_user_id entry and any
+      other access entries for this user */
+   cllBindVars[cllBindVarCount++]=iValStr;
+   if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 4");
+   status = cmlExecuteNoAnswerSql(
+	    "delete from r_user_group where user_id=?",
+	    &icss);
+   if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      int i;
+      char errMsg[MAX_NAME_LEN+40];
+      rodsLog(LOG_NOTICE,
+	      "chlDelUserRE delete user_group entry failure %d",
+	      status);
+      snprintf(errMsg, MAX_NAME_LEN+40, "Error removing user_group entry");
+      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      return(status);
+   }
    return(0);
 }
 
@@ -1557,33 +1561,25 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    }
 
    /* Check that collection exists and user has write permission */
-   snprintf(tSQL, MAX_SQL_SIZE, 
-	    "select coll_id from R_COLL_MAIN where coll_name=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= %s%s%s",
-	    "(select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = '",
-	    ACCESS_MODIFY_OBJECT,
-	    "')");
-   if (logSQL) rodsLog(LOG_SQL, "chlModColl SQL 1");
-   status = cmlGetIntegerValueFromSql(tSQL, &iVal, 
-	    collInfo->collName,
-	    rsComm->clientUser.userName,0, 0, &icss);
+   iVal = cmlCheckDir(collInfo->collName,  rsComm->clientUser.userName,  
+		   ACCESS_MODIFY_OBJECT, &icss);
 
-   if (status) {  /* error, so do another sql to see which is problem */
+   if (iVal < 0) {
       int i;
       char errMsg[105];
-      if (logSQL) rodsLog(LOG_SQL, "chlModColl SQL 2");
-      status = cmlGetIntegerValueFromSql(
-               "select coll_id from R_COLL_MAIN where coll_name=?",
-	       &iVal, collInfo->collName, 0, 0, 0, &icss);
-      if (status) {
+      if (iVal==CAT_UNKNOWN_COLLECTION) {
 	 snprintf(errMsg, 100, "collection '%s' is unknown", 
 	       collInfo->collName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
 	 return(CAT_UNKNOWN_COLLECTION);
       }
-      snprintf(errMsg, 100, "no permission to update collection '%s'", 
-	       collInfo->collName);
-      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-      return (CAT_NO_ACCESS_PERMISSION);
+      if (iVal==CAT_NO_ACCESS_PERMISSION) {
+	 snprintf(errMsg, 100, "no permission to update collection '%s'", 
+		  collInfo->collName);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return (CAT_NO_ACCESS_PERMISSION);
+      }
+      return(iVal);
    }
 
    if (collInfo==0) {
@@ -1621,7 +1617,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    cllBindVars[cllBindVarCount++]=collInfo->collName;
    strncat(tSQL, ", modify_ts=? where coll_name=?", MAX_SQL_SIZE);
 
-   if (logSQL) rodsLog(LOG_SQL, "chlModColl SQL 3");
+   if (logSQL) rodsLog(LOG_SQL, "chlModColl SQL 1");
    status =  cmlExecuteNoAnswerSql(tSQL,
 				   &icss);
    if (status != 0) {
@@ -3072,6 +3068,22 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 	      "chlRegUserRE insert failure %d",status);
       return(status);
    }
+
+
+   cllBindVars[cllBindVarCount++]=seqStr;
+   cllBindVars[cllBindVarCount++]=seqStr;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 4");
+   status =  cmlExecuteNoAnswerSql(
+             "insert into r_user_group (group_user_id, user_id, create_ts, modify_ts) values (?, ?, ?, ?)",
+	     &icss);
+   if (status) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegUserRE insert into r_user_group failure %d",status);
+      return(status);
+   }
    return(status);
 }
 
@@ -3758,7 +3770,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    userId=0;
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 3");
    status = cmlGetIntegerValueFromSql(
-              "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name !='rodsgroup'",
+              "select user_id from r_user_main where user_name=? and r_user_main.zone_name=?",
 	      &userId, userName, myZone, 0, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
@@ -3927,9 +3939,11 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 1 ");
+
    status = cmlGetIntegerValueFromSql(
-              "select coll_id from r_data_main where data_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = data_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'own')",
+	      "select coll_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	      &collId, objIdString, rsComm->clientUser.userName, 0, 0, &icss);
+
 
    if (status == 0) {  /* it is a dataObj and user has access to it */
 
@@ -3996,8 +4010,9 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 6");
+
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main where coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'own')",
+	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	    cVal, iVal, 2, objIdString, 
 	    rsComm->clientUser.userName, &icss);
    if (status == 0) { 
@@ -4171,7 +4186,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", targetCollId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 1 ");
    status = cmlGetStringValuesFromSql(
-	      "select parent_coll_name, coll_name from r_coll_main where coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'own')",
+	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	      cVal, iVal, 2, objIdString, 
 	      rsComm->clientUser.userName, &icss);
 
@@ -4194,10 +4209,9 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 3");
    status = cmlGetStringValueFromSql(
-	     "select data_name from r_data_main where data_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = data_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'own')",
+	      "select data_name from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	     dataObjName, MAX_NAME_LEN, objIdString, 
 	     rsComm->clientUser.userName, &icss);
-
    snprintf(collIdString, MAX_NAME_LEN, "%lld", targetCollId);
    if (status == 0) {  /* it is a dataObj and user has access to it */
 
