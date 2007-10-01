@@ -2,7 +2,9 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include <stdarg.h>
+#if !defined(osx_platform)
 #include <values.h>
+#endif
 #include "apiHeaderAll.h"
 #include "objStat.h"
 #include "miscUtil.h"
@@ -296,8 +298,11 @@ intAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1,
     printf
     ("GJK-P P.123.0.1. in intAddChkSumDateAvuMetadata(), after rsModAVUMetadata((%s), rsComm\n",
      objPath);
-
+#if defined(osx_platform)
+  if ((long) t1 < 190509697L || (long) t1 > LONG_MAX)
+#else
   if ((long) t1 < 190509697L || (long) t1 > MAXLONG)
+#endif
     {
       (void) rodsLog (LOG_ERROR,
 		      "The Unix time (%d) is out of reasonable bounds for intAddChkSumDateAvuMetadata() for iRods data object (%s) ",
