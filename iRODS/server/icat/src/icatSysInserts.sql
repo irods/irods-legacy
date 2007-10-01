@@ -187,6 +187,7 @@ insert into R_USER_MAIN values (9001,'rodsadmin','rodsgroup','tempZone','','',''
 
 insert into R_USER_MAIN values (9002,'rodsBoot','rodsadmin','tempZone','','','','1170000000','1170000000');
 insert into R_USER_GROUP values (9001,9002,'1170000000','1170000000');
+insert into R_USER_GROUP values (9002,9002,'1170000000','1170000000');
 insert into R_USER_PASSWORD values (9002,'RODS','9999-12-31-23.59.00','1170000000','1170000000');
 
 insert into R_COLL_MAIN values (9003,'/','/','rods','tempZone',0,'','','','','','','1170000000','1170000000');
