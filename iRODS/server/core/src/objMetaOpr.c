@@ -2620,16 +2620,18 @@ dataObjInfo_t **dataObjInfo)
     }
 
     if (status < 0 && dataObjInp->specColl == NULL) {
-        status = resolveSpecColl (rsComm, dataObjInp, dataObjInfo, 
+        int status2;
+        status2 = resolveSpecColl (rsComm, dataObjInp, dataObjInfo, 
 	  writeFlag);
-        if (status < 0) {
-            if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
+        if (status2 < 0) {
+            if (status2 == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
               dataObjInfo != NULL) {
                 freeDataObjInfo (*dataObjInfo);
             }
         }
+	if (status2==CAT_NO_ROWS_FOUND) return(status);
+	return(status2);
     }
-
-    return (status);
+    return(status);
 }
 
