@@ -1,10 +1,11 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+
+#include "rodsServer.h"
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
-#include "rodsServer.h"
 
 uint ServerBootTime;
 
@@ -278,6 +279,7 @@ serverMain (char *logDir)
     }		/* infinite loop */
 
     /* not reached - return (status); */
+    return(0); /* to avoid warning */
 }
 
 void
