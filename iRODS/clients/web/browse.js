@@ -1149,6 +1149,9 @@ function RodsBrowser(inipath, _ssid)
          coll_list_data.load({params:{start:0, limit:50}});
          grid.selModel.clearSelections(); //workaround for IE6's wierd behavior
          this.treeGoTo(rpath_grid);
+
+	 // set new ruri in applet
+ 	 document.myApplet.setRuri(new_ruri);
        }
     },
     
@@ -1897,21 +1900,10 @@ function RodsBrowser(inipath, _ssid)
         if (Ext.get('upload-applet-dlg-bd-main').dom.innerHTML == '')
         {
           Ext.get('upload-applet-dlg-bd-main').dom.innerHTML=
-            '<object classid="clsid:CAFEEFAC-0015-0000-0000-ABCDEFFEDCBA" WIDTH="650" HEIGHT="300">'+
-            '   <param name="mayscript" value="true">'+
-            '   <param name="code" value="edu.sdsc.grid.gui.applet.UploadApplet.class"> ' +
-            '   <param name="archive" value="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar">'+
+         '<applet name="myApplet" CODE="edu.sdsc.grid.gui.applet.UploadApplet.class" archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar" WIDTH="650" HEIGHT="300" mayscript>'+
             '   <param name="ruri" value="irods://'+rpath_grid+'" />'+
             '   <param name="ssid" value="'+ssid+'" />'+
-            '   <comment>'+
-            '     <embed type="application/x-java-applet" code="edu.sdsc.grid.gui.applet.UploadApplet.class" WIDTH="650" HEIGHT="300" '+
-            '       mayscript="true" '+
-            '       archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar" '+
-            '       ruri="irods://'+rpath_grid+'" '+
-            '       ssid="'+ssid+'" >'+
-            '     </embed>'+
-            '   </comment>'+
-            '</object>';
+            '</applet>';
           upload_applet_dialog.addKeyListener(27, upload_applet_dialog.hide, upload_applet_dialog); // ESC can also close the dialog
         }
         upload_applet_dialog.show(btn.getEl());
