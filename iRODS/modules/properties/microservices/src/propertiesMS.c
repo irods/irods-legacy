@@ -194,7 +194,7 @@ int
 msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam,
 	ruleExecInfo_t *rei )
 {
-	msiPropertiesAdd( listParam, keywordParam, valueParam, rei );
+	return msiPropertiesAdd( listParam, keywordParam, valueParam, rei );
 }
 
 /**
