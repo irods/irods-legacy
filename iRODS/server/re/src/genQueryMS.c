@@ -1,7 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
-#include "icatHighLevelRoutines.h"
+#include "genQuery.h"
+#include "reHelpers1.h"
 
 
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
@@ -63,6 +64,16 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
   return(0);
 }
 
+int
+_makeQuery( char *sel, char *cond, char **sql)
+{
+  *sql = (char *) malloc(strlen(sel) + strlen(cond) + 20);
+  if (strlen(cond) >  0) 
+    sprintf(*sql, "SELECT %s WHERE %s", sel, cond);
+  else
+    sprintf(*sql, "SELECT %s ", sel);
+  return(0);
+}
 
 int
 msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam, 
@@ -76,15 +87,5 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
   queryOutParam->type = strdup(STR_MS_T);
   queryOutParam->inOutStruct = sql;
   return(i);
-}
-
-_makeQuery( char *sel, char *cond, char **sql)
-{
-  *sql = (char *) malloc(strlen(sel) + strlen(cond) + 20);
-  if (strlen(cond) >  0) 
-    sprintf(*sql, "SELECT %s WHERE %s", sel, cond);
-  else
-    sprintf(*sql, "SELECT %s ", sel);
-  return(0);
 }
 
