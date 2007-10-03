@@ -19,8 +19,10 @@ ils -l
 /* LISTING AND CHECKSUM */
 irule -F ../test/listColl.ir
 irule -F ../test/showicatchksumColl.ir
+
 ichksum -r .
 irule -F ../test/showicatchksumColl.ir
+
    /** use the following to change a file under iRODS
            iquest "select DATA_PATH where DATA_NAME = 'iquest.c'"
            vi 
@@ -123,10 +125,10 @@ irule -v -F ../test/ruleTest8.ir
 more        ../test/ruleTest9.ir
 irule -v -F ../test/ruleTest9.ir
 
-/** ifExec if *A==598 then *A = 598, *D = 598 **/
+/** ifExec if *A > *D then *A = *D **/
 more        ../test/ruleTest10.ir
 irule -v -F ../test/ruleTest10.ir
-/** ifExec if *A==198 then *D = 198*A = 598, *A = 598 **/
+/** ifExec if *A < *D  then *D =  *A  **/
 irule -v -F ../test/ruleTest10.ir
 
 
@@ -156,15 +158,15 @@ irule -v -F ../test/ruleTest16.ir
 
 /** show rules, add something and show again  1000..., 0-4.., 1000...**/
 more        ../test/ruleTest17.ir
-irule  -F ../test/ruleTest17.ir
+irule  -F ../test/ruleTest17.ir |more
 
 /** show variable maps, add something and show again 1000..., 0-94.., 1000... **/
 more        ../test/ruleTest18.ir
-irule  -F ../test/ruleTest18.ir
+irule  -F ../test/ruleTest18.ir |more
 
 /** show function maps, add something and show again  1000..., 0-10.., 1000... **/
 more        ../test/ruleTest19.ir
-irule  -F ../test/ruleTest19.ir
+irule  -F ../test/ruleTest19.ir |more
 
 /** remoteExec  **/
 /****
@@ -206,6 +208,7 @@ irule -v -F ../test/ruleTest23.ir
 
 /**  medata extraction through tag files - see onMicroServices.ppt for more info **/
 icd
+irm -rf MDtest
 imkdir MDtest
 icd MDtest
 iput ../test/sample.email
