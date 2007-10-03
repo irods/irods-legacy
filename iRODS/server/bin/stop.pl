@@ -13,7 +13,9 @@ $RE_SERVER_STR="irodsReServer";
 
 $hostOS=`uname -s`;
 chomp($hostOS);
-
+$hostUser= `whoami`;
+chomp($hostUser);
+print "Host User = $hostUser\n";
 if ("$hostOS" eq "Darwin" ) {
     $psOptions="-axlw";
     $pidField="2";
@@ -30,7 +32,7 @@ if ("$hostOS" eq "SunOS" ) {
 }
 
 # find the server (if any)
-$serverLine=`ps $psOptions | egrep "$SERVER_STR" | egrep -v grep `;
+$serverLine=`ps $psOptions | egrep "$SERVER_STR" | egrep "$hostUser" | egrep -v grep `;
 chomp($serverLine);
 $serverPid=`echo "$serverLine" | awk '{ print \$$pidField }'`;
 chomp($serverPid);
@@ -51,7 +53,7 @@ else {
 }
 
 # Find the irodsReServer (if any) 
-$REFull=`ps $psOptions | egrep $RE_SERVER_STR | egrep -v grep`;
+$REFull=`ps $psOptions | egrep $RE_SERVER_STR | egrep "$hostUser" | egrep -v grep`;
 chomp($REFull);
 $REPid = `echo "$REFull" | awk '{ print \$$pidField }'`;
 chomp($REPid);
@@ -99,13 +101,13 @@ if ($REPid) {
 if ($serverPid) {
     print "killing: " . $serverPid . "\n";
     `/bin/kill $serverPid`;
-    $serverPid=`ps $psOptions | egrep "$SERVER_STR" | egrep -v grep | awk '{ print \$$pidField }'`;
+    $serverPid=`ps $psOptions | egrep "$SERVER_STR" | egrep -v grep | egrep "$hostUser" | awk '{ print \$$pidField }'`;
     chomp($serverPid);
     if ($serverPid) {
 	print "killing again as it is still going: " . $serverPid . "\n";
 	`/bin/kill $serverPid`;
     }
-    $serverPid=`ps $psOptions | egrep "$SERVER_STR" | egrep -v grep | awk '{ print \$$pidField }'`;
+    $serverPid=`ps $psOptions | egrep "$SERVER_STR" | egrep -v grep | egrep "$hostUser" | awk '{ print \$$pidField }'`;
     chomp($serverPid);
     if ($serverPid) {
 	die("irodsServer failed to exit\n");
