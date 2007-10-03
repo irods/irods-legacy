@@ -184,6 +184,10 @@ fillGenQueryInpFromStrCond(char *str, genQueryInp_t *genQueryInp);
 int
 printGenQueryOut(FILE *fd, char *format, char *hint, 
 genQueryOut_t *genQueryOut);
+
+int appendToByteBuf(bytesBuf_t *bytesBuf, char *str);
+
+char * getAttrNameFromAttrId(int cid);
 #ifdef  __cplusplus
 }
 #endif
