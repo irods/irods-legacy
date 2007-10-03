@@ -592,8 +592,6 @@ static pid_t myPid=0;
  Log or display a message.  The level argument indicates how severe
  the message is, and depending on the verbosityLevel may or may not be
  recorded.  This is used by both client and server code.
-
- This is currently a simple incomplete version for initial use.
  */
 void
 rodsLog(int level, char *formatStr, ...) {
