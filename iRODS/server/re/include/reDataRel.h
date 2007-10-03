@@ -1,6 +1,6 @@
 /* reDataRel.h */
 
-#if !defined(osx_platform)
+#if !defined(NAME_MAX)
 #define NAME_MAX	128 /* XXXXX take me out. just to get around compile error */
 #endif
 
