@@ -20,6 +20,7 @@ if (isset($_REQUEST['files']))
   $files=$_REQUEST['files'];
 if (isset($_REQUEST['dirs']))
   $dirs=$_REQUEST['dirs'];
+
 if ( (empty($files))&&(empty($dirs)) )
 {
   $response=array('success'=> false,'errmsg'=>'No files or collections specified');
@@ -32,7 +33,6 @@ if (isset($_REQUEST['force']))
   $force_delete=true;
   
 try {
-  
   $parent=ProdsDir::fromURI($ruri, false);
   if (empty($parent->account->pass))
   {
@@ -50,19 +50,29 @@ try {
     $parent->account->getUserInfo();
   }  
   
+  $num_files=0;
   foreach ($files as $filename)
   {
-    $myfile=new ProdsFile($parent->account,$parent->path_str.'/'.$filename);
-    $myfile->unlink(NULL, $force_delete);
+    if (strlen($filename)>0)
+    {
+      $myfile=new ProdsFile($parent->account,$parent->path_str.'/'.$filename);
+      $myfile->unlink(NULL, $force_delete);
+      $num_files++;
+    }
   }
   
+  $num_dirs=0;
   foreach ($dirs as $dirname)
   {
-    $mydir=new ProdsDir($parent->account,$parent->path_str.'/'.$dirname);
-    $mydir->rmdir(true, $force_delete);
+    if (strlen($dirname)>0)
+    {
+      $mydir=new ProdsDir($parent->account,$parent->path_str.'/'.$dirname);
+      $mydir->rmdir(true, $force_delete);
+      $num_dirs++;
+    }
   }
   
-  $response=array('success'=> true,'log'=>count($files).' files and '.count($dirs).' collections deleted!');
+  $response=array('success'=> true,'log'=>'$num_files files and $num_dirs collections deleted!');
   echo json_encode($response);
   
 } catch (Exception $e) {
