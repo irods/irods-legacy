@@ -1,3 +1,5 @@
+acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
+acPostProcForPut|$objPath like /tempZone/home/rods/tg/*|msiSysReplDataObj(tgReplResc,null)|nop
 # iRODS Rule Base
 # Each rule consists of four parts separated by  |
 # The four parts are: name, conditions, function calls, and recovery.
