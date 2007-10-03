@@ -15,7 +15,7 @@
 //This code is copyrighted and has limited warranties.
 //Please see http://www.Planet-Source-Code.com/xq/ASP/txtCodeId.711/lngWId.3/qx/vb/scripts/ShowCode.htm
 //for details.
-//**************************************/
+// **************************************/
 
 /* +++Date last modified: 05-Jul-1997 */
 /*

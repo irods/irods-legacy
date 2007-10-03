@@ -48,7 +48,7 @@ int
 recover_msiRegisterData(ruleExecInfo_t *rei)
 {
 
-  int status;
+
   /**** This is Just a Test Stub  ****/
   if (reTestFlag > 0 ) {
     if (reTestFlag == LOG_TEST_1)

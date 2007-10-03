@@ -101,6 +101,7 @@ freeRuleExecInfoStruct(ruleExecInfo_t *rs, int freeMsParamFlag)
 {
   freeRuleExecInfoInternals(rs, freeMsParamFlag);
   free(rs);
+  return(0);
 }
 int 
 freeRuleExecInfoInternals(ruleExecInfo_t *rs, int freeMsParamFlag)
@@ -368,7 +369,7 @@ unpackReiAndArg (rsComm_t *rsComm, ruleExecInfoAndArg_t **reiAndArg,
 bytesBuf_t *packedReiAndArgBBuf)
 {
     int status;
-    ruleExecInfo_t *myRei;
+    /*ruleExecInfo_t *myRei;*/
 
     if (packedReiAndArgBBuf == NULL || reiAndArg == NULL) {
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
@@ -459,7 +460,7 @@ touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei)
 int
 copyTaggedValue(char *str, char *tag, char *buf, int bufLen)
 {
-  int i;
+  /*int i;*/
   char tVal[NAME_LEN];
   char *t,*s, *u;
 
@@ -552,7 +553,8 @@ fillSubmitConditions (char *action, char *inDelayCondition,
    if (ruleSubmitInfo->userName == NULL || strlen(ruleSubmitInfo->userName) == 0) {
      if (rei->uoic->userName  != NULL)
        strncpy(ruleSubmitInfo->userName, rei->uoic->userName,NAME_LEN);
-     else if (rei->rsComm->clientUser.userName,NAME_LEN);
+     else if (rei->rsComm->clientUser.userName != NULL)
+       strncpy(rei->rsComm->clientUser.userName,rei->uoic->userName,NAME_LEN);
    }
    free(delayCondition);
    return(0);

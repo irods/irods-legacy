@@ -37,9 +37,9 @@ replaceSessionVar(char *action,  char *start, int size,  ruleExecInfo_t *rei)
   char varName[NAME_LEN];
   char *varMap;
   char *varValue;
-  int i,j,nLen, vinx;
+  int i,nLen, vinx;
   char *t1;
-  char tmpVarValue[MAX_NAME_LEN];
+  /*char tmpVarValue[MAX_NAME_LEN];*/
 
   /*
   varValue = tmpVarValue;
@@ -95,9 +95,9 @@ int
 replaceStarVar(char *action,  char *start, int size,   msParamArray_t *inMsParamArray)
 {
   char varName[NAME_LEN];
-  char *varMap;
+  /*  char *varMap;*/
   char *varValue;
-  int i,j,nLen, vinx;
+  int i,nLen;
   char *t1;
   char tmpVarValue[MAX_NAME_LEN];
   msParam_t *mP;
@@ -126,7 +126,7 @@ replaceStarVar(char *action,  char *start, int size,   msParamArray_t *inMsParam
 int
 replaceDataVar( char *start, int size,  dataObjInfo_t *doi)
 {
-  int i,j;
+  int i;
   char *t1;
 
 
@@ -263,7 +263,7 @@ replaceDataVar( char *start, int size,  dataObjInfo_t *doi)
 int
 replaceUserVar( char *start, int size,  userInfo_t *uoic,  userInfo_t *uoip)
 {
-  int i,j;
+  int i;
   char *t1;
 
 
@@ -386,7 +386,7 @@ replaceUserVar( char *start, int size,  userInfo_t *uoic,  userInfo_t *uoip)
 int
 replaceCollVar( char *start, int size,  collInfo_t *coi)
 {
-  int i,j;
+  int i;
   char *t1;
 
 
@@ -470,7 +470,7 @@ replaceCollVar( char *start, int size,  collInfo_t *coi)
 int
 replaceRescVar( char *start, int size,  rescInfo_t *roi)
 {
-  int i,j;
+  int i;
   char *t1;
 
 
@@ -869,7 +869,7 @@ getNextValueAndBufFromListOrStruct(char *typ, void *inPtr,
       *restPtr = NULL;
       return(NO_VALUES_FOUND);
     }
-    *value = (char *) strdup( (char *) strA->value[(*inx) * strA->size]);
+    *value = (void *) strdup( (char *) &strA->value[(*inx) * strA->size]);
     (*inx) = (*inx) + 1;
     *restPtr = inPtr;
     return(0);
@@ -936,6 +936,8 @@ getNextValueAndBufFromListOrStruct(char *typ, void *inPtr,
   else if (!strcmp(typ,DataObjInp_MS_T)) {
     return(0);
   }
+  else
+    return(USER_PARAM_TYPE_ERR);
 }
 
 int
@@ -965,12 +967,15 @@ freeNextValueStruct(void **value,char *typ, char *flag)
       *value = NULL;
     }
   }
+  else
+    return(USER_PARAM_TYPE_ERR);
+  return(0);
 }
 
 int
 getNewVarName(char *v, msParamArray_t *msParamArray)
 {
-  msParam_t *mP;
+  /*  msParam_t *mP;*/
 
   sprintf(v,"*RNDVAR%i",staticVarNumber);
   staticVarNumber++;
@@ -1019,7 +1024,7 @@ int
 carryOverMsParam(msParamArray_t *sourceMsParamArray,msParamArray_t *targetMsParamArray)
 {
 
-  int i,j;
+  int i;
     msParam_t *mP, *mPt;
     char *a, *b;
     if (sourceMsParamArray == NULL)

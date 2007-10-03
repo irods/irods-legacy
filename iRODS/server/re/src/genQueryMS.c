@@ -4,6 +4,7 @@
 #include "genQuery.h"
 #include "reHelpers1.h"
 
+int _makeQuery( char *sel, char *cond, char **sql);
 
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
 {
@@ -88,4 +89,3 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
   queryOutParam->inOutStruct = sql;
   return(i);
 }
-

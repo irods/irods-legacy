@@ -404,12 +404,12 @@ parseAction(char *inAction,char *action, char *args[], int *argc)
 int
 parseAction(char *inAction,char *action, char *args[], int *argc)
 {
-  char  *t, *s, *u;
+  char  *t, *s;
   int i = 0;
-  int j,k;
+  /*int j,k;*/
   char *act;
   char *e,  *t1;
-  char t2;
+  /*char t2;*/
   int found = 0;
 
   act = strdup(inAction);
@@ -494,12 +494,12 @@ int
 executeRuleAction(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag)
 {
   int i,ii,j;
-  funcPtr myFunc = NULL;
+  /*funcPtr myFunc = NULL;*/
   int actionInx;
-  int numOfStrArgs;
+  /*int numOfStrArgs;*/
   char action[MAX_ACTION_SIZE];  
   char oldaction[MAX_ACTION_SIZE];  
-  char  *t, *s;
+  /*char  *t, *s;*/
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   int argc;
 
@@ -609,12 +609,12 @@ int
 executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag)
 {
   int i,ii,j;
-  funcPtr myFunc = NULL;
+  /*funcPtr myFunc = NULL;*/
   int actionInx;
-  int numOfStrArgs;
+  /*int numOfStrArgs;*/
   char action[MAX_ACTION_SIZE];  
   char oldaction[MAX_ACTION_SIZE];  
-  char  *t, *s;
+  /*char  *t, *s;*/
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   int argc;
 
@@ -690,15 +690,15 @@ executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, ruleExecIn
 int
 executeMyRuleAction(char *inAction,  msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag)
 {
-  int i,ii,j;
-  funcPtr myFunc = NULL;
-  int actionInx;
-  int numOfStrArgs;
+  int ii,j;
+  /*funcPtr myFunc = NULL;*/
+  /*int actionInx;*/
+  /*int numOfStrArgs;*/
   char action[MAX_ACTION_SIZE];  
   char oldaction[MAX_ACTION_SIZE];  
-  char  *t, *s;
-  char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-  int argc;
+  /*char  *t, *s;*/
+  /*char *args[MAX_NUM_OF_ARGS_IN_ACTION];*/
+  /*int argc;*/
   /****
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
@@ -776,7 +776,7 @@ int
 getNextAction(char *listOfAction, char *action, char **restPtr)
 {
 
-  char *t, *s;
+  /*  char *t, *s;*/
 
   if (listOfAction== NULL || strlen(listOfAction) == 0) {
     return(-1);
@@ -853,10 +853,10 @@ executeMicroService (char *inAction, char *largs[MAX_NUM_OF_ARGS_IN_ACTION], int
   funcPtr myFunc = NULL;
   int actionInx;
   int numOfStrArgs;
-  int i,j,k, ii;
+  int i, ii;
   void *myArgv[MAX_NUM_OF_ARGS_IN_ACTION];
   msParam_t *mP;
-  char tmpStr[NAME_LEN];
+  /*  char tmpStr[NAME_LEN];*/
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   int argc;
   int argcToFree;
@@ -943,10 +943,10 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
   funcPtr myFunc = NULL;
   int actionInx;
   int numOfStrArgs;
-  int i,j,k, ii;
+  int i,j, ii;
   void *myArgv[MAX_NUM_OF_ARGS_IN_ACTION];
   msParam_t *mP;
-  char tmpStr[NAME_LEN];
+  /*char tmpStr[NAME_LEN];*/
   char tmpVarName[MAX_ACTION_SIZE];
   char action[MAX_ACTION_SIZE];  
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
@@ -1105,7 +1105,7 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
     ii = (*myFunc) (myArgv[0],myArgv[1],myArgv[2],myArgv[3],myArgv[4],myArgv[5],myArgv[6],myArgv[7],
 		    myArgv[8],myArgv [9],rei);
   rei->status = ii;
-  removeTmpVarName(inMsParamArray);
+  /*  removeTmpVarName(inMsParamArray);*/
   return(ii);
 }
 

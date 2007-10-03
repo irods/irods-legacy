@@ -8,8 +8,8 @@ int
 checkRuleCondition(char *action, char *incond, char *args[MAX_NUM_OF_ARGS_IN_ACTION], 
 		   int argc, ruleExecInfo_t *rei, int reiSaveFlag )
 {
-  int i,j,k;
-  char *t1, *t2, *t3;
+  int i,k;
+  /*  char *t1, *t2, *t3;*/
   char cond[MAX_COND_LEN];
   char evaStr[MAX_COND_LEN * 2];
   /*
@@ -33,7 +33,7 @@ checkRuleCondition(char *action, char *incond, char *args[MAX_NUM_OF_ARGS_IN_ACT
 
   /****
   t1 = cond;
-  /* replace variables with values * /
+  /  * replace variables with values * /
   while ((t2 = strstr(t1,"$")) != NULL) {
     j =  replaceDollarParam(t2,(int) (MAX_COND_LEN - (t2 - cond) - 1),
 			    args, argc, rei);
@@ -79,8 +79,8 @@ int
 checkRuleConditionNew(char *action, char *incond,  msParamArray_t *inMsParamArray,
 		   ruleExecInfo_t *rei, int reiSaveFlag )
 {
-  int i,j,k,kk;
-  char *t1, *t2, *t3;
+  int i,k;
+  /* char *t1, *t2, *t3;*/
   char cond[MAX_COND_LEN];
   char evaStr[MAX_COND_LEN * 2];
   /*
@@ -183,7 +183,7 @@ _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, i
 {
    int i,j,k,iii,jjj,kkk;
    double x,y;
-   char aaa[MAX_COND_LEN], bbb[MAX_COND_LEN];
+   /*   char aaa[MAX_COND_LEN], bbb[MAX_COND_LEN];*/
    char inres1[MAX_COND_LEN * 2];
    char inres2[MAX_COND_LEN * 2];
    if (isLogical(oper1)) {
@@ -398,8 +398,8 @@ int
 replaceVariables(char *action, char *inStr, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 		   ruleExecInfo_t *rei )
 {
-  int i,j,k;
-  char *t1, *t2, *t3;
+  int j;
+  char *t1, *t2;
 
   t1 = inStr;
 
@@ -418,8 +418,8 @@ replaceVariables(char *action, char *inStr, char *args[MAX_NUM_OF_ARGS_IN_ACTION
 int
 replaceVariablesNew(char *action, char *inStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei )
 {
-  int i,j,k;
-  char *t1, *t2, *t3;
+  int j;
+  char *t1, *t2;
 
   if (strncmp(inStr,"assign(",7) == 0) 
     return(0);
@@ -443,8 +443,8 @@ replaceVariablesNew(char *action, char *inStr, msParamArray_t *inMsParamArray, r
 int
 replaceVariablesAndMsParams(char *action, char *inStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei )
 {
-  int i,j,k;
-  char *t1, *t2, *t3;
+  int j;
+  char *t1, *t2;
 
   t1 = inStr;
   j = 0;
@@ -464,8 +464,8 @@ replaceVariablesAndMsParams(char *action, char *inStr, msParamArray_t *inMsParam
 int
 replaceMsParams(char *inStr, msParamArray_t *inMsParamArray)
 {
-  int i,j,k;
-  char *t1, *t2, *t3;
+  int j;
+  char *t1, *t2;
 
   t1 = inStr;
 
@@ -563,7 +563,7 @@ replaceDollarParam(char *action, char *dPtr, int len,
 int
 reREMatch(char *pat, char *str)
 {
-  int i,j;
+  int i;
 
   i = match(pat,str);
   if (i == MATCH_VALID)

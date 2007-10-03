@@ -37,5 +37,8 @@ replaceDollarParam(char *action, char *dPtr, int len,
 int
 reREMatch(char *pat, char *str);
 
-
+int _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, 
+		       int reiSaveFlag , char *res );
+int convertArgWithVariableBinding(char *inS, char **outS, msParamArray_t *inMsParamArray, 
+				  ruleExecInfo_t *rei);
 #endif	/* RE_HELPERS1_H */

@@ -49,8 +49,10 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
   tagStruct_t *tagValues;
 
   char *t, *t1, *t2, *t3, *t4, *t5, *t6, *t7, *t8;
+  /*
   int len;
   int l1, l2;
+  */
   int i,j;
   /*  char *preg[4];*/
   regex_t preg[4];
@@ -108,19 +110,20 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
   tagValues = mallocAndZero(sizeof(tagStruct_t));
   tagValues->len = 0;
   t1 = t;
+#ifdef BABABA
   /*
-  while ((t2 = regex(preg[0], t1)) != NULL) { /* t2 starts preTag * /
-    if ((t3 = regex(preg[1], t2)) == NULL)    /* t3 starts keyValue * /
+  while ((t2 = regex(preg[0], t1)) != NULL) { / * t2 starts preTag * /
+    if ((t3 = regex(preg[1], t2)) == NULL)    / * t3 starts keyValue * /
       break;
-    t6 = __loc1;                              /* t6 ends preTag * /
+    t6 = __loc1;                              / * t6 ends preTag * /
     *t6 = '\0';
-    if ((t5 = regex(preg[2], t3)) == NULL)    /* t5 starts postTag * /
+    if ((t5 = regex(preg[2], t3)) == NULL)    / *  t5 starts postTag * /
       break;
-    t4 = __loc1;                              /* t4 ends keyValue * /
+    t4 = __loc1;                              / * t4 ends keyValue * /
     *t4 = '\0';
-    if ((t7 = regex(preg[3], t5)) == NULL)    /* t7 ends the line * /
+    if ((t7 = regex(preg[3], t5)) == NULL)    / * t7 ends the line * /
       break;
-    t8 = __loc1;                              /* t8 ends postTag * /
+    t8 = __loc1;                              / * t8 ends postTag * /
     *t8 = '\0';
     
     i = addTagStruct (tagValues, t2, t5, t3);
@@ -131,6 +134,7 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
       break;
   }
   */
+#endif /*  BABABA */
   while (regexec(&preg[0], t1,1,&pm[0],0) == 0) {
     t2 = t1 + pm[0].rm_eo ;                        /* t2 starts preTag */
     if  (regexec(&preg[1],t2,1,&pm[1],0) != 0)
@@ -213,7 +217,7 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
   bytesBuf_t *metaObjBuf;
   tagStruct_t *tagValues;
   keyValPair_t *metaDataPairs;
-  int l1, l2;
+  /*  int l1, l2; */
   int i,j;
   /*char *preg[2]; */
   regex_t preg[2];
@@ -238,6 +242,7 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
   t1 = t;
   for (i = 0; i  < tagValues->len ; i++) {
     t1 = t;
+#ifdef BABABA
     /*
     preg[0] = regcmp(tagValues->preTag[i], (char *)0);
     if (preg[0] == NULL) 
@@ -245,13 +250,13 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
     preg[1] =  regcmp(tagValues->postTag[i], (char *)0);
     if (preg[1] == NULL) 
       return(INVALID_REGEXP);
-    while ((t2 = regex(preg[0], t1)) != NULL) { /* t2 starts value * /
+    while ((t2 = regex(preg[0], t1)) != NULL) { / * t2 starts value * /
       if ((t3 = regex(preg[1], t2)) == NULL) {
 	free(preg[0]);
 	free(preg[1]);
 	break;
       }
-      t4 = __loc1;                              /* t4 ends value * /
+      t4 = __loc1;                              / * t4 ends value * /
       c = *t4;
       *t4 = '\0';
       j = addKeyVal(metaDataPairs, tagValues->keyWord[i], t2);
@@ -265,7 +270,7 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
     free(preg[0]);
     free(preg[1]);
     */
-    
+#endif /*  BABABA */
     j = regcomp (&preg[0], tagValues->preTag[i], REG_EXTENDED);
     if (j != 0) {
       regerror (j,&preg[0],errbuff,sizeof(errbuff)); 
@@ -336,7 +341,8 @@ msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
 
   char *objName;
   char *objType;
-  int id, i;
+  /*  int id, i;*/
+  int i;
 
   RE_TEST_MACRO ("Loopback on msiAssociateKeyValuePairsToObj");
 

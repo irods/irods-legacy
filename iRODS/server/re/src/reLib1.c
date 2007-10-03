@@ -318,7 +318,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag)
 {
   int ruleInx, argc,i, status;
-  char *nextRule;
+  /*char *nextRule; */
   char ruleCondition[MAX_RULE_LENGTH * 3];
   char ruleAction[MAX_RULE_LENGTH * 3];
   char ruleRecovery[MAX_RULE_LENGTH * 3];
@@ -327,9 +327,9 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   int  first = 0;
   ruleExecInfo_t  *saveRei;
   int reTryWithoutRecovery = 0;
-  funcPtr myFunc = NULL;
-  int actionInx;
-  int numOfStrArgs;
+  /*funcPtr myFunc = NULL;*/
+  /*int actionInx;*/
+  /*int numOfStrArgs;*/
   int ii;
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   char action[MAX_ACTION_SIZE];  
@@ -465,7 +465,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  ruleExecInfo_t *rei, int reiSaveFlag, int allRuleExecFlag)
 {
   int ruleInx, argc,i, status;
-  char *nextRule;
+  /*char *nextRule;*/
   char ruleCondition[MAX_RULE_LENGTH * 3];
   char ruleAction[MAX_RULE_LENGTH * 3];
   char ruleRecovery[MAX_RULE_LENGTH * 3];
@@ -475,10 +475,10 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
   int  success = 0;
   ruleExecInfo_t  *saveRei;
   int reTryWithoutRecovery = 0;
-  funcPtr myFunc = NULL;
-  int actionInx;
-  int numOfStrArgs;
-  int ii;
+  /*funcPtr myFunc = NULL;*/
+  /*int actionInx;*/
+  /*int numOfStrArgs;*/
+  /*int ii;*/
   char *args[MAX_NUM_OF_ARGS_IN_ACTION];
   char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
@@ -725,7 +725,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 int
 initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
 {
-  int i,j;
+  int i;
   char r1[NAME_LEN], r2[RULE_SET_DEF_LENGTH], r3[RULE_SET_DEF_LENGTH];
   
   strcpy(r2,irbSet);
@@ -801,7 +801,7 @@ readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
    FILE *file;
    char buf[MAX_RULE_LENGTH];
    char *configDir;
-   char *t, *s;
+   char *t;
    i = inRuleStrct->MaxNumOfRules;
 
    configDir = getConfigDir ();
@@ -898,7 +898,7 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
   int i = 0;
   char l0[MAX_DVAR_LENGTH];
   char l1[MAX_DVAR_LENGTH];
-  char l2[MAX_DVAR_LENGTH];
+  /*  char l2[MAX_DVAR_LENGTH];*/
   char l3[MAX_DVAR_LENGTH];
    char dvarsFileName[MAX_NAME_LEN];
    FILE *file;
@@ -940,8 +940,8 @@ readFuncMapStructFromFile(char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef)
   int i = 0;
   char l0[MAX_FMAP_LENGTH];
   char l1[MAX_FMAP_LENGTH];
-  char l2[MAX_FMAP_LENGTH];
-  char l3[MAX_FMAP_LENGTH];
+  /*char l2[MAX_FMAP_LENGTH];
+    char l3[MAX_FMAP_LENGTH];*/
    char fmapsFileName[MAX_NAME_LEN];
    FILE *file;
    char buf[MAX_FMAP_LENGTH];

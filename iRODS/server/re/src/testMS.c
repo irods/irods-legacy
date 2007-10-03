@@ -46,6 +46,7 @@ print_doi(dataObjInfo_t *doi)
     rodsLog (LOG_NOTICE,"     dataType= %s\n",doi->dataType);
     rodsLog (LOG_NOTICE,"     dataSize= %lld\n",doi->dataSize);
   }
+  return(0);
 }
 
 
@@ -71,5 +72,6 @@ print_uoi(userInfo_t *uoi)
     rodsLog (LOG_NOTICE,"     userType= %s\n",uoi->userType);
 
   }
+  return(0);
 }
 

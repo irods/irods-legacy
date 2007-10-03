@@ -30,6 +30,7 @@ extern void myfree(char* file, int line, void *x);
 #include "dataObjInpOut.h"
 #include "msParam.h"
 
+
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/
 /***** If you are changing the RuleExecInfo   *****/
 /***** You need to modify the maintenance     *****/
@@ -129,5 +130,5 @@ extern strArray_t delayStack;
 extern strArray_t msParamStack;
 
 #include "reFuncDefs.h"
-
+#include "reHelpers1.h"
 #endif  /* RE_GLOBALS_EXTERN_H */

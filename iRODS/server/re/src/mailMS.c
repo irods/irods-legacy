@@ -7,7 +7,7 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
 {
   char *mailStr;
   char fName[100];
-  char *t1, *t2, *t3;
+  char *t1, *t2;
   FILE *fd;
   char *toAddr;
   char *subjectLine;

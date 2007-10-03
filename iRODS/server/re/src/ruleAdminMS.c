@@ -83,7 +83,7 @@ int admShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei)
 
 int _admShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleVarDef, int inx)
 {
-  int i,j;
+  int j;
   char outStr[MAX_RULE_LENGTH];
 
   _writeString("stdout","---------------------------------------------------------------\n",rei);
@@ -112,7 +112,7 @@ int admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei)
 int _admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleFuncMapDef, int inx)
 {
 
-  int i,j;
+  int j;
   char outStr[MAX_RULE_LENGTH];
 
   _writeString("stdout","---------------------------------------------------------------\n",rei);
@@ -147,7 +147,7 @@ int _admShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleSt
     char ruleBase[MAX_ACTION_SIZE]; 
     char *actionArray[MAX_ACTION_IN_RULE];
     char *recoveryArray[MAX_ACTION_IN_RULE];
-    char configDirEV[200];
+    /*char configDirEV[200];*/
     char ruleSet[RULE_SET_DEF_LENGTH];
     char oldRuleBase[MAX_ACTION_SIZE];
 
@@ -231,7 +231,7 @@ int admAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
 			msParam_t *fnmFilesParam,  ruleExecInfo_t *rei)
 {
 
-  int i,j;
+  int i;
 
   if ((i = isUserPrivileged(rei->rsComm)) != 0)
     return (i);

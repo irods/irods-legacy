@@ -22,7 +22,7 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 }
 int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
-  int i,j;
+  int i;
   char *writeId;
   char *writeStr;
 
@@ -47,7 +47,6 @@ int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 
 int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
 {
-  int i,j;
   msParamArray_t *inMsParamArray;
   msParam_t *mP;
   execCmdOut_t *myExecCmdOut;
