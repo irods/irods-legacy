@@ -1362,6 +1362,189 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 /*
+ * \fn msiReplColl
+ * \author  Sifang Lu
+ * \date   2007-10-01
+ * \brief This microservice iterate through collection, and calls 
+ *  rsDataObjRepl to recursively replication a collection
+ *  as part of a workflow  execution.
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection.
+ * \param[in]
+ *    coll     : It can be a collInp_t or a STR_MS_T which would be taken 
+ *               as destination collection path.
+ *    destResc : STR_MS_T destination resource name
+ *    options  : STR_MS_T a group of options in a string delimited by '%%'.
+ *               If the string is empty ("\0") or null ("NULL") it will not 
+ *               be used.  
+ *               The options can be the following
+ *              - "all"(ALL_KW) 
+ *              - "irodsAdmin" (IRODS_ADMIN_KW).
+ *              - "backupMode" if specified, it will try to use 'backup mode' 
+ *                to the destination resource. Means if a good copy already
+ *                exists in destination resource, it will not throw an error
+ *
+ * \param[out] a INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
+  msParam_t *outParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm; 
+    collInp_t collInp, *myCollInp;
+    int i, continueInx, status;
+    transStat_t *transStat = NULL;
+    strArray_t optArray;
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    dataObjInp_t dataObjInp;
+    
+    RE_TEST_MACRO ("    Calling msiReplColl")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+	    rodsLog (LOG_ERROR,
+	    "msiReplColl: input rei or rsComm is NULL");
+	    return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    /* parse inpParam1: coll */
+    rei->status = parseMspForCollInp (coll, &collInp, 
+      &myCollInp, 0);
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiReplColl: input inpParam1 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    /* parse inpParam2: destRescName, and assign the destination 
+       resource to dataobjinp */
+    memset (&dataObjInp, 0, sizeof (dataObjInp_t));
+    rei->status = parseMspForCondInp (destRescName, 
+      &(&dataObjInp)->condInput, DEST_RESC_NAME_KW);
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiReplColl: input inpParam2 error. status = %d", rei->status);
+        return (rei->status);
+    }
+    
+    /* parse inpParam3: options, and assign the then to conditional 
+       keywords */
+    if ( (strlen(options->inOutStruct)>0) && 
+         (0!=strcmp(options->inOutStruct,"null")) )
+    { 
+      memset (&optArray, 0, sizeof (optArray));
+      status = parseMultiStr ((char *)options->inOutStruct, &optArray);
+      if (status <= 0)
+      {
+        rodsLog (LOG_ERROR,
+          "msiReplColl: Could not parse options string '%s'",
+          options->inOutStruct);
+      }
+      for(i=0; i<optArray.len; i++)
+      {
+        char *option;
+        option= &optArray.value[i*optArray.size];
+        if ( strcmp(option,ALL_KW) && 
+             strcmp(option,IRODS_ADMIN_KW) &&
+             strcmp(option,"backupMode")
+           )
+        {
+          rodsLog (LOG_ERROR,"msiReplColl: invalid option: '%s'",option);
+          continue;  
+        }
+        if (strcmp(option,"backupMode")==0)
+          addKeyVal (&(dataObjInp.condInput), BACKUP_RESC_NAME_KW, 
+            (char *)destRescName->inOutStruct);
+        else
+          addKeyVal (&(dataObjInp.condInput), option, "");
+      }
+    }  
+    
+    /* iterate through all files */
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+    status = rsQueryDataObjInCollReCur (rsComm, myCollInp->collName, 
+      &genQueryInp, &genQueryOut, NULL, 1);
+    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
+    	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+    	  "msiReplColl: msiReplColl error for %s, stat=%d",
+    	  myCollInp->collName, status);
+    	rei->status=status;
+      return (rei->status);
+    }
+    while (rei->status >= 0) {
+      sqlResult_t *subColl, *dataObj;
+      /* get sub coll paths in the batch */
+      if ((subColl = getSqlResultByInx (genQueryOut, COL_COLL_NAME))
+        == NULL) {
+          rodsLog (LOG_ERROR,
+            "msiReplColl: msiReplColl for COL_COLL_NAME failed");
+          rei->status=UNMATCHED_KEY_OR_INDEX;  
+          return (rei->status);
+      }
+      /* get data names in the batch */
+      if ((dataObj = getSqlResultByInx (genQueryOut, COL_DATA_NAME))
+          == NULL) {
+            rodsLog (LOG_ERROR, 
+              "msiReplColl: msiReplColl for COL_DATA_NAME failed");
+            rei->status=UNMATCHED_KEY_OR_INDEX;   
+            return (rei->status);
+      }
+      
+      for (i = 0; i < genQueryOut->rowCnt; i++) {
+        char *tmpSubColl, *tmpDataName;
+
+        tmpSubColl = &subColl->value[subColl->len * i];
+        tmpDataName = &dataObj->value[dataObj->len * i];
+        snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
+              tmpSubColl, tmpDataName);
+        rei->status = rsDataObjRepl (rsComm, &dataObjInp, &transStat);
+        if (rei->status<0)
+        {
+          rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+            "msiReplColl: rsDataObjRepl failed %s, status = %d",
+			    (&dataObjInp)->objPath,
+          rei->status);
+        }
+        if (transStat != NULL) {
+    	    free (transStat);
+        }
+      }
+      
+      continueInx = genQueryOut->continueInx;
+      freeGenQueryOut (&genQueryOut);
+      if (continueInx > 0) {
+        /* More to come */
+        genQueryInp.continueInx = continueInx;
+        rei->status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+      } else {
+        break;
+      }
+    }
+    
+    clearKeyVal (&dataObjInp.condInput);
+    
+    if (rei->status >= 0) {
+        fillIntInMsParam (outParam, rei->status);
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "dataObjInp: msiReplColl failed (should have catched earlier) %s, status = %d",
+			    (&dataObjInp)->objPath,
+          rei->status);
+    }
+    return (rei->status);
+}
+
+/*
  * \fn msiPhyPathReg
  * \author  Michael Wan
  * \date   2007-04-02
