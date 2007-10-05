@@ -250,7 +250,7 @@ typedef struct {
 
 /* definition for handler function */
 
-typedef void* ((*funcPtr)());
+typedef int((*funcPtr)());
 
 /* some platform does not support vfork */
 #if defined(sgi_platform) || defined(aix_platform)

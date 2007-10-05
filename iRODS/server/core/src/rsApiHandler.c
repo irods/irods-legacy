@@ -329,10 +329,35 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 int
 chkApiPermission (rsComm_t *rsComm, int apiInx)
 {
-    if (RsApiTable[apiInx].clientUserAuth > 
-      rsComm->clientUser.authInfo.authFlag) {
+    int clientUserAuth;
+    int xmsgSvrOnly;
+    int xmsgSvrAlso;
+
+    clientUserAuth = RsApiTable[apiInx].clientUserAuth;
+
+    xmsgSvrOnly = clientUserAuth & XMSG_SVR_ONLY;
+    xmsgSvrAlso = clientUserAuth & XMSG_SVR_ALSO;
+
+    if (ProcessType == XMSG_SERVER_PT) {
+        if ((xmsgSvrOnly + xmsgSvrAlso) == 0) {
+            rodsLog (LOG_ERROR,
+             "chkApiPermission: xmsgServer not allowed to handle api %d",
+	      RsApiTable[apiInx].apiNumber);
+            return (SYS_NO_API_PRIV);
+	}
+    } else if (xmsgSvrOnly != 0) {
+        rodsLog (LOG_ERROR,
+         "chkApiPermission: non xmsgServer not allowed to handle api %d",
+          RsApiTable[apiInx].apiNumber);
+        return (SYS_NO_API_PRIV);
+    }
+
+    clientUserAuth = clientUserAuth & 0xfff;	/* take out XMSG_SVR_* flags */
+
+    if (clientUserAuth > rsComm->clientUser.authInfo.authFlag) {
 	return (SYS_NO_API_PRIV);
     }
+
     if (RsApiTable[apiInx].proxyUserAuth > 
       rsComm->proxyUser.authInfo.authFlag) {
 	return (SYS_NO_API_PRIV);
