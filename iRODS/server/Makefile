@@ -86,6 +86,8 @@ SVR_ICAT_OBJS =	\
 		$(svrIcatObjDir)/icatGeneralUpdate.o
 INCLUDES +=	-I$(svrIcatIncDir)
 
+SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
+
 ifdef NEW_ODBC
 # Use the 'new' database handling
 CFLAGS +=	-DNEW_ODBC
@@ -329,8 +331,14 @@ $(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS)
 	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 
+# xmsg server
+$(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
+	@echo "Compile xmsg server `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
-
+$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS)
+	@echo "Link agent server `basename $@`..."
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 #
 # Tests

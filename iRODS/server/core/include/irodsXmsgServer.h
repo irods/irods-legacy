@@ -20,34 +20,9 @@
 #include "rcConnect.h"
 #include "initServer.h"
 
-typedef struct IrodsXmsg {
-    uint sendTicket;
-    uint rcvTicket;
-    uint msgNumber;
-    uint sendTime;			/* unix time of the send */
-    uint numRcv;			/* nmber of receiver */
-    uint msgType[HEADER_TYPE_LEN];	/* msg type, 16 char */
-    char sendUserName[NAME_LEN];	/* userName@zone of clientUser */
-    char sendAddr[NAME_LEN];		/* sender's network address*/
-    char *msg;				/* the msg */
-    int numDel;				/* number of msg to deliver */
-    char **delAddress;			/* array of str pointer of addr */
-    uint **delPort;			/* array of port number to deliver */
-    char *miscInfo;			/* for expiration, etc */
-} irodsXmsg_t;
+#define v_FLAG  0x1
 
-typedef struct XmsgStruct {
-    irodsXmsg_t *xmsg;
-    struct XmsgStruct *prev;	 /* the link list. Last msg queued at top */  
-    struct XmsgStruct *next;	
-    struct XmsgStruct *hprev;    /* the hash link list. sort by rcvTicket and
-				  * then msgNumber */
-    struct XmsgStruct *hnext;
-} xmsgStruct_t;
-
-typedef struct XmsgQue {
-    xmsgStruct_t *head;
-    xmsgStruct_t *tail;
-} xmsgQue_t;
-
+int
+xmsgServerMain ();
+int usage (char *prog);
 #endif	/* IRODS_XMSG_SERVER_H */

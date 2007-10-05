@@ -179,6 +179,12 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	    rodsEnvArg->rodsPort=atoi(findNextTokenAndTerm(key+9));
 	    rodsLog(msgLevel, "irodsPort=%d",rodsEnvArg->rodsPort);
 	 }
+         /* add xmsgPort. mw */
+         key=strstr(buf, "xmsgPort");
+         if (key != NULL) {
+            rodsEnvArg->xmsgPort=atoi(findNextTokenAndTerm(key+8));
+            rodsLog(msgLevel, "xmsgPort=%d",rodsEnvArg->xmsgPort);
+         }
 	 key=strstr(buf, "irodsHome");
 	 if (key != NULL) {
 	    rstrcpy(rodsEnvArg->rodsHome, findNextTokenAndTerm(key+9),
@@ -289,6 +295,17 @@ getRodsEnvFromEnv(rodsEnv *rodsEnvArg) {
 	      "environment variable set, irodsPort=%d",
 	      rodsEnvArg->rodsPort);
    }
+
+   /* add xmsgPort. mw */
+
+   getVar = getenv("xmsgPort");
+   if (getVar!=NULL) {
+      rodsEnvArg->xmsgPort=atoi(findNextTokenAndTerm(getVar));
+      rodsLog(LOG_NOTICE,
+              "environment variable set, xmsgPort=%d",
+              rodsEnvArg->xmsgPort);
+   }
+
    getVar = getenv("irodsHome");
    if (getVar!=NULL) {
       rstrcpy(rodsEnvArg->rodsHome, findNextTokenAndTerm(getVar),MAX_NAME_LEN);

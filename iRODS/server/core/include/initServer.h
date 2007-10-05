@@ -55,6 +55,12 @@ typedef struct hostName {
 #define LOCAL_SLAVE_ICAT	2
 #define REMOTE_ICAT		3
 
+/* definition for runMode */
+
+#define SINGLE_PASS             0
+#define IRODS_SERVER            1
+#define STANDALONE_SERVER       2
+
 typedef struct zoneInfo {
     char zoneName[NAME_LEN];
     void *rodsServerHost;
@@ -143,5 +149,13 @@ int
 disconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint);
 int
 svrReconnect (rsComm_t *rsComm);
+int
+initRsComm (rsComm_t *rsComm);
+void
+daemonize (int runMode, int logFd);
+int
+logFileOpen (int runMode, char *logDir, char *logFileName);
+int
+initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack);
 
 #endif	/* INIT_SERVER_H */

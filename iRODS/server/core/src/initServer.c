@@ -1327,3 +1327,244 @@ svrReconnect (rsComm_t *rsComm)
     return (newSock);
 }
 
+int
+initRsComm (rsComm_t *rsComm)
+{
+    int status;
+
+    memset (rsComm, 0, sizeof (rsComm_t));
+    status = getRodsEnv (&rsComm->myEnv);
+
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "initRsComm: getRodsEnv serror, status = %d", status);
+        return (status);
+    }
+
+    /* fill in the proxyUser info from myEnv. clientUser has to come from
+     * the rei */
+
+    rstrcpy (rsComm->proxyUser.userName, rsComm->myEnv.rodsUserName, NAME_LEN);
+    rstrcpy (rsComm->proxyUser.rodsZone, rsComm->myEnv.rodsZone, NAME_LEN);
+    rstrcpy (rsComm->proxyUser.authInfo.authScheme,
+      rsComm->myEnv.rodsAuthScheme, NAME_LEN);
+    rstrcpy (rsComm->clientUser.userName, rsComm->myEnv.rodsUserName, NAME_LEN);
+    rstrcpy (rsComm->clientUser.rodsZone, rsComm->myEnv.rodsZone, NAME_LEN);
+    rstrcpy (rsComm->clientUser.authInfo.authScheme,
+      rsComm->myEnv.rodsAuthScheme, NAME_LEN);
+    /* assume LOCAL_PRIV_USER_AUTH */
+    rsComm->clientUser.authInfo.authFlag =
+     rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+    return (0);
+}
+
+void
+daemonize (int runMode, int logFd)
+{
+#ifndef _WIN32
+    if (runMode == SINGLE_PASS)
+        return;
+
+    if (runMode == STANDALONE_SERVER) {
+        if (fork())
+            exit (0);
+
+        if (setsid() < 0) {
+            fprintf(stderr, "daemonize");
+            perror("cannot create a new session.");
+            exit(1);
+        }
+    }
+
+    close (0);
+    close (1);
+    close (2);
+
+    (void) dup2 (logFd, 0);
+    (void) dup2 (logFd, 1);
+    (void) dup2 (logFd, 2);
+    close (logFd);
+#endif
+}
+
+/* logFileOpen - Open the logFile for the reServer.
+ *
+ * Input - None
+ * OutPut - the log file descriptor
+ */
+
+int
+logFileOpen (int runMode, char *logDir, char *logFileName)
+{
+    char *logFile = NULL;
+    int logFd;
+
+    if (runMode == SINGLE_PASS && logDir == NULL) {
+        return (1);
+    }
+
+    if (logDir == NULL || logFileName == NULL) {
+	return SYS_INTERNAL_NULL_INPUT_ERR;
+    }
+
+    getLogfileName (&logFile, logDir, logFileName);
+
+    logFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0666);
+    if (logFd < 0) {
+        fprintf (stderr, "logFileOpen: Unable to open %s. errno = %d\n",
+          logFile, errno);
+        return (-1 * errno);
+    }
+
+
+    return (logFd);
+}
+
+int
+initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
+{
+    char *tmpStr;
+
+    /* always use NATIVE_PROT as a client. e.g., server to server comm */
+    tmpStr = malloc (NAME_LEN * 2);
+    snprintf (tmpStr, NAME_LEN * 2, "%s=%d", IRODS_PROT, NATIVE_PROT);
+    putenv (tmpStr);
+
+    if (startupPack != NULL) {
+        rsComm->connectCnt = startupPack->connectCnt;
+        rsComm->irodsProt = startupPack->irodsProt;
+        rsComm->reconnFlag = startupPack->reconnFlag;
+        rstrcpy (rsComm->proxyUser.userName, startupPack->proxyUser, 
+	  NAME_LEN);
+        if (strcmp (startupPack->proxyUser, PUBLIC_USER_NAME) == 0) {
+            rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+        }
+        rstrcpy (rsComm->proxyUser.rodsZone, startupPack->proxyRodsZone, 
+          NAME_LEN);
+        rstrcpy (rsComm->clientUser.userName, startupPack->clientUser, 
+	  NAME_LEN);
+        if (strcmp (startupPack->clientUser, PUBLIC_USER_NAME) == 0) {
+            rsComm->clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+        }
+        rstrcpy (rsComm->clientUser.rodsZone, startupPack->clientRodsZone, 
+          NAME_LEN);
+        rstrcpy (rsComm->cliVersion.relVersion, startupPack->relVersion, 
+          NAME_LEN);
+        rstrcpy (rsComm->cliVersion.apiVersion, startupPack->apiVersion, 
+          NAME_LEN);
+        rstrcpy (rsComm->option, startupPack->option, NAME_LEN);
+    } else {	/* have to depend on env variable */
+        tmpStr = getenv (SP_NEW_SOCK);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist", 
+	      SP_NEW_SOCK);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rsComm->sock = atoi (tmpStr);
+
+        tmpStr = getenv (SP_CONNECT_CNT);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist", 
+	      SP_CONNECT_CNT);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rsComm->connectCnt = atoi (tmpStr) + 1;
+
+        tmpStr = getenv (SP_PROTOCOL);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist", 
+	      SP_PROTOCOL);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rsComm->irodsProt = atoi (tmpStr);
+
+        tmpStr = getenv (SP_RECONN_FLAG);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist", 
+	      SP_RECONN_FLAG);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rsComm->reconnFlag = atoi (tmpStr);
+
+        tmpStr = getenv (SP_PROXY_USER);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist", 
+	      SP_PROXY_USER);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rstrcpy (rsComm->proxyUser.userName, tmpStr, NAME_LEN);
+        if (strcmp (tmpStr, PUBLIC_USER_NAME) == 0) {
+            rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+        }
+
+        tmpStr = getenv (SP_PROXY_RODS_ZONE);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist",
+              SP_PROXY_RODS_ZONE);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rstrcpy (rsComm->proxyUser.rodsZone, tmpStr, NAME_LEN);
+
+        tmpStr = getenv (SP_CLIENT_USER);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist",
+              SP_CLIENT_USER);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rstrcpy (rsComm->clientUser.userName, tmpStr, NAME_LEN);
+        if (strcmp (tmpStr, PUBLIC_USER_NAME) == 0) {
+            rsComm->clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
+        }
+
+        tmpStr = getenv (SP_CLIENT_RODS_ZONE);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist",
+              SP_CLIENT_RODS_ZONE);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rstrcpy (rsComm->clientUser.rodsZone, tmpStr, NAME_LEN);
+
+        tmpStr = getenv (SP_REL_VERSION);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "getstartupPackFromEnv: env %s does not exist",
+              SP_REL_VERSION);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rstrcpy (rsComm->cliVersion.relVersion, tmpStr, NAME_LEN);
+
+        tmpStr = getenv (SP_API_VERSION);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist",
+              SP_API_VERSION);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rstrcpy (rsComm->cliVersion.apiVersion, tmpStr, NAME_LEN);
+
+        tmpStr = getenv (SP_OPTION);
+        if (tmpStr == NULL) {
+            rodsLog (LOG_NOTICE,
+              "initRsCommWithStartupPack: env %s does not exist",
+              SP_OPTION);
+            return (SYS_GETSTARTUP_PACK_ERR);
+        }
+        rstrcpy (rsComm->option, tmpStr, NAME_LEN);
+    }
+
+    setLocalAddr (rsComm->sock, &rsComm->localAddr);
+    setRemoteAddr (rsComm->sock, &rsComm->remoteAddr);
+
+    return (0);
+}
+

@@ -10,6 +10,7 @@
 
 #define RODS_LOGFILE     "rodsLog"
 #define RULE_EXEC_LOGFILE     "reLog"
+#define XMSG_SVR_LOGFILE     "xmsgLog"
 
 #define DEF_CONFIG_DIR	"../config"
 #define DEF_LOG_DIR	"../log"

@@ -76,6 +76,7 @@
 #define SERVER_PT	1	/* server process type */
 #define AGENT_PT	2	/* agent process type */
 #define RE_SERVER_PT	3	/* reServer type */
+#define XMSG_SERVER_PT	4	/* xmsgServer type */
 
 /* definition for rcat type */
 
@@ -249,7 +250,7 @@ typedef struct {
 
 /* definition for handler function */
 
-typedef int ((*funcPtr)());
+typedef void* ((*funcPtr)());
 
 /* some platform does not support vfork */
 #if defined(sgi_platform) || defined(aix_platform)
@@ -275,6 +276,24 @@ typedef struct {
     int trimDirCnt;	/* for GRAFT_PATH_S only. Number of directories to 
 			 * trim */
 } vaultPathPolicy_t;
+
+/* xmsg struct */
+
+typedef struct IrodsXmsg {
+    uint sendTicket;
+    uint rcvTicket;
+    uint msgNumber;
+    uint sendTime;                      /* unix time of the send */
+    uint numRcv;                        /* nmber of receiver */
+    uint msgType[HEADER_TYPE_LEN];      /* msg type, 16 char */
+    char sendUserName[NAME_LEN];        /* userName@zone of clientUser */
+    char sendAddr[NAME_LEN];            /* sender's network address*/
+    char *msg;                          /* the msg */
+    int numDel;                         /* number of msg to deliver */
+    char **delAddress;                  /* array of str pointer of addr */
+    uint **delPort;                     /* array of port number to deliver */
+    char *miscInfo;                     /* for expiration, etc */
+} irodsXmsg_t;
 
 
 #endif	/* RODS_DEF_H */

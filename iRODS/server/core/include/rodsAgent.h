@@ -31,7 +31,6 @@ struct allowedUser {
 };
 
 int agentMain (rsComm_t *rsComm);
-int setRsCommFromStartupPack (rsComm_t *rsComm);
 int
 setAllowedUser (struct allowedUser **allowedUserHead);
 int

@@ -36,7 +36,7 @@ main(int argc, char *argv[])
 
     memset (&rsComm, 0, sizeof (rsComm));
 
-    status = setRsCommFromStartupPack (&rsComm);
+    status = initRsCommWithStartupPack (&rsComm, NULL);
 
     if (status < 0) {
 	sendVersion (rsComm.sock, status, 0, NULL, 0);
@@ -140,122 +140,6 @@ agentMain (rsComm_t *rsComm)
 	}
     }
     return (status);
-}
-
-int
-setRsCommFromStartupPack (rsComm_t *rsComm)
-{
-    char *tmpStr;
-
-    /* always use NATIVE_PROT as a client. e.g., server to server comm */
-    tmpStr = malloc (NAME_LEN * 2);
-    snprintf (tmpStr, NAME_LEN * 2, "%s=%d", IRODS_PROT, NATIVE_PROT);
-    putenv (tmpStr);
-
-    tmpStr = getenv (SP_NEW_SOCK);
-    if (tmpStr == NULL) {
-	rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist", SP_NEW_SOCK);
-	return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rsComm->sock = atoi (tmpStr);
-
-    tmpStr = getenv (SP_CONNECT_CNT);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist", SP_CONNECT_CNT);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rsComm->connectCnt = atoi (tmpStr) + 1;
- 
-    tmpStr = getenv (SP_PROTOCOL);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist", SP_PROTOCOL);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rsComm->irodsProt = atoi (tmpStr);
-
-    tmpStr = getenv (SP_RECONN_FLAG);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist", SP_RECONN_FLAG);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rsComm->reconnFlag = atoi (tmpStr);
-
-    tmpStr = getenv (SP_PROXY_USER);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist", SP_PROXY_USER);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rstrcpy (rsComm->proxyUser.userName, tmpStr, NAME_LEN);
-    if (strcmp (tmpStr, PUBLIC_USER_NAME) == 0) {
-	rsComm->proxyUser.authInfo.authFlag = PUBLIC_USER_AUTH;
-    }
-
-    tmpStr = getenv (SP_PROXY_RODS_ZONE);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist", 
-	  SP_PROXY_RODS_ZONE);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rstrcpy (rsComm->proxyUser.rodsZone, tmpStr, NAME_LEN);
-
-    tmpStr = getenv (SP_CLIENT_USER);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist", 
-          SP_CLIENT_USER);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rstrcpy (rsComm->clientUser.userName, tmpStr, NAME_LEN);
-    if (strcmp (tmpStr, PUBLIC_USER_NAME) == 0) {
-        rsComm->clientUser.authInfo.authFlag = PUBLIC_USER_AUTH;
-    }
-
-    tmpStr = getenv (SP_CLIENT_RODS_ZONE);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist",
-          SP_CLIENT_RODS_ZONE);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rstrcpy (rsComm->clientUser.rodsZone, tmpStr, NAME_LEN);
-
-    tmpStr = getenv (SP_REL_VERSION);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist",
-          SP_REL_VERSION);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rstrcpy (rsComm->cliVersion.relVersion, tmpStr, NAME_LEN);
-
-    tmpStr = getenv (SP_API_VERSION);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist",
-          SP_API_VERSION);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rstrcpy (rsComm->cliVersion.apiVersion, tmpStr, NAME_LEN);
-
-    tmpStr = getenv (SP_OPTION);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_NOTICE,
-          "getstartupPackFromEnv: env %s does not exist",
-          SP_OPTION);
-        return (SYS_GETSTARTUP_PACK_ERR);
-    }
-    rstrcpy (rsComm->option, tmpStr, NAME_LEN);
-
-    setLocalAddr (rsComm->sock, &rsComm->localAddr);
-    setRemoteAddr (rsComm->sock, &rsComm->remoteAddr);
-
-    return (0);
 }
 
 int

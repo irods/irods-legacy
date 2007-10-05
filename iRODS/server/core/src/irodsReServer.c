@@ -79,7 +79,7 @@ main(int argc, char **argv)
         cleanupAndExit (status);
     }
 
-    if ((logFd = logFileOpen (runMode, logDir)) < 0) {
+    if ((logFd = logFileOpen (runMode, logDir, RULE_EXEC_LOGFILE)) < 0) {
         exit (1);
     }
 
@@ -97,98 +97,10 @@ main(int argc, char **argv)
     exit (0);
 }
 
-/* logFileOpen - Open the logFile for the reServer.
- *
- * Input - None
- * OutPut - the log file descriptor
- */
-
-int
-logFileOpen (int runMode, char *logDir)
-{
-    char *logFile = NULL; 
-    int logFd;
-
-    if (runMode == SINGLE_PASS && logDir == NULL) {
-	return (1);
-    }
-
-    getLogfileName (&logFile, logDir, RULE_EXEC_LOGFILE);
-
-    logFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0666);
-    if (logFd < 0) {
-	fprintf (stderr, "logFileOpen: Unable to open %s. errno = %d\n",
-	  logFile, errno);
-        return (-1 * errno);
-    }
-
-
-    return (logFd);
-}
-
-void
-daemonize (int runMode, int logFd)
-{
-    if (runMode == SINGLE_PASS)
-	return;
- 
-    if (runMode == STANDALONE_SERVER) {
-        if (fork())
-	    exit (0);
-
-        if (setsid() < 0) {
-            fprintf(stderr, "daemonize");
-            perror("cannot create a new session.");
-            exit(1);
-	}
-    }
-
-    close (0);
-    close (1);
-    close (2);
-
-    (void) dup2 (logFd, 0);
-    (void) dup2 (logFd, 1);
-    (void) dup2 (logFd, 2);
-    close (logFd);
-}
-
 int usage (char *prog)
 {
     fprintf(stderr, "Usage: %s [-scva] [-D logDir] \n",prog);
     return 0;
-}
-
-int
-initRsComm (rsComm_t *rsComm)
-{
-    int status;
-
-    memset (rsComm, 0, sizeof (rsComm_t));
-    status = getRodsEnv (&rsComm->myEnv);
-
-    if (status < 0) {
-	rodsLog (LOG_ERROR,
-	  "initRsComm: getRodsEnv serror, status = %d", status);
-	return (status);
-    }
-
-    /* fill in the proxyUser info from myEnv. clientUser has to come from
-     * the rei */
-
-    rstrcpy (rsComm->proxyUser.userName, rsComm->myEnv.rodsUserName, NAME_LEN);
-    rstrcpy (rsComm->proxyUser.rodsZone, rsComm->myEnv.rodsZone, NAME_LEN);
-    rstrcpy (rsComm->proxyUser.authInfo.authScheme, 
-      rsComm->myEnv.rodsAuthScheme, NAME_LEN);
-    rstrcpy (rsComm->clientUser.userName, rsComm->myEnv.rodsUserName, NAME_LEN);
-    rstrcpy (rsComm->clientUser.rodsZone, rsComm->myEnv.rodsZone, NAME_LEN);
-    rstrcpy (rsComm->clientUser.authInfo.authScheme,
-      rsComm->myEnv.rodsAuthScheme, NAME_LEN);
-    /* assume LOCAL_PRIV_USER_AUTH */
-    rsComm->clientUser.authInfo.authFlag =
-     rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
-
-    return (0);
 }
 
 int
