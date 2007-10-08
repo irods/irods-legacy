@@ -1889,23 +1889,16 @@ function RodsBrowser(inipath, _ssid)
            buttonAlign: "center",
            shadow: true
           });
-        }//if
 
 
-        if (upload_applet_dialog != null) {
-          Ext.get('upload-applet-dlg-bd-main').dom.innerHTML='';
-        }
-
-
-        if (Ext.get('upload-applet-dlg-bd-main').dom.innerHTML == '')
-        {
           Ext.get('upload-applet-dlg-bd-main').dom.innerHTML=
          '<applet name="myApplet" CODE="edu.sdsc.grid.gui.applet.UploadApplet.class" archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar" WIDTH="650" HEIGHT="300" mayscript>'+
             '   <param name="ruri" value="irods://'+rpath_grid+'" />'+
             '   <param name="ssid" value="'+ssid+'" />'+
             '</applet>';
           upload_applet_dialog.addKeyListener(27, upload_applet_dialog.hide, upload_applet_dialog); // ESC can also close the dialog
-        }
+        }//if
+ 
         upload_applet_dialog.show(btn.getEl());
       }
       
