@@ -78,7 +78,6 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         this.addColumn("");// empty for file/folder icon
         this.addColumn("Local"); // local file or folder
         this.addColumn("Remote"); // local file or folder
-        //this.addColumn("Size"); // size of file; folder will show sum of enclosed file sizes
         this.addColumn("Status"); // Progress bar
         
         try {
@@ -189,14 +188,9 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     
     public void removeFile(int[] selectedRows) {
         for (int k = selectedRows.length - 1; k >= 0; k--) {
-
-            //this.setValueAt(null, selectedRows[k], SOURCE_COLUMN);
             this.removeRow(selectedRows[k]);
-            
         }
         
-
-            
         // need to save upload queue to log file
         // delete queue log and save files currently in table
         File fileLog = new File(QUEUE_LOG);
@@ -209,11 +203,9 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         JTextField tfDestination = null;
         
         for (int k = 0; k < rowCount; k++) {
-            //String filePath = this.getValueAt(k, 1).toString() + "\t" + this.getValueAt(k, 2);                
             tfSource = (JTextField) this.getValueAt(k, SOURCE_COLUMN);
             tfDestination = (JTextField) this.getValueAt(k, DESTINATION_COLUMN);
-            String filePath = tfSource.getText() + "\t" + tfDestination.getText();                
-            
+            String filePath = tfSource.getText() + "\t" + tfDestination.getText(); 
             FileOutputStream fos = null;
             
             try {
@@ -239,9 +231,6 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         JTextField tfDestination = new JTextField(destination);
         tfSource.addFocusListener(tfListener);
         tfDestination.addFocusListener(tfListener);
-
-        //tfSource.addMouseListener(tfMouseListener);
-        //tfDestination.addMouseListener(tfMouseListener);
         
         tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
         tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
@@ -258,9 +247,6 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
 
         tfSource.addFocusListener(tfListener);
         tfDestination.addFocusListener(tfListener);
-
-        //tfSource.addMouseListener(tfMouseListener);
-        //tfDestination.addMouseListener(tfMouseListener);
         
         tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
         tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
@@ -276,7 +262,6 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         // includes subfolders
         File[] fileList = file.listFiles();
         int len = fileList.length;
-        
         
         for (int i=0; i < len; i++) {
             if (fileList[i].isFile()) {

@@ -26,14 +26,6 @@ public class Account {
     
     public Account() {}
 
-    // and is passed both ruri and session id parameter
-    /*
-    public Account(String ruri, String sessionId) {
-        parseRuri(ruri, false);
-        setSessionId(sessionId);
-    }
-    */
-    
     
     // This constructor is used at applet initialization
     public Account(String tempPassworServiceUrl, String ruri, String sessionId) {
@@ -51,26 +43,13 @@ public class Account {
         //   URI_PARAM = irods://user@host:port/destination
         //   URI_PARAM = user@host:port/destination
 
-        //setPassword(scrubSchemeFromRuri(ruri), parsePasswordFromRuri(ruri));
-        /*
-        StringBuffer buf = new String(ruri);
-        if (ruri.indexOf(SCHEME_DELIMITER) == -1)
-            buf.insert(0, "irods://");
-        */
-
+        if (ruri == null) return;
+        
         username = parseUsernameFromRuri(ruri);
         host = parseHostFromRuri(ruri);
         port = parsePortFromRuri(ruri);
         destination = parseDestinationFromRuri(ruri);
         setPassword(ruri);
-
-        
-        
-        //logger.log("* username : " + username);
-        //logger.log("* scrubPasswordFromRuri: " + scrubPasswordFromRuri(ruri));
-        //logger.log("* parsePasswordFromRuri: " + parsePasswordFromRuri(ruri));
-        
-        
         
         // set default values for home and defaultResource
         home = zone + "/" + username;
@@ -86,19 +65,6 @@ public class Account {
             
         }
         
-        //logger.log("Account parseRuri(). username :  "  + username);
-        //logger.log("Account parseRuri(). home :  "  + home);
-        
-        
-        /*
-        logger.log("Account.username " + username);
-        logger.log("Account.password " + getPassword(ruri));
-        logger.log("Account.host " + host);
-        logger.log("Account.port " + port);
-        logger.log("Account.destination " + destination);
-        logger.log("Account.destinationFolder  " + destinationFolder);
-        logger.log("Account.home " + home);
-        */
     }//parseRuri
     
     public void setRuri(String ruri) {
@@ -187,7 +153,6 @@ public class Account {
     public void setPassword(String ruri) {
         if (containsPassword(ruri)) {
             char[] password = parsePasswordFromRuri(ruri);
-            //logger.log("setPassword(ruri) password length : " + password.length);
             
             if (password != null && password.length > 0) {
                 map.put(ruri, password);
@@ -210,7 +175,6 @@ public class Account {
         return result;
     }//getPassword
     
-    //public char[] getPassword(String ruri, boolean getTemporaryPassword) {
     public char[] getPassword(String ruri) {
         if (_getPassword(ruri) != null)
             return _getPassword(ruri);
@@ -220,21 +184,13 @@ public class Account {
         // use session id to get temporary password
         String result = null;
         
-        /*
-        if (getPassword(ruri) != null)
-            return getPassword(ruri);
-        */
-        
         try {
             // temp password service does not accept "irods://user@host:port"
             // but accepts "user@host:port" for authentication
             String sUri = scrubPasswordFromRuri (ruri);
             sUri = scrubSchemeFromRuri(sUri);
             
-            
-            
             URL url = new URL(TEMP_PASSWORD_SERVICE_URL + "?SID=" + sessionId + "&ruri=" + URLEncoder.encode(sUri, "UTF-8") );
-            logger.log("URI to URL : " + url.toString());
             
             // possible returned value from temp password service
             // {"success":false,"error":"Authentication Required"}
@@ -246,20 +202,17 @@ public class Account {
             
             BufferedReader in = new BufferedReader(new InputStreamReader(istream));
             if ((result = in.readLine()) != null) {
-                //logger.log("temp pass service result string : " +  result);
                 jsonObject = new JSONObject(result);
             }
             
             if (jsonObject.has("success")) {
                 // true or false
                 if (jsonObject.get("success").toString().equals("false")) {
-                    logger.log("Was not successful getting temporary password. False returned.");
     
                     // get the error message first
                     if (jsonObject.has("error")) {
                         // a String message
-                        logger.log("Returned error message from temporary password service is: " + jsonObject.get("error"));
-                        
+                        logger.log("Returned error message from temporary password service is: " + jsonObject.get("error"));                        
                     }
                     
                     return null;
@@ -272,7 +225,6 @@ public class Account {
             // should be able to retrieve password at this point    
             if (jsonObject.has("temppass")) {
                 // a String message
-                //logger.log("temppass: " + jsonObject.get("temppass"));
                 result = (String) jsonObject.get("temppass");
             }
             
@@ -313,19 +265,16 @@ public class Account {
 
         // sample uri
         // irods://rods:1580a833c4618453a3bd53fafd81db9f@saltwater.sdsc.edu:1247/tempZone/home/rods/include
-        //logger.log ("input: " + ruri);
         
         String result = null;
         int i = ruri.indexOf(SCHEME_DELIMITER); // '://'
         i = ruri.indexOf(":", i + SCHEME_DELIMITER.length());
         int k = ruri.indexOf("@");
         String password = ruri.substring(i, k); // including the : symbol
-        //logger.log("password substring: " + password);
         
-        result = ruri.replaceAll(password, ""); // jdk 1.4
-        //result = ruri.replace(password, ""); // jdk 1.5
+        //result = ruri.replaceAll(password, ""); // jdk 1.4
+        result = ruri.replace(password, ""); // jdk 1.5
         
-        //logger.log("output: " + result);
         return result;
     }
     
@@ -360,7 +309,6 @@ public class Account {
 
     private char[] parsePasswordFromRuri(String ruri) {
         ruri = scrubSchemeFromRuri(ruri);
-        //logger.log("parsePasswordFromRuri. ruri is now : " + ruri);
         
         try {
             int i = ruri.indexOf("@");
@@ -386,14 +334,7 @@ public class Account {
         try {        
             int i = ruri.indexOf("@");
             int k = ruri.indexOf(":"); // first, assume there is a password
-            //int k = ruri.indexOf(":" , i); // first, assume there is a password
-            
-            //logger.log("* ruri being used is : " + ruri);
-            //logger.log("* i = " + i + " and k = " + k);
-            
-            // ruri being used is : rods:rods@saltwater.sdsc.edu:1247/tempZone/home/rods
-            // i = 9 and k = 28
-            // username :  rods:rods@saltwater.sdsc.edu
+
             if (containsPassword(ruri))
                 result = ruri.substring(0, k); // password passed in ruri parameter
             else
@@ -402,10 +343,7 @@ public class Account {
         } catch (StringIndexOutOfBoundsException e) {
             logger.log("Problem parsing username from ruri. " + e);
         }
-         
-         
-       
-        //logger.log("* returning username : " + result);
+
         return result;
     }//parseUsernameFromRuri
     
@@ -427,7 +365,6 @@ public class Account {
 
     private int parsePortFromRuri(String ruri) {
         ruri = scrubSchemeFromRuri(ruri);
-        
         int port = 0;
         
         try {

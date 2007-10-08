@@ -122,8 +122,14 @@ import edu.sdsc.grid.io.irods.IRODSFile;
 import edu.sdsc.grid.io.irods.IRODSFileSystem;
 import edu.sdsc.grid.io.irods.IRODSAccount;
 
-import netscape.javascript.*;
-
+import java.applet.Applet;
+import com.sun.java.browser.dom.*;
+import org.w3c.dom.*;
+import org.w3c.dom.css.*;
+import org.w3c.dom.events.*;
+import org.w3c.dom.html.*;
+import org.w3c.dom.stylesheets.*;
+import org.w3c.dom.views.*;
 
 /**
  * Main Applet window. Creates and adds other JPanels to the main Container.
@@ -131,20 +137,18 @@ import netscape.javascript.*;
  * @author      Alex Wu, San Diego Supercomputer Center
  * 
  **/
-
 public class UploadApplet extends JApplet implements AppletConstant {
+
     private Container content;
     private JTable table;
     private UploadTableModel model;
-    //private DropTarget dropTarget;
     private JButton removeButton;
     private JButton uploadButton;
     private JRadioButton overwriteRadio;
     private JRadioButton checksumRadio;
     private JRadioButton fileSizeRadio;
     private JCheckBox checksumCheckBox;
-    
-
+   
     // log console
     public static JTextArea textArea;
     
@@ -164,14 +168,11 @@ public class UploadApplet extends JApplet implements AppletConstant {
     // Logger
     static AppletLogger logger = AppletLogger.getInstance();
     
-    //AccountPanel accountPanel;
     DragDropPanel dragDropPanel;
     OptionsPanel optionsPanel;
-    //LogPanel logPanel;
     
     static Manager manager = Manager.getInstance();
-    //private JSObject jsWindow;
-    private String currentRuri;
+    private String ruri;
     
     
     /**
@@ -183,37 +184,8 @@ public class UploadApplet extends JApplet implements AppletConstant {
      * 
      **/
     public void init() {
-        
-        // try to load native look and feel
-        // not using native look anymore
-        // will use look of web client
-        /*
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException e) {
-            logger.log("Can't load native look and feel." + e);
-        } catch (ClassNotFoundException ce) {
-            logger.log("Could not find class: " + ce);
-        } catch (InstantiationException ie) {
-            logger.log("Could not instantiate class: " + ie);
-        } catch (IllegalAccessException ile) {
-            logger.log("Illegal access exc. : " + ile);
-        }
-        */
-        
-        JSObject jsWindow = JSObject.getWindow(this);
-        try {
-            Object result = jsWindow.call("getCurrentRURI", null); // call getCurrentRURI function with no arguments
-            currentRuri = result.toString();
-            logger.log("init.JS result.toString(): " + result);
-            //getRuriFromJavaScript();
-        } catch (Exception e) {
-            // no log
-        }
-        
         // Get the base web host url which will be used to get the temporary password
         String documentBase = getDocumentBase().toString();
-        //logger.log("documentBase : " + documentBase);
         
         // attempt parsing of document base to construct where temporary password service is
         String TEMP_PASSWORD_SERVICE_URL = null;
@@ -247,20 +219,15 @@ public class UploadApplet extends JApplet implements AppletConstant {
         
         
         // Sample URI_PARAM = irods://user:pass@host:port/destination
-        String ruri = getParameter("ruri"); // passed to applet in html code
-        //logger.log("ruri: " + ruri);
+        ruri = getParameter("ruri"); // passed to applet in html code
         String sessionId = getParameter("ssid"); // web session id passed to applet in html code
-        //logger.log("Session id passed is : " + sessionId);
-        
         
         if (ruri == null || ruri.trim().equals("")) {
             // what to do?
         }//if
-        logger.log("\n\nApplet init. RURI passed is : " + ruri +  "\n\n");
         
         // go ahead and set the account instance, even if values are null
         // will prompt for user input at end of init method
-        //Account account = new Account(host, port, username, password, destination, zone, defaultResource);
         Account account = new Account(TEMP_PASSWORD_SERVICE_URL, ruri, sessionId);
         
         // create GUI
@@ -271,8 +238,6 @@ public class UploadApplet extends JApplet implements AppletConstant {
         content.setSize(new Dimension(300, 200));
         
         model = new UploadTableModel();
-        //dragDropPanel = new DragDropPanel(model, account);
-        //dragDropPanel = new DragDropPanel(jsWindow, model, account);
         dragDropPanel = new DragDropPanel(this, model, account);
         optionsPanel = new OptionsPanel();
         
@@ -284,6 +249,7 @@ public class UploadApplet extends JApplet implements AppletConstant {
         tabbedPane.setBackground(bgColor);
         tabbedPane.add("File Upload Table", dragDropPanel); // DragDrop Panel
         tabbedPane.add("Options", optionsPanel); // UploadOptions Panel
+        
         content.add(tabbedPane);
         manager.registerApplet();
 
@@ -300,11 +266,15 @@ public class UploadApplet extends JApplet implements AppletConstant {
         if (queueList != null) {
             // open a new tab and ask user if they would like to load files from previous session
             // if yes, load files and prompt user for password for each distinct RURI, if password is not found in Hashmap
-            
             model.addFile(queueList);
+            
         }//if
         
         // prompt for password, if needed
+        /* Need to figure if this is even neccessary anymore
+         * IDEA was to prompt user for a password if the password for the RURI key was not found in the hashmap
+         * Take out for now:
+         *
         if (account.getPassword(ruri) == null && account.getSessionId() == null) {
             // prompt user for password for the specific RURI excluding the destination path
             // convert user input into char array
@@ -316,9 +286,8 @@ public class UploadApplet extends JApplet implements AppletConstant {
             }
         
         }//if
+        */
         
-        
-
     }//init
 
     
@@ -326,6 +295,7 @@ public class UploadApplet extends JApplet implements AppletConstant {
     }
     
     public void stop() {
+        
     }
     
     public void destroy() {
@@ -353,10 +323,15 @@ public class UploadApplet extends JApplet implements AppletConstant {
     
     
     public String getCurrentRuri() {
-        return currentRuri;
+        return ruri;
     }
     
     
+    public void setRuri(String r) {
+        ruri = r;
+    }
+    
+
 }//UploadApplet
 
 

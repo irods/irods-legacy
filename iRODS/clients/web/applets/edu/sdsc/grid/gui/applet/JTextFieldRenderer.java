@@ -28,12 +28,12 @@
 //
 //
 //  FILE
-//      Manager.java    -  edu.sdsc.grid.gui.applet.Manager
+//      ProgressBarRenderer.java    -  edu.sdsc.grid.gui.applet.JTextFieldRenderer
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
 //          |
-//          +-.Manager
+//          +-.JTextFieldRenderer
 //
 //  PRINCIPAL AUTHOR
 //      Alex Wu, SDSC/UCSD
@@ -42,56 +42,28 @@
 
 package edu.sdsc.grid.gui.applet;
 
-import java.util.List;
+import javax.swing.table.TableCellRenderer;
+import java.awt.Component;
+import javax.swing.border.EmptyBorder;
+import javax.swing.JTextField;
+import javax.swing.JTable;
+import javax.swing.BoundedRangeModel;
 
-public class Manager implements AppletConstant {
-    protected Manager() {}
+class JTextFieldRenderer implements TableCellRenderer {  
     
-    private static Manager instance;
-    private static int appletCount; // how many applet instances are active
-    // Logger
-    static AppletLogger logger = AppletLogger.getInstance();
+
     
-    public static Manager getInstance() {
-        if (instance == null)
-            instance = new Manager();
+    public Component getTableCellRendererComponent ( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column )  {
         
-        return instance;
-    }
-    
-    public static void registerApplet() {
-        appletCount++;
-        //logger.log("applet count is now: " + appletCount);    
-    }
-    
-    public static void unregisterApplet() {
-        if (appletCount > 0) // should never be negative
-            appletCount--;
-            
-        //logger.log("applet count is now: " + appletCount);
-    }
-    
-    public static int getAppletCount() {
-        return appletCount;
-    }
-    
-    /* Log files methods */
-    public static List recoverQueue() {
-        // if queue log differs from completed log, then
-        // some files were not uploaded
-        // once recovered, both log files should be cleared
-        // AND the queue log be rewritten
-        //if (appletCount != 1) return null;
+        JTextField tf = (JTextField) value;
+        BoundedRangeModel bm = tf.getHorizontalVisibility();
+        int extent = bm.getExtent();
+        tf.setScrollOffset(extent);
         
-        // have any applet recover queue at the moment
-        // will need to create a file lock to determine if
-        // queue should be recovered or not
-        //
-        // a file lock will help in situations
-        // where a user opens applets on multiple browser vendors
+        return  ( JTextField ) tf;
         
-        AppletLogger logger = AppletLogger.getInstance();
-        return logger.recoverQueue();
-    }
+        
+    }  
     
-}
+
+} 

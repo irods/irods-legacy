@@ -28,12 +28,12 @@
 //
 //
 //  FILE
-//      Manager.java    -  edu.sdsc.grid.gui.applet.Manager
+//      ProgressBarRenderer.java    -  edu.sdsc.grid.gui.applet.JTextFieldEditor
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
 //          |
-//          +-.Manager
+//          +-.JTextFieldEditor
 //
 //  PRINCIPAL AUTHOR
 //      Alex Wu, SDSC/UCSD
@@ -42,56 +42,74 @@
 
 package edu.sdsc.grid.gui.applet;
 
-import java.util.List;
+import javax.swing.table.TableCellEditor;
+import java.awt.Component;
+import javax.swing.JTextField;
+import javax.swing.JTable;
+import javax.swing.BoundedRangeModel;
+import javax.swing.event.CellEditorListener;
+import javax.swing.DefaultCellEditor;
+import java.util.EventObject;
+import java.awt.event.FocusListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
 
-public class Manager implements AppletConstant {
-    protected Manager() {}
-    
-    private static Manager instance;
-    private static int appletCount; // how many applet instances are active
-    // Logger
+class JTextFieldEditor implements TableCellEditor {
+
     static AppletLogger logger = AppletLogger.getInstance();
     
-    public static Manager getInstance() {
-        if (instance == null)
-            instance = new Manager();
+    
+    
+    public Component getTableCellEditorComponent ( JTable table, Object value, boolean isSelected, int row, int column )  {
         
-        return instance;
+        return  (JTextField) value;
+        
     }
     
-    public static void registerApplet() {
-        appletCount++;
-        //logger.log("applet count is now: " + appletCount);    
+
+    
+    public void removeCellEditorListener(CellEditorListener l) {
+        //logger.log("removeEditorListener.");
     }
     
-    public static void unregisterApplet() {
-        if (appletCount > 0) // should never be negative
-            appletCount--;
+    
+    public void addCellEditorListener(CellEditorListener l) {
+
+        //logger.log("addCellEditorListener.");
+    }
+    
+    public void cancelCellEditing() {
+
+    }
+    
+    public boolean stopCellEditing() {
+        
+        //logger.log("stopCellEditing.");
+        return true;
+         
+    }
+    
+    public boolean shouldSelectCell(EventObject anEvent) {
+        //logger.log("shouldSelectCell");
+        return true;
+    }
+    
+    public boolean isCellEditable(EventObject e) {
+
+        if (e instanceof MouseEvent) {
+            MouseEvent mouseEvent = (MouseEvent) e;
             
-        //logger.log("applet count is now: " + appletCount);
+            if (mouseEvent.getClickCount() > 1)
+                return true;
+        }
+
+        return false;
     }
     
-    public static int getAppletCount() {
-        return appletCount;
+    public Object getCellEditorValue() {
+        //logger.log("getCellEditorValue");
+        return null;
     }
     
-    /* Log files methods */
-    public static List recoverQueue() {
-        // if queue log differs from completed log, then
-        // some files were not uploaded
-        // once recovered, both log files should be cleared
-        // AND the queue log be rewritten
-        //if (appletCount != 1) return null;
-        
-        // have any applet recover queue at the moment
-        // will need to create a file lock to determine if
-        // queue should be recovered or not
-        //
-        // a file lock will help in situations
-        // where a user opens applets on multiple browser vendors
-        
-        AppletLogger logger = AppletLogger.getInstance();
-        return logger.recoverQueue();
-    }
     
-}
+} 
