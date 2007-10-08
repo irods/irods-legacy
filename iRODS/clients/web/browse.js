@@ -1150,8 +1150,9 @@ function RodsBrowser(inipath, _ssid)
          grid.selModel.clearSelections(); //workaround for IE6's wierd behavior
          this.treeGoTo(rpath_grid);
 
-	 // set new ruri in applet
- 	 document.myApplet.setRuri(new_ruri);
+    	 // set new ruri in applet
+    	 if (document.myApplet)
+         document.myApplet.setRuri(new_ruri);
        }
     },
     
