@@ -72,7 +72,7 @@ try {
     }
   }
   
-  $response=array('success'=> true,'log'=>'$num_files files and $num_dirs collections deleted!');
+  $response=array('success'=> true,'log'=>"$num_files files and $num_dirs collections deleted!");
   echo json_encode($response);
   
 } catch (Exception $e) {
