@@ -3,6 +3,11 @@ function getCurrentRURI()
   return browser.getCurrentRURI();
 }
 
+function refreshTreeNodeByRURI(new_ruri)
+{
+  browser.refreshTreeNodeByRURI(new_ruri);
+}
+
 function removeLoadingMasks()
 {
   var loading = Ext.get('loading');
@@ -1178,6 +1183,15 @@ function RodsBrowser(inipath, _ssid)
          }
        }
     },
+    
+    // refresh a tree node.
+    refreshTreeNodeByRURI: function (new_ruri)
+    {
+      var path="/"+new_ruri;
+      tree.expandPath(path, 'id', function(bSuccess, oLastNode){
+        oLastNode.reload();    
+      });   
+    },
 	  
 	  createMetadataGrid : function ()
 	  {
@@ -1882,7 +1896,7 @@ function RodsBrowser(inipath, _ssid)
         {
           upload_applet_dialog=new Ext.BasicDialog("upload-applet-dlg", {
            height: 410,
-           width: 700,
+           width: 710,
            minHeight: 100,
            minWidth: 150,
            modal: true,
