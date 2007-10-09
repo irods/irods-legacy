@@ -7,12 +7,12 @@
 # rodsErrorTable.h file is updated.  It is run by gmake.
 #
 
-$Defs=`grep '#define' clientLib/include/rodsErrorTable.h | grep -v RODS_ERROR_TABLE_H | grep -v '* #' | awk '{ printf("%s ", \$2) }'`;
+$Defs=`grep '#define' ../lib/core/include/rodsErrorTable.h | grep -v RODS_ERROR_TABLE_H | grep -v '* #' | awk '{ printf("%s ", \$2) }'`;
 
 $_=$Defs;
 @DO_LIST=split(" ",$_);
 
-$InputFile="clientLib/src/rodsLog.c";
+$InputFile="../lib/core/src/rodsLog.c";
 $OutputFile =$InputFile . ".tmp.128923";
 $InputFileOrig = $InputFile . ".orig";
 open(FileIn, $InputFile) || die("Can't open input file " . "$InputFile");
