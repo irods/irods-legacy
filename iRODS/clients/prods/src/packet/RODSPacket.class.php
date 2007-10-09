@@ -149,8 +149,8 @@ class RODSPacket
         if (!isset($sxe -> $packlet_key))
         {
           throw new RODSException("RODSPacket(".get_class($this).")::fromSXE failed. ".
-          "Failed to find expected packlet: $packlet_key \n",
-          PERR_UNEXPECTED_PACKET_FORMAT);
+          "Failed to find expected packlet: '$packlet_key' \n",
+          "PERR_UNEXPECTED_PACKET_FORMAT");
         }
         $packlet_val->fromSXE($sxe -> $packlet_key);
       }
