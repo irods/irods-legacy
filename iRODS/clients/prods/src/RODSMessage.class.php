@@ -142,7 +142,7 @@ class RODSMessage
   
   private function parseBodyXML($xmlstr)
   {
-    try {
+    //try {
       $xml = new SimpleXMLElement($xmlstr);
       $name= $xml->getName();
       if(substr($name,-3,3)!="_PI")
@@ -155,12 +155,14 @@ class RODSMessage
       $rp_classname="RP_".substr($name,0,strlen($name)-3);
       $this->msg = new $rp_classname();
       $this->msg->fromSXE($xml);
-    } catch (Exception $e) {
+    
+    /*} catch (Exception $e) {
       throw new RODSException("RODSMessage::parseMainBodyXML failed! ".
           "Mal formated XML in RODS message :".
           $xmlstr,
-          "SYS_PACK_INSTRUCT_FORMAT_ERR");
+          "SYS_PACK_INSTRUCT_FORMAT_ERR",$e);
     }
+    */
   }
     
   public function getBody()
