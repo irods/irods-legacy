@@ -521,7 +521,7 @@ function RODSFileSearchDialog()
   }
 } // end of RODSFileSearchDialog
 
-function RODSMetadataGrid(grid_container)
+function RODSMetadataGrid()
 {
   var gridpanel, grid, grid_view, ds, num_newrows;
   
@@ -539,7 +539,7 @@ function RODSMetadataGrid(grid_container)
   }
   
   return {
-    init : function() {  
+    init : function(grid_container) {  
       this.num_newrows=0;
       
       // shorthand alias
@@ -875,8 +875,8 @@ function RODSFileViewer()
     init : function (){ 
         //Ext.QuickTips.init();
         
-        this.metagrid=new RODSMetadataGrid('fileviewer-tab-meta-grid');
-        this.metagrid.init();
+        this.metagrid=new RODSMetadataGrid();
+        this.metagrid.init('fileviewer-tab-meta-grid');
         
         this.file_dlg = new Ext.LayoutDialog("file-dlg", { 
                             width:600,
@@ -885,28 +885,17 @@ function RODSFileViewer()
                             minButtonWidth:10,
                             minWidth:300,
                             minHeight:300,
+                            autoTabs:true,
                             proxyDrag: true,
                             center: {
     	                        autoScroll:true,
     	                        tabPosition: 'bottom',
-    	                        closeOnTab: true,
-    	                        alwaysShowTabs: true,
     	                        titlebar: true,
     	                        title: 'File Details'
     	                      }
                     });
         this.layout = this.file_dlg.getLayout();
         this.layout.beginUpdate();
-        
-        /*
-        file_dlg.addButton({ 
-           icon: "images/new-window.gif",
-           text: "Open",
-           cls: 'x-btn-text-icon'
-          }, this.openFile, this); 
-        */
-        
-        
         
         var main_tb=new Ext.Toolbar(this.file_dlg.getLayout().getRegion('center').titleEl);
         main_tb.add({
@@ -921,10 +910,13 @@ function RODSFileViewer()
         
         this.tab_main=this.layout.add('center', new Ext.ContentPanel('fileviewer-tab-main', {title: 'overview'}));
         // generate some other tabs
+        this.metagrid.gridpanel.setTitle('metadata');
+        
         this.tab_meta=this.layout.add('center', this.metagrid.gridpanel);
         this.tab_meta.on('activate', function() {
             this.metagrid.load(this.ruri,1);  
           }, this);
+        this.tab_more=this.layout.add('center', new Ext.ContentPanel('fileviewer-tab-more', {title: 'More'}));  
         this.layout.endUpdate(); 
 	      
 	       
@@ -1197,8 +1189,8 @@ function RodsBrowser(inipath, _ssid)
 	  {
 	    if (this.metagrid==null)
       {
-        this.metagrid=new RODSMetadataGrid('metadata-grid');
-        this.metagrid.init();
+        this.metagrid=new RODSMetadataGrid();
+        this.metagrid.init('metadata-grid');
       }
     },
 	     

@@ -5,7 +5,7 @@
 <html>
 <head>
   <title>iRods Rich Web Client</title>
-  <link rel="stylesheet" type="text/css" href="extjs/docs/resources/collapser.css"></link>
+  <link rel="stylesheet" type="text/css" href="extjs/docs/resources/collapser.css" />
 	<link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css" />
 	<link rel="stylesheet" type="text/css" href="extjs/resources/css/xtheme-aero.css" />
   <link rel="stylesheet" type="text/css" href="browse.css" />
@@ -25,11 +25,11 @@
       Ext.isSecure=true;  
   </script>  
   
-  <script src="history-experimental-min-2.2.2.js"></script> 
+  <script type="text/javascript" src="history-experimental-min-2.2.2.js"></script> 
 	<script type="text/javascript" src="browse.js">	</script>
 </head>
-<body scroll="no" id="body">
-  
+<!-- <body scroll="no" id="body"> -->
+<body id="body">  
   <div id="loading-mask" style="width:100%;height:100%;background:#c3daf9;position:absolute;z-index:20000;left:0;top:0;">&#160;</div>
   <div id="loading">
     <div class="loading-indicator"><img src="extjs/resources/images/default/grid/loading.gif" style="width:16px;height:16px;" align="absmiddle">&#160;Connecting ...</div>
@@ -134,7 +134,11 @@
         </div>
         <div id="fileviewer-tab-meta" class="x-layout-inactive-content" 
             style="padding:10px;"></div>
-        <div id= "fileviewer-tab-meta-grid"></div>        
+        <div id= "fileviewer-tab-meta-grid">Metadata</div> 
+        <div id="fileviewer-tab-more" class="x-layout-inactive-content" 
+            style="padding:10px;">
+            Under developement 
+        </div>
     </div>
   </div>
   
@@ -167,6 +171,6 @@
     </div>
   </div>
   
-  <iframe id="download-frame" name="download-frame" style="display:none" width=1, height=1></iframe>
+  <iframe id="download-frame" name="download-frame" style="display:none;width=1px;height=1px"></iframe>
 </body>
 </html>
