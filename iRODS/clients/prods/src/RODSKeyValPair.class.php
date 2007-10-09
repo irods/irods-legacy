@@ -34,6 +34,17 @@ class RODSKeyValPair
   {
     return new RP_KeyValPair(count($this->keys),$this->keys, $this->vals);  
   } 
+  
+  /**
+   * make a RODSKeyValPair from a RP_KeyValPair
+   */
+  public static function fromPacket(RP_KeyValPair $RP_KeyValPair)
+  {
+    $new_keyval=new RODSKeyValPair();
+    $new_keyval->keys=$RP_KeyValPair->keyWord;
+    $new_keyval->vals=$RP_KeyValPair->svalue;  
+    return $new_keyval;
+  } 
 }
 
 ?>
