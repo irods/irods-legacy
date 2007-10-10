@@ -916,10 +916,12 @@ usage(char *subOpt)
    char *mkuserMsgs[]={
 " mkuser Name Type Zone [DN] (make user)",
 "Creates a new iRODS user in the ICAT database",
-"Name is the user name to create",
-" Name can have @department and #zone as part of it",
+" ",
+"Name is the user name to create (Name can optionally have @department and #zone as part of it)",
 "Type is the user type (see 'lt user_type' for a list)",
 "DN is the Distinguished Name for GSI authentication (optional)",
+" ",
+"Tip:  Use moduser to set a password or change any attributes for the user account",
 ""};
 
    char *atrgMsgs[]={
