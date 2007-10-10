@@ -94,4 +94,6 @@
 #include "fileTruncate.h"
 #include "bunSubTruncate.h"
 #include "generalUpdate.h"
+#include "getXmsgTicket.h"
+#include "sendXmsg.h"
 #endif	/* API_HEADER_ALL_H */

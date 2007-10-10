@@ -264,3 +264,9 @@ LIB_API_OBJS += $(libApiObjDir)/rcBunSubTruncate.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGeneralUpdate.o
 LIB_API_OBJS += $(libApiObjDir)/rcGeneralUpdate.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetXmsgTicket.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetXmsgTicket.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSendXmsg.o
+LIB_API_OBJS += $(libApiObjDir)/rcSendXmsg.o

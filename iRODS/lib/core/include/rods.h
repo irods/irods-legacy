@@ -26,6 +26,7 @@
 #include "authenticate.h"
 #include "parseCommandLine.h"
 #include "obf.h"
+#include "rodsXmsg.h"
 
 #ifdef _WIN32
 #include "IRodsLib3.h"

@@ -89,6 +89,8 @@
 #define BUN_SUB_CLOSEDIR_AN 			651
 #define DATA_OBJ_TRUNCATE_AN 			652
 #define BUN_SUB_TRUNCATE_AN 			653
+#define GET_XMSG_TICKET_AN 			654
+#define SEND_XMSG_AN 			655
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

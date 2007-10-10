@@ -2885,3 +2885,29 @@ keyValFromString( char* string, keyValPair_t** list )
 
 	return 0;
 }
+
+int
+clearSendXmsgInfo (sendXmsgInfo_t *sendXmsgInfo)
+{
+    if (sendXmsgInfo == NULL) return 0;
+
+    if (sendXmsgInfo->msg != NULL) free (sendXmsgInfo->msg);
+
+    if (sendXmsgInfo->deliPort != NULL) free (sendXmsgInfo->deliPort);
+
+    if (sendXmsgInfo->miscInfo != NULL) free (sendXmsgInfo->miscInfo);
+
+    if (sendXmsgInfo->deliAddress != NULL && 
+      *sendXmsgInfo->deliAddress != NULL) {
+	int i;
+
+        for (i = 0; i < sendXmsgInfo->numDel; i++) {
+	    free (sendXmsgInfo->deliAddress[i]);
+	}
+	free (sendXmsgInfo->deliAddress);
+    }
+    memset (sendXmsgInfo, 0, sizeof (sendXmsgInfo_t));
+
+    return (0);
+}
+

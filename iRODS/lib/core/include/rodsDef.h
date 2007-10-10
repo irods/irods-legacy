@@ -277,23 +277,4 @@ typedef struct {
 			 * trim */
 } vaultPathPolicy_t;
 
-/* xmsg struct */
-
-typedef struct IrodsXmsg {
-    uint sendTicket;
-    uint rcvTicket;
-    uint msgNumber;
-    uint sendTime;                      /* unix time of the send */
-    uint numRcv;                        /* nmber of receiver */
-    uint msgType[HEADER_TYPE_LEN];      /* msg type, 16 char */
-    char sendUserName[NAME_LEN];        /* userName@zone of clientUser */
-    char sendAddr[NAME_LEN];            /* sender's network address*/
-    char *msg;                          /* the msg */
-    int numDel;                         /* number of msg to deliver */
-    char **delAddress;                  /* array of str pointer of addr */
-    uint **delPort;                     /* array of port number to deliver */
-    char *miscInfo;                     /* for expiration, etc */
-} irodsXmsg_t;
-
-
 #endif	/* RODS_DEF_H */

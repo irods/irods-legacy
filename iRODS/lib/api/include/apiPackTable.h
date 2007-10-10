@@ -72,6 +72,8 @@ packInstructArray_t ApiPackTable[] = {
         {"BunSubLseekInp_PI", BunSubLseekInp_PI},
         {"BunSubRenameInp_PI", BunSubRenameInp_PI},
         {"getTempPasswordOut_PI", getTempPasswordOut_PI},
+        {"GetXmsgTicketInp_PI", GetXmsgTicketInp_PI},
+        {"SendXmsgInp_PI", SendXmsgInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

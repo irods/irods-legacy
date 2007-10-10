@@ -99,6 +99,7 @@ xmsgServerMain ()
     int newSock;
 
     initThreadEnv ();
+    initXmsgHashQue ();
 
     status = initRsComm (&rsComm);
 
