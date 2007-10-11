@@ -6,11 +6,12 @@ class RODSGenQueConds
   private $cond_kw;
   
  /**
-  * default constructor.
-  * @param string $name name of the field, which must be one defined in file 'RodsGenQueryNum.inc.php'.
-  * @param string $attrs extra options used for operations such as order_by, the expected values are:
-  *     - 'order_by_asc' order the result by this field, in ASCENDING order
-  *     - 'order_by_desc' order the result by this field, in DESCENDING order
+  * default constructor. It take names, ops, and vals.
+  * suppose name='foo' op='>=' and val='0', then the triplex means
+  * "foo >= 0" as one iRODS general query condition.
+  * @param array (of string) $names names of the field, which must be one defined in file 'RodsGenQueryNum.inc.php'.
+  * @param array (of string) $ops logical operator, such as '=' 'like' '>'
+  * @param array (of string) $vals value of the filed
   */
   public function __construct(array $names=array(), array $ops=array(), 
     array $vals=array())    
