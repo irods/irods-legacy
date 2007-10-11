@@ -66,7 +66,8 @@ class RODSGenQueResults
   }
   
  /**
-  * get result values in (2-d) array.
+  * get result values in (2-d) array, each array key is the name
+  * used RODSGenQueSelFlds, such as COL_COLL_NAME
   */
   public function getValues()
   {
