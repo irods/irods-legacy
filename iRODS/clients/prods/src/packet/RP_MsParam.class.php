@@ -21,10 +21,10 @@ class RP_MsParam extends RODSPacket
     if (!isset($this->packlets))
       return;
     
-    $this->packlets["label"]=$sxe->lable;
-    $this->packlets["type"]=$sxe->type;
+    $this->packlets["label"]=(string) $sxe->label;
+    $this->packlets["type"]=(string) $sxe->type;
     
-    $typename=$sxe->type; //type of the expected packet
+    $typename=$this->packlets["type"]; //type of the expected packet
     if(substr($typename,-3,3)!="_PI")
     {
       throw new RODSException("RP_MsParam::fromSXE ".
