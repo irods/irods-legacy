@@ -1,7 +1,7 @@
 <?php
   $RODS_tree_root=dirname(__FILE__)."/../../..";
 
-  $capi_error_table_file=$RODS_tree_root."/clientLib/include/rodsErrorTable.h";
+  $capi_error_table_file=$RODS_tree_root."/lib/core/include/rodsErrorTable.h";
   $prods_error_table_file=$RODS_tree_root."/clients/prods/src/RodsErrorTable.inc.php";
   
   // Add more error code here, if you wish. It will be added to the default 

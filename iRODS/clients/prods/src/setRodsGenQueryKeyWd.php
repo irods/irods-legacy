@@ -1,7 +1,7 @@
 <?php
   $RODS_tree_root=dirname(__FILE__)."/../../..";
   
-  $capi_genque_KeyWd_file=$RODS_tree_root."/clientLib/include/rodsKeyWdDef.h";
+  $capi_genque_KeyWd_file=$RODS_tree_root."/lib/core/include/rodsKeyWdDef.h";
   $prods_genque_keywd_file=$RODS_tree_root."/clients/prods/src/RodsGenQueryKeyWd.inc.php";
   
   // Add more Query keywd here, if you wish. It will be added to the default 

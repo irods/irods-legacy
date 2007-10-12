@@ -1,7 +1,7 @@
 <?php
   $RODS_tree_root=dirname(__FILE__)."/../../..";
   
-  $capi_genque_num_file=$RODS_tree_root."/clientLib/include/rodsGenQuery.h";
+  $capi_genque_num_file=$RODS_tree_root."/lib/core/include/rodsGenQuery.h";
   $prods_genque_num_file=$RODS_tree_root."/clients/prods/src/RodsGenQueryNum.inc.php";
   
   // Add more GenQue number here, if you wish. It will be added to the default 
@@ -22,7 +22,7 @@
     {
       $rest=trim(substr($line,7));
       $tokens=preg_split("/\s+/",$rest);
-      if (count($tokens)!=2)
+      if (count($tokens)<2)
         continue; 
       
       $val1=trim($tokens[0]);

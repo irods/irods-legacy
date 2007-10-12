@@ -1,7 +1,7 @@
 <?php
   $RODS_tree_root=dirname(__FILE__)."/../../..";
   
-  $capi_api_num_file=$RODS_tree_root."/clientLib/include/apiNumber.h";
+  $capi_api_num_file=$RODS_tree_root."/lib/api/include/apiNumber.h";
   $prods_api_num_file=$RODS_tree_root."/clients/prods/src/RodsAPINum.inc.php";
   
   
