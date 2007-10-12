@@ -323,4 +323,63 @@ class ProdsFile extends ProdsPath
     
     return $bytesWritten;
   }
-}
+  
+  /**
+   * get replica information for this file
+   * @return array of array, each child array is a associative and contains:
+   *   [repl_num]      : replica number
+   *   [chk_sum]       : checksum of the file
+   *   [resc_name]     : resource name
+   *   [resc_grp_name] : resource group name
+   *   [resc_type]     : resource type name
+   *   [resc_class]    : resource class name
+   *   [resc_loc]      : resource location
+   *   [resc_freespace]: resource freespace
+   *   [data_status]   : data status
+   *   [ctime]         : data creation time (unix timestamp)
+   *   [mtime]         : data last modified time (unix timestamp)
+   */
+  public function getReplInfo()
+  {
+    $select=new RODSGenQueSelFlds(
+      array("COL_DATA_REPL_NUM", "COL_D_DATA_CHECKSUM", 
+        "COL_D_RESC_NAME", "COL_D_RESC_GROUP_NAME", 
+        "COL_D_DATA_STATUS", "COL_D_CREATE_TIME", 
+        "COL_D_MODIFY_TIME",'COL_R_TYPE_NAME','COL_R_CLASS_NAME',
+        'COL_R_LOC','COL_R_FREE_SPACE')    
+    );
+    $condition=new RODSGenQueConds(
+      array("COL_COLL_NAME",    "COL_DATA_NAME"),
+      array("="            ,    "="            ),
+      array($this->parent_path, $this->name    )
+    );
+     
+    $conn = RODSConnManager::getConn($this->account);
+    $que_result= $conn->query($select, $condition);    
+    RODSConnManager::releaseConn($conn);  
+    
+    $ret_arr=array();
+    for($i=0; $i< $que_result->getNumRow(); $i++)   
+    {
+      $ret_arr_row=array();
+      $que_result_val=$que_result->getValues();
+      $ret_arr_row['repl_num']=$que_result_val['COL_DATA_REPL_NUM'][$i];
+      $ret_arr_row['chk_sum']=$que_result_val['COL_D_DATA_CHECKSUM'][$i];
+      $ret_arr_row['resc_name']=$que_result_val['COL_D_RESC_NAME'][$i];
+      $ret_arr_row['resc_grp_name']=$que_result_val['COL_D_RESC_GROUP_NAME'][$i];
+      $ret_arr_row['data_status']=$que_result_val['COL_D_DATA_STATUS'][$i];
+      $ret_arr_row['ctime']=$que_result_val['COL_D_CREATE_TIME'][$i];
+      $ret_arr_row['mtime']=$que_result_val['COL_D_MODIFY_TIME'][$i];
+      $ret_arr_row['resc_type']=$que_result_val['COL_R_TYPE_NAME'][$i];
+      $ret_arr_row['resc_class']=$que_result_val['COL_R_CLASS_NAME'][$i];
+      $ret_arr_row['resc_loc']=$que_result_val['COL_R_LOC'][$i];
+      $ret_arr_row['resc_freespace']=$que_result_val['COL_R_FREE_SPACE'][$i];
+      $ret_arr[]=$ret_arr_row;
+    }
+    return $ret_arr;
+  } 
+}   
+    
+    
+    
+    
