@@ -329,7 +329,9 @@ class ProdsFile extends ProdsPath
    * @return array of array, each child array is a associative and contains:
    *   [repl_num]      : replica number
    *   [chk_sum]       : checksum of the file
+   *   [size]          : size of the file (replica)
    *   [resc_name]     : resource name
+   *   [resc_repl_status] : replica status (dirty bit), whether this replica is dirty (modifed), and requirs synchs to other replicas.
    *   [resc_grp_name] : resource group name
    *   [resc_type]     : resource type name
    *   [resc_class]    : resource class name
@@ -342,11 +344,11 @@ class ProdsFile extends ProdsPath
   public function getReplInfo()
   {
     $select=new RODSGenQueSelFlds(
-      array("COL_DATA_REPL_NUM", "COL_D_DATA_CHECKSUM", 
+      array("COL_DATA_REPL_NUM", "COL_D_DATA_CHECKSUM",'COL_DATA_SIZE',
         "COL_D_RESC_NAME", "COL_D_RESC_GROUP_NAME", 
         "COL_D_DATA_STATUS", "COL_D_CREATE_TIME", 
         "COL_D_MODIFY_TIME",'COL_R_TYPE_NAME','COL_R_CLASS_NAME',
-        'COL_R_LOC','COL_R_FREE_SPACE')    
+        'COL_R_LOC','COL_R_FREE_SPACE', 'COL_D_REPL_STATUS')    
     );
     $condition=new RODSGenQueConds(
       array("COL_COLL_NAME",    "COL_DATA_NAME"),
@@ -365,6 +367,7 @@ class ProdsFile extends ProdsPath
       $que_result_val=$que_result->getValues();
       $ret_arr_row['repl_num']=$que_result_val['COL_DATA_REPL_NUM'][$i];
       $ret_arr_row['chk_sum']=$que_result_val['COL_D_DATA_CHECKSUM'][$i];
+      $ret_arr_row['size']=$que_result_val['COL_DATA_SIZE'][$i];
       $ret_arr_row['resc_name']=$que_result_val['COL_D_RESC_NAME'][$i];
       $ret_arr_row['resc_grp_name']=$que_result_val['COL_D_RESC_GROUP_NAME'][$i];
       $ret_arr_row['data_status']=$que_result_val['COL_D_DATA_STATUS'][$i];
@@ -374,6 +377,7 @@ class ProdsFile extends ProdsPath
       $ret_arr_row['resc_class']=$que_result_val['COL_R_CLASS_NAME'][$i];
       $ret_arr_row['resc_loc']=$que_result_val['COL_R_LOC'][$i];
       $ret_arr_row['resc_freespace']=$que_result_val['COL_R_FREE_SPACE'][$i];
+      $ret_arr_row['resc_repl_status']=$que_result_val['COL_D_REPL_STATUS'][$i];
       $ret_arr[]=$ret_arr_row;
     }
     return $ret_arr;
