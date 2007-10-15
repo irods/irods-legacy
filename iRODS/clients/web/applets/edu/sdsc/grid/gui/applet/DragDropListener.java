@@ -15,13 +15,10 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetListener;
-import javax.swing.JApplet;
 import java.util.List;
 import java.util.Vector;
 import java.util.Arrays;
 import java.io.File;
-import javax.swing.SwingUtilities;
-import java.applet.Applet;
 import org.w3c.dom.*;
 import org.w3c.dom.css.*;
 import org.w3c.dom.events.*;
@@ -29,8 +26,6 @@ import org.w3c.dom.html.*;
 import org.w3c.dom.stylesheets.*;
 import org.w3c.dom.views.*;
 import com.sun.java.browser.dom.*;
-import java.net.URL;
-import java.net.MalformedURLException;
 
 
         
@@ -54,12 +49,9 @@ public class DragDropListener implements DropTargetListener {
         account = acct;
     }
     
-
-    
     private String getCurrentRuri() {
         String ruri = applet.getCurrentRuri();
         return ruri;
-        
     }
     
     public void drop (DropTargetDropEvent dtde) {
@@ -70,26 +62,23 @@ public class DragDropListener implements DropTargetListener {
             data = dtde.getTransferable().getTransferData(chosenFlavor);
             List dropList = (List) data; // a List of File objects
             List fileList = new Vector();
-            
-            // convert fileList into a List of String[]
-            // array[0] will contain the source file path as a string
-            // array[1] will contain the destination file path as a string
-            //
-
-            account.parseRuri(getCurrentRuri(), true);
-            
             File file = null;
+            
+            account.parseRuri(getCurrentRuri(), true);
 
             for (int i = 0; i < dropList.size(); i++) {
                 file = (File) dropList.get(i);
                 String[] f = new String[2];
                 f[0] = file.getAbsolutePath(); // source
                 f[1] = "irods://" + account.getDestinationFolderAsUri() +  file.getName(); // destination
-                fileList.add(f);
-            }
+
+                UploadItem item = new UploadItem(f[0], f[1], account.getDefaultResource());
+                boolean success = new DBUtil().insert(item);
+                if (success)
+                    fileList.add(item);
+            }//for
             
             model.addFile(fileList);
-
             
         } catch (Exception e) {
             logger.log("drop error. " + e);
@@ -100,7 +89,6 @@ public class DragDropListener implements DropTargetListener {
 
 
     public void dragEnter (DropTargetDragEvent dtde) {
-
         if (isDataFlavorSupported(dtde) == false)
             dtde.rejectDrag();
     }
