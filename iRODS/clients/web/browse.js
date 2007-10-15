@@ -1899,7 +1899,7 @@ function RodsBrowser(inipath, _ssid)
 
 
           Ext.get('upload-applet-dlg-bd-main').dom.innerHTML=
-         '<applet name="myApplet" CODE="edu.sdsc.grid.gui.applet.UploadApplet.class" archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar" WIDTH="650" HEIGHT="300" mayscript>'+
+         '<applet name="myApplet" CODE="edu.sdsc.grid.gui.applet.UploadApplet.class" archive="applets/UploadApplet.jar,applets/jargon.jar,applets/json.jar,applets/hsqldb.jar" WIDTH="650" HEIGHT="300" mayscript>'+
             '   <param name="ruri" value="irods://'+rpath_grid+'" />'+
             '   <param name="ssid" value="'+ssid+'" />'+
             '</applet>';
