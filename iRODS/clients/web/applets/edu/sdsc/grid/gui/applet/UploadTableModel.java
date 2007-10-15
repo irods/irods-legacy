@@ -45,21 +45,14 @@
 package edu.sdsc.grid.gui.applet;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.List;
+import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.JCheckBox;
 import javax.swing.ImageIcon;
 import javax.swing.JProgressBar;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.Icon;
 import javax.swing.JTextField;
-import java.net.MalformedURLException;
 import javax.swing.border.EmptyBorder;
-import java.awt.FlowLayout;
-import javax.swing.JTable;
 
 class UploadTableModel extends DefaultTableModel implements AppletConstant {
     private int directoryFileCount;
@@ -78,6 +71,7 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         this.addColumn("");// empty for file/folder icon
         this.addColumn("Local"); // local file or folder
         this.addColumn("Remote"); // local file or folder
+        this.addColumn("Resource"); // local file or folder
         this.addColumn("Status"); // Progress bar
         
         try {
@@ -117,143 +111,61 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         
     }
     
-    // param file can be a file or folder
-    // issue: queue log file may be written to as it is being read
-    // may cause a file to be queued in two separate applet instances
-    // param: List fileList is a List of String[] where
-    // String[0] is the source file path and
-    // String[1] is the destination path
+    // param: List fileList is a List of UploadItem objects
     public void addFile(List fileList) { 
         int rowCount = this.getRowCount();
-        File file = null;
-        String filePath = null;    
-        File fileLog = new File(QUEUE_LOG);
         
-        // load queue log entries into a List
-        List queue = logger.readQueueLog();  // a List of String
-        
+        UploadItem item = null;
         for (int k=0; k<fileList.size(); k++) {
-            String[] s = (String[]) fileList.get(k);
-            file = new File(s[0]); //source
-            String destination = s[1];
-
-            //check if file is already in queue log
-            boolean fileAdded = false;
-            for (int p=0; p < queue.size(); p++) {
-                String t = (String) queue.get(p); // from queue log file
-                String t_split[] = t.split("\t"); // delimited by a tab; the format of the line read is : <source> <tab> <destination>
-            
-                // case sensitive
-                // may cause a file to be in the table twice if Operating System doesn not handle case sensitivity
-                //
-                // compare the file source in the queue log and the source of the file dragged-dropped
-                try {
-                    if (t_split[0].equals(s[0])) {
-                        fileAdded = true;
-                        break;
-                    }
-                } catch (ArrayIndexOutOfBoundsException e){
-                    // don't log
-                }
-            }
-            
-            if (fileAdded)
-                continue;
-            
-            
-            if (file.isFile())
-                this.addFileToTable(file, destination); // can be a file
-            else if (file.isDirectory())
-                this.addDirectoryToTable(file, destination);
-            
-            // add file to text file for recovery in case application crashes or is interrupted unexpectedly    
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(fileLog, true);
-                fos.write(file.getAbsolutePath().getBytes());
-                fos.write("\t".getBytes());
-                fos.write(destination.getBytes());
-                fos.write("\n".getBytes());
-            } catch (IOException e) {
-            } finally {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                }
-            }//try-catch-finally
-            
+            item = (UploadItem) fileList.get(k);
+            addToTable(item);            
         }//for
         
     }
     
     public void removeFile(int[] selectedRows) {
+        List itemList = new ArrayList();
         for (int k = selectedRows.length - 1; k >= 0; k--) {
+            String source = ((JTextField) this.getValueAt(k, SOURCE_COLUMN)).getText();
+            String destination = ((JTextField) this.getValueAt(k, DESTINATION_COLUMN)).getText();
+            String resource = ((JTextField) this.getValueAt(k, RESOURCE_COLUMN)).getText();
+            
+            UploadItem item = new UploadItem(source, destination, resource);
+            itemList.add(item);
+            
             this.removeRow(selectedRows[k]);
         }
         
-        // need to save upload queue to log file
-        // delete queue log and save files currently in table
-        File fileLog = new File(QUEUE_LOG);
-        fileLog.delete();
+        new DBUtil().delete(itemList);
         
-        fileLog = new File(QUEUE_LOG);
-        int rowCount = this.getRowCount();
-        
-        JTextField tfSource = null;
-        JTextField tfDestination = null;
-        
-        for (int k = 0; k < rowCount; k++) {
-            tfSource = (JTextField) this.getValueAt(k, SOURCE_COLUMN);
-            tfDestination = (JTextField) this.getValueAt(k, DESTINATION_COLUMN);
-            String filePath = tfSource.getText() + "\t" + tfDestination.getText(); 
-            FileOutputStream fos = null;
-            
-            try {
-                fos = new FileOutputStream(fileLog, true);
-                fos.write(filePath.getBytes());
-                fos.write("\n".getBytes());
-            } catch (IOException ioe) {
-            } finally {
-                try {
-                    fos.close();
-                } catch (IOException ioe) {
-                }
-            }//try-catch-finally
-        }//for
     }
     
     
     private JTextFieldListener tfListener = new JTextFieldListener();
     private JTextFieldMouseListener tfMouseListener = new JTextFieldMouseListener();
      
-    private void addFileToTable(File file, String destination) {
-        JTextField tfSource = new JTextField(file.getAbsolutePath());
-        JTextField tfDestination = new JTextField(destination);
+    private void addToTable(UploadItem item) {
+        JTextField tfSource = new JTextField(item.getSource());
+        JTextField tfDestination = new JTextField(item.getDestination());
+        JTextField tfResource = new JTextField(item.getResource());
         tfSource.addFocusListener(tfListener);
         tfDestination.addFocusListener(tfListener);
         
         tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
         tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
+        tfResource.setBorder(new EmptyBorder(0, 8, 0, 8));
+        
         tfSource.setDragEnabled(false);
         tfDestination.setDragEnabled(false);
+        tfResource.setDragEnabled(false);
         
-        this.addRow(new Object[] { fileIcon, tfSource, tfDestination, null});
-    }
-    
-    private void addDirectoryToTable(File file, String destination) {
+        ImageIcon icon = null;
+        if (item.getType().equals(TYPE_FILE))
+            icon = fileIcon;
+        else
+            icon = folderIcon;
         
-        JTextField tfSource = new JTextField(file.getAbsolutePath());
-        JTextField tfDestination = new JTextField(destination);
-
-        tfSource.addFocusListener(tfListener);
-        tfDestination.addFocusListener(tfListener);
-        
-        tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
-        tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
-        tfSource.setDragEnabled(false);
-        tfDestination.setDragEnabled(false);
-        
-        this.addRow(new Object[] { folderIcon, tfSource, tfDestination, null});
+        this.addRow(new Object[] { icon, tfSource, tfDestination, tfResource, null});
     }
     
     
