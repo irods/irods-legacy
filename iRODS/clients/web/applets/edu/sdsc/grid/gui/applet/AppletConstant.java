@@ -50,6 +50,24 @@ public interface AppletConstant {
     static String UPLOADED_LOG = IRODS_DIR + FILE_SEPARATOR + "uploaded.txt";
     static String QUEUE_LOG = IRODS_DIR + FILE_SEPARATOR + "queue.txt";
     static String APPLET_LOG = IRODS_DIR + FILE_SEPARATOR + "log.txt";
+    static String ACTIVE_APPLETS_LOG = IRODS_DIR + FILE_SEPARATOR + "active_applets.txt";
+    static String INACTIVE_APPLETS_LOG = IRODS_DIR + FILE_SEPARATOR + "inactive_applets.txt";
+    static String RECOVERY_LOCK_DIR = IRODS_DIR + FILE_SEPARATOR + ".lock" + FILE_SEPARATOR;
+    static String PROMPTED_FILE = IRODS_DIR + FILE_SEPARATOR + ".prompted";
+    static String DB_FILE ="jdbc:hsqldb:file:" + IRODS_DIR + FILE_SEPARATOR + "db";
+    static String DB_USER = "sa";
+    static String DB_PASSWORD = "";
+    static String DB_SCRIPT_FILE = IRODS_DIR + FILE_SEPARATOR + "db.script";
+    
+    static String STATUS_QUEUED = "queued";
+    static String STATUS_UPLOADED = "uploaded";
+    static String STATUS_IN_PROGRESS = "in progress";
+    static String STATUS_REQUIRES_AUTHENTICATION = "requires authentication";
+    static String STATUS_SERVER_UNAVAILABLE = "server unavailable";
+    static String STATUS_FAILED = "failed";
+    
+    static String TYPE_FILE = "File";
+    static String TYPE_FOLDER = "Folder";
     
     /* Column index for table */
     // will need to change these when table model changes
@@ -57,8 +75,10 @@ public interface AppletConstant {
     static int ICON_COLUMN = 0;
     static int SOURCE_COLUMN = 1;
     static int DESTINATION_COLUMN = 2;
-    static int FILE_SIZE_COLUMN = 3;
-    static int STATUS_COLUMN = 3;
+    static int RESOURCE_COLUMN = 3;
+    static int STATUS_COLUMN = 4;
+    //static int FILE_SIZE_COLUMN = 3;
+    
     
     static String IN_PROGRESS_STATUS = "In Progress";
     static String DONE_STATUS = "Done";
