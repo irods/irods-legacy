@@ -2,7 +2,6 @@ package edu.sdsc.grid.gui.applet;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -10,6 +9,14 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import org.json.JSONObject;
+import edu.sdsc.grid.io.irods.IRODSFileSystem;
+import edu.sdsc.grid.io.irods.IRODSAccount;
+import edu.sdsc.grid.io.irods.IRODSMetaDataSet;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataField;
 
 public class Account {
     private String ruri, host, username, home, destination, destinationFolder;
@@ -29,11 +36,38 @@ public class Account {
     
     // This constructor is used at applet initialization
     public Account(String tempPassworServiceUrl, String ruri, String sessionId) {
+        this.ruri = ruri;
         TEMP_PASSWORD_SERVICE_URL = tempPassworServiceUrl;
         parseRuri(ruri, true);
         setSessionId(sessionId);
+        //setResourceList(); // giving problems
     }
     
+    private void setResourceList() {
+        String[] selectFieldNames = {IRODSMetaDataSet.RESOURCE_NAME};
+        MetaDataCondition conditions[] = {MetaDataSet.newCondition( "RESC_ZONE_KW", MetaDataCondition.LIKE, "tempZone" )};
+        MetaDataSelect selects[] = MetaDataSet.newSelection( selectFieldNames );
+
+        MetaDataRecordList[] rl = null;
+        try {
+            IRODSAccount irodsAccount = new IRODSAccount(host, port, username, new String(getPassword(ruri)), home, zone, defaultResource);            
+            IRODSFileSystem fileSystem = new IRODSFileSystem(irodsAccount);
+            rl=((IRODSFileSystem) fileSystem).query(conditions, selects);
+            logger.log("rl.length : "+ rl.length);
+            for (int i=0; i < rl.length; i++) {
+                MetaDataField[] fields = rl[i].getFields();
+                for (int k=0; k < fields.length; k++) {
+                    logger.log("field name:: " + fields[k].getName());
+                }
+            }//for
+            
+        } catch (Exception e) {
+            logger.log("Problem querying for resource list. " + e);
+            
+        }
+    }
+        
+        
     public void parseRuri(String ruri, boolean isInit) {
         // parse out password if any
         // Possible URI formats:
@@ -121,6 +155,9 @@ public class Account {
     }
 
     public String getDefaultResource() {
+        IRODSAccount irodsAccount = new IRODSAccount(host, port, username, new String(getPassword(ruri)), home, zone, defaultResource);            
+        defaultResource = irodsAccount.getDefaultStorageResource();
+        logger.log("default storage resource is :  " + defaultResource);
         return defaultResource;
     }
     
