@@ -1,0 +1,5 @@
+// Properties module microservices
+// Service name			# args		Service function
+{ "msiGetQuote",	2,		(funcPtr) msiGetQuote },
+{ "msiIp2location",	3,		(funcPtr) msiIp2location },
+{ "msiConvertCurrency",	3,		(funcPtr) msiConvertCurrency},

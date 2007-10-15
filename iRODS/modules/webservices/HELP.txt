@@ -1,0 +1,52 @@
+
+First build the gsoap libraries. See  README.txt in the gsoap distribution about how to
+build this. iRODS distribution may not contain the gsoap distribution. You may have
+to acquire that separately from  http://sourceforge.net/projects/gsoap2 or other places.
+
+These are put in microservices/lib from gsoap/soapcpp2:
+   libgsoap++.a   libgsoap.a  libgsoapck++.a libgsoapck.a  libgsoapssl++.a  libgsoapssl.a
+
+These are put in the microservice/include from gsoap/soapcpp2:
+  stdsoap2.h
+
+The common file and libraries need to be built:
+ cd microservices/src/common
+ rm *
+ touch env.h
+ $GSOAPDIR/src/soapcpp2 -c -penv env.h
+ gcc -c -DWITH_NONAMESPACES envC.c
+ gcc -c -DWITH_NONAMESPACES stdsoap2.c
+ mv envC.o  stdsoap2.o ../../obj
+
+-------------------------------------------------
+1. mkdir webservices/microservices/src/stockQuote
+2. put    stockQuote.wsdl    in webservices/microservices/src/stockQuote
+     this is obtained from the web services site
+3. setenv GSOAPDIR /projects/misc/doct/irods/irods/iRODS.brick14/modules/webservices/gsoap-2.7/soapcpp2
+4. $GSOAPDIR/wsdl/wsdl2h  -c -I$GSOAPDIR  -o stockQuoteMS_wsdl.h stockQuote.wsdl 
+     this creates a file called  stockQuoteMS_wsdl.h
+5. $GSOAPDIR/src/soapcpp2 -c -w -x -C -n -pstockQuote  stockQuoteMS_wsdl.h
+     this creates files: stockQuote.nsmap, stockQuoteC.c, stockQuoteClient.c,
+                         stockQuoteClientLib.c, stockQuoteH.h and stockQuoteStub.h
+6. create file stockQuoteMS.c    in webservices/microservices/src/stockQuote
+     this is the msi file
+7. create file stockQuoteMS.h    in webservices/microservice/include 
+     this is just the include file for the msi file
+     make sure that #define and #ifde also get changed...
+8. add the following to file microservices.header in webservices/microservice/include
+     #include "stockQuoteMS.h"
+9. add the following to file microservices.table in webservices/microservice/include 
+     { "msiGetQuote",        2,              (funcPtr) msiGetQuote },
+    which is basically the function definition for the rule engine
+10. add following changes to Makefile in the modules/webservices  directory
+     stockQuoteSrcDir= $(MSSrcDir)/stockQuote
+     STOCKQUOTE_WS_OBJS = $(MSObjDir)/stockQuoteMS.o $(MSObjDir)/stockQuoteClientLib.o
+     OBJECTS +=    $(STOCKQUOTE_WS_OBJS)
+     $(STOCKQUOTE_WS_OBJS): $(MSObjDir)/%.o: $(stockQuoteSrcDir)/%.c $(DEPEND) $(OTHER_OBJS)
+        @echo "Compile webservices-stockQuote module `basename $@`..."
+        @$(CC) -c $(CFLAGS) -o $@ $<
+11. gmake clean and gmake at the top level
+12. start.pl  at server/bin
+
+
+
