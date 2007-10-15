@@ -8,6 +8,11 @@ function refreshTreeNodeByRURI(new_ruri)
   browser.refreshTreeNodeByRURI(new_ruri);
 }
 
+function refreshGrid()
+{
+  browser.refreshGrid();
+}
+
 function removeLoadingMasks()
 {
   var loading = Ext.get('loading');
@@ -1183,6 +1188,12 @@ function RodsBrowser(inipath, _ssid)
       tree.expandPath(path, 'id', function(bSuccess, oLastNode){
         oLastNode.reload();    
       });   
+    },
+    
+    // refresh grid.
+    refreshGrid: function ()
+    {
+      coll_list_data.load({params:{start:0, limit:50}});   
     },
 	  
 	  createMetadataGrid : function ()
