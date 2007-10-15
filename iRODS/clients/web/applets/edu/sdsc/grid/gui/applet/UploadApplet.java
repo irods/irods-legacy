@@ -45,85 +45,33 @@
 
 package edu.sdsc.grid.gui.applet;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Vector;
-import java.util.List;
-import java.util.Iterator;
-import java.util.Properties;
 
+import java.io.IOException;
 import javax.swing.JApplet;
-import javax.swing.JScrollPane;
 import javax.swing.JButton;
-import javax.swing.JTextField;
-import javax.swing.JPasswordField;
 import javax.swing.JTable;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JOptionPane;
-import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
-import javax.swing.ButtonGroup;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.BoxLayout;
-import javax.swing.SpringLayout;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.SwingUtilities;
 import javax.swing.JTextArea;
-import javax.swing.JOptionPane;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.File;
+import java.util.List;
+
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Container;
 import java.awt.Color;
-import java.awt.Rectangle;
-import java.awt.FlowLayout;
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.event.MouseAdapter;
 import java.awt.event.ActionListener;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import edu.sdsc.grid.io.srb.SRBException;
-import edu.sdsc.grid.io.FileFactory;
-import edu.sdsc.grid.io.srb.SRBFile;
-import edu.sdsc.grid.io.srb.SRBFileSystem;
-import edu.sdsc.grid.io.srb.SRBAccount;
-import edu.sdsc.grid.io.GeneralFile;
-import edu.sdsc.grid.io.local.LocalFile;
-
-import edu.sdsc.grid.io.irods.IRODSFile;
-import edu.sdsc.grid.io.irods.IRODSFileSystem;
-import edu.sdsc.grid.io.irods.IRODSAccount;
-
-import java.applet.Applet;
 import com.sun.java.browser.dom.*;
+import java.util.ArrayList;
+import javax.swing.JTextField;
 import org.w3c.dom.*;
 import org.w3c.dom.css.*;
 import org.w3c.dom.events.*;
@@ -137,10 +85,10 @@ import org.w3c.dom.views.*;
  * @author      Alex Wu, San Diego Supercomputer Center
  * 
  **/
-public class UploadApplet extends JApplet implements AppletConstant {
+public class UploadApplet extends JApplet implements ActionListener, AppletConstant {
 
     private Container content;
-    private JTable table;
+    //private JTable table;
     private UploadTableModel model;
     private JButton removeButton;
     private JButton uploadButton;
@@ -171,7 +119,8 @@ public class UploadApplet extends JApplet implements AppletConstant {
     DragDropPanel dragDropPanel;
     OptionsPanel optionsPanel;
     
-    static Manager manager = Manager.getInstance();
+    //static Manager manager = Manager.getInstance();
+    private long id; // applet id for logging purpose
     private String ruri;
     
     
@@ -184,6 +133,86 @@ public class UploadApplet extends JApplet implements AppletConstant {
      * 
      **/
     public void init() {
+        // prompt user for permission to create iRODS directory and log files in the user's home directory
+        //
+        // 1. check if <iRODS_DIR>/.prompted file exists
+        // 2. if yes, create applet panels
+        // 3. if no, prompt user for permission
+        //     3.a. if user says no, stay on permission screen with a message
+        //     3.b. if user says yes
+        //          - create <iRODS_DIR>/.prompted file
+        //          - create applet panels
+        //
+        File promptedFile = new File(PROMPTED_FILE);
+        if (promptedFile.exists()) {
+            createDisplay();
+        } else {
+            showPrompt();
+        }
+    }//init
+    
+    private void showPrompt() {
+        
+        Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
+        JPanel panel = new JPanel(new BorderLayout());
+        JTextArea tf = new JTextArea("This applet requires some text files to be written to your home directory. " +
+                                  "These text files are used for logging and recovery, and can be viewed by a text editor. " +
+                                  "To use this applet, you must click Allow.", 4, 15);
+        
+        tf.setLineWrap(true);
+        tf.setWrapStyleWord(true);
+        tf.setBackground(bgColor);
+        
+        JButton allowButton = new JButton("Allow");
+        JButton denyButton = new JButton("Deny");
+        allowButton.setActionCommand("Allow");
+        denyButton.setActionCommand("Deny");
+        allowButton.addActionListener(this);
+        denyButton.addActionListener(this);
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(allowButton);
+        buttonPanel.add(denyButton);
+        buttonPanel.setBackground(bgColor);
+                
+        panel.add(tf, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.PAGE_END);
+        panel.setBackground(bgColor);
+        
+        content = getContentPane();
+        content.setBackground(bgColor);
+        content.setLayout(new BorderLayout());
+        content.setSize(new Dimension(200, 100));
+        
+        content.add(panel);
+        
+
+    }//showPrompt
+
+    public void actionPerformed(ActionEvent e) {
+        String action = e.getActionCommand().toUpperCase();
+        
+        if (action.equals("ALLOW")) {
+            //clear components and add table
+            content.removeAll();
+            createDisplay();
+            
+            try {
+                File promptedFile = new File(PROMPTED_FILE);
+                promptedFile.createNewFile();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            
+        } else if (action.equals("DENY")) {
+            // do nothing
+            
+        }
+    }//actionPerformed
+        
+        
+    private void createDisplay() {
+        //id = manager.registerApplet();
+        
         // Get the base web host url which will be used to get the temporary password
         String documentBase = getDocumentBase().toString();
         
@@ -229,6 +258,7 @@ public class UploadApplet extends JApplet implements AppletConstant {
         // go ahead and set the account instance, even if values are null
         // will prompt for user input at end of init method
         Account account = new Account(TEMP_PASSWORD_SERVICE_URL, ruri, sessionId);
+        logger.log("UploadApplet.getDefaultResource() : " + account.getDefaultResource());
         
         // create GUI
         Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
@@ -251,7 +281,7 @@ public class UploadApplet extends JApplet implements AppletConstant {
         tabbedPane.add("Options", optionsPanel); // UploadOptions Panel
         
         content.add(tabbedPane);
-        manager.registerApplet();
+        tabbedPane.updateUI();
 
         /**
          * Compare queue and uploaded log files to determine if any files were not uploaded from last session.
@@ -261,35 +291,20 @@ public class UploadApplet extends JApplet implements AppletConstant {
          * 4. Else, determine which files need to be added to the table for uploading
          * 
          **/
-        List queueList = manager.recoverQueue();
         
+        List queueList = new DBUtil().getUnassigned();
         if (queueList != null) {
-            // open a new tab and ask user if they would like to load files from previous session
-            // if yes, load files and prompt user for password for each distinct RURI, if password is not found in Hashmap
             model.addFile(queueList);
-            
-        }//if
+        }
         
-        // prompt for password, if needed
-        /* Need to figure if this is even neccessary anymore
-         * IDEA was to prompt user for a password if the password for the RURI key was not found in the hashmap
-         * Take out for now:
-         *
-        if (account.getPassword(ruri) == null && account.getSessionId() == null) {
-            // prompt user for password for the specific RURI excluding the destination path
-            // convert user input into char array
-            String inputValue = JOptionPane.showInputDialog(content, "Please enter your password for " + account.scrubPasswordFromRuri() + "  .");
-            
-            if (inputValue != null && !inputValue.trim().equals("")) {
-                char[] password = inputValue.toCharArray();
-                account.setPassword(ruri, password);
-            }
+        // set queueList to assigned
+        new DBUtil().setAssigned(queueList);
         
-        }//if
-        */
-        
-    }//init
-
+    }
+    
+    public long getId() {
+        return id;
+    }
     
     public void start() {
     }
@@ -299,8 +314,21 @@ public class UploadApplet extends JApplet implements AppletConstant {
     }
     
     public void destroy() {
-        manager.unregisterApplet();
-    }
+        new DBUtil().removeUploaded();
+        int rowCount = model.getRowCount();
+        List itemList = new ArrayList();
+        
+        for (int k = 0; k < rowCount; k++) {
+            String source = ((JTextField) model.getValueAt(k, SOURCE_COLUMN)).getText();
+            String destination = ((JTextField) model.getValueAt(k, DESTINATION_COLUMN)).getText();
+            String resource = ((JTextField) model.getValueAt(k, RESOURCE_COLUMN)).getText();
+            
+            UploadItem item = new UploadItem(source, destination, resource);
+            itemList.add(item);
+        }
+        
+        new DBUtil().updateAssigned(itemList, false);
+    }//destroy
     
     
 
