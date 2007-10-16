@@ -33,33 +33,47 @@ class RODSAcctManager
     return $this->cur_acct;  
   }
   
-  public function findAcct($newacct)
+  public function findAcct(RODSAccount $newacct)
   {
-    foreach($this->accts as $acct)
+    $index=$this->findAcctIndex($newacct);
+    
+    //echo ("index=$index\n");
+    if ($index<0)
+      return NULL;
+    else
     {
-      if (true===$newacct->equals($acct))
+      return $this->accts[$index];
+    }
+  }
+  
+  public function findAcctIndex(RODSAccount $newacct)
+  {
+    for($i=0; $i<count($this->accts); $i++ )
+    {
+      $acct=$this->accts[$i];
+      if (true==$newacct->equals($acct))
       {
         $this->cur_acct=$acct;  
-        return $acct;
+        return $i;
       }
     }
-    return NULL;  
+    return -1;  
   }
   
   // update account information.
-  public function updateAcct($newacct)
+  public function updateAcct(RODSAccount $newacct)
   {
-    $oldacct=$this->findAcct($newacct);
-    if ($oldacct!=NULL)
+    $oldacct_index=$this->findAcctIndex($newacct);
+    if ($oldacct_index>=0)
     {
       if (!empty($newacct->pass))
       {
-        $oldacct->pass=$newacct->pass;
+        $this->accts[$oldacct_index]->pass=$newacct->pass;
       }
       
       if (!empty($newacct->zone))
       {
-        $oldacct->zone=$newacct->zone;
+        $this->accts[$oldacct_index]->zone=$newacct->zone;
       }
     }
     else
