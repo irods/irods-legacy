@@ -184,6 +184,59 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
 }
 
 
+int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
+				msParam_t *outValueParam, ruleExecInfo_t *rei)
+{
+
+
+  int j;
+  regex_t preg[2];
+  regmatch_t pm[2];
+  char errbuff[100];
+  char *pstr[2];
+  char *t1, *t2, *t3, *t4;
+  char c;
+  
+  t1 = (char *) inStrParam->inOutStruct;
+  pstr[0] = (char *) malloc(strlen(inTagParam->inOutStruct) + 6 );
+  pstr[1] = (char *) malloc(strlen(inTagParam->inOutStruct) + 6 );
+  sprintf(pstr[0], "<%s>", (char *) inTagParam->inOutStruct);
+    j = regcomp (&preg[0], pstr[0], REG_EXTENDED);
+    if (j != 0) {
+      regerror (j,&preg[0],errbuff,sizeof(errbuff)); 
+      rodsLog (LOG_NOTICE,"msiGetTaggedValueFromString: Error in regcomp: %s\n",errbuff);
+      return(INVALID_REGEXP);
+    }
+    sprintf(pstr[1], "</%s>", (char *) inTagParam->inOutStruct);
+    j = regcomp (&preg[1], pstr[1], REG_EXTENDED);
+    if (j != 0) {
+      regerror (j,&preg[1],errbuff,sizeof(errbuff)); 
+      rodsLog (LOG_NOTICE,"msiGetTaggedValueFromString: Error in regcomp: %s\n",errbuff);
+      return(INVALID_REGEXP);
+    }
+    rodsLog (LOG_NOTICE,"TTTTT:%s",t1);
+    if (regexec(&preg[0], t1,1,&pm[0],0) == 0) {
+      t2 = t1 + pm[0].rm_eo ;                     /* t2 starts value */
+      if (regexec(&preg[1],t2,1,&pm[1],0) != 0)
+	fillMsParam( outValueParam, NULL, STR_MS_T, "", NULL );
+      else {
+	t4 = t2+ pm[1].rm_so;                       /* t4 ends value */
+	t3 = t2+ pm[1].rm_eo;
+	c = *t4;
+	*t4 = '\0';
+	fillMsParam( outValueParam, NULL, STR_MS_T, t2, NULL );
+	*t4 = c;
+      }
+    }
+    else
+      fillMsParam( outValueParam, NULL, STR_MS_T, "", NULL );
+    regfree(&preg[0]);
+    regfree(&preg[1]);
+    free(pstr[0]);
+    free(pstr[1]);
+    return(0);
+}
+
 int
 msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam, 
 			   msParam_t *metadataParam, ruleExecInfo_t *rei)
