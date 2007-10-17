@@ -1,3 +1,3 @@
-myTestRule||msiExecCmd(*A,*B,,,,*C)|nop
-*A=getErrorStr%*B=806000
-*C
+myTestRule||msiGetQuote(*A,*B)|nop
+*A=$ORCL
+*A%*B
