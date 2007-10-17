@@ -70,7 +70,8 @@ int msiReadMDTemplateIntoTagStruct(msParam_t* sOP, msParam_t* tSP, ruleExecInfo_
 int msiFreeBuffer(msParam_t* memP, ruleExecInfo_t *rei);
 int msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t *rei);
 
-
+int msiGetTaggedValueFromString(msParam_t *inTagParag, msParam_t *inStrParam,
+				msParam_t *outValueParam, ruleExecInfo_t *rei);
 int recover_print_hello(ruleExecInfo_t *c);
 
 int recover_msiCreateUser(ruleExecInfo_t *rei);
@@ -170,3 +171,4 @@ microsdef_t MicrosTable[] = {
   {"msiSetRandomScheme",0,(funcPtr) msiSetRandomScheme},
   {"msiCheckHostAccessControl",0,(funcPtr) msiCheckHostAccessControl},
   {"msiGetIcatTime",2,(funcPtr) msiGetIcatTime},
+  {"msiGetTaggedValueFromString",3,(funcPtr) msiGetTaggedValueFromString},
