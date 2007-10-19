@@ -272,6 +272,15 @@ abstract class ProdsPath
   } 
   
  /**
+  * Get string form of this path. note that this is the full path. 
+  * @return string form of the path.
+  */
+  public function getPath()
+  {
+    return $this->path_str;
+  }
+  
+ /**
   * Get parent's path of this path. 
   * @return string parent's path.
   */
