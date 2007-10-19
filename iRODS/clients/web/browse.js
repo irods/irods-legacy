@@ -46,13 +46,152 @@ function renderName(value, p, record){
 }
 
 function renderFmtSize(value,p,record){
-   return record.data['fmtsize'];
+  if ( (!value)||(value<0) )
+    return '';
+    
+  var rawSize=value;
+  if (rawSize / 1099511627776 > 1) 
+    return Math.round(rawSize*100/1099511627776)/100 + ' TB';
+  else if (rawSize / 1073741824 > 1) 
+    return Math.round(rawSize*100/1073741824)/100 + ' GB';  
+  else 
+  if (rawSize / 1048576 > 1) 
+    return Math.round(rawSize*100/1048576)/100 + ' MB'; 
+  else if (rawSize / 1024 > 1) 
+    return Math.round(rawSize*100/1024)/100 + ' KB'; 
+  else 
+    return rawSize + ' B ';
 }
+
 function renderTime(value){
   try {
     return value.dateFormat('F j, Y, g:i a');
   } catch (e) {
     return 'Invalid Time';
+  }
+}
+
+function jsonErrorResponseHandler(conn, r, options) {
+  
+  try {
+    var response = Ext.util.JSON.decode(r.responseText);
+  	if (response && response.success == false) {
+  		Ext.Msg.alert("Error", response.errmsg);
+  	}
+  } catch (e) {
+    alert("Invalid server response:"+r.responseText+'<br/>Exception:'+e);
+  }   
+	
+}
+
+function generalRODSHttpRequestHandler(options,success,response)
+{
+  if (options.first_calback)
+    options.first_calback();
+  
+  if (success!=true)
+  {
+    alert("HTTP error ("+response.status+"): "+response.statusText);
+  }
+  else
+  {   
+    try {
+      var response = Ext.util.JSON.decode(response.responseText);
+    } catch (e) {
+      alert("Invalid server response:"+response.responseText+'<br/>Exception:'+e);
+      return;
+    }   
+    	
+    if (response && response.success == false) {
+      Ext.Msg.alert("Error "+response.errcode+" :", response.errmsg);
+    }
+    else
+    {
+      if (options.success_calback)
+      {
+        Ext.callback(options.success_calback, options.scope);
+      }
+    }
+      
+  }  
+}
+    
+function RODSResourceBox()
+{
+  return {
+    init: function(init_ruri)
+    {  
+      this.resources = new Ext.data.Store({
+          proxy: new Ext.data.HttpProxy({
+              url: 'services/serverQuery.php?action=resources'
+          }),
+          
+          // create reader that reads the Topic records
+          reader: new Ext.data.JsonReader({
+              successProperty: 'success',
+              root: 'que_results',
+              totalProperty: 'totalCount',
+              id: 'id'
+          }, [
+              {name: 'id', mapping: 'id'},
+              {name: 'name', mapping: 'name'},
+              {name: 'type', mapping: 'type'},
+              {name: 'zone', mapping: 'zone'},
+              {name: 'class', mapping: 'class'},
+              {name: 'loc', mapping: 'loc'},
+              {name: 'info', mapping: 'info'},
+              {name: 'comment', mapping: 'comment'},
+              {name: 'vault_path', mapping: 'vault_path'},
+              {name: 'free_space', mapping: 'free_space'},
+              {name: 'ctime', mapping: 'ctime', type: 'date', dateFormat: 'timestamp'},
+              {name: 'mtime', mapping: 'mtime', type: 'date', dateFormat: 'timestamp'}
+          ]),
+    
+          // turn off remote sorting
+          remoteSort: false
+      });
+      
+      this.ruri=init_ruri.substring(0,init_ruri.indexOf('/'));
+      
+      this.resources.on('beforeload', function() {
+        this.resources.baseParams = {'ruri': this.ruri};
+      }, this);
+      
+      this.resources.proxy.getConnection().
+        on('requestcomplete', jsonErrorResponseHandler);
+      
+      this.box = new Ext.form.ComboBox({
+               fieldLabel: 'Resource',
+               store: this.resources, 
+               displayField:'name',
+               valueFiled: 'name',
+               emptyText:'Select a Resource...',
+               selectOnFocus:true,
+               allowBlank:false,
+               hiddenName: 'resource',
+               triggerAction: 'all',
+               forceSelection:true
+      });
+      
+      this.box.store.on("load",function(store){
+        this.clearValue();
+        this.setValue(store.getAt(0).data.name);
+      },this.box);
+      
+      this.box.store.load();
+    }, //end of function init
+    
+    // update RURI, and reload, if needed.
+    updateRURI: function (new_ruri)
+    {
+      var newacct=new_ruri.substring(0,new_ruri.indexOf('/'));
+        
+      if (this.ruri!=newacct) // if acct has changed
+      {
+        this.ruri=newacct;
+        this.resources.load();
+      }
+    }
   }
 }
 
@@ -530,19 +669,6 @@ function RODSMetadataGrid()
 {
   var gridpanel, grid, grid_view, ds, num_newrows;
   
-  function jsonErrorResponseHandler(conn, r, options) {
-    
-    try {
-      var response = Ext.util.JSON.decode(r.responseText);
-    	if (response && response.success == false) {
-    		Ext.Msg.alert("Error", response.errmsg);
-    	}
-    } catch (e) {
-      alert("Invalid server response:"+r.responseText+'<br/>Exception:'+e);
-    }   
-  	
-  }
-  
   return {
     init : function(grid_container) {  
       this.num_newrows=0;
@@ -673,8 +799,9 @@ function RODSMetadataGrid()
       toolbar.add(
         {
           icon: "images/add.png",
+          text: "Add",
           tooltip: 'Add a new metadata entry',
-          cls: 'x-btn-icon',
+          cls: 'x-btn-text-icon',
           scope: this,
           handler : function(){
             var p = new MetadataRecord({
@@ -693,8 +820,9 @@ function RODSMetadataGrid()
         '-',
         {
           icon: "images/delete.png",
-          tooltip: 'Delete an entry',
-          cls: 'x-btn-icon',
+          text: "Remove",
+          tooltip: 'Remove an entry',
+          cls: 'x-btn-text-icon',
           scope: this,
           handler : function(){
             var selected_rec=this.grid.getSelectionModel().getSelected();
@@ -734,16 +862,18 @@ function RODSMetadataGrid()
         '-',
         {
           icon: "images/arrow_refresh_small.png",
+          text: "Reload",
           tooltip: 'Reload and discard all changes',
-          cls: 'x-btn-icon',
+          cls: 'x-btn-text-icon',
           scope: this,
           handler: this.refresh
         }, 
         '-',
         {
           icon: "images/disk.png",
+          text: "Save",
           tooltip: 'Save all changes',
-          cls: 'x-btn-icon',
+          cls: 'x-btn-text-icon',
           scope: this,
           handler : function(){
             var rec_report='';
@@ -913,14 +1043,22 @@ function RODSFileViewer()
             handler: this.openFile
                     }); 
         
+        this.createReplGridPanel();
+        
         this.tab_main=this.layout.add('center', new Ext.ContentPanel('fileviewer-tab-main', {title: 'overview'}));
         // generate some other tabs
-        this.metagrid.gridpanel.setTitle('metadata');
+        //this.metagrid.gridpanel.setTitle('metadata');
         
         this.tab_meta=this.layout.add('center', this.metagrid.gridpanel);
         this.tab_meta.on('activate', function() {
             this.metagrid.load(this.ruri,1);  
           }, this);
+        
+        this.tab_repl=this.layout.add('center', this.replGridpanel);
+        this.tab_repl.on('activate', function() {
+            this.repl_ds.load({params:{ruri:this.ruri}});  
+          }, this);  
+          
         this.tab_more=this.layout.add('center', new Ext.ContentPanel('fileviewer-tab-more', {title: 'More'}));  
         this.layout.endUpdate(); 
 	      
@@ -1032,9 +1170,285 @@ function RODSFileViewer()
       var currenturlpath=currenturl.substring(0,currenturl.lastIndexOf('/'));
       var permalink=currenturlpath+'/rodsproxy/'+this.ruri;
       return permalink;
-    }
+    },
       
+    createReplGridPanel : function()
+    {
+      // the column model has information about grid columns
+      // dataIndex maps the column to the specific data field in
+      // the data store (created below)
+      var cm = new Ext.grid.ColumnModel([{
+             id: "repl_grid_col_replnum",
+             header: "#",
+             dataIndex: 'repl_num',
+             width: 50,
+             css: 'white-space:normal;'
+          },{
+             header: "Chksum",
+             dataIndex: 'chk_sum',
+             width: 100,
+             hidden: true
+          },{
+             id: "repl_grid_col_rescname",
+             header: "Resource",
+             dataIndex: 'resc_name',
+             width: 100
+          },{
+             header: "Resc Group",
+             dataIndex: 'resc_grp_name',
+             width: 100,
+             hidden: true 
+          },{
+             header: "Type",
+             dataIndex: 'resc_type',
+             width: 100,
+             hidden: true 
+          },{  
+             header: "Class",
+             dataIndex: 'resc_class',
+             width: 100,
+             hidden: true      
+          },{
+             header: "Location",
+             dataIndex: 'resc_loc',
+             width: 100,
+             hidden: true      
+          },{
+             header: "Freespace",
+             dataIndex: 'resc_freespace',
+             width: 100,
+             hidden: true      
+          },{
+             header: "Size",
+             dataIndex: 'size',
+             width: 50,
+             renderer: renderFmtSize,
+             align: 'right'
+          },{
+             header: "Date Created",
+             dataIndex: 'ctime',
+             width: 150,
+             renderer: renderTime,
+             align: 'right',
+             hidden: true 
+          },{
+             header: "Up-to-date",
+             dataIndex: 'resc_repl_status',
+             width: 100,
+             renderer: function (value,p,record){
+               if (record.data['resc_repl_status']==0)
+                 return '<div style="color:red">No</div>';
+               else
+               if (record.data['resc_repl_status']==1)
+                 return '<div style="color:green">Yes</div>';
+               else
+                 return ''+record.data['resc_repl_status'];    
+             },
+             align: 'right'
+          },{
+             header: "Date Modified",
+             dataIndex: 'mtime',
+             width: 200,
+             renderer: renderTime,
+             align: 'right'
+          }]);
+      
+      // by default columns are sortable
+      cm.defaultSortable = true;
+      
+      // create the Data Store
+      this.repl_ds = new Ext.data.Store({
+          proxy: new Ext.data.HttpProxy({
+              url: 'services/fileQuery.php?action=replica'
+          }),
+          
+          // create reader that reads the Topic records
+          reader: new Ext.data.JsonReader({
+              successProperty: 'success',
+              root: 'que_results',
+              totalProperty: 'totalCount'
+          }, [
+              {name: 'repl_num', mapping: 'repl_num', type: 'int'},
+              {name: 'chk_sum', mapping: 'chk_sum'},
+              {name: 'resc_name', mapping: 'resc_name'},
+              {name: 'resc_repl_status', mapping: 'resc_repl_status', type: 'int'},
+              {name: 'resc_grp_name', mapping: 'resc_grp_name'},
+              {name: 'resc_type', mapping: 'resc_type'},
+              {name: 'resc_class', mapping: 'resc_class'},
+              {name: 'resc_loc', mapping: 'resc_loc'},
+              {name: 'resc_freespace', mapping: 'resc_freespace', type: 'int'},
+              {name: 'data_status', mapping: 'data_status'},
+              {name: 'size', mapping: 'size', type: 'int'},
+              {name: 'ctime', mapping: 'ctime', type: 'date', dateFormat: 'timestamp'},
+              {name: 'mtime', mapping: 'mtime', type: 'date', dateFormat: 'timestamp'}
+          ]),
+
+          // turn on remote sorting
+          remoteSort: false
+      });
+      
+      this.repl_ds.proxy.getConnection().on('requestcomplete', jsonErrorResponseHandler);
+      
+      // create the replica list grid
+      this.repl_grid = new Ext.grid.Grid('fileviewer-tab-repl-grid', {
+          ds: this.repl_ds,
+          cm: cm,
+          loadMask: true,
+          selModel: new Ext.grid.RowSelectionModel({singleSelect:true}),
+          enableColLock:false,
+          autoWidth:true,
+          autoExpandColumn:'repl_grid_col_rescname'
+      });
+      
+      // render it
+      this.repl_grid.render();
+      
+      var gridHead = this.repl_grid.getView().getHeaderPanel(true);
+      var headerToolbar = new Ext.Toolbar(gridHead);
+      headerToolbar.add({ 
+         icon: "images/add.png",
+         text: 'Replicate',
+         tooltip: 'Replicate to Additional Resource',
+         cls: 'x-btn-text-icon',
+         scope: this,
+         handler: this.showReplDialog
+        }, '-',
+        { 
+         icon: "images/delete.png",
+         text: 'Remove Selected',
+         tooltip: 'Remove selected copy from its resource',
+         cls: 'x-btn-text-icon',
+         scope: this,
+         handler: this.removeReplHandler
+        }, '-',
+        { 
+         icon: "images/arrow_refresh_small.png",
+         text: 'Refresh List',
+         tooltip: 'Remove list of copies',
+         cls: 'x-btn-text-icon',
+         scope: this,
+         handler: function(){
+           this.repl_ds.reload();
+         }
+        }
+        
+      );
+      
+      this.replGridpanel = new Ext.GridPanel(this.repl_grid, 
+        {autoCreate: true, fitToFrame: true, autoScroll: true,
+         title: 'Copies'} );
+    }, // end of method RODSFileViewer::createReplGridPanel
     
+    removeReplHandler: function(btn)
+    {
+      if (this.repl_ds.getCount()<2)
+      {
+        Ext.MessageBox.alert('Failed to remove backup', 
+          'There has to be at least one copy for each file');
+        return;
+      }
+      
+      var selMod=this.repl_grid.getSelectionModel();
+      if (selMod.getCount()<1)
+      {
+        Ext.MessageBox.alert('Failed to remove backup', 
+          'You must select a copy to remove');
+        return;
+      }
+      var selectedResc=selMod.getSelected().get('resc_name');
+      
+      Ext.MessageBox.wait('Removing backup in progress', 'Please wait');
+      
+      var conn=new Ext.data.Connection();
+      var myparams={ruri: this.ruri,'resource': selectedResc};
+      conn.request({url: 'services/repl.php?action=remove', 
+        params: myparams, scope: this,
+        callback:generalRODSHttpRequestHandler,
+        //this property is used by generalRODSHttpRequestHandler
+        //this function is called only if everything goes well
+        success_calback: function(){
+          this.repl_ds.reload();
+        },
+        //this property is used by generalRODSHttpRequestHandler
+        //this function is called regardless of the state.
+        first_calback: function(){
+          Ext.MessageBox.hide();
+        }
+      });
+    },
+    
+    showReplDialog: function(btn)
+    {
+      if (this.replDialog==null)
+      {
+     	  this.replForm = new Ext.form.Form({
+          labelWidth: 100, // label settings here cascade unless overridden
+          url:'services/repl.php?action=add',
+          timeout: 10
+        });
+        
+        this.rescBox=new RODSResourceBox();
+        this.rescBox.init(this.ruri);
+        
+        this.replForm.add(
+          this.rescBox.box
+        );
+       
+        this.replForm.end();
+        this.replForm.render('repl-dlg-bd-form');
+        
+        this.replForm.on("actionfailed", function(form, action) {
+          Ext.MessageBox.hide();
+          if (action.result)
+          {
+            var errcode='';
+            if (action.result.errcode!=null)
+              errcode=action.result.errcode;
+            Ext.MessageBox.alert('Failure:'+errcode, action.result.errmsg);
+          }
+          else
+          {
+            Ext.MessageBox.alert('Failure:', 
+              'Replication request failed with unknown reasons...');
+          }
+        }, this);
+        
+        this.replForm.on("actioncomplete", function(form, action) {
+          Ext.MessageBox.hide();
+          this.replDialog.hide();
+          this.repl_ds.reload();
+        }, this);
+       
+        this.replDialog=new Ext.BasicDialog("repl-dlg", {
+          height: 130,
+          width: 400,
+          minHeight: 100,
+          minWidth: 150,
+          modal: true,
+          proxyDrag: true,
+          buttonAlign: "center",
+          shadow: true
+        });
+        
+        this.replDialog.on('beforeshow',function(){
+          this.rescBox.updateRURI(this.ruri);
+          return true;
+        }, this);
+        
+        this.replDialog.addKeyListener(27, this.replDialog.hide, this.replDialog); // ESC can also close the dialog
+        this.replDialog.addButton('OK', function(){
+          if (true==this.replForm.isValid()) 
+          {
+            Ext.MessageBox.wait('Replication in progress', 'Please wait');
+            this.replForm.baseParams = {'ruri': this.ruri};
+            this.replForm.submit();
+          }
+        }, this);    // Could call a save function instead of hiding
+        this.replDialog.addButton('Cancel', this.replDialog.hide, this.replDialog);
+      }
+      
+      this.replDialog.show(btn.getEl());
+    }
   }; //end of RODSFileViewer's reuturn  
 } //end of RODSFileViewer
     
@@ -1756,68 +2170,6 @@ function RodsBrowser(inipath, _ssid)
 	      }
       }
       
-      function makeResourceBox()
-      {
-        var resources = new Ext.data.Store({
-            proxy: new Ext.data.HttpProxy({
-                url: 'services/serverQuery.php?action=resources'
-            }),
-            
-            // create reader that reads the Topic records
-            reader: new Ext.data.JsonReader({
-                successProperty: 'success',
-                root: 'que_results',
-                totalProperty: 'totalCount',
-                id: 'id'
-            }, [
-                {name: 'id', mapping: 'id'},
-                {name: 'name', mapping: 'name'},
-                {name: 'type', mapping: 'type'},
-                {name: 'zone', mapping: 'zone'},
-                {name: 'class', mapping: 'class'},
-                {name: 'loc', mapping: 'loc'},
-                {name: 'info', mapping: 'info'},
-                {name: 'comment', mapping: 'comment'},
-                {name: 'vault_path', mapping: 'vault_path'},
-                {name: 'free_space', mapping: 'free_space'},
-                {name: 'ctime', mapping: 'ctime', type: 'date', dateFormat: 'timestamp'},
-                {name: 'mtime', mapping: 'mtime', type: 'date', dateFormat: 'timestamp'}
-            ]),
-  
-            // turn off remote sorting
-            remoteSort: false
-        });
-        
-        resources.on('beforeload', function() {
-          this.baseParams = {'ruri': rpath_grid};
-        });
-        
-        resources.proxy.getConnection().
-          on('requestcomplete', jsonErrorResponseHandler);
-        
-        var resource_box = new Ext.form.ComboBox({
-                 fieldLabel: 'Resource',
-                 store: resources, 
-                 displayField:'name',
-                 valueFiled: 'name',
-                 emptyText:'Select a Resource...',
-                 selectOnFocus:true,
-                 allowBlank:false,
-                 hiddenName: 'resource',
-                 triggerAction: 'all',
-                 forceSelection:true
-        });
-        
-        resource_box.store.on("load",function(store){
-          this.clearValue();
-          this.setValue(store.getAt(0).data.name);
-        },resource_box);
-        
-        resource_box.store.load();
-        
-        return resource_box;
-      }
-      
       function showUploadDialog(btn)
       {
         if (upload_dialog==null)
@@ -1830,7 +2182,8 @@ function RodsBrowser(inipath, _ssid)
             baseParams: {ruri: rpath_grid}
           });
           
-          var myRescBox=makeResourceBox();
+          var myRescBox=new RODSResourceBox();
+          myRescBox.init(rpath_grid);
           
           uploadForm.add(
             new Ext.form.TextField({
@@ -1842,7 +2195,7 @@ function RodsBrowser(inipath, _ssid)
                selectOnFocus: true, 
                allowBlank:false
             }),
-            myRescBox
+            myRescBox.box
           );
          
          uploadForm.end();
@@ -1863,19 +2216,7 @@ function RodsBrowser(inipath, _ssid)
           upload_dialog.resourcebox=myRescBox;
           
           upload_dialog.on('beforeshow',function(){
-            var cur_acct=rpath_grid.substring(0,rpath_grid.indexOf('/'));
-            if (!this.ruri_acct)
-              this.ruri_acct=cur_acct;
-            else
-            if (this.ruri_acct!=cur_acct) // if acct has changed
-            {
-              this.resourcebox.store.reload();
-              this.ruri_acct=cur_acct;
-            }
-            else
-            {
-              //do nothing if acct hasn't changed 
-            }
+            this.resourcebox.updateRURI(rpath_grid);
             return true;
           });
           
@@ -1980,7 +2321,8 @@ function RodsBrowser(inipath, _ssid)
             url:'new-file.php'
           });
           
-          var myRescBox=makeResourceBox();
+          var myRescBox=new RODSResourceBox();
+          myRescBox.init(rpath_grid);
           
           newFileForm.add(
             new Ext.form.TextField({
@@ -1991,7 +2333,7 @@ function RodsBrowser(inipath, _ssid)
                selectOnFocus: true, 
                allowBlank:false
             }),
-            myRescBox
+            myRescBox.box
           );
          
          newFileForm.end();
@@ -2012,19 +2354,7 @@ function RodsBrowser(inipath, _ssid)
           new_file_dialog.resourcebox=myRescBox;
           
           new_file_dialog.on('beforeshow',function(){
-            var cur_acct=rpath_grid.substring(0,rpath_grid.indexOf('/'));
-            if (!this.ruri_acct)
-              this.ruri_acct=cur_acct;
-            else
-            if (this.ruri_acct!=cur_acct) // if acct has changed
-            {
-              this.resourcebox.store.reload();
-              this.ruri_acct=cur_acct;
-            }
-            else
-            {
-              //do nothing if acct hasn't changed 
-            }
+            this.resourcebox.updateRURI(rpath_grid);
             return true;
           });
           

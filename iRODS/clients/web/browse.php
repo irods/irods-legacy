@@ -132,13 +132,26 @@
             style="padding:10px;">
              
         </div>
+        
         <div id="fileviewer-tab-meta" class="x-layout-inactive-content" 
             style="padding:10px;"></div>
         <div id= "fileviewer-tab-meta-grid">Metadata</div> 
+        
+        <div id="fileviewer-tab-repl" class="x-layout-inactive-content" 
+            style="padding:10px;"> </div>
+        <div id= "fileviewer-tab-repl-grid">Replicas</div> 
+        
         <div id="fileviewer-tab-more" class="x-layout-inactive-content" 
             style="padding:10px;">
             Under developement 
         </div>
+    </div>
+  </div>
+  
+  <div id="repl-dlg" style="visibility:hidden;">
+    <div id= "repl-dlg-hd" class="x-dlg-hd">Replicate to following resource</div>
+    <div id= "repl-dlg-bd" class="x-dlg-bd" style="padding:10px;background:#c4d2e3;border:0 none;">
+      <div id= "repl-dlg-bd-form"></div>     
     </div>
   </div>
   
