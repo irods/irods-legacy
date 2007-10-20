@@ -155,6 +155,14 @@
     </div>
   </div>
   
+  <div id="repl-bulk-dlg" style="visibility:hidden;">
+    <div id= "repl-bulk-dlg-hd" class="x-dlg-hd">Replicate files/collections to resource</div>
+    <div id= "repl-bulk-dlg-bd" class="x-dlg-bd" style="padding:10px;background:#c4d2e3;border:0 none;">
+      <div id= "repl-bulk-dlg-bd-desc" style="padding:10px;"></div>
+      <div id= "repl-bulk-dlg-bd-form" style="padding:10px;"></div>     
+    </div>
+  </div>
+  
   <div id="new-file-dlg" style="visibility:hidden;">
     <div id= "new-file-dlg-hd" class="x-dlg-hd">Create New File</div>
     <div id= "new-file-dlg-bd" class="x-dlg-bd" style="padding:10px;background:#c4d2e3;border:0 none;">

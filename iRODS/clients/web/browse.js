@@ -2062,12 +2062,19 @@ function RodsBrowser(inipath, _ssid)
           text:'More ...',
           menu: {
             items:[
-              {  // "new collection" menu item
+              {  
                 text: 'Metadata',
                 icon: 'images/table.png',
                 cls: 'x-btn-text-icon blist',
                 scope: this,
                 handler: showMetadataDialog
+              },
+              {  
+                text: 'Replicate',
+                icon: 'images/disk_multiple.png',
+                cls: 'x-btn-text-icon blist',
+                scope: this,
+                handler: showReplBulkDialog
               }
             ]
           }
@@ -2377,6 +2384,114 @@ function RodsBrowser(inipath, _ssid)
              	animEl: btn.getEl(),
              	fn: mkdirHandler
         });    
+      }
+      
+      function showReplBulkDialog(btn)
+      {
+        if (this.replDialog==null)
+        {
+       	  this.replForm = new Ext.form.Form({
+            labelWidth: 100, // label settings here cascade unless overridden
+            timeout: 10
+          });
+          
+          this.replRescBox=new RODSResourceBox();
+          this.replRescBox.init(rpath_grid);
+          
+          this.replForm.add(
+            this.replRescBox.box
+          );
+         
+          this.replForm.end();
+          this.replForm.render('repl-bulk-dlg-bd-form');
+          
+          this.replDialog=new Ext.BasicDialog("repl-bulk-dlg", {
+            height: 270,
+            width: 400,
+            minHeight: 100,
+            minWidth: 150,
+            modal: true,
+            proxyDrag: true,
+            buttonAlign: "center",
+            shadow: true
+          });
+          
+          this.replDialog.on('beforeshow',function(){
+            this.replRescBox.updateRURI(rpath_grid);
+            return true;
+          }, this);
+          
+          this.replDialog.addKeyListener(27, this.replDialog.hide, this.replDialog); // ESC can also close the dialog
+          this.replDialog.addButton('OK', function(btn){
+            var sm = grid.getSelectionModel();
+            var records=sm.getSelections();
+            var files=new Array();
+            var dirs=new Array();
+            for (var i=0; i<records.length; i++)
+            {
+              if (records[i].data['type']==0) 
+                dirs.push(records[i].data['ruri']);
+              else
+                files.push(records[i].data['ruri']);
+            }
+            
+            this.replDialog.hide();
+            
+            Ext.MessageBox.wait('Schedule replication in progress', 
+              'Please wait...');
+            
+            var conn=new Ext.data.Connection();
+            var myparams={'ruri': rpath_grid, 
+              'files[]': files, 'dirs[]': dirs, 
+              'resc': this.replRescBox.box.getValue()};
+            conn.request({url: 'services/replBulk.php', 
+              params: myparams, scope: this,
+              callback:generalRODSHttpRequestHandler,
+              //this property is used by generalRODSHttpRequestHandler
+              //this function is called only if everything goes well
+              success_calback: function(){
+                
+              },
+              //this property is used by generalRODSHttpRequestHandler
+              //this function is called regardless of the state.
+              first_calback: function(){
+                Ext.MessageBox.hide();
+              }});
+          }, this);    
+          this.replDialog.addButton('Cancel', this.replDialog.hide, this.replDialog);
+        }
+        
+        var sm = grid.getSelectionModel();
+        var records=sm.getSelections();
+        if (records.length>0)
+        {
+          var list = '';
+          var numfile=0, numcoll=0;
+          for (var i=0; i<records.length; i++)
+          {
+            if (i<5)
+            {
+              var itemname=records[i].data['name'];
+              if (records[i].data['type']==0)
+                itemname=itemname+'/';
+              list=list+'&nbsp;&nbsp;&nbsp;&nbsp;'+itemname+'<br/>';
+            }
+            if (records[i].data['type']==0) 
+              numcoll++;
+            else
+              numfile++;
+          }
+          if (records.length>5)
+            list=list+'&nbsp;&nbsp;&nbsp;&nbsp;... <br/>';
+          
+          var dialog_msg='<b>Schedule replications for the following '+numfile+
+               '  files and '+numcoll+' collections?</b> <br/>'+list;  
+          
+          var el=Ext.get("repl-bulk-dlg-bd-desc");
+          el.update(dialog_msg);
+          
+          this.replDialog.show(btn.getEl());
+        }
       }
       
       function mkdirHandler(btn, dirname)
