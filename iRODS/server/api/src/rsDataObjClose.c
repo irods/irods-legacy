@@ -278,6 +278,8 @@ _rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
 
 	if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
 	    addKeyVal (&regParam, ALL_REPL_STATUS_KW, tmpStr);
+            snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
+            addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
 	} else {
             snprintf (tmpStr, MAX_NAME_LEN, "%d", NEWLY_CREATED_COPY); 
              addKeyVal (&regParam, REPL_STATUS_KW, tmpStr);
