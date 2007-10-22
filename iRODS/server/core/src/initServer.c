@@ -1405,7 +1405,11 @@ logFileOpen (int runMode, char *logDir, char *logFileName)
         return (1);
     }
 
+#if 0
     if (logDir == NULL || logFileName == NULL) {
+#endif
+    if (logFileName == NULL) {
+        fprintf (stderr, "logFileOpen: NULL input logFileName\n");
 	return SYS_INTERNAL_NULL_INPUT_ERR;
     }
 
