@@ -168,10 +168,9 @@ computeExpression( char *expr, ruleExecInfo_t *rei, int reiSaveFlag , char *res)
      return(TRUE);
    }
    k++;
-   rodsLog (LOG_NOTICE,"before_cE %-*s expr1=%s expr2=%s oper=%s expr=%s \n",2*k," ",expr1,expr2,oper1,expr);
 
    i  = _computeExpression(expr1,expr2,oper1,rei,reiSaveFlag, res );
-   rodsLog (LOG_NOTICE,"aftef_rcE %-*s expr1=%s expr2=%s oper=%s status = %i res=%sEND\n",2*k," ",expr1,expr2,oper1,i,res);
+
    k--;
    if (i < 0)
      strcpy(res,expr);

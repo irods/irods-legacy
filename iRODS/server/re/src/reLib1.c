@@ -681,9 +681,9 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
     inAction = strdup("");
   }
 
-
+  /*
   rodsLog(LOG_NOTICE,"PPP:%s::%s::%s::%s\n",inAction,ruleCondition,ruleAction,ruleRecovery);
-  
+  */
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
     return(i);
