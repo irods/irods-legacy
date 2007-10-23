@@ -72,7 +72,6 @@ main(int argc, char **argv)
 
     daemonize (runMode, logFd);
 
-    status = startXmsgThreads ();
 
     status = xmsgServerMain ();
 
@@ -100,6 +99,14 @@ xmsgServerMain ()
 
     initThreadEnv ();
     initXmsgHashQue ();
+
+    status = startXmsgThreads ();
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR, 
+	  "xmsgServerMain: startXmsgThreads error. status = %d", status);
+        return status;
+    }
 
     status = initRsComm (&rsComm);
 

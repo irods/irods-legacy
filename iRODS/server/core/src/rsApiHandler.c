@@ -330,6 +330,7 @@ int
 chkApiPermission (rsComm_t *rsComm, int apiInx)
 {
     int clientUserAuth;
+    int proxyUserAuth;
     int xmsgSvrOnly;
     int xmsgSvrAlso;
 
@@ -358,8 +359,8 @@ chkApiPermission (rsComm_t *rsComm, int apiInx)
 	return (SYS_NO_API_PRIV);
     }
 
-    if (RsApiTable[apiInx].proxyUserAuth > 
-      rsComm->proxyUser.authInfo.authFlag) {
+    proxyUserAuth = RsApiTable[apiInx].proxyUserAuth & 0xfff;
+    if (proxyUserAuth > rsComm->proxyUser.authInfo.authFlag) {
 	return (SYS_NO_API_PRIV);
     }
     return  (0);

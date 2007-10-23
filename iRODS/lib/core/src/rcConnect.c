@@ -337,3 +337,20 @@ rcReconnect (rcComm_t *conn, reconnOpr_t reconnOpr)
     return (status);
 }
 
+rcComm_t *
+rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg)
+{
+    rcComm_t *conn;
+
+    if (myRodsEnv == NULL) {
+	fprintf (stderr, "rcConnectXmsg: NULL myRodsEnv input\n");
+	return (NULL);
+    }
+
+    conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->xmsgPort,
+      myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 0, errMsg);
+
+    return (conn);
+}
+
+

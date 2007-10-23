@@ -1,29 +1,29 @@
+ifndef buildDir
 buildDir = ../..
-include $(buildDir)/mk/mk.config
-include $(buildDir)/mk/mk.common
+endif
 
+include $(buildDir)/config/config.mk
+include $(buildDir)/config/platform.mk
+include $(buildDir)/config/directories.mk
+include $(buildDir)/config/common.mk
 
-svrSrcDir=$(buildDir)/server/src/server
-agentSrcDir=$(buildDir)/server/src/agent
-miscSrcDir=$(buildDir)/server/src/misc
-cliSrcDir=$(buildDir)/clientLib/src
-svrObjDir=$(buildDir)/server/obj
-clObjDir=$(buildDir)/clientLib/obj
-serverBinDir=$(buildDir)/server/bin
-dataDir=$(buildDir)/data
-
-vpath %.c $(svrSrcDir) $(agentSrcDir) $(miscSrcDir) $(cliSrcDir)
+vpath %.c src
 
 CFLAGS=$(MY_CFLAG)
-CFLAGS+= -g -I$(buildDir)/server/include -I$(buildDir)/clientLib/include  \
--I$(buildDir)/clientLib/include/api -I$(buildDir)/clientLib/src/md5
+CFLAGS+= -g -I$(buildDir)/server/core/include \
+-I$(buildDir)/server/icat/include \
+-I$(buildDir)/server/drivers/include \
+-I$(buildDir)/server/re/include \
+-I$(buildDir)/lib/core/include  \
+-I$(buildDir)/lib/api/include -I$(buildDir)/lib/md5/include
 
-LDADD+= -L$(clObjDir) -lRodsAPIs -L$(buildDir)/../SRB3_3plus/obj
+# LDADD+= -L$(clObjDir) -lRodsAPIs -L$(buildDir)/../SRB3_3plus/obj
+LDADD+= -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 
 TESTOBJS = lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
-l3bundle.o
+l3bundle.o xmsgtest.o
 
-TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3bundle
+TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3bundle xmsgtest
 
 all:: $(TARGETS)
 
@@ -54,4 +54,5 @@ xmltest: xmltest.o
 l3bundle: l3bundle.o
 	$(LDR) -o $@ $^ $(LDADD)
 
-
+xmsgtest: xmsgtest.o
+	$(LDR) -o $@ $^ $(LDADD)

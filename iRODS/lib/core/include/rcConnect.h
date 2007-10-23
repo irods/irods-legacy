@@ -119,6 +119,9 @@ int
 clientLoginWithPassword(rcComm_t *conn, char* password);
 int
 rcReconnect (rcComm_t *conn, reconnOpr_t reconnOpr);
+
+rcComm_t *
+rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg);
 #ifdef  __cplusplus
 }
 #endif

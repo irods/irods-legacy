@@ -110,9 +110,11 @@ apidef_t RcApiTable[] = {
        "generalAdminInp_PI", 0, NULL, 0, (funcPtr) RS_GENERAL_ADMIN},
     {GEN_QUERY_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "GenQueryInp_PI", 0, "GenQueryOut_PI", 0, (funcPtr) RS_GEN_QUERY},
-    {AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+    {AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH|XMSG_SVR_ALSO, 
+      NO_USER_AUTH|XMSG_SVR_ALSO,
       NULL, 0,  "authRequestOut_PI", 0, (funcPtr) RS_AUTH_REQUEST},
-    {AUTH_RESPONSE_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH,
+    {AUTH_RESPONSE_AN, RODS_API_VERSION, NO_USER_AUTH|XMSG_SVR_ALSO, 
+       NO_USER_AUTH|XMSG_SVR_ALSO,
        "authResponseInp_PI", 0, NULL, 0, (funcPtr) RS_AUTH_RESPONSE},
     /* AUTH_CHECK might need to be NO_USER_AUTH but it would be better
        if we could restrict it some; if the servers can authenticate 
