@@ -6,7 +6,7 @@
 
 
 # API and utility library name.  Do not include 'lib' prefix or '.a' suffix.
-LIBRARY_NAME =	RodsAP
+LIBRARY_NAME =	RodsAPIs
 
 LIBRARY =	$(libCoreObjDir)/lib$(LIBRARY_NAME).a
 
