@@ -214,7 +214,7 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
       rodsLog (LOG_NOTICE,"msiGetTaggedValueFromString: Error in regcomp: %s\n",errbuff);
       return(INVALID_REGEXP);
     }
-    rodsLog (LOG_NOTICE,"TTTTT:%s",t1);
+    /*    rodsLog (LOG_NOTICE,"TTTTT:%s",t1);*/
     if (regexec(&preg[0], t1,1,&pm[0],0) == 0) {
       t2 = t1 + pm[0].rm_eo ;                     /* t2 starts value */
       if (regexec(&preg[1],t2,1,&pm[1],0) != 0)
