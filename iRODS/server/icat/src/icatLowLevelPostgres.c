@@ -265,7 +265,9 @@ cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql,
    int result;
    char *status;
    SQLINTEGER rowCount;
-
+#ifdef NEW_ODBC
+   int i;
+#endif
    myHdbc = icss->connectPtr;
    rodsLog(LOG_DEBUG1, sql);
    stat = SQLAllocStmt(myHdbc, &myHstmt); 
