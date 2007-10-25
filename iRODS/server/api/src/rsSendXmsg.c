@@ -6,7 +6,7 @@
 #include "sendXmsg.h"
 #include "xmsgLib.h"
 
-extern ticketHashQue_t *XmsgHashQue;
+extern ticketHashQue_t XmsgHashQue[];
 extern xmsgQue_t XmsgQue;
 
 int
@@ -21,7 +21,7 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
       &ticketMsgStruct);
 
     if (status < 0) {
-	clearSendXmsgInfo (sendXmsgInp->sendXmsgInfo);
+	clearSendXmsgInfo (&sendXmsgInp->sendXmsgInfo);
 	return status;
     }
 
@@ -37,7 +37,8 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
     /* create a irodsXmsg_t */
  
     irodsXmsg = calloc (1, sizeof (irodsXmsg_t));
-    irodsXmsg->sendXmsgInfo = sendXmsgInp->sendXmsgInfo;
+    irodsXmsg->sendXmsgInfo = calloc (1, sizeof (sendXmsgInfo_t));
+    *irodsXmsg->sendXmsgInfo = sendXmsgInp->sendXmsgInfo;
     irodsXmsg->sendTime = time (0);
     rstrcpy (irodsXmsg->sendUserName, rsComm->clientUser.userName, NAME_LEN);
 

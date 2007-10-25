@@ -6,7 +6,7 @@
 #include "getXmsgTicket.h"
 #include "xmsgLib.h"
 
-extern ticketHashQue_t *XmsgHashQue;
+extern ticketHashQue_t XmsgHashQue[];
 
 int
 rsGetXmsgTicket (rsComm_t *rsComm, getXmsgTicketInp_t *getXmsgTicketInp,
@@ -14,14 +14,24 @@ xmsgTicketInfo_t **outXmsgTicketInfo)
 {
     int status;
     int hashSlotNum;
+    time_t thisTime;
+    time_t inpExpireTime;
 
     *outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
 
     (*outXmsgTicketInfo)->sendTicket = random();
-    if ((*outXmsgTicketInfo)->expireTime > 0) {
-	(*outXmsgTicketInfo)->expireTime = getXmsgTicketInp->expireTime;
+    thisTime = time (NULL);
+    inpExpireTime = getXmsgTicketInp->expireTime;
+    if (inpExpireTime > 0) {
+	if (inpExpireTime - thisTime > MAX_EXPIRE_INT) {
+	    (*outXmsgTicketInfo)->expireTime = thisTime + MAX_EXPIRE_INT;
+	} else if (inpExpireTime - thisTime <= 0) {
+	    (*outXmsgTicketInfo)->expireTime = thisTime + DEF_EXPIRE_INT;
+	} else {
+	    (*outXmsgTicketInfo)->expireTime = inpExpireTime;
+	}
     } else {
-        (*outXmsgTicketInfo)->expireTime = time (0) + DEF_EXPIRE_INT;
+        (*outXmsgTicketInfo)->expireTime = thisTime + DEF_EXPIRE_INT;
     }
 
     while (1) {
