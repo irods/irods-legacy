@@ -96,4 +96,5 @@
 #include "generalUpdate.h"
 #include "getXmsgTicket.h"
 #include "sendXmsg.h"
+#include "rcvXmsg.h"
 #endif	/* API_HEADER_ALL_H */

@@ -270,3 +270,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetXmsgTicket.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsSendXmsg.o
 LIB_API_OBJS += $(libApiObjDir)/rcSendXmsg.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRcvXmsg.o
+LIB_API_OBJS += $(libApiObjDir)/rcRcvXmsg.o

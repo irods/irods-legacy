@@ -100,9 +100,12 @@
 #endif
 #define SpecColl_PI "int class; int type; str collection[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str resource[NAME_LEN]; str phyPath[MAX_NAME_LEN];"
 #define SubFile_PI "struct RHostAddr_PI; str subFilePath[MAX_NAME_LEN]; double offset; struct *SpecColl_PI;" 
-#define XmsgTicketInfo_PI "int sendTicket; int rcvTicket; int expireTime;"
-#define SendXmsgInfo_PI "int msgNumber; char msgType(HEADER_TYPE_LEN); int numRcv; str *msg; int numDel; str *delAddress[numDel]; int *delPort(numDel); str *miscInfo;"
+#define XmsgTicketInfo_PI "int sendTicket; int rcvTicket; int expireTime; int flag;"
+#define SendXmsgInfo_PI "int msgNumber; str msgType[HEADER_TYPE_LEN]; int numRcv; int flag; str *msg; int numDel; str *delAddress[numDel]; int *delPort(numDel); str *miscInfo;"
 #define GetXmsgTicketInp_PI "int expireTime;"
-#define SendXmsgInp_PI "struct XmsgTicketInfo_PI; struct *SendXmsgInfo_PI;"
+#define SendXmsgInp_PI "struct XmsgTicketInfo_PI; struct SendXmsgInfo_PI;"
+#define RcvXmsgInp_PI "int rcvTicket; int msgNumber;"
+#define RcvXmsgOut_PI "str msgType[HEADER_TYPE_LEN]; str sendUserName[NAME_LEN]; str *msg;"
+
 
 #endif	/* PACK_INSTRUCT_H */

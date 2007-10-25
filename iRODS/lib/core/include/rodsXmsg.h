@@ -5,26 +5,33 @@
 #ifndef RODS_XMSG_H
 #define RODS_XMSG_H
 
-#define DEF_EXPIRE_INT	(3600 * 24)	/* default expire interval */
-
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
+#define DEF_EXPIRE_INT	(3600 * 4)	/* default expire interval */
+#define MAX_EXPIRE_INT  (3600 * 48)	/* max expire interval */
+#define INC_EXPIRE_INT  (3600 * 2)	/* minimum inteval after new inteval
+					 * was sent */ 
+/* definition for msgNumber */
+#define ANY_MSG_NUMBER	0		/* get the msg with the smallest 
+					 * msgNumber */
 typedef struct {
     uint expireTime;                    /* unix time of ticket expiration */
 } getXmsgTicketInp_t;
 
+/* definition for XmsgTicketInfo.flag */
+#define SINGLE_MSG_TICKET  0	/* ticket for just a single msg. ticket will
+				 * be deleted after the msg is received */
+#define MULTI_MSG_TICKET   1	/* ticket for MULTIPLE MSG */
 typedef struct XmsgTicketInfo {
     uint sendTicket;
     uint rcvTicket;
     uint expireTime;                    /* unix time of ticket expiration */
+    uint flag;
 } xmsgTicketInfo_t;
 
 typedef struct SendXmsgInfo {
     uint msgNumber;
     char msgType[HEADER_TYPE_LEN];      /* msg type, 16 char */
     uint numRcv;                        /* number of receiver */
+    int flag;				/* not used by client */
     char *msg;                          /* the msg */
     int numDel;                         /* number of msg to deliver */
     char **deliAddress;                  /* array of str pointer of addr */
@@ -34,7 +41,7 @@ typedef struct SendXmsgInfo {
 
 typedef struct {
     xmsgTicketInfo_t ticket;            /* xmsgTicketInfo from getXmsgTicket */
-    sendXmsgInfo_t *sendXmsgInfo;
+    sendXmsgInfo_t sendXmsgInfo;
 } sendXmsgInp_t;
 
 /* xmsg struct */
@@ -78,8 +85,16 @@ typedef struct XmsgReq {
     struct XmsgReq *next;
 } xmsgReq_t;
 
-#ifdef  __cplusplus
-}
-#endif
+typedef struct RcvXmsgInp {
+    uint rcvTicket;
+    uint msgNumber;
+} rcvXmsgInp_t;
+
+typedef struct RcvXmsgOut {
+    char msgType[HEADER_TYPE_LEN];      /* msg type, 16 char */
+    char sendUserName[NAME_LEN];        /* userName@zone of clientUser */
+    char *msg;                          /* the msg */
+} rcvXmsgOut_t;
+
 
 #endif	/* RODS_XMSG_H */

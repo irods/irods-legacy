@@ -93,6 +93,8 @@ packInstructArray_t RodsPackTable[] = {
 	{"SubFile_PI", SubFile_PI},
 	{"XmsgTicketInfo_PI", XmsgTicketInfo_PI},
 	{"SendXmsgInfo_PI", SendXmsgInfo_PI},
+	{"RcvXmsgInp_PI", RcvXmsgInp_PI},
+	{"RcvXmsgOut_PI", RcvXmsgOut_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

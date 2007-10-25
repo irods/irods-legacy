@@ -91,6 +91,7 @@
 #define BUN_SUB_TRUNCATE_AN 			653
 #define GET_XMSG_TICKET_AN 			654
 #define SEND_XMSG_AN 			655
+#define RCV_XMSG_AN 			656
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700
