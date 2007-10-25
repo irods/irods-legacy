@@ -90,6 +90,11 @@ ticketMsgStruct_t *ticketMsgStruct)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    /* up the expire time */
+    if (xmsg->sendTime + INC_EXPIRE_INT > ticketMsgStruct->ticket.expireTime) {
+	ticketMsgStruct->ticket.expireTime = xmsg->sendTime + INC_EXPIRE_INT;
+    }
+
     if (ticketMsgStruct->xmsgHead == NULL) {
 	ticketMsgStruct->xmsgHead = xmsg;
 	xmsg->tnext = NULL;
