@@ -90,7 +90,7 @@ usage ()
 "Checksum one or more data-object or collection from iRODS space.",
 "Options are:",
 " -f  force - checksum data-objects even if a checksum alreay exist in icat",
-" -a  checksum all replica.",
+" -a  checksum all replica. ils -L should be used to list the values of all replica",
 " -K  verify the checksum value in icat. If the checksum value does not exist,",
 "     compute and register one.",
 " -n  replNum  - the replica to checksum; if not specified checksum all replicas",
