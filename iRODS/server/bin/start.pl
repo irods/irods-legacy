@@ -108,6 +108,7 @@ $svrPortReconnect=1;
 # $RETESTFLAG=1;
 
 $ENV{'irodsConfigDir'}=$irodsConfigDir;
+$ENV{'irodsLogDir'}=$irodsLogDir;
 if ($irodsEnvFile)      { $ENV{'irodsEnvFile'}=$irodsEnvFile; }
 if ($irodsPort)         { $ENV{'irodsPort'}=$irodsPort; }
 if ($spLogLevel)        { $ENV{'spLogLevel'}=$spLogLevel; }
