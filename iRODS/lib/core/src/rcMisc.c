@@ -2901,7 +2901,7 @@ clearSendXmsgInfo (sendXmsgInfo_t *sendXmsgInfo)
       *sendXmsgInfo->deliAddress != NULL) {
 	int i;
 
-        for (i = 0; i < sendXmsgInfo->numDel; i++) {
+        for (i = 0; i < sendXmsgInfo->numDeli; i++) {
 	    free (sendXmsgInfo->deliAddress[i]);
 	}
 	free (sendXmsgInfo->deliAddress);

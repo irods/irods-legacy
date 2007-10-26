@@ -79,11 +79,37 @@ rmXmsgFromXmsgQue (irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue)
 }
 
 int
+rmXmsgFromXmsgTcketQue (irodsXmsg_t *xmsg, xmsgQue_t *xmsgQue)
+{
+    if (xmsg == NULL || xmsgQue == NULL) {
+        rodsLog (LOG_ERROR,
+          "addXmsgToQue: input xmsg or xmsgQue is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (xmsg->tprev == NULL) {
+	/* at head */
+	xmsgQue->head = xmsg->tnext;
+    } else {
+	xmsg->tprev->tnext = xmsg->tnext;
+    }
+
+    if (xmsg->tnext == NULL) {
+	/* at tail */
+        xmsgQue->tail = xmsg->tprev;
+    } else {
+	xmsg->tnext->tprev = xmsg->tprev;
+    }
+ 
+    xmsg->tprev = xmsg->tnext = NULL;
+
+    return (0);
+}
+
+int
 addXmsgToTicketMsgStruct (irodsXmsg_t *xmsg, 
 ticketMsgStruct_t *ticketMsgStruct)
 {
-    irodsXmsg_t *tmpXmsg;
-
     if (xmsg == NULL || ticketMsgStruct == NULL) {
         rodsLog (LOG_ERROR,
           "addXmsgToTicketMsgStruct: input xmsg or ticketMsgStruct is NULL");
@@ -95,20 +121,58 @@ ticketMsgStruct_t *ticketMsgStruct)
 	ticketMsgStruct->ticket.expireTime = xmsg->sendTime + INC_EXPIRE_INT;
     }
 
-    if (ticketMsgStruct->xmsgHead == NULL) {
-	ticketMsgStruct->xmsgHead = xmsg;
-	xmsg->tnext = NULL;
+    if (ticketMsgStruct->xmsgQue.head == NULL) {
+	ticketMsgStruct->xmsgQue.head = ticketMsgStruct->xmsgQue.tail = xmsg;
+	xmsg->tnext = xmsg->tprev = NULL;
     } else {
 	/* link it to the end */
-	tmpXmsg = ticketMsgStruct->xmsgHead;
-	while (tmpXmsg->next != NULL) {
-	    tmpXmsg = tmpXmsg->next;
-	}
-	tmpXmsg->next = tmpXmsg;
-	tmpXmsg->next = NULL;
+	ticketMsgStruct->xmsgQue.tail->tnext = xmsg;
+	xmsg->tprev = ticketMsgStruct->xmsgQue.tail;
+	ticketMsgStruct->xmsgQue.tail = xmsg;
+	xmsg->tnext = NULL;
     }
 
     return (0);
+}
+
+int 
+getIrodsXmsgByMsgNum (int rcvTicket, int msgNumber, 
+irodsXmsg_t **outIrodsXmsg) 
+{
+    int status;
+    irodsXmsg_t *tmpIrodsXmsg;
+    ticketMsgStruct_t *ticketMsgStruct;
+
+    if (ticketMsgStruct == NULL || outIrodsXmsg == NULL) {
+        rodsLog (LOG_ERROR,
+          "getIrodsXmsgStrByMsgNum: NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    /* locate the ticketMsgStruct_t */
+
+    status = getTicketMsgStructByTicket (rcvTicket, &ticketMsgStruct);
+
+    if (status < 0) {
+        return status;
+    }
+
+    /* now locate the irodsXmsg_t */
+
+    tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
+
+    if (msgNumber != ANY_MSG_NUMBER) {
+        while (tmpIrodsXmsg != NULL) {
+	    if (tmpIrodsXmsg->sendXmsgInfo->msgNumber == msgNumber) break;
+	    tmpIrodsXmsg = tmpIrodsXmsg->next;
+	}
+    }
+    *outIrodsXmsg = tmpIrodsXmsg;
+    if (tmpIrodsXmsg == NULL) {
+        return SYS_NO_XMSG_FOR_MSG_NUMBER;
+    } else {
+	return 0;
+    }
 }
 
 int
@@ -151,6 +215,7 @@ ticketHashQue_t *ticketHQue)
     }
 
     ticketMsgStruct->hnext = ticketMsgStruct->hprev = NULL;
+    ticketMsgStruct->ticketHashQue = ticketHQue;
 
     if (ticketHQue->head == NULL) {
 	ticketHQue->head = ticketHQue->tail = ticketMsgStruct;
@@ -396,5 +461,48 @@ ticketMsgStruct_t **outTicketMsgStruct)
     /* no match */
     *outTicketMsgStruct = NULL;
     return SYS_UNMATCHED_XMSG_TICKET;
+}
+
+int
+_rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
+{
+    sendXmsgInfo_t *sendXmsgInfo;
+    ticketMsgStruct_t *ticketMsgStruct;
+
+    if (irodsXmsg == NULL || rcvXmsgOut == NULL) {
+        rodsLog (LOG_ERROR,
+          "_rsRcvXmsg: input irodsXmsg or rcvXmsgOut is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    sendXmsgInfo = irodsXmsg->sendXmsgInfo;
+    ticketMsgStruct = irodsXmsg->ticketMsgStruct;
+
+    sendXmsgInfo->numRcv--;
+
+    if (sendXmsgInfo->numRcv <= 0 && sendXmsgInfo->numDeli <= 0) {
+	/* done with this msg */
+	rmXmsgFromXmsgQue (irodsXmsg, &XmsgQue);
+	rmXmsgFromXmsgTcketQue (irodsXmsg, &ticketMsgStruct->xmsgQue);
+	rcvXmsgOut->msg = sendXmsgInfo->msg;
+	sendXmsgInfo->msg = NULL;
+	rstrcpy (rcvXmsgOut->msgType, sendXmsgInfo->msgType, HEADER_TYPE_LEN);
+	rstrcpy (rcvXmsgOut->sendUserName, irodsXmsg->sendUserName,
+	  NAME_LEN);
+	clearSendXmsgInfo (sendXmsgInfo);
+	free (irodsXmsg);
+	/* take out the ticket too ? */
+	if (ticketMsgStruct->xmsgQue.head == NULL &&
+	  (!(ticketMsgStruct->ticket.flag & MULTI_MSG_TICKET) || 
+	  time (NULL) >= ticketMsgStruct->ticket.expireTime)) {
+	    rmTicketMsgStructFromHQue (ticketMsgStruct, 
+	      (ticketHashQue_t *) ticketMsgStruct->ticketHashQue);
+	}
+    } else {
+	rcvXmsgOut->msg = strdup (sendXmsgInfo->msg);
+        rstrcpy (rcvXmsgOut->msgType, sendXmsgInfo->msgType, HEADER_TYPE_LEN);
+        rstrcpy (rcvXmsgOut->sendUserName, irodsXmsg->sendUserName,
+          NAME_LEN);
+    }
+    return (0);
 }
 

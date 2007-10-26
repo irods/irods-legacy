@@ -56,6 +56,11 @@ ticketMsgStruct_t **outTicketMsgStruct);
 int
 addXmsgToTicketMsgStruct (irodsXmsg_t *xmsg,
 ticketMsgStruct_t *ticketMsgStruct);
+int 
+getIrodsXmsgByMsgNum (int rcvTicket, int msgNumber,
+irodsXmsg_t **outIrodsXmsg);
+int
+_rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut);
 
 #endif	/* XMSG_LIB_H */
 

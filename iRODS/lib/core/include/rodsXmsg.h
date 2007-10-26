@@ -33,7 +33,7 @@ typedef struct SendXmsgInfo {
     uint numRcv;                        /* number of receiver */
     int flag;				/* not used by client */
     char *msg;                          /* the msg */
-    int numDel;                         /* number of msg to deliver */
+    int numDeli;                         /* number of msg to deliver */
     char **deliAddress;                  /* array of str pointer of addr */
     uint *deliPort;                      /* array of port number to deliver */
     char *miscInfo;                     /* for expiration, etc */
@@ -55,6 +55,7 @@ typedef struct IrodsXmsg {
     struct IrodsXmsg *next;
     struct IrodsXmsg *tnext;		/* the link list within the same
 					 * ticket (diff msgNumber) */
+    struct IrodsXmsg *tprev;
     void *ticketMsgStruct;		/* points to the ticketMsgStruct_t this
 					 * xmsg belongs */
 } irodsXmsg_t;
@@ -66,11 +67,11 @@ typedef struct XmsgQue {
 
 typedef struct TicketMsgStruct {
     xmsgTicketInfo_t ticket;
-    irodsXmsg_t *xmsgHead;     /* the link list of msg with the same ticket */
+    xmsgQue_t xmsgQue;		/* the link list of msg with the same ticket */
     struct TicketMsgStruct *hprev;    /* the hash link list. sort by rcvTicket 
 				       */
     struct TicketMsgStruct *hnext;
-    void *xmsgHashQue;		/* points to the xmsgHashQue_t this ticket
+    void *ticketHashQue;	/* points to the ticketHashQue_t this ticket
 				 * belongs */
 } ticketMsgStruct_t;
 

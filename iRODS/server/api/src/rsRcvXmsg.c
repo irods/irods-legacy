@@ -14,10 +14,10 @@ rsRcvXmsg (rsComm_t *rsComm, rcvXmsgInp_t *rcvXmsgInp,
 rcvXmsgOut_t **rcvXmsgOut)
 {
     int status;
-    ticketMsgStruct_t *ticketMsgStruct = NULL;
+    irodsXmsg_t *irodsXmsg = NULL;
 
-    status = getTicketMsgStructByTicket (rcvXmsgInp->rcvTicket, 
-      &ticketMsgStruct);
+    status = getIrodsXmsgByMsgNum (rcvXmsgInp->rcvTicket,
+      rcvXmsgInp->msgNumber, &irodsXmsg);
 
     if (status < 0) {
 	return status;
@@ -26,10 +26,8 @@ rcvXmsgOut_t **rcvXmsgOut)
     /* get the msg */
  
     *rcvXmsgOut = calloc (1, sizeof (rcvXmsgOut_t));
-#if 0	/* XXXXX do this later */
-    status = getXmsgInTicketMsgStruct (rcvXmsgInp->msgNumber, ticketMsgStruct,
-      *rcvXmsgOut);
-#endif
+
+    status = _rsRcvXmsg (irodsXmsg, *rcvXmsgOut);
 
     return (status);
 }
