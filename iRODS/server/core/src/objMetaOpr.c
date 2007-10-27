@@ -693,8 +693,13 @@ int writeFlag)
 	freeAllDataObjInfo (oldCacheInfo);
 	freeAllDataObjInfo (oldArchInfo);
     } else {
+	char *rescName; 
         queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
         queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
+        if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL &&
+	  writeFlag >0) {
+	    requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, 1);
+	}
     }
 
     return (0);
