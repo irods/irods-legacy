@@ -347,7 +347,7 @@ rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg)
 	return (NULL);
     }
 
-    conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->xmsgPort,
+    conn = rcConnect (myRodsEnv->xmsgHost, myRodsEnv->xmsgPort,
       myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 0, errMsg);
 
     return (conn);

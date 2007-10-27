@@ -11,6 +11,7 @@ typedef struct {
    char rodsUserName[NAME_LEN];
    char rodsHost[NAME_LEN];
    int  rodsPort;
+   char xmsgHost[NAME_LEN];
    int  xmsgPort;
    char rodsHome[MAX_NAME_LEN];
    char rodsCwd[MAX_NAME_LEN];
