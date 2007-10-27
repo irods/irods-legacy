@@ -131,6 +131,7 @@ ticketMsgStruct_t *ticketMsgStruct)
 	ticketMsgStruct->xmsgQue.tail = xmsg;
 	xmsg->tnext = NULL;
     }
+    xmsg->ticketMsgStruct = ticketMsgStruct;
 
     return (0);
 }
@@ -143,9 +144,9 @@ irodsXmsg_t **outIrodsXmsg)
     irodsXmsg_t *tmpIrodsXmsg;
     ticketMsgStruct_t *ticketMsgStruct;
 
-    if (ticketMsgStruct == NULL || outIrodsXmsg == NULL) {
+    if (outIrodsXmsg == NULL) {
         rodsLog (LOG_ERROR,
-          "getIrodsXmsgStrByMsgNum: NULL input");
+          "getIrodsXmsgByMsgNum: input outIrodsXmsg is NULL");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
@@ -164,7 +165,7 @@ irodsXmsg_t **outIrodsXmsg)
     if (msgNumber != ANY_MSG_NUMBER) {
         while (tmpIrodsXmsg != NULL) {
 	    if (tmpIrodsXmsg->sendXmsgInfo->msgNumber == msgNumber) break;
-	    tmpIrodsXmsg = tmpIrodsXmsg->next;
+	    tmpIrodsXmsg = tmpIrodsXmsg->tnext;
 	}
     }
     *outIrodsXmsg = tmpIrodsXmsg;
