@@ -48,54 +48,13 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
     /* query rcat for dataObjInfo and sort it */
 
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, &dataObjInfoHead);
-#if 0
-    writeFlag = getWriteFlag (dataObjInp->openFlags);
-    if (writeFlag > 0 &&
-      rsComm->clientUser.authInfo.authFlag <= PUBLIC_USER_AUTH) {
-        rodsLog (LOG_NOTICE,
-         "rsDataObjOpen:open for write not allowed for user %s",
-          rsComm->clientUser.userName);
-	return (SYS_NO_API_PRIV);
-    }
-
-    if (dataObjInp->specColl != NULL) {
-	status = resolveSpecColl (rsComm, dataObjInp, &dataObjInfoHead,
-	  writeFlag);
-	if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST && 
-	  dataObjInfoHead != NULL) {
-	    freeDataObjInfo (dataObjInfoHead);
-	    dataObjInfoHead = NULL;
-	}
-    } else if (writeFlag > 0 && dataObjInp->oprType != REPLICATE_OPR) {
-        status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead, 
-	  ACCESS_DELETE_OBJECT, 0);
-    } else {
-        status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead,
-	  ACCESS_READ_OBJECT, 0);
-    }
-#endif
    
+    writeFlag = getWriteFlag (dataObjInp->openFlags);
+
     if (status < 0) {
         if (dataObjInp->openFlags & O_CREAT && writeFlag > 0) {
             l1descInx = rsDataObjCreate (rsComm, dataObjInp);
             return (l1descInx);
-#if 0
-        } else {
-	    /* see if it is in spec coll */
-	    if (dataObjInp->specColl == NULL) {
-	        status = resolveSpecColl (rsComm, dataObjInp, 
-		  &dataObjInfoHead, writeFlag);
-	        if (status < 0) {
-        	    if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
-          	      dataObjInfoHead != NULL) {
-            		freeDataObjInfo (dataObjInfoHead);
-		    }
-		    return (status);
-		}
-	    } else {
-		return (status);
-	    }
-#endif
         }
     } else {
         /* screen out any stale copies */
