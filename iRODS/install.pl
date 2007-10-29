@@ -474,7 +474,8 @@ if ($state eq "F") {
 #}
 
 print "To use the iRODS icommands set your path to include the binaries:\n";
-print "  set path=($startDir/clients/icommands/bin \$path)\n";
+print "  For csh: set path=($startDir/clients/icommands/bin \$path)\n";
+print "  For bash: PATH=$startDir/clients/icommands/bin:\$PATH\n";
 print "and then iinit, iput, ils, etc should work.\n";
 print "Run 'install.pl help' for a list of install.pl options (ps, stop, start, etc).\n";
 print "If your ICAT becomes slow, try running 'install.pl vacuum'.\n";
@@ -1532,11 +1533,26 @@ sub runTests {
     chdir "server/test/bin" || die "Can't chdir to server/test/bin";
     unlink("icatTest.log");
     printTime();
-    runCmdNoLog(0, "icatTest.pl >& icatTest.log");
+    if ($redirectForm eq "2") {
+        runCmdNoLog(0, "icatTest.pl > icatTest.log 2>&1");
+    }
+    else {
+	runCmdNoLog(0, "icatTest.pl >& icatTest.log");
+    }
     printTime();
-    runCmdNoLog(0, "icatMiscTest.pl >& icatMiscTest.log");
+    if ($redirectForm eq "2") {
+	runCmdNoLog(0, "icatMiscTest.pl > icatMiscTest.log 2>&1");
+    }
+    else {
+	runCmdNoLog(0, "icatMiscTest.pl >& icatMiscTest.log");
+    }
     printTime();
-    runCmdNoLog(0, "moveTest.pl >& moveTest.log");
+    if ($redirectForm eq "2") {
+	runCmdNoLog(0, "moveTest.pl > moveTest.log 2>&1");
+    }
+    else {
+	runCmdNoLog(0, "moveTest.pl >& moveTest.log");
+    }
     printTime();
     runCmdNoLog(0, "checkIcatLog.pl");
     print $cmdStdout;
