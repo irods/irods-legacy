@@ -54,7 +54,9 @@ public interface AppletConstant {
     static String INACTIVE_APPLETS_LOG = IRODS_DIR + FILE_SEPARATOR + "inactive_applets.txt";
     static String RECOVERY_LOCK_DIR = IRODS_DIR + FILE_SEPARATOR + ".lock" + FILE_SEPARATOR;
     static String PROMPTED_FILE = IRODS_DIR + FILE_SEPARATOR + ".prompted";
+    
     static String DB_FILE ="jdbc:hsqldb:file:" + IRODS_DIR + FILE_SEPARATOR + "db";
+    //static String DB_FILE ="jdbc:hsqldb:hsql://localhost/db";
     static String DB_USER = "sa";
     static String DB_PASSWORD = "";
     static String DB_SCRIPT_FILE = IRODS_DIR + FILE_SEPARATOR + "db.script";
