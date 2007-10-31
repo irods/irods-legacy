@@ -1,5 +1,7 @@
 package edu.sdsc.grid.gui.applet;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.net.URL;
@@ -16,7 +18,6 @@ import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
-import edu.sdsc.grid.io.MetaDataField;
 
 public class Account {
     private String ruri, host, username, home, destination, destinationFolder;
@@ -25,6 +26,8 @@ public class Account {
     private int port;
     private String sessionId;
     private Map map = new HashMap();
+    private List resourceList = new ArrayList();
+
     private static String SCHEME_DELIMITER = "://";
     private static String TEMP_PASSWORD_SERVICE_URL = null;
     
@@ -35,35 +38,47 @@ public class Account {
 
     
     // This constructor is used at applet initialization
-    public Account(String tempPassworServiceUrl, String ruri, String sessionId) {
+    public Account(String tempPasswordServiceUrl, String ruri, String sessionId) {
         this.ruri = ruri;
-        TEMP_PASSWORD_SERVICE_URL = tempPassworServiceUrl;
+        TEMP_PASSWORD_SERVICE_URL = tempPasswordServiceUrl;
         parseRuri(ruri, true);
         setSessionId(sessionId);
-        //setResourceList(); // giving problems
+        setDefaultResource();
+        setResourceList(); 
     }
     
     private void setResourceList() {
         String[] selectFieldNames = {IRODSMetaDataSet.RESOURCE_NAME};
-        MetaDataCondition conditions[] = {MetaDataSet.newCondition( "RESC_ZONE_KW", MetaDataCondition.LIKE, "tempZone" )};
+        
+        MetaDataCondition[] conditions = {
+            MetaDataSet.newCondition( IRODSMetaDataSet.USER_NAME,
+            MetaDataCondition.EQUAL, getUsername() )
+        };
+        
+        
         MetaDataSelect selects[] = MetaDataSet.newSelection( selectFieldNames );
 
         MetaDataRecordList[] rl = null;
         try {
-            IRODSAccount irodsAccount = new IRODSAccount(host, port, username, new String(getPassword(ruri)), home, zone, defaultResource);            
+            //IRODSAccount irodsAccount = new IRODSAccount("saltwater.sdsc.edu", 1247, "rods", "rods", "/tempZone/home/rods", "tempZone", "demoResc");            
+            IRODSAccount irodsAccount = new IRODSAccount(getHost(), getPort(), getUsername(), new String(getPassword(ruri)), getHome(), getZone(), getDefaultResource());
             IRODSFileSystem fileSystem = new IRODSFileSystem(irodsAccount);
-            rl=((IRODSFileSystem) fileSystem).query(conditions, selects);
-            logger.log("rl.length : "+ rl.length);
+            
+            rl = fileSystem.query(conditions, selects);
+            int random = (int)Math.round((rl.length-1)*Math.random());
+            
+
             for (int i=0; i < rl.length; i++) {
-                MetaDataField[] fields = rl[i].getFields();
-                for (int k=0; k < fields.length; k++) {
-                    logger.log("field name:: " + fields[k].getName());
-                }
+                String rsc = rl[i].getValue(IRODSMetaDataSet.RESOURCE_NAME).toString();
+                resourceList.add(rsc);
+                
+                // add to database
+                new DBUtil().addResource(getHost(), getPort(), rsc);
             }//for
             
-        } catch (Exception e) {
-            logger.log("Problem querying for resource list. " + e);
             
+        } catch (Exception e) {
+            System.out.println("Problem querying for resource list. " + e);
         }
     }
         
@@ -101,6 +116,10 @@ public class Account {
         
     }//parseRuri
     
+    public List getResourceList() {
+        return resourceList;
+    }
+
     public void setRuri(String ruri) {
         parseRuri(ruri, true);
     }
@@ -150,14 +169,13 @@ public class Account {
         return zone;
     }
     
-    public void setDefaultResource(String defaultResource) {
-        this.defaultResource = defaultResource;
+    public void setDefaultResource() {
+        IRODSAccount irodsAccount = new IRODSAccount(host, port, username, "", home, zone, defaultResource);            
+        defaultResource = irodsAccount.getDefaultStorageResource();
     }
 
     public String getDefaultResource() {
-        IRODSAccount irodsAccount = new IRODSAccount(host, port, username, new String(getPassword(ruri)), home, zone, defaultResource);            
-        defaultResource = irodsAccount.getDefaultStorageResource();
-        logger.log("default storage resource is :  " + defaultResource);
+        
         return defaultResource;
     }
     
@@ -213,6 +231,7 @@ public class Account {
     }//getPassword
     
     public char[] getPassword(String ruri) {
+
         if (_getPassword(ruri) != null)
             return _getPassword(ruri);
 
