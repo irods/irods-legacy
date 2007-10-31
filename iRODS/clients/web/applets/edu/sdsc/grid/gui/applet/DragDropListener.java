@@ -50,7 +50,7 @@ public class DragDropListener implements DropTargetListener {
     }
     
     private String getCurrentRuri() {
-        String ruri = applet.getCurrentRuri();
+        String ruri = applet.getRuri();
         return ruri;
     }
     
@@ -63,7 +63,7 @@ public class DragDropListener implements DropTargetListener {
             List dropList = (List) data; // a List of File objects
             List fileList = new Vector();
             File file = null;
-            
+
             account.parseRuri(getCurrentRuri(), true);
 
             for (int i = 0; i < dropList.size(); i++) {
@@ -72,7 +72,8 @@ public class DragDropListener implements DropTargetListener {
                 f[0] = file.getAbsolutePath(); // source
                 f[1] = "irods://" + account.getDestinationFolderAsUri() +  file.getName(); // destination
 
-                UploadItem item = new UploadItem(f[0], f[1], account.getDefaultResource());
+                //UploadItem item = new UploadItem(f[0], f[1], account.getDefaultResource());
+                UploadItem item = new UploadItem(f[0], f[1], account.getResourceList());
                 boolean success = new DBUtil().insert(item);
                 if (success)
                     fileList.add(item);
