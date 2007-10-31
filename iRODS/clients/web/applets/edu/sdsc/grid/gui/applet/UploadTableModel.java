@@ -51,12 +51,13 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.ImageIcon;
 import javax.swing.JProgressBar;
 import javax.swing.Icon;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 class UploadTableModel extends DefaultTableModel implements AppletConstant {
     private int directoryFileCount;
-    private int currentRow; // row just added
+    //private int currentRow; // row just added
                                              
     private static String fileIconPath = "/image/file.png";
     private static String folderIconPath = "/image/folder.png";
@@ -69,8 +70,8 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     
     public UploadTableModel() {        
         this.addColumn("");// empty for file/folder icon
-        this.addColumn("Local"); // local file or folder
-        this.addColumn("Remote"); // local file or folder
+        this.addColumn("Source"); // local file or folder
+        this.addColumn("Destination"); // local file or folder
         this.addColumn("Resource"); // local file or folder
         this.addColumn("Status"); // Progress bar
         
@@ -84,7 +85,7 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     }
  
     public boolean isCellEditable(int row, int col) {
-        if (col == SOURCE_COLUMN || col == DESTINATION_COLUMN)
+        if (col == SOURCE_COLUMN || col == DESTINATION_COLUMN || col == RESOURCE_COLUMN)
             return true;
         
         return false;
@@ -105,6 +106,8 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
             return JTextField.class;
         } else if (c == DESTINATION_COLUMN) {
             return JTextField.class;  
+        } else if (c == RESOURCE_COLUMN) {
+            return JComboBox.class;
         } else {
             return this.getValueAt(0, c).getClass();
         }
@@ -126,9 +129,9 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     public void removeFile(int[] selectedRows) {
         List itemList = new ArrayList();
         for (int k = selectedRows.length - 1; k >= 0; k--) {
-            String source = ((JTextField) this.getValueAt(k, SOURCE_COLUMN)).getText();
-            String destination = ((JTextField) this.getValueAt(k, DESTINATION_COLUMN)).getText();
-            String resource = ((JTextField) this.getValueAt(k, RESOURCE_COLUMN)).getText();
+            String source = ((JTextField) this.getValueAt(selectedRows[k], SOURCE_COLUMN)).getText();
+            String destination = ((JTextField) this.getValueAt(selectedRows[k], DESTINATION_COLUMN)).getText();
+            String resource = (String) ((JComboBox) this.getValueAt(selectedRows[k], RESOURCE_COLUMN)).getSelectedItem();
             
             UploadItem item = new UploadItem(source, destination, resource);
             itemList.add(item);
@@ -140,6 +143,8 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         
     }
     
+
+
     
     private JTextFieldListener tfListener = new JTextFieldListener();
     private JTextFieldMouseListener tfMouseListener = new JTextFieldMouseListener();
@@ -147,17 +152,21 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
     private void addToTable(UploadItem item) {
         JTextField tfSource = new JTextField(item.getSource());
         JTextField tfDestination = new JTextField(item.getDestination());
-        JTextField tfResource = new JTextField(item.getResource());
+        
+        
+        JComboBox comboBox = new JComboBox(item.getResourceList().toArray());
+        comboBox.setSelectedItem(item.getSelectedResource());
+        
         tfSource.addFocusListener(tfListener);
         tfDestination.addFocusListener(tfListener);
         
         tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
         tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
-        tfResource.setBorder(new EmptyBorder(0, 8, 0, 8));
+        //tfResource.setBorder(new EmptyBorder(0, 8, 0, 8));
         
         tfSource.setDragEnabled(false);
         tfDestination.setDragEnabled(false);
-        tfResource.setDragEnabled(false);
+        //tfResource.setDragEnabled(false);
         
         ImageIcon icon = null;
         if (item.getType().equals(TYPE_FILE))
@@ -165,7 +174,7 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         else
             icon = folderIcon;
         
-        this.addRow(new Object[] { icon, tfSource, tfDestination, tfResource, null});
+        this.addRow(new Object[] { icon, tfSource, tfDestination, comboBox, null});
     }
     
     
