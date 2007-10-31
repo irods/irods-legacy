@@ -49,7 +49,6 @@ package edu.sdsc.grid.gui.applet;
 import java.io.IOException;
 import javax.swing.JApplet;
 import javax.swing.JButton;
-import javax.swing.JTable;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JCheckBox;
@@ -71,7 +70,9 @@ import java.awt.event.ActionEvent;
 
 import com.sun.java.browser.dom.*;
 import java.util.ArrayList;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
+import javax.swing.ToolTipManager;
 import org.w3c.dom.*;
 import org.w3c.dom.css.*;
 import org.w3c.dom.events.*;
@@ -146,6 +147,11 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
         File promptedFile = new File(PROMPTED_FILE);
         if (promptedFile.exists()) {
             createDisplay();
+            
+            // set the behavior for tool tips
+            ToolTipManager toolTipManager = ToolTipManager.sharedInstance();
+            toolTipManager.setDismissDelay(60000); // show tip for 1 minute
+            toolTipManager.setInitialDelay(0); // show tip immediately
         } else {
             showPrompt();
         }
@@ -155,8 +161,8 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
         
         Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
         JPanel panel = new JPanel(new BorderLayout());
-        JTextArea tf = new JTextArea("This applet requires some text files to be written to your home directory. " +
-                                  "These text files are used for logging and recovery, and can be viewed by a text editor. " +
+        JTextArea tf = new JTextArea("This applet requires some files to be written to your home directory. " +
+                                  "These files are used for logging and recovery, and can be viewed by a text editor. " +
                                   "To use this applet, you must click Allow.", 4, 15);
         
         tf.setLineWrap(true);
@@ -258,7 +264,7 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
         // go ahead and set the account instance, even if values are null
         // will prompt for user input at end of init method
         Account account = new Account(TEMP_PASSWORD_SERVICE_URL, ruri, sessionId);
-        logger.log("UploadApplet.getDefaultResource() : " + account.getDefaultResource());
+
         
         // create GUI
         Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
@@ -321,13 +327,15 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
         for (int k = 0; k < rowCount; k++) {
             String source = ((JTextField) model.getValueAt(k, SOURCE_COLUMN)).getText();
             String destination = ((JTextField) model.getValueAt(k, DESTINATION_COLUMN)).getText();
-            String resource = ((JTextField) model.getValueAt(k, RESOURCE_COLUMN)).getText();
+            String resource = (String) ((JComboBox) model.getValueAt(k, RESOURCE_COLUMN)).getSelectedItem();
             
             UploadItem item = new UploadItem(source, destination, resource);
             itemList.add(item);
         }
-        
+
         new DBUtil().updateAssigned(itemList, false);
+
+                
     }//destroy
     
     
@@ -350,7 +358,7 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
     }
     
     
-    public String getCurrentRuri() {
+    public String getRuri() {
         return ruri;
     }
     
