@@ -18,10 +18,16 @@
 # To use with checkIcatLog.pl, redirect stdout to a file.  Since test_chl
 # is using the ICAT code directly, the calls are not being logged.
 
+# get our zone name
+runCmd(0, "ienv | grep irodsZone | tail -1");
+chomp($cmdStdout);
+$ix = index($cmdStdout,"=");
+$myZone=substr($cmdStdout, $ix+1);
+
 $F1="TestFile1";
 $F2="TestFile2";
 $Resc="demoResc";
-$HOME="/tempZone/home/rods";
+$HOME="/$myZone/home/rods";
 $Resc2="resc2";
 $Resc2Path="/tmp/Vault";
 $User2="user2";
@@ -31,7 +37,6 @@ $DIR2="$HOME/testDir1DoesNotExist";
 $tmpPwFile="/tmp/testPwFile.5678956";
 $tmpAuthFile="/tmp/testAuthFile.12343598";
 $USER="rods";
-$ZONE="tempZone";
 $ACCESS_GOOD="'read metadata'";
 $ACCESS_BAD="'bad access'";
 
@@ -93,8 +98,8 @@ runCmd(0, "test_genq gen8 / 0 10");
 runCmd(2, "test_genq gen8 abc 0 10");
 
 # GenQuery options to check access; exercise cmlCheckDirId
-runCmd(0, "test_genq gen10 $USER $ZONE $ACCESS_GOOD $HOME");
-runCmd(0, "test_genq gen10 $USER $ZONE $ACCESS_BAD $HOME");
+runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_GOOD $HOME");
+runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_BAD $HOME");
 
 # Mod resource freespace
 runCmd(0, "test_chl modrfs $Resc 123456789");
@@ -106,7 +111,7 @@ unlink($F1);
 runCmd(1, "irm -f $F1");
 runCmd(0, "ls -l > $F1");
 runCmd(0, "iput $F1");
-runCmd(0, "test_chl mod /tempZone/home/rods/$F1 text $F1");
+runCmd(0, "test_chl mod /$myZone/home/rods/$F1 text $F1");
 runCmd(0, "irm -f $F1");
 
 # Admin form of UnregDataObj

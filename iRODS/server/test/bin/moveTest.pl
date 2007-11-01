@@ -29,6 +29,12 @@ sub runCmd {
     }
 }
 
+# get our zone name
+runCmd(0, "ienv | grep irodsZone | tail -1");
+chomp($cmdStdout);
+$ix = index($cmdStdout,"=");
+$myZone=substr($cmdStdout, $ix+1);
+
 runCmd(1, "ls > foo1");
 runCmd(1, "ls > foo1234");
 
@@ -50,7 +56,7 @@ runCmd(1, "irm -f foo_abcdefg");
 # this is now one more level down.
 $ENV{'irodsConfigDir'}="../../config";
 
-$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /tempZone/home/rods/d1/d234 1 | grep -v NOTICE | grep -v Completed";
+$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /$myZone/home/rods/d1/d234 1 | grep -v NOTICE | grep -v Completed";
 runCmd(0, $testCmd);
 print "res:" . $cmdStdout;
 $d234Obj=$cmdStdout;
@@ -65,7 +71,7 @@ runCmd(0, "ils d1");
 print $cmdStdout;
 
 
-$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /tempZone/home/rods/t2 1 | grep -v NOTICE | grep -v Completed";
+$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /$myZone/home/rods/t2 1 | grep -v NOTICE | grep -v Completed";
 runCmd(0, $testCmd);
 print "res:" . $cmdStdout;
 $t2Obj=$cmdStdout;
@@ -84,13 +90,13 @@ runCmd(0, "iget t2/d234/testdir3/foo1234 foo1234b");
 runCmd(0, "diff foo1234 foo1234b");
 unlink (foo1234b);
 
-$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /tempZone/home/rods 1 | grep -v NOTICE | grep -v Completed";
+$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /$myZone/home/rods 1 | grep -v NOTICE | grep -v Completed";
 runCmd(0, $testCmd);
 print "res:" . $cmdStdout;
 $homeObj=$cmdStdout;
 chomp($homeObj);
 
-runCmd(0, "iadmin ls /tempZone/home/rods/t2/d234/testdir3 | grep foo");
+runCmd(0, "iadmin ls /$myZone/home/rods/t2/d234/testdir3 | grep foo");
 print "res:" . $cmdStdout;
 $index=index($cmdStdout," ");
 $t1=substr($cmdStdout, $index+1);
@@ -137,7 +143,7 @@ runCmd(0, "imkdir dir2");
 runCmd(0, "imkdir dir1/dir1a");
 runCmd(0, "imkdir dir2/dir2a");
 runCmd(0, "icd ..");
-#imv /tempZone/home/rods/xdira /tempZone/trash/home/rods/xdira
+#imv /$myZone/home/rods/xdira /$myZone/trash/home/rods/xdira
 runCmd(0, "irm -r xdira");
 runCmd(0, "irmtrash");
 

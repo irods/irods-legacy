@@ -93,6 +93,12 @@ sub mkfiles {
     }
 }
 
+# get our zone name
+runCmd(0, "ienv | grep irodsZone | tail -1");
+chomp($cmdStdout);
+$ix = index($cmdStdout,"=");
+$myZone=substr($cmdStdout, $ix+1);
+
 # Move/rename tests
 `ls -l > $F1`;
 $F1a = "$F1" . "a";
@@ -331,7 +337,8 @@ runCmd(0, "iadmin moduser $U2 type rodsuser");
 runCmd(0, "iadmin moduser $U2 DN asdfsadfsadf/dfadsf/dadf/d/");
 runCmd(0, "iadmin moduser $U2 DN ''");
 #runCmd(0, "iadmin moduser $U2 zone badZone");
-runCmd(0, "iadmin moduser $U2 zone tempZone");
+
+runCmd(0, "iadmin moduser $U2 zone $myZone");
 runCmd(0, "iadmin moduser $U2 comment 'this is a comment'");
 runCmd(0, "iadmin moduser $U2 comment ''");
 runCmd(0, "iadmin moduser $U2 info 'this is Info field'");
@@ -438,7 +445,7 @@ runCmd(0, "iadmin lt zone_type local");
 runCmd(0, "iadmin lr");
 runCmd(0, "iadmin lr demoResc");
 runCmd(0, "iadmin lz");
-runCmd(0, "iadmin lz tempZone");
+runCmd(0, "iadmin lz $myZone");
 runCmd(0, "iadmin lg");
 runCmd(0, "iadmin lg rodsadmin ");
 runCmd(0, "iadmin lgd rodsadmin");
