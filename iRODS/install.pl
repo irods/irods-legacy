@@ -13,7 +13,7 @@
 #    or at SDSC checkout a current cvs tree.
 #
 # 2) cd into the top directory and run 'install.pl' (no changes are needed).
-#    It will prompt for a few parameters or you can edit install/install.config.
+#   It will prompt for a few parameters or you can edit install/install.config.
 
 # It will download postgres and odbc, and build them and put the tar
 # files and binaries one level up and in a subdir: ../iRodsPostgres.
@@ -63,13 +63,13 @@ chomp($thisUser);
 $DB_NAME="ICAT";                  # Name of the Postgres database to create 
                                   # and use as the ICAT database.
 $ADMIN_NAME_BOOT="rodsBoot";      # Name of the rods-admin as ingested via sql
-$ADMIN_BOOT_PW="RODS";            # Passward for the above user (changed later)
+$ADMIN_BOOT_PW="RODS";            # Password for the above user (changed later)
 
 $POSTGRES_ADMIN_NAME="$thisUser"; # Normally the postgres admin is the same
                                   # as the RODS admin unix username, but you
                                   # can set it to another value if needed,
                                   # e.g.: using an existing postgres.
-$ZONE_NAME="tempZone";            # The local Zone as set up by the sql
+$ZONE_NAME_BOOT="tempZone";       # The local Zone as set up by the sql
 
 if (!$DB_PASSWORD) {
     $DB_PASSWORD = $ADMIN_PW;
@@ -616,6 +616,10 @@ sub finishIcatAndSetupEnv() {
 # and add the main collections (directories) via the admin tool.
 
     if ($subState eq "1") {
+	if ($ZONE_NAME ne $ZONE_NAME_BOOT) {
+	    runCmdNoLog(0,"perl config/replines.pl $startDir/install/irodsEnv.boot '$ZONE_NAME_BOOT' 'irodsZone \'$ZONE_NAME\''");
+	}
+
 	$ENV{'irodsEnvFile'}="$startDir/install/irodsEnv.boot";
 	startIrodsServer();
 	printf("Sleeping briefly\n");
@@ -727,6 +731,13 @@ sub installIcatDB() {
 	unlink("myinstall.results.2.psg");
 	unlink("myinstall.results.3.psg");
 	unlink("myinstall.results.4.psg");
+	if ($ZONE_NAME ne $ZONE_NAME_BOOT) {
+	    if (!-e "icatSysInserts.sql.orig") {
+		rename("icatSysInserts.sql", "icatSysInserts.sql.orig");
+	    }
+	    unlink("icatSysInserts.sql");
+	    runCmdNoLog(0, "cat icatSysInserts.sql.orig | sed s/$ZONE_NAME_BOOT/$ZONE_NAME/g > icatSysInserts.sql");
+	}
 	if ($redirectForm eq "2") {
 	    runCmdNoLog(0,"$postgresInstallDir/bin/psql $DB_NAME < icatCoreTables.sql > myinstall.results.1.psg 2>&1");
 	    runCmdNoLog(0,"$postgresInstallDir/bin/psql $DB_NAME < icatSysTables.sql > myinstall.results.2.psg 2>&1");
