@@ -40,17 +40,22 @@ if ( (empty($files))&&(empty($dirs)) )
 
 try {
   $account=RODSAccount::fromURI($ruri);
-  if (empty($account->pass))
-  {
+    
     $acct=$_SESSION['acct_manager']->findAcct($account);
     if (empty($acct))
     {
-      $response=array('success'=> false,'errmsg'=>'Authentication Required');
-      echo json_encode($response);
-      exit(0);
+      if (empty($account->pass))
+      {
+        $response=array('success'=> false,'errmsg'=>'Authentication Required');
+        echo json_encode($response);
+        exit(0);
+      }
+      else
+      {
+        $_SESSION['acct_manager']->add($account);
+      }
     }
     $account=$acct;
-  }
   
   $mservices=array();
   $input_params=array("*desc_resc" => $resc);
@@ -76,7 +81,7 @@ try {
       $mydir=ProdsDir::fromURI($diruri);
       $mservices[]=
         "msiReplColl(*desc_dir$num_dirs,*desc_resc,backupMode,*outbuf)";
-      $input_params["*desc_dirs$num_dirs"]=$mydir->getPath();
+      $input_params["*desc_dir$num_dirs"]=$mydir->getPath();
       $num_dirs++;
     }
   }
@@ -85,6 +90,10 @@ try {
     'delayExec(<PLUSET>0m</PLUSET>,'.
     implode("##", $mservices).
     ',nop)|nop';
+  
+  /* --debug code here in case when delayed exec not working */
+  //$rule_body='myTestRule||'.implode("##", $mservices).'|nop';
+  
     
   $rule=new ProdsRule($account,$rule_body,$input_params);
   $results=$rule->execute();   
