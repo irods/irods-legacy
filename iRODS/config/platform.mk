@@ -70,16 +70,6 @@ CC=cc -pthread  -std0 -verbose
 LDR=cc
 endif
 
-ifeq ($(GMAKE_EXISTS), 1)
- ifeq ($(OS_platform), osx_platform)
- MAKE="make"
- else
- MAKE="gmake"
- endif
-else
-MAKE="make"
-endif
-
 ifeq ($(OS_platform), solaris_platform)
 ifeq ($(ADDR_64BITS), 1)
 AR=/usr/xpg4/bin/ar
