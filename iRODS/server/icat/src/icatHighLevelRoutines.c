@@ -2208,7 +2208,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    int status;
    char md5Buf[100];
-   char digest[RESPONSE_LEN+2];
+   unsigned char digest[RESPONSE_LEN+2];
    MD5_CTX context;
    int i;
    char password[MAX_PASSWORD_LEN+10];
