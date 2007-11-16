@@ -2,7 +2,7 @@
 # Each input line is a keyword/value pair. 
 # Keywords supported are:
 # icatHost - the address of the master icat host
-# slaveRcatHost - the address of the slave Rcat host (optional)
+# slaveIcatHost - the address of the slave Icat host (optional)
 #
 # For RCAT-Enabled hosts:
 # DBPassword - the database password
