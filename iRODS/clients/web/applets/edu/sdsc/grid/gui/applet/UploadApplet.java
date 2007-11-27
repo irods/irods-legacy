@@ -47,32 +47,33 @@ package edu.sdsc.grid.gui.applet;
 
 
 import java.io.IOException;
-import javax.swing.JApplet;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.JCheckBox;
-import javax.swing.JRadioButton;
-import javax.swing.JTextArea;
-
 import java.io.File;
+
 import java.util.List;
+import java.util.ArrayList;
 
 import java.net.URL;
 import java.net.MalformedURLException;
 
+import javax.swing.JApplet;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JCheckBox;
+import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
+
 import java.awt.Dimension;
 import java.awt.Container;
-import java.awt.Color;
 import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import com.sun.java.browser.dom.*;
-import java.util.ArrayList;
+
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.ToolTipManager;
+
 import org.w3c.dom.*;
 import org.w3c.dom.css.*;
 import org.w3c.dom.events.*;
@@ -83,13 +84,21 @@ import org.w3c.dom.views.*;
 /**
  * Main Applet window. Creates and adds other JPanels to the main Container.
  *
- * @author      Alex Wu, San Diego Supercomputer Center
- * 
  **/
-public class UploadApplet extends JApplet implements ActionListener, AppletConstant {
+public class UploadApplet extends JApplet implements ActionListener {
+    static String USER_HOME = System.getProperty("user.home");
+    static String FILE_SEPARATOR = System.getProperty("file.separator");
+    static String IRODS_DIR = USER_HOME + FILE_SEPARATOR + ".irods";
+    static String UPLOADED_LOG = IRODS_DIR + FILE_SEPARATOR + "uploaded.txt";
+    static String QUEUE_LOG = IRODS_DIR + FILE_SEPARATOR + "queue.txt";
+    static String APPLET_LOG = IRODS_DIR + FILE_SEPARATOR + "log.txt";
+    static String ACTIVE_APPLETS_LOG = IRODS_DIR + FILE_SEPARATOR + "active_applets.txt";
+    static String INACTIVE_APPLETS_LOG = IRODS_DIR + FILE_SEPARATOR + "inactive_applets.txt";
+    static String RECOVERY_LOCK_DIR = IRODS_DIR + FILE_SEPARATOR + ".lock" + FILE_SEPARATOR;
+    static String PROMPTED_FILE = IRODS_DIR + FILE_SEPARATOR + ".prompted";
 
+    
     private Container content;
-    //private JTable table;
     private UploadTableModel model;
     private JButton removeButton;
     private JButton uploadButton;
@@ -120,7 +129,6 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
     DragDropPanel dragDropPanel;
     OptionsPanel optionsPanel;
     
-    //static Manager manager = Manager.getInstance();
     private long id; // applet id for logging purpose
     private String ruri;
     
@@ -158,40 +166,33 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
     }//init
     
     private void showPrompt() {
-        
-        Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
         JPanel panel = new JPanel(new BorderLayout());
-        JTextArea tf = new JTextArea("This applet requires some files to be written to your home directory. " +
+        MyTextArea ta = new MyTextArea("This applet requires some files to be written to your home directory. " +
                                   "These files are used for logging and recovery, and can be viewed by a text editor. " +
                                   "To use this applet, you must click Allow.", 4, 15);
         
-        tf.setLineWrap(true);
-        tf.setWrapStyleWord(true);
-        tf.setBackground(bgColor);
+        ta.setLineWrap(true);
+        ta.setWrapStyleWord(true);
         
-        JButton allowButton = new JButton("Allow");
-        JButton denyButton = new JButton("Deny");
+        MyButton allowButton = new MyButton("Allow");
+        MyButton denyButton = new MyButton("Deny");
         allowButton.setActionCommand("Allow");
         denyButton.setActionCommand("Deny");
         allowButton.addActionListener(this);
         denyButton.addActionListener(this);
-        JPanel buttonPanel = new JPanel();
+        
+        MyPanel buttonPanel = new MyPanel();
         buttonPanel.add(allowButton);
         buttonPanel.add(denyButton);
-        buttonPanel.setBackground(bgColor);
                 
-        panel.add(tf, BorderLayout.CENTER);
+        panel.add(ta, BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.PAGE_END);
-        panel.setBackground(bgColor);
         
         content = getContentPane();
-        content.setBackground(bgColor);
+        content.setBackground(new MyColor());
         content.setLayout(new BorderLayout());
         content.setSize(new Dimension(200, 100));
-        
         content.add(panel);
-        
-
     }//showPrompt
 
     public void actionPerformed(ActionEvent e) {
@@ -207,18 +208,16 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
                 promptedFile.createNewFile();
             } catch (IOException ex) {
                 ex.printStackTrace();
-            }
+            }//try-catch
             
         } else if (action.equals("DENY")) {
             // do nothing
-            
-        }
+        }//if-else
+        
     }//actionPerformed
         
         
     private void createDisplay() {
-        //id = manager.registerApplet();
-        
         // Get the base web host url which will be used to get the temporary password
         String documentBase = getDocumentBase().toString();
         
@@ -267,22 +266,16 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
 
         
         // create GUI
-        Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
         content = getContentPane();
-        content.setBackground(bgColor);
+        content.setBackground(new MyColor());
         content.setLayout(new BorderLayout());
-        content.setSize(new Dimension(300, 200));
+        content.setSize(new Dimension(300, 400));
         
         model = new UploadTableModel();
         dragDropPanel = new DragDropPanel(this, model, account);
         optionsPanel = new OptionsPanel();
         
-        // set background color
-        dragDropPanel.setBackground(bgColor);
-        optionsPanel.setBackground(bgColor);
-        
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setBackground(bgColor);
+        MyTabbedPane tabbedPane = new MyTabbedPane();
         tabbedPane.add("File Upload Table", dragDropPanel); // DragDrop Panel
         tabbedPane.add("Options", optionsPanel); // UploadOptions Panel
         
@@ -298,15 +291,14 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
          * 
          **/
         
-        List queueList = new DBUtil().getUnassigned();
+        List queueList = DBUtil.getInstance().getUnassigned();
         if (queueList != null) {
             model.addFile(queueList);
         }
         
         // set queueList to assigned
-        new DBUtil().setAssigned(queueList);
-        
-    }
+        DBUtil.getInstance().setAssigned(queueList);
+    }//createDisplay
     
     public long getId() {
         return id;
@@ -320,21 +312,22 @@ public class UploadApplet extends JApplet implements ActionListener, AppletConst
     }
     
     public void destroy() {
-        new DBUtil().removeUploaded();
+        DBUtil.getInstance().removeUploaded();
         int rowCount = model.getRowCount();
         List itemList = new ArrayList();
         
         for (int k = 0; k < rowCount; k++) {
-            String source = ((JTextField) model.getValueAt(k, SOURCE_COLUMN)).getText();
-            String destination = ((JTextField) model.getValueAt(k, DESTINATION_COLUMN)).getText();
-            String resource = (String) ((JComboBox) model.getValueAt(k, RESOURCE_COLUMN)).getSelectedItem();
+            String source = ((JTextField) model.getValueAt(k, UploadTableModel.SOURCE_COLUMN)).getText();
+            String destination = ((JTextField) model.getValueAt(k, UploadTableModel.DESTINATION_COLUMN)).getText();
+            String resource = (String) ((JComboBox) model.getValueAt(k, UploadTableModel.RESOURCE_COLUMN)).getSelectedItem();
             
             UploadItem item = new UploadItem(source, destination, resource);
             itemList.add(item);
         }
 
-        new DBUtil().updateAssigned(itemList, false);
-
+        DBUtil.getInstance().updateAssigned(itemList, false);
+        
+        DBServer.shutdown();
                 
     }//destroy
     

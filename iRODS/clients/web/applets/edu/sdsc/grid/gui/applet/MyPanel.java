@@ -28,12 +28,12 @@
 //
 //
 //  FILE
-//      JTextFieldMouseListener.java    -  edu.sdsc.grid.gui.applet.JTextFieldMouseListener
+//      MyPanel.java    -  edu.sdsc.grid.gui.applet.MyPanel
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
 //          |
-//          +-.JTextFieldMouseListener
+//          +-.MyPanel
 //
 //  PRINCIPAL AUTHOR
 //      Alex Wu, SDSC/UCSD
@@ -42,15 +42,18 @@
 
 package edu.sdsc.grid.gui.applet;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javax.swing.JPanel;
+import java.awt.LayoutManager;
 
-public class JTextFieldMouseListener  extends MouseAdapter {
-    static AppletLogger logger = AppletLogger.getInstance();
+
+public class MyPanel extends JPanel {
+    public MyPanel() {
+        super();
+        this.setBackground(new MyColor());
+    }
     
-    public void mouseClicked(MouseEvent e) {
-        // if not double click, don't pass on event
-        if (e.getClickCount() < 2)
-            e.consume();
+    public MyPanel(LayoutManager layout) {
+        super(layout);
+        this.setBackground(new MyColor());
     }
 }

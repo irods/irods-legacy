@@ -84,5 +84,5 @@ class UploadProgressThread extends Thread {
         } catch (InterruptedException ie) {
             System.out.println("thread interrupted. " + ie);
         }
-    }
+    }//run
 }

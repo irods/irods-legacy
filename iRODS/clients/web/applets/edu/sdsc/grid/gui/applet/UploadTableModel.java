@@ -45,8 +45,10 @@
 package edu.sdsc.grid.gui.applet;
 
 import java.io.File;
+
 import java.util.List;
 import java.util.ArrayList;
+
 import javax.swing.table.DefaultTableModel;
 import javax.swing.ImageIcon;
 import javax.swing.JProgressBar;
@@ -55,7 +57,15 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-class UploadTableModel extends DefaultTableModel implements AppletConstant {
+class UploadTableModel extends DefaultTableModel {
+    /* Column index for table */
+    static int ICON_COLUMN = 0;
+    static int SOURCE_COLUMN = 1;
+    static int DESTINATION_COLUMN = 2;
+    static int RESOURCE_COLUMN = 3;
+    static int STATUS_COLUMN = 4;
+
+    
     private int directoryFileCount;
     //private int currentRow; // row just added
                                              
@@ -82,14 +92,16 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         } catch (Exception e) {
             logger.log("file icon exception. " + e);
         }//try-catch
-    }
+    }//UpdateTableModel
  
+    
     public boolean isCellEditable(int row, int col) {
         if (col == SOURCE_COLUMN || col == DESTINATION_COLUMN || col == RESOURCE_COLUMN)
             return true;
         
         return false;
-    }
+    }//isCellEditable
+    
     
     // implement function below to display Checkbox
     public Class getColumnClass(int c) {
@@ -112,7 +124,8 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
             return this.getValueAt(0, c).getClass();
         }
         
-    }
+    }//getColumnClass
+    
     
     // param: List fileList is a List of UploadItem objects
     public void addFile(List fileList) { 
@@ -124,7 +137,7 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
             addToTable(item);            
         }//for
         
-    }
+    }//addFile
     
     public void removeFile(int[] selectedRows) {
         List itemList = new ArrayList();
@@ -137,13 +150,11 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
             itemList.add(item);
             
             this.removeRow(selectedRows[k]);
-        }
+        }//for
         
-        new DBUtil().delete(itemList);
+        DBUtil.getInstance().delete(itemList);
         
-    }
-    
-
+    }//removeFile
 
     
     private JTextFieldListener tfListener = new JTextFieldListener();
@@ -162,20 +173,18 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
         
         tfSource.setBorder(new EmptyBorder(0, 8, 0, 8));        
         tfDestination.setBorder(new EmptyBorder(0, 8, 0, 8));        
-        //tfResource.setBorder(new EmptyBorder(0, 8, 0, 8));
         
         tfSource.setDragEnabled(false);
         tfDestination.setDragEnabled(false);
-        //tfResource.setDragEnabled(false);
         
         ImageIcon icon = null;
-        if (item.getType().equals(TYPE_FILE))
+        if (item.getType().equals(UploadItem.TYPE_FILE))
             icon = fileIcon;
         else
             icon = folderIcon;
         
         this.addRow(new Object[] { icon, tfSource, tfDestination, comboBox, null});
-    }
+    }//addToTable
     
     
     private void calculateFileCount(File file, int row, String folderName) {
@@ -192,20 +201,8 @@ class UploadTableModel extends DefaultTableModel implements AppletConstant {
             }
         }//for
         
-    }
-    
- 
+    }//calculateFileCount
 
-    
-    // show content in the folder
-    // recursive function
-    public void expandDirectory(File file) {
-        // add rows under this directory
-    }
-    
-    public void collapseDirectory(File file) {
-        // remove rows under this directory
-    }
     
 }//UploadTableModel
 

@@ -28,12 +28,12 @@
 //
 //
 //  FILE
-//      ProgressBarRenderer.java    -  edu.sdsc.grid.gui.applet.JTextFieldRenderer
+//      JComboBoxRenderer.java    -  edu.sdsc.grid.gui.applet.JComboBoxRenderer
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
 //          |
-//          +-.JTextFieldRenderer
+//          +-.JComboBoxRenderer
 //
 //  PRINCIPAL AUTHOR
 //      Alex Wu, SDSC/UCSD
@@ -42,39 +42,35 @@
 
 package edu.sdsc.grid.gui.applet;
 
-import javax.swing.table.TableCellRenderer;
 import java.awt.Component;
-import javax.swing.JComboBox;
-import javax.swing.JTable;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-class JComboBoxRenderer extends JComboBox implements TableCellRenderer, AppletConstant {  
+import javax.swing.table.TableCellRenderer;
+import javax.swing.JComboBox;
+import javax.swing.JTable;
+
+class JComboBoxRenderer extends JComboBox implements TableCellRenderer {  
     static AppletLogger logger = AppletLogger.getInstance();  
     private Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
     
     public JComboBoxRenderer () {
         super();
-        
     }
     
     public Component getTableCellRendererComponent ( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
         JComboBox box = (JComboBox) value;
-        // need to make sure not to add multiple listeners
-        //box.addActionListener(this);
         
         if (isSelected)
-            box.setBackground(new Color(196, 210, 227)); // RGB of #c4d2e3; light blue)
+            box.setBackground(new MyColor());
         else
             box.setBackground(Color.WHITE);
         
         return box;
-    }  
+    }//getTableCellRendererComponent  
     
     public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox)e.getSource();
         String resource = (String)cb.getSelectedItem();
-
     }
 } 

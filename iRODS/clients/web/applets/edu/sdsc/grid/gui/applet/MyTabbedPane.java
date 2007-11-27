@@ -28,29 +28,24 @@
 //
 //
 //  FILE
-//      JTextFieldMouseListener.java    -  edu.sdsc.grid.gui.applet.JTextFieldMouseListener
+//      MyTabbedPane.java    -  edu.sdsc.grid.gui.applet.MyTabbedPane
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
 //          |
-//          +-.JTextFieldMouseListener
+//          +-.MyTabbedPane
 //
 //  PRINCIPAL AUTHOR
 //      Alex Wu, SDSC/UCSD
 //
 //
-
 package edu.sdsc.grid.gui.applet;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javax.swing.JTabbedPane;
 
-public class JTextFieldMouseListener  extends MouseAdapter {
-    static AppletLogger logger = AppletLogger.getInstance();
-    
-    public void mouseClicked(MouseEvent e) {
-        // if not double click, don't pass on event
-        if (e.getClickCount() < 2)
-            e.consume();
+public class MyTabbedPane extends JTabbedPane {
+    public MyTabbedPane() {
+        super();
+        this.setBackground(new MyColor());
     }
 }

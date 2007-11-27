@@ -28,64 +28,25 @@
 //
 //
 //  FILE
-//      LogPanel.java    -  edu.sdsc.grid.gui.applet.LogPanel
+//      MyTextArea.java    -  edu.sdsc.grid.gui.applet.MyTextArea
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
 //          |
-//          +-.JPanel
-//                   |
-//                   +-.LogPanel
+//          +-.MyTextArea
 //
 //  PRINCIPAL AUTHOR
 //      Alex Wu, SDSC/UCSD
 //
 //
-
 package edu.sdsc.grid.gui.applet;
 
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JPanel;
 
-public class LogPanel extends JPanel {
-    //private static LogPanel instance = null;
-    private JTextArea textArea;
-    
-    public LogPanel() {
-        init();
-    }
-    /*
-    public static LogPanel getInstance() {
-        if(instance == null)
-            instance = new LogPanel();
-        
-        return instance;
-    }
-    */
-    /**
-     * Creates a scrollable text area and add to this JPanel
-     **/
-    public void init() {
-        //static JTextArea textArea = new JTextArea(15, 48); // row, col
-        textArea = new JTextArea(15, 50); // row, col
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setEditable(false);
-        //Create the scroll pane and add the textarea to it.
-        JScrollPane textScrollPane = new JScrollPane(textArea);
-        this.add(textScrollPane);
-    }//init
- 
-    /**
-     * Add a line of string to the text area
-     **/
-    public void append(String s) {
-        try {
-            textArea.append(s);
-        } catch (Exception e) {
-            // may be null if panel is not set up yet
-            // ignore exception
-        }
+
+public class MyTextArea extends JTextArea {
+    public MyTextArea (String text, int rows, int columns) {
+        super(text, rows, columns);
+        this.setBackground(new MyColor());
     }
 }

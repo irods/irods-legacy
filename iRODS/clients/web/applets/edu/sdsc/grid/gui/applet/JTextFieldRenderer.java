@@ -28,7 +28,7 @@
 //
 //
 //  FILE
-//      ProgressBarRenderer.java    -  edu.sdsc.grid.gui.applet.JTextFieldRenderer
+//      JTextFieldRenderer.java    -  edu.sdsc.grid.gui.applet.JTextFieldRenderer
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
@@ -42,28 +42,23 @@
 
 package edu.sdsc.grid.gui.applet;
 
-import javax.swing.table.TableCellRenderer;
+
 import java.awt.Component;
-import javax.swing.border.EmptyBorder;
+import java.awt.Font;
+import java.awt.FontMetrics;
+
+import javax.swing.table.TableCellRenderer;
 import javax.swing.JTextField;
 import javax.swing.JTable;
-import javax.swing.BoundedRangeModel;
 
 class JTextFieldRenderer implements TableCellRenderer {  
     
-
-    
     public Component getTableCellRendererComponent ( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column )  {
-        
         JTextField tf = (JTextField) value;
-        BoundedRangeModel bm = tf.getHorizontalVisibility();
-        int extent = bm.getExtent();
-        tf.setScrollOffset(extent);
-        
-        return  ( JTextField ) tf;
-        
-        
+        FontMetrics fm = tf.getFontMetrics(new Font("Default", Font.PLAIN, 11));
+        int offset = fm.stringWidth(tf.getText());
+        tf.setScrollOffset(offset);
+        tf.setToolTipText(tf.getText());
+        return tf;
     }  
-    
-
 } 

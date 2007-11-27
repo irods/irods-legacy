@@ -28,70 +28,23 @@
 //
 //
 //  FILE
-//      Manager.java    -  edu.sdsc.grid.gui.applet.Manager
+//      MyColor.java    -  edu.sdsc.grid.gui.applet.MyColor
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
 //          |
-//          +-.Manager
+//          +-.MyColor
 //
 //  PRINCIPAL AUTHOR
 //      Alex Wu, SDSC/UCSD
 //
 //
-
 package edu.sdsc.grid.gui.applet;
 
-import java.util.List;
+import java.awt.Color;
 
-public class Manager implements AppletConstant {
-    protected Manager() {}
-    
-    private static Manager instance;
-    private static int appletCount; // how many applet instances are active
-    // Logger
-    static AppletLogger logger = AppletLogger.getInstance();
-    
-    public static Manager getInstance() {
-        if (instance == null)
-            instance = new Manager();
-        
-        return instance;
+public class MyColor extends Color {
+    public MyColor() {
+        super(196, 210, 227); // RGB of #c4d2e3; light blue);
     }
-    
-    public static void registerApplet() {
-        appletCount++;
-        //logger.log("applet count is now: " + appletCount);    
-    }
-    
-    public static void unregisterApplet() {
-        if (appletCount > 0) // should never be negative
-            appletCount--;
-            
-        //logger.log("applet count is now: " + appletCount);
-    }
-    
-    public static int getAppletCount() {
-        return appletCount;
-    }
-    
-    /* Log files methods */
-    public static List recoverQueue() {
-        // if queue log differs from completed log, then
-        // some files were not uploaded
-        // once recovered, both log files should be cleared
-        // AND the queue log be rewritten
-        //if (appletCount != 1) return null;
-        
-        // have any applet recover queue at the moment
-        // will need to create a file lock to determine if
-        // queue should be recovered or not
-        //
-        // a file lock will help in situations
-        // where a user opens applets on multiple browser vendors
-        
-        AppletLogger logger = AppletLogger.getInstance();
-        return logger.recoverQueue();
-    }
-    
 }

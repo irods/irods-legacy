@@ -28,7 +28,7 @@
 //
 //
 //  FILE
-//      ProgressBarRenderer.java    -  edu.sdsc.grid.gui.applet.JTextFieldEditor
+//      JTextFieldEditor.java    -  edu.sdsc.grid.gui.applet.JTextFieldEditor
 //
 //  CLASS HIERARCHY
 //      java.lang.Object
@@ -42,17 +42,16 @@
 
 package edu.sdsc.grid.gui.applet;
 
-import javax.swing.table.TableCellEditor;
 import java.awt.Component;
+import java.awt.event.MouseEvent;
+
+import javax.swing.table.TableCellEditor;
 import javax.swing.JTextField;
 import javax.swing.JTable;
-import javax.swing.BoundedRangeModel;
 import javax.swing.event.CellEditorListener;
-import javax.swing.DefaultCellEditor;
+
 import java.util.EventObject;
-import java.awt.event.FocusListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseEvent;
+
 
 class JTextFieldEditor implements TableCellEditor {
 
@@ -63,19 +62,15 @@ class JTextFieldEditor implements TableCellEditor {
     public Component getTableCellEditorComponent ( JTable table, Object value, boolean isSelected, int row, int column )  {
         
         return  (JTextField) value;
-        
     }
     
 
     
     public void removeCellEditorListener(CellEditorListener l) {
-        //logger.log("removeEditorListener.");
     }
     
     
     public void addCellEditorListener(CellEditorListener l) {
-
-        //logger.log("addCellEditorListener.");
     }
     
     public void cancelCellEditing() {
@@ -83,14 +78,10 @@ class JTextFieldEditor implements TableCellEditor {
     }
     
     public boolean stopCellEditing() {
-        
-        //logger.log("stopCellEditing.");
         return true;
-         
     }
     
     public boolean shouldSelectCell(EventObject anEvent) {
-        //logger.log("shouldSelectCell");
         return true;
     }
     
@@ -107,7 +98,6 @@ class JTextFieldEditor implements TableCellEditor {
     }
     
     public Object getCellEditorValue() {
-        //logger.log("getCellEditorValue");
         return null;
     }
     
