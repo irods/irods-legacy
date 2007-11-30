@@ -832,7 +832,7 @@ void usageMain()
 " rmuser Name (remove user, where userName: name[@department][#zone])",
 " mkdir Name (make directory(collection))",
 " rmdir Name (remove directory) ",
-" mkresc Name Type Class Host Path (make or register Resource)",
+" mkresc Name Type Class Host Path (make Resource)",
 " modresc Name [type, class, host, path, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
 " mkgroup Name (make group)",
@@ -975,16 +975,11 @@ usage(char *subOpt)
 ""};
 
    char *mkrescMsgs[]={
-" mkresc Name Type Class Host Path",
-"Create  a new storage resource (Make or register a new resource into th iCAT).",
-" ",
-"Name = name that you want to use to identify the resource",
-"Type =  Resouce type. (Use the command 'lt resource_type' to find out allowed resource types)",
-"Class = Usage class of thie resource (Use the command 'lt resc_class' to find out allowed resource classes)",
-"The 'Host' field is the DNS host name of the resource.",
+" mkresc Name Type Class Host Path (make Resource)",
+"Create a new storage resource.",
+"The 'Host' field is the DNS host name.",
 "The 'Path' is the defaultPath for the vault.",
-" ",
-"Tip: Also see the lt command for Type and Class token information.",
+"Also see the lt command for Type and Class token information.",
 ""};
 
    char *modrescMsgs[]={
