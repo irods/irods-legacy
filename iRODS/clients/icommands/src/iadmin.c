@@ -921,7 +921,7 @@ usage(char *subOpt)
 "Type is the user type (see 'lt user_type' for a list)",
 "DN is the Distinguished Name for GSI authentication (optional)",
 " ",
-"Tip:  Use moduser to set a password or change any attributes for the user account",
+"Tip: Use moduser to set a password or change attributes of the user account.",
 ""};
 
    char *atrgMsgs[]={
@@ -976,10 +976,15 @@ usage(char *subOpt)
 
    char *mkrescMsgs[]={
 " mkresc Name Type Class Host Path (make Resource)",
-"Create a new storage resource.",
-"The 'Host' field is the DNS host name.",
-"The 'Path' is the defaultPath for the vault.",
-"Also see the lt command for Type and Class token information.",
+"Create (register) a new storage resource.",
+" ",
+"Name is the name of the new resource.",
+"Type is the resource type (see 'lt resource_type' for a list).",
+"Class is the usage class of the resource (see 'lt resc_class').",
+"Host is the DNS host name.",
+"And Path is the defaultPath for the vault.",
+" ",
+"Tip: Also see the lt command for Type and Class token information.",
 ""};
 
    char *modrescMsgs[]={
