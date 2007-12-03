@@ -338,7 +338,6 @@ distclean:	clean
 	@echo "Cleaning configuration files..."
 	@rm -f config/config.mk
 	@rm -f config/config.mk.orig
-	@rm -f server/config/server.config
 	@echo "Cleaning logs..."
 	@rm -f installLogs/*
 	@rm -f server/log/*
