@@ -27,6 +27,10 @@ ifdef CCMALLOC
 LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl
 endif
 
+ifdef PHP_LIB
+AG_LDADD+=-L$(PHP_LIB_DIR) -lphp5
+endif
+
 LDADD= -lm -lpthread
 
 ifeq ($(OS_platform), solaris_platform)

@@ -138,3 +138,10 @@ ifdef IRODS_FS
 fuseHomeDir=/home/mwan/adil/fuse-2.7.0
 endif
 
+# PHP_LIB - specify whether php library will be loaded into irodsAgent.
+# Would like to use PHP as a micro-service language
+# PHP_LIB = 1
+ifdef PHP_LIB
+PHP_LIB_DIR=/data/mwan/php/php-5.2.5x/libs
+endif
+

@@ -310,7 +310,7 @@ $(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRA
 
 $(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS)
 	@echo "Link agent server `basename $@`..."
-	@$(LDR) -o $@ $^ $(LDFLAGS)
+	@$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
 # Rule engine
 $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRARY) $(OBJS)
