@@ -24,6 +24,13 @@ TESTOBJS = lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3bundle.o xmsgtest.o
 
 TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3bundle xmsgtest
+ifdef PHP_LIB
+TARGETS+= phptest
+TESTOBJS+= phptest.o
+CFLAGS+=-I$(PHP_INCLUDE_DIR) -I$(PHP_INCLUDE_DIR)/main -I$(PHP_INCLUDE_DIR)/Zend -I$(PHP_INCLUDE_DIR)/TSRM -I$(PHP_INCLUDE_DIR)/regex -I$(PHP_INCLUDE_DIR)/sapi/embed
+AG_LDADD+= -L/data/mwan/php/libxml2-2.6.30/.libs -lrt -lresolv -lm -ldl -lnsl -lxml2 -lz -lcrypt -liconv
+endif
+
 
 all:: $(TARGETS)
 
@@ -56,3 +63,7 @@ l3bundle: l3bundle.o
 
 xmsgtest: xmsgtest.o
 	$(LDR) -o $@ $^ $(LDADD)
+
+phptest: phptest.o
+	$(LDR) -o $@ $^ $(LDADD) $(AG_LDADD)
+
