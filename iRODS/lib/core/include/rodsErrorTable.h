@@ -314,6 +314,11 @@
 #define NO_VALUES_FOUND                       -1106000
 #define NO_COLUMN_NAME_FOUND                  -1107000
 
+/* 1,600,000 to 1,700,000  - PHP scripting error */
+#define PHP_EXEC_SCRIPT_ERR                   -1600000
+#define PHP_REQUEST_STARTUP_ERR               -1601000
+#define PHP_OPEN_SCRIPT_FILE_ERR	      -1602000
+
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
 #define SYS_HANDLER_DONE_WITH_ERROR		-99999997
