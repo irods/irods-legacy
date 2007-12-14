@@ -1,118 +1,155 @@
-#!/usr/bin/perl
 #
-# Copyright (c), The Regents of the University of California            ***
-# For more information please refer to files in the COPYRIGHT directory ***
+# Perl
+
 #
-# Script to shutdown the irods server and agent
+# Shut down the iRODS server and agent.
+#
+# Usage is:
+#	perl stop.pl
 #
 
-# Modify this, if needed, to the irodsServer you wish to shutdown
-$SERVER_STR="irodsServer";
-$AGENT_STR="irodsAgent";
-$RE_SERVER_STR="irodsReServer";
+use File::Spec;
+use Cwd;
+use Cwd "abs_path";
 
-$hostOS=`uname -s`;
-chomp($hostOS);
-$hostUser= `whoami`;
-chomp($hostUser);
-print "Host User = $hostUser\n";
-if ("$hostOS" eq "Darwin" ) {
-    $psOptions="-axlw";
-    $pidField="2";
-}
-else {
-    $psOptions="-elf";
-    $pidField="4";
-}
-if ("$hostOS" eq "SunOS" ) {
-    $psOptions="-el";
-    $SERVER_STR="irodsSer";
-    $AGENT_STR="irodsAge";
-    $RE_SERVER_STR="irodsReS";
-}
 
-# find the server (if any)
-$serverLine=`ps $psOptions | egrep "$SERVER_STR" | egrep "$hostUser" | egrep -v grep `;
-chomp($serverLine);
-$serverPid=`echo "$serverLine" | awk '{ print \$$pidField }'`;
-chomp($serverPid);
-if (!$serverPid) {
-    print "There are no irods Servers running\n";
-}
-else {
-    print $serverLine . "\n";
-    print "serverPid: " . $serverPid . "\n";
 
-# Find all irodsAgents (if any) that are children of this irodsServer
-    $agentsFull=`ps $psOptions | egrep " $serverPid" | egrep $AGENT_STR | egrep -v "$SERVER_STR" | egrep -v grep`;
-    chomp($agentsFull);
-    $agentPids = `echo "$agentsFull" | awk '{ print \$$pidField }'`;
-    chomp($agentPids);
-    $agentPids =~ s/\n/ /g;
-    print "agentPids: " . $agentPids . "\n";
-}
 
-# Find the irodsReServer (if any) 
-$REFull=`ps $psOptions | egrep $RE_SERVER_STR | egrep "$hostUser" | egrep -v grep`;
-chomp($REFull);
-$REPid = `echo "$REFull" | awk '{ print \$$pidField }'`;
-chomp($REPid);
-$REPid =~ s/\n/ /g;
-print $RE_SERVER_STR . "Pid: " . $REPid . "\n";
 
-$any = $agentPids . $REPid . $serverPid;
-if ($any) {
-printf("Enter y (or yes) to kill these processes:");
-    $cmd=<STDIN>;
-    chomp($cmd);
-    if ($cmd ne "yes" and $cmd ne "y") {
-	die("Aborted by user");
-    }
-}
+#
+# Design Notes:  deciding what to kill
+# 	In the simple (common) case, this host is running one iRODS
+# 	server and it's child servers.  Running "ps" and filtering
+# 	its output for processes with known server names gets us a
+# 	list of process IDs of servers.  Then we kill them.
+#
+# 	There are several gotchas that this script currently does
+# 	not handle:
+# 		1.  iRODS servers owned by other users.
+# 		2.  iRODS servers with changed process names.
+# 		3.  Multiple iRODS servers running, but only want
+# 		    to kill one.
+#
+#	If there are iRODS servers running that are owned by other
+#	users, this script will get their process IDs, but killing
+#	them will fail.  An error message is output and the script
+#	exits with a non-zero exit code.
+#
+#	If there are iRODS servers with changed process names
+#	(possible if they are started from Perl), then this script's
+#	filter of "ps" output won't find them.  This script won't
+#	be able to kill them and it will output a wrong message that
+#	there are no servers running.
+#
+#	If there are multiple iRODS servers running, this script
+#	will try to kill them all.  Currently there is no way to
+#	tell this script which ones to kill.  Further, there is
+#	no clear way for the user to know which ones to kill
+#	based upon port number, or something else.
+#
+#	These are all design flaws.  There needs to be a way for
+#	the iRODS servers to be discovered without doing "ps",
+#	which is inherently a weak method.  Once such a way exists,
+#	then this script can intelligently choose which servers
+#	to kill, and which ones to ignore.
+#
 
-if ($agentPids) {
-    print "killing: " . $agentPids . "\n";
-    `/bin/kill $agentPids`;
-    $agentsFull=`ps $psOptions | egrep " $serverPid" | egrep $AGENT_STR | egrep -v "$SERVER_STR" | egrep -v grep`;
-    chomp($agentsFull);
-    $agentPids = `echo "$agentsFull" | awk '{ print \$$pidField }'`;
-    chomp($agentPids);
-    if ($agentsPids) {
-	print "killing again as some remain: " . $agentPids . "\n";
-	`/bin/kill $agentPids`;
-    }
-}
 
-if ($REPid) {
-    print "killing: " . $REPid . "\n";
-    `/bin/kill $REPid`;
-    $REFull=`ps $psOptions | egrep " $serverPid" | egrep $RE_SERVER_STR | egrep -v "$SERVER_STR" | egrep -v grep`;
-    chomp($REFull);
-    $REPid = `echo "$REFull" | awk '{ print \$$pidField }'`;
-    chomp($REPid);
-    $REPid =~ s/\n/ /g;
-    if ($REPid) {
-	print "killing again as it remains: " . $REPid . "\n";
-	`/bin/kill $REPid`;
-    }
+
+
+
+# Server names
+%servers = (
+	# Nice name		process name
+	"iRODS agents" =>	"irodsAgent",
+	"iRODS rule servers" =>	"irodsReServer",
+	"iRODS servers" =>	"irodsServer"
+);
+
+
+
+
+
+# Find the iRODS home directory and load the support script.
+#	This script may have been executed from the iRODS home, or
+#	from one of its subdirectories.
+$IRODS_HOME = cwd( );
+my $configFile = File::Spec->catfile( $IRODS_HOME, "config", "utils_platform.pl" );
+while ( ! -e $configFile )
+{
+	my $newHome = abs_path( File::Spec->catdir( $IRODS_HOME, ".." ) );
+	if ( $newHome eq $IRODS_HOME )
+	{
+		print( "Usage problem:\n" );
+		print( "    Please run this script from the iRODS home directory.\n" );
+		exit( 1 );
+	}
+	$IRODS_HOME = $newHome;
+	$configFile = File::Spec->catfile( $IRODS_HOME, "config", "utils_platform.pl" );
 }
 
-# Kill this irods Server
-if ($serverPid) {
-    print "killing: " . $serverPid . "\n";
-    `/bin/kill $serverPid`;
-    $serverPid=`ps $psOptions | egrep "$SERVER_STR" | egrep -v grep | egrep "$hostUser" | awk '{ print \$$pidField }'`;
-    chomp($serverPid);
-    if ($serverPid) {
-	print "killing again as it is still going: " . $serverPid . "\n";
-	`/bin/kill $serverPid`;
-    }
-    $serverPid=`ps $psOptions | egrep "$SERVER_STR" | egrep -v grep | egrep "$hostUser" | awk '{ print \$$pidField }'`;
-    chomp($serverPid);
-    if ($serverPid) {
-	die("irodsServer failed to exit\n");
-    }
+require $configFile;
+
+
+
+
+
+# Find and kill the server process IDs
+my $found = 0;
+foreach $serverType (keys %servers)
+{
+	my $processName = $servers{$serverType};
+	my @pids = getProcessIds( $processName );
+	next if ( $#pids < 0 );
+	foreach $pid (@pids)
+	{
+		$found = 1;
+		kill( 'SIGINT', $pid );
+	}
 }
-exit(0);
+if ( ! $found )
+{
+	print( "There are no iRODS servers running.\n" );
+	exit( 0 );
+}
 
 
+
+
+
+# Repeat to catch stragglers.  This time use kill -9.
+foreach $serverType (keys %servers)
+{
+	my $processName = $servers{$serverType};
+	my @pids = getProcessIds( $processName );
+	next if ( $#pids < 0 );
+	foreach $pid (@pids)
+	{
+		kill( 9, $pid );
+	}
+}
+
+
+
+
+
+# Report if there are any left.
+my $didNotDie = 0;
+foreach $serverType (keys %servers)
+{
+	my $processName = $servers{$serverType};
+	@pids = getProcessIds( $processName );
+	if ( $#pids >= 0 )
+	{
+		$didNotDie = 1;
+	}
+}
+if ( $didNotDie )
+{
+	print( "Some servers could not be killed.  They may be owned\n" );
+	print( "by another user or there could be a problem.\n" );
+	exit( 1 );
+}
+
+# Done
+exit( 0 );
