@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# Uninstall Postgres used by iRODS.
+#
+# Usage is:
+#	./uninstallPostgres [options]
+#
+# This script uninstalls Postgres, as previously installed
+# for iRODS by 'installPostgres'.
+#
+if [ ! -f ./bin/runPerlScript ]; then
+	echo "Usage error:"
+	echo "    Please run this script from the top-level directory"
+	echo "    of the iRODS distribution."
+	exit 1
+fi
+./bin/runPerlScript --script install/uninstallPostgres.pl $*
+ExitCode="$?"
+exit $ExitCode
