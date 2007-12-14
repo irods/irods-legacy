@@ -1,0 +1,246 @@
+#!/bin/sh
+#
+# Run a Perl script for iRODS.
+#
+# Usage is:
+#	./runPerlScript [options]
+#
+# This shell script starts a Perl script set on the command-line.
+# It looks for Perl on the user's path and in standard locations
+# on UNIX and Windows Cygwin, then invokes Perl with the given
+# arguments.
+#
+# Options are:
+#	--script script		the name of the Perl script to run
+#	--dir directory		the name of the directory to run from
+#
+# All other options are passed to the Perl script unchanged.
+#
+
+
+
+
+
+#
+# @brief	Print error messages in red.
+#
+# The given text is printed in red using standard xterm/vt100
+# escape codes to set the text color.
+#
+# @param	text
+#	the text to print
+#
+printError( )
+{
+	echo "[31m$1[0m"
+}
+
+
+
+
+
+#
+# @brief	Find the path to Perl on this system.
+#
+# The user's path and the system are searched to find the Perl
+# executable.  The path to the executable is set in the global
+# PERL_PATH variable.
+#
+# If Perl is found on the user's path, then PERL_PATH is set
+# to simply "perl".  If it is found on the system somewhere,
+# then PERL_PATH is set to the file path to the Perl executable.
+# And if Perl could not be found, PERL_PATH is set to the empty
+# string.
+#
+# @return
+#	the path to the Perl executable
+#
+PERLPATH=""
+
+findPerl( )
+{
+	# Is Perl on the user's path?  If so, use it as-is.
+	perl -v > /dev/null 2>&1
+	if [ $? -eq 0 ]; then
+		PERL_PATH="perl"
+		return
+	fi
+
+	# Can 'which' find it?  Technically, this just searches the user's
+	# path, so it should be no better than the above.  However, it also
+	# looks at aliases and resets the path to that found in the user's
+	# .cshrc, so it can un-do changes caused to the user's current
+	# environment.  It's worth a try.
+	foundWhich=`which perl`
+	if [ $? -eq 0 ]; then
+		PERL_PATH="$foundWhich"
+		return
+	fi
+
+	# Is it in a standard UNIX, MacPorts, Fink, or Cygwin location?
+	# We try several places in high-to-low preference order.
+	#
+	# Highest preference is /usr/local/bin, which is very conventional.
+	# It is also common to put it in /usr/local/perlX/bin, where X is a
+	# version number.
+	#
+	# Second preference is /sw or /opt, both used by standard OpenSource
+	# install tools the sysadmin may have used to provide a newer version
+	# of Perl than that provided by the OS vendor.
+	#
+	# Third preference is the rest of the UNIX directories.  This is
+	# where we're likely to find the OS vendor's default Perl, if any.
+	#
+	#	UNIX standard directories:
+	#		/bin /sbin /usr/bin /usr/sbin /usr/local/bin
+	#	SDSC "standard" directories:
+	#		/usr/local/apps
+	#	MacPorts directories:
+	#		/opt/bin /opt/sbin /opt/usr/bin /opt/usr/sbin /opt/usr/local/bin
+	#	Fink directories:
+	#		/sw/bin /sw/sbin /sw/usr/bin /sw/usr/sbin /sw/usr/local/bin
+	#	Cygwin directories:
+	#		/cygwin/bin /cygwin/sbin /cygwin/usr/bin /cygwin/usr/sbin
+	#		/cygwin/usr/local/bin
+	#
+	# Note that we do not use the BSD 'whereis'.  That program only
+	# searches standard UNIX system directories, such as /usr/bin.  It
+	# does not include /usr/local/bin or anything in /sw or /opt.
+	#
+	# Look for /usr/local/perl* first.
+	foundLocal=`ls -d /usr/local/perl*`
+	if [ $? -eq 0 ]; then
+		# At least one entry.  Sort into reverse numerical order.
+		# This should bring the highest version number (if any)
+		# to the top (e.g. perl5.8 before perl5.6).
+		foundLocal=`ls -d /usr/local/perl* | sort -rn`
+		# Now pick the first one that has perl in it.
+		for dir in $foundLocal; do
+			$dir/perl -v > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				PERL_PATH="$dir/perl"
+				return
+			fi
+			$dir/bin/perl -v > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				PERL_PATH="$dir/bin/perl"
+				return
+			fi
+		done
+	fi
+
+	# Look in all the other standard places.
+	for dir in "/usr/local/bin" \
+		"/opt/local/bin"\
+		"/opt/bin"\
+		"/opt/sbin"\
+		"/opt/usr/bin"\
+		"/opt/usr/sbin"\
+		"/sw/local/bin"\
+		"/sw/bin"\
+		"/sw/sbin"\
+		"/sw/usr/bin"\
+		"/sw/usr/sbin"\
+		"/bin"\
+		"/sbin"\
+		"/usr/bin"\
+		"/usr/sbin"\
+		"/cygwin/usr/local/bin"\
+		"/cygwin/bin"\
+		"/cygwin/sbin"\
+		"/cygwin/usr/bin"\
+		"/cygwin/usr/sbin"; do
+		if [ -d $dir ]; then
+			$dir/perl -v > /dev/null 2>&1
+			if [ $? -eq 0 ]; then
+				PERL_PATH="$dir/perl"
+				return
+			fi
+		fi
+	done
+
+	PERL_PATH=""
+	return
+}
+
+
+
+# Parse the command-line and separate out arguments for
+# this script, and those for the Perl script to be invoked.
+PERL_SCRIPT=""
+PERL_RUN_DIRECTORY="."
+PERL_SCRIPT_ARGUMENTS=""
+THIS_SCRIPT="$0"
+THIS_COMMAND_LINE="$*"
+
+while [ $# -ne 0 ]; do
+	case $1 in
+	--script)	shift
+			PERL_SCRIPT=$1
+			;;
+	--dir)		shift
+			PERL_RUN_DIRECTORY=$1
+			;;
+	*)
+			PERL_SCRIPT_ARGUMENTS="$PERL_SCRIPT_ARGUMENTS $1"
+			;;
+	esac
+	shift
+done
+
+
+
+
+
+# Make sure the script and directory exist
+if [ ! -d "$PERL_RUN_DIRECTORY" ]; then
+	printError "Programmer error:"
+	printError "    The '$PERL_RUN_DIRECTORY' directory does not exist."
+	printError " "
+	printError "    The '$THIS_SCRIPT' script was probably invoked with a bad"
+	printError "    --dir argument."
+	printError "        Command line:  $THIS_SCRIPT $THIS_COMMAND_LINE"
+	printError " "
+	printError "Abort."
+	exit 1
+fi
+if [ ! -f "$PERL_SCRIPT" ]; then
+	if [ ! -f "$PERL_RUN_DIRECTORY/$PERL_SCRIPT" ]; then
+		printError "Programmer error:"
+		printError "    The '$PERL_SCRIPT' Perl script does not exist."
+		printError " "
+		printError "    The '$THIS_SCRIPT' script was probably invoked with a bad"
+		printError "    --script argument."
+		printError "        Command line:  $THIS_SCRIPT $THIS_COMMAND_LINE"
+		printError " "
+		printError "Abort."
+		exit 1
+	fi
+fi
+
+
+
+
+
+# Find perl
+findPerl
+if [ "$PERL_PATH" = "" ]; then
+	printError "Configuration problem:" 
+	printError "    This script requires Perl, but Perl cannot be found on"
+	printError "    your system.  You can get the latest version of Perl from:"
+	printError "        http://perl.org/"
+	printError " "
+	printError "Abort.  Please re-run this script after installing Perl."
+	exit 1
+fi
+
+
+
+
+
+
+# Run the script
+cd $PERL_RUN_DIRECTORY
+$PERL_PATH $PERL_SCRIPT $PERL_SCRIPT_ARGUMENTS
+ExitCode="$?"
+exit $ExitCode
