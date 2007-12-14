@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# Stop the iRODS servers.
+#
+# Usage is:
+#	./stop
+#
+IRODS_HOME="/Users/nadeau/Desktop/iRODS/iRODS"
+if [ ! -f $IRODS_HOME/bin/runPerlScript ]; then
+	echo "Usage error:"
+	echo "    Cannot find the necessary 'runPerlScript' file."
+	exit 1
+fi
+$IRODS_HOME/bin/runPerlScript --script $IRODS_HOME/server/bin/stop.pl $*
+ExitCode="$?"
+exit $ExitCode
