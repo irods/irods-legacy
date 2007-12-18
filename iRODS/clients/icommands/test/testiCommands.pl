@@ -99,31 +99,37 @@ if ( $debug ) {
 @list = dumpFileContent( $irodsfile );
 
 #-- Loop on content of @list
-
+# The below parsing works in the current environment 
+# but there are two shortcomings:
+#   1) single quotes are removed, but if there were to be embedded ones,
+#      they would be removed too.
+#   2) if the name and value are separated by =, the line will not split right.
 foreach $line ( @list ) {
  	chomp( $line );
 	if ( ! $line ) { next; }
  	if ( $line =~ /irodsUserName/ ) {
 		( $misc, $username ) = split( / /, $line );
-		$username = substr( $username, 1, -1 );
+		$username =~ s/\'//g; #remove all ' chars, if any
 		next;
 	}
 	if ( $line =~ /irodsHome/ ) {
-		( $misc, $irodshome ) = split( /=/, $line );
+		( $misc, $irodshome ) = split( / /, $line );
+		$irodshome =~ s/\'//g; #remove all ' chars, if any
 		next;
 	}
 	if ( $line =~ /irodsZone/ ) {
 		( $misc, $irodszone ) = split( / /, $line );
-		$irodszone = substr( $irodszone, 1, -1 );
+		$irodszone =~ s/\'//g; #remove all ' chars, if any
 		next;
 	}
 	if ( $line =~ /irodsHost/ ) {
 		( $misc, $irodshost ) = split( / /, $line );
-		$irodshost = substr( $irodshost, 1, -1 );
+		$irodshost =~ s/\'//g; #remove all ' chars, if any
 		next;
 	}
 	if ( $line =~ /irodsDefResource/ ) {
-		( $misc, $irodsdefresource ) = split( /=/, $line );
+		( $misc, $irodsdefresource ) = split( / /, $line );
+		$irodsdefresource =~ s/\'//g; #remove all ' chars, if any
 	}
 }
 
