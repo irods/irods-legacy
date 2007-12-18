@@ -147,11 +147,8 @@ runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
 runCmd(0, "iadmin moduser $User2 password 123");
 #$ENV{'irodsUserName'}=$User2; 
-$TMP=`grep ADMIN_PW= ../../../install/install.config`;
-$ix = index($TMP,"\"");
-$ix2 = rindex($TMP, "\"");
-$APW=substr($TMP, $ix+1, $ix2-$ix-1);
-runCmd(0, "test_chl login $User2 123 $APW");
+require "../../../config/irods.config";
+runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'irodsUserName'};
 
 # Temporary password
