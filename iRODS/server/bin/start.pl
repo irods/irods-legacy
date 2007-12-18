@@ -15,18 +15,6 @@ use Cwd "abs_path";
 
 
 
-# Server names
-%servers = (
-	# Nice name		process name
-	"iRODS agents" =>	"irodsAgent",
-	"iRODS rule servers" =>	"irodsReServer",
-	"iRODS servers" =>	"irodsServer"
-);
-
-
-
-
-
 # Find the iRODS home directory and load the support script.
 #	This script may have been executed from the iRODS home, or
 #	from one of its subdirectories.
@@ -158,7 +146,7 @@ if ( $? )
 	exit -1;
 }
 
-@pids = getProcessIds( "irodsServer" );
+@pids = getProcessIds( "(irodsSer)(ver)?" );
 if ( $#pids < 0 )
 {
 	print( "iRODS server failed to start.\n" );
