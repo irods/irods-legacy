@@ -61,9 +61,13 @@ use Cwd "abs_path";
 # Server names
 %servers = (
 	# Nice name		process name
-	"iRODS agents" =>	"irodsAgent",
-	"iRODS rule servers" =>	"irodsReServer",
-	"iRODS servers" =>	"irodsServer"
+	"iRODS agents" =>	"(irodsAge)(nt)?",
+	"iRODS rule servers" =>	"(irodsReS)(erver)?",
+	"iRODS servers" =>	"(irodsSer)(ver)?"
+
+	# Process names need to be able to match on just 8 characters,
+	# due to limitations of SysV /bin/ps (such as Solaris) which
+	# only shows the 1st 8 characters.
 );
 
 
