@@ -476,7 +476,7 @@ sub validateDatabaseVariables()
 				$DATABASE_PORT = 5432;
 			}
 		}
-		if ( $DATABASE_TYPE eq "oracle" )
+		elsif ( $DATABASE_TYPE eq "oracle" )
 		{
 			# Done above
 		}
