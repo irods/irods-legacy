@@ -506,18 +506,15 @@ sub setEnvironmentVariables
 
 	# Library path:
 	#	Add the database libraries.
+	#	Add /usr/local/lib, needed on Solaris.
+	my $libPath = $ENV{'LD_LIBRARY_PATH'};  
 	if ( $controlDatabase )
 	{
-		my $oldLibPath = $ENV{'LD_LIBRARY_PATH'};  
-		if ( !$oldLibPath )
-		{
-			$ENV{'LD_LIBRARY_PATH'} = $databaseLibDir;
-		}
-		else
-		{
-			$ENV{'LD_LIBRARY_PATH'}="$oldLibPath:$databaseLibDir";
-		}
+		$libPath = "$libPath:$databaseLibDir";
+		
 	}
+	$libPath = "$libPath:" . File::Spec->catdir( File::Spec->rootdir( ), "usr", "local", "lib" );
+	$ENV{'LD_LIBRARY_PATH'} = $libPath;
 
 
 	# Database variables
