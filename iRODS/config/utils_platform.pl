@@ -215,7 +215,8 @@ sub findCommand($)
 
 			# Does the command exist in that directory?
 			$path = File::Spec->catfile( $dir, $command );
-			next if ( ! -e $path );
+			next if ( ! -f $path && ! -l $path );	# not file or symlink
+			next if ( ! -x $path );		# not executable
 
 			# Found!
 			return $path;
@@ -760,26 +761,38 @@ sub getCurrentPs()
 	if ( $os =~ /Darwin/i )	# Mac OS X
 	{
 		# PS in /bin and SysV + BSD
-		$PS = "$PS -efwww";
-		$PS_PID_COLUMN = 1;
+		# BSD-isms have added the "w" flag for wider output
+		# so that process names aren't truncated to 80
+		# characters (as they are on Solaris).
+		$PS = "$PS -ewww";
+		$PS_PID_COLUMN = 0;
 	}
-	elsif ( $os =~ /SunOS/i )
+	elsif ( $os =~ /SunOS/i ) #Solaris
 	{
 		# PS is in /bin and SysV
-		$PS = "$PS -ef";
-		$PS_PID_COLUMN = 1;
+		# We specifically *do not* include -ef.  That produces
+		# a wider listing, but process names are limited to 80
+		# characters.  With long paths, the name of the program
+		# can get truncated off the right side, making it
+		# impossible to use ps() listings to find anything.
+		# Instead, with "ps -e" we get only the program name,
+		# but truncated to the first 8 characters.  Still bad,
+		# but not as bad.
+		$PS = "$PS -e";
+		$PS_PID_COLUMN = 0;
 	}
 	elsif ( $os =~ /Linux/i )
 	{
 		# PS is in /bin and SysV + BSD
-		$PS = "$PS -efwww";
-		$PS_PID_COLUMN = 1;
+		$PS = "$PS -ewww";
+		$PS_PID_COLUMN = 0;
 	}
 	else
 	{
-		# Assume SysV
-		$PS = "$PS -ef";
-		$PS_PID_COLUMN = 1;
+		# Assume SysV.
+		# See comment above for solaris and ps -e.
+		$PS = "$PS -e";
+		$PS_PID_COLUMN = 0;
 	}
 	return $PS;
 }
