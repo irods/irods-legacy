@@ -372,6 +372,31 @@ sub validateDatabaseVariables()
 	$createdb = undef;
 	$vacuumdb = undef;
 
+	 if ( $DATABASE_TYPE eq "oracle" )
+	 {
+		  # Database commands
+		  $databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
+		  $databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, "lib" );
+		  $sqlplus = File::Spec->catfile( $databaseBinDir, "sqlplus" );
+		  if ( ! -e $sqlplus )
+		  {
+				printError(
+				  "\n" .
+				  "Configuration problem:\n" .
+				  "    Oracle program directory is missing!\n" .
+				  "\n" .
+				  "    The iRODS configuration indicates the installed Oracle\n" .
+				  "    directory, but the files aren't there.  Has the database been\n" .
+					"    fully installed?\n" .
+					"\n" .
+					"    Please check \$DATABASE_HOME in the configuration file.\n" .
+					"        Config file:   $irodsConfig\n" .
+					"        Database path: $DATABASE_HOME\n" .
+					"        Database commands:   $databaseBinDir\n" );
+				return 0;
+		  }
+	 }
+
 	if ( $controlDatabase )
 	{
 		# A database home directory was named, and we were told
@@ -451,9 +476,10 @@ sub validateDatabaseVariables()
 				$DATABASE_PORT = 5432;
 			}
 		}
-#		if ( $DATABASE_TYPE eq "oracle" )
-#		{
-#		}
+		if ( $DATABASE_TYPE eq "oracle" )
+		{
+			# Done above
+		}
 #		if ( $DATABASE_TYPE eq "mysql" )
 #		{
 #		}
