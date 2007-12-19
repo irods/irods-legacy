@@ -5,7 +5,7 @@
 # Usage is:
 #	./start
 #
-IRODS_HOME="/Users/nadeau/Desktop/iRODS/iRODS"
+IRODS_HOME=""
 if [ ! -f $IRODS_HOME/bin/runPerlScript ]; then
 	echo "Usage error:"
 	echo "    Cannot find the necessary 'runPerlScript' file."
