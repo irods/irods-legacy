@@ -23,7 +23,7 @@ $version{"utils_file.pl"} = "1.1";
 
 
 #
-# Design notes:
+# Design notes:  In-place editing
 #	These functions go through special effort to modify files
 #	in-place, whenever possible.  The alternative would be to
 #	create a new file, delete the old file, then put the new
@@ -34,6 +34,7 @@ $version{"utils_file.pl"} = "1.1";
 #		* Hard links to the old file don't go to the new file.
 #		* On a Mac, extra per-file info (such as color, icon,
 #		  or comments) gets lost.
+#
 
 
 
@@ -74,7 +75,6 @@ sub createTempFilePath($)
 		File::Spec->tmpdir( ),
 		"irods_" . $name . "_$$.tmp" );
 }
-
 
 
 
@@ -220,15 +220,21 @@ sub replaceVariablesInFile
 		# This is used by iRODS configuration files
 		# read by Perl scripts.  Values should be
 		# in quotes.  Empty values are OK.
+		#
+		# Use single quotes so that Perl doesn't
+		# process the value when it is read back in.
+		# This insures that @, $, and other special
+		# characters that might be in the value
+		# remain in the value.
 		while( $line = <FileIn> )
 		{
 			foreach $name (keys %values)
 			{
 				if ( $line =~ /^\$$name[ \t]*=/ )
 				{
-					# $NAME = "value";
+					# $NAME = 'value';
 					my $value = $values{$name};
-					$line = "\$$name = \"$value\";\n";
+					$line = "\$$name = \'$value\';\n";
 					$replacedValues{$name} = 1;
 					$fileChanged = 1;
 					last;
@@ -350,8 +356,8 @@ sub replaceVariablesInFile
 			$fileChanged = 1;
 			if ( $syntax =~ /perl/i )
 			{
-				# $NAME = "value";
-				print( FileOut "\$$name = \"$value\";\n" );
+				# $NAME = 'value';
+				print( FileOut "\$$name = \'$value\';\n" );
 			}
 			elsif ( $syntax =~ /shell/i )
 			{
