@@ -513,7 +513,8 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    OCISvcCtx        *p_svc;
    static OCIStmt          *p_statement;
    static OCIDefine        *p_dfn    = (OCIDefine *) 0;
-   int stat, stat2, i;
+   int stat, stat2, i, j;
+   char *cptr;
    char sqlConverted[MAX_SQL_SIZE];
 
    icatStmtStrct *myStatement;
@@ -678,6 +679,23 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
       strncpy(myStatement->resultColName[i], 
 	      (char *)colName, columnLength[i]);
 
+      /* Big cludge/hack, but it looks like an OCI bug when the colName
+         is exactly 8 bytes (or something).  Anyway, when the column name
+         is "RESC_NETRESC_DEF_PATH" it's actually the running together of
+         two names, so the code below corrects it. */
+      if (strcmp (myStatement->resultColName[i], "RESC_NETRESC_DEF_PATH")==0) {
+	 strncpy(myStatement->resultColName[i], 
+		 "RESC_NET", columnLength[i]);
+      }
+
+      /* convert the column name to lower case to match postgres */
+      cptr = (char*)myStatement->resultColName[i];
+      for (j=0;j<columnLength[i];j++) {
+	 if (*cptr=='\0') break;
+	 if (*cptr==':') break;
+	 if (*cptr >= 'A' && *cptr<='Z') *cptr+=((int)'a'-(int)'A');
+	 cptr++;
+      }
 
       myStatement->resultValue[i] = malloc((int)columnLength[i]+2);
       strcpy((char *)myStatement->resultValue[i],"");
