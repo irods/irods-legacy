@@ -15,8 +15,15 @@
 # bigint), the .sql files have use upper case INTEGER which is kept
 # the same in both versions.
 
+# arg1 is the db type, optional arg2 is the directory where the
+# scripts are (i.e. if not the cwd).
+
 $tmpFile="convertSql.TempFile1";
 ($arg1, $arg2)=@ARGV;
+
+if ($arg2) {
+    chdir($arg2);
+}
 
 if (!$arg1) {
     print "Usage postgresql|oracle\n";
