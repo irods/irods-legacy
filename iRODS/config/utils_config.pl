@@ -363,6 +363,7 @@ sub validateDatabaseVariables()
 
 	$databaseBinDir  = undef;
 	$databaseLibDir  = undef;
+	$databaseEtcDir  = undef;
 	$databaseLogDir  = undef;
 	$databaseDataDir = undef;
 
@@ -371,124 +372,135 @@ sub validateDatabaseVariables()
 	$dropdb   = undef;
 	$createdb = undef;
 	$vacuumdb = undef;
+	$sqlplus  = undef;
 
-	 if ( $DATABASE_TYPE eq "oracle" )
-	 {
-		  # Database commands
-		  $databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
-		  $databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, "lib" );
-		  $sqlplus = File::Spec->catfile( $databaseBinDir, "sqlplus" );
-		  if ( ! -e $sqlplus )
-		  {
-				printError(
-				  "\n" .
-				  "Configuration problem:\n" .
-				  "    Oracle program directory is missing!\n" .
-				  "\n" .
-				  "    The iRODS configuration indicates the installed Oracle\n" .
-				  "    directory, but the files aren't there.  Has the database been\n" .
-					"    fully installed?\n" .
-					"\n" .
-					"    Please check \$DATABASE_HOME in the configuration file.\n" .
-					"        Config file:   $irodsConfig\n" .
-					"        Database path: $DATABASE_HOME\n" .
-					"        Database commands:   $databaseBinDir\n" );
-				return 0;
-		  }
-	 }
 
-	if ( $controlDatabase )
+	# Make sure the database directory exists.
+	if ( ! -e $DATABASE_HOME )
 	{
-		# A database home directory was named, and we were told
-		# to work with it.  Make sure we have enough further
-		# information.
-		#
+		printError(
+			"\n" .
+			"Configuration problem:\n" .
+			"    The database directory is missing!\n" .
+			"\n" .
+			"    The iRODS configuration indicates a database directory\n" .
+			"    but there is no such directory.  Has the database been\n" .
+			"    installed yet?  Was it uninstalled?\n" .
+			"\n" .
+			"    Please check \$DATABASE_HOME in the configuration file.\n" .
+			"        Config file:   $irodsConfig\n" .
+			"        Database path: $DATABASE_HOME\n" );
+		return 0;
+	}
 
-		# Make sure the database directory exists.
-		if ( ! -e $DATABASE_HOME )
+
+	if ( $DATABASE_TYPE eq "postgres" )
+	{
+		# A common error/confusion is to give a database
+		# home directory that is one up from the one to use.
+		# For instance, if an iRODS install has put Postgres
+		# in "here", then "here/pgsql/bin" is the bin directory,
+		# not "here/bin".  Check for this and silently adjust.
+
+		$databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
+		if ( ! -e $databaseBinDir )
 		{
-			printError(
-				"\n" .
-				"Configuration problem:\n" .
-				"    The database directory is missing!\n" .
-				"\n" .
-				"    The iRODS configuration indicates a database directory\n" .
-				"    but there is no such directory.  Has the database been\n" .
-				"    installed yet?  Was it uninstalled?\n" .
-				"\n" .
-				"    Please check \$DATABASE_HOME in the configuration file.\n" .
-				"        Config file:   $irodsConfig\n" .
-				"        Database path: $DATABASE_HOME\n" );
-			return 0;
+			my $adjusted    = File::Spec->catdir( $DATABASE_HOME, "pgsql" );
+			my $adjustedBin = File::Spec->catdir( $adjusted, "bin" );
+			if ( -e $adjustedBin )
+			{
+				# Yup.  That was it.  Adjust.
+				$DATABASE_HOME  = $adjusted;
+				$databaseBinDir = $adjustedBin;
+			}
+			# Otherwise something is wrong with the directory.
+			# Fall through to the error message below.
 		}
 
-
 		# Database directories
-		$databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
 		$databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, "lib" );
 		$databaseEtcDir  = File::Spec->catdir( $DATABASE_HOME, "etc" );
 		$databaseLogDir  = $DATABASE_HOME;
 		$databaseDataDir = File::Spec->catdir( $DATABASE_HOME, "data" );
 
-		if ( $DATABASE_TYPE eq "postgres" )
+		# Database commands
+		$pgctl = File::Spec->catfile( $databaseBinDir, "pg_ctl" );
+		if ( ! -e $pgctl )
 		{
-			# Database commands
-			$pgctl = File::Spec->catfile( $databaseBinDir, "pg_ctl" );
-			if ( ! -e $pgctl )
-			{
-				printError(
-					"\n" .
-					"Configuration problem:\n" .
-					"    Postgres program directory is missing!\n" .
-					"\n" .
-					"    The iRODS configuration indicates the installed Postgres\n" .
-					"    directory, but the files aren't there.  Has the database been\n" .
-					"    fully installed?\n" .
-					"\n" .
-					"    Please check \$DATABASE_HOME in the configuration file.\n" .
-					"        Config file:   $irodsConfig\n" .
-					"        Database path: $DATABASE_HOME\n" .
-					"        Database commands:   $databaseBinDir\n" );
-				return 0;
-			}
-			$psql     = File::Spec->catfile( $databaseBinDir, "psql" );
-			$createdb = File::Spec->catfile( $databaseBinDir, "createdb" );
-			$dropdb   = File::Spec->catfile( $databaseBinDir, "dropdb" );
-			$vacuumdb = File::Spec->catfile( $databaseBinDir, "vacuumdb" );
+			printError(
+				"\n" .
+				"Configuration problem:\n" .
+				"    Postgres program directory is missing!\n" .
+				"\n" .
+				"    The iRODS configuration indicates the installed Postgres\n" .
+				"    directory, but the files aren't there.  Has the database been\n" .
+				"    fully installed?\n" .
+				"\n" .
+				"    Please check \$DATABASE_HOME in the configuration file.\n" .
+				"        Config file:   $irodsConfig\n" .
+				"        Database path: $DATABASE_HOME\n" .
+				"        Database commands:   $databaseBinDir\n" );
+			return 0;
+		}
+		$psql     = File::Spec->catfile( $databaseBinDir, "psql" );
+		$createdb = File::Spec->catfile( $databaseBinDir, "createdb" );
+		$dropdb   = File::Spec->catfile( $databaseBinDir, "dropdb" );
+		$vacuumdb = File::Spec->catfile( $databaseBinDir, "vacuumdb" );
 
-			# Defaults
-			if ( !defined( $DATABASE_HOST ) || $DATABASE_HOST eq "" )
+		# Defaults
+		if ( !defined( $DATABASE_HOST ) || $DATABASE_HOST eq "" )
+		{
+			$DATABASE_HOST = "localhost";
+		}
+		my $thisOS = getCurrentOS( );
+		if ( $thisOS =~ /Darwin/i )
+		{
+			if ( $DATABASE_HOST =~ /\.local$/ )
 			{
+				# Mac default host names ending in .local
+				# are non-standard.  Use "localhost".
 				$DATABASE_HOST = "localhost";
 			}
-			my $thisOS = getCurrentOS( );
-			if ( $thisOS =~ /Darwin/i )
-			{
-				if ( $DATABASE_HOST =~ /\.local$/ )
-				{
-					# Mac default host names ending in .local
-					# are non-standard.  Use "localhost".
-					$DATABASE_HOST = "localhost";
-				}
-			}
-			if ( !defined( $DATABASE_PORT ) || $DATABASE_PORT eq "" )
-			{
-				$DATABASE_PORT = 5432;
-			}
 		}
-		elsif ( $DATABASE_TYPE eq "oracle" )
+		if ( !defined( $DATABASE_PORT ) || $DATABASE_PORT eq "" )
 		{
-			# Done above
+			$DATABASE_PORT = 5432;
 		}
-#		if ( $DATABASE_TYPE eq "mysql" )
-#		{
-#		}
-		else
+	}
+	elsif ( $DATABASE_TYPE eq "oracle" )
+	{
+		# Database directories
+		$databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
+		$databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, "lib" );
+
+		# Database commands
+		$sqlplus = File::Spec->catfile( $databaseBinDir, "sqlplus" );
+		if ( ! -e $sqlplus )
 		{
-			# Unrecognized database.  If we don't know what
-			# it is, we can't control it.
-			$controlDatabase = 0;
+			printError(
+				"\n" .
+				"Configuration problem:\n" .
+				"    Oracle program directory is missing!\n" .
+				"\n" .
+				"    The iRODS configuration indicates the installed Oracle\n" .
+				"    directory, but the files aren't there.  Has the database been\n" .
+				"    fully installed?\n" .
+				"\n" .
+				"    Please check \$DATABASE_HOME in the configuration file.\n" .
+				"        Config file:   $irodsConfig\n" .
+				"        Database path: $DATABASE_HOME\n" .
+				"        Database commands:   $databaseBinDir\n" );
+			return 0;
 		}
+	}
+#	elsif ( $DATABASE_TYPE eq "mysql" )
+#	{
+#	}
+	else
+	{
+		# Unrecognized database.  If we don't know what
+		# it is, we can't control it.
+		$controlDatabase = 0;
 	}
 
 	return 1;
