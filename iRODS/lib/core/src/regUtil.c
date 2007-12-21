@@ -91,7 +91,7 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
 
     if (rodsArgs->bulk == True) {
         addKeyVal (&dataObjOprInp->condInput, 
-	  COLLECTION_TYPE_KW, HAAW_BUNDLE_STR);
+	  COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
     }
 
     if (rodsArgs->mountPoint == True) {

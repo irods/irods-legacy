@@ -4,7 +4,7 @@
 #include "subStructFileStat.h"
 
 int
-rcBunSubStat (rcComm_t *conn, subFile_t *subFile,
+rcSubStructFileStat (rcComm_t *conn, subFile_t *subFile,
 rodsStat_t **bunSubStatOut)
 {
     int status;

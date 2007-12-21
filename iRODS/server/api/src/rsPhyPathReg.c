@@ -40,8 +40,8 @@ rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
       COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, UNMOUNT_STR) == 0) {
         status = unmountFileDir (rsComm, phyPathRegInp);
         return (status);
-    } else if (tmpStr != NULL && strcmp (tmpStr, HAAW_BUNDLE_STR) == 0) {
-	status = bundleReg (rsComm, phyPathRegInp);
+    } else if (tmpStr != NULL && strcmp (tmpStr, HAAW_STRUCT_FILE_STR) == 0) {
+	status = structFileReg (rsComm, phyPathRegInp);
         return (status);
     }
 
@@ -394,24 +394,24 @@ unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 }
 
 int
-bundleReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
+structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 {
     collInp_t collCreateInp;
     int status;
     dataObjInfo_t *dataObjInfo = NULL;
-    char *bundlePath = NULL;
+    char *structFilePath = NULL;
     dataObjInp_t dataObjInp;
 
-    if ((bundlePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
+    if ((structFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {
         rodsLog (LOG_ERROR,
-          "bundleReg: No bundlePath input for %s",
+          "structFileReg: No structFilePath input for %s",
           phyPathRegInp->objPath);
         return (SYS_INVALID_FILE_PATH);
     }
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
-    rstrcpy (dataObjInp.objPath, bundlePath, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, structFilePath, sizeof (dataObjInp));
     /* user need to have write permission */
     dataObjInp.openFlags = O_WRONLY;
     status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp, &dataObjInfo);
@@ -424,7 +424,7 @@ bundleReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 	myStatus = rsDataObjCreate (rsComm, &dataObjInp);
 	if (myStatus < 0) {
             rodsLog (LOG_ERROR,
-              "bundleReg: Problem with open/create bundlePath %s, status = %d",
+              "structFileReg: Problem with open/create structFilePath %s, status = %d",
               dataObjInp.objPath, status);
             return (status);
 	} else {
@@ -438,9 +438,9 @@ bundleReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 
     memset (&collCreateInp, 0, sizeof (collCreateInp));
     rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
-    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, HAAW_BUNDLE_STR);
+    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
 
-    /* have to use dataObjInp.objPath because bundle path was removed */ 
+    /* have to use dataObjInp.objPath because structFile path was removed */ 
     addKeyVal (&collCreateInp.condInput, COLLECTION_INFO1_KW, 
      dataObjInp.objPath);
 

@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubRename.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileRename.h  
  */
 
 #ifndef SUB_STRUCT_FILE_RENAME_H
@@ -13,23 +13,23 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 
-typedef struct BunSubRenameInp {
+typedef struct SubStructFileRenameInp {
     subFile_t subFile;
     char newSubFilePath[MAX_NAME_LEN];
-} bunSubRenameInp_t;
+} subStructFileRenameInp_t;
 
-#define BunSubRenameInp_PI "struct SubFile_PI; str newSubFilePath[MAX_NAME_LEN];"
+#define SubStructFileRenameInp_PI "struct SubFile_PI; str newSubFilePath[MAX_NAME_LEN];"
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_RENAME rsBunSubRename
+#define RS_SUB_STRUCT_FILE_RENAME rsSubStructFileRename
 /* prototype for the server handler */
 int
-rsBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp);
+rsSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp);
 int
-_rsBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp);
+_rsSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp);
 int
-remoteBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp,
+remoteSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp,
 rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_RENAME NULL
@@ -37,6 +37,6 @@ rodsServerHost_t *rodsServerHost);
 
 /* prototype for the client call */
 int
-rcBunSubRename (rcComm_t *conn, bunSubRenameInp_t *bunSubRenameInp);
+rcSubStructFileRename (rcComm_t *conn, subStructFileRenameInp_t *subStructFileRenameInp);
 
 #endif	/* SUB_STRUCT_FILE_RENAME_H */

@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubOpendir.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileOpendir.h  
  */
 
 #ifndef SUB_STRUCT_FILE_OPENDIR_H
@@ -13,17 +13,17 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_OPENDIR rsBunSubOpendir
+#define RS_SUB_STRUCT_FILE_OPENDIR rsSubStructFileOpendir
 /* prototype for the server handler */
 int
-rsBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile);
+rsSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile);
 int
-_rsBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile);
+_rsSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile);
 int
-remoteBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_OPENDIR NULL
@@ -31,6 +31,6 @@ rodsServerHost_t *rodsServerHost);
 
 /* prototype for the client call */
 int
-rcBunSubOpendir (rcComm_t *conn, subFile_t *subFile);
+rcSubStructFileOpendir (rcComm_t *conn, subFile_t *subFile);
 
 #endif	/* SUB_STRUCT_FILE_OPENDIR_H */

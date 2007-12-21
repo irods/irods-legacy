@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileUnlink.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile)
+rsSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -15,15 +15,15 @@ rsBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile)
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubUnlink (rsComm, subFile);
+        status = _rsSubStructFileUnlink (rsComm, subFile);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubUnlink (rsComm, subFile, rodsServerHost);
+        status = remoteSubStructFileUnlink (rsComm, subFile, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubUnlink: resolveHost returned unrecognized value %d",
+              "rsSubStructFileUnlink: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -33,14 +33,14 @@ rsBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile)
 }
 
 int
-remoteBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubUnlink: Invalid rodsServerHost");
+          "remoteSubStructFileUnlink: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -48,11 +48,11 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubUnlink (rodsServerHost->conn, subFile);
+    status = rcSubStructFileUnlink (rodsServerHost->conn, subFile);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubUnlink: rcBunSubUnlink failed for %s, status = %d",
+         "remoteSubStructFileUnlink: rcSubStructFileUnlink failed for %s, status = %d",
           subFile->subFilePath, status);
     }
 
@@ -60,11 +60,11 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile)
+_rsSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
 {
     int status;
 
-    status = bunSubUnlink (rsComm, subFile);
+    status = subStructFileUnlink (rsComm, subFile);
 
     return (status);
 }

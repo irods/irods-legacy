@@ -1,29 +1,29 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileRename.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp)
+rsSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&bunSubRenameInp->subFile.addr, &rodsServerHost);
+    remoteFlag = resolveHost (&subStructFileRenameInp->subFile.addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubRename (rsComm, bunSubRenameInp);
+        status = _rsSubStructFileRename (rsComm, subStructFileRenameInp);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubRename (rsComm, bunSubRenameInp, rodsServerHost);
+        status = remoteSubStructFileRename (rsComm, subStructFileRenameInp, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubRename: resolveHost returned unrecognized value %d",
+              "rsSubStructFileRename: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -33,14 +33,14 @@ rsBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp)
 }
 
 int
-remoteBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp,
+remoteSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp,
 rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubRename: Invalid rodsServerHost");
+          "remoteSubStructFileRename: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -48,24 +48,24 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubRename (rodsServerHost->conn, bunSubRenameInp);
+    status = rcSubStructFileRename (rodsServerHost->conn, subStructFileRenameInp);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubRename: rcBunSubRename failed for %s, status = %d",
-          bunSubRenameInp->subFile.subFilePath, status);
+         "remoteSubStructFileRename: rcSubStructFileRename failed for %s, status = %d",
+          subStructFileRenameInp->subFile.subFilePath, status);
     }
 
     return status;
 }
 
 int
-_rsBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp)
+_rsSubStructFileRename (rsComm_t *rsComm, subStructFileRenameInp_t *subStructFileRenameInp)
 {
     int status;
 
-    status = bunSubRename (rsComm, &bunSubRenameInp->subFile,
-      bunSubRenameInp->newSubFilePath);
+    status = subStructFileRename (rsComm, &subStructFileRenameInp->subFile,
+      subStructFileRenameInp->newSubFilePath);
 
     return (status);
 }

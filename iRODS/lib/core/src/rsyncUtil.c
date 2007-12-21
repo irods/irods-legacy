@@ -74,7 +74,7 @@ rodsPathInp_t *rodsPathInp)
             status = rsyncCollToDirUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjOprInp);
             if (status >= 0 && dataObjOprInp.specColl != NULL &&
-              dataObjOprInp.specColl->class == BUNDLE_COLL) {
+              dataObjOprInp.specColl->class == STRUCT_FILE_COLL) {
                 dataObjOprInp.specColl = NULL;
 		status = rsyncCollToDirUtil (conn, srcPath, targPath,
                   myRodsEnv, myRodsArgs, &dataObjOprInp);
@@ -86,7 +86,7 @@ rodsPathInp_t *rodsPathInp)
             status = rsyncCollToCollUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjCopyInp);
             if (status >= 0 && dataObjOprInp.specColl != NULL &&
-              dataObjCopyInp.srcDataObjInp.specColl->class == BUNDLE_COLL) {
+              dataObjCopyInp.srcDataObjInp.specColl->class == STRUCT_FILE_COLL) {
 		dataObjCopyInp.srcDataObjInp.specColl = NULL;
                 status = rsyncCollToCollUtil (conn, srcPath, targPath,
                  myRodsEnv, myRodsArgs, &dataObjCopyInp);

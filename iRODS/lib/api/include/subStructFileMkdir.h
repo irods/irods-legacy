@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubMkdir.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileMkdir.h  
  */
 
 #ifndef SUB_STRUCT_FILE_MKDIR_H
@@ -13,17 +13,17 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_MKDIR rsBunSubMkdir
+#define RS_SUB_STRUCT_FILE_MKDIR rsSubStructFileMkdir
 /* prototype for the server handler */
 int
-rsBunSubMkdir (rsComm_t *rsComm, subFile_t *subFile);
+rsSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile);
 int
-_rsBunSubMkdir (rsComm_t *rsComm, subFile_t *subFile);
+_rsSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile);
 int
-remoteBunSubMkdir (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_MKDIR NULL
@@ -31,6 +31,6 @@ rodsServerHost_t *rodsServerHost);
 
 /* prototype for the client call */
 int
-rcBunSubMkdir (rcComm_t *conn, subFile_t *subFile);
+rcSubStructFileMkdir (rcComm_t *conn, subFile_t *subFile);
 
 #endif	/* SUB_STRUCT_FILE_MKDIR_H */

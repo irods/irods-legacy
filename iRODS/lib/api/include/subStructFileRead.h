@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubRead.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileRead.h  
  */
 
 #ifndef SUB_STRUCT_FILE_READ_H
@@ -13,36 +13,36 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 
-typedef struct BunSubFdOpr {
+typedef struct SubStructFileFdOpr {
     rodsHostAddr_t addr;
-    bunType_t type;
+    structFileType_t type;
     int fd;
     int len;
-} bunSubFdOprInp_t;
+} subStructFileFdOprInp_t;
 
-#define BunSubFdOpr_PI "struct RHostAddr_PI; int type; int fd; int len;"
+#define SubStructFileFdOpr_PI "struct RHostAddr_PI; int type; int fd; int len;"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_READ rsBunSubRead
+#define RS_SUB_STRUCT_FILE_READ rsSubStructFileRead
 /* prototype for the server handler */
 int
-rsBunSubRead (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReadInp,
-bytesBuf_t *bunSubReadOutBBuf);
+rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+bytesBuf_t *subStructFileReadOutBBuf);
 int
-_rsBunSubRead (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReadInp,
-bytesBuf_t *bunSubReadOutBBuf);
+_rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+bytesBuf_t *subStructFileReadOutBBuf);
 int
-remoteBunSubRead (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReadInp,
-bytesBuf_t *bunSubReadOutBBuf, rodsServerHost_t *rodsServerHost);
+remoteSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+bytesBuf_t *subStructFileReadOutBBuf, rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_READ NULL
 #endif
 
 /* prototype for the client call */
 int
-rcBunSubRead (rcComm_t *conn, bunSubFdOprInp_t *bunSubReadInp,
-bytesBuf_t *bunSubReadOutBBuf);
+rcSubStructFileRead (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReadInp,
+bytesBuf_t *subStructFileReadOutBBuf);
 
 #endif	/* SUB_STRUCT_FILE_READ_H */

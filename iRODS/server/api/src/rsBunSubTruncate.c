@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileTruncate.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubTruncate (rsComm_t *rsComm, subFile_t *subFile)
+rsSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -15,15 +15,15 @@ rsBunSubTruncate (rsComm_t *rsComm, subFile_t *subFile)
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubTruncate (rsComm, subFile);
+        status = _rsSubStructFileTruncate (rsComm, subFile);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubTruncate (rsComm, subFile, rodsServerHost);
+        status = remoteSubStructFileTruncate (rsComm, subFile, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubTruncate: resolveHost returned unrecognized value %d",
+              "rsSubStructFileTruncate: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -33,14 +33,14 @@ rsBunSubTruncate (rsComm_t *rsComm, subFile_t *subFile)
 }
 
 int
-remoteBunSubTruncate (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubTruncate: Invalid rodsServerHost");
+          "remoteSubStructFileTruncate: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -48,11 +48,11 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubTruncate (rodsServerHost->conn, subFile);
+    status = rcSubStructFileTruncate (rodsServerHost->conn, subFile);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubTruncate: rcBunSubTruncate failed for %s, status = %d",
+         "remoteSubStructFileTruncate: rcSubStructFileTruncate failed for %s, status = %d",
           subFile->subFilePath, status);
     }
 
@@ -60,11 +60,11 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubTruncate (rsComm_t *rsComm, subFile_t *subFile)
+_rsSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
 {
     int status;
 
-    status = bunSubTruncate (rsComm, subFile);
+    status = subStructFileTruncate (rsComm, subFile);
 
     return (status);
 }

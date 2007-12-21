@@ -27,7 +27,7 @@ extern rescTypeDef_t RescTypeDef[];
 extern int NumRescTypeDef;
 extern rescClass_t RescClass[];
 extern int NumRescClass;
-extern bundleTypeDef_t BundleTypeDef[];
-extern int NumBundleType;
+extern structFileTypeDef_t StructFileTypeDef[];
+extern int NumStructFileType;
 
 #endif	/* RC_GLOBAL_EXTERN_H */

@@ -163,10 +163,10 @@ int
 getSpecCollTypeStr (specColl_t *specColl, char *outStr);
 int
 getUnixErrno (int irodError);
-bunOprType_t
+structFileOprType_t
 getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl);
 void
-resolveStatForBundleOpr (keyValPair_t *condInput,
+resolveStatForStructFileOpr (keyValPair_t *condInput,
 rodsObjStat_t *rodsObjStatOut);
 void
 freeRodsObjStat (rodsObjStat_t *rodsObjStatOut);

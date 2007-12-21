@@ -1,38 +1,38 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileRead.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubRead (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReadInp,
-bytesBuf_t *bunSubReadOutBBuf)
+rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+bytesBuf_t *subStructFileReadOutBBuf)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&bunSubReadInp->addr, &rodsServerHost);
+    remoteFlag = resolveHost (&subStructFileReadInp->addr, &rodsServerHost);
 
-    if (bunSubReadInp->len > 0) {
-        if (bunSubReadOutBBuf->buf == NULL)
-            bunSubReadOutBBuf->buf = malloc (bunSubReadInp->len);
+    if (subStructFileReadInp->len > 0) {
+        if (subStructFileReadOutBBuf->buf == NULL)
+            subStructFileReadOutBBuf->buf = malloc (subStructFileReadInp->len);
     } else {
         return (0);
     }
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubRead (rsComm, bunSubReadInp, bunSubReadOutBBuf);
+        status = _rsSubStructFileRead (rsComm, subStructFileReadInp, subStructFileReadOutBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubRead (rsComm, bunSubReadInp, bunSubReadOutBBuf, 
+        status = remoteSubStructFileRead (rsComm, subStructFileReadInp, subStructFileReadOutBBuf, 
 	  rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubRead: resolveHost returned unrecognized value %d",
+              "rsSubStructFileRead: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -42,14 +42,14 @@ bytesBuf_t *bunSubReadOutBBuf)
 }
 
 int
-remoteBunSubRead (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReadInp, 
-bytesBuf_t *bunSubReadOutBBuf, rodsServerHost_t *rodsServerHost)
+remoteSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp, 
+bytesBuf_t *subStructFileReadOutBBuf, rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubRead: Invalid rodsServerHost");
+          "remoteSubStructFileRead: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -57,12 +57,12 @@ bytesBuf_t *bunSubReadOutBBuf, rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubRead (rodsServerHost->conn, bunSubReadInp,
-      bunSubReadOutBBuf);
+    status = rcSubStructFileRead (rodsServerHost->conn, subStructFileReadInp,
+      subStructFileReadOutBBuf);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubRead: rcFileRead failed for fd %d",  bunSubReadInp->fd);
+         "remoteSubStructFileRead: rcFileRead failed for fd %d",  subStructFileReadInp->fd);
     }
 
     return status;
@@ -70,18 +70,18 @@ bytesBuf_t *bunSubReadOutBBuf, rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubRead (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReadInp,
-bytesBuf_t *bunSubReadOutBBuf)
+_rsSubStructFileRead (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReadInp,
+bytesBuf_t *subStructFileReadOutBBuf)
 {
     int status;
 
-    status =  bunSubRead (bunSubReadInp->type, rsComm,
-      bunSubReadInp->fd, bunSubReadOutBBuf->buf, bunSubReadInp->len);
+    status =  subStructFileRead (subStructFileReadInp->type, rsComm,
+      subStructFileReadInp->fd, subStructFileReadOutBBuf->buf, subStructFileReadInp->len);
 
     if (status > 0) {
-        bunSubReadOutBBuf->len = status;
+        subStructFileReadOutBBuf->len = status;
     } else {
-	bunSubReadOutBBuf->len = 0;
+	subStructFileReadOutBBuf->len = 0;
     }
     return (status);
 }

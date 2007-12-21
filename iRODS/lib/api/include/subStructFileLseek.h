@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubLseek.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileLseek.h  
  */
 
 #ifndef SUB_STRUCT_FILE_LSEEK_H
@@ -13,38 +13,38 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 #include "fileLseek.h"
 
-typedef struct BunSubLseekInp {
+typedef struct SubStructFileLseekInp {
     rodsHostAddr_t addr;
-    bunType_t type;
+    structFileType_t type;
     int fd;
     rodsLong_t offset;
     int whence;
-} bunSubLseekInp_t;
+} subStructFileLseekInp_t;
 
-#define BunSubLseekInp_PI "struct RHostAddr_PI; int type; int fd; double offset; int whence;"
+#define SubStructFileLseekInp_PI "struct RHostAddr_PI; int type; int fd; double offset; int whence;"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_LSEEK rsBunSubLseek
+#define RS_SUB_STRUCT_FILE_LSEEK rsSubStructFileLseek
 /* prototype for the server handler */
 int
-rsBunSubLseek (rsComm_t *rsComm, bunSubLseekInp_t *bunSubLseekInp,
-fileLseekOut_t **bunSubLseekOut);
+rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+fileLseekOut_t **subStructFileLseekOut);
 int
-_rsBunSubLseek (rsComm_t *rsComm, bunSubLseekInp_t *bunSubLseekInp,
-fileLseekOut_t **bunSubLseekOut);
+_rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+fileLseekOut_t **subStructFileLseekOut);
 int
-remoteBunSubLseek (rsComm_t *rsComm, bunSubLseekInp_t *bunSubLseekInp, 
-fileLseekOut_t **bunSubLseekOut, rodsServerHost_t *rodsServerHost);
+remoteSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp, 
+fileLseekOut_t **subStructFileLseekOut, rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_LSEEK NULL
 #endif
 
 /* prototype for the client call */
 int
-rcBunSubLseek (rcComm_t *conn, bunSubLseekInp_t *bunSubLseekInp,
-fileLseekOut_t **bunSubLseekOut);
+rcSubStructFileLseek (rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp,
+fileLseekOut_t **subStructFileLseekOut);
 
 #endif	/* SUB_STRUCT_FILE_LSEEK_H */

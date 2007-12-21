@@ -1,15 +1,15 @@
 /* This is script-generated code.  */ 
-/* See bunSubLseek.h for a description of this API call.*/
+/* See subStructFileLseek.h for a description of this API call.*/
 
 #include "subStructFileLseek.h"
 
 int
-rcBunSubLseek (rcComm_t *conn, bunSubLseekInp_t *bunSubLseekInp,
-fileLseekOut_t **bunSubLseekOut)
+rcSubStructFileLseek (rcComm_t *conn, subStructFileLseekInp_t *subStructFileLseekInp,
+fileLseekOut_t **subStructFileLseekOut)
 {
     int status;
-    status = procApiRequest (conn, SUB_STRUCT_FILE_LSEEK_AN, bunSubLseekInp, NULL, 
-        (void **) bunSubLseekOut, NULL);
+    status = procApiRequest (conn, SUB_STRUCT_FILE_LSEEK_AN, subStructFileLseekInp, NULL, 
+        (void **) subStructFileLseekOut, NULL);
 
     return (status);
 }

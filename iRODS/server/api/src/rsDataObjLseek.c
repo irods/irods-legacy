@@ -41,16 +41,16 @@ fileLseekOut_t **dataObjLseekOut)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
-        bunSubLseekInp_t bunSubLseekInp;
-        memset (&bunSubLseekInp, 0, sizeof (bunSubLseekInp));
-	bunSubLseekInp.type = dataObjInfo->specColl->type;
-        bunSubLseekInp.fd = L1desc[l1descInx].l3descInx;
-	bunSubLseekInp.offset = dataObjLseekInp->offset;
-	bunSubLseekInp.whence = dataObjLseekInp->whence;
-        rstrcpy (bunSubLseekInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        subStructFileLseekInp_t subStructFileLseekInp;
+        memset (&subStructFileLseekInp, 0, sizeof (subStructFileLseekInp));
+	subStructFileLseekInp.type = dataObjInfo->specColl->type;
+        subStructFileLseekInp.fd = L1desc[l1descInx].l3descInx;
+	subStructFileLseekInp.offset = dataObjLseekInp->offset;
+	subStructFileLseekInp.whence = dataObjLseekInp->whence;
+        rstrcpy (subStructFileLseekInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
-        status = rsBunSubLseek (rsComm, &bunSubLseekInp, dataObjLseekOut);
+        status = rsSubStructFileLseek (rsComm, &subStructFileLseekInp, dataObjLseekOut);
     } else {
         *dataObjLseekOut = malloc (sizeof (fileLseekOut_t));
         memset (*dataObjLseekOut, 0, sizeof (fileLseekOut_t));

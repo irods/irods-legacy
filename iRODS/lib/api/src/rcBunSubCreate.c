@@ -4,7 +4,7 @@
 #include "subStructFileCreate.h"
 
 int
-rcBunSubCreate (rcComm_t *conn, subFile_t *subFile)
+rcSubStructFileCreate (rcComm_t *conn, subFile_t *subFile)
 {
     int status;
     status = procApiRequest (conn, SUB_STRUCT_FILE_CREATE_AN, subFile, NULL, 

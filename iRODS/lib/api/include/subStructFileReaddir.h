@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubReaddir.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileReaddir.h  
  */
 
 #ifndef SUB_STRUCT_FILE_READDIR_H
@@ -13,20 +13,20 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 #include "subStructFileRead.h"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_READDIR rsBunSubReaddir
+#define RS_SUB_STRUCT_FILE_READDIR rsSubStructFileReaddir
 /* prototype for the server handler */
 int
-rsBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
+rsSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent);
 int
-_rsBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
+_rsSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent);
 int
-remoteBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
+remoteSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_READDIR NULL
@@ -34,7 +34,7 @@ rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost);
 
 /* prototype for the client call */
 int
-rcBunSubReaddir (rcComm_t *conn, bunSubFdOprInp_t *bunSubReaddirInp,
+rcSubStructFileReaddir (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent);
 
 #endif	/* SUB_STRUCT_FILE_READDIR_H */

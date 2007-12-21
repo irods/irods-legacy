@@ -1,31 +1,31 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileWrite.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
-bytesBuf_t *bunSubWriteOutBBuf)
+rsSubStructFileWrite (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileWriteInp,
+bytesBuf_t *subStructFileWriteOutBBuf)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&bunSubWriteInp->addr, &rodsServerHost);
+    remoteFlag = resolveHost (&subStructFileWriteInp->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubWrite (rsComm, bunSubWriteInp, bunSubWriteOutBBuf);
+        status = _rsSubStructFileWrite (rsComm, subStructFileWriteInp, subStructFileWriteOutBBuf);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubWrite (rsComm, bunSubWriteInp, bunSubWriteOutBBuf,
+        status = remoteSubStructFileWrite (rsComm, subStructFileWriteInp, subStructFileWriteOutBBuf,
           rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubWrite: resolveHost returned unrecognized value %d",
+              "rsSubStructFileWrite: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -35,14 +35,14 @@ bytesBuf_t *bunSubWriteOutBBuf)
 }
 
 int
-remoteBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
-bytesBuf_t *bunSubWriteOutBBuf, rodsServerHost_t *rodsServerHost)
+remoteSubStructFileWrite (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileWriteInp,
+bytesBuf_t *subStructFileWriteOutBBuf, rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubWrite: Invalid rodsServerHost");
+          "remoteSubStructFileWrite: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -50,26 +50,26 @@ bytesBuf_t *bunSubWriteOutBBuf, rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubWrite (rodsServerHost->conn, bunSubWriteInp,
-      bunSubWriteOutBBuf);
+    status = rcSubStructFileWrite (rodsServerHost->conn, subStructFileWriteInp,
+      subStructFileWriteOutBBuf);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubWrite: rcFileWrite failed for fd %d",  
-         bunSubWriteInp->fd);
+         "remoteSubStructFileWrite: rcFileWrite failed for fd %d",  
+         subStructFileWriteInp->fd);
     }
 
     return status;
 }
 
 int
-_rsBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
-bytesBuf_t *bunSubWriteOutBBuf)
+_rsSubStructFileWrite (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileWriteInp,
+bytesBuf_t *subStructFileWriteOutBBuf)
 {
     int status;
 
-    status =  bunSubWrite (bunSubWriteInp->type, rsComm,
-      bunSubWriteInp->fd, bunSubWriteOutBBuf->buf, bunSubWriteInp->len);
+    status =  subStructFileWrite (subStructFileWriteInp->type, rsComm,
+      subStructFileWriteInp->fd, subStructFileWriteOutBBuf->buf, subStructFileWriteInp->len);
 
     return (status);
 }

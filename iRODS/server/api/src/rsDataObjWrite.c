@@ -9,7 +9,7 @@
 #include "subStructFileWrite.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
-#include "subStructFileRead.h"  /* XXXXX can be taken out when bundle api done */
+#include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
 
 int
 rsDataObjWrite (rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp, 
@@ -43,15 +43,15 @@ bytesBuf_t *dataObjWriteInpBBuf)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
-        bunSubFdOprInp_t bunSubWriteInp;
-        memset (&bunSubWriteInp, 0, sizeof (bunSubWriteInp));
-        bunSubWriteInp.type = dataObjInfo->specColl->type;
-        bunSubWriteInp.fd = L1desc[l1descInx].l3descInx;
-        bunSubWriteInp.len = len;
-        rstrcpy (bunSubWriteInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        subStructFileFdOprInp_t subStructFileWriteInp;
+        memset (&subStructFileWriteInp, 0, sizeof (subStructFileWriteInp));
+        subStructFileWriteInp.type = dataObjInfo->specColl->type;
+        subStructFileWriteInp.fd = L1desc[l1descInx].l3descInx;
+        subStructFileWriteInp.len = len;
+        rstrcpy (subStructFileWriteInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
-        bytesWritten = rsBunSubWrite (rsComm, &bunSubWriteInp, 
+        bytesWritten = rsSubStructFileWrite (rsComm, &subStructFileWriteInp, 
 	  dataObjWriteInpBBuf);
     } else {
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;

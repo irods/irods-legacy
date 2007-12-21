@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubUnlink.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileUnlink.h  
  */
 
 #ifndef SUB_STRUCT_FILE_UNLINK_H
@@ -13,17 +13,17 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_UNLINK rsBunSubUnlink
+#define RS_SUB_STRUCT_FILE_UNLINK rsSubStructFileUnlink
 /* prototype for the server handler */
 int
-rsBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile);
+rsSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile);
 int
-_rsBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile);
+_rsSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile);
 int
-remoteBunSubUnlink (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_UNLINK NULL
@@ -31,6 +31,6 @@ rodsServerHost_t *rodsServerHost);
 
 /* prototype for the client call */
 int
-rcBunSubUnlink (rcComm_t *conn, subFile_t *subFile);
+rcSubStructFileUnlink (rcComm_t *conn, subFile_t *subFile);
 
 #endif	/* SUB_STRUCT_FILE_UNLINK_H */

@@ -1,31 +1,31 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileFstat.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubFstat (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubFstatInp,
-rodsStat_t **bunSubStatOut)
+rsSubStructFileFstat (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileFstatInp,
+rodsStat_t **subStructFileStatOut)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&bunSubFstatInp->addr, &rodsServerHost);
+    remoteFlag = resolveHost (&subStructFileFstatInp->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubFstat (rsComm, bunSubFstatInp, bunSubStatOut);
+        status = _rsSubStructFileFstat (rsComm, subStructFileFstatInp, subStructFileStatOut);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubFstat (rsComm, bunSubFstatInp, bunSubStatOut,
+        status = remoteSubStructFileFstat (rsComm, subStructFileFstatInp, subStructFileStatOut,
           rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubFstat: resolveHost returned unrecognized value %d",
+              "rsSubStructFileFstat: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -35,14 +35,14 @@ rodsStat_t **bunSubStatOut)
 }
 
 int
-remoteBunSubFstat (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubFstatInp,
-rodsStat_t **bunSubStatOut, rodsServerHost_t *rodsServerHost)
+remoteSubStructFileFstat (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileFstatInp,
+rodsStat_t **subStructFileStatOut, rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubFstat: Invalid rodsServerHost");
+          "remoteSubStructFileFstat: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -50,13 +50,13 @@ rodsStat_t **bunSubStatOut, rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubFstat (rodsServerHost->conn, bunSubFstatInp,
-      bunSubStatOut);
+    status = rcSubStructFileFstat (rodsServerHost->conn, subStructFileFstatInp,
+      subStructFileStatOut);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubFstat: rcFileFstat failed for fd %d",
-         bunSubFstatInp->fd);
+         "remoteSubStructFileFstat: rcFileFstat failed for fd %d",
+         subStructFileFstatInp->fd);
     }
 
     return status;
@@ -64,15 +64,15 @@ rodsStat_t **bunSubStatOut, rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubFstat (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubFstatInp,
-rodsStat_t **bunSubStatOut)
+_rsSubStructFileFstat (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileFstatInp,
+rodsStat_t **subStructFileStatOut)
 {
     int status;
 
-    *bunSubStatOut = (rodsStat_t *) malloc (sizeof (rodsStat_t));
-    memset (*bunSubStatOut, 0, sizeof (rodsStat_t));
-    status = bunSubFstat (bunSubFstatInp->type, rsComm, bunSubFstatInp->fd,
-      *bunSubStatOut);
+    *subStructFileStatOut = (rodsStat_t *) malloc (sizeof (rodsStat_t));
+    memset (*subStructFileStatOut, 0, sizeof (rodsStat_t));
+    status = subStructFileFstat (subStructFileFstatInp->type, rsComm, subStructFileFstatInp->fd,
+      *subStructFileStatOut);
 
     return (status);
 }

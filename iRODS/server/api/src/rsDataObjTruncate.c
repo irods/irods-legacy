@@ -112,7 +112,7 @@ l3Truncate (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileOpenInp_t fileTruncateInp;
     int status;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
@@ -121,7 +121,7 @@ l3Truncate (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
 	subFile.offset = fileTruncateInp.dataSize;
-        status = rsBunSubTruncate (rsComm, &subFile);
+        status = rsSubStructFileTruncate (rsComm, &subFile);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 

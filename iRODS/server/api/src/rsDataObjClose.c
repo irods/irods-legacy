@@ -318,14 +318,14 @@ l3Close (rsComm_t *rsComm, int l1descInx)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
-        bunSubFdOprInp_t bunSubCloseInp;
-        memset (&bunSubCloseInp, 0, sizeof (bunSubCloseInp));
-	bunSubCloseInp.type = dataObjInfo->specColl->type;
-        bunSubCloseInp.fd = L1desc[l1descInx].l3descInx;
-        rstrcpy (bunSubCloseInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        subStructFileFdOprInp_t subStructFileCloseInp;
+        memset (&subStructFileCloseInp, 0, sizeof (subStructFileCloseInp));
+	subStructFileCloseInp.type = dataObjInfo->specColl->type;
+        subStructFileCloseInp.fd = L1desc[l1descInx].l3descInx;
+        rstrcpy (subStructFileCloseInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
-        status = rsBunSubClose (rsComm, &bunSubCloseInp);
+        status = rsSubStructFileClose (rsComm, &subStructFileCloseInp);
     } else {
         rescTypeInx = L1desc[l1descInx].dataObjInfo->rescInfo->rescTypeInx;
 
@@ -377,7 +377,7 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
     fileStatInp_t fileStatInp;
     int status;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
@@ -385,7 +385,7 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-        status = rsBunSubStat (rsComm, &subFile, myStat);
+        status = rsSubStructFileStat (rsComm, &subFile, myStat);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 

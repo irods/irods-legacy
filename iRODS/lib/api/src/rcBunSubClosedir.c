@@ -1,13 +1,13 @@
 /* This is script-generated code.  */ 
-/* See bunSubClosedir.h for a description of this API call.*/
+/* See subStructFileClosedir.h for a description of this API call.*/
 
 #include "subStructFileClosedir.h"
 
 int
-rcBunSubClosedir (rcComm_t *conn, bunSubFdOprInp_t *bunSubClosedirInp)
+rcSubStructFileClosedir (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileClosedirInp)
 {
     int status;
-    status = procApiRequest (conn, SUB_STRUCT_FILE_CLOSEDIR_AN, bunSubClosedirInp, NULL, 
+    status = procApiRequest (conn, SUB_STRUCT_FILE_CLOSEDIR_AN, subStructFileClosedirInp, NULL, 
         (void **) NULL, NULL);
 
     return (status);

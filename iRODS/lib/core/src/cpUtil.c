@@ -54,7 +54,7 @@ rodsPathInp_t *rodsPathInp)
                 return (status);
             }
 	    if (dataObjCopyInp.srcDataObjInp.specColl != NULL &&
-              dataObjCopyInp.srcDataObjInp.specColl->class == BUNDLE_COLL) {
+              dataObjCopyInp.srcDataObjInp.specColl->class == STRUCT_FILE_COLL) {
                 dataObjCopyInp.srcDataObjInp.specColl = NULL;
                status = cpCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjCopyInp,

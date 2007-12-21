@@ -8,7 +8,7 @@
 #include "objMetaOpr.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
-#include "subStructFileRead.h"  /* XXXXX can be taken out when bundle api done */
+#include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
 
 
 int
@@ -41,15 +41,15 @@ bytesBuf_t *dataObjReadOutBBuf)
     dataObjInfo_t *dataObjInfo;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
-	bunSubFdOprInp_t bunSubReadInp;
-        memset (&bunSubReadInp, 0, sizeof (bunSubReadInp));
-        bunSubReadInp.type = dataObjInfo->specColl->type;
-        bunSubReadInp.fd = L1desc[l1descInx].l3descInx;
-        bunSubReadInp.len = len;
-        rstrcpy (bunSubReadInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+	subStructFileFdOprInp_t subStructFileReadInp;
+        memset (&subStructFileReadInp, 0, sizeof (subStructFileReadInp));
+        subStructFileReadInp.type = dataObjInfo->specColl->type;
+        subStructFileReadInp.fd = L1desc[l1descInx].l3descInx;
+        subStructFileReadInp.len = len;
+        rstrcpy (subStructFileReadInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
-        bytesRead = rsBunSubRead (rsComm, &bunSubReadInp, dataObjReadOutBBuf);
+        bytesRead = rsSubStructFileRead (rsComm, &subStructFileReadInp, dataObjReadOutBBuf);
     } else {
         fileReadInp_t fileReadInp;
 

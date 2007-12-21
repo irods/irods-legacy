@@ -4,7 +4,7 @@
 #include "subStructFileRmdir.h"
 
 int
-rcBunSubRmdir (rcComm_t *conn, subFile_t *subFile)
+rcSubStructFileRmdir (rcComm_t *conn, subFile_t *subFile)
 {
     int status;
     status = procApiRequest (conn, SUB_STRUCT_FILE_RMDIR_AN, subFile, NULL, 

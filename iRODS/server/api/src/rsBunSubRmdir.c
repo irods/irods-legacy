@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileRmdir.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubRmdir (rsComm_t *rsComm, subFile_t *subFile)
+rsSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -15,15 +15,15 @@ rsBunSubRmdir (rsComm_t *rsComm, subFile_t *subFile)
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        fd = _rsBunSubRmdir (rsComm, subFile);
+        fd = _rsSubStructFileRmdir (rsComm, subFile);
     } else if (remoteFlag == REMOTE_HOST) {
-        fd = remoteBunSubRmdir (rsComm, subFile, rodsServerHost);
+        fd = remoteSubStructFileRmdir (rsComm, subFile, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubRmdir: resolveHost returned unrecognized value %d",
+              "rsSubStructFileRmdir: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -33,7 +33,7 @@ rsBunSubRmdir (rsComm_t *rsComm, subFile_t *subFile)
 }
 
 int
-remoteBunSubRmdir (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost)
 {
     int fd;
@@ -41,7 +41,7 @@ rodsServerHost_t *rodsServerHost)
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubRmdir: Invalid rodsServerHost");
+          "remoteSubStructFileRmdir: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -49,11 +49,11 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    fd = rcBunSubRmdir (rodsServerHost->conn, subFile);
+    fd = rcSubStructFileRmdir (rodsServerHost->conn, subFile);
 
     if (fd < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubRmdir: rcBunSubRmdir failed for %s, status = %d",
+         "remoteSubStructFileRmdir: rcSubStructFileRmdir failed for %s, status = %d",
           subFile->subFilePath, fd);
     }
 
@@ -61,11 +61,11 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubRmdir (rsComm_t *rsComm, subFile_t *subFile)
+_rsSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
 {
     int fd;
 
-    fd = bunSubRmdir (rsComm, subFile);
+    fd = subStructFileRmdir (rsComm, subFile);
 
     return (fd);
 }

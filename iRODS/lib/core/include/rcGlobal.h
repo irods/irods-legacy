@@ -138,12 +138,12 @@ rescClass_t RescClass[] = {
 
 int NumRescClass = sizeof (RescClass) / sizeof (rescClass_t);
 
-/* Note; all bundle name must contain the word bundle */ 
+/* Note; all structFile name must contain the word structFile */ 
 
-bundleTypeDef_t BundleTypeDef[] = {
-	{HAAW_BUNDLE_STR, HAAW_BUNDLE},
+structFileTypeDef_t StructFileTypeDef[] = {
+	{HAAW_STRUCT_FILE_STR, HAAW_STRUCT_FILE},
 };
 
-int NumBundleType = sizeof (BundleTypeDef) / sizeof (bundleTypeDef_t);
+int NumStructFileType = sizeof (StructFileTypeDef) / sizeof (structFileTypeDef_t);
 
 #endif	/* RC_GLOBAL_H */

@@ -1,30 +1,30 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileClosedir.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubClosedir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubClosedirInp)
+rsSubStructFileClosedir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileClosedirInp)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&bunSubClosedirInp->addr, &rodsServerHost);
+    remoteFlag = resolveHost (&subStructFileClosedirInp->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubClosedir (rsComm, bunSubClosedirInp);
+        status = _rsSubStructFileClosedir (rsComm, subStructFileClosedirInp);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubClosedir (rsComm, bunSubClosedirInp,
+        status = remoteSubStructFileClosedir (rsComm, subStructFileClosedirInp,
           rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubClosedir: resolveHost returned unrecognized value %d",
+              "rsSubStructFileClosedir: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -34,14 +34,14 @@ rsBunSubClosedir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubClosedirInp)
 }
 
 int
-remoteBunSubClosedir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubClosedirInp,
+remoteSubStructFileClosedir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileClosedirInp,
 rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubClosedir: Invalid rodsServerHost");
+          "remoteSubStructFileClosedir: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -49,24 +49,24 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubClosedir (rodsServerHost->conn, bunSubClosedirInp);
+    status = rcSubStructFileClosedir (rodsServerHost->conn, subStructFileClosedirInp);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubClosedir: rcFileClosedir failed for fd %d",
-         bunSubClosedirInp->fd);
+         "remoteSubStructFileClosedir: rcFileClosedir failed for fd %d",
+         subStructFileClosedirInp->fd);
     }
 
     return status;
 }
 
 int
-_rsBunSubClosedir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubClosedirInp)
+_rsSubStructFileClosedir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileClosedirInp)
 {
     int status;
 
-    status =  bunSubClosedir (bunSubClosedirInp->type, rsComm,
-      bunSubClosedirInp->fd);
+    status =  subStructFileClosedir (subStructFileClosedirInp->type, rsComm,
+      subStructFileClosedirInp->fd);
 
     return (status);
 }

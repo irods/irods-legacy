@@ -30,7 +30,7 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
         dataObjInp_t dataObjInp;
         dataObjInfo_t *dataObjInfo = NULL;
 
-        /* for BUNDLE_COLL to make a directory in the bundle, the
+        /* for STRUCT_FILE_COLL to make a directory in the structFile, the
          * COLLECTION_TYPE_KW must be set */
 
 	memset (&dataObjInp, 0, sizeof (dataObjInp));
@@ -43,11 +43,11 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 		return (USER_INPUT_PATH_ERR);
 	    }
 	} else if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST) { 
-            /* for BUNDLE_COLL to make a directory in the bundle, the
+            /* for STRUCT_FILE_COLL to make a directory in the structFile, the
              * COLLECTION_TYPE_KW must be set */
 #if 0
 	    if (getValByKey (&collCreateInp->condInput, COLLECTION_TYPE_KW) ==
-              NULL && dataObjInfo->specColl->class == BUNDLE_COLL) {
+              NULL && dataObjInfo->specColl->class == STRUCT_FILE_COLL) {
 #endif
 	    if (getSpecCollOpr (&collCreateInp->condInput, 
 	      dataObjInfo->specColl) == NORMAL_OPR_ON_BUN_COLL) {
@@ -77,7 +77,7 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileMkdirInp_t fileMkdirInp;
     int status;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
@@ -85,7 +85,7 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-        status = rsBunSubMkdir (rsComm, &subFile);
+        status = rsSubStructFileMkdir (rsComm, &subFile);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 

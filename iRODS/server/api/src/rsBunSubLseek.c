@@ -1,31 +1,31 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileLseek.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubLseek (rsComm_t *rsComm, bunSubLseekInp_t *bunSubLseekInp,
-fileLseekOut_t **bunSubLseekOut)
+rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+fileLseekOut_t **subStructFileLseekOut)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&bunSubLseekInp->addr, &rodsServerHost);
+    remoteFlag = resolveHost (&subStructFileLseekInp->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubLseek (rsComm, bunSubLseekInp, bunSubLseekOut);
+        status = _rsSubStructFileLseek (rsComm, subStructFileLseekInp, subStructFileLseekOut);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubLseek (rsComm, bunSubLseekInp, bunSubLseekOut,
+        status = remoteSubStructFileLseek (rsComm, subStructFileLseekInp, subStructFileLseekOut,
           rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubLseek: resolveHost returned unrecognized value %d",
+              "rsSubStructFileLseek: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -35,14 +35,14 @@ fileLseekOut_t **bunSubLseekOut)
 }
 
 int
-remoteBunSubLseek (rsComm_t *rsComm, bunSubLseekInp_t *bunSubLseekInp,
-fileLseekOut_t **bunSubLseekOut, rodsServerHost_t *rodsServerHost)
+remoteSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+fileLseekOut_t **subStructFileLseekOut, rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubLseek: Invalid rodsServerHost");
+          "remoteSubStructFileLseek: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -50,40 +50,40 @@ fileLseekOut_t **bunSubLseekOut, rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubLseek (rodsServerHost->conn, bunSubLseekInp,
-      bunSubLseekOut);
+    status = rcSubStructFileLseek (rodsServerHost->conn, subStructFileLseekInp,
+      subStructFileLseekOut);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubLseek: rcFileLseek failed for fd %d",
-         bunSubLseekInp->fd);
+         "remoteSubStructFileLseek: rcFileLseek failed for fd %d",
+         subStructFileLseekInp->fd);
     }
 
     return status;
 }
 
 int
-_rsBunSubLseek (rsComm_t *rsComm, bunSubLseekInp_t *bunSubLseekInp,
-fileLseekOut_t **bunSubLseekOut)
+_rsSubStructFileLseek (rsComm_t *rsComm, subStructFileLseekInp_t *subStructFileLseekInp,
+fileLseekOut_t **subStructFileLseekOut)
 {
     rodsLong_t lStatus;
     int status;
 
-    *bunSubLseekOut = (fileLseekOut_t *) malloc (sizeof (fileLseekOut_t));
-    memset (*bunSubLseekOut, 0, sizeof (fileLseekOut_t));
-    lStatus = bunSubLseek (bunSubLseekInp->type, rsComm, bunSubLseekInp->fd,
-      bunSubLseekInp->offset, bunSubLseekInp->whence);
+    *subStructFileLseekOut = (fileLseekOut_t *) malloc (sizeof (fileLseekOut_t));
+    memset (*subStructFileLseekOut, 0, sizeof (fileLseekOut_t));
+    lStatus = subStructFileLseek (subStructFileLseekInp->type, rsComm, subStructFileLseekInp->fd,
+      subStructFileLseekInp->offset, subStructFileLseekInp->whence);
 
     if (lStatus < 0) {
         status = lStatus;
         rodsLog (LOG_ERROR,
-          "rsBunSubLseek: bunSubLseek failed for %d, status = %d",
-          bunSubLseekInp->fd, status);
+          "rsSubStructFileLseek: subStructFileLseek failed for %d, status = %d",
+          subStructFileLseekInp->fd, status);
         return (status);
     } else {
-        *bunSubLseekOut = (fileLseekOut_t *) malloc (sizeof (fileLseekOut_t));
-        memset (*bunSubLseekOut, 0, sizeof (fileLseekOut_t));
-        (*bunSubLseekOut)->offset = lStatus;
+        *subStructFileLseekOut = (fileLseekOut_t *) malloc (sizeof (fileLseekOut_t));
+        memset (*subStructFileLseekOut, 0, sizeof (fileLseekOut_t));
+        (*subStructFileLseekOut)->offset = lStatus;
         status = 0;
     }
 

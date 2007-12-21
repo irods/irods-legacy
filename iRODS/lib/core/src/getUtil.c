@@ -56,7 +56,7 @@ rodsPathInp_t *rodsPathInp)
                 return (status);
             }
             if (dataObjOprInp.specColl != NULL &&
-	     dataObjOprInp.specColl->class == BUNDLE_COLL) {
+	     dataObjOprInp.specColl->class == STRUCT_FILE_COLL) {
 		dataObjOprInp.specColl = NULL;
                 status = getCollUtil (conn, rodsPathInp->srcPath[i].outPath,
                   targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,

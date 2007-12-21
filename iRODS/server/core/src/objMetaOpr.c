@@ -2418,7 +2418,7 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
     status = specCollSubStat (rsComm, cachedSpecColl, dataObjInp->objPath,
       dataObjInfo);
 
-    if (*dataObjInfo != NULL && getBunType ((*dataObjInfo)->specColl) >= 0) {
+    if (*dataObjInfo != NULL && getStructFileType ((*dataObjInfo)->specColl) >= 0) {
         dataObjInp->numThreads = NO_THREADING;
     }
 
@@ -2467,12 +2467,12 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
         myDataObjInfo->dataSize = rodsObjStat.objSize;
         *dataObjInfo = myDataObjInfo;
 	status = rodsObjStat.objType;
-    } else {	/* check for bundle */
+    } else {	/* check for structFile */
 #if 0
-	for (i = 0; i < NumBundleType; i++) {
-	    if (strcmp (specCollMeta->objType, BundleTypeDef[i].typeName)
+	for (i = 0; i < NumStructFileType; i++) {
+	    if (strcmp (specCollMeta->objType, StructFileTypeDef[i].typeName)
 	      == 0) {
-		/* get of dataObjInfo for the bundle file */
+		/* get of dataObjInfo for the structFile file */
                 dataObjInp_t myDataObjInp;
 		dataObjInfo_t *tmpDataObjInfo;
 
@@ -2489,13 +2489,13 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
 
 		if (status < 0) {
 		    rodsLog (LOG_ERROR, 
-		      "resolveSpecColl: getDataObjInfo error for bundle file %s, status = %d", 
+		      "resolveSpecColl: getDataObjInfo error for structFile file %s, status = %d", 
 		      myDataObjInp.objPath, status);
 		    free (specColl);
 		    return (status);
 		}
-		specColl->class = BUNDLE_COLL;
-		specColl->type = BundleTypeDef[i].type;
+		specColl->class = STRUCT_FILE_COLL;
+		specColl->type = StructFileTypeDef[i].type;
 		rstrcpy (specColl->collection, specCollMeta->collection,
 		  MAX_NAME_LEN);
 		rstrcpy (specColl->objPath, specCollMeta->collInfo1,
@@ -2523,12 +2523,12 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
 		break;
 	    }
 	}
-	if (i >= NumBundleType) {
+	if (i >= NumStructFileType) {
 	    free (specColl);
 	    return (SYS_UNMATCHED_SPEC_COLL_TYPE);
 	}
 #endif
-        /* get of dataObjInfo for the bundle file */
+        /* get of dataObjInfo for the structFile file */
         dataObjInp_t myDataObjInp;
         dataObjInfo_t *tmpDataObjInfo;
 
@@ -2575,13 +2575,13 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
 }
 
 int
-getBunType (specColl_t *specColl)
+getStructFileType (specColl_t *specColl)
 {
     if (specColl == NULL) {
 	return (-1);
     }
 
-    if (specColl->class == BUNDLE_COLL) {  
+    if (specColl->class == STRUCT_FILE_COLL) {  
 	return ((int) specColl->type);
     } else {
 	return (-1);

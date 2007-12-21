@@ -501,10 +501,10 @@ dataObjInfo_t *dataObjInfo)
     int status;
 
     if (getValByKey (&rmCollInp->condInput, RECURSIVE_OPR__KW) != NULL) {
-	/* XXXX need to take care of bundle */
+	/* XXXX need to take care of structFile */
         status = svrRmSpecCollRecur (rsComm, dataObjInfo);
     } else {
-	/* XXXX need to take care of bundle */
+	/* XXXX need to take care of structFile */
 	status = l3Rmdir (rsComm, dataObjInfo);
     }
 #if 0
@@ -520,7 +520,7 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileRmdirInp_t fileRmdirInp;
     int status;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
@@ -528,7 +528,7 @@ l3Rmdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-        status = rsBunSubRmdir (rsComm, &subFile);
+        status = rsSubStructFileRmdir (rsComm, &subFile);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 

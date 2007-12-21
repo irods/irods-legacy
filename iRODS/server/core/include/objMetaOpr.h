@@ -152,7 +152,7 @@ int
 resolveSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfo, int writeFlag);
 int
-getBunType (specColl_t *specColl);
+getStructFileType (specColl_t *specColl);
 int
 getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfo);

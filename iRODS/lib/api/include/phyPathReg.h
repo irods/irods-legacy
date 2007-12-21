@@ -39,7 +39,7 @@ int
 mountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp, char *filePath,
 rescInfo_t *rescInfo);
 int
-bundleReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
+structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
 int
 unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
 #else

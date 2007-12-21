@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileOpendir.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile)
+rsSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -15,15 +15,15 @@ rsBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile)
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        fd = _rsBunSubOpendir (rsComm, subFile);
+        fd = _rsSubStructFileOpendir (rsComm, subFile);
     } else if (remoteFlag == REMOTE_HOST) {
-        fd = remoteBunSubOpendir (rsComm, subFile, rodsServerHost);
+        fd = remoteSubStructFileOpendir (rsComm, subFile, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubOpendir: resolveHost returned unrecognized value %d",
+              "rsSubStructFileOpendir: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -33,7 +33,7 @@ rsBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile)
 }
 
 int
-remoteBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost)
 {
     int fd;
@@ -41,7 +41,7 @@ rodsServerHost_t *rodsServerHost)
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubOpendir: Invalid rodsServerHost");
+          "remoteSubStructFileOpendir: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -49,11 +49,11 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    fd = rcBunSubOpendir (rodsServerHost->conn, subFile);
+    fd = rcSubStructFileOpendir (rodsServerHost->conn, subFile);
 
     if (fd < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubOpendir: rcBunSubOpendir failed for %s, status = %d",
+         "remoteSubStructFileOpendir: rcSubStructFileOpendir failed for %s, status = %d",
           subFile->subFilePath, fd);
     }
 
@@ -61,11 +61,11 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubOpendir (rsComm_t *rsComm, subFile_t *subFile)
+_rsSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
 {
     int fd;
 
-    fd = bunSubOpendir (rsComm, subFile);
+    fd = subStructFileOpendir (rsComm, subFile);
 
     return (fd);
 }

@@ -2601,9 +2601,9 @@ getSpecCollTypeStr (specColl_t *specColl, char *outStr)
 	rstrcpy (outStr, MOUNT_POINT_STR, NAME_LEN);
 	return (0);
     } else {
-	for (i = 0; i < NumBundleType; i++) {
-	    if (specColl->type == BundleTypeDef[i].type) {
-                rstrcpy (outStr, BundleTypeDef[i].typeName, NAME_LEN);
+	for (i = 0; i < NumStructFileType; i++) {
+	    if (specColl->type == StructFileTypeDef[i].type) {
+                rstrcpy (outStr, StructFileTypeDef[i].typeName, NAME_LEN);
 		return (0);
 	    }
 	}
@@ -2636,10 +2636,10 @@ char *collInfo2, specColl_t *specColl)
 
 	return (0);
     } else {
-        for (i = 0; i < NumBundleType; i++) {
-            if (strcmp (type, BundleTypeDef[i].typeName) == 0) {
-                specColl->class = BUNDLE_COLL;
-                specColl->type = BundleTypeDef[i].type;
+        for (i = 0; i < NumStructFileType; i++) {
+            if (strcmp (type, StructFileTypeDef[i].typeName) == 0) {
+                specColl->class = STRUCT_FILE_COLL;
+                specColl->type = StructFileTypeDef[i].type;
                 rstrcpy (specColl->objPath, collInfo1,
                   MAX_NAME_LEN);
 		return (0);
@@ -2665,45 +2665,45 @@ getUnixErrno (int irodError)
 }
 
 #if 0
-/* notBundleOpr - true if specColl is BUNDLE_COLL but BUNDLE_OPR_KW is not
+/* notStructFileOpr - true if specColl is STRUCT_FILE_COLL but STRUCT_FILE_OPR_KW is not
  * set.
  */
 
 int
-notBundleOpr (keyValPair_t *condInput, specColl_t *specColl)
+notStructFileOpr (keyValPair_t *condInput, specColl_t *specColl)
 {
     if (specColl == NULL) return (0);
 
-    if (getValByKey (condInput, BUNDLE_OPR_KW) == NULL && 
-      specColl->class == BUNDLE_COLL) 
+    if (getValByKey (condInput, STRUCT_FILE_OPR_KW) == NULL && 
+      specColl->class == STRUCT_FILE_COLL) 
 	return (1);
     else
 	return (0);
 }
 #endif
 
-bunOprType_t
+structFileOprType_t
 getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl)
 {
     if (specColl == NULL) return (NOT_SPEC_COLL_OPR);
 
-    if (specColl->class != BUNDLE_COLL) return (NON_BUN_SPEC_COLL_OPR);
+    if (specColl->class != STRUCT_FILE_COLL) return (NON_STRUCT_FILE_SPEC_COLL_OPR);
 
-    if (getValByKey (condInput, BUNDLE_OPR_KW) == NULL)
-	return (NORMAL_OPR_ON_BUN_COLL);
+    if (getValByKey (condInput, STRUCT_FILE_OPR_KW) == NULL)
+	return (NORMAL_OPR_ON_STRUCT_FILE_COLL);
     else
-	return (BUN_SPEC_COLL_OPR);
+	return (STRUCT_FILE_SPEC_COLL_OPR);
 }
 
 void
-resolveStatForBundleOpr (keyValPair_t *condInput, 
+resolveStatForStructFileOpr (keyValPair_t *condInput, 
 rodsObjStat_t *rodsObjStatOut)
 {
     if (rodsObjStatOut == NULL) return;
 
     if (getSpecCollOpr (condInput, rodsObjStatOut->specColl) == 
-      NORMAL_OPR_ON_BUN_COLL) { 
-	/* it is in a bundle but not trying to do operation in the bundle. */
+      NORMAL_OPR_ON_STRUCT_FILE_COLL) { 
+	/* it is in a structFile but not trying to do operation in the structFile. */
 	free (rodsObjStatOut->specColl);
 	rodsObjStatOut->specColl = NULL;
 	rodsObjStatOut->objType = UNKNOWN_OBJ_T;

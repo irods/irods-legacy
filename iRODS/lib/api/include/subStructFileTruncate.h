@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubTruncate.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileTruncate.h  
  */
 
 #ifndef SUB_STRUCT_FILE_TRUNCATE_H
@@ -13,18 +13,18 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 #include "fileTruncate.h"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_TRUNCATE rsBunSubTruncate
+#define RS_SUB_STRUCT_FILE_TRUNCATE rsSubStructFileTruncate
 /* prototype for the server handler */
 int
-rsBunSubTruncate (rsComm_t *rsComm, subFile_t *bunSubTruncateInp);
+rsSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subStructFileTruncateInp);
 int
-_rsBunSubTruncate (rsComm_t *rsComm, subFile_t *bunSubTruncateInp);
+_rsSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subStructFileTruncateInp);
 int
-remoteBunSubTruncate (rsComm_t *rsComm, subFile_t *bunSubTruncateInp, 
+remoteSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subStructFileTruncateInp, 
 rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_TRUNCATE NULL
@@ -32,6 +32,6 @@ rodsServerHost_t *rodsServerHost);
 
 /* prototype for the client call */
 int
-rcBunSubTruncate (rcComm_t *conn, subFile_t *bunSubTruncateInp);
+rcSubStructFileTruncate (rcComm_t *conn, subFile_t *subStructFileTruncateInp);
 
 #endif	/* SUB_STRUCT_FILE_TRUNCATE_H */

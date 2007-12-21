@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileOpen.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubOpen (rsComm_t *rsComm, subFile_t *subFile)
+rsSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -15,15 +15,15 @@ rsBunSubOpen (rsComm_t *rsComm, subFile_t *subFile)
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        fd = _rsBunSubOpen (rsComm, subFile);
+        fd = _rsSubStructFileOpen (rsComm, subFile);
     } else if (remoteFlag == REMOTE_HOST) {
-        fd = remoteBunSubOpen (rsComm, subFile, rodsServerHost);
+        fd = remoteSubStructFileOpen (rsComm, subFile, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubOpen: resolveHost returned unrecognized value %d",
+              "rsSubStructFileOpen: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -33,7 +33,7 @@ rsBunSubOpen (rsComm_t *rsComm, subFile_t *subFile)
 }
 
 int
-remoteBunSubOpen (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost)
 {
     int fd;
@@ -41,7 +41,7 @@ rodsServerHost_t *rodsServerHost)
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubOpen: Invalid rodsServerHost");
+          "remoteSubStructFileOpen: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -49,11 +49,11 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    fd = rcBunSubOpen (rodsServerHost->conn, subFile);
+    fd = rcSubStructFileOpen (rodsServerHost->conn, subFile);
 
     if (fd < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubOpen: rcBunSubOpen failed for %s, status = %d",
+         "remoteSubStructFileOpen: rcSubStructFileOpen failed for %s, status = %d",
           subFile->subFilePath, fd);
     }
 
@@ -61,11 +61,11 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubOpen (rsComm_t *rsComm, subFile_t *subFile)
+_rsSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
 {
     int fd;
 
-    fd = bunSubOpen (rsComm, subFile);
+    fd = subStructFileOpen (rsComm, subFile);
 
     return (fd);
 }

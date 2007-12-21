@@ -4,7 +4,7 @@
 #include "subStructFileOpen.h"
 
 int
-rcBunSubOpen (rcComm_t *conn, subFile_t *subFile)
+rcSubStructFileOpen (rcComm_t *conn, subFile_t *subFile)
 {
     int status;
     status = procApiRequest (conn, SUB_STRUCT_FILE_OPEN_AN, subFile, NULL, 

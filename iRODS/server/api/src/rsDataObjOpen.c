@@ -186,7 +186,7 @@ l3Open (rsComm_t *rsComm, int l1descInx)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
 	subFile_t subFile;
 	memset (&subFile, 0, sizeof (subFile));
 	rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
@@ -194,7 +194,7 @@ l3Open (rsComm_t *rsComm, int l1descInx)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
 	subFile.specColl = dataObjInfo->specColl;
-	l3descInx = rsBunSubOpen (rsComm, &subFile); 
+	l3descInx = rsSubStructFileOpen (rsComm, &subFile); 
     } else {
         mode = getFileMode (l1descInx);
         flags = getFileFlags (l1descInx);

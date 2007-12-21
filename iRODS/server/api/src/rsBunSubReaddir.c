@@ -1,31 +1,31 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileReaddir.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
+rsSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     int status;
 
-    remoteFlag = resolveHost (&bunSubReaddirInp->addr, &rodsServerHost);
+    remoteFlag = resolveHost (&subStructFileReaddirInp->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        status = _rsBunSubReaddir (rsComm, bunSubReaddirInp, rodsDirent);
+        status = _rsSubStructFileReaddir (rsComm, subStructFileReaddirInp, rodsDirent);
     } else if (remoteFlag == REMOTE_HOST) {
-        status = remoteBunSubReaddir (rsComm, bunSubReaddirInp, rodsDirent,
+        status = remoteSubStructFileReaddir (rsComm, subStructFileReaddirInp, rodsDirent,
           rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubReaddir: resolveHost returned unrecognized value %d",
+              "rsSubStructFileReaddir: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -35,14 +35,14 @@ rodsDirent_t **rodsDirent)
 }
 
 int
-remoteBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
+remoteSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost)
 {
     int status;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubReaddir: Invalid rodsServerHost");
+          "remoteSubStructFileReaddir: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -50,13 +50,13 @@ rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    status = rcBunSubReaddir (rodsServerHost->conn, bunSubReaddirInp,
+    status = rcSubStructFileReaddir (rodsServerHost->conn, subStructFileReaddirInp,
       rodsDirent);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubReaddir: rcFileReaddir failed for fd %d",
-         bunSubReaddirInp->fd);
+         "remoteSubStructFileReaddir: rcFileReaddir failed for fd %d",
+         subStructFileReaddirInp->fd);
     }
 
     return status;
@@ -64,15 +64,15 @@ rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
+_rsSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
 rodsDirent_t **rodsDirent)
 {
     int status;
 
     *rodsDirent = (rodsDirent_t *) malloc (sizeof (rodsDirent_t));
     memset (*rodsDirent, 0, sizeof (rodsDirent_t));
-    status = bunSubReaddir (bunSubReaddirInp->type, rsComm, 
-      bunSubReaddirInp->fd, *rodsDirent);
+    status = subStructFileReaddir (subStructFileReaddirInp->type, rsComm, 
+      subStructFileReaddirInp->fd, *rodsDirent);
 
     return (status);
 }

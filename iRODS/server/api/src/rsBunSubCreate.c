@@ -1,12 +1,12 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-#include "bundleDriver.h"
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+#include "structFileDriver.h"
 #include "subStructFileCreate.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 
 int
-rsBunSubCreate (rsComm_t *rsComm, subFile_t *subFile)
+rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
 {
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -15,15 +15,15 @@ rsBunSubCreate (rsComm_t *rsComm, subFile_t *subFile)
     remoteFlag = resolveHost (&subFile->addr, &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
-        fd = _rsBunSubCreate (rsComm, subFile);
+        fd = _rsSubStructFileCreate (rsComm, subFile);
     } else if (remoteFlag == REMOTE_HOST) {
-        fd = remoteBunSubCreate (rsComm, subFile, rodsServerHost);
+        fd = remoteSubStructFileCreate (rsComm, subFile, rodsServerHost);
     } else {
         if (remoteFlag < 0) {
             return (remoteFlag);
         } else {
             rodsLog (LOG_NOTICE,
-              "rsBunSubCreate: resolveHost returned unrecognized value %d",
+              "rsSubStructFileCreate: resolveHost returned unrecognized value %d",
                remoteFlag);
             return (SYS_UNRECOGNIZED_REMOTE_FLAG);
         }
@@ -33,7 +33,7 @@ rsBunSubCreate (rsComm_t *rsComm, subFile_t *subFile)
 }
 
 int
-remoteBunSubCreate (rsComm_t *rsComm, subFile_t *subFile,
+remoteSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile,
 rodsServerHost_t *rodsServerHost)
 {
     int fd;
@@ -41,7 +41,7 @@ rodsServerHost_t *rodsServerHost)
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
-          "remoteBunSubCreate: Invalid rodsServerHost");
+          "remoteSubStructFileCreate: Invalid rodsServerHost");
         return SYS_INVALID_SERVER_HOST;
     }
 
@@ -49,11 +49,11 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-    fd = rcBunSubCreate (rodsServerHost->conn, subFile);
+    fd = rcSubStructFileCreate (rodsServerHost->conn, subFile);
 
     if (fd < 0) {
         rodsLog (LOG_NOTICE,
-         "remoteBunSubCreate: rcBunSubCreate failed for %s, status = %d",
+         "remoteSubStructFileCreate: rcSubStructFileCreate failed for %s, status = %d",
           subFile->subFilePath, fd);
     }
 
@@ -61,11 +61,11 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsBunSubCreate (rsComm_t *rsComm, subFile_t *subFile)
+_rsSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
 {
     int fd;
 
-    fd = bunSubCreate (rsComm, subFile);
+    fd = subStructFileCreate (rsComm, subFile);
 
     return (fd);
 }

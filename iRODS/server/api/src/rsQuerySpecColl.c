@@ -319,14 +319,14 @@ specCollReaddir (rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
-        bunSubFdOprInp_t bunSubReaddirInp;
-        memset (&bunSubReaddirInp, 0, sizeof (bunSubReaddirInp));
-        bunSubReaddirInp.type = dataObjInfo->specColl->type;
-        bunSubReaddirInp.fd = SpecCollDesc[specCollInx].l3descInx;
-        rstrcpy (bunSubReaddirInp.addr.hostAddr, 
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        subStructFileFdOprInp_t subStructFileReaddirInp;
+        memset (&subStructFileReaddirInp, 0, sizeof (subStructFileReaddirInp));
+        subStructFileReaddirInp.type = dataObjInfo->specColl->type;
+        subStructFileReaddirInp.fd = SpecCollDesc[specCollInx].l3descInx;
+        rstrcpy (subStructFileReaddirInp.addr.hostAddr, 
 	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-        status = rsBunSubReaddir (rsComm, &bunSubReaddirInp, 
+        status = rsSubStructFileReaddir (rsComm, &subStructFileReaddirInp, 
 	  rodsDirent);
     } else if (specColl->class == MOUNTED_COLL) {
         fileReaddirInp.fileInx = SpecCollDesc[specCollInx].l3descInx;
@@ -353,14 +353,14 @@ specCollClosedir (rsComm_t *rsComm, int specCollInx)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
-        bunSubFdOprInp_t bunSubClosedirInp;
-        memset (&bunSubClosedirInp, 0, sizeof (bunSubClosedirInp));
-        bunSubClosedirInp.type = dataObjInfo->specColl->type;
-        bunSubClosedirInp.fd = SpecCollDesc[specCollInx].l3descInx;
-        rstrcpy (bunSubClosedirInp.addr.hostAddr, 
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        subStructFileFdOprInp_t subStructFileClosedirInp;
+        memset (&subStructFileClosedirInp, 0, sizeof (subStructFileClosedirInp));
+        subStructFileClosedirInp.type = dataObjInfo->specColl->type;
+        subStructFileClosedirInp.fd = SpecCollDesc[specCollInx].l3descInx;
+        rstrcpy (subStructFileClosedirInp.addr.hostAddr, 
 	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-        status = rsBunSubClosedir (rsComm, &bunSubClosedirInp); 
+        status = rsSubStructFileClosedir (rsComm, &subStructFileClosedirInp); 
     } else if (specColl->class == MOUNTED_COLL) {
         fileClosedirInp.fileInx = SpecCollDesc[specCollInx].l3descInx;
         status = rsFileClosedir (rsComm, &fileClosedirInp);
@@ -383,16 +383,16 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
     if (dataObjInfo == NULL) return (SYS_INTERNAL_NULL_INPUT_ERR);
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
 	status = 0;
-        subFile_t bunSubOpendirInp;
-        memset (&bunSubOpendirInp, 0, sizeof (bunSubOpendirInp));
-        rstrcpy (bunSubOpendirInp.subFilePath, dataObjInfo->subPath,
+        subFile_t subStructFileOpendirInp;
+        memset (&subStructFileOpendirInp, 0, sizeof (subStructFileOpendirInp));
+        rstrcpy (subStructFileOpendirInp.subFilePath, dataObjInfo->subPath,
           MAX_NAME_LEN);
-        rstrcpy (bunSubOpendirInp.addr.hostAddr,
+        rstrcpy (subStructFileOpendirInp.addr.hostAddr,
           dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-        bunSubOpendirInp.specColl = dataObjInfo->specColl;
-        status = rsBunSubOpendir (rsComm, &bunSubOpendirInp);
+        subStructFileOpendirInp.specColl = dataObjInfo->specColl;
+        status = rsSubStructFileOpendir (rsComm, &subStructFileOpendirInp);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
@@ -450,7 +450,7 @@ specCollOpendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
               dataObjInfo->filePath, dirFd);
 	}
     } else {
-	/* XXXXXX need to do the same for bundle */
+	/* XXXXXX need to do the same for structFile */
 	dirFd = 0;
     }
     return (dirFd);

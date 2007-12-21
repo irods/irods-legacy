@@ -75,22 +75,22 @@ typedef struct RescCacheInfo
 
 typedef enum {         /* class of SpecColl */
     NO_SPEC_COLL,
-    BUNDLE_COLL,
+    STRUCT_FILE_COLL,
     MOUNTED_COLL,
 } specCollClass_t;
 
-typedef enum {          /* bundle type */
-    HAAW_BUNDLE,        /* the UK eScience bundle */
-} bunType_t;
+typedef enum {          /* structFile type */
+    HAAW_STRUCT_FILE,        /* the UK eScience structFile */
+} structFileType_t;
 
 typedef enum {          /* specColl operation type */
     NOT_SPEC_COLL_OPR,
-    NON_BUN_SPEC_COLL_OPR,
-    BUN_SPEC_COLL_OPR,
-    NORMAL_OPR_ON_BUN_COLL,
-} bunOprType_t;
+    NON_STRUCT_FILE_SPEC_COLL_OPR,
+    STRUCT_FILE_SPEC_COLL_OPR,
+    NORMAL_OPR_ON_STRUCT_FILE_COLL,
+} structFileOprType_t;
     
-#define HAAW_BUNDLE_STR		"haaw bundle"
+#define HAAW_STRUCT_FILE_STR		"haaw structFile"
 #define MOUNT_POINT_STR		"mountPoint"
 #define INHERIT_PAR_SPEC_COLL_STR	"inheritParentSpecColl"
 
@@ -98,13 +98,13 @@ typedef enum {          /* specColl operation type */
 
 typedef struct SpecColl {
     specCollClass_t class;
-    bunType_t type;   
-    char collection[MAX_NAME_LEN];   /* bundlized or mounted collection */
-    char objPath[MAX_NAME_LEN];      /* BUNDLE_COLL-logical path of bundle 
+    structFileType_t type;   
+    char collection[MAX_NAME_LEN];  /* structured file or mounted collection */
+    char objPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-logical path of structFile 
 				      * MOUNTED_COLL - NA 
 				      */
     char resource[NAME_LEN];	     /* the resource */
-    char phyPath[MAX_NAME_LEN];	     /* BUNDLE_COLL-the phyPath of bundle
+    char phyPath[MAX_NAME_LEN];	     /* STRUCT_FILE_COLL-the phyPath of structFile
 				      * MOUNTED_COLL-the phyPath od mounted
 				      * directory
 				      */
@@ -284,14 +284,15 @@ typedef struct TagStruct {
 
 #if 0
 typedef struct SpecCollMeta {
-    char objType[NAME_LEN];     /* bundle subfile - bundle type,
+    char objType[NAME_LEN];     /* structFile subfile - structFile type,
                                  * mounted obj */
     char collection[MAX_NAME_LEN];	/* path of the special collection.
-                                         * bundle subfile - bundlized coll
+                                         * structFile subfile - structured
+					 * file coll
                                          * mounted obj - mounted coll */
-    char collInfo1[MAX_NAME_LEN];       /* bundle subfile - bundle file path
+    char collInfo1[MAX_NAME_LEN];       /* structFile subfile - structFile file path
                                          * mounted obj - mounted dir path */
-    char collInfo2[MAX_NAME_LEN];       /* bundle subfile - NA
+    char collInfo2[MAX_NAME_LEN];       /* structFile subfile - NA
                                          * mounted obj - resource */
 } specCollMeta_t;
 #endif
@@ -303,10 +304,10 @@ typedef struct Subfile {
     specColl_t *specColl;
 } subFile_t;
 
-typedef struct BundleTypeDef {
+typedef struct StructFileTypeDef {
     char *typeName;
-    bunType_t type;
-} bundleTypeDef_t;
+    structFileType_t type;
+} structFileTypeDef_t;
 
 #ifdef  __cplusplus
 }

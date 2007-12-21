@@ -1,285 +1,285 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
 
-/* bundleDriver.c - The general driver for all bundle types. */
+/* structFileDriver.c - The general driver for all structFile types. */
 
-#include "bundleDriver.h"
-#include "bundleDriverTable.h"
-#include "apiHeaderAll.h"	/* XXXXX no needed open bundle api done */
+#include "structFileDriver.h"
+#include "structFileDriverTable.h"
+#include "apiHeaderAll.h"	/* XXXXX no needed open structFile api done */
 
 int
-bunSubCreate (rsComm_t *rsComm, subFile_t *subFile)
+subStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int fd;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
     
-    fd = BundleDriverTable[bunSubInx].bunSubCreate (rsComm, subFile);
+    fd = StructFileDriverTable[subStructFileInx].subStructFileCreate (rsComm, subFile);
     return (fd);
 }
 
 
 int
-bunSubOpen (rsComm_t *rsComm, subFile_t *subFile)
+subStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int fd;
     
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    fd = BundleDriverTable[bunSubInx].bunSubOpen (rsComm, subFile);
+    fd = StructFileDriverTable[subStructFileInx].subStructFileOpen (rsComm, subFile);
     return (fd);
 }
 
 int
-bunSubRead (bunType_t myType, rsComm_t *rsComm, int fd, void *buf,
+subStructFileRead (structFileType_t myType, rsComm_t *rsComm, int fd, void *buf,
 int len)
 {
-    int bunSubInx;
+    int subStructFileInx;
     int status;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubRead (rsComm, fd, buf, len);
+    status = StructFileDriverTable[subStructFileInx].subStructFileRead (rsComm, fd, buf, len);
     return (status);
 }
 
 int
-bunSubWrite (bunType_t myType, rsComm_t *rsComm, int fd, void *buf, int len)
+subStructFileWrite (structFileType_t myType, rsComm_t *rsComm, int fd, void *buf, int len)
 {
-    int bunSubInx;
+    int subStructFileInx;
     int status;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubWrite (rsComm, fd, buf, len);
+    status = StructFileDriverTable[subStructFileInx].subStructFileWrite (rsComm, fd, buf, len);
     return (status);
 }
 
 int
-bunSubClose (bunType_t myType, rsComm_t *rsComm, int fd)
+subStructFileClose (structFileType_t myType, rsComm_t *rsComm, int fd)
 {
-    int bunSubInx;
+    int subStructFileInx;
     int status;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubClose (rsComm, fd);
+    status = StructFileDriverTable[subStructFileInx].subStructFileClose (rsComm, fd);
     return (status);
 }
 
 int
-bunSubUnlink (rsComm_t *rsComm, subFile_t *subFile)
+subStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int status;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubUnlink (rsComm, subFile);
+    status = StructFileDriverTable[subStructFileInx].subStructFileUnlink (rsComm, subFile);
     return (status);
 }
 
 int
-bunSubStat (rsComm_t *rsComm, subFile_t *subFile,
-rodsStat_t *bunSubStatOut)
+subStructFileStat (rsComm_t *rsComm, subFile_t *subFile,
+rodsStat_t *subStructFileStatOut)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int status;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubStat (rsComm, subFile,
-      bunSubStatOut);
+    status = StructFileDriverTable[subStructFileInx].subStructFileStat (rsComm, subFile,
+      subStructFileStatOut);
     return (status);
 }
 
 int
-bunSubFstat (bunType_t myType, rsComm_t *rsComm, int fd,
-rodsStat_t *bunSubStatOut)
+subStructFileFstat (structFileType_t myType, rsComm_t *rsComm, int fd,
+rodsStat_t *subStructFileStatOut)
 {
-    int bunSubInx;
+    int subStructFileInx;
     int status;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubFstat (rsComm, fd, 
-      bunSubStatOut);
+    status = StructFileDriverTable[subStructFileInx].subStructFileFstat (rsComm, fd, 
+      subStructFileStatOut);
     return (status);
 }
 
 rodsLong_t
-bunSubLseek (bunType_t myType, rsComm_t *rsComm, int fd,
+subStructFileLseek (structFileType_t myType, rsComm_t *rsComm, int fd,
 rodsLong_t offset, int whence)
 {
-    int bunSubInx;
+    int subStructFileInx;
     rodsLong_t status;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return ((rodsLong_t) bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return ((rodsLong_t) subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubLseek (rsComm, fd, offset,
+    status = StructFileDriverTable[subStructFileInx].subStructFileLseek (rsComm, fd, offset,
       whence);
     return (status);
 }
 
 int
-bunSubRename (rsComm_t *rsComm, subFile_t *subFile, char *newFileName)
+subStructFileRename (rsComm_t *rsComm, subFile_t *subFile, char *newFileName)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int status;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubRename (rsComm, subFile,
+    status = StructFileDriverTable[subStructFileInx].subStructFileRename (rsComm, subFile,
       newFileName);
     return (status);
 }
 
 int
-bunSubMkdir (rsComm_t *rsComm, subFile_t *subFile)
+subStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int status;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubMkdir (rsComm, subFile);
+    status = StructFileDriverTable[subStructFileInx].subStructFileMkdir (rsComm, subFile);
     return (status);
 }
 
 int
-bunSubRmdir (rsComm_t *rsComm, subFile_t *subFile)
+subStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int status;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubRmdir (rsComm, subFile);
+    status = StructFileDriverTable[subStructFileInx].subStructFileRmdir (rsComm, subFile);
     return (status);
 }
 
 int
-bunSubOpendir (rsComm_t *rsComm, subFile_t *subFile)
+subStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int status;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubOpendir (rsComm, subFile);
+    status = StructFileDriverTable[subStructFileInx].subStructFileOpendir (rsComm, subFile);
     return (status);
 }
 
 int
-bunSubReaddir (bunType_t myType, rsComm_t *rsComm, int fd, 
+subStructFileReaddir (structFileType_t myType, rsComm_t *rsComm, int fd, 
 rodsDirent_t *rodsDirent)
 {
-    int bunSubInx;
+    int subStructFileInx;
     rodsLong_t status;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return ((rodsLong_t) bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return ((rodsLong_t) subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubReaddir (rsComm, fd,
+    status = StructFileDriverTable[subStructFileInx].subStructFileReaddir (rsComm, fd,
       rodsDirent);
     return (status);
 }
 
 int
-bunSubClosedir (bunType_t myType, rsComm_t *rsComm, int fd)
+subStructFileClosedir (structFileType_t myType, rsComm_t *rsComm, int fd)
 {
-    int bunSubInx;
+    int subStructFileInx;
     rodsLong_t status;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return ((rodsLong_t) bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return ((rodsLong_t) subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubClosedir (rsComm, fd); 
+    status = StructFileDriverTable[subStructFileInx].subStructFileClosedir (rsComm, fd); 
     return (status);
 }
 
 int
-bunSubTruncate (rsComm_t *rsComm, subFile_t *subFile)
+subStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
 {
-    bunType_t myType;
-    int bunSubInx;
+    structFileType_t myType;
+    int subStructFileInx;
     int status;
 
     myType = subFile->specColl->type;
 
-    if ((bunSubInx = bunSubIndexLookup (myType)) < 0) {
-        return (bunSubInx);
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
     }
 
-    status = BundleDriverTable[bunSubInx].bunSubTruncate (rsComm, subFile);
+    status = StructFileDriverTable[subStructFileInx].subStructFileTruncate (rsComm, subFile);
     return (status);
 }
 
 int
-bunSubIndexLookup (bunType_t myType)
+subStructFileIndexLookup (structFileType_t myType)
 {
     int i;
 
-    for (i = 0; i < NumBundleDriver; i++) {
-        if (myType == BundleDriverTable[i].type)
+    for (i = 0; i < NumStructFileDriver; i++) {
+        if (myType == StructFileDriverTable[i].type)
             return (i);
     }
 
-    rodsLog (LOG_ERROR, "bundleIndexLookup error for type %d", myType);
+    rodsLog (LOG_ERROR, "structFileIndexLookup error for type %d", myType);
 
     return (FILE_INDEX_LOOKUP_ERR);
 }

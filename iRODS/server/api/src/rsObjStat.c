@@ -543,7 +543,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
             *dataObjInfo = NULL;
 	    return (status);
         }
-    } else if (getBunType (specColl) >= 0) {
+    } else if (getStructFileType (specColl) >= 0) {
 	/* bundle */
 	dataObjInp_t myDataObjInp;
 	dataObjInfo_t *tmpDataObjInfo;

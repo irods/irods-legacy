@@ -4,7 +4,7 @@
 #include "subStructFileUnlink.h"
 
 int
-rcBunSubUnlink (rcComm_t *conn, subFile_t *subFile)
+rcSubStructFileUnlink (rcComm_t *conn, subFile_t *subFile)
 {
     int status;
     status = procApiRequest (conn, SUB_STRUCT_FILE_UNLINK_AN, subFile, NULL, 

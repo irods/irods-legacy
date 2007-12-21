@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubWrite.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileWrite.h  
  */
 
 #ifndef SUB_STRUCT_FILE_WRITE_H
@@ -13,28 +13,28 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 #include "subStructFileRead.h"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_WRITE rsBunSubWrite
+#define RS_SUB_STRUCT_FILE_WRITE rsSubStructFileWrite
 /* prototype for the server handler */
 int
-rsBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
-bytesBuf_t *bunSubWriteOutBBuf);
+rsSubStructFileWrite (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileWriteInp,
+bytesBuf_t *subStructFileWriteOutBBuf);
 int
-_rsBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
-bytesBuf_t *bunSubWriteOutBBuf);
+_rsSubStructFileWrite (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileWriteInp,
+bytesBuf_t *subStructFileWriteOutBBuf);
 int
-remoteBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
-bytesBuf_t *bunSubWriteOutBBuf, rodsServerHost_t *rodsServerHost);
+remoteSubStructFileWrite (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileWriteInp,
+bytesBuf_t *subStructFileWriteOutBBuf, rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_WRITE NULL
 #endif
 
 /* prototype for the client call */
 int
-rcBunSubWrite (rcComm_t *conn, bunSubFdOprInp_t *bunSubWriteInp,
-bytesBuf_t *bunSubWriteOutBBuf);
+rcSubStructFileWrite (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileWriteInp,
+bytesBuf_t *subStructFileWriteOutBBuf);
 
 #endif	/* SUB_STRUCT_FILE_WRITE_H */

@@ -192,7 +192,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     fileUnlinkInp_t fileUnlinkInp;
     int status;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
@@ -200,7 +200,7 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-        status = rsBunSubUnlink (rsComm, &subFile);
+        status = rsSubStructFileUnlink (rsComm, &subFile);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 

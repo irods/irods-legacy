@@ -52,14 +52,14 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 	freeDataObjInfo (destDataObjInfo);
 	return (status);
     } else if (srcType == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
-        /* for BUNDLE_COLL to make a directory in the bundle, the
-         * BUNDLE_OPR_KW must be set */
+        /* for STRUCT_FILE_COLL to make a directory in the structFile, the
+         * STRUCT_FILE_OPR_KW must be set */
 #if 0
         if (getValByKey (&srcDataObjInp->condInput, COLLECTION_TYPE_KW) !=
-              NULL || srcDataObjInfo->specColl->class != BUNDLE_COLL) {
+              NULL || srcDataObjInfo->specColl->class != STRUCT_FILE_COLL) {
 #endif
         if (getSpecCollOpr (&srcDataObjInp->condInput, 
-	  srcDataObjInfo->specColl) != NORMAL_OPR_ON_BUN_COLL) {
+	  srcDataObjInfo->specColl) != NORMAL_OPR_ON_STRUCT_FILE_COLL) {
 	    return (SYS_SPEC_COLL_OBJ_NOT_EXIST);
 	}
     } else if (destType == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
@@ -232,16 +232,16 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
     fileRenameInp_t fileRenameInp;
     int status;
 
-    if (getBunType (dataObjInfo->specColl) >= 0) {
-	bunSubRenameInp_t bunSubRenameInp;
-        memset (&bunSubRenameInp, 0, sizeof (bunSubRenameInp));
-        rstrcpy (bunSubRenameInp.subFile.subFilePath, dataObjInfo->subPath,
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+	subStructFileRenameInp_t subStructFileRenameInp;
+        memset (&subStructFileRenameInp, 0, sizeof (subStructFileRenameInp));
+        rstrcpy (subStructFileRenameInp.subFile.subFilePath, dataObjInfo->subPath,
           MAX_NAME_LEN);
-	rstrcpy (bunSubRenameInp.newSubFilePath, newFileName, MAX_NAME_LEN);
-        rstrcpy (bunSubRenameInp.subFile.addr.hostAddr, 
+	rstrcpy (subStructFileRenameInp.newSubFilePath, newFileName, MAX_NAME_LEN);
+        rstrcpy (subStructFileRenameInp.subFile.addr.hostAddr, 
 	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-        bunSubRenameInp.subFile.specColl = dataObjInfo->specColl;
-        status = rsBunSubRename (rsComm, &bunSubRenameInp);
+        subStructFileRenameInp.subFile.specColl = dataObjInfo->specColl;
+        status = rsSubStructFileRename (rsComm, &subStructFileRenameInp);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 

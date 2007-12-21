@@ -4,7 +4,7 @@
 #include "subStructFileTruncate.h"
 
 int
-rcBunSubTruncate (rcComm_t *conn, subFile_t *bunSubTruncateInp)
+rcSubStructFileTruncate (rcComm_t *conn, subFile_t *bunSubTruncateInp)
 {
     int status;
     status = procApiRequest (conn, SUB_STRUCT_FILE_TRUNCATE_AN, bunSubTruncateInp, 

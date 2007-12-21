@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
-/* bunSubClose.h  
+ *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
+/* subStructFileClose.h  
  */
 
 #ifndef SUB_STRUCT_FILE_CLOSE_H
@@ -13,19 +13,19 @@
 #include "procApiRequest.h"
 #include "apiNumber.h"
 #include "initServer.h"
-#include "bundleDriver.h"
+#include "structFileDriver.h"
 #include "subStructFileRead.h"
 
 #if defined(RODS_SERVER)
-#define RS_SUB_STRUCT_FILE_CLOSE rsBunSubClose
+#define RS_SUB_STRUCT_FILE_CLOSE rsSubStructFileClose
 /* prototype for the server handler */
 int
-rsBunSubClose (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubCloseInp);
+rsSubStructFileClose (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileCloseInp);
 
 int
-_rsBunSubClose (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubCloseInp);
+_rsSubStructFileClose (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileCloseInp);
 int
-remoteBunSubClose (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubCloseInp,
+remoteSubStructFileClose (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileCloseInp,
 rodsServerHost_t *rodsServerHost);
 #else
 #define RS_SUB_STRUCT_FILE_CLOSE NULL
@@ -33,6 +33,6 @@ rodsServerHost_t *rodsServerHost);
 
 /* prototype for the client call */
 int
-rcBunSubClose (rcComm_t *conn, bunSubFdOprInp_t *bunSubCloseInp);
+rcSubStructFileClose (rcComm_t *conn, subStructFileFdOprInp_t *subStructFileCloseInp);
 
 #endif	/* SUB_STRUCT_FILE_CLOSE_H */
