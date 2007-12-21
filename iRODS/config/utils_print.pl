@@ -427,7 +427,9 @@ sub askYesNo($)
 
 	# Get user input
 	my $answer = <STDIN>;
-	chomp( $answer );
+	chomp( $answer );	# remove trailing return
+	$answer =~ s/[ \t]*$//;	# remove trailing white space
+	$answer =~ s/^[ \t]*//;	# remove leading white space
 
 	# Is it a "yes"?
 	if ( $answer =~ /y(es)?/i )
@@ -462,7 +464,9 @@ sub askString($$)
 	{
 		printNotice( $prompt );
 		$answer = <STDIN>;
-		chomp( $answer );
+		chomp( $answer );	# remove trailing return
+		$answer =~ s/[ \t]*$//;	# remove trailing white space
+		$answer =~ s/^[ \t]*//;	# remove leading white space
 		if ( $answer ne "" )
 		{
 			return $answer;
