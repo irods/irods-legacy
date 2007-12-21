@@ -548,10 +548,25 @@ sub setEnvironmentVariables
 	my $libPath = $ENV{'LD_LIBRARY_PATH'};  
 	if ( $controlDatabase )
 	{
-		$libPath = "$libPath:$databaseLibDir";
+		if ( $libPath eq "" )
+		{
+			$libPath = "$databaseLibDir";
+		}
+		else
+		{
+			$libPath = "$libPath:$databaseLibDir";
+		}
 		
 	}
-	$libPath = "$libPath:" . File::Spec->catdir( File::Spec->rootdir( ), "usr", "local", "lib" );
+	my $locallib = File::Spec->catdir( File::Spec->rootdir( ), "usr", "local", "lib" );
+	if ( $libPath eq "" )
+	{
+		$libPath = $locallib;
+	}
+	else
+	{
+		$libPath = "$libPath:$locallib";
+	}
 	$ENV{'LD_LIBRARY_PATH'} = $libPath;
 
 
