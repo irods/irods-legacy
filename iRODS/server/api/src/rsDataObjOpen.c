@@ -9,7 +9,7 @@
 #include "dataObjOpr.h"
 #include "dataObjCreate.h"
 #include "fileOpen.h"
-#include "bunSubOpen.h"
+#include "subStructFileOpen.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

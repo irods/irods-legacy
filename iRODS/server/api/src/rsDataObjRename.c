@@ -4,7 +4,7 @@
  */
 #include "dataObjRename.h"
 #include "objMetaOpr.h"
-#include "bunSubRename.h"
+#include "subStructFileRename.h"
 #include "icatHighLevelRoutines.h"
 
 int

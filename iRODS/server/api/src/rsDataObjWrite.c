@@ -6,10 +6,10 @@
 #include "dataObjWrite.h"
 #include "rodsLog.h"
 #include "objMetaOpr.h"
-#include "bunSubWrite.h"
+#include "subStructFileWrite.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
-#include "bunSubRead.h"  /* XXXXX can be taken out when bundle api done */
+#include "subStructFileRead.h"  /* XXXXX can be taken out when bundle api done */
 
 int
 rsDataObjWrite (rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp, 

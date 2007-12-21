@@ -3,8 +3,8 @@
 /* bunSubWrite.h  
  */
 
-#ifndef BUN_SUB_WRITE_H
-#define BUN_SUB_WRITE_H
+#ifndef SUB_STRUCT_FILE_WRITE_H
+#define SUB_STRUCT_FILE_WRITE_H
 
 /* This is Object File I/O type API call */
 
@@ -14,10 +14,10 @@
 #include "apiNumber.h"
 #include "initServer.h"
 #include "bundleDriver.h"
-#include "bunSubRead.h"
+#include "subStructFileRead.h"
 
 #if defined(RODS_SERVER)
-#define RS_BUN_SUB_WRITE rsBunSubWrite
+#define RS_SUB_STRUCT_FILE_WRITE rsBunSubWrite
 /* prototype for the server handler */
 int
 rsBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
@@ -29,7 +29,7 @@ int
 remoteBunSubWrite (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubWriteInp,
 bytesBuf_t *bunSubWriteOutBBuf, rodsServerHost_t *rodsServerHost);
 #else
-#define RS_BUN_SUB_WRITE NULL
+#define RS_SUB_STRUCT_FILE_WRITE NULL
 #endif
 
 /* prototype for the client call */
@@ -37,4 +37,4 @@ int
 rcBunSubWrite (rcComm_t *conn, bunSubFdOprInp_t *bunSubWriteInp,
 bytesBuf_t *bunSubWriteOutBBuf);
 
-#endif	/* BUN_SUB_WRITE_H */
+#endif	/* SUB_STRUCT_FILE_WRITE_H */

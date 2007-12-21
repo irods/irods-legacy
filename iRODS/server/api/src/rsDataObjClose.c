@@ -18,9 +18,9 @@
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "ruleExecSubmit.h"
-#include "bunSubRead.h"
-#include "bunSubStat.h"
-#include "bunSubClose.h"
+#include "subStructFileRead.h"
+#include "subStructFileStat.h"
+#include "subStructFileClose.h"
 
 int
 rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)

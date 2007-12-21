@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to bunSubs in the COPYRIGHT directory ***/
 #include "bundleDriver.h"
-#include "bunSubReaddir.h" 
+#include "subStructFileReaddir.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
 

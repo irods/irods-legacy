@@ -8,7 +8,7 @@
 #include "objMetaOpr.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
-#include "bunSubRead.h"  /* XXXXX can be taken out when bundle api done */
+#include "subStructFileRead.h"  /* XXXXX can be taken out when bundle api done */
 
 
 int

@@ -1,13 +1,13 @@
 /* This is script-generated code.  */ 
 /* See bunSubOpen.h for a description of this API call.*/
 
-#include "bunSubOpen.h"
+#include "subStructFileOpen.h"
 
 int
 rcBunSubOpen (rcComm_t *conn, subFile_t *subFile)
 {
     int status;
-    status = procApiRequest (conn, BUN_SUB_OPEN_AN, subFile, NULL, 
+    status = procApiRequest (conn, SUB_STRUCT_FILE_OPEN_AN, subFile, NULL, 
         (void **) NULL, NULL);
 
     return (status);

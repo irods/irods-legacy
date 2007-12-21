@@ -7,9 +7,9 @@
 #include "rodsLog.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
-#include "bunSubLseek.h"
+#include "subStructFileLseek.h"
 #include "objMetaOpr.h"
-#include "bunSubUnlink.h"
+#include "subStructFileUnlink.h"
 
 
 int

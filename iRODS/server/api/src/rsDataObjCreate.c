@@ -6,7 +6,7 @@
 #include "dataObjCreate.h"
 #include "dataObjOpen.h"
 #include "fileCreate.h"
-#include "bunSubCreate.h"
+#include "subStructFileCreate.h"
 #include "rodsLog.h"
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"

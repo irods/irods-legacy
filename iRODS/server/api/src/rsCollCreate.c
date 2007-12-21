@@ -8,7 +8,7 @@
 #include "regColl.h"
 #include "icatDefines.h"
 #include "fileMkdir.h"
-#include "bunSubMkdir.h"
+#include "subStructFileMkdir.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "objMetaOpr.h"

@@ -13,7 +13,7 @@
 #include "dataObjOpr.h"
 #include "objMetaOpr.h"
 #include "fileRmdir.h"
-#include "bunSubRmdir.h"
+#include "subStructFileRmdir.h"
 #include "genQuery.h"
 #include "dataObjUnlink.h"
 #include "rmColl.h"

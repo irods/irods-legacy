@@ -3,8 +3,8 @@
 /* bunSubTruncate.h  
  */
 
-#ifndef BUN_SUB_TRUNCATE_H
-#define BUN_SUB_TRUNCATE_H
+#ifndef SUB_STRUCT_FILE_TRUNCATE_H
+#define SUB_STRUCT_FILE_TRUNCATE_H
 
 /* This is Object File I/O type API call */
 
@@ -17,7 +17,7 @@
 #include "fileTruncate.h"
 
 #if defined(RODS_SERVER)
-#define RS_BUN_SUB_TRUNCATE rsBunSubTruncate
+#define RS_SUB_STRUCT_FILE_TRUNCATE rsBunSubTruncate
 /* prototype for the server handler */
 int
 rsBunSubTruncate (rsComm_t *rsComm, subFile_t *bunSubTruncateInp);
@@ -27,11 +27,11 @@ int
 remoteBunSubTruncate (rsComm_t *rsComm, subFile_t *bunSubTruncateInp, 
 rodsServerHost_t *rodsServerHost);
 #else
-#define RS_BUN_SUB_TRUNCATE NULL
+#define RS_SUB_STRUCT_FILE_TRUNCATE NULL
 #endif
 
 /* prototype for the client call */
 int
 rcBunSubTruncate (rcComm_t *conn, subFile_t *bunSubTruncateInp);
 
-#endif	/* BUN_SUB_TRUNCATE_H */
+#endif	/* SUB_STRUCT_FILE_TRUNCATE_H */

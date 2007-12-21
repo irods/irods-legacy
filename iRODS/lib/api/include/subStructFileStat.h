@@ -3,8 +3,8 @@
 /* bunSubStat.h  
  */
 
-#ifndef BUN_SUB_STAT_H
-#define BUN_SUB_STAT_H
+#ifndef SUB_STRUCT_FILE_STAT_H
+#define SUB_STRUCT_FILE_STAT_H
 
 /* This is Object File I/O type API call */
 
@@ -16,7 +16,7 @@
 #include "bundleDriver.h"
 
 #if defined(RODS_SERVER)
-#define RS_BUN_SUB_STAT rsBunSubStat
+#define RS_SUB_STRUCT_FILE_STAT rsBunSubStat
 /* prototype for the server handler */
 int
 rsBunSubStat (rsComm_t *rsComm, subFile_t *subFile, rodsStat_t **bunSubStatOut);
@@ -27,7 +27,7 @@ int
 remoteBunSubStat (rsComm_t *rsComm, subFile_t *subFile,
 rodsStat_t **bunSubStatOut, rodsServerHost_t *rodsServerHost);
 #else
-#define RS_BUN_SUB_STAT NULL
+#define RS_SUB_STRUCT_FILE_STAT NULL
 #endif
 
 /* prototype for the client call */
@@ -35,4 +35,4 @@ int
 rcBunSubStat (rcComm_t *conn, subFile_t *subFile,
 rodsStat_t **bunSubStatOut);
 
-#endif	/* BUN_SUB_STAT_H */
+#endif	/* SUB_STRUCT_FILE_STAT_H */

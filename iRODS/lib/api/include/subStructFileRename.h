@@ -3,8 +3,8 @@
 /* bunSubRename.h  
  */
 
-#ifndef BUN_SUB_RENAME_H
-#define BUN_SUB_RENAME_H
+#ifndef SUB_STRUCT_FILE_RENAME_H
+#define SUB_STRUCT_FILE_RENAME_H
 
 /* This is Object File I/O type API call */
 
@@ -22,7 +22,7 @@ typedef struct BunSubRenameInp {
 
 #define BunSubRenameInp_PI "struct SubFile_PI; str newSubFilePath[MAX_NAME_LEN];"
 #if defined(RODS_SERVER)
-#define RS_BUN_SUB_RENAME rsBunSubRename
+#define RS_SUB_STRUCT_FILE_RENAME rsBunSubRename
 /* prototype for the server handler */
 int
 rsBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp);
@@ -32,11 +32,11 @@ int
 remoteBunSubRename (rsComm_t *rsComm, bunSubRenameInp_t *bunSubRenameInp,
 rodsServerHost_t *rodsServerHost);
 #else
-#define RS_BUN_SUB_RENAME NULL
+#define RS_SUB_STRUCT_FILE_RENAME NULL
 #endif
 
 /* prototype for the client call */
 int
 rcBunSubRename (rcComm_t *conn, bunSubRenameInp_t *bunSubRenameInp);
 
-#endif	/* BUN_SUB_RENAME_H */
+#endif	/* SUB_STRUCT_FILE_RENAME_H */

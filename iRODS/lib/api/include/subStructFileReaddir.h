@@ -3,8 +3,8 @@
 /* bunSubReaddir.h  
  */
 
-#ifndef BUN_SUB_READDIR_H
-#define BUN_SUB_READDIR_H
+#ifndef SUB_STRUCT_FILE_READDIR_H
+#define SUB_STRUCT_FILE_READDIR_H
 
 /* This is Object File I/O type API call */
 
@@ -14,10 +14,10 @@
 #include "apiNumber.h"
 #include "initServer.h"
 #include "bundleDriver.h"
-#include "bunSubRead.h"
+#include "subStructFileRead.h"
 
 #if defined(RODS_SERVER)
-#define RS_BUN_SUB_READDIR rsBunSubReaddir
+#define RS_SUB_STRUCT_FILE_READDIR rsBunSubReaddir
 /* prototype for the server handler */
 int
 rsBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
@@ -29,7 +29,7 @@ int
 remoteBunSubReaddir (rsComm_t *rsComm, bunSubFdOprInp_t *bunSubReaddirInp,
 rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost);
 #else
-#define RS_BUN_SUB_READDIR NULL
+#define RS_SUB_STRUCT_FILE_READDIR NULL
 #endif
 
 /* prototype for the client call */
@@ -37,4 +37,4 @@ int
 rcBunSubReaddir (rcComm_t *conn, bunSubFdOprInp_t *bunSubReaddirInp,
 rodsDirent_t **rodsDirent);
 
-#endif	/* BUN_SUB_READDIR_H */
+#endif	/* SUB_STRUCT_FILE_READDIR_H */

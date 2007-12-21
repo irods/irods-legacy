@@ -15,7 +15,7 @@
 #include "reDefines.h"
 #include "rmColl.h"
 #include "modDataObjMeta.h"
-#include "bunSubTruncate.h"
+#include "subStructFileTruncate.h"
 
 int
 rsDataObjTruncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp)
