@@ -198,36 +198,36 @@ LIB_API_OBJS += $(libApiObjDir)/rcObjStat.o
 SVR_API_OBJS += $(svrApiObjDir)/rsExecCmd.o
 LIB_API_OBJS += $(libApiObjDir)/rcExecCmd.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubCreate.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubCreate.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileCreate.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileCreate.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubOpen.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubOpen.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileOpen.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileOpen.o
 
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubRead.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubRead.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileRead.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileRead.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubWrite.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubWrite.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileWrite.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileWrite.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubClose.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubClose.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileClose.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileClose.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubUnlink.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubUnlink.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileUnlink.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileUnlink.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubStat.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubStat.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileStat.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileStat.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubFstat.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubFstat.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileFstat.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileFstat.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubLseek.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubLseek.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileLseek.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileLseek.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubRename.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubRename.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileRename.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileRename.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsQuerySpecColl.o
 LIB_API_OBJS += $(libApiObjDir)/rcQuerySpecColl.o
@@ -238,20 +238,20 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetTempPassword.o
 SVR_API_OBJS += $(svrApiObjDir)/rsModColl.o
 LIB_API_OBJS += $(libApiObjDir)/rcModColl.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubMkdir.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubMkdir.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileMkdir.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileMkdir.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubRmdir.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubRmdir.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileRmdir.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileRmdir.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubOpendir.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubOpendir.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileOpendir.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileOpendir.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubReaddir.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubReaddir.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileReaddir.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileReaddir.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubClosedir.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubClosedir.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileClosedir.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileClosedir.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsDataObjTruncate.o
 LIB_API_OBJS += $(libApiObjDir)/rcDataObjTruncate.o
@@ -259,8 +259,8 @@ LIB_API_OBJS += $(libApiObjDir)/rcDataObjTruncate.o
 SVR_API_OBJS += $(svrApiObjDir)/rsFileTruncate.o
 LIB_API_OBJS += $(libApiObjDir)/rcFileTruncate.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsBunSubTruncate.o
-LIB_API_OBJS += $(libApiObjDir)/rcBunSubTruncate.o
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileTruncate.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileTruncate.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGeneralUpdate.o
 LIB_API_OBJS += $(libApiObjDir)/rcGeneralUpdate.o
