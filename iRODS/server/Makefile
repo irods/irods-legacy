@@ -64,9 +64,9 @@ INCLUDES +=	-I$(svrApiIncDir)
 
 # Drivers
 SVR_DRIVERS_OBJS = \
-		$(svrDriversObjDir)/bundleDriver.o \
+		$(svrDriversObjDir)/structFileDriver.o \
 		$(svrDriversObjDir)/fileDriver.o \
-		$(svrDriversObjDir)/haawBunSubDriver.o \
+		$(svrDriversObjDir)/haawStructFileDriver.o \
 		$(svrDriversObjDir)/unixFileDriver.o
 INCLUDES +=	-I$(svrDriversIncDir)
 
