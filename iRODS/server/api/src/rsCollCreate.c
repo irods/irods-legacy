@@ -50,7 +50,7 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
               NULL && dataObjInfo->specColl->class == STRUCT_FILE_COLL) {
 #endif
 	    if (getSpecCollOpr (&collCreateInp->condInput, 
-	      dataObjInfo->specColl) == NORMAL_OPR_ON_BUN_COLL) {
+	      dataObjInfo->specColl) == NORMAL_OPR_ON_STRUCT_FILE_COLL) {
         	status = _rsRegColl (rsComm, collCreateInp);
 	    } else {
 	        status = l3Mkdir (rsComm, dataObjInfo);
