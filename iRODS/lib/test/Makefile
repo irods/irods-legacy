@@ -21,12 +21,12 @@ CFLAGS+= -g -I$(buildDir)/server/core/include \
 LDADD+= -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 
 TESTOBJS = lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
-l3bundle.o xmsgtest.o
+l3structFile.o xmsgtest.o
 
-TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3bundle xmsgtest
+TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3structFile xmsgtest
 ifdef PHP_LIB
-TARGETS+= phptest
-TESTOBJS+= phptest.o
+TARGETS+= phptest phpexttest
+TESTOBJS+= phptest.o phpexttest.o
 CFLAGS+=-I$(PHP_INCLUDE_DIR) -I$(PHP_INCLUDE_DIR)/main -I$(PHP_INCLUDE_DIR)/Zend -I$(PHP_INCLUDE_DIR)/TSRM -I$(PHP_INCLUDE_DIR)/regex -I$(PHP_INCLUDE_DIR)/sapi/embed
 AG_LDADD+= -L/data/mwan/php/libxml2-2.6.30/.libs -lrt -lresolv -lm -ldl -lnsl -lxml2 -lz -lcrypt -liconv
 endif
@@ -58,12 +58,15 @@ l1rm: l1rm.o
 xmltest: xmltest.o
 	$(LDR) -o $@ $^ $(LDADD)
 
-l3bundle: l3bundle.o
+l3structFile: l3structFile.o
 	$(LDR) -o $@ $^ $(LDADD)
 
 xmsgtest: xmsgtest.o
 	$(LDR) -o $@ $^ $(LDADD)
 
 phptest: phptest.o
+	$(LDR) -o $@ $^ $(LDADD) $(AG_LDADD)
+
+phpexttest: phpexttest.o
 	$(LDR) -o $@ $^ $(LDADD) $(AG_LDADD)
 

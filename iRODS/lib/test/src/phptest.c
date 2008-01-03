@@ -58,7 +58,7 @@ main(int argc, char **argv)
 #endif
 
     for (i = 0; i < numLoop; i++) {
-        status = execPhpScript (scrFile, scrArgc, &argv[1]);
+        status = execPhpScript (scrFile, scrArgc, &argv[2]);
         if (status < 0) {
             fprintf (stderr, "execPhpScript of %s error, status = %d\n",
 	      argv[1], status);
