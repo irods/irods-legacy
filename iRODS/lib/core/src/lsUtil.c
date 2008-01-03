@@ -372,7 +372,7 @@ rodsArguments_t *rodsArgs)
       srcPath->rodsObjStat->specColl != NULL) {
 	status = lsSpecCollUtil (conn, srcPath, myRodsEnv, rodsArgs);
 	if (srcPath->rodsObjStat->specColl->class == MOUNTED_COLL) {
-	    /* for BUNDLE_COLL, we also want to list normal files */
+	    /* for STRUCT_FILE_COLL, we also want to list normal files */
 	    return (status);
 	}
     }
