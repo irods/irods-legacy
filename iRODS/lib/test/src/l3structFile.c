@@ -16,12 +16,12 @@ main(int argc, char **argv)
     rErrMsg_t errMsg;
     subFile_t subFile;
     specColl_t specColl;
-    bunSubFdOprInp_t bunSubFdOprInp;
-    bytesBuf_t bunSubReadOutBBuf;
+    subStructFileFdOprInp_t subStructFileFdOprInp;
+    bytesBuf_t subStructFileReadOutBBuf;
     rodsStat_t *rodsStat = NULL;
-    bunSubLseekInp_t bunSubLseekInp;
-    fileLseekOut_t *bunSubLseekOut = NULL;
-    bunSubRenameInp_t bunSubRenameInp;
+    subStructFileLseekInp_t subStructFileLseekInp;
+    fileLseekOut_t *subStructFileLseekOut = NULL;
+    subStructFileRenameInp_t subStructFileRenameInp;
     rodsDirent_t *rodsDirent = NULL;
 
     status = getRodsEnv (&myRodsEnv);
@@ -50,8 +50,8 @@ main(int argc, char **argv)
     memset (&specColl, 0, sizeof (specColl));
     subFile.specColl = &specColl;
     rstrcpy (specColl.collection, "/tempZone/home/rods/dir1", MAX_NAME_LEN);
-    specColl.class = BUNDLE_COLL;
-    specColl.type = HAAW_BUNDLE;
+    specColl.class = STRUCT_FILE_COLL;
+    specColl.type = HAAW_STRUCT_FILE;
     rstrcpy (specColl.objPath, "/tempZone/home/rods/dir1/myBundle", 
       MAX_NAME_LEN);
     rstrcpy (specColl.resource, "demoResc", NAME_LEN);
@@ -61,118 +61,120 @@ main(int argc, char **argv)
       MAX_NAME_LEN);
     rstrcpy (subFile.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
 
-    status = rcBunSubOpen (conn, &subFile);
+    status = rcSubStructFileOpen (conn, &subFile);
 
-    printf ("Porcessed rcBunSubOpen, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileOpen, status = %d\n", status);
 
-    status = rcBunSubCreate (conn, &subFile);
+    status = rcSubStructFileCreate (conn, &subFile);
     
-    printf ("Porcessed rcBunSubCreate, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileCreate, status = %d\n", status);
 
-    memset (&bunSubFdOprInp, 0, sizeof (bunSubFdOprInp));
+    memset (&subStructFileFdOprInp, 0, sizeof (subStructFileFdOprInp));
 
-    rstrcpy (bunSubFdOprInp.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
-    bunSubFdOprInp.type = HAAW_BUNDLE;
-    bunSubFdOprInp.fd = 10;
-    bunSubFdOprInp.len = 1000;
+    rstrcpy (subStructFileFdOprInp.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
+    subStructFileFdOprInp.type = HAAW_STRUCT_FILE;
+    subStructFileFdOprInp.fd = 10;
+    subStructFileFdOprInp.len = 1000;
 
-    memset (&bunSubReadOutBBuf, 0, sizeof (bunSubReadOutBBuf));
-    bunSubReadOutBBuf.buf = malloc (bunSubFdOprInp.len);
+    memset (&subStructFileReadOutBBuf, 0, sizeof (subStructFileReadOutBBuf));
+    subStructFileReadOutBBuf.buf = malloc (subStructFileFdOprInp.len);
 
-    status = rcBunSubRead (conn, &bunSubFdOprInp, &bunSubReadOutBBuf);
+    status = rcSubStructFileRead (conn, &subStructFileFdOprInp, &subStructFileReadOutBBuf);
 
-    printf ("Porcessed rcBunSubRead, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileRead, status = %d\n", status);
 
-    rstrcpy ((char *) bunSubReadOutBBuf.buf, "This is a test from client", 
-      bunSubFdOprInp.len);
+    rstrcpy ((char *) subStructFileReadOutBBuf.buf, "This is a test from client", 
+      subStructFileFdOprInp.len);
 
-    bunSubReadOutBBuf.len = bunSubFdOprInp.len = 
+    subStructFileReadOutBBuf.len = subStructFileFdOprInp.len = 
       strlen ("This is a test from client") + 1;
-    status = rcBunSubWrite (conn, &bunSubFdOprInp, &bunSubReadOutBBuf);
+    status = rcSubStructFileWrite (conn, &subStructFileFdOprInp, &subStructFileReadOutBBuf);
 
-    printf ("Porcessed rcBunSubWrite, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileWrite, status = %d\n", status);
 
-    status = rcBunSubClose (conn, &bunSubFdOprInp);
+    status = rcSubStructFileClose (conn, &subStructFileFdOprInp);
 
-    printf ("Porcessed rcBunSubClose, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileClose, status = %d\n", status);
 
-    status = rcBunSubStat (conn, &subFile, &rodsStat);
+    status = rcSubStructFileStat (conn, &subFile, &rodsStat);
 
-    printf ("Porcessed rcBunSubStat, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileStat, status = %d\n", status);
 
     if (rodsStat != NULL) {
 	free (rodsStat);
 	rodsStat = NULL;
     }
 
-    status = rcBunSubFstat (conn, &bunSubFdOprInp, &rodsStat);
+    status = rcSubStructFileFstat (conn, &subStructFileFdOprInp, &rodsStat);
 
-    printf ("Porcessed rcBunSubFstat, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileFstat, status = %d\n", status);
     
     if (rodsStat != NULL) {
         free (rodsStat);
         rodsStat = NULL;
     }
 
-    memset (&bunSubLseekInp, 0, sizeof (bunSubLseekInp));
+    memset (&subStructFileLseekInp, 0, sizeof (subStructFileLseekInp));
 
-    rstrcpy (bunSubLseekInp.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
-    bunSubLseekInp.type = HAAW_BUNDLE;
-    bunSubLseekInp.fd = 10;
-    bunSubLseekInp.offset = 10000;
-    bunSubLseekInp.whence = 1;
+    rstrcpy (subStructFileLseekInp.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
+    subStructFileLseekInp.type = HAAW_STRUCT_FILE;
+    subStructFileLseekInp.fd = 10;
+    subStructFileLseekInp.offset = 10000;
+    subStructFileLseekInp.whence = 1;
 
-    status = rcBunSubLseek (conn, &bunSubLseekInp, &bunSubLseekOut);
+    status = rcSubStructFileLseek (conn, &subStructFileLseekInp, &subStructFileLseekOut);
 
-    printf ("Porcessed rcBunSubLseek, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileLseek, status = %d\n", status);
 
-    if (bunSubLseekOut != NULL) {
-        free (bunSubLseekOut);
-        bunSubLseekOut = NULL;
+    if (subStructFileLseekOut != NULL) {
+        free (subStructFileLseekOut);
+        subStructFileLseekOut = NULL;
     }
 
-    memset (&bunSubRenameInp, 0, sizeof (bunSubRenameInp));
-    bunSubRenameInp.subFile.specColl = &specColl;
-    rstrcpy (bunSubRenameInp.subFile.subFilePath, 
+    memset (&subStructFileRenameInp, 0, sizeof (subStructFileRenameInp));
+    subStructFileRenameInp.subFile.specColl = &specColl;
+    rstrcpy (subStructFileRenameInp.subFile.subFilePath, 
       "/tempZone/home/rods/dir1/mySubFile", MAX_NAME_LEN);
-    rstrcpy (bunSubRenameInp.subFile.addr.hostAddr, "srbbrick8.sdsc.edu", 
+    rstrcpy (subStructFileRenameInp.subFile.addr.hostAddr, "srbbrick8.sdsc.edu", 
       NAME_LEN);
-    rstrcpy (bunSubRenameInp.newSubFilePath, 
+    rstrcpy (subStructFileRenameInp.newSubFilePath, 
       "/tempZone/home/rods/dir1/mySubFile2", MAX_NAME_LEN);
 
-    status = rcBunSubRename (conn, &bunSubRenameInp);
+    status = rcSubStructFileRename (conn, &subStructFileRenameInp);
 
-    printf ("Porcessed rcBunSubRename, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileRename, status = %d\n", status);
     
-    status = rcBunSubUnlink (conn, &subFile);
+    status = rcSubStructFileUnlink (conn, &subFile);
   
-    printf ("Porcessed rcBunSubUnlink, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileUnlink, status = %d\n", status);
 
     subFile.offset = 1000;
-    status = rcBunSubTruncate (conn, &subFile);
+    status = rcSubStructFileTruncate (conn, &subFile);
 
-    printf ("Porcessed rcBunSubTruncate, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileTruncate, status = %d\n", status);
 
-    status = rcBunSubMkdir (conn, &subFile);
+    status = rcSubStructFileMkdir (conn, &subFile);
 
-    printf ("Porcessed rcBunSubMkdir, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileMkdir, status = %d\n", status);
 
-    status = rcBunSubRmdir (conn, &subFile);
+    status = rcSubStructFileRmdir (conn, &subFile);
     
-    printf ("Porcessed rcBunSubRmdir, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileRmdir, status = %d\n", status);
 
-    status = rcBunSubOpendir (conn, &subFile);
+    status = rcSubStructFileOpendir (conn, &subFile);
    
-    printf ("Porcessed rcBunSubOpendir, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileOpendir, status = %d\n", status);
 
-    status = rcBunSubReaddir (conn, &bunSubFdOprInp, &rodsDirent);
+    status = rcSubStructFileReaddir (conn, &subStructFileFdOprInp, &rodsDirent);
   
-    printf ("Porcessed rcBunSubReaddir, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileReaddir, status = %d\n", status);
 
-    status = rcBunSubClosedir (conn, &bunSubFdOprInp);
+    status = rcSubStructFileClosedir (conn, &subStructFileFdOprInp);
 
-    printf ("Porcessed rcBunSubClosedir, status = %d\n", status);
+    printf ("Porcessed rcSubStructFileClosedir, status = %d\n", status);
 
     rcDisconnect (conn);
+
+    exit (0);
 } 
 
