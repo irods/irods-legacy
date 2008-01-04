@@ -101,6 +101,7 @@ usage ()
 "Usage : ireg -m [-hvV] [-R resource] mountDirectory irodsCollection",
 "Usage : ireg -m unmount irodsCollection",
 "Usage : ireg -b [-R resource] irodsStructuredFilePath irodsCollection",
+"NOTE: ireg -b has NOT yet been implemented.",
 " ",
 "Register a file or a directory of files and subdirectory into iRODS.",
 "The file or the directory of files must already exist on the server where",
