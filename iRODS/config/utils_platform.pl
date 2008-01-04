@@ -764,7 +764,9 @@ sub getCurrentPs()
 		# BSD-isms have added the "w" flag for wider output
 		# so that process names aren't truncated to 80
 		# characters (as they are on Solaris).
-		$PS = "$PS -ewww";
+		# The x option is to show processes without controlling
+		# terminals, such as the irodsServer.
+		$PS = "$PS -exwww";
 		$PS_PID_COLUMN = 0;
 	}
 	elsif ( $os =~ /SunOS/i ) #Solaris
