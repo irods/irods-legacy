@@ -8,9 +8,18 @@ DESCRIPTION
         sub-collections in this mounted iRods collection can be
 	accessed using regular UNIX commands through this local directory.
 
+FUSE (Filesystem in Userspace) is a free Unix kernel module that allows 
+non-privileged users to create their own file systems without editing 
+the kernel code. This is achieved by running the file system code in 
+user space, while the FUSE module only provides a "bridge" to the actual 
+kernel interfaces. 
 
-Building irodsFs:
------------------
+The iRODS FUSE implementation allows normal users to access data stored 
+in iRODS using standard UNIX commands (ls, cp, etc) and system calls 
+(open, read, write, etc).
+
+Building irods FUSE:
+--------------------
 
 a) Edit the config/config.mk file:
 
@@ -22,15 +31,15 @@ files are installed. e.g.,
 
     fuseHomeDir=/usr/local/fuse
 
-b) Making irodsFs:
+b) Making irods Fuse:
 
 Type in:
 
 cd clients/fuse
 gmake
 
-Running irodsFs:
-----------------
+Running irods Fuse:
+-------------------
 
 1) cd clients/fuse/bin
 
