@@ -61,9 +61,11 @@ rodsDirent_t **fileReaddirOut, rodsServerHost_t *rodsServerHost)
     status = rcFileReaddir (rodsServerHost->conn, fileReaddirInp, fileReaddirOut);
 
     if (status < 0) { 
-        rodsLog (LOG_NOTICE,
-         "remoteFileReaddir: rcFileReaddir failed for %s",
-          FileDesc[fileReaddirInp->fileInx].fileName);
+        if (status != -1) {     /* eof */
+            rodsLog (LOG_NOTICE,
+             "remoteFileReaddir: rcFileReaddir failed for %s",
+              FileDesc[fileReaddirInp->fileInx].fileName);
+	}
     }
 
     return status;
