@@ -336,7 +336,7 @@ sub validateDatabaseVariables()
 
 
 	# Database paths:
-	#	If there is a $DATABASE_HOME, then there is a database
+	#	If there is a $DATABASE_HOME, then there may be a database
 	#	under control of the Perl scripts.  Set up the database's
 	#	paths and parameters.
 	$controlDatabase = 0;
@@ -375,8 +375,10 @@ sub validateDatabaseVariables()
 	$sqlplus  = undef;
 
 
-	# Make sure the database directory exists.
-	if ( ! -e $DATABASE_HOME )
+	# Make sure the database directory exists if a database type
+	# has been specified.
+	if ( defined($DATABASE_TYPE) && $DATABASE_TYPE ne "" &&
+		(!defined($DATABASE_HOME) || $DATABASE_HOME eq "" || ! -e $DATABASE_HOME) )
 	{
 		printError(
 			"\n" .
