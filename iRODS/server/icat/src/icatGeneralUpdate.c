@@ -120,7 +120,7 @@ chlGeneralUpdate(generalUpdateInp_t generalUpdateInp) {
    icatSessionStruct *icss;
 
    icss = chlGetRcs();
-   //   result->rowCount=0;
+   /*   result->rowCount=0; */
 
    if (firstCall) {
       icatGeneralQuerySetup();

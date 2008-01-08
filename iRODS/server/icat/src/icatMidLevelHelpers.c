@@ -255,7 +255,7 @@ int cmlInsertIntoSingleTableUnused(char *tableName,
 
 /* like cmlInsertIntoSingleTable but the insertColumns are already
    in a single string*/
-// No longer needed with bind vars
+/* No longer needed with bind vars */
 int cmlInsertIntoSingleTableV2Unused (char *tableName,
 			   char *insertCols, 
 			   char *insertValues[], 
