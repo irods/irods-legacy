@@ -24,11 +24,31 @@
 use Sys::Hostname;
 use IO::Socket;
 use Cwd;
-use Net::FTP;
 use File::Spec;
-use Net::hostent;
 use Socket;
 use POSIX;
+
+eval { require Net::hostent; };
+if ( $@ )
+{
+	print( "Perl installation problem:\n" );
+	print( "    The Perl Net::hostent module is not installed.  This module\n" );
+	print( "    is required by the iRODS installation scripts.  Please\n" );
+	print( "    contact your system administrator.\n" );
+	exit( 1 );
+}
+use Net::hostent;
+
+eval { require Net::FTP; };
+if ( $@ )
+{
+	print( "Perl installation problem:\n" );
+	print( "    The Perl Net::FTP module is not installed.  This module\n" );
+	print( "    is required by the iRODS installation scripts.  Please\n" );
+	print( "    contact your system administrator.\n" );
+	exit( 1 );
+}
+use Net::FTP;
 
 $version{"utils_platform.pl"} = "1.1";
 
@@ -532,7 +552,7 @@ sub getHostAddresses($)
 	if ( defined( $ifconfig ) )
 	{
 		my $output = `$ifconfig -a 2>&1`;
-		if ( $? == 0 )
+		if ( ($?>>8) == 0 )
 		{
 			# Get IP addresses.
 			my @lines = split( "\n", $output );
@@ -637,10 +657,10 @@ sub is64bit()
 	# Try to compile and run it.
 	my $status = undef;
 	my $output = `$cc $tmpFile.c -o $tmpFile 2>&1`;
-	if ( $? == 0 )
+	if ( ($?>>8) == 0 )
 	{
 		$output = `./$tmpFile 2>&1`;
-		if ( $? == 1 )
+		if ( ($?>>8) == 1 )
 		{
 			$status = 1;
 		}
@@ -648,6 +668,23 @@ sub is64bit()
 		{
 			$status = 0;
 		}
+	}
+	else
+	{
+		# Compilation failed.  This can happen on
+		# systems for which the C compiler is an
+		# optional install and the sysadmin hasn't
+		# installed it.  Solaris, for instance,
+		# installs /usr/ucb/cc, but it always
+		# prints an error message and exits with
+		# a code of 1.
+		#
+		# Regardless, since the compile failed
+		# we don't know if the system can do 64-bit
+		# addressing.  But it doesn't really matter
+		# since we can't compile anything here
+		# anyway.  Return 32-bit.
+		$status = 0;
 	}
 
 	# Clean up
@@ -955,7 +992,7 @@ sub run($)
 	# Run it, capturing all output.
 	my $output = `$command 2>&1`;
 
-	return ($?,$output);
+	return (($?>>8),$output);
 }
 
 
