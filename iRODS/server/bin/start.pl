@@ -146,6 +146,9 @@ if ( $? )
 	exit -1;
 }
 
+# Sleep a bit to give the server time to start and possibly exit
+sleep(2);
+
 @pids = getProcessIds( "(irodsSer)(ver)?" );
 if ( $#pids < 0 )
 {
