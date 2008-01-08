@@ -469,7 +469,7 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 	int status;
 	int fd = -1;
 	int fileWasOpened = FALSE;
-	long fileLength = -1;
+	unsigned long fileLength = 0;
 	char* format = NULL;
 	bytesBuf_t data;
 
