@@ -1,8 +1,312 @@
-iRODS Installation
+		Introduction to iRODS scripts and configuration files
+				January 2008
 
-To install iRODS, cd to the top level directory and run
 
-	install.pl
+The iRODS distribution uses several configuration files and shell/Perl
+scripts to build and manage the iRODS system.
 
-This Perl script will prompt you for information it needs, then
-build the distribution.
+
+
+
+
+1.  Installing iRODS using 'setup'
+------------------------------------------------------------------------
+
+To install iRODS, execute the setup script in the iRODS home directory:
+
+	./setup
+
+The script prompts you for what to install and where to install it,
+then does the job.  This typically takes 1/2 hour or more and is the
+recommended way to install iRODS.
+
+This script saves its work in two configuration files:
+
+	install/installPostgres.config
+		Used to configure a Postgres install.
+
+	install/irods.config
+		Used to configure the iRODS install.
+
+Normally, there is no need for you to view or edit these files.  Both
+files include comments that explain their settings.
+
+
+
+1.1.  Installation options
+
+iRODS is a flexible system that can be installed in several ways by
+answering the prompts differently:
+
+	* Install iRODS server, iCAT, commands, and Postgres
+		The scripts download and install Postgres first,
+		then build and configure iRODS to use that database.
+
+		This is the recommended choice for new installs.
+
+
+	* Install iRODS server, iCAT, and commands
+		You will be prompted for information about an
+		existing Postgres or Oracle database.  The scripts
+		build and configure iRODS to use that database.
+
+
+	* Install iRODS server, and commands
+		You will be prompted for a host that is already
+		running an iRODS server with iCAT support.  No
+		new database is needed.  The scripts build and
+		configure iRODS to access the other iRODS+iCAT
+		server.
+
+
+	* Install iRODS commands
+		You will prompted for a host that is running an
+		iRODS server.  No new server or database is needed.
+		The scripts build and configure the commands to
+		use that existing iRODS server.
+
+
+
+
+
+2.  Installing iRODS without using 'setup'
+------------------------------------------------------------------------
+
+The 'setup' script runs four steps for the installation that you can run
+directly if needed:
+
+	./installPostgres
+		Download and build Postgres and ODBC distribtions.  Uses
+		parameters in 'install/installPostgres.config'.  Saves
+		parameters to 'install/irods.config'.
+
+	./configure
+		Configure the iRODS build.  Uses and saves parameters in
+		'install/irods.config'.  Saves compilation parameters to
+		'config/config.mk' and 'config/platform.mk'.
+
+	make
+		Build iRODS.  Uses configuration parameters in several
+		include files in 'config/*.mk'.
+
+	./setupFinish
+		Install database tables and initialize iRODS.  Uses
+		parameters in 'install/irods.config'.
+
+
+
+2.1.  Installing with a new Postgres database
+
+Edit 'install/installPostgres.config' to change defaults if needed.
+See comments in the file.
+
+Run:
+	./installPostgres
+	./configure
+	make
+	./setupFinish
+
+
+
+2.2.  Installing with an existing Postgres database
+
+Edit 'config/irods.config' and set:
+
+	$DATABASE_TYPE = 'postgres';
+	$DATABASE_ODBC_TYPE = 'unix';
+	$DATABASE_HOME = '/path/to/postgres';
+	$DATABASE_HOST = 'localhost';
+	$DATABASE_PORT = '5432';
+	$DATABASE_ADMIN_NAME = 'postgres-user-account';
+	$DATABASE_ADMIN_PASSWORD = 'postgres-user-password';
+
+The ODBC type must be "unix" for the unix ODBC, or "postgres" for the old
+Postgres ODBC.  iRODS works best with the unix ODBC.
+
+The Postgres database must be running on the same host as an iRODS
+server with the iCAT enabled.  The iCAT stores metadata about the
+catalog of archived files in the database.
+
+iRODS can be configured with servers running on multiple hosts.  Only
+one of those servers needs the iCAT enabled, so only one host needs
+Postgres installed.  The other iRODS servers on other hosts can be
+configured to communicate with the first iRODS server, its iCAT, and
+the iCAT's Postgres database.
+
+Run:
+	./configure
+	make
+	./setupFinish
+
+If the existing Postgres does not have the iCAT tables installed yet, the
+'setupFinish' script will install them.  iRODS will coexist with other
+uses of the same Postgres database.
+
+
+
+2.3.  Installing with an existing Oracle database
+
+Edit 'config/irods.config' and set:
+
+	$DATABASE_TYPE = 'oracle';
+	$DATABASE_HOME = '/path/to/oracle';
+	$DATABASE_HOST = 'oracle-host-name';
+	$DATABASE_PORT = 'oracle-port-number';
+	$DATABASE_ADMIN_NAME = 'oracle-user-account';
+	$DATABASE_ADMIN_PASSWORD = 'oracle-user-password';
+
+The user account name must have the form 'schema@instance' per Oracle
+conventions.
+
+Run:
+	./configure
+	make
+	./setupFinish
+
+The 'setupFinish' script will install iCAT tables if needed.
+
+
+
+
+
+3.  Managing an iRODS installation
+------------------------------------------------------------------------
+
+Other documents discuss the iRODS tables, accounts, etc.  Here we only
+discuss tasks under script control, including:
+
+	* start and stop the iRODS and database servers
+	* checking server status
+	* testing the installation
+
+These tasks are all done with the 'bin/irodsctl' script.
+
+
+
+3.1.  Starting the iRODS and database servers
+
+Run:
+	bin/irodsctl start
+
+If the database server was configured as dedicated for iRODS use, this
+will start the database server as well.
+
+
+
+3.2.  Stopping the iRODS and database servers
+
+Run:
+	bin/irodsctl stop
+
+If the database server was configured as dedicated for iRODS use, this
+will stop the database server as well.
+
+
+
+3.3.  Restarting the iRODS and database servers
+
+Run:
+	bin/irodsctl restart
+
+This is the same as running 'stop' then 'start'.
+
+
+
+3.4.  Checking if the servers are running
+
+Run:
+	bin/irodsctl status
+
+This lists the iRODS and database servers running, and their process IDs.
+
+
+
+3.5.  Testing the iRODS installation
+
+Run:
+	bin/irodsctl test
+
+This runs an extensive set of tests to be sure the installation is working
+properly.
+
+
+
+
+
+4.  Other iRODS scripts
+------------------------------------------------------------------------
+
+There are a few more scripts sysadmins may use if needed.
+
+
+
+4.1.  Starting the iRODS server only
+
+Run:
+	server/bin/start
+
+Be sure the database server, if needed, is already running.
+
+
+
+4.2.  Stopping the iRODS server only
+
+Run:
+	server/bin/stop
+
+The database server, if any, will be left running.
+
+
+
+4.3.  Listing server processes
+
+Run:
+	perl server/bin/list.pl
+
+This is a more detailed list of iRODS server processes than is
+produced by 'bin/irodsctl status'.
+
+
+
+
+
+5.  Uninstalling iRODS and Postgres
+------------------------------------------------------------------------
+
+
+5.1.  Dropping the iRODS tables
+
+Stop the iRODS servers but leave the database server running, then
+use the 'drop' option on 'irodsctl' to drop the database tables:
+
+	server/bin/stop
+	bin/irodsctl drop
+
+
+
+5.1.  Uninstall Postgres as installed by iRODS
+
+If you used the 'setup' or 'installPostgres' scripts to download and
+install Postgres, then you can use the 'uninstallPostgres' script.
+First stop the iRODS and database servers, then run the script:
+
+	bin/irodsctl stop
+	./uninstallPostgres
+
+Optionally, if you don't plan on using Postgres again, delete your
+'~/.pgpass' and '~/.odbc.ini' files.  Leave them there won't hurt
+anything.
+
+
+
+5.2.  Uninstall iRODS
+
+Stop the servers and delete the iRODS home directory.  There are
+no additional files in the rest of the OS.
+
+	bin/irodsctl stop
+	cd ..
+	rm -rf the_irods_directory
+
+Optionally, if you don't plan on using iRODS again, delete your
+'~/.irods' directory.  Leaving it there won't hurt anything.
