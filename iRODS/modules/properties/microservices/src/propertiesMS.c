@@ -33,7 +33,7 @@ msiPropertiesNew( msParam_t *listParam,
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesNew" );
 
-	// Create empty list
+	/* Create empty list */
 	fillMsParam( listParam, NULL,
 		KeyValPair_MS_T, mallocAndZero( sizeof(keyValPair_t) ), NULL );
 	return 0;
@@ -52,11 +52,11 @@ msiPropertiesClear( msParam_t *listParam,
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesClear" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( listParam->type, KeyValPair_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
-	// Clear list
+	/* Clear list */
 	clearKeyVal( (keyValPair_t*)listParam->inOutStruct );
 	return 0;
 }
@@ -74,7 +74,7 @@ msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t 
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesClone" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( listParam->type, KeyValPair_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
@@ -106,7 +106,7 @@ msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesAdd" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( listParam->type, KeyValPair_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 	if ( strcmp( keywordParam->type, STR_MS_T ) != 0 )
@@ -114,7 +114,7 @@ msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
 	if ( strcmp( valueParam->type, STR_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
-	// Add entry
+	/* Add entry */
 	addKeyVal( (keyValPair_t*)listParam->inOutStruct,
 		(char*)keywordParam->inOutStruct,
 		(char*)valueParam->inOutStruct );
@@ -135,13 +135,13 @@ msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam,
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesRemove" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( listParam->type, KeyValPair_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 	if ( strcmp( keywordParam->type, STR_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
-	// Remove entry
+	/* Remove entry */
 	rmKeyVal( (keyValPair_t*)listParam->inOutStruct,
 		(char*)keywordParam->inOutStruct );
 	return 0;
@@ -165,13 +165,13 @@ msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
 
 	RE_TEST_MACRO( "    Calling msiPropertiesGet" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( listParam->type, KeyValPair_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 	if ( strcmp( keywordParam->type, STR_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
-	// Get value and return it
+	/* Get value and return it */
 	value = getValByKey( (keyValPair_t*)listParam->inOutStruct,
 		(char*)keywordParam->inOutStruct );
 	fillMsParam( valueParam, NULL, STR_MS_T, value, NULL );
@@ -215,13 +215,13 @@ msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* t
 
 	RE_TEST_MACRO( "    Calling msiPropertiesExists" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( listParam->type, KeyValPair_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 	if ( strcmp( keywordParam->type, STR_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
-	// Get value and return true if exists
+	/* Get value and return true if exists */
 	value = getValByKey( (keyValPair_t*)listParam->inOutStruct,
 		(char*)keywordParam->inOutStruct );
 	fillIntInMsParam( trueFalseParam, (value==NULL) ? 0 : 1 );
@@ -250,11 +250,11 @@ msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam,
 
 	RE_TEST_MACRO( "    Calling msiPropertiesToString" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( listParam->type, KeyValPair_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
-	// Create and return string
+	/* Create and return string */
 	keyValToString( (keyValPair_t*)listParam->inOutStruct, &string );
 	fillStrInMsParam( stringParam, string );
 	return 0;
@@ -277,11 +277,11 @@ msiPropertiesFromString( msParam_t *stringParam, msParam_t* listParam,
 
 	RE_TEST_MACRO( "    Calling msiPropertiesToString" );
 
-	// Check parameters
+	/* Check parameters */
 	if ( strcmp( stringParam->type, STR_MS_T ) != 0 )
 		return USER_PARAM_TYPE_ERR;
 
-	// Parse string and return list
+	/* Parse string and return list */
 	if ( keyValFromString( (char*)stringParam->inOutStruct, &list ) == 0 )
 		fillMsParam( listParam, NULL, KeyValPair_MS_T, list, NULL );
 	return 0;

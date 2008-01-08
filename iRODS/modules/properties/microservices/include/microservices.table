@@ -1,5 +1,5 @@
-// Properties module microservices
-// Service name			# args		Service function
+/* Properties module microservices */
+/* Service name			# args		Service function */
 { "msiPropertiesNew",		1,		(funcPtr) msiPropertiesNew },
 { "msiPropertiesClear",		1,		(funcPtr) msiPropertiesClear },
 { "msiPropertiesClone",		2,		(funcPtr) msiPropertiesClone },

@@ -11,17 +11,16 @@
  * COPYRIGHT directory.
  */
 
-// ImageMagick
-// 	Due to conflicts between ImageMagick and iRODS includes,
-// 	ImageMagick needs to be included first.
+/* ImageMagick */
+/* 	Due to conflicts between ImageMagick and iRODS includes, */
+/* 	ImageMagick needs to be included first. */
 #include <magick/MagickCore.h>
 
-// iRODS
+/* iRODS */
 #include "imageMS.h"
 #include "imageMSutil.h"
 #include "rsApiHandler.h"
 #include "apiHeaderAll.h"
-#include "rcProperties.h"
 
 
 
@@ -59,7 +58,7 @@ _ImageGetFileParameter( rsComm_t* rsComm, char* messageBase,
 	int status;
 
 
-	// If the incoming parameter is NULL, it's an error.
+	/* If the incoming parameter is NULL, it's an error. */
 	if ( param == NULL )
 	{
 		status = SYS_INTERNAL_NULL_INPUT_ERR;
@@ -69,8 +68,8 @@ _ImageGetFileParameter( rsComm_t* rsComm, char* messageBase,
 		return status;
 	}
 
-	// If the parameter is an integer, we have a file descriptor.
-	// The descriptor must be positive.
+	/* If the parameter is an integer, we have a file descriptor. */
+	/* The descriptor must be positive. */
 	if ( strcmp( param->type, INT_MS_T ) == 0 )
 	{
 		result->fd   = *(int *)param->inOutStruct;
@@ -87,9 +86,9 @@ _ImageGetFileParameter( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// If the parameter is a string, it may be a file path or
-	// a string representation of a file descriptor.  It cannot
-	// be NULL.
+	/* If the parameter is a string, it may be a file path or */
+	/* a string representation of a file descriptor.  It cannot */
+	/* be NULL. */
 	if ( strcmp( param->type, STR_MS_T ) == 0 )
 	{
 		char* endParse = NULL;
@@ -105,8 +104,8 @@ _ImageGetFileParameter( rsComm_t* rsComm, char* messageBase,
 			return status;
 		}
 
-		// Is it a file descriptor number?  If so, it
-		// must be positive.
+		/* Is it a file descriptor number?  If so, it */
+		/* must be positive. */
 		result->fd = (int)strtol( result->path, &endParse, 10 );
 		if ( result->path != endParse )
 		{
@@ -125,7 +124,7 @@ _ImageGetFileParameter( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Otherwise parse it as a object or as key-value pairs.
+	/* Otherwise parse it as a object or as key-value pairs. */
 	status = parseMspForDataObjInp( param, result->dataObject, &resultObject, 0 );
 	if ( status < 0 )
 	{
@@ -155,13 +154,13 @@ int
 _ImageGetPropertyListParameter( rsComm_t* rsComm, char* messageBase,
 	msParam_t* param, keyValPair_t** result )
 {
-	// If the incoming parameter is NULL, do nothing.
-	// This isn't an error.  The user is allowed to leave
-	// property lists unspecified.
+	/* If the incoming parameter is NULL, do nothing. */
+	/* This isn't an error.  The user is allowed to leave */
+	/* property lists unspecified. */
 	if ( param == NULL )
 		return 0;
 
-	// If the parameter is not a string, it's an error
+	/* If the parameter is not a string, it's an error */
 	if ( strcmp( param->type, STR_MS_T ) != 0 )
 	{
 		int status = USER_PARAM_TYPE_ERR;
@@ -171,7 +170,7 @@ _ImageGetPropertyListParameter( rsComm_t* rsComm, char* messageBase,
 		return status;
 	}
 
-	// Parse the string.
+	/* Parse the string. */
 	keyValFromString( (char*)param->inOutStruct, result );
 	return 0;
 }
@@ -192,7 +191,7 @@ int
 _ImageGetDouble( rsComm_t* rsComm, char* messageBase,
 	msParam_t* param, double* result )
 {
-	// If the incoming parameter is NULL, it's an error.
+	/* If the incoming parameter is NULL, it's an error. */
 	if ( param == NULL )
 	{
 		int status = USER_PARAM_TYPE_ERR;
@@ -202,23 +201,23 @@ _ImageGetDouble( rsComm_t* rsComm, char* messageBase,
 		return status;
 	}
 
-	// If the parameter is an integer, cast it and
-	// convert to a double.
+	/* If the parameter is an integer, cast it and */
+	/* convert to a double. */
 	if ( strcmp( param->type, INT_MS_T ) != 0 )
 	{
 		*result = (double)(*(int *)param->inOutStruct);
 		return 0;
 	}
 
-	// If the parameter is a double, cast it and
-	// convert to a double.
+	/* If the parameter is a double, cast it and */
+	/* convert to a double. */
 	if ( strcmp( param->type, DOUBLE_MS_T ) != 0 )
 	{
 		*result = *(double *)param->inOutStruct;
 		return 0;
 	}
 
-	// If the parameter is not a string, it's an error
+	/* If the parameter is not a string, it's an error */
 	if ( strcmp( param->type, STR_MS_T ) != 0 )
 	{
 		int status = USER_PARAM_TYPE_ERR;
@@ -228,7 +227,7 @@ _ImageGetDouble( rsComm_t* rsComm, char* messageBase,
 		return status;
 	}
 
-	// Parse the string.
+	/* Parse the string. */
 	*result = atof( (char*)param->inOutStruct );
 	return 0;
 }
@@ -280,8 +279,8 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	memset( &data,       0, sizeof(bytesBuf_t) );
 
 
-	// If the file argument is a file path,
-	// open the file.
+	/* If the file argument is a file path, */
+	/* open the file. */
 	if ( file->type == IMAGEFILEPARAMETER_PATH )
 	{
 		rstrcpy( openParam.objPath, file->path, MAX_NAME_LEN );
@@ -299,11 +298,11 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 		fileWasOpened = TRUE;
 	}
 
-	// If the file argument is a data object,
-	// open the file.
+	/* If the file argument is a data object, */
+	/* open the file. */
 	else if ( file->type == IMAGEFILEPARAMETER_OBJECT )
 	{
-		// Open the file.
+		/* Open the file. */
 		status = rsDataObjOpen( rsComm, file->dataObject );
 		if ( status < 0 )
 		{
@@ -316,8 +315,8 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 		fileWasOpened = TRUE;
 	}
 
-	// Otherwise the file argument is a file
-	// descriptor and the file is already open.
+	/* Otherwise the file argument is a file */
+	/* descriptor and the file is already open. */
 	else
 	{
 		fd = file->fd;
@@ -325,7 +324,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Seek to the end of the file to get its size.
+	/* Seek to the end of the file to get its size. */
 	seekParam.fileInx = fd;
 	seekParam.offset  = 0;
 	seekParam.whence  = SEEK_END;
@@ -336,7 +335,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 			"%s:  could not seek to end of file, status = %d",
 			messageBase, status );
 
-		// Try to close the file we opened, ignoring errors.
+		/* Try to close the file we opened, ignoring errors. */
 		if ( fileWasOpened )
 		{
 			closeParam.l1descInx = fd;
@@ -346,7 +345,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	}
 	fileLength = seekResult->offset;
 
-	// Reset to the start.
+	/* Reset to the start. */
 	seekParam.offset  = 0;
 	seekParam.whence  = SEEK_SET;
 	status = rsDataObjLseek( rsComm, &seekParam, &seekResult );
@@ -356,7 +355,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 			"%s:  could not seek to start of file, status = %d",
 			messageBase, status );
 
-		// Try to close the file we opened, ignoring errors.
+		/* Try to close the file we opened, ignoring errors.*/
 		if ( fileWasOpened )
 		{
 			closeParam.l1descInx = fd;
@@ -366,7 +365,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Read the file into a big buffer.
+	/* Read the file into a big buffer. */
 	readParam.l1descInx = fd;
 	readParam.len       = fileLength;
 
@@ -381,7 +380,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 			messageBase, status );
 		free( (char*)data.buf );
 
-		// Try to close the file we opened, ignoring errors.
+		/* Try to close the file we opened, ignoring errors. */
 		if ( fileWasOpened )
 		{
 			closeParam.l1descInx = fd;
@@ -391,7 +390,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Close the file we opened.
+	/* Close the file we opened. */
 	if ( fileWasOpened )
 	{
 		closeParam.l1descInx = fd;
@@ -409,14 +408,14 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Allocate ImageMagick structures.
+	/* Allocate ImageMagick structures. */
 	errors = AcquireExceptionInfo( );
 	info   = AcquireImageInfo( );
 
-	// Guess the file's format based upon properties
-	// and a file name extension, if any.  A NULL is
-	// returned if there is no guess and then we let
-	// ImageMagick guess the format on its own.
+	/* Guess the file's format based upon properties */
+	/* and a file name extension, if any.  A NULL is */
+	/* returned if there is no guess and then we let */
+	/* ImageMagick guess the format on its own. */
 	format = _ImageGuessFormat( file );
 	if ( format != NULL )
 	{
@@ -425,7 +424,7 @@ _ImageReadFile( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Interpret the data as an image.
+	/* Interpret the data as an image. */
 	file->image = BlobToImage( info, data.buf, data.len, errors );
 	CatchException( errors );
 	free( (char*)data.buf );
@@ -481,16 +480,16 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 
 
 
-	// Allocate ImageMagick structures.
+	/* Allocate ImageMagick structures. */
 	errors = AcquireExceptionInfo( );
 	info   = AcquireImageInfo( );
 
 
-	// Guess the file's format based upon properties
-	// and a file name extension, if any.  A NULL is
-	// returned if there is no guess and then we let
-	// ImageMagick guess the format on its own.  This
-	// will probably generate an error.
+	/* Guess the file's format based upon properties */
+	/* and a file name extension, if any.  A NULL is */
+	/* returned if there is no guess and then we let */
+	/* ImageMagick guess the format on its own.  This */
+	/* will probably generate an error. */
 	format = _ImageGuessFormat( file );
 	if ( format != NULL )
 	{
@@ -501,8 +500,8 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 /** TODO:  add properties **/
 
 
-	// Convert the image into a raw byte buffer in the
-	// selected file format.
+	/* Convert the image into a raw byte buffer in the */
+	/* selected file format. */
 	data.buf = ImageToBlob( info, file->image, &fileLength, errors );
 	data.len = (int)fileLength;
 	CatchException( errors );
@@ -519,13 +518,13 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Free ImageMagick structures, except for the image.
-	// The caller is responsible for freeing the image.
+	/* Free ImageMagick structures, except for the image. */
+	/* The caller is responsible for freeing the image. */
 	DestroyExceptionInfo( errors );
 	DestroyImageInfo( info );
 
 
-	// If the file argument is a path, create the file.
+	/* If the file argument is a path, create the file. */
 	if ( file->type == IMAGEFILEPARAMETER_PATH )
 	{
 		rstrcpy( openParam.objPath, file->path, MAX_NAME_LEN );
@@ -544,7 +543,7 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 		fileWasOpened = TRUE;
 	}
 
-	// If the file argument is a data object, create the file.
+	/* If the file argument is a data object, create the file. */
 	else if ( file->type == IMAGEFILEPARAMETER_OBJECT )
 	{
 		status = rsDataObjOpen( rsComm, file->dataObject );
@@ -559,9 +558,9 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 		fileWasOpened = TRUE;
 	}
 
-	// Otherwise the file argument was a file descriptor
-	// and the file is already open.  We'll write at whatever
-	// location the file pointer is at in the file.
+	/* Otherwise the file argument was a file descriptor */
+	/* and the file is already open.  We'll write at whatever */
+	/* location the file pointer is at in the file. */
 	else
 	{
 		fd = file->fd;
@@ -569,7 +568,7 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 	}
 
 
-	// Write the buffer to the file
+	/* Write the buffer to the file */
 	writeParam.l1descInx = fd;
 	writeParam.len       = data.len;
 	status = rsDataObjWrite( rsComm, &writeParam, &data );
@@ -584,7 +583,7 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 	free( (char*)data.buf );
 
 
-	// Close the file if we opened it.
+	/* Close the file if we opened it. */
 	if ( fileWasOpened )
 	{
 		closeParam.l1descInx = fd;
@@ -618,16 +617,16 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 char*
 _ImageGuessFormat( ImageFileParameter_t* file )
 {
-	// Look at the file's property list, if any.
+	/* Look at the file's property list, if any. */
 	if ( file->properties != NULL )
 	{
-		// Look for a file format property.
+		/* Look for a file format property. */
 		char* value = getValByKey( file->properties, PROPERTY_IMAGE_FORMAT );
 		if ( value != NULL )
 			return value;
 	}
 
-	// Look at the file's name, if any.
+	/* Look at the file's name, if any. */
 	if ( file->type == IMAGEFILEPARAMETER_PATH )
 	{
 		char* dot = rindex( file->path, '.' );
@@ -635,7 +634,7 @@ _ImageGuessFormat( ImageFileParameter_t* file )
 			return strdup( dot+1 );
 	}
 
-	// Unknown format.
+	/* Unknown format. */
 	return NULL;
 }
 
@@ -666,10 +665,10 @@ _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list )
 	char buffer[1000];
 	const int lenPrefix = strlen( PROPERTY_IMAGE_PREFIX );
 
-	//
-	// Get ImageMagick's well-defined properties, and particularly
-	// those from EXIF.
-	//
+	/*
+	 * Get ImageMagick's well-defined properties, and particularly
+	 * those from EXIF.
+	 */
 	GetImageProperty( file->image, "exif:*" );
 	GetImageProperty( file->image, "8bim:*" );
 	GetImageProperty( file->image, "fx:*" );
@@ -686,44 +685,45 @@ _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list )
 		int len = 0;
 		int i;
 
-		// Get the value.
+		/* Get the value. */
 		value = (char*)GetImageProperty( file->image, name );
 		if ( value == NULL || *value == '\0' )
-			continue;	// Null values ignored
+			continue;	/* Null values ignored */
 
-		// Prefix all property names with the image prefix.
-		len = strlen( name ) + lenPrefix;	// 'image.' + name
-		newname = (char*)malloc( len + 1 );	// newname + '\0'
+		/* Prefix all property names with the image prefix. */
+		len = strlen( name ) + lenPrefix;	/* 'image.' + name */
+		newname = (char*)malloc( len + 1 );	/* newname + '\0' */
 		strcpy( newname, PROPERTY_IMAGE_PREFIX );
 		strcat( newname, name );
-// Should this be freed?
-//		free( (char*)name );
+/* Should this be freed?
+		free( (char*)name );
+*/
 
-		// Replace all ':' separators with '.' to be
-		// compliant with iRODS property conventions.
+		/* Replace all ':' separators with '.' to be */
+		/* compliant with iRODS property conventions. */
 		for ( i = 0; i < len; i++ )
 		{
 			if ( newname[i] == ':' )
 				newname[i] = '.';
 		}
 
-		// Add the name and value.
+		/* Add the name and value. */
 		addKeyVal( list, newname, value );
 	}
 
 
-	//
-	// Add generic image properties to cover the cases where an
-	// image has no EXIF properties, but we still want to know
-	// the image's attributes.  We intentionally do not name
-	// these properties EXIF so that we can distinguish between
-	// those that come from a file's EXIF content and those we
-	// are inferring by examining the image data itself.
-	//
+	/*
+	 * Add generic image properties to cover the cases where an
+	 * image has no EXIF properties, but we still want to know
+	 * the image's attributes.  We intentionally do not name
+	 * these properties EXIF so that we can distinguish between
+	 * those that come from a file's EXIF content and those we
+	 * are inferring by examining the image data itself.
+	 */
 	if ( file->image->magick != NULL )
 	{
-		// Image file format.  Should be, but isn't
-		// always in EXIF.
+		/* Image file format.  Should be, but isn't */
+		/* always in EXIF. */
 		addKeyVal( list, PROPERTY_IMAGE_FORMAT, file->image->magick );
 	}
 
@@ -744,7 +744,7 @@ _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list )
 	}
 	if ( value != NULL )
 	{
-		// exif:Compression (but as a number, not a string)
+		/* exif:Compression (but as a number, not a string) */
 		addKeyVal( list, PROPERTY_IMAGE_COMPRESSION, value );
 	}
 
@@ -768,7 +768,7 @@ _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list )
 	}
 	if ( value != NULL )
 	{
-		// No exif equivalent.
+		/* No exif equivalent. */
 		addKeyVal( list, PROPERTY_IMAGE_INTERLACE, value );
 	}
 
@@ -799,41 +799,41 @@ _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list )
 	}
 	if ( value != NULL )
 	{
-		// exif:ColorSpace (but as a number, not a string)
+		/* exif:ColorSpace (but as a number, not a string) */
 		addKeyVal( list, PROPERTY_IMAGE_COLORSPACE, value );
 	}
 
 	if ( file->image->depth > 0 )
 	{
-		// No exif equivalent.  Must be derived from content.
+		/* No exif equivalent.  Must be derived from content. */
 		sprintf( buffer, "%D", file->image->depth );
 		addKeyVal( list, PROPERTY_IMAGE_DEPTH, buffer );
 	}
 
 	if ( file->image->colors > 0 )
 	{
-		// No exif equivalent.  Must be derived from color table.
+		/* No exif equivalent.  Must be derived from color table. */
 		sprintf( buffer, "%D", file->image->colors );
 		addKeyVal( list, PROPERTY_IMAGE_COLORS, buffer );
 	}
 
 	if ( file->image->gamma > 0.0 )
 	{
-		// No exif equivalent.
+		/* No exif equivalent. */
 		sprintf( buffer, "%F", file->image->gamma );
 		addKeyVal( list, PROPERTY_IMAGE_GAMMA, buffer );
 	}
 
 	if ( file->image->x_resolution > 0.0 )
 	{
-		// exif:XResolution
+		/* exif:XResolution */
 		sprintf( buffer, "%F", file->image->x_resolution );
 		addKeyVal( list, PROPERTY_IMAGE_XRESOLUTION, buffer );
 	}
 
 	if ( file->image->y_resolution > 0.0 )
 	{
-		// exif:YResolution
+		/* exif:YResolution */
 		sprintf( buffer, "%F", file->image->y_resolution );
 		addKeyVal( list, PROPERTY_IMAGE_YRESOLUTION, buffer );
 	}
@@ -847,7 +847,7 @@ _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list )
 	}
 	if ( value != NULL )
 	{
-		// exif:ResolutionUnit (but as a number, not a string)
+		/* exif:ResolutionUnit (but as a number, not a string) */
 		addKeyVal( list, PROPERTY_IMAGE_RESOLUTIONUNIT, value );
 	}
 
@@ -866,20 +866,20 @@ _ImageGetProperties( ImageFileParameter_t* file, keyValPair_t* list )
 	}
 	if ( value != NULL )
 	{
-		// exif:Orientation (but as a number, not a string)
+		/* exif:Orientation (but as a number, not a string) */
 		addKeyVal( list, PROPERTY_IMAGE_ORIENTATION, value );
 	}
 
 	if ( file->image->rows > 0 )
 	{
-		// exif:ExifImageLength
+		/* exif:ExifImageLength */
 		sprintf( buffer, "%D", file->image->rows );
 		addKeyVal( list, PROPERTY_IMAGE_ROWS, buffer );
 	}
 
 	if ( file->image->columns > 0 )
 	{
-		// exif:ExifImageWidth
+		/* exif:ExifImageWidth */
 		sprintf( buffer, "%D", file->image->columns );
 		addKeyVal( list, PROPERTY_IMAGE_COLUMNS, buffer );
 	}

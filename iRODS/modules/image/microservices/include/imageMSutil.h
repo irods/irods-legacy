@@ -22,21 +22,21 @@
  */
 typedef struct ImageFileParameter
 {
-	int type;			// The parameter type
+	int type;			/* The parameter type */
 #define IMAGEFILEPARAMETER_PATH		0
 #define IMAGEFILEPARAMETER_FD		1
 #define IMAGEFILEPARAMETER_OBJECT	2
 
-	// From the input
-	char* path;			// The file path
-	int fd;				// The file descriptor
-	dataObjInp_t *dataObject;	// The file object
+	/* From the input */
+	char* path;			/* The file path */
+	int fd;				/* The file descriptor */
+	dataObjInp_t *dataObject;	/* The file object */
 
-	// From additional parameters
-	keyValPair_t* properties;	// The file properties
+	/* From additional parameters */
+	keyValPair_t* properties;	/* The file properties */
 
-	// The image, if appropriate.
-	Image* image;			// The image
+	/* The image, if appropriate. */
+	Image* image;			/* The image */
 } ImageFileParameter_t;
 
 

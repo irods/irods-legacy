@@ -12,12 +12,12 @@
  * COPYRIGHT directory.
  */
 
-// ImageMagick
-// 	Due to conflicts between ImageMagick and iRODS includes,
-// 	ImageMagick needs to be included first.
+/* ImageMagick */
+/* 	Due to conflicts between ImageMagick and iRODS includes, */
+/* 	ImageMagick needs to be included first. */
 #include <magick/MagickCore.h>
 
-// iRODS
+/* iRODS */
 #include "imageMS.h"
 #include "imageMSutil.h"
 #include "rsApiHandler.h"
@@ -75,13 +75,13 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 
 	RE_TEST_MACRO( "    Calling msiImageConvert" );
 
-	//
-	// Parse arguments.
-	//	Get the communications handle
-	//	Get source file.
-	//	Get destination file.
-	//	Get format name.
-	//
+	/*
+	 * Parse arguments.
+	 *	Get the communications handle
+	 *	Get source file.
+	 *	Get destination file.
+	 *	Get format name.
+	 */
 	if ( rei == NULL || rei->rsComm == NULL )
 	{
 		rodsLog( LOG_ERROR, "msiImageConvert:  input rei or rsComm is NULL" );
@@ -91,21 +91,21 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 
 	if ( (rei->status = _ImageGetFileParameter( rsComm, "msiImageConvert:  source file",
 		sourceParam, &source )) < 0 )
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 
 	source.properties = mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageConvert:  source properties",
 		sourceProp, &(source.properties) )) < 0 )
 	{
 		free( (char*)source.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 	if ( (rei->status = _ImageGetFileParameter( rsComm, "msiImageConvert:  destination file",
 		destParam, &destination )) < 0 )
 	{
 		free( (char*)source.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 	destination.properties = mallocAndZero( sizeof( keyValPair_t ) );
@@ -114,35 +114,35 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 	{
 		free( (char*)source.properties );
 		free( (char*)destination.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 
-	//
-	// Initialize ImageMagick.
-	//
+	/*
+	 * Initialize ImageMagick.
+	 */
 	MagickCoreGenesis( "", MagickFalse );
 
 
-	//
-	// Process files.
-	//	Read in the image.
-	//	Write out the image.
-	//
+	/*
+	 * Process files.
+	 *	Read in the image.
+	 *	Write out the image.
+	 */
 	rei->status = _ImageReadFile( rsComm, "msiImageConvert:  source file",
 		&source );
 	if ( rei->status >= 0 )
 	{
-		// Read success.  Write.
+		/* Read success.  Write. */
 		destination.image = source.image;
 		rei->status = _ImageWriteFile( rsComm, "msiImageConvert:  destination file",
 			&destination );
 	}
 
 
-	//
-	// Finalize ImageMagick.
-	//
+	/*
+	 * Finalize ImageMagick.
+	 */
 	if ( source.image != NULL )
 		DestroyImage( source.image );
 	MagickCoreTerminus( );
@@ -182,11 +182,11 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
 	RE_TEST_MACRO( "    Calling msiImageGetProperties" );
 
 
-	//
-	// Parse arguments.
-	//	Get the communications handle
-	//	Get source file.
-	//
+	/*
+	 * Parse arguments.
+	 *	Get the communications handle
+	 *	Get source file.
+	 */
 	if ( rei == NULL || rei->rsComm == NULL )
 	{
 		rodsLog( LOG_ERROR,
@@ -197,53 +197,53 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
 
 	if ( (rei->status = _ImageGetFileParameter( rsComm, "msiImageGetProperties:  source file",
 		sourceParam, &source )) < 0 )
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 
 	source.properties = mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageConvert:  source properties",
 		sourceProp, &(source.properties) )) < 0 )
 	{
 		free( (char*)source.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 
 
-	//
-	// Initialize the property list.
-	//
+	/*
+	 * Initialize the property list.
+	 */
 	list = (keyValPair_t*)mallocAndZero( sizeof(keyValPair_t) );
 	fillMsParam( listParam, NULL, KeyValPair_MS_T, list, NULL );
 	if ( source.type == IMAGEFILEPARAMETER_PATH )
 	{
-		// Save the filename as a property.
+		/* Save the filename as a property. */
 		addKeyVal( list, "file.Name", source.path );
 	}
 
 
-	//
-	// Initialize ImageMagick.
-	//
+	/*
+	 * Initialize ImageMagick.
+	 */
 	MagickCoreGenesis( "", MagickFalse );
 
 
-	//
-	// Process files.
-	//	Read in the image.
-	//	Get its properties.
-	//
+	/*
+	 * Process files.
+	 *	Read in the image.
+	 *	Get its properties.
+	 */
 	rei->status = _ImageReadFile( rsComm, "msiImageGetProperties:  source file",
 		&source );
 	if ( rei->status >= 0 )
 	{
-		// Read success.  Get properties.
+		/* Read success.  Get properties. */
 		rei->status = _ImageGetProperties( &source, list );
 	}
 
 
-	//
-	// Finalize ImageMagick.
-	//
+	/*
+	 * Finalize ImageMagick.
+	 */
 	if ( source.image != NULL )
 		DestroyImage( source.image );
 	MagickCoreTerminus( );
@@ -308,13 +308,13 @@ msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,
 
 	RE_TEST_MACRO( "    Calling msiImageScale" );
 
-	//
-	// Parse arguments.
-	//	Get the communications handle
-	//	Get source file.
-	//	Get destination file.
-	//	Get format name.
-	//
+	/*
+	 * Parse arguments.
+	 *	Get the communications handle
+	 *	Get source file.
+	 *	Get destination file.
+	 *	Get format name.
+	 */
 	if ( rei == NULL || rei->rsComm == NULL )
 	{
 		rodsLog( LOG_ERROR, "msiImageScale:  input rei or rsComm is NULL" );
@@ -324,35 +324,35 @@ msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,
 
 	if ( (rei->status = _ImageGetFileParameter( rsComm, "msiImageScale:  source file",
 		sourceParam, &source )) < 0 )
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 
 	source.properties = mallocAndZero( sizeof( keyValPair_t ) );
 	if ( (rei->status = _ImageGetPropertyListParameter( rsComm, "msiImageScale:  source properties",
 		sourceProp, &(source.properties) )) < 0 )
 	{
 		free( (char*)source.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 	if ( (rei->status = _ImageGetDouble( rsComm, "msiImageScale:  source X scale",
 		xScaleFactor, &xScale )) < 0 )
 	{
 		free( (char*)source.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 	if ( (rei->status = _ImageGetDouble( rsComm, "msiImageScale:  source Y scale",
 		yScaleFactor, &yScale )) < 0 )
 	{
 		free( (char*)source.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 	if ( (rei->status = _ImageGetFileParameter( rsComm, "msiImageScale:  destination file",
 		destParam, &destination )) < 0 )
 	{
 		free( (char*)source.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 	destination.properties = mallocAndZero( sizeof( keyValPair_t ) );
@@ -361,37 +361,37 @@ msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,
 	{
 		free( (char*)source.properties );
 		free( (char*)destination.properties );
-		return rei->status;	// Error
+		return rei->status;	/* Error */
 	}
 
 
-	//
-	// Initialize ImageMagick.
-	//
+	/*
+	 * Initialize ImageMagick.
+	 */
 	MagickCoreGenesis( "", MagickFalse );
 
 
-	//
-	// Process files.
-	//	Read in the image.
-	//	Write out the image.
-	//
+	/*
+	 * Process files.
+	 *	Read in the image.
+	 *	Write out the image.
+	 */
 	rei->status = _ImageReadFile( rsComm, "msiImageScale:  source file",
 		&source );
 	if ( rei->status >= 0 )
 	{
-		// Read success.  Scale.
+		/* Read success.  Scale. */
 
-		// Write
+		/* Write */
 		destination.image = source.image;
 		rei->status = _ImageWriteFile( rsComm, "msiImageScale:  destination file",
 			&destination );
 	}
 
 
-	//
-	// Finalize ImageMagick.
-	//
+	/*
+	 * Finalize ImageMagick.
+	 */
 	if ( source.image != NULL )
 		DestroyImage( source.image );
 	MagickCoreTerminus( );

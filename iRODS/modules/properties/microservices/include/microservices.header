@@ -1,2 +1,2 @@
-// Properties module microservices
+/* Properties module microservices */
 #include "propertiesMS.h"
