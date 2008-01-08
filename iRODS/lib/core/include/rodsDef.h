@@ -227,6 +227,7 @@ typedef struct {
     char hostAddr[LONG_NAME_LEN];
     char rodsZone[NAME_LEN];
     int portNum;
+    int dummyInt;	/* make it to 64 bit boundary */
 } rodsHostAddr_t;
 
 /* definition for restartState */
