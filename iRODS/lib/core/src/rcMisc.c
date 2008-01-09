@@ -2742,33 +2742,33 @@ keyValToString( keyValPair_t* list, char** string )
 	if ( list == NULL )
 		return SYS_INTERNAL_NULL_INPUT_ERR;
 
-	// Scan the list to figure out how much space we need.
+	/* Scan the list to figure out how much space we need. */
 	for ( i=0; i<nKeys; i++ )
 	{
 		int nk, nv;
 		if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' )
-			continue;	// Null keyword means empty entry
+			continue;	/* Null keyword means empty entry */
 		if ( list->value[i] == NULL )
-			continue;	// Null value is not legal
+			continue;	/* Null value is not legal */
 		nk = strlen( list->keyWord[i] );
 		nv = strlen( list->value[i] );
 
-		// <keyword>value</keyword>
+		/* <keyword>value</keyword> */
 		nBytes += 1 + nk + 1 +   nv   + 2 + nk + 1;
 	}
 	nBytes++;
 
-	// Allocate the space.
+	/* Allocate the space. */
 	*string = (char*)malloc( nBytes );
 	memset( *string, 0, nBytes );
 
-	// Write the string.
+	/* Write the string. */
 	for ( i=0; i<nKeys; i++ )
 	{
 		if ( list->keyWord[i] == NULL || list->keyWord[i][0] == '\0' )
-			continue;	// Null keyword means empty entry
+			continue;	/* Null keyword means empty entry */
 		if ( list->value[i] == NULL )
-			continue;	// Null value is not legal
+			continue;	/* Null value is not legal */
 
 		strcat( *string, "<" );
 		strcat( *string, list->keyWord[i] );
@@ -2799,12 +2799,12 @@ keyValFromString( char* string, keyValPair_t** list )
 	int index = 0;
 	int len = strlen( string );
 
-	// Create and clear the list.
+	/* Create and clear the list. */
 	*list = (keyValPair_t*)malloc( sizeof( keyValPair_t ) );
 	memset( *list, 0, sizeof( keyValPair_t ) );
 
-	// Parse the string.  Extract out the tag and value
-	// without doing any memory allocations (to save time).
+	/* Parse the string.  Extract out the tag and value */
+	/* without doing any memory allocations (to save time). */
 	while ( TRUE )
 	{
 		int startTag = -1;
@@ -2819,66 +2819,66 @@ keyValFromString( char* string, keyValPair_t** list )
 		int endValue = -1;
 		char* value = NULL;
 
-		// Skip over everything until the start
-		// of the next tag.
+		/* Skip over everything until the start */
+		/* of the next tag. */
 		while ( index < len && string[index] != '<' )
 			++index;
 		if ( index == len )
-			break;		// Done
+			break;		/* Done */
 
 
-		// Get the tag.
-		index++;		// Skip '<'
+		/* Get the tag. */
+		index++;		/* Skip '<' */
 		startTag = index;
 		while ( index < len && string[index] != '>' )
 			++index;
 		if ( index == len )
-			break;		// Done
+			break;		/* Done */
 		endTag = index;
-		index++;		// Skip '>'
+		index++;		/* Skip '>' */
 		startValue = index;
 
 
-		// Skip to the end of the value.
+		/* Skip to the end of the value. */
 		while ( index < len && string[index] != '<' )
 			++index;
 		if ( index == len )
-			break;		// Done
+			break;		/* Done */
 		endValue = index;
 
 
-		// Get the close tag.
-		index += 2;		// Skip '</'
+		/* Get the close tag.Y */
+		index += 2;		/* Skip '</' */
 		startCloseTag = index;
 		while ( index < len && string[index] != '>' )
 			++index;
 		if ( index == len )
-			break;		// Done
+			break;		/* Done */
 		endCloseTag = index;
 
 
-		// Compare the opening and closing tags
-		// and make sure they match.
+		/* Compare the opening and closing tags */
+		/* and make sure they match. */
 		if ( (endTag-startTag) != (endCloseTag-startCloseTag) )
-// Find a better error code!
+/* Find a better error code! */
 			return UNMATCHED_KEY_OR_INDEX;
 		tag = string + startTag;
 		closeTag = string + startCloseTag;
 		value = string + startValue;
 		if ( strncmp( tag, closeTag, (endTag-startTag) ) != 0 )
-// Find a better error code!
+/* Find a better error code! */
 			return UNMATCHED_KEY_OR_INDEX;
 
-		// Temporarily add a NULL at the end of the tag
-		// and the value.  This gives us two NULL-terminated
-		// strings to pass in to the addKeyVal.
-		string[endTag] = '\0';		// was '>'
-		string[endValue] = '\0';	// was '<'
+		/* Temporarily add a NULL at the end of the tag */
+		/* and the value.  This gives us two NULL-terminated */
+		/* strings to pass in to the addKeyVal. */
+		string[endTag] = '\0';		/* was '>' */
+		string[endValue] = '\0';	/* was '<' */
 
-		// Add the key-value pair.
+		/* Add the key-value pair. */
 		addKeyVal( *list, tag, value );
 
-		// Remove the NULLs added above.
+		/* Remove the NULLs added above. */
 		string[endTag] = '>';
 		string[endValue] = '<';
 	}

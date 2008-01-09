@@ -17,7 +17,7 @@ typedef struct {
    char stringToHashWith[MAX_PASSWORD_LEN];
 } getTempPasswordOut_t;
 
-//#define getTempPasswordOut_PI "str stringToHashWith[NAME_LEN];"
+/* #define getTempPasswordOut_PI "str stringToHashWith[NAME_LEN];" */
 #define getTempPasswordOut_PI "str stringToHashWith[MAX_PASSWORD_LEN];"
 
 #if defined(RODS_SERVER)

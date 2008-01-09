@@ -24,8 +24,8 @@ typedef struct GeneralUpdateInp {
 } generalUpdateInp_t;
 
 
-//typedef struct GenUpdateOut {
-//    int rowCount;
-//} genUpdateOut_t; 
+/*typedef struct GenUpdateOut {
+    int rowCount;
+} genUpdateOut_t; */
 
 #endif	/* RODS_GENERAL_UPDATE_H */
