@@ -32,10 +32,19 @@ MSIncDir =	$(modulesDir)/image/microservices/include
 #
 # Source files
 #
-IMAGEMAGICK =	$(buildDir)/../ImageMagick-6.3.5
+# Set IMAGEMAGICK to the top-level directory of the
+# ImageMagick installation.
+IMAGEMAGICK =	
+
+ifdef IMAGEMAGICK
 OBJECTS =	$(MSObjDir)/imageMS.o $(MSObjDir)/imageMSutil.o
 INCLUDE_FLAGS = -I$(MSIncDir) -I$(IMAGEMAGICK)/include
 LIBS =		-L$(IMAGEMAGICK)/lib -lMagick
+else
+OBJECTS =
+INCLUDE_FLAGS =
+LIBS =
+endif
 
 
 
@@ -75,8 +84,15 @@ server_cflags:
 	@echo $(INCLUDE_FLAGS)
 
 # Build microservices
+ifdef IMAGEMAGICK
 microservices:	$(OBJECTS)
 	@true
+else
+microservices:
+	@echo "The IMAGEMAGICK variable is not set in the image module Makefile."
+	@echo "Either set this to the path to ImageMagick, or disable the image"
+	@echo "module before building iRODS."
+endif
 
 # Build client additions
 client:
@@ -91,9 +107,14 @@ rules:
 	@true
 
 # Clean
+ifdef IMAGEMAGICK
 clean:
 	@echo "Clean image module..."
 	@rm -f $(OBJECTS)
+else
+clean:
+
+endif
 
 
 
