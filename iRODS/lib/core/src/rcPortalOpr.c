@@ -706,10 +706,10 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 	      &bytesWritten);
 
             if (bytesWritten != bytesRead) {
-                rodsLog (LOG_ERROR,
-                  "rcPartialDataGet: toWrite %lld, bytesWritten %d",
-                  bytesRead, bytesWritten);
                 myInput->status = SYS_COPY_LEN_ERR - errno;
+                rodsLog (LOG_ERROR,
+                  "rcPartialDataGet: toWrite %lld, bytesWritten %d, stat = %d",
+                  bytesRead, bytesWritten, myInput->status);
                 break;
             }
             toGet -= bytesWritten;
