@@ -27,6 +27,7 @@ use Cwd;
 use File::Spec;
 use Socket;
 use POSIX;
+use Config;
 
 eval { require Net::hostent; };
 if ( $@ )
