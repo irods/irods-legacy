@@ -224,11 +224,40 @@ irule -F ../test/ruleTest24.ir
 imeta ls -d sample.email
 
 /** test for running all the rule definitions when applying a rule
-    normally only one rule definition succeeds   **/
+    normally only one rule definition succeeds   
+    1 = use all rules
+    0 = one level 
+**/
 more        ../test/ruleTest25.ir
 irule -F ../test/ruleTest25.ir
 
 
+/**  web services  - get stock quote for a single symbol **/
+more        ../test/ruleTest226.ir
+irule -v -F ../test/ruleTest26.ir
+
+
+/**  web services  - get ip address **/
+more        ../test/ruleTest27.ir
+irule -v -F ../test/ruleTest27.ir
+
+/**  web services  - currency conversion **/
+more        ../test/ruleTest28.ir
+irule -v -F ../test/ruleTest28.ir
+
+/** web services  - matrix of stock values in different currencies  **/
+more        ../test/ruleTest29.ir
+irule -v -F ../test/ruleTest29.ir
+
+/** stress test - 10x1000 file **/
+cd ../test
+stresstest1.sh 1 10
+
+/** stress test - 1 GN file test **/
+cd ../test
+stresstest.sh 
+
+
 
 
 /**   **/
@@ -238,6 +267,7 @@ irule -v -F ../test/ruleTest.ir
 /**   **/
 more        ../test/ruleTest.ir
 irule -v -F ../test/ruleTest.ir
+
 
 
 
