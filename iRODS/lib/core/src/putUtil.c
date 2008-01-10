@@ -217,7 +217,7 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 	  rodsArgs);
 	if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "initCondForPut: openRestartFile of %s errno",
+              "initCondForPut: openRestartFile of %s error",
 	    rodsArgs->restartFileString);
 	    return (status);
 	}

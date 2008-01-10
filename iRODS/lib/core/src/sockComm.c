@@ -337,8 +337,15 @@ int *bytesWritten)
 #else
         nbytes = write (sock, (void *) tmpPtr, toWrite);
 #endif
-        if (nbytes <= 0)
-            break;
+        if (nbytes <= 0) {
+	    if (errno == EINTR) {
+		/* interrupted */
+		errno = 0;
+		nbytes = 0;
+	    } else {
+                break;
+	    }
+	}
         toWrite -= nbytes;
         tmpPtr += nbytes;
 	if (bytesWritten != NULL)
