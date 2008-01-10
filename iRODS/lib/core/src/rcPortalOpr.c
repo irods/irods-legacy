@@ -304,10 +304,10 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 	    bytesRead = myRead (srcFd, buf, toRead, FILE_DESC_TYPE, 
 	      &bytesRead);
 	    if (bytesRead != toRead) {
-		rodsLog (LOG_ERROR, 
+		myInput->status = SYS_COPY_LEN_ERR - errno;
+		rodsLogError (LOG_ERROR, myInput->status,
 		  "rcPartialDataPut: toPut %lld, bytesRead %d",
 		  toPut, bytesRead);   
-		myInput->status = SYS_COPY_LEN_ERR - errno;
 		break;
 	    }
 	    bytesWritten = myWrite (destFd, buf, bytesRead, SOCK_TYPE,
@@ -315,9 +315,9 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 
 	    if (bytesWritten != bytesRead) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
-                rodsLog (LOG_ERROR,
-                  "rcPartialDataPut: toWrite %d, bytesWritten %d, status = %d",
-                  bytesRead, bytesWritten, myInput->status);
+		rodsLogError (LOG_ERROR, myInput->status,
+                  "rcPartialDataPut: toWrite %d, bytesWritten %d",
+                  bytesRead, bytesWritten);
                 break;
 	    }
 	    toPut -= bytesWritten;
@@ -696,10 +696,10 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 
             bytesRead = myRead (srcFd, buf, toRead, SOCK_TYPE, &bytesRead);
             if (bytesRead != toRead) {
-                rodsLog (LOG_ERROR,
+                myInput->status = SYS_COPY_LEN_ERR - errno;
+                rodsLogError (LOG_ERROR, myInput->status,
                   "rcPartialDataGet: toGet %lld, bytesRead %d",
                   toGet, bytesRead);
-                myInput->status = SYS_COPY_LEN_ERR - errno;
                 break;
             }
             bytesWritten = myWrite (destFd, buf, bytesRead, FILE_DESC_TYPE,
@@ -707,9 +707,9 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 
             if (bytesWritten != bytesRead) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
-                rodsLog (LOG_ERROR,
-                  "rcPartialDataGet: toWrite %lld, bytesWritten %d, stat = %d",
-                  bytesRead, bytesWritten, myInput->status);
+                rodsLogError (LOG_ERROR, myInput->status,
+                  "rcPartialDataGet: toWrite %d, bytesWritten %d",
+                  bytesRead, bytesWritten);
                 break;
             }
             toGet -= bytesWritten;
