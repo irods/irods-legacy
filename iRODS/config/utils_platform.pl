@@ -37,7 +37,7 @@ if ( $@ )
 	print( "    contact your system administrator.\n" );
 	exit( 1 );
 }
-use Net::hostent;
+Net::hostent->import( );
 
 eval { require Net::FTP; };
 if ( $@ )
@@ -48,7 +48,7 @@ if ( $@ )
 	print( "    contact your system administrator.\n" );
 	exit( 1 );
 }
-use Net::FTP;
+Net::FTP->import( );
 
 $version{"utils_platform.pl"} = "1.1";
 
