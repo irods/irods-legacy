@@ -303,8 +303,16 @@ myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
 #else
         nbytes = read (sock, (void *) tmpPtr, toRead);
 #endif
-        if (nbytes <= 0)
-            break;
+        if (nbytes <= 0) {
+            if (errno == EINTR) {
+                /* interrupted */
+                errno = 0;
+                nbytes = 0;
+            } else {
+                break;
+            }
+        }
+
         toRead -= nbytes;
         tmpPtr += nbytes;
         if (bytesRead != NULL)
