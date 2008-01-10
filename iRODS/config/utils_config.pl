@@ -537,7 +537,7 @@ sub setEnvironmentVariables
 	#	Add the iRODS commands.
 	#	Add the database commands.
 	my $addPath = ".:$icommandsBinDir";
-	if ( $controlDatabase)
+	if ( defined( $databaseBinDir ) && $databaseBinDir ne "" )
 	{
 		$addPath .= ":$databaseBinDir";
 	}
@@ -548,7 +548,7 @@ sub setEnvironmentVariables
 	#	Add the database libraries.
 	#	Add /usr/local/lib, needed on Solaris.
 	my $libPath = $ENV{'LD_LIBRARY_PATH'};  
-	if ( $controlDatabase )
+	if ( defined( $databaseLibDir ) && $databaseLibDir ne "" )
 	{
 		if ( $libPath eq "" )
 		{
@@ -573,35 +573,30 @@ sub setEnvironmentVariables
 
 
 	# Database variables
-	if ( $controlDatabase )
+	if ( $DATABASE_TYPE eq "postgres" )
 	{
-		# The scripts will be controlling the database.
-		# Add variables depending upon the type of variable.
-		if ( $DATABASE_TYPE eq "postgres" )
+		# Postgres database
+
+		# The path to the data directory
+		$ENV{"PGDATA"} = $databaseDataDir;
+
+		# The server's port.
+		$ENV{"PGPORT"} = $DATABASE_PORT;
+
+		# The server's host.  If the host is the current
+		# host, then don't set this.  This forces commands
+		# to use a local socket instead of a TCP/IP connection.
+		if ( $DATABASE_HOST !~ "localhost" &&
+			$DATABASE_HOST !~ $thisHost )
 		{
-			# Postgres database
-
-			# The path to the data directory
-			$ENV{"PGDATA"} = $databaseDataDir;
-
-			# The server's port.
-			$ENV{"PGPORT"} = $DATABASE_PORT;
-
-			# The server's host.  If the host is the current
-			# host, then don't set this.  This forces commands
-			# to use a local socket instead of a TCP/IP connection.
-			if ( $DATABASE_HOST !~ "localhost" &&
-				$DATABASE_HOST !~ $thisHost )
-			{
-				$ENV{"PGHOST"} = $DATABASE_HOST;
-			}
-
-			# The user's name.
-			$ENV{"PGUSER"} = $DATABASE_ADMIN_NAME;
-
-			# The user's password.
-			$ENV{"PGPASSWORD"} = $DATABASE_ADMIN_PASSWORD;
+			$ENV{"PGHOST"} = $DATABASE_HOST;
 		}
+
+		# The user's name.
+		$ENV{"PGUSER"} = $DATABASE_ADMIN_NAME;
+
+		# The user's password.
+		$ENV{"PGPASSWORD"} = $DATABASE_ADMIN_PASSWORD;
 	}
 }
 
