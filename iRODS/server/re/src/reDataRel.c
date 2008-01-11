@@ -1,6 +1,5 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-
 #include <stdarg.h>
 #if !defined(osx_platform)
 #include <values.h>
@@ -22,7 +21,7 @@ int msiChkRechkRecompChkSum4DatObj (msParam_t *inpParam1, msParam_t *inpParam2, 
   long lTmp=0;
   time_t t1;
 
-  /* For testing mode when used with irule --test */
+  
   RE_TEST_MACRO
     ("RE_TEST_MACRO, begin of msiChkRechkRecompChkSum4DatObj");
 
@@ -31,7 +30,7 @@ int msiChkRechkRecompChkSum4DatObj (msParam_t *inpParam1, msParam_t *inpParam2, 
 
   rsComm = rei->rsComm;
 
-  /* parse inpParam1 */
+  
   rei->status = parseMspForCollInp (inpParam1, &collInpCache, &ptrInpColl, 0);
 
   if (rei->status < 0)
@@ -42,7 +41,7 @@ int msiChkRechkRecompChkSum4DatObj (msParam_t *inpParam1, msParam_t *inpParam2, 
       return (rei->status);
     }
 
-  /* parse inpParam2 */
+  
   if ((strTimeDiff = parseMspForStr (inpParam2)) != NULL) {
     lTmp = strtol(strTimeDiff, (char **)NULL, 10);
     t1 = (time_t)lTmp;
@@ -51,7 +50,7 @@ int msiChkRechkRecompChkSum4DatObj (msParam_t *inpParam1, msParam_t *inpParam2, 
     sprintf(strOut, "ERROR:  msiChkRechkRecompChkSum4DatObj(), input inpParam2 error\n");
     rodsLog (LOG_ERROR,
 	     "msiChkRechkRecompChkSum4DatObj(),  input inpParam2 error.");
-    i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
+    i = fillStrInMsParam (outParam1, strOut);	
     return(-1);
   }
   
@@ -59,13 +58,13 @@ int msiChkRechkRecompChkSum4DatObj (msParam_t *inpParam1, msParam_t *inpParam2, 
     ("GJK-P P.2222.0.2. in msiChkRechkRecompChkSum4DatObj(), ptrInpColl->collName=(%s), t1=%ld\n", ptrInpColl->collName, t1);
   
   
-  iErr = intChkRechkRecompChkSum4DatObj (rsComm, ptrInpColl->collName, t1, rei);	/* test blbost sobota */
-  /*  (void) intChkRechkRecompChkSum4DatObj (rsComm, strFullDataPath, t1, rei); */
+  iErr = intChkRechkRecompChkSum4DatObj (rsComm, ptrInpColl->collName, t1, rei);	
+  
 
   sprintf(strOut, "OK msiChkRechkRecompChkSum4DatObj(), iCountUserDefinedMetadata=%d, t1=(%ld), iErr=%d\n", 
 	  iCountUserDefinedMetadata, t1, iErr);
-  i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
-  /* fillBuffInParam */
+  i = fillStrInMsParam (outParam1, strOut);	
+  
 
   printf
     ("GJK-P P.2222.0.9. in msiChkRechkRecompChkSum4DatObj(), iCountUserDefinedMetadata=%d, iErr=%d\n",
@@ -120,7 +119,7 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
   tTime = 0;
   if (iTotalAVUs > 0 && ((tTime - lMax) <= 0))
     {
-      /* mam uz AVU a je novejsi */
+      
       printf
 	("GJK-P P.994.7.1. in intChkRechkRecompChkSum4DatObj(), iTotalAVUs=%d, lMax=%ld, Time=%ld\n",
 	 iTotalAVUs, lMax, tTime);
@@ -128,10 +127,10 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
     }
   else
     {
-      /* mam uz AVU a je starsi */
-      /* prepocti chksumu, porovnej a register novy cas */
+      
+      
       (void) time (&t1);
-      /* CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME     */
+      
       iErr =
 	intAddChkSumDateAvuMetadata (rei->rsComm, strFullDataPath, t1,
 				     &status);
@@ -141,8 +140,8 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
       return (iErr);
     }
 
-  /* Get all collections (recursively) under our input collection */
-  /* Prepare query */
+  
+  
   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
   genAllInCollQCond (strFullDataPath, collQCond);
 
@@ -152,7 +151,7 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
 
   genQueryInp.maxRows = MAX_SQL_ROWS;
 
-  /* ICAT query for subcollections */
+  
   rei->status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
   printf
@@ -170,7 +169,7 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
 	  printf
 	    ("GJK-P P.994.4.4. in intChkRechkRecompChkSum4DatObj(), rei->status=(%d), genQueryOut->rowCnt=(%d), strFullDataPath=(%s)\n",
 	     rei->status, genQueryOut->rowCnt, strFullDataPath);
-	  /* return(-1); // not enough lines); */
+	  
 	}
 
       if ((chksumStr =
@@ -179,7 +178,7 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
 	  rodsLog (LOG_ERROR,
 		   "printLsLong: getSqlResultByInx for COL_D_DATA_CHECKSUM failed GJK-(%s)",
 		   objPath);
-	  /* return (UNMATCHED_KEY_OR_INDEX); */
+	  
 	}
       else
 	{
@@ -195,7 +194,7 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
 	  rodsLog (LOG_ERROR,
 		   "printLsLong: getSqlResultByInx for COL_D_MODIFY_TIME failed GJK-(%s)",
 		   objPath);
-	  /* return (UNMATCHED_KEY_OR_INDEX); */
+	  
 	}
       else
 	{
@@ -211,7 +210,7 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
 	  rodsLog (LOG_ERROR,
 		   "printLsLong: getSqlResultByInx for COL_D_CREATE_TIME failed GJK-(%s)",
 		   objPath);
-	  /* return (UNMATCHED_KEY_OR_INDEX); */
+	  
 	}
       else
 	{
@@ -226,32 +225,32 @@ int intChkRechkRecompChkSum4DatObj (rsComm_t * rsComm, char *strFullDataPath,
 	 rei->status, genQueryOut->rowCnt, strFullDataPath);
 
       if (iCountUserDefinedMetadata > 0)
-	{			/* mam check sum cas */
-	  /* nedelej nic */
-	  /* kdy rozdil casu neni moc velky */
+	{			
+	  
+	  
 
 	  printf
 	    ("GJK-P P.10.0.1. in intChkRechkRecompChkSum4DatObj(), mam check sum cas a tedy nedelej nic, after GJKgetDataObjPSmeta((%s) rsComm\n",
 	     objPath);
 	}
       else
-	{			/* nemam check sum cas */
+	{			
 	  printf
 	    ("GJK-P P.10.0.2. in intChkRechkRecompChkSum4DatObj(), after GJKgetDataObjPSmeta(%s), rsComm\n",
 	     objPath);
 	  if (strlen (tmpChksumStr) ==
 	      strlen ("6d75827809277a1d50c0ed742764a82c") && 1 == 1)
 	    {
-	      /* mam check sum hodnotu */
-	      /* nemam check sum cas */
-	      /* insert check sum cas in Unix number */
-	      /*Call the function to insert metadata here. */
+	      
+	      
+	      
+	      
 	    }
 	  else
-	    {			/* nemam check sum hodnotu */
-	      /* vypocti check sum hodnotu */
-	      /* instert check sum hodnotu do iCat */
-	      /* insert check sum cas == ted */
+	    {			
+	      
+	      
+	      
 	      printf
 		("GJK-P P.10.0.4. in intChkRechkRecompChkSum4DatObj(), after GJKgetDataObjPSmeta(%s), rsComm\n",
 		 objPath);
@@ -282,7 +281,7 @@ intAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1,
      chrPtr1, objPath);
   if (chrPtr1 != NULL && *chrPtr1 == '/'
       && ((chrPtr1 - objPath) <= (strlen (objPath - 1))))
-    *chrPtr1 = 0;		/* replace '/' in /myzone/foo/' */
+    *chrPtr1 = 0;		
   printf
     ("GJK-P P.1.0.2. in intGetDataObjChksumsTimeStampsFromAVU(), chrPtr1=(%s), objPath=(%s)\n",
      chrPtr1, objPath);
@@ -290,7 +289,7 @@ intAddChkSumDateAvuMetadata (rsComm_t * rsComm, char *objPath, time_t t1,
   memset (&modAVUMetadataInp, 0, sizeof (modAVUMetadataInp));
 
   modAVUMetadataInp.arg0 = "add";
-  modAVUMetadataInp.arg1 = "-d";	/* data */
+  modAVUMetadataInp.arg1 = "-d";	
   modAVUMetadataInp.arg2 = objPath;
   modAVUMetadataInp.arg3 = "MD5checkSumDataStamp";
 
@@ -348,7 +347,7 @@ iFindChkSumDateAvuMetadata (int status, genQueryOut_t * genQueryOut,
     ("GJK 300.0.0. iFindChkSumDateAvuMetadata, fullName=(%s), i=%d, status=%d\n",
      fullName, i, status);
 
-  /*return (0); */
+  
 
   if (status != 0)
     {
@@ -361,36 +360,36 @@ iFindChkSumDateAvuMetadata (int status, genQueryOut_t * genQueryOut,
 	  for (i = 0; i < (genQueryOut->rowCnt - 0); i++)
 	    {
 
-	      /* appendStrToBBuf(mybuf, strlen(fullName)+1, fullName); */
-	      /*gjk1 printf("GJK 300.0.1. iFindChkSumDateAvuMetadata, fullName=(%s), i=%d, j=%d, genQueryOut->rowCnt=%d, genQueryOut->attriCnt=%d, iCountUserDefinedMetadata=%d\n", fullName, i, j, genQueryOut->rowCnt, genQueryOut->attriCnt, *iCountUserDefinedMetadata); */
-	      /* return (0); */
+	      
+	      
+	      
 
 	      for (j = 0; j < (genQueryOut->attriCnt - 0); j++)
 		{
 		  char *tResult;
 
-		  /*gjk1 printf ("GJK 300.0.2. iFindChkSumDateAvuMetadata, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt); */
-		  /* return (0); */
+		  
+		  
 
 		  tResult = genQueryOut->sqlResult[j].value;
-		  /*gjk1 printf ("GJK 300.0.3. iFindChkSumDateAvuMetadata, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt); */
-		  /*return (0); */
+		  
+		  
 
 		  tResult += i * genQueryOut->sqlResult[j].len;
-		  /*gjk1 printf ("GJK 300.0.4. iFindChkSumDateAvuMetadata, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt); */
-		  /*return (0); */
+		  
+		  
 
-		  /* skip final | if no units were defined */
+		  
 		  if (j < 2 || strlen (tResult))
 		    {
 		      size = genQueryOut->sqlResult[j].len + 2;
-		      /* appendStrToBBuf(mybuf, size, "%s",tResult); */
-		      /*gjk1 printf ("GJK 300.1.2. iFindChkSumDateAvuMetadata, tResult=(%s), i=%d, j=%d\n", tResult, i, j); */
+		      
+		      
 		    }
 
-		  /*gjk1 printf ("GJK 300.0.5. iFindChkSumDateAvuMetadata, fullName=(%s), i=%d, j=%d, iCountUserDefinedMetadata=%d\n", fullName, i, j, *iCountUserDefinedMetadata); */
+		  
 
-		  /*return 0; */
+		  
 
 		  switch (j)
 		    {
@@ -410,12 +409,12 @@ iFindChkSumDateAvuMetadata (int status, genQueryOut_t * genQueryOut,
 		      break;
 		    }
 
-		  /*gjk1 printf ("GJK 300.0.6. iFindChkSumDateAvuMetadata, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt); */
-		  /*return 0; */
-		}		/* j=0 */
-	      /* appendStrToBBuf(mybuf, 2, "\n"); */
+		  
+		  
+		}		
+	      
 	      *iCountUserDefinedMetadata = *iCountUserDefinedMetadata + 1;
-	    }			/* i=0 */
+	    }			
 	}
     }
   iErr = *iCountUserDefinedMetadata;
@@ -436,7 +435,7 @@ int msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
   int iCountUserDefinedMetadata = 0;
   char strOut[MAX_NAME_LEN * MAX_NAME_LEN];
 
-  /* For testing mode when used with irule --test */
+  
   RE_TEST_MACRO
     ("RE_TEST_MACRO, begin of msiAddDataObjChksumsTimeStampsToAVU");
 
@@ -445,12 +444,12 @@ int msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
 
   rsComm = rei->rsComm;
 
-  /*  (void) intChkRechkRecompChkSum4DatObj (rsComm, "/tempZone/home/rods/loopTest/submit.pl", (time_t) i, rei);	// test blbost sobota */
+  
 
   printf
     ("GJK-P P.991.0.0. in msiAddDataObjChksumsTimeStampsToAVU(), GJK msiAddDataObjChksumsTimeStampsToAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU\n");
 
-  /* parse inpParam11 */
+  
   rei->status = parseMspForCollInp (inpParam1, &collInpCache, &ptrInpColl, 0);
 
   if (rei->status < 0)
@@ -467,7 +466,7 @@ int msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
 				 &iStatus);
   (void) snprintf (strOut, 255,
 		   "|MD5checkSumDataStamp|%d|UnixTimeInSeconds|\n", (int) t1);
-  i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
+  i = fillStrInMsParam (outParam1, strOut);	
 
   printf
     ("GJK-P P.111.0.7. in msiGetDataObjChksumsTimeStampsFromAVU(), GJK msiGetDataObjChksumsTimeStampsFromAVU: GJK Calling msiGetDataObjChksumsTimeStampsFromAVU, iErr=%d, iCountUserDefinedMetadata=%d\n",
@@ -476,10 +475,7 @@ int msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
   return (iErr);
 }
 
-/*
- * Get all Dates of Performed Checksum Operations from metadata AVUs for a given iRods data object.
- * 
- */
+
 
 int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
 				       msParam_t * outParam1,
@@ -492,7 +488,7 @@ int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
   int iCountUserDefinedMetadata = 0;
   char strOut[MAX_NAME_LEN * MAX_NAME_LEN], strTmp[1024];
 
-  /* For testing mode when used with irule --test */
+  
   RE_TEST_MACRO
     ("RE_TEST_MACRO, begin of msiGetDataObjChksumsTimeStampsFromAVU");
 
@@ -501,7 +497,7 @@ int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
 
   rsComm = rei->rsComm;
 
-  /* parse inpParam11 */
+  
   rei->status = parseMspForCollInp (inpParam1, &collInpCache, &ptrInpColl, 0);
 
   if (rei->status < 0)
@@ -530,9 +526,9 @@ int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
       strncat (strOut, strTmp, MAX_NAME_LEN);
     }
 
-  /*   sprintf(strOut, "#1\n#2\n\n#3 lines gjk\n"); */
-  i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
-  /* fillBuffInParam */
+  
+  i = fillStrInMsParam (outParam1, strOut);	
+  
 
 
   printf
@@ -542,7 +538,7 @@ int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
   return (iErr);
 }
 
-/* ****************************************************************************************** */
+
 int intGetDataObjChksumsTimeStampsFromAVU (collInp_t *ptrInpColl, UserDefinedMetadata_t *aAVUarray,
 				       int *iTotalAVUs, char *strOut, ruleExecInfo_t * rei)
 {
@@ -561,7 +557,7 @@ int intGetDataObjChksumsTimeStampsFromAVU (collInp_t *ptrInpColl, UserDefinedMet
   if (chrPtr1 != NULL && *chrPtr1 == '/'
       && ((chrPtr1 - ptrInpColl->collName) <=
 	  (strlen (ptrInpColl->collName - 1))))
-    *chrPtr1 = 0;		/* replace '/' in /myzone/foo/' */
+    *chrPtr1 = 0;		
   printf
     ("GJK-P P.1.0.2. in intGetDataObjChksumsTimeStampsFromAVU(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
      chrPtr1, ptrInpColl->collName);
@@ -582,7 +578,7 @@ int intGetDataObjChksumsTimeStampsFromAVU (collInp_t *ptrInpColl, UserDefinedMet
 	  rodsLog (LOG_ERROR,
 		   "iGetDataObjChksumsTimeStampsFromAVU: input object=(%s) is not data or collection. Exiting!",
 		   ptrInpColl->collName);
-	  /*return (rei->status); */
+	  
 	}
       else
 	{
@@ -593,7 +589,7 @@ int intGetDataObjChksumsTimeStampsFromAVU (collInp_t *ptrInpColl, UserDefinedMet
 	}
     }
 
-  /* printf ("GJK-P P.1.0.3. intGetDataObjChksumsTimeStampsFromAVU : input (%s)", ptrInpColl->collName); */
+  
 
   if (rei->rsComm == NULL)
     {
@@ -604,11 +600,11 @@ int intGetDataObjChksumsTimeStampsFromAVU (collInp_t *ptrInpColl, UserDefinedMet
   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
   i1a[0] = COL_META_DATA_ATTR_NAME;
-  i1b[0] = 0;			/* currently unused */
+  i1b[0] = 0;			
   i1a[1] = COL_META_DATA_ATTR_VALUE;
-  i1b[1] = 0;			/* currently unused */
+  i1b[1] = 0;			
   i1a[2] = COL_META_DATA_ATTR_UNITS;
-  i1b[2] = 0;			/* currently unused */
+  i1b[2] = 0;			
   genQueryInp.selectInp.inx = i1a;
   genQueryInp.selectInp.value = i1b;
   genQueryInp.selectInp.len = 3;
@@ -652,7 +648,7 @@ int intGetDataObjChksumsTimeStampsFromAVU (collInp_t *ptrInpColl, UserDefinedMet
     ("GJK-P P.14.0.13. in intGetDataObjChksumsTimeStampsFromAVU(), strAbsPath=(%s), ptrInpColl->collName=(%s), v3=(%s), iErr=%d\n",
      strAbsPath, ptrInpColl->collName, v3, iErr);
 
-  /* Actual query happens here */
+  
   iErr = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
 
   printf
@@ -678,18 +674,18 @@ int intGetDataObjChksumsTimeStampsFromAVU (collInp_t *ptrInpColl, UserDefinedMet
 	  *iTotalAVUs = 0;
 	  return (0);
 	}
-      printCount += iFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* proc?? */
+      printCount += iFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	
     }
   else
     {
-      printCount += iFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* proc?? */
+      printCount += iFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	
     }
 
   while (iErr == 0 && genQueryOut->continueInx > 0)
     {
       genQueryInp.continueInx = genQueryOut->continueInx;
       iErr = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
-      printCount += iFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* proc ?? */
+      printCount += iFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	
     }
 
   printf
