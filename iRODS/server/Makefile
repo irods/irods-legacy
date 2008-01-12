@@ -52,7 +52,7 @@ INCLUDES +=	-I$(svrCoreIncDir)
 CFLAGS +=	-DRODS_SERVER
 SERVER_OBJS =	\
 		$(svrCoreObjDir)/rodsServer.o \
-		$(svrAgentObjDir)/rodsAgent.o
+		$(svrCoreObjDir)/rodsAgent.o
 SERVER_BINS =	$(serverBinDir)/irodsServer \
 		$(serverBinDir)/irodsAgent
 
@@ -87,6 +87,7 @@ SVR_ICAT_OBJS =	\
 INCLUDES +=	-I$(svrIcatIncDir)
 
 SERVER_BINS +=  $(serverBinDir)/irodsXmsgServer
+SERVER_OBJS +=	$(svrCoreObjDir)/irodsXmsgServer.o
 
 ifdef NEW_ODBC
 # Use the 'new' database handling
@@ -147,6 +148,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/reDataRel.o
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
+SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
 endif
 
 
