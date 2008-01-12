@@ -9,12 +9,12 @@ scripts to build and manage the iRODS system.
 
 
 
-1.  Installing iRODS using 'setup'
+1.  Installing iRODS using 'irodssetup'
 ------------------------------------------------------------------------
 
 To install iRODS, execute the setup script in the iRODS home directory:
 
-	./setup
+	./irodssetup
 
 The script prompts you for what to install and where to install it,
 then does the job.  This typically takes 1/2 hour or more and is the
@@ -22,10 +22,10 @@ recommended way to install iRODS.
 
 This script saves its work in two configuration files:
 
-	install/installPostgres.config
+	config/installPostgres.config
 		Used to configure a Postgres install.
 
-	install/irods.config
+	config/irods.config
 		Used to configure the iRODS install.
 
 Normally, there is no need for you to view or edit these files.  Both
@@ -69,42 +69,42 @@ answering the prompts differently:
 
 
 
-2.  Installing iRODS without using 'setup'
+2.  Installing iRODS without using 'irodssetup'
 ------------------------------------------------------------------------
 
-The 'setup' script runs four steps for the installation that you can run
+The 'irodssetup' script runs four steps for the installation that you can run
 directly if needed:
 
-	./installPostgres
+	scripts/installPostgres
 		Download and build Postgres and ODBC distribtions.  Uses
-		parameters in 'install/installPostgres.config'.  Saves
-		parameters to 'install/irods.config'.
+		parameters in 'config/installPostgres.config'.  Saves
+		parameters to 'config/irods.config'.
 
-	./configure
+	scripts/configure
 		Configure the iRODS build.  Uses and saves parameters in
-		'install/irods.config'.  Saves compilation parameters to
+		'config/irods.config'.  Saves compilation parameters to
 		'config/config.mk' and 'config/platform.mk'.
 
 	make
 		Build iRODS.  Uses configuration parameters in several
 		include files in 'config/*.mk'.
 
-	./setupFinish
+	scripts/finishSetup
 		Install database tables and initialize iRODS.  Uses
-		parameters in 'install/irods.config'.
+		parameters in 'config/irods.config'.
 
 
 
 2.1.  Installing with a new Postgres database
 
-Edit 'install/installPostgres.config' to change defaults if needed.
+Edit 'config/installPostgres.config' to change defaults if needed.
 See comments in the file.
 
 Run:
-	./installPostgres
-	./configure
+	scripts/installPostgres
+	scripts/configure
 	make
-	./setupFinish
+	scripts/finishSetup
 
 
 
@@ -134,12 +134,12 @@ configured to communicate with the first iRODS server, its iCAT, and
 the iCAT's Postgres database.
 
 Run:
-	./configure
+	scripts/configure
 	make
-	./setupFinish
+	scripts/finishSetup
 
 If the existing Postgres does not have the iCAT tables installed yet, the
-'setupFinish' script will install them.  iRODS will coexist with other
+'finishSetup' script will install them.  iRODS will coexist with other
 uses of the same Postgres database.
 
 
@@ -159,11 +159,11 @@ The user account name must have the form 'schema@instance' per Oracle
 conventions.
 
 Run:
-	./configure
+	scripts/configure
 	make
-	./setupFinish
+	scripts/finishSetup
 
-The 'setupFinish' script will install iCAT tables if needed.
+The 'finishSetup' script will install iCAT tables if needed.
 
 
 
@@ -179,14 +179,14 @@ discuss tasks under script control, including:
 	* checking server status
 	* testing the installation
 
-These tasks are all done with the 'bin/irodsctl' script.
+These tasks are all done with the 'irodsctl' script.
 
 
 
 3.1.  Starting the iRODS and database servers
 
 Run:
-	bin/irodsctl start
+	./irodsctl start
 
 If the database server was configured as dedicated for iRODS use, this
 will start the database server as well.
@@ -196,7 +196,7 @@ will start the database server as well.
 3.2.  Stopping the iRODS and database servers
 
 Run:
-	bin/irodsctl stop
+	./irodsctl stop
 
 If the database server was configured as dedicated for iRODS use, this
 will stop the database server as well.
@@ -206,7 +206,7 @@ will stop the database server as well.
 3.3.  Restarting the iRODS and database servers
 
 Run:
-	bin/irodsctl restart
+	./irodsctl restart
 
 This is the same as running 'stop' then 'start'.
 
@@ -215,7 +215,7 @@ This is the same as running 'stop' then 'start'.
 3.4.  Checking if the servers are running
 
 Run:
-	bin/irodsctl status
+	./irodsctl status
 
 This lists the iRODS and database servers running, and their process IDs.
 
@@ -224,7 +224,7 @@ This lists the iRODS and database servers running, and their process IDs.
 3.5.  Testing the iRODS installation
 
 Run:
-	bin/irodsctl test
+	./irodsctl test
 
 This runs an extensive set of tests to be sure the installation is working
 properly.
@@ -233,65 +233,26 @@ properly.
 
 
 
-4.  Other iRODS scripts
-------------------------------------------------------------------------
-
-There are a few more scripts sysadmins may use if needed.
-
-
-
-4.1.  Starting the iRODS server only
-
-Run:
-	server/bin/start
-
-Be sure the database server, if needed, is already running.
-
-
-
-4.2.  Stopping the iRODS server only
-
-Run:
-	server/bin/stop
-
-The database server, if any, will be left running.
-
-
-
-4.3.  Listing server processes
-
-Run:
-	perl server/bin/list.pl
-
-This is a more detailed list of iRODS server processes than is
-produced by 'bin/irodsctl status'.
-
-
-
-
-
-5.  Uninstalling iRODS and Postgres
+4.  Uninstalling iRODS and Postgres
 ------------------------------------------------------------------------
 
 
 5.1.  Dropping the iRODS tables
 
-Stop the iRODS servers but leave the database server running, then
-use the 'drop' option on 'irodsctl' to drop the database tables:
+Use the 'drop' option on 'irodsctl' to drop the database tables:
 
-	server/bin/stop
-	bin/irodsctl drop
+	./irodsctl drop
 
 
 
 5.1.  Uninstall Postgres as installed by iRODS
 
-If you used the 'setup' or 'installPostgres' scripts to download and
+If you used the 'irodssetup' or 'installPostgres' scripts to download and
 install Postgres, then you can use the 'uninstallPostgres' script.
 First stop the iRODS and database servers, then run the script:
 
-	bin/irodsctl stop
-	./uninstallPostgres
+	./irodsctl stop
+	scripts/uninstallPostgres
 
 Optionally, if you don't plan on using Postgres again, delete your
 '~/.pgpass' and '~/.odbc.ini' files.  Leave them there won't hurt
@@ -304,7 +265,7 @@ anything.
 Stop the servers and delete the iRODS home directory.  There are
 no additional files in the rest of the OS.
 
-	bin/irodsctl stop
+	./irodsctl stop
 	cd ..
 	rm -rf the_irods_directory
 
