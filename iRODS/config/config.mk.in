@@ -145,3 +145,10 @@ ifdef PHP_LIB
 PHP_LIB_DIR=/data/mwan/php/php-5.2.5x/libs
 endif
 
+# TAR_STRUCT_FILE - specify whether the tar structured file will be loaded 
+# into irodsAgent.
+# TAR_STRUCT_FILE = 1
+ifdef TAR_STRUCT_FILE
+tarDir=/data/mwan/tar/libtar-1.2.11
+endif
+
