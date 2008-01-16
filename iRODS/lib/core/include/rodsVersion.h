@@ -9,7 +9,7 @@
 #ifndef RODS_VERSION_H
 #define RODS_VERSION_H
 
-#define RODS_REL_VERSION	"rods0.9"
+#define RODS_REL_VERSION	"rods1.0"
 #define RODS_API_VERSION	"b"
 
 
