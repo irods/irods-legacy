@@ -85,3 +85,4 @@ export svrTestBinDir	= $(buildDir)/server/test/bin
 export configDir	= $(buildDir)/config
 export svrConfigDir	= $(buildDir)/server/config
 export modulesDir	= $(buildDir)/modules
+export perlScriptsDir	= $(buildDir)/scripts/perl
