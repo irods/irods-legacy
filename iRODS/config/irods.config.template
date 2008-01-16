@@ -101,4 +101,28 @@ $DB_KEY        = '123';		# Arbitrary key used to scramble the db pw
 
 
 
+# Build configuration (optional)
+#	The iRODS configuration script automatically finds the C compiler,
+#	loader, archiver, and ranlib to use to build iRODS.  You can
+#	override these choices by uncommenting these lines and setting
+#	them to the path to the appropriate tool.
+#
+#	$CC is the compiler path.
+#
+#	$LDR is the loader path.
+#
+#	$AR is the archiver path.
+#
+#	$RANLIB is the ranlib path.
+#
+#	$PERL is the perl path.
+#
+#$CC = '';
+#$LDR = '';
+#$AR = '';
+#$RANLIB = '';
+#$PERL = '';
+
+
+
 return 1;
