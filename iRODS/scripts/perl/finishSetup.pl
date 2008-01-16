@@ -1085,9 +1085,12 @@ sub configureIrodsServer
 		# We are using an existing iRODS server with an
 		# iCAT enabled, so we don't need to install tables or
 		# set up user accounts.
-		printStatus( "\nInstalling iCAT tables...\n" );
-		printStatus( "    Skipped.  Using existing iRODS+iCAT on '$IRODS_ICAT_HOST'\n" );
-		printLog( "Using existing iRODS+iCAT on '$IRODS_ICAT_HOST'\n" );
+		printStatus( "Running 'iinit' to enable to server to server connections...\n" );
+		printLog( "Running 'iinit' to enable server to server connections...\n" );
+		my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
+
+		printStatus( "Using ICAT-enabled server on '$IRODS_ICAT_HOST'\n" );
+		printLog( "Using ICAT-enabled server on '$IRODS_ICAT_HOST'\n" );
 		return;
 	}
 
@@ -1568,16 +1571,19 @@ sub configureIrodsUser
 	unlink( $tmpPutFile );
 	unlink( $tmpGetFile );
 
-
-	($status,$output) = run( "$iexit full" );
-	if ( $status != 0 )
-	{
-		printError( "\nInstall problem:\n" );
-		printError( "    Cannot close iRODS connection:\n" );
-		printError( "        ", $output );
-		printLog( "\nCannot close iRODS connection:\n" );
-		printLog( "    ", $output );
-		cleanAndExit( 1 );
+# Don't do the 'iexit full' for non-ICAT Servers since the auth file is 
+# needed for server to server connections.
+	if ($DATABASE_TYPE ne "") {
+		($status,$output) = run( "$iexit full" );
+		if ( $status != 0 )
+		{
+			printError( "\nInstall problem:\n" );
+			printError( "    Cannot close iRODS connection:\n" );
+			printError( "        ", $output );
+			printLog( "\nCannot close iRODS connection:\n" );
+			printLog( "    ", $output );
+			cleanAndExit( 1 );
+		}
 	}
 
 
