@@ -94,7 +94,7 @@ LDFLAGS +=	$(LDADD)
 
 MD5_CFLAGS=$(CFLAGS)
 
-ifeq ($(CC), gcc)
+ifeq ($(CC_IS_GCC), 1)
 MD5_CFLAGS += -O3
 endif
 
@@ -180,4 +180,4 @@ rodslog:  $(libCoreSrcDir)/rodsLog.c
 	@true
 
 $(libCoreSrcDir)/rodsLog.c:  $(libCoreIncDir)/rodsErrorTable.h
-	@perl $(configDir)/updateRodsLog.pl
+	@$(PERL) $(perlScriptsDir)/updateRodsLog.pl
