@@ -476,6 +476,7 @@ else
 
 # Done.
 printLog( "\nDone.\n" );
+printLog( getCurrentDateTime( ) . "\n" );
 closeLog( );
 if ( ! $noHeader )
 {
