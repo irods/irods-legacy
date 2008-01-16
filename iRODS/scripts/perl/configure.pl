@@ -44,6 +44,9 @@ use Config;
 
 $version{"configure.pl"} = "1.2";
 
+my $output;
+my $status;
+
 
 
 
@@ -265,12 +268,13 @@ foreach $arg ( @ARGV )
 # script.
 #
 %configuration = ( );
+%mkconfiguration = ( );
 
-$configuration{ "RODS_CAT" } = "";	# Enable iCAT
-$configuration{ "PSQICAT" }  = "";	# Enable Postgres iCAT
-$configuration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
-$configuration{ "NEW_ODBC" } = "1";	# New ODBC drivers
-$configuration{ "PARA_OPR" } = "";	# Parallel
+$mkconfiguration{ "RODS_CAT" } = "";	# Enable iCAT
+$mkconfiguration{ "PSQICAT" }  = "";	# Enable Postgres iCAT
+$mkconfiguration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+$mkconfiguration{ "NEW_ODBC" } = "1";	# New ODBC drivers
+$mkconfiguration{ "PARA_OPR" } = "";	# Parallel
 
 $configuration{ "IRODS_HOME" } = $IRODS_HOME;
 $configuration{ "IRODS_PORT" } = "1247";
@@ -349,33 +353,33 @@ $configuration{ "DATABASE_ADMIN_PASSWORD" } = $DATABASE_ADMIN_PASSWORD;
 
 if ( $DATABASE_ODBC_TYPE =~ /unix/i )
 {
-	$configuration{ "NEW_ODBC" } = "1";	# New ODBC drivers
+	$mkconfiguration{ "NEW_ODBC" } = "1";	# New ODBC drivers
 }
 else
 {
-	$configuration{ "NEW_ODBC" } = "";	# Old ODBC drivers
+	$mkconfiguration{ "NEW_ODBC" } = "";	# Old ODBC drivers
 }
 
 if ( $DATABASE_TYPE =~ /postgres/i )
 {
 	# Postgres.
-	$configuration{ "RODS_CAT" } = "1";	# Enable iCAT
-	$configuration{ "PSQICAT" }  = "1";	# Enable Postgres iCAT
-	$configuration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+	$mkconfiguration{ "RODS_CAT" } = "1";	# Enable iCAT
+	$mkconfiguration{ "PSQICAT" }  = "1";	# Enable Postgres iCAT
+	$mkconfiguration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
 }
 elsif ( $DATABASE_TYPE =~ /oracle/i )
 {
 	# Oracle.
-	$configuration{ "RODS_CAT" } = "1";	# Enable iCAT
-	$configuration{ "PSQICAT" }  = "";	# Disable Postgres iCAT
-	$configuration{ "ORAICAT" }  = "1";	# Enable Oracle iCAT
+	$mkconfiguration{ "RODS_CAT" } = "1";	# Enable iCAT
+	$mkconfiguration{ "PSQICAT" }  = "";	# Disable Postgres iCAT
+	$mkconfiguration{ "ORAICAT" }  = "1";	# Enable Oracle iCAT
 }
 else
 {
 	# Unknown or no database.  No iCAT.
-	$configuration{ "RODS_CAT" } = "";	# Disable iCAT
-	$configuration{ "PSQICAT" }  = "";	# Disable Postgres iCAT
-	$configuration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+	$mkconfiguration{ "RODS_CAT" } = "";	# Disable iCAT
+	$mkconfiguration{ "PSQICAT" }  = "";	# Disable Postgres iCAT
+	$mkconfiguration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
 }
 
 
@@ -392,46 +396,46 @@ foreach $arg ( @ARGV )
 	# Postgres iCAT
 	if ( $arg =~ /--disable-psgi?cat/ )
 	{
-		$configuration{ "PSQICAT" } = "";
-		$configuration{ "RODS_CAT" } = "";
+		$mkconfiguration{ "PSQICAT" } = "";
+		$mkconfiguration{ "RODS_CAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-psgi?cat/ )
 	{
-		$configuration{ "PSQICAT" } = "1";
-		$configuration{ "RODS_CAT" } = "1";
-		$configuration{ "ORAICAT" } = "";
+		$mkconfiguration{ "PSQICAT" } = "1";
+		$mkconfiguration{ "RODS_CAT" } = "1";
+		$mkconfiguration{ "ORAICAT" } = "";
 		next;
 	}
 
 	# Oracle iCAT
 	if ( $arg =~ /--disable-orai?cat/ )
 	{
-		$configuration{ "ORAICAT" } = "";
-		$configuration{ "RODS_CAT" } = "";
+		$mkconfiguration{ "ORAICAT" } = "";
+		$mkconfiguration{ "RODS_CAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-orai?cat/ )
 	{
-		$configuration{ "PSQICAT" } = "";
-		$configuration{ "RODS_CAT" } = "1";
-		$configuration{ "ORAICAT" } = "1";
+		$mkconfiguration{ "PSQICAT" } = "";
+		$mkconfiguration{ "RODS_CAT" } = "1";
+		$mkconfiguration{ "ORAICAT" } = "1";
 		next;
 	}
 
 	# iCAT
 	if ( $arg =~ /--disable-icat/ )
 	{
-		$configuration{ "PSQICAT" } = "";
-		$configuration{ "RODS_CAT" } = "";
-		$configuration{ "ORAICAT" } = "";
+		$mkconfiguration{ "PSQICAT" } = "";
+		$mkconfiguration{ "RODS_CAT" } = "";
+		$mkconfiguration{ "ORAICAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-icat/ )
 	{
-		$configuration{ "PSQICAT" } = "1";	# Default to Postgres
-		$configuration{ "RODS_CAT" } = "1";
-		$configuration{ "ORAICAT" } = "";
+		$mkconfiguration{ "PSQICAT" } = "1";	# Default to Postgres
+		$mkconfiguration{ "RODS_CAT" } = "1";
+		$mkconfiguration{ "ORAICAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--icat-host=(.*)/ )
@@ -445,9 +449,9 @@ foreach $arg ( @ARGV )
 	if ( $arg =~ /--enable-psghome=(.*)/ )
 	{
 		my $psgdir = $1;
-		$configuration{ "PSQICAT" } = "1";	# Default to Postgres
-		$configuration{ "RODS_CAT" } = "1";
-		$configuration{ "ORAICAT" } = "";
+		$mkconfiguration{ "PSQICAT" } = "1";	# Default to Postgres
+		$mkconfiguration{ "RODS_CAT" } = "1";
+		$mkconfiguration{ "ORAICAT" } = "";
 		my $default = $configuration{ "DATABASE_HOME" };
 		my $psgdir_abs  = abs_path( $psgdir );
 		my $default_abs = abs_path( $default );
@@ -463,48 +467,48 @@ foreach $arg ( @ARGV )
 	# Parallel execution
 	if ( $arg =~ /--disable-parallel/ )
 	{
-		$configuration{ "PARA_OPR" } = "";
+		$mkconfiguration{ "PARA_OPR" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-parallel/ )
 	{
-		$configuration{ "PARA_OPR" } = "1";
+		$mkconfiguration{ "PARA_OPR" } = "1";
 		next;
 	}
 
 	# 64-bit file accesses
 	if ( $arg =~ /--disable-file64bit/ )
 	{
-		$configuration{ "FILE_64BITS" } = "";
+		$mkconfiguration{ "FILE_64BITS" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-file64bit/ )
 	{
-		$configuration{ "FILE_64BITS" } = "1";
+		$mkconfiguration{ "FILE_64BITS" } = "1";
 		next;
 	}
 
 	# 64-bit addressing
 	if ( $arg =~ /--disable-addr64bit/ )
 	{
-		$configuration{ "ADDR_64BITS" } = "";
+		$mkconfiguration{ "ADDR_64BITS" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-addr64bit/ )
 	{
-		$configuration{ "ADDR_64BITS" } = "1";
+		$mkconfiguration{ "ADDR_64BITS" } = "1";
 		next;
 	}
 
 	# New or old ODBC code
 	if ( $arg =~ /--enable-newodbc/ )
 	{
-		$configuration{ "NEW_ODBC" } = "1";
+		$mkconfiguration{ "NEW_ODBC" } = "1";
 		next;
 	}
 	if ( $arg =~ /--enable-oldodbc/ )
 	{
-		$configuration{ "NEW_ODBC" } = "";
+		$mkconfiguration{ "NEW_ODBC" } = "";
 		next;
 	}
 
@@ -636,12 +640,12 @@ if ( scalar keys %modules > 0 )
 			printStatus( "$module\n" );
 		}
 	}
-	$configuration{ "MODULES"} = $tmp;
+	$mkconfiguration{ "MODULES"} = $tmp;
 }
 else
 {
 	printStatus( "    Skipped.  No modules enabled.\n" );
-	$configuration{ "MODULES"} = "";
+	$mkconfiguration{ "MODULES"} = "";
 }
 
 
@@ -654,7 +658,7 @@ else
 #
 $currentStep++;
 printSubtitle( "\nStep $currentStep of $totalSteps:  Verifying configuration...\n" );
-if ( $configuration{ "RODS_CAT" } ne "1" )
+if ( $mkconfiguration{ "RODS_CAT" } ne "1" )
 {
 	# No iCAT.  No database.
 	$configuration{ "DATABASE_TYPE" } = "";
@@ -667,12 +671,13 @@ if ( $configuration{ "RODS_CAT" } ne "1" )
 
 	printStatus( "No database configured.\n" );
 }
-elsif ( $configuration{ "PSQICAT" } eq "1" )
+elsif ( $mkconfiguration{ "PSQICAT" } eq "1" )
 {
 	# Configuration has enabled Postgres.  Make sure the
 	# rest of the configuration matches.
 	$configuration{ "DATABASE_TYPE" } = "postgres";
 	$configuration{ "POSTGRES_HOME" } = $DATABASE_HOME;
+	$mkconfiguration{ "POSTGRES_HOME" } = $DATABASE_HOME;
 
 	$databaseHome = $configuration{ "DATABASE_HOME" };
 	if ( ! -e $databaseHome )
@@ -711,17 +716,19 @@ elsif ( $configuration{ "PSQICAT" } eq "1" )
 		$DATABASE_HOME = File::Spec->catdir( $databaseHome, "pgsql" );
 		$databaseHome  = $DATABASE_HOME;
 		$configuration{ "POSTGRES_HOME" } = $DATABASE_HOME;
+		$mkconfiguration{ "POSTGRES_HOME" } = $DATABASE_HOME;
 		$configuration{ "DATABASE_HOME" } = $DATABASE_HOME;
 	}
 
 	printStatus( "Postgres database found.\n" );
 }
-elsif ( $configuration{ "ORAICAT" } eq "1" )
+elsif ( $mkconfiguration{ "ORAICAT" } eq "1" )
 {
 	# Configuration has enabled Oracle.  Make sure the
 	# rest of the configuration matches.
 	$configuration{ "DATABASE_TYPE" } = "oracle";
 	$configuration{ "ORACLE_HOME" } = $DATABASE_HOME;
+	$mkconfiguration{ "ORACLE_HOME" } = $DATABASE_HOME;
 
 	$databaseHome = $configuration{ "DATABASE_HOME" };
 	if ( ! -e $databaseHome )
@@ -741,7 +748,7 @@ else
 {
 	# Configuration has no iCAT.
 	$configuration{ "DATABASE_TYPE" } = "";
-	$configuration{ "RODS_CAT" } = "";
+	$mkconfiguration{ "RODS_CAT" } = "";
 
 	printStatus( "No database configured.\n" );
 }
@@ -761,35 +768,35 @@ printSubtitle( "\nStep $currentStep of $totalSteps:  Checking host system...\n" 
 # What OS?
 if ( $thisOS =~ /linux/i )
 {
-	$configuration{ "OS_platform" } = "linux_platform";
+	$mkconfiguration{ "OS_platform" } = "linux_platform";
 	printStatus( "Host OS is Linux.\n" );
 }
 elsif ( $thisOS =~ /(sunos)|(solaris)/i )
 {
 	if ( $thisProcessor =~ /i.86/i )	# such as i386, i486, i586, i686
 	{
-		$configuration{ "OS_platform" } = "solaris_pc_platform";
+		$mkconfiguration{ "OS_platform" } = "solaris_pc_platform";
 		printStatus( "Host OS is Solaris (PC).\n" );
 	}
 	else	# probably "sun4u" (sparc)
 	{
-		$configuration{ "OS_platform" } = "solaris_platform";
+		$mkconfiguration{ "OS_platform" } = "solaris_platform";
 		printStatus( "Host OS is Solaris (Sparc).\n" );
 	}
 }
 elsif ( $thisOS =~ /aix/i )
 {
-	$configuration{ "OS_platform" } = "aix_platform";
+	$mkconfiguration{ "OS_platform" } = "aix_platform";
 	printStatus( "Host OS is AIX.\n" );
 }
 elsif ( $thisOS =~ /irix/i )
 {
-	$configuration{ "OS_platform" } = "sgi_platform";
+	$mkconfiguration{ "OS_platform" } = "sgi_platform";
 	printStatus( "Host OS is SGI.\n" );
 }
 elsif ( $thisOS =~ /darwin/i )
 {
-	$configuration{ "OS_platform" } = "osx_platform";
+	$mkconfiguration{ "OS_platform" } = "osx_platform";
 	printStatus( "Host OS is Mac OS X.\n" );
 }
 else
@@ -809,7 +816,7 @@ else
 # Skip this check if a command-line option was given to enable
 # 64-bit addressing.
 #
-if ( defined( $configuration{ "ADDR_64BITS" } ) )
+if ( defined( $mkconfiguration{ "ADDR_64BITS" } ) )
 {
 	printStatus( "64-bit addressing enabled.\n" );
 }
@@ -818,13 +825,62 @@ else
 	if ( is64bit( ) )
 	{
 		printStatus( "64-bit addressing supported and automatically enabled.\n" );
-		$configuration{ "ADDR_64BITS" } = "1";
+		$mkconfiguration{ "ADDR_64BITS" } = "1";
 	}
 	else
 	{
 		printStatus( "64-bit addressing not supported and automatically disabled.\n" );
-		$configuration{ "ADDR_64BITS" } = "";
+		$mkconfiguration{ "ADDR_64BITS" } = "";
 	}
+}
+
+
+
+
+
+########################################################################
+#
+# Find OS-specific tools
+#	All of these may be overridden by setting variables in
+#	irods.config.  The default leaves those variables empty,
+#	in which case we search for the appropriate tools.
+#
+
+#
+# Find perl
+#
+$mkconfiguration{ "PERL" } = choosePerl( );
+printStatus( "Perl:        " . $mkconfiguration{ "PERL" } . "\n" );
+
+
+#
+# Find compiler and loader
+#
+($mkconfiguration{ "CC" },$mkconfiguration{ "CC_IS_GCC" },$mkconfiguration{ "LDR" }) =
+	chooseCompiler( );
+printStatus( "C compiler:  " . $mkconfiguration{ "CC" } . 
+	($mkconfiguration{ "CC_IS_GCC" } ? " (gcc)" : "") . "\n" );
+printStatus( "Loader:      " . $mkconfiguration{ "LDR" } . "\n" );
+
+
+#
+# Find ar
+#
+$mkconfiguration{ "AR" } = chooseArchiver( );
+printStatus( "Archiver:    " . $mkconfiguration{ "AR" } . "\n" );
+
+
+#
+# Find ranlib
+#
+$mkconfiguration{ "RANLIB" } = chooseRanlib( );
+if ( $mkconfiguration{ "RANLIB" } =~ /touch/i )
+{
+	printStatus( "Ranlib:      none needed\n" );
+}
+else
+{
+	printStatus( "Ranlib:      " . $mkconfiguration{ "RANLIB" } . "\n" );
 }
 
 
@@ -841,8 +897,7 @@ printSubtitle( "\nStep $currentStep of $totalSteps:  Updating configuration file
 
 # Update config.mk
 printStatus( "Updating config.mk...\n" );
-my $output;
-my $status = copyTemplateIfNeeded( $configMk );
+$status = copyTemplateIfNeeded( $configMk );
 if ( $status == 0 )
 {
 	printError( "\nConfiguration problem:\n" );
@@ -856,12 +911,41 @@ if ( $status == 2 )
 {
 	printStatus( "    Created $configMk\n" );
 }
-($status, $output) = replaceVariablesInFile( $configMk, "make", 0, %configuration );
+($status, $output) = replaceVariablesInFile( $configMk, "make", 0, %mkconfiguration );
 if ( $status == 0 )
 {
 	printError( "\nConfiguration problem:\n" );
 	printError( "    Could not update configuration file.\n" );
 	printError( "        File:   $configMk\n" );
+	printError( "        Error:  $output\n" );
+	printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+	exit( 1 );
+}
+
+
+# Update platform.mk
+printStatus( "Updating platform.mk...\n" );
+$platformMk = File::Spec->catfile( $configDir, "platform.mk" );
+$status = copyTemplateIfNeeded( $platformMk );
+if ( $status == 0 )
+{
+	printError( "\nConfiguration problem:\n" );
+	printError( "    Cannot find the configuration template:\n" );
+	printError( "        File:  $platformMk.in\n" );
+	printError( "    Is the iRODS installation complete?\n" );
+	printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+	exit( 1 );
+}
+if ( $status == 2 )
+{
+	printStatus( "    Created $platformMk\n" );
+}
+($status, $output) = replaceVariablesInFile( $platformMk, "make", 0, %mkconfiguration );
+if ( $status == 0 )
+{
+	printError( "\nConfiguration problem:\n" );
+	printError( "    Could not update configuration file.\n" );
+	printError( "        File:   $platformMk\n" );
 	printError( "        Error:  $output\n" );
 	printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
 	exit( 1 );
@@ -936,3 +1020,412 @@ if ( ! $noHeader )
 
 
 exit( 0 );
+
+
+
+
+
+
+
+#
+# @brief	Check if a command exists and is executable
+#
+# The given command is checked first to see if it is a full
+# path to an executable.  If not, the user's path is scanned
+# to find the command.
+#
+# @return	A numeric value:
+# 			0 = command not found
+# 			1 = command found
+#
+sub checkCommand($)
+{
+	my ($command) = @_;
+
+	# If the command is a full path, does it exist as an executable?
+	return 1 if ( -x $command );
+
+	# Scan the path to find the command
+	my @pathDirs = split( ':', $ENV{'PATH'} );
+	foreach $pathDir (@pathDirs)
+	{
+		my $commandPath = File::Spec->catfile( $pathDir, $command );
+		return 1 if ( -x $commandPath );
+	}
+	return 0;
+}
+
+
+
+
+
+#
+# @brief	Choose a Perl for use by the Makefiles
+#
+# Return the name or path of the Perl command to be used by
+# Makefiles.  If the irods.config file has set $PERL, and
+# that points to an existing Perl command, use that.
+# Otherwise use the same Perl this script was run with.
+#
+# Output an error message and exit if there is a problem.
+#
+# @return	the name or path of Perl
+#
+sub choosePerl()
+{
+	# Default to the Perl version running this script.  This is the
+	# preferred way to go.
+	if ( !defined( $PERL ) || $PERL eq "" )
+	{
+		$PERL = $perl;
+		return $PERL;
+	}
+
+	# Use $PERL set in irods.config, if the command exists.
+	return $PERL if ( checkCommand( $PERL ) );
+
+	printError(
+		"\n",
+		"Configuration problem:\n",
+		"    The Perl interpreter chosen in the iRODS configuration file does\n",
+		"    not exist.  Please check your setting for the \$PERL variable\n",
+		"    or leave it empty to use a default.\n",
+		"        Perl:  $PERL\n",
+		"        File:  $irodsConfig\n",
+		"\n",
+		"Abort.  Please re-run this script when the problem is fixed.\n" );
+	exit( 1 );
+}
+
+
+
+
+
+#
+# @brief	Choose a C compiler and loader for use by the Makefiles
+#
+# Return the name or path of the cc command and loader to be used by
+# Makefiles.  If the irods.config file has set $CC, and that points
+# to an existing and working C compiler, use that.  Otherwise look
+# for the C compiler.  If $LDR points to an existing loader, use that.
+# Otherwise use the C compiler.
+#
+# Output an error message and exit if there is a problem.
+#
+# @return	a 3-tuple including:
+# 			the name or path of cc
+# 			a 0 or 1 flag indicating if cc is gcc
+#			the name or path of the loader
+#
+sub chooseCompiler()
+{
+	my $ccDiscovered = 1;
+	my $ccIsGcc = 0;
+
+	if ( !defined( $CC ) || $CC eq "" )
+	{
+		# Default to searching for the C compiler.
+		#
+		# On Solaris, look for the SunPro C compiler.
+		if ( $thisOS =~ /(sunos)|(solaris)/i )
+		{
+			# Prefer the SunPro compiler, if available.
+			#
+			# Unfortunately, there is no standard place
+			# for it to be installed except that the
+			# installation's parent directory is usually
+			# 'SUNWspro'.  So, let's look for that in
+			# a few standard locations.
+			my $root = File::Spec->rootdir( );
+			my @dirs = (
+				File::Spec->catdir( $root ),
+				File::Spec->catdir( $root, "opt" ),
+				File::Spec->catdir( $root, "usr" ),
+				File::Spec->catdir( $root, "usr", "opt" ),
+				File::Spec->catdir( $root, "usr", "local" ),
+			);
+			foreach $dir (@dirs)
+			{
+				my $d = File::Spec->catdir( $dir, "SUNWspro" );
+				next if ( ! -d $d );
+
+				# Directory exists!  Look for bin/cc
+				my $try = File::Spec->catfile( $d, "bin", "cc" );
+				if ( -x $try )
+				{
+					$CC = $try;
+					last;
+				}
+				# Otherwise, false alarm.  Keep looking.
+			}
+			# If CC is not set by the loop above, fall through
+			# and look for standard compilers.
+		}
+
+		if ( !defined( $CC ) || $CC eq "" )
+		{
+			# Look for gcc.
+			$CC = findCommand( "gcc" );
+			if ( !defined( $CC ) || $CC eq "" )
+			{
+				# Look for cc.  Could fail.  Could find gcc
+				# pretending to be cc (Mac OS X and Linux
+				# do this).
+				$CC = findCommand( "cc" );
+			}
+			else
+			{
+				$ccIsGcc = 1;
+			}
+		}
+
+		# Complain if we didn't find anything.
+		if ( !defined( $CC ) || $CC eq "" )
+		{
+			printError(
+				"\n",
+				"Configuration problem:\n",
+				"    Cannot find a C compiler.  You can select a specific\n",
+				"    C compiler by setting the \$CC variable in the iRODS\n",
+				"    configuration file.\n",
+				"        File:  $irodsConfig\n",
+				"\n",
+				"Abort.  Please re-run this script when the problem is fixed.\n" );
+			exit( 1 );
+		}
+	}
+	elsif ( ! checkCommand( $CC ) )
+	{
+		# irods.config sets $CC, but the file doesn't exist.
+		printError(
+			"\n",
+			"Configuration problem:\n",
+			"    The C compiler chosen in the iRODS configuration file does\n",
+			"    not exist.  Please check your setting for the \$CC variable\n",
+			"    or leave it empty to use a default.\n",
+			"        CC:    $CC\n",
+			"        File:  $irodsConfig\n",
+			"\n",
+			"Abort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+	else
+	{
+		# Use the irods.config choice
+		$ccDiscovered = 0;
+	}
+
+
+	# Check that CC really is a compiler by creating a
+	# brief C program and trying to compile it.
+	my $startingDir = cwd( );
+	chdir( File::Spec->tmpdir( ) );
+	my $cctemp = "irods_cc_$$.c";
+	printToFile( $cctemp,
+		"int main(int argc,char** argv) { int junk = argc; }\n" );
+	$output = `$CC -c $cctemp 2>&1`;
+	if ( $? != 0 )
+	{
+		# Compilation failed.  On Sun platforms, sometimes "cc" is
+		# a script that simply prints that the user should go buy
+		# a C compiler.  In this case, while "cc" will exist, it
+		# won't compile and we'll get an error.
+		unlink( $cctemp );
+		chdir( $startingDir );
+		if ( $ccDiscovered == 1 )
+		{
+			printError(
+				"\n",
+				"Configuration problem:\n",
+				"    Cannot find a working C compiler.  You can select a specific\n",
+				"    C compiler by setting the \$CC variable in the iRODS\n",
+				"    configuration file.\n",
+				"        File:  $irodsConfig\n",
+				"\n",
+				"Abort.  Please re-run this script when the problem is fixed.\n" );
+			exit( 1 );
+		}
+		printError(
+			"\n",
+			"Configuration problem:\n",
+			"    The C compiler chosen in the iRODS configuration file did not\n",
+			"    work.  Please check this setting and check that the compiler\n",
+			"    works.  Some vendors install a 'cc' shell script that merely\n",
+			"    prints a warning that a C compiler is not installed.\n",
+			"        CC:    $CC\n",
+			"        File:  $irodsConfig\n",
+			"\n",
+			"Abort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+	unlink( $cctemp );
+	chdir( $startingDir );
+
+
+	# Check if CC is some form of gcc.  The Makefiles
+	# sometimes use 'if' checks to include special
+	# compiler flags for gcc.
+	if ( $ccIsGcc == 0 )
+	{
+		if ( $CC =~ /gcc/i )
+		{
+			# Name contains 'gcc'.
+			$ccIsGcc = 1;
+		}
+		else
+		{
+			# Linux and Mac OS X often install 'gcc' as 'cc'
+			$output = `$CC -v 2>&1`;
+			if ( $output =~ /gcc version/i )
+			{
+				# Version information revealed it was gcc
+				$ccIsGcc = 1;
+			}
+		}
+	}
+
+
+	# Now choose a loader.
+	if ( !defined( $LDR ) || $LDR eq "" )
+	{
+		# Default to the C compiler.  This is the preferred choice.
+		$LDR = $CC;
+	}
+	elsif ( ! checkCommand( $LDR ) )
+	{
+		# irods.config sets $LDR, but the file doesn't exist.
+		printError(
+			"\n",
+			"Configuration problem:\n",
+			"    The loader chosen in the iRODS configuration file does\n",
+			"    not exist.  Please check your setting for the \$LDR variable\n",
+			"    or leave it empty to use a default.\n",
+			"        LDR:   $LDR\n",
+			"        File:  $irodsConfig\n",
+			"\n",
+			"Abort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+
+	return ($CC, $ccIsGcc, $LDR);
+}
+
+
+
+
+
+#
+# @brief	Choose an archiver for use by the Makefiles
+#
+# Return the name or path of the ar command to be used by
+# Makefiles.  If the irods.config file has set $AR, and
+# that points to an existing archiver, use that.
+# Otherwise look for it.
+#
+# Output an error message and exit if there is a problem.
+#
+# @return	the name or path of ar
+#
+sub chooseArchiver()
+{
+	if ( defined( $AR ) && $AR ne "" )
+	{
+		# irods.config sets $AR
+		return $AR if ( checkCommand( $AR ) );
+
+		printError(
+			"\n",
+			"Configuration problem:\n",
+			"    The archiver chosen in the iRODS configuration file does\n",
+			"    not exist.  Please check your setting for the \$AR variable\n",
+			"    or leave it empty to use a default.\n",
+			"        AR:    $AR\n",
+			"        File:  $irodsConfig\n",
+			"\n",
+			"Abort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+
+	# No command chosen.  Look for it.
+
+	# On Solaris, look in /usr/xpg4 first if we are using
+	# 64-bit addressing.
+	if ( ( $thisOS =~ /(sunos)|(solaris)/i ) &&
+		defined( $mkconfiguration{ "ADDR_64BITS" } ) )
+	{
+		$AR = File::Spec->catfile( File::Spec->rootdir( ),
+			"usr", "xpg4", "bin", "ar" );
+		return $AR if ( -x $AR );
+	}
+
+	$AR = findCommand( "ar" );
+	return $AR if ( defined( $AR ) );
+
+	printError(
+		"\n",
+		"Configuration problem:\n",
+		"    Cannot find the 'ar' command.  You can select a specific\n",
+		"    archiver by setting the \$AR variable in the iRODS\n",
+		"    configuration file.\n",
+		"        File:  $irodsConfig\n",
+		"\n",
+		"Abort.  Please re-run this script when the problem is fixed.\n" );
+	exit( 1 );
+}
+
+
+
+
+#
+# @brief	Choose a ranlib for use by the Makefiles
+#
+# Return the name or path of the ranlib command to be used by
+# Makefiles.  If the irods.config file has set $RANLIB, and
+# that points to an existing ranlib, use that.
+# Otherwise look for it.  If not found, use touch instead.
+#
+# Output an error message and exit if there is a problem.
+#
+# @return	the name or path of ar
+#
+sub chooseRanlib()
+{
+	if ( defined( $RANLIB ) && $RANLIB ne "" )
+	{
+		# irods.config sets $RANLIB
+		return $RANLIB if ( checkCommand( $RANLIB ) );
+
+		printError(
+			"\n",
+			"Configuration problem:\n",
+			"    The 'ranlib' chosen in the iRODS configuration file does\n",
+			"    not exist.  Please check your setting for the \$RANLIB variable\n",
+			"    or leave it empty to use a default.\n",
+			"        RANLIB: $RANLIB\n",
+			"        File:   $irodsConfig\n",
+			"\n",
+			"Abort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+
+
+	$RANLIB = findCommand( "ranlib" );
+	return $RANLIB if ( defined( $RANLIB ) );
+
+	# When 'ranlib' is not found, it usually means that the
+	# OS automatically creates a random access library.  So,
+	# just use 'touch' insteasd.
+	$RANLIB = findCommand( "touch" );
+	return $RANLIB if ( defined( $RANLIB ) );
+
+	printError(
+		"\n",
+		"Configuration problem:\n",
+		"    Cannot find the 'ranlib' command.  You can select a specific\n",
+		"    ranlib by setting the \$RANLIB variable in the iRODS\n",
+		"    configuration file.\n",
+		"        File:  $irodsConfig\n",
+		"\n",
+		"Abort.  Please re-run this script when the problem is fixed.\n" );
+	exit( 1 );
+}
