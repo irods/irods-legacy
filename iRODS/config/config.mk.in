@@ -9,7 +9,9 @@
 # and its features.  You can edit this file by hand to modify
 # those guesses.
 #
-# Values filled in by the configure script:
+
+#
+# Values filled in by the 'configure' script:
 # 	OS_platform	The OS for this build.  Platforms supported:
 #				alpha_platform
 #				sgi_platform
@@ -19,44 +21,59 @@
 #				osx_platform
 #				linux_platform
 #
+#	FILE_64BITS	Whether 64-bit file sizes are supported.
+#
 #	ADDR_64BITS	Whether 64-bit addressing is supported.
+#
+#	PARA_OPR	A 1 to enable parallel operations.
+#
+#	RODS_CAT	A 1 to enable the iCAT in the iRODS server.
+#
+#	PSQICAT		A 1 if the iCAT uses an Postgres database.
+#
+#	POSTGRES_HOME	The home directory of Postgres, if PSQICAT = 1
+#
+#	ORAICAT		A 1 if the iCAT uses an Oracle database.
+#
+#	ORACLE_HOME	The home directory of Oracle, if ORAICAT = 1
+#
+#	NEW_ODBC	A 1 if the Postgres interface uses the unix ODBC.
 #
 #	MODULES		The list of modules enabled during configuration.
 #			Module names are the names of directories in
 #			the 'modules' subdirectory.
 #
-OS_platform=linux_platform
-
-# FILE_64BITS - defines whether 64 bits file is supported.
-FILE_64BITS=1
-
-# ADDR_64BITS defines whether this host uses 64 bit addressing.
-ADDR_64BITS=
-
-# MODULES lists the modules to be built into the system.
+OS_platform=
+#FILE_64BITS=1
+#ADDR_64BITS=
 MODULES=
+#PARA_OPR=1  
+#RODS_CAT=1
+#PSQICAT=1
+#POSTGRES_HOME=
+#NEW_ODBC=1
+#ORAICAT=1
+ifndef ORACLE_HOME
+ORACLE_HOME=
+endif
 
-# PARA_OPR - defines whether parallel operation is supported.
-PARA_OPR=1  
 
+
+#
+# Configure the rule engine server
+#
 # RULE_ENGINE defines whether the Rule Engine is enabled. 
 # Enable this normally unless you are debugging some 
 # particular module and dont want the rule engine to mess up the flow.
 RULE_ENGINE=1
 
-# RODS_CAT defines whether the RODS ICAT is enabled
-#RODS_CAT=1
-
-# PSQICAT - It is a postgres ICAT
-#PSQICAT=1
-
-# NEW_ODBC - using libiodbc with postgres
-#NEW_ODBC=1
-
-# ORAICAT - It is an Oracle ICAT
-#ORAICAT=1
 
 
+
+
+#
+# Check which database is in use for the iCAT
+#
 ifdef RODS_CAT
 
 # Postgres
@@ -71,6 +88,9 @@ endif
 endif
 
 
+#
+# Adjust for the Postgres iCAT
+#
 ifdef PSQICAT
 RODS_CAT = 1
 PSQ_DBMS = 1
@@ -78,13 +98,19 @@ DBMS_INCLUDE+= -DPSQICAT
 endif
 
 
+#
+# Adjust for the Oracle iCAT
+#
 ifdef ORAICAT
 RODS_CAT = 1
 ORA_DBMS = 1
 endif
 
+
+#
+# Postgres options
+#
 ifdef PSQ_DBMS
-POSTGRES_HOME=/scratch/slocal/rods/RODS/../iRodsPostgres/pgsql
 ifeq ($(OS_platform), osx_platform)
 NSL=
 else
@@ -101,10 +127,10 @@ DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
 endif
 
 
+#
+# Oracle options
+#
 ifdef ORA_DBMS
-ifndef ORACLE_HOME
-ORACLE_HOME=/usr/local/apps/oracle/home_102
-endif
 ifdef ADDR_64BITS
 ORA_LIB_DIR = $(ORACLE_HOME)/lib
 else
@@ -119,6 +145,11 @@ ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
 DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
 DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
 endif
+
+
+#
+# Misc options
+#
 
 # CCMALLOC - specify whether mem leak checking CCMALLOC should be run
 # CCMALLOC = 1
