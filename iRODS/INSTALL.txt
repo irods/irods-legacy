@@ -31,6 +31,14 @@ This script saves its work in two configuration files:
 Normally, there is no need for you to view or edit these files.  Both
 files include comments that explain their settings.
 
+More detailed logs are in ./installLogs with names corresponding to
+the subscripts that are run (see below), for eaxmple:
+installPostgres.log, installMake.log, and finishSetup.log.  Note that
+the scripts use internal perl functions for many operations which will
+not appear as shell commands in the log.
+
+'irodssetup' and/or the subscripts can be rerun if needed.  Each
+substep determines state and performs its function only when needed.
 
 
 1.1.  Installation options
@@ -72,8 +80,9 @@ answering the prompts differently:
 2.  Installing iRODS without using 'irodssetup'
 ------------------------------------------------------------------------
 
-The 'irodssetup' script runs four steps for the installation that you can run
-directly if needed:
+The 'irodssetup' script runs four steps for the installation that you
+can run directly, if finer control needed.  Copy the template config
+files, edit them, and then run the scripts:
 
 	scripts/installPostgres
 		Download and build Postgres and ODBC distribtions.  Uses
@@ -226,8 +235,12 @@ This lists the iRODS and database servers running, and their process IDs.
 Run:
 	./irodsctl test
 
-This runs an extensive set of tests to be sure the installation is working
-properly.
+This runs an extensive set of tests to be sure the installation is
+working properly.  Normally, you do not need to run this.  It will
+completely succeed only on the ICAT-Enabled Server host and only if a
+number of default settings are used (resource names, etc).  A simple
+iput, ils, and iget is also a good test of many aspects of the
+installation.
 
 
 
