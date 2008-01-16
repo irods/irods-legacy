@@ -148,25 +148,25 @@ cleanmodules:
 server_ldflags:
 	@touch $(SERVER_LDFLAGS_TMP)
 	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i server_ldflags; done | \
-		perl $(configDir)/joinlines.pl > $(SERVER_LDFLAGS_TMP)
+		$(PERL) $(perlScriptsDir)/joinlines.pl > $(SERVER_LDFLAGS_TMP)
 
 # Get LDFLAGS added by all the modules for the clients
 client_ldflags:
 	@touch $(CLIENT_LDFLAGS_TMP)
 	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i client_ldflags; done | \
-		perl $(configDir)/joinlines.pl > $(CLIENT_LDFLAGS_TMP)
+		$(PERL) $(perlScriptsDir)/joinlines.pl > $(CLIENT_LDFLAGS_TMP)
 
 # Get CFLAGS flags added by all the modules for the servers
 server_cflags: 
 	@touch $(SERVER_CFLAGS_TMP)
 	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i server_cflags; done | \
-		perl $(configDir)/joinlines.pl > $(SERVER_CFLAGS_TMP)
+		$(PERL) $(perlScriptsDir)/joinlines.pl > $(SERVER_CFLAGS_TMP)
 
 # Get CFLAGS flags added by all the modules for the clients
 client_cflags: 
 	@touch $(CLIENT_CFLAGS_TMP)
 	@for i in $(MODULES); do $(MAKE) -s -C modules/$$i client_cflags; done | \
-		perl $(configDir)/joinlines.pl > $(CLIENT_CFLAGS_TMP)
+		$(PERL) $(perlScriptsDir)/joinlines.pl > $(CLIENT_CFLAGS_TMP)
 
 # Build the microservices table based upon enabled modules
 reaction:	$(svrReIncDir)/reAction.h
