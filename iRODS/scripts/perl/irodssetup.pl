@@ -456,6 +456,13 @@ sub promptUser()
 				# What type of ODBC is it using?
 				while ( 1 )
 				{
+					printNotice(
+					"\n",
+					"To access Postgres, we need to know which type of ODBC is\n",
+					"available.  By default, iRODS prior to 1.0 (install.pl) would use\n",
+					"postgres ODBC and iRODS 1.0 and beyond defaults to using unix ODBC.\n",
+					"\n" );
+
 					$databaseServerOdbcType = askString(
 						"    What type of ODBC access is used?  (unix or postgres) ",
 						"Sorry, but the ODBC type cannot be left empty.\n" );
