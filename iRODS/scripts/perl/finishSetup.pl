@@ -425,7 +425,19 @@ my $currentStep = 0;
 # happens just before configuring the iRods server.
 my $databaseRestartNeeded = 0;
 
-if ( $DATABASE_TYPE eq "" )
+if ( $IRODS_ADMIN_NAME eq "" )
+{
+	# There is no administrator account name.  Probably no
+	# password either.  Without these, we cannot do any
+	# server configuration.  This case occurs when the
+	# build scripts are set to only build and install the
+	# i-commands, so this is not an error.
+	$totalSteps = 0;
+	$currentStep = 0;
+
+	# Nothing to do.  Fall through.
+}
+elsif ( $DATABASE_TYPE eq "" )
 {
 	# There is no database.  This means we are not installing
 	# the iCAT on this host, so there is no need to create the
