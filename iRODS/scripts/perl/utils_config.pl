@@ -166,8 +166,10 @@ sub loadIrodsConfig()
 sub validateIrodsVariables()
 {
 	# iRODS account:
-	#	Make sure we have an account name.
-	#	Make sure we have an account password.
+	#	Check if we have an account name and password..
+	#	These are set for most types of installs, but
+	#	are allowed to be empty for i-command-only installs.
+	my $adminSet = 1;
 	if ( !defined( $IRODS_ADMIN_NAME ) || $IRODS_ADMIN_NAME eq "" )
 	{
 		# No administrator name.  Check legacy names.
@@ -177,17 +179,7 @@ sub validateIrodsVariables()
 		}
 		else
 		{
-			printError(
-				"\n" .
-				"Configuration problem:\n" .
-				"    iRods administrator account name is not set.\n" .
-				"\n" .
-				"    The iRODS configuration file does not set the administrator\n" .
-				"    account name.  Possible typo in the variable name?\n" .
-				"\n" .
-				"    Please check \$IRODS_ADMIN_NAME in the configuration file.\n" .
-				"        Config file:  $irodsConfig\n" );
-			return 0;
+			$adminSet = 0;
 		}
 	}
 	if ( !defined( $IRODS_ADMIN_PASSWORD ) || $IRODS_ADMIN_PASSWORD eq "" )
@@ -201,8 +193,10 @@ sub validateIrodsVariables()
 		{
 			$IRODS_ADMIN_PASSWORD = $DB_PASSWORD;
 		}
-		else
+		elsif ( $adminSet == 1 )
 		{
+			# If an admin account name was given, then
+			# we really need the password too.
 			printError(
 				"\n" .
 				"Configuration problem:\n" .
