@@ -2,12 +2,12 @@
 # Perl
 
 #
-# Build, set up, and install iRODS.
+# Build and set up iRODS.
 #
 # Usage is:
 #	perl irodssetup.pl [options]
 #
-# This script automatically installs everything you need for iRODS
+# This script automatically builds everything you need for iRODS
 # and sets up a default configuration.  It prompts for any information
 # it needs.
 #
@@ -27,9 +27,9 @@ $version{"irodssetup.pl"} = "1.1";
 #
 # Design Notes:
 #	This script is a front-end to other scripts.  Its purpose is
-#	to provide an "easy" prompt-based way to install iRODS.  It
+#	to provide an "easy" prompt-based way to build iRODS.  It
 #	does not prompt for every possible configuration choice - only
-#	those essential to the install.  Advanced users will edit the
+#	those essential to the build.  Advanced users may edit the
 #	configuration files directly instead.
 #
 #	The bulk of this script is prompts.  The real work amounts
@@ -209,7 +209,7 @@ finishSetup( );
 
 
 # Done!
-printSubtitle( "\nDone.  iRODS is now set up.\n" );
+printSubtitle( "\nDone.  iRODS is now set up.\n\n" );
 
 printNotice( "To use the iRODS 'i-commands', update your PATH:\n" );
 printNotice( "    For csh users:\n" );
@@ -242,7 +242,7 @@ exit( 0 );
 
 # @brief	Prompt the user for configuration choices
 #
-# This function prompts the user to configure the install.  The answers
+# This function prompts the user to configure the build.  The answers
 # are used to set global variables that guide the rest of the setup.
 #
 # Status and error messages are output directly.
@@ -270,7 +270,7 @@ sub promptUser()
 	printTitle( "Set up iRODS\n" );
 	printTitle( "------------------------------------------------------------------------\n" );
 	printNotice(
-		"iRODS is a flexible data archive management system that supports several\n",
+		"iRODS is a flexible data archive management system that supports many\n",
 		"different site configurations.  This script will ask you a few questions,\n",
 		"then automatically build and configure iRODS.\n",
 		"\n",
@@ -284,8 +284,8 @@ sub promptUser()
 		"\n",
 		"    4.  A set of 'i-commands' for command-line access to your data.\n",
 		"\n",
-		"You can install some, or all of these, in a few standard configurations.\n",
-		"For new installations, we recommend that you install everything.\n",
+		"You can build some, or all of these, in a few standard configurations.\n",
+		"For new users, we recommend that you build everything.\n",
 		"\n" );
 
 
@@ -295,7 +295,7 @@ sub promptUser()
 		"--------------------\n" );
 
 	# Install iRODS server?
-	$installDataServer = askYesNo( "    Install an iRODS server?  (yes/no) " );
+	$installDataServer = askYesNo( "    Build an iRODS server?  (yes/no) " );
 
 	if ( $installDataServer == 0 )
 	{
@@ -303,7 +303,7 @@ sub promptUser()
 		printNotice(
 			"\n",
 			"\n",
-			"If the iRODS server is not installed, the iCAT catalog and database\n",
+			"If the iRODS server is not built, the iCAT catalog and database\n",
 			"are not needed.  This script will only build the 'i-commands'.\n" );
 	}
 	else
@@ -329,11 +329,12 @@ sub promptUser()
 
 			printNotice(
 				"\n",
-				"The installation process needs to access an existing account\n",
-				"in that iCAT catalog.\n",
+				"The build process needs to access an existing account in that\n",
+				"iCAT catalog.\n",
 				"\n" );
 
-			# Prompt for an iRODS account name and make sure it has no special characters
+			# Prompt for an iRODS account name and make sure it has
+			# no special characters
 			while ( 1 )
 			{
 				$irodsAccount = askString(
@@ -360,7 +361,7 @@ sub promptUser()
 			# Do install with the iCAT.  What iRODS password?
 			printNotice(
 				"\n",
-				"For security reasons, the installation will create a new iRODS\n",
+				"For security reasons, the build process will create a new iRODS\n",
 				"administrator account named 'rods' for managing the system.\n",
 				"\n" );
 
@@ -393,10 +394,10 @@ sub promptUser()
 
 		# Do install with an iCAT.  It needs access to a database.  Install Postgres?
 		printNotice(
-			"The iCAT uses a database to store metadata.  You can install a Postgres\n",
-			"database now or use an existing database.\n",
+			"The iCAT uses a database to store metadata.  You can build and configure\n",
+			"a new Postgres database now or use an existing database.\n",
 			"\n" );
-		$installDatabaseServer = askYesNo( "    Install Postgres?  (yes/no) " );
+		$installDatabaseServer = askYesNo( "    Build Postgres?  (yes/no) " );
 
 		if ( ! $installDatabaseServer )
 		{
@@ -440,7 +441,8 @@ sub promptUser()
 			{
 				printNotice(
 					"\n",
-					"To compile iRODS, we need access to the Postgres include and library files.\n",
+					"To compile iRODS, we need access to the Postgres include and\n",
+					"library files.\n",
 					"\n" );
 
 				# Always use the local host.
@@ -455,7 +457,7 @@ sub promptUser()
 				while ( 1 )
 				{
 					$databaseServerOdbcType = askString(
-						"    What type of ODBC access is installed?  (unix or postgres) ",
+						"    What type of ODBC access is used?  (unix or postgres) ",
 						"Sorry, but the ODBC type cannot be left empty.\n" );
 
 					if ( $databaseServerOdbcType =~ /^unix/i )
@@ -565,7 +567,15 @@ sub promptUser()
 			# Do install Postgres.
 			printNotice(
 				"\n",
-				"The Postgres source code will be automatically downloaded and installed.\n",
+				"You can select the directory for Postgres:\n",
+				"\n",
+				"    * If you are creating a new iRODS installation, select a\n",
+				"      new directory.  Postgres will be automatically downloaded,\n",
+				"      built, and installed there.\n",
+				"\n",
+				"    * If you are upgrading an iRODS installation and wish to\n",
+				"      re-use an existing database, enter the path to that Postgres\n",
+				"      directory.\n",
 				"\n" );
 
 			# Where is it?
@@ -650,18 +660,18 @@ sub promptUser()
 		"\n",
 		"Confirmation:\n",
 		"-------------\n" );
-	printNotice( "Installation is ready to begin.\n\n" );
+	printNotice( "The iRODS build and setup is ready to begin.\n\n" );
 
 	if ( $installDataServer )
 	{
-		printNotice( "    iRODS server:  install\n" );
+		printNotice( "    iRODS server:  build\n" );
 		printNotice( "                       account '$irodsAccount'\n" );
 		printNotice( "                       password '$irodsPassword'\n" );
 		printNotice( "                       path '" . cwd( ) . "'\n" );
 
 		if ( $installCatalogServer )
 		{
-			printNotice( "    iCAT catalog:  install\n" );
+			printNotice( "    iCAT catalog:  build\n" );
 			if ( $installDatabaseServer )
 			{
 				if ( $deleteDatabaseData )
@@ -670,12 +680,13 @@ sub promptUser()
 				}
 				elsif ( $priorDatabaseExists )
 				{
-					printNotice( "    Postgres:      reinstall\n" );
+					printNotice( "    Postgres:      keep prior dtaa and reinstall\n" );
 				}
 				else
 				{
-					printNotice( "    Postgres:      install\n" );
+					printNotice( "    Postgres:      install a new database\n" );
 				}
+				printNotice( "                       enable iRODS scripts to start/stop database\n" );
 			}
 			elsif ( $databaseServerType eq "postgres" )
 			{
@@ -692,6 +703,7 @@ sub promptUser()
 			elsif ( $databaseServerType eq "oracle" )
 			{
 				printNotice( "    Oracle:        use existing on '$databaseServerHost'\n" );
+				printNotice( "                       do not enable iRODS scripts to start/stop database\n" );
 			}
 			printNotice( "                       account '$databaseServerAccount'\n" );
 			printNotice( "                       password '$databaseServerPassword'\n" );
@@ -702,11 +714,7 @@ sub promptUser()
 			printNotice( "    iCAT catalog:  use existing on '$catalogServerHost'\n" );
 		}
 	}
-	else
-	{
-		printNotice( "    iRODS server:  configure later\n" );
-	}
-	printNotice( "    I-commands:    install\n" );
+	printNotice( "    I-commands:    build\n" );
 
 	if ( $installDataServer && $installCatalogServer && !$installDatabaseServer )
 	{
@@ -950,7 +958,8 @@ sub configureIrods( )
 	# Make sure the file is only readable by the user.
 	chmod( 0600, $installPostgresConfig );
 
-	# Add iRODS variables to the config file.
+	# Add iRODS variables to the config file.  These both may
+	# be empty if we are just installing the i-commands.
 	my %configure = (
 		"IRODS_ADMIN_NAME",	$irodsAccount,
 		"IRODS_ADMIN_PASSWORD",	$irodsPassword );
@@ -1066,6 +1075,14 @@ sub buildIrods( )
 #
 sub finishSetup( )
 {
+	if ( $installDataServer == 0 )
+	{
+		# The iRODS server is not being installed so there
+		# is no server or user configuration to be done.
+		return;
+	}
+
+
 	printSubtitle( "\nSetting up iRODS...\n" );
 
 	# Run the completion script.
