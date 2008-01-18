@@ -1,9 +1,9 @@
-		Introduction to iRODS scripts and configuration files
+		Scripts for installing and uninstalling iRODS
 				January 2008
 
 
 The iRODS distribution uses several configuration files and shell/Perl
-scripts to build and manage the iRODS system.
+scripts to build the iRODS system.
 
 
 
@@ -178,87 +178,19 @@ The 'finishSetup' script will install iCAT tables if needed.
 
 
 
-3.  Managing an iRODS installation
-------------------------------------------------------------------------
-
-Other documents discuss the iRODS tables, accounts, etc.  Here we only
-discuss tasks under script control, including:
-
-	* start and stop the iRODS and database servers
-	* checking server status
-	* testing the installation
-
-These tasks are all done with the 'irodsctl' script.
-
-
-
-3.1.  Starting the iRODS and database servers
-
-Run:
-	./irodsctl start
-
-If the database server was configured as dedicated for iRODS use, this
-will start the database server as well.
-
-
-
-3.2.  Stopping the iRODS and database servers
-
-Run:
-	./irodsctl stop
-
-If the database server was configured as dedicated for iRODS use, this
-will stop the database server as well.
-
-
-
-3.3.  Restarting the iRODS and database servers
-
-Run:
-	./irodsctl restart
-
-This is the same as running 'stop' then 'start'.
-
-
-
-3.4.  Checking if the servers are running
-
-Run:
-	./irodsctl status
-
-This lists the iRODS and database servers running, and their process IDs.
-
-
-
-3.5.  Testing the iRODS installation
-
-Run:
-	./irodsctl test
-
-This runs an extensive set of tests to be sure the installation is
-working properly.  Normally, you do not need to run this.  It will
-completely succeed only on the ICAT-Enabled Server host and only if a
-number of default settings are used (resource names, etc).  A simple
-iput, ils, and iget is also a good test of many aspects of the
-installation.
-
-
-
-
-
-4.  Uninstalling iRODS and Postgres
+3.  Uninstalling iRODS and Postgres
 ------------------------------------------------------------------------
 
 
-5.1.  Dropping the iRODS tables
+3.1.  Dropping the iRODS tables
 
-Use the 'drop' option on 'irodsctl' to drop the database tables:
+Use the 'drop' option on 'irodsctl' to delete the database tables:
 
 	./irodsctl drop
 
 
 
-5.1.  Uninstall Postgres as installed by iRODS
+3.1.  Uninstall Postgres as installed by iRODS
 
 If you used the 'irodssetup' or 'installPostgres' scripts to download and
 install Postgres, then you can use the 'uninstallPostgres' script.
@@ -268,12 +200,12 @@ First stop the iRODS and database servers, then run the script:
 	scripts/uninstallPostgres
 
 Optionally, if you don't plan on using Postgres again, delete your
-'~/.pgpass' and '~/.odbc.ini' files.  Leave them there won't hurt
+'~/.pgpass' and '~/.odbc.ini' files.  Leaving them there won't hurt
 anything.
 
 
 
-5.2.  Uninstall iRODS
+3.2.  Uninstall iRODS
 
 Stop the servers and delete the iRODS home directory.  There are
 no additional files in the rest of the OS.
