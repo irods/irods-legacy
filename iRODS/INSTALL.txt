@@ -3,7 +3,8 @@
 
 
 The iRODS distribution uses several configuration files and shell/Perl
-scripts to build the iRODS system.
+scripts to build the iRODS system.  See MANAGE.txt for information about
+scripts to manage iRODS after it has been installed.
 
 
 
@@ -81,8 +82,12 @@ answering the prompts differently:
 ------------------------------------------------------------------------
 
 The 'irodssetup' script runs four steps for the installation that you
-can run directly, if finer control needed.  Copy the template config
-files, edit them, and then run the scripts:
+can run directly, if finer control is needed.  However, we recommend
+that you try the 'irodssetup' script first because it already supports
+a large number of common options, and it will give you a starting
+point for adjusting your installation.
+
+The four install steps are:
 
 	scripts/installPostgres
 		Download and build Postgres and ODBC distribtions.  Uses
@@ -106,6 +111,10 @@ files, edit them, and then run the scripts:
 
 2.1.  Installing with a new Postgres database
 
+Create a new Postgres configuration file from a template:
+
+	cp config/installPostgres.config.template config/installPostgres.config
+
 Edit 'config/installPostgres.config' to change defaults if needed.
 See comments in the file.
 
@@ -115,11 +124,24 @@ Run:
 	make
 	scripts/finishSetup
 
+You may want to add command-line options to 'scripts/configure' to
+enable or disable special iRODS features.  Run 'scripts/configure --help'
+to get a list of options.
+
 
 
 2.2.  Installing with an existing Postgres database
 
-Edit 'config/irods.config' and set:
+Create a new iRODS configuration file from a template.  The easiest
+way is to run 'scripts/configure' once to set up defaults:
+
+	scripts/configure
+
+Alternatively, you can copy a template as a starting point:
+
+	cp config/irods.config.template config/irods.config
+
+Edit 'config/irods.config' and set database parameters:
 
 	$DATABASE_TYPE = 'postgres';
 	$DATABASE_ODBC_TYPE = 'unix';
@@ -136,16 +158,29 @@ The Postgres database must be running on the same host as an iRODS
 server with the iCAT enabled.  The iCAT stores metadata about the
 catalog of archived files in the database.
 
+Also set iRODS parameters:
+
+	$IRODS_HOME = '/path/to/irods';
+	$IRODS_PORT = '1247';
+	$IRODS_ADMIN_NAME = 'rods';
+	$IRODS_ADMIN_PASSWORD = 'rods';
+	$IRODS_ICAT_HOST = '';
+
 iRODS can be configured with servers running on multiple hosts.  Only
 one of those servers needs the iCAT enabled, so only one host needs
 Postgres installed.  The other iRODS servers on other hosts can be
 configured to communicate with the first iRODS server, its iCAT, and
-the iCAT's Postgres database.
+the iCAT's Postgres database.  If you are installing iRODS to talk
+to a remote iCAT, set $IRODS_ICAT_HOST to the name of the iCAT host.
 
 Run:
 	scripts/configure
 	make
 	scripts/finishSetup
+
+You may want to add command-line options to 'scripts/configure' to
+enable or disable special iRODS features.  Run 'scripts/configure --help'
+to get a list of options.
 
 If the existing Postgres does not have the iCAT tables installed yet, the
 'finishSetup' script will install them.  iRODS will coexist with other
@@ -154,6 +189,15 @@ uses of the same Postgres database.
 
 
 2.3.  Installing with an existing Oracle database
+
+Create a new iRODS configuration file from a template.  The easiest
+way is to run 'scripts/configure' once to set up defaults:
+
+	scripts/configure
+
+Alternatively, you can copy a template as a starting point:
+
+	cp config/irods.config.template config/irods.config
 
 Edit 'config/irods.config' and set:
 
@@ -167,10 +211,29 @@ Edit 'config/irods.config' and set:
 The user account name must have the form 'schema@instance' per Oracle
 conventions.
 
+Also set iRODS parameters:
+
+	$IRODS_HOME = '/path/to/irods';
+	$IRODS_PORT = '1247';
+	$IRODS_ADMIN_NAME = 'rods';
+	$IRODS_ADMIN_PASSWORD = 'rods';
+	$IRODS_ICAT_HOST = '';
+
+iRODS can be configured with servers running on multiple hosts.  Only
+one of those servers needs the iCAT enabled, so only one host needs
+Postgres installed.  The other iRODS servers on other hosts can be
+configured to communicate with the first iRODS server, its iCAT, and
+the iCAT's Postgres database.  If you are installing iRODS to talk
+to a remote iCAT, set $IRODS_ICAT_HOST to the name of the iCAT host.
+
 Run:
 	scripts/configure
 	make
 	scripts/finishSetup
+
+You may want to add command-line options to 'scripts/configure' to
+enable or disable special iRODS features.  Run 'scripts/configure --help'
+to get a list of options.
 
 The 'finishSetup' script will install iCAT tables if needed.
 
