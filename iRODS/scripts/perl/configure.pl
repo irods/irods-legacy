@@ -274,7 +274,7 @@ $mkconfiguration{ "RODS_CAT" } = "";	# Enable iCAT
 $mkconfiguration{ "PSQICAT" }  = "";	# Enable Postgres iCAT
 $mkconfiguration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
 $mkconfiguration{ "NEW_ODBC" } = "1";	# New ODBC drivers
-$mkconfiguration{ "PARA_OPR" } = "";	# Parallel
+$mkconfiguration{ "PARA_OPR" } = "1";	# Parallel
 
 $configuration{ "IRODS_HOME" } = $IRODS_HOME;
 $configuration{ "IRODS_PORT" } = "1247";
