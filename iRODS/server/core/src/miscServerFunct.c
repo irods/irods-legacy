@@ -179,6 +179,7 @@ svrPortalPutGet (rsComm_t *rsComm)
     portList_t *thisPortList;
     rodsLong_t size0, size1, offset0;
     int lsock, portalFd;
+    int i;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
 #ifdef PARA_OPR
@@ -186,6 +187,7 @@ svrPortalPutGet (rsComm_t *rsComm)
 #endif
     int oprType;
     int flags = 0;
+    int retVal = 0;
     
     myPortalOpr = rsComm->portalOpr;
 
@@ -771,10 +773,11 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     portalOprOut_t *portalOprOut;
     dataOprInp_t *dataOprInp;
     portList_t *myPortList;
-    int sock;
+    int i, sock, myFd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
     pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
+    int retVal = 0;
     rodsLong_t dataSize;
     int oprType;
 
@@ -930,9 +933,11 @@ int
 sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 {
     dataOprInp_t *dataOprInp;
+    int i, out_fd, in_fd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
     pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
+    int retVal = 0;
     rodsLong_t dataSize;
     rodsLong_t size0, size1, offset0;
 
