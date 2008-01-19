@@ -184,7 +184,9 @@ CONFIG +=	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
 
 
 # Compilation and link flags
-CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
+CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
+CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
+
 LDFLAGS +=	$(LDADD) $(LIBRARY) $(MODULE_LDFLAGS)
 
 
@@ -194,7 +196,7 @@ LDFLAGS +=	$(LDADD) $(LIBRARY) $(MODULE_LDFLAGS)
 #
 # Princpal Targets
 #
-.PHONY:	all clean config server servers bin test tests
+.PHONY:	all clean config server servers bin test tests print_cflags print_ldflags
 vpath %c	$(svrCoreSrcDir) $(svrDriversSrcDir) $(svrApiSrcDir) \
 		$(svrIcatSrcDir) $(svrReSrcDir) 
 
@@ -217,7 +219,7 @@ servers: server
 bin:	server
 	@true
 
-server:	config $(OBJS) $(SERVER_BINS)
+server:	config print_cflags print_ldflags $(OBJS) $(SERVER_BINS)
 	@true
 
 
@@ -245,6 +247,20 @@ $(svrConfigDir)/irodsHost: $(svrConfigDir)/irodsHost.in
 
 
 
+# Show compile flags
+print_cflags:
+	@echo "Compile flags:"
+	@echo "    $(CFLAGS_OPTIONS)"
+
+# Show link flags
+print_ldflags:
+	@echo "Link flags:"
+	@echo "    $(LDFLAGS)"
+
+
+
+
+
 # Tests
 tests:	test
 	@true
@@ -252,7 +268,7 @@ tests:	test
 retest:	test
 	@true
 
-test:	$(TEST_OBJS) $(TEST_BINS)
+test:	print_cflags print_ldflags $(TEST_OBJS) $(TEST_BINS)
 	@true
 
 

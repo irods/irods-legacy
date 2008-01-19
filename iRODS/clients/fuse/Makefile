@@ -57,21 +57,21 @@ INCLUDES +=	-I$(incDir)
 #
 # Compile and link flags
 #
-# Is this needed?
-#ifndef ADDR_64BITS
-#CC =		gcc
-#endif
 
+CFLAGS_OPTIONS := -g $(CFLAGS) $(MY_CFLAG)
 ifdef IRODS_FS
-CFLAGS +=	-D_REENTRANT -I$(fuseHomeDir)/include
+CFLAGS_OPTIONS += -D_REENTRANT
+INCLUDES +=	-I$(fuseHomeDir)/include
 endif
 
-CFLAGS +=	-g $(MY_CFLAG) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
-LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS)
-LDFLAGS +=	-L$(fuseHomeDir)/lib -lfuse -ldl -lrt
+CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
+
+LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -ldl -lrt
 
 # for checking memleak
 # LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib
+
+LDFLAGS +=	$(LIBRARY) 
 
 
 
@@ -80,14 +80,14 @@ LDFLAGS +=	-L$(fuseHomeDir)/lib -lfuse -ldl -lrt
 #
 # Principal Targets
 #
-.PHONY: all fuse clients clean
+.PHONY: all fuse clients clean print_cflags print_ldflags
 all:	fuse
 	@true
 
 clients: fuse
 	@true
 
-fuse:	$(LIB_OBJS) $(OBJS) $(BINS)
+fuse:	print_cflags print_ldflags $(LIB_OBJS) $(OBJS) $(BINS)
 	@true
 
 $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
@@ -96,7 +96,24 @@ $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
 
 $(binDir)/%:	$(objDir)/%.o
 	@echo "Link fuse `basename $@`..."
-	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS) $(LIBRARY)
+	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS)
+
+
+
+
+
+# Show compile flags
+print_cflags:
+	@echo "Compile flags:"
+	@echo "    $(CFLAGS_OPTIONS)"
+
+# Show link flags
+print_ldflags:
+	@echo "Link flags:"
+	@echo "    $(LDFLAGS)"
+
+
+
 
 
 # Clean

@@ -9,8 +9,8 @@ include $(buildDir)/config/common.mk
 
 vpath %.c src
 
-CFLAGS=$(MY_CFLAG)
-CFLAGS+= -g -I$(buildDir)/server/core/include \
+CFLAGS_OPTIONS := -g $(CFLAGS) $(MY_CFLAG)
+CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 -I$(buildDir)/server/icat/include \
 -I$(buildDir)/server/drivers/include \
 -I$(buildDir)/server/re/include \
@@ -18,7 +18,7 @@ CFLAGS+= -g -I$(buildDir)/server/core/include \
 -I$(buildDir)/lib/api/include -I$(buildDir)/lib/md5/include
 
 # LDADD+= -L$(clObjDir) -lRodsAPIs -L$(buildDir)/../SRB3_3plus/obj
-LDADD+= -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
+LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 
 TESTOBJS = lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o
@@ -32,7 +32,27 @@ AG_LDADD+= -L/data/mwan/php/libxml2-2.6.30/.libs -lrt -lresolv -lm -ldl -lnsl -l
 endif
 
 
-all:: $(TARGETS)
+.PHONY:	print_cflags print_ldflags
+all:: print_cflags print_ldflags $(TARGETS)
+
+
+
+# Show compile flags
+print_cflags:
+	@echo "Compile flags:"
+	@echo "    $(CFLAGS_OPTIONS)"
+
+# Show link flags
+print_ldflags:
+	@echo "Link flags:"
+	@echo "    $(LDFLAGS)"
+	@echo "PHP-only link flags:"
+	@echo "    $(LDFLAGS)" $(AG_LDDD)
+
+
+
+
+
 
 clean:
 	rm -f $(TARGETS) $(TESTOBJS)
@@ -41,32 +61,32 @@ $(TESTOBJS): %.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 lowlevtest: lowlevtest.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 packtest: packtest.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 l1test: l1test.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 testrule: testrule.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 l1rm: l1rm.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 xmltest: xmltest.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 l3structFile: l3structFile.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 xmsgtest: xmsgtest.o
-	$(LDR) -o $@ $^ $(LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS)
 
 phptest: phptest.o
-	$(LDR) -o $@ $^ $(LDADD) $(AG_LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
 phpexttest: phpexttest.o
-	$(LDR) -o $@ $^ $(LDADD) $(AG_LDADD)
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 

@@ -32,7 +32,6 @@ commonSrcDir= $(MSSrcDir)/common
 ip2locationSrcDir= $(MSSrcDir)/ip2location
 stockQuoteSrcDir= $(MSSrcDir)/stockQuote
 currencyConvertorSrcDir= $(MSSrcDir)/currencyConvertor
-#
 
 
 # Object files
@@ -61,7 +60,8 @@ OTHER_OBJS =  $(MSLibDir)/libgsoap.a
 # Compile and link flags
 #
 INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES)
-CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(MODULE_CFLAGS)
+CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
+CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(MODULE_CFLAGS)
 
 
 
@@ -69,6 +69,7 @@ CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(MODULE_CFLAGS)
 
 .PHONY: all rules microservices server client clean
 .PHONY: server_ldflags client_ldflags server_cflags client_cflags
+.PHONY: print_cflags
 
 # Build everything
 all:	microservices
@@ -91,7 +92,7 @@ server_cflags:
 	@echo $(INCLUDE_FLAGS)
 
 # Build microservices
-microservices:	$(OBJECTS)
+microservices:	print_cflags $(OBJECTS)
 	@true
 
 # Build client additions
@@ -110,6 +111,15 @@ rules:
 clean:
 	@echo "Clean webservices module..."
 	@rm -f $(OBJECTS)
+
+
+
+
+
+# Show compile flags
+print_cflags:
+	@echo "Compile flags:"
+	@echo "    $(CFLAGS_OPTIONS)"
 
 
 

@@ -89,12 +89,13 @@ CONFIG =	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
 
 
 # Compilation flags
-CFLAGS +=	$(MY_CFLAG) $(INCLUDES) $(SVR_INCLUDES)
-LDFLAGS +=	$(LDADD)
+CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
+CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(SVR_INCLUDES)
 
-MD5_CFLAGS=$(CFLAGS)
-
+MD5_CFLAGS_OPTIONS := $(CFLAGS_OPTIONS)
+MD5_CFLAGS =	$(CFLAGS)
 ifeq ($(CC_IS_GCC), 1)
+MD5_CFLAGS_OPTIONS += -O3
 MD5_CFLAGS += -O3
 endif
 
@@ -103,7 +104,7 @@ endif
 #
 # Princpal Targets
 #
-.PHONY:	all lib libs clean
+.PHONY:	all lib libs clean print_cflags
 vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir)
 
 
@@ -118,12 +119,11 @@ all:	libs
 
 
 
-
 # Build the library
 lib:	libs
 	@true
 
-libs:	$(CONFIG) $(LOG_SRC) $(LIBRARY)
+libs:	print_cflags $(CONFIG) $(LOG_SRC) $(LIBRARY)
 	@true
 
 $(LIBRARY): $(OBJS)
@@ -141,6 +141,17 @@ $(svrConfigDir)/irodsHost:
 
 $(svrConfigDir)/server.config:
 	@$(MAKE) --no-print-directory -C .. config
+
+
+
+
+
+# Show compile flags
+print_cflags:
+	@echo "Compile flags:"
+	@echo "    $(CFLAGS_OPTIONS)"
+	@echo "MD5-only compile flags:"
+	@echo "    $(MD5_CFLAGS_OPTIONS)"
 
 
 

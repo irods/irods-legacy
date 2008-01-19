@@ -117,8 +117,10 @@ BINS =		\
 #CC =		gcc
 #endif
 
-CFLAGS +=	-g $(MY_CFLAG) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
-LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS)
+CFLAGS_OPTIONS := -g $(CFLAGS) $(MY_CFLAG)
+CFLAGS =	$(CFLAGS_OPTIONS) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
+
+LDFLAGS +=	$(LDADD) $(LIBRARY) $(MODULE_LDFLAGS)
 
 # for checking memleak
 # LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib
@@ -130,14 +132,14 @@ LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS)
 #
 # Principal Targets
 #
-.PHONY: all icommands clients clean
+.PHONY: all icommands clients clean print_cflags print_ldflags
 all:	icommands
 	@true
 
 clients: icommands
 	@true
 
-icommands:	$(OBJS) $(BINS)
+icommands:	print_cflags print_ldflags $(OBJS) $(BINS)
 	@true
 
 $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
@@ -146,7 +148,21 @@ $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
 
 $(binDir)/%:	$(objDir)/%.o
 	@echo "Link icommand `basename $@`..."
-	@$(LDR) -o $@ $< $(LDFLAGS) $(LIBRARY)
+	@$(LDR) -o $@ $< $(LDFLAGS)
+
+
+
+
+
+# Show compile flags
+print_cflags:
+	@echo "Compile flags:"
+	@echo "    $(CFLAGS_OPTIONS)"
+
+# Show link flags
+print_ldflags:
+	@echo "Link flags:"
+	@echo "    $(LDFLAGS)"
 
 
 
