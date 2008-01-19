@@ -44,7 +44,7 @@
 #			the 'modules' subdirectory.
 #
 OS_platform=
-#FILE_64BITS=1
+FILE_64BITS=1
 #ADDR_64BITS=
 MODULES=
 #PARA_OPR=1  
