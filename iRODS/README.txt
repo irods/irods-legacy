@@ -1,5 +1,8 @@
 This is iRODS version 1.0.
 
+For information on how to build see:
+INSTALL.txt.
+
 Web site:
 For information, please see http://irods.sdsc.edu
 
