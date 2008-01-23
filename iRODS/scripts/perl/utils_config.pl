@@ -550,7 +550,7 @@ sub setEnvironmentVariables
 		}
 		else
 		{
-			$libPath = "$libPath:$databaseLibDir";
+			$libPath = "$databaseLibDir:$libPath";
 		}
 		
 	}
@@ -561,7 +561,7 @@ sub setEnvironmentVariables
 	}
 	else
 	{
-		$libPath = "$libPath:$locallib";
+		$libPath = "$locallib:$libPath";
 	}
 	$ENV{'LD_LIBRARY_PATH'} = $libPath;
 
