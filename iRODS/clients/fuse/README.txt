@@ -18,6 +18,13 @@ The iRODS FUSE implementation allows normal users to access data stored
 in iRODS using standard UNIX commands (ls, cp, etc) and system calls 
 (open, read, write, etc).
 
+The user's iRods passwd or credential will be used for authentication at 
+the time of the mount. e.g., doing a iinit before the mount and he/she will 
+be able to access all files/collections he/she is allowed to access under 
+iRods. The user will need to set the appropriate UNIX permission (mode) of 
+the UNIX mount directory to control access to the mounted data.
+
+
 Building irods FUSE:
 --------------------
 
