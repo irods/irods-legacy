@@ -249,6 +249,24 @@ irule -v -F ../test/ruleTest28.ir
 more        ../test/ruleTest29.ir
 irule -v -F ../test/ruleTest29.ir
 
+
+
+/** web services  - for NVO -get RA,DEC, Type for an object using NED **/
+more        ../test/ruleTest30.ir
+irule -v -F ../test/ruleTest30.ir
+
+
+/** web services  - for NVO -given RA,DEC get image cutout for an object SDSS cutout **/
+more        ../test/ruleTest31.ir
+irule -v -F ../test/ruleTest31.ir
+
+/** web services  - for NVO -given image cutout for an object given name 
+     combination of two web services - 30 and 31  **/
+more        ../test/ruleTest31.ir
+irule -v -F ../test/ruleTest31.ir
+
+
+
 /** stress test - 10x1000 file **/
 cd ../test
 stresstest1.sh 1 10
