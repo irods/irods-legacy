@@ -5,6 +5,7 @@
 #include "rodsClient.h"
 #include "parseCommandLine.h"
 #include "rodsPath.h"
+#include "getUtil.h"
 void usage ();
 
 int
@@ -22,6 +23,9 @@ main(int argc, char **argv) {
     execMyRuleInp_t execMyRuleInp;
     msParamArray_t *outParamArray = NULL;
     msParamArray_t msParamArray;
+
+    int connFlag = 0;
+    char saveFile[100];
 
     optStr = "ZhlvF:";
    
@@ -49,6 +53,52 @@ main(int argc, char **argv) {
 	int len;
 	int gotRule = 0;
 	char buf[META_STR_LEN];
+	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
+	if (!strncmp(myRodsArgs.fileString,"i:",2)) {
+	  status = getRodsEnv (&myEnv);
+	  
+	  if (status < 0) {
+	    rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
+	    exit (1);
+	  }
+	  
+	  conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+			    myEnv.rodsZone, 0, &errMsg);
+	  
+	  if (conn == NULL) {
+	    rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
+			  errMsg.msg);
+	    exit (2);
+	  }
+	  
+	  status = clientLogin(conn);
+	  if (status != 0) {
+	    rcDisconnect(conn);
+	    exit (7);
+	  }
+	  if (status == 0) {
+	    char *myargv[3];
+	    int myargc, myoptind;
+	    rodsPathInp_t rodsPathInp;
+	    connFlag = 1;
+	    
+	    myargv[0] = strdup(myRodsArgs.fileString+2);
+	    myargv[1] = saveFile;
+	    myargc = 2;
+	    myoptind = 0;
+	    snprintf(saveFile,99,"/tmp/tmpiruleFile.%i.%i.ir",(unsigned int) time(0),getpid());
+	    status = parseCmdLinePath (myargc,myargv,myoptind,&myEnv,
+				       UNKNOWN_OBJ_T, UNKNOWN_FILE_T, 0, &rodsPathInp);
+	    status = getUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
+	    if (status < 0) {
+	      rcDisconnect(conn);
+	      exit (3);
+	    }
+	    myRodsArgs.fileString = saveFile;
+	    connFlag = 1;
+	  }
+	}
+	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
 
 	fptr = fopen (myRodsArgs.fileString, "r");
 
@@ -89,6 +139,12 @@ main(int argc, char **argv) {
 	      myRodsArgs.fileString);
 	    exit (2);
 	} 
+	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
+	if (connFlag == 1) {
+	  fclose(fptr);
+	  unlink(saveFile);
+	}
+	/*** RAJA ADDED TO USE INPUT FILE FROM AN iRODS OBJECT ***/
     } else {	/* command line input */
 	int nArg = argc - optind;
         if (nArg < 3) {
@@ -104,28 +160,30 @@ main(int argc, char **argv) {
 	}
     }
 
-    status = getRodsEnv (&myEnv);
 
-    if (status < 0) {
+    if (connFlag == 0) {
+      status = getRodsEnv (&myEnv);
+      
+      if (status < 0) {
         rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
         exit (1);
-    }
+      }
 
-    conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 0, &errMsg);
-
-    if (conn == NULL) {
+      conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+			myEnv.rodsZone, 0, &errMsg);
+      
+      if (conn == NULL) {
         rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
-	       errMsg.msg);
+		      errMsg.msg);
         exit (2);
-    }
+      }
 
-    status = clientLogin(conn);
-    if (status != 0) {
-       rcDisconnect(conn);
-       exit (7);
+      status = clientLogin(conn);
+      if (status != 0) {
+	rcDisconnect(conn);
+	exit (7);
+      }
     }
-   
     if (myRodsArgs.verbose == True) {
         printf ("rcExecMyRule: %s\n", execMyRuleInp.myRule);
 	printf ("outParamDesc: %s\n", execMyRuleInp.outParamDesc);
@@ -169,7 +227,8 @@ main(int argc, char **argv) {
       }
     }
     rcDisconnect(conn);
-    exit(0);
+    exit(0);	
+
 }
 
 int
