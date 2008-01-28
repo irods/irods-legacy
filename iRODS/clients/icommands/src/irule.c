@@ -408,6 +408,7 @@ usage ()
 "Options are:",
 " --test enable test mode so that the microservices are not executed, instead a loopback is performed",
 " -F  inputFile - read the file for the input",
+"     if a prefix i: is attached, the the file is fetched from iRODS collections",  
 " -l  list file if -F option is used",
 " -v  verbose",
 " -h  this help",
