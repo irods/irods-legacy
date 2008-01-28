@@ -32,6 +32,8 @@ commonSrcDir= $(MSSrcDir)/common
 ip2locationSrcDir= $(MSSrcDir)/ip2location
 stockQuoteSrcDir= $(MSSrcDir)/stockQuote
 currencyConvertorSrcDir= $(MSSrcDir)/currencyConvertor
+nvoSrcDir= $(MSSrcDir)/nvo
+#
 
 
 # Object files
@@ -40,6 +42,7 @@ COMMON_WS_OBJS = $(MSObjDir)/envC.o $(MSObjDir)/stdsoap2.o
 IP2LOCATION_WS_OBJS = $(MSObjDir)/ip2locationMS.o $(MSObjDir)/ip2locationClientLib.o 
 STOCKQUOTE_WS_OBJS = $(MSObjDir)/stockQuoteMS.o $(MSObjDir)/stockQuoteClientLib.o
 CURRENCYCONVERTOR_WS_OBJS = $(MSObjDir)/currencyConvertorMS.o $(MSObjDir)/currencyConvertorClientLib.o
+NVO_WS_OBJS = $(MSObjDir)/nedMS.o $(MSObjDir)/nedClientLib.o $(MSObjDir)/sdssImgCutoutMS.o $(MSObjDir)/sdssImgCutoutClientLib.o
 
 #
 # Source files
@@ -48,6 +51,7 @@ OBJECTS  =    $(COMMON_WS_OBJS)
 OBJECTS +=    $(STOCKQUOTE_WS_OBJS) 
 OBJECTS +=    $(IP2LOCATION_WS_OBJS) 
 OBJECTS +=    $(CURRENCYCONVERTOR_WS_OBJS) 
+OBJECTS +=    $(NVO_WS_OBJS) 
 
 INCLUDE_FLAGS =	-I$(MSIncDir)
 LIBS =          -L$(MSLibDir) -lgsoap
@@ -144,5 +148,9 @@ $(STOCKQUOTE_WS_OBJS): $(MSObjDir)/%.o: $(stockQuoteSrcDir)/%.c $(DEPEND) $(OTHE
 
 $(CURRENCYCONVERTOR_WS_OBJS): $(MSObjDir)/%.o: $(currencyConvertorSrcDir)/%.c $(DEPEND) $(OTHER_OBJS)
 	@echo "Compile webservices-currencyConvertor module `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+
+$(NVO_WS_OBJS): $(MSObjDir)/%.o: $(nvoSrcDir)/%.c $(DEPEND) $(OTHER_OBJS)
+	@echo "Compile webservices-nvo module `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
