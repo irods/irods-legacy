@@ -456,12 +456,15 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
    rows_affected=*pUb4;
    free(pUb4);
 
+   stat = OCIHandleFree( (dvoid *)p_statement, OCI_HTYPE_STMT); /* free the
+								   statement */
+
    if ( stat3 != OCI_SUCCESS ) {
       rodsLog(LOG_ERROR, "cllExecSqlNoResult: OCIAttrGet failed: %d",stat);
       return(stat3);
    }
-   rodsLog(LOG_NOTICE, "cllExecSqlNoResult: OCIAttrGet, rows_affected: %d",
-	   rows_affected);
+   /* rodsLog(LOG_NOTICE, "cllExecSqlNoResult: OCIAttrGet, rows_affected: %d",
+              rows_affected); */
    if (rows_affected == 0) {
       return(CAT_SUCCESS_BUT_WITH_NO_INFO);
    }
