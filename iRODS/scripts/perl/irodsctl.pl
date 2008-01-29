@@ -263,6 +263,7 @@ if ( $thisUserID == 0 )
 }
 
 $numberCommands = 0;
+$doTestExitValue=0;
 foreach $arg (@ARGV)
 {
 	# Options
@@ -445,6 +446,10 @@ if ( $numberCommands == 0 )
 }
 
 # Done!
+if ( $doTestExitValue != 0)
+{
+	exit( $doTestExitValue );
+}
 exit( 0 );
 
 
@@ -732,6 +737,7 @@ sub doTestIcommands
 		printError( "$failsFound tests failed.  Check log files for details:\n" );
 		printError( "    Log:     $logFile\n" );
 		printError( "    Output:  $outputFile\n" );
+		$doTestExitValue++;
 	}
 	else
 	{
@@ -817,6 +823,7 @@ sub doTestIcat
 
 	if ($icatFailure) {
 	    printError( "One or more ICAT tests failed.\n" );
+	    $doTestExitValue++;
 	}
 	else {
 	    printStatus("All ICAT tests completed successfully.\n");
