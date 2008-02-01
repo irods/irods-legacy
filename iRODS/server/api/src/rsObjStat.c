@@ -1,6 +1,6 @@
 /*** Copyright (c), The Unregents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* unregDataObj.c
+/* rsObjStat.c
  */
 
 #include "objStat.h"
@@ -14,6 +14,21 @@
 
 int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rodsObjStat_t **rodsObjStatOut)
+{
+    int status;
+
+    status = irsObjStat (rsComm, dataObjInp, 0, rodsObjStatOut);
+
+    return (status);
+}
+
+/* irsObjStat - internal version of irsObjStat. Mostly to deal with
+ * specColl
+ */
+
+int
+irsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int intenFlag,
 rodsObjStat_t **rodsObjStatOut)
 {
     int status;
@@ -42,9 +57,28 @@ rodsObjStat_t **rodsObjStatOut)
 		if (status >= 0 && (*rodsObjStatOut)->specColl != NULL) {
 		    /* queue it in cache */
 		    queueSpecCollCacheWithObjStat (*rodsObjStatOut);
+		    if (intenFlag > 0) {
+			specCollCache_t *specCollCache; 
+			/* use the cache copy instead */
+			specCollCache = matchSpecCollCache (
+			  (*rodsObjStatOut)->specColl->collection);
+			free ((*rodsObjStatOut)->specColl);
+			(*rodsObjStatOut)->specColl = 
+			  &specCollCache->specColl;
+		    }
 		}
 	    }
+	    return (status);
 	}
+    }
+
+    if (intenFlag == 0 && status >= 0 && 
+      (*rodsObjStatOut)->specColl != NULL) {
+        /* replace specColl since the one given in rodsObjStatOut
+         * is a cached one */
+        specColl_t *specColl = malloc (sizeof (specColl_t));
+        *specColl = *(*rodsObjStatOut)->specColl;
+        (*rodsObjStatOut)->specColl = specColl;
     }
 
     return (status);
@@ -70,8 +104,11 @@ rodsObjStat_t **rodsObjStatOut)
         if (status >= 0) {
 	    if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
               &specCollCache) >= 0) {
+#if 0   /* XXXXXX specColl is cached */
 		(*rodsObjStatOut)->specColl = malloc (sizeof (specColl_t));
 		*(*rodsObjStatOut)->specColl = specCollCache->specColl;
+#endif
+                (*rodsObjStatOut)->specColl = &specCollCache->specColl;
 	    }
 	    return (status);
 	}
@@ -188,6 +225,7 @@ rodsObjStat_t **rodsObjStatOut)
             rstrcpy ((*rodsObjStatOut)->modifyTime, modifyTime->value,
               NAME_LEN);
 
+#if 0	/* XXXXX not needed ? */
 	    if (strlen (collType->value) > 0) {
 		specColl_t *specColl;
     		specColl = (*rodsObjStatOut)->specColl =
@@ -199,6 +237,7 @@ rodsObjStat_t **rodsObjStatOut)
 
 		if (status < 0) return (status);
 	    }
+#endif
 	}
 #if 0
     } else {
@@ -428,10 +467,13 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
  
     *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
     memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));
+#if 0	/* XXXXX use cached specColl */
     specColl = (*rodsObjStatOut)->specColl = 
      (specColl_t *) malloc (sizeof (specColl_t));
     *specColl = specCollCache->specColl;
-
+#else
+    specColl = (*rodsObjStatOut)->specColl = &specCollCache->specColl;
+#endif
     rstrcpy ((*rodsObjStatOut)->dataId, specCollCache->collId, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerName, specCollCache->ownerName, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerZone, specCollCache->ownerZone, NAME_LEN);
@@ -518,8 +560,12 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         myDataObjInfo = *dataObjInfo = 
 	  (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
         memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
+#if 0	/* XXXXX use cached specColl */
 	myDataObjInfo->specColl = (specColl_t *) malloc (sizeof (specColl_t));
         *myDataObjInfo->specColl = *specColl;
+#else
+        myDataObjInfo->specColl = specColl;
+#endif
 
         status = resolveResc (specColl->resource, &myDataObjInfo->rescInfo);
         if (status < 0) {
@@ -561,11 +607,48 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         /* screen out any stale copies */
         sortObjInfoForOpen (dataObjInfo, &myDataObjInp.condInput, 0);
 
+	if (strlen (specColl->resource) > 0) {
+	    if (requeDataObjInfoByResc (dataObjInfo, specColl->resource, 
+	      0, 1) >= 0) {
+		if (strcmp (specColl->resource, 
+		  (*dataObjInfo)->rescName) != 0) {
+                    rodsLog (LOG_ERROR,
+                      "resolveSpecColl: %s in %s does not match cache resc %s",
+                      myDataObjInp.objPath, (*dataObjInfo)->rescName,
+		      specColl->resource);
+                    freeAllDataObjInfo (*dataObjInfo);
+                    *dataObjInfo = NULL;
+                    return (SYS_CACHE_STRUCT_FILE_RESC_ERR);
+                }
+	    } else {
+                rodsLog (LOG_ERROR,
+                  "specCollSubStat: requeDataObjInfoByResc %s, resc %s error",
+                  myDataObjInp.objPath, specColl->resource);
+	        freeAllDataObjInfo (*dataObjInfo);
+                *dataObjInfo = NULL;
+                return (SYS_CACHE_STRUCT_FILE_RESC_ERR);
+	    }
+        }
+
+        /* free all the other dataObjInfo */
+        if ((*dataObjInfo)->next != NULL) {
+            freeAllDataObjInfo ((*dataObjInfo)->next);
+            (*dataObjInfo)->next = NULL;
+        }
+
         /* fill in DataObjInfo */
 	tmpDataObjInfo = *dataObjInfo;
+        tmpDataObjInfo->specColl = specColl;
+        rstrcpy (specColl->resource,
+          tmpDataObjInfo->rescName, NAME_LEN);
+        rstrcpy (specColl->phyPath,
+          tmpDataObjInfo->filePath, MAX_NAME_LEN);
+        rstrcpy (tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN);
+
+#if 0	/* do just one */
         while (tmpDataObjInfo != NULL) {
             rstrcpy (tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN);
-            tmpDataObjInfo->specColl = 
+            tmpDataObjInfo->specColl = specColl;
 	      (specColl_t *) malloc (sizeof (specColl_t));
             *tmpDataObjInfo->specColl = *specColl;
 	    rstrcpy (tmpDataObjInfo->specColl->resource, 
@@ -574,6 +657,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
 	      tmpDataObjInfo->filePath, MAX_NAME_LEN);
 	    tmpDataObjInfo = tmpDataObjInfo->next;
         }
+#endif
         if (strcmp ((*dataObjInfo)->subPath, specColl->collection) == 0) {
 	    /* no need to go down */
 	    return (COLL_OBJ_T);
@@ -605,65 +689,6 @@ char *subPath, dataObjInfo_t **dataObjInfo)
 
     return (objType);
 }
-
-#if 0
-int
-specCollSubStat (rsComm_t *rsComm, specColl_t *specColl, 
-char *subPath, rodsObjStat_t *rodsObjStatOut, char *outPhySubPath, 
-rescInfo_t **outRescInfo)
-{
-    char phySubPath[MAX_NAME_LEN];
-    char *tmpPtr;
-    int status;
-    dataObjInfo_t dataObjInfo;
-    rodsStat_t *rodsStat = NULL;
-
-    memset (&dataObjInfo, 0, sizeof (dataObjInfo));
-    if (specColl->class == MOUNTED_COLL) {
-	/* a mount point */
-        status = resolveResc (specColl->resource, &dataObjInfo.rescInfo);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "specCollSubStat: _getRescInfo error for %s, status = %d",
-              specColl->resource, status);
-            return (status);
-        }
-
-	if (outRescInfo != NULL) *outRescInfo = dataObjInfo.rescInfo;
-	status = getMountedSubPhyPath (specColl->collection,
-	  specColl->phyPath, subPath, dataObjInfo.filePath);
-	if (status < 0) {
-	    return (status);
-	} else if (outPhySubPath != NULL) {
-	    rstrcpy (outPhySubPath, dataObjInfo.filePath, MAX_NAME_LEN);
-        }
-	rstrcpy (dataObjInfo.objPath, subPath, MAX_NAME_LEN);
-	status = l3Stat (rsComm, &dataObjInfo, &rodsStat);
-    } else {
-	/* XXXXXX bundle ? */
-	status = -1;
-    }
-
-    if (status < 0) return status;
-
-    if (rodsStat->st_ctim != 0) {
-        snprintf (rodsObjStatOut->createTime, NAME_LEN, "%d",
-          rodsStat->st_ctim);
-        snprintf (rodsObjStatOut->modifyTime, NAME_LEN, "%d",
-          rodsStat->st_mtim);
-    }
-
-    if (rodsStat->st_mode & S_IFDIR) {
-        rodsObjStatOut->objType = COLL_OBJ_T;
-    } else {
-        rodsObjStatOut->objType = DATA_OBJ_T;
-        rodsObjStatOut->objSize = rodsStat->st_size;
-    }
-    free (rodsStat);
-
-    return (status);
-}
-#endif
 
 int
 queueSpecCollCache (genQueryOut_t *genQueryOut)

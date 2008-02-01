@@ -1689,7 +1689,7 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    rei->status = rsObjStat (rsComm, myDataObjInp, &rodsObjStatOut);
+    rei->status = irsObjStat (rsComm, myDataObjInp, 1, &rodsObjStatOut);
 
     if (rei->status >= 0) {
         fillMsParam (outParam, NULL, RodsObjStat_MS_T, rodsObjStatOut, NULL);

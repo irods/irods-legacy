@@ -97,4 +97,6 @@
 #include "getXmsgTicket.h"
 #include "sendXmsg.h"
 #include "rcvXmsg.h"
+#include "subStructFileGet.h"
+#include "subStructFilePut.h"
 #endif	/* API_HEADER_ALL_H */

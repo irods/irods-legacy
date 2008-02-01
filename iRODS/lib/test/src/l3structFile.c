@@ -51,7 +51,7 @@ main(int argc, char **argv)
     subFile.specColl = &specColl;
     rstrcpy (specColl.collection, "/tempZone/home/rods/dir1", MAX_NAME_LEN);
     specColl.class = STRUCT_FILE_COLL;
-    specColl.type = HAAW_STRUCT_FILE;
+    specColl.type = HAAW_STRUCT_FILE_T;
     rstrcpy (specColl.objPath, "/tempZone/home/rods/dir1/myBundle", 
       MAX_NAME_LEN);
     rstrcpy (specColl.resource, "demoResc", NAME_LEN);
@@ -72,7 +72,7 @@ main(int argc, char **argv)
     memset (&subStructFileFdOprInp, 0, sizeof (subStructFileFdOprInp));
 
     rstrcpy (subStructFileFdOprInp.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
-    subStructFileFdOprInp.type = HAAW_STRUCT_FILE;
+    subStructFileFdOprInp.type = HAAW_STRUCT_FILE_T;
     subStructFileFdOprInp.fd = 10;
     subStructFileFdOprInp.len = 1000;
 
@@ -117,7 +117,7 @@ main(int argc, char **argv)
     memset (&subStructFileLseekInp, 0, sizeof (subStructFileLseekInp));
 
     rstrcpy (subStructFileLseekInp.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
-    subStructFileLseekInp.type = HAAW_STRUCT_FILE;
+    subStructFileLseekInp.type = HAAW_STRUCT_FILE_T;
     subStructFileLseekInp.fd = 10;
     subStructFileLseekInp.offset = 10000;
     subStructFileLseekInp.whence = 1;

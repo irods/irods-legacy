@@ -64,15 +64,13 @@ rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost)
 }
 
 int
-_rsSubStructFileReaddir (rsComm_t *rsComm, subStructFileFdOprInp_t *subStructFileReaddirInp,
-rodsDirent_t **rodsDirent)
+_rsSubStructFileReaddir (rsComm_t *rsComm, 
+subStructFileFdOprInp_t *subStructFileReaddirInp, rodsDirent_t **rodsDirent)
 {
     int status;
 
-    *rodsDirent = (rodsDirent_t *) malloc (sizeof (rodsDirent_t));
-    memset (*rodsDirent, 0, sizeof (rodsDirent_t));
     status = subStructFileReaddir (subStructFileReaddirInp->type, rsComm, 
-      subStructFileReaddirInp->fd, *rodsDirent);
+      subStructFileReaddirInp->fd, rodsDirent);
 
     return (status);
 }

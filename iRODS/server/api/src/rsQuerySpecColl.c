@@ -197,10 +197,31 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 
 	myDataObjInfo = *dataObjInfo;
 	
-        snprintf (myDataObjInfo.filePath, MAX_NAME_LEN, "%s/%s",
-          dataObjInfo->filePath, myRodsDirent.d_name);
+#if 0
+        if (myDataObjInfo.specColl->class == STRUCT_FILE_COLL) {
+	    int len = strlen (specColl->objPath);
+            if (strncmp (specColl->objPath, subFilePath, len) == 0 &&
+	      (specColl->objPath[len] == '\0' || 
+	      specColl->objPath[len] == '/')) {
+		/* start with objPath, need to convert to collection */
+		snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s%s/%s",
+                  dataObjInfo->objPath + len, myRodsDirent.d_name);
+	    } else {
+                snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
+                  dataObjInfo->objPath, myRodsDirent.d_name);
+	    }
+	} else {	/* mounted collection */
+            snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
+              dataObjInfo->objPath, myRodsDirent.d_name);
+	}
         snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
           dataObjInfo->objPath, myRodsDirent.d_name);
+#endif
+        snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
+          dataObjInfo->subPath, myRodsDirent.d_name);
+        snprintf (myDataObjInfo.filePath, MAX_NAME_LEN, "%s/%s",
+          dataObjInfo->filePath, myRodsDirent.d_name);
+
 	status = l3Stat (rsComm, &myDataObjInfo, &fileStatOut);
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -216,7 +237,10 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 	    }
 	    rowCnt = genQueryOut->rowCnt;
 	    rstrcpy (&genQueryOut->sqlResult[0].value[MAX_NAME_LEN * rowCnt], 
+#if 0
 	      dataObjInfo->objPath, MAX_NAME_LEN);
+#endif
+	      dataObjInfo->subPath, MAX_NAME_LEN);
 	    rstrcpy (&genQueryOut->sqlResult[1].value[MAX_NAME_LEN * rowCnt], 
 	      myRodsDirent.d_name, MAX_NAME_LEN);
             snprintf (&genQueryOut->sqlResult[2].value[NAME_LEN * rowCnt],
@@ -233,10 +257,15 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 	} else {
             if (selObjType != DATA_OBJ_T) {
 	        rowCnt = genQueryOut->rowCnt;
+#if 0
 	        snprintf (
 	          &genQueryOut->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
 	          MAX_NAME_LEN, "%s/%s", dataObjInfo->objPath, 
 	          myRodsDirent.d_name);
+#endif
+		rstrcpy (
+		&genQueryOut->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
+		myDataObjInfo.subPath, MAX_NAME_LEN);
 		snprintf (&genQueryOut->sqlResult[2].value[NAME_LEN * rowCnt],
 	          NAME_LEN, "%d", fileStatOut->st_ctim);
 	        snprintf (&genQueryOut->sqlResult[3].value[NAME_LEN * rowCnt],
@@ -251,9 +280,13 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 		/* need to drill down */
 		int newSpecCollInx; 
 		newDataObjInp = *dataObjInp;
+#if 0
                 snprintf (newDataObjInp.objPath,
                   MAX_NAME_LEN, "%s/%s", dataObjInfo->objPath,
                   myRodsDirent.d_name);
+#endif
+		rstrcpy (newDataObjInp.objPath, dataObjInfo->subPath,
+		  MAX_NAME_LEN);
 		newSpecCollInx = 
 		  openSpecColl (rsComm, &newDataObjInp, specCollInx);
         	if (newSpecCollInx < 0) {

@@ -45,7 +45,8 @@ typedef struct {
    char *dataTypeString; 
    int longOption;
    int veryLongOption;
-   int mountPoint;
+   int mountCollection;
+   char *mountType; 
    int replNum;
    char *replNumValue;
    int number;

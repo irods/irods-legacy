@@ -18,14 +18,17 @@ rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp)
     memset (&dataObjInp, 0, sizeof (dataObjInp));
 
     rstrcpy (dataObjInp.objPath, regCollInp->collName, MAX_NAME_LEN);
-    status = rsObjStat (rsComm, &dataObjInp, &rodsObjStatOut);
+    status = irsObjStat (rsComm, &dataObjInp, 1, &rodsObjStatOut);
     if (status >= 0) {
         if (rodsObjStatOut->specColl != NULL) {
             rodsLog (LOG_ERROR,
              "rsRegColl: Reg path %s is in spec coll",
               dataObjInp.objPath);
+#if 0
 	    free (rodsObjStatOut->specColl);
 	    free (rodsObjStatOut);
+#endif
+	    freeRodsObjStat (rodsObjStatOut);
             return (SYS_REG_OBJ_IN_SPEC_COLL);
 	}
 	free (rodsObjStatOut);

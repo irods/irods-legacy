@@ -454,8 +454,10 @@ freeDataObjInfo (dataObjInfo_t *dataObjInfo)
     if (dataObjInfo == NULL)
 	return (0);
 
+#if 0	/* XXXXXX use the cache copy */
     if (dataObjInfo->specColl != NULL) 
 	free (dataObjInfo->specColl);
+#endif
 
     free (dataObjInfo);
 
@@ -1207,10 +1209,12 @@ clearDataObjCopyInp (dataObjCopyInp_t *dataObjCopyInp)
         return 0;
     }
 
+#if 0	/* XXXXX  cache specColl are used now */
     if (dataObjCopyInp->destDataObjInp.specColl != NULL)
 	free (dataObjCopyInp->destDataObjInp.specColl);
     if (dataObjCopyInp->srcDataObjInp.specColl != NULL)
         free (dataObjCopyInp->srcDataObjInp.specColl);
+#endif
 
     clearKeyVal (&dataObjCopyInp->destDataObjInp.condInput);
     clearKeyVal (&dataObjCopyInp->srcDataObjInp.condInput);
@@ -2642,6 +2646,7 @@ char *collInfo2, specColl_t *specColl)
                 specColl->type = StructFileTypeDef[i].type;
                 rstrcpy (specColl->objPath, collInfo1,
                   MAX_NAME_LEN);
+		parseCachedStructFileStr (collInfo2, specColl);
 		return (0);
 	    }
 	}
@@ -2650,6 +2655,68 @@ char *collInfo2, specColl_t *specColl)
 	  "resolveSpecCollType: unmatch specColl type %s", type);
 	return (SYS_UNMATCHED_SPEC_COLL_TYPE);
     }
+}
+
+int
+parseCachedStructFileStr (char *collInfo2, specColl_t *specColl) 
+{
+    char *tmpPtr1, *tmpPtr2;
+    int len;
+
+    if (collInfo2 == NULL || specColl == NULL) {
+        rodsLog (LOG_ERROR,
+          "parseCachedStructFileStr: NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    tmpPtr1 = strstr (collInfo2, ";;;");
+
+    if (tmpPtr1 == NULL) {
+        rodsLog (LOG_NOTICE,
+         "parseCachedStructFileStr: collInfo2 %s format error", collInfo2);
+        return SYS_COLLINFO_2_FORMAT_ERR;
+    }
+
+    len = (int) (tmpPtr1 - collInfo2);
+    strncpy (specColl->cacheDir, collInfo2, len);
+
+    tmpPtr1 += 3;
+
+    tmpPtr2 = strstr (tmpPtr1, ";;;");
+
+    if (tmpPtr2 == NULL) {
+        rodsLog (LOG_NOTICE,
+         "parseCachedStructFileStr: collInfo2 %s format error", collInfo2);
+        return SYS_COLLINFO_2_FORMAT_ERR;
+    }
+
+    len = (int) (tmpPtr2 - tmpPtr1);
+    strncpy (specColl->resource, tmpPtr1, len);
+
+    tmpPtr2 += 3;
+
+    specColl->cacheDirty = atoi (tmpPtr2);
+
+    return 0;
+}
+
+int
+makeCachedStructFileStr (char *collInfo2, specColl_t *specColl)
+{
+    if (collInfo2 == NULL || specColl == NULL) {
+        rodsLog (LOG_ERROR,
+          "makeCachedStructFileStr: NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (strlen (specColl->resource) == 0 || strlen (specColl->cacheDir) == 0) {
+	return (0);
+    }
+
+    snprintf ((void *) collInfo2, MAX_NAME_LEN, "%s;;;%s;;;%d",
+     specColl->cacheDir, specColl->resource, specColl->cacheDirty);
+
+    return 0;
 }
 
 int
@@ -2704,9 +2771,11 @@ rodsObjStat_t *rodsObjStatOut)
     if (getSpecCollOpr (condInput, rodsObjStatOut->specColl) == 
       NORMAL_OPR_ON_STRUCT_FILE_COLL) { 
 	/* it is in a structFile but not trying to do operation in the structFile. */
+#if 0	/* XXXX this will make put operation as a normal dataObjPut */
 	free (rodsObjStatOut->specColl);
 	rodsObjStatOut->specColl = NULL;
 	rodsObjStatOut->objType = UNKNOWN_OBJ_T;
+#endif
     }
     return;
 }
@@ -2716,7 +2785,9 @@ freeRodsObjStat (rodsObjStat_t *rodsObjStatOut)
 {
     if (rodsObjStatOut == NULL) return;
 
+#if 0	/* XXXX specColl is cached */
     if (rodsObjStatOut->specColl != NULL) free (rodsObjStatOut->specColl);
+#endif
 
     free (rodsObjStatOut);
 }

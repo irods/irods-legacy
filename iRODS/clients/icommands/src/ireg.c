@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "D:hCbmR:vV";
+    optStr = "D:hCbm:R:vV";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -98,10 +98,9 @@ usage ()
    char *msgs[]={
 "Usage : ireg [-hCvV] [-D dataType] [-R resource] physicalFilePath",
 "               irodsPath",
-"Usage : ireg -m [-hvV] [-R resource] mountDirectory irodsCollection",
-"Usage : ireg -m unmount irodsCollection",
-"Usage : ireg -b [-R resource] irodsStructuredFilePath irodsCollection",
-"NOTE: ireg -b has NOT yet been implemented.",
+"Usage : ireg -m mountType [-R resource] mountDirectory|structuredFilePath",
+"               irodsCollection",
+"Usage : ireg -m mountType 'unmount' irodsCollection",
 " ",
 "Register a file or a directory of files and subdirectory into iRODS.",
 "The file or the directory of files must already exist on the server where",
@@ -124,7 +123,9 @@ usage ()
 "will be based on the access permission of the mounted collection.",
 " ",
 "The -m option can be used to associate (mount) an iRods collection with a",
-"a physical directory (e.g.,a UNIX directory). Unlike the -C option, files",
+"a physical directory (e.g.,a UNIX directory) or a structured file.",
+"If the mountType is 'f' or 'filesystem', the first argument is the ", 
+"directory path to be mounted. Unlike the -C option, files",
 "and subdirectories beneath the directory will not be registered. Only",
 "the top level collection/directory will be registered. The content of",
 "the registered directory can be accessed through the irods server.", 
@@ -134,25 +135,27 @@ usage ()
 "For security reason, file permissions are checked to make sure that",
 "the client has the proper permission for the registration.",   
 " ",
-"To disassociate (unmount) an iRods collection with a physical directory," 
-"use the 'unmount' string as the physicalFilePath. For example, the following",
-"command unmounts the /tempZone/home/myUser/mymount collection:",
-"    ireg -m unmount /tempZone/home/myUser/mymount",
+"If the mountType is 't' or 'tar', the first argument is the logical path", 
+"of a tar file. The irods files stored in this collection will be stored in",
+"the structured file. The [-R resource] option is used to specify the", 
+"resource, to create the structured file in case it does not exist.",
+
+"If the mountType is 'h' or 'haaw', the first argument is the logical path",
+"of a  haaw type structured file developed by UK eScience.",
 " ",
-"The -b option can be used to associate a structured file with a collection.",
-"The irods files stored in this collection will be stored in",
-"the structured file. The [-R resource] option is used to specify the resource",
-"to create the structured file in case it does not exist.",
-"The 'ireg -m unmount' command can be used to disassociate a structured from a",
-"collection",
+"NOTE: the haaw type structured file has NOT yet been implemented.",
+" ",
+"To disassociate (unmount) an iRods collection with a physical directory," 
+"use the 'unmount' string as the first argument. For example, the following",
+"command unmounts the /tempZone/home/myUser/mymount collection:",
+"    ireg -m mountType 'unmount' /tempZone/home/myUser/mymount",
+" ",
 " ",
 "Options are:",
 " -R  resource - specifies the resource to store to. This can also be specified",
 "     in your environment or via a rule set up by the administrator.",
 " -C  the specified path is a directory. The default assumes the path is a file.",
-" -m  mount a directory to a collection by registering a physical directory",
-"     and a resource with a collection.",
-" -b  associated a structured file with a collection",
+" -m  mountType - mount a directory or structured file to a collection",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",

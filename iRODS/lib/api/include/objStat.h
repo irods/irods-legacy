@@ -42,6 +42,9 @@ int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 rodsObjStat_t **rodsObjStatOut);
 int
+irsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int interFlag,
+rodsObjStat_t **rodsObjStatOut);
+int
 _rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 rodsObjStat_t **rodsObjStatOut);
 int

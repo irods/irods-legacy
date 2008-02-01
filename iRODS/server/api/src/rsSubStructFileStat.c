@@ -66,11 +66,8 @@ _rsSubStructFileStat (rsComm_t *rsComm, subFile_t *subFile, rodsStat_t **subStru
 {
     int status;
 
-    *subStructFileStatOut = (rodsStat_t *) malloc (sizeof (rodsStat_t));
-    memset (*subStructFileStatOut, 0, sizeof (rodsStat_t));
-    status = subStructFileStat (rsComm, subFile, *subStructFileStatOut);
+    status = subStructFileStat (rsComm, subFile, subStructFileStatOut);
     if (status < 0) {
-	free (*subStructFileStatOut);
 	*subStructFileStatOut = NULL;
     } 
 

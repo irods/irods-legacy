@@ -15,6 +15,7 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.h"
+#include "subStructFilePut.h"
 
 
 int
@@ -218,12 +219,30 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+    dataObjInp = L1desc[l1descInx].dataObjInp;
+
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        subFile_t subFile;
+        memset (&subFile, 0, sizeof (subFile));
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
+          MAX_NAME_LEN);
+        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+          NAME_LEN);
+        subFile.specColl = dataObjInfo->specColl;
+        subFile.mode = getFileMode (l1descInx);
+        subFile.flags = O_WRONLY | dataObjInp->openFlags;
+        if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+            subFile.flags |= FORCE_FLAG;
+        }
+        bytesWritten = rsSubStructFilePut (rsComm, &subFile, dataObjInpBBuf);
+        return (bytesWritten);
+    }
+
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&filePutInp, 0, sizeof (filePutInp));
-	dataObjInp = L1desc[l1descInx].dataObjInp;
 	if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
 	    filePutInp.otherFlags |= FORCE_FLAG;
 	}

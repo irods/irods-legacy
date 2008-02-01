@@ -194,6 +194,8 @@ l3Open (rsComm_t *rsComm, int l1descInx)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
 	subFile.specColl = dataObjInfo->specColl;
+        subFile.mode = getFileMode (l1descInx);
+        subFile.flags = getFileFlags (l1descInx);
 	l3descInx = rsSubStructFileOpen (rsComm, &subFile); 
     } else {
         mode = getFileMode (l1descInx);

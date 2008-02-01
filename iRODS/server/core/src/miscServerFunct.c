@@ -1303,3 +1303,18 @@ char *regex (char *rec, char *text, ...)
   return(NULL);
 }
 #endif  /* linux_platform */
+
+/* generic functions to return SYS_NOT_SUPPORTED */
+
+int
+intNoSupport()
+{
+    return SYS_NOT_SUPPORTED;
+}
+
+rodsLong_t
+longNoSupport()
+{
+    return (rodsLong_t) SYS_NOT_SUPPORTED;
+}
+

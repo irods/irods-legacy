@@ -368,19 +368,31 @@ rodsArguments_t *rodsArgs)
         return (USER__NULL_INPUT_ERR);
     }
 
-    if (srcPath->rodsObjStat != NULL &&
-      srcPath->rodsObjStat->specColl != NULL) {
-	status = lsSpecCollUtil (conn, srcPath, myRodsEnv, rodsArgs);
-	if (srcPath->rodsObjStat->specColl->class == MOUNTED_COLL) {
-	    /* for STRUCT_FILE_COLL, we also want to list normal files */
-	    return (status);
-	}
-    }
-
     srcColl = srcPath->outPath;
 
     /* print this collection */
     printf ("%s:\n", srcColl);
+
+    if (srcPath->rodsObjStat != NULL &&
+      srcPath->rodsObjStat->specColl != NULL) {
+	status = lsSpecCollUtil (conn, srcPath, myRodsEnv, rodsArgs);
+#if 0	/* XXXXX STRUCT_FILE_COLL type collection does not contain normal 
+         * files for now */
+	if (srcPath->rodsObjStat->specColl->class == MOUNTED_COLL) {
+	    /* for STRUCT_FILE_COLL, we also want to list normal files */
+	    return (status);
+	}
+#else
+	return (status);
+#endif
+    }
+
+
+#if 0	/* moved */
+    srcColl = srcPath->outPath;
+    /* print this collection */
+    printf ("%s:\n", srcColl);
+#endif
 
     /* get the files in this collection */
 

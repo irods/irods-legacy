@@ -26,9 +26,10 @@ int
 haawSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile); 
 int
 haawSubStructFileStat (rsComm_t *rsComm, subFile_t *subFile,
-rodsStat_t *subStructFileStatOut); 
+rodsStat_t **subStructFileStatOut); 
 int
-haawSubStructFileFstat (rsComm_t *rsComm, int fd, rodsStat_t *subStructFileStatOut);
+haawSubStructFileFstat (rsComm_t *rsComm, int fd, 
+rodsStat_t **subStructFileStatOut);
 rodsLong_t
 haawSubStructFileLseek (rsComm_t *rsComm, int fd, rodsLong_t offset, int whence);
 int 
@@ -40,7 +41,7 @@ haawSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile);
 int
 haawSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile);
 int
-haawSubStructFileReaddir (rsComm_t *rsComm, int fd, rodsDirent_t *rodsDirent);
+haawSubStructFileReaddir (rsComm_t *rsComm, int fd, rodsDirent_t **rodsDirent);
 int
 haawSubStructFileClosedir (rsComm_t *rsComm, int fd);
 int

@@ -55,6 +55,7 @@ rodsPathInp_t *rodsPathInp)
                 close (rodsRestart.fd);
                 return (status);
             }
+#if 0	/* don't know why it is here */
             if (dataObjOprInp.specColl != NULL &&
 	     dataObjOprInp.specColl->class == STRUCT_FILE_COLL) {
 		dataObjOprInp.specColl = NULL;
@@ -66,6 +67,7 @@ rodsPathInp_t *rodsPathInp)
                     return (status);
                 }
 	    }
+#endif
 	} else {
 	    /* should not be here */
 	    rodsLog (LOG_ERROR,

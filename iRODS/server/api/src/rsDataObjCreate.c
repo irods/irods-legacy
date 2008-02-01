@@ -54,7 +54,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 #endif
     /* dataObj only */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
-    status = rsObjStat (rsComm, dataObjInp, &rodsObjStatOut); 
+    status = irsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
     resolveStatForStructFileOpr (&dataObjInp->condInput, rodsObjStatOut);
     if (rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
 	return (USER_INPUT_PATH_ERR);
@@ -353,6 +353,7 @@ l3Create (rsComm_t *rsComm, int l1descInx)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
+	subFile.mode = getFileMode (l1descInx);
         l3descInx = rsSubStructFileCreate (rsComm, &subFile);
 
 	return (l3descInx);

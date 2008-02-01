@@ -92,6 +92,8 @@
 #define GET_XMSG_TICKET_AN 			654
 #define SEND_XMSG_AN 			655
 #define RCV_XMSG_AN 			656
+#define SUB_STRUCT_FILE_GET_AN 			657
+#define SUB_STRUCT_FILE_PUT_AN 			658
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

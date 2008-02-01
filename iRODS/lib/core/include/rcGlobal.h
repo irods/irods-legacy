@@ -141,7 +141,8 @@ int NumRescClass = sizeof (RescClass) / sizeof (rescClass_t);
 /* Note; all structFile name must contain the word structFile */ 
 
 structFileTypeDef_t StructFileTypeDef[] = {
-	{HAAW_STRUCT_FILE_STR, HAAW_STRUCT_FILE},
+	{HAAW_STRUCT_FILE_STR, HAAW_STRUCT_FILE_T},
+	{TAR_STRUCT_FILE_STR, TAR_STRUCT_FILE_T},
 };
 
 int NumStructFileType = sizeof (StructFileTypeDef) / sizeof (structFileTypeDef_t);

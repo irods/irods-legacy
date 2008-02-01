@@ -23,7 +23,18 @@ LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 TESTOBJS = lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o
 
-TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3structFile xmsgtest
+TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
+xmsgtest
+
+ifdef TAR_STRUCT_FILE
+TARGETS+=tartest
+TESTOBJS+=tartest.o
+CFLAGS+= -I$(tarDir) -I$(tarDir)/listhash \
+                  -I${tarDir}/lib \
+                  -I${tarDir}/compat
+AG_LDADD+=-L$(tarDir)/lib -ltar
+endif
+
 ifdef PHP_LIB
 TARGETS+= phptest phpexttest
 TESTOBJS+= phptest.o phpexttest.o
@@ -90,3 +101,7 @@ phptest: phptest.o
 phpexttest: phpexttest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
+ifdef TAR_STRUCT_FILE
+tartest: tartest.o
+	$(LDR) -o $@ $^ $(LDADD) $(AG_LDADD)
+endif

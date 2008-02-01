@@ -73,4 +73,6 @@ isUserPrivileged(rsComm_t *rsComm);
 char *regcmp (char *pat, char *end);
 char *regex (char *rec, char *text, ...);
 #endif
+int intNoSupport();
+rodsLong_t longNoSupport();
 #endif	/* MISC_SERVER_FUNCT_H */

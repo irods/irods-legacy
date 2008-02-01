@@ -42,6 +42,7 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
 
     rstrcpy (collInfo.collName, modCollInp->collName, MAX_NAME_LEN);
 
+#if 0	/* change this for structured file 01/25/08 */
     if ((tmpStr = getValByKey (&modCollInp->condInput,
       COLLECTION_TYPE_KW)) != NULL) {
         rstrcpy (collInfo.collType, tmpStr, NAME_LEN);
@@ -54,6 +55,20 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
             rstrcpy (collInfo.collInfo2, tmpStr, NAME_LEN);
         }
     }
+#endif
+    if ((tmpStr = getValByKey (&modCollInp->condInput,
+      COLLECTION_TYPE_KW)) != NULL) {
+        rstrcpy (collInfo.collType, tmpStr, NAME_LEN);
+    }
+    if ((tmpStr = getValByKey (&modCollInp->condInput,
+      COLLECTION_INFO1_KW)) != NULL) {
+        rstrcpy (collInfo.collInfo1, tmpStr, MAX_NAME_LEN);
+    }
+    if ((tmpStr = getValByKey (&modCollInp->condInput,
+      COLLECTION_INFO2_KW)) != NULL) {
+        rstrcpy (collInfo.collInfo2, tmpStr, MAX_NAME_LEN);
+    }
+
     status = chlModColl (rsComm, &collInfo);
     /* XXXX need to commit */
     if (status >= 0) status = chlCommit(rsComm);

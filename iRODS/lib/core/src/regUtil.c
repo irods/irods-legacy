@@ -29,7 +29,7 @@ rodsPathInp_t *rodsPathInp)
         getRodsObjType (conn, destPath);
 
 	if (destPath->objState == EXIST_ST &&
-	 myRodsArgs->mountPoint == False && myRodsArgs->bulk == False) {
+	 myRodsArgs->mountCollection == False) {
 	    rodsLog (LOG_ERROR,
 	      "regUtil: iRodsPath %s already exist", destPath->outPath);
 	    return (CAT_NAME_EXISTS_AS_DATAOBJ);
@@ -89,6 +89,7 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
             addKeyVal (&dataObjOprInp->condInput, COLLECTION_KW, "");
     }
 
+#if 0
     if (rodsArgs->bulk == True) {
         addKeyVal (&dataObjOprInp->condInput, 
 	  COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
@@ -104,6 +105,32 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
              COLLECTION_TYPE_KW, MOUNT_POINT_STR);
         }
     }
+#endif
+    if (rodsArgs->mountCollection == True) {
+	char *mountType = rodsArgs->mountType;
+        if (strcmp (rodsPathInp->srcPath->inPath, UNMOUNT_STR) == 0) {
+            addKeyVal (&dataObjOprInp->condInput,
+             COLLECTION_TYPE_KW, UNMOUNT_STR);
+	} else if (strcmp (mountType, "h") == 0 || 
+	  strcmp (mountType, "haaw") == 0) {
+            addKeyVal (&dataObjOprInp->condInput,
+              COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
+        } else if (strcmp (mountType, "t") || 
+          strcmp (mountType, "tar") == 0) {
+            addKeyVal (&dataObjOprInp->condInput,
+              COLLECTION_TYPE_KW, TAR_STRUCT_FILE_STR);
+        } else if (strcmp (mountType, "f") == 0 || 
+	  strcmp (mountType, "filesystem") == 0) {
+            addKeyVal (&dataObjOprInp->condInput,
+             COLLECTION_TYPE_KW, MOUNT_POINT_STR);
+	} else if (strcmp (mountType, "f") == 0 || 
+          strcmp (mountType, "filesystem") == 0) {
+            /* the collection is a filesystem mount point */
+            addKeyVal (&dataObjOprInp->condInput,
+             COLLECTION_TYPE_KW, MOUNT_POINT_STR);
+        }
+    }
+
 
     if (rodsArgs->resource == True) {
         if (rodsArgs->resourceString == NULL) {

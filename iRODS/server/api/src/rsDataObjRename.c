@@ -213,13 +213,22 @@ specCollObjRename (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 dataObjInfo_t *destDataObjInfo)
 {
     int status;
+    char *newPath;
 
-    status = l3Rename (rsComm, srcDataObjInfo, destDataObjInfo->filePath);
+    if (getStructFileType (srcDataObjInfo->specColl) >= 0) {
+	/* structFile type, use the logical subPath */
+	newPath = destDataObjInfo->subPath;
+    } else {
+	/* mounted fs, use phy path */
+	newPath = destDataObjInfo->filePath;
+    }
+
+    status = l3Rename (rsComm, srcDataObjInfo, newPath);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "specCollObjRename: l3Rename error from %s to %s, status = %d",
-          srcDataObjInfo->filePath, destDataObjInfo->filePath, status);
+          srcDataObjInfo->subPath, newPath, status);
         return (status);
     }
     return (status);

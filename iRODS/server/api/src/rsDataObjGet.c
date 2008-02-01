@@ -11,6 +11,8 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.h"
+#include "objMetaOpr.h"
+#include "subStructFileGet.h"
 
 int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
@@ -35,6 +37,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
     int retval;
     dataObjCloseInp_t dataObjCloseInp;
 
+    /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
     l1descInx = _rsDataObjOpen (rsComm, dataObjInp, PHYOPEN_BY_SIZE);
 
     if (l1descInx < 0)
@@ -204,6 +207,22 @@ bytesBuf_t *dataObjOutBBuf)
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
+
+    if (getStructFileType (dataObjInfo->specColl) >= 0) {
+        subFile_t subFile;
+        memset (&subFile, 0, sizeof (subFile));
+        rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
+          MAX_NAME_LEN);
+        rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+          NAME_LEN);
+        subFile.specColl = dataObjInfo->specColl;
+	subFile.mode = getFileMode (l1descInx);
+        subFile.flags = O_RDONLY;
+	subFile.offset = dataObjInfo->dataSize;
+        bytesRead = rsSubStructFileGet (rsComm, &subFile, dataObjOutBBuf);
+	return (bytesRead);
+    }
+
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
@@ -217,6 +236,7 @@ bytesBuf_t *dataObjOutBBuf)
         fileGetInp.mode = getFileMode (l1descInx);
         fileGetInp.flags = O_RDONLY;
 	fileGetInp.dataSize = dataObjInfo->dataSize;
+	/* XXXXX need to be able to handle structured file */
         bytesRead = rsFileGet (rsComm, &fileGetInp, dataObjOutBBuf);
         break;
       default:

@@ -35,7 +35,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 
    int i;
 
-   char fullOpts[]="aAbc:C:dD:efFghH:ikK:lmn:N:p:P:qrR:s:S:t:T:u:vVzZxWY:";
+   char fullOpts[]="aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:T:u:vVzZxWY:";
    char *opts;
    int VCount=0;
 
@@ -153,7 +153,8 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          rodsArgs->veryLongOption=True;
          break;
       case 'm':
-         rodsArgs->mountPoint=True;
+         rodsArgs->mountCollection=True;
+         rodsArgs->mountType = optarg;
          break;
       case 'M':
          rodsArgs->admin=True;

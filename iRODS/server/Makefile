@@ -66,8 +66,16 @@ INCLUDES +=	-I$(svrApiIncDir)
 SVR_DRIVERS_OBJS = \
 		$(svrDriversObjDir)/structFileDriver.o \
 		$(svrDriversObjDir)/fileDriver.o \
-		$(svrDriversObjDir)/haawStructFileDriver.o \
 		$(svrDriversObjDir)/unixFileDriver.o
+
+ifdef HAAW_STRUCT_FILE
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/haawStructFileDriver.o
+endif
+
+ifdef TAR_STRUCT_FILE
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/tarStructFileDriver.o
+endif
+
 INCLUDES +=	-I$(svrDriversIncDir)
 
 

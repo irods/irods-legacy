@@ -51,20 +51,23 @@ haawSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
 
 int
 haawSubStructFileStat (rsComm_t *rsComm, subFile_t *subFile,
-rodsStat_t *subStructFileStatOut)
+rodsStat_t **subStructFileStatOut)
 {
-    subStructFileStatOut->st_size = 1000;
-    subStructFileStatOut->st_blocks = 10000;
+    *subStructFileStatOut = malloc (sizeof (rodsStat_t));
+    (*subStructFileStatOut)->st_size = 1000;
+    (*subStructFileStatOut)->st_blocks = 10000;
 
     /* return -1 or give false success */
     return (-1);
 }
 
 int
-haawSubStructFileFstat (rsComm_t *rsComm, int fd, rodsStat_t *subStructFileStatOut)
+haawSubStructFileFstat (rsComm_t *rsComm, int fd, 
+rodsStat_t **subStructFileStatOut)
 {
-    subStructFileStatOut->st_size = 1000;
-    subStructFileStatOut->st_blocks = 10000;
+    *subStructFileStatOut = malloc (sizeof (rodsStat_t));
+    (*subStructFileStatOut)->st_size = 1000;
+    (*subStructFileStatOut)->st_blocks = 10000;
 
     return (0);
 }
@@ -100,7 +103,7 @@ haawSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
 }
 
 int
-haawSubStructFileReaddir (rsComm_t *rsComm, int fd, rodsDirent_t *rodsDirent)
+haawSubStructFileReaddir (rsComm_t *rsComm, int fd, rodsDirent_t **rodsDirent)
 {
     /* XXXX a return of >= 0 will cause querySpecColl to go into info loop */ 
     return (-1);

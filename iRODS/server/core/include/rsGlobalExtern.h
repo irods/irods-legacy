@@ -13,6 +13,9 @@
 #include "fileOpr.h"
 #include "dataObjOpr.h"
 #include "querySpecColl.h"
+#ifdef TAR_STRUCT_FILE
+#include "tarSubStructFileDriver.h"
+#endif
 
 
 extern int LogFd;         		/* the log file descriptor */
@@ -42,6 +45,11 @@ extern int IcatConnState;
 #endif
 
 extern specCollCache_t *SpecCollCacheHead;
+
+#ifdef TAR_STRUCT_FILE
+extern structFileDesc_t StructFileDesc[];
+extern tarSubFileDesc_t TarSubFileDesc[];
+#endif
 
 int
 initRuleEngine(char *ruleSet, char *dvmSet, char* fnmSet);

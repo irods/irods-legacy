@@ -104,7 +104,7 @@ subStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
 
 int
 subStructFileStat (rsComm_t *rsComm, subFile_t *subFile,
-rodsStat_t *subStructFileStatOut)
+rodsStat_t **subStructFileStatOut)
 {
     structFileType_t myType;
     int subStructFileInx;
@@ -123,7 +123,7 @@ rodsStat_t *subStructFileStatOut)
 
 int
 subStructFileFstat (structFileType_t myType, rsComm_t *rsComm, int fd,
-rodsStat_t *subStructFileStatOut)
+rodsStat_t **subStructFileStatOut)
 {
     int subStructFileInx;
     int status;
@@ -224,7 +224,7 @@ subStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
 
 int
 subStructFileReaddir (structFileType_t myType, rsComm_t *rsComm, int fd, 
-rodsDirent_t *rodsDirent)
+rodsDirent_t **rodsDirent)
 {
     int subStructFileInx;
     rodsLong_t status;
@@ -233,8 +233,8 @@ rodsDirent_t *rodsDirent)
         return ((rodsLong_t) subStructFileInx);
     }
 
-    status = StructFileDriverTable[subStructFileInx].subStructFileReaddir (rsComm, fd,
-      rodsDirent);
+    status = StructFileDriverTable[subStructFileInx].subStructFileReaddir (
+      rsComm, fd, rodsDirent);
     return (status);
 }
 

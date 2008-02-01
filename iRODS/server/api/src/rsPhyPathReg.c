@@ -40,7 +40,8 @@ rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
       COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, UNMOUNT_STR) == 0) {
         status = unmountFileDir (rsComm, phyPathRegInp);
         return (status);
-    } else if (tmpStr != NULL && strcmp (tmpStr, HAAW_STRUCT_FILE_STR) == 0) {
+    } else if (tmpStr != NULL && (strcmp (tmpStr, HAAW_STRUCT_FILE_STR) == 0 ||
+      strcmp (tmpStr, TAR_STRUCT_FILE_STR) == 0)) {
 	status = structFileReg (rsComm, phyPathRegInp);
         return (status);
     }
@@ -401,6 +402,7 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     dataObjInfo_t *dataObjInfo = NULL;
     char *structFilePath = NULL;
     dataObjInp_t dataObjInp;
+    char *tmpStr;
 
     if ((structFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {
@@ -436,9 +438,17 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 
     /* mk the collection */
 
+    tmpStr = getValByKey (&phyPathRegInp->condInput, COLLECTION_TYPE_KW);
+    if (tmpStr == NULL) {
+        rodsLog (LOG_ERROR,
+          "structFileReg: Bad COLLECTION_TYPE_KW for structFilePath %s",
+              dataObjInp.objPath);
+            return (SYS_INTERNAL_NULL_INPUT_ERR);
+    } 
+
     memset (&collCreateInp, 0, sizeof (collCreateInp));
     rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
-    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
+    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, tmpStr);
 
     /* have to use dataObjInp.objPath because structFile path was removed */ 
     addKeyVal (&collCreateInp.condInput, COLLECTION_INFO1_KW, 

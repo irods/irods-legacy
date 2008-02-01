@@ -990,7 +990,10 @@ initAgent (rsComm_t *rsComm)
           status);
         return (status);
     }
-
+#ifdef TAR_STRUCT_FILE
+    initStructFileDesc ();
+    initTarSubFileDesc ();
+#endif
     status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
     if (status < 0) {
         rodsLog (LOG_ERROR,

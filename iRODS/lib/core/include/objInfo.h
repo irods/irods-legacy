@@ -80,7 +80,8 @@ typedef enum {         /* class of SpecColl */
 } specCollClass_t;
 
 typedef enum {          /* structFile type */
-    HAAW_STRUCT_FILE,        /* the UK eScience structFile */
+    HAAW_STRUCT_FILE_T,        /* the UK eScience structFile */
+    TAR_STRUCT_FILE_T,	     /* The tar structFile */
 } structFileType_t;
 
 typedef enum {          /* specColl operation type */
@@ -91,6 +92,7 @@ typedef enum {          /* specColl operation type */
 } structFileOprType_t;
     
 #define HAAW_STRUCT_FILE_STR		"haaw structFile"
+#define TAR_STRUCT_FILE_STR		"tar structFile"
 #define MOUNT_POINT_STR		"mountPoint"
 #define INHERIT_PAR_SPEC_COLL_STR	"inheritParentSpecColl"
 
@@ -108,6 +110,11 @@ typedef struct SpecColl {
 				      * MOUNTED_COLL-the phyPath od mounted
 				      * directory
 				      */
+    char cacheDir[MAX_NAME_LEN];     /* STRUCT_FILE_COLL-the directory where 
+				      * the cache tree is kept
+				      */
+    int cacheDirty;		     /* Whether the cache has been written */ 
+    int dummy;
 } specColl_t;
 
 typedef enum {
@@ -300,6 +307,8 @@ typedef struct SpecCollMeta {
 typedef struct Subfile {
     rodsHostAddr_t addr;
     char subFilePath[MAX_NAME_LEN];
+    int mode;
+    int flags;
     rodsLong_t offset;
     specColl_t *specColl;
 } subFile_t;

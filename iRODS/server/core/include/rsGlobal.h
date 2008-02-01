@@ -10,6 +10,9 @@
 #include "initServer.h"
 #include "fileOpr.h"
 #include "dataObjOpr.h"
+#ifdef TAR_STRUCT_FILE
+#include "tarSubStructFileDriver.h"
+#endif
 
 int LogFd = -1;		/* the log file descriptor */
 char *CurLogfileName = NULL;        /* the path of the current logfile */
@@ -43,6 +46,11 @@ int IcatConnState = INITIAL_NOT_DONE;
 #endif
 
 specCollCache_t *SpecCollCacheHead = NULL;
+
+#ifdef TAR_STRUCT_FILE
+structFileDesc_t StructFileDesc[NUM_STRUCT_FILE_DESC];
+tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
+#endif
 
 #endif	/* RS_GLOBAL_H */
 

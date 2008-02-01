@@ -49,10 +49,10 @@ int
 subStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile);
 int
 subStructFileStat (rsComm_t *rsComm, subFile_t *subFile,
-rodsStat_t *subStructFileStatOut);
+rodsStat_t **subStructFileStatOut);
 int
 subStructFileFstat (structFileType_t myType, rsComm_t *rsComm, int fd,
-rodsStat_t *subStructFileStatOut);
+rodsStat_t **subStructFileStatOut);
 rodsLong_t
 subStructFileLseek (structFileType_t myType, rsComm_t *rsComm, int fd,
 rodsLong_t offset, int whence);
@@ -64,7 +64,7 @@ int
 subStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile);
 int
 subStructFileReaddir (structFileType_t myType, rsComm_t *rsComm, int fd, 
-rodsDirent_t *rodsDirent);
+rodsDirent_t **rodsDirent);
 int
 subStructFileClosedir (structFileType_t myType, rsComm_t *rsComm, int fd);
 int
