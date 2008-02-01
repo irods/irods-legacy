@@ -273,3 +273,9 @@ LIB_API_OBJS += $(libApiObjDir)/rcSendXmsg.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsRcvXmsg.o
 LIB_API_OBJS += $(libApiObjDir)/rcRcvXmsg.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFileGet.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileGet.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFilePut.o
+LIB_API_OBJS += $(libApiObjDir)/rcSubStructFilePut.o
