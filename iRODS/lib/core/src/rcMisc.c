@@ -1195,7 +1195,9 @@ clearDataObjInp (dataObjInp_t *dataObjInp)
     }
 
     clearKeyVal (&dataObjInp->condInput);
+#if 0   /* XXXXX  cache specColl are used now */
     if (dataObjInp->specColl != NULL) free (dataObjInp->specColl);
+#endif
 
     memset (dataObjInp, 0, sizeof (dataObjInp_t));
 
