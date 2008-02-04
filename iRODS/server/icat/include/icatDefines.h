@@ -51,4 +51,59 @@
 #define ACCESS_CURATE               "curate"
 #define ACCESS_OWN                  "own"
 
+
+/* The following are the Auditing action values */
+
+#define AU_ACCESS_GRANTED                      1000
+
+#define AU_REGISTER_DATA_OBJ                   2010
+#define AU_REGISTER_DATA_REPLICA               2011
+#define AU_UNREGISTER_DATA_OBJ                 2012
+
+#define AU_REGISTER_DELAYED_RULE               2020
+#define AU_MODIFY_DELAYED_RULE                 2021
+#define AU_DELETE_DELAYED_RULE                 2022
+
+#define AU_REGISTER_RESOURCE                   2030
+#define AU_DELETE_RESOURCE                     2031
+
+#define AU_DELETE_USER_RE                      2040
+
+#define AU_REGISTER_COLL_BY_ADMIN              2050
+#define AU_REGISTER_COLL                       2051
+
+#define AU_DELETE_COLL_BY_ADMIN                2060
+#define AU_DELETE_COLL                         2061
+
+#define AU_MOD_USER_NAME                       2070
+#define AU_MOD_USER_TYPE                       2071
+#define AU_MOD_USER_ZONE                       2072
+#define AU_MOD_USER_DN                         2073
+#define AU_MOD_USER_INFO                       2074
+#define AU_MOD_USER_COMMENT                    2075
+#define AU_MOD_USER_PASSWORD                   2076
+
+#define AU_MOD_GROUP                           2080
+#define AU_MOD_RESC                            2090
+#define AU_MOD_RESC_FREE_SPACE                 2091
+#define AU_MOD_RESC_GROUP                      2092
+
+#define AU_REGISTER_USER_RE                    2100
+#define AU_ADD_AVU_METADATA                    2110
+#define AU_DELETE_AVU_METADATA                 2111
+#define AU_COPY_AVU_METADATA                   2112
+
+#define AU_MOD_ACCESS_CONTROL_OBJ              2120
+#define AU_MOD_ACCESS_CONTROL_COLL             2121
+#define AU_MOD_ACCESS_CONTROL_COLL_RECURSIVE   2122
+
+#define AU_RENAME_DATA_OBJ                     2130
+#define AU_RENAME_COLLECTION                   2131
+
+#define AU_MOVE_DATA_OBJ                       2140
+#define AU_MOVE_COLL                           2141
+
+#define AU_REG_TOKEN                           2150
+#define AU_DEL_TOKEN                           2151
+
 #endif /* ICAT_DEFINES_H */

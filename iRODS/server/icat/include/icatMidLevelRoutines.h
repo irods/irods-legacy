@@ -163,4 +163,19 @@ rodsLong_t cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
 
 int cmlDebug(int mode);
 
+int cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser, 
+	      char *comment, icatSessionStruct *icss);
+
+int cmlAudit2(int actionId, char *dataID, char *userName, char *zoneName, 
+	      char *accessLevel, icatSessionStruct *icss);
+
+int cmlAudit3(int actionId, char *dataId, char *clientUser, char *zone, 
+	      char *comment, icatSessionStruct *icss);
+
+int cmlAudit4(int actionId, char *sql, char *sqlParm, char *clientUser, 
+	      char *zone, char *comment, icatSessionStruct *icss);
+
+int cmlAudit5(int actionId, char *objId, char *userID, char *comment, 
+	     icatSessionStruct *icss);
+
 #endif /* ICAT_MIDLEVEL_ROUTINES_H */
