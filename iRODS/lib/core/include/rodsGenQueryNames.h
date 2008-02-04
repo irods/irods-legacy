@@ -130,6 +130,14 @@ columnName_t columnNames[] = {
    { COL_TOKEN_VALUE2,    "TOKEN_VALUE2", },
    { COL_TOKEN_VALUE3,    "TOKEN_VALUE3", },
    { COL_TOKEN_COMMENT,   "TOKEN_COMMENT", },
+
+   { COL_AUDIT_OBJ_ID,      "AUDIT_OBJ_ID", },
+   { COL_AUDIT_USER_ID,     "AUDIT_USER_ID", },
+   { COL_AUDIT_ACTION_ID,   "AUDIT_ACTION_ID", },
+   { COL_AUDIT_COMMENT,     "AUDIT_COMMENT", },
+   { COL_AUDIT_CREATE_TIME, "AUDIT_CREATE_TIME", },
+   { COL_AUDIT_MODIFY_TIME, "AUDIT_MODIFY_TIME", },
+
 };
 
 int NumOfColumnNames = sizeof(columnNames) / sizeof(columnName_t);

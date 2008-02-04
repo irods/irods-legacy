@@ -227,4 +227,12 @@ primary ordering column.
 #define COL_TOKEN_VALUE3 1105
 #define COL_TOKEN_COMMENT 1106
 
+/* R_OBJT_AUDIT */
+#define COL_AUDIT_OBJ_ID      1200
+#define COL_AUDIT_USER_ID     1201
+#define COL_AUDIT_ACTION_ID   1202
+#define COL_AUDIT_COMMENT     1203
+#define COL_AUDIT_CREATE_TIME 1204
+#define COL_AUDIT_MODIFY_TIME 1205
+
 #endif	/* RODS_GEN_QUERY_H */
