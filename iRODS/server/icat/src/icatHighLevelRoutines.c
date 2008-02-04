@@ -105,6 +105,7 @@ int
 getLocalZone()
 {
    int status;
+   rodsLog(LOG_NOTICE, "getLocalZone called");
    if (localZone[0]=='\0') {
       if (logSQL) rodsLog(LOG_SQL, "getLocalZone SQL 1 ");
       status = cmlGetStringValueFromSql(
@@ -462,6 +463,16 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
       return(status);
    }
 
+   status = cmlAudit3(AU_REGISTER_DATA_OBJ, dataIdNum,
+		      rsComm->clientUser.userName, localZone, "", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegDataObj cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -589,6 +600,15 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    cmlFreeStatement(statementNumber, &icss);
    if (status < 0) {
       rodsLog(LOG_NOTICE, "chlRegReplica cmlFreeStatement failure %d", status);
+      return(status);
+   }
+
+   status = cmlAudit3(AU_REGISTER_DATA_REPLICA, objIdString,
+		      rsComm->clientUser.userName, localZone, nextRepl, &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegDataReplica cmlAudit3 failure %d",
+	      status);
       return(status);
    }
 
@@ -742,6 +762,24 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       status = cmlExecuteNoAnswerSql(
 	       "delete from r_objt_access where object_id=? and not exists (select * from r_data_main where data_id=?)", &icss);
    }
+
+   /* Audit */
+   if (dataObjNumber[0]!='\0') {
+      status = cmlAudit3(AU_UNREGISTER_DATA_OBJ, dataObjNumber,
+		      rsComm->clientUser.userName, localZone, "", &icss);
+   }
+   else {
+      status = cmlAudit3(AU_UNREGISTER_DATA_OBJ, "0",
+			 rsComm->clientUser.userName, localZone, 
+			 dataObjInfo->objPath, &icss);
+   }
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlUnRegDataObj cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
@@ -810,6 +848,17 @@ int chlRegRuleExec(rsComm_t *rsComm,
 	      "chlRegRuleExec cmlExecuteNoAnswerSql(insert) failure %d",status);
       return(status);
 
+   }
+ 
+   /* Audit */
+   status = cmlAudit3(AU_REGISTER_DELAYED_RULE,  ruleExecIdNum,
+		      rsComm->clientUser.userName, localZone, 
+		      ruleExecSubmitInp->ruleName, &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegRuleExec cmlAudit3 failure %d",
+	      status);
+      return(status);
    }
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
@@ -896,6 +945,18 @@ int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
       return(status);
    }
 
+   /* Audit */
+   status = cmlAudit3(AU_MODIFY_DELAYED_RULE,  ruleExecId,
+		      rsComm->clientUser.userName, localZone, 
+		      "", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModRuleExec cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -930,6 +991,17 @@ int chlDelRuleExec(rsComm_t *rsComm,
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlDelRuleExec delete failure %d",
+	      status);
+      return(status);
+   }
+
+   /* Audit */
+   status = cmlAudit3(AU_DELETE_DELAYED_RULE,  ruleExecId,
+		      rsComm->clientUser.userName, localZone, 
+		      "", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlDelRuleExec cmlAudit3 failure %d",
 	      status);
       return(status);
    }
@@ -1066,6 +1138,17 @@ int chlRegResc(rsComm_t *rsComm,
       return(status);
    }
 
+   /* Audit */
+   status = cmlAudit3(AU_REGISTER_RESOURCE,  idNum,
+		      rsComm->clientUser.userName, localZone, 
+		      rescInfo->rescName, &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegResc cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1080,6 +1163,7 @@ int chlDelResc(rsComm_t *rsComm,
 	       rescInfo_t *rescInfo) {
    int status;
    rodsLong_t iVal;
+   char rescId[MAX_NAME_LEN];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc");
 
@@ -1111,8 +1195,26 @@ int chlDelResc(rsComm_t *rsComm,
       return(status);
    }
 
+   /* get rescId for possible audit call; won't be available after delete */
+   rescId[0]='\0';
+   if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 2 ");
+   status = cmlGetStringValueFromSql(
+       "select resc_id from r_resc_main where resc_name=?",
+       rescId, MAX_NAME_LEN, rescInfo->rescName, localZone, &icss);
+   if (status) {
+      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+	 int i;
+	 char errMsg[105];
+	 snprintf(errMsg, 100, 
+		  "resource '%s' does not exist",
+		  rescInfo->rescName);
+	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      }
+      return(status);
+   }
+
    cllBindVars[cllBindVarCount++]=rescInfo->rescName;
-   if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 2");
+   if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 3");
    status = cmlExecuteNoAnswerSql(
                "delete from r_resc_main where resc_name=?",
 	       &icss);
@@ -1125,6 +1227,19 @@ int chlDelResc(rsComm_t *rsComm,
 		  rescInfo->rescName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       }
+      return(status);
+   }
+
+   /* Audit */
+   status = cmlAudit3(AU_DELETE_RESOURCE,  
+		      rescId,
+		      rsComm->clientUser.userName, localZone, 
+		      rescInfo->rescName, 
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlDelResc cmlAudit3 failure %d",
+	      status);
       return(status);
    }
 
@@ -1146,7 +1261,7 @@ int chlDelResc(rsComm_t *rsComm,
  iadmin connects once and then can issue multiple commands there are
  situations where we need to rollback.
 
- example), if the user's zone is wrong the code will first remove the
+ For example, if the user's zone is wrong the code will first remove the
  home collection and then fail when removing the user and we need to
  rollback or the next attempt will show the collection as missing.
 
@@ -1256,6 +1371,20 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       return(status);
    }
+
+   /* Audit */
+   status = cmlAudit3(AU_DELETE_USER_RE,  
+		      iValStr,
+		      rsComm->clientUser.userName, localZone, 
+		      userInfo->userName,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlDelUserRE cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    return(0);
 }
 
@@ -1399,6 +1528,20 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
       return(status);
    }
 
+   /* Audit */
+   status = cmlAudit4(AU_REGISTER_COLL_BY_ADMIN,  
+		      currStr2,
+		      "",
+		      rsComm->clientUser.userName, localZone, 
+		      collInfo->collName,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegCollByAdmin cmlAudit4 failure %d",
+	      status);
+      return(status);
+   }
+
    return(0);
 }
 
@@ -1527,6 +1670,20 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       return(status);
    }
 
+   /* Audit */
+   status = cmlAudit4(AU_REGISTER_COLL,  
+		      currStr2,
+		      "",
+		      rsComm->clientUser.userName, localZone, 
+		      collInfo->collName,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegColl cmlAudit4 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1553,6 +1710,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    char tSQL[MAX_SQL_SIZE];
    int count;
    rodsLong_t iVal;
+   char iValStr[60];
 
    if (logSQL) rodsLog(LOG_SQL, "chlModColl");
 
@@ -1620,6 +1778,22 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    if (logSQL) rodsLog(LOG_SQL, "chlModColl SQL 1");
    status =  cmlExecuteNoAnswerSql(tSQL,
 				   &icss);
+
+   /* Audit */
+   snprintf(iValStr, 50, "%lld", iVal);
+   status = cmlAudit3(AU_REGISTER_COLL,  
+		      iValStr,
+		      rsComm->clientUser.userName, localZone, 
+		      collInfo->collName,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModColl cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
+
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlModColl cmlExecuteNoAnswerSQL(update) failure %d", status);
@@ -1855,6 +2029,20 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
 	      status);
    }
 
+   /* Audit (before it's deleted) */
+   status = cmlAudit4(AU_DELETE_COLL_BY_ADMIN,  
+		      "select coll_id from r_coll_main where coll_name=?",
+		      collInfo->collName,
+		      rsComm->clientUser.userName, localZone, 
+		      collInfo->collName,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModColl cmlAudit4 failure %d",
+	      status);
+      return(status);
+   }
+
 
    /* delete the row if it exists */
    cllBindVars[cllBindVarCount++]=collInfo->collName;
@@ -1981,6 +2169,20 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "_delColl cmlExecuteNoAnswerSql delete access failure %d",
 	      status);
+   }
+
+
+   /* Audit */
+   status = cmlAudit3(AU_DELETE_COLL,
+		      collIdNum,
+		      rsComm->clientUser.userName, localZone, 
+		      collInfo->collName,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModColl cmlAudit3 failure %d",
+	      status);
+      return(status);
    }
 
    return(status);
@@ -2351,6 +2553,10 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char myTime[50];
    rodsLong_t iVal;
 
+   int auditId;
+   char auditComment[110];
+   char auditUserName[110];
+
    if (logSQL) rodsLog(LOG_SQL, "chlModUser");
 
    if (userName == NULL || option == NULL || newValue==NULL) {
@@ -2375,6 +2581,10 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    opType=0;
 
    getNowStr(myTime);
+
+   auditComment[0]='\0';
+   strncpy(auditUserName,userName,100);
+
    if (strcmp(option,"name" )==0 ||
        strcmp(option,"user_name" )==0) {
       snprintf(tSQL, MAX_SQL_SIZE, form1,
@@ -2384,6 +2594,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=userName;
       cllBindVars[cllBindVarCount++]=localZone;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 1 ");
+      auditId = AU_MOD_USER_NAME;
+      strncpy(auditComment, userName, 100);
+      strncpy(auditUserName,newValue,100);
    }
    if (strcmp(option,"type")==0 ||
        strcmp(option,"user_type_name")==0) {
@@ -2397,6 +2610,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=localZone;
       opType=1;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 2");
+      auditId = AU_MOD_USER_TYPE;
+      strncpy(auditComment, newValue, 100);
    }
    if (strcmp(option,"zone")==0 ||
        strcmp(option,"zone_name")==0) {
@@ -2417,6 +2632,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneName;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 3");
+      auditId = AU_MOD_USER_ZONE;
+      strncpy(auditComment, newValue, 100);
+      strncpy(auditUserName,userName2,100);
    }
    if (strcmp(option,"DN")==0 ||
        strcmp(option,"user_distin_name")==0) {
@@ -2427,6 +2645,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=userName;
       cllBindVars[cllBindVarCount++]=localZone;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 4");
+      auditId = AU_MOD_USER_DN;
+      strncpy(auditComment, newValue, 100);
    }
    if (strcmp(option,"info")==0 ||
        strcmp(option,"user_info")==0) {
@@ -2437,6 +2657,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=userName;
       cllBindVars[cllBindVarCount++]=localZone;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 5");
+      auditId = AU_MOD_USER_INFO;
+      strncpy(auditComment, newValue, 100);
    }
    if (strcmp(option,"comment")==0 ||
        strcmp(option,"r_comment")==0) {
@@ -2447,6 +2669,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=userName;
       cllBindVars[cllBindVarCount++]=localZone;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 6");
+      auditId = AU_MOD_USER_COMMENT;
+      strncpy(auditComment, newValue, 100);
    }
    if (strcmp(option,"password")==0) {
       int i;
@@ -2476,6 +2700,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 9");
       }
+      auditId = AU_MOD_USER_PASSWORD;
    }
 
    if (tSQL[0]=='\0') {
@@ -2526,6 +2751,15 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       return(status);
    }
 
+   status = cmlAudit1(auditId, rsComm->clientUser.userName, 
+		      localZone, auditUserName, auditComment, &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModUser cmlAudit1 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2544,6 +2778,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    char myTime[50];
    char userId[MAX_NAME_LEN];
    char groupId[MAX_NAME_LEN];
+   char commentStr[100];
 
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup");
 
@@ -2624,6 +2859,20 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
       return (CAT_INVALID_ARGUMENT);
    }
 
+   /* Audit */
+   snprintf(commentStr, 90, "%s %s", option, userId);
+   status = cmlAudit3(AU_MOD_GROUP,  
+		      groupId,
+		      rsComm->clientUser.userName, localZone, 
+		      commentStr,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModGroup cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2640,6 +2889,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    int status, OK;
    char myTime[50];
    char rescId[MAX_NAME_LEN];
+   char commentStr[200];
 
    if (logSQL) rodsLog(LOG_SQL, "chlModResc");
 
@@ -2815,6 +3065,20 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       return (CAT_INVALID_ARGUMENT);
    }
 
+   /* Audit */
+   snprintf(commentStr, 190, "%s %s", option, optionValue);
+   status = cmlAudit3(AU_MOD_RESC,  
+		      rescId,
+		      rsComm->clientUser.userName, localZone, 
+		      commentStr,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModResc cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2869,10 +3133,25 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
 	       &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
-	      "chlModResc cmlExecuteNoAnswerSql update failure %d",
+	      "chlModRescFreeSpace cmlExecuteNoAnswerSql update failure %d",
 	      status);
       return(status);
    }
+
+   /* Audit */
+   status = cmlAudit4(AU_MOD_RESC_FREE_SPACE,  
+		      "select resc_id from r_resc_main where resc_name=?",
+		      rescName,
+		      rsComm->clientUser.userName, localZone, 
+		      updateValueStr,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModRescFreeSpace cmlAudit4 failure %d",
+	      status);
+      return(status);
+   }
+
    return(0);
 }
 
@@ -2882,6 +3161,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
    int status, OK;
    char myTime[50];
    char rescId[MAX_NAME_LEN];
+   char commentStr[200];
 
    if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup");
 
@@ -2953,6 +3233,20 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       return (CAT_INVALID_ARGUMENT);
    }
 
+   /* Audit */
+   snprintf(commentStr, 190, "%s %s", option, rescGroupName);
+   status = cmlAudit3(AU_MOD_RESC_GROUP,  
+		      rescId,
+		      rsComm->clientUser.userName, localZone, 
+		      commentStr,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModRescGroup cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2970,6 +3264,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    char myTime[50];
    int status;
    char seqStr[MAX_NAME_LEN];
+   char auditSQL[MAX_SQL_SIZE];
 
    static char lastValidUserType[MAX_NAME_LEN]="";
    static char userTypeTokenName[MAX_NAME_LEN]="";
@@ -3084,6 +3379,25 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 	      "chlRegUserRE insert into r_user_group failure %d",status);
       return(status);
    }
+
+   /* Audit */
+   snprintf(auditSQL, MAX_SQL_SIZE-1,
+	    "select user_id from r_user_main where user_name=? and zone_name='%s'",
+	    localZone);
+   status = cmlAudit4(AU_REGISTER_USER_RE,  
+		      auditSQL,
+		      userInfo->userName,
+		      rsComm->clientUser.userName, localZone, 
+		      userInfo->userName,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegUserRE cmlAudit4 failure %d",
+	      status);
+      return(status);
+   }
+
+
    return(status);
 }
 
@@ -3383,6 +3697,19 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       return(status);
    }
 
+   /* Audit */
+   status = cmlAudit3(AU_ADD_AVU_METADATA,  
+		      objIdStr,
+		      rsComm->clientUser.userName, localZone, 
+		      type,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlAddAVUMetadata cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -3529,6 +3856,19 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 return(status);
       }
 
+      /* Audit */
+      status = cmlAudit3(AU_DELETE_AVU_METADATA,  
+			 objIdStr,
+			 rsComm->clientUser.userName, localZone, 
+			 type,
+			 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlDeleteAVUMetadata cmlAudit3 failure %d",
+		 status);
+	 return(status);
+      }
+
       status =  cmlExecuteNoAnswerSql("commit", &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -3587,6 +3927,19 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       return(status);
    }
 
+   /* Audit */
+   status = cmlAudit3(AU_DELETE_AVU_METADATA,  
+		      objIdStr,
+		      rsComm->clientUser.userName, localZone, 
+		      type,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlDeleteAVUMetadata cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -3638,6 +3991,19 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlCopyAVUMetadata cmlExecuteNoAnswerSql insert failure %d",
+	      status);
+      return(status);
+   }
+
+   /* Audit */
+   status = cmlAudit3(AU_COPY_AVU_METADATA,  
+		      objIdStr1,
+		      rsComm->clientUser.userName, localZone, 
+		      objIdStr2,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlCopyAVUMetadata cmlAudit3 failure %d",
 	      status);
       return(status);
    }
@@ -3810,6 +4176,19 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	    if (status) return(status);
 	 }
 
+	 /* Audit */
+	 status = cmlAudit5(AU_MOD_ACCESS_CONTROL_OBJ,
+			    objIdStr,
+			    userIdStr,
+			    myAccessLev,
+			    &icss);
+	 if (status != 0) {
+	    rodsLog(LOG_NOTICE,
+		    "chlModAccessControl cmlAudit5 failure %d",
+		    status);
+	    return(status);
+	 }
+
 	 status =  cmlExecuteNoAnswerSql("commit", &icss);
 	 return(status);
       }
@@ -3825,6 +4204,18 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 return(status);
       }
       if (rmFlag) {  /* just removing */
+	 /* Audit */
+	 status = cmlAudit5(AU_MOD_ACCESS_CONTROL_COLL,
+			    collIdStr,
+			    userIdStr,
+			    myAccessLev,
+			    &icss);
+	 if (status != 0) {
+	    rodsLog(LOG_NOTICE,
+		    "chlModAccessControl cmlAudit5 failure %d",
+		    status);
+	    return(status);
+	 }
 	 status =  cmlExecuteNoAnswerSql("commit", &icss);
 	 return(status);
       }
@@ -3841,6 +4232,19 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	  &icss);
 
       if (status) return(status);
+
+      /* Audit */
+      status = cmlAudit5(AU_MOD_ACCESS_CONTROL_COLL,
+			 collIdStr,
+			 userIdStr,
+			 myAccessLev,
+			 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModAccessControl cmlAudit5 failure %d",
+		 status);
+	 return(status);
+      }
 
       status =  cmlExecuteNoAnswerSql("commit", &icss);
       return(status);
@@ -3876,6 +4280,20 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       return(status);
    }
    if (rmFlag) {  /* just removing */
+
+      /* Audit */
+      status = cmlAudit5(AU_MOD_ACCESS_CONTROL_COLL_RECURSIVE,
+			 collIdStr,
+			 userIdStr,
+			 myAccessLev,
+			 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModAccessControl cmlAudit5 failure %d",
+		 status);
+	 return(status);
+      }
+
       status =  cmlExecuteNoAnswerSql("commit", &icss);
       return(status);
    }
@@ -3896,6 +4314,19 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);
    if (status) return(status);
+
+   /* Audit */
+   status = cmlAudit5(AU_MOD_ACCESS_CONTROL_COLL_RECURSIVE,
+		      collIdStr,
+		      userIdStr,
+		      myAccessLev,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModAccessControl cmlAudit5 failure %d",
+	      status);
+      return(status);
+   }
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    return(status);
@@ -3993,6 +4424,19 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlExecuteNoAnswerSql update2 failure %d",
+		 status);
+	 return(status);
+      }
+
+      /* Audit */
+      status = cmlAudit3(AU_RENAME_DATA_OBJ,  
+			 objIdString,
+			 rsComm->clientUser.userName, localZone, 
+			 newName,
+			 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlRenameObject cmlAudit3 failure %d",
 		 status);
 	 return(status);
       }
@@ -4106,6 +4550,19 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 return(status);
+      }
+
+      /* Audit */
+      status = cmlAudit3(AU_RENAME_COLLECTION,  
+			 objIdString,
+			 rsComm->clientUser.userName, localZone, 
+			 newName,
+			 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlRenameObject cmlAudit3 failure %d",
 		 status);
 	 return(status);
       }
@@ -4266,6 +4723,19 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 return(status);
       }
 
+      /* Audit */
+      status = cmlAudit3(AU_MOVE_DATA_OBJ,  
+			 objIdString,
+			 rsComm->clientUser.userName, localZone, 
+			 collIdString,
+			 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlMoveObject cmlAudit3 failure %d",
+		 status);
+	 return(status);
+      }
+
       return(status);
    }
 
@@ -4381,6 +4851,20 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 		 status);
 	 return(status);
       }
+
+      /* Audit */
+      status = cmlAudit3(AU_MOVE_COLL,  
+			 objIdString,
+			 rsComm->clientUser.userName, localZone, 
+			 targetCollName,
+			 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlMoveObject cmlAudit3 failure %d",
+		 status);
+	 return(status);
+      }
+
       return(status);
    }
 
@@ -4486,6 +4970,19 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
 	    &icss);
    if (status) return(status);
 
+   /* Audit */
+   status = cmlAudit3(AU_REG_TOKEN,  
+			 seqNumStr,
+			 rsComm->clientUser.userName, localZone, 
+			 name,
+			 &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+		 "chlRegToken cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    return(status);
 }
@@ -4500,6 +4997,7 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
    rodsLong_t objId;
    char errMsg[205];
    int i;
+   char objIdStr[60];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelToken");
 
@@ -4525,6 +5023,20 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
 	         "delete from r_tokn_main where token_namespace=? and token_name=?",
 		 &icss);
    if (status) return(status);
+
+   /* Audit */
+   snprintf(objIdStr, 50, "%lld", objId);
+   status = cmlAudit3(AU_DEL_TOKEN,  
+			 objIdStr,
+			 rsComm->clientUser.userName, localZone, 
+			 name,
+			 &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+		 "chlRegToken cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    return(status);

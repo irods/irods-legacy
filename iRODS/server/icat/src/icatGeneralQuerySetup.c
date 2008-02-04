@@ -131,6 +131,8 @@ icatGeneralQuerySetup() {
 
   sTable( "r_rule_exec", "r_rule_exec", 0);
 
+  sTable( "r_objt_audit", "r_objt_audit", 0);
+
   /* Map the #define values to tables and columns */
 
   sColumn( COL_ZONE_ID, "r_zone_main", "zone_id");
@@ -253,6 +255,13 @@ icatGeneralQuerySetup() {
   sColumn(COL_TOKEN_VALUE3, "r_tokn_main", "token_value3");
   sColumn(COL_TOKEN_COMMENT, "r_tokn_main", "r_comment");
 
+  sColumn(COL_AUDIT_OBJ_ID,      "r_objt_audit", "object_id");
+  sColumn(COL_AUDIT_USER_ID,     "r_objt_audit", "user_id");
+  sColumn(COL_AUDIT_ACTION_ID,   "r_objt_audit", "action_id");
+  sColumn(COL_AUDIT_COMMENT,     "r_objt_audit", "r_comment");
+  sColumn(COL_AUDIT_CREATE_TIME, "r_objt_audit", "create_ts");
+  sColumn(COL_AUDIT_MODIFY_TIME, "r_objt_audit", "modify_ts");
+
   /* Define the Foreign Key links between tables */
   sFklink("r_coll_main", "r_data_main", "r_coll_main.coll_id = r_data_main.coll_id");
   sFklink("r_resc_group", "r_resc_main", "r_resc_group.resc_id = r_resc_main.resc_id");
@@ -335,5 +344,7 @@ icatGeneralQuerySetup() {
 
   sFklink("r_user_main", "r_user_group", "r_user_main.user_id = r_user_group.user_id");
   sFklink("r_user_group", "r_group_main", "r_user_group.group_user_id = r_group_main.user_id");
+
+  sFklink("r_user_main", "r_objt_audit", "r_user_main.user_id = r_objt_audit.user_id");
 }
 

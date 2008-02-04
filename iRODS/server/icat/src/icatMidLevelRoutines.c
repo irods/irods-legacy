@@ -18,10 +18,18 @@
 #include "icatLowLevel.h"
 #include "icatMidLevelHelpers.h"
 
+#include "rcMisc.h"
+
+/* Size of the r_objt_audit comment field;must match table column definition */
+#define AUDIT_COMMENT_MAX_SIZE       1000
+
 int logSQL_CML=0;
+int auditEnabled=0;  /* for debug, later will have better control */
 
 int cmlDebug(int mode) {
    logSQL_CML = mode;
+   auditEnabled=1;  /* for debug, later will have better control */
+                    /* but need to, to test each sql form and pass 'test' */
    return(0);
 }
 
@@ -713,5 +721,236 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 	    icss);
    if (status != 0) return (CAT_NO_ACCESS_PERMISSION);
    if (iVal==0)  return (CAT_NO_ACCESS_PERMISSION);
+   cmlAudit2(AU_ACCESS_GRANTED, dataId, userName, zoneName, accessLevel, icss);
+   return(status);
+}
+
+/*********************************************************************
+The following are the auditing functions, different forms.  cmlAudit1,
+2, 3, 4, and 5 each audit (record activity in the audit table) but
+have different input arguments.
+ *********************************************************************/
+
+/* 
+ Audit - record auditing information, form 1
+ */
+int
+cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser, 
+	  char *comment, icatSessionStruct *icss)
+{
+   char myTime[50];
+   char actionIdStr[50];
+   int status;
+
+   if (auditEnabled==0) return(0);
+
+   if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit1 SQL 1 ");
+
+   getNowStr(myTime);
+
+   snprintf(actionIdStr, 40, "%d", actionId);
+
+   cllBindVars[0]=targetUser;
+   cllBindVars[1]=zone;
+   cllBindVars[2]=clientUser;
+   cllBindVars[3]=zone;
+   cllBindVars[4]=actionIdStr;
+   cllBindVars[5]=comment;
+   cllBindVars[6]=myTime;
+   cllBindVars[7]=myTime;
+   cllBindVarCount=8;
+
+   status = cmlExecuteNoAnswerSql(
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((select user_id from r_user_main where user_name=? and zone_name=?), (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE, "cmlAudit1 insert failure %d", status);
+   }
+   return(status);
+}
+
+int 
+cmlAudit2(int actionId, char *dataId, char *userName, char *zoneName, 
+          char *accessLevel, icatSessionStruct *icss) 
+{
+   char myTime[50];
+   char actionIdStr[50];
+   int status;
+
+   if (auditEnabled==0) return(0);
+
+   if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit2 SQL 1 ");
+
+   getNowStr(myTime);
+
+   snprintf(actionIdStr, 40, "%d", actionId);
+
+   cllBindVars[0]=dataId;
+   cllBindVars[1]=userName;
+   cllBindVars[2]=zoneName;
+   cllBindVars[3]=actionIdStr;
+   cllBindVars[4]=accessLevel;
+   cllBindVars[5]=myTime;
+   cllBindVars[6]=myTime;
+   cllBindVarCount=7;
+
+   status = cmlExecuteNoAnswerSql(
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE, "cmlAudit2 insert failure %d", status);
+   }
+
+   return(status);
+}
+
+
+int 
+cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName, 
+          char *comment, icatSessionStruct *icss) 
+{
+   char myTime[50];
+   char actionIdStr[50];
+   int status;
+   char myComment[AUDIT_COMMENT_MAX_SIZE+10];
+
+   if (auditEnabled==0) return(0);
+
+   getNowStr(myTime);
+
+   snprintf(actionIdStr, 40, "%d", actionId);
+
+   /* Truncate the comment if necessary (or else SQL will fail)*/
+   myComment[AUDIT_COMMENT_MAX_SIZE-1]='\0';
+   strncpy(myComment, comment, AUDIT_COMMENT_MAX_SIZE-1);
+
+   if (zoneName[0]=='\0') {
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit3 SQL 1 ");
+      cllBindVars[0]=dataId;
+      cllBindVars[1]=userName;
+      cllBindVars[2]=actionIdStr;
+      cllBindVars[3]=myComment;
+      cllBindVars[4]=myTime;
+      cllBindVars[5]=myTime;
+      cllBindVarCount=6;
+      status = cmlExecuteNoAnswerSql(
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from r_user_main where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)", icss);
+   }
+   else {
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit3 SQL 2 ");
+      cllBindVars[0]=dataId;
+      cllBindVars[1]=userName;
+      cllBindVars[2]=zoneName;
+      cllBindVars[3]=actionIdStr;
+      cllBindVars[4]=myComment;
+      cllBindVars[5]=myTime;
+      cllBindVars[6]=myTime;
+      cllBindVarCount=7;
+      status = cmlExecuteNoAnswerSql(
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
+   }
+
+   if (status != 0) {
+      rodsLog(LOG_NOTICE, "cmlAudit3 insert failure %d", status);
+   }
+
+   return(status);
+}
+
+
+int 
+cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName, 
+	  char *zoneName, char *comment, icatSessionStruct *icss) 
+{
+   char myTime[50];
+   char actionIdStr[50];
+   char myComment[AUDIT_COMMENT_MAX_SIZE+10];
+   char mySQL[MAX_SQL_SIZE];
+   int status;
+   int i;
+
+   if (auditEnabled==0) return(0);
+
+   getNowStr(myTime);
+
+   snprintf(actionIdStr, 40, "%d", actionId);
+
+   /* Truncate the comment if necessary (or else SQL will fail)*/
+   myComment[AUDIT_COMMENT_MAX_SIZE-1]='\0';
+   strncpy(myComment, comment, AUDIT_COMMENT_MAX_SIZE-1);
+
+   if (zoneName[0]=='\0') {
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit4 SQL 1 ");
+      snprintf(mySQL, MAX_SQL_SIZE, 
+	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from r_user_main where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)",
+	       sql);
+      i=0;
+      if (sqlParm[0]!='\0') {
+	 cllBindVars[i++]=sqlParm;
+      }
+      cllBindVars[i++]=userName;
+      cllBindVars[i++]=actionIdStr;
+      cllBindVars[i++]=myComment;
+      cllBindVars[i++]=myTime;
+      cllBindVars[i++]=myTime;
+      cllBindVarCount=i;
+      status = cmlExecuteNoAnswerSql(mySQL,icss);
+   }
+   else {
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit4 SQL 2 ");
+      snprintf(mySQL, MAX_SQL_SIZE, 
+	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)",
+	       sql);
+      i=0;
+      if (sqlParm[0]!='\0') {
+	 cllBindVars[i++]=sqlParm;
+      }
+      cllBindVars[i++]=userName;
+      cllBindVars[i++]=zoneName;
+      cllBindVars[i++]=actionIdStr;
+      cllBindVars[i++]=myComment;
+      cllBindVars[i++]=myTime;
+      cllBindVars[i++]=myTime;
+      cllBindVarCount=i;
+      status = cmlExecuteNoAnswerSql(mySQL,icss);
+   }
+
+   if (status != 0) {
+      rodsLog(LOG_NOTICE, "cmlAudit4 insert failure %d", status);
+   }
+
+   return(status);
+}
+
+
+/* 
+ Audit - record auditing information
+ */
+int
+cmlAudit5(int actionId, char *objId, char *userId, char *comment, 
+	    icatSessionStruct *icss)
+{
+   char myTime[50];
+   char actionIdStr[50];
+   int status;
+
+   if (auditEnabled==0) return(0);
+
+   getNowStr(myTime);
+
+   snprintf(actionIdStr, 40, "%d", actionId);
+
+   cllBindVars[0]=objId;
+   cllBindVars[1]=userId;
+   cllBindVars[2]=actionIdStr;
+   cllBindVars[3]=comment;
+   cllBindVars[4]=myTime;
+   cllBindVars[5]=myTime;
+   cllBindVarCount=6;
+
+   status = cmlExecuteNoAnswerSql(
+	  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?,?,?,?,?,?)",
+	  icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE, "cmlAudit5 insert failure %d", status);
+   }
    return(status);
 }

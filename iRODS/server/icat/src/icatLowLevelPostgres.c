@@ -349,7 +349,9 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    SQLUINTEGER     precision;
    SQLSMALLINT     scale;
    SQLINTEGER      displaysize;
+#ifndef NEW_ODBC
    static SQLINTEGER resultDataSize;
+#endif
 
    icatStmtStrct *myStatement;
 
@@ -517,7 +519,9 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
    SQLUINTEGER     precision;
    SQLSMALLINT     scale;
    SQLINTEGER      displaysize;
+#ifndef NEW_ODBC
    static SQLINTEGER resultDataSize;
+#endif
 
    icatStmtStrct *myStatement;
 
