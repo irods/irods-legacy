@@ -18,17 +18,17 @@ rodsObjStat_t **rodsObjStatOut)
 {
     int status;
 
-    status = irsObjStat (rsComm, dataObjInp, 0, rodsObjStatOut);
+    status = __rsObjStat (rsComm, dataObjInp, 0, rodsObjStatOut);
 
     return (status);
 }
 
-/* irsObjStat - internal version of irsObjStat. Mostly to deal with
+/* __rsObjStat - internal version of __rsObjStat. Mostly to deal with
  * specColl
  */
 
 int
-irsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int intenFlag,
+__rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int intenFlag,
 rodsObjStat_t **rodsObjStatOut)
 {
     int status;
@@ -436,7 +436,7 @@ int inCachOnly, specCollCache_t **specCollCache)
     status = querySpecColl (rsComm, objPath, &genQueryOut);
     if (status < 0) return (status);
 
-    status = queueSpecCollCache (genQueryOut);
+    status = queueSpecCollCache (genQueryOut, objPath);
     freeGenQueryOut (&genQueryOut);
 
     if (status < 0) return (status);
@@ -501,6 +501,12 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
     return (status);
 }
 
+/* querySpecColl - The query can produce multiple answer and only one
+ * is correct. e.g., objPath = /x/yabc can produce answers:
+ * /x/y, /x/ya, /x/yabc, etc. The calling subroutine need to screen
+ * /x/y, /x/ya out 
+ * check queueSpecCollCache () for screening.
+ */ 
 int 
 querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
 {
@@ -534,13 +540,17 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
         return (status);
     }
 
+
+#if 0	/* there could be multiple answer and only one is valid */ 
     if ((*genQueryOut)->rowCnt != 1) {
+	/* this could produce multiple answers. */
         rodsLog (LOG_ERROR,
           "querySpecColl: Too many result rowCnt = %d for %s",
           (*genQueryOut)->rowCnt, objPath);
         freeGenQueryOut (genQueryOut);
         return (SYS_TOO_MANY_QUERY_RESULT);
     }
+#endif
 
     return (0);
 }
@@ -690,11 +700,19 @@ char *subPath, dataObjInfo_t **dataObjInfo)
     return (objType);
 }
 
+/* queueSpecCollCache - queue the specColl given in genQueryOut.
+ * genQueryOut may contain multiple answer and only one
+ * is correct. e.g., objPath = /x/yabc can produce answers:
+ * /x/y, /x/ya, /x/yabc, etc. The calling subroutine need to screen
+ * /x/y, /x/ya out 
+ */
+
 int
-queueSpecCollCache (genQueryOut_t *genQueryOut)
+queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath)
 {
     specCollCache_t *tmpSpecCollCache;
     int status;
+    int i;
     sqlResult_t *dataId;
     sqlResult_t *ownerName;
     sqlResult_t *ownerZone;
@@ -704,10 +722,15 @@ queueSpecCollCache (genQueryOut_t *genQueryOut)
     sqlResult_t *collection;
     sqlResult_t *collInfo1;
     sqlResult_t *collInfo2;
+    char *tmpDataId, *tmpOwnerName, *tmpOwnerZone, *tmpCreateTime, 
+      *tmpModifyTime, *tmpCollType, *tmpCollection, *tmpCollInfo1,
+      *tmpCollInfo2;
     specColl_t *specColl;
 
+#if 0
     tmpSpecCollCache = malloc (sizeof (specCollCache_t));
     memset (tmpSpecCollCache, 0, sizeof (specCollCache_t));
+#endif
 
     if ((dataId = getSqlResultByInx (genQueryOut, COL_COLL_ID)) == NULL) {
         rodsLog (LOG_ERROR,
@@ -755,9 +778,47 @@ queueSpecCollCache (genQueryOut_t *genQueryOut)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    for (i = 0; i <= genQueryOut->rowCnt; i++) {
+	int len; 
+	char *tmpPtr;
+
+	tmpCollection = &collection->value[collection->len * i];
+
+        len = strlen (tmpCollection);
+	tmpPtr = objPath + len;
+
+	if (*tmpPtr == '\0' || *tmpPtr == '/') { 
+    	    tmpSpecCollCache = malloc (sizeof (specCollCache_t));
+    	    memset (tmpSpecCollCache, 0, sizeof (specCollCache_t));
+
+	    tmpDataId = &dataId->value[dataId->len * i];
+	    tmpOwnerName = &ownerName->value[ownerName->len * i];
+	    tmpOwnerZone = &ownerZone->value[ownerZone->len * i];
+	    tmpCreateTime = &createTime->value[createTime->len * i];
+	    tmpModifyTime = &modifyTime->value[modifyTime->len * i];
+	    tmpCollType = &collType->value[collType->len * i];
+	    tmpCollInfo1 = &collInfo1->value[collInfo1->len * i];
+	    tmpCollInfo2 = &collInfo2->value[collInfo2->len * i];
+
+	    specColl = &tmpSpecCollCache->specColl;
+	    status = resolveSpecCollType (tmpCollType, tmpCollection,
+	      tmpCollInfo1, tmpCollInfo2, specColl);
+	    if (status < 0) return status;
+
+            rstrcpy (tmpSpecCollCache->collId, tmpDataId, NAME_LEN);
+            rstrcpy (tmpSpecCollCache->ownerName, tmpOwnerName, NAME_LEN);
+            rstrcpy (tmpSpecCollCache->ownerZone, tmpOwnerZone, NAME_LEN);
+            rstrcpy (tmpSpecCollCache->createTime, tmpCreateTime, NAME_LEN);
+            rstrcpy (tmpSpecCollCache->modifyTime, tmpModifyTime, NAME_LEN);
+            tmpSpecCollCache->next = SpecCollCacheHead;
+            SpecCollCacheHead = tmpSpecCollCache;
+	    return 0;
+	}
+    }
+#if 0
     specColl = &tmpSpecCollCache->specColl;
-    status = resolveSpecCollType (collType->value, collection->value,
-      collInfo1->value, collInfo2->value, specColl);
+    status = resolveSpecCollType (collType->value, 
+      collection->value, collInfo1->value, collInfo2->value, specColl);
 
     if (status < 0) return status;
 
@@ -769,8 +830,9 @@ queueSpecCollCache (genQueryOut_t *genQueryOut)
 
     tmpSpecCollCache->next = SpecCollCacheHead;
     SpecCollCacheHead = tmpSpecCollCache;
+#endif
 
-    return 0;
+    return CAT_NO_ROWS_FOUND;
 }
 
 int

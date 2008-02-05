@@ -42,7 +42,7 @@ int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 rodsObjStat_t **rodsObjStatOut);
 int
-irsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int interFlag,
+__rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int interFlag,
 rodsObjStat_t **rodsObjStatOut);
 int
 _rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
@@ -50,7 +50,7 @@ rodsObjStat_t **rodsObjStatOut);
 int
 querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut);
 int
-queueSpecCollCache (genQueryOut_t *genQueryOut);
+queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath);
 int
 queueSpecCollCacheWithObjStat (rodsObjStat_t *rodsObjStatOut);
 specCollCache_t *

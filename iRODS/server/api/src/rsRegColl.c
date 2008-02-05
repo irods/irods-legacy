@@ -18,7 +18,7 @@ rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp)
     memset (&dataObjInp, 0, sizeof (dataObjInp));
 
     rstrcpy (dataObjInp.objPath, regCollInp->collName, MAX_NAME_LEN);
-    status = irsObjStat (rsComm, &dataObjInp, 1, &rodsObjStatOut);
+    status = __rsObjStat (rsComm, &dataObjInp, 1, &rodsObjStatOut);
     if (status >= 0) {
         if (rodsObjStatOut->specColl != NULL) {
             rodsLog (LOG_ERROR,

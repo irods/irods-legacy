@@ -54,7 +54,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 #endif
     /* dataObj only */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
-    status = irsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
+    status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
     resolveStatForStructFileOpr (&dataObjInp->condInput, rodsObjStatOut);
     if (rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
 	return (USER_INPUT_PATH_ERR);
