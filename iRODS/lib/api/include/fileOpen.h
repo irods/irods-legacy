@@ -18,21 +18,21 @@
 
 /* definition for otherFlags */
 
-#define CHK_PERM_FLAG		0x1000000
-#define UNIQUE_REM_COMM_FLAG	0x2000000
-#define FORCE_FLAG		0x4000000
+#define CHK_PERM_FLAG		0x1
+#define UNIQUE_REM_COMM_FLAG	0x2
+#define FORCE_FLAG		0x4
 
 typedef struct {
     fileDriverType_t fileType;
+    int otherFlags;	/* for chkPerm, uniqueRemoteConn */
     rodsHostAddr_t addr;
     char fileName[MAX_NAME_LEN];
     int flags;
     int mode;
     rodsLong_t dataSize;
-    int otherFlags;	/* for chkPerm, uniqueRemoteConn */
 } fileOpenInp_t;
     
-#define fileOpenInp_PI "int fileType; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize; int otherFlags;"
+#define fileOpenInp_PI "int fileType; int otherFlags; struct RHostAddr_PI; str fileName[MAX_NAME_LEN]; int flags; int mode; double dataSize;"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_OPEN rsFileOpen
