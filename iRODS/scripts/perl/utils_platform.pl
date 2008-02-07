@@ -1163,8 +1163,13 @@ sub getProcessIds
 		{
 			if ( $line =~ /$pattern/i )
 			{
-				my @columns = split( " ", $line );
-				push( @pids, $columns[$col] );
+				if ( $line =~ /<defunct>/ ) {
+					# Skip Zombies (at least on Linux)
+				}
+				else {
+					my @columns = split( " ", $line );
+					push( @pids, $columns[$col] );
+				}
 			}
 		}
 	}
