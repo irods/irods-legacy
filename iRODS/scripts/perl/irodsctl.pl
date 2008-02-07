@@ -485,7 +485,7 @@ sub doStatus
 	{
 		foreach $serverType (keys %serverPids)
 		{
-			my @pids = $serverPids{$serverType};
+			my @pids = @{$serverPids{$serverType}};
 			printSubtitle( $serverType . ":\n" );
 			foreach $pid (@pids)
 			{
@@ -1049,7 +1049,7 @@ sub stopIrods
 	foreach $serverType (keys %servers)
 	{
 		my $processName = $servers{$serverType};
-		@pids = getProcessIds( $processName );
+		my @pids = getProcessIds( $processName );
 		if ( $#pids >= 0 )
 		{
 			$didNotDie = 1;
@@ -1186,7 +1186,7 @@ sub getIrodsProcessIds()
 		my $processName = $servers{$serverType};
 		my @pids = getProcessIds( $processName );
 		next if ( $#pids < 0 );
-		@serverPids{$serverType} = @pids;
+		$serverPids{$serverType} = [ @pids ];
 	}
 	return %serverPids;
 }
