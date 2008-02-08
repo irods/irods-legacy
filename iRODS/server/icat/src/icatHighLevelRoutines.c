@@ -1758,13 +1758,23 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       count++;
    }
    if (collInfo->collInfo1 != NULL && strlen(collInfo->collInfo1)>0) {
-      cllBindVars[cllBindVarCount++]=collInfo->collInfo1;
+      if (strcmp(collInfo->collInfo1,"NULL_SPECIAL_VALUE")==0) {
+         /* A special value to indicate NULL, used by icatMiscTest.pl */
+         cllBindVars[cllBindVarCount++]="";
+      } else {
+         cllBindVars[cllBindVarCount++]=collInfo->collInfo1;
+      }
       if (count>0)  strncat(tSQL, ",", MAX_SQL_SIZE);
       strncat(tSQL, "coll_info1=? ", MAX_SQL_SIZE);
       count++;
    }
    if (collInfo->collInfo2 != NULL && strlen(collInfo->collInfo2)>0) {
-      cllBindVars[cllBindVarCount++]=collInfo->collInfo2;
+      if (strcmp(collInfo->collInfo2,"NULL_SPECIAL_VALUE")==0) {
+         /* A special value to indicate NULL, used by icatMiscTest.pl */
+         cllBindVars[cllBindVarCount++]="";
+      } else {
+         cllBindVars[cllBindVarCount++]=collInfo->collInfo2;
+      }
       if (count>0)  strncat(tSQL, ",", MAX_SQL_SIZE);
       strncat(tSQL, "coll_info2=? ", MAX_SQL_SIZE);
       count++;
