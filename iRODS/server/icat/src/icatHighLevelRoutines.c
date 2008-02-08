@@ -1748,7 +1748,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    count=0;
    if (collInfo->collType != NULL && strlen(collInfo->collType)>0) {
       if (strcmp(collInfo->collType,"NULL_SPECIAL_VALUE")==0) {
-	 /* A special value to indicate NULL, used by icatMiscTest.pl */
+	 /* A special value to indicate NULL */
 	 cllBindVars[cllBindVarCount++]="";
       }
       else {
@@ -1759,7 +1759,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    }
    if (collInfo->collInfo1 != NULL && strlen(collInfo->collInfo1)>0) {
       if (strcmp(collInfo->collInfo1,"NULL_SPECIAL_VALUE")==0) {
-         /* A special value to indicate NULL, used by icatMiscTest.pl */
+         /* A special value to indicate NULL */
          cllBindVars[cllBindVarCount++]="";
       } else {
          cllBindVars[cllBindVarCount++]=collInfo->collInfo1;
@@ -1770,7 +1770,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    }
    if (collInfo->collInfo2 != NULL && strlen(collInfo->collInfo2)>0) {
       if (strcmp(collInfo->collInfo2,"NULL_SPECIAL_VALUE")==0) {
-         /* A special value to indicate NULL, used by icatMiscTest.pl */
+         /* A special value to indicate NULL */
          cllBindVars[cllBindVarCount++]="";
       } else {
          cllBindVars[cllBindVarCount++]=collInfo->collInfo2;
