@@ -12,6 +12,7 @@
 #include "rods.h"
 #include "rcConnect.h"
 #include "objInfo.h"
+#include "structFileSync.h"
 
 typedef struct {
     structFileType_t		type; 
@@ -31,6 +32,7 @@ typedef struct {
     int         	(*subStructFileReaddir)();
     int         	(*subStructFileClosedir)();
     int         	(*subStructFileTruncate)();
+    int         	(*structFileSync)();
 } structFileDriver_t;
 
 int
@@ -71,5 +73,7 @@ int
 subStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile);
 int
 subStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile);
+int
+structFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 
 #endif	/* STRUCT_FILE_DRIVER_H */

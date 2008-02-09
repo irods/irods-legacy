@@ -284,3 +284,22 @@ subStructFileIndexLookup (structFileType_t myType)
     return (FILE_INDEX_LOOKUP_ERR);
 }
 
+int
+structFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+{
+    structFileType_t myType;
+    int subStructFileInx;
+    int status;
+
+    myType = structFileOprInp->specColl->type;
+
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
+    }
+
+    status = StructFileDriverTable[subStructFileInx].structFileSync (rsComm, 
+      structFileOprInp);
+    return (status);
+
+}
+

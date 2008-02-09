@@ -101,7 +101,8 @@ rodsObjStat_t **rodsObjStatOut)
 
     if (tmpStr == NULL || strcmp (tmpStr, "collection") == 0) {
         status = collStat (rsComm, dataObjInp, rodsObjStatOut);
-        if (status >= 0) {
+	/* specColl may already been obtained from collStat */
+        if (status >= 0 && (*rodsObjStatOut)->specColl == NULL) {
 	    if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
               &specCollCache) >= 0) {
 #if 0   /* XXXXXX specColl is cached */
@@ -157,6 +158,8 @@ rodsObjStat_t **rodsObjStatOut)
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
+    /* XXXX COL_COLL_NAME added for queueSpecColl */
+    addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_COLL_OWNER_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_COLL_OWNER_ZONE, 1);
     addInxIval (&genQueryInp.selectInp, COL_COLL_CREATE_TIME, 1);
@@ -225,9 +228,19 @@ rodsObjStat_t **rodsObjStatOut)
             rstrcpy ((*rodsObjStatOut)->modifyTime, modifyTime->value,
               NAME_LEN);
 
-#if 0	/* XXXXX not needed ? */
 	    if (strlen (collType->value) > 0) {
-		specColl_t *specColl;
+		specCollCache_t *specCollCache;
+
+		if ((specCollCache = 
+		  matchSpecCollCache (dataObjInp->objPath)) != NULL) {
+		    (*rodsObjStatOut)->specColl = &specCollCache->specColl;
+		} else {
+    		    status = queueSpecCollCache (genQueryOut, 
+		      dataObjInp->objPath);
+    		    if (status < 0) return (status);
+    		    (*rodsObjStatOut)->specColl = &SpecCollCacheHead->specColl;
+		}
+#if 0	/* XXXXX not needed ? */
     		specColl = (*rodsObjStatOut)->specColl =
      		 (specColl_t *) malloc (sizeof (specColl_t));
     		memset (specColl, 0, sizeof (specColl_t));
@@ -236,8 +249,8 @@ rodsObjStat_t **rodsObjStatOut)
 		  specColl);
 
 		if (status < 0) return (status);
-	    }
 #endif
+	    }
 	}
 #if 0
     } else {

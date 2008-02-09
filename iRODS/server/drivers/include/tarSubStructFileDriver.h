@@ -12,6 +12,8 @@
 #include "rods.h"
 #include "structFileDriver.h"
 
+#define CACHE_DIR_STR "cacheDir"
+
 typedef struct structFileDesc {
     int inuseFlag;
     rsComm_t *rsComm;
@@ -108,5 +110,7 @@ int
 getSubStructFilePhyPath (char *phyPath, specColl_t *specColl,
 char *subFilePath);
 int
-modTarCollInfo2 (rsComm_t *rsComm, specColl_t *specColl);
+tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+int
+syncCacheDirToTarfile (int structFileInx);
 #endif	/* TAR_STRUCT_FILE_DRIVER_H_H */

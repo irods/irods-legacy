@@ -17,6 +17,11 @@
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
 
+/* prototype here because typedef TAR */
+int
+writeDirToTarStruct (rsComm_t *rsComm, char *fileDir, int fileType,
+specColl_t *specColl, TAR *t);
+
 tartype_t irodstype = { (openfunc_t) irodsTarOpen, (closefunc_t) irodsTarClose,
         (readfunc_t) irodsTarRead, (writefunc_t) irodsTarWrite
 };
@@ -178,7 +183,7 @@ tarSubStructFileWrite (rsComm_t *rsComm, int subInx, void *buf, int len)
 	specColl = StructFileDesc[structFileInx].specColl;
 	if (specColl->cacheDirty == 0) {
 	    specColl->cacheDirty = 1;    
-	    status1 = modTarCollInfo2 (rsComm, specColl);
+	    status1 = modCollInfo2 (rsComm, specColl, 0);
 	    if (status1 < 0) return status1;
         }
     }
@@ -248,7 +253,7 @@ tarSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
         specColl = StructFileDesc[structFileInx].specColl;
         if (specColl->cacheDirty == 0) {
             specColl->cacheDirty = 1;
-            status1 = modTarCollInfo2 (rsComm, specColl);
+            status1 = modCollInfo2 (rsComm, specColl, 0);
             if (status1 < 0) return status1;
         }
     }
@@ -384,7 +389,7 @@ char *newFileName)
         /* cache has been written */
         if (specColl->cacheDirty == 0) {
             specColl->cacheDirty = 1;
-            status1 = modTarCollInfo2 (rsComm, specColl);
+            status1 = modCollInfo2 (rsComm, specColl, 0);
             if (status1 < 0) return status1;
         }
     }
@@ -429,7 +434,7 @@ tarSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile)
         /* cache has been written */
         if (specColl->cacheDirty == 0) {
             specColl->cacheDirty = 1;
-            status1 = modTarCollInfo2 (rsComm, specColl);
+            status1 = modCollInfo2 (rsComm, specColl, 0);
             if (status1 < 0) return status1;
         }
     }
@@ -473,7 +478,7 @@ tarSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
         /* cache has been written */
         if (specColl->cacheDirty == 0) {
             specColl->cacheDirty = 1;
-            status1 = modTarCollInfo2 (rsComm, specColl);
+            status1 = modCollInfo2 (rsComm, specColl, 0);
             if (status1 < 0) return status1;
         }
     }
@@ -612,11 +617,81 @@ tarSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
         /* cache has been written */
         if (specColl->cacheDirty == 0) {
             specColl->cacheDirty = 1;
-            status1 = modTarCollInfo2 (rsComm, specColl);
+            status1 = modCollInfo2 (rsComm, specColl, 0);
             if (status1 < 0) return status1;
         }
     }
     return status;
+}
+
+int
+tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+{
+    int structFileInx;
+    specColl_t *specColl;
+    int rescTypeInx;
+    rescInfo_t *rescInfo;
+    fileRmdirInp_t fileRmdirInp;
+    int status = 0;
+
+    structFileInx = rsTarStructFileOpen (rsComm, structFileOprInp->specColl);
+
+    if (structFileInx < 0) {
+        rodsLog (LOG_NOTICE,
+         "tarStructFileSync: rsTarStructFileOpen error for %s, stat=%d",
+         structFileOprInp->specColl->collection, structFileInx);
+        return (structFileInx);
+    }
+
+    /* use the specColl in StructFileDesc. More up to date */
+    if (StructFileDesc[structFileInx].openCnt > 0) {
+	return (SYS_STRUCT_FILE_BUSY_ERR);
+    }
+
+    rescInfo = StructFileDesc[structFileInx].rescInfo;
+    rescTypeInx = rescInfo->rescTypeInx;
+    specColl = StructFileDesc[structFileInx].specColl;
+    if ((structFileOprInp->oprType & DELETE_STRUCT_FILE) != 0) {
+	/* remove cache and the struct file */
+	return (status);
+    }
+
+    if (strlen (specColl->cacheDir) > 0) {
+	if (specColl->cacheDirty > 0) {
+	    /* write the tar file and register no dirty */
+	    status = syncCacheDirToTarfile (structFileInx);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "tarStructFileSync: syncCacheDirToTarfile %s error, stat=%d",
+                  specColl->cacheDir, status);
+                return (status);
+            }
+	    specColl->cacheDirty = 0;
+	    status = modCollInfo2 (rsComm, specColl, 0);
+            if (status < 0) return status;
+	}
+
+        if ((structFileOprInp->oprType & PURGE_STRUCT_FILE_CACHE) != 0) {
+            /* unregister cache before remove */
+	    status = modCollInfo2 (rsComm, specColl, 1);
+	    if (status < 0) return status;
+            /* remove cache */
+            memset (&fileRmdirInp, 0, sizeof (fileRmdirInp));
+            fileRmdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
+            rstrcpy (fileRmdirInp.dirName, specColl->cacheDir,
+              MAX_NAME_LEN);
+            rstrcpy (fileRmdirInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+	    fileRmdirInp.flags = RMDIR_RECUR;
+            status = rsFileRmdir (rsComm, &fileRmdirInp);
+	    if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "tarStructFileSync: XXXXX Rmdir error for %s, status = %d",
+	          specColl->cacheDir, status);
+                return (status);
+	    }
+        }
+    }
+    return (status);
 }
 
 int
@@ -806,7 +881,7 @@ stageTarStructFile (int structFileInx)
 	    return SYS_TAR_STRUCT_FILE_EXTRACT_ERR - errno; 
 	}
 	/* register the CacheDir */
-	status = modTarCollInfo2 (rsComm, specColl);
+	status = modCollInfo2 (rsComm, specColl, 0);
         if (status < 0) return status;
 
 #if 0
@@ -856,8 +931,8 @@ mkTarCacheDir (int structFileInx)
     rstrcpy (fileMkdirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
 
     while (1) {
-        snprintf (fileMkdirInp.dirName, MAX_NAME_LEN, "%s.dir%d",
-          specColl->phyPath, i);
+        snprintf (fileMkdirInp.dirName, MAX_NAME_LEN, "%s.%s%d",
+          specColl->phyPath, CACHE_DIR_STR, i);
         status = rsFileMkdir (rsComm, &fileMkdirInp);
         if (status >= 0) {
 	    break;
@@ -1133,24 +1208,44 @@ char *subFilePath)
 }
 
 int
-modTarCollInfo2 (rsComm_t *rsComm, specColl_t *specColl)
+syncCacheDirToTarfile (int structFileInx)
 {
+    TAR *t;
     int status;
-    char collInfo2[MAX_NAME_LEN];
-    collInp_t modCollInp;
+    int myMode;
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
 
-    memset (&modCollInp, 0, sizeof (modCollInp));
-    rstrcpy (modCollInp.collName, specColl->collection, MAX_NAME_LEN);
-    makeCachedStructFileStr (collInfo2, specColl);
-    addKeyVal (&modCollInp.condInput, COLLECTION_TYPE_KW,
-      TAR_STRUCT_FILE_STR); /* need this or rsModColl fail */
-    addKeyVal (&modCollInp.condInput, COLLECTION_INFO2_KW, collInfo2);
-    status = rsModColl (rsComm, &modCollInp);
+
+    if (specColl == NULL || specColl->cacheDirty <= 0 || 
+      strlen (specColl->cacheDir) == 0) return 0;
+
+    myMode = encodeIrodsTarfd (structFileInx, DEFAULT_FILE_MODE);
+
+    status = tar_open (&t, specColl->phyPath, &irodstype,
+      O_WRONLY, myMode, TAR_GNU);
+
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "tarSubStructFileWrite:rsModColl error for Coll %s,stat=%d",
-         modCollInp.collName, status);
+          "syncCacheDirToTarfile: tar_open error for %s, errno = %d",
+          specColl->phyPath, errno);
+        return (SYS_TAR_OPEN_ERR - errno);
     }
-    return status;
+
+    status = tar_append_tree (t, specColl->cacheDir, ".");
+
+   if (tar_close(t) != 0) {
+        rodsLog (LOG_NOTICE,
+          "syncCacheDirToTarfile: tar_close error for %s, errno = %d",
+          specColl->phyPath, errno);
+	if (status < 0) {
+	    return (status);
+	} else {
+            return (SYS_TAR_CLOSE_ERR - errno);
+	}
+    }
+
+    /* XXXXX need to register size change */
+
+    return (0);
 }
 

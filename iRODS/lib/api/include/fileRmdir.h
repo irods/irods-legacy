@@ -16,13 +16,17 @@
 
 #include "fileDriver.h"
 
+/* definition for flags of fileRmdirInp_t */
+#define RMDIR_RECUR	0x1
+
 typedef struct {
     fileDriverType_t fileType;
+    int flags;
     rodsHostAddr_t addr;
     char dirName[MAX_NAME_LEN];
 } fileRmdirInp_t;
     
-#define fileRmdirInp_PI "int fileType; struct RHostAddr_PI; str dirName[MAX_NAME_LEN];"
+#define fileRmdirInp_PI "int fileType; int flag; struct RHostAddr_PI; str dirName[MAX_NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_FILE_RMDIR rsFileRmdir

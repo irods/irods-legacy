@@ -46,5 +46,7 @@ int
 haawSubStructFileClosedir (rsComm_t *rsComm, int fd);
 int
 haawSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile);
+int
+haawStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 
 #endif	/* HAAW_STRUCT_FILE_DRIVER_H_H */

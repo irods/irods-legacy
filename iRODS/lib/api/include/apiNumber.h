@@ -94,6 +94,8 @@
 #define RCV_XMSG_AN 			656
 #define SUB_STRUCT_FILE_GET_AN 			657
 #define SUB_STRUCT_FILE_PUT_AN 			658
+#define SYNC_MOUNTED_COLL_AN 			659
+#define STRUCT_FILE_SYNC_AN 			660
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

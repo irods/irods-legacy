@@ -71,6 +71,7 @@ typedef struct {
    char *ticketFileString;
    int user;
    char *userString;
+   int unmount;
    int verbose;
    int veryVerbose;
    int zone;

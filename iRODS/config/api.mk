@@ -279,3 +279,9 @@ LIB_API_OBJS += $(libApiObjDir)/rcSubStructFileGet.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsSubStructFilePut.o
 LIB_API_OBJS += $(libApiObjDir)/rcSubStructFilePut.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsSyncMountedColl.o
+LIB_API_OBJS += $(libApiObjDir)/rcSyncMountedColl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsStructFileSync.o
+LIB_API_OBJS += $(libApiObjDir)/rcStructFileSync.o

@@ -121,3 +121,9 @@ haawSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
     return (0);
 }
 
+int
+haawStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+{
+    return (0);
+}
+

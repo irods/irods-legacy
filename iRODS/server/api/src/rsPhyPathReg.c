@@ -6,13 +6,14 @@
 #include "phyPathReg.h"
 #include "rodsLog.h"
 #include "icatDefines.h"
-#include "fileUnlink.h"
-#include "unregDataObj.h"
 #include "objMetaOpr.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 #include "miscServerFunct.h"
+#if 0
+#include "unregDataObj.h"
+#include "fileUnlink.h"
 #include "regDataObj.h"
 #include "fileOpendir.h"
 #include "fileReaddir.h"
@@ -24,6 +25,8 @@
 #include "modColl.h"
 #include "regColl.h"
 #include "dataObjCreate.h"
+#endif
+#include "apiHeaderAll.h"
 
 int
 rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
@@ -228,11 +231,23 @@ rescInfo_t *rescInfo)
     dataObjInp_t subPhyPathRegInp;
     fileReaddirInp_t fileReaddirInp;
     rodsDirent_t *rodsDirent = NULL;
+    rodsObjStat_t *rodsObjStatOut = NULL;
 
-    memset (&collCreateInp, 0, sizeof (collCreateInp));
-    rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
-    /* create the coll just in case it does not exist */
-    rsCollCreate (rsComm, &collCreateInp);
+    status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
+    if (status < 0) {
+        memset (&collCreateInp, 0, sizeof (collCreateInp));
+        rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, 
+	  MAX_NAME_LEN);
+        /* create the coll just in case it does not exist */
+        status = rsCollCreate (rsComm, &collCreateInp);
+	if (status < 0) return status;
+    } else if (rodsObjStatOut->specColl != NULL) {
+        free (rodsObjStatOut);
+        rodsLog (LOG_ERROR,
+          "mountFileDir: %s already mounted", phyPathRegInp->objPath);
+        return (SYS_MOUNT_MOUNTED_COLL_ERR);
+    }
+    free (rodsObjStatOut);
 
     memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
 
@@ -312,7 +327,18 @@ rescInfo_t *rescInfo)
     int status;
     fileStatInp_t fileStatInp;
     rodsStat_t *myStat = NULL;
+    rodsObjStat_t *rodsObjStatOut = NULL;
 
+    status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
+    if (status < 0) return status;
+
+    if (rodsObjStatOut->specColl != NULL) {
+        free (rodsObjStatOut);
+        rodsLog (LOG_ERROR,
+          "mountFileDir: %s already mounted", phyPathRegInp->objPath);
+        return (SYS_MOUNT_MOUNTED_COLL_ERR);
+    }
+    free (rodsObjStatOut);
 
     memset (&fileStatInp, 0, sizeof (fileStatInp));
 
@@ -371,23 +397,37 @@ int
 unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 {
     int status;
-#if 0
-    collInfo_t collInfo;
-
-    memset (&collInfo, 0, sizeof (collInfo));
-
-    rstrcpy (collInfo.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
-
-    status = chlModColl (rsComm, &collInfo);
-#endif
     collInp_t modCollInp;
+    rodsObjStat_t *rodsObjStatOut = NULL;
+
+    status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
+    if (status < 0) {
+        return status;
+    } else if (rodsObjStatOut->specColl == NULL) {
+        free (rodsObjStatOut);
+        rodsLog (LOG_ERROR,
+          "unmountFileDir: %s not mounted", phyPathRegInp->objPath);
+        return (SYS_COLL_NOT_MOUNTED_ERR);
+    }
+
+    if (getStructFileType (rodsObjStatOut->specColl) >= 0) {    
+	/* a struct file */
+        status = _rsSyncMountedColl (rsComm, rodsObjStatOut->specColl,
+          PURGE_STRUCT_FILE_CACHE);
+	if (status < 0) {
+	    free (rodsObjStatOut);
+	    return (status);
+	}
+    }
+
+    free (rodsObjStatOut);
 
     memset (&modCollInp, 0, sizeof (modCollInp));
     rstrcpy (modCollInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
     addKeyVal (&modCollInp.condInput, COLLECTION_TYPE_KW, 
       "NULL_SPECIAL_VALUE");
-    addKeyVal (&modCollInp.condInput, COLLECTION_INFO1_KW, "");
-    addKeyVal (&modCollInp.condInput, COLLECTION_INFO2_KW, "");
+    addKeyVal (&modCollInp.condInput, COLLECTION_INFO1_KW, "NULL_SPECIAL_VALUE");
+    addKeyVal (&modCollInp.condInput, COLLECTION_INFO2_KW, "NULL_SPECIAL_VALUE");
 
     status = rsModColl (rsComm, &modCollInp);
 
@@ -403,6 +443,9 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     char *structFilePath = NULL;
     dataObjInp_t dataObjInp;
     char *tmpStr;
+    int len;
+    rodsObjStat_t *rodsObjStatOut = NULL;
+    specCollCache_t *specCollCache = NULL;
 
     if ((structFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {
@@ -411,6 +454,36 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
           phyPathRegInp->objPath);
         return (SYS_INVALID_FILE_PATH);
     }
+
+    len = strlen (phyPathRegInp->objPath);
+    if (strncmp (structFilePath, phyPathRegInp->objPath, len) == 0 &&
+     (structFilePath[len] == '\0' || structFilePath[len] == '/')) {
+        rodsLog (LOG_ERROR,
+          "structFileReg: structFilePath %s inside collection %s",
+          structFilePath, phyPathRegInp->objPath);
+        return (SYS_STRUCT_FILE_INMOUNTED_COLL);
+    }
+
+    /* see if the struct file is in spec coll */
+
+    if (getSpecCollCache (rsComm, structFilePath, 0,  &specCollCache) >= 0) {
+        rodsLog (LOG_ERROR,
+          "structFileReg: structFilePath %s is in a mounted path",
+          structFilePath);
+        return (SYS_STRUCT_FILE_INMOUNTED_COLL);
+    }
+
+    status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
+    if (status < 0) return status;
+ 
+    if (rodsObjStatOut->specColl != NULL) {
+	free (rodsObjStatOut);
+        rodsLog (LOG_ERROR,
+          "structFileReg: %s already mounted", phyPathRegInp->objPath);
+	return (SYS_MOUNT_MOUNTED_COLL_ERR);
+    }
+
+    free (rodsObjStatOut);
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, structFilePath, sizeof (dataObjInp));

@@ -91,8 +91,8 @@ typedef enum {          /* specColl operation type */
     NORMAL_OPR_ON_STRUCT_FILE_COLL,
 } structFileOprType_t;
     
-#define HAAW_STRUCT_FILE_STR		"haaw structFile"
-#define TAR_STRUCT_FILE_STR		"tar structFile"
+#define HAAW_STRUCT_FILE_STR		"haawStructFile"
+#define TAR_STRUCT_FILE_STR		"tarStructFile"
 #define MOUNT_POINT_STR		"mountPoint"
 #define INHERIT_PAR_SPEC_COLL_STR	"inheritParentSpecColl"
 

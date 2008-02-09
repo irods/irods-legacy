@@ -208,6 +208,9 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          rodsArgs->user=True;
          rodsArgs->userString=optarg;
          break;
+      case 'U':
+         rodsArgs->unmount=True;
+         break;
       case 'v':
          rodsArgs->verbose=True;
          break;

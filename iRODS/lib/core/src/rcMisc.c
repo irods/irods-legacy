@@ -2671,6 +2671,12 @@ parseCachedStructFileStr (char *collInfo2, specColl_t *specColl)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    if (strlen (collInfo2) == 0) {
+	/* empty */
+	specColl->cacheDir[0] = specColl->resource[0] = '\0';
+	return (0);
+    }
+
     tmpPtr1 = strstr (collInfo2, ";;;");
 
     if (tmpPtr1 == NULL) {

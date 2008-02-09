@@ -2502,3 +2502,29 @@ dataObjInfo_t **dataObjInfo)
     return(status);
 }
 
+int
+modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag)
+{
+    int status;
+    char collInfo2[MAX_NAME_LEN];
+    collInp_t modCollInp;
+
+    memset (&modCollInp, 0, sizeof (modCollInp));
+    rstrcpy (modCollInp.collName, specColl->collection, MAX_NAME_LEN);
+    addKeyVal (&modCollInp.condInput, COLLECTION_TYPE_KW,
+      TAR_STRUCT_FILE_STR); /* need this or rsModColl fail */
+    if (clearFlag > 0) {
+	rstrcpy (collInfo2, "NULL_SPECIAL_VALUE", MAX_NAME_LEN);
+    } else {
+        makeCachedStructFileStr (collInfo2, specColl);
+    }
+    addKeyVal (&modCollInp.condInput, COLLECTION_INFO2_KW, collInfo2);
+    status = rsModColl (rsComm, &modCollInp);
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+         "tarSubStructFileWrite:rsModColl error for Coll %s,stat=%d",
+         modCollInp.collName, status);
+    }
+    return status;
+}
+

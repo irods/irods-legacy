@@ -99,4 +99,6 @@
 #include "rcvXmsg.h"
 #include "subStructFileGet.h"
 #include "subStructFilePut.h"
+#include "syncMountedColl.h"
+#include "structFileSync.h"
 #endif	/* API_HEADER_ALL_H */

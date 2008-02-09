@@ -156,4 +156,6 @@ getStructFileType (specColl_t *specColl);
 int
 getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfo);
+int
+modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag);
 #endif	/* OBJ_META_OPR_H */

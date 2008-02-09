@@ -60,7 +60,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/rsyncUtil.o \
 		$(libCoreObjDir)/sockComm.o \
 		$(libCoreObjDir)/stringOpr.o \
-		$(libCoreObjDir)/trimUtil.o
+		$(libCoreObjDir)/trimUtil.o	\
+		$(libCoreObjDir)/mcollUtil.o
 INCLUDES +=	-I$(libCoreIncDir)
 
 
