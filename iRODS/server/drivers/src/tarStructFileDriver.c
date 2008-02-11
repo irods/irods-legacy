@@ -58,10 +58,7 @@ tarSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
     if (status < 0) return status;
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-#if 0	/* XXXXX only UNIX_FILE_TYPE is support for cache */	
-    fileCreateInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileCreateInp.fileType = UNIX_FILE_TYPE;
+    fileCreateInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     rstrcpy (fileCreateInp.addr.hostAddr,
     StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
     fileCreateInp.mode = subFile->mode;
@@ -113,10 +110,7 @@ tarSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
     if (status < 0) return status;
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileOpenInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileOpenInp.fileType = UNIX_FILE_TYPE;
+    fileOpenInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     rstrcpy (fileOpenInp.addr.hostAddr,
     StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
     fileOpenInp.mode = subFile->mode;
@@ -247,10 +241,7 @@ tarSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
 
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileUnlinkInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileUnlinkInp.fileType = UNIX_FILE_TYPE;
+    fileUnlinkInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     rstrcpy (fileUnlinkInp.addr.hostAddr,
     StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
 
@@ -297,10 +288,7 @@ rodsStat_t **subStructFileStatOut)
     if (status < 0) return status;
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileStatInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileStatInp.fileType = UNIX_FILE_TYPE;
+    fileStatInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     rstrcpy (fileStatInp.addr.hostAddr,  
     StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
 
@@ -383,10 +371,7 @@ char *newFileName)
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
 
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileRenameInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileRenameInp.fileType = UNIX_FILE_TYPE;
+    fileRenameInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     status = getSubStructFilePhyPath (fileRenameInp.oldFileName, specColl,
       subFile->subFilePath);
     if (status < 0) return status;
@@ -432,10 +417,7 @@ tarSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile)
     }
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileMkdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileMkdirInp.fileType = UNIX_FILE_TYPE;
+    fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     status = getSubStructFilePhyPath (fileMkdirInp.dirName, specColl,
       subFile->subFilePath);
     if (status < 0) return status;
@@ -479,10 +461,7 @@ tarSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
     }
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileMkdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileMkdirInp.fileType = UNIX_FILE_TYPE;
+    fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     status = getSubStructFilePhyPath (fileMkdirInp.dirName, specColl,
       subFile->subFilePath);
     if (status < 0) return status;
@@ -538,10 +517,7 @@ tarSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
     if (status < 0) return status;
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileOpendirInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileOpendirInp.fileType = UNIX_FILE_TYPE;
+    fileOpendirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     rstrcpy (fileOpendirInp.addr.hostAddr,
     StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
 
@@ -624,10 +600,7 @@ tarSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
     }
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileTruncateInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileTruncateInp.fileType = UNIX_FILE_TYPE;
+    fileTruncateInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     status = getSubStructFilePhyPath (fileTruncateInp.fileName, specColl,
       subFile->subFilePath);
     if (status < 0) return status;
@@ -704,10 +677,7 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 	    if (status < 0) return status;
             /* remove cache */
             memset (&fileRmdirInp, 0, sizeof (fileRmdirInp));
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-            fileRmdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-            fileRmdirInp.fileType = UNIX_FILE_TYPE;
+            fileRmdirInp.fileType = UNIX_FILE_TYPE;  /* the type for cache */
             rstrcpy (fileRmdirInp.dirName, specColl->cacheDir,
               MAX_NAME_LEN);
             rstrcpy (fileRmdirInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
@@ -956,10 +926,7 @@ mkTarCacheDir (int structFileInx)
 
     memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
     rescTypeInx = rescInfo->rescTypeInx;
-#if 0   /* XXXXX only UNIX_FILE_TYPE is support for cache */
-    fileMkdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
-#endif
-    fileMkdirInp.fileType = UNIX_FILE_TYPE;
+    fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     fileMkdirInp.mode = DEFAULT_DIR_MODE;
     rstrcpy (fileMkdirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
 
