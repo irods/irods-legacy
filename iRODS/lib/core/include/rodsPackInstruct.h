@@ -98,7 +98,7 @@
 #if 0
 #define SpecCollMeta_PI "str objType[NAME_LEN]; str collection[MAX_NAME_LEN]; str collInfo1[MAX_NAME_LEN]; str collInfo2[MAX_NAME_LEN];" 
 #endif
-#define SpecColl_PI "int class; int type; str collection[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str resource[NAME_LEN]; str phyPath[MAX_NAME_LEN]; str cacheDir[MAX_NAME_LEN]; int cacheDirty; int dummy;"
+#define SpecColl_PI "int class; int type; str collection[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str resource[NAME_LEN]; str phyPath[MAX_NAME_LEN]; str cacheDir[MAX_NAME_LEN]; int cacheDirty; int replNum;"
 #define SubFile_PI "struct RHostAddr_PI; str subFilePath[MAX_NAME_LEN]; int mode; int flags; double offset; struct *SpecColl_PI;" 
 #define XmsgTicketInfo_PI "int sendTicket; int rcvTicket; int expireTime; int flag;"
 #define SendXmsgInfo_PI "int msgNumber; str msgType[HEADER_TYPE_LEN]; int numRcv; int flag; str *msg; int numDel; str *delAddress[numDel]; int *delPort(numDel); str *miscInfo;"

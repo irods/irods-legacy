@@ -667,6 +667,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         rstrcpy (specColl->phyPath,
           tmpDataObjInfo->filePath, MAX_NAME_LEN);
         rstrcpy (tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN);
+	specColl->replNum = tmpDataObjInfo->replNum;
 
 #if 0	/* do just one */
         while (tmpDataObjInfo != NULL) {

@@ -2528,3 +2528,36 @@ modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag)
     return status;
 }
 
+int
+regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
+rodsLong_t newSize)
+{
+    dataObjInfo_t dataObjInfo;
+    keyValPair_t regParam;
+    modDataObjMeta_t modDataObjMetaInp;
+    char tmpStr[MAX_NAME_LEN]; 
+    int status;
+
+    if (objPath == NULL) return USER__NULL_INPUT_ERR;
+
+    memset (&dataObjInfo, 0, sizeof (dataObjInfo));
+    memset (&regParam, 0, sizeof (regParam));
+    memset (&modDataObjMetaInp, 0, sizeof (modDataObjMetaInp));
+
+    rstrcpy (dataObjInfo.objPath, objPath, MAX_NAME_LEN);
+    dataObjInfo.replNum = replNum;
+    snprintf (tmpStr, MAX_NAME_LEN, "%lld", newSize);
+    addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
+
+    modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+    modDataObjMetaInp.regParam = &regParam;
+    status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+    if (status < 0) {
+       rodsLog (LOG_ERROR,
+          "regNewObjSize: rsModDataObjMeta error for %s, status = %d",
+          objPath, status);
+    }
+
+    return (status);
+}
+

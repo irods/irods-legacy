@@ -158,4 +158,7 @@ getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfo);
 int
 modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag);
+int
+regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
+rodsLong_t newSize);
 #endif	/* OBJ_META_OPR_H */

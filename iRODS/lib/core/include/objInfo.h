@@ -114,7 +114,7 @@ typedef struct SpecColl {
 				      * the cache tree is kept
 				      */
     int cacheDirty;		     /* Whether the cache has been written */ 
-    int dummy;
+    int replNum;
 } specColl_t;
 
 typedef enum {
