@@ -53,7 +53,7 @@ rodsDirent_t **rodsDirent, rodsServerHost_t *rodsServerHost)
     status = rcSubStructFileReaddir (rodsServerHost->conn, subStructFileReaddirInp,
       rodsDirent);
 
-    if (status < 0) {
+    if (status < 0 && status != -1) {
         rodsLog (LOG_NOTICE,
          "remoteSubStructFileReaddir: rcFileReaddir failed for fd %d",
          subStructFileReaddirInp->fd);
@@ -71,6 +71,12 @@ subStructFileFdOprInp_t *subStructFileReaddirInp, rodsDirent_t **rodsDirent)
 
     status = subStructFileReaddir (subStructFileReaddirInp->type, rsComm, 
       subStructFileReaddirInp->fd, rodsDirent);
+
+    if (status < 0 && status != -1) {
+        rodsLog (LOG_NOTICE,
+         "_rsSubStructFileReaddir: subStructFileReaddir failed for fd %d",
+         subStructFileReaddirInp->fd);
+    }
 
     return (status);
 }
