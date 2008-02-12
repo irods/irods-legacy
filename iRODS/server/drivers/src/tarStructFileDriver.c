@@ -849,8 +849,11 @@ matchStructFileDesc (specColl_t *specColl)
     int i;
 
     for (i = 1; i < NUM_STRUCT_FILE_DESC; i++) {
-        if (StructFileDesc[i].specColl == specColl &&
-	  StructFileDesc[i].inuseFlag == FD_INUSE)  {
+        if (StructFileDesc[i].inuseFlag == FD_INUSE &&
+	  StructFileDesc[i].specColl != NULL &&
+	   strcmp (StructFileDesc[i].specColl->collection, specColl->collection)	    == 0 &&
+	    strcmp (StructFileDesc[i].specColl->objPath, specColl->objPath) 
+	    == 0) {
             return (i);
         };
     }
