@@ -46,6 +46,9 @@ tarSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
         return (structFileInx);
     }
 
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
+
     subInx = allocTarSubFileDesc ();
 
     if (subInx < 0) return subInx;
@@ -97,6 +100,9 @@ tarSubStructFileOpen (rsComm_t *rsComm, subFile_t *subFile)
           specColl->objPath, structFileInx);
         return (structFileInx);
     }
+
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
 
     subInx = allocTarSubFileDesc ();
 
@@ -234,6 +240,9 @@ tarSubStructFileUnlink (rsComm_t *rsComm, subFile_t *subFile)
         return (structFileInx);
     }
 
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
+
     memset (&fileUnlinkInp, 0, sizeof (fileUnlinkInp));
     status = getSubStructFilePhyPath (fileUnlinkInp.fileName, specColl,
       subFile->subFilePath);
@@ -280,6 +289,9 @@ rodsStat_t **subStructFileStatOut)
 	  specColl->objPath, structFileInx);
         return (structFileInx);
     }
+
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
 
     memset (&fileStatInp, 0, sizeof (fileStatInp));
 
@@ -368,6 +380,9 @@ char *newFileName)
         return (structFileInx);
     }
 
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
+
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
 
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
@@ -416,6 +431,9 @@ tarSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile)
         return (structFileInx);
     }
 
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
+
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
     fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
     status = getSubStructFilePhyPath (fileMkdirInp.dirName, specColl,
@@ -459,6 +477,9 @@ tarSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
           specColl->objPath, structFileInx);
         return (structFileInx);
     }
+
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
     fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
@@ -504,6 +525,9 @@ tarSubStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile)
           specColl->objPath, structFileInx);
         return (structFileInx);
     }
+
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
 
     subInx = allocTarSubFileDesc ();
 
@@ -598,6 +622,9 @@ tarSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
           specColl->objPath, structFileInx);
         return (structFileInx);
     }
+
+    /* use the cached specColl. specColl may have changed */
+    specColl = StructFileDesc[structFileInx].specColl;
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
     fileTruncateInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
