@@ -411,7 +411,7 @@ tarSubStructFileMkdir (rsComm_t *rsComm, subFile_t *subFile)
 
     if (structFileInx < 0) {
         rodsLog (LOG_NOTICE,
-         "tarSubStructFileOpendir: rsTarStructFileOpen error for %s,stat=%d",
+         "tarSubStructFileMkdir: rsTarStructFileOpen error for %s,stat=%d",
           specColl->objPath, structFileInx);
         return (structFileInx);
     }
@@ -455,7 +455,7 @@ tarSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
 
     if (structFileInx < 0) {
         rodsLog (LOG_NOTICE,
-         "tarSubStructFileOpendir: rsTarStructFileOpen error for %s,stat=%d",
+         "tarSubStructFileRmdir: rsTarStructFileOpen error for %s,stat=%d",
           specColl->objPath, structFileInx);
         return (structFileInx);
     }
@@ -804,6 +804,13 @@ rsTarStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
     if ((status = getSpecCollCache (rsComm, specColl->collection, 0,
       &specCollCache)) >= 0) {
 	StructFileDesc[structFileInx].specColl = &specCollCache->specColl;
+	/* getSpecCollCache does not give phyPath nor resource */
+	rstrcpy (specCollCache->specColl.phyPath, specColl->phyPath, 
+	  MAX_NAME_LEN);
+	if (strlen (specCollCache->specColl.resource) == 0) {
+	    rstrcpy (specCollCache->specColl.resource, specColl->resource,
+	      NAME_LEN);
+	}
     } else {
         rodsLog (LOG_NOTICE,
           "rsTarStructFileOpen: getSpecCollCache error for %s, status = %d",
@@ -813,7 +820,7 @@ rsTarStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
 
     StructFileDesc[structFileInx].rsComm = rsComm;
 
-    status = resolveResc (specColl->resource, 
+    status = resolveResc (StructFileDesc[structFileInx].specColl->resource, 
       &StructFileDesc[structFileInx].rescInfo);
 
     if (status < 0) {
