@@ -89,23 +89,7 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
             addKeyVal (&dataObjOprInp->condInput, COLLECTION_KW, "");
     }
 
-#if 0
-    if (rodsArgs->bulk == True) {
-        addKeyVal (&dataObjOprInp->condInput, 
-	  COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
-    }
-
-    if (rodsArgs->mountPoint == True) {
-        /* the collection is a mount point */
-        if (strcmp (rodsPathInp->srcPath->inPath, UNMOUNT_STR) == 0) {
-            addKeyVal (&dataObjOprInp->condInput,
-             COLLECTION_TYPE_KW, UNMOUNT_STR);
-        } else {
-            addKeyVal (&dataObjOprInp->condInput,
-             COLLECTION_TYPE_KW, MOUNT_POINT_STR);
-        }
-    }
-#endif
+#if 0	/* moved to imcoll */
     if (rodsArgs->mountCollection == True) {
 	char *mountType = rodsArgs->mountType;
         if (strcmp (rodsPathInp->srcPath->inPath, UNMOUNT_STR) == 0) {
@@ -130,6 +114,7 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
              COLLECTION_TYPE_KW, MOUNT_POINT_STR);
         }
     }
+#endif
 
 
     if (rodsArgs->resource == True) {
