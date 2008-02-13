@@ -13,6 +13,7 @@
 #include "fileOpr.h"
 #include "dataObjOpr.h"
 #include "querySpecColl.h"
+#include "structFileDriver.h"
 #ifdef TAR_STRUCT_FILE
 #include "tarSubStructFileDriver.h"
 #endif
