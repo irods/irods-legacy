@@ -46,8 +46,8 @@ extern int IcatConnState;
 
 extern specCollCache_t *SpecCollCacheHead;
 
-#ifdef TAR_STRUCT_FILE
 extern structFileDesc_t StructFileDesc[];
+#ifdef TAR_STRUCT_FILE
 extern tarSubFileDesc_t TarSubFileDesc[];
 #endif
 

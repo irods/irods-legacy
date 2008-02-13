@@ -47,8 +47,8 @@ int IcatConnState = INITIAL_NOT_DONE;
 
 specCollCache_t *SpecCollCacheHead = NULL;
 
-#ifdef TAR_STRUCT_FILE
 structFileDesc_t StructFileDesc[NUM_STRUCT_FILE_DESC];
+#ifdef TAR_STRUCT_FILE
 tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
 #endif
 

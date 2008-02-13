@@ -1230,3 +1230,43 @@ syncCacheDirToTarfile (int structFileInx)
     return (status);
 }
 
+int
+initTarSubFileDesc ()
+{
+    memset (TarSubFileDesc, 0,
+      sizeof (tarSubFileDesc_t) * NUM_TAR_SUB_FILE_DESC);
+    return (0);
+}
+
+int
+allocTarSubFileDesc ()
+{
+    int i;
+
+    for (i = 1; i < NUM_TAR_SUB_FILE_DESC; i++) {
+        if (TarSubFileDesc[i].inuseFlag == FD_FREE) {
+            TarSubFileDesc[i].inuseFlag = FD_INUSE;
+            return (i);
+        };
+    }
+
+    rodsLog (LOG_NOTICE,
+     "allocTarSubFileDesc: out of TarSubFileDesc");
+
+    return (SYS_OUT_OF_FILE_DESC);
+}
+
+int
+freeTarSubFileDesc (int tarSubFileInx)
+{
+    if (tarSubFileInx < 0 || tarSubFileInx >= NUM_TAR_SUB_FILE_DESC) {
+        rodsLog (LOG_NOTICE,
+         "freeTarSubFileDesc: tarSubFileInx %d out of range", tarSubFileInx);
+        return (SYS_FILE_DESC_OUT_OF_RANGE);
+    }
+
+    memset (&TarSubFileDesc[tarSubFileInx], 0, sizeof (tarSubFileDesc_t));
+
+    return (0);
+}
+

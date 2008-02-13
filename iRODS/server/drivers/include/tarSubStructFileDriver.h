@@ -12,6 +12,16 @@
 #include "rods.h"
 #include "structFileDriver.h"
 
+typedef struct tarSubFileDesc {
+    int inuseFlag;
+    int structFileInx;
+    int fd;                         /* the fd of the opened cached subFile */
+    char cacheFilePath[MAX_NAME_LEN];   /* the phy path name of the cached
+                                         * subFile */
+} tarSubFileDesc_t;
+
+#define NUM_TAR_SUB_FILE_DESC 20
+
 int
 tarSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile);
 int 
@@ -78,4 +88,10 @@ int
 tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 int
 syncCacheDirToTarfile (int structFileInx);
+int
+initTarSubFileDesc ();
+int
+allocTarSubFileDesc ();
+int
+freeTarSubFileDesc (int tarSubFileInx);
 #endif	/* TAR_STRUCT_FILE_DRIVER_H_H */

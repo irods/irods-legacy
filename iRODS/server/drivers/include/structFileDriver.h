@@ -47,16 +47,6 @@ typedef struct structFileDesc {
 
 #define NUM_STRUCT_FILE_DESC 16
 
-typedef struct tarSubFileDesc {
-    int inuseFlag;
-    int structFileInx;
-    int fd;                         /* the fd of the opened cached subFile */
-    char cacheFilePath[MAX_NAME_LEN];   /* the phy path name of the cached
-                                         * subFile */
-} tarSubFileDesc_t;
-
-#define NUM_TAR_SUB_FILE_DESC 20
-
 int
 subStructFileIndexLookup (structFileType_t myType);
 int
@@ -103,11 +93,5 @@ int
 allocStructFileDesc ();
 int
 freeStructFileDesc (int structFileInx);
-int
-initTarSubFileDesc ();
-int
-allocTarSubFileDesc ();
-int
-freeTarSubFileDesc (int tarSubFileInx);
 
 #endif	/* STRUCT_FILE_DRIVER_H */
