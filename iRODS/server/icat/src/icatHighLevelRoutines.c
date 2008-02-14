@@ -105,7 +105,6 @@ int
 getLocalZone()
 {
    int status;
-   rodsLog(LOG_NOTICE, "getLocalZone called");
    if (localZone[0]=='\0') {
       if (logSQL) rodsLog(LOG_SQL, "getLocalZone SQL 1 ");
       status = cmlGetStringValueFromSql(
