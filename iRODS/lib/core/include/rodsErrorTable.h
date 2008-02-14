@@ -207,7 +207,7 @@
 #define CAT_OCI_ERROR                    -839000
 #define CAT_PASSWORD_EXPIRED             -840000
 
-/* 900,000 to 999,000 - Misc errors (used by obf library)  */
+/* 900,000 to 920,000 - Misc errors (used by obf library)  */
 #define FILE_OPEN_ERR                    -900000
 #define FILE_READ_ERR                    -901000
 #define FILE_WRITE_ERR                   -902000
@@ -218,6 +218,28 @@
 #define AUTH_FILE_DOES_NOT_EXIST         -907000
 #define UNLINK_FAILED                    -908000
 #define NO_PASSWORD_ENTERED              -909000
+
+/* 921,000 to 999,000 - GSI errors  */
+#define GSI_NOT_COMPILED_IN              -921000
+#define GSI_NOT_BUILT_INTO_CLIENT        -922000
+#define GSI_NOT_BUILT_INTO_SERVER        -923000
+#define GSI_ERROR_IMPORT_NAME            -924000
+#define GSI_ERROR_INIT_SECURITY_CONTEXT  -925000
+#define GSI_ERROR_SENDING_TOKEN_LENGTH   -926000
+#define GSI_ERROR_READING_TOKEN_LENGTH   -927000
+#define GSI_ERROR_TOKEN_TOO_LARGE        -928000
+#define GSI_ERROR_BAD_TOKEN_RCVED        -929000
+#define GSI_SOCKET_READ_ERROR            -930000
+#define GSI_PARTIAL_TOKEN_READ           -931000
+#define GSI_SOCKET_WRITE_ERROR           -932000
+#define GSI_ERROR_FROM_GSI_LIBRARY       -933000
+#define GSI_ERROR_IMPORTING_NAME         -934000
+#define GSI_ERROR_ACQUIRING_CREDS        -935000
+#define GSI_ACCEPT_SEC_CONTEXT_ERROR     -936000
+#define GSI_ERROR_DISPLAYING_NAME        -937000
+#define GSI_ERROR_RELEASING_NAME         -938000
+#define GSI_DN_DOES_NOT_MATCH_USER       -939000
+#define GSI_QUERY_INTERNAL_ERROR         -940000
 
 /* 1,000,000 to 1,500,000  - Rule Engine errors */
 #define  OBJPATH_EMPTY_IN_STRUCT_ERR          -1000000

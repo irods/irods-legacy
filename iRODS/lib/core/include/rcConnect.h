@@ -76,6 +76,7 @@ typedef struct {
     int cookie;
     time_t reconnTime;
     reconnOpr_t reconnOpr;
+    int gsiRequest;
 } rsComm_t;
 
 void rcPipSigHandler ();
