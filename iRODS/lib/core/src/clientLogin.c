@@ -31,6 +31,52 @@ int printError(rcComm_t *Conn, int status, char *routineName) {
    return (0);
 }
 
+#ifdef GSI_AUTH
+int clientLoginGsi(rcComm_t *Conn) 
+{
+   int status;
+   gsiAuthRequestOut_t *gsiAuthReqOut;
+   char myName[500];
+
+   //   status = igsiSetupContextClientside(Conn, serviceName, 0);
+   status = igsiSetupCreds(Conn, NULL, NULL, myName, 500);
+
+   if (status) {
+      printError(Conn, status, "igsiSetupCreds");
+      return(status);
+   }
+
+   /*   printf("Client-side DN is:%s\n",myName); */
+
+   status = rcGsiAuthRequest(Conn, &gsiAuthReqOut);
+   if (status) {
+      printError(Conn, status, "rcGsiAuthRequest");
+      return(status);
+   }
+
+   /*   printf("Server-side DN is:%s\n", gsiAuthReqOut->serverDN); */
+
+   status = igsiEstablishContextClientside(Conn, myName,
+			       0);
+   if (status) {
+      printError(Conn, status, "igsiEstablishContextClientside");
+      return(status);
+   }
+
+   /* Now, check if it actually succeeded */
+   status = rcGsiAuthRequest(Conn, &gsiAuthReqOut);
+   if (status) {
+      printf("Error from iRODS Server:\n");
+      printError(Conn, status, "GSI Authentication");
+      return(status);
+   }
+
+   Conn->loggedIn = 1;
+
+   return(0);
+}
+#endif
+
 int 
 clientLogin(rcComm_t *Conn) 
 {   
@@ -46,6 +92,18 @@ clientLogin(rcComm_t *Conn)
       /* already logged in */
       return (0);
    }
+
+#ifdef GSI_AUTH
+   if (ProcessType==CLIENT_PT) {
+      char *getVar;
+      getVar = getenv("GLOBUS_LOCATION");
+      if (getVar != NULL) {
+	 status = clientLoginGsi(Conn);
+	 return(status);
+      }
+   }
+#endif
+
    status = rcAuthRequest(Conn, &authReqOut);
    if (status) {
       printError(Conn, status, "rcAuthRequest");
