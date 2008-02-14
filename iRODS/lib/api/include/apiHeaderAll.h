@@ -101,4 +101,5 @@
 #include "subStructFilePut.h"
 #include "syncMountedColl.h"
 #include "structFileSync.h"
+#include "gsiAuthRequest.h"
 #endif	/* API_HEADER_ALL_H */

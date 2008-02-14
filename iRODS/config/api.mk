@@ -285,3 +285,7 @@ LIB_API_OBJS += $(libApiObjDir)/rcSyncMountedColl.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsStructFileSync.o
 LIB_API_OBJS += $(libApiObjDir)/rcStructFileSync.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGsiAuthRequest.o
+LIB_API_OBJS += $(libApiObjDir)/rcGsiAuthRequest.o
+
