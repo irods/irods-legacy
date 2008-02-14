@@ -6,7 +6,11 @@
 #include "fileChksum.h"
 #include "miscServerFunct.h"
 
+#if 0	/* XXXX getting wrong chksum. use the same size as md5 client */
 #define SVR_MD5_BUF_SZ (1024*1024)
+#define MD5_DEBUG 1
+#endif
+#define SVR_MD5_BUF_SZ (4*1024)
 
 int
 rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp, 
@@ -95,6 +99,9 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     int len;
     unsigned char buffer[SVR_MD5_BUF_SZ], digest[16];
     int status;
+#ifdef MD5_DEBUG
+    rodsLong_t bytesRead = 0;	/* XXXX debug */
+#endif
 
     if ((fd = fileOpen (fileType, rsComm, fileName, O_RDONLY, 0)) < 0) {
         status = UNIX_FILE_OPEN_ERR - errno;
@@ -104,7 +111,10 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     }
 
     MD5Init (&context);
-    while ((len = fileRead (fileType, rsComm, fd, buffer, SVR_MD5_BUF_SZ))) {
+    while ((len = fileRead (fileType, rsComm, fd, buffer, SVR_MD5_BUF_SZ)) > 0) {
+#ifdef MD5_DEBUG
+	bytesRead += len;	/* XXXX debug */
+#endif
         MD5Update (&context, buffer, len);
     }
     MD5Final (digest, &context);
@@ -112,6 +122,11 @@ fileChksum (int fileType, rsComm_t *rsComm, char *fileName, char *chksumStr)
     fileClose (fileType, rsComm, fd);
 
     md5ToStr (digest, chksumStr);
+
+#ifdef MD5_DEBUG
+    rodsLog (LOG_NOTICE,	/* XXXX debug */
+    "fileChksum: chksum = %s, bytesRead = %lld", chksumStr, bytesRead);
+#endif
 
     return (0);
 
