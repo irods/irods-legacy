@@ -113,6 +113,12 @@ agentMain (rsComm_t *rsComm)
     int retryCnt = 0;
 
     while (1) {
+
+        if (rsComm->gsiRequest==1) {
+	    status = igsiServersideAuth(rsComm) ;
+	    rsComm->gsiRequest=0; 
+        }
+
 	status = readAndProcClientMsg (rsComm, 0);
 
 	if (status >= 0) {
