@@ -142,7 +142,13 @@ copyAVUMetadata(char *destPath, char *srcPath, rsComm_t *rsComm)
 int
 recursiveCollCopy(collInp_t *destCollInp, collInp_t *srcCollInp, rsComm_t *rsComm)
 {
-	char *destColl, *srcColl;	/* full path of source and destination collections as entered */
+	char *des /home/irods/TMP/RODS_BUILD/iRODS/server/re/src/reDataRel.c
+make
+./irodsctl restart
+./irodsctl status
+
+clients/icommands/bin/irule -F clients/icommands/test/msiChkRechkRecompChkSum4DatObjVol2.ir
+Coll, *srcColl;	/* full path of source and destination collections as entered */
 
 	genQueryInp_t genQueryInp;	/* for rsGenquery() */
 	genQueryOut_t *genQueryOut;	/* for rsGenquery() */
