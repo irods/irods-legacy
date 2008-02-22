@@ -14,7 +14,10 @@
 #include "reGlobalsExtern.h"
 #include "reDataRel.h"
 
-#include "ChkDataObjAttr2.c"
+//#include "ChkDataObjAttr2.c"
+//#include "srcEvBiWe2Ta1.c"
+#include "srcEvBiWe2Ta2.c"
+//#include "srcEvBiWe2Ta3.c"
 
 /*
  * \fn msiRecurzzzColl
