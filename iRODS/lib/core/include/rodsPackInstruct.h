@@ -106,6 +106,16 @@
 #define SendXmsgInp_PI "struct XmsgTicketInfo_PI; struct SendXmsgInfo_PI;"
 #define RcvXmsgInp_PI "int rcvTicket; int msgNumber;"
 #define RcvXmsgOut_PI "str msgType[HEADER_TYPE_LEN]; str sendUserName[NAME_LEN]; str *msg;"
-
+/* XXXXX start of HDF5 PI */
+#define h5File_PI "int fopID; str *filename; int ffid; struct *h5Group_PI; struct h5error_PI;int ftime;"
+#define h5error_PI "str major[MAX_ERROR_SIZE]; str minor[MAX_ERROR_SIZE];"
+#define h5Group_PI "int gopID; int gfid; int gobjID[OBJID_DIM]; str *gfullpath; str *dummyParent; int nGroupMembers; struct *h5Group_PI[nGroupMembers]; int nDatasetMembers; struct *h5Dataset_PI[nDatasetMembers]; int nattributes; struct *h5Attribute_PI[nattributes]; struct h5error_PI;int gtime;"
+/* XXXXX need to fix the type dependence */
+#define h5Attribute_PI "int aopID; int afid; str *aname; str *aobj_path; int aobj_type; int aclass; struct h5Datatype_PI; struct h5Dataspace_PI; int nvalue; ? aclass:3,6,9 = str *value[nvalue][NULL_TERM]:default= char *value[nvalue]; struct h5error_PI;"
+/* XXXXX need to fix the type dependence */
+#define h5Dataset_PI "int dopID; int dfid; int dobjID[OBJID_DIM]; int dclass; str *dfullpath; int nattributes; struct *h5Attribute_PI[nattributes]; struct h5Datatype_PI; struct h5Dataspace_PI; int nvalue; ? dclass:3,6,9 = str *value[nvalue][NULL_TERM]:default= char %value[nvalue]; struct h5error_PI;int dtime;"
+#define h5Datatype_PI "int tclass; int torder; int tsign; int tsize; int ntmenbers; int *mtypes[ntmenbers]; str *mnames[ntmenbers];"
+#define h5Dataspace_PI "int rank; int dims[H5S_MAX_RANK]; int npoints; int start[H5DATASPACE_MAX_RANK]; int stride[H5DATASPACE_MAX_RANK]; int count[H5DATASPACE_MAX_RANK];"
+/* XXXXX end of HDF5 PI */
 
 #endif	/* PACK_INSTRUCT_H */

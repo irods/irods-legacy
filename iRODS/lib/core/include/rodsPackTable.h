@@ -42,6 +42,12 @@ packConstantArray_t PackConstantTable[] = {
         {"CHALLENGE_LEN", CHALLENGE_LEN},
         {"RESPONSE_LEN", RESPONSE_LEN},
         {"MAX_PASSWORD_LEN", MAX_PASSWORD_LEN},
+	/* HDF5 constant */
+        {"MAX_ERROR_SIZE", 80},
+        {"OBJID_DIM", 2},
+        {"H5S_MAX_RANK", 32},
+        {"H5DATASPACE_MAX_RANK", 32},
+	/* end of HDF5 */ 
         {PACK_TABLE_END_PI, 0},
 };
 
@@ -95,6 +101,15 @@ packInstructArray_t RodsPackTable[] = {
 	{"SendXmsgInfo_PI", SendXmsgInfo_PI},
 	{"RcvXmsgInp_PI", RcvXmsgInp_PI},
 	{"RcvXmsgOut_PI", RcvXmsgOut_PI},
+	/* HDF5 PI */
+        {"h5File_PI", h5File_PI},
+        {"h5error_PI", h5error_PI},
+        {"h5Group_PI", h5Group_PI},
+        {"h5Attribute_PI", h5Attribute_PI},
+        {"h5Dataset_PI", h5Dataset_PI},
+        {"h5Datatype_PI", h5Datatype_PI},
+        {"h5Dataspace_PI", h5Dataspace_PI},
+	/* end of HDF5 */ 
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 
