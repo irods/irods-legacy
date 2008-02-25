@@ -9,7 +9,15 @@
 #
 # This shell script runs the 'irodsctl' Perl script.
 #
-IRODS_HOME="/home/irods/TMP1_raja_cvs/pivo/RODS_BUILD/FOO/iRODS"
+<<<<<<< irodsctl
+<<<<<<< irodsctl
+IRODS_HOME="/scratch/s1/kremenek/PATEK2/iRODS"
+=======
+IRODS_HOME="/scratch/s1/kremenek/PATEK2/iRODS"
+>>>>>>> 1.5
+=======
+IRODS_HOME="/scratch/s1/kremenek/PATEK2/iRODS"
+>>>>>>> 1.6
 
 if [ "$IRODS_HOME" = "" ]; then
 	# Try using the current directory
