@@ -165,8 +165,12 @@ int
 cllDisconnect(icatSessionStruct *icss) {
    RETCODE stat;
    HDBC myHdbc;
+   int i;
 
    myHdbc = icss->connectPtr;
+
+   i = cllExecSqlNoResult(icss, "commit"); /* auto commit anything that
+                                              might be pending */
 
    stat = SQLDisconnect(myHdbc);
    if (stat != SQL_SUCCESS) {
