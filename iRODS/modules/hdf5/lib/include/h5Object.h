@@ -23,6 +23,9 @@
 #define h5File_MS_T	"h5File_PI"
 #define h5error_MS_T	"h5error_PI"
 #define h5Group_MS_T	"h5Group_PI"
+#define h5Attribute_MS_T	"h5Attribute_PI"
+#define h5Dataset_MS_T	"h5Dataset_PI"
+#define h5Datatype_MS_T	"h5Datatype_PI"
 
 typedef enum H5Object_t {
     H5OBJECT_UNKNOWN = -1,  

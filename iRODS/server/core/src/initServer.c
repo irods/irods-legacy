@@ -62,6 +62,28 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     return (tmpRodsServerHost->localFlag);
 }
 
+int 
+resolveHostByDataObjInfo (dataObjInfo_t *dataObjInfo,
+rodsServerHost_t **rodsServerHost)
+{
+    rodsHostAddr_t addr;
+    int remoteFlag;
+
+    if (dataObjInfo == NULL || dataObjInfo->rescInfo == NULL ||
+      dataObjInfo->rescInfo->rescLoc == NULL) {
+        rodsLog (LOG_NOTICE,
+          "resolveHostByDataObjInfo: NULL input");
+	return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    memset (&addr, 0, sizeof (addr));
+    rstrcpy (addr.hostAddr, dataObjInfo->rescInfo->rescLoc, NAME_LEN);
+
+    remoteFlag = resolveHost (&addr, rodsServerHost);
+
+    return (remoteFlag);
+}
+
 rodsServerHost_t *
 mkServerHost (char *myHostAddr, int portNum)
 {

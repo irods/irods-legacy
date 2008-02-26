@@ -96,7 +96,7 @@ server_ldflags:
 
 # List module's includes for inclusion in the server
 server_cflags:
-	@echo $(INCLUDE_FLAGS)
+	@echo $(INCLUDE_FLAGS) -DRODS_SERVER
 
 # Build microservices
 ifdef hdf5Dir

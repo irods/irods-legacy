@@ -21,11 +21,8 @@ int clH5File_open(rcComm_t *conn, H5File* f)
 
     assert(f);
 
-#if 0	/* XXXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_FILE, 0, 
-      f->filename, NULL, (void *) f, h5File_PF, (void **) &outf, h5File_PF, 
-      Hdf5Def, 0);
-#endif
+    ret_value = _clH5File_open(conn, f,  &outf, 0);
+
     if (ret_value < 0) 
 	return (ret_value);
 
@@ -40,6 +37,20 @@ int clH5File_open(rcComm_t *conn, H5File* f)
 
     return ret_value;
 }
+
+int _clH5File_open(rcComm_t *conn, H5File* f,  H5File** outf, int flag)
+{
+    int ret_value = 0;
+
+#if 0   /* XXXXXX rm for iRods */
+    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_FILE, 0,
+      f->filename, NULL, (void *) f, h5File_PF, (void **) &outf, h5File_PF,
+      Hdf5Def, 0);
+#endif
+
+    return (ret_value);
+}
+
 
 /*------------------------------------------------------------------------------
  * Purpose: Client Close an opened H5file.

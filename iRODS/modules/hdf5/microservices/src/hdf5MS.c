@@ -14,23 +14,35 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "hdf5MS.h"
+#include "objMetaOpr.h"
+#include "miscServerFunct.h"
+#include "rsGlobalExtern.h"
 
 struct openedH5File *OpenedH5FileHead = NULL;
 
 /* msiH5File_open - msi for opening a H5File.
- * inpH5File - The input H5File to open. Must be h5File_MS_T.
- *    a STR_MS_T which would be taken as dataObj path of the H5File.
- * outParam - a INT_MS_T containing the descriptor of the create.
+ * inpH5FileParam - The input H5File to open. Must be h5File_MS_T.
+ * inpFlagParam - Input flag - INT_MS_T
+ * outFidParam - a INT_MS_T containing the descriptor of the create.
+ * outH5FileParam - the output H5File - Must be h5File_MS_T.
  *
  */
 
 int
-msiH5File_open (msParam_t *inpH5FileParam, msParam_t *outParam, 
-ruleExecInfo_t *rei)
+msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
+msParam_t *outFidParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
-    H5File *inf=0;
-    H5File outf;
+    H5File *inf = 0;
+    H5File *outf;
+    int inpFlag;
+    int l1descInx;
+    dataObjInp_t dataObjInp;
+    dataObjCloseInp_t dataObjCloseInp;
+    dataObjInfo_t *dataObjInfo, *tmpDataObjInfo;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+    int fid;
 
     RE_TEST_MACRO ("    Calling msiH5File_open")
 
@@ -42,10 +54,11 @@ ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
-    if (inpH5FileParam == NULL) {
+    if (inpH5FileParam == NULL || inpFlagParam == NULL ||
+     outFidParam == NULL || outH5FileParam == NULL) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-        rodsLog (LOG_ERROR,
-          "msiH5File_open: input inpH5FileParam is NULL");
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5File_open: NULL input/output Param");
         return (rei->status);
     }
 
@@ -53,14 +66,183 @@ ruleExecInfo_t *rei)
         inf = inpH5FileParam->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
-        rodsLog (LOG_ERROR,
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiH5File_open: input rei or rsComm is NULL");
         return (rei->status);
     }     
 
-    /* see if we need to do it remotely based on the objPath */
+    inpFlag = parseMspForPosInt (inpFlagParam);
+    if (inpFlag < 0) {
+	inpFlag = 0;
+    }
 
+    /* see if we need to do it remotely based on the objPath. Open the
+     * obj but don't do it physically */
 
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, inf->filename, MAX_NAME_LEN);
+    dataObjInp.openFlags = O_RDONLY;
+    rei->status = l1descInx = 
+      _rsDataObjOpen (rsComm, &dataObjInp, DO_NOT_PHYOPEN);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5File_open: _rsDataObjOpen of %s error",
+	  dataObjInp.objPath);
+        return (rei->status);
+    }
+
+    dataObjCloseInp.l1descInx = l1descInx;
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+    if ((inpFlag & LOCAL_H5_OPEN) != 0) {
+	/* need to find a local copy */
+	tmpDataObjInfo = dataObjInfo;
+	while (tmpDataObjInfo != NULL) {
+	    remoteFlag = resolveHostByDataObjInfo (tmpDataObjInfo,
+	      &rodsServerHost);
+	    if (remoteFlag == LOCAL_HOST) {
+		requeDataObjInfoByReplNum (&dataObjInfo, 
+		  tmpDataObjInfo->replNum);
+		/* have to update L1desc */
+		L1desc[l1descInx].dataObjInfo = dataObjInfo;
+		break;
+	    }
+	}
+	if (remoteFlag != LOCAL_HOST) {
+	    /* there is no local copy */
+	    rei->status = SYS_COPY_NOT_EXIST_AT_RESC;
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiH5File_open: _local copy of %s does not exist",
+	      dataObjInp.objPath);
+            rsDataObjClose (rsComm, &dataObjCloseInp);
+            return (rei->status);
+	}
+    } else {
+	remoteFlag = resolveHostByDataObjInfo (dataObjInfo,
+          &rodsServerHost);
+    }
+
+    if (remoteFlag == LOCAL_HOST) {
+	outf = malloc (sizeof (H5File));
+        /* replace iRods file with local file */
+        if (inf->filename != NULL) {
+            free (inf->filename);
+        }
+        inf->filename = strdup (dataObjInfo->filePath);
+        fid = H5File_open(inf, outf);
+    } else {
+	/* do the remote open */
+        if ((rei->status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
+            rsDataObjClose (rsComm, &dataObjCloseInp);
+            return rei->status;
+        }
+
+	outf = NULL;
+	fid = _clH5File_open (rodsServerHost->conn, inf, &outf, LOCAL_H5_OPEN);
+    }
+
+    if (fid >= 0) {
+	L1desc[l1descInx].l3descInx = fid;
+    } else {
+	rei->status = fid;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5File_open: H5File_open %s error",
+          dataObjInp.objPath);
+        rsDataObjClose (rsComm, &dataObjCloseInp);
+	return rei->status;
+    }
+
+    /* prepare the output */
+
+    fillIntInMsParam (outFidParam, l1descInx);
+    outf->fid = l1descInx;
+    fillMsParam (outH5FileParam, NULL, h5File_MS_T, outf, NULL);
+    
+    if (inf) H5File_dtor(inf);
+
+    return (rei->status);
+}
+
+/* msiH5File_close - msi for closing a H5File.
+ * inpH5FileParam - The input H5File to close. Must be h5File_MS_T.
+ * outParam - a INT_MS_T containing the status.
+ *
+ */
+
+int
+msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outParam,
+ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    H5File *inf = 0;
+    H5File outf;
+    dataObjCloseInp_t dataObjCloseInp;
+    dataObjInfo_t *dataObjInfo;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+    int l1descInx;
+
+    RE_TEST_MACRO ("    Calling msiH5File_close")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiH5File_close: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    if (inpH5FileParam == NULL || outParam == NULL) {
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5File_close: NULL input/output Param");
+        return (rei->status);
+    }
+
+    if (strcmp (inpH5FileParam->type, h5File_MS_T) == 0) {
+        inf = inpH5FileParam->inOutStruct;
+    } else {
+        rei->status = USER_PARAM_TYPE_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5File_open: input rei or rsComm is NULL");
+        return (rei->status);
+    }
+
+    l1descInx = inf->fid;
+
+    dataObjCloseInp.l1descInx = l1descInx;
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+    remoteFlag = resolveHostByDataObjInfo (dataObjInfo,
+      &rodsServerHost);
+
+    if (remoteFlag == LOCAL_HOST) {
+	/* switch the fid */
+	inf->fid = L1desc[l1descInx].l3descInx;
+        rei->status = H5File_close (inf, &outf);
+    } else {
+        /* do the remote close */
+        if ((rei->status = svrToSvrConnect (rsComm, rodsServerHost)) >= 0) {
+            rei->status = clH5File_close (rodsServerHost->conn, inf);
+	}
+    }
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5File_close: H5File_close error for %d", l1descInx);
+    }
+
+    L1desc[l1descInx].l3descInx = 0;
+    rsDataObjClose (rsComm, &dataObjCloseInp);
+
+    /* prepare the output */
+
+    fillIntInMsParam (outParam, rei->status);
+
+    if (inf) H5File_dtor(inf);
+
+    return rei->status;
 }
 
 
@@ -464,5 +646,6 @@ prepOutDataset (H5Dataset *d)
             return 0;
 	}
     }
+    return (0);
 }
 

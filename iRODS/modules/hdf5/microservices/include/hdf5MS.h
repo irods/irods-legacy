@@ -17,6 +17,7 @@
 #define HDF5_MS_H
 
 #include "rodsClient.h"
+#include "apiHeaderAll.h"
 #include "h5Object.h"
 #include "h5File.h"
 #include "h5Group.h"
@@ -39,7 +40,10 @@ extern "C" {
  *     process request from the client and send result to the client
  */
 int
-msiH5File_open (msParam_t *inpH5File, msParam_t *outParam,
+msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
+msParam_t *outFidParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei);
+int
+msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outParam,
 ruleExecInfo_t *rei);
 
 int

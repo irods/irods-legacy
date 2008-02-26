@@ -81,9 +81,12 @@ int H5File_open(H5File* inf, H5File *outf);
 int H5File_close(H5File* f, H5File *outf);
 int H5File_create(H5File* f);
 
+/* definition for flag in clH5File_open */
+#define LOCAL_H5_OPEN	0x1	/* open the H5File at the server locally */
 /* define the client handling functions 
 */
 int clH5File_open(rcComm_t *conn, H5File* f);
+int _clH5File_open(rcComm_t *conn, H5File* f,  H5File** outf, int flag);
 int clH5File_close(rcComm_t *conn, H5File* f);
 
 #ifdef __cplusplus
