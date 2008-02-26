@@ -1333,10 +1333,10 @@ intFindChkSumDateAvuMetadataVol3 (int status, genQueryOut_t * genQueryOut,
 
 		  /* printf ("GJK 300.0.6. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d, UAVArray[%d].value=(%s)\n", fullName, i, j, genQueryOut->attriCnt, i, UAVArray[i].value); */
 		  /* return 0; */
-		}		// j=0
-	      // appendStrToBBuf(mybuf, 2, "\n");
+		}		/* j=0 */
+	      /* appendStrToBBuf(mybuf, 2, "\n"); */
 	      *iCountUserDefinedMetadata = *iCountUserDefinedMetadata + 1;
-	    }			// i=0
+	    }			/* i=0 */
 	}
     }
   iResult = *iCountUserDefinedMetadata;
@@ -1367,7 +1367,7 @@ msiAddDataObjChksumsTimeStampsToAVUVol3 (msParam_t * inpParam1,
 
   rsComm = rei->rsComm;
 
-  //  (void) intChkDataObjACL3(rsComm, "/tempZone/home/rods/loopTest/submit.pl", (time_t) i, rei);        /* test blbost sobota */
+  /*  (void) intChkDataObjACL3(rsComm, "/tempZone/home/rods/loopTest/submit.pl", (time_t) i, rei);      test blbost sobota */
 
   printf
     ("GJK-P P.991.0.0. in msiAddDataObjChksumsTimeStampsToAVUVol3(), GJK msiAddDataObjChksumsTimeStampsToAVUVol3: GJK Calling msiGetDataObjChksumsTimeStampsFromAVUVol3\n");
@@ -1404,7 +1404,6 @@ msiAddDataObjChksumsTimeStampsToAVUVol3 (msParam_t * inpParam1,
  * 
  */
 
-//int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei)
 int msiGJK2 (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei)
 {
   rsComm_t *rsComm;
@@ -1452,9 +1451,9 @@ int msiGJK2 (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei)
       strncat (strOut, strTmp, MAX_NAME_LEN);
     }
 
-  //   sprintf(strOut, "#1\n#2\n\n#3 lines gjk\n");
+  /*  sprintf(strOut, "#1\n#2\n\n#3 lines gjk\n"); */
   i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
-  // fillBuffInParam
+  /* fillBuffInParam */
 
 
   printf
@@ -1463,7 +1462,7 @@ int msiGJK2 (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei)
 
   return (iErr);
 }
-#endif // GJK2
+#endif /* GJK2 */
 
 /* ****************************************************************************************** */
 int
@@ -1493,7 +1492,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol3 (collInp_t * ptrInpColl,
   chrPtr1, ptrInpColl->collName, (int)(chrPtr1 - ptrInpColl->collName), (strlen (ptrInpColl->collName) - 1));
   */
 
-  // spatne !!!if (chrPtr1 != NULL && *chrPtr1 == '/' &&)    *chrPtr1 = 0;              /* replace '/' in /myzone/foo/' */
+  /* spatne !!!if (chrPtr1 != NULL && *chrPtr1 == '/' &&)    *chrPtr1 = 0;             replace '/' in /myzone/foo/' */
   printf
     ("GJK-P P.21.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol3(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
      chrPtr1, ptrInpColl->collName);
@@ -1514,7 +1513,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol3 (collInp_t * ptrInpColl,
 	  rodsLog (LOG_ERROR,
 		   "iGetDataObjChksumsTimeStampsFromAVU: input object=(%s) is not data or collection. Exiting!",
 		   ptrInpColl->collName);
-	  //return (rei->status);
+	  /* return (rei->status); */
 	}
       else
 	{
@@ -1525,7 +1524,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol3 (collInp_t * ptrInpColl,
 	}
     }
 
-  // printf ("GJK-P P.21.0.4. intGetDataObjChksumsTimeStampsFromAVUVol3 : input (%s)", ptrInpColl->collName);
+  /* printf ("GJK-P P.21.0.4. intGetDataObjChksumsTimeStampsFromAVUVol3 : input (%s)", ptrInpColl->collName); */
 
   if (rei->rsComm == NULL)
     {
@@ -1565,7 +1564,7 @@ intGetDataObjChksumsTimeStampsFromAVUVol3 (collInp_t * ptrInpColl,
   condVal[1] = v2;
 
   i2a[3] = COL_DATA_SIZE;
-  // sprintf (v4, "='%s'", strFileSize);
+  /* sprintf (v4, "='%s'", strFileSize); */
   condVal[3] = v3;
 
 
@@ -1615,18 +1614,18 @@ intGetDataObjChksumsTimeStampsFromAVUVol3 (collInp_t * ptrInpColl,
 	  *iTotalAVUs = 0;
 	  return (0);
 	}
-      printCount += intFindChkSumDateAvuMetadataVol3 (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	// proc??
+      printCount += intFindChkSumDateAvuMetadataVol3 (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* why?? */
     }
   else
     {
-      printCount += intFindChkSumDateAvuMetadataVol3 (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	// proc??
+      printCount += intFindChkSumDateAvuMetadataVol3 (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* why?? */ 
     }
 
   while (iErr == 0 && genQueryOut->continueInx > 0)
     {
       genQueryInp.continueInx = genQueryOut->continueInx;
       iErr = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
-      printCount += intFindChkSumDateAvuMetadataVol3 (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	// proc ??
+      printCount += intFindChkSumDateAvuMetadataVol3 (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* why ?? */
     }
 
   printf
