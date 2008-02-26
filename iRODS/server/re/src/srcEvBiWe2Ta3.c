@@ -1,24 +1,8 @@
-#ifdef gjk_s_komentari
-
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
-#include <stdarg.h>
-#if !defined(osx_platform)
-#include <values.h>
-#endif
-#include "apiHeaderAll.h"
-#include "objStat.h"
-#include "miscUtil.h"
-#include "reDataObjOpr.h"
-#include "reGlobalsExtern.h"
-#include "reDataRel.h"
-
-#endif
+/* opravit BLBE! */
 
 #include "objStat.h"
 
-int intChkDataObjACL3 (rsComm_t *rsComm, char *str, time_t t1, ruleExecInfo_t *rei);	// test blbost sobota
+int intChkDataObjACL3 (rsComm_t *rsComm, char *str, time_t t1, ruleExecInfo_t *rei);	/* test blbost sobota */
 
 /*
  * appendFormattedStrToBBuf() - Appends a formatted string to a bytesBuf_t buffer.
@@ -64,8 +48,6 @@ appendFormattedStrToBBuf(bytesBuf_t *dest, size_t size, const char *format, ...)
 	return (written);
 }
 
-
-
 /*
  * appendStrToBBuf() - Appends a string to a bytesBuf_t buffer.
  * Returns number of bytes written or a negative value upon failure.
@@ -105,18 +87,18 @@ intExtractACLQueryResults(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, int col
 			if (j) {
 				if (j==1 && !coll_flag) {
 					/* attach collection and fileName into one path */
-					// GJK intAppendStrToBBuf(mybuf, "/");
+					/* GJK intAppendStrToBBuf(mybuf, "/"); */
 				}
 				else {
-					// GJK intAppendStrToBBuf(mybuf, "|");
+				  /* GJK intAppendStrToBBuf(mybuf, "|"); */
 				}
 			}
 
-			// GJK intAppendStrToBBuf(mybuf, tResult);
+			/* GJK intAppendStrToBBuf(mybuf, tResult); */
 			printf ("GJK-P P.011.2.3d, intExtractACLQueryResults(), mybuf=(%s), i=(%d), i=(%d)\n", (char *)mybuf, i, j);
 		}
 
-		// GJK intAppendStrToBBuf(mybuf, "\n");
+		/* GJK intAppendStrToBBuf(mybuf, "\n"); */
 		printf ("GJK-P P.011.2.3c, intExtractACLQueryResults(),  mybuf=(%s), i=(%d), i=(%d)\n", (char *)mybuf, i, j);
 	}
 
@@ -135,8 +117,6 @@ intGetDataObjACL(dataObjInp_t *myDataObjInp, bytesBuf_t *mybuf, rsComm_t *rsComm
 	genQueryInp_t genQueryInp;
 	genQueryOut_t *genQueryOut = NULL;
 	rodsObjStat_t *rodsObjStatOut;
-	char condStr[MAX_NAME_LEN];
-
 	int printCount=0;
 	int status;
 	
@@ -150,12 +130,12 @@ intGetDataObjACL(dataObjInp_t *myDataObjInp, bytesBuf_t *mybuf, rsComm_t *rsComm
 	
 	printf ("GJK-P P.012.2.3e, intGetDataObjACL(), myDataObjInp->objPath=(%s),  mybuf=(%s)\n", myDataObjInp->objPath, (char *)mybuf);
 
-	return(0); //GJK fake
+	return(0); /* GJK fake */
 
-	status = queryDataObjAcl (rsComm, myDataObjInp->objPath, &genQueryOut);
+	/*	status = queryDataObjAcl (BBLB1-rsComm, myDataObjInp->objPath, &genQueryOut); */
 
 	printf ("GJK-P P.012.2.5k, intGetDataObjACL(), myDataObjInp->objPath=(%s), status=(%d)\n", myDataObjInp->objPath, status);
-	return(0); //GJK fake
+	return(0); /* GJK fake */
 
 	memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 	
@@ -164,7 +144,7 @@ intGetDataObjACL(dataObjInp_t *myDataObjInp, bytesBuf_t *mybuf, rsComm_t *rsComm
 	
 	printf ("GJK-P P.012.2.3f, intGetDataObjACL(),  mybuf=(%s), status=(%d)\n", (char *)mybuf, status);
 
-	return(0); //GJK fake
+	return(0); /* GJK fake */
 
 	/* wanted fields */
 	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
@@ -188,11 +168,11 @@ intGetDataObjACL(dataObjInp_t *myDataObjInp, bytesBuf_t *mybuf, rsComm_t *rsComm
 	
 	genQueryInp.maxRows = MAX_SQL_ROWS;
 
-	//return(0); //GJK fake
+	/* return(0);  GJK fake */
 
 	status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
 	
-	//return(0); //GJK fake
+	/* return(0);  GJK fake */
 	
 	if (status == CAT_NO_ROWS_FOUND) {
 		/* check if file exists */
@@ -213,7 +193,7 @@ intGetDataObjACL(dataObjInp_t *myDataObjInp, bytesBuf_t *mybuf, rsComm_t *rsComm
 		printf ("GJK-P P.012.2.3h, intGetDataObjACL(),  mybuf=(%s), status=(%d)\n", (char *)mybuf, status);
 	 	printCount+= intExtractACLQueryResults(genQueryOut, mybuf, 0);
 	}
-	// return(0); //GJK fake
+	/* return(0); GJK fake */
 	
 	while (status==0 && genQueryOut->continueInx > 0) {
 		genQueryInp.continueInx=genQueryOut->continueInx;
@@ -259,9 +239,6 @@ intGetDataObjACL(dataObjInp_t *myDataObjInp, bytesBuf_t *mybuf, rsComm_t *rsComm
  * \bug  no known bugs
 **/
 
-//  msiChkRechkRecompChkSum4DatObjVol2 (msParam_t *coll, msParam_t *destRescName, msParam_t *options,  msParam_t *outParam, ruleExecInfo_t *rei)
-// msiChkRechkRecompChkSum4DatObj222 (msParam_t * inpParam1, msParam_t * inpParam2, msParam_t * outParam1, ruleExecInfo_t * rei)
-
 int
 msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -299,7 +276,7 @@ msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3
                  "usage 'foo iRods_collection size_min size_max', ERROR:  msiChkDataObjACL3(), input inpParam1 error\n");
         rodsLog (LOG_ERROR,
 		 "msiChkDataObjACL3(),  input inpParam1 error.");
-        i = fillStrInMsParam (outParam, strOut);        // MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+        i = fillStrInMsParam (outParam, strOut);        /* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
   
         return (rei->status);
     }
@@ -315,7 +292,7 @@ msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3
 		 "usage 'foo iRods_collection size_min size_max', ERROR:  msiChkDataObjACL3(), input inpParam2 error\n");
 	rodsLog (LOG_ERROR,
 	       "msiChkDataObjACL3(),  input inpParam2 error.");
-	i = fillStrInMsParam (outParam, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+	i = fillStrInMsParam (outParam, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
 	return (-1);
       }
     
@@ -330,18 +307,18 @@ msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3
 		 "usage 'foo iRods_collection size_min size_max', ERROR:  msiChkDataObjACL3(), input inpParam3 error\n");
 	rodsLog (LOG_ERROR,
 	       "msiChkDataObjACL3(),  input inpParam3 error.");
-	i = fillStrInMsParam (outParam, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+	i = fillStrInMsParam (outParam, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
 	return (-1);
       }
     
 
-    (void) intChkDataObjACL3 (rsComm, "/tempZone/home/rods/CVS/Entries.Log", (time_t) i, rei);        // test blbost sobota
+    (void) intChkDataObjACL3 (rsComm, "/tempZone/home/rods/CVS/Entries.Log", (time_t) i, rei);        /* test blbost sobota */
 
 #ifdef no17
     {
     rodsObjStat_t *rodsObjStatOut;
     int status7;
-    //genQueryInp_t genQueryInp7;    
+    /* genQueryInp_t genQueryInp7;    */
 
 
 
@@ -351,8 +328,8 @@ msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     
-    //memset (&genQueryInp7, 0, sizeof (genQueryInp_t));
-    //status = rsObjStat(rsComm, myDataObjInp, &rodsObjStatOut);
+    /* memset (&genQueryInp7, 0, sizeof (genQueryInp_t)); */
+    /* status = rsObjStat(rsComm, myDataObjInp, &rodsObjStatOut); */
     status7 = rsObjStat(rsComm, dataObjInp.objPath, &rodsObjStatOut);
     printf ("GJK-P P.007.2.2b dataObjInp.objPath=(%s), status7=(%d)\n", dataObjInp.objPath, status7);
     }
@@ -360,7 +337,6 @@ msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3
 
 
 #ifdef stat2
-    //    rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
@@ -400,13 +376,13 @@ printf("GJKaab myGlbPar1=(%s), myDataObjInp->objPath=(%s)\n", myGlbPar1, myDataO
 			  myDataObjInp->objPath,
 			  rei->status);
     }
-#endif  //stat2
+#endif  /* stat2 */
 
 /* iterate through all files */
     memset (&genQueryInp, 0, sizeof (genQueryInp));
     memset (&genQueryOut, 0, sizeof (genQueryOut));
 
-    addInxIval (&genQueryInp.selectInp, DATA_ID_KW, 1);
+    /* BLBE1 addInxIval (&genQueryInp.selectInp, DATA_ID_KW, 1); */
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
@@ -416,24 +392,24 @@ printf("GJKaab myGlbPar1=(%s), myDataObjInp->objPath=(%s)\n", myGlbPar1, myDataO
     addInxIval (&genQueryInp.selectInp, COL_D_MODIFY_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);
     
-    addInxIval (&genQueryInp.selectInp, COL_COLL_TYPE,  1); //qwerty
-    // ?? addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
-    addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1); // #gjk2 file size in range
-    // #gjk3 ACL user-uthorization pairs
-    // #gjk4 ACL contain at least
-    // #gjk5 does not ACL
-    // #gjk6 AVU contain exactly
-    // #gjk7 AVU only one
-    // #gjk8 AVU does not have duplicates
-    
-    
-    //  addInxIval (&genQueryInp.selectInp, , 1);
-    
-
+    addInxIval (&genQueryInp.selectInp, COL_COLL_TYPE,  1); 
+    /* ?? addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1); */
+    addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1); /* #gjk2 file size in range */
+    /*
+      #gjk3 ACL user-uthorization pairs
+      #gjk4 ACL contain at least
+      #gjk5 does not ACL
+      #gjk6 AVU contain exactly
+      #gjk7 AVU only one
+      #gjk8 AVU does not have duplicates
+      
+      addInxIval (&genQueryInp.selectInp, , 1);
+      
+    */
     status = rsQueryDataObjInCollReCur (rsComm, myCollInp->collName, 
       &genQueryInp, &genQueryOut, NULL, 1);
 
-    //printf("GJK- begin 0001.1.1 in msiChkDataObjACL3(), status=(%d), myCollInp->collName=(%s)\n", status, myCollInp->collName);
+    /* printf("GJK- begin 0001.1.1 in msiChkDataObjACL3(), status=(%d), myCollInp->collName=(%s)\n", status, myCollInp->collName); */
 printf("GJK- begin 0001.0.1 status=(%d), myCollInp->collName=(%s)\n", status, myCollInp->collName);
 
 printf("GJKa2a myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp->collName);
@@ -454,11 +430,11 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
       /* get sub coll paths in the batch */
       subColl = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
       dataObj = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
-      // COL_DATA_SIZE
-      //sqlDatSize = getSqlResultByInx (genQueryOut, COL_D_CREATE_TIME);
+      /* COL_DATA_SIZE */
+      /* sqlDatSize = getSqlResultByInx (genQueryOut, COL_D_CREATE_TIME); */
       sqlDatSize = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
-      //sqlDatSize = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
-      sqlDataIdKw = getSqlResultByInx (genQueryOut, DATA_ID_KW);
+      /* sqlDatSize = getSqlResultByInx (genQueryOut, COL_DATA_SIZE); */
+      /* BLBE1 sqlDataIdKw = getSqlResultByInx (genQueryOut, DATA_ID_KW); */
 
       if (sqlDataIdKw == NULL) {
 	printf ("GJK-P P.013.2.2 ERROR sqlDataIdKw == NULL, dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i);
@@ -476,10 +452,10 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
       
       if (subColl == NULL) {
 	printf ("GJK-P P.004.2.2 ERROR subColl == NULL, dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i);
-	//	if (dataObj == NULL && status < 0) {
+	/*	if (dataObj == NULL && status < 0) { */
         if (dataObj == NULL) {
 	  printf ("GJK-P P.004.2.3 ERROR dataObj == NULL, dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i);
-	  // rei->status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+	  /* rei->status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut); */
 	  
 	  rodsLog (LOG_ERROR,
 		   "msiChkDataObjACL3: msiChkDataObjACL3 failed, (%s) is not an iRods data object (dataObj == NULL), istatus=%d, rei->status=%d", myCollInp->collName, status, rei->status);
@@ -487,10 +463,10 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
 	  return (rei->status);
 	}
 	else {
-	  // delej single object
-	  iErr = intChkDataObjACL3 (rsComm, dataObjInp.objPath, t1, rei);	// test blbost sobota
+	  /* delej single object */
+	  iErr = intChkDataObjACL3 (rsComm, dataObjInp.objPath, t1, rei);	/* test blbost sobota */
 	  printf("GJK-P P.4001.0.2. in msiChkDataObjACL3(), dataObjInp.objPath=(%s), i=%d\n", dataObjInp.objPath, i);
-	  // GJK return(0);
+	  /* GJK return(0); */
 	}
 	rodsLog (LOG_ERROR,
 		 "msiChkDataObjACL3: msiChkDataObjACL3 failed, (%s) is not an iRods collection, rei->status=%d", myCollInp->collName, rei->status);
@@ -509,9 +485,9 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
       for (i = 0; i < genQueryOut->rowCnt; i++) {
         char *tmpSubColl, *tmpDataName, *tmpDataSize;
 	
-	//	./lib/api/include/objStat.h:__rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int interFlag,
+	/*	./lib/api/include/objStat.h:__rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int interFlag, */
 
-	//printf ("GJK-P P.002.2.2a  muj hlavni cyklus ! in msiChkDataObjACL3(), dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i);
+	/* printf ("GJK-P P.002.2.2a  muj hlavni cyklus ! in msiChkDataObjACL3(), dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i); */
 	status9 = intGetDataObjACL(&dataObjInp, mybuf, rsComm);
 
 	printf ("GJK-P P.002.2.2a dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d), status9=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i, status9);
@@ -543,24 +519,28 @@ snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
     
     memset (&genQueryInp7, 0, sizeof (genQueryInp_t));
     memset (&myDataObjInp7, 0, sizeof (dataObjInp_t));
-    rstrcpy(myDataObjInp7.objPath, dataObjInp.objPath, MAX_NAME_LEN);  // rstrcpy(destination, source, max_len)
-    // memset (&rodsObjStatOut, 0, sizeof (rodsObjStat_t));
-    // status = rsObjStat(rsComm, myDataObjInp, &rodsObjStatOut);
+    rstrcpy(myDataObjInp7.objPath, dataObjInp.objPath, MAX_NAME_LEN);  /* rstrcpy(destination, source, max_len) */
+    /*
+      memset (&rodsObjStatOut, 0, sizeof (rodsObjStat_t));
+      status = rsObjStat(rsComm, myDataObjInp, &rodsObjStatOut);
+    */
 
-    // if data_type only
+    /* if data_type only */
     status7 = rsObjStat(rsComm, &myDataObjInp7, &rodsObjStatOut);
-    // status7 = rsObjStat(rsComm, &dataObjInp, &rodsObjStatOut);
+    /*
+      status7 = rsObjStat(rsComm, &dataObjInp, &rodsObjStatOut);
+      
+      if (status7 == 0  && status7 == 1) {
+      if ((long)rodsObjStatOut->objSize <= lMin) iCountMin++;
+      if ((long)rodsObjStatOut->objSize >= lMax) iCountMax++;
+      if ((long)rodsObjStatOut->objSize > lMin && (long)rodsObjStatOut->objSize < lMax) iCountMid++;
+      
+      }
+      printf ("GJK-P P.007.2.2c dataObjInp.objPath=(%s), size=(%ld), createTime=(%s), status7=(%d)\n", dataObjInp.objPath, (long)rodsObjStatOut->objSize, rodsObjStatOut->createTime, status7);
+      
+    */
 
-    // if (status7 == 0  && status7 == 1) {
-    //if ((long)rodsObjStatOut->objSize <= lMin) iCountMin++;
-    //if ((long)rodsObjStatOut->objSize >= lMax) iCountMax++;
-    //if ((long)rodsObjStatOut->objSize > lMin && (long)rodsObjStatOut->objSize < lMax) iCountMid++;
-    
-    //}
-    //printf ("GJK-P P.007.2.2c dataObjInp.objPath=(%s), size=(%ld), createTime=(%s), status7=(%d)\n", dataObjInp.objPath, (long)rodsObjStatOut->objSize, rodsObjStatOut->createTime, status7);
-
-
-    //2008.02.11.
+    /* 2008.02.11. */
     /*
       typedef struct DataObjInfo {
       char objPath[MAX_NAME_LEN];
@@ -620,7 +600,7 @@ if (1 == 2) {
 
  if (2 == 2) {
    status = intGetDataObjACL(&myDataObjInp7, mybuf, rsComm);
-   // printf ("GJK intGetDataObjACL, mybuf=(%s), status=%d\n", mybuf, status); 
+   /*  printf ("GJK intGetDataObjACL, mybuf=(%s), status=%d\n", mybuf, status);  */
  }
  
     }
@@ -656,13 +636,13 @@ typedef struct DataObjInp {
     } rodsObjStat_t;
 */
 
-// printf ("GJK-P P.002.2.2b  muj hlavni cyklus ! in msiChkDataObjACL3(), dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i);
-// printf ("GJK-P P.002.2.2b dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d), tmpDataSize=(%s)\n", dataObjInp.objPath, genQueryOut->rowCnt, i, tmpDataSize);
+    /* printf ("GJK-P P.002.2.2b  muj hlavni cyklus ! in msiChkDataObjACL3(), dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i); */
+    /* printf ("GJK-P P.002.2.2b dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d), tmpDataSize=(%s)\n", dataObjInp.objPath, genQueryOut->rowCnt, i, tmpDataSize); */
 
      if (1 != genQueryOut->rowCnt)
         {
-          // printf            ("GJK-P P.994.4.4. in intChkDataObjACL3(), rei->status=(%d), genQueryOut->rowCnt=(%d), (dataObjInp.objPath=(%s)\n",             rei->status, genQueryOut->rowCnt, dataObjInp.objPath);
-          // return(-1); // not enough lines);
+          /* printf            ("GJK-P P.994.4.4. in intChkDataObjACL3(), rei->status=(%d), genQueryOut->rowCnt=(%d), (dataObjInp.objPath=(%s)\n",             rei->status, genQueryOut->rowCnt, dataObjInp.objPath); */
+          /* return(-1); not enough lines); */
         }
 #ifdef gjk009
       tmpChksumStr = NULL;
@@ -672,7 +652,7 @@ typedef struct DataObjInp {
           rodsLog (LOG_ERROR,
                    "printLsLong: getSqlResultByInx for COL_D_DATA_CHECKSUM failed GJK-(%s)",
                    objPath);
-          // return (UNMATCHED_KEY_OR_INDEX);
+          /* return (UNMATCHED_KEY_OR_INDEX); */
         }
       else
         {
@@ -686,7 +666,7 @@ typedef struct DataObjInp {
       if ((modTimVal = getSqlResultByInx (genQueryOut, COL_D_MODIFY_TIME)) == NULL)
         {
           rodsLog (LOG_ERROR,              "printLsLong: getSqlResultByInx for COL_D_MODIFY_TIME failed GJK-(%s)",                 objPath);
-          // return (UNMATCHED_KEY_OR_INDEX);
+          /* return (UNMATCHED_KEY_OR_INDEX); */
         }
       else
         {
@@ -703,7 +683,7 @@ typedef struct DataObjInp {
           rodsLog (LOG_ERROR,
                    "printLsLong: getSqlResultByInx for COL_D_CREATE_TIME failed GJK-(%s)",
                    objPath);
-          // return (UNMATCHED_KEY_OR_INDEX);
+          /* return (UNMATCHED_KEY_OR_INDEX); */
         }
       else
         {
@@ -716,8 +696,8 @@ typedef struct DataObjInp {
 
 
 
-	// GJK  rei->status = rsDataObjRepl (rsComm, &dataObjInp, &transStat);
-        rei->status = 0; //GJK
+      /* GJK  rei->status = rsDataObjRepl (rsComm, &dataObjInp, &transStat); */
+        rei->status = 0; 
         if (rei->status<0)
         {
           rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -726,8 +706,8 @@ typedef struct DataObjInp {
           rei->status);
         }
 	else {
-	  // GJK fake 2 iErr = intChkDataObjACL3 (rsComm, dataObjInp.objPath, t1, rei);	// test blbost sobota
-	  //printf("GJK-P P.004001.0.1. in msiChkDataObjACL3(), dataObjInp.objPath=(%s), i=%d\n", dataObjInp.objPath, i);
+	  /* GJK fake 2 iErr = intChkDataObjACL3 (rsComm, dataObjInp.objPath, t1, rei);	test blbost sobota */
+	  /* printf("GJK-P P.004001.0.1. in msiChkDataObjACL3(), dataObjInp.objPath=(%s), i=%d\n", dataObjInp.objPath, i); */
 	}
         if (transStat != NULL) {
     	    free (transStat);
@@ -751,7 +731,7 @@ typedef struct DataObjInp {
 #ifdef vystup1
     (void) snprintf (strOut, 255,
 		     "%d data objects are of data type '%s' from total of %d data objects in the input '%s' iRods collection\n", iCountMin, strDataTypeInput1, iCountMax, myGlbPar1);
-    i = fillStrInMsParam (outParam, strOut);     // MsParam.c parse  add formated string to bytes WriteBytesBuff printMsParam.c
+    i = fillStrInMsParam (outParam, strOut);     /* MsParam.c parse  add formated string to bytes WriteBytesBuff printMsParam.c */
     printf("GJK end strOut=(%s)\n", strOut);
 #else
 
@@ -766,7 +746,7 @@ typedef struct DataObjInp {
     }
 #endif
     return (rei->status);
-} // msiChkDataObjACL3
+} /* msiChkDataObjACL3 */
 
 /*
  
@@ -816,7 +796,7 @@ msiChkDataObjACL3222 (msParam_t * inpParam1, msParam_t * inpParam2, msParam_t * 
 	       "ERROR:  msiChkDataObjACL3(), input inpParam2 error\n");
       rodsLog (LOG_ERROR,
 	       "msiChkDataObjACL3(),  input inpParam2 error.");
-      i = fillStrInMsParam (outParam1, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+      i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
       return (-1);
     }
 
@@ -824,14 +804,14 @@ msiChkDataObjACL3222 (msParam_t * inpParam1, msParam_t * inpParam2, msParam_t * 
     ("GJK-P P.2222.0.2. in msiChkDataObjACL3(), ptrInpColl->collName=(%s), t1=%ld\n",
      ptrInpColl->collName, t1);
 
-  iErr = intChkDataObjACL3 (rsComm, ptrInpColl->collName, t1, rei);	// test blbost sobota
-  //  (void) intChkDataObjACL3 (rsComm, strFullDataPath, t1, rei);
+  iErr = intChkDataObjACL3 (rsComm, ptrInpColl->collName, t1, rei);	/* test blbost sobota */
+  /*  (void) intChkDataObjACL3 (rsComm, strFullDataPath, t1, rei); */
 
   sprintf (strOut,
 	   "OK msiChkDataObjACL3(), iCountUserDefinedMetadata=%d, t1=(%ld), iErr=%d\n",
 	   iCountUserDefinedMetadata, t1, iErr);
-  i = fillStrInMsParam (outParam1, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
-  // fillBuffInParam
+  i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
+  /* fillBuffInParam */
 
   printf
     ("GJK-P P.2222.0.9. in msiChkDataObjACL3(), iCountUserDefinedMetadata=%d, iErr=%d\n",
@@ -843,11 +823,8 @@ msiChkDataObjACL3222 (msParam_t * inpParam1, msParam_t * inpParam2, msParam_t * 
 int
 intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
 				time_t tTime, ruleExecInfo_t * rei)
-{ // bbb
-  //  collInp_t ptrInpColl;
+{ 
   int iCountUserDefinedMetadata = 0;
-  //long lMax = 0, lTmp;
-  //UserDefinedMetadata_t aAVUarray[1024];
   genQueryInp_t genQueryInp;
   genQueryOut_t *genQueryOut;
   sqlResult_t *chksumStr, *modTimVal, *creaTimVal, *sqltColDataSize;
@@ -855,9 +832,6 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
   int iIterSqlQuery = 0;
   char *tmpChksumStr, *strModTime, *strCreaTime;
   char collQCond[MAX_NAME_LEN];
-  //  char strOut[MAX_NAME_LEN * MAX_NAME_LEN];
-  //  time_t t1;
-
   char *strColDataSize ;
 
   printf
@@ -898,7 +872,7 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
     }
   /* tTime time of requested last checking */
   if (iTotalAVUs > 0 && ((tTime - lMax) <= 0))
-    {      // mam uz AVU a je novejsi ZZZ1 
+    {      /* mam uz AVU a je novejsi ZZZ1  */
       printf
 	("GJK-P P.994.7.1. in intChkDataObjACL3(), mam uz AVU a je novejsi, iTotalAVUs=%d, lMax=%ld, Time=%ld, timeDiff=%ld\n",
 	 iTotalAVUs, lMax, tTime, (tTime - lMax));
@@ -910,14 +884,14 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
   else
     {
       if (iTotalAVUs > 0)
-	{	  // mam uz AVU a je starsi // prepocti chksumu, porovnej a register novy cas //VERIFY_CHKSUM_KW
+	{	  /* mam uz AVU a je starsi prepocti chksumu, porovnej a register novy cas VERIFY_CHKSUM_KW  */
 	  dataObjInp_t dataObjInp;
 	  char *dataObjChksumStr = NULL;
 	  dataObjInfo_t *dataObjInfoHead = NULL;
 
 	  /* zero the struct and fill in the iRods object/file name */
 	  memset (&dataObjInp, 0, sizeof (dataObjInp));
-	  // fix '...foo.pl/' pozdeji   
+	  /* fix '...foo.pl/' pozdeji    */
 	  rstrcpy (dataObjInp.objPath, strFullDataPath, MAX_NAME_LEN);
 
 	  /* move the cond */
@@ -942,7 +916,7 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
 		       dataObjInp.objPath, dataObjChksumStr);
 	      return (-2);
 	    }
-	  // CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME    
+	  /*  CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME    */
 	  iErr =
 	    intAddChkSumDateAvuMetadataVol3 (rei->rsComm, strFullDataPath, t1,
 					 &status);
@@ -960,7 +934,7 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
 	  return (iErr);
 	}
       else
-	{	//      if (iTotalAVUs > 0)  , nemam zadne AVUs
+	{	/*      if (iTotalAVUs > 0)  , nemam zadne AVUs */
 	  printf
 	    ("GJK-P P.994.27.1. in intChkDataObjACL3(), nemam uz AVU, prepocti chksumu, porovnej a register novy cas, iTotalAVUs=%d, lMax=%ld, Time=%ld, timeDiff=%ld\n",
 	     iTotalAVUs, lMax, tTime, (tTime - lMax));
@@ -971,7 +945,7 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
 	}
     }
 
-#endif //gjk004
+#endif /* gjk004 */
 
   /* Get all collections (recursively) under our input collection */
   /* Prepare query */
@@ -982,21 +956,24 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
   addInxIval (&genQueryInp.selectInp, COL_D_DATA_CHECKSUM, 1);
   addInxIval (&genQueryInp.selectInp, COL_D_MODIFY_TIME, 1);
   addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);
-
-  // addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1); // #gjk1 DATA_TYPE_KW
   addInxIval (&genQueryInp.selectInp, COL_COLL_TYPE,  1);
-  //addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
-  addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1); // #gjk2 file size in range
-  // #gjk3 ACL user-uthorization pairs
-  // #gjk4 ACL contain at least
-  // #gjk5 does not ACL
-  // #gjk6 AVU contain exactly
-  // #gjk7 AVU only one
-  // #gjk8 AVU does not have duplicates
+  addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1); /* #gjk2 file size in range */
 
+  /* addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);  #gjk1 DATA_TYPE_KW
+     
+  addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
+  
+  #gjk3 ACL user-uthorization pairs
+  #gjk4 ACL contain at least
+  #gjk5 does not ACL
+  #gjk6 AVU contain exactly
+  #gjk7 AVU only one
+  #gjk8 AVU does not have duplicates
+  */
+  
   genQueryInp.maxRows = MAX_SQL_ROWS;
 
-// ./modules/ERA/microservices/src/eraUtil.c
+  /* ./modules/ERA/microservices/src/eraUtil.c */
 
   /* ICAT query for subcollections */
   rei->status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
@@ -1009,10 +986,6 @@ intChkDataObjACL3  (rsComm_t * rsComm, char *strFullDataPath,
 
   if (rei->status != CAT_NO_ROWS_FOUND)
     { int i; 
-dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */ 
-//char *fileName;   /* for rsCollCreate() and rsDataObjCopy() */ 
-//char *srcColl;       /* full path of source and destination collections as entered */
-
 
       printf
 	("GJK-P P.994.3.3. in intChkDataObjACL3(), rei->status=(%d), genQueryOut->rowCnt=(%d), strFullDataPath=(%s)\n",
@@ -1040,10 +1013,10 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 
                 /* get full path of new file to be created */
                 snprintf(destDataObjInp.objPath, MAX_NAME_LEN, "%s%s/%s", destColl, subCollName+strlen(srcColl), fileName);
-		rstsrcpy(destDataObjInp.objPath, strFullDataPath, MAX_NAME_LEN); // fake
+		rstsrcpy(destDataObjInp.objPath, strFullDataPath, MAX_NAME_LEN); /* fake */
 #endif
 
-		//printf ("GJK-P P.009.1.2. in intChkDataObjACL3(), i=(%d), destDataObjInp.objPath=(%s), strFullDataPath=(%s)\n", i, destDataObjInp.objPath, strFullDataPath); // fake
+		/* printf ("GJK-P P.009.1.2. in intChkDataObjACL3(), i=(%d), destDataObjInp.objPath=(%s), strFullDataPath=(%s)\n", i, destDataObjInp.objPath, strFullDataPath);  fake */
 		
 	}
 	
@@ -1052,7 +1025,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	    printf
 	      ("GJK-P P.994.4.4. in intChkDataObjACL3(), rei->status=(%d), genQueryOut->rowCnt=(%d), strFullDataPath=(%s)\n",
 	       rei->status, genQueryOut->rowCnt, strFullDataPath);
-	    // return(-1); // not enough lines);
+	    /* return(-1); not enough lines); */
 	  }
 	
 	tmpChksumStr = NULL;
@@ -1062,7 +1035,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	    rodsLog (LOG_ERROR,
 		     "printLsLong: getSqlResultByInx for COL_D_DATA_CHECKSUM failed GJK-(%s)",
 		     objPath);
-	    // return (UNMATCHED_KEY_OR_INDEX);
+	    /* return (UNMATCHED_KEY_OR_INDEX); */
 	  }
 	else
 	  {
@@ -1076,7 +1049,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	if ((modTimVal = getSqlResultByInx (genQueryOut, COL_D_MODIFY_TIME)) == NULL)
 	  {
 	    rodsLog (LOG_ERROR,		   "printLsLong: getSqlResultByInx for COL_D_MODIFY_TIME failed GJK-(%s)",		   objPath);
-	    // return (UNMATCHED_KEY_OR_INDEX);
+	    /* return (UNMATCHED_KEY_OR_INDEX); */
 	  }
 	else
 	  {
@@ -1093,7 +1066,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	    rodsLog (LOG_ERROR,
 		     "printLsLong: getSqlResultByInx for COL_D_CREATE_TIME failed GJK-(%s)",
 		     objPath);
-	    // return (UNMATCHED_KEY_OR_INDEX);
+	    /* return (UNMATCHED_KEY_OR_INDEX); */
 	  }
 	else
 	  {
@@ -1121,7 +1094,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	    rodsLog (LOG_ERROR,
 		     "printLsLong: getSqlResultByInx for COL_D_DATA_CHECKSUM failed GJK-(%s)",
 		     objPath);
-	    // return (UNMATCHED_KEY_OR_INDEX);
+	    /* return (UNMATCHED_KEY_OR_INDEX); */
 	  }
 	else
 	  {
@@ -1138,7 +1111,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	    rodsLog (LOG_ERROR,
 		     "printLsLong: getSqlResultByInx for COL_DATA_SIZE failed GJK-(%s)",
 		     objPath);
-	    // return (UNMATCHED_KEY_OR_INDEX);
+	    /* return (UNMATCHED_KEY_OR_INDEX); */
 	  }
 	else
 	  {
@@ -1148,18 +1121,20 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	
 	printf	("GJK-P P.994.6.6. (tady je moje maso AAA ZZZ) in intChkDataObjACL3(), rei->status=(%d), genQueryOut->rowCnt=(%d), strFullDataPath=(%s), strColDataSize=(%s), tmpChksumStr=(%s), iIterSqlQuery=(%d)\n",
 		 rei->status, genQueryOut->rowCnt, strFullDataPath, strColDataSize, tmpChksumStr, iIterSqlQuery);
-	// tady je moje maso AAA ZZZ
+	/* tady je moje maso AAA ZZZ */
 	
 	
-	// int  getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
-	// int  queryDataObjInColl (rcComm_t *conn, char *collection, rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,  genQueryOut_t **genQueryOut)'
-	// int  queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
-	
+	/*
+	  int  getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
+	  int  queryDataObjInColl (rcComm_t *conn, char *collection, rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,  genQueryOut_t **genQueryOut)'
+	  int  queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
+	*/
+
 #ifdef gjk003
 	if (iCountUserDefinedMetadata > 0)
-	  {	// mam check sum cas
-	    // nedelej nic
-	    // kdy rozdil casu neni moc velky
+	  {	/* mam check sum cas */
+	    /* nedelej nic */
+	    /* kdy rozdil casu neni moc velky */
 	    
 	    rodsLog (LOG_NOTICE,
 		     "GJK-P P.994.0.1. in intChkDataObjACL3(), mam check sum cas a tedy nedelej nic, after GJKgetDataObjPSmeta((%s) rsComm\n",
@@ -1169,7 +1144,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	       objPath);
 	  }
 	else
-	  {			// nemam check sum cas
+	  {			/* nemam check sum cas */
 	    rodsLog (LOG_NOTICE,
 		     "GJK-P P.994.0.2. in intChkDataObjACL3(), nemam check sum cas, after GJKgetDataObjPSmeta(%s), rsComm\n",
 		     objPath);
@@ -1179,20 +1154,23 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	    if (strlen (tmpChksumStr) ==
 		strlen ("6d75827809277a1d50c0ed742764a82c") && 1 == 1)
 	      {
-		// mam check sum hodnotu
-		// nemam check sum cas
-		// insert check sum cas in Unix number
-		/*Call the function to insert metadata here. */
+		/* mam check sum hodnotu
+		   nemam check sum cas
+		   insert check sum cas in Unix number
+		*/
+		/* Call the function to insert metadata here. */
 		rodsLog (LOG_NOTICE,
 			 "GJK-P P.994.99.2. in intChkDataObjACL3(), nemam check sum cas, mam check sum hodnotu, after GJKgetDataObjPSmeta(%s), rsComm\n",
 			 objPath);
 	      }
 	    else
 	      {
-		// nemam check sum hodnotu
-		// vypocti check sum hodnotu
-		// instert check sum hodnotu do iCat
-		// insert check sum cas == ted
+		/* 
+		   nemam check sum hodnotu
+		   vypocti check sum hodnotu
+		   instert check sum hodnotu do iCat
+		   insert check sum cas == ted
+		*/
 		rodsLog (LOG_NOTICE,
 			 "GJK-P P.994.99.2. in intChkDataObjACL3(), nemam check sum cas, mam check sum hodnotu, after GJKgetDataObjPSmeta(%s), rsComm\n",
 			 objPath);
@@ -1207,7 +1185,7 @@ dataObjInp_t destDataObjInp;     /* for rsDataObjCopy() */
 	
 	printf	("GJK-P P.994.0.6. in intChkDataObjACL3(), after GJKgetDataObjPSmeta((%s), rsComm\n",
 		 objPath);
-    } // if (rei->status != CAT_NO_ROWS_FOUND)
+    } /* if (rei->status != CAT_NO_ROWS_FOUND) */
   printf ("GJK-P P.994.0.8. in intChkDataObjACL3()\n");
   return(0);
 }
@@ -1223,7 +1201,7 @@ int intAddChkSumDateAvuMetadataVol3 (rsComm_t * rsComm, char *objPath, time_t t1
      chrPtr1, objPath);
   if (chrPtr1 != NULL && *chrPtr1 == '/'
       && chrPtr1[strlen (chrPtr1) - 1] == '/')
-    *chrPtr1 = 0;		// replace '/' in /myzone/foo/'
+    *chrPtr1 = 0;		/* replace '/' in /myzone/foo/' */
   printf
     ("GJK-P P.1.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol3(), chrPtr1=(%s), objPath=(%s)\n",
      chrPtr1, objPath);
@@ -1231,7 +1209,7 @@ int intAddChkSumDateAvuMetadataVol3 (rsComm_t * rsComm, char *objPath, time_t t1
   memset (&modAVUMetadataInp, 0, sizeof (modAVUMetadataInp));
 
   modAVUMetadataInp.arg0 = "add";
-  modAVUMetadataInp.arg1 = "-d";	// data
+  modAVUMetadataInp.arg1 = "-d";	/* data */
   modAVUMetadataInp.arg2 = objPath;
   modAVUMetadataInp.arg3 = "MD5checkSumDataStamp";
 
@@ -1291,7 +1269,7 @@ intFindChkSumDateAvuMetadataVol3 (int status, genQueryOut_t * genQueryOut,
     ("GJK 300.0.0. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, status=%d\n",
      fullName, i, status);
 
-  //return (0);
+  /* return (0); */
 
   if (status != 0)
     {
@@ -1304,36 +1282,36 @@ intFindChkSumDateAvuMetadataVol3 (int status, genQueryOut_t * genQueryOut,
 	  for (i = 0; i < (genQueryOut->rowCnt - 0); i++)
 	    {
 
-	      // appendStrToBBuf(mybuf, strlen(fullName)+1, fullName);
-	      //gjk1 printf("GJK 300.0.1. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->rowCnt=%d, genQueryOut->attriCnt=%d, iCountUserDefinedMetadata=%d\n", fullName, i, j, genQueryOut->rowCnt, genQueryOut->attriCnt, *iCountUserDefinedMetadata);
-	      // return (0);
+	      /* appendStrToBBuf(mybuf, strlen(fullName)+1, fullName); */
+	      /* gjk1 printf("GJK 300.0.1. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->rowCnt=%d, genQueryOut->attriCnt=%d, iCountUserDefinedMetadata=%d\n", fullName, i, j, genQueryOut->rowCnt, genQueryOut->attriCnt, *iCountUserDefinedMetadata); */
+	      /* return (0); */
 
 	      for (j = 0; j < (genQueryOut->attriCnt - 0); j++)
 		{
 		  char *tResult;
 
-		  //gjk1 printf ("GJK 300.0.2. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt);
-		  // return (0);
+		  /* gjk1 printf ("GJK 300.0.2. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt); */
+		     /* return (0); */
 
 		  tResult = genQueryOut->sqlResult[j].value;
-		  //gjk1 printf ("GJK 300.0.3. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt);
-		  //return (0);
+		  /* gjk1 printf ("GJK 300.0.3. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt); */
+		  /* return (0); */
 
 		  tResult += i * genQueryOut->sqlResult[j].len;
-		  //gjk1 printf ("GJK 300.0.4. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt);
-		  //return (0);
+		  /* gjk1 printf ("GJK 300.0.4. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d\n", fullName, i, j, genQueryOut->attriCnt); */
+		  /* return (0); */
 
 		  /* skip final | if no units were defined */
 		  if (j < 2 || strlen (tResult))
 		    {
 		      size = genQueryOut->sqlResult[j].len + 2;
-		      // appendStrToBBuf(mybuf, size, "%s",tResult);
-		      //gjk1 printf ("GJK 300.1.2. intFindChkSumDateAvuMetadataVol3, tResult=(%s), i=%d, j=%d\n", tResult, i, j);
+		      /* appendStrToBBuf(mybuf, size, "%s",tResult); */
+		      /* gjk1 printf ("GJK 300.1.2. intFindChkSumDateAvuMetadataVol3, tResult=(%s), i=%d, j=%d\n", tResult, i, j); */
 		    }
 
-		  //gjk1 printf ("GJK 300.0.5. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, iCountUserDefinedMetadata=%d\n", fullName, i, j, *iCountUserDefinedMetadata);
+		  /* gjk1 printf ("GJK 300.0.5. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, iCountUserDefinedMetadata=%d\n", fullName, i, j, *iCountUserDefinedMetadata); */
 
-		  //return 0;
+		  /* return 0; */
 
 		  switch (j)
 		    {
@@ -1353,8 +1331,8 @@ intFindChkSumDateAvuMetadataVol3 (int status, genQueryOut_t * genQueryOut,
 		      break;
 		    }
 
-		  //             printf ("GJK 300.0.6. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d, UAVArray[%d].value=(%s)\n", fullName, i, j, genQueryOut->attriCnt, i, UAVArray[i].value);
-		  //return 0;
+		  /* printf ("GJK 300.0.6. intFindChkSumDateAvuMetadataVol3, fullName=(%s), i=%d, j=%d, genQueryOut->attriCnt=%d, UAVArray[%d].value=(%s)\n", fullName, i, j, genQueryOut->attriCnt, i, UAVArray[i].value); */
+		  /* return 0; */
 		}		// j=0
 	      // appendStrToBBuf(mybuf, 2, "\n");
 	      *iCountUserDefinedMetadata = *iCountUserDefinedMetadata + 1;
@@ -1389,7 +1367,7 @@ msiAddDataObjChksumsTimeStampsToAVUVol3 (msParam_t * inpParam1,
 
   rsComm = rei->rsComm;
 
-  //  (void) intChkDataObjACL3(rsComm, "/tempZone/home/rods/loopTest/submit.pl", (time_t) i, rei);        // test blbost sobota
+  //  (void) intChkDataObjACL3(rsComm, "/tempZone/home/rods/loopTest/submit.pl", (time_t) i, rei);        /* test blbost sobota */
 
   printf
     ("GJK-P P.991.0.0. in msiAddDataObjChksumsTimeStampsToAVUVol3(), GJK msiAddDataObjChksumsTimeStampsToAVUVol3: GJK Calling msiGetDataObjChksumsTimeStampsFromAVUVol3\n");
@@ -1411,7 +1389,7 @@ msiAddDataObjChksumsTimeStampsToAVUVol3 (msParam_t * inpParam1,
 				 &iStatus);
   (void) snprintf (strOut, 255,
 		   "|MD5checkSumDataStamp|%d|UnixTimeInSeconds|\n", (int) t1);
-  i = fillStrInMsParam (outParam1, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+  i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
 
   printf
     ("GJK-P P.111.0.7. in msiGetDataObjChksumsTimeStampsFromAVUVol3(), GJK msiGetDataObjChksumsTimeStampsFromAVUVol3: GJK Calling msiGetDataObjChksumsTimeStampsFromAVUVol3, iErr=%d, iCountUserDefinedMetadata=%d\n",
@@ -1475,7 +1453,7 @@ int msiGJK2 (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei)
     }
 
   //   sprintf(strOut, "#1\n#2\n\n#3 lines gjk\n");
-  i = fillStrInMsParam (outParam1, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
+  i = fillStrInMsParam (outParam1, strOut);	/* MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c */
   // fillBuffInParam
 
 
@@ -1508,14 +1486,14 @@ intGetDataObjChksumsTimeStampsFromAVUVol3 (collInp_t * ptrInpColl,
      chrPtr1, ptrInpColl->collName);
   if (chrPtr1 != NULL && *chrPtr1 == '/'
       && (ptrInpColl->collName[strlen (ptrInpColl->collName) - 1] == '/'))
-    *chrPtr1 = 0;		// replace '/' in /myzone/foo/'
+    *chrPtr1 = 0;		/* replace '/' in /myzone/foo/' */
 /*
   else printf
   ("GJK-P P.21.1.1. in intGetDataObjChksumsTimeStampsFromAVUVol3(), chrPtr1=(%s), ptrInpColl->collName=(%s), Pmath=%d, strlen=%d\n",
   chrPtr1, ptrInpColl->collName, (int)(chrPtr1 - ptrInpColl->collName), (strlen (ptrInpColl->collName) - 1));
   */
 
-  // spatne !!!if (chrPtr1 != NULL && *chrPtr1 == '/' &&)    *chrPtr1 = 0;              // replace '/' in /myzone/foo/'
+  // spatne !!!if (chrPtr1 != NULL && *chrPtr1 == '/' &&)    *chrPtr1 = 0;              /* replace '/' in /myzone/foo/' */
   printf
     ("GJK-P P.21.0.2. in intGetDataObjChksumsTimeStampsFromAVUVol3(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
      chrPtr1, ptrInpColl->collName);
