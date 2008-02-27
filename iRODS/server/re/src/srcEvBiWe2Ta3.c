@@ -13,7 +13,7 @@ int intChkDataObjACL3 (rsComm_t *rsComm, char *str, time_t t1, ruleExecInfo_t *r
  *
  */
 int
-appendFormattedStrToBBuf(bytesBuf_t *dest, size_t size, const char *format, ...)
+intAppendFormattedStrToBBuf(bytesBuf_t *dest, size_t size, const char *format, ...)
 {
 	va_list ap;
 	int written;
@@ -62,8 +62,8 @@ intAppendStrToBBuf(bytesBuf_t *dest, char *str)
 		return (-1);
 	}
 
-	/* call appendFormattedStrToBBuf() */
-	written = appendFormattedStrToBBuf(dest, strlen(str)+1, "%s", str);
+	/* call intAppendFormattedStrToBBuf() */
+	written = intAppendFormattedStrToBBuf(dest, strlen(str)+1, "%s", str);
 #else
 #endif
 	return (written);
