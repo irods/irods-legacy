@@ -18,8 +18,6 @@
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
 
-struct openedH5File *OpenedH5FileHead = NULL;
-
 /* msiH5File_open - msi for opening a H5File.
  * inpH5FileParam - The input H5File to open. Must be h5File_MS_T.
  * inpFlagParam - Input flag - INT_MS_T
@@ -205,7 +203,8 @@ ruleExecInfo_t *rei)
     } else {
         rei->status = USER_PARAM_TYPE_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiH5File_open: input rei or rsComm is NULL");
+          "msiH5File_close: wrong inpH5FileParam type %s",
+          inpH5FileParam->type);
         return (rei->status);
     }
 
@@ -245,407 +244,229 @@ ruleExecInfo_t *rei)
     return rei->status;
 }
 
+/* msiH5Dataset_read - msi for reading a dataset from an opened H5File.
+ * inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
+ * outH5DatasetParam - the output H5Dataset - Must be h5Dataset_MS_T.
+ *
+ */
 
-#if 0	/* XXXXX take out for testing */
-int h5ObjProcess(genFunctType_t functType, int objID, int intInput2, 
-char *strInput1, char *strInput2, bytesBuf_t *bytesBufInp, 
-bytesBuf_t *bytesBufOut, int maxOutSz)
+int
+msiH5Dataset_read (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam,
+ruleExecInfo_t *rei)
 {
-    int ret_value=0;
-    struct hostElement  *hostAddrPtr = NULL;
+    rsComm_t *rsComm;
+    H5Dataset *ind;
+    H5Dataset *outd;
+    int l1descInx;
+    dataObjInfo_t *dataObjInfo;
     int remoteFlag;
-    int status;
+    rodsServerHost_t *rodsServerHost;
 
-    if (bytesBufInp == NULL) {
-        elog (NOTICE,
-         "h5ObjProcess: NULL bytesBufInp for functType %d, objID %d",
-         functType, objID);
-        return (SYS_ERR_NULL_INPUT);
+    RE_TEST_MACRO ("    Calling msiH5Dataset_read")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiH5Dataset_read: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    if (H5OBJECT_FILE == objID)
-    {
-        H5File *inf=0;
-        H5File outf;
-	struct mdasInfoOut *infoOutHead = NULL;
- 	int fid = 0;
+    rsComm = rei->rsComm;
 
-#if 0
-        ret_value = unpackMsg (VAROUTDATA (vPackedInput), (char **) &inf,
-         h5File_PF, Hdf5Def);
-#endif
-
-        ret_value = unpackMsgFromBB (bytesBufInp, (char **) &inf,
-         h5File_PF, Hdf5Def, 1);
-
-        if (ret_value < 0) {
-            elog (NOTICE,
-             "h5ObjProcess: unpackMsgFromBB error for functType %d, objID %d",
-             functType, objID);
-            return (ret_value);
-        }
-
-        if (H5FILE_OP_OPEN == inf->opID) {
-            /* see if we need to do it remotely */
-            ret_value = getInfoOutByName (NULL, NULL, inf->filename, "read",
-              &infoOutHead);
-
-            if (ret_value < 0) 
-                return (ret_value);
-
-            remoteFlag = chkHostAndZone (infoOutHead->resourceLoc, 
-	      &hostAddrPtr);
-
-	    if (remoteFlag < 0) {
-        	elog (NOTICE, "h5ObjProcess: Invalid host addr %s", 
-		  infoOutHead->resourceLoc);
-	        freeAllInfoOut (infoOutHead);
-        	if (inf) {
-                    H5File_dtor(inf);
-                    free(inf);
-                }
-       		return INP_ERR_HOST_ADDR;               /* failure */
-            } else if (remoteFlag == REMOTE_HOST) {
-		fid = remoteGenProxyFunct (hostAddrPtr,
-		  functType, objID, intInput2, strInput1, strInput2, 
-		  bytesBufInp, bytesBufOut, maxOutSz); 
-		if (fid >= 0) {
-		    addOpenedHdf5File (fid, hostAddrPtr);
-		}
-	        freeAllInfoOut (infoOutHead);
-                if (inf) {
-                    H5File_dtor(inf);
-                    free(inf);
-                }
-		return (fid);
-	    }
-		    
-	    /* do it locally */
-
-	    if (infoOutHead != NULL) {
-		/* replace srb file with local file */ 
-		if (inf->filename != NULL) {
-		    free (inf->filename);
-		}
-		inf->filename = infoOutHead->dataPath;
-		infoOutHead->dataPath = NULL;
-		freeAllInfoOut (infoOutHead);
-	    }
-
-            fid = H5File_open(inf, &outf);
-        } else if (H5FILE_OP_CLOSE == inf->opID) {
-            hostAddrPtr = getHostByFid (inf->fid);
-
-            if (hostAddrPtr != NULL) {
-                /* do it remotely */
-                fid = remoteGenProxyFunct (hostAddrPtr,
-                  functType, objID, intInput2, strInput1, strInput2, 
-		  bytesBufInp, bytesBufOut, maxOutSz);
-
-		closeOpenedHdf5File (inf->fid);
-        	if (inf) {
-                    H5File_dtor(inf);
-                    free(inf);
-                }
-
-                return (fid);
-            }
-
-	    /* do it locally */
-
-            fid = H5File_close(inf, &outf);
-	} else {
-            elog (NOTICE,
-             "h5ObjProcess: unknown opID %d, objID %d", inf->opID, objID);
-	    return -1;	/* XXXX add meaningful error */
-	}
-
-	/* local falls through to here */
-
-        if (inf) {
-            H5File_dtor(inf);
-            free(inf);
-        }
-
-        if (fid < 0) {
-            elog (NOTICE,
-              "h5ObjProcess:H5File_open err.functType %d,objID %d,stat=%d",
-              functType, objID, fid);
-	    ret_value = fid;
-        } else {
-#if 0
-            ret_value = packMsg ((char *) &outf, outBuf, h5File_PF, Hdf5Def);
-#endif
-            ret_value = packMsgInBB ((char *) &outf, bytesBufOut, h5File_PF,
-             Hdf5Def);
-            if (ret_value < 0) {
-                elog (NOTICE,
-                  "h5ObjProcess: packMsg error. status = %d", ret_value);
-                fid = ret_value;
-            }
-            H5File_dtor(&outf);
-	}
-        return (fid);
-
-        /* TODO at h5Handler -- more actions needs to be added here */
-    }
-    else if (H5OBJECT_DATASET == objID)
-    {
-        H5Dataset *ind=NULL;
-        H5Dataset outd;
-
-#if 0
-        ret_value = unpackMsg (VAROUTDATA (vPackedInput), (char **) &ind,
-         h5Dataset_PF, Hdf5Def);
-#endif
-
-        ret_value = unpackMsgFromBB (bytesBufInp, (char **) &ind,
-         h5Dataset_PF, Hdf5Def, 1);
-
-        if (ret_value < 0) {
-            elog (NOTICE,
-             "h5ObjProcess: unpackMsgFromBB error for functType %d, objID %d",
-             functType, objID);
-            return (ret_value);
-        }
-
-        hostAddrPtr = getHostByFid (ind->fid);
-
-        if (hostAddrPtr != NULL) {
-	    /* do it remotely */
-            ret_value = remoteGenProxyFunct (hostAddrPtr,
-              functType, objID, intInput2, strInput1, strInput2, 
-	      bytesBufInp, bytesBufOut, maxOutSz);
-
-            if (ind) {
-                H5Dataset_dtor (ind);
-                free (ind);
-            }
-
-            return (ret_value);
-	}
-
-	/* do it locally */
-
-        if (H5DATASET_OP_READ == ind->opID) {
-            ret_value = H5Dataset_read (ind, &outd);
-
-	    if (ind) {
-                H5Dataset_dtor (ind);
-                free (ind);
-	    }
-
-            if (ret_value < 0) {
-                elog (NOTICE,
-                  "h5ObjProcess: H5Dataset_read error, status = %d",
-                  ret_value);
-            }
-#if 0
-            status = packMsg ((char *) &outd, outBuf,
-              h5Dataset_PF, Hdf5Def);
-#endif
-            status = packMsgInBB ((char *) &outd, bytesBufOut,
-              h5Dataset_PF, Hdf5Def);
-
-            if (status < 0) {
-                elog (NOTICE,
-                  "h5ObjProcess: packMsg err.functType %d,objID %d,stat=%d",
-                  functType, objID, status);
-            }
-
-	    prepOutDataset (&outd);
-            H5Dataset_dtor (&outd);
-
-            return (ret_value);
-        } else if (H5DATASET_OP_READ_ATTRIBUTE == ind->opID) {
-            ret_value = H5Dataset_read_attribute (ind, &outd);
-
-	    if (ind) {
-                H5Dataset_dtor (ind);
-                free (ind);
-	    }
-
-            if (ret_value < 0) {
-                elog (NOTICE,
-                  "h5ObjProcess: H5Dataset_read error, status = %d",
-                  ret_value);
-            }
-            status = packMsgInBB ((char *) &outd, bytesBufOut,
-              h5Dataset_PF, Hdf5Def);
-
-            if (status < 0) {
-                elog (NOTICE,
-                  "h5ObjProcess: packMsg err.functType %d,objID %d,stat=%d",
-                  functType, objID, status);
-            }
-
-	    prepOutDataset (&outd);
-            H5Dataset_dtor (&outd);
-
-            return (ret_value);
-        } else {
-            elog (NOTICE,
-             "h5ObjProcess: unknown opID %d, objID %d", ind->opID, objID);
-            return -1;  /* XXXX add meaningful error */
-
-        }
-
-        /* TODO at h5Handler -- more actions needs to be added here */
-    } 
-    else if (H5OBJECT_GROUP == objID) {
-	H5Group *ing = NULL;
-	H5Group outg;
-
-#if 0
-        ret_value = unpackMsg (VAROUTDATA (vPackedInput), (char **) &ing,
-         h5Group_PF, Hdf5Def);
-#endif
-        ret_value = unpackMsgFromBB (bytesBufInp, (char **) &ing,
-         h5Group_PF, Hdf5Def, 1);
-
-        if (ret_value < 0) {
-            elog (NOTICE,
-             "h5ObjProcess: unpackMsgFromBB error for functType %d, objID %d",
-             functType, objID);
-            return (ret_value);
-        }
-
-        hostAddrPtr = getHostByFid (ing->fid);
-
-        if (hostAddrPtr != NULL) {
-            /* do it remotely */
-            ret_value = remoteGenProxyFunct (hostAddrPtr,
-              functType, objID, intInput2, strInput1, strInput2,
-              bytesBufInp, bytesBufOut, maxOutSz);
-
-            if (ing) {
-                H5Group_dtor (ing);
-                free (ing);
-            }
-            return (ret_value);
-        }
-
-        /* do it locally */
-
-        if (H5GROUP_OP_READ_ATTRIBUTE == ing->opID) {
-            ret_value = H5Group_read_attribute (ing, &outg);
-
-            if (ing) {
-                H5Group_dtor (ing);
-                free (ing);
-            }
-
-            if (ret_value < 0) {
-                elog (NOTICE,
-                  "h5ObjProcess: H5Dataset_read error, status = %d",
-                  ret_value);
-            }
-            status = packMsgInBB ((char *) &outg, bytesBufOut,
-              h5Group_PF, Hdf5Def);
-
-            if (status < 0) {
-                elog (NOTICE,
-                  "h5ObjProcess: packMsg err.functType %d,objID %d,stat=%d",
-                  functType, objID, status);
-            }
-
-            H5Group_dtor (&outg);
-
-            return (ret_value);
-        } else {
-            elog (NOTICE,
-             "h5ObjProcess: unknown opID %d, objID %d", ing->opID, objID);
-            return -1;  /* XXXX add meaningful error */
-
-        }
+    if (inpH5DatasetParam == NULL || outH5DatasetParam == NULL) {
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Dataset_read: NULL input/output Param");
+        return (rei->status);
     }
 
-    return ret_value;
-}
-#endif	/* XXXXX taken out for testing */
-
-int
-addOpenedHdf5File (int fid, rodsHostAddr_t *hostAddrPtr) 
-{
-    struct openedH5File *myOopenedH5File;
-
-    myOopenedH5File = malloc (sizeof (struct openedH5File));
-    myOopenedH5File->fid = fid;
-    myOopenedH5File->hostAddrPtr = hostAddrPtr;
-    myOopenedH5File->next = NULL;
-
-    /* queue it */ 
-
-    if (OpenedH5FileHead == NULL) {
-	OpenedH5FileHead = myOopenedH5File;
+    if (strcmp (inpH5DatasetParam->type, h5Dataset_MS_T) == 0) {
+        ind = inpH5DatasetParam->inOutStruct;
     } else {
-	myOopenedH5File->next = OpenedH5FileHead;
-	OpenedH5FileHead = myOopenedH5File;
+        rei->status = USER_PARAM_TYPE_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Dataset_read: wrong inpH5DatasetParam type %s",
+	  inpH5DatasetParam->type);
+        return (rei->status);
     }
 
-    return (0);
-}
+    l1descInx = ind->fid;
 
-rodsHostAddr_t *
-getHostByFid (int fid)
-{
-    struct openedH5File *tmpOpenedH5File;
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
-    tmpOpenedH5File = OpenedH5FileHead;
-    while (tmpOpenedH5File != NULL) {
-	if (fid == tmpOpenedH5File->fid) {
-	    return (tmpOpenedH5File->hostAddrPtr);
-	}
-	tmpOpenedH5File = tmpOpenedH5File->next;
-    }
-    return (NULL);
-}
+    remoteFlag = resolveHostByDataObjInfo (dataObjInfo,
+      &rodsServerHost);
 
-int
-closeOpenedHdf5File (int fid)
-{
-    struct openedH5File *tmpOpenedH5File, *prevOpenedH5File = NULL;;
-
-    tmpOpenedH5File = OpenedH5FileHead;
-    while (tmpOpenedH5File != NULL) {
-        if (fid == tmpOpenedH5File->fid) {
-	    if (tmpOpenedH5File == OpenedH5FileHead) {
-		/* the head */
-		OpenedH5FileHead = OpenedH5FileHead->next;
-	    } else {
-		prevOpenedH5File->next = tmpOpenedH5File->next;
-	    } 
-	    free (tmpOpenedH5File);
-            return (0);
+    if (remoteFlag == LOCAL_HOST) {
+	outd = malloc (sizeof (H5Dataset));
+        /* switch the fid */
+        ind->fid = L1desc[l1descInx].l3descInx;
+        rei->status = H5Dataset_read (ind, outd);
+    } else {
+        /* do the remote close */
+	outd = NULL;
+        if ((rei->status = svrToSvrConnect (rsComm, rodsServerHost)) >= 0) {
+            rei->status = _clH5Dataset_read (rodsServerHost->conn, ind, &outd);
         }
-	prevOpenedH5File = tmpOpenedH5File;
-        tmpOpenedH5File = tmpOpenedH5File->next;
     }
 
-    /* no Match */
-    rodsLog (LOG_ERROR,
-      "closeOpenedHdf5File: unmatch fid %d", fid);
-    return (-1);
-} 
+    /* prepare the output */
 
-/* Prep the dataset so value won't be freed */
+    fillMsParam (outH5DatasetParam, NULL, h5Dataset_MS_T, outd, NULL);
+
+    if (ind) H5Dataset_dtor(ind);
+
+    return rei->status;
+}
+
+/* msiH5Dataset_read_attribute - msi for reading attribute of a dataset from 
+ * an opened H5File.
+ * inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
+ * outH5DatasetParam - the output H5Dataset - Must be h5Dataset_MS_T.
+ *
+ */
 
 int
-prepOutDataset (H5Dataset *d)
+msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, 
+msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
 {
-    if (d == NULL)
-	return (0);
+    rsComm_t *rsComm;
+    H5Dataset *ind;
+    H5Dataset *outd;
+    int l1descInx;
+    dataObjInfo_t *dataObjInfo;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
-    if (d->value) {
-        if (( H5DATATYPE_VLEN == d->type.class ) || 
-	  ( H5DATATYPE_COMPOUND == d->type.class ) || 
-	  ( H5DATATYPE_STRING == d->type.class )) {
-	    return (0);
-	} else {
-	    d->value = NULL;
-            return 0;
-	}
+    RE_TEST_MACRO ("    Calling msiH5Dataset_read_attribute")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiH5Dataset_read_attribute: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
-    return (0);
+
+    rsComm = rei->rsComm;
+
+    if (inpH5DatasetParam == NULL || outH5DatasetParam == NULL) {
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Dataset_read_attribute: NULL input/output Param");
+        return (rei->status);
+    }
+
+    if (strcmp (inpH5DatasetParam->type, h5Dataset_MS_T) == 0) {
+        ind = inpH5DatasetParam->inOutStruct;
+    } else {
+        rei->status = USER_PARAM_TYPE_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Dataset_read_attribute: wrong inpH5DatasetParam type %s",
+	  inpH5DatasetParam->type);
+        return (rei->status);
+    }
+
+    l1descInx = ind->fid;
+
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+    remoteFlag = resolveHostByDataObjInfo (dataObjInfo,
+      &rodsServerHost);
+
+    if (remoteFlag == LOCAL_HOST) {
+	outd = malloc (sizeof (H5Dataset));
+        /* switch the fid */
+        ind->fid = L1desc[l1descInx].l3descInx;
+        rei->status = H5Dataset_read_attribute (ind, outd);
+    } else {
+        /* do the remote close */
+	outd = NULL;
+        if ((rei->status = svrToSvrConnect (rsComm, rodsServerHost)) >= 0) {
+            rei->status = _clH5Dataset_read_attribute (rodsServerHost->conn, 
+	      ind, &outd);
+        }
+    }
+
+    /* prepare the output */
+
+    fillMsParam (outH5DatasetParam, NULL, h5Dataset_MS_T, outd, NULL);
+
+    if (ind) H5Dataset_dtor(ind);
+
+    return rei->status;
+}
+
+/* msiH5Group_read_attribute - msi for reading attribute of a dataset from 
+ * an opened H5File.
+ * inpH5GroupParam - The input H5Group. Must be h5Dataset_MS_T.
+ * outH5GroupParam - the output H5Group - Must be h5Dataset_MS_T.
+ *
+ */
+
+int
+msiH5Group_read_attribute (msParam_t *inpH5GroupParam, 
+msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    H5Group *ing;
+    H5Group *outg;
+    int l1descInx;
+    dataObjInfo_t *dataObjInfo;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+
+    RE_TEST_MACRO ("    Calling msiH5Group_read_attribute")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiH5Group_read_attribute: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    if (inpH5GroupParam == NULL || outH5GroupParam == NULL) {
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Group_read_attribute: NULL input/output Param");
+        return (rei->status);
+    }
+
+    if (strcmp (inpH5GroupParam->type, h5Dataset_MS_T) == 0) {
+        ing = inpH5GroupParam->inOutStruct;
+    } else {
+        rei->status = USER_PARAM_TYPE_ERR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Group_read_attribute: wrong inpH5GroupParam type %s",
+	  inpH5GroupParam->type);
+        return (rei->status);
+    }
+
+    l1descInx = ing->fid;
+
+    dataObjInfo = L1desc[l1descInx].dataObjInfo;
+
+    remoteFlag = resolveHostByDataObjInfo (dataObjInfo,
+      &rodsServerHost);
+
+    if (remoteFlag == LOCAL_HOST) {
+	outg = malloc (sizeof (H5Group));
+        /* switch the fid */
+        ing->fid = L1desc[l1descInx].l3descInx;
+        rei->status = H5Group_read_attribute (ing, outg);
+    } else {
+        /* do the remote close */
+	outg = NULL;
+        if ((rei->status = svrToSvrConnect (rsComm, rodsServerHost)) >= 0) {
+            rei->status = _clH5Group_read_attribute (rodsServerHost->conn, 
+	      ing, &outg);
+        }
+    }
+
+    /* prepare the output */
+
+    fillMsParam (outH5GroupParam, NULL, h5Group_MS_T, outg, NULL);
+
+    if (ing) H5Group_dtor(ing);
+
+    return rei->status;
 }
 

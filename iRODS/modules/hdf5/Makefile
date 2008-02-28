@@ -83,12 +83,13 @@ all:	test
 
 # List module's objects and needed libs for inclusion in clients
 client_ldflags:
-	@echo $(HDF5_LD_LIBS) $(HDF_LIB_OBJECTS)
 	@true
+#	@echo $(HDF5_LD_LIBS) $(HDF_LIB_OBJECTS)
 
 # List module's includes for inclusion in the clients
 client_cflags:
-	@echo $(INCLUDE_FLAGS)
+	@true
+#	@echo $(INCLUDE_FLAGS)
 
 # List module's objects and needed libs for inclusion in the server
 server_ldflags:

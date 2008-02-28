@@ -78,8 +78,11 @@ int H5Dataset_delete(H5Dataset* d);
 int H5Dataset_write(H5Dataset* d);
 int H5Dataset_read(H5Dataset* ind, H5Dataset *outd);
 int clH5Dataset_read(rcComm_t *conn, H5Dataset* d);
+int _clH5Dataset_read (rcComm_t *conn, H5Dataset* d, H5Dataset** outd);
 int H5Dataset_read_attribute(H5Dataset* ind, H5Dataset* outd);
 int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* d);
+int _clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* d, 
+H5Dataset** outd);
 
 #ifdef __cplusplus
 }

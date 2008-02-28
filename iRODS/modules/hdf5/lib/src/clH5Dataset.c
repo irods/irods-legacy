@@ -22,11 +22,9 @@ int clH5Dataset_read(rcComm_t *conn, H5Dataset* d)
     assert(d);
 
     d->opID = H5DATASET_OP_READ;
-#if 0	/* XXXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_DATASET, 
-      0, NULL, NULL,
-      (void *) d, h5Dataset_PF, (void **) &outd, h5Dataset_PF, Hdf5Def, 0);
-#endif
+
+    ret_value = _clH5Dataset_read (conn, d, &outd);
+
     if (ret_value < 0) 
 	return (ret_value);
 
@@ -43,6 +41,17 @@ int clH5Dataset_read(rcComm_t *conn, H5Dataset* d)
     return ret_value;
 }
 
+int _clH5Dataset_read (rcComm_t *conn, H5Dataset* d, H5Dataset** outd)
+{
+    int ret_value = 0;
+#if 0   /* XXXXXX rm for iRods */
+    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_DATASET,
+      0, NULL, NULL,
+      (void *) d, h5Dataset_PF, (void **) &outd, h5Dataset_PF, Hdf5Def, 0);
+#endif
+    return (ret_value);
+}
+
 int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* ind)
 {
     int ret_value = 0;
@@ -51,11 +60,8 @@ int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* ind)
     assert(ind);
 
     ind->opID = H5DATASET_OP_READ_ATTRIBUTE;
-#if 0	/* XXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_DATASET,
-      0, NULL, NULL,
-      (void *) ind, h5Dataset_PF, (void **) &outd, h5Dataset_PF, Hdf5Def, 0);
-#endif
+
+    ret_value = _clH5Dataset_read_attribute (conn, ind, &outd);
 
     if (ret_value < 0)
         return (ret_value);
@@ -74,3 +80,15 @@ int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* ind)
 
     return ret_value;
 }
+
+int _clH5Dataset_read_attribute (rcComm_t *conn, H5Dataset* d, H5Dataset** outd)
+{
+    int ret_value = 0;
+#if 0   /* XXXXX rm for iRods */
+    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_DATASET,
+      0, NULL, NULL,
+      (void *) ind, h5Dataset_PF, (void **) &outd, h5Dataset_PF, Hdf5Def, 0);
+#endif
+    return (ret_value);
+}
+

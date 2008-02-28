@@ -63,6 +63,7 @@ int H5Group_create(H5Group* g);
 int H5Group_delete(H5Group* g);
 int H5Group_read_attribute(H5Group *g, H5Group *outg);
 int clH5Group_read_attribute(rcComm_t *conn, H5Group *g);
+int _clH5Group_read_attribute(rcComm_t *conn, H5Group* ing, H5Group** outg);
 
 #ifdef __cplusplus
 }

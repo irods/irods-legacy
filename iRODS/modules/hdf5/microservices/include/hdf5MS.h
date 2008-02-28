@@ -25,13 +25,6 @@
 #include <malloc.h>
 #include <assert.h>
 
-struct openedH5File {
-    int fid;	/* the fid of the opened H5File */
-    rodsHostAddr_t  *hostAddrPtr;	/* host table where the file is 
-					 * located */
-    struct openedH5File *next;    /* link list pointer */
-};
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,14 +38,15 @@ msParam_t *outFidParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei);
 int
 msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outParam,
 ruleExecInfo_t *rei);
-
 int
-addOpenedHdf5File (int fid, rodsHostAddr_t *hostAddrPtr);
-rodsHostAddr_t *getHostByFid (int fid);
+msiH5Dataset_read (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam,
+ruleExecInfo_t *rei);
 int
-closeOpenedHdf5File (int fid);
+msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, 
+msParam_t *outH5DatasetParam, ruleExecInfo_t *rei);
 int
-prepOutDataset (H5Dataset *d);
+msiH5Group_read_attribute (msParam_t *inpH5GroupParam,
+msParam_t *outH5GroupParam, ruleExecInfo_t *rei);
 
 #ifdef __cplusplus
 }
