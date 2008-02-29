@@ -39,6 +39,9 @@ extern int get64RandomBytes(char *buf);
 */
 #define TEMP_PASSWORD_TIME 10
 
+#define PASSWORD_SCRAMBLE_PREFIX ".E_"
+#define PASSWORD_KEY_ENV_VAR "irodsPKey"
+#define PASSWORD_DEFAULT_KEY "a9_3fker"
 
 int logSQL=0;
 
@@ -46,6 +49,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo);
 
 icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]="";
+
 
 int chlDebug(char *debugMode) {
    if (strstr(debugMode, "SQL")) {
@@ -61,6 +65,55 @@ int chlDebug(char *debugMode) {
       cmlDebug(0);
    }
    return(0);
+}
+
+/* 
+ Possibly descramble a password (for user passwords stored in the ICAT)
+ */
+int
+icatDescramble(char *pw) {
+   char *cp1, *cp2, *cp3;
+   int i,len;
+   char pw2[MAX_PASSWORD_LEN+10];
+   char unscrambled[MAX_PASSWORD_LEN+10];
+
+   len = strlen(PASSWORD_SCRAMBLE_PREFIX);
+   cp1=pw;
+   cp2=PASSWORD_SCRAMBLE_PREFIX;  /* if starts with this, it is scrambled */
+   for (i=0;i<len;i++) {
+      if (*cp1++ != *cp2++) {
+	 return 0;                /* not scrambled, leave as is */
+      }
+   }
+   strncpy(pw2, cp1, MAX_PASSWORD_LEN);
+   cp3 = getenv(PASSWORD_KEY_ENV_VAR);
+   if (cp3==NULL) {
+      cp3 = PASSWORD_DEFAULT_KEY;
+   }
+   obfDecodeByKey(pw2, cp3, unscrambled);
+   strncpy(pw, unscrambled, MAX_PASSWORD_LEN);
+
+   return 0;
+}
+
+/* 
+ Scramble a password (for user passwords stored in the ICAT)
+ */
+int
+icatScramble(char *pw) {
+   char *cp1;
+   char newPw[MAX_PASSWORD_LEN+10];
+   char scrambled[MAX_PASSWORD_LEN+10];
+
+   cp1 = getenv(PASSWORD_KEY_ENV_VAR);
+   if (cp1==NULL) {
+      cp1 = PASSWORD_DEFAULT_KEY;
+   }
+   obfEncodeByKey(pw, cp1, scrambled);
+   strncpy(newPw, PASSWORD_SCRAMBLE_PREFIX, MAX_PASSWORD_LEN);
+   strncat(newPw, scrambled, MAX_PASSWORD_LEN);
+   strncpy(pw, newPw, MAX_PASSWORD_LEN);
+   return 0;
 }
 
 int chlOpen(char *DBUser, char *DBpasswd) {
@@ -2265,6 +2318,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    for (k=0;k<MAX_PASSWORDS && k<nPasswords;k++) {
       memset(md5Buf, 0, sizeof(md5Buf));
       strncpy(md5Buf, challenge, CHALLENGE_LEN);
+      icatDescramble(cpw);
       strncpy(md5Buf+CHALLENGE_LEN, cpw, MAX_PASSWORD_LEN);
 
       MD5Init (&context);
@@ -2451,6 +2505,8 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
       return(status);
    }
 
+   icatDescramble(password);
+
    j=0;
    get64RandomBytes(rBuf);
    for (i=0;i<50 && j<MAX_PASSWORD_LEN-1;i++) {
@@ -2537,6 +2593,9 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
       }
       return(status);
    }
+
+   icatDescramble(password);
+
    obfDecodeByKey(in, password, upassword);
    memset(password, 0, MAX_PASSWORD_LEN);
 
@@ -2687,6 +2746,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       int i;
       char userIdStr[MAX_NAME_LEN];
       i = decodePw(rsComm, newValue, decoded);
+
+      icatScramble(decoded); 
+
       if (i) return(i);
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 7");
       i = cmlGetStringValueFromSql(
