@@ -21,14 +21,13 @@
 /* msiH5File_open - msi for opening a H5File.
  * inpH5FileParam - The input H5File to open. Must be h5File_MS_T.
  * inpFlagParam - Input flag - INT_MS_T
- * outFidParam - a INT_MS_T containing the descriptor of the create.
  * outH5FileParam - the output H5File - Must be h5File_MS_T.
  *
  */
 
 int
 msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
-msParam_t *outFidParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei)
+msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     H5File *inf = 0;
@@ -53,7 +52,7 @@ msParam_t *outFidParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei)
     rsComm = rei->rsComm;
 
     if (inpH5FileParam == NULL || inpFlagParam == NULL ||
-     outFidParam == NULL || outH5FileParam == NULL) {
+      outH5FileParam == NULL) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiH5File_open: NULL input/output Param");
@@ -153,7 +152,6 @@ msParam_t *outFidParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 
     /* prepare the output */
 
-    fillIntInMsParam (outFidParam, l1descInx);
     outf->fid = l1descInx;
     fillMsParam (outH5FileParam, NULL, h5File_MS_T, outf, NULL);
     

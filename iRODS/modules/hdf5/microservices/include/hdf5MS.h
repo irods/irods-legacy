@@ -34,7 +34,7 @@ extern "C" {
  */
 int
 msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
-msParam_t *outFidParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei);
+msParam_t *outH5FileParam, ruleExecInfo_t *rei);
 int
 msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outParam,
 ruleExecInfo_t *rei);

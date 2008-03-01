@@ -38,17 +38,53 @@ int clH5File_open(rcComm_t *conn, H5File* f)
     return ret_value;
 }
 
-int _clH5File_open(rcComm_t *conn, H5File* f,  H5File** outf, int flag)
+int _clH5File_open(rcComm_t *conn, H5File* inf,  H5File** outf, int flag)
 {
-    int ret_value = 0;
+    execMyRuleInp_t execMyRuleInp;
+    msParamArray_t *outParamArray = NULL;
+    msParamArray_t msParamArray;
+    msParam_t *outMsParam;
+    int status = 0;
 
-#if 0   /* XXXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_FILE, 0,
-      f->filename, NULL, (void *) f, h5File_PF, (void **) &outf, h5File_PF,
-      Hdf5Def, 0);
-#endif
 
-    return (ret_value);
+    memset (&execMyRuleInp, 0, sizeof (execMyRuleInp));
+    memset (&msParamArray, 0, sizeof (msParamArray));
+    execMyRuleInp.inpParamArray = &msParamArray;
+
+    /* specify the msi to run */
+    rstrcpy (execMyRuleInp.myRule, 
+     "H5File_open||msiH5File_open(*INF,*FLAG,*OUTF)|nop", META_STR_LEN);
+    /* specify *OUTF as returned value */
+    rstrcpy (execMyRuleInp.outParamDesc, "*OUTF", LONG_NAME_LEN);
+
+    addMsParamToArray (execMyRuleInp.inpParamArray, "*INF", h5File_MS_T, inf, 
+      NULL, 0);
+    addMsParamToArray (execMyRuleInp.inpParamArray, "*FLAG", INT_MS_T, &flag, 
+      NULL, 0);
+
+    status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
+
+    if (status < 0) {
+	rodsLogError (LOG_ERROR, status, 
+	  "_clH5File_open: rcExecMyRule error for %s.",
+	  inf->filename);
+        clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+	return (status);
+    }
+
+    if ((outMsParam = getMsParamByLabel (outParamArray, "*OUTF")) == NULL) {
+	status = USER_PARAM_LABEL_ERR;
+        rodsLogError (LOG_ERROR, status,
+          "_clH5File_open: outParamArray does not contain OUTF for %s.",
+          inf->filename);
+    } else {
+	*outf = outMsParam->inOutStruct;
+	clearMsParamArray (outParamArray, 0);
+    }
+
+    clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+
+    return (status);
 }
 
 
