@@ -403,6 +403,20 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
       return(0);
    }
 
+   if (strcmp(sql, "rollback") == 0) {
+      rodsLogSql(sql);
+      stat = OCITransRollback(p_svc, p_err, (ub4) OCI_DEFAULT);
+      stat2 = logExecuteStatus(stat, sql, "cllExecSqlNoResult");
+      if (stat != OCI_SUCCESS) {
+	 rodsLog(LOG_ERROR, "cllExecSqlNoResult: OCITransRollback failed: %d",
+		 stat);
+	 logOraError(LOG_ERROR, p_err, stat);
+	 return(CAT_OCI_ERROR);
+      }
+      return(0);
+   }
+
+
    /* Allocate SQL statement */
    stat = OCIHandleAlloc( (dvoid *) p_env, (dvoid **) &p_statement,
 			OCI_HTYPE_STMT, (size_t) 0, (dvoid **) 0);
