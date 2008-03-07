@@ -104,6 +104,9 @@ runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_BAD $HOME");
 # Mod resource freespace
 runCmd(0, "test_chl modrfs $Resc 123456789");
 runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
+# Mod and rollback
+runCmd(0, "test_chl modrfs $Resc 987654321 rollback");
+runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
 runCmd(0, "test_chl modrfs $Resc ''");
 
 # Mod DataObj Meta without a dataID
