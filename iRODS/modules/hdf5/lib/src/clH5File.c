@@ -109,11 +109,8 @@ int clH5File_close (rcComm_t *conn, H5File* f)
     inf.fid = f->fid;
     inf.opID = f->opID;
  
-#if 0	/* XXXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_FILE, 0,
-      f->filename, NULL, (void *) &inf, h5File_PF, (void **) &outf, h5File_PF, 
-      Hdf5Def, 0);
-#endif
+    ret_value = _clH5File_close (conn, &inf, &outf);
+
     if (ret_value < 0) 
 	return (ret_value);
 
@@ -124,5 +121,51 @@ int clH5File_close (rcComm_t *conn, H5File* f)
         free(outf);
 
     return ret_value;
+}
+
+int _clH5File_close (rcComm_t *conn, H5File* inf, H5File** outf)
+{
+    execMyRuleInp_t execMyRuleInp;
+    msParamArray_t *outParamArray = NULL;
+    msParamArray_t msParamArray;
+    msParam_t *outMsParam;
+    int status = 0;
+
+
+    memset (&execMyRuleInp, 0, sizeof (execMyRuleInp));
+    memset (&msParamArray, 0, sizeof (msParamArray));
+    execMyRuleInp.inpParamArray = &msParamArray;
+
+    /* specify the msi to run */
+    rstrcpy (execMyRuleInp.myRule,
+     "H5File_close||msiH5File_close(*INF,*OUTF)|nop", META_STR_LEN);
+    /* specify *OUTF as returned value */
+    rstrcpy (execMyRuleInp.outParamDesc, "*OUTF", LONG_NAME_LEN);
+
+    addMsParamToArray (execMyRuleInp.inpParamArray, "*INF", h5File_MS_T, inf,
+      NULL, 0);
+
+    status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "_clH5File_close: rcExecMyRule error for %s.",
+          inf->filename);
+        clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+        return (status);
+    }
+
+    if ((outMsParam = getMsParamByLabel (outParamArray, "*OUTF")) == NULL) {
+        status = USER_PARAM_LABEL_ERR;
+        rodsLogError (LOG_ERROR, status,
+          "_clH5File_close: outParamArray does not contain OUTF");
+    } else {
+        *outf = outMsParam->inOutStruct;
+        clearMsParamArray (outParamArray, 0);
+    }
+
+    clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+
+    return (status);
 }
 

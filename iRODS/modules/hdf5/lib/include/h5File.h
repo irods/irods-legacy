@@ -88,6 +88,7 @@ int H5File_create(H5File* f);
 int clH5File_open(rcComm_t *conn, H5File* f);
 int _clH5File_open(rcComm_t *conn, H5File* f,  H5File** outf, int flag);
 int clH5File_close(rcComm_t *conn, H5File* f);
+int _clH5File_close (rcComm_t *conn, H5File* inf, H5File** outf);
 
 #ifdef __cplusplus
 }

@@ -162,17 +162,18 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 
 /* msiH5File_close - msi for closing a H5File.
  * inpH5FileParam - The input H5File to close. Must be h5File_MS_T.
+ * outH5FileParam - the output H5File - Must be h5File_MS_T.
  * outParam - a INT_MS_T containing the status.
  *
  */
 
 int
-msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outParam,
+msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outH5FileParam,
 ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     H5File *inf = 0;
-    H5File outf;
+    H5File *outf;
     dataObjCloseInp_t dataObjCloseInp;
     dataObjInfo_t *dataObjInfo;
     int remoteFlag;
@@ -189,7 +190,7 @@ ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
-    if (inpH5FileParam == NULL || outParam == NULL) {
+    if (inpH5FileParam == NULL || outH5FileParam == NULL) {
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiH5File_close: NULL input/output Param");
@@ -215,13 +216,14 @@ ruleExecInfo_t *rei)
       &rodsServerHost);
 
     if (remoteFlag == LOCAL_HOST) {
+        outf = malloc (sizeof (H5File));
 	/* switch the fid */
 	inf->fid = L1desc[l1descInx].l3descInx;
-        rei->status = H5File_close (inf, &outf);
+        rei->status = H5File_close (inf, outf);
     } else {
         /* do the remote close */
         if ((rei->status = svrToSvrConnect (rsComm, rodsServerHost)) >= 0) {
-            rei->status = clH5File_close (rodsServerHost->conn, inf);
+            rei->status = _clH5File_close (rodsServerHost->conn, inf, &outf);
 	}
     }
 
@@ -235,7 +237,7 @@ ruleExecInfo_t *rei)
 
     /* prepare the output */
 
-    fillIntInMsParam (outParam, rei->status);
+    fillMsParam (outH5FileParam, NULL, h5File_MS_T, outf, NULL);
 
     if (inf) H5File_dtor(inf);
 
