@@ -11,10 +11,12 @@
 #include "objMetaOpr.h"
 #include "miscUtil.h"
 
-#define AUDIT_TRAIL_FILENAME	"auditLog.xml"
 
-
-int logClientInfoForAuditTrail(msParam_t *inpParam, ruleExecInfo_t *rei);
+int msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei);
+int msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei);
+int msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei);
+int msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei);
+int msiGetAuditTrailInfoByTimeStamp(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei);
 
 
 #endif	/* AUDITMS_H */

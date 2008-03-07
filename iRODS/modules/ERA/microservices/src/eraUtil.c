@@ -442,16 +442,16 @@ getDataObjPSmeta(char *objPath, bytesBuf_t *mybuf, rsComm_t *rsComm)
           "getDataObjPSmeta: DataObject %s not found. status = %d", fullName, status);
 	return (status);
       }
-      printCount+=extractPSQueryResults(rsComm, status, genQueryOut, mybuf, fullName);
+      printCount+=extractPSQueryResults(status, genQueryOut, mybuf, fullName);
    }
    else {
-      printCount+=extractPSQueryResults(rsComm, status, genQueryOut, mybuf, fullName);
+      printCount+=extractPSQueryResults(status, genQueryOut, mybuf, fullName);
    }
 
    while (status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-      printCount+= extractPSQueryResults(rsComm, status, genQueryOut, mybuf, fullName);
+      printCount+= extractPSQueryResults(status, genQueryOut, mybuf, fullName);
    }
 
   return (status);
@@ -529,12 +529,12 @@ getCollectionPSmeta(char *objPath, bytesBuf_t *mybuf, rsComm_t *rsComm)
       }
    }
 
-   printCount+=extractPSQueryResults(rsComm, status, genQueryOut, mybuf, objPath);
+   printCount+=extractPSQueryResults(status, genQueryOut, mybuf, objPath);
 
    while (status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-      printCount+= extractPSQueryResults(rsComm, status, genQueryOut, mybuf, objPath);
+      printCount+= extractPSQueryResults(status, genQueryOut, mybuf, objPath);
    }
 
   return (status);
@@ -1032,52 +1032,46 @@ parseMetadataModLine(char *inpLine, rsComm_t *rsComm)
  * the nth attribute.
  */
 int
-genQueryOutToXML(rsComm_t *rsComm, int status, genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char **tags)
+genQueryOutToXML(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char **tags)
 {
-   int printCount;
-   int i, j;
-   size_t size;
+	int printCount;
+	int i, j;
+	size_t size;
+	
+	printCount=0;
 
-
-   printCount=0;
-
-   if (status!=0) {
-	rodsLog (LOG_ERROR, "genQueryOutoXML error: %d", status);
-	return (status);
-   }
-   else {
-      if (status !=CAT_NO_ROWS_FOUND) {
-	 for (i=0;i<genQueryOut->rowCnt;i++) {
-	 
-	    if ( (tags[0] != NULL) && strlen(tags[0]) ) {
-		appendFormattedStrToBBuf(mybuf, strlen(tags[0])+4, "<%s>\n", tags[0]);
-	    }
-
-	    for (j=0;j<genQueryOut->attriCnt;j++) {
-	       char *tResult;
-	       tResult = genQueryOut->sqlResult[j].value;
-	       tResult += i*genQueryOut->sqlResult[j].len;
-
-	       if ( (tags[j+1] != NULL) && strlen(tags[j+1]) ) {
-		  size = genQueryOut->sqlResult[j].len + 2*strlen(tags[j+1]) + 10;
-	    	  appendFormattedStrToBBuf(mybuf, size, "<%s>%s</%s>\n", tags[j+1], tResult, tags[j+1]);
-	       }
-	       else {
-		  size = genQueryOut->sqlResult[j].len + 1;
-	    	  appendFormattedStrToBBuf(mybuf, size, "%s\n",tResult);
-	       }
-	       printCount++;
-	    }
-
-	    if ( (tags[0] != NULL) && strlen(tags[0]) ) {
-		    appendFormattedStrToBBuf(mybuf, strlen(tags[0])+5, "</%s>\n", tags[0]);
-	    }
-
-	 }
-      }
-   }
-
-   return (printCount);
+	
+	for (i=0;i<genQueryOut->rowCnt;i++) {
+		
+		if ( (tags[0] != NULL) && strlen(tags[0]) ) {
+			appendFormattedStrToBBuf(mybuf, strlen(tags[0])+4, "<%s>\n", tags[0]);
+		}
+		
+		for (j=0;j<genQueryOut->attriCnt;j++) {
+			char *tResult;
+			tResult = genQueryOut->sqlResult[j].value;
+			tResult += i*genQueryOut->sqlResult[j].len;
+			
+			if ( (tags[j+1] != NULL) && strlen(tags[j+1]) ) {
+				size = genQueryOut->sqlResult[j].len + 2*strlen(tags[j+1]) + 10;
+				appendFormattedStrToBBuf(mybuf, size, "<%s>%s</%s>\n", tags[j+1], tResult, tags[j+1]);
+			}
+			else {
+				size = genQueryOut->sqlResult[j].len + 1;
+				appendFormattedStrToBBuf(mybuf, size, "%s\n",tResult);
+			}
+			printCount++;
+		}
+		
+		if ( (tags[0] != NULL) && strlen(tags[0]) ) {
+			appendFormattedStrToBBuf(mybuf, strlen(tags[0])+5, "</%s>\n", tags[0]);
+		}
+	
+	}
+	
+	
+	
+	return (printCount);
 }
 
 
@@ -1088,7 +1082,7 @@ genQueryOutToXML(rsComm_t *rsComm, int status, genQueryOut_t *genQueryOut, bytes
  * To be used in msiGetDataObjPSmeta().
  */
 int
-extractPSQueryResults(rsComm_t *rsComm, int status, genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char *fullName)
+extractPSQueryResults(int status, genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char *fullName)
 {
    int printCount;
    int i, j;

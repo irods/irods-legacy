@@ -24,12 +24,17 @@ int getCollectionPSmeta(char *objPath, bytesBuf_t *mybuf, rsComm_t *rsComm);
 int getDataObjACL(dataObjInp_t *myDataObjInp, bytesBuf_t *mybuf, rsComm_t *rsComm);
 int getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t *rsComm);
 int loadMetadataFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm);
-int genQueryOutToXML(rsComm_t *Conn, int status, genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char **tags);
-int extractPSQueryResults(rsComm_t *Conn, int status, genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char *fullName);
+int genQueryOutToXML(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char **tags);
+int extractPSQueryResults(int status, genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char *fullName);
+int extractGenQueryResults(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, char *header, char **descriptions);
 int getUserInfo(char *userName, bytesBuf_t *mybuf, rsComm_t *rsComm);
 int genAdminOpFromDataObj(dataObjInp_t *dataObjInp, generalAdminInp_t *generalAdminInp, rsComm_t *rsComm);
 int parseGenAdminLine(char *inpLine, generalAdminInp_t *generalAdminInp, rsComm_t *rsComm);
 int loadACLFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm);
+int extractACLQueryResults(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, int coll_flag);
+int getUserACL(char *userName, bytesBuf_t *mybuf, rsComm_t *rsComm);
+int parseACLModLine(char *inpLine, rsComm_t *rsComm);
 
 #endif	/* ERAUTIL_H */
+
 

@@ -394,16 +394,16 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
           "msiGetDataObjAVUs: DataObject %s not found. status = %d", fullName, rei->status);
 	return (rei->status);
       }
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
    else {
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
    while (rei->status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-      printCount+= genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+= genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
   /* Closing tag */
@@ -723,16 +723,16 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
           "msiGetDataObjAIP: DataObject %s not found. status = %d", fullName, rei->status);
 	return (rei->status);
       }
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
    else {
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
    while (rei->status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-      printCount+= genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+= genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
 
@@ -793,16 +793,16 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
           "msiGetDataObjAVUs: DataObject %s not found. status = %d", fullName, rei->status);
 	return (rei->status);
       }
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
    else {
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
    while (rei->status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-      printCount+= genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+= genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
     /* Same thing again, but this time for user access */
@@ -848,16 +848,16 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
           "msiGetDataObjAIP: DataObject %s not found. status = %d", fullName, rei->status);
 	return (rei->status);
       }
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
    else {
-      printCount+=genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+=genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
    while (rei->status==0 && genQueryOut->continueInx > 0) {
       genQueryInp.continueInx=genQueryOut->continueInx;
       rei->status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
-      printCount+= genQueryOutToXML(rsComm, rei->status, genQueryOut, mybuf, tags);
+      printCount+= genQueryOutToXML(genQueryOut, mybuf, tags);
    }
 
 
