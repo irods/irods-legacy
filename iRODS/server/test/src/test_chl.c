@@ -483,7 +483,7 @@ int testModRuleMeta(rsComm_t *rsComm, char *id,
 }
 
 int testModResourceFreeSpace(rsComm_t *rsComm, char *rescName, 
-		       char *numberString) {
+		       char *numberString, char *option) {
    int number, status;
    if (*numberString=='\\') numberString++;
    number = atoi(numberString);
@@ -491,6 +491,9 @@ int testModResourceFreeSpace(rsComm_t *rsComm, char *rescName,
    rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
    status = chlModRescFreeSpace(rsComm, rescName, number);
    if (status != 0)  return(status);
+   if (option != NULL && strcmp(option, "rollback")==0 ) {
+      status = chlRollback(rsComm);
+   }
    status = chlCommit(rsComm);
    return(status);
 }
@@ -646,7 +649,7 @@ main(int argc, char **argv) {
    }
 
    if (strcmp(argv[1],"modrfs")==0) { 
-      status = testModResourceFreeSpace(Comm, argv[2], argv[3]);
+      status = testModResourceFreeSpace(Comm, argv[2], argv[3], argv[4]);
       didOne=1;
    }
 
@@ -743,6 +746,25 @@ main(int argc, char **argv) {
 
    if (strcmp(argv[1],"tpw")==0) {
       status = testTempPwCombined(Comm, argv[2]);
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"open")==0) {
+      int i;
+      for (i=0;i<3;i++) {
+	 status = chlClose();
+	 if (status) {
+	    printf ("close %d error", i);
+	 }
+      
+	 if ((status = chlOpen(serverConfig.DBUsername,
+			       serverConfig.DBPassword)) != 0) {
+	    rodsLog (LOG_SYS_FATAL,
+		     "initInfoWithRcat: chlopen %d Error. Status = %d",
+		     i, status);
+	    return (status);
+	 }
+      }
       didOne=1;
    }
 
