@@ -53,11 +53,11 @@ import javax.swing.border.EmptyBorder;
 
 
 
-public class JTextFieldListener implements FocusListener {
+class JTextFieldListener implements FocusListener {
     static AppletLogger logger = AppletLogger.getInstance();
     private static EtchedBorder etchedBorder = new EtchedBorder(EtchedBorder.LOWERED);
     private static EmptyBorder emptyBorder = new EmptyBorder(0, 8, 0, 8); // top, left, bottom, right
-    
+
     public void focusGained(FocusEvent e) {
         JTextField tf = (JTextField) e.getComponent();
         tf.setBorder(etchedBorder);
@@ -65,15 +65,15 @@ public class JTextFieldListener implements FocusListener {
     }//focusGained
 
     public void focusLost(FocusEvent e) {
-        JTextField tf = (JTextField) e.getComponent();        
+        JTextField tf = (JTextField) e.getComponent();
         tf.setBorder(emptyBorder);
-        
+
         Component c = (Component) tf.getParent();
-        
+
         // JTextField is not calling the JTextFieldEditor.removeCellEditor
         // calling this results in JTextFieldEditor.removeCellEditor being called
         if (c instanceof JTable)
             ((JTable) c).removeEditor();
-        
-    }//focusLost 
+
+    }//focusLost
 }

@@ -43,8 +43,8 @@ package edu.sdsc.grid.gui.applet;
 
 import javax.swing.JTabbedPane;
 
-public class MyTabbedPane extends JTabbedPane {
-    public MyTabbedPane() {
+class MyTabbedPane extends JTabbedPane {
+    MyTabbedPane() {
         super();
         this.setBackground(new MyColor());
     }

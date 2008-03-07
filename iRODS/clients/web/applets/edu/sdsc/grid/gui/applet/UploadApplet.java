@@ -52,6 +52,8 @@ import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
 
@@ -80,6 +82,9 @@ import org.w3c.dom.events.*;
 import org.w3c.dom.html.*;
 import org.w3c.dom.stylesheets.*;
 import org.w3c.dom.views.*;
+
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.FileFactory;
 
 /**
  * Main Applet window. Creates and adds other JPanels to the main Container.
@@ -130,7 +135,7 @@ public class UploadApplet extends JApplet implements ActionListener {
     OptionsPanel optionsPanel;
     
     private long id; // applet id for logging purpose
-    private String ruri;
+    private URI uri;
     
     
     /**
@@ -245,7 +250,8 @@ public class UploadApplet extends JApplet implements ActionListener {
             }
             
             TEMP_PASSWORD_SERVICE_URL += urlPath + "/services/getTempPassword.php"; // maybe put the string literal outside of class file
-
+//TODO temp!
+TEMP_PASSWORD_SERVICE_URL = Account.TEMP_PASSWORD_SERVICE_URL +"/services/getTempPassword.php";
         } catch (MalformedURLException me) {
             logger.log("Problem while getting URL parts. " + me);
             me.printStackTrace();
@@ -253,16 +259,28 @@ public class UploadApplet extends JApplet implements ActionListener {
         
         
         // Sample URI_PARAM = irods://user:pass@host:port/destination
-        ruri = getParameter("ruri"); // passed to applet in html code
+        String ruri = getParameter("ruri"); // passed to applet in html code
         String sessionId = getParameter("ssid"); // web session id passed to applet in html code
         
         if (ruri == null || ruri.trim().equals("")) {
-            // what to do?
+            // TODO what to do?        
         }//if
+        //TODO
+        try {
+          uri = new java.net.URI( ruri );
+        } catch( java.net.URISyntaxException e ) {
+
+        }
         
         // go ahead and set the account instance, even if values are null
         // will prompt for user input at end of init method
-        Account account = new Account(TEMP_PASSWORD_SERVICE_URL, ruri, sessionId);
+        Account account = null;
+        try {
+          account = new Account(TEMP_PASSWORD_SERVICE_URL, uri, sessionId);
+        } catch (IOException e) {
+          //TODO do something...
+          throw new RuntimeException("IO failure");
+        }
 
         
         // create GUI
@@ -300,7 +318,7 @@ public class UploadApplet extends JApplet implements ActionListener {
         DBUtil.getInstance().setAssigned(queueList);
     }//createDisplay
     
-    public long getId() {
+    long getId() {
         return id;
     }
     
@@ -314,19 +332,31 @@ public class UploadApplet extends JApplet implements ActionListener {
     public void destroy() {
         DBUtil.getInstance().removeUploaded();
         int rowCount = model.getRowCount();
-        List itemList = new ArrayList();
+/*        List itemList = new ArrayList();
         
         for (int k = 0; k < rowCount; k++) {
-            String source = ((JTextField) model.getValueAt(k, UploadTableModel.SOURCE_COLUMN)).getText();
-            String destination = ((JTextField) model.getValueAt(k, UploadTableModel.DESTINATION_COLUMN)).getText();
+            String s = ((JTextField) model.getValueAt(k, UploadTableModel.SOURCE_COLUMN)).getText();
+            String d = ((JTextField) model.getValueAt(k, UploadTableModel.DESTINATION_COLUMN)).getText();
             String resource = (String) ((JComboBox) model.getValueAt(k, UploadTableModel.RESOURCE_COLUMN)).getSelectedItem();
             
-            UploadItem item = new UploadItem(source, destination, resource);
-            itemList.add(item);
+//TODO Shouldn't need to login again just to remove a file from the database...            
+            try {
+              UploadItem item = new UploadItem(FileFactory.newFile(new URI(s)), 
+                FileFactory.newFile(new URI(d)), resource);
+              itemList.add(item); 
+            } catch (IOException e) {
+//TODO ?
+              RuntimeException x = new RuntimeException();
+              x.initCause(e);
+            } catch (URISyntaxException e) {
+//TODO ?
+              RuntimeException x = new RuntimeException();
+              x.initCause(e);              
+            }
         }
 
         DBUtil.getInstance().updateAssigned(itemList, false);
-        
+*/        
         DBServer.shutdown();
                 
     }//destroy
@@ -351,13 +381,15 @@ public class UploadApplet extends JApplet implements ActionListener {
     }
     
     
-    public String getRuri() {
-        return ruri;
+    URI getRuri() 
+    {
+      return uri;
     }
-    
-    
-    public void setRuri(String r) {
-        ruri = r;
+
+
+    void setRuri( URI uri ) 
+    {
+      this.uri = uri;
     }
     
 

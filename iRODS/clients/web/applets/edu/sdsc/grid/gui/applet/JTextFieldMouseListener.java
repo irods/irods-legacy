@@ -45,9 +45,9 @@ package edu.sdsc.grid.gui.applet;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class JTextFieldMouseListener  extends MouseAdapter {
+class JTextFieldMouseListener  extends MouseAdapter {
     static AppletLogger logger = AppletLogger.getInstance();
-    
+
     public void mouseClicked(MouseEvent e) {
         // if not double click, don't pass on event
         if (e.getClickCount() < 2)

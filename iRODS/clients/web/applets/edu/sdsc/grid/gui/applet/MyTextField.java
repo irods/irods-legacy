@@ -45,8 +45,8 @@ package edu.sdsc.grid.gui.applet;
 import javax.swing.JTextField;
 
 
-public class MyTextField extends JTextField {
-    public MyTextField() {
+class MyTextField extends JTextField {
+    MyTextField() {
         super();
         this.setBackground(new MyColor());
     }

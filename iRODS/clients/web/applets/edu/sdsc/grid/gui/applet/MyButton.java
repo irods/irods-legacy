@@ -45,15 +45,15 @@ package edu.sdsc.grid.gui.applet;
 import javax.swing.JButton;
 
 
-public class MyButton extends JButton {
-    public MyButton() {
+class MyButton extends JButton {
+    MyButton() {
         super();
         this.setBackground(new MyColor());
     }
 
-    public MyButton(String text) {
+    MyButton(String text) {
         super(text);
         this.setBackground(new MyColor());
     }
-    
+
 }

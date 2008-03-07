@@ -44,8 +44,8 @@ package edu.sdsc.grid.gui.applet;
 import javax.swing.JTextArea;
 
 
-public class MyTextArea extends JTextArea {
-    public MyTextArea (String text, int rows, int columns) {
+class MyTextArea extends JTextArea {
+    MyTextArea (String text, int rows, int columns) {
         super(text, rows, columns);
         this.setBackground(new MyColor());
     }

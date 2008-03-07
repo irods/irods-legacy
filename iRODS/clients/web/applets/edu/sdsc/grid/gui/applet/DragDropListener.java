@@ -49,6 +49,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetListener;
 
+import java.net.URI;
+  
 import java.util.List;
 import java.util.Vector;
 import java.util.Arrays;
@@ -65,8 +67,14 @@ import org.w3c.dom.views.*;
 import com.sun.java.browser.dom.*;
 
 
-// This class handles the drag and drop event from the local filesystem
-public class DragDropListener implements DropTargetListener {
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.local.LocalFile;
+
+/**
+ * This class handles the drag and drop event from the local filesystem
+ */
+class DragDropListener implements DropTargetListener {
     static AppletLogger logger = AppletLogger.getInstance();        
     private Account account;
     public static final DataFlavor fileListFlavor = DataFlavor.javaFileListFlavor;
@@ -76,15 +84,14 @@ public class DragDropListener implements DropTargetListener {
     UploadTableModel model;
     UploadApplet applet;
     
-    public DragDropListener(UploadTableModel model, UploadApplet a, Account acct) {
+    DragDropListener(UploadTableModel model, UploadApplet a, Account acct) {
         this.model = model;
         applet = a;
         account = acct;
     }
     
-    private String getCurrentRuri() {
-        String ruri = applet.getRuri();
-        return ruri;
+    private URI getCurrentRuri() {
+        return applet.getRuri();
     }
     
     public void drop (DropTargetDropEvent dtde) {
@@ -97,15 +104,16 @@ public class DragDropListener implements DropTargetListener {
             List fileList = new Vector();
             File file = null;
 
-            account.parseRuri(getCurrentRuri(), true);
-
+            account.parseURI(getCurrentRuri(), true);
+ 
             for (int i = 0; i < dropList.size(); i++) {
-                file = (File) dropList.get(i);
-                String[] f = new String[2];
-                f[0] = file.getAbsolutePath(); // source
-                f[1] = "irods://" + account.getDestinationFolderAsUri() +  file.getName(); // destination
-
-                UploadItem item = new UploadItem(f[0], f[1], account.getResourceList());
+                file = ((File) dropList.get(i));
+                UploadItem item = new UploadItem(
+                  new LocalFile(file), //local file from from desktop
+                  FileFactory.newFile( 
+                  account.getDestinationFolder(), file.getName()), 
+                  account.getResourceList());
+                
                 boolean success = DBUtil.getInstance().insert(item);
                 if (success)
                     fileList.add(item);
@@ -150,7 +158,5 @@ public class DragDropListener implements DropTargetListener {
             }
         }
         return isSupported;
-    }        
-    
-    
+    }
 }

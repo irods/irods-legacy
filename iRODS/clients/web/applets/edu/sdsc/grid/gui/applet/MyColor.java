@@ -43,8 +43,8 @@ package edu.sdsc.grid.gui.applet;
 
 import java.awt.Color;
 
-public class MyColor extends Color {
-    public MyColor() {
+class MyColor extends Color {
+    MyColor() {
         super(196, 210, 227); // RGB of #c4d2e3; light blue);
     }
 }

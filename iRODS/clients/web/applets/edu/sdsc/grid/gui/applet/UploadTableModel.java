@@ -45,6 +45,9 @@
 package edu.sdsc.grid.gui.applet;
 
 import java.io.File;
+import java.io.IOException;
+
+import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -78,7 +81,7 @@ class UploadTableModel extends DefaultTableModel {
     // Logger
     static AppletLogger logger = AppletLogger.getInstance();
     
-    public UploadTableModel() {        
+    UploadTableModel() {        
         this.addColumn("");// empty for file/folder icon
         this.addColumn("Source"); // local file or folder
         this.addColumn("Destination"); // local file or folder
@@ -139,21 +142,26 @@ class UploadTableModel extends DefaultTableModel {
         
     }//addFile
     
-    public void removeFile(int[] selectedRows) {
-        List itemList = new ArrayList();
+    public void removeFile(int[] selectedRows)
+    {
+      List itemList = new ArrayList();
+      try {
         for (int k = selectedRows.length - 1; k >= 0; k--) {
-            String source = ((JTextField) this.getValueAt(selectedRows[k], SOURCE_COLUMN)).getText();
-            String destination = ((JTextField) this.getValueAt(selectedRows[k], DESTINATION_COLUMN)).getText();
-            String resource = (String) ((JComboBox) this.getValueAt(selectedRows[k], RESOURCE_COLUMN)).getSelectedItem();
-            
-            UploadItem item = new UploadItem(source, destination, resource);
-            itemList.add(item);
-            
-            this.removeRow(selectedRows[k]);
+          String source = ((JTextField) this.getValueAt(selectedRows[k], SOURCE_COLUMN)).getText();
+          String destination = ((JTextField) this.getValueAt(selectedRows[k], DESTINATION_COLUMN)).getText();
+          String resource = (String) ((JComboBox) this.getValueAt(selectedRows[k], RESOURCE_COLUMN)).getSelectedItem();
+
+          UploadItem item = new UploadItem(source, destination, resource);
+          itemList.add(item);
+
+          this.removeRow(selectedRows[k]);
         }//for
-        
-        DBUtil.getInstance().delete(itemList);
-        
+      } catch (IOException e) {
+        logger.log("file grid exception. " + e);
+      } catch (URISyntaxException e) {
+        logger.log("file name/uri exception. " + e);
+      }
+      DBUtil.getInstance().delete(itemList);        
     }//removeFile
 
     

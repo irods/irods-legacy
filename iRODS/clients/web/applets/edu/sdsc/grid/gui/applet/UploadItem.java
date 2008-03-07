@@ -48,124 +48,177 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import java.io.File;
+import java.io.IOException;
+
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+//TODO temp?
+import edu.sdsc.grid.io.RemoteFile;
+import edu.sdsc.grid.io.RemoteFileSystem;
 
 
-public class UploadItem {
-    /* Begin static variables
-    */
-    
-    static String STATUS_QUEUED = "queued";
-    static String STATUS_UPLOADED = "uploaded";
-    static String STATUS_IN_PROGRESS = "in progress";
-    static String STATUS_REQUIRES_AUTHENTICATION = "requires authentication";
-    static String STATUS_SERVER_UNAVAILABLE = "server unavailable";
-    static String STATUS_FAILED = "failed";
-    
-    static String TYPE_FILE = "File";
-    static String TYPE_FOLDER = "Folder";
-    
-    static String IN_PROGRESS_STATUS = "In Progress";
-    static String DONE_STATUS = "Done";
-    static String FAILED_STATUS = "Failed";
+class UploadItem 
+{
+  /* Begin static variables
+  */
 
-    /* End static variables
-    */
-    
-    private String source, destination, selectedResource, type; // type has value FILE or FOLDER
-    private String status = STATUS_QUEUED; // queued, uploaded, in progress, requires authentication, server unavailable, failed
-    private boolean assigned = false;
-    private List resourceList;
-    static AppletLogger logger = AppletLogger.getInstance();
-    
-    public UploadItem(String source, String destination, String selectedResource) {
-        this.source = source;
-        this.destination = destination;
-        this.selectedResource = selectedResource;
+  static String STATUS_QUEUED = "queued";
+  static String STATUS_UPLOADED = "uploaded";
+  static String STATUS_IN_PROGRESS = "in progress";
+  static String STATUS_REQUIRES_AUTHENTICATION = "requires authentication";
+  static String STATUS_SERVER_UNAVAILABLE = "server unavailable";
+  static String STATUS_FAILED = "failed";
 
-        try {
-            URI uri = new URI(destination);
-            
-            resourceList = DBUtil.getInstance().getResourceList(uri.getHost(), uri.getPort());
-        } catch (URISyntaxException e) {
-        }
-        
-        // find out if this is a file or folder
-        File f = new File(source);
-        if (f.exists())
-            if (f.isFile())
-                type = TYPE_FILE;
-            else
-                type = TYPE_FOLDER;
-        // else
-        // TODO: Handle case when file no longer exists
-            
-    }//UploadItem
-    
+  static String TYPE_FILE = "File";
+  static String TYPE_FOLDER = "Folder";
 
-    public UploadItem(String source, String destination, List resourceList) {
-        this.source = source;
-        this.destination = destination;
-        this.resourceList = resourceList;
-        if (resourceList != null && resourceList.size() > 0)
-            this.selectedResource = (String) resourceList.get(0);
-        else
-            this.selectedResource = ""; // should never come here
-        
-        // find out if this is a file or folder
-        File f = new File(source);
-        if (f.exists())
-            if (f.isFile())
-                type = TYPE_FILE;
-            else
-                type = TYPE_FOLDER;
-        // else
-        // TODO: Handle case when file no longer exists
-            
-    }//UploadItem
+  static String IN_PROGRESS_STATUS = "In Progress";
+  static String DONE_STATUS = "Done";
+  static String FAILED_STATUS = "Failed";
+
+  /* End static variables
+  */
+
+  private GeneralFile source, destination; 
+  
+  private String selectedResource;
+  /**
+   * type has value FILE or FOLDER
+   */
+  private String type;
+  /**
+   * queued, uploaded, in progress, requires authentication, 
+   * server unavailable, failed
+   */
+  private String status = STATUS_QUEUED; 
+  private boolean assigned = false;
+  private List resourceList;
+  static AppletLogger logger = AppletLogger.getInstance();
 
 
-    public String getSource() {
-        return source;
+  UploadItem(String s, String d, String resource) 
+    throws IOException, URISyntaxException
+  {
+    this.source = FileFactory.newFile(new URI(s));
+//TODO only needed for DB, won't connect without password.     
+    this.destination = FileFactory.newFile(new URI(d));
+    if (resource == null)
+      this.selectedResource = Account.defaultResource;
+    else
+      this.selectedResource = resource;
+
+    resourceList = DBUtil.getInstance().getResourceList(
+      ((RemoteFileSystem)destination.getFileSystem()).getHost(), 
+      ((RemoteFileSystem)destination.getFileSystem()).getPort());
+
+    // find out if this is a file or folder
+    if (source.exists()) {
+      if (source.isFile())
+        type = TYPE_FILE;
+      else
+        type = TYPE_FOLDER;
     }
+    // else
+    // TODO: Handle case when file no longer exists
+  }  
 
-    public String getDestination() {
-        return destination;
-    }
-    
-    public String getDestinationParent() {
-        // returns the parent folder of the upload item
-        int lastIndex = destination.lastIndexOf("/");
-        return destination.substring(0, lastIndex);
-        
-    }
+  
+  UploadItem(GeneralFile source, GeneralFile destination, 
+    String resource) 
+    throws IOException
+  {
+    this.source = source;
+    this.destination = destination;
+    if (resource == null)
+      this.selectedResource = Account.defaultResource;
+    else
+      this.selectedResource = resource;
 
-    public String getSelectedResource() {
-        return selectedResource;
-    }
+    resourceList = DBUtil.getInstance().getResourceList(
+      ((RemoteFileSystem)destination.getFileSystem()).getHost(), 
+      ((RemoteFileSystem)destination.getFileSystem()).getPort());
 
-    public List getResourceList() {
-        return resourceList;
+    // find out if this is a file or folder
+    if (source.exists()) {
+      if (source.isFile())
+        type = TYPE_FILE;
+      else
+        type = TYPE_FOLDER;
     }
+    // else
+    // TODO: Handle case when file no longer exists
+  }//UploadItem
 
-    public String getType() {
-        return type;
-    }
 
-    public String getStatus() {
-        return status;
-    }
+  UploadItem(GeneralFile source, GeneralFile destination, 
+    List resourceList) 
+  {
+    this.source = source;
+    this.destination = destination;
+    this.resourceList = resourceList;
+    if (resourceList != null && resourceList.size() > 0)
+      this.selectedResource = (String) resourceList.get(0);
+    else
+      this.selectedResource = Account.defaultResource; // should never come here
 
-    public void setStatus(String status) {
-        this.status = status;
+    // find out if this is a file or folder
+    if (source.exists()) {
+      if (source.isFile())
+        type = TYPE_FILE;
+      else
+        type = TYPE_FOLDER;
     }
+    // else
+    // TODO: Handle case when file no longer exists
+  }//UploadItem
 
-    public boolean isAssigned() {
-        return assigned;
-    }
 
-    public void setAssigned(boolean assigned) {
-        this.assigned = assigned;
-    }
-    
-    
+  public String getSource() {
+    return source.toString();
+  }
+
+  public String getDestination() {
+    return destination.toString();
+  }
+
+  public GeneralFile getSourceFile() {
+    return source;
+  }
+
+  public GeneralFile getDestinationFile() {
+    return destination;
+  }
+
+  public GeneralFile getDestinationParent() {
+    // returns the parent folder of the upload item
+  return destination.getParentFile();        
+  }
+
+  public String getSelectedResource() {
+    return selectedResource;
+  }
+
+  public List getResourceList() {
+    return resourceList;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public boolean isAssigned() {
+    return assigned;
+  }
+
+  public void setAssigned(boolean assigned) {
+    this.assigned = assigned;
+  }
 }

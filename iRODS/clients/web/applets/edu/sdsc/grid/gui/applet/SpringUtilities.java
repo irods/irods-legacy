@@ -53,10 +53,10 @@ import java.awt.*;
  * These utilities are used by several programs, such as
  * SpringBox and SpringCompactGrid.
  */
-public class SpringUtilities {
+class SpringUtilities {
     // Logger
     static AppletLogger logger = AppletLogger.getInstance();
-    
+
     /**
      * A debugging utility that prints to stdout the component's
      * minimum, preferred, and maximum sizes.

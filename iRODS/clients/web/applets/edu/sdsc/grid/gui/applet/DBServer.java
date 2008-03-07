@@ -50,22 +50,22 @@ import org.hsqldb.Server;
 
 
 // This class handles the starting/stopping of the database server
-public class DBServer {
+class DBServer {
     private static DBServer instance;
     private static Server server;
     static AppletLogger logger = AppletLogger.getInstance();
 
     private DBServer() {
     }
-    
-    public static DBServer getInstance() {
+
+    static DBServer getInstance() {
         if (instance == null)
             instance = new DBServer();
-            
+
         return instance;
     }//getInstance
 
-    public static void start() {        
+    public static void start() {
         if (server == null) {
             PrintWriter writer = null;
             try {
@@ -73,34 +73,34 @@ public class DBServer {
             } catch (FileNotFoundException e) {
                 // no log
             }//try-catch
-            
+
             server = new org.hsqldb.Server();
             server.setLogWriter(writer); // write to log file instead
             server.setErrWriter(writer);
             server.putPropertiesFromString("database.0=file:" + DBUtil.DB_FILE + ";dbname.0=mydb");
-            
-        }//if 
-        
+
+        }//if
+
         if (server.getState() == 16) { // server is not running
             try {
                 server.start();
-                
+
             } catch (Exception e) {
                 logger.log("server.start() exception : " + e);
             }//try-catch
-        } 
-        
+        }
+
     }//start
-    
+
     public static void shutdown() {
         if (server != null) {
             server.shutdown();
             File lockFile = new File(DBUtil.DB_LOCK_FILE);
-            
+
             // delete lock file so other JVMs can access the database
             if (lockFile.exists())
                 lockFile.delete();
-            
+
         }//if
     }//shutdown
 }

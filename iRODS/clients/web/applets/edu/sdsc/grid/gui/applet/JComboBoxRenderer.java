@@ -50,27 +50,27 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JTable;
 
-class JComboBoxRenderer extends JComboBox implements TableCellRenderer {  
-    static AppletLogger logger = AppletLogger.getInstance();  
+class JComboBoxRenderer extends JComboBox implements TableCellRenderer {
+    static AppletLogger logger = AppletLogger.getInstance();
     private Color bgColor = new Color(196, 210, 227); // RGB of #c4d2e3; light blue
-    
-    public JComboBoxRenderer () {
+
+    JComboBoxRenderer () {
         super();
     }
-    
+
     public Component getTableCellRendererComponent ( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
         JComboBox box = (JComboBox) value;
-        
+
         if (isSelected)
             box.setBackground(new MyColor());
         else
             box.setBackground(Color.WHITE);
-        
+
         return box;
-    }//getTableCellRendererComponent  
-    
+    }//getTableCellRendererComponent
+
     public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox)e.getSource();
         String resource = (String)cb.getSelectedItem();
     }
-} 
+}

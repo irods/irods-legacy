@@ -57,8 +57,8 @@ class UploadProgressThread extends Thread {
     int row;
     long fileSize;
     boolean complete = false;
-    
-    public UploadProgressThread(File localFile, GeneralFile remoteFile, JProgressBar progressBar, JTable table,  int row) {
+
+    UploadProgressThread(File localFile, GeneralFile remoteFile, JProgressBar progressBar, JTable table,  int row) {
         this.fileSize = localFile.length();
         this.remoteFile = remoteFile;
         this.progressBar = progressBar;
@@ -66,13 +66,13 @@ class UploadProgressThread extends Thread {
         this.row = row;
         this.start();
     }
-    
+
     public void run() {
-        
+
         try {
             long bytesTransferred = 0;
             int percentage = 0;
-            
+
             while (!complete) {
                 //bytesTransferred = remoteFile.fileCopyStatus();
                 bytesTransferred = 0;
@@ -80,7 +80,7 @@ class UploadProgressThread extends Thread {
                 progressBar.setValue(percentage);
                 this.sleep(3000);
             }
-                
+
         } catch (InterruptedException ie) {
             System.out.println("thread interrupted. " + ie);
         }

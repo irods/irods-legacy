@@ -46,13 +46,13 @@ import javax.swing.JPanel;
 import java.awt.LayoutManager;
 
 
-public class MyPanel extends JPanel {
-    public MyPanel() {
+class MyPanel extends JPanel {
+    MyPanel() {
         super();
         this.setBackground(new MyColor());
     }
-    
-    public MyPanel(LayoutManager layout) {
+
+    MyPanel(LayoutManager layout) {
         super(layout);
         this.setBackground(new MyColor());
     }

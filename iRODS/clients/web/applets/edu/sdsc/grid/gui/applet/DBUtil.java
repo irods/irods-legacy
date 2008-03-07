@@ -42,6 +42,9 @@
 
 package edu.sdsc.grid.gui.applet;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -157,10 +160,10 @@ public class DBUtil {
     // UploadItem contains information about the file/folder to be uploaded
     // and where it will be uploaded
     public synchronized static boolean insert(UploadItem item) {
-        beginTransaction();
+/*        beginTransaction();
         boolean rowExist = false;
         String sql = "SELECT COUNT(*) FROM queue WHERE source = ? AND destination = ?";
-        ResultSet rs = null;
+        ResultSet rs = null; 
         
         try {
             PreparedStatement p = c.prepareStatement(sql);
@@ -207,7 +210,7 @@ public class DBUtil {
         }//try-catch-finally
         
         
-        return false;
+        return false;*/return true;
     }//insert
     
     
@@ -232,7 +235,13 @@ public class DBUtil {
             
         } catch (SQLException ex) {
             ex.printStackTrace();
-            logger.log("getUnassigned: " + ex);
+            logger.log("getUnassigned: " + ex);            
+        } catch (URISyntaxException ex) {
+            ex.printStackTrace();
+            logger.log("URISyntaxException: " + ex);             
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            logger.log("IOException: " + ex);          
         } finally {
             try {
                 if (rs != null)

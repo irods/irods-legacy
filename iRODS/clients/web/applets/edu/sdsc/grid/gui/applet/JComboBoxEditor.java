@@ -60,59 +60,59 @@ import javax.swing.table.TableCellEditor;
 
 // TODO: Add listener for selection change
 // will need to update DB with new selection
-public class JComboBoxEditor implements TableCellEditor, ActionListener {
-    static AppletLogger logger = AppletLogger.getInstance();        
-    
+class JComboBoxEditor implements TableCellEditor, ActionListener {
+    static AppletLogger logger = AppletLogger.getInstance();
+
     public Component getTableCellEditorComponent ( JTable table, Object value, boolean isSelected, int row, int column )  {
         JComboBox box = (JComboBox) value;
         if (isSelected)
             box.setBackground(new MyColor()); // RGB of #c4d2e3; light blue)
         else
             box.setBackground(Color.WHITE);
-        
+
         box.removeActionListener(this);
         box.addActionListener(this);
-        
+
         return  box;
-        
+
     }//getTableCellEditorComponent
-    
+
     public void actionPerformed(ActionEvent e) {
         JComboBox cb = (JComboBox)e.getSource();
         String resource = (String)cb.getSelectedItem();
 
     }
-        
+
     public void removeCellEditorListener(CellEditorListener l) {
-        
+
     }
-    
-    
+
+
     public void addCellEditorListener(CellEditorListener l) {
 
     }
-    
+
     public void cancelCellEditing() {
 
     }
-    
+
     public boolean stopCellEditing() {
 
         return true;
-         
-    }   
+
+    }
 
     public boolean shouldSelectCell(EventObject anEvent) {
 
         return true;
     }
-    
+
     public boolean isCellEditable(EventObject e) {
 
         return true;
 
     }
-    
+
     public Object getCellEditorValue() {
 
         return null;
