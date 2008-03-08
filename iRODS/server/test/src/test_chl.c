@@ -494,6 +494,10 @@ int testModResourceFreeSpace(rsComm_t *rsComm, char *rescName,
    if (option != NULL && strcmp(option, "rollback")==0 ) {
       status = chlRollback(rsComm);
    }
+   if (option != NULL && strcmp(option, "close")==0 ) {
+      status = chlClose();
+      return(status);
+   }
    status = chlCommit(rsComm);
    return(status);
 }
