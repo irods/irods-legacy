@@ -196,6 +196,9 @@ runCmd(0, "test_genu 1 test 100078 name1");
 runCmd(2, "test_genu 2 test 100099 name1");
 runCmd(0, "test_genu 2 test 100078 name1");
 
+# multiple open/close test
+runCmd(0, "test_chl open");
+
 # clean up
 runCmd(0, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin rmuser $User2");
