@@ -709,6 +709,12 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 	 strncpy(myStatement->resultColName[i], 
 		 "RESC_NET", columnLength[i]);
       }
+      /* Second case, second cludge/hack */
+      if (strcmp (myStatement->resultColName[i],
+		  "USER_DISTIN_NAMEUSER_INFO")==0) {
+	 strncpy(myStatement->resultColName[i],
+		 "USER_DISTIN_NAME", columnLength[i]);
+      }
 
       /* convert the column name to lower case to match postgres */
       cptr = (char*)myStatement->resultColName[i];
