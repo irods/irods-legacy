@@ -371,6 +371,10 @@ $POSTGRES_ADMIN_NAME = $thisUser;
 $POSTGRES_ADMIN_PASSWORD = "";		# When empty, will prompt for it
 
 
+# Other
+$POSTGRES_FORCE_INIT = 0;
+
+
 
 
 
@@ -422,6 +426,11 @@ if ( $status == 2 )
 
 # Load the file, overriding prior default configurations.
 require $installPostgresConfig;
+
+if ( $POSTGRES_FORCE_INIT )
+{
+	$forceinit = 1;
+}
 
 
 
