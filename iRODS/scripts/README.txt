@@ -7,6 +7,7 @@ Contents
 	configure		configure prior to building iRODS
 	finishSetup		finish setting up iRODS
 	installPostgres		install Postgres for iRODS
+	irodsprompt		prompt for iRODS configuration
 	runperl			shell wrapper for perl scripts
 	uninstallPostgres	uninstall Postgres for iRODS
 
