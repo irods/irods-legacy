@@ -97,6 +97,16 @@ $IRODS_DEFAULT_ZONE          = "tempZone";
 #
 sub loadIrodsConfig()
 {
+	return loadIrodsConfigAndValidate(1);
+}
+sub loadIrodsConfigNoValidate()
+{
+	return loadIrodsConfigAndValidate(0);
+}
+sub loadIrodsConfigAndValidate($)
+{
+	my ($validate) = @_;
+
 	# Check that the configuration file exists.
 	if ( ! -e $irodsConfig )
 	{
@@ -140,8 +150,11 @@ sub loadIrodsConfig()
 	#    While the iRODS configuration file is usually automatically edited
 	#    by the installation scripts, it is possible that it has been edited
 	#    by a user, or that the scripts have made a mistake.
-	return 0 if validateIrodsVariables( )    == 0;
-	return 0 if validateDatabaseVariables( ) == 0;
+	if ( $validate == 1 )
+	{
+		return 0 if validateIrodsVariables( )    == 0;
+		return 0 if validateDatabaseVariables( ) == 0;
+	}
 
 	# Set environment variables.
 	setEnvironmentVariables( );
