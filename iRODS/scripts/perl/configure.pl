@@ -129,7 +129,7 @@ my %thisHostAddresses = getCurrentHostAddresses( );
 # The current step increases after each major part of the
 # install.  These are used as a progress indicator for the
 # user, but otherwise have no meaning.
-$totalSteps  = 5;
+$totalSteps  = 4;
 $currentStep = 0;
 
 
@@ -896,6 +896,15 @@ printSubtitle( "\nStep $currentStep of $totalSteps:  Updating configuration file
 
 
 # Update config.mk
+#	The iRODS Makefiles check if config.mk has changed and trigger
+#	a build-from-scratch if it has.  But the configuration we are
+#	about to write to it might not be different.  If it isn't
+#	different, we'd like to avoid triggering a rebuild.
+#
+#	So, copy the existing config.mk and update the copy.  Then
+#	compare them.  If they are differ, copy the updated file
+#	on top of the old file.  Otherwise, delete the copy and
+#	leave the original as-is (since it is already uptodate).
 printStatus( "Updating config.mk...\n" );
 $status = copyTemplateIfNeeded( $configMk );
 if ( $status == 0 )
@@ -909,21 +918,63 @@ if ( $status == 0 )
 }
 if ( $status == 2 )
 {
+	# New config.mk.  Update it in place.
 	printStatus( "    Created $configMk\n" );
+
+	($status, $output) = replaceVariablesInFile( $configMk, "make", 0, %mkconfiguration );
+	if ( $status == 0 )
+	{
+		printError( "\nConfiguration problem:\n" );
+		printError( "    Could not update configuration file.\n" );
+		printError( "        File:   $configMk\n" );
+		printError( "        Error:  $output\n" );
+		printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
 }
-($status, $output) = replaceVariablesInFile( $configMk, "make", 0, %mkconfiguration );
-if ( $status == 0 )
+else
 {
-	printError( "\nConfiguration problem:\n" );
-	printError( "    Could not update configuration file.\n" );
-	printError( "        File:   $configMk\n" );
-	printError( "        Error:  $output\n" );
-	printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
-	exit( 1 );
+	# There is an existing config.mk.  Copy and update
+	# the copy.
+	$tmpConfigMk = File::Spec->catfile( File::Spec->tmpdir( ), "irods_configmk_$$.txt" );
+	if ( copy( $configMk, $tmpConfigMk ) != 1 )
+	{
+		printError( "\nConfiguration problem:\n" );
+		printError( "    Could not create a temporary file.\n" );
+		printError( "        File:   $tmpConfigMk\n" );
+		printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+
+	($status, $output) = replaceVariablesInFile( $tmpConfigMk, "make", 0, %mkconfiguration );
+	if ( $status == 0 )
+	{
+		printError( "\nConfiguration problem:\n" );
+		printError( "    Could not update configuration file.\n" );
+		printError( "        File:   $tmpConfigMk\n" );
+		printError( "        Error:  $output\n" );
+		printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+	# Are the files different?
+	if ( diff( $tmpConfigMk, $configMk ) == 1 )
+	{
+		# Yup.  Replace the old file with the new one.
+		move( $tmpConfigMk, $configMk );
+	}
+	else
+	{
+		# Nope.  They're the same.  Leave the original
+		# untouched and delete the temp.
+		unlink( $tmpConfigMk );
+	}
 }
 
 
 # Update platform.mk
+#	See the comments above for config.mk.  Again, with platform.mk
+#	we don't want to write to the existing file if there are no
+#	changes.  This avoids the change triggering a rebuild.
 printStatus( "Updating platform.mk...\n" );
 $platformMk = File::Spec->catfile( $configDir, "platform.mk" );
 $status = copyTemplateIfNeeded( $platformMk );
@@ -938,17 +989,57 @@ if ( $status == 0 )
 }
 if ( $status == 2 )
 {
+	# New platform.mk.  Update it in place.
 	printStatus( "    Created $platformMk\n" );
+
+	($status, $output) = replaceVariablesInFile( $platformMk, "make", 0, %mkconfiguration );
+	if ( $status == 0 )
+	{
+		printError( "\nConfiguration problem:\n" );
+		printError( "    Could not update configuration file.\n" );
+		printError( "        File:   $platformMk\n" );
+		printError( "        Error:  $output\n" );
+		printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
 }
-($status, $output) = replaceVariablesInFile( $platformMk, "make", 0, %mkconfiguration );
-if ( $status == 0 )
+else
 {
-	printError( "\nConfiguration problem:\n" );
-	printError( "    Could not update configuration file.\n" );
-	printError( "        File:   $platformMk\n" );
-	printError( "        Error:  $output\n" );
-	printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
-	exit( 1 );
+	# There is an existing platform.mk.  Copy and update
+	# the copy.
+	$tmpPlatformMk = File::Spec->catfile( File::Spec->tmpdir( ), "irods_platformmk_$$.txt" );
+	if ( copy( $platformMk, $tmpPlatformMk ) != 1 )
+	{
+		printError( "\nConfiguration problem:\n" );
+		printError( "    Could not create a temporary file.\n" );
+		printError( "        File:   $tmpPlatformMk\n" );
+		printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+
+	($status, $output) = replaceVariablesInFile( $tmpPlatformMk, "make", 0, %mkconfiguration );
+	if ( $status == 0 )
+	{
+		printError( "\nConfiguration problem:\n" );
+		printError( "    Could not update configuration file.\n" );
+		printError( "        File:   $tmpPlatformMk\n" );
+		printError( "        Error:  $output\n" );
+		printError( "\nAbort.  Please re-run this script when the problem is fixed.\n" );
+		exit( 1 );
+	}
+
+	# Are the files different?
+	if ( diff( $tmpPlatformMk, $platformMk ) == 1 )
+	{
+		# Yup.  Replace the old file with the new one.
+		move( $tmpPlatformMk, $platformMk );
+	}
+	else
+	{
+		# Nope.  They're the same.  Leave the original
+		# untouched and delete the temp.
+		unlink( $tmpPlatformMk );
+	}
 }
 
 
@@ -985,29 +1076,6 @@ if ( $status == 0 )
 # since it is meant for admin use only.
 chmod( 0700, $irodsctl );
 
-
-
-
-
-########################################################################
-#
-# Clean out any previously-compiled files.
-#
-$currentStep++;
-printSubtitle( "\nStep $currentStep of $totalSteps:  Cleaning out previously compiled files...\n" );
-
-chdir( $IRODS_HOME );
-($status,$output) = make( "clean" );
-if ( $status != 0 )
-{
-	printError( "Configuration problem:\n" );
-	printError( "    A problem occurred when cleaning out old compiled files\n" );
-	printError( "    with 'make clean'.  Is there a problem in the Makefile?\n" );
-	printError( "        ", $output );
-	printError( "\n" );
-	printError( "Abort.  Please re-run this script when the problem is fixed.\n" );
-	exit( 1 );
-}
 
 
 
