@@ -113,6 +113,7 @@ my $SUBTITLE_COLOR = "";
 my $NOTICE_COLOR   = "";
 my $STATUS_COLOR   = "";
 my $ERROR_COLOR    = "";
+my $QUESTION_COLOR = "";
 my $NORMAL_COLOR   = "";
 
 
@@ -152,6 +153,7 @@ sub enablePrintColors($)
 		$NOTICE_COLOR   = $RESET;
 		$STATUS_COLOR   = $RESET;
 		$ERROR_COLOR    = $BOLD_RED;
+		$QUESTION_COLOR = $BOLD;
 		$NORMAL_COLOR   = $RESET;	# black or white or
 						# whatever the user
 						# has as a default
@@ -164,6 +166,7 @@ sub enablePrintColors($)
 		$NOTICE_COLOR   = "";
 		$STATUS_COLOR   = "";
 		$ERROR_COLOR    = "";
+		$QUESTION_COLOR = "";
 		$NORMAL_COLOR   = "";
 	}
 }
@@ -385,6 +388,20 @@ sub printStatus
 {
 	return if !$PRINT_VERBOSE;
 	printMessage( $STATUS_COLOR, "    ", @_ );
+}
+
+
+
+
+
+#
+# @brief	Print a question message.
+#
+# @param	message		the message to print
+#
+sub printQuestion
+{
+	printMessage( $QUESTION_COLOR, @_ );
 }
 
 
