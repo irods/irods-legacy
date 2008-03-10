@@ -312,6 +312,9 @@ sub replaceVariablesInFile
 		{
 			foreach $name (keys %values)
 			{
+				# Don't replace more than once.
+				next if ( $replacedValues{$name} == 1 );
+
 				if ( $line =~ /^#?[ \t]*$name[ \t]*=/ )
 				{
 					# If value is not empty:
@@ -339,8 +342,6 @@ sub replaceVariablesInFile
 
 
 	# If we are to append unreplaced values, do so now.
-	# This only really makes sense for 'config' style files,
-	# but we'll do it for all syntax types.
 	if ( $appendIfNotReplaced )
 	{
 		foreach $name (keys %values)
@@ -395,6 +396,15 @@ sub replaceVariablesInFile
 				}
 			}
 		}
+
+		# For Perl config files, the last line of the file sets
+		# the return type for a 'require'-ed file.  Since we don't
+		# know if the last variable output above evaluates to '1',
+		# we need to add an extra variable that does.
+		if ( $syntax =~ /perl/i )
+		{
+			print( FileOut "\n\$return_result = 1;\n" );
+		}
 	}
 	close( FileOut );
 
@@ -405,6 +415,54 @@ sub replaceVariablesInFile
 
 	return (1,undef) if ( $fileChanged );
 	return (2,undef);
+}
+
+
+
+
+
+
+#
+# @brief	Compare the contents of two files
+#
+# Two files are read into memory and compared.  If they differ in
+# any way, 1 is returned.  Otherwise 0.
+#
+# @param	$filename1
+# 	the first file
+# @param	$filename2
+# 	the second file
+# @return
+# 	1 if differ, 0 if same
+#
+sub diff($$)
+{
+	my ($filename1,$filename2) = @_;
+
+	# Read in each file
+	if ( open( FILE1, "<$filename1" ) == 0 )
+	{
+		# Can't open first file.  Must differ.
+		return true;
+	}
+	my @first = <FILE1>;
+	close( FILE1 );
+
+	if ( open( FILE2, "<$filename2" ) == 0 )
+	{
+		# Can't open first file.  Must differ.
+		return true;
+	}
+	my @second = <FILE2>;
+	close( FILE2 );
+
+	return 1 if ( $#first != $#second );
+	my $n = $#first;
+	for ( $i = 0; $i < $n; $i++ )
+	{
+		return 1 if ( $first[$i] ne $second[$i] );
+	}
+	return 0;
 }
 
 
