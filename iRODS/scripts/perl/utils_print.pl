@@ -431,6 +431,7 @@ sub printError
 # 	the prompt to print
 # @return
 # 	0 for no, 1 for yes.
+# @deprecated	Use promptYesNo() instead.
 #
 sub askYesNo($)
 {
@@ -472,12 +473,13 @@ sub askYesNo($)
 # 	the message to print if the text is empty.
 # @return
 # 	the text.
+# @deprecated	Use promptString() instead.
 sub askString($$)
 {
 	my ($prompt,$emptyError) = @_;
 	my $answer = undef;
 
-	while ( 1 )
+	for ( $tryAgain = 0; $tryAgain < 20; $tryAgain++ )
 	{
 		printNotice( $prompt );
 		$answer = <STDIN>;
@@ -490,6 +492,11 @@ sub askString($$)
 		}
 		printError( $emptyError );
 	}
+	printError(
+		"\n",
+		"Sorry, there have been too many invalid answers.\n",
+		"Abort.\n" );
+	exit( 1 );
 }
 
 

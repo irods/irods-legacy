@@ -15,6 +15,7 @@
 #
 
 $version{"utils_prompt.pl"} = "1.2";
+my $TRY_TOO_MANY = 20;
 
 
 
@@ -33,7 +34,8 @@ sub promptYesNo( $$ )
 {
 	my ($prompt,$default) = @_;
 
-	while ( 1 )
+	my $tryAgain;
+	for ( $tryAgain = 0; $tryAgain < $TRY_TOO_MANY; $tryAgain++ )
 	{
 		# Prompt
 		printQuestion( "    $prompt [$default]? " );
@@ -57,6 +59,11 @@ sub promptYesNo( $$ )
 		# The answer is invalid.
 		printError( "    Please answer either yes or no.\n\n" );
 	}
+	printError(
+		"\n",
+		"Sorry, there have been too many invalid answers.\n",
+		"Abort.\n" );
+	exit( 1 );
 }
 
 
@@ -88,7 +95,8 @@ sub promptString( $$ )
 	$promptString .= "? ";
 
 
-	while ( 1 )
+	my $tryAgain;
+	for ( $tryAgain = 0; $tryAgain < $TRY_TOO_MANY; $tryAgain++ )
 	{
 		# Prompt
 		printQuestion( $promptString );
@@ -110,6 +118,11 @@ sub promptString( $$ )
 		printError(
 			"    Sorry, but the value cannot be left empty.\n\n" );
 	}
+	printError(
+		"\n",
+		"Sorry, there have been too many invalid answers.\n",
+		"Abort.\n" );
+	exit( 1 );
 }
 
 
@@ -132,7 +145,8 @@ sub promptHostName( $$ )
 {
 	my ($prompt,$default) = @_;
 
-	while ( 1 )
+	my $tryAgain;
+	for ( $tryAgain = 0; $tryAgain < $TRY_TOO_MANY; $tryAgain++ )
 	{
 		my $answer = promptString( $prompt, $default );
 		return $answer if ( $answer !~ /[^a-zA-Z0-9\-\.]+/ );
@@ -140,6 +154,11 @@ sub promptHostName( $$ )
 			"    Sorry, but the host name can only include the characters\n",
 			"    a-Z A-Z 0-9, dash, or period.\n" );
 	}
+	printError(
+		"\n",
+		"Sorry, there have been too many invalid answers.\n",
+		"Abort.\n" );
+	exit( 1 );
 }
 
 
@@ -161,13 +180,19 @@ sub promptInteger( $$ )
 {
 	my ($prompt,$default) = @_;
 
-	while ( 1 )
+	my $tryAgain;
+	for ( $tryAgain = 0; $tryAgain < $TRY_TOO_MANY; $tryAgain++ )
 	{
 		my $answer = promptString( $prompt, $default );
 		return $answer if ( $answer !~ /[^0-9]+/ );
 		printError(
 			"    Sorry, but the value must be a single positive integer.\n" );
 	}
+	printError(
+		"\n",
+		"Sorry, there have been too many invalid answers.\n",
+		"Abort.\n" );
+	exit( 1 );
 }
 
 
@@ -192,7 +217,8 @@ sub promptIdentifier( $$$ )
 {
 	my ($prompt,$default) = @_;
 
-	while ( 1 )
+	my $tryAgain;
+	for ( $tryAgain = 0; $tryAgain < $TRY_TOO_MANY; $tryAgain++ )
 	{
 		my $answer = promptString( $prompt, $default );
 		return $answer if ( $answer !~ /[^a-zA-Z0-9_\-\.]+/ );
@@ -200,6 +226,11 @@ sub promptIdentifier( $$$ )
 			"    Sorry, but the value can only include the characters\n",
 			"    a-Z A-Z 0-9, dash, period, and underscore.\n" );
 	}
+	printError(
+		"\n",
+		"Sorry, there have been too many invalid answers.\n",
+		"Abort.\n" );
+	exit( 1 );
 }
 
 
