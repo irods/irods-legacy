@@ -141,13 +141,21 @@ cllOpenEnv(icatSessionStruct *icss) {
  */
 int
 cllCloseEnv(icatSessionStruct *icss) {
+   OCIEnv           *p_env;
+   OCISvcCtx        *p_svc;
    sword stat;
-   stat = OCITerminate(OCI_DEFAULT);
 
-   if (stat != OCI_SUCCESS) {
-      rodsLog(LOG_ERROR, "cllCloseEnv: OCITerminate failed");
-      return(CAT_ENV_ERR);
-   }
+   /* OCITerminate can only be called once per process, so it 
+      is no longer called. */
+
+   p_svc = icss->connectPtr;
+   p_env = icss->environPtr;
+
+   stat = OCIHandleFree((dvoid *) p_svc, OCI_HTYPE_SVCCTX);
+
+   stat = OCIHandleFree((dvoid *) p_err, OCI_HTYPE_ERROR);
+
+   icss->connectPtr=0;
    return(0);
 }
 
@@ -160,13 +168,14 @@ cllConnect(icatSessionStruct *icss) {
    OCIEnv           *p_env;
    OCISvcCtx        *p_svc;
 
-   p_svc = icss->connectPtr;
-   p_env = icss->environPtr;
    char userName[110];
    char databaseName[110];
    char *cp1, *cp2;
    int i, atFound;
    
+   p_svc = icss->connectPtr;
+   p_env = icss->environPtr;
+
    atFound=0;
    userName[0]='\0';
    databaseName[0]='\0';
@@ -233,10 +242,6 @@ cllDisconnect(icatSessionStruct *icss) {
       return(CAT_DISCONNECT_ERR);
    }
 
-   stat = OCIHandleFree((dvoid *) p_svc, OCI_HTYPE_SVCCTX);
-   stat = OCIHandleFree((dvoid *) p_err, OCI_HTYPE_ERROR);
-
-   icss->connectPtr=0;
    return(0);
 }
 
