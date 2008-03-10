@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-				January 2008
+				March 2008
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -81,18 +81,23 @@ answering the prompts differently:
 2.  Installing iRODS without using 'irodssetup'
 ------------------------------------------------------------------------
 
-The 'irodssetup' script runs four steps for the installation that you
+The 'irodssetup' script runs five steps for the installation that you
 can run directly, if finer control is needed.  However, we recommend
 that you try the 'irodssetup' script first because it already supports
 a large number of common options, and it will give you a starting
 point for adjusting your installation.
 
-The four install steps are:
+The five install steps are:
+
+	scripts/irodsprompt
+		Prompt for configuration settings.  Initial settings
+		are read from 'config/irods.config', and new settings
+		are written back to the file.
 
 	scripts/installPostgres
 		Download and build Postgres and ODBC distribtions.  Uses
 		parameters in 'config/installPostgres.config'.  Saves
-		parameters to 'config/irods.config'.
+		a few parameters to 'config/irods.config'.
 
 	scripts/configure
 		Configure the iRODS build.  Uses and saves parameters in
@@ -133,9 +138,9 @@ to get a list of options.
 2.2.  Installing with an existing Postgres database
 
 Create a new iRODS configuration file from a template.  The easiest
-way is to run 'scripts/configure' once to set up defaults:
+way is to run 'scripts/irodsprompt' once to set up defaults:
 
-	scripts/configure
+	scripts/irodsprompt
 
 Alternatively, you can copy a template as a starting point:
 
@@ -191,9 +196,9 @@ uses of the same Postgres database.
 2.3.  Installing with an existing Oracle database
 
 Create a new iRODS configuration file from a template.  The easiest
-way is to run 'scripts/configure' once to set up defaults:
+way is to run 'scripts/irodsprompt' once to set up defaults:
 
-	scripts/configure
+	scripts/irodsprompt
 
 Alternatively, you can copy a template as a starting point:
 
