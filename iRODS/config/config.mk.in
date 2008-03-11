@@ -183,3 +183,14 @@ ifdef TAR_STRUCT_FILE
 tarDir=/data/mwan/tar/libtar-1.2.11
 endif
 
+#
+# Grid Security Infrastructure
+# 
+# Uncomment '# GSI_AUTH=1' and specify your GLOBUS_LOCATION and 
+# GSI_INSTALL_TYPE (the examples of these below work at SDSC).
+#
+# GSI_AUTH = 1
+ifdef GSI_AUTH
+GLOBUS_LOCATION=/usr/local/apps/globus-4.0.1
+GSI_INSTALL_TYPE=gcc32dbg
+endif

@@ -62,6 +62,9 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/stringOpr.o \
 		$(libCoreObjDir)/trimUtil.o	\
 		$(libCoreObjDir)/mcollUtil.o
+ifdef GSI_AUTH
+LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
+endif
 INCLUDES +=	-I$(libCoreIncDir)
 
 
@@ -75,6 +78,10 @@ LIB_MD5_OBJS =	\
 		$(libMd5ObjDir)/md5Checksum.o
 INCLUDES +=	-I$(libMd5IncDir)
 
+# GSI
+ifdef GSI_AUTH
+INCLUDES += 	-I$(GLOBUS_LOCATION)/include/$(GSI_INSTALL_TYPE)
+endif
 
 # API (see api.mk, which is automatically generated)
 include $(buildDir)/config/api.mk
@@ -99,7 +106,9 @@ ifeq ($(CC_IS_GCC), 1)
 MD5_CFLAGS_OPTIONS += -O3
 MD5_CFLAGS += -O3
 endif
-
+ifdef GSI_AUTH
+CFLAGS_OPTIONS += -D GSI_AUTH
+endif
 
 
 #

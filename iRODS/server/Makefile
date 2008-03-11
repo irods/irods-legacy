@@ -125,6 +125,9 @@ ifdef GEN_QUERY_AC
 CFLAGS +=	-DGEN_QUERY_AC
 endif
 
+ifdef GSI_AUTH
+CFLAGS +=       -DGSI_AUTH
+endif
 
 # re
 ifdef RULE_ENGINE
@@ -197,9 +200,26 @@ CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 
 LDFLAGS +=	$(LDADD) $(LIBRARY) $(MODULE_LDFLAGS)
 
+ifdef GSI_AUTH
+LIB_GSI_AUTH = \
+        -L$(GLOBUS_LOCATION)/lib \
+        -lglobus_gss_assist_$(GSI_INSTALL_TYPE) \
+	-lglobus_gssapi_gsi_$(GSI_INSTALL_TYPE) \
+        -lglobus_gsi_credential_$(GSI_INSTALL_TYPE) \
+        -lglobus_gsi_proxy_core_$(GSI_INSTALL_TYPE) \
+	-lglobus_gsi_callback_$(GSI_INSTALL_TYPE) \
+	-lglobus_oldgaa_$(GSI_INSTALL_TYPE) \
+	-lglobus_gsi_sysconfig_$(GSI_INSTALL_TYPE) \
+	-lglobus_gsi_cert_utils_$(GSI_INSTALL_TYPE) \
+	-lglobus_openssl_error_$(GSI_INSTALL_TYPE) \
+	-lglobus_openssl_$(GSI_INSTALL_TYPE) \
+	-lglobus_proxy_ssl_$(GSI_INSTALL_TYPE) \
+	-lssl_$(GSI_INSTALL_TYPE) \
+	-lcrypto_$(GSI_INSTALL_TYPE) \
+	-lglobus_common_$(GSI_INSTALL_TYPE)
 
-
-
+LDFLAGS += $(LIB_GSI_AUTH)
+endif
 
 #
 # Princpal Targets
