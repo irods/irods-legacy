@@ -96,8 +96,8 @@ clientLogin(rcComm_t *Conn)
 #ifdef GSI_AUTH
    if (ProcessType==CLIENT_PT) {
       char *getVar;
-      getVar = getenv("GLOBUS_LOCATION");
-      if (getVar != NULL) {
+      getVar = getenv("irodsAuthScheme");
+      if (getVar != NULL && strncmp("GSI",getVar,3)==0) {
 	 status = clientLoginGsi(Conn);
 	 return(status);
       }

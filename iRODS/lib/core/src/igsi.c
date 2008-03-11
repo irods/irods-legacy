@@ -98,14 +98,9 @@ static int inCacheBufLen[MAX_FDS];
 static int inCacheBufWriteIndex[MAX_FDS];
 static int inCacheBufReadIndex[MAX_FDS];
 
-static int igsiObjCreated = 0;
-
 #endif  /* end of #if defined(GSI_AUTH) */
 
 int context_flags;
-
-#define OBJ_CREATE_NEEDED 1      /* 1/7/2000, I thought it wouldn't be needed
-                                   with the new GSI, but it seems it is */
 
 /* Function for time test 
  * Returns the difference between start time and end time in tdiff 
@@ -526,30 +521,6 @@ int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     }
     (void) gss_release_name(&minorStatus, &myName);
 
-#if defined(OBJ_CREATE_NEEDED)
-    /*
-       Found that if this is at the beginning of this routine and
-       this routine is called for both Kerberos and GSI, then the
-       Object seems to be forgotten (subsequent calls to use the
-       Obj return a number in the DN, altho another OBJ_create gets
-       a higher number).  But if we call OBJ_create after
-       doing the GSI calls, it seems to stick.
-
-       Changed this (and other blocks like this) to repeatedly create
-       the object (up to 10 times).  Previously, this was a one-time
-       flag but then it would sometimes not take.
-
-     */
-    if (igsiObjCreated < 10 ) {
-        int obj_cre_val;
-        /* create the SDSC UID object (in the running version of SSL) */
-        obj_cre_val =
-            OBJ_create("0.9.2342.19200300.100.1.1", "USERID", "userId");
-        /* fprintf(stderr,"setupCreds obj_cre_val = %d\n",obj_cre_val); */
-        igsiObjCreated++;
-    }
-#endif
-
     if (maxReturnedName > 0 && returnedName != NULL) {
        gss_OID doid2;
        gss_buffer_desc client_name2;
@@ -649,17 +620,6 @@ int igsiEstablishContextServerside(rsComm_t *rsComm, char *clientName,
     /* Starting timer for function */
     (void) gettimeofday(&startTimeFunc, (struct timezone *) 0);
 
-#endif
-
-#if defined(OBJ_CREATE_NEEDED)
-    if (igsiObjCreated < 10) {
-        int obj_cre_val;
-        /* create the SDSC UID object (in the running version of SSL) */
-        obj_cre_val =
-            OBJ_create("0.9.2342.19200300.100.1.1", "USERID", "userId");
-        /*fprintf(stderr,"obj_cre_val = %d\n",obj_cre_val); */
-        igsiObjCreated++;
-    }
 #endif
 
     context[fd] = GSS_C_NO_CONTEXT;
@@ -890,18 +850,6 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
     (void) gettimeofday(&startTimeFunc, (struct timezone *) 0);
 #endif
 
-#if defined(OBJ_CREATE_NEEDED)
-    if (igsiObjCreated < 10) {
-        int obj_cre_val;
-        /* create the SDSC UID object (in the running version of SSL) */
-        obj_cre_val =
-            OBJ_create("0.9.2342.19200300.100.1.1", "USERID", "userId");
-        if (igsiDebugFlag > 0)
-            fprintf(stderr, "obj_cre_val = %d\n", obj_cre_val);
-        igsiObjCreated++;
-    }
-#endif
-
     /*
      * Import the name into target_name.
      */
@@ -1107,18 +1055,6 @@ int delegFlag;
 
 #endif
 
-#if defined(OBJ_CREATE_NEEDED)
-    if (igsiObjCreated < 10) {
-        int obj_cre_val;
-        /* create the SDSC UID object (in the running version of SSL) */
-        obj_cre_val =
-            OBJ_create("0.9.2342.19200300.100.1.1", "USERID", "userId");
-        if (igsiDebugFlag > 0)
-            fprintf(stderr, "obj_cre_val = %d\n", obj_cre_val);
-        igsiObjCreated++;
-    }
-#endif
-
     /* performing context establishment loop */
     tokenPtr = GSS_C_NO_BUFFER;
     context[fd] = GSS_C_NO_CONTEXT;
@@ -1245,61 +1181,6 @@ int delegFlag;
 #endif
     return 0;
 
-#else
-    if (ProcessType==CLIENT_PT) {
-       return(GSI_NOT_BUILT_INTO_CLIENT);
-    }
-    else {
-       return(GSI_NOT_BUILT_INTO_SERVER);
-    }
-#endif
-}
-
-/* Perform the server-side authentication sequence, using the irods
-   socket.
-*/
-int xxxigsiServersideAuth(rsComm_t *rsComm) {
-#if defined(GSI_AUTH)
-   int status;
-   char clientName[500];
-   rodsServerHost_t *rodsServerHost;
-   genQueryInp_t genQueryInp;
-   genQueryOut_t genQueryOut;
-
-   char *getVar;
-   getVar = getenv("X509_CERT_DIR");
-   if (getVar != NULL) {
-      printf("X509_CERT_DIR:%s\n",getVar);
-   }
-
-   status = igsiEstablishContextServerside(rsComm, clientName, 
-					    500);
-   if (status==0) printf("clientName:%s\n",clientName);
-
-
-   //   status = getAndConnRcatHostNoLogin (rsComm, MASTER_RCAT, NULL,
-   //                                &rodsServerHost);
-   //   if (status < 0) {
-   //      return(status);
-   //   }
-
-   //   memset (&authCheckInp, 0, sizeof (authCheckInp)); 
-   //   authCheckInp.challenge = bufp;
-   //   authCheckInp.response = authResponseInp->response;
-   //   authCheckInp.username = authResponseInp->username;
-   //
-   //   if (rodsServerHost->localFlag == LOCAL_HOST) {
-   //      status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-   //   } else {
-   //  status = rcGenQuery (rodsServerHost->conn, &genQueryInp, &genQueryOut);
-      //   }
-   if (status < 0) {
-      rodsLog (LOG_NOTICE,
-            "igsiServersideAuth: rcGenQuery failed, status = %d", status);
-      return (status);
-   }
-
-    return status;
 #else
     if (ProcessType==CLIENT_PT) {
        return(GSI_NOT_BUILT_INTO_CLIENT);

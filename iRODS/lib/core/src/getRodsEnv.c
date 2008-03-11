@@ -206,10 +206,15 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	 }
 	 key=strstr(buf, "irodsAuthScheme");
 	 if (key != NULL) {
+	    static char tmpStr1[120];
 	    rstrcpy(rodsEnvArg->rodsAuthScheme, findNextTokenAndTerm(key+15),
 		    LONG_NAME_LEN);
 	    rodsLog(msgLevel, "irodsAuthScheme=%s",
 		    rodsEnvArg->rodsAuthScheme);
+	    /* Also put it into the env for easy access */
+	    snprintf(tmpStr1,100,"irodsAuthScheme=%s",
+		     rodsEnvArg->rodsAuthScheme);
+	    putenv(tmpStr1);
 	 }
 	 key=strstr(buf, "irodsDefResource");
 	 if (key != NULL) {
