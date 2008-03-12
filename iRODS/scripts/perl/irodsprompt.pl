@@ -430,7 +430,7 @@ sub promptForIrodsConfiguration( )
 		(($installCatalogServer == 1) ? "yes" : "no") );
 	if ( $installCatalogServer == 0 )
 	{
-		# Don't include the iCAT catalog.  Get the iCAT host.
+		# Don't include the iCAT catalog.  Get the iCAT host, etc.
 		$installDatabaseServer	= 0;
 		$priorDatabaseExists	= 0;
 		$deleteDatabaseData	= 0;
@@ -453,6 +453,24 @@ sub promptForIrodsConfiguration( )
 		$catalogServerHost = promptHostName(
 			"Host running iRODS with an iCAT catalog",
 			$catalogServerHost );
+
+# Resource name
+		printNotice(
+			"\n",
+			"A name is needed for the storage resource that will be on this host,\n",
+			"and it needs to be different from other defined resource names.\n",
+			"\n" );
+		$irodsResourceName = promptString(
+						  "Resource name", 
+			((!defined($irodsResourceName)||$irodsResourceName eq $DEFAULT_irodsResourceName) ?
+				"demoResc2" : $irodsResourceName) );
+
+# Resource directory
+		$irodsResourceDir = promptString(
+			"Resource storage area directory",
+			((!defined($irodsResourceDir)||$irodsResourceDir eq "") ?
+				$DEFAULT_irodsResourceDir : $irodsResourceDir) );
+
 ## TODO:  What about a port # for that iRODS server?
 ## can it differ from the to-be-installed iRODS server?
 
