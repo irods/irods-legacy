@@ -1,0 +1,14 @@
+#!/bin/bash
+
+myhost=`hostname --long`
+
+TINDERCLIENT="./tinderclient.pl"
+URL="http://tinderbox.sdsc.edu/srb"
+
+pwd=`pwd`
+BUILD_DIR="$pwd/IRODS_BUILD"
+
+export CVS_RSH="ssh"
+
+echo  $TINDERCLIENT --url ${URL} --dir ${BUILD_DIR} iRODS "iRODS on $myhost"
+nohup $TINDERCLIENT --url ${URL} --dir ${BUILD_DIR} iRODS "iRODS on $myhost" >& tinderbox.out &
