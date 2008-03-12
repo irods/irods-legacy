@@ -32,7 +32,7 @@ fi
 rm -f irods.tar
 echo $PATH
 os=`uname -s`
-if [ $os == "Darwin" ] ; then
+if [ $os = "Darwin" ] ; then
 curl http://users.sdsc.edu/~schroede/irods.tar > irods.tar
 else
 wget http://users.sdsc.edu/~schroede/irods.tar
@@ -45,7 +45,7 @@ pgsql=`ls -d pgsql`
 
 #cd /tbox/IRODS_BUILD/iRODS
 cd iRODS
-if [ $pgsql == "pgsql" ] ; then
+if [ $pgsql = "pgsql" ] ; then
   echo reusing pgsql
   ./irodssetup < ../../input1.txt.reuse.pg
 else
