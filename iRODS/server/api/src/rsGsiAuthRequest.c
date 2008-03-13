@@ -14,9 +14,7 @@ int
 rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
 {
     gsiAuthRequestOut_t *result;
-    /*    char *bufp; */
     int status;
-    static char DnString[1000];
 
     if (gsiAuthReqStatus==1) {
        gsiAuthReqStatus=0;
@@ -31,20 +29,18 @@ rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
     memset((char *)*gsiAuthRequestOut, 0, sizeof(gsiAuthRequestOut_t));
 
     result = *gsiAuthRequestOut;
+    result->serverDN=malloc(10000);
+
 #if defined(GSI_AUTH)
-    status = igsiSetupCreds(NULL, rsComm, NULL, DnString, 1000);
-    result->serverDN=DnString;
-    /*    result->challenge = bufp; */
-    /*    return(0); */
+    status = igsiSetupCreds(NULL, rsComm, NULL, result->serverDN, 10000);
     if (status==0) {
         rsComm->gsiRequest=1;
     }
     return(status);
 #else
-    DnString[0]='\0'; /* avoid warning */
     status = GSI_NOT_BUILT_INTO_SERVER;
     rodsLog (LOG_ERROR,
-	    "igsiServersideAuth failed GSI_NOT_BUILT_INTO_SERVER, status = %d",
+	    "rsGsiAuthRequest failed GSI_NOT_BUILT_INTO_SERVER, status = %d",
 	     status);
     return (status);
 #endif
@@ -59,18 +55,25 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    genQueryOut_t *genQueryOut;
    char condition1[MAX_NAME_LEN];
    char condition2[MAX_NAME_LEN];
+   char *tResult;
+   int privLevel;
+   int clientPrivLevel;
 
+#ifdef GSI_DEBUG
    char *getVar;
    getVar = getenv("X509_CERT_DIR");
    if (getVar != NULL) {
       printf("X509_CERT_DIR:%s\n",getVar);
    }
+#endif
 
    gsiAuthReqStatus=1;
 
    status = igsiEstablishContextServerside(rsComm, clientName, 
 					    500);
+#ifdef GSI_DEBUG
    if (status==0) printf("clientName:%s\n",clientName);
+#endif
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
@@ -117,17 +120,18 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       return(GSI_QUERY_INTERNAL_ERROR);
    }
 
+#ifdef GSI_DEBUG
    printf("Results=%d\n",genQueryOut->rowCnt);
+#endif
 
-   char *tResult;
    tResult = genQueryOut->sqlResult[0].value;
+#ifdef GSI_DEBUG
    printf("0:%s\n",tResult);
+#endif
    tResult = genQueryOut->sqlResult[1].value;
+#ifdef GSI_DEBUG
    printf("1:%s\n",tResult);
-
-   int privLevel;
-   int clientPrivLevel;
-
+#endif
    privLevel = LOCAL_USER_AUTH;
    clientPrivLevel = LOCAL_USER_AUTH;
 
