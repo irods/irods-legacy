@@ -782,6 +782,20 @@ sub createDatabaseAndTables
 			"icatSysTables.sql",
 			"icatCoreInserts.sql",
 			"icatSysInserts.sql" );
+
+		if ( $ZONE_NAME ne $IRODS_DEFAULT) {
+		    printStatus( "    Converting zone name in icatSysInserts.sql\n" );
+		    printLog( "    Converting zone name in icatSysInserts.sql\n" );
+		    my $sqlPath = File::Spec->catfile( $serverSqlDir, 
+						       "icatSysInserts.sql");
+		    my $sqlPathOrig = File::Spec->catfile( $serverSqlDir, 
+						       "icatSysInserts.sql.orig");
+		    if (!-e $sqlPathOrig) {
+			rename($sqlPath, $sqlPathOrig);
+		    }
+		    unlink($sqlPath);
+		    `cat $sqlPathOrig | sed s/$IRODS_DEFAULT_ZONE/$ZONE_NAME/g > $sqlPath`;
+		}
 		
 		if ( $DATABASE_TYPE eq "oracle" )
 		{
@@ -1115,7 +1129,7 @@ sub configureIrodsServer
 	printLog( "\nUpdating iRODS irodsEnv.boot...\n" );
 	my $bootEnv  = File::Spec->catfile( $configDir, "irodsEnv.boot" );
 	my $authFile = File::Spec->catfile( $configDir, "auth.tmp" );
-	my %envVariables = ( "irodsAuthFileName", $authFile );
+	my %envVariables = ( "irodsAuthFileName", $authFile, "irodsZone", $ZONE_NAME) ;
 	printLog( "    irodsAuthFileName = $authFile\n" );
 
 	($status,$output) = replaceVariablesInFile( $bootEnv, "config", 1, %envVariables );
