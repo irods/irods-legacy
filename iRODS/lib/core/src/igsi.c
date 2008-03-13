@@ -11,6 +11,10 @@ GSI uses X.509 Certificates.
 
 All functions called from outside have names that start with 'igsi'.
 Internal routines start with '_igsi'.
+
+Also see rsGsiAuthRequest.c, which includes the igsiServersideAuth
+function which calls igsiEstablishContextServerside, and then queries and
+sets up the login session.
 */
 
 #include <stdio.h>
@@ -34,7 +38,6 @@ Internal routines start with '_igsi'.
 
 #include "rodsErrorTable.h"
 
-//rcComm_t *gsiCommPtr;
 rError_t *igsi_rErrorPtr;
 
 /* #define IGSI_TIMING 1  (uncomment this out for timing) */
@@ -47,8 +50,6 @@ extern gss_OID gss_nt_service_name;
 extern int OBJ_create(char *input1, char *input2, char *input3);
 #endif
 
-/* #define gss_nt_service_name_gsi GSS_C_NT_HOSTBASED_SERVICE 
- Changed to 0 for GSI 0.3.0 10/12/1999 */
 #define gss_nt_service_name_gsi 0
 
 #define SCRATCH_BUFFER_SIZE 20000
@@ -218,7 +219,6 @@ gss_buffer_t tok;
 /*
  read the token hdr
  */
-
 int _igsiRcvTokenHeader(fd)
 int fd;
 {
@@ -331,7 +331,6 @@ gss_buffer_t tok;
         }
     }
 
-
     if (igsiTokenHeaderMode) {
         length = _igsiRcvTokenHeader(fd);
         if (length <= 0)
@@ -378,8 +377,6 @@ static void _igsiLogError_1(char *callerMsg, OM_uint32 code, int type)
 	rodsLogAndErrorMsg( LOG_ERROR, igsi_rErrorPtr, status,
 			    "%sGSS-API error %s: %s", whichSide, callerMsg,
 			    (char *) msg.value);
-       //        fprintf(stderr, "GSS-API error %s: %s", callerMsg,
-       //		(char *) msg.value);
 	(void) gss_release_buffer(&minorStatus, &msg);
 
         if (!msg_ctx)
@@ -395,10 +392,6 @@ Display an error message followed by GSS-API messages.
 #if defined(GSI_AUTH)
 void _igsiLogError(char *msg, OM_uint32 majorStatus, OM_uint32 minorStatus)
 {
-   //    rodsLogAndErrorMsg( LOG_ERROR, gsiCommPtr->rError, 
-   //			    GSI_ERROR_FROM_GSI_LIBRARY,
-   //			    msg);
-    //    fprintf(stderr, "Error %s\n", msg);
     _igsiLogError_1(msg, majorStatus, GSS_C_GSS_CODE);
     _igsiLogError_1(msg, minorStatus, GSS_C_MECH_CODE);
 }
@@ -489,7 +482,6 @@ int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     (void) gettimeofday(&startTimeFunc, (struct timezone *) 0);
 #endif
 
-    //    gsiCommPtr = Comm;
     if (Comm != NULL) igsi_rErrorPtr = Comm->rError;
     if (rsComm != NULL) igsi_rErrorPtr = &rsComm->rError;
 
@@ -540,7 +532,6 @@ int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
 	  return GSI_ERROR_DISPLAYING_NAME;
        }
        if (client_name2.value != 0 && client_name2.length>0) {
-	  //printf("name: %s\n",client_name2.value);
 	  strncpy(returnedName, client_name2.value, maxReturnedName);
        }
 
@@ -603,15 +594,12 @@ int igsiEstablishContextServerside(rsComm_t *rsComm, char *clientName,
     fd = rsComm->sock;
     igsi_rErrorPtr = &rsComm->rError;
 
-    //    gsiCommPtr = Comm;
-    //    igsi_rErrorPtr = Comm->rError;
-
     gss_buffer_desc send_buffer, recv_buffer;
     gss_buffer_desc client_name;
     gss_name_t client;
     gss_OID doid;
     OM_uint32 majorStatus, minorStatus;
-    //    gss_buffer_desc oid_name;
+
     int i;
 
 #if defined(IGSI_TIMING)
@@ -834,7 +822,7 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
     int status;
 
     fd = Comm->sock;
-    //    gsiCommPtr = Comm;
+
     igsi_rErrorPtr = Comm->rError;
 
     gss_OID oid = GSS_C_NULL_OID;
@@ -924,11 +912,11 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
                         send_tok.length);
 		(void) gss_release_buffer(&minorStatus, &send_tok);
 		(void) gss_release_name(&minorStatus, &target_name);
-		return status; //GSI_SOCKET_WRITE_ERROR;
+		return status; /* GSI_SOCKET_WRITE_ERROR */
 	    }
 	}
 
-        (void) gss_release_buffer(&minorStatus, &send_tok); //??
+        (void) gss_release_buffer(&minorStatus, &send_tok);
 
         if (majorStatus == GSS_S_CONTINUE_NEEDED) {
             if (igsiDebugFlag > 0)
@@ -936,14 +924,14 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
             recv_tok.value = &igsiScratchBuffer;
             recv_tok.length = SCRATCH_BUFFER_SIZE;
             if (_igsiRcvToken(fd, &recv_tok) <= 0) {
-	       (void) gss_release_name(&minorStatus, &target_name); //???
+	       (void) gss_release_name(&minorStatus, &target_name);
                 return GSI_ERROR_RELEASING_NAME;
             }
             tokenPtr = &recv_tok;
         }
     } while (majorStatus == GSS_S_CONTINUE_NEEDED);
 
-    (void) gss_release_name(&minorStatus, &target_name); //???
+    (void) gss_release_name(&minorStatus, &target_name);
 
     if (igsiDebugFlag > 0)
         _igsiDisplayCtxFlags();
