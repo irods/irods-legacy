@@ -626,7 +626,7 @@ msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam,
  * \bug  no known bugs
 **/
 int
-msiGetDiffTime(msParam_t* inpParam1,  msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei)
+msiGetDiffTime(msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei)
 {
 	long hours, minutes, seconds;
 	char timeStr[TIME_LEN];
@@ -636,6 +636,13 @@ msiGetDiffTime(msParam_t* inpParam1,  msParam_t* inpParam2, msParam_t* inpParam3
 	
 	/* For testing mode when used with irule --test */
 	RE_TEST_MACRO ("    Calling msiGetDiffTime")
+
+
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiGetDiffTime: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
 	
 	/* Check for proper input */
 	if ((parseMspForStr(inpParam1) == NULL)) {
@@ -696,7 +703,7 @@ msiGetDiffTime(msParam_t* inpParam1,  msParam_t* inpParam2, msParam_t* inpParam3
  * \bug  no known bugs
 **/
 int
-msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *rei)
+msiGetSystemTime(msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei)
 {
 	char *format;
 	char tStr0[TIME_LEN],tStr[TIME_LEN];
@@ -704,8 +711,15 @@ msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *rei)
 	
 	/* For testing mode when used with irule --test */
 	RE_TEST_MACRO ("    Calling msiGetSystemTime")
+
+
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiGetSystemTime: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
 	
-	format =inpParam->inOutStruct;
+
+	format = inpParam->inOutStruct;
 	
 	if (!format || strcmp(format, "human")) {
 		getNowStr(tStr);
@@ -719,5 +733,62 @@ msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *rei)
 
 	return(status);
 }
+
+
+/**
+ * \fn msiHumanToSystemTime
+ * \author  Antoine de Torcy
+ * \date   2008-03-11
+ * \brief Converts a human readable date to a system timestamp
+ * \note Expects an input date in the form: YYYY-MM-DD-hh.mm.ss
+ * \param[in] 
+ *    inpParam - a STR_MS_T containing the input date
+ * \param[out] 
+ *    outParam - a STR_MS_T containing the timestamp
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei)
+{
+	char sys_time[TIME_LEN], *hr_time;
+	int status;
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiHumanToSystemTime")
+
+
+	/* microservice check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiHumanToSystemTime: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/* parse inpParam (date input string) */
+	if ((hr_time = parseMspForStr (inpParam)) == NULL) {
+		rodsLog (LOG_ERROR, "msiHumanToSystemTime: parseMspForStr error for input param.");
+		return (rei->status);
+	}
+
+
+	/* left padding with a zero for DB format. Might change that later */
+	memset(sys_time, '\0', TIME_LEN);
+	sys_time[0] = '0';
+
+
+	/* conversion */
+	if ((status = localToUnixTime (hr_time, &sys_time[1]))  == 0) {
+		status = fillStrInMsParam (outParam, sys_time);
+	}
+
+
+	return(status);
+}
+
 
 
