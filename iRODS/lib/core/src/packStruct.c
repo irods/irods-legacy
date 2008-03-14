@@ -129,6 +129,30 @@ parsePackInstruct (char *packInstruct, packItem_t **packItemHead)
             prevPackItem = myPackItem;
             myPackItem = NULL;
 	    continue;
+        } else if (strcmp (buf,  "%") == 0) {   /* int dependent */
+            /* int dependent type */
+            if (gotTypeCast > 0 || gotItemName > 0) {
+                rodsLog (LOG_ERROR,
+                  "parsePackInstruct: % position error for %s", packInstruct);
+                 return (SYS_PACK_INSTRUCT_FORMAT_ERR);
+            }
+            myPackItem->typeInx = (packTypeInx_t)packTypeLookup (buf);
+            if (myPackItem->typeInx < 0) {
+                rodsLog (LOG_ERROR,
+                  "parsePackInstruct: packTypeLookup failed for %s", buf);
+                 return (SYS_PACK_INSTRUCT_FORMAT_ERR);
+            }
+            gotTypeCast = 1;
+            outLen = copyStrFromPiBuf (&inptr, buf, 1);
+            if (outLen <= 0) {
+                rodsLog (LOG_ERROR,
+                 "parsePackInstruct: ? No variable following ? for %s",
+                  packInstruct);
+                 return (SYS_PACK_INSTRUCT_FORMAT_ERR);
+            }
+            myPackItem->name = strdup (buf);
+            gotItemName = 1;
+            continue;
 	} else if (strcmp (buf,  "?") == 0) {	/* dependent */
 	    /* dependent type */
 	    if (gotTypeCast > 0 || gotItemName > 0) {
@@ -162,13 +186,21 @@ parsePackInstruct (char *packInstruct, packItem_t **packItemHead)
 #endif
 	    continue;
 	} else if (strcmp (buf,  "*") == 0) {	/* pointer */
-	    myPackItem->pointerType = 1;
+	    myPackItem->pointerType = A_POINTER;
             if (gotTypeCast == 0 || gotItemName > 0) {
                 rodsLog (LOG_ERROR,
                   "parsePackInstruct: * position error for %s", packInstruct);
                  return (SYS_PACK_INSTRUCT_FORMAT_ERR);
             }
 	    continue;
+        } else if (strcmp (buf,  "$") == 0) {   /* pointer but don't free */
+            myPackItem->pointerType = NO_FREE_POINTER;
+            if (gotTypeCast == 0 || gotItemName > 0) {
+                rodsLog (LOG_ERROR,
+                  "parsePackInstruct: * position error for %s", packInstruct);
+                 return (SYS_PACK_INSTRUCT_FORMAT_ERR);
+            }
+            continue;
 	} else if (gotTypeCast == 0) {	/* a typeCast */
             myPackItem->typeInx = (packTypeInx_t)packTypeLookup (buf);
             if (myPackItem->typeInx < 0) {
@@ -369,11 +401,9 @@ packInstructArray_t *myPackTable, packOpr_t packOpr)
 {
     int status;
 
-    if (myPackedItem->typeInx == PACK_DEPENDENT_TYPE) {
-        status = parseDependent (myPackedItem, myPackTable);
-        if (status < 0) {
-            return status;
-	}
+    status = parseDependent (myPackedItem, myPackTable);
+    if (status < 0) {
+        return status;
     }
 
     status = resolveDepInArray (myPackedItem, myPackTable);
@@ -403,24 +433,27 @@ packInstructArray_t *myPackTable, packOpr_t packOpr)
 int 
 parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
 {
-#if 0
+    int status;
+
+    if (myPackedItem->typeInx == PACK_DEPENDENT_TYPE) {
+        status =  resolveStrInItem (myPackedItem, myPackTable);
+    } else if (myPackedItem->typeInx == PACK_INT_DEPENDENT_TYPE) {
+	status =  resolveIntDepItem (myPackedItem, myPackTable);
+    } else {
+	status = 0;
+    }
+    return (status);
+}
+
+int
+resolveIntDepItem (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
+{
     char *tmpPtr, *bufPtr;
-    char buf[MAX_PI_LEN], myPI[MAX_PI_LEN], *pfPtr = NULL;
+    char buf[MAX_NAME_LEN], myPI[MAX_NAME_LEN], *pfPtr = NULL;
     int endReached, c;
     int outLen;
     int keyVal, status;
-    packItem_t *newItem, *tmpItem, *lastItem;
-#else
-    int status;
-#endif
-    
-
-    if (myPackedItem->typeInx != PACK_DEPENDENT_TYPE) {
-        return (0);
-    }
-
-#if 0
-    /* check for array */
+    packItem_t *newPackedItem, *tmpPackedItem, *lastPackedItem;
 
     tmpPtr = myPackedItem->name;
     bufPtr = buf;
@@ -445,7 +478,7 @@ parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
             }
         } else if (c == ';') {
 	    rodsLog (LOG_ERROR,
-              "parseDependent: end reached while parsing for key: %s",
+              "resolveIntDepItem: end reached while parsing for key: %s",
               myPackedItem->name);
             return (SYS_PACK_INSTRUCT_FORMAT_ERR);
         } else {    /* just normal char */
@@ -458,15 +491,8 @@ parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
 
     keyVal = resolveIntInItem (buf, myPackedItem, myPackTable);
     if (keyVal == SYS_PACK_INSTRUCT_FORMAT_ERR) {
-	/* see if it is a string */
-	if (*tmpPtr == '\0') {
-	    status =  resolveStrInItem (myPackedItem, myPackTable);
-	    if (status >= 0) {
-		return (status);
-	    }
-	}
 	rodsLog (LOG_ERROR,
-          "parseDependent: resolveFormatDef error for %s", buf);
+          "resolveIntDepItem: resolveIntInItem error for %s", buf);
         return SYS_PACK_INSTRUCT_FORMAT_ERR;
     }
 
@@ -476,7 +502,7 @@ parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
         if (c == ',' || c == '=') {
             *bufPtr = '\0';
             if (strstr (buf, "default") != 0 || atoi (buf) == keyVal) {
-                /* get the PF */
+                /* get the PI */
                 if (c == ',') {
                     /* skip to = */
                     while (1) {
@@ -484,8 +510,8 @@ parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
                         if (c == '=') {
                             break;
                         } else if (c == ';' || c == ':' || c == '\0') {
-	                    rodsLog (LOG_ERROR,
-                              "parseDependent: end reached with no PF%s",
+			    rodsLog (LOG_ERROR,
+                              "resolveIntDepItem: end reached with no PI%s",
                               myPackedItem->name);
                             return SYS_PACK_INSTRUCT_FORMAT_ERR;
                         }
@@ -519,8 +545,8 @@ parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
                     if (c == ':')
                         break;
                     if (c == '\0' || c == ';') {
-	                rodsLog (LOG_ERROR,
-                          "parseDependent: end reached with no PF%s",
+			rodsLog (LOG_ERROR,
+                          "resolveIntDepItem: end reached with no PI%s",
                           myPackedItem->name);
                         return SYS_PACK_INSTRUCT_FORMAT_ERR;
                     }
@@ -534,39 +560,36 @@ parseDependent (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
         tmpPtr++;
     }
 
-    status = parsePackInstruct (myPI, &newItem);
+    newPackedItem = NULL;
+    status = parsePackInstruct (myPI, &newPackedItem);
 
     if (status < 0) {
 	rodsLog (LOG_ERROR,
-          "parseDependent: parsePackInstruct error for =%s", myPI);
+          "resolveIntDepItem: parsePackFormat error for =%s", myPI);
         return status;
     }
 
-    /* reset the link and switch myItem<->newItem */
+    /* reset the link and switch myPackedItem<->newType */
     free (myPackedItem->name);
-
-    tmpItem = newItem;
-    while (tmpItem != NULL) {
-        lastItem = tmpItem;
-        tmpItem = tmpItem->next;
+    tmpPackedItem = newPackedItem;
+    while (tmpPackedItem != NULL) {
+        lastPackedItem = tmpPackedItem;
+        tmpPackedItem = tmpPackedItem->next;
     }
 
-    if (newItem != lastItem) {
-        newItem->next->prev = myPackedItem;
+    if (newPackedItem != lastPackedItem) {
+        newPackedItem->next->prev = myPackedItem;
         if (myPackedItem->next != NULL)
-            myPackedItem->next->prev = lastItem;
+            myPackedItem->next->prev = lastPackedItem;
     }
-    newItem->prev = myPackedItem->prev;
-    lastItem->next = myPackedItem->next;
+    newPackedItem->prev = myPackedItem->prev;
+    lastPackedItem->next = myPackedItem->next;
 
-    *myPackedItem = *newItem;
+    *myPackedItem = *newPackedItem;
 
-    free (newItem);
+    free (newPackedItem);
+
     return (0);
-#else
-    status =  resolveStrInItem (myPackedItem, myPackTable);
-    return (status);
-#endif
 }
 
 int
@@ -631,7 +654,7 @@ resolveStrInItem (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
 {
     packItem_t *tmpPackedItem;
     char *name;
-    int aPointer;
+    int aPointer = 0;
 
 #if 0
     if (myPackedItem->name[0] == '*') {
@@ -1031,14 +1054,15 @@ int freePointer, irodsProt_t irodsProt)
 	    
             status = packChar (&pointer, packedOutput, numElement * elementSz,
 	      myPackedItem, irodsProt);
-	    if (freePointer > 0) {
+	    if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
 		free (origPtr);
 	    }
             if (status < 0) {
                 return (status);
 	    }
         }
-	if (freePointer > 0 && numPointer > 0 && myDim > 0) {
+	if (freePointer > 0  && myPackedItem->pointerType == A_POINTER && 
+	 numPointer > 0 && myDim > 0) {
 	    /* Array of pointers */
 	    free (pointerArray);
         }
@@ -1076,11 +1100,12 @@ int freePointer, irodsProt_t irodsProt)
 		    return (status);
 		}
 	    }
-            if (freePointer > 0) {
+            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
 	}
-        if (freePointer > 0 && numPointer > 0 && myDim > 0) {        
+        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER 
+	  && numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
         }
@@ -1092,7 +1117,7 @@ int freePointer, irodsProt_t irodsProt)
 
             status = packInt (&pointer, packedOutput, numElement, 
 	      myPackedItem, irodsProt);
-            if (freePointer > 0) {
+            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
             if (status < 0) {
@@ -1100,7 +1125,8 @@ int freePointer, irodsProt_t irodsProt)
             }
         }
 
-        if (freePointer > 0 && numPointer > 0 && myDim > 0) {        
+        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER &&
+	  numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
         }
@@ -1112,7 +1138,7 @@ int freePointer, irodsProt_t irodsProt)
 
             status = packDouble (&pointer, packedOutput, numElement, 
 	     myPackedItem, irodsProt);
-            if (freePointer > 0) {
+            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
             if (status < 0) {
@@ -1120,7 +1146,8 @@ int freePointer, irodsProt_t irodsProt)
             }
         }
 
-        if (freePointer > 0 && numPointer > 0 && myDim > 0) {        
+        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER
+	  && numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
         }
@@ -1133,14 +1160,15 @@ int freePointer, irodsProt_t irodsProt)
             origPtr = pointer = pointerArray[i];
             status = packChildStruct (&pointer, packedOutput, myPackedItem,
 	      myPackTable, numElement, freePointer, irodsProt, NULL);
-            if (freePointer > 0) {
+            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
             if (status < 0) {
                 return (status);
 	    }
         }
-        if (freePointer > 0 && numPointer > 0 && myDim > 0) {        
+        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER
+	  && numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
         }

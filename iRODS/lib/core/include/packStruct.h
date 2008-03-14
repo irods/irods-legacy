@@ -59,7 +59,8 @@ typedef enum {
     PACK_INT_TYPE,
     PACK_DOUBLE_TYPE,
     PACK_STRUCT_TYPE,
-    PACK_DEPENDENT_TYPE
+    PACK_DEPENDENT_TYPE,
+    PACK_INT_DEPENDENT_TYPE
 } packTypeInx_t;
 
 /* for the packOpr input in resolvePackedItem() */
@@ -76,10 +77,14 @@ typedef struct {
 
 #define MAX_PACK_DIM	20
 
+/* definition for pointerType */
+#define NON_POINTER	0
+#define A_POINTER	1
+#define NO_FREE_POINTER 2
 typedef struct packItem {
     packTypeInx_t typeInx;
     char *name;
-    int pointerType;	/* 0 - not a pointer, 1 - pointer */
+    int pointerType;	/* see definition */
     void *pointer;	/* the value of a pointer */
     int intValue;	/* for int type only */ 
     char strValue[NAME_LEN];	/* for str type only */
@@ -122,6 +127,8 @@ initPackedOutputWithBuf (packedOutput_t *packedOutput, void *buf, int len);
 int
 resolvePackedItem (packItem_t *myPackedItem, void **inPtr, 
 packInstructArray_t *myPackTable, packOpr_t packOpr);
+int
+resolveIntDepItem (packItem_t *myPackedItem, packInstructArray_t *myPackTable);
 int
 resolveIntInItem (char *name, packItem_t *myPackedItem,
 packInstructArray_t *myPackTable);

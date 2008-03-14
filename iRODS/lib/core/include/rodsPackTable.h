@@ -24,6 +24,7 @@ packType_t packTypeTable[] = {
         {"double", PACK_DOUBLE_TYPE, 8},
         {"struct", PACK_STRUCT_TYPE, UNKNOWN_SIZE},
         {"?", PACK_DEPENDENT_TYPE, UNKNOWN_SIZE},
+        {"%", PACK_INT_DEPENDENT_TYPE, UNKNOWN_SIZE},
 };
 
 int NumOfPackTypes = (sizeof (packTypeTable) / sizeof (packType_t));

@@ -316,8 +316,8 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 	    if (bytesWritten != bytesRead) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
 		rodsLogError (LOG_ERROR, myInput->status,
-                  "rcPartialDataPut: toWrite %d, bytesWritten %d",
-                  bytesRead, bytesWritten);
+                  "rcPartialDataPut: toWrite %d, bytesWritten %d, errno = %d",
+                  bytesRead, bytesWritten, errno);
                 break;
 	    }
 	    toPut -= bytesWritten;

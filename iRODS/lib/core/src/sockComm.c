@@ -286,6 +286,7 @@ myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
     int nbytes;
     int toRead;
     char *tmpPtr;
+    int retryCnt = 0;
 
     toRead = len;
     tmpPtr = (char *) buf;
@@ -309,7 +310,13 @@ myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
                 errno = 0;
                 nbytes = 0;
             } else {
-                break;
+                if (retryCnt <= 0) {
+                    printf ("myRead: retrying\n");
+                    retryCnt = 1;
+                    nbytes = 0;
+                } else {
+                    break;
+		}
             }
         }
 
@@ -328,6 +335,7 @@ int *bytesWritten)
     int nbytes;
     int toWrite;
     char *tmpPtr;
+    int retryCnt = 0;
 
     toWrite = len;
     tmpPtr = (char *) buf;
@@ -351,7 +359,13 @@ int *bytesWritten)
 		errno = 0;
 		nbytes = 0;
 	    } else {
-                break;
+		if (retryCnt <= 0) {
+		    printf ("myWrite: retrying\n");
+		    retryCnt = 1;
+		    nbytes = 0;
+		} else {
+                    break;
+		}
 	    }
 	}
         toWrite -= nbytes;
