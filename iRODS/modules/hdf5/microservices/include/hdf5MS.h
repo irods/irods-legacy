@@ -47,6 +47,8 @@ msParam_t *outH5DatasetParam, ruleExecInfo_t *rei);
 int
 msiH5Group_read_attribute (msParam_t *inpH5GroupParam,
 msParam_t *outH5GroupParam, ruleExecInfo_t *rei);
+int
+getL1descInxByFid (int fid);
 
 #ifdef __cplusplus
 }

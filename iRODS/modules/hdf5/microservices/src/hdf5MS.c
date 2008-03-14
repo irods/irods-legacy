@@ -140,7 +140,7 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
     }
 
     if (fid >= 0) {
-	L1desc[l1descInx].l3descInx = fid;
+	L1desc[l1descInx].l3descInx = outf->fid;
     } else {
 	rei->status = fid;
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
@@ -152,7 +152,9 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 
     /* prepare the output */
 
-    outf->fid = l1descInx;
+#if 0
+     outf->fid = l1descInx;
+#endif
     fillMsParam (outH5FileParam, NULL, h5File_MS_T, outf, NULL);
     
     if (inf) H5File_dtor(inf);
@@ -207,8 +209,14 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    l1descInx = inf->fid;
-
+    l1descInx = getL1descInxByFid (inf->fid);
+    if (l1descInx < 0) {
+	rei->status = SYS_BAD_FILE_DESCRIPTOR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5File_close: bad fid %d", inf->fid);
+        return (rei->status);
+    }
+	
     dataObjCloseInp.l1descInx = l1descInx;
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
@@ -289,7 +297,13 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    l1descInx = ind->fid;
+    l1descInx = getL1descInxByFid (ind->fid);
+    if (l1descInx < 0) {
+        rei->status = SYS_BAD_FILE_DESCRIPTOR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Dataset_read: bad fid %d", ind->fid);
+        return (rei->status);
+    }
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
@@ -298,8 +312,10 @@ ruleExecInfo_t *rei)
 
     if (remoteFlag == LOCAL_HOST) {
 	outd = malloc (sizeof (H5Dataset));
+#if 0
         /* switch the fid */
         ind->fid = L1desc[l1descInx].l3descInx;
+#endif
         rei->status = H5Dataset_read (ind, outd);
     } else {
         /* do the remote close */
@@ -364,7 +380,13 @@ msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    l1descInx = ind->fid;
+    l1descInx = getL1descInxByFid (ind->fid);
+    if (l1descInx < 0) {
+        rei->status = SYS_BAD_FILE_DESCRIPTOR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Dataset_read_attribute: bad fid %d", ind->fid);
+        return (rei->status);
+    }
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
@@ -373,8 +395,10 @@ msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
 
     if (remoteFlag == LOCAL_HOST) {
 	outd = malloc (sizeof (H5Dataset));
+#if 0
         /* switch the fid */
         ind->fid = L1desc[l1descInx].l3descInx;
+#endif
         rei->status = H5Dataset_read_attribute (ind, outd);
     } else {
         /* do the remote close */
@@ -440,7 +464,14 @@ msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    l1descInx = ing->fid;
+    l1descInx = getL1descInxByFid (ing->fid);
+    if (l1descInx < 0) {
+        rei->status = SYS_BAD_FILE_DESCRIPTOR;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiH5Group_read_attribute: bad fid %d", ing->fid);
+        return (rei->status);
+    }
+
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
 
@@ -449,8 +480,10 @@ msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
 
     if (remoteFlag == LOCAL_HOST) {
 	outg = malloc (sizeof (H5Group));
+#if 0
         /* switch the fid */
         ing->fid = L1desc[l1descInx].l3descInx;
+#endif
         rei->status = H5Group_read_attribute (ing, outg);
     } else {
         /* do the remote close */
@@ -470,3 +503,15 @@ msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
     return rei->status;
 }
 
+int
+getL1descInxByFid (int fid)
+{
+    int i;
+
+    for (i = 3; i < NUM_L1_DESC; i++) {
+	if (L1desc[i].inuseFlag == 1 && L1desc[i].l3descInx == fid) return i;
+    }
+
+    return (-1);
+}
+	      

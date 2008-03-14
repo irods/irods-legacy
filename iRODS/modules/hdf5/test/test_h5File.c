@@ -8,7 +8,9 @@
 #define NO_TEST_ATTRI	1
 #define NO_TEST_PALETTE	1
 #define TEST_SUBSET 1
+#if 0
 #define HDF5_LOCAL 1
+#endif
 
 int print_group(rcComm_t *conn, const H5Group *pg);
 int print_dataset(const H5Dataset *d);
@@ -20,7 +22,12 @@ int main(int argc, char* argv[])
     char fname[80];
     H5File *f=0;
     H5Dataset *d=0;
+#ifndef HDF5_LOCAL
+    int status;
+    rodsEnv myEnv;
+    rErrMsg_t errMsg;
     rcComm_t *conn = NULL;
+#endif
 
 /******************************************************************************
  *    In real application, the filename should be obtained from the SRB server. 
@@ -39,13 +46,25 @@ int main(int argc, char* argv[])
     fflush(stdout);
 
 #ifndef HDF5_LOCAL
-    conn = rcConnect (NULL, NULL, NULL,
-     NULL, NULL, NULL, NULL);
-    if (clStatus(conn) != CLI_CONNECTION_OK) {
-      fprintf(stderr,"Connection to rodsMaster failed.\n");
-      fprintf(stderr,"%s",clErrorMessage(conn));
-      rods_perror (2, clStatus(conn), "", SRB_RCMD_ACTION|SRB_LONG_MSG);
-      clFinish(conn); exit(3);
+    status = getRodsEnv (&myEnv);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status, "main: getRodsEnv error. ");
+        exit (1);
+    }
+    conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+      myEnv.rodsZone, 1, &errMsg);
+
+    if (conn == NULL) {
+        rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
+               errMsg.msg);
+        exit (2);
+    }
+
+    status = clientLogin(conn);
+    if (status != 0) {
+        rcDisconnect(conn);
+        exit (7);
     }
 #endif
 
@@ -179,6 +198,7 @@ exit:
     H5File_dtor(f);
     if (f) free(f);
 
+    rcDisconnect (conn);
     return ret_value;
 }
 

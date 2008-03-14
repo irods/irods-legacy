@@ -41,15 +41,52 @@ int clH5Dataset_read(rcComm_t *conn, H5Dataset* d)
     return ret_value;
 }
 
-int _clH5Dataset_read (rcComm_t *conn, H5Dataset* d, H5Dataset** outd)
+int _clH5Dataset_read (rcComm_t *conn, H5Dataset* ind, H5Dataset** outd)
 {
-    int ret_value = 0;
-#if 0   /* XXXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_DATASET,
-      0, NULL, NULL,
-      (void *) d, h5Dataset_PF, (void **) &outd, h5Dataset_PF, Hdf5Def, 0);
-#endif
-    return (ret_value);
+    execMyRuleInp_t execMyRuleInp;
+    msParamArray_t *outParamArray = NULL;
+    msParamArray_t msParamArray;
+    msParam_t *outMsParam;
+    int status = 0;
+
+
+    memset (&execMyRuleInp, 0, sizeof (execMyRuleInp));
+    memset (&msParamArray, 0, sizeof (msParamArray));
+    execMyRuleInp.inpParamArray = &msParamArray;
+
+    /* specify the msi to run */
+    rstrcpy (execMyRuleInp.myRule,
+     "H5File_open||msiH5Dataset_read(*IND,*OUTD)|nop", META_STR_LEN);
+    /* specify *OUTF as returned value */
+    rstrcpy (execMyRuleInp.outParamDesc, "*OUTD", LONG_NAME_LEN);
+
+    addMsParamToArray (execMyRuleInp.inpParamArray, "*IND", h5Dataset_MS_T, ind,
+      NULL, 0);
+
+    status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "_clH5Dataset_read: rcExecMyRule error for %s.",
+          ind->fullpath);
+        clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+        return (status);
+    }
+
+    if ((outMsParam = getMsParamByLabel (outParamArray, "*OUTD")) == NULL) {
+        status = USER_PARAM_LABEL_ERR;
+        rodsLogError (LOG_ERROR, status,
+          "_clH5Dataset_read: outParamArray does not contain OUTD for %s.",
+          ind->fullpath);
+    } else {
+        *outd = outMsParam->inOutStruct;
+        clearMsParamArray (outParamArray, 0);
+    }
+
+    clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+
+    return (status);
+
 }
 
 int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* ind)
@@ -81,14 +118,50 @@ int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* ind)
     return ret_value;
 }
 
-int _clH5Dataset_read_attribute (rcComm_t *conn, H5Dataset* d, H5Dataset** outd)
+int _clH5Dataset_read_attribute (rcComm_t *conn, H5Dataset* ind, 
+H5Dataset** outd)
 {
-    int ret_value = 0;
-#if 0   /* XXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_DATASET,
-      0, NULL, NULL,
-      (void *) ind, h5Dataset_PF, (void **) &outd, h5Dataset_PF, Hdf5Def, 0);
-#endif
-    return (ret_value);
+    execMyRuleInp_t execMyRuleInp;
+    msParamArray_t *outParamArray = NULL;
+    msParamArray_t msParamArray;
+    msParam_t *outMsParam;
+    int status = 0;
+
+
+    memset (&execMyRuleInp, 0, sizeof (execMyRuleInp));
+    memset (&msParamArray, 0, sizeof (msParamArray));
+    execMyRuleInp.inpParamArray = &msParamArray;
+
+    /* specify the msi to run */
+    rstrcpy (execMyRuleInp.myRule,
+     "H5File_open||msiH5Dataset_read_attribute(*IND,*OUTD)|nop", META_STR_LEN);
+    /* specify *OUTF as returned value */
+    rstrcpy (execMyRuleInp.outParamDesc, "*OUTD", LONG_NAME_LEN);
+
+    addMsParamToArray (execMyRuleInp.inpParamArray, "*IND", h5Dataset_MS_T, ind,
+      NULL, 0);
+
+    status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "_clH5Dataset_read_attribute: rcExecMyRule error for %s.",
+          ind->fullpath);
+        clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+        return (status);
+    }
+
+    if ((outMsParam = getMsParamByLabel (outParamArray, "*OUTD")) == NULL) {
+        status = USER_PARAM_LABEL_ERR;
+        rodsLogError (LOG_ERROR, status,
+          "_clH5Dataset_read_attribute: outParamArray does not contain OUTD for %s.",
+          ind->fullpath);
+    } else {
+        *outd = outMsParam->inOutStruct;
+        clearMsParamArray (outParamArray, 0);
+    }
+
+    clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+
+    return (status);
 }
 

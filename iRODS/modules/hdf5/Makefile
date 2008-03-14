@@ -53,6 +53,7 @@ ifdef MAKE_LOCAL_TEST
 TEST_PROG = $(hdf5TestDir)/tl5
 INCLUDE_FLAGS+=-DHDF5_LOCAL
 HDF_LIB_OBJECTS+=$(hdf5LibObjDir)/h5LocalHandler.o
+TEST_LDADD=
 else
 TEST_PROG = $(hdf5TestDir)/t5
 HDF_LIB_OBJECTS+=$(hdf5LibObjDir)/h5ClHandler.o
@@ -60,6 +61,7 @@ HDF_LIB_OBJECTS+=$(hdf5LibObjDir)/clH5Dataset.o 	\
     $(hdf5LibObjDir)/clH5File.o $(hdf5LibObjDir)/clH5Group.o
 endif
 HDF5_LD_LIBS = -L$(hdf5Dir)/src/.libs -L$(hdf5Dir)/lib -L$(hdf5Dir)/hl/src/.libs -lhdf5 -lhdf5_hl
+TEST_LDADD=$(LDADD) $(LIBRARY)
 else
 MS_OBJECTS =
 INCLUDE_FLAGS =
@@ -156,5 +158,5 @@ $(HDF_LIB_OBJECTS): $(hdf5LibObjDir)/%.o: $(hdf5LibSrcDir)/%.c $(DEPEND)
 
 # rule to link the program
 $(TEST_PROG): $(OBJS) $(TEST_OBJECT) $(HDF_LIB_OBJECTS)
-	$(CC) $(TEST_OBJECT) $(HDF_LIB_OBJECTS) $(HDF5_LD_LIBS) -o $(TEST_PROG)
+	$(CC) $(TEST_OBJECT) $(HDF_LIB_OBJECTS) $(HDF5_LD_LIBS) $(TEST_LDADD) -o $(TEST_PROG)
 

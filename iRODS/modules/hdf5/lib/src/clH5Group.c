@@ -37,14 +37,48 @@ int clH5Group_read_attribute(rcComm_t *conn, H5Group* ing)
 
 int _clH5Group_read_attribute(rcComm_t *conn, H5Group* ing, H5Group** outg)
 {
-    int ret_value = 0;
+    execMyRuleInp_t execMyRuleInp;
+    msParamArray_t *outParamArray = NULL;
+    msParamArray_t msParamArray;
+    msParam_t *outMsParam;
+    int status = 0;
 
-#if 0   /* XXXXX rm for iRods */
-    ret_value = srbGenProxyFunct (conn, HDF5_OPR_TYPE, H5OBJECT_GROUP,
-      0, NULL, NULL,
-      (void *) ing, h5Group_PF, (void **) &outg, h5Group_PF, Hdf5Def, 0);
-#endif
 
-    return (ret_value);
+    memset (&execMyRuleInp, 0, sizeof (execMyRuleInp));
+    memset (&msParamArray, 0, sizeof (msParamArray));
+    execMyRuleInp.inpParamArray = &msParamArray;
+
+    /* specify the msi to run */
+    rstrcpy (execMyRuleInp.myRule,
+     "H5File_open||msiH5Group_read_attribute(*ING,*OUTG)|nop", META_STR_LEN);
+    /* specify *OUTF as returned value */
+    rstrcpy (execMyRuleInp.outParamDesc, "*OUTG", LONG_NAME_LEN);
+
+    addMsParamToArray (execMyRuleInp.inpParamArray, "*ING", h5Dataset_MS_T, ing,
+      NULL, 0);
+
+    status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "_clH5Group_read_attribute: rcExecMyRule error for %s.",
+          ing->fullpath);
+        clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+        return (status);
+    }
+
+    if ((outMsParam = getMsParamByLabel (outParamArray, "*OUTG")) == NULL) {
+        status = USER_PARAM_LABEL_ERR;
+        rodsLogError (LOG_ERROR, status,
+          "_clH5Group_read_attribute: outParamArray does not contain OUTG for %s.",
+          ing->fullpath);
+    } else {
+        *outg = outMsParam->inOutStruct;
+        clearMsParamArray (outParamArray, 0);
+    }
+
+    clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+
+    return (status);
 }
 
