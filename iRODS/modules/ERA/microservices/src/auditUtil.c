@@ -38,7 +38,7 @@ getAuditTrailInfoByUserID(char *userID, bytesBuf_t *mybuf, rsComm_t *rsComm)
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_USER_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_ACTION_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_COMMENT, 1);
-	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, ORDER_BY);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_MODIFY_TIME, 1);
 
 
@@ -105,7 +105,7 @@ getAuditTrailInfoByObjectID(char *objectID, bytesBuf_t *mybuf, rsComm_t *rsComm)
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_USER_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_ACTION_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_COMMENT, 1);
-	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, ORDER_BY);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_MODIFY_TIME, 1);
 
 
@@ -172,7 +172,7 @@ getAuditTrailInfoByActionID(char *actionID, bytesBuf_t *mybuf, rsComm_t *rsComm)
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_USER_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_ACTION_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_COMMENT, 1);
-	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, ORDER_BY);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_MODIFY_TIME, 1);
 
 
@@ -239,7 +239,7 @@ getAuditTrailInfoByKeywords(char *keywordStr, bytesBuf_t *mybuf, rsComm_t *rsCom
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_USER_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_ACTION_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_COMMENT, 1);
-	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, ORDER_BY);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_MODIFY_TIME, 1);
 
 
@@ -321,7 +321,7 @@ getAuditTrailInfoByTimeStamp(char *begTS, char *endTS, bytesBuf_t *mybuf, rsComm
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_USER_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_ACTION_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_COMMENT, 1);
-	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_AUDIT_CREATE_TIME, ORDER_BY);
 	addInxIval (&genQueryInp.selectInp, COL_AUDIT_MODIFY_TIME, 1);
 
 
