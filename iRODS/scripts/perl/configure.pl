@@ -811,30 +811,6 @@ else
 }
 
 
-# 64-bit addressing?
-#
-# Skip this check if a command-line option was given to enable
-# 64-bit addressing.
-#
-if ( defined( $mkconfiguration{ "ADDR_64BITS" } ) )
-{
-	printStatus( "64-bit addressing enabled.\n" );
-}
-else
-{
-	if ( is64bit( ) )
-	{
-		printStatus( "64-bit addressing supported and automatically enabled.\n" );
-		$mkconfiguration{ "ADDR_64BITS" } = "1";
-	}
-	else
-	{
-		printStatus( "64-bit addressing not supported and automatically disabled.\n" );
-		$mkconfiguration{ "ADDR_64BITS" } = "";
-	}
-}
-
-
 
 
 
@@ -860,7 +836,30 @@ printStatus( "Perl:        " . $mkconfiguration{ "PERL" } . "\n" );
 	chooseCompiler( );
 printStatus( "C compiler:  " . $mkconfiguration{ "CC" } . 
 	($mkconfiguration{ "CC_IS_GCC" } ? " (gcc)" : "") . "\n" );
+
+if ( defined( $CCFLAGS ) && $CCFLAGS ne "" )
+{
+	$mkconfiguration{ "CCFLAGS" } = $CCFLAGS;
+	printStatus( "  Flags:     " . $CCFLAGS . "\n" );
+}
+else
+{
+	$mkconfiguration{ "CCFLAGS" } = '';
+	printStatus( "  Flags:     none\n" );
+}
+
 printStatus( "Loader:      " . $mkconfiguration{ "LDR" } . "\n" );
+
+if ( defined( $LDRFLAGS ) && $LDRFLAGS ne "" )
+{
+	$mkconfiguration{ "LDRFLAGS" } = $LDRFLAGS;
+	printStatus( "  Flags:     " . $LDRFLAGS . "\n" );
+}
+else
+{
+	$mkconfiguration{ "LDRFLAGS" } = '';
+	printStatus( "  Flags:     none\n" );
+}
 
 
 #
@@ -881,6 +880,35 @@ if ( $mkconfiguration{ "RANLIB" } =~ /touch/i )
 else
 {
 	printStatus( "Ranlib:      " . $mkconfiguration{ "RANLIB" } . "\n" );
+}
+
+
+
+
+
+#
+# 64-bit addressing?
+#
+# Skip this check if a command-line option was given to enable
+# 64-bit addressing.
+#
+if ( defined( $mkconfiguration{ "ADDR_64BITS" } ) )
+{
+	printStatus( "64-bit addressing enabled.\n" );
+}
+else
+{
+	if ( is64bit( $mkconfiguration{ "CC" }, $mkconfiguration{ "CCFLAGS" },
+	       $mkconfiguration{ "LDR" }, $mkconfiguration{ "LDRFLAGS" } ) )
+	{
+		printStatus( "64-bit addressing supported and automatically enabled.\n" );
+		$mkconfiguration{ "ADDR_64BITS" } = "1";
+	}
+	else
+	{
+		printStatus( "64-bit addressing not supported and automatically disabled.\n" );
+		$mkconfiguration{ "ADDR_64BITS" } = "";
+	}
 }
 
 
@@ -966,6 +994,7 @@ else
 	{
 		# Nope.  They're the same.  Leave the original
 		# untouched and delete the temp.
+		printStatus( "    Skipped.  No change.\n" );
 		unlink( $tmpConfigMk );
 	}
 }
@@ -1038,6 +1067,7 @@ else
 	{
 		# Nope.  They're the same.  Leave the original
 		# untouched and delete the temp.
+		printStatus( "    Skipped.  No change.\n" );
 		unlink( $tmpPlatformMk );
 	}
 }
