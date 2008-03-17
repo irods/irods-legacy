@@ -128,7 +128,11 @@ $DB_KEY        = '123';		# Arbitrary key used to scramble the db pw
 #
 #	$CC is the compiler path.
 #
+#	$CCFLAGS are flags to add to the compiler.
+#
 #	$LDR is the loader path.
+#
+#	$LDR are flags to add to the loader.
 #
 #	$AR is the archiver path.
 #
@@ -136,8 +140,25 @@ $DB_KEY        = '123';		# Arbitrary key used to scramble the db pw
 #
 #	$PERL is the perl path.
 #
+# On systems that support 64-bit addressing, the iRODS setup scripts only
+# enable this if the compiler supports this option by default.  Otherwise
+# you will need to add appropriate compiler and linker flags here to enable
+# 64-bit addressing.
+#
+# For instance, on 'gcc' add '-m64' to *both* CCFLAGS and LDRFLAGS.
+#
+# Note, however, that the iRODS server must link with an ODBC library to
+# access your database.  iRODS and that ODBC library must either both be
+# 32-bit, or both be 64-bit.  If they don't match, the build will fail.
+#
+# Please see the documentation for your database to see how to build or
+# aquire a 64-bit ODBC library.  For Postgres, you can set flags on the
+# build to make it 64-bit.  iRODS does not set these flags itself.
+#
 #$CC = '';
+#$CCFLAGS = '';
 #$LDR = '';
+#$LDRFLAGS = '';
 #$AR = '';
 #$RANLIB = '';
 #$PERL = '';
