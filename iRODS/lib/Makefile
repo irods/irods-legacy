@@ -138,6 +138,7 @@ libs:	print_cflags $(CONFIG) $(LOG_SRC) $(LIBRARY)
 
 $(LIBRARY): $(OBJS)
 	@echo "Building lib$(LIBRARY_NAME).a"
+	@rm -f $(LIBRARY)
 	@$(AR) $(AROPT) $(LIBRARY) $^
 	@$(RANLIB) $(LIBRARY)
 
@@ -191,7 +192,7 @@ $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND)
 
 # Build MD5
 #	Requires -O3 for optimization
-$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk)
+$(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk) $(platformMk)
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
 
