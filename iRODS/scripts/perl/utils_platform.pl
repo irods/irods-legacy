@@ -628,13 +628,17 @@ sub getHostAddresses($)
 # the host supports 64-bit addressing, but the compiler defaults to
 # 32-bit (in fact, that's very likely).
 #
+# @param	cc		the C compiler to use
+# @param	cflags		the C compiler's flags to use
+# @param	ldr		the loader to use
+# @param	ldrflags	the loader flags to use
 # @return
 # 	a boolean indicating if the host appears to use 32-bit
 # 	addressing (0 = false) or 64-bit addressing (1 = true)
 #
-sub is64bit()
+sub is64bit($$)
 {
-	my $cc = getCurrentCC( );
+	my ($cc,$cflags,$ldr,$ldrflags) = @_;
 	if ( !defined( $cc ) )
 	{
 		# No C compiler, but no way to return
@@ -657,7 +661,7 @@ sub is64bit()
 
 	# Try to compile and run it.
 	my $status = undef;
-	my $output = `$cc $tmpFile.c -o $tmpFile 2>&1`;
+	my $output = `$cc $cflags $tmpFile.c $ldrflags -o $tmpFile 2>&1`;
 	if ( ($?>>8) == 0 )
 	{
 		$output = `./$tmpFile 2>&1`;
