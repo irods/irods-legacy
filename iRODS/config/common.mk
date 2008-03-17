@@ -28,8 +28,9 @@ SVR_INCLUDES =	-I$(svrCoreIncDir) -I$(svrReIncDir) -I$(svrIcatIncDir) \
 # Otherwise (normal case), rebuild everything whenever include files
 # change (in case it is needed); so 'gmake clean' shouldn't be needed
 configMk =	$(configDir)/config.mk
-DEPEND =	$(configMk)
-REACTION_DEPEND = $(configMk)
+platformMk =	$(configDir)/platform.mk
+DEPEND =	$(configMk) $(platformMk)
+REACTION_DEPEND = $(configMk) $(platformMk)
 
 ifndef IRODS_QUICK_BUILD
 # Depend upon configuration file changes and changes to any
