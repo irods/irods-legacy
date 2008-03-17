@@ -14,10 +14,23 @@
 #
 CC=
 CC_IS_GCC=0
+CCFLAGS=
 LDR=
+LDRFLAGS=
 RANLIB=
 AR=
 PERL=
+
+
+
+
+
+ifdef CCFLAGS
+MY_CFLAG += $(CCFLAGS)
+endif
+ifdef LDRFLAGS
+LDADD += $(LDRFLAGS)
+endif
 
 
 
