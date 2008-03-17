@@ -833,6 +833,7 @@ sub promptForDatabaseConfiguration()
 					$databaseServerAccount = undef;
 					$databaseServerPassword = undef;
 				}
+				$databaseServerHost = $thisHost;
 				$databaseServerExclusive = 0;
 				promptForExistingOracleDatabase( );
 				return;
@@ -1274,7 +1275,9 @@ sub promptForExistingOracleDatabase( )
 				"\n" );
 			next;
 		}
-		$databaseServerHost = $parts[1];
+# Do not set $databaseServerHost below, it needs to be left as $thisHost,
+# the icat-enabled irods server host name.
+#		$databaseServerHost = $parts[1];
 		last;
 	}
 
