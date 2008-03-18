@@ -239,6 +239,13 @@ foreach $arg ( @ARGV )
 	printNotice( "    --disable-parallel          Disable parallel computation\n" );
 	printNotice( "    --enable-file64bit          Enable large files\n" );
 	printNotice( "    --disable-file64bit         Disable large files\n" );
+	printNotice( "\n" );
+	printNotice( "Authentication options:\n" );
+	printNotice( "    --enable-gsi                Enable GSI authentication\n" );
+	printNotice( "    --globus-location=<DIR>     Where Globus is installed\n" );
+	printNotice( "    --gsi-install-type=<TYPE>   Globus/GSI installation type\n" );
+	printNotice( "                                See \$GLOBUS_LOCATION/include\n" );
+	printNotice( "    --disable-gsi               Disable GSI authentication\n" );
 	if ( scalar keys %modules > 0 )
 	{
 		printNotice( "\n" );
@@ -516,6 +523,30 @@ foreach $arg ( @ARGV )
 	if ( $arg =~ /--enable-i?rodsport=(.*)/ )
 	{
 		$configuration{ "IRODS_PORT" } = $1;
+		next;
+	}
+
+	# GSI
+	if ( $arg =~ /--enable-gsi/ )
+	{
+		$mkconfiguration{ "GSI_AUTH" } = "1";
+		next;
+	}
+	if ( $arg =~ /--disable-gsi/ )
+	{
+		$mkconfiguration{ "GSI_AUTH" } = "";
+		next;
+	}
+	if ( $arg =~ /--globus-location=(.*)/ )
+	{
+		$mkconfiguration{ "GSI_AUTH" } = "1";
+		$mkconfiguration{ "GLOBUS_LOCATION" } = $1;
+		next;
+	}
+	if ( $arg =~ /--gsi-install-type=(.*)/ )
+	{
+		$mkconfiguration{ "GSI_AUTH" } = "1";
+		$mkconfiguration{ "GSI_INSTALL_TYPE" } = $1;
 		next;
 	}
 
