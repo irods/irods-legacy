@@ -79,4 +79,6 @@ execAgent (int newSock, startupPack_t *startupPack);
 int
 queAgentProc (int childPid, startupPack_t *startupPack,
 agentProc_t **agentProcHead);
+int
+recordServerProcess(rsComm_t *svrComm);
 #endif	/* RODS_SERVER_H */

@@ -186,6 +186,9 @@ serverMain (char *logDir)
         exit (1);
     }
 
+    /* Record port, pid, and cwd into a well-known file */
+    recordServerProcess(&svrComm);
+
     /* open  a socket an listen for connection */ 
     svrComm.sock = sockOpenForInConn (&svrComm, &svrComm.myEnv.rodsPort, NULL);
 
@@ -514,3 +517,42 @@ setRsCommFromRodsEnv (rsComm_t *rsComm)
     return (0);
 }
 
+int
+recordServerProcess(rsComm_t *svrComm) {
+    int myPid;
+    FILE *fd;
+    DIR  *dirp;
+    char filePath[100];
+    char cwd[1000];
+    char stateFile[]="irodsServer";
+    char *tmp;
+    char *cp;
+    rodsEnv *myEnv = &svrComm->myEnv;
+    
+    /* Use /usr/tmp if it exists, /tmp otherwise */
+    dirp = opendir("/usr/tmp");
+    if (dirp!=NULL) {
+       tmp="/usr/tmp";
+       (void)closedir( dirp );
+    }
+    else {
+       tmp="/tmp";
+    }
+
+    sprintf (filePath, "%s/%s.%d", tmp, stateFile, myEnv->rodsPort);
+
+    unlink(filePath);
+
+    myPid=getpid();
+    cp = getcwd(cwd, 1000);
+    if (cp != NULL) {
+       fd = fopen (filePath, "w");
+       if (fd>0) {
+	  fprintf(fd, "%d %s\n", myPid, cwd);
+	  fclose(fd);
+	  chmod(filePath, 0644);
+       }
+    }
+
+    return 0;
+}
