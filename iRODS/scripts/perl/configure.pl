@@ -1350,6 +1350,7 @@ sub chooseCompiler()
 	my $startingDir = cwd( );
 	chdir( File::Spec->tmpdir( ) );
 	my $cctemp = "irods_cc_$$.c";
+	my $cctempObj = "irods_cc_$$.o";
 	printToFile( $cctemp,
 		"int main(int argc,char** argv) { int junk = argc; }\n" );
 	$output = `$CC -c $cctemp 2>&1`;
@@ -1360,6 +1361,7 @@ sub chooseCompiler()
 		# a C compiler.  In this case, while "cc" will exist, it
 		# won't compile and we'll get an error.
 		unlink( $cctemp );
+		unlink( $cctempObj);
 		chdir( $startingDir );
 		if ( $ccDiscovered == 1 )
 		{
@@ -1388,7 +1390,7 @@ sub chooseCompiler()
 		exit( 1 );
 	}
 	unlink( $cctemp );
-        unlink( $cctemp.o);
+        unlink( $cctempObj);
 	chdir( $startingDir );
 
 
