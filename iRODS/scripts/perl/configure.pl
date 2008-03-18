@@ -1388,6 +1388,7 @@ sub chooseCompiler()
 		exit( 1 );
 	}
 	unlink( $cctemp );
+        unlink( $cctemp.o);
 	chdir( $startingDir );
 
 
