@@ -467,13 +467,15 @@ gss_buffer_t tok;
  and an iRODS error code returned.
  */
 int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
-		   char *returnedName, int maxReturnedName)
+		   char **returnedName)
 {
 #if defined(GSI_AUTH)
     gss_buffer_desc name_buf;
     gss_name_t myName = GSS_C_NO_NAME;
     gss_name_t myName2 = GSS_C_NO_NAME;
     OM_uint32 majorStatus, minorStatus;
+    gss_OID doid2;
+    gss_buffer_desc client_name2;
 
 #if defined(IGSI_TIMING)
     float fSec;
@@ -513,39 +515,36 @@ int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     }
     (void) gss_release_name(&minorStatus, &myName);
 
-    if (maxReturnedName > 0 && returnedName != NULL) {
-       gss_OID doid2;
-       gss_buffer_desc client_name2;
-
-       /* caller requested name from credential */
-       majorStatus = gss_inquire_cred(&minorStatus, myCreds, &myName2, 
-				      NULL, NULL, NULL);
-       if (majorStatus != GSS_S_COMPLETE) {
-	  _igsiLogError("inquire_cred", majorStatus, minorStatus);
-	  return GSI_ERROR_ACQUIRING_CREDS;
-       }
-
-       majorStatus =
-	  gss_display_name(&minorStatus, myName2, &client_name2, &doid2);
-       if (majorStatus != GSS_S_COMPLETE) {
-	  _igsiLogError("displaying name", majorStatus, minorStatus);
-	  return GSI_ERROR_DISPLAYING_NAME;
-       }
-       if (client_name2.value != 0 && client_name2.length>0) {
-	  strncpy(returnedName, client_name2.value, maxReturnedName);
-       }
-
-       /* release the name structure */
-       majorStatus = gss_release_name(&minorStatus, &myName2);
-
-       if (majorStatus != GSS_S_COMPLETE) {
-	  _igsiLogError("releasing name", majorStatus, minorStatus);
-	  return GSI_ERROR_RELEASING_NAME;
-       }
-
-       (void) gss_release_buffer(&minorStatus, &client_name2);
+    majorStatus = gss_inquire_cred(&minorStatus, myCreds, &myName2, 
+				   NULL, NULL, NULL);
+    if (majorStatus != GSS_S_COMPLETE) {
+       _igsiLogError("inquire_cred", majorStatus, minorStatus);
+       return GSI_ERROR_ACQUIRING_CREDS;
     }
 
+    majorStatus =
+       gss_display_name(&minorStatus, myName2, &client_name2, &doid2);
+    if (majorStatus != GSS_S_COMPLETE) {
+       _igsiLogError("displaying name", majorStatus, minorStatus);
+       return GSI_ERROR_DISPLAYING_NAME;
+    }
+    if (client_name2.value != 0 && client_name2.length>0) {
+       *returnedName = malloc(client_name2.length+10);
+       if (*returnedName != 0) {
+	  memset(*returnedName,  0, sizeof(client_name2.length));
+	  strncpy(*returnedName, client_name2.value, client_name2.length+1);
+       }
+    }
+
+    /* release the name structure */
+    majorStatus = gss_release_name(&minorStatus, &myName2);
+
+    if (majorStatus != GSS_S_COMPLETE) {
+       _igsiLogError("releasing name", majorStatus, minorStatus);
+       return GSI_ERROR_RELEASING_NAME;
+       }
+    
+    (void) gss_release_buffer(&minorStatus, &client_name2);
 
 
 #if defined(IGSI_TIMING)

@@ -29,10 +29,9 @@ rsGsiAuthRequest (rsComm_t *rsComm, gsiAuthRequestOut_t **gsiAuthRequestOut)
     memset((char *)*gsiAuthRequestOut, 0, sizeof(gsiAuthRequestOut_t));
 
     result = *gsiAuthRequestOut;
-    result->serverDN=malloc(10000);
 
 #if defined(GSI_AUTH)
-    status = igsiSetupCreds(NULL, rsComm, NULL, result->serverDN, 10000);
+    status = igsiSetupCreds(NULL, rsComm, NULL, &result->serverDN);
     if (status==0) {
         rsComm->gsiRequest=1;
     }

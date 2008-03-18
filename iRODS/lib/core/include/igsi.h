@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 int igsiSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
-		   char *returnedName, int maxReturnedName);
+		   char **returnedName);
 
 int igsiEstablishContextClientside(rcComm_t *Comm, char *service_name,
 			       int deleg_flag);

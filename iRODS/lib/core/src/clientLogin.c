@@ -36,10 +36,9 @@ int clientLoginGsi(rcComm_t *Conn)
 {
    int status;
    gsiAuthRequestOut_t *gsiAuthReqOut;
-   char myName[500];
+   char *myName;
 
-   //   status = igsiSetupContextClientside(Conn, serviceName, 0);
-   status = igsiSetupCreds(Conn, NULL, NULL, myName, 500);
+   status = igsiSetupCreds(Conn, NULL, NULL, &myName);
 
    if (status) {
       printError(Conn, status, "igsiSetupCreds");
