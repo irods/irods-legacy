@@ -175,6 +175,11 @@ $databaseServerPort	= $DEFAULT_databaseServerPort;	# Prompt [advanced].
 $databaseServerAccount	= $DEFAULT_databaseServerAccount;# Prompt.
 $databaseServerPassword	= undef;			# Prompt.
 
+# GSI
+$gsiAuth		= 0;
+$globusLocation         = undef;
+$gsiInstallType         = undef;
+
 # Actions to take
 $installDataServer	= 1;				# Prompt.
 $installCatalogServer	= 1;				# Prompt.
@@ -249,6 +254,10 @@ if ( -e $irodsConfig )
 	$irodsResourceName = $RESOURCE_NAME;
 	$irodsResourceDir  = $RESOURCE_DIR;
 	$irodsZone         = $ZONE_NAME;
+
+	$gsiAuth           = $GSI_AUTH;
+	$globusLocation    = $GLOBUS_LOCATION;
+	$gsiInstallType    = $GSI_INSTALL_TYPE;
 
 	$databaseServerType      = $DATABASE_TYPE;
 	$databaseServerOdbcType  = $DATABASE_ODBC_TYPE;
@@ -361,6 +370,7 @@ exit( 0 );
 #
 sub promptForIrodsConfiguration( )
 {
+    my $gTypes;
 	# Intro
 	if ( $advanced )
 	{
@@ -375,6 +385,61 @@ sub promptForIrodsConfiguration( )
 			"-------------------\n" );
 
 	}
+	printNotice(
+		"\n",
+		"iRODS can make use of the Grid Security Infrastructure (GSI)\n",
+		"authentication system in addition to the iRODS secure\n",
+		"password system (challenge/response, no plain-text).\n",
+		"In most cases, the iRODS password system is sufficient but\n",
+		"if you are using GSI for other applications, you might want\n",
+		"to include GSI in iRODS.  Both the clients and servers need\n",
+		"to be built with GSI and then users can select it by setting\n",
+		"irodsAuthScheme=GSI in their .irodsEnv files (or still use\n",
+		"the iRODS password system if they want).\n",
+		"\n" );
+	# GSI ?
+	$gsiAuth = promptYesNo(
+		"Include GSI",
+		(($gsiAuth == 1) ? "yes" : "no") );
+	if ( $gsiAuth == 1 ) {
+	        printNotice(
+		       "\n",
+		       "The GLOBUS_LOCATION and the 'install type' is needed to find include\n",
+		       "and library files.  GLOBUS_LOCATION specifies the directory where\n",
+		       "Globus is installed (see Globus documentation).  The 'install type' is\n",
+		       "which 'flavor' of installation you want to use.  For this, use the,\n",
+		       "exact name of one of the subdirectories under GLOBUS_LOCATION/include.\n",
+		       "\n",
+		       "You also need to set up your Globus GSI environment before running\n",
+		       "this.\n",
+			"\n" );
+		if (!defined($globusLocation)||$globusLocation eq "") {
+		    $globusLocation = $ENV{"GLOBUS_LOCATION"};
+		}
+		$globusLocation = promptString(
+			"GLOBUS_LOCATION",
+			((!defined($globusLocation)||$globusLocation eq "") ?
+				"" : $globusLocation) );
+		if (!-e $globusLocation) {
+		    printError("Warning, $globusLocation does not exist, build will fail.\n");
+		    $gTypes = "";
+		}
+		else {
+		    my $gpathInc = "$globusLocation" . "/include";
+		    $gTypes = `ls -C $gpathInc`;
+		}
+		printNotice("\nAvailable types appear to be: $gTypes\n");
+		$gsiInstallType = promptString(
+			"GSI Install Type to use",
+			((!defined($gsiInstallType)||$gsiInstallType eq "") ?
+				"" : $gsiInstallType) );
+
+		if (!-e $globusLocation . "/include/" . $gsiInstallType) {
+		    printError("Warning, $globusLocation/include/$gsiInstallType does not exist, build will fail.\n");
+		}
+
+	}
+
 	printNotice(
 		"iRODS includes an iRODS data server and an iCAT metadata catalog.\n",
 		"\n",
@@ -1448,6 +1513,10 @@ sub configureIrods( )
 		"RESOURCE_NAME",		$irodsResourceName,
 		"RESOURCE_DIR",			$irodsResourceDir,
 		"ZONE_NAME",			$irodsZone,
+
+		"GSI_AUTH",			$gsiAuth,
+		"GLOBUS_LOCATION",		$globusLocation,
+		"GSI_INSTALL_TYPE",		$gsiInstallType,
 
 		"DATABASE_TYPE",		$databaseServerType,
 		"DATABASE_ODBC_TYPE",		((!defined($databaseServerOdbcType)) ? "" : $databaseServerOdbcType),
