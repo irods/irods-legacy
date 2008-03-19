@@ -15,6 +15,8 @@
 # hdf5 installation.
 # hdf5Dir = /data/mwan/hdf5/hdf5-1.6.4
 hdf5Dir = /data/mwan/hdf5/hdf5-1.8.0
+# szlibDir=/home/srb/ext_lib/szip
+# zlibDir=/home/srb/ext_lib/zlib
 
 ifndef buildDir
 buildDir = $(CURDIR)/../..
@@ -41,7 +43,13 @@ ifdef hdf5Dir
 MS_OBJECTS	=  $(hdf5MSObjDir)/hdf5MS.o
 TEST_OBJECT = $(hdf5TestDir)/test_h5File.o
 INCLUDE_FLAGS = -I$(hdf5TestDir) -I$(hdf5Dir)/src -I$(hdf5LibIncDir)	\
-    -I$(hdf5MSIncDir)
+    -I$(hdf5MSIncDir) 
+ifdef zlibDir
+INCLUDE_FLAGS+=  -I$(zlibDir)/include
+endif
+ifdef szlibDir
+INCLUDE_FLAGS+= -I$(szlibDir)/include
+endif
 HDF_LIB_OBJECTS = $(hdf5LibObjDir)/h5Ctor.o $(hdf5LibObjDir)/h5Dtor.o
 HDF_LIB_OBJECTS+=$(hdf5LibObjDir)/h5File.o \
 $(hdf5LibObjDir)/h5Dataset.o $(hdf5LibObjDir)/h5String.o        \
@@ -61,6 +69,12 @@ HDF_LIB_OBJECTS+=$(hdf5LibObjDir)/clH5Dataset.o 	\
     $(hdf5LibObjDir)/clH5File.o $(hdf5LibObjDir)/clH5Group.o
 endif
 HDF5_LD_LIBS = -L$(hdf5Dir)/src/.libs -L$(hdf5Dir)/lib -L$(hdf5Dir)/hl/src/.libs -lhdf5 -lhdf5_hl
+ifdef zlibDir
+HDF5_LD_LIBS+= -L$(zlibDir)/lib -lz
+endif
+ifdef szlibDir
+HDF5_LD_LIBS+= -L$(szlibDir)/lib -lsz
+endif
 TEST_LDADD=$(LDADD) $(LIBRARY)
 else
 MS_OBJECTS =
