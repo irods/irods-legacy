@@ -332,7 +332,14 @@ sub _getCurrentHostAttributes()
 		}
 		if ( !defined( $PROCESSOR ) )
 		{
-			$PROCESSOR = `$uname -m`;
+			# On many hosts "uname -m" returns the same value,
+			# but not on Solaris.  Sample values:
+			#			-m	-p
+			#	Mac OS X	i386	i386
+			#	Linux		i686	i686
+			#	Solaris PC	i86pc	i386
+			#	Solaris SPARC	sun4u	sparc
+			$PROCESSOR = `$uname -p`;
 			chomp( $PROCESSOR );
 		}
 	}
