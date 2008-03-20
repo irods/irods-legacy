@@ -274,30 +274,31 @@ foreach $arg ( @ARGV )
 # are written back to the iRODS configuration files at the end of this
 # script.
 #
-%configuration = ( );
-%mkconfiguration = ( );
+%irodsConfigVariables = ( );		# irods.config settings
+%configMkVariables = ( );		# config.mk settings
+%platformMkVariables = ( );		# platform.mk settings
 
-$mkconfiguration{ "RODS_CAT" } = "";	# Enable iCAT
-$mkconfiguration{ "PSQICAT" }  = "";	# Enable Postgres iCAT
-$mkconfiguration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
-$mkconfiguration{ "NEW_ODBC" } = "1";	# New ODBC drivers
-$mkconfiguration{ "PARA_OPR" } = "1";	# Parallel
+$configMkVariables{ "RODS_CAT" } = "";	# Enable iCAT
+$configMkVariables{ "PSQICAT" }  = "";	# Enable Postgres iCAT
+$configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+$configMkVariables{ "NEW_ODBC" } = "1";	# New ODBC drivers
+$configMkVariables{ "PARA_OPR" } = "1";	# Parallel
 
-$configuration{ "IRODS_HOME" } = $IRODS_HOME;
-$configuration{ "IRODS_PORT" } = "1247";
-$configuration{ "IRODS_ADMIN_NAME" } = "rods";
-$configuration{ "IRODS_ADMIN_PASSWORD" } = "rods";
-$configuration{ "IRODS_ICAT_HOST" } = "";
+$irodsConfigVariables{ "IRODS_HOME" } = $IRODS_HOME;
+$irodsConfigVariables{ "IRODS_PORT" } = "1247";
+$irodsConfigVariables{ "IRODS_ADMIN_NAME" } = "rods";
+$irodsConfigVariables{ "IRODS_ADMIN_PASSWORD" } = "rods";
+$irodsConfigVariables{ "IRODS_ICAT_HOST" } = "";
 
-$configuration{ "DATABASE_TYPE" } = "";			# No database
-$configuration{ "DATABASE_ODBC_TYPE" } = "";		# No ODBC!?
-$configuration{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";	# Database just for iRODS
-$configuration{ "DATABASE_HOME" } = "$IRODS_HOME/../iRodsPostgres";	# Database directory
+$irodsConfigVariables{ "DATABASE_TYPE" } = "";			# No database
+$irodsConfigVariables{ "DATABASE_ODBC_TYPE" } = "";		# No ODBC!?
+$irodsConfigVariables{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";	# Database just for iRODS
+$irodsConfigVariables{ "DATABASE_HOME" } = "$IRODS_HOME/../iRodsPostgres";	# Database directory
 
-$configuration{ "DATABASE_HOST" } = "";			# Database host
-$configuration{ "DATABASE_PORT" } = "5432";		# Database port
-$configuration{ "DATABASE_ADMIN_NAME" } = $thisUser;	# Database admin
-$configuration{ "DATABASE_ADMIN_PASSWORD" } = "";	# Database admin password
+$irodsConfigVariables{ "DATABASE_HOST" } = "";			# Database host
+$irodsConfigVariables{ "DATABASE_PORT" } = "5432";		# Database port
+$irodsConfigVariables{ "DATABASE_ADMIN_NAME" } = $thisUser;	# Database admin
+$irodsConfigVariables{ "DATABASE_ADMIN_PASSWORD" } = "";	# Database admin password
 
 
 
@@ -343,50 +344,51 @@ $IRODS_HOME = $savedIRODS_HOME;
 #	by command-line arguments, are written back to irods.config
 #	to provide new defaults for the next time (if ever) that
 #	this script is run.
-$configuration{ "IRODS_PORT" }           = $IRODS_PORT;
-$configuration{ "IRODS_ADMIN_NAME" }     = $IRODS_ADMIN_NAME;
-$configuration{ "IRODS_ADMIN_PASSWORD" } = $IRODS_ADMIN_PASSWORD;
+$irodsConfigVariables{ "IRODS_PORT" }           = $IRODS_PORT;
+$irodsConfigVariables{ "IRODS_ADMIN_NAME" }     = $IRODS_ADMIN_NAME;
+$irodsConfigVariables{ "IRODS_ADMIN_PASSWORD" } = $IRODS_ADMIN_PASSWORD;
+$irodsConfigVariables{ "IRODS_ICAT_HOST" } 	= $IRODS_ICAT_HOST;
 
-$configuration{ "DATABASE_TYPE" }        = $DATABASE_TYPE;
-$configuration{ "DATABASE_ODBC_TYPE" }   = $DATABASE_ODBC_TYPE;
-$configuration{ "DATABASE_EXCLUSIVE_TO_IRODS" } = $DATABASE_EXCLUSIVE_TO_IRODS;
-$configuration{ "DATABASE_HOME" }        = $DATABASE_HOME;
+$irodsConfigVariables{ "DATABASE_TYPE" }        = $DATABASE_TYPE;
+$irodsConfigVariables{ "DATABASE_ODBC_TYPE" }   = $DATABASE_ODBC_TYPE;
+$irodsConfigVariables{ "DATABASE_EXCLUSIVE_TO_IRODS" } = $DATABASE_EXCLUSIVE_TO_IRODS;
+$irodsConfigVariables{ "DATABASE_HOME" }        = $DATABASE_HOME;
 
-$configuration{ "DATABASE_HOST" }        = $DATABASE_HOST;
-$configuration{ "DATABASE_PORT" }        = $DATABASE_PORT;
-$configuration{ "DATABASE_ADMIN_NAME" }  = $DATABASE_ADMIN_NAME;
-$configuration{ "DATABASE_ADMIN_PASSWORD" } = $DATABASE_ADMIN_PASSWORD;
+$irodsConfigVariables{ "DATABASE_HOST" }        = $DATABASE_HOST;
+$irodsConfigVariables{ "DATABASE_PORT" }        = $DATABASE_PORT;
+$irodsConfigVariables{ "DATABASE_ADMIN_NAME" }  = $DATABASE_ADMIN_NAME;
+$irodsConfigVariables{ "DATABASE_ADMIN_PASSWORD" } = $DATABASE_ADMIN_PASSWORD;
 
 
 if ( $DATABASE_ODBC_TYPE =~ /unix/i )
 {
-	$mkconfiguration{ "NEW_ODBC" } = "1";	# New ODBC drivers
+	$configMkVariables{ "NEW_ODBC" } = "1";	# New ODBC drivers
 }
 else
 {
-	$mkconfiguration{ "NEW_ODBC" } = "";	# Old ODBC drivers
+	$configMkVariables{ "NEW_ODBC" } = "";	# Old ODBC drivers
 }
 
 if ( $DATABASE_TYPE =~ /postgres/i )
 {
 	# Postgres.
-	$mkconfiguration{ "RODS_CAT" } = "1";	# Enable iCAT
-	$mkconfiguration{ "PSQICAT" }  = "1";	# Enable Postgres iCAT
-	$mkconfiguration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+	$configMkVariables{ "RODS_CAT" } = "1";	# Enable iCAT
+	$configMkVariables{ "PSQICAT" }  = "1";	# Enable Postgres iCAT
+	$configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
 }
 elsif ( $DATABASE_TYPE =~ /oracle/i )
 {
 	# Oracle.
-	$mkconfiguration{ "RODS_CAT" } = "1";	# Enable iCAT
-	$mkconfiguration{ "PSQICAT" }  = "";	# Disable Postgres iCAT
-	$mkconfiguration{ "ORAICAT" }  = "1";	# Enable Oracle iCAT
+	$configMkVariables{ "RODS_CAT" } = "1";	# Enable iCAT
+	$configMkVariables{ "PSQICAT" }  = "";	# Disable Postgres iCAT
+	$configMkVariables{ "ORAICAT" }  = "1";	# Enable Oracle iCAT
 }
 else
 {
 	# Unknown or no database.  No iCAT.
-	$mkconfiguration{ "RODS_CAT" } = "";	# Disable iCAT
-	$mkconfiguration{ "PSQICAT" }  = "";	# Disable Postgres iCAT
-	$mkconfiguration{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+	$configMkVariables{ "RODS_CAT" } = "";	# Disable iCAT
+	$configMkVariables{ "PSQICAT" }  = "";	# Disable Postgres iCAT
+	$configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
 }
 
 
@@ -403,51 +405,51 @@ foreach $arg ( @ARGV )
 	# Postgres iCAT
 	if ( $arg =~ /--disable-psgi?cat/ )
 	{
-		$mkconfiguration{ "PSQICAT" } = "";
-		$mkconfiguration{ "RODS_CAT" } = "";
+		$configMkVariables{ "PSQICAT" } = "";
+		$configMkVariables{ "RODS_CAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-psgi?cat/ )
 	{
-		$mkconfiguration{ "PSQICAT" } = "1";
-		$mkconfiguration{ "RODS_CAT" } = "1";
-		$mkconfiguration{ "ORAICAT" } = "";
+		$configMkVariables{ "PSQICAT" } = "1";
+		$configMkVariables{ "RODS_CAT" } = "1";
+		$configMkVariables{ "ORAICAT" } = "";
 		next;
 	}
 
 	# Oracle iCAT
 	if ( $arg =~ /--disable-orai?cat/ )
 	{
-		$mkconfiguration{ "ORAICAT" } = "";
-		$mkconfiguration{ "RODS_CAT" } = "";
+		$configMkVariables{ "ORAICAT" } = "";
+		$configMkVariables{ "RODS_CAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-orai?cat/ )
 	{
-		$mkconfiguration{ "PSQICAT" } = "";
-		$mkconfiguration{ "RODS_CAT" } = "1";
-		$mkconfiguration{ "ORAICAT" } = "1";
+		$configMkVariables{ "PSQICAT" } = "";
+		$configMkVariables{ "RODS_CAT" } = "1";
+		$configMkVariables{ "ORAICAT" } = "1";
 		next;
 	}
 
 	# iCAT
 	if ( $arg =~ /--disable-icat/ )
 	{
-		$mkconfiguration{ "PSQICAT" } = "";
-		$mkconfiguration{ "RODS_CAT" } = "";
-		$mkconfiguration{ "ORAICAT" } = "";
+		$configMkVariables{ "PSQICAT" } = "";
+		$configMkVariables{ "RODS_CAT" } = "";
+		$configMkVariables{ "ORAICAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-icat/ )
 	{
-		$mkconfiguration{ "PSQICAT" } = "1";	# Default to Postgres
-		$mkconfiguration{ "RODS_CAT" } = "1";
-		$mkconfiguration{ "ORAICAT" } = "";
+		$configMkVariables{ "PSQICAT" } = "1";	# Default to Postgres
+		$configMkVariables{ "RODS_CAT" } = "1";
+		$configMkVariables{ "ORAICAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--icat-host=(.*)/ )
 	{
-		$configuration{ "IRODS_ICAT_HOST" } = $1;
+		$irodsConfigVariables{ "IRODS_ICAT_HOST" } = $1;
 		next;
 	}
 
@@ -456,17 +458,17 @@ foreach $arg ( @ARGV )
 	if ( $arg =~ /--enable-psghome=(.*)/ )
 	{
 		my $psgdir = $1;
-		$mkconfiguration{ "PSQICAT" } = "1";	# Default to Postgres
-		$mkconfiguration{ "RODS_CAT" } = "1";
-		$mkconfiguration{ "ORAICAT" } = "";
-		my $default = $configuration{ "DATABASE_HOME" };
+		$configMkVariables{ "PSQICAT" } = "1";	# Default to Postgres
+		$configMkVariables{ "RODS_CAT" } = "1";
+		$configMkVariables{ "ORAICAT" } = "";
+		my $default = $irodsConfigVariables{ "DATABASE_HOME" };
 		my $psgdir_abs  = abs_path( $psgdir );
 		my $default_abs = abs_path( $default );
 		if ( !( $psgdir_abs =~ $default_abs ) )
 		{
 			# Different directory.  Assume not exclusive use.
-			$configuration{ "DATABASE_HOME" } = $psgdir;
-			$configuration{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";
+			$irodsConfigVariables{ "DATABASE_HOME" } = $psgdir;
+			$irodsConfigVariables{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";
 		}
 		next;
 	}
@@ -474,79 +476,79 @@ foreach $arg ( @ARGV )
 	# Parallel execution
 	if ( $arg =~ /--disable-parallel/ )
 	{
-		$mkconfiguration{ "PARA_OPR" } = "";
+		$configMkVariables{ "PARA_OPR" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-parallel/ )
 	{
-		$mkconfiguration{ "PARA_OPR" } = "1";
+		$configMkVariables{ "PARA_OPR" } = "1";
 		next;
 	}
 
 	# 64-bit file accesses
 	if ( $arg =~ /--disable-file64bit/ )
 	{
-		$mkconfiguration{ "FILE_64BITS" } = "";
+		$configMkVariables{ "FILE_64BITS" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-file64bit/ )
 	{
-		$mkconfiguration{ "FILE_64BITS" } = "1";
+		$configMkVariables{ "FILE_64BITS" } = "1";
 		next;
 	}
 
 	# 64-bit addressing
 	if ( $arg =~ /--disable-addr64bit/ )
 	{
-		$mkconfiguration{ "ADDR_64BITS" } = "";
+		$configMkVariables{ "ADDR_64BITS" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-addr64bit/ )
 	{
-		$mkconfiguration{ "ADDR_64BITS" } = "1";
+		$configMkVariables{ "ADDR_64BITS" } = "1";
 		next;
 	}
 
 	# New or old ODBC code
 	if ( $arg =~ /--enable-newodbc/ )
 	{
-		$mkconfiguration{ "NEW_ODBC" } = "1";
+		$configMkVariables{ "NEW_ODBC" } = "1";
 		next;
 	}
 	if ( $arg =~ /--enable-oldodbc/ )
 	{
-		$mkconfiguration{ "NEW_ODBC" } = "";
+		$configMkVariables{ "NEW_ODBC" } = "";
 		next;
 	}
 
 	# iRODS server port
 	if ( $arg =~ /--enable-i?rodsport=(.*)/ )
 	{
-		$configuration{ "IRODS_PORT" } = $1;
+		$irodsConfigVariables{ "IRODS_PORT" } = $1;
 		next;
 	}
 
 	# GSI
 	if ( $arg =~ /--enable-gsi/ )
 	{
-		$mkconfiguration{ "GSI_AUTH" } = "1";
+		$configMkVariables{ "GSI_AUTH" } = "1";
 		next;
 	}
 	if ( $arg =~ /--disable-gsi/ )
 	{
-		$mkconfiguration{ "GSI_AUTH" } = "";
+		$configMkVariables{ "GSI_AUTH" } = "";
 		next;
 	}
 	if ( $arg =~ /--globus-location=(.*)/ )
 	{
-		$mkconfiguration{ "GSI_AUTH" } = "1";
-		$mkconfiguration{ "GLOBUS_LOCATION" } = $1;
+		$configMkVariables{ "GSI_AUTH" } = "1";
+		$configMkVariables{ "GLOBUS_LOCATION" } = $1;
 		next;
 	}
 	if ( $arg =~ /--gsi-install-type=(.*)/ )
 	{
-		$mkconfiguration{ "GSI_AUTH" } = "1";
-		$mkconfiguration{ "GSI_INSTALL_TYPE" } = $1;
+		$configMkVariables{ "GSI_AUTH" } = "1";
+		$configMkVariables{ "GSI_INSTALL_TYPE" } = $1;
 		next;
 	}
 
@@ -671,12 +673,12 @@ if ( scalar keys %modules > 0 )
 			printStatus( "$module\n" );
 		}
 	}
-	$mkconfiguration{ "MODULES"} = $tmp;
+	$configMkVariables{ "MODULES"} = $tmp;
 }
 else
 {
 	printStatus( "    Skipped.  No modules enabled.\n" );
-	$mkconfiguration{ "MODULES"} = "";
+	$configMkVariables{ "MODULES"} = "";
 }
 
 
@@ -689,28 +691,28 @@ else
 #
 $currentStep++;
 printSubtitle( "\nStep $currentStep of $totalSteps:  Verifying configuration...\n" );
-if ( $mkconfiguration{ "RODS_CAT" } ne "1" )
+if ( $configMkVariables{ "RODS_CAT" } ne "1" )
 {
 	# No iCAT.  No database.
-	$configuration{ "DATABASE_TYPE" } = "";
-	$configuration{ "DATABASE_HOME" } = "";
-	$configuration{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";
-	$configuration{ "DATABASE_HOST" } = "";
-	$configuration{ "DATABASE_PORT" } = "";
-	$configuration{ "DATABASE_ADMIN_NAME" } = "";
-	$configuration{ "DATABASE_ADMIN_PASSWORD" } = "";
+	$irodsConfigVariables{ "DATABASE_TYPE" } = "";
+	$irodsConfigVariables{ "DATABASE_HOME" } = "";
+	$irodsConfigVariables{ "DATABASE_EXCLUSIVE_TO_IRODS" } ="0";
+	$irodsConfigVariables{ "DATABASE_HOST" } = "";
+	$irodsConfigVariables{ "DATABASE_PORT" } = "";
+	$irodsConfigVariables{ "DATABASE_ADMIN_NAME" } = "";
+	$irodsConfigVariables{ "DATABASE_ADMIN_PASSWORD" } = "";
 
 	printStatus( "No database configured.\n" );
 }
-elsif ( $mkconfiguration{ "PSQICAT" } eq "1" )
+elsif ( $configMkVariables{ "PSQICAT" } eq "1" )
 {
 	# Configuration has enabled Postgres.  Make sure the
 	# rest of the configuration matches.
-	$configuration{ "DATABASE_TYPE" } = "postgres";
-	$configuration{ "POSTGRES_HOME" } = $DATABASE_HOME;
-	$mkconfiguration{ "POSTGRES_HOME" } = $DATABASE_HOME;
+	$irodsConfigVariables{ "DATABASE_TYPE" } = "postgres";
+	$irodsConfigVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
+	$configMkVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
 
-	$databaseHome = $configuration{ "DATABASE_HOME" };
+	$databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
 	if ( ! -e $databaseHome )
 	{
 		printError( "\n" );
@@ -746,22 +748,22 @@ elsif ( $mkconfiguration{ "PSQICAT" } eq "1" )
 		# That worked.  Adjust.
 		$DATABASE_HOME = File::Spec->catdir( $databaseHome, "pgsql" );
 		$databaseHome  = $DATABASE_HOME;
-		$configuration{ "POSTGRES_HOME" } = $DATABASE_HOME;
-		$mkconfiguration{ "POSTGRES_HOME" } = $DATABASE_HOME;
-		$configuration{ "DATABASE_HOME" } = $DATABASE_HOME;
+		$irodsConfigVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
+		$configMkVariables{ "POSTGRES_HOME" } = $DATABASE_HOME;
+		$irodsConfigVariables{ "DATABASE_HOME" } = $DATABASE_HOME;
 	}
 
 	printStatus( "Postgres database found.\n" );
 }
-elsif ( $mkconfiguration{ "ORAICAT" } eq "1" )
+elsif ( $configMkVariables{ "ORAICAT" } eq "1" )
 {
 	# Configuration has enabled Oracle.  Make sure the
-	# rest of the configuration matches.
-	$configuration{ "DATABASE_TYPE" } = "oracle";
-	$configuration{ "ORACLE_HOME" } = $DATABASE_HOME;
-	$mkconfiguration{ "ORACLE_HOME" } = $DATABASE_HOME;
+	# rest of the irodsConfigVariables matches.
+	$irodsConfigVariables{ "DATABASE_TYPE" } = "oracle";
+	$irodsConfigVariables{ "ORACLE_HOME" } = $DATABASE_HOME;
+	$configMkVariables{ "ORACLE_HOME" } = $DATABASE_HOME;
 
-	$databaseHome = $configuration{ "DATABASE_HOME" };
+	$databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
 	if ( ! -e $databaseHome )
 	{
 		printError( "\n" );
@@ -778,8 +780,8 @@ elsif ( $mkconfiguration{ "ORAICAT" } eq "1" )
 else
 {
 	# Configuration has no iCAT.
-	$configuration{ "DATABASE_TYPE" } = "";
-	$mkconfiguration{ "RODS_CAT" } = "";
+	$irodsConfigVariables{ "DATABASE_TYPE" } = "";
+	$configMkVariables{ "RODS_CAT" } = "";
 
 	printStatus( "No database configured.\n" );
 }
@@ -799,35 +801,35 @@ printSubtitle( "\nStep $currentStep of $totalSteps:  Checking host system...\n" 
 # What OS?
 if ( $thisOS =~ /linux/i )
 {
-	$mkconfiguration{ "OS_platform" } = "linux_platform";
+	$configMkVariables{ "OS_platform" } = "linux_platform";
 	printStatus( "Host OS is Linux.\n" );
 }
 elsif ( $thisOS =~ /(sunos)|(solaris)/i )
 {
 	if ( $thisProcessor =~ /i.86/i )	# such as i386, i486, i586, i686
 	{
-		$mkconfiguration{ "OS_platform" } = "solaris_pc_platform";
+		$configMkVariables{ "OS_platform" } = "solaris_pc_platform";
 		printStatus( "Host OS is Solaris (PC).\n" );
 	}
 	else	# probably "sun4u" (sparc)
 	{
-		$mkconfiguration{ "OS_platform" } = "solaris_platform";
+		$configMkVariables{ "OS_platform" } = "solaris_platform";
 		printStatus( "Host OS is Solaris (Sparc).\n" );
 	}
 }
 elsif ( $thisOS =~ /aix/i )
 {
-	$mkconfiguration{ "OS_platform" } = "aix_platform";
+	$configMkVariables{ "OS_platform" } = "aix_platform";
 	printStatus( "Host OS is AIX.\n" );
 }
 elsif ( $thisOS =~ /irix/i )
 {
-	$mkconfiguration{ "OS_platform" } = "sgi_platform";
+	$configMkVariables{ "OS_platform" } = "sgi_platform";
 	printStatus( "Host OS is SGI.\n" );
 }
 elsif ( $thisOS =~ /darwin/i )
 {
-	$mkconfiguration{ "OS_platform" } = "osx_platform";
+	$configMkVariables{ "OS_platform" } = "osx_platform";
 	printStatus( "Host OS is Mac OS X.\n" );
 }
 else
@@ -856,39 +858,39 @@ else
 #
 # Find perl
 #
-$mkconfiguration{ "PERL" } = choosePerl( );
-printStatus( "Perl:        " . $mkconfiguration{ "PERL" } . "\n" );
+$platformMkVariables{ "PERL" } = choosePerl( );
+printStatus( "Perl:        " . $platformMkVariables{ "PERL" } . "\n" );
 
 
 #
 # Find compiler and loader
 #
-($mkconfiguration{ "CC" },$mkconfiguration{ "CC_IS_GCC" },$mkconfiguration{ "LDR" }) =
+($platformMkVariables{ "CC" },$platformMkVariables{ "CC_IS_GCC" },$platformMkVariables{ "LDR" }) =
 	chooseCompiler( );
-printStatus( "C compiler:  " . $mkconfiguration{ "CC" } . 
-	($mkconfiguration{ "CC_IS_GCC" } ? " (gcc)" : "") . "\n" );
+printStatus( "C compiler:  " . $platformMkVariables{ "CC" } . 
+	($platformMkVariables{ "CC_IS_GCC" } ? " (gcc)" : "") . "\n" );
 
 if ( defined( $CCFLAGS ) && $CCFLAGS ne "" )
 {
-	$mkconfiguration{ "CCFLAGS" } = $CCFLAGS;
+	$platformMkVariables{ "CCFLAGS" } = $CCFLAGS;
 	printStatus( "  Flags:     " . $CCFLAGS . "\n" );
 }
 else
 {
-	$mkconfiguration{ "CCFLAGS" } = '';
+	$platformMkVariables{ "CCFLAGS" } = '';
 	printStatus( "  Flags:     none\n" );
 }
 
-printStatus( "Loader:      " . $mkconfiguration{ "LDR" } . "\n" );
+printStatus( "Loader:      " . $platformMkVariables{ "LDR" } . "\n" );
 
 if ( defined( $LDRFLAGS ) && $LDRFLAGS ne "" )
 {
-	$mkconfiguration{ "LDRFLAGS" } = $LDRFLAGS;
+	$platformMkVariables{ "LDRFLAGS" } = $LDRFLAGS;
 	printStatus( "  Flags:     " . $LDRFLAGS . "\n" );
 }
 else
 {
-	$mkconfiguration{ "LDRFLAGS" } = '';
+	$platformMkVariables{ "LDRFLAGS" } = '';
 	printStatus( "  Flags:     none\n" );
 }
 
@@ -896,21 +898,21 @@ else
 #
 # Find ar
 #
-$mkconfiguration{ "AR" } = chooseArchiver( );
-printStatus( "Archiver:    " . $mkconfiguration{ "AR" } . "\n" );
+$platformMkVariables{ "AR" } = chooseArchiver( );
+printStatus( "Archiver:    " . $platformMkVariables{ "AR" } . "\n" );
 
 
 #
 # Find ranlib
 #
-$mkconfiguration{ "RANLIB" } = chooseRanlib( );
-if ( $mkconfiguration{ "RANLIB" } =~ /touch/i )
+$platformMkVariables{ "RANLIB" } = chooseRanlib( );
+if ( $platformMkVariables{ "RANLIB" } =~ /touch/i )
 {
 	printStatus( "Ranlib:      none needed\n" );
 }
 else
 {
-	printStatus( "Ranlib:      " . $mkconfiguration{ "RANLIB" } . "\n" );
+	printStatus( "Ranlib:      " . $platformMkVariables{ "RANLIB" } . "\n" );
 }
 
 
@@ -923,22 +925,22 @@ else
 # Skip this check if a command-line option was given to enable
 # 64-bit addressing.
 #
-if ( defined( $mkconfiguration{ "ADDR_64BITS" } ) )
+if ( defined( $configMkVariables{ "ADDR_64BITS" } ) )
 {
 	printStatus( "64-bit addressing enabled.\n" );
 }
 else
 {
-	if ( is64bit( $mkconfiguration{ "CC" }, $mkconfiguration{ "CCFLAGS" },
-	       $mkconfiguration{ "LDR" }, $mkconfiguration{ "LDRFLAGS" } ) )
+	if ( is64bit( $platformMkVariables{ "CC" }, $platformMkVariables{ "CCFLAGS" },
+	       $platformMkVariables{ "LDR" }, $platformMkVariables{ "LDRFLAGS" } ) )
 	{
 		printStatus( "64-bit addressing supported and automatically enabled.\n" );
-		$mkconfiguration{ "ADDR_64BITS" } = "1";
+		$configMkVariables{ "ADDR_64BITS" } = "1";
 	}
 	else
 	{
 		printStatus( "64-bit addressing not supported and automatically disabled.\n" );
-		$mkconfiguration{ "ADDR_64BITS" } = "";
+		$configMkVariables{ "ADDR_64BITS" } = "";
 	}
 }
 
@@ -980,7 +982,7 @@ if ( $status == 2 )
 	# New config.mk.  Update it in place.
 	printStatus( "    Created $configMk\n" );
 
-	($status, $output) = replaceVariablesInFile( $configMk, "make", 0, %mkconfiguration );
+	($status, $output) = replaceVariablesInFile( $configMk, "make", 0, %configMkVariables );
 	if ( $status == 0 )
 	{
 		printError( "\nConfiguration problem:\n" );
@@ -1005,7 +1007,7 @@ else
 		exit( 1 );
 	}
 
-	($status, $output) = replaceVariablesInFile( $tmpConfigMk, "make", 0, %mkconfiguration );
+	($status, $output) = replaceVariablesInFile( $tmpConfigMk, "make", 0, %configMkVariables );
 	if ( $status == 0 )
 	{
 		printError( "\nConfiguration problem:\n" );
@@ -1052,7 +1054,7 @@ if ( $status == 2 )
 	# New platform.mk.  Update it in place.
 	printStatus( "    Created $platformMk\n" );
 
-	($status, $output) = replaceVariablesInFile( $platformMk, "make", 0, %mkconfiguration );
+	($status, $output) = replaceVariablesInFile( $platformMk, "make", 0, %platformMkVariables );
 	if ( $status == 0 )
 	{
 		printError( "\nConfiguration problem:\n" );
@@ -1077,7 +1079,7 @@ else
 		exit( 1 );
 	}
 
-	($status, $output) = replaceVariablesInFile( $tmpPlatformMk, "make", 0, %mkconfiguration );
+	($status, $output) = replaceVariablesInFile( $tmpPlatformMk, "make", 0, %platformMkVariables );
 	if ( $status == 0 )
 	{
 		printError( "\nConfiguration problem:\n" );
@@ -1106,7 +1108,7 @@ else
 
 # Update irods.config
 printStatus( "Updating irods.config...\n" );
-($status, $output) = replaceVariablesInFile( $irodsConfig, "perl", 0, %configuration );
+($status, $output) = replaceVariablesInFile( $irodsConfig, "perl", 0, %irodsConfigVariables );
 if ( $status == 0 )
 {
 	printError( "\nConfiguration problem:\n" );
@@ -1123,7 +1125,7 @@ chmod( 0600, $irodsConfig );
 
 # Update irodsctl script
 printStatus( "Updating irodsctl...\n" );
-($status, $output) = replaceVariablesInFile( $irodsctl, "shell", 0, %configuration );
+($status, $output) = replaceVariablesInFile( $irodsctl, "shell", 0, %irodsConfigVariables );
 if ( $status == 0 )
 {
 	printError( "\nConfiguration problem:\n" );
@@ -1483,7 +1485,7 @@ sub chooseArchiver()
 	# On Solaris, look in /usr/xpg4 first if we are using
 	# 64-bit addressing.
 	if ( ( $thisOS =~ /(sunos)|(solaris)/i ) &&
-		defined( $mkconfiguration{ "ADDR_64BITS" } ) )
+		defined( $configMkVariables{ "ADDR_64BITS" } ) )
 	{
 		$AR = File::Spec->catfile( File::Spec->rootdir( ),
 			"usr", "xpg4", "bin", "ar" );
