@@ -316,6 +316,9 @@ printSubtitle( "\n\n" );
 promptForDatabaseConfiguration( );
 printSubtitle( "\n\n" );
 
+promptForIrodsConfigurationPart2( ); 
+printSubtitle( "\n\n" );
+
 # Adjust paths to be absolute
 if ( defined( $databaseServerPath ) && $databaseServerPath ne "" )
 {
@@ -370,7 +373,6 @@ exit( 0 );
 #
 sub promptForIrodsConfiguration( )
 {
-    my $gTypes;
 	# Intro
 	if ( $advanced )
 	{
@@ -383,60 +385,6 @@ sub promptForIrodsConfiguration( )
 		printSubtitle(
 			"iRODS configuration\n",
 			"-------------------\n" );
-
-	}
-	printNotice(
-		"\n",
-		"iRODS can make use of the Grid Security Infrastructure (GSI)\n",
-		"authentication system in addition to the iRODS secure\n",
-		"password system (challenge/response, no plain-text).\n",
-		"In most cases, the iRODS password system is sufficient but\n",
-		"if you are using GSI for other applications, you might want\n",
-		"to include GSI in iRODS.  Both the clients and servers need\n",
-		"to be built with GSI and then users can select it by setting\n",
-		"irodsAuthScheme=GSI in their .irodsEnv files (or still use\n",
-		"the iRODS password system if they want).\n",
-		"\n" );
-	# GSI ?
-	$gsiAuth = promptYesNo(
-		"Include GSI",
-		(($gsiAuth == 1) ? "yes" : "no") );
-	if ( $gsiAuth == 1 ) {
-	        printNotice(
-		       "\n",
-		       "The GLOBUS_LOCATION and the 'install type' is needed to find include\n",
-		       "and library files.  GLOBUS_LOCATION specifies the directory where\n",
-		       "Globus is installed (see Globus documentation).  The 'install type' is\n",
-		       "which 'flavor' of installation you want to use.  For this, use the,\n",
-		       "exact name of one of the subdirectories under GLOBUS_LOCATION/include.\n",
-		       "\n",
-		       "You also need to set up your Globus GSI environment before running\n",
-		       "this.\n",
-			"\n" );
-		if (!defined($globusLocation)||$globusLocation eq "") {
-		    $globusLocation = $ENV{"GLOBUS_LOCATION"};
-		}
-		$globusLocation = promptString(
-			"GLOBUS_LOCATION",
-			((!defined($globusLocation)||$globusLocation eq "") ?
-				"" : $globusLocation) );
-		if (!-e $globusLocation) {
-		    printError("Warning, $globusLocation does not exist, build will fail.\n");
-		    $gTypes = "";
-		}
-		else {
-		    my $gpathInc = "$globusLocation" . "/include";
-		    $gTypes = `ls -C $gpathInc`;
-		}
-		printNotice("\nAvailable types appear to be: $gTypes\n");
-		$gsiInstallType = promptString(
-			"GSI Install Type to use",
-			((!defined($gsiInstallType)||$gsiInstallType eq "") ?
-				"" : $gsiInstallType) );
-
-		if (!-e $globusLocation . "/include/" . $gsiInstallType) {
-		    printError("Warning, $globusLocation/include/$gsiInstallType does not exist, build will fail.\n");
-		}
 
 	}
 
@@ -674,7 +622,72 @@ sub promptForIrodsConfiguration( )
 }
 
 
+# @brief	Prompt for the iRODS configuration part 2
+#
+# Like promptForIrodsConfiguration but is done later.
+# These are options that apply to client and server but
+# are not simple.  
+#
+# Currently, this is just GSI.
+# 
+#
+sub promptForIrodsConfigurationPart2( )
+{
+   my $gTypes;
+	printNotice(
+		"\n",
+		"iRODS can make use of the Grid Security Infrastructure (GSI)\n",
+		"authentication system in addition to the iRODS secure\n",
+		"password system (challenge/response, no plain-text).\n",
+		"In most cases, the iRODS password system is sufficient but\n",
+		"if you are using GSI for other applications, you might want\n",
+		"to include GSI in iRODS.  Both the clients and servers need\n",
+		"to be built with GSI and then users can select it by setting\n",
+		"irodsAuthScheme=GSI in their .irodsEnv files (or still use\n",
+		"the iRODS password system if they want).\n",
+		"\n" );
+	# GSI ?
+	$gsiAuth = promptYesNo(
+		"Include GSI",
+		(($gsiAuth == 1) ? "yes" : "no") );
+	if ( $gsiAuth == 1 ) {
+		 printNotice(
+				 "\n",
+		       "The GLOBUS_LOCATION and the 'install type' is needed to find include\n",
+		       "and library files.  GLOBUS_LOCATION specifies the directory where\n",
+		       "Globus is installed (see Globus documentation).  The 'install type' is\n",
+		       "which 'flavor' of installation you want to use.  For this, use the,\n",
+		       "exact name of one of the subdirectories under GLOBUS_LOCATION/include.\n",
+		       "\n",
+		       "You also need to set up your Globus GSI environment before running\n",
+		       "this.\n",
+			"\n" );
+		if (!defined($globusLocation)||$globusLocation eq "") {
+		    $globusLocation = $ENV{"GLOBUS_LOCATION"};
+		}
+		$globusLocation = promptString(
+			"GLOBUS_LOCATION",
+			((!defined($globusLocation)||$globusLocation eq "") ?
+				"" : $globusLocation) );
+		if (!-e $globusLocation) {
+		    printError("Warning, $globusLocation does not exist, build will fail.\n");
+		    $gTypes = "";
+		}
+		else {
+		    my $gpathInc = "$globusLocation" . "/include";
+		    $gTypes = `ls -C $gpathInc`;
+		}
+		printNotice("\nAvailable types appear to be: $gTypes\n");
+		$gsiInstallType = promptString(
+			"GSI Install Type to use",
+			((!defined($gsiInstallType)||$gsiInstallType eq "") ?
+				"" : $gsiInstallType) );
 
+		if (!-e $globusLocation . "/include/" . $gsiInstallType) {
+		    printError("Warning, $globusLocation/include/$gsiInstallType does not exist, build will fail.\n");
+		}
+	}
+}
 
 
 # @brief	Prompt for the database configuration

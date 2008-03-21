@@ -1521,7 +1521,7 @@ sub configureIrodsUser
 
 	# List existing resources first to see if it already exists.
 	($status,$output) = run( "$iadmin lr" );
-	if ( $status == 0 && $output =~ /^[ \t]*$RESOURCE_NAME[ \t]*$/ )
+	if ( $status == 0 && index($output,$RESOURCE_NAME) >= 0 )
 	{
 		printStatus( "    Skipped.  Resource already created.\n" );
 		printLog( "    Skipped.  Resource already created.\n" );
