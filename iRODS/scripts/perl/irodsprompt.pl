@@ -1471,6 +1471,17 @@ sub promptForConfirmation( )
 			"\n" );
 	}
 
+   # GSI
+	if ($gsiAuth == 0) {
+		 printNotice(
+			"    GSI not selected\n\n");
+   } else {
+		 printNotice (
+			"    GSI enabled\n",
+			"        GLOBUS_LOCATION  $globusLocation\n",
+			"        gsiInstallType   $gsiInstallType\n\n");
+	}
+
 	# Commands
 	printNotice(
 		"    Build iRODS command-line tools\n",
