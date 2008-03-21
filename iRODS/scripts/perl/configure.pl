@@ -359,10 +359,11 @@ $irodsConfigVariables{ "DATABASE_PORT" }        = $DATABASE_PORT;
 $irodsConfigVariables{ "DATABASE_ADMIN_NAME" }  = $DATABASE_ADMIN_NAME;
 $irodsConfigVariables{ "DATABASE_ADMIN_PASSWORD" } = $DATABASE_ADMIN_PASSWORD;
 
-$configMkVariables{ "GSI_AUTH" } = $GSI_AUTH;
-$configMkVariables{ "GLOBUS_LOCATION" } = $GLOBUS_LOCATION;
-$configMkVariables{ "GSI_INSTALL_TYPE" } = $GSI_INSTALL_TYPE;
-
+if ($GSI_AUTH == 1) {
+	$configMkVariables{ "GSI_AUTH" } = $GSI_AUTH;
+	$configMkVariables{ "GLOBUS_LOCATION" } = $GLOBUS_LOCATION;
+	$configMkVariables{ "GSI_INSTALL_TYPE" } = $GSI_INSTALL_TYPE;
+}
 
 if ( $DATABASE_ODBC_TYPE =~ /unix/i )
 {
