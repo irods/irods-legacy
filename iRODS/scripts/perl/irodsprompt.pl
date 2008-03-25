@@ -1169,7 +1169,7 @@ sub promptForNewPostgresConfiguration( $ )
 	}
 	else
 	{
-		$databaseServerExclusive = 0;
+		$databaseServerExclusive = 1;
 	}
 }
 
