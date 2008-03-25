@@ -98,6 +98,8 @@ try {
     $destfile->open('w',$resource);
     $destfile->write(file_get_contents($tempuploadfilepath));
     $destfile->close();
+    if (AUTO_EXTRACT_EXIF === true)
+      extactExif($tempuploadfilepath,$destfile);
     $numfiles++; 
     unlink($tempuploadfilepath); 
   }
@@ -111,5 +113,50 @@ try {
 } catch (Exception $e) {
   $response=array('success'=> false, 'errmsg'=> $e->getMessage(), 'errcode'=>$e->getCode());
   echo json_encode($response);
+}
+
+function extactExif($localfile, $remoteRODSfile)
+{
+  $exif = exif_read_data($localfile, 'EXIF');
+  if ($exif===false) return;
+  
+  foreach ($exif as $name => $val) {
+    
+    if ($name=='THUMBNAIL')
+    {
+      foreach ($val as $tname => $tval) 
+        $remoteRODSfile->addMeta(new RODSMeta(
+          'EXIF.THUMBNAIL.'.$tname, $tval, ''));
+    }
+    else
+    if ($name=='COMPUTED')
+    {
+      foreach ($val as $cname => $cval) 
+      {
+        if ($cname=='html') 
+        {
+          //skip html tag, because there is a irods server bug that corrupting string with 
+          //double quotes: 'COMPUTED.html: width="3264" height="2448"'  
+        }
+        else
+          $remoteRODSfile->addMeta(new RODSMeta(
+            'EXIF.COMPUTED.'.$cname, $cval, ''));
+      }
+    }
+    else
+    if ($name=='MakerNote')
+    {
+      //skip makernote  
+    } 
+    else
+    if ($name=='ComponentsConfiguration')
+    {
+      //skip ComponentsConfiguration, because there is a irods server bug that corrupting string with 
+         
+    }  
+    else  
+      $remoteRODSfile->addMeta(new RODSMeta(
+        'EXIF.'.$name, $val, ''));
+  }
 }
 ?>
