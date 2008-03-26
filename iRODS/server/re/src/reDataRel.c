@@ -16,7 +16,6 @@
 
 #define  My_linux_platform
 #ifdef My_linux_platform
-// msiHumanToSystemTime
 
 int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
 				       msParam_t * outParam1,
@@ -29,7 +28,7 @@ int msiChkDataType (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam
 int msiChkDataSize (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3, msParam_t *outParam, ruleExecInfo_t *rei) {return(0);}
 int msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3, msParam_t *outParam, ruleExecInfo_t *rei) {return(0);}
 int msiGJK2 (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei) {return(0);}
-int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei) {return(0);} /* missing at all ?! */
+/* int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei) {return(0);} / * missing at all ?! */
 #else
 
 /* #include "ChkDataObjAttr2.c" */
