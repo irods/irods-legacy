@@ -293,6 +293,7 @@ serverExit ()
 #endif
 {
     rodsLog (LOG_NOTICE, "rodsServer caught signal %d, exiting", sig);
+    recordServerProcess(NULL); /* unlink the process id file */
     exit (1);
 }
 
@@ -517,16 +518,26 @@ setRsCommFromRodsEnv (rsComm_t *rsComm)
     return (0);
 }
 
+/* record the server process number and other information into
+   a well-known file.  If svrComm is Null and this has created a file
+   before, just unlink the file. */
 int
 recordServerProcess(rsComm_t *svrComm) {
     int myPid;
     FILE *fd;
     DIR  *dirp;
-    char filePath[100];
+    static char filePath[100]="";
     char cwd[1000];
     char stateFile[]="irodsServer";
     char *tmp;
     char *cp;
+
+	 if (svrComm == NULL) {
+		 if (filePath[0]!='\0') {
+			 unlink(filePath);
+		 }
+		 return 0;
+	 }
     rodsEnv *myEnv = &svrComm->myEnv;
     
     /* Use /usr/tmp if it exists, /tmp otherwise */
@@ -550,7 +561,7 @@ recordServerProcess(rsComm_t *svrComm) {
        if (fd>0) {
 	  fprintf(fd, "%d %s\n", myPid, cwd);
 	  fclose(fd);
-	  chmod(filePath, 0644);
+	  chmod(filePath, 0664);
        }
     }
 
