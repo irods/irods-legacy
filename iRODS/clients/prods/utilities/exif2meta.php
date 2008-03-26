@@ -10,6 +10,8 @@ $pass='RODS';
 /**
  * This simple script reads JPEG/TIFF files stored in iRODS, extract
  * its EXIF information, and set it as userdefined metadata.
+ * Note: EXIF php module is required for this program to work properly
+ *       http://us2.php.net/manual/en/ref.exif.php
  *
  * Example: php -f exif2meta.php /tempZone/home/rods/test2/RIMG0087.jpg
  */
