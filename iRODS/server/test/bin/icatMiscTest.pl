@@ -203,5 +203,6 @@ runCmd(0, "test_chl open");
 runCmd(0, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin rmuser $User2");
 runCmd(0, "iadmin rmresc $Resc2");
+runCmd(0, "rm -rf $Resc2Path");
 
 printf("Success\n");

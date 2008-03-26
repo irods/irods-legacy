@@ -520,6 +520,7 @@ runCmd(0, "iadmin lr $Resc2");
 
 # finished with temp resource
 runCmd(0, "iadmin rmresc $Resc2");
+runCmd(0, "rm -rf $Resc2Path");
 
 # Test rmuser and clean up user added for test
 runCmd(0, "iadmin rmuser $U2");
