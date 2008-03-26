@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* working, DRAFT, versio, It WILL be cleaned! */
+/* working, DRAFT, versio, It WILL be cleaned soon! */
 
 #include <stdarg.h>
 #if !defined(osx_platform)
@@ -14,10 +14,37 @@
 #include "reGlobalsExtern.h"
 #include "reDataRel.h"
 
+#define  My_linux_platform
+#ifdef My_linux_platform
+// msiHumanToSystemTime
+
+int msiGetDataObjChksumsTimeStampsFromAVU (msParam_t * inpParam1,
+				       msParam_t * outParam1,
+				       ruleExecInfo_t * rei) {return(0);}
+int msiAddDataObjChksumsTimeStampsToAVU (msParam_t * inpParam1,
+				     msParam_t * outParam1,
+				     ruleExecInfo_t * rei){return(0);}
+int msiChkRechkRecompChkSum4DatObj (msParam_t *coll, msParam_t * inpParam2, msParam_t *outParam, ruleExecInfo_t *rei) {return(0);}
+int msiChkDataType (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3, msParam_t *outParam, ruleExecInfo_t *rei) {return(0);}
+int msiChkDataSize (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3, msParam_t *outParam, ruleExecInfo_t *rei) {return(0);}
+int msiChkDataObjACL3 (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam3, msParam_t *outParam, ruleExecInfo_t *rei) {return(0);}
+int msiGJK2 (msParam_t * inpParam1, msParam_t * outParam1, ruleExecInfo_t * rei) {return(0);}
+int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei) {return(0);} /* missing at all ?! */
+#else
+
 /* #include "ChkDataObjAttr2.c" */
 #include "srcEvBiWe2Ta1.c"
 #include "srcEvBiWe2Ta2.c"
 #include "srcEvBiWe2Ta3.c"
+
+#include "srcEvBiWe2Ta6.c"
+#include "srcEvBiWe2Ta7.c"
+
+#include "srcEvBiWe3Ta1.c"
+#include "srcEvBiWe4Ta1.c"
+
+//#include "junk5.c"
+
 
 /*
  * \fn msiRecurzzzColl
@@ -1167,4 +1194,175 @@ intGetDataObjChksumsTimeStampsFromAVU1 (collInp_t * ptrInpColl,
 
   return (*iTotalAVUs);
 }
+#endif
+
+
+/* ****************************************************************************************** */
+
+int
+intGetDataObjChksumsTimeStampsFromAVU9 (collInp_t * ptrInpColl,
+				       UserDefinedMetadata_t * aAVUarray,
+				       int *iTotalAVUs, char *strOut,
+				       ruleExecInfo_t * rei)
+{
+  char *chrPtr1 =
+    NULL, strAbsPath[MAX_NAME_LEN], v1[1024], v2[1024], v3[1024],
+    strDirName[MAX_NAME_LEN], strFileName[MAX_NAME_LEN], *condVal[10],
+    attrName[256] = "" /* give me any attribute */;
+  genQueryInp_t genQueryInp;
+  int i1a[10], i1b[10], i2a[10], iI = 0, iErr = 0, printCount = 0;
+  genQueryOut_t *genQueryOut;
+
+  chrPtr1 = strrchr (ptrInpColl->collName, '/');
+  printf
+    ("GJK-P P.21.0.1. in intGetDataObjChksumsTimeStampsFromAVU9(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
+     chrPtr1, ptrInpColl->collName);
+  if (chrPtr1 != NULL && *chrPtr1 == '/'
+      && (ptrInpColl->collName[strlen (ptrInpColl->collName) - 1] == '/'))
+    *chrPtr1 = 0;		/* replace '/' in /myzone/foo/' */
+/*
+  else printf
+  ("GJK-P P.21.1.1. in intGetDataObjChksumsTimeStampsFromAVU9(), chrPtr1=(%s), ptrInpColl->collName=(%s), Pmath=%d, strlen=%d\n",
+  chrPtr1, ptrInpColl->collName, (int)(chrPtr1 - ptrInpColl->collName), (strlen (ptrInpColl->collName) - 1));
+  */
+
+  /* spatne !!!if (chrPtr1 != NULL && *chrPtr1 == '/' &&)    *chrPtr1 = 0;               replace '/' in /myzone/foo/' */
+  printf
+    ("GJK-P P.21.0.2. in intGetDataObjChksumsTimeStampsFromAVU9(), chrPtr1=(%s), ptrInpColl->collName=(%s)\n",
+     chrPtr1, ptrInpColl->collName);
+
+  if ((iI = isData (rei->rsComm, ptrInpColl->collName, NULL)) >= 0)
+    {
+      rodsLog (LOG_NOTICE,
+	       "GJK intGetDataObjChksumsTimeStampsFromAVU9: input (%s) is data.",
+	       ptrInpColl->collName);
+    }
+  else
+    {
+      printf
+	("GJK-P P.21.0.3. in intGetDataObjChksumsTimeStampsFromAVU9(), chrPtr1=(%s), ptrInpColl->collName=(%s), iI=%d\n",
+	 chrPtr1, ptrInpColl->collName, iI);
+      if ((iI = isColl (rei->rsComm, ptrInpColl->collName, NULL)) < 0)
+	{
+	  rodsLog (LOG_ERROR,
+		   "iGetDataObjChksumsTimeStampsFromAVU: input object=(%s) is not data or collection. Exiting!",
+		   ptrInpColl->collName);
+	  /* return (rei->status); */
+	}
+      else
+	{
+	  rodsLog (LOG_ERROR,
+		   "GJK intGetDataObjChksumsTimeStampsFromAVU9: input (%s) is a collection.",
+		   ptrInpColl->collName);
+	  /* return (rei->status); */
+	}
+    }
+
+  printf ("GJK-P P.21.0.4. intGetDataObjChksumsTimeStampsFromAVU9 : input (%s)", ptrInpColl->collName);
+
+  if (rei->rsComm == NULL)
+    {
+      rodsLog (LOG_ERROR, "GJKgetDataObjPSmeta: input rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+  memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+  i1a[0] = COL_META_DATA_ATTR_NAME;
+  i1b[0] = 0;			/* currently unused */
+  i1a[1] = COL_META_DATA_ATTR_VALUE;
+  i1b[1] = 0;			/* currently unused */
+  i1a[2] = COL_META_DATA_ATTR_UNITS;
+  i1b[2] = 0;			/* currently unused */
+  genQueryInp.selectInp.inx = i1a;
+  genQueryInp.selectInp.value = i1b;
+  genQueryInp.selectInp.len = 3;
+
+  strncpy (strAbsPath, ptrInpColl->collName, MAX_NAME_LEN);
+  printf
+    ("GJK-P P.14.0.11. in intGetDataObjChksumsTimeStampsFromAVU9(), strAbsPath=(%s), ptrInpColl->collName=(%s)\n",
+     strAbsPath, ptrInpColl->collName);
+
+  iErr = splitPathByKey (strAbsPath, strDirName, strFileName, '/');
+
+  printf
+    ("GJK-P P.14.0.12. in intGetDataObjChksumsTimeStampsFromAVU9(), strAbsPath=(%s), ptrInpColl->collName=(%s), strDirName=(%s), strFileName=(%s), iErr=%d\n",
+     strAbsPath, ptrInpColl->collName, strDirName, strFileName, iErr);
+
+  i2a[0] = COL_COLL_NAME;
+  sprintf (v1, "='%s'", strDirName);
+  condVal[0] = v1;
+
+  i2a[1] = COL_DATA_NAME;
+  sprintf (v2, "='%s'", strFileName);
+  condVal[1] = v2;
+
+  genQueryInp.sqlCondInp.inx = i2a;
+  genQueryInp.sqlCondInp.value = condVal;
+  genQueryInp.sqlCondInp.len = 2;
+
+  if (attrName != NULL && *attrName != '\0')
+    {
+      i2a[2] = COL_META_DATA_ATTR_NAME;
+      sprintf (v3, "= '%s'", attrName);
+      condVal[2] = v3;
+      genQueryInp.sqlCondInp.len++;
+    }
+
+  genQueryInp.maxRows = 100;
+  genQueryInp.continueInx = 0;
+  genQueryInp.condInput.len = 0;
+
+  printf
+    ("GJK-P P.14.0.13. in intGetDataObjChksumsTimeStampsFromAVU9(), strAbsPath=(%s), ptrInpColl->collName=(%s), v3=(%s), iErr=%d\n",
+     strAbsPath, ptrInpColl->collName, v3, iErr);
+
+  /* Actual query happens here */
+  iErr = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+
+  printf
+    ("GJK-P P.14.0.14. in intGetDataObjChksumsTimeStampsFromAVU9(), strAbsPath=(%s), ptrInpColl->collName=(%s), iErr=%d\n",
+     strAbsPath, ptrInpColl->collName, iErr);
+
+  if (iErr == CAT_NO_ROWS_FOUND)
+    {
+      i1a[0] = COL_D_DATA_PATH;
+      genQueryInp.selectInp.len = 1;
+      iErr = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+      if (iErr == 0)
+	{
+	  printf ("GJK GJKgetDataObjPSmeta(),  iErr=%d, None\n", iErr);
+	  return (0);
+	}
+      if (iErr == CAT_NO_ROWS_FOUND)
+	{
+
+	  rodsLog (LOG_NOTICE,
+		   "GJKgetDataObjPSmeta: DataObject %s not found. iErr = %d",
+		   strAbsPath, iErr);
+	  *iTotalAVUs = 0;
+	  return (0);
+	}
+      printCount += intFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* proc?? */
+    }
+  else
+    {
+      printCount += intFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* proc?? */
+    }
+
+  while (iErr == 0 && genQueryOut->continueInx > 0)
+    {
+      genQueryInp.continueInx = genQueryOut->continueInx;
+      iErr = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+      printCount += intFindChkSumDateAvuMetadata (iErr, genQueryOut, strAbsPath, aAVUarray, iTotalAVUs);	/* why ?? */
+    }
+
+  printf
+    ("GJK-P P.14.1.15. in intGetDataObjChksumsTimeStampsFromAVU9(), strAbsPath=(%s), ptrInpColl->collName=(%s), iErr=%d, *iTotalAVUs=%d\n",
+     strAbsPath, ptrInpColl->collName, iErr, *iTotalAVUs);
+
+  return (*iTotalAVUs);
+}
+
+/* of #ifdef linux_platform */
 #endif

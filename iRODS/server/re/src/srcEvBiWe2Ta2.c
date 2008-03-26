@@ -80,6 +80,7 @@ int msiChkDataSize (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam
     if ((strTimeDiff = parseMspForStr (inpParam2)) != NULL)
       {
 	lMin = strtol (strTimeDiff, (char **) NULL, 10);
+        printf("GJK ########################## p2=(%s)\n", strTimeDiff);
       }
     else
       {
@@ -95,6 +96,7 @@ int msiChkDataSize (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam
     if ((strTimeDiff = parseMspForStr (inpParam3)) != NULL)
       {
 	lMax = strtol (strTimeDiff, (char **) NULL, 10);
+        printf("GJK ########################## p3=(%s)\n", strTimeDiff);
       }
     else
       {
@@ -106,6 +108,7 @@ int msiChkDataSize (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam
 	return (-1);
       }
     
+    return(0);
 
 /* iterate through all files */
     memset (&genQueryInp, 0, sizeof (genQueryInp));
@@ -123,30 +126,30 @@ int msiChkDataSize (msParam_t *coll, msParam_t * inpParam2, msParam_t * inpParam
     addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1); 
 
     status = rsQueryDataObjInCollReCur (rsComm, myCollInp->collName, 
-      &genQueryInp, &genQueryOut, NULL, 1);
-
-printf("GJK- begin 0001.0.1 status=(%d), myCollInp->collName=(%s)\n", status, myCollInp->collName);
-
-printf("GJKa2a myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp->collName);
-rstrcpy(myGlbPar1, myCollInp->collName, MAX_NAME_LEN);
-printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp->collName);
-
+					&genQueryInp, &genQueryOut, NULL, 1);
+    
+    printf("GJK- begin 0001.0.1 Sat Mar  1 21:16:44 PST 2008 status=(%d), myCollInp->collName=(%s)\n", status, myCollInp->collName);
+    
+    printf("GJKa2a myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp->collName);
+    rstrcpy(myGlbPar1, myCollInp->collName, MAX_NAME_LEN);
+    printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp->collName);
+    
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-    	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-    	  "msiChkDataSize: msiChkDataSize error for %s, stat=%d",
-    	  myCollInp->collName, status);
-    	rei->status=status;
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+			  "msiChkDataSize: msiChkDataSize error for %s, stat=%d",
+			  myCollInp->collName, status);
+      rei->status=status;
       return (rei->status);
     }
-
+    
     while (rei->status >= 0) {
       sqlResult_t *subColl, *dataObj, *sqlDatSize;
-
+      
       /* get sub coll paths in the batch */
       subColl = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
       dataObj = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
       sqlDatSize = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
-
+      
       if (sqlDatSize == NULL) {
 	printf ("GJK-P P.003.2.2 ERROR sqlDatSize == NULL, dataObjInp.objPath=(%s), genQueryOut->rowCnt=(%d), i=(%d)\n", dataObjInp.objPath, genQueryOut->rowCnt, i);
       }
@@ -175,10 +178,10 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
       /* get data names in the batch */
       if ((dataObj = getSqlResultByInx (genQueryOut, COL_DATA_NAME))
           == NULL) {
-            rodsLog (LOG_ERROR, 
-              "msiChkDataSize: msiChkDataSize for COL_DATA_NAME failed");
-            rei->status=UNMATCHED_KEY_OR_INDEX;   
-            return (rei->status);
+	rodsLog (LOG_ERROR, 
+		 "msiChkDataSize: msiChkDataSize for COL_DATA_NAME failed");
+	rei->status=UNMATCHED_KEY_OR_INDEX;   
+	return (rei->status);
       }
       
       for (i = 0; i < genQueryOut->rowCnt; i++) {
@@ -187,47 +190,51 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
         tmpSubColl = &subColl->value[subColl->len * i];
         tmpDataName = &dataObj->value[dataObj->len * i];
         tmpDataSize = &sqlDatSize->value[sqlDatSize->len * i];
+	
+	snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
+		  tmpSubColl, tmpDataName);
 
-snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
-              tmpSubColl, tmpDataName);
-
+	printf ("GJK-P P.000300.33.1o genQueryOut->rowCnt=(%d), i=(%d), tmpSubColl=(%s), tmpDataName=(%s)\n", 
+		genQueryOut->rowCnt, i, tmpSubColl, tmpDataName);
+	
 #define no18
 #ifdef no18
-    {
-    rodsObjStat_t *rodsObjStatOut;
-    int status7;
-    genQueryInp_t genQueryInp7;    
-    dataObjInp_t myDataObjInp7;
-
-    /* check for valid connection */
-    if (rsComm == NULL) {
-        rodsLog (LOG_ERROR, "msiChkDataSize(): input rsComm is NULL");
-        return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-    
-    memset (&genQueryInp7, 0, sizeof (genQueryInp_t));
-    memset (&myDataObjInp7, 0, sizeof (dataObjInp_t));
-    rstrcpy(myDataObjInp7.objPath, dataObjInp.objPath, MAX_NAME_LEN);  /* rstrcpy(destination, source, max_len) */
-    status7 = rsObjStat(rsComm, &myDataObjInp7, &rodsObjStatOut);
-if ((long)rodsObjStatOut->objSize <= lMin) iCountMin++;
-if ((long)rodsObjStatOut->objSize >= lMax) iCountMax++;
-if ((long)rodsObjStatOut->objSize > lMin && (long)rodsObjStatOut->objSize < lMax) iCountMid++;
-
-    }
+	{
+	  rodsObjStat_t *rodsObjStatOut;
+	  int status7;
+	  genQueryInp_t genQueryInp7;    
+	  dataObjInp_t myDataObjInp7;
+	  
+	  /* check for valid connection */
+	  if (rsComm == NULL) {
+	    rodsLog (LOG_ERROR, "msiChkDataSize(): input rsComm is NULL");
+	    return (SYS_INTERNAL_NULL_INPUT_ERR);
+	  }
+	  
+	  memset (&genQueryInp7, 0, sizeof (genQueryInp_t));
+	  memset (&myDataObjInp7, 0, sizeof (dataObjInp_t));
+	  rstrcpy(myDataObjInp7.objPath, dataObjInp.objPath, MAX_NAME_LEN);  /* rstrcpy(destination, source, max_len) */
+	  status7 = rsObjStat(rsComm, &myDataObjInp7, &rodsObjStatOut);
+	  if ((long)rodsObjStatOut->objSize <= lMin) iCountMin++;
+	  if ((long)rodsObjStatOut->objSize >= lMax) iCountMax++;
+	  if ((long)rodsObjStatOut->objSize > lMin && (long)rodsObjStatOut->objSize < lMax) iCountMid++;
+	  printf ("GJK-P P.000301.34.2p rodsObjStatOut->objSize=(%ld)\n", (long)rodsObjStatOut->objSize);
+	  
+	}
 #endif
-    /*
-typedef struct DataObjInp {
-    char objPath[MAX_NAME_LEN];
-    int createMode;
-    int openFlags;      / * used for specCollInx in rcQuerySpecColl * /
-    rodsLong_t offset;
-    rodsLong_t dataSize;
-    int numThreads;
-    int oprType;
-    specColl_t *specColl;
-    keyValPair_t condInput;   / * include chksum flag and value * /
-      } dataObjInp_t;
-*/
+	/*
+	  typedef struct DataObjInp {
+	  char objPath[MAX_NAME_LEN];
+	  int createMode;
+	  int openFlags;      / * used for specCollInx in rcQuerySpecColl * /
+	  rodsLong_t offset;
+	  rodsLong_t dataSize;
+	  int numThreads;
+	  int oprType;
+	  specColl_t *specColl;
+	  keyValPair_t condInput;   / * include chksum flag and value * /
+	  } dataObjInp_t;
+	*/
     /*
     typedef struct rodsObjStat {
       rodsLong_t          objSize;        / * file size * /
