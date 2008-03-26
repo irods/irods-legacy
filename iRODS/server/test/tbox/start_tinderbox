@@ -1,6 +1,9 @@
 #!/bin/bash
 
 myhost=`hostname --long`
+if [ "$?" -ne 0 ]; then
+   myhost=`hostname`
+fi
 
 TINDERCLIENT="./tinderclient.pl"
 URL="http://tinderbox.sdsc.edu/srb"

@@ -70,6 +70,10 @@ cat server/test/bin/*.log
 ls -lt /tmp/test*
 cat /tmp/test*
 
+# Record the build log into the main log file available via the web
+ls -lt installLogs/installMake.log
+cat installLogs/installMake.log
+
 ./irodsctl stop
 # remember error code
 error4=$?
