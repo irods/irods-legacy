@@ -142,6 +142,9 @@ $irodsServerConfigDir = File::Spec->catdir( $IRODS_HOME, "server", "config" );
 # Directory for the server log.
 $irodsLogDir    = File::Spec->catdir( $IRODS_HOME, "server", "log" );
 
+# Postgres bin dir.
+$postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
+
 # iRODS Server names
 %servers = (
 	# Nice name		process name
@@ -1206,11 +1209,14 @@ sub getDatabaseProcessId
 
 	if ( $DATABASE_TYPE eq "postgres" )
 	{
-		my @pids = getProcessIds( "(postgres)" );
-		if ( $#pids >= 0 )
-		{
-			# Return the first one only?
-			($pid) = $pids[0];
+		my $i, $j;
+		my $output = `$pgctl status 2>&1`;
+ 		if ( $? == 0 ) {
+			$i=index($output, "PID: ");
+			$j=index($output, ")");
+			if ($i>1 && $j>$i+5) {
+				($pid) = substr($output,$i+5, $j-$i-5);
+			}
 		}
 	}
 

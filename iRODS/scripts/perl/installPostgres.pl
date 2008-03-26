@@ -852,6 +852,15 @@ sub prepare()
 		return;
 	}
 
+# Check if it's running on the port we want to use
+	my $output = `ls  /tmp/.s.PGSQL.*.lock`;
+	my $i = index($output, $POSTGRES_PORT);
+	if ($i < 0) {
+		printStatus( "    Skipped.  No servers running on our port.\n" );
+		printLog( "No Postgres servers running on our port.\n" );
+		return;
+	}
+
 	# Postgres is already running.  That's a problem.  What should we do?
 	printError( "\nInstall problem:\n" );
 	printError( "    Postgres is already installed and running on this system.\n" );
@@ -871,6 +880,11 @@ sub prepare()
 		printError( "        You do not need to install Postgres again.  You can re-use the\n" );
 		printError( "        the existing installation.  Please see the iRODS documentation\n" );
 		printError( "        for how to set this up.\n" );
+		printError( "\n");
+		printError( "    If you want to run a separate independent Portgres:\n" );
+		printError( "        You can install your own Postgres on a different port by\n" );
+		printError( "        rerunning this script and specifying an alternative port for\n" );
+		printError( "        your Postgres to use.\n");
 		printError( "\n");
 		printError( "    If a prior Postgres or iRODS installation failed:\n" );
 		printError( "        Sorry about that.  A failed installation may have left Postgres\n" );
