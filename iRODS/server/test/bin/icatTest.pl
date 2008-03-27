@@ -329,8 +329,8 @@ runCmd(0, "irm -f -r $D1");
 
 # ModUser
 $UA = $U2 . "a";
-runCmd(0, "iadmin moduser $U2 name $UA");
-runCmd(0, "iadmin moduser $UA name $U2");
+#runCmd(0, "iadmin moduser $U2 name $UA");  # moduser name no longer allowed
+#runCmd(0, "iadmin moduser $UA name $U2");  # moduser name no longer allowed
 runCmd(2, "iadmin moduser $U2 type badUserType");
 runCmd(0, "iadmin moduser $U2 type rodsadmin");
 runCmd(0, "iadmin moduser $U2 type rodsuser");
