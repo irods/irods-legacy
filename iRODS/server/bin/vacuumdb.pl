@@ -21,7 +21,6 @@ sub logMsg {
 # Adjustable parameters:
 $sleepSecs=70;
 $sleepRetries=10;
-$DB_NAME="ICAT";
 $minutesInactive=4;  # minutes iRods must be inactive
 
 #
@@ -42,12 +41,12 @@ $i = rindex($tmp, "/");
 $myDir = substr($tmp, 0, $i);
 
 
-# Normally, you need not change following values, but you may if you
-# didn't use the install.pl script or you moved this script.
-$stopScript="$myDir/stop.pl";
-$startScript="$myDir/start.pl";
+# Set up some needed paths.
+$irodsctlScript="$myDir/../../irodsctl";
 $logDir="$myDir/../log";
-$postgresBin="$myDir/../../../iRodsPostgres/pgsql/bin";
+$irodsConfig="$myDir/../../config/irods.config";
+require $irodsConfig; # get the $DB_NAME and $DATABASE_HOME
+$postgresBin="$DATABASE_HOME/bin";
 $myLogFile="$logDir/vacuumdb.log";
 
 # Open the log file
@@ -112,8 +111,9 @@ if ($active) {
 #
 # Stop the iRODS server
 #
-logMsg "Stopping the iRODS server, etc";
-`yes | $stopScript`;
+logMsg "Stopping the iRODS server";
+$output = `$irodsctlScript istop`;
+logMsg $output;
 
 #
 # Sleep a bit to let postgres cleanup
@@ -124,18 +124,17 @@ sleep(2);
 #
 # Run the vacuumdb
 #
-$DB_NAME="ICAT";
 chdir("$postgresBin");
 $nowDir=`pwd`;
 chomp($nowDir);
 logMsg "cd'ed to " . $nowDir;
-logMsg "Running vacuumdb";
-#`$postgresBin/vacuumdb -f -z $DB_NAME`;
-`./vacuumdb -f -z -q -d $DB_NAME`;
+logMsg "Running vacuumdb -f -z -d $DB_NAME";
+$output = `./vacuumdb -f -z -d $DB_NAME`;
 $status=$?;
 if ($status) {
     logMsg "vacuumdb failed";
 }
+logMsg "$output";
 
 #
 # Restart the iRODS server
@@ -145,9 +144,10 @@ chomp($nowDir);
 logMsg "cd'ed to " . $nowDir;
 
 logMsg "Restarting iRODS servers";
-`$startScript`;
+$output = `$irodsctlScript istart`;
+logMsg $output;
+
 
 logMsg "vacuumdb.pl exiting";
 close F;
-
 
