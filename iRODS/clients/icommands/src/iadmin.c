@@ -828,7 +828,7 @@ void usageMain()
 " lrg [name] (list resource group info)",
 " lf DataId (list file details; DataId is the number (from ls))",
 " mkuser Name Type [DN] (make user, where userName: name[@department][#zone])",
-" moduser Name [ name | type | zone | DN | comment | info | password ] newValue",
+" moduser Name [ type | zone | DN | comment | info | password ] newValue",
 " rmuser Name (remove user, where userName: name[@department][#zone])",
 " mkdir Name (make directory(collection))",
 " rmdir Name (remove directory) ",
@@ -949,15 +949,18 @@ usage(char *subOpt)
 
 
    char *moduserMsgs[]={
-" moduser Name [ name | type | zone | DN | comment | info | password ] newValue",
+" moduser Name [ type | zone | DN | comment | info | password ] newValue",
 "Modifies a field of an existing user definition.",
-"For GSI authentication, the DN can be entered via mkuser.",
+"For GSI authentication, the DN can also be entered via mkuser.",
 "For password authentication, use moduser to set the password.",
 "(The password is transferred in a scrambled form to be more secure.)",
 "Long forms of the field names may also be used:",
 "user_name, user_type_name, zone_name, user_distin_name, user_info, or ",
 "r_comment",
 "These are the names listed by 'lu' (and are the database table column names).",
+"Modifying the user's name (user_name) is not allowed; instead remove the user",
+"and create a new one.  rmuser/mkuser will remove (if empty) and create the needed",
+"collections too.",
 ""};
    char *rmuserMsgs[]={
 " rmuser Name (remove user, where userName: name[@department][#zone])",
@@ -1038,25 +1041,28 @@ usage(char *subOpt)
 
    char *pvMsgs[]={
 " pv [date-time] [minutes] (initiate a periodic rule to vacuum the DB)",
-" The date-time value is the time of day to run the first time,",
-" for example 2006-12-07-23.00.00 .",
-" The minutes value is the time between each subsequent run.",
-" For example, you would use 1440 (24*60) to run it daily at the same time.",
-" 'pv 2006-12-30-23:59:00 1440' will run the pv rule/script each night one",
-" minute before midnight.",
-" With no arguments, pv will run the rule now and only once.",
-" Without a minutes argument, pv will run the rule only once.",
-" Run iqstat to view the queued rule.",
+"The pv command will shutdown your irods Servers (if they have been",
+"inactive a while), perform a db vacuum, and then restart them.",
+"The date-time value is the time of day to run the first time,",
+"for example 2006-12-07-23.00.00 .",
+"The minutes value is the time between each subsequent run.",
+"For example, you would use 1440 (24*60) to run it daily at the same time.",
+"'pv 2006-12-30-23:59:00 1440' will run the pv rule/script each night one",
+"minute before midnight.",
+"With no arguments, pv will run the rule now and only once.",
+"Without a minutes argument, pv will run the rule only once.",
+"Run iqstat to view the queued rule.",
+"See the vacuumdb.pl script (which is run by the rule) for details.",
 ""};
 
    char *ctimeMsgs[]={
 " ctime Time (convert a iRODSTime value (integer) to local time",
-" Time values (modify times, access times) are stored in the database",
-" as a Unix Time value.  This is the number of seconds since 1970 and",
-" is the same in all time zones (basically, Coordinated Universal Time).",
-" ils and other utilities will convert it before displaying it, but iadmin"
-" displays the actual value in the database.  You can enter the value to"
-" the ctime command to convert it to your local time.",
+"Time values (modify times, access times) are stored in the database",
+"as a Unix Time value.  This is the number of seconds since 1970 and",
+"is the same in all time zones (basically, Coordinated Universal Time).",
+"ils and other utilities will convert it before displaying it, but iadmin"
+"displays the actual value in the database.  You can enter the value to"
+"the ctime command to convert it to your local time.",
 ""};
 
    char *helpMsgs[]={
@@ -1097,7 +1103,5 @@ usage(char *subOpt)
 	    printMsgs(pMsgs[i]);
 	 }
       }
-      printf("%s is an invalid command, try 'h'\n",
-	     subOpt);
    }
 }
