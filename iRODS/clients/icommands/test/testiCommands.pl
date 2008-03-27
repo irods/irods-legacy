@@ -255,6 +255,8 @@ runCmd( "iadmin lg", "negtest", "LIST", "resgroup" );
 runCmd( "iadmin lr", "negtest", "LIST", "testresource" );
 runCmd( "irmtrash" );
 runCmd( "iexit full" );
+`/bin/rm -rf /tmp/foo`;# remove the vault for the testresource; needed in case
+                       # another unix login runs this test on this host
 
 #-- print the result of the test into testSurvey.log
 
