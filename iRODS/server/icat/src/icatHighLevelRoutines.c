@@ -2655,6 +2655,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    auditComment[0]='\0';
    strncpy(auditUserName,userName,100);
 
+#if 0
+	/* no longer allow modifying the user's name since it would 
+      require moving the home and trash/home collections too */
    if (strcmp(option,"name" )==0 ||
        strcmp(option,"user_name" )==0) {
       snprintf(tSQL, MAX_SQL_SIZE, form1,
@@ -2663,11 +2666,12 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=userName;
       cllBindVars[cllBindVarCount++]=localZone;
-      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 1 ");
+      if (logSQL) rodsLog(LOG_SQL, "chlModUserSQLxx1x");
       auditId = AU_MOD_USER_NAME;
       strncpy(auditComment, userName, 100);
       strncpy(auditUserName,newValue,100);
    }
+#endif
    if (strcmp(option,"type")==0 ||
        strcmp(option,"user_type_name")==0) {
       char tsubSQL[MAX_SQL_SIZE];
