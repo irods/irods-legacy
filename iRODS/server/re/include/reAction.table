@@ -36,13 +36,6 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
 int msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, 
 	msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei);
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiGetDataObjChksumsTimeStampsFromAVU(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiAddDataObjChksumsTimeStampsToAVU(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiChkRechkRecompChkSum4DatObj(msParam_t* queryParam1, msParam_t* queryParam2, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiChkDataType(msParam_t* queryParam1, msParam_t* queryParam2, msParam_t* queryParam3, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiChkDataSize(msParam_t* queryParam1, msParam_t* queryParam2, msParam_t* queryParam3, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiChkDataObjACL3(msParam_t* queryParam1, msParam_t* queryParam2, msParam_t* queryParam3, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
-int msiGJK2(msParam_t* queryParam1, msParam_t* queryParam2, msParam_t* genQueryOutParam, ruleExecInfo_t *rei); 
 int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
 int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 		 msParam_t* queryOutParam, ruleExecInfo_t *rei);
@@ -168,13 +161,6 @@ microsdef_t MicrosTable[] = {
   {"ifExec",5,(funcPtr) ifExec},
   {"applyAllRules",3,(funcPtr) msiApplyAllRules},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
-  {"msiGetDataObjChksumsTimeStampsFromAVU",2,(funcPtr) msiGetDataObjChksumsTimeStampsFromAVU},
-  {"msiAddDataObjChksumsTimeStampsToAVU",2,(funcPtr) msiAddDataObjChksumsTimeStampsToAVU},
-  {"msiChkRechkRecompChkSum4DatObj",3,(funcPtr) msiChkRechkRecompChkSum4DatObj},
-  {"msiChkDataType", 4, (funcPtr) msiChkDataType},
-  {"msiChkDataSize", 4, (funcPtr) msiChkDataSize},
-  {"msiChkDataObjACL3", 4, (funcPtr) msiChkDataObjACL3},
-  {"msiGJK2",3,(funcPtr) msiGJK2},
   {"msiExecGenQuery",2,(funcPtr) msiExecGenQuery},
   {"msiMakeQuery",3,(funcPtr) msiMakeQuery},
   {"msiExecCmd",6,(funcPtr) msiExecCmd},
