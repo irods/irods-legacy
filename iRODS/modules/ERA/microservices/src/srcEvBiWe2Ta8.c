@@ -1,4 +1,4 @@
-// mozna potrebuju delku souboru?! Musim udelat vstup stejny (mozna vyvolat z verze #0 primo?
+/*  mozna potrebuju delku souboru?! Musim udelat vstup stejny (mozna vyvolat z verze #0 primo? */
 
 #include "objStat.h"
 
