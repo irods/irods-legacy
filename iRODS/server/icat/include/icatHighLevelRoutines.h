@@ -81,6 +81,8 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
 		char *value2, char *value3, char *comment);
 int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *Name);
 
+char *chlGetLocalZone();
+
 int sTableInit();
 int sFklink(char *table1, char *table2, char *connectingSQL);
 int sTable(char *tableName, char *tableAlias, int cycler);
