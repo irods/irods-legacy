@@ -129,3 +129,15 @@ else
 LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS) -z muldefs
 endif
 endif
+
+ifdef HAAW_STRUCT_FILE
+MY_CFLAG+= -DHAAW_STRUCT_FILE
+endif
+
+ifdef TAR_STRUCT_FILE
+MY_CFLAG+= -DTAR_STRUCT_FILE -I$(tarDir) -I$(tarDir)/listhash \
+                  -I${tarDir}/lib \
+                  -I${tarDir}/compat
+LDADD+=-L$(tarDir)/lib -ltar
+endif
+
