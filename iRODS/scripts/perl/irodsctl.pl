@@ -498,17 +498,24 @@ sub doStatus
 	}
 
 	# Report on database servers even if they are
-	# not under our control.
+	# not under our control but only for postgres (not Oracle).
 	printSubtitle( "Database servers:\n" );
-	my $databasePID = getDatabaseProcessId( );
-	if ( defined( $databasePID ) )
+	if ( $DATABASE_TYPE eq "oracle" )
 	{
-		printStatus( "Process $databasePID \n" );
+		printStatus( "Not applicable: DBMS is Oracle\n");
 	}
-	else
+	else 
 	{
-		printStatus( "No servers running\n" );
-	}
+		my $databasePID = getDatabaseProcessId( );
+		if ( defined( $databasePID ) )
+		{
+			printStatus( "Process $databasePID \n" );
+		}
+		else
+		{
+			printStatus( "No servers running\n" );
+		}
+	} 
 	setPrintVerbose( $verbosity );
 }
 
