@@ -292,11 +292,11 @@ logTheBindVariables(int level)
    char tmpStr[TMP_STR_LEN+2];
    for (i=0;i<cllBindVarCountPrev;i++) {
       snprintf(tmpStr, TMP_STR_LEN, "bindVar[%d]=:%s:", i+1, cllBindVars[i]);
-      if (level == LOG_ERROR) {
-	 rodsLog(level, tmpStr);
+      if (level == 0) {
+	 rodsLogSql(tmpStr);
       } 
       else {
-	 rodsLogSql(tmpStr);
+	 rodsLog(level, tmpStr);
       }
    }
 }
@@ -361,10 +361,11 @@ logExecuteStatus(int stat, char *sql, char *funcName) {
       return(0);
    }
    else {
-      rodsLog(LOG_NOTICE, 
+      logTheBindVariables(LOG_ERROR);
+      rodsLog(LOG_ERROR, 
 	      "%s OCIStmtExecute error: %d, sql:%s",
 	      funcName, stat, sql);
-      stat2 = logOraError(LOG_NOTICE, p_err, stat);
+      stat2 = logOraError(LOG_ERROR, p_err, stat);
       return(stat2);
    }
 }
@@ -614,7 +615,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 		       (CONST OCISnapshot *) NULL, (OCISnapshot *) NULL,
 			 OCI_DEFAULT);
 
-   stat2 = logExecuteStatus(stat, sql, "cllExecSqlWithResult");
+   stat2 = logExecuteStatus(stat, sqlConverted, "cllExecSqlWithResult");
 
    if (stat2) {
       return(stat2);

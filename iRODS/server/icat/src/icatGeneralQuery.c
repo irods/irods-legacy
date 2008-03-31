@@ -24,6 +24,7 @@
 
  */
 #include "rodsClient.h"
+#include "icatHighLevelRoutines.h"
 #include "icatMidLevelRoutines.h"
 #include "icatLowLevel.h"
 
@@ -1036,6 +1037,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    if (dataIx<0 && collIx<0) return(CAT_INVALID_ARGUMENT);
 
    if (dataIx>=0) {
+      char *zoneName;
       if (continueFlag==0) {
          if (strcmp(prevDataId, 
                 icss->stmtPtr[statementNum]->resultValue[dataIx])==0) {
@@ -1047,10 +1049,16 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 	      LONG_NAME_LEN);
       prevStatus=0;
 
+      if (strlen(genQueryInp.condInput.value[zoneIx])==0) {
+          zoneName = chlGetLocalZone();
+      }
+      else {
+          zoneName = genQueryInp.condInput.value[zoneIx];
+      }
       status = cmlCheckDataObjId(
 			      icss->stmtPtr[statementNum]->resultValue[dataIx],
 			      genQueryInp.condInput.value[userIx],
-			      genQueryInp.condInput.value[zoneIx],
+			      zoneName,
 			      genQueryInp.condInput.value[accessIx], icss);
       prevStatus=status;
       return(status);

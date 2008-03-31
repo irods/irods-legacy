@@ -173,6 +173,13 @@ getLocalZone()
    return(0);
 }
 
+/* return the local zone name */
+char *
+chlGetLocalZone() {
+   getLocalZone();
+   return(localZone);
+}
+
 /* 
  * chlModDataObjMeta - Modify the metadata of an existing data object. 
  * Input - rsComm_t *rsComm  - the server handle
