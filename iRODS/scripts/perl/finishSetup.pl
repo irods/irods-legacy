@@ -113,6 +113,7 @@ require File::Spec->catfile( $perlScriptsDir, "utils_print.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_file.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_platform.pl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_config.pl" );
+my $irodsctl = File::Spec->catfile( $perlScriptsDir, "irodsctl.pl" );
 
 # Get the path to Perl.  We'll use it for running other Perl scripts.
 my $perl = $Config{"perlpath"};
@@ -945,12 +946,12 @@ sub restartDatabase()
 
 	if ( ! $databaseRestartNeeded )
 	{
-		printStatus( "Restarting database...\n" );
+		printStatus( "Restarting database server...\n" );
 		printStatus( "    Skipped.  Not needed.\n" );
 		return;
 	}
 
-	printStatus( "Stopping database...\n" );
+	printStatus( "Stopping database server...\n" );
 	my $status = stopDatabase( );
 	if ( $status == 0 )
 	{
@@ -962,7 +963,7 @@ sub restartDatabase()
 		print( "    Skipped.  Database already stopped.\n" );
 	}
 
-	printStatus( "Starting database...\n" );
+	printStatus( "Starting database server...\n" );
 	$status = startDatabase( );
 	if ( $status == 0 )
 	{
@@ -1583,7 +1584,7 @@ sub configureIrodsUser
 		cleanAndExit( 1 );
 	}
 
-	($status,$output) = run( "$irm $tmpPutFile" );
+	($status,$output) = run( "$irm -f $tmpPutFile" );
 	if ( $status != 0 )
 	{
 		printError( "\nInstall problem:\n" );
@@ -1789,23 +1790,9 @@ sub startIrods()
 		return 2;
 	}
 
-	# Make sure the server is available
-	my $irodsServer  = File::Spec->catfile( $serverBinDir, "irodsServer" );
-	if ( ! -e $irodsServer )
-	{
-		printError( "Could not find the iRODS server.\n" );
-		printLog( "\nCould not find server:  $irodsServer\n" );
-		return 0;
-	}
+	($status,$output) = run( "$perl $irodsctl istart" );
 
-	# Prepare
-	my $startingDir = cwd( );
-	chdir( $serverBinDir );
-	umask( 077 );
-
-	# Start the server
-	my $output = `$irodsServer 2>&1`;
-	if ( $? != 0 )
+	if ( $status != 0 )
 	{
 		printError( "Could not start iRODS server.\n" );
 		printError( "    $output\n" );
@@ -1813,20 +1800,6 @@ sub startIrods()
 		printLog( "    $output\n" );
 		return 0;
 	}
-	chdir( $startingDir );
-
-	# Sleep a bit to give the server time to start and possibly exit
-	sleep( $databaseStartStopDelay );
-
-	# Check that it actually started
-	my %serverPids = getIrodsProcessIds( );
-	if ( (scalar keys %serverPids) == 0 )
-	{
-		printError( "iRODS server failed to start.\n" );
-		printLog( "\niRODS server failed to start.\n" );
-		return 0;
-	}
-
 	return 1;
 }
 
@@ -2429,6 +2402,7 @@ sub Postgres_ConfigureDatabaseUser()
 
 	# Replace the old one with the new one.
 	move( "$pgpass.new", $pgpass );
+	chmod( 0600, $pgpass );
 }
 
 

@@ -219,9 +219,11 @@ if ( -e $irodsConfig )
 	printNotice(
 		"A prior iRODS configuration file was found.  This script can\n",
 		"prompt you for changes, or use the same configuration again.\n",
+		"You can also change parameters by editing config/irods.config\n",
+		"and restarting this script.\n",
 		"\n" );
 	my $answer = promptYesNo(
-		"Use the existing iRODS configuration",
+		"Use the existing iRODS configuration without changes",
 		"yes" );
 
 	if ( $answer == 1 )
@@ -299,12 +301,11 @@ if ( -e $irodsConfig )
 
 # Standard or advanced?
 printNotice(
-	"For flexibility, iRODS has a lot of configuration options.  Most\n",
-	"sites should use the standard settings, but some sites may need\n",
-	"more control.\n",
-	"\n" );
+	"For flexibility, iRODS has a lot of configuration options.  Often\n",
+	"the standard settings are sufficient, but if you need more control\n",
+	"enter yes and additional questions will be asked.\n\n" );
 $advanced = promptYesNo(
-	"Prompt for advanced settings",
+	"Include additional prompts for advanced settings",
 	"no" );
 printSubtitle( "\n\n" );
 
@@ -346,14 +347,14 @@ if ( $installDataServer && $installCatalogServer &&
 {
 	printNotice(
 		"\n",
-		"Please be sure that the $databaseServerType database on '$databaseServerHost'\n",
+		"Please be sure that the $databaseServerType DBMS on '$databaseServerHost'\n",
 		"is started and ready before continuing.\n" );
 }
 if ( $installDataServer && !$installCatalogServer )
 {
 	printNotice(
 		"\n",
-		"Please be sure that the iRODS + iCAT server on '$catalogServerHost'\n",
+		"Please be sure that the iRODS iCAT-enabled server on '$catalogServerHost'\n",
 		"is started and ready before continuing.\n" );
 }
 
@@ -389,16 +390,20 @@ sub promptForIrodsConfiguration( )
 	}
 
 	printNotice(
-		"iRODS includes an iRODS data server and an iCAT metadata catalog.\n",
+		"iRODS consists of clients (e.g. i-commands) with at least one iRODS\n",
+		"server.  One server must include the iRODS metadata catalog (iCAT).\n",
 		"\n",
-		"Most sites should build both of these.\n",
+		"For the initial installation, you would normally build the server with\n",
+		"the iCAT (an iCAT-Enabled Server, IES), along with the i-commands.\n",
 		"\n",
-		"For multi-server sites, you may build the iRODS data server alone,\n",
-		"and direct it to connect to an existing shared iCAT metadata\n",
-		"catalog.\n",
+		"After that, you might want to build another Server to support another\n",
+		"storage resource on another computer (where you are running this now).\n",
+		"You would then build the iRODS server non-ICAT, and configure it with\n",
+		"the IES host name (the servers connect to the IES for ICAT operations).\n",
 		"\n",
-		"For sites that already have iRODS installed, you may skip building\n",
+		"If you already have iRODS installed (an IES), you may skip building\n",
 		"the iRODS server and iCAT, and just build the command-line tools.\n",
+
 		"\n" );
 
 
@@ -460,11 +465,11 @@ sub promptForIrodsConfiguration( )
 
 		printNotice(
 			"\n",
-			"When an iCAT catalog is not included, the iRODS data server needs\n",
-			"to connect to another iRODS server that includes an iCAT catalog.\n",
+			"When an iCAT-enabled server is already available, the non-ICAT\n",
+			"server needs to know the host name of the iCAT-enabled server.\n",
 			"\n" );
 		$catalogServerHost = promptHostName(
-			"Host running iRODS with an iCAT catalog",
+			"Host running iCAT-enabled iRODS server",
 			$catalogServerHost );
 
 # Resource name
@@ -479,6 +484,10 @@ sub promptForIrodsConfiguration( )
 				"demoResc2" : $irodsResourceName) );
 
 # Resource directory
+		printNotice(
+			"\n",
+			"This resource will store iRODS data in a directory on this host.\n",
+			"\n" );
 		$irodsResourceDir = promptString(
 			"Resource storage area directory",
 			((!defined($irodsResourceDir)||$irodsResourceDir eq "") ?
@@ -490,11 +499,11 @@ sub promptForIrodsConfiguration( )
 		# iRODS account name and password.
 		printNotice(
 			"\n",
-			"The build process needs to use an existing iRODS administrator\n",
-			"account for that host's iRODS data server and iCAT catalog.\n",
+			"The irodsServer will authenticate to the other servers via\n",
+			"an existing iRODS administrator account.\n",
 			"\n" );
 		$irodsAccount = promptIdentifier(
-			 "Existing iRODS login name",
+			 "Existing iRODS admin login name",
 			((!defined($irodsAccount)||$irodsAccount eq "") ?
 				$DEFAULT_irodsAccount : $irodsAccount) );
 
@@ -512,7 +521,7 @@ sub promptForIrodsConfiguration( )
 		printNotice(
 			"\n",
 			"The build process will create a new iRODS administrator account\n",
-			"for managing the system.\n",
+			"for managing the iRODS system (unless there is one already).\n",
 			"\n" );
 
 		$irodsAccount = promptIdentifier(
@@ -531,8 +540,8 @@ sub promptForIrodsConfiguration( )
 		# iRODS port
 		printNotice(
 			"\n",
-			"Sites that run multiple iRODS servers on the same host my give\n",
-			"each one a different port number.\n",
+			"You can use a different port for the iRODS servers as long as all\n",
+			"servers in your zone use the same one.\n",
 			"\n" );
 		$irodsPort = promptInteger(
 			"Port",
@@ -543,9 +552,11 @@ sub promptForIrodsConfiguration( )
 		# iRODS zone
 		printNotice(
 			"\n",
-			"Sites may group iRODS servers and iCAT catalogs into different\n",
-			"'zones' for managing different data collections.  Each zone\n",
-			"has a name.\n",
+			"Each set of distributed servers (perhaps hundreds, world-wide),\n",
+			"supported by one ICAT-enabled server is an iRODS 'zone' and has a\n",
+			"unique name.  This name appears at the beginning of collection names.\n",
+			"In the future, zones will interoperate but for now each is\n",
+			"independent.\n",
 			"\n" );
 		$irodsZone = promptString(
 			"iRODS zone name",
@@ -556,8 +567,9 @@ sub promptForIrodsConfiguration( )
 		# iRODS database name
 		printNotice(
 			"\n",
-			"Sites that share a single database server between multiple iCAT\n",
-			"catalogs may use a different database name for each catalog.\n",
+			"Sites that share a single database system (DBMS) supporting\n".
+			"multiple iCAT databases (catalogs) need to use a different database\n",
+			"name for each catalog.\n",
 			"\n" );
 		$irodsDbName = promptString(
 			"iRODS database name",
@@ -568,11 +580,11 @@ sub promptForIrodsConfiguration( )
 		# iRODS database key
 		printNotice(
 			"\n",
-			"iRODS scrambles passwords stored in text files.  Scrambling uses\n",
-			"an integer seed key.\n",
+			"iRODS scrambles passwords stored in various files.\n",
+			"The following ascii-string key is used to scramble the DB password.\n",
 			"\n" );
-		$irodsDbKey = promptInteger(
-			"iRODS scramble key",
+		$irodsDbKey = promptString(
+			"iRODS DB password scramble key",
 			((!defined($irodsDbKey)||$irodsDbKey eq "") ?
 				$DEFAULT_irodsDbKey : $irodsDbKey) );
 
@@ -580,8 +592,9 @@ sub promptForIrodsConfiguration( )
 		# iRODS resource name and directory
 		printNotice(
 			"\n",
-			"iRODS groups stored data into 'resources'.  Each resource has\n",
-			"a name and a local directory in which the data is stored.\n",
+			"iRODS stores data (file contents) into storage 'resources'.\n",
+			"Each resource has a name, a host name (this host for this one), and\n",
+			"a local directory under which the data is stored.\n",
 			"\n" );
 		$irodsResourceName = promptString(
 			"Resource name",
@@ -728,12 +741,12 @@ sub promptForDatabaseConfiguration()
 	}
 
 	printNotice(
-		"The iCAT catalog uses a database to store metadata.  You have\n",
-		"three choices:\n",
+		"The iCAT catalog uses a DBMS (database management system) to store\n",
+		"state information in a database.  You have three choices:\n",
 		"\n",
-		"    1.  Download and build a new Postgres database.\n",
-		"    2.  Upgrade an existing Postgres database.\n",
-		"    3.  Use an existing Postgres or Oracle database.\n",
+		"    1.  Download and build a new Postgres DBMS system.\n",
+		"    2.  Upgrade an existing Postgres DBMS installation.\n",
+		"    3.  Use an existing Postgres or Oracle DBMS and database.\n",
 		"\n" );
 
 	# The loop below walks through three prompts for the
@@ -754,7 +767,7 @@ sub promptForDatabaseConfiguration()
 		{
 			# New Postgres?
 			$installDatabaseServer = promptYesNo(
-				"Download and build a new Postgres database",
+				"Download and build a new Postgres DBMS",
 				(($installDatabaseServer == 0) ? "no" : "yes") );
 			if ( $installDatabaseServer == 1 )
 			{
@@ -775,7 +788,7 @@ sub promptForDatabaseConfiguration()
 		{
 			# Upgrade existing Postgres?
 			my $upgrade = promptYesNo(
-				"Upgrade an existing Postgres database",
+				"Upgrade an existing Postgres DBMS",
 				(($databaseServerType ne "" && $databaseServerType ne "postgres") ?
 					"no" : "yes" ) );
 			if ( $upgrade == 1 )
@@ -1018,7 +1031,7 @@ sub promptForNewPostgresConfiguration( $ )
 					"\n" );
 
 				my $switchUpgrade = promptYesNo(
-					"Upgrade an existing Postgres database",
+					"Upgrade an existing Postgres DBMS",
 					"yes" );
 
 				if ( $switchUpgrade == 0 )
@@ -1042,12 +1055,12 @@ sub promptForNewPostgresConfiguration( $ )
 			# Ask if they'd like to keep the data
 			printNotice(
 				"\n",
-				"You can reuse the existing Postgres data or delete it first.\n",
-				"Deleting the data will remove all prior content and accounts.\n",
+				"You can reuse the existing Postgres databases or delete it first.\n",
+				"Deleting the data will remove all prior data, content and accounts.\n",
 				"This cannot be undone.\n",
 				"\n" );
 			$deleteDatabaseData = promptYesNo(
-				"Permanently delete prior Postgres data",
+				"Permanently delete prior IRODS data (Postgres data, ICAT)",
 				"no" );
 			last;
 		}
@@ -1321,7 +1334,7 @@ sub promptForExistingOracleDatabase( )
 		"\n",
 		"iRODS will need to use an existing database account.  Oracle\n",
 		"account names have the form 'schema\@instance', such as\n",
-		"'icat\@example.com'.\n",
+		"'icat\@irods_rac'.\n",
 		"\n" );
 	while ( 1 )
 	{
@@ -1393,7 +1406,7 @@ sub promptForConfirmation( )
 		if ( !$installCatalogServer )
 		{
 			printNotice(
-				"    Build iRODS data server alone\n",
+				"    Build iRODS data server without iCAT\n",
 				"        iCAT host     '$catalogServerHost'\n" );
 		}
 		else
@@ -1493,7 +1506,7 @@ sub promptForConfirmation( )
 
 
 	return promptYesNo(
-		"Save configuration",
+		"Save configuration (irods.config)",
 		"yes" );
 }
 
