@@ -122,6 +122,14 @@ function extactExif($localfile, $remoteRODSfile)
   
   foreach ($exif as $name => $val) {
     
+    // replace ascii char that can't be displayed, which causes problem in irods
+    if ( (!is_array($val))&&(is_string($val))&&
+         ( (ord($val[0])<32)||(ord($val[0])>126) )
+       )
+    {
+      $val='__undefined__';
+    }
+    
     if ($name=='THUMBNAIL')
     {
       foreach ($val as $tname => $tval) 
@@ -153,6 +161,15 @@ function extactExif($localfile, $remoteRODSfile)
     {
       //skip ComponentsConfiguration, because there is a irods server bug that corrupting string with 
          
+    }
+    else
+    if (is_array($val))
+    {
+      foreach ($val as $cname => $cval) 
+      {
+        $remoteRODSfile->addMeta(new RODSMeta(
+            "EXIF.$name.".$cname, $cval, ''));
+      }
     }  
     else  
       $remoteRODSfile->addMeta(new RODSMeta(
