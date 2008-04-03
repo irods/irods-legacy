@@ -252,7 +252,7 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 /*
  * Retrieves Audit Trail information by timestamp
  * 
- * DO SEARCH BY COMMENTS FIRST AND CONTINUE LATER. SEE WITH WAYNE FOR POSSIBLE USE OF DB FORMAT
+ *
  */
 int
 msiGetAuditTrailInfoByTimeStamp(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
