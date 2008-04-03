@@ -70,7 +70,8 @@ OBJS =		\
 		$(objDir)/isysmeta.o \
 		$(objDir)/itrim.o \
 		$(objDir)/iuserinfo.o \
-		$(objDir)/imcoll.o
+		$(objDir)/imcoll.o \
+		$(objDir)/ierror.o
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -106,7 +107,7 @@ BINS =		\
 		$(binDir)/itrim \
 		$(binDir)/iuserinfo \
 		$(binDir)/imcoll \
-
+		$(binDir)/ierror 
 
 
 
