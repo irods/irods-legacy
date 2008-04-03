@@ -900,7 +900,7 @@ sub setupEnvironment
 		}
 		else
 		{
-			$ENV{'LD_LIBRARY_PATH'}="$oldLibPath:$databaseLibDir";
+			$ENV{'LD_LIBRARY_PATH'}="$databaseLibDir:$oldLibPath";
 		}
 	}
 

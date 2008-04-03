@@ -1976,7 +1976,7 @@ sub setupPostgresEnvironment
 	}
 	else
 	{
-		$libPath = "$libPath:$postgresLibDir";
+		$libPath = "$postgresLibDir:$libPath";
 		
 	}
 	$libPath = "$libPath:" . File::Spec->catdir( File::Spec->rootdir( ), "usr", "local", "lib" );
