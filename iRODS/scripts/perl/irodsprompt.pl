@@ -511,6 +511,15 @@ sub promptForIrodsConfiguration( )
 			 "Password",
 			((!defined($irodsPassword)||$irodsPassword eq "") ?
 				$DEFAULT_irodsPassword : $irodsPassword) );
+		# iRODS zone
+		printNotice(
+		     "\n",
+		     "Enter the zone as defined in your ICAT\n",
+		      "\n" );
+		$irodsZone = promptString(
+				"iRODS zone name",
+				((!defined($irodsZone)||$irodsZone eq "") ?
+				 $DEFAULT_irodsZone : $irodsZone) );
 	}
 	else
 	{
@@ -548,9 +557,9 @@ sub promptForIrodsConfiguration( )
 			((!defined($irodsPort)||$irodsPort eq "") ?
 				$DEFAULT_irodsPort : $irodsPort) );
 
-
-		# iRODS zone
-		printNotice(
+		if ( $installCatalogServer == 1 ) {
+		    # iRODS zone
+		    printNotice(
 			"\n",
 			"Each set of distributed servers (perhaps hundreds, world-wide),\n",
 			"supported by one ICAT-enabled server is an iRODS 'zone' and has a\n",
@@ -558,52 +567,53 @@ sub promptForIrodsConfiguration( )
 			"In the future, zones will interoperate but for now each is\n",
 			"independent.\n",
 			"\n" );
-		$irodsZone = promptString(
+		    $irodsZone = promptString(
 			"iRODS zone name",
 			((!defined($irodsZone)||$irodsZone eq "") ?
 				$DEFAULT_irodsZone : $irodsZone) );
 
 
-		# iRODS database name
-		printNotice(
+		    # iRODS database name
+		    printNotice(
 			"\n",
 			"Sites that share a single database system (DBMS) supporting\n".
 			"multiple iCAT databases (catalogs) need to use a different database\n",
 			"name for each catalog.\n",
 			"\n" );
-		$irodsDbName = promptString(
+		    $irodsDbName = promptString(
 			"iRODS database name",
 			((!defined($irodsDbName)||$irodsDbName eq "") ?
 				$DEFAULT_irodsDbName : $irodsDbName) );
 
 
-		# iRODS database key
-		printNotice(
+		    # iRODS database key
+		    printNotice(
 			"\n",
 			"iRODS scrambles passwords stored in various files.\n",
 			"The following ascii-string key is used to scramble the DB password.\n",
 			"\n" );
-		$irodsDbKey = promptString(
+		    $irodsDbKey = promptString(
 			"iRODS DB password scramble key",
 			((!defined($irodsDbKey)||$irodsDbKey eq "") ?
 				$DEFAULT_irodsDbKey : $irodsDbKey) );
 
 
-		# iRODS resource name and directory
-		printNotice(
+		    # iRODS resource name and directory
+		    printNotice(
 			"\n",
 			"iRODS stores data (file contents) into storage 'resources'.\n",
 			"Each resource has a name, a host name (this host for this one), and\n",
 			"a local directory under which the data is stored.\n",
 			"\n" );
-		$irodsResourceName = promptString(
+		    $irodsResourceName = promptString(
 			"Resource name",
 			((!defined($irodsResourceName)||$irodsResourceName eq "") ?
 				$DEFAULT_irodsResourceName : $irodsResourceName) );
-		$irodsResourceDir = promptString(
+		    $irodsResourceDir = promptString(
 			"Directory",
 			((!defined($irodsResourceDir)||$irodsResourceDir eq "") ?
 				$DEFAULT_irodsResourceDir : $irodsResourceDir) );
+		}
 	}
 	else
 	{
