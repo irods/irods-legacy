@@ -8,6 +8,8 @@
 #include "regDataObj.h"
 /* #include "reAction.h" */
 #include "miscServerFunct.h"
+#include "apiHeaderAll.h"
+#include "miscUtil.h"
 
 
 int
@@ -176,4 +178,83 @@ msitest3 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
 
   return(0);
 }
+
+
+
+/**
+ * \fn msiApplyDCMetadataTemplate
+ * \author  Antoine de Torcy
+ * \date   2008-04-04
+ * \brief Adds Dublin Core Metadata fields to an object or collection
+ * \note 
+ * \param[in] 
+ *    inpParam - a STR_MS_T containing the target object's path
+ * \param[out] 
+ *    outParam - an INT_MS_T containing the status
+ * \return integer
+ * \retval 0 upon success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei)
+{
+	char *objPath;
+	char objType[NAME_LEN];
+	modAVUMetadataInp_t modAVUMetadataInp;
+	int i, status;
+
+	/* Dublin Core metadata elements */
+	char *elements[]={"DC.Title", "DC.Creator", "DC.Subject", "DC.Description", "DC.Publisher", "DC.Contributor", "DC.Date", "DC.Type", "DC.Format", "DC.Identifier", "DC.Source", "DC.Language", "DC.Relation", "DC.Coverage", "DC.Rights" };
+	
+
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiApplyDCMetadataTemplate")
+
+
+	/* microservice check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiApplyDCMetadataTemplate: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/* Check for proper input */
+	if ((objPath = parseMspForStr(inpParam)) == NULL) {
+		rodsLog (LOG_ERROR, "msiApplyDCMetadataTemplate: input parameter is NULL");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+
+	/* Get type of target object */
+	status = getObjType(rei->rsComm, objPath, objType);
+
+
+	/* Add each DC element */
+	for (i=0; i<15; i++) {
+		/* set up our modAVU input */
+		memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
+		modAVUMetadataInp.arg0 = "add";
+		modAVUMetadataInp.arg1 = objType;
+		modAVUMetadataInp.arg2 = objPath;
+		modAVUMetadataInp.arg3 = elements[i];	/* attribute */
+		modAVUMetadataInp.arg4 = " ";		/* value, cannot be empty */
+		modAVUMetadataInp.arg5 = "";		/* units, can be empty */
+
+		/* add metadata AVU triplet */
+		status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+	}
+
+
+	/* return operation status through outParam */
+	fillIntInMsParam (outParam, status);
+
+
+	return(status);
+}
+
+
+
 
