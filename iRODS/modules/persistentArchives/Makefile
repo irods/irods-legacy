@@ -1,7 +1,7 @@
 #
-# modules/image/Makefile
+# modules/persistentArchives/Makefile
 #
-# Build the iRODS image module
+# Build the iRODS persistentArchives module
 #
 
 ifndef buildDir
@@ -13,14 +13,12 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-
 #
 # Directories
 #
-MSObjDir =	$(modulesDir)/diglib/microservices/obj
-MSSrcDir =	$(modulesDir)/diglib/microservices/src
-MSIncDir =	$(modulesDir)/diglib/microservices/include
-
+MSObjDir =	$(modulesDir)/persistentArchives/microservices/obj
+MSSrcDir =	$(modulesDir)/persistentArchives/microservices/src
+MSIncDir =	$(modulesDir)/persistentArchives/microservices/include
 
 #
 # Source files
@@ -30,8 +28,8 @@ OBJECTS =	$(MSObjDir)/reDataRel.o
 #OBJECTS =	$(MSObjDir)/reDataRel.o $(MSObjDir)/srcEvBiWe2Ta3.o $(MSObjDir)/srcEvBiWe2Ta2.o $(MSObjDir)/srcEvBiWe2Ta1.o
 
 INCLUDE_FLAGS = -I$(MSIncDir)
-#LIB_INCLUDES = -I$(buildDir)/lib/api/include
-
+LIB_INCLUDES = -I$(buildDir)/lib/core/include -I$(buildDir)/lib/md5/include -I$(buildDir)/lib/api/include
+#LIB_INCLUDES = -I$(buildDir)/lib/core/include -I$(buildDir)/lib/api/include
 
 #
 # Compile and link flags
@@ -84,18 +82,9 @@ rules:
 	@true
 
 # Clean
-ifdef DIGLIBMAGICK
 clean:
-	@echo "Clean diglib module..."
+	@echo "Clean persistentArchives module..."
 	@rm -f $(OBJECTS)
-else
-clean:
-	@echo "Clean diglib module..."
-endif
-
-
-
-
 
 # Show compile flags
 print_cflags:
@@ -111,7 +100,7 @@ print_cflags:
 # Compile targets
 #
 $(OBJECTS): $(MSObjDir)/%.o: $(MSSrcDir)/%.c $(DEPEND)
-	@echo "Compile diglib module `basename $@`..."
+	@echo "Compile persistentArchives module `basename $@`..."
 	@echo "$(CC) -c $(CFLAGS) -o $@ $<"
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
