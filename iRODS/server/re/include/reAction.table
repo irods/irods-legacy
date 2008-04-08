@@ -77,6 +77,11 @@ int recover_print_hello(ruleExecInfo_t *c);
 int recover_msiCreateUser(ruleExecInfo_t *rei);
 int recover_msiCreateCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei);
 
+int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei);
+int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei);
+
+
+
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
   {"msiVacuum", 0, (funcPtr) msiVacuum},
@@ -171,3 +176,5 @@ microsdef_t MicrosTable[] = {
   {"msiCheckHostAccessControl",0,(funcPtr) msiCheckHostAccessControl},
   {"msiGetIcatTime",2,(funcPtr) msiGetIcatTime},
   {"msiGetTaggedValueFromString",3,(funcPtr) msiGetTaggedValueFromString},
+  {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
+  {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
