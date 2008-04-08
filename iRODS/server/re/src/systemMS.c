@@ -564,7 +564,7 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
 {
 
 
-  RE_TEST_MACRO ("Loopback on msiAssociateKeyValuePairsToObj");
+  RE_TEST_MACRO ("Loopback on msiFreeBuffer");
 
 
   if (memoryParam->inpOutBuf != NULL)
