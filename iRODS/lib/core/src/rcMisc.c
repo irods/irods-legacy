@@ -2086,7 +2086,9 @@ openRestartFile (char *restartFile, rodsRestart_t *rodsRestart,
 rodsArguments_t *rodsArgs)
 {
     struct stat statbuf;
-    char buf[MAX_NAME_LEN * 2];
+    char buf[MAX_NAME_LEN * 3];
+    char *inptr;
+    char tmpStr[MAX_NAME_LEN];
     int status; 
 
     status = stat (restartFile, &statbuf);
@@ -2116,7 +2118,7 @@ rodsArguments_t *rodsArgs)
               "openRestartFile: open error for %s", restartFile);
             return status;
         }
-	status = read (rodsRestart->fd, (void *) buf, MAX_NAME_LEN * 2);
+	status = read (rodsRestart->fd, (void *) buf, MAX_NAME_LEN * 3);
 	if (status <= 0) {
 	    close (rodsRestart->fd);
 	    status = UNIX_FILE_READ_ERR -errno;
@@ -2124,6 +2126,28 @@ rodsArguments_t *rodsArgs)
               "openRestartFile: read error for %s", restartFile);
             return status;
 	}
+	
+	inptr = buf;
+	if (getLineInBuf (&inptr, rodsRestart->collection, MAX_NAME_LEN) < 0) {
+            rodsLog (LOG_ERROR,
+              "openRestartFile: restartFile %s has 0 line", restartFile);
+            return USER_RESTART_FILE_INPUT_ERR;
+	} 
+        if (getLineInBuf (&inptr, tmpStr, MAX_NAME_LEN) < 0) {
+            rodsLog (LOG_ERROR,
+              "openRestartFile: restartFile %s has 1 line", restartFile);
+            return USER_RESTART_FILE_INPUT_ERR;
+        }
+	rodsRestart->doneCnt = atoi (tmpStr);
+
+        if (getLineInBuf (&inptr, rodsRestart->lastDonePath, 
+	  MAX_NAME_LEN) < 0) {
+            rodsLog (LOG_ERROR,
+              "openRestartFile: restartFile %s has 2 line", restartFile);
+            return USER_RESTART_FILE_INPUT_ERR;
+        }
+
+#if 0	/* 1 line per entry */
 	status = sscanf ((void *) buf, "%s %d %s", 
 	  rodsRestart->collection, &rodsRestart->doneCnt, 
 	  rodsRestart->lastDonePath);
@@ -2132,15 +2156,8 @@ rodsArguments_t *rodsArgs)
 	      "openRestartFile: sscanf error for %s containing %s", 
 	      rodsRestart->lastDonePath, buf);
 	    return USER_RESTART_FILE_INPUT_ERR;
-#if 0	/* not true for local target */
-        } else if (*rodsRestart->collection != '/' ||
-	  *rodsRestart->lastDonePath != '/') {	/* some sanity check */
-            rodsLog (LOG_ERROR,
-              "openRestartFile: problem with path input for %s containing %s",
-              rodsRestart->lastDonePath, buf);
-            return USER_RESTART_FILE_INPUT_ERR;
-#endif
 	}
+#endif
 	rodsRestart->restartState = PATH_MATCHING;
 	printf ("RestartFile %s opened\n", restartFile); 
 	printf ("Restarting collection/directory = %s     File count %d\n", 
@@ -2148,6 +2165,30 @@ rodsArguments_t *rodsArgs)
 	printf ("File last completed = %s\n", rodsRestart->lastDonePath);
     }
     return (0);
+}
+
+int
+getLineInBuf (char **inbuf, char *outbuf, int bufLen)
+{
+    char *inPtr, *outPtr;
+    int bytesCopied  = 0;
+    int c;
+
+    inPtr = *inbuf;
+    outPtr = outbuf;
+
+    while ((c = *inPtr) != '\n' && c != EOF && bytesCopied < bufLen) {
+	c = *inPtr;
+	if (c == '\n' || c == EOF)
+	    break;
+	*outPtr = c;
+	inPtr++;
+	outPtr++;
+	bytesCopied++;
+    }
+    *outPtr = '\0';
+    *inbuf = inPtr + 1;
+    return (bytesCopied);
 }
 
 int
@@ -2185,19 +2226,19 @@ int deleteFlag)
 int
 writeRestartFile (rodsRestart_t *rodsRestart, char *lastDonePath)
 {
-    char buf[MAX_NAME_LEN * 2];
+    char buf[MAX_NAME_LEN * 3];
     int status;
 
     rodsRestart->doneCnt = rodsRestart->curCnt;
     rstrcpy (rodsRestart->lastDonePath, lastDonePath, MAX_NAME_LEN);
-    memset (buf, 0, MAX_NAME_LEN * 2);
-    snprintf (buf, MAX_NAME_LEN * 2, "%s %d %s\n",
+    memset (buf, 0, MAX_NAME_LEN * 3);
+    snprintf (buf, MAX_NAME_LEN * 3, "%s\n%d\n%s\n",
       rodsRestart->collection, rodsRestart->doneCnt,
       rodsRestart->lastDonePath);
 
     lseek (rodsRestart->fd, 0, SEEK_SET);
-    status = write (rodsRestart->fd, buf, MAX_NAME_LEN * 2);
-    if (status != MAX_NAME_LEN * 2) {
+    status = write (rodsRestart->fd, buf, MAX_NAME_LEN * 3);
+    if (status != MAX_NAME_LEN * 3) {
 	rodsLog (LOG_ERROR,
           "writeRestartFile: write error, errno = %d",
           errno);

@@ -196,6 +196,8 @@ int
 parseCachedStructFileStr (char *collInfo2, specColl_t *specColl);
 int
 makeCachedStructFileStr (char *collInfo2, specColl_t *specColl);
+int
+getLineInBuf (char **inbuf, char *outbuf, int bufLen);
 
 #ifdef  __cplusplus
 }
