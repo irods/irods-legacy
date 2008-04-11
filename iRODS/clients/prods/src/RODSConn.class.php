@@ -448,7 +448,7 @@ class RODSConn
     $continueInx=0;
     $que_result= $this->genQuery(  $select_val, $cond,
       array(),$startingInx,$maxresults,true,
-      $select_attr, $continueInx,$_total_num_rows);
+      $select_attr, $continueInx,$total_num_rows);
     
     if (false===$que_result)
     {
@@ -550,7 +550,7 @@ class RODSConn
     $continueInx=0;
     $que_result= $this->genQuery(  $select_val, $cond,
       array(),$startingInx,$maxresults,true,
-      $select_attr, $continueInx,$_total_num_rows);
+      $select_attr, $continueInx,$total_num_rows);
     
     
     if (false===$que_result)
