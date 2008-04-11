@@ -54,6 +54,42 @@ typedef struct DataObjMetaInfo {
     char *dataId;
 } dataObjMetaInfo_t;
 
+/* definition for state in collHandle_t */
+typedef enum {
+    COLL_CLOSED,
+    COLL_OPENED,
+    COLL_DATA_OBJ_QUERIED,
+    COLL_COLL_OBJ_QUERIED,
+} collState_t;
+
+/* definition for flag in rcOpenCollection and collHandle_t */
+#define LONG_METADATA       0x1     /* get verbose metadata */
+
+typedef struct CollHandle {
+    collState_t state;
+    int flag;
+    int rowInx;
+    genQueryInp_t genQueryInp;
+    dataObjInp_t dataObjInp;
+    dataObjSqlResult_t dataObjSqlResult;
+    collSqlResult_t collSqlResult;
+} collHandle_t;
+    
+/* the output of rcReadCollection */
+typedef struct CollEnt {
+    objType_t objType;
+    char collName[MAX_NAME_LEN];
+    char dataName[MAX_NAME_LEN];
+    rodsLong_t dataSize;
+    char createTime[TIME_LEN];
+    char modifyTime[TIME_LEN];
+    char chksum[NAME_LEN];
+    int replStatus;
+    char dataId[NAME_LEN];
+    char collOwner[NAME_LEN];    /* valid only for collection */
+    specColl_t specColl;	 /* valid only for collection */ 
+} collEnt_t;
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -121,6 +157,14 @@ int
 getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
 int *rowInx, dataObjMetaInfo_t *outDataObjMetaInfo);
+int
+rcOpenCollection (rcComm_t *conn, char *collection, 
+int flag, collHandle_t *collHandle);
+int
+clearCollHandle (collHandle_t *collHandle);
+int
+rcCloseCollection (collHandle_t *collHandle);
+
 #ifdef  __cplusplus
 }
 #endif
