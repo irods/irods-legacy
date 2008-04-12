@@ -11,9 +11,10 @@ class RODSFileStats
   public $id;
   public $typename;  
   public $rescname;
+  public $comments;
   
   public function __construct($name,$size,$owner,$ownerzone, $mtime,$ctime,$id,$typename,
-    $rescname)
+    $rescname, $comments)
   {
     $this->name=$name;
     $this->size=$size;
@@ -24,6 +25,7 @@ class RODSFileStats
     $this->id=$id;
     $this->typename=$typename;
     $this->rescname=$rescname;
+    $this->comments=$comments;
   }
   
 }  
