@@ -103,6 +103,44 @@ class ProdsDir extends ProdsPath
   }
   
  /**
+  * @return all children (files and dirs) of current dir
+	*/
+  public function getChildren()
+  {
+    $this->all_children=array();
+    $this->all_children=array_merge($this->all_children,
+      $this->getChildrenFiles());
+    $this->all_children=array_merge($this->all_children,
+      $this->getChildrenDirs());
+    return $this->all_children;  
+  }
+  
+ /**
+  * Get children directories of this dir. The result may be cached.
+	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method findDirs();
+	* @return an array of ProdsDir
+	*/
+  public function getChildrenDirs(array $orderby=array(), $startingInx=0, 
+    $maxresults=500, &$total_num_rows=-1)
+  {
+    $terms=array("descendantOnly"=>true,"recursive"=>false);
+    return $this->findDirs($terms,$total_num_rows,$startingInx,$maxresults,$orderby);  
+  }
+  
+ /**
+	* Get children files of this dir. 
+	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method findFiles();
+	* @return an array of ProdsFile
+	*/
+  public function getChildrenFiles(array $orderby=array(), $startingInx=0, 
+    $maxresults=500, &$total_num_rows=-1)
+  {
+    $terms=array("descendantOnly"=>true,"recursive"=>false);
+    return $this->findFiles($terms,$total_num_rows,$startingInx,$maxresults,$orderby); 
+  }
+  
+  /**
+  * This method is depreciated,
 	* @return all children (files and dirs) of current dir
 	*/
   public function getAllChildren()
@@ -123,11 +161,12 @@ class ProdsDir extends ProdsPath
   }
   
  /**
+  * This method is depreciated, use getChildrenDirs()
 	* Get children directories of this dir. The result may be cached.
-	* @param $orderby An associated array specifying how to sort the result by attributes. Each array key is the attribute, array val is 0 (assendent) or 1 (dessendent). The supported attributes are "name", "owner", "mtime". 
+	* @param $orderby An associated array specifying how to sort the result by attributes. Each array key is the attribute, array val is 1 (assendent) or 0 (dessendent). The supported attributes are "name", "owner", "mtime". 
 	* @return an array of ProdsDir
 	*/
-  public function getChildDirs(array $orderby=array(), $startingInx=0, 
+	public function getChildDirs(array $orderby=array(), $startingInx=0, 
     $maxresults=500, &$total_num_rows=-1)
   {
     /*
@@ -157,6 +196,7 @@ class ProdsDir extends ProdsPath
   
   
  /**
+  * This method is depreciated, use getChildrenFiles()
 	* Get children files of this dir. The result may be cached.
 	* @param $orderby An associated array specifying how to sort the result by attributes. Each array key is the attribute, array val is 0 (assendent) or 1 (dessendent). The supported attributes are "name", "size", "owner", "mtime". 
 	* @return an array of ProdsFile
@@ -260,9 +300,9 @@ class ProdsDir extends ProdsPath
   {
     $flds=array("COL_DATA_NAME"=>NULL,"COL_D_DATA_ID"=>NULL,
         "COL_DATA_TYPE_NAME"=>NULL,"COL_D_RESC_NAME"=>NULL,
-        "COL_DATA_SIZE"=>NULL,"COL_D_OWNER_NAME"=>NULL,
+        "COL_DATA_SIZE"=>NULL,"COL_D_OWNER_NAME"=>NULL, "COL_D_OWNER_ZONE"=>NULL,
         "COL_D_CREATE_TIME"=>NULL, "COL_D_MODIFY_TIME"=>NULL,
-        "COL_COLL_NAME"=>NULL);
+        "COL_COLL_NAME"=>NULL, "COL_D_COMMENTS"=>NULL);
     
     foreach($sort_flds as $sort_fld_key => $sort_fld_val)
     {
@@ -351,6 +391,9 @@ class ProdsDir extends ProdsPath
           break;
         case 'owner':
           $condition->add('COL_D_OWNER_NAME', '=', $term_val);
+          break;   
+        case 'ownerzone':
+          $condition->add('COL_D_OWNER_ZONE', '=', $term_val);
           break;  
         case 'rescname':
           $condition->add('COL_D_RESC_NAME', '=', $term_val);
@@ -409,11 +452,13 @@ class ProdsDir extends ProdsPath
           $result_values['COL_DATA_NAME'][$i],
           $result_values['COL_DATA_SIZE'][$i],
           $result_values['COL_D_OWNER_NAME'][$i],
+          $result_values['COL_D_OWNER_ZONE'][$i],
           $result_values['COL_D_MODIFY_TIME'][$i],
           $result_values['COL_D_CREATE_TIME'][$i],
           $result_values['COL_D_DATA_ID'][$i],
           $result_values['COL_DATA_TYPE_NAME'][$i],
-          $result_values['COL_D_RESC_NAME'][$i]);
+          $result_values['COL_D_RESC_NAME'][$i],
+          $result_values['COL_D_COMMENTS'][$i]);
       
       if ($result_values['COL_COLL_NAME'][$i]=='/')
         $full_path='/'.$result_values['COL_DATA_NAME'][$i];
@@ -424,4 +469,159 @@ class ProdsDir extends ProdsPath
     }
     return $found;
   }
+  
+ /**
+  * query metadata, and find matching diretories.
+  * @param array $terms an assositive array of search conditions, supported ones are:
+  *     'name' (string) - partial name of the target (file or dir)
+  *     'descendantOnly' (boolean) - whether to search among this directory's decendents. default is false.
+  *     'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendantOnly' is true
+  *     'smtime'         (int)     - start last-modified-time in unix timestamp. The specified time is included in query, in other words the search can be thought was "mtime >= specified time"
+  *     'emtime'         (int)     - end last-modified-time in unix timestamp. The specified time is not included in query, in other words the search can be thought was "mtime < specified time"
+  *     'owner'          (string)  - owner name of the dir
+  *     'metadata' (array of RODSMeta) - array of metadata.
+  * @param int &$total_count This value (passed by reference) returns the total potential count of search results
+  * @param int $start starting index of search results.
+  * @param int $limit up to how many results to be returned. If negative, give all results back.
+  * @param array $sort_flds associative array with following keys:
+  *      'name'      - name of the dir
+  *      'mtime'     - last modified time
+  *      'ctime'     - creation time
+  *      'owner'     - owner of the dir
+  *     The results are sorted by specified array keys.
+  *     The possible array value must be boolean: true stands for 'asc' and false stands for 'desc', default is 'asc'  
+  * @return array of ProdsPath objects (ProdsFile or ProdsDir).
+  */
+  public function findDirs(array $terms, &$total_count, $start=0, $limit=-1,
+    array $sort_flds=array())
+  {
+    $flds=array("COL_COLL_NAME"=>NULL,"COL_COLL_ID"=>NULL,
+        "COL_COLL_OWNER_NAME"=>NULL,
+        "COL_COLL_CREATE_TIME"=>NULL,"COL_COLL_MODIFY_TIME"=>NULL,
+        "COL_COLL_COMMENTS"=>NULL);
+    
+    foreach($sort_flds as $sort_fld_key => $sort_fld_val)
+    {
+      switch($sort_fld_key)
+      {
+        case 'name':
+          if ($sort_fld_val===false)
+            $flds['COL_COLL_NAME']='order_by_desc';
+          else
+            $flds['COL_COLL_NAME']='order_by_asc';
+          break;
+        
+        case 'mtime':
+          if ($sort_fld_val===false)
+            $flds['COL_COLL_MODIFY_TIME']='order_by_desc';
+          else
+            $flds['COL_COLL_MODIFY_TIME']='order_by_asc';
+          break; 
+        
+        case 'ctime':
+          if ($sort_fld_val===false)
+            $flds['COL_COLL_CREATE_TIME']='order_by_desc';
+          else
+            $flds['COL_COLL_CREATE_TIME']='order_by_asc';
+          break; 
+        
+        case 'owner':
+          if ($sort_fld_val===false)
+            $flds['COL_COLL_OWNER_NAME']='order_by_desc';
+          else
+            $flds['COL_COLL_OWNER_NAME']='order_by_asc';
+          break; 
+        
+        default:
+          throw new RODSException("Sort field name '$sort_fld_key' is not valid",
+            'PERR_USER_INPUT_ERROR');
+          break;
+      }
+    }
+    $select=new RODSGenQueSelFlds(array_keys($flds), array_values($flds));
+    
+    $descendantOnly=false;
+    $recursive=false;
+    $condition=new RODSGenQueConds();
+    foreach($terms as $term_key => $term_val)
+    {
+      switch ($term_key)
+      {
+        case 'name':
+          $condition->add('COL_COLL_NAME', 'like', '%'.$term_val.'%');
+          break;
+        case 'smtime':
+          $condition->add('COL_COLL_MODIFY_TIME', '>=', $term_val);
+          break;
+        case 'emtime':
+          $condition->add('COL_COLL_MODIFY_TIME', '<', $term_val);
+          break;
+        case 'owner':
+          $condition->add('COL_COLL_OWNER_NAME', '=', $term_val);
+          break;  
+        case 'metadata':
+          $meta_array=$term_val;
+          foreach($meta_array as $meta)
+          {
+            $condition->add('COL_META_DATA_ATTR_NAME', '=', $meta->name);
+            if (isset($meta->op))
+              $op=$meta->op;
+            else
+              $op='=';
+            if ($op=='like')
+              $value='%'.$meta->value.'%';
+            else
+              $value=$meta->value;  
+            $condition->add('COL_META_DATA_ATTR_VALUE', $op, $value);
+          }
+          break;
+        
+        case 'descendantOnly':
+          if (true===$term_val)
+            $descendantOnly=true;
+          break;
+        
+        case 'recursive':
+          if (true===$term_val)
+            $recursive=true;
+          break;
+          
+        default:
+          throw new RODSException("Term field name '$term_key' is not valid",
+            'PERR_USER_INPUT_ERROR');
+          break;
+      } 
+    }
+    
+    if ($descendantOnly===true) 
+    {
+      if ($recursive===true)
+        $condition->add('COL_COLL_PARENT_NAME', 'like', $this->path_str.'%');
+      else
+        $condition->add('COL_COLL_PARENT_NAME', '=', $this->path_str);    
+    }
+    
+    $conn = RODSConnManager::getConn($this->account);
+    $results = $conn->query($select, $condition, $start, $limit);
+    RODSConnManager::releaseConn($conn); 
+    
+    $total_count=$results->getTotalCount();
+    $result_values=$results->getValues();
+    $found=array();
+    for($i=0; $i<$results->getNumRow(); $i++)
+    {
+      $stats=new RODSDirStats(
+          $result_values['COL_COLL_NAME'][$i],
+          $result_values['COL_COLL_OWNER_NAME'][$i],
+          $result_values['COL_COLL_OWNER_ZONE'][$i],
+          $result_values['COL_COLL_MODIFY_TIME'][$i],
+          $result_values['COL_COLL_CREATE_TIME'][$i],
+          $result_values['COL_COLL_ID'][$i],
+          $result_values['COL_COLL_COMMENTS'][$i]);
+      
+      $full_path=$result_values['COL_COLL_NAME'][$i];
+      $found[]=new ProdsDir($this->account, $full_path, false, $stats);
+    }
+    return $found;
+  }    
 }
