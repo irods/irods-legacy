@@ -397,6 +397,8 @@ genQueryInp_t *genQueryInp)
     if (rodsArgs->veryLongOption == True) {
         addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
+        addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
+    addInxIval (&genQueryInp->selectInp, COL_D_CREATE_TIME, 1);
     }
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
@@ -764,17 +766,17 @@ dataObjSqlResult_t *dataObjSqlResult)
         dataObjSqlResult->dataSize = *dataSize;
     }
 
-    if ((createTime = getSqlResultByInx (myGenQueryOut, COL_COLL_CREATE_TIME)) 
+    if ((createTime = getSqlResultByInx (myGenQueryOut, COL_D_CREATE_TIME)) 
       == NULL) {
-        setSqlResultValue (&dataObjSqlResult->createTime, COL_COLL_CREATE_TIME, 
+        setSqlResultValue (&dataObjSqlResult->createTime, COL_D_CREATE_TIME, 
 	  "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->createTime = *createTime;
     }
 
-    if ((modifyTime = getSqlResultByInx (myGenQueryOut, COL_COLL_MODIFY_TIME)) 
+    if ((modifyTime = getSqlResultByInx (myGenQueryOut, COL_D_MODIFY_TIME)) 
       == NULL) {
-        setSqlResultValue (&dataObjSqlResult->modifyTime, COL_COLL_MODIFY_TIME, 
+        setSqlResultValue (&dataObjSqlResult->modifyTime, COL_D_MODIFY_TIME, 
           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->modifyTime = *modifyTime;
@@ -920,7 +922,7 @@ int *rowInx, dataObjMetaInfo_t *outDataObjMetaInfo)
 }
 
 int
-rcOpenCollection (rcComm_t *conn, char *collection, int flag,
+rclOpenCollection (rcComm_t *conn, char *collection, int flag,
 collHandle_t *collHandle)
 {
     rodsObjStat_t *rodsObjStatOut = NULL;
@@ -928,7 +930,7 @@ collHandle_t *collHandle)
 
     if (conn == NULL || collection == NULL || collHandle == NULL) {
 	rodsLog (LOG_ERROR,
-          "rcOpenCollection: NULL conn, collection or collHandle input");
+          "rclOpenCollection: NULL conn, collection or collHandle input");
 	return USER__NULL_INPUT_ERR;
     }
 
@@ -956,7 +958,7 @@ collHandle_t *collHandle)
 }
 
 int
-rcReadCollection (rcComm_t *conn, collHandle_t *collHandle,  
+rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,  
 collEnt_t *collEnt)
 {
     int status = 0;
@@ -965,16 +967,17 @@ collEnt_t *collEnt)
     dataObjMetaInfo_t dataObjMetaInfo;
     rodsArguments_t rodsArgs;
 
-    if (conn == NULL || collHandle == NULL) {
+    if (conn == NULL || collHandle == NULL || collEnt == NULL) {
         rodsLog (LOG_ERROR,
-          "rcReadCollection: NULL conn or collHandle input");
+          "rclReadCollection: NULL conn or collHandle input");
         return USER__NULL_INPUT_ERR;
     }
 
     memset (collEnt, 0, sizeof (collEnt_t));
 
-    if (collHandle->flag & LONG_METADATA) {
+    if ((collHandle->flag & LONG_METADATA_FG) > 0) {
         rodsArgs.longOption = True;
+        rodsArgs.veryLongOption = True;
     } else {
         rodsArgs.longOption = False;
     }
@@ -992,8 +995,15 @@ collEnt_t *collEnt)
 	      &genQueryOut);
         } else {
             memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
-            status = queryDataObjInColl (conn, collHandle->dataObjInp.objPath, 
-	      &rodsArgs, &collHandle->genQueryInp, &genQueryOut);
+	    if ((collHandle->flag & RECUR_QUERY_FG) > 0) {
+                status = queryDataObjInCollReCur (conn, 
+		  collHandle->dataObjInp.objPath, &rodsArgs, 
+		  &collHandle->genQueryInp, &genQueryOut);
+	    } else {
+                status = queryDataObjInColl (conn, 
+		  collHandle->dataObjInp.objPath, &rodsArgs, 
+		  &collHandle->genQueryInp, &genQueryOut);
+	    }
         }
 
 	collHandle->rowInx = 0;
@@ -1003,7 +1013,7 @@ collEnt_t *collEnt)
 	      &collHandle->dataObjSqlResult);
         } else if (status != CAT_NO_ROWS_FOUND) {
             rodsLog (LOG_ERROR,
-              "rcReadCollection: query dataObj error for %s. status = %d",
+              "rclReadCollection: query dataObj error for %s. status = %d",
 	      collHandle->dataObjInp.objPath, status);
 	}
     }
@@ -1016,29 +1026,21 @@ collEnt_t *collEnt)
 
         if (status >= 0) {
             collEnt->objType = DATA_OBJ_T;
-            rstrcpy (collEnt->collName, dataObjMetaInfo.collName,
-              MAX_NAME_LEN);
-            rstrcpy (collEnt->dataName, dataObjMetaInfo.dataName,
-              MAX_NAME_LEN);
+	    collEnt->collName = dataObjMetaInfo.collName;
+	    collEnt->dataName = dataObjMetaInfo.dataName;
+	    collEnt->dataId = dataObjMetaInfo.dataId;
+	    collEnt->createTime = dataObjMetaInfo.createTime;
+	    collEnt->modifyTime = dataObjMetaInfo.modifyTime;
+	    collEnt->chksum = dataObjMetaInfo.chksum;
 	    if (dataObjMetaInfo.dataSize != NULL)
                 collEnt->dataSize = strtoll (dataObjMetaInfo.dataSize, 0, 0);
-	    if (dataObjMetaInfo.createTime != NULL)
-                rstrcpy (collEnt->createTime, dataObjMetaInfo.createTime,
-                  TIME_LEN);
-	    if (dataObjMetaInfo.modifyTime != NULL)
-                rstrcpy (collEnt->modifyTime, dataObjMetaInfo.modifyTime,
-                  TIME_LEN);
-            rstrcpy (collEnt->chksum, dataObjMetaInfo.chksum,
-              NAME_LEN);
 	    if (dataObjMetaInfo.replStatus != NULL)
                 collEnt->replStatus = atoi (dataObjMetaInfo.replStatus);
-            rstrcpy (collEnt->dataId, dataObjMetaInfo.dataId,
-              NAME_LEN);
             return status;
         } else {
             if (status != CAT_NO_ROWS_FOUND) {
                 rodsLog (LOG_ERROR,
-                  "rcReadCollection: getNextDataObjMetaInfo error for %s. status = %d",
+                  "rclReadCollection: getNextDataObjMetaInfo error for %s. status = %d",
                   collHandle->dataObjInp.objPath, status);
             }
             /* cleanup */
@@ -1057,8 +1059,15 @@ collEnt_t *collEnt)
               &genQueryOut);
         } else {
             memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
-            status = queryCollInColl (conn, collHandle->dataObjInp.objPath,
-              &rodsArgs, &collHandle->genQueryInp, &genQueryOut);
+            if ((collHandle->flag & RECUR_QUERY_FG) > 0) {
+                status = queryCollInCollReCur (conn, 
+		  collHandle->dataObjInp.objPath, &rodsArgs, 
+		  &collHandle->genQueryInp, &genQueryOut);
+	    } else {
+                status = queryCollInColl (conn, 
+		  collHandle->dataObjInp.objPath, &rodsArgs, 
+		  &collHandle->genQueryInp, &genQueryOut);
+	    }
         }
 
         collHandle->rowInx = 0;
@@ -1068,7 +1077,7 @@ collEnt_t *collEnt)
               &collHandle->collSqlResult);
         } else if (status != CAT_NO_ROWS_FOUND) {
             rodsLog (LOG_ERROR,
-              "rcReadCollection: query collection error for %s. status = %d",
+              "rclReadCollection: query collection error for %s. status = %d",
               collHandle->dataObjInp.objPath, status);
         }
     }
@@ -1081,17 +1090,15 @@ collEnt_t *collEnt)
 
         if (status >= 0) {
             collEnt->objType = COLL_OBJ_T;
-            rstrcpy (collEnt->collName, collMetaInfo.collName,
-              MAX_NAME_LEN);
-            rstrcpy (collEnt->collOwner, collMetaInfo.collOwner,
-              NAME_LEN);
+	    collEnt->collName = collMetaInfo.collName;
+	    collEnt->collOwner = collMetaInfo.collOwner;
             if (collMetaInfo.specColl.class != NO_SPEC_COLL) {
                 collEnt->specColl = collMetaInfo.specColl;
 	    }
         } else {
             if (status != CAT_NO_ROWS_FOUND) {
                 rodsLog (LOG_ERROR,
-                  "rcReadCollection: getNextCollMetaInfo error for %s. status = %d",
+                  "rclReadCollection: getNextCollMetaInfo error for %s. status = %d",
                   collHandle->dataObjInp.objPath, status);
             }
             /* Nothing else to do. cleanup */
@@ -1103,7 +1110,7 @@ collEnt_t *collEnt)
 }
 
 int
-rcCloseCollection (collHandle_t *collHandle)
+rclCloseCollection (collHandle_t *collHandle)
 {
     return (clearCollHandle (collHandle));
 }

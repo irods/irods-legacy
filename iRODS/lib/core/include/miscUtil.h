@@ -62,8 +62,9 @@ typedef enum {
     COLL_COLL_OBJ_QUERIED,
 } collState_t;
 
-/* definition for flag in rcOpenCollection and collHandle_t */
-#define LONG_METADATA       0x1     /* get verbose metadata */
+/* definition for flag in rclOpenCollection and collHandle_t */
+#define LONG_METADATA_FG     0x1     /* get verbose metadata */
+#define RECUR_QUERY_FG       0x2     /* get recursive query */
 
 typedef struct CollHandle {
     collState_t state;
@@ -75,18 +76,18 @@ typedef struct CollHandle {
     collSqlResult_t collSqlResult;
 } collHandle_t;
     
-/* the output of rcReadCollection */
+/* the output of rclReadCollection */
 typedef struct CollEnt {
     objType_t objType;
-    char collName[MAX_NAME_LEN];
-    char dataName[MAX_NAME_LEN];
+    char *collName;
+    char *dataName;
+    char *dataId;
+    char *createTime;
+    char *modifyTime;
+    char *chksum;
     rodsLong_t dataSize;
-    char createTime[TIME_LEN];
-    char modifyTime[TIME_LEN];
-    char chksum[NAME_LEN];
     int replStatus;
-    char dataId[NAME_LEN];
-    char collOwner[NAME_LEN];    /* valid only for collection */
+    char *collOwner;    	 /* valid only for collection */
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 
@@ -158,12 +159,15 @@ getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
 int *rowInx, dataObjMetaInfo_t *outDataObjMetaInfo);
 int
-rcOpenCollection (rcComm_t *conn, char *collection, 
+rclOpenCollection (rcComm_t *conn, char *collection, 
 int flag, collHandle_t *collHandle);
+int
+rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,
+collEnt_t *collEnt);
 int
 clearCollHandle (collHandle_t *collHandle);
 int
-rcCloseCollection (collHandle_t *collHandle);
+rclCloseCollection (collHandle_t *collHandle);
 
 #ifdef  __cplusplus
 }
