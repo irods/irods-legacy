@@ -70,7 +70,7 @@ class ProdsDir extends ProdsPath
   }  
   
  /**
-	* Verify if this dir exist with server.
+	* Verify if this dir exist with server. 
 	*/
   public function verify()
   {
@@ -105,7 +105,7 @@ class ProdsDir extends ProdsPath
  /**
   * @return all children (files and dirs) of current dir
 	*/
-  public function getChildren()
+  public function getAllChildren()
   {
     $this->all_children=array();
     $this->all_children=array_merge($this->all_children,
@@ -120,7 +120,7 @@ class ProdsDir extends ProdsPath
 	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method findDirs();
 	* @return an array of ProdsDir
 	*/
-  public function getChildrenDirs(array $orderby=array(), $startingInx=0, 
+  public function getChildDirs(array $orderby=array(), $startingInx=0, 
     $maxresults=500, &$total_num_rows=-1)
   {
     $terms=array("descendantOnly"=>true,"recursive"=>false);
@@ -132,97 +132,13 @@ class ProdsDir extends ProdsPath
 	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method findFiles();
 	* @return an array of ProdsFile
 	*/
-  public function getChildrenFiles(array $orderby=array(), $startingInx=0, 
+  public function getChildFiles(array $orderby=array(), $startingInx=0, 
     $maxresults=500, &$total_num_rows=-1)
   {
     $terms=array("descendantOnly"=>true,"recursive"=>false);
     return $this->findFiles($terms,$total_num_rows,$startingInx,$maxresults,$orderby); 
   }
   
-  /**
-  * This method is depreciated,
-	* @return all children (files and dirs) of current dir
-	*/
-  public function getAllChildren()
-  {
-    /*
-    if ( ($this->usecache===true) && (isset($this->all_children)) )
-	  { 
-      return $this->all_children;
-    }
-    */
-    
-    $this->all_children=array();
-    $this->all_children=array_merge($this->all_children,
-      $this->getChildFiles());
-    $this->all_children=array_merge($this->all_children,
-      $this->getChildDirs());
-    return $this->all_children;  
-  }
-  
- /**
-  * This method is depreciated, use getChildrenDirs()
-	* Get children directories of this dir. The result may be cached.
-	* @param $orderby An associated array specifying how to sort the result by attributes. Each array key is the attribute, array val is 1 (assendent) or 0 (dessendent). The supported attributes are "name", "owner", "mtime". 
-	* @return an array of ProdsDir
-	*/
-	public function getChildDirs(array $orderby=array(), $startingInx=0, 
-    $maxresults=500, &$total_num_rows=-1)
-  {
-    /*
-    if ( ($reset===false) && (isset($this->child_dirs)) )
-	  { 
-	    return $this->child_dirs;
-	  }
-	  */
-	  
-    $conn = RODSConnManager::getConn($this->account);
-    $child_dirs_stats=$conn->getChildDirWithStats($this->path_str,$orderby,
-      $startingInx, $maxresults, $total_num_rows);
-    RODSConnManager::releaseConn($conn); 
-    $this->child_dirs=array();
-    foreach($child_dirs_stats as $stat)
-    {
-      if ($this->path_str=='/')
-        $this->child_dirs[]=new ProdsDir($this->account, 
-          "/".$stat->name,false,$stat);
-      else
-        $this->child_dirs[]=new ProdsDir($this->account, 
-          $this->path_str."/".$stat->name,false,$stat);
-    }
-    return $this->child_dirs;
-  }
-  
-  
-  
- /**
-  * This method is depreciated, use getChildrenFiles()
-	* Get children files of this dir. The result may be cached.
-	* @param $orderby An associated array specifying how to sort the result by attributes. Each array key is the attribute, array val is 0 (assendent) or 1 (dessendent). The supported attributes are "name", "size", "owner", "mtime". 
-	* @return an array of ProdsFile
-	*/
-  public function getChildFiles(array $orderby=array(), $startingInx=0, 
-    $maxresults=500, &$total_num_rows=-1)
-  {
-    /*
-    if ( ($this->usecache===true) && (isset($this->child_files)) )
-	  { 
-	    return $this->child_files;
-	  }
-	  */
-	  
-	  $conn = RODSConnManager::getConn($this->account);
-    $child_files_stats=$conn->getChildFileWithStats($this->path_str, $orderby,
-      $startingInx, $maxresults, $total_num_rows);
-    RODSConnManager::releaseConn($conn); 
-    $this->child_files=array();
-    foreach($child_files_stats as $stat)
-    {
-      $this->child_files[]=new ProdsFile($this->account,
-        $this->path_str."/".$stat->name,false,$stat);
-    }
-    return $this->child_files;  
-  }
   
  /**
   * Make a new directory under this directory

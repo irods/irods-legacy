@@ -55,11 +55,11 @@ abstract class ProdsPath
   }
   
  /**
-	* Whether a path exists on the server. Note that the result of this may be cached.
+	* Whether a path exists on the server. 
 	*/
   public function exists()
   {
-    if ( (isset($this->path_exists)) && ($this->usecache===true) )
+    if ( isset($this->path_exists) )
       return $this->path_exists;
     else
     {
