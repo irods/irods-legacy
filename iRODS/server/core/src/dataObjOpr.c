@@ -404,6 +404,8 @@ char *userName, int trimDirCnt, char *outPath)
 	} else {
 	    /* skip over '/' */
 	    objPathPtr = tmpPtr + 1;
+	    /* don't skip over the trash path */
+	    if (i == 0 && strncmp (objPathPtr, "trash/", 6) == 0) break; 
 	}
     }
 
