@@ -124,7 +124,8 @@ function extactExif($localfile, $remoteRODSfile)
     
     // replace ascii char that can't be displayed, which causes problem in irods
     if ( (!is_array($val))&&(is_string($val))&&
-         ( (ord($val[0])<32)||(ord($val[0])>126) )
+         ( (ord($val[0])<32)||(ord($val[0])>126) ) &&
+         ( $name!='UserComment' )
        )
     {
       $val='__undefined__';
@@ -161,6 +162,33 @@ function extactExif($localfile, $remoteRODSfile)
     {
       //skip ComponentsConfiguration, because there is a irods server bug that corrupting string with 
          
+    }
+    else
+    if ($name=='UserComment')
+    {
+      if (($start=strpos($val,'GCM_TAG'))!==false)
+      {
+        $str=substr($val,$start+strlen('GCM_TAG'));
+        $gcm_tokens=explode(chr(0),$str);   
+        $gcm_counter=0;
+        foreach($gcm_tokens as $gcm_tag)
+        {
+          if ( (strlen($gcm_tag)>0)&&(preg_match('/^[' . chr(32) . '-' . chr(126) . ']+$/', $gcm_tag)) )
+          {  
+            $remoteRODSfile->addMeta(new RODSMeta(
+            'EXIF.UserComment'.$gcm_counter++, $gcm_tag, ''));
+          }
+        }
+      }
+      else
+      {
+        if (strlen($val)<1)
+          $str=' ';
+        //replace no displable char
+        $str=preg_replace('/[^' . chr(32) . '-' . chr(126) . ']+/', ' ', $val);
+        $remoteRODSfile->addMeta(new RODSMeta(
+            'EXIF.UserComment', $str, '')); 
+      }
     }
     else
     if (is_array($val))
