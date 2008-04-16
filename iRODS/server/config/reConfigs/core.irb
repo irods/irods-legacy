@@ -127,7 +127,7 @@ acPostProcForCopy||nop|nop
 # The msiSetNumThreads function must be present or no thread will be used
 # for all transfer 
 # acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
-acSetNumThreads||msiSetNumThreads(default,default,default)|nop  
+acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
 # 7) acDataDeletePolicy - This rule set the policy for deleting data objects.
 # Only one function can be called:
 #    msiDeleteDisallowed() - Disallow the deletion of the data object. 
@@ -193,8 +193,10 @@ acChkHostAccessControl||nop|nop
 #      are much faster because there is no need to rename the 
 #      corresponding physical path. 
 # This default is GRAFT_PATH scheme with addUserName == yes and trimDirCnt == 1.
+# Note : if trimDirCnt is greater than 1, the home or trash entry will be
+# taken out.
 # acSetVaultPathPolicy||msiSetRandomScheme|nop
-acSetVaultPathPolicy||msiSetGraftPathScheme(no,2)|nop
+acSetVaultPathPolicy||msiSetGraftPathScheme(no,1)|nop
 #      
 # ----------------------------------------------------------------------------
 # These rules are for testing only
