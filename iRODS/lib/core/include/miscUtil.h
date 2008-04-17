@@ -41,6 +41,10 @@ typedef struct DataObjSqlResult {
 				 * for rsync */
     sqlResult_t replStatus;
     sqlResult_t dataId;
+    sqlResult_t resource;
+    sqlResult_t phyPath;
+    sqlResult_t ownerName;
+    sqlResult_t replNum;
 } dataObjSqlResult_t;
 
 typedef struct DataObjMetaInfo {
@@ -52,6 +56,12 @@ typedef struct DataObjMetaInfo {
     char *chksum;
     char *replStatus;
     char *dataId;
+#if 0
+    char *resource;
+    char *phyPath;
+    char *ownerName;
+    char *replNum;
+#endif
 } dataObjMetaInfo_t;
 
 /* definition for state in collHandle_t */
@@ -79,15 +89,18 @@ typedef struct CollHandle {
 /* the output of rclReadCollection */
 typedef struct CollEnt {
     objType_t objType;
-    char *collName;
+    char *collName;		/* valid for dataObj and collection */
     char *dataName;
     char *dataId;
     char *createTime;
     char *modifyTime;
     char *chksum;
-    rodsLong_t dataSize;
+    int replNum;
     int replStatus;
-    char *collOwner;    	 /* valid only for collection */
+    rodsLong_t dataSize;
+    char *resource;
+    char *phyPath;
+    char *ownerName;    	 /* valid for dataObj and collection */
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 
@@ -168,7 +181,18 @@ int
 clearCollHandle (collHandle_t *collHandle);
 int
 rclCloseCollection (collHandle_t *collHandle);
-
+int
+newGetNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
+int *rowInx, collEnt_t *outCollEnt);
+int
+newGetNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
+int *rowInx, collEnt_t *outCollEnt);
+int
+genCollResInColl (rcComm_t *conn, collHandle_t *collHandle);
+int
+genDataResInColl (rcComm_t *conn, collHandle_t *collHandle);
 #ifdef  __cplusplus
 }
 #endif
