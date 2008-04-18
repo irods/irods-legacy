@@ -537,6 +537,7 @@ sub finishSetup( )
 	{
 		printError( "Set up failed.  Please see the log file for details:\n" );
 		printError( "    $finishSetupLog\n" );
+		printError( "The server/log/rodsLog* file may also contain useful information.\n" );
 		exit( 1 );
 	}
 }

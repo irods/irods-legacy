@@ -493,9 +493,6 @@ sub promptForIrodsConfiguration( )
 			((!defined($irodsResourceDir)||$irodsResourceDir eq "") ?
 				$DEFAULT_irodsResourceDir : $irodsResourceDir) );
 
-## TODO:  What about a port # for that iRODS server?
-## can it differ from the to-be-installed iRODS server?
-
 		# iRODS account name and password.
 		printNotice(
 			"\n",
@@ -524,6 +521,22 @@ sub promptForIrodsConfiguration( )
 	else
 	{
 		# Include the iCAT.
+
+	        # iRODS zone
+		printNotice(
+			"\n",
+			"Each set of distributed servers (perhaps hundreds, world-wide),\n",
+			"supported by one ICAT-enabled server is an iRODS 'zone' and has a\n",
+			"unique name.  This name appears at the beginning of collection names.\n",
+			"In the future, zones will interoperate but for now each is\n",
+			"independent.\n",
+			"\n" );
+		$irodsZone = promptString(
+			"iRODS zone name",
+			((!defined($irodsZone)||$irodsZone eq "") ?
+				$DEFAULT_irodsZone : $irodsZone) );
+
+
 		$catalogServerHost = undef;	# No external host needed
 
 		# iRODS account name and password.
@@ -558,20 +571,6 @@ sub promptForIrodsConfiguration( )
 				$DEFAULT_irodsPort : $irodsPort) );
 
 		if ( $installCatalogServer == 1 ) {
-		    # iRODS zone
-		    printNotice(
-			"\n",
-			"Each set of distributed servers (perhaps hundreds, world-wide),\n",
-			"supported by one ICAT-enabled server is an iRODS 'zone' and has a\n",
-			"unique name.  This name appears at the beginning of collection names.\n",
-			"In the future, zones will interoperate but for now each is\n",
-			"independent.\n",
-			"\n" );
-		    $irodsZone = promptString(
-			"iRODS zone name",
-			((!defined($irodsZone)||$irodsZone eq "") ?
-				$DEFAULT_irodsZone : $irodsZone) );
-
 
 		    # iRODS database name
 		    printNotice(
