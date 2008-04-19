@@ -50,6 +50,9 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
         return (0);
     }
 
+    /* In dataObjInfo, need just dataId. But it will accept objPath too,
+     * but less efficient 
+     */
     status = chlModDataObjMeta (rsComm, dataObjInfo, regParam);
     return (status);
 #else
