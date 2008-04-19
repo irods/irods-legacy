@@ -217,16 +217,20 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 {
     int status = 0;
     int savedStatus = 0;
+    int collLen;
+#if 0
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
-    int collLen;
     dataObjInp_t dataObjOprInp;
     int rowInx;
     collSqlResult_t collSqlResult;
     collMetaInfo_t collMetaInfo;
     dataObjSqlResult_t dataObjSqlResult;
     dataObjMetaInfo_t dataObjMetaInfo;
-
+#else
+    collHandle_t collHandle;
+    collEnt_t collEnt;
+#endif
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
 
     if (srcColl == NULL || targColl == NULL) {
@@ -244,6 +248,7 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 
     collLen = strlen (srcColl);
 
+#if 0
     /* query all sub collections in srcColl and the mk the required
      * subdirectories */
 
@@ -308,96 +313,6 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
         }
     }
 
-#if 0	/* Refactored */
-    while (status >= 0) {
-        sqlResult_t *subColl, *collType, *collInfo1, *collInfo2;
-
-        if ((subColl = getSqlResultByInx (genQueryOut, COL_COLL_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "getCollUtil: getSqlResultByInx for COL_COLL_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-
-	if (dataObjCopyInp->srcDataObjInp.specColl == NULL) {
-            if ((collType = getSqlResultByInx (genQueryOut,
-              COL_COLL_TYPE)) == NULL) {
-                rodsLog (LOG_ERROR,
-                 "getCollUtil:getSqlResultByInx for COL_COLL_TYPE failed");
-                return (UNMATCHED_KEY_OR_INDEX);
-            } else if ((collInfo1 = getSqlResultByInx (genQueryOut,
-              COL_COLL_INFO1)) == NULL) {
-                rodsLog (LOG_ERROR,
-                 "getCollUtil:getSqlResultByInx for COL_COLL_INFO1 failed");
-                return (UNMATCHED_KEY_OR_INDEX);
-            } else if ((collInfo2 = getSqlResultByInx (genQueryOut,
-              COL_COLL_INFO2)) == NULL) {
-                rodsLog (LOG_ERROR,
-                 "getCollUtil:getSqlResultByInx for COL_COLL_INFO2 failed");
-                return (UNMATCHED_KEY_OR_INDEX);
-            }
-        }
-
-        for (i = 0; i < genQueryOut->rowCnt; i++) {
-            char *tmpSubColl, *tmpCollType, *tmpCollInfo1, *tmpCollInfo2;
-
-            tmpSubColl = &subColl->value[subColl->len * i];
-            if (strlen (tmpSubColl) <= collLen)
-                continue;
-
-            snprintf (targChildPath, MAX_NAME_LEN, "%s%s",
-              targColl, tmpSubColl + collLen);
-            mkCollR (conn, targColl, targChildPath);
-
-            if (rodsArgs->verbose == True) {
-                fprintf (stdout, "C- %s:\n", targChildPath);
-            }
-            if (dataObjCopyInp->srcDataObjInp.specColl == NULL) {
-                tmpCollType = &collType->value[collType->len * i];
-                tmpCollInfo1 = &collInfo1->value[collInfo1->len * i];
-                tmpCollInfo2 = &collInfo2->value[collInfo2->len * i];
-                if (tmpCollType[0] != '\0') {
-                    /* spec Coll */
-                    dataObjCopyInp_t childDataObjCopyInp;
-                    specColl_t specColl;
-
-                    childDataObjCopyInp = *dataObjCopyInp;
-                    childDataObjCopyInp.srcDataObjInp.specColl = &specColl;
-                    status = resolveSpecCollType (tmpCollType, tmpSubColl,
-                      tmpCollInfo1, tmpCollInfo2, &specColl);
-                    if (status < 0) return status;
-
-                    status = cpCollUtil (conn, tmpSubColl, targChildPath, 
-		      myRodsEnv, rodsArgs, &childDataObjCopyInp, rodsRestart);
-
-                    if (status < 0 && status != CAT_NO_ROWS_FOUND &&
-                       status != SYS_SPEC_COLL_OBJ_NOT_EXIST) {
-                        return (status);
-                    }
-                }
-            }
-        }
-
-        continueInx = genQueryOut->continueInx;
-
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-
-            if (dataObjCopyInp->srcDataObjInp.specColl != NULL) {
-	        dataObjOprInp.openFlags = continueInx;
-                status = rcQuerySpecColl (conn, &dataObjOprInp, &genQueryOut);
-	    } else {
-                genQueryInp.continueInx = continueInx;
-                status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
-	    }
-        } else {
-            break;
-        }
-    }
-#endif
-
     /* Now get all the files */
 
     if (dataObjCopyInp->srcDataObjInp.specColl != NULL) {
@@ -419,13 +334,13 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 
     while (status >= 0 &&
       (status = getNextDataObjMetaInfo (conn, &dataObjCopyInp->srcDataObjInp, 
-      &genQueryInp, &dataObjSqlResult, &rowInx, &dataObjMetaInfo)) >= 0) {
+      &genQueryInp, &dataObjSqlResult, &rowInx, &collEnt)) >= 0) {
 
         snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-          dataObjMetaInfo.collName, dataObjMetaInfo.dataName);
+          collEnt.collName, collEnt.dataName);
         snprintf (targChildPath, MAX_NAME_LEN, "%s%s/%s",
-          targColl, dataObjMetaInfo.collName + collLen,
-          dataObjMetaInfo.dataName);
+          targColl, collEnt.collName + collLen,
+          collEnt.dataName);
 
         status = chkStateForResume (conn, rodsRestart, targChildPath,
           rodsArgs, DATA_OBJ_T, &dataObjCopyInp->destDataObjInp.condInput, 1);
@@ -454,34 +369,26 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
         }
     }
 
-#if 0	/* Refactored */
-    while (status >= 0) {
-        sqlResult_t *subColl, *dataObj;
+    if (dataObjCopyInp->srcDataObjInp.specColl == NULL) {
+        clearGenQueryInp (&genQueryInp);
+    }
+#else
+    status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
+      &collHandle);
 
-        if ((subColl = getSqlResultByInx (genQueryOut, COL_COLL_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "getCollUtil: getSqlResultByInx for COL_COLL_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-
-        if ((dataObj = getSqlResultByInx (genQueryOut, COL_DATA_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "getCollUtil: getSqlResultByInx for COL_DATA_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-
-        for (i = 0; i < genQueryOut->rowCnt; i++) {
-            char *tmpSubColl, *tmpDataName;
-
-            tmpSubColl = &subColl->value[subColl->len * i];
-            tmpDataName = &dataObj->value[dataObj->len * i];
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          srcColl, status);
+        return status;
+    }
+    while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
+        if (collEnt.objType == DATA_OBJ_T) {
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-              tmpSubColl, tmpDataName);
-
+              collEnt.collName, collEnt.dataName);
             snprintf (targChildPath, MAX_NAME_LEN, "%s%s/%s",
-              targColl, tmpSubColl + collLen, tmpDataName);
+              targColl, collEnt.collName + collLen,
+              collEnt.dataName);
 
             status = chkStateForResume (conn, rodsRestart, targChildPath,
               rodsArgs, DATA_OBJ_T, &dataObjCopyInp->destDataObjInp.condInput,
@@ -489,61 +396,59 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 
             if (status < 0) {
                 /* restart failed */
-                freeGenQueryOut (&genQueryOut);
-                clearGenQueryInp (&genQueryInp);
-                return (status);
+                break;
             } else if (status == 0) {
                 continue;
             }
 
-	    status = cpFileUtil (conn, srcChildPath, targChildPath, 
-	      -1, myRodsEnv, rodsArgs, dataObjCopyInp);
+            status = cpFileUtil (conn, srcChildPath, targChildPath,
+              -1, myRodsEnv, rodsArgs, dataObjCopyInp);
 
-            if (rodsRestart->fd > 0) {
-                if (status >= 0) {
-                    /* write the restart file */
-                    rodsRestart->curCnt ++;
-                    status = writeRestartFile (rodsRestart, targChildPath);
+            if (status < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "getCollUtil: getDataObjUtil failed for %s. status = %d",
+                  srcChildPath, status);
+                if (rodsRestart->fd > 0) {
+                    break;
                 } else {
-                    /* don't continue with restart */
-                    freeGenQueryOut (&genQueryOut);
-                    clearGenQueryInp (&genQueryInp);
-                    rodsLogError (LOG_ERROR, status,
-                      "cpCollUtil: cpFileUtil failed for %s. status = %d",
-                      srcChildPath, status);
+                    savedStatus = status;
+                }
+            } else {
+                status = procAndWrriteRestartFile (rodsRestart, targChildPath);
+            }
+        } else if (collEnt.objType == COLL_OBJ_T) {
+            if (strlen (collEnt.collName) <= collLen)
+                continue;
+
+            snprintf (targChildPath, MAX_NAME_LEN, "%s%s",
+              targColl, collEnt.collName + collLen);
+            mkCollR (conn, targColl, targChildPath);
+
+            if (rodsArgs->verbose == True) {
+                fprintf (stdout, "C- %s:\n", targChildPath);
+            }
+
+            if (collEnt.specColl.class != NO_SPEC_COLL) {
+                /* the child is a spec coll. need to drill down */
+                dataObjCopyInp_t childDataObjCopyInp;
+
+                childDataObjCopyInp = *dataObjCopyInp;
+                childDataObjCopyInp.srcDataObjInp.specColl = 
+		  &collEnt.specColl;
+                status = cpCollUtil (conn, collEnt.collName, 
+		  targChildPath, myRodsEnv, rodsArgs, &childDataObjCopyInp, 
+		  rodsRestart);
+
+                if (status < 0 && status != CAT_NO_ROWS_FOUND &&
+                 status != SYS_SPEC_COLL_OBJ_NOT_EXIST) {
                     return (status);
                 }
-            } else if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
-                  "cpCollUtil: cpFileUtil failed for %s. status = %d",
-                  srcChildPath, status);
-                /* need to set global error here */
-                savedStatus = status;
             }
-	}
-
-        continueInx = genQueryOut->continueInx;
-
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-            if (dataObjCopyInp->srcDataObjInp.specColl != NULL) {
-                dataObjOprInp.openFlags = continueInx;
-                status = rcQuerySpecColl (conn, &dataObjOprInp, &genQueryOut);
-            } else {
-                genQueryInp.continueInx = continueInx;
-                status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
-	    }
-        } else {
-            break;
         }
     }
-#endif
+    rclCloseCollection (&collHandle);
 
-    if (dataObjCopyInp->srcDataObjInp.specColl == NULL) {
-        clearGenQueryInp (&genQueryInp);
-    }
+#endif
 
     if (savedStatus < 0) {
         return (savedStatus);

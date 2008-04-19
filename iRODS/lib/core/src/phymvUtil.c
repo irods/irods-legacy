@@ -153,13 +153,18 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
 {
     int status;
     int savedStatus = 0;
-    genQueryInp_t genQueryInp;
-    char srcChildPath[MAX_NAME_LEN];
-    genQueryOut_t *genQueryOut = NULL;
     int collLen;
+#if 0
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
     int rowInx;
     dataObjSqlResult_t dataObjSqlResult;
     dataObjMetaInfo_t dataObjMetaInfo;
+#else
+    collHandle_t collHandle;
+    collEnt_t collEnt;
+#endif
+    char srcChildPath[MAX_NAME_LEN];
 
     if (srcColl == NULL) {
        rodsLog (LOG_ERROR,
@@ -180,6 +185,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
 
     collLen = strlen (srcColl);
 
+#if 0
     /* Now get all the files */
 
     memset (&genQueryInp, 0, sizeof (genQueryInp));
@@ -209,56 +215,34 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
 	    status = 0;
         }
     }
+#else
+    status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
+      &collHandle);
 
-#if 0
-    while (status >= 0) {
-	sqlResult_t *subColl, *dataObj;
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          srcColl, status);
+        return status;
+    }
+    while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
+        if (collEnt.objType == DATA_OBJ_T) {
+            snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
+              collEnt.collName, collEnt.dataName);
 
-        if ((subColl = getSqlResultByInx (genQueryOut, COL_COLL_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "phymvCollUtil: getSqlResultByInx for COL_COLL_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-
-        if ((dataObj = getSqlResultByInx (genQueryOut, COL_DATA_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "phymvCollUtil: getSqlResultByInx for COL_DATA_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-
-	for (i = 0; i < genQueryOut->rowCnt; i++) {
-	    char *tmpSubColl, *tmpDataName;
-
-	    tmpSubColl = &subColl->value[subColl->len * i];
-	    tmpDataName = &dataObj->value[dataObj->len * i];
-
-	    snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-	      tmpSubColl, tmpDataName);
-	    status = phymvDataObjUtil (conn, srcChildPath,
+            status = phymvDataObjUtil (conn, srcChildPath,
              myRodsEnv, rodsArgs, dataObjInp);
-	    if (status < 0) {
+            if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "phymvCollUtil: phymvDataObjUtil failed for %s. status = %d",
-	          srcChildPath, status);
-		/* need to set global error here */
-		savedStatus = status;
-	    }
-	}
-
-	continueInx = genQueryOut->continueInx;
-
-	freeGenQueryOut (&genQueryOut);
-
-	if (continueInx > 0) {
-	    /* More to come */
-	    genQueryInp.continueInx = continueInx;
-            status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
-	} else {
-	    break;
+                  srcChildPath, status);
+                /* need to set global error here */
+                savedStatus = status;
+                status = 0;
+            }
 	}
     }
+    rclCloseCollection (&collHandle);
 #endif
 
     if (savedStatus < 0) {
