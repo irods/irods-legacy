@@ -900,7 +900,7 @@ msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 	memset (mybuf, 0, sizeof (bytesBuf_t));
 
 	
-	/* parse inpParam1 */
+	/* parse inpParam */
 	rei->status = parseMspForDataObjInp (inpParam, &dataObjInp, &myDataObjInp, 0);
 	
 	if (rei->status < 0) {
@@ -1271,6 +1271,82 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
 
 	/* send result buffer, even if length is 0, to inParam2 */
 	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
+	
+	return (rei->status);
+
+}
+
+
+
+/*
+ * msiSetDataType - Sets the data_type_name attribute of a data object
+ *
+ */
+int
+msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+	char *dataTypeStr, *dataIdStr;		/* for parsing of input params */
+	
+	modDataObjMeta_t modDataObjMetaInp;	/* for rsModDataObjMeta() */
+	dataObjInfo_t dataObjInfo;		/* for rsModDataObjMeta() */
+	keyValPair_t regParam;			/* for rsModDataObjMeta() */
+	
+	
+	RE_TEST_MACRO ("    Calling msiSetDataType")
+	
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiSetDataType: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/* parse inpParam1: data object ID */
+	if ((dataIdStr = parseMspForStr(inpParam1)) != NULL)  {
+		dataObjInfo.dataId = (rodsLong_t) atoll(dataIdStr);
+	}
+
+
+	/* parse inpParam2: data object path */
+	if (parseMspForStr(inpParam2)) {
+		strncpy(dataObjInfo.objPath, parseMspForStr(inpParam2), MAX_NAME_LEN);
+	}
+
+
+	/* make sure to have at least data ID or path */
+	if (!(dataIdStr || dataObjInfo.objPath)) {
+		rodsLog (LOG_ERROR, "msiSetDataType: No data object ID or path provided.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+
+	/* parse inpParam3: data type string */
+	if ((dataTypeStr = parseMspForStr (inpParam3)) == NULL) {
+		rodsLog (LOG_ERROR, "msiSetDataType: parseMspForStr error for param 3.");
+		return (USER__NULL_INPUT_ERR);
+	}
+	memset (&regParam, 0, sizeof (regParam));
+	addKeyVal (&regParam, DATA_TYPE_KW, dataTypeStr);
+
+	
+	/* call rsModDataObjMeta() */
+	modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+	modDataObjMetaInp.regParam = &regParam;
+	rei->status = rsModDataObjMeta (rei->rsComm, &modDataObjMetaInp);
+
+
+	/* failure? */
+	if (rei->status < 0) {
+		if (dataObjInfo.objPath) {
+			rodsLog (LOG_ERROR, "msiSetDataType: rsModDataObjMeta failed for object %s, status = %d", dataObjInfo.objPath, rei->status);
+		}
+		else {
+			rodsLog (LOG_ERROR, "msiSetDataType: rsModDataObjMeta failed for object ID %d, status = %d", dataObjInfo.dataId, rei->status);
+		}
+	}
+
+
+	/* return operation status through outParam */
+	fillIntInMsParam (outParam, rei->status);
 	
 	return (rei->status);
 

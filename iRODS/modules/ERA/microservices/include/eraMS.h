@@ -29,6 +29,7 @@ int msiCreateUserAccountsFromDataObj(msParam_t *inpParam, msParam_t *outParam, r
 int msiLoadUserModsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei);
+int msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei);
 
 #endif	/* ERAMS_H */
 
