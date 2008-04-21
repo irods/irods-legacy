@@ -81,6 +81,11 @@ typedef struct {
 #define NON_POINTER	0
 #define A_POINTER	1
 #define NO_FREE_POINTER 2
+#define NO_PACK_POINTER 3
+
+/* definition for packFlag */
+#define FREE_POINTER	0x1	/* free the pointer after packing */
+
 typedef struct packItem {
     packTypeInx_t typeInx;
     char *name;
@@ -98,13 +103,19 @@ typedef struct packItem {
 } packItem_t;
 
 typedef struct {
+    int numBuf;
+    bytesBuf_t *bBufArray;	/* pointer to an array of bytesBuf_t */
+} bytesBufArray_t;
+
+typedef struct {
     bytesBuf_t *bBuf;
     int bufSize;
+    bytesBufArray_t nopackBufArray;	/* bBuf for non packed buffer */
 } packedOutput_t;
 
 int 
 packStruct (void *inStruct, bytesBuf_t **packedResult, char *packInstName,
-packInstructArray_t *myPackTable, int freePointer, irodsProt_t irodsProt);
+packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt);
 
 int
 unpackStruct (void *inPackStr, void **outStruct, char *packInstName,
@@ -145,15 +156,15 @@ extendPackedOutput (packedOutput_t *packedOutput, int extLen, void **outPtr);
 int
 packItem (packItem_t *myPackedItem, void **inPtr, 
 packedOutput_t *packedOutput, packInstructArray_t *myPackTable, 
-int freePointer, irodsProt_t irodsProt);
+int packFlag, irodsProt_t irodsProt);
 int
 packPointerItem (packItem_t *myPackedItem, void **inPtr,
 packedOutput_t *packedOutput, packInstructArray_t *myPackTable,
-int freePointer, irodsProt_t irodsProt);
+int packFlag, irodsProt_t irodsProt);
 int
 packNonpointerItem (packItem_t *myPackedItem, void **inPtr, 
 packedOutput_t *packedOutput, packInstructArray_t *myPackTable,
-int freePointer, irodsProt_t irodsProt);
+int packFlag, irodsProt_t irodsProt);
 int
 packChar (void **inPtr, packedOutput_t *packedOutput, int len,
 packItem_t *myPackedItem, irodsProt_t irodsProt);
@@ -179,7 +190,7 @@ packItem_t *myPackedItem, irodsProt_t irodsProt);
 int
 packChildStruct (void **inPtr, packedOutput_t *packedOutput,
 packItem_t *myPackedItem, packInstructArray_t *myPackTable, int numElement,
-int freePointer, irodsProt_t irodsProt, char *packInstruct);
+int packFlag, irodsProt_t irodsProt, char *packInstruct);
 int
 freePackedItem (packItem_t *packItemHead);
 int
@@ -275,6 +286,9 @@ int
 parseXmlTag (void **inPtr, packItem_t *myPackedItem, int flag, int *skipLen);
 int
 alignPackedOutput64 (packedOutput_t *packedOutput);
+int
+packNopackPointer (void **inPtr, packedOutput_t *packedOutput, int len,
+packItem_t *myPackedItem, irodsProt_t irodsProt);
 #ifdef  __cplusplus
 }
 #endif

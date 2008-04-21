@@ -13,7 +13,7 @@
 
 int 
 packStruct (void *inStruct, bytesBuf_t **packedResult, char *packInstName,
-packInstructArray_t *myPackTable, int freePointer, irodsProt_t irodsProt)
+packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt)
 {
     int status;
     packItem_t rootPackedItem;
@@ -34,7 +34,7 @@ packInstructArray_t *myPackTable, int freePointer, irodsProt_t irodsProt)
     memset (&rootPackedItem, 0, sizeof (rootPackedItem));
     rootPackedItem.name = packInstName;
     status = packChildStruct (&inPtr, &packedOutput, &rootPackedItem, 
-      myPackTable, 1, freePointer, irodsProt, NULL);
+      myPackTable, 1, packFlag, irodsProt, NULL);
 
     if (status < 0) {
         return (status);
@@ -193,6 +193,14 @@ parsePackInstruct (char *packInstruct, packItem_t **packItemHead)
                  return (SYS_PACK_INSTRUCT_FORMAT_ERR);
             }
 	    continue;
+        } else if (strcmp (buf, "#") == 0) {   /* no pack pointer */
+            myPackItem->pointerType = NO_PACK_POINTER;
+            if (gotTypeCast == 0 || gotItemName > 0) {
+                rodsLog (LOG_ERROR,
+                  "parsePackInstruct: * position error for %s", packInstruct);
+                 return (SYS_PACK_INSTRUCT_FORMAT_ERR);
+            }
+            continue;
         } else if (strcmp (buf,  "$") == 0) {   /* pointer but don't free */
             myPackItem->pointerType = NO_FREE_POINTER;
             if (gotTypeCast == 0 || gotItemName > 0) {
@@ -879,7 +887,7 @@ resolveDepInArray (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
 int
 packNonpointerItem (packItem_t *myPackedItem, void **inPtr, 
 packedOutput_t *packedOutput, packInstructArray_t *myPackTable, 
-int freePointer, irodsProt_t irodsProt)
+int packFlag, irodsProt_t irodsProt)
 {
     int numElement;
     int elementSz;
@@ -979,7 +987,7 @@ int freePointer, irodsProt_t irodsProt)
 	/* no need to align boundary for struct */
 
         status = packChildStruct (inPtr, packedOutput, myPackedItem,
-	  myPackTable, numElement, freePointer, irodsProt, NULL);
+	  myPackTable, numElement, packFlag, irodsProt, NULL);
 
         if (status < 0) {
             return (status);
@@ -1000,7 +1008,7 @@ int freePointer, irodsProt_t irodsProt)
 int
 packPointerItem (packItem_t *myPackedItem, void **inPtr, 
 packedOutput_t *packedOutput, packInstructArray_t *myPackTable, 
-int freePointer, irodsProt_t irodsProt)
+int packFlag, irodsProt_t irodsProt)
 {
     int numElement;	/* number of elements pointed to by one pointer */
     int numPointer;	/* number of pointers in the array of pointer */
@@ -1052,16 +1060,23 @@ int freePointer, irodsProt_t irodsProt)
 	for (i = 0; i < numPointer; i++) {
             origPtr = pointer = pointerArray[i];
 	    
-            status = packChar (&pointer, packedOutput, numElement * elementSz,
-	      myPackedItem, irodsProt);
-	    if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
+	    if (myPackedItem->pointerType == NO_PACK_POINTER) {
+		status = packNopackPointer (&pointer, packedOutput, 
+		  numElement * elementSz, myPackedItem, irodsProt);
+	    } else {
+                status = packChar (&pointer, packedOutput, 
+		 numElement * elementSz, myPackedItem, irodsProt);
+	    }
+	    if ((packFlag & FREE_POINTER) && 
+	      myPackedItem->pointerType == A_POINTER) {
 		free (origPtr);
 	    }
             if (status < 0) {
                 return (status);
 	    }
         }
-	if (freePointer > 0  && myPackedItem->pointerType == A_POINTER && 
+	if ((packFlag & FREE_POINTER)  && 
+	  myPackedItem->pointerType == A_POINTER && 
 	 numPointer > 0 && myDim > 0) {
 	    /* Array of pointers */
 	    free (pointerArray);
@@ -1100,12 +1115,14 @@ int freePointer, irodsProt_t irodsProt)
 		    return (status);
 		}
 	    }
-            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
+            if ((packFlag & FREE_POINTER) && 
+	      myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
 	}
-        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER 
-	  && numPointer > 0 && myDim > 0) {        
+        if ((packFlag & FREE_POINTER) && 
+	  myPackedItem->pointerType == A_POINTER && 
+	  numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
         }
@@ -1117,7 +1134,8 @@ int freePointer, irodsProt_t irodsProt)
 
             status = packInt (&pointer, packedOutput, numElement, 
 	      myPackedItem, irodsProt);
-            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
+            if ((packFlag & FREE_POINTER) && 
+	      myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
             if (status < 0) {
@@ -1125,7 +1143,8 @@ int freePointer, irodsProt_t irodsProt)
             }
         }
 
-        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER &&
+        if ((packFlag & FREE_POINTER) && 
+	  myPackedItem->pointerType == A_POINTER &&
 	  numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
@@ -1138,7 +1157,8 @@ int freePointer, irodsProt_t irodsProt)
 
             status = packDouble (&pointer, packedOutput, numElement, 
 	     myPackedItem, irodsProt);
-            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
+            if ((packFlag & FREE_POINTER) && 
+	      myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
             if (status < 0) {
@@ -1146,8 +1166,9 @@ int freePointer, irodsProt_t irodsProt)
             }
         }
 
-        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER
-	  && numPointer > 0 && myDim > 0) {        
+        if ((packFlag & FREE_POINTER) && 
+	  myPackedItem->pointerType == A_POINTER && 
+	  numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
         }
@@ -1159,15 +1180,17 @@ int freePointer, irodsProt_t irodsProt)
         for (i = 0; i < numPointer; i++) {
             origPtr = pointer = pointerArray[i];
             status = packChildStruct (&pointer, packedOutput, myPackedItem,
-	      myPackTable, numElement, freePointer, irodsProt, NULL);
-            if (freePointer > 0 && myPackedItem->pointerType == A_POINTER) {
+	      myPackTable, numElement, packFlag, irodsProt, NULL);
+            if ((packFlag & FREE_POINTER) && 
+	      myPackedItem->pointerType == A_POINTER) {
                 free (origPtr);
             }
             if (status < 0) {
                 return (status);
 	    }
         }
-        if (freePointer > 0 && myPackedItem->pointerType == A_POINTER
+        if ((packFlag & FREE_POINTER) && 
+	  myPackedItem->pointerType == A_POINTER
 	  && numPointer > 0 && myDim > 0) {        
 	    /* Array of pointers */
             free (pointerArray);
@@ -1256,7 +1279,7 @@ extendPackedOutput (packedOutput_t *packedOutput, int extLen, void **outPtr)
 
 int
 packItem (packItem_t *myPackedItem, void **inPtr, packedOutput_t *packedOutput,
-packInstructArray_t *myPackTable, int freePointer, irodsProt_t irodsProt)
+packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt)
 {
     int status;
 
@@ -1267,10 +1290,10 @@ packInstructArray_t *myPackTable, int freePointer, irodsProt_t irodsProt)
     if (myPackedItem->pointerType > 0) {
         /* a pointer type */
         status = packPointerItem (myPackedItem, inPtr, packedOutput,
-          myPackTable, freePointer, irodsProt);
+          myPackTable, packFlag, irodsProt);
     } else {
         status = packNonpointerItem (myPackedItem, inPtr, packedOutput,
-          myPackTable, freePointer, irodsProt);
+          myPackTable, packFlag, irodsProt);
     }
 
     return (status);
@@ -1707,7 +1730,7 @@ packItem_t *myPackedItem, irodsProt_t irodsProt)
 int
 packChildStruct (void **inPtr, packedOutput_t *packedOutput, 
 packItem_t *myPackedItem, packInstructArray_t *myPackTable, int numElement,
-int freePointer, irodsProt_t irodsProt, char *packInstructInp)
+int packFlag, irodsProt_t irodsProt, char *packInstructInp)
 {
     void *packInstruct;
     int i, status;
@@ -1759,7 +1782,7 @@ int freePointer, irodsProt_t irodsProt, char *packInstructInp)
 	    } 
 #endif
 	    status = packItem (tmpItem, inPtr, packedOutput,
-                  myPackTable, freePointer, irodsProt);
+                  myPackTable, packFlag, irodsProt);
             if (status < 0) {
                 return (status);
             }
@@ -2646,19 +2669,26 @@ irodsProt_t irodsProt)
       case PACK_CHAR_TYPE:
       case PACK_BIN_TYPE:
 	if (myDim == 0) {
-	    outPtr = addPointerToPackedOut (unpackedOutput,
-	      numElement * elementSz, NULL);
-            status = unpackCharToOutPtr (inPtr, &outPtr,
-             numElement * elementSz, myPackedItem, irodsProt);
+	    if (myPackedItem->pointerType == NO_PACK_POINTER) {
+	    } else {
+	        outPtr = addPointerToPackedOut (unpackedOutput,
+	          numElement * elementSz, NULL);
+                status = unpackCharToOutPtr (inPtr, &outPtr,
+                 numElement * elementSz, myPackedItem, irodsProt);
+	    }
+
             if (status < 0) {
                 return (status);
             }
 	} else {
 	    /* pointer to an array of pointers */
             for (i = 0; i < numPointer; i++) {
-                outPtr = pointerArray[i] = malloc (numElement * elementSz);
-        	status = unpackCharToOutPtr (inPtr, &outPtr, 
-                 numElement * elementSz, myPackedItem, irodsProt);
+                if (myPackedItem->pointerType == NO_PACK_POINTER) {
+                } else {
+                    outPtr = pointerArray[i] = malloc (numElement * elementSz);
+        	    status = unpackCharToOutPtr (inPtr, &outPtr, 
+                     numElement * elementSz, myPackedItem, irodsProt);
+		}
                 if (status < 0) {
                     return (status);
                 }
@@ -3151,3 +3181,49 @@ alignPackedOutput64 (packedOutput_t *packedOutput)
     return (0);
 }
 
+/* packNopackPointer - copy the char pointer in *inPtr into 
+ * packedOutput->nopackBufArray without packing. Pack the buffer index
+ * into packedOutput as an integer. 
+ */
+
+int
+packNopackPointer (void **inPtr, packedOutput_t *packedOutput, int len,
+packItem_t *myPackedItem, irodsProt_t irodsProt)
+{
+    int newNumBuf;
+    int curNumBuf, *intPtr;
+    bytesBuf_t *newBBufArray;
+    int i;
+    int status;
+
+    curNumBuf = packedOutput->nopackBufArray.numBuf;
+    if ((curNumBuf % PTR_ARRAY_MALLOC_LEN) == 0) {
+        newNumBuf = curNumBuf + PTR_ARRAY_MALLOC_LEN;
+
+        newBBufArray = (bytesBuf_t *) malloc (newNumBuf * sizeof (bytesBuf_t));
+        memset (newBBufArray, 0, newNumBuf * sizeof (bytesBuf_t));
+        for (i = 0; i < curNumBuf; i++) {
+	    newBBufArray[i].len = packedOutput->nopackBufArray.bBufArray[i].len;
+	    newBBufArray[i].buf = packedOutput->nopackBufArray.bBufArray[i].buf;
+        }
+	if (packedOutput->nopackBufArray.bBufArray != NULL) {
+	    free (packedOutput->nopackBufArray.bBufArray);
+	}
+	packedOutput->nopackBufArray.bBufArray = newBBufArray;
+    }
+    packedOutput->nopackBufArray.bBufArray[curNumBuf].len = len;
+    packedOutput->nopackBufArray.bBufArray[curNumBuf].buf = *inPtr;
+    packedOutput->nopackBufArray.numBuf++;
+
+    intPtr = malloc (sizeof (int));
+    *intPtr = curNumBuf;
+    status = packInt ((void **) &intPtr, packedOutput, 1, myPackedItem,
+     irodsProt);
+
+    free (intPtr);
+    if (status < 0) {
+        return (status);
+    }
+
+    return (0);
+}

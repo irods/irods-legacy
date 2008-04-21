@@ -17,18 +17,17 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 -I$(buildDir)/lib/core/include  \
 -I$(buildDir)/lib/api/include -I$(buildDir)/lib/md5/include
 
-# LDADD+= -L$(clObjDir) -lRodsAPIs -L$(buildDir)/../SRB3_3plus/obj
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 
 TESTOBJS = lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
-l3structFile.o xmsgtest.o
+l3structFile.o xmsgtest.o listcoll.o
 
 TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
-xmsgtest
+xmsgtest listcoll
 
 ifdef TAR_STRUCT_FILE
-TARGETS+=tartest
-TESTOBJS+=tartest.o
+# TARGETS+=tartest
+# TESTOBJS+=tartest.o
 CFLAGS+= -I$(tarDir) -I$(tarDir)/listhash \
                   -I${tarDir}/lib \
                   -I${tarDir}/compat
@@ -99,6 +98,9 @@ phptest: phptest.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
 phpexttest: phpexttest.o
+	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
+
+listcoll: listcoll.o
 	$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
 ifdef TAR_STRUCT_FILE

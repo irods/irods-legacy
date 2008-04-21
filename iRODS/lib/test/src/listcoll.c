@@ -68,7 +68,7 @@ main(int argc, char **argv)
         exit (7);
     }
 
-    if (rodsArgs.longOption == True) flag |= LONG_METADATA_FG; 
+    if (rodsArgs.longOption == True) flag |= VERY_LONG_METADATA_FG; 
 
     status = rclOpenCollection (conn, argv[optind], flag, &collHandle);
 
@@ -97,18 +97,22 @@ printCollection (rcComm_t *conn, collHandle_t *collHandle)
 	    printf ("D - %s/%s\n", collEnt.collName, collEnt.dataName);
 	    printf ("      dataId - %s\n", collEnt.dataId);
 	    if ((collHandle->flag & LONG_METADATA_FG) > 0) {
+	        printf ("      ownerName - %s\n", collEnt.ownerName);
 		printf ("      createTime (UNIX clock in string) - %s\n", 
 		  collEnt.createTime);
 		printf ("      modifyTime (UNIX clock in string) - %s\n", 
 		  collEnt.modifyTime);
 		printf ("      chksum - %s\n", collEnt.chksum);
-		printf ("      dataSize - %lld\n", collEnt.dataSize);
+		printf ("      phyPath - %s\n", collEnt.phyPath);
+	        printf ("      resource - %s\n", collEnt.resource);
 		printf ("      replStatus - %d\n", collEnt.replStatus);
+		printf ("      replNum - %d\n", collEnt.replNum);
+		printf ("      dataSize - %lld\n", collEnt.dataSize);
 	    }
 	} else if (collEnt.objType == COLL_OBJ_T) {
 	    collHandle_t subCollhandle;
 	    printf ("C - %s\n", collEnt.collName);
-	    printf ("      collOwner %s\n", collEnt.collOwner);
+	    printf ("      collOwner %s\n", collEnt.ownerName);
 	    /* recursive print */
             status = rclOpenCollection (conn, collEnt.collName, 
 	      collHandle->flag, &subCollhandle);
