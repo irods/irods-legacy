@@ -1016,9 +1016,11 @@ collEnt_t *collEnt)
 
     memset (collEnt, 0, sizeof (collEnt_t));
 
-    if ((collHandle->flag & LONG_METADATA_FG) != 0) {
+    if ((collHandle->flag & VERY_LONG_METADATA_FG) != 0) {
         rodsArgs.longOption = True;
         rodsArgs.veryLongOption = True;
+    } else if ((collHandle->flag & LONG_METADATA_FG) != 0) {
+        rodsArgs.longOption = True;
     } else {
         rodsArgs.longOption = False;
     }

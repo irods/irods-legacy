@@ -56,12 +56,6 @@ typedef struct DataObjMetaInfo {
     char *chksum;
     char *replStatus;
     char *dataId;
-#if 0
-    char *resource;
-    char *phyPath;
-    char *ownerName;
-    char *replNum;
-#endif
 } dataObjMetaInfo_t;
 
 /* definition for state in collHandle_t */
@@ -74,7 +68,8 @@ typedef enum {
 
 /* definition for flag in rclOpenCollection and collHandle_t */
 #define LONG_METADATA_FG     0x1     /* get verbose metadata */
-#define RECUR_QUERY_FG       0x2     /* get recursive query */
+#define VERY_LONG_METADATA_FG     0x2   /* get verbose metadata */
+#define RECUR_QUERY_FG       0x3     /* get recursive query */
 
 typedef struct CollHandle {
     collState_t state;

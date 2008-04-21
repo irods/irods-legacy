@@ -523,7 +523,7 @@ dataObjInp_t *dataObjOprInp)
     }
 #else
     status = rclOpenCollection (conn, srcColl, 
-      RECUR_QUERY_FG | LONG_METADATA_FG, &collHandle);
+      RECUR_QUERY_FG | VERY_LONG_METADATA_FG, &collHandle);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -889,7 +889,7 @@ dataObjCopyInp_t *dataObjCopyInp)
     }
 #else
     status = rclOpenCollection (conn, srcColl,
-      RECUR_QUERY_FG | LONG_METADATA_FG, &collHandle);
+      RECUR_QUERY_FG | VERY_LONG_METADATA_FG, &collHandle);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
