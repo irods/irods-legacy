@@ -1465,52 +1465,56 @@ strToXmlStr (char *inStr, char **outXmlStr)
     while (1) {
 	if (*tmpPtr == '&') {
 	    if (*outXmlStr == NULL) {
-		*outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr));
+		*outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr) + 6);
 	    }
 	    cpLen = tmpPtr - inPtr;
 	    strncpy (outPtr, inPtr, cpLen);
 	    outPtr += cpLen;
-	    strcat (outPtr, "&amp;");
+	    /* strcat (outPtr, "&amp;"); */
+	    rstrcpy (outPtr, "&amp;", 6);
 	    outPtr += 5;
 	    inPtr += cpLen + 1;
 	} else if (*tmpPtr == '<') {
             if (*outXmlStr == NULL) {
-                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr));
+                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr) + 6);
             }
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&lt;");
+            /* strcat (outPtr, "&lt;"); */
+            rstrcpy (outPtr, "&lt;", 5);
             outPtr += 4;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '>') {
             if (*outXmlStr == NULL) {
-                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr));
+                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr) + 6);
             }
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&gt;");
+	    rstrcpy (outPtr, "&gt;", 5);
+            /* strcat (outPtr, "&gt;"); */
             outPtr += 4;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '"') {
             if (*outXmlStr == NULL) {
-                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr));
+                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr) + 6);
             }
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&quot;");
+	    rstrcpy (outPtr, "&quot;", 7);
             outPtr += 6;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '`') {
             if (*outXmlStr == NULL) {
-                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr));
+                *outXmlStr = outPtr = (char*)malloc (5 * strlen (inPtr) + 6);
             }
             cpLen = tmpPtr - inPtr;
             strncpy (outPtr, inPtr, cpLen);
             outPtr += cpLen;
-            strcat (outPtr, "&apos;");
+            /* strcat (outPtr, "&apos;"); */
+            rstrcpy (outPtr, "&apos;", 7);
             outPtr += 6;
             inPtr += cpLen + 1;
 	} else if (*tmpPtr == '\0') {
