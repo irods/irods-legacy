@@ -22,3 +22,4 @@
 {"msiGetAuditTrailInfoByKeywords",	3,		(funcPtr) msiGetAuditTrailInfoByKeywords},
 {"msiGetAuditTrailInfoByTimeStamp",	4,		(funcPtr) msiGetAuditTrailInfoByTimeStamp},
 {"msiSetDataType",			4,		(funcPtr) msiSetDataType},
+{"msiGuessDataType",			3,		(funcPtr) msiGuessDataType},

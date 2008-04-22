@@ -1354,6 +1354,94 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
 
 
 
+/*
+ * msiGuessDataType - Guesses the data type of an object based on its file extension
+ *
+ */
+int
+msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+	char *pathStr, *extStr;			/* for parsing of input params */
+	genQueryInp_t genQueryInp;		/* for query inputs */
+	char condStr[MAX_NAME_LEN];		/* for query condition */
+	genQueryOut_t *genQueryOut;		/* for query results */
+	sqlResult_t *sqlResult;			/* for query results */
+
+	
+	RE_TEST_MACRO ("    Calling msiGuessDataType")
+	
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiGuessDataType: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/* parse inpParam1: data object path */
+	if ((pathStr = parseMspForStr(inpParam1)) == NULL)  {
+		rodsLog (LOG_ERROR, "msiGuessDataType: No data object path provided.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	
+	/* get the file extension */
+	extStr = strrchr(pathStr, '.');
+	if (!extStr) {
+		rodsLog (LOG_ERROR, "msiGuessDataType: Unable to find file extension in path %s", pathStr);
+		return (USER_INPUT_PATH_ERR);
+	}
+
+
+	/* prepare query */
+	memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+	/* wanted fields */
+	addInxIval (&genQueryInp.selectInp, COL_TOKEN_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_TOKEN_ID, ORDER_BY);  /* to get the lowest token ID first */
+
+	/* make the condition */
+	snprintf (condStr, MAX_NAME_LEN, " like '|%s|'", extStr);
+	addInxVal (&genQueryInp.sqlCondInp, COL_TOKEN_VALUE2, condStr);
+
+	
+	/* ICAT query for token name */
+	rei->status = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+
+
+	/* no result is not considered an error here. Return "generic" which is the default data type */
+	if (rei->status == CAT_NO_ROWS_FOUND) {
+		fillStrInMsParam (inpParam2, "generic");
+		fillIntInMsParam (outParam, rei->status);
+		return (0);
+	}
+
+
+	/* failure? */
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiGuessDataType: rsGenQuery failed for object %s, status = %d", pathStr, rei->status);
+	}
+
+
+	/* retrieve and send data type */
+	sqlResult = getSqlResultByInx(genQueryOut, COL_TOKEN_NAME);
+	fillStrInMsParam (inpParam2, sqlResult->value);
+
+
+	/* clean up rows in the pipeline */
+	genQueryInp.maxRows = -1;
+	genQueryInp.continueInx=genQueryOut->continueInx;
+	rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+
+
+	/* return operation status through outParam */
+	fillIntInMsParam (outParam, rei->status);
+	
+	return (rei->status);
+
+}
+
+
+
 
 
 
