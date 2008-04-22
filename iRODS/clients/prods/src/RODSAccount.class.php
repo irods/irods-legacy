@@ -12,12 +12,16 @@ require_once("autoload.inc.php");
 
 class RODSAccount
 {
+ /**#@+
+  * @var string 
+  */
   public $user;
   public $pass;
   public $host;
   public $port;
   public $zone; 
   public $default_resc;  
+  /**#@-*/
   
   public function __construct($host, $port, $user, $pass, $zone="", 
     $default_resc="")

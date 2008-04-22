@@ -159,11 +159,6 @@ class ProdsFile extends ProdsPath
   */
   public function getStats()
   {
-    if ( ($this->usecache===true) && (isset($this->stats)) )
-	  { 
-      return $this->stats;
-    }
-    
     $conn = RODSConnManager::getConn($this->account);
     $stats=$conn->getFileStats($this->path_str);
     RODSConnManager::releaseConn($conn); 

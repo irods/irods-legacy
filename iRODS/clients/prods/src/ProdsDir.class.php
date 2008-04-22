@@ -116,7 +116,7 @@ class ProdsDir extends ProdsPath
   }
   
  /**
-  * Get children directories of this dir. The result may be cached.
+  * Get children directories of this dir. 
 	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method findDirs();
 	* @return an array of ProdsDir
 	*/
@@ -170,11 +170,6 @@ class ProdsDir extends ProdsPath
   */
   public function getStats()
   {
-    if ( ($this->usecache===true) && (isset($this->stats)) )
-	  { 
-      return $this->stats;
-    }
-    
     $conn = RODSConnManager::getConn($this->account);
     $stats=$conn->getDirStats($this->path_str);
     RODSConnManager::releaseConn($conn); 
@@ -187,28 +182,28 @@ class ProdsDir extends ProdsPath
  /**
   * query metadata, and find matching files.
   * @param array $terms an assositive array of search conditions, supported ones are:
-  *     'name' (string) - partial name of the target (file or dir)
-  *     'descendantOnly' (boolean) - whether to search among this directory's decendents. default is false.
-  *     'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendantOnly' is true
-  *     'smtime'         (int)     - start last-modified-time in unix timestamp. The specified time is included in query, in other words the search can be thought was "mtime >= specified time"
-  *     'emtime'         (int)     - end last-modified-time in unix timestamp. The specified time is not included in query, in other words the search can be thought was "mtime < specified time"
-  *     'owner'          (string)  - owner name of the file
-  *     'rescname'       (string)  - resource name of the file
-  *     'metadata' (array of RODSMeta) - array of metadata.
+  * -    'name' (string) - partial name of the target (file or dir)
+  * -    'descendantOnly' (boolean) - whether to search among this directory's decendents. default is false.
+  * -    'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendantOnly' is true
+  * -    'smtime'         (int)     - start last-modified-time in unix timestamp. The specified time is included in query, in other words the search can be thought was "mtime >= specified time"
+  * -    'emtime'         (int)     - end last-modified-time in unix timestamp. The specified time is not included in query, in other words the search can be thought was "mtime < specified time"
+  * -    'owner'          (string)  - owner name of the file
+  * -    'rescname'       (string)  - resource name of the file
+  * -    'metadata' (array of RODSMeta) - array of metadata.
   * @param int &$total_count This value (passed by reference) returns the total potential count of search results
   * @param int $start starting index of search results.
   * @param int $limit up to how many results to be returned. If negative, give all results back.
   * @param array $sort_flds associative array with following keys:
-  *      'name'      - name of the file or dir
-  *      'size'      - size of the file
-  *      'mtime'     - last modified time
-  *      'ctime'     - creation time
-  *      'owner'     - owner of the file
-  *      'typename'  - file/data type 
-  *      'rescname'  - resource name
-  *      'dirname'   - directory/collection name for the file
-  *     The results are sorted by specified array keys.
-  *     The possible array value must be boolean: true stands for 'asc' and false stands for 'desc', default is 'asc'  
+  * -     'name'      - name of the file or dir
+  * -     'size'      - size of the file
+  * -     'mtime'     - last modified time
+  * -     'ctime'     - creation time
+  * -     'owner'     - owner of the file
+  * -     'typename'  - file/data type 
+  * -     'rescname'  - resource name
+  * -     'dirname'   - directory/collection name for the file
+  * The results are sorted by specified array keys.
+  * The possible array value must be boolean: true stands for 'asc' and false stands for 'desc', default is 'asc'  
   * @return array of ProdsPath objects (ProdsFile or ProdsDir).
   */
   public function findFiles(array $terms, &$total_count, $start=0, $limit=-1,
@@ -389,23 +384,23 @@ class ProdsDir extends ProdsPath
  /**
   * query metadata, and find matching diretories.
   * @param array $terms an assositive array of search conditions, supported ones are:
-  *     'name' (string) - partial name of the target (file or dir)
-  *     'descendantOnly' (boolean) - whether to search among this directory's decendents. default is false.
-  *     'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendantOnly' is true
-  *     'smtime'         (int)     - start last-modified-time in unix timestamp. The specified time is included in query, in other words the search can be thought was "mtime >= specified time"
-  *     'emtime'         (int)     - end last-modified-time in unix timestamp. The specified time is not included in query, in other words the search can be thought was "mtime < specified time"
-  *     'owner'          (string)  - owner name of the dir
-  *     'metadata' (array of RODSMeta) - array of metadata.
+  * -    'name' (string) - partial name of the target (file or dir)
+  * -    'descendantOnly' (boolean) - whether to search among this directory's decendents. default is false.
+  * -    'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendantOnly' is true
+  * -    'smtime'         (int)     - start last-modified-time in unix timestamp. The specified time is included in query, in other words the search can be thought was "mtime >= specified time"
+  * -    'emtime'         (int)     - end last-modified-time in unix timestamp. The specified time is not included in query, in other words the search can be thought was "mtime < specified time"
+  * -    'owner'          (string)  - owner name of the dir
+  * -    'metadata' (array of RODSMeta) - array of metadata.
   * @param int &$total_count This value (passed by reference) returns the total potential count of search results
   * @param int $start starting index of search results.
   * @param int $limit up to how many results to be returned. If negative, give all results back.
   * @param array $sort_flds associative array with following keys:
-  *      'name'      - name of the dir
-  *      'mtime'     - last modified time
-  *      'ctime'     - creation time
-  *      'owner'     - owner of the dir
-  *     The results are sorted by specified array keys.
-  *     The possible array value must be boolean: true stands for 'asc' and false stands for 'desc', default is 'asc'  
+  * -     'name'      - name of the dir
+  * -     'mtime'     - last modified time
+  * -     'ctime'     - creation time
+  * -     'owner'     - owner of the dir
+  * The results are sorted by specified array keys.
+  * The possible array value must be boolean: true stands for 'asc' and false stands for 'desc', default is 'asc'  
   * @return array of ProdsPath objects (ProdsFile or ProdsDir).
   */
   public function findDirs(array $terms, &$total_count, $start=0, $limit=-1,

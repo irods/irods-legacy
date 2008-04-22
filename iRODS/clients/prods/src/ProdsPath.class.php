@@ -1,5 +1,4 @@
 <?php
-
 /**
  * PRODS class. Provides high level PRODS functionalities.
  * @author Sifang Lu <sifang@sdsc.edu>
@@ -21,7 +20,6 @@ abstract class ProdsPath
 	
   public $account;
   
-  protected $usecache;
   protected $path_exists;
   
   protected $parent_path;
@@ -37,13 +35,6 @@ abstract class ProdsPath
       $path_str=substr($path_str,0,strlen($path_str)-1);  
     }
     $this->path_str=$path_str;
-    
-    if (PRODSPATH_USE_CACHE===false)
-      $this->usecache=false;
-    else
-      $this->usecache=true;  
-      
-    $this->result_cached=false;
     
     $this->parent_path=dirname($this->path_str);
     $this->name=basename($this->path_str);
