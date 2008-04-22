@@ -1400,7 +1400,7 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
 	addInxIval (&genQueryInp.selectInp, COL_TOKEN_ID, ORDER_BY);  /* to get the lowest token ID first */
 
 	/* make the condition */
-	snprintf (condStr, MAX_NAME_LEN, " like '|%s|'", extStr);
+	snprintf (condStr, MAX_NAME_LEN, " like '%%|%s|%%'", extStr);
 	addInxVal (&genQueryInp.sqlCondInp, COL_TOKEN_VALUE2, condStr);
 
 	
