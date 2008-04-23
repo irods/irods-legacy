@@ -82,9 +82,9 @@ class ProdsFile extends ProdsPath
   }  
   
  /**
-	* Verify if this file exist with server.
+	* Verify if this file exist with server. This function shouldn't be called directly, use {@link exists}
 	*/
-  public function verify()
+  protected function verify()
   {
     $conn = RODSConnManager::getConn($this->account);
     $this->path_exists= $conn -> fileExists ($this->path_str);
@@ -95,14 +95,14 @@ class ProdsFile extends ProdsPath
   * Open a file path (string) exists on RODS server.
   *
   * @param string $mode open mode. Supported modes are: 
-  *   'r'	 Open for reading only; place the file pointer at the beginning of the file.
-  *   'r+'	Open for reading and writing; place the file pointer at the beginning of the file.
-  *   'w'	Open for writing only; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it.
-  *   'w+'	Open for reading and writing; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it.
-  *   'a'	Open for writing only; place the file pointer at the end of the file. If the file does not exist, attempt to create it.
-  *   'a+'	Open for reading and writing; place the file pointer at the end of the file. If the file does not exist, attempt to create it.
-  *   'x'	Create and open for writing only; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning FALSE and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
-  *   'x+'	Create and open for reading and writing; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning FALSE and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
+  * -  'r'	 Open for reading only; place the file pointer at the beginning of the file.
+  * -  'r+'	Open for reading and writing; place the file pointer at the beginning of the file.
+  * -  'w'	Open for writing only; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it.
+  * -  'w+'	Open for reading and writing; place the file pointer at the beginning of the file and truncate the file to zero length. If the file does not exist, attempt to create it.
+  * -  'a'	Open for writing only; place the file pointer at the end of the file. If the file does not exist, attempt to create it.
+  * -  'a+'	Open for reading and writing; place the file pointer at the end of the file. If the file does not exist, attempt to create it.
+  * -  'x'	Create and open for writing only; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning FALSE and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
+  * -  'x+'	Create and open for reading and writing; place the file pointer at the beginning of the file. If the file already exists, the fopen() call will fail by returning FALSE and generating an error of level E_WARNING. If the file does not exist, attempt to create it. This is equivalent to specifying O_EXCL|O_CREAT flags for the underlying open(2) system call. 
   * @param string $rescname. Note that this parameter is required only if the file does not exists (create mode). If the file already exists, and if file resource is unknown or unique or you-dont-care for that file, leave the field, or pass NULL. 
   * @param boolean $assum_file_exists. This parameter specifies whether file exists. If the value is false, this mothod will check with RODS server to make sure. If value is true, the check will NOT be done. Default value is false.
   * @param string $filetype. This parameter only make sense when you want to specify the file type, if file does not exists (create mode). If not specified, it defaults to "generic"

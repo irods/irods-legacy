@@ -1,6 +1,6 @@
 <?php
 /**
- * PRODS class. Provides high level PRODS functionalities.
+ * ProdsPath class file. 
  * @author Sifang Lu <sifang@sdsc.edu>
  * @copyright Copyright &copy; 2007, TBD
  * @package Prods
@@ -10,6 +10,10 @@ require_once("autoload.inc.php");
 
 require_once(CLASS_DIR."/ProdsConfig.inc.php");
 
+/**
+ * ProdsPath class. This class is a abastract class for objects that can be represented as a path, such as file or directory
+ * @package Prods
+ */
 abstract class ProdsPath
 {
   /**
@@ -25,6 +29,13 @@ abstract class ProdsPath
   protected $parent_path;
   protected $name;
   
+ /**
+	* Default Constructor. Because this class is abstract, this constructor should not be called directly.
+	*
+	* @param RODSAccount account iRODS account used for connection
+	* @param string $path_str the path of this dir
+	* @return ProdsPath a new ProdsPath
+	*/
   public function __construct(RODSAccount $account, $path_str)
   {
     $this->account=$account;
@@ -46,7 +57,8 @@ abstract class ProdsPath
   }
   
  /**
-	* Whether a path exists on the server. 
+	* Whether this path (dir or file) exists on the server. 
+	* @return boolean
 	*/
   public function exists()
   {
@@ -60,13 +72,13 @@ abstract class ProdsPath
   } 
   
  /**
-	* Verify if a path exist with server.
+	* Verify if a path exist with server. This function shouldn't be called directly, use {@link exists}
 	*/
-  abstract public function verify();
+  abstract protected function verify();
   
  /**
 	* Get meta data of this path (file or dir).
-	* @return array of RODSMeta. 
+	* @return array array of RODSMeta. 
 	*/
   public function getMeta()
   {
@@ -89,12 +101,7 @@ abstract class ProdsPath
   */
   public function updateMeta(RODSMeta $meta_old, RODSMeta $meta_new)
   {
-    try {
-      $this->rmMeta($meta_old);
-    } catch (RODSException $e) {
-      trigger_error("updateMeta(): Failed to deleted old metadata ($meta_old->name, $meta_old->value) with exception: $e",
-            E_USER_WARNING);
-    }
+    $this->rmMeta($meta_old);
     $this->addMeta($meta_new);
   }
   
@@ -136,8 +143,9 @@ abstract class ProdsPath
     RODSConnManager::releaseConn($conn);  
   }
   
-  /**
-  * remove metadata to this path (file or dir)
+ /**
+  * remove metadata of this path (file or dir) by id
+  * @param integer metaid id of the metadata entry
   */
   public function rmMetaByID ($metaid)
   {
@@ -156,7 +164,7 @@ abstract class ProdsPath
   }
   
  /**
-  * copy meta data between two path (file or dir)
+  * copy meta data from this path (file or dir) to $dest path
   */
   public function cpMeta(ProdsPath $dest)
   {
@@ -181,58 +189,6 @@ abstract class ProdsPath
     $conn = RODSConnManager::getConn($this->account);
     $conn -> cpMeta ($type_src,$type_dest,$this->path_str,$dest->path_str);
     RODSConnManager::releaseConn($conn);  
-  }
-  
- /**
-  * query metadata, and find matching files.
-  * @param RODSAccount $account accout of RODS server
-  * @param array $meta_array array of RODSMeta, each represent one meta query. For instance one query could be ("foo","bar",">"). It means check any files with metadata name "foo", with value greater than "bar".
-  * @param integer $ret_type. If 0, return matching files; if 1, return matching directories
-  * @param string $parent_dir_str. If this is set, it would only search the files directly under this directory.
-  * @return array of prodsFile.
-  */
-  public static function queryMeta(RODSAccount $account,
-    array $meta_array, $ret_type=0, $parent_dir_str=NULL)
-  {
-    if ($ret_type==0)
-      $select=array("COL_COLL_NAME","COL_DATA_NAME");
-    else
-      $select=array("COL_COLL_NAME");
-      
-    $condition=array();
-    foreach($meta_array as $meta)
-    {
-      $condition[]=new RODSQueryCondition
-        ("COL_META_DATA_ATTR_NAME",$meta->name);
-      $condition[]=new RODSQueryCondition
-        ("COL_META_DATA_ATTR_VALUE",$meta->value,$meta->op);
-    } 
-    if (!empty($parent_dir_str))
-    {
-      $condition[]=new RODSQueryCondition("COL_COLL_NAME",parent_dir_str);
-    }
-    
-    $conn = RODSConnManager::getConn($account);
-    $genque_result= $conn -> genQuery ($select,$condition);
-    RODSConnManager::releaseConn($conn);    
-    
-    if ($genque_result===false)
-    {
-      return array();
-    }
-    
-    $ret_val=array();
-    for($i=0;$i < count($genque_result["COL_COLL_NAME"]);$i++)
-    {
-      if ($ret_type==0)
-        $ret_val[]=new ProdsFile($account,
-          $genque_result["COL_COLL_NAME"][$i]."/".
-          $genque_result["COL_DATA_NAME"][$i]);
-      else
-        $ret_val[]=new ProdsDir($account,
-          $genque_result["COL_COLL_NAME"][$i]);
-    }
-    return $ret_val;
   }
   
  /**
@@ -280,6 +236,10 @@ abstract class ProdsPath
     return $this->parent_path;  
   }
   
+ /**
+  * Get URI of this path. 
+  * @return string this path's URI.
+  */
   public function toURI()
   {
     return $this->account->user."@".$this->account->host.":".$this->account->port.$this->path_str;    

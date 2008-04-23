@@ -1,7 +1,8 @@
 <?php
-
 /**
- * ProdsQuery class. Provides high level PRODS queries, which aren't specific
+ * ProdsQuery class. 
+ *
+ * This class provides high level PRODS queries, which aren't specific
  * to a path, account or resource.
  * @author Sifang Lu <sifang@sdsc.edu>
  * @copyright Copyright &copy; 2007, TBD

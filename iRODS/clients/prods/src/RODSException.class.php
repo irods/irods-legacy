@@ -3,7 +3,7 @@
  * RODS exception class
  * @author Sifang Lu <sifang@sdsc.edu>
  * @copyright Copyright &copy; 2007, TBD
- * @package RODSException
+ * @package Prods
  */
 
 $errtable_file=dirname(__FILE__)."/RodsErrorTable.inc.php";

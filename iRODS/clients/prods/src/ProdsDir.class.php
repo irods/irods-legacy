@@ -10,6 +10,9 @@ require_once("autoload.inc.php");
 
 class ProdsDir extends ProdsPath
 {
+  /**
+  * @var RODSDirStats 
+  */
   public  $stats;
   
   private $child_dirs;
@@ -17,6 +20,15 @@ class ProdsDir extends ProdsPath
   private $all_children;
   private $position;
   
+ /**
+	* Default Constructor.
+	*
+	* @param RODSAccount account iRODS account used for connection
+	* @param string $path_str the path of this dir
+	* @param boolean $verify whether verify if the path exsits
+	* @param RODSDirStats $stats if the stats for this dir is already known, initilize it here.
+	* @return a new ProdsDir
+	*/
   public function __construct(RODSAccount $account, $path_str, $verify=false, 
     RODSDirStats $stats=NULL)
   {
@@ -70,9 +82,9 @@ class ProdsDir extends ProdsPath
   }  
   
  /**
-	* Verify if this dir exist with server. 
+	* Verify if this dir exist with server. This function shouldn't be called directly, use {@link exists}
 	*/
-  public function verify()
+  protected function verify()
   {
     $conn = RODSConnManager::getConn($this->account);
     $this->path_exists= $conn -> dirExists ($this->path_str);
@@ -89,15 +101,17 @@ class ProdsDir extends ProdsPath
   }
   
  /**
+  * get next file or directory from the directory, where the internal iterator points to.
 	* @return next file or directory from the directory. The file always come first and dir comes later. return false on failure
 	*/
   public function getNextChild()
   {
-    $children=$this->getAllChildren();
-    if (($this->position>=count($children))||($this->position<0))
+    if (!$this->all_children)
+      $this->all_children=$this->getAllChildren();
+    if (($this->position>=count($this->all_children))||($this->position<0))
       return false;
-    $names=array_keys($children);  
-    $ret_val=$children[$names[$this->position]];
+    $names=array_keys($this->all_children);  
+    $ret_val=$this->all_children[$names[$this->position]];
     $this->position++;
     return $ret_val;
   }
@@ -117,11 +131,11 @@ class ProdsDir extends ProdsPath
   
  /**
   * Get children directories of this dir. 
-	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method findDirs();
+	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method {@link findDirs};
 	* @return an array of ProdsDir
 	*/
   public function getChildDirs(array $orderby=array(), $startingInx=0, 
-    $maxresults=500, &$total_num_rows=-1)
+    $maxresults=-1, &$total_num_rows=-1)
   {
     $terms=array("descendantOnly"=>true,"recursive"=>false);
     return $this->findDirs($terms,$total_num_rows,$startingInx,$maxresults,$orderby);  
@@ -129,11 +143,13 @@ class ProdsDir extends ProdsPath
   
  /**
 	* Get children files of this dir. 
-	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method findFiles();
+	*
+	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method {@link findFiles};
+	* @see findFiles()
 	* @return an array of ProdsFile
 	*/
   public function getChildFiles(array $orderby=array(), $startingInx=0, 
-    $maxresults=500, &$total_num_rows=-1)
+    $maxresults=-1, &$total_num_rows=-1)
   {
     $terms=array("descendantOnly"=>true,"recursive"=>false);
     return $this->findFiles($terms,$total_num_rows,$startingInx,$maxresults,$orderby); 
@@ -167,9 +183,14 @@ class ProdsDir extends ProdsPath
   
  /**
   * get the dir stats
+  * @param boolean $force_reload If stats already present in the object, and this flag is true, a force reload will be done.
+  * @return RODSDirStats the stats object, note that if this object will not refresh unless $force_reload flag is used.
   */
-  public function getStats()
+  public function getStats($force_reload=false)
   {
+    if ( ($force_reload===false)&&($this->stats) )
+      return $this->stats;
+    
     $conn = RODSConnManager::getConn($this->account);
     $stats=$conn->getDirStats($this->path_str);
     RODSConnManager::releaseConn($conn); 
