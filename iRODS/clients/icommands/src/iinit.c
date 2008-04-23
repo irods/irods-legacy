@@ -15,6 +15,7 @@ main(int argc, char **argv)
     rcComm_t *Conn;
     rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
+    int useGsi=0;
 
     status = parseCmdLineOpt(argc, argv, "ehvVl", 0, &myRodsArgs);
     if (status != 0) {
@@ -33,7 +34,7 @@ main(int argc, char **argv)
     if (myRodsArgs.longOption==True) {
 	rodsLogLevel(LOG_NOTICE);
     }
-
+ 
     ix = myRodsArgs.optind;
 
     password="";
@@ -52,17 +53,26 @@ main(int argc, char **argv)
 	/* just list the env */
 	exit (0);
     }
-
-    if (myRodsArgs.verbose==True) {
-       i = obfSavePw(echoFlag, 1, 1, password);
+#if defined(GSI_AUTH)
+    if (strncmp("GSI",myEnv.rodsAuthScheme,3)==0) {
+       useGsi=1;
+    }
+#endif
+    if (useGsi==1) {
+       printf("Using GSI, attempting connection/authentication\n");
     }
     else {
-       i = obfSavePw(echoFlag, 0, 0, password);
-    }
+       if (myRodsArgs.verbose==True) {
+          i = obfSavePw(echoFlag, 1, 1, password);
+       }
+       else {
+          i = obfSavePw(echoFlag, 0, 0, password);
+       }
 
-    if (i != 0) {
-       rodsLogError(LOG_ERROR, i, "Save Password failure");
-       exit(1);
+       if (i != 0) {
+          rodsLogError(LOG_ERROR, i, "Save Password failure");
+          exit(1);
+       }
     }
 
     /* Connect... */ 
