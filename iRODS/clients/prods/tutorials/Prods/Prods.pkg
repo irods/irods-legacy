@@ -6,9 +6,6 @@
   <refsynopsisdiv>
     <author>
       Sifang Lu
-      <authorblurb>
-        {@link mailto:sifang@sdsc.edu Sifang Lu}
-      </authorblurb>
     </author>
   </refsynopsisdiv>
   {@toc}
@@ -23,9 +20,9 @@
   <refsect1 id="{@id gettingstarted}">
     <title>Getting Started</title>
     <para>
-      PRODS requirs PHP 5.2 or higher. Because it does not depends on any external 
-      library. the installation is easy and simple. Just include the file "Prods.inc.php" 
-      in your PHP code, and nothing else! 
+      PRODS requirs PHP 5.2 or higher. It does not depends on any external 
+      library. To install the API, just get the source pakage, and include the 
+      file "Prods.inc.php" in your PHP code, and nothing else! 
       {@example tutorials/Prods/gettingstarted.php}
     </para>
   </refsect1>
