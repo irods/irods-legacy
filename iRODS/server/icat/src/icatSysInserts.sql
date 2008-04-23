@@ -175,9 +175,10 @@ insert into R_TOKN_MAIN values ('data_type',1689,'email','text/text','','','','1
 insert into R_TOKN_MAIN values ('data_type',1690,'orb data','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('data_type',1691,'datascope data','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('data_type',1692,'DICOM header','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('data_type',1693,'XML Schema','text/xml','|.xsd|','','','1170000000','1170000000');
 
 
-insert into R_TOKN_MAIN values ('action_type',1700,'generic','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('action_type',1800,'generic','','','','','1170000000','1170000000');
 
 
 
