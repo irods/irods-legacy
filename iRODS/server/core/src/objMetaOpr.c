@@ -2443,7 +2443,7 @@ getStructFileType (specColl_t *specColl)
 	return (-1);
     }
 
-    if (specColl->class == STRUCT_FILE_COLL) {  
+    if (specColl->collClass == STRUCT_FILE_COLL) {  
 	return ((int) specColl->type);
     } else {
 	return (-1);

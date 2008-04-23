@@ -662,7 +662,7 @@ int *rowInx, collMetaInfo_t *outCollMetaInfo)
 		rodsLog (LOG_ERROR,
 		  "getNextCollMetaInfo: parent specColl is NULL for %s",
 		  outCollMetaInfo->collName);
-		outCollMetaInfo->specColl.class = NO_SPEC_COLL;
+		outCollMetaInfo->specColl.collClass = NO_SPEC_COLL;
 	    } else {
 		outCollMetaInfo->specColl = *dataObjInp->specColl;
 	    }
@@ -672,7 +672,7 @@ int *rowInx, collMetaInfo_t *outCollMetaInfo)
               collInfo1, collInfo2, &outCollMetaInfo->specColl);
 	}
     } else {
-	outCollMetaInfo->specColl.class = NO_SPEC_COLL;
+	outCollMetaInfo->specColl.collClass = NO_SPEC_COLL;
 	status = 0;
     }
     (*rowInx) ++;
@@ -1303,7 +1303,7 @@ int *rowInx, collEnt_t *outCollEnt)
                 rodsLog (LOG_ERROR,
                   "getNextCollMetaInfo: parent specColl is NULL for %s",
                   outCollEnt->collName);
-                outCollEnt->specColl.class = NO_SPEC_COLL;
+                outCollEnt->specColl.collClass = NO_SPEC_COLL;
             } else {
                 outCollEnt->specColl = *dataObjInp->specColl;
             }
@@ -1313,7 +1313,7 @@ int *rowInx, collEnt_t *outCollEnt)
               collInfo1, collInfo2, &outCollEnt->specColl);
         }
     } else {
-        outCollEnt->specColl.class = NO_SPEC_COLL;
+        outCollEnt->specColl.collClass = NO_SPEC_COLL;
         status = 0;
     }
     (*rowInx) ++;

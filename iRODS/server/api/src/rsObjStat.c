@@ -120,7 +120,7 @@ rodsObjStat_t **rodsObjStatOut)
         /* don't call querySubInSpecColl if BUNDLE_COLL */
         if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
           &specCollCache) < 0 ||
-          specCollCache->specColl.class == BUNDLE_COLL) {
+          specCollCache->specColl.collClass == BUNDLE_COLL) {
             return (USER_FILE_DOES_NOT_EXIST);
         }
     }
@@ -259,7 +259,7 @@ rodsObjStat_t **rodsObjStatOut)
             /* don't call querySubInSpecColl if BUNDLE_COLL */
             if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
               &specCollCache) < 0 ||
-              specCollCache->specColl.class == BUNDLE_COLL) { 
+              specCollCache->specColl.collClass == BUNDLE_COLL) { 
                 return (USER_FILE_DOES_NOT_EXIST);
             }
         }
@@ -417,7 +417,7 @@ rodsObjStat_t **rodsObjStatOut)
 	    /* don't call querySubInSpecColl if BUNDLE_COLL */
     	    if (getSpecCollCache (rsComm, dataObjInp->objPath, 0, 
               &specCollCache) < 0 || 
-	      specCollCache->specColl.class == BUNDLE_COLL) {  
+	      specCollCache->specColl.collClass == BUNDLE_COLL) {  
 		return (USER_FILE_DOES_NOT_EXIST);
 	    }
 	}
@@ -576,7 +576,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
     int objType;
     rodsStat_t *rodsStat = NULL;
 
-    if (specColl->class == MOUNTED_COLL) {
+    if (specColl->collClass == MOUNTED_COLL) {
 	dataObjInfo_t *myDataObjInfo;
 
 	/* a mount point */
@@ -688,8 +688,8 @@ char *subPath, dataObjInfo_t **dataObjInfo)
 	}
     } else {
        rodsLog (LOG_ERROR,
-          "specCollSubStat: Unknown specColl class = %d",
-          specColl->class);
+          "specCollSubStat: Unknown specColl collClass = %d",
+          specColl->collClass);
         return (SYS_UNKNOWN_SPEC_COLL_CLASS);
     }
 

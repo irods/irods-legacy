@@ -468,8 +468,8 @@ partialDataPut (portalTransferInp_t *myInput)
                 break;
             } else {        /* toread > 0 */
 		rodsLog (LOG_NOTICE,
-                 "_partialDataPut: toread %d bytes, %d bytes read",
-                   toread1, bytesRead);
+                 "_partialDataPut: toread %d bytes, %d bytes read, errno = %d",
+                   toread1, bytesRead, errno);
 		myInput->status = SYS_COPY_LEN_ERR;
                 break;
             }

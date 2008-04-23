@@ -2644,7 +2644,7 @@ getSpecCollTypeStr (specColl_t *specColl, char *outStr)
 {
     int i;
 
-    if (specColl->class == MOUNTED_COLL) {
+    if (specColl->collClass == MOUNTED_COLL) {
 	rstrcpy (outStr, MOUNT_POINT_STR, NAME_LEN);
 	return (0);
     } else {
@@ -2669,7 +2669,7 @@ char *collInfo2, specColl_t *specColl)
     if (specColl == NULL) return (USER__NULL_INPUT_ERR);
 
     if (type == '\0') {
-	specColl->class = NO_SPEC_COLL;
+	specColl->collClass = NO_SPEC_COLL;
 	return (SYS_UNMATCHED_SPEC_COLL_TYPE);
     }
 	
@@ -2677,7 +2677,7 @@ char *collInfo2, specColl_t *specColl)
       MAX_NAME_LEN);
 
     if (strcmp (type, MOUNT_POINT_STR) == 0) {
-        specColl->class = MOUNTED_COLL;
+        specColl->collClass = MOUNTED_COLL;
         rstrcpy (specColl->phyPath, collInfo1, MAX_NAME_LEN);
         rstrcpy (specColl->resource, collInfo2, NAME_LEN);
 
@@ -2685,7 +2685,7 @@ char *collInfo2, specColl_t *specColl)
     } else {
         for (i = 0; i < NumStructFileType; i++) {
             if (strcmp (type, StructFileTypeDef[i].typeName) == 0) {
-                specColl->class = STRUCT_FILE_COLL;
+                specColl->collClass = STRUCT_FILE_COLL;
                 specColl->type = StructFileTypeDef[i].type;
                 rstrcpy (specColl->objPath, collInfo1,
                   MAX_NAME_LEN);
@@ -2693,7 +2693,7 @@ char *collInfo2, specColl_t *specColl)
 		return (0);
 	    }
 	}
-	specColl->class = NO_SPEC_COLL;
+	specColl->collClass = NO_SPEC_COLL;
 	rodsLog (LOG_ERROR,
 	  "resolveSpecCollType: unmatch specColl type %s", type);
 	return (SYS_UNMATCHED_SPEC_COLL_TYPE);
@@ -2791,7 +2791,7 @@ notStructFileOpr (keyValPair_t *condInput, specColl_t *specColl)
     if (specColl == NULL) return (0);
 
     if (getValByKey (condInput, STRUCT_FILE_OPR_KW) == NULL && 
-      specColl->class == STRUCT_FILE_COLL) 
+      specColl->collClass == STRUCT_FILE_COLL) 
 	return (1);
     else
 	return (0);
@@ -2803,7 +2803,7 @@ getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl)
 {
     if (specColl == NULL) return (NOT_SPEC_COLL_OPR);
 
-    if (specColl->class != STRUCT_FILE_COLL) return (NON_STRUCT_FILE_SPEC_COLL_OPR);
+    if (specColl->collClass != STRUCT_FILE_COLL) return (NON_STRUCT_FILE_SPEC_COLL_OPR);
 
     if (getValByKey (condInput, STRUCT_FILE_OPR_KW) == NULL)
 	return (NORMAL_OPR_ON_STRUCT_FILE_COLL);

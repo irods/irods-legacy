@@ -198,7 +198,7 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 	myDataObjInfo = *dataObjInfo;
 	
 #if 0
-        if (myDataObjInfo.specColl->class == STRUCT_FILE_COLL) {
+        if (myDataObjInfo.specColl->collClass == STRUCT_FILE_COLL) {
 	    int len = strlen (specColl->objPath);
             if (strncmp (specColl->objPath, subFilePath, len) == 0 &&
 	      (specColl->objPath[len] == '\0' || 
@@ -361,13 +361,13 @@ specCollReaddir (rsComm_t *rsComm, int specCollInx, rodsDirent_t **rodsDirent)
 	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
         status = rsSubStructFileReaddir (rsComm, &subStructFileReaddirInp, 
 	  rodsDirent);
-    } else if (specColl->class == MOUNTED_COLL) {
+    } else if (specColl->collClass == MOUNTED_COLL) {
         fileReaddirInp.fileInx = SpecCollDesc[specCollInx].l3descInx;
         status = rsFileReaddir (rsComm, &fileReaddirInp, rodsDirent);
     } else {
        rodsLog (LOG_ERROR,
-          "specCollReaddir: Unknown specColl class = %d",
-          specColl->class);
+          "specCollReaddir: Unknown specColl collClass = %d",
+          specColl->collClass);
 	status = SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
 
@@ -394,13 +394,13 @@ specCollClosedir (rsComm_t *rsComm, int specCollInx)
         rstrcpy (subStructFileClosedirInp.addr.hostAddr, 
 	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
         status = rsSubStructFileClosedir (rsComm, &subStructFileClosedirInp); 
-    } else if (specColl->class == MOUNTED_COLL) {
+    } else if (specColl->collClass == MOUNTED_COLL) {
         fileClosedirInp.fileInx = SpecCollDesc[specCollInx].l3descInx;
         status = rsFileClosedir (rsComm, &fileClosedirInp);
     } else {
        rodsLog (LOG_ERROR,
-          "specCollClosedir: Unknown specColl class = %d",
-          specColl->class);
+          "specCollClosedir: Unknown specColl collClass = %d",
+          specColl->collClass);
 	status = SYS_UNKNOWN_SPEC_COLL_CLASS;
     }
 
@@ -468,7 +468,7 @@ specCollOpendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
  
-    if (specColl->class == MOUNTED_COLL) {
+    if (specColl->collClass == MOUNTED_COLL) {
         memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
 
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;

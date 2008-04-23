@@ -243,7 +243,7 @@ rodsRestart_t *rodsRestart)
         mkdirR (targDir, targChildPath, 0750);
 #endif
 
-	if (collMetaInfo.specColl.class != NO_SPEC_COLL) {
+	if (collMetaInfo.specColl.collClass != NO_SPEC_COLL) {
 	    /* the child is a spec coll. need to drill down */
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjOprInp;
@@ -383,7 +383,7 @@ rodsRestart_t *rodsRestart)
             mkdirR (targDir, targChildPath, 0750);
 #endif
 
-            if (collEnt.specColl.class != NO_SPEC_COLL) {
+            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
                 /* the child is a spec coll. need to drill down */
                 dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;

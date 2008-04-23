@@ -378,7 +378,7 @@ rodsArguments_t *rodsArgs)
 	status = lsSpecCollUtil (conn, srcPath, myRodsEnv, rodsArgs);
 #if 0	/* XXXXX STRUCT_FILE_COLL type collection does not contain normal 
          * files for now */
-	if (srcPath->rodsObjStat->specColl->class == MOUNTED_COLL) {
+	if (srcPath->rodsObjStat->specColl->collClass == MOUNTED_COLL) {
 	    /* for STRUCT_FILE_COLL, we also want to list normal files */
 	    return (status);
 	}
@@ -609,7 +609,7 @@ genQueryOut_t *genQueryOut)
 	    }
 	
             if (rodsArgs->veryLongOption == True) {
-		if (specColl->class == MOUNTED_COLL) {
+		if (specColl->collClass == MOUNTED_COLL) {
                     printf ("  %s  %s\n", specColl->phyPath, 
 		      specColl->resource);
 		} else {
@@ -651,7 +651,7 @@ char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs)
      ownerName, objType, specColl->resource, objSize,
       localTimeModify, srcElement);
     if (rodsArgs->veryLongOption == True) {
-        if (specColl->class == MOUNTED_COLL) {
+        if (specColl->collClass == MOUNTED_COLL) {
             status = getMountedSubPhyPath (
               specColl->collection,
               specColl->phyPath, objPath, phySubPath);

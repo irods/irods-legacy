@@ -228,7 +228,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
     if (RsApiTable[apiInx].outPackInstruct != NULL && myOutStruct != NULL) {
 
         status = packStruct ((char *) myOutStruct, &outStructBBuf,
-          RsApiTable[apiInx].outPackInstruct, RodsPackTable, 1, 
+          RsApiTable[apiInx].outPackInstruct, RodsPackTable, FREE_POINTER, 
 	  rsComm->irodsProt);
 
        if (status < 0) {

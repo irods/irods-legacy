@@ -54,7 +54,7 @@ rodsPathInp_t *rodsPathInp)
                 return (status);
             }
 	    if (dataObjCopyInp.srcDataObjInp.specColl != NULL &&
-              dataObjCopyInp.srcDataObjInp.specColl->class == STRUCT_FILE_COLL) {
+              dataObjCopyInp.srcDataObjInp.specColl->collClass == STRUCT_FILE_COLL) {
                 dataObjCopyInp.srcDataObjInp.specColl = NULL;
                status = cpCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjCopyInp,
@@ -297,7 +297,7 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
             fprintf (stdout, "C- %s:\n", targChildPath);
         }
 
-        if (collMetaInfo.specColl.class != NO_SPEC_COLL) {
+        if (collMetaInfo.specColl.collClass != NO_SPEC_COLL) {
             /* the child is a spec coll. need to drill down */
             dataObjCopyInp_t childDataObjCopyInp;
 
@@ -428,7 +428,7 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
                 fprintf (stdout, "C- %s:\n", targChildPath);
             }
 
-            if (collEnt.specColl.class != NO_SPEC_COLL) {
+            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
                 /* the child is a spec coll. need to drill down */
                 dataObjCopyInp_t childDataObjCopyInp;
 

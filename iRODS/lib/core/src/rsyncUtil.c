@@ -74,7 +74,7 @@ rodsPathInp_t *rodsPathInp)
             status = rsyncCollToDirUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjOprInp);
             if (status >= 0 && dataObjOprInp.specColl != NULL &&
-              dataObjOprInp.specColl->class == STRUCT_FILE_COLL) {
+              dataObjOprInp.specColl->collClass == STRUCT_FILE_COLL) {
                 dataObjOprInp.specColl = NULL;
 		status = rsyncCollToDirUtil (conn, srcPath, targPath,
                   myRodsEnv, myRodsArgs, &dataObjOprInp);
@@ -86,7 +86,7 @@ rodsPathInp_t *rodsPathInp)
             status = rsyncCollToCollUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjCopyInp);
             if (status >= 0 && dataObjOprInp.specColl != NULL &&
-              dataObjCopyInp.srcDataObjInp.specColl->class == STRUCT_FILE_COLL) {
+              dataObjCopyInp.srcDataObjInp.specColl->collClass == STRUCT_FILE_COLL) {
 		dataObjCopyInp.srcDataObjInp.specColl = NULL;
                 status = rsyncCollToCollUtil (conn, srcPath, targPath,
                  myRodsEnv, myRodsArgs, &dataObjCopyInp);
@@ -440,7 +440,7 @@ dataObjInp_t *dataObjOprInp)
             mkdirR (targDir, targChildPath, 0750);
 #endif
 
-        if (collMetaInfo.specColl.class != NO_SPEC_COLL) {
+        if (collMetaInfo.specColl.collClass != NO_SPEC_COLL) {
             /* the child is a spec coll. need to drill down */
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjOprInp;
@@ -572,7 +572,7 @@ dataObjInp_t *dataObjOprInp)
                 mkdirR (targDir, targChildPath, 0750);
 #endif
 
-            if (collEnt.specColl.class != NO_SPEC_COLL) {
+            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
                 /* the child is a spec coll. need to drill down */
                 dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;
@@ -805,7 +805,7 @@ dataObjCopyInp_t *dataObjCopyInp)
 
         mkColl (conn, targChildPath);
 
-        if (collMetaInfo.specColl.class != NO_SPEC_COLL) {
+        if (collMetaInfo.specColl.collClass != NO_SPEC_COLL) {
             /* the child is a spec coll. need to drill down */
 	    dataObjCopyInp_t childDataObjCopyInp;
             childDataObjCopyInp = *dataObjCopyInp;
@@ -949,7 +949,7 @@ dataObjCopyInp_t *dataObjCopyInp)
 
             mkColl (conn, targChildPath);
 
-            if (collEnt.specColl.class != NO_SPEC_COLL) {
+            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
                 /* the child is a spec coll. need to drill down */
                 dataObjCopyInp_t childDataObjCopyInp;
                 childDataObjCopyInp = *dataObjCopyInp;

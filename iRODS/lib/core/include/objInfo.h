@@ -99,7 +99,7 @@ typedef enum {          /* specColl operation type */
 #define UNMOUNT_STR		"unmount"
 
 typedef struct SpecColl {
-    specCollClass_t class;
+    specCollClass_t collClass;
     structFileType_t type;   
     char collection[MAX_NAME_LEN];  /* structured file or mounted collection */
     char objPath[MAX_NAME_LEN];      /* STRUCT_FILE_COLL-logical path of structFile 
