@@ -583,12 +583,12 @@ int rowCnt)
         sqlResult->len = strlen (valueStr) + 1;
     }
     if (sqlResult->len == 1) {
-	sqlResult->value = malloc (rowCnt);
+	sqlResult->value = (char *)malloc (rowCnt);
 	memset (sqlResult->value, 0, rowCnt);
     } else {
         int i;
 	char *tmpPtr;
-	tmpPtr = sqlResult->value = malloc (rowCnt * sqlResult->len);
+	tmpPtr = sqlResult->value = (char *)malloc (rowCnt * sqlResult->len);
 	for (i = 0; i < rowCnt; i++) {
 	    rstrcpy (tmpPtr, valueStr, sqlResult->len);
 	    tmpPtr += sqlResult->len;
