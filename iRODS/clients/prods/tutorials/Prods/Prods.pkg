@@ -23,7 +23,7 @@
   <refsect1 id="{@id gettingstarted}">
     <title>Getting Started</title>
     <para>
-      PRODS requirs PHP 5.1 or higher. Because it does not depends on any external 
+      PRODS requirs PHP 5.2 or higher. Because it does not depends on any external 
       library. the installation is easy and simple. Just include the file "Prods.inc.php" 
       in your PHP code, and nothing else! 
       {@example tutorials/Prods/gettingstarted.php}
