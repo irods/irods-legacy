@@ -1,6 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#ifndef windows_platform
 #include <sys/time.h>
+#endif
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
@@ -377,11 +379,7 @@ rodsRestart_t *rodsRestart)
             snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
               targDir, collEnt.collName + collLen);
 
-#ifdef _WIN32
-            mkdirR (targDir, targChildPath);
-#else
             mkdirR (targDir, targChildPath, 0750);
-#endif
 
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
                 /* the child is a spec coll. need to drill down */
