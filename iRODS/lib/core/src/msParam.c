@@ -558,7 +558,7 @@ dataObjInp_t **outDataObjInp, int outputToCache)
         /* str input */
 	if (strcmp ((char *) inpParam->inOutStruct, "null") != 0) {
 	    if (dataObjInpCache == NULL) {
-		dataObjInpCache = malloc (sizeof (dataObjInp_t));
+		dataObjInpCache = (dataObjInp_t *)malloc (sizeof (dataObjInp_t));
 	    }
             memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
             rstrcpy (dataObjInpCache->objPath, (char*)inpParam->inOutStruct, 
@@ -571,7 +571,7 @@ dataObjInp_t **outDataObjInp, int outputToCache)
 	    dataObjInp_t *tmpDataObjInp;
 	    tmpDataObjInp = (dataObjInp_t *)inpParam->inOutStruct;
             if (dataObjInpCache == NULL) {
-                dataObjInpCache = malloc (sizeof (dataObjInp_t));
+                dataObjInpCache = (dataObjInp_t *)malloc (sizeof (dataObjInp_t));
             }
 	    *dataObjInpCache = *tmpDataObjInp;
 	    /* zero out the condition of the original because it has been
@@ -593,7 +593,7 @@ dataObjInp_t **outDataObjInp, int outputToCache)
 	    return(USER_PARAM_TYPE_ERR);
 
         if (dataObjInpCache == NULL) {
-            dataObjInpCache = malloc (sizeof (dataObjInp_t));
+            dataObjInpCache = (dataObjInp_t *)malloc (sizeof (dataObjInp_t));
         }
 
         memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
@@ -627,7 +627,7 @@ collInp_t **outCollInp, int outputToCache)
         /* str input */
 	if (strcmp ((char *) inpParam->inOutStruct, "null") != 0) {
             if (collInpCache == NULL) {
-                collInpCache = malloc (sizeof (collInpCache));
+                collInpCache = (collInp_t *)malloc (sizeof (collInp_t));
             }
             memset (collInpCache, 0, sizeof (collInp_t));
             rstrcpy (collInpCache->collName, (char*)inpParam->inOutStruct, 
@@ -640,7 +640,7 @@ collInp_t **outCollInp, int outputToCache)
 	    collInp_t *tmpCollInp;
 	    tmpCollInp = (collInp_t *)inpParam->inOutStruct;
             if (collInpCache == NULL) {
-                collInpCache = malloc (sizeof (collInpCache));
+                collInpCache = (collInp_t *)malloc (sizeof (collInp_t));
             }
 	    *collInpCache = *tmpCollInp;
 	    /* zero out the condition of the original because it has been
@@ -798,7 +798,7 @@ parseMspForStr (msParam_t *inpParam)
 	return (NULL);
     }
 
-    return (inpParam->inOutStruct);
+    return (char *)(inpParam->inOutStruct);
 }
 
 int
