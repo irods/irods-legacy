@@ -1,0 +1,81 @@
+<refentry id="{@id}">
+  <refnamediv>
+    <refname>User Guide for PRODS - PHP iRODS client API</refname>
+    <refpurpose>To demonstrate the various tasks available in PRODS</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+    <author>
+      Sifang Lu
+      <authorblurb>
+        {@link mailto:sifang@sdsc.edu Sifang Lu}
+      </authorblurb>
+    </author>
+  </refsynopsisdiv>
+  {@toc}
+  <refsect1 id="{@id intro}">
+    <title>Introduction</title>
+    <para>
+      PRODS is a PHP client API for iRODS (http://www.irods.org). It does not depends  
+      on any external library, and talk to iRODS server directly via sockets with native 
+      iRODS XML protocol. 
+    </para>
+  </refsect1>
+  <refsect1 id="{@id gettingstarted}">
+    <title>Getting Started</title>
+    <para>
+      PRODS requirs PHP 5.1 or higher. Because it does not depends on any external 
+      library. the installation is easy and simple. Just include the file "Prods.inc.php" 
+      in your PHP code, and nothing else! 
+      {@example tutorials/Prods/gettingstarted.php}
+    </para>
+  </refsect1>
+  <refsect1 id="{@id fileio}">
+    <title>Connect to server and file IO</title>
+    <para>
+      {@example tutorials/Prods/fileio.php}
+    </para>
+  </refsect1>
+  <refsect1 id="{@id dir}">
+    <title>Directory/Collection manipulation</title>
+    <para>
+      iRODS "collection" is equvilant to directory in normal file system.
+      They can be accessed and manipulated in simular fashions.
+      {@example tutorials/Prods/dir.php}
+    </para>
+  </refsect1>
+  <refsect1 id="{@id streamer}">
+    <title>Access iRODS file structure with native PHP functions</title>
+    <para>
+      PRODS provides a streamer class for native PHP funtions to access iRODS file structure.
+      Many native PHP functions support streamer class, including fopen(), fwrite(), 
+      file_get_contents(), scandir() and many more.
+      It offers an extremly simple way for application developers to access iRODS file
+      structures.
+      {@example tutorials/Prods/streamer.php}
+    </para>
+  </refsect1>
+  <refsect1 id="{@id metadata}">
+    <title>Get/Set User-defined metadata</title>
+    <para>
+      Any iRODS file or directory can have user-defined metadata. User-defined metadata
+      is a list of name/value/unit triplets. 
+      {@example tutorials/Prods/meta.php}
+    </para>
+  </refsect1>
+  <refsect1 id="{@id metadata_search}">
+    <title>Find files/dirs by User-defined metadata</title>
+    <para>
+      Files and directories can be searched by User-defined metadata 
+      {@example tutorials/Prods/meta_search.php}
+    </para>
+  </refsect1>
+  <refsect1 id="{@id exception}">
+    <title>Exception Handling</title>
+    <para>
+      Prods classes/methods could throw an exception, when it encounters an error.
+      see {@link RODSException} for details
+      {@example tutorials/Prods/exception.php}
+    </para>
+  </refsect1>
+</refentry>
+
