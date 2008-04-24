@@ -20,6 +20,8 @@
 #if !defined(solaris_platform)
 char *__loc1;
 #endif /* linux_platform */
+#include "rsGlobalExtern.h"
+#include "rcGlobalExtern.h"
 
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
@@ -109,7 +111,18 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
 
     thisPortList->sock = lsock;
     thisPortList->cookie = random ();
-    rstrcpy (thisPortList->hostAddr, laddr, LONG_NAME_LEN);
+    if (ProcessType == CLIENT_PT) {
+        rstrcpy (thisPortList->hostAddr, laddr, LONG_NAME_LEN);
+    } else {
+        struct hostent *hostEnt;
+        /* server. try to use what is configured */
+        if (LocalServerHost != NULL &&
+         (hostEnt = gethostbyname (LocalServerHost->hostName->name)) != NULL){
+            rstrcpy (thisPortList->hostAddr, hostEnt->h_name, LONG_NAME_LEN);
+        } else {
+             rstrcpy (thisPortList->hostAddr, laddr, LONG_NAME_LEN);
+        }
+    }
     free (laddr);
     thisPortList->portNum = lport;
     thisPortList->windowSize = rsComm->windowSize;
