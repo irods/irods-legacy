@@ -8,7 +8,7 @@
 #include "rcConnect.h"
 #include "rcGlobal.h"
 
-#ifdef _WIN32
+#ifdef windows_platform
 #include "startsock.h"
 #endif
 
@@ -19,7 +19,7 @@ int reconnFlag, rErrMsg_t *errMsg)
 
     rcComm_t *conn;
 
-#ifdef _WIN32
+#ifdef windows_platform
     if(0 != startWinsock())
 	{
 		conn = NULL;
@@ -44,7 +44,7 @@ int reconnFlag)
     int status;
     char *tmpStr;
 
-#ifndef _WIN32
+#ifndef windows_platform
     if (ProcessType == CLIENT_PT)
         signal (SIGPIPE, (void (*)(int)) rcPipSigHandler);
 #endif
@@ -211,7 +211,7 @@ rcDisconnect (rcComm_t *conn)
     status = sendRodsMsg (conn->sock, RODS_DISCONNECT_T, NULL, NULL, NULL, 0,
       conn->irodsProt);
 
-#ifdef _WIN32
+#ifdef windows_platform
 	closesocket(conn->sock);
 #else
     close (conn->sock);
