@@ -10,7 +10,7 @@
 
 #include "rodsGenQuery.h"
 
-typedef struct columnName {
+typedef struct {
    int columnId;
    char *columnName;
 } columnName_t;
