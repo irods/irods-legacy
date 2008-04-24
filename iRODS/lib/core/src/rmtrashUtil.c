@@ -1,6 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#ifndef windows_platform
 #include <sys/time.h>
+#endif
 #include "rodsPath.h"
 #include "rodsErrorTable.h"
 #include "miscUtil.h"
@@ -148,7 +150,11 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
         addKeyVal (&collInp->condInput, IRODS_RMTRASH_KW, "");
     }
 
+#ifdef windows_platform
+	srand((unsigned int) time(0) % getpid());
+#else
     srandom((unsigned int) time(0) % getpid());
+#endif
 
     return (0);
 }
