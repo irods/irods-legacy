@@ -3219,7 +3219,7 @@ packItem_t *myPackedItem, irodsProt_t irodsProt)
     packedOutput->nopackBufArray.bBufArray[curNumBuf].buf = *inPtr;
     packedOutput->nopackBufArray.numBuf++;
 
-    intPtr = malloc (sizeof (int));
+    intPtr = (int *)malloc (sizeof (int));
     *intPtr = curNumBuf;
     status = packInt ((void **) &intPtr, packedOutput, 1, myPackedItem,
      irodsProt);
