@@ -23,3 +23,4 @@
 {"msiGetAuditTrailInfoByTimeStamp",	4,		(funcPtr) msiGetAuditTrailInfoByTimeStamp},
 {"msiSetDataType",			4,		(funcPtr) msiSetDataType},
 {"msiGuessDataType",			3,		(funcPtr) msiGuessDataType},
+{"msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport},

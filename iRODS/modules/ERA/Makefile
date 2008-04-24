@@ -32,7 +32,10 @@ MSIncDir =	$(modulesDir)/ERA/microservices/include
 #
 # Source files
 #
-OBJECTS =	$(MSObjDir)/eraMS.o $(MSObjDir)/eraUtil.o $(MSObjDir)/auditMS.o $(MSObjDir)/auditUtil.o
+OBJECTS =	$(MSObjDir)/eraMS.o $(MSObjDir)/eraUtil.o \
+$(MSObjDir)/auditMS.o $(MSObjDir)/auditUtil.o \
+$(MSObjDir)/collInfoMS.o
+
 INCLUDE_FLAGS =	-I$(MSIncDir)
 
 
