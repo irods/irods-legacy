@@ -51,6 +51,7 @@ int msiCreateCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_
 int msiCommit(ruleExecInfo_t *rei);
 int msiDeleteCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei);
 int msiDeleteUser(ruleExecInfo_t *rei);
+int msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei);
 int msiSendMail(msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei);
 int admChangeCoreIRB(msParam_t *newF, ruleExecInfo_t *rei);
 int admShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
@@ -97,6 +98,7 @@ microsdef_t MicrosTable[] = {
   {"msiRollback", 0, (funcPtr) msiRollback},
   {"msiDeleteCollByAdmin",2, (funcPtr) msiDeleteCollByAdmin},
   {"msiDeleteUser", 0, (funcPtr) msiDeleteUser},
+  {"msiAddUserToGroup", 1, (funcPtr) msiAddUserToGroup},
   {"msiSetDefaultResc", 2, (funcPtr) msiSetDefaultResc},
   {"msiSetRescSortScheme", 1, (funcPtr) msiSetRescSortScheme},
   {"msiSysReplDataObj", 2, (funcPtr) msiSysReplDataObj},
