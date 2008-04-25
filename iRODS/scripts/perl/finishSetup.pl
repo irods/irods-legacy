@@ -1275,6 +1275,32 @@ sub configureIrodsServer
 	# no home directory for it.
 
 
+	# Create the public group, if no earlier error occurred.
+	#	If the group already exists, continue without
+	#	an error.
+	#
+	#	If the group doesn't exist, create it.
+	#
+	#	Otherwise, something is wrong.  An error message is
+	#	already output.  Flag the error so that we can
+	#	clean up and quit later.
+	if ( !$somethingFailed )
+	{
+		printStatus( "Creating iRODS group 'public'...\n" );
+		printLog( "\nCreating iRODS group 'public'...\n" );
+
+		my $createdGroup = 0;
+
+		$status = imkgroup( "public" );
+		if ( $status == 0 ) { $somethingFailed = 1; }
+		elsif ( $status == 1 ) { $createdGroup = 1; }
+
+		if ( !$somethingFailed && !$createdGroup )
+		{
+			printStatus( "    Skipped.  Group already created.\n" );
+		}
+	}
+
 	# Create the admin account, if no earlier error occurred.
 	#	If the account already exists, continue without
 	#	an error.
@@ -2087,6 +2113,45 @@ sub imkuser($)
 
 	# Create it.
 	return runIcommand( "$iadmin mkuser $username rodsadmin" );
+}
+
+
+#
+# @brief	Make an iRODS group, if it doesn't already exist.
+#
+# This function runs the iRODS command needed to create a user group.
+# It checks that the group doesn't exist first.
+#
+# @param	$groupname
+# 	the name of the user group
+# @return
+# 	A numeric code indicating success or failure:
+# 		0 = failure
+# 		1 = success
+# 		2 = already exists
+#
+sub imkgroup($)
+{
+	my ($groupname) = @_;
+
+	# Check if the account already exists.
+	# 	'iadmin lu' returns a list of accounts, one per line.
+	#	Ignore leading and trailing white-space on the group name.
+	my ($status,$output) = run( "$iadmin lg" );
+	my $line;
+	my @lines = split( "\n", $output );
+	foreach $line (@lines)
+	{
+		if ( $line =~ /^[ \t]*$groupname[ \t]*$/ )
+		{
+			# The group already exists.
+			printLog( "        Skipped.  Group '$groupname' already exists.\n" );
+			return 2;
+		}
+	}
+
+	# Create it.
+	return runIcommand( "$iadmin mkgroup $groupname" );
 }
 
 
