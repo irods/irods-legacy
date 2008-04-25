@@ -53,11 +53,9 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     *genQueryOut = malloc(sizeof(genQueryOut_t));
     memset((char *)*genQueryOut, 0, sizeof(genQueryOut_t));
 
-#ifdef GEN_QUERY_AC
     chlGenQueryAccessControlSetup(rsComm->clientUser.userName, 
 			      rsComm->clientUser.rodsZone,
 			      rsComm->proxyUser.authInfo.authFlag);
-#endif
 
     status = chlGenQuery(*genQueryInp, *genQueryOut);
 
