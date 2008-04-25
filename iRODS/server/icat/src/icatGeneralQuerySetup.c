@@ -100,7 +100,7 @@ icatGeneralQuerySetup() {
   sTable( "r_rule_au_user_main", "r_user_main r_rule_au_user_main", 0);
 
   sTable( "r_resc_tokn_accs", "r_tokn_main r_resc_tokn_accs", 1);
-  sTable( "r_coll_tokn_accs", "r_tokn_main r_coll_tokn_accs", 1);
+  sTable( "r_coll_tokn_accs", "r_tokn_main r_coll_tokn_accs", 0); /* changed from 1 like data */
   /* Needed to change the 1 to 0 (to indicate it is not a cycler)
      to get the queries on COL_DATA_ACCESS_NAME to work; seems OK,
      but could cause problems */
@@ -188,6 +188,12 @@ icatGeneralQuerySetup() {
   sColumn( COL_DATA_ACCESS_USER_ID, "r_data_access", "user_id");
   sColumn( COL_DATA_ACCESS_DATA_ID, "r_data_access", "object_id");
 
+  sColumn( COL_COLL_ACCESS_TYPE, "r_coll_access", "access_type_id");
+  sColumn( COL_COLL_ACCESS_NAME, "r_coll_tokn_accs", "token_name");
+  sColumn( COL_COLL_TOKEN_NAMESPACE, "r_coll_tokn_accs", "token_namespace");
+  sColumn( COL_COLL_ACCESS_USER_ID, "r_coll_access", "user_id");
+  sColumn( COL_COLL_ACCESS_COLL_ID, "r_coll_access", "object_id");
+
   sColumn( COL_COLL_ID, "r_coll_main", "coll_id");
   sColumn( COL_COLL_NAME, "r_coll_main", "coll_name");
   sColumn( COL_COLL_PARENT_NAME, "r_coll_main", "parent_coll_name");
@@ -201,7 +207,6 @@ icatGeneralQuerySetup() {
   sColumn( COL_COLL_TYPE, "r_coll_main", "coll_type");
   sColumn( COL_COLL_INFO1, "r_coll_main", "coll_info1");
   sColumn( COL_COLL_INFO2, "r_coll_main", "coll_info2");
-
 
   sColumn( COL_META_DATA_ATTR_NAME, "r_data_meta_main", "meta_attr_name");
   sColumn( COL_META_DATA_ATTR_VALUE, "r_data_meta_main", "meta_attr_value");
@@ -295,7 +300,7 @@ icatGeneralQuerySetup() {
   sFklink("r_met2_metamap", "r_met2_meta_main",  "r_met2_metamap.object_id = r_met2_meta_main.meta_id");
   sFklink("r_resc_access", "r_resc_tokn_accs",  "r_resc_access.access_typ_id = r_resc_tokn_accs.token_id");
   sFklink("r_resc_access", "r_resc_user_group", "r_resc_access.user_id = r_resc_user_group.group_user_id");
-  sFklink("r_coll_access", "r_coll_tokn_accs",  "r_coll_access.access_typ_id = r_coll_tokn_accs.token_id");
+  sFklink("r_coll_access", "r_coll_tokn_accs",  "r_coll_access.access_type_id = r_coll_tokn_accs.token_id");
   sFklink("r_coll_access", "r_coll_user_group", "r_coll_access.user_id = r_coll_user_group.group_user_id");
   sFklink("r_data_access", "r_data_tokn_accs",  "r_data_access.access_type_id = r_data_tokn_accs.token_id");
   sFklink("r_data_access", "r_data_user_group", "r_data_access.user_id = r_data_user_group.group_user_id");
@@ -341,10 +346,7 @@ icatGeneralQuerySetup() {
   sFklink("r_user_main", "r_user_password", "r_user_main.user_id = r_user_password.user_id");
   sFklink("r_user_main", "r_user_session_key", "r_user_main.user_id = r_user_session_key.user_id");
   sFklink("r_user_main", "r_data_access", "r_user_main.user_id = r_data_access.user_id");
-
   sFklink("r_user_main", "r_user_group", "r_user_main.user_id = r_user_group.user_id");
   sFklink("r_user_group", "r_group_main", "r_user_group.group_user_id = r_group_main.user_id");
-
   sFklink("r_user_main", "r_objt_audit", "r_user_main.user_id = r_objt_audit.user_id");
 }
-

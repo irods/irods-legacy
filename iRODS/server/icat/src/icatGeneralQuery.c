@@ -831,14 +831,26 @@ insertWhere(char *condition, int option) {
 }
 
 /* 
- Only used if GEN_QUERY_AC is compiled in (which normally isn't).
+ Only used if GEN_QUERY_AC is compiled in (which normally isn't)
+ or if the user is anonymous.
  This restricts data_main info to only users with access.
  Something similar could be done for collections too.
  */
 int
 genqAppendAccessCheck() {
    /* if client user is the local admin, do not restrict */
+   int doCheck=0;
    if (accessControlPriv==LOCAL_PRIV_USER_AUTH) return(0); 
+
+#if GEN_QUERY_AC
+   doCheck=1;
+#endif
+   if (doCheck==0) {
+      if (strncmp(accessControlUserName,ANONYMOUS_USER, MAX_NAME_LEN)==0) {
+	 doCheck=1;
+      }
+   }
+   if (doCheck==0) return(0);
 
    /* if an item in r_data_main is being accessed, add a
       (complicated) addition to the where clause to check access */
@@ -951,9 +963,9 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
    rstrcat(combinedSQL, selectSQL, MAX_SQL_SIZE);
    rstrcat(combinedSQL, " " , MAX_SQL_SIZE);
    rstrcat(combinedSQL, fromSQL, MAX_SQL_SIZE);
-#if GEN_QUERY_AC
+
    genqAppendAccessCheck();
-#endif
+
    if (strlen(whereSQL)>6) {
       rstrcat(combinedSQL, " " , MAX_SQL_SIZE);
       rstrcat(combinedSQL, whereSQL, MAX_SQL_SIZE);

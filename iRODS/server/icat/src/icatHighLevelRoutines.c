@@ -2313,6 +2313,10 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    if (status < 3) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
+	 if (strncmp(ANONYMOUS_USER, username, NAME_LEN)==0) {
+	    /* anonymous user, skip the pw check but do the rest */
+	    goto checkLevel;
+	 }
       } 
       return(status);
    }
@@ -2432,6 +2436,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    }
 
    /* Get the user type so privilege level can be set */
+ checkLevel:
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 5");
    status = cmlGetStringValueFromSql(
