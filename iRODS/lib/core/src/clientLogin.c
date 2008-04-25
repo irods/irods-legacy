@@ -111,7 +111,14 @@ clientLogin(rcComm_t *Conn)
 
    memset(md5Buf, 0, sizeof(md5Buf));
    strncpy(md5Buf, authReqOut->challenge, CHALLENGE_LEN);
-   i = obfGetPw(md5Buf+CHALLENGE_LEN);
+   if (strncmp(ANONYMOUS_USER, Conn->proxyUser.userName, NAME_LEN) == 0) {
+      md5Buf[CHALLENGE_LEN+1]='\0';
+      i = 0;
+      printf("test1\n");
+   }
+   else {
+      i = obfGetPw(md5Buf+CHALLENGE_LEN);
+   }
    if (i != 0) {
       int doStty=0;
       if (stat ("/bin/stty", &statbuf) == 0) {
@@ -179,7 +186,7 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
 
    memset(md5Buf, 0, sizeof(md5Buf));
    strncpy(md5Buf, authReqOut->challenge, CHALLENGE_LEN);
-   /*i = obfGetPw(md5Buf+CHALLENGE_LEN);*/
+
    len = strlen(password);
    sprintf(md5Buf+CHALLENGE_LEN, "%s", password);
    md5Buf[CHALLENGE_LEN+len]='\0'; /* remove trailing \n */

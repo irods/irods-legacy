@@ -26,7 +26,7 @@ rodsPathInp_t *rodsPathInp)
 	    getRodsObjType (conn, &rodsPathInp->srcPath[i]);
 	    if (rodsPathInp->srcPath[i].objState == NOT_EXIST_ST) {
                 rodsLog (LOG_ERROR,
-                  "lsUtil: srcPath %s does not exist",
+                  "lsUtil: srcPath %s does not exist or user lacks access permission",
                   rodsPathInp->srcPath[i].outPath);
 		savedStatus = USER_INPUT_PATH_ERR;
 		continue;
@@ -141,7 +141,8 @@ rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp)
 
     if (status < 0) {
 	if (status == CAT_NO_ROWS_FOUND) {
-	    rodsLog (LOG_ERROR, "%s does not exist", srcPath);
+	    rodsLog (LOG_ERROR, "%s does not exist or user lacks access permission",
+		     srcPath);
 	} else {
             rodsLogError (LOG_ERROR, status,
 	      "lsDataObjUtilLong: rcGenQuery error for %s", srcPath);
@@ -372,6 +373,11 @@ rodsArguments_t *rodsArgs)
 
     /* print this collection */
     printf ("%s:\n", srcColl);
+
+    if (rodsArgs->accessControl == True) {
+       printCollAcl (conn, srcColl);
+    }
+
 
     if (srcPath->rodsObjStat != NULL &&
       srcPath->rodsObjStat->specColl != NULL) {
@@ -806,6 +812,49 @@ printDataAcl (rcComm_t *conn, char *dataId)
 	userNameStr = &userName->value[userName->len * i];
 	dataAccessStr = &dataAccess->value[dataAccess->len * i];
 	printf ("%s:%s   ", userNameStr, dataAccessStr);
+    }
+    
+    printf ("\n");
+
+    freeGenQueryOut (&genQueryOut);
+
+    return (status);
+}
+
+int
+printCollAcl (rcComm_t *conn, char *collName)
+{
+    genQueryOut_t *genQueryOut = NULL;
+    int status;
+    int i;
+    sqlResult_t *userName, *dataAccess;
+    char *userNameStr, *dataAccessStr;
+
+    status = queryCollAcl (conn, collName, &genQueryOut);
+
+    printf ("        ACL - ");
+
+    if (status < 0) {
+	printf ("\n");
+        return (status);
+    }
+
+    if ((userName = getSqlResultByInx (genQueryOut, COL_COLL_ACCESS_USER_ID)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "printCollAcl: getSqlResultByInx for COL_COLL_USER_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataAccess = getSqlResultByInx (genQueryOut, COL_COLL_ACCESS_NAME)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "printCollAcl: getSqlResultByInx for COL_COLL_ACCESS_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    for (i = 0; i < genQueryOut->rowCnt; i++) {
+	userNameStr = &userName->value[userName->len * i];
+	dataAccessStr = &dataAccess->value[dataAccess->len * i];
+	printf ("%s:%s   ", useridToName(conn, userNameStr), dataAccessStr);
     }
     
     printf ("\n");
