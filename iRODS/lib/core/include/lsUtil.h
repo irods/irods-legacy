@@ -46,6 +46,8 @@ rodsArguments_t *rodsArgs);
 int
 printDataAcl (rcComm_t *conn, char *dataId);
 int
+printCollAcl (rcComm_t *conn, char *collId);
+int
 lsSpecDataObjUtilLong (rcComm_t *conn, rodsPath_t *srcPath, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs);
 int

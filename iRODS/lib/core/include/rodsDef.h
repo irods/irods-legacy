@@ -121,6 +121,10 @@
 
 /* definition for public user */
 #define PUBLIC_USER_NAME	"public"
+
+/* definition for anonymous user */
+#define ANONYMOUS_USER "anonymous"
+
 /* protocol */
 typedef enum {
     NATIVE_PROT,
