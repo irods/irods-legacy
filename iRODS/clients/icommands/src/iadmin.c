@@ -659,12 +659,15 @@ doCommand(char *cmdToken[]) {
 	 printf("Password exceeds maximum length\n");
       }
       else {
+	 if (strlen(cmdToken[2])==0) {
+	    printf("Warning, scramble key is null\n");
+	 }
 	 obfEncodeByKey(cmdToken[1], cmdToken[2], scrambled);
 	 printf("Scrambled form is:%s\n", scrambled);
       }
       return(0);
    }
-   if (strcmp(cmdToken[0],"dspass") ==0) {
+   if (strcmp(cmdToken[0],"dspass")==0) {
       char unscrambled[MAX_PASSWORD_LEN+100];
       if (simpleQueryCheck() != 0) {
 	 exit(-1); /* not authorized */
@@ -673,6 +676,9 @@ doCommand(char *cmdToken[]) {
 	 printf("Scrambled password exceeds maximum length\n");
       }
       else {
+	 if (strlen(cmdToken[2])==0) {
+	    printf("Warning, scramble key is null\n");
+	 }
 	 obfDecodeByKey(cmdToken[1], cmdToken[2], unscrambled);
 	 printf("Unscrambled form is:%s\n", unscrambled);
       }
@@ -752,6 +758,9 @@ main(int argc, char **argv) {
 	 printf("Password exceeds maximum length\n");
       }
       else {
+	 if (strlen(cmdToken[2])==0) {
+	    printf("Warning, scramble key is null\n");
+	 }
 	 obfEncodeByKey(cmdToken[1], cmdToken[2], scrambled);
 	 printf("Scrambled form is:%s\n", scrambled);
       }

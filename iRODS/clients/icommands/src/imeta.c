@@ -191,7 +191,7 @@ showColl(char *name, char *attrName, int wild)
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
-   printf("AVUs defined for dataObj %s:\n",name);
+   printf("AVUs defined for collection %s:\n",name);
    printCount=0;
    i1a[0]=COL_META_COLL_ATTR_NAME;
    i1b[0]=0; /* currently unused */

@@ -16,6 +16,7 @@ main(int argc, char **argv)
     rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
     int useGsi=0;
+    int doPassword;
 
     status = parseCmdLineOpt(argc, argv, "ehvVl", 0, &myRodsArgs);
     if (status != 0) {
@@ -53,25 +54,32 @@ main(int argc, char **argv)
 	/* just list the env */
 	exit (0);
     }
+
+    doPassword=1;
 #if defined(GSI_AUTH)
     if (strncmp("GSI",myEnv.rodsAuthScheme,3)==0) {
        useGsi=1;
+       doPassword=0;
     }
 #endif
+
+    if (strcmp(myEnv.rodsUserName, ANONYMOUS_USER)==0) {
+       doPassword=0;
+    }
     if (useGsi==1) {
        printf("Using GSI, attempting connection/authentication\n");
     }
-    else {
+    if (doPassword==1) {
        if (myRodsArgs.verbose==True) {
-          i = obfSavePw(echoFlag, 1, 1, password);
+	  i = obfSavePw(echoFlag, 1, 1, password);
        }
        else {
-          i = obfSavePw(echoFlag, 0, 0, password);
+	  i = obfSavePw(echoFlag, 0, 0, password);
        }
 
        if (i != 0) {
-          rodsLogError(LOG_ERROR, i, "Save Password failure");
-          exit(1);
+	  rodsLogError(LOG_ERROR, i, "Save Password failure");
+	  exit(1);
        }
     }
 
