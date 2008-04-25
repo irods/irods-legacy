@@ -10,7 +10,8 @@ printHello||print_hello|nop
 ## 
 ##
 ## These are sys admin rules for creating and deleting users
-acCreateUser||msiCreateUser##acCreateDefaultCollections##msiCommit|msiRollback##msiRollback##nop
+acCreateUser|$otherUserName == anonymous|msiCreateUser##msiCommit|msiRollback##nop
+acCreateUser||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
 acVacuum(*arg1)||delayExec(*arg1,msiVacuum,nop)|nop
 acCreateDefaultCollections||acCreateUserZoneCollections|nop
 acCreateUserZoneCollections||acCreateCollByAdmin(/$rodsZoneProxy/home,$otherUserName)##acCreateCollByAdmin(/$rodsZoneProxy/trash/home,$otherUserName)|nop##nop
