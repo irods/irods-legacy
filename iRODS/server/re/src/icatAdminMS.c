@@ -127,3 +127,29 @@ msiDeleteUser(ruleExecInfo_t *rei) {
 #endif
   return(i);
 }
+
+int 
+msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei) {
+  int i;
+  char *groupName;
+  if (reTestFlag > 0 ) {  /* Test stub mode */
+    if (reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1) {
+      print_uoi(rei->uoio);
+    }
+    else {
+      rodsLog (LOG_NOTICE,"   Calling chlModGroup For \n");
+      print_uoi(rei->uoio);
+    }
+    return(0);
+  }
+#ifdef RODS_CAT
+  if (strncmp(rei->uoio->userType,"rodsgroup",9)==0) {
+     return(0);
+  }
+  groupName =  (char *) msParam->inOutStruct;
+  i =  chlModGroup(rei->rsComm, groupName, "add", rei->uoio->userName);
+#else
+  i = SYS_NO_RCAT_SERVER_ERR;
+#endif
+  return(i);
+}
