@@ -421,6 +421,8 @@ int doLs(rcComm_t *Conn)
    int i, status;
    int printCount;
 
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
    /* first get all the subcollections */
    printCount=0;
    i1a[0]=COL_COLL_NAME;
@@ -680,6 +682,79 @@ int doLongLs(rcComm_t *Conn, char *inStr, char *inRepl)
    return (0);
 }
 
+/* Check to see if the user has read or better access to a dataObj */
+/* for example:
+login rods
+acc rods z2 /z2/home/rods foo 'read object' or
+acc u2 z2 /z2/home/rods foo 'read object'
+*/
+int
+doAccCheck(rcComm_t *Conn, char *user, char *zone, char *coll, 
+	   char *dataObjName, char *access)
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i, status;
+   int printCount;
+   char accStr[300];
+   char condStr[300];
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printCount=0;
+
+#if 0
+    //    char accessPerm="read object";
+
+   snprintf (accStr, LONG_NAME_LEN, "%s", user);
+   addKeyVal (&genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr);
+
+   snprintf (accStr, LONG_NAME_LEN, "%s", "z2");
+   addKeyVal (&genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr);
+
+   snprintf (accStr, LONG_NAME_LEN, "%s", "read object");
+   addKeyVal (&genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", "/z2/home/rods");
+   addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", "foo");
+   addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, condStr);
+
+   addInxIval (&genQueryInp.selectInp,  COL_D_DATA_ID, 1);
+#endif
+
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", user);
+   addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", zone);
+   addInxVal (&genQueryInp.sqlCondInp, COL_ZONE_NAME, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", coll);
+   addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", dataObjName);
+   addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, condStr);
+
+   addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_TYPE, 1);
+
+
+ 
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   printCount+= printGenQueryResults(Conn, status, genQueryOut, "testout:");
+
+   if (printCount==0) {
+      printf("no access\n");
+   }
+   if (printCount > 0) {
+      printf("Yes, access allowed\n");
+   }
+   return (0);
+}
+
 main(int argc, char **argv) {
    int status, i;
    rodsEnv myEnv;
@@ -706,6 +781,9 @@ main(int argc, char **argv) {
    char *tok1;
    char *tok2;
    char *tok3;
+   char *tok4;
+   char *tok5;
+   char *tok6;
    int blankFlag;
    int didOne;
 
@@ -759,6 +837,9 @@ main(int argc, char **argv) {
       tok1=ttybuf;
       tok2="";
       tok3="";
+      tok4="";
+      tok5="";
+      tok6="";
       ntokens=1;
       blankFlag=0;
       for (i=0;i<lenstr;i++) {
@@ -771,6 +852,9 @@ main(int argc, char **argv) {
 	       ntokens++;
 	       if (ntokens==2) tok2=(char *)&ttybuf[i];
 	       if (ntokens==3) tok3=(char *)&ttybuf[i];
+	       if (ntokens==4) tok4=(char *)&ttybuf[i];
+	       if (ntokens==5) tok5=(char *)&ttybuf[i];
+	       if (ntokens==6) tok6=(char *)&ttybuf[i];
 	    }
 	    blankFlag=0;
 	 }
@@ -842,6 +926,10 @@ main(int argc, char **argv) {
       }
       if (strncmp(tok1,"ll",2)==0) {
 	 doLongLs(Conn, tok2, tok3);
+	 didOne=1;
+      }
+      if (strncmp(tok1, "acc", 3)==0) {
+	 doAccCheck(Conn, tok2, tok3, tok4, tok5, tok6);
 	 didOne=1;
       }
       if (strncmp(tok1,"cd",2)==0) {
