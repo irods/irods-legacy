@@ -1885,6 +1885,36 @@ parseACLModLine(char *inpLine, rsComm_t *rsComm)
 
 
 
+/*
+ * getSqlRowsByInx()
+ *
+ */
+int
+getSqlRowsByInx(genQueryOut_t *genQueryOut, intArray_t *indexes, bytesBuf_t *mybuf)
+{
+	char *resultStringToken;
+	sqlResult_t *sqlResult;
+	int i, j;
+
+
+	for (i=0;i<genQueryOut->rowCnt;i++) {
+
+		for (j=0;j<indexes->len;j++) {
+			sqlResult = getSqlResultByInx (genQueryOut, indexes->value[j]);
+
+			resultStringToken = sqlResult->value + i*sqlResult->len;
+
+			appendStrToBBuf(mybuf, resultStringToken);
+			appendStrToBBuf(mybuf, "|");
+		}
+
+
+		appendStrToBBuf(mybuf, "\n");
+	}
+
+	return (i);
+}
+
 
 
 
