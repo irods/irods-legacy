@@ -57,7 +57,7 @@ function listFileJson($dir, $start=0, $limit=500, $orderby=array())
     {
       $childstats=array();
       $childstats['id']=$childdir->stats->id;
-      $childstats['name']=$childdir->stats->name;
+      $childstats['name']=$childdir->getName();
       $childstats['size']=-1;
       $childstats['fmtsize']="";
       $childstats['mtime']=$childdir->stats->mtime;
