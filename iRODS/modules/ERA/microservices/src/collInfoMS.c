@@ -7,25 +7,25 @@
 
 
 /*
- * msiGetCollectionContentsReport() - STUB
+ * msiGetCollectionContentsReport()
  *
  */
 int
 msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
-	char *resultStringToken;
-	char *oldValStr, newValStr[21];
-	rodsLong_t newVal; 
-	sqlResult_t *sqlResult;
-	int i;
-	keyValPair_t contents;
+	collInp_t collInpCache, *outCollInp;	/* for parsing collection input param */
 
-	collInp_t collInpCache, *outCollInp;
+	keyValPair_t *contents;			/* for passing out results */
+
 	char collQCond[2*MAX_NAME_LEN];		/* for condition in rsGenquery() */
-	bytesBuf_t *mybuf;
-
 	genQueryInp_t genQueryInp;		/* for query inputs */
 	genQueryOut_t *genQueryOut;		/* for query results */
+
+	char *resultStringToken;		/* for parsing key-value pairs from genQueryOut */
+	char *oldValStr, newValStr[21];		/* for parsing key-value pairs from genQueryOut */
+	rodsLong_t newVal;			/* for parsing key-value pairs from genQueryOut */
+	sqlResult_t *sqlResult;			/* for parsing key-value pairs from genQueryOut */
+	int i;					/* for parsing key-value pairs from genQueryOut */
 
 
 	RE_TEST_MACRO ("    Calling msiGetCollectionContentsReport")
@@ -36,14 +36,7 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	}
 
 
-	/* buffer init */
-	mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
-	memset (mybuf, 0, sizeof (bytesBuf_t));
-
-	memset (&contents, 0, sizeof (contents));
-
-
-	/* parse inpParam1 */
+	/* parse inpParam1: our target collection */
 	rei->status = parseMspForCollInp (inpParam1, &collInpCache, &outCollInp, 0);
 	
 	if (rei->status < 0) {
@@ -52,42 +45,43 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	}
 
 
-	/* How many data types are there? Count all token IDs whose namespace is data_type */
+	/* allocate memory for our result struct */
+	contents = (keyValPair_t*)malloc(sizeof(keyValPair_t));
+	memset (contents, 0, sizeof (keyValPair_t));
+
+
+	/* Wanted fields. We use coll_id to do a join query on r_data_main and r_coll_main */
 	memset (&genQueryInp, 0, sizeof (genQueryInp));
 	addInxIval (&genQueryInp.selectInp, COL_DATA_TYPE_NAME, 1);
 	addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
 
 
-	/* Conditions and options */
-	/* make the condition */
+	/* Make condition for getting all objects under a collection */
 	genAllInCollQCond (outCollInp->collName, collQCond);
-	
 	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, collQCond);
-
 	genQueryInp.maxRows = MAX_SQL_ROWS;
-
-	genQueryInp.options = RETURN_TOTAL_ROW_COUNT;
+	/* genQueryInp.options = RETURN_TOTAL_ROW_COUNT; */
 
 
 	/* Query */
 	rei->status  = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
 
 
-	/**********************************/
-
-	/* print results out to buffer */
+	/* Parse results */
 	if (rei->status == 0) {
 
+		/* for each row */
 		for (i=0;i<genQueryOut->rowCnt;i++) {
 	
-
+			/* get COL_DATA_TYPE_NAME result */
 			sqlResult = getSqlResultByInx (genQueryOut, COL_DATA_TYPE_NAME);
 
-			/* retrive value for this row */
+			/* retrieve value for this row */
 			resultStringToken = sqlResult->value + i*sqlResult->len;
 
-			oldValStr = getValByKey (&contents, resultStringToken);
+			/* have we found this data type before? */
+			oldValStr = getValByKey (contents, resultStringToken);
 			if (oldValStr) {
 				newVal = atoll(oldValStr) + 1;
 			}
@@ -95,9 +89,9 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 				newVal = 1;
 			}
 		
+			/* add data type name along with its total number of occurrences */
 			snprintf(newValStr, 21, "%lld", newVal);
-			addKeyVal(&contents, resultStringToken, newValStr);
-
+			addKeyVal(contents, resultStringToken, newValStr);
 		}
 
 
@@ -107,15 +101,17 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 			genQueryInp.continueInx=genQueryOut->continueInx;
 			rei->status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
 
+			/* for each row */
 			for (i=0;i<genQueryOut->rowCnt;i++) {
 		
-	
+				/* get COL_DATA_TYPE_NAME result */
 				sqlResult = getSqlResultByInx (genQueryOut, COL_DATA_TYPE_NAME);
 	
-				/* retrive value for this row */
+				/* retrieve value for this row */
 				resultStringToken = sqlResult->value + i*sqlResult->len;
 	
-				oldValStr = getValByKey (&contents, resultStringToken);
+				/* have we found this data type before? */
+				oldValStr = getValByKey (contents, resultStringToken);
 				if (oldValStr) {
 					newVal = atoll(oldValStr) + 1;
 				}
@@ -123,39 +119,21 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 					newVal = 1;
 				}
 			
+				/* add data type name along with its total number of occurrences */
 				snprintf(newValStr, 21, "%lld", newVal);
-				addKeyVal(&contents, resultStringToken, newValStr);
-	
+				addKeyVal(contents, resultStringToken, newValStr);
 			}
 		}
 	}
 
 
-
-	/* print contents of keyvalpair to buffer */
-	for (i=0; i<contents.len; i++) {
-		appendStrToBBuf(mybuf, contents.keyWord[i]);
-		appendStrToBBuf(mybuf, ": ");
-		appendStrToBBuf(mybuf, contents.value[i]);
-		appendStrToBBuf(mybuf, "\n");
-	}
-
-
-
 	/* send results out to outParam */
-	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
-
-
-
-
+	fillMsParam (inpParam2, NULL, KeyValPair_MS_T, contents, NULL);
 
 
 	/* Return operation status through outParam */
-// 	fillIntInMsParam (outParam, rei->status);
-	fillIntInMsParam (outParam, genQueryOut->totalRowCount);
-
-
-
+	fillIntInMsParam (outParam, rei->status);
+	/* fillIntInMsParam (outParam, genQueryOut->totalRowCount); */
 
 	return (rei->status);
 }
