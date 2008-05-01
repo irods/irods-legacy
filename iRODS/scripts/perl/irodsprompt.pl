@@ -444,7 +444,7 @@ sub promptForIrodsConfiguration( )
 
 	# Include the iCAT metadata catalog?
 	$installCatalogServer = promptYesNo(
-		"Include an iCAT catalog",
+		"Make this Server ICAT-Enabled",
 		(($installCatalogServer == 1) ? "yes" : "no") );
 	if ( $installCatalogServer == 0 )
 	{
@@ -530,6 +530,9 @@ sub promptForIrodsConfiguration( )
 			"unique name.  This name appears at the beginning of collection names.\n",
 			"In the future, zones will interoperate but for now each is\n",
 			"independent.\n",
+			"\n",
+			"If you are reusing an existing ICAT database, please enter the\n",
+			"existing zone name and irods account below.\n",
 			"\n" );
 		$irodsZone = promptString(
 			"iRODS zone name",
@@ -547,7 +550,7 @@ sub promptForIrodsConfiguration( )
 			"\n" );
 
 		$irodsAccount = promptIdentifier(
-			 "New iRODS login name",
+			 "iRODS login name",
 			((!defined($irodsAccount)||$irodsAccount eq "") ?
 				$DEFAULT_irodsAccount : $irodsAccount) );
 
