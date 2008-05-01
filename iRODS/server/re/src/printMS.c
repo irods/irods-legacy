@@ -151,5 +151,87 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
 
 
 
+int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei)
+{
+	keyValPair_t *KVPairs;
+	char *writeId;
+	char *writeStr;
+	char *sepStr;
+	int i;
+	size_t size;
+
+
+	RE_TEST_MACRO ("    Calling writeKeyValPairs")
+
+	
+	/* sanity checks */
+	if (!rei ) {
+		rodsLog (LOG_ERROR, "writeKeyValPairs: input rei is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	if (!where) {
+		rodsLog (LOG_ERROR, "writeKeyValPairs: No destination provided for writing.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	
+	/* check for proper input type and get keyValPair input */
+	if (strcmp(inKVPair->type, KeyValPair_MS_T)) {
+		rodsLog (LOG_ERROR, "writeKeyValPairs: input parameter is not of KeyValPair_MS_T type.");
+		return(USER_PARAM_TYPE_ERR);
+	}
+	KVPairs = (keyValPair_t *)inKVPair->inOutStruct;
+
+
+	/* where are we writing to? */
+	if (where->inOutStruct != NULL) {
+		writeId = where->inOutStruct;
+	}
+	else {
+		writeId = where->label;
+	}
+
+
+	/* get separator string or use default */
+	if ((sepStr = parseMspForStr(separator)) == NULL)  {
+		sepStr = "\t|\t";
+	}
+
+
+	/* find out how much memory is needed for writeStr */
+	size = 0;
+	for (i=0; i < KVPairs->len; i++) {
+		size += strlen(KVPairs->keyWord[i]) + strlen(sepStr) + strlen(KVPairs->value[i]) + strlen("\n");
+	}
+
+	/* allocate memory for writeStr and pad with null chars */
+	writeStr = (char *)malloc(size + MAX_COND_LEN);
+	memset(writeStr, '\0', size + MAX_COND_LEN);
+
+
+	/* print each key-value pair to writeStr */
+	for (i=0; i < KVPairs->len; i++)  {
+		strcat(writeStr, KVPairs->keyWord[i]);
+		strcat(writeStr, sepStr);
+		strcat(writeStr, KVPairs->value[i]);
+		strcat(writeStr, "\n");
+	}
+
+
+	/* call _writeString() routine */
+	rei->status = _writeString(writeId, writeStr, rei);
+
+	
+	/* free writeStr since its content has been copied somewhere else */
+	if (writeStr != NULL) {
+		free(writeStr);
+	}
+
+	return (rei->status);
+}
+
+
+
 
 
