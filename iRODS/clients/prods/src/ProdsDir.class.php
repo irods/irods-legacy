@@ -132,6 +132,7 @@ class ProdsDir extends ProdsPath
  /**
   * Get children directories of this dir. 
 	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method {@link findDirs};
+	* Note that if the current dir is root '/', it will not return '/' as its child, unlike iCommand's current behavior.
 	* @return an array of ProdsDir
 	*/
   public function getChildDirs(array $orderby=array(), $startingInx=0, 
@@ -527,6 +528,10 @@ class ProdsDir extends ProdsPath
     
     if ($descendantOnly===true) 
     {
+      // eliminate '/' from children, if current path is already root
+      if ($this->path_str=='/')
+        $condition->add('COL_COLL_NAME', '<>', '/');
+        
       if ($recursive===true)
         $condition->add('COL_COLL_PARENT_NAME', 'like', $this->path_str.'%');
       else
@@ -542,8 +547,10 @@ class ProdsDir extends ProdsPath
     $found=array();
     for($i=0; $i<$results->getNumRow(); $i++)
     {
+      $full_path=$result_values['COL_COLL_NAME'][$i];
+      $acctual_name=basename($result_values['COL_COLL_NAME'][$i]);
       $stats=new RODSDirStats(
-          $result_values['COL_COLL_NAME'][$i],
+          $acctual_name,
           $result_values['COL_COLL_OWNER_NAME'][$i],
           $result_values['COL_COLL_OWNER_ZONE'][$i],
           $result_values['COL_COLL_MODIFY_TIME'][$i],
@@ -551,7 +558,6 @@ class ProdsDir extends ProdsPath
           $result_values['COL_COLL_ID'][$i],
           $result_values['COL_COLL_COMMENTS'][$i]);
       
-      $full_path=$result_values['COL_COLL_NAME'][$i];
       $found[]=new ProdsDir($this->account, $full_path, false, $stats);
     }
     return $found;
