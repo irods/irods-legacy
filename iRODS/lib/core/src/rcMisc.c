@@ -3,7 +3,9 @@
 
 /* rcMisc.c - misc client routines
  */
+#ifndef windows_platform
 #include <sys/time.h>
+#endif
 #include "rcMisc.h"
 #include "apiHeaderAll.h"
 #include "modDataObjMeta.h"
@@ -2592,17 +2594,17 @@ appendToByteBuf(bytesBuf_t *bytesBuf, char *str) {
   j = 0;
   if (bytesBuf->buf == NULL) {
     bytesBuf->buf = malloc (i + 1 + MAX_NAME_LEN * 5);
-    strcpy(bytesBuf->buf, str);
+    strcpy((char *)bytesBuf->buf, str);
     bytesBuf->len = i + 1 + MAX_NAME_LEN * 5; /* allocated length */
   }
   else {
-    j = strlen(bytesBuf->buf);
+    j = strlen((char *)bytesBuf->buf);
     if ((i + j) < bytesBuf->len) {
-      strcat(bytesBuf->buf, str);
+      strcat((char *)bytesBuf->buf, str);
     }
     else { /* needs more space */
       tBuf = (char *) malloc(j + i + 1 + (MAX_NAME_LEN * 5));
-      strcpy(tBuf,bytesBuf->buf);
+      strcpy(tBuf,(char *)bytesBuf->buf);
       strcat(tBuf,str);
       free (bytesBuf->buf);
       bytesBuf->len = j + i + 1 + (MAX_NAME_LEN * 5);
@@ -2762,7 +2764,7 @@ makeCachedStructFileStr (char *collInfo2, specColl_t *specColl)
 	return (0);
     }
 
-    snprintf ((void *) collInfo2, MAX_NAME_LEN, "%s;;;%s;;;%d",
+    snprintf (collInfo2, MAX_NAME_LEN, "%s;;;%s;;;%d",
      specColl->cacheDir, specColl->resource, specColl->cacheDirty);
 
     return 0;
