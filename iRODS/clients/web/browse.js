@@ -247,7 +247,7 @@ function RODSFileSearchDialog()
              header: "Resource",
              dataIndex: 'rescname',
              width: 100,
-             hidden: true 
+             hidden: false 
           },{
              header: "Type",
              dataIndex: 'typename',
@@ -1868,7 +1868,7 @@ function RodsBrowser(inipath, _ssid)
              header: "Resource",
              dataIndex: 'rescname',
              width: 100,
-             hidden: true 
+             hidden: false 
           },{
              header: "Type",
              dataIndex: 'typename',
