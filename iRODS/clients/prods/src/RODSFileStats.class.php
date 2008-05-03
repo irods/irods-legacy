@@ -12,9 +12,10 @@ class RODSFileStats
   public $typename;  
   public $rescname;
   public $comments;
+  public $num_replica;
   
   public function __construct($name,$size,$owner,$ownerzone, $mtime,$ctime,$id,$typename,
-    $rescname, $comments)
+    $rescname, $comments, $num_replica=null)
   {
     $this->name=$name;
     $this->size=$size;
@@ -26,6 +27,7 @@ class RODSFileStats
     $this->typename=$typename;
     $this->rescname=$rescname;
     $this->comments=$comments;
+    $this->num_replica=$num_replica;
   }
   
 }  
