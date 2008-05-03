@@ -145,14 +145,17 @@ class ProdsDir extends ProdsPath
  /**
 	* Get children files of this dir. 
 	*
-	* @param $orderby An associated array specifying how to sort the result by attributes. See details in method {@link findFiles};
-	* @see findFiles()
+	* @param array $orderby An associated array specifying how to sort the result by attributes. See details in method {@link findFiles};
+	* @param int $startingInx starting index of all files. default is 0.
+	* @param int $maxresults max results returned. if negative, it returns all rows. default is -1
+	* @param int &$total_num_rows number of all results
+	* @param boolean $logical_file whether to return only logical files, if false, it returns all replica with resource name, if true, it returns only 1 logical file, with num_replica available in the stats. default is false.
 	* @return an array of ProdsFile
 	*/
   public function getChildFiles(array $orderby=array(), $startingInx=0, 
-    $maxresults=-1, &$total_num_rows=-1)
+    $maxresults=-1, &$total_num_rows=-1, $logicalFile=false)
   {
-    $terms=array("descendantOnly"=>true,"recursive"=>false);
+    $terms=array("descendantOnly"=>true,"recursive"=>false, 'logicalFile'=>$logicalFile);
     return $this->findFiles($terms,$total_num_rows,$startingInx,$maxresults,$orderby); 
   }
   
@@ -207,6 +210,7 @@ class ProdsDir extends ProdsPath
   * -    'name' (string) - partial name of the target (file or dir)
   * -    'descendantOnly' (boolean) - whether to search among this directory's decendents. default is false.
   * -    'recursive'      (boolean) - whether to search recursively, among all decendents and their children. default is false. This option only works when 'descendantOnly' is true
+  * -    'logicalFile'    (boolean) - whether to return logical file, instead of all replicas for each file. if true, the resource name for each file will be null, instead, num_replicas will be provided. default is false.
   * -    'smtime'         (int)     - start last-modified-time in unix timestamp. The specified time is included in query, in other words the search can be thought was "mtime >= specified time"
   * -    'emtime'         (int)     - end last-modified-time in unix timestamp. The specified time is not included in query, in other words the search can be thought was "mtime < specified time"
   * -    'owner'          (string)  - owner name of the file
@@ -222,7 +226,6 @@ class ProdsDir extends ProdsPath
   * -     'ctime'     - creation time
   * -     'owner'     - owner of the file
   * -     'typename'  - file/data type 
-  * -     'rescname'  - resource name
   * -     'dirname'   - directory/collection name for the file
   * The results are sorted by specified array keys.
   * The possible array value must be boolean: true stands for 'asc' and false stands for 'desc', default is 'asc'  
@@ -232,7 +235,7 @@ class ProdsDir extends ProdsPath
     array $sort_flds=array())
   {
     $flds=array("COL_DATA_NAME"=>NULL,"COL_D_DATA_ID"=>NULL,
-        "COL_DATA_TYPE_NAME"=>NULL,"COL_D_RESC_NAME"=>NULL,
+        "COL_DATA_TYPE_NAME"=>NULL, "COL_D_RESC_NAME"=>NULL,
         "COL_DATA_SIZE"=>NULL,"COL_D_OWNER_NAME"=>NULL, "COL_D_OWNER_ZONE"=>NULL,
         "COL_D_CREATE_TIME"=>NULL, "COL_D_MODIFY_TIME"=>NULL,
         "COL_COLL_NAME"=>NULL, "COL_D_COMMENTS"=>NULL);
@@ -283,13 +286,6 @@ class ProdsDir extends ProdsPath
             $flds['COL_D_OWNER_NAME']='order_by_asc';
           break; 
         
-        case 'rescname':
-          if ($sort_fld_val===false)
-            $flds['COL_D_RESC_NAME']='order_by_desc';
-          else
-            $flds['COL_D_RESC_NAME']='order_by_asc';
-          break;      
-          
         case 'dirname':
           if ($sort_fld_val===false)
             $flds['COL_COLL_NAME']='order_by_desc';
@@ -303,11 +299,11 @@ class ProdsDir extends ProdsPath
           break;
       }
     }    
-    
     $select=new RODSGenQueSelFlds(array_keys($flds), array_values($flds));
     
     $descendantOnly=false;
     $recursive=false;
+    $logicalFile=false;
     $condition=new RODSGenQueConds();
     foreach($terms as $term_key => $term_val)
     {
@@ -357,6 +353,11 @@ class ProdsDir extends ProdsPath
             $recursive=true;
           break;
           
+        case 'logicalFile':
+          if (true===$term_val)
+            $logicalFile=true;
+          break;  
+          
         default:
           throw new RODSException("Term field name '$term_key' is not valid",
             'PERR_USER_INPUT_ERROR');
@@ -372,6 +373,14 @@ class ProdsDir extends ProdsPath
         $condition->add('COL_COLL_NAME', '=', $this->path_str);    
     }
     
+    if ($logicalFile===true)
+    {
+      $select->update('COL_D_RESC_NAME','count');
+      $select->update('COL_DATA_SIZE','max');
+      $select->update('COL_D_CREATE_TIME','min');
+      $select->update('COL_D_MODIFY_TIME','max');
+    }
+    
     $conn = RODSConnManager::getConn($this->account);
     $results = $conn->query($select, $condition, $start, $limit);
     RODSConnManager::releaseConn($conn); 
@@ -381,6 +390,8 @@ class ProdsDir extends ProdsPath
     $found=array();
     for($i=0; $i<$results->getNumRow(); $i++)
     {
+      $resc_name= ($logicalFile===true)?NULL:$result_values['COL_D_RESC_NAME'][$i];
+      $num_replica= ($logicalFile===true)? intval($result_values['COL_D_RESC_NAME'][$i]):NULL;
       $stats=new RODSFileStats(
           $result_values['COL_DATA_NAME'][$i],
           $result_values['COL_DATA_SIZE'][$i],
@@ -390,8 +401,10 @@ class ProdsDir extends ProdsPath
           $result_values['COL_D_CREATE_TIME'][$i],
           $result_values['COL_D_DATA_ID'][$i],
           $result_values['COL_DATA_TYPE_NAME'][$i],
-          $result_values['COL_D_RESC_NAME'][$i],
-          $result_values['COL_D_COMMENTS'][$i]);
+          $resc_name,
+          $result_values['COL_D_COMMENTS'][$i],
+          $num_replica
+      );
       
       if ($result_values['COL_COLL_NAME'][$i]=='/')
         $full_path='/'.$result_values['COL_DATA_NAME'][$i];
