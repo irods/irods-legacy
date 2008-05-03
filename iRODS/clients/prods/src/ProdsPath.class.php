@@ -46,8 +46,14 @@ abstract class ProdsPath
       $path_str=substr($path_str,0,strlen($path_str)-1);  
     }
     $this->path_str=$path_str;
-    
-    $this->parent_path=dirname($this->path_str);
+    if ($path_str=='/')
+    {
+      $this->parent_path=null;
+    }
+    else
+    {
+      $this->parent_path=dirname($this->path_str);
+    }
     $this->name=basename($this->path_str);
   }
   

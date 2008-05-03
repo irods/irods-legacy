@@ -1508,7 +1508,7 @@ class RODSConn
           break;
         }
         
-        throw new RODSException("RODSConn::genQuery has got an error from the server",
+        throw new RODSException("RODSConn::query has got an error from the server",
           $GLOBALS['PRODS_ERR_CODES_REV']["$intInfo"]);
       }
       $genque_result_pk=$msg_resv->getBody();
