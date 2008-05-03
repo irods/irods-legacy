@@ -57,7 +57,7 @@ function listFileJson($dir, $start=0, $limit=500, $orderby=array())
     {
       $childstats=array();
       $childstats['id']=$childdir->stats->id;
-      $childstats['name']=$childdir->getName();
+      $childstats['name']=$childdir->stats->name;
       $childstats['size']=-1;
       $childstats['fmtsize']="";
       $childstats['mtime']=$childdir->stats->mtime;
@@ -68,13 +68,14 @@ function listFileJson($dir, $start=0, $limit=500, $orderby=array())
       $arr['que_results'][]=$childstats;
     }
     
+    $totalcount=0;
+    //$childfiles=$dir->getChildFiles($orderby,0, -1, $totalcount, true);
     $childfiles=$dir->getChildFiles($orderby);
-    //var_dump($childfiles);
     $arr['totalCount']=$arr['totalCount']+count($childfiles);
     foreach ($childfiles as $childfile)
     {
       $childstats=array();
-      $childstats['id']=$childfile->stats->id;
+      $childstats['id']=$childfile->stats->id.'_'.$childfile->stats->rescname;
       $childstats['name']=$childfile->stats->name;
       $childstats['size']=$childfile->stats->size;
       $childstats['fmtsize']=format_size($childfile->stats->size);
@@ -82,6 +83,7 @@ function listFileJson($dir, $start=0, $limit=500, $orderby=array())
       $childstats['ctime']=$childfile->stats->ctime;
       $childstats['owner']=$childfile->stats->owner;
       $childstats['rescname']=$childfile->stats->rescname;
+      $childstats['num_replica']=$childfile->stats->num_replica;
       $childstats['typename']=$childfile->stats->typename;
       $childstats['type']=1;
       $childstats['ruri']=$childfile->toURI();
