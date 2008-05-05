@@ -653,6 +653,8 @@ setOrderBy(genQueryInp_t genQueryInp, int column) {
 		  if (strlen(orderBySQL)>10) {
 		     rstrcat(orderBySQL, ", ", MAX_SQL_SIZE);
 		  }
+		  rstrcat(orderBySQL, Columns[j].tableName, MAX_SQL_SIZE);
+		  rstrcat(orderBySQL, ".", MAX_SQL_SIZE);
 		  rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE);
 		  break;
 	       }
@@ -677,6 +679,8 @@ setOrderByUser(genQueryInp_t genQueryInp) {
 	       if (strlen(orderBySQL)>10) {
 		  rstrcat(orderBySQL, ", ", MAX_SQL_SIZE);
 	       }
+	       rstrcat(orderBySQL, Columns[j].tableName, MAX_SQL_SIZE);
+	       rstrcat(orderBySQL, ".", MAX_SQL_SIZE);
 	       rstrcat(orderBySQL, Columns[j].columnName, MAX_SQL_SIZE);
 	       if (genQueryInp.selectInp.value[i] & ORDER_BY_DESC) {
 		  rstrcat(orderBySQL, " DESC ", MAX_SQL_SIZE);

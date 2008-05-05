@@ -571,6 +571,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    int IX_RESC_NAME=8;      /* index into theColls */
    int IX_RESC_GROUP_NAME=7;/* index into theColls */
    int IX_DATA_PATH=9;      /* index into theColls */
+   int IX_CREATE_TS=18;
    int IX_MODIFY_TS=19;
    int nColumns=20;
    char objIdString[MAX_NAME_LEN];
@@ -642,6 +643,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 
    getNowStr(myTime);
    cVal[IX_MODIFY_TS]=myTime;
+   cVal[IX_CREATE_TS]=myTime;
 
    for (i=0;i<nColumns;i++) {
       cllBindVars[i]=cVal[i];
