@@ -991,7 +991,7 @@ usage(char *subOpt)
 "Create (register) a new storage resource.",
 " ",
 "Name is the name of the new resource.",
-"Type is the resource type (see 'lt resource_type' for a list).",
+"Type is the resource type (see 'lt resc_type' for a list).",
 "Class is the usage class of the resource (see 'lt resc_class').",
 "Host is the DNS host name.",
 "And Path is the defaultPath for the vault.",
