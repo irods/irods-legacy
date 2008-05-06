@@ -7,10 +7,17 @@
  Date of last modification: 11/15/2006
  *******************************************************************/
 #include "iRODSNtutil.h"
-#include "direct.h"
+#include <io.h>
+#include <conio.h>
+#include <direct.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h> 
+#include <sys/stat.h>
+#include <errno.h>
+ 
 
-int nRunInConsole=0;
-void iRODSPathToNtPath(char *ntpath,const char *srbpath);
+
 /* The function is used to convert unix path delimiter,slash, to
    windows path delimiter, back slash. 
  */
@@ -40,15 +47,6 @@ void iRODSNtPathForwardSlash(char *str)
 	StrChangeChar(str,'\\','/');
 }
 
-FILE *iRODSNt_fopen(const char *filename, const char *mode)
-{
-	char ntfp[1024];
-
-	iRODSPathToNtPath(ntfp,filename);
-
-	return fopen(ntfp,mode);
-}
-
 void iRODSPathToNtPath(char *ntpath,const char *srbpath)
 {
 	char buff[1024];
@@ -74,10 +72,19 @@ void iRODSPathToNtPath(char *ntpath,const char *srbpath)
 	strcpy(ntpath,buff);
 }
 
-int iRODSNtFileOpen(const char *filename,int oflag, int istextfile)
+FILE *iRODSNt_fopen(const char *filename, const char *mode)
+{
+	char ntfp[2048];
+	iRODSPathToNtPath(ntfp,filename);
+	return fopen(ntfp,mode);
+}
+
+
+
+int iRODSNt_pen(const char *filename,int oflag, int istextfile)
 {
 	int New_Oflag;
-	char ntfp[1024];
+	char ntfp[2048];
 
 	iRODSPathToNtPath(ntfp,filename);
 
@@ -94,10 +101,11 @@ int iRODSNtFileOpen(const char *filename,int oflag, int istextfile)
 	return _open(ntfp,New_Oflag);
 }
 
-int iRODSNtFileBinaryOpen(const char *filename,int oflag)
+/* open a file in binary mode. */
+int iRODSNt_bpen(const char *filename,int oflag)
 {
 	int New_Oflag;
-	char ntfp[1024];
+	char ntfp[2048];
 
 	iRODSPathToNtPath(ntfp,filename);
 
@@ -105,55 +113,39 @@ int iRODSNtFileBinaryOpen(const char *filename,int oflag)
 	return _open(ntfp,New_Oflag);
 }
 
-int iRODSNtFileBinaryCreate(const char *filename)
+/* create a file in binary mode */
+int iRODSNt_bcreate(const char *filename)
 {
-	char ntfp[1024];
+	char ntfp[2048];
 
 	iRODSPathToNtPath(ntfp,filename);
 
 	return _open(ntfp,_O_RDWR|_O_CREAT|_O_EXCL|_O_BINARY, _S_IREAD|_S_IWRITE);
 }
 
-int iRODSNtUnlinkFile(char *filename)
+int iRODSNt_unlink(char *filename)
 {
-	char ntfp[1024];
+	char ntfp[2048];
 
 	iRODSPathToNtPath(ntfp,filename);
 
 	return _unlink(ntfp);
 }
 
-void iRODSNtCheckExecMode(int aargc,char **aargv)
+int iRODSNt_stat(const char *filename,struct stat *stat_p)
 {
-	int i;
-
-	nRunInConsole = 0;
-	for(i=0;i<aargc;i++)
-	{
-		if(strcmp(aargv[i],"console") == 0)
-		{
-			nRunInConsole = 1;
-			return;
-		}
-	}
+        char ntfp[2048];
+        iRODSPathToNtPath(ntfp,filename);
+        return stat(ntfp,stat_p);
 }
 
-int iRODSNtRunInConsoleMode()
+int iRODSNt_mkdir(char *dir,int mode)
 {
-	return nRunInConsole;
+        char ntfp[2048];
+        iRODSPathToNtPath(ntfp,dir);
+        return _mkdir(ntfp);
 }
 
-void NtEmergencyMessage(char *msg)
-{
-   int fd;
-   fd = open("c:\\ntsrblog.txt",_O_CREAT|_O_APPEND|_O_WRONLY, _S_IREAD | _S_IWRITE);
-
-   if(fd < 0)
-     return;
-
-   _write(fd,msg,strlen(msg));
-   _close(fd);
-}
 
 /* The function is used in Windows console app, especially S-commands. */
 void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
@@ -170,7 +162,7 @@ void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
 
    while(1)
    {
-      c = getch();
+      c = _getch();
 
       if(c == 8)   /* a backspace, we currently ignore it. i.e. treat it as doing nothing. User can alway re-do it. */
       {
@@ -197,36 +189,3 @@ void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
 
    printf("\n");
 }
-
-long getppid(void)
-{
-	return NULL;
-}
-
-int getopt(int argc, char* const argv[], const char* optstring)
-{
-	return 0;
-}
-
-
-int NTmkdir(const char *dirname)
-{
-	char buf[2048];
-	int i,len;
-
-	len = strlen(dirname);
-
-	for(i = 0; i < len; i++)
-	{
-		if(dirname[i] == '/')
-			buf[i] = '\\';
-		else
-			buf[i] = dirname[i];
-	}
-	buf[i] = '\0';
-
-	len = mkdir(buf);
-
-	return mkdir(buf);
-}
-
