@@ -31,7 +31,7 @@ try {
     }
     $file->account=$acct;
   }
-  $file->verify();
+  //$file->verify();
   if (!$file->exists())
   {
     header("HTTP/1.0 404 Not Found");
