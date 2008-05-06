@@ -29,8 +29,10 @@ This script saves its work in two configuration files:
 	config/irods.config
 		Used to configure the iRODS install.
 
-Normally, there is no need for you to view or edit these files.  Both
-files include comments that explain their settings.
+Normally, there is no need for you to view or edit these files,
+however you can edit irods.config.  If you rerun irodssetup, the saved
+settings of irods.config will be the default choices.  Both files
+include comments that explain their settings.
 
 More detailed logs are in ./installLogs with names corresponding to
 the subscripts that are run (see below), for eaxmple:
@@ -68,14 +70,13 @@ answering the prompts differently:
 		server.
 
 
-	* Install iRODS commands
-		You will prompted for a host that is running an
-		iRODS server.  No new server or database is needed.
-		The scripts build and configure the commands to
-		use that existing iRODS server.
+	* Install iRODS commands 
 
-
-
+		The scripts configure and build the i-commands.  No
+		new server or database is needed.  You will then need
+		to set up your ~/.irods/.irodsEnv file to connect to
+		one of the servers in your grid (see the irods web
+		site, the page "User Environment", for more).
 
 
 2.  Installing iRODS without using 'irodssetup'
