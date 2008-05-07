@@ -201,7 +201,13 @@ printSubtitle(
 	"Done!\n",
 	"-----\n" );
 
-printNotice( "To use the iRODS command-line tools, update your PATH:\n" );
+if ( $installDataServer )
+{
+	printNotice("For special network interfaces, you may need to\n");
+	printNotice("modify server/config/irodsHost; see comments within it.\n");
+}
+
+printNotice( "\nTo use the iRODS command-line tools, update your PATH:\n" );
 printNotice( "    For csh users:\n" );
 printNotice( "        set path=($icommandsBinDir \$path)\n" );
 printNotice( "    For sh or bash users:\n" );

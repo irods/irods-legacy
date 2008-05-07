@@ -516,6 +516,20 @@ sub doStatus
 			printStatus( "No servers running\n" );
 		}
 	} 
+
+	# Report on our PIDs
+	my @pids = getOurIrodsServerPids();
+	my $foundOne=0;
+	printSubtitle( "iRODS Servers associated with this instance, port $IRODS_PORT:\n" );
+	foreach $pid (@pids)
+	{
+		printStatus( "Process $pid\n" );
+		$foundOne=1;
+	}
+	if ($foundOne==0) {
+		printStatus( "None\n" );
+	}
+
 	setPrintVerbose( $verbosity );
 }
 
@@ -986,55 +1000,23 @@ sub startIrods
 sub stopIrods
 {
 	#
-	# Design Notes:  deciding what to kill
-	# 	In the simple (common) case, this host is running one iRODS
-	# 	server and it's child servers.  Running "ps" and filtering
-	# 	its output for processes with known server names gets us a
-	# 	list of process IDs of servers.  Then we kill them.
-	#
-	# 	There are several gotchas that this script currently does
-	# 	not handle:
-	# 		1.  iRODS servers owned by other users.
-	# 		2.  iRODS servers with changed process names.
-	# 		3.  Multiple iRODS servers running, but only want
-	# 		    to kill one.
-	#
-	#	If there are iRODS servers running that are owned by other
-	#	users, this script will get their process IDs, but killing
-	#	them will fail.  An error message is output and the script
-	#	exits with a non-zero exit code.
-	#
-	#	If there are iRODS servers with changed process names
-	#	(possible if they are started from Perl), then this script's
-	#	filter of "ps" output won't find them.  This script won't
-	#	be able to kill them and it will output a wrong message that
-	#	there are no servers running.
-	#
-	#	If there are multiple iRODS servers running, this script
-	#	will try to kill them all.  Currently there is no way to
-	#	tell this script which ones to kill.  Further, there is
-	#	no clear way for the user to know which ones to kill
-	#	based upon port number, or something else.
-	#
-	#	These are all design flaws.  There needs to be a way for
-	#	the iRODS servers to be discovered without doing "ps",
-	#	which is inherently a weak method.  Once such a way exists,
-	#	then this script can intelligently choose which servers
-	#	to kill, and which ones to ignore.
+	# Design Notes:  The current version of this uses a file created
+	# 	by the irods server which records its PID and then finds
+	# 	the children, which should work well in most cases. 
+	# 	The previous version (irods 1.0) would use ps
+	# 	to find processes of the right name.  See the old version
+	#       from CVS for the limitations of that approach.  
+	#       This should work better, in most situations, and will
+	# 	allow us to run multiple systems on a host.
 	#
 
 	# Find and kill the server process IDs
+	my @pids = getOurIrodsServerPids();
 	my $found = 0;
-	foreach $serverType (keys %servers)
+	foreach $pid (@pids)
 	{
-		my $processName = $servers{$serverType};
-		my @pids = getProcessIds( $processName );
-		next if ( $#pids < 0 );
-		foreach $pid (@pids)
-		{
-			$found = 1;
-			kill( 'SIGINT', $pid );
-		}
+		$found = 1;
+		kill( 'SIGINT', $pid );
 	}
 	if ( ! $found )
 	{
@@ -1043,29 +1025,19 @@ sub stopIrods
 	}
 
 	# Repeat to catch stragglers.  This time use kill -9.
-	foreach $serverType (keys %servers)
+	my @pids = getOurIrodsServerPids();
+	my $found = 0;
+	foreach $pid (@pids)
 	{
-		my $processName = $servers{$serverType};
-		my @pids = getProcessIds( $processName );
-		next if ( $#pids < 0 );
-		foreach $pid (@pids)
-		{
-			kill( 9, $pid );
-		}
+		$found = 1;
+		kill( 9, $pid );
 	}
 
 	# Report if there are any left.
 	my $didNotDie = 0;
-	foreach $serverType (keys %servers)
-	{
-		my $processName = $servers{$serverType};
-		my @pids = getProcessIds( $processName );
-		if ( $#pids >= 0 )
-		{
-			$didNotDie = 1;
-		}
-	}
-	if ( $didNotDie )
+        my @pids = getOurIrodsServerPids();
+
+	if ( $#pids >= 0 )
 	{
 		printError( "    Some servers could not be killed.  They may be owned\n" );
 		printError( "    by another user or there could be a problem.\n" );
@@ -1075,7 +1047,37 @@ sub stopIrods
 }
 
 
+#
+# @brief	Get Our iRODS Server Process IDs
+#
+# Find the server processes that are part of this installation.
+# Use the state file to find the process ID of the server and
+# find all it's children.
+#
+# @return	0 = failed
+# 		1 = started
+# 		2 = already started
+# 		3 = not under our control
+#
+sub getOurIrodsServerPids
+{ 
+    my $processFile   = File::Spec->catfile( File::Spec->tmpdir( ),
+					     "irodsServer" . "." . 
+					     $IRODS_PORT );
+    open( PIDFILE, "<$processFile" );
+    my $line;
+    my $parentPid;
+    foreach $line (<PIDFILE>)
+    {
+	my $i = index($line, " ");
+	$parentPid=substr($line,0,$i);
+    }
+    close( PIDFILE );
 
+    my @serverPids = getFamilyProcessIds( $parentPid );
+
+    return @serverPids;
+}
 
 
 #

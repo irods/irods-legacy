@@ -849,6 +849,68 @@ sub getCurrentPs()
 }
 
 
+#
+# @brief	Get the ps command for this OS for getting PPIDs.
+#
+# @return
+# 	the current ps command and options
+#
+my $PS_V2 = undef;
+my $PS_PID_COLUMN_V2 = undef;
+my $PS_PPID_COLUMN_V2 = undef;
+sub getCurrentPs_V2()
+{
+	# Return the cached value.
+	return $PS_V2 if defined( $PS_V2 );
+
+	# Look for 'ps'.
+	$PS_V2 = findCommand( "ps" );
+	if ( !defined( $PS_V2 ) )
+	{
+		# 'ps' not found!  We may not be on a UNIX
+		# derivative.  Return undef.
+		return undef;
+	}
+
+	# Modify the command to add options appropriate
+	# for different OSes.  Also record which column of
+	# the output has the process ID.
+	my $os = getCurrentOS( );
+	if ( $os =~ /Darwin/i )	# Mac OS X
+	{
+		# PS in /bin and SysV + BSD
+		# The x option is to show processes without controlling
+		# terminals, such as the irodsServer.
+		$PS_V2 = "$PS_V2 -elx";
+		$PS_PID_COLUMN_V2 = 1;
+		$PS_PPID_COLUMN_V2 = 2;
+	}
+	elsif ( $os =~ /SunOS/i ) #Solaris
+	{
+		# PS is in /bin and SysV
+		$PS_V2 = "$PS_V2 -el";
+		$PS_PID_COLUMN_V2 = 3;
+		$PS_PPID_COLUMN_V2 = 4;
+	}
+	elsif ( $os =~ /Linux/i )
+	{
+		# PS is in /bin and SysV + BSD
+		$PS_V2 = "$PS_V2 -el";
+		$PS_PID_COLUMN_V2 = 3;
+		$PS_PPID_COLUMN_V2 = 4;
+	}
+	else
+	{
+		# Assume SysV.
+		# See comment above for solaris and ps -e.
+		$PS_V2 = "$PS_V2 -el";
+		$PS_PID_COLUMN_V2 = 3;
+		$PS_PPID_COLUMN_V2 = 4;
+	}
+	return $PS_V2;
+}
+
+
 
 
 
@@ -1182,6 +1244,58 @@ sub getProcessIds
 					push( @pids, $columns[$col] );
 				}
 			}
+		}
+	}
+	return @pids;
+}
+
+
+#
+# @brief	Get family process IDs
+#
+# Given a process id, find it and all it's children.
+#
+# @param	@pid
+# 	parent id to look for
+# @return
+# 	an array of process IDs
+#
+sub getFamilyProcessIds
+{
+	my ($ppid) = @_;
+
+	my $ps = getCurrentPs_V2( );
+	if ( ! defined( $ps ) )
+	{
+		return undef;
+	}
+
+	# Get a process list
+	my ($status,$output) = run( $ps );
+	if ( $status != 0 )
+	{
+		# Couldn't run program.
+		return undef;
+	}
+	my @lines = split( "\n", $output );
+	# Search the results for the PIDs.
+	# The column of the output that contains the PID
+	# depends upon the OS and the format of its 'ps' output.
+	my @pids = ();
+	my $pattern;
+	my $col = $PS_PID_COLUMN_V2;
+	my $ppidCol = $PS_PPID_COLUMN_V2;
+
+	foreach $line (@lines)
+        {
+		my @columns = split( " ", $line );
+		if ( $columns[$ppidCol] =~ /$ppid/i )
+		{
+			push( @pids, $columns[$col] );
+		}
+		if ( $columns[$col] =~ /$ppid/i )
+		{
+			push( @pids, $columns[$col] );
 		}
 	}
 	return @pids;

@@ -105,6 +105,7 @@ $configDir  = abs_path( $configDir );
 
 # Get the script name.  We'll use it for some print messages.
 my $scriptName = $0;
+my $currentPort = 0;
 
 # Load support scripts.
 my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
@@ -536,6 +537,7 @@ sub prepare()
 	# Stop iRODS if it is running.
 	printStatus( "Stopping iRODS server...\n" );
 	printLog( "Stopping iRODS server...\n" );
+	$currentPort = $IRODS_PORT;
 	my $status = stopIrods( );
 	if ( $status == 0 )
 	{
@@ -1158,6 +1160,10 @@ sub configureIrodsServer
 	foreach $line (<BOOTENV>)
 	{
 		printLog( "    ", $line );
+		if ( $line =~ "irodsPort") {
+			$currentPort = substr($line, 10);
+			chomp($currentPort);
+		}
 	}
 	close( BOOTENV );
 
@@ -1432,6 +1438,10 @@ sub configureIrodsServer
 	printStatus( "Stopping iRODS server...\n" );
 	printLog( "\nStopping iRODS server...\n" );
 	stopIrods( );
+
+	# Switch to the new (non-boot) port (for checking processes)
+	$currentPort = $IRODS_PORT;
+
 
 	if ( $somethingFailed )
 	{
@@ -1779,15 +1789,12 @@ sub listDatabaseTables()
 #
 sub getIrodsProcessIds()
 {
-	my %serverPids = ();
-	foreach $serverType (keys %servers)
-	{
-		my $processName = $servers{$serverType};
-		my @pids = getProcessIds( $processName );
-		next if ( $#pids < 0 );
-		@serverPids{$serverType} = @pids;
-	}
-	return %serverPids;
+	my @serverPids = ();
+
+	$parentPid=getIrodsServerPid();
+	my @serverPids = getFamilyProcessIds( $parentPid );
+
+	return @serverPids;
 }
 
 
@@ -1809,9 +1816,9 @@ sub getIrodsProcessIds()
 sub startIrods()
 {
 	# See if server is already started
-	my %serverPids = getIrodsProcessIds( );
-	if ( (scalar keys %serverPids) != 0 &&
-		defined( @serverPids{'iRODS servers'} ) )
+	my @serverPids = getIrodsProcessIds( );
+
+	if ( $#serverPids > 0 )
 	{
 		return 2;
 	}
@@ -1829,6 +1836,31 @@ sub startIrods()
 	return 1;
 }
 
+
+#
+# @brief	Get the iRODS Server PID (Parent of the others)
+#
+# This function iRODS Server PID, which is the parent of the others.
+#
+# @return
+# 	The PID or "NotFound"
+#
+sub getIrodsServerPid()
+{
+	my $processFile   = File::Spec->catfile( File::Spec->tmpdir( ),
+						 "irodsServer" . "." . 
+						 $currentPort );
+	open( PIDFILE, "<$processFile" );
+	my $line;
+	my $parentPid="NotFound";
+	foreach $line (<PIDFILE>)
+	{
+		my $i = index($line, " ");
+		$parentPid=substr($line,0,$i);
+	}
+	close( PIDFILE );
+	return ( $parentPid);
+}
 
 
 
@@ -1849,48 +1881,38 @@ sub stopIrods()
 {
 	# Find and kill the server process IDs
 	my $found = 0;
-	foreach $serverType (keys %servers)
+
+	$parentPid=getIrodsServerPid();
+	my @pids = getFamilyProcessIds( $parentPid );
+
+	foreach $pid (@pids)
 	{
-		my $processName = $servers{$serverType};
-		my @pids = getProcessIds( $processName );
-		next if ( $#pids < 0 );
-		foreach $pid (@pids)
-		{
-			$found = 1;
-			kill( 'SIGINT', $pid );
-		}
+	    	$found = 1;
+		kill( 'SIGINT', $pid );
 	}
 	return 2 if ( ! $found );	# Nothing running
 
 	# Repeat to catch stragglers.  This time use kill -9.
-	foreach $serverType (keys %servers)
+
+	my @pids = getFamilyProcessIds( $parentPid );
+	foreach $pid (@pids)
 	{
-		my $processName = $servers{$serverType};
-		my @pids = getProcessIds( $processName );
-		next if ( $#pids < 0 );
-		foreach $pid (@pids)
-		{
-			kill( 9, $pid );
-		}
+	    	kill( 9, $pid );
 	}
 
 	# Report if there are any left.
 	my $didNotDie = 0;
-	foreach $serverType (keys %servers)
+	@pids = getFamilyProcessIds( $parentPid );
+	if ( $#pids >= 0 )
 	{
-		my $processName = $servers{$serverType};
-		@pids = getProcessIds( $processName );
-		if ( $#pids >= 0 )
+	    	printError( "Could not stop all iRODS servers\n" );
+		printLog( "Could not stop all iRODS servers\n" );
+		foreach $pid (@pids)
 		{
-			printError( "Could not stop all $serverType:\n" );
-			printLog( "Could not stop all $serverType:\n" );
-			foreach $pid (@pids)
-			{
-				printError( "    Process $pid\n" );
-				printLog( "    Process $pid\n" );
-			}
-			$didNotDie = 1;
-		}
+			printError( "    Process $pid\n" );
+			printLog( "    Process $pid\n" );
+		}		
+		$didNotDie = 1;
 	}
 	return 0 if ( $didNotDie );	# Failed to kill all
 	return 1;
