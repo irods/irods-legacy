@@ -9,12 +9,10 @@
 */
 #include "stdlib.h"
 #include "stdio.h"
-/*
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <conio.h>
 #include <direct.h>
-*/
 
 #ifdef  __cplusplus
 extern "C" {
@@ -30,9 +28,13 @@ int iRODSNt_bpen(const char *filename,int oflag);
 int iRODSNt_bcreate(const char *filename);
 int iRODSNt_unlink(char *filename);
 int iRODSNt_stat(const char *filename,struct stat *stat_p);
+int iRODSNt_mkdir(char *dir,int mode);
 
-
+char *iRODSNt_gethome();
 void iRODSNTGetUserPasswdInputInConsole(char *buf, char *prompt);
+
+int getopt (int argc, char *const *argv, const char *shortopts);
+
 #ifdef  __cplusplus
 }
 #endif
