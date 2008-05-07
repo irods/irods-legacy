@@ -145,10 +145,10 @@ usage ()
 "     irsync -r i:foo1 i:foo2",
 " ",
 "synchronizes recursively the data from  the  iRODS  collection foo1 to another",
-" iRODS collection foo2.", 
+"iRODS collection foo2.", 
 " ",
-"The command compares the checksum values and file sizes of the source"
-"and target files to determine whether synchronization is needed. Therefore,"
+"The command compares the checksum values and file sizes of the source",
+"and target files to determine whether synchronization is needed. Therefore,",
 "the command will run faster if the checksum value for the specific iRODS file,",
 "no matter whether it is a source or target, already exists and is registered",
 "with  iCAT. This can be achieved by using the -k or -K options of the iput",
@@ -186,8 +186,7 @@ usage ()
 " -h  this help",
 " -a   synchronize to all replica if the target is a  iRODS file/collection.",
 " -s   use the size instead of the checksum value for determining", 
-"      synchronization."
-"  -v   verbose mode.", 
+"      synchronization.",
 ""};
    int i;
    for (i=0;;i++) {
