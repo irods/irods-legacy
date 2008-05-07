@@ -1061,9 +1061,11 @@ sub stopIrods
 #
 sub getOurIrodsServerPids
 { 
-    my $processFile   = File::Spec->catfile( File::Spec->tmpdir( ),
-					     "irodsServer" . "." . 
-					     $IRODS_PORT );
+    my $tmpDir="/usr/tmp";
+    if (!-e $tmpDir)  {
+	$tmpDir="/tmp";
+    }
+    my $processFile   = $tmpDir . "/irodsServer" . "." . $IRODS_PORT;
     open( PIDFILE, "<$processFile" );
     my $line;
     my $parentPid;

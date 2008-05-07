@@ -1847,9 +1847,12 @@ sub startIrods()
 #
 sub getIrodsServerPid()
 {
-	my $processFile   = File::Spec->catfile( File::Spec->tmpdir( ),
-						 "irodsServer" . "." . 
-						 $currentPort );
+	my $tmpDir="/usr/tmp";
+	if (!-e $tmpDir)  {
+	    $tmpDir="/tmp";
+	}
+	my $processFile   = $tmpDir . "/irodsServer" . "." . $IRODS_PORT;
+
 	open( PIDFILE, "<$processFile" );
 	my $line;
 	my $parentPid="NotFound";
