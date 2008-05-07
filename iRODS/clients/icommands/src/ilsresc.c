@@ -380,6 +380,8 @@ void usage()
 "otherwise list them all ",
 "Options are:", 
 " -l Long format - list details",
+" -v verbose",
+" -V Very verbose",
 " -h This help",
 ""};
    int i;
