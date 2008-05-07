@@ -15,8 +15,6 @@
 #include <sys/types.h> 
 #include <sys/stat.h>
 #include <errno.h>
- 
-
 
 /* The function is used to convert unix path delimiter,slash, to
    windows path delimiter, back slash. 
@@ -49,7 +47,7 @@ void iRODSNtPathForwardSlash(char *str)
 
 void iRODSPathToNtPath(char *ntpath,const char *srbpath)
 {
-	char buff[1024];
+	char buff[2048];
 
 	if(strlen(srbpath) <= 3)
 	{
@@ -78,8 +76,6 @@ FILE *iRODSNt_fopen(const char *filename, const char *mode)
 	iRODSPathToNtPath(ntfp,filename);
 	return fopen(ntfp,mode);
 }
-
-
 
 int iRODSNt_pen(const char *filename,int oflag, int istextfile)
 {
@@ -146,6 +142,23 @@ int iRODSNt_mkdir(char *dir,int mode)
         return _mkdir(ntfp);
 }
 
+/* the caller needs to free the memory. */
+char *iRODSNt_gethome()
+{
+	char *s1, *s2;
+	char tmpstr[1024];
+	s1 = getenv("HOMEDRIVE");
+	s2 = getenv("HOMEPATH");
+
+	if((s1==NULL)||(strlen(s1)==0))
+		return NULL;
+
+	if((s2==NULL)||(strlen(s2)==0))
+		return NULL;
+
+	sprintf(tmpstr, "%s%s", s1, s2);
+	return strdup(tmpstr);
+}
 
 /* The function is used in Windows console app, especially S-commands. */
 void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
