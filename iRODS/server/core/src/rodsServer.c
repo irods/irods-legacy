@@ -186,9 +186,6 @@ serverMain (char *logDir)
         exit (1);
     }
 
-    /* Record port, pid, and cwd into a well-known file */
-    recordServerProcess(&svrComm);
-
     /* open  a socket an listen for connection */ 
     svrComm.sock = sockOpenForInConn (&svrComm, &svrComm.myEnv.rodsPort, NULL);
 
@@ -203,6 +200,9 @@ serverMain (char *logDir)
     FD_ZERO(&sockMask);
 
     rodsLog (LOG_NOTICE, "rodsServer version %s is up", RODS_REL_VERSION);
+
+    /* Record port, pid, and cwd into a well-known file */
+    recordServerProcess(&svrComm);
 
     while (1) {		/* infinite loop */
         FD_SET(svrComm.sock, &sockMask);
