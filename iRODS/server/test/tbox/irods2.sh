@@ -56,7 +56,9 @@ fi
 # remember error code
 error1=$?
 
-./irodsctl start
+#./irodsctl start (don't start, is running from install
+#                  and it will mess up the irodsServer.[port]
+#                  file and start another REserver).
 # remember error code
 error2=$?
 
