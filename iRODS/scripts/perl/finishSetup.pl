@@ -1851,7 +1851,7 @@ sub getIrodsServerPid()
 	if (!-e $tmpDir)  {
 	    $tmpDir="/tmp";
 	}
-	my $processFile   = $tmpDir . "/irodsServer" . "." . $IRODS_PORT;
+	my $processFile   = $tmpDir . "/irodsServer" . "." . $currentPort;
 
 	open( PIDFILE, "<$processFile" );
 	my $line;
