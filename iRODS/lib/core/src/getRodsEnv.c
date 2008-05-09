@@ -27,7 +27,7 @@
 #include "getRodsEnv.h"
 #include "rodsLog.h"
 
-#ifdef _WIN32
+#ifdef windows_platform
 #include "irodsntutil.h"
 #endif
 
@@ -82,12 +82,16 @@ convertLogLevel(char *inputStr) {
 }
 
 int getRodsEnv(rodsEnv *rodsEnvArg) {
-   char *getVar;
+   char *getVar = NULL;
    int status;
    int ppid;
    char ppidStr[BUF_LEN];
 
+#ifdef windows_platform
+   getVar = iRODSNt_gethome();
+#else
    getVar = getenv("HOME");
+#endif
    if (getVar==NULL) {
       rstrcpy(configFileName,"", LONG_NAME_LEN);
    }
@@ -114,6 +118,10 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
 
    /* Only client processes will do this, otherwise a lot of errors */
    if (ProcessType == CLIENT_PT) {
+#ifdef windows_platform    
+	   /* windows only allow one session per user. This is because there is no ppid.*/
+	   sprintf(configFileName, "%s.cwd", configFileName);
+#else
       if (irodsEnvFile==0) {
 	 /* For normal case, use the ppid as part of the session file name */
 	 ppid = getppid();
@@ -125,9 +133,15 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
             one.  This is useful when running scripts. */
 	 sprintf(ppidStr, ".%s", "cwd");
       }
+#endif
       rstrcat(configFileName, ppidStr, LONG_NAME_LEN);
       status = getRodsEnvFromFile(configFileName, rodsEnvArg, LOG_DEBUG);
    }
+
+#ifdef windows_platform
+   if(getVar != NULL)
+	   free(getVar);
+#endif
 
    return(0);
 }
@@ -153,7 +167,11 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
    Read and process the env file
 */
    envFileFound=0;
+#ifdef windows_platform
+   file = iRODSNt_fopen(fileName, "r");
+#else
    file = fopen(fileName, "r");
+#endif
    if (file != NULL) {
       envFileFound=1;
       buf[LARGE_BUF_LEN-1]='\0';

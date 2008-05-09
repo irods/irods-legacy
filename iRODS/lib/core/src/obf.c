@@ -98,25 +98,16 @@ obfSetDebug(int opt)
 int
 obfiGetFilename(char *fileName)
 {
-   char *envVar;
-#ifdef _WIN32
-   char tmptmp[MAXEXFPATH];
-#endif
+   char *envVar = NULL;
+
    envVar = getRodsEnvAuthFileName();
    if (envVar != NULL && *envVar!='\0') {
       strcpy(fileName,envVar);
       return(0);
    }
 
-#ifdef _WIN32
-   tmptmp[0] = '\0';
-   //irodsGetWindowsClientEnvDir(tmptmp,1);
-
-   if(strlen(tmptmp) > 0) {
-      envVar = tmptmp;
-   }
-   else
-      envVar = NULL;
+#ifdef windows_platform
+   envVar = iRODSNt_gethome();
 #else
    envVar =  getenv ("HOME");
 #endif
@@ -126,6 +117,12 @@ obfiGetFilename(char *fileName)
    strncpy(fileName, envVar, MAX_NAME_LEN);
    strncat(fileName, "/", MAX_NAME_LEN);
    strncat(fileName, AUTH_FILENAME_DEFAULT, MAX_NAME_LEN);
+
+#ifdef windows_platform
+   if(envVar != NULL)
+	   free(envVar);
+#endif
+
    return(0);
 }
 
