@@ -54,11 +54,16 @@ int cmlOpen( icatSessionStruct *icss) {
 
 int cmlClose( icatSessionStruct *icss) {
    int status, stat2;
+   static int pending=0;
+
+   if (pending==1) return(0); /* avoid hang if stuck doing this */
+   pending=1;
 
    status = cllDisconnect(icss);
 
    stat2 = cllCloseEnv(icss);
 
+   pending=0;
    if (status) {
       return(CAT_DISCONNECT_ERR);
    }
