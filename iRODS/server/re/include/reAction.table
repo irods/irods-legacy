@@ -82,7 +82,14 @@ int recover_msiCreateCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleE
 int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei);
 int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei);
 
-
+int msiRdaToStdout(msParam_t *inpRdaName, msParam_t *inpSQL, 
+	 msParam_t *inpParam1, msParam_t *inpParam2, 
+	 msParam_t *inpParam3, msParam_t *inpParam4, 
+	 ruleExecInfo_t *rei);
+int msiRdaToDataObj(msParam_t *inpRdaName, msParam_t *inpSQL, 
+	 msParam_t *inpParam1, msParam_t *inpParam2, 
+	 msParam_t *inpParam3, msParam_t *inpParam4, 
+	 msParam_t *inOutFd, ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
@@ -182,3 +189,5 @@ microsdef_t MicrosTable[] = {
   {"msiGetTaggedValueFromString",3,(funcPtr) msiGetTaggedValueFromString},
   {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
   {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
+  {"msiRdaToStdout",6,(funcPtr) msiRdaToStdout},
+  {"msiRdaToDataObj",7,(funcPtr) msiRdaToDataObj},
