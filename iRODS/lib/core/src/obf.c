@@ -342,7 +342,7 @@ obfiGetPw(char *fileName, char *pw)
    char buf1[500];
 
 #ifdef _WIN32
-   fd_in = iRODSNtFileOpen(fileName,O_RDONLY,1);
+   fd_in = iRODSNt_open(fileName,O_RDONLY,1);
 #else
    fd_in = open(fileName,O_RDONLY,0);
 #endif
@@ -374,7 +374,7 @@ obfiOpenOutFile(char *fileName, int fileOpt)
    int i, fd_out;
 
 #ifdef _WIN32
-   fd_out = iRODSNtFileOpen(fileName,O_CREAT|O_WRONLY|O_EXCL, 1);
+   fd_out = iRODSNt_open(fileName,O_CREAT|O_WRONLY|O_EXCL, 1);
 #else
    fd_out = open(fileName,O_CREAT|O_WRONLY|O_EXCL,0600);
 #endif
@@ -394,7 +394,7 @@ obfiOpenOutFile(char *fileName, int fileOpt)
      }
      if (inbuf[0]=='y') {
 #ifdef _WIN32
-       fd_out = iRODSNtFileOpen(fileName, O_CREAT|O_WRONLY|O_TRUNC, 1);
+       fd_out = iRODSNt_open(fileName, O_CREAT|O_WRONLY|O_TRUNC, 1);
 #else
        fd_out = open(fileName, O_CREAT|O_WRONLY|O_TRUNC, 0600);
 #endif
