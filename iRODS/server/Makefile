@@ -102,6 +102,8 @@ ifdef NEW_ODBC
 CFLAGS +=	-DNEW_ODBC
 endif
 
+# Add new RDA functions (either empty stubs or full functions)
+SVR_ICAT_OBJS += $(svrIcatObjDir)/rdaHighLevelRoutines.o
 
 ifdef PSQICAT
 # Support Postgres
@@ -155,6 +157,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/regExpMatch.o \
 		$(svrReObjDir)/ruleAdminMS.o \
 		$(svrReObjDir)/systemMS.o \
+		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/testMS.o
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
@@ -168,13 +171,15 @@ TEST_OBJS =	\
 		$(svrTestObjDir)/test_chl.o \
 		$(svrTestObjDir)/test_cll.o \
 		$(svrTestObjDir)/test_genq.o \
-		$(svrTestObjDir)/test_genu.o
+		$(svrTestObjDir)/test_genu.o \
+		$(svrTestObjDir)/test_rda.o
 
 TEST_BINS =	\
 		$(svrTestBinDir)/test_chl \
 		$(svrTestBinDir)/test_cll \
 		$(svrTestBinDir)/test_genq \
-		$(svrTestBinDir)/test_genu
+		$(svrTestBinDir)/test_genu \
+		$(svrTestBinDir)/test_rda
 endif
 
 # reTest only works on Solaris
@@ -415,7 +420,9 @@ $(svrTestBinDir)/test_genu: $(svrTestObjDir)/test_genu.o $(SVR_ICAT_OBJS) $(svrC
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $^ $(LDFLAGS)
 
-
+$(svrTestBinDir)/test_rda: $(svrTestObjDir)/test_rda.o $(SVR_ICAT_OBJS)
+	@echo "Link server test `basename $@`..."
+	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 
 
