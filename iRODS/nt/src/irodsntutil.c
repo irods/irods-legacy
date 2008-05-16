@@ -77,7 +77,7 @@ FILE *iRODSNt_fopen(const char *filename, const char *mode)
 	return fopen(ntfp,mode);
 }
 
-int iRODSNt_pen(const char *filename,int oflag, int istextfile)
+int iRODSNt_open(const char *filename,int oflag, int istextfile)
 {
 	int New_Oflag;
 	char ntfp[2048];
@@ -98,7 +98,7 @@ int iRODSNt_pen(const char *filename,int oflag, int istextfile)
 }
 
 /* open a file in binary mode. */
-int iRODSNt_bpen(const char *filename,int oflag)
+int iRODSNt_bopen(const char *filename,int oflag)
 {
 	int New_Oflag;
 	char ntfp[2048];
