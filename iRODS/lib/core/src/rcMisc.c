@@ -1075,17 +1075,29 @@ int get64RandomBytes(char *buf) {
     char buffer[65]; /* each digest is 16 bytes, 4 of them */
     int ints[30];
     int pid;
+#ifdef windows_platform
+	SYSTEMTIME tv;
+#else
     struct timeval tv;
+#endif
     static int count=12348;
     int i;
 
+#ifdef windows_platform
+    GetSystemTime(&tv);
+#else
     gettimeofday(&tv, 0);
+#endif
     pid = getpid();
     count++;
 
     ints[0]=12349994;
     ints[1]=count;
+#ifdef windows_platform
+	ints[2]= (int)tv.wSecond;
+#else
     ints[2]=tv.tv_usec;
+#endif
     MD5Init (&context);
     MD5Update (&context, (unsigned char*)&ints[0], 100);
     MD5Final ((unsigned char*)buffer, &context);
