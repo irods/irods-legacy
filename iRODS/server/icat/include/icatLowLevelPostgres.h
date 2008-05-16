@@ -30,11 +30,16 @@ extern int cllBindVarCount;
 extern char *cllBindVars[20];
 
 
-#define POSTGRES_DATABASE_NAME "PostgreSQL"
+/* The name in the various 'odbc.ini' files for the catalog: */
+#define CATALOG_ODBC_ENTRY_NAME "PostgreSQL"
+
+/* The name in the various 'odbc.ini' files for the RDA: */
+#define RDA_ODBC_ENTRY_NAME "iRODS_RDA"
 
 int cllOpenEnv(icatSessionStruct *icss);
 int cllCloseEnv(icatSessionStruct *icss);
 int cllConnect(icatSessionStruct *icss);
+int cllConnectRda(icatSessionStruct *icss);
 int cllDisconnect(icatSessionStruct *icss);
 int cllExecSqlNoResult(icatSessionStruct *icss, char *sql);
 int cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql, char *bindVar1,
