@@ -136,12 +136,68 @@ cllConnect(icatSessionStruct *icss) {
       return (-1);
    }
 
-   stat = SQLConnect(myHdbc, (unsigned char *)POSTGRES_DATABASE_NAME, SQL_NTS, 
+   stat = SQLConnect(myHdbc, (unsigned char *)CATALOG_ODBC_ENTRY_NAME, SQL_NTS,
 		     (unsigned char *)icss->databaseUsername, SQL_NTS, 
 		     (unsigned char *)icss->databasePassword, SQL_NTS);
    if (stat != SQL_SUCCESS) {
       rodsLog(LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat);
-      rodsLog(LOG_ERROR, "cllConnect: SQLConnect failed:db=%s,user=%s,pass=%s\n",POSTGRES_DATABASE_NAME,icss->databaseUsername,  icss->databasePassword);
+      rodsLog(LOG_ERROR, 
+          "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
+	  CATALOG_ODBC_ENTRY_NAME,icss->databaseUsername, 
+	  icss->databasePassword);
+      while (SQLError(icss->environPtr,myHdbc , 0, sqlstate, &sqlcode, buffer,
+                    SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
+        rodsLog(LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate);
+        rodsLog(LOG_ERROR, "cllConnect:  Native Error Code: %ld\n", sqlcode);
+        rodsLog(LOG_ERROR, "cllConnect: %s \n", buffer);
+    }
+
+      stat2 = SQLDisconnect(myHdbc);
+      stat2 = SQLFreeConnect(myHdbc);
+      return (-1);
+   }
+
+   icss->connectPtr=myHdbc;
+   return(0);
+}
+
+/*
+ Connect to the DBMS for Rda access.
+ */
+int 
+cllConnectRda(icatSessionStruct *icss) {
+   RETCODE stat;
+   RETCODE stat2;
+
+   SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
+   SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
+   SQLINTEGER      sqlcode;
+   SQLSMALLINT     length;
+
+   HDBC myHdbc;
+
+   stat = SQLAllocConnect(icss->environPtr,
+			  &myHdbc);
+   if (stat != SQL_SUCCESS) {
+      rodsLog(LOG_ERROR, "cllConnect: SQLAllocConnect failed: %d, stat");
+      return (-1);
+   }
+
+   stat = SQLSetConnectOption(myHdbc,
+			      SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
+   if (stat != SQL_SUCCESS) {
+      rodsLog(LOG_ERROR, "cllConnect: SQLSetConnectOption failed: %d", stat);
+      return (-1);
+   }
+
+   stat = SQLConnect(myHdbc, (unsigned char *)RDA_ODBC_ENTRY_NAME, SQL_NTS, 
+		     (unsigned char *)icss->databaseUsername, SQL_NTS, 
+		     (unsigned char *)icss->databasePassword, SQL_NTS);
+   if (stat != SQL_SUCCESS) {
+      rodsLog(LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat);
+      rodsLog(LOG_ERROR, 
+         "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
+         RDA_ODBC_ENTRY_NAME,icss->databaseUsername,  icss->databasePassword);
       while (SQLError(icss->environPtr,myHdbc , 0, sqlstate, &sqlcode, buffer,
                     SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
         rodsLog(LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate);
