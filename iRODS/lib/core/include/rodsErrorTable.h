@@ -166,7 +166,7 @@
 #define UNIX_FILE_RENAME_ERR		-528000 
 #define UNIX_FILE_TRUNCATE_ERR		-529000 
 
-/* 800,000 to 900,000 - Catalog library errors  */
+/* 800,000 to 880,000 - Catalog library errors  */
 #define CATALOG_NOT_CONNECTED           -801000
 #define CAT_ENV_ERR                     -802000
 #define CAT_CONNECT_ERR                 -803000
@@ -207,6 +207,18 @@
 #define CAT_LAST_REPLICA                 -838000
 #define CAT_OCI_ERROR                    -839000
 #define CAT_PASSWORD_EXPIRED             -840000
+
+/* 880,000 to 900,000  RDA errors  */
+#define RDA_NOT_COMPILED_IN             -880000
+#define RDA_NOT_CONNECTED               -881000
+#define RDA_ENV_ERR                     -882000
+#define RDA_CONNECT_ERR                 -883000
+#define RDA_DISCONNECT_ERR              -884000
+#define RDA_CLOSE_ENV_ERR               -885000
+#define RDA_SQL_ERR                     -886000
+#define RDA_CONFIG_FILE_ERR             -887000
+#define RDA_ACCESS_PROHIBITED           -888000
+#define RDA_NAME_NOT_FOUND              -889000
 
 /* 900,000 to 920,000 - Misc errors (used by obf library)  */
 #define FILE_OPEN_ERR                    -900000
