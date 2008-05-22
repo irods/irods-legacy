@@ -44,6 +44,7 @@ remoteFileClose (rsComm_t *rsComm, fileCloseInp_t *fileCloseInp,
 rodsServerHost_t *rodsServerHost)
 {    
     int status;
+    fileCloseInp_t remFileCloseInp;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_NOTICE,
@@ -55,14 +56,14 @@ rodsServerHost_t *rodsServerHost)
         return status;
     }
 
-
-    fileCloseInp->fileInx = convL3descInx (fileCloseInp->fileInx);
-    status = rcFileClose (rodsServerHost->conn, fileCloseInp);
+    memset (&remFileCloseInp, 0, sizeof (remFileCloseInp));
+    remFileCloseInp.fileInx = convL3descInx (fileCloseInp->fileInx);
+    status = rcFileClose (rodsServerHost->conn, &remFileCloseInp);
 
     if (status < 0) { 
         rodsLog (LOG_NOTICE,
          "remoteFileClose: rcFileClose failed for %d, status = %d",
-          fileCloseInp->fileInx, status);
+          remFileCloseInp.fileInx, status);
     }
 
     return status;
