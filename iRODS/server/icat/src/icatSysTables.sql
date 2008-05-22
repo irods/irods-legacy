@@ -191,7 +191,7 @@ create table R_RULE_MAIN
 create table R_RULE_EXEC
  (
    rule_exec_id        bigint not null,
-   rule_name           varchar(250) not null,
+   rule_name           varchar(2700) not null,
    rei_file_path       varchar(2700),
    user_name           varchar(250),
    exe_address         varchar(250),
