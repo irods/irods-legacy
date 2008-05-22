@@ -196,7 +196,12 @@ initLocalServerHost (rsComm_t *rsComm)
 
     status = queAddr (ServerHostHead, myHostName);
     if (status < 0) {
-        return (status);
+	/* some configuration may not be able to resolve myHostName. So don't
+	 * exit. Just print out warning */ 
+        rodsLog (LOG_NOTICE,
+          "initLocalServerHost: queAddr error, status = %d",
+          status);
+	status = 0;
     }
 
     if (myEnv != NULL) {
