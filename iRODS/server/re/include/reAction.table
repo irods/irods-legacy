@@ -79,6 +79,33 @@ int recover_print_hello(ruleExecInfo_t *c);
 int recover_msiCreateUser(ruleExecInfo_t *rei);
 int recover_msiCreateCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_t *rei);
 
+int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei);
+int msiXmsgCreateStream(msParam_t* inConnParam, 
+			msParam_t* inGgetXmsgTicketInpParam, 
+			msParam_t* outXmsgTicketInfoParam, 
+			ruleExecInfo_t *rei);
+int msiCreateXmsgInp(msParam_t* inMsgNumber,
+		  msParam_t* inMsgType,
+		  msParam_t* inNumberOfReceivers,
+		  msParam_t* inMsg,
+		  msParam_t* inNumberOfDeliverySites,
+		  msParam_t* inDeliveryAddressList,
+		  msParam_t* inDeliveryPortList,
+		  msParam_t* inMiscInfo,
+		  msParam_t* inXmsgTicketInfoParam,
+		  msParam_t* outSendXmsgInfoParam,
+		ruleExecInfo_t *rei);
+int msiSendXmsg(msParam_t* inConnParam, 
+		msParam_t* inSendXmsgInpParam,
+		ruleExecInfo_t *rei);
+int msiRcvXmsg(msParam_t* inConnParam, 
+	       msParam_t* inTicketNumber,
+	       msParam_t* inMsgNumber,
+	       msParam_t* outMsgType,
+	       msParam_t* outMsg,
+	       msParam_t* outSendUser,
+	       ruleExecInfo_t *rei);
+int msiXmsgServerDisConnect(msParam_t* inConnParam, ruleExecInfo_t *rei);
 int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei);
 int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei);
 
@@ -187,6 +214,14 @@ microsdef_t MicrosTable[] = {
   {"msiCheckHostAccessControl",0,(funcPtr) msiCheckHostAccessControl},
   {"msiGetIcatTime",2,(funcPtr) msiGetIcatTime},
   {"msiGetTaggedValueFromString",3,(funcPtr) msiGetTaggedValueFromString},
+  {"msiXmsgServerConnect",1,(funcPtr) msiXmsgServerConnect},
+  {"msiXmsgCreateStream",3,(funcPtr) msiXmsgCreateStream},
+  {"msiCreateXmsgInp",10,(funcPtr) msiCreateXmsgInp},
+  {"msiSendXmsg",2,(funcPtr) msiSendXmsg},
+  {"msiRcvXmsg",6,(funcPtr) msiRcvXmsg},
+  {"msiXmsgServerDisConnect",1,(funcPtr) msiXmsgServerDisConnect},
+  {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
+  {"msiStrArray2String",2,(funcPtr) msiStrArray2String},=======
   {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
   {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
   {"msiRdaToStdout",6,(funcPtr) msiRdaToStdout},
