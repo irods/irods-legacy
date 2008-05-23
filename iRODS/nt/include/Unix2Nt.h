@@ -62,9 +62,7 @@ the conditional can fail properly.*/
 #define getpid _getpid
 */
 
-#ifdef  __cplusplus
-extern "C" {
-#endif
+
 
 typedef unsigned short mode_t;
 typedef long ssize_t;
@@ -133,8 +131,19 @@ typedef struct _srb_w_flock_ {
           long      pad[4];         /* reserve area */
 } flock_t;
 
+struct timezone 
+{
+  int  tz_minuteswest; 
+  int  tz_dsttime;  
+};
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+/*
 int gettimeofday(struct timeval *tp, void* timezone);
+*/
+int gettimeofday(struct timeval *tv, struct timezone *tz);
 
 #ifdef  __cplusplus
 }
