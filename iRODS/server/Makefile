@@ -157,6 +157,7 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/regExpMatch.o \
 		$(svrReObjDir)/ruleAdminMS.o \
 		$(svrReObjDir)/systemMS.o \
+		$(svrReObjDir)/xmsgMS.o \
 		$(svrReObjDir)/reRDA.o \
 		$(svrReObjDir)/testMS.o
 INCLUDES +=	-I$(svrReIncDir)
