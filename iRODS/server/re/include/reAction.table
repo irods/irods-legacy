@@ -221,7 +221,7 @@ microsdef_t MicrosTable[] = {
   {"msiRcvXmsg",6,(funcPtr) msiRcvXmsg},
   {"msiXmsgServerDisConnect",1,(funcPtr) msiXmsgServerDisConnect},
   {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
-  {"msiStrArray2String",2,(funcPtr) msiStrArray2String},=======
+  {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
   {"msiString2KeyValPair",2,(funcPtr) msiString2KeyValPair},
   {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
   {"msiRdaToStdout",6,(funcPtr) msiRdaToStdout},
