@@ -444,10 +444,10 @@ rodsLong_t dataSize)
     rodsLong_t totalWritten = 0;
 
     if (strcmp (locFilePath, STDOUT_FILE_NAME) == 0) {
-        out_fd = open (locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
-    } else {
 	/* streaming to stdout */
         out_fd =1;
+    } else {
+        out_fd = open (locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
     }
  
     if (out_fd < 0) { /* error */
