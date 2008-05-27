@@ -9,6 +9,7 @@
 #include "irodsFs.h"
 #include "iFuseOper.h"
 #include "iFuseLib.h"
+#include "miscUtil.h"
 
 extern iFuseConn_t DefConn;
 extern rodsEnv MyRodsEnv;
@@ -60,6 +61,7 @@ irodsGetattr (const char *path, struct stat *stbuf)
         stbuf->st_atime = atoi (rodsObjStatOut->modifyTime);
     }
 
+    freeRodsObjStat (rodsObjStatOut);
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
 
@@ -78,6 +80,10 @@ irodsReaddir (const char *path, void *buf, fuse_fill_dir_t filler,
 off_t offset, struct fuse_file_info *fi)
 {
     char collPath[MAX_NAME_LEN];
+    collHandle_t collHandle;
+    collEnt_t collEnt;
+    int status;
+#if 0
     rodsArguments_t rodsArgs;
     genQueryInp_t genQueryInp;
     genQueryOut_t *genQueryOut = NULL;
@@ -85,6 +91,7 @@ off_t offset, struct fuse_file_info *fi)
     char *dataName, *collName;
     sqlResult_t *tmpResult;
     int len;
+#endif
 
     rodsLog (LOG_DEBUG, "irodsReaddir: ");
 
@@ -99,6 +106,31 @@ off_t offset, struct fuse_file_info *fi)
         return -ENOTDIR;
     }
 
+    getIFuseConn (&DefConn, &MyRodsEnv);
+    status = rclOpenCollection (DefConn.conn, collPath, 0, &collHandle);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          collPath, status);
+        return status;
+    }
+    while ((status = rclReadCollection (DefConn.conn, &collHandle, &collEnt)) 
+      >= 0) {
+	char myDir[MAX_NAME_LEN], mySubDir[MAX_NAME_LEN];
+
+        if (collEnt.objType == DATA_OBJ_T) {
+	    filler (buf, collEnt.dataName, NULL, 0);
+        } else if (collEnt.objType == COLL_OBJ_T) {
+	    splitPathByKey (collEnt.collName, myDir, mySubDir, '/');
+	    filler (buf, mySubDir, NULL, 0);
+        }
+    }
+    rclCloseCollection (&collHandle);
+    relIFuseConn (&DefConn);
+
+    return (0);
+#if 0
     memset (&rodsArgs, 0, sizeof (rodsArgs));
 
     status = queryDataObjInColl (DefConn.conn, collPath, &rodsArgs, &genQueryInp,
@@ -184,6 +216,7 @@ off_t offset, struct fuse_file_info *fi)
     }
 
     return (0);
+#endif
 }
 
 int 
