@@ -1,16 +1,13 @@
-#!/bin/sh
+#!/bin/sh 
 
-# usage: sh commandsuite.sh [m] [num]    
-# m=mute
-# num=number of times to run
-# this is messy let's get rid of this for now and just run some tests
+# SDL determine usage()
+# right now only verboseflag can be set by user
+# right now hardcoded to 1
 
-echo "SDL Starting iRODS test suite"
+echo "SDL Starting iRODS concurrent test suite"
 
 ## SDL we need to check and see if iRODS is even running
 
-
-# These are the three sub test scripts this script runs
 
 numoferrors=1 
 verboseFlag=1
@@ -19,13 +16,15 @@ TMP_DIR=TMP
 # where is $OS set?
 OS=Darwin
 
-echo "$OS = " $OS
+testid=concurrenttest-`date "+%Y%m%d%H%M%S"`
 
+# These are the three sub test scripts this script runs
 #testscripts="putget.sh test2.sh test3.sh"
-testscripts="putget.sh"
+testscripts="subtest1"
 
-# SDL test for pre-existence of this directory
+if [ ! -d $TMP_DIR ]; then
 mkdir $TMP_DIR
+fi
 
 for testscript in $testscripts ; do
 
@@ -33,28 +32,27 @@ for testscript in $testscripts ; do
   		echo "Starting $testscript..."
 	fi
 
-	testid=$testscript-`date "+%Y%m%d%H%M%S"`
-	echo testid = $testid
+	subtestid=$testid-$testscript
 
-	sh -ex $testscript $testid 2>&1 | tee $TMP_DIR/$testscript.$testid.irods
-	cp $TMP_DIR/$testscript.$testid.irods $TMP_DIR/$testscript.log
+	# Run the subtest
+	sh -ex $testscript $subtestid > $TMP_DIR/$subtestid.irods 2>&1
+	# sh -ex $testscript $subtestid 2>&1 | tee $TMP_DIR/$subtestid.irods
+	cp $TMP_DIR/$subtestid.irods $TMP_DIR/$subtestid.log
+	cp $TMP_DIR/$subtestid.log $subtestid.result.out
 
-	# Make new comparison file
-	cp $TMP_DIR/$testscript.log $testscript.result.out
-	sh -ex $testscript.sh $testid > $TMP_DIR/$testscript.$testid.irods 2>&1
-	cp $TMP_DIR/$testscript.$testid.irods $TMP_DIR/$testscript.log
+	# forget about mydiff for now - let's just get the skeleton working
+	# SDL what the heck is going on here?
 
 	# compare results
+	#echo "Starting mydiff $testscript.result.out $TMP_DIR/$testid.irods"
+	wc $subtestid.result.out $TMP_DIR/$subtestid.irods
+	./mydiff $subtestid.result.out $TMP_DIR/$subtestid.irods 
 
-	echo "Starting mydiff $testscript.result.out $TMP_DIR/$testscript.$testid.irods"
-
-	wc $testscript.result.out $TMP_DIR/$testscript.$testid.irods
-	./mydiff $testscript.result.out $TMP_DIR/$testscript.$testid.irods $numoferrors
 
 done
 
 
-# now clean up locally
+# SDL now clean up locally
 
 exit 0
 
