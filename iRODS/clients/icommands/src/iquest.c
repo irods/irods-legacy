@@ -32,6 +32,9 @@ usage () {
 " iquest \" %-5.5s access has been given to user %-6.6s for the file %s\" \"SELECT DATA_ACCESS_NAME, USER_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \"SELECT RESC_NAME, RESC_LOC, RESC_VAULT_PATH, DATA_PATH WHERE DATA_NAME = 't2' AND COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \"User %-9.9s uses %14.14s bytes in %8.8s files in '%s'\" \"SELECT USER_NAME, sum(DATA_SIZE),count(DATA_NAME),RESC_NAME\"",
+" iquest \"select sum(DATA_SIZE) where COLL_NAME = '/tempZone/home/rods'\"",
+" iquest \"select sum(DATA_SIZE) where COLL_NAME like '/tempZone/home/rods%'\"",
+" iquest \"select sum(DATA_SIZE), RESC_NAME where COLL_NAME like '/tempZone/home/rods%'\"",
 ""};
    int i;
    for (i=0;;i++) {
