@@ -64,25 +64,7 @@ main(int argc, char **argv)
 	}
     }
 
-#ifdef RODS_CAT
-    if (getenv ("reServerOnIes") != NULL) {
-#else
-    if (getenv ("reServerOnThisServer") != NULL) {
-#endif
-
-        if (RODS_FORK () == 0) {  /* child */
-            char *reServerOption = NULL;
-            char *av[NAME_LEN];
-
-            memset (av, 0, sizeof (av));
-            reServerOption = getenv ("reServerOption");
-            setExecArg (reServerOption, av);
-	    rodsLog(LOG_NOTICE, "Starting irodsReServer");
-            av[0] = "irodsReServer";
-            execv(av[0], av);
-            exit(1);
-        }
-    }
+    /* start of irodsReServer has been moved to serverMain */
 
     signal(SIGTTIN, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
@@ -203,6 +185,27 @@ serverMain (char *logDir)
 
     /* Record port, pid, and cwd into a well-known file */
     recordServerProcess(&svrComm);
+
+    /* start the irodsReServer */
+#ifdef RODS_CAT
+    if (getenv ("reServerOnIes") != NULL) {
+#else
+    if (getenv ("reServerOnThisServer") != NULL) {
+#endif
+
+        if (RODS_FORK () == 0) {  /* child */
+            char *reServerOption = NULL;
+            char *av[NAME_LEN];
+
+            memset (av, 0, sizeof (av));
+            reServerOption = getenv ("reServerOption");
+            setExecArg (reServerOption, av);
+            rodsLog(LOG_NOTICE, "Starting irodsReServer");
+            av[0] = "irodsReServer";
+            execv(av[0], av);
+            exit(1);
+        }
+    }
 
     while (1) {		/* infinite loop */
         FD_SET(svrComm.sock, &sockMask);
