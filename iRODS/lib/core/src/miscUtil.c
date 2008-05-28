@@ -698,88 +698,6 @@ int rowCnt)
 }
 
 int
-getNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp, 
-genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult, 
-int *rowInx, collMetaInfo_t *outCollMetaInfo)
-{
-    char *value;
-    int len;
-    char *collType, *collInfo1, *collInfo2;
-    int status = 0;
-
-    if (collSqlResult == NULL || outCollMetaInfo == NULL)
-        return (USER__NULL_INPUT_ERR);
-
-    if (*rowInx >= collSqlResult->rowCnt) {
-	genQueryOut_t *genQueryOut = NULL;
-	int continueInx = collSqlResult->continueInx;
-	clearCollSqlResult (collSqlResult);
- 
-        if (continueInx > 0) {
-            /* More to come */
-
-            if (dataObjInp->specColl != NULL) {
-                dataObjInp->openFlags = continueInx;
-                status = rcQuerySpecColl (conn, dataObjInp, &genQueryOut);
-            } else {
-                genQueryInp->continueInx = continueInx;
-                status =  rcGenQuery (conn, genQueryInp, &genQueryOut);
-            }
-	    if (status < 0) {
-		return (status);
-	    } else {
-		status = genQueryOutToCollRes (&genQueryOut, collSqlResult);
-		*rowInx = 0;
-		free (genQueryOut);
-	    }
-	} else {
-	    return (CAT_NO_ROWS_FOUND);
-	}
-    }
-    value = collSqlResult->collName.value;
-    len = collSqlResult->collName.len;
-    outCollMetaInfo->collName = &value[len * (*rowInx)];
-
-    value = collSqlResult->collOwner.value;
-    len = collSqlResult->collOwner.len;
-    outCollMetaInfo->collOwner = &value[len * (*rowInx)];
-
-    value = collSqlResult->collType.value;
-    len = collSqlResult->collType.len;
-    collType = &value[len * (*rowInx)];
-
-    if (*collType != '\0') {
-        value = collSqlResult->collInfo1.value;
-        len = collSqlResult->collInfo1.len;
-        collInfo1 = &value[len * (*rowInx)];
-
-        value = collSqlResult->collInfo2.value;
-        len = collSqlResult->collInfo2.len;
-        collInfo2 = &value[len * (*rowInx)];
-
-	if (strcmp (collType, INHERIT_PAR_SPEC_COLL_STR) == 0) { 
-	    if (dataObjInp->specColl == NULL) {
-		rodsLog (LOG_ERROR,
-		  "getNextCollMetaInfo: parent specColl is NULL for %s",
-		  outCollMetaInfo->collName);
-		outCollMetaInfo->specColl.collClass = NO_SPEC_COLL;
-	    } else {
-		outCollMetaInfo->specColl = *dataObjInp->specColl;
-	    }
-            status = 0;
-	} else {
-	    status = resolveSpecCollType (collType, outCollMetaInfo->collName,
-              collInfo1, collInfo2, &outCollMetaInfo->specColl);
-	}
-    } else {
-	outCollMetaInfo->specColl.collClass = NO_SPEC_COLL;
-	status = 0;
-    }
-    (*rowInx) ++;
-    return (status);
-}
-
-int
 clearCollSqlResult (collSqlResult_t *collSqlResult)
 {
     if (collSqlResult == NULL) return (USER__NULL_INPUT_ERR);
@@ -954,115 +872,6 @@ dataObjSqlResult_t *dataObjSqlResult)
 }
 
 int
-getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
-genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
-int *rowInx, dataObjMetaInfo_t *outDataObjMetaInfo)
-{
-    int status;
-    char *value;
-    int len;
-    int nextInx;
-    char *replStatus, *dataId;
-    int dataIdLen, replStatusLen;
-
-    if (dataObjSqlResult == NULL || outDataObjMetaInfo == NULL)
-        return (USER__NULL_INPUT_ERR);
-
-    if (*rowInx >= dataObjSqlResult->rowCnt) {
-        genQueryOut_t *genQueryOut = NULL;
-        int continueInx = dataObjSqlResult->continueInx;
-        clearDataObjSqlResult (dataObjSqlResult);
-
-        if (continueInx > 0) {
-            /* More to come */
-
-            if (dataObjInp->specColl != NULL) {
-                dataObjInp->openFlags = continueInx;
-                status = rcQuerySpecColl (conn, dataObjInp, &genQueryOut);
-            } else {
-                genQueryInp->continueInx = continueInx;
-                status =  rcGenQuery (conn, genQueryInp, &genQueryOut);
-            }
-            if (status < 0) {
-                return (status);
-            } else {
-                status = genQueryOutToDataObjRes (&genQueryOut, 
-		  dataObjSqlResult);
-                *rowInx = 0;
-                free (genQueryOut);
-            }
-        } else {
-            return (CAT_NO_ROWS_FOUND);
-        }
-    }
-
-    dataId = dataObjSqlResult->dataId.value;
-    dataIdLen = dataObjSqlResult->dataId.len;
-    replStatus = dataObjSqlResult->replStatus.value;
-    replStatusLen = dataObjSqlResult->replStatus.len;
-
-    if (strlen (dataId) > 0) {
-        int i;
-        char *prevdataId = NULL;
-        int gotCopy = 0;
-
-	/* rsync type query ask for dataId. Others don't. Need to 
-	 * screen out dup copies */
-
-        for (i = *rowInx; i < dataObjSqlResult->rowCnt; i++) {
-            if (prevdataId != NULL) {
-                if (strcmp (prevdataId, &dataId[dataIdLen * i]) != 0) {
-                    break;
-                }
-            } else {
-                prevdataId = &dataId[dataIdLen * i];
-		*rowInx = i;
-            }
-
-            if (gotCopy == 0 &&
-              atoi (&replStatus[replStatusLen * i]) > 0) {
-	        *rowInx = i;
-                gotCopy = 1;
-            }
-        }
-	nextInx = i;
-    } else {
-	nextInx = (*rowInx) + 1;
-    }
-
-    value = dataObjSqlResult->collName.value;
-    len = dataObjSqlResult->collName.len;
-    outDataObjMetaInfo->collName = &value[len * (*rowInx)];
-
-    value = dataObjSqlResult->dataName.value;
-    len = dataObjSqlResult->dataName.len;
-    outDataObjMetaInfo->dataName = &value[len * (*rowInx)];
-
-    value = dataObjSqlResult->dataSize.value;
-    len = dataObjSqlResult->dataSize.len;
-    outDataObjMetaInfo->dataSize = &value[len * (*rowInx)];
-
-    value = dataObjSqlResult->createTime.value;
-    len = dataObjSqlResult->createTime.len;
-    outDataObjMetaInfo->createTime = &value[len * (*rowInx)];
-
-    value = dataObjSqlResult->modifyTime.value;
-    len = dataObjSqlResult->modifyTime.len;
-    outDataObjMetaInfo->modifyTime = &value[len * (*rowInx)];
-
-    outDataObjMetaInfo->dataId = &dataId[dataIdLen * (*rowInx)];
-
-    outDataObjMetaInfo->replStatus = &replStatus[replStatusLen * (*rowInx)];
-
-    value = dataObjSqlResult->chksum.value;
-    len = dataObjSqlResult->chksum.len;
-    outDataObjMetaInfo->chksum = &value[len * (*rowInx)];
-
-    (*rowInx) = nextInx;
-    return (0);
-}
-
-int
 rclOpenCollection (rcComm_t *conn, char *collection, int flag,
 collHandle_t *collHandle)
 {
@@ -1103,10 +912,12 @@ rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,
 collEnt_t *collEnt)
 {
     int status = 0;
-    genQueryOut_t *genQueryOut = NULL;
     collMetaInfo_t collMetaInfo;
     dataObjMetaInfo_t dataObjMetaInfo;
+#if 0
+    genQueryOut_t *genQueryOut = NULL;
     rodsArguments_t rodsArgs;
+#endif
 
     if (conn == NULL || collHandle == NULL || collEnt == NULL) {
         rodsLog (LOG_ERROR,
@@ -1116,6 +927,7 @@ collEnt_t *collEnt)
 
     memset (collEnt, 0, sizeof (collEnt_t));
 
+#if 0
     if ((collHandle->flag & VERY_LONG_METADATA_FG) != 0) {
         rodsArgs.longOption = True;
         rodsArgs.veryLongOption = True;
@@ -1124,6 +936,7 @@ collEnt_t *collEnt)
     } else {
         rodsArgs.longOption = False;
     }
+#endif
 
     if (collHandle->state == COLL_CLOSED) return (CAT_NO_ROWS_FOUND);
 
@@ -1135,7 +948,7 @@ collEnt_t *collEnt)
 
         if (collHandle->state == COLL_COLL_OBJ_QUERIED) {
             memset (&collMetaInfo, 0, sizeof (collMetaInfo));
-            status = newGetNextCollMetaInfo (conn, &collHandle->dataObjInp,
+            status = getNextCollMetaInfo (conn, &collHandle->dataObjInp,
               &collHandle->genQueryInp, &collHandle->collSqlResult,
               &collHandle->rowInx, collEnt);
             if (status >= 0) {
@@ -1154,7 +967,7 @@ collEnt_t *collEnt)
         }
         if (collHandle->state == COLL_DATA_OBJ_QUERIED) {
             memset (&dataObjMetaInfo, 0, sizeof (dataObjMetaInfo));
-            status = newGetNextDataObjMetaInfo (conn, &collHandle->dataObjInp,
+            status = getNextDataObjMetaInfo (conn, &collHandle->dataObjInp,
               &collHandle->genQueryInp, &collHandle->dataObjSqlResult,
               &collHandle->rowInx, collEnt);
 
@@ -1182,7 +995,7 @@ collEnt_t *collEnt)
 
         if (collHandle->state == COLL_DATA_OBJ_QUERIED) {
             memset (&dataObjMetaInfo, 0, sizeof (dataObjMetaInfo));
-            status = newGetNextDataObjMetaInfo (conn, &collHandle->dataObjInp,
+            status = getNextDataObjMetaInfo (conn, &collHandle->dataObjInp,
               &collHandle->genQueryInp, &collHandle->dataObjSqlResult,
               &collHandle->rowInx, collEnt);
 
@@ -1205,7 +1018,7 @@ collEnt_t *collEnt)
 
         if (collHandle->state == COLL_COLL_OBJ_QUERIED) {
             memset (&collMetaInfo, 0, sizeof (collMetaInfo));
-            status = newGetNextCollMetaInfo (conn, &collHandle->dataObjInp,
+            status = getNextCollMetaInfo (conn, &collHandle->dataObjInp,
               &collHandle->genQueryInp, &collHandle->collSqlResult,
               &collHandle->rowInx, collEnt);
 	    if (status < 0) {
@@ -1234,6 +1047,15 @@ genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
     rodsArguments_t rodsArgs;
+
+    if ((collHandle->flag & VERY_LONG_METADATA_FG) != 0) {
+        rodsArgs.longOption = True;
+        rodsArgs.veryLongOption = True;
+    } else if ((collHandle->flag & LONG_METADATA_FG) != 0) {
+        rodsArgs.longOption = True;
+    } else {
+        rodsArgs.longOption = False;
+    }
 
     /* query for sub-collections */
     if (collHandle->dataObjInp.specColl != NULL) {
@@ -1274,6 +1096,15 @@ genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
     rodsArguments_t rodsArgs;
+
+    if ((collHandle->flag & VERY_LONG_METADATA_FG) != 0) {
+        rodsArgs.longOption = True;
+        rodsArgs.veryLongOption = True;
+    } else if ((collHandle->flag & LONG_METADATA_FG) != 0) {
+        rodsArgs.longOption = True;
+    } else {
+        rodsArgs.longOption = False;
+    }
 
     if (collHandle->dataObjInp.specColl != NULL) {
         /* query */
@@ -1336,7 +1167,7 @@ clearCollHandle (collHandle_t *collHandle)
 }
 
 int
-newGetNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
 int *rowInx, collEnt_t *outCollEnt)
 {
@@ -1421,7 +1252,7 @@ int *rowInx, collEnt_t *outCollEnt)
 }
 
 int
-newGetNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
 int *rowInx, collEnt_t *outCollEnt)
 {

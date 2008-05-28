@@ -156,20 +156,12 @@ int
 setSqlResultValue (sqlResult_t *sqlResult, int attriInx, char *valueStr,
 int rowCnt);
 int
-getNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
-genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
-int *rowInx, collMetaInfo_t *outCollMetaInfo);
-int
 clearCollSqlResult (collSqlResult_t *collSqlResult);
 int
 clearDataObjSqlResult (dataObjSqlResult_t *dataObjSqlResult);
 int
 genQueryOutToDataObjRes (genQueryOut_t **genQueryOut,
 dataObjSqlResult_t *dataObjSqlResult);
-int
-getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
-genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
-int *rowInx, dataObjMetaInfo_t *outDataObjMetaInfo);
 int
 rclOpenCollection (rcComm_t *conn, char *collection, 
 int flag, collHandle_t *collHandle);
@@ -181,11 +173,11 @@ clearCollHandle (collHandle_t *collHandle);
 int
 rclCloseCollection (collHandle_t *collHandle);
 int
-newGetNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
 int *rowInx, collEnt_t *outCollEnt);
 int
-newGetNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
 int *rowInx, collEnt_t *outCollEnt);
 int
