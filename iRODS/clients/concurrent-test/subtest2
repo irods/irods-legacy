@@ -12,11 +12,12 @@
 #  More modifications to irods: Susan Lindsey
 #####################################################################################
 
-storeset=`cat ResourcesToTest`
 
 
-DATA_FILES="data_1 data_2 data_3 data_4 datadb1.xml dataempty"
-TMP_DIR=../TMP
+#DATA_FILES="data_1 data_2 data_3 data_4 datadb1.xml dataempty"
+DATA_FILES="data_1"
+TMP_DIR=TMP
+resourceset=`cat ResourcesToTest`
 
 #####################################################################################
 #  Make unique names for directories using current date and time
@@ -27,9 +28,7 @@ then testid=`date "+%Y%m%d%H%M%S"`
 else testid=$1
 fi
 
-testdate=`date "+%Y-%m-%d"`
 echo "TESTID = $testid"
-echo "TESTDATE = $testdate"
 
 #####################################################################################
 #  Initialize srb client environment, and get User information
@@ -37,13 +36,10 @@ echo "TESTDATE = $testdate"
 $binDir/Sinit -v
 $binDir/SgetU -d -Y 0
 
-#####################################################################################
-#  Make new test directory in srb space
-#####################################################################################
-
+#  Make new test directory in irods space
 $binDir/imkdir Itest2Dir$testid
 $binDir/icd Itest2Dir$testid
-for store1 in $storeset ; do
+for thisresc in $resourceset ; do
   $binDir/imkdir Isub1
   $binDir/ils -lr
   $binDir/icd Isub1
@@ -52,10 +48,10 @@ for store1 in $storeset ; do
 #  Put local data files into newly created container in srb space.
 #####################################################################################
 
-  $binDir/Smkcont -S $store1 Container$testid
+  $binDir/Smkcont -S $thisresc Container$testid
 
   for file in $DATA_FILES ; do
-      $binDir/Sput -c Container$testid -S $store1 $file "$file&COPIES=all" 
+      $binDir/Sput -c Container$testid -S $thisresc $file "$file&COPIES=all" 
   done
 
   $binDir/Scd ..
@@ -103,8 +99,8 @@ for store1 in $storeset ; do
 #  compare with local copies of same data.
 #####################################################################################
 
-  for store in $storeset ; do
-    $binDir/Smkcont -S $store1 Container$testid.$store
+  for store in $resourceset ; do
+    $binDir/Smkcont -S $thisresc Container$testid.$store
 
     for file in $DATA_FILES ; do
        $binDir/icp -c Container$testid.$store -S $store I_sub2/$file I_sub1/$file.$store
