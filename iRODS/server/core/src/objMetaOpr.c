@@ -2494,6 +2494,7 @@ dataObjInfo_t **dataObjInfo)
             if (status2 == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
               dataObjInfo != NULL) {
                 freeDataObjInfo (*dataObjInfo);
+		*dataObjInfo = NULL;
             }
         }
 	if (status2==CAT_NO_ROWS_FOUND) return(status);

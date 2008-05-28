@@ -55,16 +55,13 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
         if (dataObjInp->openFlags & O_CREAT && writeFlag > 0) {
             l1descInx = rsDataObjCreate (rsComm, dataObjInp);
             return (l1descInx);
-        }
+        } else {
+	    return (status);
+	}
     } else {
         /* screen out any stale copies */
         sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp->condInput,
          writeFlag);
-
-
-        if (status < 0) {
-            return (status);
-        }
 
         initReiWithDataObjInp (&rei, rsComm, dataObjInp);
 	rei.doi = dataObjInfoHead;
