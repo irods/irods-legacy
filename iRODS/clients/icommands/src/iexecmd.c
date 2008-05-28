@@ -35,7 +35,7 @@ main(int argc, char **argv) {
 
     nArg = argc - optind;
 
-    if (nArg <= 0 && nArg > 1) {
+    if (nArg <= 0 || nArg > 1) {
         rodsLog (LOG_ERROR, "iexecmd: no input or too many input");
         printf("Use -h for help.\n");
         exit (2);
