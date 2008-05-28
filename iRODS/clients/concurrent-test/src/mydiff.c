@@ -53,9 +53,9 @@ getPhyResources(char *fname, int ii)
   char sysString[500];
   FILE *fd;
 
-  sprintf(sysString,"grep 'phy_rsrc_name: ' %s  | sort -ur -o ../TMP/test1.sort.%d",fname, getpid());
+  sprintf(sysString,"grep 'phy_rsrc_name: ' %s  | sort -ur -o TMP/test1.sort.%d",fname, getpid());
   system(sysString);
-  sprintf(sysString,"../TMP/test1.sort.%d", getpid());
+  sprintf(sysString,"TMP/test1.sort.%d", getpid());
   fd = fopen (sysString,"r");
   if (fd == NULL) {
      printf("error opening input file:%s\n",sysString);
@@ -69,7 +69,7 @@ getPhyResources(char *fname, int ii)
     }
   }
   if (i == MAX_PHY_RESOURCE) {
-     printf("error max resource limit of %i exceeded foe %s\n", MAX_PHY_RESOURCE, fname);
+     printf("error max resource limit of %i exceeded for %s\n", MAX_PHY_RESOURCE, fname);
       exit(1);
   }
   strcpy(phyrsrc[ii][i],"ENDOFRESOURCES");
