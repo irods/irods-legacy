@@ -46,8 +46,12 @@
 #
 # 	$DATABASE_HOME is the full path to the installation
 # 	directory of the database.  Subdirectories of this directory
-# 	will include the database's applications, configuration files,
-# 	and data storage.
+# 	include the database's libraries, applications, configuration 
+#       files, and data storage.
+#
+# 	$DATABASE_LIB the subdirectories uder $DATABASE_HOME for the
+#       libraries.  Sometimes for Oracle, this is something other 
+#       than lib.
 # 
 # 	$DATABASE_HOST is the name of the host running the database
 # 	server used by iRODS.  It need not be the localhost.
@@ -64,6 +68,7 @@ $DATABASE_TYPE = '';
 $DATABASE_ODBC_TYPE = '';
 $DATABASE_EXCLUSIVE_TO_IRODS = '0';
 $DATABASE_HOME = '';
+$DATABASE_LIB = '';
 
 $DATABASE_HOST = '';
 $DATABASE_PORT = '';
