@@ -186,16 +186,8 @@ rodsRestart_t *rodsRestart)
     int status;
     int savedStatus = 0;
     int collLen;
-#if 0
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int rowInx;
-    dataObjSqlResult_t dataObjSqlResult;
-    dataObjMetaInfo_t dataObjMetaInfo;
-#else
     collHandle_t collHandle;
     collEnt_t collEnt;
-#endif
     char srcChildPath[MAX_NAME_LEN];
 
     if (srcColl == NULL) {
@@ -217,62 +209,6 @@ rodsRestart_t *rodsRestart)
 
     collLen = strlen (srcColl);
 
-#if 0
-    /* Now get all the files */
-
-    memset (&genQueryInp, 0, sizeof (genQueryInp));
-    status = queryDataObjInCollReCur (conn, srcColl, rodsArgs, &genQueryInp,
-      &genQueryOut);
-
-    if (status >= 0) {
-        status = genQueryOutToDataObjRes (&genQueryOut, &dataObjSqlResult);
-    }
-
-    rowInx = 0;
-    while (status >= 0 &&
-      (status = getNextDataObjMetaInfo (conn, dataObjInp, &genQueryInp,
-      &dataObjSqlResult, &rowInx, &dataObjMetaInfo)) >= 0) {
-
-        snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-          dataObjMetaInfo.collName, dataObjMetaInfo.dataName);
-
-        status = chkStateForResume (conn, rodsRestart, srcChildPath,
-          rodsArgs, DATA_OBJ_T, &dataObjInp->condInput, 0);
-
-        if (status < 0) {
-            /* restart failed */
-            break;
-        } else if (status == 0) {
-            continue;
-        }
-
-        status = replDataObjUtil (conn, srcChildPath,
-         myRodsEnv, rodsArgs, dataObjInp);
-
-	
-	if (status == SYS_COPY_ALREADY_IN_RESC) {
-           if (rodsArgs->verbose == True) {
-              printf ("copy of %s already exists. Probably OK\n",
-                srcChildPath);
-            }
-            status = 0;
-	}
-
-        if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
-              "replCollUtil: getDataObjUtil failed for %s. status = %d",
-              srcChildPath, status);
-            if (rodsRestart->fd > 0) {
-                break;
-            } else {
-                savedStatus = status;
-            }
-        } else {
-            status = procAndWrriteRestartFile (rodsRestart, srcChildPath);
-        }
-    }
-    clearGenQueryInp (&genQueryInp);
-#else
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
       &collHandle);
 
@@ -323,10 +259,6 @@ rodsRestart_t *rodsRestart)
 	}
     }
     rclCloseCollection (&collHandle);
-
-#endif
-
-
 
     if (savedStatus < 0) {
 	return (savedStatus);

@@ -156,16 +156,8 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
     int status;
     int savedStatus = 0;
     int collLen;
-#if 0
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int rowInx;
-    dataObjSqlResult_t dataObjSqlResult;
-    dataObjMetaInfo_t dataObjMetaInfo;
-#else
     collHandle_t collHandle;
     collEnt_t collEnt;
-#endif
     char srcChildPath[MAX_NAME_LEN];
 
     if (srcColl == NULL) {
@@ -187,37 +179,6 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
 
     collLen = strlen (srcColl);
 
-#if 0
-    /* Now get all the files */
-
-    memset (&genQueryInp, 0, sizeof (genQueryInp));
-    status = queryDataObjInCollReCur (conn, srcColl, rodsArgs, &genQueryInp,
-      &genQueryOut);
-
-    if (status >= 0) {
-        status = genQueryOutToDataObjRes (&genQueryOut, &dataObjSqlResult);
-    }
-
-    rowInx = 0;
-    while (status >= 0 &&
-      (status = getNextDataObjMetaInfo (conn, dataObjInp, &genQueryInp,
-      &dataObjSqlResult, &rowInx, &dataObjMetaInfo)) >= 0) {
-
-        snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
-          dataObjMetaInfo.collName, dataObjMetaInfo.dataName);
-
-        status = phymvDataObjUtil (conn, srcChildPath,
-         myRodsEnv, rodsArgs, dataObjInp);
-        if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
-              "phymvCollUtil: phymvDataObjUtil failed for %s. status = %d",
-              srcChildPath, status);
-            /* need to set global error here */
-            savedStatus = status;
-	    status = 0;
-        }
-    }
-#else
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
       &collHandle);
 
@@ -245,7 +206,6 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
 	}
     }
     rclCloseCollection (&collHandle);
-#endif
 
     if (savedStatus < 0) {
 	return (savedStatus);

@@ -369,18 +369,8 @@ dataObjInp_t *dataObjOprInp)
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
     int collLen;
     rodsPath_t mySrcPath, myTargPath;
-#if 0
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int rowInx;
-    collSqlResult_t collSqlResult;
-    collMetaInfo_t collMetaInfo;
-    dataObjSqlResult_t dataObjSqlResult;
-    dataObjMetaInfo_t dataObjMetaInfo;
-#else
     collHandle_t collHandle;
     collEnt_t collEnt;
-#endif
 
     if (srcPath == NULL || targPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -400,130 +390,6 @@ dataObjInp_t *dataObjOprInp)
 
     collLen = strlen (srcColl);
 
-#if 0
-    /* query all sub collections in srcColl and the mk the required
-     * subdirectories */
-
-    if (dataObjOprInp->specColl != NULL) {
-        if (rodsArgs->verbose == True) {
-            if (rodsArgs->verbose == True) {
-                char objType[NAME_LEN];
-                status = getSpecCollTypeStr (dataObjOprInp->specColl, objType);
-                if (status < 0) return (status);
-                fprintf (stdout, "D- %s    %-5.5s :\n", targDir, objType);
-            }
-        }
-        addKeyVal (&dataObjOprInp->condInput, SEL_OBJ_TYPE_KW, "collection");
-        rstrcpy (dataObjOprInp->objPath, srcColl, MAX_NAME_LEN);
-        status = rcQuerySpecColl (conn, dataObjOprInp, &genQueryOut);
-    } else {
-        if (rodsArgs->verbose == True) {
-            fprintf (stdout, "D- %s:\n", targDir);
-        }
-
-        status = queryCollInCollReCur (conn, srcColl, rodsArgs, &genQueryInp,
-          &genQueryOut);
-    }
-
-    if (status >= 0) {
-        status = genQueryOutToCollRes (&genQueryOut, &collSqlResult);
-    }
-    
-    rowInx = 0;
-    while (status >= 0 &&
-      (status = getNextCollMetaInfo (conn, dataObjOprInp, &genQueryInp,
-      &collSqlResult, &rowInx, &collMetaInfo)) >= 0) {
-
-        snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
-          targDir, collMetaInfo.collName + collLen);
-#ifdef _WIN32
-            mkdirR (targDir, targChildPath);
-#else
-            mkdirR (targDir, targChildPath, 0750);
-#endif
-
-        if (collMetaInfo.specColl.collClass != NO_SPEC_COLL) {
-            /* the child is a spec coll. need to drill down */
-            dataObjInp_t childDataObjInp;
-            childDataObjInp = *dataObjOprInp;
-            childDataObjInp.specColl = &collMetaInfo.specColl;
-            rstrcpy (myTargPath.outPath, targChildPath, MAX_NAME_LEN);
-            rstrcpy (mySrcPath.outPath, collMetaInfo.collName, MAX_NAME_LEN);
-
-            status = rsyncCollToDirUtil (conn, &mySrcPath,
-              &myTargPath, myRodsEnv, rodsArgs, &childDataObjInp);
-
-            if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-                return (status);
-            }
-        }
-    }
-
-    if (dataObjOprInp->specColl == NULL) {
-        clearGenQueryInp (&genQueryInp);
-    }
-
-    memset (&mySrcPath, 0, sizeof (mySrcPath));
-    memset (&myTargPath, 0, sizeof (myTargPath));
-    myTargPath.objType = LOCAL_FILE_T;
-    mySrcPath.objType = DATA_OBJ_T;
-    
-    /* Now get all the files */
-
-    if (dataObjOprInp->specColl != NULL) {
-        /* do the collection */
-        addKeyVal (&dataObjOprInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
-        status = rcQuerySpecColl (conn, dataObjOprInp, &genQueryOut);
-    } else {
-        memset (&genQueryInp, 0, sizeof (genQueryInp));
-        addInxIval (&genQueryInp.selectInp, COL_D_DATA_CHECKSUM, 1);
-        addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
-        addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
-        addInxIval (&genQueryInp.selectInp, COL_D_REPL_STATUS, 1);
-        status = queryDataObjInCollReCur (conn, srcColl, rodsArgs, 
-	  &genQueryInp, &genQueryOut);
-    }
-
-    if (status >= 0) {
-        status = genQueryOutToDataObjRes (&genQueryOut, &dataObjSqlResult);
-    }
-
-    rowInx = 0;
-
-    while (status >= 0 &&
-      (status = getNextDataObjMetaInfo (conn, dataObjOprInp, &genQueryInp,
-      &dataObjSqlResult, &rowInx, &dataObjMetaInfo)) >= 0) {
-
-        snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
-          targDir, dataObjMetaInfo.collName + collLen, 
-	  dataObjMetaInfo.dataName);
-        snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
-          dataObjMetaInfo.collName, dataObjMetaInfo.dataName);
-	/* fill in some info for mySrcPath */
-	if (strlen (mySrcPath.dataId) == 0)
-            rstrcpy (mySrcPath.dataId, dataObjMetaInfo.dataId, NAME_LEN);
-        mySrcPath.size = strtoll (dataObjMetaInfo.dataSize, 0, 0);
-        rstrcpy (mySrcPath.chksum, dataObjMetaInfo.chksum, NAME_LEN);
-	mySrcPath.objState = EXIST_ST;
-
-	getFileType (&myTargPath);
-
-        status = rsyncDataToFileUtil (conn, &mySrcPath, &myTargPath, 
-	  myRodsEnv, rodsArgs, dataObjOprInp);
-        if (status < 0) {
-            rodsLogError (LOG_ERROR, status,
-              "rsyncCollUtil: rsyncDataObjUtil failed for %s. status = %d",
-              srcChildPath, status);
-            /* need to set global error here */
-            savedStatus = status;
-	    status = 0;
-        }
-    }
-
-    if (dataObjOprInp->specColl == NULL) {
-        clearGenQueryInp (&genQueryInp);
-    }
-#else
     status = rclOpenCollection (conn, srcColl, 
       RECUR_QUERY_FG | VERY_LONG_METADATA_FG, &collHandle);
 
@@ -589,8 +455,6 @@ dataObjInp_t *dataObjOprInp)
         }
     }
     rclCloseCollection (&collHandle);
-
-#endif
 
     if (savedStatus < 0) {
         return (savedStatus);
