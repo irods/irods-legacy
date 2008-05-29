@@ -1,4 +1,4 @@
-// Properties module microservices
+// ERA module microservices
 // Service name				# args		Service function
 {"msiRecursiveCollCopy",		3,		(funcPtr) msiRecursiveCollCopy},
 {"msiGetDataObjACL",			2,		(funcPtr) msiGetDataObjACL},

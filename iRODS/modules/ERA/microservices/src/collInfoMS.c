@@ -94,8 +94,6 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 			addKeyVal(contents, resultStringToken, newValStr);
 		}
 
-
-
 		/* not done? */
 		while (rei->status==0 && genQueryOut->continueInx > 0) {
 			genQueryInp.continueInx=genQueryOut->continueInx;
