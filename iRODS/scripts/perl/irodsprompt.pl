@@ -168,6 +168,7 @@ $catalogServerHost	= undef;			# Prompt.
 $databaseServerType	= $DEFAULT_databaseServerType;	# Prompt.
 $databaseServerOdbcType	= $DEFAULT_databaseServerOdbcType; # Prompt.
 $databaseServerPath	= undef;			# Prompt.
+$databaseServerLib	= undef;			# Prompt.
 $databaseServerExclusive = 1;				# Prompt.
 
 $databaseServerHost	= "localhost";			# Prompt.
@@ -264,6 +265,7 @@ if ( -e $irodsConfig )
 	$databaseServerType      = $DATABASE_TYPE;
 	$databaseServerOdbcType  = $DATABASE_ODBC_TYPE;
 	$databaseServerPath      = $DATABASE_HOME;
+	$databaseServerLib       = $DATABASE_LIB;
 	$databaseServerExclusive = $DATABASE_EXCLUSIVE_TO_IRODS;
 
 	$databaseServerHost      = $DATABASE_HOST;
@@ -565,6 +567,7 @@ sub promptForIrodsConfiguration( )
 		# iRODS port
 		printNotice(
 			"\n",
+			"[Advanced option]\n",
 			"You can use a different port for the iRODS servers as long as all\n",
 			"servers in your zone use the same one.\n",
 			"\n" );
@@ -578,9 +581,11 @@ sub promptForIrodsConfiguration( )
 		    # iRODS database name
 		    printNotice(
 			"\n",
+			"[Advanced option]\n",
 			"Sites that share a single database system (DBMS) supporting\n".
 			"multiple iCAT databases (catalogs) need to use a different database\n",
-			"name for each catalog.\n",
+			"name for each catalog.  Currently, this applies to Postgres but not\n",
+			"Oracle.  For Oracle, this name is unused.\n",
 			"\n" );
 		    $irodsDbName = promptString(
 			"iRODS database name",
@@ -591,6 +596,7 @@ sub promptForIrodsConfiguration( )
 		    # iRODS database key
 		    printNotice(
 			"\n",
+			"[Advanced option]\n",
 			"iRODS scrambles passwords stored in various files.\n",
 			"The following ascii-string key is used to scramble the DB password.\n",
 			"\n" );
@@ -603,6 +609,7 @@ sub promptForIrodsConfiguration( )
 		    # iRODS resource name and directory
 		    printNotice(
 			"\n",
+			"[Advanced options]\n",
 			"iRODS stores data (file contents) into storage 'resources'.\n",
 			"Each resource has a name, a host name (this host for this one), and\n",
 			"a local directory under which the data is stored.\n",
@@ -1155,6 +1162,7 @@ sub promptForNewPostgresConfiguration( $ )
 		# Database port
 		printNotice(
 			"\n",
+			"[Advanced option]\n",
 			"For sites with multiple databases, Postgres can be configured\n",
 			"to use a custom port.\n",
 			"\n" );
@@ -1276,6 +1284,7 @@ sub promptForExistingPostgresDatabase( )
 		# Port.
 		printNotice(
 			"\n",
+			"[Advanced option]\n",
 			"For sites with multiple databases, iRODS can use a Postgres\n",
 			"database configured to use a custom port.\n",
 			"\n" );
@@ -1339,6 +1348,12 @@ sub promptForExistingOracleDatabase( )
 		"Existing Oracle directory",
 		((!defined($databaseServerPath)||$databaseServerPath eq "") ?
 			$ENV{"ORACLE_HOME"} : $databaseServerPath) );
+
+	# Which lib dir?
+	$databaseServerLib = promptString(
+		"Which library subdirectory under $databaseServerPath",
+		((!defined($databaseServerLib)||$databaseServerLib eq "") ?
+			"lib" : $databaseServerLib) );
 
 
 	# Prompt for schema@instance and make sure the input has that form
@@ -1483,7 +1498,12 @@ sub promptForConfirmation( )
 			($advanced ?
 			"        port          '$databaseServerPort'\n" :
 			""),
-			"        directory     '$databaseServerPath'\n",
+			"        directory     '$databaseServerPath'\n");
+		if (defined( $databaseServerLib ) && $databaseServerLib ne "" ) {
+		    printNotice(
+			"        lib subdir    '$databaseServerLib'\n");
+		}
+		printNotice(
 			"        account       '$databaseServerAccount'\n",
 			"        password      '$databaseServerPassword'\n" );
 		my $msg = "";
@@ -1571,6 +1591,7 @@ sub configureIrods( )
 		"DATABASE_ODBC_TYPE",		((!defined($databaseServerOdbcType)) ? "" : $databaseServerOdbcType),
 		"DATABASE_EXCLUSIVE_TO_IRODS",	"$databaseServerExclusive",
 		"DATABASE_HOME",		$databaseServerPath,
+		"DATABASE_LIB", 		$databaseServerLib,
 		"DATABASE_HOST",		$databaseServerHost,
 		"DATABASE_PORT",		$databaseServerPort,
 		"DATABASE_ADMIN_NAME",		$databaseServerAccount,

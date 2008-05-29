@@ -120,6 +120,7 @@ sub loadIrodsConfigAndValidate($)
 	# Set default values that are overridden by the file.
 	$DATABASE_TYPE               = undef;
 	$DATABASE_HOME               = undef;
+	$DATABASE_LIB                = undef;
 	$DATABASE_EXCLUSIVE_TO_IRODS = undef;
 	$DATABASE_HOST               = undef;
 	$DATABASE_PORT               = undef;
@@ -480,7 +481,12 @@ sub validateDatabaseVariables()
 	{
 		# Database directories
 		$databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
-		$databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, "lib" );
+		if (defined( $DATABASE_LIB ) && $DATABASE_LIB ne "" ) {
+		    $databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, $DATABASE_LIB );
+		}
+		else {
+		    $databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, "lib" );
+	        }
 
 		# Database commands
 		$sqlplus = File::Spec->catfile( $databaseBinDir, "sqlplus" );
