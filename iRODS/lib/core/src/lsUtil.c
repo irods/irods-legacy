@@ -118,8 +118,10 @@ rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp)
     genQueryOut_t *genQueryOut = NULL;
     char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
     char condStr[MAX_NAME_LEN];
+    int queryFlags;
 
-    setQueryInpForLong (rodsArgs, genQueryInp);
+    queryFlags = setQueryFlag (rodsArgs);
+    setQueryInpForData (queryFlags, genQueryInp);
 
     memset (myColl, 0, MAX_NAME_LEN);
     memset (myData, 0, MAX_NAME_LEN);
@@ -362,6 +364,7 @@ rodsArguments_t *rodsArgs)
     int continueInx;
     char *srcColl;
     int status;
+    int queryFlags;
 
     if (srcPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -402,7 +405,9 @@ rodsArguments_t *rodsArgs)
 
     /* get the files in this collection */
 
-    status = queryDataObjInColl (conn, srcColl, rodsArgs, &genQueryInp,
+    queryFlags = setQueryFlag (rodsArgs);
+	
+    status = queryDataObjInColl (conn, srcColl, queryFlags, &genQueryInp,
       &genQueryOut);
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
@@ -434,7 +439,11 @@ rodsArguments_t *rodsArgs)
     /* query all sub collections in srcColl and the mk the required
      * subdirectories */
 
+#if 0
     status = queryCollInColl (conn, srcColl, rodsArgs, &genQueryInp,
+#else
+    status = queryCollInColl (conn, srcColl, 0, &genQueryInp,
+#endif
       &genQueryOut);
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {

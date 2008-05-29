@@ -69,11 +69,12 @@ typedef enum {
 /* definition for flag in rclOpenCollection and collHandle_t */
 #define LONG_METADATA_FG     0x1     /* get verbose metadata */
 #define VERY_LONG_METADATA_FG     0x2   /* get verbose metadata */
-#define RECUR_QUERY_FG       0x3     /* get recursive query */
+#define RECUR_QUERY_FG       0x4     /* get recursive query */
 
 typedef struct CollHandle {
     collState_t state;
-    int flag;
+    int inuseFlag;
+    int flags;
     int rowInx;
     genQueryInp_t genQueryInp;
     dataObjInp_t dataObjInp;
@@ -99,6 +100,19 @@ typedef struct CollEnt {
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 
+typedef enum {
+    RC_COMM,
+    RS_COMM,
+} connType_t;
+
+/* struct for query by both client and server */
+typedef struct QueryHandle {
+    void *conn;		/* either rsComm or rcComm */
+    connType_t connType;
+    funcPtr querySpecColl;	/* rcQuerySpecColl or rsQuerySpecColl */
+    funcPtr genQuery;		/* rcGenQuery or rsGenQuery */
+} queryHandle_t;
+    
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -113,28 +127,15 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath);
 int
 genAllInCollQCond (char *collection, char *collQCond);
 int
-queryCollInCollReCur (rcComm_t *conn, char *collection,
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut);
-int
 queryCollInColl (rcComm_t *conn, char *collection,
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut);
-int
-queryCollInColl (rcComm_t *conn, char *collection,
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut);
-int
-queryDataObjInCollReCur (rcComm_t *conn, char *collection,
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
+int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut);
 int
 queryDataObjInColl (rcComm_t *conn, char *collection,
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
+int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut);
 int
-setQueryInpForLong (rodsArguments_t *rodsArgs,
-genQueryInp_t *genQueryInp);
+setQueryInpForData (int flags, genQueryInp_t *genQueryInp);
 
 int
 printTiming (rcComm_t *conn, char *objPath, rodsLong_t fileSize,
@@ -169,7 +170,7 @@ int
 rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,
 collEnt_t *collEnt);
 int
-clearCollHandle (collHandle_t *collHandle);
+clearCollHandle (collHandle_t *collHandle, int freeSpecColl);
 int
 rclCloseCollection (collHandle_t *collHandle);
 int
@@ -184,6 +185,8 @@ int
 genCollResInColl (rcComm_t *conn, collHandle_t *collHandle);
 int
 genDataResInColl (rcComm_t *conn, collHandle_t *collHandle);
+int
+setQueryFlag (rodsArguments_t *rodsArgs);
 #ifdef  __cplusplus
 }
 #endif

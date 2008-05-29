@@ -243,6 +243,7 @@ genAllInCollQCond (char *collection, char *collQCond)
     return (0);
 }
 
+#if 0
 int
 queryCollInCollReCur (rcComm_t *conn, char *collection, 
 rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
@@ -274,10 +275,11 @@ genQueryOut_t **genQueryOut)
     return (status);
 
 }
+#endif
 
 int
 queryCollInColl (rcComm_t *conn, char *collection,
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
+int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut)
 {
     char collQCond[MAX_NAME_LEN];
@@ -289,10 +291,13 @@ genQueryOut_t **genQueryOut)
 
     memset (genQueryInp, 0, sizeof (genQueryInp_t));
 
-    snprintf (collQCond, MAX_NAME_LEN, "='%s'", collection);
-
-    addInxVal (&genQueryInp->sqlCondInp, COL_COLL_PARENT_NAME, collQCond);
-
+    if ((flags & RECUR_QUERY_FG) != 0) {
+        genAllInCollQCond (collection, collQCond);
+        addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond);
+    } else {
+        snprintf (collQCond, MAX_NAME_LEN, "='%s'", collection);
+        addInxVal (&genQueryInp->sqlCondInp, COL_COLL_PARENT_NAME, collQCond);
+    }
     addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp->selectInp, COL_COLL_OWNER_NAME, 1);
     addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
@@ -306,6 +311,7 @@ genQueryOut_t **genQueryOut)
     return (status);
 }
 
+#if 0
 /* queryDataObjInCollReCur - query all dataobj in a collection and
  * all subcollections in it.
  * The genQueryInp may already have some sqlCondInp and selectInp
@@ -342,10 +348,11 @@ genQueryOut_t **genQueryOut)
     return (status);
 
 }
+#endif
 
 int
 queryDataObjInColl (rcComm_t *conn, char *collection, 
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
+int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut)
 {
     char collQCond[MAX_NAME_LEN];
@@ -357,17 +364,15 @@ genQueryOut_t **genQueryOut)
 
     memset (genQueryInp, 0, sizeof (genQueryInp_t));
 
-    snprintf (collQCond, MAX_NAME_LEN, " = '%s'", collection);
-
-    addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond);
-
-    if (rodsArgs->longOption == True) {
-	setQueryInpForLong (rodsArgs, genQueryInp);
+    if ((flags & RECUR_QUERY_FG) != 0) {
+        genAllInCollQCond (collection, collQCond);
+        addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond);
     } else {
-        addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
+        snprintf (collQCond, MAX_NAME_LEN, " = '%s'", collection);
+        addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond);
     }
+
+    setQueryInpForData (flags, genQueryInp);
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
@@ -378,31 +383,42 @@ genQueryOut_t **genQueryOut)
 }
 
 int
-setQueryInpForLong (rodsArguments_t *rodsArgs, 
-genQueryInp_t *genQueryInp)
+setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
 {
 
     if (genQueryInp == NULL) { 
         return (USER__NULL_INPUT_ERR);
     }
 
-    addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
-    addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
-    addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
-    addInxIval (&genQueryInp->selectInp, COL_DATA_SIZE, 1);
-    addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
-    addInxIval (&genQueryInp->selectInp, COL_D_REPL_STATUS, 1);
-    addInxIval (&genQueryInp->selectInp, COL_D_MODIFY_TIME, 1);
-    addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
+    if ((flags & LONG_METADATA_FG) != 0) {
+        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
+        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
+        addInxIval (&genQueryInp->selectInp, COL_DATA_SIZE, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_REPL_STATUS, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_MODIFY_TIME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
 
-    if (rodsArgs->veryLongOption == True) {
+    } else if ((flags & VERY_LONG_METADATA_FG) != 0) {
+        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
+        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
+        addInxIval (&genQueryInp->selectInp, COL_DATA_SIZE, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_REPL_STATUS, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_MODIFY_TIME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
+
         addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
         addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_CREATE_TIME, 1);
+   } else {
+        addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
     }
-
-    genQueryInp->maxRows = MAX_SQL_ROWS;
 
     return (0);
 }
@@ -872,7 +888,7 @@ dataObjSqlResult_t *dataObjSqlResult)
 }
 
 int
-rclOpenCollection (rcComm_t *conn, char *collection, int flag,
+rclOpenCollection (rcComm_t *conn, char *collection, int flags,
 collHandle_t *collHandle)
 {
     rodsObjStat_t *rodsObjStatOut = NULL;
@@ -902,7 +918,7 @@ collHandle_t *collHandle)
     free (rodsObjStatOut);
 
     collHandle->state = COLL_OPENED;
-    collHandle->flag = flag;
+    collHandle->flags = flags;
     /* the collection exist. now query the data in it */
     return (0);
 }
@@ -940,7 +956,7 @@ collEnt_t *collEnt)
 
     if (collHandle->state == COLL_CLOSED) return (CAT_NO_ROWS_FOUND);
 
-    if ((collHandle->flag & RECUR_QUERY_FG) != 0) {
+    if ((collHandle->flags & RECUR_QUERY_FG) != 0) {
 	/* recursive - coll first, dataObj second */
         if (collHandle->state == COLL_OPENED) {
 	    status = genCollResInColl (conn, collHandle);
@@ -984,7 +1000,7 @@ collEnt_t *collEnt)
                     clearGenQueryInp (&collHandle->genQueryInp);
                 }
                 /* Nothing else to do. cleanup */
-                clearCollHandle (collHandle);
+                clearCollHandle (collHandle, 1);
             }
             return status;
         }
@@ -1032,7 +1048,7 @@ collEnt_t *collEnt)
                     clearGenQueryInp (&collHandle->genQueryInp);
                 }
                 /* Nothing else to do. cleanup */
-	        clearCollHandle (collHandle);
+	        clearCollHandle (collHandle, 1);
             }
 	    return status;
         }
@@ -1046,16 +1062,18 @@ genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
 {
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
+#if 0
     rodsArguments_t rodsArgs;
 
-    if ((collHandle->flag & VERY_LONG_METADATA_FG) != 0) {
+    if ((collHandle->flags & VERY_LONG_METADATA_FG) != 0) {
         rodsArgs.longOption = True;
         rodsArgs.veryLongOption = True;
-    } else if ((collHandle->flag & LONG_METADATA_FG) != 0) {
+    } else if ((collHandle->flags & LONG_METADATA_FG) != 0) {
         rodsArgs.longOption = True;
     } else {
         rodsArgs.longOption = False;
     }
+#endif
 
     /* query for sub-collections */
     if (collHandle->dataObjInp.specColl != NULL) {
@@ -1066,7 +1084,8 @@ genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
           &genQueryOut);
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
-        if ((collHandle->flag & RECUR_QUERY_FG) != 0) {
+#if 0
+        if ((collHandle->flags & RECUR_QUERY_FG) != 0) {
             status = queryCollInCollReCur (conn,
               collHandle->dataObjInp.objPath, &rodsArgs,
               &collHandle->genQueryInp, &genQueryOut);
@@ -1075,6 +1094,11 @@ genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
               collHandle->dataObjInp.objPath, &rodsArgs,
               &collHandle->genQueryInp, &genQueryOut);
         }
+#else
+        status = queryCollInColl (conn,
+          collHandle->dataObjInp.objPath, collHandle->flags,
+          &collHandle->genQueryInp, &genQueryOut);
+#endif
     }
 
     collHandle->rowInx = 0;
@@ -1095,16 +1119,18 @@ genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
 {
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
+#if 0
     rodsArguments_t rodsArgs;
 
-    if ((collHandle->flag & VERY_LONG_METADATA_FG) != 0) {
+    if ((collHandle->flags & VERY_LONG_METADATA_FG) != 0) {
         rodsArgs.longOption = True;
         rodsArgs.veryLongOption = True;
-    } else if ((collHandle->flag & LONG_METADATA_FG) != 0) {
+    } else if ((collHandle->flags & LONG_METADATA_FG) != 0) {
         rodsArgs.longOption = True;
     } else {
         rodsArgs.longOption = False;
     }
+#endif
 
     if (collHandle->dataObjInp.specColl != NULL) {
         /* query */
@@ -1114,7 +1140,8 @@ genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
           &genQueryOut);
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
-        if ((collHandle->flag & RECUR_QUERY_FG) != 0) {
+#if 0
+        if ((collHandle->flags & RECUR_QUERY_FG) != 0) {
             status = queryDataObjInCollReCur (conn,
               collHandle->dataObjInp.objPath, &rodsArgs,
               &collHandle->genQueryInp, &genQueryOut);
@@ -1123,6 +1150,11 @@ genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
               collHandle->dataObjInp.objPath, &rodsArgs,
               &collHandle->genQueryInp, &genQueryOut);
         }
+#else
+        status = queryDataObjInColl (conn,
+          collHandle->dataObjInp.objPath, collHandle->flags,
+          &collHandle->genQueryInp, &genQueryOut);
+#endif
     }
 
     collHandle->rowInx = 0;
@@ -1141,17 +1173,17 @@ genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
 int
 rclCloseCollection (collHandle_t *collHandle)
 {
-    return (clearCollHandle (collHandle));
+    return (clearCollHandle (collHandle, 1));
 }
 
 int
-clearCollHandle (collHandle_t *collHandle)
+clearCollHandle (collHandle_t *collHandle, int freeSpecColl)
 {
     if (collHandle == NULL) return 0;
     if (collHandle->dataObjInp.specColl == NULL) {
         clearGenQueryInp (&collHandle->genQueryInp);
     }
-    if (collHandle->dataObjInp.specColl != NULL) {
+    if (freeSpecColl != 0 && collHandle->dataObjInp.specColl != NULL) {
         free (collHandle->dataObjInp.specColl);
     }
     clearKeyVal (&collHandle->dataObjInp.condInput);
@@ -1376,5 +1408,21 @@ int *rowInx, collEnt_t *outCollEnt)
 
     (*rowInx) = nextInx;
     return (0);
+}
+
+int
+setQueryFlag (rodsArguments_t *rodsArgs)
+{
+    int queryFlags;
+
+    if (rodsArgs->veryLongOption == True) {
+        queryFlags = VERY_LONG_METADATA_FG;
+    } else if (rodsArgs->longOption == True) {
+        queryFlags = LONG_METADATA_FG;
+    } else {
+        queryFlags = 0;
+    }
+
+    return queryFlags;
 }
 
