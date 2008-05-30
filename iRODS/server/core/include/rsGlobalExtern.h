@@ -17,6 +17,7 @@
 #ifdef TAR_STRUCT_FILE
 #include "tarSubStructFileDriver.h"
 #endif
+#include "miscUtil.h"
 
 
 extern int LogFd;         		/* the log file descriptor */
@@ -31,6 +32,7 @@ extern rescGrpInfo_t *CachedRescGrpInfo;
 extern fileDesc_t FileDesc[];
 extern l1desc_t L1desc[];
 extern specCollDesc_t SpecCollDesc[];
+extern collHandle_t CollHandle[];
 
 /* global Rule Engine File Initialization String */
 

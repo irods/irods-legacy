@@ -1010,6 +1010,7 @@ initAgent (rsComm_t *rsComm)
 
     initL1desc ();
     initSpecCollDesc ();
+    initCollHandle ();
     status = initFileDesc ();
     if (status < 0) {
         rodsLog (LOG_ERROR,

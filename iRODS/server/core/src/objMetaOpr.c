@@ -10,6 +10,7 @@
 #include "icatHighLevelRoutines.h"
 #include "reSysDataObjOpr.h"
 #include "miscUtil.h"
+#include "rodsClient.h"
 
 int
 getRescInfo (rsComm_t *rsComm, char *defaultResc, keyValPair_t *condInput, 

@@ -17,7 +17,7 @@
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"
 #include "genQuery.h"
-#include "collCreate.h"
+#include "rodsClient.h"
 
 int
 initL1desc ()
@@ -1438,5 +1438,61 @@ isInVault (dataObjInfo_t *dataObjInfo)
     } else {
 	return (0);
     }
+}
+
+int
+initCollHandle ()
+{
+    memset (CollHandle, 0, sizeof (collHandle_t) * NUM_COLL_HANDLE);
+    return (0);
+}
+
+int
+allocCollHandle ()
+{
+    int i;
+
+    for (i = 0; i < NUM_COLL_HANDLE; i++) {
+        if (CollHandle[i].inuseFlag <= FD_FREE) {
+            CollHandle[i].inuseFlag = FD_INUSE;
+            return (i);
+        };
+    }
+
+    rodsLog (LOG_NOTICE,
+     "allocCollHandle: out of CollHandle");
+
+    return (SYS_OUT_OF_FILE_DESC);
+}
+
+int
+freeCollHandle (int handleInx)
+{
+    if (handleInx < 0 || handleInx >= NUM_COLL_HANDLE) {
+        rodsLog (LOG_NOTICE,
+         "freeCollHandle: handleInx %d out of range", handleInx);
+        return (SYS_FILE_DESC_OUT_OF_RANGE);
+    }
+
+    /* don't free specColl. It is in cache */
+    clearCollHandle (&CollHandle[handleInx], 0);
+    memset (&CollHandle[handleInx], 0, sizeof (collHandle_t));
+
+    return (0);
+}
+
+int
+rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm)
+{
+    if (queryHandle == NULL || rsComm == NULL) {
+        return (USER__NULL_INPUT_ERR);
+    }
+
+    queryHandle->conn = rsComm;
+    queryHandle->connType = RS_COMM;
+    queryHandle->querySpecColl = (funcPtr) rsQuerySpecColl;
+    queryHandle->genQuery = (funcPtr) rsGenQuery;
+
+    return (0);
 }
 

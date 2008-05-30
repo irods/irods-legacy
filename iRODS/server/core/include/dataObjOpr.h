@@ -14,6 +14,7 @@
 #include "objInfo.h"
 #include "dataObjInpOut.h"
 #include "fileRename.h"
+#include "miscUtil.h"
 
 #define NUM_L1_DESC	100 	/* number of L1Desc */
 
@@ -162,5 +163,13 @@ int
 isInVault (dataObjInfo_t *dataObjInfo);
 int
 initL1desc ();
+int
+initCollHandle ();
+int
+allocCollHandle ();
+int
+freeCollHandle (int handleInx);
+int
+rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm);
 #endif	/* DATA_OBJ_OPR */
 

@@ -289,3 +289,12 @@ LIB_API_OBJS += $(libApiObjDir)/rcStructFileSync.o
 SVR_API_OBJS += $(svrApiObjDir)/rsGsiAuthRequest.o
 LIB_API_OBJS += $(libApiObjDir)/rcGsiAuthRequest.o
 
+
+SVR_API_OBJS += $(svrApiObjDir)/rsOpenCollection.o
+LIB_API_OBJS += $(libApiObjDir)/rcOpenCollection.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsReadCollection.o
+LIB_API_OBJS += $(libApiObjDir)/rcReadCollection.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsCloseCollection.o
+LIB_API_OBJS += $(libApiObjDir)/rcCloseCollection.o

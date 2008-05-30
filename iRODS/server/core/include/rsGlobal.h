@@ -14,6 +14,7 @@
 #ifdef TAR_STRUCT_FILE
 #include "tarSubStructFileDriver.h"
 #endif
+#include "miscUtil.h"
 
 int LogFd = -1;		/* the log file descriptor */
 char *CurLogfileName = NULL;        /* the path of the current logfile */
@@ -30,6 +31,7 @@ rescGrpInfo_t *CachedRescGrpInfo = NULL;
 fileDesc_t FileDesc[NUM_FILE_DESC];
 l1desc_t L1desc[NUM_L1_DESC];
 specCollDesc_t SpecCollDesc[NUM_SPEC_COLL_DESC];
+collHandle_t CollHandle[NUM_COLL_HANDLE];
 
 /* global Rule Engine File Initialization String */
 
