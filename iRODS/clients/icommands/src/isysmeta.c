@@ -200,7 +200,6 @@ main(int argc, char **argv)
    rErrMsg_t errMsg;
    char *mySubName;
    char *myName;
-   int lastCommandStatus;
 
    status = parseCmdLineOpt(argc, argv, "lvVh", 0, &myRodsArgs);
    if (status) {
@@ -307,7 +306,6 @@ main(int argc, char **argv)
       exit(1);
    }
 
-   if (lastCommandStatus != 0) exit(4);
    exit(0);
 }
 
