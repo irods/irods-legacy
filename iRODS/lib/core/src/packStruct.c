@@ -355,15 +355,18 @@ alignInt (void *ptr)
 void *
 alignDouble (void *ptr)
 {
-#if defined(linux_platform)     /* no need align at 64 bit boundary for linux */
+#if defined(linux_platform) || defined(windows_platform)   /* no need align at 64 bit boundary for linux */
+	                                                       /* By Bing on 5-29-08: Mike and I found that 
+														      Windows 32-bit OS is aligned with 4. */
 #ifdef ADDR_64BITS
     return (alignAddrToBoundary (ptr, 8));
 #else   /* ADDR_64BITS */
     return (alignAddrToBoundary (ptr, 4));
 #endif  /* ADDR_64BITS */
-#else   /* linux_platform */
+
+#else   /* non-linux_platform || non-windows*/
     return (alignAddrToBoundary (ptr, 8));
-#endif  /* linux_platform */
+#endif  /* linux_platform | windows */
 }
 
 /* align pointer address in a struct */
