@@ -404,34 +404,23 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
         return (USER__NULL_INPUT_ERR);
     }
 
-    if ((flags & LONG_METADATA_FG) != 0) {
-        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
-        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
+    addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
+    if ((flags & LONG_METADATA_FG) != 0 || 
+      (flags & VERY_LONG_METADATA_FG) != 0) {
+        addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
+        addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
         addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
         addInxIval (&genQueryInp->selectInp, COL_DATA_SIZE, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_REPL_STATUS, 1);
         addInxIval (&genQueryInp->selectInp, COL_D_MODIFY_TIME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
 
-    } else if ((flags & VERY_LONG_METADATA_FG) != 0) {
-        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
-        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_DATA_REPL_NUM, 1);
-        addInxIval (&genQueryInp->selectInp, COL_DATA_SIZE, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_REPL_STATUS, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_MODIFY_TIME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_OWNER_NAME, 1);
-
-        addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
-        addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_CREATE_TIME, 1);
-   } else {
-        addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
+        if ((flags & VERY_LONG_METADATA_FG) != 0) {
+             addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
+             addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
+             addInxIval (&genQueryInp->selectInp, COL_D_CREATE_TIME, 1);
+	}
     }
 
     return (0);

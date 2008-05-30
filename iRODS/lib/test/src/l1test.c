@@ -36,7 +36,6 @@ main(int argc, char **argv)
     bytesBuf_t dataObjReadOutBBuf;
     dataObjInp_t dataObjOprInp;
     bytesBuf_t dataObjInpBBuf;
-    portalOprOut_t *portalOprOut = NULL;
     struct stat statbuf;
 
     int bytesWritten, bytesRead, total;
@@ -74,8 +73,8 @@ main(int argc, char **argv)
         fprintf (stderr, "stat of %s failed\n", argv[1]);
         exit (1);
     } else {
-	printf ("input file %s size = %d\n",
-	  argv[1], statbuf.st_size);
+	printf ("input file %s size = %lld\n",
+	  (char *) argv[1], statbuf.st_size);
     }
 
 
@@ -101,7 +100,7 @@ main(int argc, char **argv)
 
     if (status >= 0) {
 	printf ("rcExecCmd of hello success, output=%s\n",
-	  execCmdOut->stdoutBuf.buf);
+	  (char *) execCmdOut->stdoutBuf.buf);
     } else {
         printf ("rcExecCmd failed, status = %d\n", status);
 	exit (1);
@@ -125,7 +124,7 @@ main(int argc, char **argv)
       &dataObjOprInp.condInput);
 
     if (status < 0) {
-	fprintf (stderr, "rcChksumLocFile error, status = status\n",
+	fprintf (stderr, "rcChksumLocFile error, status = %d\n",
 	  status);
 	exit (1);
     }
@@ -143,7 +142,7 @@ main(int argc, char **argv)
     status = rcDataObjChksum (conn, &dataObjOprInp, &chksumStr);
 
     if (status < 0) {
-        fprintf (stderr, "rcDataObjChksum error, status = status\n",
+        fprintf (stderr, "rcDataObjChksum error, status = %d\n",
           status);
         exit (1);
     } else {
@@ -255,7 +254,7 @@ main(int argc, char **argv)
 
     if (status < 0) {
         fprintf (stderr, "rcDataObjRename error. status = %d\n", 
-	  rcDataObjRename);
+	  status);
         rcDisconnect (conn);
         exit (1);
     } else {

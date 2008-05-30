@@ -96,6 +96,7 @@
 #define SUB_STRUCT_FILE_PUT_AN 			658
 #define SYNC_MOUNTED_COLL_AN 			659
 #define STRUCT_FILE_SYNC_AN 			660
+#define CLOSE_COLLECTION_AN 			661
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700
@@ -110,5 +111,7 @@
 #define GET_TEMP_PASSWORD_AN 		709
 #define GENERAL_UPDATE_AN 		710
 #define GSI_AUTH_REQUEST_AN		711
+#define OPEN_COLLECTION_AN 			712
+#define READ_COLLECTION_AN 			713
 
 #endif	/* API_NUMBER_H */

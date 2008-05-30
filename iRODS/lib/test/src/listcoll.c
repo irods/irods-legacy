@@ -1,22 +1,17 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* l1rm.c - test the high level api */
+/* listcoll.c - test the two sets of calls to list the contents of a
+ * collection:
+ * 1) 
+ */
 
 #include "rodsClient.h" 
 #include "miscUtil.h" 
 
-#define USER_NAME	"rods"
-#define RODS_ZONE	"temp"
-
-/* NOTE : You have to change FILE_NAME, PAR_DIR_NAME, DIR_NAME and ADDR
- * for your own env */
-
-
-#define DEST_RESC_NAME  "demoResc"
-#define RESC_NAME   	"demoResc"
-
 int
-printCollection (rcComm_t *conn, collHandle_t *collHandle);
+printCollection (rcComm_t *conn, char *collection, int flags);
+int
+printCollectionNat (rcComm_t *conn, char *collection, int flags);
 
 int
 main(int argc, char **argv)
@@ -28,9 +23,9 @@ main(int argc, char **argv)
     int status;
     rodsArguments_t rodsArgs;
     int flag = 0;
-    collHandle_t collHandle;
+    int nativeAPI = 0;
 
-    optStr = "l";
+    optStr = "alL";
 
     status = parseCmdLineOpt (argc, argv, optStr, 1, &rodsArgs);
 
@@ -54,8 +49,8 @@ main(int argc, char **argv)
     }
 
 
-    conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, USER_NAME,
-      RODS_ZONE, 0, &errMsg);
+    conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
+      myEnv.rodsZone, 1, &errMsg);
 
     if (conn == NULL) {
         fprintf (stderr, "rcConnect error\n");
@@ -68,18 +63,15 @@ main(int argc, char **argv)
         exit (7);
     }
 
-    if (rodsArgs.longOption == True) flag |= VERY_LONG_METADATA_FG; 
+    flag = setQueryFlag (&rodsArgs);
 
-    status = rclOpenCollection (conn, argv[optind], flag, &collHandle);
+    if (rodsArgs.all == True) nativeAPI = 1;
 
-    if (status < 0) {
-        fprintf (stderr, "rclOpenCollection of %s error. status = %d\n",
-	  argv[optind], status);
-        exit (1);
+    if (nativeAPI == 1) {
+	status = printCollectionNat (conn, argv[optind], flag);
+    } else {
+        status = printCollection (conn, argv[optind], flag);
     }
-
-    status = printCollection (conn, &collHandle);
-    rclCloseCollection (&collHandle);
 
     rcDisconnect (conn);
 
@@ -87,45 +79,106 @@ main(int argc, char **argv)
 } 
 
 int
-printCollection (rcComm_t *conn, collHandle_t *collHandle)
+printCollection (rcComm_t *conn, char *collection, int flags)
 {
     int status;
+    collHandle_t collHandle;
     collEnt_t collEnt;
 
-    while ((status = rclReadCollection (conn, collHandle, &collEnt)) >= 0) {
+    status = rclOpenCollection (conn, collection, flags, &collHandle);
+    if (status < 0) {
+        fprintf (stderr, "rclOpenCollection of %s error. status = %d\n",
+          collection, status);
+        return status;
+    }
+
+    while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
 	    printf ("D - %s/%s\n", collEnt.collName, collEnt.dataName);
+	    printf ("      collName - %s\n", collEnt.collName);
+	    printf ("      dataName - %s\n", collEnt.dataName);
 	    printf ("      dataId - %s\n", collEnt.dataId);
-	    if ((collHandle->flag & LONG_METADATA_FG) > 0) {
+	    if (collHandle.flags > 0) {
 	        printf ("      ownerName - %s\n", collEnt.ownerName);
-		printf ("      createTime (UNIX clock in string) - %s\n", 
-		  collEnt.createTime);
-		printf ("      modifyTime (UNIX clock in string) - %s\n", 
-		  collEnt.modifyTime);
-		printf ("      chksum - %s\n", collEnt.chksum);
-		printf ("      phyPath - %s\n", collEnt.phyPath);
 	        printf ("      resource - %s\n", collEnt.resource);
-		printf ("      replStatus - %d\n", collEnt.replStatus);
 		printf ("      replNum - %d\n", collEnt.replNum);
 		printf ("      dataSize - %lld\n", collEnt.dataSize);
+		printf ("      replStatus - %d\n", collEnt.replStatus);
+                printf ("      modifyTime (UNIX clock in string) - %s\n",
+                  collEnt.modifyTime);
+
+		if ((collHandle.flags & VERY_LONG_METADATA_FG) != 0) {
+		    printf ("      phyPath - %s\n", collEnt.phyPath);
+		    printf ("      chksum - %s\n", collEnt.chksum);
+		    printf ("      createTime (UNIX clock in string) - %s\n", 
+		      collEnt.createTime);
+		}
 	    }
 	} else if (collEnt.objType == COLL_OBJ_T) {
-	    collHandle_t subCollhandle;
 	    printf ("C - %s\n", collEnt.collName);
 	    printf ("      collOwner %s\n", collEnt.ownerName);
 	    /* recursive print */
-            status = rclOpenCollection (conn, collEnt.collName, 
-	      collHandle->flag, &subCollhandle);
-
-            if (status < 0) {
-                fprintf (stderr, "rclOpenCollection of %s error. status = %d\n",
-                  collEnt.collName, status);
-	    }
-
-	    printCollection (conn, &subCollhandle);
-	    rclCloseCollection (&subCollhandle);
+	    printCollection (conn, collEnt.collName, collHandle.flags);
 	}
     }
+    rclCloseCollection (&collHandle);
+
+    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
+        return (status);
+    } else {
+	return (0);
+    }
+}
+	
+int
+printCollectionNat (rcComm_t *conn, char *collection, int flags)
+{
+    int status;
+    openCollInp_t openCollInp;
+    collEnt_t *collEnt;
+    int handleInx;
+
+    memset (&openCollInp, 0, sizeof (openCollInp));
+    rstrcpy (openCollInp.collName, collection, MAX_NAME_LEN);
+    openCollInp.flags = flags;
+    handleInx = rcOpenCollection (conn, &openCollInp);
+    if (handleInx < 0) {
+        fprintf (stderr, "rcOpenCollection of %s error. status = %d\n",
+          collection, handleInx);
+        return (handleInx);
+    }
+
+    while ((status = rcReadCollection (conn, handleInx, &collEnt)) >= 0) {
+        if (collEnt->objType == DATA_OBJ_T) {
+	    printf ("D - %s/%s\n", collEnt->collName, collEnt->dataName);
+	    printf ("      collName - %s\n", collEnt->collName);
+	    printf ("      dataName - %s\n", collEnt->dataName);
+	    printf ("      dataId - %s\n", collEnt->dataId);
+	    if (flags > 0) {
+	        printf ("      ownerName - %s\n", collEnt->ownerName);
+	        printf ("      resource - %s\n", collEnt->resource);
+		printf ("      replNum - %d\n", collEnt->replNum);
+		printf ("      dataSize - %lld\n", collEnt->dataSize);
+		printf ("      replStatus - %d\n", collEnt->replStatus);
+                printf ("      modifyTime (UNIX clock in string) - %s\n",
+                  collEnt->modifyTime);
+
+		if ((flags & VERY_LONG_METADATA_FG) != 0) {
+		    printf ("      phyPath - %s\n", collEnt->phyPath);
+		    printf ("      chksum - %s\n", collEnt->chksum);
+		    printf ("      createTime (UNIX clock in string) - %s\n", 
+		      collEnt->createTime);
+		}
+	    }
+	} else if (collEnt->objType == COLL_OBJ_T) {
+	    printf ("C - %s\n", collEnt->collName);
+	    printf ("      collOwner %s\n", collEnt->ownerName);
+	    /* recursive print */
+            printCollection (conn, collEnt->collName, flags);
+	}
+    }
+
+    rcCloseCollection (conn, handleInx);
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
         return (status);

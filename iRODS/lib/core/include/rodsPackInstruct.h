@@ -116,6 +116,7 @@
 #define h5Dataset_PI "int dopID; int dfid; int dobjID[OBJID_DIM]; int dclass; str *dfullpath; int nattributes; struct *h5Attribute_PI(nattributes); struct h5Datatype_PI; struct h5Dataspace_PI; int nvalue; % dclass:3,6,9 = str *value[nvalue]:default= char *value(nvalue); struct h5error_PI;int dtime;"
 #define h5Datatype_PI "int tclass; int torder; int tsign; int tsize; int ntmenbers; int *mtypes(ntmenbers); str *mnames[ntmenbers];"
 #define h5Dataspace_PI "int rank; int dims[H5S_MAX_RANK]; int npoints; int start[H5DATASPACE_MAX_RANK]; int stride[H5DATASPACE_MAX_RANK]; int count[H5DATASPACE_MAX_RANK];"
+#define CollEnt_PI "int objType; int replNum; int replStatus; int dummy; double dataSize; str *collName; str *dataName; str *dataId; str *createTime; str *modifyTime; str *chksum; str *resource; str *phyPath; str *ownerName; struct SpecColl_PI;" 
 /* XXXXX end of HDF5 PI */
 
 #endif	/* PACK_INSTRUCT_H */

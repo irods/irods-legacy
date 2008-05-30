@@ -76,6 +76,7 @@ packInstructArray_t ApiPackTable[] = {
         {"SendXmsgInp_PI", SendXmsgInp_PI},
         {"StructFileOprInp_PI", StructFileOprInp_PI},
         {"gsiAuthRequestOut_PI", gsiAuthRequestOut_PI},
+        {"OpenCollInp_PI", OpenCollInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

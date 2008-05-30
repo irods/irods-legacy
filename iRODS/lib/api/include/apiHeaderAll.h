@@ -102,4 +102,7 @@
 #include "syncMountedColl.h"
 #include "structFileSync.h"
 #include "gsiAuthRequest.h"
+#include "openCollection.h"
+#include "readCollection.h"
+#include "closeCollection.h"
 #endif	/* API_HEADER_ALL_H */

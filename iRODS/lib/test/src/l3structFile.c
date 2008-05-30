@@ -50,7 +50,7 @@ main(int argc, char **argv)
     memset (&specColl, 0, sizeof (specColl));
     subFile.specColl = &specColl;
     rstrcpy (specColl.collection, "/tempZone/home/rods/dir1", MAX_NAME_LEN);
-    specColl.class = STRUCT_FILE_COLL;
+    specColl.collClass = STRUCT_FILE_COLL;
     specColl.type = HAAW_STRUCT_FILE_T;
     rstrcpy (specColl.objPath, "/tempZone/home/rods/dir1/myBundle", 
       MAX_NAME_LEN);
