@@ -27,11 +27,19 @@ typedef struct dir_struct {
 	struct dirent dir_sdReturn;
 } DIR;
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 DIR *opendir(const char *);
 struct dirent *readdir(DIR *);
 void rewinddir(DIR *);
 void closedir(DIR *);
 int telldir(DIR *);
 void seekdir(DIR *, long);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif
