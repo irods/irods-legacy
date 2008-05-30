@@ -134,8 +134,6 @@ int chlOpen(char *DBUser, char *DBpasswd) {
 int chlClose() {
    int i;
 
-   if (logSQL) rodsLog(LOG_SQL, "chlClose (commit) SQL 1 ");
-
    i = cmlClose(&icss);
    if (i == 0) icss.status=0;
    return(i);

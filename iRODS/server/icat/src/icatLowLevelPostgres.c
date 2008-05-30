@@ -215,6 +215,77 @@ cllConnectRda(icatSessionStruct *icss) {
 }
 
 /*
+ This function is used to check that there are no DB-modifying SQLs pending 
+ before a disconnect.  If there are, it logs a warning.
+
+ If option is 0, record some of the sql, or clear it (if commit or rollback).
+ If option is 1, issue warning the there are some pending (and include
+    some of the sql).
+ If option is 2, this is indicating that the previous option 0 call was
+    for an audit-type SQL.
+ */
+#define maxPendingToRecord 5
+#define pendingRecordSize 30
+#define pBufferSize (maxPendingToRecord*pendingRecordSize)
+int
+cllCheckPending(char *sql, int option) {
+   static int pendingCount=0;
+   static int pendingIx=0;
+   static int pendingAudits=0;
+   static char pBuffer[pBufferSize+2];
+   static int firstTime=1;
+
+   if (firstTime) {
+      firstTime=0;
+      memset(pBuffer, 0, pBufferSize);
+   }
+   if (option==0) {
+      if (strncmp(sql,"commit", 6)==0 ||
+	  strncmp(sql,"rollback", 8)==0) {
+	 pendingIx=0;
+	 pendingCount=0;
+	 pendingAudits=0;
+	 memset(pBuffer, 0, pBufferSize);
+	 return(0);
+      }
+      if (pendingIx < maxPendingToRecord) {
+	 strncpy((char *)&pBuffer[pendingIx*pendingRecordSize], sql, 
+		 pendingRecordSize-1);
+	 pendingIx++;
+      }
+      pendingCount++;
+      return(0);
+   }
+   if (option==2) {
+      pendingAudits++;
+      return(0);
+   }
+
+   /* if there are some non-Audit pending SQL, log them */
+   if (pendingCount > pendingAudits) {
+      int i, max;
+      rodsLog(LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
+	      pendingCount);
+      max = maxPendingToRecord;
+      if (pendingIx < max) max = pendingIx;
+      for (i=0;i<max;i++) {
+	 rodsLog(LOG_NOTICE, "Warning, pending SQL: %s ...", 
+		 (char *)&pBuffer[i*pendingRecordSize]);
+      }
+      if (pendingAudits > 0) {
+	 rodsLog(LOG_NOTICE, "Warning, SQL will be commited with audits");
+      }
+   }
+
+   if (pendingAudits > 0) {
+      rodsLog(LOG_NOTICE, 
+	      "Notice, pending Auditing SQL committed at cllDisconnect");
+      return(1); /* tell caller (cllDisconect) to call do a commit */
+   }
+   return(0);
+}
+
+/*
  Disconnect from the DBMS.
 */
 int
@@ -225,8 +296,13 @@ cllDisconnect(icatSessionStruct *icss) {
 
    myHdbc = icss->connectPtr;
 
-   i = cllExecSqlNoResult(icss, "commit"); /* auto commit anything that
-                                              might be pending */
+   i = cllCheckPending("", 1);
+   if (i==1) {
+      i = cllExecSqlNoResult(icss, "commit"); /* auto commit any
+						 pending SQLs, including
+                                                 the Audit ones */
+      /* Nothing to do if it fails */
+   }
 
    stat = SQLDisconnect(myHdbc);
    if (stat != SQL_SUCCESS) {
@@ -361,6 +437,7 @@ cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql,
 
    if (stat == SQL_SUCCESS || stat == SQL_SUCCESS_WITH_INFO ||
       stat == SQL_NO_DATA_FOUND) {
+      cllCheckPending(sql, 0);
       result = 0;
       if (stat == SQL_NO_DATA_FOUND) result = CAT_SUCCESS_BUT_WITH_NO_INFO;
 #ifdef NEW_ODBC

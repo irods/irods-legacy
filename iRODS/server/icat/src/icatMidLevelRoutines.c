@@ -770,6 +770,14 @@ cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser,
    if (status != 0) {
       rodsLog(LOG_NOTICE, "cmlAudit1 insert failure %d", status);
    }
+#ifdef ORA_ICAT
+#else
+   else {
+      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
+			       and so should be committed on 
+			       disconnect if still pending. */
+   }
+#endif
    return(status);
 }
 
@@ -803,6 +811,14 @@ cmlAudit2(int actionId, char *dataId, char *userName, char *zoneName,
    if (status != 0) {
       rodsLog(LOG_NOTICE, "cmlAudit2 insert failure %d", status);
    }
+#ifdef ORA_ICAT
+#else
+   else {
+      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
+			       and so should be committed on 
+			       disconnect if still pending. */
+   }
+#endif
 
    return(status);
 }
@@ -856,6 +872,14 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
    if (status != 0) {
       rodsLog(LOG_NOTICE, "cmlAudit3 insert failure %d", status);
    }
+#ifdef ORA_ICAT
+#else
+   else {
+      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
+			       and so should be committed on 
+			       disconnect if still pending. */
+   }
+#endif
 
    return(status);
 }
@@ -921,6 +945,14 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
    if (status != 0) {
       rodsLog(LOG_NOTICE, "cmlAudit4 insert failure %d", status);
    }
+#ifdef ORA_ICAT
+#else
+   else {
+      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
+			       and so should be committed on 
+			       disconnect if still pending. */
+   }
+#endif
 
    return(status);
 }
@@ -957,5 +989,13 @@ cmlAudit5(int actionId, char *objId, char *userId, char *comment,
    if (status != 0) {
       rodsLog(LOG_NOTICE, "cmlAudit5 insert failure %d", status);
    }
+#ifdef ORA_ICAT
+#else
+   else {
+      cllCheckPending("",2);  /* Indicate that this was an audit SQL 
+			       and so should be committed on 
+			       disconnect if still pending. */
+   }
+#endif
    return(status);
 }
