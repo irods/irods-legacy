@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*
- Simple program to test the Rcat Low Level routines to Postgres.
+ Simple program to test the Rcat Low Level routines to Postgres or Oracle.
  */
 
 #include "rods.h"
