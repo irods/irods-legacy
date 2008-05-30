@@ -122,6 +122,7 @@ rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp)
 
     queryFlags = setQueryFlag (rodsArgs);
     setQueryInpForData (queryFlags, genQueryInp);
+    genQueryInp->maxRows = MAX_SQL_ROWS;
 
     memset (myColl, 0, MAX_NAME_LEN);
     memset (myData, 0, MAX_NAME_LEN);
@@ -365,6 +366,7 @@ rodsArguments_t *rodsArgs)
     char *srcColl;
     int status;
     int queryFlags;
+    queryHandle_t queryHandle;
 
     if (srcPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -407,8 +409,12 @@ rodsArguments_t *rodsArgs)
 
     queryFlags = setQueryFlag (rodsArgs);
 	
-    status = queryDataObjInColl (conn, srcColl, queryFlags, &genQueryInp,
-      &genQueryOut);
+    status = rclInitQueryHandle (&queryHandle, conn);
+
+    if (status < 0) return status;
+
+    status = queryDataObjInColl (&queryHandle, srcColl, queryFlags, 
+      &genQueryInp, &genQueryOut);
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
         rodsLogError (LOG_ERROR, status,
@@ -442,7 +448,7 @@ rodsArguments_t *rodsArgs)
 #if 0
     status = queryCollInColl (conn, srcColl, rodsArgs, &genQueryInp,
 #else
-    status = queryCollInColl (conn, srcColl, 0, &genQueryInp,
+    status = queryCollInColl (&queryHandle, srcColl, 0, &genQueryInp,
 #endif
       &genQueryOut);
 
