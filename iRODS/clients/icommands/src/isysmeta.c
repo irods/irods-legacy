@@ -53,7 +53,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 /* perform the ls command */
 int
 doLs(rcComm_t *Conn, char *objPath, int longOption) {
-   printf("doing ls of %s\n", objPath);
+   
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
    int i1a[30];
@@ -79,6 +79,8 @@ doLs(rcComm_t *Conn, char *objPath, int longOption) {
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
    printCount=0;
+
+   printf("doing ls of %s\n", objPath);
 
    status = splitPathByKey(objPath,
 			   logicalParentDirName, logicalEndName, '/');
