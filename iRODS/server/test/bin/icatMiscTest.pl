@@ -110,8 +110,15 @@ runCmd(0, "test_chl modrfs $Resc 987654321 rollback");
 runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
 
 # Mod without commit should auto-commit on normal completion
+# (since auditing is on, via debug (irodsDebug set to CATSQL)
 runCmd(0, "test_chl modrfs $Resc 987654321 close");
 runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 987654321");
+
+# Mod without audit should not auto-commit
+$ENV{'irodsDebug'}='noop'; # override value in irodsEnv file
+runCmd(0, "test_chl modrfs $Resc 123456789 close");
+runCmd(2, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
+delete $ENV{'irodsDebug'};
 
 runCmd(0, "test_chl modrfs $Resc ''");
 
