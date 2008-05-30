@@ -245,7 +245,7 @@ genAllInCollQCond (char *collection, char *collQCond)
 
 #if 0
 int
-queryCollInCollReCur (rcComm_t *conn, char *collection, 
+queryCollInCollReCur (queryHandle_t *queryHandle, char *collection, 
 rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut)
 {
@@ -270,15 +270,19 @@ genQueryOut_t **genQueryOut)
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
+#if 0
     status =  rcGenQuery (conn, genQueryInp, genQueryOut);
-
+#else
+    status = (*queryHandle->genQuery) (
+      (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
+#endif
     return (status);
 
 }
 #endif
 
 int
-queryCollInColl (rcComm_t *conn, char *collection,
+queryCollInColl (queryHandle_t *queryHandle, char *collection,
 int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut)
 {
@@ -306,7 +310,12 @@ genQueryOut_t **genQueryOut)
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
+#if 0
     status =  rcGenQuery (conn, genQueryInp, genQueryOut);
+#else
+    status = (*queryHandle->genQuery) (
+      (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
+#endif
 
     return (status);
 }
@@ -351,7 +360,7 @@ genQueryOut_t **genQueryOut)
 #endif
 
 int
-queryDataObjInColl (rcComm_t *conn, char *collection, 
+queryDataObjInColl (queryHandle_t *queryHandle, char *collection, 
 int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut)
 {
@@ -376,7 +385,12 @@ genQueryOut_t **genQueryOut)
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
+#if 0
     status =  rcGenQuery (conn, genQueryInp, genQueryOut);
+#else
+    status = (*queryHandle->genQuery) (
+      (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
+#endif
 
     return (status);
 
@@ -900,6 +914,10 @@ collHandle_t *collHandle)
 	return USER__NULL_INPUT_ERR;
     }
 
+    status = rclInitQueryHandle (&collHandle->queryHandle, conn);
+    
+    if (status < 0) return status;
+
     memset (collHandle, 0, sizeof (collHandle_t));
 
     rstrcpy (collHandle->dataObjInp.objPath, collection, MAX_NAME_LEN);
@@ -920,11 +938,27 @@ collHandle_t *collHandle)
     collHandle->state = COLL_OPENED;
     collHandle->flags = flags;
     /* the collection exist. now query the data in it */
+    status = rclInitQueryHandle (&collHandle->queryHandle, conn);
+
+    if (status < 0) return status;
+
     return (0);
 }
 
 int
-rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,  
+rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,
+collEnt_t *collEnt)
+{
+    int status;
+
+    collHandle->queryHandle.conn = conn;	/* in case it changed */
+    status = readCollection (&collHandle->queryHandle, collHandle, collEnt);
+
+    return (status);
+}
+
+int
+readCollection (queryHandle_t *queryHandle, collHandle_t *collHandle,  
 collEnt_t *collEnt)
 {
     int status = 0;
@@ -935,9 +969,9 @@ collEnt_t *collEnt)
     rodsArguments_t rodsArgs;
 #endif
 
-    if (conn == NULL || collHandle == NULL || collEnt == NULL) {
+    if (queryHandle == NULL || collHandle == NULL || collEnt == NULL) {
         rodsLog (LOG_ERROR,
-          "rclReadCollection: NULL conn or collHandle input");
+          "rclReadCollection: NULL queryHandle or collHandle input");
         return USER__NULL_INPUT_ERR;
     }
 
@@ -959,12 +993,12 @@ collEnt_t *collEnt)
     if ((collHandle->flags & RECUR_QUERY_FG) != 0) {
 	/* recursive - coll first, dataObj second */
         if (collHandle->state == COLL_OPENED) {
-	    status = genCollResInColl (conn, collHandle);
+	    status = genCollResInColl (queryHandle, collHandle);
 	}
 
         if (collHandle->state == COLL_COLL_OBJ_QUERIED) {
             memset (&collMetaInfo, 0, sizeof (collMetaInfo));
-            status = getNextCollMetaInfo (conn, &collHandle->dataObjInp,
+            status = getNextCollMetaInfo (queryHandle, &collHandle->dataObjInp,
               &collHandle->genQueryInp, &collHandle->collSqlResult,
               &collHandle->rowInx, collEnt);
             if (status >= 0) {
@@ -979,13 +1013,13 @@ collEnt_t *collEnt)
                     clearGenQueryInp (&collHandle->genQueryInp);
                 }
             }
-	    status = genDataResInColl (conn, collHandle);
+	    status = genDataResInColl (queryHandle, collHandle);
         }
         if (collHandle->state == COLL_DATA_OBJ_QUERIED) {
             memset (&dataObjMetaInfo, 0, sizeof (dataObjMetaInfo));
-            status = getNextDataObjMetaInfo (conn, &collHandle->dataObjInp,
-              &collHandle->genQueryInp, &collHandle->dataObjSqlResult,
-              &collHandle->rowInx, collEnt);
+            status = getNextDataObjMetaInfo (queryHandle, 
+	      &collHandle->dataObjInp, &collHandle->genQueryInp, 
+	      &collHandle->dataObjSqlResult, &collHandle->rowInx, collEnt);
 
             if (status >= 0) {
                 return status;
@@ -1006,12 +1040,13 @@ collEnt_t *collEnt)
         }
     } else {
         if (collHandle->state == COLL_OPENED) {
-	    status = genDataResInColl (conn, collHandle);
+	    status = genDataResInColl (queryHandle, collHandle);
         }
 
         if (collHandle->state == COLL_DATA_OBJ_QUERIED) {
             memset (&dataObjMetaInfo, 0, sizeof (dataObjMetaInfo));
-            status = getNextDataObjMetaInfo (conn, &collHandle->dataObjInp,
+            status = getNextDataObjMetaInfo (queryHandle, 
+	      &collHandle->dataObjInp,
               &collHandle->genQueryInp, &collHandle->dataObjSqlResult,
               &collHandle->rowInx, collEnt);
 
@@ -1029,12 +1064,12 @@ collEnt_t *collEnt)
                 }
             }
 
-	    status = genCollResInColl (conn, collHandle);
+	    status = genCollResInColl (queryHandle, collHandle);
         }
 
         if (collHandle->state == COLL_COLL_OBJ_QUERIED) {
             memset (&collMetaInfo, 0, sizeof (collMetaInfo));
-            status = getNextCollMetaInfo (conn, &collHandle->dataObjInp,
+            status = getNextCollMetaInfo (queryHandle, &collHandle->dataObjInp,
               &collHandle->genQueryInp, &collHandle->collSqlResult,
               &collHandle->rowInx, collEnt);
 	    if (status < 0) {
@@ -1058,7 +1093,7 @@ collEnt_t *collEnt)
 
 
 int
-genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
+genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
 {
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
@@ -1080,8 +1115,14 @@ genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
         /* query */
         addKeyVal (&collHandle->dataObjInp.condInput,
           SEL_OBJ_TYPE_KW, "collection");
-        status = rcQuerySpecColl (conn, &collHandle->dataObjInp,
-          &genQueryOut);
+#if 0
+        status = rcQuerySpecColl ((rcComm_t *) queryHandle->conn, 
+	  &collHandle->dataObjInp, &genQueryOut);
+#else
+        status = (*queryHandle->querySpecColl) ((rcComm_t *) queryHandle->conn, 
+          &collHandle->dataObjInp, &genQueryOut);
+#endif
+
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
 #if 0
@@ -1095,7 +1136,7 @@ genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
               &collHandle->genQueryInp, &genQueryOut);
         }
 #else
-        status = queryCollInColl (conn,
+        status = queryCollInColl (queryHandle,
           collHandle->dataObjInp.objPath, collHandle->flags,
           &collHandle->genQueryInp, &genQueryOut);
 #endif
@@ -1115,7 +1156,7 @@ genCollResInColl (rcComm_t *conn, collHandle_t *collHandle)
 }
 
 int
-genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
+genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
 {
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
@@ -1136,8 +1177,14 @@ genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
         /* query */
         addKeyVal (&collHandle->dataObjInp.condInput,
           SEL_OBJ_TYPE_KW, "dataObj");
+#if 0
         status = rcQuerySpecColl (conn, &collHandle->dataObjInp,
           &genQueryOut);
+#else
+        status = (*queryHandle->querySpecColl) ((rcComm_t *) queryHandle->conn,
+          &collHandle->dataObjInp, &genQueryOut);
+#endif
+
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
 #if 0
@@ -1151,7 +1198,7 @@ genDataResInColl (rcComm_t *conn, collHandle_t *collHandle)
               &collHandle->genQueryInp, &genQueryOut);
         }
 #else
-        status = queryDataObjInColl (conn,
+        status = queryDataObjInColl (queryHandle,
           collHandle->dataObjInp.objPath, collHandle->flags,
           &collHandle->genQueryInp, &genQueryOut);
 #endif
@@ -1199,7 +1246,7 @@ clearCollHandle (collHandle_t *collHandle, int freeSpecColl)
 }
 
 int
-getNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextCollMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
 int *rowInx, collEnt_t *outCollEnt)
 {
@@ -1224,10 +1271,20 @@ int *rowInx, collEnt_t *outCollEnt)
 
             if (dataObjInp->specColl != NULL) {
                 dataObjInp->openFlags = continueInx;
+#if 0
                 status = rcQuerySpecColl (conn, dataObjInp, &genQueryOut);
+#else
+                status = (*queryHandle->querySpecColl) (
+		  (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
+#endif
             } else {
                 genQueryInp->continueInx = continueInx;
+#if 0
                 status =  rcGenQuery (conn, genQueryInp, &genQueryOut);
+#else
+                status = (*queryHandle->genQuery) (
+		  (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
+#endif
             }
             if (status < 0) {
                 return (status);
@@ -1284,7 +1341,7 @@ int *rowInx, collEnt_t *outCollEnt)
 }
 
 int
-getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextDataObjMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
 int *rowInx, collEnt_t *outCollEnt)
 {
@@ -1310,10 +1367,20 @@ int *rowInx, collEnt_t *outCollEnt)
 
             if (dataObjInp->specColl != NULL) {
                 dataObjInp->openFlags = continueInx;
+#if 0
                 status = rcQuerySpecColl (conn, dataObjInp, &genQueryOut);
+#else
+                status = (*queryHandle->querySpecColl) (
+		  (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
+#endif
             } else {
                 genQueryInp->continueInx = continueInx;
+#if 0
                 status =  rcGenQuery (conn, genQueryInp, &genQueryOut);
+#else
+                status = (*queryHandle->genQuery) (
+		  (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
+#endif
             }
             if (status < 0) {
                 return (status);
@@ -1424,5 +1491,20 @@ setQueryFlag (rodsArguments_t *rodsArgs)
     }
 
     return queryFlags;
+}
+
+int
+rclInitQueryHandle (queryHandle_t *queryHandle, rcComm_t *conn)
+{
+    if (queryHandle == NULL || conn == NULL) {
+        return (USER__NULL_INPUT_ERR);
+    }
+
+    queryHandle->conn = conn;
+    queryHandle->connType = RC_COMM;
+    queryHandle->querySpecColl = (funcPtr) rcQuerySpecColl;
+    queryHandle->genQuery = (funcPtr) rcGenQuery;
+
+    return (0);
 }
 

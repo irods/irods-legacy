@@ -5,7 +5,6 @@
 #ifndef MISC_UTIL_H
 #define MISC_UTIL_H
 
-#include "rodsClient.h"
 #include "rodsPath.h"
 #include "parseCommandLine.h"
 
@@ -66,6 +65,19 @@ typedef enum {
     COLL_COLL_OBJ_QUERIED,
 } collState_t;
 
+typedef enum {
+    RC_COMM,
+    RS_COMM,
+} connType_t;
+
+/* struct for query by both client and server */
+typedef struct QueryHandle {
+    void *conn;         /* either rsComm or rcComm */
+    connType_t connType;
+    funcPtr querySpecColl;      /* rcQuerySpecColl or rsQuerySpecColl */
+    funcPtr genQuery;           /* rcGenQuery or rsGenQuery */
+} queryHandle_t;
+
 /* definition for flag in rclOpenCollection and collHandle_t */
 #define LONG_METADATA_FG     0x1     /* get verbose metadata */
 #define VERY_LONG_METADATA_FG     0x2   /* get verbose metadata */
@@ -76,6 +88,7 @@ typedef struct CollHandle {
     int inuseFlag;
     int flags;
     int rowInx;
+    queryHandle_t queryHandle;
     genQueryInp_t genQueryInp;
     dataObjInp_t dataObjInp;
     dataObjSqlResult_t dataObjSqlResult;
@@ -85,34 +98,22 @@ typedef struct CollHandle {
 /* the output of rclReadCollection */
 typedef struct CollEnt {
     objType_t objType;
+    int replNum;
+    int replStatus;
+    int dummy;
+    rodsLong_t dataSize;
     char *collName;		/* valid for dataObj and collection */
     char *dataName;
     char *dataId;
     char *createTime;
     char *modifyTime;
     char *chksum;
-    int replNum;
-    int replStatus;
-    rodsLong_t dataSize;
     char *resource;
     char *phyPath;
     char *ownerName;    	 /* valid for dataObj and collection */
     specColl_t specColl;	 /* valid only for collection */ 
 } collEnt_t;
 
-typedef enum {
-    RC_COMM,
-    RS_COMM,
-} connType_t;
-
-/* struct for query by both client and server */
-typedef struct QueryHandle {
-    void *conn;		/* either rsComm or rcComm */
-    connType_t connType;
-    funcPtr querySpecColl;	/* rcQuerySpecColl or rsQuerySpecColl */
-    funcPtr genQuery;		/* rcGenQuery or rsGenQuery */
-} queryHandle_t;
-    
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -127,11 +128,11 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath);
 int
 genAllInCollQCond (char *collection, char *collQCond);
 int
-queryCollInColl (rcComm_t *conn, char *collection,
+queryCollInColl (queryHandle_t *queryHandle, char *collection,
 int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut);
 int
-queryDataObjInColl (rcComm_t *conn, char *collection,
+queryDataObjInColl (queryHandle_t *queryHandle, char *collection,
 int flags, genQueryInp_t *genQueryInp,
 genQueryOut_t **genQueryOut);
 int
@@ -170,23 +171,28 @@ int
 rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,
 collEnt_t *collEnt);
 int
+readCollection (queryHandle_t *queryHandle, collHandle_t *collHandle,
+collEnt_t *collEnt);
+int
 clearCollHandle (collHandle_t *collHandle, int freeSpecColl);
 int
 rclCloseCollection (collHandle_t *collHandle);
 int
-getNextCollMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextCollMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
 int *rowInx, collEnt_t *outCollEnt);
 int
-getNextDataObjMetaInfo (rcComm_t *conn, dataObjInp_t *dataObjInp,
+getNextDataObjMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
 genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
 int *rowInx, collEnt_t *outCollEnt);
 int
-genCollResInColl (rcComm_t *conn, collHandle_t *collHandle);
+genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle);
 int
-genDataResInColl (rcComm_t *conn, collHandle_t *collHandle);
+genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle);
 int
 setQueryFlag (rodsArguments_t *rodsArgs);
+int
+rclInitQueryHandle (queryHandle_t *queryHandle, rcComm_t *conn);
 #ifdef  __cplusplus
 }
 #endif
