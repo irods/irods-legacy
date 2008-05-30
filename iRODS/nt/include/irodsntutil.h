@@ -34,6 +34,7 @@ char *iRODSNt_gethome();
 void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt);
 
 int getopt(int argc, char *const *argv, const char *shortopts);
+long long atoll(const char *str);
 
 #ifdef  __cplusplus
 }

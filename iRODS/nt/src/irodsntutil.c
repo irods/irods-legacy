@@ -202,3 +202,8 @@ void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
 
    printf("\n");
 }
+
+long long atoll(const char *str)
+{
+	return _atoi64(str);
+}
