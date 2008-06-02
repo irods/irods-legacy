@@ -34,6 +34,7 @@
 #include "icatHighLevelRoutines.h"
 
 /* For now, uncomment this line to build RDA #define BUILD_RDA 1  */
+/* Do same in reRDA.c */
 
 #define RDA_CONFIG_FILE "rda.config"
 #define RDA_ACCESS_ATTRIBUTE "RDA_ACCESS"
