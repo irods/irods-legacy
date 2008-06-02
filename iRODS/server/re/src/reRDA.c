@@ -8,6 +8,9 @@
 #include "rdaHighLevelRoutines.h"
 #include "dataObjWrite.h"
 
+/* For now, uncomment this line to build RDA #define BUILD_RDA 1  */
+/* Do same in rdaHighLevelRoutines.c */
+
 /*
  * \fn msiRdaStdout
  * \author Wayne Schroeder
@@ -35,6 +38,7 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
 	      msParam_t *inpParam3, msParam_t *inpParam4, 
 	      ruleExecInfo_t *rei)
 {
+#if defined(BUILD_RDA) 
     rsComm_t *rsComm; 
     char *rdaName;
     char *sql;
@@ -113,8 +117,11 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
     }
 
     return (0);
-}
+#else
+   return(RDA_NOT_COMPILED_IN);
+#endif
 
+}
 
 /*
  * \fn msiRdaToDataObj
@@ -142,6 +149,7 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
 	      msParam_t *inpParam3, msParam_t *inpParam4, 
 	      msParam_t *inpOutObj, ruleExecInfo_t *rei)
 {
+#if defined(BUILD_RDA) 
     rsComm_t *rsComm; 
     char *rdaName;
     char *sql;
@@ -241,4 +249,8 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
        free(outBuf);
     }
     return (status);
+#else
+   return(RDA_NOT_COMPILED_IN);
+#endif
+
 }
