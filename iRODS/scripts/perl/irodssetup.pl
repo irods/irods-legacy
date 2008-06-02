@@ -220,11 +220,19 @@ if ( $installDataServer )
 	printNotice( "    irodsctl stop\n" );
 	printNotice( "    irodsctl restart\n" );
 	printNotice( "Add '--help' for a list of commands.\n" );
+
+	printNotice(
+		    "\n",
+		    "Please see the iRODS documentation for additional notes on how\n",
+		    "to manage the servers and adjust the configuration.\n" );
 }
-printNotice(
-	"\n",
-	"Please see the iRODS documentation for additional notes on how\n",
-	"to manage the servers and adjust the configuration.\n" );
+else {
+	printNotice("\nFor i-commands-only builds like this, irodssetup does not\n");
+	printNotice("attempt to create your ~/.irods/.irodsEnv file, so you need to\n");
+	printNotice("create or update it by hand yourself. See the iRODS web site page\n" );
+	printNotice("on the User Environment.  You may wish to copy .irodsEnv from\n");
+	printNotice("another host.\n" );
+}
 
 exit( 0 );
 
