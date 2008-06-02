@@ -1,59 +1,60 @@
-#!/bin/sh 
+#!/bin/sh -ex
 
-# SDL determine usage()
-# right now only verboseflag can be set by user
-# right now hardcoded to 1
+# rm the file that each runtest1.build.sh will log Success in
+#rm -f runtest1.build.sh.log
 
-echo "SDL Starting iRODS concurrent test suite"
-
-## SDL we need to check and see if iRODS is even running
-
-
-numoferrors=1 
-verboseFlag=1
-binDir=../utilities/bin
-TMP_DIR=TMP
-# where is $OS set?
-OS=Darwin
-
-testid=concurrenttest-`date "+%Y%m%d%H%M%S"`
-
-# These are the three sub test scripts this script runs
-#testscripts="putget.sh test2.sh test3.sh"
-testscripts="subtest1"
-
-if [ ! -d $TMP_DIR ]; then
-mkdir $TMP_DIR
+if [ "$1" = "" ]
+then
+ echo "Usage: sh $0.sh <count> <error count (default is 1)>"
+ exit 1
 fi
 
-for testscript in $testscripts ; do
+i=1
 
-	if [ $verboseFlag -eq 1 ]; then
-  		echo "Starting $testscript..."
-	fi
+#SDL this will be a loop eventually
+subtests="putgetwrapper.sh"
 
-	subtestid=$testid-$testscript
-
-	# Run the subtest
-	sh -ex $testscript $subtestid > $TMP_DIR/$subtestid.irods 2>&1
-	# sh -ex $testscript $subtestid 2>&1 | tee $TMP_DIR/$subtestid.irods
-	cp $TMP_DIR/$subtestid.irods $TMP_DIR/$subtestid.log
-	cp $TMP_DIR/$subtestid.log $subtestid.result.out
-
-	# forget about mydiff for now - let's just get the skeleton working
-	# SDL what the heck is going on here?
-
-	# compare results
-	#echo "Starting mydiff $testscript.result.out $TMP_DIR/$testid.irods"
-	wc $subtestid.result.out $TMP_DIR/$subtestid.irods
-	./mydiff $subtestid.result.out $TMP_DIR/$subtestid.irods 
-
-
+while [ $i -lt $1 ]
+do
+   sh $subtests &
+   i=`expr $i +  1`
+   sleep 3
 done
+sleep 10
+sh $subtests 
 
 
-# SDL now clean up locally
+# Check if all have completed successfully, and error exit if not.
+# runtest1.build.sh will exit immediately with an error code if any
+# subcommands error exit (because sh is running with -e), but for the
+# background commands spawned in the above while loop, those exit codes
+# will not propogate back up.  So this takes care of that.
+#wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
+#if [ "$wc" != "$1" ]
+#then 
+#   echo "Only $wc of the $1 jobs completed successfully; waiting 10 seconds"
+#   sleep 10
+#   wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
+#   if [ "$wc" != "$1" ]
+#   then 
+#       echo "Only $wc of the $1 jobs completed successfully; waiting 30 seconds"
+#       sleep 30
+#       wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
+#       if [ "$wc" != "$1" ]
+#       then 
+#	   echo "Only $wc of the $1 jobs completed successfully; waiting 60 seconds"
+#	   sleep 60
+#	   wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
+#	   if [ "$wc" != "$1" ]
+#	   then 
+#	       echo "Only $wc of the $1 jobs completed successfully; failed"
+#	       exit 2
+#	   fi
+#       fi
+#   fi
+#fi
 
+echo "Parallel Test with $1 concurrent tests completed successfully"  
 exit 0
 
 
