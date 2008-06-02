@@ -113,13 +113,21 @@ initOutForQuerySpecColl (genQueryOut_t **genQueryOut)
       malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[1].value, 0, 
       MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
+#if 0
     myGenQueryOut->sqlResult[2].attriInx = COL_COLL_CREATE_TIME;
+#else
+    myGenQueryOut->sqlResult[2].attriInx = COL_D_CREATE_TIME;
+#endif
     myGenQueryOut->sqlResult[2].len = NAME_LEN;
     myGenQueryOut->sqlResult[2].value =
       malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[2].value, 0,
       NAME_LEN * MAX_SPEC_COLL_ROW); 
+#if 0
     myGenQueryOut->sqlResult[3].attriInx = COL_COLL_MODIFY_TIME;
+#else
+    myGenQueryOut->sqlResult[3].attriInx = COL_D_MODIFY_TIME;
+#endif
     myGenQueryOut->sqlResult[3].len = NAME_LEN;
     myGenQueryOut->sqlResult[3].value =
       malloc (NAME_LEN * MAX_SPEC_COLL_ROW);

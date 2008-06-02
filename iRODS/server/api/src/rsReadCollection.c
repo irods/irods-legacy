@@ -29,7 +29,7 @@ collEnt_t **collEnt)
     collHandle = &CollHandle[handleInx];
     *collEnt = (collEnt_t *) malloc (sizeof (collEnt_t));
 
-    status = readCollection (&collHandle->queryHandle, collHandle, *collEnt);
+    status = readCollection (collHandle, *collEnt);
 
     if (status < 0) {
 	free (*collEnt);

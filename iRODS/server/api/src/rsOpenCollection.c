@@ -36,7 +36,7 @@ rsOpenCollection (rsComm_t *rsComm, openCollInp_t *openCollInp)
 
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
 
-    free (rodsObjStatOut);
+    collHandle->rodsObjStat = rodsObjStatOut;
 
     collHandle->state = COLL_OPENED;
     collHandle->flags = openCollInp->flags;

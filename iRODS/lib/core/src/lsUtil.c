@@ -583,17 +583,17 @@ genQueryOut_t *genQueryOut)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
-    if ((createTime = getSqlResultByInx (genQueryOut, COL_COLL_CREATE_TIME)) 
+    if ((createTime = getSqlResultByInx (genQueryOut, COL_D_CREATE_TIME)) 
       == NULL) {
         rodsLog (LOG_ERROR,
-          "printSpecLs: getSqlResultByInx for COL_COLL_CREATE_TIME failed");
+          "printSpecLs: getSqlResultByInx for COL_D_CREATE_TIME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
-    if ((modifyTime = getSqlResultByInx (genQueryOut, COL_COLL_MODIFY_TIME)) 
+    if ((modifyTime = getSqlResultByInx (genQueryOut, COL_D_MODIFY_TIME)) 
       == NULL) {
         rodsLog (LOG_ERROR,
-          "printSpecLs: getSqlResultByInx for COL_COLL_MODIFY_TIME failed");
+          "printSpecLs: getSqlResultByInx for COL_D_MODIFY_TIME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 

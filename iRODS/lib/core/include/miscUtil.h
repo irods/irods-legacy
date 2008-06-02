@@ -88,6 +88,7 @@ typedef struct CollHandle {
     int inuseFlag;
     int flags;
     int rowInx;
+    rodsObjStat_t *rodsObjStat;
     queryHandle_t queryHandle;
     genQueryInp_t genQueryInp;
     dataObjInp_t dataObjInp;
@@ -171,20 +172,15 @@ int
 rclReadCollection (rcComm_t *conn, collHandle_t *collHandle,
 collEnt_t *collEnt);
 int
-readCollection (queryHandle_t *queryHandle, collHandle_t *collHandle,
-collEnt_t *collEnt);
+readCollection (collHandle_t *collHandle, collEnt_t *collEnt);
 int
 clearCollHandle (collHandle_t *collHandle, int freeSpecColl);
 int
 rclCloseCollection (collHandle_t *collHandle);
 int
-getNextCollMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
-genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
-int *rowInx, collEnt_t *outCollEnt);
+getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt);
 int
-getNextDataObjMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
-genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
-int *rowInx, collEnt_t *outCollEnt);
+getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt);
 int
 genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle);
 int
@@ -193,6 +189,10 @@ int
 setQueryFlag (rodsArguments_t *rodsArgs);
 int
 rclInitQueryHandle (queryHandle_t *queryHandle, rcComm_t *conn);
+int
+freeCollEnt (collEnt_t *collEnt);
+int
+clearCollEnt (collEnt_t *collEnt);
 #ifdef  __cplusplus
 }
 #endif

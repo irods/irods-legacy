@@ -176,6 +176,7 @@ printCollectionNat (rcComm_t *conn, char *collection, int flags)
 	    /* recursive print */
             printCollection (conn, collEnt->collName, flags);
 	}
+	freeCollEnt (collEnt);
     }
 
     rcCloseCollection (conn, handleInx);

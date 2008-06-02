@@ -271,7 +271,7 @@ copyStrFromPiBuf (char **inBuf, char *outBuf, int dependentFlag)
 		/* we got something */
 		break;
 	    }
-	} else if (c == '*' || c == ';' || c == '?') {
+	} else if (c == '*' || c == ';' || c == '?' || c == '$') {
 	    if (outLen > 0) {	
 		/* what we have in outBuf is type cast. don't advance 
 		 * inPtr because we'll pick up next time 
