@@ -105,4 +105,5 @@
 #include "openCollection.h"
 #include "readCollection.h"
 #include "closeCollection.h"
+#include "collRepl.h"
 #endif	/* API_HEADER_ALL_H */

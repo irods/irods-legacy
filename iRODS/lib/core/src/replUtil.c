@@ -207,6 +207,14 @@ rodsRestart_t *rodsRestart)
         fprintf (stdout, "C- %s:\n", srcColl);
     }
 
+#if 0	/* for testing rcCollRepl */
+    if (rodsArgs->restart == False && rodsArgs->verbose == False) {
+        rstrcpy (dataObjInp->objPath, srcColl, MAX_NAME_LEN);
+        status = rcCollRepl (conn, dataObjInp);
+	return status;
+    }
+#endif
+
     collLen = strlen (srcColl);
 
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
@@ -217,6 +225,13 @@ rodsRestart_t *rodsRestart)
           "getCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
+    }
+    if (collHandle.rodsObjStat->specColl != NULL) {
+	 fprintf (stderr, 
+          "getCollUtil: Mounted collection %s cannot be replicated\n",
+          srcColl);
+	rclCloseCollection (&collHandle);
+	return (0);
     }
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {

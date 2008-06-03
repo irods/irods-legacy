@@ -97,6 +97,7 @@
 #define SYNC_MOUNTED_COLL_AN 			659
 #define STRUCT_FILE_SYNC_AN 			660
 #define CLOSE_COLLECTION_AN 			661
+#define COLL_REPL_AN 			662
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

@@ -298,3 +298,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcReadCollection.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsCloseCollection.o
 LIB_API_OBJS += $(libApiObjDir)/rcCloseCollection.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsCollRepl.o
+LIB_API_OBJS += $(libApiObjDir)/rcCollRepl.o
