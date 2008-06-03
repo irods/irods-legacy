@@ -181,7 +181,11 @@ obfRmPw(int opt)
    i = obfiGetFilename(fileName);
    if (i != 0) return(i);
 
+#ifdef windows_platform
+   fd = iRODSNt_open(fileName,O_RDONLY,1);
+#else
    fd = open(fileName,O_RDONLY,0);
+#endif
    if (fd < 0) {
       if (opt==0) printf("%s does not exist\n", fileName);
       return(AUTH_FILE_DOES_NOT_EXIST);
@@ -246,7 +250,9 @@ obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg)
 
   if (strlen(pwArg)==0) {
 
-#ifndef _WIN32
+#ifdef windows_platform
+	 iRODSNtGetUserPasswdInputInConsole(inbuf, "Enter your current iRODS password:");
+#else
     if (promptOpt != 1) {
       if (stat ("/bin/stty", &statbuf) == 0)
         system("/bin/stty -echo");
@@ -259,9 +265,6 @@ obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg)
       system("/bin/stty echo");
       printf("\n");
     }
-
-#else
-    //iRODSNtGetUserPasswdInputInConsole(inbuf, "Enter your current IRODS password:");
 #endif
 
   }
@@ -341,7 +344,7 @@ obfiGetPw(char *fileName, char *pw)
    int fd_in, rval;
    char buf1[500];
 
-#ifdef _WIN32
+#ifdef windows_platform
    fd_in = iRODSNt_open(fileName,O_RDONLY,1);
 #else
    fd_in = open(fileName,O_RDONLY,0);
@@ -393,7 +396,7 @@ obfiOpenOutFile(char *fileName, int fileOpt)
        strcpy(inbuf, "y");
      }
      if (inbuf[0]=='y') {
-#ifdef _WIN32
+#ifdef windows_platform
        fd_out = iRODSNt_open(fileName, O_CREAT|O_WRONLY|O_TRUNC, 1);
 #else
        fd_out = open(fileName, O_CREAT|O_WRONLY|O_TRUNC, 0600);
@@ -425,19 +428,10 @@ int obfiTimeval()
    long sec;
    int val;  
 
-#ifdef _WIN32
-   SYSTEMTIME nowtime;
-#else
    struct timeval nowtime;
-#endif
 
-#ifdef _WIN32
-   GetSystemTime(&nowtime);
-   sec = nowtime.wSecond;
-#else
    (void)gettimeofday(&nowtime, (struct timezone *)0);
    sec = nowtime.tv_sec;
-#endif
 
    val = sec;
    val = val & 0xffff;      /* keep it bounded */
@@ -457,11 +451,8 @@ obfiEncode(char *in, char *out, int extra)
    char *my_in;
 
    /*   struct timeb timeb_time; */
-#ifdef _WIN32
-   SYSTEMTIME nowtime;
-#else
    struct timeval nowtime;
-#endif
+
    int rval;
    int wheel_len;
    int wheel[26+26+10+15];
@@ -494,13 +485,9 @@ obfiEncode(char *in, char *out, int extra)
 /*
  get a pseudo random number
 */
-#ifdef _WIN32
-   GetSystemTime(&nowtime);
-   rval = nowtime.wSecond & 0xf;
-#else
+
    (void)gettimeofday(&nowtime, (struct timezone *)0);
    rval = nowtime.tv_usec & 0xf;
-#endif
 
 /*
  and use it to pick a pattern for ascii offsets
