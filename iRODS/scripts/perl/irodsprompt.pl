@@ -86,6 +86,7 @@ my $thisHost   = getCurrentHostName( );
 
 # Paths to other files
 my $installPostgresConfig = File::Spec->catfile( $configDir, "installPostgres.config" );
+my $installPostgresConfigTemplate = File::Spec->catfile( $configDir, "installPostgres.config.template" );
 
 
 
@@ -175,6 +176,11 @@ $databaseServerHost	= "localhost";			# Prompt.
 $databaseServerPort	= $DEFAULT_databaseServerPort;	# Prompt [advanced].
 $databaseServerAccount	= $DEFAULT_databaseServerAccount;# Prompt.
 $databaseServerPassword	= undef;			# Prompt.
+
+# Postgres and ODBC versions
+$postgresSource         = '';				# Prompt.
+$odbcSource             = '';				# Prompt.
+
 
 # GSI
 $gsiAuth		= 0;
@@ -1022,9 +1028,13 @@ sub promptForNewPostgresConfiguration( $ )
 		# Prompt for the directory
 		if ( $upgrade == 0 )
 		{
+			$tmpPath = $databaseServerPath;
+			$tmpPath =~ s\/pgsql\\g; # remove /pgsql if it is there,
+						 # as it seems to get added later but
+						 # what we need as default here is without.
 			$databaseServerPath = promptString(
 				"New Postgres directory",
-				$databaseServerPath );
+				$tmpPath );
 		}
 		else
 		{
@@ -1151,10 +1161,40 @@ sub promptForNewPostgresConfiguration( $ )
 	}
 
 
-	# There is no prompt for the ODBC type for a new install.
-	# Instead, the ODBC type is set in the installPostgres.config
-	# file.  During the Postgres install, that ODBC choice is
-	# copied back into irods.config.
+	# Previous version did not, but we now prompt for the pg and odbc versions
+	# to install.
+
+        # Get default postgres settings
+	if (-e $installPostgresConfig) {
+	    require $installPostgresConfig
+	}
+	else {
+	    require $installPostgresConfigTemplate
+	}
+
+        # Prompt for pg version
+	$postgresSource = $POSTGRES_SOURCE;
+
+	printNotice(
+		    "\n",
+		    "Multiple versions of PostgreSQL are available from their web site.\n",
+		    "We recommend the default, or newer, version.",
+		    "\n" );
+	$postgresSource = promptString(
+			"PostgreSQL version",
+			$postgresSource );
+
+        # Prompt for ODBC version
+	$odbcSource = $ODBC_SOURCE;
+
+	printNotice(
+		    "\n",
+		    "Different versions of ODBC are also available.\n",
+		    "We recommend the default, but others may work well too.",
+		    "\n" );
+	$odbcSource = promptString(
+			"ODBC version",
+			$odbcSource );
 
 
 	if ( $advanced )
@@ -1505,7 +1545,9 @@ sub promptForConfirmation( )
 		}
 		printNotice(
 			"        account       '$databaseServerAccount'\n",
-			"        password      '$databaseServerPassword'\n" );
+			"        password      '$databaseServerPassword'\n",
+			"        pg version    '$postgresSource'\n",
+			"        odbc version  '$odbcSource'\n" );
 		my $msg = "";
 		if ( !$databaseServerExclusive )
 		{
@@ -1648,6 +1690,14 @@ sub configureNewPostgresDatabase( )
 	if ( $deleteDatabaseData ne "" )
 	{
 		$configure{"POSTGRES_FORCE_INIT"} = $deleteDatabaseData;
+	}
+	if ( $postgresSource ne "" )
+	{
+		$configure{"POSTGRES_SOURCE"} = $postgresSource;
+	}
+	if ( $postgresSource ne "" )
+	{
+		$configure{"ODBC_SOURCE"} = $odbcSource;
 	}
 	replaceVariablesInFile( $installPostgresConfig,
 		"perl", 1, %configure );
