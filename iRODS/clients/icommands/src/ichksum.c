@@ -93,7 +93,7 @@ usage ()
 " -a  checksum all replica. ils -L should be used to list the values of all replica",
 " -K  verify the checksum value in icat. If the checksum value does not exist,",
 "     compute and register one.",
-" -n  replNum  - the replica to checksum; if not specified checksum all replicas",
+" -n  replNum  - the replica to checksum; use -a to checksum all replicas.",
 " -r  recursive - checksum the whole subtree; the collection, all data-objects",
 "     in the collection, and any subcollections and sub-data-objects in the",
 "     collection.",
