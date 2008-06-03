@@ -549,6 +549,8 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
 
     status =  rsGenQuery (rsComm, &genQueryInp, genQueryOut);
 
+    clearGenQueryInp (&genQueryInp);
+
     if (status < 0) {
         return (status);
     }
