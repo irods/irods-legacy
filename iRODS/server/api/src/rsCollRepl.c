@@ -27,7 +27,7 @@ int
 rsCollRepl (rsComm_t *rsComm, dataObjInp_t *collReplInp,
 collOprStat_t **collOprStat)
 {
-    int status, myBuf;
+    int status;
     openCollInp_t openCollInp;
     collEnt_t *collEnt;
     int handleInx;
