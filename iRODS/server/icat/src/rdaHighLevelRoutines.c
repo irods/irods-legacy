@@ -136,6 +136,17 @@ int rdaClose() {
 #endif
 }
 
+int rdaCommit() {
+#if defined(BUILD_RDA) 
+   int status, stat2;
+
+   status = cllExecSqlNoResult(&rda_icss, "commit");
+   return(status);
+#else
+   return(RDA_NOT_COMPILED_IN);
+#endif
+}
+
 int rdaIsConnected() {
 #if defined(BUILD_RDA) 
    if (rdaLogSQL) rodsLog(LOG_SQL, "rdaIsConnected");
@@ -200,7 +211,7 @@ int rdaCheckAccess(char *rdaName, rsComm_t *rsComm) {
 }
 
 
-int rdaSql(char *sql, char *parm[], int nParms) {
+int rdaSqlNoResults(char *sql, char *parm[], int nParms) {
 #if defined(BUILD_RDA) 
    int i;
    for (i=0;i<nParms;i++) {
