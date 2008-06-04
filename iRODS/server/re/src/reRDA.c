@@ -254,3 +254,137 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
 #endif
 
 }
+
+/*
+ * \fn msiRdaNoResults
+ * \author Wayne Schroeder
+ * \date   2007-06-03
+ * \brief This microservice calls new RDA functions to interface
+ * to an arbitrary database (under iRODS access control), performing
+ * a SQL that does not return results.
+ * \note 
+ * \param[in]
+ *    inpRdaName - string, name of the RDA being used
+ *    inpSQL - string, the SQL to use
+ *    inpParam1-4 optional - STR_MS_T parameters (bind variables) to
+ *    the SQL.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+
+int
+msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
+	      msParam_t *inpParam1, msParam_t *inpParam2, 
+	      msParam_t *inpParam3, msParam_t *inpParam4, 
+	      ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm; 
+    char *rdaName;
+    char *sql;
+    char *p1;
+    char *p2;
+    char *p3;
+    char *p4;
+    int status;
+    char *parms[20];
+    int nParm=0;
+
+    RE_TEST_MACRO ("    Calling msiRdaNoResults")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+	rodsLog (LOG_ERROR,
+	  "msiRdaNoResults rei or rsComm is NULL");
+	return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+
+
+    rdaName = parseMspForStr(inpRdaName);
+    if (rdaName == NULL) {
+       rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+			   "msiRdaNoResults: input inpRdaName is NULL");
+       return(USER__NULL_INPUT_ERR);
+    }
+
+    sql = parseMspForStr(inpSQL);
+    if (sql == NULL) {
+       rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+			   "msiRdaNoResults: input inpSQL is NULL");
+       return(USER__NULL_INPUT_ERR);
+    }
+
+    p1 = parseMspForStr(inpParam1);
+    p2 = parseMspForStr(inpParam2);
+    p3 = parseMspForStr(inpParam3);
+    p4 = parseMspForStr(inpParam4);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiRdaNoResults: input inpParam1 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    status = rdaCheckAccess(rdaName, rsComm);
+    if (status) return(status);
+
+    status = rdaOpen(rdaName);
+    if (status) return(status);
+
+    if (p1!=NULL) {
+       parms[nParm++]=p1;
+    }
+    if (p2!=NULL) {
+       parms[nParm++]=p2;
+    }
+    if (p3!=NULL) {
+       parms[nParm++]=p3;
+    }
+    if (p4!=NULL) {
+       parms[nParm++]=p4;
+    }
+
+    status = rdaSqlNoResults(sql, parms, nParm);
+    if (status) {
+       return(status);
+    }
+
+    return (0);
+}
+
+
+/*
+ * \fn msiRdaCommit
+ * \author Wayne Schroeder
+ * \date   2007-06-03
+ * \brief This microservice calls new RDA functions to interface
+ * to an arbitrary database (under iRODS access control), performing
+ * a commit operation.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+
+int
+msiRdaCommit(ruleExecInfo_t *rei) {
+    rsComm_t *rsComm; 
+    int status;
+
+    RE_TEST_MACRO ("    Calling msiRdaCommit")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+	rodsLog (LOG_ERROR,
+	  "msiRdaNoCommit rei or rsComm is NULL");
+	return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+
+    status = rdaCommit(rsComm);
+    return(status);
+}

@@ -117,6 +117,11 @@ int msiRdaToDataObj(msParam_t *inpRdaName, msParam_t *inpSQL,
 	 msParam_t *inpParam1, msParam_t *inpParam2, 
 	 msParam_t *inpParam3, msParam_t *inpParam4, 
 	 msParam_t *inOutFd, ruleExecInfo_t *rei);
+int msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL, 
+	 msParam_t *inpParam1, msParam_t *inpParam2, 
+	 msParam_t *inpParam3, msParam_t *inpParam4, 
+	 ruleExecInfo_t *rei);
+int msiRdaCommit(ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
@@ -226,3 +231,5 @@ microsdef_t MicrosTable[] = {
   {"msiStrArray2String",2,(funcPtr) msiStrArray2String},
   {"msiRdaToStdout",6,(funcPtr) msiRdaToStdout},
   {"msiRdaToDataObj",7,(funcPtr) msiRdaToDataObj},
+  {"msiRdaNoResults",6,(funcPtr) msiRdaNoResults},
+  {"msiRdaCommit",0,(funcPtr) msiRdaCommit},
