@@ -71,7 +71,7 @@ main(int argc, char **argv) {
 	 parms[i-4]=argv[i];
       }
       nParms = i-4;
-      status = rdaSql(argv[3], parms, nParms);
+      status = rdaSqlNoResults(argv[3], parms, nParms);
       didOne=1;
    }
 
