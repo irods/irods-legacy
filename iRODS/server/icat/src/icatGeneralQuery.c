@@ -1151,7 +1151,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 	 return(status);
       }
 
-      if (genQueryInp.options && RETURN_TOTAL_ROW_COUNT) {
+      if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT) {
 	 if (logSQLGenQuery) rodsLog(LOG_SQL, "chlGenQuery SQL 3");
 	 i = cllGetRowCount(icss, statementNum);
 	 if (i >= 0) result->totalRowCount = i + genQueryInp.rowOffset;
