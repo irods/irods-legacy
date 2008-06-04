@@ -29,30 +29,30 @@ sh $subtests
 # subcommands error exit (because sh is running with -e), but for the
 # background commands spawned in the above while loop, those exit codes
 # will not propogate back up.  So this takes care of that.
-#wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
-#if [ "$wc" != "$1" ]
-#then 
-#   echo "Only $wc of the $1 jobs completed successfully; waiting 10 seconds"
-#   sleep 10
-#   wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
-#   if [ "$wc" != "$1" ]
-#   then 
-#       echo "Only $wc of the $1 jobs completed successfully; waiting 30 seconds"
-#       sleep 30
-#       wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
-#       if [ "$wc" != "$1" ]
-#       then 
-#	   echo "Only $wc of the $1 jobs completed successfully; waiting 60 seconds"
-#	   sleep 60
-#	   wc=`cat runtest1.build.sh.log | wc -l | sed 's/ //g'`
-#	   if [ "$wc" != "$1" ]
-#	   then 
-#	       echo "Only $wc of the $1 jobs completed successfully; failed"
-#	       exit 2
-#	   fi
-#       fi
-#   fi
-#fi
+wc=`cat $subtests.log | wc -l | sed 's/ //g'`
+if [ "$wc" != "$1" ]
+then 
+   echo "Only $wc of the $1 jobs completed successfully; waiting 10 seconds"
+   sleep 10
+   wc=`cat $subtests.log | wc -l | sed 's/ //g'`
+   if [ "$wc" != "$1" ]
+   then 
+       echo "Only $wc of the $1 jobs completed successfully; waiting 30 seconds"
+       sleep 30
+       wc=`cat $subtests.log | wc -l | sed 's/ //g'`
+       if [ "$wc" != "$1" ]
+       then 
+	   echo "Only $wc of the $1 jobs completed successfully; waiting 60 seconds"
+   sleep 60
+   wc=`cat $subtests.log | wc -l | sed 's/ //g'`
+	   if [ "$wc" != "$1" ]
+	   then 
+	       echo "Only $wc of the $1 jobs completed successfully; failed"
+	       exit 2
+	   fi
+       fi
+   fi
+fi
 
 echo "Parallel Test with $1 concurrent tests completed successfully"  
 exit 0
