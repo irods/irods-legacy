@@ -1171,7 +1171,16 @@ sub configureIrodsServer
 	{
 		printError( "\nInstall problem:\n" );
 		printError( "    Cannot start iRODS server.\n" );
+
+		printError( "    \nIf your network environment is unusual, you may need to update the\n");
+		printError( "    server/config/irodsHost file and rerun irodssetup.  See comments\n");
+		printError( "    within irodsHost.\n");
+
 		printLog( "\nCannot start iRODS server.\n" );
+
+		printLog( "    \nIf your network environment is unusual, you may need to update the\n");
+		printLog( "    server/config/irodsHost file and rerun irodssetup.  See comments\n");
+		printLog( "    within irodsHost.\n");
 		cleanAndExit( 1 );
 	}
 

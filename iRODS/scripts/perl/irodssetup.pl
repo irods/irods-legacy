@@ -325,12 +325,33 @@ sub prepare( )
 	# 'irodsctl' won't work because configuration files won't be
 	# right yet.  That's fine because it probably means there are
 	# no servers to stop anyway.
+	# 
+	# But especially with recent changes, there may be other
+	# irodsservers running.  If on another port, this is OK, but
+	# on a fresh install or dedicated host re-install, it is not.
+	# So check, and warn the user if some are running.
 	#
 	printSubtitle( "\nPreparing...\n" );
 	`$irodsctl --quiet stop 2>&1`;
 	# Ignore errors.
-}
 
+	# Sleep a bit and warn user if irods servers are running
+	sleep(2);
+	$ps_opt = "-el";
+        if ($thisOS =~ /Darwin/i ) {
+	    $ps_opt = "-x";
+	}
+	$psOut1 = `ps $ps_opt | grep irodsServer | grep -v defunct | grep -v grep`;
+	$psOut2 = `ps $ps_opt | grep irodsReServer | grep -v defunct | grep -v grep`;
+	$psOut3 = `ps $ps_opt | grep irodsAgent | grep -v defunct | grep -v grep`;
+	$psOut =  $psOut1 . $psOut2 . $psOut3;
+	if (length($psOut)) {
+	    printError( "\nWarning, some irods processes are running\n" );
+	    printError( "Will ignore, but if you are trying to run one only irods system,\n");
+	    printError( "you might need to kill them and re-run irodssetup.\n");
+	    printError( "ps $ps_opt | grep ...  results:\n$psOut\n" );
+	}
+}
 
 
 
