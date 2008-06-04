@@ -22,7 +22,7 @@
 /* prototype for the server handler */
 int
 rsCollRepl (rsComm_t *rsComm, dataObjInp_t *collReplInp, 
-transStat_t **transStat);
+collOprStat_t **collOprStat);
 #else
 #define RS_COLL_REPL NULL
 #endif
@@ -33,7 +33,10 @@ extern "C" {
 
 /* prototype for the client call */
 int
-rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp);
+rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp, int vFlag);
+int
+_rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp,
+collOprStat_t **collOprStat);
 
 #ifdef  __cplusplus
 }

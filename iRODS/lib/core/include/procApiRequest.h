@@ -34,7 +34,8 @@ bytesBuf_t *outBsBBuf);
 int
 branchReadAndProcApiReply (rcComm_t *conn, int apiNumber,
 void **outStruct, bytesBuf_t *outBsBBuf);
-
+int
+cliGetCollOprStat (rcComm_t *conn, collOprStat_t *collOprStat, int vFlag);
 #ifdef  __cplusplus
 }
 #endif

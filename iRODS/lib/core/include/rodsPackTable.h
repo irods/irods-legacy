@@ -111,6 +111,7 @@ packInstructArray_t RodsPackTable[] = {
         {"h5Datatype_PI", h5Datatype_PI},
         {"h5Dataspace_PI", h5Dataspace_PI},
         {"CollEnt_PI", CollEnt_PI},
+        {"CollOprStat_PI", CollOprStat_PI},
 	/* end of HDF5 */ 
         {PACK_TABLE_END_PI, (char *) NULL},
 };

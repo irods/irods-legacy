@@ -333,3 +333,34 @@ bytesBuf_t *errorBBuf)
     return retVal;
 }
 
+int 
+cliGetCollOprStat (rcComm_t *conn, collOprStat_t *collOprStat, int vFlag)
+{
+    int status;
+
+    while (status == SYS_SVR_TO_CLI_COLL_STAT) {
+        int myBuf;
+        /* more to come */
+        if (collOprStat != NULL) {
+            if (vFlag != 0) {
+                printf (
+                  "num files done = %d, totalFileCnt = %d, bytesWritten = %lld, last file done: %s\n",
+                  collOprStat->filesCnt, collOprStat->totalFileCnt,
+                  collOprStat->bytesWritten, collOprStat->lastObjPath);
+            }
+            free (collOprStat);
+            collOprStat = NULL;
+        }
+        myBuf = htonl (SYS_CLI_TO_SVR_COLL_STAT_REPLY);
+        status = write (conn->sock, (void *) &myBuf, 4);
+        status = readAndProcApiReply (conn, conn->apiInx,
+          (void **) &collOprStat, NULL);
+    }
+
+    if (collOprStat != NULL) {
+        free (collOprStat);
+    }
+
+    return (status);
+}
+

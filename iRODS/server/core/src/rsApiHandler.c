@@ -546,3 +546,33 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
     }
 }
  
+int
+svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat)
+{
+    int myBuf;
+    int status;
+
+    status = sendAndProcApiReply (rsComm, rsComm->apiInx,
+      SYS_SVR_TO_CLI_COLL_STAT, collOprStat, NULL);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "svrSendCollOprStat: sendAndProcApiReply failed. status = %d",
+          status);
+	return status;
+    }
+
+    /* read 4 bytes */
+    status = myRead (rsComm->sock, &myBuf, sizeof (myBuf), SOCK_TYPE, NULL);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "svrSendCollOprStat: read handshake failed. status = %d", status);
+    }
+    if (ntohl (myBuf) != SYS_CLI_TO_SVR_COLL_STAT_REPLY) {
+        rodsLog (LOG_ERROR,
+          "svrSendCollOprStat: client reply %d != %d.", 
+	  ntohl (myBuf), SYS_CLI_TO_SVR_COLL_STAT_REPLY);
+	return (UNMATCHED_KEY_OR_INDEX);
+    } 
+
+    return (0);
+}

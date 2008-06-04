@@ -384,6 +384,7 @@ genQueryOut_t **genQueryOut)
     setQueryInpForData (flags, genQueryInp);
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
+    genQueryInp->options = RETURN_TOTAL_ROW_COUNT;
 
 #if 0
     status =  rcGenQuery (conn, genQueryInp, genQueryOut);

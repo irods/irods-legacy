@@ -41,5 +41,6 @@ int readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus);
 int
 sendAndRecvBranchMsg (rsComm_t *rsComm, int apiInx, int status,
 void *myOutStruct, bytesBuf_t *myOutBsBBuf);
-
+int
+svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat);
 #endif	/* RS_API_HANDLER_H */

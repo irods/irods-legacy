@@ -278,6 +278,15 @@ typedef struct {
     rodsLong_t bytesWritten;
 } transStat_t;
 
+#define FILE_CNT_PER_STAT_OUT	10	/* the default file count per 
+					 * collOprStat output */
+typedef struct {
+    int filesCnt;
+    int totalFileCnt;
+    rodsLong_t bytesWritten;
+    char lastObjPath[MAX_NAME_LEN];
+} collOprStat_t;
+
 /* tagStruct_t - tagged keyword structure
    preTag  defines the reg exp to find beginning of value
    postTag defines the reg exp to be checked to find end of value

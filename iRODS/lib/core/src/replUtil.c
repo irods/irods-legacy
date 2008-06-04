@@ -207,10 +207,10 @@ rodsRestart_t *rodsRestart)
         fprintf (stdout, "C- %s:\n", srcColl);
     }
 
-#if 0	/* for testing rcCollRepl */
+#if 0 	/* for testing rcCollRepl */
     if (rodsArgs->restart == False && rodsArgs->verbose == False) {
         rstrcpy (dataObjInp->objPath, srcColl, MAX_NAME_LEN);
-        status = rcCollRepl (conn, dataObjInp);
+        status = rcCollRepl (conn, dataObjInp, rodsArgs->verbose);
 	return status;
     }
 #endif

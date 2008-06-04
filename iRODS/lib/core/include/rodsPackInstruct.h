@@ -119,6 +119,7 @@
 /* content of collEnt_t cannot be freed since they are pointers in "value"
  * of sqlResult */ 
 #define CollEnt_PI "int objType; int replNum; int replStatus; int dummy; double dataSize; str $collName; str $dataName; str $dataId; str $createTime; str $modifyTime; str $chksum; str $resource; str $phyPath; str $ownerName; struct SpecColl_PI;" 
+#define CollOprStat_PI "int filesCnt; int totalFileCnt; double bytesWritten; str lastObjPath[MAX_NAME_LEN];"
 /* XXXXX end of HDF5 PI */
 
 #endif	/* PACK_INSTRUCT_H */

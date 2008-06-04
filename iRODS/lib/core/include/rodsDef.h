@@ -107,6 +107,8 @@
 /* this is the return value for the rcExecMyRule call indicating the
  * server is requesting the client to client to perform certain task */ 
 #define SYS_SVR_TO_CLI_MSI_REQUEST 99999995
+#define SYS_SVR_TO_CLI_COLL_STAT 99999996
+#define SYS_CLI_TO_SVR_COLL_STAT_REPLY 99999997
 
 /* definition for iRods server to client action request from a microservice. 
  * these definitions are put in the "label" field of MsParam */  

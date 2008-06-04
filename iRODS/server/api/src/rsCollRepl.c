@@ -13,27 +13,30 @@
 #include "readCollection.h"
 #include "closeCollection.h"
 #include "dataObjRepl.h"
+#include "rsApiHandler.h"
 
 /* rsCollRepl - The Api handler of the rcCollRepl call - Replicate
  * a data object.
  * Input -
  *    rsComm_t *rsComm
  *    collRepl_t *collRepl - The replication input
- *    transStat_t **transStat - transfer stat output
+ *    collOprStat_t **collOprStat - transfer stat output
  */
 
 int
 rsCollRepl (rsComm_t *rsComm, dataObjInp_t *collReplInp,
-transStat_t **transStat)
+collOprStat_t **collOprStat)
 {
-    int status;
+    int status, myBuf;
     openCollInp_t openCollInp;
     collEnt_t *collEnt;
     int handleInx;
     transStat_t myTransStat;
+    int totalFileCnt;
     int savedStatus = 0;
+    int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
 
-    *transStat = NULL;
+    *collOprStat = NULL;
 
     memset (&openCollInp, 0, sizeof (openCollInp));
     rstrcpy (openCollInp.collName, collReplInp->objPath, MAX_NAME_LEN);
@@ -47,9 +50,8 @@ transStat_t **transStat)
     }
 
 
-    *transStat = malloc (sizeof (transStat_t));
-    memset (*transStat, 0, sizeof (transStat_t));
-    memset (&myTransStat, 0, sizeof (transStat_t));
+    *collOprStat = malloc (sizeof (collOprStat_t));
+    memset (*collOprStat, 0, sizeof (collOprStat_t));
 
     if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
         rodsLog (LOG_ERROR,
@@ -61,14 +63,18 @@ transStat_t **transStat)
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->objType == DATA_OBJ_T) {
+	    if (totalFileCnt == 0) totalFileCnt = 
+		CollHandle[handleInx].dataObjSqlResult.totalRowCount;
+
             snprintf (collReplInp->objPath, MAX_NAME_LEN, "%s/%s",
               collEnt->collName, collEnt->dataName);
 
+    	    memset (&myTransStat, 0, sizeof (myTransStat));
             status = rsDataObjReplWithOutDataObj (rsComm, collReplInp,
 	      &myTransStat, NULL);
 
             if (status == SYS_COPY_ALREADY_IN_RESC) {
-		savedStatus = 0;
+		savedStatus = status;
                 status = 0;
             }
 
@@ -76,10 +82,27 @@ transStat_t **transStat)
                 rodsLogError (LOG_ERROR, status,
                   "rsCollRepl: rsDataObjRepl failed for %s. status = %d",
                   collReplInp->objPath, status);
+		savedStatus = status;
                 break;
             } else {
-		(*transStat)->bytesWritten += myTransStat.bytesWritten;
-		(*transStat)->numThreads ++;  /* use numThreads for num files */
+		(*collOprStat)->bytesWritten += myTransStat.bytesWritten;
+		(*collOprStat)->filesCnt ++; 
+	    }
+	    if ((*collOprStat)->filesCnt >= fileCntPerStatOut) {
+	        rstrcpy ((*collOprStat)->lastObjPath, collReplInp->objPath,
+	          MAX_NAME_LEN);
+	        (*collOprStat)->totalFileCnt = totalFileCnt;
+	        status = svrSendCollOprStat (rsComm, *collOprStat);
+	        if (status < 0) {
+                    rodsLogError (LOG_ERROR, status,
+                      "rsCollRepl: svrSendCollOprStat failed for %s. status = %d",
+                      collReplInp->objPath, status);
+		    *collOprStat = NULL;
+	            savedStatus = status;
+	            break;
+	        }
+                 *collOprStat = malloc (sizeof (collOprStat_t));
+                 memset (*collOprStat, 0, sizeof (collOprStat_t));
 	    }
         }
 	free (collEnt);	    /* just free collEnt but not content */
