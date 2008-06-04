@@ -366,6 +366,9 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 	ordering = PERMUTE;
     }
 
+/* June 4, 2008. Bing added the line to maintain the order of input argv.*/
+  ordering = REQUIRE_ORDER;
+
   if (nextchar == NULL || *nextchar == '\0')
     {
       if (ordering == PERMUTE)
