@@ -125,12 +125,28 @@ rsPhyRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp)
     collInp_t tmpCollInp;
     int rmtrashFlag;
 
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    memset (&tmpCollInp, 0, sizeof (tmpCollInp));
+    addKeyVal (&tmpCollInp.condInput, FORCE_FLAG_KW, "");
+    addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
+
     if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL) {
+	if (isTrashPath (rmCollInp->collName) == False) {
+	    return (SYS_INVALID_FILE_PATH);
+	}
         if (rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
            return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }
+        addKeyVal (&tmpCollInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
+        addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
 	rmtrashFlag = 2;
+
     } else if (getValByKey (&rmCollInp->condInput, IRODS_RMTRASH_KW) != NULL) {
+        if (isTrashPath (rmCollInp->collName) == False) {
+            return (SYS_INVALID_FILE_PATH);
+        }
+        addKeyVal (&tmpCollInp.condInput, IRODS_RMTRASH_KW, "");
+        addKeyVal (&dataObjInp.condInput, IRODS_RMTRASH_KW, "");
         rmtrashFlag = 1;
     }
 
@@ -139,6 +155,7 @@ rsPhyRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp)
     /* Now get all the files */
 
     memset (&genQueryInp, 0, sizeof (genQueryInp));
+
     status = rsQueryDataObjInCollReCur (rsComm, rmCollInp->collName, 
       &genQueryInp, &genQueryOut, NULL, 1);
 
@@ -149,7 +166,6 @@ rsPhyRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp)
 	return (status);
     }
 
-    memset (&dataObjInp, 0, sizeof (dataObjInp));
     while (status >= 0) {
         sqlResult_t *subColl, *dataObj;
 
@@ -166,12 +182,6 @@ rsPhyRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp)
               "rsPhyRmCollRecur: getSqlResultByInx for COL_DATA_NAME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         }
-
-	addKeyVal (&rmCollInp->condInput, FORCE_FLAG_KW, "");
-	addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
-	if (rmtrashFlag == 2) {
-	    addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
-	}
 
         for (i = 0; i < genQueryOut->rowCnt; i++) {
             char *tmpSubColl, *tmpDataName;
@@ -212,8 +222,6 @@ rsPhyRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp)
     status = rsQueryCollInColl (rsComm, rmCollInp->collName, &genQueryInp,
       &genQueryOut);
 
-    memset (&tmpCollInp, 0, sizeof (tmpCollInp));
-
     while (status >= 0) {
         sqlResult_t *subColl;
 
@@ -222,12 +230,6 @@ rsPhyRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp)
             rodsLog (LOG_ERROR,
               "rsPhyRmCollRecur: getSqlResultByInx for COL_COLL_NAME failed");
             return (UNMATCHED_KEY_OR_INDEX);
-        }
-
-        if (rmtrashFlag == 1) {
-            addKeyVal (&tmpCollInp.condInput, IRODS_RMTRASH_KW, "");
-        } else if (rmtrashFlag == 2) {
-            addKeyVal (&tmpCollInp.condInput, IRODS_ADMIN_RMTRASH_KW, "");
         }
 
         for (i = 0; i < genQueryOut->rowCnt; i++) {

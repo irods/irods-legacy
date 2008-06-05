@@ -125,6 +125,8 @@ getDataObjInfoCnt (dataObjInfo_t *dataObjInfoHead);
 int
 appendRandomToPath (char *trashPath);
 int
+isTrashPath (char *myPath);
+int
 isTrashHome (char *myPath);
 int
 openRestartFile (char *restartFile, rodsRestart_t *rodsRestart,

@@ -2046,6 +2046,32 @@ appendRandomToPath (char *trashPath)
     return (0);
 }
 
+int
+isTrashPath (char *myPath)
+{
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if (*tmpPtr != '/') {
+        return False;
+    }
+
+    tmpPtr++;
+    if ((tmpPtr1 = strchr (tmpPtr, '/')) == NULL) {
+        return False;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if (strncmp (tmpPtr, "trash/", 6) == 0) {
+	return True;
+    } else {
+        return False;
+    }
+}
+
 /* isTrashHome - see if the path is /myZone/trash/home or 
  * /myZone/trash/home/myName.
  * return 0 if it is not

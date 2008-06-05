@@ -25,6 +25,15 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     int trashPolicy;
     dataObjInfo_t *dataObjInfoHead = NULL;
 
+    if (getValByKey (
+      &dataObjUnlinkInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL ||
+      getValByKey (
+      &dataObjUnlinkInp->condInput, IRODS_RMTRASH_KW) != NULL) {
+        if (isTrashPath (dataObjUnlinkInp->objPath) == False) {
+            return (SYS_INVALID_FILE_PATH);
+        }
+    }
+
     dataObjUnlinkInp->openFlags = O_WRONLY;  /* set the permission checking */
     status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp, 
       &dataObjInfoHead);
@@ -82,35 +91,6 @@ dataObjInfo_t *dataObjInfoHead)
     int retVal = 0;
     dataObjInfo_t *tmpDataObjInfo;
 
-#if 0
-    if (dataObjUnlinkInp->specColl != NULL) {
-        status = resolveSpecColl (rsComm, dataObjUnlinkInp,
-          &dataObjInfoHead, 1);
-        /* screen out any stale copies */
-        sortObjInfoForOpen (&dataObjInfoHead, &dataObjUnlinkInp->condInput, 1);
-    } else if (getValByKey (&dataObjUnlinkInp->condInput, 
-      IRODS_ADMIN_RMTRASH_KW) != NULL) {
-        status = getDataObjInfo (rsComm, dataObjUnlinkInp, &dataObjInfoHead,
-          NULL, 0);
-    } else {
-        if (getValByKey (&dataObjUnlinkInp->condInput, 
-	  DATA_ACCESS_KW) == NULL) {
-	    addKeyVal (&dataObjUnlinkInp->condInput, DATA_ACCESS_KW, 
-	      ACCESS_DELETE_OBJECT);
-        }
-
-        status = getDataObjInfo (rsComm, dataObjUnlinkInp, &dataObjInfoHead,
-          ACCESS_DELETE_OBJECT, 0);
-    }
-
-    if (status < 0) {
-	rodsLog (LOG_NOTICE,
-	  "rsDataObjUnlink: getDataObjInfo error for %s. status = %d",
-	  dataObjUnlinkInp->objPath, status);
-	return (status);
-    }
-#endif
-
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
 	status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
@@ -157,6 +137,18 @@ dataObjInfo_t *dataObjInfo)
 	return (rei.status);
     }
 
+    if (dataObjInfo->specColl == NULL) {
+        unregDataObjInp.dataObjInfo = dataObjInfo;
+        unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
+        status = rsUnregDataObj (rsComm, &unregDataObjInp);
+
+        if (status < 0) {
+            rodsLog (LOG_NOTICE,
+              "dataObjUnlinkS: rsUnregDataObj error for %s. status = %d",
+              dataObjUnlinkInp->objPath, status);
+	    return status;
+        }
+    }
     
     status = l3Unlink (rsComm, dataObjInfo);
 
@@ -167,21 +159,14 @@ dataObjInfo_t *dataObjInfo)
           dataObjUnlinkInp->objPath, status);
 	/* allow ENOENT to go on and unregister */
 	if (myError != ENOENT && myError != EACCES) {
-	    return (status);
-	}
-    }
-
-    if (dataObjInfo->specColl == NULL) {
-        unregDataObjInp.dataObjInfo = dataObjInfo;
-        unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
-        status = rsUnregDataObj (rsComm, &unregDataObjInp); 
-
-        if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "dataObjUnlinkS: rsUnregDataObj error for %s. status = %d",
-              dataObjUnlinkInp->objPath, status);
+              "dataObjUnlinkS: orphan file %s", dataObjInfo->filePath);
+	    return (status);
+	} else {
+	    status = 0;
 	}
     }
+
     return (status);
 }
 
