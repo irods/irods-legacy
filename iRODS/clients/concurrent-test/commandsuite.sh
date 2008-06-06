@@ -12,7 +12,7 @@ fi
 i=1
 
 #SDL this will be a loop eventually
-subtests="putgetwrapper.sh"
+subtests="poundtests.sh"
 
 while [ $i -lt $1 ]
 do
