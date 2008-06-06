@@ -32,6 +32,11 @@ TMP_DIR=TMP
 #$iDir/iuserinfo -v
 #$iDir/ilsresc -vl
 
+# Make local directories if needed
+test -d $TMP_DIR || mkdir $TMP_DIR
+test -d Isub1 || mkdir Isub1
+test -d Isub2 || mkdir Isub2
+
 $iDir/imkdir $testid
 $iDir/icd $testid
 
@@ -45,7 +50,7 @@ for myresc in $resourceset ; do
 	# iput one file at a time or iput the whole directory?
 	for file in $FILES ; do
 		$iDir/iput -f -R $myresc $DATADIR/$file 
-		$iDir/imeta add -d $DATADIR/$file $DATADIR "attributestring"
+		$iDir/imeta add -d $file $file-A $file-B $file-C
 	done
 
 	$iDir/icd ..
@@ -53,37 +58,43 @@ for myresc in $resourceset ; do
 	# OK let's get back what we've just put in, do a 'diff' and a 'wc' for our first little test
 	for file in $FILES ; do
 		$iDir/iget -f Isub1/$file $TMP_DIR/$file.$testid.tmp
-		diff $DATADIR/$file $TMP_DIR/$file.$testid.tmp
-		wc $DATADIR/$file $TMP_DIR/$file.$testid.tmp
-		# rm $TMP_DIR/$file.$testid.tmp
+		diffresult=`diff $DATADIR/$file $TMP_DIR/$file.$testid.tmp`
+		# SDL Why bother with wc? wc $DATADIR/$file $TMP_DIR/$file.$testid.tmp
+		if [ -n "$diffresult" ]; then
+			echo "$file is different from it's retrieved counterpart"
+			exit 3
+		fi
 	done
 
-
+	#  Move all files from Isub1 to Isub2
 	$iDir/imkdir Isub2
-
-	#  Move all files from Iub1 to Iub2
 	for file in $FILES ; do
 		$iDir/imv Isub1/$file Isub2
+		$iDir/imeta ls -d Isub2/$file
+ 		attname=`$iDir/imeta qu -d $file-A  = $file-B | grep dataObj | awk {'print $2'}`
+	 	if [ "$attname" != "$file" ]; then
+			echo "attribute name not retrieved correctly (or something)"
+		fi	
 	done
 
-	#  Copy all data across different platforms, replicate, then get data to local 
-	#  environment, and compare with local copies of same data.
-	for store in $resourceset ; do
-		for file in $FILES ; do
-			$iDir/icp -f -R $store Isub2/$file Isub1/$file.$store
-			#iDir/irepl -R $store Isub1/$file.$store SDL what is this
-		done
+#  Copy all data across different platforms, replicate, then get data to local 
+#  environment, and compare with local copies of same data.
+#for store in $resourceset ; do
+#	for file in $FILES ; do
+#		$iDir/icp -f -R $store Isub2/$file Isub1/$file.$store
+#		#iDir/irepl -R $store Isub1/$file.$store SDL what is this
+#	done
+#
+#		$iDir/iget -rf Isub1
+#		$iDir/iget -rf Isub2
 
-		$iDir/iget -rf Isub1
-		$iDir/iget -rf Isub2
-
-		for file in $FILES ; do
-			$iDir/iget Isub1/$file.$store $TMP_DIR/$file.$testid.tmp
-			diff $DATADIR/$file $TMP_DIR/$file.$testid.tmp
-			wc $DATADIR/$file $TMP_DIR/$file.$testid.tmp
-			rm $TMP_DIR/$file.$testid.tmp
-		done
-	done
+#		for file in $FILES ; do
+#			$iDir/iget Isub1/$file.$store $TMP_DIR/$file.$testid.tmp
+#			diff $DATADIR/$file $TMP_DIR/$file.$testid.tmp
+#			wc $DATADIR/$file $TMP_DIR/$file.$testid.tmp
+#			rm $TMP_DIR/$file.$testid.tmp
+#		done
+#	done
 
 	$iDir/irm -r Isub1
 	$iDir/irm -r Isub2
