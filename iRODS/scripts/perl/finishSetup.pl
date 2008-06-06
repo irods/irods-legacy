@@ -708,7 +708,7 @@ sub createDatabaseAndTables
 		printLog( "Setting database user password...\n" );
 		my $tmpSql = createTempFilePath( "sql" );
 
-		my $sql = "alter user $DATABASE_ADMIN_NAME with password '$DATABASE_ADMIN_PASSWORD';";
+		my $sql = "alter user \"$DATABASE_ADMIN_NAME\" with password '$DATABASE_ADMIN_PASSWORD';";
 		printLog( "    $sql\n" );
 
 		# Create an empty file first and make it unreadable by others
