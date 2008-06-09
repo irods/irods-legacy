@@ -971,7 +971,7 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
 
     if (collHandle->state == COLL_CLOSED) return (CAT_NO_ROWS_FOUND);
 
-    if ((collHandle->flags & RECUR_QUERY_FG) != 0) {
+    if ((collHandle->flags & DATA_QUERY_FIRST_FG) == 0) {
 	/* recursive - coll first, dataObj second */
         if (collHandle->state == COLL_OPENED) {
 	    status = genCollResInColl (queryHandle, collHandle);

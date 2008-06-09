@@ -1,16 +1,29 @@
-/*** Copyright (c), The Regents of the University of California            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 /* This is script-generated code.  */ 
-/* See rmColl.h for a description of this API call.*/
+/* See rmCollRecur.h for a description of this API call.*/
 
 #include "rmColl.h"
 
 int
-rcRmColl (rcComm_t *conn, collInp_t *rmCollInp)
+_rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, 
+collOprStat_t **collOprStat)
 {
     int status;
     status = procApiRequest (conn, RM_COLL_AN, rmCollInp, NULL, 
-        (void **) NULL, NULL);
+        (void **) collOprStat, NULL);
 
     return (status);
 }
+
+int
+rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, int vFlag)
+{
+    int status;
+    collOprStat_t *collOprStat = NULL;
+
+    status = _rcRmColl (conn, rmCollInp, &collOprStat);
+
+    status = cliGetCollOprStat (conn, collOprStat, vFlag);
+
+    return (status);
+}
+

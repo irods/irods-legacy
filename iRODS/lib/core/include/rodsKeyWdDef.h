@@ -61,6 +61,7 @@
 #define SEL_OBJ_TYPE_KW    "selObjType"
 #define STRUCT_FILE_OPR_KW    	"structFileOpr"
 #define ALL_MS_PARAM_KW    	"allMsParam"
+#define UNREG_COLL_KW    	"unregColl"
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

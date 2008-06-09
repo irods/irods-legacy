@@ -50,7 +50,7 @@
 #include "authRequest.h"
 #include "authResponse.h"
 #include "authCheck.h"
-#include "rmColl.h"
+#include "rmCollOld.h"
 #include "regColl.h"
 #include "regDataObj.h"
 #include "unregDataObj.h"
@@ -106,4 +106,5 @@
 #include "readCollection.h"
 #include "closeCollection.h"
 #include "collRepl.h"
+#include "rmColl.h"
 #endif	/* API_HEADER_ALL_H */

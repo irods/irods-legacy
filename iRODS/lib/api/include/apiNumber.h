@@ -52,7 +52,7 @@
 #define SIMPLE_QUERY_AN 		614
 #define DATA_OBJ_UNLINK_AN 		615
 #define COLL_CREATE_AN 			616
-#define RM_COLL_AN 			617
+#define RM_COLL_OLD_AN 			617
 #define REG_COLL_AN 			618
 #define REG_DATA_OBJ_AN 			619
 #define UNREG_DATA_OBJ_AN 			620
@@ -98,6 +98,7 @@
 #define STRUCT_FILE_SYNC_AN 			660
 #define CLOSE_COLLECTION_AN 			661
 #define COLL_REPL_AN 			662
+#define RM_COLL_AN 			663
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

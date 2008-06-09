@@ -82,6 +82,7 @@ typedef struct QueryHandle {
 #define LONG_METADATA_FG     0x1     /* get verbose metadata */
 #define VERY_LONG_METADATA_FG     0x2   /* get verbose metadata */
 #define RECUR_QUERY_FG       0x4     /* get recursive query */
+#define DATA_QUERY_FIRST_FG       0x8     /* get data res first */
 
 typedef struct CollHandle {
     collState_t state;
