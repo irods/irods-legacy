@@ -466,7 +466,7 @@ tarSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
     int structFileInx;
     int rescTypeInx;
     int status;
-    fileMkdirInp_t fileMkdirInp;
+    fileRmdirInp_t fileRmdirInp;
 
     specColl = subFile->specColl;
     structFileInx = rsTarStructFileOpen (rsComm, specColl);
@@ -482,15 +482,14 @@ tarSubStructFileRmdir (rsComm_t *rsComm, subFile_t *subFile)
     specColl = StructFileDesc[structFileInx].specColl;
 
     rescTypeInx = StructFileDesc[structFileInx].rescInfo->rescTypeInx;
-    fileMkdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
-    status = getSubStructFilePhyPath (fileMkdirInp.dirName, specColl,
+    fileRmdirInp.fileType = UNIX_FILE_TYPE;	/* the only type for cache */
+    status = getSubStructFilePhyPath (fileRmdirInp.dirName, specColl,
       subFile->subFilePath);
     if (status < 0) return status;
 
-    rstrcpy (fileMkdirInp.addr.hostAddr,
+    rstrcpy (fileRmdirInp.addr.hostAddr,
       StructFileDesc[structFileInx].rescInfo->rescLoc, NAME_LEN);
-    fileMkdirInp.mode = subFile->mode;
-    status = rsFileMkdir (rsComm, &fileMkdirInp);
+    status = rsFileRmdir (rsComm, &fileRmdirInp);
 
     if (status >= 0) {
         int status1;
