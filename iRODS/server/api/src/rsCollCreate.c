@@ -48,13 +48,15 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 #if 0
 	    if (getValByKey (&collCreateInp->condInput, COLLECTION_TYPE_KW) ==
               NULL && dataObjInfo->specColl->class == STRUCT_FILE_COLL) {
-#endif
 	    if (getSpecCollOpr (&collCreateInp->condInput, 
 	      dataObjInfo->specColl) == NORMAL_OPR_ON_STRUCT_FILE_COLL) {
         	status = _rsRegColl (rsComm, collCreateInp);
 	    } else {
+#endif
 	        status = l3Mkdir (rsComm, dataObjInfo);
+#if 0
 	    }
+#endif
 	    freeDataObjInfo (dataObjInfo);
 	    return (status);
 	} else {
@@ -82,6 +84,7 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
           MAX_NAME_LEN);
+        subFile.mode = DEFAULT_DIR_MODE;
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
