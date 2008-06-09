@@ -282,6 +282,7 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
 	      msParam_t *inpParam3, msParam_t *inpParam4, 
 	      ruleExecInfo_t *rei)
 {
+#if defined(BUILD_RDA) 
     rsComm_t *rsComm; 
     char *rdaName;
     char *sql;
@@ -353,6 +354,10 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
     }
 
     return (0);
+#else
+    return(RDA_NOT_COMPILED_IN);
+#endif
+
 }
 
 
@@ -373,6 +378,7 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
 
 int
 msiRdaCommit(ruleExecInfo_t *rei) {
+#if defined(BUILD_RDA) 
     rsComm_t *rsComm; 
     int status;
 
@@ -387,4 +393,7 @@ msiRdaCommit(ruleExecInfo_t *rei) {
 
     status = rdaCommit(rsComm);
     return(status);
+#else
+    return(RDA_NOT_COMPILED_IN);
+#endif
 }
