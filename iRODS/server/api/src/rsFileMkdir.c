@@ -71,9 +71,10 @@ _rsFileMkdir (rsComm_t *rsComm, fileMkdirInp_t *fileMkdirInp)
      fileMkdirInp->mode);
 
     if (status < 0) {
-        rodsLog (LOG_NOTICE, 
-          "_rsFileMkdir: fileMkdir for %s, status = %d",
-          fileMkdirInp->dirName, status);
+	if (getUnixErrno (status) != EEXIST)
+            rodsLog (LOG_NOTICE, 
+              "_rsFileMkdir: fileMkdir for %s, status = %d",
+              fileMkdirInp->dirName, status);
         return (status);
     }
 

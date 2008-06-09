@@ -211,9 +211,10 @@ unixFileMkdir (rsComm_t *rsComm, char *filename, int mode)
 
     if (status < 0) {
         status = UNIX_FILE_MKDIR_ERR - errno;
-        rodsLog (LOG_NOTICE,
-          "unixFileMkdir: mkdir of %s error, status = %d", 
-	  filename, status);
+	if (errno != EEXIST)
+            rodsLog (LOG_NOTICE,
+              "unixFileMkdir: mkdir of %s error, status = %d", 
+	      filename, status);
     }
 
     return (status);
