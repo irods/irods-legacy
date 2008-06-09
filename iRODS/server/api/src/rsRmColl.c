@@ -19,7 +19,8 @@ collOprStat_t **collOprStat)
 {
     int status;
 
-    *collOprStat = NULL;
+    if (collOprStat != NULL)
+        *collOprStat = NULL;
     if (getValByKey (&rmCollInp->condInput, RECURSIVE_OPR__KW) == NULL) {
 	status = _rsRmColl (rsComm, rmCollInp, collOprStat);
     } else {
@@ -95,7 +96,7 @@ collOprStat_t **collOprStat)
             trashPolicy = rei.status;
             if (trashPolicy != NO_TRASH_CAN) {
                 status = rsMvCollToTrash (rsComm, rmCollInp);
-                if (status >= 0) {
+                if (status >= 0 && collOprStat != NULL) {
 		    if (*collOprStat == NULL) {
                         *collOprStat = malloc (sizeof (collOprStat_t));
                         memset (*collOprStat, 0, sizeof (collOprStat_t));
@@ -142,7 +143,7 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
         return (handleInx);
     }
 
-    if (*collOprStat == NULL) {
+    if (collOprStat != NULL && *collOprStat == NULL) {
         *collOprStat = malloc (sizeof (collOprStat_t));
         memset (*collOprStat, 0, sizeof (collOprStat_t));
     }
@@ -187,23 +188,24 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
                   "_rsPhyRmColl:rsDataObjUnlink failed for %s. stat = %d",
                   dataObjInp.objPath, status);
                 /* need to set global error here */
-            } else {
+                savedStatus = status;
+            } else if (collOprStat != NULL) {
                 (*collOprStat)->filesCnt ++;
-            }
-            if ((*collOprStat)->filesCnt >= fileCntPerStatOut) {
-                rstrcpy ((*collOprStat)->lastObjPath, dataObjInp.objPath,
-                  MAX_NAME_LEN);
-                status = svrSendCollOprStat (rsComm, *collOprStat);
-                if (status < 0) {
-                    rodsLogError (LOG_ERROR, status,
-                      "_rsPhyRmColl: svrSendCollOprStat failed for %s. status = %d",
-                      rmCollInp->collName, status);
-                    *collOprStat = NULL;
-                    savedStatus = status;
-                    break;
-                }
-                 *collOprStat = malloc (sizeof (collOprStat_t));
-                 memset (*collOprStat, 0, sizeof (collOprStat_t));
+                if ((*collOprStat)->filesCnt >= fileCntPerStatOut) {
+                    rstrcpy ((*collOprStat)->lastObjPath, dataObjInp.objPath,
+                      MAX_NAME_LEN);
+                    status = svrSendCollOprStat (rsComm, *collOprStat);
+                    if (status < 0) {
+                        rodsLogError (LOG_ERROR, status,
+                          "_rsPhyRmColl: svrSendCollOprStat failed for %s. status = %d",
+                          rmCollInp->collName, status);
+                        *collOprStat = NULL;
+                        savedStatus = status;
+                        break;
+                    }
+                     *collOprStat = malloc (sizeof (collOprStat_t));
+                     memset (*collOprStat, 0, sizeof (collOprStat_t));
+		}
             }
 	} else if (collEnt->objType == COLL_OBJ_T) {
 	    if (strcmp (collEnt->collName, rmCollInp->collName) == 0)

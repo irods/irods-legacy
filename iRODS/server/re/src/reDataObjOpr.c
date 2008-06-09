@@ -1343,7 +1343,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     addKeyVal (&myRmCollInp->condInput, RECURSIVE_OPR__KW, "");
 
-    rei->status = rsRmColl (rsComm, myRmCollInp);
+    rei->status = rsRmColl (rsComm, myRmCollInp, NULL);
 
     if (rei->status >= 0) {
         fillIntInMsParam (outParam, rei->status);
