@@ -132,8 +132,8 @@ LIB_API_OBJS += $(libApiObjDir)/rcAuthResponse.o
 SVR_API_OBJS += $(svrApiObjDir)/rsAuthCheck.o
 LIB_API_OBJS += $(libApiObjDir)/rcAuthCheck.o
 
-SVR_API_OBJS += $(svrApiObjDir)/rsRmColl.o
-LIB_API_OBJS += $(libApiObjDir)/rcRmColl.o
+SVR_API_OBJS += $(svrApiObjDir)/rsRmCollOld.o
+LIB_API_OBJS += $(libApiObjDir)/rcRmCollOld.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsRegColl.o
 LIB_API_OBJS += $(libApiObjDir)/rcRegColl.o
@@ -301,3 +301,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcCloseCollection.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsCollRepl.o
 LIB_API_OBJS += $(libApiObjDir)/rcCollRepl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsRmColl.o
+LIB_API_OBJS += $(libApiObjDir)/rcRmColl.o

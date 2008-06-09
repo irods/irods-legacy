@@ -13,6 +13,7 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
+#include "rmCollOld.h"
 #include "rmColl.h"
 #include "dataObjRename.h"
 #include "subStructFileUnlink.h"

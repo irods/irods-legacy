@@ -623,7 +623,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         status = getDataObjInfo (rsComm, &myDataObjInp, dataObjInfo, NULL, 1);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-              "resolveSpecColl: getDataObjInfo error for %s, status = %d",
+              "specCollSubStat: getDataObjInfo error for %s, status = %d",
               myDataObjInp.objPath, status);
             *dataObjInfo = NULL;
             return (status);
@@ -638,7 +638,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
 		if (strcmp (specColl->resource, 
 		  (*dataObjInfo)->rescName) != 0) {
                     rodsLog (LOG_ERROR,
-                      "resolveSpecColl: %s in %s does not match cache resc %s",
+                      "specCollSubStat: %s in %s does not match cache resc %s",
                       myDataObjInp.objPath, (*dataObjInfo)->rescName,
 		      specColl->resource);
                     freeAllDataObjInfo (*dataObjInfo);
