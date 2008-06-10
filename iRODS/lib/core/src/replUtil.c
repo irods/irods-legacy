@@ -162,6 +162,11 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
           myResc);
     }
 
+    if (rodsArgs->unmount == True) {
+        /* use unmount for update */
+        addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
+    }
+
     memset (rodsRestart, 0, sizeof (rodsRestart_t));
     if (rodsArgs->restart == True) {
         int status;

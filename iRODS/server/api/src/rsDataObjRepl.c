@@ -103,6 +103,16 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 
     sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag);
 
+    if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
+	/* update old repl to new repl */
+        status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead,
+          NULL, transStat, oldDataObjInfoHead);
+        freeAllDataObjInfo (dataObjInfoHead);
+        freeAllDataObjInfo (oldDataObjInfoHead);
+        freeAllRescGrpInfo (myRescGrpInfo);
+	return status;
+    }
+
     if (getValByKey (&dataObjInp->condInput, BACKUP_RESC_NAME_KW) != NULL) {
 	backupFlag = 1;
     } else {

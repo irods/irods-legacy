@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "aBMhrvVn:R:S:X:";
+    optStr = "aBMhrvVn:R:S:X:U";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -107,6 +107,7 @@ usage ()
 "     Replicate to all the resources in the resource group.",
 " -B  Backup mode - if a good copy already exists in this",
 "     resource, don't make another copy.",
+" -U  Update (Synchronize) all old replica with the latest copy.",
 " -M  admin - admin user uses this option to backup/replicate other users files",
 " -r  recursive - copy the whole subtree",
 " -n  replNum  - the replica to copy, typically not needed",
