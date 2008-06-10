@@ -98,7 +98,7 @@ int iRODSNt_open(const char *filename,int oflag, int istextfile)
 }
 
 /* open a file in binary mode. */
-int iRODSNt_bopen(const char *filename,int oflag)
+int iRODSNt_bopen(const char *filename,int oflag, int pmode)
 {
 	int New_Oflag;
 	char ntfp[2048];
@@ -106,7 +106,7 @@ int iRODSNt_bopen(const char *filename,int oflag)
 	iRODSPathToNtPath(ntfp,filename);
 
 	New_Oflag = _O_BINARY | oflag;
-	return _open(ntfp,New_Oflag);
+	return _open(ntfp,New_Oflag,pmode);
 }
 
 /* create a file in binary mode */
@@ -161,11 +161,12 @@ char *iRODSNt_gethome()
 }
 
 /* The function is used in Windows console app, especially S-commands. */
-void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
+void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt, int echo_input)
 {
    char *p = buf;
    char c;
    char star='*';
+   char whitechar = ' ';
 
    if((prompt != NULL) && (strlen(prompt) > 0))
    {
@@ -179,6 +180,16 @@ void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
 
       if(c == 8)   /* a backspace, we currently ignore it. i.e. treat it as doing nothing. User can alway re-do it. */
       {
+		  if(p > buf)
+		  {
+			  --p;
+			  if(echo_input)
+			  {
+					_putch(c);
+					_putch(whitechar);
+					_putch(c);
+		      }
+		  }
       }
       else if(c == 13)  /* 13 is a return char */
       {
@@ -187,9 +198,14 @@ void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt)
       }
       else
       {
-         _putch(star);
+         /* _putch(star); */
+		  
          p[0] = c;
          ++p;
+		 if(echo_input)
+		 {
+			  _putch(c);
+		 }
       }
 
       /* extra protection */

@@ -24,14 +24,14 @@ void iRODSNTPathBackSlash(char *str);
 void iRODSNTPathForwardSlash(char *str);
 FILE *iRODSNt_fopen(const char *filename, const char *mode);
 int iRODSNt_open(const char *filename,int oflag, int istextfile);
-int iRODSNt_bopen(const char *filename,int oflag);
+int iRODSNt_bopen(const char *filename,int oflag, int pmode);
 int iRODSNt_bcreate(const char *filename);
 int iRODSNt_unlink(char *filename);
 int iRODSNt_stat(const char *filename,struct stat *stat_p);
 int iRODSNt_mkdir(char *dir,int mode);
 
 char *iRODSNt_gethome();
-void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt);
+void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt, int echo_input);
 
 int getopt(int argc, char *const *argv, const char *shortopts);
 long long atoll(const char *str);
