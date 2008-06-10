@@ -496,7 +496,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 	status = l2DataObjPut (rsComm, destL1descInx, &portalOprOut);
        if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "dataObjCopy: _rsDataObjPut error for %s",
+              "dataObjCopy: l2DataObjPut error for %s",
               L1desc[srcL1descInx].dataObjInfo->objPath);
             return (status);
         }

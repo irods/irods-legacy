@@ -525,7 +525,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
       myOutStruct, myOutBsBBuf);
     if (retval < 0) {
         rodsLog (LOG_ERROR,
-      "_rsDataObjPut: sendAndProcApiReply error. status = %d", retval);
+      "sendAndRecvBranchMsg: sendAndProcApiReply error. status = %d", retval);
 	rsComm->apiInx = savedApiInx;
         return (retval);
     }
