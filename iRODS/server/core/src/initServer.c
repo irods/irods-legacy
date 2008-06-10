@@ -438,7 +438,14 @@ queAddr (rodsServerHost_t *rodsServerHost, char *myHostName)
     }
 
     if (strcasecmp (myHostName, hostEnt->h_name) != 0) {
-        queHostName (rodsServerHost, hostEnt->h_name, 0);
+        if (rodsServerHost->localFlag == LOCAL_HOST && 
+	  rodsServerHost->hostName != NULL &&
+	  strcmp (rodsServerHost->hostName->name, "localhost") == 0) {
+	    /* put it on top */
+            queHostName (rodsServerHost, hostEnt->h_name, 1);
+	} else {
+            queHostName (rodsServerHost, hostEnt->h_name, 0);
+	}
     }
     return (0);
 }
@@ -471,8 +478,8 @@ queHostName (rodsServerHost_t *rodsServerHost, char *myName, int topFlag)
         } else {
 	    lastHostName->next = tmpHostName;
 	}
+        tmpHostName->next = NULL;
     }
-    tmpHostName->next = NULL;
 
     return (0);
 }
