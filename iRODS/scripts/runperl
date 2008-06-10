@@ -92,6 +92,27 @@ findPerl( )
 	#		/cygwin/bin /cygwin/sbin /cygwin/usr/bin /cygwin/usr/sbin
 	#		/cygwin/usr/local/bin /cygwin/usr/share/bin
 	foundany="0"
+
+#
+# First, we include the user's prefered perl, in case it's the best.
+# This is needed at NMI B&T for example, where the path is adjusted to
+# select preferred versions of commands.
+#
+	foundWhich=`which perl`
+	if [ $? -eq 0 ]; then
+		PERL_PATH="$foundWhich"
+		# It's a file.  Runnable?
+		$PERL_PATH -v > /dev/null 2>&1
+		if [ $? -eq 0 ]; then
+			# Record working perl
+			PERL_VERSION=`echo 'print $]' | $PERL_PATH`
+			echo "$PERL_VERSION	$PERL_PATH" >> $RESULTSFILE
+			foundany="1"
+		fi
+	fi
+#
+# Now we check other locations for more recent Perl's.
+#
 	for prefix in "/" "/opt" "/sw" "/cygwin"; do
 
 		if [ ! -d $prefix ]; then
