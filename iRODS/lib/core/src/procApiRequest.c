@@ -352,7 +352,7 @@ cliGetCollOprStat (rcComm_t *conn, collOprStat_t *collOprStat, int vFlag)
             collOprStat = NULL;
         }
         myBuf = htonl (SYS_CLI_TO_SVR_COLL_STAT_REPLY);
-        status = write (conn->sock, (void *) &myBuf, 4);
+        status = myWrite (conn->sock, (void *) &myBuf, 4, SOCK_TYPE, NULL);
         status = readAndProcApiReply (conn, conn->apiInx,
           (void **) &collOprStat, NULL);
     }
