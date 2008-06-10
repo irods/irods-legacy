@@ -205,6 +205,7 @@ sub findCommand($)
 		File::Spec->catdir( "usr", "sbin" ),
 		# Additional Solaris directories
 		File::Spec->catdir( "usr", "ucb" ),
+		File::Spec->catdir( "usr", "ccs", "bin" ),
 		# Additional Mac directories
 		File::Spec->catdir( "Developer", "usr", "bin" ),
 		File::Spec->catdir( "Developer", "usr", "sbin" ),
@@ -223,6 +224,13 @@ sub findCommand($)
 		File::Spec->catdir( File::Spec->rootdir( ), "opt" ),
 		File::Spec->catdir( File::Spec->rootdir( ), "cygwin" ),
 	);
+
+	# First, check the user's PATH via 'which'
+	$whichPath = `which $command`;
+	chomp($whichPath);
+	if (-f $whichPath && -x $whichPath ) {	# a file and executable
+		return $whichPath;
+	}
 
 	# Loop through the possible roots.
 	foreach $root (@rootDirectories)
