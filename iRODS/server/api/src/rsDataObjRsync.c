@@ -134,6 +134,7 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     /* have to get its own dataObjInp_t */
     myDataObjInp = malloc (sizeof (dataObjInp_t));
     replDataObjInp (dataObjInp, myDataObjInp);
+    addKeyVal (&myDataObjInp->condInput, REG_CHKSUM_KW, fileChksumStr);
 
     status = addMsParam (myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T,
       (void *) myDataObjInp, NULL);

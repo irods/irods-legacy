@@ -16,6 +16,7 @@
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.h"
 #include "subStructFilePut.h"
+#include "dataObjRepl.h"
 
 
 int
@@ -47,28 +48,29 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     int l1descInx;
     int retval;
     dataObjCloseInp_t dataObjCloseInp;
+    int allFlag;
+    transStat_t *transStat = NULL;
+    dataObjInp_t replDataObjInp;
+
+    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
+        allFlag = 1;
+    } else {
+	allFlag = 0;
+    }
 
     if (getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
         status = l3DataPutSingleBuf (rsComm, dataObjInp, dataObjInpBBuf);
-	if (status > 0)
-	    status = 0;
+        if (status >= 0 && allFlag == 1) {
+	    /* update the rest of copies */
+	    addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
+	    status = rsDataObjRepl (rsComm, dataObjInp, &transStat);
+	    if (transStat!= NULL) free (transStat);
+	}
+	if (status > 0) status = 0;
         return (status);
     }
 
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-#if 0	/* moved to rsDataObjCreate */
-    if (dataObjExist (rsComm, dataObjInp)) {
-	if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-	    dataObjInp->openFlags |= O_TRUNC;
-	    l1descInx = _rsDataObjOpen (rsComm, dataObjInp, DO_PHYOPEN);
-	} else {
-	    l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
-	}
-    } else {
-        l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-	rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
-    }
-#endif
  
     if (l1descInx < 0) 
 	return l1descInx;
@@ -85,6 +87,13 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
 	return (status);
     } 
 
+    if (allFlag == 1) {
+	/* need to save dataObjInp. get freed in sendAndRecvBranchMsg */
+	memset (&replDataObjInp, 0, sizeof (replDataObjInp));
+	rstrcpy (replDataObjInp.objPath, dataObjInp->objPath, MAX_NAME_LEN);
+	addKeyVal (&replDataObjInp.condInput, UPDATE_REPL_KW, "");
+    }
+
     retval = sendAndRecvBranchMsg (rsComm, rsComm->apiInx, status,
       (void *) *portalOprOut, NULL);
 
@@ -92,6 +101,11 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
         dataObjCloseInp.l1descInx = l1descInx;
         rsDataObjClose (rsComm, &dataObjCloseInp);
+	if (allFlag == 1) clearKeyVal (&replDataObjInp.condInput);
+    } else if (allFlag == 1) {
+        status = rsDataObjRepl (rsComm, &replDataObjInp, &transStat);
+        if (transStat!= NULL) free (transStat);
+	clearKeyVal (&replDataObjInp.condInput);
     }
 
     if (handlerFlag & INTERNAL_SVR_CALL) {
