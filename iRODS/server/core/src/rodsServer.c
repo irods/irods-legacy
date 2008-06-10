@@ -561,7 +561,7 @@ recordServerProcess(rsComm_t *svrComm) {
     cp = getcwd(cwd, 1000);
     if (cp != NULL) {
        fd = fopen (filePath, "w");
-       if (fd>0) {
+       if (fd != NULL) {
 	  fprintf(fd, "%d %s\n", myPid, cwd);
 	  fclose(fd);
 	  chmod(filePath, 0664);
