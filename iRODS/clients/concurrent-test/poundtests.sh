@@ -22,12 +22,11 @@ makefiles () {
 
 	for dir in $testdirs; do
 		test -d $dir || mkdir $dir
-	done
 
 	
 	case "$dir" in
 		"zerofiles")
-			for ((i=1;i<=1000;i+=1)); do
+			for ((i=1;i<=100;i+=1)); do
 				touch zerofiles/zerofile$i
 			done
 		;;
@@ -43,12 +42,13 @@ makefiles () {
 			for ((i=1;i<=10;i+=1)); do
 				for ((j=1;j<=5;j+=1)); do
 					## SDL this needs to be changed
-					cat /mach_kernel >> bigfiles/bigfile$i
+					 cat bigfile >> bigfiles/bigfile$i
 				done
 			done
 		;;
 	esac
 
+	done
 }
 
 echo "beginning poundtest"

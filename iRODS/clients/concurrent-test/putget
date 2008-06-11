@@ -19,7 +19,7 @@ fi
 echo "Running $testid $ddir"
 
 # SDL get rid of hardcoding
-irodshome=/Users/slinz/iRODS
+irodshome=../../
 iDir=$irodshome/clients/icommands/bin
 resourceset=`cat ResourcesToTest`
 DATADIR=$irodshome/clients/concurrent-test/$ddir
