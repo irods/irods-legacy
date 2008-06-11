@@ -164,9 +164,6 @@ main(int argc, char **argv) {
 
    rodsArguments_t myRodsArgs;
 
-   char *mySubName;
-   char *myName;
-
    rodsLogLevel(LOG_ERROR);
 
    status = parseCmdLineOpt (argc, argv, "vVh", 0, &myRodsArgs);
@@ -190,9 +187,6 @@ main(int argc, char **argv) {
                      myEnv.rodsZone, 0, &errMsg);
 
    if (Conn == NULL) {
-      myName = rodsErrorName(errMsg.status, &mySubName);
-      rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
-	       errMsg.msg);
       exit (2);
    }
 

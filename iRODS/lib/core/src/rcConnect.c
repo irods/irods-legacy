@@ -89,6 +89,9 @@ int reconnFlag)
     status = connectToRhost (conn, connectCnt, reconnFlag);
 
     if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+	 "_rcConnect: connectToRhost error, server on %s is probably down",
+	 conn->host);
         if (errMsg != NULL) {
             errMsg->status = status;
             snprintf (errMsg->msg, ERR_MSG_LEN - 1,

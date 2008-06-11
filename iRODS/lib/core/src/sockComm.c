@@ -774,7 +774,7 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
             status = select (sock + 1, NULL, &myset, NULL, &tv);
             if (status < 0) {
 		if (errno != EINTR) {
-                    rodsLog (LOG_ERROR,
+                    rodsLog (LOG_NOTICE,
                      "connectToRhostWithTout: connect error, errno = %d", 
 		      errno);
 		    timeoutCnt++;
@@ -792,7 +792,7 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
 		}
                 /* Check the returned value */
                 if (myval) {
-                    rodsLog (LOG_ERROR,
+                    rodsLog (LOG_NOTICE,
                       "connectToRhostWithTout: connect error, errno = %d", 
                       myval);
                     timeoutCnt++;
@@ -807,7 +807,7 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
 		break;
 	    }
 	} else {
-            rodsLog (LOG_ERROR,
+            rodsLog (LOG_NOTICE,
              "connectToRhostWithTout: connect error, errno = %d", errno);
             timeoutCnt++;
 	    status = USER_SOCK_CONNECT_ERR - errno;

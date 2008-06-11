@@ -61,8 +61,6 @@ main(int argc, char **argv) {
       myEnv.rodsZone, 1, &errMsg);
 
     if (conn == NULL) {
-        rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
-	       errMsg.msg);
         exit (2);
     }
    

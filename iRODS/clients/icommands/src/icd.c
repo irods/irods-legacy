@@ -61,8 +61,6 @@ main(int argc, char **argv)
     Conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
       myEnv.rodsZone, 0, &errMsg);
     if (Conn == NULL) {
-       rodsLog (LOG_ERROR, "rcConnect failure %d %s",errMsg.status,
-		errMsg.msg);
        exit (2);
     }
 

@@ -259,9 +259,6 @@ main(int argc, char **argv) {
 
    rodsArguments_t myRodsArgs;
 
-   char *mySubName;
-   char *myName;
-
    char userName[NAME_LEN];
 
    rodsLogLevel(LOG_ERROR);
@@ -290,9 +287,6 @@ main(int argc, char **argv) {
                      myEnv.rodsZone, 0, &errMsg);
 
    if (Conn == NULL) {
-      myName = rodsErrorName(errMsg.status, &mySubName);
-      rodsLogError (LOG_ERROR, errMsg.status, "rcConnect failure %s",
-	       errMsg.msg);
       exit (2);
    }
 

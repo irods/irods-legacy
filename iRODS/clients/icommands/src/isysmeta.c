@@ -235,8 +235,6 @@ main(int argc, char **argv)
 
    if (Conn == NULL) {
       myName = rodsErrorName(errMsg.status, &mySubName);
-      rodsLogError(LOG_ERROR, errMsg.status, "rcConnect failure");
-
       rodsLog(LOG_ERROR, "rcConnect failure %s (%s) (%d) %s",
 	      myName,
 	      mySubName,
