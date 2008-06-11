@@ -1,4 +1,28 @@
-Modified from SRB's command test suite
+## The Beginning of a Mega Collection of tests designed to pound,
+## hammer, bludgeon and just generally test the heck out of iRODS.
 
-Susan Lindsey
-May 2008
+Invoke the test like so:
+
+./poundtests.sh <numtests>
+
+The above will initiate 3 concurrent (kinda) tests pounding on
+the resources listed in the ResourcesToTest file
+
+Currently, 'poundtests' only calls the 'putget' script.
+For each test subdirectory created in 'poundtests', putget puts
+an individual file, adds meta data, mv's the files to another
+irods directory, get's the same file and compares the meta data.
+
+The subdirectories created by poundtests are created on the fly.
+They are:
+
+zerofiles - contains 1000 zero length files  
+smallfiles - contains 100 smallish (32byte or something) files
+bigfiles - contains 10 big files
+
+The 'bigfile' I used is simply a binary from /usr/bin/ cat'd to
+itself many times.  This is not optimal.  I need to figure out
+how to write a big ol' binary file on the fly in a shell script.
+
+If putget has any trouble getting or retrieving anything it
+bails and so does poundtest.
