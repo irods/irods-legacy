@@ -1,16 +1,21 @@
 #!/bin/bash -e
 
 # SDL Usage # concurrent tests
-# Usage right now: no parameters, verbose set to 1 by default
-# numoferrors set to 1 by default right now also
+# 
 
 verboseflag=1
 numoferrors=1
 OS=Darwin
 
 TMP_DIR=TMP
+# putget is the shell script this script calls
 thistest=putget
 testdirs="zerofiles smallfiles bigfiles"
+
+usage () {
+	echo "Usage: $0 <numtests>"
+	exit 1
+}
 
 # Make data directories of varying file numbers and sizes
 makefiles () {
@@ -37,6 +42,7 @@ makefiles () {
 		"bigfiles")
 			for ((i=1;i<=10;i+=1)); do
 				for ((j=1;j<=5;j+=1)); do
+					## SDL this needs to be changed
 					cat /mach_kernel >> bigfiles/bigfile$i
 				done
 			done
@@ -45,17 +51,23 @@ makefiles () {
 
 }
 
-# Test variables
-# concurrenttests= this variable is passed in
-# numfiles = vary between 0 and 1000
-# filesize = vary between 0 and mega
+echo "beginning poundtest"
+
+if [ "$1" = "" ]; 
+then 
+	usage 
+fi
+
+# make our test directories
+makefiles
 
 for testdir in $testdirs; do
 
 	i=0
 	while [ $i -lt $1 ]; do
 		testid=$thistest-$testdir-`date "+%Y%m%d%H%M%S"`
-		echo $i of $1:$thistest $testid
+		numtest=`expr $i + 1`
+		echo $numtest of $1:$thistest $testid
 		sh -e $thistest $testid $testdir > $testid.irods 2>&1
 		# check for failure
 		if [ "$?" -ne 0 ]; then
@@ -64,6 +76,7 @@ for testdir in $testdirs; do
 		fi
 
 		i=`expr $i +  1`
+		numtest=`expr $i +  1`
 		sleep 3
 
 		now=`date`
