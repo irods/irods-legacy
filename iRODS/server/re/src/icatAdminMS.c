@@ -131,7 +131,9 @@ msiDeleteUser(ruleExecInfo_t *rei) {
 int 
 msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei) {
   int i;
+#ifdef RODS_CAT
   char *groupName;
+#endif
   if (reTestFlag > 0 ) {  /* Test stub mode */
     if (reTestFlag == COMMAND_TEST_1 || reTestFlag == HTML_TEST_1) {
       print_uoi(rei->uoio);

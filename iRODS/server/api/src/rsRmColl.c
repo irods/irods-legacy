@@ -248,7 +248,9 @@ int
 svrUnregColl (rsComm_t *rsComm, collInp_t *rmCollInp)
 {
     int status;
+#ifdef RODS_CAT
     collInfo_t collInfo;
+#endif
     rodsServerHost_t *rodsServerHost = NULL;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, rmCollInp->collName,
