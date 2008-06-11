@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+#include <time.h>
 
 #define NO_TEST_ATTRI	1
 #define NO_TEST_PALETTE	1
@@ -26,8 +27,8 @@ int main(int argc, char* argv[])
     int status;
     rodsEnv myEnv;
     rErrMsg_t errMsg;
-    rcComm_t *conn = NULL;
 #endif
+    rcComm_t *conn = NULL;
 
 /******************************************************************************
  *    In real application, the filename should be obtained from the SRB server. 
@@ -91,7 +92,6 @@ int main(int argc, char* argv[])
 #ifdef foo
 /* ...... f goes to the server */
 
-
 /******************************************************************************
  * In real application, the server program make this call and
  *    a) unpack the message to for H5File structure
@@ -124,23 +124,19 @@ int main(int argc, char* argv[])
  * suppose we want to read the data value  of the first dataset from the file
  ******************************************************************************/
     d = NULL;
-    /* print out one dataset */
-    for (i=0; i<f->root->ndatasets; i++)
-    {
+ 
+    if (f->root->ndatasets > 0)
         d = (H5Dataset *) &f->root->datasets[i];
-        if (strcmp(d->fullpath, "/Vdata with mixed types") == 0)
-        /*if (strcmp(d->fullpath, "/A note") == 0)*/
-            break;
-    }
-    
+
     if (d)
     {
+        time_t t1=time(NULL);
 
 /******************************************************************************
- *  In real application, the client program should make this call andi
+ *  In real application, the client program should make this call and
  *      a) pack message
  *      b) send it to the SRB server
- *      c)  wait for response from the SRB server
+ *      c) wait for response from the SRB server
  ******************************************************************************/
         d->opID = H5DATASET_OP_READ;
         ret_value = h5ObjRequest(conn, d, H5OBJECT_DATASET);
@@ -162,6 +158,9 @@ int main(int argc, char* argv[])
  *****************************************************************************/
         h5ObjProcess(d, H5OBJECT_DATASET);
 #endif
+
+       time_t t2=time(NULL);
+       printf("%d seconds on read\n", t2-t1);
 
 /* .... d goes to the client */
         print_dataset(d);
@@ -298,7 +297,7 @@ int print_dataset(const H5Dataset *d)
 
     assert(d);
 
-    printf("\nThe total size of the value buffer = %d\n", d->nvalue);
+    printf("\nNumber of data points in the dataset = %d\n", d->nvalue);
     printf("\nPrinting the first 10 values of %s\n", d->fullpath);
     if (d->value)
     {
@@ -378,7 +377,7 @@ int print_attribute(const H5Attribute *a)
 
     assert(a);
 
-    printf("\n\tThe total size of the attribute value buffer = %d\n", a->nvalue);
+    printf("\n\tNumber of data points in the attribute = %d\n", a->nvalue);
     printf("\n\tPrinting the first 10 values of %s\n", a->name);
     if (a->value)
     {
