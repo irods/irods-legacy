@@ -316,10 +316,10 @@ sub prepare( )
 	# On a fresh install, there won't be any servers running.
 	# But on a re-install, there might be.  Stop them.
 	#
-	# Don't tell the user we're stopping servers, because that is
-	# just confusing to a new user who doesn't know there are servers
-	# or who knows there shouldn't be any because this is the first
-	# install.  So, we just say we are "Preparing".
+	# Now we do tell users were running irodsctl stop since it is
+	# more confusing to users if we hide what's going on.
+	# We still say we are "Preparing" but give a message about 
+	# the 'irodsctl stop'.
 	#
 	# Ignore error messages.  If this is the first install, then
 	# 'irodsctl' won't work because configuration files won't be
@@ -332,6 +332,7 @@ sub prepare( )
 	# So check, and warn the user if some are running.
 	#
 	printSubtitle( "\nPreparing...\n" );
+	printNotice( "    Running 'irodsctl --quiet stop' in case previous is running.\n" );
 	`$irodsctl --quiet stop 2>&1`;
 	# Ignore errors.
 

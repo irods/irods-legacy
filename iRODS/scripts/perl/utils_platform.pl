@@ -226,7 +226,7 @@ sub findCommand($)
 	);
 
 	# First, check the user's PATH via 'which'
-	$whichPath = `which $command`;
+	$whichPath = `which $command 2> /dev/null`;
 	chomp($whichPath);
 	if (-f $whichPath && -x $whichPath ) {	# a file and executable
 		return $whichPath;

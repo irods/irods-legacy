@@ -2530,6 +2530,8 @@ sub Postgres_CreateDatabase()
 	# Check if the database already exists.
 	#	'psql' will list databases, or report an error
 	#	if the one we want isn't there.
+	printStatus( "Checking whether iCAT database exists...\n" );
+	printLog( "\nChecking whether iCAT database exist...\n" );
 	my $needCreate = 1;
 	my ($status,$output) = run( "$psql -l $DB_NAME" );
 	if ( $output =~ /List of databases/i )
@@ -2594,10 +2596,10 @@ sub Postgres_CreateDatabase()
 	#	doesn't exist yet.  So, .pgpass isn't involved and
 	#	the user will be prompted for a password.  To avoid
 	#	the prompt, we include the password in an input file.
-	printStatus( "Creating iCAT database...\n" );
-	printLog( "\nCreating iCAT database...\n" );
 	if ( $needCreate )
 	{
+		printStatus( "    Creating iCAT database...\n" );
+		printLog( "\n    Creating iCAT database...\n" );
 		my $tmpPassword = createTempFilePath( "create" );
 		printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
 		chmod( 0600, $tmpPassword );
@@ -2626,8 +2628,8 @@ sub Postgres_CreateDatabase()
 	}
 	else
 	{
-		printStatus( "    Skipped.  iCAT database already exists.\n" );
-		printLog( "    Skipped.  iCAT database already exists.\n" );
+		printStatus( "    Skipped creating iCAT database, it already exists.\n" );
+		printLog( "    Skipped creating iCAT database, it already exists.\n" );
 	}
 
 
