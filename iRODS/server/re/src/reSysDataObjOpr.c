@@ -103,6 +103,9 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
           &myRescGrpInfo);
     }
 
+    if (rei->status == CAT_NO_ROWS_FOUND) 
+      rei->status = SYS_RESC_DOES_NOT_EXIST;
+
     if (value != NULL)
         free (value);
 
