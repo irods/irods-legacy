@@ -15,7 +15,7 @@
 #include "initServer.h"
 #include "dataObjInpOut.h"
 
-#define NUM_COLL_HANDLE	10
+#define NUM_COLL_HANDLE	30
 
 /* prototype for the client call */
 typedef struct OpenCollInp {
