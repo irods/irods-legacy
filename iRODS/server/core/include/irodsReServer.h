@@ -23,6 +23,8 @@
 #define RE_SERVER_SLEEP_TIME    120
 #define RE_SERVER_EXEC_TIME     1800
 
+uint CoreIrbTimeStamp = 0;
+
 /* definition for flagval flags */
 
 #define v_FLAG  0x1
@@ -31,4 +33,6 @@ int
 reServerMain (rsComm_t *rsComm);
 int
 reSvrSleep (rsComm_t *rsComm);
+int
+chkAndResetRule (rsComm_t *rsComm);
 #endif	/* IRODS_RE_SERVER_H */

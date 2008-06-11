@@ -12,6 +12,8 @@
 #include "rsApiHandler.h"
 #include "rsIcatOpr.h"
 
+extern int admClearAppRuleStruct(ruleExecInfo_t *rei);
+
 int usage (char *prog);
 
 int
@@ -112,6 +114,7 @@ reServerMain (rsComm_t *rsComm)
     int runCnt;
    
     while (1) {
+	chkAndResetRule (rsComm);
         rodsLog (LOG_NOTICE,
           "reServerMain: checking the queue for jobs");
         status = getReInfo (rsComm, &genQueryOut);
@@ -182,5 +185,50 @@ reSvrSleep (rsComm_t *rsComm)
 #endif
     }
     return (status);
+}
+
+int
+chkAndResetRule (rsComm_t *rsComm)
+{
+    char *configDir;
+    char rulesFileName[MAX_NAME_LEN];
+    struct stat statbuf;
+    int status;
+    ruleExecInfo_t rei;
+
+    configDir = getConfigDir ();
+    snprintf (rulesFileName, MAX_NAME_LEN, "%s/reConfigs/core.irb", 
+      configDir); 
+    status = stat (rulesFileName, &statbuf);
+
+    if (status != 0) {
+	status = UNIX_FILE_STAT_ERR - errno;
+        rodsLog (LOG_ERROR,
+          "chkAndResetRule: unable to read rule config file %s, status = %d",
+	  rulesFileName, status);
+	return (status);
+    }
+
+    if (CoreIrbTimeStamp == 0) {
+	/* first time */
+	CoreIrbTimeStamp = (uint) statbuf.st_mtime;
+	return (0);
+    }
+
+    if ((uint) statbuf.st_mtime > CoreIrbTimeStamp) {
+	/* file has been changed */
+        rodsLog (LOG_NOTICE,
+          "chkAndResetRule: reconf file %s has been changed. re-initializing",
+	  rulesFileName);
+	CoreIrbTimeStamp = (uint) statbuf.st_mtime;
+	rei.rsComm = rsComm;
+	admClearAppRuleStruct (&rei);
+	status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "chkAndResetRule: initRuleEngine error, status = %d", status);
+        }
+    }
+    return status;
 }
 
