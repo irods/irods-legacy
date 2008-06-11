@@ -3,6 +3,10 @@
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 #include "rodsXmsg.h"
+#include "getXmsgTicket.h"
+#include "sendXmsg.h"
+#include "rcvXmsg.h"
+
 
 int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
 {

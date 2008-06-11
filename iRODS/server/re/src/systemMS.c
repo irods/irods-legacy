@@ -517,7 +517,7 @@ doForkExec(char *prog, char *arg1)
       for (i=0;i<100;i++) {
 	 close(i);
       }
-      i = execl(prog, prog, arg1, 0);
+      i = execl(prog, prog, arg1, (char *) 0);
       printf("execl failed %d\n",i);
       return(0);
    }
