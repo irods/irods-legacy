@@ -683,9 +683,25 @@ sub doTest
 	printSubtitle( "Testing iCommands...\n" );
 	doTestIcommands( );
 
-	# Test iCAT
-	printSubtitle( "\nTesting iCAT...\n" );
-	doTestIcat( );
+	# Check if this host is ICAT-enabled.
+	# Note that the tests assume i-commands are in the path so we can too.
+	# Need to re-iinit first for svr to svr connections, non-ICAT hosts.
+	my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;  
+	$old_irodsHost = $ENV{"irodsHost"};
+	$ENV{"irodsHost"} = "localhost";
+	$out = `imiscsvrinfo`;
+	$ENV{"irodsHost"} = $old_irodsHost;
+	if ( $out =~ /RCAT_ENABLED/) {
+	    # Test iCAT
+	    printSubtitle( "\nTesting iCAT...\n" );
+	    doTestIcat( );
+	}
+	else {
+	    printNotice( "\nSkipping ICAT tests since the ICAT-enabled server\n");
+	    printNotice( "is on a remote host.  The ICAT tests can only be\n" );
+	    printNotice( "run locally.\n" );
+ 
+	}
 
 	printNotice( "\nDone.\n" );
 
