@@ -3,7 +3,8 @@
 set -x 
 
 myhost=`hostname`
-mydate=`date`mypwd=`pwd`
+mydate=`date`
+mypwd=`pwd`
 
 echo "$myhost:$mypwd $mydate irods2.sh starting"
 
@@ -19,7 +20,7 @@ pgsql/bin/pg_ctl kill -D pgsql/data
 
 set +x
 /bin/rm -rf iRODS
-/bin/rm -f /tmp/test*
+/bin/rm -f /tmp/testRule_* /tmp/testSurvey_*
 set -x
 
 # Once a day, download and build postgres too
@@ -69,8 +70,8 @@ error3=$?
 # Record the test logs into the main log file available via the web
 ls -lt server/test/bin/*.log
 cat server/test/bin/*.log
-ls -lt /tmp/test*
-cat /tmp/test*
+ls -lt /tmp/testRule_* /tmp/testSurvey_*
+cat /tmp/testRule_* /tmp/testSurvey_*
 
 # Record the build log into the main log file available via the web
 ls -lt installLogs/installMake.log
