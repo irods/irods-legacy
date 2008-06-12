@@ -332,6 +332,11 @@ sub prepare( )
 	# So check, and warn the user if some are running.
 	#
 	printSubtitle( "\nPreparing...\n" );
+
+	# Don't do any of this if we're only building clients.
+	return if ( $installDataServer == 0 ); 
+
+
 	printNotice( "    Running 'irodsctl --quiet stop' in case previous is running.\n" );
 	`$irodsctl --quiet stop 2>&1`;
 	# Ignore errors.
