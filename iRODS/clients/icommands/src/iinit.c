@@ -87,6 +87,9 @@ main(int argc, char **argv)
     Conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
       myEnv.rodsZone, 0, &errMsg);
     if (Conn == NULL) {
+       rodsLog(LOG_ERROR, 
+		    "Saved password, but failed to connect to server %s",
+	       myEnv.rodsHost);
        exit(2);
     }
 
