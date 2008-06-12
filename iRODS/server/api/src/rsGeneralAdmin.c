@@ -49,7 +49,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
     rescInfo_t rescInfo;
     ruleExecInfo_t rei;
 
-    rodsLog (LOG_NOTICE,
+    rodsLog (LOG_DEBUG,
 	     "_rsGeneralAdmin arg0=%s", 
 	     generalAdminInp->arg0);
 
