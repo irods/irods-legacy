@@ -687,11 +687,8 @@ sub doTest
 	# Note that the tests assume i-commands are in the path so we can too.
 	# Need to re-iinit first for svr to svr connections, non-ICAT hosts.
 	my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;  
-	$old_irodsHost = $ENV{"irodsHost"};
-	$ENV{"irodsHost"} = "localhost";
-	$out = `imiscsvrinfo`;
-	$ENV{"irodsHost"} = $old_irodsHost;
-	if ( $out =~ /RCAT_ENABLED/) {
+	my $outMisc = `imiscsvrinfo`;
+	if ( $outMisc =~ /RCAT_ENABLED/) {
 	    # Test iCAT
 	    printSubtitle( "\nTesting iCAT...\n" );
 	    doTestIcat( );
