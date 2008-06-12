@@ -1114,7 +1114,15 @@ sub configureIrodsServer
 		# We are using an existing iRODS server with an
 		# iCAT enabled, so we don't need to install tables or
 		# set up user accounts.
-		printStatus( "Running 'iinit' to enable to server to server connections...\n" );
+		if ( ! -e $userIrodsDir )
+		{
+		    # User's iRODS configuration directory doesn't exist yet.
+		    # This is needed for iinit to be able to save the pw file.
+		    printLog( "    mkdir $userIrodsDir\n" );
+		    mkdir( $userIrodsDir, 0700 );
+		}
+
+		printStatus( "Running 'iinit' to enable server to server connections...\n" );
 		printLog( "Running 'iinit' to enable server to server connections...\n" );
 		my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
 
