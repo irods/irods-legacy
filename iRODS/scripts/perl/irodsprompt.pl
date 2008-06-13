@@ -353,10 +353,15 @@ printNotice( "Saved.\n" );
 if ( $installDataServer && $installCatalogServer &&
 	!$installDatabaseServer )
 {
-	printNotice(
-		"\n",
-		"Please be sure that the $databaseServerType DBMS on '$databaseServerHost'\n",
-		"is started and ready before continuing.\n" );
+# I'm removing this for now as it is wrong in some cases (perhaps all cases).
+# If the old irodsctl controls the DBMS, the first step ('Prepare') will
+# stop the DBMS.  No need to tell the user to start it just to stop it
+# right after that.
+
+#	printNotice(
+#		"\n",
+#		"Please be sure that the $databaseServerType DBMS on '$databaseServerHost'\n",
+#		"is started and ready before continuing.\n" );
 }
 if ( $installDataServer && !$installCatalogServer )
 {
@@ -767,16 +772,15 @@ sub promptForDatabaseConfiguration()
 
 	printNotice(
 		"The iCAT catalog uses a DBMS (database management system) to store\n",
-		"state information in a database.  You have three choices:\n",
+		"state information in a database.  You have two choices:\n",
 		"\n",
 		"    1.  Download and build a new Postgres DBMS system.\n",
-		"    2.  Upgrade an existing Postgres DBMS installation.\n",
-		"    3.  Use an existing Postgres or Oracle DBMS and database.\n",
+		"    2.  Use an existing Postgres or Oracle DBMS and database.\n",
 		"\n" );
 
 	# The loop below walks through three prompts for the
-	# above three cases.  Normally, we ask about 1, then
-	# 2, then 3.
+	# above two cases.  Normally, we ask about 1, then
+	# 2.
 	#
 	# If $databaseServerType is already set to "oracle", it
 	# can only be because that was chosen in a prior existing
@@ -809,15 +813,16 @@ sub promptForDatabaseConfiguration()
 			$showPrompt = 2;
 		}
 
+# No longer allow upgrade, this script tries to do too much already.
 		if ( $showPrompt == 2 )
 		{
-			# Upgrade existing Postgres?
-			my $upgrade = promptYesNo(
-				"Upgrade an existing Postgres DBMS",
-				(($databaseServerType ne "" && $databaseServerType ne "postgres") ?
-					"no" : "yes" ) );
-			if ( $upgrade == 1 )
-			{
+#			# Upgrade existing Postgres?
+#			my $upgrade = promptYesNo( 
+#				"Upgrade an existing Postgres DBMS",
+#				(($databaseServerType ne "" && $databaseServerType ne "postgres") ?
+#					"no" : "yes" ) );
+#			if ( $upgrade == 1 )
+#			{
 				# Definitive answer.  It's an upgrade
 				# of an existing Postgres install.
 				# Prompt for it, then we're done.
@@ -828,12 +833,12 @@ sub promptForDatabaseConfiguration()
 				# prompts before overwriting prior
 				# data.  We present this as a
 				# separate "upgrade" choice for clarity.
-				$installDatabaseServer = 1;
-				$databaseServerType = "postgres";
-				$databaseServerExclusive = 1;
-				promptForNewPostgresConfiguration( 1 );	# upgrade
-				return;
-			}
+#				$installDatabaseServer = 1;
+#				$databaseServerType = "postgres";
+#				$databaseServerExclusive = 1;
+#				promptForNewPostgresConfiguration( 1 );	# upgrade
+#				return;
+#			}
 
 			# Not that choice.  Try the next one.
 			$showPrompt = 3;
@@ -960,8 +965,9 @@ sub promptForDatabaseConfiguration()
 #				return;
 #			}
 			printError(
-				"    Sorry, but iRODS only works with Postgres or Oracle\n",
-				"    databases.  Please select one of these two.\n\n" );
+				"    iRODS currently only works with Postgres or Oracle\n",
+				"    database management systems.  Please select one of\n",
+				"    these two.\n\n" );
 
 			# Not that choice.  Try the first one
 			# again.
@@ -1055,14 +1061,14 @@ sub promptForNewPostgresConfiguration( $ )
 				# new install.  Confirm.
 				printNotice(
 					"\n",
-					"Postgres is already installed in that directory.  You can\n",
-					"upgrade it to a new version, or select a different directory.\n",
-					"\n" );
+					"Postgres is already installed in that directory.\n");
+# old version				"Postgres is already installed in that directory.  You can\n",
+#					"upgrade it to a new version, or select a different directory.\n",
 
-				my $switchUpgrade = promptYesNo(
-					"Upgrade an existing Postgres DBMS",
-					"yes" );
-
+#				my $switchUpgrade = promptYesNo(
+#					"Upgrade an existing Postgres DBMS",
+#					"yes" );
+				my $switchUpgrade = 0;
 				if ( $switchUpgrade == 0 )
 				{
 					# They don't want to upgrade.
@@ -1070,7 +1076,7 @@ sub promptForNewPostgresConfiguration( $ )
 					printNotice(
 						"\n",
 						"Please select another directory for a new installation\n",
-						"of Postgres.\n",
+						"of Postgres or control-C and restart this script.\n",
 						"\n" );
 					next;
 				}
@@ -1352,12 +1358,13 @@ sub promptForExistingPostgresDatabase( )
 	printNotice(
 		"\n",
 		"iRODS can be configured to start and stop the Postgres database\n",
-		"along with the iRODS servers.  Enable this only if your database\n",
-		"is not being used for anything else besides iRODS.\n",
+		"along with the iRODS servers via the 'irodsctl' control script.\n",
+		"Most likely, you'll want to enable this if you are using your\n",
+		"Postgres primarily for iRODS.\n",
 		"\n" );
 	$databaseServerExclusive = promptYesNo(
 		"Start and stop the database along with iRods",
-		(($databaseServerExclusive==1)?"yes":"no") );
+		"yes" );
 }
 
 
