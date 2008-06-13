@@ -1,5 +1,0 @@
-flex rulegen.l 
-bison -t -y -d rulegen.y
-gcc -c -g y.tab.c lex.yy.c rulegen.c
-gcc -g y.tab.o lex.yy.o rulegen.o -o rulegen
-rulegen -s test1.r
