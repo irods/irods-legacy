@@ -174,7 +174,8 @@ xmsgServerMain ()
 	addReqToQue (newSock);
 
     }
-
+    /* RAJA removed June 13, 2088 to avoid compiler warning in solaris
     return status;
+    */
 }
 
