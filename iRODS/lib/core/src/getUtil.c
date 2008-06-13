@@ -249,8 +249,26 @@ rodsRestart_t *rodsRestart)
                 status = procAndWrriteRestartFile (rodsRestart, targChildPath);
             }
 	} else if (collEnt.objType == COLL_OBJ_T) {
+#ifdef windows_platform			/* Bing June 12,2008. To avoid path like ./t3//t2 in windows */
+		if(strlen(collEnt.collName + collLen) > 0)
+		{
+			if(*(collEnt.collName + collLen) == '/')
+			{
+				snprintf (targChildPath, MAX_NAME_LEN, "%s%s", targDir, collEnt.collName + collLen);
+			}
+			else
+			{
+				snprintf (targChildPath, MAX_NAME_LEN, "%s/%s", targDir, collEnt.collName + collLen);
+			}
+		}
+		else
+		{
+			snprintf (targChildPath, MAX_NAME_LEN, "%s", targDir); 
+		}
+#else
             snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
               targDir, collEnt.collName + collLen);
+#endif
 
             mkdirR (targDir, targChildPath, 0750);
 
