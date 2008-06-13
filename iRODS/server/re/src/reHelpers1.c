@@ -390,7 +390,7 @@ _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, i
      sprintf(res,"%i",  iii);
      return(iii);
    }
-   return(-5);
+   /*   return(-5); removed RAJA June 13 2008 as it is not reached */
 }
 
 int
