@@ -17,12 +17,12 @@ collOprStat_t **collOprStat)
 int
 rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, int vFlag)
 {
-    int status;
+    int status, retval;
     collOprStat_t *collOprStat = NULL;
 
-    status = _rcRmColl (conn, rmCollInp, &collOprStat);
+    retval = _rcRmColl (conn, rmCollInp, &collOprStat);
 
-    status = cliGetCollOprStat (conn, collOprStat, vFlag);
+    status = cliGetCollOprStat (conn, collOprStat, vFlag, retval);
 
     return (status);
 }

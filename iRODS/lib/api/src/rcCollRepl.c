@@ -20,12 +20,12 @@ collOprStat_t **collOprStat)
 int
 rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp, int vFlag)
 {
-    int status;
+    int status, retval;
     collOprStat_t *collOprStat = NULL;
 
-    status = _rcCollRepl (conn, collReplInp, &collOprStat);
+    retval = _rcCollRepl (conn, collReplInp, &collOprStat);
 
-    status = cliGetCollOprStat (conn, collOprStat, vFlag);
+    status = cliGetCollOprStat (conn, collOprStat, vFlag, retval);
 
     return (status);
 }

@@ -334,9 +334,10 @@ bytesBuf_t *errorBBuf)
 }
 
 int 
-cliGetCollOprStat (rcComm_t *conn, collOprStat_t *collOprStat, int vFlag)
+cliGetCollOprStat (rcComm_t *conn, collOprStat_t *collOprStat, int vFlag, 
+int retval)
 {
-    int status;
+    int status = retval;
 
     while (status == SYS_SVR_TO_CLI_COLL_STAT) {
         int myBuf;
