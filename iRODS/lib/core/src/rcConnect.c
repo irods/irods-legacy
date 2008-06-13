@@ -79,6 +79,8 @@ int reconnFlag)
 
     if (status < 0) {
         if (errMsg != NULL) {
+        rodsLogError (LOG_ERROR, status,
+         "_rcConnect: setRhostInfo error, irodHost is probably not set correctly");
             errMsg->status = status;
             snprintf (errMsg->msg, ERR_MSG_LEN - 1,
               "_rcConnect: setRhostInfo failed\n");

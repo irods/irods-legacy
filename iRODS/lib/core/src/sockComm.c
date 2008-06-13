@@ -112,7 +112,7 @@ sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr)
 
     if (addr != NULL) {
         struct sockaddr_in sin;
-        int length = sizeof (sin);
+        uint length = sizeof (sin);
         if (getsockname (sock, (struct sockaddr *) &sin, &length)) {
             rodsLog (LOG_NOTICE,
             "sockOpenForInConn() -- getsockname() failed: errno=%d", errno);
@@ -782,7 +782,7 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
 		continue;
 	    } else if (status > 0) {
 		int myval;
-		int mylen = sizeof (int);
+		uint mylen = sizeof (int);
                 if (getsockopt (sock, SOL_SOCKET, SO_ERROR, (void*) (&myval), 
 		  &mylen) < 0) {
         	    rodsLog (LOG_ERROR,
@@ -894,7 +894,7 @@ setRemoteAddr (int sock, struct sockaddr_in *remoteAddr)
 #if defined(PORTNAME_aix)
     size_t      laddrlen = sizeof(struct sockaddr);
 #else
-    int         laddrlen = sizeof(struct sockaddr);
+    uint         laddrlen = sizeof(struct sockaddr);
 #endif
 
     /* fill in the server address. This is for case where the conn->host
@@ -917,7 +917,7 @@ setLocalAddr (int sock, struct sockaddr_in *localAddr)
 #if defined(PORTNAME_aix)
     size_t      laddrlen = sizeof(struct sockaddr);
 #else
-    int         laddrlen = sizeof(struct sockaddr);
+    uint         laddrlen = sizeof(struct sockaddr);
 #endif
 
 
