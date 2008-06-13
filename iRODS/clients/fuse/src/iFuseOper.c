@@ -359,7 +359,7 @@ irodsRmdir (const char *path)
     addKeyVal (&collInp.condInput, FORCE_FLAG_KW, "");
 
     getIFuseConn (&DefConn, &MyRodsEnv);
-    status = rcRmColl (DefConn.conn, &collInp);
+    status = rcRmColl (DefConn.conn, &collInp, 0);
     relIFuseConn (&DefConn);
 
     clearKeyVal (&collInp.condInput);

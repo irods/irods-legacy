@@ -66,7 +66,8 @@ endif
 
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 
-LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -ldl -lrt
+# LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -ldl -lrt
+LDFLAGS +=	$(LDADD) $(MODULE_LDFLAGS) -L$(fuseHomeDir)/lib -lfuse -ldl
 
 # for checking memleak
 # LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib
