@@ -90,25 +90,6 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
         return lsock;
     }
 
-#if 0
-    length = sizeof (sin);
-    if (getsockname (lsock, (struct sockaddr *) &sin, &length)) {
-        rodsLog (LOG_NOTICE,
-         "createSrvPortal() -- getsockname() failed: errno=%d",
-          errno);
-        return SYS_SOCK_BIND_ERR - errno;
-    }
-    lport = ntohs (sin.sin_port);
-    if (getsockname (rsComm->sock, (struct sockaddr *) &sin, &length)) {
-        rodsLog (LOG_NOTICE,
-         "setupSrvPortal() -- getsockname() of rsComm failed: errno=%d",
-          errno);
-        return SYS_SOCK_BIND_ERR - errno;
-    }
-
-    laddr = rods_inet_ntoa (sin.sin_addr);
-#endif
-
     thisPortList->sock = lsock;
     thisPortList->cookie = random ();
     if (ProcessType == CLIENT_PT) {
@@ -117,6 +98,7 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
         struct hostent *hostEnt;
         /* server. try to use what is configured */
         if (LocalServerHost != NULL &&
+	 strcmp (LocalServerHost->hostName->name, "localhost") != 0 &&
          (hostEnt = gethostbyname (LocalServerHost->hostName->name)) != NULL){
             rstrcpy (thisPortList->hostAddr, hostEnt->h_name, LONG_NAME_LEN);
         } else {

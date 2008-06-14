@@ -438,6 +438,7 @@ queAddr (rodsServerHost_t *rodsServerHost, char *myHostName)
     }
 
     if (strcasecmp (myHostName, hostEnt->h_name) != 0) {
+#if 0	/* rollback - change in createSrvPortal instead */ 
         if (rodsServerHost->localFlag == LOCAL_HOST && 
 	  rodsServerHost->hostName != NULL &&
 	  strcmp (rodsServerHost->hostName->name, "localhost") == 0) {
@@ -446,6 +447,9 @@ queAddr (rodsServerHost_t *rodsServerHost, char *myHostName)
 	} else {
             queHostName (rodsServerHost, hostEnt->h_name, 0);
 	}
+#else
+        queHostName (rodsServerHost, hostEnt->h_name, 0);
+#endif
     }
     return (0);
 }
