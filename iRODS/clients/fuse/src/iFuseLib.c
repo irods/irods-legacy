@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
+#include <pthread.h>
 #include "irodsFs.h"
 #include "iFuseLib.h"
 
@@ -137,7 +138,8 @@ ifuseLseek (const char *path, int descInx, off_t offset)
               "ifuseLseek: rcDataObjLseek of %s error", path);
             return status;
         } else {
-            free (dataObjLseekOut);
+	    if (dataObjLseekOut != NULL)
+                free (dataObjLseekOut);
             IFuseDesc[descInx].offset = offset;
         }
 
@@ -204,7 +206,6 @@ void
 connManager ()
 {
     time_t curTime;
-    int status;
 
     while (1) {
         pthread_mutex_lock (&DefConn.lock);

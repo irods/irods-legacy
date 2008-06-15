@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <time.h>
 #include <assert.h>
+#include <pthread.h>
 #include "irodsFs.h"
 #include "iFuseOper.h"
 #include "iFuseLib.h"
@@ -85,13 +86,9 @@ static void usage(const char *progname)
 int 
 main (int argc, char **argv)
 {
-
     int status;
-    rErrMsg_t errMsg;
     rodsArguments_t myRodsArgs;
     char *optStr;
-    rodsPathInp_t rodsPathInp;
-    pthread_t connManagerThr;
 
     optStr = "h";
 

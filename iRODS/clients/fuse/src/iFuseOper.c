@@ -22,8 +22,9 @@ irodsGetattr (const char *path, struct stat *stbuf)
     dataObjInp_t dataObjInp;
     rodsObjStat_t *rodsObjStatOut = NULL;
 
-    rodsLog (LOG_DEBUG, "irodsGetattr: ");
+    rodsLog (LOG_DEBUG, "irodsGetattr: %s", path);
 
+    memset (stbuf, 0, sizeof (struct stat));
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv, 
       dataObjInp.objPath);
@@ -61,7 +62,8 @@ irodsGetattr (const char *path, struct stat *stbuf)
         stbuf->st_atime = atoi (rodsObjStatOut->modifyTime);
     }
 
-    freeRodsObjStat (rodsObjStatOut);
+    if (rodsObjStatOut != NULL)
+        freeRodsObjStat (rodsObjStatOut);
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
 
@@ -71,7 +73,7 @@ irodsGetattr (const char *path, struct stat *stbuf)
 int 
 irodsReadlink (const char *path, char *buf, size_t size)
 {
-    rodsLog (LOG_DEBUG, "irodsReadlink: ");
+    rodsLog (LOG_DEBUG, "irodsReadlink: %s", path);
     return (0);
 }
 
@@ -83,6 +85,10 @@ off_t offset, struct fuse_file_info *fi)
     collHandle_t collHandle;
     collEnt_t collEnt;
     int status;
+    /* don't know why we need this. the example have them */
+    (void) offset;
+    (void) fi;
+
 #if 0
     rodsArguments_t rodsArgs;
     genQueryInp_t genQueryInp;
@@ -93,7 +99,7 @@ off_t offset, struct fuse_file_info *fi)
     int len;
 #endif
 
-    rodsLog (LOG_DEBUG, "irodsReaddir: ");
+    rodsLog (LOG_DEBUG, "irodsReaddir: %s", path);
 
     filler(buf, ".", NULL, 0);
     filler(buf, "..", NULL, 0);
@@ -113,7 +119,7 @@ off_t offset, struct fuse_file_info *fi)
         rodsLog (LOG_ERROR,
           "getCollUtil: rclOpenCollection of %s error. status = %d",
           collPath, status);
-        return status;
+        return -ENOENT;
     }
     while ((status = rclReadCollection (DefConn.conn, &collHandle, &collEnt)) 
       >= 0) {
@@ -226,7 +232,7 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     dataObjCloseInp_t dataObjCloseInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "irodsMknod: ");
+    rodsLog (LOG_DEBUG, "irodsMknod: %s", path);
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
@@ -275,7 +281,7 @@ irodsMkdir (const char *path, mode_t mode)
     collInp_t collCreateInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "irodsMkdir: ");
+    rodsLog (LOG_DEBUG, "irodsMkdir: %s", path);
 
     memset (&collCreateInp, 0, sizeof (collCreateInp));
 
@@ -307,7 +313,7 @@ irodsUnlink (const char *path)
     dataObjInp_t dataObjInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "irodsUnlink: ");
+    rodsLog (LOG_DEBUG, "irodsUnlink: %s", path);
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
 
@@ -343,7 +349,7 @@ irodsRmdir (const char *path)
     collInp_t collInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "irodsRmdir: ");
+    rodsLog (LOG_DEBUG, "irodsRmdir: %s", path);
 
     memset (&collInp, 0, sizeof (collInp));
 
@@ -376,7 +382,7 @@ irodsRmdir (const char *path)
 int 
 irodsSymlink (const char *from, const char *to)
 {
-    rodsLog (LOG_DEBUG, "irodsSymlink: ");
+    rodsLog (LOG_DEBUG, "irodsSymlink: %s to %s", from, to);
     return (0);
 }
 
@@ -386,7 +392,7 @@ irodsRename (const char *from, const char *to)
     dataObjCopyInp_t dataObjRenameInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "irodsRename: ");
+    rodsLog (LOG_DEBUG, "irodsRename: %s to %s", from, to);
 
     /* test rcDataObjRename */
 
@@ -436,21 +442,21 @@ irodsRename (const char *from, const char *to)
 int 
 irodsLink (const char *from, const char *to)
 {
-    rodsLog (LOG_DEBUG, "irodsLink: ");
+    rodsLog (LOG_DEBUG, "irodsLink: %s to %s");
     return (0);
 }
 
 int 
 irodsChmod (const char *path, mode_t mode)
 {
-    rodsLog (LOG_DEBUG, "irodsChmod: ");
+    rodsLog (LOG_DEBUG, "irodsChmod: %s", path);
     return (0);
 }
 
 int 
 irodsChown (const char *path, uid_t uid, gid_t gid)
 {
-    rodsLog (LOG_DEBUG, "irodsChown: ");
+    rodsLog (LOG_DEBUG, "irodsChown: %s", path);
     return (0);
 }
 
@@ -460,7 +466,7 @@ irodsTruncate (const char *path, off_t size)
     dataObjInp_t dataObjInp;
     int status;
 
-    rodsLog (LOG_DEBUG, "irodsTruncate: ");
+    rodsLog (LOG_DEBUG, "irodsTruncate: %s", path);
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
@@ -490,14 +496,14 @@ irodsTruncate (const char *path, off_t size)
 int 
 irodsFlush (const char *path, struct fuse_file_info *fi)
 {
-    rodsLog (LOG_DEBUG, "irodsFlush: ");
+    rodsLog (LOG_DEBUG, "irodsFlush: %s", path);
     return (0);
 }
 
 int 
 irodsUtimens (const char *path, const struct timespec ts[2])
 {
-    rodsLog (LOG_DEBUG, "irodsUtimens: ");
+    rodsLog (LOG_DEBUG, "irodsUtimens: %s", path);
     return (0);
 }
 
@@ -509,7 +515,7 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
     int fd;
     int descInx;
 
-    rodsLog (LOG_DEBUG, "irodsOpen: ");
+    rodsLog (LOG_DEBUG, "irodsOpen: %s", path);
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
@@ -554,7 +560,7 @@ struct fuse_file_info *fi)
     dataObjReadInp_t dataObjReadInp;
     bytesBuf_t dataObjReadOutBBuf;
 
-    rodsLog (LOG_DEBUG, "irodsRead: ");
+    rodsLog (LOG_DEBUG, "irodsRead: %s", path);
 
     descInx = fi->fh;
 
@@ -599,7 +605,7 @@ struct fuse_file_info *fi)
     dataObjWriteInp_t dataObjWriteInp;
     bytesBuf_t dataObjWriteInpBBuf;
 
-    rodsLog (LOG_DEBUG, "irodsWrite: ");
+    rodsLog (LOG_DEBUG, "irodsWrite: %s", path);
 
     descInx = fi->fh;
 
@@ -646,7 +652,7 @@ irodsStatfs (const char *path, struct statvfs *stbuf)
 {
     int status;
 
-    rodsLog (LOG_DEBUG, "irodsStatfs: ");
+    rodsLog (LOG_DEBUG, "irodsStatfs: %s", path);
 
     if (stbuf == NULL)
 	return (0);
@@ -672,7 +678,7 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     int status, myError;
     dataObjCloseInp_t dataObjCloseInp;
 
-    rodsLog (LOG_DEBUG, "irodsRelease: ");
+    rodsLog (LOG_DEBUG, "irodsRelease: %s", path);
 
     descInx = fi->fh;
 
@@ -703,7 +709,7 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 int 
 irodsFsync (const char *path, int isdatasync, struct fuse_file_info *fi)
 {
-    rodsLog (LOG_DEBUG, "irodsFsync: ");
+    rodsLog (LOG_DEBUG, "irodsFsync: %s", path);
     return (0);
 }
 

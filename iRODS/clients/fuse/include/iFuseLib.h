@@ -52,6 +52,8 @@ void
 connManager ();
 int
 iFuseDescInuse ();
+int
+checkFuseDesc (int descInx);
 #ifdef  __cplusplus
 }
 #endif
