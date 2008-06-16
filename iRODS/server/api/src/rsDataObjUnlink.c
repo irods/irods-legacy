@@ -61,27 +61,6 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     }
 
     return (status);
-
-#if 0
-    if (getValByKey (&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
-      getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL ||
-      dataObjUnlinkInp->specColl != NULL) { 
-        status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp);
-    } else {
-        initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
-        status = applyRule ("acTrashPolicy", NULL, &rei, NO_SAVE_REI);
-        trashPolicy = rei.status;
-
-        if (trashPolicy != NO_TRASH_CAN) {
-            status = rsMvDataObjToTrash (rsComm, dataObjUnlinkInp);
-            return status;
-        } else {
-            status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp);
-	}
-    }
-
-    return (status);
-#endif
 }
 
 int

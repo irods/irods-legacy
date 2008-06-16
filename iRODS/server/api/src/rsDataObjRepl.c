@@ -250,45 +250,6 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
     }
 
     return (savedStatus);
-
-#if 0
-    tmpDataObjInfo = srcDataObjInfoHead;
-    while (tmpDataObjInfo != NULL) {
-	myDataObjInfo = malloc (sizeof (dataObjInfo_t));
-	*myDataObjInfo = *tmpDataObjInfo;
-        myDataObjInfo->next = NULL;
-
-	transStat->bytesWritten = tmpDataObjInfo->dataSize;
-        if (destDataObjInfo != NULL && destDataObjInfo->dataId > 0) {
-	    /* overwrite a specific destDataObjInfo */
-            status = _rsDataObjReplS (rsComm, dataObjInp, myDataObjInfo,
-              NULL, destDataObjInfo);
-	} else {
-            tmpRescGrpInfo = destRescGrpInfo;
-            while (tmpRescGrpInfo != NULL) {
-                tmpRescInfo = tmpRescGrpInfo->rescInfo;
-
-                status = _rsDataObjReplS (rsComm, dataObjInp, myDataObjInfo, 
-	          tmpRescInfo, destDataObjInfo);
-
-	        if (status >= 0) {
-		    break;
-	        }
-	        tmpRescGrpInfo = tmpRescGrpInfo->next;
-	    }
-	}
-	if (status >= 0) {
-            transStat->numThreads = dataObjInp->numThreads;
-	    break;
-        } else {
-	    savedStatus = status;
-        }
-
-        tmpDataObjInfo = tmpDataObjInfo->next;
-    }
-
-    return (status);
-#endif
 }
 
 /* _rsDataObjReplS - replicate a single obj 

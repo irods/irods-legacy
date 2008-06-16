@@ -6,11 +6,7 @@
 #include "fileChksum.h"
 #include "miscServerFunct.h"
 
-#if 0	/* XXXX getting wrong chksum. use the same size as md5 client */
 #define SVR_MD5_BUF_SZ (1024*1024)
-#define MD5_DEBUG 1
-#endif
-#define SVR_MD5_BUF_SZ (4*1024)
 
 int
 rsFileChksum (rsComm_t *rsComm, fileChksumInp_t *fileChksumInp, 
