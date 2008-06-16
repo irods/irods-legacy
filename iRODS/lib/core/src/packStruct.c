@@ -167,23 +167,14 @@ parsePackInstruct (char *packInstruct, packItem_t **packItemHead)
                  return (SYS_PACK_INSTRUCT_FORMAT_ERR);
             }
 	    gotTypeCast = 1;
-#if 0
-	    outLen = copyStrFromPiBuf (&inptr, buf, 1);
-#else
             outLen = copyStrFromPiBuf (&inptr, buf, 0);
-#endif
 	    if (outLen <= 0) {
                 rodsLog (LOG_ERROR,
                  "parsePackInstruct: ? No variable following ? for %s", 
 		  packInstruct);
                  return (SYS_PACK_INSTRUCT_FORMAT_ERR);
 	    }
-#if 0
-	    myPackItem->name = strdup (buf);
-	    gotItemName = 1;
-#else
 	    rstrcpy (myPackItem->strValue, buf, NAME_LEN);
-#endif
 	    continue;
 	} else if (strcmp (buf,  "*") == 0) {	/* pointer */
 	    myPackItem->pointerType = A_POINTER;
@@ -667,17 +658,7 @@ resolveStrInItem (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
     char *name;
     int aPointer = 0;
 
-#if 0
-    if (myPackedItem->name[0] == '*') {
-	aPointer = 1;
-	name = myPackedItem->name + 1;
-    } else {
-	aPointer = 0;
-	name = myPackedItem->name;
-    }
-#else
     name = myPackedItem->strValue;
-#endif
     /* check the current item chain first */
 
     tmpPackedItem = myPackedItem->prev;
@@ -929,12 +910,6 @@ int packFlag, irodsProt_t irodsProt)
 	    /* NULL pterminated */
 	    maxStrLen = -1;
 	    numStr = 1;
-#if 0
-	    rodsLog (LOG_ERROR,
-	      "packNonpointerItem: string type %s must have dimension > 0",
-	      myPackedItem->name);
-	    return (SYS_PACK_INSTRUCT_FORMAT_ERR);
-#endif
 	} else {
 	    maxStrLen = myPackedItem->dimSize[myDim - 1];
 	    numStr = numElement / maxStrLen;
@@ -1028,11 +1003,6 @@ int packFlag, irodsProt_t irodsProt)
     if (myPackedItem->pointer == NULL) {
 	if (irodsProt == NATIVE_PROT) {
 	    packNullString (packedOutput);
-	} else {
-#if 0	/* OK to have packXmlTag too */
-	    packXmlTag (myPackedItem, packedOutput, START_TAG_FL);
-	    packXmlTag (myPackedItem, packedOutput, END_TAG_FL);
-#endif
 	}
 	return (0);
     }
@@ -1891,23 +1861,10 @@ irodsProt_t irodsProt)
 	    /* null terminated */
 	    maxStrLen = -1;
 	    numStr = 1;
-#if 0
-            rodsLog (LOG_ERROR,
-              "unpackNonpointerItem: string type %s must have dimension > 0",
-              myPackedItem->name);
-            return (SYS_PACK_INSTRUCT_FORMAT_ERR);
-#endif
         } else {
             maxStrLen = myPackedItem->dimSize[myDim - 1];
             numStr = numElement / maxStrLen;
 	}
-
-#if 0	/* done below */
-        /* save the str */
-        if (numStr == 1 && myTypeNum == PACK_PI_STR_TYPE) {
-            strncpy (myPackedItem->strValue, (char*)*inPtr, NAME_LEN);
-        }
-#endif
 
         for (i = 0; i < numStr; i++) {
 	    char *outStr = NULL;
@@ -1976,10 +1933,6 @@ packItem_t *myPackedItem, irodsProt_t irodsProt)
         memset (outPtr, 0, len);
     } else {
 	unpackCharToOutPtr (inPtr, &outPtr, len, myPackedItem, irodsProt);
-#if 0
-        memcpy (outPtr,*inPtr, len);
-        *inPtr = (void *) ((char *) *inPtr + len);
-#endif
     }
     unpackedOutput->bBuf->len += len;
 
@@ -2635,14 +2588,6 @@ irodsProt_t irodsProt)
     elementSz = packTypeTable[typeInx].size;
     myTypeNum = packTypeTable[typeInx].number;
 
-#if 0	/* done in unpackNullString */
-    if (numElement <= 0) {
-        /* add a null pointer mw. 9/15/06 */
-        outPtr = addPointerToPackedOut (unpackedOutput, 0, NULL);
-        return (0);
-    }
-#endif
-
     /* alloc pointer to an array of pointer if myDim > 0 */
     if (myDim > 0) {
         if (numPointer > 0) {
@@ -2663,11 +2608,6 @@ irodsProt_t irodsProt)
 	          allocLen * sizeof (void *), NULL);
 	    }
         } else {
-#if 0	/* done in unpackNullString */
-	    /* nothing to do. add a null pointer */
-	    pointerArray = (void **) addPointerToPackedOut (unpackedOutput,0, 
-	     NULL);
-#endif
             return 0;
         }
     }
@@ -2723,11 +2663,6 @@ irodsProt_t irodsProt)
 
         if (myDim == 0) {
 	    char *myOutStr;
-#if 0	/* done below */
-	    if (numStr <= 1 && myTypeNum == PACK_PI_STR_TYPE) {
-                strncpy (myPackedItem->strValue, (char*)*inPtr, NAME_LEN);
-	    }
-#endif
 
 	    myLen = getAllocLenForStr (myPackedItem, inPtr, numStr, maxStrLen);
 	    if (myLen < 0) {

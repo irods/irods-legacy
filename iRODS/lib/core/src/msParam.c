@@ -164,32 +164,6 @@ replMsParam (msParam_t *msParam, msParam_t *outMsParam)
 	return status;
     }
 
-#if 0
-    if (inOutStruct != NULL && type != NULL) {
-        if (strcmp (type, STR_MS_T) == 0) {
-            outMsParam->inOutStruct = (void *) strdup ((char *)inOutStruct);
-        } else {
-            bytesBuf_t *packedResult;
-            status = packStruct (inOutStruct, &packedResult, type,
-              NULL, 0, NATIVE_PROT);
-            if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
-                   "replMsParamArray: packStruct error for type %s", type);
-                return (status);
-            }
-            status = unpackStruct (packedResult->buf,
-              (void **) &outMsParam->inOutStruct, type, NULL, NATIVE_PROT);
-            freeBBuf (packedResult);
-            if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
-                   "replMsParamArray: unpackStruct error for type %s",
-                  type);
-                return (status);
-            }
-        }
-    }
-#endif
-
     if (inpOutBuf != NULL && inpOutBuf->len > 0) {
         outMsParam->inpOutBuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
         outMsParam->inpOutBuf->len = inpOutBuf->len;
