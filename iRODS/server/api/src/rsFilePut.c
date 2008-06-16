@@ -83,9 +83,6 @@ bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost)
     int fd;
 
     /* XXXXX this test does not seem to work for i86 solaris */
-#if 0
-    if (filePutInp->otherFlags & FORCE_FLAG) {
-#endif
     if ((filePutInp->otherFlags & FORCE_FLAG) != 0) {
         fd = _rsFileOpen (rsComm, filePutInp);
     } else {

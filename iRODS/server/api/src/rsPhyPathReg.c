@@ -11,21 +11,6 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 #include "miscServerFunct.h"
-#if 0
-#include "unregDataObj.h"
-#include "fileUnlink.h"
-#include "regDataObj.h"
-#include "fileOpendir.h"
-#include "fileReaddir.h"
-#include "fileClosedir.h"
-#include "fileStat.h"
-#include "collCreate.h"
-#include "dataObjClose.h"
-#include "fileMkdir.h"
-#include "modColl.h"
-#include "regColl.h"
-#include "dataObjCreate.h"
-#endif
 #include "apiHeaderAll.h"
 
 int
