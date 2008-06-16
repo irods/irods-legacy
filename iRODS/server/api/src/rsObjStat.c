@@ -105,26 +105,12 @@ rodsObjStat_t **rodsObjStatOut)
         if (status >= 0 && (*rodsObjStatOut)->specColl == NULL) {
 	    if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
               &specCollCache) >= 0) {
-#if 0   /* XXXXXX specColl is cached */
-		(*rodsObjStatOut)->specColl = malloc (sizeof (specColl_t));
-		*(*rodsObjStatOut)->specColl = specCollCache->specColl;
-#endif
                 (*rodsObjStatOut)->specColl = &specCollCache->specColl;
 	    }
 	    return (status);
 	}
     }
 
-#if 0
-    if (dataObjInp->oprType == PUT_OPR) {
-        /* don't call querySubInSpecColl if BUNDLE_COLL */
-        if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
-          &specCollCache) < 0 ||
-          specCollCache->specColl.collClass == BUNDLE_COLL) {
-            return (USER_FILE_DOES_NOT_EXIST);
-        }
-    }
-#endif
     /* now check specColl */
     /* XXXX need to check a rule if it supports spec collection */
     status = querySubInSpecColl (rsComm, dataObjInp->objPath, 0,
@@ -240,34 +226,8 @@ rodsObjStat_t **rodsObjStatOut)
     		    if (status < 0) return (status);
     		    (*rodsObjStatOut)->specColl = &SpecCollCacheHead->specColl;
 		}
-#if 0	/* XXXXX not needed ? */
-    		specColl = (*rodsObjStatOut)->specColl =
-     		 (specColl_t *) malloc (sizeof (specColl_t));
-    		memset (specColl, 0, sizeof (specColl_t));
-	        status = resolveSpecCollType (collType->value, 
-		  dataObjInp->objPath, collInfo1->value, collInfo2->value, 
-		  specColl);
-
-		if (status < 0) return (status);
-#endif
 	    }
 	}
-#if 0
-    } else {
-        if (dataObjInp->oprType == PUT_OPR) { 
-            specCollCache_t *specCollCache;
-            /* don't call querySubInSpecColl if BUNDLE_COLL */
-            if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
-              &specCollCache) < 0 ||
-              specCollCache->specColl.collClass == BUNDLE_COLL) { 
-                return (USER_FILE_DOES_NOT_EXIST);
-            }
-        }
-        /* XXXX need to check a rule if it supports spec collection */
-        status = querySubInSpecColl (rsComm, dataObjInp->objPath, 0,
-          rodsObjStatOut);
-        if (status < 0) status = USER_FILE_DOES_NOT_EXIST;
-#endif
     } 
     clearGenQueryInp (&genQueryInp);
     freeGenQueryOut (&genQueryOut);
@@ -410,24 +370,6 @@ rodsObjStat_t **rodsObjStatOut)
             }
         }
         freeGenQueryOut (&genQueryOut);
-#if 0
-    } else {
-        if (dataObjInp->oprType == PUT_OPR) { 
-	    specCollCache_t *specCollCache;
-	    /* don't call querySubInSpecColl if BUNDLE_COLL */
-    	    if (getSpecCollCache (rsComm, dataObjInp->objPath, 0, 
-              &specCollCache) < 0 || 
-	      specCollCache->specColl.collClass == BUNDLE_COLL) {  
-		return (USER_FILE_DOES_NOT_EXIST);
-	    }
-	}
-
-	/* XXXX need to check a rule if it supports spec collection */ 
-	status = querySubInSpecColl (rsComm, dataObjInp->objPath, 0,
-	  rodsObjStatOut);
-	if (status < 0) 
-            return (USER_FILE_DOES_NOT_EXIST);
-#endif
     }
 
     return (status);
@@ -480,13 +422,7 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
  
     *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
     memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));
-#if 0	/* XXXXX use cached specColl */
-    specColl = (*rodsObjStatOut)->specColl = 
-     (specColl_t *) malloc (sizeof (specColl_t));
-    *specColl = specCollCache->specColl;
-#else
     specColl = (*rodsObjStatOut)->specColl = &specCollCache->specColl;
-#endif
     rstrcpy ((*rodsObjStatOut)->dataId, specCollCache->collId, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerName, specCollCache->ownerName, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerZone, specCollCache->ownerZone, NAME_LEN);
@@ -555,18 +491,6 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
         return (status);
     }
 
-
-#if 0	/* there could be multiple answer and only one is valid */ 
-    if ((*genQueryOut)->rowCnt != 1) {
-	/* this could produce multiple answers. */
-        rodsLog (LOG_ERROR,
-          "querySpecColl: Too many result rowCnt = %d for %s",
-          (*genQueryOut)->rowCnt, objPath);
-        freeGenQueryOut (genQueryOut);
-        return (SYS_TOO_MANY_QUERY_RESULT);
-    }
-#endif
-
     return (0);
 }
 
@@ -585,12 +509,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         myDataObjInfo = *dataObjInfo = 
 	  (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
         memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
-#if 0	/* XXXXX use cached specColl */
-	myDataObjInfo->specColl = (specColl_t *) malloc (sizeof (specColl_t));
-        *myDataObjInfo->specColl = *specColl;
-#else
         myDataObjInfo->specColl = specColl;
-#endif
 
         status = resolveResc (specColl->resource, &myDataObjInfo->rescInfo);
         if (status < 0) {
@@ -671,19 +590,6 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         rstrcpy (tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN);
 	specColl->replNum = tmpDataObjInfo->replNum;
 
-#if 0	/* do just one */
-        while (tmpDataObjInfo != NULL) {
-            rstrcpy (tmpDataObjInfo->subPath, subPath, MAX_NAME_LEN);
-            tmpDataObjInfo->specColl = specColl;
-	      (specColl_t *) malloc (sizeof (specColl_t));
-            *tmpDataObjInfo->specColl = *specColl;
-	    rstrcpy (tmpDataObjInfo->specColl->resource, 
-	      tmpDataObjInfo->rescName, NAME_LEN);
-            rstrcpy (tmpDataObjInfo->specColl->phyPath, 
-	      tmpDataObjInfo->filePath, MAX_NAME_LEN);
-	    tmpDataObjInfo = tmpDataObjInfo->next;
-        }
-#endif
         if (strcmp ((*dataObjInfo)->subPath, specColl->collection) == 0) {
 	    /* no need to go down */
 	    return (COLL_OBJ_T);
@@ -742,11 +648,6 @@ queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath)
       *tmpModifyTime, *tmpCollType, *tmpCollection, *tmpCollInfo1,
       *tmpCollInfo2;
     specColl_t *specColl;
-
-#if 0
-    tmpSpecCollCache = malloc (sizeof (specCollCache_t));
-    memset (tmpSpecCollCache, 0, sizeof (specCollCache_t));
-#endif
 
     if ((dataId = getSqlResultByInx (genQueryOut, COL_COLL_ID)) == NULL) {
         rodsLog (LOG_ERROR,
@@ -831,22 +732,6 @@ queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath)
 	    return 0;
 	}
     }
-#if 0
-    specColl = &tmpSpecCollCache->specColl;
-    status = resolveSpecCollType (collType->value, 
-      collection->value, collInfo1->value, collInfo2->value, specColl);
-
-    if (status < 0) return status;
-
-    rstrcpy (tmpSpecCollCache->collId, dataId->value, NAME_LEN);
-    rstrcpy (tmpSpecCollCache->ownerName, ownerName->value, NAME_LEN);
-    rstrcpy (tmpSpecCollCache->ownerZone, ownerZone->value, NAME_LEN);
-    rstrcpy (tmpSpecCollCache->createTime, createTime->value, NAME_LEN);
-    rstrcpy (tmpSpecCollCache->modifyTime, modifyTime->value, NAME_LEN);
-
-    tmpSpecCollCache->next = SpecCollCacheHead;
-    SpecCollCacheHead = tmpSpecCollCache;
-#endif
 
     return CAT_NO_ROWS_FOUND;
 }
