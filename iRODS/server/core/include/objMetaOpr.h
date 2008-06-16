@@ -161,4 +161,6 @@ modCollInfo2 (rsComm_t *rsComm, specColl_t *specColl, int clearFlag);
 int
 regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
 rodsLong_t newSize);
+int
+isCollEmpty (rsComm_t *rsComm, char *collection);
 #endif	/* OBJ_META_OPR_H */

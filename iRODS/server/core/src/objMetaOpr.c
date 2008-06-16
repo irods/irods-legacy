@@ -2496,3 +2496,40 @@ rodsLong_t newSize)
     return (status);
 }
 
+int
+isCollEmpty (rsComm_t *rsComm, char *collection)
+{
+    openCollInp_t openCollInp;
+    collEnt_t *collEnt;
+    int handleInx;
+    int entCnt = 0;
+
+    if (rsComm == NULL || collection == NULL) {
+        rodsLog (LOG_ERROR,
+	  "isCollEmpty: Input rsComm or collection is NULL");
+	return True;
+    }
+
+    memset (&openCollInp, 0, sizeof (openCollInp));
+    rstrcpy (openCollInp.collName, collection, MAX_NAME_LEN);
+    /* cannot query recur because collection is sorted in wrong order */
+    openCollInp.flags = 0;
+    handleInx = rsOpenCollection (rsComm, &openCollInp);
+    if (handleInx < 0) {
+        rodsLog (LOG_ERROR,
+          "isCollEmpty: rsOpenCollection of %s error. status = %d",
+          openCollInp.collName, handleInx);
+	return (True);
+    }
+
+    while (rsReadCollection (rsComm, &handleInx, &collEnt) >= 0) {
+	entCnt++;
+	free (collEnt);     /* just free collEnt but not content */
+    }
+
+    if (entCnt > 0) 
+	return False;
+    else 
+	return True;
+}
+

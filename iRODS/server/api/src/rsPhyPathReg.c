@@ -325,6 +325,12 @@ rescInfo_t *rescInfo)
     }
     free (rodsObjStatOut);
 
+    if (isCollEmpty (rsComm, phyPathRegInp->objPath) == False) {
+        rodsLog (LOG_ERROR,
+          "mountFileDir: collection %s not empty", phyPathRegInp->objPath);
+        return (SYS_COLLECTION_NOT_EMPTY);
+    }
+
     memset (&fileStatInp, 0, sizeof (fileStatInp));
 
     rstrcpy (fileStatInp.fileName, filePath, MAX_NAME_LEN);
@@ -469,6 +475,12 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     }
 
     free (rodsObjStatOut);
+
+    if (isCollEmpty (rsComm, phyPathRegInp->objPath) == False) {
+        rodsLog (LOG_ERROR,
+          "structFileReg: collection %s not empty", phyPathRegInp->objPath);
+        return (SYS_COLLECTION_NOT_EMPTY);
+    }
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, structFilePath, sizeof (dataObjInp));
