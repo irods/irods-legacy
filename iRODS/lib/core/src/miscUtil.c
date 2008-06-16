@@ -243,44 +243,6 @@ genAllInCollQCond (char *collection, char *collQCond)
     return (0);
 }
 
-#if 0
-int
-queryCollInCollReCur (queryHandle_t *queryHandle, char *collection, 
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut)
-{
-    char collQCond[MAX_NAME_LEN*2];
-    int status;
-
-    if (collection == NULL || genQueryOut == NULL) {
-        return (USER__NULL_INPUT_ERR);
-    }
-
-    memset (genQueryInp, 0, sizeof (genQueryInp_t));
-
-    genAllInCollQCond (collection, collQCond);
-
-    addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond);
-
-    addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
-    addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
-    addInxIval (&genQueryInp->selectInp, COL_COLL_INFO1, 1);
-    addInxIval (&genQueryInp->selectInp, COL_COLL_INFO2, 1);
-    addInxIval (&genQueryInp->selectInp, COL_COLL_OWNER_NAME, 1);
-
-    genQueryInp->maxRows = MAX_SQL_ROWS;
-
-#if 0
-    status =  rcGenQuery (conn, genQueryInp, genQueryOut);
-#else
-    status = (*queryHandle->genQuery) (
-      (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
-#endif
-    return (status);
-
-}
-#endif
-
 int
 queryCollInColl (queryHandle_t *queryHandle, char *collection,
 int flags, genQueryInp_t *genQueryInp,
@@ -310,54 +272,11 @@ genQueryOut_t **genQueryOut)
 
     genQueryInp->maxRows = MAX_SQL_ROWS;
 
-#if 0
-    status =  rcGenQuery (conn, genQueryInp, genQueryOut);
-#else
     status = (*queryHandle->genQuery) (
       (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
-#endif
 
     return (status);
 }
-
-#if 0
-/* queryDataObjInCollReCur - query all dataobj in a collection and
- * all subcollections in it.
- * The genQueryInp may already have some sqlCondInp and selectInp
- * in it.
- */ 
-int
-queryDataObjInCollReCur (rcComm_t *conn, char *collection,
-rodsArguments_t *rodsArgs, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut)
-{
-    char collQCond[MAX_NAME_LEN*2];
-    int status;
-
-    if (collection == NULL || genQueryOut == NULL) {
-        return (USER__NULL_INPUT_ERR);
-    }
-
-    genAllInCollQCond (collection, collQCond);
-
-    addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond);
-
-    if (rodsArgs->longOption == True) {
-        setQueryInpForLong (rodsArgs, genQueryInp);
-    } else {
-        addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
-        addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
-    }
-
-    genQueryInp->maxRows = MAX_SQL_ROWS;
-
-    status =  rcGenQuery (conn, genQueryInp, genQueryOut);
-
-    return (status);
-
-}
-#endif
 
 int
 queryDataObjInColl (queryHandle_t *queryHandle, char *collection, 
@@ -386,12 +305,8 @@ genQueryOut_t **genQueryOut)
     genQueryInp->maxRows = MAX_SQL_ROWS;
     genQueryInp->options = RETURN_TOTAL_ROW_COUNT;
 
-#if 0
-    status =  rcGenQuery (conn, genQueryInp, genQueryOut);
-#else
     status = (*queryHandle->genQuery) (
       (rcComm_t *) queryHandle->conn, genQueryInp, genQueryOut);
-#endif
 
     return (status);
 
@@ -947,14 +862,8 @@ collEnt_t *collEnt)
     return (status);
 }
 
-#if 0
-int
-readCollection (queryHandle_t *queryHandle, collHandle_t *collHandle,  
-collEnt_t *collEnt)
-#else
 int
 readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
-#endif
 {
     int status = 0;
     collMetaInfo_t collMetaInfo;
@@ -1011,11 +920,7 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
                     clearGenQueryInp (&collHandle->genQueryInp);
                 }
                 /* Nothing else to do. cleanup */
-#if 0
-                clearCollHandle (collHandle, 1);
-#else
                 collHandle->state = COLL_CLOSED;
-#endif
             }
             return status;
         }
@@ -1059,12 +964,7 @@ readCollection (collHandle_t *collHandle, collEnt_t *collEnt)
                     clearGenQueryInp (&collHandle->genQueryInp);
                 }
                 /* Nothing else to do. cleanup */
-#if 0
-	        clearCollHandle (collHandle, 1);
-#else
                 collHandle->state = COLL_CLOSED;
-#endif
-
             }
 	    return status;
         }
@@ -1078,49 +978,20 @@ genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
 {
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
-#if 0
-    rodsArguments_t rodsArgs;
-
-    if ((collHandle->flags & VERY_LONG_METADATA_FG) != 0) {
-        rodsArgs.longOption = True;
-        rodsArgs.veryLongOption = True;
-    } else if ((collHandle->flags & LONG_METADATA_FG) != 0) {
-        rodsArgs.longOption = True;
-    } else {
-        rodsArgs.longOption = False;
-    }
-#endif
 
     /* query for sub-collections */
     if (collHandle->dataObjInp.specColl != NULL) {
         /* query */
         addKeyVal (&collHandle->dataObjInp.condInput,
           SEL_OBJ_TYPE_KW, "collection");
-#if 0
-        status = rcQuerySpecColl ((rcComm_t *) queryHandle->conn, 
-	  &collHandle->dataObjInp, &genQueryOut);
-#else
         status = (*queryHandle->querySpecColl) ((rcComm_t *) queryHandle->conn, 
           &collHandle->dataObjInp, &genQueryOut);
-#endif
 
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
-#if 0
-        if ((collHandle->flags & RECUR_QUERY_FG) != 0) {
-            status = queryCollInCollReCur (conn,
-              collHandle->dataObjInp.objPath, &rodsArgs,
-              &collHandle->genQueryInp, &genQueryOut);
-        } else {
-            status = queryCollInColl (conn,
-              collHandle->dataObjInp.objPath, &rodsArgs,
-              &collHandle->genQueryInp, &genQueryOut);
-        }
-#else
         status = queryCollInColl (queryHandle,
           collHandle->dataObjInp.objPath, collHandle->flags,
           &collHandle->genQueryInp, &genQueryOut);
-#endif
     }
 
     collHandle->rowInx = 0;
@@ -1141,48 +1012,19 @@ genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
 {
     genQueryOut_t *genQueryOut = NULL;
     int status = 0;
-#if 0
-    rodsArguments_t rodsArgs;
-
-    if ((collHandle->flags & VERY_LONG_METADATA_FG) != 0) {
-        rodsArgs.longOption = True;
-        rodsArgs.veryLongOption = True;
-    } else if ((collHandle->flags & LONG_METADATA_FG) != 0) {
-        rodsArgs.longOption = True;
-    } else {
-        rodsArgs.longOption = False;
-    }
-#endif
 
     if (collHandle->dataObjInp.specColl != NULL) {
         /* query */
         addKeyVal (&collHandle->dataObjInp.condInput,
           SEL_OBJ_TYPE_KW, "dataObj");
-#if 0
-        status = rcQuerySpecColl (conn, &collHandle->dataObjInp,
-          &genQueryOut);
-#else
         status = (*queryHandle->querySpecColl) ((rcComm_t *) queryHandle->conn,
           &collHandle->dataObjInp, &genQueryOut);
-#endif
 
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
-#if 0
-        if ((collHandle->flags & RECUR_QUERY_FG) != 0) {
-            status = queryDataObjInCollReCur (conn,
-              collHandle->dataObjInp.objPath, &rodsArgs,
-              &collHandle->genQueryInp, &genQueryOut);
-        } else {
-            status = queryDataObjInColl (conn,
-              collHandle->dataObjInp.objPath, &rodsArgs,
-              &collHandle->genQueryInp, &genQueryOut);
-        }
-#else
         status = queryDataObjInColl (queryHandle,
           collHandle->dataObjInp.objPath, collHandle->flags,
           &collHandle->genQueryInp, &genQueryOut);
-#endif
     }
 
     collHandle->rowInx = 0;
@@ -1231,13 +1073,7 @@ clearCollHandle (collHandle_t *collHandle, int freeSpecColl)
 }
 
 int
-#if 0
-getNextCollMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
-genQueryInp_t *genQueryInp, collSqlResult_t *collSqlResult,
-int *rowInx, collEnt_t *outCollEnt)
-#else
 getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
-#endif
 {
     char *value;
     int len;
@@ -1264,20 +1100,12 @@ getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
 
             if (dataObjInp->specColl != NULL) {
                 dataObjInp->openFlags = continueInx;
-#if 0
-                status = rcQuerySpecColl (conn, dataObjInp, &genQueryOut);
-#else
                 status = (*queryHandle->querySpecColl) (
 		  (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
-#endif
             } else {
                 genQueryInp->continueInx = continueInx;
-#if 0
-                status =  rcGenQuery (conn, genQueryInp, &genQueryOut);
-#else
                 status = (*queryHandle->genQuery) (
 		  (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
-#endif
             }
             if (status < 0) {
                 return (status);
@@ -1333,15 +1161,8 @@ getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     return (status);
 }
 
-#if 0
-int
-getNextDataObjMetaInfo (queryHandle_t *queryHandle, dataObjInp_t *dataObjInp,
-genQueryInp_t *genQueryInp, dataObjSqlResult_t *dataObjSqlResult,
-int *rowInx, collEnt_t *outCollEnt)
-#else
 int
 getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
-#endif
 {
     int status;
     char *value;
@@ -1370,20 +1191,12 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
 
             if (dataObjInp->specColl != NULL) {
                 dataObjInp->openFlags = continueInx;
-#if 0
-                status = rcQuerySpecColl (conn, dataObjInp, &genQueryOut);
-#else
                 status = (*queryHandle->querySpecColl) (
 		  (rcComm_t *) queryHandle->conn, dataObjInp, &genQueryOut);
-#endif
             } else {
                 genQueryInp->continueInx = continueInx;
-#if 0
-                status =  rcGenQuery (conn, genQueryInp, &genQueryOut);
-#else
                 status = (*queryHandle->genQuery) (
 		  (rcComm_t *) queryHandle->conn, genQueryInp, &genQueryOut);
-#endif
             }
             if (status < 0) {
                 return (status);
