@@ -12,9 +12,6 @@ int
 rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 {
     int status;
-#if 0
-    dataObjCloseInp_t dataObjCloseInp;
-#endif
     portalOprOut_t *portalOprOut = NULL;
     bytesBuf_t dataObjOutBBuf;
     struct stat statbuf;
@@ -81,11 +78,6 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
             status = getFileFromPortal (conn, portalOprOut, locFilePath,
               dataObjInp->dataSize);
 	}
-#if 0
-        dataObjCloseInp.l1descInx = portalOprOut->l1descInx;
-        dataObjCloseInp.bytesWritten = 0;
-        rcDataObjClose (conn, &dataObjCloseInp);
-#endif
         /* just send a complete msg */
         if (status < 0) {
             rcOprComplete (conn, status);

@@ -11,9 +11,6 @@ int
 rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 {
     int status;
-#if 0
-    dataObjCloseInp_t dataObjCloseInp;
-#endif
     portalOprOut_t *portalOprOut = NULL;
     bytesBuf_t dataObjInpBBuf;
 
@@ -90,16 +87,6 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 	  dataObjInp->dataSize);
     }
 
-#if 0
-    dataObjCloseInp.l1descInx = portalOprOut->l1descInx;
-    if (status < 0) {
-        dataObjCloseInp.bytesWritten = 0;
-        rcDataObjClose (conn, &dataObjCloseInp);
-    } else {
-        dataObjCloseInp.bytesWritten = dataObjInp->dataSize;
-        status = rcDataObjClose (conn, &dataObjCloseInp);
-    }
-#endif
     /* just send a complete msg */
     if (status < 0) {
 	rcOprComplete (conn, status);

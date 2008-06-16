@@ -129,18 +129,6 @@ agentMain (rsComm_t *rsComm)
 		status = 0;
 		break;
 	    } else {
-#if 0	/* client most likely gone */
-                if (retryCnt >= MAX_MSG_READ_RETRY) {
-                    rodsLog (LOG_NOTICE,
-                      "agentMain: readMsg error. status = %d", status);
-               } else {
-                    retryCnt ++;
-                    rodsSleep (READ_RETRY_SLEEP_TIME, 0);
-                    continue;
-                }
-		/* attempt to send the error msg */
-                sendVersion (rsComm->sock, status, 0, NULL);
-#endif
                 break;
 	    }
 	}

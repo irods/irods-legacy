@@ -73,16 +73,6 @@ bytesBuf_t *bsBBuf)
         return (SYS_API_INPUT_ERR);
     }
 
-#if 0	/* input is optional */
-    if (bsBBuf->len <= 0 && RsApiTable[apiInx].inBsFlag > 0){
-        rodsLog (LOG_NOTICE,
-          "rsApiHandler: input byte stream error for apiNumber %d", apiNumber);
-	sendApiReply (rsComm, apiInx, SYS_API_INPUT_ERR, myOutStruct, 
-	  &myOutBsBBuf);
-        return (SYS_API_INPUT_ERR);
-    }
-#endif
-
     if (inputStructBBuf->len > 0) {
         status = unpackStruct (inputStructBBuf->buf, (void **) &myInStruct,
           RsApiTable[apiInx].inPackInstruct, RodsPackTable, rsComm->irodsProt);
@@ -133,19 +123,6 @@ bytesBuf_t *bsBBuf)
 	  myArgv[3]);
     }
 
-#if 0
-	/* XXXXX this is a hack to reduce mem leak. Need a more generalized 
-	 * solution */
-	if (apiNumber == GEN_QUERY_AN) {
-	    clearGenQueryInp ((genQueryInp_t *) myInStruct);
-	} else if (apiNumber == MOD_DATA_OBJ_META_AN) {
-	    clearModDataObjMetaInp ((modDataObjMeta_t *) myInStruct);
-        } else if (apiNumber == REG_REPLICA_AN) {
-	    clearRegReplicaInp ((regReplica_t *) myInStruct);
-        } else if (apiNumber == UNREG_DATA_OBJ_AN) {
-	    clearUnregDataObj ((unregDataObj_t *) myInStruct);
-	}
-#endif
     if (myInStruct != NULL) {
         /* XXXXX this is a hack to reduce mem leak. Need a more generalized
          * solution */
@@ -283,11 +260,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
          "sendApiReply: sendRodsMsg error, status = %d", status);
         /* attempt to accept reconnect. ENOENT result  from
                      * user cntl-C */
-#if 0	/* XXXXX testing only */
-        if (errno != ENOENT && rsComm->reconnSock > 0) {
-#else
         if (rsComm->reconnSock > 0) {
-#endif
             status = svrReconnect (rsComm);
             if (status >= 0) {
                 /* success */
@@ -430,11 +403,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
           "readAndProcClientMsg: readMsgHeader error. status = %d", status);
         /* attempt to accept reconnect. ENOENT result  from
                      * user cntl-C */
-#if 0	/* XXXXXX testing only */
-        if (errno != ENOENT && rsComm->reconnSock > 0) {
-#else
         if (rsComm->reconnSock > 0) {
-#endif
             status = svrReconnect (rsComm);
             if (status >= 0) {
                 /* success */
