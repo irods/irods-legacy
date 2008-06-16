@@ -31,6 +31,10 @@ The external functions used are those that begin with SQL.
 #include "icatLowLevelPostgres.h"
 int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 
+int
+_cllExecSqlNoResult(icatSessionStruct *icss, char *sql, int option);
+
+
 int cllBindVarCount=0;
 char *cllBindVars[MAX_BIND_VARS];
 int cllBindVarCountPrev=0; /* cclBindVarCount earlier in processing */
@@ -45,6 +49,7 @@ SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 #include <stdio.h>
 #include <pwd.h>
 
+static int didBegin=0;
 
 /*
   call SQLError to get error information and log it
@@ -77,7 +82,6 @@ cllOpenEnv(icatSessionStruct *icss) {
    RETCODE stat;
 
    HENV myHenv;
-
    stat = SQLAllocEnv(&myHenv);
 
    if (stat != SQL_SUCCESS) {
@@ -126,13 +130,6 @@ cllConnect(icatSessionStruct *icss) {
 			  &myHdbc);
    if (stat != SQL_SUCCESS) {
       rodsLog(LOG_ERROR, "cllConnect: SQLAllocConnect failed: %d, stat");
-      return (-1);
-   }
-
-   stat = SQLSetConnectOption(myHdbc,
-			      SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
-   if (stat != SQL_SUCCESS) {
-      rodsLog(LOG_ERROR, "cllConnect: SQLSetConnectOption failed: %d", stat);
       return (-1);
    }
 
@@ -323,11 +320,25 @@ cllDisconnect(icatSessionStruct *icss) {
 /*
  Execute a SQL command which has no resulting table.  Examples include
  insert, delete, update, or ddl.
+ Insert a 'begin' statement, if necessary.
  */
 int
 cllExecSqlNoResult(icatSessionStruct *icss, char *sql)
 {
-   return (cllExecSqlNoResultBV(icss, sql,0,0,0));
+   int status;
+
+   if (strncmp(sql,"commit", 6)==0 ||
+       strncmp(sql,"rollback", 8)==0) {
+      didBegin=0;
+   }
+   else {
+      if (didBegin==0) {
+	 status = _cllExecSqlNoResult(icss, "begin", 1);
+	 if (status != SQL_SUCCESS) return(status);
+      }
+      didBegin=1;
+   }
+   return (_cllExecSqlNoResult(icss, sql, 0));
 }
 
 /*
@@ -391,10 +402,11 @@ bindTheVariables(HSTMT myHstmt, char *sql) {
 /*
  Execute a SQL command which has no resulting table.  With optional
  bind variables.
+ If option is 1, skip the bind variables.
  */
 int
-cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql,
-		   char *bindVar1, char *bindVar2, char *bindVar3) {
+_cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
+		   int option) {
    RETCODE stat;
    HDBC myHdbc;
    HSTMT myHstmt;
@@ -408,24 +420,28 @@ cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql,
    rodsLog(LOG_DEBUG1, sql);
    stat = SQLAllocStmt(myHdbc, &myHstmt); 
    if (stat != SQL_SUCCESS) {
-      rodsLog(LOG_ERROR, "cllExecSqlNoResultBV: SQLAllocStmt failed: %d", stat);
+      rodsLog(LOG_ERROR, "_cllExecSqlNoResult: SQLAllocStmt failed: %d", stat);
       return(-1);
    }
 
-   /*   // used? */
+#if 0
    if (bindVar1 != 0 && *bindVar1 != '\0') {
       stat = SQLBindParameter(myHstmt, 1, SQL_PARAM_INPUT, SQL_C_SBIGINT,
 			      SQL_C_SBIGINT, 0, 0, 0, 0, 0);
       if (stat != SQL_SUCCESS) {
-	 rodsLog(LOG_ERROR, "cllExecSqlNoResultBV: SQLAllocStmt failed: %d",
+	 rodsLog(LOG_ERROR, "_cllExecSqlNoResult: SQLAllocStmt failed: %d",
 		 stat);
 	 return(-1);
       }
    }
+#endif
 
-   if (bindTheVariables(myHstmt, sql) != 0) return(-1);
+   if (option==0) {
+      if (bindTheVariables(myHstmt, sql) != 0) return(-1);
+   }
 
    rodsLogSql(sql);
+
    stat = SQLExecDirect(myHstmt, (unsigned char *)sql, SQL_NTS);
    status = "UNKNOWN";
    if (stat == SQL_SUCCESS) status= "SUCCESS";
@@ -453,15 +469,17 @@ cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql,
 #endif
    }
    else {
-      logTheBindVariables(LOG_NOTICE);
-      rodsLog(LOG_NOTICE, "cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
+      if (option==0) {
+	 logTheBindVariables(LOG_NOTICE);
+      }
+      rodsLog(LOG_NOTICE, "_cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
 	      stat, sql);
       result = logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, myHstmt);
    }
 
    stat = SQLFreeStmt(myHstmt, SQL_DROP);
    if (stat != SQL_SUCCESS) {
-      rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLFreeStmt error: %d", stat);
+      rodsLog(LOG_ERROR, "_cllExecSqlNoResult: SQLFreeStmt error: %d", stat);
    }
 
    return(result);
@@ -496,6 +514,13 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    int statementNumber;
    char *status;
 
+   if (didBegin==0) {
+      int stat;
+      stat = _cllExecSqlNoResult(icss, "begin",1);
+      if (stat != SQL_SUCCESS) return(stat);
+   }
+   didBegin=1;
+
    myHdbc = icss->connectPtr;
    rodsLog(LOG_DEBUG1, sql);
    stat = SQLAllocStmt(myHdbc, &hstmt); 
@@ -525,6 +550,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    if (bindTheVariables(hstmt, sql) != 0) return(-1);
 
    rodsLogSql(sql);
+
    stat = SQLExecDirect(hstmt, (unsigned char *)sql, SQL_NTS);
    status = "UNKNOWN";
    if (stat == SQL_SUCCESS) status= "SUCCESS";
@@ -1088,7 +1114,7 @@ int cllTest(char *userArg, char *pwArg) {
    i = cllExecSqlNoResult(&icss,"drop table test;");
    if (i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO) OK=0;
 
-   i = cllExecSqlNoResultBV(&icss, "commit",0,0,0);
+   i = cllExecSqlNoResult(&icss, "commit");
    if (i != 0) OK=0;
 
    i = cllDisconnect(&icss);
