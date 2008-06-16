@@ -42,8 +42,6 @@ int cllConnect(icatSessionStruct *icss);
 int cllConnectRda(icatSessionStruct *icss);
 int cllDisconnect(icatSessionStruct *icss);
 int cllExecSqlNoResult(icatSessionStruct *icss, char *sql);
-int cllExecSqlNoResultBV(icatSessionStruct *icss, char *sql, char *bindVar1,
-		       char *bindVar2, char *bindVar3);
 int cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql);
 int cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 			     char *bindVar1, char *bindVar2, char *bindVar3,
