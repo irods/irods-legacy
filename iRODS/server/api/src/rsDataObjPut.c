@@ -154,22 +154,6 @@ bytesBuf_t *dataObjInpBBuf)
     /* don't actually physically open the file */
     addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-#if 0
-    if ((existFlag = dataObjExist (rsComm, dataObjInp))) {
-        if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-	    dataObjInp->openFlags |= O_TRUNC;
-            l1descInx = _rsDataObjOpen (rsComm, dataObjInp, DO_NOT_PHYOPEN);
-        } else {
-            l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
-	}
-    } else {
-        /* don't actually physically open the file */
-        addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
-
-        l1descInx = rsDataObjCreate (rsComm, dataObjInp);
-	rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
-    }
-#endif
 
     if (l1descInx <= 2) {
 	if (l1descInx >= 0) {

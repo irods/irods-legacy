@@ -35,20 +35,6 @@ transStat_t **transStat)
 	return (USER_INPUT_PATH_ERR);
     }
 	
-#if 0
-    if (dataObjExist (rsComm, destDataObjInp)) {
-        if (getValByKey (&destDataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
-	    return (OVERWITE_WITHOUT_FORCE_FLAG);
-	}
-	existFlag = 1;
-    } else {
-	existFlag = 0;
-	/* have to remove FORCE_FLAG_KW because it is used later to 
-	 * determine wether the file exists */
-	rmKeyVal (&destDataObjInp->condInput, FORCE_FLAG_KW);
-    }
-#endif
-
     srcL1descInx = _rsDataObjOpen (rsComm, srcDataObjInp, PHYOPEN_BY_SIZE);
 
     if (srcL1descInx < 0)
@@ -66,26 +52,6 @@ transStat_t **transStat)
     }
 
     destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
-
-#if 0
-    if (existFlag > 0) {
-        int phyOpenFlag;
-	if (L1desc[srcL1descInx].l3descInx <= 2) {
-            /* dataSingleBuf */
-            phyOpenFlag = DO_NOT_PHYOPEN;
-        } else {
-            phyOpenFlag = DO_PHYOPEN;
-        }
-	destDataObjInp->openFlags |= (O_TRUNC | O_WRONLY);
-	destL1descInx = _rsDataObjOpen (rsComm, destDataObjInp, phyOpenFlag);
-    } else {
-        if (L1desc[srcL1descInx].l3descInx <= 2) {
-            /* dataSingleBuf */
-            addKeyVal (&destDataObjInp->condInput, NO_OPEN_FLAG_KW, "");
-        }
-	destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
-    }
-#endif
 
     if (destL1descInx < 0) {
 	return (destL1descInx);

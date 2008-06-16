@@ -88,14 +88,6 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
         return (status);
     }
 
-#if 0
-        if (dataObjOutBBuf->len > 0) {
-	    status = 0;
-        } else {
-            status = l1descInx;
-        }
-#endif
-
     status = l1descInx;		/* means file no included */
     if (chksumStr != NULL) {
         rstrcpy ((*portalOprOut)->chksum, chksumStr, NAME_LEN);

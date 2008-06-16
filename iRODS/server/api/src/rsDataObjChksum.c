@@ -49,10 +49,6 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 
     *dataObjInfoHead = NULL;
     *outChksumStr = NULL;
-#if 0
-    status = getDataObjInfo (rsComm, dataObjInp, dataObjInfoHead,
-      ACCESS_READ_OBJECT, 0);
-#endif
     status = getDataObjInfoIncSpecColl (rsComm, dataObjInp, dataObjInfoHead);
 
     if (status < 0) {

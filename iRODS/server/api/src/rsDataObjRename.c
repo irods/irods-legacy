@@ -54,10 +54,6 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     } else if (srcType == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
         /* for STRUCT_FILE_COLL to make a directory in the structFile, the
          * STRUCT_FILE_OPR_KW must be set */
-#if 0
-        if (getValByKey (&srcDataObjInp->condInput, COLLECTION_TYPE_KW) !=
-              NULL || srcDataObjInfo->specColl->class != STRUCT_FILE_COLL) {
-#endif
         if (getSpecCollOpr (&srcDataObjInp->condInput, 
 	  srcDataObjInfo->specColl) != NORMAL_OPR_ON_STRUCT_FILE_COLL) {
 	    return (SYS_SPEC_COLL_OBJ_NOT_EXIST);

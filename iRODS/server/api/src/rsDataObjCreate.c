@@ -39,19 +39,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	phyOpenFlag = DO_PHYOPEN;
     }
 
-#if 0
-    if ((existFlag = dataObjExist (rsComm, dataObjInp))) {
-        if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-            dataObjInp->openFlags |= O_TRUNC;
-            l1descInx = _rsDataObjOpen (rsComm, dataObjInp, phyOpenFlag);
-        } else {
-            l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
-        }
-    } else {
-        l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
-        rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
-    }
-#endif
     /* dataObj only */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
     status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
@@ -84,37 +71,8 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
         }
     }
-#if 0
-    rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
-#endif
     freeRodsObjStat (rodsObjStatOut);
     return (l1descInx);
-
-#if 0
-    if (status >= 0) {
-	if (rodsObjStatOut->specColl != NULL) {
-	    dataObjInp->specColl = rodsObjStatOut->specColl;
-	    if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-		free (rodsObjStatOut);
-		l1descInx = specCollSubCreate (rsComm, dataObjInp);
-        	rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
-		return (l1descInx);
-	    }
-	    free (rodsObjStatOut);
-	}
-	/* got here when the dataObj exist, spec Coll or not */
-        if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
-            dataObjInp->openFlags |= O_TRUNC;
-            l1descInx = _rsDataObjOpen (rsComm, dataObjInp, phyOpenFlag);
-        } else {
-            l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
-        }
-    } else {
-        l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
-        rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
-    }
-    return (l1descInx);
-#endif
 }
 
 int
