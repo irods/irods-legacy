@@ -24,10 +24,6 @@ rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp)
             rodsLog (LOG_ERROR,
              "rsRegColl: Reg path %s is in spec coll",
               dataObjInp.objPath);
-#if 0
-	    free (rodsObjStatOut->specColl);
-	    free (rodsObjStatOut);
-#endif
 	    freeRodsObjStat (rodsObjStatOut);
             return (SYS_REG_OBJ_IN_SPEC_COLL);
 	}

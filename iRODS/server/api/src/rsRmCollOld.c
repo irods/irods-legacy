@@ -515,9 +515,6 @@ dataObjInfo_t *dataObjInfo)
 	/* XXXX need to take care of structFile */
 	status = l3Rmdir (rsComm, dataObjInfo);
     }
-#if 0
-    rstrcpy (collInfo.collName, rmCollInp->collName, MAX_NAME_LEN);
-#endif
     return (status);
 }
 
@@ -574,10 +571,6 @@ svrRmSpecCollRecur (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
     myDataObjInfo = *dataObjInfo;
     memset (&dataObjInp, 0, sizeof (dataObjInp));
-#if 0
-    addKeyVal (&dataObjInp.condInput, SEL_OBJ_TYPE_KW, "dataObj");
-    addKeyVal (&dataObjInp.condInput, RECURSIVE_OPR__KW, "");
-#endif
     rstrcpy (dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
     status = rsQuerySpecColl (rsComm, &dataObjInp, &genQueryOut);
 
@@ -620,9 +613,6 @@ svrRmSpecCollRecur (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 	    if (strlen (tmpDataName) > 0) {
 	        status = l3Unlink (rsComm, &myDataObjInfo);
 	    } else {
-#if 0
-		status = l3Rmdir (rsComm, &myDataObjInfo);
-#endif
 		status = svrRmSpecCollRecur (rsComm, &myDataObjInfo);
 	    }
 

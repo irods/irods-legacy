@@ -113,21 +113,13 @@ initOutForQuerySpecColl (genQueryOut_t **genQueryOut)
       malloc (MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[1].value, 0, 
       MAX_NAME_LEN * MAX_SPEC_COLL_ROW);
-#if 0
-    myGenQueryOut->sqlResult[2].attriInx = COL_COLL_CREATE_TIME;
-#else
     myGenQueryOut->sqlResult[2].attriInx = COL_D_CREATE_TIME;
-#endif
     myGenQueryOut->sqlResult[2].len = NAME_LEN;
     myGenQueryOut->sqlResult[2].value =
       malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
     memset (myGenQueryOut->sqlResult[2].value, 0,
       NAME_LEN * MAX_SPEC_COLL_ROW); 
-#if 0
-    myGenQueryOut->sqlResult[3].attriInx = COL_COLL_MODIFY_TIME;
-#else
     myGenQueryOut->sqlResult[3].attriInx = COL_D_MODIFY_TIME;
-#endif
     myGenQueryOut->sqlResult[3].len = NAME_LEN;
     myGenQueryOut->sqlResult[3].value =
       malloc (NAME_LEN * MAX_SPEC_COLL_ROW);
@@ -205,26 +197,6 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 
 	myDataObjInfo = *dataObjInfo;
 	
-#if 0
-        if (myDataObjInfo.specColl->collClass == STRUCT_FILE_COLL) {
-	    int len = strlen (specColl->objPath);
-            if (strncmp (specColl->objPath, subFilePath, len) == 0 &&
-	      (specColl->objPath[len] == '\0' || 
-	      specColl->objPath[len] == '/')) {
-		/* start with objPath, need to convert to collection */
-		snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s%s/%s",
-                  dataObjInfo->objPath + len, myRodsDirent.d_name);
-	    } else {
-                snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
-                  dataObjInfo->objPath, myRodsDirent.d_name);
-	    }
-	} else {	/* mounted collection */
-            snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
-              dataObjInfo->objPath, myRodsDirent.d_name);
-	}
-        snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
-          dataObjInfo->objPath, myRodsDirent.d_name);
-#endif
         snprintf (myDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
           dataObjInfo->subPath, myRodsDirent.d_name);
         snprintf (myDataObjInfo.filePath, MAX_NAME_LEN, "%s/%s",
@@ -245,9 +217,6 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 	    }
 	    rowCnt = genQueryOut->rowCnt;
 	    rstrcpy (&genQueryOut->sqlResult[0].value[MAX_NAME_LEN * rowCnt], 
-#if 0
-	      dataObjInfo->objPath, MAX_NAME_LEN);
-#endif
 	      dataObjInfo->subPath, MAX_NAME_LEN);
 	    rstrcpy (&genQueryOut->sqlResult[1].value[MAX_NAME_LEN * rowCnt], 
 	      myRodsDirent.d_name, MAX_NAME_LEN);
@@ -265,12 +234,6 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 	} else {
             if (selObjType != DATA_OBJ_T) {
 	        rowCnt = genQueryOut->rowCnt;
-#if 0
-	        snprintf (
-	          &genQueryOut->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
-	          MAX_NAME_LEN, "%s/%s", dataObjInfo->objPath, 
-	          myRodsDirent.d_name);
-#endif
 		rstrcpy (
 		&genQueryOut->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
 		myDataObjInfo.subPath, MAX_NAME_LEN);
@@ -288,11 +251,6 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 		/* need to drill down */
 		int newSpecCollInx; 
 		newDataObjInp = *dataObjInp;
-#if 0
-                snprintf (newDataObjInp.objPath,
-                  MAX_NAME_LEN, "%s/%s", dataObjInfo->objPath,
-                  myRodsDirent.d_name);
-#endif
 		rstrcpy (newDataObjInp.objPath, dataObjInfo->subPath,
 		  MAX_NAME_LEN);
 		newSpecCollInx = 
@@ -463,37 +421,3 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     return (status);
 }
 
-#if 0
-int 
-specCollOpendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
-{
-    specColl_t *specColl;
-    fileOpendirInp_t fileOpendirInp;
-    int dirFd;
-    int rescTypeInx;
-
-    if (dataObjInfo == NULL || (specColl = dataObjInfo->specColl) == NULL) {
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
- 
-    if (specColl->collClass == MOUNTED_COLL) {
-        memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
-
-        rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        rstrcpy (fileOpendirInp.dirName, dataObjInfo->filePath, MAX_NAME_LEN);
-        fileOpendirInp.fileType = RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileOpendirInp.addr.hostAddr,  
-	  dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-        dirFd = rsFileOpendir (rsComm, &fileOpendirInp);
-        if (dirFd < 0) {
-           rodsLog (LOG_ERROR,
-              "specCollOpendir: rsFileOpendir for %s error, status = %d",
-              dataObjInfo->filePath, dirFd);
-	}
-    } else {
-	/* XXXXXX need to do the same for structFile */
-	dirFd = 0;
-    }
-    return (dirFd);
-}
-#endif

@@ -173,12 +173,6 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->objType == DATA_OBJ_T) {
-#if 0	/* totalFileCnt is not meaningful */
-            if (totalFileCnt == 0 && dataObjInfo == NULL) { 
-	        totalFileCnt =
-                  CollHandle[handleInx].dataObjSqlResult.totalRowCount;
-	    }
-#endif
             snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
               collEnt->collName, collEnt->dataName);
 
@@ -216,14 +210,6 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
 		  == 0) continue;	/* no mount point */
 	    }
 	    status = _rsRmCollRecur (rsComm, &tmpCollInp, collOprStat);
-#if 0
-		/* normal coll */
-		status = svrUnregColl (rsComm, &tmpCollInp);
-	    } else if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
-		rmKeyVal (&tmpCollInp.condInput, UNREG_COLL_KW);
-		status = _rsRmColl (rsComm, &tmpCollInp, NULL);
-	    }
-#endif
 	}
 	if (status < 0) savedStatus = status;
 	free (collEnt);     /* just free collEnt but not content */
