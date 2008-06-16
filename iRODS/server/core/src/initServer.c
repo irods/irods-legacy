@@ -1343,11 +1343,6 @@ svrReconnect (rsComm_t *rsComm)
 
     if (newSock > 0) {
         rsComm->sock = newSock;
-#if 0	/* use cookie instead */
-        /* have to re-authenticate */
-        rsComm->proxyUser.authInfo.authFlag =
-        rsComm->clientUser.authInfo.authFlag = 0;
-#endif
         if ((status = readReconMsg (newSock, &reconnMsg)) < 0) {
             rodsLog (LOG_ERROR,
               "svrReconnect: readReconMsg error, status = %d", status);
@@ -1447,9 +1442,6 @@ logFileOpen (int runMode, char *logDir, char *logFileName)
         return (1);
     }
 
-#if 0
-    if (logDir == NULL || logFileName == NULL) {
-#endif
     if (logFileName == NULL) {
         fprintf (stderr, "logFileOpen: NULL input logFileName\n");
 	return SYS_INTERNAL_NULL_INPUT_ERR;

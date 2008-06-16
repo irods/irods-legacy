@@ -437,12 +437,6 @@ dataObjInp_t *dataObjInp)
     char tmpStr[NAME_LEN];
     char *filePath;
 
-#if 0
-   /* don't want to check for orphan if there are a lot of failure.
-    * Checking is time consumming */
-   if (rsComm->perfStat.nonOrphanCnt < CHK_ORPHAN_CNT_LIMIT || 
-     rsComm->perfStat.orphanCnt > rsComm->perfStat.nonOrphanCnt) {
-#endif
     if (getSizeInVault (rsComm, dataObjInfo) == SYS_PATH_IS_NOT_A_FILE) {
 	/* a dir */
 	return (SYS_PATH_IS_NOT_A_FILE);

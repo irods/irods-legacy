@@ -1423,22 +1423,6 @@ modExeInfoForRepeat(rsComm_t *rsComm, char *ruleExecId, char* pastTime,
     ruleExecModInp_t ruleExecModInp;
     ruleExecDelInp_t ruleExecDelInp;
 
-#if 0
-    /****** RAJA Jul 06, 2007  changed this *********/ 
-
-    updateOffsetTimeStr((char*)&myTimeNext, iDelay);
-    if (strcmp (myTimeNext, myTimeNow) < 0) {
-       /* delay is not into the future, try to make it so */
-       int i, iDelayOrig;
-       iDelayOrig = iDelay;
-       for (i=0;i<1000;i++) {
-	  iDelay = iDelay + iDelayOrig;
-	  updateOffsetTimeStr((char*)&myTimeNext, iDelay);
-	  if (strcmp (myTimeNext, myTimeNow) > 0) break;
-       }
-    }
-    /****** RAJA Jul 06, 2007  changed this *********/
-#endif
     status1 = getNextRepeatTime(myTimeNow, delay,myTimeNext);
 
     /***
@@ -1931,12 +1915,6 @@ isResc(rsComm_t *rsComm, char *objName)
 int
 isMeta(rsComm_t *rsComm, char *objName)
 {
-#if 0
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char tmpStr[NAME_LEN];
-    int status;
-#endif
     /* needs to be filled in later */
     return(INVALID_OBJECT_TYPE);
 }
@@ -1944,12 +1922,6 @@ isMeta(rsComm_t *rsComm, char *objName)
 int
 isToken(rsComm_t *rsComm, char *objName)
 {
-#if 0
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    char tmpStr[NAME_LEN];
-    int status;
-#endif
     /* needs to be filled in later */
     return(INVALID_OBJECT_TYPE);
 }
@@ -2223,20 +2195,6 @@ keyValPair_t *condInput)
     }
     condFlag = status;	/* cond exist if condFlag > 0 */
 
-#if 0
-    if (matchedDataObjInfo == NULL && matchedOldDataObjInfo == NULL) {
-	/* no condition, just trim the old copies */
-	if (dataObjInfoHead != NULL && condFlag > 0) {
-	    freeAllDataObjInfo (*dataObjInfoHead);
-	    *dataObjInfoHead = oldDataObjInfoHead;
-	} else {
-	    freeAllDataObjInfo (*dataObjInfoHead);
-	    freeAllDataObjInfo (oldDataObjInfoHead);
-	    *dataObjInfoHead = NULL;
-	}
-	return (0);
-    }
-#else
     if (matchedDataObjInfo == NULL && matchedOldDataObjInfo == NULL) {
 	if (dataObjInfoHead != NULL && condFlag == 0) {
 	    /* at least have some good copies */
@@ -2251,7 +2209,6 @@ keyValPair_t *condInput)
             return (0);
 	}
     }
-#endif
 
     matchedInfoCnt = getDataObjInfoCnt (matchedDataObjInfo);
     unmatchedInfoCnt = getDataObjInfoCnt (*dataObjInfoHead);
@@ -2334,30 +2291,6 @@ keyValPair_t *condInput)
             queDataObjInfo (dataObjInfoHead, matchedOldDataObjInfo, 0, 1);
 	}
     }
-
-#if 0
-    if (unmatchedInfoCnt >= minCnt) {
-	/* trim all of it */
-       *dataObjInfoHead = matchedOldDataObjInfo;
-	queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
-    } else if (unmatchedInfoCnt > 0) {
-	*dataObjInfoHead = matchedOldDataObjInfo;
-	for (i = 0; i < minCnt - unmatchedInfoCnt; i++) {
-	    if (matchedDataObjInfo == NULL) {
-		break;
-	    } else {
-	        matchedDataObjInfo = matchedDataObjInfo->next;
-	        freeDataObjInfo (tmpDataObjInfo);
-	    }
-	}
-	queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
-    } else {
-	/* nothing to do */
-        freeAllDataObjInfo (matchedOldDataObjInfo);
-        freeAllDataObjInfo (matchedDataObjInfo);
-    }
-#endif
-	
     return (0);
 }
 
