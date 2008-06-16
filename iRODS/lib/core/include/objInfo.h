@@ -298,21 +298,6 @@ typedef struct TagStruct {
     char **keyWord;       /* pointer to an array of KeyWords */
 } tagStruct_t;
 
-#if 0
-typedef struct SpecCollMeta {
-    char objType[NAME_LEN];     /* structFile subfile - structFile type,
-                                 * mounted obj */
-    char collection[MAX_NAME_LEN];	/* path of the special collection.
-                                         * structFile subfile - structured
-					 * file coll
-                                         * mounted obj - mounted coll */
-    char collInfo1[MAX_NAME_LEN];       /* structFile subfile - structFile file path
-                                         * mounted obj - mounted dir path */
-    char collInfo2[MAX_NAME_LEN];       /* structFile subfile - NA
-                                         * mounted obj - resource */
-} specCollMeta_t;
-#endif
-
 typedef struct Subfile {
     rodsHostAddr_t addr;
     char subFilePath[MAX_NAME_LEN];

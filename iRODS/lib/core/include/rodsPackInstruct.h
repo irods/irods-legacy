@@ -80,11 +80,7 @@
 #define BytesBuf_PI "int buflen; char *buf(buflen);"
 #define BinBytesBuf_PI "int buflen; bin *buf(buflen);"
 
-#if 0
-#define MsParam_PI "str *label; piStr *type; ?*type; struct *BytesBuf_PI;"
-#else
 #define MsParam_PI "str *label; piStr *type; ?type *inOutStruct; struct *BinBytesBuf_PI;"
-#endif
 
 #define MsParamArray_PI "int paramLen; int oprType; struct *MsParam_PI[paramLen];"
  
@@ -95,9 +91,6 @@
 #define VaultPathPolicy_PI "int scheme; int addUserName; int trimDirCnt;"
 #define StrArray_PI "int len; int size; str *value(len)(size);" 
 #define IntArray_PI "int len; int *value(len);" 
-#if 0
-#define SpecCollMeta_PI "str objType[NAME_LEN]; str collection[MAX_NAME_LEN]; str collInfo1[MAX_NAME_LEN]; str collInfo2[MAX_NAME_LEN];" 
-#endif
 #define SpecColl_PI "int collClass; int type; str collection[MAX_NAME_LEN]; str objPath[MAX_NAME_LEN]; str resource[NAME_LEN]; str phyPath[MAX_NAME_LEN]; str cacheDir[MAX_NAME_LEN]; int cacheDirty; int replNum;"
 #define SubFile_PI "struct RHostAddr_PI; str subFilePath[MAX_NAME_LEN]; int mode; int flags; double offset; struct *SpecColl_PI;" 
 #define XmsgTicketInfo_PI "int sendTicket; int rcvTicket; int expireTime; int flag;"

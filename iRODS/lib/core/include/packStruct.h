@@ -27,11 +27,6 @@ extern "C" {
 
 typedef char* packInstruct_t; 
 
-#if 0
-/* the XML declaration str */
-#define XML_DECLAR_STR 	"<?xml version=\"1.0\"?>"
-#endif
-
 /* indicate the end of packing table */
 
 #define PACK_TABLE_END_PI  "PACK_TABLE_END_PI"
