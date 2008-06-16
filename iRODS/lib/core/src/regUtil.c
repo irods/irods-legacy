@@ -89,34 +89,6 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
             addKeyVal (&dataObjOprInp->condInput, COLLECTION_KW, "");
     }
 
-#if 0	/* moved to imcoll */
-    if (rodsArgs->mountCollection == True) {
-	char *mountType = rodsArgs->mountType;
-        if (strcmp (rodsPathInp->srcPath->inPath, UNMOUNT_STR) == 0) {
-            addKeyVal (&dataObjOprInp->condInput,
-             COLLECTION_TYPE_KW, UNMOUNT_STR);
-	} else if (strcmp (mountType, "h") == 0 || 
-	  strcmp (mountType, "haaw") == 0) {
-            addKeyVal (&dataObjOprInp->condInput,
-              COLLECTION_TYPE_KW, HAAW_STRUCT_FILE_STR);
-        } else if (strcmp (mountType, "t") || 
-          strcmp (mountType, "tar") == 0) {
-            addKeyVal (&dataObjOprInp->condInput,
-              COLLECTION_TYPE_KW, TAR_STRUCT_FILE_STR);
-        } else if (strcmp (mountType, "f") == 0 || 
-	  strcmp (mountType, "filesystem") == 0) {
-            addKeyVal (&dataObjOprInp->condInput,
-             COLLECTION_TYPE_KW, MOUNT_POINT_STR);
-	} else if (strcmp (mountType, "f") == 0 || 
-          strcmp (mountType, "filesystem") == 0) {
-            /* the collection is a filesystem mount point */
-            addKeyVal (&dataObjOprInp->condInput,
-             COLLECTION_TYPE_KW, MOUNT_POINT_STR);
-        }
-    }
-#endif
-
-
     if (rodsArgs->resource == True) {
         if (rodsArgs->resourceString == NULL) {
             rodsLog (LOG_ERROR,

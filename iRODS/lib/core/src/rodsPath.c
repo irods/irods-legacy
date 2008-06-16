@@ -67,18 +67,12 @@ parseRodsPath (rodsPath_t *rodsPath, rodsEnv *myRodsEnv)
 	/* just copy rodsCwd */
         rstrcpy (rodsPath->outPath, myRodsEnv->rodsCwd, MAX_NAME_LEN);
         rodsPath->objType = COLL_OBJ_T;
-#if 0
-	rodsPath->objState = EXIST_ST;		/* assume it exist */
-#endif
         return (0);
     } else if (strcmp (rodsPath->inPath, ".") == 0 || 
       strcmp (rodsPath->inPath, "./") == 0) {
 	/* '.' or './' */
 	rstrcpy (rodsPath->outPath, myRodsEnv->rodsCwd, MAX_NAME_LEN);
         rodsPath->objType = COLL_OBJ_T;
-#if 0
-	rodsPath->objState = EXIST_ST;		/* assume it exist */
-#endif
 	return (0);
     } else if (strcmp (rodsPath->inPath, "~") == 0 ||
       strcmp (rodsPath->inPath, "~/") == 0 ||
@@ -87,9 +81,6 @@ parseRodsPath (rodsPath_t *rodsPath, rodsEnv *myRodsEnv)
 	/* ~ or ~/ */
         rstrcpy (rodsPath->outPath, myRodsEnv->rodsHome, MAX_NAME_LEN);
         rodsPath->objType = COLL_OBJ_T;
-#if 0
-	rodsPath->objState = EXIST_ST;		/* assume it exist */
-#endif
         return (0);
     } else if (rodsPath->inPath[0] == '~' || rodsPath->inPath[0] == '^') {
 	if (rodsPath->inPath[1] == '/') {
@@ -491,11 +482,6 @@ rodsPathInp_t *rodsPathInp, int oprType)
                 } else {
                     targPath->objType = LOCAL_FILE_T;
                 }
-
-#if 0
-	        rstrcpy (targPath->outPath, destPath->outPath, MAX_NAME_LEN);
-		targPath->objState = destPath->objState;
-#endif
 	    } else {
                 rodsLogError (LOG_ERROR, USER_FILE_DOES_NOT_EXIST,
                   "resolveRodsTarget: target %s does not exist",

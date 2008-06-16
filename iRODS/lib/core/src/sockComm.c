@@ -205,14 +205,6 @@ readMsgHeader (int sock, msgHeader_t *myHeader)
 
     free (outHeader);
 
-#if 0
-    myHeader->msgLen = ntohl (myHeader->msgLen);
-    myHeader->bsLen = ntohl (myHeader->bsLen);
-    myHeader->errorLen = ntohl (myHeader->errorLen);
-    myHeader->intInfo = ntohl (myHeader->intInfo);
-#endif
-
-
     return (0);
 }
 
@@ -223,19 +215,6 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
     int status;
     int myLen;
     bytesBuf_t *headerBBuf = NULL;
-
-#if 0
-    msgHeader_t tmpHeader;
-
-    toWrite = sizeof (msgHeader_t);
-
-    rstrcpy (tmpHeader.type, myHeader->type, HEADER_TYPE_LEN);
-
-    tmpHeader.msgLen = htonl (myHeader->msgLen);
-    tmpHeader.bsLen = htonl (myHeader->bsLen);
-    tmpHeader.errorLen = htonl (myHeader->errorLen);
-    tmpHeader.intInfo = ntohl (myHeader->intInfo);
-#endif
 
     /* always use XML_PROT for the Header */
     status = packStruct ((void *) myHeader, &headerBBuf,
@@ -835,30 +814,6 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
          "connectToRhostWithTout: fcntl F_SETFL error, errno = %d", errno);
         return (USER_SOCK_CONNECT_ERR);
     }
-
-#if 0	/* use select instead of setjump/longjmp call */
-    signal(SIGALRM, connToutHandler);
-    if (setjmp(Jcenv) == 0) {
-        alarm (CONNECT_TIMEOUT_TIME);
-        while (timeoutCnt < MAX_CONN_RETRY_CNT) {
-            if ((status = connect 
-	      (sock, sin, sizeof (struct sockaddr))) < 0) {
-                timeoutCnt ++;
-        	alarm (0);
-                rodsSleep (0, CONNECT_SLEEP_TIME);
-            } else {
-        	alarm (0);
-                break;
-            }
-        }
-    } else {
-	rodsLog (LOG_NOTICE,
-         "connectToRhostWithTout: connect timed out. errno = %d \n", 
-	  errno);
-        status = USER_SOCK_CONNECT_ERR - errno;
-	return status;
-    }
-#endif
 
 #endif
     if (status < 0) {

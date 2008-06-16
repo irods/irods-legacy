@@ -269,11 +269,6 @@ bytesBuf_t *errorBBuf)
 
     retVal = myHeader->intInfo;
 
-#if 0
-    if (retVal < 0) 
-	return retVal;
-#endif
- 
     /* some sanity check */
 
     if (RcApiTable[apiInx].outPackInstruct != NULL && outStruct == NULL) {

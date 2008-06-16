@@ -194,13 +194,6 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         } else {
             addKeyVal (&dataObjOprInp->condInput, DEST_RESC_NAME_KW,
               rodsArgs->resourceString);
-#if 0
-    	    if (rodsArgs->force == True) {
-		/* specify the source resc too if force. */
-                addKeyVal (&dataObjOprInp->condInput, RESC_NAME_KW,
-                  rodsArgs->resourceString);
-	    }
-#endif
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
         addKeyVal (&dataObjOprInp->condInput, DEST_RESC_NAME_KW,

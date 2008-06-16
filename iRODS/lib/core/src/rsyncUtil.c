@@ -593,20 +593,9 @@ dataObjCopyInp_t *dataObjCopyInp)
     char targChildPath[MAX_NAME_LEN];
     int collLen;
     rodsPath_t mySrcPath, myTargPath;
-#if 0
-    dataObjInp_t *dataObjOprInp = &dataObjCopyInp->srcDataObjInp;
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int rowInx;
-    collSqlResult_t collSqlResult;
-    collMetaInfo_t collMetaInfo;
-    dataObjSqlResult_t dataObjSqlResult;
-    dataObjMetaInfo_t dataObjMetaInfo;
-#else
     collHandle_t collHandle;
     collEnt_t collEnt;
     dataObjInp_t *dataObjOprInp = &collHandle.dataObjInp;
-#endif
 
     if (srcPath == NULL || targPath == NULL) {
        rodsLog (LOG_ERROR,

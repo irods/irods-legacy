@@ -456,11 +456,6 @@ freeDataObjInfo (dataObjInfo_t *dataObjInfo)
     if (dataObjInfo == NULL)
 	return (0);
 
-#if 0	/* XXXXXX use the cache copy */
-    if (dataObjInfo->specColl != NULL) 
-	free (dataObjInfo->specColl);
-#endif
-
     free (dataObjInfo);
 
     return (0);
@@ -1029,11 +1024,6 @@ clearGenQueryOut (genQueryOut_t *genQueryOut)
     if (genQueryOut == NULL)
         return 0;
 
-#if 0	/* _rsQuerySpecColl would have rowCnt == 0 */
-    if (genQueryOut->rowCnt <= 0)
-        return 0;
-#endif
-	
     for (i = 0; i < genQueryOut->attriCnt; i++) {
         if (genQueryOut->sqlResult[i].value != NULL)
 	    free (genQueryOut->sqlResult[i].value);
@@ -1209,9 +1199,6 @@ clearDataObjInp (dataObjInp_t *dataObjInp)
     }
 
     clearKeyVal (&dataObjInp->condInput);
-#if 0   /* XXXXX  cache specColl are used now */
-    if (dataObjInp->specColl != NULL) free (dataObjInp->specColl);
-#endif
 
     memset (dataObjInp, 0, sizeof (dataObjInp_t));
 
@@ -1224,13 +1211,6 @@ clearDataObjCopyInp (dataObjCopyInp_t *dataObjCopyInp)
     if (dataObjCopyInp == NULL) {
         return 0;
     }
-
-#if 0	/* XXXXX  cache specColl are used now */
-    if (dataObjCopyInp->destDataObjInp.specColl != NULL)
-	free (dataObjCopyInp->destDataObjInp.specColl);
-    if (dataObjCopyInp->srcDataObjInp.specColl != NULL)
-        free (dataObjCopyInp->srcDataObjInp.specColl);
-#endif
 
     clearKeyVal (&dataObjCopyInp->destDataObjInp.condInput);
     clearKeyVal (&dataObjCopyInp->srcDataObjInp.condInput);
@@ -1372,48 +1352,6 @@ getOffsetTimeStr(char *timeStr, char *offSet)
     myTime += atoi (offSet);
 
     snprintf (timeStr, NAME_LEN, "%d", (uint) myTime);
-#if 0
-    mytm = localtime (&myTime);
-    rstrcpy(s,offSet,49);
-
-    s[19] = '\0';
-    mytm->tm_sec += atoi(&s[17]);
-    s[16] = '\0';
-    mytm->tm_min += atoi(&s[14]);
-    s[13] = '\0';
-    mytm->tm_hour += atoi(&s[11]);
-    s[10] = '\0';
-    mytm->tm_mday += atoi(&s[8]);
-    s[7] = '\0';
-    mytm->tm_mon += atoi(&s[5]);
-    s[4] = '\0';
-    mytm->tm_year += atoi(&s[0]);
-
-
-    newTime = mktime(mytm);
-    mytm = localtime (&newTime);
-
-    snprintf (timeStr, TIME_LEN, "%4d-%2d-%2d-%2d.%2d.%2d", 
-      mytm->tm_year + 1900, mytm->tm_mon + 1, mytm->tm_mday, 
-      mytm->tm_hour, mytm->tm_min, mytm->tm_sec);
-
-    if (timeStr[5] == ' ') {
-	timeStr[5] = '0';
-    }
-    if (timeStr[8] == ' ') {
-        timeStr[8] = '0';
-    }
-    if (timeStr[11] == ' ') {
-        timeStr[11] = '0';
-    }
-    if (timeStr[14] == ' ') {
-        timeStr[14] = '0';
-    }
-    if (timeStr[17] == ' ') {
-        timeStr[17] = '0';
-    }
-#endif
-
 }
 
 /* Update the input time string to be offset minutes ahead of the
@@ -2187,17 +2125,6 @@ rodsArguments_t *rodsArgs)
             return USER_RESTART_FILE_INPUT_ERR;
         }
 
-#if 0	/* 1 line per entry */
-	status = sscanf ((void *) buf, "%s %d %s", 
-	  rodsRestart->collection, &rodsRestart->doneCnt, 
-	  rodsRestart->lastDonePath);
-	if (status != 3) {
-	    rodsLog (LOG_ERROR,
-	      "openRestartFile: sscanf error for %s containing %s", 
-	      rodsRestart->lastDonePath, buf);
-	    return USER_RESTART_FILE_INPUT_ERR;
-	}
-#endif
 	rodsRestart->restartState = PATH_MATCHING;
 	printf ("RestartFile %s opened\n", restartFile); 
 	printf ("Restarting collection/directory = %s     File count %d\n", 
@@ -2820,24 +2747,6 @@ getUnixErrno (int irodError)
     return (unixErrno);
 }
 
-#if 0
-/* notStructFileOpr - true if specColl is STRUCT_FILE_COLL but STRUCT_FILE_OPR_KW is not
- * set.
- */
-
-int
-notStructFileOpr (keyValPair_t *condInput, specColl_t *specColl)
-{
-    if (specColl == NULL) return (0);
-
-    if (getValByKey (condInput, STRUCT_FILE_OPR_KW) == NULL && 
-      specColl->collClass == STRUCT_FILE_COLL) 
-	return (1);
-    else
-	return (0);
-}
-#endif
-
 structFileOprType_t
 getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl)
 {
@@ -2860,11 +2769,6 @@ rodsObjStat_t *rodsObjStatOut)
     if (getSpecCollOpr (condInput, rodsObjStatOut->specColl) == 
       NORMAL_OPR_ON_STRUCT_FILE_COLL) { 
 	/* it is in a structFile but not trying to do operation in the structFile. */
-#if 0	/* XXXX this will make put operation as a normal dataObjPut */
-	free (rodsObjStatOut->specColl);
-	rodsObjStatOut->specColl = NULL;
-	rodsObjStatOut->objType = UNKNOWN_OBJ_T;
-#endif
     }
     return;
 }
@@ -2873,10 +2777,6 @@ void
 freeRodsObjStat (rodsObjStat_t *rodsObjStatOut)
 {
     if (rodsObjStatOut == NULL) return;
-
-#if 0	/* XXXX specColl is cached */
-    if (rodsObjStatOut->specColl != NULL) free (rodsObjStatOut->specColl);
-#endif
 
     free (rodsObjStatOut);
 }
