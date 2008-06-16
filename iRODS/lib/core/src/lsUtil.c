@@ -387,23 +387,9 @@ rodsArguments_t *rodsArgs)
     if (srcPath->rodsObjStat != NULL &&
       srcPath->rodsObjStat->specColl != NULL) {
 	status = lsSpecCollUtil (conn, srcPath, myRodsEnv, rodsArgs);
-#if 0	/* XXXXX STRUCT_FILE_COLL type collection does not contain normal 
-         * files for now */
-	if (srcPath->rodsObjStat->specColl->collClass == MOUNTED_COLL) {
-	    /* for STRUCT_FILE_COLL, we also want to list normal files */
-	    return (status);
-	}
-#else
 	return (status);
-#endif
     }
 
-
-#if 0	/* moved */
-    srcColl = srcPath->outPath;
-    /* print this collection */
-    printf ("%s:\n", srcColl);
-#endif
 
     /* get the files in this collection */
 
@@ -445,11 +431,7 @@ rodsArguments_t *rodsArgs)
     /* query all sub collections in srcColl and the mk the required
      * subdirectories */
 
-#if 0
-    status = queryCollInColl (conn, srcColl, rodsArgs, &genQueryInp,
-#else
     status = queryCollInColl (&queryHandle, srcColl, 0, &genQueryInp,
-#endif
       &genQueryOut);
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
@@ -765,12 +747,6 @@ genQueryOut_t *genQueryOut)
 		status = resolveSpecCollType (tmpCollType, tmpCollName,
 		  tmpCollInfo1, tmpCollInfo2, &specColl);
 		if (status < 0) return (status);
-#if 0
-                rstrcpy (specColl.objType, tmpCollType, NAME_LEN);
-                rstrcpy (specColl.collection, tmpCollName, MAX_NAME_LEN);
-                rstrcpy (specColl.collInfo1, tmpCollInfo1, MAX_NAME_LEN);
-                rstrcpy (specColl.collInfo2, tmpCollInfo2, MAX_NAME_LEN);
-#endif
 
                 status = lsSpecCollUtil (conn, &tmpPath, myRodsEnv, rodsArgs);
 	    }

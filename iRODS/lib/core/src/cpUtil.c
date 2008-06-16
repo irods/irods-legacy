@@ -218,19 +218,8 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
     int status = 0;
     int savedStatus = 0;
     int collLen;
-#if 0
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    dataObjInp_t dataObjOprInp;
-    int rowInx;
-    collSqlResult_t collSqlResult;
-    collMetaInfo_t collMetaInfo;
-    dataObjSqlResult_t dataObjSqlResult;
-    dataObjMetaInfo_t dataObjMetaInfo;
-#else
     collHandle_t collHandle;
     collEnt_t collEnt;
-#endif
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
 
     if (srcColl == NULL || targColl == NULL) {
