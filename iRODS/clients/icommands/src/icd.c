@@ -70,18 +70,6 @@ main(int argc, char **argv)
        exit (7);
     }
 
-#if 0	/* need to do special coll */ 
-    status = checkColl(Conn, rodsPath.outPath);
-    rcDisconnect(Conn);
-    if (status == CAT_NO_ROWS_FOUND) {
-       printf("No such directory (collection): %s\n", rodsPath.outPath);
-       exit(3);
-    }
-    if (status != 0) {
-       printError(Conn, status, "rcGenQuery");
-       exit(4);
-    }
-#endif
     status = getRodsObjType (Conn, &rodsPath);
     rcDisconnect(Conn);
 

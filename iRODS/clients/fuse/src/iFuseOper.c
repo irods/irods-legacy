@@ -89,16 +89,6 @@ off_t offset, struct fuse_file_info *fi)
     (void) offset;
     (void) fi;
 
-#if 0
-    rodsArguments_t rodsArgs;
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int continueInx, i, status;
-    char *dataName, *collName;
-    sqlResult_t *tmpResult;
-    int len;
-#endif
-
     rodsLog (LOG_DEBUG, "irodsReaddir: %s", path);
 
     filler(buf, ".", NULL, 0);
@@ -136,93 +126,6 @@ off_t offset, struct fuse_file_info *fi)
     relIFuseConn (&DefConn);
 
     return (0);
-#if 0
-    memset (&rodsArgs, 0, sizeof (rodsArgs));
-
-    status = queryDataObjInColl (DefConn.conn, collPath, &rodsArgs, &genQueryInp,
-      &genQueryOut);
-
-    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-        rodsLogError (LOG_ERROR, status,
-          "irodsReaddir: queryDataObjInColl error for %s", collPath);
-	return -ENOTDIR;
-    }
-
-    while (status >= 0) {
-        if ((tmpResult = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == 
-	  NULL) {
-            rodsLog (LOG_ERROR,
-              "irodsReaddir: getSqlResultByInx for COL_DATA_NAME failed for %s",
-	      collPath);
-            return -ENOTDIR;
-	} else {
-	    dataName = tmpResult->value;
-	    len = tmpResult->len;
-	}
-
-	for (i = 0;i < genQueryOut->rowCnt; i++) {
-	    filler (buf, dataName, NULL, 0);
-	    dataName += len;
-	}
-        continueInx = genQueryOut->continueInx;
-
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-            genQueryInp.continueInx = continueInx;
-	    getIFuseConn (&DefConn, &MyRodsEnv);
-            status =  rcGenQuery (DefConn.conn, &genQueryInp, &genQueryOut);
-	    relIFuseConn (&DefConn);
-        } else {
-            break;
-        }
-    }
-
-    status = queryCollInColl (DefConn.conn, collPath, &rodsArgs, &genQueryInp,
-      &genQueryOut);
-
-    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-        rodsLogError (LOG_ERROR, status,
-          "irodsReaddir: queryCollInColl error for %s", collPath);
-	return -ENOTDIR;
-    }
-
-    while (status >= 0) {
-        if ((tmpResult = getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == 
-	  NULL) {
-            rodsLog (LOG_ERROR,
-              "irodsReaddir: getSqlResultByInx for COL_COLL_NAME failed for %s",
-	      collPath);
-            return -ENOTDIR;
-        } else {
-            collName = tmpResult->value;
-	    len = tmpResult->len;
-        }
-
-	for (i = 0;i < genQueryOut->rowCnt; i++) {
-	    char myParent[MAX_NAME_LEN], myChild[MAX_NAME_LEN];
-	    splitPathByKey (collName, myParent, myChild, '/');
-	    filler (buf, myChild, NULL, 0);
-	    collName += len;
-	}
-        continueInx = genQueryOut->continueInx;
-
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-            genQueryInp.continueInx = continueInx;
-	    getIFuseConn (&DefConn, &MyRodsEnv);
-            status =  rcGenQuery (DefConn.conn, &genQueryInp, &genQueryOut);
-	    relIFuseConn (&DefConn);
-        } else {
-            break;
-        }
-    }
-
-    return (0);
-#endif
 }
 
 int 
