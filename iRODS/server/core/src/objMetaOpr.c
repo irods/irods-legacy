@@ -2527,6 +2527,8 @@ isCollEmpty (rsComm_t *rsComm, char *collection)
 	free (collEnt);     /* just free collEnt but not content */
     }
 
+    rsCloseCollection (rsComm, &handleInx);
+
     if (entCnt > 0) 
 	return False;
     else 
