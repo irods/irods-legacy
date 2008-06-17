@@ -95,6 +95,17 @@ $configDir  = abs_path( $configDir );
 # Get the script name.  We'll use it for some print messages.
 my $scriptName = $0;
 
+# Check commandline
+my $isUpgrade="";
+my $arg;
+foreach $arg (@ARGV)
+{
+	if ( $arg =~ /--upgrade/ )	# irodsupgrade, not irodssetup
+	{
+		$isUpgrade="upgrade";
+	}
+}
+
 # Load support scripts.
 my $perlScriptsDir = File::Spec->catdir( $IRODS_HOME, "scripts", "perl" );
 require File::Spec->catfile( $perlScriptsDir, "utils_paths.pl" );
