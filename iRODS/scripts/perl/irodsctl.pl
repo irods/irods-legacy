@@ -700,13 +700,32 @@ sub doTest
  
 	}
 
+	# Pound test
+	printSubtitle( "\nTesting via concurrent-test (many iput/iget)...\n" );
+	doTestPound( );
+	return(0);
+
 	printNotice( "\nDone.\n" );
 
 	setPrintVerbose( $verbosity );
 }
 
 
-
+# run the concurrent-test 
+sub doTestPound
+{
+	my $startDir = cwd( );
+	chdir( $startDir . "/clients/concurrent-test" );
+	my $output = `./poundtests.sh 1`;
+	if ( $? != 0 ) {
+	    printError( "Failed\n" );
+	    $doTestExitValue++;
+	}
+	else {
+	    printStatus( "All concurrent-tests were successful.\n" );
+	}
+	chdir( $startDir);
+}
 
 
 #
