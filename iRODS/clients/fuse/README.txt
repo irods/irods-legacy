@@ -67,3 +67,10 @@ The user's home collection is now mounted. The iRods files and sub-collections
 in the user's home collection should be accessible with normal UNIX commands 
 through the /usr/tmp/fmount directory. 
 
+WARNING:
+--------
+
+When a collection is mounted using irodsFs, users should not use iCommands
+such as iput, irm, icp, etc to change the content of the collection because
+the FUSE implementation seems to cache the attributes of the contents of
+the collection.  
