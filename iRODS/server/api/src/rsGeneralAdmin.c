@@ -88,12 +88,14 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  rei.uoic = &rsComm->clientUser;
 	  rei.uoip = &rsComm->proxyUser;
 	  status = applyRuleArg("acCreateUser", args, 0, &rei, SAVE_REI);
+	  if (status != 0) chlRollback(rsComm);
           return(status);
        }
        if (strcmp(generalAdminInp->arg1,"dir")==0) {
 	  memset((char*)&collInfo,0,sizeof(collInfo));
 	  strncpy(collInfo.collName, generalAdminInp->arg2, MAX_NAME_LEN);
 	  status = chlRegColl(rsComm, &collInfo);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
@@ -104,6 +106,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, NAME_LEN);
 	  strncpy(rescInfo.zoneName,  generalAdminInp->arg7, NAME_LEN);
 	  status = chlRegResc(rsComm, &rescInfo);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"token")==0) {
@@ -113,6 +116,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 			       generalAdminInp->arg5,
 			       generalAdminInp->arg6,
 			       generalAdminInp->arg7);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
     }
@@ -120,21 +124,25 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        if (strcmp(generalAdminInp->arg1,"user")==0) {
 	  status = chlModUser(rsComm, generalAdminInp->arg2, 
 			      generalAdminInp->arg3, generalAdminInp->arg4);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"group")==0) {
 	  status = chlModGroup(rsComm, generalAdminInp->arg2, 
 			      generalAdminInp->arg3, generalAdminInp->arg4);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
 	  status = chlModResc(rsComm, generalAdminInp->arg2, 
 			      generalAdminInp->arg3, generalAdminInp->arg4);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resourcegroup")==0) {
 	  status = chlModRescGroup(rsComm, generalAdminInp->arg2, 
 			      generalAdminInp->arg3, generalAdminInp->arg4);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
     }
@@ -150,22 +158,26 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  rei.uoic = &rsComm->clientUser;
 	  rei.uoip = &rsComm->proxyUser;
 	  status = applyRuleArg("acDeleteUser", args, 0, &rei, SAVE_REI);
+	  if (status != 0) chlRollback(rsComm);
           return(status);
        }
        if (strcmp(generalAdminInp->arg1,"dir")==0) {
 	  memset((char*)&collInfo,0,sizeof(collInfo));
 	  strncpy(collInfo.collName, generalAdminInp->arg2, MAX_NAME_LEN);
 	  status = chlDelColl(rsComm, &collInfo);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
 	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, NAME_LEN);
 	  status = chlDelResc(rsComm, &rescInfo);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"token")==0) {
 	  status = chlDelToken(rsComm, generalAdminInp->arg2,
 			       generalAdminInp->arg3);
+	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
     }
