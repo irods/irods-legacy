@@ -339,9 +339,13 @@ int retval)
         /* more to come */
         if (collOprStat != NULL) {
             if (vFlag != 0) {
-                printf (
-                  "num files done = %d, totalFileCnt = %d, bytesWritten = %lld, last file done: %s\n",
-                  collOprStat->filesCnt, collOprStat->totalFileCnt,
+		printf ("num files done = %d, ", collOprStat->filesCnt);
+		if (collOprStat->totalFileCnt <= 0) {
+                    printf ("totalFileCnt = UNKNOWN, ");
+		} else {
+                    printf ("totalFileCnt = %d, ", collOprStat->totalFileCnt);
+		}
+		printf ("bytesWritten = %lld, last file done: %s\n",
                   collOprStat->bytesWritten, collOprStat->lastObjPath);
             }
             free (collOprStat);
