@@ -475,7 +475,6 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
       rodsLog(LOG_NOTICE, "_cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
 	      stat, sql);
       result = logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, myHstmt);
-      didBegin=0;  /* the transaction has been cancelled so start again */
    }
 
    stat = SQLFreeStmt(myHstmt, SQL_DROP);
@@ -571,7 +570,6 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 	      "cllExecSqlWithResult: SQLExecDirect error: %d, sql:%s",
 	      stat, sql);
       logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt);
-      didBegin=0;  /* the transaction has been cancelled so start again */
       return(-1);
    }
 
@@ -809,7 +807,6 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 	      "cllExecSqlWithResultBV: SQLExecDirect error: %d, sql:%s",
 	      stat, sql);
       logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt);
-      didBegin=0;  /* the transaction has been cancelled so start again */
       return(-1);
    }
 
@@ -1050,6 +1047,7 @@ int cllTest(char *userArg, char *pwArg) {
 
    i = cllExecSqlNoResult(&icss, "bad sql");
    if (i == 0) OK=0;   /* should fail, if not it's not OK */
+   i = cllExecSqlNoResult(&icss, "rollback"); /* close the bad transaction*/
 
    i = cllExecSqlNoResult(&icss, "delete from test where i = 1");
    if (i != 0 && i != CAT_SUCCESS_BUT_WITH_NO_INFO) OK=0;
