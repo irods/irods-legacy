@@ -475,6 +475,7 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
       rodsLog(LOG_NOTICE, "_cllExecSqlNoResult: SQLExecDirect error: %d sql:%s",
 	      stat, sql);
       result = logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, myHstmt);
+      didBegin=0;  /* the transaction has been cancelled so start again */
    }
 
    stat = SQLFreeStmt(myHstmt, SQL_DROP);
@@ -570,6 +571,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 	      "cllExecSqlWithResult: SQLExecDirect error: %d, sql:%s",
 	      stat, sql);
       logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt);
+      didBegin=0;  /* the transaction has been cancelled so start again */
       return(-1);
    }
 
@@ -807,6 +809,7 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 	      "cllExecSqlWithResultBV: SQLExecDirect error: %d, sql:%s",
 	      stat, sql);
       logPsgError(LOG_NOTICE, icss->environPtr, myHdbc, hstmt);
+      didBegin=0;  /* the transaction has been cancelled so start again */
       return(-1);
    }
 
