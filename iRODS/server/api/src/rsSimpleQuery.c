@@ -14,8 +14,6 @@ simpleQueryOut_t **simpleQueryOut)
     int status;
 
     status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL, &rodsServerHost);
-    rodsLog (LOG_NOTICE,
-		 "rsSimpleQuery get stat=%d", status);
     if (status < 0) {
        return(status);
     }
