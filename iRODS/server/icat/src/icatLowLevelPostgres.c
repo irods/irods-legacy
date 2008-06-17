@@ -261,6 +261,12 @@ cllCheckPending(char *sql, int option) {
    /* if there are some non-Audit pending SQL, log them */
    if (pendingCount > pendingAudits) {
       int i, max;
+      /* but ignore a single pending "begin" which can be normal */
+      if (pendingIx == 1) {
+	 if (strncmp((char *)&pBuffer[0], "begin", 5)==0) {
+	    return(0);
+	 }
+      }
       rodsLog(LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
 	      pendingCount);
       max = maxPendingToRecord;
@@ -277,7 +283,7 @@ cllCheckPending(char *sql, int option) {
    if (pendingAudits > 0) {
       rodsLog(LOG_NOTICE, 
 	      "Notice, pending Auditing SQL committed at cllDisconnect");
-      return(1); /* tell caller (cllDisconect) to call do a commit */
+      return(1); /* tell caller (cllDisconect) to do a commit */
    }
    return(0);
 }
@@ -516,7 +522,7 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
 
    if (didBegin==0) {
       int stat;
-      stat = _cllExecSqlNoResult(icss, "begin",1);
+      stat = _cllExecSqlNoResult(icss, "begin", 1);
       if (stat != SQL_SUCCESS) return(stat);
    }
    didBegin=1;
