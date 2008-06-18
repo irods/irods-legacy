@@ -12,7 +12,7 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 
-#define FILE_BLOCK_SZ	1024
+#define FILE_BLOCK_SZ	512
 #define DIR_SZ    4096
 #define DEF_FILE_MODE	0660
 #define DEF_FILE_CREATE_MODE	0750

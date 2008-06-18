@@ -564,6 +564,7 @@ irodsStatfs (const char *path, struct statvfs *stbuf)
     /* just fake some number */
     status = statvfs ("/", stbuf);
 
+    stbuf->f_bsize = FILE_BLOCK_SZ;
     stbuf->f_blocks = 2000000000;
     stbuf->f_bfree = stbuf->f_bavail = 1000000000;
     stbuf->f_files = 200000000;
