@@ -112,7 +112,11 @@ sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr)
 
     if (addr != NULL) {
         struct sockaddr_in sin;
+#if defined(aix_platform)
+	size_t length = sizeof (sin);
+#else
         uint length = sizeof (sin);
+#endif
         if (getsockname (sock, (struct sockaddr *) &sin, &length)) {
             rodsLog (LOG_NOTICE,
             "sockOpenForInConn() -- getsockname() failed: errno=%d", errno);
@@ -761,7 +765,11 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
 		continue;
 	    } else if (status > 0) {
 		int myval;
+#if defined(aix_platform)
+        	size_t mylen = sizeof (int);
+#else
 		uint mylen = sizeof (int);
+#endif
                 if (getsockopt (sock, SOL_SOCKET, SO_ERROR, (void*) (&myval), 
 		  &mylen) < 0) {
         	    rodsLog (LOG_ERROR,
@@ -846,7 +854,7 @@ setConnAddr (rcComm_t *conn)
 int
 setRemoteAddr (int sock, struct sockaddr_in *remoteAddr)
 {
-#if defined(PORTNAME_aix)
+#if defined(aix_platform)
     size_t      laddrlen = sizeof(struct sockaddr);
 #else
     uint         laddrlen = sizeof(struct sockaddr);
@@ -869,7 +877,7 @@ setRemoteAddr (int sock, struct sockaddr_in *remoteAddr)
 int
 setLocalAddr (int sock, struct sockaddr_in *localAddr)
 {
-#if defined(PORTNAME_aix)
+#if defined(aix_platform)
     size_t      laddrlen = sizeof(struct sockaddr);
 #else
     uint         laddrlen = sizeof(struct sockaddr);
