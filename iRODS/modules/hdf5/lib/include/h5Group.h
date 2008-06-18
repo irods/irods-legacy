@@ -45,7 +45,7 @@ typedef struct H5Group
     int nattributes;            /* number of attributes of this group */
     H5Attribute *attributes;   /* attributes of this group */
     H5Error error;              /* strings used to carry error report from server operation */
-    long  time;                /* number of microseconds used to finish the hdf5 request on server */
+    long  time;                /* number of seconds used to finish the hdf5 request on server */
 } H5Group;
 
 #ifdef __cplusplus

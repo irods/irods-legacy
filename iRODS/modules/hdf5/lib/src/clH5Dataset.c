@@ -32,6 +32,7 @@ int clH5Dataset_read(rcComm_t *conn, H5Dataset* d)
     d->nvalue = outd->nvalue;
     d->value = outd->value;
     d->error = outd->error;
+    d->time = outd->time;
     outd->value = NULL;
     outd->nvalue = 0;
 

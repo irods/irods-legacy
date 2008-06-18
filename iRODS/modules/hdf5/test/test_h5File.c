@@ -6,6 +6,7 @@
 #include <malloc.h>
 #include <time.h>
 
+#define PRINT_ALL 1
 #define NO_TEST_ATTRI	1
 #define NO_TEST_PALETTE	1
 #define TEST_SUBSET 1
@@ -117,16 +118,20 @@ int main(int argc, char* argv[])
         d->type.order =get_machine_endian();
     } 
 
+#ifdef PRINT_ALL
     ret_value = print_group(conn, f->root);
+#endif
 
 
 /******************************************************************************
  * suppose we want to read the data value  of the first dataset from the file
  ******************************************************************************/
     d = NULL;
- 
-    if (f->root->ndatasets > 0)
-        d = (H5Dataset *) &f->root->datasets[i];
+
+    if (f->root->ndatasets > 0) {
+        d = (H5Dataset *) &f->root->datasets[0];
+    }
+
 
     if (d)
     {
@@ -160,7 +165,8 @@ int main(int argc, char* argv[])
 #endif
 
        time_t t2=time(NULL);
-       printf("%d seconds on read\n", t2-t1);
+       printf("HDF5 time on read: %d seconds\n", d->time);
+       printf("Total time on read: %d seconds\n", t2-t1);
 
 /* .... d goes to the client */
         print_dataset(d);
@@ -209,10 +215,17 @@ int print_group(rcComm_t *conn, const H5Group *pg)
 
     assert(pg);
 
+    printf("\n====== HDF5 Group: %s\n", pg->fullpath);
+    printf("\tNumber of datasets: %d\n", pg->ndatasets);
+    printf("\tNubmer of groups:  %d\n", pg->ngroups);
+    printf("\tNumber of attributes: %d\n", pg->nattributes);
+
+    for (i=0; i<pg->nattributes; i++)
+        print_attribute(&(pg->attributes[i]));
+
     for (i=0; i<pg->ngroups; i++)
     {
         g = (H5Group *) &pg->groups[i];
-        printf("%s\n", g->fullpath);
 
 #ifdef TEST_ATTRI
         g->opID = H5GROUP_OP_READ_ATTRIBUTE;
@@ -222,15 +235,6 @@ int print_group(rcComm_t *conn, const H5Group *pg)
 	      "H5GROUP_OP_READ_ATTRIBUTE failed, status = %d\n", ret_value);
             exit (1);
         }
-
-        printf("\nTotal number of attributes = %d\n", g->nattributes);
-    if (g->attributes)
-    {
-        printf("Attributes: \n");
-
-        for (i=0; i<g->nattributes; i++)
-            print_attribute(&(g->attributes[i]));
-    }
 #endif
 
         ret_value = print_group(conn, g);
@@ -239,7 +243,6 @@ int print_group(rcComm_t *conn, const H5Group *pg)
     for (i=0; i<pg->ndatasets; i++)
     {
         d = (H5Dataset *) &pg->datasets[i];
-        printf("%s\n", d->fullpath);
 
 #ifdef TEST_PALETTE
         if (d->nattributes > 0)
@@ -249,7 +252,6 @@ int print_group(rcComm_t *conn, const H5Group *pg)
             H5Attribute a = (d->attributes)[0];
             if ( strcmp(a.name, PALETTE_VALUE) == 0)
             {
-                printf("\n#################### PALETTE #####################\n");
                 pv = (unsigned char *)a.value;
                 for (i=0; i<20; i++) printf("%u\t", *((unsigned char*)(pv+i)));    
             }
@@ -266,6 +268,7 @@ int print_group(rcComm_t *conn, const H5Group *pg)
             if (d->space.count[j] == 0) d->space.count[j] =1;
         }
 #endif
+
         ret_value = h5ObjRequest(conn, d, H5OBJECT_DATASET);
         if (ret_value < 0) {
             fprintf (stderr, "H5DATASET_OP_READ failed, status = %d\n", 
@@ -297,8 +300,9 @@ int print_dataset(const H5Dataset *d)
 
     assert(d);
 
-    printf("\nNumber of data points in the dataset = %d\n", d->nvalue);
-    printf("\nPrinting the first 10 values of %s\n", d->fullpath);
+    printf("\n====== HDF5 Dataset: %s\n", d->fullpath);
+    printf("\tSize of data buffer (bytes) = %d\n", d->nvalue);
+    printf("\tThe first 10 values:\t");
     if (d->value)
     {
         size = 1;
@@ -353,18 +357,13 @@ int print_dataset(const H5Dataset *d)
                     printf("%s\t", strs[i]);
             }
         }
-        printf("\n\n");
+        printf("\n");
     }
 
-    if (d->attributes)
-    {
-        printf("\nTotal number of attributes = %d\n", d->nattributes);
-        printf("Attributes: \n");
-  
-        for (i=0; i<d->nattributes; i++)
-            print_attribute(&(d->attributes[i]));
-    }
 
+    printf("\tNumber of attributes: %d\n", d->nattributes);
+    for (i=0; i<d->nattributes; i++)
+        print_attribute(&(d->attributes[i]));
 
     return ret_value;
 }
@@ -377,8 +376,9 @@ int print_attribute(const H5Attribute *a)
 
     assert(a);
 
-    printf("\n\tNumber of data points in the attribute = %d\n", a->nvalue);
-    printf("\n\tPrinting the first 10 values of %s\n", a->name);
+    printf("\tName of the attribute: %s", a->name);
+    printf("\tSize of data buffer (bytes) = %d\n", a->nvalue);
+    printf("\tThe first 10 values:\t");
     if (a->value)
     {
         size = 1;

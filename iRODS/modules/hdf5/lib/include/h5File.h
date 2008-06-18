@@ -47,7 +47,7 @@ typedef struct H5File
     int fid;             /* the file ID from H5Fopen() */
     H5Group *root;       /* the root group that holds the whole file structure */
     H5Error error;       /* strings used to carry error report from server operation */
-    long  time;          /* number of microseconds used to finish the hdf5 request on server */
+    long  time;          /* number of seconds used to finish the hdf5 request on server */
 } H5File;
 
 /* The following structure is used to hold all the information.

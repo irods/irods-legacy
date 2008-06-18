@@ -424,7 +424,7 @@ rcComm_t *make_connection(JNIEnv *env) {
         return NULL;
     }
 
-    ret_val = clientLogin(conn_t);
+    ret_val = clientLogin(conn_t); /* try default login first */
 
     if (ret_val != 0) {
         rcDisconnect(conn_t);
@@ -455,28 +455,45 @@ JNIEXPORT jstring JNICALL Java_ncsa_hdf_srb_H5SRB_getFileFieldSeparator
 
 /*
  * Class:     ncsa_hdf_srb_H5SRB
+ * Method:    callServerInit
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_ncsa_hdf_srb_H5SRB_callServerInit
+  (JNIEnv *env, jclass cls, jstring jpasswd) 
+{
+    char *passwd;
+    jboolean isCopy;
+
+    passwd = (char *)(*env)->GetStringUTFChars(env,jpasswd,&isCopy);
+    if (passwd != NULL && strlen(passwd)>0) {
+        obfSavePw(0, 0, 0, passwd); 
+    }
+} 
+
+
+/*
+ * Class:     ncsa_hdf_srb_H5SRB
  * Method:    _getServerInfo
  * Signature: ([Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_ncsa_hdf_srb_H5SRB__1getServerInfo
   (JNIEnv *env, jclass cls, jobjectArray jInfo)
 {
-    int n;
+    int n, status;
     jstring jstr;
     char str[NAME_LEN];
 
-    if (server_connection == NULL) {
-        if ( (server_connection = make_connection(env)) == NULL )
-            (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), 
-                 "Cannot make connection to the server");
-    }
- 
     n = (*env)->GetArrayLength(env, jInfo);
-    if (n<10) {
+    if (n<14) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/IllegalArgumentException"), 
-             "Array size for server information is less than 10");
+             "Array size for server information is less than 14");
     }
 
+    status = getRodsEnv(&rodsServerEnv);
+    if (status<0) {
+        (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "getRodsEnv() failed");
+    }
+ 
     jstr = (*env)->NewStringUTF(env, rodsServerEnv.rodsUserName);
     (*env)->SetObjectArrayElement(env, jInfo, 0, jstr);
 
@@ -510,6 +527,20 @@ JNIEXPORT void JNICALL Java_ncsa_hdf_srb_H5SRB__1getServerInfo
 
     jstr = (*env)->NewStringUTF(env, rodsServerEnv.rodsZone);
     (*env)->SetObjectArrayElement(env, jInfo, 9, jstr);
+
+    jstr = (*env)->NewStringUTF(env, rodsServerEnv.rodsServerDn);
+    (*env)->SetObjectArrayElement(env, jInfo, 10, jstr);
+
+    str[0] = '\0';
+    sprintf(str, "%d",  rodsServerEnv.rodsLogLevel);
+    jstr = (*env)->NewStringUTF(env, str);
+    (*env)->SetObjectArrayElement(env, jInfo, 11, jstr);
+
+    jstr = (*env)->NewStringUTF(env, rodsServerEnv.rodsAuthFileName);
+    (*env)->SetObjectArrayElement(env, jInfo, 12, jstr);
+
+    jstr = (*env)->NewStringUTF(env, rodsServerEnv.rodsDebug);
+    (*env)->SetObjectArrayElement(env, jInfo, 13, jstr);
 }
 
 /*
@@ -572,7 +603,7 @@ JNIEXPORT jint JNICALL Java_ncsa_hdf_srb_H5SRB_h5ObjRequest
             THROW_JNI_ERROR("java/lang/RuntimeException", "Cannot make connection to the server");
     }
 
-    load_field_method_IDs(env);
+   load_field_method_IDs(env);
 
     switch (obj_type) {
         case H5OBJECT_FILE:
@@ -587,7 +618,7 @@ JNIEXPORT jint JNICALL Java_ncsa_hdf_srb_H5SRB_h5ObjRequest
         default:
             THROW_JNI_ERROR("java/lang/UnsupportedOperationException", "Unsupported client request");
             break;
-    } /* end of switch */
+    } /*  end of switch */
 
 done:
     return ret_val;
