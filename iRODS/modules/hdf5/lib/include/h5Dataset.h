@@ -24,6 +24,11 @@
 #include "h5Attribute.h"
 #include "rodsClient.h"
 
+#define  H5D_IMAGE_FLAG 0x0001
+#define  H5D_IMAGE_TRUECOLOR_FLAG 0x0002
+#define  H5D_IMAGE_INTERLACE_PIXEL_FLAG 0x0004
+#define  H5D_IMAGE_INTERLACE_PLANE_FLAG 0x0008
+
 /* operation id for H5Dataset */
 typedef enum H5Dataset_op_t
 {
@@ -55,7 +60,7 @@ typedef struct H5Dataset
     unsigned int nvalue;       /* the number of bytes in the buffer *value */
     void*    value;            /* the data read from file or write to file */
     H5Error error;             /* strings used to carry error report from server operation */
-    long  time;                /* number of microseconds used to finish the hdf5 request on server */
+    long  time;                /* number of seconds used to finish the hdf5 request on server */
 } H5Dataset;
 
 #ifdef __cplusplus

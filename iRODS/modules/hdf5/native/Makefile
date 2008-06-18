@@ -63,16 +63,16 @@ all: $(SLIB)
 $(SLIB): $(OBJ)
 ifeq ($(OS_platform), aix_platform)
 	grep " JNICALL " *.c|sed "s/.* JNICALL //g">$@.exp
-	$(LDR) -lm -bnoentry -bM:SRE -bE:$@.exp -lc_r -blibpath:/usr/lib/threads:/usr/lib:/lib -L/usr/local/apps/Java/lib/aix/native_threads -o $(SLIB) $(HDF_LIB_OBJECTS) $(LDFLAGS) $(OBJ)
+	$(LDR) -lm -bnoentry -bM:SRE -bE:$@.exp -lc_r -blibpath:/usr/lib/threads:/usr/lib:/lib -L/usr/local/apps/Java/lib/aix/native_threads -o $(SLIB) $(HDF_LIB_OBJECTS) $(OBJ) $(LDFLAGS)
 	rm $@.exp
 else
 ifeq ($(OS_platform), sgi_platform)
-	$(LDR) -shared -o $(SLIB) $(HDF_LIB_OBJECTS) $(LDFLAGS) $(OBJ)
+	$(LDR) -shared -o $(SLIB) $(HDF_LIB_OBJECTS) $(OBJ) $(LDFLAGS)
 else
 ifeq ($(OS_platform), linux_platform)
-	$(LDR) -shared -lm -lpthread -o $(SLIB) $(HDF_LIB_OBJECTS) $(LDFLAGS) $(OBJ) 
+	$(LDR) -shared -lm -lpthread -o $(SLIB) $(HDF_LIB_OBJECTS) $(OBJ) $(LDFLAGS)
 else
-	$(LDR) -G -o $(SLIB) $(HDF_LIB_OBJECTS) $(LDFLAGS) $(OBJ)
+	$(LDR) -G -o $(SLIB) $(HDF_LIB_OBJECTS) $(OBJ) $(LDFLAGS)
 endif
 endif
 endif

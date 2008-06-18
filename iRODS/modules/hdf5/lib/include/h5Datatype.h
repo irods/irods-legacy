@@ -68,8 +68,14 @@ typedef struct H5Datatype
        and C(float), and A is compound with members X(unsign int) and Y(char), 
        then:
        nmembers = 4;
-       mtypes[] = {unsigned int, char, int, float};
        mnames[] = {"A.X", "A.Y", "B", "C"}; 
+
+       memeber dataype is packed into 32-bit integer as 4bit_class+4bit_sign+24bit_size, 
+           i.e. mtype = mclass<<28 | msign<<24 | msize
+       To extract mtype information, 
+           int mclass = (0XFFFFFFF & mtype)>>28;
+           int msign = (0XFFFFFFF & mtype)>>24;
+           int msize = (0XFFFFFF & mtype);
     */
     int nmembers;          /* number of members of the compound datatype */
     int *mtypes;          /* datatypes of members */
