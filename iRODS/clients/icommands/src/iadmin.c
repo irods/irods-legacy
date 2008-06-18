@@ -866,8 +866,8 @@ usage(char *subOpt)
    char *luMsgs[]={
 "lu [name] (list user info; details if name entered)",
 "list user information.  ",
-"Just 'lu' will briefly list currently defined local users."
-"If you include a user name, more detailed information is provided."
+"Just 'lu' will briefly list currently defined local users.",
+"If you include a user name, more detailed information is provided.",
 "Also see the iuserinfo command.",
 ""};
    char *ltMsgs[]={
@@ -1096,8 +1096,8 @@ usage(char *subOpt)
 		    lgMsgs, lgdMsgs, lrgMsgs, lfMsgs, mkuserMsgs, 
 		    moduserMsgs, rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs, 
 		    modrescMsgs, rmrescMsgs, mkgroupMsgs, rmgroupMsgs,atgMsgs, 
-		    rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs, dspassMsgs,
-		    pvMsgs, ctimeMsgs, helpMsgs, helpMsgs };
+		    rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
+		    dspassMsgs, pvMsgs, ctimeMsgs, helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {
       usageMain();
