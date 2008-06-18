@@ -5,8 +5,9 @@
 
   This file contains most of the ICAT (iRODS Catalog) high Level
   functions.  These, along with chlGeneralQuery, constitute the API
-  between and Server and the ICAT code.  Each of the API routine names
-  start with 'chl' for Catalog High Level.
+  between and Server (and microservices) and the ICAT code.  Each of
+  the API routine names start with 'chl' for Catalog High Level.  
+  Others are internal.
 
   Also see icatGeneralQuery.c for chlGeneralQuery, the other ICAT high
   level API call.
@@ -50,7 +51,10 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo);
 icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]="";
 
-
+/*
+ Enable or disable some debug logging.
+ By default this is off.
+ */
 int chlDebug(char *debugMode) {
    if (strstr(debugMode, "SQL")) {
       logSQL=1;
@@ -68,7 +72,8 @@ int chlDebug(char *debugMode) {
 }
 
 /* 
- Possibly descramble a password (for user passwords stored in the ICAT)
+ Possibly descramble a password (for user passwords stored in the ICAT).
+ Called internally, from various chl functions.
  */
 int
 icatDescramble(char *pw) {
@@ -97,7 +102,8 @@ icatDescramble(char *pw) {
 }
 
 /* 
- Scramble a password (for user passwords stored in the ICAT)
+ Scramble a password (for user passwords stored in the ICAT).
+ Called internally.
  */
 int
 icatScramble(char *pw) {
@@ -116,6 +122,10 @@ icatScramble(char *pw) {
    return 0;
 }
 
+/*
+ Open a connection to the database.  This has to be called first.  The
+ server/agent and Rule-Engine Server call this when initializing.
+ */
 int chlOpen(char *DBUser, char *DBpasswd) {
    int i;
    if (logSQL) rodsLog(LOG_SQL, "chlOpen");
@@ -131,6 +141,10 @@ int chlOpen(char *DBUser, char *DBpasswd) {
    return(i);
 }
 
+/*
+ Close an open connection to the database.  
+ Clean up and shutdown the connection.
+ */
 int chlClose() {
    int i;
 
@@ -144,6 +158,13 @@ int chlIsConnected() {
    return(icss.status);
 }
 
+/*
+ This is used by the icatGeneralUpdate.c functions to get the icss
+ structure.  icatGeneralUpdate.c and this (icatHighLevelRoutine.c)
+ are actually one module but in two separate source files (as they
+ got larger) so this is a 'glue' that binds them together.  So this
+ is mostly an 'internal' function too.
+ */
 icatSessionStruct *
 chlGetRcs()
 {
@@ -154,6 +175,11 @@ chlGetRcs()
    return(&icss);
 }
 
+/*
+ Internal function to return the local zone (which is the default
+ zone).  The first time it's called, it gets the zone from the DB and
+ subsequent calls just return that value.
+ */
 int
 getLocalZone()
 {
@@ -171,7 +197,10 @@ getLocalZone()
    return(0);
 }
 
-/* return the local zone name */
+/* 
+  External function to return the local zone name.
+  Used by icatGeneralQuery.c
+ */
 char *
 chlGetLocalZone() {
    getLocalZone();
@@ -1339,6 +1368,13 @@ int chlRollback(rsComm_t *rsComm) {
    return(status);
 }
 
+/*
+ Issue a commit command.
+ This is called to commit changes to the database.
+ Some of the chl functions also commit changes upon success but some
+ do not, having the caller (microservice, perhaps) either commit or
+ rollback.
+ */
 int chlCommit(rsComm_t *rsComm) {
    int status;
    if (logSQL) rodsLog(LOG_SQL, "chlCommit - SQL 1 ");
@@ -1449,7 +1485,12 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    return(0);
 }
 
-
+/*
+ Register a Collection by the admin.
+ There are cases where the irods admin needs to create collections,
+ for a new user, for example; thus the create user rule/microservices
+ make use of this.
+ */
 int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
 {
    char myTime[50];
@@ -1876,6 +1917,15 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 
 /* Simple query
 
+   This is used in cases where it is easier to do a straight-forward
+   SQL query rather than go thru the generalQuery interface.  This is
+   used this in the iadmin.c interface as it was easier for me (Wayne)
+   to work in SQL for admin type ops as I'm thinking in terms of
+   tables and columns and SQL anyway.
+
+   For improved security, this is available only to admin users and
+   the code checks that the input sql is one of the allowed forms.
+
    input: sql, up to for optional arguments (bind variables),
           and requested format, max text to return (maxOutBuf)
    output: text (outBuf) or error return
@@ -1887,7 +1937,6 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    format 1: column-name : column value, and with CR after each column
    format 2: column headings CR, rows and col values with CR
 
-   Checks that the input sql is one of the allowed forms.
 */
 int chlSimpleQuery(rsComm_t *rsComm, char *sql, 
 		   char *arg1, char *arg2, char *arg3, char *arg4,
@@ -2268,6 +2317,8 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    The clientPrivLevel is the privilege level for the client in
    the rsComm structure; this is used by servers when setting the
    authFlag.
+
+   Called from rsAuthCheck.
 */
 int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 		 char *username, int *userPrivLevel, int *clientPrivLevel) {
@@ -2483,6 +2534,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    Output is the pattern, that when hashed with the user's password,
    becomes the temporary password.  The temp password is also stored
    in the database.
+
+   Called from rsGetTempPassword.
 */
 int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    int status;
@@ -2585,7 +2638,11 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    return(0);
 }
 
-
+/*
+ de-scramble a password sent from the client.
+ This isn't real encryption, but does obfuscate the pw on the network.
+ Called internally, from chlModUser.
+ */
 int decodePw(rsComm_t *rsComm, char *in, char *out) {
    int status;
    char *cp;
@@ -2620,7 +2677,9 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
 }
 
 
-/* Modify an existing user */
+/* Modify an existing user.
+   Admin only.
+   Called from rsGeneralAdmin which is used by iadmin */
 int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 		 char *newValue) {
    int status;
@@ -2858,9 +2917,10 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    }
    return(0);
 }
-/* Modify an existing group (membership). */
-/* Groups are also users in the schema, so chlModUser can also 
-   modify other group attibutes.*/
+
+/* Modify an existing group (membership). 
+   Groups are also users in the schema, so chlModUser can also 
+   modify other group attibutes. */
 int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 		 char *userName) {
    int status, OK;
@@ -3492,6 +3552,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
 /*
 Check object - get an object's ID and check that the user has access.
+Called internally.
 */
 rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
 		    char *name, char *access) {
