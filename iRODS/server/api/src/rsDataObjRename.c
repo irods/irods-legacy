@@ -134,7 +134,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
               srcDataObjInp->objPath, status);
             return (status);
         }
-    } else {
+    } else if (srcDataObjInp->oprType == RENAME_COLL) {
         status = isColl (rsComm, srcDataObjInp->objPath, &srcId);
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -142,6 +142,18 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
               srcDataObjInp->objPath, status);
             return (status);
         }
+    } else {
+	if ((status = isData (rsComm, srcDataObjInp->objPath, &srcId)) >= 0) {
+	    srcDataObjInp->oprType = RENAME_DATA_OBJ;
+	} else if ((status = isColl (rsComm, srcDataObjInp->objPath, &srcId))
+	 >= 0) {
+	    srcDataObjInp->oprType = RENAME_COLL;
+	} else {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjRename: src obj %s does not exist, status = %d",
+              srcDataObjInp->objPath, status);
+            return (status);
+	}
     }
 
     if (strcmp (srcObj, destObj) != 0) {
