@@ -320,12 +320,18 @@ irodsRename (const char *from, const char *to)
     }
 
     dataObjRenameInp.srcDataObjInp.oprType =
-      dataObjRenameInp.destDataObjInp.oprType = RENAME_DATA_OBJ;
+      dataObjRenameInp.destDataObjInp.oprType = RENAME_UNKNOWN_TYPE;
 
     getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjRename (DefConn.conn, &dataObjRenameInp);
     relIFuseConn (&DefConn);
 
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "irodsRename: rcDataObjRename of %s to %s error", from, to);
+        return -ENOENT;
+    }
+#if 0
     if (status < 0) {
         dataObjRenameInp.srcDataObjInp.oprType =
           dataObjRenameInp.destDataObjInp.oprType = RENAME_COLL;
@@ -338,6 +344,7 @@ irodsRename (const char *from, const char *to)
             return -ENOENT;
 	}
     }
+#endif
 
     return (0);
 }

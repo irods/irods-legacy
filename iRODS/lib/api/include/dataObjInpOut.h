@@ -97,6 +97,7 @@ typedef struct CollInp {
 #define QUERY_DATA_OBJ_RECUR    19
 #define QUERY_COLL_OBJ          20
 #define QUERY_COLL_OBJ_RECUR    21
+#define RENAME_UNKNOWN_TYPE     22
 
 typedef struct PortalOpr {
     int oprType;
