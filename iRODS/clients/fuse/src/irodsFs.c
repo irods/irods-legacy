@@ -90,7 +90,7 @@ main (int argc, char **argv)
     rodsArguments_t myRodsArgs;
     char *optStr;
 
-    optStr = "h";
+    optStr = "hd";
 
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
