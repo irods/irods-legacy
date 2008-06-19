@@ -324,13 +324,19 @@ irodsRename (const char *from, const char *to)
 
     getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjRename (DefConn.conn, &dataObjRenameInp);
-    relIFuseConn (&DefConn);
+
+    if (status == CAT_NAME_EXISTS_AS_DATAOBJ) {
+        rcDataObjUnlink (DefConn.conn, &dataObjRenameInp.destDataObjInp);
+        status = rcDataObjRename (DefConn.conn, &dataObjRenameInp);
+    }
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "irodsRename: rcDataObjRename of %s to %s error", from, to);
+        relIFuseConn (&DefConn);
         return -ENOENT;
     }
+    relIFuseConn (&DefConn);
 #if 0
     if (status < 0) {
         dataObjRenameInp.srcDataObjInp.oprType =
