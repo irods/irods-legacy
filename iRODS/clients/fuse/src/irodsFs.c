@@ -90,7 +90,7 @@ main (int argc, char **argv)
     rodsArguments_t myRodsArgs;
     char *optStr;
 
-    optStr = "hd";
+    optStr = "hdo:";
 
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -139,10 +139,12 @@ void
 usage ()
 {
    char *msgs[]={
-   "Usage : irodsFs [-h]",
+   "Usage : irodsFs [-hd] [-o opt,[opt...]]",
 "Single user iRods/Fuse server",
 "Options are:",
 " -h  this help",
+" -d  FUSE debug mode",
+" -o  opt,[opt...]  FUSE mount options",
 ""};
     int i;
     for (i=0;;i++) {
