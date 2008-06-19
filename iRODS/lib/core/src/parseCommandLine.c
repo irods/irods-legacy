@@ -167,6 +167,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          rodsArgs->number=True;
          rodsArgs->numberValue = atoi(optarg);
          break;
+      case 'o':
+         rodsArgs->option=True;
+         rodsArgs->optionString=optarg;
+         break;
       case 'p':
          rodsArgs->physicalPath=True;
          rodsArgs->physicalPathString=optarg;

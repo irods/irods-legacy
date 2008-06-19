@@ -55,6 +55,8 @@ typedef struct {
    char *physicalPathString;
    int logicalPath;
    char *logicalPathString;
+   int option;
+   char *optionString;
    int prompt;
    int query;
    int recursive;
