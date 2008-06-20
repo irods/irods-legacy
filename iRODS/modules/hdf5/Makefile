@@ -117,7 +117,7 @@ server_cflags:
 
 # Build microservices
 ifdef hdf5Dir
-microservices:	print_cflags $(MS_OBJECTS) $(HDF_LIB_OBJECTS)
+microservices:	print_cflags $(MS_OBJECTS) $(HDF_LIB_OBJECTS) $(TEST_PROG)
 	@true
 test:	$(TEST_PROG)
 else

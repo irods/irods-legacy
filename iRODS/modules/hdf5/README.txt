@@ -7,7 +7,8 @@ module, you must follow the steps below
 	1.  Download and install szip, zlib, and HDF5 libraries from
                 http://www.hdfgroup.org/HDF5/release/obtain5.html
 
-                if you are using HDF5 1.8.x version, you must use
+		The implementation is compatible with HDF5 1.6.x.
+                If you are using HDF5 1.8.x version, you must use
                 the 5-1.8.x-16API build. If you are building HDF5 1.8.x
                 from the source, you must use the HDF5 1.6 compatibility 
                 flag in the configuration, such as
@@ -21,7 +22,43 @@ module, you must follow the steps below
                 szlibDir=/home/srb/ext_lib/szip
                 zlibDir=/home/srb/ext_lib/zlib
 
-	3.  Recompile iRODS by typing 'make'.  You do not need to
+	3.  Edit the config/config.mk file and add hdf5 to the line that
+	    defines MODULES. e.g., 
+
+	        MODULES= properties hdf5
+
+	4.  Recompile iRODS by typing 'make'.  You do not need to
 	    run any of the install scripts again.
 
-	4.  Restart iRODS by runing 'irodsctl restart'.
+	5.  Restart iRODS by runing 'irodsctl restart'.
+
+
+The make also build a test program t5 in the test directory. To run
+this test program, first iput a hdf5 data file into irods, e.g.,
+
+	iput hdfTestFile /tempZone/home/rods/hdf5/hdfTestFile
+
+Then type in:
+
+	test/t5 /tempZone/home/rods/hdf5/hdfTestFile
+
+
+iRods-HDF5 client API 
+---------------------
+
+The h5ObjRequest() is the primary API for iRods clients to access the
+HDF5 objects and micro-services on the iRods server. It supports operations
+on three types of HDF5 objects:
+
+	H5OBJECT_FILE - hdf5 file
+	H5OBJECT_GROUP - hdf5 group
+	H5OBJECT_DATASET - hdf5 dataset
+
+hdf5 operations supported are:
+	H5FILE_OP_OPEN - open a hdf5 file
+	H5FILE_OP_CLOSE - close a hdf5 file
+	H5GROUP_OP_READ_ATTRIBUTE - read the attributes of a hdf5 group
+	H5DATASET_OP_READ_ATTRIBUTE - read the attributes of a hdf5 dataset
+
+Please read examples given in test/test_h5File.c on how this API is used. 
+
