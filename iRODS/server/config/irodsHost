@@ -7,6 +7,12 @@
 # should list all the hostnames and addresses (separated by spaces)
 # for a given host. If the host is the local host, the first entry
 # must be the keyword "localhost" followed by all the local host
-# addresses,
+# addresses. In addition, the first entry following the "localhost"
+# is the preferred address and will be used for connecting to clients 
+# and remote servers. 
+# Similarly, a line can be entered for each remote host. This line will 
+# not begin with the "localhost" keyword and the first entry is the
+# preferred address.  
 # e.g. :
-# localhost foo.sdsc.edu srbbrick7
+# localhost srbbrick7.sdsc.edu srbbrick7 
+# srbbrick8.sdsc.edu srbbrick8
