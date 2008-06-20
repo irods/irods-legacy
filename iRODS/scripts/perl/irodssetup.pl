@@ -100,10 +100,11 @@ my $isUpgrade="";
 my $arg;
 foreach $arg (@ARGV)
 {
-	if ( $arg =~ /--upgrade/ )	# irodsupgrade, not irodssetup
-	{
-		$isUpgrade="upgrade";
-	}
+    if ( $arg =~ /-?-?up/ )	# irodsupgrade, not irodssetup
+    {
+	$isUpgrade="upgrade";
+	printf("Upgrade mode\n");
+    }
 }
 
 # Load support scripts.
@@ -188,7 +189,9 @@ prepare( );
 
 # Install database for the catalog server.
 #	Runs 'installPostgres'
-installDatabase( );
+if ($isUpgrade eq "") {
+    installDatabase( );
+}
 
 
 # Configure iRODS
@@ -204,6 +207,7 @@ buildIrods( );
 # Finish setting up iRODS
 #	Runs 'setupFinish'
 finishSetup( );
+
 
 
 # Done!
@@ -266,7 +270,12 @@ sub promptUser( )
 {
 	# Run the prompt script.  The script sets irods.config and
 	# installPostgres.config based upon user choices.
-	system( $irodsPrompt );
+	if ( $isUpgrade ne "") {
+	    system( "$irodsPrompt --upgrade");
+	}
+	else {
+	    system( $irodsPrompt );
+	}
 	if ( $? ne 0 )
 	{
 		# There is no log file from the prompt script.
@@ -580,11 +589,23 @@ sub finishSetup( )
 	# 		Indent the script's own messages so that
 	# 		the look nice together with this script's
 	# 		messages.
+	# 	--upgrade
+	# 		Finish in Upgrade mode.
 	#
-	system( $setupFinish,
+	if (isUpgrade eq "") {
+	    system( $setupFinish,
 		"--noask",
 		"--noheader",
 		"--indent" );
+	}
+	else {
+	    system( $setupFinish,
+		"--noask",
+		"--noheader",
+		"--indent",
+		"--upgrade" );
+	}
+
 	if ( $? ne 0 )
 	{
 		printError( "Set up failed.  Please see the log file for details:\n" );

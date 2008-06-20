@@ -186,6 +186,7 @@ if ( $thisUserID == 0 )
 my $force = 0;
 my $noAsk = 0;
 my $noHeader = 0;
+my $isUpgrade = 0;
 setPrintVerbose( 1 );
 
 
@@ -228,6 +229,11 @@ foreach $arg (@ARGV)
 	if ( $arg =~ /^-?-?(force)$/ )		# Force all actions
 	{
 		$force = 1;
+		next;
+	}
+	if ( $arg =~ /-?-?upgrade/ ) 	# Upgrade mode
+	{
+		$isUpgrade = 1;
 		next;
 	}
 
@@ -461,6 +467,7 @@ else
 {
 	# There is a database.  We need to configure it.
 	$totalSteps  = 6;
+	if ($isUpgrade) {$totalSteps=3;}
 	$currentStep = 0;
 
 	# Ignore the iCAT host name, if any, if we
@@ -471,15 +478,21 @@ else
 	prepare( );
 
 	# 2.  Set up the user account for the database.
-	configureDatabaseUser( );
+	if (!$isUpgrade) {
+	    configureDatabaseUser( );
+	}
 
 	# 3.  Create the database schema and tables.
-	createDatabaseAndTables( );
+	if (!$isUpgrade) {
+	    createDatabaseAndTables( );
+	}
 
 	# 4.  Configure database security settings and restart.
-	configureDatabaseSecurity( );
-	restartDatabase( );
-	testDatabase( );
+	if (!$isUpgrade) {
+	    configureDatabaseSecurity( );
+	    restartDatabase( );
+	    testDatabase( );
+	}
 
 	# 5.  Configure 
 	configureIrodsServer( );
@@ -1487,12 +1500,40 @@ sub configureIrodsUser
 {
 	++$currentStep;
 	printSubtitle( "\n" );
-	printSubtitle( "Step $currentStep of $totalSteps:  Configuring iRODS user...\n" );
+	printSubtitle( "Step $currentStep of $totalSteps:  Configuring iRODS user and starting server...\n" );
 	printLog( "\n" );
-	printLog( "Configuring iRODS user...\n" );
+	printLog( "Configuring iRODS user and starting server...\n" );
 	printLog( "------------------------------------------------------------------------\n" );
 	printLog( getCurrentDateTime( ) . "\n\n" );
 
+
+	if ($isUpgrade)  {
+	    # For an upgrade, just start the server and connect
+	    # Start iRODS.
+	    printStatus( "Starting iRODS server...\n" );
+	    printLog( "\nStarting iRODS server...\n" );
+	    if ( startIrods( ) == 0 )
+	    {
+		printError( "\nInstall problem:\n" );
+		printError( "    Cannot start iRODS server.\n" );
+		printLog( "\nCannot start iRODS server.\n" );
+		cleanAndExit( 1 );
+	    }
+
+	    printStatus( "Opening iRODS connection...\n" );
+	    printLog( "\nOpening iRODS connection...\n" );
+	    my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
+	    if ( $status != 0 )
+	    {
+		printError( "\nInstall problem:\n" );
+		printError( "    Connection to iRODS server failed.\n" );
+		printError( "        ", $output );
+		printLog( "\nCannot open connection to iRODS server.\n" );
+		printLog( "    ", $output );
+		cleanAndExit( 1 );
+	    }
+	    return();
+	}
 
 
 	# Create a .rodsEnv file for the user, if needed.

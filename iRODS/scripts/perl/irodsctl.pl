@@ -267,6 +267,7 @@ if ( $thisUserID == 0 )
 
 $numberCommands = 0;
 $doTestExitValue=0;
+$doStartExitValue=0;
 foreach $arg (@ARGV)
 {
 	# Options
@@ -359,7 +360,8 @@ foreach $arg (@ARGV)
 	{
 		$numberCommands++;
 		printSubtitle( "Starting iRODS server...\n" );
-		startIrods( );
+		$startVal = startIrods( );
+		if ($startVal eq "0") {$doStartExitValue++;}
 		next;
 	}
 	if ( $arg =~ /^-?-?(istop)$/i )		# Stop iRODS
@@ -391,7 +393,8 @@ foreach $arg (@ARGV)
 			startDatabase( ) || exit( 1 );
 		}
 		printSubtitle( "Starting iRODS server...\n" );
-		startIrods( );
+		$startVal = startIrods( );
+		if ($startVal eq "0") {$doStartExitValue++;}
 		next;
 	}
 	if ( $arg =~ /^-?-?(stop)$/i )		# Stop database and iRODS
@@ -452,6 +455,10 @@ if ( $numberCommands == 0 )
 if ( $doTestExitValue != 0)
 {
 	exit( $doTestExitValue );
+}
+if ( $doStartExitValue != 0)
+{
+	exit( $doStartExitValue );
 }
 exit( 0 );
 

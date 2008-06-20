@@ -88,7 +88,7 @@ my $thisHost   = getCurrentHostName( );
 my $installPostgresConfig = File::Spec->catfile( $configDir, "installPostgres.config" );
 my $installPostgresConfigTemplate = File::Spec->catfile( $configDir, "installPostgres.config.template" );
 
-
+my $isUpgrade="";
 
 
 
@@ -114,10 +114,16 @@ foreach $arg (@ARGV)
 		printUsage( );
 		exit( 0 );
 	}
+	if ( $arg =~ /--upgrade/ )	# upgrade mode
+	{
+		$isUpgrade="upgrade";
+	}
 
-	printError( "Unknown command:  $arg\n" );
-	printUsage( );
-	exit( 1 );
+	if ($isUpgrade eq "" ) {
+	    printError( "Unknown command:  $arg\n" );
+	    printUsage( );
+	    exit( 1 );
+	}
 }
 
 
@@ -486,25 +492,27 @@ sub promptForIrodsConfiguration( )
 			$catalogServerHost );
 
 # Resource name
-		printNotice(
+		if ($isUpgrade eq "") {
+		    printNotice(
 			"\n",
 			"A name is needed for the storage resource that will be on this host,\n",
 			"and it needs to be different from other defined resource names.\n",
 			"\n" );
-		$irodsResourceName = promptString(
+		    $irodsResourceName = promptString(
 						  "Resource name", 
 			((!defined($irodsResourceName)||$irodsResourceName eq $DEFAULT_irodsResourceName) ?
 				"demoResc2" : $irodsResourceName) );
 
 # Resource directory
-		printNotice(
+		    printNotice(
 			"\n",
 			"This resource will store iRODS data in a directory on this host.\n",
 			"\n" );
-		$irodsResourceDir = promptString(
+		    $irodsResourceDir = promptString(
 			"Resource storage area directory",
 			((!defined($irodsResourceDir)||$irodsResourceDir eq "") ?
 				$DEFAULT_irodsResourceDir : $irodsResourceDir) );
+		}
 
 		# iRODS account name and password.
 		printNotice(
@@ -536,7 +544,8 @@ sub promptForIrodsConfiguration( )
 		# Include the iCAT.
 
 	        # iRODS zone
-		printNotice(
+		if ($isUpgrade eq "") {
+		    printNotice(
 			"\n",
 			"Each set of distributed servers (perhaps hundreds, world-wide),\n",
 			"supported by one ICAT-enabled server is an iRODS 'zone' and has a\n",
@@ -547,6 +556,13 @@ sub promptForIrodsConfiguration( )
 			"If you are reusing an existing ICAT database, please enter the\n",
 			"existing zone name and irods account below.\n",
 			"\n" );
+		}
+		else {
+		    printNotice(
+			"\n",
+			"Please enter the existing zone name and irods account below.\n",
+			"\n" );
+		}
 		$irodsZone = promptString(
 			"iRODS zone name",
 			((!defined($irodsZone)||$irodsZone eq "") ?
@@ -556,11 +572,13 @@ sub promptForIrodsConfiguration( )
 		$catalogServerHost = undef;	# No external host needed
 
 		# iRODS account name and password.
-		printNotice(
+		if ($isUpgrade eq "") {
+		    printNotice(
 			"\n",
 			"The build process will create a new iRODS administrator account\n",
 			"for managing the iRODS system (unless there is one already).\n",
 			"\n" );
+		}
 
 		$irodsAccount = promptIdentifier(
 			 "iRODS login name",
@@ -770,13 +788,15 @@ sub promptForDatabaseConfiguration()
 			"----------------------\n" );
 	}
 
-	printNotice(
+	if ( $isUpgrade eq "" ) {
+	    printNotice(
 		"The iCAT catalog uses a DBMS (database management system) to store\n",
 		"state information in a database.  You have two choices:\n",
 		"\n",
 		"    1.  Download and build a new Postgres DBMS system.\n",
 		"    2.  Use an existing Postgres or Oracle DBMS and database.\n",
 		"\n" );
+	}
 
 	# The loop below walks through three prompts for the
 	# above two cases.  Normally, we ask about 1, then
@@ -788,6 +808,9 @@ sub promptForDatabaseConfiguration()
 	# to keep this choice, so do the prompts here in a different
 	# order for this case to give a fast path for Oracle.
 	my $showPrompt = ($databaseServerType =~ /oracle/i) ? 3 : 1;
+	if ( $isUpgrade ne "" ) {
+	    $showPrompt = 3;
+	}
 	my $oldDatabaseServerType = $databaseServerType;
 	my $dontPrompt3Again = 0;
 	while ( 1 )
