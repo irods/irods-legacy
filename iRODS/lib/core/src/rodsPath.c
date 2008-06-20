@@ -8,6 +8,9 @@
 #include "miscUtil.h"
 #include "rodsErrorTable.h"
 #include "rodsLog.h"
+#ifdef windows_platform
+#include "irodsntutil.h"
+#endif
 
 /* parseRodsPathStr - This is similar to parseRodsPath except the
  * input and output are char string inPath and outPath
@@ -530,8 +533,8 @@ rodsPathInp_t *rodsPathInp, int oprType)
 			        status = 0;
 		            }
 		        } else {
-#ifdef _WIN32
-		            status = NTmkdir (targPath->outPath);
+#ifdef windows_platform
+		            status = iRODSNt_mkdir (targPath->outPath, 0750);
 #else
 			    status = mkdir (targPath->outPath, 0750);
 #endif
@@ -562,8 +565,8 @@ rodsPathInp_t *rodsPathInp, int oprType)
 	        } else {
                     /* use destPath. targPath->outPath not defined.
 		     *  status = mkdir (targPath->outPath, 0750); */
-#ifdef _WIN32
-		    status = mkdir (destPath->outPath);
+#ifdef windows_platform
+		    status = iRODSNt_mkdir (destPath->outPath, 0750);
 #else
 		    status = mkdir (destPath->outPath, 0750);
 #endif
