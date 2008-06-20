@@ -133,8 +133,8 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
             one.  This is useful when running scripts. */
 	 sprintf(ppidStr, ".%s", "cwd");
       }
+	  rstrcat(configFileName, ppidStr, LONG_NAME_LEN);
 #endif
-      rstrcat(configFileName, ppidStr, LONG_NAME_LEN);
       status = getRodsEnvFromFile(configFileName, rodsEnvArg, LOG_DEBUG);
    }
 
