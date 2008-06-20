@@ -251,7 +251,7 @@ obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg)
   if (strlen(pwArg)==0) {
 
 #ifdef windows_platform
-	 iRODSNtGetUserPasswdInputInConsole(inbuf, "Enter your current iRODS password:");
+	 iRODSNtGetUserPasswdInputInConsole(inbuf, "Enter your current iRODS password:", promptOpt);
 #else
     if (promptOpt != 1) {
       if (stat ("/bin/stty", &statbuf) == 0)
