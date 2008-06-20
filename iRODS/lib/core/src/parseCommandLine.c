@@ -16,6 +16,9 @@ CommandLineOptions document so we can keep it all consistent.
 #include "rods.h"
 #include "parseCommandLine.h"
 #include "rodsLog.h"
+#ifdef windows_platform
+#include "irodsntutil.h"
+#endif
 
 
 /* 
