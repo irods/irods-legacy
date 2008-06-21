@@ -176,8 +176,11 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
         myExecCmdOut->status = *((int *)statusBuf.buf);
 	free (statusBuf.buf);
     }
-    status = waitpid (childPid, &childStatus, WNOHANG);
+    childStatus = 0;
+    status = waitpid (childPid, &childStatus, 0);
     if (status >= 0 && myExecCmdOut->status >= 0 && childStatus != 0) {
+        rodsLog (LOG_ERROR,
+         "_rsExecCmd: waitpid status = %d, myExecCmdOut->status = %d, childStatus = %d", status, myExecCmdOut->status, childStatus);
         myExecCmdOut->status = EXEC_CMD_ERROR;
     }
     return (myExecCmdOut->status);
