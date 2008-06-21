@@ -29,7 +29,7 @@ main(int argc, char **argv) {
        exit(1);
     }
     if (myRodsArgs.help==True) {
-       usage(argv[0]);
+       usage();
        exit(0);
     }
 
