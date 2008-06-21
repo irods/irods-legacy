@@ -256,8 +256,11 @@ typedef struct {
 } rodsRestart_t;  
 
 /* definition for handler function */
-
+#ifdef windows_platform
+typedef int((*funcPtr)(...));
+#else
 typedef int((*funcPtr)());
+#endif
 
 /* some platform does not support vfork */
 #if defined(sgi_platform) || defined(aix_platform)
