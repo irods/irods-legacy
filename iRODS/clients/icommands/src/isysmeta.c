@@ -3,7 +3,7 @@
 
 #include "rodsClient.h"
 
-void usage ();
+void usage(char *option);
 
 /* 
  print the results of a general query.
