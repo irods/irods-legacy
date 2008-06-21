@@ -592,7 +592,7 @@ sub finishSetup( )
 	# 	--upgrade
 	# 		Finish in Upgrade mode.
 	#
-	if (isUpgrade eq "") {
+	if ($isUpgrade eq "") {
 	    system( $setupFinish,
 		"--noask",
 		"--noheader",
