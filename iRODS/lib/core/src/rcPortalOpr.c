@@ -79,8 +79,11 @@ rodsLong_t dataSize)
           "fillBBufWithFile: dataSize %lld too large", dataSize);
     }
 
- 
+#ifdef windows_platform
+	in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
+#else
     in_fd = open (locFilePath, O_RDONLY, 0, FILE_DESC_TYPE, NULL);
+#endif
     if (in_fd < 0) { /* error */
 	status = USER_FILE_DOES_NOT_EXIST - errno;
 	rodsLogError (LOG_ERROR, status,
@@ -404,7 +407,11 @@ getIncludeFile (rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath)
 	if (bytesWritten == 1)
 	    bytesWritten = dataObjOutBBuf->len;
     } else { 
+#ifdef windows_platform
+		out_fd = iRODSNt_bopen(locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#else
         out_fd = open (locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#endif
         if (out_fd < 0) { /* error */
             status = USER_FILE_DOES_NOT_EXIST - errno;
             rodsLogError (LOG_ERROR, status,

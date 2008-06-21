@@ -111,7 +111,7 @@ mkdirR (char *startDir, char *destDir, int mode)
         /* Put back the '/' */
         tmpPath[tmpLen] = '/';
 #ifdef _WIN32
-        status = mkdir (tmpPath);
+        status = iRODSNt_mkdir (tmpPath, mode);
 #else
         status = mkdir (tmpPath, mode);
 #endif
