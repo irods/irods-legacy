@@ -16,6 +16,8 @@ module, you must follow the steps below
 
 	2.  Edit the 'Makefile' in this module and set the follow variables:
                 hdf5Dir, szlibDir, and zlibDir.
+		Note that hdf5Dir is the install directory of hdf5 created
+		by "make install".
 
                 For example,
                 hdf5Dir=/home/srb/linux32/hdf5
