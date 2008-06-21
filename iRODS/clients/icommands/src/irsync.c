@@ -8,7 +8,7 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 #include "rsyncUtil.h"
-void usage ();
+void usage();
 
 int
 main(int argc, char **argv) {
@@ -47,7 +47,7 @@ main(int argc, char **argv) {
     nArgv = argc - optind;
 
     if (nArgv < 2) {      /* must have at least 2 input */
-        usage (argv[0]);
+        usage();
         exit (1);
     }
 
