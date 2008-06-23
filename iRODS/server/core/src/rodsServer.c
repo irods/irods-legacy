@@ -181,7 +181,9 @@ serverMain (char *logDir)
 
     FD_ZERO(&sockMask);
 
-    rodsLog (LOG_NOTICE, "rodsServer version %s is up", RODS_REL_VERSION);
+    rodsLog (LOG_NOTICE, 
+     "rodsServer Release version %s - API Version %s is up", 
+     RODS_REL_VERSION, RODS_API_VERSION);
 
     /* Record port, pid, and cwd into a well-known file */
     recordServerProcess(&svrComm);
