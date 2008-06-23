@@ -48,9 +48,13 @@ Then type in:
 iRods-HDF5 client API 
 ---------------------
 
-The h5ObjRequest() is the primary API for iRods clients to access the
-HDF5 objects and micro-services on the iRods server. It supports operations
-on three types of HDF5 objects:
+Five HDF5 microservices: msiH5File_open, msiH5File_close, msiH5Dataset_read, 
+msiH5Dataset_read_attribute and msiH5Group_read_attribute have been
+implemented on the server. 
+
+The h5ObjRequest() is the primary library call for iRods clients to access 
+the HDF5 objects and micro-services on the iRods server. It supports 
+operations on three types of HDF5 objects:
 
 	H5OBJECT_FILE - hdf5 file
 	H5OBJECT_GROUP - hdf5 group
@@ -63,4 +67,8 @@ hdf5 operations supported are:
 	H5DATASET_OP_READ_ATTRIBUTE - read the attributes of a hdf5 dataset
 
 Please read examples given in test/test_h5File.c on how this API is used. 
+
+The client implementation also include a JNI interface given in the
+native directory which allows the HFD5 Java browser HDF5View to access 
+HDF5 files stored in iRods.
 
