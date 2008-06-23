@@ -33,6 +33,9 @@ main(int argc, char **argv) {
 
 	rodsLogLevel(LOG_NOTICE);
 
+	rodsLog (LOG_NOTICE, "Release Version = %s, API Version = %s",
+	  RODS_REL_VERSION, RODS_API_VERSION);
+
 	status = getRodsEnv (&myEnv);
 	
 	if (status < 0) {
