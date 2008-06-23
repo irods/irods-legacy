@@ -294,7 +294,7 @@ showRescGroups(int longOption)
 
 int
 main(int argc, char **argv) {
-   int status;
+   int status, status2;
    rErrMsg_t errMsg;
 
    rodsArguments_t myRodsArgs;
@@ -344,16 +344,17 @@ main(int argc, char **argv) {
       exit (3);
    }
 
+   status2=0;
    if (myRodsArgs.optind == argc) {  /* no resource name specified */
       status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
-      status = showRescGroups(myRodsArgs.longOption);
+      status2 = showRescGroups(myRodsArgs.longOption);
    }
    else {
       status = showOneRescGroup(argv[myRodsArgs.optind], 
 				myRodsArgs.longOption);
       if (status==0) {
-	 status = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
-	 if (status==0) {
+	 status2 = showResc(argv[myRodsArgs.optind], myRodsArgs.longOption);
+	 if (status2==0) {
 	    /* Only print this if both fail */
 	    printf("Resource-group %s does not exist.\n",
 		   argv[myRodsArgs.optind]); 
@@ -363,7 +364,10 @@ main(int argc, char **argv) {
 
    rcDisconnect(Conn);
 
-   exit(status);
+   /* Exit 0 if one or more items were displayed */
+   if (status > 0) exit(0);
+   if (status2 > 0) exit(0);
+   exit(4);
 }
 
 /*
