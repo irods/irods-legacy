@@ -39,6 +39,12 @@ bytesBuf_t *bsBBuf)
  
     rsComm->apiInx = apiInx;
 
+    status = chkApiVersion (rsComm, apiInx);
+    if (status < 0) {
+        sendApiReply (rsComm, apiInx, status, myOutStruct, &myOutBsBBuf);
+        return (status);
+    }
+
     status = chkApiPermission (rsComm, apiInx);
     if (status < 0) {
         rodsLog (LOG_NOTICE,
@@ -296,6 +302,22 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
         return status;
     }
 
+    return (0);
+}
+
+int
+chkApiVersion (rsComm_t *rsComm, int apiInx)
+{
+    char *cliApiVersion;
+
+    if ((cliApiVersion = getenv (SP_API_VERSION)) != NULL) {
+	if (strcmp (cliApiVersion, RsApiTable[apiInx].apiVersion) != 0) {
+            rodsLog (LOG_ERROR,
+             "chkApiVersion:Client's API Version %s does not match Server's %s",
+              cliApiVersion, RsApiTable[apiInx].apiVersion);
+            return (USER_API_VERSION_MISMATCH);
+        }
+    }
     return (0);
 }
 

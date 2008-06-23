@@ -28,6 +28,8 @@ int
 rsApiHandler (rsComm_t *rsComm, int apiNumber, bytesBuf_t *inputStructBBuf,
 bytesBuf_t *bsBBuf);
 int
+chkApiVersion (rsComm_t *rsComm, int apiInx);
+int
 chkApiPermission (rsComm_t *rsComm, int apiInx);
 int
 handlePortalOpr (rsComm_t *rsComm);
