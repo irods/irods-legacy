@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-				March 2008
+				June 2008
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -7,6 +7,38 @@ scripts to build the iRODS system.  See MANAGE.txt for information about
 scripts to manage iRODS after it has been installed.
 
 
+0.  Upgrading an existing iRODS installation (1.0 to 1.1)
+
+If you are upgrading to a new version of iRODS and want to keep your
+existing state information (the ICAT, information on dataObjects,
+collections, resources, users, etc), run either of these (they are
+equivalent):
+
+        ./irodsupgrade
+    or
+        ./irodssetup --upgrade
+
+and follow the prompts.  This runs in a similar manner as irodssetup
+as described below, but with fewer prompts and default settings for
+upgrading an existing ICAT.
+
+After that (or before if you wish) run the patch file for either
+PostgreSQL or Oracle to make some minor changes to some tables.
+Assuming your iCAT database is named ICAT, this would be:
+
+        psql ICAT < server/icat/src/psg-patch-v1.0Tov1.1.sql
+
+    or 
+        sqlplus name@instance
+        @server/icat/src/ora-patch-v1.0Tov1.1.sql
+
+And you are done.  Many new features and bug fixes will then be
+installed.  Others, such as GSI, can be enabled via your answers to
+'irodsupgrade'.  And others, others are enabled in other ways.
+
+Note that there has been a small protocol change between 1.0 and 1.1
+and so 1.0 clients will get an error when attempting to connect to 1.1
+servers.  Be sure to upgrade all your clients to 1.1.
 
 
 
