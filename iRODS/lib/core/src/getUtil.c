@@ -144,6 +144,9 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         addKeyVal (&dataObjOprInp->condInput, VERIFY_CHKSUM_KW, "");
     }
 
+#ifdef windows_platform
+    dataObjOprInp->numThreads = NO_THREADING;
+#else
     if (rodsArgs->number == True) {
 	if (rodsArgs->numberValue == 0) {
 	    dataObjOprInp->numThreads = NO_THREADING;
@@ -151,6 +154,7 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 	    dataObjOprInp->numThreads = rodsArgs->numberValue;
 	}
     }
+#endif
 
     if (rodsArgs->replNum == True) {
         addKeyVal (&dataObjOprInp->condInput, REPL_NUM_KW, 
