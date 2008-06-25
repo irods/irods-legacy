@@ -39,7 +39,7 @@ main(int argc, char **argv) {
     nArgv = argc - optind;
 
     if (nArgv != 2) {      /* must have 2 inputs */
-        usage (argv[0]);
+        usage ();
         exit (1);
     }
 
