@@ -41,10 +41,10 @@ main(int argc, char **argv) {
 
     if (myRodsArgs.mountCollection == True && nArgv != 2) {      
 	/* must have 2 inputs */
-        usage (argv[0]);
+        usage ();
         exit (1);
     } else if (nArgv < 1) {
-        usage (argv[0]);
+        usage ();
         exit (1);
     }
 
