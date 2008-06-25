@@ -102,6 +102,9 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
 
    getVar = getenv("irodsEnvFile");
    if (getVar!=NULL && *getVar!='\0') {
+#ifdef windows_platform
+       getVar = strdup(getenv("irodsEnvFile"));
+#endif
       rstrcpy(configFileName, findNextTokenAndTerm(getVar), LONG_NAME_LEN);
       rodsLog(LOG_NOTICE,
 	      "environment variable set, irodsEnvFile=%s",
