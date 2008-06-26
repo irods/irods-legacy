@@ -42,6 +42,9 @@ int
 structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
 int
 unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
+int
+structFileSupport (rsComm_t *rsComm, char *collection, char *collType, 
+rescInfo_t *rescInfo);
 #else
 #define RS_PHY_PATH_REG NULL
 #endif

@@ -433,10 +433,11 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     dataObjInfo_t *dataObjInfo = NULL;
     char *structFilePath = NULL;
     dataObjInp_t dataObjInp;
-    char *tmpStr;
+    char *collType;
     int len;
     rodsObjStat_t *rodsObjStatOut = NULL;
     specCollCache_t *specCollCache = NULL;
+    rescInfo_t *rescInfo = NULL;
 
     if ((structFilePath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
       == NULL) {
@@ -444,6 +445,14 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
           "structFileReg: No structFilePath input for %s",
           phyPathRegInp->objPath);
         return (SYS_INVALID_FILE_PATH);
+    }
+
+    collType = getValByKey (&phyPathRegInp->condInput, COLLECTION_TYPE_KW);
+    if (collType == NULL) {
+        rodsLog (LOG_ERROR,
+          "structFileReg: Bad COLLECTION_TYPE_KW for structFilePath %s",
+              dataObjInp.objPath);
+            return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     len = strlen (phyPathRegInp->objPath);
@@ -500,25 +509,28 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
               dataObjInp.objPath, status);
             return (status);
 	} else {
+	    rescInfo = L1desc[myStatus].dataObjInfo->rescInfo;
 	    dataObjCloseInp_t dataObjCloseInp;
 	    dataObjCloseInp.l1descInx = myStatus;
 	    rsDataObjClose (rsComm, &dataObjCloseInp);
 	}
+    } else {
+	rescInfo = dataObjInfo->rescInfo;
+    }
+
+    if (!structFileSupport (rsComm, phyPathRegInp->objPath, 
+      collType, rescInfo)) {
+        rodsLog (LOG_ERROR,
+          "structFileReg: structFileDriver type %s does not exist for %s",
+          collType, dataObjInp.objPath);
+        return (SYS_NOT_SUPPORTED);
     }
 
     /* mk the collection */
 
-    tmpStr = getValByKey (&phyPathRegInp->condInput, COLLECTION_TYPE_KW);
-    if (tmpStr == NULL) {
-        rodsLog (LOG_ERROR,
-          "structFileReg: Bad COLLECTION_TYPE_KW for structFilePath %s",
-              dataObjInp.objPath);
-            return (SYS_INTERNAL_NULL_INPUT_ERR);
-    } 
-
     memset (&collCreateInp, 0, sizeof (collCreateInp));
     rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
-    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, tmpStr);
+    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, collType);
 
     /* have to use dataObjInp.objPath because structFile path was removed */ 
     addKeyVal (&collCreateInp.condInput, COLLECTION_INFO1_KW, 
@@ -534,3 +546,44 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     return (status);
 }
 
+int
+structFileSupport (rsComm_t *rsComm, char *collection, char *collType, 
+rescInfo_t *rescInfo)
+{
+    rodsStat_t *myStat = NULL;
+    int status;
+    subFile_t subFile;
+    specColl_t specColl;
+
+    if (rsComm == NULL || collection == NULL || collType == NULL || 
+      rescInfo == NULL) return 0;
+
+    memset (&subFile, 0, sizeof (subFile));
+    memset (&specColl, 0, sizeof (specColl));
+    /* put in some fake path */
+    subFile.specColl = &specColl;
+    rstrcpy (specColl.collection, collection, MAX_NAME_LEN);
+    specColl.collClass = STRUCT_FILE_COLL;
+    if (strcmp (collType, HAAW_STRUCT_FILE_STR) == 0) { 
+        specColl.type = HAAW_STRUCT_FILE_T;
+    } else if (strcmp (collType, TAR_STRUCT_FILE_STR) == 0) {
+	specColl.type = TAR_STRUCT_FILE_T;
+    } else {
+	return (0);
+    }
+    snprintf (specColl.objPath, MAX_NAME_LEN, "%s/myFakeFile",
+      collection);
+    rstrcpy (specColl.resource, rescInfo->rescName, NAME_LEN);
+    rstrcpy (specColl.phyPath, "/fakeDir1/fakeDir2/myFakeStructFile",
+      MAX_NAME_LEN);
+    rstrcpy (subFile.subFilePath, "/fakeDir1/fakeDir2/myFakeFile",
+      MAX_NAME_LEN);
+    rstrcpy (subFile.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+
+    status = rsSubStructFileStat (rsComm, &subFile, &myStat);
+
+    if (status == SYS_NOT_SUPPORTED)
+	return (0);
+    else
+	return (1);
+}
