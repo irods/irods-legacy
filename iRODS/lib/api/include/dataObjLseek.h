@@ -46,7 +46,9 @@ extern "C" {
  *	whence - SEEK_SET, SEEK_CUR and SEEK_END
  *
  * OutPut -
- *   irodsLong_t status. If >= 0, the offset. < 0 ==> error.
+ *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+ *   fileLseekOut_t **dataObjLseekOut. Relevant items are:
+ *	offset - the new offset
  */
 
 int

@@ -43,6 +43,18 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
+/* rcDataObjRead - Read an opened iRods data object descriptor.
+ * Input -
+ *   rcComm_t *conn - The client connection handle.
+ *   dataObjReadInp_t *fileReadInp - Relevant items are:
+ *      l1descInx - the iRods data object descriptor to read.
+ *      len - the number of bytes to read
+ *
+ * OutPut -
+ *   int status of the operation - >= 0 ==> success, < 0 ==> failure.
+ *   bytesBuf_t *dataObjReadOutBBuf - the bytesBuf for the read output. 
+ */
+
 int
 rcDataObjRead (rcComm_t *conn, dataObjReadInp_t *fileReadInp,
 bytesBuf_t *dataObjReadOutBBuf);

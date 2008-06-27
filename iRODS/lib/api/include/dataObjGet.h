@@ -43,19 +43,19 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjget - Get (download) a iRods data object.
+/* rcDataObjGet - Get (download) a iRods data object.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:
  *      objPath - the path of the data object.
+ *      numThreads - Number of threads to use. NO_THREADING ==> no threading,
+ *         0 ==> server will decide (default), >0 ==> number of threads.
  *      openFlags - should be set to O_RDONLY.
  *      condInput - conditional Input
  *	    FORCE_FLAG_KW - overwrite an existing data object
  *          REPL_NUM_KW  - "value" = The replica number of the copy to
  *              download.
  *          VERIFY_CHKSUM_KW - verify the checksum of the download file.
- *          REPL_NUM_KW - the "value" gives the replica number of the
- *            copy to checksum.
  *   return value - The status of the operation.
  */
 int
