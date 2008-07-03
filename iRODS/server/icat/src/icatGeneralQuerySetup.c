@@ -13,6 +13,12 @@
   more meaningful name to the client and allows the Where clause to do
   multiple comparisons of fields in the same table in different ways.
 
+  The last argument to sTable is 0 or 1 to indicate if the table
+  is a 'cycler'.  When 1, the the sql generation function will stop
+  at this table to avoid cycles in the graph.  We had some set but
+  currently all are 0 because they are natural terminators; that is,
+  each table has either links that can be used or no further links.
+
   A series for sColumns calls are made to map the #define values to
   tables and columns.
 
@@ -99,26 +105,22 @@ icatGeneralQuerySetup() {
   sTable( "r_met2_au_user_main", "r_user_main r_met2_au_user_main", 0);
   sTable( "r_rule_au_user_main", "r_user_main r_rule_au_user_main", 0);
 
-  sTable( "r_resc_tokn_accs", "r_tokn_main r_resc_tokn_accs", 1);
-  sTable( "r_coll_tokn_accs", "r_tokn_main r_coll_tokn_accs", 0); /* changed from 1 like data */
-  /* Needed to change the 1 to 0 (to indicate it is not a cycler)
-     to get the queries on COL_DATA_ACCESS_NAME to work; seems OK,
-     but could cause problems */
-/*sTable( "r_data_tokn_accs", "r_tokn_main r_data_tokn_accs", 1);  */
+  sTable( "r_resc_tokn_accs", "r_tokn_main r_resc_tokn_accs", 0);
+  sTable( "r_coll_tokn_accs", "r_tokn_main r_coll_tokn_accs", 0);
   sTable( "r_data_tokn_accs", "r_tokn_main r_data_tokn_accs", 0);
 
-  sTable( "r_rule_tokn_accs", "r_tokn_main r_rule_tokn_accs", 1);
-  sTable( "r_met2_tokn_accs", "r_tokn_main r_met2_tokn_accs", 1);
-  sTable( "r_resc_tokn_deny_accs", "r_tokn_main r_resc_tokn_deny_accs", 1);
-  sTable( "r_coll_tokn_deny_accs", "r_tokn_main r_coll_tokn_deny_accs", 1);
-  sTable( "r_data_tokn_deny_accs", "r_tokn_main r_data_tokn_deny_accs", 1);
-  sTable( "r_rule_tokn_deny_accs", "r_tokn_main r_rule_tokn_deny_accs", 1);
-  sTable( "r_met2_tokn_deny_accs", "r_tokn_main r_met2_tokn_deny_accs", 1);
-  sTable( "r_resc_tokn_audit", "r_tokn_main r_resc_tokn_audit", 1);
-  sTable( "r_coll_tokn_audit", "r_tokn_main r_coll_tokn_audit", 1);
-  sTable( "r_data_tokn_audit", "r_tokn_main r_data_tokn_audit", 1);
-  sTable( "r_rule_tokn_audit", "r_tokn_main r_rule_tokn_audit", 1);
-  sTable( "r_met2_tokn_audit", "r_tokn_main r_met2_tokn_audit", 1);
+  sTable( "r_rule_tokn_accs", "r_tokn_main r_rule_tokn_accs", 0);
+  sTable( "r_met2_tokn_accs", "r_tokn_main r_met2_tokn_accs", 0);
+  sTable( "r_resc_tokn_deny_accs", "r_tokn_main r_resc_tokn_deny_accs", 0);
+  sTable( "r_coll_tokn_deny_accs", "r_tokn_main r_coll_tokn_deny_accs", 0);
+  sTable( "r_data_tokn_deny_accs", "r_tokn_main r_data_tokn_deny_accs", 0);
+  sTable( "r_rule_tokn_deny_accs", "r_tokn_main r_rule_tokn_deny_accs", 0);
+  sTable( "r_met2_tokn_deny_accs", "r_tokn_main r_met2_tokn_deny_accs", 0);
+  sTable( "r_resc_tokn_audit", "r_tokn_main r_resc_tokn_audit", 0);
+  sTable( "r_coll_tokn_audit", "r_tokn_main r_coll_tokn_audit", 0);
+  sTable( "r_data_tokn_audit", "r_tokn_main r_data_tokn_audit", 0);
+  sTable( "r_rule_tokn_audit", "r_tokn_main r_rule_tokn_audit", 0);
+  sTable( "r_met2_tokn_audit", "r_tokn_main r_met2_tokn_audit", 0);
   sTable( "r_resc_meta_main", "r_meta_main r_resc_meta_main", 0);
   sTable( "r_coll_meta_main", "r_meta_main r_coll_meta_main", 0);
   sTable( "r_data_meta_main", "r_meta_main r_data_meta_main", 0);
@@ -266,6 +268,8 @@ icatGeneralQuerySetup() {
   sColumn(COL_AUDIT_COMMENT,     "r_objt_audit", "r_comment");
   sColumn(COL_AUDIT_CREATE_TIME, "r_objt_audit", "create_ts");
   sColumn(COL_AUDIT_MODIFY_TIME, "r_objt_audit", "modify_ts");
+
+  sColumn(COL_COLL_USER_NAME, "r_coll_user_main", "user_name");
 
   /* Define the Foreign Key links between tables */
   sFklink("r_coll_main", "r_data_main", "r_coll_main.coll_id = r_data_main.coll_id");

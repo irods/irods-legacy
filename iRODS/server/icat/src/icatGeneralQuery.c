@@ -85,6 +85,7 @@ int nToFind;
 char tableAbbrevs;
 
 int debug=0;
+int debug2=0;
 
 /*
  Used by fklink (below) to find an existing name and return the
@@ -118,6 +119,9 @@ sFklink(char *table1, char *table2, char *connectingSQL) {
    strncpy(Links[nLinks].connectingSQL, connectingSQL, MAX_TSQL);
    if (debug>1) printf("link %d is from %d to %d\n", nLinks, 
 	  Links[nLinks].table1,
+	  Links[nLinks].table2);
+   if (debug2) printf("T%2.2d L%2.2d T%2.2d\n", 
+	  Links[nLinks].table1,  nLinks, 
 	  Links[nLinks].table2);
    nLinks++;
    return(0);
