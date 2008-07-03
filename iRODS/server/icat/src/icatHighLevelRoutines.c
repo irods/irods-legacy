@@ -2697,6 +2697,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    int auditId;
    char auditComment[110];
    char auditUserName[110];
+   int userSettingOwnPassword;
 
    if (logSQL) rodsLog(LOG_SQL, "chlModUser");
 
@@ -2708,11 +2709,19 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       return (CAT_INVALID_ARGUMENT);
    }
 
-   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   userSettingOwnPassword=0;
+   if ( strcmp(option,"password")==0 &&
+        strcmp(userName, rsComm->clientUser.userName)==0)  {
+      userSettingOwnPassword=1;
    }
-   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+
+   if (userSettingOwnPassword==0) {
+      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+      if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
    }
 
    status = getLocalZone();

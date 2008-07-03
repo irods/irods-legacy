@@ -88,6 +88,15 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
        return(status);
     }
 
+    if (strcmp(modAVUMetadataInp->arg0,"userpw")==0) {
+       status = chlModUser(rsComm, 
+			   modAVUMetadataInp->arg1,
+			   modAVUMetadataInp->arg2,
+			   modAVUMetadataInp->arg3);
+       if (status != 0) chlRollback(rsComm);
+       return(status);
+    }
+
     return(CAT_INVALID_ARGUMENT);
 
 } 
