@@ -147,8 +147,6 @@ int
 queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut);
 int
 queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut);
-char *
-useridToName(rcComm_t *conn, char *username);
 int
 extractRodsObjType (rodsPath_t *rodsPath, sqlResult_t *dataId, 
 sqlResult_t *replStatus, sqlResult_t *chksum, sqlResult_t *dataSize, 

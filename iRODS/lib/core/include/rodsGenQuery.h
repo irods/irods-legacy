@@ -241,4 +241,7 @@ primary ordering column.
 #define COL_AUDIT_CREATE_TIME 1204
 #define COL_AUDIT_MODIFY_TIME 1205
 
+/* R_COLL_USER_MAIN (r_user_main for Collection information) */
+#define COL_COLL_USER_NAME    1300
+
 #endif	/* RODS_GEN_QUERY_H */
