@@ -446,8 +446,6 @@ queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
     int status;
     char tmpStr[MAX_NAME_LEN];
 
-    sqlResult_t *collId;
-
     if (collName == NULL || genQueryOut == NULL) {
         return (USER__NULL_INPUT_ERR);
     }
@@ -458,34 +456,19 @@ queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
       (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
     memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
 
-    addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
-
-    snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", collName);
-
-    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
-    genQueryInp.maxRows = MAX_SQL_ROWS;
-
-    status =  rcGenQuery (conn, &genQueryInp, &myGenQueryOut);
-    if (status) return(status);
-
-    if ((collId = getSqlResultByInx (myGenQueryOut, COL_COLL_ID)) == NULL) {
-        rodsLog (LOG_ERROR,
-          "queryCollAcl: getSqlResultByInx for COL_COLL_ID failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
     clearGenQueryInp (&genQueryInp);
 
-    addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_USER_ID, 1);
-    addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
 
-    snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", collId->value);
-    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_ACCESS_COLL_ID, tmpStr);
+    addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, 1);
 
     snprintf (tmpStr, MAX_NAME_LEN, "='%s'", "access_type");
 
     /* Currently necessary since other namespaces exist in the token table */
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_TOKEN_NAMESPACE, tmpStr);
+ 
+    snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", collName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -493,48 +476,6 @@ queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
 
     return (status);
 
-}
-
-/*
-Convert a userid to a username; gets the table (once) and then
-searches for a match; holds on to the table for possible 
-subsequent calls.
-This is a temporary function to work around a generalQuery problem.
- */
-char *
-useridToName(rcComm_t *conn, char *username) {
-    genQueryInp_t genQueryInp;
-    static genQueryOut_t *myGenQueryOut=0;
-    int status, i, j;
-    char *tResult, *tResult2; 
-
-    if (myGenQueryOut==0) {
-       memset (&genQueryInp, 0, sizeof (genQueryInp_t));
-
-       myGenQueryOut = 
-	  (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
-       memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
-
-       addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
-       addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
-
-       genQueryInp.maxRows = MAX_SQL_ROWS;
-
-       status =  rcGenQuery (conn, &genQueryInp, &myGenQueryOut);
-       if (status) return("QueryError");
-    }
-    for (i=0;i<myGenQueryOut->attriCnt;i++) {
-       for (j=0;j<myGenQueryOut->rowCnt;j++) {
-	  tResult = myGenQueryOut->sqlResult[i].value;
-	  tResult += j*myGenQueryOut->sqlResult[i].len;
-	  if (strcmp(tResult, username)==0) {
-	     tResult2 = myGenQueryOut->sqlResult[i+1].value;
-	     tResult2 += j*myGenQueryOut->sqlResult[i+1].len;
-	     return(tResult2);
-	  }
-       }
-    }
-    return(username);
 }
 
 int

@@ -830,7 +830,7 @@ printCollAcl (rcComm_t *conn, char *collName)
         return (status);
     }
 
-    if ((userName = getSqlResultByInx (genQueryOut, COL_COLL_ACCESS_USER_ID)) == NULL) {
+    if ((userName = getSqlResultByInx (genQueryOut, COL_COLL_USER_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
           "printCollAcl: getSqlResultByInx for COL_COLL_USER_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
@@ -845,7 +845,7 @@ printCollAcl (rcComm_t *conn, char *collName)
     for (i = 0; i < genQueryOut->rowCnt; i++) {
 	userNameStr = &userName->value[userName->len * i];
 	dataAccessStr = &dataAccess->value[dataAccess->len * i];
-	printf ("%s:%s   ", useridToName(conn, userNameStr), dataAccessStr);
+	printf ("%s:%s   ",  userNameStr, dataAccessStr);
     }
     
     printf ("\n");
