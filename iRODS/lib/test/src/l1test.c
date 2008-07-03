@@ -156,8 +156,6 @@ main(int argc, char **argv)
 
     if (l1descInx3 < 0) {
         fprintf (stderr, "rcDataObjRepl error. status = %d\n", l1descInx3);
-        rcDisconnect (conn);
-        exit (1);
     } else {
         printf ("rcDataObjRepl: l1descInx3 = %d\n", l1descInx3);
     }
@@ -562,7 +560,7 @@ main(int argc, char **argv)
     addKeyVal (&collCreateInp.condInput, FORCE_FLAG_KW, "");
     addKeyVal (&collCreateInp.condInput, IRODS_RMTRASH_KW, "");
 
-    l1descInx1 = rcRmColl (conn, &collCreateInp);
+    l1descInx1 = rcRmColl (conn, &collCreateInp, True);
 
     if (l1descInx1 < 0) {
         fprintf (stderr, "rcRmColl error. status = %d\n", l1descInx1);
