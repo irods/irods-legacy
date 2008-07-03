@@ -39,7 +39,8 @@ rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
 
     l1descInx = dataObjCloseInp->l1descInx;
     if (status >= 0) {
-	if (L1desc[l1descInx].oprType == PUT_OPR) {
+	if (L1desc[l1descInx].oprType == PUT_OPR || 
+	  L1desc[l1descInx].oprType == CREATE_OPR) {
             initReiWithDataObjInp (&rei, rsComm, L1desc[l1descInx].dataObjInp);
             rei.doi = L1desc[l1descInx].dataObjInfo;
 #ifdef TEST_QUE_RULE

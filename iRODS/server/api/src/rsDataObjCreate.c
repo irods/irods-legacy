@@ -137,6 +137,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 		    L1desc[l1descInx].copiesNeeded = copiesNeeded;
 		}
 	    }
+	    L1desc[l1descInx].oprType = CREATE_OPR;
 	    freeAllRescGrpInfo (myRescGrpInfo);
             return (l1descInx);
 	}
