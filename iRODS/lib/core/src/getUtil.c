@@ -161,6 +161,17 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 	  rodsArgs->replNumValue);
     }
 
+    if (rodsArgs->resource == True) {
+        if (rodsArgs->resourceString == NULL) {
+            rodsLog (LOG_ERROR,
+              "initCondForPut: NULL resourceString error");
+            return (USER__NULL_INPUT_ERR);
+        } else {
+            addKeyVal (&dataObjOprInp->condInput, RESC_NAME_KW,
+              rodsArgs->resourceString);
+        }
+    }
+
     memset (rodsRestart, 0, sizeof (rodsRestart_t));
     if (rodsArgs->restart == True) {
         int status;

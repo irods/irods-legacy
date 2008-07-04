@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hfKN:n:rvVX:";
+    optStr = "hfKN:n:rvVX:R:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -81,11 +81,11 @@ void
 usage () {
    char *msgs[]={
 "Usage: iget [-fKrvV] [-n replNumber] [-N numThreads] [-X restartFile]",
-"srcDataObj|srcCollection ... destLocalFile|destLocalDir",
+"[-R resource] srcDataObj|srcCollection ... destLocalFile|destLocalDir",
 "Usage : iget [-fKvV] [-n replNumber] [-N numThreads] [-X restartFile]",
-"srcDataObj|srcCollection",
+"[-R resource] srcDataObj|srcCollection",
 "Usage : iget [-fKvV] [-n replNumber] [-N numThreads] [-X restartFile]",
-"srcDataObj ... -",
+"[-R resource] srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
 " ",
@@ -109,6 +109,7 @@ usage () {
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.", 
 " -r  recursive - retrieve subcollections",
+" -R  resource - the preferred resource",
 " -v  verbose",
 " -V  Very verbose",
 "     restartFile input specifies a local file that contains the restart info.",
