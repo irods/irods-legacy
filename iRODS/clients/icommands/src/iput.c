@@ -103,6 +103,7 @@ usage ()
 "command should be used to make a replica of an existing copy.", 
 " ",
 "Options are:",
+" -D  dataType - the data type string",
 " -f  force - write data-object even it exists already; overwrite it",
 " -k  checksum - calculate a checksum on the data",
 " -K  verify checksum - calculate and verify the checksum on the data",
