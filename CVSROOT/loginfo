@@ -27,5 +27,5 @@
 
 ALL	Mail -s %s mwan@sdsc.edu,bzhu@sdsc.edu,sheauc@sdsc.edu,arun@sdsc.edu,kremenek@sdsc.edu,schroede@sdsc.edu,sekar@sdsc.edu,sifang@sdsc.edu,antoine@sdsc.edu,chienyi@sdsc.edu,lindsey@sdsc.edu
 jargon	Mail -s %s iktome@sdsc.edu
-ALL Mail -s (echo"[iRODS_CVS:] "; echo %s) arun_bit@yahoo.com
+ALL Mail -s "[iRODS_CVS]  %s" arun_bit@yahoo.com
 #SRB2_0_0rel	Mail -s %s srb@sdsc.edu
