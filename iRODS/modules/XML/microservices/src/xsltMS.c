@@ -39,6 +39,8 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	xsltStylesheetPtr style = NULL;
 	xmlDocPtr xslSheet, doc, res;
 
+	/* for output buffer */
+	bytesBuf_t *mybuf;
 
 
 	/*********************************  USUAL INIT PROCEDURE **********************************/
@@ -175,8 +177,15 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 	/************************************** WE'RE DONE **************************************/
 
+
+	/* copy the result string into an output buffer */
+	mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+	mybuf->buf = (void *)outStr;
+	mybuf->len = strlen(outStr);
+
+
 	/* send results out to msParamOut */
-	fillStrInMsParam (msParamOut, outStr);
+	fillBufLenInMsParam (msParamOut, mybuf->len, mybuf);
 
 	return (rei->status);
 }
