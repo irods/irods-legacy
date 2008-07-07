@@ -26,7 +26,7 @@ MSIncDir =	$(modulesDir)/XML/microservices/include
 #
 # Objects
 #
-OBJECTS =	$(MSObjDir)/xsltMS.o
+OBJECTS =	$(MSObjDir)/xsltMS.o $(MSObjDir)/xmlMS.o
 
 
 
