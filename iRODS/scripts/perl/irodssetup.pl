@@ -280,6 +280,23 @@ sub promptUser( )
 	{
 		# There is no log file from the prompt script.
 		# Its errors are printed out directly.
+
+		# But if there is a blank in the path name (that is,
+		# within a folder name), 'system' will fail and no
+		# messages are displayed.  Blanks are common on Macs,
+		# but can be done on other OSes too.  So check for
+		# this and print a message.  We could modify the
+		# $irodsPrompt path to have '\ ' instead of ' ' but
+		# even with that other errors occur later.  So it is
+		# better to just avoid it.  A message, tho, is needed.
+
+		if ($irodsPrompt =~ / / ) {
+			printError(
+"There is a blank in one of the folder names above 'iRODS' which will
+cause various errors.  Please move iRODS to another folder or rename
+the containing folder so as to have no blanks.\n");
+		}
+
 		exit( 1 );
 	}
 	printNotice( "\n\n" );
