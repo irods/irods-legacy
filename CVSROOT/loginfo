@@ -27,7 +27,7 @@
 ^SRB2_0_0rel Mail -s "[iRODS_CVS] %s" mwan@sdsc.edu,bzhu@sdsc.edu,sheauc@sdsc.edu,arun@sdsc.edu,kremenek@sdsc.edu,schroede@sdsc.edu,sekar@sdsc.edu,sifang@sdsc.edu,antoine@sdsc.edu,chienyi@sdsc.edu,lindsey@sdsc.edu
 ^iRODS Mail -s %s irods-chat@irods.org 
 ^jargon	Mail -s %s iktome@sdsc.edu
-^CVSROOT Mail -s "%{}" arun_bit@yahoo.com
+^CVSROOT Mail -s %s arun_bit@yahoo.com
 DEFAULT Mail -s "%{} unknown CVS COmmit" arun@irods.org
 #ALL Mail -s "[iRODS_CVS:]  %s" arun_bit@yahoo.com
 #SRB2_0_0rel	Mail -s %s srb@sdsc.edu
