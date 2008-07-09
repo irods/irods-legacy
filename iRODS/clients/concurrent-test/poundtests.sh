@@ -3,7 +3,7 @@
 # SDL Usage # concurrent tests
 # 
 
-set -x 
+#set -x 
 
 verboseflag=1
 numoferrors=1
@@ -31,14 +31,14 @@ makefiles () {
 	case "$dir" in
 		"zerofiles")
 			echo "making zerofiles"
-			for ((i=1;i<=100;i+=1)); do
+			for ((i=1;i<=1000;i+=1)); do
 				touch zerofiles/zerofile$i
 			done
 		;;
 
 		"smallfiles")
 			echo "making smallfiles"
-			for ((i=1;i<=10;i+=1)); do
+			for ((i=1;i<=100;i+=1)); do
 				echo "abcdefghijklmnopqrstuvwxyz" > smallfiles/smallfile$i
 			done
 		;;
@@ -47,7 +47,7 @@ makefiles () {
 			cd src; make clean; make; cd ..
 			echo "making bigfiles"
 			$thisdir/src/writebigfile
-			for ((i=1;i<=1;i+=1)); do
+			for ((i=1;i<=10;i+=1)); do
 				cp bigfile bigfiles/bigfile$i				
 			done
 			/bin/rm bigfile
