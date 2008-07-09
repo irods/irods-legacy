@@ -15,7 +15,7 @@
 #include "tarSubStructFileDriver.h"
 #include "miscServerFunct.h"
 
-#define NO_SUB_STRUCT_FILE_FUNCTIONS  intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport
+#define NO_SUB_STRUCT_FILE_FUNCTIONS  intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport 
 
 structFileDriver_t StructFileDriverTable[] = {
 #ifdef HAAW_STRUCT_FILE
@@ -24,7 +24,8 @@ structFileDriver_t StructFileDriverTable[] = {
       haawSubStructFileUnlink, haawSubStructFileStat, haawSubStructFileFstat, 
       haawSubStructFileLseek, haawSubStructFileRename, haawSubStructFileMkdir,
       haawSubStructFileRmdir, haawSubStructFileOpendir, haawSubStructFileReaddir,
-      haawSubStructFileClosedir, haawSubStructFileTruncate haawStructFileSync},
+      haawSubStructFileClosedir, haawSubStructFileTruncate haawStructFileSync,
+      haawStructFileExtract},
 #else
     {HAAW_STRUCT_FILE_T, NO_SUB_STRUCT_FILE_FUNCTIONS},
 #endif
@@ -34,7 +35,8 @@ structFileDriver_t StructFileDriverTable[] = {
       tarSubStructFileUnlink, tarSubStructFileStat, tarSubStructFileFstat, 
       tarSubStructFileLseek, tarSubStructFileRename, tarSubStructFileMkdir,
       tarSubStructFileRmdir, tarSubStructFileOpendir, tarSubStructFileReaddir,
-      tarSubStructFileClosedir, tarSubStructFileTruncate, tarStructFileSync},
+      tarSubStructFileClosedir, tarSubStructFileTruncate, tarStructFileSync,
+      tarStructFileExtract},
 #else
     {TAR_STRUCT_FILE_T, NO_SUB_STRUCT_FILE_FUNCTIONS},
 #endif

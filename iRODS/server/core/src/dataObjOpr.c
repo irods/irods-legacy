@@ -1490,3 +1490,58 @@ rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm)
     return (0);
 }
 
+int
+initStructFileOprInp (rsComm_t *rsComm, 
+structFileOprInp_t *structFileOprInp,
+structFileExtAndRegInp_t *structFileExtAndRegInp, 
+dataObjInfo_t *dataObjInfo)
+{
+    int status;
+    vaultPathPolicy_t vaultPathPolicy;
+    int addUserNameFlag;
+
+    memset (structFileOprInp, 0, sizeof (structFileOprInp_t));
+    structFileOprInp->specColl = malloc (sizeof (specColl_t));
+    memset (structFileOprInp->specColl, 0, sizeof (specColl_t));
+    if (strcmp (dataObjInfo->dataType, TAR_DT_STR) == 0) {
+        structFileOprInp->specColl->type = TAR_STRUCT_FILE_T;
+    } else if (strcmp (dataObjInfo->dataType, HAAW_DT_STR) == 0) {
+        structFileOprInp->specColl->type = HAAW_STRUCT_FILE_T;
+    } else {
+        rodsLog (LOG_ERROR,
+          "initStructFileOprInp: objType %s of %s is not a struct file",
+          dataObjInfo->dataType, dataObjInfo->objPath);
+        return SYS_OBJ_TYPE_NOT_STRUCT_FILE;
+    }
+
+    rstrcpy (structFileOprInp->specColl->collection,
+      structFileExtAndRegInp->collection, MAX_NAME_LEN);
+    rstrcpy (structFileOprInp->specColl->objPath,
+      structFileExtAndRegInp->objPath, MAX_NAME_LEN);
+    structFileOprInp->specColl->collClass = STRUCT_FILE_COLL;
+    rstrcpy (structFileOprInp->specColl->resource, dataObjInfo->rescName,
+      NAME_LEN);
+    rstrcpy (structFileOprInp->specColl->phyPath,
+      dataObjInfo->filePath, MAX_NAME_LEN);
+    rstrcpy (structFileOprInp->addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+      NAME_LEN);
+    /* set the cacheDir */
+    status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
+    if (status < 0) {
+        return (status);
+    }
+    /* don't do other type of Policy except GRAFT_PATH_S */
+    if (vaultPathPolicy.scheme == GRAFT_PATH_S) {
+        addUserNameFlag = vaultPathPolicy.addUserName;
+    } else {
+        addUserNameFlag = 1;
+    }
+    status = setPathForGraftPathScheme (structFileExtAndRegInp->collection,
+      dataObjInfo->rescInfo->rescVaultPath, addUserNameFlag,
+      rsComm->clientUser.userName, vaultPathPolicy.trimDirCnt,
+      structFileOprInp->specColl->cacheDir);
+
+    return (status);
+}
+
+

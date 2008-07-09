@@ -148,6 +148,9 @@ keyValPair_t *condInput);
 int
 requeDataObjInfoByDestResc (dataObjInfo_t **dataObjInfoHead,
 keyValPair_t *condInput, int writeFlag, int topFlag);
+int
+requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput, int writeFlag, int topFlag);
 int 
 resolveSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfo, int writeFlag);

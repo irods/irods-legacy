@@ -99,6 +99,9 @@
 #define CLOSE_COLLECTION_AN 			661
 #define COLL_REPL_AN 			662
 #define RM_COLL_AN 			663
+#define STRUCT_FILE_EXTRACT_AN 			664
+#define STRUCT_FILE_EXT_AND_REG_AN 			665
+#define STRUCT_FILE_BUNDLE_AN 			666
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

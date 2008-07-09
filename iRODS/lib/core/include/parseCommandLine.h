@@ -77,8 +77,8 @@ typedef struct {
    int verbose;
    int veryVerbose;
    int zone;
-
    int verify;
+   int extract; 
    int restart;
    char *restartFileString;
    int version;

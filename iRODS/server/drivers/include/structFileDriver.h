@@ -33,6 +33,7 @@ typedef struct {
     int         	(*subStructFileClosedir)();
     int         	(*subStructFileTruncate)();
     int         	(*structFileSync)();
+    int         	(*structFileExtract)();
 } structFileDriver_t;
 
 #define CACHE_DIR_STR "cacheDir"
@@ -87,6 +88,8 @@ int
 subStructFileOpendir (rsComm_t *rsComm, subFile_t *subFile);
 int
 structFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+int
+structFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 int
 initStructFileDesc ();
 int

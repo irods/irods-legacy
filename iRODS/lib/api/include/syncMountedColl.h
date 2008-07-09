@@ -30,6 +30,8 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType);
 
 #define PURGE_STRUCT_FILE_CACHE	0x1 
 #define DELETE_STRUCT_FILE	0x2 
+#define NO_REG_COLL_INFO	0x4	/* don't register collInfo even if
+					 * struct file is changed */ 
 
 #ifdef  __cplusplus
 extern "C" {

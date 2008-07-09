@@ -15,6 +15,8 @@
 #include "dataObjInpOut.h"
 #include "fileRename.h"
 #include "miscUtil.h"
+#include "structFileSync.h"
+#include "structFileExtAndReg.h"
 
 #define NUM_L1_DESC	100 	/* number of L1Desc */
 
@@ -171,5 +173,9 @@ int
 freeCollHandle (int handleInx);
 int
 rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm);
+int
+initStructFileOprInp (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
+structFileExtAndRegInp_t *structFileExtAndRegInp,
+dataObjInfo_t *dataObjInfo);
 #endif	/* DATA_OBJ_OPR */
 

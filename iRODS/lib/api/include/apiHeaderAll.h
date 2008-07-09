@@ -107,4 +107,7 @@
 #include "closeCollection.h"
 #include "collRepl.h"
 #include "rmColl.h"
+#include "structFileExtract.h"
+#include "structFileExtAndReg.h"
+#include "structFileBundle.h"
 #endif	/* API_HEADER_ALL_H */

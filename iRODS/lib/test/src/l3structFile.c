@@ -23,6 +23,7 @@ main(int argc, char **argv)
     fileLseekOut_t *subStructFileLseekOut = NULL;
     subStructFileRenameInp_t subStructFileRenameInp;
     rodsDirent_t *rodsDirent = NULL;
+    structFileOprInp_t structFileOprInp;
 
     status = getRodsEnv (&myRodsEnv);
 
@@ -45,6 +46,23 @@ main(int argc, char **argv)
        rcDisconnect(conn);
        exit (7);
     }
+
+    memset (&structFileOprInp, 0, sizeof (structFileOprInp));
+    structFileOprInp.specColl = malloc (sizeof (specColl_t));
+    rstrcpy (structFileOprInp.specColl->collection, 
+      "/tempZone/home/rods/dirx", MAX_NAME_LEN);
+    structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
+    structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
+    rstrcpy (structFileOprInp.specColl->resource, "demoResc", NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->phyPath, 
+      "/data/mwan/rods/Vault8/rods/tarfiles/my.tar", MAX_NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->cacheDir,
+      "/data/mwan/rods/Vault8/rods/dirx", MAX_NAME_LEN);
+    rstrcpy (structFileOprInp.addr.hostAddr, "srbbrick8.sdsc.edu", NAME_LEN);
+
+    status = rcStructFileExtract (conn, &structFileOprInp);
+
+    printf ("Porcessed rcStructFileExtract, status = %d\n", status);
 
     memset (&subFile, 0, sizeof (subFile));
     memset (&specColl, 0, sizeof (specColl));

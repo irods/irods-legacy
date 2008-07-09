@@ -241,7 +241,11 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 
       /* The following are also -- options */
       case 'x':
+#if 0
 	 rodsArgs->verify=True;
+#else
+	 rodsArgs->extract=True;
+#endif
          break;
       case 'X':
          rodsArgs->restart=True;

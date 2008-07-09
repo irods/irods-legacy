@@ -29,6 +29,11 @@ value string based on a keyword.
 extern "C" {
 #endif
 
+/* defines some commonly used dataTypes */
+#define GENERIC_DT_STR	"generic"
+#define TAR_DT_STR	"tar file"
+#define HAAW_DT_STR	"haaw file"
+
 typedef struct RescInfo
 {
     char rescName[NAME_LEN];

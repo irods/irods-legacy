@@ -305,6 +305,25 @@ structFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 }
 
 int
+structFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+{
+    structFileType_t myType;
+    int subStructFileInx;
+    int status;
+
+    myType = structFileOprInp->specColl->type;
+
+    if ((subStructFileInx = subStructFileIndexLookup (myType)) < 0) {
+        return (subStructFileInx);
+    }
+
+    status = StructFileDriverTable[subStructFileInx].structFileExtract (rsComm,
+      structFileOprInp);
+    return (status);
+
+}
+
+int
 initStructFileDesc ()
 {
     memset (StructFileDesc, 0,

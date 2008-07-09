@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to subStructFiles in the COPYRIGHT directory ***/
-/* subStructFileCreate.h  
+/* structFileSync.h  
  */
 
 #ifndef STRUCT_FILE_SYNC_H

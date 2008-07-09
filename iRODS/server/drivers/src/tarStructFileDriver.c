@@ -693,8 +693,10 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
                 return (status);
             }
 	    specColl->cacheDirty = 0;
-	    status = modCollInfo2 (rsComm, specColl, 0);
-            if (status < 0) return status;
+	    if ((structFileOprInp->oprType & NO_REG_COLL_INFO) == 0) {
+	        status = modCollInfo2 (rsComm, specColl, 0);
+                if (status < 0) return status;
+	    }
 	}
 
         if ((structFileOprInp->oprType & PURGE_STRUCT_FILE_CACHE) != 0) {
@@ -717,6 +719,64 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 	    }
         }
     }
+    return (status);
+}
+
+/* tarStructFileExtract - this is the handler for "structFileExtract"
+ * called by rsStructFileExtract.
+ */
+
+int
+tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+{
+    int structFileInx;
+    int status;
+    specColl_t *specColl;
+    int fileType;
+    rescInfo_t *rescInfo;
+
+    if (rsComm == NULL || structFileOprInp == NULL || 
+      structFileOprInp->specColl == NULL) {
+        rodsLog (LOG_ERROR,
+          "tarStructFileExtract: NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    specColl = structFileOprInp->specColl;
+
+    if ((structFileInx = allocStructFileDesc ()) < 0) {
+        return (structFileInx);
+    }
+
+    StructFileDesc[structFileInx].specColl = specColl;
+    StructFileDesc[structFileInx].rsComm = rsComm;
+
+    status = resolveResc (StructFileDesc[structFileInx].specColl->resource,
+      &StructFileDesc[structFileInx].rescInfo);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "tarStructFileExtract: resolveResc error for %s, status = %d",
+          specColl->resource, status);
+        freeStructFileDesc (structFileInx);
+        return (status);
+    }
+
+
+    rescInfo = StructFileDesc[structFileInx].rescInfo;
+    fileType = RescTypeDef[rescInfo->rescTypeInx].driverType;
+
+    mkFileDirR (fileType, rsComm, "/", specColl->cacheDir, DEFAULT_DIR_MODE);
+
+    status = extractTarFile (structFileInx);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "tarStructFileExtract:extract error for %s in cacheDir %s,errno=%d",
+             specColl->objPath, specColl->cacheDir, errno);
+            /* XXXX may need to remove the cacheDir too */
+        status = SYS_TAR_STRUCT_FILE_EXTRACT_ERR - errno;
+    }
+    freeStructFileDesc (structFileInx);
     return (status);
 }
 
@@ -758,10 +818,13 @@ rsTarStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
 	      NAME_LEN);
 	}
     } else {
+	StructFileDesc[structFileInx].specColl = specColl;
+#if 0	/* not real spec coll */
         rodsLog (LOG_NOTICE,
           "rsTarStructFileOpen: getSpecCollCache error for %s, status = %d",
           specColl->collection, status);
 	return (status);
+#endif
     }
 
     StructFileDesc[structFileInx].rsComm = rsComm;

@@ -2308,6 +2308,18 @@ keyValPair_t *condInput, int writeFlag, int topFlag)
 }
 
 int
+requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput, int writeFlag, int topFlag)
+{
+    char *rescName;
+
+      if ((rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
+        requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, topFlag);
+    }
+    return (0);
+}
+
+int
 resolveSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 dataObjInfo_t **dataObjInfo, int writeFlag)
 {

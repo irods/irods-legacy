@@ -72,7 +72,8 @@ OBJS =		\
 		$(objDir)/iuserinfo.o \
 		$(objDir)/imcoll.o \
 		$(objDir)/ierror.o \
-		$(objDir)/ipasswd.o
+		$(objDir)/ipasswd.o	\
+		$(objDir)/ibun.o
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -109,7 +110,8 @@ BINS =		\
 		$(binDir)/iuserinfo \
 		$(binDir)/imcoll \
 		$(binDir)/ierror \
-		$(binDir)/ipasswd
+		$(binDir)/ipasswd	\
+		$(binDir)/ibun
 
 
 

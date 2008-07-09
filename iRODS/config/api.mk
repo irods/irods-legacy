@@ -304,3 +304,12 @@ LIB_API_OBJS += $(libApiObjDir)/rcCollRepl.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsRmColl.o
 LIB_API_OBJS += $(libApiObjDir)/rcRmColl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsStructFileExtract.o
+LIB_API_OBJS += $(libApiObjDir)/rcStructFileExtract.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsStructFileExtAndReg.o
+LIB_API_OBJS += $(libApiObjDir)/rcStructFileExtAndReg.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsStructFileBundle.o
+LIB_API_OBJS += $(libApiObjDir)/rcStructFileBundle.o

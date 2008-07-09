@@ -61,7 +61,8 @@ LIB_CORE_OBJS =	\
 		$(libCoreObjDir)/sockComm.o \
 		$(libCoreObjDir)/stringOpr.o \
 		$(libCoreObjDir)/trimUtil.o	\
-		$(libCoreObjDir)/mcollUtil.o
+		$(libCoreObjDir)/mcollUtil.o	\
+		$(libCoreObjDir)/bunUtil.o
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
 endif
