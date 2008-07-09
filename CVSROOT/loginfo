@@ -24,7 +24,7 @@
 #DEFAULT (echo ""; id; echo %s; date; cat) >> $CVSROOT/CVSROOT/commitlog
 # or
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
-^SRB2_0_0rel Mail -s "[SRB_CVS]"%S mwan@sdsc.edu,bzhu@sdsc.edu,sheauc@sdsc.edu,arun@sdsc.edu,kremenek@sdsc.edu,schroede@sdsc.edu,sekar@sdsc.edu,sifang@sdsc.edu,antoine@sdsc.edu,chienyi@sdsc.edu,lindsey@sdsc.edu
+^SRB2_0_0rel Mail -s "[SRB_CVS]"%S mwan@sdsc.edu,bzhu@sdsc.edu,sheauc@sdsc.edu,arun@sdsc.edu,schroede@sdsc.edu,sekar@sdsc.edu,sifang@sdsc.edu,antoine@sdsc.edu,chienyi@sdsc.edu,lindsey@sdsc.edu
 ^iRODS Mail -s %S irods-chat@irods.org 
 ^jargon	Mail -s %S iktome@sdsc.edu
 ^CVSROOT Mail -s %S  arun_bit@yahoo.com
