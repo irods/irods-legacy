@@ -1,7 +1,7 @@
 # Makefile - makefile for commandtest files
 
-COMTESTOBJ = mydiff.o
-COMTESTBIN = mydiff
+COMTESTOBJ = writebigfile.o
+COMTESTBIN = writebigfile
 
 CC=gcc
 
