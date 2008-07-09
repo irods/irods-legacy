@@ -21,8 +21,6 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
     structFileOprInp_t structFileOprInp;
-    vaultPathPolicy_t vaultPathPolicy;
-    int addUserNameFlag;
 
     status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection);
 
@@ -43,58 +41,18 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
         return (l1descInx);
     }
 
-    memset (&structFileOprInp, 0, sizeof (structFileOprInp));
-    structFileOprInp.specColl = malloc (sizeof (specColl_t));
-    memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
-
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
-    if (strcmp (dataObjInfo->dataType, TAR_DT_STR) == 0) {
-        structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
-    } else if (strcmp (dataObjInfo->dataType, HAAW_DT_STR) == 0) {
-        structFileOprInp.specColl->type = HAAW_STRUCT_FILE_T;
-    } else {
-        rodsLog (LOG_ERROR,
-          "rsStructFileExtAndReg: objType %s of %s is not a struct file",
-          dataObjInfo->dataType, dataObjInp.objPath);
-	return SYS_OBJ_TYPE_NOT_STRUCT_FILE;
-    }
+    status = initStructFileOprInp (rsComm, &structFileOprInp,
+      structFileExtAndRegInp, dataObjInfo);
 
-
-    if (getStructFileType (dataObjInfo->specColl) >= 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileExtAndReg: struct file %s is in a mounted strct file",
-          dataObjInp.objPath);
-	dataObjCloseInp.l1descInx = l1descInx;
-        rsDataObjClose (rsComm, &dataObjCloseInp);
-	return (SYS_STRUCT_FILE_INMOUNTED_COLL);
-    }
-
-    rstrcpy (structFileOprInp.specColl->collection,
-      structFileExtAndRegInp->collection, MAX_NAME_LEN);
-    structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
-    rstrcpy (structFileOprInp.specColl->resource, dataObjInfo->rescName, 
-      NAME_LEN);
-    rstrcpy (structFileOprInp.specColl->phyPath,
-      dataObjInfo->filePath, MAX_NAME_LEN);
-    rstrcpy (structFileOprInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-      NAME_LEN);
-    /* set the cacheDir */
-    status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
     if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "rsStructFileExtAndReg: initStructFileOprInp of %s error. stat = %d",
+          dataObjInp.objPath, status);
         dataObjCloseInp.l1descInx = l1descInx;
         rsDataObjClose (rsComm, &dataObjCloseInp);
         return (status);
     }
-    /* don't do other type of Policy except GRAFT_PATH_S */
-    if (vaultPathPolicy.scheme == GRAFT_PATH_S) {
-	addUserNameFlag = vaultPathPolicy.addUserName;
-    } else {
-	addUserNameFlag = 1;
-    }
-    status = setPathForGraftPathScheme (structFileExtAndRegInp->collection,
-      dataObjInfo->rescInfo->rescVaultPath, addUserNameFlag,
-      rsComm->clientUser.userName, vaultPathPolicy.trimDirCnt,
-      structFileOprInp.specColl->cacheDir);
 
     status = rsStructFileExtract (rsComm, &structFileOprInp);
 
