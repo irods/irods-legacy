@@ -8,9 +8,15 @@ numoferrors=1
 OS=Darwin
 
 TMP_DIR=TMP
-# putget is the shell script this script calls
 thistest=putget
-testdirs="zerofiles smallfiles bigfiles"
+#testdirs="zerofiles smallfiles bigfiles"
+testdirs="bigfiles"
+
+thisdir=`pwd`
+echo thisdir: $thisdir
+
+# How to reference and make the writebigfile utility?
+wbigfile=$HOME/
 
 usage () {
 	echo "Usage: $0 <numtests>"
@@ -26,7 +32,7 @@ makefiles () {
 	
 	case "$dir" in
 		"zerofiles")
-			for ((i=1;i<=100;i+=1)); do
+			for ((i=1;i<=1000;i+=1)); do
 				touch zerofiles/zerofile$i
 			done
 		;;
@@ -37,14 +43,12 @@ makefiles () {
 			done
 		;;
 
-		#Google how to write big ol' binary file
 		"bigfiles")
+			$thisdir/writebigfile
 			for ((i=1;i<=10;i+=1)); do
-				for ((j=1;j<=5;j+=1)); do
-					## SDL this needs to be changed
-					 cat bigfile >> bigfiles/bigfile$i
-				done
+				cp bigfile bigfiles/bigfile$i				
 			done
+			/bin/rm bigfile
 		;;
 	esac
 
