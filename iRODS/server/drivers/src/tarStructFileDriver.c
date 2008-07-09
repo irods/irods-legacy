@@ -685,7 +685,8 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     if (strlen (specColl->cacheDir) > 0) {
 	if (specColl->cacheDirty > 0) {
 	    /* write the tar file and register no dirty */
-	    status = syncCacheDirToTarfile (structFileInx);
+	    status = syncCacheDirToTarfile (structFileInx, 
+	      structFileOprInp->oprType);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "tarStructFileSync: syncCacheDirToTarfile %s error, stat=%d",
@@ -1227,7 +1228,7 @@ char *subFilePath)
 }
 
 int
-syncCacheDirToTarfile (int structFileInx)
+syncCacheDirToTarfile (int structFileInx, int oprType)
 {
     TAR *t;
     int status;
@@ -1284,8 +1285,10 @@ syncCacheDirToTarfile (int structFileInx)
 	return (status);
     }
 
-    status = regNewObjSize (rsComm, specColl->objPath, specColl->replNum, 
-      fileStatOut->st_size);
+    if ((oprType & NO_REG_COLL_INFO) == 0) {
+        status = regNewObjSize (rsComm, specColl->objPath, specColl->replNum, 
+          fileStatOut->st_size);
+    }
 
     free (fileStatOut);
 

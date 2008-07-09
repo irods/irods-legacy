@@ -55,19 +55,19 @@ structFileExtAndRegInp_t *structFileBundleInp)
     structFileOprInp.oprType = NO_REG_COLL_INFO;
     structFileOprInp.specColl->cacheDirty = 1;
 
-    dataObjCloseInp.l1descInx = l1descInx;
-    rsDataObjClose (rsComm, &dataObjCloseInp);
-
     status = rsStructFileSync (rsComm, &structFileOprInp);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: rsStructFileSync of %s error. stat = %d",
           dataObjInp.objPath, status);
-        dataObjCloseInp.l1descInx = l1descInx;
-        rsDataObjClose (rsComm, &dataObjCloseInp);
-        return (status);
+    } else {
+	/* mark it was written so the size would be adjusted */
+	L1desc[l1descInx].bytesWritten = 1;
     }
+
+    dataObjCloseInp.l1descInx = l1descInx;
+    rsDataObjClose (rsComm, &dataObjCloseInp);
 
     return (status);
 }
