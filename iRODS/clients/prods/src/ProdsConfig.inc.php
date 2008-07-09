@@ -1,4 +1,7 @@
 <?php
+
+die("this version of prods has been deprecated. Please get the latest prods from http://extrods.googlecode.com !");
+  
   
 /**#@+
  * Constants

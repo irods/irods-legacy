@@ -1,4 +1,6 @@
 <?php
+  
+  die("this version of iRODS Browser has been deprecated. Please get the latest iRODS Browser from http://extrods.googlecode.com !");
   session_start();
   
   if (isset($_REQUEST['redirect']))
