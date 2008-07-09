@@ -51,6 +51,7 @@ for myresc in $resourceset ; do
 	for file in $FILES ; do
 		$iDir/iput -f -R $myresc $DATADIR/$file 
 		$iDir/imeta add -d $file $file-A $file-B $file-C
+		echo "putting file \"$file\""
 	done
 
 	$iDir/icd ..
@@ -71,6 +72,7 @@ for myresc in $resourceset ; do
 	for file in $FILES ; do
 		$iDir/imv Isub1/$file Isub2
 		#$iDir/imeta ls -d Isub2/$file
+		echo "moving file \"$file\""
  		attname=`$iDir/imeta qu -d $file-A  = $file-B | grep dataObj | awk {'print $2'}`
 		echo $attname
 	 	if [ "$attname" != "$file" ]; then

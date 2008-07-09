@@ -9,14 +9,11 @@ OS=Darwin
 
 TMP_DIR=TMP
 thistest=putget
-#testdirs="zerofiles smallfiles bigfiles"
-testdirs="bigfiles"
+testdirs="zerofiles smallfiles bigfiles"
 
 thisdir=`pwd`
 echo thisdir: $thisdir
 
-# How to reference and make the writebigfile utility?
-wbigfile=$HOME/
 
 usage () {
 	echo "Usage: $0 <numtests>"
@@ -29,22 +26,25 @@ makefiles () {
 	for dir in $testdirs; do
 		test -d $dir || mkdir $dir
 
-	
 	case "$dir" in
 		"zerofiles")
+			echo "making zerofiles"
 			for ((i=1;i<=1000;i+=1)); do
 				touch zerofiles/zerofile$i
 			done
 		;;
 
 		"smallfiles")
+			echo "making smallfiles"
 			for ((i=1;i<=100;i+=1)); do
 				echo "abcdefghijklmnopqrstuvwxyz" > smallfiles/smallfile$i
 			done
 		;;
 
 		"bigfiles")
-			$thisdir/writebigfile
+			cd src; make clean; make; cd ..
+			echo "making bigfiles"
+			$thisdir/src/writebigfile
 			for ((i=1;i<=10;i+=1)); do
 				cp bigfile bigfiles/bigfile$i				
 			done
@@ -72,7 +72,7 @@ for testdir in $testdirs; do
 		testid=$thistest-$testdir-`date "+%Y%m%d%H%M%S"`
 		numtest=`expr $i + 1`
 		echo $numtest of $1:$thistest $testid
-		sh -e $thistest $testid $testdir > $testid.irods 2>&1
+		sh -ex $thistest $testid $testdir > $testid.irods 2>&1
 		# check for failure
 		if [ "$?" -ne 0 ]; then
 			echo "$testid FAILED, exiting"
