@@ -5,7 +5,9 @@ Invoke the test like so:
 
 ./poundtests.sh <numtests>
 
-The above will initiate 3 concurrent (kinda) tests pounding on
+In the ResourcesToTest file, list your resources, one per line.  Currently no comments are allowed.
+
+The above will initiate 3 consecutive tests pounding on
 the resources listed in the ResourcesToTest file
 
 Currently, 'poundtests' only calls the 'putget' script.
