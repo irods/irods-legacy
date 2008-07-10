@@ -4470,7 +4470,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    cllBindVars[cllBindVarCount++]=pathStart;
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
    status =  cmlExecuteNoAnswerSql(
-	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
+	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);
    if (status) return(status);
 
