@@ -9,6 +9,8 @@ verboseflag=1
 numoferrors=1
 OS=Darwin
 
+irodshome=../..
+
 TMP_DIR=TMP
 thistest=putget
 #testdirs="zerofiles smallfiles bigfiles"
@@ -32,14 +34,14 @@ makefiles () {
 	case "$dir" in
 		"zerofiles")
 			echo "making zerofiles"
-			for ((i=1;i<=1000;i+=1)); do
+			for ((i=1;i<=100;i+=1)); do
 				touch zerofiles/zerofile$i
 			done
 		;;
 
 		"smallfiles")
 			echo "making smallfiles"
-			for ((i=1;i<=100;i+=1)); do
+			for ((i=1;i<=10;i+=1)); do
 				echo "abcdefghijklmnopqrstuvwxyz" > smallfiles/smallfile$i
 			done
 		;;
@@ -48,7 +50,7 @@ makefiles () {
 			cd src; make clean; make; cd ..
 			echo "making bigfiles"
 			$thisdir/src/writebigfile
-			for ((i=1;i<=10;i+=1)); do
+			for ((i=1;i<=1;i+=1)); do
 				cp bigfile bigfiles/bigfile$i				
 			done
 			/bin/rm bigfile
@@ -75,7 +77,7 @@ for testdir in $testdirs; do
 		testid=$thistest-$testdir-`date "+%Y%m%d%H%M%S"`
 		numtest=`expr $i + 1`
 		echo $numtest of $1:$thistest $testid
-		sh -ex $thistest $testid $testdir > $testid.irods 2>&1
+		sh -ex $irodshome/clients/concurrent-test/$thistest $testid $testdir > $testid.irods 2>&1
 		# check for failure
 		if [ "$?" -ne 0 ]; then
 			echo "$testid FAILED, exiting"
