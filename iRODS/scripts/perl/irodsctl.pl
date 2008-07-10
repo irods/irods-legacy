@@ -708,8 +708,8 @@ sub doTest
 	}
 
 	# Pound test
-	printSubtitle( "\nTesting via concurrent-test (many iput/iget)...\n" );
-	doTestPound( );
+#	printSubtitle( "\nTesting via concurrent-test (many iput/iget)...\n" );
+#	doTestPound( );
 	return(0);
 
 	printNotice( "\nDone.\n" );
