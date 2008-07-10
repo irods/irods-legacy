@@ -11,7 +11,8 @@ OS=Darwin
 
 TMP_DIR=TMP
 thistest=putget
-testdirs="zerofiles smallfiles bigfiles"
+#testdirs="zerofiles smallfiles bigfiles"
+testdirs="zerofiles smallfiles"
 
 thisdir=`pwd`
 echo thisdir: $thisdir

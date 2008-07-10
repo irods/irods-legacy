@@ -5,7 +5,7 @@ Invoke the test like so:
 
 ./poundtests.sh <numtests>
 
-In the ResourcesToTest file, list your resources, one per line.  Currently no comments are allowed.
+In the ResourcesToTest file, list your resources, one per line.  Currently no comments are allowed in this file.
 
 The above will initiate 3 consecutive tests pounding on
 the resources listed in the ResourcesToTest file
