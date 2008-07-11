@@ -9,12 +9,17 @@ verboseflag=1
 numoferrors=1
 OS=Darwin
 
-irodshome=../..
 
 TMP_DIR=TMP
 thistest=putget
 #testdirs="zerofiles smallfiles bigfiles"
-testdirs="zerofiles smallfiles"
+testdirs="zerofiles"
+
+irodshome="../../"
+
+numzerofiles=100
+numsmallfiles=100
+numbigfiles=10
 
 thisdir=`pwd`
 echo thisdir: $thisdir
@@ -34,15 +39,15 @@ makefiles () {
 	case "$dir" in
 		"zerofiles")
 			echo "making zerofiles"
-			for ((i=1;i<=100;i+=1)); do
+			for ((i=1;i<=$numzerofiles;i+=1)); do
 				touch zerofiles/zerofile$i
 			done
 		;;
 
 		"smallfiles")
 			echo "making smallfiles"
-			for ((i=1;i<=10;i+=1)); do
-				echo "abcdefghijklmnopqrstuvwxyz" > smallfiles/smallfile$i
+			for ((i=1;i<=$numsmallfiles;i+=1)); do
+				echo "abcdefghijklmnopqrstuvwxyz1234567890" > smallfiles/smallfile$i
 			done
 		;;
 
@@ -50,7 +55,7 @@ makefiles () {
 			cd src; make clean; make; cd ..
 			echo "making bigfiles"
 			$thisdir/src/writebigfile
-			for ((i=1;i<=1;i+=1)); do
+			for ((i=1;i<=$numbigfiles;i+=1)); do
 				cp bigfile bigfiles/bigfile$i				
 			done
 			/bin/rm bigfile
@@ -74,7 +79,20 @@ for testdir in $testdirs; do
 
 	i=0
 	while [ $i -lt $1 ]; do
-		testid=$thistest-$testdir-`date "+%Y%m%d%H%M%S"`
+		
+		case "$testdir" in
+		"zerofiles")
+			testid=$thistest-$numzerofiles-$testdir-`date "+%Y%m%d%H%M%S"`
+		;;
+		"smallfiles")
+			testid=$thistest-$numsmallfiles-$testdir-`date "+%Y%m%d%H%M%S"`
+		;;
+		"bigfiles")
+			testid=$thistest-$numbigfiles-$testdir-`date "+%Y%m%d%H%M%S"`
+		;;
+
+		esac;
+		
 		numtest=`expr $i + 1`
 		echo $numtest of $1:$thistest $testid
 		sh -ex $irodshome/clients/concurrent-test/$thistest $testid $testdir > $testid.irods 2>&1
@@ -93,10 +111,14 @@ for testdir in $testdirs; do
 		echo "$testid ended Successfully"
 	done
 
-	#cp $TMP_DIR/$testid.irods $TMP_DIR/$thistest.log
-	#cp $TMP_DIR/$thistest.log $thistest.out
-
 done
+
+#Clean up locally
+for testdir in $testdirs; do
+	/bin/rm -rf $testdir
+done
+
+
 
 exit 0
 
