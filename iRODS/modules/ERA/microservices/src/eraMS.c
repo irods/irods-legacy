@@ -1383,11 +1383,12 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
 	}
 
 	
-	/* get the file extension */
+	/* get the file extension. If no extension, data type is 'generic' */
 	extStr = strrchr(pathStr, '.');
 	if (!extStr) {
-		rodsLog (LOG_ERROR, "msiGuessDataType: Unable to find file extension in path %s", pathStr);
-		return (USER_INPUT_PATH_ERR);
+		fillStrInMsParam (inpParam2, "generic");
+		fillIntInMsParam (outParam, 0);
+		return (0);
 	}
 
 
@@ -1408,7 +1409,7 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
 	rei->status = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
 
 
-	/* no result is not considered an error here. Return "generic" which is the default data type */
+	/* no result is not considered an error here. Return 'generic' which is the default data type */
 	if (rei->status == CAT_NO_ROWS_FOUND) {
 		fillStrInMsParam (inpParam2, "generic");
 		fillIntInMsParam (outParam, rei->status);
