@@ -94,13 +94,15 @@ for testdir in $testdirs; do
 		esac;
 		
 		numtest=`expr $i + 1`
-		echo $numtest of $1:$thistest $testid
+		echo $numtest of $1:$thistest $testid began at `date`
 		sh -ex $irodshome/clients/concurrent-test/$thistest $testid $testdir > $testid.irods 2>&1
 		# check for failure
 		if [ "$?" -ne 0 ]; then
 			echo "$testid FAILED, exiting"
 			exit 3
 		fi
+		echo $numtest of $1:$thistest $testid ended at `date`
+		
 
 		i=`expr $i +  1`
 		numtest=`expr $i +  1`
