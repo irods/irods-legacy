@@ -4,6 +4,9 @@
 #include "structFileExtract.h" 
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+#include "rsGlobalExtern.h"
+#include "objMetaOpr.h"
+
 
 int
 rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
@@ -64,8 +67,54 @@ int
 _rsStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 {
     int status;
+    specColl_t *specColl;
+
+
+    if (rsComm == NULL || structFileOprInp == NULL ||
+      structFileOprInp->specColl == NULL) {
+        rodsLog (LOG_ERROR,
+          "_rsStructFileExtract: NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    specColl = structFileOprInp->specColl;
+
+    status = procCacheDir (rsComm, specColl->cacheDir, specColl->resource);
+    if (status < 0) return status;
 
     status = structFileExtract (rsComm, structFileOprInp);
+
+    return (status);
+}
+
+int
+procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource)
+{
+    int status;
+    int fileType;
+    rescInfo_t *rescInfo;
+
+    status = resolveResc (resource, &rescInfo);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "procCacheDir: resolveResc error for %s, status = %d",
+          resource, status);
+        return (status);
+    }
+
+    fileType = RescTypeDef[rescInfo->rescTypeInx].driverType;
+
+    status = chkEmptyDir (fileType, rsComm, cacheDir);
+
+    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
+        rodsLog (LOG_ERROR,
+          "procCacheDir: chkEmptyDir error for %s in resc %s, status = %d",
+          cacheDir, resource, status);
+        return (status);
+    }
+
+    mkFileDirR (fileType, rsComm, "/", cacheDir, DEFAULT_DIR_MODE);
 
     return (status);
 }

@@ -21,6 +21,10 @@
 int
 rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
 int
+phyPathRegNoChkPerm (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
+int
+irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp);
+int
 remotePhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp,
 rodsServerHost_t *rodsServerHost);
 int

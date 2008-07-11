@@ -171,6 +171,63 @@ char *destDir, int mode)
     return 0;
 }
 
+int
+chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
+{
+    void *dirPtr = NULL;
+    struct dirent *myFileDirent = NULL;
+    int status;
+    char childPath[MAX_NAME_LEN];
+    struct stat myFileStat;
+
+    status = fileOpendir (fileType, rsComm, cacheDir, &dirPtr);
+
+    if (status < 0) {
+        return (0);
+    }
+
+    while ((status = fileReaddir (fileType, rsComm, dirPtr, &myFileDirent))
+      >= 0) {
+        if (strcmp (myFileDirent->d_name, ".") == 0 ||
+          strcmp (myFileDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (childPath, MAX_NAME_LEN, "%s/%s", cacheDir, 
+	  myFileDirent->d_name);
+
+        status = fileStat (fileType, rsComm, childPath, &myFileStat);
+
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "chkEmptyDir: fileStat error for %s, status = %d",
+              childPath, status);
+	    break;
+        }
+	if (myFileStat.st_mode & S_IFREG) {
+            rodsLog (LOG_ERROR,
+              "chkEmptyDir: file %s exists",
+              childPath, status);
+	    status = SYS_DIR_IN_VAULT_NOT_EMPTY;
+            break;
+        }
+
+	if (myFileStat.st_mode & S_IFDIR) {
+	    status = chkEmptyDir (fileType, rsComm, childPath);
+	    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
+                rodsLog (LOG_ERROR,
+                  "chkEmptyDir: dir %s is not empty", childPath);
+	        break;
+	    }
+	}
+    }
+    fileClosedir (fileType, rsComm, dirPtr);
+    if (status != SYS_DIR_IN_VAULT_NOT_EMPTY) {
+	fileRmdir (fileType, rsComm, cacheDir);
+	status = 0;
+    }
+    return status;
+}
+
 /* chkFilePathPerm - check the FilePath permission.
  * If rodsServerHost
  */

@@ -733,8 +733,10 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int structFileInx;
     int status;
     specColl_t *specColl;
+#if 0
     int fileType;
     rescInfo_t *rescInfo;
+#endif
 
     if (rsComm == NULL || structFileOprInp == NULL || 
       structFileOprInp->specColl == NULL) {
@@ -764,10 +766,12 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     }
 
 
+#if 0
     rescInfo = StructFileDesc[structFileInx].rescInfo;
     fileType = RescTypeDef[rescInfo->rescTypeInx].driverType;
 
     mkFileDirR (fileType, rsComm, "/", specColl->cacheDir, DEFAULT_DIR_MODE);
+#endif
 
     status = extractTarFile (structFileInx);
     if (status < 0) {

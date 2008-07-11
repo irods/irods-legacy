@@ -110,6 +110,7 @@
 #define USER_CREATE_PROXY_KW         "userCreateProxy"
 #define USER_MODIFY_PROXY_KW         "userModifyProxy"
 #define ACCESS_PERMISSION_KW         "accessPermission"
+#define NO_CHK_FILE_PERM_KW          "noChkFilePerm"
 
 /* The following are the keyWord definition for the collCond key/value pair */
 

@@ -23,6 +23,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     structFileOprInp_t structFileOprInp;
 
     status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection);
+    if (status < 0) return status;
 
     /* open the structured file */
     memset (&dataObjInp, 0, sizeof (dataObjInp));
@@ -109,6 +110,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
 
     handleInx = rsOpenCollection (rsComm, &openCollInp);
     if (handleInx < 0) {
+	if (handleInx == USER_FILE_DOES_NOT_EXIST) return 0;
         rodsLog (LOG_ERROR,
           "chkCollForExtAndReg: rsOpenCollection of %s error. status = %d",
           openCollInp.collName, handleInx);

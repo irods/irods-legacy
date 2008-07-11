@@ -32,5 +32,6 @@ structFileOprInp_t *structFileOprInp, rodsServerHost_t *rodsServerHost);
 /* prototype for the client call */
 int
 rcStructFileExtract (rcComm_t *conn, structFileOprInp_t *structFileOprInp);
-
+int
+procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource);
 #endif	/* STRUCT_FILE_EXTRACT_H */

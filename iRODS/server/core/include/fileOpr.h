@@ -55,6 +55,8 @@ int
 mkFileDirR (int fileType, rsComm_t *rsComm, char *startDir,
 char *destDir, int mode);
 int
+procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource);
+int
 chkFilePathPerm (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp,
 rodsServerHost_t *rodsServerHost);
 int

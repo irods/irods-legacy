@@ -1490,6 +1490,10 @@ rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm)
     return (0);
 }
 
+/* initStructFileOprInp - initialize the structFileOprInp struct for
+ * rsStructFileBundle and rsStructFileExtAndReg
+ */
+
 int
 initStructFileOprInp (rsComm_t *rsComm, 
 structFileOprInp_t *structFileOprInp,
@@ -1532,9 +1536,12 @@ dataObjInfo_t *dataObjInfo)
     }
     /* don't do other type of Policy except GRAFT_PATH_S */
     if (vaultPathPolicy.scheme == GRAFT_PATH_S) {
-        addUserNameFlag = vaultPathPolicy.addUserName;
+	addUserNameFlag = vaultPathPolicy.addUserName;
     } else {
-        addUserNameFlag = 1;
+        rodsLog (LOG_ERROR,
+          "initStructFileOprInp: vaultPathPolicy.scheme %d for resource %s is not GRAFT_PATH_S",
+          vaultPathPolicy.scheme, structFileOprInp->specColl->resource);
+        return SYS_WRONG_RESC_POLICY_FOR_BUN_OPR;
     }
     status = setPathForGraftPathScheme (structFileExtAndRegInp->collection,
       dataObjInfo->rescInfo->rescVaultPath, addUserNameFlag,

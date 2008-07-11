@@ -13,8 +13,36 @@
 #include "miscServerFunct.h"
 #include "apiHeaderAll.h"
 
+/* phyPathRegNoChkPerm - Wrapper internal function to allow phyPathReg with 
+ * no checking for path Perm.
+ */
+int
+phyPathRegNoChkPerm (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
+{
+    int status;
+
+    addKeyVal (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW, "");
+
+    status = irsPhyPathReg (rsComm, phyPathRegInp);
+    return (status);
+}
+
 int
 rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
+{
+    int status;
+
+    if (getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) != NULL &&
+      rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	return SYS_NO_API_PRIV;
+    }
+
+    status = irsPhyPathReg (rsComm, phyPathRegInp);
+    return (status);
+}
+
+int
+irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 {
     int status;
     rescGrpInfo_t *rescGrpInfo = NULL;
@@ -137,7 +165,8 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
       LONG_NAME_LEN);
 
  
-    if (getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) { 
+    if (getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) == NULL &&
+      getchkPathPerm (rsComm, phyPathRegInp, &dataObjInfo)) { 
         memset (&chkNVPathPermInp, 0, sizeof (chkNVPathPermInp));
 
         rescTypeInx = rescGrpInfo->rescInfo->rescTypeInx;
