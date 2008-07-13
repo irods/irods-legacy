@@ -145,6 +145,7 @@ resolveDataObjReplStatus (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
 
         clearKeyVal (&regParam);
     }
+    freeAllDataObjInfo (dataObjInfoHead);
     return (status);
 }
 
