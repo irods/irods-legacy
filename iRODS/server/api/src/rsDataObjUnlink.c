@@ -17,6 +17,7 @@
 #include "rmColl.h"
 #include "dataObjRename.h"
 #include "subStructFileUnlink.h"
+#include "modDataObjMeta.h"
 
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
@@ -84,9 +85,67 @@ dataObjInfo_t *dataObjInfoHead)
 	tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
+    if (dataObjInfoHead->specColl == NULL)
+        resolveDataObjReplStatus (rsComm, dataObjUnlinkInp);
     freeAllDataObjInfo (dataObjInfoHead);  
 
     return (retVal);
+}
+
+/* resolveDataObjReplStatus - a dirty copy may be deleted leaving no
+ * dirty copy. In that case, pick the newest copy and mark it dirty
+ */
+int
+resolveDataObjReplStatus (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
+{
+    int status;
+    dataObjInfo_t *dataObjInfoHead = NULL;
+    dataObjInfo_t *newestDataObjInfo = NULL;
+    dataObjInfo_t *tmpDataObjInfo;
+
+    if (getValByKey (&dataObjUnlinkInp->condInput, RESC_NAME_KW) == NULL &&
+      getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) == NULL) {
+	return 0;
+    } 
+    status = getDataObjInfo (rsComm, dataObjUnlinkInp,
+      &dataObjInfoHead, ACCESS_DELETE_OBJECT, 1);
+
+    if (status < 0) return status;
+
+    tmpDataObjInfo = dataObjInfoHead;
+    while (tmpDataObjInfo != NULL) {
+	if (tmpDataObjInfo->replStatus == 0) {
+	    if (newestDataObjInfo == NULL) {
+		newestDataObjInfo = tmpDataObjInfo;
+	    } else if (atoi (tmpDataObjInfo->dataModify) >
+	      atoi (newestDataObjInfo->dataModify)) {
+		newestDataObjInfo = tmpDataObjInfo;
+	    }
+	} else {
+	    newestDataObjInfo = NULL;
+	    break;
+	}
+        tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+
+    /* modify the repl status */
+    if (newestDataObjInfo != NULL) {
+        keyValPair_t regParam;
+        char tmpStr[MAX_NAME_LEN];
+        modDataObjMeta_t modDataObjMetaInp;
+
+	memset (&regParam, 0, sizeof (regParam));
+	memset (&modDataObjMetaInp, 0, sizeof (modDataObjMetaInp));
+        snprintf (tmpStr, MAX_NAME_LEN, "%d", NEWLY_CREATED_COPY);
+        addKeyVal (&regParam, REPL_STATUS_KW, tmpStr);
+        modDataObjMetaInp.dataObjInfo = newestDataObjInfo;
+        modDataObjMetaInp.regParam = &regParam;
+
+        status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+
+        clearKeyVal (&regParam);
+    }
+    return (status);
 }
 
 int
