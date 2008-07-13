@@ -12,7 +12,7 @@ int main (int argc, char** argv) {
 	for (i=0; i<256; i++)
 		x[i]=(char) i;
 
-	for (i=0; i<1000000; i++)
+	for (i=0; i<100000; i++)
 		fwrite(x, sizeof(x[0]), sizeof(x)/sizeof(x[0]), fp);
 
 	fclose (fp);
