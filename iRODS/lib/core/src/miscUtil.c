@@ -281,10 +281,11 @@ genQueryOut_t **genQueryOut)
 int
 queryDataObjInColl (queryHandle_t *queryHandle, char *collection, 
 int flags, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut)
+genQueryOut_t **genQueryOut, keyValPair_t *condInput)
 {
     char collQCond[MAX_NAME_LEN];
     int status;
+    char *rescName = NULL;
 
     if (collection == NULL || genQueryOut == NULL) {
         return (USER__NULL_INPUT_ERR);
@@ -298,6 +299,13 @@ genQueryOut_t **genQueryOut)
     } else {
         snprintf (collQCond, MAX_NAME_LEN, " = '%s'", collection);
         addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, collQCond);
+    }
+
+    if ((flags & INCLUDE_CONDINPUT_IN_QUERY) != 0 && 
+      condInput != NULL &&
+      (rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
+        snprintf (collQCond, MAX_NAME_LEN, " = '%s'", rescName);
+        addInxVal (&genQueryInp->sqlCondInp, COL_D_RESC_NAME, collQCond);
     }
 
     setQueryInpForData (flags, genQueryInp);
@@ -965,7 +973,8 @@ genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
         status = queryDataObjInColl (queryHandle,
           collHandle->dataObjInp.objPath, collHandle->flags,
-          &collHandle->genQueryInp, &genQueryOut);
+          &collHandle->genQueryInp, &genQueryOut, 
+	  &collHandle->dataObjInp.condInput);
     }
 
     collHandle->rowInx = 0;
@@ -1157,7 +1166,7 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     replStatus = dataObjSqlResult->replStatus.value;
     replStatusLen = dataObjSqlResult->replStatus.len;
 
-    if (strlen (dataId) > 0) {
+    if (strlen (dataId) > 0 && (collHandle->flags & NO_TRIM_REPL_FG) == 0) {
         int i;
         char *prevdataId = NULL;
         int gotCopy = 0;

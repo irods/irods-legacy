@@ -400,7 +400,7 @@ rodsArguments_t *rodsArgs)
     if (status < 0) return status;
 
     status = queryDataObjInColl (&queryHandle, srcColl, queryFlags, 
-      &genQueryInp, &genQueryOut);
+      &genQueryInp, &genQueryOut, NULL);
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
         rodsLogError (LOG_ERROR, status,

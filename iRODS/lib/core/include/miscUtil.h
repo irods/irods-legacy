@@ -83,6 +83,9 @@ typedef struct QueryHandle {
 #define VERY_LONG_METADATA_FG     0x2   /* get verbose metadata */
 #define RECUR_QUERY_FG       0x4     /* get recursive query */
 #define DATA_QUERY_FIRST_FG       0x8     /* get data res first */
+#define NO_TRIM_REPL_FG       0x10     /* don't trim the replica */
+#define INCLUDE_CONDINPUT_IN_QUERY       0x20  /* include the cond in condInput
+					        * in the query */
 
 typedef struct CollHandle {
     collState_t state;
@@ -136,7 +139,7 @@ genQueryOut_t **genQueryOut);
 int
 queryDataObjInColl (queryHandle_t *queryHandle, char *collection,
 int flags, genQueryInp_t *genQueryInp,
-genQueryOut_t **genQueryOut);
+genQueryOut_t **genQueryOut, keyValPair_t *condInput);
 int
 setQueryInpForData (int flags, genQueryInp_t *genQueryInp);
 

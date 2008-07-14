@@ -110,4 +110,5 @@
 #include "structFileExtract.h"
 #include "structFileExtAndReg.h"
 #include "structFileBundle.h"
+#include "chkObjPermAndStat.h"
 #endif	/* API_HEADER_ALL_H */

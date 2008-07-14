@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "hR:cxD:";
+    optStr = "hR:cxD:f";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -93,8 +93,11 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : ibun [-h] [-R resource] [-D dataType] -x|c structFilePath",
+"Usage : ibun -x [-h] -R resource structFilePath",
 "               irodsCollection",
+"Usage : ibun -c [-hf] -R resource [-D dataType] structFilePath",
+"               irodsCollection",
+
 " ",
 "Bundle file operations",
 " ",
@@ -108,6 +111,7 @@ usage ()
 "     under the input irodsCollection", 
 " -c  bundle the files and sub-collection underneath the input irodsCollection",
 "     and store it in the structFilePath",  
+" -f  force overwrite the struct file. Valid only with -c option", 
 " -h  this help",
 ""};
    int i;

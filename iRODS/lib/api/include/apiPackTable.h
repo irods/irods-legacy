@@ -78,6 +78,7 @@ packInstructArray_t ApiPackTable[] = {
         {"gsiAuthRequestOut_PI", gsiAuthRequestOut_PI},
         {"OpenCollInp_PI", OpenCollInp_PI},
         {"StructFileExtAndRegInp_PI", StructFileExtAndRegInp_PI},
+        {"ChkObjPermAndStat_PI", ChkObjPermAndStat_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

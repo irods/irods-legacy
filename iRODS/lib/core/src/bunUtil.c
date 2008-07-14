@@ -53,10 +53,16 @@ rodsPathInp_t *rodsPathInp)
 
 	/* XXXX may need to return a global status */
 	if (status < 0) {
-	    rodsLogError (LOG_ERROR, status,
-             "bunUtil: opr error for %s, status = %d", 
-	      collPath->outPath, status);
-            savedStatus = status;
+	    if (status == SYS_CACHE_STRUCT_FILE_RESC_ERR && 
+	      myRodsArgs->condition == True) {
+                rodsLogError (LOG_ERROR, status,
+                 "bunUtil: A resc must be entered for non-existing structFile");
+	    } else {
+	        rodsLogError (LOG_ERROR, status,
+                 "bunUtil: opr error for %s, status = %d", 
+	          collPath->outPath, status);
+                savedStatus = status;
+	    }
 	} 
     }
 
@@ -103,10 +109,16 @@ rodsPathInp_t *rodsPathInp)
               "initCondForBunOpr: NULL resourceString error");
             return (USER__NULL_INPUT_ERR);
         } else {
+            addKeyVal (&structFileExtAndRegInp->condInput, 
+	      DEST_RESC_NAME_KW, rodsArgs->resourceString);
             addKeyVal (&structFileExtAndRegInp->condInput, RESC_NAME_KW,
               rodsArgs->resourceString);
         }
     } 
+
+    if (rodsArgs->force == True && rodsArgs->condition == True) {
+        addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
+    }
 
     return (0);
 }

@@ -65,6 +65,7 @@ rodsServerHost_t *rodsServerHost, char **outVaultPath);
 int
 matchCliVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost);
-
+int
+chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir);
 
 #endif	/* FILE_OPR_H */

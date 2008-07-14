@@ -18,9 +18,9 @@ structFileExtAndRegInp_t *structFileBundleInp)
     dataObjInp_t dataObjInp;
     dataObjCloseInp_t dataObjCloseInp;
     structFileOprInp_t structFileOprInp;
+    chkObjPermAndStat_t chkObjPermAndStatInp;
     int l1descInx;
 
-    /* XXXXXX need to check permission of all files in collection */
 
     /* open the structured file */
     memset (&dataObjInp, 0, sizeof (dataObjInp));
@@ -30,14 +30,22 @@ structFileExtAndRegInp_t *structFileBundleInp)
     /* replicate the condInput. may have resource input */
     replKeyVal (&structFileBundleInp->condInput, &dataObjInp.condInput);
 
-    dataObjInp.openFlags = O_CREAT | O_WRONLY;  
+    dataObjInp.openFlags = O_WRONLY;  
     l1descInx = _rsDataObjOpen (rsComm, &dataObjInp, DO_NOT_PHYOPEN);
 
     if (l1descInx < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileBundle: _rsDataObjOpen of %s error. status = %d",
-          dataObjInp.objPath, l1descInx);
-        return (l1descInx);
+	if (getValByKey (&dataObjInp.condInput, DEST_RESC_NAME_KW) == NULL) {
+	    return SYS_CACHE_STRUCT_FILE_RESC_ERR;
+	} else {
+	    l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
+	}
+
+	if (l1descInx < 0) {
+            rodsLog (LOG_ERROR,
+              "rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
+              dataObjInp.objPath, l1descInx);
+            return (l1descInx);
+	}
     }
 
     status = initStructFileOprInp (rsComm, &structFileOprInp, 
@@ -47,6 +55,24 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: initStructFileOprInp of %s error. stat = %d",
           dataObjInp.objPath, status);
+        dataObjCloseInp.l1descInx = l1descInx;
+        rsDataObjClose (rsComm, &dataObjCloseInp);
+        return (status);
+    }
+
+    memset (&chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
+    rstrcpy (chkObjPermAndStatInp.objPath, 
+      structFileBundleInp->collection, MAX_NAME_LEN); 
+    chkObjPermAndStatInp.flags = CHK_COLL_FOR_BUNDLE_OPR;
+    addKeyVal (&chkObjPermAndStatInp.condInput, RESC_NAME_KW,
+      L1desc[l1descInx].dataObjInfo->rescName);
+
+   status = rsChkObjPermAndStat (rsComm, &chkObjPermAndStatInp);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "rsStructFileBundle: rsChkObjPermAndStat of %s error. stat = %d",
+          chkObjPermAndStatInp.objPath, status);
         dataObjCloseInp.l1descInx = l1descInx;
         rsDataObjClose (rsComm, &dataObjCloseInp);
         return (status);

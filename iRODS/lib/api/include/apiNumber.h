@@ -102,6 +102,7 @@
 #define STRUCT_FILE_EXTRACT_AN 			664
 #define STRUCT_FILE_EXT_AND_REG_AN 			665
 #define STRUCT_FILE_BUNDLE_AN 			666
+#define CHK_OBJ_PERM_AND_STAT_AN 			667
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700
