@@ -690,7 +690,7 @@ acc u2 z2 /z2/home/rods foo 'read object'
 */
 int
 doAccCheck(rcComm_t *Conn, char *user, char *zone, char *coll, 
-	   char *dataObjName, char *access)
+	   char *dataObjName, char *access, char *access2)
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -725,6 +725,7 @@ doAccCheck(rcComm_t *Conn, char *user, char *zone, char *coll,
 #endif
 
 
+#if 0
    snprintf (condStr, MAX_NAME_LEN, "='%s'", user);
    addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, condStr);
 
@@ -738,8 +739,46 @@ doAccCheck(rcComm_t *Conn, char *user, char *zone, char *coll,
    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, condStr);
 
    addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_TYPE, 1);
+#endif
 
+#if 0
+    snprintf (accStr, LONG_NAME_LEN, "%s", userName);
+    addKeyVal (&genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr);
 
+    snprintf (accStr, LONG_NAME_LEN, "%s", rodsZone);
+    addKeyVal (&genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr);
+
+    snprintf (accStr, LONG_NAME_LEN, "%s", accessPerm);
+    addKeyVal (&genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr);
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", collection);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", dataObj);
+    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, condStr);
+
+    addInxIval (&genQueryInp.selectInp,  COL_D_DATA_ID, 1);
+
+#endif
+   snprintf (condStr, MAX_NAME_LEN, "%s", user);
+   addKeyVal (&genQueryInp.condInput, USER_NAME_CLIENT_KW, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "%s", zone);
+   addInxVal (&genQueryInp.condInput, RODS_ZONE_CLIENT_KW, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "%s %s", access, access2);
+   addKeyVal (&genQueryInp.condInput, ACCESS_PERMISSION_KW, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", coll);
+   addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", dataObjName);
+   addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, condStr);
+
+   /*   addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_TYPE, 1); */
+   addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+
+   /* acc rods tempZone /tempZone/home/rods t4 read object */
  
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
@@ -784,6 +823,7 @@ main(int argc, char **argv) {
    char *tok4;
    char *tok5;
    char *tok6;
+   char *tok7;
    int blankFlag;
    int didOne;
 
@@ -840,6 +880,7 @@ main(int argc, char **argv) {
       tok4="";
       tok5="";
       tok6="";
+      tok7="";
       ntokens=1;
       blankFlag=0;
       for (i=0;i<lenstr;i++) {
@@ -855,6 +896,7 @@ main(int argc, char **argv) {
 	       if (ntokens==4) tok4=(char *)&ttybuf[i];
 	       if (ntokens==5) tok5=(char *)&ttybuf[i];
 	       if (ntokens==6) tok6=(char *)&ttybuf[i];
+	       if (ntokens==7) tok7=(char *)&ttybuf[i];
 	    }
 	    blankFlag=0;
 	 }
@@ -929,7 +971,7 @@ main(int argc, char **argv) {
 	 didOne=1;
       }
       if (strncmp(tok1, "acc", 3)==0) {
-	 doAccCheck(Conn, tok2, tok3, tok4, tok5, tok6);
+	 doAccCheck(Conn, tok2, tok3, tok4, tok5, tok6, tok7);
 	 didOne=1;
       }
       if (strncmp(tok1,"cd",2)==0) {
