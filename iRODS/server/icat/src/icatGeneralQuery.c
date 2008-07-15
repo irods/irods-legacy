@@ -1027,6 +1027,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    int userIx=-1, zoneIx=-1, accessIx=-1, dataIx=-1, collIx=-1;
    int status;
    static char prevDataId[LONG_NAME_LEN];
+   static char prevUser[LONG_NAME_LEN];
    static int prevStatus;
 
    for (i=0;i<genQueryInp.condInput.len;i++) {
@@ -1061,12 +1062,16 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
       if (continueFlag==0) {
          if (strcmp(prevDataId, 
                 icss->stmtPtr[statementNum]->resultValue[dataIx])==0) {
- 	    return(prevStatus);
+	    if (strcmp(prevUser, genQueryInp.condInput.value[userIx])==0) {
+	       	    return(prevStatus);
+	    }
          }
       }
 
       strncpy(prevDataId, icss->stmtPtr[statementNum]->resultValue[dataIx],
 	      LONG_NAME_LEN);
+      strncpy(prevUser, genQueryInp.condInput.value[userIx], 
+              LONG_NAME_LEN);
       prevStatus=0;
 
       if (strlen(genQueryInp.condInput.value[zoneIx])==0) {
