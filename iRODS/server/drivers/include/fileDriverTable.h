@@ -12,6 +12,9 @@
 #include "rods.h"
 #include "fileDriver.h"
 #include "unixFileDriver.h"
+#include "miscServerFunct.h"
+
+#define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport 
 
 fileDriver_t FileDriverTable[] = {
     {UNIX_FILE_TYPE, unixFileCreate, unixFileOpen, unixFileRead, unixFileWrite,
@@ -19,6 +22,15 @@ fileDriver_t FileDriverTable[] = {
     unxiFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
     unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
     unixFileGetFsFreeSpace, unixFileTruncate},
+#ifdef HPSS
+    {HPSS_FILE_TYPE, hpssFileCreate, hpssFileOpen, hpssFileRead, hpssFileWrite,
+    hpssFileClose, hpssFileUnlink, hpssFileStat, hpssFileFstat, hpssFileLseek,
+    unxiFileFsync, hpssFileMkdir, hpssFileChmod, hpssFileRmdir, hpssFileOpendir,
+    hpssFileClosedir, hpssFileReaddir, hpssFileStage, hpssFileRename,
+    hpssFileGetFsFreeSpace, hpssFileTruncate},
+#else
+    {HPSS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
 };
 
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);
