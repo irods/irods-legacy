@@ -22,9 +22,10 @@ typedef struct OpenCollInp {
     char collName[MAX_NAME_LEN];
     int flags;
     int dummy;
+    keyValPair_t condInput;
 } openCollInp_t;
 
-#define OpenCollInp_PI "str collName[MAX_NAME_LEN]; int flags; int dummy;"
+#define OpenCollInp_PI "str collName[MAX_NAME_LEN]; int flags; int dummy; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_OPEN_COLLECTION rsOpenCollection

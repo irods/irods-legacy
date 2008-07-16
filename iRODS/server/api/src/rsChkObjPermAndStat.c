@@ -91,6 +91,30 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
     }
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
+        if (collEnt->specColl.collClass != NO_SPEC_COLL) {
+	    if (strcmp (resource, collEnt->specColl.resource) != 0) {
+                rodsLog (LOG_ERROR,
+                  "chkCollForBundleOpr: specColl resc %s does not match %s",
+                  collEnt->specColl.resource, resource);
+                rsCloseCollection (rsComm, &handleInx);
+                return SYS_COPY_NOT_EXIST_IN_RESC;
+	    }
+	    /* check permission */
+            myId = checkAndGetObjectId (rsComm, "-c", 
+	      collEnt->specColl.collection, ACCESS_READ_OBJECT);
+            if (myId < 0) {
+                status = myId;
+                rodsLog (LOG_ERROR,
+                 "chkCollForBundleOpr: no accPerm to specColl %s. status = %d",
+                  collEnt->specColl.collection, status);
+                rsCloseCollection (rsComm, &handleInx);
+                return status;
+	    }
+	    free (collEnt);
+	    collEnt = NULL;
+	    continue;
+	}
+
 	if (collEnt->objType == DATA_OBJ_T) {
             if (curCollEnt == NULL) {
 	        curCollEnt = collEnt;
@@ -125,7 +149,8 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
                     /* we have a good copy. Check the permission */
                     myId = checkAndGetObjectId (rsComm, "-d", myPath,
                       ACCESS_READ_OBJECT);
-		    if (myId < 0) {
+                    if (myId < 0 && myId != CAT_UNKNOWN_FILE) {
+                        /* could return CAT_UNKNOWN_FILE if mounted files */
 			status = myId;
 			rodsLog (LOG_ERROR,
                          "chkCollForBundleOpr: no accPerm to %s. status = %d",
@@ -144,7 +169,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 		    }
 		}
 	    }
-	}	/* don't need to handle collection */
+	}	
     }
 
     /* handle what's left */

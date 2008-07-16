@@ -28,6 +28,8 @@ isAllDigit (char *myStr);
 int
 splitPathByKey (char *srcPath, char *dir, char *file, char key);
 int
+getParentPathlen (char *path);
+int
 trimQuotes(char *s);
 #ifdef  __cplusplus
 }

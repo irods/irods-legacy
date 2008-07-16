@@ -87,6 +87,10 @@ char *subFilePath);
 int
 tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 int
+tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+int
+tarPhyStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
+int
 tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 int
 syncCacheDirToTarfile (int structFileInx, int oprType);

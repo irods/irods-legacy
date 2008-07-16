@@ -26,12 +26,15 @@ _rsSyncMountedColl (rsComm_t *rsComm, specColl_t *specColl, int oprType);
 #define RS_SYNC_MOUNTED_COLL NULL
 #endif
 
-/* flag for oprType of dataObjInp_t */
+/* flag for oprType of dataObjInp_t and structFileOprInp_t. */
 
 #define PURGE_STRUCT_FILE_CACHE	0x1 
 #define DELETE_STRUCT_FILE	0x2 
 #define NO_REG_COLL_INFO	0x4	/* don't register collInfo even if
 					 * struct file is changed */ 
+#define LOGICAL_BUNDLE		0x8	/* use the filePath associated with
+					 * the logical path instead of
+					 * the path in cacheDir */  
 
 #ifdef  __cplusplus
 extern "C" {

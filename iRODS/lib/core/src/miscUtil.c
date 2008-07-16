@@ -127,6 +127,32 @@ mkdirR (char *startDir, char *destDir, int mode)
     return 0;
 }
 
+int
+rmdirR (char *startDir, char *destDir)
+{
+    int startLen;
+    int pathLen, tmpLen;
+    char tmpPath[MAX_NAME_LEN];
+
+    startLen = strlen (startDir);
+    pathLen = strlen (destDir);
+
+    rstrcpy (tmpPath, destDir, MAX_NAME_LEN);
+
+    tmpLen = pathLen;
+
+    while (tmpLen > startLen) {
+	rmdir (tmpPath);
+
+        /* Go backward */
+
+        while (tmpLen && tmpPath[tmpLen] != '/')
+            tmpLen --;
+        tmpPath[tmpLen] = '\0';
+    }
+    return (0);
+}
+
 int 
 getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
 {
@@ -1231,6 +1257,7 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     if (rodsObjStat->specColl != NULL) {
 	outCollEnt->resource = rodsObjStat->specColl->resource;
 	outCollEnt->ownerName = rodsObjStat->ownerName;
+	outCollEnt->replStatus = NEWLY_CREATED_COPY;
     } else {
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;

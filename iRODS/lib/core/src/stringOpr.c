@@ -284,6 +284,28 @@ splitPathByKey (char *srcPath, char *dir, char *file, char key)
     return (SYS_INVALID_FILE_PATH);
 }
 
+/* get the strlen of the parent, including the last '/'
+ */
+
+int
+getParentPathlen (char *path) 
+{
+    int len;
+    char *tmpPtr;
+
+    if (path == NULL) return 0;
+    len = strlen (path);
+
+    tmpPtr = path + len;
+
+    while (len >= 0) {
+	if (*tmpPtr == '/') break;
+	len --;
+	tmpPtr --;
+    }
+    return (len + 1);
+}
+
 int
 trimWS(char *s) 
 {

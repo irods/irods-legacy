@@ -78,7 +78,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
         return (status);
     }
 
-    structFileOprInp.oprType = NO_REG_COLL_INFO;
+    structFileOprInp.oprType = NO_REG_COLL_INFO | LOGICAL_BUNDLE;
     structFileOprInp.specColl->cacheDirty = 1;
 
     status = rsStructFileSync (rsComm, &structFileOprInp);

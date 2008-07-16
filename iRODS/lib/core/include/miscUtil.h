@@ -125,6 +125,8 @@ extern "C" {
 int
 mkdirR (char *startDir, char *destDir, int mode);
 int
+rmdirR (char *startDir, char *destDir);
+int
 mkColl (rcComm_t *conn, char *collection);
 int
 mkCollR (rcComm_t *conn, char *startColl, char *destColl);

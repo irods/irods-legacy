@@ -29,6 +29,9 @@ rsOpenCollection (rsComm_t *rsComm, openCollInp_t *openCollInp)
 
     rstrcpy (collHandle->dataObjInp.objPath, openCollInp->collName, 
       MAX_NAME_LEN);
+    if ((openCollInp->flags & INCLUDE_CONDINPUT_IN_QUERY) != 0) {
+	replKeyVal (&openCollInp->condInput, &collHandle->dataObjInp.condInput);
+    }
     status = rsObjStat (rsComm, &collHandle->dataObjInp, &rodsObjStatOut);
 
 

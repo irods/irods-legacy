@@ -14,6 +14,8 @@
 #include "apiNumber.h"
 #include "initServer.h"
 
+/* definition for flags */
+
 typedef struct StructFileOprInp {
     rodsHostAddr_t addr;
     int oprType;
