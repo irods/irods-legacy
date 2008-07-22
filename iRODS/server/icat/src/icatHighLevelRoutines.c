@@ -5060,7 +5060,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
 {
    int status;
    rodsLong_t objId;
-   char *myValue2, *myValue3, *myComment;
+   char *myValue1, *myValue2, *myValue3, *myComment;
    char myTime[50];
    rodsLong_t seqNum;
    char errMsg[205];
@@ -5071,7 +5071,6 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
 
    if (nameSpace==NULL || strlen(nameSpace)==0) return (CAT_INVALID_ARGUMENT);
    if (name==NULL || strlen(name)==0) return (CAT_INVALID_ARGUMENT);
-   if (value==NULL || strlen(value)==0) return (CAT_INVALID_ARGUMENT);
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegToken SQL 1 ");
    status = cmlGetIntegerValueFromSql(
@@ -5097,6 +5096,8 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
       return (CAT_INVALID_ARGUMENT);
    }
 
+   myValue1=value;
+   if (myValue1==NULL) myValue1="";
    myValue2=value2;
    if (myValue2==NULL) myValue2="";
    myValue3=value3;
@@ -5117,7 +5118,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    cllBindVars[cllBindVarCount++]=nameSpace;
    cllBindVars[cllBindVarCount++]=seqNumStr;
    cllBindVars[cllBindVarCount++]=name;
-   cllBindVars[cllBindVarCount++]=value;
+   cllBindVars[cllBindVarCount++]=myValue1;
    cllBindVars[cllBindVarCount++]=myValue2;
    cllBindVars[cllBindVarCount++]=myValue3;
    cllBindVars[cllBindVarCount++]=myComment;

@@ -43,6 +43,7 @@ insert into R_TOKN_MAIN values ('object_type',306,'collection','','','','','1170
 insert into R_TOKN_MAIN values ('object_type',307,'token','','','','','1170000000','1170000000');
 
 insert into R_TOKN_MAIN values ('resc_type',400,'unix file system','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('resc_type',401,'hpss file system','','','','','1170000000','1170000000');
 
 insert into R_TOKN_MAIN values ('resc_class',500,'cache','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',501,'archive','','','','','1170000000','1170000000');

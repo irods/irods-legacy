@@ -138,7 +138,7 @@ int rdaClose() {
 
 int rdaCommit() {
 #if defined(BUILD_RDA) 
-   int status, stat2;
+   int status;
 
    status = cllExecSqlNoResult(&rda_icss, "commit");
    return(status);
