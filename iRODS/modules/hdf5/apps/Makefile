@@ -1,4 +1,5 @@
-# Makefile - This is the makefile for libjh5srb.so, jh5srb.class. 
+# Makefile - This is the makefile for build standalone HDF5/iRods 
+# client application.
 SHELL=/bin/csh
 
 # these parameters needs to be changed
