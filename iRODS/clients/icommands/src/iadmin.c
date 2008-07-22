@@ -848,8 +848,8 @@ void usageMain()
 " rfg groupName userName (remove from group - remove a user from a group)",
 " atrg resourceGroupName resourceName (add (resource) to resource group)",
 " rfrg resourceGroupName resourceName (remove (resource) from resource group)",
-" at tokenNamespace Name Value [Value2] [Value3] (add token) ",
-" rt tokenNamespace Name Value (remove token) ",
+" at tokenNamespace Name [Value1] [Value2] [Value3] (add token) ",
+" rt tokenNamespace Name [Value1] (remove token) ",
 " spass Password Key (print a scrambled form of a password for DB)",
 " dspass Password Key (descramble a password and print it)",
 " pv [date-time] [repeat-time(minutes)] (initiate a periodic rule to vacuum the DB)",
@@ -1035,13 +1035,13 @@ usage(char *subOpt)
 ""};
 
    char *atMsgs[]={
-" at tokenNamespace Name Value [Value2] [Value3] [comment] (add token) ",
+" at tokenNamespace Name [Value1] [Value2] [Value3] [comment] (add token) ",
 "Add a new token.  The most common use of this is to add",
 "data_type or user_type tokens.  See lt to display currently defined tokens.",
 ""};
 
    char *rtMsgs[]={
-" rt tokenNamespace Name Value (remove token) ",
+" rt tokenNamespace Name [Value] (remove token) ",
 "Remove a token.  The most common use of this is to remove",
 "data_type or user_type tokens.  See lt to display currently defined tokens.",
 ""};
