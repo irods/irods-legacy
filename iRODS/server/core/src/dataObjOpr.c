@@ -18,6 +18,9 @@
 #include "reSysDataObjOpr.h"
 #include "genQuery.h"
 #include "rodsClient.h"
+#ifdef LOG_TRANSFERS
+#include <sys/time.h>
+#endif
 
 int
 initL1desc ()
@@ -152,6 +155,10 @@ dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize)
 	    rstrcpy (L1desc[l1descInx].chksum, tmpPtr, NAME_LEN);
 	}
     }
+#ifdef LOG_TRANSFERS
+    (void)gettimeofday(&L1desc[l1descInx].openStartTime,
+		       (struct timezone *)0);
+#endif
     return (0);
 }
 
