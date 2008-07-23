@@ -46,6 +46,9 @@ typedef struct l1desc {
     int chksumFlag;     /* parsed from condition */
     int srcL1descInx;
     char chksum[NAME_LEN]; /* the input chksum */
+#ifdef LOG_TRANSFERS
+    struct timeval openStartTime;
+#endif
 } l1desc_t;
 
 int
