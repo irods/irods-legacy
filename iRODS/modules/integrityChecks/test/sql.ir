@@ -1,0 +1,3 @@
+simpleSQLquery||msiCheckFilesizeRange(*A,*B,*C,*SUSAN)|nop
+*A=/tempZone/home/rods%*B=10%*C=1000
+ruleExecOut%*SUSAN

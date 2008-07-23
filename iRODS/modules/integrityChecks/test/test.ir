@@ -1,0 +1,3 @@
+myCollCheck||msiHiThere(NULL,NULL,NULL,*I)##writePosInt(stdout,*I)##writeLine(stdout, "")|nop
+null
+ruleExecOut
