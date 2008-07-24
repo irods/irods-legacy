@@ -28,6 +28,10 @@
 #include "icatMidLevelRoutines.h"
 #include "icatLowLevel.h"
 
+#define LIMIT_AUDIT_ACCESS 1  /* undefine this if you want to allow
+                                 access to the audit tables by
+                                 non-privileged users */
+
 int logSQLGenQuery=0;
 
 void icatGeneralQuerySetup();
@@ -926,6 +930,14 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
 		genQueryInp.selectInp.inx[i]);
 	 return(CAT_UNKNOWN_TABLE);
       }
+#ifdef LIMIT_AUDIT_ACCESS
+      if (genQueryInp.selectInp.inx[i] >= COL_AUDIT_RANGE_START &&
+	  genQueryInp.selectInp.inx[i] <= COL_AUDIT_RANGE_END) {
+	 if (accessControlPriv != LOCAL_PRIV_USER_AUTH) {
+	    return(CAT_NO_ACCESS_PERMISSION);
+	 }
+      }
+#endif
    }
 
    for (i=0;i<genQueryInp.sqlCondInp.len;i++) {
@@ -947,6 +959,14 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
 	 status = insertWhere(condition, 0);
 	 if (status) return(status);
       }
+#ifdef LIMIT_AUDIT_ACCESS
+      if (genQueryInp.sqlCondInp.inx[i] >= COL_AUDIT_RANGE_START &&
+	  genQueryInp.sqlCondInp.inx[i] <= COL_AUDIT_RANGE_END) {
+	 if (accessControlPriv != LOCAL_PRIV_USER_AUTH) {
+	    return(CAT_NO_ACCESS_PERMISSION);
+	 }
+      }
+#endif
    }
 
    keepVal = tScan(table, -1);
