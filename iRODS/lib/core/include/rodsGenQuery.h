@@ -241,6 +241,10 @@ primary ordering column.
 #define COL_AUDIT_CREATE_TIME 1204
 #define COL_AUDIT_MODIFY_TIME 1205
 
+/* Range of the Audit columns; used sometimes to restrict access */
+#define COL_AUDIT_RANGE_START 1200
+#define COL_AUDIT_RANGE_END   1299
+
 /* R_COLL_USER_MAIN (r_user_main for Collection information) */
 #define COL_COLL_USER_NAME    1300
 
