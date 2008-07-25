@@ -27,7 +27,7 @@ main(int argc, char **argv)
     char buf1[MAX_PASSWORD_LEN+10];
     char buf2[MAX_PASSWORD_LEN+10];
 
-    modAVUMetadataInp_t modAVUMetadataInp;
+    userAdminInp_t userAdminInp;
 
     /* this is a random string used to pad, arbitrary, but must match
        the server side: */
@@ -128,15 +128,14 @@ main(int argc, char **argv)
     }
     obfEncodeByKey(buf0, buf1, buf2);
 
-    /* Hack for now, using ModAVUMetatdata */
-    modAVUMetadataInp.arg0 = "userpw";
-    modAVUMetadataInp.arg1 = myEnv.rodsUserName;
-    modAVUMetadataInp.arg2 = "password";
-    modAVUMetadataInp.arg3 = buf2;
+    userAdminInp.arg0 = "userpw";
+    userAdminInp.arg1 = myEnv.rodsUserName;
+    userAdminInp.arg2 = "password";
+    userAdminInp.arg3 = buf2;
 
-    status = rcModAVUMetadata(Conn, &modAVUMetadataInp);
+    status = rcUserAdmin(Conn, &userAdminInp);
     if (status != 0) {
-       rodsLog (LOG_ERROR, "rcModAVUMetadata error. status = %d",
+       rodsLog (LOG_ERROR, "rcUserAdmin error. status = %d",
 		status);
 
     }
