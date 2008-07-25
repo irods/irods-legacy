@@ -111,4 +111,5 @@
 #include "structFileExtAndReg.h"
 #include "structFileBundle.h"
 #include "chkObjPermAndStat.h"
+#include "userAdmin.h"
 #endif	/* API_HEADER_ALL_H */

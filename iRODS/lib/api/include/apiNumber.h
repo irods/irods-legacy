@@ -119,5 +119,6 @@
 #define GSI_AUTH_REQUEST_AN		711
 #define OPEN_COLLECTION_AN 			712
 #define READ_COLLECTION_AN 			713
+#define USER_ADMIN_AN 			714
 
 #endif	/* API_NUMBER_H */

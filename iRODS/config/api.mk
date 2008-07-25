@@ -316,3 +316,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcStructFileBundle.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsChkObjPermAndStat.o
 LIB_API_OBJS += $(libApiObjDir)/rcChkObjPermAndStat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsUserAdmin.o
+LIB_API_OBJS += $(libApiObjDir)/rcUserAdmin.o
