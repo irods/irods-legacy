@@ -34,6 +34,7 @@
 #include "icatHighLevelRoutines.h"
 
 /* For now, uncomment this line to build RDA #define BUILD_RDA 1  */
+#define BUILD_RDA 1
 /* Do same in reRDA.c */
 
 #define RDA_CONFIG_FILE "rda.config"
@@ -237,6 +238,7 @@ int rdaSqlWithResults(char *sql, char *parm[], int nParms, char **outBuf) {
    int maxOutBuf;
    char *myBuf, *pbuf;
    static char resultBuf1[RESULT_BUF1_SIZE+10];
+   int totalRows, toMalloc;
 
    for (i=0;i<nParms;i++) {
       cllBindVars[i]=parm[i];
@@ -250,8 +252,6 @@ int rdaSqlWithResults(char *sql, char *parm[], int nParms, char **outBuf) {
    myBuf=resultBuf1; /* Initially, use this buffer */
    maxOutBuf=RESULT_BUF1_SIZE;
    memset(myBuf, 0, maxOutBuf);
-
-   pbuf = myBuf;
 
    for (rowCount=0;;rowCount++) {
       i = cllGetRow(&rda_icss, statement);
@@ -285,17 +285,38 @@ int rdaSqlWithResults(char *sql, char *parm[], int nParms, char **outBuf) {
       }
       rstrcat(myBuf, "\n", maxOutBuf);
       if (rowSize==0) {
-	 int totalRows, toMalloc;
 	 rowSize=strlen(myBuf);
 	 totalRows=cllGetRowCount(&rda_icss, statement);
 	 printf("rowSize=%d, totalRows=%d\n",rowSize, totalRows);
 	 if (totalRows < 0) return(totalRows);
-	 toMalloc=(totalRows*rowSize)*3;
+	 if (totalRows == 0) {
+	    /* Unknown number of rows available (Oracle) */
+	    totalRows=10; /* to start with */
+	 }
+	 toMalloc=((totalRows+1)*rowSize)*3;
 	 myBuf=malloc(toMalloc);
 	 if (myBuf <=0) return(SYS_MALLOC_ERR);
 	 maxOutBuf=toMalloc;
 	 memset(myBuf, 0, maxOutBuf);
 	 rstrcpy(myBuf, resultBuf1, RESULT_BUF1_SIZE);
+      }
+      if (rowCount > totalRows) {
+	 int oldTotalRows;
+	 oldTotalRows = totalRows;
+	 if (totalRows < 1000) {
+	    totalRows = totalRows*2;
+	 }
+	 else {
+	    totalRows = totalRows+500;
+	 }
+	 pbuf = myBuf;
+	 toMalloc=((totalRows+1)*rowSize)*3;
+	 myBuf=malloc(toMalloc);
+	 if (myBuf <=0) return(SYS_MALLOC_ERR);
+	 maxOutBuf=toMalloc;
+	 memset(myBuf, 0, maxOutBuf);
+	 strcpy(myBuf, pbuf);
+	 free(pbuf);
       }
    }
 
