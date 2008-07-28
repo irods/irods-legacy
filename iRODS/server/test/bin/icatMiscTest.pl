@@ -117,7 +117,16 @@ runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 987654321");
 # Mod without audit should not auto-commit
 $ENV{'irodsDebug'}='noop'; # override value in irodsEnv file
 runCmd(0, "test_chl modrfs $Resc 123456789 close");
-runCmd(2, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
+
+require "../../../config/irods.config";
+if ($DATABASE_TYPE eq "oracle") {
+#   oracle does autocommit so don't check the result
+    runCmd(1, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
+}
+else {
+#   but postgres does, so check it
+    runCmd(2, "iadmin lr $Resc | grep -i free_space: | grep 123456789");
+}
 delete $ENV{'irodsDebug'};
 
 runCmd(0, "test_chl modrfs $Resc ''");
@@ -163,7 +172,7 @@ runCmd(1, "iadmin rmuser $User2");
 runCmd(0, "iadmin mkuser $User2 rodsuser");
 runCmd(0, "iadmin moduser $User2 password 123");
 #$ENV{'irodsUserName'}=$User2; 
-require "../../../config/irods.config";
+#   $IRODS_ADMIN_PASSWORD is from ../../../config/irods.config
 runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'irodsUserName'};
 
