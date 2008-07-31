@@ -14,13 +14,18 @@
 
 #include "rods.h"
 #include "rodsDef.h"
-#include "reGlobalsExtern.h"
-#include "rsGlobalExtern.h"
-#include "rcGlobalExtern.h"
+//#include "reGlobalsExtern.h"
+//#include "rsGlobalExtern.h"
+//#include "rcGlobalExtern.h"
+#include "miscUtil.h"
+#include "apiHeaderAll.h"
+#include "objMetaOpr.h"
 
 
 int msiHiThere (ruleExecInfo_t *rei);
 int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei);
 int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei);
+
+int hithere ();
 
 #endif	/* INTEGRITYCHECKS_H */

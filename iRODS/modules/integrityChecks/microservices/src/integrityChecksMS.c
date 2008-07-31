@@ -4,10 +4,11 @@
 int isItemInList (char* item, char* list) {
 	
 	int	itemfoundflag=0;
-	char test[80], blah[80];
+	//char test[80], blah[80];
 	char qstr[200];
 	char *sep = ",";
-	char *word, *phrase, *brkt, *brkb;
+	char *word, *brkt; 
+	//char *phrase, *brkb;
 	int	numwords=0;
 	char *endptr;
 
@@ -32,7 +33,6 @@ int isItemInList (char* item, char* list) {
 	}
 
 	fprintf (stderr, "query : %s\n", qstr);
-
 	
 	return (itemfoundflag);
 }
@@ -53,8 +53,6 @@ int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1
 	char* key;
 	char* value;
 	
-	char* attrs[]={"filename", "datatype"};
-
 	RE_TEST_MACRO ("    Calling msiCheckDatatypes")
 
 	/* Sanity check */
@@ -157,7 +155,6 @@ int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1
 
 }
 
-
 int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei) {
 
 	genQueryInp_t genQueryInp;
@@ -171,13 +168,10 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 	sqlResult_t *dataName;
 	sqlResult_t *dataSize;
 
-	char* colname[MAX_SQL_ATTR];
 	keyValPair_t	*results;	
 	char* key;
 	char* value;
 	
-	char* attrs[]={"filename", "filesize", "collname"};
-
 	RE_TEST_MACRO ("    Calling msiCheckFilesizeRange")
 
 	/* Sanity check */
@@ -213,13 +207,6 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 	snprintf (condStr, MAX_NAME_LEN, " > '%s'", maxfilesize);
 	addInxVal (&genQueryInp.sqlCondInp, COL_DATA_SIZE, condStr); 
 	
-/*
-	fprintf (stderr,"\n");
-	printGenQI(&genQueryInp);  
-	fprintf (stderr,"\n");
-	rodsLog (LOG_ERROR, "2 s tuff: ");
-*/
-
 	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
 	if (j != CAT_NO_ROWS_FOUND) {
@@ -286,9 +273,7 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 
 	/* print out KeyVal struct */
 /*
-	rodsLog (LOG_ERROR, "6.5 stuff: ");
 	fprintf (stderr, "results.len: %d\n", results->len);
-	rodsLog (LOG_ERROR, "6.6 stuff: ");
 	for (i=0; i<results->len; i++) {
 		fprintf (stderr, "key: %s = value: %s\n", results->keyWord[i], results->value[i]);
 	}
@@ -304,6 +289,7 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 }
 
 
+/* Silly hello world microservice */
 int msiHiThere (ruleExecInfo_t *rei) {
 
 	int i;
@@ -311,9 +297,6 @@ int msiHiThere (ruleExecInfo_t *rei) {
 	RE_TEST_MACRO ("    Calling msiHiThere")
 
 	i = hithere ();
-
-	//fillIntInMsParam (mPout2, i);
-
 	return(i);
 }
 
