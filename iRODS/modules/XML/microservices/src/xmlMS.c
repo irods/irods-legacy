@@ -7,6 +7,7 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
+#include <libxml/xmlschemas.h>
 
 
 
@@ -27,6 +28,7 @@ xmlNodePtr getChildNodeByName(xmlNodePtr cur, char *name){
 
 	return NULL;
 }
+
 
 
 
@@ -233,6 +235,273 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	return (SYS_NOT_SUPPORTED);
 }
 #endif
+
+
+
+/*
+ * msiXmlDocSchemaValidate()
+ *
+ */
+int 
+msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status, ruleExecInfo_t *rei) 
+{
+	/* for parsing msParams and to open iRods objects */
+	dataObjInp_t xmlObjInp, *myXmlObjInp;
+	dataObjInp_t xsdObjInp, *myXsdObjInp;
+	int xmlObjID, xsdObjID;
+
+	/* for getting size of objects to read from */
+	rodsObjStat_t *rodsObjStatOut = NULL;
+
+	/* for reading from iRods objects */
+	dataObjReadInp_t dataObjReadInp;
+	dataObjCloseInp_t dataObjCloseInp;
+	bytesBuf_t xmlBuf;
+	char *tail;
+
+	/* for xml parsing and validating */
+	xmlDocPtr doc, xsd_doc;
+	xmlSchemaParserCtxtPtr parser_ctxt;
+	xmlSchemaPtr schema;
+	xmlSchemaValidCtxtPtr valid_ctxt;
+
+	/* misc. to avoid repeating rei->rsComm */
+	rsComm_t *rsComm;
+
+
+
+	/*************************************  USUAL INIT PROCEDURE **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiXmlDocSchemaValidate")
+
+
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	rsComm = rei->rsComm;
+
+
+
+	/************************************ ADDITIONAL INIT SETTINGS *********************************/
+
+	/* XML constants */
+	xmlSubstituteEntitiesDefault(1);
+	xmlLoadExtDtdDefaultValue = 1;
+
+
+	/* Default output is negative, overwrite if success */
+	fillIntInMsParam (status, -1);
+
+
+	
+	/********************************** RETRIEVE INPUT PARAMS **************************************/
+
+	/* Get path of XML document */
+	rei->status = parseMspForDataObjInp (xmlObj, &xmlObjInp, &myXmlObjInp, 0);
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: input xmlObj error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+
+	/* Get path of schema */
+	rei->status = parseMspForDataObjInp (xsdObj, &xsdObjInp, &myXsdObjInp, 0);
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: input xsdObj error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+
+	/******************************** OPEN AND READ FROM XML OBJECT ********************************/
+
+	/* Open XML file */
+	if ((xmlObjID = rsDataObjOpen(rsComm, &xmlObjInp)) < 0) 
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Cannot open XML data object. status = %d", xmlObjID);
+		return (xmlObjID);
+	}
+
+
+	/* Get size of XML file */
+	rei->status = rsObjStat (rsComm, &xmlObjInp, &rodsObjStatOut);
+
+
+	/* Read content of XML file */
+	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
+	dataObjReadInp.l1descInx = xmlObjID;
+	dataObjReadInp.len = (int)rodsObjStatOut->objSize + 1;	/* extra byte to add a null char */
+
+	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
+
+	/* add terminating null character */
+	tail = xmlBuf.buf;
+	tail[dataObjReadInp.len - 1] = '\0';
+
+
+	/* Close XML file */
+	memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+	dataObjCloseInp.l1descInx = xmlObjID;
+	
+	rei->status = rsDataObjClose (rsComm, &dataObjCloseInp);
+
+	/* cleanup */
+	freeRodsObjStat (rodsObjStatOut);
+
+
+
+	/*************************************** PARSE XML DOCUMENT **************************************/
+
+	/* Parse xmlBuf.buf into an xmlDocPtr */
+	doc = xmlParseDoc((const xmlChar*)xmlBuf.buf);
+	clearBBuf(&xmlBuf);
+
+	if (doc == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: XML document cannot be loaded or is not well-formed.");
+
+	        xmlCleanupParser();
+
+	        return (USER_INPUT_FORMAT_ERR);
+	}
+
+
+
+	/******************************** OPEN AND READ FROM XSD OBJECT ********************************/
+
+	/* Open schema file */
+	if ((xsdObjID = rsDataObjOpen(rsComm, &xsdObjInp)) < 0) 
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Cannot open XSD data object. status = %d", xsdObjID);
+
+		xmlFreeDoc(doc);
+	        xmlCleanupParser();
+
+		return (xsdObjID);
+	}
+
+
+	/* Get size of schema file */
+	rei->status = rsObjStat (rsComm, &xsdObjInp, &rodsObjStatOut);
+
+
+	/* Read entire schema file */
+	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
+	dataObjReadInp.l1descInx = xsdObjID;
+	dataObjReadInp.len = (int)rodsObjStatOut->objSize + 1;	/* to add null char */
+
+	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
+
+	/* add terminating null character */
+	tail = xmlBuf.buf;
+	tail[dataObjReadInp.len - 1] = '\0';
+
+
+	/* Close schema file */
+	memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+	dataObjCloseInp.l1descInx = xsdObjID;
+	
+	rei->status = rsDataObjClose (rsComm, &dataObjCloseInp);
+
+	/* cleanup */
+	freeRodsObjStat (rodsObjStatOut);
+
+
+
+	/*************************************** PARSE XSD DOCUMENT **************************************/
+
+	/* Parse xmlBuf.buf into an xmlDocPtr */
+	xsd_doc = xmlParseDoc((const xmlChar*)xmlBuf.buf);
+	clearBBuf(&xmlBuf);
+
+	if (xsd_doc == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: XML Schema cannot be loaded or is not well-formed.");
+
+		xmlFreeDoc(doc);
+		xmlCleanupParser();
+
+	        return (USER_INPUT_FORMAT_ERR);
+	}
+
+
+
+	/**************************************** VALIDATE DOCUMENT **************************************/
+
+	/* Create a parser context */
+	parser_ctxt = xmlSchemaNewDocParserCtxt(xsd_doc);
+	if (parser_ctxt == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Unable to create a parser context for the schema.");
+
+		xmlFreeDoc(xsd_doc);
+		xmlFreeDoc(doc);
+	        xmlCleanupParser();
+
+	        return (USER_INPUT_FORMAT_ERR);
+	}
+
+
+	/* Parse the XML schema */
+	schema = xmlSchemaParse(parser_ctxt);
+	if (schema == NULL) 
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Invalid schema.");
+
+		xmlSchemaFreeParserCtxt(parser_ctxt);
+		xmlFreeDoc(doc);
+		xmlFreeDoc(xsd_doc);
+        	xmlCleanupParser();
+
+	        return (USER_INPUT_FORMAT_ERR);
+	}
+
+
+	/* Create a validation context */
+	valid_ctxt = xmlSchemaNewValidCtxt(schema);
+	if (valid_ctxt == NULL) 
+	{
+		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Unable to create a validation context for the schema.");
+
+		xmlSchemaFree(schema);
+		xmlSchemaFreeParserCtxt(parser_ctxt);
+		xmlFreeDoc(xsd_doc);
+		xmlFreeDoc(doc);
+	        xmlCleanupParser();
+
+	        return (USER_INPUT_FORMAT_ERR);
+	}
+
+
+	/* Validate XML doc*/
+	rei->status = xmlSchemaValidateDoc(valid_ctxt, doc);
+
+
+
+	/******************************************* WE'RE DONE ******************************************/
+
+	/* return operation status */
+	resetMsParam (status);
+	fillIntInMsParam (status, rei->status);
+
+
+	/* cleanup of all xml parsing stuff */
+	xmlSchemaFreeValidCtxt(valid_ctxt);
+	xmlSchemaFree(schema);
+	xmlSchemaFreeParserCtxt(parser_ctxt);
+	xmlFreeDoc(doc);
+	xmlFreeDoc(xsd_doc);
+        xmlCleanupParser();
+
+	return (rei->status);
+}
+
 
 
 

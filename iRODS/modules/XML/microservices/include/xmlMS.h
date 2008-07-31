@@ -13,6 +13,7 @@
 
 
 int msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *rei);
+int msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status, ruleExecInfo_t *rei);
 
 
 #endif	/* XMLMS_H */
