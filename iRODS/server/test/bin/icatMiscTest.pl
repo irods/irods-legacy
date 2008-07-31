@@ -96,6 +96,7 @@ runCmd(0, "test_genq gen7 i 1 10");
 runCmd(2, "test_genq gen7 i 20 10");
 runCmd(0, "test_genq gen8 / 0 10");
 runCmd(2, "test_genq gen8 abc 0 10");
+runCmd(0, "test_genq gen7 i 0 8 10"); # test totalRowCount
 
 # GenQuery options to check access; exercise cmlCheckDirId
 runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_GOOD $HOME");
