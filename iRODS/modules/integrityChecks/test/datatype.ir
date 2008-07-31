@@ -1,0 +1,3 @@
+checkdatatypes||msiCheckFileDatatypes(*A,*B,*STATUS))##writeKeyValPairs(stdout, *B, ": ")##writeLine(stdout,"")|nop
+*A=/tempZone/home/rods%*B=text,kitten 
+ruleExecOut%*STATUS
