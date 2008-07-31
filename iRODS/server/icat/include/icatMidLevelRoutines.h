@@ -32,6 +32,12 @@ int cmlGetOneRowFromSqlV2 (char *sql,
 			   char *bindVar2,
 			   icatSessionStruct *icss);
 
+int cmlGetRowFromSqlV3 (char *sql, 
+		   char *cVal[], 
+		   int cValSize[], 
+		   int numOfCols,
+		   icatSessionStruct *icss);
+
 int cmlFreeStatement(int statementNumber, 
 		     icatSessionStruct *icss);
 
@@ -80,6 +86,10 @@ int cmlGetIntegerValueFromSql (char *sql,
 			    char *bindVar2,
                             char *bindVar3,
 			    char *bindVar4,
+			    icatSessionStruct *icss);
+
+int cmlGetIntegerValueFromSqlV3 (char *sql, 
+			    rodsLong_t *iVal,
 			    icatSessionStruct *icss);
 
 int cmlCheckNameToken(char *nameSpace, 
