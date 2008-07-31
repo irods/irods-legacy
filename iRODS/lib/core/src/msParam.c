@@ -429,7 +429,7 @@ clearMsParam (msParam_t *msParam, int freeStruct)
     /* XXXXXX - need to free ther internal struct too */
     if (msParam->inOutStruct != NULL && freeStruct > 0)
 	free (msParam->inOutStruct);
-
+    memset (msParam, 0, sizeof (msParam_t));
     return (0);
 }
 
