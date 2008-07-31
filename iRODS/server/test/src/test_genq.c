@@ -304,7 +304,8 @@ doTest6(char *testString) {
 }
 
 int
-doTest7(char *testString, char *testString2, char *testString3) {
+doTest7(char *testString, char *testString2, char *testString3, 
+	char *minTotalRows) {
     genQueryInp_t genQueryInp;
     genQueryOut_t genQueryOut;
     char condStr1[MAX_NAME_LEN];
@@ -342,6 +343,16 @@ doTest7(char *testString, char *testString2, char *testString3) {
 
     if (status == 0) {
        printGenQOut(&genQueryOut);
+    }
+
+    if (minTotalRows != NULL && *minTotalRows!='\0') {
+       int minTotalRowsInt;
+       minTotalRowsInt  = atoi(minTotalRows);
+       if (genQueryOut.totalRowCount < minTotalRowsInt) {
+	  rodsLog (LOG_ERROR, "doTest7 chlGenQuery totalRowCount(%d) is less than minimum expected (%d)\n",
+		   genQueryOut.totalRowCount, minTotalRowsInt);
+	  return(-1);
+       }
     }
 
     if (genQueryOut.continueInx>0) {
@@ -741,7 +752,7 @@ main(int argc, char **argv) {
       }
 
       if (mode==8) {
-	 status = doTest7(argv[2], argv[3], argv[4]);
+	 status = doTest7(argv[2], argv[3], argv[4], argv[5]);
 	 if (status <0) exit(1);
 	 exit(0);
       }
