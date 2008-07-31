@@ -67,6 +67,8 @@ typedef struct MsParamArray {
 } msParamArray_t;
 
 int
+resetMsParam(msParam_t *msParam);
+int
 clearMsParam (msParam_t *msParam, int freeStruct);
 int
 addMsParam (msParamArray_t *msParamArray, char *label,

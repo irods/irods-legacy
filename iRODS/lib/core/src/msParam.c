@@ -433,6 +433,31 @@ clearMsParam (msParam_t *msParam, int freeStruct)
     return (0);
 }
 
+
+/* clears everything but the label */
+int
+resetMsParam(msParam_t *msParam)
+{
+	if (msParam == NULL) {
+		return (0);
+	}
+		
+	if (msParam->type != NULL) {
+		free (msParam->type);
+	}
+	
+	if (msParam->inOutStruct != NULL) {
+		free (msParam->inOutStruct);
+	}
+
+	if (msParam->inpOutBuf != NULL) {
+		freeBBuf (msParam->inpOutBuf);
+	}
+	
+	return (0);
+}
+
+
 int
 trimMsParamArray (msParamArray_t *msParamArray, char *outParamDesc)
 {
