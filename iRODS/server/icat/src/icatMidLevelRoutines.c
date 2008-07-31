@@ -186,6 +186,42 @@ int cmlGetOneRowFromSqlV2 (char *sql,
     return(stmtNum);  /* 0 or positive is the statement number */
 }
 
+/*
+ Like cmlGetOneRowFromSql but uses bind variable array (via 
+    cllExecSqlWithResult).
+ */
+int cmlGetOneRowFromSqlV3 (char *sql, 
+		   char *cVal[], 
+		   int cValSize[], 
+		   int numOfCols,
+		   icatSessionStruct *icss)
+{
+    int i,j, stmtNum, ii;
+    
+    i = cllExecSqlWithResult(icss, &stmtNum, sql);
+
+    if (i != 0) {
+      if (i <= CAT_ENV_ERR) return(i); /* already an iRODS error code */
+      return (CAT_SQL_ERR);
+    }
+    i = cllGetRow(icss,stmtNum);
+    if (i != 0)  {
+      ii = cllFreeStatement(icss,stmtNum);
+      return(CAT_GET_ROW_ERR);
+    }
+    if (icss->stmtPtr[stmtNum]->numOfCols == 0) {
+      ii = cllFreeStatement(icss,stmtNum);
+      return(CAT_NO_ROWS_FOUND);
+    }
+    for (j = 0; j < numOfCols && j < icss->stmtPtr[stmtNum]->numOfCols ; j++ ) 
+      rstrcpy(cVal[j],icss->stmtPtr[stmtNum]->resultValue[j],cValSize[j]);
+
+    i = cllFreeStatement(icss,stmtNum);
+    return(j);
+
+}
+
+
 int cmlFreeStatement(int statementNumber, icatSessionStruct *icss) 
 {
    int i;
@@ -397,6 +433,29 @@ int cmlGetIntegerValueFromSql (char *sql,
 
   i = cmlGetOneRowFromSqlBV (sql, cVal, &cValSize, 1, 
 			   bindVar1, bindVar2, bindVar3, bindVar4, icss);
+  if (i == 1) {
+     if (*cVal[0]=='\0') {
+	return(CAT_NO_ROWS_FOUND);
+     }
+    *iVal = strtoll(*cVal, NULL, 0);
+    return(0);
+  }
+  return(i);
+}
+
+/* Like cmlGetIntegerValueFromSql but uses bind-variable array */
+int cmlGetIntegerValueFromSqlV3 (char *sql, 
+			       rodsLong_t *iVal,
+			       icatSessionStruct *icss)
+{
+  int i, cValSize;
+  char *cVal[2];
+  char cValStr[MAX_INTEGER_SIZE+10];
+
+  cVal[0]=cValStr;
+  cValSize = MAX_INTEGER_SIZE;
+
+  i = cmlGetOneRowFromSqlV3 (sql, cVal, &cValSize, 1, icss);
   if (i == 1) {
      if (*cVal[0]=='\0') {
 	return(CAT_NO_ROWS_FOUND);

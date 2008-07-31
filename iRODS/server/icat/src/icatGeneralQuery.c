@@ -889,7 +889,8 @@ genqAppendAccessCheck() {
 Called by chlGenQuery to generate the SQL.
 */
 int
-generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
+generateSQL(genQueryInp_t genQueryInp, char *resultingSQL, 
+	    char *resultingCountSQL) {
    int i, table;
    int keepVal;
    char *condition;
@@ -897,6 +898,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
    int useGroupBy;
 
    char combinedSQL[MAX_SQL_SIZE];
+   char countSQL[MAX_SQL_SIZE];
 #if ORA_ICAT
 #else
    static char offsetStr[20];
@@ -1030,6 +1032,20 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL) {
    if (debug) printf("combinedSQL=:%s:\n",combinedSQL);
    strncpy(resultingSQL, combinedSQL, MAX_SQL_SIZE);
 
+#if ORA_ICAT
+   countSQL[0]='\0';
+   rstrcat(countSQL, "select distinct count(*) ", MAX_SQL_SIZE);
+   rstrcat(countSQL, fromSQL, MAX_SQL_SIZE);
+
+   if (strlen(whereSQL)>6) {
+      rstrcat(countSQL, " " , MAX_SQL_SIZE);
+      rstrcat(countSQL, whereSQL, MAX_SQL_SIZE);
+   }
+
+   if (debug) printf("countSQL=:%s:\n",countSQL);
+   strncpy(resultingCountSQL, countSQL, MAX_SQL_SIZE);
+
+#endif
    return(0);
 }
 
@@ -1134,6 +1150,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
    int needToGetNextRow;
 
    char combinedSQL[MAX_SQL_SIZE];
+   char countSQL[MAX_SQL_SIZE]; /* For Oracle, sql to get the count */
 
    int status, statementNum;
    int numOfCols;
@@ -1158,7 +1175,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
    if (debug) printf("icss=%d\n",(int)icss);
 
    if (genQueryInp.continueInx == 0) {
-      status = generateSQL(genQueryInp, combinedSQL);
+      status = generateSQL(genQueryInp, combinedSQL, countSQL);
       if (status != 0) return(status);
       if (logSQLGenQuery) {
 	 if (genQueryInp.rowOffset==0) {
@@ -1168,6 +1185,31 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 	    rodsLog(LOG_SQL, "chlGenQuery SQL 2");
 	 }
       }
+
+      if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT) {
+         /* For Oracle, done just below, for Postgres a little later */
+	 if (logSQLGenQuery) rodsLog(LOG_SQL, "chlGenQuery SQL 3");
+      }
+
+#if ORA_ICAT
+      if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT) {
+         int cllBindVarCountSave;
+         rodsLong_t iVal;
+         cllBindVarCountSave = cllBindVarCount;
+         status = cmlGetIntegerValueFromSqlV3(countSQL, &iVal, 
+                                            icss);
+         if (status < 0) {
+	    if (status != CAT_NO_ROWS_FOUND) {
+	       rodsLog(LOG_NOTICE,
+		 "chlGenQuery cmlGetFirstRowFromSql failure %d",
+		 status);
+  	    }
+	    return(status);
+         }
+	 if (iVal >= 0) result->totalRowCount = iVal;
+         cllBindVarCount = cllBindVarCountSave;
+      }
+#endif
 
       status = cmlGetFirstRowFromSql(combinedSQL, &statementNum, 
                                      genQueryInp.rowOffset, icss);
@@ -1180,11 +1222,13 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 	 return(status);
       }
 
+#if ORA_ICAT
+#else
       if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT) {
-	 if (logSQLGenQuery) rodsLog(LOG_SQL, "chlGenQuery SQL 3");
 	 i = cllGetRowCount(icss, statementNum);
 	 if (i >= 0) result->totalRowCount = i + genQueryInp.rowOffset;
       }
+#endif
 
       if (genQueryInp.condInput.len > 0) {
 	 status = checkCondInputAccess(genQueryInp, statementNum, icss, 0);

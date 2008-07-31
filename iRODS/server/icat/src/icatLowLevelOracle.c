@@ -877,6 +877,10 @@ cllCurrentValueString(char *itemName, char *outString, int maxSize) {
    return 0;
 }
 
+
+/* This doesn't work as I had expected (it did not return the total
+rows available).  See changes in icatGeneralQuery that now handle
+this. */
 int
 cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
    int i, stat;
