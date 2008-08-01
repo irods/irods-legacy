@@ -607,6 +607,7 @@ handleCompoundCondition(char *condition, int prevWhereLen)
    int type;
    char *cptr;
    int status;
+   int i;
    rstrcpy(cond, condition, MAX_NAME_LEN*2);
    cptr = strstr(cond, "||");
    if (cptr != NULL) {
@@ -619,6 +620,21 @@ handleCompoundCondition(char *condition, int prevWhereLen)
    }
    *cptr='\0';
    cptr+=2; /* past the && or || */
+
+   /* If there's an AND that was appended, need to include it */
+   i = prevWhereLen;
+   if (whereSQL[i]==' ') i++;
+   if (whereSQL[i]==' ') i++;
+   if (whereSQL[i]=='A') {
+      i++;
+      if (whereSQL[i]=='N') {
+	 i++;
+	 if (whereSQL[i]=='D') {
+	    i++;
+	    prevWhereLen=i;
+	 }
+      }
+   }
 
    rstrcpy(tabAndColumn, (char *)&whereSQL[prevWhereLen], MAX_SQL_SIZE);
    whereSQL[prevWhereLen]='\0'; /* reset whereSQL to previous spot */
