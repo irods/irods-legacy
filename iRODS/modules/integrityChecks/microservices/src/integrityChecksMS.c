@@ -1,4 +1,3 @@
-#include "rsApiHandler.h"
 #include "integrityChecksMS.h"
 
 int isItemInList (char* item, char* list) {
@@ -182,10 +181,15 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 
 	rsComm = rei->rsComm;
 
-	/* construct an SQL query from the parameter list */
+	/* construct an SQL query from the input parameter list */
 	strcpy (collname,  (char*) mPin1->inOutStruct);
 	strcpy (minfilesize, (char*) mPin2->inOutStruct);
 	strcpy (maxfilesize, (char*) mPin3->inOutStruct);
+
+	/* But first, make sure our size range is valid */
+	if (atoi(minfilesize) >= atoi(maxfilesize)) {
+		return (USER_PARAM_TYPE_ERR);
+	}
 
 	// initialize results to 0; AddKeyVal does all our malloc-ing
 	results = (keyValPair_t*) malloc (sizeof(keyValPair_t));
@@ -199,13 +203,22 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 	addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
 	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
 
+	rodsLog (LOG_ERROR, "2 stuff: ");
+
 	/* make the condition */
 	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
 	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr); 
-	snprintf (condStr, MAX_NAME_LEN, " < '%s'", minfilesize);
+	snprintf (condStr, MAX_NAME_LEN, " < '%s' || > '%s'", minfilesize, maxfilesize);
 	addInxVal (&genQueryInp.sqlCondInp, COL_DATA_SIZE, condStr); 
-	snprintf (condStr, MAX_NAME_LEN, " > '%s'", maxfilesize);
+
+	rodsLog (LOG_ERROR, "condStr:%s",condStr);
+
+/*
+	snprintf (condStr, MAX_NAME_LEN, " < '%s'", maxfilesize);
 	addInxVal (&genQueryInp.sqlCondInp, COL_DATA_SIZE, condStr); 
+*/
+
+	rodsLog (LOG_ERROR, "3 stuff: ");
 	
 	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 

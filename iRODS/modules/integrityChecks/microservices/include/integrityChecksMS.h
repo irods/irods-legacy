@@ -12,14 +12,15 @@
 #ifndef INTEGRITYCHECKS_H
 #define INTEGRITYCHECKS_H
 
-#include "rods.h"
-#include "rodsDef.h"
-//#include "reGlobalsExtern.h"
-//#include "rsGlobalExtern.h"
-//#include "rcGlobalExtern.h"
-#include "miscUtil.h"
+//#include "rods.h"
+//#include "rodsDef.h"
+//#include "miscUtil.h"
+//#include "apiHeaderAll.h"
+//#include "objMetaOpr.h"
+
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
+#include "miscUtil.h"
 
 
 int msiHiThere (ruleExecInfo_t *rei);
