@@ -1245,7 +1245,7 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
 	
 	/* buffer init */
 	mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
-	memset (mybuf, 0, sizeof (bytesBuf_t));	
+	memset (mybuf, 0, sizeof (bytesBuf_t));
 
 
 	/* parse inpParam1 (username input string) */
