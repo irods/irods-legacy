@@ -11,8 +11,13 @@
 
 
 
-xmlNodePtr getChildNodeByName(xmlNodePtr cur, char *name){
 
+
+
+/* get the first child node with a given name */
+static xmlNodePtr
+getChildNodeByName(xmlNodePtr cur, char *name)
+{
         if (cur == NULL || name == NULL)
 	{
 		return NULL;
@@ -31,16 +36,35 @@ xmlNodePtr getChildNodeByName(xmlNodePtr cur, char *name){
 
 
 
+/* custom handler to catch XML validation errors and print them to a buffer */
+static int 
+myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
+{
+	va_list ap;
+	char tmpStr[MAX_NAME_LEN];
+	int written;
 
-#if defined(LIBXML_XPATH_ENABLED) && \
-    defined(LIBXML_SAX1_ENABLED) && \
-    defined(LIBXML_OUTPUT_ENABLED)
+	va_start(ap, errMsg);
+	written = vsnprintf(tmpStr, MAX_NAME_LEN, errMsg, ap);
+	va_end(ap);
+
+	appendToByteBuf(errBuf, tmpStr);
+	return (written);
+}
+
+
 
 
 /*
  * msiLoadMetadataFromXml() - Prototype
  *
+ * Requires XPAth support
+ *
  */
+#if defined(LIBXML_XPATH_ENABLED) && \
+    defined(LIBXML_SAX1_ENABLED) && \
+    defined(LIBXML_OUTPUT_ENABLED)
+
 int 
 msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *rei) 
 {
@@ -264,6 +288,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	xmlSchemaParserCtxtPtr parser_ctxt;
 	xmlSchemaPtr schema;
 	xmlSchemaValidCtxtPtr valid_ctxt;
+	bytesBuf_t *errBuf;
 
 	/* misc. to avoid repeating rei->rsComm */
 	rsComm_t *rsComm;
@@ -294,9 +319,13 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	xmlLoadExtDtdDefaultValue = 1;
 
 
-	/* Default output is negative, overwrite if success */
-	fillIntInMsParam (status, -1);
+	/* allocate memory for output error buffer */
+	errBuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+	errBuf->buf = strdup("");
+	errBuf->len = strlen(errBuf->buf);
 
+	/* Default status is failure, overwrite if success */
+	fillBufLenInMsParam (status, -1, NULL);
 
 	
 	/********************************** RETRIEVE INPUT PARAMS **************************************/
@@ -479,16 +508,20 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	}
 
 
-	/* Validate XML doc*/
+	/* Set myErrorCallback() as the default handler for error messages and warnings */
+	xmlSchemaSetValidErrors(valid_ctxt, (xmlSchemaValidityErrorFunc)myErrorCallback, (xmlSchemaValidityWarningFunc)myErrorCallback, errBuf);
+
+
+	/* Validate XML doc */
 	rei->status = xmlSchemaValidateDoc(valid_ctxt, doc);
 
 
 
 	/******************************************* WE'RE DONE ******************************************/
 
-	/* return operation status */
+	/* return both error code and messages through status */
 	resetMsParam (status);
-	fillIntInMsParam (status, rei->status);
+	fillBufLenInMsParam (status, rei->status, errBuf);
 
 
 	/* cleanup of all xml parsing stuff */
