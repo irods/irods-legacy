@@ -914,8 +914,8 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    int useGroupBy;
 
    char combinedSQL[MAX_SQL_SIZE];
-   char countSQL[MAX_SQL_SIZE];
 #if ORA_ICAT
+   char countSQL[MAX_SQL_SIZE];
 #else
    static char offsetStr[20];
 #endif
@@ -1060,7 +1060,6 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 
    if (debug) printf("countSQL=:%s:\n",countSQL);
    strncpy(resultingCountSQL, countSQL, MAX_SQL_SIZE);
-
 #endif
    return(0);
 }
@@ -1175,6 +1174,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
    int maxColSize;
    int currentMaxColSize;
    char *tResult, *tResult2;
+   static int recursiveCall=0;
 
    if (logSQLGenQuery) rodsLog(LOG_SQL, "chlGenQuery");
 
@@ -1235,14 +1235,35 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 		 "chlGenQuery cmlGetFirstRowFromSql failure %d",
 		 status);
 	 }
+#if ORA_ICAT
+#else
+         else {
+            int saveStatus;
+            int newStatus;
+            if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT  &&
+	        genQueryInp.rowOffset > 0 ) {
+/* For Postgres in this  case, need to query again to determine total rows */
+               saveStatus = status;
+               recursiveCall=1;
+               genQueryInp.rowOffset = 0;
+               newStatus = chlGenQuery(genQueryInp, result);
+               return(saveStatus);
+            }
+         }
+#endif
 	 return(status);
       }
 
 #if ORA_ICAT
+      recursiveCall=0; /* avoid warning */
 #else
       if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT) {
 	 i = cllGetRowCount(icss, statementNum);
 	 if (i >= 0) result->totalRowCount = i + genQueryInp.rowOffset;
+         if (recursiveCall==1) {
+             recursiveCall=0;
+             return(status);
+         }
       }
 #endif
 
