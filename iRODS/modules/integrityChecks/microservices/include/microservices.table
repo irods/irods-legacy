@@ -2,4 +2,6 @@
 /* Service name			# args		Service function */
 { "msiHiThere",		4,		(funcPtr) msiHiThere },
 { "msiCheckFilesizeRange", 4, (funcPtr) msiCheckFilesizeRange },
+{ "msiCheckFileDatatypes", 3, (funcPtr) msiCheckFileDatatypes },
+{ "msiListCollection", 2, (funcPtr) msiListCollection },
 
