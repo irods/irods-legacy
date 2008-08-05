@@ -8,6 +8,7 @@
 int rdaOpen(char *rdaName);
 int rdaClose();
 int rdaCommit();
+int rdaRollback();
 int rdaIsConnected();
 int rdaSqlNoResults(char *sql, char *parm[], int nparms);
 int rdaSqlWithResults(char *sql, char *parm[], int nparms, char **outBuf);
