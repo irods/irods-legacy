@@ -14,7 +14,7 @@
 /*
  * \fn msiRdaStdout
  * \author Wayne Schroeder
- * \date   2007-05-12
+ * \date   2008-05-12
  * \brief This microservice calls new RDA functions to interface
  * to an arbitrary database (under iRODS access control), getting results
  * (i.e. from a query) and returning them in stdout.
@@ -126,7 +126,7 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
 /*
  * \fn msiRdaToDataObj
  * \author Wayne Schroeder
- * \date   2007-05-15
+ * \date   2008-05-15
  * \brief This microservice calls new RDA functions to interface
  * to an arbitrary database (under iRODS access control), getting results
  * (i.e. from a query) and writing them to an open DataObject.
@@ -258,7 +258,7 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
 /*
  * \fn msiRdaNoResults
  * \author Wayne Schroeder
- * \date   2007-06-03
+ * \date   2008-06-03
  * \brief This microservice calls new RDA functions to interface
  * to an arbitrary database (under iRODS access control), performing
  * a SQL that does not return results.
@@ -364,7 +364,7 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
 /*
  * \fn msiRdaCommit
  * \author Wayne Schroeder
- * \date   2007-06-03
+ * \date   2008-06-03
  * \brief This microservice calls new RDA functions to interface
  * to an arbitrary database (under iRODS access control), performing
  * a commit operation.
@@ -386,12 +386,49 @@ msiRdaCommit(ruleExecInfo_t *rei) {
 
     if (rei == NULL || rei->rsComm == NULL) {
 	rodsLog (LOG_ERROR,
-	  "msiRdaNoCommit rei or rsComm is NULL");
+	  "msiRdaCommit rei or rsComm is NULL");
 	return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     rsComm = rei->rsComm;
 
     status = rdaCommit(rsComm);
+    return(status);
+#else
+    return(RDA_NOT_COMPILED_IN);
+#endif
+}
+
+/*
+ * \fn msiRdaRollback
+ * \author Wayne Schroeder
+ * \date   2008-08-05
+ * \brief This microservice calls new RDA functions to interface
+ * to an arbitrary database (under iRODS access control), performing
+ * a rollback operation.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+
+int
+msiRdaRollback(ruleExecInfo_t *rei) {
+#if defined(BUILD_RDA) 
+    rsComm_t *rsComm; 
+    int status;
+
+    RE_TEST_MACRO ("    Calling msiRdaRollback")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+	rodsLog (LOG_ERROR,
+	  "msiRdaRollback rei or rsComm is NULL");
+	return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    rsComm = rei->rsComm;
+
+    status = rdaRollback(rsComm);
     return(status);
 #else
     return(RDA_NOT_COMPILED_IN);
