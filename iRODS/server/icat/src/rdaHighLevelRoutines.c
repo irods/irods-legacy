@@ -34,7 +34,6 @@
 #include "icatHighLevelRoutines.h"
 
 /* For now, uncomment this line to build RDA #define BUILD_RDA 1  */
-#define BUILD_RDA 1
 /* Do same in reRDA.c */
 
 #define RDA_CONFIG_FILE "rda.config"
@@ -142,6 +141,17 @@ int rdaCommit() {
    int status;
 
    status = cllExecSqlNoResult(&rda_icss, "commit");
+   return(status);
+#else
+   return(RDA_NOT_COMPILED_IN);
+#endif
+}
+
+int rdaRollback() {
+#if defined(BUILD_RDA) 
+   int status;
+
+   status = cllExecSqlNoResult(&rda_icss, "rollback");
    return(status);
 #else
    return(RDA_NOT_COMPILED_IN);
