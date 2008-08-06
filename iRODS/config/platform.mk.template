@@ -141,3 +141,8 @@ MY_CFLAG+= -DTAR_STRUCT_FILE -I$(tarDir) -I$(tarDir)/listhash \
 LDADD+=-L$(tarDir)/lib -ltar
 endif
 
+ifdef RBUDP_TRANSFER
+MY_CFLAG+= -DRBUDP_TRANSFER -I$(libCoreIncDir) -I$(libApiIncDir)        \
+		-I$(libMd5IncDir) -I$(libRbudpIncDir)
+endif
+
