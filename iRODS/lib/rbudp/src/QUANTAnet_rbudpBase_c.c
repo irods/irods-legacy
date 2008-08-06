@@ -33,7 +33,8 @@ const int SUCCESS;
 const int FAILED;
 #endif
 
-inline void TRACE_DEBUG( char *format, ...)
+// inline void TRACE_DEBUG( char *format, ...)
+void TRACE_DEBUG( char *format, ...)
 {
         va_list arglist;
         va_start( arglist, format);

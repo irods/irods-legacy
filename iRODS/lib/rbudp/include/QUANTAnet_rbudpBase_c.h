@@ -176,5 +176,6 @@ typedef struct  QUANTAnet_rbudpBase_c
 	void setverbose(rbudpBase_t *rbudpBase, int v );
 	void checkbuf( int udpSockfd, int sockbufsize, int verbose );
         int setUdpSockOpt (int udpSockfd);
-        inline void TRACE_DEBUG( char *format, ...);
+        // inline void TRACE_DEBUG( char *format, ...);
+        void TRACE_DEBUG( char *format, ...);
 #endif
