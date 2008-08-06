@@ -855,7 +855,7 @@ initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList)
     rbudpBase->udpSockBufSize = UDPSOCKBUF;
     rbudpBase->tcpPort = tcpPort;
     rbudpBase->tcpSockfd = tcpSock;
-    rbudpBase->hasTcpSock = 1;
+    rbudpBase->hasTcpSock = 0;	/* so it will close properly */
     rbudpBase->udpRemotePort = udpPort;
 
     /* connect to the server's UDP port */

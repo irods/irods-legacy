@@ -1395,6 +1395,8 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
           errno);
         CLOSE_SOCK (lsock);
         return (tcpSock);
+    } else {
+        CLOSE_SOCK (lsock);
     }
     status = readn (tcpSock, (char *) &udpPortBuf, sizeof (udpPortBuf));
     if (status != sizeof (udpPortBuf)) {
@@ -1430,7 +1432,7 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
 	rbudpReceiver.rbudpBase.tcpPort = getTcpPortFromPortList (thisPortList);
         rbudpReceiver.rbudpBase.tcpSockfd = tcpSock;
         rbudpReceiver.rbudpBase.udpSockfd = udpSockfd;
-        rbudpReceiver.rbudpBase.hasTcpSock = 1;
+        rbudpReceiver.rbudpBase.hasTcpSock = 0;
         rbudpReceiver.rbudpBase.udpRemotePort = ntohl (udpPortBuf);
 	/* use the addr of tcp sock */
         if (getpeername (tcpSock, 
@@ -1464,7 +1466,7 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
         rbudpSender.rbudpBase.tcpPort = getTcpPortFromPortList (thisPortList);
         rbudpSender.rbudpBase.tcpSockfd = tcpSock;
         rbudpSender.rbudpBase.udpSockfd = udpSockfd;
-        rbudpSender.rbudpBase.hasTcpSock = 1;
+        rbudpSender.rbudpBase.hasTcpSock = 0;
         rbudpSender.rbudpBase.udpRemotePort = ntohl (udpPortBuf);
         /* use the addr of tcp sock */
         if (getpeername (tcpSock,
