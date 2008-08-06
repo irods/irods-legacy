@@ -29,6 +29,8 @@ int getRodsEnv(rodsEnv *myRodsEnv);
 char *getRodsEnvFileName();
 char *getRodsEnvAuthFileName();
 
+int appendRodsEnv(char *appendText);
+
 #ifdef  __cplusplus
 }
 #endif
