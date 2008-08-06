@@ -7,6 +7,9 @@
 #include "rcMisc.h"
 #include "rcGlobalExtern.h"
 #include "miscServerFunct.h"
+#ifdef RBUDP_TRANSFER
+#include "QUANTAnet_rbudpBase_c.h"
+#endif  /* RBUDP_TRANSFER */
 
 
 #ifdef _WIN32
@@ -30,7 +33,7 @@ connToutHandler (int sig)
 
 /* open sock for incoming connection */
 int 
-sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr)
+sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
 {
     struct sockaddr_in  mySockAddr;
     int sock;
@@ -38,9 +41,15 @@ sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr)
     int svrPortRangeStart, svrPortRangeEnd;
     char *tmpPtr;
  
+    if (proto != SOCK_DGRAM && proto != SOCK_STREAM) {
+        rodsLog (LOG_ERROR,
+         "sockOpenForInConn() -- invalid input protocol %d", proto);
+        return SYS_INVALID_PROTOCOL_TYPE;
+    }
+
     memset((char *) &mySockAddr, 0, sizeof mySockAddr);
 
-    sock = socket (AF_INET, SOCK_STREAM, 0);
+    sock = socket (AF_INET, proto, 0);
 
     if (sock < 0) {
 	status = SYS_SOCK_OPEN_ERR - errno;
@@ -49,7 +58,8 @@ sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr)
 	return (status);
     }
 
-    if (rsComm != NULL) {
+    /* For SOCK_DGRAM, done in checkbuf */
+    if (proto == SOCK_STREAM) {
         rodsSetSockOpt (sock, rsComm->windowSize);
     }
 
@@ -898,7 +908,7 @@ setLocalAddr (int sock, struct sockaddr_in *localAddr)
             errno);
 	return USER_RODS_HOSTNAME_ERR;
     }
-    return 0;
+    return ntohs (localAddr->sin_port);
 }
 
 int
@@ -1276,5 +1286,49 @@ readReconMsg (int sock, reconnMsg_t **reconnMsg)
 	 status);
     } 
     return (status);
+}
+
+int
+addUdpPortToPortList (portList_t *thisPortList, int udpport)
+{
+    /* put udpport in the upper 16 bits of portNum */
+    thisPortList->portNum |= udpport << 16;
+    return 0;
+}
+
+int
+getUdpPortFromPortList (portList_t *thisPortList)
+{
+    int udpport = 0;
+    udpport = (thisPortList->portNum & 0xffff0000) >> 16;
+    return (udpport);
+}
+
+int
+getTcpPortFromPortList (portList_t *thisPortList)
+{
+    return (thisPortList->portNum & 0xffff);
+}
+
+int
+addUdpSockToPortList (portList_t *thisPortList, int udpsock)
+{
+    /* put udpport in the upper 16 bits of portNum */
+    thisPortList->sock |= udpsock << 16;
+    return 0;
+}
+
+int
+getUdpSockFromPortList (portList_t *thisPortList)
+{
+    int udpsock = 0;
+    udpsock = (thisPortList->sock & 0xffff0000) >> 16;
+    return (udpsock);
+}
+
+int
+getTcpSockFromPortList (portList_t *thisPortList)
+{
+    return (thisPortList->sock & 0xffff);
 }
 

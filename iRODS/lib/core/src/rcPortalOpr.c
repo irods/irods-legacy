@@ -732,3 +732,158 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     CLOSE_SOCK (srcFd);
 }
 
+#ifdef RBUDP_TRANSFER
+int
+putFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut, 
+char *locFilePath, rodsLong_t dataSize, int veryVerbose)
+{
+    portList_t *myPortList;
+    int status;
+    rbudpSender_t rbudpSender;
+    int sendRate, packetSize;
+    char *tmpStr;
+
+    if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
+        rodsLog (LOG_ERROR,
+         "putFileToPortal: invalid portalOprOut");
+        return (SYS_INVALID_PORTAL_OPR);
+    }
+
+    myPortList = &portalOprOut->portList;
+
+    bzero (&rbudpSender, sizeof (rbudpSender));
+    status = initRbudpClient (&rbudpSender.rbudpBase, myPortList);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "putFileToPortalRbudp: initRbudpClient error for %s", 
+	  myPortList->hostAddr);
+        return (status);
+    }
+    rbudpSender.rbudpBase.verbose = veryVerbose;
+    if ((tmpStr = getenv (RBUDP_SEND_RATE_KW)) != NULL) {
+	sendRate = atoi (tmpStr);
+    } else {
+	sendRate = DEF_UDP_SEND_RATE;
+    }
+    if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
+	packetSize = atoi (tmpStr);
+    } else {
+	packetSize = DEF_UDP_PACKET_SIZE;
+    }
+
+    status = sendfile (&rbudpSender, sendRate, packetSize, 
+      locFilePath);
+
+    sendClose (&rbudpSender);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "putFileToPortalRbudp: sendfile error for %s", 
+	  myPortList->hostAddr);
+        return (status);
+    }
+    return (status);
+}
+
+int
+getFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut, 
+char *locFilePath, rodsLong_t dataSize, int veryVerbose)
+{
+    portList_t *myPortList;
+    int status;
+    rbudpReceiver_t rbudpReceiver;
+    int packetSize;
+    char *tmpStr;
+
+    if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
+        rodsLog (LOG_ERROR,
+         "getFileToPortalRbudp: invalid portalOprOut");
+        return (SYS_INVALID_PORTAL_OPR);
+    }
+
+    myPortList = &portalOprOut->portList;
+
+    bzero (&rbudpReceiver, sizeof (rbudpReceiver));
+    status = initRbudpClient (&rbudpReceiver.rbudpBase, myPortList);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "getFileToPortalRbudp: initRbudpClient error for %s", 
+	  myPortList->hostAddr);
+        return (status);
+    }
+    rbudpReceiver.rbudpBase.verbose = veryVerbose;
+    if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
+	packetSize = atoi (tmpStr);
+    } else {
+	packetSize = DEF_UDP_PACKET_SIZE;
+    }
+
+    status = getfile (&rbudpReceiver, NULL, locFilePath, packetSize);
+
+    recvClose (&rbudpReceiver);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "getFileToPortalRbudp: getfile error for %s", 
+	  myPortList->hostAddr);
+        return (status);
+    }
+    return (status);
+}
+
+int
+initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList)
+{ 
+    int  tcpSock;
+    int tcpPort, udpPort;
+    int status;
+    struct sockaddr_in localUdpAddr;
+    int udpLocalPort;
+
+    if ((udpPort = getUdpPortFromPortList (myPortList)) == 0) {
+        rodsLog (LOG_ERROR,
+         "putFileToPortalRbudp: udpPort == 0");
+        return (SYS_INVALID_PORTAL_OPR);
+    }
+   
+    tcpPort = getTcpPortFromPortList (myPortList);
+
+    tcpSock = connectToRhostPortal (myPortList->hostAddr,
+      tcpPort, myPortList->cookie, myPortList->windowSize);
+    if (tcpSock < 0) {
+        return (tcpSock);
+    }
+
+    rbudpBase->udpSockBufSize = UDPSOCKBUF;
+    rbudpBase->tcpPort = tcpPort;
+    rbudpBase->tcpSockfd = tcpSock;
+    rbudpBase->hasTcpSock = 1;
+    rbudpBase->udpRemotePort = udpPort;
+
+    /* connect to the server's UDP port */
+    status = passiveUDP (rbudpBase, myPortList->hostAddr);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "initRbudpClient: passiveUDP connect to %s error. status = %d", 
+	  myPortList->hostAddr, status);
+        return (SYS_UDP_CONNECT_ERR + status);
+    }
+
+    /* inform the server of the UDP port */
+    rbudpBase->udpLocalPort = 
+      setLocalAddr (rbudpBase->udpSockfd, &localUdpAddr);
+    if (rbudpBase->udpLocalPort < 0) 
+        return rbudpBase->udpLocalPort;
+    udpLocalPort = htonl (rbudpBase->udpLocalPort);
+    status = writen (rbudpBase->tcpSockfd, (char *) &udpLocalPort, 
+      sizeof (udpLocalPort));
+    if (status != sizeof (udpLocalPort)) {
+        rodsLog (LOG_ERROR,
+         "initRbudpClient: writen error. towrite %d, bytes written %d ",
+          sizeof (udpLocalPort), status);
+        return (SYS_UDP_CONNECT_ERR);
+    }
+
+    return 0;
+}
+#endif  /* RBUDP_TRANSFER */
+

@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-int sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr);
+int sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
 int rodsSetSockOpt (int sock, int windowSize);
 int readMsgHeader (int sock, msgHeader_t *myHeader);
 int writeMsgHeader (int sock, msgHeader_t *myHeader);
@@ -72,6 +72,18 @@ int
 irodsCloseSock (int sock);
 int
 readReconMsg (int sock, reconnMsg_t **reconnMsg);
+int
+addUdpPortToPortList (portList_t *thisPortList, int udpport);
+int
+getUdpPortFromPortList (portList_t *thisPortList);
+int
+getTcpPortFromPortList (portList_t *thisPortList);
+int
+addUdpSockToPortList (portList_t *thisPortList, int udpsock);
+int
+getUdpSockFromPortList (portList_t *thisPortList);
+int
+getTcpSockFromPortList (portList_t *thisPortList);
 #ifdef  __cplusplus
 }
 #endif

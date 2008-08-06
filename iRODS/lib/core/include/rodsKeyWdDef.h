@@ -63,6 +63,10 @@
 #define ALL_MS_PARAM_KW    	"allMsParam"
 #define UNREG_COLL_KW    	"unregColl"
 #define UPDATE_REPL_KW    	"updateRepl"
+#define RBUDP_TRANSFER_KW    	"rbudpTransfer"
+#define VERY_VERBOSE_KW    	"veryVerbose"
+#define RBUDP_SEND_RATE_KW    	"rbudpSendRate"
+#define RBUDP_PACK_SIZE_KW    	"rbudpPackSize"
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

@@ -13,7 +13,11 @@
 #include "rodsError.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
-
+#ifdef RBUDP_TRANSFER
+#include "QUANTAnet_rbudpBase_c.h"
+#include "QUANTAnet_rbudpSender_c.h"
+#include "QUANTAnet_rbudpReceiver_c.h"
+#endif
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -27,6 +31,11 @@ typedef struct RcPortalTransferInp {
     rodsLong_t	bytesWritten;
 } rcPortalTransferInp_t;
     
+typedef enum {
+    RBUDP_CLIENT,
+    RBUDP_SERVER
+} rbudpProcType_t;
+
 int
 fillRcPortalTransferInp (rcComm_t *conn, rcPortalTransferInp_t *myInput, 
 int destFd, int srcFd, int threadNum);
@@ -57,7 +66,16 @@ getIncludeFile (rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath);
 int
 getFile (rcComm_t *conn, int l1descInx, char *locFilePath,
 rodsLong_t dataSize);
-
+#ifdef RBUDP_TRANSFER
+int
+putFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut,
+char *locFilePath, rodsLong_t dataSize, int veryVerbose);
+int
+getFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut,
+char *locFilePath, rodsLong_t dataSize, int veryVerbose);
+int
+initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList);
+#endif  /* RBUDP_TRANSFER */
 #ifdef  __cplusplus
 }
 #endif

@@ -75,6 +75,25 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
     if (portalOprOut->numThreads <= 0) { 
 	status = putFile (conn, portalOprOut->l1descInx, 
 	  locFilePath, dataObjInp->dataSize);
+#ifdef RBUDP_TRANSFER
+    } else if (getUdpPortFromPortList (&portalOprOut->portList) != 0) {
+	int veryVerbose;
+	/* rbudp transfer */
+        /* some sanity check */
+        if (portalOprOut->numThreads != 1) {
+            rcOprComplete (conn, SYS_INVALID_PORTAL_OPR);
+            free (portalOprOut);
+            return (SYS_INVALID_PORTAL_OPR);
+        }
+        conn->transStat.numThreads = portalOprOut->numThreads;
+	if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
+	    veryVerbose = 2;
+	} else {
+	    veryVerbose = 0;
+	}
+        status = putFileToPortalRbudp (conn, portalOprOut, locFilePath,
+          dataObjInp->dataSize, veryVerbose);
+#endif  /* RBUDP_TRANSFER */
     } else {
 	/* some sanity check */
 	if (portalOprOut->numThreads >= 20 * MAX_NUM_TRAN_THR) {

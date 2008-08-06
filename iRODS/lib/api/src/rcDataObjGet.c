@@ -61,6 +61,31 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 	}
 	status = getIncludeFile (conn, &dataObjOutBBuf, locFilePath);
 	free (dataObjOutBBuf.buf);
+#ifdef RBUDP_TRANSFER
+    } else if (getUdpPortFromPortList (&portalOprOut->portList) != 0) {
+        int veryVerbose;
+        /* rbudp transfer */
+        /* some sanity check */
+        if (portalOprOut->numThreads != 1) {
+            rcOprComplete (conn, SYS_INVALID_PORTAL_OPR);
+            free (portalOprOut);
+            return (SYS_INVALID_PORTAL_OPR);
+        }
+        conn->transStat.numThreads = portalOprOut->numThreads;
+        if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
+            veryVerbose = 2;
+        } else {
+            veryVerbose = 0;
+        }
+        status = getFileToPortalRbudp (conn, portalOprOut, locFilePath,
+          dataObjInp->dataSize, veryVerbose);
+        /* just send a complete msg */
+        if (status < 0) {
+            rcOprComplete (conn, status);
+        } else {
+            status = rcOprComplete (conn, portalOprOut->l1descInx);
+        }
+#endif  /* RBUDP_TRANSFER */
     } else {
 
         if (portalOprOut->numThreads <= 0) {

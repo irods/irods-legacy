@@ -79,6 +79,14 @@ LIB_MD5_OBJS =	\
 		$(libMd5ObjDir)/md5Checksum.o
 INCLUDES +=	-I$(libMd5IncDir)
 
+# rbudp
+ifdef RBUDP_TRANSFER
+LIB_RBUDP_OBJS =  \
+		$(libRbudpObjDir)/QUANTAnet_rbudpBase_c.o \
+		$(libRbudpObjDir)/QUANTAnet_rbudpSender_c.o 	\
+		$(libRbudpObjDir)/QUANTAnet_rbudpReceiver_c.o
+endif
+
 # GSI
 ifdef GSI_AUTH
 INCLUDES += 	-I$(GLOBUS_LOCATION)/include/$(GSI_INSTALL_TYPE)
@@ -90,7 +98,8 @@ INCLUDES +=	-I$(libApiIncDir)
 
 
 # All objects
-OBJS =		$(LIB_CORE_OBJS) $(LIB_API_OBJS) $(LIB_MD5_OBJS)
+OBJS =		$(LIB_CORE_OBJS) $(LIB_API_OBJS) $(LIB_MD5_OBJS)	\
+		$(LIB_RBUDP_OBJS)
 
 
 # Server configuration
@@ -116,7 +125,8 @@ endif
 # Princpal Targets
 #
 .PHONY:	all lib libs clean print_cflags
-vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir)
+vpath %c	$(libCoreSrcDir) $(libApiSrcDir) $(libMd5SrcDir) 	\
+		$(libRbudpSrcDir)
 
 
 
@@ -197,6 +207,11 @@ $(LIB_MD5_OBJS):  $(libMd5ObjDir)/%.o: $(libMd5SrcDir)/%.c $(configMk) $(platfor
 	@echo "Compile md5 `basename $@`..."
 	@$(CC) -c $(MD5_CFLAGS) -o $@ $<
 
+ifdef RBUDP_TRANSFER
+$(LIB_RBUDP_OBJS):  $(libRbudpObjDir)/%.o: $(libRbudpSrcDir)/%.c $(configMk) $(platformMk)
+	@echo "Compile rbudp `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+endif
 
 # Build logging source
 rodslog:  $(libCoreSrcDir)/rodsLog.c

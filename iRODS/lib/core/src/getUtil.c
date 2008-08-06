@@ -124,6 +124,10 @@ int
 initCondForGet (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 {
+#ifdef RBUDP_TRANSFER
+    char *tmpStr;
+#endif  /* RBUDP_TRANSFER */
+
     if (dataObjOprInp == NULL) {
        rodsLog (LOG_ERROR,
           "initCondForGet: NULL dataObjOprInp input");
@@ -172,6 +176,31 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         }
     }
 
+#ifdef RBUDP_TRANSFER
+    if (rodsArgs->unmount == True) {
+        /* use -U for rbudp transfer */
+        addKeyVal (&dataObjOprInp->condInput, RBUDP_TRANSFER_KW, "");
+    }
+
+    if (rodsArgs->veryVerbose == True) {
+        /* use -U for rbudp transfer */
+        addKeyVal (&dataObjOprInp->condInput, VERY_VERBOSE_KW, "");
+    }
+
+    if ((tmpStr = getenv (RBUDP_SEND_RATE_KW)) != NULL) {
+        addKeyVal (&dataObjOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr);
+    }
+
+    if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
+        addKeyVal (&dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr);
+    }
+#else   /* RBUDP_TRANSFER */
+    if (rodsArgs->unmount == True) {
+        rodsLog (LOG_NOTICE,
+          "initCondForGet: RBUDP_TRANSFER (-U) not supported");
+    }
+#endif  /* RBUDP_TRANSFER */
+
     memset (rodsRestart, 0, sizeof (rodsRestart_t));
     if (rodsArgs->restart == True) {
         int status;
@@ -185,7 +214,8 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         }
     }
 
-    dataObjOprInp->openFlags = O_RDONLY;
+    /* mmap in rbudp needs O_RDWR */
+    dataObjOprInp->openFlags = O_RDWR;
 
     return (0);
 }
