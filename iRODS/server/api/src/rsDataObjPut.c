@@ -70,6 +70,9 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
         return (status);
     }
 
+    /* so that mmap will work */
+    dataObjInp->openFlags |= O_RDWR;
+
     l1descInx = rsDataObjCreate (rsComm, dataObjInp);
  
     if (l1descInx < 0) 
