@@ -20,6 +20,9 @@
 
  If an error occurs, a message may logged or displayed but the
  structure is filled with whatever values are available.
+
+ There is also an 'appendRodsEnv' function to add text to
+ the env file, either creating it or appending to it.
 */
 
 #include "rods.h"
@@ -516,3 +519,38 @@ char *findNextTokenAndTerm(char *inPtr)
    }
 }
 
+int appendRodsEnv(char *appendText) {
+   FILE *fptr;
+   char *getVar = NULL;
+
+#ifdef windows_platform
+   getVar = iRODSNt_gethome();
+#else
+   getVar = getenv("HOME");
+#endif
+   if (getVar==NULL) {
+      rstrcpy(configFileName,"", LONG_NAME_LEN);
+   }
+   else {
+      rstrcpy(configFileName,getVar, LONG_NAME_LEN);
+   }
+   rstrcat(configFileName, RODS_ENV_FILE, LONG_NAME_LEN);
+
+   getVar = getenv("irodsEnvFile");
+   if (getVar!=NULL && *getVar!='\0') {
+#ifdef windows_platform
+       getVar = strdup(getenv("irodsEnvFile"));
+#endif
+      rstrcpy(configFileName, findNextTokenAndTerm(getVar), LONG_NAME_LEN);
+   }
+   fptr = fopen (configFileName, "a");
+   if (fptr == NULL) {
+      rodsLog(LOG_ERROR,
+	      "appendRodsEnv: cannot create file %s",
+	      configFileName);
+      return(0);
+   }
+   fputs(appendText, fptr);
+   fclose (fptr);
+   return(0);
+}
