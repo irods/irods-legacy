@@ -107,6 +107,10 @@ _rsFileOpen (rsComm_t *rsComm, fileOpenInp_t *fileOpenInp)
      * when RCAT is available 
      */
 
+    if ((fileOpenInp->flags & O_WRONLY) && (fileOpenInp->flags & O_RDWR)) {
+	/* both O_WRONLY and O_RDWR are on, can cause I/O to fail */
+	fileOpenInp->flags &= ~(O_WRONLY);
+    }
     fd = fileOpen (fileOpenInp->fileType, rsComm, fileOpenInp->fileName,
      fileOpenInp->flags, fileOpenInp->mode);
 
