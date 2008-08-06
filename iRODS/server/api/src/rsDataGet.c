@@ -49,14 +49,26 @@ portalOprOut_t **portalOprOut)
 {
    portalOprOut_t *myDataObjGetOut;
     int portalSock;
+    int proto;
+
+#ifdef RBUDP_TRANSFER
+    if (getValByKey (&dataOprInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
+        proto = SOCK_DGRAM;
+    } else {
+        proto = SOCK_STREAM;
+    }
+#else
+    proto = SOCK_STREAM;
+#endif  /* RBUDP_TRANSFER */
 
     myDataObjGetOut = (portalOprOut_t *) malloc (sizeof (portalOprOut_t));
     memset (myDataObjGetOut, 0, sizeof (portalOprOut_t));
 
     *portalOprOut = myDataObjGetOut;
 
-    if (getValByKey (&dataOprInp->condInput, STREAMING_KW) != NULL) {
-        /* streaming - use only one thread */
+    if (getValByKey (&dataOprInp->condInput, STREAMING_KW) != NULL ||
+      proto == SOCK_DGRAM) {
+	/* streaming or udp - use only one thread */
         myDataObjGetOut->numThreads = 1;
     } else {
         myDataObjGetOut->numThreads =
@@ -72,7 +84,8 @@ portalOprOut_t **portalOprOut)
         portalOpr_t *myPortalOpr;
 
         /* setup the portal */
-        portalSock = createSrvPortal (rsComm, &myDataObjGetOut->portList);
+        portalSock = createSrvPortal (rsComm, &myDataObjGetOut->portList,
+	  proto);
         if (portalSock < 0) {
             rodsLog (LOG_NOTICE,
               "_rsDataGet: createSrvPortal error, ststus = %d", portalSock);

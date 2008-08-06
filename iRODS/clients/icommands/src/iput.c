@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "aD:fhkKn:N:p:rR:vVX:";
+    optStr = "aD:fhkKn:N:p:rR:UvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -79,10 +79,10 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-fkKrvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-fkKrUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-fkKvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-fkKUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -113,6 +113,7 @@ usage ()
 " -R  resource - specifies the resource to store to. This can also be specified",
 "     in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",
+" -U  use RBUDP protocol for the data transfer",
 " -v  verbose",
 " -V  Very verbose",
 " -X  restartFile - specifies that the restart option is on and the",

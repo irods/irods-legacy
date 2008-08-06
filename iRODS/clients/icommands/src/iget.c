@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hfKN:n:rvVX:R:";
+    optStr = "hfKN:n:rUvVX:R:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -80,11 +80,11 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage: iget [-fKrvV] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage: iget [-fKrUvV] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection ... destLocalFile|destLocalDir",
-"Usage : iget [-fKvV] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKUvV] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection",
-"Usage : iget [-fKvV] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKUvV] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
@@ -110,6 +110,7 @@ usage () {
 "       decides the number of threads to use.", 
 " -r  recursive - retrieve subcollections",
 " -R  resource - the preferred resource",
+" -U  use RBUDP protocol for the data transfer",
 " -v  verbose",
 " -V  Very verbose",
 "     restartFile input specifies a local file that contains the restart info.",

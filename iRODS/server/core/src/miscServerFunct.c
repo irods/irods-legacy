@@ -76,17 +76,32 @@ svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
     }
 }
 
+/* createSrvPortal - create a server socket portal.
+ * proto can be SOCK_STREAM or SOCK_DGRAM.
+ * if proto == SOCK_DGRAM, create a tcp (control) and a udp socket
+ */
+
 int
-createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
+createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto)
 {
     int lsock = -1;
     int lport = 0;
     char *laddr = NULL;
+    int udpsock = -1;
+    int udpport = 0;
+    char *udpaddr = NULL;
 
-    if ((lsock = sockOpenForInConn (rsComm, &lport, &laddr)) < 0) {
-        rodsLog (LOG_NOTICE,
-         "setupSrvPortal() -- sockOpenForInConn () failed: errno=%d",
-          errno);
+    
+    if (proto != SOCK_DGRAM && proto != SOCK_STREAM) {
+        rodsLog (LOG_ERROR,
+         "setupSrvPortal() -- invalid input protocol %d", proto);
+        return SYS_INVALID_PROTOCOL_TYPE;
+    }
+
+    if ((lsock = sockOpenForInConn (rsComm, &lport, &laddr, SOCK_STREAM)) < 0) {
+        rodsLog (LOG_ERROR,
+         "setupSrvPortal - sockOpenForInConn of SOCK_STREAM failed: status=%d",
+          lsock);
         return lsock;
     }
 
@@ -111,6 +126,21 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
 
     listen (lsock, SOMAXCONN);
 
+    if (proto == SOCK_DGRAM) {
+        if ((udpsock = sockOpenForInConn (rsComm, &udpport, &udpaddr, 
+          SOCK_DGRAM)) < 0) {
+            rodsLog (LOG_ERROR,
+             "setupSrvPortal- sockOpenForInConn of SOCK_DGRAM failed: stat=%d",
+              udpsock);
+	    CLOSE_SOCK (lsock);
+            return udpsock;
+	} else {
+            addUdpPortToPortList (thisPortList, udpport);
+            addUdpSockToPortList (thisPortList, udpsock);
+	}
+    }
+    free (udpaddr);
+ 
     return (lsock);
 }
 
@@ -122,10 +152,11 @@ acceptSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
     int nbytes;
     fd_set basemask;
     int nSockets, nSelected;
+    int lsock = getTcpSockFromPortList (thisPortList);
 
-    nSockets = thisPortList->sock + 1;
+    nSockets = lsock + 1;
     FD_ZERO(&basemask);
-    FD_SET(thisPortList->sock, &basemask);
+    FD_SET(lsock, &basemask);
     struct timeval selectTimeout;
 
 
@@ -141,7 +172,7 @@ acceptSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
         rodsLog (LOG_ERROR, "acceptSrvPortal: select select failed, errno = %d",
           errno);
     }
-    myFd = accept (thisPortList->sock, 0, 0);
+    myFd = accept (lsock, 0, 0);
     if (myFd < 0) {
         rodsLog (LOG_NOTICE,
          "acceptSrvPortal() -- accept() failed: errno=%d",
@@ -191,6 +222,20 @@ svrPortalPutGet (rsComm_t *rsComm)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    thisPortList = &myPortalOpr->portList;
+    if (thisPortList == NULL) {
+        rodsLog (LOG_NOTICE, "svrPortalPut: NULL portList");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+#ifdef RBUDP_TRANSFER
+   if (getUdpPortFromPortList (thisPortList) != 0) {
+        /* rbudp transfer */
+        retVal = svrPortalPutGetRbudp (rsComm);
+	return retVal;
+    }
+#endif  /* RBUDP_TRANSFER */
+
     oprType = myPortalOpr->oprType;
     dataOprInp = &myPortalOpr->dataOprInp;
 
@@ -215,13 +260,7 @@ svrPortalPutGet (rsComm_t *rsComm)
     size1 = dataOprInp->dataSize - size0 * (numThreads - 1);
     offset0 = dataOprInp->offset;
 
-    thisPortList = &myPortalOpr->portList;
-
-    if (thisPortList == NULL) {
-        rodsLog (LOG_NOTICE, "svrPortalPut: NULL portList");
-        return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-    lsock = thisPortList->sock;
+    lsock = getTcpSockFromPortList (thisPortList);
 
     /* accept the first connection */
     portalFd = acceptSrvPortal (rsComm, thisPortList);
@@ -1313,3 +1352,151 @@ longNoSupport()
     return (rodsLong_t) SYS_NOT_SUPPORTED;
 }
 
+#ifdef RBUDP_TRANSFER
+int
+svrPortalPutGetRbudp (rsComm_t *rsComm)
+{
+    portalOpr_t *myPortalOpr;
+    portList_t *thisPortList;
+    int lsock;
+    int  tcpSock, udpSockfd;
+    int udpPortBuf;
+    int status;
+#if defined(aix_platform)
+    size_t      laddrlen = sizeof(struct sockaddr);
+#elif defined(windows_platform)
+        int laddrlen = sizeof(struct sockaddr);
+#else
+    uint         laddrlen = sizeof(struct sockaddr);
+#endif
+    int packetSize;
+    char *tmpStr;
+    int verbose;
+
+    myPortalOpr = rsComm->portalOpr;
+
+    if (myPortalOpr == NULL) {
+        rodsLog (LOG_NOTICE, "svrPortalPutGetRbudp: NULL myPortalOpr");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    thisPortList = &myPortalOpr->portList;
+    if (thisPortList == NULL) {
+        rodsLog (LOG_NOTICE, "svrPortalPutGetRbudp: NULL portList");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    lsock = getTcpSockFromPortList (thisPortList);
+
+    tcpSock =  acceptSrvPortal (rsComm, thisPortList);
+    if (tcpSock < 0) {
+        rodsLog (LOG_NOTICE,
+          "svrPortalPutGetRbudp: acceptSrvPortal error. errno = %d",
+          errno);
+        CLOSE_SOCK (lsock);
+        return (tcpSock);
+    }
+    status = readn (tcpSock, (char *) &udpPortBuf, sizeof (udpPortBuf));
+    if (status != sizeof (udpPortBuf)) {
+        rodsLog (LOG_ERROR,
+         "svrPortalPutGetRbudp: readn error. toread %d, bytes read %d ",
+          sizeof (udpPortBuf), status);
+        return (SYS_UDP_CONNECT_ERR);
+    }
+
+    if ((tmpStr = getValByKey (&myPortalOpr->dataOprInp.condInput,
+      RBUDP_PACK_SIZE_KW)) != NULL) {
+        packetSize = atoi (tmpStr);
+    } else {
+        packetSize = DEF_UDP_PACKET_SIZE;
+    }
+
+    if (getValByKey (&myPortalOpr->dataOprInp.condInput, VERY_VERBOSE_KW) != 
+      NULL) 
+	verbose = 2;
+    else
+	verbose = 0;
+
+    udpSockfd = getUdpSockFromPortList (thisPortList);
+
+    checkbuf (udpSockfd, UDPSOCKBUF, verbose);
+    if (myPortalOpr->oprType == PUT_OPR) {
+	rbudpReceiver_t rbudpReceiver;
+        bzero (&rbudpReceiver, sizeof (rbudpReceiver));
+        int destL3descInx = myPortalOpr->dataOprInp.destL3descInx;
+
+	rbudpReceiver.rbudpBase.verbose = verbose;
+	rbudpReceiver.rbudpBase.udpSockBufSize = UDPSOCKBUF;
+	rbudpReceiver.rbudpBase.tcpPort = getTcpPortFromPortList (thisPortList);
+        rbudpReceiver.rbudpBase.tcpSockfd = tcpSock;
+        rbudpReceiver.rbudpBase.udpSockfd = udpSockfd;
+        rbudpReceiver.rbudpBase.hasTcpSock = 1;
+        rbudpReceiver.rbudpBase.udpRemotePort = ntohl (udpPortBuf);
+	/* use the addr of tcp sock */
+        if (getpeername (tcpSock, 
+	  (struct sockaddr *) &rbudpReceiver.rbudpBase.udpServerAddr,
+          &laddrlen) < 0) {
+            rodsLog (LOG_NOTICE,
+              "svrPortalPutGetRbudp() - getpeername() failed: errno=%d", 
+	      errno);
+            recvClose (&rbudpReceiver);
+            return (USER_RODS_HOSTNAME_ERR);
+	}
+	rbudpReceiver.rbudpBase.udpServerAddr.sin_port = 
+	  htons (rbudpReceiver.rbudpBase.udpRemotePort);
+	status = getfileByFd (&rbudpReceiver, FileDesc[destL3descInx].fd,
+	  packetSize);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "svrPortalPutGetRbudp: getfileByFd error for %s",
+              FileDesc[destL3descInx].fileName);
+	    status += SYS_UDP_TRANSFER_ERR; 
+        }
+        recvClose (&rbudpReceiver);
+    } else if (myPortalOpr->oprType == GET_OPR) {
+	int sendRate;
+	rbudpSender_t rbudpSender;
+        int srcL3descInx = myPortalOpr->dataOprInp.srcL3descInx;
+
+        bzero (&rbudpSender, sizeof (rbudpSender));
+        rbudpSender.rbudpBase.verbose = verbose;
+        rbudpSender.rbudpBase.udpSockBufSize = UDPSOCKBUF;
+        rbudpSender.rbudpBase.tcpPort = getTcpPortFromPortList (thisPortList);
+        rbudpSender.rbudpBase.tcpSockfd = tcpSock;
+        rbudpSender.rbudpBase.udpSockfd = udpSockfd;
+        rbudpSender.rbudpBase.hasTcpSock = 1;
+        rbudpSender.rbudpBase.udpRemotePort = ntohl (udpPortBuf);
+        /* use the addr of tcp sock */
+        if (getpeername (tcpSock,
+          (struct sockaddr *) &rbudpSender.rbudpBase.udpServerAddr,
+          &laddrlen) < 0) {
+            rodsLog (LOG_NOTICE,
+              "svrPortalPutGetRbudp() - getpeername() failed: errno=%d",
+              errno);
+            sendClose (&rbudpSender);
+            return (USER_RODS_HOSTNAME_ERR);
+        }
+        rbudpSender.rbudpBase.udpServerAddr.sin_port = 
+          htons (rbudpSender.rbudpBase.udpRemotePort);
+        if ((tmpStr = getValByKey (&myPortalOpr->dataOprInp.condInput,
+          RBUDP_SEND_RATE_KW)) != NULL) {
+            sendRate = atoi (tmpStr);
+        } else {
+            sendRate = DEF_UDP_SEND_RATE;
+        }
+
+        status = sendfileByFd (&rbudpSender, sendRate, packetSize,
+          FileDesc[srcL3descInx].fd);
+
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "svrPortalPutGetRbudp: sendfile error for %s",
+              FileDesc[srcL3descInx].fileName);
+            status += SYS_UDP_TRANSFER_ERR;
+        }
+        sendClose (&rbudpSender);
+    }
+
+    return (status);
+}
+#endif  /* RBUDP_TRANSFER */

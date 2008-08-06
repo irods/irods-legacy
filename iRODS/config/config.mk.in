@@ -194,3 +194,8 @@ ifdef GSI_AUTH
 GLOBUS_LOCATION=/usr/local/apps/globus-4.0.1
 GSI_INSTALL_TYPE=gcc32dbg
 endif
+
+# RBUDP_TRANSFER - specify whether RBUDP file transfer mechanism will be
+# supported (iget/iget -U)
+# RBUDP_TRANSFER = 1
+

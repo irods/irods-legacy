@@ -133,7 +133,8 @@ xmsgServerMain ()
     }
 
     /* open  a socket an listen for connection */
-    svrComm.sock = sockOpenForInConn (&svrComm, &svrComm.myEnv.xmsgPort, NULL);
+    svrComm.sock = sockOpenForInConn (&svrComm, &svrComm.myEnv.xmsgPort, NULL,
+      SOCK_STREAM);
 
     if (svrComm.sock < 0) {
         rodsLog (LOG_NOTICE, "serverMain: sockOpenForInConn error. status = %d",

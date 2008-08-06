@@ -827,6 +827,7 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 {
     dataObjInfo_t *dataObjInfo;
     dataObjInp_t  *dataObjInp;
+    char *tmpStr;
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
     dataObjInp = L1desc[l1descInx].dataObjInp;
@@ -858,6 +859,25 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
     if (getValByKey (&dataObjInp->condInput, NO_PARA_OP_KW) != NULL) {
         addKeyVal (&dataOprInp->condInput, NO_PARA_OP_KW, "");
     }
+
+    if (getValByKey (&dataObjInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
+        addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
+    }
+
+    if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
+        addKeyVal (&dataOprInp->condInput, VERY_VERBOSE_KW, "");
+    }
+
+    if ((tmpStr = getValByKey (&dataObjInp->condInput, RBUDP_SEND_RATE_KW)) !=
+      NULL) {
+        addKeyVal (&dataOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr);
+    }
+
+    if ((tmpStr = getValByKey (&dataObjInp->condInput, RBUDP_PACK_SIZE_KW)) !=
+      NULL) {
+        addKeyVal (&dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr);
+    }
+
 
     return (0);
 }

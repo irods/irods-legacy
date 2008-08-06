@@ -23,6 +23,11 @@
 #include "fileOpen.h"
 #include "dataObjInpOut.h"
 #include "dataCopy.h"
+#ifdef RBUDP_TRANSFER
+#include "QUANTAnet_rbudpBase_c.h"
+#include "QUANTAnet_rbudpSender_c.h"
+#include "QUANTAnet_rbudpReceiver_c.h"
+#endif	/* RBUDP_TRANSFER */
 
 typedef struct PortalTransferInp {
     rsComm_t *rsComm;
@@ -44,7 +49,7 @@ svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost);
 int
 svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost);
 int
-createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList);
+createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto);
 int
 acceptSrvPortal (rsComm_t *rsComm, portList_t *thisPortList);
 int
@@ -75,4 +80,8 @@ char *regex (char *rec, char *text, ...);
 #endif
 int intNoSupport();
 rodsLong_t longNoSupport();
+#ifdef RBUDP_TRANSFER
+int
+svrPortalPutGetRbudp (rsComm_t *rsComm);
+#endif	/* RBUDP_TRANSFER */
 #endif	/* MISC_SERVER_FUNCT_H */

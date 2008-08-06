@@ -1059,7 +1059,7 @@ initAgent (rsComm_t *rsComm)
 
     if (rsComm->reconnFlag > 0 && getenv ("svrPortReconnect") != NULL) { 
 	rsComm->reconnSock = sockOpenForInConn (rsComm, &rsComm->reconnPort,
-	  &rsComm->reconnAddr);
+	  &rsComm->reconnAddr, SOCK_STREAM);
 	if (rsComm->reconnSock < 0) {
 	    rsComm->reconnPort = 0;
 	    rsComm->reconnAddr = NULL;
