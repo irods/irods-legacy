@@ -100,20 +100,24 @@ int H5File_close(H5File* f, H5File*outf)
     /* close all open datasets */
     fid = (hid_t)f->fid;
     n = H5Fget_obj_count(fid, H5F_OBJ_DATASET);
-    pids = (hid_t *) malloc(sizeof(hid_t)*n);
-    assert(pids);
-    H5Fget_obj_ids(fid, H5F_OBJ_DATASET, n, pids);
-    for (i=0; i<n; i++) 
-        H5Dclose(pids[i]);
-     free(pids);
+    if (n > 0) {
+        pids = (hid_t *) malloc(sizeof(hid_t)*n);
+        assert(pids);
+        H5Fget_obj_ids(fid, H5F_OBJ_DATASET, n, pids);
+        for (i=0; i<n; i++) 
+            H5Dclose(pids[i]);
+         free(pids);
+    }
 
     /* close all open groups */
     n = H5Fget_obj_count(fid, H5F_OBJ_GROUP );
-    pids = (hid_t *) malloc(sizeof(hid_t)*n);
-    H5Fget_obj_ids(fid, H5F_OBJ_GROUP , n, pids);
-    for (i=0; i<n; i++) 
-        H5Gclose(pids[i]); 
-    free(pids);
+    if (n > 0) {
+        pids = (hid_t *) malloc(sizeof(hid_t)*n);
+        H5Fget_obj_ids(fid, H5F_OBJ_GROUP , n, pids);
+        for (i=0; i<n; i++) 
+            H5Gclose(pids[i]); 
+        free(pids);
+    }
 
     H5Fflush(fid, H5F_SCOPE_GLOBAL);
     
