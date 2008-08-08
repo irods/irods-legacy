@@ -80,6 +80,8 @@ int _clH5File_open(rcComm_t *conn, H5File* inf,  H5File** outf, int flag)
     } else {
 	*outf = outMsParam->inOutStruct;
 	clearMsParamArray (outParamArray, 0);
+	/* XXXX free outParamArray */
+	free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);
@@ -162,6 +164,7 @@ int _clH5File_close (rcComm_t *conn, H5File* inf, H5File** outf)
     } else {
         *outf = outMsParam->inOutStruct;
         clearMsParamArray (outParamArray, 0);
+	free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);

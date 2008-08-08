@@ -82,6 +82,8 @@ int _clH5Dataset_read (rcComm_t *conn, H5Dataset* ind, H5Dataset** outd)
     } else {
         *outd = outMsParam->inOutStruct;
         clearMsParamArray (outParamArray, 0);
+	/* XXXXXX free outParamArray */
+	free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);

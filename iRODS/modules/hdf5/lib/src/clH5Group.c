@@ -75,6 +75,7 @@ int _clH5Group_read_attribute(rcComm_t *conn, H5Group* ing, H5Group** outg)
     } else {
         *outg = outMsParam->inOutStruct;
         clearMsParamArray (outParamArray, 0);
+	free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);
