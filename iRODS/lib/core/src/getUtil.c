@@ -214,8 +214,7 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         }
     }
 
-    /* mmap in rbudp needs O_RDWR */
-    dataObjOprInp->openFlags = O_RDWR;
+    dataObjOprInp->openFlags = O_RDONLY;
 
     return (0);
 }
