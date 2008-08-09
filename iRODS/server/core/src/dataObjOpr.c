@@ -861,7 +861,10 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
     }
 
     if (getValByKey (&dataObjInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
-        addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
+	/* only do unix fs */
+	int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+	if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
+            addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
     }
 
     if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
