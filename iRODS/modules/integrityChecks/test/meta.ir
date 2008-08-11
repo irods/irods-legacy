@@ -1,0 +1,3 @@
+stuff||msiVerifyACL(*Collection,*NAME,*VALUE,*ATTR,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"")|nop
+*Collection=/sdscZone/home/rods%*NAME=buttername%*VALUE=buttervalue%*ATTR=butterattr
+ruleExecOut
