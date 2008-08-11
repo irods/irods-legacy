@@ -20,7 +20,7 @@
 #include "rcConnect.h"
 #include "initServer.h"
 
-#define RE_SERVER_SLEEP_TIME    120
+#define RE_SERVER_SLEEP_TIME    60
 #define RE_SERVER_EXEC_TIME     1800
 
 uint CoreIrbTimeStamp = 0;
