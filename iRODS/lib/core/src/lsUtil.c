@@ -728,7 +728,8 @@ genQueryOut_t *genQueryOut)
                 printf ("  C- %s  %s\n", tmpCollName, tmpCollType);
 	    }
 	}
-	if (rodsArgs->recursive == True) {
+	/* for some reason, ils of "/" also give "/" as an answer */
+	if (rodsArgs->recursive == True && strcmp (tmpCollName, "/") != 0) {
 	    rodsPath_t tmpPath;
 	    memset (&tmpPath, 0, sizeof (tmpPath));
 	    rstrcpy (tmpPath.outPath, tmpCollName, MAX_NAME_LEN);
