@@ -24,7 +24,8 @@ MSIncDir =	$(modulesDir)/integrityChecks/microservices/include
 #
 # Source files
 #
-OBJECTS =	$(MSObjDir)/integrityChecksMS.o $(MSObjDir)/hithere.o 
+//OBJECTS =	$(MSObjDir)/integrityChecksMS.o $(MSObjDir)/hithere.o 
+OBJECTS =	$(MSObjDir)/integrityChecksMS.o 
 INCLUDE_FLAGS =	-I$(MSIncDir)
 
 
@@ -32,7 +33,7 @@ INCLUDE_FLAGS =	-I$(MSIncDir)
 # Compile and link flags
 #
 INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES)
-CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
+CFLAGS_OPTIONS := -DRODS_SERVER $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(MODULE_CFLAGS)
 
 

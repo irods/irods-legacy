@@ -1,95 +1,5 @@
 #include "integrityChecksMS.h"
 
-
-int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei) {
-
-	genQueryInp_t genQueryInp;
-	genQueryOut_t *genQueryOut = NULL;
-	char condStr[MAX_NAME_LEN];
-	rsComm_t *rsComm;
-	char collname[200];
-	char datatypeparam[200];
-	int i,j;
-	sqlResult_t *dataName;
-	sqlResult_t *dataType;
-	char delims[]=",";
-	char* word;
-
-	keyValPair_t	*results;	
-	char* key;
-	char* value;
-	
-	RE_TEST_MACRO ("    Calling msiCheckDatatypes")
-
-	/* Sanity check */
-	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: input rei or rsComm is NULL");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
-
-	rsComm = rei->rsComm;
-
-	//rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 0");
-
-	/* construct an SQL query from the parameter list */
-	strcpy (collname,  (char*) mPin1->inOutStruct);
-	strcpy (datatypeparam, (char*) mPin2->inOutStruct);
-
-	fprintf (stderr, "datatypeparam: %s\n", datatypeparam);
-
-	// initialize results to 0; AddKeyVal does all our malloc-ing
-	results = (keyValPair_t*) malloc (sizeof(keyValPair_t));
-	memset (results, 0, sizeof(keyValPair_t));
-
-	/* Parse the comma-delimited datatype list & make a separate query for each datatype*/
-	for (word=strtok(datatypeparam, delims); word; word=strtok(NULL, delims)) {
-
-		fprintf (stderr, "word: %s\n", word);
-
-		memset (&genQueryInp, 0, sizeof(genQueryInp_t));
-		genQueryInp.maxRows = MAX_SQL_ROWS;
-
-		/* this is the info we want returned from the query */
-		addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
-		addInxIval (&genQueryInp.selectInp, COL_DATA_TYPE_NAME, 1);
-		snprintf (condStr, MAX_NAME_LEN, " = '%s'", word);
-		addInxVal (&genQueryInp.sqlCondInp, COL_DATA_TYPE_NAME, condStr); 
-	
-		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 2");
-
-		j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-
-		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 3");
-
-		if (j != CAT_NO_ROWS_FOUND) {
-
-			fprintf (stderr, "word: %s\trows:%d\n", word, genQueryOut->rowCnt);
-
-			/* we got results - do something cool */
-			dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
-			dataType = getSqlResultByInx (genQueryOut, COL_DATA_TYPE_NAME);
-
-			for (i=0; i<genQueryOut->rowCnt; i++) {
-				key = strdup (&dataName->value[dataName->len *i]);
-				value = strdup (&dataType->value[dataType->len * i]);
-				addKeyVal (results, key, value);
-			}	
-
-			printGenQueryOut(stderr, NULL, NULL, genQueryOut);
-
-		} else continue; 
-
-	}
-
-	fillMsParam (mPin2, NULL, KeyValPair_MS_T, results, NULL);
-	//rodsLog (LOG_ERROR, "7 s tuff: ");
-	fillIntInMsParam (mPout1, rei->status);
-	//rodsLog (LOG_ERROR, "8 s tuff: ");
-  
-	return(rei->status);
-
-}
-
 int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei) {
 
 	genQueryInp_t genQueryInp;
@@ -418,6 +328,7 @@ int msiVerifyACL (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 }
 
 /* Silly hello world microservice */
+/*
 int msiHiThere (ruleExecInfo_t *rei) {
 
 	int i;
@@ -426,5 +337,95 @@ int msiHiThere (ruleExecInfo_t *rei) {
 
 	i = hithere ();
 	return(i);
+}
+*/
+
+int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei) {
+
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut = NULL;
+	char condStr[MAX_NAME_LEN];
+	rsComm_t *rsComm;
+	char collname[200];
+	char datatypeparam[200];
+	int i,j;
+	sqlResult_t *dataName;
+	sqlResult_t *dataType;
+	char delims[]=",";
+	char* word;
+
+	keyValPair_t	*results;	
+	char* key;
+	char* value;
+	
+	RE_TEST_MACRO ("    Calling msiCheckDatatypes")
+
+	/* Sanity check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	rsComm = rei->rsComm;
+
+	//rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 0");
+
+	/* construct an SQL query from the parameter list */
+	strcpy (collname,  (char*) mPin1->inOutStruct);
+	strcpy (datatypeparam, (char*) mPin2->inOutStruct);
+
+	fprintf (stderr, "datatypeparam: %s\n", datatypeparam);
+
+	// initialize results to 0; AddKeyVal does all our malloc-ing
+	results = (keyValPair_t*) malloc (sizeof(keyValPair_t));
+	memset (results, 0, sizeof(keyValPair_t));
+
+	/* Parse the comma-delimited datatype list & make a separate query for each datatype*/
+	for (word=strtok(datatypeparam, delims); word; word=strtok(NULL, delims)) {
+
+		fprintf (stderr, "word: %s\n", word);
+
+		memset (&genQueryInp, 0, sizeof(genQueryInp_t));
+		genQueryInp.maxRows = MAX_SQL_ROWS;
+
+		/* this is the info we want returned from the query */
+		addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+		addInxIval (&genQueryInp.selectInp, COL_DATA_TYPE_NAME, 1);
+		snprintf (condStr, MAX_NAME_LEN, " = '%s'", word);
+		addInxVal (&genQueryInp.sqlCondInp, COL_DATA_TYPE_NAME, condStr); 
+	
+		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 2");
+
+		j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 3");
+
+		if (j != CAT_NO_ROWS_FOUND) {
+
+			fprintf (stderr, "word: %s\trows:%d\n", word, genQueryOut->rowCnt);
+
+			/* we got results - do something cool */
+			dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
+			dataType = getSqlResultByInx (genQueryOut, COL_DATA_TYPE_NAME);
+
+			for (i=0; i<genQueryOut->rowCnt; i++) {
+				key = strdup (&dataName->value[dataName->len *i]);
+				value = strdup (&dataType->value[dataType->len * i]);
+				addKeyVal (results, key, value);
+			}	
+
+			printGenQueryOut(stderr, NULL, NULL, genQueryOut);
+
+		} else continue; 
+
+	}
+
+	fillMsParam (mPin2, NULL, KeyValPair_MS_T, results, NULL);
+	//rodsLog (LOG_ERROR, "7 s tuff: ");
+	fillIntInMsParam (mPout1, rei->status);
+	//rodsLog (LOG_ERROR, "8 s tuff: ");
+  
+	return(rei->status);
+
 }
 
