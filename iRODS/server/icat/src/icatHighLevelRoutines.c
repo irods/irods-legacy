@@ -1747,8 +1747,15 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    status =  cmlExecuteNoAnswerSql(tSQL,
 				   &icss);
    if (status != 0) {
+      int status2;
       rodsLog(LOG_NOTICE,
-	      "chlRegColl cmlExecuteNoAnswer(insert) failure %d",status);
+	      "chlRegColl cmlExecuteNoAnswerSql(insert) failure %d",status);
+      status2 =  cmlExecuteNoAnswerSql("rollback", &icss);
+      if (status2 != 0) {
+	 rodsLog(LOG_NOTICE,
+	      "chlRegColl cmlExecuteNoAnswerSql(rollback) failure %d",
+	      status2);
+      }
       return(status);
    }
 
@@ -5115,7 +5122,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    if (logSQL) rodsLog(LOG_SQL, "chlRegToken SQL 3");
    seqNum = cmlGetNextSeqVal(&icss);
    if (seqNum < 0) {
-      rodsLog(LOG_NOTICE, "chlAddAVUMetadata cmlGetNextSeqVal failure %d",
+      rodsLog(LOG_NOTICE, "chlRegToken cmlGetNextSeqVal failure %d",
 	      seqNum);
       return(seqNum);
    }
