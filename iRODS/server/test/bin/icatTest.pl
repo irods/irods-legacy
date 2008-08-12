@@ -128,6 +128,16 @@ runCmd(2, "irm -f $D1");
 runCmd(0, "irm -f -r $D1");
 runCmd(0, "ils");
 
+# Repeated iput -rf test (was failing as ICAT code needed to 
+# rollback after an insert failure since it is now doing a 'begin').
+mkfiles(2, "testIput_RF_repeat");
+runCmd(0, "iput -rf  testIput_RF_repeat");
+runCmd(0, "ils -l testIput_RF_repeat");
+runCmd(0, "iput -rf  testIput_RF_repeat");
+runCmd(0, "iput -rf  testIput_RF_repeat");
+runCmd(0, "irm -rf testIput_RF_repeat");
+runCmd(0, "rm -rf testIput_RF_repeat");
+
 # Token tests
 runCmd(0, "iadmin at user_type rodstest test");
 runCmd(0, "iadmin lt user_type");
