@@ -69,7 +69,9 @@ error3=$?
 
 # Record the test logs into the main log file available via the web
 ls -lt server/test/bin/*.log
-cat server/test/bin/*.log
+cat server/test/bin/icatTest.log 
+cat server/test/bin/icatMiscTest.log 
+cat server/test/bin/moveTest.log
 ls -lt /tmp/testRule_* /tmp/testSurvey_*
 cat /tmp/testRule_* /tmp/testSurvey_*
 
