@@ -111,8 +111,10 @@ freeRuleExecInfoInternals(ruleExecInfo_t *rs, int freeMsParamFlag)
     free (rs->msParamArray);
   }
 
-  if (rs->doinp != NULL)
+  if (rs->doinp != NULL) {
+      clearDataObjInp (rs->doinp);
       free (rs->doinp);
+  }
  
   if (rs->doi != NULL) 
     freeAllDataObjInfo(rs->doi);
