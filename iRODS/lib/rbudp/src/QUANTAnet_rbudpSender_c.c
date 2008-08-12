@@ -215,6 +215,7 @@ udpSend(rbudpSender_t *rbudpSender)
 	int i, done, actualPayloadSize;
 	struct timeval start, now;
 	char *msg = (char *) malloc(rbudpSender->rbudpBase.packetSize);	
+	int sendErrCnt = 0;
 
 	done = 0; i = 0;
 	gettimeofday(&start, NULL);
@@ -259,7 +260,9 @@ udpSend(rbudpSender_t *rbudpSender)
 			      actualPayloadSize +
 			      rbudpSender->rbudpBase.headerSize, 0) < 0) {
 				perror("send");
-		                return (errno ? (-1 * errno) : -1);
+				sendErrCnt++;
+				if (sendErrCnt > MAX_SEND_ERR_CNT)
+		                    return (errno ? (-1 * errno) : -1);
       			    }
 			} else {	
       			    if (sendto(rbudpSender->rbudpBase.udpSockfd, msg, 
@@ -270,7 +273,9 @@ udpSend(rbudpSender_t *rbudpSender)
 	  		      sizeof(rbudpSender->rbudpBase.udpServerAddr)) 
 			      < 0 ) {
               			perror("sendto");
-	      			return (errno ? (-1 * errno) : -1);
+                                sendErrCnt++;
+                                if (sendErrCnt > MAX_SEND_ERR_CNT)
+	      			    return (errno ? (-1 * errno) : -1);
       			    }
 			}
 			i++;
