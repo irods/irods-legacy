@@ -524,6 +524,8 @@ ruleExecInfo_t *rei)
     rei->status = rsDataObjReplWithOutDataObj (rei->rsComm, &dataObjInp,
       &transStat, myDataObjInfo);
 
+    /* fix mem leak */
+    clearKeyVal (&dataObjInp.condInput);
     if (rei->status >= 0) {
 	rei->status = 1;
 	/* que the cache copy at the top */
