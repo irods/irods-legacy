@@ -537,6 +537,7 @@ dataObjInp_t *dataObjOprInp)
             myTargPath.objType = DATA_OBJ_T;
             mySrcPath.objType = LOCAL_FILE_T;
 	    mySrcPath.objState = EXIST_ST;
+	    mySrcPath.size = statbuf.st_size;
 	    getRodsObjType (conn, &myTargPath);
             status = rsyncFileToDataUtil (conn, &mySrcPath, &myTargPath,
               myRodsEnv, rodsArgs, dataObjOprInp);
