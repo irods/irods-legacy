@@ -3,5 +3,6 @@
 { "msiCheckFilesizeRange",	4,	(funcPtr) msiCheckFilesizeRange },
 { "msiCheckFileDatatypes",	3,	(funcPtr) msiCheckFileDatatypes },
 { "msiVerifyOwner",			4,	(funcPtr) msiVerifyOwner },
-{ "msiVerifyACL",			6,	(funcPtr) msiVerifyACL },
+{ "msiVerifyAVU",			6,	(funcPtr) msiVerifyAVU },
+{ "msiHiThere",				0,	(funcPtr) msiHiThere },
 

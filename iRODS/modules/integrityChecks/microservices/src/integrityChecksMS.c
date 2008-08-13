@@ -96,6 +96,166 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 }
 
 
+/* See if all files in a collection match a given AVU */
+/* xxxxxxxxx */
+int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPin4, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
+
+	genQueryInp_t gqin;;
+	genQueryOut_t *gqout1 = NULL;
+	genQueryOut_t *gqout2 = NULL;
+	char condStr[MAX_NAME_LEN];
+	char tmpstr[MAX_NAME_LEN];
+	rsComm_t *rsComm;
+	int i,j;
+	sqlResult_t *dataName;
+	sqlResult_t *dataID1; /* points to the data ID column in our first query */
+	sqlResult_t *dataID2; /* points to the data ID column in our second query */
+	sqlResult_t *dataAttrName;
+	sqlResult_t *dataAttrValue;
+	sqlResult_t *dataAttrUnits;
+	bytesBuf_t*	mybuf=NULL;
+	char* collname;
+	char* inputattrname;
+	char* inputattrvalue;
+	char* inputattrunits;
+	
+	RE_TEST_MACRO ("    Calling msiVerifyAVU")
+
+	/* Sanity check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiVerifyAVU: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	/*
+		Query 1 - just return the files in the collection
+		Query 2 - return the files and their AVU triplet
+	
+		Note that Query 2 might be a subset of Query 1 since Query 2 will not return files that have no AVU listed.
+		
+		Foreach file in Query1 - see if the same file exists in Query2
+			if so, see if the AVU triplet matches the input parameter
+				if the AVU triplet doesn't match
+					append error message to buf
+			if not, append error message to buf
+	*/
+
+	rsComm = rei->rsComm;
+
+	/* General Query Input init */
+	memset (&gqin, 0, sizeof(genQueryInp_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+
+   /* buffer init */
+    mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+    memset (mybuf, 0, sizeof (bytesBuf_t));
+
+	/* construct an SQL query from the parameter list */
+	collname = (char*) strdup (mPin1->inOutStruct);
+
+	/* Return just the name and id of all the files in the collection for our first query */
+	addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
+	addInxIval (&gqin.selectInp, COL_D_DATA_ID, 1);
+	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
+	addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
+
+	j = rsGenQuery (rsComm, &gqin, &gqout1);
+
+	if (j != CAT_NO_ROWS_FOUND) {
+
+		printGenQueryOut(stderr, NULL, NULL, gqout1);
+
+		/* Now construct our second query, get the AVU information */
+		clearGenQueryInp (&gqin);
+		gqin.maxRows = MAX_SQL_ROWS;
+
+		addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
+		addInxIval (&gqin.selectInp, COL_D_DATA_ID, 1);
+		addInxIval (&gqin.selectInp, COL_META_DATA_ATTR_NAME, 1);
+		addInxIval (&gqin.selectInp, COL_META_DATA_ATTR_VALUE, 1);
+		addInxIval (&gqin.selectInp, COL_META_DATA_ATTR_UNITS, 1);
+		snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
+		addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
+
+		j = rsGenQuery (rsComm, &gqin, &gqout2);
+
+		if (j != CAT_NO_ROWS_FOUND) { /* Second query results */
+
+			int q1rows = gqout1->rowCnt;
+			int q2rows = gqout2->rowCnt;
+			int q1thisdataid, q2thisdataid;
+			char* q1thisdataname;
+			char* thisdataattrname;
+			char* thisdataattrvalue;
+			char* thisdataattrunits; 
+
+			/* OK now we have the results of two queries - time to compare
+				data objects and their AVU's */
+			dataName = getSqlResultByInx (gqout1, COL_DATA_NAME);
+			dataID1 = getSqlResultByInx (gqout1, COL_D_DATA_ID);  /* we'll use this field for indexing into the second query */
+			dataID2 = getSqlResultByInx (gqout2, COL_D_DATA_ID);  
+			dataAttrName = getSqlResultByInx (gqout2, COL_META_DATA_ATTR_NAME);  
+			dataAttrValue = getSqlResultByInx (gqout2, COL_META_DATA_ATTR_VALUE);  
+			dataAttrUnits = getSqlResultByInx (gqout2, COL_META_DATA_ATTR_UNITS);  
+
+			/* Assigning the inputted AVU values */
+			inputattrname = (char*) strdup (mPin2->inOutStruct); 
+			inputattrvalue = (char*) strdup (mPin3->inOutStruct); 
+			inputattrunits = (char*) strdup (mPin4->inOutStruct); 
+
+			/* Ok now for each data object id returned in Query 1, see if there's a matching ID returned in Query 2 */
+			for (i=0; i<q1rows; i++) {
+				int avufoundflag=0;
+				q1thisdataname = strdup((&dataName->value[dataName->len*i]));
+				q1thisdataid = atoi(&dataID1->value[dataID1->len*i]);
+				for (j=0; j<q2rows; j++) {
+					q2thisdataid = atoi(&dataID2->value[dataID2->len*j]);
+					if (q1thisdataid == q2thisdataid) { /* means this data object has an AVU triplet set*/
+						avufoundflag=1;
+						/* now see if the AVU matches our input */
+						thisdataattrname = strdup((&dataAttrName->value[dataAttrName->len*j]));
+						thisdataattrvalue = strdup((&dataAttrValue->value[dataAttrValue->len*j]));
+						thisdataattrunits = strdup((&dataAttrUnits->value[dataAttrUnits->len*j]));
+						if (strcmp(thisdataattrname, inputattrname)) { /* no match */
+							sprintf (tmpstr, "Data object:%s with AVU:%s,%s,%s does not match input\n",
+								q1thisdataname, thisdataattrname, thisdataattrvalue, thisdataattrunits);	
+							appendToByteBuf (mybuf, tmpstr);
+						}
+						if (strcmp(thisdataattrvalue, inputattrvalue)) { /* no match */
+							sprintf (tmpstr, "Data object:%s with AVU:%s,%s,%s does not match input\n",
+								q1thisdataname, thisdataattrname, thisdataattrvalue, thisdataattrunits);	
+							appendToByteBuf (mybuf, tmpstr);
+						}
+						if (strcmp(thisdataattrunits, inputattrunits)) { /* no match */
+							sprintf (tmpstr, "Data object:%s with AVU:%s,%s,%s does not match input\n",
+								q1thisdataname, thisdataattrname, thisdataattrvalue, thisdataattrunits);	
+							appendToByteBuf (mybuf, tmpstr);
+						}
+						break;
+					} 
+					
+				}
+				if (!avufoundflag) { /* this data object has no AVU associated with it */
+					sprintf (tmpstr, "Data object:%s has no AVU triplet set\n", q1thisdataname);	
+					appendToByteBuf (mybuf, tmpstr);
+				}
+				
+			}
+			
+
+		} else {
+			/* Query 2 returned no results */
+		}
+	} else {
+		/* Query 1 returned no results */
+	}
+
+	fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
+	fillIntInMsParam (mPout2, rei->status);
+  
+	return(rei->status);
+
+}
 
 /* Check and see if the owner is in a comma separated list */
 int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
@@ -225,110 +385,15 @@ int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPar
 		}	
 	} 
 
-	rodsLog (LOG_ERROR, "got here 7");
 	fillBufLenInMsParam (mPout1, stuff->len, stuff);
-	rodsLog (LOG_ERROR, "got here 8");
-//	fillIntInMsParam (mPout1, rei->status);
-//	rodsLog (LOG_ERROR, "got here 9");
+	fillIntInMsParam (mPout1, rei->status);
   
 	return(rei->status);
 
 }
 
-/* Performs two functions: if mPin2 is not NULL, then check and see if every file in the collection
-matches the given ACL, if it is NULL, just see that all ACLs are identical */
-int msiVerifyACL (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t* mPin4, 
-	msParam_t* mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
-
-	genQueryInp_t genQueryInp;
-	genQueryOut_t *genQueryOut = NULL;
-	char condStr[MAX_NAME_LEN];
-	rsComm_t *rsComm;
-	char *collname, *aclname, *aclvalue, *aclattr;
-	int i,j;
-	sqlResult_t *dataName;
-	sqlResult_t *dataMetaName;
-	sqlResult_t *dataMetaValue;
-	sqlResult_t *dataMetaUnits;
-
-	bytesBuf_t*	mybuf;
-	
-	RE_TEST_MACRO ("    Calling msiVerifyACL")
-
-	/* Sanity check */
-	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiVerifyACL: input rei or rsComm is NULL");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
-
-	/* initialize return buffer structure */
-	mybuf = (bytesBuf_t*) malloc (sizeof(bytesBuf_t));
-	memset (mybuf, 0, sizeof (bytesBuf_t));
-
-	rsComm = rei->rsComm;
-
-	/* construct an SQL query from the input parameter list */
-	/* Some of these may or may not be NULL */
-	collname = (char*) strdup (mPin1->inOutStruct);
-	aclname = (char*) strdup (mPin2->inOutStruct);
-	aclvalue = (char*) strdup (mPin3->inOutStruct);
-	aclattr = (char*) strdup (mPin4->inOutStruct);
-
-	memset (&genQueryInp, 0, sizeof(genQueryInp_t));
-	genQueryInp.maxRows = MAX_SQL_ROWS;
-
-	/* this is the info we want returned from the query */
-	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
-	addInxIval (&genQueryInp.selectInp, COL_META_DATA_ATTR_NAME, 1);
-	addInxIval (&genQueryInp.selectInp, COL_META_DATA_ATTR_VALUE, 1);
-	addInxIval (&genQueryInp.selectInp, COL_META_DATA_ATTR_UNITS, 1);
-
-	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
-	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr); 
-
-	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-	rodsLog (LOG_ERROR, "after query j=%d",j);
-
-	if (j != CAT_NO_ROWS_FOUND) {
-		printGenQueryOut(stderr, NULL, NULL, genQueryOut);
-
-		/* pointers to returned columns */
-		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
-		dataMetaName = getSqlResultByInx (genQueryOut, COL_META_DATA_ATTR_NAME);
-		dataMetaValue = getSqlResultByInx (genQueryOut, COL_META_DATA_ATTR_VALUE);
-		dataMetaUnits = getSqlResultByInx (genQueryOut, COL_META_DATA_ATTR_UNITS);
-
-		for (i=0; i<genQueryOut->rowCnt; i++) {
-			appendToByteBuf (mybuf, "data object: ");
-			appendToByteBuf (mybuf, &dataName->value[dataName->len * i]);
-			appendToByteBuf (mybuf, "\n");
-			appendToByteBuf (mybuf, "data meta name: ");
-			appendToByteBuf (mybuf, &dataMetaName->value[dataMetaName->len * i]);
-			appendToByteBuf (mybuf, "\n");
-			appendToByteBuf (mybuf, "data meta value: ");
-			appendToByteBuf (mybuf, &dataMetaValue->value[dataMetaValue->len * i]);
-			appendToByteBuf (mybuf, "\n");
-			appendToByteBuf (mybuf, "data meta units: ");
-			appendToByteBuf (mybuf, &dataMetaUnits->value[dataMetaUnits->len * i]);
-			appendToByteBuf (mybuf, "\n");
-			
-		}
-
-		/* fill in the return buffer */
-		fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
-
-	} else {
-		appendToByteBuf (mybuf, "No rows found\n");
-	}
-
-	fillIntInMsParam (mPout2, rei->status);
-  
-	return(rei->status);
-
-}
 
 /* Silly hello world microservice */
-/*
 int msiHiThere (ruleExecInfo_t *rei) {
 
 	int i;
@@ -338,7 +403,6 @@ int msiHiThere (ruleExecInfo_t *rei) {
 	i = hithere ();
 	return(i);
 }
-*/
 
 int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei) {
 
@@ -421,9 +485,7 @@ int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1
 	}
 
 	fillMsParam (mPin2, NULL, KeyValPair_MS_T, results, NULL);
-	//rodsLog (LOG_ERROR, "7 s tuff: ");
 	fillIntInMsParam (mPout1, rei->status);
-	//rodsLog (LOG_ERROR, "8 s tuff: ");
   
 	return(rei->status);
 

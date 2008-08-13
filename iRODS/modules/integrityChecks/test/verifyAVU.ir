@@ -1,0 +1,3 @@
+msiVerifyAVU||msiVerifyAVU(*Collection,*AVUNAME, *AVUVALUE, *AVUATTRS, *OUT,*STATUS))##writeBytesBuf(stdout,*OUT)##writeLine(stdout,"")|nop
+*Collection=/sdscZone/home/rods%*AVUNAME=buttername%*AVUVALUE=buttervalue%*AVUATTRS=butterattrs
+ruleExecOut%*STATUS
