@@ -367,6 +367,8 @@ int fd)
   int tcpSockfd = rbudpSender->rbudpBase.tcpSockfd;
   int verbose = rbudpSender->rbudpBase.verbose;
   int status = 0;
+  long long remaining;
+  long long offset = 0;
 
   struct stat filestat;
   if (fstat(fd, &filestat) < 0) {
@@ -389,11 +391,36 @@ int fd)
      }			
    }
 
-   char *buf = (char *)mmap(NULL, filesize, PROT_READ, MAP_SHARED, fd, 0);
+   remaining = filesize;
+   while (remaining > 0) {
+      uint toSend;
 
-   status = sendBuf (rbudpSender, buf, filesize, sendRate, packetSize);
+      if (remaining > (uint) ONE_GIGA) {
+	 toSend = (uint) ONE_GIGA;
+      } else {
+	 toSend = remaining;
+      } 
+
+      TRACE_DEBUG("Sending %d bytes chunk. %lld bytes remaining", 
+        toSend, remaining - toSend);
+
+      char *buf = (char *)mmap(NULL, toSend, PROT_READ, MAP_SHARED, fd, offset);
+      if (buf == MAP_FAILED) {
+        fprintf(stderr,"mmap failed. toSend = %d, offset = %lld, errno = %d\n",
+         toSend, offset, errno);
+        return (errno ? (-1 * errno) : -1);
+      }
+
+      status = sendBuf (rbudpSender, buf, toSend, sendRate, packetSize);
    
-   munmap(buf, filesize);
+      munmap(buf, toSend);
+      if (status < 0) {
+         fprintf (stderr, "sendBuf error, status = %d\n", status);
+         break;
+      }
+      remaining -= toSend;
+      offset += toSend;
+   } 
 
    return (status);
 }

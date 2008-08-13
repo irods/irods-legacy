@@ -398,6 +398,8 @@ getfileByFd (rbudpReceiver_t *rbudpReceiver, int fd, int packetSize)
    long long filesize;
    int status = 0;
    int verbose = rbudpReceiver->rbudpBase.verbose;
+  long long remaining;
+  long long offset = 0;
 
    int n = readn(rbudpReceiver->rbudpBase.tcpSockfd, 
      (char *)&filesize, sizeof(filesize));
@@ -412,16 +414,39 @@ getfileByFd (rbudpReceiver_t *rbudpReceiver, int fd, int packetSize)
    
    ftruncate(fd, filesize);
    
-   char *buf;
-   buf = (char *)mmap(NULL, filesize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-   if (buf == MAP_FAILED) {
-     fprintf(stderr,"mmap failed. errno = %d\n", errno);
-     return (errno ? (-1 * errno) : -1);
+   remaining = filesize;
+   while (remaining > 0) {
+      uint toRead;
+      char *buf;
+
+      if (remaining > (uint) ONE_GIGA) {
+         toRead = (uint) ONE_GIGA;
+      } else {
+         toRead = remaining;
+      }
+
+      TRACE_DEBUG("Receiving %d bytes chunk. %lld bytes remaining", 
+        toRead, remaining - toRead);
+
+      buf = (char *)mmap(NULL, toRead, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 
+        offset);
+      if (buf == MAP_FAILED) {
+        fprintf(stderr,"mmap failed. toRead = %d, offset = %lld, errno = %d\n",
+         toRead, offset, errno);
+        return (errno ? (-1 * errno) : -1);
+      }
+
+      status = receiveBuf (rbudpReceiver, buf, toRead, packetSize);
+
+      munmap(buf, toRead);
+      if (status < 0) {
+         fprintf (stderr, "receiveBuf error, status = %d\n", status);
+         break;
+      }
+      remaining -= toRead;
+      offset += toRead;
    }
 
-   status = receiveBuf (rbudpReceiver, buf, filesize, packetSize);
-
-   munmap(buf, filesize);
    
    return status; 
 }

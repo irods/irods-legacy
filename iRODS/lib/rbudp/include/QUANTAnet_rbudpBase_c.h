@@ -47,6 +47,7 @@
 
 #define DEF_UDP_SEND_RATE       600000
 #define DEF_UDP_PACKET_SIZE     8192
+#define	ONE_GIGA		(1610612736)	/* 1.5 g */
 
 #define USEC(st, fi) (((fi)->tv_sec-(st)->tv_sec)*1000000+((fi)->tv_usec-(st)->tv_usec))
 
