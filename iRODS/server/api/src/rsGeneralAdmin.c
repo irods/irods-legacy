@@ -94,7 +94,18 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        if (strcmp(generalAdminInp->arg1,"dir")==0) {
 	  memset((char*)&collInfo,0,sizeof(collInfo));
 	  strncpy(collInfo.collName, generalAdminInp->arg2, MAX_NAME_LEN);
-	  status = chlRegColl(rsComm, &collInfo);
+	  if (strlen(generalAdminInp->arg3) > 0) {
+	     strncpy(collInfo.collOwnerName, generalAdminInp->arg3,
+		     MAX_NAME_LEN);
+	     status = chlRegCollByAdmin(rsComm, &collInfo);
+	     if (status == 0) {
+		int status2;
+		status2 = chlCommit(rsComm);
+	     }
+	  }
+	  else {
+	     status = chlRegColl(rsComm, &collInfo);
+	  }
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
