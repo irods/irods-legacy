@@ -713,6 +713,7 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
     /* A Windows console app has very limited timeout functionality.
      * An pseudo timeout is implemented.
      */
+	/*
 	int connectCnt;
 	int win_connect_timeout_cb;
     int win_connect_timeout = 0;
@@ -721,20 +722,27 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
 	 win_connect_timer_id = 
      timeSetEvent(CONNECT_TIMEOUT*1000, 0, my_timeout_handler, 0, 
      TIME_ONESHOT);
-
 	connectCnt = 0;
+	*/
 
 	 status = 0;
 
-    while ((connectCnt < MAX_CONN_SVR_CNT) && (!win_connect_timeout)) {
+    while ((timeoutCnt < MAX_CONN_RETRY_CNT) && (!win_connect_timeout)) {
         if ((status = connect (sock, sin, sizeof (struct sockaddr))) < 0) {
-            connectCnt ++;
+            timeoutCnt ++;
             rodsSleep (0, 200000);
         } else {
             break;
         }
     }
+	if(status != 0)
+	{
+		return USER_SOCK_CONNECT_TIMEDOUT;
+	}
 
+	return 0;
+
+	/*
     if(win_connect_timeout) {
         fprintf(stderr,
 	 "portalConnect: connect msg timed out for pid %d\n", getpid ());
@@ -742,6 +750,7 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
     } else {
         timeKillEvent(win_connect_timer_id);
     }
+	*/
 
 #else
     /* redo the timeout using select */
