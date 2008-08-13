@@ -691,6 +691,21 @@ doCommand(char *cmdToken[]) {
    }
    if (strcmp(cmdToken[0],"ctime") == 0) {
       char myString[20];
+      if (strcmp(cmdToken[1],"str") == 0) {
+	 int status;
+	 status=checkDateFormat(cmdToken[2]);
+	 if (status) {
+	    rodsLogError(LOG_ERROR, status, "ctime str:checkDateFormat error");
+	 }
+	 printf("Converted to local iRODS integer time: %s\n", cmdToken[2]);
+	 return(0);
+      }
+      if (strcmp(cmdToken[1],"now") == 0) {
+	 char nowString[100];
+	 getNowStr(nowString);
+	 printf("Current time as iRODS integer time: %s\n", nowString);
+	 return(0);
+      }
       getLocalTimeFromRodsTime(cmdToken[1], myString);
       printf("Converted to local time: %s\n", myString);
       return(0);
@@ -767,6 +782,30 @@ main(int argc, char **argv) {
       exit(0);
    }
 
+   if (strcmp(cmdToken[0],"ctime") == 0) {
+      char myString[20];
+      if (strcmp(cmdToken[1],"str") == 0) {
+	 int status;
+	 status=checkDateFormat(cmdToken[2]);
+	 if (status) {
+	    rodsLogError(LOG_ERROR, status, "ctime str:checkDateFormat error");
+	 }
+	 printf("Converted to local iRODS integer time: %s\n", cmdToken[2]);
+	 exit(0);
+      }
+      if (strcmp(cmdToken[1],"now") == 0) {
+	 char nowString[100];
+	 getNowStr(nowString);
+	 printf("Current time as iRODS integer time: %s\n", nowString);
+	 exit(0);
+      }
+      getLocalTimeFromRodsTime(cmdToken[1], myString);
+      printf("Converted to local time: %s\n", myString);
+      exit(0);
+   }
+
+   /* need to copy time convert commands up here too */
+
    Conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
                      myEnv.rodsZone, 0, &errMsg);
 
@@ -837,7 +876,7 @@ void usageMain()
 " mkuser Name Type [DN] (make user, where userName: name[@department][#zone])",
 " moduser Name [ type | zone | DN | comment | info | password ] newValue",
 " rmuser Name (remove user, where userName: name[@department][#zone])",
-" mkdir Name (make directory(collection))",
+" mkdir Name [username] (make directory(collection))",
 " rmdir Name (remove directory) ",
 " mkresc Name Type Class Host Path (make Resource)",
 " modresc Name [type, class, host, path, comment, info, freespace] Value (mod Resc)",
@@ -853,7 +892,7 @@ void usageMain()
 " spass Password Key (print a scrambled form of a password for DB)",
 " dspass Password Key (descramble a password and print it)",
 " pv [date-time] [repeat-time(minutes)] (initiate a periodic rule to vacuum the DB)",
-" ctime Time (convert an iRODS time value (integer) to local time)",
+" ctime Time (convert an iRODS time (integer) to local time; & other forms)",
 " help (or h) [command] (this help, or more details on a command)",
 "Also see 'irmtrash -M -u user' for the admin mode of removing trash.",
 ""};
@@ -977,6 +1016,8 @@ usage(char *subOpt)
    char *mkdirMsgs[]={
 " mkdir Name (make directory(collection))",
 "This is similar to imkdir but is used during the installation process.",
+"There is also a form 'mkdir Name Username' which makes a collection",
+"that is owned by user Username.",
 ""};
 
    char *rmdirMsgs[]={
@@ -1067,9 +1108,16 @@ usage(char *subOpt)
 "Time values (modify times, access times) are stored in the database",
 "as a Unix Time value.  This is the number of seconds since 1970 and",
 "is the same in all time zones (basically, Coordinated Universal Time).",
-"ils and other utilities will convert it before displaying it, but iadmin"
-"displays the actual value in the database.  You can enter the value to"
-"the ctime command to convert it to your local time.",
+"ils and other utilities will convert it before displaying it, but iadmin",
+"displays the actual value in the database.  You can enter the value to",
+"the ctime command to convert it to your local time.  The following two",
+"additional forms can also be used:",
+" ",
+" ctime now   convert a current time to an irods time integer value.",
+" ",
+" ctime str Timestr  - convert a string time string (YYYY-MM-DD.hh:mm:ss)",
+" to an irods integer value time.",
+" ",
 ""};
 
    char *helpMsgs[]={
