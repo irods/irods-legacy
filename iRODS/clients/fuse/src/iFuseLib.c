@@ -117,6 +117,7 @@ fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath)
     return (0);
 }
 
+/* need to call getIFuseConn before calling ifuseLseek */ 
 int
 ifuseLseek (const char *path, int descInx, off_t offset)
 {

@@ -478,13 +478,16 @@ struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsRead: %s", path);
 
+    getIFuseConn (&DefConn, &MyRodsEnv);
     descInx = fi->fh;
 
     if (checkFuseDesc (descInx) < 0) {
+        relIFuseConn (&DefConn);
 	return -EBADF;
     }
 
     if ((status = ifuseLseek (path, descInx, offset)) < 0) {
+        relIFuseConn (&DefConn);
         if ((myError = getUnixErrno (status)) > 0) {
             return (-myError);
         } else {
@@ -497,10 +500,9 @@ struct fuse_file_info *fi)
     dataObjReadInp.l1descInx = IFuseDesc[descInx].iFd;
     dataObjReadInp.len = size;
 
-    getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjRead (DefConn.conn, &dataObjReadInp, &dataObjReadOutBBuf);
-    relIFuseConn (&DefConn);
     if (status < 0) {
+        relIFuseConn (&DefConn);
         if ((myError = getUnixErrno (status)) > 0) {
 	    return (-myError);
 	} else {
@@ -508,6 +510,7 @@ struct fuse_file_info *fi)
 	}
     } else {
 	IFuseDesc[descInx].offset += status;
+        relIFuseConn (&DefConn);
         return (status);
     }
 }
@@ -523,13 +526,16 @@ struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsWrite: %s", path);
 
+    getIFuseConn (&DefConn, &MyRodsEnv);
     descInx = fi->fh;
 
     if (checkFuseDesc (descInx) < 0) {
+        relIFuseConn (&DefConn);
         return -EBADF;
     }
 
     if ((status = ifuseLseek (path, descInx, offset)) < 0) {
+        relIFuseConn (&DefConn);
         if ((myError = getUnixErrno (status)) > 0) {
             return (-myError);
         } else {
@@ -542,11 +548,10 @@ struct fuse_file_info *fi)
     dataObjWriteInp.l1descInx = IFuseDesc[descInx].iFd;
     dataObjWriteInp.len = size;
 
-    getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjWrite (DefConn.conn, &dataObjWriteInp, 
       &dataObjWriteInpBBuf);
-    relIFuseConn (&DefConn);
     if (status < 0) {
+        relIFuseConn (&DefConn);
         if ((myError = getUnixErrno (status)) > 0) {
             return (-myError);
         } else {
@@ -559,6 +564,7 @@ struct fuse_file_info *fi)
         return -ENOENT;
     } else {
         IFuseDesc[descInx].offset += status;
+        relIFuseConn (&DefConn);
         return (status);
     }
 }
@@ -603,10 +609,10 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
         return -EBADF;
     }
 
+    getIFuseConn (&DefConn, &MyRodsEnv);
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = IFuseDesc[descInx].iFd;
 
-    getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
     relIFuseConn (&DefConn);
 
