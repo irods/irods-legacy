@@ -439,6 +439,33 @@ char *localFile, struct timeval *startTime, struct timeval *endTime)
 }
 
 int
+printNoSync (char *objPath, rodsLong_t fileSize)
+{
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+    float sizeInMb;
+    int status;
+   
+
+    if ((status = splitPathByKey (objPath, myDir, myFile, '/')) < 0) {
+        rodsLogError (LOG_NOTICE, status,
+          "printNoSync: splitPathByKey for %s error, status = %d",
+          objPath, status);
+        return (status);
+    }
+
+    if (fileSize <= 0) {
+        sizeInMb = 0.0;
+    } else {
+        sizeInMb = (float) fileSize / 1048600.0;
+    }
+
+    fprintf (stdout,
+      "   %-25.25s  %10.3f MB --- no sync required \n", myFile, sizeInMb);
+
+    return (0);
+}
+
+int
 queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
 {
     genQueryInp_t genQueryInp;

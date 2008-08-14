@@ -196,9 +196,13 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (status >= 0 && myRodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, srcPath->outPath, srcPath->size, 
-	  targPath->outPath, &startTime, &endTime);
+	if (getFlag + syncFlag > 0) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTiming (conn, srcPath->outPath, srcPath->size, 
+	      targPath->outPath, &startTime, &endTime);
+	} else {
+	    printNoSync (srcPath->outPath, srcPath->size);
+	}
     }
 
     return (status);
@@ -283,9 +287,13 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (status >= 0 && myRodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, srcPath->outPath, srcPath->size,
-          targPath->outPath, &startTime, &endTime);
+	if (putFlag + syncFlag > 0) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTiming (conn, srcPath->outPath, srcPath->size,
+              targPath->outPath, &startTime, &endTime);
+        } else {
+            printNoSync (srcPath->outPath, srcPath->size);
+        }
     }
 
     return (status);
@@ -350,9 +358,13 @@ dataObjCopyInp_t *dataObjCopyInp)
     }
 
     if (status >= 0 && myRodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, srcPath->outPath, srcPath->size, 
-	  targPath->outPath, &startTime, &endTime);
+	if (cpFlag + syncFlag > 0) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTiming (conn, srcPath->outPath, srcPath->size, 
+	      targPath->outPath, &startTime, &endTime);
+	} else {
+            printNoSync (srcPath->outPath, srcPath->size);
+        }
     }
 
     return (status);

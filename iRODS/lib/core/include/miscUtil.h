@@ -149,6 +149,8 @@ int
 printTiming (rcComm_t *conn, char *objPath, rodsLong_t fileSize,
 char *localFile, struct timeval *startTime, struct timeval *endTime);
 int
+printNoSync (char *objPath, rodsLong_t fileSize);
+int
 queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut);
 int
 queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut);
