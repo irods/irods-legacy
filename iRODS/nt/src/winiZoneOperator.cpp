@@ -13,6 +13,8 @@
 #include "winiZoneOperator.h"
 #include "winiString.h"
 #include "winiSet.h"
+#include "rcMisc.h"
+#include "genQuery.h"
 
 namespace WINI
 {
@@ -95,7 +97,8 @@ StatusCode ZoneOperatorImpl::GetCollections(ZoneNodeImpl* target)
 
 	void* fooX = this->m_session->GetConn();
 	rcComm_t* foo = (rcComm_t*)fooX;
-    int s = queryCollInColl (foo, (char*)target->GetPath(), &myRodsArgs, &genQueryInp, &genQueryOut);
+	queryHandle_t queryHandle;
+    int s = queryCollInColl (&queryHandle, (char*)target->GetPath(), 0, &genQueryInp, &genQueryOut);
 
     int i, status, j;
 
@@ -123,6 +126,7 @@ StatusCode ZoneOperatorImpl::GetCollections(ZoneNodeImpl* target)
     return WINI_OK;
 }
 
+#if 0
 StatusCode ZoneOperatorImpl::GetDomains(ZoneNodeImpl* target)
 {
 	ClearMCATScratch();
@@ -162,7 +166,7 @@ StatusCode ZoneOperatorImpl::GetDomains(ZoneNodeImpl* target)
 
 	return SRB_OK;
 }
-
+#endif
 StatusCode ZoneOperatorImpl::GetResources(ZoneNodeImpl* target)
 {
    genQueryInp_t genQueryInp;
