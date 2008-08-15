@@ -5,4 +5,7 @@
 { "msiVerifyOwner",			4,	(funcPtr) msiVerifyOwner },
 { "msiVerifyAVU",			6,	(funcPtr) msiVerifyAVU },
 { "msiHiThere",				0,	(funcPtr) msiHiThere },
+{ "msiListFields",			4,	(funcPtr) msiListFields },
+{ "msiVerifyExpiry",		4,	(funcPtr) msiVerifyExpiry },
+
 

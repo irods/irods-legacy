@@ -14,6 +14,7 @@
 
 #include "rods.h"
 #include "rodsClient.h"
+#include "rcMisc.h"
 
 
 int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei);
