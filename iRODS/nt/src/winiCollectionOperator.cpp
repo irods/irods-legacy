@@ -40,7 +40,7 @@ StatusCode CollectionOperatorImpl::Delete(ICollectionNode* target)
 
 	memset((void*)&targetCollInp_t.condInput, 0, sizeof(keyValPair_t));
 
-	status = rcRmColl(m_conn, &targetCollInp_t);
+	status = rcRmColl(m_conn, &targetCollInp_t, 0);
 
 	if(!status.isOk())
 		return status;
@@ -748,7 +748,8 @@ StatusCode CollectionOperatorImpl::GetChildCollections(CollectionNodeImpl* targe
 
 	void* fooX = this->m_session->GetConn();
 	rcComm_t* foo = (rcComm_t*)fooX;
-    int s = queryCollInColl (foo, (char*)target->GetPath(), &myRodsArgs, &genQueryInp, &genQueryOut);
+	queryHandle_t queryHandle;
+    int s = queryCollInColl (&queryHandle, (char*)target->GetPath(), 0, &genQueryInp, &genQueryOut);
 
 	//TODO Add support for no collections
 	if(-808000 == s)
