@@ -141,6 +141,7 @@ create table R_DATA_MAIN
    data_checksum       varchar(1000),
    data_expiry_ts      varchar(32),
    data_map_id         bigint DEFAULT 0,
+   data_mode           varchar(32),
    r_comment           varchar(1000),
    create_ts           varchar(32),
    modify_ts           varchar(32)

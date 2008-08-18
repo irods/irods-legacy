@@ -183,6 +183,8 @@ icatGeneralQuerySetup() {
   sColumn( COL_D_COMMENTS, "r_data_main", "r_comment");
   sColumn( COL_D_CREATE_TIME, "r_data_main", "create_ts");
   sColumn( COL_D_MODIFY_TIME, "r_data_main", "modify_ts");
+  sColumn( COL_DATA_MODE, "r_data_main", "data_mode");
+
 
   sColumn( COL_DATA_ACCESS_TYPE, "r_data_access", "access_type_id");
   sColumn( COL_DATA_ACCESS_NAME, "r_data_tokn_accs", "token_name");
