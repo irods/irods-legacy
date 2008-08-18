@@ -190,6 +190,7 @@ genQueryOut_t *genQueryOut);
 int appendToByteBuf(bytesBuf_t *bytesBuf, char *str);
 
 char * getAttrNameFromAttrId(int cid);
+int getAttrIdFromAttrName(char *cname);
 
 int
 clearSendXmsgInfo (sendXmsgInfo_t *sendXmsgInfo);
