@@ -163,6 +163,7 @@ typedef struct DataObjInfo {
     rodsLong_t  collId;
     int  dataMapId;
     char dataComments[LONG_NAME_LEN];
+    char dataMode[SHORT_STR_LEN];
     char dataExpiry[TIME_LEN];
     char dataCreate[TIME_LEN];
     char dataModify[TIME_LEN];

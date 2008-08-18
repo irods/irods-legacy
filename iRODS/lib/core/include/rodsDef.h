@@ -64,6 +64,8 @@
  */
 #define META_STR_LEN  2704
 
+#define SHORT_STR_LEN 32  /* for dataMode, perhaps others */
+
 #ifndef NULL
 #define NULL    0
 #endif
