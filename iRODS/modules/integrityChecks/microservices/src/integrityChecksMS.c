@@ -1,4 +1,89 @@
 #include "integrityChecksMS.h"
+#include "icutils.h"
+
+/* For now our second parameter is the string "now" and just sees if anything has expired */
+int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
+
+	genQueryInp_t gqin;
+	genQueryOut_t *gqout = NULL;
+	char condStr[MAX_NAME_LEN];
+	char tmpstr[MAX_NAME_LEN];
+	rsComm_t *rsComm;
+	char* collname;
+	sqlResult_t *dataName;
+	sqlResult_t *dataExpiry;
+	bytesBuf_t*	mybuf=NULL;
+	int i,j;
+
+	char* timestr;
+	char* inputtime;
+
+	RE_TEST_MACRO ("    Calling msiVerifyExpiry")
+
+	/* Sanity check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiListFields: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	rsComm = rei->rsComm;
+
+	/* init stuff */
+	memset (&gqin, 0, sizeof(genQueryInp_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+    mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+    memset (mybuf, 0, sizeof (bytesBuf_t));
+
+	/* 
+		First get the local time = now
+		foreach file's expiry date	
+			if irodsfileunixtime < localtime
+				print to buf as an expired file
+	*/
+
+	/* construct an SQL query from the parameter list */
+	collname = (char*) strdup (mPin1->inOutStruct);
+	inputtime = (char*) strdup (mPin2->inOutStruct);
+
+	/* this is the info we want returned from the query */
+	addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
+	addInxIval (&gqin.selectInp, COL_D_EXPIRY , 1);
+	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
+	addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
+
+	j = rsGenQuery (rsComm, &gqin, &gqout);
+
+	if (j != CAT_NO_ROWS_FOUND) {
+
+		printGenQueryOut(stderr, NULL, NULL, gqout);
+
+		getNowStr (timestr);
+		rodsLog (LOG_ERROR, "timestr=%s", timestr);
+
+		dataName = getSqlResultByInx (gqout, COL_DATA_NAME);
+		dataExpiry = getSqlResultByInx (gqout, COL_D_EXPIRY);
+
+		rodsLog (LOG_ERROR, "got here 3 rowCnt=%d",gqout->rowCnt);
+
+		for (i=0; i<gqout->rowCnt; i++) {
+			int dataobjexpiry, inputtimeexpiry;
+			dataobjexpiry = atoi(&dataExpiry->value[dataExpiry->len*i]);
+			inputtimeexpiry = atoi (inputtime);
+			rodsLog (LOG_ERROR, "Data object:%s\tExpiry:%s\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+			sprintf (tmpstr, "Data object:%s\tExpiry:%s\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+			appendToByteBuf (mybuf, tmpstr);
+		}
+	} else appendToByteBuf (mybuf, "No rows found\n");
+
+		rodsLog (LOG_ERROR, "got here 6: mybuf->len:%d",mybuf->len);
+	fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
+		rodsLog (LOG_ERROR, "got here 7");
+	fillIntInMsParam (mPout2, rei->status);
+		rodsLog (LOG_ERROR, "got here 8");
+  
+	return(rei->status);
+
+}
 
 int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei) {
 
@@ -392,17 +477,6 @@ int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPar
 
 }
 
-
-/* Silly hello world microservice */
-int msiHiThere (ruleExecInfo_t *rei) {
-
-	int i;
-
-	RE_TEST_MACRO ("    Calling msiHiThere")
-
-	i = hithere ();
-	return(i);
-}
 
 int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei) {
 
