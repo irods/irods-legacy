@@ -20,8 +20,8 @@
 #	status      Report the running status of iRODS and Postgres servers
 #	test        Test the iRODS installation
 #
-#	optimize    Optimize the Postgres tables used by iRODS
-#	vacuum      Same as 'optimize'
+#	dboptimize  Optimize the Postgres tables used by iRODS
+#	dbvacuum    Same as 'dboptimize'
 #
 #	icatcreate  Create the database tables
 #	icatdrop    Delete the database tables
@@ -340,7 +340,7 @@ foreach $arg (@ARGV)
 		}
 		next;
 	}
-	if ( $arg =~ /^-?-?((opt(imize)?)|(vac(uu?m)))$/i ) # Optimize tables
+	if ( $arg =~ /^-?-?((dbopt(imize)?)|(dbvac(uum)?))$/i ) # Optimize db
 	{
 		$numberCommands++;
 		doOptimize( );
@@ -1308,7 +1308,7 @@ sub printUsage
 	printNotice( "    dbrestart     Restart the database servers\n" );
 	printNotice( "    dbdrop        Delete the iRODS tables in the database\n" );
 	printNotice( "    dboptimize    Optimize the iRODS tables in the database\n" );
-	printNotice( "    dbvacuum      Same as 'optimize'\n" );
+	printNotice( "    dbvacuum      Same as 'dboptimize'\n" );
 	printNotice( "\n" );
 	printNotice( "General Commands:\n" );
 	printNotice( "    start         Start the iRODS and database servers\n" );
