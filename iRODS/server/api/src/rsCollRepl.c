@@ -19,7 +19,7 @@
  * a data object.
  * Input -
  *    rsComm_t *rsComm
- *    collRepl_t *collRepl - The replication input
+ *     dataObjInp_t *collReplInp - The replication input
  *    collOprStat_t **collOprStat - transfer stat output
  */
 
