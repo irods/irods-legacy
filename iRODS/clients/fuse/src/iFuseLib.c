@@ -112,7 +112,6 @@ matchPathInPathQue (pathCacheQue_t *pathCacheQue, char *inPath)
           "matchPathInPathQue: input pathCacheQue is NULL");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
-    chkCacheExpire (pathCacheQue);
     tmpPathCache = pathCacheQue->top;
     while (tmpPathCache != NULL) {
 	if (strcmp (tmpPathCache->filePath, inPath) == 0) return 1;

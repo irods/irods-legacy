@@ -53,6 +53,11 @@ irodsGetattr (const char *path, struct stat *stbuf)
             rodsLogError (LOG_ERROR, status, 
 	      "irodsGetattr: rcObjStat of %s error", path);
 	}
+#if defined(linux_platform)
+        if (specPathFlag == 1) {
+            addToCacheQue (myque, (char *) path);
+        }
+#endif
 	return -ENOENT;
     }
 
@@ -77,12 +82,6 @@ irodsGetattr (const char *path, struct stat *stbuf)
         freeRodsObjStat (rodsObjStatOut);
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
-
-#if defined(linux_platform)
-    if (specPathFlag == 1) {
-	addToCacheQue (myque, (char *) path);
-    }
-#endif
 
     return 0;
 }
