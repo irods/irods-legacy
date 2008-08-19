@@ -8,6 +8,8 @@ char **ruleExecId)
     rodsServerHost_t *rodsServerHost;
     int status;
 
+    *ruleExecId = NULL;
+
     if (ruleExecSubmitInp == NULL || 
       ruleExecSubmitInp->packedReiAndArgBBuf == NULL ||
       ruleExecSubmitInp->packedReiAndArgBBuf->len <= 0 ||
@@ -26,6 +28,9 @@ char **ruleExecId)
     if (rodsServerHost->localFlag == LOCAL_HOST) {
 #ifdef RODS_CAT
        status = _rsRuleExecSubmit (rsComm, ruleExecSubmitInp);
+        if (status >= 0) {
+            *ruleExecId = strdup (ruleExecSubmitInp->ruleExecId);
+        }
 #else
        rodsLog(LOG_NOTICE,
                "rsRuleExecSubmit error. ICAT is not configured on this host");
@@ -34,9 +39,6 @@ char **ruleExecId)
     } else {
         status = rcRuleExecSubmit(rodsServerHost->conn, ruleExecSubmitInp,
 	  ruleExecId);
-	if (status >= 0) {
-            *ruleExecId = strdup (ruleExecSubmitInp->ruleExecId);
-	}
     }
     if (status < 0) {
         rodsLog (LOG_ERROR,
