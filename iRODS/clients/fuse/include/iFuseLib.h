@@ -30,6 +30,26 @@ typedef struct IFuseDesc {
     char objPath[MAX_NAME_LEN];
 } iFuseDesc_t;
 
+#define NUM_PATH_HASH_SLOT	23
+#define CACHE_EXPIRE_TIME	600	/* 10 minutes before expiration */
+
+typedef struct PathCache {
+    char filePath[MAX_NAME_LEN];
+    uint cachedTime;
+    struct PathCache *prev;
+    struct PathCache *next;
+} pathCache_t;
+
+typedef struct PathCacheQue {
+    pathCache_t *top;
+    pathCache_t *bottom;
+} pathCacheQue_t;
+
+typedef struct specialPath {
+    char *path;
+    int len;
+} specialPath_t;
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -54,6 +74,22 @@ int
 iFuseDescInuse ();
 int
 checkFuseDesc (int descInx);
+int
+initNonExistPathCache ();
+int
+getHashSlot (int value, int numHashSlot);
+int
+matchPathInPathQue (pathCacheQue_t *pathCacheQue, char *inPath);
+int
+chkCacheExpire (pathCacheQue_t *pathCacheQue);
+int
+addToCacheQue (pathCacheQue_t *pathCacheQue, char *inPath);
+int
+pathSum (char *inPath);
+int
+matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque);
+int
+isSpecialPath (char *inPath);
 #ifdef  __cplusplus
 }
 #endif

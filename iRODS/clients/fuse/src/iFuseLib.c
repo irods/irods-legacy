@@ -25,6 +25,179 @@ extern rodsEnv MyRodsEnv;
 
 static int ConnManagerStarted = 0;
 
+static pathCacheQue_t NonExistPathQue[NUM_PATH_HASH_SLOT];
+
+static specialPath_t SpecialPath[] = {
+    {"/tls", 4},
+    {"/i686", 5},
+    {"/sse2", 5},
+    {"/lib", 4},
+    {"/librt.so.1", 11},
+    {"/libacl.so.1", 12},
+    {"/libselinux.so.1", 16},
+    {"/libc.so.6", 10},
+    {"/libpthread.so.0", 16},
+    {"/libattr.so.1", 13},
+};
+
+static int NumSpecialPath = sizeof (SpecialPath) / sizeof (specialPath_t);
+
+int
+initNonExistPathCache ()
+{
+    bzero (NonExistPathQue, sizeof (NonExistPathQue));
+    return (0);
+}
+
+int
+isSpecialPath (char *inPath)
+{
+    int len;
+    char *endPtr;
+    int i;
+
+    if (inPath == NULL) {
+        rodsLog (LOG_ERROR,
+          "isSpecialPath: input inPath is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    len = strlen (inPath);
+    endPtr = inPath + len;
+    for (i = 0; i < NumSpecialPath; i++) {
+	if (len < SpecialPath[i].len) continue;
+	if (strcmp (SpecialPath[i].path, endPtr - SpecialPath[i].len) == 0)
+	    return (1);
+    }
+    return 0;
+}
+
+int
+matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque)
+{
+    int mysum, myslot;
+    int status;
+
+    if (inPath == NULL) {
+        rodsLog (LOG_ERROR,
+          "matchPathInNonExistPathCache: input inPath is NULL");
+	*myque = NULL;
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    mysum = pathSum (inPath);
+    myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
+    *myque = &NonExistPathQue[myslot];
+
+    chkCacheExpire (*myque);
+    status = matchPathInPathQue (*myque, inPath);
+
+    return status;
+}
+
+int
+getHashSlot (int value, int numHashSlot)
+{
+    int mySlot = value % numHashSlot;
+    return (mySlot);
+}
+
+int
+matchPathInPathQue (pathCacheQue_t *pathCacheQue, char *inPath)
+{
+    pathCache_t *tmpPathCache;
+
+    if (pathCacheQue == NULL) {
+        rodsLog (LOG_ERROR,
+          "matchPathInPathQue: input pathCacheQue is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    chkCacheExpire (pathCacheQue);
+    tmpPathCache = pathCacheQue->top;
+    while (tmpPathCache != NULL) {
+	if (strcmp (tmpPathCache->filePath, inPath) == 0) return 1;
+	tmpPathCache = tmpPathCache->next;
+    }
+    return (0);
+}
+
+int
+chkCacheExpire (pathCacheQue_t *pathCacheQue)
+{
+    pathCache_t *tmpPathCache;
+
+    uint curTime = time (0);
+    if (pathCacheQue == NULL) {
+        rodsLog (LOG_ERROR,
+          "chkCacheExpire: input pathCacheQue is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    tmpPathCache = pathCacheQue->top;
+    while (tmpPathCache != NULL) {
+	if (curTime >= tmpPathCache->cachedTime + CACHE_EXPIRE_TIME) {
+	    /* cache expired */
+	    pathCacheQue->top = tmpPathCache->next;
+	    free (tmpPathCache);
+	    tmpPathCache = pathCacheQue->top;
+            if (tmpPathCache != NULL) {
+                tmpPathCache->prev = NULL;
+            } else {
+		pathCacheQue->bottom = NULL;
+		return (0);
+	    }
+	} else {
+	    /* not expired */
+	    return (0);
+	}
+    }
+    return (0);
+}
+	     
+int
+addToCacheQue (pathCacheQue_t *pathCacheQue, char *inPath)
+{
+    pathCache_t *tmpPathCache;
+    
+    if (pathCacheQue == NULL || inPath == NULL) {
+        rodsLog (LOG_ERROR,
+          "addToCacheQue: input pathCacheQue or inPath is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    tmpPathCache = malloc (sizeof (pathCache_t));
+    bzero (tmpPathCache, sizeof (pathCache_t));
+    rstrcpy (tmpPathCache->filePath, inPath, MAX_NAME_LEN);
+    tmpPathCache->cachedTime = time (0);
+    /* queue it to the bottom */
+    if (pathCacheQue->top == NULL) {
+	pathCacheQue->top = pathCacheQue->bottom = tmpPathCache;
+    } else {
+	pathCacheQue->bottom->next = tmpPathCache;
+	tmpPathCache->prev = pathCacheQue->bottom;
+	pathCacheQue->bottom = tmpPathCache;
+    }
+    return (0);
+}
+
+int
+pathSum (char *inPath)
+{
+    int len, i;
+    int mysum = 0;
+
+    if (inPath == NULL) {
+        rodsLog (LOG_ERROR,
+          "pathSum: input inPath is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    len = strlen (inPath);
+
+    for (i = 0; i < len; i++) {
+	mysum += inPath[i];
+    }
+
+    return mysum; 
+}
+
 int
 initIFuseDesc ()
 {

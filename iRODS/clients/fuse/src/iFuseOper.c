@@ -21,9 +21,20 @@ irodsGetattr (const char *path, struct stat *stbuf)
     int status;
     dataObjInp_t dataObjInp;
     rodsObjStat_t *rodsObjStatOut = NULL;
+#if defined(linux_platform)
+    int specPathFlag;
+    pathCacheQue_t *myque;
+#endif
 
     rodsLog (LOG_DEBUG, "irodsGetattr: %s", path);
 
+#if defined(linux_platform)
+    specPathFlag = isSpecialPath ((char *) path);
+    if (specPathFlag == 1 &&
+      matchPathInNonExistPathCache ((char *) path, &myque) == 1) { 
+	return -ENOENT; 
+    }
+#endif
     memset (stbuf, 0, sizeof (struct stat));
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv, 
@@ -66,6 +77,12 @@ irodsGetattr (const char *path, struct stat *stbuf)
         freeRodsObjStat (rodsObjStatOut);
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
+
+#if defined(linux_platform)
+    if (specPathFlag == 1) {
+	addToCacheQue (myque, (char *) path);
+    }
+#endif
 
     return 0;
 }
