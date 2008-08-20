@@ -34,6 +34,7 @@ packConstantArray_t PackConstantTable[] = {
         {"NAME_LEN", NAME_LEN},
         {"LONG_NAME_LEN", LONG_NAME_LEN},
         {"MAX_NAME_LEN", MAX_NAME_LEN},
+        {"SHORT_STR_LEN", SHORT_STR_LEN},
         {"TIME_LEN", TIME_LEN},
         {"DIR_LEN", DIR_LEN},
         {"ERR_MSG_LEN", ERR_MSG_LEN},
