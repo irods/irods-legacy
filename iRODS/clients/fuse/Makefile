@@ -98,7 +98,7 @@ $(objDir)/%.o:	$(srcDir)/%.c $(LIBRARY)
 	@echo "Compile fuse `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(binDir)/%:	$(objDir)/%.o
+$(binDir)/%:	$(objDir)/%.o $(LIB_OBJS)
 	@echo "Link fuse `basename $@`..."
 	@$(LDR) -o $@ $< $(LIB_OBJS) $(LDFLAGS)
 

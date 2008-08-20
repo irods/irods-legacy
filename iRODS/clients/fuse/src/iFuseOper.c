@@ -183,6 +183,10 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
         rodsLogError (LOG_ERROR, status,
           "irodsMknod: rcDataObjCreate of %s error", path);
         return -ENOENT;
+#if defined(linux_platform)
+    } else {
+        rmPathFromCache ((char *) path);
+#endif
     }
 
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
@@ -221,6 +225,10 @@ irodsMkdir (const char *path, mode_t mode)
         rodsLogError (LOG_ERROR, status,
           "irodsMkdir: rcCollCreate of %s error", path);
         return -ENOENT;
+#if defined(linux_platform)
+    } else {
+        rmPathFromCache ((char *) path);
+#endif
     }
 
     return (0);
@@ -470,6 +478,9 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
           "irodsOpen: rcDataObjOpen of %s error", path);
         return -ENOENT;
     } else {
+#if defined(linux_platform)
+        rmPathFromCache ((char *) path);
+#endif
 	descInx = allocIFuseDesc ();
         if (descInx < 0) {
             rodsLogError (LOG_ERROR, descInx,

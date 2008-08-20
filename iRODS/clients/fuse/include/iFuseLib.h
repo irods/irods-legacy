@@ -90,6 +90,8 @@ int
 matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque);
 int
 isSpecialPath (char *inPath);
+int
+rmPathFromCache (char *inPath);
 #ifdef  __cplusplus
 }
 #endif

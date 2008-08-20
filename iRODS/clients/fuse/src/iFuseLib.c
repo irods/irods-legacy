@@ -96,9 +96,45 @@ matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque)
 }
 
 int
+rmPathFromCache (char *inPath)
+{
+    pathCacheQue_t *pathCacheQue;
+    int mysum, myslot;
+    pathCache_t *tmpPathCache;
+
+    if (isSpecialPath ((char *) inPath) != 1) return 0;
+    mysum = pathSum (inPath);
+    myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
+    pathCacheQue = &NonExistPathQue[myslot];
+
+    tmpPathCache = pathCacheQue->top;
+    while (tmpPathCache != NULL) {
+        if (strcmp (tmpPathCache->filePath, inPath) == 0) {
+            if (tmpPathCache->prev == NULL) {
+                /* top */
+                pathCacheQue->top = tmpPathCache->next;
+            } else {
+                tmpPathCache->prev->next = tmpPathCache->next;
+            }
+            if (tmpPathCache->next == NULL) {
+		/* bottom */
+		pathCacheQue->bottom = tmpPathCache->prev;
+	    } else {
+		tmpPathCache->next->prev = tmpPathCache->prev;
+	    }
+	    free (tmpPathCache);
+	    return 1;
+	}
+        tmpPathCache = tmpPathCache->next;
+    }
+    return 0;
+}
+
+int
 getHashSlot (int value, int numHashSlot)
 {
     int mySlot = value % numHashSlot;
+
     return (mySlot);
 }
 
