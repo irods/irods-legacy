@@ -1,0 +1,3 @@
+msiListCollACL||msiListCollACL(*Collection,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"xxx")|nop
+*Collection=/sdscZone/home/rods
+ruleExecOut%*STATUS
