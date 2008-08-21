@@ -18,6 +18,7 @@
 */
 
 int debug=0;
+int veryVerbose=0;
 
 rcComm_t *Conn;
 rodsEnv myEnv;
@@ -468,6 +469,17 @@ doCommand(char *cmdToken[]) {
    char buf0[MAX_PASSWORD_LEN+10];
    char buf1[MAX_PASSWORD_LEN+10];
    char buf2[MAX_PASSWORD_LEN+10];
+   if (veryVerbose) {
+      int i;
+      printf("executing command:");
+      for (i=0;i<20 && strlen(cmdToken[i])>0;i++) {
+	 printf(" %s",cmdToken[i]);
+      }
+      printf("\n");
+      fflush(stderr);
+      fflush(stdout);
+   }
+
    if (strcmp(cmdToken[0],"help")==0 ||
 	      strcmp(cmdToken[0],"h") == 0) {
       usage(cmdToken[1]);
@@ -751,6 +763,10 @@ main(int argc, char **argv) {
       rodsLog (LOG_ERROR, "main: getRodsEnv error. status = %d",
 	       status);
       exit (1);
+   }
+
+   if (myRodsArgs.veryVerbose==True) {
+      veryVerbose=1;
    }
 
    for (i=0;i<maxCmdTokens;i++) {
