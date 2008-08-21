@@ -17,26 +17,53 @@
 # You will need to change the following parameters for your
 # particular MCAT and  ICATs and environment.
 
-# 
+# Begin section to edit ---------------------------------------------------
+# Conversion tables (cv_):
 $cv_srbZone = "A";            # Your SRB zone name
 $cv_irodsZone = "tempZone";   # Your iRODS zone name
-$SRB_BEGIN_DATE="2008-07-12"; # approximate date your SRB was installed; used to
+
+# Special usernames to convert:
+@cv_srb_usernames=("srbAdmin"); # username conversion table:srb form
+@cv_irods_usernames=("rods");   # irods form for corresponding srb forms
+@cv_srb_userdomains=("demo");   # Used for user.domain situations
+
+# These below are used for ingesting users.
+# Note that, by default, only users of type 'staff' are ingested.
+# If you would like to ingest others, edit this list.
+# The other commonly used user type is 'sysadmin' which would
+# correspond to 'rodsadmin', but you might want to do those by hand.
+@cv_srb_usertypes=("staff");         # The only types of users converted
+@cv_irods_usertypes=("rodsuser");    # The corresponding user-type converted to
+
+# This flag indicates if you want user names to be of the form
+# user#domain or just user.
+$useDomainWithUsername = "0"; # 0 no, 1 yes
+
+$SRB_BEGIN_DATE="2008-07-12"; # approximate date your SRB was installed;used to
                               # avoid some unneeded built-in items, etc.
 $Spullmeta = "/scratch/slocal/srbtest/testc/SRB2_0_0rel/utilities/bin/Spullmeta";
                               # if in Path, but could also be just "Spullmeta"
 $iadmin = "iadmin";           # Change this to be full path if not in PATH.
 $psql = "psql";               # And this too.
-@cv_srb_usernames=("srbAdmin"); # username conversion table:srb form
-@cv_irods_usernames=("rods");   # irods form for matching srb forms
-@cv_srb_userdomains=("demo");   # Used for user.domain situations
 
-#------------
+$password_length = 6;         # The length of the random password strings
+                              # used for users.  Note that you will need
+                              # to send the strings (from the $iadminFile)
+                              # to the users in some manner.  They can
+                              # then change their password with 'ipasswd'.
+
+
+# End section to edit  ---------------------------------------------------
+
 # You can, but don't need to, change these:
-$logColl  = "Spull.log.coll";    # Spullmeta log file for collections
+$logUser = "Spull.log.user";     # Spullmeta log file for users
+$logColl = "Spull.log.coll";    # Spullmeta log file for collections
 $logData = "Spull.log.data";     # Spullmeta log file for dataObjects
-$logResc = "Spull.log.resc";     # Spullmeta log file for resources.
+$logResc = "Spull.log.resc";     # Spullmeta log file for resources
 $sqlFile = "m2icat.cmds.sql"; # the output file: SQL (for psql)
+$psqlLog = "psql.log";        # the log file when running psql
 $iadminFile = "m2icat.cmds.iadmin"; # the output file for iadmin commands
+$iadminLog  = "iadmin.log";   # the log file when running iadmin
 $showOne="0";            # A debug option, if "1";
 
 #------------
@@ -45,6 +72,9 @@ $showOne="0";            # A debug option, if "1";
 @datatypeList=();        # filled and used dynamically
 
 
+if (!-e $logUser) {
+    runCmd(0, "$Spullmeta -F GET_CHANGED_USER_INFO $SRB_BEGIN_DATE > $logUser");
+}
 if (!-e $logResc) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_PHYSICAL_RESOURCE_CORE_INFO $SRB_BEGIN_DATE > $logResc");
 }
@@ -55,12 +85,15 @@ if (!-e $logData) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_CORE_INFO $SRB_BEGIN_DATE > $logData");
 }
 
+
 if ( open(  SQL_FILE, ">$sqlFile" ) == 0 ) {
     die("open failed on output file " . $sqlFile);
 }
 if ( open(  IADMIN_FILE, ">$iadminFile" ) == 0 ) {
     die("open failed on output file " . $iadminFile);
 }
+
+processLogFile($logUser);
 
 processLogFile($logResc);
 
@@ -81,12 +114,12 @@ printf("to run iadmin and psql with the files just generated:");
 my $answer = <STDIN>;
 chomp( $answer );	# remove trailing return
 if ($answer eq "yes" || $answer eq "y") {
-    runCmd (1, "iadmin < $iadminFile" );
+    runCmd (1, "iadmin -V < $iadminFile >& $iadminLog" );
     printf("Enter y or yes if you want to go ahead and run psql now:");
     my $answer = <STDIN>;
     chomp( $answer );	# remove trailing return
     if ($answer eq "yes" || $answer eq "y") {
-	runCmd (0, "$psql ICAT < $sqlFile");
+	runCmd (0, "$psql ICAT < $sqlFile >& $psqlLog");
     }
 }
 
@@ -160,17 +193,27 @@ sub getNow() {
 }
 
 # Using the defined arrays at the top, possibly convert a user name
-sub convertUser($)
+# Also, if not special, do the define conversion
+sub convertUser($$)
 {
-    my ($inUser) = @_;
+    my ($inUser, $inDomain) = @_;
     $k=0;
     foreach $user (@cv_srb_usernames) {
 	if ($user eq $inUser) {
+	    printf("user=$user inUser=$inUser\n");
 	    return ($cv_irods_usernames[$k]);
 	}
 	$k++;
     }
-    return($inUser);
+    if ($useDomainWithUsername) {
+#	$newUserName=$v_user_name . "#" . $v_user_domain;
+	$newUserName=$inUser. "#" . $inDomain;
+    }
+    else {
+#	$newUserName=$v_user_name;
+	$newUserName=$inUser;
+    }
+    return($newUserName);
 }
 
 # Using the defined arrays at the top, possibly convert collection name
@@ -187,6 +230,33 @@ sub convertCollection($)
 	$outColl =~ s\$tmp\$tmp2\g; 
 	$k++;
     }
+    printf("inColl=$inColl outColl=$outColl\n");
+    return($outColl);
+}
+
+# convertCollections version, for dataObjects
+sub convertCollectionForData($$$)
+{
+    my ($inColl, $inUser, $inDomain) = @_;
+    my $outColl = $inColl;
+    my $tmp;
+    my $tmp2;
+
+    $outColl =~ s\/$cv_srbZone/\/$cv_irodsZone/\g; 
+    $k=0;
+    foreach $user (@cv_srb_usernames) {
+	$tmp = "/" . $user . "." . $cv_srb_userdomains[$k];
+	$tmp2 = "/" . $cv_irods_usernames[$k];
+	$outColl =~ s\$tmp\$tmp2\g; 
+	$k++;
+    }
+    $tmp = "/" . $inUser . "." . $inDomain;
+    my $newUser = convertUser($inUser, $inDomain);
+    $tmp2 = "/" . $newUser;
+    printf("tmp=$tmp tmp2=$tmp2\n");
+    $outColl =~ s\$tmp\$tmp2\g; 
+
+    printf("inColl=$inColl outColl=$outColl\n");
     return($outColl);
 }
 
@@ -217,6 +287,9 @@ sub processLogFile($) {
 	if ($i==1) {
 	    @cmdArgs = split('\|',$line);
 	    print ("cmdArgs[0]:" . $cmdArgs[0] . " " . "\n");
+	    if ($cmdArgs[0] eq "GET_CHANGED_USER_INFO") {
+		$mode="USER";
+	    }
 	    if ($cmdArgs[0] eq "GET_CHANGED_COLL_CORE_INFO") {
 		$mode="COLL";
 	    }
@@ -254,10 +327,13 @@ sub processLogFile($) {
 		$v_dataTypeName = $values[1];
 		$v_phyPath = $values[2];
 		$v_size = $values[6];
-		$v_owner = convertUser($values[9]);
+		$v_owner_domain = $values[13];
+		$v_owner = convertUser($values[9], $v_owner_domain);
 		$v_create_time = convertTime($values[15]);
 		$v_access_time = convertTime($values[16]);
-		$v_collection = convertCollection($values[27]);
+		$v_collection = convertCollectionForData($values[27],
+							 $v_owner,
+							 $v_owner_domain);
 		print( SQL_FILE "begin;\n"); # begin/commit to make these 2 like 1
 		print( SQL_FILE "insert into r_data_main (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((select nextval('R_ObjectID')), (select coll_id from r_coll_main where coll_name ='$v_collection'), '$v_dataName', '0', ' ', '$v_dataTypeName', '$v_size', '$newResource', '$v_phyPath', '$v_owner', '$cv_irodsZone', '1', '$v_create_time', '$v_access_time');\n");
 
@@ -276,16 +352,36 @@ sub processLogFile($) {
 		    }
 		}
 	    }
-	    if ($mode eq "COLL") {
-		$v_coll_name=convertCollection($values[0]);
-		$v_parent_coll_name=convertCollection($values[1]);
-		$v_coll_owner=convertUser($values[2]);
-		$v_coll_zone=$values[6];
-		if ($v_coll_zone eq $cv_srbZone) { # make sure it's 
-		                                   # in the converting zone
-		    print( IADMIN_FILE "mkdir $v_coll_name $v_coll_owner\n");
-		    printf("mkdir $v_coll_name $v_coll_owner\n");
+	    if ($mode eq "USER") {
+		$v_user_type = $values[0];
+		$v_user_addr = $values[1];
+		$v_user_name = $values[2];
+		$v_user_domain=$values[3];
+		my $k=0;
+		foreach $userType (@cv_srb_usertypes) {
+		    if ($v_user_type eq $userType) {
+			$newUserName=convertUser($v_user_name, $v_user_domain);
+			print( IADMIN_FILE "mkuser $newUserName $cv_irods_usertypes[$k]\n");
+			print( IADMIN_FILE "moduser $newUserName info $v_user_addr\n");
+			$newPassword = randomPassword();
+			print( IADMIN_FILE "moduser $newUserName password $newPassword\n");
+		    }
+		    $k++;
 		}
+	    }
+	    if ($mode eq "COLL") {
+		if (checkDoCollection($values[0])==1) {
+		    $v_coll_name=convertCollection($values[0]);
+		    $v_parent_coll_name=convertCollection($values[1]);
+		    $v_coll_owner_domain=$values[5];
+		    $v_coll_owner=convertUser($values[2],
+					      $v_coll_owner_domain);
+		    $v_coll_zone=$values[6];
+		    if ($v_coll_zone eq $cv_srbZone) { # make sure it's 
+			                               # in the converting zone
+		       print(IADMIN_FILE "mkdir $v_coll_name $v_coll_owner\n");
+		}
+	    }
 	    }
 	    if ($mode eq "RESC") {
 		$v_resc_name=$values[0];
@@ -306,4 +402,55 @@ sub processLogFile($) {
 	}
     }
     close( LOG_FILE );
+}
+
+# Geneate a random password string
+sub randomPassword() {
+    my @chars = split(" ",
+      "a b c d e f g h i j k l m n o p q r s t u v w x y z 
+       A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+       0 1 2 3 4 5 6 7 8 9");
+    srand;
+    my $password="";
+    for (my $i=0; $i < $password_length ;$i++) {
+	$_rand = int(rand 62);
+	$j=$_rand;
+#	printf("$i=$i j=$j\n");
+	$password .= $chars[$j];
+    }
+    return $password;
+}
+
+# check to see if a collection (based on the name) should be converted
+sub checkDoCollection($) {
+    my ($inCollName) = @_;
+    if (index($inCollName, "/container")==0) {
+	return(0); # don't convert those starting with/container
+    }
+    if (index($inCollName, "/home")==0) {
+	return(0); # don't convert these either
+    }
+    $testColl = "/" . $cv_srbZone . "/container";
+    if (index($inCollName, "$testColl")==0) {
+	return(0); # don't convert these
+    }
+    $testColl = "/" . $cv_srbZone . "/trash";
+    if (index($inCollName, "$testColl")==0) {
+	return(0); # don't convert these
+    }
+    $testColl = "/" . $cv_srbZone . "/home/";
+    if (index($inCollName, "$testColl")==0) {  # if it starts with /zone/home/ 
+	if (rindex($inCollName, "/") < length($testColl)) {
+                                          # and there are no additional subdirs
+	    return(0);                    # skip it
+	}
+    }
+    $testColl = "/" . $cv_srbZone . "/";
+    if (index($inCollName, "$testColl")==0) {  # if it starts with /zone/
+	if (rindex($inCollName, "/") < length($testColl)) {
+                                          # and there are no additional subdirs
+	    return(0);                    # skip it
+	}
+    }
+    return(1);
 }
