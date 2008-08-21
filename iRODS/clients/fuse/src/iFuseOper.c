@@ -67,7 +67,10 @@ irodsGetattr (const char *path, struct stat *stbuf)
         stbuf->st_ctime = atoi (rodsObjStatOut->createTime);
         stbuf->st_mtime = atoi (rodsObjStatOut->modifyTime);
     } else {
-	stbuf->st_mode = S_IFREG | DEF_FILE_MODE;
+	if (rodsObjStatOut->dataMode >= 0100)
+	    stbuf->st_mode = S_IFREG | rodsObjStatOut->dataMode;
+	else
+	    stbuf->st_mode = S_IFREG | DEF_FILE_MODE;
         stbuf->st_size = rodsObjStatOut->objSize;
 
         stbuf->st_blksize = FILE_BLOCK_SZ;
@@ -389,8 +392,42 @@ irodsLink (const char *from, const char *to)
 int 
 irodsChmod (const char *path, mode_t mode)
 {
+    int status;
+    modDataObjMeta_t modDataObjMetaInp;
+    keyValPair_t regParam;
+    dataObjInfo_t dataObjInfo;
+    char dataMode[SHORT_STR_LEN];
+
     rodsLog (LOG_DEBUG, "irodsChmod: %s", path);
-    return (0);
+
+    memset (&regParam, 0, sizeof (regParam));
+    snprintf (dataMode, SHORT_STR_LEN, "%d", mode);
+    addKeyVal (&regParam, DATA_MODE_KW, dataMode);
+
+    memset(&dataObjInfo, 0, sizeof(dataObjInfo));
+
+    status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
+      dataObjInfo.objPath);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "irodsChmod: parseRodsPathStr of %s error", path);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+
+    modDataObjMetaInp.regParam = &regParam;
+    modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+
+    getIFuseConn (&DefConn, &MyRodsEnv);
+    status = rcModDataObjMeta(DefConn.conn, &modDataObjMetaInp);
+    relIFuseConn (&DefConn);
+    clearKeyVal (&regParam);
+
+    if (status) {
+        rodsLogError(LOG_ERROR, status, "irodsChmod: rcModDataObjMeta failure");
+	return -ENOENT;
+    }
+    return(0);
 }
 
 int 
