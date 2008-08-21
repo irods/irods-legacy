@@ -356,12 +356,12 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
       *rescGroupName, *rescName, *filePath, *dataOwnerName, *dataOwnerZone,
       *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId, 
-      *dataComments, *dataCreate, *dataModify;
+      *dataComments, *dataCreate, *dataModify, *dataMode;
     char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType, 
       *tmpDataSize, *tmpRescGroupName, *tmpRescName, *tmpFilePath, 
       *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString, 
       *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments, 
-      *tmpDataCreate, *tmpDataModify;
+      *tmpDataCreate, *tmpDataModify, *tmpDataMode;
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
 
@@ -402,6 +402,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
     addInxIval (&genQueryInp.selectInp, COL_D_COMMENTS, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_MODIFY_TIME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_MODE, 1);
 
     if (accessPerm != NULL) {
         snprintf (accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName);
@@ -565,6 +566,12 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    if ((dataMode =
+      getSqlResultByInx (genQueryOut, COL_DATA_MODE)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_MODE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
 
    for (i = 0;i < genQueryOut->rowCnt; i++) {
         dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
@@ -591,6 +598,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         tmpDataComments = &dataComments->value[dataComments->len * i];
         tmpDataCreate = &dataCreate->value[dataCreate->len * i];
         tmpDataModify = &dataModify->value[dataModify->len * i];
+        tmpDataMode = &dataMode->value[dataMode->len * i];
 
 	rstrcpy (dataObjInfo->rescName, tmpRescName, NAME_LEN);
         status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
@@ -618,6 +626,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 	rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, NAME_LEN);
 	rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, NAME_LEN);
 	rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
+	rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
 
 	queDataObjInfo (dataObjInfoHead, dataObjInfo, 1, 0);
     }
