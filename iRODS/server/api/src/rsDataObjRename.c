@@ -6,6 +6,7 @@
 #include "objMetaOpr.h"
 #include "subStructFileRename.h"
 #include "icatHighLevelRoutines.h"
+#include "dataObjUnlink.h"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
@@ -144,6 +145,11 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         }
     } else {
 	if ((status = isData (rsComm, srcDataObjInp->objPath, &srcId)) >= 0) {
+	    if ((status = isData (rsComm, destDataObjInp->objPath, &destId)) >= 0 &&
+	      getValByKey (&srcDataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+		/* dest exist */
+		rsDataObjUnlink (rsComm, destDataObjInp);
+	    }	
 	    srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_DATA_OBJ;
 	} else if ((status = isColl (rsComm, srcDataObjInp->objPath, &srcId))
 	 >= 0) {

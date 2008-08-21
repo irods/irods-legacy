@@ -346,6 +346,8 @@ irodsRename (const char *from, const char *to)
         return -ENOTDIR;
     }
 
+    addKeyVal (&dataObjRenameInp.destDataObjInp.condInput, FORCE_FLAG_KW, "");
+
     dataObjRenameInp.srcDataObjInp.oprType =
       dataObjRenameInp.destDataObjInp.oprType = RENAME_UNKNOWN_TYPE;
 
