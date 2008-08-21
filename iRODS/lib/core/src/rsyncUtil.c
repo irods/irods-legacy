@@ -185,8 +185,7 @@ dataObjInp_t *dataObjOprInp)
     if (getFlag == 1) {
         status = rcDataObjGet (conn, dataObjOprInp, targPath->outPath);
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
-	if (status >= 0 && srcPath->objMode >= 0100) 
-	    chmod (targPath->outPath, srcPath->objMode & 0777);
+	if (status >= 0) myChmod (targPath->outPath, srcPath->objMode);
     } else if (syncFlag == 1) {
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW, 
 	  targPath->outPath);

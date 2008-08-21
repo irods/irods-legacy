@@ -115,7 +115,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
     if (status >= 0) {
         /* old objState use numCopies in place of dataMode.
          * Just a sanity check */
-	if (dataMode >= 0100) chmod (targPath, dataMode & 0777);
+	myChmod (targPath, dataMode);
 	if (rodsArgs->verbose == True) {
             (void) gettimeofday(&endTime, (struct timezone *)0);
             printTiming (conn, dataObjOprInp->objPath, srcSize, targPath,

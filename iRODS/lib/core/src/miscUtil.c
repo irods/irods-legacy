@@ -4,6 +4,8 @@
 #include "rodsLog.h"
 #include "miscUtil.h"
 
+static uint Myumask = INIT_UMASK_VAL;
+
 int
 mkColl (rcComm_t *conn, char *collection)
 {
@@ -1376,3 +1378,21 @@ clearCollEnt (collEnt_t *collEnt)
  
     return (0);
 }
+
+
+int
+myChmod (char *inPath, uint dataMode)
+{
+    if (dataMode < 0100) return (0);
+
+    if (Myumask == INIT_UMASK_VAL) {
+        Myumask = umask (0022);
+	umask (Myumask);
+    }
+
+    chmod (inPath, dataMode & 0777 & ~(Myumask));
+
+    return (0);
+}
+
+     

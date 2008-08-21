@@ -8,6 +8,7 @@
 #include "rodsPath.h"
 #include "parseCommandLine.h"
 
+#define	INIT_UMASK_VAL	99999999
 typedef struct CollSqlResult {
     int rowCnt;
     int attriCnt;
@@ -200,6 +201,8 @@ int
 freeCollEnt (collEnt_t *collEnt);
 int
 clearCollEnt (collEnt_t *collEnt);
+int
+myChmod (char *inPath, uint dataMode);
 #ifdef  __cplusplus
 }
 #endif
