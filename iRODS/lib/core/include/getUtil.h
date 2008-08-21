@@ -18,8 +18,8 @@ getUtil (rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs,
 rodsPathInp_t *rodsPathInp);
 int
 getDataObjUtil (rcComm_t *conn, char *srcPath, char *targPath,
-rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjInp_t *dataObjOprInp);
+rodsLong_t srcSize, uint dataMode, rodsEnv *myRodsEnv, 
+rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp);
 
 int
 initCondForGet (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,

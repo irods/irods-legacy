@@ -37,6 +37,7 @@ rodsPathInp_t *rodsPathInp)
 	targPath = &rodsPathInp->targPath[i];
 
 	if (targPath->objType == DATA_OBJ_T) {
+	    dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
 	    status = putFileUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	      targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv, 
 	       myRodsArgs, &dataObjOprInp);
@@ -251,7 +252,7 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 	}
     }
 
-    dataObjOprInp->createMode = 0700;
+    /* Not needed - dataObjOprInp->createMode = 0700; */
     /* mmap in rbudp needs O_RDWR */
     dataObjOprInp->openFlags = O_RDWR;
 
@@ -314,6 +315,7 @@ rodsRestart_t *rodsRestart)
             return (USER_INPUT_PATH_ERR);
         }
 
+	dataObjOprInp->createMode = statbuf.st_mode;
         snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
 	  targColl, myDirent->d_name);
 

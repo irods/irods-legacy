@@ -21,6 +21,7 @@ transStat_t **transStat)
     int srcL1descInx, destL1descInx;
     int status;
     int existFlag;
+    uint createMode;
 
     *transStat = malloc (sizeof (transStat_t));
     memset (*transStat, 0, sizeof (transStat_t));
@@ -44,6 +45,9 @@ transStat_t **transStat)
     destDataObjInp->dataSize = L1desc[srcL1descInx].dataSize =
      L1desc[srcL1descInx].dataObjInfo->dataSize;
 
+    createMode = atoi (L1desc[srcL1descInx].dataObjInfo->dataMode);
+    if (createMode >= 0100)
+	destDataObjInp->createMode = createMode; 
     L1desc[srcL1descInx].oprType = COPY_SRC;
 
     if (L1desc[srcL1descInx].l3descInx <= 2) {

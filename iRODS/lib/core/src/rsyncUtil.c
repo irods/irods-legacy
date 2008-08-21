@@ -67,6 +67,7 @@ rodsPathInp_t *rodsPathInp)
 	    status = rsyncDataToFileUtil (conn, srcPath, targPath,
 	     myRodsEnv, myRodsArgs, &dataObjOprInp);
 	} else if (srcType == LOCAL_FILE_T && targType == DATA_OBJ_T) {
+	    dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
             status = rsyncFileToDataUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjOprInp);
         } else if (srcType == DATA_OBJ_T && targType == DATA_OBJ_T) {
@@ -184,6 +185,8 @@ dataObjInp_t *dataObjOprInp)
     if (getFlag == 1) {
         status = rcDataObjGet (conn, dataObjOprInp, targPath->outPath);
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
+	if (status >= 0 && srcPath->objMode >= 0100) 
+	    chmod (targPath->outPath, srcPath->objMode & 0777);
     } else if (syncFlag == 1) {
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW, 
 	  targPath->outPath);
@@ -268,7 +271,6 @@ dataObjInp_t *dataObjOprInp)
     if (putFlag + syncFlag > 0) {
         rstrcpy (dataObjOprInp->objPath, targPath->outPath, MAX_NAME_LEN);
         dataObjOprInp->dataSize = srcPath->size;
-        dataObjOprInp->createMode = 0700;
         dataObjOprInp->openFlags = O_WRONLY;
     }
 
@@ -428,6 +430,7 @@ dataObjInp_t *dataObjOprInp)
             if (strlen (mySrcPath.dataId) == 0)
                 rstrcpy (mySrcPath.dataId, collEnt.dataId, NAME_LEN);
             mySrcPath.size = collEnt.dataSize;
+            mySrcPath.objMode = collEnt.dataMode;
             rstrcpy (mySrcPath.chksum, collEnt.chksum, NAME_LEN);
             mySrcPath.objState = EXIST_ST;
 
@@ -542,6 +545,7 @@ dataObjInp_t *dataObjOprInp)
             return (USER_INPUT_PATH_ERR);
         }
 
+	dataObjOprInp->createMode = statbuf.st_mode;
         snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
           targColl, myDirent->d_name);
 

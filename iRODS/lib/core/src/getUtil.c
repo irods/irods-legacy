@@ -46,7 +46,8 @@ rodsPathInp_t *rodsPathInp)
 	}
 	if (targPath->objType == LOCAL_FILE_T) {
 	    status = getDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
-	     targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv, 
+	     targPath->outPath, rodsPathInp->srcPath[i].size,
+	      rodsPathInp->srcPath[i].objMode, myRodsEnv, 
 	      myRodsArgs, &dataObjOprInp);
 	} else if (targPath->objType ==  LOCAL_DIR_T) {
             setStateForRestart (conn, &rodsRestart, targPath, myRodsArgs);
@@ -87,9 +88,9 @@ rodsPathInp_t *rodsPathInp)
 }
 
 int
-getDataObjUtil (rcComm_t *conn, char *srcPath, char *targPath, 
-rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjOprInp)
+getDataObjUtil (rcComm_t *conn, char *srcPath, char *targPath,
+rodsLong_t srcSize, uint dataMode, rodsEnv *myRodsEnv, 
+rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 {
     int status;
     struct timeval startTime, endTime;
@@ -111,10 +112,15 @@ dataObjInp_t *dataObjOprInp)
 
     status = rcDataObjGet (conn, dataObjOprInp, targPath);
 
-    if (status >= 0 && rodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, dataObjOprInp->objPath, srcSize, targPath,
-         &startTime, &endTime);
+    if (status >= 0) {
+        /* old objState use numCopies in place of dataMode.
+         * Just a sanity check */
+	if (dataMode >= 0100) chmod (targPath, dataMode & 0777);
+	if (rodsArgs->verbose == True) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTiming (conn, dataObjOprInp->objPath, srcSize, targPath,
+             &startTime, &endTime);
+	}
     }
 
     return (status);
@@ -279,7 +285,8 @@ rodsRestart_t *rodsRestart)
             }
 
             status = getDataObjUtil (conn, srcChildPath,
-             targChildPath, mySize, myRodsEnv, rodsArgs, dataObjOprInp);
+             targChildPath, mySize, collEnt.dataMode, myRodsEnv, rodsArgs, 
+	     dataObjOprInp);
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "getCollUtil: getDataObjUtil failed for %s. status = %d",

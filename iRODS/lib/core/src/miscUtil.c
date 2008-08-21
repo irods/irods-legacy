@@ -185,6 +185,7 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
 	}
 	rodsPath->objType = rodsObjStatOut->objType;
 	if (rodsPath->objType == DATA_OBJ_T) {
+	    rodsPath->objMode = rodsObjStatOut->dataMode;
             rstrcpy (rodsPath->dataId, rodsObjStatOut->dataId, NAME_LEN);
             rodsPath->size = rodsObjStatOut->objSize;
             rstrcpy (rodsPath->chksum, rodsObjStatOut->chksum, NAME_LEN);
@@ -357,6 +358,7 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
     addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp->selectInp, COL_DATA_NAME, 1);
     addInxIval (&genQueryInp->selectInp, COL_D_DATA_ID, 1);
+    addInxIval (&genQueryInp->selectInp, COL_DATA_MODE, 1);
     if ((flags & LONG_METADATA_FG) != 0 || 
       (flags & VERY_LONG_METADATA_FG) != 0) {
         addInxIval (&genQueryInp->selectInp, COL_D_RESC_NAME, 1);
@@ -695,8 +697,9 @@ genQueryOutToDataObjRes (genQueryOut_t **genQueryOut,
 dataObjSqlResult_t *dataObjSqlResult)
 {
     genQueryOut_t *myGenQueryOut;
-    sqlResult_t *collName, *dataName, *dataSize, *createTime, *modifyTime,
-      *chksum, *replStatus, *dataId, *resource, *phyPath, *ownerName, *replNum;
+    sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime, 
+      *modifyTime, *chksum, *replStatus, *dataId, *resource, *phyPath, 
+      *ownerName, *replNum;
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
       dataObjSqlResult == NULL)
@@ -721,6 +724,13 @@ dataObjSqlResult_t *dataObjSqlResult)
         return (UNMATCHED_KEY_OR_INDEX);
     } else {
         dataObjSqlResult->dataName = *dataName;
+    }
+
+    if ((dataMode = getSqlResultByInx (myGenQueryOut, COL_DATA_MODE)) == NULL) {
+        setSqlResultValue (&dataObjSqlResult->dataMode, COL_DATA_MODE, "",
+        myGenQueryOut->rowCnt);
+    } else {
+        dataObjSqlResult->dataMode = *dataMode;
     }
 
     if ((dataSize = getSqlResultByInx (myGenQueryOut, COL_DATA_SIZE)) == NULL) {
@@ -1255,6 +1265,10 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     value = dataObjSqlResult->dataName.value;
     len = dataObjSqlResult->dataName.len;
     outCollEnt->dataName = &value[len * (collHandle->rowInx)];
+
+    value = dataObjSqlResult->dataMode.value;
+    len = dataObjSqlResult->dataMode.len;
+    outCollEnt->dataMode = atoi (&value[len * (collHandle->rowInx)]);
 
     value = dataObjSqlResult->dataSize.value;
     len = dataObjSqlResult->dataSize.len;

@@ -245,6 +245,7 @@ rodsObjStat_t **rodsObjStatOut)
     char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
     char condStr[MAX_NAME_LEN];
     sqlResult_t *dataSize;
+    sqlResult_t *dataMode;
     sqlResult_t *replStatus;
     sqlResult_t *dataId;
     sqlResult_t *chksum;
@@ -272,6 +273,7 @@ rodsObjStat_t **rodsObjStatOut)
 
     addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_MODE, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_REPL_STATUS, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_DATA_CHECKSUM, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_OWNER_NAME, 1);
@@ -290,6 +292,11 @@ rodsObjStat_t **rodsObjStatOut)
           == NULL) {
             rodsLog (LOG_ERROR,
               "_rsObjStat: getSqlResultByInx for COL_DATA_SIZE failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        } else if ((dataMode = getSqlResultByInx (genQueryOut,
+          COL_DATA_MODE)) == NULL) {
+            rodsLog (LOG_ERROR,
+              "_rsObjStat: getSqlResultByInx for COL_DATA_MODE failed");
             return (UNMATCHED_KEY_OR_INDEX);
         } else if ((replStatus = getSqlResultByInx (genQueryOut,
           COL_D_REPL_STATUS)) == NULL) {
@@ -332,7 +339,8 @@ rodsObjStat_t **rodsObjStatOut)
             *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
             memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));
             (*rodsObjStatOut)->objType = status = DATA_OBJ_T;
-            (*rodsObjStatOut)->numCopies = genQueryOut->rowCnt;
+            /* XXXXXX . dont have numCopies anymore. Replaced by dataMode 
+	     * (*rodsObjStatOut)->numCopies = genQueryOut->rowCnt; */
 
             for (i = 0;i < genQueryOut->rowCnt; i++) {
                 if (atoi (&replStatus->value[replStatus->len * i]) > 0) {
@@ -340,6 +348,8 @@ rodsObjStat_t **rodsObjStatOut)
 		      &dataId->value[dataId->len * i], NAME_LEN);
                     (*rodsObjStatOut)->objSize =
                       strtoll (&dataSize->value[dataSize->len * i], 0, 0);
+                    (*rodsObjStatOut)->dataMode =
+                      atoi (&dataMode->value[dataMode->len * i]);
                     rstrcpy ((*rodsObjStatOut)->chksum,
                       &chksum->value[chksum->len * i], NAME_LEN);
 		    rstrcpy ((*rodsObjStatOut)->ownerName,

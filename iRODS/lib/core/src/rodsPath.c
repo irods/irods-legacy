@@ -237,7 +237,7 @@ getFileType (rodsPath_t *rodsPath)
 	rodsPath->objState = NOT_EXIST_ST;
 	return (NOT_EXIST_ST);
     }
-
+    rodsPath->objMode = statbuf.st_mode;
     if ((statbuf.st_mode & S_IFREG) != 0) {     /* A file */
         rodsPath->objType = LOCAL_FILE_T;
 	rodsPath->objState = EXIST_ST;

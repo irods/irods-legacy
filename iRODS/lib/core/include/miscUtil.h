@@ -33,6 +33,7 @@ typedef struct DataObjSqlResult {
     int totalRowCount;
     sqlResult_t collName;
     sqlResult_t dataName;
+    sqlResult_t dataMode;
     sqlResult_t dataSize;
     sqlResult_t createTime;
     sqlResult_t modifyTime;
@@ -105,7 +106,7 @@ typedef struct CollEnt {
     objType_t objType;
     int replNum;
     int replStatus;
-    int dummy;
+    uint dataMode;
     rodsLong_t dataSize;
     char *collName;		/* valid for dataObj and collection */
     char *dataName;
