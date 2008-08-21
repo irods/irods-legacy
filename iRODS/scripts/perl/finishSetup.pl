@@ -141,7 +141,7 @@ my $logFile = File::Spec->catfile( $logDir, "finishSetup.log" );
 # we do anything more.  The actual number here is a guess.  Different
 # CPU speeds, host loads, or database versions may make this too little
 # or too much.
-my $databaseStartStopDelay = 4;		# Seconds
+my $databaseStartStopDelay = 8;		# Seconds
 
 # Set the default iRODS boot administrator name and password.
 # These are the defaults when iRODS is first installed.  After
@@ -2868,6 +2868,25 @@ sub Postgres_CreateDatabase()
 				print( NEWCONFIGFILE $line );
 			}
 		}
+
+# New section added 8/21/08 to update ~/.odbc.ini to have the
+# [PostgreSQL] section as this seems to be needed on some hosts.  Note
+# that this may change the user's version of odbcpsql.so being used
+# (but the previous ~/.odbc.ini file is saved).
+		my $libPath = abs_path( File::Spec->catfile(
+			      $databaseLibDir, "libodbcpsql.so" ) );
+
+		print ( NEWCONFIGFILE "[PostgreSQL]\n" .
+				"Driver=$libPath\n" .
+				"Debug=0\n" .
+				"CommLog=0\n" .
+				"Servername=$thisHost\n" .
+				"Database=$DB_NAME\n" .
+				"ReadOnly=no\n" .
+				"Port=$DATABASE_PORT\n" );
+		$hasContent = 1;
+# end new section
+
 		close( NEWCONFIGFILE );
 		close( CONFIGFILE );
 
