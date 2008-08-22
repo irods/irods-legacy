@@ -1897,3 +1897,96 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+
+/**
+ * \fn  msiCollRepl
+ * \author  Antoine de Torcy
+ * \date  2008-08-19
+ * \brief  This microservice wraps the rsCollRepl() routine to replicate a collection.
+ * \note  This call does not require client interaction, which means
+ *	it can be used through rcExecMyRule (irule) or internally by the server.
+ * \param[in]
+ *    collection - A CollInp_MS_T or a STR_MS_T with the irods path of the collection to replicate.
+ *    targetResc - A STR_MS_T which specifies the resource where replicated objects should be stored.
+ * \param[out] 
+ *    status - a CollOprStat_t for detailed operation status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+
+int
+msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ruleExecInfo_t *rei)
+{
+	/* for parsing collection input param */
+	collInp_t collInpCache, *collInp;
+
+	/* to pass as parameter to rsCollRepl */
+	dataObjInp_t collReplInp;
+	collOprStat_t *collOprStat;
+
+	/* misc. to avoid repeating rei->rsComm */
+	rsComm_t *rsComm;
+
+
+
+	/*************************************  INIT **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiCollRepl")
+	
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiCollRepl: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	rsComm = rei->rsComm;
+
+
+
+	/********************************** PARAM PARSING  *********************************/
+
+	/* Parse target collection */
+	rei->status = parseMspForCollInp (collection, &collInpCache, &collInp, 0);
+	
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiCollRepl: input collection error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+
+	/* Parse resource name and directly write to collReplInp */
+	rei->status = parseMspForCondInp (targetResc, &(collReplInp.condInput), DEST_RESC_NAME_KW);
+	
+	if (rei->status < 0) {
+	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+		"msiCollRepl: input inpParam2 error. status = %d", rei->status);
+	return (rei->status);
+	}
+
+
+
+	/******************************** API SERVER CALL ***********************************/
+
+	/* Copy collection path to input struct */
+	strncpy (collReplInp.objPath, collInp->collName, MAX_NAME_LEN);
+
+	/* Call rsCollRepl() */
+	rei->status = rsCollRepl (rsComm, &collReplInp, &collOprStat);
+
+
+
+	/********************************** OUTPUT PACKAGING *********************************/
+
+	/* Send out op status */
+	fillMsParam (status, NULL, "CollOprStat_PI", collOprStat, NULL);
+
+	return (rei->status);
+}
+
+
+

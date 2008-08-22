@@ -183,6 +183,7 @@ microsdef_t MicrosTable[] = {
   {"msiCollCreate",2,(funcPtr) msiCollCreate},
   {"msiRmColl",3,(funcPtr) msiRmColl},
   {"msiReplColl",4,(funcPtr) msiReplColl},
+  {"msiCollRepl",3,(funcPtr) msiCollRepl},
   {"msiPhyPathReg",5,(funcPtr) msiPhyPathReg},
   {"msiObjStat",2,(funcPtr) msiObjStat},
   {"msiDataObjRsync",5,(funcPtr) msiDataObjRsync},

@@ -75,6 +75,9 @@ int
 msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
   msParam_t *outParam, ruleExecInfo_t *rei);
 int
+msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, 
+  ruleExecInfo_t *rei);
+int
 msiPhyPathReg (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
 ruleExecInfo_t *rei);
