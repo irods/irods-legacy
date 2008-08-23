@@ -70,8 +70,6 @@ irodsGetattr (const char *path, struct stat *stbuf)
         }
 #endif
 	return -ENOENT;
-    } else {
-	addPathToCache ((char *) path, PathArray, stbuf);
     }
 
     if (rodsObjStatOut->objType == COLL_OBJ_T) {
@@ -98,6 +96,8 @@ irodsGetattr (const char *path, struct stat *stbuf)
         freeRodsObjStat (rodsObjStatOut);
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
+
+    addPathToCache ((char *) path, PathArray, stbuf);
 
     return 0;
 }
@@ -660,23 +660,22 @@ struct fuse_file_info *fi)
     status = rcDataObjWrite (DefConn.conn, &dataObjWriteInp, 
       &dataObjWriteInpBBuf);
     if (status < 0) {
-        relIFuseConn (&DefConn);
         if ((myError = getUnixErrno (status)) > 0) {
-            return (-myError);
+            status = (-myError);
         } else {
-            return -ENOENT;
+            status = -ENOENT;
         }
     } else if (status != size) {
         rodsLog (LOG_ERROR,
           "irodsWrite: rcDataObjWrite of %s error, wrote %d, toWrite %d",
            path, status, size);
-        return -ENOENT;
+        status = -ENOENT;
     } else {
         IFuseDesc[descInx].offset += status;
 	IFuseDesc[descInx].bytesWritten += status;
-        relIFuseConn (&DefConn);
-        return (status);
     }
+    relIFuseConn (&DefConn);
+    return status;
 }
 
 int 
