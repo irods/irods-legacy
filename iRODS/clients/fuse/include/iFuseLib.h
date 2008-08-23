@@ -27,14 +27,17 @@ typedef struct IFuseDesc {
     int inuseFlag;      /* 0 means not in use */
     int iFd;    /* irods client fd */
     rodsLong_t offset;
+    rodsLong_t bytesWritten;
     char objPath[MAX_NAME_LEN];
+    char localPath[MAX_NAME_LEN];
 } iFuseDesc_t;
 
-#define NUM_PATH_HASH_SLOT	23
+#define NUM_PATH_HASH_SLOT	53
 #define CACHE_EXPIRE_TIME	600	/* 10 minutes before expiration */
 
 typedef struct PathCache {
     char filePath[MAX_NAME_LEN];
+    struct stat stbuf;
     uint cachedTime;
     struct PathCache *prev;
     struct PathCache *next;
@@ -61,7 +64,8 @@ allocIFuseDesc ();
 int
 freeIFuseDesc (int descInx);
 int
-fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath);
+fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath,
+char *localPath);
 int
 ifuseLseek (const char *path, int descInx, off_t offset);
 int
@@ -75,23 +79,32 @@ iFuseDescInuse ();
 int
 checkFuseDesc (int descInx);
 int
-initNonExistPathCache ();
+initPathCache ();
 int
 getHashSlot (int value, int numHashSlot);
 int
-matchPathInPathQue (pathCacheQue_t *pathCacheQue, char *inPath);
+matchPathInPathSlot (pathCacheQue_t *pathCacheQue, char *inPath,
+pathCache_t **outPathCache);
 int
 chkCacheExpire (pathCacheQue_t *pathCacheQue);
 int
-addToCacheQue (pathCacheQue_t *pathCacheQue, char *inPath);
+addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+struct stat *stbuf);
+int
+addToCacheSlot (char *inPath, pathCacheQue_t *pathCacheQue,
+struct stat *stbuf);
 int
 pathSum (char *inPath);
 int
-matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque);
+matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque,
+pathCache_t **outPathCache);
+int
+matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
+pathCacheQue_t **myque, pathCache_t **outPathCache);
 int
 isSpecialPath (char *inPath);
 int
-rmPathFromCache (char *inPath);
+rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray);
 #ifdef  __cplusplus
 }
 #endif

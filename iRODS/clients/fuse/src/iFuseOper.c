@@ -14,6 +14,8 @@
 extern iFuseConn_t DefConn;
 extern rodsEnv MyRodsEnv;
 extern iFuseDesc_t IFuseDesc[];
+extern pathCacheQue_t NonExistPathArray[];
+extern pathCacheQue_t PathArray[];
 
 int 
 irodsGetattr (const char *path, struct stat *stbuf)
@@ -23,18 +25,27 @@ irodsGetattr (const char *path, struct stat *stbuf)
     rodsObjStat_t *rodsObjStatOut = NULL;
 #if defined(linux_platform)
     int specPathFlag;
-    pathCacheQue_t *myque;
+    pathCacheQue_t *nonExistQue;
+    pathCache_t *nonExistPathCache;
 #endif
+    pathCacheQue_t *tmpCacheQue;
+    pathCache_t *tmpPathCache;
 
     rodsLog (LOG_DEBUG, "irodsGetattr: %s", path);
 
 #if defined(linux_platform)
     specPathFlag = isSpecialPath ((char *) path);
-    if (specPathFlag == 1 &&
-      matchPathInNonExistPathCache ((char *) path, &myque) == 1) { 
+    if (specPathFlag == 1 && matchPathInPathCache (
+     (char *) path, NonExistPathArray, &nonExistQue, &nonExistPathCache) == 1) {
 	return -ENOENT; 
     }
 #endif
+    if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue, 
+      &tmpPathCache) == 1) {
+	*stbuf = tmpPathCache->stbuf;
+	return (0);
+    }
+
     memset (stbuf, 0, sizeof (struct stat));
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv, 
@@ -55,10 +66,12 @@ irodsGetattr (const char *path, struct stat *stbuf)
 	}
 #if defined(linux_platform)
         if (specPathFlag == 1) {
-            addToCacheQue (myque, (char *) path);
+            addToCacheSlot ((char *) path, nonExistQue, NULL);
         }
 #endif
 	return -ENOENT;
+    } else {
+	addPathToCache ((char *) path, PathArray, stbuf);
     }
 
     if (rodsObjStatOut->objType == COLL_OBJ_T) {
@@ -188,7 +201,8 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
         return -ENOENT;
 #if defined(linux_platform)
     } else {
-        rmPathFromCache ((char *) path);
+        if (isSpecialPath ((char *) path) == 1)
+            rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
     }
 
@@ -230,7 +244,8 @@ irodsMkdir (const char *path, mode_t mode)
         return -ENOENT;
 #if defined(linux_platform)
     } else {
-        rmPathFromCache ((char *) path);
+        if (isSpecialPath ((char *) path) == 1)
+            rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
     }
 
@@ -260,17 +275,19 @@ irodsUnlink (const char *path)
 
     getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjUnlink (DefConn.conn, &dataObjInp);
+    if (status >= 0) {
+	rmPathFromCache ((char *) path, PathArray);
+	status = 0;
+    } else {
+        rodsLogError (LOG_ERROR, status,
+          "irodsUnlink: rcDataObjUnlink of %s error", path);
+        status = -ENOENT;
+    } 
     relIFuseConn (&DefConn);
 
     clearKeyVal (&dataObjInp.condInput);
 
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "irodsUnlink: rcDataObjUnlink of %s error", path);
-        return -ENOENT;
-    }
-
-    return (0);
+    return (status);
 }
 
 int 
@@ -296,17 +313,20 @@ irodsRmdir (const char *path)
 
     getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcRmColl (DefConn.conn, &collInp, 0);
+    if (status >= 0) {
+        rmPathFromCache ((char *) path, PathArray);
+        status = 0;
+    } else {
+        rodsLogError (LOG_ERROR, status,
+          "irodsRmdir: rcRmColl of %s error", path);
+        status = -ENOENT;
+    }
+
     relIFuseConn (&DefConn);
 
     clearKeyVal (&collInp.condInput);
 
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "irodsRmdir: rcRmColl of %s error", path);
-        return -ENOENT;
-    }
-
-    return (0);
+    return (status);
 }
 
 int 
@@ -359,11 +379,13 @@ irodsRename (const char *from, const char *to)
         status = rcDataObjRename (DefConn.conn, &dataObjRenameInp);
     }
 
-    if (status < 0) {
+    if (status >= 0) {
+        rmPathFromCache ((char *) from, PathArray);
+        status = 0;
+    } else {
         rodsLogError (LOG_ERROR, status,
           "irodsRename: rcDataObjRename of %s to %s error", from, to);
-        relIFuseConn (&DefConn);
-        return -ENOENT;
+        status = -ENOENT;
     }
     relIFuseConn (&DefConn);
 #if 0
@@ -381,7 +403,7 @@ irodsRename (const char *from, const char *to)
     }
 #endif
 
-    return (0);
+    return (status);
 }
 
 int 
@@ -422,14 +444,25 @@ irodsChmod (const char *path, mode_t mode)
 
     getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcModDataObjMeta(DefConn.conn, &modDataObjMetaInp);
+    if (status >= 0) {
+        pathCacheQue_t *tmpCacheQue;
+        pathCache_t *tmpPathCache;
+
+        if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue,
+          &tmpPathCache) == 1) {
+            tmpPathCache->stbuf.st_mode &= 0xfffffe00;
+	    tmpPathCache->stbuf.st_mode |= (mode & 0777);
+	}
+        status = 0;
+    } else {
+        rodsLogError(LOG_ERROR, status, "irodsChmod: rcModDataObjMeta failure");
+        status = -ENOENT;
+    }
+
     relIFuseConn (&DefConn);
     clearKeyVal (&regParam);
 
-    if (status) {
-        rodsLogError(LOG_ERROR, status, "irodsChmod: rcModDataObjMeta failure");
-	return -ENOENT;
-    }
-    return(0);
+    return(status);
 }
 
 int 
@@ -461,15 +494,23 @@ irodsTruncate (const char *path, off_t size)
 
     getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjTruncate (DefConn.conn, &dataObjInp);
-    relIFuseConn (&DefConn);
+    if (status >= 0) {
+        pathCacheQue_t *tmpCacheQue;
+        pathCache_t *tmpPathCache;
 
-    if (status < 0) {
+        if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue,
+          &tmpPathCache) == 1) {
+            tmpPathCache->stbuf.st_size = size;
+        }
+        status = 0;
+    } else {
         rodsLogError (LOG_ERROR, status,
           "irodsTruncate: rcDataObjTruncate of %s error", path);
-        return -ENOENT;
+        status = -ENOENT;
     }
+    relIFuseConn (&DefConn);
 
-    return (0);
+    return (status);
 }
 
 int 
@@ -518,7 +559,8 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
         return -ENOENT;
     } else {
 #if defined(linux_platform)
-        rmPathFromCache ((char *) path);
+        if (isSpecialPath ((char *) path) == 1)
+            rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
 	descInx = allocIFuseDesc ();
         if (descInx < 0) {
@@ -526,7 +568,8 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
               "irodsOpen: allocIFuseDesc of %s error", path);
             return -ENOENT;
 	}
-	fillIFuseDesc (descInx, DefConn.conn, fd, dataObjInp.objPath);
+	fillIFuseDesc (descInx, DefConn.conn, fd, dataObjInp.objPath, 
+	  (char *) path);
 	fi->fh = descInx;
 
         return (0);
@@ -630,6 +673,7 @@ struct fuse_file_info *fi)
         return -ENOENT;
     } else {
         IFuseDesc[descInx].offset += status;
+	IFuseDesc[descInx].bytesWritten += status;
         relIFuseConn (&DefConn);
         return (status);
     }
@@ -680,6 +724,11 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     dataObjCloseInp.l1descInx = IFuseDesc[descInx].iFd;
 
     status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
+
+    if (IFuseDesc[descInx].bytesWritten > 0) {
+	rmPathFromCache ((char *) path, PathArray);
+    }
+
     relIFuseConn (&DefConn);
 
     freeIFuseDesc (descInx);

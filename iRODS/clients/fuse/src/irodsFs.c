@@ -122,6 +122,7 @@ main (int argc, char **argv)
         exit (2);
     }
 
+    initPathCache ();
     initIFuseDesc ();
 
     status = fuse_main (argc, argv, &irodsOper, NULL);

@@ -25,7 +25,8 @@ extern rodsEnv MyRodsEnv;
 
 static int ConnManagerStarted = 0;
 
-static pathCacheQue_t NonExistPathQue[NUM_PATH_HASH_SLOT];
+pathCacheQue_t NonExistPathArray[NUM_PATH_HASH_SLOT];
+pathCacheQue_t PathArray[NUM_PATH_HASH_SLOT];
 
 static specialPath_t SpecialPath[] = {
     {"/tls", 4},
@@ -43,9 +44,10 @@ static specialPath_t SpecialPath[] = {
 static int NumSpecialPath = sizeof (SpecialPath) / sizeof (specialPath_t);
 
 int
-initNonExistPathCache ()
+initPathCache ()
 {
-    bzero (NonExistPathQue, sizeof (NonExistPathQue));
+    bzero (NonExistPathArray, sizeof (NonExistPathArray));
+    bzero (PathArray, sizeof (NonExistPathArray));
     return (0);
 }
 
@@ -72,8 +74,10 @@ isSpecialPath (char *inPath)
     return 0;
 }
 
+#if 0
 int
-matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque)
+matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque,
+pathCache_t **outPathCache)
 {
     int mysum, myslot;
     int status;
@@ -87,25 +91,67 @@ matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque)
 
     mysum = pathSum (inPath);
     myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
-    *myque = &NonExistPathQue[myslot];
+    *myque = &NonExistPathArray[myslot];
 
     chkCacheExpire (*myque);
-    status = matchPathInPathQue (*myque, inPath);
+    status = matchPathInPathSlot (*myque, inPath, outPathCache);
+
+    return status;
+}
+#endif
+
+int
+matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
+pathCacheQue_t **myque, pathCache_t **outPathCache)
+{
+    int mysum, myslot;
+    int status;
+
+    if (inPath == NULL) {
+        rodsLog (LOG_ERROR,
+          "matchPathInPathCache: input inPath is NULL");
+        *myque = NULL;
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    mysum = pathSum (inPath);
+    myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
+    *myque = &pathQueArray[myslot];
+
+    chkCacheExpire (*myque);
+    status = matchPathInPathSlot (*myque, inPath, outPathCache);
 
     return status;
 }
 
 int
-rmPathFromCache (char *inPath)
+addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+struct stat *stbuf)
+{
+    pathCacheQue_t *pathCacheQue;
+    int mysum, myslot;
+    int status;
+
+    /* XXXX if (isSpecialPath ((char *) inPath) != 1) return 0; */
+    mysum = pathSum (inPath);
+    myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
+    pathCacheQue = &pathQueArray[myslot];
+    status = addToCacheSlot (inPath, pathCacheQue, stbuf);
+
+    return (status);
+}
+
+int
+rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray)
 {
     pathCacheQue_t *pathCacheQue;
     int mysum, myslot;
     pathCache_t *tmpPathCache;
 
-    if (isSpecialPath ((char *) inPath) != 1) return 0;
+    /* XXXX if (isSpecialPath ((char *) inPath) != 1) return 0; */
     mysum = pathSum (inPath);
     myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
-    pathCacheQue = &NonExistPathQue[myslot];
+    pathCacheQue = &pathQueArray[myslot];
 
     tmpPathCache = pathCacheQue->top;
     while (tmpPathCache != NULL) {
@@ -139,18 +185,23 @@ getHashSlot (int value, int numHashSlot)
 }
 
 int
-matchPathInPathQue (pathCacheQue_t *pathCacheQue, char *inPath)
+matchPathInPathSlot (pathCacheQue_t *pathCacheQue, char *inPath, 
+pathCache_t **outPathCache)
 {
     pathCache_t *tmpPathCache;
 
+    *outPathCache = NULL;
     if (pathCacheQue == NULL) {
         rodsLog (LOG_ERROR,
-          "matchPathInPathQue: input pathCacheQue is NULL");
+          "matchPathInPathSlot: input pathCacheQue is NULL");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     tmpPathCache = pathCacheQue->top;
     while (tmpPathCache != NULL) {
-	if (strcmp (tmpPathCache->filePath, inPath) == 0) return 1;
+	if (strcmp (tmpPathCache->filePath, inPath) == 0) {
+	    *outPathCache = tmpPathCache;
+	    return 1;
+	}
 	tmpPathCache = tmpPathCache->next;
     }
     return (0);
@@ -189,19 +240,23 @@ chkCacheExpire (pathCacheQue_t *pathCacheQue)
 }
 	     
 int
-addToCacheQue (pathCacheQue_t *pathCacheQue, char *inPath)
+addToCacheSlot (char *inPath, pathCacheQue_t *pathCacheQue, 
+struct stat *stbuf)
 {
     pathCache_t *tmpPathCache;
     
     if (pathCacheQue == NULL || inPath == NULL) {
         rodsLog (LOG_ERROR,
-          "addToCacheQue: input pathCacheQue or inPath is NULL");
+          "addToCacheSlot: input pathCacheQue or inPath is NULL");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     tmpPathCache = malloc (sizeof (pathCache_t));
     bzero (tmpPathCache, sizeof (pathCache_t));
     rstrcpy (tmpPathCache->filePath, inPath, MAX_NAME_LEN);
     tmpPathCache->cachedTime = time (0);
+    if (stbuf != NULL) {
+	tmpPathCache->stbuf = *stbuf;
+    }
     /* queue it to the bottom */
     if (pathCacheQue->top == NULL) {
 	pathCacheQue->top = pathCacheQue->bottom = tmpPathCache;
@@ -315,14 +370,18 @@ checkFuseDesc (int descInx)
 }
 
 int
-fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath)
+fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath,
+char *localPath)
 { 
     IFuseDesc[descInx].conn = conn;
     IFuseDesc[descInx].iFd = iFd;
     if (objPath != NULL) {
         rstrcpy (IFuseDesc[descInx].objPath, objPath, MAX_NAME_LEN);
     }
-    return (0);
+    if (localPath != NULL) {
+        rstrcpy (IFuseDesc[descInx].localPath, localPath, MAX_NAME_LEN);
+    }
+ return (0);
 }
 
 /* need to call getIFuseConn before calling ifuseLseek */ 
