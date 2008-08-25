@@ -145,7 +145,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         }
     } else {
 	if ((status = isData (rsComm, srcDataObjInp->objPath, &srcId)) >= 0) {
-	    if ((status = isData (rsComm, destDataObjInp->objPath, &destId)) >= 0 &&
+	    if (isData (rsComm, destDataObjInp->objPath, &destId) >= 0 &&
 	      getValByKey (&srcDataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
 		/* dest exist */
 		rsDataObjUnlink (rsComm, destDataObjInp);
