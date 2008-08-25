@@ -1,6 +1,23 @@
 #include "integritychecksMS.h"
 #include "icutils.h"
 
+void initStructs (bytesBuf_t* mybuf, genQueryOut_t** mygqout, genQueryInp_t* mygqin) {
+
+	/* init & clear out all my favorite structs */
+	mybuf = (bytesBuf_t*) malloc(sizeof(bytesBuf_t));
+	memset (mybuf, 0, sizeof (bytesBuf_t));
+
+	if (mygqout == NULL)
+		mygqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (mygqout, 0, sizeof (genQueryOut_t));
+
+	if (mygqin == NULL)
+		mygqin = (genQueryInp_t*) malloc (sizeof (genQueryInp_t));
+	memset (&mygqin, 0, sizeof (genQueryInp_t));
+	//clearGenQueryInp (&gqin);
+
+}
+
 int msiListCollACL (msParam_t* mPin1, msParam_t* mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
 
 	int i,j;
@@ -26,12 +43,7 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPout1, msParam_t* mPout2, rule
 	rsComm = rei->rsComm;
 
 	/* init gqout, gqin & mybuf structs */
-	mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
-	memset (mybuf, 0, sizeof (bytesBuf_t));
-	gqout = (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
-	memset (gqout, 0, sizeof (genQueryOut_t));
-	memset (&gqin, 0, sizeof (genQueryInp_t));
-	//clearGenQueryInp (&gqin);
+	initStructs (&mybuf, gqout, &gqin); 
 	gqin.maxRows = MAX_SQL_ROWS;
 
 	/* Currently necessary since other namespaces exist in the token table */

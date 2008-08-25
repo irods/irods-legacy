@@ -54,7 +54,9 @@ int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPa
 
 	j = rsGenQuery (rsComm, &gqin, &gqout);
 
-	if (j != CAT_NO_ROWS_FOUND) {
+	if (j<0) {
+		appendToByteBuf (mybuf, "General Query was bad");
+	} else if (j != CAT_NO_ROWS_FOUND) {
 
 		printGenQueryOut(stderr, NULL, NULL, gqout);
 
@@ -64,23 +66,21 @@ int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPa
 		dataName = getSqlResultByInx (gqout, COL_DATA_NAME);
 		dataExpiry = getSqlResultByInx (gqout, COL_D_EXPIRY);
 
-		rodsLog (LOG_ERROR, "got here 3 rowCnt=%d",gqout->rowCnt);
-
 		for (i=0; i<gqout->rowCnt; i++) {
 			int dataobjexpiry, inputtimeexpiry;
 			dataobjexpiry = atoi(&dataExpiry->value[dataExpiry->len*i]);
 			inputtimeexpiry = atoi (inputtime);
-			rodsLog (LOG_ERROR, "Data object:%s\tExpiry:%s\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
-			sprintf (tmpstr, "Data object:%s\tExpiry:%s\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+			if (dataobjexpiry < inputtimeexpiry) 
+				sprintf (tmpstr, "Data object:%s\twith Expiry:%s has expired\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+			else
+				sprintf (tmpstr, "Data object:%s\twith Expiry:%s has not expired\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+				
 			appendToByteBuf (mybuf, tmpstr);
 		}
 	} else appendToByteBuf (mybuf, "No rows found\n");
 
-		rodsLog (LOG_ERROR, "got here 6: mybuf->len:%d",mybuf->len);
 	fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
-		rodsLog (LOG_ERROR, "got here 7");
 	fillIntInMsParam (mPout2, rei->status);
-		rodsLog (LOG_ERROR, "got here 8");
   
 	return(rei->status);
 
@@ -386,11 +386,7 @@ int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPar
 	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
 	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
 
-	rodsLog (LOG_ERROR, "msiVerifyOwner: got here 0");
-	
 	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-
-	rodsLog (LOG_ERROR, "msiVerifyOwner: got here 1");
 
 	/* Now for each file retrieved in the query, determine if it's owner is in our list */
 
@@ -454,7 +450,6 @@ int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPar
 				char* thisowner = strdup( &dataOwner->value[dataOwner->len*i]);
 				if (strcmp(firstowner, thisowner)) { /* the two strings are not equal */
 					appendToByteBuf (stuff, "Owner is not consistent across this collection");
-					rodsLog (LOG_ERROR, "got here 5");
 					matchflag=0;
 					break;
 				}
@@ -462,12 +457,10 @@ int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPar
 
 			appendToByteBuf (stuff,"let's get this party started\n");
 
-			rodsLog (LOG_ERROR, "got here 6");
 			if (matchflag) /* owner field was consistent across all data objects */
 				appendToByteBuf (stuff, "Owner is consistent across this collection.\n");
 			else
 				appendToByteBuf (stuff, "Owner is not consistent across this collection.\n");
-			rodsLog (LOG_ERROR, "got here 6.5");
 		}	
 	} 
 
@@ -507,7 +500,6 @@ int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1
 
 	rsComm = rei->rsComm;
 
-	//rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 0");
 
 	/* construct an SQL query from the parameter list */
 	strcpy (collname,  (char*) mPin1->inOutStruct);
@@ -533,11 +525,9 @@ int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1
 		snprintf (condStr, MAX_NAME_LEN, " = '%s'", word);
 		addInxVal (&genQueryInp.sqlCondInp, COL_DATA_TYPE_NAME, condStr); 
 	
-		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 2");
 
 		j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
-		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: got here 3");
 
 		if (j != CAT_NO_ROWS_FOUND) {
 
