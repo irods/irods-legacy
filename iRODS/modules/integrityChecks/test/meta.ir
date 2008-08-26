@@ -1,3 +1,0 @@
-msiVerifyACL||msiVerifyACL(*Collection,*NAME,*VALUE,*ATTR,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"")|nop
-*Collection=/homeZone/home/rods%*NAME=buttername%*VALUE=buttervalue%*ATTR=butterattr
-ruleExecOut

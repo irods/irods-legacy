@@ -1,3 +1,0 @@
-msiVerifyOwner||msiVerifyOwner(*Collection,*Owner,*OUT,*STATUS)##writeBytesBuf(stdout,*OUT)##writeLine(stdout,"")|nop
-*Collection=/homeZone/home/rods%*Owner=butter
-ruleExecOut%*STATUS
