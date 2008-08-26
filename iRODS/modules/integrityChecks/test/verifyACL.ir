@@ -1,3 +1,3 @@
 msiListCollACL||msiListCollACL(*Collection,*User, *Auth, *NotFlag, BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"")|nop
-*Collection=/sdscZone/home/rods%*User=rods%*Auth=own%*NotFlag=0
+*Collection=/homeZone/home/rods%*User=rods%*Auth=own%*NotFlag=0
 ruleExecOut%*STATUS

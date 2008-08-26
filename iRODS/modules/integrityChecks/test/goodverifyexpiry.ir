@@ -1,0 +1,3 @@
+msiVerifyExpiry||msiVerifyExpiry(*Collection,*TIME,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,*STATUS)|nop
+*Collection=/homeZone/home/rods%*TIME=now
+ruleExecOut%*STATUS
