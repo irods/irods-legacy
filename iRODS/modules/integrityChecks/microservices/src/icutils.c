@@ -233,18 +233,19 @@ int msiListFields (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPara
 	fillIntInMsParam (mPout2, rei->status);
   
 	return(rei->status);
-
+	
 }
 
 
 /* Silly hello world microservice */
-int msiHiThere (ruleExecInfo_t *rei) {
+int msiHiThere (msParam_t* mPout1, ruleExecInfo_t *rei) {
 
-	int i;
+	char str[]="hi there\n";
 
 	RE_TEST_MACRO ("    Calling msiHiThere")
+	fillStrInMsParam (mPout1, str);
 
-	i = hithere ();
-	return(i);
+	return(rei->status);
+	
 }
 
