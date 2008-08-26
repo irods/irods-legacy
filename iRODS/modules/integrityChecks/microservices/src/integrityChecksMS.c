@@ -135,8 +135,6 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 	addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
 	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
 
-	rodsLog (LOG_ERROR, "2 stuff: ");
-
 	/* build the condition:
 		collection name AND (filesize < minfilesize or filesize > maxfilesize) */
 
@@ -145,8 +143,6 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
 	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr); 
 
-	rodsLog (LOG_ERROR, "3 stuff: ");
-	
 	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
 	if (j != CAT_NO_ROWS_FOUND) {
@@ -162,20 +158,15 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 			addKeyVal (results, key, value);
 		}
 
-		// rodsLog (LOG_ERROR, "4.8 stuff: ");
-
 	} else {
 		fillIntInMsParam (mPout1, rei->status);
 		return (rei->status);  //ack this is ugly
 	}
 
-	rodsLog (LOG_ERROR, "6 stuff: ");
-	printGenQueryOut(stderr, NULL, NULL, genQueryOut);
+	//printGenQueryOut(stderr, NULL, NULL, genQueryOut);
 
 	fillMsParam (mPin3, NULL, KeyValPair_MS_T, results, NULL);
-	//rodsLog (LOG_ERROR, "7 s tuff: ");
 	fillIntInMsParam (mPout1, rei->status);
-	//rodsLog (LOG_ERROR, "8 s tuff: ");
   
 	return(rei->status);
 

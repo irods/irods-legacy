@@ -32,7 +32,8 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPin2, msParam_t* mPin3, msPara
 	}
 	rsComm = rei->rsComm;
 
-	/* This function can perform three different checks, depending on flags set via input parameters:
+	/* 
+		This function can perform three different checks, depending on flags set via input parameters:
 		1. check that its ACL contains the same set of user-authorization pairs as others in its collection
 		2. check that its ACL contains at least a given set of user-authorization pairs
 		3. check that its ACL does not contain a given set of user-authorization pairs 
@@ -55,6 +56,7 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPin2, msParam_t* mPin3, msPara
 		querytype=1; /* Case #1. see above */
 		notflag=NULL; /* we don't care about this variable in this case */
 	} 
+	/* just an exclusive OR - both of these variables, username & accessauth HAVE to be set */
 	else if (((username==NULL) && (accessauth!=NULL)) || ((username!=NULL) && (accessauth==NULL))) {
 			return (USER__NULL_INPUT_ERR);
 	} else {
@@ -109,11 +111,11 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPin2, msParam_t* mPin3, msPara
 	addInxIval (&gqin.selectInp, COL_DATA_ACCESS_TYPE, 1);
 	addInxIval (&gqin.selectInp, COL_DATA_ACCESS_DATA_ID, 1);
 	addInxIval (&gqin.selectInp, COL_DATA_ACCESS_USER_ID, 1);
-	addInxIval (&gqin.selectInp, COL_DATA_TOKEN_NAMESPACE, 1);
+	//addInxIval (&gqin.selectInp, COL_DATA_TOKEN_NAMESPACE, 1);
 
 	/* Currently necessary since other namespaces exist in the token table */
-	snprintf (tmpstr, MAX_NAME_LEN, "='%s'", "access_type");
-	addInxVal (&gqin.sqlCondInp, COL_COLL_TOKEN_NAMESPACE, tmpStr);
+	//snprintf (tmpstr, MAX_NAME_LEN, "='%s'", "access_type");
+	//addInxVal (&gqin.sqlCondInp, COL_COLL_TOKEN_NAMESPACE, tmpStr);
 
 	snprintf (tmpstr, MAX_NAME_LEN, " = '%s'", collid);
 	addInxVal (&gqin.sqlCondInp, COL_D_COLL_ID, tmpstr);
@@ -129,7 +131,7 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPin2, msParam_t* mPin3, msPara
 		dataAccessName = getSqlResultByInx (gqout, COL_DATA_ACCESS_NAME);
 		dataAccessDataId = getSqlResultByInx (gqout, COL_DATA_ACCESS_DATA_ID);
 		dataAccessUserId = getSqlResultByInx (gqout, COL_DATA_ACCESS_USER_ID);
-		dataTokenNamespace = getSqlResultByInx (gqout, COL_DATA_TOKEN_NAMESPACE);
+		//dataTokenNamespace = getSqlResultByInx (gqout, COL_DATA_TOKEN_NAMESPACE);
 
 		for (i=0; i<gqout->rowCnt; i++) {
 			sprintf (tmpstr, "Data name:%s\tData Access Type:%s\tData Access Name:%s\tData Access Data Id:%s\t Data Access User ID:%s\tNamespace:%s\n",
@@ -138,7 +140,8 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPin2, msParam_t* mPin3, msPara
 				&dataAccessName->value[dataAccessName->len *i],
 				&dataAccessDataId->value[dataAccessDataId->len *i],
 				&dataAccessUserId->value[dataAccessUserId->len *i],
-				&dataTokenNamespace->value[dataTokenNamespace->len *i]);
+		//		&dataTokenNamespace->value[dataTokenNamespace->len *i]);
+				"some namespace");
 			appendToByteBuf (mybuf, tmpstr);
 		}	
 

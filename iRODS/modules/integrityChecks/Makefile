@@ -24,7 +24,7 @@ MSIncDir =	$(modulesDir)/integrityChecks/microservices/include
 #
 # Source files
 #
-OBJECTS =	$(MSObjDir)/integrityChecksMS.o $(MSObjDir)/icutils.o $(MSObjDir)/hithere.o   
+OBJECTS =	$(MSObjDir)/integrityChecksMS.o $(MSObjDir)/icutils.o 
 //OBJECTS =	$(MSObjDir)/integrityChecksMS.o 
 INCLUDE_FLAGS =	-I$(MSIncDir)
 
