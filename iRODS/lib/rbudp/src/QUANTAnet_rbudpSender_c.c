@@ -401,8 +401,9 @@ int fd)
 	 toSend = remaining;
       } 
 
-      TRACE_DEBUG("Sending %d bytes chunk. %lld bytes remaining", 
-        toSend, remaining - toSend);
+      if (verbose > 0)
+          TRACE_DEBUG("Sending %d bytes chunk. %lld bytes remaining", 
+            toSend, remaining - toSend);
 
       char *buf = (char *)mmap(NULL, toSend, PROT_READ, MAP_SHARED, fd, offset);
       if (buf == MAP_FAILED) {

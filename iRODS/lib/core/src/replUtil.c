@@ -110,6 +110,9 @@ initCondForRepl (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
 {
     char *myResc = NULL;
+#ifdef RBUDP_TRANSFER
+    char *tmpStr;
+#endif  /* RBUDP_TRANSFER */
 
     if (dataObjInp == NULL) {
        rodsLog (LOG_ERROR,
@@ -167,6 +170,30 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
         addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
     }
 
+#ifdef RBUDP_TRANSFER
+    if (rodsArgs->dataObjects == True) {
+        /* use -d for rbudp transfer */
+        addKeyVal (&dataObjInp->condInput, RBUDP_TRANSFER_KW, "");
+    }
+
+    if (rodsArgs->veryVerbose == True) {
+        addKeyVal (&dataObjInp->condInput, VERY_VERBOSE_KW, "");
+    }
+
+    if ((tmpStr = getenv (RBUDP_SEND_RATE_KW)) != NULL) {
+        addKeyVal (&dataObjInp->condInput, RBUDP_SEND_RATE_KW, tmpStr);
+    }
+
+    if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
+        addKeyVal (&dataObjInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr);
+    }
+#else   /* RBUDP_TRANSFER */
+    if (rodsArgs->dataObjects == True) {
+        rodsLog (LOG_NOTICE,
+          "initCondForRepl: RBUDP_TRANSFER (-d) not supported");
+    }
+#endif  /* RBUDP_TRANSFER */
+
     memset (rodsRestart, 0, sizeof (rodsRestart_t));
     if (rodsArgs->restart == True) {
         int status;
@@ -174,7 +201,7 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
           rodsArgs);
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
-              "initCondForPut: openRestartFile of %s errno",
+              "initCondForRepl: openRestartFile of %s errno",
             rodsArgs->restartFileString);
             return (status);
         }

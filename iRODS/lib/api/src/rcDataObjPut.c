@@ -91,8 +91,8 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 	} else {
 	    veryVerbose = 0;
 	}
-        status = putFileToPortalRbudp (conn, portalOprOut, locFilePath,
-          dataObjInp->dataSize, veryVerbose);
+        status = putFileToPortalRbudp (portalOprOut, locFilePath, -1,
+          dataObjInp->dataSize, veryVerbose, 0, 0);
 #endif  /* RBUDP_TRANSFER */
     } else {
 	/* some sanity check */

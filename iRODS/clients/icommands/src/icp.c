@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hfkKN:p:rR:vVX:";
+    optStr = "dhfkKN:p:rR:vVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status) {
@@ -90,6 +90,15 @@ usage ()
 "-X restartFile] srcDataObj|srcColl ...  destDataObj|destColl",
 "icp copies an irods data-object (file) or collection (directory) to another",
 "data-object or collection.",  
+" ",
+"The -d option specifies the use of the RBUDP transfer mechanism which uses",
+"the UDP protocol for data transfer. The UDP protocol is very efficient",
+"if the network is very robust with few packet losses. Two environment",
+"variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
+"data transfer. rbudpSendRate is used to throttle the send rate in ",
+"kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
+"to set the packet size. The dafault rbudpPackSize is 8192.",
+" ",
 "The -X option specifies that the restart option is on and the restartFile",
 "input specifies a local file that contains the restart info. If the ",
 "restartFile does not exist, it will be created and used for recording ",
@@ -98,6 +107,7 @@ usage ()
 "Note that the restart operation only works for uploading directories and",
 "the path input must be identical to the one that generated the restart file",
 "Options are:",
+" -d  use RBUDP (datagram) protocol for the data transfer",
 "-f force - write data-object even it exists already; overwrite it",
 "-k checksum - calculate a checksum on the data",
 "-K verify checksum - calculate and verify the checksum on the data",

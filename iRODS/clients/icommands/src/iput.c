@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "aD:fhkKn:N:p:rR:UvVX:";
+    optStr = "aD:fhkKn:N:p:rR:dvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -102,7 +102,7 @@ usage ()
 "if a copy in the specified resource does not already exist. The irepl",
 "command should be used to make a replica of an existing copy.", 
 " ",
-"The -U option specifies the use of the RBUDP transfer mechanism which uses",
+"The -d option specifies the use of the RBUDP transfer mechanism which uses",
 "the UDP protocol for data transfer. The UDP protocol is very efficient",
 "if the network is very robust with few packet losses. Two environment",
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
@@ -121,7 +121,7 @@ usage ()
 " -R  resource - specifies the resource to store to. This can also be specified",
 "     in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",
-" -U  use RBUDP protocol for the data transfer",
+" -d  use RBUDP (datagram) protocol for the data transfer",
 " -v  verbose",
 " -V  Very verbose",
 " -X  restartFile - specifies that the restart option is on and the",

@@ -492,6 +492,12 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
     }
     status =  rsDataCopy (rsComm, &dataCopyInp);
 
+    if (status >= 0 && portalOprOut != NULL && 
+      L1desc[l1descInx].dataObjInp != NULL) {
+	/* update numThreads since it could be chnages by remote server */ 
+        L1desc[l1descInx].dataObjInp->numThreads = portalOprOut->numThreads;
+    }
+	
     return (status);
 }
 

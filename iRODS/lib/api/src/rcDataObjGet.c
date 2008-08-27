@@ -77,8 +77,8 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         } else {
             veryVerbose = 0;
         }
-        status = getFileToPortalRbudp (conn, portalOprOut, locFilePath,
-          dataObjInp->dataSize, veryVerbose);
+        status = getFileToPortalRbudp (portalOprOut, locFilePath, 0,
+          dataObjInp->dataSize, veryVerbose, 0);
         /* just send a complete msg */
         if (status < 0) {
             rcOprComplete (conn, status);

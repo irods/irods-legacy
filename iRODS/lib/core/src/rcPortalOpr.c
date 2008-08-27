@@ -733,14 +733,20 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
 }
 
 #ifdef RBUDP_TRANSFER
+/* putFileToPortalRbudp - The client side of putting a file using 
+ * Rbudp. If locFilePath is NULL, the local file has already been opned
+ * and locFd should be used. If sendRate and packetSize are 0, it will 
+ * try to set it based on env and default.
+ */
 int
-putFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut, 
-char *locFilePath, rodsLong_t dataSize, int veryVerbose)
+putFileToPortalRbudp (portalOprOut_t *portalOprOut, 
+char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
+int sendRate, int packetSize)
 {
     portList_t *myPortList;
     int status;
     rbudpSender_t rbudpSender;
-    int sendRate, packetSize;
+    int mysendRate, mypacketSize;
     char *tmpStr;
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
@@ -760,19 +766,32 @@ char *locFilePath, rodsLong_t dataSize, int veryVerbose)
         return (status);
     }
     rbudpSender.rbudpBase.verbose = veryVerbose;
-    if ((tmpStr = getenv (RBUDP_SEND_RATE_KW)) != NULL) {
-	sendRate = atoi (tmpStr);
+    if (sendRate <= 0) {
+        if ((tmpStr = getenv (RBUDP_SEND_RATE_KW)) != NULL) {
+	    mysendRate = atoi (tmpStr);
+        } else {
+	    mysendRate = DEF_UDP_SEND_RATE;
+	}
     } else {
-	sendRate = DEF_UDP_SEND_RATE;
+	mysendRate = sendRate;
     }
-    if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
-	packetSize = atoi (tmpStr);
+    if (packetSize <= 0) {
+        if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
+	    mypacketSize = atoi (tmpStr);
+        } else {
+	    mypacketSize = DEF_UDP_PACKET_SIZE;
+	}
     } else {
-	packetSize = DEF_UDP_PACKET_SIZE;
+	mypacketSize = packetSize;
     }
 
-    status = sendfile (&rbudpSender, sendRate, packetSize, 
-      locFilePath);
+    if (locFilePath == NULL) {
+        status = sendfileByFd (&rbudpSender, mysendRate, mypacketSize,
+          locFd);
+    } else {
+        status = sendfile (&rbudpSender, mysendRate, mypacketSize, 
+          locFilePath);
+    }
 
     sendClose (&rbudpSender);
     if (status < 0) {
@@ -784,14 +803,20 @@ char *locFilePath, rodsLong_t dataSize, int veryVerbose)
     return (status);
 }
 
+/* getFileToPortalRbudp - The client side of getting a file using 
+ * Rbudp. If locFilePath is NULL, the local file has already been opned
+ * and locFd should be used. If sendRate and packetSize are 0, it will 
+ * try to set it based on env and default.
+ */
 int
-getFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut, 
-char *locFilePath, rodsLong_t dataSize, int veryVerbose)
+getFileToPortalRbudp (portalOprOut_t *portalOprOut, 
+char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
+int packetSize)
 {
     portList_t *myPortList;
     int status;
     rbudpReceiver_t rbudpReceiver;
-    int packetSize;
+    int mypacketSize;
     char *tmpStr;
 
     if (portalOprOut == NULL || portalOprOut->numThreads != 1) {
@@ -811,13 +836,22 @@ char *locFilePath, rodsLong_t dataSize, int veryVerbose)
         return (status);
     }
     rbudpReceiver.rbudpBase.verbose = veryVerbose;
-    if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
-	packetSize = atoi (tmpStr);
+
+    if (packetSize <= 0) {
+        if ((tmpStr = getenv (RBUDP_PACK_SIZE_KW)) != NULL) {
+            mypacketSize = atoi (tmpStr);
+        } else {
+            mypacketSize = DEF_UDP_PACKET_SIZE;
+        }
     } else {
-	packetSize = DEF_UDP_PACKET_SIZE;
+        mypacketSize = packetSize;
     }
 
-    status = getfile (&rbudpReceiver, NULL, locFilePath, packetSize);
+    if (locFilePath == NULL) {
+        status = getfileByFd (&rbudpReceiver, locFd, mypacketSize);
+    } else {
+        status = getfile (&rbudpReceiver, NULL, locFilePath, mypacketSize);
+    }
 
     recvClose (&rbudpReceiver);
     if (status < 0) {

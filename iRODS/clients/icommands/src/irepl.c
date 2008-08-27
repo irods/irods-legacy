@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "aBMhrvVn:R:S:X:U";
+    optStr = "aBdMhrvVn:R:S:X:U";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -92,6 +92,14 @@ usage ()
 " ",
 "Replicate a file in iRODS to another storage resource.",
 " ",
+"The -d option specifies the use of the RBUDP transfer mechanism which uses",
+"the UDP protocol for data transfer. The UDP protocol is very efficient",
+"if the network is very robust with few packet losses. Two environment",
+"variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
+"data transfer. rbudpSendRate is used to throttle the send rate in ",
+"kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
+"to set the packet size. The dafault rbudpPackSize is 8192.",
+" ",
 "The -X option specifies that the restart option is on and the restartFile",
 "input specifies a local file that contains the restart info. If the ",
 "restartFile does not exist, it will be created and used for recording ",
@@ -105,6 +113,7 @@ usage ()
 "     Replicate to all the resources in the resource group.",
 " -B  Backup mode - if a good copy already exists in this",
 "     resource, don't make another copy.",
+" -d  use RBUDP (datagram) protocol for the data transfer",
 " -U  Update (Synchronize) all old replica with the latest copy.",
 " -M  admin - admin user uses this option to backup/replicate other users files",
 " -r  recursive - copy the whole subtree",

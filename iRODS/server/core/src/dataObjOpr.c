@@ -988,7 +988,7 @@ char **chksumStr)
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-         "rsDataObjGet: rsModDataObjMeta error for %s, status = %d",
+         "dataObjChksumAndReg: rsModDataObjMeta error for %s, status = %d",
          dataObjInfo->objPath, status);
 	/* don't return error because it is not fatal */
     }

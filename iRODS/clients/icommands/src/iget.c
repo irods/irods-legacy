@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hfKN:n:rUvVX:R:";
+    optStr = "hfKN:n:rdvVX:R:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -101,7 +101,7 @@ usage () {
 "Note that the restart operation only works for uploading directories and",
 "the path input must be identical to the one that generated the restart file",
 " ",
-"The -U option specifies the use of the RBUDP transfer mechanism which uses",
+"The -d option specifies the use of the RBUDP transfer mechanism which uses",
 "the UDP protocol for data transfer. The UDP protocol is very efficient",
 "if the network is very robust with few packet losses. Two environment",
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
@@ -119,7 +119,7 @@ usage () {
 "       decides the number of threads to use.", 
 " -r  recursive - retrieve subcollections",
 " -R  resource - the preferred resource",
-" -U  use RBUDP protocol for the data transfer",
+" -d  use RBUDP (datagram) protocol for the data transfer",
 " -v  verbose",
 " -V  Very verbose",
 "     restartFile input specifies a local file that contains the restart info.",

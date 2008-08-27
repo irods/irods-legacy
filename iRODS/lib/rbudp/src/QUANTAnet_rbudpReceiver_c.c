@@ -425,8 +425,9 @@ getfileByFd (rbudpReceiver_t *rbudpReceiver, int fd, int packetSize)
          toRead = remaining;
       }
 
-      TRACE_DEBUG("Receiving %d bytes chunk. %lld bytes remaining", 
-        toRead, remaining - toRead);
+      if (verbose > 0)
+          TRACE_DEBUG("Receiving %d bytes chunk. %lld bytes remaining", 
+            toRead, remaining - toRead);
 
       buf = (char *)mmap(NULL, toRead, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 
         offset);

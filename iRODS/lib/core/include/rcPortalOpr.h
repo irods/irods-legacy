@@ -68,11 +68,13 @@ getFile (rcComm_t *conn, int l1descInx, char *locFilePath,
 rodsLong_t dataSize);
 #ifdef RBUDP_TRANSFER
 int
-putFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut,
-char *locFilePath, rodsLong_t dataSize, int veryVerbose);
+putFileToPortalRbudp (portalOprOut_t *portalOprOut,                
+char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
+int sendRate, int packetSize);
 int
-getFileToPortalRbudp (rcComm_t *conn, portalOprOut_t *portalOprOut,
-char *locFilePath, rodsLong_t dataSize, int veryVerbose);
+getFileToPortalRbudp (portalOprOut_t *portalOprOut,                
+char *locFilePath, int locFd, rodsLong_t dataSize, int veryVerbose,
+int packetSize);
 int
 initRbudpClient (rbudpBase_t *rbudpBase, portList_t *myPortList);
 #endif  /* RBUDP_TRANSFER */

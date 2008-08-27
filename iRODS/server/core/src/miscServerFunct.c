@@ -798,6 +798,65 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
     CLOSE_SOCK (srcFd);
 }
 
+/* rbudpRemLocCopy - The rbudp version of remLocCopy.
+ */
+
+int
+rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
+{
+    portalOprOut_t *portalOprOut;
+    dataOprInp_t *dataOprInp;
+    rodsLong_t dataSize;
+    int oprType;
+    int veryVerbose, sendRate, packetSize;
+    char *tmpStr;
+    int status;
+
+    if (dataCopyInp == NULL) {
+        rodsLog (LOG_NOTICE,
+          "rbudpRemLocCopy: NULL dataCopyInp input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    portalOprOut = &dataCopyInp->portalOprOut;
+    dataOprInp = &dataCopyInp->dataOprInp;
+    oprType = dataOprInp->oprType;
+    dataSize = dataOprInp->dataSize;
+
+    if (getValByKey (&dataOprInp->condInput, VERY_VERBOSE_KW) != NULL) {
+        veryVerbose = 2;
+    } else {
+        veryVerbose = 0;
+    }
+
+    if ((tmpStr = getValByKey (&dataOprInp->condInput,
+      RBUDP_PACK_SIZE_KW)) != NULL) {
+        packetSize = atoi (tmpStr);
+    } else {
+        packetSize = DEF_UDP_PACKET_SIZE;
+    }
+
+    if (oprType == COPY_TO_LOCAL_OPR) {
+	int destL3descInx = dataOprInp->destL3descInx;
+
+        status = getFileToPortalRbudp (portalOprOut, NULL, 
+	  FileDesc[destL3descInx].fd, dataSize, 
+	  veryVerbose, packetSize);
+    } else {
+	int srcL3descInx = dataOprInp->srcL3descInx;
+
+        if ((tmpStr = getValByKey (&dataOprInp->condInput,
+          RBUDP_SEND_RATE_KW)) != NULL) {
+            sendRate = atoi (tmpStr);
+        } else {
+            sendRate = DEF_UDP_SEND_RATE;
+        }
+        status = putFileToPortalRbudp (portalOprOut, NULL, 
+	  FileDesc[srcL3descInx].fd, dataSize, 
+	  veryVerbose, sendRate, packetSize);
+    }
+    return (status);
+}
+
 /* remLocCopy - This routine is very similar to rcPartialDataGet.
  */
 
@@ -822,6 +881,16 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     }
     portalOprOut = &dataCopyInp->portalOprOut;
     dataOprInp = &dataCopyInp->dataOprInp;
+
+    oprType = dataOprInp->oprType;
+    numThreads = portalOprOut->numThreads;
+    dataSize = dataOprInp->dataSize;
+
+    if (getUdpPortFromPortList (&portalOprOut->portList) != 0) {
+        /* rbudp transfer */
+	retVal = rbudpRemLocCopy (rsComm, dataCopyInp);
+	return (retVal);
+    }
 
     oprType = dataOprInp->oprType;
     numThreads = portalOprOut->numThreads;

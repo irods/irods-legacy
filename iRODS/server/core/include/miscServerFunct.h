@@ -67,6 +67,8 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
 void
 sameHostPartialCopy (portalTransferInp_t *myInput);
 int
+rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
+int
 remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
 void
 remToLocPartialCopy (portalTransferInp_t *myInput);
