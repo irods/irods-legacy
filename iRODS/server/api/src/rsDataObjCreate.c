@@ -176,6 +176,9 @@ specCollSubCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     l1descInx = allocL1desc ();
+
+    if (l1descInx < 0) return l1descInx;
+
     dataObjInfo->replStatus = NEWLY_CREATED_COPY;
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
       dataObjInp->dataSize);
@@ -212,6 +215,7 @@ rescInfo_t *rescInfo, char *rescGroupName)
     rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
     rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
     l1descInx = allocL1desc ();
+    if (l1descInx < 0) return l1descInx;
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
       dataObjInp->dataSize);
 

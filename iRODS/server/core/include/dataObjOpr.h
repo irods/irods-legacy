@@ -18,7 +18,7 @@
 #include "structFileSync.h"
 #include "structFileExtAndReg.h"
 
-#define NUM_L1_DESC	100 	/* number of L1Desc */
+#define NUM_L1_DESC	1026 	/* number of L1Desc */
 
 #define ORPHAN_DIR	"orphan"
 #define REPL_DIR	"replica"

@@ -123,6 +123,8 @@ int phyOpenFlag, dataObjInfo_t *dataObjInfo)
 
     l1descInx = allocL1desc ();
 
+    if (l1descInx < 0) return l1descInx;
+
     replStatus = dataObjInfo->replStatus | OPEN_EXISTING_COPY;
 
     /* the size was set to -1 because we don't know the target size.

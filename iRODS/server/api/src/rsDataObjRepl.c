@@ -324,6 +324,8 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     dataObjInp->dataSize = inpSrcDataObjInfo->dataSize;
     destL1descInx = allocL1desc ();
 
+    if (destL1descInx < 0) return destL1descInx;
+
     myDestDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
     srcDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
     *srcDataObjInfo = *inpSrcDataObjInfo;
@@ -391,6 +393,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     /* open the src */
 
     srcL1descInx = allocL1desc ();
+    if (srcL1descInx < 0) return srcL1descInx;
     fillL1desc (srcL1descInx, dataObjInp, srcDataObjInfo, 
      srcDataObjInfo->replStatus, srcDataObjInfo->dataSize);
     if (dataObjInp->oprType == PHYMV_OPR) {

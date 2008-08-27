@@ -14,7 +14,7 @@
 #include "fileDriver.h"
 #include "chkNVPathPerm.h"
 
-#define NUM_FILE_DESC	100 	/* number of FileDesc */
+#define NUM_FILE_DESC	1026 	/* number of FileDesc */
 
 /* definition for inuseFlag */
 

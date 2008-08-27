@@ -34,7 +34,7 @@ allocL1desc ()
 {
     int i;
 
-    for (i = 3; i < NUM_FILE_DESC; i++) {
+    for (i = 3; i < NUM_L1_DESC; i++) {
         if (L1desc[i].inuseFlag <= FD_FREE) {
             L1desc[i].inuseFlag = FD_INUSE;
             return (i);
@@ -59,7 +59,7 @@ allocSpecCollDesc ()
 {
     int i;
 
-    for (i = 1; i < NUM_FILE_DESC; i++) {
+    for (i = 1; i < NUM_SPEC_COLL_DESC; i++) {
         if (SpecCollDesc[i].inuseFlag <= FD_FREE) {
             SpecCollDesc[i].inuseFlag = FD_INUSE;
             return (i);
@@ -98,7 +98,7 @@ closeAllL1desc (rsComm_t *rsComm)
     if (rsComm == NULL) {
 	return 0;
     }
-    for (i = 3; i < NUM_FILE_DESC; i++) {
+    for (i = 3; i < NUM_L1_DESC; i++) {
         if (L1desc[i].inuseFlag == FD_INUSE && 
 	  L1desc[i].l3descInx > 2) {
 	    l3Close (rsComm, i);
@@ -110,7 +110,7 @@ closeAllL1desc (rsComm_t *rsComm)
 int
 freeL1desc (int l1descInx)
 {
-    if (l1descInx < 3 || l1descInx >= NUM_FILE_DESC) {
+    if (l1descInx < 3 || l1descInx >= NUM_L1_DESC) {
         rodsLog (LOG_NOTICE,
          "freeL1desc: l1descInx %d out of range", l1descInx);
         return (SYS_FILE_DESC_OUT_OF_RANGE);
