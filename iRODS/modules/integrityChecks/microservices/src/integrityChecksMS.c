@@ -2,22 +2,24 @@
 #include "icutils.h"
 
 
-/* For now our second parameter is the string "now" and just sees if anything has expired */
-int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
+/* Check to see if files in a collection have expired or not */
+int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
 
+	rsComm_t *rsComm;
 	genQueryInp_t gqin;
 	genQueryOut_t *gqout = NULL;
 	char condStr[MAX_NAME_LEN];
 	char tmpstr[MAX_NAME_LEN];
-	rsComm_t *rsComm;
 	char* collname;
 	sqlResult_t *dataName;
 	sqlResult_t *dataExpiry;
 	bytesBuf_t*	mybuf=NULL;
-	int i,j;
+	int i,j,status;
 
-	char* timestr;
 	char* inputtime;
+	char* querytype;
+	int	checkExpiredFlag=0;
+	char inputtimestr[TIME_LEN];
 
 	RE_TEST_MACRO ("    Calling msiVerifyExpiry")
 
@@ -32,19 +34,39 @@ int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPa
 	/* init stuff */
 	memset (&gqin, 0, sizeof(genQueryInp_t));
 	gqin.maxRows = MAX_SQL_ROWS;
-    mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+    mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
     memset (mybuf, 0, sizeof (bytesBuf_t));
+	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout, 0, sizeof (genQueryOut_t));
 
-	/* 
-		First get the local time = now
-		foreach file's expiry date	
-			if irodsfileunixtime < localtime
-				print to buf as an expired file
-	*/
 
 	/* construct an SQL query from the parameter list */
 	collname = (char*) strdup (mPin1->inOutStruct);
 	inputtime = (char*) strdup (mPin2->inOutStruct);
+	querytype = (char*) strdup (mPin3->inOutStruct);
+
+	/* 
+		We have a couple of rule query possibilities:
+		1. If 'inputtime' is valid & querytype == EXPIRED then list files which have an expiration date equal or past the input time
+		2. If 'inputtime' is valid & querytype == NOTEXPIRED then list files which have yet to expire
+	*/
+
+	/* gotta at least have a collection name input */
+	if (collname==NULL) return (USER_PARAM_TYPE_ERR);
+	
+	/* convert inputtime to unixtime */
+	/* SUSAN we should make an option that inputtime = "now" */
+	rstrcpy (inputtimestr, inputtime, TIME_LEN);
+	status = checkDateFormat (inputtimestr);
+	if (status < 0) return (DATE_FORMAT_ERR);
+
+	/* now figure out what kind of query to perform */
+	if (!strcmp(querytype, "EXPIRED")) {
+		checkExpiredFlag = 1;
+	} else if (!strcmp(querytype, "NOTEXPIRED")) {
+		checkExpiredFlag = 0;
+	} else return (USER_PARAM_TYPE_ERR); 
+	
 
 	/* this is the info we want returned from the query */
 	addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
@@ -55,27 +77,35 @@ int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPa
 	j = rsGenQuery (rsComm, &gqin, &gqout);
 
 	if (j<0) {
+
 		appendToByteBuf (mybuf, "General Query was bad");
+
 	} else if (j != CAT_NO_ROWS_FOUND) {
 
-		printGenQueryOut(stderr, NULL, NULL, gqout);
-
-		getNowStr (timestr);
-		rodsLog (LOG_ERROR, "timestr=%s", timestr);
+		int dataobjexpiry, inputtimeexpiry;
 
 		dataName = getSqlResultByInx (gqout, COL_DATA_NAME);
 		dataExpiry = getSqlResultByInx (gqout, COL_D_EXPIRY);
+		inputtimeexpiry = atoi (inputtimestr);
 
 		for (i=0; i<gqout->rowCnt; i++) {
-			int dataobjexpiry, inputtimeexpiry;
 			dataobjexpiry = atoi(&dataExpiry->value[dataExpiry->len*i]);
-			inputtimeexpiry = atoi (inputtime);
-			if (dataobjexpiry < inputtimeexpiry) 
-				sprintf (tmpstr, "Data object:%s\twith Expiry:%s has expired\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
-			else
-				sprintf (tmpstr, "Data object:%s\twith Expiry:%s has not expired\n", &dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+
+			/* check for expired files */
+			if (checkExpiredFlag) { 
+				if (dataobjexpiry < inputtimeexpiry)   {
+					sprintf (tmpstr, "Data object:%s\twith Expiration date:%s has expired\n", 
+						&dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+					appendToByteBuf (mybuf, tmpstr);
+				}
+			} else { 
+				if (dataobjexpiry >= inputtimeexpiry) {
+					sprintf (tmpstr, "Data object:%s\twith Expiration date:%s is expiring\n", 
+						&dataName->value[dataName->len *i], &dataExpiry->value[dataExpiry->len *i]);
+					appendToByteBuf (mybuf, tmpstr);
+				}
+			} 
 				
-			appendToByteBuf (mybuf, tmpstr);
 		}
 	} else appendToByteBuf (mybuf, "No rows found\n");
 

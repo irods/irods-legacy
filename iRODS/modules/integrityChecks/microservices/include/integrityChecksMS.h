@@ -23,7 +23,7 @@ int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPar
 int msiVerifyACL (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t mPin4, msParam_t *mPout1, msParam_t *mPout2, ruleExecInfo_t *rei);
 int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPin4, msParam_t *mPout1, 
 	msParam_t *mPout2, ruleExecInfo_t *rei);
-int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t *mPout2, ruleExecInfo_t *rei);
+int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msParam_t *mPout1, msParam_t *mPout2, ruleExecInfo_t *rei);
 
 
 #endif	/* INTEGRITYCHECKS_H */
