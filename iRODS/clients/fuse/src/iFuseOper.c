@@ -23,16 +23,17 @@ irodsGetattr (const char *path, struct stat *stbuf)
     int status;
     dataObjInp_t dataObjInp;
     rodsObjStat_t *rodsObjStatOut = NULL;
-#if defined(linux_platform)
+/* #if defined(linux_platform) */
     int specPathFlag;
     pathCacheQue_t *nonExistQue;
     pathCache_t *nonExistPathCache;
-#endif
+/* #endif */
     pathCacheQue_t *tmpCacheQue;
     pathCache_t *tmpPathCache;
 
     rodsLog (LOG_DEBUG, "irodsGetattr: %s", path);
 
+#if 0
 #if defined(linux_platform)
     specPathFlag = isSpecialPath ((char *) path);
     if (specPathFlag == 1 && matchPathInPathCache (
@@ -40,8 +41,17 @@ irodsGetattr (const char *path, struct stat *stbuf)
 	return -ENOENT; 
     }
 #endif
+#endif
+    if (matchPathInPathCache ( (char *) path, NonExistPathArray, &nonExistQue, 
+      &nonExistPathCache) == 1) {
+        rodsLog (LOG_DEBUG, "irodsGetattr: a match for non existing path %s", 
+	  path);
+        return -ENOENT;
+    }
+
     if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue, 
       &tmpPathCache) == 1) {
+        rodsLog (LOG_DEBUG, "irodsGetattr: a match for path %s", path);
 	*stbuf = tmpPathCache->stbuf;
 	return (0);
     }
@@ -64,11 +74,15 @@ irodsGetattr (const char *path, struct stat *stbuf)
             rodsLogError (LOG_ERROR, status, 
 	      "irodsGetattr: rcObjStat of %s error", path);
 	}
+#if 0
 #if defined(linux_platform)
         if (specPathFlag == 1) {
             addToCacheSlot ((char *) path, nonExistQue, NULL);
         }
 #endif
+#endif
+        addToCacheSlot ((char *) path, nonExistQue, NULL);
+
 	return -ENOENT;
     }
 
@@ -199,11 +213,15 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
         rodsLogError (LOG_ERROR, status,
           "irodsMknod: rcDataObjCreate of %s error", path);
         return -ENOENT;
+#if 0
 #if defined(linux_platform)
     } else {
         if (isSpecialPath ((char *) path) == 1)
             rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
+#endif
+    } else {
+	rmPathFromCache ((char *) path, NonExistPathArray);
     }
 
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
@@ -242,11 +260,15 @@ irodsMkdir (const char *path, mode_t mode)
         rodsLogError (LOG_ERROR, status,
           "irodsMkdir: rcCollCreate of %s error", path);
         return -ENOENT;
+#if 0
 #if defined(linux_platform)
     } else {
         if (isSpecialPath ((char *) path) == 1)
             rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
+#endif
+    } else {
+	rmPathFromCache ((char *) path, NonExistPathArray);
     }
 
     return (0);
@@ -380,7 +402,14 @@ irodsRename (const char *from, const char *to)
     }
 
     if (status >= 0) {
-        rmPathFromCache ((char *) from, PathArray);
+	pathCache_t *tmpPathCache;
+	pathCacheQue_t *tmpCacheQue;
+        if (matchPathInPathCache ((char *) from, PathArray, &tmpCacheQue,
+          &tmpPathCache) == 1) {
+	    addPathToCache ((char *) to, PathArray, &tmpPathCache->stbuf);
+            rmPathFromCache ((char *) from, PathArray);
+	}
+	rmPathFromCache ((char *) to, NonExistPathArray);
         status = 0;
     } else {
         rodsLogError (LOG_ERROR, status,
@@ -558,10 +587,13 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
           "irodsOpen: rcDataObjOpen of %s error", path);
         return -ENOENT;
     } else {
+#if 0
 #if defined(linux_platform)
         if (isSpecialPath ((char *) path) == 1)
             rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
+#endif
+	rmPathFromCache ((char *) path, NonExistPathArray);
 	descInx = allocIFuseDesc ();
         if (descInx < 0) {
             rodsLogError (LOG_ERROR, descInx,

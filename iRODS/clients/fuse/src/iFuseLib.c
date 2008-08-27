@@ -346,6 +346,12 @@ freeIFuseDesc (int descInx)
 	    free (IFuseDesc[descInx].bufCache[i].buf);
 	}
     }
+    if (IFuseDesc[descInx].objPath != NULL)
+	free (IFuseDesc[descInx].objPath);
+
+    if (IFuseDesc[descInx].localPath != NULL)
+	free (IFuseDesc[descInx].localPath);
+
     memset (&IFuseDesc[descInx], 0, sizeof (iFuseDesc_t));
     pthread_mutex_unlock (&DescLock);
 
@@ -376,10 +382,12 @@ char *localPath)
     IFuseDesc[descInx].conn = conn;
     IFuseDesc[descInx].iFd = iFd;
     if (objPath != NULL) {
-        rstrcpy (IFuseDesc[descInx].objPath, objPath, MAX_NAME_LEN);
+        /* rstrcpy (IFuseDesc[descInx].objPath, objPath, MAX_NAME_LEN); */
+        IFuseDesc[descInx].objPath = strdup (objPath);
     }
     if (localPath != NULL) {
-        rstrcpy (IFuseDesc[descInx].localPath, localPath, MAX_NAME_LEN);
+        /* rstrcpy (IFuseDesc[descInx].localPath, localPath, MAX_NAME_LEN); */
+        IFuseDesc[descInx].localPath = strdup (localPath);
     }
  return (0);
 }

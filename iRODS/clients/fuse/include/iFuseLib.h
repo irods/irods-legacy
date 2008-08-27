@@ -9,7 +9,7 @@
 #include "rodsPath.h"
 
 #define MAX_BUF_CACHE   2
-#define MAX_IFUSE_DESC   20
+#define MAX_IFUSE_DESC   1024
 
 #define FD_FREE		0
 #define FD_INUSE	1 
@@ -26,10 +26,11 @@ typedef struct IFuseDesc {
     int actCacheInx;    /* (cacheInx + 1) currently active. 0 means no cache */
     int inuseFlag;      /* 0 means not in use */
     int iFd;    /* irods client fd */
+    int newFlag;
     rodsLong_t offset;
     rodsLong_t bytesWritten;
-    char objPath[MAX_NAME_LEN];
-    char localPath[MAX_NAME_LEN];
+    char *objPath;
+    char *localPath;
 } iFuseDesc_t;
 
 #define NUM_PATH_HASH_SLOT	53
