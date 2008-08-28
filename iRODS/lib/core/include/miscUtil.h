@@ -19,6 +19,8 @@ typedef struct CollSqlResult {
     sqlResult_t collInfo1; 
     sqlResult_t collInfo2;
     sqlResult_t collOwner;
+    sqlResult_t collCreateTime;
+    sqlResult_t collModifyTime;
 } collSqlResult_t;
 
 typedef struct CollMetaInfo {

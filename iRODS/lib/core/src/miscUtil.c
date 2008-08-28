@@ -295,6 +295,8 @@ genQueryOut_t **genQueryOut)
     }
     addInxIval (&genQueryInp->selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp->selectInp, COL_COLL_OWNER_NAME, 1);
+    addInxIval (&genQueryInp->selectInp, COL_COLL_CREATE_TIME, 1);
+    addInxIval (&genQueryInp->selectInp, COL_COLL_MODIFY_TIME, 1);
     addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
     addInxIval (&genQueryInp->selectInp, COL_COLL_INFO1, 1);
     addInxIval (&genQueryInp->selectInp, COL_COLL_INFO2, 1);
@@ -548,7 +550,8 @@ genQueryOutToCollRes (genQueryOut_t **genQueryOut,
 collSqlResult_t *collSqlResult)
 {
     genQueryOut_t *myGenQueryOut;
-    sqlResult_t *collName, *collType, *collInfo1, *collInfo2, *collOwner;
+    sqlResult_t *collName, *collType, *collInfo1, *collInfo2, *collOwner,
+      *collCreateTime, *collModifyTime;
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
       collSqlResult == NULL) 
@@ -577,6 +580,10 @@ collSqlResult_t *collSqlResult)
         myGenQueryOut->rowCnt);
         setSqlResultValue (&collSqlResult->collOwner, COL_COLL_OWNER_NAME, "",
         myGenQueryOut->rowCnt);
+        setSqlResultValue (&collSqlResult->collCreateTime, COL_COLL_CREATE_TIME,
+	  "", myGenQueryOut->rowCnt);
+        setSqlResultValue (&collSqlResult->collModifyTime, COL_COLL_MODIFY_TIME,
+	  "", myGenQueryOut->rowCnt);
     } else {
 	collSqlResult->collType = *collType;
         if ((collInfo1 = getSqlResultByInx (myGenQueryOut, COL_COLL_INFO1)) == 
@@ -603,6 +610,22 @@ collSqlResult_t *collSqlResult)
             return (UNMATCHED_KEY_OR_INDEX);
         } else {
             collSqlResult->collOwner = *collOwner;
+        }
+        if ((collCreateTime = getSqlResultByInx (myGenQueryOut,
+          COL_COLL_CREATE_TIME)) == NULL) {
+            rodsLog (LOG_ERROR,
+              "genQueryOutToCollRes: getSqlResultByInx COL_COLL_CREATE_TIME failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        } else {
+            collSqlResult->collCreateTime = *collCreateTime;
+        }
+        if ((collModifyTime = getSqlResultByInx (myGenQueryOut,
+          COL_COLL_MODIFY_TIME)) == NULL) {
+            rodsLog (LOG_ERROR,
+              "genQueryOutToCollRes: getSqlResultByInx COL_COLL_MODIFY_TIME failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        } else {
+            collSqlResult->collModifyTime = *collModifyTime;
         }
     }
 
@@ -653,6 +676,10 @@ clearCollSqlResult (collSqlResult_t *collSqlResult)
       free (collSqlResult->collInfo2.value);
     if (collSqlResult->collOwner.value != NULL) 
       free (collSqlResult->collOwner.value);
+    if (collSqlResult->collCreateTime.value != NULL) 
+      free (collSqlResult->collCreateTime.value);
+    if (collSqlResult->collModifyTime.value != NULL) 
+      free (collSqlResult->collModifyTime.value);
 
     memset (collSqlResult, 0, sizeof (collSqlResult_t));
 
@@ -1140,6 +1167,14 @@ getNextCollMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     value = collSqlResult->collOwner.value;
     len = collSqlResult->collOwner.len;
     outCollEnt->ownerName = &value[len * (collHandle->rowInx)];
+
+    value = collSqlResult->collCreateTime.value;
+    len = collSqlResult->collCreateTime.len;
+    outCollEnt->createTime = &value[len * (collHandle->rowInx)];
+
+    value = collSqlResult->collModifyTime.value;
+    len = collSqlResult->collModifyTime.len;
+    outCollEnt->modifyTime = &value[len * (collHandle->rowInx)];
 
     value = collSqlResult->collType.value;
     len = collSqlResult->collType.len;
