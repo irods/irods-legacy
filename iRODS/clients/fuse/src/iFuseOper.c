@@ -24,7 +24,9 @@ irodsGetattr (const char *path, struct stat *stbuf)
     dataObjInp_t dataObjInp;
     rodsObjStat_t *rodsObjStatOut = NULL;
 /* #if defined(linux_platform) */
+#if 0
     int specPathFlag;
+#endif
     pathCacheQue_t *nonExistQue;
     pathCache_t *nonExistPathCache;
 /* #endif */
@@ -87,11 +89,20 @@ irodsGetattr (const char *path, struct stat *stbuf)
     }
 
     if (rodsObjStatOut->objType == COLL_OBJ_T) {
+	fillDirStat (stbuf, 
+	  atoi (rodsObjStatOut->createTime), atoi (rodsObjStatOut->modifyTime),
+	  atoi (rodsObjStatOut->modifyTime));
+#if 0
 	stbuf->st_mode = S_IFDIR | DEF_DIR_MODE;
         stbuf->st_size = DIR_SZ;
         stbuf->st_ctime = atoi (rodsObjStatOut->createTime);
         stbuf->st_mtime = atoi (rodsObjStatOut->modifyTime);
+#endif
     } else {
+	fillFileStat (stbuf, rodsObjStatOut->dataMode, rodsObjStatOut->objSize,
+	  atoi (rodsObjStatOut->createTime), atoi (rodsObjStatOut->modifyTime),
+	  atoi (rodsObjStatOut->modifyTime));
+#if 0
 	if (rodsObjStatOut->dataMode >= 0100)
 	    stbuf->st_mode = S_IFREG | rodsObjStatOut->dataMode;
 	else
@@ -104,12 +115,15 @@ irodsGetattr (const char *path, struct stat *stbuf)
         stbuf->st_ctime = atoi (rodsObjStatOut->createTime);
         stbuf->st_mtime = atoi (rodsObjStatOut->modifyTime);
         stbuf->st_atime = atoi (rodsObjStatOut->modifyTime);
+#endif
     }
 
     if (rodsObjStatOut != NULL)
         freeRodsObjStat (rodsObjStatOut);
+#if 0
     stbuf->st_uid = getuid();
     stbuf->st_gid = getgid();
+#endif
 
     addPathToCache ((char *) path, PathArray, stbuf);
 
@@ -131,6 +145,9 @@ off_t offset, struct fuse_file_info *fi)
     collHandle_t collHandle;
     collEnt_t collEnt;
     int status;
+    struct stat stbuf;
+    pathCacheQue_t *tmpCacheQue;
+    pathCache_t *tmpPathCache;
     /* don't know why we need this. the example have them */
     (void) offset;
     (void) fi;
@@ -160,12 +177,39 @@ off_t offset, struct fuse_file_info *fi)
     while ((status = rclReadCollection (DefConn.conn, &collHandle, &collEnt)) 
       >= 0) {
 	char myDir[MAX_NAME_LEN], mySubDir[MAX_NAME_LEN];
+	char childPath[MAX_NAME_LEN];
 
+	bzero (&stbuf, sizeof (struct stat));
         if (collEnt.objType == DATA_OBJ_T) {
 	    filler (buf, collEnt.dataName, NULL, 0);
+	    if (strcmp (path, "/") == 0) {
+	        snprintf (childPath, MAX_NAME_LEN, "/%s", collEnt.dataName);
+	    } else {
+	        snprintf (childPath, MAX_NAME_LEN, "%s/%s", 
+		  path, collEnt.dataName);
+	    }
+            if (matchPathInPathCache ((char *) childPath, PathArray, 
+	      &tmpCacheQue, &tmpPathCache) != 1) {
+	        fillFileStat (&stbuf, collEnt.dataMode, collEnt.dataSize,
+	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
+	          atoi (collEnt.modifyTime));
+	        addPathToCache (childPath, PathArray, &stbuf);
+	    }
         } else if (collEnt.objType == COLL_OBJ_T) {
 	    splitPathByKey (collEnt.collName, myDir, mySubDir, '/');
 	    filler (buf, mySubDir, NULL, 0);
+            if (strcmp (path, "/") == 0) {
+                snprintf (childPath, MAX_NAME_LEN, "/%s", mySubDir);
+            } else {
+	        snprintf (childPath, MAX_NAME_LEN, "%s/%s", path, mySubDir);
+	    }
+            if (matchPathInPathCache ((char *) childPath, PathArray, 
+              &tmpCacheQue, &tmpPathCache) != 1) {
+	        fillDirStat (&stbuf, 
+	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
+	          atoi (collEnt.modifyTime));
+	        addPathToCache (childPath, PathArray, &stbuf);
+	    }
         }
     }
     rclCloseCollection (&collHandle);
@@ -178,7 +222,9 @@ int
 irodsMknod (const char *path, mode_t mode, dev_t rdev)
 {
     dataObjInp_t dataObjInp;
+#if 0
     dataObjCloseInp_t dataObjCloseInp;
+#endif
     int status;
 
     rodsLog (LOG_DEBUG, "irodsMknod: %s", path);
@@ -199,7 +245,8 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     }
 
     addKeyVal (&dataObjInp.condInput, DATA_TYPE_KW, "generic");
-    dataObjInp.createMode = DEF_FILE_CREATE_MODE;
+    /* dataObjInp.createMode = DEF_FILE_CREATE_MODE; */
+    dataObjInp.createMode = mode;
     dataObjInp.openFlags = O_WRONLY;
     dataObjInp.dataSize = -1;
 
@@ -221,14 +268,30 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 #endif
 #endif
     } else {
+	int descInx;
+
 	rmPathFromCache ((char *) path, NonExistPathArray);
+        descInx = allocIFuseDesc ();
+
+        if (descInx < 0) {
+            rodsLogError (LOG_ERROR, descInx,
+              "irodsMknod: allocIFuseDesc of %s error", path);
+	    closeIrodsFd (status);
+            return 0;
+        }
+        fillIFuseDesc (descInx, DefConn.conn, status, dataObjInp.objPath,
+          (char *) path);
+	addNewlyCreatedToCache ((char *) path, descInx, mode);
+
     }
 
+#if 0
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = status;
     getIFuseConn (&DefConn, &MyRodsEnv);
     rcDataObjClose (DefConn.conn, &dataObjCloseInp);
     relIFuseConn (&DefConn);
+#endif
 
     return (0);
 }
@@ -566,6 +629,12 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsOpen: %s", path);
 
+    if ((descInx = getDescInxInNewlyCreatedCache ((char *) path, fi->flags)) 
+     > 0) {
+	rodsLog (LOG_DEBUG, "irodsOpen: a match for %s", path);
+	fi->fh = descInx;
+	return (0);
+    }
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
       dataObjInp.objPath);
@@ -603,7 +672,6 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 	fillIFuseDesc (descInx, DefConn.conn, fd, dataObjInp.objPath, 
 	  (char *) path);
 	fi->fh = descInx;
-
         return (0);
     }
 }
@@ -757,7 +825,18 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
 
     if (IFuseDesc[descInx].bytesWritten > 0) {
-	rmPathFromCache ((char *) path, PathArray);
+	if (IFuseDesc[descInx].newFlag > 0) {
+            pathCacheQue_t *tmpCacheQue;
+            pathCache_t *tmpPathCache;
+
+	    /* newly created. Just update the size */
+    	    if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue,
+      	     &tmpPathCache) == 1) {
+                tmpPathCache->stbuf.st_size += IFuseDesc[descInx].bytesWritten;
+            }
+	} else {
+	    rmPathFromCache ((char *) path, PathArray);
+	}
     }
 
     relIFuseConn (&DefConn);

@@ -12,6 +12,7 @@
 #include <pthread.h>
 #include "irodsFs.h"
 #include "iFuseLib.h"
+#include "iFuseOper.h"
 
 static pthread_mutex_t DescLock;
 pthread_t ConnManagerThr;
@@ -27,6 +28,7 @@ static int ConnManagerStarted = 0;
 
 pathCacheQue_t NonExistPathArray[NUM_PATH_HASH_SLOT];
 pathCacheQue_t PathArray[NUM_PATH_HASH_SLOT];
+newlyCreatedFile_t NewlyCreatedFile;
 
 static specialPath_t SpecialPath[] = {
     {"/tls", 4},
@@ -48,6 +50,7 @@ initPathCache ()
 {
     bzero (NonExistPathArray, sizeof (NonExistPathArray));
     bzero (PathArray, sizeof (NonExistPathArray));
+    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
     return (0);
 }
 
@@ -372,6 +375,13 @@ checkFuseDesc (int descInx)
          "checkFuseDesc: descInx %d is not inuse", descInx);
         return (SYS_BAD_FILE_DESCRIPTOR);
     }
+    if (IFuseDesc[descInx].iFd <= 0) {
+        rodsLog (LOG_ERROR,
+         "checkFuseDesc:  iFd %d of descInx %d <= 0", 
+	  IFuseDesc[descInx].iFd, descInx);
+        return (SYS_BAD_FILE_DESCRIPTOR);
+    }
+
     return (0);
 }
 
@@ -496,5 +506,116 @@ connManager ()
         pthread_mutex_unlock (&DefConn.lock);
         rodsSleep (CONN_MANAGER_SLEEP_TIME, 0);
     }
+}
+
+int
+addNewlyCreatedToCache (char *path, int descInx, int mode)
+{
+    uint cachedTime = time (0);
+
+    closeNewlyCreatedCache ();
+    rstrcpy (NewlyCreatedFile.filePath, path, MAX_NAME_LEN);
+    NewlyCreatedFile.descInx = descInx;
+    NewlyCreatedFile.cachedTime = cachedTime;
+    fillFileStat (&NewlyCreatedFile.stbuf, mode, 0, cachedTime, cachedTime,
+      cachedTime);
+#if 0
+    NewlyCreatedFile.stbuf.st_mode = S_IFREG | mode;
+    NewlyCreatedFile.stbuf.st_ctime = cachedTime;
+    NewlyCreatedFile.stbuf.st_mtime = cachedTime;
+    NewlyCreatedFile.stbuf.st_atime = cachedTime;
+    NewlyCreatedFile.stbuf.st_uid = getuid();
+    NewlyCreatedFile.stbuf.st_gid = getgid();
+#endif
+
+    IFuseDesc[descInx].newFlag = 1;
+    addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf);
+    return (0);
+}
+    
+
+int
+closeIrodsFd (int fd)
+{
+    dataObjCloseInp_t dataObjCloseInp;
+
+    dataObjCloseInp.l1descInx = fd;
+    getIFuseConn (&DefConn, &MyRodsEnv);
+    rcDataObjClose (DefConn.conn, &dataObjCloseInp);
+    relIFuseConn (&DefConn);
+
+    return (0);
+}
+
+int
+closeNewlyCreatedCache ()
+{
+    if (strlen (NewlyCreatedFile.filePath) > 0) {
+	struct fuse_file_info fi;
+	int descInx = NewlyCreatedFile.descInx;
+	
+	fi.fh = descInx;
+	irodsRelease (NewlyCreatedFile.filePath, &fi);
+	bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
+    }
+    return (0);
+}
+
+int
+getDescInxInNewlyCreatedCache (char *path, int flags)
+{
+    if (strcmp (path, NewlyCreatedFile.filePath) == 0) {
+	if ((flags & O_RDWR) == 0 && (flags & O_WRONLY) == 0) {
+	    closeNewlyCreatedCache ();
+	    return -1;
+	} else if (checkFuseDesc (NewlyCreatedFile.descInx) >= 0) {
+	    int descInx = NewlyCreatedFile.descInx;
+	    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
+	    return descInx;
+	} else {
+	    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
+	    return -1;
+	}
+    } else {
+	closeNewlyCreatedCache ();
+	return -1;
+    }
+}
+
+int
+fillFileStat (struct stat *stbuf, uint mode, rodsLong_t size, uint ctime,
+uint mtime, uint atime)
+{
+    if (mode >= 0100)
+        stbuf->st_mode = S_IFREG | mode;
+    else
+        stbuf->st_mode = S_IFREG | DEF_FILE_MODE;
+    stbuf->st_size = size;
+
+    stbuf->st_blksize = FILE_BLOCK_SZ;
+    stbuf->st_blocks = (stbuf->st_size / FILE_BLOCK_SZ) + 1;
+
+    stbuf->st_ctime = ctime;
+    stbuf->st_mtime = mtime;
+    stbuf->st_atime = atime;
+    stbuf->st_uid = getuid();
+    stbuf->st_gid = getgid();
+
+    return 0;
+}
+
+int
+fillDirStat (struct stat *stbuf, uint ctime, uint mtime, uint atime)
+{
+    stbuf->st_mode = S_IFDIR | DEF_DIR_MODE;
+    stbuf->st_size = DIR_SZ;
+
+    stbuf->st_ctime = ctime;
+    stbuf->st_mtime = mtime;
+    stbuf->st_atime = atime;
+    stbuf->st_uid = getuid();
+    stbuf->st_gid = getgid();
+
+    return 0;
 }
 

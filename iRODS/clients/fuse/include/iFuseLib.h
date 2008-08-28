@@ -33,7 +33,7 @@ typedef struct IFuseDesc {
     char *localPath;
 } iFuseDesc_t;
 
-#define NUM_PATH_HASH_SLOT	53
+#define NUM_PATH_HASH_SLOT	201
 #define CACHE_EXPIRE_TIME	600	/* 10 minutes before expiration */
 
 typedef struct PathCache {
@@ -53,6 +53,13 @@ typedef struct specialPath {
     char *path;
     int len;
 } specialPath_t;
+
+typedef struct newlyCreatedFile {
+    int descInx;
+    char filePath[MAX_NAME_LEN];
+    struct stat stbuf;
+    uint cachedTime;
+} newlyCreatedFile_t;
 
 #ifdef  __cplusplus
 extern "C" {
@@ -106,6 +113,19 @@ int
 isSpecialPath (char *inPath);
 int
 rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray);
+int
+addNewlyCreatedToCache (char *path, int descInx, int mode);
+int
+closeNewlyCreatedCache ();
+int
+closeIrodsFd (int fd);
+int
+getDescInxInNewlyCreatedCache (char *path, int flags);
+int
+fillDirStat (struct stat *stbuf, uint ctime, uint mtime, uint atime);
+int
+fillFileStat (struct stat *stbuf, uint mode, rodsLong_t size, uint ctime,
+uint mtime, uint atime);
 #ifdef  __cplusplus
 }
 #endif
