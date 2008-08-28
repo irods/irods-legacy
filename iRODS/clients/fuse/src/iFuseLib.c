@@ -77,32 +77,6 @@ isSpecialPath (char *inPath)
     return 0;
 }
 
-#if 0
-int
-matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque,
-pathCache_t **outPathCache)
-{
-    int mysum, myslot;
-    int status;
-
-    if (inPath == NULL) {
-        rodsLog (LOG_ERROR,
-          "matchPathInNonExistPathCache: input inPath is NULL");
-	*myque = NULL;
-        return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-
-    mysum = pathSum (inPath);
-    myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
-    *myque = &NonExistPathArray[myslot];
-
-    chkCacheExpire (*myque);
-    status = matchPathInPathSlot (*myque, inPath, outPathCache);
-
-    return status;
-}
-#endif
-
 int
 matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
 pathCacheQue_t **myque, pathCache_t **outPathCache)
@@ -519,14 +493,6 @@ addNewlyCreatedToCache (char *path, int descInx, int mode)
     NewlyCreatedFile.cachedTime = cachedTime;
     fillFileStat (&NewlyCreatedFile.stbuf, mode, 0, cachedTime, cachedTime,
       cachedTime);
-#if 0
-    NewlyCreatedFile.stbuf.st_mode = S_IFREG | mode;
-    NewlyCreatedFile.stbuf.st_ctime = cachedTime;
-    NewlyCreatedFile.stbuf.st_mtime = cachedTime;
-    NewlyCreatedFile.stbuf.st_atime = cachedTime;
-    NewlyCreatedFile.stbuf.st_uid = getuid();
-    NewlyCreatedFile.stbuf.st_gid = getgid();
-#endif
 
     IFuseDesc[descInx].newFlag = 1;
     addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf);
