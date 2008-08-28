@@ -228,13 +228,15 @@ svrPortalPutGet (rsComm_t *rsComm)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-#ifdef RBUDP_TRANSFER
    if (getUdpPortFromPortList (thisPortList) != 0) {
+#ifdef RBUDP_TRANSFER
         /* rbudp transfer */
         retVal = svrPortalPutGetRbudp (rsComm);
 	return retVal;
-    }
+#else
+	return SYS_UDP_NO_SUPPORT_ERR;
 #endif  /* RBUDP_TRANSFER */
+    }
 
     oprType = myPortalOpr->oprType;
     dataOprInp = &myPortalOpr->dataOprInp;
@@ -801,6 +803,7 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
 /* rbudpRemLocCopy - The rbudp version of remLocCopy.
  */
 
+#ifdef RBUDP_TRANSFER
 int
 rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 {
@@ -856,6 +859,7 @@ rbudpRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     }
     return (status);
 }
+#endif	/* RBUDP_TRANSFER */
 
 /* remLocCopy - This routine is very similar to rcPartialDataGet.
  */
@@ -888,8 +892,12 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     if (getUdpPortFromPortList (&portalOprOut->portList) != 0) {
         /* rbudp transfer */
+#ifdef RBUDP_TRANSFER
 	retVal = rbudpRemLocCopy (rsComm, dataCopyInp);
 	return (retVal);
+#else
+	return (SYS_UDP_NO_SUPPORT_ERR);
+#endif
     }
 
     oprType = dataOprInp->oprType;

@@ -828,7 +828,9 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 {
     dataObjInfo_t *dataObjInfo;
     dataObjInp_t  *dataObjInp;
+#ifdef RBUDP_TRANSFER
     char *tmpStr;
+#endif
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
     dataObjInp = L1desc[l1descInx].dataObjInp;
@@ -861,6 +863,7 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
         addKeyVal (&dataOprInp->condInput, NO_PARA_OP_KW, "");
     }
 
+#ifdef RBUDP_TRANSFER
     if (getValByKey (&dataObjInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
 	/* only do unix fs */
 	int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
@@ -881,6 +884,7 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
       NULL) {
         addKeyVal (&dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr);
     }
+#endif
 
 
     return (0);
