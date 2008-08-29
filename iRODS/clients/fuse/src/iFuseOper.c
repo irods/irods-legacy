@@ -26,24 +26,21 @@ irodsGetattr (const char *path, struct stat *stbuf)
     dataObjInp_t dataObjInp;
     rodsObjStat_t *rodsObjStatOut = NULL;
 #ifdef CACHE_FUSE_PATH
-    pathCacheQue_t *nonExistQue;
     pathCache_t *nonExistPathCache;
-    pathCacheQue_t *tmpCacheQue;
     pathCache_t *tmpPathCache;
 #endif
 
     rodsLog (LOG_DEBUG, "irodsGetattr: %s", path);
 
 #ifdef CACHE_FUSE_PATH 
-    if (matchPathInPathCache ( (char *) path, NonExistPathArray, &nonExistQue, 
+    if (matchPathInPathCache ( (char *) path, NonExistPathArray, 
       &nonExistPathCache) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for non existing path %s", 
 	  path);
         return -ENOENT;
     }
 
-    if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue, 
-      &tmpPathCache) == 1) {
+    if (matchPathInPathCache ((char *) path, PathArray, &tmpPathCache) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for path %s", path);
 	*stbuf = tmpPathCache->stbuf;
 	return (0);
@@ -69,7 +66,8 @@ irodsGetattr (const char *path, struct stat *stbuf)
 	      "irodsGetattr: rcObjStat of %s error", path);
 	}
 #ifdef CACHE_FUSE_PATH
-        addToCacheSlot ((char *) path, nonExistQue, NULL);
+        addToCacheSlot ((char *) path, 
+	  (pathCacheQue_t *) nonExistPathCache->pathCacheQue, NULL);
 #endif
 	return -ENOENT;
     }
@@ -111,7 +109,6 @@ off_t offset, struct fuse_file_info *fi)
     int status;
 #ifdef CACHE_FUSE_PATH
     struct stat stbuf;
-    pathCacheQue_t *tmpCacheQue;
     pathCache_t *tmpPathCache;
 #endif
     /* don't know why we need this. the example have them */
@@ -158,7 +155,7 @@ off_t offset, struct fuse_file_info *fi)
 		  path, collEnt.dataName);
 	    }
             if (matchPathInPathCache ((char *) childPath, PathArray, 
-	      &tmpCacheQue, &tmpPathCache) != 1) {
+	      &tmpPathCache) != 1) {
 	        fillFileStat (&stbuf, collEnt.dataMode, collEnt.dataSize,
 	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
 	          atoi (collEnt.modifyTime));
@@ -175,7 +172,7 @@ off_t offset, struct fuse_file_info *fi)
 	        snprintf (childPath, MAX_NAME_LEN, "%s/%s", path, mySubDir);
 	    }
             if (matchPathInPathCache ((char *) childPath, PathArray, 
-              &tmpCacheQue, &tmpPathCache) != 1) {
+              &tmpPathCache) != 1) {
 	        fillDirStat (&stbuf, 
 	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
 	          atoi (collEnt.modifyTime));
@@ -428,8 +425,7 @@ irodsRename (const char *from, const char *to)
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
 	pathCache_t *tmpPathCache;
-	pathCacheQue_t *tmpCacheQue;
-        if (matchPathInPathCache ((char *) from, PathArray, &tmpCacheQue,
+        if (matchPathInPathCache ((char *) from, PathArray,
           &tmpPathCache) == 1) {
 	    addPathToCache ((char *) to, PathArray, &tmpPathCache->stbuf);
             rmPathFromCache ((char *) from, PathArray);
@@ -487,10 +483,9 @@ irodsChmod (const char *path, mode_t mode)
     status = rcModDataObjMeta(DefConn.conn, &modDataObjMetaInp);
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
-        pathCacheQue_t *tmpCacheQue;
         pathCache_t *tmpPathCache;
 
-        if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue,
+        if (matchPathInPathCache ((char *) path, PathArray,
           &tmpPathCache) == 1) {
             tmpPathCache->stbuf.st_mode &= 0xfffffe00;
 	    tmpPathCache->stbuf.st_mode |= (mode & 0777);
@@ -539,10 +534,9 @@ irodsTruncate (const char *path, off_t size)
     status = rcDataObjTruncate (DefConn.conn, &dataObjInp);
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
-        pathCacheQue_t *tmpCacheQue;
         pathCache_t *tmpPathCache;
 
-        if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue,
+        if (matchPathInPathCache ((char *) path, PathArray,
           &tmpPathCache) == 1) {
             tmpPathCache->stbuf.st_size = size;
         }
@@ -778,11 +772,10 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 #ifdef CACHE_FUSE_PATH
     if (IFuseDesc[descInx].bytesWritten > 0) {
 	if (IFuseDesc[descInx].newFlag > 0) {
-            pathCacheQue_t *tmpCacheQue;
             pathCache_t *tmpPathCache;
 
 	    /* newly created. Just update the size */
-    	    if (matchPathInPathCache ((char *) path, PathArray, &tmpCacheQue,
+    	    if (matchPathInPathCache ((char *) path, PathArray,
       	     &tmpPathCache) == 1) {
                 tmpPathCache->stbuf.st_size += IFuseDesc[descInx].bytesWritten;
             }

@@ -42,6 +42,7 @@ typedef struct PathCache {
     uint cachedTime;
     struct PathCache *prev;
     struct PathCache *next;
+    void *pathCacheQue;
 } pathCache_t;
 
 typedef struct PathCacheQue {
@@ -104,11 +105,8 @@ struct stat *stbuf);
 int
 pathSum (char *inPath);
 int
-matchPathInNonExistPathCache (char *inPath, pathCacheQue_t **myque,
-pathCache_t **outPathCache);
-int
 matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
-pathCacheQue_t **myque, pathCache_t **outPathCache);
+pathCache_t **outPathCache);
 int
 isSpecialPath (char *inPath);
 int

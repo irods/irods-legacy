@@ -79,24 +79,24 @@ isSpecialPath (char *inPath)
 
 int
 matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
-pathCacheQue_t **myque, pathCache_t **outPathCache)
+pathCache_t **outPathCache)
 {
     int mysum, myslot;
     int status;
+    pathCacheQue_t *myque;
 
     if (inPath == NULL) {
         rodsLog (LOG_ERROR,
           "matchPathInPathCache: input inPath is NULL");
-        *myque = NULL;
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     mysum = pathSum (inPath);
     myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
-    *myque = &pathQueArray[myslot];
+    myque = &pathQueArray[myslot];
 
-    chkCacheExpire (*myque);
-    status = matchPathInPathSlot (*myque, inPath, outPathCache);
+    chkCacheExpire (myque);
+    status = matchPathInPathSlot (myque, inPath, outPathCache);
 
     return status;
 }
@@ -231,6 +231,7 @@ struct stat *stbuf)
     bzero (tmpPathCache, sizeof (pathCache_t));
     rstrcpy (tmpPathCache->filePath, inPath, MAX_NAME_LEN);
     tmpPathCache->cachedTime = time (0);
+    tmpPathCache->pathCacheQue = pathCacheQue;
     if (stbuf != NULL) {
 	tmpPathCache->stbuf = *stbuf;
     }
