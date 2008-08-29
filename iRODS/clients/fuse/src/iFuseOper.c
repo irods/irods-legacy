@@ -66,8 +66,7 @@ irodsGetattr (const char *path, struct stat *stbuf)
 	      "irodsGetattr: rcObjStat of %s error", path);
 	}
 #ifdef CACHE_FUSE_PATH
-        addToCacheSlot ((char *) path, 
-	  (pathCacheQue_t *) nonExistPathCache->pathCacheQue, NULL);
+        addPathToCache ((char *) path, NonExistPathArray, stbuf);
 #endif
 	return -ENOENT;
     }
