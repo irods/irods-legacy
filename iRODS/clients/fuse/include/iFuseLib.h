@@ -10,6 +10,7 @@
 
 #define MAX_BUF_CACHE   2
 #define MAX_IFUSE_DESC   1024
+#define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
 
 #define FD_FREE		0
 #define FD_INUSE	1 
@@ -19,6 +20,11 @@ typedef struct BufCache {
     rodsLong_t endOffset;
     void *buf;
 } bufCache_t;
+
+typedef enum { 
+    NO_READ_CACHE,
+    HAVE_READ_CACHE,
+} readCacheState_t;
 
 typedef struct IFuseDesc {
     rcComm_t *conn;     /* The iRods client connection */
@@ -31,18 +37,21 @@ typedef struct IFuseDesc {
     rodsLong_t bytesWritten;
     char *objPath;
     char *localPath;
+    readCacheState_t readCacheState;
 } iFuseDesc_t;
 
 #define NUM_PATH_HASH_SLOT	201
 #define CACHE_EXPIRE_TIME	600	/* 10 minutes before expiration */
 
 typedef struct PathCache {
-    char filePath[MAX_NAME_LEN];
+    char* filePath;
+    char* locCachePath;
     struct stat stbuf;
     uint cachedTime;
     struct PathCache *prev;
     struct PathCache *next;
     void *pathCacheQue;
+    readCacheState_t readCacheState;
 } pathCache_t;
 
 typedef struct PathCacheQue {
@@ -98,10 +107,10 @@ int
 chkCacheExpire (pathCacheQue_t *pathCacheQue);
 int
 addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
-struct stat *stbuf);
+struct stat *stbuf, pathCache_t **outPathCache);
 int
 addToCacheSlot (char *inPath, pathCacheQue_t *pathCacheQue,
-struct stat *stbuf);
+struct stat *stbuf, pathCache_t **outPathCache);
 int
 pathSum (char *inPath);
 int
@@ -124,6 +133,10 @@ fillDirStat (struct stat *stbuf, uint ctime, uint mtime, uint atime);
 int
 fillFileStat (struct stat *stbuf, uint mode, rodsLong_t size, uint ctime,
 uint mtime, uint atime);
+int
+irodsOpenWithReadCache (char *path, int flags);
+int
+freePathCache (pathCache_t *tmpPathCache);
 #ifdef  __cplusplus
 }
 #endif

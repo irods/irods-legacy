@@ -8,7 +8,6 @@
 #include <assert.h>
 #include "irodsFs.h"
 #include "iFuseOper.h"
-#include "iFuseLib.h"
 #include "miscUtil.h"
 
 extern iFuseConn_t DefConn;
@@ -18,9 +17,21 @@ extern pathCacheQue_t NonExistPathArray[];
 extern pathCacheQue_t PathArray[];
 
 #define	CACHE_FUSE_PATH		1
+#ifdef CACHE_FUSE_PATH
+/* #define CACHE_FILE_FOR_READ	1 */
+#endif
+
+int
+irodsGetattr (const char *path, struct stat *stbuf)
+{
+    int status;
+
+    status = _irodsGetattr (path, stbuf, NULL);
+    return (status);
+}
 
 int 
-irodsGetattr (const char *path, struct stat *stbuf)
+_irodsGetattr (const char *path, struct stat *stbuf, pathCache_t **outPathCache)
 {
     int status;
     dataObjInp_t dataObjInp;
@@ -30,9 +41,10 @@ irodsGetattr (const char *path, struct stat *stbuf)
     pathCache_t *tmpPathCache;
 #endif
 
-    rodsLog (LOG_DEBUG, "irodsGetattr: %s", path);
+    rodsLog (LOG_DEBUG, "_irodsGetattr: %s", path);
 
 #ifdef CACHE_FUSE_PATH 
+    if (outPathCache != NULL) *outPathCache = NULL;
     if (matchPathInPathCache ( (char *) path, NonExistPathArray, 
       &nonExistPathCache) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for non existing path %s", 
@@ -43,6 +55,7 @@ irodsGetattr (const char *path, struct stat *stbuf)
     if (matchPathInPathCache ((char *) path, PathArray, &tmpPathCache) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for path %s", path);
 	*stbuf = tmpPathCache->stbuf;
+	if (outPathCache != NULL) *outPathCache = tmpPathCache;
 	return (0);
     }
 #endif
@@ -66,7 +79,7 @@ irodsGetattr (const char *path, struct stat *stbuf)
 	      "irodsGetattr: rcObjStat of %s error", path);
 	}
 #ifdef CACHE_FUSE_PATH
-        addPathToCache ((char *) path, NonExistPathArray, stbuf);
+        addPathToCache ((char *) path, NonExistPathArray, stbuf, NULL);
 #endif
 	return -ENOENT;
     }
@@ -85,9 +98,8 @@ irodsGetattr (const char *path, struct stat *stbuf)
         freeRodsObjStat (rodsObjStatOut);
 
 #ifdef CACHE_FUSE_PATH
-    addPathToCache ((char *) path, PathArray, stbuf);
+    addPathToCache ((char *) path, PathArray, stbuf, outPathCache);
 #endif
-
     return 0;
 }
 
@@ -158,7 +170,7 @@ off_t offset, struct fuse_file_info *fi)
 	        fillFileStat (&stbuf, collEnt.dataMode, collEnt.dataSize,
 	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
 	          atoi (collEnt.modifyTime));
-	        addPathToCache (childPath, PathArray, &stbuf);
+	        addPathToCache (childPath, PathArray, &stbuf, &tmpPathCache);
 	    }
 #endif
         } else if (collEnt.objType == COLL_OBJ_T) {
@@ -175,7 +187,7 @@ off_t offset, struct fuse_file_info *fi)
 	        fillDirStat (&stbuf, 
 	          atoi (collEnt.createTime), atoi (collEnt.modifyTime), 
 	          atoi (collEnt.modifyTime));
-	        addPathToCache (childPath, PathArray, &stbuf);
+	        addPathToCache (childPath, PathArray, &stbuf, &tmpPathCache);
 	    }
 #endif
         }
@@ -282,7 +294,7 @@ irodsMkdir (const char *path, mode_t mode)
 	uint mytime = time (0);
 	bzero (&stbuf, sizeof (struct stat));
         fillDirStat (&stbuf, mytime, mytime, mytime);
-        addPathToCache ((char *) path, PathArray, &stbuf);
+        addPathToCache ((char *) path, PathArray, &stbuf, NULL);
 	rmPathFromCache ((char *) path, NonExistPathArray);
 #endif
     }
@@ -426,7 +438,8 @@ irodsRename (const char *from, const char *to)
 	pathCache_t *tmpPathCache;
         if (matchPathInPathCache ((char *) from, PathArray,
           &tmpPathCache) == 1) {
-	    addPathToCache ((char *) to, PathArray, &tmpPathCache->stbuf);
+	    addPathToCache ((char *) to, PathArray, &tmpPathCache->stbuf,
+	      &tmpPathCache);
             rmPathFromCache ((char *) from, PathArray);
 	}
 	rmPathFromCache ((char *) to, NonExistPathArray);
@@ -581,6 +594,14 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 	rodsLog (LOG_DEBUG, "irodsOpen: a match for %s", path);
 	fi->fh = descInx;
 	return (0);
+    }
+#endif
+#ifdef CACHE_FILE_FOR_READ
+    if ((descInx = irodsOpenWithReadCache ((char *) path, fi->flags))
+     > 0) {
+        rodsLog (LOG_DEBUG, "irodsOpen: a match for %s", path);
+        fi->fh = descInx;
+        return (0);
     }
 #endif
     memset (&dataObjInp, 0, sizeof (dataObjInp));
@@ -756,33 +777,34 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsRelease: %s", path);
 
+    getIFuseConn (&DefConn, &MyRodsEnv);
     descInx = fi->fh;
 
     if (checkFuseDesc (descInx) < 0) {
         return -EBADF;
+        relIFuseConn (&DefConn);
     }
 
-    getIFuseConn (&DefConn, &MyRodsEnv);
+#ifdef CACHE_FUSE_PATH
+    if (IFuseDesc[descInx].bytesWritten > 0) {
+        if (IFuseDesc[descInx].newFlag > 0) {
+            pathCache_t *tmpPathCache;
+
+            /* newly created. Just update the size */
+            if (matchPathInPathCache ((char *) path, PathArray,
+             &tmpPathCache) == 1) {
+                tmpPathCache->stbuf.st_size += IFuseDesc[descInx].bytesWritten;
+            }
+        } else {
+            rmPathFromCache ((char *) path, PathArray);
+        }
+    }
+#endif
+
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = IFuseDesc[descInx].iFd;
 
     status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
-
-#ifdef CACHE_FUSE_PATH
-    if (IFuseDesc[descInx].bytesWritten > 0) {
-	if (IFuseDesc[descInx].newFlag > 0) {
-            pathCache_t *tmpPathCache;
-
-	    /* newly created. Just update the size */
-    	    if (matchPathInPathCache ((char *) path, PathArray,
-      	     &tmpPathCache) == 1) {
-                tmpPathCache->stbuf.st_size += IFuseDesc[descInx].bytesWritten;
-            }
-	} else {
-	    rmPathFromCache ((char *) path, PathArray);
-	}
-    }
-#endif
 
     relIFuseConn (&DefConn);
 

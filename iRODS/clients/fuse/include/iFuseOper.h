@@ -8,11 +8,14 @@
 #include <sys/statvfs.h>
 #include "rodsClient.h"
 #include "rodsPath.h"
+#include "iFuseLib.h"
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
+int
+_irodsGetattr (const char *path, struct stat *stbuf, pathCache_t **outPathCache);
 int irodsGetattr(const char *path, struct stat *stbuf);
 int irodsReadlink(const char *path, char *buf, size_t size);
 int irodsReaddir(const char *path, void *buf, fuse_fill_dir_t filler, 

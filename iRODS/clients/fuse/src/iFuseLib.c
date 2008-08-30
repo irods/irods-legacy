@@ -29,6 +29,7 @@ static int ConnManagerStarted = 0;
 pathCacheQue_t NonExistPathArray[NUM_PATH_HASH_SLOT];
 pathCacheQue_t PathArray[NUM_PATH_HASH_SLOT];
 newlyCreatedFile_t NewlyCreatedFile;
+char *ReadCacheDir = NULL;
 
 static specialPath_t SpecialPath[] = {
     {"/tls", 4},
@@ -103,7 +104,7 @@ pathCache_t **outPathCache)
 
 int
 addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
-struct stat *stbuf)
+struct stat *stbuf, pathCache_t **outPathCache)
 {
     pathCacheQue_t *pathCacheQue;
     int mysum, myslot;
@@ -113,7 +114,7 @@ struct stat *stbuf)
     mysum = pathSum (inPath);
     myslot = getHashSlot (mysum, NUM_PATH_HASH_SLOT);
     pathCacheQue = &pathQueArray[myslot];
-    status = addToCacheSlot (inPath, pathCacheQue, stbuf);
+    status = addToCacheSlot (inPath, pathCacheQue, stbuf, outPathCache);
 
     return (status);
 }
@@ -145,7 +146,7 @@ rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray)
 	    } else {
 		tmpPathCache->next->prev = tmpPathCache->prev;
 	    }
-	    free (tmpPathCache);
+	    freePathCache (tmpPathCache);
 	    return 1;
 	}
         tmpPathCache = tmpPathCache->next;
@@ -200,7 +201,7 @@ chkCacheExpire (pathCacheQue_t *pathCacheQue)
 	if (curTime >= tmpPathCache->cachedTime + CACHE_EXPIRE_TIME) {
 	    /* cache expired */
 	    pathCacheQue->top = tmpPathCache->next;
-	    free (tmpPathCache);
+	    freePathCache (tmpPathCache);
 	    tmpPathCache = pathCacheQue->top;
             if (tmpPathCache != NULL) {
                 tmpPathCache->prev = NULL;
@@ -218,7 +219,7 @@ chkCacheExpire (pathCacheQue_t *pathCacheQue)
 	     
 int
 addToCacheSlot (char *inPath, pathCacheQue_t *pathCacheQue, 
-struct stat *stbuf)
+struct stat *stbuf, pathCache_t **outPathCache)
 {
     pathCache_t *tmpPathCache;
     
@@ -228,8 +229,9 @@ struct stat *stbuf)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
     tmpPathCache = malloc (sizeof (pathCache_t));
+    if (outPathCache != NULL) *outPathCache = tmpPathCache;
     bzero (tmpPathCache, sizeof (pathCache_t));
-    rstrcpy (tmpPathCache->filePath, inPath, MAX_NAME_LEN);
+    tmpPathCache->filePath = strdup (inPath);
     tmpPathCache->cachedTime = time (0);
     tmpPathCache->pathCacheQue = pathCacheQue;
     if (stbuf != NULL) {
@@ -306,6 +308,20 @@ iFuseDescInuse ()
     }
     return (0);
 } 
+
+int
+freePathCache (pathCache_t *tmpPathCache)
+{
+    if (tmpPathCache == NULL) return 0;
+    if (tmpPathCache->filePath != NULL) free (tmpPathCache->filePath);
+    if (tmpPathCache->readCacheState == HAVE_READ_CACHE &&
+      tmpPathCache->locCachePath != NULL) {
+	unlink (tmpPathCache->locCachePath);
+        free (tmpPathCache->locCachePath);
+    }
+    free (tmpPathCache);
+    return (0);
+}
 
 int
 freeIFuseDesc (int descInx)
@@ -496,7 +512,7 @@ addNewlyCreatedToCache (char *path, int descInx, int mode)
       cachedTime);
 
     IFuseDesc[descInx].newFlag = 1;
-    addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf);
+    addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf, NULL);
     return (0);
 }
     
@@ -586,3 +602,17 @@ fillDirStat (struct stat *stbuf, uint ctime, uint mtime, uint atime)
     return 0;
 }
 
+int
+irodsOpenWithReadCache (char *path, int flags)
+{
+    pathCache_t *tmpPathCache;
+    struct stat stbuf;
+
+    /* do only O_RDONLY (0) */
+    if ((flags & (O_WRONLY | O_RDWR)) != 0) return -1;
+
+    if (_irodsGetattr (path, &stbuf, &tmpPathCache) < 0) return -1;
+
+    if (stbuf.st_size > MAX_READ_CACHE_SIZE) return -1;	/* too big to cache */
+    return -1;	/* XXXXX fail for now */
+}
