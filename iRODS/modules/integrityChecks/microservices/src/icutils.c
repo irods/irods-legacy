@@ -240,6 +240,19 @@ int msiListFields (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPara
 }
 
 
+/* Test writePosInt microservice */
+int msiTestWritePosInt (msParam_t* mPout1, ruleExecInfo_t *rei) {
+
+	int butter=99;
+
+	RE_TEST_MACRO ("    Calling msiHiThere")
+
+	fillIntInMsParam (mPout1, butter);
+
+	return(rei->status);
+	
+}
+
 /* Silly hello world microservice */
 int msiHiThere (msParam_t* mPout1, ruleExecInfo_t *rei) {
 

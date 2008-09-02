@@ -20,5 +20,6 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPin2, msParam_t* mPin3, msPara
 
 /* junk functions */
 int msiHiThere (msParam_t* mPout1, ruleExecInfo_t *rei);
+int msiTestWritePosInt (msParam_t* mPout1, ruleExecInfo_t *rei);
 
 #endif	/* ICUTILS */
