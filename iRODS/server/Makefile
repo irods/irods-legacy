@@ -203,7 +203,11 @@ CONFIG +=	$(svrConfigDir)/server.config $(svrConfigDir)/irodsHost
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(LIB_INCLUDES) $(MODULE_CFLAGS)
 
-LDFLAGS +=	$(LDADD) $(LIBRARY) $(MODULE_LDFLAGS)
+# Previously, MODULE_LDFLAGS was included in the LDFLAGS below, but now
+# we use MODULE_LDFLAGS for some dependencies so servers will be relinked
+# when module object files are updated.  The MODULE_LDFLAGS is a list of
+# the object files for modules.
+LDFLAGS +=	$(LDADD) $(LIBRARY)
 
 ifdef GSI_AUTH
 LIB_GSI_AUTH = \
@@ -359,7 +363,7 @@ $(svrCoreObjDir)/rodsAgent.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBRA
 	@echo "Compile agent server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS)
+$(serverBinDir)/irodsAgent: $(svrCoreObjDir)/rodsAgent.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS)
 	@echo "Link agent server `basename $@`..."
 	@$(LDR) -o $@ $^ $(LDFLAGS) $(AG_LDADD)
 
@@ -368,7 +372,7 @@ $(svrCoreObjDir)/irodsReServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(L
 	@echo "Compile rule engine server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS)
+$(serverBinDir)/irodsReServer: $(svrCoreObjDir)/irodsReServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS)
 	@echo "Link rule engine server `basename $@`..."
 	@$(LDR) -o $@ $^ $(LDFLAGS)
 
@@ -377,7 +381,7 @@ $(svrCoreObjDir)/rodsServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $(LIBR
 	@echo "Compile rods server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS)
+$(serverBinDir)/irodsServer: $(svrCoreObjDir)/rodsServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS)
 	@echo "Link rods server `basename $@`..."
 	@$(LDR) -o $@ $^ $(LDFLAGS)
 
@@ -387,8 +391,8 @@ $(svrCoreObjDir)/irodsXmsgServer.o: $(svrCoreObjDir)/%.o: $(svrCoreSrcDir)/%.c $
 	@echo "Compile xmsg server `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS)
-	@echo "Link agent server `basename $@`..."
+$(serverBinDir)/irodsXmsgServer: $(svrCoreObjDir)/irodsXmsgServer.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS)
+	@echo "Link xmsg server `basename $@`..."
 	@$(LDR) -o $@ $^ $(LDFLAGS)
 
 #
@@ -399,7 +403,7 @@ $(TEST_OBJS):	$(svrTestObjDir)/%.o: $(svrTestSrcDir)/%.c $(DEPEND)
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # reTest
-$(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS)
+$(svrTestBinDir)/reTest: $(svrTestObjDir)/reTest.o $(OBJS) $(MODULE_LDFLAGS)
 	@echo "Link server test `basename $@`..."
 	@$(LDR) -o $@ $^ $(LDFLAGS)
 
@@ -436,6 +440,6 @@ ruleadmin:: $(serverBinDir)/ruleAdmin
 $(svrCoreObjDir)/ruleAdmin.o: $(svrCoreObjDir)/%.o: %.c $(LIBRARY) $(OBJS)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(serverBinDir)/ruleAdmin: $(svrCoreObjDir)/ruleAdmin.o $(LIBRARY) $(OBJS)
+$(serverBinDir)/ruleAdmin: $(svrCoreObjDir)/ruleAdmin.o $(LIBRARY) $(OBJS) $(MODULE_LDFLAGS)
 	$(LDR) -o $@ $^ $(LDFLAGS)
 
