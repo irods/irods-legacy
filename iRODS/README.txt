@@ -1,21 +1,19 @@
-This is iRODS version 1.0.
+This is iRODS, the integrated Rule-based Data System, a distributed
+data-management system for creating data grids, digital libraries,
+persistent archives, and real-time data systems.  
 
 For information on how to build see:
-INSTALL.txt.
+INSTALL.txt and/or https://www.irods.org/index.php/installation
 
 Web site:
-For information, please see http://irods.sdsc.edu
-
+For additional information, please see https://www.irods.org
 
 Release notes:
-http://irods.sdsc.edu/index.php/Release_Notes_1.0
+https://www.irods.org/index.php/Release_Notes
 
+iRODS builds on the previous versions of iRODS and upon our years of
+experience developing SRB.
 
-iRODS 1.0 is an integrated Rule Oriented Data System for creating data
-grids, digital libraries, persistent archives, and real-time data
-systems.  It builds on the previous versions of iRODS and upon our
-years of experience developing SRB.
-
-See the above URLs for additional information.  http://irods.sdsc.edu
+See the above URLs for additional information.  https://www.irods.org
 is a Wiki system and includes documentation, descriptions,
 publications, presentations, and other information.
