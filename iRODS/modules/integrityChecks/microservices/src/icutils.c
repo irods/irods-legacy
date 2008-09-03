@@ -21,7 +21,7 @@ int msiListCollACL (msParam_t* mPin1, msParam_t* mPin2, msParam_t* mPin3, msPara
 	sqlResult_t* dataAccessType;
 	sqlResult_t* dataAccessDataId;
 	sqlResult_t* dataAccessUserId;
-	sqlResult_t* dataTokenNamespace;
+	//sqlResult_t* dataTokenNamespace;
 
 	RE_TEST_MACRO ("    Calling msiListCollACL")
 
@@ -245,7 +245,7 @@ int msiTestWritePosInt (msParam_t* mPout1, ruleExecInfo_t *rei) {
 
 	int butter=99;
 
-	RE_TEST_MACRO ("    Calling msiHiThere")
+	RE_TEST_MACRO ("    Calling msiTestWritePosInt")
 
 	fillIntInMsParam (mPout1, butter);
 
@@ -259,6 +259,7 @@ int msiHiThere (msParam_t* mPout1, ruleExecInfo_t *rei) {
 	char str[]="hi there\n";
 
 	RE_TEST_MACRO ("    Calling msiHiThere")
+
 	fillStrInMsParam (mPout1, str);
 
 	return(rei->status);

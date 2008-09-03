@@ -2,7 +2,24 @@
 #include "icutils.h"
 
 
-/* Check to see if files in a collection have expired or not */
+/**
+ * \fn msiVerifyExpiry
+ * \module	integrityChecks
+ * \author	Susan Lindsey
+ * \date	September 2008
+ * \brief	Checks whether files in a collection have expired
+ * \note	none 
+ * \param[in]	 mPin1=string=collection name, mPin2=string=date, mPin3=string=type{EXPIRED|NOTEXPIRED}
+ * \param[out]	 none
+ * \DolVarDependence	none
+ * \DolVarModified		none
+ * \iCatAtrDependence	none
+ * \iCatAttrModified	none
+ * \sideeffect
+ * \return integer
+ * \retval rei->status
+ * \bug no known bugs
+**/
 int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
 
 	rsComm_t *rsComm;
@@ -116,6 +133,24 @@ int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msPar
 
 }
 
+/**
+ * \fn	msiCheckFilesizeRange
+ * \module	integrityChecks
+ * \author	Susan Lindsey
+ * \date	December 2006
+ * \brief	Check to see if file sizes are NOT within a certain range
+ * \note
+ * \param[in] mPin1=string=collection name, mPin2=lower limit on filesize, mPin3=upper limit on filesize
+ * \param[out]
+ * \DolVarDependence	none
+ * \DolVarModified		none
+ * \iCatAtrDependence	none
+ * \iCatAttrModified	none
+ * \sideeffect
+ * \return	integer
+ * \retval	0 on success
+ * \bug		no known bugs
+**/
 int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei) {
 
 	genQueryInp_t genQueryInp;
@@ -204,7 +239,24 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
 
 
 /* See if all files in a collection match a given AVU */
-/* xxxxxxxxx */
+/**
+ * \fn	msiVerifyAVU
+ * \module	integrityChecks
+ * \author	Susan Lindsey
+ * \date	December 2006
+ * \brief	Performs operations on the AVU metadata on files in a given collection
+ * \note
+ * \param[in]
+ * \param[out]
+ * \DolVarDependence	none
+ * \DolVarModified		none
+ * \iCatAtrDependence	none
+ * \iCatAttrModified	none
+ * \sideeffect
+ * \return	integer
+ * \retval	0 on success
+ * \bug		no known bugs
+**/
 int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPin4, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
 
 	genQueryInp_t gqin;;
@@ -249,13 +301,15 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 
 	rsComm = rei->rsComm;
 
-	/* General Query Input init */
-	memset (&gqin, 0, sizeof(genQueryInp_t));
+	/* init structs */
 	gqin.maxRows = MAX_SQL_ROWS;
-
-   /* buffer init */
     mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
     memset (mybuf, 0, sizeof (bytesBuf_t));
+	gqout1 = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout1, 0, sizeof (genQueryOut_t));
+	gqout2 = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout2, 0, sizeof (genQueryOut_t));
+ 
 
 	/* construct an SQL query from the parameter list */
 	collname = (char*) strdup (mPin1->inOutStruct);
@@ -268,6 +322,8 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 
 	j = rsGenQuery (rsComm, &gqin, &gqout1);
 
+	if (j<0)
+		return (-1); /*RAJA badness what's the correct return error message */
 	if (j != CAT_NO_ROWS_FOUND) {
 
 		printGenQueryOut(stderr, NULL, NULL, gqout1);
@@ -365,6 +421,24 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 }
 
 /* Check and see if the owner is in a comma separated list */
+/**
+ * \fn	msiVerifyOwner
+ * \module	integrityChecks
+ * \author	Susan Lindsey
+ * \date	December 2006
+ * \brief	Check if files in a given collection have a consistent owner
+ * \note
+ * \param[in]
+ * \param[out]
+ * \DolVarDependence	none
+ * \DolVarModified		none
+ * \iCatAtrDependence	none
+ * \iCatAttrModified	none
+ * \sideeffect
+ * \return	integer
+ * \retval	0 on success
+ * \bug		no known bugs
+**/
 int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
 
 	genQueryInp_t genQueryInp;
@@ -493,6 +567,24 @@ int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPar
 }
 
 
+/**
+ * \fn	msiCheckFileDatatypes
+ * \module	integrityChecks
+ * \author	Susan Lindsey
+ * \date	December 2006
+ * \brief	Check if files in a collection belong to a given data type
+ * \note
+ * \param[in]
+ * \param[out]
+ * \DolVarDependence	none
+ * \DolVarModified		none
+ * \iCatAtrDependence	none
+ * \iCatAttrModified	none
+ * \sideeffect
+ * \return	integer
+ * \retval	0 on success
+ * \bug		no known bugs
+**/
 int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei) {
 
 	genQueryInp_t genQueryInp;
@@ -548,7 +640,6 @@ int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1
 	
 
 		j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-
 
 		if (j != CAT_NO_ROWS_FOUND) {
 
