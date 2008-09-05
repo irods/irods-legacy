@@ -603,55 +603,82 @@ int
 handleCompoundCondition(char *condition, int prevWhereLen)
 {
    char tabAndColumn[MAX_SQL_SIZE];
-   char cond[MAX_NAME_LEN*2];
+   char condPart1[MAX_NAME_LEN*2];
+   static char condPart2[MAX_NAME_LEN*2];
+   static char conditionsForBind[MAX_NAME_LEN*2];
+   static int conditionsForBindIx=0;
    int type;
    char *cptr;
    int status;
    int i;
-   rstrcpy(cond, condition, MAX_NAME_LEN*2);
-   cptr = strstr(cond, "||");
-   if (cptr != NULL) {
-      type=1;
-   }
-   else {
-      cptr = strstr(cond, "&&");
-      if (cptr == NULL) return (CAT_INVALID_ARGUMENT); /* shouldn't be possible */
-      type=2;
-   }
-   *cptr='\0';
-   cptr+=2; /* past the && or || */
+   int first=1;
+   int keepGoing=1;
 
-   /* If there's an AND that was appended, need to include it */
-   i = prevWhereLen;
-   if (whereSQL[i]==' ') i++;
-   if (whereSQL[i]==' ') i++;
-   if (whereSQL[i]=='A') {
-      i++;
-      if (whereSQL[i]=='N') {
-	 i++;
-	 if (whereSQL[i]=='D') {
-	    i++;
-	    prevWhereLen=i;
-	 }
+
+   rstrcpy(condPart1, condition, MAX_NAME_LEN*2);
+
+   while (keepGoing) {
+      type=0;
+      cptr = strstr(condPart1, "||");
+      if (cptr != NULL) {
+	 type=1;
       }
-   }
+      else {
+	 cptr = strstr(condPart1, "&&");
+	 type=2;
+      }
+      if (type) {
+	 *cptr='\0';
+	 cptr+=2; /* past the && or || */
+	 rstrcpy(condPart2, cptr, MAX_NAME_LEN*2);
+      }
 
-   rstrcpy(tabAndColumn, (char *)&whereSQL[prevWhereLen], MAX_SQL_SIZE);
-   whereSQL[prevWhereLen]='\0'; /* reset whereSQL to previous spot */
-   rstrcat(whereSQL, " ( ", MAX_SQL_SIZE);
-   rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE);
-   status = insertWhere(cond, 0);
-   if (status) return(status);
+      if (first) {
+	 /* If there's an AND that was appended, need to include it */
+	 i = prevWhereLen;
+	 if (whereSQL[i]==' ') i++;
+	 if (whereSQL[i]==' ') i++;
+	 if (whereSQL[i]=='A') {
+	    i++;
+	    if (whereSQL[i]=='N') {
+	       i++;
+	       if (whereSQL[i]=='D') {
+		  i++;
+		  prevWhereLen=i;
+	       }
+	    }
+	 }
 
-   if (type==1) {
-      rstrcat(whereSQL, " OR ", MAX_SQL_SIZE);
+	 rstrcpy(tabAndColumn, (char *)&whereSQL[prevWhereLen], MAX_SQL_SIZE);
+	 whereSQL[prevWhereLen]='\0'; /* reset whereSQL to previous spot */
+	 rstrcat(whereSQL, " ( ", MAX_SQL_SIZE);
+      }
+      rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE);
+      rstrcpy((char*)&conditionsForBind[conditionsForBindIx], condPart1, 
+	      (MAX_SQL_SIZE*2)-conditionsForBindIx);
+      status = insertWhere((char*)&conditionsForBind[conditionsForBindIx], 0);
+      if (status) return(status);
+      conditionsForBindIx+=strlen(condPart1)+1;
+
+      if (type==1) {
+	 rstrcat(whereSQL, " OR ", MAX_SQL_SIZE);
+      }
+      else {
+	 rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+      }
+
+      if (strstr(condPart2, "||") == NULL &&
+	  strstr(condPart2, "&&") == NULL) {
+	 rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE);
+	 status = insertWhere(condPart2, 0);
+	 if (status) return(status);
+	 keepGoing=0;
+      }
+      else {
+	 rstrcpy(condPart1, condPart2, MAX_NAME_LEN*2);
+      }
+      first=0;
    }
-   else {
-      rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
-   }
-   rstrcat(whereSQL, tabAndColumn, MAX_SQL_SIZE);
-   status = insertWhere(cptr, 0);
-   if (status) return(status);
 
    rstrcat(whereSQL, " ) ", MAX_SQL_SIZE);
    return(0);
