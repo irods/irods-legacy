@@ -10,7 +10,7 @@
 { "msiHiThere",				1,	(funcPtr) msiHiThere },
 { "msiTestWritePosInt",		1,	(funcPtr) msiHiThere },
 { "msiTestWritePosInt",		1,	(funcPtr) msiHiThere },
-{ "msiCollUtil",			2,	(funcPtr) msiCollUtil },
+{ "msiListColl",			2,	(funcPtr) msiListColl },
 
 
 
