@@ -1,0 +1,3 @@
+msiRecursiveListColl||msiRecursiveListColl(*A)##writeLine(stdout,"xxx")|nop
+A=/sdscirods/home/rods
+ruleExecOut
