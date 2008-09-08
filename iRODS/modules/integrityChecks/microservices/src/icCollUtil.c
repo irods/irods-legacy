@@ -5,17 +5,75 @@
 
 #include "icCollUtil.h"
 
-/*
-#include "objMetaOpr.h"
-#include "icatHighLevelRoutines.h"
-#include "openCollection.h"
-#include "readCollection.h"
-#include "closeCollection.h"
-#include "dataObjUnlink.h"
-#include "rsApiHandler.h"
-*/
+int	msiListColl (msParam_t* collectionname, msParam_t* buf, ruleExecInfo_t* rei) {
 
-/* All derived from Mike's rsRmColl.[ch] */
+	rsComm_t* rsComm;
+	sqlResult_t *collectionName;
+	sqlResult_t *collectionID;
+	bytesBuf_t* mybuf=NULL;
+	genQueryInp_t gqin;
+	genQueryOut_t* gqout=NULL;
+	int i,status;
+	char condStr[MAX_NAME_LEN];
+	char* collname;
+
+	RE_TEST_MACRO ("    Calling msiListColl")
+
+	/* Sanity check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiListColl: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	rsComm = rei->rsComm;
+
+	/* need to turn parameter 1 into a collInp_t struct */
+	collname = strdup (collectionname->inOutStruct);
+	
+	/* init stuff */
+	memset (&gqin, 0, sizeof(genQueryInp_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout, 0, sizeof (genQueryOut_t));
+	mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+	memset (mybuf, 0, sizeof (bytesBuf_t));
+
+	/* Generate a query - we only want subcollection data objects */
+    addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&gqin.selectInp, COL_COLL_ID, 1);
+	genAllInCollQCond (collname, condStr);
+    addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
+
+	/* This is effectively a recursive query */
+    status = rsGenQuery (rsComm, &gqin, &gqout);
+
+	if (status < 0) {
+		return (status);
+	} else if (status != CAT_NO_ROWS_FOUND)  {
+
+		collectionName = getSqlResultByInx (gqout, COL_COLL_NAME);
+		collectionID = getSqlResultByInx (gqout, COL_COLL_ID);
+		for (i=1; i<gqout->rowCnt; i++) {
+
+			char* subcoll;
+			char tmpstr[MAX_NAME_LEN];
+
+			subcoll = &collectionName->value[collectionName->len*i];
+			sprintf (tmpstr, "%s\n", subcoll );
+			appendToByteBuf (mybuf, tmpstr);
+		}
+
+	} else {
+		return (status); /* something bad happened */
+	}
+
+    fillBufLenInMsParam (buf, mybuf->len, mybuf);	
+	return (rei->status);
+
+}
+	
+
+
 int icListColl (rsComm_t *rsComm, collInp_t *listCollInp, collOprStat_t **collOprStat) {
 
 	int status;
@@ -27,7 +85,7 @@ int icListColl (rsComm_t *rsComm, collInp_t *listCollInp, collOprStat_t **collOp
 	} else {
 		if (isTrashPath (listCollInp->collName) == False && 
 			getValByKey (&listCollInp->condInput, FORCE_FLAG_KW) != NULL) {
-		rodsLog (LOG_NOTICE, "icListColl: Recursively listing %s.", listCollInp->collName);
+			rodsLog (LOG_NOTICE, "icListColl: Recursively listing %s.", listCollInp->collName);
 		}
 
 		status = _icListCollRecur (rsComm, listCollInp, collOprStat);
@@ -83,6 +141,7 @@ int _icListCollRecur (rsComm_t *rsComm, collInp_t *listCollInp, collOprStat_t **
 
 	memset (&dataObjInp, 0, sizeof (dataObjInp));
 	rstrcpy (dataObjInp.objPath, listCollInp->collName, MAX_NAME_LEN);
+	fprintf (stderr, "objPath:%s\n", dataObjInp.objPath);
 
 	/* check for specColl and permission */
 	status = resolveSpecColl (rsComm, &dataObjInp, &dataObjInfo, 1);
@@ -97,7 +156,8 @@ int _icListCollRecur (rsComm_t *rsComm, collInp_t *listCollInp, collOprStat_t **
 			status = applyRule ("acTrashPolicy", NULL, &rei, NO_SAVE_REI);
 			trashPolicy = rei.status;
 			if (trashPolicy != NO_TRASH_CAN) {
-				status = rsMvCollToTrash (rsComm, listCollInp);
+				//status = rsMvCollToTrash (rsComm, listCollInp);
+				status = 0;
 				if (status >= 0 && collOprStat != NULL) {
 					if (*collOprStat == NULL) {
 						*collOprStat = malloc (sizeof (collOprStat_t));
@@ -112,7 +172,9 @@ int _icListCollRecur (rsComm_t *rsComm, collInp_t *listCollInp, collOprStat_t **
 		}
 	}
 	/* got here. will recursively list the collection */
+	fprintf (stderr, "_icListCollRecur: got here: collname:%s\n", listCollInp->collName);
 	status = _icPhyListColl (rsComm, listCollInp, dataObjInfo, collOprStat);
+	fprintf (stderr, "_icListCollRecur: got here 1\n");
 
 	if (dataObjInfo != NULL) freeDataObjInfo (dataObjInfo);
 	return (status);
@@ -137,7 +199,7 @@ int _icPhyListColl (rsComm_t *rsComm, collInp_t *listCollInp, dataObjInfo_t *dat
 	openCollInp.flags = 0;
 	handleInx = rsOpenCollection (rsComm, &openCollInp);
 	if (handleInx < 0) {
-		rodsLog (LOG_ERROR, "_rsPhyRmColl: rsOpenCollection of %s error. status = %d",
+		rodsLog (LOG_ERROR, "_icPhyListColl: rsOpenCollection of %s error. status = %d",
 			openCollInp.collName, handleInx);
 		return (handleInx);
 	}
@@ -176,8 +238,7 @@ int _icPhyListColl (rsComm_t *rsComm, collInp_t *listCollInp, dataObjInfo_t *dat
 
 	while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
 		if (collEnt->objType == DATA_OBJ_T) {
-			snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
-			collEnt->collName, collEnt->dataName);
+			snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
 
 			status = rsDataObjUnlink (rsComm, &dataObjInp);
 			if (status < 0) {
@@ -192,7 +253,7 @@ int _icPhyListColl (rsComm_t *rsComm, collInp_t *listCollInp, dataObjInfo_t *dat
 					rstrcpy ((*collOprStat)->lastObjPath, dataObjInp.objPath, MAX_NAME_LEN);
 					status = svrSendCollOprStat (rsComm, *collOprStat);
 					if (status < 0) {
-						rodsLogError (LOG_ERROR, status, "_rsPhyRmColl: svrSendCollOprStat failed for %s. status = %d",
+						rodsLogError (LOG_ERROR, status, "_icPhyListColl: svrSendCollOprStat failed for %s. status = %d",
 							listCollInp->collName, status);
 						*collOprStat = NULL;
 						savedStatus = status;
@@ -211,6 +272,7 @@ int _icPhyListColl (rsComm_t *rsComm, collInp_t *listCollInp, dataObjInfo_t *dat
 				if (strcmp (collEnt->collName, collEnt->specColl.collection) == 0) 
 					continue;	/* no mount point */
 			}
+			fprintf (stderr, "_icPhyListColl: tmpCollInp->collname:%s\n", tmpCollInp.collName);
 			status = _icListCollRecur (rsComm, &tmpCollInp, collOprStat);
 		}
 
@@ -233,33 +295,4 @@ int _icPhyListColl (rsComm_t *rsComm, collInp_t *listCollInp, dataObjInfo_t *dat
 	return (savedStatus);
 }
 
-int	msiListColl (msParam_t* mPin1, msParam_t* mPout1, ruleExecInfo_t* rei) {
-
-	rsComm_t* rsComm;
-	char* collname;
-	collInp_t* listCollInp;
-	//collOprStat_t* collOprStat;
-	int status;
-
-	RE_TEST_MACRO ("    Calling msiListColl")
-
-	/* Sanity check */
-	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiListFields: input rei or rsComm is NULL");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
-
-	rsComm = rei->rsComm;
-
-	/* need to turn parameter 1 into a collInp_t struct */
-	collname = strdup (mPin1->inOutStruct);
-	rstrcpy (listCollInp->collName, collname, MAX_NAME_LEN);
-	addKeyVal (&listCollInp->condInput, RECURSIVE_OPR__KW, "");  
-
-	status = icListColl (rsComm, listCollInp, NULL);
-
-	return (status);
-	
-
-}
 

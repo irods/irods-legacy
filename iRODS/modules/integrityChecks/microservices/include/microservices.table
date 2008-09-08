@@ -9,7 +9,6 @@
 { "msiListCollACL",			6,	(funcPtr) msiListCollACL },
 { "msiHiThere",				1,	(funcPtr) msiHiThere },
 { "msiTestWritePosInt",		1,	(funcPtr) msiHiThere },
-{ "msiTestWritePosInt",		1,	(funcPtr) msiHiThere },
 { "msiListColl",			2,	(funcPtr) msiListColl },
 
 
