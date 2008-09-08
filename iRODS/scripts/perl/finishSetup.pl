@@ -1692,20 +1692,20 @@ sub configureIrodsUser
 	unlink( $tmpPutFile );
 	unlink( $tmpGetFile );
 
-# Don't do the 'iexit full' for non-ICAT Servers since the auth file is 
-# needed for server to server connections.
-	if ($DATABASE_TYPE ne "") {
-		($status,$output) = run( "$iexit full" );
-		if ( $status != 0 )
-		{
-			printError( "\nInstall problem:\n" );
-			printError( "    Cannot close iRODS connection:\n" );
-			printError( "        ", $output );
-			printLog( "\nCannot close iRODS connection:\n" );
-			printLog( "    ", $output );
-			cleanAndExit( 1 );
-		}
-	}
+# No longer do the 'iexit full' ICAT-enable Servers either since the
+# auth file is needed for server to server connections.
+#	if ($DATABASE_TYPE ne "") {
+#		($status,$output) = run( "$iexit full" );
+#		if ( $status != 0 )
+#		{
+#			printError( "\nInstall problem:\n" );
+#			printError( "    Cannot close iRODS connection:\n" );
+#			printError( "        ", $output );
+#			printLog( "\nCannot close iRODS connection:\n" );
+#			printLog( "    ", $output );
+#			cleanAndExit( 1 );
+#		}
+#	}
 
 
 	# Stop iRODS.

@@ -228,6 +228,15 @@ printNotice( "        set path=($icommandsBinDir \$path)\n" );
 printNotice( "    For sh or bash users:\n" );
 printNotice( "        PATH=$icommandsBinDir:\$PATH\n" );
 
+printNotice("\nIf you wish to set the ports to use, set the environment variable\n");
+printNotice("'svrPortRangeStart' or edit the svrPortRangeStart line in irodsctl.pl.\n");
+printNotice("See the 'Specifying Ports' page on the irods web site for more.\n");
+
+#if ( $isUpgrade ne "") {
+# Place-holder, to be updated if the release requires an ICAT patch.
+#    printNotice("\nYou may need to run a patch script.\n");
+#}
+
 if ( $installDataServer )
 {
 	printNotice( "\nTo start and stop the servers, use 'irodsctl':\n" );

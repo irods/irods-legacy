@@ -223,7 +223,25 @@ printNotice(
 	"\n",
 	"\n" );
 
+if ($isUpgrade eq "upgrade" ) {
+    if ( !-e $irodsConfig ) {
+	printNotice(
+	     "For an upgrade, the easiest way to get all the settings is to copy the\n",
+	     "config/irods.config file from your previous installation to this\n",
+             "current source tree.  Don't enter 'yes' to exit now so you can do the\n",
+             "copy and then rerun this.\n",
+	     "\n" );
+	my $answer = promptYesNo(
+		"Continue without a previous irods.config file",
+		"yes" );
 
+	if ( $answer == 0 )
+	{
+		# Skip prompting and exit with error to exit parent
+		exit( 1 );
+	}
+    }
+}
 if ( -e $irodsConfig )
 {
 	# An irods.config file already exists.  Ask if the
@@ -643,14 +661,16 @@ sub promptForIrodsConfiguration( )
 			"Each resource has a name, a host name (this host for this one), and\n",
 			"a local directory under which the data is stored.\n",
 			"\n" );
-		    $irodsResourceName = promptString(
-			"Resource name",
-			((!defined($irodsResourceName)||$irodsResourceName eq "") ?
-				$DEFAULT_irodsResourceName : $irodsResourceName) );
-		    $irodsResourceDir = promptString(
-			"Directory",
-			((!defined($irodsResourceDir)||$irodsResourceDir eq "") ?
-				$DEFAULT_irodsResourceDir : $irodsResourceDir) );
+		    if ($isUpgrade eq "") {
+			$irodsResourceName = promptString(
+			  "Resource name",
+			  ((!defined($irodsResourceName)||$irodsResourceName eq "") ?
+			  $DEFAULT_irodsResourceName : $irodsResourceName) );
+			$irodsResourceDir = promptString(
+			  "Directory",
+			  ((!defined($irodsResourceDir)||$irodsResourceDir eq "") ?
+			  $DEFAULT_irodsResourceDir : $irodsResourceDir) );
+		    }
 		}
 	}
 	else
