@@ -179,6 +179,7 @@ runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 
 # Temporary password
 $ENV{'irodsUserName'}=$User2; 
+$prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
 $ENV{'irodsAuthFileName'}=$tmpPwFile;
 runCmd(0, "test_chl tpw 123 | grep  'temp pw'");
 $temp1=$cmdStdout;
@@ -190,7 +191,12 @@ unlink($tmpAuthFile);
 runCmd(0, "echo $pw > $tmpPwFile");
 runCmd(0, "ils < $tmpPwFile");
 delete $ENV{'irodsUserName'};
-delete $ENV{'irodsAuthFileName'};
+if ($prevAuthFileName eq "") {
+    delete $ENV{'irodsAuthFileName'};
+}
+else {
+    $ENV{'irodsAuthFileName'}=$prevAuthFileName;
+}
 unlink($tmpPwFile);
 
 # auth test (special case)

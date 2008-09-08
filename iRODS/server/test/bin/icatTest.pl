@@ -361,12 +361,17 @@ runCmd(2, "iadmin moduser $UA password '1234'");
 
 unlink($F2);
 $MYHOME=$ENV{'HOME'};
-runCmd(0, "mv $MYHOME/.irods/.irodsA $F2"); # save the auth file
+$authFile="$MYHOME/.irods/.irodsA";
+$envAuth=$ENV{'irodsAuthFileName'};
+if ($envAuth ne "") {
+    $authFile=$envAuth;
+}
+runCmd(0, "mv $authFile $F2"); # save the auth file
 runCmd(2, "iinit 1234");
 $ENV{'irodsUserName'}=$U2; 
 runCmd(0, "iinit 1234");
 runCmd(0, "iexit full");
-runCmd(0, "mv $F2 $MYHOME/.irods/.irodsA"); # restore auth file
+runCmd(0, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};
 runCmd(0, "ils");
 
