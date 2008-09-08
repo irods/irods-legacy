@@ -173,9 +173,17 @@ if ( $thisUserID == 0 )
 # Install
 #
 
+if ( $isUpgrade ne "") {
+    printNotice("\nNote: When upgrading from 1.1 to 1.2, you will need to\n");
+    printNotice("run psg-patch-v1.1Tov1.2.sql via psql\n");
+    printNotice("or ora-patch-v1.1Tov1.2.sql via sqlplus\n");
+    printNotice("before running this script.\n\n");
+}
+
 # Prompt for information.
 #	Asks lots of questions and sets config files
 promptUser( );
+
 
 printSubtitle(
 	"Build and configure\n",
@@ -231,11 +239,6 @@ printNotice( "        PATH=$icommandsBinDir:\$PATH\n" );
 printNotice("\nIf you wish to set the ports to use, set the environment variable\n");
 printNotice("'svrPortRangeStart' or edit the svrPortRangeStart line in irodsctl.pl.\n");
 printNotice("See the 'Specifying Ports' page on the irods web site for more.\n");
-
-#if ( $isUpgrade ne "") {
-# Place-holder, to be updated if the release requires an ICAT patch.
-#    printNotice("\nYou may need to run a patch script.\n");
-#}
 
 if ( $installDataServer )
 {
