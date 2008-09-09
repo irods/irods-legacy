@@ -528,6 +528,7 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
    if (stat == OCI_ERROR) {
       rodsLog(LOG_ERROR, "cllExecSqlNoResult: OCIStmtExecute failed: %d",stat);
       logOraError(LOG_ERROR, p_err, stat);
+      if (stat2==CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) return(stat2);
       return(CAT_OCI_ERROR);
    }
 
