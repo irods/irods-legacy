@@ -128,6 +128,14 @@ runCmd(2, "irm -f $D1");
 runCmd(0, "irm -f -r $D1");
 runCmd(0, "ils");
 
+#
+# Multiple imkdir's should return without error.
+# ICAT should give CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME error
+# which imkdir (and other commands) handle.
+runCmd(0, "imkdir $D1");
+runCmd(0, "imkdir $D1");
+runCmd(0, "irm -rf $D1");
+
 # Repeated iput -rf test (was failing as ICAT code needed to 
 # rollback after an insert failure since it is now doing a 'begin').
 mkfiles(2, "testIput_RF_repeat");
