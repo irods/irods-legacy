@@ -376,7 +376,7 @@ test:
 
 # Install
 install:
-	@echo "Please use the install.pl script to install iRODS"
+	@echo "Please use the irodssetup script to install iRODS"
 
 installdirs:
 	@true
