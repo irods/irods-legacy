@@ -611,6 +611,10 @@ sub setEnvironmentVariables
 		# The user's password.
 		$ENV{"PGPASSWORD"} = $DATABASE_ADMIN_PASSWORD;
 	}
+	if ( $DATABASE_TYPE eq "oracle" )
+	{
+	    $ENV{"ORACLE_HOME"} = $DATABASE_HOME;
+	}
 }
 
 
