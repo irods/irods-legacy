@@ -16,11 +16,6 @@ extern iFuseDesc_t IFuseDesc[];
 extern pathCacheQue_t NonExistPathArray[];
 extern pathCacheQue_t PathArray[];
 
-#define	CACHE_FUSE_PATH		1
-#ifdef CACHE_FUSE_PATH
-#define CACHE_FILE_FOR_READ	1
-#endif
-
 int
 irodsGetattr (const char *path, struct stat *stbuf)
 {
@@ -54,9 +49,15 @@ _irodsGetattr (const char *path, struct stat *stbuf, pathCache_t **outPathCache)
 
     if (matchPathInPathCache ((char *) path, PathArray, &tmpPathCache) == 1) {
         rodsLog (LOG_DEBUG, "irodsGetattr: a match for path %s", path);
-	*stbuf = tmpPathCache->stbuf;
-	if (outPathCache != NULL) *outPathCache = tmpPathCache;
-	return (0);
+	status = updatePathCacheStat (tmpPathCache);
+	if (status < 0) {
+	    /* we have a problem */
+	    rmPathFromCache ((char *) path, PathArray);
+	} else {
+	    *stbuf = tmpPathCache->stbuf;
+	    if (outPathCache != NULL) *outPathCache = tmpPathCache;
+	    return (0);
+	}
     }
 #endif
 
@@ -586,7 +587,7 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
     int fd;
     int descInx;
 
-    rodsLog (LOG_DEBUG, "irodsOpen: %s", path);
+    rodsLog (LOG_DEBUG, "irodsOpen: %s, flags = %d", path, fi->flags);
 
 #ifdef CACHE_FUSE_PATH
     if ((descInx = getDescInxInNewlyCreatedCache ((char *) path, fi->flags)) 

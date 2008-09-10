@@ -668,6 +668,23 @@ fillDirStat (struct stat *stbuf, uint ctime, uint mtime, uint atime)
     return 0;
 }
 
+int 
+updatePathCacheStat (pathCache_t *tmpPathCache)
+{
+    int status;
+
+    if (tmpPathCache->locCacheState != NO_FILE_CACHE &&
+      tmpPathCache->locCachePath != NULL) {
+	status = stat (tmpPathCache->locCachePath, &tmpPathCache->stbuf);
+	if (status < 0)
+	    return (errno ? (-1 * errno) : -1);
+	else
+	    return 0; 
+    } else {
+	return 0;
+    }
+}
+
 int
 irodsOpenWithReadCache (char *path, int flags)
 {
@@ -686,9 +703,6 @@ irodsOpenWithReadCache (char *path, int flags)
 
     /* too big to cache */
     if (stbuf.st_size > MAX_READ_CACHE_SIZE) return -1;	
-
-    if (tmpPathCache->locCacheState != NO_FILE_CACHE &&
-     tmpPathCache->locCacheState != HAVE_READ_CACHE) return -1;
 
     getIFuseConn (&DefConn, &MyRodsEnv);
     if (tmpPathCache->locCachePath == NULL) {

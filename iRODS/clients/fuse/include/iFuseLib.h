@@ -8,6 +8,11 @@
 #include "rodsClient.h"
 #include "rodsPath.h"
 
+#define CACHE_FUSE_PATH         1
+#ifdef CACHE_FUSE_PATH
+#define CACHE_FILE_FOR_READ     1
+#endif
+
 #define MAX_BUF_CACHE   2
 #define MAX_IFUSE_DESC   1024
 #define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
@@ -146,6 +151,10 @@ int
 getFileCachePath (char *inPath, char *cacehPath);
 int
 setAndMkFileCacheDir ();
+int 
+updatePathCacheStat (pathCache_t *tmpPathCache);
+int
+ifuseClose (const char *path, int descInx);
 #ifdef  __cplusplus
 }
 #endif
