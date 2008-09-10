@@ -1,15 +1,14 @@
 /* Properties module microservices */
 /* Service name			# args		Service function */
-{ "msiCheckFilesizeRange",	4,	(funcPtr) msiCheckFilesizeRange },
-{ "msiCheckFileDatatypes",	3,	(funcPtr) msiCheckFileDatatypes },
 { "msiVerifyOwner",			4,	(funcPtr) msiVerifyOwner },
 { "msiVerifyAVU",			6,	(funcPtr) msiVerifyAVU },
-{ "msiListFields",			4,	(funcPtr) msiListFields },
+{ "msiVerifyACL",			6,	(funcPtr) msiVerifyACL },
 { "msiVerifyExpiry",		5,	(funcPtr) msiVerifyExpiry },
-{ "msiListCollACL",			6,	(funcPtr) msiListCollACL },
+{ "msiVerifyDataType",		4,	(funcPtr) msiVerifyDataType },
+{ "msiVerifyFileSizeRange",	5,	(funcPtr) msiVerifyFileSizeRange },
+
+{ "msiListFields",			4,	(funcPtr) msiListFields },
 { "msiHiThere",				1,	(funcPtr) msiHiThere },
-{ "msiTestWritePosInt",		1,	(funcPtr) msiHiThere },
+{ "msiTestWritePosInt",		1,	(funcPtr) msiTestWritePosInt },
 { "msiListColl",			2,	(funcPtr) msiListColl },
-
-
 

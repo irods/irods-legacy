@@ -17,13 +17,19 @@
 #include "rcMisc.h"
 
 
-int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei);
-int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei);
-int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t *mPout2, ruleExecInfo_t *rei);
-int msiVerifyACL (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t mPin4, msParam_t *mPout1, msParam_t *mPout2, ruleExecInfo_t *rei);
-int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPin4, msParam_t *mPout1, 
-	msParam_t *mPout2, ruleExecInfo_t *rei);
-int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msParam_t *mPout1, msParam_t *mPout2, ruleExecInfo_t *rei);
+
+int msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei);
+int msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp, msParam_t* avuattrsinp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei);
+int msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msParam_t* notflaginp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei);
+int msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei);
+int msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei);
+int msiVerifyFileSizeRange (msParam_t* collinp, msParam_t* minsizeinp, msParam_t* maxsizeinp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei);
 
 
 #endif	/* INTEGRITYCHECKS_H */

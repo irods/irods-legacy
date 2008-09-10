@@ -1,15 +1,314 @@
 #include "integrityChecksMS.h"
 #include "icutils.h"
 
+/* Check and see if the owner is in a comma separated list */
+/**
+ * \fn	msiVerifyOwner
+ * \module	integrityChecks
+ * \author	Susan Lindsey
+ * \date	August 2008
+ * \brief	Check if files in a given collection have a consistent owner
+ * \note
+ * \param[in]
+ * \param[out]
+ * \DolVarDependence	none
+ * \DolVarModified		none
+ * \iCatAtrDependence	none
+ * \iCatAttrModified	none
+ * \sideeffect
+ * \return	integer
+ * \retval	0 on success
+ * \bug		no known bugs
+**/
+int msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei) {
+
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut = NULL;
+	char condStr[MAX_NAME_LEN];
+	rsComm_t *rsComm;
+	char* collname;
+	char* ownerlist;
+	int i,j;
+	sqlResult_t *dataName;
+	sqlResult_t *dataOwner;
+	char delims[]=",";
+	char* word;
+	char** olist=NULL;
+	bytesBuf_t*	stuff=NULL;
+	
+	RE_TEST_MACRO ("    Calling msiVerifyOwner")
+
+	/* Sanity check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiVerifyOwner: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	rsComm = rei->rsComm;
+
+	memset (&genQueryInp, 0, sizeof(genQueryInp_t));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+   /* buffer init */
+    stuff = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+    memset (stuff, 0, sizeof (bytesBuf_t));
+
+	/* construct an SQL query from the parameter list */
+	collname = (char*) strdup (collinp->inOutStruct);
+
+	/* this is the info we want returned from the query */
+	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_D_OWNER_NAME, 1);
+	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+	/* Now for each file retrieved in the query, determine if it's owner is in our list */
+
+	if (j != CAT_NO_ROWS_FOUND) {
+
+		printGenQueryOut(stderr, NULL, NULL, genQueryOut);
+
+		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
+		dataOwner = getSqlResultByInx (genQueryOut, COL_D_OWNER_NAME);
+
+
+		ownerlist = (char*) strdup (ownerinp->inOutStruct);
+		//fprintf(stderr, "ownerlist: %s\n", ownerlist);
+
+		if (strlen(ownerlist)>0) { /* our rule contains a list of owners we want to compare against */
+			int ownercount=0;
+
+			rodsLog (LOG_ERROR, "msiVerifyOwner: ownerlist!=NULL");
+
+			/* Construct a list of owners*/
+			for (word=strtok(ownerlist, delims); word; word=strtok(NULL, delims)) {
+				olist = (char**) realloc (olist, sizeof (char*) * (ownercount));  
+				olist[ownercount] = strdup (word);
+				ownercount++;
+			}
+
+			/* Now compare each file's owner with our list */
+			for (i=0; i<genQueryOut->rowCnt; i++) {
+				int foundflag=0;
+				for (j=0; j<ownercount; j++) {
+					char* thisowner = strdup(&dataOwner->value[dataOwner->len*i]);
+
+					//fprintf(stderr, "comparing %s and %s\n", thisowner, olist[j]);
+					if (!(strcmp(thisowner, olist[j]))) {
+						/* We only care about the ones that DON'T match */
+						foundflag=1;
+						break;
+					}
+				}
+
+				if (!foundflag) {
+					char tmpstr[80];
+					sprintf (tmpstr, "File: %s with owner: %s does not match input list\n", 
+						&dataName->value[dataName->len *i], &dataOwner->value[dataOwner->len * i]);
+					appendToByteBuf (stuff, tmpstr);
+				}
+			}
+
+		} else { /* input parameter for owner is not set */
+			
+			rodsLog (LOG_ERROR, "msiVerifyOwner: ownerlist is NULL");
+
+			/* just check if the owner name (whatever it is) is consistent across all files */
+			/* We'll just compare using the first file's owner - this can probably be done several ways */
+			char* firstowner = strdup(&dataOwner->value[0]); 
+
+			int matchflag=1;  /* Start off assuming all owners match */
+
+			for (i=1; i<genQueryOut->rowCnt; i++) {
+				char* thisowner = strdup( &dataOwner->value[dataOwner->len*i]);
+				if (strcmp(firstowner, thisowner)) { /* the two strings are not equal */
+					appendToByteBuf (stuff, "Owner is not consistent across this collection");
+					matchflag=0;
+					break;
+				}
+			}
+
+			if (matchflag) /* owner field was consistent across all data objects */
+				appendToByteBuf (stuff, "Owner is consistent across this collection.\n");
+			else
+				appendToByteBuf (stuff, "Owner is not consistent across this collection.\n");
+		}	
+	} 
+
+	fillBufLenInMsParam (bufout, stuff->len, stuff);
+	fillIntInMsParam (statout, rei->status);
+  
+	return(rei->status);
+
+}
+int msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msParam_t* notflaginp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei) {
+
+	int i,j;
+	int querytype=0;
+	char tmpstr[MAX_NAME_LEN];
+	genQueryInp_t	gqin;
+	genQueryOut_t*	gqout = NULL;
+	char* collname=NULL;
+	char* collid=NULL;
+	char* username=NULL;
+	char* accessauth=NULL;
+	char* notflag=NULL;
+	rsComm_t *rsComm;
+	bytesBuf_t* mybuf=NULL;
+	sqlResult_t* collCollId;
+	sqlResult_t* dataName;
+	sqlResult_t* dataAccessName;
+	sqlResult_t* dataAccessType;
+	sqlResult_t* dataAccessDataId;
+	sqlResult_t* dataAccessUserId;
+	//sqlResult_t* dataTokenNamespace;
+
+	RE_TEST_MACRO ("    Calling msiListCollACL")
+
+	/* Sanity check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiListCollACL: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	rsComm = rei->rsComm;
+
+	/* 
+		This function can perform three different checks, depending on flags set via input parameters:
+		1. check that its ACL contains the same set of user-authorization pairs as others in its collection
+		2. check that its ACL contains at least a given set of user-authorization pairs
+		3. check that its ACL does not contain a given set of user-authorization pairs 
+
+		We have four input parameters: Collection Name, User Name, Authorization Type & NOT flag
+		For the above conditions, the following are examples of how to call the rule
+		1. collname=/sdscZone/home/rods%*User=rods%*Auth=own  
+		2. collname=/sdscZone/home/rods  
+		3. collname=/sdscZone/home/rods%*User=rods%*Auth=own*Notflag=1  
+	*/
+
+	collname = (char*) strdup (collinp->inOutStruct);
+	if (collname == NULL) return (USER__NULL_INPUT_ERR);
+	/* These next three don't necessarily have to be set */
+	username = (char*) strdup (userinp->inOutStruct);
+	accessauth = (char*) strdup (authinp->inOutStruct);
+	notflag = (char*) strdup (notflaginp->inOutStruct);
+	
+	if ((username==NULL) && (accessauth==NULL)) {
+		querytype=1; /* Case #1. see above */
+		notflag=NULL; /* we don't care about this variable in this case */
+	} 
+	/* just an exclusive OR - both of these variables, username & accessauth HAVE to be set */
+	else if (((username==NULL) && (accessauth!=NULL)) || ((username!=NULL) && (accessauth==NULL))) {
+			return (USER__NULL_INPUT_ERR);
+	} else {
+		if (atoi(notflag)==0)
+			querytype=2;
+		else
+			querytype=3;
+	}
+		
+	
+	/* init gqout, gqin & mybuf structs */
+	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout, 0, sizeof (genQueryOut_t));
+	mybuf = (bytesBuf_t*) malloc(sizeof(bytesBuf_t));
+	memset (mybuf, 0, sizeof (bytesBuf_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+
+
+	/* First get the collection id from the collection name, then
+		use the collection id field as a key to obtaining all the
+		other nifty info we need */ 
+	snprintf (tmpstr, MAX_NAME_LEN, " = '%s'", collname);
+	addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, tmpstr);
+	addInxIval (&gqin.selectInp, COL_D_COLL_ID, 1);
+
+	j = rsGenQuery (rsComm, &gqin, &gqout);
+	
+	if (j<0) {
+		appendToByteBuf (mybuf, "Coll ID Not found\n");
+	}
+	else if (j != CAT_NO_ROWS_FOUND) {
+
+		printGenQueryOut(stderr, NULL, NULL, gqout);
+
+		/* RAJA don't we really just need the first element, since all the collection id's should be the same? */
+		collCollId = getSqlResultByInx (gqout, COL_D_COLL_ID);
+		collid = strdup (&collCollId->value[0]);
+		sprintf (tmpstr, "Collection ID:%s\n", &collCollId->value[0]);
+		appendToByteBuf (mybuf, tmpstr);
+
+	} else {
+		appendToByteBuf (mybuf, "RAJA - what unknown error\n");
+		return (1);  /* what return value RAJA */
+	}
+
+	/* Now do another query to get all the interesting ACL information */
+	memset (&gqin, 0, sizeof (genQueryInp_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+	
+	addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
+	addInxIval (&gqin.selectInp, COL_DATA_ACCESS_NAME, 1);
+	addInxIval (&gqin.selectInp, COL_DATA_ACCESS_TYPE, 1);
+	addInxIval (&gqin.selectInp, COL_DATA_ACCESS_DATA_ID, 1);
+	addInxIval (&gqin.selectInp, COL_DATA_ACCESS_USER_ID, 1);
+	//addInxIval (&gqin.selectInp, COL_DATA_TOKEN_NAMESPACE, 1);
+
+	/* Currently necessary since other namespaces exist in the token table */
+	//snprintf (tmpstr, MAX_NAME_LEN, "='%s'", "access_type");
+	//addInxVal (&gqin.sqlCondInp, COL_COLL_TOKEN_NAMESPACE, tmpStr);
+
+	snprintf (tmpstr, MAX_NAME_LEN, " = '%s'", collid);
+	addInxVal (&gqin.sqlCondInp, COL_D_COLL_ID, tmpstr);
+
+	j = rsGenQuery (rsComm, &gqin, &gqout);
+
+	if (j<0) {
+		 appendToByteBuf (mybuf, "Second gen query bad\n");
+	} else if  (j != CAT_NO_ROWS_FOUND) {
+
+		dataName = getSqlResultByInx (gqout, COL_DATA_NAME);
+		dataAccessType = getSqlResultByInx (gqout, COL_DATA_ACCESS_TYPE);
+		dataAccessName = getSqlResultByInx (gqout, COL_DATA_ACCESS_NAME);
+		dataAccessDataId = getSqlResultByInx (gqout, COL_DATA_ACCESS_DATA_ID);
+		dataAccessUserId = getSqlResultByInx (gqout, COL_DATA_ACCESS_USER_ID);
+		//dataTokenNamespace = getSqlResultByInx (gqout, COL_DATA_TOKEN_NAMESPACE);
+
+		for (i=0; i<gqout->rowCnt; i++) {
+			sprintf (tmpstr, "Data name:%s\tData Access Type:%s\tData Access Name:%s\tData Access Data Id:%s\t Data Access User ID:%s\tNamespace:%s\n",
+				&dataName->value[dataName->len *i], 
+				&dataAccessType->value[dataAccessType->len *i], 
+				&dataAccessName->value[dataAccessName->len *i],
+				&dataAccessDataId->value[dataAccessDataId->len *i],
+				&dataAccessUserId->value[dataAccessUserId->len *i],
+		//		&dataTokenNamespace->value[dataTokenNamespace->len *i]);
+				"some namespace");
+			appendToByteBuf (mybuf, tmpstr);
+		}	
+
+		printGenQueryOut(stderr, NULL, NULL, gqout);
+	} else appendToByteBuf (mybuf, "something else gone bad RAJA");
+	
+
+	fillBufLenInMsParam (bufout, mybuf->len, mybuf);
+	fillIntInMsParam (statout, rei->status);
+  
+	return(rei->status);
+
+	return(0);
+	
+}
 
 /**
  * \fn msiVerifyExpiry
  * \module	integrityChecks
  * \author	Susan Lindsey
  * \date	September 2008
- * \brief	Checks whether files in a collection have expired
+ * \brief	Checks whether files in a collection have expired or not expired
  * \note	none 
- * \param[in]	 mPin1=string=collection name, mPin2=string=date, mPin3=string=type{EXPIRED|NOTEXPIRED}
+ * \param[in]	 collinp=string=collection name, timeinp=string=date, typeinp=string=type{EXPIRED|NOTEXPIRED}
  * \param[out]	 none
  * \DolVarDependence	none
  * \DolVarModified		none
@@ -20,7 +319,7 @@
  * \retval rei->status
  * \bug no known bugs
 **/
-int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
+int msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei) {
 
 	rsComm_t *rsComm;
 	genQueryInp_t gqin;
@@ -58,9 +357,9 @@ int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msPar
 
 
 	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (mPin1->inOutStruct);
-	inputtime = (char*) strdup (mPin2->inOutStruct);
-	querytype = (char*) strdup (mPin3->inOutStruct);
+	collname = (char*) strdup (collinp->inOutStruct);
+	inputtime = (char*) strdup (timeinp->inOutStruct);
+	querytype = (char*) strdup (typeinp->inOutStruct);
 
 	/* 
 		We have a couple of rule query possibilities:
@@ -126,112 +425,8 @@ int msiVerifyExpiry (msParam_t *mPin1, msParam_t *mPin2, msParam_t* mPin3, msPar
 		}
 	} else appendToByteBuf (mybuf, "No rows found\n");
 
-	fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
-	fillIntInMsParam (mPout2, rei->status);
-  
-	return(rei->status);
-
-}
-
-/**
- * \fn	msiCheckFilesizeRange
- * \module	integrityChecks
- * \author	Susan Lindsey
- * \date	December 2006
- * \brief	Check to see if file sizes are NOT within a certain range
- * \note
- * \param[in] mPin1=string=collection name, mPin2=lower limit on filesize, mPin3=upper limit on filesize
- * \param[out]
- * \DolVarDependence	none
- * \DolVarModified		none
- * \iCatAtrDependence	none
- * \iCatAttrModified	none
- * \sideeffect
- * \return	integer
- * \retval	0 on success
- * \bug		no known bugs
-**/
-int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPout1, ruleExecInfo_t *rei) {
-
-	genQueryInp_t genQueryInp;
-	genQueryOut_t *genQueryOut = NULL;
-	char condStr[MAX_NAME_LEN];
-	rsComm_t *rsComm;
-	char collname[200];
-	char maxfilesize[100]; 
-	char minfilesize[100];
-	int i,j;
-	sqlResult_t *dataName;
-	sqlResult_t *dataSize;
-
-	keyValPair_t	*results;	
-	char* key;
-	char* value;
-	
-	RE_TEST_MACRO ("    Calling msiCheckFilesizeRange")
-
-	/* Sanity check */
-	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiCheckFilesizeRange: input rei or rsComm is NULL");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
-
-	rsComm = rei->rsComm;
-
-	/* construct an SQL query from the input parameter list */
-	strcpy (collname,  (char*) mPin1->inOutStruct);
-	strcpy (minfilesize, (char*) mPin2->inOutStruct);
-	strcpy (maxfilesize, (char*) mPin3->inOutStruct);
-
-	/* But first, make sure our size range is valid */
-	if (atoi(minfilesize) >= atoi(maxfilesize)) {
-		return (USER_PARAM_TYPE_ERR);
-	}
-
-	// initialize results to 0; AddKeyVal does all our malloc-ing
-	results = (keyValPair_t*) malloc (sizeof(keyValPair_t));
-	memset (results, 0, sizeof(keyValPair_t));
-
-	memset (&genQueryInp, 0, sizeof(genQueryInp_t));
-	genQueryInp.maxRows = MAX_SQL_ROWS;
-
-	/* this is the info we want returned from the query */
-	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
-	addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
-	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
-
-	/* build the condition:
-		collection name AND (filesize < minfilesize or filesize > maxfilesize) */
-
-	snprintf (condStr, MAX_NAME_LEN, " < '%s' || > '%s'", minfilesize, maxfilesize);
-	addInxVal (&genQueryInp.sqlCondInp, COL_DATA_SIZE, condStr); 
-	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
-	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr); 
-
-	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-
-	if (j != CAT_NO_ROWS_FOUND) {
-
-		/* we got results - do something cool */
-		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
-		dataSize = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
-		for (i=0; i<genQueryOut->rowCnt; i++) {
-			// fprintf (stderr, "dataName[%d]:%s\n",i,&dataName->value[dataName->len * i]);
-			key = strdup (&dataName->value[dataName->len *i]);
-			// fprintf (stderr, "dataSize[%d]:%s\n",i,&dataSize->value[dataSize->len * i]);
-			value = strdup (&dataSize->value[dataSize->len * i]);
-			addKeyVal (results, key, value);
-		}
-
-	} else {
-		fillIntInMsParam (mPout1, rei->status);
-		return (rei->status);  //ack this is ugly
-	}
-
-	//printGenQueryOut(stderr, NULL, NULL, genQueryOut);
-
-	fillMsParam (mPin3, NULL, KeyValPair_MS_T, results, NULL);
-	fillIntInMsParam (mPout1, rei->status);
+	fillBufLenInMsParam (bufout, mybuf->len, mybuf);
+	fillIntInMsParam (statout, rei->status);
   
 	return(rei->status);
 
@@ -243,7 +438,7 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
  * \fn	msiVerifyAVU
  * \module	integrityChecks
  * \author	Susan Lindsey
- * \date	December 2006
+ * \date	August 2008
  * \brief	Performs operations on the AVU metadata on files in a given collection
  * \note
  * \param[in]
@@ -257,9 +452,10 @@ int msiCheckFilesizeRange (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3,
  * \retval	0 on success
  * \bug		no known bugs
 **/
-int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_t *mPin4, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
+int msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp, msParam_t* avuattrsinp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei) {
 
-	genQueryInp_t gqin;;
+	genQueryInp_t gqin;
 	genQueryOut_t *gqout1 = NULL;
 	genQueryOut_t *gqout2 = NULL;
 	char condStr[MAX_NAME_LEN];
@@ -302,8 +498,9 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 	rsComm = rei->rsComm;
 
 	/* init structs */
+	memset (&gqin, 0, sizeof (genQueryInp_t));
 	gqin.maxRows = MAX_SQL_ROWS;
-    mybuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+    mybuf = (bytesBuf_t*) malloc(sizeof(bytesBuf_t));
     memset (mybuf, 0, sizeof (bytesBuf_t));
 	gqout1 = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
 	memset (gqout1, 0, sizeof (genQueryOut_t));
@@ -312,7 +509,7 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
  
 
 	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (mPin1->inOutStruct);
+	collname = (char*) strdup (collinp->inOutStruct);
 
 	/* Return just the name and id of all the files in the collection for our first query */
 	addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
@@ -329,7 +526,7 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 		printGenQueryOut(stderr, NULL, NULL, gqout1);
 
 		/* Now construct our second query, get the AVU information */
-		clearGenQueryInp (&gqin);
+		memset (&gqin, 0, sizeof (genQueryInp_t));
 		gqin.maxRows = MAX_SQL_ROWS;
 
 		addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
@@ -362,9 +559,9 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 			dataAttrUnits = getSqlResultByInx (gqout2, COL_META_DATA_ATTR_UNITS);  
 
 			/* Assigning the inputted AVU values */
-			inputattrname = (char*) strdup (mPin2->inOutStruct); 
-			inputattrvalue = (char*) strdup (mPin3->inOutStruct); 
-			inputattrunits = (char*) strdup (mPin4->inOutStruct); 
+			inputattrname = (char*) strdup (avunameinp->inOutStruct); 
+			inputattrvalue = (char*) strdup (avuvalueinp->inOutStruct); 
+			inputattrunits = (char*) strdup (avuattrsinp->inOutStruct); 
 
 			/* Ok now for each data object id returned in Query 1, see if there's a matching ID returned in Query 2 */
 			for (i=0; i<q1rows; i++) {
@@ -413,20 +610,21 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
 		/* Query 1 returned no results */
 	}
 
-	fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
-	fillIntInMsParam (mPout2, rei->status);
+	fillBufLenInMsParam (bufout, mybuf->len, mybuf);
+	fillIntInMsParam (statout, rei->status);
   
 	return(rei->status);
 
 }
 
-/* Check and see if the owner is in a comma separated list */
+
+
 /**
- * \fn	msiVerifyOwner
+ * \fn	msiVerifyDataType
  * \module	integrityChecks
  * \author	Susan Lindsey
- * \date	December 2006
- * \brief	Check if files in a given collection have a consistent owner
+ * \date	August 2008
+ * \brief	Check if files in a given collection are of a given data type(s)
  * \note
  * \param[in]
  * \param[out]
@@ -439,184 +637,36 @@ int msiVerifyAVU (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPin3, msParam_
  * \retval	0 on success
  * \bug		no known bugs
 **/
-int msiVerifyOwner (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
+int msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei) {
 
 	genQueryInp_t genQueryInp;
 	genQueryOut_t *genQueryOut = NULL;
 	char condStr[MAX_NAME_LEN];
 	rsComm_t *rsComm;
-	char* collname;
-	char* ownerlist;
-	int i,j;
-	sqlResult_t *dataName;
-	sqlResult_t *dataOwner;
-	char delims[]=",";
-	char* word;
-	char** olist=NULL;
-	bytesBuf_t*	stuff=NULL;
-	
-	RE_TEST_MACRO ("    Calling msiVerifyOwner")
-
-	/* Sanity check */
-	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiVerifyOwner: input rei or rsComm is NULL");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
-
-	rsComm = rei->rsComm;
-
-	memset (&genQueryInp, 0, sizeof(genQueryInp_t));
-	genQueryInp.maxRows = MAX_SQL_ROWS;
-
-   /* buffer init */
-    stuff = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
-    memset (stuff, 0, sizeof (bytesBuf_t));
-
-	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (mPin1->inOutStruct);
-
-	/* this is the info we want returned from the query */
-	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
-	addInxIval (&genQueryInp.selectInp, COL_D_OWNER_NAME, 1);
-	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
-	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
-
-	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-
-	/* Now for each file retrieved in the query, determine if it's owner is in our list */
-
-	if (j != CAT_NO_ROWS_FOUND) {
-
-		printGenQueryOut(stderr, NULL, NULL, genQueryOut);
-
-		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
-		dataOwner = getSqlResultByInx (genQueryOut, COL_D_OWNER_NAME);
-
-
-		ownerlist = (char*) strdup (mPin2->inOutStruct);
-		fprintf(stderr, "ownerlist: %s\n", ownerlist);
-
-		if (strlen(ownerlist)>0) { /* our rule contains a list of owners we want to compare against */
-			int ownercount=0;
-
-			rodsLog (LOG_ERROR, "msiVerifyOwner: ownerlist!=NULL");
-
-			/* Construct a list of owners*/
-			for (word=strtok(ownerlist, delims); word; word=strtok(NULL, delims)) {
-				olist = (char**) realloc (olist, sizeof (char*) * (ownercount));  
-				olist[ownercount] = strdup (word);
-				ownercount++;
-			}
-
-			/* Now compare each file's owner with our list */
-			for (i=0; i<genQueryOut->rowCnt; i++) {
-				int foundflag=0;
-				for (j=0; j<ownercount; j++) {
-					char* thisowner = strdup(&dataOwner->value[dataOwner->len*i]);
-
-					fprintf(stderr, "comparing %s and %s\n", thisowner, olist[j]);
-					if (!(strcmp(thisowner, olist[j]))) {
-						/* We only care about the ones that DON'T match */
-						foundflag=1;
-						break;
-					}
-				}
-
-				if (!foundflag) {
-					char tmpstr[80];
-					sprintf (tmpstr, "File: %s with owner: %s does not match input list\n", 
-						&dataName->value[dataName->len *i], &dataOwner->value[dataOwner->len * i]);
-					appendToByteBuf (stuff, tmpstr);
-				}
-			}
-			appendToByteBuf(stuff,"here's an answer for ya");
-
-		} else { /* input parameter for owner is not set */
-			
-			rodsLog (LOG_ERROR, "msiVerifyOwner: ownerlist is NULL");
-
-			/* just check if the owner name (whatever it is) is consistent across all files */
-			/* We'll just compare using the first file's owner - this can probably be done several ways */
-			char* firstowner = strdup(&dataOwner->value[0]); 
-
-			int matchflag=1;  /* Start off assuming all owners match */
-
-			for (i=1; i<genQueryOut->rowCnt; i++) {
-				char* thisowner = strdup( &dataOwner->value[dataOwner->len*i]);
-				if (strcmp(firstowner, thisowner)) { /* the two strings are not equal */
-					appendToByteBuf (stuff, "Owner is not consistent across this collection");
-					matchflag=0;
-					break;
-				}
-			}
-
-			appendToByteBuf (stuff,"let's get this party started\n");
-
-			if (matchflag) /* owner field was consistent across all data objects */
-				appendToByteBuf (stuff, "Owner is consistent across this collection.\n");
-			else
-				appendToByteBuf (stuff, "Owner is not consistent across this collection.\n");
-		}	
-	} 
-
-	fillBufLenInMsParam (mPout1, stuff->len, stuff);
-	fillIntInMsParam (mPout1, rei->status);
-  
-	return(rei->status);
-
-}
-
-
-/**
- * \fn	msiCheckFileDatatypes
- * \module	integrityChecks
- * \author	Susan Lindsey
- * \date	December 2006
- * \brief	Check if files in a collection belong to a given data type
- * \note
- * \param[in]
- * \param[out]
- * \DolVarDependence	none
- * \DolVarModified		none
- * \iCatAtrDependence	none
- * \iCatAttrModified	none
- * \sideeffect
- * \return	integer
- * \retval	0 on success
- * \bug		no known bugs
-**/
-int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, ruleExecInfo_t *rei) {
-
-	genQueryInp_t genQueryInp;
-	genQueryOut_t *genQueryOut = NULL;
-	char condStr[MAX_NAME_LEN];
-	rsComm_t *rsComm;
-	char collname[200];
-	char datatypeparam[200];
+	char collname[MAX_NAME_LEN];
+	char datatypeparam[MAX_NAME_LEN];
 	int i,j;
 	sqlResult_t *dataName;
 	sqlResult_t *dataType;
 	char delims[]=",";
 	char* word;
-
 	keyValPair_t	*results;	
 	char* key;
 	char* value;
 	
-	RE_TEST_MACRO ("    Calling msiCheckDatatypes")
+	RE_TEST_MACRO ("    Calling msiVerifyDataType")
 
 	/* Sanity check */
 	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiCheckFileDatatypes: input rei or rsComm is NULL");
+		rodsLog (LOG_ERROR, "msiVerifyDataType: input rei or rsComm is NULL");
 		return (SYS_INTERNAL_NULL_INPUT_ERR);
 	}
 
 	rsComm = rei->rsComm;
 
-
 	/* construct an SQL query from the parameter list */
-	strcpy (collname,  (char*) mPin1->inOutStruct);
-	strcpy (datatypeparam, (char*) mPin2->inOutStruct);
+	strcpy (collname,  (char*) collinp->inOutStruct);
+	strcpy (datatypeparam, (char*) datatypeinp->inOutStruct);
 
 	fprintf (stderr, "datatypeparam: %s\n", datatypeparam);
 
@@ -661,8 +711,112 @@ int msiCheckFileDatatypes (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1
 
 	}
 
-	fillMsParam (mPin2, NULL, KeyValPair_MS_T, results, NULL);
-	fillIntInMsParam (mPout1, rei->status);
+	fillMsParam (bufout, NULL, KeyValPair_MS_T, results, NULL);
+	fillIntInMsParam (statout, rei->status);
+  
+	return(rei->status);
+
+}
+
+/**
+ * \fn	msiVerifyFileSizeRange
+ * \module	integrityChecks
+ * \author	Susan Lindsey
+ * \date	August 2008
+ * \brief	Check to see if file sizes are NOT within a certain range
+ * \note
+ * \param[in] collinp=string=collection name, minsizeinp=lower limit on filesize, maxsizeinp=upper limit on filesize
+ * \param[out]
+ * \DolVarDependence	none
+ * \DolVarModified		none
+ * \iCatAtrDependence	none
+ * \iCatAttrModified	none
+ * \sideeffect
+ * \return	integer
+ * \retval	0 on success
+ * \bug		no known bugs
+**/
+int msiVerifyFileSizeRange (msParam_t* collinp, msParam_t* minsizeinp, msParam_t* maxsizeinp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei) {
+
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut = NULL;
+	char condStr[MAX_NAME_LEN];
+	rsComm_t *rsComm;
+	char collname[MAX_NAME_LEN];
+	char maxfilesize[MAX_NAME_LEN]; 
+	char minfilesize[MAX_NAME_LEN];
+	int i,j;
+	sqlResult_t *dataName;
+	sqlResult_t *dataSize;
+	keyValPair_t	*results;	
+	char* key;
+	char* value;
+	
+	RE_TEST_MACRO ("    Calling msiVerifyFileSizeRange")
+
+	/* Sanity check */
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiVerifyFileSizeRange: input rei or rsComm is NULL");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	rsComm = rei->rsComm;
+
+	/* construct an SQL query from the input parameter list */
+	strcpy (collname,  (char*) collinp->inOutStruct);
+	strcpy (minfilesize, (char*) minsizeinp->inOutStruct);
+	strcpy (maxfilesize, (char*) maxsizeinp->inOutStruct);
+
+	/* But first, make sure our size range is valid */
+	if (atoi(minfilesize) >= atoi(maxfilesize)) {
+		return (USER_PARAM_TYPE_ERR);
+	}
+
+	// initialize results to 0; AddKeyVal does all our malloc-ing
+	results = (keyValPair_t*) malloc (sizeof(keyValPair_t));
+	memset (results, 0, sizeof(keyValPair_t));
+
+	memset (&genQueryInp, 0, sizeof(genQueryInp_t));
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+
+	/* this is the info we want returned from the query */
+	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+
+	/* build the condition:
+		collection name AND (filesize < minfilesize or filesize > maxfilesize) */
+
+	snprintf (condStr, MAX_NAME_LEN, " < '%s' || > '%s'", minfilesize, maxfilesize);
+	addInxVal (&genQueryInp.sqlCondInp, COL_DATA_SIZE, condStr); 
+	snprintf (condStr, MAX_NAME_LEN, " = '%s'", collname);
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr); 
+
+	j = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+	if (j != CAT_NO_ROWS_FOUND) {
+
+		/* we got results - do something cool */
+		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
+		dataSize = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
+		for (i=0; i<genQueryOut->rowCnt; i++) {
+			// fprintf (stderr, "dataName[%d]:%s\n",i,&dataName->value[dataName->len * i]);
+			key = strdup (&dataName->value[dataName->len *i]);
+			// fprintf (stderr, "dataSize[%d]:%s\n",i,&dataSize->value[dataSize->len * i]);
+			value = strdup (&dataSize->value[dataSize->len * i]);
+			addKeyVal (results, key, value);
+		}
+
+	} else {
+		fillIntInMsParam (statout, rei->status);
+		return (rei->status);  
+	}
+
+	//printGenQueryOut(stderr, NULL, NULL, genQueryOut);
+
+	fillMsParam (bufout, NULL, KeyValPair_MS_T, results, NULL);
+	fillIntInMsParam (statout, rei->status);
   
 	return(rei->status);
 
