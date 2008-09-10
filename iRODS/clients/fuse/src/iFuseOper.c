@@ -18,7 +18,7 @@ extern pathCacheQue_t PathArray[];
 
 #define	CACHE_FUSE_PATH		1
 #ifdef CACHE_FUSE_PATH
-/* #define CACHE_FILE_FOR_READ	1 */
+#define CACHE_FILE_FOR_READ	1
 #endif
 
 int
@@ -647,8 +647,10 @@ struct fuse_file_info *fi)
 {
     int descInx;
     int status, myError;
+#if 0
     dataObjReadInp_t dataObjReadInp;
     bytesBuf_t dataObjReadOutBBuf;
+#endif
 
     rodsLog (LOG_DEBUG, "irodsRead: %s", path);
 
@@ -669,6 +671,8 @@ struct fuse_file_info *fi)
         }
     }
 
+#if 0
+    /* if (IFuseDesc[descInx].locCacheState == NO_READ_CACHE) { */
     dataObjReadOutBBuf.buf = buf;
     dataObjReadOutBBuf.len = size;
     dataObjReadInp.l1descInx = IFuseDesc[descInx].iFd;
@@ -687,6 +691,11 @@ struct fuse_file_info *fi)
         relIFuseConn (&DefConn);
         return (status);
     }
+#endif
+    status = ifuseRead (path, descInx, buf, size, offset);
+
+    relIFuseConn (&DefConn);
+    return status;
 }
 
 int 
@@ -773,7 +782,9 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 {
     int descInx;
     int status, myError;
+#if 0
     dataObjCloseInp_t dataObjCloseInp;
+#endif
 
     rodsLog (LOG_DEBUG, "irodsRelease: %s", path);
 
@@ -801,10 +812,13 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     }
 #endif
 
+#if 0
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = IFuseDesc[descInx].iFd;
 
     status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
+#endif
+    status = ifuseClose ((char *) path, descInx);
 
     relIFuseConn (&DefConn);
 

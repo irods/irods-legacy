@@ -12,6 +12,8 @@
 #define MAX_IFUSE_DESC   1024
 #define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
 
+#define FUSE_CACHE_DIR	"/tmp/fuseCache"
+
 #define FD_FREE		0
 #define FD_INUSE	1 
 
@@ -22,7 +24,7 @@ typedef struct BufCache {
 } bufCache_t;
 
 typedef enum { 
-    NO_READ_CACHE,
+    NO_FILE_CACHE,
     HAVE_READ_CACHE,
 } readCacheState_t;
 
@@ -37,7 +39,7 @@ typedef struct IFuseDesc {
     rodsLong_t bytesWritten;
     char *objPath;
     char *localPath;
-    readCacheState_t readCacheState;
+    readCacheState_t locCacheState;
 } iFuseDesc_t;
 
 #define NUM_PATH_HASH_SLOT	201
@@ -51,7 +53,7 @@ typedef struct PathCache {
     struct PathCache *prev;
     struct PathCache *next;
     void *pathCacheQue;
-    readCacheState_t readCacheState;
+    readCacheState_t locCacheState;
 } pathCache_t;
 
 typedef struct PathCacheQue {
@@ -84,6 +86,9 @@ freeIFuseDesc (int descInx);
 int
 fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath,
 char *localPath);
+int
+ifuseRead (const char *path, int descInx, char *buf, size_t size, 
+off_t offset);
 int
 ifuseLseek (const char *path, int descInx, off_t offset);
 int
@@ -137,6 +142,10 @@ int
 irodsOpenWithReadCache (char *path, int flags);
 int
 freePathCache (pathCache_t *tmpPathCache);
+int
+getFileCachePath (char *inPath, char *cacehPath);
+int
+setAndMkFileCacheDir ();
 #ifdef  __cplusplus
 }
 #endif

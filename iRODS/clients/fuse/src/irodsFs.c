@@ -110,6 +110,12 @@ main (int argc, char **argv)
         exit (1);
     }
 
+    srandom((unsigned int) time(0) % getpid());
+
+#ifdef CACHE_FILE_FOR_READ
+    if (setAndMkFileCacheDir () < 0) exit (1);
+#endif
+
     memset (&DefConn, 0, sizeof (DefConn));
 
     pthread_mutex_init (&DefConn.lock, NULL);
