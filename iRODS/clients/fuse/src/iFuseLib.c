@@ -675,11 +675,15 @@ updatePathCacheStat (pathCache_t *tmpPathCache)
 
     if (tmpPathCache->locCacheState != NO_FILE_CACHE &&
       tmpPathCache->locCachePath != NULL) {
-	status = stat (tmpPathCache->locCachePath, &tmpPathCache->stbuf);
-	if (status < 0)
+	struct stat stbuf;
+	status = stat (tmpPathCache->locCachePath, &stbuf);
+	if (status < 0) {
 	    return (errno ? (-1 * errno) : -1);
-	else
+	} else {
+	    /* update the size */
+	    tmpPathCache->stbuf.st_size = stbuf.st_size; 
 	    return 0; 
+	}
     } else {
 	return 0;
     }
@@ -798,7 +802,7 @@ setAndMkFileCacheDir ()
 
     myPasswd = getpwuid(getuid());
 
-    if ((tmpStr = getenv (FuseCacheDir)) != NULL) {
+    if ((tmpStr = getenv (FuseCacheDir)) != NULL && strlen (tmpStr) > 0) {
 	tmpDir = tmpStr;
     } else {
 	tmpDir = FUSE_CACHE_DIR;
