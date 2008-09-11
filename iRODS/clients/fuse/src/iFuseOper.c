@@ -799,17 +799,21 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 
 #ifdef CACHE_FUSE_PATH
     if (IFuseDesc[descInx].bytesWritten > 0) {
+	int goodStat = 0;
         if (IFuseDesc[descInx].newFlag > 0) {
             pathCache_t *tmpPathCache;
 
             /* newly created. Just update the size */
             if (matchPathInPathCache ((char *) path, PathArray,
              &tmpPathCache) == 1) {
-                tmpPathCache->stbuf.st_size += IFuseDesc[descInx].bytesWritten;
-            }
-        } else {
-            rmPathFromCache ((char *) path, PathArray);
+		
+	        if (tmpPathCache->locCachePath != NULL) {
+                    status = updatePathCacheStat (tmpPathCache);
+                    if (status >= 0) goodStat = 1;
+		}
+	    }
         }
+	if (goodStat == 0) rmPathFromCache ((char *) path, PathArray);
     }
 #endif
 
