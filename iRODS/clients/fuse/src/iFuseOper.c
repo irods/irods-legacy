@@ -202,62 +202,94 @@ off_t offset, struct fuse_file_info *fi)
 int 
 irodsMknod (const char *path, mode_t mode, dev_t rdev)
 {
-    dataObjInp_t dataObjInp;
-    int status;
+#ifdef CACHE_FUSE_PATH
+    int descInx;
+#endif
+    struct stat stbuf;
+    int status = -1;
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    char cachePath[MAX_NAME_LEN];
+    uint mytime;
+    pathCache_t *tmpPathCache = NULL;
+#endif
+    char irodsPath[MAX_NAME_LEN];
 
     rodsLog (LOG_DEBUG, "irodsMknod: %s", path);
 
-    memset (&dataObjInp, 0, sizeof (dataObjInp));
-    status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
-      dataObjInp.objPath);
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status, 
-	  "irodsMknod: parseRodsPathStr of %s error", path);
-        /* use ENOTDIR for this type of error */
-        return -ENOTDIR;
-    }
-
-    if (strlen (MyRodsEnv.rodsDefResource) > 0) {
-        addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, 
-	  MyRodsEnv.rodsDefResource);
-    }
-
-    addKeyVal (&dataObjInp.condInput, DATA_TYPE_KW, "generic");
-    /* dataObjInp.createMode = DEF_FILE_CREATE_MODE; */
-    dataObjInp.createMode = mode;
-    dataObjInp.openFlags = O_WRONLY;
-    dataObjInp.dataSize = -1;
+    if (_irodsGetattr (path, &stbuf, NULL) >= 0) 
+	return -EEXIST;
 
     getIFuseConn (&DefConn, &MyRodsEnv);
-    status = rcDataObjCreate (DefConn.conn, &dataObjInp);
-    relIFuseConn (&DefConn);
-
-    clearKeyVal (&dataObjInp.condInput);
-
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    status = irodsMknodWithCache ((char *)path, mode, cachePath);
+    irodsPath[0] = '\0';
+#endif 	/* CACHE_FILE_FOR_NEWLY_CREATED */
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "irodsMknod: rcDataObjCreate of %s error", path);
-        return -ENOENT;
-    } else {
-#ifdef CACHE_FUSE_PATH
-	int descInx;
-
-        descInx = allocIFuseDesc ();
-
-        if (descInx < 0) {
-            rodsLogError (LOG_ERROR, descInx,
-              "irodsMknod: allocIFuseDesc of %s error", path);
-	    closeIrodsFd (status);
-            return 0;
+#if 0
+        memset (&dataObjInp, 0, sizeof (dataObjInp));
+        status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
+          dataObjInp.objPath);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status, 
+	      "irodsMknod: parseRodsPathStr of %s error", path);
+            /* use ENOTDIR for this type of error */
+            relIFuseConn (&DefConn);
+            return -ENOTDIR;
         }
-        fillIFuseDesc (descInx, DefConn.conn, status, dataObjInp.objPath,
-          (char *) path);
-	rmPathFromCache ((char *) path, NonExistPathArray);
-	addNewlyCreatedToCache ((char *) path, descInx, mode);
-#else
-	closeIrodsFd (status);
+
+        if (strlen (MyRodsEnv.rodsDefResource) > 0) {
+            addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, 
+	      MyRodsEnv.rodsDefResource);
+        }
+
+        addKeyVal (&dataObjInp.condInput, DATA_TYPE_KW, "generic");
+        /* dataObjInp.createMode = DEF_FILE_CREATE_MODE; */
+        dataObjInp.createMode = mode;
+        dataObjInp.openFlags = O_WRONLY;
+        dataObjInp.dataSize = -1;
+
+        status = rcDataObjCreate (DefConn.conn, &dataObjInp);
+
+        clearKeyVal (&dataObjInp.condInput);
 #endif
+	status = dataObjCreateByFusePath ((char *) path, mode, irodsPath);
+
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "irodsMknod: rcDataObjCreate of %s error", path);
+            relIFuseConn (&DefConn);
+            return -ENOENT;
+	}
     }
+    rmPathFromCache ((char *) path, NonExistPathArray);
+#ifdef CACHE_FUSE_PATH
+    descInx = allocIFuseDesc ();
+
+    if (descInx < 0) {
+        rodsLogError (LOG_ERROR, descInx,
+          "irodsMknod: allocIFuseDesc of %s error", path);
+	closeIrodsFd (status);
+        relIFuseConn (&DefConn);
+        return 0;
+    }
+    fillIFuseDesc (descInx, DefConn.conn, status, irodsPath,
+      (char *) path);
+    addNewlyCreatedToCache ((char *) path, descInx, mode);
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    mytime = time (0); 
+    fillFileStat (&stbuf, mode, 0, mytime, mytime, mytime);
+
+    addPathToCache ((char *) path, PathArray, &stbuf, &tmpPathCache);
+    tmpPathCache->locCachePath = strdup (cachePath);
+    tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
+    IFuseDesc[descInx].locCacheState = HAVE_NEWLY_CREATED_CACHE;
+    IFuseDesc[descInx].createMode = mode;
+#endif
+
+#else   /* CACHE_FUSE_PATH */ 
+    closeIrodsFd (status);
+#endif  /* CACHE_FUSE_PATH */ 
+    relIFuseConn (&DefConn);
 
     return (0);
 }
@@ -589,11 +621,13 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsOpen: %s, flags = %d", path, fi->flags);
 
+    getIFuseConn (&DefConn, &MyRodsEnv);
 #ifdef CACHE_FUSE_PATH
     if ((descInx = getDescInxInNewlyCreatedCache ((char *) path, fi->flags)) 
      > 0) {
 	rodsLog (LOG_DEBUG, "irodsOpen: a match for %s", path);
 	fi->fh = descInx;
+        relIFuseConn (&DefConn);
 	return (0);
     }
 #endif
@@ -602,6 +636,7 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
      > 0) {
         rodsLog (LOG_DEBUG, "irodsOpen: a match for %s", path);
         fi->fh = descInx;
+        relIFuseConn (&DefConn);
         return (0);
     }
 #endif
@@ -612,12 +647,12 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
         rodsLogError (LOG_ERROR, status, 
 	  "irodsOpen: parseRodsPathStr of %s error", path);
         /* use ENOTDIR for this type of error */
+        relIFuseConn (&DefConn);
         return -ENOTDIR;
     }
 
     dataObjInp.openFlags = fi->flags;
 
-    getIFuseConn (&DefConn, &MyRodsEnv);
     fd = rcDataObjOpen (DefConn.conn, &dataObjInp);
     relIFuseConn (&DefConn);
 
@@ -663,7 +698,7 @@ struct fuse_file_info *fi)
 	return -EBADF;
     }
 
-    if ((status = ifuseLseek (path, descInx, offset)) < 0) {
+    if ((status = ifuseLseek ((char *) path, descInx, offset)) < 0) {
         relIFuseConn (&DefConn);
         if ((myError = getUnixErrno (status)) > 0) {
             return (-myError);
@@ -693,7 +728,7 @@ struct fuse_file_info *fi)
         return (status);
     }
 #endif
-    status = ifuseRead (path, descInx, buf, size, offset);
+    status = ifuseRead ((char *) path, descInx, buf, size, offset);
 
     relIFuseConn (&DefConn);
     return status;
@@ -705,8 +740,6 @@ struct fuse_file_info *fi)
 {
     int descInx;
     int status, myError;
-    dataObjWriteInp_t dataObjWriteInp;
-    bytesBuf_t dataObjWriteInpBBuf;
 
     rodsLog (LOG_DEBUG, "irodsWrite: %s", path);
 
@@ -718,7 +751,7 @@ struct fuse_file_info *fi)
         return -EBADF;
     }
 
-    if ((status = ifuseLseek (path, descInx, offset)) < 0) {
+    if ((status = ifuseLseek ((char *) path, descInx, offset)) < 0) {
         relIFuseConn (&DefConn);
         if ((myError = getUnixErrno (status)) > 0) {
             return (-myError);
@@ -727,6 +760,7 @@ struct fuse_file_info *fi)
         }
     }
 
+#if 0
     dataObjWriteInpBBuf.buf = (void *) buf;
     dataObjWriteInpBBuf.len = size;
     dataObjWriteInp.l1descInx = IFuseDesc[descInx].iFd;
@@ -749,6 +783,9 @@ struct fuse_file_info *fi)
         IFuseDesc[descInx].offset += status;
 	IFuseDesc[descInx].bytesWritten += status;
     }
+#endif
+    status = ifuseWrite ((char *) path, descInx, (char *)buf, size, offset);
+
     relIFuseConn (&DefConn);
     return status;
 }
@@ -797,6 +834,7 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
         relIFuseConn (&DefConn);
     }
 
+#if 0
 #ifdef CACHE_FUSE_PATH
     if (IFuseDesc[descInx].bytesWritten > 0) {
 	int goodStat = 0;
@@ -817,7 +855,6 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     }
 #endif
 
-#if 0
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = IFuseDesc[descInx].iFd;
 

@@ -391,14 +391,15 @@ char *localPath)
         /* rstrcpy (IFuseDesc[descInx].localPath, localPath, MAX_NAME_LEN); */
         IFuseDesc[descInx].localPath = strdup (localPath);
     }
- return (0);
+    return (0);
 }
 
-/* need to call getIFuseConn before calling ifuseLseek */
+/* need to call getIFuseConn before calling ifuseClose */
 int
-ifuseClose (const char *path, int descInx)
+ifuseClose (char *path, int descInx)
 {
-    int status;
+    int status = 0;
+    int savedStatus = 0;
 
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
         dataObjCloseInp_t dataObjCloseInp;
@@ -407,16 +408,195 @@ ifuseClose (const char *path, int descInx)
         dataObjCloseInp.l1descInx = IFuseDesc[descInx].iFd;
 
         status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
-    } else {
+    } else {	/* cached */
+        if (IFuseDesc[descInx].bytesWritten > 0) {
+            int goodStat = 0;
+            if (IFuseDesc[descInx].newFlag > 0 || 
+	      IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
+                pathCache_t *tmpPathCache;
+                /* newly created. Just update the size */
+                if (matchPathInPathCache ((char *) path, PathArray,
+                 &tmpPathCache) == 1 && tmpPathCache->locCachePath != NULL) {
+                    status = updatePathCacheStat (tmpPathCache);
+                    if (status >= 0) goodStat = 1;
+		    status = ifusePut (path, tmpPathCache->locCachePath,
+		      IFuseDesc[descInx].createMode, 
+		      tmpPathCache->stbuf.st_size);
+		    if (status < 0) {
+		        rodsLog (LOG_ERROR,
+                          "ifuseClose: ifusePut of %s error, status = %d",
+                           path, status);
+			savedStatus = -EBADF;
+		    }
+                } else {
+                    /* should not be here. but cache may be removed that we
+		     * may have to deal with it */
+                    rodsLog (LOG_ERROR,
+                      "ifuseClose: IFuseDesc indicated a newly created cache, but does not exist for %s",
+                       path);
+		    savedStatus = -EBADF;
+	        }
+            } else {
+	        /* should not be here */
+                rodsLog (LOG_ERROR,
+                  "ifuseClose: bytesWritten to not newly created cache for %s",
+                   path);
+		savedStatus = -EBADF;
+	    }
+
+            if (goodStat == 0) rmPathFromCache ((char *) path, PathArray);
+        }
 	status = close (IFuseDesc[descInx].iFd);
-	if (status < 0) status = (errno ? (-1 * errno) : -1);
+	if (status < 0) {
+	    status = (errno ? (-1 * errno) : -1);
+	} else {
+	    status = savedStatus;
+	}
     }
     return (status);
 }
 
-/* need to call getIFuseConn before calling ifuseLseek */
 int
-ifuseRead (const char *path, int descInx, char *buf, size_t size, 
+ifusePut (char *path, char *locCachePath, int mode, rodsLong_t srcSize)
+{
+    dataObjInp_t dataObjInp;
+    int status;
+
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
+      dataObjInp.objPath);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "ifusePut: parseRodsPathStr of %s error", path);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+    dataObjInp.dataSize = srcSize;
+    dataObjInp.createMode = mode;
+    dataObjInp.openFlags = O_RDWR;
+    addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
+    addKeyVal (&dataObjInp.condInput, DATA_TYPE_KW, "generic");
+    if (strlen (MyRodsEnv.rodsDefResource) > 0) {
+        addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW,
+          MyRodsEnv.rodsDefResource);
+    }
+
+    status = rcDataObjPut (DefConn.conn, &dataObjInp, locCachePath);
+    return (status);
+}
+
+/* need to call getIFuseConn before calling ifuseWrite */
+int
+ifuseWrite (char *path, int descInx, char *buf, size_t size,
+off_t offset)
+{
+    int status, myError;
+    char irodsPath[MAX_NAME_LEN];
+    dataObjWriteInp_t dataObjWriteInp;
+    bytesBuf_t dataObjWriteInpBBuf;
+
+
+    if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
+        dataObjWriteInpBBuf.buf = (void *) buf;
+        dataObjWriteInpBBuf.len = size;
+        dataObjWriteInp.l1descInx = IFuseDesc[descInx].iFd;
+        dataObjWriteInp.len = size;
+
+        status = rcDataObjWrite (DefConn.conn, &dataObjWriteInp,
+          &dataObjWriteInpBBuf);
+        if (status < 0) {
+            if ((myError = getUnixErrno (status)) > 0) {
+                return (-myError);
+            } else {
+                return -ENOENT;
+            }
+        } else if (status != size) {
+            rodsLog (LOG_ERROR,
+              "ifuseWrite: rcDataObjWrite of %s error, wrote %d, toWrite %d",
+               path, status, size);
+            return -ENOENT;
+        }
+        IFuseDesc[descInx].offset += status;
+    } else {
+        status = write (IFuseDesc[descInx].iFd, buf, size);
+
+        if (status < 0) return (errno ? (-1 * errno) : -1);
+        IFuseDesc[descInx].offset += status;
+	if (IFuseDesc[descInx].offset >= MAX_NEWLY_CREATED_CACHE_SIZE) {
+	    int irodsFd; 
+	    int status1;
+	    struct stat stbuf;
+	    char *mybuf;
+	    rodsLong_t myoffset;
+
+	    /* need to write it to iRods */
+	    irodsFd = dataObjCreateByFusePath (path, 
+	      IFuseDesc[descInx].createMode, irodsPath);
+	    if (irodsFd < 0) {
+                rodsLog (LOG_ERROR,
+                  "ifuseWrite: dataObjCreateByFusePath of %s error, stat=%d",
+                 path, irodsFd);
+		close (IFuseDesc[descInx].iFd);
+		rmPathFromCache ((char *) path, PathArray);
+                return -ENOENT;
+	    }
+	    status1 = fstat (IFuseDesc[descInx].iFd, &stbuf);
+            if (status1 < 0) {
+		close (IFuseDesc[descInx].iFd);
+		rmPathFromCache ((char *) path, PathArray);
+		return (errno ? (-1 * errno) : -1);
+	    }
+	    mybuf = malloc (stbuf.st_size);
+	    status1 = read (IFuseDesc[descInx].iFd, mybuf, stbuf.st_size);
+            if (status1 < 0) {
+		close (IFuseDesc[descInx].iFd);
+                rmPathFromCache ((char *) path, PathArray);
+                return (errno ? (-1 * errno) : -1);
+            }
+            dataObjWriteInpBBuf.buf = (void *) mybuf;
+            dataObjWriteInpBBuf.len = stbuf.st_size;
+            dataObjWriteInp.l1descInx = irodsFd;
+            dataObjWriteInp.len = stbuf.st_size;
+
+            status1 = rcDataObjWrite (DefConn.conn, &dataObjWriteInp,
+              &dataObjWriteInpBBuf);
+	    free (mybuf);
+            close (IFuseDesc[descInx].iFd);
+            rmPathFromCache ((char *) path, PathArray);
+
+            if (status1 < 0) {
+                if ((myError = getUnixErrno (status1)) > 0) {
+                    status1 = (-myError);
+                } else {
+                    status1 = -ENOENT;
+                }
+		IFuseDesc[descInx].iFd = 0;
+                return (status1);
+	    } else {
+		IFuseDesc[descInx].iFd = irodsFd;
+		IFuseDesc[descInx].locCacheState = NO_FILE_CACHE;
+	    }
+	    /* one last thing - seek to the right offset */
+            myoffset = IFuseDesc[descInx].offset;
+	    IFuseDesc[descInx].offset = 0;
+            if ((status1 = ifuseLseek ((char *) path, descInx, myoffset)) 
+	      < 0) {
+                if ((myError = getUnixErrno (status1)) > 0) {
+                    return (-myError);
+                } else {
+                    return -ENOENT;
+                }
+	    }
+	}
+    }
+    IFuseDesc[descInx].bytesWritten += status;
+
+    return status;
+}
+
+/* need to call getIFuseConn before calling ifuseRead */
+int
+ifuseRead (char *path, int descInx, char *buf, size_t size, 
 off_t offset)
 {
     int status;
@@ -452,7 +632,7 @@ off_t offset)
 
 /* need to call getIFuseConn before calling ifuseLseek */ 
 int
-ifuseLseek (const char *path, int descInx, off_t offset)
+ifuseLseek (char *path, int descInx, off_t offset)
 {
     int status;
 
@@ -689,6 +869,28 @@ updatePathCacheStat (pathCache_t *tmpPathCache)
     }
 }
 
+/* need to call getIFuseConn before calling irodsMknodWithCache */
+int
+irodsMknodWithCache (char *path, mode_t mode, char *cachePath)
+{
+    int status;
+    int fd;
+
+    if ((status = getFileCachePath (path, cachePath)) < 0)
+        return status;
+
+    fd = creat (cachePath, mode);
+    if (fd < 0) {
+        rodsLog (LOG_ERROR,
+          "irodsMknodWithCache: local cache creat error for %s, errno = %d",
+          cachePath, errno);
+        return(errno ? (-1 * errno) : -1);
+    } else {
+        return fd;
+    }
+}
+
+/* need to call getIFuseConn before calling irodsOpenWithReadCache */
 int
 irodsOpenWithReadCache (char *path, int flags)
 {
@@ -708,7 +910,6 @@ irodsOpenWithReadCache (char *path, int flags)
     /* too big to cache */
     if (stbuf.st_size > MAX_READ_CACHE_SIZE) return -1;	
 
-    getIFuseConn (&DefConn, &MyRodsEnv);
     if (tmpPathCache->locCachePath == NULL) {
 
         rodsLog (LOG_DEBUG, "irodsOpenWithReadCache: caching %s", path);
@@ -722,7 +923,6 @@ irodsOpenWithReadCache (char *path, int flags)
         if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "irodsOpenWithReadCache: parseRodsPathStr of %s error", path);
-	    relIFuseConn (&DefConn);
             /* use ENOTDIR for this type of error */
             return -ENOTDIR;
         }
@@ -736,7 +936,6 @@ irodsOpenWithReadCache (char *path, int flags)
               "irodsOpenWithReadCache: rcDataObjGet of %s error", 
 	      dataObjInp.objPath);
 
-	    relIFuseConn (&DefConn);
 	    return status; 
 	}
         tmpPathCache->locCachePath = strdup (cachePath);
@@ -750,8 +949,7 @@ irodsOpenWithReadCache (char *path, int flags)
     if (fd < 0) {
         rodsLog (LOG_ERROR,
           "irodsOpenWithReadCache: local cache open error for %s, errno = %d",
-          cachePath, errno);
-	relIFuseConn (&DefConn);
+          tmpPathCache->locCachePath, errno);
 	return(errno ? (-1 * errno) : -1);
     }
 
@@ -759,14 +957,11 @@ irodsOpenWithReadCache (char *path, int flags)
     if (descInx < 0) {
         rodsLogError (LOG_ERROR, descInx,
           "irodsOpenWithReadCache: allocIFuseDesc of %s error", path);
-        relIFuseConn (&DefConn);
         return -ENOENT;
     }
     fillIFuseDesc (descInx, DefConn.conn, fd, dataObjInp.objPath,
       (char *) path);
     IFuseDesc[descInx].locCacheState = HAVE_READ_CACHE;
-
-    relIFuseConn (&DefConn);
 
     return descInx;
 }
@@ -820,3 +1015,37 @@ setAndMkFileCacheDir ()
 
 }
 
+int
+dataObjCreateByFusePath (char *path, int mode, char *outIrodsPath)
+{
+    dataObjInp_t dataObjInp;
+    int status;
+
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,
+      dataObjInp.objPath);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "dataObjCreateByFusePath: parseRodsPathStr of %s error", path);
+        /* use ENOTDIR for this type of error */
+        return -ENOTDIR;
+    }
+
+    if (strlen (MyRodsEnv.rodsDefResource) > 0) {
+        addKeyVal (&dataObjInp.condInput, RESC_NAME_KW,
+          MyRodsEnv.rodsDefResource);
+    }
+
+    addKeyVal (&dataObjInp.condInput, DATA_TYPE_KW, "generic");
+    /* dataObjInp.createMode = DEF_FILE_CREATE_MODE; */
+    dataObjInp.createMode = mode;
+    dataObjInp.openFlags = O_RDWR;
+    dataObjInp.dataSize = -1;
+
+    status = rcDataObjCreate (DefConn.conn, &dataObjInp);
+    clearKeyVal (&dataObjInp.condInput);
+    if (status >= 0 && outIrodsPath != NULL)
+	rstrcpy (outIrodsPath, dataObjInp.objPath, MAX_NAME_LEN);
+
+    return status;
+}

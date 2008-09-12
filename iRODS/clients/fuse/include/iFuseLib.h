@@ -11,11 +11,13 @@
 #define CACHE_FUSE_PATH         1
 #ifdef CACHE_FUSE_PATH
 #define CACHE_FILE_FOR_READ     1
+#define CACHE_FILE_FOR_NEWLY_CREATED     1
 #endif
 
 #define MAX_BUF_CACHE   2
 #define MAX_IFUSE_DESC   1024
 #define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
+#define MAX_NEWLY_CREATED_CACHE_SIZE   (1024*1024)	/* 1 mb */
 
 #define FUSE_CACHE_DIR	"/tmp/fuseCache"
 
@@ -31,6 +33,7 @@ typedef struct BufCache {
 typedef enum { 
     NO_FILE_CACHE,
     HAVE_READ_CACHE,
+    HAVE_NEWLY_CREATED_CACHE,
 } readCacheState_t;
 
 typedef struct IFuseDesc {
@@ -40,6 +43,7 @@ typedef struct IFuseDesc {
     int inuseFlag;      /* 0 means not in use */
     int iFd;    /* irods client fd */
     int newFlag;
+    int createMode;
     rodsLong_t offset;
     rodsLong_t bytesWritten;
     char *objPath;
@@ -92,10 +96,13 @@ int
 fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath,
 char *localPath);
 int
-ifuseRead (const char *path, int descInx, char *buf, size_t size, 
+ifuseWrite (char *path, int descInx, char *buf, size_t size,
 off_t offset);
 int
-ifuseLseek (const char *path, int descInx, off_t offset);
+ifuseRead (char *path, int descInx, char *buf, size_t size, 
+off_t offset);
+int
+ifuseLseek (char *path, int descInx, off_t offset);
 int
 getIFuseConn (iFuseConn_t *iFuseConn, rodsEnv *MyRodsEnv);
 int
@@ -144,6 +151,8 @@ int
 fillFileStat (struct stat *stbuf, uint mode, rodsLong_t size, uint ctime,
 uint mtime, uint atime);
 int
+irodsMknodWithCache (char *path, mode_t mode, char *cachePath);
+int
 irodsOpenWithReadCache (char *path, int flags);
 int
 freePathCache (pathCache_t *tmpPathCache);
@@ -154,7 +163,11 @@ setAndMkFileCacheDir ();
 int 
 updatePathCacheStat (pathCache_t *tmpPathCache);
 int
-ifuseClose (const char *path, int descInx);
+ifuseClose (char *path, int descInx);
+int
+dataObjCreateByFusePath (char *path, int mode, char *outIrodsPath);
+int
+ifusePut (char *path, char *locCachePath, int mode, rodsLong_t srcSize);
 #ifdef  __cplusplus
 }
 #endif
