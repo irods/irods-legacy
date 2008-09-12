@@ -11,4 +11,5 @@
 { "msiHiThere",				1,	(funcPtr) msiHiThere },
 { "msiTestWritePosInt",		1,	(funcPtr) msiTestWritePosInt },
 { "msiListColl",			2,	(funcPtr) msiListColl },
+{ "msiTestForEachExec",		1,	(funcPtr) msiTestForEachExec },
 

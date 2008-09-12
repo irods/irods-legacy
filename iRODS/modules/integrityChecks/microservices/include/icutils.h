@@ -15,9 +15,11 @@
 #include "rods.h"
 #include "rodsGenQuery.h"
 
-int msiListFields (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t *mPout2, ruleExecInfo_t *rei);
+int msiListFields (msParam_t *collinp, msParam_t *fieldinp, 
+	msParam_t *bufout, msParam_t* statout, ruleExecInfo_t *rei);
 
 /* junk functions */
+int msiTestForEachExec (msParam_t* mPout1, ruleExecInfo_t *rei);
 int msiHiThere (msParam_t* mPout1, ruleExecInfo_t *rei);
 int msiTestWritePosInt (msParam_t* mPout1, ruleExecInfo_t *rei);
 

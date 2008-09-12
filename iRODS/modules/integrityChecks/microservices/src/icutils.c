@@ -3,7 +3,8 @@
 
 
 /* Utility function for listing file object and an input parameter field */
-int msiListFields (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msParam_t* mPout2, ruleExecInfo_t *rei) {
+int msiListFields (msParam_t *collinp, msParam_t *fieldinp, 
+	msParam_t *bufout, msParam_t* statout, ruleExecInfo_t *rei) {
 
 	genQueryInp_t gqin;
 	genQueryOut_t *gqout = NULL;
@@ -17,7 +18,6 @@ int msiListFields (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPara
 	bytesBuf_t*	mybuf=NULL;
 	int i,j;
 	int	fieldid;
-	int debug=1;
 
 	RE_TEST_MACRO ("    Calling msiListFields")
 
@@ -35,19 +35,16 @@ int msiListFields (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPara
 	gqout = (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
 	memset (gqout, 0, sizeof (genQueryOut_t));
 	memset (&gqin, 0, sizeof (genQueryInp_t));
-
 	gqin.maxRows = MAX_SQL_ROWS;
 
 	/* construct an SQL query from the parameter list */
-	collname = (char*) strdup (mPin1->inOutStruct);
-	fieldname = (char*) strdup (mPin2->inOutStruct);
+	collname = (char*) strdup (collinp->inOutStruct);
+	fieldname = (char*) strdup (fieldinp->inOutStruct);
 	if ((fieldid = getAttrIdFromAttrName(fieldname))==NO_COLUMN_NAME_FOUND) {
 		sprintf (tmpstr, "Field: %s not found in database", fieldname);
 		appendToByteBuf (mybuf, tmpstr);
 		return (-1);
 	}
-
-	if (debug) rodsLog (LOG_NOTICE, "fieldname: %s\tfieldid:%d", fieldname,fieldid);
 
 	/* this is the info we want returned from the query */
 	addInxIval (&gqin.selectInp, COL_DATA_NAME, 1);
@@ -66,18 +63,18 @@ int msiListFields (msParam_t *mPin1, msParam_t *mPin2, msParam_t *mPout1, msPara
 		dataName = getSqlResultByInx (gqout, COL_DATA_NAME);
 		dataField = getSqlResultByInx (gqout, fieldid);
 
-		rodsLog (LOG_ERROR, "got here 3 rowCnt=%d",gqout->rowCnt);
+		//rodsLog (LOG_ERROR, "got here 3 rowCnt=%d",gqout->rowCnt);
 
 		for (i=0; i<gqout->rowCnt; i++) {
-			sprintf (tmpstr, "Data object:%s\t%s:%s\n", &dataName->value[dataName->len *i], fieldname, &dataField->value[dataField->len *i]);
-		rodsLog (LOG_ERROR, "got here 4");
+			sprintf (tmpstr, "Data object:%s\t%s:%s,", &dataName->value[dataName->len *i], fieldname, &dataField->value[dataField->len *i]);
 			appendToByteBuf (mybuf, tmpstr);
 		}
 
 	} else appendToByteBuf (mybuf, "No matching rows found");
 
-	fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
-	fillIntInMsParam (mPout2, rei->status);
+	bufout->type = strdup(GenQueryOut_MS_T);
+	fillBufLenInMsParam (bufout, mybuf->len, mybuf);
+	fillIntInMsParam (statout, rei->status);
   
 	return(rei->status);
 	
@@ -92,6 +89,36 @@ int msiTestWritePosInt (msParam_t* mPout1, ruleExecInfo_t *rei) {
 	RE_TEST_MACRO ("    Calling msiTestWritePosInt")
 
 	fillIntInMsParam (mPout1, butter);
+
+	return(rei->status);
+	
+}
+
+/* Testing passing of info from C function to rule */
+int msiTestForEachExec (msParam_t* mPout1, ruleExecInfo_t *rei) {
+
+	int numbers[10];
+	int i;
+	bytesBuf_t* mybuf;
+	char tmpstr[MAX_NAME_LEN];
+
+	RE_TEST_MACRO ("    Calling msiTestForEachExec")
+
+	/* make some fake data */
+	for (i=0;i<10;i++) numbers[i]=i;	
+
+	mybuf = (bytesBuf_t *) malloc(sizeof(bytesBuf_t));
+	memset (mybuf,0, sizeof(bytesBuf_t));
+
+	/* mybuf will contain a comma-separated list */
+	for (i=0;i<10;i++) {
+		sprintf (tmpstr, "number[%d]=%d,", i, i);
+		appendToByteBuf (mybuf, tmpstr);
+	}
+
+	mPout1->type = strdup (STR_MS_T);
+	//fillBufLenInMsParam (mPout1, mybuf->len, mybuf);
+	fillStrInMsParam (mPout1, mybuf->buf);
 
 	return(rei->status);
 	
