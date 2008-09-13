@@ -17,7 +17,7 @@
 #define MAX_BUF_CACHE   2
 #define MAX_IFUSE_DESC   1024
 #define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
-#define MAX_NEWLY_CREATED_CACHE_SIZE   (1024*1024)	/* 1 mb */
+#define MAX_NEWLY_CREATED_CACHE_SIZE   (4*1024*1024)	/* 4 mb */
 
 #define FUSE_CACHE_DIR	"/tmp/fuseCache"
 
@@ -169,6 +169,8 @@ int
 dataObjCreateByFusePath (char *path, int mode, char *outIrodsPath);
 int
 ifusePut (char *path, char *locCachePath, int mode, rodsLong_t srcSize);
+int
+freeFileCache (pathCache_t *tmpPathCache);
 #ifdef  __cplusplus
 }
 #endif

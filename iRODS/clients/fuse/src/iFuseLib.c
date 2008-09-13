@@ -317,11 +317,20 @@ freePathCache (pathCache_t *tmpPathCache)
     if (tmpPathCache->filePath != NULL) free (tmpPathCache->filePath);
     if (tmpPathCache->locCacheState == HAVE_READ_CACHE &&
       tmpPathCache->locCachePath != NULL) {
-	unlink (tmpPathCache->locCachePath);
-        free (tmpPathCache->locCachePath);
+	freeFileCache (tmpPathCache);
     }
     free (tmpPathCache);
     return (0);
+}
+
+int
+freeFileCache (pathCache_t *tmpPathCache)
+{
+    unlink (tmpPathCache->locCachePath);
+    free (tmpPathCache->locCachePath);
+    tmpPathCache->locCachePath = NULL;
+    tmpPathCache->locCacheState = NO_FILE_CACHE;
+    return 0;
 }
 
 int
@@ -409,48 +418,45 @@ ifuseClose (char *path, int descInx)
 
         status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
     } else {	/* cached */
-#if 0
-        if (IFuseDesc[descInx].bytesWritten > 0) {
-#endif
-            int goodStat = 0;
-            if (IFuseDesc[descInx].newFlag > 0 || 
-	      IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
-                pathCache_t *tmpPathCache;
-                /* newly created. Just update the size */
-                if (matchPathInPathCache ((char *) path, PathArray,
-                 &tmpPathCache) == 1 && tmpPathCache->locCachePath != NULL) {
-                    status = updatePathCacheStat (tmpPathCache);
-                    if (status >= 0) goodStat = 1;
-		    status = ifusePut (path, tmpPathCache->locCachePath,
-		      IFuseDesc[descInx].createMode, 
-		      tmpPathCache->stbuf.st_size);
-		    if (status < 0) {
-		        rodsLog (LOG_ERROR,
-                          "ifuseClose: ifusePut of %s error, status = %d",
-                           path, status);
-			savedStatus = -EBADF;
-		    }
-                } else {
-                    /* should not be here. but cache may be removed that we
-		     * may have to deal with it */
-                    rodsLog (LOG_ERROR,
-                      "ifuseClose: IFuseDesc indicated a newly created cache, but does not exist for %s",
-                       path);
+        int goodStat = 0;
+        if (IFuseDesc[descInx].newFlag > 0 || 
+	  IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
+            pathCache_t *tmpPathCache;
+            /* newly created. Just update the size */
+            if (matchPathInPathCache ((char *) path, PathArray,
+             &tmpPathCache) == 1 && tmpPathCache->locCachePath != NULL) {
+                status = updatePathCacheStat (tmpPathCache);
+                if (status >= 0) goodStat = 1;
+		status = ifusePut (path, tmpPathCache->locCachePath,
+		  IFuseDesc[descInx].createMode, 
+		  tmpPathCache->stbuf.st_size);
+		if (status < 0) {
+		    rodsLog (LOG_ERROR,
+                      "ifuseClose: ifusePut of %s error, status = %d",
+                       path, status);
 		    savedStatus = -EBADF;
-	        }
+		}
+		if (tmpPathCache->stbuf.st_size > CACHE_FILE_FOR_READ) {
+		    /* too big to keep */
+		    freeFileCache (tmpPathCache);
+		}	
             } else {
-	        /* should not be here */
+                /* should not be here. but cache may be removed that we
+		 * may have to deal with it */
                 rodsLog (LOG_ERROR,
-                  "ifuseClose: bytesWritten to not newly created cache for %s",
+                  "ifuseClose: IFuseDesc indicated a newly created cache, but does not exist for %s",
                    path);
 		savedStatus = -EBADF;
 	    }
-            if (IFuseDesc[descInx].bytesWritten > 0 && goodStat == 0) 
-	        rmPathFromCache ((char *) path, PathArray);
-#if 0
-            if (goodStat == 0) rmPathFromCache ((char *) path, PathArray);
-        }
-#endif
+        } else {
+	    /* should not be here */
+            rodsLog (LOG_ERROR,
+              "ifuseClose: bytesWritten to not newly created cache for %s",
+               path);
+	    savedStatus = -EBADF;
+	}
+        if (IFuseDesc[descInx].bytesWritten > 0 && goodStat == 0) 
+	    rmPathFromCache ((char *) path, PathArray);
 	status = close (IFuseDesc[descInx].iFd);
 	if (status < 0) {
 	    status = (errno ? (-1 * errno) : -1);
@@ -547,13 +553,20 @@ off_t offset)
 	    }
 	    status1 = fstat (IFuseDesc[descInx].iFd, &stbuf);
             if (status1 < 0) {
+                rodsLog (LOG_ERROR,
+                  "ifuseWrite: fstat of %s error, errno=%d",
+                 path, errno);
 		close (IFuseDesc[descInx].iFd);
 		rmPathFromCache ((char *) path, PathArray);
 		return (errno ? (-1 * errno) : -1);
 	    }
 	    mybuf = malloc (stbuf.st_size);
+	    lseek (IFuseDesc[descInx].iFd, 0, SEEK_SET);
 	    status1 = read (IFuseDesc[descInx].iFd, mybuf, stbuf.st_size);
             if (status1 < 0) {
+                rodsLog (LOG_ERROR,
+                  "ifuseWrite: read of %s error, errno=%d",
+                 path, errno);
 		close (IFuseDesc[descInx].iFd);
                 rmPathFromCache ((char *) path, PathArray);
                 return (errno ? (-1 * errno) : -1);
@@ -570,6 +583,9 @@ off_t offset)
             rmPathFromCache ((char *) path, PathArray);
 
             if (status1 < 0) {
+                rodsLog (LOG_ERROR,
+                  "ifuseWrite: rcDataObjWrite of %s error, status=%d",
+                 path, status1);
                 if ((myError = getUnixErrno (status1)) > 0) {
                     status1 = (-myError);
                 } else {
@@ -587,6 +603,9 @@ off_t offset)
 	    IFuseDesc[descInx].offset = 0;
             if ((status1 = ifuseLseek ((char *) path, descInx, myoffset)) 
 	      < 0) {
+                rodsLog (LOG_ERROR,
+                  "ifuseWrite: ifuseLseek of %s error, status=%d",
+                 path, status1);
                 if ((myError = getUnixErrno (status1)) > 0) {
                     return (-myError);
                 } else {
@@ -886,7 +905,8 @@ irodsMknodWithCache (char *path, mode_t mode, char *cachePath)
     if ((status = getFileCachePath (path, cachePath)) < 0)
         return status;
 
-    fd = creat (cachePath, mode);
+    /* fd = creat (cachePath, mode); WRONLY */
+    fd = open (cachePath, O_CREAT|O_EXCL|O_RDWR, mode);
     if (fd < 0) {
         rodsLog (LOG_ERROR,
           "irodsMknodWithCache: local cache creat error for %s, errno = %d",

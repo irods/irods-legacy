@@ -838,6 +838,7 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 #if 0
 #ifdef CACHE_FUSE_PATH
     if (IFuseDesc[descInx].bytesWritten > 0) {
+        rmPathFromCache ((char *) path, PathArray);
 	int goodStat = 0;
         if (IFuseDesc[descInx].newFlag > 0) {
             pathCache_t *tmpPathCache;
