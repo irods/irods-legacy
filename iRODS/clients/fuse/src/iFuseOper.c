@@ -209,9 +209,8 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     int status = -1;
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
     char cachePath[MAX_NAME_LEN];
-    uint mytime;
-    pathCache_t *tmpPathCache = NULL;
 #endif
+    pathCache_t *tmpPathCache = NULL;
     char irodsPath[MAX_NAME_LEN];
 
     rodsLog (LOG_DEBUG, "irodsMknod: %s", path);
@@ -274,12 +273,14 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     }
     fillIFuseDesc (descInx, DefConn.conn, status, irodsPath,
       (char *) path);
-    addNewlyCreatedToCache ((char *) path, descInx, mode);
+    addNewlyCreatedToCache ((char *) path, descInx, mode, &tmpPathCache);
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
+#if 0
     mytime = time (0); 
     fillFileStat (&stbuf, mode, 0, mytime, mytime, mytime);
 
     addPathToCache ((char *) path, PathArray, &stbuf, &tmpPathCache);
+#endif
     tmpPathCache->locCachePath = strdup (cachePath);
     tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
     IFuseDesc[descInx].locCacheState = HAVE_NEWLY_CREATED_CACHE;

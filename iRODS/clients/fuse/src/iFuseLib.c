@@ -409,7 +409,9 @@ ifuseClose (char *path, int descInx)
 
         status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
     } else {	/* cached */
+#if 0
         if (IFuseDesc[descInx].bytesWritten > 0) {
+#endif
             int goodStat = 0;
             if (IFuseDesc[descInx].newFlag > 0 || 
 	      IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
@@ -443,9 +445,12 @@ ifuseClose (char *path, int descInx)
                    path);
 		savedStatus = -EBADF;
 	    }
-
+            if (IFuseDesc[descInx].bytesWritten > 0 && goodStat == 0) 
+	        rmPathFromCache ((char *) path, PathArray);
+#if 0
             if (goodStat == 0) rmPathFromCache ((char *) path, PathArray);
         }
+#endif
 	status = close (IFuseDesc[descInx].iFd);
 	if (status < 0) {
 	    status = (errno ? (-1 * errno) : -1);
@@ -575,6 +580,7 @@ off_t offset)
 	    } else {
 		IFuseDesc[descInx].iFd = irodsFd;
 		IFuseDesc[descInx].locCacheState = NO_FILE_CACHE;
+		IFuseDesc[descInx].newFlag = 0;
 	    }
 	    /* one last thing - seek to the right offset */
             myoffset = IFuseDesc[descInx].offset;
@@ -746,7 +752,8 @@ connManager ()
 }
 
 int
-addNewlyCreatedToCache (char *path, int descInx, int mode)
+addNewlyCreatedToCache (char *path, int descInx, int mode, 
+pathCache_t **tmpPathCache)
 {
     uint cachedTime = time (0);
 
@@ -754,11 +761,11 @@ addNewlyCreatedToCache (char *path, int descInx, int mode)
     rstrcpy (NewlyCreatedFile.filePath, path, MAX_NAME_LEN);
     NewlyCreatedFile.descInx = descInx;
     NewlyCreatedFile.cachedTime = cachedTime;
+    IFuseDesc[descInx].newFlag = 1;
     fillFileStat (&NewlyCreatedFile.stbuf, mode, 0, cachedTime, cachedTime,
       cachedTime);
 
-    IFuseDesc[descInx].newFlag = 1;
-    addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf, NULL);
+    addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf, tmpPathCache);
     return (0);
 }
     

@@ -138,7 +138,8 @@ isSpecialPath (char *inPath);
 int
 rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray);
 int
-addNewlyCreatedToCache (char *path, int descInx, int mode);
+addNewlyCreatedToCache (char *path, int descInx, int mode,
+pathCache_t **tmpPathCache);
 int
 closeNewlyCreatedCache ();
 int
