@@ -411,12 +411,7 @@ ifuseClose (char *path, int descInx)
     int savedStatus = 0;
 
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
-        dataObjCloseInp_t dataObjCloseInp;
-
-        memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-        dataObjCloseInp.l1descInx = IFuseDesc[descInx].iFd;
-
-        status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
+	status = closeIrodsFd (IFuseDesc[descInx].iFd);
     } else {	/* cached */
         int goodStat = 0;
         if (IFuseDesc[descInx].newFlag > 0 || 
@@ -792,14 +787,14 @@ pathCache_t **tmpPathCache)
 int
 closeIrodsFd (int fd)
 {
+    int status;
+
     dataObjCloseInp_t dataObjCloseInp;
 
     dataObjCloseInp.l1descInx = fd;
-    getIFuseConn (&DefConn, &MyRodsEnv);
-    rcDataObjClose (DefConn.conn, &dataObjCloseInp);
-    relIFuseConn (&DefConn);
+    status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
 
-    return (0);
+    return (status);
 }
 
 int
@@ -1030,8 +1025,8 @@ setAndMkFileCacheDir ()
 	tmpDir = FUSE_CACHE_DIR;
     }
 
-    snprintf (FuseCacheDir, MAX_NAME_LEN, "%s/%s", tmpDir,
-      myPasswd->pw_name);
+    snprintf (FuseCacheDir, MAX_NAME_LEN, "%s/%s.%d", tmpDir,
+      myPasswd->pw_name, getpid());
 
     if ((status = mkdirR ("/", FuseCacheDir, DEF_DIR_MODE)) < 0) {
         rodsLog (LOG_ERROR,
