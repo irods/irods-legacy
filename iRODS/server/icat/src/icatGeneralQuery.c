@@ -595,6 +595,80 @@ int setTable(int column, int sel, int selectOption) {
    return(-1);
 }
 
+/*
+ When there are multiple AVU conditions, need to adjust the SQL.
+ */
+void 
+handleMultiDataAVUConditions(int nConditions) {
+   int i;
+   char *firstItem, *nextItem;
+   char nextStr[20];
+
+   /* In the whereSQL, change r_data_meta_main.meta_attr_name to
+      r_data_meta_mnNN.meta_attr_name, where NN is index.  First one
+      is OK, subsequent ones need a new name for each. */
+   firstItem = strstr(whereSQL, "r_data_meta_main.meta_attr_name");
+   if (firstItem != NULL) {
+      *firstItem = 'x'; /* temporarily change 1st string */
+   }
+   for (i=2;i<=nConditions;i++) {
+      nextItem = strstr(whereSQL, "r_data_meta_main.meta_attr_name");
+      if (nextItem != NULL) {
+	 snprintf(nextStr, 20, "n%2.2d", i);
+	 *(nextItem+13)=nextStr[0];  /* replace "ain" in main */
+	 *(nextItem+14)=nextStr[1];  /* with nNN */
+	 *(nextItem+15)=nextStr[2];
+      }
+   }
+   if (firstItem != NULL) {
+      *firstItem = 'r'; /* put it back */
+   }
+
+   /* Do similar for r_data_meta_main.meta_attr_value.  */
+   firstItem = strstr(whereSQL, "r_data_meta_main.meta_attr_value");
+   if (firstItem != NULL) {
+      *firstItem = 'x'; /* temporarily change 1st string */
+   }
+   for (i=2;i<=nConditions;i++) {
+      nextItem = strstr(whereSQL, "r_data_meta_main.meta_attr_value");
+      if (nextItem != NULL) {
+	 snprintf(nextStr, 20, "n%2.2d", i);
+	 *(nextItem+13)=nextStr[0];  /* replace "ain" in main */
+	 *(nextItem+14)=nextStr[1];  /* with nNN */
+	 *(nextItem+15)=nextStr[2];
+      }
+   }
+   if (firstItem != NULL) {
+      *firstItem = 'r'; /* put it back */
+   }
+
+ 
+   /* In the fromSQL, add items for r_data_metamapNN and
+      r_data_meta_mnNN */
+   for (i=2;i<=nConditions;i++) {
+      char newStr[100];
+      snprintf(newStr, 100,
+       ", r_objt_metamap r_data_metamap%d, r_meta_main r_data_meta_mn%2.2d ", 
+	       i, i);
+      rstrcat(fromSQL, newStr, MAX_SQL_SIZE);
+   }
+
+   /* In the whereSQL, add items for 
+      r_data_metamapNN.meta_id = r_data_meta_maNN.meta_id  and
+      r_data_main.data_id = r_data_metamap2.object_id
+   */
+   for (i=2;i<=nConditions;i++) {
+      char newStr[100];
+      snprintf(newStr, 100,
+       " AND r_data_metamap%d.meta_id = r_data_meta_mn%2.2d.meta_id", i, i);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+      snprintf(newStr, 100,
+	       " AND r_data_main.data_id = r_data_metamap%d.object_id ", i);
+      rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
+   }
+
+}
+
 /* When there's a compound condition, need to put () around it, use the 
    tablename.column for each part, and put OR or AND between.
    Uses and updates whereSQL in addition to the arguments.
@@ -939,6 +1013,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    char *condition;
    int status;
    int useGroupBy;
+   int N_col_meta_data_attr_name=0;
 
    char combinedSQL[MAX_SQL_SIZE];
 #if ORA_ICAT
@@ -988,6 +1063,9 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    for (i=0;i<genQueryInp.sqlCondInp.len;i++) {
       int prevWhereLen;
       prevWhereLen = strlen(whereSQL);
+      if (genQueryInp.sqlCondInp.inx[i]==COL_META_DATA_ATTR_NAME) {
+	 N_col_meta_data_attr_name++;
+      }
       table = setTable(genQueryInp.sqlCondInp.inx[i], 0, 0);
       if (table < 0) {
 	 printf("Table for column %d not found\n",
@@ -1021,6 +1099,11 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    }
    else {
       if (debug>1) printf("SUCCESS linking tables\n");
+   }
+
+   if (N_col_meta_data_attr_name > 1) {
+      /* Need to do some special changes and additions for multi AVU query */
+      handleMultiDataAVUConditions(N_col_meta_data_attr_name);
    }
 
    if (debug) printf("selectSQL: %s\n",selectSQL);
