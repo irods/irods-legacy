@@ -3,7 +3,7 @@
 # This script helps convert an MCAT DB to an ICAT one.
 #
 # Currently, this is very preliminary, but I was able to insert an SRB
-# file into the ICAT and get it via 'iget'.  Currently 
+# file into the ICAT and get it via 'iget'.
 #
 # If the Spull.log.* files don't exist, this script will run Spullmeta
 # to create them.
@@ -39,10 +39,10 @@ $cv_irodsZone = "tempZone";   # Your iRODS zone name
 # user#domain or just user.
 $useDomainWithUsername = "0"; # 0 no, 1 yes
 
-$SRB_BEGIN_DATE="2008-07-12"; # approximate date your SRB was installed;used to
+$SRB_BEGIN_DATE="1995-07-12"; # approximate date your SRB was installed;used to
                               # avoid some unneeded built-in items, etc.
 $Spullmeta = "/scratch/slocal/srbtest/testc/SRB2_0_0rel/utilities/bin/Spullmeta";
-                              # if in Path, but could also be just "Spullmeta"
+                              # if in Path this could also be just "Spullmeta"
 $iadmin = "iadmin";           # Change this to be full path if not in PATH.
 $psql = "psql";               # And this too.
 
@@ -70,7 +70,7 @@ $showOne="0";            # A debug option, if "1";
 @cv_srb_resources =();   # SRB resource(s) being converted (created on the fly)
 @cv_irods_resources=();  # corresponding name of SRB resource(s) in iRODS.
 @datatypeList=();        # filled and used dynamically
-
+$nowTime="";
 
 if (!-e $logUser) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_USER_INFO $SRB_BEGIN_DATE > $logUser");
@@ -85,29 +85,44 @@ if (!-e $logData) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_CORE_INFO $SRB_BEGIN_DATE > $logData");
 }
 
-
-if ( open(  SQL_FILE, ">$sqlFile" ) == 0 ) {
-    die("open failed on output file " . $sqlFile);
+my $doMainStep="yes";
+if ( -e $sqlFile ) {
+    printf("Enter y or yes if you want this script to run regenerate the $sqlFile\n");
+    printf("and the $iadminFile:");
+    my $answer = <STDIN>;
+    chomp( $answer );	# remove trailing return
+    if ($answer eq "yes" || $answer eq "y") {
+    }
+    else {
+	$doMainStep="no";
+    }
 }
-if ( open(  IADMIN_FILE, ">$iadminFile" ) == 0 ) {
-    die("open failed on output file " . $iadminFile);
+
+if ($doMainStep eq "yes") {
+
+    if ( open(  SQL_FILE, ">$sqlFile" ) == 0 ) {
+	die("open failed on output file " . $sqlFile);
+    }
+    if ( open(  IADMIN_FILE, ">$iadminFile" ) == 0 ) {
+	die("open failed on output file " . $iadminFile);
+    }
+
+    processLogFile($logUser);
+
+    processLogFile($logResc);
+
+    processLogFile($logColl);
+
+    processLogFile($logData);
+
+    foreach $dataType (@datatypeList) {
+	print( IADMIN_FILE "at data_type \'$dataType\'\n");
+    }
+    print( IADMIN_FILE "quit\n");
+
+    close( IADMIN_FILE );
+    close( SQL_FILE );
 }
-
-processLogFile($logUser);
-
-processLogFile($logResc);
-
-processLogFile($logColl);
-
-processLogFile($logData);
-
-foreach $dataType (@datatypeList) {
-    print( IADMIN_FILE "at data_type \'$dataType\'\n");
-}
-print( IADMIN_FILE "quit\n");
-
-close( IADMIN_FILE );
-close( SQL_FILE );
 
 printf("Enter y or yes if you want this script to run the next steps now;\n");
 printf("to run iadmin and psql with the files just generated:");
@@ -186,10 +201,12 @@ sub convertTime($)
 
 # Using an iadmin option, get the current time in irods format
 sub getNow() {
-    runCmd(0, "iadmin ctime now");
-    $i = index($cmdStdout, "time: ");
-    $nowTime = substr($cmdStdout, $i+6);
-    chomp($nowTime);
+    if ($nowTime eq "") {
+	runCmd(0, "iadmin ctime now");
+	$i = index($cmdStdout, "time: ");
+	$nowTime = substr($cmdStdout, $i+6);
+	chomp($nowTime);
+    }
 }
 
 # Using the defined arrays at the top, possibly convert a user name
@@ -200,7 +217,7 @@ sub convertUser($$)
     $k=0;
     foreach $user (@cv_srb_usernames) {
 	if ($user eq $inUser) {
-	    printf("user=$user inUser=$inUser\n");
+#	    printf("user=$user inUser=$inUser\n");
 	    return ($cv_irods_usernames[$k]);
 	}
 	$k++;
@@ -253,10 +270,10 @@ sub convertCollectionForData($$$)
     $tmp = "/" . $inUser . "." . $inDomain;
     my $newUser = convertUser($inUser, $inDomain);
     $tmp2 = "/" . $newUser;
-    printf("tmp=$tmp tmp2=$tmp2\n");
+#   printf("tmp=$tmp tmp2=$tmp2\n");
     $outColl =~ s\$tmp\$tmp2\g; 
 
-    printf("inColl=$inColl outColl=$outColl\n");
+#   printf("inColl=$inColl outColl=$outColl\n");
     return($outColl);
 }
 
@@ -286,7 +303,7 @@ sub processLogFile($) {
 	$i++;
 	if ($i==1) {
 	    @cmdArgs = split('\|',$line);
-	    print ("cmdArgs[0]:" . $cmdArgs[0] . " " . "\n");
+#	    print ("cmdArgs[0]:" . $cmdArgs[0] . " " . "\n");
 	    if ($cmdArgs[0] eq "GET_CHANGED_USER_INFO") {
 		$mode="USER";
 	    }
@@ -300,10 +317,10 @@ sub processLogFile($) {
 		$mode="RESC";
 	    }
 	}
-	printf("MODE: $mode, i: $i\n");
+#	printf("MODE: $mode, i: $i\n");
 	if ($i==2) {
 	    @names = split('\|',$line);
-	    print ("names[0]:" . $names[0] . " " . "\n");
+#	    print ("names[0]:" . $names[0] . " " . "\n");
 	    if ($mode eq "") {
 		die ("Unrecognized type of Spullmeta log file: $logFile");
 	    }
@@ -452,5 +469,12 @@ sub checkDoCollection($) {
 	    return(0);                    # skip it
 	}
     }
+
+    $testColl = "/" . $cv_srbZone . "/";
+    if (index($inCollName, "$testColl")!=0) {  # if it doesn't start w /zone/
+	    return(0);                    # skip it
+    }
+   
     return(1);
 }
+
