@@ -166,11 +166,11 @@ int msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, ms
 	sqlResult_t* dataAccessUserId;
 	//sqlResult_t* dataTokenNamespace;
 
-	RE_TEST_MACRO ("    Calling msiListCollACL")
+	RE_TEST_MACRO ("    Calling msiVerifyACL")
 
 	/* Sanity check */
 	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiListCollACL: input rei or rsComm is NULL");
+		rodsLog (LOG_ERROR, "msiVerifyACL: input rei or rsComm is NULL");
 		return (SYS_INTERNAL_NULL_INPUT_ERR);
 	}
 	rsComm = rei->rsComm;
