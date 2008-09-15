@@ -430,18 +430,23 @@ showUser(char *name, char *attrName, int wild)
 
 /*
 Do a query on AVUs for dataobjs and show the results
+attribute op value [AND attribute op value] [REPEAT]
  */
-int queryDataObj(char *attribute, char *op, char *value) {
+int queryDataObj(char *cmdToken[]) {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
-   int i1a[10];
-   int i1b[10];
-   int i2a[10];
-   char *condVal[10];
+   int i1a[20];
+   int i1b[20];
+   int i2a[20];
+   char *condVal[20];
    char v1[BIG_STR];
    char v2[BIG_STR];
+   char v3[BIG_STR];
    int status;
    char *columnNames[]={"collection", "dataObj"};
+   int cmdIx;
+   int condIx;
+   char vstr[20] [BIG_STR];
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
@@ -455,16 +460,38 @@ int queryDataObj(char *attribute, char *op, char *value) {
    genQueryInp.selectInp.len = 2;
 
    i2a[0]=COL_META_DATA_ATTR_NAME;
-   sprintf(v1,"='%s'",attribute);
+   sprintf(v1,"='%s'", cmdToken[2]);
    condVal[0]=v1;
 
    i2a[1]=COL_META_DATA_ATTR_VALUE;
-   sprintf(v2, "%s '%s'", op, value);
+   sprintf(v2, "%s '%s'", cmdToken[3], cmdToken[4]);
    condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
    genQueryInp.sqlCondInp.len=2;
+
+   if (strcmp(cmdToken[5], "or")==0) {
+      sprintf(v3, "|| %s '%s'", cmdToken[6], cmdToken[7]);
+      rstrcat(v2, v3, BIG_STR);
+   }
+
+   cmdIx = 5;
+   condIx = 2;
+   while (strcmp(cmdToken[cmdIx], "and")==0) {
+      i2a[condIx]=COL_META_DATA_ATTR_NAME;
+      cmdIx++;
+      sprintf(vstr[condIx],"='%s'", cmdToken[cmdIx]);
+      condVal[condIx]=vstr[condIx];
+      condIx++;
+
+      i2a[condIx]=COL_META_DATA_ATTR_VALUE;
+      sprintf(vstr[condIx], "%s '%s'", cmdToken[cmdIx+1], cmdToken[cmdIx+2]);
+      cmdIx+=3;
+      condVal[condIx]=vstr[condIx];
+      condIx++;
+      genQueryInp.sqlCondInp.len+=2;
+   }
 
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
@@ -938,7 +965,7 @@ doCommand(char *cmdToken[]) {
 
    if (strcmp(cmdToken[0],"qu") == 0) {
       if (strcmp(cmdToken[1],"-d")==0) {
-	 queryDataObj(cmdToken[2], cmdToken[3], cmdToken[4]);
+	 queryDataObj(cmdToken);
 	 return(0);
       }
       if (strcmp(cmdToken[1],"-C")==0 || strcmp(cmdToken[1],"-c")==0) {
@@ -1141,7 +1168,7 @@ int usageMain()
 " rmw -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)", 
 " ls  -d|C|R|u Name [AttName] (List existing AVUs for item Name)", 
 " lsw -d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)", 
-" qu -d|C|R|u AttName Op AttVal  (Query objects with matching AVUs)", 
+" qu -d|C|R|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
 " cp -d|C|R|u -d|C|R|u Name1 Name2 (Copy AVUs from item Name1 to Name2)", 
 " ", 
 "Metadata attribute-value-units triplets (AVUs) consist of an Attribute-Name,", 
@@ -1169,6 +1196,7 @@ int usageMain()
 "Single or double quotes can be used to enter items with blanks.", 
 " ",
 "Try 'help command' for more help on a specific command.",
+"'help qu' will explain additional options on the query.",
 ""};
    int i;
    for (i=0;;i++) {
@@ -1267,9 +1295,15 @@ usage(char *subOpt)
       }
       if (strcmp(subOpt,"qu")==0) {
 	 char *msgs[]={
-" qu -d|C|R|u AttName Op AttVal  (Query objects with matching AVUs)", 
+" qu -d|C|R|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
 "Query across AVUs for the specified type of item",
 "Example: qu -d distance '<=' 12",
+" ",
+"When querying dataObjects (-d) additional conditions (AttName Op AttVal)",
+"may be given separated by 'and', for example:",
+"qu -d a = b and c '<' 10",
+"Or a single 'or' can be given for the same AttName, for example",
+"qu -d r '<' 5 or '>' 7",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);
