@@ -118,6 +118,13 @@ rodsServerHost_t *rodsServerHost)
         	      fileCreateInp->fileName, fd);
 		}
 	    }
+	} else if (getErrno (fd) == EEXIST) {
+	    /* an empty dir may be there */ 
+	    fileRmdir (fileCreateInp->fileType, rsComm, 
+	     fileCreateInp->fileName);
+            fd = fileCreate (fileCreateInp->fileType, rsComm,
+              fileCreateInp->fileName, fileCreateInp->mode,
+              fileCreateInp->dataSize);
 	} else {
             if (getErrno (fd) == EEXIST) {
                 rodsLog (LOG_DEBUG1,
