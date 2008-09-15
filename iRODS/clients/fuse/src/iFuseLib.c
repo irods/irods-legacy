@@ -436,7 +436,7 @@ ifuseClose (char *path, int descInx)
                        path, status);
 		    savedStatus = -EBADF;
 		}
-		if (tmpPathCache->stbuf.st_size > CACHE_FILE_FOR_READ) {
+		if (tmpPathCache->stbuf.st_size > MAX_READ_CACHE_SIZE) {
 		    /* too big to keep */
 		    freeFileCache (tmpPathCache);
 		}	
