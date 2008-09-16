@@ -129,11 +129,11 @@ runCmd(0, "irm -f -r $D1");
 runCmd(0, "ils");
 
 #
-# Multiple imkdir's should return without error.
+# Multiple imkdir's should return an error now.
 # ICAT should give CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME error
-# which imkdir (and other commands) handle.
+# which imkdir now displays (use to suppress).
 runCmd(0, "imkdir $D1");
-runCmd(0, "imkdir $D1");
+runCmd(2, "imkdir $D1");
 runCmd(0, "irm -rf $D1");
 
 # Repeated iput -rf test (was failing as ICAT code needed to 
