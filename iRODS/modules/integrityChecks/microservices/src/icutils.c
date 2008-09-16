@@ -137,3 +137,61 @@ int msiHiThere (msParam_t* mPout1, ruleExecInfo_t *rei) {
 	
 }
 
+/* verify consistency of the owners across a query */
+int verifyCollOwners (genQueryOut_t* gqout, char* ownerlist, bytesBuf_t* mybuf) {
+
+	sqlResult_t* collName;
+	sqlResult_t* collOwner;
+	sqlResult_t* collID;
+	int ownercount=0;
+	int i,j;
+	char* word;
+	char delims[]=",";
+    char** olist=NULL;
+	char tmpstr[MAX_NAME_LEN];
+
+	collName = getSqlResultByInx (gqout, COL_COLL_NAME);
+	collOwner = getSqlResultByInx (gqout, COL_COLL_OWNER_NAME);
+	collID = getSqlResultByInx (gqout, COL_COLL_ID);
+
+	//Assume ownerlist is not NULL
+	fprintf(stderr, "ownerlist: %s\n", ownerlist);
+
+	/* Construct a list of owners from our input parameter*/
+	for (word=strtok(ownerlist, delims); word; word=strtok(NULL, delims)) {
+		olist = (char**) realloc (olist, sizeof (char*) * (ownercount));
+		olist[ownercount] = strdup (word);
+		ownercount++;
+	}
+
+	/* Now compare each subCollection's owner with our list */
+	for (i=0; i<gqout->rowCnt; i++) {
+		int foundflag=0;
+		for (j=0; j<ownercount; j++) {
+			char* thisowner = strdup(&collOwner->value[collOwner->len*i]);
+			fprintf(stderr, "comparing %s and %s\n", thisowner, olist[j]);
+			if (!(strcmp(thisowner, olist[j]))) {
+				/* We only care about the ones that DON'T match */
+				foundflag=1;
+				break;  /* or continue till all non matching are found? */
+			}
+		}
+
+		if (!foundflag) {
+			snprintf (tmpstr, MAX_NAME_LEN, "Sub Collection: %s with owner: %s does not match input list\n",
+				&collName->value[collName->len *i], &collOwner->value[collOwner->len * i]);
+			appendToByteBuf (mybuf, tmpstr);
+		}
+	}
+
+	return (0);
+}
+
+
+int verifyCollAVU (genQueryOut_t* gqout, char* avulist, bytesBuf_t* mybuf) {
+	return (0);
+}
+
+int verifyCollACL (genQueryOut_t* gqout, char* acllist, bytesBuf_t* mybuf) {
+	return (0);
+}

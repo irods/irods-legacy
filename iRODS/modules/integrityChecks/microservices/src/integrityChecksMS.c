@@ -79,8 +79,6 @@ int msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, 
 		if (strlen(ownerlist)>0) { /* our rule contains a list of owners we want to compare against */
 			int ownercount=0;
 
-			rodsLog (LOG_ERROR, "msiVerifyOwner: ownerlist!=NULL");
-
 			/* Construct a list of owners*/
 			for (word=strtok(ownerlist, delims); word; word=strtok(NULL, delims)) {
 				olist = (char**) realloc (olist, sizeof (char*) * (ownercount));  

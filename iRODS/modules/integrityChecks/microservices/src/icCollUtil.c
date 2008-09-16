@@ -4,6 +4,130 @@
  */
 
 #include "icCollUtil.h"
+#include "icutils.h"
+
+int	icCollOps (char* collname, char* operation, char* oplist, bytesBuf_t* mybuf, int status) {
+
+	rsComm_t* rsComm;
+	//sqlResult_t *collectionName;
+	//sqlResult_t *collectionID;
+	genQueryInp_t gqin;
+	genQueryOut_t* gqout=NULL;
+	char condStr[MAX_NAME_LEN];
+	char tmpstr[MAX_NAME_LEN];
+
+	/* init stuff */
+	memset (&gqin, 0, sizeof(genQueryInp_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout, 0, sizeof (genQueryOut_t));
+	//mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+	//memset (mybuf, 0, sizeof (bytesBuf_t));
+
+	/* Generate a query - we only want subcollection data objects */
+    addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&gqin.selectInp, COL_COLL_ID, 1); 
+	genAllInCollQCond (collname, condStr);
+    addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
+
+	/* Determine which data we want to receive - ownerstuff, ACL stuff or AVU stuff */
+	if (!(strcmp(operation,"owner"))) {
+		addInxIval (&gqin.selectInp, COL_COLL_OWNER_NAME, 1);
+	} else if (!(strcmp(operation, "AVU"))) {
+		addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_NAME, 1);
+		addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_VALUE, 1);
+		addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_UNITS, 1);
+	} else if (!(strcmp(operation, "ACL"))) {
+		addInxIval (&gqin.selectInp, COL_COLL_ACCESS_TYPE, 1);
+		addInxIval (&gqin.selectInp, COL_COLL_ACCESS_NAME, 1);
+	} else {
+		rodsLog (LOG_ERROR, "icCollOps: ERROR");
+		return (-1); 
+	}
+
+	/* This is effectively a recursive query because of the condStr */
+    status = rsGenQuery (rsComm, &gqin, &gqout);
+	fprintf (stderr, "status=%d\n", status);
+
+	if ((status==CAT_NO_ROWS_FOUND) || (status < 0)) {
+		snprintf (tmpstr, MAX_NAME_LEN, "No rows found matching input criteria.\n");
+		appendToByteBuf (mybuf, tmpstr);
+
+	/* assume at this point we have valid data for all three possible query types */
+	} else if (!(strcmp(operation,"owner"))) {
+		// process owners query results
+		verifyCollOwners (gqout, oplist, mybuf);
+	} else if (!(strcmp(operation, "AVU"))) {
+		// process AVU query results
+		verifyCollAVU (gqout, oplist, mybuf);
+	} else if (!(strcmp(operation, "ACL"))) {
+		// process ACL query results
+		verifyCollACL (gqout, oplist, mybuf);
+	}
+
+	printGenQueryOut(stderr, NULL, NULL, gqout);
+
+	return (status);
+
+}
+	
+
+/* the following functions are wrappers for icCollOps function */
+int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t *bufout, msParam_t* statout) {
+
+	bytesBuf_t* mybuf=NULL;
+	char* collname;
+	char* ownerlist;
+	int status;
+
+    mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+    memset (mybuf, 0, sizeof (bytesBuf_t));
+
+	collname = strdup (collinp->inOutStruct);
+	ownerlist = strdup (ownerinp->inOutStruct);
+	
+	status = icCollOps (collname, "owner", ownerlist, mybuf, status);
+
+	fillStrInMsParam (bufout, mybuf->buf);
+	fillIntInMsParam (statout, status);
+	return (status);
+}
+
+int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuinp, msParam_t *bufout, msParam_t* statout) {
+
+	void* mybuf=NULL;
+	char* collname;
+	char* avulist;
+	int status;
+
+	collname = strdup (collinp->inOutStruct);
+	avulist = strdup (avuinp->inOutStruct);
+	
+	status = icCollOps (collname, "AVU", avulist, mybuf, status);
+
+	fillIntInMsParam (statout, status);
+	return (status);
+}
+
+int msiVerifySubCollACL (msParam_t* collinp, msParam_t* aclinp, msParam_t *bufout, msParam_t* statout) {
+
+	void* mybuf=NULL;
+	char* collname;
+	char* acllist;
+	int status;
+
+	collname = strdup (collinp->inOutStruct);
+	acllist = strdup (aclinp->inOutStruct);
+	
+	status = icCollOps (collname, "ACL", acllist, mybuf, status);
+
+	fillIntInMsParam (statout, status);
+	return (status);
+}
+
+
+
+
 
 int	msiListColl (msParam_t* collectionname, msParam_t* buf, ruleExecInfo_t* rei) {
 
@@ -71,119 +195,4 @@ int	msiListColl (msParam_t* collectionname, msParam_t* buf, ruleExecInfo_t* rei)
 	return (rei->status);
 
 }
-
-int	icCollOps (char* collname, char* operation, char* oplist, void* myinout, int status) {
-
-	rsComm_t* rsComm;
-	//sqlResult_t *collectionName;
-	//sqlResult_t *collectionID;
-	genQueryInp_t gqin;
-	genQueryOut_t* gqout=NULL;
-	char condStr[MAX_NAME_LEN];
-	bytesBuf_t* mybuf;
-
-	/* init stuff */
-	memset (&gqin, 0, sizeof(genQueryInp_t));
-	gqin.maxRows = MAX_SQL_ROWS;
-	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
-	memset (gqout, 0, sizeof (genQueryOut_t));
-	mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
-	memset (mybuf, 0, sizeof (bytesBuf_t));
-
-
-	/* Generate a query - we only want subcollection data objects */
-    addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
-    addInxIval (&gqin.selectInp, COL_COLL_ID, 1); 
-	genAllInCollQCond (collname, condStr);
-    addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
-
-	/* Determine which data we want to receive - ownerstuff, ACL stuff or AVU stuff */
-	if (!(strcmp(operation,"owner"))) {
-		fprintf (stderr, "adding owner field\n");
-		addInxIval (&gqin.selectInp, COL_COLL_OWNER_NAME, 1);
-	} else if (!(strcmp(operation, "AVU"))) {
-		fprintf (stderr, "adding AVU\n");
-		addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_NAME, 1);
-		addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_VALUE, 1);
-		addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_UNITS, 1);
-	} else if (!(strcmp(operation, "ACL"))) {
-		fprintf (stderr, "adding ACL\n");
-		addInxIval (&gqin.selectInp, COL_COLL_ACCESS_TYPE, 1);
-		addInxIval (&gqin.selectInp, COL_COLL_ACCESS_NAME, 1);
-	} else {
-		fprintf (stderr, "adding nothing - something didn't happen\n");
-		//badness
-	}
-
-
-	/* This is effectively a recursive query because of the condStr */
-    status = rsGenQuery (rsComm, &gqin, &gqout);
-	fprintf (stderr, "status=%d\n", status);
-
-	if (status < 0) 
-		fprintf (stderr, "something not good happened\n");
-	else if (status==CAT_NO_ROWS_FOUND)
-		fprintf (stderr, "query worked but no rows found\n");
-	else /* assume goodness */
-		printGenQueryOut(stderr, NULL, NULL, gqout);
-
-	/* assume at this point we have valid data for all three possible query types */
-
-	return (status);
-
-}
-	
-
-/* the following functions are wrappers for icCollOps function */
-int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t *bufout, msParam_t* statout) {
-
-	void* myinout=NULL;
-	char* collname;
-	char* ownerlist;
-	int status;
-
-	collname = strdup (collinp->inOutStruct);
-	ownerlist = strdup (ownerinp->inOutStruct);
-	
-	status = icCollOps (collname, "owner", ownerlist, myinout, status);
-
-	fillIntInMsParam (statout, status);
-	return (status);
-}
-
-int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuinp, msParam_t *bufout, msParam_t* statout) {
-
-	void* myinout=NULL;
-	char* collname;
-	char* avulist;
-	int status;
-
-	collname = strdup (collinp->inOutStruct);
-	avulist = strdup (avuinp->inOutStruct);
-	
-	status = icCollOps (collname, "AVU", avulist, myinout, status);
-
-	fillIntInMsParam (statout, status);
-	return (status);
-}
-
-int msiVerifySubCollACL (msParam_t* collinp, msParam_t* aclinp, msParam_t *bufout, msParam_t* statout) {
-
-	void* myinout=NULL;
-	char* collname;
-	char* acllist;
-	int status;
-
-	collname = strdup (collinp->inOutStruct);
-	acllist = strdup (aclinp->inOutStruct);
-	
-	status = icCollOps (collname, "ACL", acllist, myinout, status);
-
-	fillIntInMsParam (statout, status);
-	return (status);
-}
-
-
-
-
 
