@@ -431,8 +431,8 @@ getIncludeFile (rcComm_t *conn, bytesBuf_t *dataObjOutBBuf, char *locFilePath)
     }
     if (bytesWritten != dataObjOutBBuf->len) {
        rodsLog (LOG_ERROR,
-        "getIncludeFile: Read %d bytes, Wrote %d bytes.\n ",
-        dataObjOutBBuf->len, bytesWritten);
+        "getIncludeFile: Read %d bytes, Wrote %d bytes. errno = %d\n ",
+        dataObjOutBBuf->len, bytesWritten, errno);
         return (SYS_COPY_LEN_ERR);
     } else {
 	conn->transStat.bytesWritten = bytesWritten;

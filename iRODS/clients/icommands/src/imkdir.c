@@ -20,7 +20,7 @@ main(int argc, char **argv) {
     char *optStr;
     rodsPathInp_t rodsPathInp;
     
-    optStr = "hvV";
+    optStr = "phvV";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -77,9 +77,10 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage: imkdir [-hvV] collection ...",
+"Usage: imkdir [-phvV] collection ...",
 "Create one or more new collections",
 "Options are:",
+" -p  make parent directories as needed",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",
