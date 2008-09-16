@@ -6,6 +6,9 @@
 { "msiVerifyExpiry",		5,	(funcPtr) msiVerifyExpiry },
 { "msiVerifyDataType",		4,	(funcPtr) msiVerifyDataType },
 { "msiVerifyFileSizeRange",	5,	(funcPtr) msiVerifyFileSizeRange },
+{ "msiVerifySubCollOwner",	4,	(funcPtr) msiVerifySubCollOwner },
+{ "msiVerifySubCollACL",	4,	(funcPtr) msiVerifySubCollACL },
+{ "msiVerifySubCollAVU",	4,	(funcPtr) msiVerifySubCollAVU },
 
 { "msiListFields",			4,	(funcPtr) msiListFields },
 { "msiHiThere",				1,	(funcPtr) msiHiThere },

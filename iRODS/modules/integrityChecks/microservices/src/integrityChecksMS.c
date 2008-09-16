@@ -73,7 +73,6 @@ int msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, 
 		dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
 		dataOwner = getSqlResultByInx (genQueryOut, COL_D_OWNER_NAME);
 
-
 		ownerlist = (char*) strdup (ownerinp->inOutStruct);
 		//fprintf(stderr, "ownerlist: %s\n", ownerlist);
 

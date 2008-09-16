@@ -10,23 +10,13 @@
 #include "rods.h"
 #include "rcMisc.h"
 #include "rodsClient.h"
-#include "rsApiHandler.h"
-#include "objMetaOpr.h"
+//#include "rsApiHandler.h"
+//#include "objMetaOpr.h"
 
-/*
-#include "dataObjInpOut.h"
-#include "procApiRequest.h"
-#include "apiNumber.h"
-#include "initServer.h"
-*/
 
-/* prototype for the server handler */
-int msiListColl (msParam_t* mPin1, msParam_t* mPout1, ruleExecInfo_t* rei);
-int icListColl (rsComm_t* rsComm, collInp_t *rmCollInp, collOprStat_t **collOprStat);
-int _icListColl (rsComm_t* rsComm, collInp_t *rmCollInp, collOprStat_t **collOprStat);
-int _icListCollRecur (rsComm_t* rsComm, collInp_t *rmCollInp, collOprStat_t **collOprStat);
-int _icPhyListColl (rsComm_t* rsComm, collInp_t *rmCollInp, dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat);
-
-//int svrUnregColl (rsComm_t *rsComm, collInp_t *rmCollInp);
+int msiListColl (msParam_t* collectionname, msParam_t* buf, ruleExecInfo_t* rei);
+int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t *bufout, msParam_t* statout);
+int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuinp, msParam_t *bufout, msParam_t* statout);
+int msiVerifySubCollACL (msParam_t* collinp, msParam_t* aclinp, msParam_t *bufout, msParam_t* statout);
 
 #endif	/* _IC_COLL_UTIL */
