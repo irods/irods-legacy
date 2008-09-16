@@ -1650,6 +1650,26 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    return(0);
 }
 
+/*
+ Called internally to rollback current transaction after an error.
+ */
+int
+_rollback(char *functionName) {
+   int status;
+   status =  cmlExecuteNoAnswerSql("rollback", &icss);
+   if (status == 0) {
+      rodsLog(LOG_NOTICE,
+	      "%s cmlExecuteNoAnswerSql(rollback) succeeded", functionName);
+   }
+   else {
+      rodsLog(LOG_NOTICE,
+	      "%s cmlExecuteNoAnswerSql(rollback) failure %d", 
+	      functionName, status);
+   }
+
+   return(status);
+}
+
 /* 
  * chlRegColl - register a collection
  * Input -
@@ -1750,15 +1770,9 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    status =  cmlExecuteNoAnswerSql(tSQL,
 				   &icss);
    if (status != 0) {
-      int status2;
       rodsLog(LOG_NOTICE,
 	      "chlRegColl cmlExecuteNoAnswerSql(insert) failure %d",status);
-      status2 =  cmlExecuteNoAnswerSql("rollback", &icss);
-      if (status2 != 0) {
-	 rodsLog(LOG_NOTICE,
-	      "chlRegColl cmlExecuteNoAnswerSql(rollback) failure %d",
-	      status2);
-      }
+      _rollback("chlRegColl");
       return(status);
    }
 
@@ -3735,7 +3749,10 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
 			   rsComm->clientUser.userName, 
 			   ACCESS_CREATE_METADATA, &icss);
-      if (status < 0) return(status);
+      if (status < 0) {
+	 _rollback("chlAddAVUMetadata");
+	 return(status);
+      }
       objId=status;
    }
 
@@ -3749,6 +3766,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       if (status < 0) {
 	 int i;
 	 char errMsg[105];
+	 _rollback("chlAddAVUMetadata");
 	 if (status == CAT_UNKNOWN_COLLECTION) {
 	    snprintf(errMsg, 100, "collection '%s' is unknown",
 		     name);
@@ -3773,6 +3791,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
 		 "select resc_id from r_resc_main where resc_name=? and zone_name=?",
 		 &objId, name, localZone, 0, 0, &icss);
       if (status != 0) {
+	 _rollback("chlAddAVUMetadata");
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
 	 return(status);
       }
@@ -3792,6 +3811,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
               "select user_id from r_user_main where user_name=? and zone_name=?",
 	      &objId, name, localZone, 0, 0, &icss);
       if (status != 0) {
+	 _rollback("chlAddAVUMetadata");
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
 	 return(status);
       }
@@ -3842,6 +3862,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
 	 rodsLog(LOG_NOTICE,
 		 "chlAddAVUMetadata cmlExecuteNoAnswerSql (insert) failure %d",
 		 status);
+	 _rollback("chlAddAVUMetadata");
 	 return(status);
       }
    }
@@ -3863,6 +3884,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       rodsLog(LOG_NOTICE,
 	      "chlAddAVUMetadata cmlExecuteNoAnswerSql insert failure %d",
 	      status);
+      _rollback("chlAddAVUMetadata");
       return(status);
    }
 
@@ -3876,6 +3898,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       rodsLog(LOG_NOTICE,
 	      "chlAddAVUMetadata cmlAudit3 failure %d",
 	      status);
+      _rollback("chlAddAVUMetadata");
       return(status);
    }
 

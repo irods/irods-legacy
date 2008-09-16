@@ -45,6 +45,7 @@ $Spullmeta = "/scratch/slocal/srbtest/testc/SRB2_0_0rel/utilities/bin/Spullmeta"
                               # if in Path this could also be just "Spullmeta"
 $iadmin = "iadmin";           # Change this to be full path if not in PATH.
 $psql = "psql";               # And this too.
+$imeta = "imeta";             # And this one.
 
 $password_length = 6;         # The length of the random password strings
                               # used for users.  Note that you will need
@@ -60,9 +61,15 @@ $logUser = "Spull.log.user";     # Spullmeta log file for users
 $logColl = "Spull.log.coll";    # Spullmeta log file for collections
 $logData = "Spull.log.data";     # Spullmeta log file for dataObjects
 $logResc = "Spull.log.resc";     # Spullmeta log file for resources
-$sqlFile = "m2icat.cmds.sql"; # the output file: SQL (for psql)
+$logMetaData = "Spull.log.meta.data"; # Spullmeta log file for user-defined
+                                      # metadata for dataObjects
+$logMetaColl = "Spull.log.meta.coll"; # Spullmeta log file for user-defined
+                                      # metadata for collections
+$sqlFile = "m2icat.cmds.sql"; # the output/input file: SQL (for psql)
 $psqlLog = "psql.log";        # the log file when running psql
-$iadminFile = "m2icat.cmds.iadmin"; # the output file for iadmin commands
+$iadminFile = "m2icat.cmds.iadmin"; # the output/input file for iadmin commands
+$imetaFile = "m2icat.cmds.imeta";  # the output/input file for imeta commands
+$imetaLog  = "imeta.log";     # the log file when running imeta
 $iadminLog  = "iadmin.log";   # the log file when running iadmin
 $showOne="0";            # A debug option, if "1";
 
@@ -71,6 +78,7 @@ $showOne="0";            # A debug option, if "1";
 @cv_irods_resources=();  # corresponding name of SRB resource(s) in iRODS.
 @datatypeList=();        # filled and used dynamically
 $nowTime="";
+$imetaFlag="";           # flag for whether imeta needs to be run
 
 if (!-e $logUser) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_USER_INFO $SRB_BEGIN_DATE > $logUser");
@@ -84,11 +92,17 @@ if (!-e $logColl) {
 if (!-e $logData) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_CORE_INFO $SRB_BEGIN_DATE > $logData");
 }
+if (!-e $logMetaData) {
+    runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_UDEFMETA_INFO $SRB_BEGIN_DATE > $logMetaData");
+}
+if (!-e $logMetaColl) {
+    runCmd(0, "$Spullmeta -F GET_CHANGED_COLL_UDEFMETA_INFO $SRB_BEGIN_DATE > $logMetaColl");
+}
 
 my $doMainStep="yes";
 if ( -e $sqlFile ) {
-    printf("Enter y or yes if you want this script to run regenerate the $sqlFile\n");
-    printf("and the $iadminFile:");
+    printf("Enter y or yes if you want this script to run regenerate the $sqlFile,\n");
+    printf("the $iadminFile, and the $imetaFile:");
     my $answer = <STDIN>;
     chomp( $answer );	# remove trailing return
     if ($answer eq "yes" || $answer eq "y") {
@@ -106,6 +120,9 @@ if ($doMainStep eq "yes") {
     if ( open(  IADMIN_FILE, ">$iadminFile" ) == 0 ) {
 	die("open failed on output file " . $iadminFile);
     }
+    if ( open(  IMETA_FILE, ">$imetaFile" ) == 0 ) {
+	die("open failed on output file " . $iadminFile);
+    }
 
     processLogFile($logUser);
 
@@ -115,13 +132,20 @@ if ($doMainStep eq "yes") {
 
     processLogFile($logData);
 
+    processLogFile($logMetaData);
+
+    processLogFile($logMetaColl);
+
     foreach $dataType (@datatypeList) {
 	print( IADMIN_FILE "at data_type \'$dataType\'\n");
     }
     print( IADMIN_FILE "quit\n");
 
+    print( IMETA_FILE "quit\n");
+
     close( IADMIN_FILE );
     close( SQL_FILE );
+    close( IMETA_FILE );
 }
 
 printf("Enter y or yes if you want this script to run the next steps now;\n");
@@ -130,11 +154,21 @@ my $answer = <STDIN>;
 chomp( $answer );	# remove trailing return
 if ($answer eq "yes" || $answer eq "y") {
     runCmd (1, "iadmin -V < $iadminFile >& $iadminLog" );
+
     printf("Enter y or yes if you want to go ahead and run psql now:");
     my $answer = <STDIN>;
     chomp( $answer );	# remove trailing return
     if ($answer eq "yes" || $answer eq "y") {
 	runCmd (0, "$psql ICAT < $sqlFile >& $psqlLog");
+    }
+
+    if ($imetaFlag eq "yes") {
+	printf("Enter y or yes if you want to go ahead and run imeta now:");
+	my $answer = <STDIN>;
+	chomp( $answer );	# remove trailing return
+	if ($answer eq "yes" || $answer eq "y") {
+	    runCmd (0, "$imeta < $imetaFile >& $imetaLog");
+	}
     }
 }
 
@@ -294,6 +328,7 @@ sub processLogFile($) {
 # First line in the log file is the run parameters, 
 # 2nd is the column-names, the rest are data items.
     my($logFile) = @_;
+    my @udsmd;
     if ( open(  LOG_FILE, "<$logFile" ) == 0 ) {
 	die("open failed on input file " . $logFile);
     }
@@ -315,6 +350,12 @@ sub processLogFile($) {
 	    }
 	    if ($cmdArgs[0] eq "GET_CHANGED_PHYSICAL_RESOURCE_CORE_INFO") {
 		$mode="RESC";
+	    }
+	    if ($cmdArgs[0] eq "GET_CHANGED_DATA_UDEFMETA_INFO") {
+		$mode="METADATA_DATA";
+	    }
+	    if ($cmdArgs[0] eq "GET_CHANGED_COLL_UDEFMETA_INFO") {
+		$mode="METADATA_COLL";
 	    }
 	}
 #	printf("MODE: $mode, i: $i\n");
@@ -414,6 +455,52 @@ sub processLogFile($) {
 		    $newName = "SRB-" . $v_resc_name;
 		    push(@cv_irods_resources, $newName);
 		    print( IADMIN_FILE "mkresc '$newName' '$v_resc_type' 'archive' '$v_resc_location' $newPath\n");
+		}
+	    }
+	    if ($mode eq "METADATA_DATA") {
+		$v_dataobj_name=$values[0];
+		$v_dataobj_collection=convertCollection($values[1]);
+		for ($i=0;$i<10;$i++) {
+		    $udsmd[$i]=$values[$i+3];
+		}
+		$v_dataobj_udimd0=$values[13];
+		$v_dataobj_udimd1=$values[14];
+		for ($i=0;$i<10;$i++) {
+		    if ($udsmd[$i] ne "") {
+			$imetaFlag="yes";
+			print( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name UDSMD$i '$udsmd[$i]'\n") ;
+		    }
+		}
+		if ($v_dataobj_udimd0 ne "") {
+		    $imetaFlag="yes";
+		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name UDIMD0 '$v_dataobj_udimd0'\n");
+		}
+		if ($v_dataobj_udimd1 ne "") {
+		    $imetaFlag="yes";
+		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name UDIMD1 '$v_dataobj_udimd1'\n");
+		}
+	    }
+
+	    if ($mode eq "METADATA_COLL") {
+		$v_coll_name=convertCollection($values[0]);
+		for ($i=0;$i<10;$i++) {
+		    $udsmd_coll[$i]=$values[$i+2];
+		}
+		$v_coll_udimd0=$values[12];
+		$v_coll_udimd1=$values[13];
+		for ($i=0;$i<10;$i++) {
+		    if ($udsmd_coll[$i] ne "") {
+			$imetaFlag="yes";
+			print( IMETA_FILE "add -c $v_coll_name UDSMD_COLL$i '$udsmd_coll[$i]'\n") ;
+		    }
+		}
+		if ($v_coll_udimd0 ne "") {
+		    $imetaFlag="yes";
+		    print ( IMETA_FILE "add -c $v_coll_name UDIMD_COLL0 '$v_coll_udimd0'\n");
+		}
+		if ($v_coll_udimd1 ne "") {
+		    $imetaFlag="yes";
+		    print ( IMETA_FILE "add -c $v_coll_name UDIMD_COLL1 '$v_coll_udimd1'\n");
 		}
 	    }
 	}
