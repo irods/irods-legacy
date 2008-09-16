@@ -26,6 +26,10 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
     }
 
     if (rodsServerHost->localFlag == LOCAL_HOST) {
+        if (getValByKey (&collCreateInp->condInput, RECURSIVE_OPR__KW) != NULL) {
+	    status = rsMkCollR (rsComm, "/", collCreateInp->collName);
+	    return (status);
+    }
 #ifdef RODS_CAT
         dataObjInp_t dataObjInp;
         dataObjInfo_t *dataObjInfo = NULL;
