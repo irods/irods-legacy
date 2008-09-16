@@ -67,7 +67,8 @@ msiDataObjTrim (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
 msParam_t *outParam, ruleExecInfo_t *rei);
 int
-msiCollCreate (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei);
+msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, 
+msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiRmColl (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *outParam, ruleExecInfo_t *rei);

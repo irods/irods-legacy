@@ -1229,6 +1229,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in]
  *    inpParam1 - It can be a DataObjInp_MS_T or
  *      a STR_MS_T which would be taken as dataObj path.
+ *    inpParam2 - A STR_MS_T which specifies the flags integer. A flags of
+ *	1 means the parent collections will be created too.
  * \param[out] a INT_MS_T containing the status.
  * \return integer
  * \retval 0 on success
@@ -1239,10 +1241,11 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 **/
 
 int
-msiCollCreate (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
+msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     collInp_t collCreateInp, *myCollCreateInp;
+    int flags;
 
     RE_TEST_MACRO ("    Calling msiCollCreate")
 
@@ -1264,6 +1267,10 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+    flags = parseMspForPosInt (inpParam2);
+
+    if (flags > 0) 
+        addKeyVal (&collCreateInp.condInput, RECURSIVE_OPR__KW, "");
     rei->status = rsCollCreate (rsComm, myCollCreateInp);
 
     if (rei->status >= 0) {
