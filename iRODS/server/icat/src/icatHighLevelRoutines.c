@@ -176,6 +176,33 @@ chlGetRcs()
 }
 
 /*
+ Called internally to rollback current transaction after an error.
+ */
+int
+_rollback(char *functionName) {
+   int status;
+#if ORA_ICAT
+   status = 0; 
+#else
+   /* This type of rollback is needed for Postgres since the low-level
+      now does an automatic 'begin' to create a sql block */
+   status =  cmlExecuteNoAnswerSql("rollback", &icss);
+   if (status == 0) {
+      rodsLog(LOG_NOTICE,
+	      "%s cmlExecuteNoAnswerSql(rollback) succeeded", functionName);
+   }
+   else {
+      rodsLog(LOG_NOTICE,
+	      "%s cmlExecuteNoAnswerSql(rollback) failure %d", 
+	      functionName, status);
+   }
+#endif
+
+   return(status);
+}
+
+
+/*
  Internal function to return the local zone (which is the default
  zone).  The first time it's called, it gets the zone from the DB and
  subsequent calls just return that value.
@@ -190,6 +217,7 @@ getLocalZone()
 	   "select zone_name from R_ZONE_MAIN where zone_type_name=?",
 	   localZone, MAX_NAME_LEN, "local", 0, &icss);
       if (status != 0) {
+	 _rollback("getLocalZone");
 	 rodsLog(LOG_NOTICE, "getLocalZone failure %d", status);
       }
       return(status);
@@ -320,6 +348,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 snprintf(errMsg, 100, "collection '%s' is unknown", 
 	       logicalDirName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 _rollback("chlModDataObjMeta");
 	 return(CAT_UNKNOWN_COLLECTION);
       }
       snprintf(objIdString, MAX_NAME_LEN, "%lld", iVal);
@@ -329,6 +358,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
           "select data_id from R_DATA_MAIN where coll_id=? and data_name=?",
 	  &iVal, objIdString, logicalFileName,  0, 0, &icss);
       if (status) {
+	 _rollback("chlModDataObjMeta");
 	 return(CAT_UNKNOWN_FILE);
       }
 
@@ -350,6 +380,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
 				 localZone, neededAccess, &icss);
       if (status) {
+	 _rollback("chlModDataObjMeta");
 	 return(CAT_NO_ACCESS_PERMISSION);
       } 
    }
@@ -408,11 +439,13 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	    rodsLog(LOG_NOTICE,
 		    "chlModDataObjMeta cmlModifySingleTable failure for other replicas %d",
 		    status2);
+	    _rollback("chlModDataObjMeta");
 	    return(status2);
 	 }
       }
    }
    if (status != 0) {
+      _rollback("chlModDataObjMeta");
       rodsLog(LOG_NOTICE,
 	      "chlModDataObjMeta cmlModifySingleTable failure %d",
 	      status);
@@ -459,6 +492,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    if (seqNum < 0) {
       rodsLog(LOG_NOTICE, "chlRegDataObj cmlGetNextSeqVal failure %d",
 	      seqNum);
+      _rollback("chlRegDataObj");
       return(seqNum);
    }
    snprintf(dataIdNum, MAX_NAME_LEN, "%lld", seqNum);
@@ -534,6 +568,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlRegDataObj cmlExecuteNoAnswerSql failure %d",status);
+      _rollback("chlRegDataObj");
       return(status);
    }
 
@@ -551,6 +586,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlRegDataObj cmlExecuteNoAnswerSql insert access failure %d",
 	      status);
+      _rollback("chlRegDataObj");
       return(status);
    }
 
@@ -560,6 +596,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlRegDataObj cmlAudit3 failure %d",
 	      status);
+      _rollback("chlRegDataObj");
       return(status);
    }
 
@@ -637,7 +674,10 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
       status = cmlCheckDataObjOnly(logicalDirName, logicalFileName,
 				   rsComm->clientUser.userName, 
 				   ACCESS_READ_OBJECT, &icss);
-      if (status < 0) return(status);
+      if (status < 0) {
+	 _rollback("chlRegReplica");
+	 return(status);
+      }
    }
 
    /* Get the next replica number */
@@ -648,6 +688,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 	&iVal, objIdString, 0, 0, 0, &icss);
 
    if (status) {
+      _rollback("chlRegReplica");
       return(status);
    }
 
@@ -662,6 +703,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    status = cmlGetOneRowFromSqlV2(tSQL, cVal, nColumns, 
 				   objIdString, replNumString, &icss);
    if (status < 0) {
+      _rollback("chlRegReplica");
       return(status);
    }
    statementNumber = status;
@@ -687,6 +729,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
       rodsLog(LOG_NOTICE, 
 	      "chlRegReplica cmlExecuteNoAnswerSql(insert) failure %d",
 	      status);
+      _rollback("chlRegReplica");
       return(status);
    }
 
@@ -702,6 +745,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
       rodsLog(LOG_NOTICE,
 	      "chlRegDataReplica cmlAudit3 failure %d",
 	      status);
+      _rollback("chlRegReplica");
       return(status);
    }
 
@@ -768,7 +812,10 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       status = cmlCheckDataObjOnly(logicalDirName, logicalFileName,
 				   rsComm->clientUser.userName, 
 				   ACCESS_DELETE_OBJECT, &icss);
-      if (status < 0) return(status);  /* convert long to int */
+      if (status < 0) {
+	 _rollback("chlUnregDataObj");
+	 return(status);  /* convert long to int */
+      }
       snprintf(dataObjNumber, 30, "%lld", status);
    }
    else {
@@ -812,6 +859,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 else {
 	    i = addRErrorMsg (&rsComm->rError, 0, 
 			      "dataId and replNum required");
+	    _rollback("chlUnregDataObj");
 	    return (CAT_INVALID_ARGUMENT);
 	 }
       }
@@ -842,7 +890,9 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 snprintf(errMsg, 100, "data object '%s' is unknown", 
 	       logicalFileName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(status);
       }
+      _rollback("chlUnregDataObj");
       return(status);
    }
 
@@ -870,6 +920,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       rodsLog(LOG_NOTICE,
 	      "chlUnRegDataObj cmlAudit3 failure %d",
 	      status);
+      _rollback("chlUnregDataObj");
       return(status);
    }
 
@@ -909,6 +960,7 @@ int chlRegRuleExec(rsComm_t *rsComm,
    if (seqNum < 0) {
       rodsLog(LOG_NOTICE, "chlRegRuleExec cmlGetNextSeqVal failure %d",
 	      seqNum);
+      _rollback("chlRegRuleExec");
       return(seqNum);
    }
    snprintf(ruleExecIdNum, MAX_NAME_LEN, "%lld", seqNum);
@@ -939,6 +991,7 @@ int chlRegRuleExec(rsComm_t *rsComm,
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlRegRuleExec cmlExecuteNoAnswerSql(insert) failure %d",status);
+      _rollback("chlRegRuleExec");
       return(status);
 
    }
@@ -951,6 +1004,7 @@ int chlRegRuleExec(rsComm_t *rsComm,
       rodsLog(LOG_NOTICE,
 	      "chlRegRuleExec cmlAudit3 failure %d",
 	      status);
+      _rollback("chlRegRuleExec");
       return(status);
    }
 
@@ -1032,8 +1086,9 @@ int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
 
    if (status != 0) {
+      _rollback("chlModRuleExec");
       rodsLog(LOG_NOTICE,
-	      "chlModRuleExecMeta cmlExecuteNoAnswer(update) failure %d",
+	      "chlModRuleExec cmlExecuteNoAnswer(update) failure %d",
 	      status);
       return(status);
    }
@@ -1046,6 +1101,7 @@ int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
       rodsLog(LOG_NOTICE,
 	      "chlModRuleExec cmlAudit3 failure %d",
 	      status);
+      _rollback("chlModRuleExec");
       return(status);
    }
 
@@ -1085,6 +1141,7 @@ int chlDelRuleExec(rsComm_t *rsComm,
       rodsLog(LOG_NOTICE,
 	      "chlDelRuleExec delete failure %d",
 	      status);
+      _rollback("chlDelRuleExec");
       return(status);
    }
 
@@ -1096,6 +1153,7 @@ int chlDelRuleExec(rsComm_t *rsComm,
       rodsLog(LOG_NOTICE,
 	      "chlDelRuleExec cmlAudit3 failure %d",
 	      status);
+      _rollback("chlDelRuleExec");
       return(status);
    }
 
@@ -1165,6 +1223,7 @@ int chlRegResc(rsComm_t *rsComm,
    if (seqNum < 0) {
       rodsLog(LOG_NOTICE, "chlRegResc cmlGetNextSeqVal failure %d",
 	      seqNum);
+      _rollback("chlRegResc");
       return(seqNum);
    }
    snprintf(idNum, MAX_SQL_SIZE, "%lld", seqNum);
@@ -1228,6 +1287,7 @@ int chlRegResc(rsComm_t *rsComm,
       rodsLog(LOG_NOTICE,
 	      "chlRegResc cmlExectuteNoAnswerSql(insert) failure %d",
 	      status);
+      _rollback("chlRegResc");
       return(status);
    }
 
@@ -1239,6 +1299,7 @@ int chlRegResc(rsComm_t *rsComm,
       rodsLog(LOG_NOTICE,
 	      "chlRegResc cmlAudit3 failure %d",
 	      status);
+      _rollback("chlRegResc");
       return(status);
    }
 
@@ -1285,6 +1346,7 @@ int chlDelResc(rsComm_t *rsComm,
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
 	 return(CAT_RESOURCE_NOT_EMPTY);
       }
+      _rollback("chlDelResc");
       return(status);
    }
 
@@ -1302,7 +1364,9 @@ int chlDelResc(rsComm_t *rsComm,
 		  "resource '%s' does not exist",
 		  rescInfo->rescName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(status);
       }
+      _rollback("chlDelResc");
       return(status);
    }
 
@@ -1319,7 +1383,9 @@ int chlDelResc(rsComm_t *rsComm,
 		  "resource '%s' does not exist",
 		  rescInfo->rescName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(status);
       }
+      _rollback("chlDelResc");
       return(status);
    }
 
@@ -1333,6 +1399,7 @@ int chlDelResc(rsComm_t *rsComm,
       rodsLog(LOG_NOTICE,
 	      "chlDelResc cmlAudit3 failure %d",
 	      status);
+      _rollback("chlDelResc");
       return(status);
    }
 
@@ -1426,7 +1493,10 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       i = addRErrorMsg (&rsComm->rError, 0, "Invalid user");
       return(CAT_INVALID_USER); 
    }
-   if (status) return(status);
+   if (status) {
+      _rollback("chlDelUserRE");
+      return(status);
+   }
 
    cllBindVars[cllBindVarCount++]=userInfo->userName;
    cllBindVars[cllBindVarCount++]=localZone;
@@ -1434,9 +1504,11 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    status = cmlExecuteNoAnswerSql(
 	    "delete from r_user_main where user_name=? and zone_name=?",
 	    &icss);
-
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) return(CAT_INVALID_USER); 
-   if (status) return(status);
+   if (status) {
+      _rollback("chlDelUserRE");
+      return(status);
+   }
 
    cllBindVars[cllBindVarCount++]=iValStr;
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 3");
@@ -1451,6 +1523,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 	      status);
       snprintf(errMsg, MAX_NAME_LEN+40, "Error removing password entry");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      _rollback("chlDelUserRE");
       return(status);
    }
 
@@ -1469,6 +1542,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 	      status);
       snprintf(errMsg, MAX_NAME_LEN+40, "Error removing user_group entry");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      _rollback("chlDelUserRE");
       return(status);
    }
 
@@ -1482,6 +1556,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlDelUserRE cmlAudit3 failure %d",
 	      status);
+      _rollback("chlDelUserRE");
       return(status);
    }
 
@@ -1545,7 +1620,9 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
 		  "collection '%s' is unknown, cannot create %s under it",
 		  logicalParentDirName, logicalEndName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(status);
       }
+      _rollback("chlRegCollByAdmin");
       return(status);
    }
 
@@ -1609,6 +1686,7 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
       rodsLog(LOG_NOTICE,
 	      "chlRegCollByAdmin cmlExecuteNoAnswerSQL(insert) failure %d"
 	      ,status);
+      _rollback("chlRegCollByAdmin");
       return(status);
    }
 
@@ -1630,6 +1708,7 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
       rodsLog(LOG_NOTICE,
 	      "chlRegCollByAdmin cmlExecuteNoAnswerSql(insert access) failure %d",
 	      status);
+      _rollback("chlRegCollByAdmin");
       return(status);
    }
 
@@ -1644,30 +1723,11 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
       rodsLog(LOG_NOTICE,
 	      "chlRegCollByAdmin cmlAudit4 failure %d",
 	      status);
+      _rollback("chlRegCollByAdmin");
       return(status);
    }
 
    return(0);
-}
-
-/*
- Called internally to rollback current transaction after an error.
- */
-int
-_rollback(char *functionName) {
-   int status;
-   status =  cmlExecuteNoAnswerSql("rollback", &icss);
-   if (status == 0) {
-      rodsLog(LOG_NOTICE,
-	      "%s cmlExecuteNoAnswerSql(rollback) succeeded", functionName);
-   }
-   else {
-      rodsLog(LOG_NOTICE,
-	      "%s cmlExecuteNoAnswerSql(rollback) failure %d", 
-	      functionName, status);
-   }
-
-   return(status);
 }
 
 /* 
@@ -1718,7 +1778,9 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 	 snprintf(errMsg, 100, "collection '%s' is unknown",
 		  logicalParentDirName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(status);
       }
+      _rollback("chlRegColl");
       return(status);
    }
    snprintf(collIdNum, MAX_NAME_LEN, "%lld", status);
@@ -1793,6 +1855,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlRegColl cmlExecuteNoAnswerSql(insert access) failure %d",
 	      status);
+      _rollback("chlRegColl");
       return(status);
    }
 
@@ -1807,6 +1870,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlRegColl cmlAudit4 failure %d",
 	      status);
+      _rollback("chlRegColl");
       return(status);
    }
 
@@ -2157,6 +2221,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
 	 return(CAT_COLLECTION_NOT_EMPTY);
       }
+      _rollback("chlDelCollByAdmin");
       return(status);
    }
 
@@ -2171,6 +2236,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlDelCollByAdmin delete access failure %d",
 	      status);
+      _rollback("chlDelCollByAdmin");
    }
 
    /* Audit (before it's deleted) */
@@ -2184,6 +2250,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlModColl cmlAudit4 failure %d",
 	      status);
+      _rollback("chlDelCollByAdmin");
       return(status);
    }
 
@@ -2200,6 +2267,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
       snprintf(errMsg, 100, "collection '%s' is unknown", 
 	       collInfo->collName);
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      _rollback("chlDelCollByAdmin");
       return(CAT_UNKNOWN_COLLECTION);
    }
 
@@ -2222,6 +2290,7 @@ int chlDelColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlDelColl cmlExecuteNoAnswerSql commit failure %d",
 	      status);
+      _rollback("chlDelColl");
       return(status);
    }
    return(0);
@@ -2266,7 +2335,9 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 	 snprintf(errMsg, 100, "collection '%s' is unknown",
 		  logicalParentDirName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 return(status);
       }
+      _rollback("_chlDelColl");
       return(status);
    }
    snprintf(parentCollIdNum, MAX_NAME_LEN, "%lld", status);
@@ -2301,6 +2372,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "_delColl cmlExecuteNoAnswerSql delete failure %d",
 	      status);
+      _rollback("_chlDelColl");
    }
 
    /* remove any access rows */
@@ -2313,6 +2385,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "_delColl cmlExecuteNoAnswerSql delete access failure %d",
 	      status);
+      _rollback("_chlDelColl");
    }
 
 
@@ -2326,6 +2399,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlModColl cmlAudit3 failure %d",
 	      status);
+      _rollback("_chlDelColl");
       return(status);
    }
 
@@ -2471,6 +2545,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 rodsLog(LOG_NOTICE,
 		 "chlCheckAuth cmlExecuteNoAnswerSql delete failure %d",
 		 status);
+	 _rollback("chlCheckAuth");
 	 return(status);
       }
 
@@ -2492,6 +2567,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 rodsLog(LOG_NOTICE,
 		 "chlCheckAuth cmlExecuteNoAnswerSql delete2 failure %d",
 		 status);
+	 _rollback("chlCheckAuth");
 	 return(status);
       }
 
@@ -2521,6 +2597,9 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
       }
+      else {
+	 _rollback("chlCheckAuth");
+      }
       return(status);
    }
    *userPrivLevel = LOCAL_USER_AUTH;
@@ -2539,6 +2618,9 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 if (status !=0) {
 	    if (status == CAT_NO_ROWS_FOUND) {
 	       status = CAT_INVALID_CLIENT_USER; /* more specific */
+	    }
+	    else {
+	       _rollback("chlCheckAuth");
 	    }
 	    return(status);
 	 }
@@ -2590,6 +2672,9 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
+      }
+      else {
+	 _rollback("chlMakeTempPw");
       }
       return(status);
    }
@@ -2647,6 +2732,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
       rodsLog(LOG_NOTICE,
 	      "chlMakeTempPw cmlExecuteNoAnswerSql insert failure %d",
 	      status);
+      _rollback("chlMakeTempPw");
       return(status);
    }
 
@@ -2683,6 +2769,9 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
+      }
+      else {
+	 _rollback("decodePw");
       }
       return(status);
    }
@@ -2938,6 +3027,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       rodsLog(LOG_NOTICE,
 	      "chlModUser cmlAudit1 failure %d",
 	      status);
+      _rollback("chlModUser");
       return(status);
    }
 
@@ -2989,6 +3079,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 	    userId, MAX_NAME_LEN, userName, localZone, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
+      _rollback("chlModGroup");
       return(status);
    }
 
@@ -2999,6 +3090,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 	      groupId, MAX_NAME_LEN, groupName, localZone, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_GROUP);
+      _rollback("chlModGroup");
       return(status);
    }
    OK=0;
@@ -3013,6 +3105,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModGroup cmlExecuteNoAnswerSql delete failure %d",
 		 status);
+	 _rollback("chlModGroup");
 	 return(status);
       }
       OK=1;
@@ -3032,6 +3125,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModGroup cmlExecuteNoAnswerSql delete failure %d",
 		 status);
+	 _rollback("chlModGroup");
 	 return(status);
       }
       OK=1;
@@ -3052,6 +3146,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
       rodsLog(LOG_NOTICE,
 	      "chlModGroup cmlAudit3 failure %d",
 	      status);
+      _rollback("chlModGroup");
       return(status);
    }
 
@@ -3100,6 +3195,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
        rescId, MAX_NAME_LEN, rescName, localZone, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+      _rollback("chlModResc");
       return(status);
    }
 
@@ -3117,6 +3213,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlModResc");
 	 return(status);
       }
       OK=1;
@@ -3133,6 +3230,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlModResc");
 	 return(status);
       }
       OK=1;
@@ -3150,6 +3248,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlModResc");
 	 return(status);
       }
       OK=1;
@@ -3166,6 +3265,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlModResc");
 	 return(status);
       }
       OK=1;
@@ -3193,6 +3293,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlModResc");
 	 return(status);
       }
       OK=1;
@@ -3221,6 +3322,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlModResc");
 	 return(status);
       }
       OK=1;
@@ -3238,6 +3340,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlModResc");
 	 return(status);
       }
       OK=1;
@@ -3258,6 +3361,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       rodsLog(LOG_NOTICE,
 	      "chlModResc cmlAudit3 failure %d",
 	      status);
+      _rollback("chlModResc");
       return(status);
    }
 
@@ -3317,6 +3421,7 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
       rodsLog(LOG_NOTICE,
 	      "chlModRescFreeSpace cmlExecuteNoAnswerSql update failure %d",
 	      status);
+      _rollback("chlModRescFreeSpace");
       return(status);
    }
 
@@ -3331,6 +3436,7 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
       rodsLog(LOG_NOTICE,
 	      "chlModRescFreeSpace cmlAudit4 failure %d",
 	      status);
+      _rollback("chlModRescFreeSpace");
       return(status);
    }
 
@@ -3372,6 +3478,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
 	      rescId, MAX_NAME_LEN, rescName, localZone, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+      _rollback("chlModRescGroup");
       return(status);
    }
 
@@ -3390,6 +3497,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModRescGroup cmlExecuteNoAnswerSql insert failure %d",
 		 status);
+	 _rollback("chlModRescGroup");
 	 return(status);
       }
       OK=1;
@@ -3406,6 +3514,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
 	 rodsLog(LOG_NOTICE,
 		 "chlModRescGroup cmlExecuteNoAnswerSql delete failure %d",
 		 status);
+	 _rollback("chlModRescGroup");
 	 return(status);
       }
       OK=1;
@@ -3426,6 +3535,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       rodsLog(LOG_NOTICE,
 	      "chlModRescGroup cmlAudit3 failure %d",
 	      status);
+      _rollback("chlModRescGroup");
       return(status);
    }
 
@@ -3541,6 +3651,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 		  );
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       }
+      _rollback("chlRegUserRE");
       rodsLog(LOG_NOTICE,
 	      "chlRegUserRE insert failure %d",status);
       return(status);
@@ -3559,6 +3670,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    if (status) {
       rodsLog(LOG_NOTICE,
 	      "chlRegUserRE insert into r_user_group failure %d",status);
+      _rollback("chlRegUserRE");
       return(status);
    }
 
@@ -3576,6 +3688,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlRegUserRE cmlAudit4 failure %d",
 	      status);
+      _rollback("chlRegUserRE");
       return(status);
    }
 
@@ -3627,7 +3740,10 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
 			   rsComm->clientUser.userName, 
 			   access, &icss);
-      if (status < 0) return(status);
+      if (status < 0) {
+	 _rollback("checkAndGetObjectId");
+	 return(status);
+      }
       objId=status;
    }
 
@@ -3637,7 +3753,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 2");
       status = cmlCheckDir(name,
 			   rsComm->clientUser.userName, 
-			   access, &icss);
+			   access, &icss); 
       if (status < 0) {
 	 int i;
 	 char errMsg[105];
@@ -3666,6 +3782,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
 		   &objId, name, localZone, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+	 _rollback("checkAndGetObjectId");
 	 return(status);
       }
    }
@@ -3685,6 +3802,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
 	 &objId, name, localZone, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
+	 _rollback("checkAndGetObjectId");
 	 return(status);
       }
    }
@@ -3771,6 +3889,8 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
 	    snprintf(errMsg, 100, "collection '%s' is unknown",
 		     name);
 	    i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	 } else {
+	    _rollback("chlAddAVUMetadata");
 	 }
 	 return(status);
       }
@@ -3969,7 +4089,10 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
 			   rsComm->clientUser.userName, 
 			   ACCESS_DELETE_METADATA, &icss);
-      if (status < 0) return(status);
+      if (status < 0) {
+	 _rollback("chlDeleteAVUMetadata");
+	 return(status);
+      }
       objId=status;
    }
 
@@ -4008,6 +4131,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 		&objId, name, localZone, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+	 _rollback("chlDeleteAVUMetadata");
 	 return(status);
       }
    }
@@ -4027,6 +4151,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 		 &objId, name, localZone, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
+	 _rollback("chlDeleteAVUMetadata");
 	 return(status);
       }
    }
@@ -4045,6 +4170,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 rodsLog(LOG_NOTICE,
 	       "chlDeleteAVUMetadata cmlExecuteNoAnswerSql delete failure %d",
 		 status);
+	 _rollback("chlDeleteAVUMetadata");
 	 return(status);
       }
 
@@ -4058,6 +4184,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 rodsLog(LOG_NOTICE,
 		 "chlDeleteAVUMetadata cmlAudit3 failure %d",
 		 status);
+	 _rollback("chlDeleteAVUMetadata");
 	 return(status);
       }
 
@@ -4116,6 +4243,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       rodsLog(LOG_NOTICE,
 	      "chlDeleteAVUMetadata cmlExecuteNoAnswerSql delete failure %d",
 	      status);
+      _rollback("chlDeleteAVUMetadata");
       return(status);
    }
 
@@ -4129,6 +4257,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       rodsLog(LOG_NOTICE,
 	      "chlDeleteAVUMetadata cmlAudit3 failure %d",
 	      status);
+      _rollback("chlDeleteAVUMetadata");
       return(status);
    }
 
@@ -4184,6 +4313,7 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
       rodsLog(LOG_NOTICE,
 	      "chlCopyAVUMetadata cmlExecuteNoAnswerSql insert failure %d",
 	      status);
+      _rollback("chlCopyAVUMetadata");
       return(status);
    }
 
@@ -4197,6 +4327,7 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
       rodsLog(LOG_NOTICE,
 	      "chlCopyAVUMetadata cmlAudit3 failure %d",
 	      status);
+      _rollback("chlCopyAVUMetadata");
       return(status);
    }
 
@@ -4308,7 +4439,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 11");
 	    status3 = cmlCheckDataObjOwn(logicalParentDirName, logicalEndName,
 					 rsComm->clientUser.userName,  &icss);
-	    if (status3 < 0) return(status2);
+	    if (status3 < 0) {
+	       _rollback("chlModAccessControl");
+	       return(status2);
+	    }
 	    objId = status3;
 	 } else {
 	    return(status2);
@@ -4365,7 +4499,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	    status =  cmlExecuteNoAnswerSql(
 			"insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  values (?, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 			&icss);
-	    if (status) return(status);
+	    if (status) {
+	       _rollback("chlModAccessControl");
+	       return(status);
+	    }
 	 }
 
 	 /* Audit */
@@ -4378,6 +4515,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	    rodsLog(LOG_NOTICE,
 		    "chlModAccessControl cmlAudit5 failure %d",
 		    status);
+	    _rollback("chlModAccessControl");
 	    return(status);
 	 }
 
@@ -4393,6 +4531,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	      "delete from r_objt_access where user_id=? and object_id=?",
   	      &icss);
       if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+	 _rollback("chlModAccessControl");
 	 return(status);
       }
       if (rmFlag) {  /* just removing */
@@ -4406,6 +4545,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	    rodsLog(LOG_NOTICE,
 		    "chlModAccessControl cmlAudit5 failure %d",
 		    status);
+	    _rollback("chlModAccessControl");
 	    return(status);
 	 }
 	 status =  cmlExecuteNoAnswerSql("commit", &icss);
@@ -4423,8 +4563,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
           "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  values (?, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 	  &icss);
 
-      if (status) return(status);
-
+      if (status) {
+	 _rollback("chlModAccessControl");
+	 return(status);
+      }
       /* Audit */
       status = cmlAudit5(AU_MOD_ACCESS_CONTROL_COLL,
 			 collIdStr,
@@ -4435,6 +4577,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 rodsLog(LOG_NOTICE,
 		 "chlModAccessControl cmlAudit5 failure %d",
 		 status);
+	 _rollback("chlModAccessControl");
 	 return(status);
       }
 
@@ -4469,6 +4612,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
                "delete from r_objt_access where user_id=? and object_id in (select data_id from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
 	       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      _rollback("chlModAccessControl");
       return(status);
    }
    if (rmFlag) {  /* just removing */
@@ -4483,6 +4627,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 rodsLog(LOG_NOTICE,
 		 "chlModAccessControl cmlAudit5 failure %d",
 		 status);
+	 _rollback("chlModAccessControl");
 	 return(status);
       }
 
@@ -4512,7 +4657,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);
 #endif
-   if (status) return(status);
+   if (status) {
+      _rollback("chlModAccessControl");
+      return(status);
+   }
 
    /* Audit */
    status = cmlAudit5(AU_MOD_ACCESS_CONTROL_COLL_RECURSIVE,
@@ -4524,6 +4672,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       rodsLog(LOG_NOTICE,
 	      "chlModAccessControl cmlAudit5 failure %d",
 	      status);
+      _rollback("chlModAccessControl");
       return(status);
    }
 
@@ -4611,6 +4760,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlExecuteNoAnswerSql update1 failure %d",
 		 status);
+	 _rollback("chlRenameObject");
 	 return(status);
       }
 
@@ -4624,6 +4774,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlExecuteNoAnswerSql update2 failure %d",
 		 status);
+	 _rollback("chlRenameObject");
 	 return(status);
       }
 
@@ -4637,6 +4788,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlAudit3 failure %d",
 		 status);
+	 _rollback("chlRenameObject");
 	 return(status);
       }
 
@@ -4715,6 +4867,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlRenameObject");
 	 return(status);
       }
 
@@ -4733,6 +4886,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlRenameObject");
 	 return(status);
       }
 
@@ -4750,6 +4904,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlRenameObject");
 	 return(status);
       }
 
@@ -4763,6 +4918,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlRenameObject cmlAudit3 failure %d",
 		 status);
+	 _rollback("chlRenameObject");
 	 return(status);
       }
 
@@ -4905,6 +5061,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlMoveObject cmlExecuteNoAnswerSql update1 failure %d",
 		 status);
+	 _rollback("chlMoveObject");
 	 return(status);
       }
 
@@ -4919,6 +5076,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlMoveObject cmlExecuteNoAnswerSql update2 failure %d",
 		 status);
+	 _rollback("chlMoveObject");
 	 return(status);
       }
 
@@ -4932,6 +5090,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlMoveObject cmlAudit3 failure %d",
 		 status);
+	 _rollback("chlMoveObject");
 	 return(status);
       }
 
@@ -5020,6 +5179,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlMoveObject cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlMoveObject");
 	 return(status);
       }
 
@@ -5048,6 +5208,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlMoveObject cmlExecuteNoAnswerSql update failure %d",
 		 status);
+	 _rollback("chlMoveObject");
 	 return(status);
       }
 
@@ -5061,6 +5222,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 rodsLog(LOG_NOTICE,
 		 "chlMoveObject cmlAudit3 failure %d",
 		 status);
+	 _rollback("chlMoveObject");
 	 return(status);
       }
 
@@ -5168,7 +5330,10 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    status =  cmlExecuteNoAnswerSql(
 	    "insert into r_tokn_main values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 	    &icss);
-   if (status) return(status);
+   if (status) {
+      _rollback("chlRegToken");
+      return(status);
+   }
 
    /* Audit */
    status = cmlAudit3(AU_REG_TOKEN,  
@@ -5180,6 +5345,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
       rodsLog(LOG_NOTICE,
 		 "chlRegToken cmlAudit3 failure %d",
 	      status);
+      _rollback("chlRegToken");
       return(status);
    }
 
@@ -5222,7 +5388,10 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
    status =  cmlExecuteNoAnswerSql(
 	         "delete from r_tokn_main where token_namespace=? and token_name=?",
 		 &icss);
-   if (status) return(status);
+   if (status) {
+      _rollback("chlDelToken");
+      return(status);
+   }
 
    /* Audit */
    snprintf(objIdStr, 50, "%lld", objId);
@@ -5233,8 +5402,9 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
 			 &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
-		 "chlRegToken cmlAudit3 failure %d",
+		 "chlDelToken cmlAudit3 failure %d",
 	      status);
+      _rollback("chlDelToken");
       return(status);
    }
 
