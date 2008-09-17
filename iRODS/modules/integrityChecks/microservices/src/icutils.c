@@ -173,7 +173,7 @@ int verifyCollOwners (genQueryOut_t* gqout, char* ownerlist, bytesBuf_t* mybuf) 
 			if (!(strcmp(thisowner, olist[j]))) {
 				/* We only care about the ones that DON'T match */
 				foundflag=1;
-				break;  /* or continue till all non matching are found? */
+				break;  
 			}
 		}
 
@@ -188,10 +188,18 @@ int verifyCollOwners (genQueryOut_t* gqout, char* ownerlist, bytesBuf_t* mybuf) 
 }
 
 
-int verifyCollAVU (genQueryOut_t* gqout, char* avulist, bytesBuf_t* mybuf) {
-	return (0);
+int verifyCollAVU (genQueryOut_t* gqout, char* myavuname, char* myavuvalue, char* myavuattr, bytesBuf_t* mybuf) {
+	sqlResult_t* collName;
+	sqlResult_t* avuname;
+	sqlResult_t* avuavlue;
+	sqlResult_t* avuattr;
+	int status;
+
+	return (status);
 }
 
 int verifyCollACL (genQueryOut_t* gqout, char* acllist, bytesBuf_t* mybuf) {
-	return (0);
+	int status;
+
+	return (status);
 }

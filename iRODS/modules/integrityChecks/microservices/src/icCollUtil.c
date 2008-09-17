@@ -8,9 +8,6 @@
 
 int	icCollOps (char* collname, char* operation, char* oplist, bytesBuf_t* mybuf, int status) {
 
-	rsComm_t* rsComm;
-	//sqlResult_t *collectionName;
-	//sqlResult_t *collectionID;
 	genQueryInp_t gqin;
 	genQueryOut_t* gqout=NULL;
 	char condStr[MAX_NAME_LEN];
@@ -21,8 +18,6 @@ int	icCollOps (char* collname, char* operation, char* oplist, bytesBuf_t* mybuf,
 	gqin.maxRows = MAX_SQL_ROWS;
 	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
 	memset (gqout, 0, sizeof (genQueryOut_t));
-	//mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
-	//memset (mybuf, 0, sizeof (bytesBuf_t));
 
 	/* Generate a query - we only want subcollection data objects */
     addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
@@ -93,18 +88,55 @@ int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t *b
 	return (status);
 }
 
-int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuinp, msParam_t *bufout, msParam_t* statout) {
+int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuname, msParam_t* avuvalue, msParam_t* avuattr, msParam_t *bufout, msParam_t* statout) {
 
-	void* mybuf=NULL;
+	genQueryInp_t gqin;
+	genQueryOut_t* gqout=NULL;
+	char condStr[MAX_NAME_LEN];
+	char tmpstr[MAX_NAME_LEN];
+	bytesBuf_t* mybuf=NULL;
 	char* collname;
-	char* avulist;
+	char* avuname;
+	char* avuvalue;
+	char* avuattr;;
 	int status;
 
+	/* init stuff */
+	memset (&gqin, 0, sizeof(genQueryInp_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout, 0, sizeof (genQueryOut_t));
+    mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+    memset (mybuf, 0, sizeof (bytesBuf_t));
+
 	collname = strdup (collinp->inOutStruct);
-	avulist = strdup (avuinp->inOutStruct);
+	avuname = strdup (avuname->inOutStruct);
+	avuvalue = strdup (avuvalue->inOutStruct);
+	avuattr = strdup (avuattr->inOutStruct);
 	
+	/* Generate a query - we only want subcollection data objects */
+    addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&gqin.selectInp, COL_COLL_ID, 1); 
+	genAllInCollQCond (collname, condStr);
+    addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
+
+	/* get the AVU fields */
+	addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_NAME, 1);
+	addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_VALUE, 1);
+	addInxIval (&gqin.selectInp, COL_META_COLL_ATTR_UNITS, 1);
+
+	/* This is effectively a recursive query because of the condStr */
+    status = rsGenQuery (rsComm, &gqin, &gqout);
+	fprintf (stderr, "status=%d\n", status);
+
+	if ((status==CAT_NO_ROWS_FOUND) || (status < 0)) {
+		snprintf (tmpstr, MAX_NAME_LEN, "No rows found matching input criteria.\n");
+		appendToByteBuf (mybuf, tmpstr);
+	}
+
 	status = icCollOps (collname, "AVU", avulist, mybuf, status);
 
+	fillStrInMsParam (bufout, mybuf->buf);
 	fillIntInMsParam (statout, status);
 	return (status);
 }
