@@ -792,3 +792,51 @@ msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *r
 
 
 
+/**
+ * \fn msiStrToByteBuf
+ * \author  Antoine de Torcy
+ * \date   2008-09-16
+ * \brief Converts a string to a bytesBuf_t
+ * \note Following discussion on iRODS_Chat. For easily passing parameters to
+ *	microservices that require a BUF_LEN_MS_T
+ * \param[in] 
+ *    inpParam - a STR_MS_T
+ * \param[out] 
+ *    outParam - a BUF_LEN_MS_T
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
+{
+	char *inStr;
+	bytesBuf_t *outBuf;
+
+	/* parse str_msp */
+	if ((inStr = parseMspForStr(str_msp)) == NULL)  
+	{
+		rodsLog (LOG_ERROR, "msiStrToBytesBuf: input str_msp is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	/* buffer init */
+	outBuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+	memset (outBuf, 0, sizeof (bytesBuf_t));
+
+	/* fill string in buffer */
+	outBuf->len = strlen(inStr);
+	outBuf->buf = inStr;
+
+	/* fill buffer in buf_msp */
+	fillBufLenInMsParam (buf_msp, outBuf->len, outBuf);
+	
+	return 0;
+}
+
+
+
+
