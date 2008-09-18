@@ -315,7 +315,7 @@ freePathCache (pathCache_t *tmpPathCache)
 {
     if (tmpPathCache == NULL) return 0;
     if (tmpPathCache->filePath != NULL) free (tmpPathCache->filePath);
-    if (tmpPathCache->locCacheState == HAVE_READ_CACHE &&
+    if (tmpPathCache->locCacheState != NO_FILE_CACHE &&
       tmpPathCache->locCachePath != NULL) {
 	freeFileCache (tmpPathCache);
     }
