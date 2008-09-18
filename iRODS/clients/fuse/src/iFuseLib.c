@@ -409,11 +409,11 @@ ifuseClose (char *path, int descInx)
 {
     int status = 0;
     int savedStatus = 0;
+    int goodStat = 0;
 
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
 	status = closeIrodsFd (IFuseDesc[descInx].iFd);
     } else {	/* cached */
-        int goodStat = 0;
         if (IFuseDesc[descInx].newFlag > 0 || 
 	  IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
             pathCache_t *tmpPathCache;
@@ -450,8 +450,6 @@ ifuseClose (char *path, int descInx)
                path);
 	    savedStatus = -EBADF;
 	}
-        if (IFuseDesc[descInx].bytesWritten > 0 && goodStat == 0) 
-	    rmPathFromCache ((char *) path, PathArray);
 	status = close (IFuseDesc[descInx].iFd);
 	if (status < 0) {
 	    status = (errno ? (-1 * errno) : -1);
@@ -459,6 +457,9 @@ ifuseClose (char *path, int descInx)
 	    status = savedStatus;
 	}
     }
+
+    if (IFuseDesc[descInx].bytesWritten > 0 && goodStat == 0) 
+        rmPathFromCache ((char *) path, PathArray);
     return (status);
 }
 

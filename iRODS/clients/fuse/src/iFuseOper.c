@@ -21,7 +21,9 @@ irodsGetattr (const char *path, struct stat *stbuf)
 {
     int status;
 
+    getIFuseConn (&DefConn, &MyRodsEnv);
     status = _irodsGetattr (path, stbuf, NULL);
+    relIFuseConn (&DefConn);
     return (status);
 }
 
@@ -71,9 +73,9 @@ _irodsGetattr (const char *path, struct stat *stbuf, pathCache_t **outPathCache)
 	/* use ENOTDIR for this type of error */
 	return -ENOTDIR;
     }
-    getIFuseConn (&DefConn, &MyRodsEnv);
+    /* do it outside XXXXX getIFuseConn (&DefConn, &MyRodsEnv); */
     status = rcObjStat (DefConn.conn, &dataObjInp, &rodsObjStatOut);
-    relIFuseConn (&DefConn);
+    /* relIFuseConn (&DefConn); */
     if (status < 0) {
 	if (status != USER_FILE_DOES_NOT_EXIST) {
             rodsLogError (LOG_ERROR, status, 
@@ -215,10 +217,11 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 
     rodsLog (LOG_DEBUG, "irodsMknod: %s", path);
 
-    if (_irodsGetattr (path, &stbuf, NULL) >= 0) 
-	return -EEXIST;
-
     getIFuseConn (&DefConn, &MyRodsEnv);
+
+    if (_irodsGetattr (path, &stbuf, NULL) >= 0)
+        return -EEXIST;
+
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
     status = irodsMknodWithCache ((char *)path, mode, cachePath);
     irodsPath[0] = '\0';
