@@ -15,6 +15,6 @@
 int msiListColl (msParam_t* collectionname, msParam_t* buf, ruleExecInfo_t* rei);
 int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t *bufout, msParam_t* statout);
 int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuname, msParam_t* avuvalue, msParam_t* avuattr, msParam_t *bufout, msParam_t* statout);
-int msiVerifySubCollACL (msParam_t* collinp, msParam_t* aclinp, msParam_t *bufout, msParam_t* statout);
+int msiVerifySubCollACL (msParam_t* collinp, msParam_t* acltypeinp, msParam_t* aclnameinp, msParam_t *bufout, msParam_t* statout);
 
 #endif	/* _IC_COLL_UTIL */

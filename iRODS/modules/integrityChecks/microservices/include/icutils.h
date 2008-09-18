@@ -25,7 +25,7 @@ int msiTestWritePosInt (msParam_t* mPout1, ruleExecInfo_t *rei);
 
 /* helper monkey function */
 int verifyCollOwners (genQueryOut_t* gqout, char* ownerlist, bytesBuf_t* mybuf);
-int verifyCollAVU (genQueryOut_t* gqout, char* avulist, bytesBuf_t* mybuf);
-int verifyCollACL (genQueryOut_t* gqout, char* acllist, bytesBuf_t* mybuf);
+int verifyCollAVU (genQueryOut_t* gqout, char* myavuname, char* myavuvalue, char* myavuattr, bytesBuf_t* mybuf);
+int verifyCollACL (genQueryOut_t* gqout, char* myaclname, char* myacltype, bytesBuf_t* mybuf);
 
 #endif	/* ICUTILS */

@@ -8,6 +8,7 @@
 
 int	icCollOps (char* collname, char* operation, char* oplist, bytesBuf_t* mybuf, int status) {
 
+	rsComm_t* rsComm;
 	genQueryInp_t gqin;
 	genQueryOut_t* gqout=NULL;
 	char condStr[MAX_NAME_LEN];
@@ -54,10 +55,10 @@ int	icCollOps (char* collname, char* operation, char* oplist, bytesBuf_t* mybuf,
 		verifyCollOwners (gqout, oplist, mybuf);
 	} else if (!(strcmp(operation, "AVU"))) {
 		// process AVU query results
-		verifyCollAVU (gqout, oplist, mybuf);
+		//verifyCollAVU (gqout, oplist, mybuf);
 	} else if (!(strcmp(operation, "ACL"))) {
 		// process ACL query results
-		verifyCollACL (gqout, oplist, mybuf);
+		//verifyCollACL (gqout, oplist, mybuf);
 	}
 
 	printGenQueryOut(stderr, NULL, NULL, gqout);
@@ -68,7 +69,8 @@ int	icCollOps (char* collname, char* operation, char* oplist, bytesBuf_t* mybuf,
 	
 
 /* the following functions are wrappers for icCollOps function */
-int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t *bufout, msParam_t* statout) {
+int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, 
+	msParam_t *bufout, msParam_t* statout) {
 
 	bytesBuf_t* mybuf=NULL;
 	char* collname;
@@ -88,17 +90,19 @@ int msiVerifySubCollOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t *b
 	return (status);
 }
 
-int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuname, msParam_t* avuvalue, msParam_t* avuattr, msParam_t *bufout, msParam_t* statout) {
+int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp, 
+	msParam_t* avuattrinp, msParam_t *bufout, msParam_t* statout) {
 
+	rsComm_t* rsComm;
 	genQueryInp_t gqin;
 	genQueryOut_t* gqout=NULL;
 	char condStr[MAX_NAME_LEN];
 	char tmpstr[MAX_NAME_LEN];
 	bytesBuf_t* mybuf=NULL;
 	char* collname;
-	char* avuname;
-	char* avuvalue;
-	char* avuattr;;
+	char* myavuname;
+	char* myavuvalue;
+	char* myavuattr;;
 	int status;
 
 	/* init stuff */
@@ -110,9 +114,9 @@ int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuname, msParam_t* avuv
     memset (mybuf, 0, sizeof (bytesBuf_t));
 
 	collname = strdup (collinp->inOutStruct);
-	avuname = strdup (avuname->inOutStruct);
-	avuvalue = strdup (avuvalue->inOutStruct);
-	avuattr = strdup (avuattr->inOutStruct);
+	myavuname = strdup (avunameinp->inOutStruct);
+	myavuvalue = strdup (avuvalueinp->inOutStruct);
+	myavuattr = strdup (avuattrinp->inOutStruct);
 	
 	/* Generate a query - we only want subcollection data objects */
     addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
@@ -132,27 +136,62 @@ int msiVerifySubCollAVU (msParam_t* collinp, msParam_t* avuname, msParam_t* avuv
 	if ((status==CAT_NO_ROWS_FOUND) || (status < 0)) {
 		snprintf (tmpstr, MAX_NAME_LEN, "No rows found matching input criteria.\n");
 		appendToByteBuf (mybuf, tmpstr);
-	}
-
-	status = icCollOps (collname, "AVU", avulist, mybuf, status);
+	} else
+		verifyCollAVU (gqout, myavuname, myavuvalue, myavuattr, mybuf);
 
 	fillStrInMsParam (bufout, mybuf->buf);
 	fillIntInMsParam (statout, status);
 	return (status);
 }
 
-int msiVerifySubCollACL (msParam_t* collinp, msParam_t* aclinp, msParam_t *bufout, msParam_t* statout) {
+int msiVerifySubCollACL (msParam_t* collinp, msParam_t* acltypeinp, msParam_t* aclnameinp, msParam_t *bufout, msParam_t* statout) {
 
-	void* mybuf=NULL;
+	rsComm_t* rsComm;
+	genQueryInp_t gqin;
+	genQueryOut_t* gqout=NULL;
+	bytesBuf_t* mybuf;
+	char condStr[MAX_NAME_LEN];
+	char tmpstr[MAX_NAME_LEN];
 	char* collname;
-	char* acllist;
+	char* myaclname;
+	char* myacltype;
 	int status;
 
-	collname = strdup (collinp->inOutStruct);
-	acllist = strdup (aclinp->inOutStruct);
-	
-	status = icCollOps (collname, "ACL", acllist, mybuf, status);
+	/* init stuff */
+	memset (&gqin, 0, sizeof(genQueryInp_t));
+	gqin.maxRows = MAX_SQL_ROWS;
+	gqout = (genQueryOut_t*) malloc (sizeof (genQueryOut_t));
+	memset (gqout, 0, sizeof (genQueryOut_t));
+	mybuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+	memset (mybuf, 0, sizeof (bytesBuf_t));
 
+	collname = strdup (collinp->inOutStruct);
+	myaclname = strdup (aclnameinp->inOutStruct);
+	myacltype = strdup (acltypeinp->inOutStruct);
+
+	/* Generate a query - we only want subcollection data objects */
+    addInxIval (&gqin.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&gqin.selectInp, COL_COLL_ID, 1); 
+	genAllInCollQCond (collname, condStr);
+    addInxVal (&gqin.sqlCondInp, COL_COLL_NAME, condStr);
+
+	/* Determine which data we want to receive - ownerstuff, ACL stuff or AVU stuff */
+	addInxIval (&gqin.selectInp, COL_COLL_ACCESS_TYPE, 1);
+	addInxIval (&gqin.selectInp, COL_COLL_ACCESS_NAME, 1);
+
+	/* This is effectively a recursive query because of the condStr */
+    status = rsGenQuery (rsComm, &gqin, &gqout);
+	fprintf (stderr, "status=%d\n", status);
+
+	if ((status==CAT_NO_ROWS_FOUND) || (status < 0)) {
+		snprintf (tmpstr, MAX_NAME_LEN, "No rows found matching input criteria.\n");
+		appendToByteBuf (mybuf, tmpstr);
+	} else
+		verifyCollACL (gqout, myaclname, myacltype, mybuf);
+
+	printGenQueryOut(stderr, NULL, NULL, gqout);
+
+	fillStrInMsParam (bufout, mybuf->buf);
 	fillIntInMsParam (statout, status);
 	return (status);
 }
