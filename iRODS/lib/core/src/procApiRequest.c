@@ -203,6 +203,7 @@ bytesBuf_t *outBsBBuf)
     status = readMsgHeader (conn->sock, &myHeader);
 
     if (status < 0) {
+	int savedStatus = status;
         rodsLogError (LOG_ERROR, status,
           "readAndProcApiReply: readMsgHeader error. status = %d", status);
 
@@ -215,16 +216,16 @@ bytesBuf_t *outBsBBuf)
 		} else {
         	    rodsLogError (LOG_ERROR, status,
                      "readAndProcApiReply:reconnected but readMsgHeader failed");
-		    return (status);
+		    return (savedStatus);
 	        }
 	    } else {
 	        rodsLog (LOG_ERROR,
                  "readAndProcApiReply: reconnect failed. status = %d \n",
                   status);
-                return status;
+                return savedStatus;
 	    }
 	} else {
-            return (status);
+            return (savedStatus);
 	}
     }
 

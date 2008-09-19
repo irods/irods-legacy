@@ -113,6 +113,7 @@
 #define SYS_UDP_CONNECT_ERR 		-86000
 #define SYS_UDP_TRANSFER_ERR 		-89000
 #define SYS_UDP_NO_SUPPORT_ERR 		-90000
+#define SYS_READ_MSG_BODY_LEN_ERR	-91000
 
 /* 300,000 - 499,000 - user input type error */
 #define USER_AUTH_SCHEME_ERR		-300000

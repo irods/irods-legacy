@@ -108,6 +108,7 @@
     SYS_UDP_CONNECT_ERR, 
     SYS_UDP_TRANSFER_ERR, 
     SYS_UDP_NO_SUPPORT_ERR, 
+    SYS_READ_MSG_BODY_LEN_ERR, 
     USER_AUTH_SCHEME_ERR, 
     USER_AUTH_STRING_EMPTY, 
     USER_RODS_HOST_EMPTY, 
@@ -452,6 +453,7 @@
     "SYS_UDP_CONNECT_ERR", 
     "SYS_UDP_TRANSFER_ERR", 
     "SYS_UDP_NO_SUPPORT_ERR", 
+    "SYS_READ_MSG_BODY_LEN_ERR", 
     "USER_AUTH_SCHEME_ERR", 
     "USER_AUTH_STRING_EMPTY", 
     "USER_RODS_HOST_EMPTY", 
@@ -707,7 +709,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 342;
+int irodsErrorCount= 343;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

@@ -84,6 +84,8 @@ int
 getUdpSockFromPortList (portList_t *thisPortList);
 int
 getTcpSockFromPortList (portList_t *thisPortList);
+int
+isReadMsgError (int status);
 #ifdef  __cplusplus
 }
 #endif

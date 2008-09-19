@@ -1152,10 +1152,10 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
 
         if (nbytes != myHeader->errorLen) {
             rodsLog (LOG_NOTICE,
-              "readMsgBody: errorBbuf read error, read %d bytes, expect %d",
-             nbytes, myHeader->msgLen);
+              "readMsgBody: errorBbuf read error, read %d bytes, expect %d, errno = %d",
+             nbytes, myHeader->msgLen, errno);
             free (errorBBuf->buf);
-            return (SYS_HEADER_READ_LEN_ERR);
+            return (SYS_READ_MSG_BODY_LEN_ERR - errno);
         }
         errorBBuf->len = myHeader->errorLen;
     }
@@ -1177,10 +1177,10 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
 
         if (nbytes != myHeader->bsLen) {
             rodsLog (LOG_NOTICE, 
-	      "readMsgBody: bsBBuf read error, read %d bytes, expect %d",
-             nbytes, myHeader->bsLen);
+	      "readMsgBody: bsBBuf read error, read %d bytes, expect %d, errno = %d",
+             nbytes, myHeader->bsLen, errno);
             free (bsBBuf->buf);
-            return (SYS_HEADER_READ_LEN_ERR);
+            return (SYS_READ_MSG_BODY_INPUT_ERR - errno);
         }
 	bsBBuf->len = myHeader->bsLen;
     }
@@ -1341,3 +1341,13 @@ getTcpSockFromPortList (portList_t *thisPortList)
     return (thisPortList->sock & 0xffff);
 }
 
+int
+isReadMsgError (int status)
+{
+    if (status + (status % 1000) == SYS_READ_MSG_BODY_LEN_ERR ||
+      status + (status % 1000) == SYS_HEADER_READ_LEN_ERR) {
+	return 1;
+    } else {
+	return 0;
+    }
+}
