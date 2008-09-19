@@ -171,6 +171,8 @@ int
 ifusePut (char *path, char *locCachePath, int mode, rodsLong_t srcSize);
 int
 freeFileCache (pathCache_t *tmpPathCache);
+int
+disConnIFuseConn ();
 #ifdef  __cplusplus
 }
 #endif

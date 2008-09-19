@@ -766,6 +766,17 @@ connManager ()
     }
 }
 
+/* have to do this after getIFuseConn - lock */
+int
+disConnIFuseConn ()
+{
+    if (&DefConn.conn != NULL) {
+        rcDisconnect (DefConn.conn);
+        DefConn.conn = NULL;
+    }
+    return 0;
+}
+
 int
 addNewlyCreatedToCache (char *path, int descInx, int mode, 
 pathCache_t **tmpPathCache)
