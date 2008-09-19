@@ -89,10 +89,17 @@ libs:	modules
 
 
 # Build the servers
+#
+# The MODULE_OBJS is the MODULE_LDFLAGS without the -L or -l options
+# and is used for setting up proper dependencies in the
+# server/Makefile.  This assumes that the various module Makefiles
+# always place the -L options after the .o files, which should be the
+# case.
 server:	reaction server_ldflags server_cflags libs modules
 	@echo "Server"
 	@echo "------------------------------------------------------------------------"
 	@MODULE_LDFLAGS=`cat $(SERVER_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
+		MODULE_OBJS=`cat $(SERVER_LDFLAGS_TMP) | sed s/-L.*//g` && export MODULE_OBJS && \
 		MODULE_CFLAGS=`cat $(SERVER_CFLAGS_TMP)` && export MODULE_CFLAGS && \
 		$(MAKE) -C server all
 	@echo " "
