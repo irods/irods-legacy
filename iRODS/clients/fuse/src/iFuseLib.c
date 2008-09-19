@@ -695,11 +695,13 @@ int
 getIFuseConn (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
 {
     int status;
-    rErrMsg_t errMsg;
 
     pthread_mutex_lock (&iFuseConn->lock);
 
     if (DefConn.conn == NULL) {
+	status = ifuseConnect (iFuseConn, myRodsEnv);
+	if (status < 0) return status;
+#if 0
         DefConn.conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->rodsPort,
           myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 1, &errMsg);
 
@@ -718,6 +720,7 @@ getIFuseConn (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
             rcDisconnect (DefConn.conn);
             return (status);
         }
+#endif
     }
 
 
@@ -736,6 +739,32 @@ getIFuseConn (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
     DefConn.actTime = time (NULL);
 
     return 0;
+}
+
+int
+ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
+{ 
+    int status;
+    rErrMsg_t errMsg;
+
+    iFuseConn->conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->rodsPort,
+      myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 1, &errMsg);
+
+    if (iFuseConn->conn == NULL) {
+        rodsLogError (LOG_ERROR, errMsg.status,
+          "ifuseConnect: rcConnect failure %s", errMsg.msg);
+        if (errMsg.status < 0) {
+            return (errMsg.status);
+        } else {
+            return (-1);
+        }
+    }
+
+    status = clientLogin (iFuseConn->conn);
+    if (status != 0) {
+        rcDisconnect (iFuseConn->conn);
+    }
+    return (status);
 }
 
 int
@@ -768,13 +797,15 @@ connManager ()
 
 /* have to do this after getIFuseConn - lock */
 int
-disConnIFuseConn ()
+ifuseReconnect ()
 {
+    int status = 0;
     if (&DefConn.conn != NULL) {
+	rodsLog (LOG_DEBUG, "ifuseReconnect: reconnecting");
         rcDisconnect (DefConn.conn);
-        DefConn.conn = NULL;
+	status = ifuseConnect (&DefConn, &MyRodsEnv);
     }
-    return 0;
+    return status;
 }
 
 int

@@ -172,7 +172,9 @@ ifusePut (char *path, char *locCachePath, int mode, rodsLong_t srcSize);
 int
 freeFileCache (pathCache_t *tmpPathCache);
 int
-disConnIFuseConn ();
+ifuseReconnect ();
+int
+ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv);
 #ifdef  __cplusplus
 }
 #endif
