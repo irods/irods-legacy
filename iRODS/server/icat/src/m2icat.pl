@@ -19,13 +19,16 @@
 
 # Begin section to edit ---------------------------------------------------
 # Conversion tables (cv_):
-$cv_srbZone = "A";            # Your SRB zone name
+$cv_srbZone = "galvin";            # Your SRB zone name
 $cv_irodsZone = "tempZone";   # Your iRODS zone name
 
 # Special usernames to convert:
 @cv_srb_usernames=("srbAdmin"); # username conversion table:srb form
 @cv_irods_usernames=("rods");   # irods form for corresponding srb forms
 @cv_srb_userdomains=("demo");   # Used for user.domain situations
+
+# Special usernames to add
+@cv_special_users=("vidarch");  # Needed for sils instance
 
 # These below are used for ingesting users.
 # Note that, by default, only users of type 'staff' are ingested.
@@ -53,6 +56,10 @@ $password_length = 6;         # The length of the random password strings
                               # to the users in some manner.  They can
                               # then change their password with 'ipasswd'.
 
+$bypass_time_for_speed = 1;   # For debug/speed, don't convert time values
+                              # but instead use the current time
+
+$thisUser = 'rods';           # The irods user that this is being run as.
 
 # End section to edit  ---------------------------------------------------
 
@@ -78,30 +85,55 @@ $showOne="0";            # A debug option, if "1";
 @cv_irods_resources=();  # corresponding name of SRB resource(s) in iRODS.
 @datatypeList=();        # filled and used dynamically
 $nowTime="";
-$imetaFlag="";           # flag for whether imeta needs to be run
+$metadataLastColl="";
+$metadataLastDataname="";
 
 if (!-e $logUser) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_USER_INFO $SRB_BEGIN_DATE > $logUser");
 }
+else {
+    printf("$logUser exists, so not running Spullmeta to get it.\n");
+}
+
 if (!-e $logResc) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_PHYSICAL_RESOURCE_CORE_INFO $SRB_BEGIN_DATE > $logResc");
 }
+else {
+    printf("$logResc exists, so not running Spullmeta to get it.\n");
+}
+
 if (!-e $logColl) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_COLL_CORE_INFO $SRB_BEGIN_DATE > $logColl");
 }
+else {
+    printf("$logColl exists, so not running Spullmeta to get it.\n");
+}
+
 if (!-e $logData) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_CORE_INFO $SRB_BEGIN_DATE > $logData");
 }
+else {
+    printf("$logData exists, so not running Spullmeta to get it.\n");
+}
+
 if (!-e $logMetaData) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_UDEFMETA_INFO $SRB_BEGIN_DATE > $logMetaData");
 }
-if (!-e $logMetaColl) {
-    runCmd(0, "$Spullmeta -F GET_CHANGED_COLL_UDEFMETA_INFO $SRB_BEGIN_DATE > $logMetaColl");
+else {
+    printf("$logMetaData exists, so not running Spullmeta to get it.\n");
 }
+
+if (!-e $logMetaColl) {
+    runCmd(1, "$Spullmeta -F GET_CHANGED_COLL_UDEFMETA_INFO $SRB_BEGIN_DATE > $logMetaColl");
+}
+else {
+    printf("$logMetaColl exists, so not running Spullmeta to get it.\n");
+}
+
 
 my $doMainStep="yes";
 if ( -e $sqlFile ) {
-    printf("Enter y or yes if you want this script to run regenerate the $sqlFile,\n");
+    printf("Enter y or yes if you want this script to regenerate the $sqlFile,\n");
     printf("the $iadminFile, and the $imetaFile:");
     my $answer = <STDIN>;
     chomp( $answer );	# remove trailing return
@@ -126,6 +158,12 @@ if ($doMainStep eq "yes") {
 
     processLogFile($logUser);
 
+    foreach $user (@cv_special_users) {
+	print( IADMIN_FILE "mkuser $user rodsuser\n");
+	$newPassword = randomPassword();
+	print( IADMIN_FILE "moduser $user password $newPassword\n");
+    }
+
     processLogFile($logResc);
 
     processLogFile($logColl);
@@ -148,28 +186,25 @@ if ($doMainStep eq "yes") {
     close( IMETA_FILE );
 }
 
-printf("Enter y or yes if you want this script to run the next steps now;\n");
-printf("to run iadmin and psql with the files just generated:");
+printf("Enter y or yes if you want to run iadmin now:");
 my $answer = <STDIN>;
 chomp( $answer );	# remove trailing return
 if ($answer eq "yes" || $answer eq "y") {
     runCmd (1, "iadmin -V < $iadminFile >& $iadminLog" );
+}
 
-    printf("Enter y or yes if you want to go ahead and run psql now:");
-    my $answer = <STDIN>;
-    chomp( $answer );	# remove trailing return
-    if ($answer eq "yes" || $answer eq "y") {
-	runCmd (0, "$psql ICAT < $sqlFile >& $psqlLog");
-    }
+printf("Enter y or yes if you want to run psql now:");
+my $answer = <STDIN>;
+chomp( $answer );	# remove trailing return
+if ($answer eq "yes" || $answer eq "y") {
+    runCmd (0, "$psql ICAT < $sqlFile >& $psqlLog");
+}
 
-    if ($imetaFlag eq "yes") {
-	printf("Enter y or yes if you want to go ahead and run imeta now:");
-	my $answer = <STDIN>;
-	chomp( $answer );	# remove trailing return
-	if ($answer eq "yes" || $answer eq "y") {
-	    runCmd (0, "$imeta < $imetaFile >& $imetaLog");
-	}
-    }
+printf("Enter y or yes if you run imeta now:");
+my $answer = <STDIN>;
+chomp( $answer );	# remove trailing return
+if ($answer eq "yes" || $answer eq "y") {
+    runCmd (0, "$imeta < $imetaFile >& $imetaLog");
 }
 
 # run a command
@@ -207,6 +242,11 @@ sub convertTime($)
     $lastOutTime;
     $lastOutTimeConverted;
     $maxLastOutTime=10;
+
+    if ($bypass_time_for_speed ) {
+	getNow();
+	return($nowTime);
+    }
 
 #   printf("inTime =%s\n",$inTime);
     $outTime = substr($inTime,0,10) . "." . substr($inTime, 11, 2) .
@@ -281,7 +321,7 @@ sub convertCollection($)
 	$outColl =~ s\$tmp\$tmp2\g; 
 	$k++;
     }
-    printf("inColl=$inColl outColl=$outColl\n");
+#   printf("inColl=$inColl outColl=$outColl\n");
     return($outColl);
 }
 
@@ -389,24 +429,27 @@ sub processLogFile($) {
 		$v_owner = convertUser($values[9], $v_owner_domain);
 		$v_create_time = convertTime($values[15]);
 		$v_access_time = convertTime($values[16]);
-		$v_collection = convertCollectionForData($values[27],
-							 $v_owner,
-							 $v_owner_domain);
-		print( SQL_FILE "begin;\n"); # begin/commit to make these 2 like 1
-		print( SQL_FILE "insert into r_data_main (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((select nextval('R_ObjectID')), (select coll_id from r_coll_main where coll_name ='$v_collection'), '$v_dataName', '0', ' ', '$v_dataTypeName', '$v_size', '$newResource', '$v_phyPath', '$v_owner', '$cv_irodsZone', '1', '$v_create_time', '$v_access_time');\n");
+#		$v_collection = convertCollectionForData($values[27],
+#							 $v_owner,
+#							 $v_owner_domain);
+		$v_collection = convertCollection($values[27]);
+		if (checkDoCollection($values[27])==1) {
+		    print( SQL_FILE "begin;\n"); # begin/commit to make these 2 like 1
+		    print( SQL_FILE "insert into r_data_main (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((select nextval('R_ObjectID')), (select coll_id from r_coll_main where coll_name ='$v_collection'), '$v_dataName', '0', ' ', '$v_dataTypeName', '$v_size', '$newResource', '$v_phyPath', '$v_owner', '$cv_irodsZone', '1', '$v_create_time', '$v_access_time');\n");
 
-		getNow();
-		print( SQL_FILE "insert into r_objt_access ( object_id, user_id, access_type_id , create_ts,  modify_ts) values ( (select currval('R_ObjectID')), (select user_id from r_user_main where user_name = '$v_owner'), '1200', '$nowTime', '$nowTime');\n");
+		    getNow();
+		    print( SQL_FILE "insert into r_objt_access ( object_id, user_id, access_type_id , create_ts,  modify_ts) values ( (select currval('R_ObjectID')), (select user_id from r_user_main where user_name = '$v_owner'), '1200', '$nowTime', '$nowTime');\n");
 
-		print( SQL_FILE "commit;\n");
+		    print( SQL_FILE "commit;\n");
 
-		AddToDatatypeList($v_dataTypeName);
+		    AddToDatatypeList($v_dataTypeName);
 
-		if ($i==3 && $showOne=="1") {
-		    $j = 0;
-		    foreach $value (@values) {
-			print ($names[$j] . " " . $value . "\n");
-			$j++;
+		    if ($i==3 && $showOne=="1") {
+			$j = 0;
+			foreach $value (@values) {
+			    print ($names[$j] . " " . $value . "\n");
+			    $j++;
+			}
 		    }
 		}
 	    }
@@ -429,17 +472,25 @@ sub processLogFile($) {
 	    }
 	    if ($mode eq "COLL") {
 		if (checkDoCollection($values[0])==1) {
-		    $v_coll_name=convertCollection($values[0]);
-		    $v_parent_coll_name=convertCollection($values[1]);
-		    $v_coll_owner_domain=$values[5];
-		    $v_coll_owner=convertUser($values[2],
-					      $v_coll_owner_domain);
-		    $v_coll_zone=$values[6];
-		    if ($v_coll_zone eq $cv_srbZone) { # make sure it's 
-			                               # in the converting zone
+		   $v_coll_name=convertCollection($values[0]);
+		   $v_parent_coll_name=convertCollection($values[1]);
+		   $v_coll_owner_domain=$values[5];
+		   $v_coll_owner=convertUser($values[2],
+				      $v_coll_owner_domain);
+		   $v_coll_zone=$values[6];
+		   $skipIt=0;
+		   if ($v_coll_owner eq "srb")    { $skipIt=1; }
+		   if ($v_coll_owner eq "npaci")  { $skipIt=1; }
+		   if ($v_coll_owner eq "public") { $skipIt=1; }
+		   if ($v_coll_owner eq "sdsc")   { $skipIt=1; }
+		   if ($v_coll_owner eq "testuser")   { $skipIt=1; }
+		   if ($v_coll_owner eq "ticketuser")  { $skipIt=1; }
+		   # make sure it's in the converting zone:
+		   if ($v_coll_zone ne $cv_srbZone) { $skipIt=1;}
+		   if ($skipIt==0) {
 		       print(IADMIN_FILE "mkdir $v_coll_name $v_coll_owner\n");
+		   }
 		}
-	    }
 	    }
 	    if ($mode eq "RESC") {
 		$v_resc_name=$values[0];
@@ -452,32 +503,40 @@ sub processLogFile($) {
 		    $k = index($v_resc_path, "/?");
 		    $newPath = substr($v_resc_path, 0, $k);
 		    push(@cv_srb_resources, $v_resc_name);
-		    $newName = "SRB-" . $v_resc_name;
-		    push(@cv_irods_resources, $newName);
-		    print( IADMIN_FILE "mkresc '$newName' '$v_resc_type' 'archive' '$v_resc_location' $newPath\n");
+		    if ($v_resc_name ne "sdsc-fs") { # skip special built-in
+			$newName = "SRB-" . $v_resc_name;
+			push(@cv_irods_resources, $newName);
+			print( IADMIN_FILE "mkresc '$newName' '$v_resc_type' 'archive' '$v_resc_location' $newPath\n");
+		    }
 		}
 	    }
 	    if ($mode eq "METADATA_DATA") {
 		$v_dataobj_name=$values[0];
 		$v_dataobj_collection=convertCollection($values[1]);
+		$TYPE=$values[2];
 		for ($i=0;$i<10;$i++) {
 		    $udsmd[$i]=$values[$i+3];
 		}
 		$v_dataobj_udimd0=$values[13];
 		$v_dataobj_udimd1=$values[14];
+		$didOne=0;
 		for ($i=0;$i<10;$i++) {
 		    if ($udsmd[$i] ne "") {
-			$imetaFlag="yes";
-			print( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name UDSMD$i '$udsmd[$i]'\n") ;
+			print( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDSMD$i '$udsmd[$i]'\n") ;
+			$didOne=1;
 		    }
 		}
 		if ($v_dataobj_udimd0 ne "") {
-		    $imetaFlag="yes";
-		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name UDIMD0 '$v_dataobj_udimd0'\n");
+		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDIMD0 '$v_dataobj_udimd0'\n");
+		    $didOne=1;
 		}
 		if ($v_dataobj_udimd1 ne "") {
-		    $imetaFlag="yes";
-		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name UDIMD1 '$v_dataobj_udimd1'\n");
+		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDIMD1 '$v_dataobj_udimd1'\n");
+		    $didOne=1;
+		}
+		if ($didOne) {
+		    # give our admin user access for setting metadata
+		    addAccess($v_dataobj_collection, $v_dataobj_name);
 		}
 	    }
 
@@ -490,16 +549,13 @@ sub processLogFile($) {
 		$v_coll_udimd1=$values[13];
 		for ($i=0;$i<10;$i++) {
 		    if ($udsmd_coll[$i] ne "") {
-			$imetaFlag="yes";
 			print( IMETA_FILE "add -c $v_coll_name UDSMD_COLL$i '$udsmd_coll[$i]'\n") ;
 		    }
 		}
 		if ($v_coll_udimd0 ne "") {
-		    $imetaFlag="yes";
 		    print ( IMETA_FILE "add -c $v_coll_name UDIMD_COLL0 '$v_coll_udimd0'\n");
 		}
 		if ($v_coll_udimd1 ne "") {
-		    $imetaFlag="yes";
 		    print ( IMETA_FILE "add -c $v_coll_name UDIMD_COLL1 '$v_coll_udimd1'\n");
 		}
 	    }
@@ -528,6 +584,7 @@ sub randomPassword() {
 # check to see if a collection (based on the name) should be converted
 sub checkDoCollection($) {
     my ($inCollName) = @_;
+#   printf("incollname = $inCollName \n");
     if (index($inCollName, "/container")==0) {
 	return(0); # don't convert those starting with/container
     }
@@ -542,13 +599,18 @@ sub checkDoCollection($) {
     if (index($inCollName, "$testColl")==0) {
 	return(0); # don't convert these
     }
-    $testColl = "/" . $cv_srbZone . "/home/";
-    if (index($inCollName, "$testColl")==0) {  # if it starts with /zone/home/ 
-	if (rindex($inCollName, "/") < length($testColl)) {
-                                          # and there are no additional subdirs
-	    return(0);                    # skip it
-	}
-    }
+#   $testColl = "/" . $cv_srbZone . "/home/";
+#
+# Sometimes these will match existing /zone/home/user directories and
+# sometimes not, so go ahead and return them as OK (caller might reject
+# specific ones).
+#
+#    if (index($inCollName, "$testColl")==0) {  # if it starts with /zone/home/ 
+#	if (rindex($inCollName, "/") < length($testColl)) {
+#                                         # and there are no additional subdirs
+#	    return(0);                    # skip it
+#	}
+#   }
     $testColl = "/" . $cv_srbZone . "/";
     if (index($inCollName, "$testColl")==0) {  # if it starts with /zone/
 	if (rindex($inCollName, "/") < length($testColl)) {
@@ -561,7 +623,17 @@ sub checkDoCollection($) {
     if (index($inCollName, "$testColl")!=0) {  # if it doesn't start w /zone/
 	    return(0);                    # skip it
     }
-   
     return(1);
 }
 
+# Add SQL to give access to this user if the previous item didn't already
+sub addAccess($$) {
+    my ($inColl, $inDataname) = @_;
+    if ($inColl eq $metadataLastColl &&
+	$inDataname eq $metadataLastDataname) {
+	return;
+    }
+    print( SQL_FILE "insert into r_objt_access (object_id, user_id, access_type_id)  values ((select data_id from r_data_main where data_name = '$inDataname' and coll_id = (select coll_id from r_coll_main where coll_name = '$inColl')),(select user_id from r_user_main where user_name = '$thisUser'), '1200');\n");
+    $metadataLastColl=$inColl;
+    $metadataLastDataname=$inDataname;
+}
