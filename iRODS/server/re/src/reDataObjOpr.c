@@ -1369,6 +1369,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 /*
+ * XXXXXX this microservice is being phased out. The new microservice
+ * for replicating a collection is  msiCollRepl 
  * \fn msiReplColl
  * \author  Sifang Lu
  * \date   2007-10-01
