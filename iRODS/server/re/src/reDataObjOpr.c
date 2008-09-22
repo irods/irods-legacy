@@ -1933,7 +1933,6 @@ msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ru
 
 	/* to pass as parameter to rsCollRepl */
 	dataObjInp_t collReplInp;
-	collOprStat_t *collOprStat;
 
 	/* misc. to avoid repeating rei->rsComm */
 	rsComm_t *rsComm;
@@ -1983,14 +1982,15 @@ msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ru
 	strncpy (collReplInp.objPath, collInp->collName, MAX_NAME_LEN);
 
 	/* Call rsCollRepl() */
-	rei->status = rsCollRepl (rsComm, &collReplInp, &collOprStat);
+	rei->status = rsCollRepl (rsComm, &collReplInp, NULL);
 
 
 
 	/********************************** OUTPUT PACKAGING *********************************/
 
 	/* Send out op status */
-	fillMsParam (status, NULL, "CollOprStat_PI", collOprStat, NULL);
+	fillIntInMsParam (status, rei->status);
+
 
 	return (rei->status);
 }

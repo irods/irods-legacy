@@ -20,7 +20,8 @@
  * Input -
  *    rsComm_t *rsComm
  *     dataObjInp_t *collReplInp - The replication input
- *    collOprStat_t **collOprStat - transfer stat output
+ *    collOprStat_t **collOprStat - transfer stat output. If it is an 
+ *     internal server call, collOprStat must be NULL
  */
 
 int
@@ -36,7 +37,7 @@ collOprStat_t **collOprStat)
     int savedStatus = 0;
     int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
 
-    *collOprStat = NULL;
+    if (collOprStat != NULL) *collOprStat = NULL;
 
     memset (&openCollInp, 0, sizeof (openCollInp));
     rstrcpy (openCollInp.collName, collReplInp->objPath, MAX_NAME_LEN);
@@ -49,9 +50,10 @@ collOprStat_t **collOprStat)
         return (handleInx);
     }
 
-
-    *collOprStat = malloc (sizeof (collOprStat_t));
-    memset (*collOprStat, 0, sizeof (collOprStat_t));
+    if (collOprStat != NULL) {
+        *collOprStat = malloc (sizeof (collOprStat_t));
+        memset (*collOprStat, 0, sizeof (collOprStat_t));
+    }
 
     if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
         rodsLog (LOG_ERROR,
@@ -85,10 +87,13 @@ collOprStat_t **collOprStat)
 		savedStatus = status;
                 break;
             } else {
-		(*collOprStat)->bytesWritten += myTransStat.bytesWritten;
-		(*collOprStat)->filesCnt ++; 
+		if (collOprStat != NULL) {
+		    (*collOprStat)->bytesWritten += myTransStat.bytesWritten;
+		    (*collOprStat)->filesCnt ++; 
+		}
 	    }
-	    if ((*collOprStat)->filesCnt >= fileCntPerStatOut) {
+	    if (collOprStat != NULL &&
+	      (*collOprStat)->filesCnt >= fileCntPerStatOut) {
 	        rstrcpy ((*collOprStat)->lastObjPath, collReplInp->objPath,
 	          MAX_NAME_LEN);
 	        (*collOprStat)->totalFileCnt = totalFileCnt;
