@@ -18,6 +18,11 @@ typedef struct {
 columnName_t columnNames[] = {
    { COL_ZONE_ID,          "ZONE_ID", }, 
    { COL_ZONE_NAME,        "ZONE_NAME", },
+
+   { COL_ZONE_TYPE,        "ZONE_TYPE", },
+   { COL_ZONE_CONNECTION,  "ZONE_CONNECTION", },
+   { COL_ZONE_COMMENT,     "ZONE_COMMENT", },
+
    { COL_USER_ID,          "USER_ID", },
    { COL_USER_NAME,        "USER_NAME", },
    { COL_USER_TYPE,        "USER_TYPE", },

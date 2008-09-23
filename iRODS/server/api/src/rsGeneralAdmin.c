@@ -109,6 +109,14 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
+       if (strcmp(generalAdminInp->arg1,"zone")==0) {
+	  status = chlRegZone(rsComm, generalAdminInp->arg2,
+			      generalAdminInp->arg3, 
+			      generalAdminInp->arg4,
+			      generalAdminInp->arg5);
+	  if (status != 0) chlRollback(rsComm);
+	  return(status);
+       }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
 	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, NAME_LEN);
 	  strncpy(rescInfo.rescType,  generalAdminInp->arg3, NAME_LEN);
@@ -140,6 +148,12 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        }
        if (strcmp(generalAdminInp->arg1,"group")==0) {
 	  status = chlModGroup(rsComm, generalAdminInp->arg2, 
+			      generalAdminInp->arg3, generalAdminInp->arg4);
+	  if (status != 0) chlRollback(rsComm);
+	  return(status);
+       }
+       if (strcmp(generalAdminInp->arg1,"zone")==0) {
+	  status = chlModZone(rsComm, generalAdminInp->arg2, 
 			      generalAdminInp->arg3, generalAdminInp->arg4);
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
@@ -182,6 +196,11 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
 	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, NAME_LEN);
 	  status = chlDelResc(rsComm, &rescInfo);
+	  if (status != 0) chlRollback(rsComm);
+	  return(status); 
+       }
+       if (strcmp(generalAdminInp->arg1,"zone")==0) {
+	  status = chlDelZone(rsComm, generalAdminInp->arg2);
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }

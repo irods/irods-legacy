@@ -74,6 +74,9 @@
 
 #define AU_DELETE_COLL_BY_ADMIN                2060
 #define AU_DELETE_COLL                         2061
+#define AU_DELETE_ZONE                         2062
+
+#define AU_REGISTER_ZONE                       2064
 
 #define AU_MOD_USER_NAME                       2070
 #define AU_MOD_USER_TYPE                       2071
@@ -87,6 +90,7 @@
 #define AU_MOD_RESC                            2090
 #define AU_MOD_RESC_FREE_SPACE                 2091
 #define AU_MOD_RESC_GROUP                      2092
+#define AU_MOD_ZONE                            2093
 
 #define AU_REGISTER_USER_RE                    2100
 #define AU_ADD_AVU_METADATA                    2110

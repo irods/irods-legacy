@@ -81,6 +81,12 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
 		char *value2, char *value3, char *comment);
 int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *Name);
 
+int chlRegZone(rsComm_t *rsComm, char *zoneName, char *zoneType, 
+	       char *zoneConnInfo, char *zoneComment);
+int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
+	       char *optionValue);
+int chlDelZone(rsComm_t *rsComm, char *zoneName);
+
 char *chlGetLocalZone();
 
 int sTableInit();

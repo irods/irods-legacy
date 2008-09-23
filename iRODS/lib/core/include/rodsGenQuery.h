@@ -100,6 +100,9 @@ primary ordering column.
 /* R_ZONE_MAIN: */
 #define COL_ZONE_ID 101
 #define COL_ZONE_NAME 102
+#define COL_ZONE_TYPE 103
+#define COL_ZONE_CONNECTION 104
+#define COL_ZONE_COMMENT 105
 
 /* R_USER_MAIN: */
 #define COL_USER_ID 201

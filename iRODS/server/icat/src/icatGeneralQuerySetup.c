@@ -139,6 +139,9 @@ icatGeneralQuerySetup() {
 
   sColumn( COL_ZONE_ID, "r_zone_main", "zone_id");
   sColumn( COL_ZONE_NAME, "r_zone_main", "zone_name");
+  sColumn( COL_ZONE_TYPE, "r_zone_main", "zone_type_name");
+  sColumn( COL_ZONE_CONNECTION, "r_zone_main", "zone_conn_string");
+  sColumn( COL_ZONE_COMMENT, "r_zone_main", "r_comment");
 
   sColumn( COL_USER_ID,   "r_user_main", "user_id");
   sColumn( COL_USER_NAME, "r_user_main", "user_name");

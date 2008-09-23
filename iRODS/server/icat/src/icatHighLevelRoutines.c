@@ -2003,6 +2003,276 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 }
 
 
+/* register a Zone */
+int chlRegZone(rsComm_t *rsComm, 
+	       char *zoneName, char *zoneType, char *zoneConnInfo, 
+	       char *zoneComment) {
+   char nextStr[MAX_NAME_LEN];
+   char tSQL[MAX_SQL_SIZE];
+   int status;
+   char myTime[50];
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRegZone");
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (strncmp(zoneType, "remote", 6) != 0) {
+      int i;
+      i = addRErrorMsg (&rsComm->rError, 0, 
+			"Currently, only zones of type 'remote' are allowed");
+      return(CAT_INVALID_ARGUMENT);
+   }
+
+   /* String to get next sequence item for objects */
+   cllNextValueString("R_ObjectID", nextStr, MAX_NAME_LEN);
+
+   getNowStr(myTime);
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRegZone SQL 1 ");
+   cllBindVars[cllBindVarCount++]=zoneName;
+   cllBindVars[cllBindVarCount++]=zoneConnInfo;
+   cllBindVars[cllBindVarCount++]=zoneComment;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+
+   snprintf(tSQL, MAX_SQL_SIZE, 
+	    "insert into R_ZONE_MAIN (zone_id, zone_name, zone_type_name, zone_conn_string, r_comment, create_ts, modify_ts) values (%s, ?, 'remote', ?, ?, ?, ?)",
+	    nextStr);
+   status =  cmlExecuteNoAnswerSql(tSQL,
+				   &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegZone cmlExecuteNoAnswerSql(insert) failure %d",status);
+      _rollback("chlRegZone");
+      return(status);
+   }
+
+   /* Audit */
+   status = getLocalZone();
+   if (status) return(status);
+
+   status = cmlAudit3(AU_REGISTER_ZONE,  "0",
+		      rsComm->clientUser.userName, localZone, 
+		      "", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegResc cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegZone cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+
+   return(0);
+}
+
+
+/* Modify a Zone (certain fields) */
+int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
+		 char *optionValue) {
+   int status, OK;
+   char myTime[50];
+   char zoneId[MAX_NAME_LEN];
+   char commentStr[200];
+
+   if (logSQL) rodsLog(LOG_SQL, "chlModZone");
+
+   if (zoneName == NULL || option==NULL || optionValue==NULL) {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
+   if (*zoneName == '\0' || *option == '\0' || *optionValue=='\0') {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   status = getLocalZone();
+   if (status) return(status);
+
+   zoneId[0]='\0';
+   if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 1 ");
+   status = cmlGetStringValueFromSql(
+       "select zone_id from r_zone_main where zone_name=?",
+       zoneId, MAX_NAME_LEN, zoneName, localZone, &icss);
+   if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
+      return(status);
+   }
+
+   getNowStr(myTime);
+   OK=0;
+   if (strcmp(option, "comment")==0) {
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=zoneId;
+      if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 3");
+      status =  cmlExecuteNoAnswerSql(
+	       "update r_zone_main set r_comment = ?, modify_ts=? where zone_id=?",
+	       &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModZone cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 return(status);
+      }
+      OK=1;
+   }
+   if (strcmp(option, "conn")==0) {
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=zoneId;
+      if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 5");
+      status =  cmlExecuteNoAnswerSql(
+		 "update r_zone_main set zone_conn_string = ?, modify_ts=? where zone_id=?",
+		 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModZone cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 return(status);
+      }
+      OK=1;
+   }
+   if (strcmp(option, "name")==0) {
+      if (strcmp(zoneName,localZone)==0) {
+	 int i;
+	 i = addRErrorMsg (&rsComm->rError, 0, 
+			   "It is not currently permitted to rename the local zone");
+	 return (CAT_INVALID_ARGUMENT);
+      }
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=zoneId;
+      if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 5");
+      status =  cmlExecuteNoAnswerSql(
+		 "update r_zone_main set zone_name = ?, modify_ts=? where zone_id=?",
+		 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModZone cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 return(status);
+      }
+      OK=1;
+   }
+   if (OK==0) {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
+   /* Audit */
+   snprintf(commentStr, 190, "%s %s", option, optionValue);
+   status = cmlAudit3(AU_MOD_ZONE,  
+		      zoneId,
+		      rsComm->clientUser.userName, localZone, 
+		      commentStr,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModZone cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModZone cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+   return(0);
+}
+
+/* delete a Zone */
+int chlDelZone(rsComm_t *rsComm, char *zoneName) {
+   int status;
+   char zoneType[MAX_NAME_LEN];
+
+   if (logSQL) rodsLog(LOG_SQL, "chlDelZone");
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (logSQL) rodsLog(LOG_SQL, "chlDelZone SQL 1 ");
+
+   status = cmlGetStringValueFromSql(
+       "select zone_type_name from r_zone_main where zone_name=?",
+       zoneType, MAX_NAME_LEN, zoneName, 0, &icss);
+   if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
+      return(status);
+   }
+
+   if (strcmp(zoneType, "remote") != 0) {
+      int i;
+      i = addRErrorMsg (&rsComm->rError, 0, 
+          "It is not permitted to remove the local zone");
+      return(CAT_INVALID_ARGUMENT);
+   }
+
+   cllBindVars[cllBindVarCount++]=zoneName;
+   if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3");
+   status =  cmlExecuteNoAnswerSql(
+		"delete from r_zone_main where zone_name = ?",
+		&icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlDelZone cmlExecuteNoAnswerSql delete failure %d",
+	      status);
+      return(status);
+   }
+
+   /* Audit */
+   status = getLocalZone();
+   if (status) return(status);
+   status = cmlAudit3(AU_DELETE_ZONE,
+		      zoneName,
+		      rsComm->clientUser.userName, localZone, 
+		      "",
+		      &icss);
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlModResc cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+
+   return(0);
+}
+
+
 /* Simple query
 
    This is used in cases where it is easier to do a straight-forward
@@ -4648,7 +4918,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    cllBindVars[cllBindVarCount++]=pathStart;
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
 #if ORA_ICAT
-   /* For Oracle cast is to integer, for Oracle to bigint */
+   /* For Oracle cast is to integer, for Postgres to bigint */
    status =  cmlExecuteNoAnswerSql(
 	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);

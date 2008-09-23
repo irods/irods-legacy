@@ -34,6 +34,8 @@ $U2="u2";
 $U1="rods";
 $Resc="demoResc";
 $Resc2="Resc2";
+$Zone2="ATestZoneName";
+$Zone3="ADifTestZoneName";
 $Resc2Path="/tmp/Vault";
 $G1="group1";
 $RG1="Resource_group";
@@ -151,6 +153,16 @@ runCmd(0, "iadmin at user_type rodstest test");
 runCmd(0, "iadmin lt user_type");
 runCmd(0, "iadmin lt user_type rodstest");
 runCmd(0, "iadmin rt user_type rodstest");
+
+# Zone tests
+runCmd(0, "iadmin mkzone $Zone2 remote host:1234 comment");
+runCmd(2, "iadmin mkzone $Zone2 remote host:1234 comment");
+runCmd(0, "iadmin modzone $Zone2 conn host2.foo:435");
+runCmd(0, "iadmin modzone $Zone2 comment 'another comment'");
+runCmd(0, "iadmin modzone $Zone2 name $Zone3");
+runCmd(2, "iadmin rmzone $Zone2");
+runCmd(0, "iadmin rmzone $Zone3");
+runCmd(2, "iadmin rmzone $myZone");
 
 # Make another user to test making user and for other tests
 runCmd(1, "iadmin rmuser $U2");

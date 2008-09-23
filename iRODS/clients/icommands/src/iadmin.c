@@ -597,6 +597,22 @@ doCommand(char *cmdToken[]) {
 		  cmdToken[3], "", "", "");
       return(0);
    }
+   if (strcmp(cmdToken[0],"mkzone") == 0) {
+      generalAdmin("add", "zone", cmdToken[1], cmdToken[2], 
+		  cmdToken[3], cmdToken[4], "", "");
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"modzone") == 0) {
+      generalAdmin("modify", "zone", cmdToken[1], cmdToken[2], 
+		  cmdToken[3], "", "", "");
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"rmzone") == 0) {
+      generalAdmin("rm", "zone", cmdToken[1], "",
+		   "", "", "", "");
+      return(0);
+   }
+
    if (strcmp(cmdToken[0],"mkgroup") == 0) {
       generalAdmin("add", "user", cmdToken[1], "rodsgroup",
 		   myEnv.rodsZone, "", "", "");
@@ -897,6 +913,9 @@ void usageMain()
 " mkresc Name Type Class Host Path (make Resource)",
 " modresc Name [type, class, host, path, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
+" mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
+" modZone Name [ name | conn | comment ] newValue  (modify zone)",
+" rmZone Name (remove zone)",
 " mkgroup Name (make group)",
 " rmgroup Name (remove group)",
 " atg groupName userName (add to group - add a user to a group)",
@@ -1068,6 +1087,30 @@ usage(char *subOpt)
 "Remove a storage resource.",
 ""};
 
+   char *mkzoneMsgs[]={
+" mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
+"Create a new zone definition.  Type must be 'remote' as the local zone",
+"must previously exist and there can be only one local zone definition.",
+"Connection-info (hostname:port) and a Comment field are optional.",
+"Also see modzone, rmzone, and lz.",
+""};
+
+   char *modzoneMsgs[]={
+" modZone Name [ name | conn | comment ] newValue  (modify zone)",
+"Modify values in a zone definition, either the name, conn (connection-info),",
+"or comment.  Connection-info is the DNS host string:port, for example:",
+"zuri.unc.edu:1247",
+"The name of the local zone cannot currently be changed as it would require",
+"many other changes to various tables and to user-environment and",
+"configuration files.",
+""};
+
+   char *rmzoneMsgs[]={
+" rmZone Name (remove zone)",
+"Remove a zone definition.",
+"Only remote zones can be removed.",
+""};
+
    char *mkgroupMsgs[]={
 " mkgroup Name (make group)"
 "Create a user group.",
@@ -1151,7 +1194,9 @@ usage(char *subOpt)
    char *subCmds[]={"lu", "lt", "lr", "ls", "lz",
 		    "lg", "lgd", "lrg", "lf", "mkuser",
 		    "moduser", "rmuser", "mkdir", "rmdir", "mkresc",
-		    "modresc", "rmresc", "mkgroup", "rmgroup", "atg",
+		    "modresc", "rmresc", 
+		    "mkzone", "modzone", "rmzone",
+		    "mkgroup", "rmgroup", "atg",
 		    "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
 		    "pv", "ctime", "help", "h",
 		    ""};
@@ -1159,7 +1204,9 @@ usage(char *subOpt)
    char **pMsgs[]={ luMsgs, ltMsgs, lrMsgs, lsMsgs, lzMsgs, 
 		    lgMsgs, lgdMsgs, lrgMsgs, lfMsgs, mkuserMsgs, 
 		    moduserMsgs, rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs, 
-		    modrescMsgs, rmrescMsgs, mkgroupMsgs, rmgroupMsgs,atgMsgs, 
+		    modrescMsgs, rmrescMsgs, 
+		    mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
+		    mkgroupMsgs, rmgroupMsgs,atgMsgs, 
 		    rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
 		    dspassMsgs, pvMsgs, ctimeMsgs, helpMsgs, helpMsgs };
 
