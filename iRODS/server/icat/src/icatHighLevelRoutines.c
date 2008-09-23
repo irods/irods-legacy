@@ -2256,15 +2256,22 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
    status = getLocalZone();
    if (status) return(status);
    status = cmlAudit3(AU_DELETE_ZONE,
-		      zoneName,
+		      "0",
 		      rsComm->clientUser.userName, localZone, 
-		      "",
+		      zoneName,
 		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlDelZone cmlAudit3 failure %d",
+	      status);
+      _rollback("chlDelZone");
+      return(status);
+   }
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
-	      "chlModResc cmlExecuteNoAnswerSql commit failure %d",
+	      "chlDelZone cmlExecuteNoAnswerSql commit failure %d",
 	      status);
       return(status);
    }
