@@ -61,22 +61,22 @@ typedef struct hostName {
 #define IRODS_SERVER            1
 #define STANDALONE_SERVER       2
 
-typedef struct zoneInfo {
-    char zoneName[NAME_LEN];
-    void *rodsServerHost;
-    struct zoneInfo *next;
-} zoneInfo_t;
-
 typedef struct rodsServerHost {
     hostName_t *hostName;
     int portNum;
     rcComm_t *conn;
     int rcatEnabled;
     int localFlag;
-    zoneInfo_t myZoneInfo;
     int status;
     struct rodsServerHost *next;
 } rodsServerHost_t;
+
+typedef struct zoneInfo {
+    char zoneName[NAME_LEN];
+    rodsServerHost_t *masterServerHost;
+    rodsServerHost_t *slaveServerHost;
+    struct zoneInfo *next;
+} zoneInfo_t;
 
 int
 resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost);
@@ -111,7 +111,8 @@ rodsServerHost_t **rodsServerHost);
 int
 initZone (rsComm_t *rsComm);
 int
-queZone (char *zoneName, rodsServerHost_t *tmpRodsServerHost);
+queZone (char *zoneName, rodsServerHost_t *masterServerHost,
+rodsServerHost_t *slaveServerHost);
 int
 initResc (rsComm_t *rsComm);
 int

@@ -247,17 +247,26 @@ printZoneInfo ()
     tmpZoneInfo = ZoneInfoHead;
     fprintf (stderr, "Zone Info:\n");
     while (tmpZoneInfo != NULL) {
-        tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->rodsServerHost;
+	/* print the master */
+        tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->masterServerHost;
 	fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
 	if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
 	    fprintf (stderr, "Type: LOCAL_ICAT   "); 
-	} else if (tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
-	    fprintf (stderr, "Type: LOCAL_SLAVE_ICAT   "); 
 	} else {
 	    fprintf (stderr, "Type: REMOTE_ICAT   "); 
 	}
         fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n", 
 	  tmpRodsServerHost->hostName->name, tmpRodsServerHost->portNum);
+
+	/* print the slave */
+        tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->slaveServerHost;
+	if (tmpRodsServerHost != NULL) { 
+            fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
+            fprintf (stderr, "Type: LOCAL_SLAVE_ICAT   ");
+            fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n",
+              tmpRodsServerHost->hostName->name, tmpRodsServerHost->portNum);
+	}
+
 	tmpZoneInfo = tmpZoneInfo->next;
     }
     return (0);
@@ -612,41 +621,44 @@ rodsServerHost_t **rodsServerHost)
     int status;
     rodsServerHost_t *tmpRodsServerHost;
     zoneInfo_t *tmpZoneInfo;
-    int localRcatFlag;
+    zoneInfo_t *myZoneInfo = NULL;
+    int zoneInput;
     char zoneName[NAME_LEN];
  
     if (rcatZoneHint == NULL || strlen (rcatZoneHint) == 0) {
-	localRcatFlag = 1;
+	zoneInput = 0;
     } else {
-	localRcatFlag = 0;
+	zoneInput = 1;
 	getZoneNameFromHint (rcatZoneHint, zoneName, NAME_LEN);
     }
 
     tmpZoneInfo = ZoneInfoHead;
     while (tmpZoneInfo != NULL) {
-	tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->rodsServerHost;
-	if (localRcatFlag) {
-	    if (rcatType == MASTER_RCAT) {
-	        if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
-		    *rodsServerHost = tmpRodsServerHost;
-		    return (tmpRodsServerHost->localFlag);
-		}
-	    } else {
-	        if (tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
-                    *rodsServerHost = tmpRodsServerHost;
-                    return (tmpRodsServerHost->localFlag);
-		}
+	if (zoneInput == 0) {	/* assume local */
+	    tmpRodsServerHost = tmpZoneInfo->masterServerHost;
+	    if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
+		myZoneInfo = tmpZoneInfo;
 	    }
-	} else {	/* remote zone */
-	    if (strcmp (zoneName, tmpZoneInfo->zoneName) == 0) {
-                *rodsServerHost = tmpRodsServerHost;
-                return (tmpRodsServerHost->localFlag);
+        } else {        /* remote zone */
+            if (strcmp (zoneName, tmpZoneInfo->zoneName) == 0) {
+                myZoneInfo = tmpZoneInfo;
             }
+        }
+
+	if (myZoneInfo != NULL) {
+	    if (rcatType == MASTER_RCAT || 
+	      myZoneInfo->slaveServerHost == NULL) {
+	        *rodsServerHost = myZoneInfo->masterServerHost;
+		return (myZoneInfo->masterServerHost->localFlag);
+	    } else {
+	        *rodsServerHost = myZoneInfo->slaveServerHost;
+		return (myZoneInfo->slaveServerHost->localFlag);
+	    }
 	}
 	tmpZoneInfo = tmpZoneInfo->next;
     }
 
-    if (localRcatFlag) {
+    if (zoneInput == 0) {
         rodsLog (LOG_ERROR,
           "getRcatHost: No local Rcat"); 
 	return (SYS_INVALID_ZONE_NAME);
@@ -713,25 +725,29 @@ int
 initZone (rsComm_t *rsComm)
 {
     rodsEnv *myEnv = &rsComm->myEnv;
-
-    /* XXXXX this subroutine needs to be redone when we have the Rcat */
-    /* configure the local zone */
-
     rodsServerHost_t *tmpRodsServerHost;
+    rodsServerHost_t *masterServerHost = NULL;
+    rodsServerHost_t *slaveServerHost = NULL;
+
+    /* configure the local zone */
 
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
-	if (tmpRodsServerHost->rcatEnabled > 0) {
-	    /* XXXXX assume zone in myEnv */
-	    queZone (myEnv->rodsZone, tmpRodsServerHost);
+	if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
+	    masterServerHost = tmpRodsServerHost;
+	} else if (tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
+	    slaveServerHost = tmpRodsServerHost;
 	}
 	tmpRodsServerHost = tmpRodsServerHost->next;
     }
+    /* XXXXX assume zone in myEnv */
+    queZone (myEnv->rodsZone, masterServerHost, slaveServerHost);
     return (0); 
 }
 
 int
-queZone (char *zoneName, rodsServerHost_t *tmpRodsServerHost) 
+queZone (char *zoneName, rodsServerHost_t *masterServerHost,
+rodsServerHost_t *slaveServerHost) 
 {
     zoneInfo_t *tmpZoneInfo, *lastZoneInfo;
     zoneInfo_t *myZoneInfo;
@@ -741,7 +757,8 @@ queZone (char *zoneName, rodsServerHost_t *tmpRodsServerHost)
     memset (myZoneInfo, 0, sizeof (zoneInfo_t));
 
     rstrcpy (myZoneInfo->zoneName, zoneName, NAME_LEN);
-    myZoneInfo->rodsServerHost = tmpRodsServerHost;
+    myZoneInfo->masterServerHost = masterServerHost;
+    myZoneInfo->slaveServerHost = slaveServerHost;
 
     /* queue it */
 
@@ -758,7 +775,13 @@ queZone (char *zoneName, rodsServerHost_t *tmpRodsServerHost)
     }
     myZoneInfo->next = NULL;
 
-    return (0);
+    if (masterServerHost == NULL) {
+        rodsLog (LOG_ERROR,
+          "queZone:  masterServerHost for %s is NULL", zoneName);
+        return (SYS_INVALID_SERVER_HOST);
+    } else {
+        return (0);
+    }
 }
 
 int
