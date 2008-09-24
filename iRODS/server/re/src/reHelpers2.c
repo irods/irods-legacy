@@ -116,6 +116,16 @@ replaceStarVar(char *action,  char *start, int size,   msParamArray_t *inMsParam
   mP = getMsParamByLabel (inMsParamArray, varName);
   if (mP == NULL || mP->inOutStruct == NULL)
     return(0);
+
+
+/*************************** Added by AdT on 09/24/2008 *********************/
+if (strcmp(mP->type, INT_MS_T) == 0)
+{
+	i = replaceIntValue(start, size, *(int *)mP->inOutStruct, nLen);
+	return (i);
+}
+/****************************************************************************/
+
   if (strcmp(mP->type,STR_MS_T) != 0)
     return(0);
   i = replaceStrValue(start, size, (char *) mP->inOutStruct,  nLen);
