@@ -103,7 +103,7 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
  * \param[in] 
  *    genQueryOut_msp - Required - a GenQueryOut_MS_T to write results to. If its continuation index is 0 the query will be closed.
  * \param[out] 
- *    continueInx - a STR_MS_T containing the new continuation index (after the query).
+ *    continueInx - a INT_MS_T containing the new continuation index (after the query).
  * \return integer
  * \retval 0 on success
  * \sa
@@ -116,7 +116,6 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 {
 	genQueryInp_t *genQueryInp;
 	genQueryOut_t *genQueryOut;
-	char tmpStr[20];
 
 
 	RE_TEST_MACRO ("    Calling msiGetMoreRows")
@@ -182,11 +181,9 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 		/* return query results */
 		genQueryOut_msp->inOutStruct = genQueryOut;
 
-		/* continuation index must be returned as a STR_MS_T
-		for use in conditional expressions (as of 09/23/2008) */
+		/* return continuation index separately in case it is needed in conditional expressions */
 		resetMsParam(continueInx);
-		snprintf(tmpStr, 20, "%d", genQueryOut->continueInx);
-		fillStrInMsParam(continueInx, tmpStr);
+		fillIntInMsParam(continueInx, genQueryOut->continueInx);
 	}
 
 	return (rei->status);
