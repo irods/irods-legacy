@@ -99,9 +99,11 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
  * \brief Continues an unfinished query
  * \note Gets the next batch of rows for an open ICAT query. Likely to follow msiMakeGenQuery and msiExecGenQuery.
  * \param[in] 
- *    query_msp - Required - a GenQueryInp_MS_T containing the query parameters and conditions. Its continuation index gets modified.
+ *    query_msp - Required - a GenQueryInp_MS_T containing the query parameters and conditions.
+ * \param[in] 
+ *    genQueryOut_msp - Required - a GenQueryOut_MS_T to write results to. If its continuation index is 0 the query will be closed.
  * \param[out] 
- *    genQueryOut_msp - Required - a GenQueryOut_MS_T. If its continuation index is 0 the query will be closed.
+ *    continueInx - a STR_MS_T containing the new continuation index (after the query).
  * \return integer
  * \retval 0 on success
  * \sa
@@ -110,10 +112,11 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
  * \bug  no known bugs
 **/
 int
-msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei)
+msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei)
 {
 	genQueryInp_t *genQueryInp;
 	genQueryOut_t *genQueryOut;
+	char tmpStr[20];
 
 
 	RE_TEST_MACRO ("    Calling msiGetMoreRows")
@@ -176,7 +179,14 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecI
 
 	if (rei->status == 0)
 	{
+		/* return query results */
 		genQueryOut_msp->inOutStruct = genQueryOut;
+
+		/* continuation index must be returned as a STR_MS_T
+		for use in conditional expressions (as of 09/23/2008) */
+		resetMsParam(continueInx);
+		snprintf(tmpStr, 20, "%d", genQueryOut->continueInx);
+		fillStrInMsParam(continueInx, tmpStr);
 	}
 
 	return (rei->status);

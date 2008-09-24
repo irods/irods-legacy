@@ -43,7 +43,7 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
 int msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 		 msParam_t* queryOutParam, ruleExecInfo_t *rei);
 int msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
-int msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, ruleExecInfo_t *rei);
+int msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei);
 
 int msiVacuum(ruleExecInfo_t *rei);
 int msiGoodFailure(ruleExecInfo_t *rei);
@@ -220,7 +220,7 @@ microsdef_t MicrosTable[] = {
   {"msiExecGenQuery",2,(funcPtr) msiExecGenQuery},
   {"msiMakeQuery",3,(funcPtr) msiMakeQuery},
   {"msiMakeGenQuery",3,(funcPtr) msiMakeGenQuery},
-  {"msiGetMoreRows",2,(funcPtr) msiGetMoreRows},
+  {"msiGetMoreRows",3,(funcPtr) msiGetMoreRows},
   {"msiExecCmd",6,(funcPtr) msiExecCmd},
   {"msiSetGraftPathScheme",2,(funcPtr) msiSetGraftPathScheme},
   {"msiSetRandomScheme",0,(funcPtr) msiSetRandomScheme},
