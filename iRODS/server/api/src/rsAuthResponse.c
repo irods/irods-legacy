@@ -22,7 +22,7 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
     * zone auth */
 
    status = getAndConnRcatHostNoLogin (rsComm, SLAVE_RCAT, 
-    rsComm->clientUser.rodsZone, &rodsServerHost);
+    rsComm->proxyUser.rodsZone, &rodsServerHost);
    if (status < 0) {
       return(status);
    }
