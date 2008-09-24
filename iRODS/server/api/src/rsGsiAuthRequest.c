@@ -4,6 +4,7 @@
 /* See gsiAuthRequest.h for a description of this API call.*/
 
 #include "gsiAuthRequest.h"
+#include "authResponse.h"
 #include "genQuery.h"
 
 static int gsiAuthReqStatus=0;
@@ -139,8 +140,10 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       clientPrivLevel = LOCAL_PRIV_USER_AUTH;
    }
 
-   /* XXXXX will need to change logic a bit for, perhaps for server-server
-      and for remote zone users */
+   status = chkProxyUserPriv (rsComm, privLevel);
+
+   if (status < 0) return status;
+
    rsComm->proxyUser.authInfo.authFlag = privLevel;
    rsComm->clientUser.authInfo.authFlag = clientPrivLevel;
 

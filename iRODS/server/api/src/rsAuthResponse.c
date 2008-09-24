@@ -21,8 +21,8 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
    /* need to do NoLogin because it could get into inf loop for cross 
     * zone auth */
 
-   status = getAndConnRcatHostNoLogin (rsComm, MASTER_RCAT, NULL,
-                                &rodsServerHost);
+   status = getAndConnRcatHostNoLogin (rsComm, SLAVE_RCAT, 
+    rsComm->clientUser.rodsZone, &rodsServerHost);
    if (status < 0) {
       return(status);
    }
@@ -43,40 +43,53 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
       return (status);
    }
 
-   /* XXXXX will need to change logic a bit for remote zone users */
+   status = chkProxyUserPriv (rsComm, authCheckOut->privLevel);
+
+   if (status < 0) {
+      free (authCheckOut);
+      return status;
+   } 
+
+   rodsLog(LOG_NOTICE,
+    "rsAuthResponse set proxy authFlag to %d, client authFlag to %d, user:%s proxy:%s client:%s",
+          authCheckOut->privLevel,
+          authCheckOut->clientPrivLevel,
+          authCheckInp.username,
+          rsComm->proxyUser.userName,
+          rsComm->clientUser.userName);
+
    if (strcmp (rsComm->proxyUser.userName, rsComm->clientUser.userName) != 0) {
-      if (authCheckOut->privLevel < LOCAL_PRIV_USER_AUTH) {
-         rodsLog (LOG_ERROR, 
-          "rsAuthResponse: proxyuser %s with %d no priv to auth clientUser %s",
-             rsComm->proxyUser.userName, 
-             authCheckOut->privLevel, 
-             rsComm->clientUser.userName); 
-         free (authCheckOut);
-         return (SYS_PROXYUSER_NO_PRIV);
-      } else {
-         rsComm->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
-         rsComm->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
-         rodsLog(LOG_NOTICE,
-          "rsAuthResponse set proxy authFlag to %d, client authFlag to %d, user:%s proxy:%s client:%s",
-              authCheckOut->privLevel,
-              authCheckOut->clientPrivLevel,
-              authCheckInp.username,
-              rsComm->proxyUser.userName,
-              rsComm->clientUser.userName);
-      }
+      rsComm->proxyUser.authInfo.authFlag = authCheckOut->privLevel;
+      rsComm->clientUser.authInfo.authFlag = authCheckOut->clientPrivLevel;
    } else {	/* proxyUser and clientUser are the same */
-      rsComm->proxyUser.authInfo.authFlag = 
+      rsComm->proxyUser.authInfo.authFlag =
       rsComm->clientUser.authInfo.authFlag = authCheckOut->privLevel;
-      rodsLog(LOG_NOTICE,
-       "rsAuthResponse set proxy and client authFlag to %d, user:%s proxy:%s client:%s",
-           authCheckOut->privLevel,
-           authCheckInp.username,
-           rsComm->proxyUser.userName,
-           rsComm->clientUser.userName);
-   }
+   } 
 
    free (authCheckOut);
 
    return (status);
 } 
+
+int
+chkProxyUserPriv (rsComm_t *rsComm, int proxyUserPriv)
+{
+    if (strcmp (rsComm->proxyUser.userName, rsComm->clientUser.userName) 
+      == 0) return 0;
+
+    /* remote privileged user can only do things on behalf of users from
+     * the same zone */
+    if (proxyUserPriv >= LOCAL_PRIV_USER_AUTH ||
+      (proxyUserPriv >= REMOTE_PRIV_USER_AUTH &&
+      strcmp (rsComm->proxyUser.rodsZone,rsComm->clientUser.rodsZone) == 0)) {
+	return 0;
+    } else {
+        rodsLog (LOG_ERROR,
+         "rsAuthResponse: proxyuser %s with %d no priv to auth clientUser %s",
+             rsComm->proxyUser.userName,
+             proxyUserPriv,
+             rsComm->clientUser.userName);
+         return (SYS_PROXYUSER_NO_PRIV);
+    }
+}
 

@@ -35,7 +35,8 @@ typedef struct {
 /* prototype for the server handler */
 int
 rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp );
-
+int
+chkProxyUserPriv (rsComm_t *rsComm, int proxyUserPriv);
 #else
 #define RS_AUTH_RESPONSE NULL
 #endif
