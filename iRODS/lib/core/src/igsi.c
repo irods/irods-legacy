@@ -884,7 +884,7 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
 
 	majorStatus = gss_init_sec_context(&minorStatus,
                        /* was: GSS_C_NO_CREDENTIAL, */
-                       myCreds, &context[fd], target_name, oid, 
+                       myCreds, &context[fd], GSS_C_NO_NAME, oid, 
                        flags, 0, 
                        NULL,   /* no channel bindings */
                        tokenPtr, NULL,    /* ignore mech type */
