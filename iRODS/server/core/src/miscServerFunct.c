@@ -68,7 +68,7 @@ svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
     status = clientLogin (rodsServerHost->conn);
     if (status < 0) {
         rodsLog (LOG_NOTICE,
-          "getAndConnRcatHost: clientLogin to %s failed",
+          "svrToSvrConnect: clientLogin to %s failed",
           rodsServerHost->hostName->name);
         return (status);
     } else {

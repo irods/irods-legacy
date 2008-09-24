@@ -16,7 +16,7 @@ genQueryOut_t **genQueryOut)
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL,
+    status = getAndConnRcatHost(rsComm, SLAVE_RCAT, NULL,
 				&rodsServerHost);
     if (status < 0) {
        return(status);

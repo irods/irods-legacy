@@ -34,7 +34,7 @@ rodsObjStat_t **rodsObjStatOut)
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
-    status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInp->objPath,
+    status = getAndConnRcatHost (rsComm, SLAVE_RCAT, dataObjInp->objPath,
       &rodsServerHost);
     if (status < 0) {
        return(status);
