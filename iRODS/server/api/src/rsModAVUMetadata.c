@@ -12,8 +12,24 @@ rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 {
     rodsServerHost_t *rodsServerHost;
     int status;
+    char *myHint;
 
-    status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL, &rodsServerHost);
+    if (strcmp(modAVUMetadataInp->arg0,"add")==0) {
+	myHint = modAVUMetadataInp->arg2;
+    } else if (strcmp(modAVUMetadataInp->arg0,"rmw")==0) {
+        myHint = modAVUMetadataInp->arg3;
+    } else if (strcmp(modAVUMetadataInp->arg0,"rmi")==0) {
+        myHint = modAVUMetadataInp->arg3;
+    } else if (strcmp(modAVUMetadataInp->arg0,"rm")==0) {
+        myHint = modAVUMetadataInp->arg3;
+    } else if (strcmp(modAVUMetadataInp->arg0,"cp")==0) {
+        myHint = modAVUMetadataInp->arg3;
+    } else {
+	/* assume local */
+	myHint = NULL;
+    }
+ 
+    status = getAndConnRcatHost(rsComm, MASTER_RCAT, myHint, &rodsServerHost);
     if (status < 0) {
        return(status);
     }
