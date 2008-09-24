@@ -108,7 +108,7 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 	}
 	if (remoteFlag != LOCAL_HOST) {
 	    /* there is no local copy */
-	    rei->status = SYS_COPY_NOT_EXIST_AT_RESC;
+	    rei->status = SYS_COPY_NOT_EXIST_IN_RESC;
             rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
               "msiH5File_open: _local copy of %s does not exist",
 	      dataObjInp.objPath);

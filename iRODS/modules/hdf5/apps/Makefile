@@ -1,22 +1,30 @@
-# Makefile - This is the makefile for building a standalone HDF5/iRods 
-# client application.
+# Makefile - This is the makefile for build standalone HDF5/iRods 
+# client application. 
 SHELL=/bin/csh
 
-# these parameters need to be changed
-OS_platform=linux_platform
-irodsDir = /data/mwan/rods/iRODS
+# name of the application program
 PROG = islice
 
-include $(irodsDir)/config/config.mk
-include $(irodsDir)/config/platform.mk
-include $(irodsDir)/config/directories.mk
-include $(irodsDir)/config/common.mk
+# iRODS home direcotry 
+IRODSDIR = /data/mwan/rods/iRODS
+
+# only need if you need jpeg image output file
+JPEGDIR = /home/srb/ext_lib/jpeg
+
+#################################################################
+#                 do not change below this line                 #
+#################################################################
+
+include $(IRODSDIR)/config/config.mk
+include $(IRODSDIR)/config/platform.mk
+include $(IRODSDIR)/config/directories.mk
+include $(IRODSDIR)/config/common.mk
 
 # these are derived parameters
-irodsLibDir = $(irodsDir)/lib/core/obj
-hdf5LibIncDir = $(irodsDir)/modules/hdf5/lib/include
-hdf5LibObjDir = $(irodsDir)/modules/hdf5/lib/obj
-hdf5LibSrcDir = $(irodsDir)/modules/hdf5/lib/src
+irodsLibDir = $(IRODSDIR)/lib/core/obj
+hdf5LibIncDir = $(IRODSDIR)/modules/hdf5/lib/include
+hdf5LibObjDir = $(IRODSDIR)/modules/hdf5/lib/obj
+hdf5LibSrcDir = $(IRODSDIR)/modules/hdf5/lib/src
 
 PROG_OBJECTS = $(PROG).o
 PROG_SRC = $(PROG).c
@@ -28,17 +36,22 @@ HDF_LIB_OBJECTS=$(hdf5LibObjDir)/h5ClHandler.o 	\
 #   $(hdf5LibObjDir)/h5LocalHandler.o	\
 
 INCLUDES = -I$(hdf5LibIncDir)
-INCLUDES +=     -I$(irodsDir)/lib/core/include -I$(irodsDir)/lib/api/include
-INCLUDES +=     -I$(irodsDir)/lib/md5/include
-INCLUDES +=     -I$(irodsDir)/server/core/include
-INCLUDES +=     -I$(irodsDir)/server/icat/include
-INCLUDES +=     -I$(irodsDir)/server/drivers/include
-INCLUDES +=     -I$(irodsDir)/server/re/include
+INCLUDES +=     -I$(IRODSDIR)/lib/core/include -I$(IRODSDIR)/lib/api/include
+INCLUDES +=     -I$(IRODSDIR)/lib/md5/include
+INCLUDES +=     -I$(IRODSDIR)/server/core/include
+INCLUDES +=     -I$(IRODSDIR)/server/icat/include
+INCLUDES +=     -I$(IRODSDIR)/server/drivers/include
+INCLUDES +=     -I$(IRODSDIR)/server/re/include
+INCLUDES +=     -I$(JPEGDIR)/include
 
 CFLAGS = $(MY_CFLAG) $(INCLUDES)
 
 LDFLAGS =      -L$(irodsLibDir) -lRodsAPIs -lpthread -lm
+LDFLAGS +=     -L$(JPEGDIR)/lib -ljpeg
 
+ifdef CCMALLOC
+LDFLAGS+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl -lstdc++
+endif
 
 all:: $(PROG) 
 
