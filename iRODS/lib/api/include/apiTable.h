@@ -120,8 +120,10 @@ apidef_t RcApiTable[] = {
        if we could restrict it some; if the servers can authenticate 
        themselves first (if they need to eventually, probably, anyway)
        then this should work OK.  If not, we can change REMOTE_USER_AUTH
-       to NO_USER_AUTH */
-    {AUTH_CHECK_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+       to NO_USER_AUTH. 
+       Need to set it to NO_USER_AUTH for cross zone auth to prevent ping-pong
+       effect */
+    {AUTH_CHECK_AN, RODS_API_VERSION, NO_USER_AUTH, NO_USER_AUTH, 
        "authCheckInp_PI", 0,  "authCheckOut_PI", 0, (funcPtr) RS_AUTH_CHECK},
     {GSI_AUTH_REQUEST_AN, RODS_API_VERSION, NO_USER_AUTH|XMSG_SVR_ALSO, 
       NO_USER_AUTH|XMSG_SVR_ALSO,
