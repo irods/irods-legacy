@@ -17,11 +17,11 @@ rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     if (strcmp(modAVUMetadataInp->arg0,"add")==0) {
 	myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"rmw")==0) {
-        myHint = modAVUMetadataInp->arg3;
+        myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"rmi")==0) {
-        myHint = modAVUMetadataInp->arg3;
+        myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"rm")==0) {
-        myHint = modAVUMetadataInp->arg3;
+        myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"cp")==0) {
         myHint = modAVUMetadataInp->arg3;
     } else {
