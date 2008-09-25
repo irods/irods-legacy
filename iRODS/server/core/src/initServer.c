@@ -676,6 +676,26 @@ rodsServerHost_t **rodsServerHost)
     }
 }
 
+int
+getLocalZoneInfo (zoneInfo_t **outZoneInfo)
+{
+    zoneInfo_t *tmpZoneInfo;
+
+    tmpZoneInfo = ZoneInfoHead;
+    while (tmpZoneInfo != NULL) {
+        if (tmpZoneInfo->masterServerHost->rcatEnabled == LOCAL_ICAT) {
+            *outZoneInfo = tmpZoneInfo;
+	    return (0);
+	}
+        tmpZoneInfo = tmpZoneInfo->next;
+    }
+    rodsLog (LOG_ERROR,
+     "getLocalZoneInfo: Local Zone does not exist");
+
+    *outZoneInfo = NULL;
+    return (SYS_INVALID_ZONE_NAME);
+}
+
 /* Check if there is a connected ICAT host, and if there is, disconnect */
 int 
 getAndDisconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,

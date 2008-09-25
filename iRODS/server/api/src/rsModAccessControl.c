@@ -13,7 +13,8 @@ rsModAccessControl (rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
     rodsServerHost_t *rodsServerHost;
     int status;
 
-    status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL, &rodsServerHost);
+    status = getAndConnRcatHost(rsComm, MASTER_RCAT, 
+      modAccessControlInp->path, &rodsServerHost);
     if (status < 0) {
        return(status);
     }

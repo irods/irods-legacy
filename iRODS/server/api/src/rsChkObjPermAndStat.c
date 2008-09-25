@@ -14,7 +14,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
-    status = getAndConnRcatHost (rsComm, MASTER_RCAT, 
+    status = getAndConnRcatHost (rsComm, SLAVE_RCAT, 
       chkObjPermAndStatInp->objPath, &rodsServerHost);
     if (status < 0) {
        return(status);

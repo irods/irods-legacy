@@ -161,5 +161,7 @@ int
 logFileOpen (int runMode, char *logDir, char *logFileName);
 int
 initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack);
+int
+getLocalZoneInfo (zoneInfo_t **outZoneInfo);
 
 #endif	/* INIT_SERVER_H */
