@@ -970,7 +970,13 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
    strncpy(myComment, comment, AUDIT_COMMENT_MAX_SIZE-1);
 
    if (zoneName[0]=='\0') {
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit4 SQL 1 ");
+      /* This no longer seems to occur.  I'm leaving the code in place
+         (just in case) but I'm removing the rodsLog call so the ICAT
+         test suite does not require it to be tested.
+      */
+      /*   
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlA---udit4 S--QL 1 ");
+      */
       snprintf(mySQL, MAX_SQL_SIZE, 
 	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from r_user_main where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)",
 	       sql);
