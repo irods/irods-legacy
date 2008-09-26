@@ -205,6 +205,8 @@ int
 clearCollEnt (collEnt_t *collEnt);
 int
 myChmod (char *inPath, uint dataMode);
+char *
+getZoneHintForGenQuery (genQueryInp_t *genQueryInp);
 #ifdef  __cplusplus
 }
 #endif

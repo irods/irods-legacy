@@ -1430,4 +1430,27 @@ myChmod (char *inPath, uint dataMode)
     return (0);
 }
 
-     
+char *
+getZoneHintForGenQuery (genQueryInp_t *genQueryInp)
+{
+    char *zoneHint;
+    int i;
+
+    if (genQueryInp == NULL) return NULL;
+
+    if ((zoneHint = getValByKey (&genQueryInp->condInput, ZONE_KW)) != NULL) 
+	return (zoneHint);
+
+    for (i = 0; i < genQueryInp->sqlCondInp.len; i++) {
+	int inx = genQueryInp->sqlCondInp.inx[i];
+	if (inx == COL_DATA_NAME ||
+	  inx == COL_COLL_NAME ||
+	  inx == COL_COLL_PARENT_NAME ||
+	  inx == COL_ZONE_NAME) {
+	    zoneHint = genQueryInp->sqlCondInp.value[i];
+	    return (zoneHint);
+	}
+    }
+    return NULL; 
+}
+
