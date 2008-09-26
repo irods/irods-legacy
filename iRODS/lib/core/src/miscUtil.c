@@ -1447,7 +1447,9 @@ getZoneHintForGenQuery (genQueryInp_t *genQueryInp)
 	  inx == COL_COLL_NAME ||
 	  inx == COL_COLL_PARENT_NAME ||
 	  inx == COL_ZONE_NAME) {
+	    char *tmpPtr;
 	    zoneHint = genQueryInp->sqlCondInp.value[i];
+	    if ((tmpPtr = strchr (zoneHint, '/')) != NULL) zoneHint = tmpPtr;
 	    return (zoneHint);
 	}
     }
