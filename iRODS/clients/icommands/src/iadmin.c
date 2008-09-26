@@ -531,7 +531,9 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
    if (strcmp(cmdToken[0],"mkuser") == 0) {
+      /*
       int status;
+      No more, at least for now:
       char userName[NAME_LEN];
       char zoneName[NAME_LEN];
       status = parseUserName(cmdToken[1], userName, zoneName);
@@ -539,8 +541,9 @@ doCommand(char *cmdToken[]) {
 	 printf("Invalid user name format");
 	 return(0);
       }
-      generalAdmin("add", "user", userName, cmdToken[2], 
-		   zoneName, cmdToken[3], cmdToken[4], cmdToken[5]);
+      */
+      generalAdmin("add", "user", cmdToken[1], cmdToken[2], 
+      		   cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
       return(0);
    }
    if (strcmp(cmdToken[0],"moduser") == 0) {
@@ -626,13 +629,13 @@ doCommand(char *cmdToken[]) {
 
    if (strcmp(cmdToken[0],"atg") == 0) {
       generalAdmin("modify", "group", cmdToken[1], "add", cmdToken[2],
-		   "", "", "");
+		   cmdToken[3], "", "");
       return(0);
    }
 
    if (strcmp(cmdToken[0],"rfg") == 0) {
       generalAdmin("modify", "group", cmdToken[1], "remove", cmdToken[2],
-		   "", "", "");
+		   cmdToken[3], "", "");
       return(0);
    }
 
@@ -905,7 +908,7 @@ void usageMain()
 " lgd name  (list group details)",
 " lrg [name] (list resource group info)",
 " lf DataId (list file details; DataId is the number (from ls))",
-" mkuser Name Type [DN] (make user, where userName: name[@department][#zone])",
+" mkuser Name Type [zone] [DN] (make user)",
 " moduser Name [ type | zone | DN | comment | info | password ] newValue",
 " rmuser Name (remove user, where userName: name[@department][#zone])",
 " mkdir Name [username] (make directory(collection))",
@@ -918,8 +921,8 @@ void usageMain()
 " rmZone Name (remove zone)",
 " mkgroup Name (make group)",
 " rmgroup Name (remove group)",
-" atg groupName userName (add to group - add a user to a group)",
-" rfg groupName userName (remove from group - remove a user from a group)",
+" atg groupName userName [userZone] (add to group - add a user to a group)",
+" rfg groupName userName [userZone] (remove from group - remove a user from a group)",
 " atrg resourceGroupName resourceName (add (resource) to resource group)",
 " rfrg resourceGroupName resourceName (remove (resource) from resource group)",
 " at tokenNamespace Name [Value1] [Value2] [Value3] (add token) ",
@@ -995,14 +998,15 @@ usage(char *subOpt)
 
 ""};
    char *mkuserMsgs[]={
-" mkuser Name Type Zone [DN] (make user)",
-"Creates a new iRODS user in the ICAT database",
+" mkuser Name Type [Zone] [DN] (make user)",
+"Create a new iRODS user in the ICAT database",
 " ",
-"Name is the user name to create (Name can optionally have @department and #zone as part of it)",
+"Name is the user name to create",
 "Type is the user type (see 'lt user_type' for a list)",
+"Zone is the user's zone (optional for local zone users)",
 "DN is the Distinguished Name for GSI authentication (optional)",
 " ",
-"Tip: Use moduser to set a password or change attributes of the user account.",
+"Tip: Use moduser to set a password, DN or other attributes of the user account.",
 ""};
 
    char *atrgMsgs[]={
@@ -1124,13 +1128,15 @@ usage(char *subOpt)
 ""};
 
    char *atgMsgs[]={
-" atg groupName userName (add to group - add a user to a group)",
+" atg groupName userName [userZone] (add to group - add a user to a group)",
+"For remote-zone users, include the userZone.",
 "Also see mkgroup, rfg and rmgroup.",
 " ",
 ""};
 
    char *rfgMsgs[]={
-" rfg groupName userName (remove from group - remove a user from a group)",
+" rfg groupName userName [userZone] (remove from group - remove a user from a group)",
+"For remote-zone users, include the userZone.",
 "Also see mkgroup, afg and rmgroup.",
 ""};
 

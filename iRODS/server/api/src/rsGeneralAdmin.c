@@ -83,6 +83,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  strncpy(userInfo.userName, generalAdminInp->arg2, NAME_LEN);
 	  strncpy(userInfo.userType, generalAdminInp->arg3, NAME_LEN);
 	  strncpy(userInfo.rodsZone, generalAdminInp->arg4, NAME_LEN);
+
 	  strncpy(userInfo.authInfo.authStr, generalAdminInp->arg5, NAME_LEN);
 	  rei.uoio = &userInfo;
 	  rei.uoic = &rsComm->clientUser;
@@ -148,7 +149,8 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        }
        if (strcmp(generalAdminInp->arg1,"group")==0) {
 	  status = chlModGroup(rsComm, generalAdminInp->arg2, 
-			      generalAdminInp->arg3, generalAdminInp->arg4);
+			       generalAdminInp->arg3, generalAdminInp->arg4,
+			       generalAdminInp->arg5);
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }

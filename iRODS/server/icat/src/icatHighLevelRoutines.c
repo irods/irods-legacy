@@ -374,11 +374,8 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       }
    }
    else {
-      status = getLocalZone();
-      if (status) return(status);
-
       status = cmlCheckDataObjId(objIdString, rsComm->clientUser.userName,
-				 localZone, neededAccess, &icss);
+	      rsComm->clientUser.rodsZone, neededAccess, &icss);
       if (status) {
 	 _rollback("chlModDataObjMeta");
 	 return(CAT_NO_ACCESS_PERMISSION);
@@ -591,7 +588,8 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    }
 
    status = cmlAudit3(AU_REGISTER_DATA_OBJ, dataIdNum,
-		      rsComm->clientUser.userName, localZone, "", &icss);
+		      rsComm->clientUser.userName, 
+		      rsComm->clientUser.rodsZone, "", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlRegDataObj cmlAudit3 failure %d",
@@ -740,7 +738,8 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    }
 
    status = cmlAudit3(AU_REGISTER_DATA_REPLICA, objIdString,
-		      rsComm->clientUser.userName, localZone, nextRepl, &icss);
+		      rsComm->clientUser.userName, 
+		      rsComm->clientUser.rodsZone, nextRepl, &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlRegDataReplica cmlAudit3 failure %d",
@@ -909,11 +908,13 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    /* Audit */
    if (dataObjNumber[0]!='\0') {
       status = cmlAudit3(AU_UNREGISTER_DATA_OBJ, dataObjNumber,
-		      rsComm->clientUser.userName, localZone, "", &icss);
+		      rsComm->clientUser.userName, 
+		      rsComm->clientUser.rodsZone, "", &icss);
    }
    else {
       status = cmlAudit3(AU_UNREGISTER_DATA_OBJ, "0",
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName, 
+			 rsComm->clientUser.rodsZone,
 			 dataObjInfo->objPath, &icss);
    }
    if (status != 0) {
@@ -998,7 +999,8 @@ int chlRegRuleExec(rsComm_t *rsComm,
  
    /* Audit */
    status = cmlAudit3(AU_REGISTER_DELAYED_RULE,  ruleExecIdNum,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      ruleExecSubmitInp->ruleName, &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1095,7 +1097,8 @@ int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
 
    /* Audit */
    status = cmlAudit3(AU_MODIFY_DELAYED_RULE,  ruleExecId,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      "", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1147,7 +1150,8 @@ int chlDelRuleExec(rsComm_t *rsComm,
 
    /* Audit */
    status = cmlAudit3(AU_DELETE_DELAYED_RULE,  ruleExecId,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      "", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1265,6 +1269,9 @@ int chlRegResc(rsComm_t *rsComm,
       return(CAT_INVALID_RESOURCE_VAULT_PATH);
    }
 
+   status = getLocalZone();
+   if (status) return(status);
+
    getNowStr(myTime);
 
    cllBindVars[0]=idNum;
@@ -1293,7 +1300,8 @@ int chlRegResc(rsComm_t *rsComm,
 
    /* Audit */
    status = cmlAudit3(AU_REGISTER_RESOURCE,  idNum,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      rescInfo->rescName, &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1350,6 +1358,9 @@ int chlDelResc(rsComm_t *rsComm,
       return(status);
    }
 
+   status = getLocalZone();
+   if (status) return(status);
+
    /* get rescId for possible audit call; won't be available after delete */
    rescId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 2 ");
@@ -1392,7 +1403,8 @@ int chlDelResc(rsComm_t *rsComm,
    /* Audit */
    status = cmlAudit3(AU_DELETE_RESOURCE,  
 		      rescId,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      rescInfo->rescName, 
 		      &icss);
    if (status != 0) {
@@ -1549,7 +1561,8 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    /* Audit */
    status = cmlAudit3(AU_DELETE_USER_RE,  
 		      iValStr,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      userInfo->userName,
 		      &icss);
    if (status != 0) {
@@ -1716,7 +1729,8 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    status = cmlAudit4(AU_REGISTER_COLL_BY_ADMIN,  
 		      currStr2,
 		      "",
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      collInfo->collName,
 		      &icss);
    if (status != 0) {
@@ -1863,7 +1877,8 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    status = cmlAudit4(AU_REGISTER_COLL,  
 		      currStr2,
 		      "",
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      collInfo->collName,
 		      &icss);
    if (status != 0) {
@@ -1983,7 +1998,8 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    snprintf(iValStr, 50, "%lld", iVal);
    status = cmlAudit3(AU_REGISTER_COLL,  
 		      iValStr,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      collInfo->collName,
 		      &icss);
    if (status != 0) {
@@ -2057,11 +2073,9 @@ int chlRegZone(rsComm_t *rsComm,
    }
 
    /* Audit */
-   status = getLocalZone();
-   if (status) return(status);
-
    status = cmlAudit3(AU_REGISTER_ZONE,  "0",
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      "", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2115,7 +2129,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 1 ");
    status = cmlGetStringValueFromSql(
        "select zone_id from r_zone_main where zone_name=?",
-       zoneId, MAX_NAME_LEN, zoneName, localZone, &icss);
+       zoneId, MAX_NAME_LEN, zoneName, "", &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
       return(status);
@@ -2185,7 +2199,8 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
    snprintf(commentStr, 190, "%s %s", option, optionValue);
    status = cmlAudit3(AU_MOD_ZONE,  
 		      zoneId,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      commentStr,
 		      &icss);
    if (status != 0) {
@@ -2253,11 +2268,10 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
    }
 
    /* Audit */
-   status = getLocalZone();
-   if (status) return(status);
    status = cmlAudit3(AU_DELETE_ZONE,
 		      "0",
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      zoneName,
 		      &icss);
    if (status != 0) {
@@ -2520,7 +2534,8 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    status = cmlAudit4(AU_DELETE_COLL_BY_ADMIN,  
 		      "select coll_id from r_coll_main where coll_name=?",
 		      collInfo->collName,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      collInfo->collName,
 		      &icss);
    if (status != 0) {
@@ -2669,7 +2684,8 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    /* Audit */
    status = cmlAudit3(AU_DELETE_COLL,
 		      collIdNum,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      collInfo->collName,
 		      &icss);
    if (status != 0) {
@@ -2990,13 +3006,11 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
 
    /* Insert the temporay, one-time password */
 
-   status = getLocalZone();
-   if (status) return(status);
    getNowStr(myTime);
    sprintf(myTimeExp, "%d", TEMP_PASSWORD_TIME);  /* seconds from create time
                                                      when it will expire */
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
-   cllBindVars[cllBindVarCount++]=localZone;
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone,
    cllBindVars[cllBindVarCount++]=newPw;
    cllBindVars[cllBindVarCount++]=myTimeExp;
    cllBindVars[cllBindVarCount++]=myTime;
@@ -3322,12 +3336,13 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    Groups are also users in the schema, so chlModUser can also 
    modify other group attibutes. */
 int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
-		 char *userName) {
+		 char *userName, char *userZone) {
    int status, OK;
    char myTime[50];
    char userId[MAX_NAME_LEN];
    char groupId[MAX_NAME_LEN];
    char commentStr[100];
+   char zoneToUse[MAX_NAME_LEN];
 
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup");
 
@@ -3349,13 +3364,20 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    status = getLocalZone();
    if (status) return(status);
 
+   strncpy(zoneToUse, localZone, MAX_NAME_LEN);
+   if (userZone != NULL && *userZone != '\0') {
+      strncpy(zoneToUse, userZone, MAX_NAME_LEN);
+   }
+
    userId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 1 ");
    status = cmlGetStringValueFromSql(
             "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name !='rodsgroup'",
-	    userId, MAX_NAME_LEN, userName, localZone, &icss);
+	    userId, MAX_NAME_LEN, userName, zoneToUse, &icss);
    if (status != 0) {
-      if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
+      if (status==CAT_NO_ROWS_FOUND) {
+	 return(CAT_INVALID_USER);
+      }
       _rollback("chlModGroup");
       return(status);
    }
@@ -3364,9 +3386,14 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 2");
    status = cmlGetStringValueFromSql(
               "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name='rodsgroup'",
-	      groupId, MAX_NAME_LEN, groupName, localZone, &icss);
+	      groupId, MAX_NAME_LEN, groupName, zoneToUse, &icss);
    if (status != 0) {
-      if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_GROUP);
+      if (status==CAT_NO_ROWS_FOUND) {
+	 if (strncmp(zoneToUse, localZone, MAX_NAME_LEN) != 0) {
+	    return(0);
+	 }
+	 return(CAT_INVALID_GROUP);
+      }
       _rollback("chlModGroup");
       return(status);
    }
@@ -3416,7 +3443,8 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    snprintf(commentStr, 90, "%s %s", option, userId);
    status = cmlAudit3(AU_MOD_GROUP,  
 		      groupId,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      commentStr,
 		      &icss);
    if (status != 0) {
@@ -3631,7 +3659,8 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    snprintf(commentStr, 190, "%s %s", option, optionValue);
    status = cmlAudit3(AU_MOD_RESC,  
 		      rescId,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      commentStr,
 		      &icss);
    if (status != 0) {
@@ -3706,7 +3735,8 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
    status = cmlAudit4(AU_MOD_RESC_FREE_SPACE,  
 		      "select resc_id from r_resc_main where resc_name=?",
 		      rescName,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      updateValueStr,
 		      &icss);
    if (status != 0) {
@@ -3805,7 +3835,8 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
    snprintf(commentStr, 190, "%s %s", option, rescGroupName);
    status = cmlAudit3(AU_MOD_RESC_GROUP,  
 		      rescId,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      commentStr,
 		      &icss);
    if (status != 0) {
@@ -3834,6 +3865,8 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    int status;
    char seqStr[MAX_NAME_LEN];
    char auditSQL[MAX_SQL_SIZE];
+   char userZone[MAX_NAME_LEN];
+   char zoneId[MAX_NAME_LEN];
 
    static char lastValidUserType[MAX_NAME_LEN]="";
    static char userTypeTokenName[MAX_NAME_LEN]="";
@@ -3887,12 +3920,20 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    if (status) return(status);
 
    if (strlen(userInfo->rodsZone)>0) {
-      if (strcmp(userInfo->rodsZone, localZone) !=0) {
-	 int i;
-	 i = addRErrorMsg (&rsComm->rError, 0, 
-			   "Currently, users must be in the local zone");
-	 return(CAT_INVALID_ZONE);
+      strncpy(userZone, userInfo->rodsZone, MAX_NAME_LEN);
+      /* check that the zone exists */
+      zoneId[0]='\0';
+      if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 5 ");
+      status = cmlGetStringValueFromSql(
+		"select zone_id from r_zone_main where zone_name=?",
+		zoneId, MAX_NAME_LEN, userZone, "", &icss);
+      if (status != 0) {
+	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
+	 return(status);
       }
+   }
+   else {
+      strncpy(userZone, localZone, MAX_NAME_LEN);
    }
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 2");
@@ -3908,7 +3949,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    cllBindVars[cllBindVarCount++]=seqStr;
    cllBindVars[cllBindVarCount++]=userInfo->userName;
    cllBindVars[cllBindVarCount++]=userTypeTokenName;
-   cllBindVars[cllBindVarCount++]=localZone;
+   cllBindVars[cllBindVarCount++]=userZone;
    cllBindVars[cllBindVarCount++]=userInfo->authInfo.authStr;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
@@ -3954,11 +3995,12 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    /* Audit */
    snprintf(auditSQL, MAX_SQL_SIZE-1,
 	    "select user_id from r_user_main where user_name=? and zone_name='%s'",
-	    localZone);
+	    userZone);
    status = cmlAudit4(AU_REGISTER_USER_RE,  
 		      auditSQL,
 		      userInfo->userName,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      userInfo->userName,
 		      &icss);
    if (status != 0) {
@@ -4288,7 +4330,8 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
    /* Audit */
    status = cmlAudit3(AU_ADD_AVU_METADATA,  
 		      objIdStr,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      type,
 		      &icss);
    if (status != 0) {
@@ -4454,7 +4497,8 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       /* Audit */
       status = cmlAudit3(AU_DELETE_AVU_METADATA,  
 			 objIdStr,
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName,
+			 rsComm->clientUser.rodsZone,
 			 type,
 			 &icss);
       if (status != 0) {
@@ -4527,7 +4571,8 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
    /* Audit */
    status = cmlAudit3(AU_DELETE_AVU_METADATA,  
 		      objIdStr,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      type,
 		      &icss);
    if (status != 0) {
@@ -4597,7 +4642,8 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
    /* Audit */
    status = cmlAudit3(AU_COPY_AVU_METADATA,  
 		      objIdStr1,
-		      rsComm->clientUser.userName, localZone, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
 		      objIdStr2,
 		      &icss);
    if (status != 0) {
@@ -5058,7 +5104,8 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       /* Audit */
       status = cmlAudit3(AU_RENAME_DATA_OBJ,  
 			 objIdString,
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName,
+			 rsComm->clientUser.rodsZone,
 			 newName,
 			 &icss);
       if (status != 0) {
@@ -5188,7 +5235,8 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       /* Audit */
       status = cmlAudit3(AU_RENAME_COLLECTION,  
 			 objIdString,
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName,
+			 rsComm->clientUser.rodsZone,
 			 newName,
 			 &icss);
       if (status != 0) {
@@ -5360,7 +5408,8 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       /* Audit */
       status = cmlAudit3(AU_MOVE_DATA_OBJ,  
 			 objIdString,
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName,
+			 rsComm->clientUser.rodsZone,
 			 collIdString,
 			 &icss);
       if (status != 0) {
@@ -5492,7 +5541,8 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       /* Audit */
       status = cmlAudit3(AU_MOVE_COLL,  
 			 objIdString,
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName,
+			 rsComm->clientUser.rodsZone,
 			 targetCollName,
 			 &icss);
       if (status != 0) {
@@ -5615,7 +5665,8 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    /* Audit */
    status = cmlAudit3(AU_REG_TOKEN,  
 			 seqNumStr,
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName,
+			 rsComm->clientUser.rodsZone,
 			 name,
 			 &icss);
    if (status != 0) {
@@ -5674,7 +5725,8 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
    snprintf(objIdStr, 50, "%lld", objId);
    status = cmlAudit3(AU_DEL_TOKEN,  
 			 objIdStr,
-			 rsComm->clientUser.userName, localZone, 
+			 rsComm->clientUser.userName,
+			 rsComm->clientUser.rodsZone,
 			 name,
 			 &icss);
    if (status != 0) {

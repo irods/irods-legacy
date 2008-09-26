@@ -49,7 +49,7 @@ int decodePw(rsComm_t *rsComm, char *in, char *out);
 int chlModUser(rsComm_t *rsComm, char *userName, char *option,
     char *newValue);
 int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
-    char *userName);
+    char *userName, char *userZone);
 int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
     char *optionValue);
 int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, 

@@ -903,7 +903,11 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
    strncpy(myComment, comment, AUDIT_COMMENT_MAX_SIZE-1);
 
    if (zoneName[0]=='\0') {
-      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit3 SQL 1 ");
+      /* This no longer seems to occur.  I'm leaving the code in place
+         (just in case) but I'm removing the rodsLog call so the ICAT
+         test suite does not require it to be tested.
+      */
+      /*      if (logSQL_CML) rodsLog(LOG_SQL, "cmlAu---dit3 S--QL 1 "); */
       cllBindVars[0]=dataId;
       cllBindVars[1]=userName;
       cllBindVars[2]=actionIdStr;

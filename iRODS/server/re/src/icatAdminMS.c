@@ -149,7 +149,8 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei) {
      return(0);
   }
   groupName =  (char *) msParam->inOutStruct;
-  i =  chlModGroup(rei->rsComm, groupName, "add", rei->uoio->userName);
+  i =  chlModGroup(rei->rsComm, groupName, "add", rei->uoio->userName,
+		   rei->uoio->rodsZone);
 #else
   i = SYS_NO_RCAT_SERVER_ERR;
 #endif
