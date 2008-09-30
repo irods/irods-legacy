@@ -1386,6 +1386,11 @@ sub configureIrodsServer
 		printLog( "\nSetting iRODS directory ownership...\n" );
 		my $chownedDirectory = 0;
 
+		printLog( "    chown /\n" );
+		$status = ichown( $IRODS_ADMIN_NAME, "/" );
+		if ( $status == 0 ) { $somethingFailed = 1; }
+		elsif ( $status == 1 ) { $chownedDirectory = 1; }
+
 		printLog( "    chown /$ZONE_NAME...\n" );
 		$status = ichown( $IRODS_ADMIN_NAME, "/$ZONE_NAME" );
 		if ( $status == 0 ) { $somethingFailed = 1; }
