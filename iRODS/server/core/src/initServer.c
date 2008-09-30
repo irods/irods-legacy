@@ -663,9 +663,8 @@ rodsServerHost_t **rodsServerHost)
           "getRcatHost: No local Rcat"); 
 	return (SYS_INVALID_ZONE_NAME);
     } else {
-        rodsLog (LOG_ERROR,
+        rodsLog (LOG_DEBUG,
           "getRcatHost: Invalid zone name from hint %s", rcatZoneHint);
-	/* XXXXX take me out. use the local rcat for now */
 	status = getRcatHost (rcatType, NULL, &tmpRodsServerHost);
 	if (status < 0) {
             return (SYS_INVALID_ZONE_NAME);
@@ -748,20 +747,106 @@ initZone (rsComm_t *rsComm)
     rodsServerHost_t *tmpRodsServerHost;
     rodsServerHost_t *masterServerHost = NULL;
     rodsServerHost_t *slaveServerHost = NULL;
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int status, i;
+    sqlResult_t *zoneName, *zoneType, *zoneConn, *zoneComment;
+    char *tmpZoneName, *tmpZoneType, *tmpZoneConn, *tmpZoneComment;
 
-    /* configure the local zone */
+    /* configure the local zone first or rsGenQuery would not work */
 
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
-	if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
-	    masterServerHost = tmpRodsServerHost;
-	} else if (tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
-	    slaveServerHost = tmpRodsServerHost;
-	}
-	tmpRodsServerHost = tmpRodsServerHost->next;
+        if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
+            masterServerHost = tmpRodsServerHost;
+        } else if (tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
+            slaveServerHost = tmpRodsServerHost;
+        }
+        tmpRodsServerHost = tmpRodsServerHost->next;
     }
     /* XXXXX assume zone in myEnv */
     queZone (myEnv->rodsZone, masterServerHost, slaveServerHost);
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+    addInxIval (&genQueryInp.selectInp, COL_ZONE_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_ZONE_TYPE, 1);
+    addInxIval (&genQueryInp.selectInp, COL_ZONE_CONNECTION, 1);
+    addInxIval (&genQueryInp.selectInp, COL_ZONE_COMMENT, 1);
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+    clearGenQueryInp (&genQueryInp);
+
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+          "initZone: rsGenQuery error, status = %d", status);
+        return (status);
+    }
+
+    if (genQueryOut == NULL) {
+        rodsLog (LOG_NOTICE,
+          "initZone: NULL genQueryOut");
+        return (CAT_NO_ROWS_FOUND);
+    }
+
+    if ((zoneName = getSqlResultByInx (genQueryOut, COL_ZONE_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "initZone: getSqlResultByInx for COL_ZONE_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((zoneType = getSqlResultByInx (genQueryOut, COL_ZONE_TYPE)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "initZone: getSqlResultByInx for COL_ZONE_TYPE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((zoneConn = getSqlResultByInx (genQueryOut, COL_ZONE_CONNECTION)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "initZone: getSqlResultByInx for COL_ZONE_CONNECTION failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((zoneComment = getSqlResultByInx (genQueryOut, COL_ZONE_COMMENT)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "initZone: getSqlResultByInx for COL_ZONE_COMMENT failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    for (i = 0;i < genQueryOut->rowCnt; i++) {
+	rodsHostAddr_t addr;
+	char port[NAME_LEN];
+
+        tmpZoneName = &zoneName->value[zoneName->len * i];
+        tmpZoneType = &zoneType->value[zoneType->len * i];
+        tmpZoneConn = &zoneConn->value[zoneConn->len * i];
+        tmpZoneComment = &zoneComment->value[zoneComment->len * i];
+	if (strcmp (tmpZoneType, "local") == 0) {
+	    if (strcmp (myEnv->rodsZone, tmpZoneName) != 0) {
+                rodsLog (LOG_ERROR,
+                  "initZone: zoneName in env %s does not match %s in icat ",
+		  myEnv->rodsZone, tmpZoneName);
+	    }
+	    continue;
+	}
+        memset (&addr, 0, sizeof (addr));
+	/* assume address:port */
+	if (splitPathByKey (tmpZoneConn, addr.hostAddr, port, ':') < 0) {
+            rstrcpy (addr.hostAddr, tmpZoneConn, LONG_NAME_LEN);
+	    addr.portNum = 0;
+	} else {
+	    addr.portNum = atoi (port);
+	}
+        status = resolveHost (&addr, &tmpRodsServerHost);
+	if (status < 0) {
+	    rodsLog (LOG_ERROR,
+              "initZone: resolveHost error for %s. status = %d",
+               addr.hostAddr);
+	    return (status);
+	}
+        queZone (tmpZoneName, tmpRodsServerHost, NULL);
+    }
+
+    freeGenQueryOut (&genQueryOut);
+
     return (0); 
 }
 
