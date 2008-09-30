@@ -2,21 +2,34 @@
 #
 # This script helps convert an MCAT DB to an ICAT one.
 #
-# Currently, this is very preliminary, but I was able to insert an SRB
-# file into the ICAT and get it via 'iget'.
+# Currently, this is a preliminary version, but it does handle many
+# cases.  For example, we were able to ingest an SRB file into the
+# ICAT and get it via 'iget'.
 #
-# If the Spull.log.* files don't exist, this script will run Spullmeta
-# to create them.
+# To run this script:
+# 1) Move it to an empty directory.
+# 2) Review and edit some the settings below.
+# 3) For the first phase, be sure your version of the SRB client codes
+#    has has the fixes committed for Spullmeta.c srbClientUtil.c by 
+#    Wayne on Sept 18, 2008.
+# 4) Set up your SRB environment for the MCAT you want to convert.
+# 5) Set up your iRODS environment for your IRODS instance.
+#    (You want, you can do this on another host, just move the files
+#     after the Spullmeta phase).
+# 6) Run the script (and/or rerun).
 #
-# This script generates two files, one with iadmin commands and other
-# with psql sql commands.  After these are created, this script will
-# prompt and if confirmed will attempt to run iadmin and psql.  You
-# might instead tho check the contents of these files and run the
-# iadmin and psql steps my hand.
+# There are 3 phases to this script: 1) it runs Spullmeta to get
+# information from the MCAT, 2) it generates iadmin, imeta, and psql
+# commands and 3) it runs the commands.  For 1, it will skip that step
+# if the Spull.log.* log files exist.  For 2 and 3 it will prompt you
+# before doing or re-doing the steps.  Generally, it is OK to rerun
+# this script.  You might want to review, and possibly edit, some of
+# the command files before executing them.
+#
 #
 # You will need to change the following parameters for your
 # particular MCAT and  ICATs and environment.
-
+#
 # Begin section to edit ---------------------------------------------------
 # Conversion tables (cv_):
 $cv_srbZone = "galvin";            # Your SRB zone name
