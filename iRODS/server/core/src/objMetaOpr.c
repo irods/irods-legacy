@@ -86,7 +86,7 @@ rescGrpInfo_t **rescGrpInfo)
     if ((rescName = getSqlResultByInx (genQueryOut, COL_R_RESC_NAME)) ==
       NULL) {
         rodsLog (LOG_NOTICE,
-          "_getRescInfo: getSqlResultByInx for COL_R_RESC_NAME failed");
+          "resolveRescGrp: getSqlResultByInx for COL_R_RESC_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
@@ -97,7 +97,7 @@ rescGrpInfo_t **rescGrpInfo)
 	  &tmpRescGrpInfo);
 	if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "_getRescInfo: resolveAndQueResc error for %s. status = %d",
+              "resolveRescGrp: resolveAndQueResc error for %s. status = %d",
 	      rescNameStr, status);
 	    freeGenQueryOut (&genQueryOut);
 	    return (status);
@@ -604,7 +604,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
 	if (status < 0) {
 	    rodsLog (LOG_NOTICE,
-              "getDataObjInfo: _getRescInfo error for %s, status = %d",
+              "getDataObjInfo: resolveResc error for %s, status = %d",
 	      tmpRescName, status);
 	    return (status);
 	}

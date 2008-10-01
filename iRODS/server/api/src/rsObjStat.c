@@ -524,7 +524,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         status = resolveResc (specColl->resource, &myDataObjInfo->rescInfo);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-              "specCollSubStat: _getRescInfo error for %s, status = %d",
+              "specCollSubStat: resolveResc error for %s, status = %d",
               specColl->resource, status);
 	    freeDataObjInfo (myDataObjInfo);
 	    *dataObjInfo = NULL;
