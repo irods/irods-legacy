@@ -5,6 +5,7 @@
 
 #include "genQuery.h"
 #include "icatHighLevelRoutines.h"
+#include "miscUtil.h"
 
 /* can be used for debug: */
 /* extern int printGenQI( genQueryInp_t *genQueryInp); */
