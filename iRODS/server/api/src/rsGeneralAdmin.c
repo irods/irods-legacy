@@ -160,6 +160,21 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
+       if (strcmp(generalAdminInp->arg1,"localzonename")==0) {
+	  /* run the acRenameLocalZone rule */
+	  char *args[2];
+	  memset((char*)&rei,0,sizeof(rei));
+	  rei.rsComm = rsComm;
+	  memset((char*)&rei,0,sizeof(rei));
+	  rei.rsComm = rsComm;
+	  rei.uoic = &rsComm->clientUser;
+	  rei.uoip = &rsComm->proxyUser;
+	  args[0]=generalAdminInp->arg2;
+	  args[1]=generalAdminInp->arg3;
+	  status = applyRuleArg("acRenameLocalZone", args, 2, &rei, 
+				NO_SAVE_REI);
+	  return(status);
+       }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
 	  status = chlModResc(rsComm, generalAdminInp->arg2, 
 			      generalAdminInp->arg3, generalAdminInp->arg4);
