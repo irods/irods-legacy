@@ -60,6 +60,7 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         accessPerm = ACCESS_READ_OBJECT;
     }
     /* query rcat for resource info and sort it */
+#if 0
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
 
     status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
@@ -77,6 +78,10 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
             return (SYS_INVALID_RESC_INPUT);
         }
     }
+#endif
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    if (status < 0) return status;
+
 
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
@@ -133,6 +138,7 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         }
     }
 
+#if 0
     rei.doi = dataObjInfoHead;
     status = applyRule ("acPreprocForDataObjOpen", NULL, &rei, NO_SAVE_REI);
 
@@ -146,6 +152,9 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     } else {
         dataObjInfoHead = rei.doi;
     }
+#endif
+    status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
+    if (status < 0) return status;
 
     if (destDataObjInfo != NULL) {
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 

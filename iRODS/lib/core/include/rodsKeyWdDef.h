@@ -69,6 +69,7 @@
 #define RBUDP_SEND_RATE_KW    	"rbudpSendRate"
 #define RBUDP_PACK_SIZE_KW    	"rbudpPackSize"
 #define ZONE_KW    		"zone"
+#define REMOTE_ZONE_OPR_KW    	"remoteZoneOpr"
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

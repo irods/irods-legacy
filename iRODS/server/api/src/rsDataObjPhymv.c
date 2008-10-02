@@ -10,6 +10,8 @@
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"
+#include "dataObjCreate.h"
+
 /* rsDataObjPhymv - The Api handler of the rcDataObjPhymv call - phymove
  * a data object from one resource to another.
  * Input -
@@ -43,6 +45,7 @@ transStat_t **transStat)
     }
 
     /* query rcat for resource info and sort it */
+#if 0
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
 
     status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
@@ -60,6 +63,9 @@ transStat_t **transStat)
             return (SYS_INVALID_RESC_INPUT);
         }
     }
+#endif
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    if (status < 0) return status;
 
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {

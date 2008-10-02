@@ -34,6 +34,9 @@ int
 dataCreate (rsComm_t *rsComm, int l1descInx);
 int
 l3Create (rsComm_t *rsComm, int l1descInx);
+int
+getRescGrpForCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rescGrpInfo_t **myRescGrpInfo);
 #else
 #define RS_DATA_OBJ_CREATE NULL
 #endif

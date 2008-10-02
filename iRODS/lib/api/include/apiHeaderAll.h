@@ -112,4 +112,5 @@
 #include "structFileBundle.h"
 #include "chkObjPermAndStat.h"
 #include "userAdmin.h"
+#include "getRemoteZoneResc.h"
 #endif	/* API_HEADER_ALL_H */

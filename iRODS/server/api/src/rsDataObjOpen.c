@@ -43,7 +43,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
     dataObjInfo_t *tmpDataObjInfo; 
     int l1descInx;
     int writeFlag;
-    ruleExecInfo_t rei;
 
     /* query rcat for dataObjInfo and sort it */
 
@@ -63,6 +62,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
         sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp->condInput,
          writeFlag);
 
+#if 0
         initReiWithDataObjInp (&rei, rsComm, dataObjInp);
 	rei.doi = dataObjInfoHead;
 
@@ -79,6 +79,9 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
         } else {
             dataObjInfoHead = rei.doi;
         }
+#endif
+        status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
+        if (status < 0) return status;
     }
 
     if (phyOpenFlag > 0 && writeFlag > 0) {
@@ -265,4 +268,27 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags)
     return (newL3descInx);
 }
 
+int
+applyPreprocRuleForOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead)
+{
+    int status;
+    ruleExecInfo_t rei;
 
+    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
+    rei.doi = *dataObjInfoHead;
+
+    status = applyRule ("acPreprocForDataObjOpen", NULL, &rei, NO_SAVE_REI);
+
+    if (status < 0) {
+        if (rei.status < 0) {
+            status = rei.status;
+        }
+        rodsLog (LOG_ERROR,
+         "applyPreprocRuleForOpen:acPreprocForDataObjOpen error for %s,stat=%d",
+          dataObjInp->objPath, status);
+    } else {
+        *dataObjInfoHead = rei.doi;
+    }
+    return (status);
+}

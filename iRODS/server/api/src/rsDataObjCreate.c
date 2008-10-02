@@ -90,6 +90,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
 
+#if 0
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
 
@@ -106,6 +107,9 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	    return (SYS_INVALID_RESC_INPUT);
 	}
     }
+#endif
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    if (status < 0) return status;
 
     rescCnt = getRescCnt (myRescGrpInfo);
 
@@ -366,5 +370,33 @@ l3Create (rsComm_t *rsComm, int l1descInx)
 	break;
     }
     return (l3descInx);
+}
+
+int
+getRescGrpForCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rescGrpInfo_t **myRescGrpInfo)
+{ 
+    int status;
+    ruleExecInfo_t rei;
+
+    /* query rcat for resource info and sort it */
+
+    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
+    status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
+
+    if (status < 0) {
+        if (rei.status < 0)
+            status = rei.status;
+        rodsLog (LOG_NOTICE,
+         "getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
+          dataObjInp->objPath, status);
+    } else {
+        *myRescGrpInfo = rei.rgi;
+        if (myRescGrpInfo == NULL) {
+            status = SYS_INVALID_RESC_INPUT;
+        }
+    }
+
+    return (status);
 }
 

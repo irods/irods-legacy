@@ -319,3 +319,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcChkObjPermAndStat.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsUserAdmin.o
 LIB_API_OBJS += $(libApiObjDir)/rcUserAdmin.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetRemoteZoneResc.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetRemoteZoneResc.o
