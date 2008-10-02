@@ -163,6 +163,10 @@ runCmd(0, "iadmin modzone $Zone2 name $Zone3");
 runCmd(2, "iadmin rmzone $Zone2");
 runCmd(0, "iadmin rmzone $Zone3");
 runCmd(2, "iadmin rmzone $myZone");
+runCmd(0, "yes | iadmin modzone $myZone name $Zone3");
+$ENV{'irodsZone'}=$Zone3;
+runCmd(0, "yes | iadmin modzone $Zone3 name $myZone");
+delete $ENV{'irodsZone'};
 
 # Make another user to test making user and for other tests
 runCmd(1, "iadmin rmuser $U2");
