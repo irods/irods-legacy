@@ -199,25 +199,43 @@ if ($doMainStep eq "yes") {
     close( IMETA_FILE );
 }
 
+$thisOS=`uname -s`;
+chomp($thisOS);
+
 printf("Enter y or yes if you want to run iadmin now:");
 my $answer = <STDIN>;
 chomp( $answer );	# remove trailing return
 if ($answer eq "yes" || $answer eq "y") {
-    runCmd (1, "iadmin -V < $iadminFile >& $iadminLog" );
+    if ($thisOS eq "SunOS" or $thisOS eq "AIX" or $thisOS eq "HP-UX") {
+	runCmd (1, "iadmin -V < $iadminFile > $iadminLog 2>&1" );
+    }
+    else {
+	runCmd (1, "iadmin -V < $iadminFile >& $iadminLog" );
+    }
 }
 
 printf("Enter y or yes if you want to run psql now:");
 my $answer = <STDIN>;
 chomp( $answer );	# remove trailing return
 if ($answer eq "yes" || $answer eq "y") {
-    runCmd (0, "$psql ICAT < $sqlFile >& $psqlLog");
+    if ($thisOS eq "SunOS" or $thisOS eq "AIX" or $thisOS eq "HP-UX") {
+	runCmd (0, "$psql ICAT < $sqlFile > $psqlLog 2>&1");
+    }
+    else {
+	runCmd (0, "$psql ICAT < $sqlFile >& $psqlLog");
+    }
 }
 
 printf("Enter y or yes if you run imeta now:");
 my $answer = <STDIN>;
 chomp( $answer );	# remove trailing return
 if ($answer eq "yes" || $answer eq "y") {
-    runCmd (0, "$imeta < $imetaFile >& $imetaLog");
+    if ($thisOS eq "SunOS" or $thisOS eq "AIX" or $thisOS eq "HP-UX") {
+	runCmd (0, "$imeta < $imetaFile > $imetaLog 2>&1");
+    }
+    else {
+	runCmd (0, "$imeta < $imetaFile >& $imetaLog");
+    }
 }
 
 # run a command
@@ -501,7 +519,7 @@ sub processLogFile($) {
 		   # make sure it's in the converting zone:
 		   if ($v_coll_zone ne $cv_srbZone) { $skipIt=1;}
 		   if ($skipIt==0) {
-		       print(IADMIN_FILE "mkdir $v_coll_name $v_coll_owner\n");
+		       print(IADMIN_FILE "mkdir '$v_coll_name' $v_coll_owner\n");
 		   }
 		}
 	    }
