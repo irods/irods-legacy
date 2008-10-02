@@ -9,7 +9,8 @@
 printHello||print_hello|nop
 ## 
 ##
-## These are sys admin rules for creating and deleting users
+## These are sys admin rules for creating and deleting users and renaming
+## the local zone.
 acCreateUser|$otherUserName == anonymous|msiCreateUser##msiCommit|msiRollback##nop
 acCreateUser||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
 acVacuum(*arg1)||delayExec(*arg1,msiVacuum,nop)|nop
@@ -24,6 +25,8 @@ acDeleteDefaultCollections||acDeleteUserZoneCollections|nop
 acDeleteUserZoneCollections||acDeleteCollByAdmin(/$rodsZoneProxy/home,$otherUserName)##acDeleteCollByAdmin(/$rodsZoneProxy/trash/home,$otherUserName)|nop##nop
 #acDeleteCollByAdmin||msiDeleteCollByAdmin($ARG[0],$ARG[1])|nop
 acDeleteCollByAdmin(*parColl,*childColl)||msiDeleteCollByAdmin(*parColl,*childColl)|nop
+#
+acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(/*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
 # 1) acSetRescSchemeForCreate - This is the preprossing rule for setting
