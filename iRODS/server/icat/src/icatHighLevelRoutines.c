@@ -2173,7 +2173,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
       if (strcmp(zoneName,localZone)==0) {
 	 int i;
 	 i = addRErrorMsg (&rsComm->rError, 0, 
-			   "It is not currently permitted to rename the local zone");
+			   "It is not valid to rename the local zone via chlModZone; iadmin should use acRenameLocalZone");
 	 return (CAT_INVALID_ARGUMENT);
       }
       cllBindVars[cllBindVarCount++]=optionValue;
@@ -2217,6 +2217,179 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
 	      status);
       return(status);
    }
+   return(0);
+}
+
+/* rename a collection */
+int chlRenameColl(rsComm_t *rsComm, char *oldCollName, char *newCollName) {
+   int status;
+   rodsLong_t status1;
+
+   /* See if the input path is a collection and the user owns it,
+      and, if so, get the collectionID */
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameColl SQL 1 ");
+
+   status1 = cmlCheckDir(oldCollName,
+			rsComm->clientUser.userName, 
+			ACCESS_OWN, 
+			&icss);
+
+   if (status1 < 0) {
+      return(status1);
+   }
+
+   /* call chlRenameObject to rename */
+   status = chlRenameObject(rsComm, status1, newCollName);
+   return(status);
+}
+
+
+/* rename the local zone */
+int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
+   int status;
+   char zoneId[MAX_NAME_LEN];
+   char myTime[50];
+   char commentStr[200];
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone");
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 1 ");
+   getLocalZone();
+
+   if (strcmp(localZone, oldZoneName) != 0) { /* not the local zone */
+      return(CAT_INVALID_ARGUMENT);
+   }
+
+   /* check that the new zone does not exist */
+   zoneId[0]='\0';
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 2 ");
+   status = cmlGetStringValueFromSql(
+	     "select zone_id from r_zone_main where zone_name=?",
+	     zoneId, MAX_NAME_LEN, newZoneName, "", &icss);
+   if (status != CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
+
+   getNowStr(myTime);
+
+   /* Audit */
+   /* Do this first, before the userName-zone is made invalid;
+      it will be rolledback if an error occurs */
+
+   snprintf(commentStr, 190, "renamed local zone %s to %s",
+	    oldZoneName, newZoneName);
+   status = cmlAudit3(AU_MOD_ZONE,  
+		      "0",
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
+		      commentStr,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRenameLocalZone cmlAudit3 failure %d",
+	      status);
+      return(status);
+   }
+
+   /* update coll_owner_zone in r_coll_main */
+   cllBindVars[cllBindVarCount++]=newZoneName;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=oldZoneName;
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 3 ");
+   status =  cmlExecuteNoAnswerSql(
+      "update r_coll_main set coll_owner_zone = ?, modify_ts=? where coll_owner_zone=?",
+      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRenameLocalZone cmlExecuteNoAnswerSql update failure %d",
+	      status);
+      return(status);
+   }
+
+   /* update data_owner_zone in r_data_main */
+   cllBindVars[cllBindVarCount++]=newZoneName;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=oldZoneName;
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 4 ");
+   status =  cmlExecuteNoAnswerSql(
+      "update r_data_main set data_owner_zone = ?, modify_ts=? where data_owner_zone=?",
+      &icss);
+   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      rodsLog(LOG_NOTICE,
+	      "chlRenameLocalZone cmlExecuteNoAnswerSql update failure %d",
+	      status);
+      return(status);
+   }
+
+   /* update zone_name in r_resc_main */
+   cllBindVars[cllBindVarCount++]=newZoneName;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=oldZoneName;
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 5 ");
+   status =  cmlExecuteNoAnswerSql(
+      "update r_resc_main set zone_name = ?, modify_ts=? where zone_name=?",
+      &icss);
+   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      rodsLog(LOG_NOTICE,
+	      "chlRenameLocalZone cmlExecuteNoAnswerSql update failure %d",
+	      status);
+      return(status);
+   }
+
+   /* update rule_owner_zone in r_rule_main */
+   cllBindVars[cllBindVarCount++]=newZoneName;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=oldZoneName;
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 6 ");
+   status =  cmlExecuteNoAnswerSql(
+      "update r_rule_main set rule_owner_zone=?, modify_ts=? where rule_owner_zone=?",
+      &icss);
+   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      rodsLog(LOG_NOTICE,
+	      "chlRenameLocalZone cmlExecuteNoAnswerSql update failure %d",
+	      status);
+      return(status);
+   }
+
+   /* update zone_name in r_user_main */
+   cllBindVars[cllBindVarCount++]=newZoneName;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=oldZoneName;
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 7 ");
+   status =  cmlExecuteNoAnswerSql(
+      "update r_user_main set zone_name=?, modify_ts=? where zone_name=?",
+      &icss);
+   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      rodsLog(LOG_NOTICE,
+	      "chlRenameLocalZone cmlExecuteNoAnswerSql update failure %d",
+	      status);
+      return(status);
+   }
+
+   /* update zone_name in r_zone_main */
+   cllBindVars[cllBindVarCount++]=newZoneName;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=oldZoneName;
+   if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 8 ");
+   status =  cmlExecuteNoAnswerSql(
+      "update r_zone_main set zone_name=?, modify_ts=? where zone_name=?",
+      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRenameLocalZone cmlExecuteNoAnswerSql update failure %d",
+	      status);
+      return(status);
+   }
+
    return(0);
 }
 
@@ -5019,6 +5192,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    char *cVal[3];
    int iVal[3];
    int pLen, newNameLen, cLen, len;
+   int isRootDir=0;
    char objIdString[MAX_NAME_LEN];
    char collIdString[MAX_NAME_LEN];
    char collNameTmp[MAX_NAME_LEN];
@@ -5164,6 +5338,12 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       if (pLen<=0 || cLen <=0) return(CAT_INVALID_ARGUMENT);  /* invalid 
             argument is not really right, but something is really wrong */
 
+      if (pLen==1) {
+	 if (strncmp(parentCollName, "/", 20) == 0) { /* just to be sure */
+	    isRootDir=1;  /* need to treat a little special below */
+	 }
+      }
+
       /* set any collection names that are under this collection to
 	 the new name, putting the string together from the the old upper
 	 part, newName string, and then (if any for each row) the
@@ -5177,6 +5357,9 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       len = strlen(collNameSlash);
       snprintf(collNameSlashLen, 10, "%d", len);
       snprintf(slashNewName, MAX_NAME_LEN, "/%s", newName);
+      if (isRootDir) {
+	 snprintf(slashNewName, MAX_NAME_LEN, "%s", newName);
+      }
       cllBindVars[cllBindVarCount++]=pLenStr;
       cllBindVars[cllBindVarCount++]=slashNewName;
       cllBindVars[cllBindVarCount++]=cLenStr;
@@ -5217,6 +5400,9 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       /* And now, update the row for this collection */
       getNowStr(myTime);
       snprintf(collNameTmp, MAX_NAME_LEN, "%s/%s", parentCollName, newName);
+      if (isRootDir) {
+	 snprintf(collNameTmp, MAX_NAME_LEN, "%s%s", parentCollName, newName);
+      }
       cllBindVars[cllBindVarCount++]=collNameTmp;
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=objIdString;
