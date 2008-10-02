@@ -611,11 +611,11 @@ doCommand(char *cmdToken[]) {
 	 char ttybuf[100];
 
 	 printf(
-     "If you modify the local zone name, you and other users will need to
-change your .irodsEnv files to use it, you may need to update
-irods.config and, if rules use the zone name, you'll need to update
-core.irb.  This command will update various tables with the new name 
-and rename the top-level collection.\n");
+		"If you modify the local zone name, you and other users will need to\n");
+	 printf("change your .irodsEnv files to use it, you may need to update\n");
+	 printf("irods.config and, if rules use the zone name, you'll need to update\n");
+	 printf("core.irb.  This command will update various tables with the new name\n");
+	 printf("and rename the top-level collection.\n");
 	 printf("Do you really want to modify the local zone name? (enter y or yes to do so):");
 	 fgets(ttybuf, 50, stdin);
 	 if (strcmp(ttybuf, "y\n") == 0 ||
