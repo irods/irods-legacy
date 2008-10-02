@@ -156,3 +156,27 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei) {
 #endif
   return(i);
 }
+
+int msiRenameLocalZone(msParam_t* oldName, msParam_t* newName,
+		       ruleExecInfo_t *rei) {
+   int status;
+   char *oldNameStr;
+   char *newNameStr;
+
+   oldNameStr = (char *) oldName->inOutStruct;
+   newNameStr = (char *) newName->inOutStruct;
+   status = chlRenameLocalZone(rei->rsComm, oldNameStr, newNameStr);
+   return(status);
+}
+
+int msiRenameCollection(msParam_t* oldName, msParam_t* newName,
+		       ruleExecInfo_t *rei) {
+   int status;
+   char *oldNameStr;
+   char *newNameStr;
+
+   oldNameStr = (char *) oldName->inOutStruct;
+   newNameStr = (char *) newName->inOutStruct;
+   status = chlRenameColl(rei->rsComm, oldNameStr, newNameStr);
+   return(status);
+}
