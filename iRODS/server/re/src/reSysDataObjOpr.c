@@ -492,26 +492,6 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-#if 0
-    /* stage the copy by replicating it */
-
-    status = _getRescInfo (rei->rsComm, cacheResc, &myRescGrpInfo);
-
-    if (status < 0) {
-	rodsLog (LOG_ERROR,
-	  "msiSysReplDataObj: cacheResc %s does not exit", cacheResc);
-        return (rei->status);
-    }
-
-    myDataObjInfo = malloc (sizeof (dataObjInfo_t));
-    memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
-
-    rei->status = _rsDataObjRepl (rei->rsComm, rei->doinp, dataObjInfoHead,
-      myRescGrpInfo, &transStat, myDataObjInfo);
-
-    freeAllRescGrpInfo (myRescGrpInfo);
-#endif
-
     myDataObjInfo = malloc (sizeof (dataObjInfo_t));
     memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
     memset (&transStat, 0, sizeof (transStat));
