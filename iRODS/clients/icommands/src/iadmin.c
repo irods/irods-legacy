@@ -606,8 +606,32 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
    if (strcmp(cmdToken[0],"modzone") == 0) {
-      generalAdmin("modify", "zone", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], "", "", "");
+      if (strcmp(myEnv.rodsZone, cmdToken[1])==0 &&
+	  strcmp(cmdToken[2], "name")==0)       {
+	 char ttybuf[100];
+
+	 printf(
+     "If you modify the local zone name, you and other users will need to
+change your .irodsEnv files to use it, you may need to update
+irods.config and, if rules use the zone name, you'll need to update
+core.irb.  This command will update various tables with the new name 
+and rename the top-level collection.\n");
+	 printf("Do you really want to modify the local zone name? (enter y or yes to do so):");
+	 fgets(ttybuf, 50, stdin);
+	 if (strcmp(ttybuf, "y\n") == 0 ||
+	     strcmp(ttybuf, "yes\n") == 0) {
+	    printf("OK, performing the local zone rename\n");
+	    generalAdmin("modify", "localzonename", cmdToken[1], cmdToken[3], 
+			 "", "", "", "");
+	 }
+	 else {
+	    printf("Local zone rename aborted\n");
+	 }
+      }
+      else {
+	 generalAdmin("modify", "zone", cmdToken[1], cmdToken[2], 
+		      cmdToken[3], "", "", "");
+      }
       return(0);
    }
    if (strcmp(cmdToken[0],"rmzone") == 0) {
@@ -917,8 +941,8 @@ void usageMain()
 " modresc Name [type, class, host, path, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
 " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
-" modZone Name [ name | conn | comment ] newValue  (modify zone)",
-" rmZone Name (remove zone)",
+" modzone Name [ name | conn | comment ] newValue  (modify zone)",
+" rmzone Name (remove zone)",
 " mkgroup Name (make group)",
 " rmgroup Name (remove group)",
 " atg groupName userName [userZone] (add to group - add a user to a group)",
@@ -1100,17 +1124,17 @@ usage(char *subOpt)
 ""};
 
    char *modzoneMsgs[]={
-" modZone Name [ name | conn | comment ] newValue  (modify zone)",
+" modzone Name [ name | conn | comment ] newValue  (modify zone)",
 "Modify values in a zone definition, either the name, conn (connection-info),",
 "or comment.  Connection-info is the DNS host string:port, for example:",
 "zuri.unc.edu:1247",
-"The name of the local zone cannot currently be changed as it would require",
-"many other changes to various tables and to user-environment and",
-"configuration files.",
+"The name of the local zone can be changed via some special processing and",
+"since it also requires some manual changes, iadmin will explain those and",
+"prompt for comfirmation in this case.",
 ""};
 
    char *rmzoneMsgs[]={
-" rmZone Name (remove zone)",
+" rmzone Name (remove zone)",
 "Remove a zone definition.",
 "Only remote zones can be removed.",
 ""};
