@@ -126,6 +126,10 @@ int msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
 	 ruleExecInfo_t *rei);
 int msiRdaCommit(ruleExecInfo_t *rei);
 int msiRdaRollback(ruleExecInfo_t *rei);
+int msiRenameLocalZone(msParam_t *oldName, msParam_t *newName,
+                       ruleExecInfo_t *rei);
+int msiRenameCollection(msParam_t *oldName, msParam_t *newName,
+                       ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
@@ -242,3 +246,5 @@ microsdef_t MicrosTable[] = {
   {"msiRdaNoResults",6,(funcPtr) msiRdaNoResults},
   {"msiRdaCommit",0,(funcPtr) msiRdaCommit},
   {"msiRdaRollback",0,(funcPtr) msiRdaRollback},
+  {"msiRenameLocalZone",2,(funcPtr) msiRenameLocalZone},
+  {"msiRenameCollection",2,(funcPtr) msiRenameCollection},
