@@ -41,7 +41,8 @@ $cv_irodsZone = "tempZone";   # Your iRODS zone name
 @cv_srb_userdomains=("demo");   # Used for user.domain situations
 
 # Special usernames to add
-@cv_special_users=("vidarch");  # Needed for sils instance
+@cv_special_users=("vidarch.sils");  # Needed for sils instance
+# if $useDomainWithUsername="0", above should be "vidarch".
 
 # These below are used for ingesting users.
 # Note that, by default, only users of type 'staff' are ingested.
@@ -53,7 +54,7 @@ $cv_irodsZone = "tempZone";   # Your iRODS zone name
 
 # This flag indicates if you want user names to be of the form
 # user#domain or just user.
-$useDomainWithUsername = "0"; # 0 no, 1 yes
+$useDomainWithUsername = "1"; # 0 no, 1 yes
 
 $SRB_BEGIN_DATE="1995-07-12"; # approximate date your SRB was installed;used to
                               # avoid some unneeded built-in items, etc.
@@ -329,7 +330,7 @@ sub convertUser($$)
     }
     if ($useDomainWithUsername) {
 #	$newUserName=$v_user_name . "#" . $v_user_domain;
-	$newUserName=$inUser. "#" . $inDomain;
+	$newUserName=$inUser. "." . $inDomain;
     }
     else {
 #	$newUserName=$v_user_name;
@@ -510,12 +511,12 @@ sub processLogFile($) {
 				      $v_coll_owner_domain);
 		   $v_coll_zone=$values[6];
 		   $skipIt=0;
-		   if ($v_coll_owner eq "srb")    { $skipIt=1; }
-		   if ($v_coll_owner eq "npaci")  { $skipIt=1; }
-		   if ($v_coll_owner eq "public") { $skipIt=1; }
-		   if ($v_coll_owner eq "sdsc")   { $skipIt=1; }
-		   if ($v_coll_owner eq "testuser")   { $skipIt=1; }
-		   if ($v_coll_owner eq "ticketuser")  { $skipIt=1; }
+		   if ($values[2] eq "srb")    { $skipIt=1; }
+		   if ($values[2] eq "npaci")  { $skipIt=1; }
+		   if ($values[2] eq "public") { $skipIt=1; }
+		   if ($values[2] eq "sdsc")   { $skipIt=1; }
+		   if ($values[2] eq "testuser")   { $skipIt=1; }
+		   if ($values[2] eq "ticketuser")  { $skipIt=1; }
 		   # make sure it's in the converting zone:
 		   if ($v_coll_zone ne $cv_srbZone) { $skipIt=1;}
 		   if ($skipIt==0) {
