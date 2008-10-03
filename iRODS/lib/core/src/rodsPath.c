@@ -603,15 +603,20 @@ rodsPathInp_t *rodsPathInp, int oprType)
 }
 
 int
-getLastPathElement (char *inPath, char *lastElement)
+getLastPathElement (char *inInPath, char *lastElement)
 {
     char mydir[MAX_NAME_LEN];
+	char inPath[MAX_NAME_LEN];
     int len;
 
-    if (inPath == NULL) {
+    if (inInPath == NULL) {
         *lastElement = '\0';
 	return (0);
     }
+	strcpy(inPath, inInPath);
+#ifdef windows_platform
+	iRODSNtPathForwardSlash(inPath);
+#endif
 
     
     splitPathByKey (inPath, mydir, lastElement, '/'); 
