@@ -20,8 +20,8 @@ extern "C" {
 
 void iRODSPathToNtPath(char *ntpath,const char *srbpath);
 int iRODSNtFileOpen(const char *filename,int oflag, int istextfile);
-void iRODSNTPathBackSlash(char *str);
-void iRODSNTPathForwardSlash(char *str);
+void iRODSNtPathBackSlash(char *str);
+void iRODSNtPathForwardSlash(char *str);
 FILE *iRODSNt_fopen(const char *filename, const char *mode);
 int iRODSNt_open(const char *filename,int oflag, int istextfile);
 int iRODSNt_bopen(const char *filename,int oflag, int pmode);
