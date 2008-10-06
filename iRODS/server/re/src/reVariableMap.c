@@ -1004,7 +1004,7 @@ getSetValFromRodsHostAddr(char *varMap, rodsHostAddr_t **inptr, char **varValue,
     i = getSetLeafValue(varValue,&(ptr->hostAddr), (void *) ptr->hostAddr , newVarValue,RE_STR);
     /* *varValue = ptr->hostAddr; */
   else  if (!strcmp(varName, "rodsZone") )
-    i = getSetLeafValue(varValue,&(ptr->rodsZone), (void *) ptr->rodsZone , newVarValue,RE_STR);
+    i = getSetLeafValue(varValue,&(ptr->zoneName), (void *) ptr->zoneName , newVarValue,RE_STR);
     /* *varValue = ptr->rodsZone; */
   else  if (!strcmp(varName, "portNum") )
     i = getSetLeafValue(varValue,&(ptr->portNum), (void *) ptr->portNum, newVarValue, RE_INT);

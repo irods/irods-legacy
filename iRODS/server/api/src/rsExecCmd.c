@@ -51,7 +51,7 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 	    snprintf (execCmdInp->cmdArgv, LONG_NAME_LEN, "%s %s",
 	      dataObjInfoHead->filePath, tmpArgv);
 	}
-	rstrcpy (addr.rodsZone, dataObjInfoHead->rescInfo->zoneName, 
+	rstrcpy (addr.zoneName, dataObjInfoHead->rescInfo->zoneName, 
 	  NAME_LEN);
 	rstrcpy (addr.hostAddr, dataObjInfoHead->rescInfo->rescLoc, 
 	  LONG_NAME_LEN);

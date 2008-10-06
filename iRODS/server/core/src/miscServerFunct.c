@@ -37,7 +37,7 @@ svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 	    reconnFlag = 0;
 	}
         rodsServerHost->conn = _rcConnect (rodsServerHost->hostName->name,
-          rodsServerHost->portNum,
+          ((zoneInfo_t *) rodsServerHost->zoneInfo)->portNum,
           rsComm->myEnv.rodsUserName, rsComm->myEnv.rodsZone,
           rsComm->clientUser.userName, rsComm->clientUser.rodsZone, &errMsg,
 	   rsComm->connectCnt, reconnFlag);

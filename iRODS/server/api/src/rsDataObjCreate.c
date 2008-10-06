@@ -86,7 +86,6 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int copiesNeeded;
     int failedCount = 0;
     int rescCnt;
-    ruleExecInfo_t rei;
 
     /* query rcat for resource info and sort it */
 

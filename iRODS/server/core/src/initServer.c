@@ -19,6 +19,7 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     int status;
     rodsServerHost_t *tmpRodsServerHost;
     char *myHostAddr;
+    char *myZoneName;
 
     /* check if host exist */
 
@@ -27,25 +28,32 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     if (strlen (myHostAddr) == 0) {
         return LOCAL_HOST;
     }
+    if (strlen (addr->zoneName) == 0) {
+	myZoneName = ZoneInfoHead->zoneName;
+    } else {
+	myZoneName = addr->zoneName;
+    }
 
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
 	hostName_t *tmpName;
-	tmpName = tmpRodsServerHost->hostName;
-	while (tmpName != NULL) {
-	    if (strcasecmp (tmpName->name, myHostAddr) == 0) {
-		/* a match */
-		*rodsServerHost = tmpRodsServerHost;
-		return (tmpRodsServerHost->localFlag);
+	zoneInfo_t *serverZoneInfo = (zoneInfo_t *) tmpRodsServerHost->zoneInfo;
+	if (strcmp (myZoneName, serverZoneInfo->zoneName) == 0) {
+	    tmpName = tmpRodsServerHost->hostName;
+	    while (tmpName != NULL) {
+	        if (strcasecmp (tmpName->name, myHostAddr) == 0) { 
+		    *rodsServerHost = tmpRodsServerHost;
+		    return (tmpRodsServerHost->localFlag);
+	        }
+	        tmpName = tmpName->next;
 	    }
-	    tmpName = tmpName->next;
 	}
 	tmpRodsServerHost = tmpRodsServerHost->next;
     }
 
     /* no match */ 
  
-    tmpRodsServerHost = mkServerHost (myHostAddr, addr->portNum);
+    tmpRodsServerHost = mkServerHost (myHostAddr, myZoneName);
 
     if (tmpRodsServerHost == NULL) {
 	rodsLog (LOG_ERROR,
@@ -85,7 +93,7 @@ rodsServerHost_t **rodsServerHost)
 }
 
 rodsServerHost_t *
-mkServerHost (char *myHostAddr, int portNum)
+mkServerHost (char *myHostAddr, char *zoneName)
 {
     rodsServerHost_t *tmpRodsServerHost;
     int status;
@@ -93,14 +101,17 @@ mkServerHost (char *myHostAddr, int portNum)
     tmpRodsServerHost = malloc (sizeof (rodsServerHost_t));
     memset (tmpRodsServerHost, 0, sizeof (rodsServerHost_t));
 
+#if 0
     if (portNum > 0) {
         tmpRodsServerHost->portNum = portNum;
     } else {
         tmpRodsServerHost->portNum = ServerHostHead->portNum;
     }
+#endif
     /* XXXXX need to lookup the zone table when availiable */
     status = queHostName (tmpRodsServerHost, myHostAddr, 0);
     if (status < 0) {
+	free (tmpRodsServerHost);
         return (NULL);
     }
 
@@ -110,13 +121,25 @@ mkServerHost (char *myHostAddr, int portNum)
 
     status = matchHostConfig (tmpRodsServerHost);
 
-    return (tmpRodsServerHost);
+    status = getZoneInfo (zoneName, 
+      (zoneInfo_t **) &tmpRodsServerHost->zoneInfo);
+
+    if (status < 0) {
+        free (tmpRodsServerHost);
+        return (NULL);
+    } else {
+        return (tmpRodsServerHost);
+    }
 }
 
 int
 initServerInfo (rsComm_t *rsComm)
 {
     int status;
+
+    /* que the local zone */
+
+    queZone (rsComm->myEnv.rodsZone, rsComm->myEnv.rodsPort, NULL, NULL);
 
     status = initHostConfigByFile (rsComm);
 
@@ -171,12 +194,12 @@ initLocalServerHost (rsComm_t *rsComm)
 {
     int status;
     char myHostName[MAX_NAME_LEN];
-    rodsEnv *myEnv = &rsComm->myEnv;
 
     LocalServerHost = ServerHostHead = malloc (sizeof (rodsServerHost_t));
     memset (ServerHostHead, 0, sizeof (rodsServerHost_t)); 
 
     LocalServerHost->localFlag = LOCAL_HOST;
+    LocalServerHost->zoneInfo = ZoneInfoHead;
 
     status = matchHostConfig (LocalServerHost);
 
@@ -204,9 +227,12 @@ initLocalServerHost (rsComm_t *rsComm)
 	status = 0;
     }
 
+#if 0
     if (myEnv != NULL) {
-        ServerHostHead->portNum = myEnv->rodsPort;
+        /* ServerHostHead->portNum = myEnv->rodsPort; */
+	ZoneInfoHead->portNum = myEnv->rodsPort;
     }
+#endif
 
     if (ProcessType == SERVER_PT) {
 	printServerHost (LocalServerHost);
@@ -233,7 +259,8 @@ printServerHost (rodsServerHost_t *myServerHost)
         tmpHostName = tmpHostName->next;
     }
 
-    fprintf (stderr, " Port Num: %d.\n\n", myServerHost->portNum);
+    fprintf (stderr, " Port Num: %d.\n\n", 
+      ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
 
     return (0);
 }
@@ -256,7 +283,7 @@ printZoneInfo ()
 	    fprintf (stderr, "Type: REMOTE_ICAT   "); 
 	}
         fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n", 
-	  tmpRodsServerHost->hostName->name, tmpRodsServerHost->portNum);
+	  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
 
 	/* print the slave */
         tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->slaveServerHost;
@@ -264,7 +291,7 @@ printZoneInfo ()
             fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
             fprintf (stderr, "Type: LOCAL_SLAVE_ICAT   ");
             fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n",
-              tmpRodsServerHost->hostName->name, tmpRodsServerHost->portNum);
+              tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
 	}
 
 	tmpZoneInfo = tmpZoneInfo->next;
@@ -615,13 +642,73 @@ rodsServerHost_t **rodsServerHost)
  */
 
 int
+getZoneInfo (char *rcatZoneHint, zoneInfo_t **myZoneInfo) 
+{
+    int status;
+    zoneInfo_t *tmpZoneInfo;
+    int zoneInput;
+    char zoneName[NAME_LEN];
+
+    if (rcatZoneHint == NULL || strlen (rcatZoneHint) == 0) {
+        zoneInput = 0;
+    } else {
+        zoneInput = 1;
+        getZoneNameFromHint (rcatZoneHint, zoneName, NAME_LEN);
+    }
+
+    *myZoneInfo = NULL;
+    tmpZoneInfo = ZoneInfoHead;
+    while (tmpZoneInfo != NULL) {
+        if (zoneInput == 0) {   /* assume local */
+            if (tmpZoneInfo->masterServerHost->rcatEnabled == LOCAL_ICAT) {
+                *myZoneInfo = tmpZoneInfo;
+            }
+        } else {        /* remote zone */
+            if (strcmp (zoneName, tmpZoneInfo->zoneName) == 0) {
+                *myZoneInfo = tmpZoneInfo;
+            }
+        }
+	if (*myZoneInfo != NULL) return 0;
+        tmpZoneInfo = tmpZoneInfo->next;
+    }
+
+    if (zoneInput == 0) {
+        rodsLog (LOG_ERROR,
+          "getRcatHost: No local Rcat");
+        return (SYS_INVALID_ZONE_NAME);
+    } else {
+        rodsLog (LOG_DEBUG,
+          "getZoneInfo: Invalid zone name from hint %s", rcatZoneHint);
+	status = getZoneInfo (NULL, myZoneInfo);
+        if (status < 0) {
+            return (SYS_INVALID_ZONE_NAME);
+        } else {
+            return (0);
+        }
+    }
+}
+
+int
 getRcatHost (int rcatType, char *rcatZoneHint,  
 rodsServerHost_t **rodsServerHost)
 {
     int status;
-    rodsServerHost_t *tmpRodsServerHost;
-    zoneInfo_t *tmpZoneInfo;
     zoneInfo_t *myZoneInfo = NULL;
+
+    status = getZoneInfo (rcatZoneHint, &myZoneInfo);
+    if (status < 0) return status;
+
+    if (rcatType == MASTER_RCAT ||
+      myZoneInfo->slaveServerHost == NULL) {
+        *rodsServerHost = myZoneInfo->masterServerHost;
+        return (myZoneInfo->masterServerHost->localFlag);
+    } else {
+        *rodsServerHost = myZoneInfo->slaveServerHost;
+        return (myZoneInfo->slaveServerHost->localFlag);
+    }
+
+#if 0
+    zoneInfo_t *tmpZoneInfo;
     int zoneInput;
     char zoneName[NAME_LEN];
  
@@ -673,6 +760,7 @@ rodsServerHost_t **rodsServerHost)
 	    return (tmpRodsServerHost->localFlag);
 	}
     }
+#endif
 }
 
 int
@@ -758,14 +846,27 @@ initZone (rsComm_t *rsComm)
     tmpRodsServerHost = ServerHostHead;
     while (tmpRodsServerHost != NULL) {
         if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
+	    tmpRodsServerHost->zoneInfo = ZoneInfoHead;
             masterServerHost = tmpRodsServerHost;
         } else if (tmpRodsServerHost->rcatEnabled == LOCAL_SLAVE_ICAT) {
+	    tmpRodsServerHost->zoneInfo = ZoneInfoHead;
             slaveServerHost = tmpRodsServerHost;
         }
         tmpRodsServerHost = tmpRodsServerHost->next;
     }
-    /* XXXXX assume zone in myEnv */
-    queZone (myEnv->rodsZone, masterServerHost, slaveServerHost);
+    ZoneInfoHead->masterServerHost = masterServerHost;
+    ZoneInfoHead->slaveServerHost = slaveServerHost;
+    /* queZone (myEnv->rodsZone, masterServerHost, slaveServerHost); */
+
+#if 0
+    /* initialize all hosts to local zone */
+
+    tmpRodsServerHost = ServerHostHead;
+    while (tmpRodsServerHost != NULL) {
+	tmpRodsServerHost->zoneInfo = ZoneInfoHead;
+        tmpRodsServerHost = tmpRodsServerHost->next;
+    }
+#endif
 
     memset (&genQueryInp, 0, sizeof (genQueryInp));
     addInxIval (&genQueryInp.selectInp, COL_ZONE_NAME, 1);
@@ -831,7 +932,7 @@ initZone (rsComm_t *rsComm)
 	/* assume address:port */
 	if (splitPathByKey (tmpZoneConn, addr.hostAddr, port, ':') < 0) {
             rstrcpy (addr.hostAddr, tmpZoneConn, LONG_NAME_LEN);
-	    addr.portNum = 0;
+	    addr.portNum = ZoneInfoHead->portNum;
 	} else {
 	    addr.portNum = atoi (port);
 	}
@@ -842,7 +943,7 @@ initZone (rsComm_t *rsComm)
                addr.hostAddr);
 	    return (status);
 	}
-        queZone (tmpZoneName, tmpRodsServerHost, NULL);
+        queZone (tmpZoneName, addr.portNum, tmpRodsServerHost, NULL);
     }
 
     freeGenQueryOut (&genQueryOut);
@@ -851,7 +952,7 @@ initZone (rsComm_t *rsComm)
 }
 
 int
-queZone (char *zoneName, rodsServerHost_t *masterServerHost,
+queZone (char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
 rodsServerHost_t *slaveServerHost) 
 {
     zoneInfo_t *tmpZoneInfo, *lastZoneInfo;
@@ -864,6 +965,19 @@ rodsServerHost_t *slaveServerHost)
     rstrcpy (myZoneInfo->zoneName, zoneName, NAME_LEN);
     myZoneInfo->masterServerHost = masterServerHost;
     myZoneInfo->slaveServerHost = slaveServerHost;
+
+    if (portNum <= 0) {
+	if (ZoneInfoHead != NULL) {
+	    myZoneInfo->portNum = ZoneInfoHead->portNum; 
+	} else {
+            rodsLog (LOG_ERROR,
+              "queZone:  Bad input portNum %d for %s", portNum, zoneName);
+            free (myZoneInfo);
+            return (SYS_INVALID_SERVER_HOST);
+        }
+    } else {
+	myZoneInfo->portNum = portNum;
+    }
 
     /* queue it */
 
@@ -881,7 +995,7 @@ rodsServerHost_t *slaveServerHost)
     myZoneInfo->next = NULL;
 
     if (masterServerHost == NULL) {
-        rodsLog (LOG_ERROR,
+        rodsLog (LOG_DEBUG,
           "queZone:  masterServerHost for %s is NULL", zoneName);
         return (SYS_INVALID_SERVER_HOST);
     } else {
@@ -1044,7 +1158,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 	 * need to do so */
 	memset (&addr, 0, sizeof (addr));
 	rstrcpy (addr.hostAddr, tmpRescLoc, LONG_NAME_LEN);
-	rstrcpy (addr.rodsZone, tmpZoneName, NAME_LEN);
+	rstrcpy (addr.zoneName, tmpZoneName, NAME_LEN);
 	status = resolveHost (&addr, &tmpRodsServerHost);
 	if (status < 0) {
 	    rodsLog (LOG_NOTICE,
@@ -1315,6 +1429,8 @@ initHostConfigByFile (rsComm_t *rsComm)
 		/* first host */
 		tmpRodsServerHost = malloc (sizeof (rodsServerHost_t));
                 memset (tmpRodsServerHost, 0, sizeof (rodsServerHost_t));
+		/* local zone */
+		tmpRodsServerHost->zoneInfo = ZoneInfoHead;
 		status = queRodsServerHost (&HostConfigHead, tmpRodsServerHost);
 
 	    }

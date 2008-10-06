@@ -63,16 +63,17 @@ typedef struct hostName {
 
 typedef struct rodsServerHost {
     hostName_t *hostName;
-    int portNum;
     rcComm_t *conn;
     int rcatEnabled;
     int localFlag;
     int status;
+    void *zoneInfo;
     struct rodsServerHost *next;
 } rodsServerHost_t;
 
 typedef struct zoneInfo {
     char zoneName[NAME_LEN];
+    int portNum;
     rodsServerHost_t *masterServerHost;
     rodsServerHost_t *slaveServerHost;
     struct zoneInfo *next;
@@ -104,14 +105,14 @@ getConfigDir();
 char *
 getLogDir();
 rodsServerHost_t *
-mkServerHost (char *myHostAddr, int portNum);
+mkServerHost (char *myHostAddr, char *zoneName);
 int
 getRcatHost (int rcatType, char *rcatZoneHint,  
 rodsServerHost_t **rodsServerHost);
 int
 initZone (rsComm_t *rsComm);
 int
-queZone (char *zoneName, rodsServerHost_t *masterServerHost,
+queZone (char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
 rodsServerHost_t *slaveServerHost);
 int
 initResc (rsComm_t *rsComm);
@@ -163,5 +164,6 @@ int
 initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack);
 int
 getLocalZoneInfo (zoneInfo_t **outZoneInfo);
-
+int
+getZoneInfo (char *rcatZoneHint, zoneInfo_t **myZoneInfo);
 #endif	/* INIT_SERVER_H */
