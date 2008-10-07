@@ -31,6 +31,7 @@ $D3D="direct003/subAD";
 $D3E="direct003/subE";
 
 $U2="u2";
+$U3="u3";
 $U1="rods";
 $Resc="demoResc";
 $Resc2="Resc2";
@@ -157,6 +158,10 @@ runCmd(0, "iadmin rt user_type rodstest");
 # Zone tests
 runCmd(0, "iadmin mkzone $Zone2 remote host:1234 comment");
 runCmd(2, "iadmin mkzone $Zone2 remote host:1234 comment");
+runCmd(0, "iadmin mkuser $U3#$Zone2 rodsuser");
+runCmd(0, "iadmin lu $U3#$Zone2");
+runCmd(0, "iadmin luz $Zone2");
+runCmd(0, "iadmin rmuser $U3#$Zone2");
 runCmd(0, "iadmin modzone $Zone2 conn host2.foo:435");
 runCmd(0, "iadmin modzone $Zone2 comment 'another comment'");
 runCmd(0, "iadmin modzone $Zone2 name $Zone3");
