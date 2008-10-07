@@ -86,6 +86,7 @@ int cmlGetIntegerValueFromSql (char *sql,
 			    char *bindVar2,
                             char *bindVar3,
 			    char *bindVar4,
+			    char *bindVar5,
 			    icatSessionStruct *icss);
 
 int cmlGetIntegerValueFromSqlV3 (char *sql, 
@@ -141,6 +142,7 @@ int cmlGetOneRowFromSqlBV (char *sql,
                    char *bindVar2,
                    char *bindVar3,
                    char *bindVar4,
+                   char *bindVar5,
                    icatSessionStruct *icss);
 
 int cmlGetOneRowFromSql (char *sql,
@@ -153,23 +155,24 @@ rodsLong_t cmlGetNextSeqVal(icatSessionStruct *icss);
 
 int cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss);
 
-rodsLong_t cmlCheckDir( char *dirName, char *userName, char *accessLevel,
-		 icatSessionStruct *icss);
+rodsLong_t cmlCheckDir( char *dirName, char *userName, char *userZone, 
+			char *accessLevel, icatSessionStruct *icss);
 
-rodsLong_t cmlCheckDirId( char *dirId, char *userName, char *accessLevel,
-		 icatSessionStruct *icss);
+rodsLong_t cmlCheckDirId( char *dirId, char *userName, char *userZone,
+			  char *accessLevel, icatSessionStruct *icss);
 
-rodsLong_t cmlCheckDirOwn( char *dirName, char *userName,
+rodsLong_t cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
 			   icatSessionStruct *icss);
 
 int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName, 
 		       char *accessLevel, icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
-                     char *accessLevel, icatSessionStruct *icss);
+				char *userZone,
+				char *accessLevel, icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
-                        icatSessionStruct *icss);
+			       char *userZone, icatSessionStruct *icss);
 
 int cmlDebug(int mode);
 
