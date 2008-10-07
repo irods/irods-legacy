@@ -20,6 +20,8 @@
 int debug=0;
 int veryVerbose=0;
 
+char localZone[BIG_STR]="";
+
 rcComm_t *Conn;
 rodsEnv myEnv;
 
@@ -204,6 +206,45 @@ showZone(char *zone)
    return (doSimpleQuery(simpleQueryInp));
 }
 
+int 
+getLocalZone() {
+   int status, i;
+   simpleQueryInp_t simpleQueryInp;
+   simpleQueryOut_t *simpleQueryOut;
+   if (localZone[0]=='\0') {
+      memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
+      simpleQueryInp.form = 1;
+      simpleQueryInp.sql =
+	 "select zone_name from R_ZONE_MAIN where zone_type_name=?";
+      simpleQueryInp.arg1 = "local";
+      simpleQueryInp.maxBufSize = 1024;
+      status = rcSimpleQuery(Conn, &simpleQueryInp, &simpleQueryOut);
+      lastCommandStatus = status;
+      if (status < 0) {
+	 char *myName;
+	 char *mySubName;
+	 myName = rodsErrorName(status, &mySubName);
+	 rodsLog (LOG_ERROR, "rcSimpleQuery failed with error %d %s %s",
+	       status, myName, mySubName);
+	 printf("Error getting local zone\n");
+	 return(status);
+      }
+      strncpy(localZone,simpleQueryOut->outBuf, BIG_STR);
+      i = strlen(localZone);
+      for (;i>1;i--) {
+	 if (localZone[i]=='\n') {
+	    localZone[i]='\0';
+	    if (localZone[i-1]==' ') {
+	       localZone[i-1]='\0';
+	    }
+	    break;
+	 }
+      }
+   }
+   return(0);
+}
+  
+
 int
 showGroup(char *group) 
 {
@@ -294,6 +335,29 @@ showUser(char *user)
    else {
       simpleQueryInp.form = 1;
       simpleQueryInp.sql = "select user_name from r_user_main where user_type_name != 'rodsgroup'";
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   return (doSimpleQuery(simpleQueryInp));
+}
+
+int
+showUserOfZone(char *zone, char *user)
+{
+   simpleQueryInp_t simpleQueryInp;
+
+   memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
+   simpleQueryInp.control = 0;
+   if (*user!='\0') {
+      simpleQueryInp.form = 2;
+      simpleQueryInp.sql = "select * from r_user_main where user_name=? and zone_name=?";
+      simpleQueryInp.arg1 = user;
+      simpleQueryInp.arg2 = zone;
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   else {
+      simpleQueryInp.form = 1;
+      simpleQueryInp.sql = "select user_name from r_user_main where zone_name=? and user_type_name != 'rodsgroup'";
+      simpleQueryInp.arg1 = zone;
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -490,7 +554,20 @@ doCommand(char *cmdToken[]) {
       return(-1);
    }
    if (strcmp(cmdToken[0],"lu") == 0) {
-      showUser(cmdToken[1]);
+      char userName[NAME_LEN];
+      char zoneName[NAME_LEN];
+      int status;
+      status = parseUserName(cmdToken[1], userName, zoneName);
+      if (zoneName[0]!='\0') {
+	 showUserOfZone(zoneName, userName);
+      }
+      else {
+	 showUser(cmdToken[1]);
+      }
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"luz") == 0) {
+      showUserOfZone(cmdToken[1],cmdToken[2]);
       return(0);
    }
    if (strcmp(cmdToken[0],"lt") == 0) {
@@ -531,19 +608,25 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
    if (strcmp(cmdToken[0],"mkuser") == 0) {
-      /*
       int status;
-      No more, at least for now:
       char userName[NAME_LEN];
       char zoneName[NAME_LEN];
       status = parseUserName(cmdToken[1], userName, zoneName);
       if (status) {
 	 printf("Invalid user name format");
+	 return( USER_INVALID_USERNAME_FORMAT);
+      }
+      status = getLocalZone();
+      if (status) return(status);
+      if (strcmp(zoneName, localZone)==0) {
+	 printf("Invalid format, the #zone field is the local zone\n");
+	 printf("The #zone should only be used for remote-zone users\n");
+	 lastCommandStatus = USER_INVALID_USERNAME_FORMAT;
 	 return(0);
       }
-      */
-      generalAdmin("add", "user", cmdToken[1], cmdToken[2], 
-      		   cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+      generalAdmin("add", "user", cmdToken[1], cmdToken[2], "",
+      		   cmdToken[3], cmdToken[4], cmdToken[5]);  /* "" is unused
+		       zoneName as that's part of the username now */
       return(0);
    }
    if (strcmp(cmdToken[0],"moduser") == 0) {
@@ -690,12 +773,13 @@ doCommand(char *cmdToken[]) {
       char userName[NAME_LEN];
       char zoneName[NAME_LEN];
       status = parseUserName(cmdToken[1], userName, zoneName);
+      /* just check for format */
       if (status) {
 	 printf("Invalid user name format");
 	 return(0);
       }
-      generalAdmin("rm", "user", userName, zoneName, 
-	 cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5]); 
+      generalAdmin("rm", "user", cmdToken[1], 
+	 cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]); 
       return(0);
    }
    if (strcmp(cmdToken[0],"at") == 0) {
@@ -932,7 +1016,7 @@ void usageMain()
 " lgd name  (list group details)",
 " lrg [name] (list resource group info)",
 " lf DataId (list file details; DataId is the number (from ls))",
-" mkuser Name Type [zone] [DN] (make user)",
+" mkuser Name[#Zone] Type [DN] (make user)",
 " moduser Name [ type | zone | DN | comment | info | password ] newValue",
 " rmuser Name (remove user, where userName: name[@department][#zone])",
 " mkdir Name [username] (make directory(collection))",
@@ -967,9 +1051,17 @@ usage(char *subOpt)
    char *luMsgs[]={
 "lu [name] (list user info; details if name entered)",
 "list user information.  ",
-"Just 'lu' will briefly list currently defined local users.",
+"Just 'lu' will briefly list currently defined users.",
 "If you include a user name, more detailed information is provided.",
-"Also see the iuserinfo command.",
+"Usernames can include the zone preceeded by #, for example rods#tempZone.",
+"Also see the luz and lz and the iuserinfo command.",
+""};
+   char *luzMsgs[]={
+"luz Zone [User] (list user info for a Zone; details if name entered)",
+"list user information for users of a particular Zone.  ",
+"Just 'luz Zonename' will briefly list currently defined users of that Zone.",
+"If you include a user name, more detailed information is provided.",
+"Also see the lu and lz commands.",
 ""};
    char *ltMsgs[]={
 "lt [name] [subname]",
@@ -1022,12 +1114,12 @@ usage(char *subOpt)
 
 ""};
    char *mkuserMsgs[]={
-" mkuser Name Type [Zone] [DN] (make user)",
+" mkuser Name[#Zone] Type [DN] (make user)",
 "Create a new iRODS user in the ICAT database",
 " ",
 "Name is the user name to create",
 "Type is the user type (see 'lt user_type' for a list)",
-"Zone is the user's zone (optional for local zone users)",
+"Zone is the user's zone (for remote-zone users)",
 "DN is the Distinguished Name for GSI authentication (optional)",
 " ",
 "Tip: Use moduser to set a password, DN or other attributes of the user account.",
@@ -1073,7 +1165,7 @@ usage(char *subOpt)
 ""};
    char *rmuserMsgs[]={
 " rmuser Name (remove user, where userName: name[@department][#zone])",
-" Remove an irods.",
+" Remove an irods user.",
 ""};
 
    char *mkdirMsgs[]={
@@ -1221,7 +1313,7 @@ usage(char *subOpt)
       ""};
    */
 
-   char *subCmds[]={"lu", "lt", "lr", "ls", "lz",
+   char *subCmds[]={"lu", "luz", "lt", "lr", "ls", "lz",
 		    "lg", "lgd", "lrg", "lf", "mkuser",
 		    "moduser", "rmuser", "mkdir", "rmdir", "mkresc",
 		    "modresc", "rmresc", 
@@ -1231,7 +1323,7 @@ usage(char *subOpt)
 		    "pv", "ctime", "help", "h",
 		    ""};
 
-   char **pMsgs[]={ luMsgs, ltMsgs, lrMsgs, lsMsgs, lzMsgs, 
+   char **pMsgs[]={ luMsgs, luzMsgs, ltMsgs, lrMsgs, lsMsgs, lzMsgs, 
 		    lgMsgs, lgdMsgs, lrgMsgs, lfMsgs, mkuserMsgs, 
 		    moduserMsgs, rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs, 
 		    modrescMsgs, rmrescMsgs, 
