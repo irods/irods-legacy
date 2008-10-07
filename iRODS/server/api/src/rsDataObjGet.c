@@ -13,15 +13,26 @@
 #include "rsApiHandler.h"
 #include "objMetaOpr.h"
 #include "subStructFileGet.h"
+#include "getRemoteZoneResc.h"
 
 int
 rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
 {
     int status;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
-    status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
-      dataObjOutBBuf, BRANCH_MSG);
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      REMOTE_OPEN);
+
+    if (remoteFlag == LOCAL_HOST) {
+        status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
+          dataObjOutBBuf, BRANCH_MSG);
+    } else {
+	status = _rcDataObjGet (rodsServerHost->conn, dataObjInp, portalOprOut,
+	  dataObjOutBBuf);
+    }
 
     return (status);
 }
@@ -36,6 +47,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
     char *chksumStr = NULL;
     int retval;
     dataObjCloseInp_t dataObjCloseInp;
+
 
     /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
     l1descInx = _rsDataObjOpen (rsComm, dataObjInp, PHYOPEN_BY_SIZE);

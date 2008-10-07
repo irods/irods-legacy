@@ -166,4 +166,10 @@ int
 getLocalZoneInfo (zoneInfo_t **outZoneInfo);
 int
 getZoneInfo (char *rcatZoneHint, zoneInfo_t **myZoneInfo);
+int
+getAndConnRemoteZone (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rodsServerHost_t **rodsServerHost, char *remotZoneOpr);
+int
+getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rodsServerHost_t **rodsServerHost, char *remotZoneOpr);
 #endif	/* INIT_SERVER_H */
