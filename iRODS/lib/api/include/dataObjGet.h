@@ -61,6 +61,10 @@ extern "C" {
 int
 rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath);
 
+int
+_rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp,
+portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf);
+
 #ifdef  __cplusplus
 }
 #endif
