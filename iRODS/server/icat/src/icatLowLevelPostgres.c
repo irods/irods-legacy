@@ -786,6 +786,18 @@ cllExecSqlWithResultBV(icatSessionStruct *icss, int *stmtNum, char *sql,
 	    return(-1);
 	 }
       }
+      if (bindVar5 != 0 && *bindVar5 != '\0') {
+	 stat = SQLBindParameter(hstmt, 5, SQL_PARAM_INPUT, SQL_C_CHAR,
+				 SQL_C_CHAR, 0, 0, bindVar5, 0, 0);
+	 snprintf(tmpStr, TMP_STR_LEN, 
+		   "bindVar5=%s", bindVar5);
+	 rodsLogSql(tmpStr);
+	 if (stat != SQL_SUCCESS) {
+	    rodsLog(LOG_ERROR, "cllExecSqlNoResult: SQLBindParameter failed: %d",
+		    stat);
+	    return(-1);
+	 }
+      }
       rodsLogSql(sql);
       stat = SQLExecute(hstmt);
    }

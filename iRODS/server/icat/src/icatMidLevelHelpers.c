@@ -294,7 +294,7 @@ int cmlGetUserIdUnused( char *userName, icatSessionStruct *icss) {
 
    snprintf(tsql, MAX_SQL_SIZE, 
 	    "select user_id from R_USER_MAIN where user_name = ?");
-   status = cmlGetIntegerValueFromSql (tsql, &iVal, userName, 0, 0, 0, icss);
+   status = cmlGetIntegerValueFromSql (tsql, &iVal, userName, 0, 0, 0, 0,icss);
    if (status == 0) return(iVal);
 
    /* need to cache a few and skip the sql if found */

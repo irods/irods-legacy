@@ -96,12 +96,14 @@ int cmlGetOneRowFromSqlBV (char *sql,
 		   char *bindVar2,
 		   char *bindVar3,
 		   char *bindVar4,
+		   char *bindVar5,
 		   icatSessionStruct *icss)
 {
     int i,j, stmtNum, ii;
     
     i = cllExecSqlWithResultBV(icss, &stmtNum, sql,
-				 bindVar1,bindVar2,bindVar3,bindVar4,0,0);
+			       bindVar1,bindVar2,bindVar3,bindVar4,
+			       bindVar5,0);
     if (i != 0) {
       if (i <= CAT_ENV_ERR) return(i); /* already an iRODS error code */
       return (CAT_SQL_ERR);
@@ -341,7 +343,7 @@ int cmlGetStringValueFromSql (char *sql,
     iVals[0]=cValSize;
 
     i = cmlGetOneRowFromSqlBV (sql, cVals, iVals, 1, 
-			       bindVar1, bindVar2, 0, 0, icss);
+			       bindVar1, bindVar2, 0, 0, 0, icss);
     if (i == 1)
       return(0);
     else
@@ -360,7 +362,7 @@ int cmlGetStringValuesFromSql (char *sql,
     int i;
 
     i = cmlGetOneRowFromSqlBV (sql, cVal, cValSize, numberOfStringsToGet,
-			       bindVar1, bindVar2, 0, 0, icss);
+			       bindVar1, bindVar2, 0, 0, 0, icss);
     if (i == numberOfStringsToGet)
       return(0);
     else
@@ -422,6 +424,7 @@ int cmlGetIntegerValueFromSql (char *sql,
 			       char *bindVar2,
 			       char *bindVar3,
 			       char *bindVar4,
+			       char *bindVar5,
 			       icatSessionStruct *icss)
 {
   int i, cValSize;
@@ -432,7 +435,8 @@ int cmlGetIntegerValueFromSql (char *sql,
   cValSize = MAX_INTEGER_SIZE;
 
   i = cmlGetOneRowFromSqlBV (sql, cVal, &cValSize, 1, 
-			   bindVar1, bindVar2, bindVar3, bindVar4, icss);
+			     bindVar1, bindVar2, bindVar3, bindVar4, 
+			     bindVar5, icss);
   if (i == 1) {
      if (*cVal[0]=='\0') {
 	return(CAT_NO_ROWS_FOUND);
@@ -475,7 +479,7 @@ int cmlCheckNameToken(char *nameSpace, char *tokenName, icatSessionStruct *icss)
   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckNameToken SQL 1 ");
   status = cmlGetIntegerValueFromSql (
   "select token_id from  R_TOKN_MAIN where token_namespace=? and token_name=?",
-      &iVal, nameSpace, tokenName, 0, 0, icss);
+      &iVal, nameSpace, tokenName, 0, 0, 0, icss);
   return(status);
 
 }
@@ -534,7 +538,7 @@ cmlGetNextSeqVal(icatSessionStruct *icss) {
    snprintf(sql, STR_LEN, "select %s", nextStr);
 #endif
 
-   status = cmlGetIntegerValueFromSql (sql, &iVal, 0, 0, 0, 0, icss);
+   status = cmlGetIntegerValueFromSql (sql, &iVal, 0, 0, 0, 0, 0, icss);
    if (status < 0) {
       rodsLog(LOG_NOTICE, 
 	      "cmlGetNextSeqVal cmlGetIntegerValueFromSql failure %d", status);
@@ -612,7 +616,7 @@ int cmlTest( icatSessionStruct *icss) {
   Return code is either an iRODS error code (< 0) or the collectionId.
 */
 rodsLong_t
-cmlCheckDir( char *dirName, char *userName, char *accessLevel,
+cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
 		 icatSessionStruct *icss)
 {
    int status;
@@ -621,8 +625,8 @@ cmlCheckDir( char *dirName, char *userName, char *accessLevel,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDir SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-  	        "select coll_id from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_name=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-	      &iVal, dirName, userName, accessLevel, 0, icss);
+  	        "select coll_id from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+	      &iVal, dirName, userName, userZone, accessLevel, 0, icss);
    if (status) { 
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
@@ -631,7 +635,7 @@ cmlCheckDir( char *dirName, char *userName, char *accessLevel,
 
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from R_COLL_MAIN where coll_name=?",
-		 &iVal, dirName, 0, 0, 0, icss);
+		 &iVal, dirName, 0, 0, 0, 0, icss);
       if (status) {
 	 return(CAT_UNKNOWN_COLLECTION);
       }
@@ -647,8 +651,8 @@ cmlCheckDir( char *dirName, char *userName, char *accessLevel,
   Return code is either an iRODS error code (< 0) or the collectionId.
 */
 rodsLong_t
-cmlCheckDirId( char *dirId, char *userName, char *accessLevel,
-		 icatSessionStruct *icss)
+cmlCheckDirId( char *dirId, char *userName, char *userZone, 
+	       char *accessLevel, icatSessionStruct *icss)
 {
    int status;
    rodsLong_t iVal;
@@ -656,8 +660,8 @@ cmlCheckDirId( char *dirId, char *userName, char *accessLevel,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirId SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-  	        "select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-	      &iVal, userName, dirId, accessLevel, 0, icss);
+  	        "select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+	      &iVal, userName, userZone, dirId, accessLevel, 0, icss);
    if (status) { 
       /* There was an error, so do another sql to see which 
          of the two likely cases is problem. */
@@ -666,7 +670,7 @@ cmlCheckDirId( char *dirId, char *userName, char *accessLevel,
 
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from R_COLL_MAIN where coll_id=?",
-		 &iVal, dirId, 0, 0, 0, icss);
+		 &iVal, dirId, 0, 0, 0, 0, icss);
       if (status) {
 	 return(CAT_UNKNOWN_COLLECTION);
       }
@@ -680,7 +684,7 @@ cmlCheckDirId( char *dirId, char *userName, char *accessLevel,
   Check that a collection exists and user owns it
 */
 rodsLong_t
-cmlCheckDirOwn( char *dirName, char *userName, 
+cmlCheckDirOwn( char *dirName, char *userName, char *userZone,
 			icatSessionStruct *icss)
 {
    int status; 
@@ -689,8 +693,8 @@ cmlCheckDirOwn( char *dirName, char *userName,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirOwn SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-	    "select coll_id from R_COLL_MAIN where coll_name=? and coll_owner_name=?",
-	    &iVal, dirName, userName, 0, 0, icss);
+	    "select coll_id from R_COLL_MAIN where coll_name=? and coll_owner_name=? and coll_owner_zone=?",
+	    &iVal, dirName, userName, userZone, 0, 0, icss);
    if (status < 0) return(status);
    return(iVal);
 }
@@ -702,7 +706,8 @@ cmlCheckDirOwn( char *dirName, char *userName,
   Return code is either an iRODS error code (< 0) or the dataId.
 */
 rodsLong_t
-cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName, 
+cmlCheckDataObjOnly( char *dirName, char *dataName, 
+		     char *userName, char *userZone,  
 		     char *accessLevel, icatSessionStruct *icss)
 {
    int status;
@@ -711,8 +716,9 @@ cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-  	        "select data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
-		 &iVal, dataName, dirName, userName, accessLevel, icss);
+  	        "select data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+		 &iVal, dataName, dirName, userName, userZone, 
+		accessLevel, icss);
 
    if (status) { 
       /* There was an error, so do another sql to see which 
@@ -721,7 +727,7 @@ cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
 
       status = cmlGetIntegerValueFromSql(
          "select data_id from r_data_main DM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
-	  &iVal, dataName, dirName, 0, 0, icss);
+	  &iVal, dataName, dirName, 0, 0, 0, icss);
       if (status) {
 	 return(CAT_UNKNOWN_FILE);
       }
@@ -737,7 +743,7 @@ cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
 */
 rodsLong_t
 cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName, 
-			icatSessionStruct *icss)
+		    char *userZone, icatSessionStruct *icss)
 {
    int status;
    rodsLong_t iVal, collId;
@@ -746,15 +752,15 @@ cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOwn SQL 1 ");
    status = cmlGetIntegerValueFromSql(
 	    "select coll_id from R_COLL_MAIN where coll_name=?",
-	    &iVal, dirName, 0, 0, 0, icss);
+	    &iVal, dirName, 0, 0, 0, 0, icss);
    if (status < 0) return(status);
    collId = iVal;
    snprintf(collIdStr, MAX_NAME_LEN, "%lld", collId);
 
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOwn SQL 2 ");
    status = cmlGetIntegerValueFromSql(
-	         "select data_id from R_DATA_MAIN where data_name=? and coll_id=? and data_owner_name=?",
-		 &iVal, dataName, collIdStr, userName, 0, icss);
+	         "select data_id from R_DATA_MAIN where data_name=? and coll_id=? and data_owner_name=? and data_owner_zone=?",
+		 &iVal, dataName, collIdStr, userName, userZone, 0, icss);
 
    if (status) {
       return (status);
@@ -782,6 +788,7 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 	    userName,
 	    zoneName,
 	    accessLevel,
+	    0,
 	    icss);
    if (status != 0) return (CAT_NO_ACCESS_PERMISSION);
    if (iVal==0)  return (CAT_NO_ACCESS_PERMISSION);

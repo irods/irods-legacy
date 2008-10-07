@@ -340,7 +340,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       if (logSQL) rodsLog(LOG_SQL, "chlModDataObjMeta SQL 1 ");
       status = cmlGetIntegerValueFromSql(
 	 "select coll_id from R_COLL_MAIN where coll_name=?", &iVal, 
-	 logicalDirName, 0, 0, 0, &icss);
+	 logicalDirName, 0, 0, 0, 0, &icss);
 
       if (status) {
 	 int i;
@@ -356,7 +356,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       if (logSQL) rodsLog(LOG_SQL, "chlModDataObjMeta SQL 2");
       status = cmlGetIntegerValueFromSql(
           "select data_id from R_DATA_MAIN where coll_id=? and data_name=?",
-	  &iVal, objIdString, logicalFileName,  0, 0, &icss);
+	  &iVal, objIdString, logicalFileName,  0, 0, 0, &icss);
       if (status) {
 	 _rollback("chlModDataObjMeta");
 	 return(CAT_UNKNOWN_FILE);
@@ -501,7 +501,8 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
 
    /* Check that collection exists and user has write permission */
    iVal = cmlCheckDir(logicalDirName, rsComm->clientUser.userName,
-			ACCESS_MODIFY_OBJECT, &icss);
+		      rsComm->clientUser.rodsZone, 
+		      ACCESS_MODIFY_OBJECT, &icss);
    if (iVal < 0) {
       int i;
       char errMsg[105];
@@ -524,7 +525,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    status = cmlGetIntegerValueFromSql(
                "select coll_id from R_COLL_MAIN where coll_name=?",
 	       &iVal, 
-	       dataObjInfo->objPath, 0, 0, 0, &icss);
+	       dataObjInfo->objPath, 0, 0, 0, 0, &icss);
    if (status == 0) {
       return(CAT_NAME_EXISTS_AS_COLLECTION);
    }
@@ -571,13 +572,14 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
 
    cllBindVars[0]=dataIdNum;
    cllBindVars[1]=rsComm->clientUser.userName;
-   cllBindVars[2]=ACCESS_OWN;
-   cllBindVars[3]=myTime;
+   cllBindVars[2]=rsComm->clientUser.rodsZone;
+   cllBindVars[3]=ACCESS_OWN;
    cllBindVars[4]=myTime;
-   cllBindVarCount=5;
+   cllBindVars[5]=myTime;
+   cllBindVarCount=6;
    if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 7");
    status =  cmlExecuteNoAnswerSql(
-				   "insert into r_objt_access values (?, (select user_id from r_user_main where user_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+				   "insert into r_objt_access values (?, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 				   &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -671,6 +673,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
       if (logSQL) rodsLog(LOG_SQL, "chlRegReplica SQL 1 ");
       status = cmlCheckDataObjOnly(logicalDirName, logicalFileName,
 				   rsComm->clientUser.userName, 
+				   rsComm->clientUser.rodsZone, 
 				   ACCESS_READ_OBJECT, &icss);
       if (status < 0) {
 	 _rollback("chlRegReplica");
@@ -683,7 +686,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    if (logSQL) rodsLog(LOG_SQL, "chlRegReplica SQL 2");
    status = cmlGetIntegerValueFromSql(
         "select max(data_repl_num) from r_data_main where data_id = ?",
-	&iVal, objIdString, 0, 0, 0, &icss);
+	&iVal, objIdString, 0, 0, 0, 0, &icss);
 
    if (status) {
       _rollback("chlRegReplica");
@@ -810,6 +813,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 1 ");
       status = cmlCheckDataObjOnly(logicalDirName, logicalFileName,
 				   rsComm->clientUser.userName, 
+				   rsComm->clientUser.rodsZone, 
 				   ACCESS_DELETE_OBJECT, &icss);
       if (status < 0) {
 	 _rollback("chlUnregDataObj");
@@ -1343,7 +1347,7 @@ int chlDelResc(rsComm_t *rsComm,
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 1 ");
    status = cmlGetIntegerValueFromSql(
 	    "select data_id from r_data_main where resc_name=?",
-	     &iVal, rescInfo->rescName, 0, 0, 0, &icss);
+	     &iVal, rescInfo->rescName, 0, 0, 0, 0, &icss);
    if (status != CAT_NO_ROWS_FOUND) {
       if (status == 0) {
 	 int i;
@@ -1473,6 +1477,10 @@ int chlCommit(rsComm_t *rsComm) {
 int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    int status;
    char iValStr[200];
+   char zoneToUse[MAX_NAME_LEN];
+   char userStr[200];
+   char userName2[NAME_LEN];
+   char zoneName[NAME_LEN];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE");
 
@@ -1486,19 +1494,20 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    status = getLocalZone();
    if (status) return(status);
 
+   strncpy(zoneToUse, localZone, MAX_NAME_LEN);
    if (strlen(userInfo->rodsZone)>0) {
-      if (strcmp(userInfo->rodsZone, localZone) !=0) {
-	 int i;
-	 i = addRErrorMsg (&rsComm->rError, 0, 
-			   "Currently, users must be in the local zone");
-	 return(CAT_INVALID_ZONE);
-      }
+      strncpy(zoneToUse, userInfo->rodsZone, MAX_NAME_LEN);
+   }
+
+   status = parseUserName(userInfo->userName, userName2, zoneName);
+   if (zoneName[0]!='\0') {
+      rstrcpy(zoneToUse, zoneName, NAME_LEN);
    }
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 1 ");
    status = cmlGetStringValueFromSql(
             "select user_id from r_user_main where user_name=? and zone_name=?",
-	    iValStr, 200, userInfo->userName, localZone, &icss);
+	    iValStr, 200, userName2, zoneToUse, &icss);
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO ||
        status==CAT_NO_ROWS_FOUND) {
       int i;
@@ -1510,8 +1519,8 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       return(status);
    }
 
-   cllBindVars[cllBindVarCount++]=userInfo->userName;
-   cllBindVars[cllBindVarCount++]=localZone;
+   cllBindVars[cllBindVarCount++]=userName2;
+   cllBindVars[cllBindVarCount++]=zoneToUse;
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 2");
    status = cmlExecuteNoAnswerSql(
 	    "delete from r_user_main where user_name=? and zone_name=?",
@@ -1559,11 +1568,13 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    }
 
    /* Audit */
+   snprintf(userStr, 190, "%s#%s",
+	    userName2, zoneToUse);
    status = cmlAudit3(AU_DELETE_USER_RE,  
 		      iValStr,
 		      rsComm->clientUser.userName,
 		      rsComm->clientUser.rodsZone,
-		      userInfo->userName,
+		      userStr,
 		      &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1594,6 +1605,8 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    char currStr2[MAX_SQL_SIZE];
    int status;
    char tSQL[MAX_SQL_SIZE];
+   char userName2[NAME_LEN];
+   char zoneName[NAME_LEN];
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegCollByAdmin");
 
@@ -1624,7 +1637,7 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    if (logSQL) rodsLog(LOG_SQL, "chlRegCollByAdmin SQL 1 ");
    status = cmlGetIntegerValueFromSql(
              "select coll_id from R_COLL_MAIN where coll_name=?",
-	     &iVal, logicalParentDirName, 0, 0, 0, &icss);
+	     &iVal, logicalParentDirName, 0, 0, 0, 0, &icss);
    if (status < 0) {
       int i;
       char errMsg[MAX_NAME_LEN+40];
@@ -1651,16 +1664,23 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
 
    getNowStr(myTime);
 
+   status = getLocalZone();
+   if (status) return(status);
+
+   /* Parse input name into user and zone */
+   status = parseUserName(collInfo->collOwnerName, userName2, zoneName);
+   if (zoneName[0]=='\0') {
+      rstrcpy(zoneName, localZone, NAME_LEN);
+   }
+
    cllBindVars[cllBindVarCount++]=logicalParentDirName;
    cllBindVars[cllBindVarCount++]=collInfo->collName;
-   cllBindVars[cllBindVarCount++]=collInfo->collOwnerName;
+   cllBindVars[cllBindVarCount++]=userName2;
    if (strlen(collInfo->collOwnerZone)>0) {
       cllBindVars[cllBindVarCount++]=collInfo->collOwnerZone;
    }
    else {
-      status = getLocalZone();
-      if (status) return(status);
-      cllBindVars[cllBindVarCount++]=localZone;
+      cllBindVars[cllBindVarCount++]=zoneName;
    }
    if (collInfo->collType != NULL) {
       cllBindVars[cllBindVarCount++]=collInfo->collType;
@@ -1707,13 +1727,14 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    cllCurrentValueString("R_ObjectID", currStr, MAX_NAME_LEN);
    snprintf(currStr2, MAX_SQL_SIZE, " %s ", currStr);
 
-   cllBindVars[cllBindVarCount++]=collInfo->collOwnerName;
+   cllBindVars[cllBindVarCount++]=userName2;
+   cllBindVars[cllBindVarCount++]=zoneName;
    cllBindVars[cllBindVarCount++]=ACCESS_OWN;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
 
    snprintf(tSQL, MAX_SQL_SIZE, 
-	    "insert into r_objt_access values (%s, (select user_id from r_user_main where user_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+	    "insert into r_objt_access values (%s, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 	    currStr2);
    if (logSQL) rodsLog(LOG_SQL, "chlRegCollByAdmin SQL 4");
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
@@ -1729,9 +1750,9 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    status = cmlAudit4(AU_REGISTER_COLL_BY_ADMIN,  
 		      currStr2,
 		      "",
+		      userName2,
+		      zoneName,
 		      rsComm->clientUser.userName,
-		      rsComm->clientUser.rodsZone,
-		      collInfo->collName,
 		      &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1783,8 +1804,9 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       and get the collectionID */
    if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 1 ");
    status = cmlCheckDir(logicalParentDirName, 
-			rsComm->clientUser.userName, ACCESS_MODIFY_OBJECT, 
-			&icss);
+			rsComm->clientUser.userName, 
+			rsComm->clientUser.rodsZone, 
+			ACCESS_MODIFY_OBJECT, &icss);
    if (status < 0) {
       int i;
       char errMsg[105];
@@ -1803,7 +1825,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 2");
    status = cmlGetIntegerValueFromSql(
        "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
-       &iVal, logicalEndName, collIdNum, 0, 0, &icss);
+       &iVal, logicalEndName, collIdNum, 0, 0, 0, &icss);
 
    if (status == 0) {
       return(CAT_NAME_EXISTS_AS_DATAOBJ);
@@ -1857,11 +1879,12 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    snprintf(currStr2, MAX_SQL_SIZE, " %s ", currStr);
 
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName,
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone,
    cllBindVars[cllBindVarCount++]=ACCESS_OWN;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
    snprintf(tSQL, MAX_SQL_SIZE, 
-	    "insert into r_objt_access values (%s, (select user_id from r_user_main where user_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+	    "insert into r_objt_access values (%s, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 	    currStr2);
    if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 4");
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
@@ -1925,7 +1948,8 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 
    /* Check that collection exists and user has write permission */
    iVal = cmlCheckDir(collInfo->collName,  rsComm->clientUser.userName,  
-		   ACCESS_MODIFY_OBJECT, &icss);
+		      rsComm->clientUser.rodsZone, 
+		      ACCESS_MODIFY_OBJECT, &icss);
 
    if (iVal < 0) {
       int i;
@@ -2231,6 +2255,7 @@ int chlRenameColl(rsComm_t *rsComm, char *oldCollName, char *newCollName) {
 
    status1 = cmlCheckDir(oldCollName,
 			rsComm->clientUser.userName, 
+			rsComm->clientUser.rodsZone, 
 			ACCESS_OWN, 
 			&icss);
 
@@ -2498,7 +2523,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    int rowSize;
    int rows;
 
-   int allowedSQLForms=17;
+   int allowedSQLForms=19;
    char *allowedSQL[]={
 "select token_name from r_tokn_main where token_namespace = 'token_namespace'",
 "select token_name from r_tokn_main where token_namespace = ?",
@@ -2517,6 +2542,9 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 "select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_resc_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?",
 "select distinct resc_group_name from r_resc_group",
 "select coll_id from r_coll_main where coll_name = ?",
+"select * from r_user_main where user_name=? and zone_name=?",
+"select user_name from r_user_main where zone_name=? and user_type_name != 'rodsgroup'",
+"select zone_name from R_ZONE_MAIN where zone_type_name=?",
 ""
    };
 
@@ -2533,7 +2561,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    for (i=0;i<allowedSQLForms;i++) {
       if (strcmp(allowedSQL[i], sql)==0) break;
    }
-   if (i >= allowedSQLForms) return(CAT_INVALID_ARGUMENT);
+   if (i > allowedSQLForms) return(CAT_INVALID_ARGUMENT);
 
    /* done with multiple log calls so that each form will be checked
       via checkIcatLog.pl */
@@ -2553,6 +2581,9 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    if (i==13 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 14");
    if (i==14 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 15");
    if (i==15 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 16");
+   if (i==16 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 17");
+   if (i==17 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 18");
+   if (i==18 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 19");
 
    outBuf[0]='\0';
    needToGet=1;
@@ -2674,7 +2705,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 1 ");
    status = cmlGetIntegerValueFromSql(
              "select coll_id from r_coll_main where parent_coll_name=? union select coll_id from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
-	     &iVal, collInfo->collName, collInfo->collName, 0, 0, &icss);
+	     &iVal, collInfo->collName, collInfo->collName, 0, 0, 0, &icss);
  
    if (status != CAT_NO_ROWS_FOUND) {
       if (status == 0) {
@@ -2791,6 +2822,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    if (logSQL) rodsLog(LOG_SQL, "_delColl SQL 1 ");
    status = cmlCheckDir(logicalParentDirName, 
 			rsComm->clientUser.userName, 
+			rsComm->clientUser.rodsZone, 
 			ACCESS_MODIFY_OBJECT, 
 			&icss);
    if (status < 0) {
@@ -2812,6 +2844,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    if (logSQL) rodsLog(LOG_SQL, "_delColl SQL 2");
    status = cmlCheckDir(collInfo->collName, 
 			rsComm->clientUser.userName, 
+			rsComm->clientUser.rodsZone,
 			ACCESS_DELETE_OBJECT, 
 			&icss);
    if (status < 0) return(status);
@@ -2821,7 +2854,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    if (logSQL) rodsLog(LOG_SQL, "_delColl SQL 3");
    status = cmlGetIntegerValueFromSql(
        "select coll_id from r_coll_main where parent_coll_name=? union select coll_id from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
-       &iVal, collInfo->collName, collInfo->collName, 0, 0, &icss);
+       &iVal, collInfo->collName, collInfo->collName, 0, 0, 0, &icss);
    if (status != CAT_NO_ROWS_FOUND) {
       return(CAT_COLLECTION_NOT_EMPTY);
    }
@@ -3453,7 +3486,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 10");
 	 status2 = cmlGetIntegerValueFromSql(
              "select token_name from r_tokn_main where token_namespace='user_type' and token_name=?", 
-	     &iVal, newValue, 0, 0, 0, &icss);
+	     &iVal, newValue, 0, 0, 0, 0, &icss);
 	 if (status2) {
 	    char errMsg[105];
 	    int i;
@@ -3472,7 +3505,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 11");
 	 status2 = cmlGetIntegerValueFromSql(
            "select user_id from r_user_main where user_name=? and zone_name=?",
-	   &iVal, userName, localZone, 0, 0, &icss);
+	   &iVal, userName, localZone, 0, 0, 0, &icss);
 	 if (status2) {
 	    rodsLog(LOG_NOTICE,
 		    "chlModUser invalid user %s zone %s", userName, localZone);
@@ -3517,6 +3550,10 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    char commentStr[100];
    char zoneToUse[MAX_NAME_LEN];
 
+   char userName2[NAME_LEN];
+   char zoneName[NAME_LEN];
+      
+
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup");
 
    if (groupName == NULL || option == NULL || userName==NULL) {
@@ -3542,11 +3579,16 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
       strncpy(zoneToUse, userZone, MAX_NAME_LEN);
    }
 
+   status = parseUserName(userName, userName2, zoneName);
+   if (zoneName[0]!='\0') {
+      rstrcpy(zoneToUse, zoneName, NAME_LEN);
+   }
+
    userId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 1 ");
    status = cmlGetStringValueFromSql(
             "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name !='rodsgroup'",
-	    userId, MAX_NAME_LEN, userName, zoneToUse, &icss);
+	    userId, MAX_NAME_LEN, userName2, zoneToUse, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
 	 return(CAT_INVALID_USER);
@@ -4041,6 +4083,10 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    char userZone[MAX_NAME_LEN];
    char zoneId[MAX_NAME_LEN];
 
+   int zoneForm;
+   char userName2[NAME_LEN];
+   char zoneName[NAME_LEN];
+
    static char lastValidUserType[MAX_NAME_LEN]="";
    static char userTypeTokenName[MAX_NAME_LEN]="";
 
@@ -4093,20 +4139,42 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    if (status) return(status);
 
    if (strlen(userInfo->rodsZone)>0) {
+      zoneForm=1;
       strncpy(userZone, userInfo->rodsZone, MAX_NAME_LEN);
-      /* check that the zone exists */
+   }
+   else {
+      zoneForm=0;
+      strncpy(userZone, localZone, MAX_NAME_LEN);
+   }
+
+   status = parseUserName(userInfo->userName, userName2, zoneName);
+   if (zoneName[0]!='\0') {
+      rstrcpy(userZone, zoneName, NAME_LEN);
+      zoneForm=2;
+   }
+   if (status) {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
+   if (zoneForm) {
+      /* check that the zone exists (if not defaulting to local) */
       zoneId[0]='\0';
       if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 5 ");
       status = cmlGetStringValueFromSql(
 		"select zone_id from r_zone_main where zone_name=?",
 		zoneId, MAX_NAME_LEN, userZone, "", &icss);
       if (status != 0) {
-	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
+	 if (status==CAT_NO_ROWS_FOUND) {
+	    int i;
+	    char errMsg[105];
+	    snprintf(errMsg, 100, 
+		  "zone '%s' does not exist",
+		  userZone);
+	    i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+	    return(CAT_INVALID_ZONE);
+	 }
 	 return(status);
       }
-   }
-   else {
-      strncpy(userZone, localZone, MAX_NAME_LEN);
    }
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 2");
@@ -4120,7 +4188,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    getNowStr(myTime);
 
    cllBindVars[cllBindVarCount++]=seqStr;
-   cllBindVars[cllBindVarCount++]=userInfo->userName;
+   cllBindVars[cllBindVarCount++]=userName2;
    cllBindVars[cllBindVarCount++]=userTypeTokenName;
    cllBindVars[cllBindVarCount++]=userZone;
    cllBindVars[cllBindVarCount++]=userInfo->authInfo.authStr;
@@ -4171,10 +4239,10 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 	    userZone);
    status = cmlAudit4(AU_REGISTER_USER_RE,  
 		      auditSQL,
-		      userInfo->userName,
+		      userName2,
 		      rsComm->clientUser.userName,
 		      rsComm->clientUser.rodsZone,
-		      userInfo->userName,
+		      userZone,
 		      &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -4230,8 +4298,9 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       }
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 1 ");
       status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
-			   rsComm->clientUser.userName, 
-			   access, &icss);
+				   rsComm->clientUser.userName, 
+				   rsComm->clientUser.rodsZone, 
+				   access, &icss);
       if (status < 0) {
 	 _rollback("checkAndGetObjectId");
 	 return(status);
@@ -4245,6 +4314,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 2");
       status = cmlCheckDir(name,
 			   rsComm->clientUser.userName, 
+			   rsComm->clientUser.rodsZone,
 			   access, &icss); 
       if (status < 0) {
 	 int i;
@@ -4271,7 +4341,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 3");
       status = cmlGetIntegerValueFromSql(
                    "select resc_id from r_resc_main where resc_name=? and zone_name=?",
-		   &objId, name, localZone, 0, 0, &icss);
+		   &objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
 	 _rollback("checkAndGetObjectId");
@@ -4291,7 +4361,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 4");
       status = cmlGetIntegerValueFromSql(
          "select user_id from r_user_main where user_name=? and zone_name=?",
-	 &objId, name, localZone, 0, 0, &icss);
+	 &objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
 	 _rollback("checkAndGetObjectId");
@@ -4357,8 +4427,9 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       }
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 1 ");
       status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
-			   rsComm->clientUser.userName, 
-			   ACCESS_CREATE_METADATA, &icss);
+				   rsComm->clientUser.userName, 
+				   rsComm->clientUser.rodsZone, 
+				   ACCESS_CREATE_METADATA, &icss);
       if (status < 0) {
 	 _rollback("chlAddAVUMetadata");
 	 return(status);
@@ -4372,6 +4443,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 2");
       status = cmlCheckDir(name,
 			   rsComm->clientUser.userName, 
+			   rsComm->clientUser.rodsZone,
 			   ACCESS_CREATE_METADATA, &icss);
       if (status < 0) {
 	 int i;
@@ -4401,7 +4473,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 3");
       status = cmlGetIntegerValueFromSql(
 		 "select resc_id from r_resc_main where resc_name=? and zone_name=?",
-		 &objId, name, localZone, 0, 0, &icss);
+		 &objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 _rollback("chlAddAVUMetadata");
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -4421,7 +4493,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 4");
       status = cmlGetIntegerValueFromSql(
               "select user_id from r_user_main where user_name=? and zone_name=?",
-	      &objId, name, localZone, 0, 0, &icss);
+	      &objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 _rollback("chlAddAVUMetadata");
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
@@ -4434,13 +4506,13 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 5");
       status = cmlGetIntegerValueFromSql(
             "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
-	    &iVal, attribute, value, units, 0, &icss);
+	    &iVal, attribute, value, units, 0, 0, &icss);
    }
    else {
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 6");
       status = cmlGetIntegerValueFromSql(
          "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=?",
-         &iVal, attribute, value, 0, 0, &icss);
+         &iVal, attribute, value, 0, 0, 0, &icss);
    }
    if (status == 0) {
       seqNum = iVal; /* use existing r_meta_main row */
@@ -4580,8 +4652,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       }
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 1 ");
       status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
-			   rsComm->clientUser.userName, 
-			   ACCESS_DELETE_METADATA, &icss);
+				   rsComm->clientUser.userName, 
+				   rsComm->clientUser.rodsZone, 
+				   ACCESS_DELETE_METADATA, &icss);
       if (status < 0) {
 	 _rollback("chlDeleteAVUMetadata");
 	 return(status);
@@ -4595,6 +4668,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 2");
       status = cmlCheckDir(name,
 			   rsComm->clientUser.userName, 
+			   rsComm->clientUser.rodsZone,
 			   ACCESS_DELETE_METADATA, &icss);
       if (status < 0) {
 	 int i;
@@ -4621,7 +4695,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 3");
       status = cmlGetIntegerValueFromSql(
                 "select resc_id from r_resc_main where resc_name=? and zone_name=?",
-		&objId, name, localZone, 0, 0, &icss);
+		&objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
 	 _rollback("chlDeleteAVUMetadata");
@@ -4641,7 +4715,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 4");
       status = cmlGetIntegerValueFromSql(
                  "select user_id from r_user_main where user_name=? and zone_name=?",
-		 &objId, name, localZone, 0, 0, &icss);
+		 &objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
 	 _rollback("chlDeleteAVUMetadata");
@@ -4885,9 +4959,10 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       and, if so, get the collectionID */
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 1 ");
    status1 = cmlCheckDir(pathName,
-			rsComm->clientUser.userName, 
-			ACCESS_OWN, 
-			&icss);
+			 rsComm->clientUser.userName, 
+			 rsComm->clientUser.rodsZone,
+			 ACCESS_OWN, 
+			 &icss);
    if (status1 >= 0) {
       snprintf(collIdStr, MAX_NAME_LEN, "%lld", status1);
    }
@@ -4903,8 +4978,9 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       }
       if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 2");
       status2 = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
-			       rsComm->clientUser.userName, 
-			       ACCESS_OWN, &icss);
+				    rsComm->clientUser.userName, 
+				    rsComm->clientUser.rodsZone, 
+				    ACCESS_OWN, &icss);
       if (status2 > 0) objId=status2;
    }
 
@@ -4924,6 +5000,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 10");
 	 status3 = cmlCheckDirOwn(pathName,
 				  rsComm->clientUser.userName, 
+				  rsComm->clientUser.rodsZone, 
 				  &icss);
 	 if (status3 < 0) return(status1);
 	 snprintf(collIdStr, MAX_NAME_LEN, "%lld", status3);
@@ -4934,7 +5011,9 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	       allowed to ichmod) */
 	    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 11");
 	    status3 = cmlCheckDataObjOwn(logicalParentDirName, logicalEndName,
-					 rsComm->clientUser.userName,  &icss);
+					 rsComm->clientUser.userName,
+					 rsComm->clientUser.rodsZone,
+					 &icss);
 	    if (status3 < 0) {
 	       _rollback("chlModAccessControl");
 	       return(status2);
@@ -4959,7 +5038,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 3");
    status = cmlGetIntegerValueFromSql(
               "select user_id from r_user_main where user_name=? and r_user_main.zone_name=?",
-	      &userId, userName, myZone, 0, 0, &icss);
+	      &userId, userName, myZone, 0, 0, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
       return(status);
@@ -5218,7 +5297,8 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
 
    status = cmlGetIntegerValueFromSql(
 	      "select coll_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-	      &collId, objIdString, rsComm->clientUser.userName, 0, 0, &icss);
+	      &collId, objIdString, rsComm->clientUser.userName, 0, 0, 0,
+	      &icss);
 
 
    if (status == 0) {  /* it is a dataObj and user has access to it */
@@ -5229,7 +5309,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       status = cmlGetIntegerValueFromSql(
          "select data_id from r_data_main where data_name=? and coll_id=?",
 	 &otherDataId, 
-	 newName, collIdString, 0, 0, &icss);
+	 newName, collIdString, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_DATAOBJ);
       }
@@ -5240,7 +5320,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 3");
       status = cmlGetIntegerValueFromSql(
                  "select coll_id from r_coll_main where coll_name = ( select coll_name from r_coll_main where coll_id=? ) || ?",
-		 &otherCollId, collIdString, collNameTmp, 0, 0, &icss);
+		 &otherCollId, collIdString, collNameTmp, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
       }
@@ -5315,7 +5395,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 7");
       status = cmlGetIntegerValueFromSql(
            "select data_id from r_data_main where data_name=? and coll_id= (select coll_id from r_coll_main  where coll_name = ?)",
-	   &otherDataId, newName, parentCollName, 0, 0, &icss);
+	   &otherDataId, newName, parentCollName, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_DATAOBJ);
       }
@@ -5326,7 +5406,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 8");
       status = cmlGetIntegerValueFromSql(
                "select coll_id from r_coll_main where coll_name = ?",
-	       &otherCollId, collNameTmp, 0, 0, 0, &icss);
+	       &otherCollId, collNameTmp, 0, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
       }
@@ -5445,7 +5525,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 12");
    status = cmlGetIntegerValueFromSql(
                    "select coll_id from r_data_main where data_id=?",
-		   &otherDataId, objIdString, 0, 0, 0, &icss);
+		   &otherDataId, objIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a data obj, must be permission error */
       return (CAT_NO_ACCESS_PERMISSION);
@@ -5455,7 +5535,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 12");
    status = cmlGetIntegerValueFromSql(
               "select coll_id from r_coll_main where coll_id=?",
-	      &otherDataId, collIdString, 0, 0, 0, &icss);
+	      &otherDataId, collIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a collection, must be permission error */
       return (CAT_NO_ACCESS_PERMISSION);
@@ -5518,7 +5598,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 2");
       status = cmlGetIntegerValueFromSql(
                     "select coll_id from r_coll_main where coll_id=?",
-		    &collId, collIdString, 0, 0, 0, &icss);
+		    &collId, collIdString, 0, 0, 0, 0, &icss);
       if (status==0) {
 	 return (CAT_NO_ACCESS_PERMISSION);  /* does exist, must be
 						permission error */
@@ -5543,7 +5623,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 4");
       status = cmlGetIntegerValueFromSql(
            "select data_id from r_data_main where data_name=? and coll_id=?",
-	   &otherDataId, dataObjName, collIdString, 0, 0, &icss);
+	   &otherDataId, dataObjName, collIdString, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_DATAOBJ);
       }
@@ -5555,7 +5635,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 5");
       status = cmlGetIntegerValueFromSql(
                 "select coll_id from r_coll_main where coll_name = ( select coll_name from r_coll_main where coll_id=? ) || ?",
-		&otherCollId, collIdString, nameTmp, 0, 0, &icss);
+		&otherCollId, collIdString, nameTmp, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
       }
@@ -5645,7 +5725,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 9");
       status = cmlGetIntegerValueFromSql(
          "select data_id from r_data_main where data_name=? and coll_id=?",
-	 &otherDataId, endCollName, collIdString, 0, 0, &icss);
+	 &otherDataId, endCollName, collIdString, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_DATAOBJ);
       }
@@ -5660,7 +5740,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 10");
       status = cmlGetIntegerValueFromSql(
 		 "select coll_id from r_coll_main where coll_name = ?",
-		 &otherCollId, newCollName, 0, 0, 0, &icss);
+		 &otherCollId, newCollName, 0, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
       }
@@ -5749,7 +5829,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 13");
    status = cmlGetIntegerValueFromSql(
 	      "select coll_id from r_data_main where data_id=?",
-	      &otherDataId, objIdString, 0, 0, 0, &icss);
+	      &otherDataId, objIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a data obj, must be permission error */
       return (CAT_NO_ACCESS_PERMISSION);
@@ -5758,7 +5838,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 14");
    status = cmlGetIntegerValueFromSql(
        "select coll_id from r_coll_main where coll_id=?",
-       &otherDataId, objIdString, 0, 0, 0, &icss);
+       &otherDataId, objIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a collection, must be permission error */
       return (CAT_NO_ACCESS_PERMISSION);
@@ -5790,7 +5870,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    if (logSQL) rodsLog(LOG_SQL, "chlRegToken SQL 1 ");
    status = cmlGetIntegerValueFromSql(
               "select token_id from r_tokn_main where token_namespace=? and token_name=?",
-	      &objId, "token_namespace", nameSpace, 0, 0, &icss);
+	      &objId, "token_namespace", nameSpace, 0, 0, 0, &icss);
    if (status != 0) {
       snprintf(errMsg, 200, 
 	       "Token namespace '%s' does not exist",
@@ -5802,7 +5882,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    if (logSQL) rodsLog(LOG_SQL, "chlRegToken SQL 2");
    status = cmlGetIntegerValueFromSql(
               "select token_id from r_tokn_main where token_namespace=? and token_name=?",
-	      &objId, nameSpace, name, 0, 0, &icss);
+	      &objId, nameSpace, name, 0, 0, 0, &icss);
    if (status == 0) {
       snprintf(errMsg, 200, 
 	       "Token '%s' already exists in namespace '%s'",
@@ -5887,7 +5967,7 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
    if (logSQL) rodsLog(LOG_SQL, "chlDelToken SQL 1 ");
    status = cmlGetIntegerValueFromSql(
                  "select token_id from r_tokn_main where token_namespace=? and token_name=?",
-		 &objId, nameSpace, name, 0, 0, &icss);
+		 &objId, nameSpace, name, 0, 0, 0, &icss);
    if (status != 0) {
       snprintf(errMsg, 200, 
 	       "Token '%s' does not exist in namespace '%s'",

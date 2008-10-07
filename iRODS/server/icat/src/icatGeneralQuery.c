@@ -1187,6 +1187,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    int i, nCols;
    int userIx=-1, zoneIx=-1, accessIx=-1, dataIx=-1, collIx=-1;
    int status;
+   char *zoneName;
    static char prevDataId[LONG_NAME_LEN];
    static char prevUser[LONG_NAME_LEN];
    static int prevStatus;
@@ -1219,7 +1220,6 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    if (dataIx<0 && collIx<0) return(CAT_INVALID_ARGUMENT);
 
    if (dataIx>=0) {
-      char *zoneName;
       if (continueFlag==0) {
          if (strcmp(prevDataId, 
                 icss->stmtPtr[statementNum]->resultValue[dataIx])==0) {
@@ -1251,9 +1251,16 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    }
 
    if (collIx>=0) {
+      if (strlen(genQueryInp.condInput.value[zoneIx])==0) {
+          zoneName = chlGetLocalZone();
+      }
+      else {
+          zoneName = genQueryInp.condInput.value[zoneIx];
+      }
       status = cmlCheckDirId(
 			      icss->stmtPtr[statementNum]->resultValue[collIx],
 			      genQueryInp.condInput.value[userIx],
+			      zoneName,
   			      genQueryInp.condInput.value[accessIx], icss);
    }
    return(status);
