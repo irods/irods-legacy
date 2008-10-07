@@ -490,7 +490,16 @@ JNIEXPORT void JNICALL Java_ncsa_hdf_srb_H5SRB__1getServerInfo
     }
 
     status = getRodsEnv(&rodsServerEnv);
+
     if (status<0) {
+        (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "getRodsEnv() failed");
+    }
+
+    /* check if server information is valid */
+    if ( (rodsServerEnv.rodsUserName == NULL || strlen(rodsServerEnv.rodsUserName) < 1) || 
+         (rodsServerEnv.rodsHost == NULL || strlen (rodsServerEnv.rodsHost) <1) ||
+         (rodsServerEnv.rodsPort < 1) ||
+         (rodsServerEnv.rodsHome == NULL || strlen(rodsServerEnv.rodsHome) < 1) ) {
         (*env)->ThrowNew(env, (*env)->FindClass(env, "java/lang/RuntimeException"), "getRodsEnv() failed");
     }
  
@@ -664,7 +673,7 @@ jint getFileList(JNIEnv *env, jobject flist, jmethodID addElement,
             (*env)->CallVoidMethod(env, flist, addElement, (*env)->NewStringUTF(env, fname));
             */
 
-            ret_val = rclOpenCollection (conn, collEnt.collName, collHandle->flag, &subCollhandle);
+            ret_val = rclOpenCollection (conn, collEnt.collName, collHandle->flags, &subCollhandle);
             if (ret_val < 0)
                 THROW_JNI_ERROR("java/lang/RuntimeException", "rclOpenCollection() failed");
 
@@ -1122,16 +1131,16 @@ jint c2j_h5group(JNIEnv *env, jobject jfile, jobject jgroup, H5Group *cgroup)
 		(*env)->SetBooleanField(env, jd, field_dataset_scalar_isImageDisplay, JNI_TRUE);
             }
 
-            if ((cd->time & H5D_IMAGE_TRUECOLOR_FLAG)>0) {
+            if ( (cd->time & H5D_IMAGE_TRUECOLOR_FLAG)>0 && cd->space.rank>2) {
 		(*env)->SetBooleanField(env, jd, field_dataset_scalar_isTrueColor, JNI_TRUE);
 		(*env)->SetIntField(env, jd, field_dataset_scalar_interlace, 0);
             }
 
-            if ((cd->time & H5D_IMAGE_INTERLACE_PIXEL_FLAG)>0) {
+            if ((cd->time & H5D_IMAGE_INTERLACE_PIXEL_FLAG)>0 && cd->space.rank>2) {
 	        (*env)->SetIntField(env, jd, field_dataset_scalar_interlace, 0);
 		(*env)->SetBooleanField(env, jd, field_dataset_scalar_isTrueColor, JNI_TRUE);
             }
-            else if ((cd->time & H5D_IMAGE_INTERLACE_PLANE_FLAG)>0) {
+            else if ((cd->time & H5D_IMAGE_INTERLACE_PLANE_FLAG)>0 && cd->space.rank>2) {
 	        (*env)->SetIntField(env, jd, field_dataset_scalar_interlace, 2);
 		(*env)->SetBooleanField(env, jd, field_dataset_scalar_isTrueColor, JNI_TRUE);
             }
