@@ -25,9 +25,16 @@ bytesBuf_t *dataObjReadOutBBuf)
           l1descInx);
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
-    bytesRead = l3Read (rsComm, l1descInx, dataObjReadInp->len,
-      dataObjReadOutBBuf);
-
+    if (L1desc[l1descInx].remoteZoneHost != NULL) {
+        /* cross zone operation */
+        dataObjReadInp->l1descInx = L1desc[l1descInx].l3descInx;
+        bytesRead = rcDataObjRead (L1desc[l1descInx].remoteZoneHost->conn,
+          dataObjReadInp, dataObjReadOutBBuf);
+	dataObjReadInp->l1descInx = l1descInx;
+    } else {
+        bytesRead = l3Read (rsComm, l1descInx, dataObjReadInp->len,
+          dataObjReadOutBBuf);
+    }
     return (bytesRead);
 }
 

@@ -66,7 +66,9 @@ extern "C" {
 int
 rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp,
 char *locFilePath);
-
+int
+_rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp,
+bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut);
 #ifdef  __cplusplus
 }
 #endif

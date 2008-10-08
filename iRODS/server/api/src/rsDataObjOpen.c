@@ -14,15 +14,31 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
+#include "reDefines.h"
+#include "getRemoteZoneResc.h"
 
 int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
-    int status;
+    int status, l1descInx;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
-    status = _rsDataObjOpen (rsComm, dataObjInp, DO_PHYOPEN);
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      REMOTE_CREATE);
 
-    return (status);
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = rcDataObjOpen (rodsServerHost->conn, dataObjInp);
+        if (status < 0) return status;
+        l1descInx = allocAndSetL1descForZoneOpr (status, rodsServerHost);
+        return (l1descInx);
+    } else {
+        l1descInx = _rsDataObjOpen (rsComm, dataObjInp, DO_PHYOPEN);
+    }
+
+    return (l1descInx);
 }
 
 /* _rsDataObjOpen - handle internal server dataObj open request.

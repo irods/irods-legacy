@@ -42,9 +42,26 @@ rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
     ruleExecSubmitInp_t ruleExecSubmitInp;
 #endif
 
+    l1descInx = dataObjCloseInp->l1descInx;
+    if (l1descInx <= 2 || l1descInx >= NUM_L1_DESC) {
+       rodsLog (LOG_NOTICE,
+         "rsDataObjClose: l1descInx %d out of range",
+         l1descInx);
+        return (SYS_FILE_DESC_OUT_OF_RANGE);
+    }
+
+    if (L1desc[l1descInx].remoteZoneHost != NULL) {
+	/* cross zone operation */
+	dataObjCloseInp->l1descInx = L1desc[l1descInx].l3descInx;
+	status = rcDataObjClose (L1desc[l1descInx].remoteZoneHost->conn, 
+	  dataObjCloseInp);
+	freeL1desc (l1descInx);
+	dataObjCloseInp->l1descInx = l1descInx;
+	return (status);
+    }
+
     status = _rsDataObjClose (rsComm, dataObjCloseInp);
 
-    l1descInx = dataObjCloseInp->l1descInx;
     if (status >= 0) {
 	if (L1desc[l1descInx].oprType == PUT_OPR || 
 	  L1desc[l1descInx].oprType == CREATE_OPR) {
@@ -184,12 +201,6 @@ _rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
     modDataObjMeta_t modDataObjMetaInp;
 
     l1descInx = dataObjCloseInp->l1descInx;
-    if (l1descInx <= 2 || l1descInx >= NUM_L1_DESC) {
-       rodsLog (LOG_NOTICE,
-         "_rsDataObjClose: l1descInx %d out of range",
-         l1descInx);
-        return (SYS_FILE_DESC_OUT_OF_RANGE);
-    }
 
     l3descInx = L1desc[l1descInx].l3descInx;
 

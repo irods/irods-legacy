@@ -53,22 +53,14 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
     addKeyVal (&dataObjInp->condInput, NO_PARA_OP_KW, "");
 #endif
 
-    status = procApiRequest (conn, DATA_OBJ_PUT_AN,  dataObjInp, 
-	&dataObjInpBBuf, (void **) &portalOprOut, NULL);
+    status = _rcDataObjPut (conn, dataObjInp, &dataObjInpBBuf, &portalOprOut);
 
     clearBBuf (&dataObjInpBBuf);
  
-    if (status < 0) {
+    if (status < 0 || 
+      getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
 	if (portalOprOut != NULL)
 	    free (portalOprOut);
-	return (status);
-    } else if (getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
-	/* done */
-	free (portalOprOut);
-	return (status);
-    } else if (portalOprOut->l1descInx < 0) {
-	status = portalOprOut->l1descInx;
-	free (portalOprOut);
 	return (status);
     }
 
@@ -115,5 +107,21 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
     free (portalOprOut);
 
     return (status);
+}
+
+int
+_rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp,
+bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
+{
+    int status;
+
+    status = procApiRequest (conn, DATA_OBJ_PUT_AN,  dataObjInp,
+        dataObjInpBBuf, (void **) portalOprOut, NULL);
+
+    if (*portalOprOut != NULL && (*portalOprOut)->l1descInx < 0) {
+        status = (*portalOprOut)->l1descInx;
+    }
+
+    return status;
 }
 

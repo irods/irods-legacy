@@ -15,6 +15,7 @@
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
+#include "getRemoteZoneResc.h"
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -32,6 +33,20 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int status;
     int phyOpenFlag;
     rodsObjStat_t *rodsObjStatOut = NULL;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      REMOTE_CREATE);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+	status = rcDataObjCreate (rodsServerHost->conn, dataObjInp);
+	if (status < 0) return status;
+	l1descInx = allocAndSetL1descForZoneOpr (status, rodsServerHost);
+	return (l1descInx);
+    }
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
 	phyOpenFlag = DO_NOT_PHYOPEN;

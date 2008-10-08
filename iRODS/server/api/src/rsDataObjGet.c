@@ -26,12 +26,30 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_OPEN);
 
-    if (remoteFlag == LOCAL_HOST) {
+    if (remoteFlag < 0) {
+	return (remoteFlag);
+    } else if (remoteFlag == LOCAL_HOST) {
         status = _rsDataObjGet (rsComm, dataObjInp, portalOprOut, 
           dataObjOutBBuf, BRANCH_MSG);
     } else {
+       int l1descInx;
 	status = _rcDataObjGet (rodsServerHost->conn, dataObjInp, portalOprOut,
 	  dataObjOutBBuf);
+
+        if (status < 0) {
+            return (status);
+        }
+        if (status == 0 || 
+	  (dataObjOutBBuf != NULL && dataObjOutBBuf->len > 0)) {
+            /* data included in buf */
+            return status;
+        } else {
+	    l1descInx = allocAndSetL1descForZoneOpr (
+	      (*portalOprOut)->l1descInx, rodsServerHost);
+            if (l1descInx < 0) return l1descInx;
+            (*portalOprOut)->l1descInx = l1descInx;
+            return status;
+        }
     }
 
     return (status);

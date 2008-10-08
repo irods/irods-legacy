@@ -49,6 +49,7 @@ typedef struct l1desc {
 #ifdef LOG_TRANSFERS
     struct timeval openStartTime;
 #endif
+    rodsServerHost_t *remoteZoneHost;
 } l1desc_t;
 
 int
@@ -180,5 +181,7 @@ int
 initStructFileOprInp (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
 structFileExtAndRegInp_t *structFileExtAndRegInp,
 dataObjInfo_t *dataObjInfo);
+int
+allocAndSetL1descForZoneOpr (int l3descInx, rodsServerHost_t *remoteZoneHost);
 #endif	/* DATA_OBJ_OPR */
 

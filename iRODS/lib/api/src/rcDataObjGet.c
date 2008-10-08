@@ -44,13 +44,7 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 #endif
 
     if (status < 0) {
-        if (portalOprOut != NULL)
-            free (portalOprOut);
-        return (status);
-    } else if (portalOprOut != NULL && portalOprOut->l1descInx < 0) {
-        status = portalOprOut->l1descInx;
-	if (portalOprOut != NULL)
-            free (portalOprOut);
+        if (portalOprOut != NULL) free (portalOprOut);
         return (status);
     }
 
@@ -171,6 +165,10 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
 
     status = procApiRequest (conn, DATA_OBJ_GET_AN,  dataObjInp, NULL,
         (void **) portalOprOut, dataObjOutBBuf);
+
+    if (*portalOprOut != NULL && (*portalOprOut)->l1descInx < 0) {
+        status = (*portalOprOut)->l1descInx;
+    }
 
     return (status);
 }

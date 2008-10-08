@@ -26,8 +26,16 @@ bytesBuf_t *dataObjWriteInpBBuf)
 	return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
-    bytesWritten = l3Write (rsComm, l1descInx, dataObjWriteInp->len,
-     dataObjWriteInpBBuf);
+    if (L1desc[l1descInx].remoteZoneHost != NULL) {
+        /* cross zone operation */
+        dataObjWriteInp->l1descInx = L1desc[l1descInx].l3descInx;
+        bytesWritten = rcDataObjWrite (L1desc[l1descInx].remoteZoneHost->conn,
+          dataObjWriteInp, dataObjWriteInpBBuf);
+        dataObjWriteInp->l1descInx = l1descInx;
+    } else {
+        bytesWritten = l3Write (rsComm, l1descInx, dataObjWriteInp->len,
+         dataObjWriteInpBBuf);
+    }
 
     return (bytesWritten);
 }

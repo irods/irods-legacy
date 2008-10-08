@@ -17,6 +17,7 @@
 #include "rsApiHandler.h"
 #include "subStructFilePut.h"
 #include "dataObjRepl.h"
+#include "getRemoteZoneResc.h"
 
 
 int
@@ -24,9 +25,32 @@ rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
 {
     int status;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
-    status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
-      portalOprOut, BRANCH_MSG);
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      REMOTE_CREATE);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == LOCAL_HOST) {
+        status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
+          portalOprOut, BRANCH_MSG);
+    } else {
+	int l1descInx;
+        status = _rcDataObjPut (rodsServerHost->conn, dataObjInp, 
+	  dataObjInpBBuf, portalOprOut);
+        if (status < 0 || 
+          getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
+            return (status);
+        } else {
+           l1descInx = allocAndSetL1descForZoneOpr (
+              (*portalOprOut)->l1descInx, rodsServerHost);
+            if (l1descInx < 0) return l1descInx;
+            (*portalOprOut)->l1descInx = l1descInx;
+            return status;
+        }
+    }
 
     return (status);
 }
