@@ -30,6 +30,15 @@ fileLseekOut_t **dataObjLseekOut)
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
+    if (L1desc[l1descInx].remoteZoneHost != NULL) {
+        /* cross zone operation */
+        dataObjLseekInp->fileInx = L1desc[l1descInx].l3descInx;
+        status = rcDataObjLseek (L1desc[l1descInx].remoteZoneHost->conn,
+          dataObjLseekInp, dataObjLseekOut);
+        dataObjLseekInp->fileInx = l1descInx;
+	return status;
+    }
+
     l3descInx = L1desc[l1descInx].l3descInx;
 
     if (l3descInx <= 2) {
