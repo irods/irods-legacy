@@ -4374,7 +4374,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
 
 
 /* Add an Attribute-Value [Units] pair/triple metadata item to an object */
-int chlAddAVUMetadata(rsComm_t *rsComm, char *type, 
+int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type, 
 		  char *name, char *attribute, char *value,  char *units) {
    int itype;
    char myTime[50];
@@ -4408,6 +4408,12 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       return (CAT_INVALID_ARGUMENT);
    }
 
+   if (adminMode==1) {
+      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+   }
+
    if (units == NULL) units="";
 
    itype=0;
@@ -4425,11 +4431,20 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
 	 strcpy(logicalParentDirName, "/");
 	 strcpy(logicalEndName, name);
       }
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 1 ");
-      status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
+      if (adminMode==1) {
+	 if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 1 ");
+	 status = cmlGetIntegerValueFromSql(
+	       "select data_id from r_data_main DM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+	       &iVal, logicalEndName, logicalParentDirName, 0, 0, 0, &icss);
+	 if (status==0) status=iVal; /*like cmlCheckDataObjOnly, status is objid */
+      }
+      else {
+	 if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 2");
+	 status = cmlCheckDataObjOnly(logicalParentDirName, logicalEndName,
 				   rsComm->clientUser.userName, 
 				   rsComm->clientUser.rodsZone, 
 				   ACCESS_CREATE_METADATA, &icss);
+      }
       if (status < 0) {
 	 _rollback("chlAddAVUMetadata");
 	 return(status);
@@ -4438,13 +4453,22 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
    }
 
    if (itype==2) {
-   /* Check that the collection exists and user has create_metadata permission,
-      and get the collectionID */
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 2");
-      status = cmlCheckDir(name,
+      if (adminMode==1) {
+	 if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 3");
+	 status = cmlGetIntegerValueFromSql(
+            "select coll_id from R_COLL_MAIN where coll_name=?",
+            &iVal, name, 0, 0, 0, 0, &icss);
+	 if (status==0) status=iVal;/*like cmlCheckDir, status is objid*/
+      }
+      else {
+	 /* Check that the collection exists and user has create_metadata 
+	    permission, and get the collectionID */
+	 if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 4");
+	 status = cmlCheckDir(name,
 			   rsComm->clientUser.userName, 
 			   rsComm->clientUser.rodsZone,
 			   ACCESS_CREATE_METADATA, &icss);
+      }
       if (status < 0) {
 	 int i;
 	 char errMsg[105];
@@ -4470,7 +4494,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       if (status) return(status);
 
       objId=0;
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 3");
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 5");
       status = cmlGetIntegerValueFromSql(
 		 "select resc_id from r_resc_main where resc_name=? and zone_name=?",
 		 &objId, name, localZone, 0, 0, 0, &icss);
@@ -4490,7 +4514,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       if (status) return(status);
 
       objId=0;
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 4");
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 6");
       status = cmlGetIntegerValueFromSql(
               "select user_id from r_user_main where user_name=? and zone_name=?",
 	      &objId, name, localZone, 0, 0, 0, &icss);
@@ -4503,13 +4527,13 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
 
    iVal=0;
    if (*units!='\0') {
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 5");
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 7");
       status = cmlGetIntegerValueFromSql(
             "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
 	    &iVal, attribute, value, units, 0, 0, &icss);
    }
    else {
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 6");
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 8");
       status = cmlGetIntegerValueFromSql(
          "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=?",
          &iVal, attribute, value, 0, 0, 0, &icss);
@@ -4519,7 +4543,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
    }
 
    else {
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 7");
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 9");
       seqNum = cmlGetNextSeqVal(&icss);
       if (seqNum < 0) {
 	 rodsLog(LOG_NOTICE, "chlAddAVUMetadata cmlGetNextSeqVal failure %d",
@@ -4538,7 +4562,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=myTime;
 
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 8");
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 10");
       status =  cmlExecuteNoAnswerSql(
              "insert into r_meta_main (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
 	     &icss);
@@ -4560,7 +4584,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, char *type,
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
 
-   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 9");
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 11");
    status =  cmlExecuteNoAnswerSql(
                  "insert into r_objt_metamap (object_id, meta_id, create_ts, modify_ts) values (?, ?, ?, ?)",
 		 &icss);

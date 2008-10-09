@@ -554,16 +554,16 @@ sub processLogFile($) {
 		$didOne=0;
 		for ($i=0;$i<10;$i++) {
 		    if ($udsmd[$i] ne "") {
-			print( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDSMD$i '$udsmd[$i]'\n") ;
+			print( IMETA_FILE "adda -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDSMD$i '$udsmd[$i]'\n") ;
 			$didOne=1;
 		    }
 		}
 		if ($v_dataobj_udimd0 ne "") {
-		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDIMD0 '$v_dataobj_udimd0'\n");
+		    print ( IMETA_FILE "adda -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDIMD0 '$v_dataobj_udimd0'\n");
 		    $didOne=1;
 		}
 		if ($v_dataobj_udimd1 ne "") {
-		    print ( IMETA_FILE "add -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDIMD1 '$v_dataobj_udimd1'\n");
+		    print ( IMETA_FILE "adda -d $v_dataobj_collection/$v_dataobj_name $TYPE-UDIMD1 '$v_dataobj_udimd1'\n");
 		    $didOne=1;
 		}
 		if ($didOne) {
@@ -581,14 +581,14 @@ sub processLogFile($) {
 		$v_coll_udimd1=$values[13];
 		for ($i=0;$i<10;$i++) {
 		    if ($udsmd_coll[$i] ne "") {
-			print( IMETA_FILE "add -c $v_coll_name UDSMD_COLL$i '$udsmd_coll[$i]'\n") ;
+			print( IMETA_FILE "adda -c $v_coll_name UDSMD_COLL$i '$udsmd_coll[$i]'\n") ;
 		    }
 		}
 		if ($v_coll_udimd0 ne "") {
-		    print ( IMETA_FILE "add -c $v_coll_name UDIMD_COLL0 '$v_coll_udimd0'\n");
+		    print ( IMETA_FILE "adda -c $v_coll_name UDIMD_COLL0 '$v_coll_udimd0'\n");
 		}
 		if ($v_coll_udimd1 ne "") {
-		    print ( IMETA_FILE "add -c $v_coll_name UDIMD_COLL1 '$v_coll_udimd1'\n");
+		    print ( IMETA_FILE "adda -c $v_coll_name UDIMD_COLL1 '$v_coll_udimd1'\n");
 		}
 	    }
 	}
