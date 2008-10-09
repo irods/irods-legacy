@@ -244,6 +244,8 @@ runCmd(0, "imeta qu -d a = c | grep 'No rows found'");
 runCmd(0, "imeta cp -d $F1 -d $F3");
 runCmd(0, "imeta rm -d $F3 a b c");
 runCmd(0, "imeta rm -d $F1 a b c");
+runCmd(0, "imeta adda -d $F1 x y z");
+runCmd(0, "imeta rm -d $F1 x y z");
 runCmd(0, "irm -f $F3");
 
 runCmd(0, "imeta add -C $D1 a b c");
@@ -254,6 +256,8 @@ runCmd(0, "imeta qu -C a = b");
 runCmd(0, "imeta qu -C a = b | wc");
 runCmd(0, "imeta qu -C a = c | grep 'No rows found'");
 runCmd(0, "imeta rm -C $D1 a b c");
+runCmd(0, "imeta adda -C $D1 x y z");
+runCmd(0, "imeta rm -C $D1 x y z");
 runCmd(0, "irm -rf $D2");
 
 runCmd(0, "imeta add -u $U2 d e f");
