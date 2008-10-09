@@ -909,6 +909,12 @@ doCommand(char *cmdToken[]) {
    if (strcmp(cmdToken[2],"-D")==0) cmdToken[2][1]='d';
    if (strcmp(cmdToken[2],"-R")==0) cmdToken[2][1]='r';
 
+   if (strcmp(cmdToken[0],"adda") == 0) {
+      modAVUMetadata("adda", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7]);
+      return(0);
+   }
    if (strcmp(cmdToken[0],"add") == 0) {
       modAVUMetadata("add", cmdToken[1], cmdToken[2], 
 		     cmdToken[3], cmdToken[4], cmdToken[5],
@@ -1173,7 +1179,7 @@ int usageMain()
 " ", 
 "Metadata attribute-value-units triplets (AVUs) consist of an Attribute-Name,", 
 "Attribute-Value, and an optional Attribute-Units.  They can be added", 
-"via the 'add' command (and in other ways (eventually)), and", 
+"via the 'add' command (and in other ways), and", 
 "then queried to find matching objects.",
 " ", 
 "For each command, -d, -C, -R or -u is used to specify which type of", 
@@ -1222,6 +1228,10 @@ usage(char *subOpt)
 " add -d|C|R|u Name AttName AttValue [AttUnits]  (Add new AVU triplet)", 
 "Add an AVU to a dataobj (-d), collection(-C), resource(-R) or user(-u)",
 "Example: add -d file1 distance 12 miles",
+" ",
+"Admins can also use the command 'adda' (add as admin) to add metadata",
+"to any collection or dataobj; syntax is the same as 'add'.  Admins are",
+"also allowed to add user and resource metadata.",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);
