@@ -27,6 +27,19 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     int trashPolicy;
     dataObjInfo_t *dataObjInfoHead = NULL;
 
+    rodsServerHost_t *rodsServerHost = NULL;
+
+    status = getAndConnRcatHost (rsComm, MASTER_RCAT,
+     dataObjUnlinkInp->objPath, &rodsServerHost);
+
+    if (status < 0) {
+        return (status);
+    } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
+        int retval;
+        retval = rcDataObjUnlink (rodsServerHost->conn, dataObjUnlinkInp);
+        return status;
+    }
+
     if (getValByKey (
       &dataObjUnlinkInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL ||
       getValByKey (

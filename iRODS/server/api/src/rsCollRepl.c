@@ -14,6 +14,7 @@
 #include "closeCollection.h"
 #include "dataObjRepl.h"
 #include "rsApiHandler.h"
+#include "getRemoteZoneResc.h"
 
 /* rsCollRepl - The Api handler of the rcCollRepl call - Replicate
  * a data object.
@@ -34,11 +35,28 @@ collOprStat_t **collOprStat)
     int handleInx;
     transStat_t myTransStat;
     int totalFileCnt;
+    int fileCntPerStatOut;
     int savedStatus = 0;
-    int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
+    /* try to connect to dest resc */
+    remoteFlag = getAndConnRemoteZone (rsComm, collReplInp, &rodsServerHost,
+      REMOTE_CREATE);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+	int retval;
+        retval = _rcCollRepl (rodsServerHost->conn, collReplInp, collOprStat);
+        if (status < 0) return status;
+        status = svrSendZoneCollOprStat (rsComm, rodsServerHost->conn,
+          *collOprStat, retval);
+        return status;
+    }
+
+    fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
     if (collOprStat != NULL) *collOprStat = NULL;
-
     memset (&openCollInp, 0, sizeof (openCollInp));
     rstrcpy (openCollInp.collName, collReplInp->objPath, MAX_NAME_LEN);
     openCollInp.flags = RECUR_QUERY_FG;

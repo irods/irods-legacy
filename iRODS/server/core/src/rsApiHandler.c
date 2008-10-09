@@ -540,6 +540,23 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
 int
 svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat)
 {
+    int status;
+
+    status = _svrSendCollOprStat (rsComm, collOprStat);
+
+    if (status != SYS_CLI_TO_SVR_COLL_STAT_REPLY) {
+        rodsLog (LOG_ERROR,
+          "svrSendCollOprStat: client reply %d != %d.", 
+	  status, SYS_CLI_TO_SVR_COLL_STAT_REPLY);
+	return (UNMATCHED_KEY_OR_INDEX);
+    } else {
+        return (0);
+    }
+}
+
+int
+_svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat)
+{
     int myBuf;
     int status;
 
@@ -549,7 +566,7 @@ svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat)
         rodsLogError (LOG_ERROR, status,
           "svrSendCollOprStat: sendAndProcApiReply failed. status = %d",
           status);
-	return status;
+        return status;
     }
 
     /* read 4 bytes */
@@ -558,12 +575,25 @@ svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat)
         rodsLogError (LOG_ERROR, status,
           "svrSendCollOprStat: read handshake failed. status = %d", status);
     }
-    if (ntohl (myBuf) != SYS_CLI_TO_SVR_COLL_STAT_REPLY) {
-        rodsLog (LOG_ERROR,
-          "svrSendCollOprStat: client reply %d != %d.", 
-	  ntohl (myBuf), SYS_CLI_TO_SVR_COLL_STAT_REPLY);
-	return (UNMATCHED_KEY_OR_INDEX);
-    } 
-
-    return (0);
+    return (ntohl (myBuf));
 }
+
+int
+svrSendZoneCollOprStat (rsComm_t *rsComm, rcComm_t *conn, 
+collOprStat_t *collOprStat, int retval)
+{
+    int status = retval;
+
+    while (status == SYS_SVR_TO_CLI_COLL_STAT) {
+        status = _svrSendCollOprStat (rsComm, collOprStat);
+	if (status == SYS_CLI_TO_SVR_COLL_STAT_REPLY) {
+	    status = _cliGetCollOprStat (conn, &collOprStat);
+	} else {
+    	    int myBuf = htonl (status);
+    	    myWrite (conn->sock, (void *) &myBuf, 4, SOCK_TYPE, NULL);
+	    break;
+	}
+    }
+    return (status);
+}
+

@@ -37,6 +37,8 @@ void **outStruct, bytesBuf_t *outBsBBuf);
 int
 cliGetCollOprStat (rcComm_t *conn, collOprStat_t *collOprStat, int vFlag,
 int retval);
+int
+_cliGetCollOprStat (rcComm_t *conn, collOprStat_t **collOprStat);
 #ifdef  __cplusplus
 }
 #endif

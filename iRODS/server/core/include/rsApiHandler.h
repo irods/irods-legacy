@@ -45,4 +45,10 @@ sendAndRecvBranchMsg (rsComm_t *rsComm, int apiInx, int status,
 void *myOutStruct, bytesBuf_t *myOutBsBBuf);
 int
 svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat);
+int
+_svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat);
+int
+svrSendZoneCollOprStat (rsComm_t *rsComm, rcComm_t *conn,
+collOprStat_t *collOprStat, int retval);
+
 #endif	/* RS_API_HANDLER_H */

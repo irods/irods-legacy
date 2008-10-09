@@ -336,7 +336,6 @@ int retval)
     int status = retval;
 
     while (status == SYS_SVR_TO_CLI_COLL_STAT) {
-        int myBuf;
         /* more to come */
         if (collOprStat != NULL) {
             if (vFlag != 0) {
@@ -352,15 +351,26 @@ int retval)
             free (collOprStat);
             collOprStat = NULL;
         }
-        myBuf = htonl (SYS_CLI_TO_SVR_COLL_STAT_REPLY);
-        status = myWrite (conn->sock, (void *) &myBuf, 4, SOCK_TYPE, NULL);
-        status = readAndProcApiReply (conn, conn->apiInx,
-          (void **) &collOprStat, NULL);
+	status = _cliGetCollOprStat (conn, &collOprStat);
     }
 
     if (collOprStat != NULL) {
         free (collOprStat);
     }
+
+    return (status);
+}
+
+int
+_cliGetCollOprStat (rcComm_t *conn, collOprStat_t **collOprStat)
+{
+    int myBuf;
+    int status;
+
+    myBuf = htonl (SYS_CLI_TO_SVR_COLL_STAT_REPLY);
+    status = myWrite (conn->sock, (void *) &myBuf, 4, SOCK_TYPE, NULL);
+    status = readAndProcApiReply (conn, conn->apiInx,
+      (void **) collOprStat, NULL);
 
     return (status);
 }

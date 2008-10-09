@@ -19,6 +19,21 @@ collOprStat_t **collOprStat)
 {
     int status;
 
+    rodsServerHost_t *rodsServerHost = NULL;
+
+    status = getAndConnRcatHost (rsComm, MASTER_RCAT,
+     rmCollInp->collName, &rodsServerHost);
+
+    if (status < 0) {
+        return (status);
+    } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
+	int retval;
+        retval = _rcRmColl (rodsServerHost->conn, rmCollInp, collOprStat);
+	status = svrSendZoneCollOprStat (rsComm, rodsServerHost->conn,
+	  *collOprStat, retval);
+        return status;
+    }
+
     if (collOprStat != NULL)
         *collOprStat = NULL;
     if (getValByKey (&rmCollInp->condInput, RECURSIVE_OPR__KW) == NULL) {
