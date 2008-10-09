@@ -165,7 +165,11 @@ int msiRenameLocalZone(msParam_t* oldName, msParam_t* newName,
 
    oldNameStr = (char *) oldName->inOutStruct;
    newNameStr = (char *) newName->inOutStruct;
+#ifdef RODS_CAT
    status = chlRenameLocalZone(rei->rsComm, oldNameStr, newNameStr);
+#else
+   status = SYS_NO_RCAT_SERVER_ERR;
+#endif
    return(status);
 }
 
@@ -177,6 +181,10 @@ int msiRenameCollection(msParam_t* oldName, msParam_t* newName,
 
    oldNameStr = (char *) oldName->inOutStruct;
    newNameStr = (char *) newName->inOutStruct;
+#ifdef RODS_CAT
    status = chlRenameColl(rei->rsComm, oldNameStr, newNameStr);
+#else
+   status = SYS_NO_RCAT_SERVER_ERR;
+#endif
    return(status);
 }
