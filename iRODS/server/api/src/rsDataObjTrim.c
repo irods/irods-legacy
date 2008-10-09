@@ -10,6 +10,7 @@
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"
+#include "getRemoteZoneResc.h"
 
 /* rsDataObjTrim - The Api handler of the rcDataObjTrim call - trim down 
  * the number of replica of a file
@@ -26,6 +27,18 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *tmpDataObjInfo;
     char *accessPerm;
     int retVal = 0;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = rcDataObjTrim (rodsServerHost->conn, dataObjInp);
+        return status;
+    }
 
     if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {

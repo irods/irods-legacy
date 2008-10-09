@@ -25,7 +25,7 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     rodsServerHost_t *rodsServerHost;
 
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
-      REMOTE_CREATE);
+      REMOTE_OPEN);
 
     if (remoteFlag < 0) {
         return (remoteFlag);

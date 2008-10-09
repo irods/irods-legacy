@@ -4,6 +4,7 @@
 #include "dataObjOpr.h"
 #include "rsApiHandler.h"
 #include "modDataObjMeta.h"
+#include "getRemoteZoneResc.h"
 
 int
 rsDataObjChksum (rsComm_t *rsComm, dataObjInp_t *dataObjChksumInp,
@@ -11,9 +12,22 @@ char **outChksum)
 {
     int status;
     dataObjInfo_t *dataObjInfoHead;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
-    status = _rsDataObjChksum (rsComm, dataObjChksumInp, outChksum,
-      &dataObjInfoHead);
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjChksumInp, 
+      &rodsServerHost, REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+	status = rcDataObjChksum (rodsServerHost->conn, dataObjChksumInp, 
+	  outChksum);
+	return status;
+    } else { 
+        status = _rsDataObjChksum (rsComm, dataObjChksumInp, outChksum,
+          &dataObjInfoHead);
+    }
 
     freeAllDataObjInfo (dataObjInfoHead);
     return (status);

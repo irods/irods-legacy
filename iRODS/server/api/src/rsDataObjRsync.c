@@ -4,6 +4,7 @@
 #include "dataObjOpr.h"
 #include "rsApiHandler.h"
 #include "modDataObjMeta.h"
+#include "getRemoteZoneResc.h"
 
 int
 rsDataObjRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -11,7 +12,11 @@ msParamArray_t **outParamArray)
 {
     int status;
     char *rsyncMode;
+    char *remoteZoneOpr;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
+    *outParamArray = NULL;
     if (dataObjInp == NULL) { 
        rodsLog(LOG_ERROR, "rsDataObjRsync error. NULL input");
        return (SYS_INTERNAL_NULL_INPUT_ERR);
@@ -22,6 +27,38 @@ msParamArray_t **outParamArray)
 	rodsLog (LOG_ERROR,
 	  "rsDataObjRsync: RSYNC_MODE_KW input is missing");
 	return (USER_RSYNC_NO_MODE_INPUT_ERR);
+    }
+
+    if (strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
+	remoteZoneOpr = REMOTE_CREATE;
+    } else {
+	remoteZoneOpr = REMOTE_OPEN;
+    }
+
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      remoteZoneOpr);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+	int l1descInx;
+
+        status = _rcDataObjRsync (rodsServerHost->conn, dataObjInp,
+          outParamArray);
+	if (status < 0) {
+            return (status);
+        }
+	if (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
+	    /* server request to client */
+            l1descInx = allocAndSetL1descForZoneOpr (0, rodsServerHost);
+            if (l1descInx < 0) return l1descInx;
+	    if (*outParamArray == NULL) {
+	        *outParamArray = malloc (sizeof (msParamArray_t));
+	        bzero (*outParamArray, sizeof (msParamArray_t));
+	    } 
+	    addIntParamToArray (*outParamArray, CL_ZONE_OPR_INX, l1descInx);
+	}
+        return status;
     }
 
     if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0) {

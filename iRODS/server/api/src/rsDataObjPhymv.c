@@ -11,6 +11,7 @@
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"
 #include "dataObjCreate.h"
+#include "getRemoteZoneResc.h"
 
 /* rsDataObjPhymv - The Api handler of the rcDataObjPhymv call - phymove
  * a data object from one resource to another.
@@ -31,6 +32,19 @@ transStat_t **transStat)
     ruleExecInfo_t rei;
     int multiCopyFlag;
     char *accessPerm;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = _rcDataObjPhymv (rodsServerHost->conn, dataObjInp,
+          transStat);
+        return status;
+    }
 
     *transStat = malloc (sizeof (transStat_t));
     memset (*transStat, 0, sizeof (transStat_t));

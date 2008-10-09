@@ -23,6 +23,17 @@ char *type, void *inOutStruct, bytesBuf_t *inpOutBuf)
     return (status);
 }
 
+int
+addIntParamToArray (msParamArray_t *msParamArray, char *label, int inpInt)
+{
+    int *myInt;
+    int status;
+
+    myInt = malloc (sizeof (int));
+    *myInt = inpInt;
+    status = addMsParamToArray (msParamArray, label, INT_MS_T, myInt, NULL, 0);
+    return status;
+}
 
 /* addMsParamToArray - Add a msParam_t to the msParamArray.
  * Input char *label - an element of the msParam_t. This input must be 

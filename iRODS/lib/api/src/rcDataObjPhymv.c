@@ -15,8 +15,7 @@ rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp)
 
     dataObjInp->oprType = PHYMV_OPR;
 
-    status = procApiRequest (conn, DATA_OBJ_PHYMV_AN,  dataObjInp, NULL, 
-        (void **) &transStat, NULL);
+    status = _rcDataObjPhymv (conn, dataObjInp, &transStat);
 
     if (status >= 0 && transStat != NULL) {
 	conn->transStat = *(transStat);
@@ -28,3 +27,15 @@ rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp)
 
     return (status);
 }
+
+int
+_rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp, 
+transStat_t **transStat)
+{
+    int status;
+
+    status = procApiRequest (conn, DATA_OBJ_PHYMV_AN,  dataObjInp, NULL,
+        (void **) &transStat, NULL);
+    return (status);
+}
+

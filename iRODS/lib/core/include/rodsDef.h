@@ -117,6 +117,7 @@
 
 #define CL_PUT_ACTION	"CL_PUT_ACTION"
 #define CL_GET_ACTION	"CL_GET_ACTION"
+#define CL_ZONE_OPR_INX	"CL_ZONE_OPR_INX"
 
 /* the following defines the RSYNC_MODE_KW */
 #define LOCAL_TO_IRODS	"LOCAL_TO_IRODS"

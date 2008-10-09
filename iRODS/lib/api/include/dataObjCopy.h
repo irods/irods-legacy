@@ -63,6 +63,9 @@ extern "C" {
 int
 rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp);
 int
+_rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
+transStat_t **transStat);
+int
 clearDataObjCopyInp (dataObjCopyInp_t *dataObjCopyInp);
 #ifdef  __cplusplus
 }

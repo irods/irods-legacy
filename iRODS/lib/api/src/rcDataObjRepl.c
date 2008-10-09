@@ -15,8 +15,7 @@ rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp)
 
     dataObjInp->oprType = REPLICATE_OPR;
 
-    status = procApiRequest (conn, DATA_OBJ_REPL_AN,  dataObjInp, NULL, 
-        (void **) &transStat, NULL);
+    status = _rcDataObjRepl (conn, dataObjInp, &transStat);
 
     if (status >= 0 && transStat != NULL) {
 	conn->transStat = *(transStat);
@@ -28,3 +27,16 @@ rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp)
 
     return (status);
 }
+
+int
+_rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp, 
+transStat_t **transStat)
+{
+    int status;
+
+    status = procApiRequest (conn, DATA_OBJ_REPL_AN,  dataObjInp, NULL, 
+        (void **) &transStat, NULL);
+
+    return status;
+}
+

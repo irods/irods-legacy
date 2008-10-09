@@ -74,6 +74,8 @@ int
 addMsParam (msParamArray_t *msParamArray, char *label,
 char *packInstruct, void *inOutStruct, bytesBuf_t *inpOutBuf);
 int
+addIntParamToArray (msParamArray_t *msParamArray, char *label, int inpInt);
+int
 addMsParamToArray (msParamArray_t *msParamArray, char *label,
 char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag);
 int

@@ -14,6 +14,7 @@
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"
+#include "getRemoteZoneResc.h"
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
@@ -28,6 +29,20 @@ rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 transStat_t **transStat)
 {
     int status;
+
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+      REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = _rcDataObjRepl (rodsServerHost->conn, dataObjInp,
+          transStat);
+        return status;
+    }
 
     *transStat = malloc (sizeof (transStat_t));
     memset (*transStat, 0, sizeof (transStat_t));

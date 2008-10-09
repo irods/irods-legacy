@@ -16,12 +16,25 @@
 #include "rmColl.h"
 #include "modDataObjMeta.h"
 #include "subStructFileTruncate.h"
+#include "getRemoteZoneResc.h"
 
 int
 rsDataObjTruncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp)
 {
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+
+    remoteFlag = getAndConnRemoteZone (rsComm, dataObjTruncateInp, 
+      &rodsServerHost, REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = rcDataObjTruncate (rodsServerHost->conn, dataObjTruncateInp);
+        return status;
+    }
 
     dataObjTruncateInp->openFlags = O_WRONLY;  /* set the permission checking */
     status = getDataObjInfoIncSpecColl (rsComm, dataObjTruncateInp, 

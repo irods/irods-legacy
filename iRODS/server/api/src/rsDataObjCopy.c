@@ -12,6 +12,7 @@
 #include "regDataObj.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
+#include "getRemoteZoneResc.h"
 
 int
 rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
@@ -22,12 +23,25 @@ transStat_t **transStat)
     int status;
     int existFlag;
     uint createMode;
-
-    *transStat = malloc (sizeof (transStat_t));
-    memset (*transStat, 0, sizeof (transStat_t));
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
     srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
     destDataObjInp = &dataObjCopyInp->destDataObjInp;
+
+    remoteFlag = getAndConnRemoteZone (rsComm, srcDataObjInp, &rodsServerHost,
+      REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = _rcDataObjCopy (rodsServerHost->conn, dataObjCopyInp,
+	  transStat);
+	return status;
+    }
+
+    *transStat = malloc (sizeof (transStat_t));
+    memset (*transStat, 0, sizeof (transStat_t));
 
     if (strcmp (srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
         rodsLog (LOG_ERROR,

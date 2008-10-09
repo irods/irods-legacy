@@ -21,6 +21,17 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
     destDataObjInp = &dataObjRenameInp->destDataObjInp;
 
+    /* connect to rcat for cross zone */
+    status = getAndConnRcatHost (rsComm, MASTER_RCAT, 
+     srcDataObjInp->objPath, &rodsServerHost);
+
+    if (status < 0) {
+        return (status);
+    } else if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
+        status = rcDataObjRename (rodsServerHost->conn, dataObjRenameInp);
+        return status;
+    }
+
     if (strcmp (srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
         return (SAME_SRC_DEST_PATHS_ERR);
     }

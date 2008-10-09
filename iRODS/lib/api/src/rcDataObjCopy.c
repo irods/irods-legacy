@@ -16,8 +16,7 @@ rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp)
     dataObjCopyInp->srcDataObjInp.oprType = COPY_SRC;
     dataObjCopyInp->destDataObjInp.oprType = COPY_DEST;
 
-    status = procApiRequest (conn, DATA_OBJ_COPY_AN,  dataObjCopyInp, NULL, 
-        (void **) &transStat, NULL);
+    status = _rcDataObjCopy (conn, dataObjCopyInp, &transStat);
 
     if (status >= 0 && transStat != NULL) {
         conn->transStat = *(transStat);
@@ -29,3 +28,16 @@ rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp)
 
     return (status);
 }
+
+int
+_rcDataObjCopy (rcComm_t *conn, dataObjCopyInp_t *dataObjCopyInp,
+transStat_t **transStat)
+{
+    int status;
+
+    status = procApiRequest (conn, DATA_OBJ_COPY_AN,  dataObjCopyInp, NULL,
+        (void **) &transStat, NULL);
+
+    return status;
+}
+

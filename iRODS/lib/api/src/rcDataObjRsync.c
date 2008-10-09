@@ -2,7 +2,6 @@
 /* See dataObjRsync.h for a description of this API call.*/
 
 #include "dataObjRsync.h"
-#include "oprComplete.h"
 #include "dataObjPut.h"
 #include "dataObjGet.h"
 
@@ -12,15 +11,21 @@ rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
     int status;
     msParamArray_t *outParamArray = NULL;
 
-    status = procApiRequest (conn, DATA_OBJ_RSYNC_AN, dataObjInp, NULL, 
-        (void **)&outParamArray, NULL);
- 
+    status = _rcDataObjRsync (conn, dataObjInp, &outParamArray);
+
     while (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
 	/* it is a server request */
 	char *locFilePath;
         msParam_t *myMsParam;
         dataObjInp_t *dataObjInp = NULL;
+	int l1descInx; 
 
+	myMsParam = getMsParamByLabel (outParamArray, CL_ZONE_OPR_INX);
+	if (myMsParam == NULL) {
+	    l1descInx = -1;
+	} else {
+	    l1descInx = *(int*) myMsParam->inOutStruct;
+	}
 
 	if ((myMsParam = getMsParamByLabel (outParamArray, CL_PUT_ACTION))
 	  != NULL) { 
@@ -28,23 +33,43 @@ rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
 	    dataObjInp = (dataObjInp_t *) myMsParam->inOutStruct;
 	    if ((locFilePath = getValByKey (&dataObjInp->condInput, 
 	      RSYNC_DEST_PATH_KW)) == NULL) {
-		rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
+		if (l1descInx >= 0) {
+		    rcOprComplete (conn, l1descInx);
+		} else {
+		        rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
+		}
 	    } else {
 	        status = rcDataObjPut (conn, dataObjInp, locFilePath);
-		rcOprComplete (conn, status);
+                if (l1descInx >= 0) {
+                    rcOprComplete (conn, l1descInx);
+                } else {
+		    rcOprComplete (conn, status);
+		}
 	    }
 	} else if ((myMsParam = getMsParamByLabel (outParamArray, 
 	  CL_GET_ACTION)) != NULL) {
             dataObjInp = (dataObjInp_t *) myMsParam->inOutStruct;
             if ((locFilePath = getValByKey (&dataObjInp->condInput,
               RSYNC_DEST_PATH_KW)) == NULL) {
-                rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
+                if (l1descInx >= 0) {
+                    rcOprComplete (conn, l1descInx);
+                } else {
+                    rcOprComplete (conn, USER_FILE_DOES_NOT_EXIST);
+		}
             } else {
                 status = rcDataObjGet (conn, dataObjInp, locFilePath);
-                rcOprComplete (conn, status);
+                if (l1descInx >= 0) {
+                    rcOprComplete (conn, l1descInx);
+                } else {
+                    rcOprComplete (conn, status);
+		}
             }
 	} else {
-	    rcOprComplete (conn, SYS_SVR_TO_CLI_MSI_NO_EXIST);
+            if (l1descInx >= 0) {
+                rcOprComplete (conn, l1descInx);
+            } else {
+                rcOprComplete (conn, SYS_SVR_TO_CLI_MSI_NO_EXIST);
+	    }
 	}
 	/* free outParamArray */
 	if (dataObjInp != NULL) {
@@ -67,3 +92,14 @@ rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
     return (status);
 }
 
+int
+_rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp, 
+msParamArray_t **outParamArray)
+{
+    int status;
+
+    status = procApiRequest (conn, DATA_OBJ_RSYNC_AN, dataObjInp, NULL,
+        (void **)outParamArray, NULL);
+
+    return (status);
+}

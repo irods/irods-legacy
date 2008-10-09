@@ -70,6 +70,9 @@ extern "C" {
  */
 int
 rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp);
+int
+_rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp,
+transStat_t **transStat);
 
 #ifdef  __cplusplus
 }

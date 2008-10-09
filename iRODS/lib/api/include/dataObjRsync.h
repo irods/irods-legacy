@@ -15,6 +15,8 @@
 #include "initServer.h"
 #include "dataObjWrite.h"
 #include "dataObjClose.h"
+#include "oprComplete.h"
+
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_RSYNC rsDataObjRsync
@@ -65,6 +67,9 @@ extern "C" {
 
 int
 rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp); 
+int
+_rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp,
+msParamArray_t **outParamArray);
 
 #ifdef  __cplusplus
 }

@@ -55,7 +55,9 @@ extern "C" {
 
 int
 rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp);
-
+int
+_rcDataObjPhymv (rcComm_t *conn, dataObjInp_t *dataObjInp,
+transStat_t **transStat);
 #ifdef  __cplusplus
 }
 #endif
