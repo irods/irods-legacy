@@ -57,7 +57,7 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName,
 int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo);
 rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
     char *name, char *access);
-int chlAddAVUMetadata(rsComm_t *rsComm, char *type, 
+int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type, 
     char *name, char *attribute, char *value,  char *units);
 int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type, 
     char *name, char *attribute, char *value,  char *units);
