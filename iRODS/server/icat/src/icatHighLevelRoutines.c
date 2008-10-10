@@ -4535,7 +4535,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
    else {
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 8");
       status = cmlGetIntegerValueFromSql(
-         "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=?",
+         "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit IS NULL",
          &iVal, attribute, value, 0, 0, 0, &icss);
    }
    if (status == 0) {
