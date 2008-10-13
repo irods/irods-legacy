@@ -109,7 +109,7 @@ client_cflags:
 
 # List module's objects and needed libs for inclusion in the server
 server_ldflags:
-	@echo $(MS_OBJECTS) $(HDF5_LD_LIBS) $(HDF_LIB_OBJECTS)
+	@echo $(MS_OBJECTS) $(HDF_LIB_OBJECTS) $(HDF5_LD_LIBS)
 
 # List module's includes for inclusion in the server
 server_cflags:
