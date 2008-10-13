@@ -13,10 +13,14 @@
 #    has has the fixes committed for Spullmeta.c srbClientUtil.c by 
 #    Wayne on Sept 18, 2008.
 # 4) Set up your SRB environment for the MCAT you want to convert.
-# 5) Set up your iRODS environment for your IRODS instance.
+# 5) Run the script (and/or rerun).
+#
+# The script will say it has completed the SRB interaction.
+# 
+# 6) Set up your iRODS environment for your IRODS instance.
 #    (You want, you can do this on another host, just move the files
 #     after the Spullmeta phase).
-# 6) Run the script (and/or rerun).
+# 7) Run the script again (it skips the SRB interaction).
 #
 # There are 3 phases to this script: 1) it runs Spullmeta to get
 # information from the MCAT, 2) it generates iadmin, imeta, and psql
@@ -79,9 +83,10 @@ $thisUser = 'rods';           # The irods user that this is being run as.
 
 # You can, but don't need to, change these:
 $logUser = "Spull.log.user";     # Spullmeta log file for users
-$logColl = "Spull.log.coll";    # Spullmeta log file for collections
+$logColl = "Spull.log.coll";     # Spullmeta log file for collections
 $logData = "Spull.log.data";     # Spullmeta log file for dataObjects
 $logResc = "Spull.log.resc";     # Spullmeta log file for resources
+$logLoc = "Spull.log.loc";      # Spullmeta log file for locations
 $logMetaData = "Spull.log.meta.data"; # Spullmeta log file for user-defined
                                       # metadata for dataObjects
 $logMetaColl = "Spull.log.meta.coll"; # Spullmeta log file for user-defined
@@ -96,54 +101,58 @@ $showOne="0";            # A debug option, if "1";
 
 #------------
 @cv_srb_resources =();   # SRB resource(s) being converted (created on the fly)
+@cv_srb_location_name=();
+@cv_srb_location_address=();
 @cv_irods_resources=();  # corresponding name of SRB resource(s) in iRODS.
 @datatypeList=();        # filled and used dynamically
 $nowTime="";
 $metadataLastColl="";
 $metadataLastDataname="";
 
-if (!-e $logUser) {
+$SRBMode=0;
+if (!-e $logUser || -s $logUser == 0) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_USER_INFO $SRB_BEGIN_DATE > $logUser");
-}
-else {
-    printf("$logUser exists, so not running Spullmeta to get it.\n");
+    $SRBMode=1;
 }
 
-if (!-e $logResc) {
+if (!-e $logResc || -s $logResc == 0) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_PHYSICAL_RESOURCE_CORE_INFO $SRB_BEGIN_DATE > $logResc");
-}
-else {
-    printf("$logResc exists, so not running Spullmeta to get it.\n");
+    $SRBMode=1;
 }
 
-if (!-e $logColl) {
+if (!-e $logLoc  || -s $logLoc == 0) {
+    runCmd(0, "$Spullmeta -F GET_LOCATION_INFO > $logLoc");
+    $SRBMode=1;
+}
+
+if (!-e $logColl || -s $logColl == 0) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_COLL_CORE_INFO $SRB_BEGIN_DATE > $logColl");
-}
-else {
-    printf("$logColl exists, so not running Spullmeta to get it.\n");
+    $SRBMode=1;
 }
 
-if (!-e $logData) {
+if (!-e $logData || -s $logData == 0) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_CORE_INFO $SRB_BEGIN_DATE > $logData");
-}
-else {
-    printf("$logData exists, so not running Spullmeta to get it.\n");
+    $SRBMode=1;
 }
 
 if (!-e $logMetaData) {
     runCmd(0, "$Spullmeta -F GET_CHANGED_DATA_UDEFMETA_INFO $SRB_BEGIN_DATE > $logMetaData");
-}
-else {
-    printf("$logMetaData exists, so not running Spullmeta to get it.\n");
+    $SRBMode=1;
 }
 
 if (!-e $logMetaColl) {
     runCmd(1, "$Spullmeta -F GET_CHANGED_COLL_UDEFMETA_INFO $SRB_BEGIN_DATE > $logMetaColl");
-}
-else {
-    printf("$logMetaColl exists, so not running Spullmeta to get it.\n");
+    $SRBMode=1;
 }
 
+if ($SRBMode==1) {
+    printf("\nSRB interaction completed.\n");
+    printf("Run this script again to interact with iRODS.\n");
+    printf("You will first need to set up your irods environment.\n");
+    printf("If needed, you can move this script and the log files\n");
+    printf("(from the SRB interaction) to another host and continue there.\n\n");
+    exit();
+}
 
 my $doMainStep="yes";
 if ( -e $sqlFile ) {
@@ -177,6 +186,9 @@ if ($doMainStep eq "yes") {
 	$newPassword = randomPassword();
 	print( IADMIN_FILE "moduser $user password $newPassword\n");
     }
+
+
+    processLogFile($logLoc);
 
     processLogFile($logResc);
 
@@ -423,6 +435,9 @@ sub processLogFile($) {
 	    if ($cmdArgs[0] eq "GET_CHANGED_PHYSICAL_RESOURCE_CORE_INFO") {
 		$mode="RESC";
 	    }
+	    if ($cmdArgs[0] eq "GET_LOCATION_INFO\n") {
+		$mode="LOCATION";
+	    }
 	    if ($cmdArgs[0] eq "GET_CHANGED_DATA_UDEFMETA_INFO") {
 		$mode="METADATA_DATA";
 	    }
@@ -524,12 +539,27 @@ sub processLogFile($) {
 		   }
 		}
 	    }
+	    if ($mode eq "LOCATION") {
+		$v_location_name=$values[2];
+		$v_location_address=$values[3];
+		$v_location_address =~ s/:NULL.NULL//;
+		push(@cv_srb_location_name, $v_location_name);
+		push(@cv_srb_location_address, $v_location_address);
+	    }
 	    if ($mode eq "RESC") {
 		$v_resc_name=$values[0];
 		$v_resc_type=$values[1];
 		$v_resc_path=$values[2];
 		$v_resc_physical_name=$values[3];
-		$v_resc_location=$values[5];
+		$resc_hostaddress=$values[5];
+		$k=0;
+		foreach $location_name (@cv_srb_location_name) {
+		    if ($location_name eq $values[5]) {
+			$resc_hostaddress = $cv_srb_location_address[$k];
+		    }
+		    $k++;
+		}
+#		$v_resc_location=$values[5];
 		if ($v_resc_name eq $v_resc_physical_name &&
 		    $v_resc_type eq "unix file system") {
 		    $k = index($v_resc_path, "/?");
@@ -538,7 +568,7 @@ sub processLogFile($) {
 		    if ($v_resc_name ne "sdsc-fs") { # skip special built-in
 			$newName = "SRB-" . $v_resc_name;
 			push(@cv_irods_resources, $newName);
-			print( IADMIN_FILE "mkresc '$newName' '$v_resc_type' 'archive' '$v_resc_location' $newPath\n");
+			print( IADMIN_FILE "mkresc '$newName' '$v_resc_type' 'archive' '$resc_hostaddress' $newPath\n");
 		    }
 		}
 	    }
