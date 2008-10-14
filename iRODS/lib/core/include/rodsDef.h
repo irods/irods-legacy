@@ -260,7 +260,11 @@ typedef struct {
 
 /* definition for handler function */
 #ifdef windows_platform
+#ifdef __cplusplus
 typedef int((*funcPtr)(...));
+#else
+typedef int((*funcPtr)());
+#endif
 #else
 typedef int((*funcPtr)());
 #endif
