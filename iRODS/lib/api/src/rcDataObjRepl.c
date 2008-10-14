@@ -35,7 +35,7 @@ transStat_t **transStat)
     int status;
 
     status = procApiRequest (conn, DATA_OBJ_REPL_AN,  dataObjInp, NULL, 
-        (void **) &transStat, NULL);
+        (void **) transStat, NULL);
 
     return status;
 }
