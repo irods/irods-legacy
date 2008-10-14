@@ -673,11 +673,11 @@ int
 printLsColl (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 genQueryOut_t *genQueryOut)
 {
-    int i, status;
+    int i, status = 0;
     sqlResult_t *collName, *collType, *collInfo1, *collInfo2, *ownerName;
     char *tmpCollName, *tmpCollType, *tmpCollInfo1, *tmpCollInfo2,
       *tmpOwnerName;
-    int savedStatus;
+    int savedStatus = 0;
 
     if (genQueryOut == NULL) {
         return (USER__NULL_INPUT_ERR);
