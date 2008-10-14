@@ -153,11 +153,12 @@ acceptSrvPortal (rsComm_t *rsComm, portList_t *thisPortList)
     fd_set basemask;
     int nSockets, nSelected;
     int lsock = getTcpSockFromPortList (thisPortList);
+	struct timeval selectTimeout;
 
     nSockets = lsock + 1;
     FD_ZERO(&basemask);
     FD_SET(lsock, &basemask);
-    struct timeval selectTimeout;
+    
 
 
     selectTimeout.tv_sec = SELECT_TIMEOUT_FOR_CONN;
@@ -873,7 +874,9 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     int i, sock, myFd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
+#ifndef windows_platform
     pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
+#endif
     int retVal = 0;
     rodsLong_t dataSize;
     int oprType;
@@ -914,7 +917,9 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     myPortList = &portalOprOut->portList;
 
+#ifndef windows_platform
     memset (tid, 0, sizeof (tid));
+#endif
     memset (myInput, 0, sizeof (myInput));
 
     sock = connectToRhostPortal (myPortList->hostAddr,
@@ -1047,7 +1052,9 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     int i, out_fd, in_fd;
     int numThreads;
     portalTransferInp_t myInput[MAX_NUM_CONFIG_TRAN_THR];
+#ifndef windows_platform
     pthread_t tid[MAX_NUM_CONFIG_TRAN_THR];
+#endif
     int retVal = 0;
     rodsLong_t dataSize;
     rodsLong_t size0, size1, offset0;
@@ -1071,8 +1078,9 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
         return (SYS_INVALID_PORTAL_OPR);
     }
 
-
+#ifndef windows_platform
     memset (tid, 0, sizeof (tid));
+#endif
     memset (myInput, 0, sizeof (myInput));
 
     size0 = dataOprInp->dataSize / numThreads;

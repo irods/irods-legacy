@@ -4,14 +4,18 @@
 /* xmsgLib.c - library routines for irodsXmsg
  */
 
+#ifndef windows_platform
 #include <pthread.h>
+#endif
 #include "xmsgLib.h"
 #include "rsApiHandler.h"
 
+#ifndef windows_platform
 pthread_mutex_t ReqQueCondMutex;
 pthread_cond_t ReqQueCond;
 pthread_cond_t ReqQueCond;
 pthread_t ProcReqThread;
+#endif
 
 xmsgReq_t *XmsgReqHead = NULL;
 ticketHashQue_t XmsgHashQue[NUM_HASH_SLOT];
@@ -20,8 +24,10 @@ xmsgQue_t XmsgQue;
 int 
 initThreadEnv ()
 {
+#ifndef windows_platform
     pthread_mutex_init (&ReqQueCondMutex, NULL);
     pthread_cond_init (&ReqQueCond, NULL);
+#endif
 
     return (0);
 }
@@ -294,7 +300,9 @@ addReqToQue (int sock)
 {
     xmsgReq_t *myXmsgReq, *tmpXmsgReq;
 
+#ifndef windows_platform
     pthread_mutex_lock (&ReqQueCondMutex);
+#endif
     myXmsgReq = calloc (1, sizeof (xmsgReq_t));
 
     myXmsgReq->sock = sock;
@@ -308,8 +316,11 @@ addReqToQue (int sock)
 	}
 	tmpXmsgReq->next = myXmsgReq;
     }
+
+#ifndef windows_platform
     pthread_cond_signal (&ReqQueCond);
     pthread_mutex_unlock (&ReqQueCondMutex);
+#endif
 
     return (0);
 }
@@ -320,21 +331,32 @@ getReqFromQue ()
     xmsgReq_t *myXmsgReq = NULL;
 
     while (myXmsgReq == NULL) {
+#ifndef windows_platform
         pthread_mutex_lock (&ReqQueCondMutex);
+#endif
         if (XmsgReqHead != NULL) {
             myXmsgReq = XmsgReqHead;
             XmsgReqHead = XmsgReqHead->next;
+#ifndef windows_platform
             pthread_mutex_unlock (&ReqQueCondMutex);
+#endif
             break;
 	}
+
+#ifndef windows_platform
 	pthread_cond_wait (&ReqQueCond, &ReqQueCondMutex);
+#endif
         if (XmsgReqHead == NULL) {
+#ifndef windows_platform
 	    pthread_mutex_unlock (&ReqQueCondMutex);
+#endif
 	    continue;
 	} else {
             myXmsgReq = XmsgReqHead;
     	    XmsgReqHead = XmsgReqHead->next;
+#ifndef windows_platform
 	    pthread_mutex_unlock (&ReqQueCondMutex);
+#endif
 	    break;
 	}
     }
@@ -345,10 +367,11 @@ getReqFromQue ()
 int
 startXmsgThreads ()
 {
-    int status;
-
+    int status = 0;
+#ifndef windows_platform
     status = pthread_create(&ProcReqThread, NULL, 
       (void *(*)(void *)) procReqRoutine, (void *) NULL);
+#endif
 
     return (status);
 }
