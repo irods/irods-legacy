@@ -70,6 +70,7 @@ rodsHostAddr_t **rescAddr)
     *rescAddr = malloc (sizeof (rodsHostAddr_t));
     bzero (*rescAddr, sizeof (rodsHostAddr_t));
     rstrcpy ((*rescAddr)->hostAddr, rescInfo->rescLoc, NAME_LEN);
+    rstrcpy ((*rescAddr)->zoneName, ZoneInfoHead->zoneName, NAME_LEN);
 
     return (0);
 }
