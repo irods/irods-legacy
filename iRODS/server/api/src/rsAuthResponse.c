@@ -36,6 +36,9 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
       status = rsAuthCheck (rsComm, &authCheckInp, &authCheckOut);
    } else {
       status = rcAuthCheck (rodsServerHost->conn, &authCheckInp, &authCheckOut);
+      /* not likely we need this connection again */
+      rcDisconnect(rodsServerHost->conn);
+      rodsServerHost->conn = NULL;
    }
    if (status < 0) {
       rodsLog (LOG_NOTICE,
