@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -x 
+set -x
 
 myhost=`hostname`
 mydate=`date`
@@ -10,8 +10,8 @@ echo "$myhost:$mypwd $mydate irods2.sh starting"
 
 #cd IRODS_BUILD
 
-pgsql/bin/pg_ctl stop  
-pgsql/bin/pg_ctl status 
+pgsql/bin/pg_ctl stop
+pgsql/bin/pg_ctl status
 pgsql/bin/pg_ctl kill
 
 pgsql/bin/pg_ctl stop  -D pgsql/data
@@ -61,16 +61,19 @@ error1=$?
 #                  and it will mess up the irodsServer.[port]
 #                  file and start another REserver).
 # remember error code
-error2=$?
+error2=0
 
-./irodsctl test
+error3=0
+if [ $error1 -eq 0 ] ; then
+  ./irodsctl test
 # remember error code
-error3=$?
+  error3=$?
+fi 
 
 # Record the test logs into the main log file available via the web
 ls -lt server/test/bin/*.log
-cat server/test/bin/icatTest.log 
-cat server/test/bin/icatMiscTest.log 
+cat server/test/bin/icatTest.log
+cat server/test/bin/icatMiscTest.log
 cat server/test/bin/moveTest.log
 ls -lt /tmp/testRule_* /tmp/testSurvey_*
 cat /tmp/testRule_* /tmp/testSurvey_*
