@@ -29,7 +29,7 @@ addIntParamToArray (msParamArray_t *msParamArray, char *label, int inpInt)
     int *myInt;
     int status;
 
-    myInt = malloc (sizeof (int));
+    myInt = (int *)malloc (sizeof (int));
     *myInt = inpInt;
     status = addMsParamToArray (msParamArray, label, INT_MS_T, myInt, NULL, 0);
     return status;
