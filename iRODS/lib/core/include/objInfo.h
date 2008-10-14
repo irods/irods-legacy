@@ -247,6 +247,7 @@ typedef enum {	/* resource category */
 typedef enum {
     UNIX_FILE_TYPE,
     HPSS_FILE_TYPE,
+	NT_FILE_TYPE,
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
