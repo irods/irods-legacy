@@ -1427,10 +1427,11 @@ modExeInfoForRepeat(rsComm_t *rsComm, char *ruleExecId, char* pastTime,
     int status, status1;
     char myTimeNow[200];
     char myTimeNext[200];
+	ruleExecModInp_t ruleExecModInp;
+    ruleExecDelInp_t ruleExecDelInp;
+
     rstrcpy (myTimeNext, pastTime, 200);
     getOffsetTimeStr((char*)&myTimeNow, "                      ");
-    ruleExecModInp_t ruleExecModInp;
-    ruleExecDelInp_t ruleExecDelInp;
 
     status1 = getNextRepeatTime(myTimeNow, delay,myTimeNext);
 
