@@ -17,6 +17,7 @@
 #define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport 
 
 fileDriver_t FileDriverTable[] = {
+#ifndef windows_platform
     {UNIX_FILE_TYPE, unixFileCreate, unixFileOpen, unixFileRead, unixFileWrite,
     unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
     unxiFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
@@ -30,6 +31,13 @@ fileDriver_t FileDriverTable[] = {
     hpssFileGetFsFreeSpace, hpssFileTruncate},
 #else
     {HPSS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
+#else
+	{NT_FILE_TYPE, ntFileCreate, ntFileOpen, ntFileRead, ntFileWrite,
+    ntFileClose, ntFileUnlink, ntFileStat, ntFileFstat, ntFileLseek,
+    ntFileFsync, ntFileMkdir, ntFileChmod, ntFileRmdir, ntFileOpendir,
+    ntFileClosedir, ntFileReaddir, ntFileStage, ntFileRename,
+    ntFileGetFsFreeSpace, ntFileTruncate},
 #endif
 };
 
