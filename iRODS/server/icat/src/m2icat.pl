@@ -156,8 +156,8 @@ if ($SRBMode==1) {
 
 my $doMainStep="yes";
 if ( -e $sqlFile ) {
-    printf("Enter y or yes if you want this script to regenerate the $sqlFile,\n");
-    printf("the $iadminFile, and the $imetaFile:");
+    printf("Enter y or yes if you want this script to regenerate the command\n");
+    printf("files ($sqlFile, $iadminFile, and $imetaFile):");
     my $answer = <STDIN>;
     chomp( $answer );	# remove trailing return
     if ($answer eq "yes" || $answer eq "y") {
@@ -169,6 +169,7 @@ if ( -e $sqlFile ) {
 
 if ($doMainStep eq "yes") {
 
+    print("Generating command files\n");
     if ( open(  SQL_FILE, ">$sqlFile" ) == 0 ) {
 	die("open failed on output file " . $sqlFile);
     }
@@ -210,6 +211,8 @@ if ($doMainStep eq "yes") {
     close( IADMIN_FILE );
     close( SQL_FILE );
     close( IMETA_FILE );
+
+    printf("Command files $sqlFile, $iadminFile, and $imetaFile written\n");
 }
 
 $thisOS=`uname -s`;
@@ -476,13 +479,14 @@ sub processLogFile($) {
 		$v_owner = convertUser($values[9], $v_owner_domain);
 		$v_create_time = convertTime($values[15]);
 		$v_access_time = convertTime($values[16]);
+		$v_replica = $values[14];
 #		$v_collection = convertCollectionForData($values[27],
 #							 $v_owner,
 #							 $v_owner_domain);
 		$v_collection = convertCollection($values[27]);
 		if (checkDoCollection($values[27])==1) {
 		    print( SQL_FILE "begin;\n"); # begin/commit to make these 2 like 1
-		    print( SQL_FILE "insert into r_data_main (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((select nextval('R_ObjectID')), (select coll_id from r_coll_main where coll_name ='$v_collection'), '$v_dataName', '0', ' ', '$v_dataTypeName', '$v_size', '$newResource', '$v_phyPath', '$v_owner', '$cv_irodsZone', '1', '$v_create_time', '$v_access_time');\n");
+		    print( SQL_FILE "insert into r_data_main (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((select nextval('R_ObjectID')), (select coll_id from r_coll_main where coll_name ='$v_collection'), '$v_dataName', '$v_replica', ' ', '$v_dataTypeName', '$v_size', '$newResource', '$v_phyPath', '$v_owner', '$cv_irodsZone', '1', '$v_create_time', '$v_access_time');\n");
 
 		    getNow();
 		    print( SQL_FILE "insert into r_objt_access ( object_id, user_id, access_type_id , create_ts,  modify_ts) values ( (select currval('R_ObjectID')), (select user_id from r_user_main where user_name = '$v_owner'), '1200', '$nowTime', '$nowTime');\n");
@@ -564,8 +568,8 @@ sub processLogFile($) {
 		    $v_resc_type eq "unix file system") {
 		    $k = index($v_resc_path, "/?");
 		    $newPath = substr($v_resc_path, 0, $k);
-		    push(@cv_srb_resources, $v_resc_name);
 		    if ($v_resc_name ne "sdsc-fs") { # skip special built-in
+			push(@cv_srb_resources, $v_resc_name);
 			$newName = "SRB-" . $v_resc_name;
 			push(@cv_irods_resources, $newName);
 			print( IADMIN_FILE "mkresc '$newName' '$v_resc_type' 'archive' '$resc_hostaddress' $newPath\n");
@@ -598,7 +602,8 @@ sub processLogFile($) {
 		}
 		if ($didOne) {
 		    # give our admin user access for setting metadata
-		    addAccess($v_dataobj_collection, $v_dataobj_name);
+#		    addAccess($v_dataobj_collection, $v_dataobj_name);
+# Changed to use the adda command instead of add; adda is privileged.
 		}
 	    }
 
