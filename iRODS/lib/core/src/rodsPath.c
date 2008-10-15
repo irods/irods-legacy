@@ -230,6 +230,8 @@ getFileType (rodsPath_t *rodsPath)
     struct stat statbuf;
     int status;
 
+    /* XXXX need to use lstat to follow symbolic link. to be done later. 
+     * also needs to call symlink to get the real path */
     status = stat (rodsPath->outPath, &statbuf);
 
     if (status < 0) {
