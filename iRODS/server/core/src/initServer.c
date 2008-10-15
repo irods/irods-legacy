@@ -27,6 +27,7 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     myHostAddr = addr->hostAddr;
 
     if (strlen (myHostAddr) == 0) {
+	*rodsServerHost = ServerHostHead;
         return LOCAL_HOST;
     }
     if (strlen (addr->zoneName) == 0) {
@@ -928,7 +929,13 @@ initZone (rsComm_t *rsComm)
 		  myEnv->rodsZone, tmpZoneName);
 	    }
 	    continue;
+	} else if (strlen (tmpZoneConn) <= 0) {
+            rodsLog (LOG_ERROR,
+              "initZone: connection info for zone %s not configured",
+               tmpZoneName);
+	    continue;
 	}
+ 
         memset (&addr, 0, sizeof (addr));
 	/* assume address:port */
 	if (splitPathByKey (tmpZoneConn, addr.hostAddr, port, ':') < 0) {
@@ -940,9 +947,9 @@ initZone (rsComm_t *rsComm)
         status = resolveHost (&addr, &tmpRodsServerHost);
 	if (status < 0) {
 	    rodsLog (LOG_ERROR,
-              "initZone: resolveHost error for %s. status = %d",
-               addr.hostAddr);
-	    return (status);
+              "initZone: resolveHost error for %s for zone %s. status = %d",
+               addr.hostAddr, tmpZoneName, status);
+	    continue;
 	}
 	tmpRodsServerHost->rcatEnabled = REMOTE_ICAT;
         queZone (tmpZoneName, addr.portNum, tmpRodsServerHost, NULL);
