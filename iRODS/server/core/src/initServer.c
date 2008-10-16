@@ -951,6 +951,12 @@ initZone (rsComm_t *rsComm)
                addr.hostAddr, tmpZoneName, status);
 	    continue;
 	}
+	if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) { 
+	    rodsLog (LOG_ERROR,
+              "initZone: address %s for remote zone %s already in use",
+               tmpZoneConn, tmpZoneName);
+	    continue;
+	}
 	tmpRodsServerHost->rcatEnabled = REMOTE_ICAT;
         queZone (tmpZoneName, addr.portNum, tmpRodsServerHost, NULL);
     }
