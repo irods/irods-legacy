@@ -28,18 +28,24 @@ rodsPathInp_t *rodsPathInp)
 
     if (rodsPathInp->numSrc <= 0) {
 	char trashPath[MAX_NAME_LEN];
+	char *myZoneName;
 
+	if (myRodsArgs->zoneName != NULL) {
+	    myZoneName = myRodsArgs->zoneName;
+	} else {
+	    myZoneName = conn->clientUser.rodsZone;
+	}
 	if (myRodsArgs->admin == True) {
 	    if (myRodsArgs->user == True) {
 		snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home/%s",
-		  conn->clientUser.rodsZone, myRodsArgs->userString);
+		  myZoneName, myRodsArgs->userString);
 	    } else {
 		snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home",
-                  conn->clientUser.rodsZone);
+                  myZoneName);
 	    }
 	} else {
             snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home/%s",
-              conn->clientUser.rodsZone, conn->clientUser.userName);
+              myZoneName, conn->clientUser.userName);
 	}
         addSrcInPath (rodsPathInp, trashPath);
 	rstrcpy (rodsPathInp->srcPath[0].outPath, trashPath, MAX_NAME_LEN);
@@ -149,6 +155,12 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
         addKeyVal (&dataObjInp->condInput, IRODS_RMTRASH_KW, "");
         addKeyVal (&collInp->condInput, IRODS_RMTRASH_KW, "");
     }
+
+    if (rodsArgs->zone == True) {
+	addKeyVal (&collInp->condInput, ZONE_KW, rodsArgs->zoneName);
+	addKeyVal (&dataObjInp->condInput, ZONE_KW, rodsArgs->zoneName);
+    }
+
 
 #ifdef windows_platform
 	srand((unsigned int) time(0) % getpid());

@@ -234,6 +234,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          break;
       case 'z':
          rodsArgs->zone=True;
+         rodsArgs->zoneName=optarg;
          break;
       case 'Z':
 	 /* noop; Z is placeholder for the long options */

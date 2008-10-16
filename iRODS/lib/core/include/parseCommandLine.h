@@ -77,6 +77,7 @@ typedef struct {
    int verbose;
    int veryVerbose;
    int zone;
+   char *zoneName;
    int verify;
    int extract; 
    int restart;
