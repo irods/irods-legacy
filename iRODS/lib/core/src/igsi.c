@@ -837,25 +837,26 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
     (void) gettimeofday(&startTimeFunc, (struct timezone *) 0);
 #endif
 
-    /*
-     * Import the name into target_name.
-     */
-    name_buffer.value = serviceName;
-    name_buffer.length = strlen(serviceName) + 1;
+    if (serviceName != 0 && strlen(serviceName)>0) {
+       /*
+	* Import the name into target_name.
+	*/
+       name_buffer.value = serviceName;
+       name_buffer.length = strlen(serviceName) + 1;
 
-
-    majorStatus = gss_import_name(&minorStatus, &name_buffer,
+       majorStatus = gss_import_name(&minorStatus, &name_buffer,
 			       (gss_OID) gss_nt_service_name_gsi,
 			       &target_name);
 
-    if (majorStatus != GSS_S_COMPLETE) {
+       if (majorStatus != GSS_S_COMPLETE) {
        /* could use "if (GSS_ERROR(majorStatus))" but I believe it should
           always be GSS_S_COMPLETE if successful  */
-        _igsiLogError
+          _igsiLogError
             ("importing name (igsiEstablishContextClientside)", majorStatus,
              minorStatus);
-        return GSI_ERROR_IMPORT_NAME; 
-    } 
+	  return GSI_ERROR_IMPORT_NAME; 
+       } 
+    }
     /*
      * Perform the context-establishment loop.
      *
@@ -882,14 +883,24 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
         if (igsiDebugFlag > 0) 
             fprintf(stderr, "--> calling gss_init_sec_context\n");
 
-	majorStatus = gss_init_sec_context(&minorStatus,
-                       /* was: GSS_C_NO_CREDENTIAL, */
+	if (serviceName != 0 && strlen(serviceName)>0) {
+	   majorStatus = gss_init_sec_context(&minorStatus,
+                       myCreds, &context[fd], target_name, oid, 
+                       flags, 0, 
+                       NULL,   /* no channel bindings */
+                       tokenPtr, NULL,    /* ignore mech type */
+                       &send_tok, &context_flags, 
+                       NULL);   /* ignore time_rec */
+	}
+	else {
+	   majorStatus = gss_init_sec_context(&minorStatus,
                        myCreds, &context[fd], GSS_C_NO_NAME, oid, 
                        flags, 0, 
                        NULL,   /* no channel bindings */
                        tokenPtr, NULL,    /* ignore mech type */
                        &send_tok, &context_flags, 
                        NULL);   /* ignore time_rec */
+	}
 
         /* since recv_tok is not malloc'ed, don't need to call
            gss_release_buffer, instead clear it. */

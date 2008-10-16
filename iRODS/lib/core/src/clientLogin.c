@@ -37,6 +37,7 @@ int clientLoginGsi(rcComm_t *Conn)
    int status;
    gsiAuthRequestOut_t *gsiAuthReqOut;
    char *myName;
+   char *serverDN;
 
    status = igsiSetupCreds(Conn, NULL, NULL, &myName);
 
@@ -55,7 +56,9 @@ int clientLoginGsi(rcComm_t *Conn)
 
    /*   printf("Server-side DN is:%s\n", gsiAuthReqOut->serverDN); */
 
-   status = igsiEstablishContextClientside(Conn, myName,
+   serverDN = getenv("SERVER_DN");  /* NULL or the SERVER_DN string */
+
+   status = igsiEstablishContextClientside(Conn, serverDN,
 			       0);
    if (status) {
       printError(Conn, status, "igsiEstablishContextClientside");
