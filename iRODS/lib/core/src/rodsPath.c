@@ -610,6 +610,7 @@ getLastPathElement (char *inInPath, char *lastElement)
     char mydir[MAX_NAME_LEN];
 	char inPath[MAX_NAME_LEN];
     int len;
+    char *tmpPtr1, *tmpPtr2;
 
     if (inInPath == NULL) {
         *lastElement = '\0';
@@ -626,15 +627,35 @@ getLastPathElement (char *inInPath, char *lastElement)
     len = strlen (lastElement);
 
     if (len == 0) {
-	len = strlen (inPath);
-	if (len == 0) {
-	    *lastElement = '\0';
-	    return (0);
-	} else {
-	    rstrcpy (lastElement, inPath, MAX_NAME_LEN);
+        len = strlen (inPath);
+        if (len == 0) {
+            *lastElement = '\0';
+            return (0);
+        } else {
+            rstrcpy (lastElement, inPath, MAX_NAME_LEN);
+            len = strlen (lastElement);
+        }
+    }
+
+    tmpPtr1 = lastElement + len;
+    if (len >= 2) {
+	tmpPtr2 = tmpPtr1 - 2;
+        if (strcmp (tmpPtr2, "/.") == 0 || strcmp (tmpPtr2, "..") == 0) {
+	    *tmpPtr2 = '\0';
+	    return 0;
+	}
+    } 
+
+    if (len >= 1) {
+	tmpPtr2 = tmpPtr1 - 1;
+        if (*tmpPtr2 == '.' || *tmpPtr2 == '~' ||
+          *tmpPtr2 == '^' || *tmpPtr2 == '/') {
+            *tmpPtr2 = '\0';
+	    return 0;
 	}
     }
 
+#if 0
     if (len == 1 && (*lastElement == '.' || *lastElement == '~' ||
       *lastElement == '^' || *lastElement == '/')) {
         *lastElement = '\0';
@@ -642,6 +663,7 @@ getLastPathElement (char *inInPath, char *lastElement)
 	/* ".." */
        *lastElement = '\0';
     }
+#endif
 
     return (0); 
 }
