@@ -441,7 +441,12 @@ getZoneNameFromHint (char *rcatZoneHint, char *zoneName, int len)
 	    outPtr ++;
 	    hintPtr ++;
 	}
-	*outPtr = '\0';
+	/* take out the last ' */
+	if (*(outPtr - 1) == '\'') {
+	    *(outPtr - 1) = '\0';
+	} else {
+	    *outPtr = '\0';
+	}
     } else {
 	/* just a zoneName */
 	rstrcpy (zoneName, rcatZoneHint, len);
