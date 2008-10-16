@@ -71,6 +71,7 @@ rodsHostAddr_t **rescAddr)
     bzero (*rescAddr, sizeof (rodsHostAddr_t));
     rstrcpy ((*rescAddr)->hostAddr, rescInfo->rescLoc, NAME_LEN);
     rstrcpy ((*rescAddr)->zoneName, ZoneInfoHead->zoneName, NAME_LEN);
+    if (myRescGrpInfo != NULL) freeAllRescGrpInfo (myRescGrpInfo);
 
     return (0);
 }
