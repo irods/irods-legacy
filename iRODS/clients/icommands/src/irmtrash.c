@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hru:vVM";
+    optStr = "hru:vVz:M";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status < 0) {
@@ -82,7 +82,7 @@ void
 usage ()
 {
    char *msgs[]={
-   "Usage : irmtrash [-hMrvV] [-u user] [dataObj|collection ...] ",
+   "Usage : irmtrash [-hMrvV] [-u user] [-z zoneName] [dataObj|collection ...] ",
 "Remove one or more data-object or collection from a RODS trash bin.",
 "If the input dataObj|collection is not specified, the entire trash bin",
 "of the user (/$myZone/trash/$myUserBame) will be removed.",
@@ -106,6 +106,7 @@ usage ()
 "     specific user's trash bin.",
 " -v  verbose",
 " -V  Very verbose",
+" -z  zoneName - the zone where the rm trash will be carried out",
 " -h  this help",
 ""};
    int i;
