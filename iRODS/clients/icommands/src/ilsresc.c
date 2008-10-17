@@ -73,7 +73,6 @@ showResc(char *name, int longOption)
    int i2a[20];
    char *condVal[10];
    char v1[BIG_STR];
-   char v2[BIG_STR];
    int i, status;
    int printCount;
    char *columnNames[]={"resource name", "resc id", "zone", "type", "class",
@@ -117,10 +116,9 @@ showResc(char *name, int longOption)
    else {
       genQueryInp.sqlCondInp.len=0;
    }
+
    if (zoneArgument[0]!='\0') {
-      i2a[genQueryInp.sqlCondInp.len]=COL_R_ZONE_NAME;
-      sprintf(v2,"='%s'",zoneArgument);
-      condVal[genQueryInp.sqlCondInp.len++]=v2;
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
    }
 
    genQueryInp.maxRows=50;
@@ -173,7 +171,6 @@ showOneRescGroup(char *rescGroupName, int longOption)
    int i2a[20];
    char *condVal[10];
    char v1[BIG_STR];
-   char v2[BIG_STR];
    int i, status;
    char *tResult;
 
@@ -194,9 +191,7 @@ showOneRescGroup(char *rescGroupName, int longOption)
    genQueryInp.sqlCondInp.len=1;
 
    if (zoneArgument[0]!='\0') {
-      i2a[genQueryInp.sqlCondInp.len]=COL_R_ZONE_NAME;
-      sprintf(v2,"='%s'",zoneArgument);
-      condVal[genQueryInp.sqlCondInp.len++]=v2;
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
    }
 
    genQueryInp.maxRows=50;
@@ -255,7 +250,6 @@ showRescGroups(int longOption)
    int i2a[20];
    char *condVal[10];
    int i, status;
-   char v1[BIG_STR];
 
    memset(&genQueryInp, 0, sizeof(genQueryInp));
 
@@ -272,9 +266,7 @@ showRescGroups(int longOption)
    genQueryInp.sqlCondInp.len=0;
 
    if (zoneArgument[0]!='\0') {
-      i2a[genQueryInp.sqlCondInp.len]=COL_R_ZONE_NAME;
-      sprintf(v1,"='%s'",zoneArgument);
-      condVal[genQueryInp.sqlCondInp.len++]=v1;
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
    }
 
    genQueryInp.maxRows=50;
