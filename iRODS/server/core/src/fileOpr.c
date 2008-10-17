@@ -299,7 +299,7 @@ int
 matchCliVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost)
 {
-    int len, count;
+    int len, nameLen;
     char *tmpPath;
     char *outVaultPath = NULL;
 
@@ -310,10 +310,26 @@ rodsServerHost_t *rodsServerHost)
 	return (0);
     }
 
-    /* assume the path is $(vaultPath/myzone/home/userName */
+    /* assume the path is $(vaultPath/myzone/home/userName or 
+     * $(vaultPath/home/userName */
+
+    nameLen = strlen (rsComm->clientUser.userName);
 
     tmpPath = filePath + len + 1;    /* skip the vault path */
 
+    if ((tmpPath = strchr (tmpPath, '/')) == NULL) return 0;
+    tmpPath++;
+    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0) 
+	return 1;
+
+    if ((tmpPath = strchr (tmpPath, '/')) == NULL) return 0;
+    tmpPath++;
+    if (strncmp (tmpPath, rsComm->clientUser.userName, nameLen) == 0) 
+        return 1;
+    else
+	return 0;
+
+#if 0
     /* skip two more '/' */
 
     count = 0;
@@ -338,5 +354,6 @@ rodsServerHost_t *rodsServerHost)
     } else {
 	return (0);
     }
+#endif
 }
 
