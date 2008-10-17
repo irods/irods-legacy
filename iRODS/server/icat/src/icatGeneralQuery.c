@@ -1201,6 +1201,11 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
 		ACCESS_PERMISSION_KW)==0)  accessIx=i;
 
    }
+   if (genQueryInp.condInput.len==1 && 
+       strcmp(genQueryInp.condInput.keyWord[0], ZONE_KW)==0) {
+       return(0);
+   }
+
    if (userIx<0 || zoneIx<0 || accessIx<0) return(CAT_INVALID_ARGUMENT);
 
    /* Try to find the dataId and/or collID in the output */
