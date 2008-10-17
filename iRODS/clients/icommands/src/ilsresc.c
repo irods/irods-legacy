@@ -13,6 +13,8 @@
 
 rcComm_t *Conn;
 
+char zoneArgument[MAX_NAME_LEN+2]="";
+
 void usage();
 
 /* 
@@ -71,6 +73,7 @@ showResc(char *name, int longOption)
    int i2a[20];
    char *condVal[10];
    char v1[BIG_STR];
+   char v2[BIG_STR];
    int i, status;
    int printCount;
    char *columnNames[]={"resource name", "resc id", "zone", "type", "class",
@@ -114,6 +117,11 @@ showResc(char *name, int longOption)
    else {
       genQueryInp.sqlCondInp.len=0;
    }
+   if (zoneArgument[0]!='\0') {
+      i2a[genQueryInp.sqlCondInp.len]=COL_R_ZONE_NAME;
+      sprintf(v2,"='%s'",zoneArgument);
+      condVal[genQueryInp.sqlCondInp.len++]=v2;
+   }
 
    genQueryInp.maxRows=50;
    genQueryInp.continueInx=0;
@@ -127,7 +135,12 @@ showResc(char *name, int longOption)
 	 return(0);
       }
       if (status == CAT_NO_ROWS_FOUND) {
-	 printf("Resource %s does not exist.\n", name);
+	 if (name!=NULL && name[0]!='\0') {
+	    printf("Resource %s does not exist.\n", name);
+	 }
+	 else {
+	    printf("Resource does not exist.\n");
+	 }
 	 return(0);
       }
    }
@@ -160,6 +173,7 @@ showOneRescGroup(char *rescGroupName, int longOption)
    int i2a[20];
    char *condVal[10];
    char v1[BIG_STR];
+   char v2[BIG_STR];
    int i, status;
    char *tResult;
 
@@ -178,6 +192,12 @@ showOneRescGroup(char *rescGroupName, int longOption)
    sprintf(v1,"='%s'",rescGroupName);
    condVal[0]=v1;
    genQueryInp.sqlCondInp.len=1;
+
+   if (zoneArgument[0]!='\0') {
+      i2a[genQueryInp.sqlCondInp.len]=COL_R_ZONE_NAME;
+      sprintf(v2,"='%s'",zoneArgument);
+      condVal[genQueryInp.sqlCondInp.len++]=v2;
+   }
 
    genQueryInp.maxRows=50;
    genQueryInp.continueInx=0;
@@ -235,6 +255,7 @@ showRescGroups(int longOption)
    int i2a[20];
    char *condVal[10];
    int i, status;
+   char v1[BIG_STR];
 
    memset(&genQueryInp, 0, sizeof(genQueryInp));
 
@@ -249,6 +270,12 @@ showRescGroups(int longOption)
    genQueryInp.sqlCondInp.value = condVal;
 
    genQueryInp.sqlCondInp.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      i2a[genQueryInp.sqlCondInp.len]=COL_R_ZONE_NAME;
+      sprintf(v1,"='%s'",zoneArgument);
+      condVal[genQueryInp.sqlCondInp.len++]=v1;
+   }
 
    genQueryInp.maxRows=50;
    genQueryInp.continueInx=0;
@@ -307,7 +334,7 @@ main(int argc, char **argv) {
 
    rodsLogLevel(LOG_ERROR);
 
-   status = parseCmdLineOpt (argc, argv, "hvVl", 0, &myRodsArgs);
+   status = parseCmdLineOpt (argc, argv, "hvVlz:", 0, &myRodsArgs);
    if (status) {
       printf("Use -h for help.\n");
       exit(1);
@@ -316,6 +343,10 @@ main(int argc, char **argv) {
    if (myRodsArgs.help==True) {
       usage();
       exit(0);
+   }
+
+   if (myRodsArgs.zone==True) {
+      strncpy(zoneArgument, myRodsArgs.zoneName, MAX_NAME_LEN);
    }
 
    status = getRodsEnv (&myEnv);
@@ -384,6 +415,7 @@ void usage()
 " -l Long format - list details",
 " -v verbose",
 " -V Very verbose",
+" -z Zonename  list resources of specified Zone",
 " -h This help",
 ""};
    int i;
