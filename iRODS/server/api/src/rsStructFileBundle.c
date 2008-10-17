@@ -20,7 +20,8 @@ structFileExtAndRegInp_t *structFileBundleInp)
     structFileOprInp_t structFileOprInp;
     chkObjPermAndStat_t chkObjPermAndStatInp;
     int l1descInx;
-
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
     /* open the structured file */
     memset (&dataObjInp, 0, sizeof (dataObjInp));
@@ -31,6 +32,17 @@ structFileExtAndRegInp_t *structFileBundleInp)
     replKeyVal (&structFileBundleInp->condInput, &dataObjInp.condInput);
 
     dataObjInp.openFlags = O_WRONLY;  
+    remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
+      REMOTE_CREATE);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = rcStructFileBundle (rodsServerHost->conn, 
+	  structFileBundleInp);
+        return status;
+    }
+
     l1descInx = _rsDataObjOpen (rsComm, &dataObjInp, DO_NOT_PHYOPEN);
 
     if (l1descInx < 0) {

@@ -21,18 +21,32 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
     structFileOprInp_t structFileOprInp;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, structFileExtAndRegInp->objPath,
+      MAX_NAME_LEN);
+
+    /* replicate the condInput. may have resource input */
+    replKeyVal (&structFileExtAndRegInp->condInput, &dataObjInp.condInput);
+    dataObjInp.openFlags = O_RDONLY;
+
+    remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
+      REMOTE_OPEN);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = rcStructFileExtAndReg (rodsServerHost->conn, 
+          structFileExtAndRegInp);
+        return status;
+    }
 
     status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection);
     if (status < 0) return status;
 
     /* open the structured file */
-    memset (&dataObjInp, 0, sizeof (dataObjInp));
-    rstrcpy (dataObjInp.objPath, structFileExtAndRegInp->objPath, 
-      MAX_NAME_LEN);
- 
-    /* replicate the condInput. may have resource input */
-    replKeyVal (&structFileExtAndRegInp->condInput, &dataObjInp.condInput);
-    dataObjInp.openFlags = O_RDONLY;  
     l1descInx = _rsDataObjOpen (rsComm, &dataObjInp, DO_NOT_PHYOPEN);
 
     if (l1descInx < 0) {
