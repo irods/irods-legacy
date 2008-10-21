@@ -31,7 +31,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     int l1descInx;
     int status;
-    int phyOpenFlag;
     rodsObjStat_t *rodsObjStatOut = NULL;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
@@ -48,11 +47,13 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (l1descInx);
     }
 
+#if 0
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
 	phyOpenFlag = DO_NOT_PHYOPEN;
     } else {
 	phyOpenFlag = DO_PHYOPEN;
     }
+#endif
 
     /* dataObj only */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
@@ -81,7 +82,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                 rodsObjStatOut->specColl = NULL;
 	    }
             dataObjInp->openFlags |= O_TRUNC;
-            l1descInx = _rsDataObjOpen (rsComm, dataObjInp, phyOpenFlag);
+            l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
             l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
         }

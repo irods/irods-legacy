@@ -68,7 +68,8 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
 
 
     /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
-    l1descInx = _rsDataObjOpen (rsComm, dataObjInp, PHYOPEN_BY_SIZE);
+    addKeyVal (&dataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "");
+    l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
 
     if (l1descInx < 0)
         return l1descInx;

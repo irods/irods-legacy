@@ -54,7 +54,8 @@ transStat_t **transStat)
 	return (USER_INPUT_PATH_ERR);
     }
 	
-    srcL1descInx = _rsDataObjOpen (rsComm, srcDataObjInp, PHYOPEN_BY_SIZE);
+    addKeyVal (&srcDataObjInp->condInput, PHYOPEN_BY_SIZE_KW, "");
+    srcL1descInx = rsDataObjOpen (rsComm, srcDataObjInp);
 
     if (srcL1descInx < 0)
         return srcL1descInx;

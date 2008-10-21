@@ -35,7 +35,7 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         l1descInx = allocAndSetL1descForZoneOpr (status, rodsServerHost);
         return (l1descInx);
     } else {
-        l1descInx = _rsDataObjOpen (rsComm, dataObjInp, DO_PHYOPEN);
+        l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
     }
 
     return (l1descInx);
@@ -50,7 +50,7 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
  */
  
 int
-_rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
+_rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 {
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL;
@@ -59,6 +59,14 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
     dataObjInfo_t *tmpDataObjInfo; 
     int l1descInx;
     int writeFlag;
+    int phyOpenFlag = DO_PHYOPEN;
+
+    if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
+	phyOpenFlag = DO_NOT_PHYOPEN;
+    } else if (getValByKey (&dataObjInp->condInput, PHYOPEN_BY_SIZE_KW) 
+      != NULL) {
+	phyOpenFlag = PHYOPEN_BY_SIZE;
+    }
 
     /* query rcat for dataObjInfo and sort it */
 
@@ -78,24 +86,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag)
         sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp->condInput,
          writeFlag);
 
-#if 0
-        initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-	rei.doi = dataObjInfoHead;
-
-        status = applyRule ("acPreprocForDataObjOpen", NULL, &rei, NO_SAVE_REI);
-
-        if (status < 0) {
-            if (rei.status < 0) {
-                status = rei.status;
-	    }
-            rodsLog (LOG_NOTICE,
-             "rsDataObjOpen:acPreprocForDataObjOpen error for %s,status=%d",
-              dataObjInp->objPath, status);
-            return (status);
-        } else {
-            dataObjInfoHead = rei.doi;
-        }
-#endif
         status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
         if (status < 0) return status;
     }

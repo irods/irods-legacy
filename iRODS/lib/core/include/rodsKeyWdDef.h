@@ -37,6 +37,7 @@
 #define DATA_ACCESS_KW	"dataAccess"
 #define DATA_ACCESS_INX_KW	"dataAccessInx"
 #define NO_OPEN_FLAG_KW	"noOpenFlag"
+#define PHYOPEN_BY_SIZE_KW "phyOpenBySize"
 #define STREAMING_KW	"streaming"
 #define DATA_ID_KW     "dataId"
 #define COLL_ID_KW     "collId"

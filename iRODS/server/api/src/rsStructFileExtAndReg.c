@@ -47,7 +47,8 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     if (status < 0) return status;
 
     /* open the structured file */
-    l1descInx = _rsDataObjOpen (rsComm, &dataObjInp, DO_NOT_PHYOPEN);
+    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
+    l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
 
     if (l1descInx < 0) {
         rodsLog (LOG_ERROR,

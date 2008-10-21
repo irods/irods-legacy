@@ -30,7 +30,7 @@ int
 _rsDataObjOpenWithObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 int phyOpenFlag, dataObjInfo_t *dataObjInfo);
 int
-_rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int phyOpenFlag);
+_rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int
 dataOpen (rsComm_t *rsComm, int l1descInx);
 int

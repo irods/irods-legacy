@@ -43,7 +43,8 @@ structFileExtAndRegInp_t *structFileBundleInp)
         return status;
     }
 
-    l1descInx = _rsDataObjOpen (rsComm, &dataObjInp, DO_NOT_PHYOPEN);
+    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
+    l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
 
     if (l1descInx < 0) {
 	if (getValByKey (&dataObjInp.condInput, DEST_RESC_NAME_KW) == NULL) {
