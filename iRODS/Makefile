@@ -42,6 +42,13 @@ REACTION_MASTERS =	$(svrReIncDir)/reAction.header \
 REACTION_MODULE_HEADER = microservices/include/microservices.header
 REACTION_MODULE_TABLE = microservices/include/microservices.table
 
+#
+# On Solaris, use /bin/sed not possibly /usr/xpg4/bin/sed
+#
+SED = sed
+ifeq ($(OS_platform), solaris_platform)
+SED = /bin/sed
+endif
 
 
 
@@ -99,11 +106,10 @@ server:	reaction server_ldflags server_cflags libs modules
 	@echo "Server"
 	@echo "------------------------------------------------------------------------"
 	@MODULE_LDFLAGS=`cat $(SERVER_LDFLAGS_TMP)` && export MODULE_LDFLAGS && \
-		MODULE_OBJS=`cat $(SERVER_LDFLAGS_TMP) | sed s/-L.*//g` && export MODULE_OBJS && \
+		MODULE_OBJS=`cat $(SERVER_LDFLAGS_TMP) | $(SED) s/-L.*//g` && export MODULE_OBJS && \
 		MODULE_CFLAGS=`cat $(SERVER_CFLAGS_TMP)` && export MODULE_CFLAGS && \
 		$(MAKE) -C server all
 	@echo " "
-
 
 
 
