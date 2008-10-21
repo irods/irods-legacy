@@ -27,7 +27,7 @@ bytesBuf_t *dataObjReadOutBBuf)
     }
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         /* cross zone operation */
-        dataObjReadInp->l1descInx = L1desc[l1descInx].l3descInx;
+        dataObjReadInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
         bytesRead = rcDataObjRead (L1desc[l1descInx].remoteZoneHost->conn,
           dataObjReadInp, dataObjReadOutBBuf);
 	dataObjReadInp->l1descInx = l1descInx;

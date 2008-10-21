@@ -30,12 +30,15 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
+	addKeyVal (&dataObjInp->condInput, RETURN_L3INX_KW, "");
         status = rcDataObjOpen (rodsServerHost->conn, dataObjInp);
         if (status < 0) return status;
         l1descInx = allocAndSetL1descForZoneOpr (status, rodsServerHost);
         return (l1descInx);
     } else {
         l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
+        if (getValByKey (&dataObjInp->condInput, RETURN_L3INX_KW) != NULL)
+	    l1descInx |= L1desc[l1descInx].l3descInx << 16;
     }
 
     return (l1descInx);

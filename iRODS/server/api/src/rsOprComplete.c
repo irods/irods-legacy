@@ -12,7 +12,7 @@ int rsOprComplete (rsComm_t *rsComm, int *retval)
 
         if (L1desc[l1descInx].remoteZoneHost != NULL) {
             *retval = rcOprComplete (L1desc[l1descInx].remoteZoneHost->conn,
-	      L1desc[l1descInx].l3descInx);
+	      L1desc[l1descInx].remoteL1descInx);
 	    freeL1desc (l1descInx);
 	} else {
             memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));

@@ -52,7 +52,7 @@ rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
 
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
 	/* cross zone operation */
-	dataObjCloseInp->l1descInx = L1desc[l1descInx].l3descInx;
+	dataObjCloseInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
 	status = rcDataObjClose (L1desc[l1descInx].remoteZoneHost->conn, 
 	  dataObjCloseInp);
 	freeL1desc (l1descInx);

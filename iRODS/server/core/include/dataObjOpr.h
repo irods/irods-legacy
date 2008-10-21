@@ -49,6 +49,7 @@ typedef struct l1desc {
 #ifdef LOG_TRANSFERS
     struct timeval openStartTime;
 #endif
+    int remoteL1descInx;
     rodsServerHost_t *remoteZoneHost;
 } l1desc_t;
 

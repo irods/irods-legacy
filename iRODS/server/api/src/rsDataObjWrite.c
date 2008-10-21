@@ -28,7 +28,7 @@ bytesBuf_t *dataObjWriteInpBBuf)
 
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         /* cross zone operation */
-        dataObjWriteInp->l1descInx = L1desc[l1descInx].l3descInx;
+        dataObjWriteInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
         bytesWritten = rcDataObjWrite (L1desc[l1descInx].remoteZoneHost->conn,
           dataObjWriteInp, dataObjWriteInpBBuf);
         dataObjWriteInp->l1descInx = l1descInx;

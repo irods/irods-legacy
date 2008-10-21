@@ -32,7 +32,7 @@ fileLseekOut_t **dataObjLseekOut)
 
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         /* cross zone operation */
-        dataObjLseekInp->fileInx = L1desc[l1descInx].l3descInx;
+        dataObjLseekInp->fileInx = L1desc[l1descInx].remoteL1descInx;
         status = rcDataObjLseek (L1desc[l1descInx].remoteZoneHost->conn,
           dataObjLseekInp, dataObjLseekOut);
         dataObjLseekInp->fileInx = l1descInx;
