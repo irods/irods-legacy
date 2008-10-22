@@ -144,7 +144,7 @@ dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize)
     condInput = &dataObjInp->condInput;
 
     if (dataObjInp != NULL) { 
-        if (getValByKey (&dataObjInp->condInput, REPL_DATA_OBJ_INP) != NULL) {
+        if (getValByKey (&dataObjInp->condInput, REPL_DATA_OBJ_INP_KW) != NULL) {
 	    L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
 	    replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
 	    L1desc[l1descInx].dataObjInpReplFlag = 1;
