@@ -31,14 +31,14 @@
 #include "h5Dataset.h"
 #include "h5Group.h"
 
-#define NOJPEG
+#define JPEG
 
 #ifdef JPEG
 #include "jpeglib.h"
 #include "jerror.h"
 #endif
 
-#define DEBUG
+#define NODEBUG
 #define NAME_LENGTH 120
 #define LINE_LENGTH 120
 #define VAR_LENGTH 5 
@@ -180,7 +180,18 @@ rodsConnect()
     return conn;
 }
 
-/* get default outfile name. */
+/* 
+   Name:
+       get_defualt_outfile_name()
+
+   Purpose:
+       get the default name of the output file.
+
+   Description:
+       When the name of the output file is not given from the command line, 
+       get_defualt_outfile_name() will create a default file name based on
+       the name of input file, name of the dataset, slice orientation, and etc.
+*/
 static void 
 get_defualt_outfile_name(const char *infile, char *outfile, int pos, 
     const char *var, float coor, int dims[], const char *ext)
@@ -271,12 +282,16 @@ write_jpeg_file(const char *fname, JSAMPLE *buf, int height,
 }
 #endif
 
+/*
+ *  Extract a slice based on the position, dataset, and coordinate of the 
+ *  slice. The slice data is saved to a float array
+ */
 static float *
 get_slice(const char *infile, int pos, const char *var, 
           float coor, int *sizes)
 {
     /* slcice parameter */
-    int    c, b, select;
+    int    c, b, select, is_float=0;
     int    i1, i2, j1, j2, i, j, k, ii, jj;
     int    tot_blocks, lrefmin, lrefmax;
     int    Nx, Ny, N1, N2, Nz, N1b, N2b, N1r, N2r, nxb, nyb, nzb;
@@ -285,8 +300,8 @@ get_slice(const char *infile, int pos, const char *var,
     float  dx, dy, dz;
     int    rebin_factor;
     int    *lrefine, *nodetype;
-    float  *slice=NULL;
-    double *data, *bnd_box;
+    float  *data_f, *slice=NULL;
+    double *data_d, *bnd_box, *bnd_box_cp=NULL;
 
     size_t *dims, *start, *stride, *count;
 
@@ -357,7 +372,7 @@ get_slice(const char *infile, int pos, const char *var,
     if (ret_val < 0)
         PRINT_ERROR("H5DATASET_OP_READ failed.");
     nodetype   = (int *)h5dset->value;
-    
+
 #ifdef DEBUG
     printf("node type:\n");
     for (i = 0; i < tot_blocks; i++)
@@ -380,7 +395,18 @@ get_slice(const char *infile, int pos, const char *var,
     ret_val = h5ObjRequest(conn, h5dset, H5OBJECT_DATASET);
     if (ret_val < 0)
         PRINT_ERROR("H5DATASET_OP_READ failed.");
-    bnd_box   = (double *)h5dset->value;
+
+    if (h5dset->type.size == 4) {
+        is_float = 1;
+        int npoints = h5dset->space.npoints;
+        bnd_box = (double *)malloc(npoints*sizeof(double));
+        float *bnd_box_f = (float *)h5dset->value;
+
+        for (i=0; i<npoints; i++)
+            bnd_box[i] = (double)bnd_box_f[i];
+        bnd_box_cp = bnd_box;
+     } else
+        bnd_box   = (double *)h5dset->value;
 
     xmin =  1.E99;
     xmax = -1.E99;
@@ -413,7 +439,9 @@ get_slice(const char *infile, int pos, const char *var,
         if (lrefine[i] > lrefmax) { lrefmax = lrefine[i]; }
     }
 
+#ifdef DEBUG
     printf("refinement levels: %d ... %d\n", lrefmin, lrefmax);
+#endif
 
     for (i=0; i<h5file->root->ndatasets; i++) {
         h5dset = (H5Dataset *) &(h5file->root->datasets[i]);
@@ -423,6 +451,7 @@ get_slice(const char *infile, int pos, const char *var,
             h5dset = NULL;
     }
 
+printf("\ndataset: %s\n", var);
 
     if (h5dset == NULL)
         PRINT_ERROR("Failed to open dataset.");
@@ -542,7 +571,11 @@ get_slice(const char *infile, int pos, const char *var,
         ret_val = h5ObjRequest(conn, h5dset, H5OBJECT_DATASET);
         if (ret_val < 0)
             PRINT_ERROR("H5DATASET_OP_READ failed.");
-        data = (double *)h5dset->value;
+
+        if (is_float)
+            data_f = (float *)h5dset->value;
+        else
+            data_d = (double *)h5dset->value;
     
         switch (pos) {
             case 0: 
@@ -556,7 +589,10 @@ get_slice(const char *infile, int pos, const char *var,
                     for (i = i1; i < i2; i++) {
                         ii = (i-i1)/rebin_factor;
                         jj = (j-j1)/rebin_factor;
-                        slice[i+j*N1] = (float)data[ii+jj*N1b+k*N1b*N2b];
+                        if (is_float)
+                            slice[i+j*N1] = data_f[ii+jj*N1b+k*N1b*N2b];
+                        else
+                            slice[i+j*N1] = (float)data_d[ii+jj*N1b+k*N1b*N2b];
                     }
                 }
                 break;
@@ -570,7 +606,10 @@ get_slice(const char *infile, int pos, const char *var,
                     for (i = i1; i < i2; i++) {
                         ii = (i-i1)/rebin_factor;
                         jj = (j-j1)/rebin_factor;
-                        slice[i+j*N1] = (float)data[ii+k*N1b+jj*N1b*N2b];
+                        if (is_float)
+                            slice[i+j*N1] = data_f[ii+k*N1b+jj*N1b*N2b];
+                        else
+                            slice[i+j*N1] = (float)data_d[ii+k*N1b+jj*N1b*N2b];
                     }
                 }
                 break;
@@ -584,29 +623,14 @@ get_slice(const char *infile, int pos, const char *var,
                     for (i = i1; i < i2; i++) {
                         ii = (i-i1)/rebin_factor;
                         jj = (j-j1)/rebin_factor;
-                        slice[i+j*N1] = (float)data[k+ii*N1b+jj*N1b*N2b];
+                        if (is_float)
+                            slice[i+j*N1] = data_f[k+ii*N1b+jj*N1b*N2b];
+                        else
+                            slice[i+j*N1] = (float)data_d[k+ii*N1b+jj*N1b*N2b];
                     }
                 }
                 break;
         } /* switch (pos) */
-	if (h5dset->value != NULL) {
-	    H5Dataset_freeBuffer(h5dset->value, h5dset->space, h5dset->type,  h5dset->nvalue);
-	    h5dset->value = 0;
-	}
-#if 0
-        if (h5dset->fullpath) {
-            free (h5dset->fullpath);
-            h5dset->fullpath = NULL;
-        }
-    if (h5dset->attributes)
-    {
-        for (i=0; i<h5dset->nattributes; i++)
-            H5Attribute_dtor(&h5dset->attributes[i]);
-        free(h5dset->attributes);
-        h5dset->attributes = NULL;
-    }
-#endif
-
     } /* for (b = 0; b < tot_blocks; b++) */
 
     sizes[0] = N1;
@@ -639,6 +663,9 @@ done:
         free (slice);
         slice = NULL;
     }
+  
+    if (bnd_box_cp)
+        free (bnd_box_cp);
 
     rcDisconnect(conn);
 
@@ -646,7 +673,9 @@ done:
 
 }
 
-/* write data into raw float data to file */
+/* 
+ * Write the slice data into a binary file (floats)
+ */
 static void
 write_float(const char *infile, char *outfile, int pos, const char *var, 
           float coor, int dims[], float *slice)
@@ -662,11 +691,21 @@ write_float(const char *infile, char *outfile, int pos, const char *var,
 }
 
 #ifdef JPEG
-/* read palette from file.
- * A palette file has format of (value, red, green, blue).
- * The color value in palette file can be either unsigned char [0..255] or
- * float [0..1]. Float value will be converted to [0..255].
- * return number of color entries in the color table.
+/* 
+ * read an image palette from a file.
+ *
+ * A palette file has format of (value, red, green, blue). The color value 
+ * in palette file can be either unsigned char [0..255] or float [0..1]. Float 
+ * value will be converted to [0..255].
+ * 
+ * The color table in file can have any number of entries between 2 to 256.
+ * It will be converted to a color table of 256 entries. Any missing index will
+ * calculated by linear interpolation between the neighboring index values.
+ * For example, index 11 is missing in the following table
+ *             10  200 60  20
+ *             12  100 100 60
+ * Index 11 will be calculated based on index 10 and index 12, i.e.
+ *             11  150 80  40 
  */
 static int 
 read_palette(const char *palfile, unsigned char *pal)

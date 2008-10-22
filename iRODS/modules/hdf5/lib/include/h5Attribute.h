@@ -41,7 +41,7 @@ typedef struct H5Attribute
     char* name;             /* the name of the attribute */
     char* obj_path;         /* the full path and name of the object attribute is attached to */
     int obj_type;           /* the type of object attribute is attached to*/
-    H5Datatype_class_t class;  /* same as class in H5Datatype. Put here for packing */
+    H5Datatype_class_t tclass;  /* same as class in H5Datatype. Put here for packing */
     H5Datatype type;
     H5Dataspace space;
     unsigned int nvalue;       /* the number of bytes in the buffer *value */

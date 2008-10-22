@@ -91,9 +91,9 @@ int H5Attribute_read(H5Attribute *a)
     /* convert compound and variable length data into strings
      * so that the client application is able to display it
      */
-    if ( (H5DATATYPE_VLEN == a->type.class )
-         || (H5DATATYPE_COMPOUND == a->type.class)
-         || (H5DATATYPE_STRING == a->type.class )
+    if ( (H5DATATYPE_VLEN == a->type.tclass )
+         || (H5DATATYPE_COMPOUND == a->type.tclass)
+         || (H5DATATYPE_STRING == a->type.tclass )
        )
     {
         sid = H5Aget_space(aid);
@@ -254,20 +254,20 @@ int H5Attribute_init(H5Attribute *a, hid_t aid) {
     a->name = (char *)malloc(MAX_NAME_LEN);
     H5Aget_name(aid, MAX_NAME_LEN, a->name);
 
-    a->class = a->type.class = (H5Datatype_class_t)H5Tget_class(tid);
+    a->tclass = a->type.tclass = (H5Datatype_class_t)H5Tget_class(tid);
     a->type.size = H5Tget_size(tid);
 
-    if  ( a->type.class == H5DATATYPE_INTEGER
-         || a->type.class == H5DATATYPE_FLOAT
-         || a->type.class == H5DATATYPE_BITFIELD
-         || a->type.class == H5DATATYPE_REFERENCE
-         || a->type.class == H5DATATYPE_ENUM ) {
+    if  ( a->type.tclass == H5DATATYPE_INTEGER
+         || a->type.tclass == H5DATATYPE_FLOAT
+         || a->type.tclass == H5DATATYPE_BITFIELD
+         || a->type.tclass == H5DATATYPE_REFERENCE
+         || a->type.tclass == H5DATATYPE_ENUM ) {
         a->type.order = (H5Datatype_order_t)H5Tget_order(tid);
-        if (a->type.class == H5DATATYPE_INTEGER) {
+        if (a->type.tclass == H5DATATYPE_INTEGER) {
             a->type.sign = (H5Datatype_sign_t)H5Tget_sign(tid);
         }
     }
-    else if (a->type.class == H5DATATYPE_COMPOUND) {
+    else if (a->type.tclass == H5DATATYPE_COMPOUND) {
         a->type.nmembers = H5Tget_nmembers(tid );
         a->type.mnames = (char **)malloc(a->type.nmembers*sizeof(char*));
         a->type.mtypes = (int *)malloc(a->type.nmembers*sizeof(int));

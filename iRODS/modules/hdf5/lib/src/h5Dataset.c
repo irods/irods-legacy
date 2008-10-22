@@ -150,7 +150,7 @@ int H5Dataset_read(H5Dataset* ind, H5Dataset* outd)
             ret_value, done);
    
     ind->nvalue = npoints*ind->type.size; 
-    ind->class = ind->type.class; 
+    ind->tclass = ind->type.tclass; 
     if ( H5Dread(did, tid, msid, sid, H5P_DEFAULT, ind->value) < 0)
     {
         free (ind->value);
@@ -161,9 +161,9 @@ int H5Dataset_read(H5Dataset* ind, H5Dataset* outd)
     /* convert compound and variable length data into strings
      * so that the client application is able to display it
      */ 
-    if ( (H5DATATYPE_VLEN == ind->type.class )
-         || (H5DATATYPE_COMPOUND == ind->type.class)
-         || (H5DATATYPE_STRING == ind->type.class )
+    if ( (H5DATATYPE_VLEN == ind->type.tclass )
+         || (H5DATATYPE_COMPOUND == ind->type.tclass)
+         || (H5DATATYPE_STRING == ind->type.tclass )
        )
     {
         H5Dataset_value_to_string(ind, tid, msid);
@@ -183,7 +183,7 @@ done:
     /* pass on the value */
     outd->nvalue = ind->nvalue;
     outd->value = ind->value;
-    outd->class = ind->class;
+    outd->tclass = ind->tclass;
     outd->error = ind->error;
     outd->time = (long)(t1-t0);
 
@@ -239,18 +239,18 @@ int H5Dataset_init(H5Dataset *d)
     tid = H5Tget_native_type(ftid, H5T_DIR_ASCEND);
     if ( ftid > 0) H5Tclose(ftid);
 
-    d->class = d->type.class = (H5Datatype_class_t)H5Tget_class(tid);
+    d->tclass = d->type.tclass = (H5Datatype_class_t)H5Tget_class(tid);
     d->type.size = H5Tget_size(tid);
 
-    if  ( d->type.class == H5DATATYPE_INTEGER 
-         || d->type.class == H5DATATYPE_FLOAT 
-         || d->type.class == H5DATATYPE_BITFIELD 
-         || d->type.class == H5DATATYPE_REFERENCE 
-         || d->type.class == H5DATATYPE_ENUM ) 
+    if  ( d->type.tclass == H5DATATYPE_INTEGER 
+         || d->type.tclass == H5DATATYPE_FLOAT 
+         || d->type.tclass == H5DATATYPE_BITFIELD 
+         || d->type.tclass == H5DATATYPE_REFERENCE 
+         || d->type.tclass == H5DATATYPE_ENUM ) 
     {
         d->type.order = (H5Datatype_order_t)H5Tget_order(tid);
 
-        if (d->type.class == H5DATATYPE_INTEGER)
+        if (d->type.tclass == H5DATATYPE_INTEGER)
         {
             d->type.sign = (H5Datatype_sign_t)H5Tget_sign(tid);
 
@@ -260,7 +260,7 @@ int H5Dataset_init(H5Dataset *d)
             H5Dataset_check_image(d, did);
         }
     }
-    else if (d->type.class == H5DATATYPE_COMPOUND) {
+    else if (d->type.tclass == H5DATATYPE_COMPOUND) {
         d->type.nmembers = H5Tget_nmembers(tid );
         d->type.mnames = (char **)malloc(d->type.nmembers*sizeof(char*));
         d->type.mtypes = (int *)malloc(d->type.nmembers*sizeof(int));
@@ -530,7 +530,7 @@ done:
 
 
     /* pass on the value */
-    outd->class = ind->class;
+    outd->tclass = ind->tclass;
     outd->error = ind->error;
     outd->nattributes = ind->nattributes;
     outd->attributes = ind->attributes;

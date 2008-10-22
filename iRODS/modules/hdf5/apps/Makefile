@@ -1,4 +1,4 @@
-# Makefile - This is the makefile for build standalone HDF5/iRods 
+# Makefile - This is the makefile for building standalone HDF5/iRods 
 # client application. 
 SHELL=/bin/csh
 
@@ -6,7 +6,7 @@ SHELL=/bin/csh
 PROG = islice
 
 # iRODS home direcotry 
-IRODSDIR = /data/mwan/rods/iRODS
+IRODSDIR = /home/srb/iRODS
 
 # only need if you need jpeg image output file
 JPEGDIR = /home/srb/ext_lib/jpeg
@@ -48,10 +48,6 @@ CFLAGS = $(MY_CFLAG) $(INCLUDES)
 
 LDFLAGS =      -L$(irodsLibDir) -lRodsAPIs -lpthread -lm
 LDFLAGS +=     -L$(JPEGDIR)/lib -ljpeg
-
-ifdef CCMALLOC
-LDFLAGS+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl -lstdc++
-endif
 
 all:: $(PROG) 
 

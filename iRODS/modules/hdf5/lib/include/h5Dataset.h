@@ -51,7 +51,7 @@ typedef struct H5Dataset
     int opID;                  /* the id of operation to take on the server */
     int fid;                   /* the file ID from H5Fopen() */
     unsigned long objID[2];    /* uniquely identify an object in a file [from server] */
-    H5Datatype_class_t class;  /* same as class in H5Datatype. Put here for packing */
+    H5Datatype_class_t tclass;  /* same as class in H5Datatype. Put here for packing */
     char* fullpath;            /* the path + name, e.g. /hdfeos/swaths/data fields/channel */
     int nattributes;           /* number of attributes */
     H5Attribute *attributes;  /* array of attributes */

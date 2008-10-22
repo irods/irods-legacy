@@ -58,7 +58,7 @@ typedef enum H5Datatype_sign_t {
  */
 typedef struct H5Datatype
 {
-    H5Datatype_class_t class;
+    H5Datatype_class_t tclass;
     H5Datatype_order_t order;
     H5Datatype_sign_t sign;
     unsigned int size;

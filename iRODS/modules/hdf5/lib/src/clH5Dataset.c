@@ -107,7 +107,7 @@ int clH5Dataset_read_attribute(rcComm_t *conn, H5Dataset* ind)
         return (ret_value);
 
     /* psss on the value */
-    ind->class = outd->class;
+    ind->tclass = outd->tclass;
     ind->error = outd->error;
     ind->nattributes = outd->nattributes;
     ind->attributes = outd->attributes;

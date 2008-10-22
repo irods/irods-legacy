@@ -24,9 +24,6 @@
 
 void H5Attribute_dtor(H5Attribute* a)
 {
-    unsigned int i;
-    char **strs;
-
     assert(a);
 
     if (a->name)
@@ -50,7 +47,6 @@ void H5Attribute_dtor(H5Attribute* a)
 void H5Dataset_dtor(H5Dataset* d)
 {
     unsigned int i;
-    char **strs;
 
     assert(d);
 
@@ -179,9 +175,9 @@ int nvalue)
 
     if (value)
     {
-        if (    ( H5DATATYPE_VLEN == type.class )
-             || ( H5DATATYPE_COMPOUND == type.class )
-             || ( H5DATATYPE_STRING == type.class )
+        if (    ( H5DATATYPE_VLEN == type.tclass )
+             || ( H5DATATYPE_COMPOUND == type.tclass )
+             || ( H5DATATYPE_STRING == type.tclass )
            )
         {
             strs = (char **)value;
