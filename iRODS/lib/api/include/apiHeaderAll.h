@@ -115,4 +115,5 @@
 #include "getRemoteZoneResc.h"
 #include "dataObjOpenAndStat.h"
 #include "l3FileGetSingleBuf.h"
+#include "l3FilePutSingleBuf.h"
 #endif	/* API_HEADER_ALL_H */

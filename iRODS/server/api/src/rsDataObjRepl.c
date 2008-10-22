@@ -16,6 +16,7 @@
 #include "reSysDataObjOpr.h"
 #include "getRemoteZoneResc.h"
 #include "l3FileGetSingleBuf.h"
+#include "l3FilePutSingleBuf.h"
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
@@ -559,7 +560,10 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
 	return (bytesRead);
     }
 
+#if 0
     bytesWritten = l3FilePutSingleBuf (rsComm, l1descInx, &dataBBuf);
+#endif
+    bytesWritten = rsL3FilePutSingleBuf (rsComm, &l1descInx, &dataBBuf);
  
     if (dataBBuf.buf != NULL) {
 	free (dataBBuf.buf);

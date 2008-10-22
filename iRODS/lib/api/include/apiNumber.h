@@ -106,6 +106,7 @@
 #define GET_REMOTE_ZONE_RESC_AN 			668
 #define DATA_OBJ_OPEN_AND_STAT_AN 			669
 #define L3_FILE_GET_SINGLE_BUF_AN 			670
+#define L3_FILE_PUT_SINGLE_BUF_AN 			671
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

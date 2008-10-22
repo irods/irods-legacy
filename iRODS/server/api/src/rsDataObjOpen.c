@@ -37,6 +37,7 @@ rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         if (status < 0) return status;
         l1descInx = allocAndSetL1descForZoneOpr (status, dataObjInp,
 	  rodsServerHost, openStat);
+	if (openStat != NULL) free (openStat);
         return (l1descInx);
     } else {
         l1descInx = _rsDataObjOpen (rsComm, dataObjInp);

@@ -1591,6 +1591,8 @@ allocAndSetL1descForZoneOpr (int l3descInx, dataObjInp_t *dataObjInp,
 rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
 {
     int l1descInx;            
+    dataObjInfo_t *dataObjInfo;
+
     l1descInx = allocL1desc ();
     if (l1descInx < 0) return l1descInx;
     L1desc[l1descInx].remoteL1descInx = l3descInx & 0xffff;
@@ -1598,12 +1600,12 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
     L1desc[l1descInx].oprType = REMOTE_ZONE_OPR;
     L1desc[l1descInx].remoteZoneHost = remoteZoneHost;
     L1desc[l1descInx].dataObjInp = dataObjInp;
+    dataObjInfo = L1desc[l1descInx].dataObjInfo =
+      malloc (sizeof (dataObjInfo_t));
+    bzero (dataObjInfo, sizeof (dataObjInfo_t));
+    rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
+
     if (openStat != NULL) {
-	dataObjInfo_t *dataObjInfo;
-	dataObjInfo = L1desc[l1descInx].dataObjInfo = 
-	  malloc (sizeof (dataObjInfo_t));
-	bzero (dataObjInfo, sizeof (dataObjInfo_t));
-	rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
 	dataObjInfo->dataSize = openStat->dataSize;
 	rstrcpy (dataObjInfo->dataMode, openStat->dataMode, SHORT_STR_LEN);
 	rstrcpy (dataObjInfo->dataType, openStat->dataType, NAME_LEN);
