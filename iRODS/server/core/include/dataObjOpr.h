@@ -17,6 +17,7 @@
 #include "miscUtil.h"
 #include "structFileSync.h"
 #include "structFileExtAndReg.h"
+#include "dataObjOpenAndStat.h"
 
 #define NUM_L1_DESC	1026 	/* number of L1Desc */
 
@@ -183,6 +184,7 @@ initStructFileOprInp (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
 structFileExtAndRegInp_t *structFileExtAndRegInp,
 dataObjInfo_t *dataObjInfo);
 int
-allocAndSetL1descForZoneOpr (int l3descInx, rodsServerHost_t *remoteZoneHost);
+allocAndSetL1descForZoneOpr (int l3descInx, dataObjInp_t *dataObjInp,
+rodsServerHost_t *remoteZoneHost, openStat_t *openStat);
 #endif	/* DATA_OBJ_OPR */
 

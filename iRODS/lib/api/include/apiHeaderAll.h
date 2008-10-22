@@ -113,4 +113,5 @@
 #include "chkObjPermAndStat.h"
 #include "userAdmin.h"
 #include "getRemoteZoneResc.h"
+#include "dataObjOpenAndStat.h"
 #endif	/* API_HEADER_ALL_H */

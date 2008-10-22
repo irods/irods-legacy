@@ -50,7 +50,8 @@ msParamArray_t **outParamArray)
         }
 	if (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
 	    /* server request to client */
-            l1descInx = allocAndSetL1descForZoneOpr (0, rodsServerHost);
+            l1descInx = allocAndSetL1descForZoneOpr (0, dataObjInp,
+	      rodsServerHost, NULL);
             if (l1descInx < 0) return l1descInx;
 	    if (*outParamArray == NULL) {
 	        *outParamArray = malloc (sizeof (msParamArray_t));

@@ -45,7 +45,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
             return status;
         } else {
 	    l1descInx = allocAndSetL1descForZoneOpr (
-	      (*portalOprOut)->l1descInx, rodsServerHost);
+	      (*portalOprOut)->l1descInx, dataObjInp, rodsServerHost, NULL);
             if (l1descInx < 0) return l1descInx;
             (*portalOprOut)->l1descInx = l1descInx;
             return status;

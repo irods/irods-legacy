@@ -104,6 +104,7 @@
 #define STRUCT_FILE_BUNDLE_AN 			666
 #define CHK_OBJ_PERM_AND_STAT_AN 			667
 #define GET_REMOTE_ZONE_RESC_AN 			668
+#define DATA_OBJ_OPEN_AND_STAT_AN 			669
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

@@ -44,7 +44,8 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         addKeyVal (&dataObjInp->condInput, RETURN_L3INX_KW, "");
 	status = rcDataObjCreate (rodsServerHost->conn, dataObjInp);
 	if (status < 0) return status;
-	l1descInx = allocAndSetL1descForZoneOpr (status, rodsServerHost);
+	l1descInx = allocAndSetL1descForZoneOpr (status, dataObjInp,
+	  rodsServerHost, NULL);
 	return (l1descInx);
     }
 

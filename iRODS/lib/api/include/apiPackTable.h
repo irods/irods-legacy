@@ -80,6 +80,7 @@ packInstructArray_t ApiPackTable[] = {
         {"StructFileExtAndRegInp_PI", StructFileExtAndRegInp_PI},
         {"ChkObjPermAndStat_PI", ChkObjPermAndStat_PI},
         {"userAdminInp_PI", userAdminInp_PI},
+        {"OpenStat_PI", OpenStat_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 
