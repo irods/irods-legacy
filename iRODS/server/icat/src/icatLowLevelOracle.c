@@ -528,6 +528,7 @@ cllExecSqlNoResult(icatSessionStruct *icss, char *sqlInput)
    if (stat == OCI_ERROR) {
       rodsLog(LOG_ERROR, "cllExecSqlNoResult: OCIStmtExecute failed: %d",stat);
       logOraError(LOG_ERROR, p_err, stat);
+      free(pUb4);
       if (stat2==CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) return(stat2);
       return(CAT_OCI_ERROR);
    }
@@ -581,6 +582,7 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    if (stat == OCI_SUCCESS) {
       return(0);
    }
+   _cllFreeStatementColumns(icss,statementNumber);
    myStatement->numOfCols=0;
    return(0);
 }
@@ -910,6 +912,7 @@ cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
       if (stat != OCI_SUCCESS) {
 	 rodsLog(LOG_ERROR, "cllGetRowCount: OCIAttrGet failed: %d",stat);
 	 logOraError(LOG_ERROR, p_err, stat);
+	 free(pUb4);
 	 return(CAT_OCI_ERROR);
       }
    }

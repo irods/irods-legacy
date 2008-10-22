@@ -1370,7 +1370,7 @@ int chlDelResc(rsComm_t *rsComm,
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 2 ");
    status = cmlGetStringValueFromSql(
        "select resc_id from r_resc_main where resc_name=?",
-       rescId, MAX_NAME_LEN, rescInfo->rescName, localZone, &icss);
+       rescId, MAX_NAME_LEN, rescInfo->rescName, 0, &icss);
    if (status) {
       if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 int i;
