@@ -325,3 +325,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetRemoteZoneResc.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsDataObjOpenAndStat.o
 LIB_API_OBJS += $(libApiObjDir)/rcDataObjOpenAndStat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsL3FileGetSingleBuf.o
+LIB_API_OBJS += $(libApiObjDir)/rcL3FileGetSingleBuf.o

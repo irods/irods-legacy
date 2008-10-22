@@ -15,6 +15,7 @@
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"
 #include "getRemoteZoneResc.h"
+#include "l3FileGetSingleBuf.h"
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
@@ -548,7 +549,10 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
 	bytesRead = 0;
     } else {
         dataBBuf.buf = malloc (L1desc[srcL1descInx].dataSize);
+#if 0
         bytesRead = l3FileGetSingleBuf (rsComm, srcL1descInx, &dataBBuf);
+#endif
+        bytesRead = rsL3FileGetSingleBuf (rsComm, &srcL1descInx, &dataBBuf);
     }
 
     if (bytesRead < 0) {

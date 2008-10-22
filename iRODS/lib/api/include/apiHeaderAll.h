@@ -114,4 +114,5 @@
 #include "userAdmin.h"
 #include "getRemoteZoneResc.h"
 #include "dataObjOpenAndStat.h"
+#include "l3FileGetSingleBuf.h"
 #endif	/* API_HEADER_ALL_H */
