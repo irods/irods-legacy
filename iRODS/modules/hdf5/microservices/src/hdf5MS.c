@@ -79,8 +79,9 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, inf->filename, MAX_NAME_LEN);
     dataObjInp.openFlags = O_RDONLY;
+    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
     rei->status = l1descInx = 
-      _rsDataObjOpen (rsComm, &dataObjInp, DO_NOT_PHYOPEN);
+      _rsDataObjOpen (rsComm, &dataObjInp);
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,

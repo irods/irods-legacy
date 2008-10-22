@@ -10,7 +10,7 @@
 #define NO_TEST_ATTRI	1
 #define NO_TEST_PALETTE	1
 #define TEST_SUBSET 1
-#if 0
+#if 1
 #define HDF5_LOCAL 1
 #endif
 
@@ -309,14 +309,14 @@ int print_dataset(const H5Dataset *d)
         pv = (char*)d->value;
         for (i=0; i<d->space.rank; i++) size *= d->space.count[i];
         if (size > 10 ) size = 10; /* print only the first 10 values */
-        if (d->type.class == H5DATATYPE_VLEN 
-            || d->type.class == H5DATATYPE_COMPOUND
-            || d->type.class == H5DATATYPE_STRING)
+        if (d->type.tclass == H5DATATYPE_VLEN 
+            || d->type.tclass == H5DATATYPE_COMPOUND
+            || d->type.tclass == H5DATATYPE_STRING)
             strs = (char **)d->value;
 
         for (i=0; i<size; i++)
         {
-            if (d->type.class == H5DATATYPE_INTEGER)
+            if (d->type.tclass == H5DATATYPE_INTEGER)
             {
                 if (d->type.sign == H5DATATYPE_SGN_NONE)
                 {
@@ -340,18 +340,18 @@ int print_dataset(const H5Dataset *d)
                     else if (d->type.size == 8)
                         printf("%d\t", *((long long*)(pv+i*8)));
                 }
-            } else if (d->type.class == H5DATATYPE_FLOAT)
+            } else if (d->type.tclass == H5DATATYPE_FLOAT)
             {
                 if (d->type.size == 4)
                     printf("%f\t", *((float *)(pv+i*4)));
                 else if (d->type.size == 8)
                     printf("%f\t", *((double *)(pv+i*8)));
-            } else if (d->type.class == H5DATATYPE_VLEN 
-                    || d->type.class == H5DATATYPE_COMPOUND)
+            } else if (d->type.tclass == H5DATATYPE_VLEN 
+                    || d->type.tclass == H5DATATYPE_COMPOUND)
             {
                 if (strs[i])
                     printf("%s\t", strs[i]);
-            } else if (d->type.class == H5DATATYPE_STRING)
+            } else if (d->type.tclass == H5DATATYPE_STRING)
             {
                 if (strs[i])
                     printf("%s\t", strs[i]);
@@ -386,14 +386,14 @@ int print_attribute(const H5Attribute *a)
 
         for (i=0; i<a->space.rank; i++) size *= a->space.count[i];
         if (size > 10 ) size = 10; /* print only the first 10 values */
-        if (a->type.class == H5DATATYPE_VLEN
-            || a->type.class == H5DATATYPE_COMPOUND
-            || a->type.class == H5DATATYPE_STRING)
+        if (a->type.tclass == H5DATATYPE_VLEN
+            || a->type.tclass == H5DATATYPE_COMPOUND
+            || a->type.tclass == H5DATATYPE_STRING)
             strs = (char **)a->value;
 
         for (i=0; i<size; i++)
         {
-            if (a->type.class == H5DATATYPE_INTEGER)
+            if (a->type.tclass == H5DATATYPE_INTEGER)
             {
                 if (a->type.sign == H5DATATYPE_SGN_NONE)
                 {
@@ -417,18 +417,18 @@ int print_attribute(const H5Attribute *a)
                     else if (a->type.size == 8)
                         printf("%d\t", *((long long*)(pv+i*8)));
                 }
-            } else if (a->type.class == H5DATATYPE_FLOAT)
+            } else if (a->type.tclass == H5DATATYPE_FLOAT)
             {
                 if (a->type.size == 4)
                     printf("%f\t", *((float *)(pv+i*4)));
                 else if (a->type.size == 8)
                     printf("%f\t", *((double *)(pv+i*8)));
-            } else if (a->type.class == H5DATATYPE_VLEN
-                    || a->type.class == H5DATATYPE_COMPOUND)
+            } else if (a->type.tclass == H5DATATYPE_VLEN
+                    || a->type.tclass == H5DATATYPE_COMPOUND)
             {
                 if (strs[i])
                     printf("%s\t", strs[i]);
-            } else if (a->type.class == H5DATATYPE_STRING)
+            } else if (a->type.tclass == H5DATATYPE_STRING)
             {
                 if (strs[i]) printf("%s\t", strs[i]);
             }

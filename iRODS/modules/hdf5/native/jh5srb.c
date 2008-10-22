@@ -892,7 +892,7 @@ jint j2c_h5dataset(JNIEnv *env, jobject jobj, H5Dataset *cobj)
     {
         /* set datatype information */
         jtype = (*env)->GetObjectField(env, jobj, field_dataset_datatype);
-        cobj->type.class = (H5Datatype_class_t) (*env)->GetIntField(env, jtype, field_datatype_class);
+        cobj->type.tclass = (H5Datatype_class_t) (*env)->GetIntField(env, jtype, field_datatype_class);
         cobj->type.size = (unsigned int) (*env)->GetIntField(env, jtype, field_datatype_size);
         /*cobj->type.order = (H5Datatype_order_t) (*env)->GetIntField(env, jtype, field_datatype_order);*/
         cobj->type.sign = (H5Datatype_sign_t) (*env)->GetIntField(env, jtype, field_datatype_sign);
@@ -1047,7 +1047,7 @@ jint c2j_h5group(JNIEnv *env, jobject jfile, jobject jgroup, H5Group *cgroup)
             cd = &cgroup->datasets[i];
             if (NULL == cd) continue;
 
-            if (H5DATATYPE_COMPOUND == cd->type.class)
+            if (H5DATATYPE_COMPOUND == cd->type.tclass)
                 set_field_method_IDs_compound();
             else
                 set_field_method_IDs_scalar();            
@@ -1065,7 +1065,7 @@ jint c2j_h5group(JNIEnv *env, jobject jfile, jobject jgroup, H5Group *cgroup)
             jd = (*env)->NewObject(env, cls_dataset, method_dataset_ctr, jfile, NULL, jpath, joid);
 
             /* for compound only */
-            if (H5DATATYPE_COMPOUND == cd->type.class && cd->type.nmembers>0 && cd->type.mnames) {
+            if (H5DATATYPE_COMPOUND == cd->type.tclass && cd->type.nmembers>0 && cd->type.mnames) {
                 jobjectArray jmnames, jmtypes;
                 jstring jname;
                 jobject jmtype;
@@ -1122,7 +1122,7 @@ jint c2j_h5group(JNIEnv *env, jobject jfile, jobject jgroup, H5Group *cgroup)
 
             /* set datatype information */
             jdtype = (*env)->NewObject(env, cls_datatype, method_datatype_ctr, 
-                cd->type.class, cd->type.size, cd->type.order, cd->type.sign);
+                cd->type.tclass, cd->type.size, cd->type.order, cd->type.sign);
             (*env)->SetObjectField(env, jd, field_dataset_datatype, jdtype);
 
             /* set image indicator */
@@ -1167,7 +1167,7 @@ jint c2j_h5dataset_read(JNIEnv *env, jobject jobj, H5Dataset *cobj)
 
     assert(cobj);
 
-    jdata = c2j_data_value (env, cobj->value, cobj->space.npoints, cobj->type.class, cobj->type.size);
+    jdata = c2j_data_value (env, cobj->value, cobj->space.npoints, cobj->type.tclass, cobj->type.size);
     
     if (NULL == jdata)
         GOTO_JNI_ERROR();
@@ -1202,7 +1202,7 @@ jint c2j_h5dataset_read_attribute(JNIEnv *env, jobject jobj, H5Dataset *cobj)
         attr = cobj->attributes[i];
 
         attr_name = (*env)->NewStringUTF(env, attr.name);
-        attr_value = c2j_data_value (env, attr.value, attr.space.npoints, attr.type.class, attr.type.size);
+        attr_value = c2j_data_value (env, attr.value, attr.space.npoints, attr.type.tclass, attr.type.size);
 
         /* get the dims */
         jdims = (*env)->NewLongArray(env, attr.space.rank);
@@ -1212,7 +1212,7 @@ jint c2j_h5dataset_read_attribute(JNIEnv *env, jobject jobj, H5Dataset *cobj)
 
         /* add the attribute */
         (*env)->CallVoidMethod(env, jobj, method_dataset_addAttribute, 
-            attr_name, attr_value, jdims, attr.type.class, attr.type.size, 
+            attr_name, attr_value, jdims, attr.type.tclass, attr.type.size, 
             attr.type.order, attr.type.sign);
      }
 
@@ -1244,7 +1244,7 @@ jint c2j_h5group_read_attribute(JNIEnv *env, jobject jobj, H5Group *cobj)
         attr = cobj->attributes[i];
 
         attr_name = (*env)->NewStringUTF(env, attr.name);
-        attr_value = c2j_data_value (env, attr.value, attr.space.npoints, attr.type.class, attr.type.size);
+        attr_value = c2j_data_value (env, attr.value, attr.space.npoints, attr.type.tclass, attr.type.size);
 
         /* get the dims */
         jdims = (*env)->NewLongArray(env, attr.space.rank);
@@ -1254,7 +1254,7 @@ jint c2j_h5group_read_attribute(JNIEnv *env, jobject jobj, H5Group *cobj)
 
         /* add the attribute */
         (*env)->CallVoidMethod(env, jobj, method_group_addAttribute, 
-            attr_name, attr_value, jdims, attr.type.class, attr.type.size, 
+            attr_name, attr_value, jdims, attr.type.tclass, attr.type.size, 
             attr.type.order, attr.type.sign);
      }
 
@@ -1407,7 +1407,7 @@ void print_datatype(H5Datatype *type)
 
     assert(type);
 
-    printf("\ntype class = %d\n", type->class);
+    printf("\ntype class = %d\n", type->tclass);
     printf(  "type order = %d\n", type->order);
     printf(  "type sign  = %d\n", type->sign);
     printf(  "type size  = %d\n", type->size);
@@ -1489,14 +1489,14 @@ void print_dataset_value(H5Dataset *d)
         pv = (char*)d->value;
         for (i=0; i<d->space.rank; i++) size *= d->space.count[i];
         if (size > 10 ) size = 10; /* print only the first 10 values */
-        if (d->type.class == H5DATATYPE_VLEN
-            || d->type.class == H5DATATYPE_COMPOUND
-            || d->type.class == H5DATATYPE_STRING)
+        if (d->type.tclass == H5DATATYPE_VLEN
+            || d->type.tclass == H5DATATYPE_COMPOUND
+            || d->type.tclass == H5DATATYPE_STRING)
             strs = (char **)d->value;
 
         for (i=0; i<size; i++)
         {
-            if (d->type.class == H5DATATYPE_INTEGER)
+            if (d->type.tclass == H5DATATYPE_INTEGER)
             {
                 if (d->type.sign == H5DATATYPE_SGN_NONE)
                 {
@@ -1520,18 +1520,18 @@ void print_dataset_value(H5Dataset *d)
                     else if (d->type.size == 8)
                         printf("%d\t", *((long*)(pv+i*8)));
                 }
-            } else if (d->type.class == H5DATATYPE_FLOAT)
+            } else if (d->type.tclass == H5DATATYPE_FLOAT)
             {
                 if (d->type.size == 4)
                     printf("%f\t", *((float *)(pv+i*4)));
                 else if (d->type.size == 8)
                     printf("%f\t", *((double *)(pv+i*8)));
-            } else if (d->type.class == H5DATATYPE_VLEN
-                    || d->type.class == H5DATATYPE_COMPOUND)
+            } else if (d->type.tclass == H5DATATYPE_VLEN
+                    || d->type.tclass == H5DATATYPE_COMPOUND)
             {
                 if (strs[i])
                     printf("%s\t", strs[i]);
-            } else if (d->type.class == H5DATATYPE_STRING)
+            } else if (d->type.tclass == H5DATATYPE_STRING)
             {
                 if (strs[i])
                     printf("%s\t", strs[i]);
@@ -1559,14 +1559,14 @@ void print_attribute(H5Attribute *a)
         pv = (char*)a->value;
         for (i=0; i<a->space.rank; i++) size *= a->space.count[i];
         if (size > 10 ) size = 10; /* print only the first 10 values */
-        if (a->type.class == H5DATATYPE_VLEN
-            || a->type.class == H5DATATYPE_COMPOUND
-            || a->type.class == H5DATATYPE_STRING)
+        if (a->type.tclass == H5DATATYPE_VLEN
+            || a->type.tclass == H5DATATYPE_COMPOUND
+            || a->type.tclass == H5DATATYPE_STRING)
             strs = (char **)a->value;
 
         for (i=0; i<size; i++)
         {
-            if (a->type.class == H5DATATYPE_INTEGER)
+            if (a->type.tclass == H5DATATYPE_INTEGER)
             {
                 if (a->type.sign == H5DATATYPE_SGN_NONE)
                 {
@@ -1590,18 +1590,18 @@ void print_attribute(H5Attribute *a)
                     else if (a->type.size == 8)
                         printf("%d\t", *((long *)(pv+i*8)));
                 }
-            } else if (a->type.class == H5DATATYPE_FLOAT)
+            } else if (a->type.tclass == H5DATATYPE_FLOAT)
             {
                 if (a->type.size == 4)
                     printf("%f\t", *((float *)(pv+i*4)));
                 else if (a->type.size == 8)
                     printf("%f\t", *((double *)(pv+i*8)));
-            } else if (a->type.class == H5DATATYPE_VLEN
-                    || a->type.class == H5DATATYPE_COMPOUND)
+            } else if (a->type.tclass == H5DATATYPE_VLEN
+                    || a->type.tclass == H5DATATYPE_COMPOUND)
             {
                 if (strs[i])
                     printf("%s\t", strs[i]);
-            } else if (a->type.class == H5DATATYPE_STRING)
+            } else if (a->type.tclass == H5DATATYPE_STRING)
             {
                 if (strs[i]) printf("%s\t", strs[i]);
             }
