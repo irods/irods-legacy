@@ -3,5 +3,5 @@
 irodsHost 'localhost'
 irodsPort 1233
 irodsUserName 'rodsBoot'
-irodsZone 'tempZone'
-irodsAuthFileName /home/irods/TMP1_raja_cvs/pivo/RODS_BUILD/iRODS/config/auth.tmp
+irodsZone tempZone7
+irodsAuthFileName /data/mwan/rods/iRODS/config/auth.tmp
