@@ -165,11 +165,15 @@ reSvrSleep (rsComm_t *rsComm)
     if ((status = disconnRcatHost (rsComm, MASTER_RCAT, 
       rsComm->myEnv.rodsZone)) == LOCAL_HOST) {
 #ifdef RODS_CAT
+#ifndef ORA_ICAT
+       /* For Oracle, we don't disconnect.  This is to avoid a 
+          memory leak in the OCI library */
         disconnectRcat (rsComm);
         if (status < 0) {
             rodsLog (LOG_ERROR,
               "reSvrSleep: disconnectRcat error. status = %d", status);
         }
+#endif
 #endif
     }
     rodsSleep (RE_SERVER_SLEEP_TIME, 0);
