@@ -42,6 +42,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
         addKeyVal (&dataObjInp->condInput, RETURN_L3INX_KW, "");
+        addKeyVal (&dataObjInp->condInput, REPL_DATA_OBJ_INP, "");
 	status = rcDataObjCreate (rodsServerHost->conn, dataObjInp);
 	if (status < 0) return status;
 	l1descInx = allocAndSetL1descForZoneOpr (status, dataObjInp,

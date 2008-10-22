@@ -124,6 +124,11 @@ freeL1desc (int l1descInx)
         freeAllDataObjInfo (L1desc[l1descInx].otherDataObjInfo);
     }
 
+    if (L1desc[l1descInx].dataObjInpReplFlag == 1 &&
+      L1desc[l1descInx].dataObjInp != NULL) {
+	clearDataObjInp (L1desc[l1descInx].dataObjInp);
+	free (L1desc[l1descInx].dataObjInp);
+    }
     memset (&L1desc[l1descInx], 0, sizeof (l1desc_t));
 
     return (0);
@@ -138,7 +143,18 @@ dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize)
 
     condInput = &dataObjInp->condInput;
 
-    L1desc[l1descInx].dataObjInp = dataObjInp;
+    if (dataObjInp != NULL) { 
+        if (getValByKey (&dataObjInp->condInput, REPL_DATA_OBJ_INP) != NULL) {
+	    L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
+	    replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
+	    L1desc[l1descInx].dataObjInpReplFlag = 1;
+	} else {
+	    L1desc[l1descInx].dataObjInp = dataObjInp;
+	}
+    } else {
+	L1desc[l1descInx].dataObjInp = NULL; 
+    }
+ 
     L1desc[l1descInx].dataObjInfo = dataObjInfo;
     if (dataObjInp != NULL) {
 	L1desc[l1descInx].oprType = dataObjInp->oprType;
