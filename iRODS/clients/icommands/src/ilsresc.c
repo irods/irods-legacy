@@ -276,6 +276,8 @@ showRescGroups(int longOption)
       return(0);
    }
 
+   if (status != 0) return(0);
+
    for (i=0;i<genQueryOut->rowCnt;i++) {
       char *tResult;
       tResult = genQueryOut->sqlResult[0].value;
