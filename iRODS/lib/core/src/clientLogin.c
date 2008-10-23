@@ -156,6 +156,7 @@ clientLogin(rcComm_t *Conn)
    authRespIn.response=digest;
    /* the authentication is always for the proxyUser. */
    authRespIn.username = Conn->proxyUser.userName;
+   authRespIn.userZone = Conn->proxyUser.rodsZone;
    status = rcAuthResponse(Conn, &authRespIn);
 
    if (status) {
@@ -213,6 +214,7 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    authRespIn.response=digest;
    /* the authentication is always for the proxyUser. */
    authRespIn.username = Conn->proxyUser.userName;
+   authRespIn.userZone = Conn->proxyUser.rodsZone;
    status = rcAuthResponse(Conn, &authRespIn);
 
    if (status) {
