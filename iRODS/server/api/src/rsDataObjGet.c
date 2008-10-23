@@ -155,7 +155,12 @@ l2DataObjGet (rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut)
     l3descInx = L1desc[l1descInx].l3descInx;
 
     initDataOprInp (&dataOprInp, l1descInx, GET_OPR);
-    status =  rsDataGet (rsComm, &dataOprInp, portalOprOut);
+    if (L1desc[l1descInx].remoteZoneHost != NULL) {
+        status =  remoteDataGet (rsComm, &dataOprInp, portalOprOut,
+        L1desc[l1descInx].remoteZoneHost);
+    } else {
+        status =  rsDataGet (rsComm, &dataOprInp, portalOprOut);
+    }
 
     if (status >= 0) {
         (*portalOprOut)->l1descInx = l1descInx;

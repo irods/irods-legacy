@@ -47,6 +47,7 @@ typedef struct hostName {
 #define LOCAL_HOST	0
 #define REMOTE_HOST	1
 #define REMOTE_GW_HOST  2	/* remote gateway host */
+#define REMOTE_ZONE_HOST  3     /* host in remote zone */
 
 /* definition for rcatEnabled */
 

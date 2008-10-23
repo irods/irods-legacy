@@ -159,7 +159,12 @@ portalOprOut_t **portalOprOut)
     l3descInx = L1desc[l1descInx].l3descInx;
 
     initDataOprInp (&dataOprInp, l1descInx, PUT_OPR);
-    status =  rsDataPut (rsComm, &dataOprInp, portalOprOut);
+    if (L1desc[l1descInx].remoteZoneHost != NULL) {
+        status =  remoteDataPut (rsComm, &dataOprInp, portalOprOut,
+	L1desc[l1descInx].remoteZoneHost);
+    } else {
+        status =  rsDataPut (rsComm, &dataOprInp, portalOprOut);
+    }
 
     if (status >= 0) {
         (*portalOprOut)->l1descInx = l1descInx;

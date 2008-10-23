@@ -866,10 +866,12 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
     if (oprType == PUT_OPR || oprType == COPY_TO_LOCAL_OPR ||
       oprType == SAME_HOST_COPY_OPR) {
         dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+	if (L1desc[l1descInx].remoteZoneHost == NULL)
+            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
     } else if (oprType == GET_OPR || COPY_TO_REM_OPR) {
         dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
-        dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+	if (L1desc[l1descInx].remoteZoneHost == NULL)
+            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
     }
     if (getValByKey (&dataObjInp->condInput, STREAMING_KW) != NULL) {
         addKeyVal (&dataOprInp->condInput, STREAMING_KW, "");
@@ -881,10 +883,12 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 
 #ifdef RBUDP_TRANSFER
     if (getValByKey (&dataObjInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
-	/* only do unix fs */
-	int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-	if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
-            addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
+	if (L1desc[l1descInx].remoteZoneHost == NULL) {
+	    /* only do unix fs */
+	    int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+	    if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
+                addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
+	}
     }
 
     if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {

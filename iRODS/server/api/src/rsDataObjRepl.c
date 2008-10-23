@@ -455,6 +455,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
     portalOprOut_t *portalOprOut = NULL;
     dataCopyInp_t dataCopyInp;
     dataOprInp_t *dataOprInp;
+    int srcRemoteFlag, destRemoteFlag;
 
 
     dataOprInp = &dataCopyInp.dataOprInp;
@@ -464,7 +465,21 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
     srcL3descInx = L1desc[srcL1descInx].l3descInx;
     destL3descInx = L1desc[destL1descInx].l3descInx;
 
-    if (FileDesc[srcL3descInx].rodsServerHost == 
+    if (L1desc[srcL1descInx].remoteZoneHost != NULL) {
+	srcRemoteFlag = REMOTE_ZONE_HOST;
+    } else {
+	srcRemoteFlag = FileDesc[srcL3descInx].rodsServerHost->localFlag;
+    }
+ 
+    if (L1desc[destL1descInx].remoteZoneHost != NULL) {
+        destRemoteFlag = REMOTE_ZONE_HOST;
+    } else {
+        destRemoteFlag = FileDesc[destL3descInx].rodsServerHost->localFlag;
+    }
+
+    if (srcRemoteFlag != REMOTE_ZONE_HOST &&
+      destRemoteFlag != REMOTE_ZONE_HOST &&
+      FileDesc[srcL3descInx].rodsServerHost == 
       FileDesc[destL3descInx].rodsServerHost) {
 	dataObjInfo_t *dataObjInfo;
 
@@ -475,13 +490,10 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 	dataOprInp->srcL3descInx = srcL3descInx;
 	dataOprInp->srcRescTypeInx = 
 	  dataObjInfo->rescInfo->rescTypeInx;
-	if (FileDesc[srcL3descInx].rodsServerHost->localFlag == LOCAL_HOST) {
+	if (srcRemoteFlag == LOCAL_HOST) {
 	    addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
 	}
-    } else if (
-      FileDesc[srcL3descInx].rodsServerHost->localFlag == LOCAL_HOST &&
-      FileDesc[destL3descInx].rodsServerHost->localFlag == REMOTE_HOST) {
-
+    } else if (srcRemoteFlag == LOCAL_HOST && destRemoteFlag != LOCAL_HOST) {
         initDataOprInp (&dataCopyInp.dataOprInp, srcL1descInx, COPY_TO_REM_OPR);
 	status = l2DataObjPut (rsComm, destL1descInx, &portalOprOut);
        if (status < 0) {
@@ -492,10 +504,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         }
         dataCopyInp.portalOprOut = *portalOprOut;
         addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
-    } else if (
-      FileDesc[srcL3descInx].rodsServerHost->localFlag == REMOTE_HOST &&
-      FileDesc[destL3descInx].rodsServerHost->localFlag == LOCAL_HOST) {
-
+    } else if (srcRemoteFlag != LOCAL_HOST && destRemoteFlag == LOCAL_HOST) {
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_LOCAL_OPR);
         status = l2DataObjGet (rsComm, srcL1descInx, &portalOprOut);
        if (status < 0) {
