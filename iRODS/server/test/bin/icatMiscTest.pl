@@ -203,7 +203,7 @@ unlink($tmpPwFile);
 runCmd(1, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin mkuser $UserAdmin2 rodsadmin");
 runCmd(0, "iadmin moduser $UserAdmin2 password abc");
-runCmd(0, "test_chl checkauth $UserAdmin2 $User2");
+runCmd(0, "test_chl checkauth $UserAdmin2 $User2 $myZone");
 
 # modColl test
 runCmd(1, "imkdir $DIR1");
