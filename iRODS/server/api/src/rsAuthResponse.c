@@ -31,6 +31,7 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
    authCheckInp.challenge = bufp;
    authCheckInp.response = authResponseInp->response;
    authCheckInp.username = authResponseInp->username;
+   authCheckInp.userZone = authResponseInp->userZone;
 
    if (rodsServerHost->localFlag == LOCAL_HOST) {
       status = rsAuthCheck (rsComm, &authCheckInp, &authCheckOut);

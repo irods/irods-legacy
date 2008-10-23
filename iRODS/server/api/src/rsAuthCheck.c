@@ -20,10 +20,12 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
    *authCheckOut = malloc(sizeof(authCheckOut_t));
    memset((char *)*authCheckOut, 0, sizeof(authCheckOut_t));
 
-   rodsLog(LOG_NOTICE, "rsAuthCheck user %s", authCheckInp->username);
+   rodsLog(LOG_NOTICE, "rsAuthCheck user %s zone %s", authCheckInp->username,
+	   authCheckInp->userZone);
    status = chlCheckAuth(rsComm, authCheckInp->challenge, 
 			 authCheckInp->response, 
-			 authCheckInp->username, &privLevel, &clientPrivLevel);
+			 authCheckInp->username, authCheckInp->userZone, 
+			 &privLevel, &clientPrivLevel);
    if (status < 0) {
       rodsLog (LOG_NOTICE, 
 	       "_rsAuthCheck: chlCheckAuth status = %d", status);
