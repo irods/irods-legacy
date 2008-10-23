@@ -115,7 +115,20 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 			      generalAdminInp->arg3, 
 			      generalAdminInp->arg4,
 			      generalAdminInp->arg5);
-	  if (status != 0) chlRollback(rsComm);
+	  if (status == 0) {
+	     if (strcmp(generalAdminInp->arg3,"remote")==0) {
+		memset((char*)&collInfo,0,sizeof(collInfo));
+		strncpy(collInfo.collName, "/", MAX_NAME_LEN);
+		strncat(collInfo.collName, generalAdminInp->arg2,
+			MAX_NAME_LEN);
+		strncpy(collInfo.collOwnerName, rsComm->proxyUser.userName,
+			MAX_NAME_LEN);
+		status = chlRegCollByAdmin(rsComm, &collInfo);
+		if (status == 0) {
+		   chlCommit(rsComm);
+		}
+	     }
+	  }
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
@@ -218,7 +231,16 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        }
        if (strcmp(generalAdminInp->arg1,"zone")==0) {
 	  status = chlDelZone(rsComm, generalAdminInp->arg2);
-	  if (status != 0) chlRollback(rsComm);
+	  if (status == 0) {
+	     memset((char*)&collInfo,0,sizeof(collInfo));
+	     strncpy(collInfo.collName, "/", MAX_NAME_LEN);
+	     strncat(collInfo.collName, generalAdminInp->arg2,
+		     MAX_NAME_LEN);
+	     status = chlDelCollByAdmin(rsComm, &collInfo);
+	  }
+	  if (status == 0) {
+	     status = chlCommit(rsComm);
+	  }
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"token")==0) {
