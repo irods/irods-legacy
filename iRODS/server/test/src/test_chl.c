@@ -88,6 +88,8 @@ int testLogin(rsComm_t *rsComm, char *User, char *pw, char *pw1) {
    status = clientLoginWithPassword(Conn, pw1);  /* first login as self */
    if (status ==0) {
       rstrcpy (Conn->clientUser.userName, User, NAME_LEN);
+      rstrcpy (Conn->clientUser.rodsZone, myEnv.rodsZone, NAME_LEN); /* default
+								to our zone */
       status = clientLoginWithPassword(Conn, pw);  /* then try other user */
    }
 
@@ -174,7 +176,8 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
 
    return(0);
 }
-int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser) {
+int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
+		  char *testUserZone) {
    /* Use an pre-determined user, challenge and resp */
 
    char response[RESPONSE_LEN+2];
@@ -185,6 +188,7 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser) {
    int status, i;
 
    strncpy(rsComm->clientUser.userName, testUser, NAME_LEN);
+   strncpy(rsComm->clientUser.rodsZone, testUserZone, NAME_LEN);
 
    for (i=0;i<CHALLENGE_LEN+2;i++) challenge[i]=' ';
 
@@ -208,7 +212,8 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser) {
    response[i++]=0x00;
 
    status = chlCheckAuth(rsComm, challenge, response,
-			 testAdminUser, &userPrivLevel, &clientPrivLevel);
+			 testAdminUser, testUserZone,
+			 &userPrivLevel, &clientPrivLevel);
 
    return(status);
 
@@ -734,7 +739,7 @@ main(int argc, char **argv) {
    }
 
    if (strcmp(argv[1],"checkauth")==0) {
-      status = testCheckAuth(Comm, argv[2], argv[3]);
+      status = testCheckAuth(Comm, argv[2], argv[3], argv[4]);
       didOne=1;
    }
 
