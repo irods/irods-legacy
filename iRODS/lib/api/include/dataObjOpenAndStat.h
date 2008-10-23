@@ -26,7 +26,7 @@ typedef struct OpenStat {
     int replStatus;
 } openStat_t;
 
-#define OpenStat_PI "double dataSize; str dataType[NAME_LEN]; int dataMode; int l3descInx; int replStatus;"
+#define OpenStat_PI "double dataSize; str dataType[NAME_LEN]; str dataMode[SHORT_STR_LEN]; int l3descInx; int replStatus;"
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_OPEN_AND_STAT rsDataObjOpenAndStat
