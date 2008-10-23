@@ -130,7 +130,8 @@ _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag)
         status = l3DataCopySingleBuf (rsComm, destL1descInx);
 	/* has not been registered yet because of NO_OPEN_FLAG_KW */
 	if (status >= 0 && existFlag == 0 && 
-	  destDataObjInfo->specColl == NULL) {
+	  destDataObjInfo->specColl == NULL &&
+	  L1desc[destL1descInx].remoteZoneHost == NULL) {
             status = svrRegDataObj (rsComm, destDataObjInfo);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
