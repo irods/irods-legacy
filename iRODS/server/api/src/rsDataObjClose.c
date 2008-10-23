@@ -21,6 +21,7 @@
 #include "subStructFileRead.h"
 #include "subStructFileStat.h"
 #include "subStructFileClose.h"
+#include "regDataObj.h"
 
 #ifdef LOG_TRANSFERS
 #include <sys/time.h>
@@ -361,6 +362,21 @@ _rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
 	    return (status);
 	}
     } else if (L1desc[l1descInx].dataObjInfo->specColl == NULL) {
+	if (l3descInx < 2 &&
+	  L1desc[l1descInx].dataObjInpReplFlag == 1 &&
+	  getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
+	  RETURN_L3INX_KW) != NULL &&
+	  L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
+	    /* the comes from a cross zone copy. have not been
+	     * registered yet */
+            status = svrRegDataObj (rsComm, myDataObjInfo);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "_rsDataObjClose: svrRegDataObj for %s failed, status = %d",
+                  myDataObjInfo->objPath, status);
+            }
+	}
+	      
         if (myDataObjInfo == NULL || myDataObjInfo->dataSize != newSize) {
             snprintf (tmpStr, MAX_NAME_LEN, "%lld", newSize);
             addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
