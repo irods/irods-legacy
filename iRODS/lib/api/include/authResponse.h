@@ -22,12 +22,13 @@ extern "C" {
 typedef struct {
    char *response;
    char *username;
+   char *userZone;
 } authResponseInp_t;
     
 #if 0
-#define authResponseInp_PI "str *response; str *username;"
+#define authResponseInp_PI "str *response; str *username; str *userZone;"
 #else
-#define authResponseInp_PI "bin *response(RESPONSE_LEN); str *username;"
+#define authResponseInp_PI "bin *response(RESPONSE_LEN); str *username; str *userZone;"
 #endif
 
 #if defined(RODS_SERVER)
