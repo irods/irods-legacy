@@ -4,6 +4,7 @@
 /* See dataObjCreate.h for a description of this API call.*/
 
 #include "dataObjCreate.h"
+#include "dataObjCreateAndStat.h"
 #include "dataObjOpen.h"
 #include "fileCreate.h"
 #include "subStructFileCreate.h"
@@ -43,7 +44,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     } else if (remoteFlag == REMOTE_HOST) {
        openStat_t *openStat = NULL;
         addKeyVal (&dataObjInp->condInput, REPL_DATA_OBJ_INP_KW, "");
-	status = rsDataObjCreateAndStat (rodsServerHost->conn, dataObjInp,
+	status = rcDataObjCreateAndStat (rodsServerHost->conn, dataObjInp,
 	  &openStat);
 	if (status < 0) return status;
 	l1descInx = allocAndSetL1descForZoneOpr (status, dataObjInp,
