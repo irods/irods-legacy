@@ -171,6 +171,16 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  status = chlModZone(rsComm, generalAdminInp->arg2, 
 			      generalAdminInp->arg3, generalAdminInp->arg4);
 	  if (status != 0) chlRollback(rsComm);
+	  if (status == 0 &&
+	      strcmp(generalAdminInp->arg3, "name")==0) {
+	     char oldName[MAX_NAME_LEN];
+	     char newName[MAX_NAME_LEN];
+	     strncpy(oldName, "/", MAX_NAME_LEN);
+	     strncat(oldName, generalAdminInp->arg2, MAX_NAME_LEN);
+	     strncpy(newName, generalAdminInp->arg4, MAX_NAME_LEN);
+	     status = chlRenameColl(rsComm, oldName, newName);
+	     if (status==0) chlCommit(rsComm);
+	  }
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"localzonename")==0) {
