@@ -23,15 +23,12 @@ transStat_t **transStat)
     int status;
     int existFlag;
     uint createMode;
-#if 0
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
 
-    srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
-    destDataObjInp = &dataObjCopyInp->destDataObjInp;
 
-    remoteFlag = getAndConnRemoteZone (rsComm, destDataObjInp, &rodsServerHost,
-      REMOTE_OPEN);
+    remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, 
+      &rodsServerHost);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
@@ -40,7 +37,6 @@ transStat_t **transStat)
 	  transStat);
 	return status;
     }
-#endif
     srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
     destDataObjInp = &dataObjCopyInp->destDataObjInp;
 

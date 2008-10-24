@@ -1906,6 +1906,60 @@ rodsServerHost_t **rodsServerHost, char *remotZoneOpr)
 }
 
 int
+getAndConnRemoteZoneForCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
+rodsServerHost_t **rodsServerHost)
+{
+    int status;
+    dataObjInp_t *srcDataObjInp, *destDataObjInp;
+    rodsServerHost_t *srcIcatServerHost = NULL;
+    rodsServerHost_t *destIcatServerHost = NULL;
+
+    srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
+    destDataObjInp = &dataObjCopyInp->destDataObjInp;
+
+    status = getRcatHost (MASTER_RCAT, srcDataObjInp->objPath, 
+      &srcIcatServerHost);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
+          srcDataObjInp->objPath);
+        return (status);
+    }
+
+    if (srcIcatServerHost->rcatEnabled != REMOTE_ICAT) {
+        /* local zone. nothing to do */
+        return (LOCAL_HOST);
+    }
+
+    status = getRcatHost (MASTER_RCAT, destDataObjInp->objPath,
+      &destIcatServerHost);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "getAndConnRemoteZoneForCopy: getRcatHost error for %s",
+          destDataObjInp->objPath);
+        return (status);
+    }
+
+    if (destIcatServerHost->rcatEnabled != REMOTE_ICAT) {
+        /* local zone. nothing to do */
+        return (LOCAL_HOST);
+    }
+
+    if (srcIcatServerHost != destIcatServerHost) {
+        return (LOCAL_HOST);
+    }
+
+    /* from the same remote zone */
+
+    status = getAndConnRemoteZone (rsComm, destDataObjInp, rodsServerHost, 
+      REMOTE_CREATE);
+
+    return status;
+}
+
+int
 getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t **rodsServerHost, char *remotZoneOpr)
 {
