@@ -41,12 +41,14 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
-        addKeyVal (&dataObjInp->condInput, RETURN_L3INX_KW, "");
+       openStat_t *openStat = NULL;
         addKeyVal (&dataObjInp->condInput, REPL_DATA_OBJ_INP_KW, "");
-	status = rcDataObjCreate (rodsServerHost->conn, dataObjInp);
+	status = rsDataObjCreateAndStat (rodsServerHost->conn, dataObjInp,
+	  &openStat);
 	if (status < 0) return status;
 	l1descInx = allocAndSetL1descForZoneOpr (status, dataObjInp,
-	  rodsServerHost, NULL);
+	  rodsServerHost, openStat);
+	if (openStat != NULL) free (openStat);
 	return (l1descInx);
     }
 
@@ -91,8 +93,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         }
     }
     freeRodsObjStat (rodsObjStatOut);
-    if (getValByKey (&dataObjInp->condInput, RETURN_L3INX_KW) != NULL)
-        l1descInx |= L1desc[l1descInx].l3descInx << 16;
 
     return (l1descInx);
 }

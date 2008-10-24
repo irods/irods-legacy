@@ -116,4 +116,5 @@
 #include "dataObjOpenAndStat.h"
 #include "l3FileGetSingleBuf.h"
 #include "l3FilePutSingleBuf.h"
+#include "dataObjCreateAndStat.h"
 #endif	/* API_HEADER_ALL_H */

@@ -331,3 +331,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcL3FileGetSingleBuf.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsL3FilePutSingleBuf.o
 LIB_API_OBJS += $(libApiObjDir)/rcL3FilePutSingleBuf.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDataObjCreateAndStat.o
+LIB_API_OBJS += $(libApiObjDir)/rcDataObjCreateAndStat.o

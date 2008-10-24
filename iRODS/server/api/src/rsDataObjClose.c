@@ -365,7 +365,7 @@ _rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
 	if (l3descInx < 2 &&
 	  L1desc[l1descInx].dataObjInpReplFlag == 1 &&
 	  getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
-	  RETURN_L3INX_KW) != NULL &&
+	  REPL_DATA_OBJ_INP_KW) != NULL &&
 	  L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
 	    /* the comes from a cross zone copy. have not been
 	     * registered yet */
