@@ -56,52 +56,52 @@ rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
 	dataObjCloseInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
 	status = rcDataObjClose (L1desc[l1descInx].remoteZoneHost->conn, 
 	  dataObjCloseInp);
-	freeL1desc (l1descInx);
 	dataObjCloseInp->l1descInx = l1descInx;
-	return (status);
-    }
+    } else {
+        status = _rsDataObjClose (rsComm, dataObjCloseInp);
 
-    status = _rsDataObjClose (rsComm, dataObjCloseInp);
-
-    if (status >= 0) {
-	if (L1desc[l1descInx].oprType == PUT_OPR || 
-	  L1desc[l1descInx].oprType == CREATE_OPR) {
-            initReiWithDataObjInp (&rei, rsComm, L1desc[l1descInx].dataObjInp);
-            rei.doi = L1desc[l1descInx].dataObjInfo;
+        if (status >= 0) {
+	    if (L1desc[l1descInx].oprType == PUT_OPR || 
+	      L1desc[l1descInx].oprType == CREATE_OPR) {
+                initReiWithDataObjInp (&rei, rsComm, 
+		  L1desc[l1descInx].dataObjInp);
+                rei.doi = L1desc[l1descInx].dataObjInfo;
 #ifdef TEST_QUE_RULE
-	    status = packReiAndArg (rsComm, &rei, NULL, 0, 
-	      &packedReiAndArgBBuf);
-	    if (status < 0) {
-		rodsLog (LOG_ERROR,
-		 "rsDataObjClose: packReiAndArg error");
-	    } else {
-		memset (&ruleExecSubmitInp, 0, sizeof (ruleExecSubmitInp));
-		rstrcpy (ruleExecSubmitInp.ruleName, "acPostProcForPut",
-		  NAME_LEN);
-		rstrcpy (ruleExecSubmitInp.userName, rei.uoic->userName,
-		  NAME_LEN);
-		ruleExecSubmitInp.packedReiAndArgBBuf = packedReiAndArgBBuf;
-		getNowStr (ruleExecSubmitInp.exeTime);
-		status = rsRuleExecSubmit (rsComm, &ruleExecSubmitInp);
-		free (packedReiAndArgBBuf);
-		if (status < 0) {
+	        status = packReiAndArg (rsComm, &rei, NULL, 0, 
+	          &packedReiAndArgBBuf);
+	        if (status < 0) {
 		    rodsLog (LOG_ERROR,
-		     "rsDataObjClose: rsRuleExecSubmit failed");
-		}
-	    }
+		     "rsDataObjClose: packReiAndArg error");
+	        } else {
+		    memset (&ruleExecSubmitInp, 0, sizeof (ruleExecSubmitInp));
+		    rstrcpy (ruleExecSubmitInp.ruleName, "acPostProcForPut",
+		      NAME_LEN);
+		    rstrcpy (ruleExecSubmitInp.userName, rei.uoic->userName,
+		      NAME_LEN);
+		    ruleExecSubmitInp.packedReiAndArgBBuf = packedReiAndArgBBuf;
+		    getNowStr (ruleExecSubmitInp.exeTime);
+		    status = rsRuleExecSubmit (rsComm, &ruleExecSubmitInp);
+		    free (packedReiAndArgBBuf);
+		    if (status < 0) {
+		        rodsLog (LOG_ERROR,
+		         "rsDataObjClose: rsRuleExecSubmit failed");
+		    }
+	        }
 #else
-	    status = applyRule ("acPostProcForPut", NULL, &rei, 
-	      NO_SAVE_REI);
-	    /* doi might have changed */
-	    L1desc[l1descInx].dataObjInfo = rei.doi;
+	        status = applyRule ("acPostProcForPut", NULL, &rei, 
+	          NO_SAVE_REI);
+	        /* doi might have changed */
+	        L1desc[l1descInx].dataObjInfo = rei.doi;
 #endif
-	} else if (L1desc[l1descInx].oprType == COPY_DEST) {
-            initReiWithDataObjInp (&rei, rsComm, L1desc[l1descInx].dataObjInp);
-            rei.doi = L1desc[l1descInx].dataObjInfo;
-            status = applyRule ("acPostProcForCopy", NULL, &rei,
-	      NO_SAVE_REI);
+	    } else if (L1desc[l1descInx].oprType == COPY_DEST) {
+                initReiWithDataObjInp (&rei, rsComm, 
+		  L1desc[l1descInx].dataObjInp);
+		  rei.doi = L1desc[l1descInx].dataObjInfo;
+		  status = applyRule ("acPostProcForCopy", NULL, &rei,
+		    NO_SAVE_REI);
             /* doi might have changed */
-            L1desc[l1descInx].dataObjInfo = rei.doi;
+                L1desc[l1descInx].dataObjInfo = rei.doi;
+	    }
 	}
     }
 
