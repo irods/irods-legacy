@@ -117,6 +117,11 @@ freeL1desc (int l1descInx)
     }
 
     if (L1desc[l1descInx].dataObjInfo != NULL) {
+	/* for remote zone type L1desc, rescInfo is not from local cache
+	 * but malloc'ed */ 
+	if (L1desc[l1descInx].remoteZoneHost != NULL &&
+	  L1desc[l1descInx].dataObjInfo->rescInfo != NULL)
+	    free (L1desc[l1descInx].dataObjInfo->rescInfo);
         freeDataObjInfo (L1desc[l1descInx].dataObjInfo);
     }
 
@@ -883,7 +888,7 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 
 #ifdef RBUDP_TRANSFER
     if (getValByKey (&dataObjInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
-	if (L1desc[l1descInx].remoteZoneHost == NULL) {
+	if (dataObjInfo->rescInfo != NULL) {
 	    /* only do unix fs */
 	    int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 	    if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
@@ -1631,6 +1636,9 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
 	rstrcpy (dataObjInfo->dataType, openStat->dataType, NAME_LEN);
 	L1desc[l1descInx].l3descInx = openStat->l3descInx;
 	L1desc[l1descInx].replStatus = openStat->replStatus;
+	dataObjInfo->rescInfo = malloc (sizeof (rescInfo_t));
+	bzero (dataObjInfo->rescInfo, sizeof (rescInfo_t));
+	dataObjInfo->rescInfo->rescTypeInx = openStat->rescTypeInx;
     }
 
     return l1descInx;
