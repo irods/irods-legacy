@@ -25,6 +25,18 @@ genQueryOut_t **genQueryOut)
     int specCollInx;
     int status;
     int continueFlag; 	/* continue query */ 
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+    remoteFlag = getAndConnRcatHost (rsComm, SLAVE_RCAT, dataObjInp->objPath,
+      &rodsServerHost);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+	status = rcQuerySpecColl (rodsServerHost->conn, dataObjInp,
+	  genQueryOut);
+	return status;
+    }
 
     if ((specCollInx = dataObjInp->openFlags) <= 0) {
 	specCollInx = openSpecColl (rsComm, dataObjInp, -1);

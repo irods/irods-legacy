@@ -18,6 +18,9 @@ rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
 {
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
+    dataObjInp_t myDataObjInp;
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
 
     status = collStat (rsComm, syncMountedCollInp, &rodsObjStatOut);
     if (status < 0) return status;
@@ -29,9 +32,22 @@ rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
 	syncMountedCollInp->objPath);
         return (SYS_COLL_NOT_MOUNTED_ERR);
     }
+	
+    bzero (&myDataObjInp, sizeof (myDataObjInp));
+    rstrcpy (myDataObjInp.objPath, rodsObjStatOut->specColl->objPath,
+      MAX_NAME_LEN);
+    remoteFlag = getAndConnRemoteZone (rsComm, &myDataObjInp, &rodsServerHost,
+      REMOTE_OPEN);
 
-    status = _rsSyncMountedColl (rsComm, rodsObjStatOut->specColl,
-      syncMountedCollInp->oprType);
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+	status = rcSyncMountedColl (rodsServerHost->conn, 
+	  syncMountedCollInp); 
+    } else {
+        status = _rsSyncMountedColl (rsComm, rodsObjStatOut->specColl,
+          syncMountedCollInp->oprType);
+    }
 
     free (rodsObjStatOut);
 
