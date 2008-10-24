@@ -27,6 +27,9 @@ rsDataObjCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
 transStat_t **transStat);
 int
 _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag);
+int
+getAndConnRemoteZoneForCopy (rsComm_t *rsComm, dataObjCopyInp_t *dataObjCopyInp,
+rodsServerHost_t **rodsServerHost);
 #else
 #define RS_DATA_OBJ_COPY NULL
 #endif
