@@ -807,7 +807,7 @@ keyValPair_t *condInput)
     if (dataSize < 0)
         return 1;
 
-    if (dataSize <= MAX_SZ_FOR_SINGLE_BUF) {
+    if (dataSize <= MIN_SZ_FOR_PARA_TRAN) {
         if (inpNumThr > 0) {
             inpNumThr = 1;
         } else {
