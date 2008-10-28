@@ -220,10 +220,11 @@ $reServerOnIes = 1;
 # not desirable. 
 # $reServerOption="-cD /a/b/c/myLogDir";
 
-# svrPortReconnect - Specifies whether the agent will create a reconnect
+# irodsConnTimeout - Specifies whether the agent accept a client request
+# to timeout and terminate corrent connection and create a reconnect
 # socket/port for reconnection in case the client server connection is
 # broken due to timeout or other reason. The default is on. 
-$svrPortReconnect=1;
+$irodsConnTimeout=1;
 
 # RETESTFLAG - option for logging
 # use 1 to make it log
@@ -239,7 +240,7 @@ if ($svrPortRangeEnd)		{ $ENV{'svrPortRangeEnd'}     = $svrPortRangeEnd; }
 if ($reServerOnIes)		{ $ENV{'reServerOnIes'}       = $reServerOnIes; }
 if ($reServerOnThisServer)	{ $ENV{'reServerOnThisServer'}= $reServerOnThisServer; }
 if ($reServerOption)		{ $ENV{'reServerOption'}      = $reServerOption; }
-if ($svrPortReconnect)		{ $ENV{'svrPortReconnect'}    = $svrPortReconnect; }
+if ($irodsConnTimeout)		{ $ENV{'irodsConnTimeout'}    = $irodsConnTimeout; }
 if ($RETESTFLAG)		{ $ENV{'RETESTFLAG'}          = $RETESTFLAG; }
 
 
