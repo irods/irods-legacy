@@ -161,8 +161,14 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         if (rodsArgs->dataTypeString == NULL) {
 	    addKeyVal (&dataObjOprInp->condInput, DATA_TYPE_KW, "generic");
         } else {
-	    addKeyVal (&dataObjOprInp->condInput, DATA_TYPE_KW, 
-	      rodsArgs->dataTypeString);
+            if (strcmp (rodsArgs->dataTypeString, "t") == 0 ||
+              strcmp (rodsArgs->dataTypeString, "tar") == 0) {
+                addKeyVal (&dataObjOprInp->condInput, DATA_TYPE_KW,
+                  "tar file");
+            } else {
+                addKeyVal (&dataObjOprInp->condInput, DATA_TYPE_KW,
+                  rodsArgs->dataTypeString);
+            }
         }
     } else {
 	addKeyVal (&dataObjOprInp->condInput, DATA_TYPE_KW, "generic");

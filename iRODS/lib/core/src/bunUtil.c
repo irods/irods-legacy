@@ -94,13 +94,19 @@ rodsPathInp_t *rodsPathInp)
 
     if (rodsArgs->dataType == True) {
         if (rodsArgs->dataTypeString != NULL) {
-            addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
-              rodsArgs->dataTypeString);
+	    if (strcmp (rodsArgs->dataTypeString, "t") == 0 ||
+	      strcmp (rodsArgs->dataTypeString, "tar") == 0) {
+                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
+                  "tar file");
+	    } else {
+                addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
+                  rodsArgs->dataTypeString);
+	    }
         }
     } else if (rodsArgs->condition == True) {	/* -c */
-        rodsLog (LOG_ERROR,
-          "initCondForBunOpr: dataType (-D) must be provided with -c");
-	return (-1);
+        addKeyVal (&structFileExtAndRegInp->condInput, DATA_TYPE_KW,
+          "tar file");
+
     }
 
     if (rodsArgs->resource == True) {

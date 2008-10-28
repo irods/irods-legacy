@@ -622,7 +622,6 @@ rmKeyVal (keyValPair_t *condInput, char *keyWord)
     for (i = 0; i < condInput->len; i++) {
         if (strcmp (condInput->keyWord[i], keyWord) == 0) {
 	    *condInput->keyWord[i] = '\0';
-            return (0);
         }
     }
 
