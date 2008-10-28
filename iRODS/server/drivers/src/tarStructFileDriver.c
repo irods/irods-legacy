@@ -730,8 +730,13 @@ tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
 	if (collEnt->objType == DATA_OBJ_T) {
-	    snprintf (savepath, MAX_NAME_LEN, "./%s/%s", 
-	      collEnt->collName + collLen, collEnt->dataName);
+	    if (collEnt->collName[collLen] == '\0') {
+	        snprintf (savepath, MAX_NAME_LEN, "./%s", 
+	          collEnt->dataName);
+	    } else {
+	        snprintf (savepath, MAX_NAME_LEN, "./%s/%s", 
+	          collEnt->collName + collLen, collEnt->dataName);
+	    }
 	    status = tar_append_file (t, collEnt->phyPath, savepath);
     	    if (status != 0) {
         	rodsLog (LOG_NOTICE,

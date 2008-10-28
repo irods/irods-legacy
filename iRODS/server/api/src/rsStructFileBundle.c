@@ -47,11 +47,16 @@ structFileExtAndRegInp_t *structFileBundleInp)
     l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
 
     if (l1descInx < 0) {
+#if 0
 	if (getValByKey (&dataObjInp.condInput, DEST_RESC_NAME_KW) == NULL) {
 	    return SYS_CACHE_STRUCT_FILE_RESC_ERR;
 	} else {
+#endif
+	    rmKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW);
 	    l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
+#if 0
 	}
+#endif
 
 	if (l1descInx < 0) {
             rodsLog (LOG_ERROR,
