@@ -4,6 +4,9 @@
 /* initServer.c - Server initialization routines
  */
 
+#ifndef windows_platform
+#include <pthread.h>
+#endif
 #include "initServer.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
@@ -1320,7 +1323,7 @@ initAgent (rsComm_t *rsComm)
 
     srandom((unsigned int) time(0) % getpid());
 
-    if (rsComm->reconnFlag > 0 && getenv ("svrPortReconnect") != NULL) { 
+    if (rsComm->reconnFlag != NO_RECONN) { 
 	rsComm->reconnSock = sockOpenForInConn (rsComm, &rsComm->reconnPort,
 	  &rsComm->reconnAddr, SOCK_STREAM);
 	if (rsComm->reconnSock < 0) {
@@ -1329,6 +1332,20 @@ initAgent (rsComm_t *rsComm)
         } else {
 	    rsComm->cookie = random ();
 	}
+#ifndef windows_platform
+	if (rsComm->reconnFlag == RECONN_TIMEOUT) { 
+            status = pthread_create  (&rsComm->reconnThr, pthread_attr_default,
+                  (void *(*)(void *)) reconnManager,
+                  (void *) rsComm);
+
+            if (status < 0) {
+                rodsLog (LOG_ERROR, "initAgent: pthread_create failed, stat=%d",
+	          status);
+	    }
+	    pthread_mutex_init (&rsComm->lock, NULL);
+	    rsComm->reconnTimeout = time (0) + RECONN_TIMEOUT_TIME;
+        }
+#endif
     }
 
     InitialState = INITIAL_DONE;
@@ -1584,7 +1601,7 @@ svrReconnect (rsComm_t *rsComm)
       rsComm->reconnSock, rsComm->reconnPort);
 
     memset (&reconnTimeout, 0, sizeof (reconnTimeout));
-   reconnTimeout.tv_sec = RECONNECT_TIMEOUT_TIME;
+   reconnTimeout.tv_sec = RECONNECT_WAIT_TIME;
 
 #ifndef _WIN32
     /* ignore SIGPIPE because it probably would get one */

@@ -31,10 +31,9 @@ svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 
 
     if (rodsServerHost->conn == NULL) { /* a connection already */
-	if (getenv ("svrPortReconnect") != NULL) {
-	    reconnFlag = 1;
+	if (getenv (CONN_TIMEOUT_ENV) != NULL) {
 	} else {
-	    reconnFlag = 0;
+	    reconnFlag = NO_RECONN;
 	}
         rodsServerHost->conn = _rcConnect (rodsServerHost->hostName->name,
           ((zoneInfo_t *) rodsServerHost->zoneInfo)->portNum,
@@ -1587,3 +1586,29 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
     return (status);
 }
 #endif  /* RBUDP_TRANSFER */
+#ifndef windows_platform
+void
+reconnManager (rsComm_t *rsComm)
+{
+    if (rsComm == NULL || rsComm->reconnSock <= 0 || 
+      rsComm->reconnTimeout <= 0) {
+        return;
+    }
+    listen (rsComm->reconnSock, 1);
+    while (1) {
+	time_t curtime = time (0);
+	if (curtime < rsComm->reconnTimeout) {
+	    /* not time yet */
+	    rodsSleep ((rsComm->reconnTimeout - curtime), 0);
+	    continue;
+	}
+	pthread_mutex_lock (&rsComm->lock);
+	if (rsComm->agentState == READING_FROM_CLI) {
+	    pthread_mutex_unlock (&rsComm->lock);
+	    rodsSleep (RECONNECT_SLEEP_TIME, 0);
+	    continue;
+	}
+	/* notify client we are reconnecting */
+    }
+}
+#endif

@@ -86,4 +86,8 @@ rodsLong_t longNoSupport();
 int
 svrPortalPutGetRbudp (rsComm_t *rsComm);
 #endif	/* RBUDP_TRANSFER */
+#ifndef windows_platform
+void
+reconnManager (rsComm_t *rsComm);
+#endif
 #endif	/* MISC_SERVER_FUNCT_H */

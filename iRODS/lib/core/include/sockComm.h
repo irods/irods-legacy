@@ -16,13 +16,27 @@
 #define MAX_SOCK_WINDOW_SIZE	(16*1024*1024) /* max window size = 16 Mb */
 #define DEF_NUMBER_SVR_PORT	200	/* default number of of server ports */
 #define CONNECT_TIMEOUT_TIME    10	/* connection timeout time in sec */
-#define RECONNECT_TIMEOUT_TIME  10	/* re-connection timeout time in sec */
+#define RECONNECT_WAIT_TIME  10	/* re-connection timeout time in sec */
 #define RECONNECT_SLEEP_TIME  3		/* re-connection sleep time in sec */
 #define MAX_RECONN_RETRY_CNT 4		/* max connect retry count */
 #define MAX_CONN_RETRY_CNT 3	/* max connect retry count */
 #define  CONNECT_SLEEP_TIME 200000	/* connect sleep time in uSec */
 
+/* definition for the reconnFlag */
+#define NO_RECONN	0	/* no reconnection */
+#define DO_RECONN	1	/* reconnect when the connection is broken */
+#define RECONN_TIMEOUT	2
+
+#define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
+
+#define CONN_TIMEOUT_ENV "irodsConnTimeout"	/* reconnFlag will be set to
+						 * RECONN_TIMEOUT if this
+						 * env is set */
+
 /* definition for socket close function */
+#define READING_FROM_CLI	0
+#define PROCESSING_API		1
+
 #ifdef _WIN32
 #define CLOSE_SOCK       closesocket
 #else

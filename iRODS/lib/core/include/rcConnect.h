@@ -76,6 +76,10 @@ typedef struct {
     int cookie;
     time_t reconnTime;
     reconnOpr_t reconnOpr;
+    time_t reconnTimeout;
+    pthread_t reconnThr;
+    pthread_mutex_t lock;
+    int agentState;	
     int gsiRequest;
 } rsComm_t;
 

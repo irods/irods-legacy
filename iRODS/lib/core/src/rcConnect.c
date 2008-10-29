@@ -28,6 +28,10 @@ int reconnFlag, rErrMsg_t *errMsg)
 	}
 #endif
 
+    if (getenv (CONN_TIMEOUT_ENV) != NULL) {
+        reconnFlag = RECONN_TIMEOUT;
+    }
+
     conn = _rcConnect (rodsHost, rodsPort, userName, rodsZone, NULL, NULL,
       errMsg, 0, reconnFlag);
 
