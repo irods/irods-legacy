@@ -6,6 +6,13 @@
 #include "authRequest.h"
 #include "authResponse.h"
 #include "authCheck.h"
+#include "miscServerFunct.h"
+
+
+/* Set requireServerAuth to 1 to fail authentications from
+   un-authenticated Servers (for example, if the LocalZoneSID 
+   is not set) */
+#define requireServerAuth 0 
 
 int
 rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
@@ -15,6 +22,11 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
    authCheckInp_t authCheckInp;
    authCheckOut_t *authCheckOut = NULL;
    rodsServerHost_t *rodsServerHost;
+
+   char digest[RESPONSE_LEN+2];
+   char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
+   char serverId[MAX_PASSWORD_LEN+2];
+   MD5_CTX context;
 
    bufp = _rsAuthRequestGetChallenge();
 
@@ -46,6 +58,61 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
             "rsAuthResponse: rxAuthCheck failed, status = %d", status);
       return (status);
    }
+
+   if (rodsServerHost->localFlag != LOCAL_HOST) {
+      if (authCheckOut->serverResponse == NULL) {
+	 rodsLog(LOG_NOTICE, "Warning, cannot authenticate remote server, no serverResponse field");
+	 if (requireServerAuth) {
+	    rodsLog(LOG_NOTICE, "Authentication disallowed, no serverResponse field");
+	    return(REMOTE_SERVER_AUTH_NOT_PROVIDED);
+	 }
+      }
+      else {
+	 char *cp;
+	 int OK, len, i;
+	 if (*authCheckOut->serverResponse == '\0') {
+	    rodsLog(LOG_NOTICE, "Warning, cannot authenticate remote server, serverResponse field is empty");
+	    if (requireServerAuth) { 
+	       rodsLog(LOG_NOTICE, "Authentication disallowed, empty serverResponse");
+	       return(REMOTE_SERVER_AUTH_EMPTY);  
+	    }
+	 }
+	 else {
+	    memset(md5Buf, 0, sizeof(md5Buf));
+	    strncpy(md5Buf, authCheckInp.challenge, CHALLENGE_LEN);
+	    getZoneServerId(authResponseInp->userZone, serverId);
+	    len = strlen(serverId);
+	    if (len <= 0) {
+	       rodsLog (LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config", status);
+	       if (requireServerAuth) {
+		  rodsLog(LOG_NOTICE, "Authentication disallowed, no RemoteZoneSID defined");
+		  return(REMOTE_SERVER_SID_NOT_DEFINED);  
+	       }
+	    }
+	    else { 
+	       strncpy(md5Buf+CHALLENGE_LEN, serverId, len);
+	       MD5Init (&context);
+	       MD5Update (&context, (unsigned char*)md5Buf, 
+			  CHALLENGE_LEN+MAX_PASSWORD_LEN);
+	       MD5Final ((unsigned char*)digest, &context);
+	       for (i=0;i<RESPONSE_LEN;i++) {
+		  if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
+							end early*/
+	       }
+	       cp = authCheckOut->serverResponse;
+	       OK=1;
+	       for (i=0;i<RESPONSE_LEN;i++) {
+		  if (*cp++ != digest[i]) OK=0;
+	       }
+	       rodsLog(LOG_DEBUG, "serverResponse is OK/Not: %d", OK);
+	       if (OK==0) {
+		  rodsLog(LOG_NOTICE, "Server response incorrect, authentication disallowed");
+		  return(REMOTE_SERVER_AUTHENTICATION_FAILURE);
+	       }
+	    }
+	 }
+      }
+   }     
 
    /* have to modify privLevel if the icat is a foreign icat because
     * a local user in a foreign zone is not a local user in this zone

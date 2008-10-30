@@ -6,6 +6,7 @@
 #include "authRequest.h"
 #include "authCheck.h"
 #include "icatHighLevelRoutines.h"
+#include "miscServerFunct.h"
 
 int
 rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp, 
@@ -16,6 +17,10 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
    int privLevel;
    int clientPrivLevel;
    authCheckOut_t *result;
+   unsigned char *digest;
+   char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
+   MD5_CTX context;
+   char ServerID[MAX_PASSWORD_LEN+2];
 
    *authCheckOut = malloc(sizeof(authCheckOut_t));
    memset((char *)*authCheckOut, 0, sizeof(authCheckOut_t));
@@ -28,12 +33,40 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
 			 &privLevel, &clientPrivLevel);
    if (status < 0) {
       rodsLog (LOG_NOTICE, 
-	       "_rsAuthCheck: chlCheckAuth status = %d", status);
+	       "rsAuthCheck: chlCheckAuth status = %d", status);
    }
+
    if (status == 0) {
+      int len, i;
       result = *authCheckOut;
       result->privLevel = privLevel;
       result->clientPrivLevel = clientPrivLevel;
+
+      /* Add a hash to authenticate this server to the other server */
+      memset(md5Buf, 0, sizeof(md5Buf));
+      strncpy(md5Buf, authCheckInp->challenge, CHALLENGE_LEN);
+
+      getZoneServerId("", ServerID); /* get our local zone SID */
+      len = strlen(ServerID);
+      digest = malloc(RESPONSE_LEN+2);
+      if (len <=0) {
+	 rodsLog (LOG_DEBUG, 
+	       "rsAuthCheck: Warning, cannot authenticate this server to remote server, no LocalZoneSID defined in server.config", status);
+	 memset(digest, 0, RESPONSE_LEN);
+      }
+      else {
+	 strncpy(md5Buf+CHALLENGE_LEN, ServerID, len);
+
+	 MD5Init (&context);
+	 MD5Update (&context, (unsigned char*)md5Buf, 
+		    CHALLENGE_LEN+MAX_PASSWORD_LEN);
+	 MD5Final (digest, &context);
+	 for (i=0;i<RESPONSE_LEN;i++) {
+	    if (digest[i]=='\0') digest[i]++;  /* make sure 'string' doesn't
+						  end early */
+	 }
+      }
+      result->serverResponse = (char*)digest;
    }
 
    return (status);
