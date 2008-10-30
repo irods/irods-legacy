@@ -262,7 +262,7 @@ showGroup(char *group)
       printf("Members of group %s:\n",group);
       simpleQueryInp.form = 1;
       simpleQueryInp.sql = 
-	 "select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)";
+	 "select user_name||'#'||zone_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)";
       simpleQueryInp.arg1 = group;
       simpleQueryInp.maxBufSize = 1024;
    }
@@ -334,7 +334,7 @@ showUser(char *user)
    }
    else {
       simpleQueryInp.form = 1;
-      simpleQueryInp.sql = "select user_name from r_user_main where user_type_name != 'rodsgroup'";
+      simpleQueryInp.sql = "select user_name||'#'||zone_name from r_user_main where user_type_name != 'rodsgroup'";
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -619,14 +619,17 @@ doCommand(char *cmdToken[]) {
       status = getLocalZone();
       if (status) return(status);
       if (strcmp(zoneName, localZone)==0) {
-	 printf("Invalid format, the #zone field is the local zone\n");
-	 printf("The #zone should only be used for remote-zone users\n");
-	 lastCommandStatus = USER_INVALID_USERNAME_FORMAT;
-	 return(0);
+	 /* User entered user#localZone but call generalAdmin
+	    without #localZone as is needed to differentiate
+            local and remote user creation */
+	 generalAdmin("add", "user", userName, cmdToken[2], "",
+		      cmdToken[3], cmdToken[4], cmdToken[5]);
       }
-      generalAdmin("add", "user", cmdToken[1], cmdToken[2], "",
-      		   cmdToken[3], cmdToken[4], cmdToken[5]);  /* "" is unused
-		       zoneName as that's part of the username now */
+      else {
+	 generalAdmin("add", "user", cmdToken[1], cmdToken[2], "",
+		      cmdToken[3], cmdToken[4], cmdToken[5]);  /* "" is unused
+		      zoneName as that's part of the username now */
+      }
       return(0);
    }
    if (strcmp(cmdToken[0],"moduser") == 0) {
@@ -1007,7 +1010,7 @@ void usageMain()
 "prompts and executes commands until 'quit' or 'q' is entered.",
 "Single or double quotes can be used to enter items with blanks.",
 "Commands are:",
-" lu [name] (list user info; details if name entered)",
+" lu [name[#Zone]] (list user info; details if name entered)",
 " lt [name] [subname] (list token info)",
 " lr [name] (list resource info)",
 " ls [name] (list directory: subdirs and files)",
@@ -1017,8 +1020,8 @@ void usageMain()
 " lrg [name] (list resource group info)",
 " lf DataId (list file details; DataId is the number (from ls))",
 " mkuser Name[#Zone] Type [DN] (make user)",
-" moduser Name [ type | zone | DN | comment | info | password ] newValue",
-" rmuser Name (remove user, where userName: name[@department][#zone])",
+" moduser Name[#Zone] [ type | zone | DN | comment | info | password ] newValue",
+" rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
 " mkdir Name [username] (make directory(collection))",
 " rmdir Name (remove directory) ",
 " mkresc Name Type Class Host Path (make Resource)",
@@ -1029,8 +1032,8 @@ void usageMain()
 " rmzone Name (remove zone)",
 " mkgroup Name (make group)",
 " rmgroup Name (remove group)",
-" atg groupName userName [userZone] (add to group - add a user to a group)",
-" rfg groupName userName [userZone] (remove from group - remove a user from a group)",
+" atg groupName userName[#Zone] (add to group - add a user to a group)",
+" rfg groupName userName[#Zone] (remove from group - remove a user from a group)",
 " atrg resourceGroupName resourceName (add (resource) to resource group)",
 " rfrg resourceGroupName resourceName (remove (resource) from resource group)",
 " at tokenNamespace Name [Value1] [Value2] [Value3] (add token) ",
@@ -1054,6 +1057,7 @@ usage(char *subOpt)
 "Just 'lu' will briefly list currently defined users.",
 "If you include a user name, more detailed information is provided.",
 "Usernames can include the zone preceeded by #, for example rods#tempZone.",
+"Users are listed in the userName#ZoneName form.",
 "Also see the luz and lz and the iuserinfo command.",
 ""};
    char *luzMsgs[]={
@@ -1093,7 +1097,7 @@ usage(char *subOpt)
 " lg [name] (list group info (user member list))",
 "Just 'lg' briefly lists the defined groups.",
 "If you include a group name, it will list users who are",
-"members of that group.",
+"members of that group.  Users are listed in the user#zone format.",
 ""};
 
    char *lgdMsgs[]={
@@ -1150,7 +1154,7 @@ usage(char *subOpt)
 
 
    char *moduserMsgs[]={
-" moduser Name [ type | zone | DN | comment | info | password ] newValue",
+" moduser Name[#Zone] [ type | zone | DN | comment | info | password ] newValue",
 "Modifies a field of an existing user definition.",
 "For GSI authentication, the DN can also be entered via mkuser.",
 "For password authentication, use moduser to set the password.",
@@ -1164,7 +1168,7 @@ usage(char *subOpt)
 "collections too.",
 ""};
    char *rmuserMsgs[]={
-" rmuser Name (remove user, where userName: name[@department][#zone])",
+" rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
 " Remove an irods user.",
 ""};
 
@@ -1244,14 +1248,14 @@ usage(char *subOpt)
 ""};
 
    char *atgMsgs[]={
-" atg groupName userName [userZone] (add to group - add a user to a group)",
+" atg groupName userName[#userZone] (add to group - add a user to a group)",
 "For remote-zone users, include the userZone.",
 "Also see mkgroup, rfg and rmgroup.",
 " ",
 ""};
 
    char *rfgMsgs[]={
-" rfg groupName userName [userZone] (remove from group - remove a user from a group)",
+" rfg groupName userName[#userZone] (remove from group - remove a user from a group)",
 "For remote-zone users, include the userZone.",
 "Also see mkgroup, afg and rmgroup.",
 ""};
