@@ -1396,6 +1396,60 @@ locToRemPartialCopy (portalTransferInp_t *myInput)
     CLOSE_SOCK (destFd);
 }
 
+/*
+ Given a zoneName, return the Zone Server ID string (from the server.config
+ file) if defined.  If the input zoneName is null, use the local zone.
+ Input: zoneName
+ Output: zoneSID
+ */
+void
+getZoneServerId(char *zoneName, char *zoneSID) {
+   zoneInfo_t *tmpZoneInfo;
+   rodsServerHost_t *tmpRodsServerHost;
+   int i;
+   int zoneNameLen=0;
+   char *localZoneName=NULL;
+   char matchStr[MAX_NAME_LEN+2];
+
+   if (zoneName!=NULL) zoneNameLen=strlen(zoneName);
+   if (zoneNameLen==0) {
+      strncpy(zoneSID, localSID, MAX_PASSWORD_LEN);
+      return;
+   }
+
+   /* get our local zoneName */
+   tmpZoneInfo = ZoneInfoHead;
+   while (tmpZoneInfo != NULL) {
+      tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->masterServerHost;
+      if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
+	 localZoneName = tmpZoneInfo->zoneName;
+      }
+      tmpZoneInfo = tmpZoneInfo->next;
+   }
+
+   /* return the local SID if the local zone is the one requested */
+   if (localZoneName!=NULL) {
+      if (strncmp(localZoneName, zoneName, MAX_NAME_LEN)==0) {
+	 strncpy(zoneSID, localSID, MAX_PASSWORD_LEN);
+	 return;
+      }
+   }
+
+   /* check the remoteSIDs; form is ZoneName-SID */
+   strncpy(matchStr, zoneName, MAX_NAME_LEN);
+   strncat(matchStr, "-", MAX_NAME_LEN);
+   for (i=0;i<MAX_FED_RSIDS;i++) {
+      if (strncmp(matchStr, remoteSID[i], zoneNameLen+1)==0) {
+	 strncpy(zoneSID, (char*)&remoteSID[i][zoneNameLen+1],
+		 MAX_PASSWORD_LEN);
+	 return;
+      }
+   }
+
+   zoneSID[0]='\0';
+   return;
+}
+
 int
 isUserPrivileged(rsComm_t *rsComm)
 {

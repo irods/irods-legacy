@@ -349,6 +349,14 @@ initRcatServerHostByFile (rsComm_t *rsComm)
     int lineLen, bytesCopied, remoteFlag;
     char keyWdName[MAX_NAME_LEN];
     int gptRcatFlag = 0;
+    int remoteSidCount = 0;
+    char sidKey[MAX_PASSWORD_LEN]="";
+    int i;
+
+    localSID[0]='\0';
+    for (i=0;i<MAX_FED_RSIDS;i++) {
+       remoteSID[i][0]='\0';
+    }
 
     rcatCongFile =  (char *) malloc((strlen (getConfigDir()) +
         strlen(RCAT_HOST_FILE) + 24));
@@ -432,10 +440,41 @@ initRcatServerHostByFile (rsComm_t *rsComm)
                        keyWdName);
                     return (SYS_CONFIG_FILE_ERR);
 		}
+	    } else if (strcmp(keyWdName, LOCAL_ZONE_SID_KW) == 0) {
+	       getStrInBuf(&inPtr, localSID, &lineLen, MAX_PASSWORD_LEN);
+	    } else if (strcmp(keyWdName, REMOTE_ZONE_SID_KW) == 0) {
+	       if (remoteSidCount < MAX_FED_RSIDS) {
+		  getStrInBuf(&inPtr, remoteSID[remoteSidCount],
+			      &lineLen, MAX_PASSWORD_LEN);
+		  remoteSidCount++;
+	       }
+	    } else if (strcmp(keyWdName, SID_KEY_KW) == 0) {
+	       getStrInBuf(&inPtr, sidKey, &lineLen, MAX_PASSWORD_LEN);
 	    }
 	}
     } 
     fclose (fptr);
+
+    /* Possibly descramble the Server ID strings */
+    if (strlen(sidKey) > 0) {
+        char SID[MAX_PASSWORD_LEN+10];
+        int i;
+        if (strlen(localSID) > 0) {
+	     strncpy(SID, localSID, MAX_PASSWORD_LEN);
+	     obfDecodeByKey(SID, sidKey, localSID);
+	}
+	for (i=0;i<MAX_FED_RSIDS;i++) {
+	    if (strlen(remoteSID[i]) > 0) {
+	        strncpy(SID, remoteSID[i], MAX_PASSWORD_LEN);
+		obfDecodeByKey(SID, 
+			       sidKey,
+			       remoteSID[i]);
+	    }
+	    else {
+	        break;
+	    }
+	}
+    }
 
     if (gptRcatFlag <= 0) {
        rodsLog (LOG_SYS_FATAL,
