@@ -2533,12 +2533,12 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 "select zone_name from r_zone_main",
 "select * from r_zone_main where zone_name=?",
 "select user_name from r_user_main where user_type_name='rodsgroup'",
-"select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)",
+"select user_name||'#'||zone_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)",
 "select * from r_data_main where data_id=?",
 "select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)",
 "select coll_name from r_coll_main where parent_coll_name=?",
 "select * from r_user_main where user_name=?",
-"select user_name from r_user_main where user_type_name != 'rodsgroup'",
+"select user_name||'#'||zone_name from r_user_main where user_type_name != 'rodsgroup'",
 "select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_resc_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?",
 "select distinct resc_group_name from r_resc_group",
 "select coll_id from r_coll_main where coll_name = ?",
@@ -3323,6 +3323,9 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char auditUserName[110];
    int userSettingOwnPassword;
 
+   char userName2[NAME_LEN];
+   char zoneName[NAME_LEN];
+
    if (logSQL) rodsLog(LOG_SQL, "chlModUser");
 
    if (userName == NULL || option == NULL || newValue==NULL) {
@@ -3359,6 +3362,14 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    auditComment[0]='\0';
    strncpy(auditUserName,userName,100);
 
+   status = parseUserName(userName, userName2, zoneName);
+   if (zoneName[0]=='\0') {
+      rstrcpy(zoneName, localZone, NAME_LEN);
+   }
+   if (status) {
+      return (CAT_INVALID_ARGUMENT);
+   }
+
 #if 0
 	/* no longer allow modifying the user's name since it would 
       require moving the home and trash/home collections too */
@@ -3368,8 +3379,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	       "user_name");
       cllBindVars[cllBindVarCount++]=newValue;
       cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=userName;
-      cllBindVars[cllBindVarCount++]=localZone;
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneName;
       if (logSQL) rodsLog(LOG_SQL, "chlModUserSQLxx1x");
       auditId = AU_MOD_USER_NAME;
       strncpy(auditComment, userName, 100);
@@ -3384,8 +3395,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       snprintf(tSQL, MAX_SQL_SIZE, form2,
 	       "user_type_name", tsubSQL);
       cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=userName;
-      cllBindVars[cllBindVarCount++]=localZone;
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneName;
       opType=1;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 2");
       auditId = AU_MOD_USER_TYPE;
@@ -3393,17 +3404,6 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    }
    if (strcmp(option,"zone")==0 ||
        strcmp(option,"zone_name")==0) {
-      /* maybe should not be allowed, but go ahead and do it for now,
-         parsing out the zone from the username if it is there */
-      char userName2[NAME_LEN];
-      char zoneName[NAME_LEN];
-      status = parseUserName(userName, userName2, zoneName);
-      if (zoneName[0]=='\0') {
-	 rstrcpy(zoneName, localZone, NAME_LEN);
-      }
-      if (status) {
-	 return (CAT_INVALID_ARGUMENT);
-      }
       snprintf(tSQL, MAX_SQL_SIZE, form1, "zone_name");
       cllBindVars[cllBindVarCount++]=newValue;
       cllBindVars[cllBindVarCount++]=myTime;
@@ -3412,7 +3412,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 3");
       auditId = AU_MOD_USER_ZONE;
       strncpy(auditComment, newValue, 100);
-      strncpy(auditUserName,userName2,100);
+      strncpy(auditUserName,userName,100);
    }
    if (strcmp(option,"DN")==0 ||
        strcmp(option,"user_distin_name")==0) {
@@ -3420,8 +3420,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	       "user_distin_name");
       cllBindVars[cllBindVarCount++]=newValue;
       cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=userName;
-      cllBindVars[cllBindVarCount++]=localZone;
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneName;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 4");
       auditId = AU_MOD_USER_DN;
       strncpy(auditComment, newValue, 100);
@@ -3432,8 +3432,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	       "user_info");
       cllBindVars[cllBindVarCount++]=newValue;
       cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=userName;
-      cllBindVars[cllBindVarCount++]=localZone;
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneName;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 5");
       auditId = AU_MOD_USER_INFO;
       strncpy(auditComment, newValue, 100);
@@ -3444,8 +3444,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	       "r_comment");
       cllBindVars[cllBindVarCount++]=newValue;
       cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=userName;
-      cllBindVars[cllBindVarCount++]=localZone;
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneName;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 6");
       auditId = AU_MOD_USER_COMMENT;
       strncpy(auditComment, newValue, 100);
@@ -3461,7 +3461,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 7");
       i = cmlGetStringValueFromSql(
 	       "select r_user_password.user_id from r_user_password, r_user_main where r_user_main.user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id",
-	       userIdStr, MAX_NAME_LEN, userName, localZone, &icss);
+	       userIdStr, MAX_NAME_LEN, userName2, zoneName, &icss);
       if (i != 0 && i !=CAT_NO_ROWS_FOUND) return(i);
       if (i == 0) {
 	 snprintf(tSQL, MAX_SQL_SIZE, form3);
@@ -3473,8 +3473,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       else {
 	 opType=4;
 	 snprintf(tSQL, MAX_SQL_SIZE, form4);
-	 cllBindVars[cllBindVarCount++]=userName;
-	 cllBindVars[cllBindVarCount++]=localZone;
+	 cllBindVars[cllBindVarCount++]=userName2;
+	 cllBindVars[cllBindVarCount++]=zoneName;
 	 cllBindVars[cllBindVarCount++]=decoded;
 	 cllBindVars[cllBindVarCount++]="9999-12-31-23.59.01";
 	 cllBindVars[cllBindVarCount++]=myTime;
@@ -3490,10 +3490,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
    memset(decoded, 0, MAX_PASSWORD_LEN);
-#if 0
-   //   Not sure why this was here; seems like simple test on 0 is right
-   //   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {  /* error */
-#endif
+
    if (status != 0 ) {  /* error */
       if (opType==1) { /* doing a type change, check if user_type problem */
 	 int status2;
@@ -3519,10 +3516,10 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 11");
 	 status2 = cmlGetIntegerValueFromSql(
            "select user_id from r_user_main where user_name=? and zone_name=?",
-	   &iVal, userName, localZone, 0, 0, 0, &icss);
+	   &iVal, userName2, zoneName, 0, 0, 0, &icss);
 	 if (status2) {
 	    rodsLog(LOG_NOTICE,
-		    "chlModUser invalid user %s zone %s", userName, localZone);
+		    "chlModUser invalid user %s zone %s", userName2, zoneName);
 	    return(CAT_INVALID_USER);
 	 }
       }
@@ -3615,12 +3612,9 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 2");
    status = cmlGetStringValueFromSql(
               "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name='rodsgroup'",
-	      groupId, MAX_NAME_LEN, groupName, zoneToUse, &icss);
+	      groupId, MAX_NAME_LEN, groupName, localZone, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
-	 if (strncmp(zoneToUse, localZone, MAX_NAME_LEN) != 0) {
-	    return(0);
-	 }
 	 return(CAT_INVALID_GROUP);
       }
       _rollback("chlModGroup");
