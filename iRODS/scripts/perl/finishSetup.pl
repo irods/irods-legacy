@@ -2189,9 +2189,10 @@ sub imkuser($)
 	my ($status,$output) = run( "$iadmin lu" );
 	my $line;
 	my @lines = split( "\n", $output );
+	$usernameWithZone=$username . "#" . $ZONE_NAME;
 	foreach $line (@lines)
 	{
-		if ( $line =~ /^[ \t]*$username[ \t]*$/ )
+		if ( $line =~ /^[ \t]*$usernameWithZone[ \t]*$/ )
 		{
 			# The account already exists.
 			printLog( "        Skipped.  Account '$username' already exists.\n" );
