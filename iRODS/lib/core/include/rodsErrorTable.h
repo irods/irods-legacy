@@ -234,7 +234,7 @@
 #define RDA_ACCESS_PROHIBITED           -888000
 #define RDA_NAME_NOT_FOUND              -889000
 
-/* 900,000 to 920,000 - Misc errors (used by obf library)  */
+/* 900,000 to 920,000 - Misc errors (used by obf library, etc)  */
 #define FILE_OPEN_ERR                    -900000
 #define FILE_READ_ERR                    -901000
 #define FILE_WRITE_ERR                   -902000
@@ -245,6 +245,10 @@
 #define AUTH_FILE_DOES_NOT_EXIST         -907000
 #define UNLINK_FAILED                    -908000
 #define NO_PASSWORD_ENTERED              -909000
+#define REMOTE_SERVER_AUTHENTICATION_FAILURE -910000
+#define REMOTE_SERVER_AUTH_NOT_PROVIDED  -911000
+#define REMOTE_SERVER_AUTH_EMPTY         -912000
+#define REMOTE_SERVER_SID_NOT_DEFINED    -913000
 
 /* 921,000 to 999,000 - GSI errors  */
 #define GSI_NOT_COMPILED_IN              -921000
