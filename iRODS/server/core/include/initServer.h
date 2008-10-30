@@ -80,6 +80,13 @@ typedef struct zoneInfo {
     struct zoneInfo *next;
 } zoneInfo_t;
 
+/* definitions for Server ID information */
+#define MAX_FED_RSIDS  5
+#define LOCAL_ZONE_SID_KW       "LocalZoneSID"
+#define REMOTE_ZONE_SID_KW      "RemoteZoneSID"
+#define SID_KEY_KW              "SIDKey"
+
+
 int
 resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost);
 int

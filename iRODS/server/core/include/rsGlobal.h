@@ -55,5 +55,10 @@ structFileDesc_t StructFileDesc[NUM_STRUCT_FILE_DESC];
 tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
 #endif
 
+/* Server Authentication information */
+
+char localSID[MAX_PASSWORD_LEN]; /* Local Zone Servers ID string */
+char remoteSID[MAX_FED_RSIDS] [MAX_PASSWORD_LEN];  /* Remote Zone SIDs */
+
 #endif	/* RS_GLOBAL_H */
 

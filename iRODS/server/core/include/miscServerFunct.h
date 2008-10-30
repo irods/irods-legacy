@@ -82,6 +82,7 @@ char *regex (char *rec, char *text, ...);
 #endif
 int intNoSupport();
 rodsLong_t longNoSupport();
+void getZoneServerId(char *zoneName, char *zoneSID);
 #ifdef RBUDP_TRANSFER
 int
 svrPortalPutGetRbudp (rsComm_t *rsComm);
