@@ -2941,6 +2941,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    time_t pwExpireMaxCreateTime;
    char expireStr[50];
    char expireStrCreate[50];
+   char myUserZone[MAX_NAME_LEN];
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -2952,13 +2953,23 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    *userPrivLevel = NO_USER_AUTH;
    *clientPrivLevel = NO_USER_AUTH;
 
+   if (userZone == NULL || userZone[0]=='\0') {
+      status = getLocalZone();
+      if (status) return(status);
+      strncpy(myUserZone, localZone, MAX_NAME_LEN);
+   }
+   else {
+      strncpy(myUserZone, userZone, MAX_NAME_LEN);
+   }
+
+
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
 
    status = cmlGetMultiRowStringValuesFromSql(
 	    "select rcat_password, pass_expiry_ts, r_user_password.create_ts from r_user_password, r_user_main where user_name=? and zone_name=? and r_user_main.user_id = r_user_password.user_id",
 	    pwInfoArray, MAX_PASSWORD_LEN,
 	    MAX_PASSWORDS*3,  /* three strings per password returned */
-	    username, userZone, &icss);
+	    username, myUserZone, &icss);
    if (status < 3) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
@@ -3092,7 +3103,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 5");
    status = cmlGetStringValueFromSql(
 	    "select user_type_name from r_user_main where user_name=? and zone_name=?",
-	    userType, MAX_NAME_LEN, username, userZone, &icss);
+	    userType, MAX_NAME_LEN, username, myUserZone, &icss);
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
