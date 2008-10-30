@@ -32,11 +32,12 @@ typedef struct {
 typedef struct {
    int  privLevel;
    int  clientPrivLevel;
+   char *serverResponse;
 } authCheckOut_t;
     
 #define authCheckInp_PI "str *challenge; str *response; str *username; str *userzone;"
 
-#define authCheckOut_PI "int privLevel; int clientPrivLevel;"
+#define authCheckOut_PI "int privLevel; int clientPrivLevel; str *serverResponse;"
 
 #if defined(RODS_SERVER)
 #define RS_AUTH_CHECK rsAuthCheck
