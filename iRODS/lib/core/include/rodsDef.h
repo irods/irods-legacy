@@ -190,16 +190,6 @@ typedef struct startupPack {
     char option[NAME_LEN];
 } startupPack_t;
 
-typedef enum {
-    RECONN_SEND_OPR,
-    RECONN_RCV_OPR,
-} reconnOpr_t;
-
-typedef struct reconnMsg {
-    int cookie;
-    reconnOpr_t reconnOpr;
-} reconnMsg_t;
-    
 /* env variable for the client protocol */
 #define IRODS_PROT	"irodsProt"
  

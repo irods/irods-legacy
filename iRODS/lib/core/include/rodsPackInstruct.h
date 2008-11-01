@@ -87,7 +87,7 @@
 #define TagStruct_PI "int ssLen; str *preTag[ssLen]; str *postTag[ssLen]; str *keyWord[ssLen];" 
 
 #define RodsObjStat_PI "double objSize; int objType; int dataMode; str dataId[NAME_LEN]; str chksum[NAME_LEN]; str ownerName[NAME_LEN]; str ownerZone[NAME_LEN]; str createTime[TIME_LEN]; str modifyTime[TIME_LEN]; struct *SpecColl_PI;" 
-#define ReconnMsg_PI "int cookie; int reconnOpr;"
+#define ReconnMsg_PI "int status; int cookie; int procState; int flag;"
 #define VaultPathPolicy_PI "int scheme; int addUserName; int trimDirCnt;"
 #define StrArray_PI "int len; int size; str *value(len)(size);" 
 #define IntArray_PI "int len; int *value(len);" 

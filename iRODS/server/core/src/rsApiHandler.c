@@ -11,6 +11,9 @@
 #include "miscServerFunct.h"
 #include "regReplica.h"
 #include "unregDataObj.h"
+#ifndef windows_platform
+#include <pthread.h>
+#endif
 
 int
 rsApiHandler (rsComm_t *rsComm, int apiNumber, bytesBuf_t *inputStructBBuf,
@@ -201,7 +204,10 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
     bytesBuf_t *myOutStructBBuf;
     bytesBuf_t *rErrorBBuf = NULL;
     bytesBuf_t *myRErrorBBuf;
-    int retryCnt = 0;
+
+#ifndef windows_platform
+    svrChkReconnAtSendStart (rsComm);
+#endif
 
     if (retVal == SYS_HANDLER_DONE_NO_ERROR) {
 	/* not actually an error */
@@ -219,6 +225,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
              "sendApiReply: packStruct error, status = %d", status);
             sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
               NULL, NULL, status, rsComm->irodsProt);
+#ifndef windows_platform
+            svrChkReconnAtSendEnd (rsComm);
+#endif
             return status;
 	}
 
@@ -240,6 +249,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
              "sendApiReply: packStruct error, status = %d", status);
             sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL,
               NULL, NULL, status, rsComm->irodsProt);
+#ifndef windows_platform
+            svrChkReconnAtSendEnd (rsComm);
+#endif
             return status;
         }
 
@@ -248,61 +260,45 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
         myRErrorBBuf = NULL;
     }
 
-    while (retryCnt <= SEND_RCV_RETRY_CNT) {
-        status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, myOutStructBBuf,
-          myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
-	if (status >= 0 || rsComm->reconnSock == 0) {
-	    break;
-	} else {
-	    rodsSleep (SEND_RCV_SLEEP_TIME, 0);
-        }
-	retryCnt ++;
-    }
-      
+    status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, myOutStructBBuf,
+      myOutBsBBuf, myRErrorBBuf, retVal, rsComm->irodsProt);
+	
     if (status < 0) {
-	int savedStatus = status;
-
+	int status1;
         rodsLog (LOG_NOTICE,
          "sendApiReply: sendRodsMsg error, status = %d", status);
-        /* attempt to accept reconnect. ENOENT result  from
-                     * user cntl-C */
+#ifndef windows_platform
         if (rsComm->reconnSock > 0) {
-            status = svrReconnect (rsComm);
-            if (status >= 0) {
-                /* success */
+	    int savedStatus = status;
+	    pthread_mutex_lock (&rsComm->lock);
+	    status1 = svrSwitchConnect (rsComm);
+	    pthread_mutex_unlock (&rsComm->lock);
+	    if (status1 > 0) {
+	        /* should not be here */
                 rodsLog (LOG_NOTICE,
-                  "sendApiReply: Reconnected");
-    		status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, 
-		 myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, 
-		 rsComm->irodsProt);
-                if (status >= 0) {
-                    rodsLog (LOG_NOTICE,
-                      "sendApiReply: Reconnected and sendRodsMsg");
-                } else {
-                    rodsLog (LOG_NOTICE,
-                      "sendApiReply: Reconnected but sendRodsMsg failed");
-                    return (savedStatus);
-                }
-            } else {
-                rodsLog (LOG_NOTICE,
-                  "sendApiReply: Reconnection failed");
-                return (savedStatus);
-            }
-        } else {
-            return (status);
-        }
+                  "sendApiReply: Switch connection and retry sendRodsMsg");
+	        status = sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, 
+	          myOutStructBBuf, myOutBsBBuf, myRErrorBBuf, retVal, 
+	          rsComm->irodsProt);
+	        if (status >= 0) {
+		    rodsLog (LOG_NOTICE,
+                      "sendApiReply: retry sendRodsMsg succeeded");
+		} else {
+		    status = savedStatus;
+		}
+	    }
+	}
+#endif
     }
+
+#ifndef windows_platform
+    svrChkReconnAtSendEnd (rsComm);
+#endif
 
     freeBBuf (outStructBBuf);
     freeBBuf (rErrorBBuf);
-	
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
-         "sendApiReply: sendRodsMsg error, status = %d", status);
-        return status;
-    }
 
-    return (0);
+    return (status);
 }
 
 int
@@ -392,69 +388,39 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
     int status = 0;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
-    int retryCnt = 0; 
 
+#ifndef windows_platform
+    svrChkReconnAtReadStart (rsComm);
+#endif
     /* everything else are set in readMsgBody */
 
     memset (&bsBBuf, 0, sizeof (bsBBuf));
 
-    /* head the header */
+    /* read the header */
 
-    while (retryCnt <= SEND_RCV_RETRY_CNT) {
-        retryCnt ++;
-        status = readMsgHeader (rsComm->sock, &myHeader);
-        if (status >= 0 || rsComm->reconnSock == 0) {
-            break;
-        } else {
-            rodsSleep (SEND_RCV_SLEEP_TIME, 0);
-            if (rsComm->reconnTime > 0 && time (0) <= 
-              rsComm->reconnTime + 60) {
-                /* reconnected recently. try to prevent deadlock */
-		if (rsComm->reconnOpr != RECONN_SEND_OPR) {
-                    rodsLog (LOG_NOTICE,
-                      "readAndProcClientMsg:Agent reading.Client not sending");
-		    return (SYS_RECONN_OPR_MISMATCH);
-		}
-	    }
-        }
-    }
+    status = readMsgHeader (rsComm->sock, &myHeader);
 
     if (status < 0) {
-	int savedStatus = status;
+#ifndef windows_platform
         rodsLog (LOG_DEBUG,
           "readAndProcClientMsg: readMsgHeader error. status = %d", status);
         /* attempt to accept reconnect. ENOENT result  from
                      * user cntl-C */
         if (rsComm->reconnSock > 0) {
-            status = svrReconnect (rsComm);
-            if (status >= 0) {
-                /* success */
-	        rodsLog (LOG_NOTICE,
-                  "readAndProcClientMsg: Reconnected");
-                /* reconnected recently. try to prevent deadlock */
-                if (rsComm->reconnOpr != RECONN_SEND_OPR) {
-                    rodsLog (LOG_NOTICE,
-                      "readAndProcClientMsg:Agent reading.Client not sending");
-                    return (SYS_RECONN_OPR_MISMATCH);
-                }
-
-		status = readMsgHeader (rsComm->sock, &myHeader);
-		if (status >= 0) {
-                    rodsLog (LOG_NOTICE,
-                      "readAndProcClientMsg: Reconnected and readMsgHeader");
-		} else {
-                    rodsLog (LOG_NOTICE,
-                      "readAndProcClientMsg: Reconnected but readMsgHeader failed");
-		    return (savedStatus);
-		}
-            } else {
-	        rodsLog (LOG_NOTICE,
-                  "readAndProcClientMsg: Reconnection failed");
-		return (savedStatus);
-            }
+	    int savedStatus = status;
+	    /* try again. the socket might have changed */ 
+	    pthread_mutex_lock (&rsComm->lock);
+	    svrSwitchConnect (rsComm);
+	    pthread_mutex_unlock (&rsComm->lock);
+	    status = readMsgHeader (rsComm->sock, &myHeader);
+	    if (status < 0)
+	        return (savedStatus);
 	} else {
             return (status);
 	}
+#else
+	return (status);
+#endif
     }
 
     status = readMsgBody (rsComm->sock, &myHeader, &inputStructBBuf,
@@ -464,6 +430,10 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
           "agentMain: readMsgBody error. status = %d", status);
         return (status);
     }
+
+#ifndef windows_platform
+    svrChkReconnAtReadEnd (rsComm);
+#endif
 
     /* handler switch by msg type */
 
@@ -480,8 +450,14 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
 	}
     } else if (strcmp (myHeader.type, RODS_DISCONNECT_T) == 0) {
         rodsLog (LOG_NOTICE,
-          "agentMain: received disconnect msg from client");
+          "readAndProcClientMsg: received disconnect msg from client");
         return (DISCONN_STATUS);
+    } else if (strcmp (myHeader.type, RODS_RECONNECT_T) == 0) {
+        rodsLog (LOG_NOTICE,
+          "readAndProcClientMsg: received reconnect msg from client");
+	/* call itself again. be careful */
+	status = readAndProcClientMsg (rsComm, retApiStatus);
+	return status;
     } else {
         rodsLog (LOG_NOTICE,
           "agentMain: msg type %s not support by server",

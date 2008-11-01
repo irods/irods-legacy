@@ -24,6 +24,20 @@
 extern "C" {
 #endif
 
+typedef enum {
+    PROCESSING_STATE,	 /* the process is not sending nor receiving */
+    RECEIVING_STATE,
+    SENDING_STATE,
+    CONN_WAIT_STATE,
+} procState_t;
+
+typedef struct reconnMsg {
+    int status;
+    int cookie;
+    procState_t procState;
+    int flag;
+} reconnMsg_t;
+
 /* The client connection handle */
 
 typedef struct {
@@ -72,14 +86,17 @@ typedef struct {
     int reconnFlag;
     int reconnSock;
     int reconnPort;
+    int reconnectedSock;
     char *reconnAddr;
     int cookie;
     time_t reconnTime;
-    reconnOpr_t reconnOpr;
     time_t reconnTimeout;
     pthread_t reconnThr;
     pthread_mutex_t lock;
-    int agentState;	
+    pthread_cond_t cond;
+    procState_t agentState;	
+    procState_t clientState;
+    procState_t reconnThrState;
     int gsiRequest;
 } rsComm_t;
 
@@ -122,9 +139,10 @@ clientLogin(rcComm_t *conn);
 
 int
 clientLoginWithPassword(rcComm_t *conn, char* password);
+#if 0
 int
 rcReconnect (rcComm_t *conn, reconnOpr_t reconnOpr);
-
+#endif
 rcComm_t *
 rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg);
 #ifdef  __cplusplus

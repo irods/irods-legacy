@@ -87,6 +87,8 @@ irodsCloseSock (int sock);
 int
 readReconMsg (int sock, reconnMsg_t **reconnMsg);
 int
+sendReconnMsg (int sock, reconnMsg_t *reconnMsg);
+int
 addUdpPortToPortList (portList_t *thisPortList, int udpport);
 int
 getUdpPortFromPortList (portList_t *thisPortList);
@@ -100,6 +102,7 @@ int
 getTcpSockFromPortList (portList_t *thisPortList);
 int
 isReadMsgError (int status);
+int svrSwitchConnect (rsComm_t *rsComm);
 #ifdef  __cplusplus
 }
 #endif

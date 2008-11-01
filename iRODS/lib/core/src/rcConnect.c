@@ -270,6 +270,7 @@ void rcPipSigHandler ()
      "Client Caught broken pipe signal. Connection to server may be down\n");
 }
 
+#if 0	/* XXXXX redo */
 int
 rcReconnect (rcComm_t *conn, reconnOpr_t reconnOpr)
 {
@@ -345,6 +346,7 @@ rcReconnect (rcComm_t *conn, reconnOpr_t reconnOpr)
     }
     return (status);
 }
+#endif
 
 rcComm_t *
 rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg)

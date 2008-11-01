@@ -1362,7 +1362,8 @@ initAgent (rsComm_t *rsComm)
 
     srandom((unsigned int) time(0) % getpid());
 
-    if (rsComm->reconnFlag != NO_RECONN) { 
+#ifndef windows_platform
+    if (rsComm->reconnFlag == RECONN_TIMEOUT) { 
 	rsComm->reconnSock = sockOpenForInConn (rsComm, &rsComm->reconnPort,
 	  &rsComm->reconnAddr, SOCK_STREAM);
 	if (rsComm->reconnSock < 0) {
@@ -1371,21 +1372,19 @@ initAgent (rsComm_t *rsComm)
         } else {
 	    rsComm->cookie = random ();
 	}
-#ifndef windows_platform
-	if (rsComm->reconnFlag == RECONN_TIMEOUT) { 
-            status = pthread_create  (&rsComm->reconnThr, pthread_attr_default,
-                  (void *(*)(void *)) reconnManager,
-                  (void *) rsComm);
+	pthread_mutex_init (&rsComm->lock, NULL);
+	pthread_cond_init (&rsComm->cond, NULL);
+	rsComm->reconnTimeout = time (0) + RECONN_TIMEOUT_TIME;
+        status = pthread_create  (&rsComm->reconnThr, pthread_attr_default,
+              (void *(*)(void *)) reconnManager,
+              (void *) rsComm);
 
-            if (status < 0) {
-                rodsLog (LOG_ERROR, "initAgent: pthread_create failed, stat=%d",
-	          status);
-	    }
-	    pthread_mutex_init (&rsComm->lock, NULL);
-	    rsComm->reconnTimeout = time (0) + RECONN_TIMEOUT_TIME;
-        }
-#endif
+        if (status < 0) {
+            rodsLog (LOG_ERROR, "initAgent: pthread_create failed, stat=%d",
+	      status);
+	}
     }
+#endif
 
     InitialState = INITIAL_DONE;
     ThisComm = rsComm;
@@ -1448,11 +1447,12 @@ rsPipSigalHandler ()
          "caught a broken pipe signal and exiting");
         cleanupAndExit (SYS_CAUGHT_SIGNAL);
     } else {
-	int status;
 
 	rodsLog (LOG_NOTICE,
          "caught a broken pipe signal. Attempt to reconnect");
 #ifndef _WIN32
+#if 0	/* XXXXX redo */
+	int status;
 	status = svrReconnect (ThisComm);
 	if (status >= 0) {
             rodsLog (LOG_NOTICE,
@@ -1462,7 +1462,7 @@ rsPipSigalHandler ()
              "rsPipSigalHandler: reconnect failed, existing");
             cleanupAndExit (SYS_CAUGHT_SIGNAL);
 	}
-
+#endif
         signal(SIGPIPE, (void (*)(int)) rsPipSigalHandler);
 #endif
 
@@ -1609,7 +1609,8 @@ disconnectAllSvrToSvrConn ()
     }
     return (0);
 }
-	 
+
+#if 0	/* XXXXX redo */
 int
 svrReconnect (rsComm_t *rsComm)
 {
@@ -1684,6 +1685,7 @@ svrReconnect (rsComm_t *rsComm)
     }
     return (newSock);
 }
+#endif
 
 int
 initRsComm (rsComm_t *rsComm)

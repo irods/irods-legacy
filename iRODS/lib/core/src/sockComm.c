@@ -1298,6 +1298,53 @@ readReconMsg (int sock, reconnMsg_t **reconnMsg)
 }
 
 int
+sendReconnMsg (int sock, reconnMsg_t *reconnMsg)
+{
+    int status;
+    bytesBuf_t *reconnMsgBBuf = NULL;
+
+    if (reconnMsg == NULL) return (USER__NULL_INPUT_ERR);
+
+   /* alway use XML for version */
+    status = packStruct ((char *) &reconnMsg, &reconnMsgBBuf,
+      "ReconnMsg_PI", RodsPackTable, 0, XML_PROT);
+
+    status = sendRodsMsg (sock, RODS_RECONNECT_T, reconnMsgBBuf,
+      NULL, NULL, 0, XML_PROT);
+
+    freeBBuf (reconnMsgBBuf);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "sendReconnMsg: sendRodsMsg of reconnect msg failed, status = %d",
+          status);
+    }
+    return (status);
+}
+
+int svrSwitchConnect (rsComm_t *rsComm)
+{
+    reconnMsg_t reconnMsg;
+
+    if (rsComm->reconnectedSock > 0) {
+	if (rsComm->clientState == RECEIVING_STATE) {
+            reconnMsg_t reconnMsg;
+	    bzero (&reconnMsg, sizeof (reconnMsg));
+	    sendReconnMsg (rsComm->sock, &reconnMsg);
+	    rsComm->clientState = PROCESSING_STATE;
+	}
+	close (rsComm->sock); 
+	rsComm->sock = rsComm->reconnectedSock;
+	rsComm->reconnectedSock = 0;
+	rodsLog (LOG_NOTICE,
+          "reconnManager: svrSwitchConnect. Switch connection");
+        return 1;
+    } else {
+	return 0;
+    }
+}
+
+int
 addUdpPortToPortList (portList_t *thisPortList, int udpport)
 {
     /* put udpport in the upper 16 bits of portNum */

@@ -1644,25 +1644,161 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
 void
 reconnManager (rsComm_t *rsComm)
 {
+    fd_set basemask;
+    int nSockets, nSelected;
+    struct sockaddr_in  remoteAddr;
+    socklen_t len;
+    int newSock, status;
+    reconnMsg_t *reconnMsg;
+
     if (rsComm == NULL || rsComm->reconnSock <= 0 || 
       rsComm->reconnTimeout <= 0) {
         return;
     }
+
     listen (rsComm->reconnSock, 1);
+
+    nSockets = rsComm->reconnSock + 1;
+    FD_ZERO(&basemask);
+    FD_SET(rsComm->reconnSock, &basemask);
+
     while (1) {
-	time_t curtime = time (0);
-	if (curtime < rsComm->reconnTimeout) {
-	    /* not time yet */
-	    rodsSleep ((rsComm->reconnTimeout - curtime), 0);
+        while ((nSelected = select (nSockets, &basemask,
+          (fd_set *) NULL, (fd_set *) NULL, NULL)) < 0) {
+            if (errno == EINTR) {
+                rodsLog (LOG_NOTICE, "reconnManager: select interrupted\n");
+                continue;
+            } else {
+                rodsLog (LOG_ERROR, "reconnManager: select failed, errno = %d",
+                  errno);
+	        pthread_mutex_lock (&rsComm->lock);
+	        close (rsComm->reconnSock);
+	        rsComm->reconnSock = 0;
+	        pthread_mutex_unlock (&rsComm->lock);
+		return;
+	    }
+	}
+	/* don't lock it yet until we are done with establishing a connection */
+        newSock = accept (rsComm->reconnSock, (struct sockaddr *) &remoteAddr, 
+	  &len);
+	if (newSock < 0) {
+	    rodsLog (LOG_ERROR, "reconnManager: accept failed, errno = %d",
+              errno);
 	    continue;
 	}
+        if ((status = readReconMsg (newSock, &reconnMsg)) < 0) {
+            rodsLog (LOG_ERROR,
+              "reconnManager: readReconMsg error, status = %d", status);
+	    close (newSock);
+	    continue;
+        } else if (reconnMsg->cookie != rsComm->cookie) {
+            rodsLog (LOG_ERROR,
+            "reconnManager: cookie mistach, got = %d vs %d",
+              reconnMsg->cookie, rsComm->cookie);
+	    close (newSock);
+            free (reconnMsg);
+	    continue;
+        } 
+
 	pthread_mutex_lock (&rsComm->lock);
-	if (rsComm->agentState == READING_FROM_CLI) {
-	    pthread_mutex_unlock (&rsComm->lock);
-	    rodsSleep (RECONNECT_SLEEP_TIME, 0);
-	    continue;
+	rsComm->clientState = reconnMsg->procState;
+	rsComm->reconnectedSock = newSock;
+	/* need to check agentState */
+	while (rsComm->agentState == SENDING_STATE) {
+	    /* have to wait until the agent stop sending */
+	    rsComm->reconnThrState = CONN_WAIT_STATE;
+	    pthread_cond_wait (&rsComm->cond, &rsComm->lock);
 	}
-	/* notify client we are reconnecting */
+	rsComm->reconnThrState = PROCESSING_STATE;
+	bzero (reconnMsg, sizeof (procState_t));
+	reconnMsg->procState = rsComm->agentState;
+        status = sendReconnMsg (newSock, reconnMsg);
+	free (reconnMsg);
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+            "reconnManager: sendReconnMsg error. status =  %d",
+              status);
+            close (newSock);
+	    rsComm->reconnectedSock = 0;
+	    pthread_mutex_unlock (&rsComm->lock);
+            continue;
+        }
+	if (rsComm->agentState == PROCESSING_STATE) {
+	    svrSwitchConnect (rsComm);
+	}
+	pthread_mutex_unlock (&rsComm->lock);
     }
 }
+
+int
+svrChkReconnAtSendStart (rsComm_t *rsComm)
+{
+    if (rsComm->reconnSock > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&rsComm->lock);
+        if (rsComm->reconnThrState == CONN_WAIT_STATE) {
+            /* should not be here */
+            rodsLog (LOG_NOTICE,
+              "svrChkReconnAtSendStart: ThrState = CONN_WAIT_STATE, agentState=%d",
+              rsComm->agentState);
+            rsComm->agentState = PROCESSING_STATE;
+            pthread_cond_signal (&rsComm->cond);
+        }
+        rsComm->agentState = SENDING_STATE;
+        pthread_mutex_unlock (&rsComm->lock);
+    }
+    return 0;
+}
+
+int
+svrChkReconnAtSendEnd (rsComm_t *rsComm)
+{
+    if (rsComm->reconnSock > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&rsComm->lock);
+        rsComm->agentState = PROCESSING_STATE;
+        if (rsComm->reconnThrState == CONN_WAIT_STATE) {
+            pthread_cond_signal (&rsComm->cond);
+        }
+        pthread_mutex_unlock (&rsComm->lock);
+    }
+    return 0;
+}
+
+int
+svrChkReconnAtReadStart (rsComm_t *rsComm)
+{
+    if (rsComm->reconnSock > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&rsComm->lock);
+        if (rsComm->reconnThrState == CONN_WAIT_STATE) {
+            /* should not be here */
+            rodsLog (LOG_NOTICE,
+              "svrChkReconnAtReadStart: ThrState = CONN_WAIT_STATE, agentState=%d",
+              rsComm->agentState);
+            rsComm->agentState = PROCESSING_STATE;
+            pthread_cond_signal (&rsComm->cond);
+        }
+	svrSwitchConnect (rsComm);
+        rsComm->agentState = RECEIVING_STATE;
+        pthread_mutex_unlock (&rsComm->lock);
+    }
+    return 0;
+}
+
+int
+svrChkReconnAtReadEnd (rsComm_t *rsComm)
+{
+    if (rsComm->reconnSock > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&rsComm->lock);
+        rsComm->agentState = PROCESSING_STATE;
+        if (rsComm->reconnThrState == CONN_WAIT_STATE) {
+            pthread_cond_signal (&rsComm->cond);
+        }
+        pthread_mutex_unlock (&rsComm->lock);
+    }
+    return 0;
+}
+
 #endif

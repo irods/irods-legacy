@@ -141,6 +141,7 @@ bytesBuf_t *inputBsBBuf)
         rodsLogError (LOG_ERROR, status,
          "sendApiRequest: sendRodsMsg error, status = %d", status);
         if (conn->svrVersion->reconnPort > 0) {
+#if 0	/* XXXXX redo */
             if ((status = rcReconnect (conn, RECONN_SEND_OPR)) >= 0) {
                 status = sendRodsMsg (conn->sock, RODS_API_REQ_T, 
 		  myInputStructBBuf, inputBsBBuf, NULL, 
@@ -161,6 +162,7 @@ bytesBuf_t *inputBsBBuf)
     		freeBBuf (inputStructBBuf);
                 return status;
             }
+#endif
         } else {
     	    freeBBuf (inputStructBBuf);
             return (status);
@@ -208,6 +210,7 @@ bytesBuf_t *outBsBBuf)
           "readAndProcApiReply: readMsgHeader error. status = %d", status);
 
 	if (conn->svrVersion->reconnPort > 0) {
+#if 0	/* XXXXXX redo */
             if ((status = rcReconnect (conn, RECONN_RCV_OPR)) >= 0) {
 		status = readMsgHeader (conn->sock, &myHeader);
 		if (status >= 0) {
@@ -224,6 +227,7 @@ bytesBuf_t *outBsBBuf)
                   status);
                 return savedStatus;
 	    }
+#endif
 	} else {
             return (savedStatus);
 	}

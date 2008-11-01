@@ -90,5 +90,13 @@ svrPortalPutGetRbudp (rsComm_t *rsComm);
 #ifndef windows_platform
 void
 reconnManager (rsComm_t *rsComm);
+int
+svrChkReconnAtReadStart (rsComm_t *rsComm);
+int
+svrChkReconnAtReadEnd (rsComm_t *rsComm);
+int
+svrChkReconnAtSendStart (rsComm_t *rsComm);
+int 
+svrChkReconnAtSendEnd (rsComm_t *rsComm);
 #endif
 #endif	/* MISC_SERVER_FUNCT_H */
