@@ -125,7 +125,7 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	}
 
 
-	/* send results out to outParam */
+	/* send results out to inpParam2 */
 	fillMsParam (inpParam2, NULL, KeyValPair_MS_T, contents, NULL);
 
 
@@ -136,6 +136,136 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 	return (rei->status);
 }
 
+
+
+/*
+ * msiGetCollectionSize()
+ *
+ */
+int
+msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *status, ruleExecInfo_t *rei)
+{
+	collInp_t collInpCache, *outCollInp;	/* for parsing collection input param */
+
+	keyValPair_t *res;			/* for passing out results */
+
+	char collQCond[2*MAX_NAME_LEN];		/* for condition in rsGenquery() */
+	genQueryInp_t genQueryInp;		/* for query inputs */
+	genQueryOut_t *genQueryOut;		/* for query results */
+
+	rodsLong_t size, objCount;		/* to store total size and file count */
+	char tmpStr[21];			/* to store total size and file count */
+	
+	char *resultStringToken;		/* for parsing key-value pairs from genQueryOut */
+	sqlResult_t *sqlResult;			/* for parsing key-value pairs from genQueryOut */
+	int i;					/* for parsing key-value pairs from genQueryOut */
+
+
+	RE_TEST_MACRO ("    Calling msiGetCollectionSize")
+	
+	if (rei == NULL || rei->rsComm == NULL) {
+		rodsLog (LOG_ERROR, "msiGetCollectionSize: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/* parse inpParam1: our target collection */
+	rei->status = parseMspForCollInp (collPath, &collInpCache, &outCollInp, 0);
+	
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiGetCollectionSize: input collPath error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+
+	/* allocate memory for our result struct */
+	res = (keyValPair_t*)malloc(sizeof(keyValPair_t));
+	memset (res, 0, sizeof (keyValPair_t));
+
+
+	/* Wanted fields. We use coll_id to do a join query on r_data_main and r_coll_main */
+	memset (&genQueryInp, 0, sizeof (genQueryInp));
+	addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
+	addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+	addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
+
+
+	/* Make condition for getting all objects under a collection */
+	genAllInCollQCond (outCollInp->collName, collQCond);
+	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, collQCond);
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+	genQueryInp.options = RETURN_TOTAL_ROW_COUNT;
+
+
+	/* Query */
+	rei->status  = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+
+
+	/* intit counters */
+	size = 0;
+	objCount = 0;
+
+
+	/* Parse results */
+	if (rei->status == 0) {
+
+		/* add row count to previous total */
+		objCount += genQueryOut->totalRowCount;
+
+		/* for each row */
+		for (i=0;i<genQueryOut->rowCnt;i++) {
+	
+			/* get COL_DATA_SIZE result */
+			sqlResult = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
+
+			/* retrieve value for this row */
+			resultStringToken = sqlResult->value + i*sqlResult->len;
+
+			/* add to previous total */
+			size += atoll(resultStringToken);
+		}
+
+		/* not done? */
+		while (rei->status==0 && genQueryOut->continueInx > 0) {
+			genQueryInp.continueInx=genQueryOut->continueInx;
+			rei->status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+	
+			/* add row count to previous total */
+			objCount += genQueryOut->totalRowCount;
+
+			/* for each row */
+			for (i=0;i<genQueryOut->rowCnt;i++) {
+			
+				/* get COL_DATA_SIZE result */
+				sqlResult = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
+	
+				/* retrieve value for this row */
+				resultStringToken = sqlResult->value + i*sqlResult->len;
+	
+				/* add to previous total */
+				size += atoll(resultStringToken);
+			}
+		}
+	}
+
+
+	/* store results in keyValPair_t*/
+	snprintf(tmpStr, 21, "%lld", size);
+	addKeyVal(res, "Size", tmpStr);
+
+	snprintf(tmpStr, 21, "%lld", objCount);
+	addKeyVal(res, "Object Count", tmpStr);
+
+
+	/* send results out to outKVPairs */
+	fillMsParam (outKVPairs, NULL, KeyValPair_MS_T, res, NULL);
+
+
+	/* Return operation status through outParam */
+	fillIntInMsParam (status, rei->status);
+
+	return (rei->status);
+}
 
 
 

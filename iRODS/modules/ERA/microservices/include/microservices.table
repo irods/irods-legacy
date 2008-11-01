@@ -24,3 +24,4 @@
 {"msiSetDataType",			4,		(funcPtr) msiSetDataType},
 {"msiGuessDataType",			3,		(funcPtr) msiGuessDataType},
 {"msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport},
+{"msiGetCollectionSize",		3,		(funcPtr) msiGetCollectionSize},
