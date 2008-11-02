@@ -102,6 +102,7 @@ bytesBuf_t *inputBsBBuf)
     bytesBuf_t *inputStructBBuf = NULL;
     bytesBuf_t *myInputStructBBuf;
 
+#if 0	/* XXXXX redo */
     if (conn->reconnTime > 0) {
 	/* has been reconnected. need to r-eauthenticate */
         status = clientLogin(conn);
@@ -110,6 +111,7 @@ bytesBuf_t *inputBsBBuf)
         }
 	conn->reconnTime = 0;
     }
+#endif
 
     if (RcApiTable[apiInx].inPackInstruct != NULL) {
         if (inputStruct == NULL) {

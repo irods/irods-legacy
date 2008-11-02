@@ -1324,8 +1324,6 @@ sendReconnMsg (int sock, reconnMsg_t *reconnMsg)
 
 int svrSwitchConnect (rsComm_t *rsComm)
 {
-    reconnMsg_t reconnMsg;
-
     if (rsComm->reconnectedSock > 0) {
 	if (rsComm->clientState == RECEIVING_STATE) {
             reconnMsg_t reconnMsg;
@@ -1337,10 +1335,30 @@ int svrSwitchConnect (rsComm_t *rsComm)
 	rsComm->sock = rsComm->reconnectedSock;
 	rsComm->reconnectedSock = 0;
 	rodsLog (LOG_NOTICE,
-          "reconnManager: svrSwitchConnect. Switch connection");
+          "svrSwitchConnect: Switch connection");
         return 1;
     } else {
 	return 0;
+    }
+}
+
+int cliSwitchConnect (rcComm_t *conn)
+{
+    if (conn->reconnectedSock > 0) {
+        if (conn->agentState == RECEIVING_STATE) {
+            reconnMsg_t reconnMsg;
+            bzero (&reconnMsg, sizeof (reconnMsg));
+            sendReconnMsg (conn->sock, &reconnMsg);
+            conn->agentState = PROCESSING_STATE;
+        }
+        close (conn->sock);
+        conn->sock = conn->reconnectedSock;
+        conn->reconnectedSock = 0;
+        rodsLog (LOG_NOTICE,
+          "cliSwitchConnect: Switch connection");
+        return 1;
+    } else {
+        return 0;
     }
 }
 

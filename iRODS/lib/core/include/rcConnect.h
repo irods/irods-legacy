@@ -57,7 +57,14 @@ typedef struct {
     int apiInx;
     int status;
     int windowSize;
+    int reconnectedSock;
     time_t reconnTime;
+    pthread_t reconnThr;
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
+    procState_t agentState;
+    procState_t clientState;
+    procState_t reconnThrState;
 } rcComm_t;
 
 typedef struct {
@@ -89,8 +96,10 @@ typedef struct {
     int reconnectedSock;
     char *reconnAddr;
     int cookie;
+#if 0
     time_t reconnTime;
     time_t reconnTimeout;
+#endif
     pthread_t reconnThr;
     pthread_mutex_t lock;
     pthread_cond_t cond;
@@ -145,6 +154,8 @@ rcReconnect (rcComm_t *conn, reconnOpr_t reconnOpr);
 #endif
 rcComm_t *
 rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg);
+void
+cliReconnManager (rcComm_t *conn);
 #ifdef  __cplusplus
 }
 #endif

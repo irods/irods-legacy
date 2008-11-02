@@ -12,6 +12,10 @@
 #include "startsock.h"
 #endif
 
+#ifndef windows_platform
+#include <pthread.h>
+#endif
+
 rcComm_t *
 rcConnect (char *rodsHost, int rodsPort, char *userName, char *rodsZone,
 int reconnFlag, rErrMsg_t *errMsg)
@@ -28,7 +32,7 @@ int reconnFlag, rErrMsg_t *errMsg)
 	}
 #endif
 
-    if (getenv (CONN_TIMEOUT_ENV) != NULL) {
+    if (getenv (RECONNECT_ENV) != NULL) {
         reconnFlag = RECONN_TIMEOUT;
     }
 
@@ -105,6 +109,22 @@ int reconnFlag)
         }
         return NULL;
     }
+
+#ifndef windows_platform
+    if (reconnFlag == RECONN_TIMEOUT && conn->svrVersion != NULL &&
+       conn->svrVersion->reconnPort > 0) {
+        pthread_mutex_init (&conn->lock, NULL);
+        pthread_cond_init (&conn->cond, NULL);
+        status = pthread_create  (&conn->reconnThr, pthread_attr_default,
+              (void *(*)(void *)) cliReconnManager,
+              (void *) conn);
+
+        if (status < 0) {
+            rodsLog (LOG_ERROR, "_rcConnect: pthread_create failed, stat=%d",
+              status);
+        }
+    }
+#endif
 
     return (conn);
 }
@@ -364,4 +384,101 @@ rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg)
     return (conn);
 }
 
+#ifndef windows_platform
+void
+cliReconnManager (rcComm_t *conn)
+{
+    int newSock, status;
+    struct sockaddr_in remoteAddr;
+    struct hostent *myHostent;
+    reconnMsg_t reconnMsg;
+    reconnMsg_t *reconnMsgOut = NULL;
+
+    if (conn == NULL || conn->svrVersion == NULL ||
+       conn->svrVersion->reconnPort <= 0) {
+        return;
+    }
+
+    conn->reconnTime = time (0) + RECONN_TIMEOUT_TIME;
+
+    while (1) {
+	time_t curTime = time (0);
+
+	if (curTime < conn->reconnTime) 
+	    rodsSleep (conn->reconnTime - curTime, 0);
+
+        pthread_mutex_lock (&conn->lock);
+        /* need to check clientState */
+        while (conn->clientState == SENDING_STATE) {
+            /* have to wait until the client stop sending */
+            conn->reconnThrState = CONN_WAIT_STATE;
+            pthread_cond_wait (&conn->cond, &conn->lock);
+        }
+        conn->reconnThrState = PROCESSING_STATE;
+	/* connect to server's reconn thread */
+
+        myHostent = gethostbyname (conn->svrVersion->reconnAddr);
+
+        if (myHostent == NULL || myHostent->h_addrtype != AF_INET) {
+            rodsLog (LOG_ERROR, "cliReconnManager: unknown hostname: %s",
+              conn->svrVersion->reconnAddr);
+            return;
+        }
+
+        memcpy (&remoteAddr.sin_addr, myHostent->h_addr,
+          myHostent->h_length);
+        remoteAddr.sin_family = AF_INET;
+        remoteAddr.sin_port = 
+	  htons((unsigned short) conn->svrVersion->reconnPort);
+
+        conn->reconnectedSock = 
+	  connectToRhostWithRaddr (&remoteAddr, conn->windowSize, 0);
+
+        if (conn->reconnectedSock < 0) {
+            pthread_mutex_unlock (&conn->lock);
+            rodsLog (LOG_ERROR, 
+	      "cliReconnManager: connect to host %s failed, status = %d",
+              conn->svrVersion->reconnAddr, conn->reconnectedSock);
+            rodsSleep (RECONNECT_SLEEP_TIME, 0);
+            continue;
+        }
+
+        bzero (&reconnMsg, sizeof (procState_t));
+        reconnMsg.procState = conn->clientState;
+	reconnMsg.cookie = conn->svrVersion->cookie;
+        status = sendReconnMsg (conn->reconnectedSock, &reconnMsg);
+
+        if (status < 0) {
+	    close (conn->reconnectedSock);
+	    conn->reconnectedSock = 0;
+            pthread_mutex_unlock (&conn->lock);
+            rodsLog (LOG_ERROR,
+              "cliReconnManager: sendReconnMsg to host %s failed, status = %d",
+              conn->svrVersion->reconnAddr, status);
+            rodsSleep (RECONNECT_SLEEP_TIME, 0);
+            continue;
+        }
+
+        if ((status = readReconMsg (newSock, &reconnMsgOut)) < 0) {
+            close (conn->reconnectedSock);
+            conn->reconnectedSock = 0;
+            pthread_mutex_unlock (&conn->lock);
+            rodsLog (LOG_ERROR,
+              "cliReconnManager: readReconMsg to host %s failed, status = %d",
+              conn->svrVersion->reconnAddr, status);
+            rodsSleep (RECONNECT_SLEEP_TIME, 0);
+            continue;
+        }
+
+        conn->agentState = reconnMsgOut->procState;
+	free (reconnMsgOut);
+	reconnMsgOut = NULL;
+        conn->reconnTime = time (0) + RECONN_TIMEOUT_TIME;
+        if (conn->clientState == PROCESSING_STATE) {
+            cliSwitchConnect (conn);
+        }
+        pthread_mutex_unlock (&conn->lock);
+    }
+}
+#endif
 

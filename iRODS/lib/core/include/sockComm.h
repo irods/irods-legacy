@@ -24,12 +24,12 @@
 
 /* definition for the reconnFlag */
 #define NO_RECONN	0	/* no reconnection */
-#define DO_RECONN	1	/* reconnect when the connection is broken */
+#define DO_RECONN	1	/* this has been depricated */
 #define RECONN_TIMEOUT	2
 
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
 
-#define CONN_TIMEOUT_ENV "irodsConnTimeout"	/* reconnFlag will be set to
+#define RECONNECT_ENV "irodsReconnect"		/* reconnFlag will be set to
 						 * RECONN_TIMEOUT if this
 						 * env is set */
 
@@ -103,6 +103,7 @@ getTcpSockFromPortList (portList_t *thisPortList);
 int
 isReadMsgError (int status);
 int svrSwitchConnect (rsComm_t *rsComm);
+int cliSwitchConnect (rcComm_t *conn);
 #ifdef  __cplusplus
 }
 #endif
