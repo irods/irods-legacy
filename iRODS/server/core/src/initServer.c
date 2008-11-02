@@ -1374,7 +1374,9 @@ initAgent (rsComm_t *rsComm)
 	}
 	pthread_mutex_init (&rsComm->lock, NULL);
 	pthread_cond_init (&rsComm->cond, NULL);
+#if 0
 	rsComm->reconnTimeout = time (0) + RECONN_TIMEOUT_TIME;
+#endif
         status = pthread_create  (&rsComm->reconnThr, pthread_attr_default,
               (void *(*)(void *)) reconnManager,
               (void *) rsComm);

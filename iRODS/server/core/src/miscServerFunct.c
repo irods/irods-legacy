@@ -31,7 +31,7 @@ svrToSvrConnectNoLogin (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
 
 
     if (rodsServerHost->conn == NULL) { /* a connection already */
-	if (getenv (CONN_TIMEOUT_ENV) != NULL) {
+	if (getenv (RECONNECT_ENV) != NULL) {
 	} else {
 	    reconnFlag = NO_RECONN;
 	}
@@ -1651,8 +1651,7 @@ reconnManager (rsComm_t *rsComm)
     int newSock, status;
     reconnMsg_t *reconnMsg;
 
-    if (rsComm == NULL || rsComm->reconnSock <= 0 || 
-      rsComm->reconnTimeout <= 0) {
+    if (rsComm == NULL || rsComm->reconnSock <= 0) { 
         return;
     }
 
