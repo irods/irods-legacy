@@ -480,5 +480,77 @@ cliReconnManager (rcComm_t *conn)
         pthread_mutex_unlock (&conn->lock);
     }
 }
+
+int
+cliChkReconnAtSendStart (rcComm_t *conn)
+{
+    if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&conn->lock);
+        if (conn->reconnThrState == CONN_WAIT_STATE) {
+            /* should not be here */
+            rodsLog (LOG_NOTICE,
+              "cliChkReconnAtSendStart: ThrState = CONN_WAIT_STATE, clientState=%d",
+              conn->clientState);
+            conn->clientState = PROCESSING_STATE;
+            pthread_cond_signal (&conn->cond);
+        }
+        conn->clientState = SENDING_STATE;
+        pthread_mutex_unlock (&conn->lock);
+    }
+    return 0;
+}
+
+int
+cliChkReconnAtSendEnd (rcComm_t *conn)
+{
+    if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&conn->lock);
+        conn->clientState = PROCESSING_STATE;
+        if (conn->reconnThrState == CONN_WAIT_STATE) {
+            pthread_cond_signal (&conn->cond);
+        }
+        pthread_mutex_unlock (&conn->lock);
+    }
+    return 0;
+}
+
+int
+cliChkReconnAtReadStart (rcComm_t *conn)
+{
+    if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&conn->lock);
+        if (conn->reconnThrState == CONN_WAIT_STATE) {
+            /* should not be here */
+            rodsLog (LOG_NOTICE,
+              "cliChkReconnAtReadStart: ThrState = CONN_WAIT_STATE, clientState=%d",
+              conn->clientState);
+            conn->clientState = PROCESSING_STATE;
+            pthread_cond_signal (&conn->cond);
+        }
+        cliSwitchConnect (conn);
+        conn->clientState = RECEIVING_STATE;
+        pthread_mutex_unlock (&conn->lock);
+    }
+    return 0;
+}
+
+int
+cliChkReconnAtReadEnd (rcComm_t *conn)
+{
+    if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
+        /* handle reconn */
+        pthread_mutex_lock (&conn->lock);
+        conn->clientState = PROCESSING_STATE;
+        if (conn->reconnThrState == CONN_WAIT_STATE) {
+            pthread_cond_signal (&conn->cond);
+        }
+        pthread_mutex_unlock (&conn->lock);
+    }
+    return 0;
+}
+
 #endif
 

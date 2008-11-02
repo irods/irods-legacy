@@ -156,6 +156,14 @@ rcComm_t *
 rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg);
 void
 cliReconnManager (rcComm_t *conn);
+int
+cliChkReconnAtSendStart (rcComm_t *conn);
+int
+cliChkReconnAtSendEnd (rcComm_t *conn);
+int
+cliChkReconnAtReadStart (rcComm_t *conn);
+int
+cliChkReconnAtReadEnd (rcComm_t *conn);
 #ifdef  __cplusplus
 }
 #endif
