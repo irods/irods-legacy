@@ -360,12 +360,25 @@ showUser(char *name, char *attrName, int wild)
    char *condVal[10];
    char v1[BIG_STR];
    char v2[BIG_STR];
+   char v3[BIG_STR];
    int status;
    char *columnNames[]={"attribute", "value", "unit"};
 
+   char userName[NAME_LEN];
+   char userZone[NAME_LEN];
+
+   status = parseUserName(name, userName, userZone);
+   if (status) {
+      printf("Invalid username format\n");
+      return(0);
+   }
+   if (userZone[0]=='\0') {
+      strncpy(userZone, myEnv.rodsZone, NAME_LEN);
+   }
+
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
-   printf("AVUs defined for user %s:\n",name);
+   printf("AVUs defined for user %s#%s:\n",userName, userZone);
    printCount=0;
    i1a[0]=COL_META_USER_ATTR_NAME;
    i1b[0]=0; /* currently unused */
@@ -378,22 +391,26 @@ showUser(char *name, char *attrName, int wild)
    genQueryInp.selectInp.len = 3;
 
    i2a[0]=COL_USER_NAME;
-   sprintf(v1,"='%s'",name);
+   sprintf(v1,"='%s'",userName);
    condVal[0]=v1;
+
+   i2a[1]=COL_USER_ZONE;
+   sprintf(v2,"='%s'",userZone);
+   condVal[1]=v2;
 
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
-   genQueryInp.sqlCondInp.len=1;
+   genQueryInp.sqlCondInp.len=2;
 
    if (attrName != NULL && *attrName!='\0') {
-      i2a[1]=COL_META_USER_ATTR_NAME;
+      i2a[2]=COL_META_USER_ATTR_NAME;
       if (wild) {
-	 sprintf(v2,"like '%s'",attrName);
+	 sprintf(v3,"like '%s'",attrName);
       }
       else {
-	 sprintf(v2,"= '%s'",attrName);
+	 sprintf(v3,"= '%s'",attrName);
       }
-      condVal[1]=v2;
+      condVal[2]=v3;
       genQueryInp.sqlCondInp.len++;
    }
 
@@ -632,16 +649,18 @@ int queryUser(char *attribute, char *op, char *value) {
    char v1[BIG_STR];
    char v2[BIG_STR];
    int status;
-   char *columnNames[]={"user"};
+   char *columnNames[]={"user", "zone"};
 
    printCount=0;
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
    i1a[0]=COL_USER_NAME;
    i1b[0]=0;  /* (unused) */
+   i1a[1]=COL_USER_ZONE;
+   i1b[1]=0;  /* (unused) */
    genQueryInp.selectInp.inx = i1a;
    genQueryInp.selectInp.value = i1b;
-   genQueryInp.selectInp.len = 1;
+   genQueryInp.selectInp.len = 2;
 
    i2a[0]=COL_META_USER_ATTR_NAME;
    sprintf(v1,"='%s'",attribute);
@@ -1200,6 +1219,9 @@ int usageMain()
 "'cat file1 | imeta' (maintaining one connection for all commands).",
 " ",
 "Single or double quotes can be used to enter items with blanks.", 
+" ",
+"Entered usernames are of the form username[#zone].  If #zone is not",
+"provided, the zone from your .irodsEnv is assumed.", 
 " ",
 "Try 'help command' for more help on a specific command.",
 "'help qu' will explain additional options on the query.",
