@@ -37,11 +37,11 @@
 #	$POSTGRES_SOURCE = "postgresql-8.2.5.tar.gz";
 #	$ODBC_SOURCE = "psqlodbc-07.03.0200.tar.gz";
 #   or
-#	$POSTGRES_SOURCE = "postgresql-8.3.3.tar.gz";
+#	$POSTGRES_SOURCE = "postgresql-8.3.5.tar.gz";
 #	$ODBC_SOURCE = "unixODBC-2.2.12.tar.gz";
 #
 # These values must be set in this file.
-$POSTGRES_SOURCE = "postgresql-8.3.3.tar.gz";
+$POSTGRES_SOURCE = "postgresql-8.3.5.tar.gz";
 $ODBC_SOURCE     = "unixODBC-2.2.12.tar.gz";
 
 
