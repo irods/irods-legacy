@@ -4275,6 +4275,9 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
    char logicalParentDirName[MAX_NAME_LEN];
    rodsLong_t status;
    rodsLong_t objId;
+   char userName[NAME_LEN];
+   char userZone[NAME_LEN];
+
 
    if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId");
 
@@ -4362,14 +4365,18 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
 	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
       }
 
-      status = getLocalZone();
-      if (status) return(status);
+      status = parseUserName(name, userName, userZone);
+      if (userZone[0]=='\0') {
+	 status = getLocalZone();
+	 if (status) return(status);
+	 strncpy(userZone, localZone, NAME_LEN);
+      }
 
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 4");
       status = cmlGetIntegerValueFromSql(
          "select user_id from r_user_main where user_name=? and zone_name=?",
-	 &objId, name, localZone, 0, 0, 0, &icss);
+	 &objId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
 	 _rollback("checkAndGetObjectId");
@@ -4393,6 +4400,8 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
    rodsLong_t objId, status;
    char objIdStr[MAX_NAME_LEN];
    char seqNumStr[MAX_NAME_LEN];
+   char userName[NAME_LEN];
+   char userZone[NAME_LEN];
 
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata");
 
@@ -4518,14 +4527,18 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
 	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
       }
 
-      status = getLocalZone();
-      if (status) return(status);
+      status = parseUserName(name, userName, userZone);
+      if (userZone[0]=='\0') {
+	 status = getLocalZone();
+	 if (status) return(status);
+	 strncpy(userZone, localZone, NAME_LEN);
+      }
 
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 6");
       status = cmlGetIntegerValueFromSql(
               "select user_id from r_user_main where user_name=? and zone_name=?",
-	      &objId, name, localZone, 0, 0, 0, &icss);
+	      &objId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 _rollback("chlAddAVUMetadata");
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
@@ -4641,6 +4654,8 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
    rodsLong_t objId;
    char objIdStr[MAX_NAME_LEN];
    int allowNullUnits;
+   char userName[NAME_LEN];
+   char userZone[NAME_LEN];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata");
 
@@ -4740,14 +4755,18 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
       }
 
-      status = getLocalZone();
-      if (status) return(status);
+      status = parseUserName(name, userName, userZone);
+      if (userZone[0]=='\0') {
+	 status = getLocalZone();
+	 if (status) return(status);
+	 strncpy(userZone, localZone, NAME_LEN);
+      }
 
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 4");
       status = cmlGetIntegerValueFromSql(
                  "select user_id from r_user_main where user_name=? and zone_name=?",
-		 &objId, name, localZone, 0, 0, 0, &icss);
+		 &objId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
 	 _rollback("chlDeleteAVUMetadata");
