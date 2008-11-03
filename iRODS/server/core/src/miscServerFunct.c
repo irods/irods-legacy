@@ -1746,9 +1746,6 @@ svrChkReconnAtSendStart (rsComm_t *rsComm)
             rsComm->agentState = PROCESSING_STATE;
             pthread_cond_signal (&rsComm->cond);
         }
-        rodsLog (LOG_DEBUG,
-          "svrChkReconnAtSendStart: svrSwitchConnect. cliState = %d,agState=%d",
-          rsComm->clientState, rsComm->agentState);
 	svrSwitchConnect (rsComm);
         rsComm->agentState = SENDING_STATE;
         pthread_mutex_unlock (&rsComm->lock);
@@ -1785,9 +1782,6 @@ svrChkReconnAtReadStart (rsComm_t *rsComm)
             rsComm->agentState = PROCESSING_STATE;
             pthread_cond_signal (&rsComm->cond);
         }
-        rodsLog (LOG_DEBUG,
-          "svrChkReconnAtReadStart: svrSwitchConnect. cliState = %d,agState=%d",
-          rsComm->clientState, rsComm->agentState);
 	svrSwitchConnect (rsComm);
         rsComm->agentState = RECEIVING_STATE;
         pthread_mutex_unlock (&rsComm->lock);
