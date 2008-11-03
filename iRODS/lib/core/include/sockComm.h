@@ -27,6 +27,9 @@
 #define DO_RECONN	1	/* this has been depricated */
 #define RECONN_TIMEOUT	2
 
+#if 0	/* XXXXXXX take me out testig only */
+#define RECONN_TIMEOUT_TIME  2   /* re-connection timeout time in sec */
+#endif
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
 
 #define RECONNECT_ENV "irodsReconnect"		/* reconnFlag will be set to

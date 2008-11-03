@@ -388,7 +388,7 @@ rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg)
 void
 cliReconnManager (rcComm_t *conn)
 {
-    int newSock, status;
+    int status;
     struct sockaddr_in remoteAddr;
     struct hostent *myHostent;
     reconnMsg_t reconnMsg;
@@ -409,7 +409,7 @@ cliReconnManager (rcComm_t *conn)
 
         pthread_mutex_lock (&conn->lock);
         /* need to check clientState */
-        while (conn->clientState == SENDING_STATE) {
+        while (conn->clientState != PROCESSING_STATE) {
             /* have to wait until the client stop sending */
             conn->reconnThrState = CONN_WAIT_STATE;
             pthread_cond_wait (&conn->cond, &conn->lock);
@@ -459,7 +459,8 @@ cliReconnManager (rcComm_t *conn)
             continue;
         }
 
-        if ((status = readReconMsg (newSock, &reconnMsgOut)) < 0) {
+        if ((status = readReconMsg (conn->reconnectedSock, &reconnMsgOut)) 
+	  < 0) {
             close (conn->reconnectedSock);
             conn->reconnectedSock = 0;
             pthread_mutex_unlock (&conn->lock);
@@ -475,6 +476,9 @@ cliReconnManager (rcComm_t *conn)
 	reconnMsgOut = NULL;
         conn->reconnTime = time (0) + RECONN_TIMEOUT_TIME;
         if (conn->clientState == PROCESSING_STATE) {
+            rodsLog (LOG_DEBUG,
+              "cliReconnManager: svrSwitchConnect. cliState = %d,agState=%d",
+              conn->clientState, conn->agentState);
             cliSwitchConnect (conn);
         }
         pthread_mutex_unlock (&conn->lock);
@@ -488,8 +492,7 @@ cliChkReconnAtSendStart (rcComm_t *conn)
         /* handle reconn */
         pthread_mutex_lock (&conn->lock);
         if (conn->reconnThrState == CONN_WAIT_STATE) {
-            /* should not be here */
-            rodsLog (LOG_NOTICE,
+            rodsLog (LOG_DEBUG,
               "cliChkReconnAtSendStart: ThrState = CONN_WAIT_STATE, clientState=%d",
               conn->clientState);
             conn->clientState = PROCESSING_STATE;
@@ -522,15 +525,6 @@ cliChkReconnAtReadStart (rcComm_t *conn)
     if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
         /* handle reconn */
         pthread_mutex_lock (&conn->lock);
-        if (conn->reconnThrState == CONN_WAIT_STATE) {
-            /* should not be here */
-            rodsLog (LOG_NOTICE,
-              "cliChkReconnAtReadStart: ThrState = CONN_WAIT_STATE, clientState=%d",
-              conn->clientState);
-            conn->clientState = PROCESSING_STATE;
-            pthread_cond_signal (&conn->cond);
-        }
-        cliSwitchConnect (conn);
         conn->clientState = RECEIVING_STATE;
         pthread_mutex_unlock (&conn->lock);
     }

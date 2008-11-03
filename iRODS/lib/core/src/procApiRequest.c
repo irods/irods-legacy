@@ -6,6 +6,9 @@
 #include "procApiRequest.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
+#ifndef windows_platform
+#include <pthread.h>
+#endif
 
 /* procApiRequest - This is the main function used by the client API
  * function to issue API requests and recieve output returned from 
@@ -102,19 +105,15 @@ bytesBuf_t *inputBsBBuf)
     bytesBuf_t *inputStructBBuf = NULL;
     bytesBuf_t *myInputStructBBuf;
 
-#if 0	/* XXXXX redo */
-    if (conn->reconnTime > 0) {
-	/* has been reconnected. need to r-eauthenticate */
-        status = clientLogin(conn);
-        if (status != 0) {
-           rcDisconnect(conn);
-        }
-	conn->reconnTime = 0;
-    }
+#ifndef windows_platform
+    cliChkReconnAtSendStart (conn);
 #endif
 
     if (RcApiTable[apiInx].inPackInstruct != NULL) {
         if (inputStruct == NULL) {
+#ifndef windows_platform
+            cliChkReconnAtSendEnd (conn);
+#endif
             return (USER_API_INPUT_ERR);
         }
         status = packStruct ((void *) inputStruct, &inputStructBBuf,
@@ -123,6 +122,9 @@ bytesBuf_t *inputBsBBuf)
        if (status < 0) {
             rodsLogError (LOG_ERROR, status,
              "sendApiRequest: packStruct error, status = %d", status);
+#ifndef windows_platform
+            cliChkReconnAtSendEnd (conn);
+#endif
             return status;
         }
 
@@ -142,8 +144,35 @@ bytesBuf_t *inputBsBBuf)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
          "sendApiRequest: sendRodsMsg error, status = %d", status);
-        if (conn->svrVersion->reconnPort > 0) {
+#ifndef windows_platform
+        if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
+	    int status1;
+            int savedStatus = status;
+            pthread_mutex_lock (&conn->lock);
+            status1 = cliSwitchConnect (conn);
+            rodsLog (LOG_DEBUG,
+              "sendApiRequest: svrSwitchConnect. cliState = %d,agState=%d",
+              conn->clientState, conn->agentState);
+            pthread_mutex_unlock (&conn->lock);
+            if (status1 > 0) {
+                /* should not be here */
+                rodsLog (LOG_NOTICE,
+                  "sendApiRequest: Switch connection and retry sendRodsMsg");
+        	status = sendRodsMsg (conn->sock, RODS_API_REQ_T, 
+		  myInputStructBBuf, inputBsBBuf, NULL, 
+		    RcApiTable[apiInx].apiNumber, conn->irodsProt);
+                if (status >= 0) {
+                    rodsLog (LOG_NOTICE,
+                      "sendApiRequest: retry sendRodsMsg succeeded");
+                } else {
+                    status = savedStatus;
+                }
+            }
+        }
+#endif
+
 #if 0	/* XXXXX redo */
+        if (conn->svrVersion->reconnPort > 0) {
             if ((status = rcReconnect (conn, RECONN_SEND_OPR)) >= 0) {
                 status = sendRodsMsg (conn->sock, RODS_API_REQ_T, 
 		  myInputStructBBuf, inputBsBBuf, NULL, 
@@ -164,15 +193,21 @@ bytesBuf_t *inputBsBBuf)
     		freeBBuf (inputStructBBuf);
                 return status;
             }
-#endif
         } else {
     	    freeBBuf (inputStructBBuf);
             return (status);
         }
+#endif
     }
+#if 0	/* keep the send state intact */
+#ifndef windows_platform
+    cliChkReconnAtSendEnd (conn);
+#endif
+#endif
+
     freeBBuf (inputStructBBuf);
 
-    return (0);
+    return (status);
 }
 
 int
@@ -184,6 +219,10 @@ bytesBuf_t *outBsBBuf)
     /* bytesBuf_t outStructBBuf, errorBBuf, myOutBsBBuf; */
     bytesBuf_t outStructBBuf, errorBBuf;
 
+#ifndef windows_platform
+    cliChkReconnAtReadStart (conn);
+#endif
+
     memset (&outStructBBuf, 0, sizeof (bytesBuf_t));
     memset (&outStructBBuf, 0, sizeof (bytesBuf_t));
     /* memset (&myOutBsBBuf, 0, sizeof (bytesBuf_t)); */
@@ -194,6 +233,9 @@ bytesBuf_t *outBsBBuf)
         rodsLog (LOG_ERROR,
           "readAndProcApiReply: outStruct error for apiNumber %d", 
 	  RcApiTable[apiInx].apiNumber);
+#ifndef windows_platform
+        cliChkReconnAtReadEnd (conn);
+#endif
         return (USER_API_INPUT_ERR);
     }
 
@@ -201,18 +243,44 @@ bytesBuf_t *outBsBBuf)
         rodsLog (LOG_ERROR,
           "readAndProcApiReply: outBsBBuf error for apiNumber %d",
           RcApiTable[apiInx].apiNumber);
+#ifndef windows_platform
+        cliChkReconnAtReadEnd (conn);
+#endif
         return (USER_API_INPUT_ERR);
     }
 
     status = readMsgHeader (conn->sock, &myHeader);
 
     if (status < 0) {
-	int savedStatus = status;
         rodsLogError (LOG_ERROR, status,
           "readAndProcApiReply: readMsgHeader error. status = %d", status);
+#ifndef windows_platform
+        rodsLog (LOG_DEBUG,
+          "readAndProcClientMsg: readMsgHeader error. status = %d", status);
+	if (conn->svrVersion != NULL && conn->svrVersion->reconnPort > 0) {
+            int savedStatus = status;
+            /* try again. the socket might have changed */
+            pthread_mutex_lock (&conn->lock);
+            rodsLog (LOG_DEBUG,
+              "readAndProcClientMsg:svrSwitchConnect.cliState = %d,agState=%d",
+              conn->clientState, conn->agentState);
+            cliSwitchConnect (conn);
+            pthread_mutex_unlock (&conn->lock);
+            status = readMsgHeader (conn->sock, &myHeader);
+            if (status < 0) {
+                cliChkReconnAtReadEnd (conn);
+                return (savedStatus);
+            }
+        } else {
+            cliChkReconnAtReadEnd (conn);
+            return (status);
+        }
+#else
+        return (status);
+#endif
 
-	if (conn->svrVersion->reconnPort > 0) {
 #if 0	/* XXXXXX redo */
+	if (conn->svrVersion->reconnPort > 0) {
             if ((status = rcReconnect (conn, RECONN_RCV_OPR)) >= 0) {
 		status = readMsgHeader (conn->sock, &myHeader);
 		if (status >= 0) {
@@ -229,10 +297,10 @@ bytesBuf_t *outBsBBuf)
                   status);
                 return savedStatus;
 	    }
-#endif
 	} else {
             return (savedStatus);
 	}
+#endif
     }
 
     status = readMsgBody (conn->sock, &myHeader, &outStructBBuf, outBsBBuf,
@@ -240,8 +308,15 @@ bytesBuf_t *outBsBBuf)
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "readAndProcApiReply: readMsgBody error. status = %d", status);
+#ifndef windows_platform
+        cliChkReconnAtReadEnd (conn);
+#endif
         return (status);
     }
+
+#ifndef windows_platform
+    cliChkReconnAtReadEnd (conn);
+#endif
 
     if (strcmp (myHeader.type, RODS_API_REPLY_T) == 0) {
 	status = procApiReply (conn, apiInx, outStruct, outBsBBuf,

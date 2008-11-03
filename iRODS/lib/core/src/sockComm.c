@@ -1306,7 +1306,7 @@ sendReconnMsg (int sock, reconnMsg_t *reconnMsg)
     if (reconnMsg == NULL) return (USER__NULL_INPUT_ERR);
 
    /* alway use XML for version */
-    status = packStruct ((char *) &reconnMsg, &reconnMsgBBuf,
+    status = packStruct ((char *) reconnMsg, &reconnMsgBBuf,
       "ReconnMsg_PI", RodsPackTable, 0, XML_PROT);
 
     status = sendRodsMsg (sock, RODS_RECONNECT_T, reconnMsgBBuf,
