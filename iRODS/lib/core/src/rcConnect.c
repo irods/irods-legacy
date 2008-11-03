@@ -414,8 +414,14 @@ cliReconnManager (rcComm_t *conn)
         while (conn->clientState != PROCESSING_STATE) {
             /* have to wait until the client stop sending */
             conn->reconnThrState = CONN_WAIT_STATE;
+            rodsLog (LOG_DEBUG,
+              "cliReconnManager: clientState = %d", conn->clientState);
             pthread_cond_wait (&conn->cond, &conn->lock);
         }
+        rodsLog (LOG_DEBUG,
+          "cliReconnManager: Reconnecting clientState = %d", 
+	  conn->clientState);
+
         conn->reconnThrState = PROCESSING_STATE;
 	/* connect to server's reconn thread */
 
@@ -437,6 +443,7 @@ cliReconnManager (rcComm_t *conn)
 	  connectToRhostWithRaddr (&remoteAddr, conn->windowSize, 0);
 
         if (conn->reconnectedSock < 0) {
+	    pthread_cond_signal (&conn->cond);
             pthread_mutex_unlock (&conn->lock);
             rodsLog (LOG_ERROR, 
 	      "cliReconnManager: connect to host %s failed, status = %d",
@@ -453,6 +460,7 @@ cliReconnManager (rcComm_t *conn)
         if (status < 0) {
 	    close (conn->reconnectedSock);
 	    conn->reconnectedSock = 0;
+	    pthread_cond_signal (&conn->cond);
             pthread_mutex_unlock (&conn->lock);
             rodsLog (LOG_ERROR,
               "cliReconnManager: sendReconnMsg to host %s failed, status = %d",
@@ -465,6 +473,7 @@ cliReconnManager (rcComm_t *conn)
 	  < 0) {
             close (conn->reconnectedSock);
             conn->reconnectedSock = 0;
+	    pthread_cond_signal (&conn->cond);
             pthread_mutex_unlock (&conn->lock);
             rodsLog (LOG_ERROR,
               "cliReconnManager: readReconMsg to host %s failed, status = %d",
@@ -482,7 +491,12 @@ cliReconnManager (rcComm_t *conn)
               "cliReconnManager: svrSwitchConnect. cliState = %d,agState=%d",
               conn->clientState, conn->agentState);
             cliSwitchConnect (conn);
-        }
+        } else {
+            rodsLog (LOG_DEBUG,
+              "cliReconnManager: Not calling svrSwitchConnect,  clientState = %d", 
+              conn->clientState);
+	}
+	pthread_cond_signal (&conn->cond);
         pthread_mutex_unlock (&conn->lock);
     }
 }
@@ -495,10 +509,12 @@ cliChkReconnAtSendStart (rcComm_t *conn)
         pthread_mutex_lock (&conn->lock);
         if (conn->reconnThrState == CONN_WAIT_STATE) {
             rodsLog (LOG_DEBUG,
-              "cliChkReconnAtSendStart: ThrState = CONN_WAIT_STATE, clientState=%d",
+              "cliChkReconnAtSendStart:ThrState=CONN_WAIT_STATE,clientState=%d",
               conn->clientState);
             conn->clientState = PROCESSING_STATE;
             pthread_cond_signal (&conn->cond);
+	    /* wait for reconnManager to get done */ 
+	    pthread_cond_wait (&conn->cond, &conn->lock);
         }
         conn->clientState = SENDING_STATE;
         pthread_mutex_unlock (&conn->lock);
@@ -541,7 +557,12 @@ cliChkReconnAtReadEnd (rcComm_t *conn)
         pthread_mutex_lock (&conn->lock);
         conn->clientState = PROCESSING_STATE;
         if (conn->reconnThrState == CONN_WAIT_STATE) {
+            rodsLog (LOG_DEBUG,
+              "cliChkReconnAtReadEnd:ThrState=CONN_WAIT_STATE, clientState=%d",
+              conn->clientState);
             pthread_cond_signal (&conn->cond);
+            /* wait for reconnManager to get done */
+            pthread_cond_wait (&conn->cond, &conn->lock);
         }
         pthread_mutex_unlock (&conn->lock);
     }
