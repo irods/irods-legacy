@@ -10,6 +10,9 @@
 #define RODS_TYPE_H
 
 #include <sys/types.h>
+#if defined(solaris_platform)
+#include <strings.h>
+#endif
 #include "rodsDef.h"
 
 #if defined(osx_platform)
