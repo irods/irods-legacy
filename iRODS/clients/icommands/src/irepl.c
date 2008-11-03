@@ -19,9 +19,10 @@ main(int argc, char **argv) {
     rodsArguments_t myRodsArgs;
     char *optStr;
     rodsPathInp_t rodsPathInp;
+    int reconnFlag;
     
 
-    optStr = "aBdMhrvVn:R:S:X:U";
+    optStr = "aBdMhrvVn:R:S:TX:U";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -57,8 +58,14 @@ main(int argc, char **argv) {
         exit (1);
     }
 
+    if (myRodsArgs.reconnect == True) {
+        reconnFlag = RECONN_TIMEOUT;
+    } else {
+        reconnFlag = NO_RECONN;
+    }
+
     conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 1, &errMsg);
+      myEnv.rodsZone, reconnFlag, &errMsg);
 
     if (conn == NULL) {
         exit (2);
@@ -87,7 +94,7 @@ usage ()
 {
 
    char *msgs[]={
-"Usage : irepl [-aBMrvV] [-n replNum] [-R destResource] [-S srcResource]",
+"Usage : irepl [-aBMrTvV] [-n replNum] [-R destResource] [-S srcResource]",
 "[-X restartFile]  dataObj|collection ... ",
 " ",
 "Replicate a file in iRODS to another storage resource.",
@@ -108,6 +115,10 @@ usage ()
 "Note that the restart operation only works for uploading directories and",
 "the path input must be identical to the one that generated the restart file",
 " ",
+"The -T option will renew the socket connection between the client and ",
+"server after 10 minutes of connection. This gets around the problem of",
+"sockets getting timed out by the firewall as reported by some users.",
+" ",
 "Options are:",
 " -a  all - only meaningful if input resource [-R resource] is a resource group.",
 "     Replicate to all the resources in the resource group.",
@@ -124,6 +135,7 @@ usage ()
 " -S  srcResource - specifies the source resource of the data object to be",
 "     replicated. If specified, only copies stored in this resource will",
 "     be replicated. Otherwise, one of the copy will be replicated",
+" -T  renew socket connection after 10 minutes",
 " -v  verbose",
 " -V  Very verbose",
 " -X  restartFile - specifies that the restart option is on and the",

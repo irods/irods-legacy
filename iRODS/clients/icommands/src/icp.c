@@ -19,9 +19,10 @@ main(int argc, char **argv) {
     rodsArguments_t myRodsArgs;
     char *optStr;
     rodsPathInp_t rodsPathInp;
+    int reconnFlag;
     
 
-    optStr = "dhfkKN:p:rR:vVX:";
+    optStr = "dhfkKN:p:rR:TvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status) {
@@ -55,8 +56,14 @@ main(int argc, char **argv) {
         exit (1);
     }
 
+    if (myRodsArgs.reconnect == True) {
+        reconnFlag = RECONN_TIMEOUT;
+    } else {
+        reconnFlag = NO_RECONN;
+    }
+
     conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 1, &errMsg);
+      myEnv.rodsZone, reconnFlag, &errMsg);
 
     if (conn == NULL) {
         exit (2);
@@ -86,7 +93,7 @@ usage ()
    int i;
 
    char *msgs[]={
-"Usage : icp [-fkKrvV] [-N numThreads] [-p physicalPath] [-R resource]", 
+"Usage : icp [-fkKrTvV] [-N numThreads] [-p physicalPath] [-R resource]", 
 "-X restartFile] srcDataObj|srcColl ...  destDataObj|destColl",
 "icp copies an irods data-object (file) or collection (directory) to another",
 "data-object or collection.",  
@@ -106,6 +113,11 @@ usage ()
 "contained in this file will be used for restarting the operation.",
 "Note that the restart operation only works for uploading directories and",
 "the path input must be identical to the one that generated the restart file",
+" ",
+"The -T option will renew the socket connection between the client and ",
+"server after 10 minutes of connection. This gets around the problem of",
+"sockets getting timed out by the firewall as reported by some users.",
+" ",
 "Options are:",
 " -d  use RBUDP (datagram) protocol for the data transfer",
 "-f force - write data-object even it exists already; overwrite it",
@@ -118,6 +130,7 @@ usage ()
 "-R resource - specifies the resource to store to. This can also be specified",
 "       in your environment or via a rule set up by the administrator.",
 "-r recursive - copy the whole subtree",
+"-T  renew socket connection after 10 minutes",
 "-v verbose - display various messages while processing",
 "-V very verbose",
 " -X  restartFile - specifies that the restart option is on and the",

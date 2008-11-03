@@ -24,7 +24,7 @@
 
 /* definition for the reconnFlag */
 #define NO_RECONN	0	/* no reconnection */
-#define DO_RECONN	1	/* this has been depricated */
+#define RECONN_NOTUSED	1	/* this has been depricated */
 #define RECONN_TIMEOUT	2
 
 #if 0	/* XXXXXXX take me out testig only */

@@ -19,9 +19,10 @@ main(int argc, char **argv) {
     rodsArguments_t myRodsArgs;
     char *optStr;
     rodsPathInp_t rodsPathInp;
+    int reconnFlag;
     
 
-    optStr = "aD:fhkKn:N:p:rR:dvVX:";
+    optStr = "aD:fhkKn:N:p:rR:dTvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -50,8 +51,14 @@ main(int argc, char **argv) {
         exit (1);
     }
 
+    if (myRodsArgs.reconnect == True) {
+        reconnFlag = RECONN_TIMEOUT;
+    } else {
+        reconnFlag = NO_RECONN;
+    }
+
     conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 1, &errMsg);
+      myEnv.rodsZone, reconnFlag, &errMsg);
 
     if (conn == NULL) {
         exit (2);
@@ -79,10 +86,10 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-fkKrUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-fkKrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-fkKUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-fkKTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -110,6 +117,10 @@ usage ()
 "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
 "to set the packet size. The dafault rbudpPackSize is 8192.",
 " ",
+"The -T option will renew the socket connection between the client and ",
+"server after 10 minutes of connection. This gets around the problem of",
+"sockets getting timed out by the firewall as reported by some users.",
+" ",
 "Options are:",
 " -D  dataType - the data type string",
 " -f  force - write data-object even it exists already; overwrite it",
@@ -122,6 +133,7 @@ usage ()
 "     in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",
 " -d  use RBUDP (datagram) protocol for the data transfer",
+" -T  renew socket connection after 10 minutes",
 " -v  verbose",
 " -V  Very verbose",
 " -X  restartFile - specifies that the restart option is on and the",

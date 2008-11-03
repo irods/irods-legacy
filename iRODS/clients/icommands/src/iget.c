@@ -19,9 +19,10 @@ main(int argc, char **argv) {
     rodsArguments_t myRodsArgs;
     char *optStr;
     rodsPathInp_t rodsPathInp;
+    int reconnFlag;
     
 
-    optStr = "hfKN:n:rdvVX:R:";
+    optStr = "hfKN:n:rdvVX:R:T";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -50,8 +51,14 @@ main(int argc, char **argv) {
         exit (1);
     }
 
+    if (myRodsArgs.reconnect == True) {
+	reconnFlag = RECONN_TIMEOUT;
+    } else {
+	reconnFlag = NO_RECONN;
+    }
+
     conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
-      myEnv.rodsZone, 1, &errMsg);
+      myEnv.rodsZone, reconnFlag, &errMsg);
 
     if (conn == NULL) {
         exit (2);
@@ -80,11 +87,11 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage: iget [-fKrUvV] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage: iget [-fKrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection ... destLocalFile|destLocalDir",
-"Usage : iget [-fKUvV] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection",
-"Usage : iget [-fKUvV] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
@@ -109,6 +116,10 @@ usage () {
 "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
 "to set the packet size. The dafault rbudpPackSize is 8192.",
 " ",
+"The -T option will renew the socket connection between the client and ",
+"server after 10 minutes of connection. This gets around the problem of",
+"sockets getting timed out by the firewall as reported by some users.",
+" ",
 "Options are:",
 
 " -f  force - write local files even it they exist already (overwrite them)",
@@ -119,6 +130,7 @@ usage () {
 "       decides the number of threads to use.", 
 " -r  recursive - retrieve subcollections",
 " -R  resource - the preferred resource",
+" -T  renew socket connection after 10 minutes",
 " -d  use RBUDP (datagram) protocol for the data transfer",
 " -v  verbose",
 " -V  Very verbose",

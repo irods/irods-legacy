@@ -32,9 +32,11 @@ int reconnFlag, rErrMsg_t *errMsg)
 	}
 #endif
 
-    if (getenv (RECONNECT_ENV) != NULL) {
+#ifndef windows_platform
+    if (reconnFlag != RECONN_TIMEOUT && getenv (RECONNECT_ENV) != NULL) {
         reconnFlag = RECONN_TIMEOUT;
     }
+#endif
 
     conn = _rcConnect (rodsHost, rodsPort, userName, rodsZone, NULL, NULL,
       errMsg, 0, reconnFlag);

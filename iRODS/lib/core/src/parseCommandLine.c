@@ -38,7 +38,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 
    int i;
 
-   char fullOpts[]="aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:T:u:vVzZxWY:";
+   char fullOpts[]="aAbc:C:dD:efFghH:ikK:lm:n:N:p:P:qrR:s:S:t:Tu:vVzZxWY:";
    char *opts;
    int VCount=0;
 
@@ -208,8 +208,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
          rodsArgs->ticketString=optarg;
          break;
       case 'T':
-         rodsArgs->ticketFile=True;
-         rodsArgs->ticketFileString=optarg;
+         rodsArgs->reconnect=True;
          break;
       case 'u':
          rodsArgs->user=True;

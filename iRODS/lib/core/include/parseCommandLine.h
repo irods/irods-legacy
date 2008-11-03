@@ -69,8 +69,7 @@ typedef struct {
    int test;
    int ticket;
    char *ticketString;
-   int ticketFile;
-   char *ticketFileString;
+   int reconnect;
    int user;
    char *userString;
    int unmount;
