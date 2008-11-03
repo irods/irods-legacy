@@ -271,6 +271,9 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
         if (rsComm->reconnSock > 0) {
 	    int savedStatus = status;
 	    pthread_mutex_lock (&rsComm->lock);
+            rodsLog (LOG_DEBUG,
+              "sendApiReply: svrSwitchConnect. cliState = %d,agState=%d",
+              rsComm->clientState, rsComm->agentState);
 	    status1 = svrSwitchConnect (rsComm);
 	    pthread_mutex_unlock (&rsComm->lock);
 	    if (status1 > 0) {
@@ -410,12 +413,18 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
 	    int savedStatus = status;
 	    /* try again. the socket might have changed */ 
 	    pthread_mutex_lock (&rsComm->lock);
+            rodsLog (LOG_DEBUG,
+              "readAndProcClientMsg: svrSwitchConnect. cliState = %d,agState=%d",
+              rsComm->clientState, rsComm->agentState);
 	    svrSwitchConnect (rsComm);
 	    pthread_mutex_unlock (&rsComm->lock);
 	    status = readMsgHeader (rsComm->sock, &myHeader);
-	    if (status < 0)
+	    if (status < 0) {
+                svrChkReconnAtReadEnd (rsComm);
 	        return (savedStatus);
+	    }
 	} else {
+            svrChkReconnAtReadEnd (rsComm);
             return (status);
 	}
 #else
@@ -428,6 +437,9 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
     if (status < 0) {
         rodsLog (LOG_NOTICE,
           "agentMain: readMsgBody error. status = %d", status);
+#ifndef windows_platform
+        svrChkReconnAtReadEnd (rsComm);
+#endif
         return (status);
     }
 
