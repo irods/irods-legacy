@@ -128,6 +128,12 @@ usage ()
 " ",
 "    ibun -cDtar mydir1.tar mydir", 
 " ",
+"NOTE: To use the tar data type for bundling, the server must be linked with",
+"the libtar library. The link:",
+"    https://www.irods.org/index.php/Mounted_iRODS_Collection",
+"gives instructions for installing libtar.",
+" ",
+
 " ",
 "Options are:",
 " -R  resource - specifies the resource to store to. This is optional",
