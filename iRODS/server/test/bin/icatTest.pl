@@ -326,6 +326,7 @@ runCmd(0, "imeta add -u $U1 role archivist");
 runCmd(0, "imeta add -u $U1 role_a test");
 runCmd(0, "imeta add -u $U1 role_ test2");
 runCmd(0, "imeta ls -u $U1 | grep attribute | wc -l", "3");
+runCmd(0, "imeta ls -u $U1#$myZone | grep attribute | wc -l", "3");
 runCmd(0, "imeta ls -u $U1 role | grep attribute | wc -l", "1");
 runCmd(0, "imeta ls -u $U1 role_ | grep attribute | wc -l", "1");
 runCmd(0, "imeta lsw -u $U1 role_ | grep attribute | wc -l", "1");
