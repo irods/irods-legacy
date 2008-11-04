@@ -2918,7 +2918,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    Called from rsAuthCheck.
 */
 int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
-		 char *username, char *userZone, 
+		 char *username, 
 		 int *userPrivLevel, int *clientPrivLevel) {
 
    int status;
@@ -2942,6 +2942,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    char expireStr[50];
    char expireStrCreate[50];
    char myUserZone[MAX_NAME_LEN];
+   char userName2[NAME_LEN+2];
+   char userZone[NAME_LEN+2];
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth");
 
@@ -2953,7 +2955,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    *userPrivLevel = NO_USER_AUTH;
    *clientPrivLevel = NO_USER_AUTH;
 
-   if (userZone == NULL || userZone[0]=='\0') {
+   status = parseUserName(username, userName2, userZone);
+   if (userZone[0]=='\0') {
       status = getLocalZone();
       if (status) return(status);
       strncpy(myUserZone, localZone, MAX_NAME_LEN);
@@ -2969,11 +2972,11 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	    "select rcat_password, pass_expiry_ts, r_user_password.create_ts from r_user_password, r_user_main where user_name=? and zone_name=? and r_user_main.user_id = r_user_password.user_id",
 	    pwInfoArray, MAX_PASSWORD_LEN,
 	    MAX_PASSWORDS*3,  /* three strings per password returned */
-	    username, myUserZone, &icss);
+	    userName2, myUserZone, &icss);
    if (status < 3) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
-	 if (strncmp(ANONYMOUS_USER, username, NAME_LEN)==0) {
+	 if (strncmp(ANONYMOUS_USER, userName2, NAME_LEN)==0) {
 	    /* anonymous user, skip the pw check but do the rest */
 	    goto checkLevel;
 	 }
@@ -3103,7 +3106,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 5");
    status = cmlGetStringValueFromSql(
 	    "select user_type_name from r_user_main where user_name=? and zone_name=?",
-	    userType, MAX_NAME_LEN, username, myUserZone, &icss);
+	    userType, MAX_NAME_LEN, userName2, myUserZone, &icss);
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
@@ -3118,7 +3121,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       *userPrivLevel = LOCAL_PRIV_USER_AUTH;
 
       /* Since the user is admin, also get the client privilege level */
-      if (strcmp( rsComm->clientUser.userName, username)==0 &&
+      if (strcmp( rsComm->clientUser.userName, userName2)==0 &&
 	  strcmp( rsComm->clientUser.rodsZone, userZone)==0) {
 	 *clientPrivLevel = LOCAL_PRIV_USER_AUTH; /* same user, no query req */
       }
@@ -3126,8 +3129,9 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
 	 status = cmlGetStringValueFromSql(
 	       "select user_type_name from r_user_main where user_name=? and zone_name=?",
-	       userType, MAX_NAME_LEN, rsComm->clientUser.userName, 
-	       rsComm->clientUser.rodsZone, &icss);
+	       userType, MAX_NAME_LEN, userName2,
+	       myUserZone, &icss);
+
 	 if (status !=0) {
 	    if (status == CAT_NO_ROWS_FOUND) {
 	       status = CAT_INVALID_CLIENT_USER; /* more specific */
