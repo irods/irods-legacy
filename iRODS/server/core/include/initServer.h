@@ -180,4 +180,6 @@ rodsServerHost_t **rodsServerHost, char *remotZoneOpr);
 int
 getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t **rodsServerHost, char *remotZoneOpr);
+int
+convZoneSockError (int inStatus);
 #endif	/* INIT_SERVER_H */

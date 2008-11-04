@@ -172,7 +172,13 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
 
     if (status < 0) {
         rodsPath->objState = NOT_EXIST_ST;
-        return (NOT_EXIST_ST);
+	if (status == USER_FILE_DOES_NOT_EXIST) {
+            return (NOT_EXIST_ST);
+	} else {
+	    rodsLogError (LOG_ERROR, status, 
+	     "rcObjStat of %s failed", rodsPath->outPath);
+	    return status;
+	}
     } else if (rodsPath->objType == COLL_OBJ_T && 
       rodsObjStatOut->objType != COLL_OBJ_T) {
         rodsPath->objState = NOT_EXIST_ST;

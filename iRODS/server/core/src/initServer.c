@@ -644,6 +644,7 @@ rodsServerHost_t **rodsServerHost)
         rodsLog (LOG_NOTICE,
           "getAndConnRcatHost: svrToSvrConnect to %s failed",
 	  (*rodsServerHost)->hostName->name);
+	status = convZoneSockError (status);
     }
     if (status >= 0) {
 	return (REMOTE_HOST);
@@ -674,8 +675,19 @@ rodsServerHost_t **rodsServerHost)
         rodsLog (LOG_NOTICE,
           "getAndConnRcatHost: svrToSvrConnectNoLogin to %s failed",
           (*rodsServerHost)->hostName->name);
+	status = convZoneSockError (status);
     }
     return (status);
+}
+
+int
+convZoneSockError (int inStatus)
+{
+    int unixErr = getUnixErrno (inStatus);
+    if (inStatus + unixErr == USER_SOCK_CONNECT_ERR)  
+	return (CROSS_ZONE_SOCK_CONNECT_ERR - unixErr);
+    else 
+	return inStatus;
 }
 
 /* getRcatHost - get the rodsServerHost of the rcat enable host based

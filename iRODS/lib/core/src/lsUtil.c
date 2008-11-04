@@ -23,11 +23,13 @@ rodsPathInp_t *rodsPathInp)
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T || 
 	  rodsPathInp->srcPath[i].objState == UNKNOWN_ST) {
-	    getRodsObjType (conn, &rodsPathInp->srcPath[i]);
+	    status = getRodsObjType (conn, &rodsPathInp->srcPath[i]);
 	    if (rodsPathInp->srcPath[i].objState == NOT_EXIST_ST) {
-                rodsLog (LOG_ERROR,
-                  "lsUtil: srcPath %s does not exist or user lacks access permission",
-                  rodsPathInp->srcPath[i].outPath);
+                if (status == NOT_EXIST_ST) {
+                    rodsLog (LOG_ERROR,
+                      "lsUtil: srcPath %s does not exist or user lacks access permission",
+                      rodsPathInp->srcPath[i].outPath);
+		}
 		savedStatus = USER_INPUT_PATH_ERR;
 		continue;
 	    }
