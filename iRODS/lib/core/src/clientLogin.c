@@ -87,6 +87,7 @@ clientLogin(rcComm_t *Conn)
    authResponseInp_t authRespIn;
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
+   char userNameAndZone[NAME_LEN*2];
    struct stat statbuf;
    MD5_CTX context;
 
@@ -156,7 +157,10 @@ clientLogin(rcComm_t *Conn)
    authRespIn.response=digest;
    /* the authentication is always for the proxyUser. */
    authRespIn.username = Conn->proxyUser.userName;
-   authRespIn.userZone = Conn->proxyUser.rodsZone;
+   strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
+   strncat(userNameAndZone, "#", NAME_LEN);
+   strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
+   authRespIn.username = userNameAndZone;
    status = rcAuthResponse(Conn, &authRespIn);
 
    if (status) {
@@ -176,6 +180,7 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    authResponseInp_t authRespIn;
    char md5Buf[CHALLENGE_LEN+MAX_PASSWORD_LEN+2];
    char digest[RESPONSE_LEN+2];
+   char userNameAndZone[NAME_LEN*2];
    MD5_CTX context;
 
    if (Conn->loggedIn == 1) {
@@ -214,7 +219,10 @@ clientLoginWithPassword(rcComm_t *Conn, char* password)
    authRespIn.response=digest;
    /* the authentication is always for the proxyUser. */
    authRespIn.username = Conn->proxyUser.userName;
-   authRespIn.userZone = Conn->proxyUser.rodsZone;
+   strncpy(userNameAndZone, Conn->proxyUser.userName, NAME_LEN);
+   strncat(userNameAndZone, "#", NAME_LEN);
+   strncat(userNameAndZone, Conn->proxyUser.rodsZone, NAME_LEN*2);
+   authRespIn.username = userNameAndZone;
    status = rcAuthResponse(Conn, &authRespIn);
 
    if (status) {
