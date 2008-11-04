@@ -26,7 +26,6 @@ typedef struct {
    char *challenge;
    char *response;
    char *username;
-   char *userZone;
 } authCheckInp_t;
 
 typedef struct {
@@ -35,7 +34,7 @@ typedef struct {
    char *serverResponse;
 } authCheckOut_t;
     
-#define authCheckInp_PI "str *challenge; str *response; str *username; str *userzone;"
+#define authCheckInp_PI "str *challenge; str *response; str *username;"
 
 #define authCheckOut_PI "int privLevel; int clientPrivLevel; str *serverResponse;"
 
