@@ -186,6 +186,7 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
    int userPrivLevel;
    int clientPrivLevel;
    int status, i;
+   char userNameAndZone[NAME_LEN*2];
 
    strncpy(rsComm->clientUser.userName, testUser, NAME_LEN);
    strncpy(rsComm->clientUser.rodsZone, testUserZone, NAME_LEN);
@@ -211,8 +212,12 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
    response[i++]=0xeb;
    response[i++]=0x00;
 
+   strncpy(userNameAndZone, testAdminUser, NAME_LEN);
+   strncat(userNameAndZone, "#", NAME_LEN);
+   strncat(userNameAndZone, testUserZone, NAME_LEN);
+
    status = chlCheckAuth(rsComm, challenge, response,
-			 testAdminUser, testUserZone,
+			 userNameAndZone,
 			 &userPrivLevel, &clientPrivLevel);
 
    return(status);
