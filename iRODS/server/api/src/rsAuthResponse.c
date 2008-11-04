@@ -43,7 +43,6 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
    authCheckInp.challenge = bufp;
    authCheckInp.response = authResponseInp->response;
    authCheckInp.username = authResponseInp->username;
-   authCheckInp.userZone = authResponseInp->userZone;
 
    if (rodsServerHost->localFlag == LOCAL_HOST) {
       status = rsAuthCheck (rsComm, &authCheckInp, &authCheckOut);
@@ -78,9 +77,12 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
 	    }
 	 }
 	 else {
+	    char username2[NAME_LEN+2];
+	    char userZone[NAME_LEN+2];
 	    memset(md5Buf, 0, sizeof(md5Buf));
 	    strncpy(md5Buf, authCheckInp.challenge, CHALLENGE_LEN);
-	    getZoneServerId(authResponseInp->userZone, serverId);
+	    parseUserName(authResponseInp->username, username2, userZone);
+	    getZoneServerId(userZone, serverId);
 	    len = strlen(serverId);
 	    if (len <= 0) {
 	       rodsLog (LOG_NOTICE, "rsAuthResponse: Warning, cannot authenticate the remote server, no RemoteZoneSID defined in server.config", status);
