@@ -30,6 +30,10 @@
 # this script.  You might want to review, and possibly edit, some of
 # the command files before executing them.
 #
+# Note that if the text files get very large, the perl process may
+# grow too large and hang your system.  If that happens, let us know
+# and we'll develop a workaround to this perl limitation.
+#
 #
 # You will need to change the following parameters for your
 # particular MCAT and  ICATs and environment.
@@ -49,12 +53,11 @@ $cv_irodsZone = "tempZone";   # Your iRODS zone name
 # if $useDomainWithUsername="0", above should be "vidarch".
 
 # These below are used for ingesting users.
-# Note that, by default, only users of type 'staff' are ingested.
-# If you would like to ingest others, edit this list.
-# The other commonly used user type is 'sysadmin' which would
-# correspond to 'rodsadmin', but you might want to do those by hand.
-@cv_srb_usertypes=("staff");         # The only types of users converted
-@cv_irods_usertypes=("rodsuser");    # The corresponding user-type converted to
+# Note that, by default, users of type 'staff' and 'sysadmin' are ingested.
+# You might want to skip the sysadmin users, either by removing the "sysadmin"
+# below or editing m2icat.cmds.iadmin after it is created.
+@cv_srb_usertypes=("staff", "sysadmin");   # Users of these types are converted
+@cv_irods_usertypes=("rodsuser", "rodsadmin");  # to these types.
 
 # This flag indicates if you want user names to be of the form
 # user#domain or just user.
@@ -86,7 +89,7 @@ $logUser = "Spull.log.user";     # Spullmeta log file for users
 $logColl = "Spull.log.coll";     # Spullmeta log file for collections
 $logData = "Spull.log.data";     # Spullmeta log file for dataObjects
 $logResc = "Spull.log.resc";     # Spullmeta log file for resources
-$logLoc = "Spull.log.loc";      # Spullmeta log file for locations
+$logLoc = "Spull.log.loc";       # Spullmeta log file for locations
 $logMetaData = "Spull.log.meta.data"; # Spullmeta log file for user-defined
                                       # metadata for dataObjects
 $logMetaColl = "Spull.log.meta.coll"; # Spullmeta log file for user-defined
@@ -360,6 +363,10 @@ sub convertCollection($)
     my ($inColl) = @_;
     my $outColl = $inColl;
 
+    if (index($outColl, "/home/") == 0) {
+	$outColl =~ s\/home/\/$cv_irodsZone/home/\g;
+    }
+
     $outColl =~ s\/$cv_srbZone/\/$cv_irodsZone/\g; 
     $k=0;
     foreach $user (@cv_srb_usernames) {
@@ -379,6 +386,10 @@ sub convertCollectionForData($$$)
     my $outColl = $inColl;
     my $tmp;
     my $tmp2;
+
+     if (index($outColl, "/home/") == 0) {
+       $outColl =~ s\/home/\/$cv_irodsZone/home/\g;
+     }
 
     $outColl =~ s\/$cv_srbZone/\/$cv_irodsZone/\g; 
     $k=0;
@@ -419,11 +430,12 @@ sub processLogFile($) {
     if ( open(  LOG_FILE, "<$logFile" ) == 0 ) {
 	die("open failed on input file " . $logFile);
     }
-    $i = 0;
+    $lineNum = 0;
     $mode = "";
+
     foreach $line ( <LOG_FILE> ) {
-	$i++;
-	if ($i==1) {
+	$lineNum++;
+	if ($lineNum==1) {
 	    @cmdArgs = split('\|',$line);
 #	    print ("cmdArgs[0]:" . $cmdArgs[0] . " " . "\n");
 	    if ($cmdArgs[0] eq "GET_CHANGED_USER_INFO") {
@@ -448,15 +460,15 @@ sub processLogFile($) {
 		$mode="METADATA_COLL";
 	    }
 	}
-#	printf("MODE: $mode, i: $i\n");
-	if ($i==2) {
+#	printf("MODE: $mode, lineNum: $lineNum\n");
+	if ($lineNum==2) {
 	    @names = split('\|',$line);
 #	    print ("names[0]:" . $names[0] . " " . "\n");
 	    if ($mode eq "") {
 		die ("Unrecognized type of Spullmeta log file: $logFile");
 	    }
 	}
-	if ($i>2) { # regular lines
+	if ($lineNum>2) { # regular lines
 	    @values = split('\|',$line);
 	    $doDataInsert=0;
 	    if ($mode eq "DATA") {
@@ -495,7 +507,7 @@ sub processLogFile($) {
 
 		    AddToDatatypeList($v_dataTypeName);
 
-		    if ($i==3 && $showOne=="1") {
+		    if ($lineNum==3 && $showOne=="1") {
 			$j = 0;
 			foreach $value (@values) {
 			    print ($names[$j] . " " . $value . "\n");
@@ -655,8 +667,8 @@ sub checkDoCollection($) {
     if (index($inCollName, "/container")==0) {
 	return(0); # don't convert those starting with/container
     }
-    if (index($inCollName, "/home")==0) {
-	return(0); # don't convert these either
+    if (index($inCollName, "/home/")==0) {
+	return(1); # do convert /home/* collections 
     }
     $testColl = "/" . $cv_srbZone . "/container";
     if (index($inCollName, "$testColl")==0) {
