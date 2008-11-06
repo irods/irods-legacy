@@ -185,6 +185,31 @@ doMod(rcComm_t *Conn, char *objPath, char *time) {
    return(status);
 }
 
+/* perform the modify command to change the data_type*/
+int 
+doModDatatype(rcComm_t *Conn, char *objPath, char *dataType) {
+   int status;
+
+   modDataObjMeta_t modDataObjMetaInp;
+   keyValPair_t regParam;
+   dataObjInfo_t dataObjInfo;
+
+   memset (&regParam, 0, sizeof (regParam));
+   addKeyVal (&regParam, DATA_TYPE_KW, dataType);
+
+   memset(&dataObjInfo, 0, sizeof(dataObjInfo));
+   rstrcpy(dataObjInfo.objPath, objPath, MAX_NAME_LEN);
+
+   modDataObjMetaInp.regParam = &regParam;
+   modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+
+   status = rcModDataObjMeta(Conn, &modDataObjMetaInp);
+   if (status) {
+      rodsLogError(LOG_ERROR, status, "rcModDataObjMeta failure");
+   }
+   return(status);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -278,22 +303,31 @@ main(int argc, char **argv)
 	 usage("");
 	 exit(1);
       }
-
-      rstrcpy(theTime, cmdToken[2], TIME_LEN);
-      status=0;
-      if (*cmdToken[2]=='+') {
-	 rstrcpy(theTime, cmdToken[2]+1, TIME_LEN); /* skip the + */
-	 status = checkDateFormat(theTime);      /* check and convert the time value */
-	 getOffsetTimeStr(theTime, theTime);     /* convert delta format to now + this*/
-      } else {
-	 status = checkDateFormat(theTime);      /* check and convert the time value */
-      }
-      if (status==0) {
-	 status = doMod(Conn, objPath, theTime);
+      if (strcmp(cmdToken[2],"datatype")==0) {
+	 if (*cmdToken[3]=='\0') {
+	    usage("");
+	    exit(1);
+	 }	    
+	 status = doModDatatype(Conn, objPath, cmdToken[3]);
 	 didOne=1;
       }
       else {
-	 printf("Invalid time format input\n");
+	 rstrcpy(theTime, cmdToken[2], TIME_LEN);
+	 status=0;
+	 if (*cmdToken[2]=='+') {
+	    rstrcpy(theTime, cmdToken[2]+1, TIME_LEN); /* skip the + */
+	    status = checkDateFormat(theTime);      /* check and convert the time value */
+	    getOffsetTimeStr(theTime, theTime);     /* convert delta format to now + this*/
+	 } else {
+	    status = checkDateFormat(theTime);      /* check and convert the time value */
+	 }
+	 if (status==0) {
+	    status = doMod(Conn, objPath, theTime);
+	    didOne=1;
+	 }
+	 else {
+	    printf("Invalid time format input\n");
+	 }
       }
    }
 
@@ -324,6 +358,7 @@ usage(char *option)
 " Show or modify system metadata.",
 "Commands are:",
 " mod DataObjectName Time (modify expire time)",
+" mod DataObjectName datatype Type (modify data-type)",
 " ls [-lvV] Name (list dataObject, -l -v for long form)",
 "Time can be full or partial date/time: '2007-12-01' or '2007-12-11.12:03' etc, or",
 "a delta time '+1h' (one hour from now), etc.",
@@ -331,6 +366,7 @@ usage(char *option)
 "Examples:",
 " isysmeta mod foo +1h  (change the expire time for the file foo to an hour from now)",
 " isysmeta mod /tempZone/home/rods/foo 2007-12-01",
+" isysmeta mod /tempZone/home/rods/foo datatype 'tar file'",
 " isysmeta ls foo",
 " isysmeta -l ls foo",
 " isysmeta ls -l foo",
