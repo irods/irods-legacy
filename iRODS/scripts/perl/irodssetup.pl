@@ -175,9 +175,18 @@ if ( $thisUserID == 0 )
 
 if ( $isUpgrade ne "") {
     printNotice("\nNote: When upgrading from 1.1 to 1.2, you will need to\n");
-    printNotice("run psg-patch-v1.1Tov1.2.sql via psql\n");
-    printNotice("or ora-patch-v1.1Tov1.2.sql via sqlplus\n");
+    printNotice("run psg-patch-v1.1Tov1.2.sql via psql (for Postgres)\n");
+    printNotice("or ora-patch-v1.1Tov1.2.sql via sqlplus (for Oracle)\n");
     printNotice("before running this script.\n\n");
+
+    my $answer = promptYesNo(
+			     "Have you run one of those?",
+		"yes" );
+    if ( $answer == 0 )
+    {
+	printError( "Abort.\n" );
+	exit( 0 );
+    }
 }
 
 # Prompt for information.

@@ -13,19 +13,7 @@
 # 	--verbose   Output all messages (default)
 #
 # Commands:
-# 	start       Start the iRODS and Postgres servers
-# 	stop        Stop the iRODS and Postgres servers
-#	restart     Stop and start the iRODS and Postgres servers
-#
-#	status      Report the running status of iRODS and Postgres servers
-#	test        Test the iRODS installation
-#
-#	dboptimize  Optimize the Postgres tables used by iRODS
-#	dbvacuum    Same as 'dboptimize'
-#
-#	icatcreate  Create the database tables
-#	icatdrop    Delete the database tables
-#	initialize  Initialize iRODS (typically only on fresh install)
+#   See the printUsage function.
 #
 
 use File::Spec;
@@ -190,7 +178,8 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 #	3-LOG_DEBUG3
 #	2-LOG_DEBUG2
 #	1-LOG_DEBUG1.
-# The lower the level, the more verbose is the log. The default level is 5-LOG_NOTICE
+# The lower the level, the more verbose is the log. The default level 
+# is 5-LOG_NOTICE
 # $spLogLevel = "3";
 
 # spLogSql defines if sql will be logged or not.  The default is no logging.
@@ -1307,7 +1296,6 @@ sub printUsage
 	printNotice( "    dbstart       Start the database servers\n" );
 	printNotice( "    dbstop        Stop the database servers\n" );
 	printNotice( "    dbrestart     Restart the database servers\n" );
-	printNotice( "    dbdrop        Delete the iRODS tables in the database\n" );
 	printNotice( "    dboptimize    Optimize the iRODS tables in the database\n" );
 	printNotice( "    dbvacuum      Same as 'dboptimize'\n" );
 	printNotice( "\n" );
