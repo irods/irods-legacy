@@ -276,6 +276,7 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    /* regParamNames has the argument names (in regParam) that this
       routine understands and colNames has the corresponding column
       names; one for one. */
+   int dataTypeIndex=1; /* matches table below for quick check */
    char *regParamNames[]={
       "replNum", "dataType", "dataSize",
       "rescName","filePath", "dataOwner", "dataOwnerZone", 
@@ -311,6 +312,15 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 updateCols[j]=colNames[i];
 	 updateVals[j]=theVal;
 	 j++;
+
+	 /* If the datatype is being updated, check that it is valid */
+	 if (i==dataTypeIndex) {
+	    status = cmlCheckNameToken("data_type", 
+				       theVal, &icss);
+	    if (status !=0 ) {
+	       return(CAT_INVALID_DATA_TYPE);
+	    }
+	 }
       }
    }
    upCols=j;
