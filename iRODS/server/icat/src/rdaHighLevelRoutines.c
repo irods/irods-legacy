@@ -33,8 +33,9 @@
 
 #include "icatHighLevelRoutines.h"
 
-/* For now, uncomment this line to build RDA #define BUILD_RDA 1  */
-/* Do same in reRDA.c */
+/* For now, uncomment this line to build RDA 
+#define BUILD_RDA 1  */
+/* Do the same in reRDA.c */
 
 #define RDA_CONFIG_FILE "rda.config"
 #define RDA_ACCESS_ATTRIBUTE "RDA_ACCESS"
@@ -382,14 +383,25 @@ readRdaConfig(char *rdaName, char **DBUser, char**DBPasswd) {
       key=strstr(buf, rdaName);
       if (key == buf) {
 	 int state, i;
+	 char *DBKey=0;
 	 rstrcpy(foundLine, buf, BUF_LEN);
 	 state=0;
 	 for (i=0;i<BUF_LEN;i++) {
 	    if (foundLine[i]==' ' || foundLine[i]=='\n') {
+	       int endOfLine;
+	       endOfLine=0;
+	       if (foundLine[i]=='\n') endOfLine=1;
 	       foundLine[i]='\0';
+	       if (endOfLine && state<6) return(0);
 	       if (state==0) state=1;
 	       if (state==2) state=3;
-	       if (state==4) return(0);
+	       if (state==4) state=5;
+	       if (state==6) {
+		  static char unscrambledPw[NAME_LEN];
+		  obfDecodeByKey(*DBPasswd, DBKey, unscrambledPw);
+		  *DBPasswd=unscrambledPw;
+		  return(0);
+	       }
 	    }
 	    else {
 	       if (state==1) {
@@ -399,6 +411,10 @@ readRdaConfig(char *rdaName, char **DBUser, char**DBPasswd) {
 	       if (state==3) {
 		  state=4;
 		  *DBPasswd=&foundLine[i];
+	       }
+	       if (state==5) {
+		  state=6;
+		  DBKey=&foundLine[i];
 	       }
 	    }
 	 }
