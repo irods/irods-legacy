@@ -159,6 +159,9 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut);
 int
 queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut);
 int
+queryCollInheritance (rcComm_t *conn, char *collName, 
+		      genQueryOut_t **genQueryOut);
+int
 extractRodsObjType (rodsPath_t *rodsPath, sqlResult_t *dataId, 
 sqlResult_t *replStatus, sqlResult_t *chksum, sqlResult_t *dataSize, 
 int inx, int rowCnt);

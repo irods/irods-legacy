@@ -48,6 +48,8 @@ printDataAcl (rcComm_t *conn, char *dataId);
 int
 printCollAcl (rcComm_t *conn, char *collId);
 int
+printCollInheritance (rcComm_t *conn, char *collName);
+int
 lsSpecDataObjUtilLong (rcComm_t *conn, rodsPath_t *srcPath, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs);
 int
