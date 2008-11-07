@@ -36,6 +36,7 @@ int msiGetValByKey(msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  r
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
 int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
 	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
+int breakExec(ruleExecInfo_t *rei);
 int msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, 
 	msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei);
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei);
@@ -125,6 +126,7 @@ int msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
 	 msParam_t *inpParam3, msParam_t *inpParam4, 
 	 ruleExecInfo_t *rei);
 int msiRdaCommit(ruleExecInfo_t *rei);
+int msiAW1(msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei);
 int msiRdaRollback(ruleExecInfo_t *rei);
 int msiRenameLocalZone(msParam_t *oldName, msParam_t *newName,
                        ruleExecInfo_t *rei);
@@ -219,6 +221,7 @@ microsdef_t MicrosTable[] = {
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},
   {"assign",2,(funcPtr) assign},
   {"ifExec",5,(funcPtr) ifExec},
+  {"break",0,(funcPtr) breakExec},
   {"applyAllRules",3,(funcPtr) msiApplyAllRules},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
   {"msiExecGenQuery",2,(funcPtr) msiExecGenQuery},
@@ -245,6 +248,7 @@ microsdef_t MicrosTable[] = {
   {"msiRdaToDataObj",7,(funcPtr) msiRdaToDataObj},
   {"msiRdaNoResults",6,(funcPtr) msiRdaNoResults},
   {"msiRdaCommit",0,(funcPtr) msiRdaCommit},
+  {"msiAW1",2,(funcPtr) msiAW1},
   {"msiRdaRollback",0,(funcPtr) msiRdaRollback},
   {"msiRenameLocalZone",2,(funcPtr) msiRenameLocalZone},
   {"msiRenameCollection",2,(funcPtr) msiRenameCollection},
