@@ -81,7 +81,7 @@ usage () {
 "Usage : ils [-ArlLv] dataObj|collection ... ",
 "Display data Objects and collections stored in irods.",
 "Options are:",
-" -A  ACL (access control list) format",
+" -A  ACL (access control list) and inheritance format",
 " -l  long format",
 " -L  very long format",
 " -r  recursive - show subcollections",

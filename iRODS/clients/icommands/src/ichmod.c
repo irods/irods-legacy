@@ -23,6 +23,7 @@ main(int argc, char **argv) {
     modAccessControlInp_t modAccessControl;
     char userName[NAME_LEN];
     char zoneName[NAME_LEN];
+    int doingInherit;
 
     optStr = "rhvV";
    
@@ -44,7 +45,7 @@ main(int argc, char **argv) {
 
     nArgs = argc - myRodsArgs.optind;
 
-    if (nArgs < 3) {usage(); exit(3);}
+    if (nArgs < 2) {usage(); exit(3);}
 
     status = getRodsEnv (&myEnv);
 
@@ -54,6 +55,12 @@ main(int argc, char **argv) {
     }
 
     optind=myRodsArgs.optind + 2;
+    doingInherit=0;
+    if (strcmp(argv[myRodsArgs.optind], ACCESS_INHERIT) == 0 ||
+	strcmp(argv[myRodsArgs.optind], ACCESS_NO_INHERIT) == 0 ) {
+       doingInherit=1;
+       optind=myRodsArgs.optind + 1;
+    }
 
     status = parseCmdLinePath (argc, argv, optind, &myEnv,
       UNKNOWN_OBJ_T, NO_INPUT_T, 0, &rodsPathInp);
@@ -79,11 +86,17 @@ main(int argc, char **argv) {
 
     modAccessControl.recursiveFlag = myRodsArgs.recursive;
     modAccessControl.accessLevel = argv[myRodsArgs.optind];
-    status = parseUserName(argv[myRodsArgs.optind+1], userName, zoneName);
-    if (status != 0) {
-       printf("Invalid iRODS user name format: %s\n",
-	      argv[myRodsArgs.optind+1]);
-       exit(7);
+    if (doingInherit) {
+       modAccessControl.userName = "";
+       modAccessControl.zone = "";
+    }
+    else {
+       status = parseUserName(argv[myRodsArgs.optind+1], userName, zoneName);
+       if (status != 0) {
+	  printf("Invalid iRODS user name format: %s\n",
+		 argv[myRodsArgs.optind+1]);
+	  exit(7);
+       }
     }
     modAccessControl.userName = userName;
     modAccessControl.zone = zoneName;
@@ -124,6 +137,8 @@ void
 usage () {
    char *msgs[]={
 "Usage: ichmod [-rhvV] null|read|write|own userOrGroup dataObj|Collection ...",
+" or    ichmod [-rhvV] inherit Collection ...",
+" or    ichmod [-rhvV] noinherit Collection ...",
 " -r  recursive - set the access level for all dataObjects",
 "             in the entered collection and subCollections under it",
 " -v  verbose",
@@ -150,6 +165,12 @@ usage () {
 "Access permissions on collections are not currently displayed via ils.",
 "As normally configured, all users can read all collections (i.e. see",
 "dataObj names within).",
+" ",
+"The inherit/noinherit form sets or clears the inheritance attribute of",
+"one or more collections.  When collections have this attribute set,",
+"new dataObjects and collections added to the collection inherit the",
+"access permisions (ACLs) of the collection.  'ils -A' displays ACLs",
+"and the inheritance status.",
 ""};
    int i;
    for (i=0;;i++) {
