@@ -380,6 +380,7 @@
 #define INVALID_OBJECT_TYPE                   -1105000
 #define NO_VALUES_FOUND                       -1106000
 #define NO_COLUMN_NAME_FOUND                  -1107000
+#define BREAK_ACTION_ENCOUNTERED_ERR          -1108000
 
 /* 1,600,000 to 1,700,000  - PHP scripting error */
 #define PHP_EXEC_SCRIPT_ERR                   -1600000
