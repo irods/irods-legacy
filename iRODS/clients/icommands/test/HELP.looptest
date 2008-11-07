@@ -262,8 +262,44 @@ irule -v -F ../test/ruleTest31.ir
 
 /** web services  - for NVO -given image cutout for an object given name 
      combination of two web services - 30 and 31  **/
-more        ../test/ruleTest31.ir
-irule -v -F ../test/ruleTest31.ir
+more        ../test/ruleTest32.ir
+irule -v -F ../test/ruleTest32.ir
+
+/** break in while loop test **/
+more        ../test/ruleTest33.ir
+irule -v -F ../test/ruleTest33.ir
+
+/**** approval flags ****/
+irm -rf ApprovalColl1
+iqstat
+imkdir ApprovalColl1
+iput ../test/sample.email ApprovalColl1
+iput ../test/sample2.email ApprovalColl1
+imeta rmw -d ApprovalColl1/sample.email % %
+imeta rmw -d ApprovalColl1/sample2.email % %
+   (the above two rmw are needed as one of the rules
+    automatically extracts metadata from files ending
+    with *.email extension)
+imeta ls -C  ApprovalColl1
+imeta ls -d ApprovalColl1/sample.email
+imeta ls -d ApprovalColl1/sample2.email
+iqstat
+irule -v -F ../rulegen/approvalFlagA.ir
+irule -v -F ../rulegen/approvalFlagB.ir
+iqstat -l
+
+
+imeta add -C ApprovalColl1 AFlag 1
+<wait>
+ils -l ApprovalColl1
+imeta ls -C  ApprovalColl1
+imeta ls -d ApprovalColl1/sample.email
+imeta ls -d ApprovalColl1/sample2.email
+iqstat
+iqdel xxxx
+iqdel xxxx
+
+
 
 
 
