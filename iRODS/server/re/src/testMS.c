@@ -75,3 +75,20 @@ print_uoi(userInfo_t *uoi)
   return(0);
 }
 
+int msiAW1(msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei)
+{
+  char *In;
+  char  *Out2;
+  int i;
+
+  In  = (char *) mPIn->inOutStruct;
+
+  Out2 = (char *) mPOut2->inOutStruct;
+
+  rodsLog (LOG_NOTICE,"ALPHA: ------>  In:%s\n", In);
+  mPOut2->type = strdup(STR_MS_T);
+  mPOut2->inOutStruct = strdup("Microservice_1");
+  return(0);
+
+}
+
