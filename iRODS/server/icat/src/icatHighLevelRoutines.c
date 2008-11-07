@@ -488,6 +488,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    char dataSizeNum[MAX_NAME_LEN];
    char dataStatusNum[MAX_NAME_LEN];
    int status;
+   int inheritFlag;
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj");
    if (!icss.status) {
@@ -509,10 +510,12 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
 			   logicalDirName, logicalFileName, '/');
 
 
-   /* Check that collection exists and user has write permission */
-   iVal = cmlCheckDir(logicalDirName, rsComm->clientUser.userName,
+   /* Check that collection exists and user has write permission. 
+      At the same time, also get the inherit flag */
+   iVal = cmlCheckDirAndGetInheritFlag(logicalDirName, 
+		      rsComm->clientUser.userName,
 		      rsComm->clientUser.rodsZone, 
-		      ACCESS_MODIFY_OBJECT, &icss);
+		      ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
    if (iVal < 0) {
       int i;
       char errMsg[105];
@@ -580,23 +583,45 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
       return(status);
    }
 
-   cllBindVars[0]=dataIdNum;
-   cllBindVars[1]=rsComm->clientUser.userName;
-   cllBindVars[2]=rsComm->clientUser.rodsZone;
-   cllBindVars[3]=ACCESS_OWN;
-   cllBindVars[4]=myTime;
-   cllBindVars[5]=myTime;
-   cllBindVarCount=6;
-   if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 7");
-   status =  cmlExecuteNoAnswerSql(
+   if (inheritFlag) {
+      /* If inherit is set (sticky bit), then add access rows for this
+         dataobject that match those of the parent collection */
+      cllBindVars[0]=dataIdNum;
+      cllBindVars[1]=myTime;
+      cllBindVars[2]=myTime;
+      cllBindVars[3]=collIdNum;
+      cllBindVarCount=4;
+      if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 7");
+      status =  cmlExecuteNoAnswerSql(
+				   "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts) (select ?, user_id, access_type_id, ?, ? from r_objt_access where object_id = ?)",
+				   &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlRegDataObj cmlExecuteNoAnswerSql insert access failure %d",
+	      status);
+	 _rollback("chlRegDataObj");
+	 return(status);
+      }
+   }
+   else {
+      cllBindVars[0]=dataIdNum;
+      cllBindVars[1]=rsComm->clientUser.userName;
+      cllBindVars[2]=rsComm->clientUser.rodsZone;
+      cllBindVars[3]=ACCESS_OWN;
+      cllBindVars[4]=myTime;
+      cllBindVars[5]=myTime;
+      cllBindVarCount=6;
+      if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 8");
+      status =  cmlExecuteNoAnswerSql(
 				   "insert into r_objt_access values (?, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 				   &icss);
-   if (status != 0) {
-      rodsLog(LOG_NOTICE,
-	      "chlRegDataObj cmlExecuteNoAnswerSql insert access failure %d",
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlRegDataObj cmlExecuteNoAnswerSql insert access failure %d",
 	      status);
-      _rollback("chlRegDataObj");
-      return(status);
+	 _rollback("chlRegDataObj");
+	 return(status);
+      }
    }
 
    status = cmlAudit3(AU_REGISTER_DATA_OBJ, dataIdNum,
@@ -1795,6 +1820,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    char currStr2[MAX_SQL_SIZE];
    rodsLong_t status;
    char tSQL[MAX_SQL_SIZE];
+   int inheritFlag;
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegColl");
 
@@ -1811,12 +1837,12 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    }
 
    /* Check that the parent collection exists and user has write permission,
-      and get the collectionID */
+      and get the collectionID.  Also get the inherit flag */
    if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 1 ");
-   status = cmlCheckDir(logicalParentDirName, 
-			rsComm->clientUser.userName, 
-			rsComm->clientUser.rodsZone, 
-			ACCESS_MODIFY_OBJECT, &icss);
+   status = cmlCheckDirAndGetInheritFlag(logicalParentDirName, 
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone, 
+		      ACCESS_MODIFY_OBJECT, &inheritFlag, &icss);
    if (status < 0) {
       int i;
       char errMsg[105];
@@ -1888,16 +1914,42 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    cllCurrentValueString("R_ObjectID", currStr, MAX_NAME_LEN);
    snprintf(currStr2, MAX_SQL_SIZE, " %s ", currStr);
 
-   cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName,
-   cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone,
-   cllBindVars[cllBindVarCount++]=ACCESS_OWN;
-   cllBindVars[cllBindVarCount++]=myTime;
-   cllBindVars[cllBindVarCount++]=myTime;
-   snprintf(tSQL, MAX_SQL_SIZE, 
+   if (inheritFlag) {
+      /* If inherit is set (sticky bit), then add access rows for this
+         collection that match those of the parent collection */
+      cllBindVars[0]=myTime;
+      cllBindVars[1]=myTime;
+      cllBindVars[2]=collIdNum;
+      cllBindVarCount=3;
+      if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 4");
+      snprintf(tSQL, MAX_SQL_SIZE, 
+	       "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts) (select %s, user_id, access_type_id, ?, ? from r_objt_access where object_id = ?)",
+	       currStr2);
+      status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+
+      if (status == 0) {
+	 if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 5");
+	 cllBindVars[cllBindVarCount++]="1";
+	 cllBindVars[cllBindVarCount++]=myTime;
+	 cllBindVars[cllBindVarCount++]=collIdNum;
+	 snprintf(tSQL, MAX_SQL_SIZE, 
+		 "update r_coll_main set coll_inheritance=?, modify_ts=? where coll_id=%s",
+		  currStr2);
+	 status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+      }
+   }
+   else {
+      cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+      cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone;
+      cllBindVars[cllBindVarCount++]=ACCESS_OWN;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=myTime;
+      snprintf(tSQL, MAX_SQL_SIZE, 
 	    "insert into r_objt_access values (%s, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 	    currStr2);
-   if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 4");
-   status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+      if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 6");
+      status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+   }
    if (status != 0) {
       rodsLog(LOG_NOTICE,
 	      "chlRegColl cmlExecuteNoAnswerSql(insert access) failure %d",
@@ -2844,7 +2896,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
 	 return(status);
       }
-      _rollback("_chlDelColl");
+      _rollback("_delColl");
       return(status);
    }
    snprintf(parentCollIdNum, MAX_NAME_LEN, "%lld", status);
@@ -2880,7 +2932,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "_delColl cmlExecuteNoAnswerSql delete failure %d",
 	      status);
-      _rollback("_chlDelColl");
+      _rollback("_delColl");
    }
 
    /* remove any access rows */
@@ -2893,7 +2945,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "_delColl cmlExecuteNoAnswerSql delete access failure %d",
 	      status);
-      _rollback("_chlDelColl");
+      _rollback("_delColl");
    }
 
 
@@ -2908,7 +2960,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlModColl cmlAudit3 failure %d",
 	      status);
-      _rollback("_chlDelColl");
+      _rollback("_delColl");
       return(status);
    }
 
@@ -4977,6 +5029,88 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
    return(status);
 }
 
+/* Internal routine to modify inheritance */
+/* inheritFlag =1 to set, 2 to remove */
+int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *pathName) {
+   rodsLong_t status;
+   char myTime[50];
+   char newValue[10];
+   char pathStart[MAX_NAME_LEN];
+   int len;
+   char pathStartLen[20];
+   char auditStr[30];
+
+   if (recursiveFlag==0) {
+      strcpy(auditStr, "inheritance non-recursive ");
+   }
+   else {
+      strcpy(auditStr, "inheritance recursive ");
+   }
+
+   if (inheritFlag==1) {
+      newValue[0]='1';
+      newValue[1]='\0';
+   }
+   else {
+      newValue[0]='0';
+      newValue[1]='\0';
+   }
+   strcat(auditStr, newValue);
+
+   getNowStr(myTime);
+
+   /* non-Recursive mode */
+   if (recursiveFlag==0) {
+
+      if (logSQL) rodsLog(LOG_SQL, "_modInheritance SQL 1");
+
+      cllBindVars[cllBindVarCount++]=newValue;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=collIdStr;
+      status =  cmlExecuteNoAnswerSql(
+	      "update r_coll_main set coll_inheritance=?, modify_ts=? where coll_id=?",
+	      &icss);
+   }
+   else {
+   /* Recursive mode */
+
+      snprintf(pathStart, MAX_NAME_LEN, "%s/", pathName);
+      len = strlen(pathStart);
+      snprintf(pathStartLen, 10, "%d", len);
+
+      cllBindVars[cllBindVarCount++]=newValue;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=pathName;
+      cllBindVars[cllBindVarCount++]=pathStartLen;
+      cllBindVars[cllBindVarCount++]=pathStart;
+      if (logSQL) rodsLog(LOG_SQL, "_modInheritance SQL 2");
+      status =  cmlExecuteNoAnswerSql(
+	      "update r_coll_main set coll_inheritance=?, modify_ts=? where coll_name = ? or substr(coll_name,1,?) = ?",
+		 &icss);
+   }
+   if (status) {
+      _rollback("_modInheritance");
+      return(status);
+   }
+
+   /* Audit */
+   status = cmlAudit5(AU_MOD_ACCESS_CONTROL_COLL,
+		      collIdStr,
+		      "0",
+		      auditStr,
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "_modInheritance cmlAudit5 failure %d",
+	      status);
+      _rollback("_modInheritance");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   return(status);
+}
+
 /* 
  * chlModAccessControl - Modify the Access Control information
  *         of an existing dataObj or collection.
@@ -5000,6 +5134,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    char pathStart[MAX_NAME_LEN];
    int len;
    char pathStartLen[20];
+   int inheritFlag=0;
 
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl");
 
@@ -5007,6 +5142,12 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    else if (strcmp(accessLevel,AP_READ)==0) {myAccessLev=ACCESS_READ_OBJECT;}
    else if (strcmp(accessLevel,AP_WRITE)==0){myAccessLev=ACCESS_MODIFY_OBJECT;}
    else if (strcmp(accessLevel,AP_OWN)==0) {myAccessLev=ACCESS_OWN;}
+   else if (strcmp(accessLevel,ACCESS_INHERIT)==0) {
+      inheritFlag=1;
+   }
+   else if (strcmp(accessLevel,ACCESS_NO_INHERIT)==0) {
+      inheritFlag=2;
+   }
    else {
       int i;
       char errMsg[105];
@@ -5030,6 +5171,15 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 			 &icss);
    if (status1 >= 0) {
       snprintf(collIdStr, MAX_NAME_LEN, "%lld", status1);
+   }
+
+   if (status1 < 0 && inheritFlag!=0) {
+      int i;
+      char errMsg[105];
+      snprintf(errMsg, 100, "access level '%s' is valid only for collections",
+	       accessLevel);
+      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      return(CAT_INVALID_ARGUMENT);
    }
 
    /* Not a collection with access, so see if the input path dataObj 
@@ -5088,6 +5238,12 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	    return(status2);
 	 }
       }
+   }
+
+   /* Doing inheritance */
+   if (inheritFlag!=0) {
+      status = _modInheritance(inheritFlag, recursiveFlag, collIdStr, pathName);
+      return(status);
    }
 
    /* Check that the receiving user exists and if so get the userId */

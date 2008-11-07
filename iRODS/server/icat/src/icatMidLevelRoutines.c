@@ -646,6 +646,64 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
 
 }
 
+
+/*
+  Check that a collection exists and user has 'accessLevel' permission.
+  Return code is either an iRODS error code (< 0) or the collectionId.
+  While at it, get the inheritance flag.
+*/
+rodsLong_t
+cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
+			      char *accessLevel, int *inheritFlag,
+		 icatSessionStruct *icss)
+{
+   int status;
+   rodsLong_t iVal;
+
+   int cValSize[2];
+   char *cVal[3];
+   char cValStr1[MAX_INTEGER_SIZE+10];
+   char cValStr2[MAX_INTEGER_SIZE+10];
+
+   cVal[0]=cValStr1;
+   cVal[1]=cValStr2;
+   cValSize[0] = MAX_INTEGER_SIZE;
+   cValSize[1] = MAX_INTEGER_SIZE;
+
+   *inheritFlag = 0;
+   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 ");
+
+   status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss);
+   if (status == 2) {
+      if (*cVal[0]=='\0') {
+	 return(CAT_NO_ROWS_FOUND);
+      }
+      iVal = strtoll(*cVal, NULL, 0);
+      rodsLog(LOG_ERROR, "test inherit:%s:", cValStr2);
+      if (cValStr2[0]=='1') *inheritFlag = 1;
+      status = 0;
+   }
+
+   if (status) { 
+      /* There was an error, so do another sql to see which 
+         of the two likely cases is problem. */
+
+      if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 2 ");
+
+      status = cmlGetIntegerValueFromSql(
+		 "select coll_id from R_COLL_MAIN where coll_name=?",
+		 &iVal, dirName, 0, 0, 0, 0, icss);
+      if (status) {
+	 return(CAT_UNKNOWN_COLLECTION);
+      }
+      return (CAT_NO_ACCESS_PERMISSION);
+   }
+
+   return(iVal);
+
+}
+
+
 /*
   Check that a collection exists and user has 'accessLevel' permission.
   Return code is either an iRODS error code (< 0) or the collectionId.
