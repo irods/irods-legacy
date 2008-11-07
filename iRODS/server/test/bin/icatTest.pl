@@ -29,6 +29,8 @@ $D3B="direct003/suB";
 $D3C="direct003/suA";
 $D3D="direct003/subAD";
 $D3E="direct003/subE";
+$D4="directory04";
+$D4A="directory04/sub1";
 
 $U2="u2";
 $U3="u3";
@@ -148,6 +150,16 @@ runCmd(0, "iput -rf  testIput_RF_repeat");
 runCmd(0, "iput -rf  testIput_RF_repeat");
 runCmd(0, "irm -rf testIput_RF_repeat");
 runCmd(0, "rm -rf testIput_RF_repeat");
+
+# Basic inheritance tests (for SQL checks)
+runCmd(1, "irm -rf $D4");
+runCmd(0, "imkdir $D4");
+runCmd(0, "ichmod inherit $D4");
+runCmd(0, "iput $F1 $D4/$F1");
+runCmd(0, "imkdir $D4A");
+runCmd(0, "ils -A $D4");
+runCmd(0, "ichmod -r inherit $D4A");
+runCmd(0, "irm -rf $D4");
 
 # Token tests
 runCmd(0, "iadmin at user_type rodstest test");
