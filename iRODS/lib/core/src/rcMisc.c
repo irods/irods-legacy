@@ -2391,6 +2391,55 @@ getAttrNameFromAttrId(int cid)
   return(NULL);
 }
 
+int
+goodStrExpr(char *expr)
+{
+  int qcnt = 0;
+  int qqcnt = 0;
+  int bcnt = 0;
+  int i = 0;
+  int inq =  0;
+  int inqq =  0;
+  while(expr[i] != '\0') {
+    if (inq) {
+      if (expr[i] == '\'') { inq--; qcnt++;}
+    }
+    else if (inqq) {
+      if (expr[i] == '"') { inqq--; qqcnt++;}
+    }
+    else if (expr[i] == '\'') { inq++; qcnt++; }
+    else if (expr[i] == '"') { inqq++; qqcnt++; }
+    else if (expr[i] == '(') bcnt++;
+    else if (expr[i] == ')') 
+      if (bcnt > 0) bcnt--;
+    i++;
+  }
+  if (bcnt != 0 || qcnt % 2 != 0 || qqcnt % 2 != 0 )
+    return(-1);
+  return(0);
+
+}
+
+
+char *getCondFromString(char *t) 
+{
+   char *u;
+   char *s;
+   
+   s = t;
+
+   while ((u = strstr(s," and ")) != NULL ||
+         (u = strstr(s," AND ")) != NULL ){
+     *u = '\0';
+     if (goodStrExpr(t) == 0) {
+	*u = ' ';
+ 	return(u);
+     }
+     *u = ' ';
+     s = u+1;
+  }
+  return(NULL);
+}
 
 int
 fillGenQueryInpFromStrCond(char *str, genQueryInp_t *genQueryInp)
@@ -2444,8 +2493,11 @@ fillGenQueryInpFromStrCond(char *str, genQueryInp_t *genQueryInp)
     }
   }
   t = f + 6;
+/**** RAJA changed Jul 2, 2008 
   while ((u = strstr(t," and ")) != NULL ||
 	 (u = strstr(t," AND ")) != NULL ){
+***/
+  while ((u = getCondFromString(t)) != NULL) {
     *u = '\0';
     trimWS(t);
     if ((p = strchr(t, ' ')) == NULL)
