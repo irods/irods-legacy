@@ -383,6 +383,7 @@ rodsArguments_t *rodsArgs)
 
     if (rodsArgs->accessControl == True) {
        printCollAcl (conn, srcColl);
+       printCollInheritance (conn, srcColl);
     }
 
 
@@ -852,6 +853,40 @@ printCollAcl (rcComm_t *conn, char *collName)
     }
     
     printf ("\n");
+
+    freeGenQueryOut (&genQueryOut);
+
+    return (status);
+}
+
+int
+printCollInheritance (rcComm_t *conn, char *collName)
+{
+    genQueryOut_t *genQueryOut = NULL;
+    int status;
+    sqlResult_t *inheritResult;
+    char *inheritStr;
+
+    status = queryCollInheritance (conn, collName, &genQueryOut);
+
+    if (status < 0) {
+        return (status);
+    }
+
+    if ((inheritResult = getSqlResultByInx (genQueryOut, COL_COLL_INHERITANCE)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "printCollInheritance: getSqlResultByInx for COL_COLL_INHERITANCE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    inheritStr = &inheritResult->value[0];
+    printf ("        Inheritance - ");
+    if (*inheritStr=='1') {
+       printf("Enabled\n");
+    }
+    else {
+       printf("Disabled\n");
+    }
 
     freeGenQueryOut (&genQueryOut);
 

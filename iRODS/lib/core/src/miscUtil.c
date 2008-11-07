@@ -552,6 +552,40 @@ queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
 }
 
 int
+queryCollInheritance (rcComm_t *conn, char *collName, 
+		      genQueryOut_t **genQueryOut)
+{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *myGenQueryOut;
+    int status;
+    char tmpStr[MAX_NAME_LEN];
+
+    if (collName == NULL || genQueryOut == NULL) {
+        return (USER__NULL_INPUT_ERR);
+    }
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+    myGenQueryOut = *genQueryOut = 
+      (genQueryOut_t *) malloc (sizeof (genQueryOut_t));
+    memset (myGenQueryOut, 0, sizeof (genQueryOut_t));
+
+    clearGenQueryInp (&genQueryInp);
+
+    addInxIval (&genQueryInp.selectInp, COL_COLL_INHERITANCE, 1);
+
+    snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", collName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, tmpStr);
+
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rcGenQuery (conn, &genQueryInp, genQueryOut);
+
+    return (status);
+
+}
+
+int
 genQueryOutToCollRes (genQueryOut_t **genQueryOut, 
 collSqlResult_t *collSqlResult)
 {
