@@ -51,6 +51,9 @@
 #define ACCESS_CURATE               "curate"
 #define ACCESS_OWN                  "own"
 
+#define ACCESS_INHERIT              "inherit"
+#define ACCESS_NO_INHERIT           "noinherit"
+
 
 /* The following are the Auditing action values */
 
