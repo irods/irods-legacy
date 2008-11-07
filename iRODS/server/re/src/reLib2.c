@@ -57,6 +57,8 @@ executeRuleBody(char *action, char *ruleAction, char *ruleRecovery,
     if (j < 0) 
       break;
   }
+  if (j == BREAK_ACTION_ENCOUNTERED_ERR)
+    return(j);
   if (j == RETRY_WITHOUT_RECOVERY_ERR)
     return(j);
   if (j < 0) {
@@ -141,6 +143,8 @@ executeRuleBodyNew(char *action, char *ruleAction, char *ruleRecovery,
     if (j < 0) 
       break;
   }
+  if (j == BREAK_ACTION_ENCOUNTERED_ERR)
+    return(j);
   if (j == RETRY_WITHOUT_RECOVERY_ERR)
     return(j);
   if (j < 0) {
@@ -243,6 +247,8 @@ executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery,
     if (j < 0) 
       break;
   }
+  if (j == BREAK_ACTION_ENCOUNTERED_ERR)
+    return(j);
   if (j == RETRY_WITHOUT_RECOVERY_ERR)
     return(j);
   if (j < 0) {
