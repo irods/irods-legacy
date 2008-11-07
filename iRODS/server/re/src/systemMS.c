@@ -85,6 +85,8 @@ int whileExec(msParam_t* condition, msParam_t* whileBody,
       break;
     }    
     i = execMyRuleWithSaveFlag(ruleBody, inMsParamArray, rei, 0);
+    if (i == BREAK_ACTION_ENCOUNTERED_ERR) 
+      return(0);
     if (i != 0) 
       return(i);
     /*  RECOVERY OF OTHER EXECUTED BODY IS NOT DONE. HOW CAN WE DO THAT */
@@ -125,6 +127,8 @@ int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step,
     sprintf(ruleBody,"%s|%s",(char *) forBody->inOutStruct,
             (char *) recoverForBody->inOutStruct);
     i = execMyRuleWithSaveFlag(ruleBody, rei->msParamArray, rei, 0);
+    if (i == BREAK_ACTION_ENCOUNTERED_ERR) 
+      return(0);
     if (i != 0)
       return(i);
     /* strcpy(cond , condition->label); */
@@ -176,6 +180,10 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
 
 }
 
+int breakExec(ruleExecInfo_t *rei)
+{
+  return (BREAK_ACTION_ENCOUNTERED_ERR);
+}
 int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
 	      ruleExecInfo_t *rei)
 {
@@ -258,6 +266,8 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
        clearMsParamArray (list,1);
        free(list);
   ***/
+  if (i == BREAK_ACTION_ENCOUNTERED_ERR) 
+      return(0);
   if (i == NO_VALUES_FOUND)
     return(0);
   return(i);
