@@ -103,6 +103,7 @@ iteration_statement
 	| FOR '(' ass_expr_list ';' cond_expr ';'  ass_expr_list ')' statement
 	| IF '(' cond_expr ')' THEN statement 
 	| IF '(' cond_expr ')' THEN statement ELSE statement
+        | 'break' 
 	;
 or_list_statement_list 
         : ORON '(' cond_expr ')' statement  
