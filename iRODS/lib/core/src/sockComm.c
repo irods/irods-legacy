@@ -11,6 +11,9 @@
 #include "QUANTAnet_rbudpBase_c.h"
 #endif  /* RBUDP_TRANSFER */
 
+#ifdef windows_platform
+#include "irodsntutil.h"
+#endif
 
 #ifdef _WIN32
 #include <mmsystem.h>
