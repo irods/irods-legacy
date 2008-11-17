@@ -223,3 +223,8 @@ long long atoll(const char *str)
 {
 	return _atoi64(str);
 }
+
+void bzero(void *s, size_t n)
+{
+	memset((char *)s, 0, n);
+}
