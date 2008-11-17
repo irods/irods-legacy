@@ -59,9 +59,11 @@ typedef struct {
     int windowSize;
     int reconnectedSock;
     time_t reconnTime;
+#ifndef windows_platform
     pthread_t reconnThr;
     pthread_mutex_t lock;
     pthread_cond_t cond;
+#endif
     procState_t agentState;
     procState_t clientState;
     procState_t reconnThrState;
@@ -100,9 +102,12 @@ typedef struct {
     time_t reconnTime;
     time_t reconnTimeout;
 #endif
+
+#ifndef windows_platform
     pthread_t reconnThr;
     pthread_mutex_t lock;
     pthread_cond_t cond;
+#endif
     procState_t agentState;	
     procState_t clientState;
     procState_t reconnThrState;
@@ -164,6 +169,7 @@ int
 cliChkReconnAtReadStart (rcComm_t *conn);
 int
 cliChkReconnAtReadEnd (rcComm_t *conn);
+
 #ifdef  __cplusplus
 }
 #endif
