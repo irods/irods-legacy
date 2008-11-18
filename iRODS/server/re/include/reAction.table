@@ -58,13 +58,13 @@ int msiDeleteCollByAdmin(msParam_t *parColl, msParam_t *childName, ruleExecInfo_
 int msiDeleteUser(ruleExecInfo_t *rei);
 int msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei);
 int msiSendMail(msParam_t *toAddr, msParam_t *subjectLine, msParam_t *body, ruleExecInfo_t *rei);
-int admChangeCoreIRB(msParam_t *newF, ruleExecInfo_t *rei);
-int admShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
-int admShowDVM(msParam_t *bufP, ruleExecInfo_t *rei);
-int admShowFNM(msParam_t *bufP, ruleExecInfo_t *rei);
-int admAppendToTopOfCoreIRB(msParam_t *bufP, ruleExecInfo_t *rei);
-int admClearAppRuleStruct(ruleExecInfo_t *rei);
-int admAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
+int msiAdmChangeCoreIRB(msParam_t *newF, ruleExecInfo_t *rei);
+int msiAdmShowIRB(msParam_t *bufP, ruleExecInfo_t *rei);
+int msiAdmShowDVM(msParam_t *bufP, ruleExecInfo_t *rei);
+int msiAdmShowFNM(msParam_t *bufP, ruleExecInfo_t *rei);
+int msiAdmAppendToTopOfCoreIRB(msParam_t *bufP, ruleExecInfo_t *rei);
+int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei);
+int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
 			msParam_t *fnmFilesParam,  ruleExecInfo_t *rei);
 int msiGetObjType(msParam_t *objNameP, msParam_t *objTypeP,
 	      ruleExecInfo_t *rei);
@@ -172,13 +172,13 @@ microsdef_t MicrosTable[] = {
   {"msiDataObjCopy",4,(funcPtr) msiDataObjCopy},
   {"msiExtractNaraMetadata",0,(funcPtr) msiExtractNaraMetadata},
   {"msiSetMultiReplPerResc",0,(funcPtr) msiSetMultiReplPerResc},
-  {"admChangeCoreIRB",1,(funcPtr) admChangeCoreIRB},
-  {"admShowIRB",1,(funcPtr) admShowIRB},
-  {"admShowDVM",1,(funcPtr) admShowDVM},
-  {"admShowFNM",1,(funcPtr) admShowFNM},
-  {"admAppendToTopOfCoreIRB",1,(funcPtr) admAppendToTopOfCoreIRB},
-  {"admClearAppRuleStruct",0,(funcPtr) admClearAppRuleStruct},
-  {"admAddAppRuleStruct",3,(funcPtr) admAddAppRuleStruct},
+  {"msiAdmChangeCoreIRB",1,(funcPtr) msiAdmChangeCoreIRB},
+  {"msiAdmShowIRB",1,(funcPtr) msiAdmShowIRB},
+  {"msiAdmShowDVM",1,(funcPtr) msiAdmShowDVM},
+  {"msiAdmShowFNM",1,(funcPtr) msiAdmShowFNM},
+  {"msiAdmAppendToTopOfCoreIRB",1,(funcPtr) msiAdmAppendToTopOfCoreIRB},
+  {"msiAdmClearAppRuleStruct",0,(funcPtr) msiAdmClearAppRuleStruct},
+  {"msiAdmAddAppRuleStruct",3,(funcPtr) msiAdmAddAppRuleStruct},
   {"msiGetObjType",2,(funcPtr) msiGetObjType},
   {"msiAssociateKeyValuePairsToObj",3,(funcPtr) msiAssociateKeyValuePairsToObj},
   {"msiExtractTemplateMDFromBuf",3,(funcPtr) msiExtractTemplateMDFromBuf},
