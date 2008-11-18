@@ -12,7 +12,7 @@
 #include "rsApiHandler.h"
 #include "rsIcatOpr.h"
 
-extern int admClearAppRuleStruct(ruleExecInfo_t *rei);
+extern int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei);
 
 int usage (char *prog);
 
@@ -226,7 +226,7 @@ chkAndResetRule (rsComm_t *rsComm)
 	  rulesFileName);
 	CoreIrbTimeStamp = (uint) statbuf.st_mtime;
 	rei.rsComm = rsComm;
-	admClearAppRuleStruct (&rei);
+	msiAdmClearAppRuleStruct (&rei);
 	status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
         if (status < 0) {
             rodsLog (LOG_ERROR,
