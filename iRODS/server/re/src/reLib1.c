@@ -175,6 +175,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   }
   makeAction(tmpStr,action, args,argc, MAX_ACTION_SIZE);
   i = applyRule(tmpStr, inMsParamArray, rei, reiSaveFlag);
+#if 0
   /* RAJA ADDED Jul 14, 2008 to get back the changed args * /
   if (i == 0) {
     for (i = 0; i < argc ; i++) {
@@ -185,6 +186,7 @@ applyRuleArgPA(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
     i = 0;
   }
   /* RAJA ADDED Jul 14, 2008 to get back the changed args */
+#endif
   if (pFlag == 1)
     free(inMsParamArray);
   return(i);
