@@ -13,7 +13,7 @@
 
 
 int
-admChangeCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
+msiAdmChangeCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
 {
   /*  newFileNameParam contains the file name of the new core.
       The file  should be in reConfigs  directory */
@@ -38,7 +38,7 @@ admChangeCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
   return(0);
 }
 
-int admAppendToTopOfCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
+int msiAdmAppendToTopOfCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
 {
   /*  newFileNameParam contains the file name to be added to top of  core.irb
       The file  should be in reConfigs  directory */
@@ -67,7 +67,7 @@ int admAppendToTopOfCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
 
 }
 
-int admShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei)
+int msiAdmShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei)
 {
   int i;
 
@@ -96,7 +96,7 @@ int _admShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleVa
   return(0);
 }
 
-int admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei)
+int msiAdmShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei)
 {
   int i;
 
@@ -124,7 +124,7 @@ int _admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleF
   return(0);
 
 }
-int admShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei)
+int msiAdmShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei)
 {
   int i;
 
@@ -210,7 +210,7 @@ int _admShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleSt
   return(0);
 }
 
-int admClearAppRuleStruct(ruleExecInfo_t *rei)
+int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei)
 {
 
   int i;
@@ -227,7 +227,7 @@ int admClearAppRuleStruct(ruleExecInfo_t *rei)
   return(i);
 
 }
-int admAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
+int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam, 
 			msParam_t *fnmFilesParam,  ruleExecInfo_t *rei)
 {
 

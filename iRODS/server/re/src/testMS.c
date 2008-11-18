@@ -79,7 +79,6 @@ int msiAW1(msParam_t* mPIn, msParam_t* mPOut2, ruleExecInfo_t *rei)
 {
   char *In;
   char  *Out2;
-  int i;
 
   In  = (char *) mPIn->inOutStruct;
 
