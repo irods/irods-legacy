@@ -95,6 +95,9 @@ main(int argc, char **argv)
     }
 
     /* get the new password */
+#ifdef windows_platform
+	 iRODSNtGetUserPasswdInputInConsole(newPw, "Enter your new iRODS password:", echoFlag);
+#else
     if (stat ("/bin/stty", &statbuf) == 0) {
 	 system("/bin/stty -echo");
 	 doStty=1;
@@ -113,6 +116,7 @@ main(int argc, char **argv)
        printf("\n");
     }
     newPw[len-1]='\0'; /* remove trailing \n */
+#endif
 
     strncpy(buf0, newPw, MAX_PASSWORD_LEN);
     len = strlen(newPw);
@@ -132,6 +136,12 @@ main(int argc, char **argv)
     userAdminInp.arg1 = myEnv.rodsUserName;
     userAdminInp.arg2 = "password";
     userAdminInp.arg3 = buf2;
+	userAdminInp.arg4 = "";
+	userAdminInp.arg5 = "";
+	userAdminInp.arg6 = "";
+	userAdminInp.arg7 = "";
+	userAdminInp.arg8 = "";
+	userAdminInp.arg9 = "";
 
     status = rcUserAdmin(Conn, &userAdminInp);
     if (status != 0) {
