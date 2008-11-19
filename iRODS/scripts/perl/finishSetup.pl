@@ -2267,30 +2267,14 @@ sub ichown($$)
 {
 	my ($username,$directory) = @_;
 
-	# We'd like to check the ownership of the directory first, but
-	# currently there is no iCommand to do that.  In the future,
-	# 'ils -l' will probably report file and directory ownership,
-	# but currently it does not.  So, we go ahead and set the
-	# ownership anyway.  This won't hurt anything if it is redundant.
-
-	# In the current version of iRODS there is no good way
-	# to get ownership information about a directory.  So,
-	# we just run the command and watch for errors that
-	# indicate it was already set.
+	# The original author wanted to check the ownership of the
+	# directory first, but there was not iCommand to do that at
+	# the time (now, ils -A does it).  But it does no harm to just
+	# set it, even if it is redundant.
 	my ($status,$output) = run( "$ichmod own $username $directory" );
 	return 1 if ( $status == 0 );
 
-
-	if ( $output =~ /CAT_SQL_ERR/ )
-	{
-		# Well, currently this error means the directory
-		# is already properly owned.
-		printLog( "        Error ignored.  Directory probably already chowned.\n" );
-		printLog( "            ", $output );
-		return 2;
-	}
-
-	# Something more serious.
+	# An error.
 	printError( "\nInstall problem:\n" );
 	printError( "    iRODS command failed:\n" );
 	printError( "        Command:  $ichmod own $username $directory\n" );
