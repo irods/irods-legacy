@@ -5,11 +5,25 @@
 #include "eraUtil.h"
 
 
-
-/*
- * msiGetCollectionContentsReport()
- *
- */
+/**
+ * \fn msiGetCollectionContentsReport
+ * \author  Antoine de Torcy
+ * \date   2008-03-17
+ * \brief Returns the number of objects in a collection by data type
+ * \note This microservice returns the number of objects for each known data type in a collection, recursively.
+ *	The results are written to a KeyValPair_MS_T, with a keyword for each data type plus "unknown".
+ * \param[in] 
+ *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] 
+ *    inpParam2 (poorly named...) - A KeyValPair_MS_T containing the results.
+ *    outParam - an INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -138,10 +152,26 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 
 
 
-/*
- * msiGetCollectionSize()
- *
- */
+/**
+ * \fn msiGetCollectionSize
+ * \author  Antoine de Torcy
+ * \date   2008-10-31
+ * \brief Returns the object count and total disk usage of a collection
+ * \note This microservice returns the object count and total disk usage for all objects in a collection, recursively.
+ *	The results are written to a KeyValPair_MS_T whose keyword strings are "Size" and "Object Count".
+ *	Might be merged with msiGetCollectionContentsReport()...
+ * \param[in] 
+ *    collPath - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] 
+ *    outKVPairs - A KeyValPair_MS_T containing the results.
+ *    status - an INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *status, ruleExecInfo_t *rei)
 {
