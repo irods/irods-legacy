@@ -7,14 +7,25 @@
 
 
 
-/*
- * Recursively copies a collection into another collection.
- * Data object and collection metadata AVUs are also copied.
- * inpParam1 - a STR_MS_T containing the destination collection path.
- * inpParam2 - a STR_MS_T containing the source collection path.
- * outParam - a INT_MS_T containing the status.
- *
- */
+/**
+ * \fn msiRecursiveCollCopy
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Copies a collection and its contents recursively
+ * \note This microservice copies a collection and its contents recursively.
+ *	Collection and data object metadata AVUs are also copied over to the new objects and collections.
+ * \param[in] 
+ *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the destination collection.
+ *    inpParam2 - A CollInp_MS_T or a STR_MS_T with the irods path of the source collection.
+ * \param[out] 
+ *    outParam - An INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiRecursiveCollCopy(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -74,14 +85,25 @@ msiRecursiveCollCopy(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outP
 
 
 
-/*
- * Copies metadata AVUs from one iRODS object to another one.
- * Both the source and destination object can be either a file,
- * a collection, a user or a resource independently of each other.
- * inpParam1 is treated as the destination object.
- * inpParam2 is treated as the source object.
- *
- */
+/**
+ * \fn msiCopyAVUMetadata
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Copies metadata triplets from an iRODS object to another one
+ * \note This microservice copies metadata triplets from an iRODS object to another one.
+ *	The source and destination can be a data object or a collection, independently.
+ * \param[in] 
+ *    inpParam1 - A STR_MS_T with the irods path of the source object.
+ *    inpParam2 - A STR_MS_T with the irods path of the destination object.
+ * \param[out] 
+ *    outParam - An INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -120,13 +142,27 @@ msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPar
 
 
 
-/*
- * Recursively exports user defined metadata attributes (AVUs) for
- * a collection and all collections and data objects in this collection.
- * The output is written to a bytesBuf_t buffer in pipe separated format, one
- * line per attribute as in the example below:
- * /tempZone/home/testuser/myFile|myAttr|myVal|myUnits
- */
+/**
+ * \fn msiExportRecursiveCollMeta
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Exports metadata AVU triplets for a collection and its contents
+ * \note This microservice recursively exports user defined metadata attributes (AVUs) for
+ *	a collection and all collections and data objects in this collection.
+ *	The output is written to a bytesBuf_t buffer in pipe separated format, one
+ *	line per attribute as in the example below:
+ *	/tempZone/home/testuser/myFile|myAttr|myVal|myUnits
+ * \param[in] 
+ *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] 
+ *    outParam - A BUF_LEN_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -283,11 +319,23 @@ msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 
 
 
-/*
- * Gets metadata AVUs for a given file.
- * Writes results to outParam in XML format.
- *
- */
+/**
+ * \fn msiGetDataObjAVUs
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Retrieves metadata AVU triplets for a data object
+ * \note Retrieves metadata AVU triplets for a data object and returns them as an XML file.
+ * \param[in] 
+ *    inpParam1 - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ * \param[out] 
+ *    outParam - A BUF_LEN_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -418,11 +466,24 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 
 
-/*
- * Gets metadata AVUs for a data object (file).
- * Writes results to outParam in pipe-separated (Chien-Yi's) format.
- *
- */
+/**
+ * \fn msiGetDataObjPSmeta
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Retrieves metadata AVU triplets for a data object
+ * \note Retrieves metadata AVU triplets for a data object. Similar to msiGetDataObjAVUs
+ *	except that the results are returned in a pipe separated format.
+ * \param[in] 
+ *    inpParam1 - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ * \param[out] 
+ *    outParam - A BUF_LEN_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -470,10 +531,23 @@ msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *re
 
 
 
-/*
- * Gets metadata AVUs for a collection.
- * Writes results to outParam in pipe-separated (Chien-Yi's) format.
- */
+/**
+ * \fn msiGetCollectionPSmeta
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Retrieves metadata AVU triplets for a collection
+ * \note Retrieves metadata AVU triplets for a collection and returns the results in a pipe separated format.
+ * \param[in] 
+ *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] 
+ *    outParam - A BUF_LEN_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -521,10 +595,36 @@ msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t 
 
 
 
-/*
- * msiLoadMetadataFromDataObj()
+/**
+ * \fn msiLoadMetadataFromDataObj
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Parses an iRods object for new metadata AVUs
+ * \note Parses an iRods object (file) for new metadata AVUs and adds them to the ICAT.
+ *	The metadata file is read as a text file and must contain one AVU per line.
+ *	See example below:
  *
- */
+ *	C-/tempZone/home/antoine/testColl |CollAttr000 |CollVal00 |CollUnits00
+ *	/tempZone/home/antoine/testColl/file00.txt |myAttr000 |myVal001
+ *	/tempZone/home/antoine/testColl/file00.txt |myAttr001 |myVal001 |myUnits001
+ *	# Some comments
+ *	/tempZone/home/antoine/testColl/file01.txt |myAttr011 |myVal011
+ *	/tempZone/home/antoine/testColl/file01.txt |myAttr010 |myVal011
+ *
+ *	Collection paths must start with C-
+ *	Units in AVUs are optional
+ *	Lines starting with # won't be parsed
+ * \param[in] 
+ *    inpParam1 - A DataObjInp_MS_T or a STR_MS_T with the irods path of the metadata file.
+ * \param[out] 
+ *    outParam - An INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiLoadMetadataFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
