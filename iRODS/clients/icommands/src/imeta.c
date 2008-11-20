@@ -16,6 +16,8 @@ char cwd[BIG_STR];
 int debug=0;
 int testMode=0; /* some some particular internal tests */
 
+char zoneArgument[MAX_NAME_LEN+2]="";
+
 rcComm_t *Conn;
 rodsEnv myEnv;
 
@@ -141,6 +143,11 @@ showDataObj(char *name, char *attrName, int wild)
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_D_DATA_PATH;
@@ -236,6 +243,11 @@ showColl(char *name, char *attrName, int wild)
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_COLL_COMMENTS;
@@ -318,6 +330,11 @@ showResc(char *name, char *attrName, int wild)
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_R_RESC_INFO;
@@ -417,6 +434,11 @@ showUser(char *name, char *attrName, int wild)
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
    if (status == CAT_NO_ROWS_FOUND) {
       i1a[0]=COL_USER_COMMENT;
@@ -513,6 +535,11 @@ int queryDataObj(char *cmdToken[]) {
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
 
    printGenQueryResults(Conn, status, genQueryOut, columnNames);
@@ -567,6 +594,11 @@ int queryCollection(char *attribute, char *op, char *value) {
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
 
    printGenQueryResults(Conn, status, genQueryOut, columnNames);
@@ -621,6 +653,11 @@ int queryResc(char *attribute, char *op, char *value) {
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
 
    printGenQueryResults(Conn, status, genQueryOut, columnNames);
@@ -677,6 +714,11 @@ int queryUser(char *attribute, char *op, char *value) {
    genQueryInp.maxRows=10;
    genQueryInp.continueInx=0;
    genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
 
    printGenQueryResults(Conn, status, genQueryOut, columnNames);
@@ -1052,7 +1094,7 @@ main(int argc, char **argv) {
 
    rodsLogLevel(LOG_ERROR);
 
-   status = parseCmdLineOpt (argc, argv, "vVhrcRCdu", 0, &myRodsArgs);
+   status = parseCmdLineOpt (argc, argv, "vVhrcRCduz:", 0, &myRodsArgs);
    if (status) {
       printf("Use -h for help.\n");
       exit(1);
@@ -1061,9 +1103,32 @@ main(int argc, char **argv) {
       usage("");
       exit(0);
    }
+
+   if (myRodsArgs.zone==True) {
+      strncpy(zoneArgument, myRodsArgs.zoneName, MAX_NAME_LEN);
+   }
+
    argOffset = myRodsArgs.optind;
-   if (argOffset > 1) argOffset=1; /* Ignore the parseCmdLineOpt parsing 
-				      as -d etc handled  below*/
+   if (argOffset > 1) {
+      if (argOffset > 2) {
+	 if (*argv[1]=='-' && *(argv[1]+1)=='z') {
+	    if (*(argv[1]+2)=='\0') {
+	       argOffset=3;  /* skip -z zone */
+	    }
+	    else {
+	       argOffset=2;  /* skip -zzone */
+	    }
+	 }
+	 else {
+	    argOffset=1; /* Ignore the parseCmdLineOpt parsing 
+			    as -d etc handled  below*/
+	 }
+      }
+      else {
+	 argOffset=1; /* Ignore the parseCmdLineOpt parsing 
+			 as -d etc handled  below*/
+      }
+   }
 
    status = getRodsEnv (&myEnv);
    if (status < 0) {
@@ -1093,13 +1158,13 @@ main(int argc, char **argv) {
    if (cmdToken[0]!=NULL && *cmdToken[0]=='-') {
       /* args were toggled, switch them back */
       if (cmdToken[1]!=NULL && *cmdToken[1]=='-') {
-	 cmdToken[0]=argv[3];
-	 cmdToken[1]=argv[1];
-	 cmdToken[2]=argv[2];
+	 cmdToken[0]=argv[argOffset+2];
+	 cmdToken[1]=argv[argOffset];
+	 cmdToken[2]=argv[argOffset+1];
       }
       else {
-	 cmdToken[0]=argv[2];
-	 cmdToken[1]=argv[1];
+	 cmdToken[0]=argv[argOffset+1];
+	 cmdToken[1]=argv[argOffset];
       }
    }
 #else
@@ -1112,8 +1177,8 @@ main(int argc, char **argv) {
    if (cmdToken[0]!=NULL && cmdToken[1]!=NULL && *cmdToken[1]=='-' &&
        cmdToken[2]!=NULL && cmdToken[3]!=NULL && *cmdToken[3]=='-') {
       /* two args */
-      cmdToken[2]=argv[4];
-      cmdToken[3]=argv[3];
+      cmdToken[2]=argv[argOffset+3];
+      cmdToken[3]=argv[argOffset+2];
    }
 
 #endif
@@ -1186,7 +1251,11 @@ Print the main usage/help information.
 int usageMain()
 {
    char *msgs[]={
-"Usage: imeta [-vVh] [command]", 
+"Usage: imeta [-vVhz] [command]", 
+" -v verbose",
+" -V Very verbose",
+" -z Zonename  work with the specified Zone",
+" -h This help",
 "Commands are:", 
 " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triplet)", 
 " rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)", 
@@ -1222,6 +1291,9 @@ int usageMain()
 " ",
 "Entered usernames are of the form username[#zone].  If #zone is not",
 "provided, the zone from your .irodsEnv is assumed.", 
+" ",
+"The appropriate zone (local or remote) is determined from the path names",
+"or via -z Zonename (for 'qu' and when working with resources).",
 " ",
 "Try 'help command' for more help on a specific command.",
 "'help qu' will explain additional options on the query.",
