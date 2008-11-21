@@ -275,6 +275,7 @@ icatGeneralQuerySetup() {
   sColumn(COL_AUDIT_MODIFY_TIME, "r_objt_audit", "modify_ts");
 
   sColumn(COL_COLL_USER_NAME, "r_coll_user_main", "user_name");
+  sColumn(COL_COLL_USER_ZONE, "r_coll_user_main", "zone_name");
 
   /* Define the Foreign Key links between tables */
   sFklink("r_coll_main", "r_data_main", "r_coll_main.coll_id = r_data_main.coll_id");
