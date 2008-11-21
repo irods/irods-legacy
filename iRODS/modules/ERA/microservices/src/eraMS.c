@@ -153,7 +153,7 @@ msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPar
  *	line per attribute as in the example below:
  *	/tempZone/home/testuser/myFile|myAttr|myVal|myUnits
  * \param[in] 
- *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ *    inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
  * \param[out] 
  *    outParam - A BUF_LEN_MS_T containing the results.
  * \return integer
@@ -326,7 +326,7 @@ msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
  * \brief Retrieves metadata AVU triplets for a data object
  * \note Retrieves metadata AVU triplets for a data object and returns them as an XML file.
  * \param[in] 
- *    inpParam1 - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
  * \param[out] 
  *    outParam - A BUF_LEN_MS_T containing the results.
  * \return integer
@@ -474,7 +474,7 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \note Retrieves metadata AVU triplets for a data object. Similar to msiGetDataObjAVUs
  *	except that the results are returned in a pipe separated format.
  * \param[in] 
- *    inpParam1 - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
  * \param[out] 
  *    outParam - A BUF_LEN_MS_T containing the results.
  * \return integer
@@ -538,7 +538,7 @@ msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *re
  * \brief Retrieves metadata AVU triplets for a collection
  * \note Retrieves metadata AVU triplets for a collection and returns the results in a pipe separated format.
  * \param[in] 
- *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ *    inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
  * \param[out] 
  *    outParam - A BUF_LEN_MS_T containing the results.
  * \return integer
@@ -615,7 +615,7 @@ msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t 
  *	Units in AVUs are optional
  *	Lines starting with # won't be parsed
  * \param[in] 
- *    inpParam1 - A DataObjInp_MS_T or a STR_MS_T with the irods path of the metadata file.
+ *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the metadata file.
  * \param[out] 
  *    outParam - An INT_MS_T containing the status.
  * \return integer
@@ -664,12 +664,24 @@ msiLoadMetadataFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 
 
 
-/*
- * msiGetDataObjAIP() - Gets the Archival Information Package of a given file.
- * Writes results to outParam in XML format. This may later
- * be broken down to separate microservices: one for
- * getting system metadata and the other one for user defined MD.
- */
+/**
+ * \fn msiGetDataObjAIP
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Gets the Archival Information Package of a data object.
+ * \note Gets the Archival Information Package of a data object.
+ * 	The results are returned as an XML file.
+ * \param[in] 
+ *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ * \param[out] 
+ *    outParam - A BUF_LEN_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -973,11 +985,24 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 
 
-/*
- * Gets ACL (Access Control List) for a data object.
- * Writes pipe-separated results to outParam.
- *
- */
+/**
+ * \fn msiGetDataObjACL
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Gets ACL (Access Control List) for a data object.
+ * \note Gets ACL (Access Control List) for a data object.
+ * 	The results are returned in a pipe-separated format.
+ * \param[in] 
+ *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ * \param[out] 
+ *    outParam - A BUF_LEN_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1023,11 +1048,25 @@ msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 
 
-/*
- * Gets ACL (Access Control List) for a collection.
- * Writes pipe-separated results to outParam.
- *
- */
+/**
+ * \fn msiGetCollectionACL
+ * \author  Antoine de Torcy
+ * \date   2007-09-26
+ * \brief Gets ACL (Access Control List) for a collection.
+ * \note Gets ACL (Access Control List) for a data object.
+ * 	The results are returned in a pipe-separated format.
+ * \param[in] 
+ *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ *    inpParam2 - Optional - A STR_MS_T. Set it to "recursive" to perform the operation recursively. 
+ * \param[out] 
+ *    outParam - A BUF_LEN_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
 int
 msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1060,7 +1099,7 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
 	}
 
 	
-	/* call getDataObjACL() */
+	/* call getCollectionACL() */
 	rei->status = getCollectionACL(outCollInp, inpParam2->inOutStruct, mybuf, rsComm);
 	
 
