@@ -251,5 +251,6 @@ primary ordering column.
 
 /* R_COLL_USER_MAIN (r_user_main for Collection information) */
 #define COL_COLL_USER_NAME    1300
+#define COL_COLL_USER_ZONE    1301
 
 #endif	/* RODS_GEN_QUERY_H */
