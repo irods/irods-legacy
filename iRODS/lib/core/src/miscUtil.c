@@ -491,6 +491,7 @@ queryDataObjAcl (rcComm_t *conn, char *dataId, genQueryOut_t **genQueryOut)
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
     addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, 1);
 
     snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", dataId);
@@ -532,6 +533,7 @@ queryCollAcl (rcComm_t *conn, char *collName, genQueryOut_t **genQueryOut)
     clearGenQueryInp (&genQueryInp);
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_USER_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_COLL_USER_ZONE, 1);
 
     addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, 1);
 

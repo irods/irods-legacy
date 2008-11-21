@@ -778,8 +778,8 @@ printDataAcl (rcComm_t *conn, char *dataId)
     genQueryOut_t *genQueryOut = NULL;
     int status;
     int i;
-    sqlResult_t *userName, *dataAccess;
-    char *userNameStr, *dataAccessStr;
+    sqlResult_t *userName, *userZone, *dataAccess;
+    char *userNameStr, *userZoneStr, *dataAccessStr;
 
     status = queryDataObjAcl (conn, dataId, &genQueryOut);
 
@@ -796,6 +796,12 @@ printDataAcl (rcComm_t *conn, char *dataId)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    if ((userZone = getSqlResultByInx (genQueryOut, COL_USER_ZONE)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "printDataAcl: getSqlResultByInx for COL_USER_ZONE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
     if ((dataAccess = getSqlResultByInx (genQueryOut, COL_DATA_ACCESS_NAME)) 
       == NULL) {
         rodsLog (LOG_ERROR,
@@ -805,8 +811,9 @@ printDataAcl (rcComm_t *conn, char *dataId)
 
     for (i = 0; i < genQueryOut->rowCnt; i++) {
 	userNameStr = &userName->value[userName->len * i];
+	userZoneStr = &userZone->value[userZone->len * i];
 	dataAccessStr = &dataAccess->value[dataAccess->len * i];
-	printf ("%s:%s   ", userNameStr, dataAccessStr);
+	printf ("%s#%s:%s   ", userNameStr, userZoneStr, dataAccessStr);
     }
     
     printf ("\n");
@@ -822,8 +829,8 @@ printCollAcl (rcComm_t *conn, char *collName)
     genQueryOut_t *genQueryOut = NULL;
     int status;
     int i;
-    sqlResult_t *userName, *dataAccess;
-    char *userNameStr, *dataAccessStr;
+    sqlResult_t *userName, *userZone, *dataAccess ;
+    char *userNameStr, *userZoneStr, *dataAccessStr;
 
     status = queryCollAcl (conn, collName, &genQueryOut);
 
@@ -839,6 +846,11 @@ printCollAcl (rcComm_t *conn, char *collName)
           "printCollAcl: getSqlResultByInx for COL_COLL_USER_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
+    if ((userZone = getSqlResultByInx (genQueryOut, COL_COLL_USER_ZONE)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "printCollAcl: getSqlResultByInx for COL_COLL_USER_ZONE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
 
     if ((dataAccess = getSqlResultByInx (genQueryOut, COL_COLL_ACCESS_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
@@ -848,8 +860,9 @@ printCollAcl (rcComm_t *conn, char *collName)
 
     for (i = 0; i < genQueryOut->rowCnt; i++) {
 	userNameStr = &userName->value[userName->len * i];
+	userZoneStr = &userZone->value[userZone->len * i];
 	dataAccessStr = &dataAccess->value[dataAccess->len * i];
-	printf ("%s:%s   ",  userNameStr, dataAccessStr);
+	printf ("%s#%s:%s   ",  userNameStr, userZoneStr, dataAccessStr);
     }
     
     printf ("\n");
