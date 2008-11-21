@@ -224,7 +224,7 @@ runCmd(0, "iput $F1 $D3D/$F1");
 runCmd(0, "iput $F1 $D3E/$F1");
 runCmd(0, "iput $F1 $D3E/$F2");
 runCmd(0, "ichmod -r read $U2 $D3");
-runCmd(0, "ils -Ar $D3 | grep $U2:read | wc -l");
+runCmd(0, "ils -Ar $D3 | grep $U2 | grep read | wc -l");
 $u2Lines = $cmdStdout;
 chomp($u2Lines);
 if ($u2Lines != 7) {
