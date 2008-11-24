@@ -131,7 +131,11 @@ usage ()
 "NOTE: To use the tar data type for bundling, the server must be linked with",
 "the libtar library. The link:",
 "    https://www.irods.org/index.php/Mounted_iRODS_Collection",
-"gives instructions for installing libtar.",
+"gives instructions for installing libtar. Please note that the current",
+"version of libtar 1.2.11 does not support tar file size larger than",
+"2 GBytes. We have made a mod to libtar 1.2.11 so that it can handle ",
+"files larger than 2 GBytes. This mod is only needed for building the irods",
+"server software. Please contact all@diceresearch.org for this mod.",  
 " ",
 
 " ",
