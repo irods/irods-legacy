@@ -30,6 +30,7 @@ MY_CFLAG += $(CCFLAGS)
 endif
 ifdef LDRFLAGS
 LDADD += $(LDRFLAGS)
+CL_LDADD += $(LDRFLAGS)
 endif
 
 
@@ -41,6 +42,7 @@ endif
 #
 ifdef CCMALLOC
 LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl
+CL_LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl
 endif
 
 
@@ -66,6 +68,7 @@ endif
 #
 MY_CFLAG+= -g
 LDADD+= -lm -lpthread
+CL_LDADD+= -lm -lpthread
 
 ifeq ($(OS_platform), solaris_pc_platform)
 OS_platform=solaris_platform
@@ -119,14 +122,17 @@ ifeq ($(ADDR_64BITS), 1)
 MY_CFLAG+=-xarch=v9
 endif
 LDADD+=-lnsl -lsocket -lm -lpthread
+CL_LDADD+=-lnsl -lsocket -lm -lpthread
 endif
 
 # Authorization
 ifdef GSI_AUTH
 ifeq ($(OS_platform), aix_platform)
 LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
+CL_LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS)
 else
 LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS) -z muldefs
+CL_LDADD+= $(LIB_GSI_AUTH) $(KRB_LIBS) -z muldefs
 endif
 endif
 
@@ -138,11 +144,16 @@ ifdef TAR_STRUCT_FILE
 MY_CFLAG+= -DTAR_STRUCT_FILE -I$(tarDir) -I$(tarDir)/listhash \
                   -I${tarDir}/lib \
                   -I${tarDir}/compat
-LDADD+=-L$(tarDir)/lib -ltar
 endif
 
 ifdef RBUDP_TRANSFER
 MY_CFLAG+= -DRBUDP_TRANSFER -I$(libCoreIncDir) -I$(libApiIncDir)        \
 		-I$(libMd5IncDir) -I$(libRbudpIncDir)
+endif
+
+# server specific LDADD
+
+ifdef TAR_STRUCT_FILE
+LDADD+=-L$(tarDir)/lib -ltar
 endif
 
