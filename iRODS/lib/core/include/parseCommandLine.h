@@ -59,6 +59,7 @@ typedef struct {
    char *optionString;
    int prompt;
    int query;
+   int rbudp;
    int recursive;
    int resource;
    char *resourceString;

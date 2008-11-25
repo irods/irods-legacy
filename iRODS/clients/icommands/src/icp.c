@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "dhfkKN:p:rR:TvVX:";
+    optStr = "QhfkKN:p:rR:TvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status) {
@@ -93,12 +93,12 @@ usage ()
    int i;
 
    char *msgs[]={
-"Usage : icp [-fkKrTvV] [-N numThreads] [-p physicalPath] [-R resource]", 
+"Usage : icp [-fkKQrTvV] [-N numThreads] [-p physicalPath] [-R resource]", 
 "-X restartFile] srcDataObj|srcColl ...  destDataObj|destColl",
 "icp copies an irods data-object (file) or collection (directory) to another",
 "data-object or collection.",  
 " ",
-"The -d option specifies the use of the RBUDP transfer mechanism which uses",
+"The -Q option specifies the use of the RBUDP transfer mechanism which uses",
 "the UDP protocol for data transfer. The UDP protocol is very efficient",
 "if the network is very robust with few packet losses. Two environment",
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
@@ -119,7 +119,7 @@ usage ()
 "sockets getting timed out by the firewall as reported by some users.",
 " ",
 "Options are:",
-" -d  use RBUDP (datagram) protocol for the data transfer",
+" -Q  use RBUDP (datagram) protocol for the data transfer",
 "-f force - write data-object even it exists already; overwrite it",
 "-k checksum - calculate a checksum on the data",
 "-K verify checksum - calculate and verify the checksum on the data",

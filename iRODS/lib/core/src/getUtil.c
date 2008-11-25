@@ -183,8 +183,8 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
     }
 
 #ifdef RBUDP_TRANSFER
-    if (rodsArgs->dataObjects == True) {
-        /* use -d for rbudp transfer */
+    if (rodsArgs->rbudp == True) {
+        /* use -Q for rbudp transfer */
         addKeyVal (&dataObjOprInp->condInput, RBUDP_TRANSFER_KW, "");
     }
 
@@ -200,7 +200,7 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         addKeyVal (&dataObjOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr);
     }
 #else   /* RBUDP_TRANSFER */
-    if (rodsArgs->dataObjects == True) {
+    if (rodsArgs->rbudp == True) {
         rodsLog (LOG_NOTICE,
           "initCondForGet: RBUDP_TRANSFER (-d) not supported");
     }

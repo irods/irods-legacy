@@ -185,6 +185,9 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
       case 'q':
          rodsArgs->query=True;
          break;
+      case 'Q':
+         rodsArgs->rbudp=True;
+         break;
       case 'r':
          rodsArgs->recursive=True;
          break;

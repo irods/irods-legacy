@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "hfKN:n:rdvVX:R:T";
+    optStr = "hfKN:n:rQvVX:R:T";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -87,11 +87,11 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage: iget [-fKrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage: iget [-fKQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection ... destLocalFile|destLocalDir",
-"Usage : iget [-fKUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection",
-"Usage : iget [-fKUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
@@ -108,7 +108,7 @@ usage () {
 "Note that the restart operation only works for uploading directories and",
 "the path input must be identical to the one that generated the restart file",
 " ",
-"The -d option specifies the use of the RBUDP transfer mechanism which uses",
+"The -Q option specifies the use of the RBUDP transfer mechanism which uses",
 "the UDP protocol for data transfer. The UDP protocol is very efficient",
 "if the network is very robust with few packet losses. Two environment",
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
@@ -131,7 +131,7 @@ usage () {
 " -r  recursive - retrieve subcollections",
 " -R  resource - the preferred resource",
 " -T  renew socket connection after 10 minutes",
-" -d  use RBUDP (datagram) protocol for the data transfer",
+" -Q  use RBUDP (datagram) protocol for the data transfer",
 " -v  verbose",
 " -V  Very verbose",
 "     restartFile input specifies a local file that contains the restart info.",

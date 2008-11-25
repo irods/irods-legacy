@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "aD:fhkKn:N:p:rR:dTvVX:";
+    optStr = "aD:fhkKn:N:p:rR:QTvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -86,10 +86,10 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-fkKrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-fkKQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-fkKTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-fkKQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -109,7 +109,7 @@ usage ()
 "if a copy in the specified resource does not already exist. The irepl",
 "command should be used to make a replica of an existing copy.", 
 " ",
-"The -d option specifies the use of the RBUDP transfer mechanism which uses",
+"The -Q option specifies the use of the RBUDP transfer mechanism which uses",
 "the UDP protocol for data transfer. The UDP protocol is very efficient",
 "if the network is very robust with few packet losses. Two environment",
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
@@ -129,10 +129,10 @@ usage ()
 " -N  numThreads - the number of thread to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.",
+" -Q  use RBUDP (datagram) protocol for the data transfer",
 " -R  resource - specifies the resource to store to. This can also be specified",
 "     in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",
-" -d  use RBUDP (datagram) protocol for the data transfer",
 " -T  renew socket connection after 10 minutes",
 " -v  verbose",
 " -V  Very verbose",
