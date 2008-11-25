@@ -1509,7 +1509,7 @@ char *outZoneType)
     genQueryOut_t *genQueryOut = NULL;
     int status;
     sqlResult_t *zoneType;
-    char *tmpStr;
+    char tmpStr[MAX_NAME_LEN];
 
     if (inZoneName == NULL || outZoneType == NULL)
         return (USER__NULL_INPUT_ERR);
