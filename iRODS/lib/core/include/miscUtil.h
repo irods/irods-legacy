@@ -210,6 +210,9 @@ int
 myChmod (char *inPath, uint dataMode);
 char *
 getZoneHintForGenQuery (genQueryInp_t *genQueryInp);
+int
+getZoneType (rcComm_t *conn, char *icatZone, char *inZoneName, 
+char *outZoneType);
 #ifdef  __cplusplus
 }
 #endif

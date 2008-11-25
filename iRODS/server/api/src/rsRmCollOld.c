@@ -463,15 +463,16 @@ rsMkTrashPath (rsComm_t *rsComm, char *objPath, char *trashPath)
 	return (USER_INPUT_PATH_ERR);
     }
      
-    /* skip "home/userName/ */
+    /* skip "home/userName/"  or "home/userName#" */
 
     if (strncmp (tmpStr, "home/", 5) == 0) {
         int nameLen; 
         tmpStr += 5;
         nameLen = strlen (rsComm->clientUser.userName);
         if (strncmp (tmpStr, rsComm->clientUser.userName, nameLen) == 0 &&
-	  *(tmpStr + nameLen) == '/') { 
-            tmpStr += (nameLen + 1);
+	  (*(tmpStr + nameLen) == '/' || *(tmpStr + nameLen) == '#')) { 
+            /* tmpStr += (nameLen + 1); */
+	    tmpStr = strchr (tmpStr, '/') + 1;
         }
     }
 
@@ -482,8 +483,15 @@ rsMkTrashPath (rsComm_t *rsComm, char *objPath, char *trashPath)
 
     /* add home/userName/ */
 
-    snprintf (trashPathPtr, MAX_NAME_LEN, "trash/home/%s/%s",  
-      rsComm->clientUser.userName, tmpStr); 
+    if (rsComm->clientUser.authInfo.authFlag == REMOTE_USER_AUTH || 
+      rsComm->clientUser.authInfo.authFlag == REMOTE_PRIV_USER_AUTH) {
+	/* remote user */
+        snprintf (trashPathPtr, MAX_NAME_LEN, "trash/home/%s#%s/%s",  
+          rsComm->clientUser.userName, rsComm->clientUser.rodsZone, tmpStr); 
+    } else {
+        snprintf (trashPathPtr, MAX_NAME_LEN, "trash/home/%s/%s",  
+          rsComm->clientUser.userName, tmpStr); 
+    }
 
     if ((status = splitPathByKey (trashPath, destTrashColl, myFile, '/')) < 0) {
         rodsLog (LOG_ERROR,

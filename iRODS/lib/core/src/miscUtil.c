@@ -1498,3 +1498,50 @@ getZoneHintForGenQuery (genQueryInp_t *genQueryInp)
     return NULL; 
 }
 
+/* getZoneType - get the ZoneType of inZoneName. icatZone is the icat
+ * to query.
+ */ 
+int
+getZoneType (rcComm_t *conn, char *icatZone, char *inZoneName,
+char *outZoneType)
+{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int status;
+    sqlResult_t *zoneType;
+    char *tmpStr;
+
+    if (inZoneName == NULL || outZoneType == NULL)
+        return (USER__NULL_INPUT_ERR);
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+    if (icatZone != NULL && strlen (icatZone) > 0) {
+        addKeyVal (&genQueryInp.condInput, ZONE_KW, icatZone);
+    }
+    addInxIval (&genQueryInp.selectInp, COL_ZONE_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_ZONE_TYPE, 1);
+
+    snprintf (tmpStr, MAX_NAME_LEN, " = '%s'", inZoneName);
+
+    addInxVal (&genQueryInp.sqlCondInp, COL_ZONE_NAME, tmpStr);
+
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
+
+    if (status < 0)
+        return status;
+
+    if ((zoneType = getSqlResultByInx (genQueryOut, COL_ZONE_TYPE)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getZoneInfo: getSqlResultByInx for COL_ZONE_TYPE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    rstrcpy (outZoneType, zoneType->value, MAX_NAME_LEN);
+
+    freeGenQueryOut (&genQueryOut);
+
+    return 0;
+}
+

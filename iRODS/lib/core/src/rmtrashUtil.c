@@ -29,6 +29,7 @@ rodsPathInp_t *rodsPathInp)
     if (rodsPathInp->numSrc <= 0) {
 	char trashPath[MAX_NAME_LEN];
 	char *myZoneName;
+	char myZoneType[MAX_NAME_LEN];
 
 	if (myRodsArgs->zoneName != NULL) {
 	    myZoneName = myRodsArgs->zoneName;
@@ -44,8 +45,21 @@ rodsPathInp_t *rodsPathInp)
                   myZoneName);
 	    }
 	} else {
-            snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home/%s",
-              myZoneName, conn->clientUser.userName);
+	    int remoteFlag = 0;
+	    status = getZoneType (conn, myZoneName, conn->clientUser.rodsZone, 
+	      myZoneType);
+	    if (status >= 0) {
+		if (strcmp (myZoneType, "remote") == 0) 
+		    remoteFlag = 1;
+	    }
+	    if (remoteFlag == 0) {
+                snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home/%s",
+                  myZoneName, conn->clientUser.userName);
+	    } else {
+		snprintf (trashPath, MAX_NAME_LEN, "/%s/trash/home/%s#%s",
+                  myZoneName, conn->clientUser.userName, 
+		    conn->clientUser.rodsZone);
+	    }
 	}
         addSrcInPath (rodsPathInp, trashPath);
 	rstrcpy (rodsPathInp->srcPath[0].outPath, trashPath, MAX_NAME_LEN);
