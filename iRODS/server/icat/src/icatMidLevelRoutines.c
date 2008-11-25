@@ -333,6 +333,7 @@ int cmlGetStringValueFromSql (char *sql,
 			   int cValSize,
                            char *bindVar1,
                            char *bindVar2,
+                           char *bindVar3,
 			   icatSessionStruct *icss)
 {
     int i;
@@ -343,7 +344,7 @@ int cmlGetStringValueFromSql (char *sql,
     iVals[0]=cValSize;
 
     i = cmlGetOneRowFromSqlBV (sql, cVals, iVals, 1, 
-			       bindVar1, bindVar2, 0, 0, 0, icss);
+			       bindVar1, bindVar2, bindVar3, 0, 0, icss);
     if (i == 1)
       return(0);
     else
@@ -357,12 +358,13 @@ int cmlGetStringValuesFromSql (char *sql,
 		           int numberOfStringsToGet,
                            char *bindVar1,
                            char *bindVar2,
+                           char *bindVar3,
 			   icatSessionStruct *icss)
 {
     int i;
 
     i = cmlGetOneRowFromSqlBV (sql, cVal, cValSize, numberOfStringsToGet,
-			       bindVar1, bindVar2, 0, 0, 0, icss);
+			       bindVar1, bindVar2, bindVar3, 0, 0, icss);
     if (i == numberOfStringsToGet)
       return(0);
     else
@@ -566,7 +568,7 @@ cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss) {
    snprintf(sql, STR_LEN, "select %s", nextStr);
 #endif
 
-   status = cmlGetStringValueFromSql (sql, seqStr, maxSeqStrLen, 0, 0, icss);
+   status = cmlGetStringValueFromSql (sql, seqStr, maxSeqStrLen, 0, 0, 0, icss);
    if (status < 0) {
       rodsLog(LOG_NOTICE, 
 	      "cmlGetNextSeqStr cmlGetStringValueFromSql failure %d", status);

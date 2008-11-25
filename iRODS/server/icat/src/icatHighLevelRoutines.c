@@ -215,7 +215,7 @@ getLocalZone()
       if (logSQL) rodsLog(LOG_SQL, "getLocalZone SQL 1 ");
       status = cmlGetStringValueFromSql(
 	   "select zone_name from R_ZONE_MAIN where zone_type_name=?",
-	   localZone, MAX_NAME_LEN, "local", 0, &icss);
+	   localZone, MAX_NAME_LEN, "local", 0, 0, &icss);
       if (status != 0) {
 	 _rollback("getLocalZone");
 	 rodsLog(LOG_NOTICE, "getLocalZone failure %d", status);
@@ -887,6 +887,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
                   30,
 		  dataObjNumber,
 		  replNumber,
+		  0,
 		  &icss);
 	    if (status) {
 	       i = addRErrorMsg (&rsComm->rError, 0, 
@@ -1405,7 +1406,7 @@ int chlDelResc(rsComm_t *rsComm,
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 2 ");
    status = cmlGetStringValueFromSql(
        "select resc_id from r_resc_main where resc_name=?",
-       rescId, MAX_NAME_LEN, rescInfo->rescName, 0, &icss);
+       rescId, MAX_NAME_LEN, rescInfo->rescName, 0, 0, &icss);
    if (status) {
       if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 int i;
@@ -1542,7 +1543,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 1 ");
    status = cmlGetStringValueFromSql(
             "select user_id from r_user_main where user_name=? and zone_name=?",
-	    iValStr, 200, userName2, zoneToUse, &icss);
+	    iValStr, 200, userName2, zoneToUse, 0, &icss);
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO ||
        status==CAT_NO_ROWS_FOUND) {
       int i;
@@ -2215,7 +2216,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 1 ");
    status = cmlGetStringValueFromSql(
        "select zone_id from r_zone_main where zone_name=?",
-       zoneId, MAX_NAME_LEN, zoneName, "", &icss);
+       zoneId, MAX_NAME_LEN, zoneName, "", 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
       return(status);
@@ -2363,7 +2364,7 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 2 ");
    status = cmlGetStringValueFromSql(
 	     "select zone_id from r_zone_main where zone_name=?",
-	     zoneId, MAX_NAME_LEN, newZoneName, "", &icss);
+	     zoneId, MAX_NAME_LEN, newZoneName, "", 0, &icss);
    if (status != CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
 
    getNowStr(myTime);
@@ -2502,7 +2503,7 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
 
    status = cmlGetStringValueFromSql(
        "select zone_type_name from r_zone_main where zone_name=?",
-       zoneType, MAX_NAME_LEN, zoneName, 0, &icss);
+       zoneType, MAX_NAME_LEN, zoneName, 0, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
       return(status);
@@ -3168,7 +3169,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 5");
    status = cmlGetStringValueFromSql(
 	    "select user_type_name from r_user_main where user_name=? and zone_name=?",
-	    userType, MAX_NAME_LEN, userName2, myUserZone, &icss);
+	    userType, MAX_NAME_LEN, userName2, myUserZone, 0, &icss);
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
@@ -3192,7 +3193,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 status = cmlGetStringValueFromSql(
 	       "select user_type_name from r_user_main where user_name=? and zone_name=?",
 	       userType, MAX_NAME_LEN, userName2,
-	       myUserZone, &icss);
+	       myUserZone, 0, &icss);
 
 	 if (status !=0) {
 	    if (status == CAT_NO_ROWS_FOUND) {
@@ -3242,12 +3243,13 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    if (logSQL) rodsLog(LOG_SQL, "chlMakeTempPw SQL 1 ");
 
    snprintf(tSQL, MAX_SQL_SIZE, 
-            "select rcat_password from r_user_password, r_user_main where user_name=? and r_user_main.user_id = r_user_password.user_id and pass_expiry_ts != '%d'",
+            "select rcat_password from r_user_password, r_user_main where user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id and pass_expiry_ts != '%d'",
 	    TEMP_PASSWORD_TIME);
 
    status = cmlGetStringValueFromSql(tSQL,
 	    password, MAX_PASSWORD_LEN, 
-	    rsComm->clientUser.userName, 0, &icss);
+	    rsComm->clientUser.userName, 
+            rsComm->clientUser.rodsZone, 0, &icss);
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
@@ -3340,9 +3342,11 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
 
    if (logSQL) rodsLog(LOG_SQL, "decodePw - SQL 1 ");
    status = cmlGetStringValueFromSql(
-	    "select rcat_password from r_user_password, r_user_main where user_name=? and r_user_main.user_id = r_user_password.user_id",
+	    "select rcat_password from r_user_password, r_user_main where user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id",
 	    password, MAX_PASSWORD_LEN, 
-	    rsComm->clientUser.userName, 0, &icss);
+	    rsComm->clientUser.userName, 
+            rsComm->clientUser.rodsZone,
+            0, &icss);
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
 	 status = CAT_INVALID_USER; /* Be a little more specific */
@@ -3527,7 +3531,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 7");
       i = cmlGetStringValueFromSql(
 	       "select r_user_password.user_id from r_user_password, r_user_main where r_user_main.user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id",
-	       userIdStr, MAX_NAME_LEN, userName2, zoneName, &icss);
+	       userIdStr, MAX_NAME_LEN, userName2, zoneName, 0, &icss);
       if (i != 0 && i !=CAT_NO_ROWS_FOUND) return(i);
       if (i == 0) {
 	 snprintf(tSQL, MAX_SQL_SIZE, form3);
@@ -3665,7 +3669,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 1 ");
    status = cmlGetStringValueFromSql(
             "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name !='rodsgroup'",
-	    userId, MAX_NAME_LEN, userName2, zoneToUse, &icss);
+	    userId, MAX_NAME_LEN, userName2, zoneToUse, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
 	 return(CAT_INVALID_USER);
@@ -3678,7 +3682,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 2");
    status = cmlGetStringValueFromSql(
               "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name='rodsgroup'",
-	      groupId, MAX_NAME_LEN, groupName, localZone, &icss);
+	      groupId, MAX_NAME_LEN, groupName, localZone, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
 	 return(CAT_INVALID_GROUP);
@@ -3786,7 +3790,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 1 ");
    status = cmlGetStringValueFromSql(
        "select resc_id from r_resc_main where resc_name=? and zone_name=?",
-       rescId, MAX_NAME_LEN, rescName, localZone, &icss);
+       rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
       _rollback("chlModResc");
@@ -4071,7 +4075,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
    if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 1 ");
    status = cmlGetStringValueFromSql(
 	      "select resc_id from r_resc_main where resc_name=? and zone_name=?",
-	      rescId, MAX_NAME_LEN, rescName, localZone, &icss);
+	      rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
       _rollback("chlModRescGroup");
@@ -4197,7 +4201,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 1 ");
       status = cmlGetStringValueFromSql(
                 "select token_name from r_tokn_main where token_namespace='user_type' and token_name=?", 
-		userTypeTokenName, MAX_NAME_LEN, userInfo->userType, 0, &icss);
+		userTypeTokenName, MAX_NAME_LEN, userInfo->userType, 0, 0, &icss);
       if (status==0) {
 	 strncpy(lastValidUserType, userInfo->userType, MAX_NAME_LEN);
       }
@@ -4236,7 +4240,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 5 ");
       status = cmlGetStringValueFromSql(
 		"select zone_id from r_zone_main where zone_name=?",
-		zoneId, MAX_NAME_LEN, userZone, "", &icss);
+		zoneId, MAX_NAME_LEN, userZone, "", 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) {
 	    int i;
@@ -5517,10 +5521,9 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-	      "select coll_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-	      &collId, objIdString, rsComm->clientUser.userName, 0, 0, 0,
-	      &icss);
-
+	      "select coll_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	      &collId, objIdString, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
+	      0, 0,  &icss);
 
    if (status == 0) {  /* it is a dataObj and user has access to it */
 
@@ -5606,9 +5609,9 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 6");
 
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	    cVal, iVal, 2, objIdString, 
-	    rsComm->clientUser.userName, &icss);
+	    rsComm->clientUser.userName, rsComm->clientUser.rodsZone, &icss);
    if (status == 0) { 
       /* it is a collection and user has access to it */
 
@@ -5810,9 +5813,10 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", targetCollId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 1 ");
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
-	      cVal, iVal, 2, objIdString, 
-	      rsComm->clientUser.userName, &icss);
+	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	    cVal, iVal, 2, objIdString, 
+	    rsComm->clientUser.userName, 
+	    rsComm->clientUser.rodsZone, &icss);
 
    snprintf(collIdString, MAX_NAME_LEN, "%lld", targetCollId);
    if (status != 0) {
@@ -5833,9 +5837,10 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 3");
    status = cmlGetStringValueFromSql(
-	      "select data_name from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	      "select data_name from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	     dataObjName, MAX_NAME_LEN, objIdString, 
-	     rsComm->clientUser.userName, &icss);
+	     rsComm->clientUser.userName,
+ 	     rsComm->clientUser.rodsZone, &icss);
    snprintf(collIdString, MAX_NAME_LEN, "%lld", targetCollId);
    if (status == 0) {  /* it is a dataObj and user has access to it */
 
@@ -5919,8 +5924,9 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 8");
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main where coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'own')",
-	       cVal, iVal, 2, objIdString, rsComm->clientUser.userName, &icss);
+	    "select parent_coll_name, coll_name from r_coll_main where coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'own')",
+	    cVal, iVal, 2, objIdString, rsComm->clientUser.userName, 
+	    rsComm->clientUser.rodsZone, &icss);
    if (status == 0) { 
       /* it is a collection and user has access to it */
 
