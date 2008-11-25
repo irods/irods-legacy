@@ -679,7 +679,6 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
 	 return(CAT_NO_ROWS_FOUND);
       }
       iVal = strtoll(*cVal, NULL, 0);
-      rodsLog(LOG_ERROR, "test inherit:%s:", cValStr2);
       if (cValStr2[0]=='1') *inheritFlag = 1;
       status = 0;
    }
