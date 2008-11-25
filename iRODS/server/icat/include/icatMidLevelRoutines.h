@@ -62,6 +62,7 @@ int cmlGetStringValueFromSql (char *sql,
 			      int cValSize,
 			      char *bindVar1,
 			      char *bindVar2,
+			      char *bindVar3,
 			      icatSessionStruct *icss);
 
 int cmlGetStringValuesFromSql (char *sql, 
@@ -70,6 +71,7 @@ int cmlGetStringValuesFromSql (char *sql,
 			      int numberOfStringsToGet, 
 			      char *bindVar1,
 			      char *bindVar2,
+			      char *bindVar3,
 			      icatSessionStruct *icss);
 
 int cmlGetMultiRowStringValuesFromSql (char *sql, 
