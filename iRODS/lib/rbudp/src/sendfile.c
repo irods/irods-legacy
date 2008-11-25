@@ -47,7 +47,7 @@ main (int argc, char **argv)
 
   QUANTAnet_rbudpBase_c (&rbudpSender->rbudpBase);
   // mysender->sendfile (sendRate, atoi (argv[3]));
-  sendfile (rbudpSender, sendRate, atoi (argv[3]), (char *) 0);
+  rbSendfile (rbudpSender, sendRate, atoi (argv[3]), (char *) 0);
 
   // mysender->close ();
   sendClose (rbudpSender);

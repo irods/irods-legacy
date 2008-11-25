@@ -789,7 +789,7 @@ int sendRate, int packetSize)
         status = sendfileByFd (&rbudpSender, mysendRate, mypacketSize,
           locFd);
     } else {
-        status = sendfile (&rbudpSender, mysendRate, mypacketSize, 
+        status = rbSendfile (&rbudpSender, mysendRate, mypacketSize, 
           locFilePath);
     }
 

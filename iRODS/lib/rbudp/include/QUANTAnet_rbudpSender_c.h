@@ -81,7 +81,7 @@ typedef struct  QUANTAnet_rbudpSender_c
 	        @param sendRate the first-pass UDP blasting rate in Kbps.
 		@param packetSize payload size of each UDP packet.
 	*/
-        int sendfile(rbudpSender_t *rbudpSender, int sendRate, int packetSize,
+        int rbSendfile(rbudpSender_t *rbudpSender, int sendRate, int packetSize,
 	  char *fname);
         
 	int sendfileByFd (rbudpSender_t *rbudpSender, int sendRate, 

@@ -100,7 +100,7 @@ int sendRate, int packetSize)
 		    TRACE_DEBUG("send to socket %d an end signal.", 
 		    rbudpSender->rbudpBase.tcpSockfd); 
 		if(rbudpSender->rbudpBase.verbose>1) 
-		    fprintf(stderr,"write %d bytes.\n", sizeof(rbudpSender->rbudpBase.endOfUdp));
+		    fprintf(stderr,"write %d bytes.\n", (int) sizeof(rbudpSender->rbudpBase.endOfUdp));
 		writen(rbudpSender->rbudpBase.tcpSockfd, (char *)&rbudpSender->rbudpBase.endOfUdp, 
 		  sizeof(rbudpSender->rbudpBase.endOfUdp));
 		rbudpSender->rbudpBase.endOfUdp.round ++;
@@ -329,7 +329,7 @@ int packetSize, int bufSize )
    return ((bytesread == 0) ? SUCCESS /*clean EOF*/ : FAILED /*error*/);
 }
 
-int  sendfile(rbudpSender_t *rbudpSender, int sendRate, int packetSize,
+int  rbSendfile(rbudpSender_t *rbudpSender, int sendRate, int packetSize,
 char *fname)
 {
   int tcpSockfd = rbudpSender->rbudpBase.tcpSockfd;
@@ -380,7 +380,7 @@ int fd)
   if (verbose > 0) fprintf(stderr,"The size of the file is %lld\n", filesize);
 
   long long nfilesize = htonll(filesize);
-  if (verbose > 0) fprintf(stderr,"write %d bytess.\n", sizeof(nfilesize));
+  if (verbose > 0) fprintf(stderr,"write %d bytess.\n", (int) sizeof(nfilesize));
 
   // Send the file size to the receiver.
    if (writen(tcpSockfd, (char *)&nfilesize, sizeof(nfilesize)) != sizeof(nfilesize))
