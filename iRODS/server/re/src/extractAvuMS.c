@@ -453,3 +453,52 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
   typeParam->type = (char *) strdup(STR_MS_T);
   return(0);
 }
+
+
+int
+msiRemoveKeyValuePairsFromObj(msParam_t *metadataParam, msParam_t* objParam,
+                               msParam_t* typeParam, 
+                               ruleExecInfo_t *rei)
+{
+
+/**
+ * \fn msiRemoveKeyValuePairsFromObj
+ * \author  Romain Guinot
+ * \date   2008
+ * \brief this function removes with an object <key,value> p pairs
+ *  from a given keyValPair_t structure. 
+ * \note The object Type is also needed.
+ * \param[in] metadataParam is a msParam of type KeyValPair_MS_T
+ * \param[in] objParam   is a msParam of type STR_MS_T
+ * \param[in] typeParam is a msParam of type STR_MS_T
+ * \return integer
+ * \retval 0 on success
+ * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
+ * \retval from removeAVUMetadataFromKVPairs
+ * \sa removeAVUMetadataFromKVPairs
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+
+  char *objName;
+  char *objType;
+  /*  int id, i;*/
+  int i;
+  
+  RE_TEST_MACRO ("Loopback on msiRemoveKeyValuePairsFromObj");
+  
+  if (strcmp (metadataParam->type,KeyValPair_MS_T) != 0)
+    return(USER_PARAM_TYPE_ERR);
+  if (strcmp (objParam->type,STR_MS_T) != 0)
+    return(USER_PARAM_TYPE_ERR);
+  if (strcmp (typeParam->type,STR_MS_T) != 0)
+    return(USER_PARAM_TYPE_ERR);
+  objName = (char *) objParam->inOutStruct;
+  objType = (char *) typeParam->inOutStruct;
+  i = removeAVUMetadataFromKVPairs (rei->rsComm,  objName, objType,
+                                 (keyValPair_t *) metadataParam->inOutStruct);
+  return(i);
+
+}
+
