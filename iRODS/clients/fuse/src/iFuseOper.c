@@ -516,9 +516,17 @@ irodsChmod (const char *path, mode_t mode)
     keyValPair_t regParam;
     dataObjInfo_t dataObjInfo;
     char dataMode[SHORT_STR_LEN];
+    int descInx;
 
     rodsLog (LOG_DEBUG, "irodsChmod: %s", path);
 
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    if ((descInx = getNewlyCreatedDescByPath (path)) >= 3) {
+	/* has not actually been created yet */
+	IFuseDesc[descInx].createMode = mode;
+	return (0);
+    }
+#endif
     memset (&regParam, 0, sizeof (regParam));
     snprintf (dataMode, SHORT_STR_LEN, "%d", mode);
     addKeyVal (&regParam, DATA_MODE_KW, dataMode);

@@ -175,6 +175,8 @@ int
 ifuseReconnect ();
 int
 ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv);
+int
+getNewlyCreatedDescByPath (char *path);
 #ifdef  __cplusplus
 }
 #endif

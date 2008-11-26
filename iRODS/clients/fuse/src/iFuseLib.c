@@ -1114,3 +1114,23 @@ dataObjCreateByFusePath (char *path, int mode, char *outIrodsPath)
 
     return status;
 }
+
+int
+getNewlyCreatedDescByPath (char *path)
+{
+    int i;
+
+    pthread_mutex_lock (&DescLock);
+    for (i = 3; i < MAX_IFUSE_DESC; i++) {
+        if (IFuseDesc[i].inuseFlag != FD_INUSE || 
+	  IFuseDesc[i].locCacheState != HAVE_NEWLY_CREATED_CACHE||
+	  IFuseDesc[i].localPath == NULL) 
+	    continue;
+	if (strcmp (IFuseDesc[i].localPath, path) == 0) { 
+            pthread_mutex_unlock (&DescLock);
+            return (i);
+        };
+    }
+    pthread_mutex_unlock (&DescLock);
+    return (-1);
+}
