@@ -125,6 +125,9 @@ int
 addAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP);
 int
+removeAVUMetadataFromKVPairs(rsComm_t *rsComm, char *objName, char *inObjType,
+                           keyValPair_t *kVP);
+int
 rsQueryDataObjInCollReCur (rsComm_t *rsComm, char *collection,
 genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut, char *accessPerm,
 int singleFlag);
