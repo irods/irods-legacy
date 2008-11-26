@@ -1062,7 +1062,7 @@ setAndMkFileCacheDir ()
 
     myPasswd = getpwuid(getuid());
 
-    if ((tmpStr = getenv (FuseCacheDir)) != NULL && strlen (tmpStr) > 0) {
+    if ((tmpStr = getenv ("FuseCacheDir")) != NULL && strlen (tmpStr) > 0) {
 	tmpDir = tmpStr;
     } else {
 	tmpDir = FUSE_CACHE_DIR;

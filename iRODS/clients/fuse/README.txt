@@ -60,7 +60,13 @@ work. Type in:
 
 and do the normal login.
 
-3) Mount the home collection to the local directory by typing in:
+4) The 1.2 irodsFs caches small files in the local disk to improve 
+performance. By default, the cached files are put in the /tmp/fuseCache
+directory. The env variable "FuseCacheDir" can be used to change the
+default cache directory. This env varible much be set before starting
+irodsFs (step 5).
+
+5) Mount the home collection to the local directory by typing in:
 ./irodsFs /usr/tmp/fmount
 
 The user's home collection is now mounted. The iRods files and sub-collections 
