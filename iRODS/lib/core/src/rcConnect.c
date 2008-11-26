@@ -246,6 +246,12 @@ rcDisconnect (rcComm_t *conn)
 	closesocket(conn->sock);
 #else
     close (conn->sock);
+    if (conn->svrVersion->reconnPort > 0 && conn->reconnThr != 0) {
+	pthread_cancel (conn->reconnThr);
+	pthread_detach (conn->reconnThr);
+        pthread_mutex_destroy (&conn->lock);
+        pthread_cond_destroy (&conn->cond);
+    }
 #endif
 
     status = freeRcComm (conn);
