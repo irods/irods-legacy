@@ -2022,6 +2022,7 @@ msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ru
  * \pre
  * \bug  no known bugs
 **/
+int
 msiDataObjPutWithOptions(msParam_t *inpParam1, msParam_t *inpParam2,
                msParam_t *inpParam3, msParam_t *outParam, 
                msParam_t *inpOverwriteParam,msParam_t *inpAllCopiesParam,
