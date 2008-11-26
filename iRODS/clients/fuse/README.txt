@@ -60,7 +60,7 @@ work. Type in:
 
 and do the normal login.
 
-4) The 1.2 irodsFs caches small files in the local disk to improve 
+4) The 2.0 irodsFs caches small files in the local disk to improve 
 performance. By default, the cached files are put in the /tmp/fuseCache
 directory. The env variable "FuseCacheDir" can be used to change the
 default cache directory. This env varible much be set before starting
