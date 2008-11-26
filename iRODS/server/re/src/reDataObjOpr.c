@@ -1997,5 +1997,115 @@ msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ru
 	return (rei->status);
 }
 
+/**
+ * \fn msiDataObjPutWithOptions
+ * \author  Romain Guinot
+ * \date   2008
+ * \brief This microservice is  a variation of msiDataObjPut
+ * \param[in] 
+ *    inpParam1 - It can be a DataObjInp_MS_T or
+ *      a STR_MS_T which would be taken as dataObj path.
+ *    inpParam2 - Optional - a STR_MS_T which specifies the resource.
+ *    inpParam3 - Optional - a STR_MS_T which specifies the client's local 
+ *      file path.
+ *    inpOverwriteParam - Optional - a STR_MS_T which specifies if the put 
+        should do an overwrite if content already exists in the resource.
+      to trigger an overwrite, "forceFlag" keyword is expected
+ *    inpAllCopiesParam - Optional - a STR_MS_T which specifies if that 
+        in case of an overwrite,the operation should overwrite all 
+        existing copies 
+ * \param[out] a INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa msiDataObjPuy
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+msiDataObjPutWithOptions(msParam_t *inpParam1, msParam_t *inpParam2,
+               msParam_t *inpParam3, msParam_t *outParam, 
+               msParam_t *inpOverwriteParam,msParam_t *inpAllCopiesParam,
+               ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    dataObjInp_t *dataObjInp, *myDataObjInp;
+    msParamArray_t *myMsParamArray;
 
+    RE_TEST_MACRO ("    Calling msiDataObjPut")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiDataObjPut: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    dataObjInp = malloc (sizeof (dataObjInp_t));
+    /* parse inpParam1 */
+    rei->status = parseMspForDataObjInp (inpParam1, dataObjInp,
+      &myDataObjInp, 1);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjPut: input inpParam1 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    rei->status = parseMspForCondInp (inpParam2, &dataObjInp->condInput,
+      DEST_RESC_NAME_KW);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjPut: input inpParam2 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+
+    rei->status = parseMspForCondInp (inpParam3, &dataObjInp->condInput,
+      LOCAL_PATH_KW);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjPut: input inpParam3 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    if (inpOverwriteParam !=NULL && 
+        strcmp(inpOverwriteParam->inOutStruct, "forceFlag") == 0 )
+      rei->status = parseMspForCondInp (inpOverwriteParam, 
+                                        &dataObjInp->condInput,FORCE_FLAG_KW);
+
+    if (inpAllCopiesParam !=NULL && 
+        strcmp(inpAllCopiesParam->inOutStruct, "all") == 0 )
+      rei->status = parseMspForCondInp (inpAllCopiesParam, 
+                                        &dataObjInp->condInput,ALL_KW);
+
+    myMsParamArray = malloc (sizeof (msParamArray_t));
+    memset (myMsParamArray, 0, sizeof (msParamArray_t));
+
+    rei->status = addMsParam (myMsParamArray, CL_PUT_ACTION, DataObjInp_MS_T, 
+      (void *) dataObjInp, NULL);
+    
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjPut: addMsParam error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    /* tell the client to do the put */
+    rei->status = sendAndRecvBranchMsg (rsComm, rsComm->apiInx, 
+     SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
+
+    if (rei->status >= 0) {
+        fillIntInMsParam (outParam, rei->status);
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjPut: rsDataObjPut failed for %s, status = %d",
+                            dataObjInp->objPath,
+          rei->status);
+    }
+
+    return (rei->status);
+}
 
