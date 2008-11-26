@@ -2557,3 +2557,39 @@ isCollEmpty (rsComm_t *rsComm, char *collection)
 	return True;
 }
 
+int
+removeAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
+                           keyValPair_t *kVP)
+{
+  int i,j;
+  char  objType[10];
+  modAVUMetadataInp_t modAVUMetadataInp;
+
+  if (strcmp(inObjType,"-1")) {
+    strcpy(objType,inObjType);
+  }
+  else {
+    i = getObjType(rsComm, objName,objType);
+    if (i < 0)
+      return(i);
+  }
+
+  modAVUMetadataInp.arg0 = "rm";
+  for (i = 0; i < kVP->len ; i++) {
+     /* Call rsModAVUMetadata to call chlAddAVUMetadata.
+        rsModAVUMetadata connects to the icat-enabled server if the
+        local host isn't.
+     */
+    modAVUMetadataInp.arg1 = objType;
+    modAVUMetadataInp.arg2 = objName;
+    modAVUMetadataInp.arg3 = kVP->keyWord[i];
+    modAVUMetadataInp.arg4 = kVP->value[i];
+    modAVUMetadataInp.arg5 = "";
+    j = rsModAVUMetadata (rsComm, &modAVUMetadataInp);
+    if (j < 0)
+      return(j);
+  }
+  return(0);
+}
+
+
