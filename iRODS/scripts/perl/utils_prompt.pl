@@ -14,7 +14,7 @@
 # print functions in utils_print.pl.
 #
 
-$version{"utils_prompt.pl"} = "1.2";
+$version{"utils_prompt.pl"} = "2.0";
 my $TRY_TOO_MANY = 20;
 
 

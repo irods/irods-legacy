@@ -18,7 +18,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"irodssetup.pl"} = "1.1";
+$version{"irodssetup.pl"} = "2.0";
 
 
 
@@ -174,9 +174,9 @@ if ( $thisUserID == 0 )
 #
 
 if ( $isUpgrade ne "") {
-    printNotice("\nNote: When upgrading from 1.1 to 1.2, you will need to\n");
-    printNotice("run psg-patch-v1.1Tov1.2.sql via psql (for Postgres)\n");
-    printNotice("or ora-patch-v1.1Tov1.2.sql via sqlplus (for Oracle)\n");
+    printNotice("\nNote: When upgrading from 1.1 to 2.0, you will need to\n");
+    printNotice("run psg-patch-v1.1Tov2.0.sql via psql (for Postgres)\n");
+    printNotice("or ora-patch-v1.1Tov2.0.sql via sqlplus (for Oracle)\n");
     printNotice("before running this script.\n\n");
 
     my $answer = promptYesNo(
