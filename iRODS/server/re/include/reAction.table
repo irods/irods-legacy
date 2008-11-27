@@ -7,6 +7,7 @@ typedef struct {
 
 
 int print_hello(ruleExecInfo_t *c);
+int print_hello_arg(msParam_t* xs, ruleExecInfo_t *rei );
 int whileExec(msParam_t* condition, msParam_t* whileBody,
 	      msParam_t* recoverWhileBody, ruleExecInfo_t *rei);
 int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, 
@@ -30,7 +31,7 @@ int msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei
 int msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 
 int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei);
-int sendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei);
+int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei);
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inKVPair,  ruleExecInfo_t *rei);
 int msiGetValByKey(msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  ruleExecInfo_t *rei);
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
@@ -147,6 +148,7 @@ int msiDataObjPutWithOptions (msParam_t *inpParam1,
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
+  {"print_hello_arg", 1, (funcPtr) print_hello_arg},
   {"msiVacuum", 0, (funcPtr) msiVacuum},
   {"msiGoodFailure", 0, (funcPtr) msiGoodFailure},
   {"msiSetResource", 1,(funcPtr)  msiSetResource},
@@ -228,7 +230,7 @@ microsdef_t MicrosTable[] = {
   {"msiHumanToSystemTime", 2, (funcPtr) msiHumanToSystemTime},
   {"msiStrToBytesBuf", 2, (funcPtr) msiStrToBytesBuf},
   {"msiApplyDCMetadataTemplate", 2, (funcPtr) msiApplyDCMetadataTemplate},
-  {"sendStdoutAsEmail",2,(funcPtr) sendStdoutAsEmail},
+  {"msiSendStdoutAsEmail",2,(funcPtr) msiSendStdoutAsEmail},
   {"msiPrintKeyValPair",2,(funcPtr) msiPrintKeyValPair},
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},
   {"assign",2,(funcPtr) assign},
