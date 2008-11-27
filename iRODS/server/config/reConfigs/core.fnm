@@ -18,3 +18,4 @@ findObjType|msiGetObjType
 ingestBulkMD|msiAssociateKeyValuePairsToObj
 commitIcat|msiCommit
 admShowCoreIRB|admShowIRB
+sendStdoutAsEmail|msiSendStdoutAsEmail
