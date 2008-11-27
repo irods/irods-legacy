@@ -521,7 +521,7 @@ irodsChmod (const char *path, mode_t mode)
     rodsLog (LOG_DEBUG, "irodsChmod: %s", path);
 
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
-    if ((descInx = getNewlyCreatedDescByPath (path)) >= 3) {
+    if ((descInx = getNewlyCreatedDescByPath ((char *)path)) >= 3) {
 	/* has not actually been created yet */
 	IFuseDesc[descInx].createMode = mode;
 	return (0);
