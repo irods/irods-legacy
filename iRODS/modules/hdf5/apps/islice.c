@@ -22,9 +22,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <math.h>
+
+#ifndef windows_platform
+#include <unistd.h>
+#endif
+
+#ifdef windows_platform
+#define fmaxf max
+#define fminf min
+#endif
 
 #include "clH5Handler.h"
 #include "h5File.h"
@@ -203,7 +211,7 @@ get_defualt_outfile_name(const char *infile, char *outfile, int pos,
 
     strcpy(infile_cp, infile);
 
-    char *tmpfile = strrchr(infile, '/');
+    const char *tmpfile = strrchr(infile, '/');
     if (tmpfile == NULL)
         tmpfile = infile_cp;
     else
@@ -296,7 +304,7 @@ get_slice(const char *infile, int pos, const char *var,
     int    tot_blocks, lrefmin, lrefmax;
     int    Nx, Ny, N1, N2, Nz, N1b, N2b, N1r, N2r, nxb, nyb, nzb;
     float  dx1, dx2, xm1, xm2;
-    float  xmin, xmax, ymin, ymax, zmin, zmax;
+    double  xmin, xmax, ymin, ymax, zmin, zmax;
     float  dx, dy, dz;
     int    rebin_factor;
     int    *lrefine, *nodetype;
@@ -478,9 +486,9 @@ printf("\ndataset: %s\n", var);
     count[2]  = dims[2];
     count[3]  = dims[3];
 
-    Nx = dims[3];
-    Ny = dims[2];
-    Nz = dims[1];
+    Nx = (int)dims[3];
+    Ny = (int)dims[2];
+    Nz = (int)dims[1];
     for (i = 0; i < lrefmax-1; i++) {
         Nx *= 2;
         Ny *= 2;
@@ -491,32 +499,32 @@ printf("\ndataset: %s\n", var);
         slice = (float *)malloc(Nx*Ny*sizeof(float));
         N1    = Nx;
         N2    = Ny;
-        N1b   = dims[3];
-        N2b   = dims[2];
-        dx1   = (xmax - xmin) / ((float)N1);
-        xm1   = xmin;
-        dx2   = (ymax - ymin) / ((float)N2);
-        xm2   = ymin;
+        N1b   = (int)dims[3];
+        N2b   = (int)dims[2];
+        dx1   = (float) ((xmax - xmin) / ((float)N1));
+        xm1   = (float)xmin;
+        dx2   = (float) ((ymax - ymin) / ((float)N2));
+        xm2   = (float)ymin;
     } else if (pos == 1) {
         slice = (float *)malloc(Nx*Nz*sizeof(float));
         N1    = Nx;
         N2    = Nz;
-        N1b   = dims[3];
-        N2b   = dims[1];
-        dx1   = (xmax - xmin) / ((float)N1);
-        xm1   = xmin;
-        dx2   = (zmax - zmin) / ((float)N2);
-        xm2   = zmin;
+        N1b   = (int)dims[3];
+        N2b   = (int)dims[1];
+        dx1   = (float) ((xmax - xmin) / ((float)N1));
+        xm1   = (float)xmin;
+        dx2   = (float) ((zmax - zmin) / ((float)N2));
+        xm2   = (float)zmin;
     } else {
         slice = (float *)malloc(Ny*Nz*sizeof(float));
         N1    = Ny;
         N2    = Nz;
-        N1b   = dims[2];
-        N2b   = dims[1];
-        dx1   = (ymax - ymin) / ((float)N1);
-        xm1   = ymin;
-        dx2   = (zmax - zmin) / ((float)N2);
-        xm2   = zmin;
+        N1b   = (int)dims[2];
+        N2b   = (int)dims[1];
+        dx1   = (float) ((ymax - ymin) / ((float)N1));
+        xm1   = (float)ymin;
+        dx2   = (float) ((zmax - zmin) / ((float)N2));
+        xm2   = (float)zmin;
     }
 
 #ifdef DEBUG
@@ -758,7 +766,7 @@ read_palette(const char *palfile, unsigned char *pal)
 
     nentries = idx;
     if (max_color <= 1) {
-        ratio = (min_color==max_color) ? 1.0f : ((NCOLOR-1.0)/(max_color-min_color));
+        ratio = (min_color==max_color) ? 1.0f : (float)((NCOLOR-1.0)/(max_color-min_color));
 
         for (i=0; i<nentries; i++) {
             for (j=1; j<4; j++)
@@ -773,7 +781,7 @@ read_palette(const char *palfile, unsigned char *pal)
 
     idx = 0; 
     memset(pal, 0, NCOLOR*3);
-    ratio = (min_v==max_v) ? 1.0f : ((NCOLOR-1.0)/(max_v-min_v));
+    ratio = (min_v==max_v) ? 1.0f : (float)((NCOLOR-1.0)/(max_v-min_v));
 
     for (i=0; i<nentries; i++) {
         idx = (int) ((tbl[i][0]-min_v)*ratio);
@@ -822,7 +830,7 @@ write_jpeg(const char *infile, char *outfile, int pos, const char *var,
     if (strlen(outfile)<1)
         get_defualt_outfile_name (infile, outfile, pos, var, coor, dims, "jpg");
 
-    if (read_palette(palfile, &pal))
+    if (read_palette(palfile, pal))
         has_color_table = 1; 
  
     /* find min and max */
@@ -833,7 +841,7 @@ write_jpeg(const char *infile, char *outfile, int pos, const char *var,
     }
 
     if (max < min)
-        max = (2.0 * fabs(min)) + 1.0;  // Make something up ...
+        max = (float) ((2.0 * fabs(min)) + 1.0);  // Make something up ...
 
     /* using log10 scaling */
     if (min>=0) {
@@ -908,7 +916,7 @@ int main(int argc, char* argv[])
             memset(var, 0, VAR_LENGTH);
             strcpy(var, argv[++i]);
         } else if (strncmp(argv[i], "-c", 2) == 0) {
-            coor = atof(argv[++i]);
+            coor = (float)atof(argv[++i]);
         } else if (strncmp(argv[i], "-j", 2) == 0) {
             strcpy(jpgfile, argv[++i]);     
         } else if (strncmp(argv[i], "-t", 2) == 0) {
