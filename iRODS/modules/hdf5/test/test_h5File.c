@@ -7,10 +7,11 @@
 #include <time.h>
 
 #define PRINT_ALL 1
-#define NO_TEST_ATTRI	1
-#define NO_TEST_PALETTE	1
+#define TEST_ATTRI	1
+#define TEST_PALETTE	1
 #define TEST_SUBSET 1
-#if 1
+
+#if 0
 #define HDF5_LOCAL 1
 #endif
 
@@ -43,6 +44,9 @@ int main(int argc, char* argv[])
         scanf("%s", fname);
     } else
         strcpy(fname, argv[1]);
+
+    if (strlen(fname)<=1)
+        strcpy (fname, "/tempZone/home/rods/hdf5_test.h5"); 
 
     printf("\n..... test file: %s\n", fname);
     fflush(stdout);

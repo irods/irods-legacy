@@ -24,7 +24,7 @@ int clH5File_open(rcComm_t *conn, H5File* f)
     ret_value = _clH5File_open(conn, f,  &outf, 0);
 
     if (ret_value < 0) 
-	return (ret_value);
+    return (ret_value);
 
     f->fid = outf->fid;
     f->root = outf->root;
@@ -65,23 +65,23 @@ int _clH5File_open(rcComm_t *conn, H5File* inf,  H5File** outf, int flag)
     status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
 
     if (status < 0) {
-	rodsLogError (LOG_ERROR, status, 
-	  "_clH5File_open: rcExecMyRule error for %s.",
-	  inf->filename);
-        clearMsParamArray (execMyRuleInp.inpParamArray, 0);
-	return (status);
+        rodsLogError (LOG_ERROR, status, 
+            "_clH5File_open: rcExecMyRule error for %s.",
+            inf->filename);
+            clearMsParamArray (execMyRuleInp.inpParamArray, 0);
+        return (status);
     }
 
     if ((outMsParam = getMsParamByLabel (outParamArray, "*OUTF")) == NULL) {
-	status = USER_PARAM_LABEL_ERR;
-        rodsLogError (LOG_ERROR, status,
-          "_clH5File_open: outParamArray does not contain OUTF for %s.",
-          inf->filename);
+        status = USER_PARAM_LABEL_ERR;
+            rodsLogError (LOG_ERROR, status,
+            "_clH5File_open: outParamArray does not contain OUTF for %s.",
+             inf->filename);
     } else {
-	*outf = outMsParam->inOutStruct;
-	clearMsParamArray (outParamArray, 0);
-	/* XXXX free outParamArray */
-	free (outParamArray);
+        *outf = (H5File*) outMsParam->inOutStruct;
+        clearMsParamArray (outParamArray, 0);
+        /* XXXX free outParamArray */
+        free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);
@@ -114,7 +114,7 @@ int clH5File_close (rcComm_t *conn, H5File* f)
     ret_value = _clH5File_close (conn, &inf, &outf);
 
     if (ret_value < 0) 
-	return (ret_value);
+    return (ret_value);
 
     f->error = outf->error;
 
@@ -162,9 +162,9 @@ int _clH5File_close (rcComm_t *conn, H5File* inf, H5File** outf)
         rodsLogError (LOG_ERROR, status,
           "_clH5File_close: outParamArray does not contain OUTF");
     } else {
-        *outf = outMsParam->inOutStruct;
+        *outf = (H5File*)outMsParam->inOutStruct;
         clearMsParamArray (outParamArray, 0);
-	free (outParamArray);
+        free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);

@@ -46,7 +46,7 @@ void H5Attribute_dtor(H5Attribute* a)
 
 void H5Dataset_dtor(H5Dataset* d)
 {
-    unsigned int i;
+    int i;
 
     assert(d);
 

@@ -26,7 +26,7 @@ int clH5Dataset_read(rcComm_t *conn, H5Dataset* d)
     ret_value = _clH5Dataset_read (conn, d, &outd);
 
     if (ret_value < 0) 
-	return (ret_value);
+    return (ret_value);
 
     /* psss on the value */
     d->nvalue = outd->nvalue;
@@ -80,10 +80,10 @@ int _clH5Dataset_read (rcComm_t *conn, H5Dataset* ind, H5Dataset** outd)
           "_clH5Dataset_read: outParamArray does not contain OUTD for %s.",
           ind->fullpath);
     } else {
-        *outd = outMsParam->inOutStruct;
+        *outd = (H5Dataset *)outMsParam->inOutStruct;
         clearMsParamArray (outParamArray, 0);
-	/* XXXXXX free outParamArray */
-	free (outParamArray);
+        /* XXXXXX free outParamArray */
+        free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);
@@ -159,8 +159,10 @@ H5Dataset** outd)
           "_clH5Dataset_read_attribute: outParamArray does not contain OUTD for %s.",
           ind->fullpath);
     } else {
-        *outd = outMsParam->inOutStruct;
+        *outd = (H5Dataset *)outMsParam->inOutStruct;
         clearMsParamArray (outParamArray, 0);
+        /* XXXXXX free outParamArray */
+        free (outParamArray);
     }
 
     clearMsParamArray (execMyRuleInp.inpParamArray, 0);
