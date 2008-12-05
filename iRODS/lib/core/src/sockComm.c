@@ -582,13 +582,16 @@ int cookie, int windowSize)
     status = setSockAddr (&remoteAddr, rodsHost, rodsPort);
     if (status < 0) {
 	rodsLog (LOG_NOTICE,
-	  "connectToRhostByHostName: setSockAddr error for %s, errno = %d",
+	  "connectToRhostPortal: setSockAddr error for %s, errno = %d",
 	  errno); 
 	return (status);
     }
     sock = connectToRhostWithRaddr (&remoteAddr, windowSize, 0);
 
     if (sock < 0) {
+	rodsLog (LOG_ERROR,
+	  "connectToRhostPortal: connectTo Rhost %s error, status = %d",
+	  rodsHost, sock);
 	return (sock);
     }
 
@@ -676,6 +679,7 @@ int timeoutFlag)
     }
 
     if (status < 0) {
+	if (status == -1) status = USER_SOCK_CONNECT_ERR - errno;
 #ifdef _WIN32
         closesocket (sock);
 #else
