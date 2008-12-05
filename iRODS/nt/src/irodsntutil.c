@@ -228,3 +228,11 @@ void bzero(void *s, size_t n)
 {
 	memset((char *)s, 0, n);
 }
+
+size_t irodsnt_strlen(const char *str)
+{
+	if(str == NULL)
+		return 0;
+
+	return strlen(str);
+}
