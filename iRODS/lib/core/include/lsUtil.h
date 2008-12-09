@@ -29,9 +29,6 @@ int
 printLsLong (rcComm_t *conn, rodsArguments_t *rodsArgs, 
 genQueryOut_t *genQueryOut);
 int
-printLsColl (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-genQueryOut_t *genQueryOut);
-int
 printLsShort (rcComm_t *conn, rodsArguments_t *rodsArgs, 
 genQueryOut_t *genQueryOut);
 int
@@ -39,9 +36,6 @@ initCondForLs (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 genQueryInp_t *genQueryInp);
 int
 lsCollUtil (rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
-rodsArguments_t *rodsArgs);
-int
-lsSpecCollUtil (rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs);
 int
 printDataAcl (rcComm_t *conn, char *dataId);
@@ -52,9 +46,6 @@ printCollInheritance (rcComm_t *conn, char *collName);
 int
 lsSpecDataObjUtilLong (rcComm_t *conn, rodsPath_t *srcPath, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs);
-int
-printSpecLs (rcComm_t *conn, rodsArguments_t *rodsArgs, rodsPath_t *srcPath,
-genQueryOut_t *genQueryOut);
 int
 printSpecLsLong (char *objPath, char *ownerName, char *objSize,
 char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs);

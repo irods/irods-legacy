@@ -167,13 +167,7 @@ genQueryOut_t *genQueryOut)
     sqlResult_t *dataName, *replNum, *dataSize, *rescName, 
       *replStatus, *dataModify, *dataOwnerName, *dataId;
     sqlResult_t *chksumStr, *dataPath;
-#if 0
-    char *tmpDataName, *tmpReplNum, *tmpDataSize,  *tmpRescName,
-      *tmpReplStatus,  *tmpDataModify, *tmpDataOwnerName, *tmpDataId;
-    char *tmpChksumStr, *tmpDataPath;
-#else
     char *tmpDataId;
-#endif
     int queryFlags;
 
    if (genQueryOut == NULL) {
@@ -268,36 +262,6 @@ genQueryOut_t *genQueryOut)
 	}
 
 	printDataCollEntLong (&collEnt, queryFlags);
-#if 0
-	int intReplStatus;
-	char localTimeModify[20];
-        tmpDataName = &dataName->value[dataName->len * i];
-        tmpReplNum = &replNum->value[replNum->len * i];
-        tmpDataSize = &dataSize->value[dataSize->len * i];
-        tmpRescName = &rescName->value[rescName->len * i];
-        tmpDataOwnerName = &dataOwnerName->value[dataOwnerName->len * i];
-        tmpReplStatus = &replStatus->value[replStatus->len * i];
-	intReplStatus = atoi (tmpReplStatus); 
-	if (intReplStatus == OLD_COPY) {
-	    tmpReplStatus = " ";
-	} else {
-	    tmpReplStatus = "&";
-        }
-	     
-        tmpDataModify = &dataModify->value[dataModify->len * i];
-	getLocalTimeFromRodsTime(tmpDataModify, localTimeModify);
-
-        printf (
-         "  %-12.12s %3s %-20.20s %8.12s %16.16s %s %s\n",
-         tmpDataOwnerName, tmpReplNum, tmpRescName, tmpDataSize, 
-	 localTimeModify,
-         tmpReplStatus, tmpDataName);
-	if (rodsArgs->veryLongOption == True) {
-	    tmpChksumStr = &chksumStr->value[chksumStr->len * i];
-	    tmpDataPath = &dataPath->value[dataPath->len * i];
-	    printf ("    %s    %s\n", tmpChksumStr, tmpDataPath);
-	}
-#endif
 
 	if (rodsArgs->accessControl == True) {
             tmpDataId = &dataId->value[dataId->len * i];
@@ -390,15 +354,8 @@ rodsArguments_t *rodsArgs)
     char *srcColl;
     int status;
     int queryFlags;
-#if 0
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int continueInx;
-    queryHandle_t queryHandle;
-#else
     collHandle_t collHandle;
     collEnt_t collEnt;
-#endif
 
     if (srcPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -416,89 +373,6 @@ rodsArguments_t *rodsArgs)
        printCollInheritance (conn, srcColl);
     }
 
-#if 0
-
-    if (srcPath->rodsObjStat != NULL &&
-      srcPath->rodsObjStat->specColl != NULL) {
-	status = lsSpecCollUtil (conn, srcPath, myRodsEnv, rodsArgs);
-	return (status);
-    }
-
-
-    /* get the files in this collection */
-
-    queryFlags = setQueryFlag (rodsArgs);
-	
-    status = rclInitQueryHandle (&queryHandle, conn);
-
-    if (status < 0) return status;
-
-    status = queryDataObjInColl (&queryHandle, srcColl, queryFlags, 
-      &genQueryInp, &genQueryOut, NULL);
-
-    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-        rodsLogError (LOG_ERROR, status,
-          "lsCollUtil: queryDataObjInColl error for %s", srcColl);
-    }
-
-    while (status >= 0) {
-        if (rodsArgs->longOption == True) {
-            printLsLong (conn, rodsArgs, genQueryOut);
-        } else {
-            printLsShort (conn, rodsArgs, genQueryOut);
-        }
-
-
-	continueInx = genQueryOut->continueInx;
-
-	freeGenQueryOut (&genQueryOut);
-
-	if (continueInx > 0) {
-	    /* More to come */
-	    genQueryInp.continueInx = continueInx;
-            status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
-	} else {
-	    break;
-	}
-    }
-
-    /* query all sub collections in srcColl and the mk the required
-     * subdirectories */
-
-    status = queryCollInColl (&queryHandle, srcColl, 0, &genQueryInp,
-      &genQueryOut);
-
-    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-        rodsLogError (LOG_ERROR, status,
-          "lsCollUtil: queryCollInColl error for %s", srcColl);
-    }
-
-    while (status >= 0) {
-        printLsColl (conn, myRodsEnv, rodsArgs, genQueryOut);
-
-        continueInx = genQueryOut->continueInx;
-
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-            genQueryInp.continueInx = continueInx;
-            status =  rcGenQuery (conn, &genQueryInp, &genQueryOut);
-        } else {
-            break;
-        }
-    }
-
-    clearGenQueryInp (&genQueryInp);
-
-    if (savedStatus < 0) {
-	return (savedStatus);
-    } else if (status == CAT_NO_ROWS_FOUND) {
-	return (0);
-    } else {
-        return (status);
-    }
-#else
     queryFlags = DATA_QUERY_FIRST_FG;
     if (rodsArgs->veryLongOption == True) {
 	/* need to check veryLongOption first since it will have both
@@ -542,8 +416,6 @@ rodsArguments_t *rodsArgs)
     } else {
         return (0);
     }
-#endif
-
 }
 
 int
@@ -625,192 +497,11 @@ printCollCollEnt (collEnt_t *collEnt, int flags)
     return (0);
 }
 
-#if 0
-int
-lsSpecCollUtil (rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
-rodsArguments_t *rodsArgs)
-{
-    dataObjInp_t dataObjInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int continueInx;
-    int status;
-
-
-    memset (&dataObjInp, 0, sizeof (dataObjInp));
-    rstrcpy (dataObjInp.objPath, srcPath->outPath, MAX_NAME_LEN);
-    dataObjInp.specColl = srcPath->rodsObjStat->specColl;
-    /* do the data first */
-    addKeyVal (&dataObjInp.condInput, SEL_OBJ_TYPE_KW, "dataObj");
-
-    status = rcQuerySpecColl (conn, &dataObjInp, &genQueryOut);
-
-    while (status >= 0) {
-        printSpecLs (conn, rodsArgs, srcPath, genQueryOut);
-
-        continueInx = genQueryOut->continueInx;
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-	    dataObjInp.openFlags = continueInx;
-            status = rcQuerySpecColl (conn, &dataObjInp, &genQueryOut);
-        } else {
-            break;
-        }
-    }
-
-    if (status < 0 && status != CAT_NO_ROWS_FOUND && 
-      status != SYS_SPEC_COLL_OBJ_NOT_EXIST) {
-	rodsLogError (LOG_ERROR, status,
-	  "lsSpecCollUtil: rcQuerySpecColl error for %s", dataObjInp.objPath);
-	return (status);
-    }
-
-    /* do the collection second */
-    addKeyVal (&dataObjInp.condInput, SEL_OBJ_TYPE_KW, "collection");
-
-    status = rcQuerySpecColl (conn, &dataObjInp, &genQueryOut);
-
-    while (status >= 0) {
-        printSpecLs (conn, rodsArgs, srcPath, genQueryOut);
-
-        continueInx = genQueryOut->continueInx;
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-            dataObjInp.openFlags = continueInx;
-            status = rcQuerySpecColl (conn, &dataObjInp, &genQueryOut);
-        } else {
-            break;
-        }
-    }
-
-    return (status);
-}
-#endif
-    
-#if 0
-int
-printSpecLs (rcComm_t *conn, rodsArguments_t *rodsArgs, rodsPath_t *srcPath, 
-genQueryOut_t *genQueryOut)
-{
-    int i, status;
-    sqlResult_t *dataName, *collName, *dataSize, *createTime, *modifyTime;
-    char *tmpDataName, *tmpCollName, *tmpCreateTime, *tmpModifyTime, 
-      *tmpDataSize;
-    specColl_t *specColl = srcPath->rodsObjStat->specColl;
-
-   if (genQueryOut == NULL) {
-        return (USER__NULL_INPUT_ERR);
-    }
-
-    if (genQueryOut->rowCnt <= 0) {
-	return 0;
-    }
-
-    if ((dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == NULL) {
-        rodsLog (LOG_ERROR,
-          "printSpecLs: getSqlResultByInx for COL_DATA_NAME failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((collName = getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == NULL) {
-        rodsLog (LOG_ERROR,
-          "printSpecLs: getSqlResultByInx for COL_COLL_NAME failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((dataSize = getSqlResultByInx (genQueryOut, COL_DATA_SIZE)) == NULL) {
-        rodsLog (LOG_ERROR,
-          "printSpecLs: getSqlResultByInx for COL_DATA_SIZE failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((createTime = getSqlResultByInx (genQueryOut, COL_D_CREATE_TIME)) 
-      == NULL) {
-        rodsLog (LOG_ERROR,
-          "printSpecLs: getSqlResultByInx for COL_D_CREATE_TIME failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    if ((modifyTime = getSqlResultByInx (genQueryOut, COL_D_MODIFY_TIME)) 
-      == NULL) {
-        rodsLog (LOG_ERROR,
-          "printSpecLs: getSqlResultByInx for COL_D_MODIFY_TIME failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    for (i = 0;i < genQueryOut->rowCnt; i++) {
-        tmpDataName = &dataName->value[dataName->len * i];
-        tmpCollName = &collName->value[collName->len * i];
-        tmpCreateTime = &createTime->value[createTime->len * i];
-        tmpModifyTime = &modifyTime->value[modifyTime->len * i];
-        tmpDataSize = &dataSize->value[dataSize->len * i];
-
-	if (tmpDataName[0] != '\0') {
-	    /* a file */
-	    if (rodsArgs->longOption == True) {
-		char objPath[MAX_NAME_LEN];
-
-		snprintf (objPath, MAX_NAME_LEN, "%s/%s",
-		  tmpCollName, tmpDataName);
-		printSpecLsLong (objPath, srcPath->rodsObjStat->ownerName,
-		  tmpDataSize, tmpModifyTime, specColl, rodsArgs);
-	    } else {
-        	printLsStrShort (tmpDataName);
-	    }
-#if 0	/* don't do spec coll */
-	} else {
-	    /* a collection */
-	    rodsPath_t tmpPath;
-	    char objType[NAME_LEN];
-
-	    status = getSpecCollTypeStr (specColl, objType);
-	    if (status < 0) return (status);
-	    if (strcmp (tmpCollName, specColl->collection) == 0) {
-		printf ("  C- %s  %s", tmpCollName, objType);
-	    } else {
-                printf ("  C- %s  %-5.5s", tmpCollName, objType);
-	    }
-	
-            if (rodsArgs->veryLongOption == True) {
-		if (specColl->collClass == MOUNTED_COLL) {
-                    printf ("  %s  %s\n", specColl->phyPath, 
-		      specColl->resource);
-		} else {
-                    printf ("  %s\n", specColl->objPath);
-		}
-            } else {
-                printf ("\n");
-            }
-
-	    tmpPath = *srcPath;
-            snprintf (tmpPath.outPath, MAX_NAME_LEN, "%s",
-              tmpCollName);
-
-	    if (rodsArgs->recursive == True) {
-	        status = lsSpecCollUtil (conn, &tmpPath, NULL, rodsArgs);
-	    }
-#endif
-	}
-    }
-
-    return (0);
-}
-#endif
-
 int
 printSpecLsLong (char *objPath, char *ownerName, char *objSize, 
 char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs)
 {
     char srcElement[MAX_NAME_LEN];
-#if 0
-    char phySubPath[MAX_NAME_LEN];
-    char localTimeModify[20];
-    int status;
-    char objType[NAME_LEN];
-#endif
     collEnt_t collEnt;
     int queryFlags;
 
@@ -827,132 +518,8 @@ char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs)
     queryFlags = setQueryFlag (rodsArgs);
 
     printDataCollEntLong (&collEnt, queryFlags);
-#if 0
-    getLocalTimeFromRodsTime(modifyTime, localTimeModify);
-    if (getSpecCollTypeStr (specColl, objType) < 0) {
-	rstrcpy (objType, "UNKNOWN_COLL_TYPE", NAME_LEN);
-    }
-    printf ("  %-12.12s %-5.5s %-18.18s %8.12s %16.16s   %s\n",
-     ownerName, objType, specColl->resource, objSize,
-      localTimeModify, srcElement);
-    if (rodsArgs->veryLongOption == True) {
-        if (specColl->collClass == MOUNTED_COLL) {
-            status = getMountedSubPhyPath (
-              specColl->collection,
-              specColl->phyPath, objPath, phySubPath);
-            if (status < 0) {
-                return (status);
-            }
-            printf ("        %s\n", phySubPath);
-        } else {
-            printf ("        %s\n", specColl->objPath);
-        }
-    }
-#endif
     return (0);
 }
-
-#if 0
-int
-printLsColl (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-genQueryOut_t *genQueryOut)
-{
-    int i, status = 0;
-    sqlResult_t *collName, *collType, *collInfo1, *collInfo2, *ownerName;
-    char *tmpCollName, *tmpCollType, *tmpCollInfo1, *tmpCollInfo2,
-      *tmpOwnerName;
-    int savedStatus = 0;
-
-    if (genQueryOut == NULL) {
-        return (USER__NULL_INPUT_ERR);
-    }
-
-    if ((collName = getSqlResultByInx (genQueryOut, COL_COLL_NAME))
-      == NULL) {
-        rodsLog (LOG_ERROR,
-          "printLsColl: getSqlResultByInx for COL_COLL_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-    } else if ((collType = getSqlResultByInx (genQueryOut,
-      COL_COLL_TYPE)) == NULL) {
-        rodsLog (LOG_ERROR,
-         "printLsColl:getSqlResultByInx for COL_COLL_TYPE failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    } else if ((collInfo1 = getSqlResultByInx (genQueryOut,
-      COL_COLL_INFO1)) == NULL) {
-        rodsLog (LOG_ERROR,
-         "printLsColl:getSqlResultByInx for COL_COLL_INFO1 failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    } else if ((collInfo2 = getSqlResultByInx (genQueryOut,
-      COL_COLL_INFO2)) == NULL) {
-        rodsLog (LOG_ERROR,
-         "printLsColl:getSqlResultByInx for COL_COLL_INFO2 failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    } else if ((ownerName = getSqlResultByInx (genQueryOut,
-      COL_COLL_OWNER_NAME)) == NULL) {
-        rodsLog (LOG_ERROR,
-         "printLsColl:getSqlResultByInx for COL_COLL_OWNER_NAME failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-
-    for (i = 0; i < genQueryOut->rowCnt; i++) {
-
-        tmpCollName = &collName->value[collName->len * i];
-        tmpCollType = &collType->value[collType->len * i];
-        tmpCollInfo1 = &collInfo1->value[collInfo1->len * i];
-        tmpCollInfo2 = &collInfo2->value[collInfo2->len * i];
-        tmpOwnerName = &ownerName->value[ownerName->len * i];
-
-	if (tmpCollType[0] == '\0') {
-	    printf ("  C- %s\n", tmpCollName);
-	} else {
-	    if (rodsArgs->veryLongOption == True) {
-                printf ("  C- %s  %s  %s  %s\n", tmpCollName, tmpCollType,
-		  tmpCollInfo1, tmpCollInfo2);
-	    } else {
-                printf ("  C- %s  %s\n", tmpCollName, tmpCollType);
-	    }
-	}
-	/* for some reason, ils of "/" also give "/" as an answer */
-	if (rodsArgs->recursive == True && strcmp (tmpCollName, "/") != 0) {
-	    rodsPath_t tmpPath;
-	    memset (&tmpPath, 0, sizeof (tmpPath));
-	    rstrcpy (tmpPath.outPath, tmpCollName, MAX_NAME_LEN);
-	    if (tmpCollType[0] == '\0') {
-	        status = lsCollUtil (conn, &tmpPath, myRodsEnv, rodsArgs);
-	    } else {
-                specColl_t specColl;
-		rodsObjStat_t rodsObjStat;
-
-		tmpPath.rodsObjStat = &rodsObjStat;
-		memset (tmpPath.rodsObjStat, 0, sizeof (rodsObjStat_t));
-                tmpPath.rodsObjStat->specColl = &specColl;
-                memset (&specColl, 0, sizeof (specColl_t));
-
-		rstrcpy (rodsObjStat.ownerName, tmpOwnerName, NAME_LEN);
-		status = resolveSpecCollType (tmpCollType, tmpCollName,
-		  tmpCollInfo1, tmpCollInfo2, &specColl);
-		if (status < 0) return (status);
-
-                status = lsSpecCollUtil (conn, &tmpPath, myRodsEnv, rodsArgs);
-	    }
-
-	    if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-		rodsLogError (LOG_ERROR, status,
-		 "printLsColl: lsCollUtil error for %s", tmpCollName);
-		savedStatus = status;
-	    }
-    	}
-    }
-
-    if (savedStatus < 0) {
-        return (savedStatus);
-    } else if (status == CAT_NO_ROWS_FOUND) {
-        return (0);
-    } else {
-        return (status);
-    }
-}
-#endif
 
 int
 printDataAcl (rcComm_t *conn, char *dataId)
