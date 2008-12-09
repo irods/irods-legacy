@@ -167,13 +167,20 @@ genQueryOut_t *genQueryOut)
     sqlResult_t *dataName, *replNum, *dataSize, *rescName, 
       *replStatus, *dataModify, *dataOwnerName, *dataId;
     sqlResult_t *chksumStr, *dataPath;
+#if 0
     char *tmpDataName, *tmpReplNum, *tmpDataSize,  *tmpRescName,
       *tmpReplStatus,  *tmpDataModify, *tmpDataOwnerName, *tmpDataId;
     char *tmpChksumStr, *tmpDataPath;
+#else
+    char *tmpDataId;
+#endif
+    int queryFlags;
 
    if (genQueryOut == NULL) {
         return (USER__NULL_INPUT_ERR);
     }
+
+    queryFlags = setQueryFlag (rodsArgs);
 
     if (rodsArgs->veryLongOption == True) {
         if ((chksumStr = getSqlResultByInx (genQueryOut, COL_D_DATA_CHECKSUM)) 
@@ -244,9 +251,26 @@ genQueryOut_t *genQueryOut)
     }
 
    for (i = 0;i < genQueryOut->rowCnt; i++) {
+	collEnt_t collEnt;
+
+	bzero (&collEnt, sizeof (collEnt));
+
+	collEnt.dataName = &dataName->value[dataName->len * i];
+	collEnt.replNum = atoi (&replNum->value[replNum->len * i]);
+	collEnt.dataSize = strtoll (&dataSize->value[dataSize->len * i], 0, 0);
+	collEnt.resource = &rescName->value[rescName->len * i];
+	collEnt.ownerName = &dataOwnerName->value[dataOwnerName->len * i];
+	collEnt.replStatus = atoi (&replStatus->value[replStatus->len * i]);
+	collEnt.modifyTime = &dataModify->value[dataModify->len * i];
+        if (rodsArgs->veryLongOption == True) {
+	    collEnt.chksum = &chksumStr->value[chksumStr->len * i];
+	    collEnt.phyPath = &dataPath->value[dataPath->len * i];
+	}
+
+	printDataCollEntLong (&collEnt, queryFlags);
+#if 0
 	int intReplStatus;
 	char localTimeModify[20];
-
         tmpDataName = &dataName->value[dataName->len * i];
         tmpReplNum = &replNum->value[replNum->len * i];
         tmpDataSize = &dataSize->value[dataSize->len * i];
@@ -273,6 +297,7 @@ genQueryOut_t *genQueryOut)
 	    tmpDataPath = &dataPath->value[dataPath->len * i];
 	    printf ("    %s    %s\n", tmpChksumStr, tmpDataPath);
 	}
+#endif
 
 	if (rodsArgs->accessControl == True) {
             tmpDataId = &dataId->value[dataId->len * i];
@@ -362,13 +387,18 @@ lsCollUtil (rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs)
 {
     int savedStatus = 0;
-    genQueryInp_t genQueryInp;
-    genQueryOut_t *genQueryOut = NULL;
-    int continueInx;
     char *srcColl;
     int status;
     int queryFlags;
+#if 0
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int continueInx;
     queryHandle_t queryHandle;
+#else
+    collHandle_t collHandle;
+    collEnt_t collEnt;
+#endif
 
     if (srcPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -386,6 +416,7 @@ rodsArguments_t *rodsArgs)
        printCollInheritance (conn, srcColl);
     }
 
+#if 0
 
     if (srcPath->rodsObjStat != NULL &&
       srcPath->rodsObjStat->specColl != NULL) {
@@ -467,8 +498,134 @@ rodsArguments_t *rodsArgs)
     } else {
         return (status);
     }
+#else
+    queryFlags = DATA_QUERY_FIRST_FG;
+    if (rodsArgs->veryLongOption == True) {
+	/* need to check veryLongOption first since it will have both
+	 * veryLongOption and longOption flags on. */
+	queryFlags = queryFlags | VERY_LONG_METADATA_FG | NO_TRIM_REPL_FG;
+    } else if (rodsArgs->longOption == True) { 
+	queryFlags |= LONG_METADATA_FG | NO_TRIM_REPL_FG;;
+    }
+
+    status = rclOpenCollection (conn, srcColl, queryFlags,
+      &collHandle);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "lsCollUtil: rclOpenCollection of %s error. status = %d",
+          srcColl, status);
+        return status;
+    }
+    while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
+	if (collEnt.objType == DATA_OBJ_T) {
+	    printDataCollEnt (&collEnt, queryFlags);
+	    if (rodsArgs->accessControl == True) {
+		printDataAcl (conn, collEnt.dataId);
+	    }
+	} else {
+	    printCollCollEnt (&collEnt, queryFlags);
+	    /* need to drill down */
+            if (rodsArgs->recursive == True && 
+	      strcmp (collEnt.collName, "/") != 0) {
+                rodsPath_t tmpPath;
+                memset (&tmpPath, 0, sizeof (tmpPath));
+                rstrcpy (tmpPath.outPath, collEnt.collName, MAX_NAME_LEN);
+                status = lsCollUtil (conn, &tmpPath, myRodsEnv, rodsArgs);
+	        if (status < 0) savedStatus = status;
+	    }
+	}
+    }
+    rclCloseCollection (&collHandle);
+    if (savedStatus < 0 && savedStatus != CAT_NO_ROWS_FOUND) {
+        return (savedStatus);
+    } else {
+        return (0);
+    }
+#endif
+
 }
 
+int
+printDataCollEnt (collEnt_t *collEnt, int flags)
+{
+    if ((flags & (LONG_METADATA_FG | VERY_LONG_METADATA_FG)) == 0) {
+	/* short */
+	printLsStrShort (collEnt->dataName);
+    } else {
+	printDataCollEntLong (collEnt, flags);
+    }
+    return 0;
+}
+
+int
+printDataCollEntLong (collEnt_t *collEnt, int flags)
+{
+    char *tmpReplStatus;
+    char localTimeModify[20];
+    char typeStr[NAME_LEN];
+
+    if (collEnt->replStatus == OLD_COPY) {
+        tmpReplStatus = " ";
+    } else {
+        tmpReplStatus = "&";
+    }
+
+    getLocalTimeFromRodsTime (collEnt->modifyTime, localTimeModify);
+
+    if (collEnt->specColl.collClass == NO_SPEC_COLL) {
+        printf ("  %-12.12s %6d %-20.20s %12lld %16.16s %s %s\n",
+         collEnt->ownerName, collEnt->replNum, collEnt->resource, 
+         collEnt->dataSize, localTimeModify, tmpReplStatus, collEnt->dataName);
+    } else {
+        getSpecCollTypeStr (&collEnt->specColl, typeStr);
+        printf ("  %-12.12s %6.6s %-20.20s %12lld %16.16s %s %s\n",
+         collEnt->ownerName, typeStr, collEnt->resource,
+         collEnt->dataSize, localTimeModify, tmpReplStatus, collEnt->dataName);
+    }
+
+
+    if ((flags & VERY_LONG_METADATA_FG) != 0) {
+        printf ("    %s    %s\n", collEnt->chksum, collEnt->phyPath);
+    }
+    return 0;
+}
+
+int
+printCollCollEnt (collEnt_t *collEnt, int flags)
+{
+	char typeStr[NAME_LEN];
+
+    typeStr[0] = '\0';
+    if (collEnt->specColl.collClass != NO_SPEC_COLL) {
+        getSpecCollTypeStr (&collEnt->specColl, typeStr);
+    }
+    if ((flags & LONG_METADATA_FG) != 0) {
+	printf ("  C- %s  %s\n", collEnt->collName, typeStr);
+    } else if ((flags & VERY_LONG_METADATA_FG) != 0) {
+	if (collEnt->specColl.collClass == NO_SPEC_COLL) {
+	    printf ("  C- %s\n", collEnt->collName);
+        } else {
+	    if (collEnt->specColl.collClass == MOUNTED_COLL) {
+                printf ("  C- %s  %6.6s  %s  %s   %s\n",
+                  collEnt->collName, typeStr,
+                  collEnt->specColl.objPath, collEnt->specColl.phyPath,
+                  collEnt->specColl.resource);
+	    } else {
+	        printf ("  C- %s  %6.6s  %s  %s;;;%s;;;%d\n", 
+	          collEnt->collName, typeStr,
+                  collEnt->specColl.objPath, collEnt->specColl.cacheDir,
+	          collEnt->specColl.resource, collEnt->specColl.cacheDirty);
+	    }
+	}
+    } else {
+        /* short */
+	printf ("  C- %s\n", collEnt->collName);
+    }
+    return (0);
+}
+
+#if 0
 int
 lsSpecCollUtil (rcComm_t *conn, rodsPath_t *srcPath, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs)
@@ -531,7 +688,9 @@ rodsArguments_t *rodsArgs)
 
     return (status);
 }
+#endif
     
+#if 0
 int
 printSpecLs (rcComm_t *conn, rodsArguments_t *rodsArgs, rodsPath_t *srcPath, 
 genQueryOut_t *genQueryOut)
@@ -601,6 +760,7 @@ genQueryOut_t *genQueryOut)
 	    } else {
         	printLsStrShort (tmpDataName);
 	    }
+#if 0	/* don't do spec coll */
 	} else {
 	    /* a collection */
 	    rodsPath_t tmpPath;
@@ -632,23 +792,42 @@ genQueryOut_t *genQueryOut)
 	    if (rodsArgs->recursive == True) {
 	        status = lsSpecCollUtil (conn, &tmpPath, NULL, rodsArgs);
 	    }
+#endif
 	}
     }
 
     return (0);
 }
+#endif
 
 int
 printSpecLsLong (char *objPath, char *ownerName, char *objSize, 
 char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs)
 {
-    char localTimeModify[20];
     char srcElement[MAX_NAME_LEN];
+#if 0
     char phySubPath[MAX_NAME_LEN];
+    char localTimeModify[20];
     int status;
     char objType[NAME_LEN];
+#endif
+    collEnt_t collEnt;
+    int queryFlags;
+
+    bzero (&collEnt, sizeof (collEnt));
 
     getLastPathElement (objPath, srcElement);
+    collEnt.dataName = objPath;
+    collEnt.ownerName = ownerName;
+    collEnt.dataSize = strtoll (objSize, 0, 0);
+    collEnt.resource = specColl->resource;
+    collEnt.modifyTime = modifyTime;
+    collEnt.specColl = *specColl;
+    collEnt.objType = DATA_OBJ_T;
+    queryFlags = setQueryFlag (rodsArgs);
+
+    printDataCollEntLong (&collEnt, queryFlags);
+#if 0
     getLocalTimeFromRodsTime(modifyTime, localTimeModify);
     if (getSpecCollTypeStr (specColl, objType) < 0) {
 	rstrcpy (objType, "UNKNOWN_COLL_TYPE", NAME_LEN);
@@ -669,9 +848,11 @@ char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs)
             printf ("        %s\n", specColl->objPath);
         }
     }
+#endif
     return (0);
 }
 
+#if 0
 int
 printLsColl (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 genQueryOut_t *genQueryOut)
@@ -771,6 +952,7 @@ genQueryOut_t *genQueryOut)
         return (status);
     }
 }
+#endif
 
 int
 printDataAcl (rcComm_t *conn, char *dataId)

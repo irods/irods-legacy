@@ -1378,6 +1378,7 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
 	outCollEnt->resource = rodsObjStat->specColl->resource;
 	outCollEnt->ownerName = rodsObjStat->ownerName;
 	outCollEnt->replStatus = NEWLY_CREATED_COPY;
+	outCollEnt->specColl = *rodsObjStat->specColl;
     } else {
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;

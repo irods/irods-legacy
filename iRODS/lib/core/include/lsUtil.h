@@ -61,6 +61,12 @@ char *modifyTime, specColl_t *specColl, rodsArguments_t *rodsArgs);
 void 
 printCollOrDir (char *myName, objType_t myType, rodsArguments_t *rodsArgs,
 specColl_t *specColl);
+int
+printDataCollEnt (collEnt_t *collEnt, int flags);
+int
+printDataCollEntLong (collEnt_t *collEnt, int flags);
+int
+printCollCollEnt (collEnt_t *collEnt, int flags);
 #ifdef  __cplusplus
 }
 #endif
