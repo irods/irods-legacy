@@ -211,7 +211,10 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
               rodsArgs->resourceString);
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
-        addKeyVal (&dataObjOprInp->condInput, DEST_RESC_NAME_KW,
+	/* use rodsDefResource but set the DEF_RESC_NAME_KW instead. 
+	 * Used by dataObjCreate. Will only make a new replica only if
+	 * DEST_RESC_NAME_KW is set */ 
+        addKeyVal (&dataObjOprInp->condInput, DEF_RESC_NAME_KW,
           myRodsEnv->rodsDefResource);
     } 
 

@@ -21,6 +21,7 @@ rescGrpInfo_t **rescGrpInfo)
 
     if ((rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) == NULL &&
       (rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
+      (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL &&
       (rescName = getValByKey (condInput, RESC_NAME_KW)) == NULL &&
       ((rescName = defaultResc) == NULL || strcmp (defaultResc, "null") == 0)) {
         return (USER_NO_RESC_INPUT_ERR);
@@ -706,7 +707,8 @@ int writeFlag)
 	char *rescName; 
         queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
         queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
-        if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL &&
+        if (((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL ||
+	  (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) &&
 	  writeFlag >0) {
 	    requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, 1);
 	}
@@ -2311,7 +2313,8 @@ keyValPair_t *condInput, int writeFlag, int topFlag)
     char *rescName;
 
    if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL || 
-      (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) == NULL) { 
+      (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL ||
+      (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) { 
 	requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, topFlag);
     }
     return (0);

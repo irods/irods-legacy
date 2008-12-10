@@ -18,6 +18,7 @@
 #define OBJ_PATH_KW	"objPath"	/* logical path of the object */ 
 #define RESC_NAME_KW	"rescName"	/* resource name */
 #define DEST_RESC_NAME_KW	"destRescName"	/* destination resource name */
+#define DEF_RESC_NAME_KW	"defRescName"	/* default resource name */
 #define BACKUP_RESC_NAME_KW "backupRescName" /* destination resource name */
 #define DATA_TYPE_KW	"dataType"	/* data type */
 #define DATA_SIZE_KW	"dataSize"

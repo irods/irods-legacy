@@ -156,6 +156,11 @@ replaceDataVar( char *start, int size,  dataObjInfo_t *doi)
       return(DESTRESCNAME_EMPTY_IN_STRUCT_ERR);
     i = replaceStrValue(start,size,doi->destRescName,strlen(DEST_RESC_NAME_KW)+1);
   }
+  else if (strstr(t1,DEF_RESC_NAME_KW) == t1) {
+    if (doi->destRescName == NULL)
+      return(DESTRESCNAME_EMPTY_IN_STRUCT_ERR);
+    i = replaceStrValue(start,size,doi->destRescName,strlen(DEF_RESC_NAME_KW)+1);
+  }
   else if (strstr(t1,BACKUP_RESC_NAME_KW) == t1) {
     if (doi->backupRescName == NULL)
       return(BACKUPRESCNAME_EMPTY_IN_STRUCT_ERR);

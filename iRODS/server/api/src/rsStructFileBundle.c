@@ -48,7 +48,8 @@ structFileExtAndRegInp_t *structFileBundleInp)
 
     if (l1descInx < 0) {
 #if 0
-	if (getValByKey (&dataObjInp.condInput, DEST_RESC_NAME_KW) == NULL) {
+	if (getValByKey (&dataObjInp.condInput, DEST_RESC_NAME_KW) == NULL &&
+	  getValByKey (&dataObjInp.condInput, DEF_RESC_NAME_KW) == NUL) {
 	    return SYS_CACHE_STRUCT_FILE_RESC_ERR;
 	} else {
 #endif

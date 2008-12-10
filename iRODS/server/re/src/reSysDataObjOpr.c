@@ -178,6 +178,7 @@ msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
 
     if ((rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) == NULL &&
       (rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
+      (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL &&
       (rescName = getValByKey (condInput, RESC_NAME_KW)) == NULL) { 
 	return (0);
     }
