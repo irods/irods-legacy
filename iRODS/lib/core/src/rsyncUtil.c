@@ -138,6 +138,7 @@ dataObjInp_t *dataObjOprInp)
 
     if (myRodsArgs->verbose == True) {
         (void) gettimeofday(&startTime, (struct timezone *)0);
+	bzero (&conn->transStat, sizeof (transStat_t));
     }
 
     if (targPath->objState == NOT_EXIST_ST) {
@@ -229,6 +230,7 @@ dataObjInp_t *dataObjOprInp)
 
     if (myRodsArgs->verbose == True) {
         (void) gettimeofday(&startTime, (struct timezone *)0);
+        bzero (&conn->transStat, sizeof (transStat_t));
     }
 
     if (targPath->objState == NOT_EXIST_ST) {
@@ -318,6 +320,7 @@ dataObjCopyInp_t *dataObjCopyInp)
 
     if (myRodsArgs->verbose == True) {
         (void) gettimeofday(&startTime, (struct timezone *)0);
+        bzero (&conn->transStat, sizeof (transStat_t));
     }
 
     if (targPath->objState == NOT_EXIST_ST) {
@@ -556,6 +559,8 @@ dataObjInp_t *dataObjOprInp)
 	    getRodsObjType (conn, &myTargPath);
             status = rsyncFileToDataUtil (conn, &mySrcPath, &myTargPath,
               myRodsEnv, rodsArgs, dataObjOprInp);
+	    /* fix a big mem leak */
+	    freeRodsObjStat (myTargPath.rodsObjStat);
         } else if ((statbuf.st_mode & S_IFDIR) != 0) {      /* a directory */
             status = mkCollR (conn, targColl, myTargPath.outPath);
             if (status < 0) {
@@ -569,6 +574,8 @@ dataObjInp_t *dataObjOprInp)
                 getRodsObjType (conn, &myTargPath);
                 status = rsyncDirToCollUtil (conn, &mySrcPath, &myTargPath,
                   myRodsEnv, rodsArgs, dataObjOprInp);
+	        /* fix a big mem leak */
+		freeRodsObjStat (myTargPath.rodsObjStat);
             }
         } else {
             rodsLog (LOG_ERROR,

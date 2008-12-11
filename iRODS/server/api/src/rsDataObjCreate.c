@@ -93,7 +93,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
         }
     }
-    freeRodsObjStat (rodsObjStatOut);
+    if (rodsObjStatOut != NULL) free (rodsObjStatOut);
 
     return (l1descInx);
 }

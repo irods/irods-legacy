@@ -170,9 +170,6 @@ getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl);
 void
 resolveStatForStructFileOpr (keyValPair_t *condInput,
 rodsObjStat_t *rodsObjStatOut);
-void
-freeRodsObjStat (rodsObjStat_t *rodsObjStatOut);
-
 int keyValToString( keyValPair_t* list, char** string );
 int keyValFromString( char* string, keyValPair_t** list );
 int
@@ -201,7 +198,8 @@ int
 makeCachedStructFileStr (char *collInfo2, specColl_t *specColl);
 int
 getLineInBuf (char **inbuf, char *outbuf, int bufLen);
-
+int
+freeRodsObjStat (rodsObjStat_t *rodsObjStat);
 #ifdef  __cplusplus
 }
 #endif

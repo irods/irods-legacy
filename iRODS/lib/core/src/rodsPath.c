@@ -678,7 +678,7 @@ clearRodsPath (rodsPath_t *rodsPath)
     if (rodsPath->rodsObjStat->specColl != NULL) 
 	free (rodsPath->rodsObjStat->specColl);
 
-    free (rodsPath->rodsObjStat);
+    freeRodsObjStat (rodsPath->rodsObjStat);
 
     memset (rodsPath, 0, sizeof (rodsPath_t));
 

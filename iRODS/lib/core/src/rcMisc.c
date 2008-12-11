@@ -2829,17 +2829,6 @@ rodsObjStat_t *rodsObjStatOut)
     return;
 }
 
-void
-freeRodsObjStat (rodsObjStat_t *rodsObjStatOut)
-{
-    if (rodsObjStatOut == NULL) return;
-
-    free (rodsObjStatOut);
-}
-
-
-
-
 
 /**
  * Output a list of keyword-value pairs as a property string.
@@ -3025,5 +3014,21 @@ clearSendXmsgInfo (sendXmsgInfo_t *sendXmsgInfo)
     memset (sendXmsgInfo, 0, sizeof (sendXmsgInfo_t));
 
     return (0);
+}
+
+/* freeRodsObjStat - free a rodsObjStat_t. Note that this should only
+ * be used by the client because specColl also is freed which is cached
+ * on the server
+ */
+int
+freeRodsObjStat (rodsObjStat_t *rodsObjStat)
+{
+    if (rodsObjStat == NULL) return 0;
+
+    if (rodsObjStat->specColl != NULL) free (rodsObjStat->specColl);
+
+    free (rodsObjStat);
+
+    return 0;
 }
 
