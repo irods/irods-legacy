@@ -346,7 +346,7 @@ l3Create (rsComm_t *rsComm, int l1descInx)
     } else {
         /* normal or mounted file */
         l3descInx = l3CreateByObjInfo (rsComm, L1desc[l1descInx].dataObjInp,
-          L1desc[l1descInx].dataObjInp);
+          L1desc[l1descInx].dataObjInfo);
     }
 
      return (l3descInx);
