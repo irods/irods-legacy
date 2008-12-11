@@ -42,6 +42,9 @@ l3OpenByHost (rsComm_t *rsComm, int rescTypeInx, int l3descInx, int flags);
 int
 applyPreprocRuleForOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfoHead);
+int
+createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead);
 #else
 #define RS_DATA_OBJ_OPEN NULL
 #endif

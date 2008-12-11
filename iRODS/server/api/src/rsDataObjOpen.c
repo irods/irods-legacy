@@ -17,6 +17,9 @@
 #include "reDefines.h"
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
+#include "regReplica.h"
+#include "regDataObj.h"
+#include "dataObjClose.h"
 
 int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
@@ -95,10 +98,23 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         if (status < 0) return status;
     }
 
-    if (phyOpenFlag > 0 && writeFlag > 0) {
+    /* no sure why phyOpenFlag only - if (phyOpenFlag > 0 && writeFlag > 0) { */
+    if (writeFlag > 0) {
 	/* put the copy with destResc on top */
-	requeDataObjInfoByDestResc (&dataObjInfoHead, &dataObjInp->condInput,
-	  writeFlag, 1);
+	status = requeDataObjInfoByDestResc (&dataObjInfoHead, 
+	  &dataObjInp->condInput, writeFlag, 1);
+	/* status < 0 means there is no copy in the DEST_RESC */
+	if (status < 0 && getStructFileType (dataObjInfoHead->specColl) < 0 &&
+	  getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
+	    /* we don't have a copy in the DEST_RESC_NAME */
+	    status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
+	    if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "_rsDataObjOpen: createEmptyRepl of %s failed, status = %d",
+          	  dataObjInfoHead->objPath, status);
+		return status;
+	    }
+	}
     }
 
     tmpDataObjInfo = dataObjInfoHead;
@@ -207,11 +223,11 @@ l3Open (rsComm_t *rsComm, int l1descInx)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
 	subFile.specColl = dataObjInfo->specColl;
-        subFile.mode = getFileMode (l1descInx);
+        subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         subFile.flags = getFileFlags (l1descInx);
 	l3descInx = rsSubStructFileOpen (rsComm, &subFile); 
     } else {
-        mode = getFileMode (l1descInx);
+        mode = getFileMode (L1desc[l1descInx].dataObjInp);
         flags = getFileFlags (l1descInx);
 	l3descInx = _l3Open (rsComm, dataObjInfo, mode, flags);
     }
@@ -303,3 +319,73 @@ dataObjInfo_t **dataObjInfoHead)
     }
     return (status);
 }
+
+int
+createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead)
+{
+    int status;
+    char *rescName;
+    rescInfo_t *rescInfo;
+    rescGrpInfo_t *tmpRescGrpInfo;
+    regReplica_t regReplicaInp;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    keyValPair_t *condInput = &dataObjInp->condInput;
+    dataObjInfo_t *myDataObjInfo;
+
+    if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
+      (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) == NULL &&
+      (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL) {
+	return USER_NO_RESC_INPUT_ERR;
+    }
+
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    if (status < 0) return status;
+
+    myDataObjInfo = malloc (sizeof (dataObjInfo_t));
+    *myDataObjInfo = *(*dataObjInfoHead);
+    tmpRescGrpInfo = myRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+	rescInfo = tmpRescGrpInfo->rescInfo;
+        myDataObjInfo->rescInfo = rescInfo;
+        rstrcpy (myDataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
+        rstrcpy (myDataObjInfo->rescGroupName, myRescGrpInfo->rescGroupName, 
+	  NAME_LEN);
+        status = getFilePathName (rsComm, myDataObjInfo, dataObjInp);
+	if (status < 0) {
+	    myRescGrpInfo = myRescGrpInfo->next;
+	    continue;
+	}
+	status = l3CreateByObjInfo (rsComm, dataObjInp, myDataObjInfo);
+	if (status < 0) {
+            myRescGrpInfo = myRescGrpInfo->next;
+            continue;
+        }
+	/* close it */
+	_l3Close (rsComm, rescInfo->rescTypeInx, status);
+
+	/* register the replica */
+        memset (&regReplicaInp, 0, sizeof (regReplicaInp));
+        regReplicaInp.srcDataObjInfo = *dataObjInfoHead;
+        regReplicaInp.destDataObjInfo = myDataObjInfo;
+        if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
+            addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+        }
+        status = rsRegReplica (rsComm, &regReplicaInp);
+        clearKeyVal (&regReplicaInp.condInput);
+
+	break;
+    }
+
+    freeAllRescGrpInfo (myRescGrpInfo);
+
+    if (status < 0) {
+	free (myDataObjInfo);
+    } else {
+	/* queue it on top */
+	myDataObjInfo->next = *dataObjInfoHead;
+	*dataObjInfoHead = myDataObjInfo;
+    }
+    return status;
+}
+

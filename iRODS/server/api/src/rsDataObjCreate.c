@@ -329,7 +329,6 @@ int
 l3Create (rsComm_t *rsComm, int l1descInx)
 {
     dataObjInfo_t *dataObjInfo;
-    int rescTypeInx;
     int l3descInx;
 
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -342,13 +341,23 @@ l3Create (rsComm_t *rsComm, int l1descInx)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-	subFile.mode = getFileMode (l1descInx);
+	subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         l3descInx = rsSubStructFileCreate (rsComm, &subFile);
-
-	return (l3descInx);
+    } else {
+        /* normal or mounted file */
+        l3descInx = l3CreateByObjInfo (rsComm, L1desc[l1descInx].dataObjInp,
+          L1desc[l1descInx].dataObjInp);
     }
 
-    /* normal or mounted file */
+     return (l3descInx);
+}
+
+int
+l3CreateByObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+dataObjInfo_t *dataObjInfo)
+{
+    int rescTypeInx;
+    int l3descInx;
 
     rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
 
@@ -363,9 +372,8 @@ l3Create (rsComm_t *rsComm, int l1descInx)
 	rstrcpy (fileCreateInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
 	  NAME_LEN);
 	rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-	fileCreateInp.mode = getFileMode (l1descInx);
-	if (getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp, 
-	  L1desc[l1descInx].dataObjInfo)) {
+	fileCreateInp.mode = getFileMode (dataObjInp);
+	if (getchkPathPerm (rsComm, dataObjInp, dataObjInfo)) {
 	    fileCreateInp.otherFlags |= CHK_PERM_FLAG; 
 	}
 	l3descInx = rsFileCreate (rsComm, &fileCreateInp);
@@ -373,8 +381,7 @@ l3Create (rsComm_t *rsComm, int l1descInx)
         /* file already exists ? */
 	while (l3descInx <= 2 && retryCnt < 100 && 
 	  getErrno (l3descInx) == EEXIST) {
-	    if (resolveDupFilePath (rsComm, dataObjInfo, 
-		L1desc[l1descInx].dataObjInp) < 0) {
+	    if (resolveDupFilePath (rsComm, dataObjInfo, dataObjInp) < 0) {
 		break;
 	    }
 	    rstrcpy (fileCreateInp.fileName, dataObjInfo->filePath, 

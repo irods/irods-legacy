@@ -2311,13 +2311,15 @@ requeDataObjInfoByDestResc (dataObjInfo_t **dataObjInfoHead,
 keyValPair_t *condInput, int writeFlag, int topFlag)
 {
     char *rescName;
+    int status = -1; 
 
    if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL || 
       (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL ||
       (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) { 
-	requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, topFlag);
+	status = requeDataObjInfoByResc (dataObjInfoHead, rescName, 
+	  writeFlag, topFlag);
     }
-    return (0);
+    return (status);
 }
 
 int

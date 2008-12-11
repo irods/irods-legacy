@@ -266,11 +266,9 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
 }
 
 int
-getFileMode (int l1descInx)
+getFileMode (dataObjInp_t *dataObjInp)
 {
     int createMode;
-
-    dataObjInp_t *dataObjInp = L1desc[l1descInx].dataObjInp;
 
     if (dataObjInp != NULL && 
       (dataObjInp->createMode & 0110) != 0) {

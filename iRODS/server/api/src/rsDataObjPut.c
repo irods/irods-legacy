@@ -259,7 +259,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-        subFile.mode = getFileMode (l1descInx);
+        subFile.mode = getFileMode (dataObjInp);
         subFile.flags = O_WRONLY | dataObjInp->openFlags;
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
             subFile.flags |= FORCE_FLAG;
@@ -280,7 +280,7 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         rstrcpy (filePutInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         rstrcpy (filePutInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-        filePutInp.mode = getFileMode (l1descInx);
+        filePutInp.mode = getFileMode (dataObjInp);
         filePutInp.flags = O_WRONLY | dataObjInp->openFlags;
         if (getchkPathPerm (rsComm, L1desc[l1descInx].dataObjInp, 
           L1desc[l1descInx].dataObjInfo)) {

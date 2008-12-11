@@ -244,7 +244,7 @@ bytesBuf_t *dataObjOutBBuf)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-	subFile.mode = getFileMode (l1descInx);
+	subFile.mode = getFileMode (L1desc[l1descInx].dataObjInp);
         subFile.flags = O_RDONLY;
 	subFile.offset = dataObjInfo->dataSize;
         bytesRead = rsSubStructFileGet (rsComm, &subFile, dataObjOutBBuf);
@@ -261,7 +261,7 @@ bytesBuf_t *dataObjOutBBuf)
         rstrcpy (fileGetInp.addr.hostAddr,  dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         rstrcpy (fileGetInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-        fileGetInp.mode = getFileMode (l1descInx);
+        fileGetInp.mode = getFileMode (dataObjInp);
         fileGetInp.flags = O_RDONLY;
 	fileGetInp.dataSize = dataObjInfo->dataSize;
 	/* XXXXX need to be able to handle structured file */

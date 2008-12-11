@@ -69,7 +69,7 @@ fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
 dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize);
 
 int
-getFileMode (int l1descInx);
+getFileMode (dataObjInp_t *dataObjInp);
 
 int
 getFileFlags (int l1descInx);
