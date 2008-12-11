@@ -41,8 +41,8 @@ endif
 # Special memory allocation library
 #
 ifdef CCMALLOC
-LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl
-CL_LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl
+LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl -lstdc++
+CL_LDADD+=$(CCMALLOC_DIR)/obj/ccmalloc-gcc.o -L$(CCMALLOC_DIR)/lib -lccmalloc -ldl -lstdc++
 endif
 
 
