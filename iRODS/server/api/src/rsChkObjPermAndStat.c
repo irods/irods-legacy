@@ -8,6 +8,11 @@
 #include "icatHighLevelRoutines.h"
 #include "icatHighLevelRoutines.h"
 int
+saveCollEntForChkColl (collEnt_t *collEnt);
+int
+freeCollEntForChkColl (collEnt_t *collEnt);
+
+int
 rsChkObjPermAndStat (rsComm_t *rsComm,
 chkObjPermAndStat_t *chkObjPermAndStatInp)
 {
@@ -118,6 +123,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 	if (collEnt->objType == DATA_OBJ_T) {
             if (curCollEnt == NULL) {
 	        curCollEnt = collEnt;
+		saveCollEntForChkColl (collEnt);
                 if (collEnt->replStatus > 0 &&
                   strcmp (resource, collEnt->resource) == 0) {
                     curCopyGood = True;
@@ -128,16 +134,17 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 		    if (collEnt->replStatus > 0 &&
 		      strcmp (resource, collEnt->resource) == 0) {
 			/* a good copy */
-			free (curCollEnt);
+			freeCollEntForChkColl (curCollEnt);
 			curCopyGood = True;
 			curCollEnt = collEnt;
+			saveCollEntForChkColl (collEnt);
 		    }
 		} else {
 		    /* encounter a new data obj */
                     snprintf (myPath, MAX_NAME_LEN, "%s/%s", 
 		      curCollEnt->collName,
                       curCollEnt->dataName);
-                    free (curCollEnt);
+                    freeCollEntForChkColl (curCollEnt);
                     curCollEnt = NULL;
                     if (curCopyGood == False) {
                         rodsLog (LOG_ERROR,
@@ -160,6 +167,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 		    } else {
 			/* copy is OK */
                         curCollEnt = collEnt;
+			saveCollEntForChkColl (collEnt);
 			collEnt = NULL;
                         if (curCollEnt->replStatus > 0 &&
                           strcmp (resource, curCollEnt->resource) == 0) {
@@ -173,11 +181,15 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
     }
 
     /* handle what's left */
-    if (curCollEnt != NULL && curCopyGood == False) {
-        rodsLog (LOG_ERROR,
-         "chkCollForBundleOpr: a file in %s does not have a good copy in %s",
-          chkObjPermAndStatInp->objPath, resource);
-        status = SYS_COPY_NOT_EXIST_IN_RESC;
+    if (curCollEnt != NULL) {
+	if (curCopyGood == False) {
+            rodsLog (LOG_ERROR,
+             "chkCollForBundleOpr:a file in %s does not have a good copy in %s",
+              chkObjPermAndStatInp->objPath, resource);
+            status = SYS_COPY_NOT_EXIST_IN_RESC;
+	} else {
+	    freeCollEntForChkColl (curCollEnt);
+	}
     } else {
 	status = 0;
     }
@@ -188,5 +200,34 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 #else
     return (SYS_NO_RCAT_SERVER_ERR);
 #endif
+}
+
+/* saveCollEntForChkColl - save some of entries in collEnt_t used by
+ * chkCollForBundleOpr. These entry need to be saved because it could 
+ * be freed if the query has continuation.
+ */
+int
+saveCollEntForChkColl (collEnt_t *collEnt)
+{
+    if (collEnt == NULL) return 0;
+    if (collEnt->collName != NULL) 
+	collEnt->collName = strdup (collEnt->collName);
+    if (collEnt->dataName != NULL) 
+	collEnt->dataName = strdup (collEnt->dataName);
+    if (collEnt->resource != NULL) 
+	collEnt->resource = strdup (collEnt->resource);
+    return 0;
+}
+
+int
+freeCollEntForChkColl (collEnt_t *collEnt)
+{
+    if (collEnt == NULL) return 0;
+    if (collEnt->collName != NULL) free (collEnt->collName);
+    if (collEnt->dataName != NULL) free (collEnt->dataName);
+    if (collEnt->resource != NULL) free (collEnt->resource);
+
+    free (collEnt);
+    return 0;
 }
 
