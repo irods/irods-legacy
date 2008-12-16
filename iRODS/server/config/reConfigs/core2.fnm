@@ -17,4 +17,4 @@ getKVPairsUsingTags|msiExtractTemplateMDFromBuf
 findObjType|msiGetObjType
 ingestBulkMD|msiAssociateKeyValuePairsToObj
 commitIcat|msiCommit
-admShowCoreIRB|admShowIRB
+admShowCoreIRB|msiAdmShowIRB
