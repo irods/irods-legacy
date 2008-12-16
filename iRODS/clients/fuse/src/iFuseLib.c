@@ -843,15 +843,20 @@ closeIrodsFd (int fd)
 int
 closeNewlyCreatedCache ()
 {
+    int status = 0;
+
     if (strlen (NewlyCreatedFile.filePath) > 0) {
-	struct fuse_file_info fi;
 	int descInx = NewlyCreatedFile.descInx;
 	
-	fi.fh = descInx;
-	irodsRelease (NewlyCreatedFile.filePath, &fi);
+	/* should not call irodsRelease because it will call
+	 * getIFuseConn which will result in deadlock 
+	 * irodsRelease (NewlyCreatedFile.filePath, &fi); */
+        if (checkFuseDesc (descInx) < 0) return -EBADF;
+        status = ifuseClose ((char *) NewlyCreatedFile.filePath, descInx);
+        freeIFuseDesc (descInx);
 	bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
     }
-    return (0);
+    return (status);
 }
 
 int

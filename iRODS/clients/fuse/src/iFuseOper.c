@@ -819,8 +819,8 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
     descInx = fi->fh;
 
     if (checkFuseDesc (descInx) < 0) {
-        return -EBADF;
         relIFuseConn (&DefConn);
+        return -EBADF;
     }
 
     status = ifuseClose ((char *) path, descInx);
