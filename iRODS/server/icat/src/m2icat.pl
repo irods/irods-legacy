@@ -467,12 +467,15 @@ sub processLogFile($) {
 	    if ($mode eq "") {
 		die ("Unrecognized type of Spullmeta log file: $logFile");
 	    }
+            if ($mode eq "DATA") {
+                parseDataHdr($line);
+            }
 	}
 	if ($lineNum>2) { # regular lines
 	    @values = split('\|',$line);
 	    $doDataInsert=0;
 	    if ($mode eq "DATA") {
-		$v_resc = $values[3];
+		$v_resc = $values[$g_resc_name_ix];
 		$k=0;
 		foreach $resc (@cv_srb_resources) {
 		    if ($resc eq $v_resc) {
@@ -483,19 +486,20 @@ sub processLogFile($) {
 		}
 	    }
 	    if ($doDataInsert) {
-		$v_dataName = $values[0];
-		$v_dataTypeName = $values[1];
-		$v_phyPath = $values[2];
-		$v_size = $values[6];
-		$v_owner_domain = $values[13];
-		$v_owner = convertUser($values[9], $v_owner_domain);
-		$v_create_time = convertTime($values[15]);
-		$v_access_time = convertTime($values[16]);
-		$v_replica = $values[14];
+		$v_dataName = $values[$g_data_name_ix];
+		$v_dataTypeName = $values[$g_data_type_name_ix];
+		$v_phyPath = $values[$g_path_name_ix];
+		$v_size = $values[$g_size_ix];
+		$v_owner_domain = $values[$g_data_owner_domain_ix];
+		$v_owner = convertUser($values[$g_data_owner_ix], $v_owner_domain);
+		$v_create_time = convertTime($values[$g_data_create_timestamp_ix]);
+		$v_access_time = convertTime($values[$g_data_last_access_timestamp_ix]);
+		$v_replica = $values[$g_container_repl_enum_ix];
 #		$v_collection = convertCollectionForData($values[27],
 #							 $v_owner,
 #							 $v_owner_domain);
-		$v_collection = convertCollection($values[27]);
+#		$v_collection = convertCollection($values[27]);
+		$v_collection = convertCollection($values[$g_collection_cont_name_ix]);
 		if (checkDoCollection($values[27])==1) {
 		    print( SQL_FILE "begin;\n"); # begin/commit to make these 2 like 1
 		    print( SQL_FILE "insert into r_data_main (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((select nextval('R_ObjectID')), (select coll_id from r_coll_main where coll_name ='$v_collection'), '$v_dataName', '$v_replica', ' ', '$v_dataTypeName', '$v_size', '$newResource', '$v_phyPath', '$v_owner', '$cv_irodsZone', '1', '$v_create_time', '$v_access_time');\n");
@@ -715,4 +719,112 @@ sub addAccess($$) {
     print( SQL_FILE "insert into r_objt_access (object_id, user_id, access_type_id)  values ((select data_id from r_data_main where data_name = '$inDataname' and coll_id = (select coll_id from r_coll_main where coll_name = '$inColl')),(select user_id from r_user_main where user_name = '$thisUser'), '1200');\n");
     $metadataLastColl=$inColl;
     $metadataLastDataname=$inDataname;
+}
+
+# This function checks the position (index) of the fields in the log
+# file and sets global indexes (g_*).  Sometimes the order of the
+# fields in the Spullmeta log files differ, so this function is needed.
+sub parseDataHdr {
+    my($line) = @_;
+    $_=$line;
+    @DO_LIST=split('\|', $_);
+    $ix=0;
+
+    $g_data_name_ix=-1;
+    $g_resc_name_ix=-1;
+    $g_data_typ_name_ix=-1;
+    $g_path_name_ix=-1;
+    $g_size_ix=-1;
+    $g_data_owner_ix=-1;
+    $g_data_owner_domain_ix=-1;
+    $g_data_create_timestamp_ix=-1;
+    $g_data_last_access_timestamp_ix=-1;
+    $g_container_repl_enum_ix=-1;
+    $g_collection_cont_name_ix=-1;
+
+    foreach $DO_ITEM (@DO_LIST) {
+        if (index($DO_ITEM, "DATA_NAME")>=0) {
+            $g_data_name_ix=$ix;
+        }
+        if (index($DO_ITEM, "RSRC_NAME")>=0) {
+            $g_resc_name_ix=$ix;
+        }
+        if (index($DO_ITEM, "PATH_NAME")>=0) {
+            $g_path_name_ix=$ix;
+        }
+        if (index($DO_ITEM, "DATA_TYP_NAME")>=0) {
+            $g_data_typ_name_ix=$ix;
+        }
+        if (index($DO_ITEM, "SIZE")>=0) {
+            $g_size_ix=$ix;
+        }
+        if (index($DO_ITEM, "DATA_OWNER")>=0) {
+            if (index($DO_ITEM, "DATA_OWNER_") < 0) {
+                $g_data_owner_ix=$ix;
+            }
+        }
+        if (index($DO_ITEM, "DATA_OWNER_DOMAIN")>=0) {
+            $g_data_owner_domain_ix=$ix;
+        }
+        if (index($DO_ITEM, "DATA_CREATE_TIMESTAMP")>=0) {
+            $g_data_create_timestamp_ix=$ix;
+        }
+        if (index($DO_ITEM, "DATA_LAST_ACCESS_TIMESTAMP")>=0) {
+            $g_data_last_access_timestamp_ix=$ix;
+        }
+        if (index($DO_ITEM, "CONTAINER_REPL_ENUM")>=0) {
+            $g_container_repl_enum_ix=$ix;
+        }
+        if (index($DO_ITEM, "COLLECTION_CONT_NAME")>=0) {
+            $g_collection_cont_name_ix=$ix;
+        }
+        $ix++;
+    }
+    if ($g_data_name_ix<0) {
+        die("missing data_name field in Spullmeta log");
+    }
+    if ($g_resc_name_ix<0) {
+        die("missing resc_name field in Spullmeta log");
+    }
+    if ($g_path_name_ix<0) {
+        die("missing path_name field in Spullmeta log");
+    }
+    if ($g_data_typ_name_ix<0) {
+        die("missing data_typ_name field in Spullmeta log");
+    }
+    if ($g_size_ix<0) {
+        die("missing size field in Spullmeta log");
+    }
+    if ($g_data_owner_ix<0) {
+        die("missing data_owner field in Spullmeta log");
+    }
+    if ($g_data_owner_domain_ix<0) {
+        die("missing data_owner_domain field in Spullmeta log");
+    }
+    if ($g_data_create_timestamp_ix<0) {
+        die("missing data_create_timestamp field in Spullmeta log");
+    }
+    if ($g_data_last_access_timestamp_ix<0) {
+        die("missing data_last_access_timestamp field in Spullmeta log");
+    }
+    if ($g_container_repl_enum_ix<0) {
+        die("missing container_repl_enum field in Spullmeta log");
+    }
+    if ($g_collection_cont_name_ix<0) {
+        die("missing collection_cont_name field in Spullmeta log");
+    }
+    $debug_print=0;
+    if ($debug_print) {
+        print "g_data_name_ix $g_data_name_ix\n";
+        print "g_resc_name_ix $g_resc_name_ix\n";
+        print "g_path_name_ix $g_path_name_ix\n";
+        print "g_data_typ_name_ix $g_data_typ_name_ix\n";
+        print "g_size_ix $g_size_ix\n";
+        print "g_data_owner_ix $g_data_owner_ix\n";
+        print "g_data_owner_domain_ix $g_data_owner_domain_ix\n";
+        print "g_data_create_timestamp_ix $g_data_create_timestamp_ix\n";
+        print "g_data_last_access_timestamp_ix $g_data_last_access_timestamp_ix\n";
+        print "g_container_repl_enum_ix $g_container_repl_enum_ix\n";
+        print "g_collection_cont_name_ix $g_collection_cont_name_ix\n";
+    }
 }
