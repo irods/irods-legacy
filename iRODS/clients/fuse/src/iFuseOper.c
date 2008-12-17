@@ -158,6 +158,7 @@ off_t offset, struct fuse_file_info *fi)
             rodsLog (LOG_ERROR,
               "getCollUtil: rclOpenCollection of %s error. status = %d",
               collPath, status);
+                relIFuseConn (&DefConn);
         	return -ENOENT;
 	}
     }
