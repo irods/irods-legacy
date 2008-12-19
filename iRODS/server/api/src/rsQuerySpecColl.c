@@ -395,8 +395,9 @@ l3Opendir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     if (dataObjInfo == NULL) return (SYS_INTERNAL_NULL_INPUT_ERR);
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
-	status = 0;
-        subFile_t subStructFileOpendirInp;
+		subFile_t subStructFileOpendirInp;
+	    status = 0;
+        
         memset (&subStructFileOpendirInp, 0, sizeof (subStructFileOpendirInp));
         rstrcpy (subStructFileOpendirInp.subFilePath, dataObjInfo->subPath,
           MAX_NAME_LEN);
