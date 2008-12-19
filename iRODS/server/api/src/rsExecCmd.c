@@ -4,7 +4,9 @@
 /* See dataObjRead.h for a description of this API call.*/
 
 #include <sys/types.h>
+#ifndef windows_platform
 #include <sys/wait.h>
+#endif
 #include "execCmd.h"
 #include "objMetaOpr.h"
 #include "miscServerFunct.h"
