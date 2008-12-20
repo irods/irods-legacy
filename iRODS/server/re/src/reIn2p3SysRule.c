@@ -5,10 +5,11 @@
 
 #include "reIn2p3SysRule.h"
 #include "genQuery.h"
+#ifndef windows_platform
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
+#endif
 
 int checkIPaddress(char *IP, unsigned char IPcomp[IPV4]) {
 
