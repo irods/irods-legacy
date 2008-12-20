@@ -538,8 +538,8 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
               dataObjInp.objPath, status);
             return (status);
 	} else {
+		dataObjCloseInp_t dataObjCloseInp;
 	    rescInfo = L1desc[myStatus].dataObjInfo->rescInfo;
-	    dataObjCloseInp_t dataObjCloseInp;
 	    dataObjCloseInp.l1descInx = myStatus;
 	    rsDataObjClose (rsComm, &dataObjCloseInp);
 	}
