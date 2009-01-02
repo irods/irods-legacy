@@ -1078,7 +1078,8 @@ setAndMkFileCacheDir ()
 
     if ((status = mkdirR ("/", FuseCacheDir, DEF_DIR_MODE)) < 0) {
         rodsLog (LOG_ERROR,
-          "setAndMkFileCacheDir: mkdirR of %s error. status = %d");
+          "setAndMkFileCacheDir: mkdirR of %s error. status = %d", 
+	  FuseCacheDir, status);
     }
 
     return (status);
