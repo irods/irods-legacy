@@ -13,9 +13,11 @@
 #define RODS_SERVER_H
 
 #include <stdarg.h>
+#ifndef windows_platform
 #include <unistd.h>
 #include <signal.h>
 #include <sys/wait.h>
+#endif
 
 #include "rods.h"
 #include "rsGlobal.h"	/* server global */
@@ -32,8 +34,11 @@
 
 extern char *optarg;
 extern int optind, opterr, optopt;
-
+#ifndef windows_platform
 #define AGENT_EXE	"irodsAgent"	/* the agent's executable */
+#else /* windows */
+#define AGENT_EXE   "irodsAgent.exe"
+#endif
 #define MAX_EXEC_ENV	10	/* max number of env for execv */
 #define MAX_SVR_SVR_CONNECT_CNT 7  /* avoid recurive connect */
 
