@@ -231,14 +231,20 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	 key=strstr(buf, "irodsAuthScheme");
 	 if (key != NULL) {
 	    static char tmpStr1[120];
+	    char *getVar;
+
 	    rstrcpy(rodsEnvArg->rodsAuthScheme, findNextTokenAndTerm(key+15),
 		    LONG_NAME_LEN);
 	    rodsLog(msgLevel, "irodsAuthScheme=%s",
 		    rodsEnvArg->rodsAuthScheme);
-	    /* Also put it into the env for easy access */
-	    snprintf(tmpStr1,100,"irodsAuthScheme=%s",
-		     rodsEnvArg->rodsAuthScheme);
-	    putenv(tmpStr1);
+	    /* Also put it into the environment for easy access,
+               unless there already is one (which should be used instead) */
+	    getVar = getenv("irodsAuthScheme");
+	    if (getVar==NULL) {
+	       snprintf(tmpStr1,100,"irodsAuthScheme=%s",
+			rodsEnvArg->rodsAuthScheme);
+	       putenv(tmpStr1);
+	    }
 	 }
 	 key=strstr(buf, "irodsDefResource");
 	 if (key != NULL) {
@@ -257,12 +263,26 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	 key=strstr(buf, "irodsServerDn");
 	 if (key != NULL) {
 	    char *myStr;
+	    char *getVar;
 	    myStr = (char *)malloc(strlen(buf));
 	    rstrcpy(myStr, findNextTokenAndTerm(key+13),
 		    LONG_NAME_LEN);
 	    rodsEnvArg->rodsServerDn=myStr;
 	    rodsLog(msgLevel, "irodsServerDn=%s",
 		    rodsEnvArg->rodsServerDn);
+	    /* Also put it into the environment for easy access,
+               unless there already is one (which should be used instead) */
+	    getVar = getenv("irodsServerDn");
+	    if (getVar==NULL) {
+	       char *tmpStr2;
+	       int tmpLen;
+	       tmpLen = strlen(myStr)+40;
+	       tmpStr2 = malloc(tmpLen);
+	       snprintf(tmpStr2,tmpLen,"irodsServerDn=%s", 
+			rodsEnvArg->rodsServerDn);
+	       putenv(tmpStr2);
+	       free(tmpStr2);
+	    }
 	 }
 	 key=strstr(buf, "irodsLogLevel");
 	 if (key != NULL) {

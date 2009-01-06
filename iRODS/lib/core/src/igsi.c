@@ -941,7 +941,9 @@ int igsiEstablishContextClientside(rcComm_t *Comm, char *serviceName,
         }
     } while (majorStatus == GSS_S_CONTINUE_NEEDED);
 
-    (void) gss_release_name(&minorStatus, &target_name);
+    if (serviceName != 0 && strlen(serviceName)>0) {
+       (void) gss_release_name(&minorStatus, &target_name);
+    }
 
     if (igsiDebugFlag > 0)
         _igsiDisplayCtxFlags();

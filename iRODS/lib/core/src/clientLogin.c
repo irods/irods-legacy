@@ -56,7 +56,10 @@ int clientLoginGsi(rcComm_t *Conn)
 
    /*   printf("Server-side DN is:%s\n", gsiAuthReqOut->serverDN); */
 
-   serverDN = getenv("SERVER_DN");  /* NULL or the SERVER_DN string */
+   serverDN = getenv("irodsServerDn"); /* Use irodsServerDn if defined */
+   if (serverDN == NULL) {
+      serverDN = getenv("SERVER_DN");  /* NULL or the SERVER_DN string */
+   }
 
    status = igsiEstablishContextClientside(Conn, serverDN,
 			       0);
@@ -118,7 +121,6 @@ clientLogin(rcComm_t *Conn)
    if (strncmp(ANONYMOUS_USER, Conn->proxyUser.userName, NAME_LEN) == 0) {
       md5Buf[CHALLENGE_LEN+1]='\0';
       i = 0;
-      printf("test1\n");
    }
    else {
       i = obfGetPw(md5Buf+CHALLENGE_LEN);
