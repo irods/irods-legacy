@@ -2718,6 +2718,7 @@ sub Postgres_CreateDatabase()
 				"Servername=$thisHost\n" .
 				"Database=$DB_NAME\n" .
 				"ReadOnly=no\n" .
+				"Ksqo=0\n" .
 				"Port=$DATABASE_PORT\n" );
 			$databaseRestartNeeded = 1;
 		}
@@ -2771,6 +2772,7 @@ sub Postgres_CreateDatabase()
 				"Servername=$thisHost\n" .
 				"Database=$DB_NAME\n" .
 				"ReadOnly=no\n" .
+				"Ksqo=0\n" .
 				"Port=$DATABASE_PORT\n" );
 			$databaseRestartNeeded = 1;
 		}
@@ -2873,6 +2875,7 @@ sub Postgres_CreateDatabase()
 				"Servername=$thisHost\n" .
 				"Database=$DB_NAME\n" .
 				"ReadOnly=no\n" .
+				"Ksqo=0\n" .
 				"Port=$DATABASE_PORT\n" );
 		$hasContent = 1;
 # end new section

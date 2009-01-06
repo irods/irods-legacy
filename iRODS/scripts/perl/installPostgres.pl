@@ -1589,6 +1589,7 @@ sub buildPostgresODBC
 		"Servername=$thisHost\n" .
 #		"Database=$DB_NAME\n" .		# To be added during iRODS setup
 		"ReadOnly=no\n" .
+                "Ksqo=0\n" .
 		"Port=$POSTGRES_PORT\n" );
 
 	return $source_dir;
@@ -1811,6 +1812,7 @@ sub buildUNIXODBC
 		"Servername=$thisHost\n" .
 #		"Database=$DB_NAME\n" .		# To be added during iRODS setup
 		"ReadOnly=no\n" .
+                "Ksqo=0\n" .
 		"Port=$POSTGRES_PORT\n" );
 
 	return $source_dir;
