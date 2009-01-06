@@ -281,7 +281,6 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	       snprintf(tmpStr2,tmpLen,"irodsServerDn=%s", 
 			rodsEnvArg->rodsServerDn);
 	       putenv(tmpStr2);
-	       free(tmpStr2);
 	    }
 	 }
 	 key=strstr(buf, "irodsLogLevel");
