@@ -123,7 +123,7 @@ COLL_ID_KW,
 rescTypeDef_t RescTypeDef[] = {
 	{"unix",	FILE_CAT, 	UNIX_FILE_TYPE,	DO_CHK_PATH_PERM},
 	{"hpss",	FILE_CAT, 	HPSS_FILE_TYPE,	DO_CHK_PATH_PERM},
-	{"nt",      FILE_CAT,   NT_FILE_TYPE,   DO_CHK_PATH_PERM},
+	{"windows",      FILE_CAT,   NT_FILE_TYPE,   DO_CHK_PATH_PERM},
 };
 
 int NumRescTypeDef = sizeof (RescTypeDef) / sizeof (rescTypeDef_t);
