@@ -93,6 +93,10 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
 #ifdef windows_platform
    getVar = iRODSNt_gethome();
 #else
+#ifdef UNI_CODE
+#include <locale.h>
+   setlocale (LC_ALL, "");
+#endif
    getVar = getenv("HOME");
 #endif
    if (getVar==NULL) {

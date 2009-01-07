@@ -151,6 +151,10 @@ MY_CFLAG+= -DRBUDP_TRANSFER -I$(libCoreIncDir) -I$(libApiIncDir)        \
 		-I$(libMd5IncDir) -I$(libRbudpIncDir)
 endif
 
+ifdef UNI_CODE
+MY_CFLAG+= -DUNI_CODE
+endif
+
 # server specific LDADD
 
 ifdef TAR_STRUCT_FILE
