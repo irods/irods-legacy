@@ -1254,12 +1254,18 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 	/* convert rescType to rescTypeInx */
 	myRescInfo->rescTypeInx = getRescTypeInx (tmpRescType);
 	if (myRescInfo->rescTypeInx < 0) {
-	    return (myRescInfo->rescTypeInx);
+	    rodsLog (LOG_ERROR,
+	     "procAndQueResResult: Unknown rescType %s. Resource %s will not be configured",
+	      tmpRescType, myRescInfo->rescName);
+	    continue;
 	}
 	rstrcpy (myRescInfo->rescClass, tmpRescClass, NAME_LEN);
 	myRescInfo->rescClassInx = getRescClassInx (tmpRescClass);
         if (myRescInfo->rescClassInx < 0) {
-            return (myRescInfo->rescClassInx);
+	    rodsLog (LOG_ERROR,
+	     "procAndQueResResult: Unknown rescClass %s. Resource %s will not be configured",
+	      tmpRescClass, myRescInfo->rescName);
+	    continue;
         }
 	rstrcpy (myRescInfo->rescVaultPath, tmpRescVaultPath, MAX_NAME_LEN);
 	rstrcpy (myRescInfo->rescInfo, tmpRescInfo, LONG_NAME_LEN);
