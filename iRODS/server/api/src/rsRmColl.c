@@ -142,7 +142,7 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     int handleInx;
     dataObjInp_t dataObjInp;
     collInp_t tmpCollInp;
-    int rmtrashFlag;
+    int rmtrashFlag =0;
     int savedStatus = 0;
     int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
 
