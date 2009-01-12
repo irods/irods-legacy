@@ -27,6 +27,12 @@ acDeleteUserZoneCollections||acDeleteCollByAdmin(/$rodsZoneProxy/home,$otherUser
 acDeleteCollByAdmin(*parColl,*childColl)||msiDeleteCollByAdmin(*parColl,*childColl)|nop
 #
 acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(/*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
+#
+# The acGetUserByDN by default is a no-op but can be configured to do some
+# special handling of GSI DNs.  See rsGsiAuthRequest.c.
+#acGetUserByDN(*arg,*OUT)||msiExecCmd(t,"*arg",null,null,null,*OUT)|nop
+acGetUserByDN(*arg,*OUT)||nop|nop
+#
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
 # 1) acSetRescSchemeForCreate - This is the preprossing rule for setting
