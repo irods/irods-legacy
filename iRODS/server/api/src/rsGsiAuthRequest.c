@@ -6,6 +6,7 @@
 #include "gsiAuthRequest.h"
 #include "authResponse.h"
 #include "genQuery.h"
+#include "reGlobals.h"
 
 static int gsiAuthReqStatus=0;
 static int gsiAuthReqError=0;
@@ -58,6 +59,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    char *tResult;
    int privLevel;
    int clientPrivLevel;
+   int noNameMode;
 
 #ifdef GSI_DEBUG
    char *getVar;
@@ -77,19 +79,149 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
-   snprintf (condition1, MAX_NAME_LEN, "='%s'", clientName);
-   addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
+   noNameMode=0;
+   if (strlen(rsComm->clientUser.userName)>0) {  
+      /* regular mode */
 
-   snprintf (condition2, MAX_NAME_LEN, "='%s'", rsComm->clientUser.userName);
-   addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, condition2);
+      snprintf (condition1, MAX_NAME_LEN, "='%s'", clientName);
+      addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
 
-   addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
-   addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
+      snprintf (condition2, MAX_NAME_LEN, "='%s'", 
+		rsComm->clientUser.userName);
+      addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, condition2);
 
-   genQueryInp.maxRows = 2;
+      addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+      addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
 
-   status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+      genQueryInp.maxRows = 2;
 
+      status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+   }
+   else {
+      /* 
+	 The client isn't providing the rodsUserName so query on just
+         the DN.  If it returns just one row, set the clientUser to 
+         the returned irods user name.
+      */
+      noNameMode=1;
+      memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+      
+      snprintf (condition1, MAX_NAME_LEN, "='%s'", clientName);
+      addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
+
+      addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+      addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
+      addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
+
+      genQueryInp.maxRows = 2;
+
+      status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+      if (status == 0) {
+      	 strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
+      		 NAME_LEN);
+      }
+
+      if (status == CAT_NO_ROWS_FOUND) { /* not found */
+
+	 /* execute the rule acGetUserByDN.  By default this
+            is a no-op but at some sites can be configured to
+            run a process to determine a user by DN (for VO support)
+            or possibly create the user.
+	    The stdout of the process is the irodsUserName to use.
+
+	    The corresponding rule would be something like this:
+	    acGetUserByDN(*arg,*OUT)||msiExecCmd(t,"*arg",null,null,null,*OUT)|nop
+	 */
+
+	 ruleExecInfo_t rei;
+	 char *args[1];
+	 msParamArray_t *myMsParamArray;
+	 msParamArray_t myInOutParamArray;
+	 msParam_t *mP;
+	 execCmdOut_t *execCmdOut;
+	 int userFoundViaRule=0;
+
+	 memset((char*)&rei,0,sizeof(rei));
+	 rei.rsComm = rsComm;
+	 rei.uoic = &rsComm->clientUser;
+	 rei.uoip = &rsComm->proxyUser;
+	 args[0]=clientName;
+	 char out[200]="*cmdOutput";
+	 args[1]=out;
+
+	 rei.inOutMsParamArray = myInOutParamArray;
+
+	 myMsParamArray = malloc (sizeof (msParamArray_t));
+	 memset (myMsParamArray, 0, sizeof (msParamArray_t));
+
+	 status = applyRuleArgPA("acGetUserByDN", args, 2, 
+				 myMsParamArray, &rei, NO_SAVE_REI);	
+
+#ifdef GSI_DEBUG
+	 printf("acGetUserByDN status=%d\n",status);
+
+	 int i;
+	 for (i=0;i<myMsParamArray->len;i++)
+         {
+	    char *r;
+	    msParam_t *myP;
+            myP = myMsParamArray->msParam[i];
+	    r = myP->label;
+	    printf("l1=%s\n", r);
+	 }
+#endif
+	 /* if it ran OK, set the username to the returned value (stdout) */
+	 if (status==0) {
+	    int len;
+	    if ((mP = getMsParamByLabel(myMsParamArray,"*cmdOutput"))!= NULL) {
+	       execCmdOut = (execCmdOut_t *) mP->inOutStruct;
+	       if (execCmdOut != NULL && execCmdOut->stdoutBuf.buf != NULL) {
+		  len = strlen(execCmdOut->stdoutBuf.buf);
+		  if (len > 1) {
+		     len--; /* skip trailing \n */
+		     if (len > NAME_LEN) len=NAME_LEN;
+		     strncpy(rsComm->clientUser.userName, 
+			     execCmdOut->stdoutBuf.buf, len);
+#ifdef GSI_DEBUG
+		     fprintf(stdout,"set to '%s'\n",
+			     rsComm->clientUser.userName);
+#endif
+
+		     userFoundViaRule=1;
+		  }
+	       }
+#ifdef GSI_DEBUG
+	       if (execCmdOut->stderrBuf.buf != NULL) {
+		  fprintf(stderr,"%s", (char *) execCmdOut->stderrBuf.buf);
+	       }
+#endif
+	    }
+	 }
+
+	 /* If the rule didn't work, try the query again as the rule
+            may have added the user. */
+	 if (!userFoundViaRule) {
+	    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+      
+	    snprintf (condition1, MAX_NAME_LEN, "='%s'", clientName);
+	    addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
+
+	    addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+	    addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
+	    addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
+
+	    genQueryInp.maxRows = 2;
+
+	    status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+	    if (status == 0) {
+	       strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
+		       NAME_LEN);
+	    }
+	 }
+      }
+   }
    if (status == CAT_NO_ROWS_FOUND || genQueryOut==NULL) {
       status = GSI_DN_DOES_NOT_MATCH_USER;
       rodsLog (LOG_NOTICE,
@@ -115,9 +247,17 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       return (status);
    }
 
-   if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 2) {
-      gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
-      return(GSI_QUERY_INTERNAL_ERROR);
+   if (noNameMode==0) {
+      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 2) {
+	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
+	 return(GSI_QUERY_INTERNAL_ERROR);
+      }
+   }
+   else {
+      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 3) {
+	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
+	 return(GSI_QUERY_INTERNAL_ERROR);
+      }
    }
 
 #ifdef GSI_DEBUG
