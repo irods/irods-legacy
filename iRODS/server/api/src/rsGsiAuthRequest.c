@@ -120,6 +120,8 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       if (status == 0) {
       	 strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
       		 NAME_LEN);
+       	 strncpy(rsComm->proxyUser.userName, genQueryOut->sqlResult[2].value,
+		 NAME_LEN);
       }
 
       if (status == CAT_NO_ROWS_FOUND) { /* not found */
@@ -183,6 +185,8 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 		     if (len > NAME_LEN) len=NAME_LEN;
 		     strncpy(rsComm->clientUser.userName, 
 			     execCmdOut->stdoutBuf.buf, len);
+		     strncpy(rsComm->proxyUser.userName, 
+			     execCmdOut->stdoutBuf.buf, len);
 #ifdef GSI_DEBUG
 		     fprintf(stdout,"set to '%s'\n",
 			     rsComm->clientUser.userName);
@@ -217,6 +221,8 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 
 	    if (status == 0) {
 	       strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
+		       NAME_LEN);
+	       strncpy(rsComm->proxyUser.userName, genQueryOut->sqlResult[2].value,
 		       NAME_LEN);
 	    }
 	 }
