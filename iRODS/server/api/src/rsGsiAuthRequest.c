@@ -6,7 +6,7 @@
 #include "gsiAuthRequest.h"
 #include "authResponse.h"
 #include "genQuery.h"
-#include "reGlobals.h"
+#include "reGlobalsExtern.h"
 
 static int gsiAuthReqStatus=0;
 static int gsiAuthReqError=0;
