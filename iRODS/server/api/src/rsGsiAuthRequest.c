@@ -60,6 +60,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    int privLevel;
    int clientPrivLevel;
    int noNameMode;
+   int userFoundViaRule=0;
 
 #ifdef GSI_DEBUG
    char *getVar;
@@ -142,7 +143,6 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	 msParamArray_t myInOutParamArray;
 	 msParam_t *mP;
 	 execCmdOut_t *execCmdOut;
-	 int userFoundViaRule=0;
 
 	 memset((char*)&rei,0,sizeof(rei));
 	 rei.rsComm = rsComm;
@@ -228,7 +228,8 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	 }
       }
    }
-   if (status == CAT_NO_ROWS_FOUND || genQueryOut==NULL) {
+   if (!userFoundViaRule && 
+        (status == CAT_NO_ROWS_FOUND || genQueryOut==NULL)) {
       status = GSI_DN_DOES_NOT_MATCH_USER;
       rodsLog (LOG_NOTICE,
 	       "igsiServersideAuth: DN mismatch, user=%s, Certificate DN=%s, status=%d",
