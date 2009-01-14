@@ -148,7 +148,9 @@ LIB_GSI_AUTH = \
       -lglobus_proxy_ssl_$(GSI_INSTALL_TYPE) \
       -lssl_$(GSI_INSTALL_TYPE) \
       -lcrypto_$(GSI_INSTALL_TYPE) \
-      -lglobus_common_$(GSI_INSTALL_TYPE)
+      -lglobus_common_$(GSI_INSTALL_TYPE) \
+      -lglobus_callout_$(GSI_INSTALL_TYPE) \
+      -lltdl_$(GSI_INSTALL_TYPE)
 LDFLAGS += $(LIB_GSI_AUTH)
 endif
 
