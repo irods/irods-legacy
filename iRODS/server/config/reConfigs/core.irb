@@ -123,7 +123,7 @@ acSetMultiReplPerResc||nop|nop
 #acPostProcForPut||msiSetDataTypeFromExt|nop
 acPostProcForPut||nop|nop
 acPostProcForCopy||nop|nop
-acPostProcForFilePathReg||msiSysReplDataObj(demoResc8,all)|nop
+acPostProcForFilePathReg||nop|nop
 
 # 7) acSetNumThreads - Rule to set the number of threads for a data transfer
 # Only one function can be used for this rule
