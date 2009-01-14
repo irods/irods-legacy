@@ -228,7 +228,14 @@ rescInfo_t *rescInfo)
         rodsLog (LOG_ERROR,
          "filePathReg: rsRegDataObj for %s failed, status = %d",
           dataObjInfo.objPath, status);
+    } else {
+        ruleExecInfo_t rei;
+        initReiWithDataObjInp (&rei, rsComm, phyPathRegInp);
+	rei.doi = &dataObjInfo;
+        status = applyRule ("acPostProcForFilePathReg", NULL, &rei,
+          NO_SAVE_REI);
     }
+
     return (status);
 }
 
