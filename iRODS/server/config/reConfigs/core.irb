@@ -100,6 +100,9 @@ acSetMultiReplPerResc||nop|nop
 #acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
 #acPostProcForPut|$objPath like /tempZone/home/rods/tg/*|msiSysReplDataObj(tgReplResc,null)|nop
 # 5) acPostProcForCopy - Rule for post processing the copy operation.
+# 6) acPostProcForFilePathReg - Rule for post processing the registration
+# of a physical file path (e.g. - ireg command).
+# 
 # Currently, three post processing functions can be used individually or
 # in sequence by these rules. 
 #    msiExtractNaraMetadata - extract and register metadata from the just 
@@ -120,7 +123,9 @@ acSetMultiReplPerResc||nop|nop
 #acPostProcForPut||msiSetDataTypeFromExt|nop
 acPostProcForPut||nop|nop
 acPostProcForCopy||nop|nop
-# 6) acSetNumThreads - Rule to set the number of threads for a data transfer
+acPostProcForFilePathReg||msiSysReplDataObj(demoResc8,all)|nop
+
+# 7) acSetNumThreads - Rule to set the number of threads for a data transfer
 # Only one function can be used for this rule
 #    msiSetNumThreads(sizePerThrInMb, maxNumThr, windowSize) - set the number 
 #      of threads and the tcp window size. The number of threads is based 
@@ -138,7 +143,7 @@ acPostProcForCopy||nop|nop
 # for all transfer 
 # acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
 acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
-# 7) acDataDeletePolicy - This rule set the policy for deleting data objects.
+# 8) acDataDeletePolicy - This rule set the policy for deleting data objects.
 # Only one function can be called:
 #    msiDeleteDisallowed() - Disallow the deletion of the data object. 
 # Examples:
@@ -151,21 +156,21 @@ acSetNumThreads||msiSetNumThreads(default,16,default)|nop
 # acDataDeletePolicy|$objPath like /temp/home/rods/*|msiDeleteDisallowed|nop
 acDataDeletePolicy||nop|nop
 #
-# 8) acNoChkFilePathPerm - This rule set the policy for checking the
+# 9) acNoChkFilePathPerm - This rule set the policy for checking the
 # file path permission when registering physical file path using commands
 # such as ireg. Only one function can be called:
 #    msiNoChkFilePathPerm() - Do not check file path permission when registering
 #    a file. WARNING - This function can create a security problem if used.
 acNoChkFilePathPerm||nop|nop
 #
-# 9) acTrashPolicy - This rule set the policy for whether the trash can
+# 10) acTrashPolicy - This rule set the policy for whether the trash can
 # should be used. The default policy is the trash can will be used. Only
 # one function can be called.
 #    msiNoTrashCan() - Set the policy to no trash can.
 acTrashPolicy||nop|nop
 # acTrashPolicy||msiNoTrashCan|nop
 #
-# 10) acSetPublicUserPolicy - This rule set the policy for the set of 
+# 11) acSetPublicUserPolicy - This rule set the policy for the set of 
 # operations that are allowable for the user "public" Only one function can 
 # be called.
 #    msiSetPublicUserOpr(oprList) - Sets a list of operations that can
@@ -175,7 +180,7 @@ acTrashPolicy||nop|nop
 #      e.g., read%query.
 # acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
 acSetPublicUserPolicy||nop|nop
-# 11) acChkHostAccessControl - This rule checks the access control by host
+# 12) acChkHostAccessControl - This rule checks the access control by host
 # and user based on the the policy given in the HostAccessControl file.
 # The msi is developed by Jean-Yves Nief of IN2P3. Only one function can
 # be called.
@@ -183,7 +188,7 @@ acSetPublicUserPolicy||nop|nop
 #     based on the the policy given in the HostAccessControl file.
 # acChkHostAccessControl||msiCheckHostAccessControl|nop
 acChkHostAccessControl||nop|nop
-# 12) acSetVaultPathPolicy - This rule set the policy for creating the physical
+# 13) acSetVaultPathPolicy - This rule set the policy for creating the physical
 # path in the iRods resource vault. Two functions can be called:
 #    msiSetGraftPathScheme(addUserName,trimDirCnt) - Set the VaultPath scheme
 #      to GRAFT_PATH - graft (add) the logical path to the vault path of the
