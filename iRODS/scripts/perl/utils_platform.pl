@@ -399,7 +399,6 @@ sub _getCurrentHostAttributes()
 		$HOSTNAME = $hostEntry->name;
 	}
 
-
 	if ( getCurrentOS( ) =~ /Darwin/i )	# Mac OS X
 	{
 		# Macs have a default host name of the form:
@@ -437,6 +436,31 @@ sub _getCurrentHostAttributes()
 			{
 				$HOSTNAME = "localhost";
 			}
+		}
+                # Even if this Mac is currently connected to a 
+                # network, if it is a laptop it very well might
+                # have a different name with the next wireless
+                # connection.  In that case, we're better off
+                # just using localhost so that as it changes, 
+                # postgres and iRODS will still work.
+                # If the user sets one of these environment variables,
+                # we'll use localhost as the host name in place
+                # of the full DNS name.
+                # Ubuntu works differently so this is just for Macs.
+		$USE_LOCAL = $ENV{"USE_LOCAL"};
+		if ( defined( $USE_LOCAL ) && $USE_LOCAL != "" )
+		{
+		    $HOSTNAME = "localhost";
+		}
+		$USE_LOCALHOST = $ENV{"USE_LOCALHOST"};
+		if ( defined( $USE_LOCALHOST ) && $USE_LOCALHOST != "" )
+		{
+		    $HOSTNAME = "localhost";
+		}
+		$USE_LOCAL_HOST = $ENV{"USE_LOCAL_HOST"};
+		if ( defined( $USE_LOCAL_HOST ) && $USE_LOCAL_HOST != "" )
+		{
+		    $HOSTNAME = "localhost";
 		}
 	}
 }
