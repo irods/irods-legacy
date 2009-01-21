@@ -509,13 +509,14 @@ int
 doForkExec(char *prog, char *arg1)
 {
    int pid, i;
-     
+
    i = checkFilePerms(prog);
    if (i) return(i);
 
    i = checkFilePerms(arg1);
    if (i) return(i);
 
+#ifndef windows_platform
    pid = fork();
    if (pid == -1) return -1;
 
@@ -531,6 +532,14 @@ doForkExec(char *prog, char *arg1)
       printf("execl failed %d\n",i);
       return(0);
    }
+#else
+   /* windows platform */
+   if(_spawnl(_P_NOWAIT, prog, prog, arg1) == -1)
+   {
+	   return -1;
+   }
+#endif
+
    return(0);
 }
 
