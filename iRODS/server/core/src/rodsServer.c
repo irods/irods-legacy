@@ -3,19 +3,30 @@
 
 #include "rodsServer.h"
 
+#ifndef windows_platform
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
+
+#ifdef windows_platform
+#include "irodsntutil.h"
+#endif
 
 uint ServerBootTime;
 
+#ifndef windows_platform   /* all UNIX */
 int
 main(int argc, char **argv)
+#else   /* Windows */
+int irodsWinMain(int argc, char **argv)
+#endif
 {
     int c;
     int uFlag = 0;
     char tmpStr1[100], tmpStr2[100];
     char *logDir = NULL;
+
 
     ProcessType = SERVER_PT;	/* I am a server */
 
@@ -65,7 +76,7 @@ main(int argc, char **argv)
     }
 
     /* start of irodsReServer has been moved to serverMain */
-
+#ifndef _WIN32
     signal(SIGTTIN, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
     signal(SIGCHLD, SIG_IGN);
@@ -77,6 +88,7 @@ main(int argc, char **argv)
     signal(SIGINT, serverExit);
     signal(SIGHUP, serverExit);
     signal(SIGTERM, serverExit);
+#endif
 #endif
 /* log the server timeout */
 
@@ -106,16 +118,27 @@ serverize (char *logDir)
 {
     char *logFile = NULL;
 
+#ifdef windows_platform
+	if(iRODSNtServerRunningConsoleMode())
+		return;
+#endif
+
     getLogfileName (&logFile, logDir, RODS_LOGFILE);
 
+#ifndef windows_platform
     LogFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0644);
+#else
+	
+	LogFd = iRODSNt_open(logFile, O_CREAT|O_APPEND|O_WRONLY, 1);
+#endif
+
     if (LogFd < 0) {
         rodsLog (LOG_NOTICE, "logFileOpen: Unable to open %s. errno = %d",
           logFile, errno);
         return (-1);
     }
 
-#ifndef _WIN32
+#ifndef windows_platform
     if (fork()) {	/* parent */
         exit (0);
     } else {	/* child */
@@ -130,7 +153,10 @@ serverize (char *logDir)
         close (LogFd);
         LogFd = 2;
     }
+#else
+	_close(LogFd);
 #endif
+
     return (LogFd);
 }
 
@@ -144,7 +170,7 @@ serverMain (char *logDir)
     int newSock;
     startupPack_t *startupPack;
     agentProc_t *agentProcHead = NULL;
-    int loopCnt;
+    int loopCnt = 0;
     int acceptErrCnt = 0;
 
 
@@ -190,12 +216,13 @@ serverMain (char *logDir)
     recordServerProcess(&svrComm);
 
     /* start the irodsReServer */
+#ifndef windows_platform   /* tempoarily set Windows don't need to to have reServer */
 #ifdef RODS_CAT
-    if (getenv ("reServerOnIes") != NULL) {
+    if (getenv ("reServerOnIes") != NULL) 
 #else
-    if (getenv ("reServerOnThisServer") != NULL) {
+    if (getenv ("reServerOnThisServer") != NULL) 
 #endif
-
+	{
         if (RODS_FORK () == 0) {  /* child */
             char *reServerOption = NULL;
             char *av[NAME_LEN];
@@ -209,6 +236,7 @@ serverMain (char *logDir)
             exit(1);
         }
     }
+#endif
 
     while (1) {		/* infinite loop */
         FD_SET(svrComm.sock, &sockMask);
@@ -263,13 +291,15 @@ serverMain (char *logDir)
 
 	status = spawnAgent (newSock, startupPack, &agentProcHead);
 
+#ifndef windows_platform
 	close (newSock);
+#endif
         if (status < 0) {
             rodsLog (LOG_NOTICE, 
 	     "spawnAgent error for puser=%s and cuser=%s from %s, status = %d",
               startupPack->proxyUser, startupPack->clientUser,
 	      inet_ntoa (svrComm.remoteAddr.sin_addr), status);
-	    free  (startupPack);
+	        free  (startupPack);
             continue;
         } else {
             rodsLog (LOG_NOTICE,
@@ -284,7 +314,7 @@ serverMain (char *logDir)
 		chkLogfileName (logDir, RODS_LOGFILE);
 	    }
 #endif
-	}
+	    }
     }		/* infinite loop */
 
     /* not reached - return (status); */
@@ -298,7 +328,11 @@ serverExit (int sig)
 serverExit ()
 #endif
 {
+#ifndef windows_platform
     rodsLog (LOG_NOTICE, "rodsServer caught signal %d, exiting", sig);
+#else
+	rodsLog (LOG_NOTICE, "rodsServer is exiting.");
+#endif
     recordServerProcess(NULL); /* unlink the process id file */
     exit (1);
 }
@@ -370,6 +404,7 @@ agentProc_t **agentProcHead)
 {
     int childPid;
 
+#ifndef windows_platform
     childPid = RODS_FORK ();
 
     if (childPid == 0) {	/* child */
@@ -377,13 +412,23 @@ agentProc_t **agentProcHead)
     } else {			/* parent */
 	queAgentProc (childPid, startupPack, agentProcHead);
     }
+#else
+	childPid = execAgent (newSock, startupPack);
+	queAgentProc (childPid, startupPack, agentProcHead);
+#endif
+
     return (childPid);
 }
 
-int 
+int
 execAgent (int newSock, startupPack_t *startupPack)
 {
+#if windows_platform
+	char *myArgv[3];
+	char console_buf[20];
+#else
     char *myArgv[2];
+#endif
     char buf[NAME_LEN];
     char *myBuf;
 
@@ -407,27 +452,27 @@ execAgent (int newSock, startupPack_t *startupPack)
     putenv (myBuf);
 
     myBuf = malloc (NAME_LEN * 2);
-    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_PROXY_USER, 
+    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_PROXY_USER,
       startupPack->proxyUser);
     putenv (myBuf);
 
-    myBuf = malloc (NAME_LEN * 2);
-    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_PROXY_RODS_ZONE, 
+	 myBuf = malloc (NAME_LEN * 2);
+    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_PROXY_RODS_ZONE,
       startupPack->proxyRodsZone);
     putenv (myBuf);
 
     myBuf = malloc (NAME_LEN * 2);
-    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_USER, 
+    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_USER,
       startupPack->clientUser);
     putenv (myBuf);
 
     myBuf = malloc (NAME_LEN * 2);
-    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_RODS_ZONE, 
+    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_RODS_ZONE,
       startupPack->clientRodsZone);
     putenv (myBuf);
 
     myBuf = malloc (NAME_LEN * 2);
-    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_REL_VERSION, 
+    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_REL_VERSION,
       startupPack->relVersion);
     putenv (myBuf);
 
@@ -437,21 +482,41 @@ execAgent (int newSock, startupPack_t *startupPack)
     putenv (myBuf);
 
     myBuf = malloc (NAME_LEN * 2);
-    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_OPTION, 
+    snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_OPTION,
       startupPack->option);
     putenv (myBuf);
 
-    myBuf = malloc (NAME_LEN * 2);
+	myBuf = malloc (NAME_LEN * 2);
     snprintf (myBuf, NAME_LEN * 2, "%s=%d", SERVER_BOOT_TIME,
       ServerBootTime);
     putenv (myBuf);
 
-    rstrcpy (buf, AGENT_EXE, NAME_LEN); 
+#ifdef windows_platform  /* windows */
+	iRODSNtGetAgentExecutableWithPath(buf, AGENT_EXE);
+	myArgv[0] = buf;
+	if(iRODSNtServerRunningConsoleMode())
+	{
+		strcpy(console_buf, "console");
+		myArgv[1]= console_buf;
+		myArgv[2] = NULL;
+	}
+	else
+	{
+		myArgv[1] = NULL;
+		myArgv[2] = NULL;
+	}
+#else
+    rstrcpy (buf, AGENT_EXE, NAME_LEN);
     myArgv[0] = buf;
     myArgv[1] = NULL;
-    
+#endif
+
+#if windows_platform  /* windows */
+	return (int)_spawnv(_P_NOWAIT,myArgv[0], myArgv);
+#else
     execv(myArgv[0], myArgv);
     return (0);
+#endif
 }
 
 int
@@ -477,6 +542,15 @@ initServer ( rsComm_t *svrComm)
 {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
+
+#ifdef windows_platform
+	status = startWinsock();
+	if(status !=0)
+	{
+		rodsLog (LOG_NOTICE, "initServer: startWinsock() failed. status=%d", status);
+		return -1;
+	}
+#endif
 
     status = initServerInfo (svrComm);
     if (status < 0) {
@@ -529,7 +603,8 @@ setRsCommFromRodsEnv (rsComm_t *rsComm)
    before, just unlink the file. */
 int
 recordServerProcess(rsComm_t *svrComm) {
-    int myPid;
+#ifndef windows_platform
+	int myPid;
     FILE *fd;
     DIR  *dirp;
     static char filePath[100]="";
@@ -544,7 +619,7 @@ recordServerProcess(rsComm_t *svrComm) {
 		 }
 		 return 0;
 	 }
-    rodsEnv *myEnv = &svrComm->myEnv;
+    rodsEnv *myEnv = &(svrComm->myEnv);
     
     /* Use /usr/tmp if it exists, /tmp otherwise */
     dirp = opendir("/usr/tmp");
@@ -570,6 +645,6 @@ recordServerProcess(rsComm_t *svrComm) {
 	  chmod(filePath, 0664);
        }
     }
-
+#endif
     return 0;
 }
