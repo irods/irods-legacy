@@ -6,6 +6,8 @@
 #include <sys/types.h>
 #ifndef windows_platform
 #include <sys/wait.h>
+#else
+#include "Unix2Nt.h"
 #endif
 #include "execCmd.h"
 #include "objMetaOpr.h"
@@ -123,25 +125,44 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     execCmdOut_t *myExecCmdOut;
     bytesBuf_t statusBuf;
     int status, childStatus;
+#ifdef windows_platform
+	int pipe_buf_size = MAX_NAME_LEN * 5;
+#endif
     
-    if (pipe (stdoutFd) < 0) {
+#ifndef windows_platform    /* UNIX */
+    if (pipe (stdoutFd) < 0) 
+#else
+	if(_pipe(stdoutFd, pipe_buf_size, O_BINARY) < 0)
+#endif
+	{
         rodsLog (LOG_ERROR,
          "_rsExecCmd: pipe create failed. errno = %d", errno);
 	return (SYS_PIPE_ERROR - errno);
     }
 
-    if (pipe (stderrFd) < 0) {
+#ifndef windows_platform    /* UNIX */
+    if (pipe (stderrFd) < 0) 
+#else
+	if(_pipe(stderrFd, pipe_buf_size, O_BINARY) < 0)
+#endif
+	{
         rodsLog (LOG_ERROR,
          "_rsExecCmd: pipe create failed. errno = %d", errno);
         return (SYS_PIPE_ERROR - errno);
     }
 
-    if (pipe (statusFd) < 0) {
+#ifndef windows_platform    /* UNIX */
+    if (pipe (statusFd) < 0) 
+#else
+	if(_pipe(statusFd, pipe_buf_size, O_BINARY) < 0)
+#endif
+	{
         rodsLog (LOG_ERROR,
          "_rsExecCmd: pipe create failed. errno = %d", errno);
         return (SYS_PIPE_ERROR - errno);
     }
 
+#ifndef windows_platform   /* UNIX */
     childPid = RODS_FORK ();
 
     if (childPid == 0) {
@@ -161,11 +182,25 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
          "_rsExecCmd: RODS_FORK failed. errno = %d", errno);
 	return (SYS_FORK_ERROR);
     }
+#else  /* Windows */
+	status = execCmd (execCmdInp, stdoutFd[1], stderrFd[1]);
+	if (status < 0) {
+	    status = EXEC_CMD_ERROR - errno;
+	}
+	if(status < 0)
+	{
+		rodsLog (LOG_ERROR, "_rsExecCmd: RODS_FORK failed. errno = %d", errno);
+		return (SYS_FORK_ERROR);
+	}
+#endif
+
 
     /* the parent gets here */
+#ifndef windows_platform
     close (stdoutFd[1]);
     close (stderrFd[1]);
     close (statusFd[1]);
+#endif
 
     myExecCmdOut = *execCmdOut = malloc (sizeof (execCmdOut_t));
     memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
@@ -179,12 +214,15 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 	free (statusBuf.buf);
     }
     childStatus = 0;
+
+#ifndef windows_platform   /* UNIX */
     status = waitpid (childPid, &childStatus, 0);
     if (status >= 0 && myExecCmdOut->status >= 0 && childStatus != 0) {
         rodsLog (LOG_ERROR,
          "_rsExecCmd: waitpid status = %d, myExecCmdOut->status = %d, childStatus = %d", status, myExecCmdOut->status, childStatus);
         myExecCmdOut->status = EXEC_CMD_ERROR;
     }
+#endif
     return (myExecCmdOut->status);
 }
 
@@ -249,6 +287,7 @@ execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd)
 
     closeAllL1desc (ThisComm);
 
+#ifndef windows_platform
     /* set up the pipe as the stdin, stdout and stderr */
   
     close (0);
@@ -262,6 +301,11 @@ execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd)
     close (stdErrFd);
 
     status = execv (av[0], av);
+
+#else /* Windows: Can Windows redirect the stdin, etc, to a pipe? */
+	status = _spawnv(_P_NOWAIT, av[0], av);
+#endif
+
     return (status);
 }
 
