@@ -7,6 +7,10 @@
 #include "rodsAgent.h"
 #include "rsApiHandler.h"
 #include "icatHighLevelRoutines.h"
+#ifdef windows_platform
+#include "rsLog.h"
+static void NtAgentSetEnvsFromArgs(int ac, char **av);
+#endif
 
 #define SERVER_DEBUG 1
 int
@@ -17,9 +21,14 @@ main(int argc, char *argv[])
     struct allowedUser *allowedUserHead = NULL;
     char *tmpStr;
 
+
     ProcessType = AGENT_PT;
 
-#ifndef _WIN32
+#ifdef windows_platform
+	iRODSNtAgentInit(argc, argv);
+#endif
+
+#ifndef windows_platform
     signal(SIGINT, signalExit);
     signal(SIGHUP, signalExit);
     signal(SIGTERM, signalExit);
@@ -27,7 +36,7 @@ main(int argc, char *argv[])
     signal(SIGPIPE, rsPipSigalHandler);
 #endif
 
-#ifndef _WIN32
+#ifndef windows_platform
 #ifdef SERVER_DEBUG
     if (isPath ("/tmp/rodsdebug"))
         sleep (20);
@@ -252,4 +261,3 @@ char *rodsZone)
         return (1);
     }
 }
-
