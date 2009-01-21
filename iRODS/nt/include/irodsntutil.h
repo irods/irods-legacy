@@ -18,6 +18,16 @@
 extern "C" {
 #endif
 
+void iRODSNtAgentInit(int ac, char **av);
+int iRODSNtGetServiceName(char *service_name);
+void iRODSNtServerCheckExecMode(int targc, char **targv);
+int iRODSNtServerRunningConsoleMode();
+void iRODSNtSetServerHomeDir(char *inExec);
+void iRODSNtGetAgentExecutableWithPath(char *buf, char *agent_name);
+char *iRODSNtGetServerConfigPath();
+void iRODSNtGetLogFilename(char *log_filename);
+void iRODSNtGetLogFilenameWithPath(char *logfilename_wp);
+char *iRODSNtServerGetLogDir();
 void iRODSPathToNtPath(char *ntpath,const char *srbpath);
 int iRODSNtFileOpen(const char *filename,int oflag, int istextfile);
 void iRODSNtPathBackSlash(char *str);
@@ -36,6 +46,13 @@ void iRODSNtGetUserPasswdInputInConsole(char *buf, char *prompt, int echo_input)
 int getopt(int argc, char *const *argv, const char *shortopts);
 long long atoll(const char *str);
 void bzero(void *s, size_t n);
+size_t irodsnt_strlen(const char *str);
+void srandom(unsigned int seed);
+int strcasecmp(const char *s1, const char *s2);
+
+void irodsStrChangeChar(char* str,char from, char to);
+void irodsNtPathBackSlash(char *str);
+void irodsPath2NtPath(char *irodsPath, char *ntPath);
 
 #ifdef  __cplusplus
 }
