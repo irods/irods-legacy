@@ -8,8 +8,12 @@
 #include "rcMisc.h"
 #include <time.h>
 
-#ifndef _WIN32
+#ifndef windows_platform
 #include <unistd.h>
+#endif
+
+#ifdef windows_platform
+#include "irodsntutil.h"
 #endif
 
 #define BIG_STRING_LEN MAX_NAME_LEN+300
@@ -728,6 +732,11 @@ static int verbosityLevel=LOG_ERROR;
 static int sqlVerbosityLevel=0;
 static pid_t myPid=0;
 
+
+#ifdef windows_platform
+static void rodsNtElog(char *msg);
+#endif
+
 /*
  Log or display a message.  The level argument indicates how severe
  the message is, and depending on the verbosityLevel may or may not be
@@ -743,6 +752,9 @@ rodsLog(int level, char *formatStr, ...) {
    va_list ap;
 
    char extraInfo[100];
+#ifdef windows_platform
+   char nt_log_msg[2048];
+#endif
 
    if (level < verbosityLevel) return;
 
@@ -752,7 +764,9 @@ rodsLog(int level, char *formatStr, ...) {
    va_end(ap);
    
    extraInfo[0]='\0';
+#ifndef windows_platform
    errOrOut = stdout;
+#endif
    if (ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
      ProcessType == RE_SERVER_PT) {
       char timeBuf[100];
@@ -763,7 +777,9 @@ rodsLog(int level, char *formatStr, ...) {
       snprintf(extraInfo, 100-1, "%s pid:%d ", timeBuf+4, myPid);
    }
    else {
+#ifndef windows_platform
       if (level >= LOG_ERROR) errOrOut=stderr;
+#endif
    }
 
    prefix="";
@@ -773,13 +789,27 @@ rodsLog(int level, char *formatStr, ...) {
    if (level == LOG_ERROR) prefix="ERROR";
    if (level == LOG_NOTICE) prefix="NOTICE";
    if (level <= LOG_DEBUG) prefix="DEBUG";
-   if (bigString[strlen(bigString)-1]=='\n') {
+   if (bigString[strlen(bigString)-1]=='\n') 
+   {
+#ifndef windows_platform
       fprintf(errOrOut, "%s%s: %s", extraInfo, prefix, bigString);
+#else
+	  sprintf(nt_log_msg, "%s%s: %s", extraInfo, prefix, bigString);
+	  rodsNtElog(nt_log_msg);
+#endif
    }
-   else {
+   else 
+   {
+#ifndef windows_platform
       fprintf(errOrOut, "%s%s: %s\n", extraInfo, prefix, bigString);
+#else
+	   sprintf(nt_log_msg, "%s%s: %s\n", extraInfo, prefix, bigString);
+	   rodsNtElog(nt_log_msg);
+#endif
    }
+#ifndef windows_platform
    fflush (errOrOut);
+#endif
 }
 
 /* same as rodsLog plus putting the msg in myError too. Need to merge with
@@ -798,6 +828,9 @@ char *formatStr, ...) {
    char errMsg[ERR_MSG_LEN];
 
    char extraInfo[100];
+#ifdef windows_platform
+   char nt_log_msg[2048];
+#endif
 
    if (level < verbosityLevel) return;
 
@@ -828,23 +861,38 @@ char *formatStr, ...) {
    if (level == LOG_ERROR) prefix="ERROR";
    if (level == LOG_NOTICE) prefix="NOTICE";
    if (level <= LOG_DEBUG) prefix="DEBUG";
-   if (bigString[strlen(bigString)-1]=='\n') {
+   if (bigString[strlen(bigString)-1]=='\n') 
+   {
+#ifndef windows_platform
       fprintf(errOrOut, "%s%s: %s", extraInfo, prefix, bigString);
       if (myError != NULL) {
          snprintf (errMsg, ERR_MSG_LEN,
            "%s: %s", prefix, bigString);
          addRErrorMsg (myError, status, errMsg);
       } 
+#else
+	   sprintf(nt_log_msg, "%s%s: %s", extraInfo, prefix, bigString);
+	   rodsNtElog(nt_log_msg);
+#endif
    }
-   else {
+   else 
+   {
+#ifndef windows_platform
       fprintf(errOrOut, "%s%s: %s\n", extraInfo, prefix, bigString);
       if (myError != NULL) {
          snprintf (errMsg, ERR_MSG_LEN,
            "%s: %s\n", prefix, bigString);
          addRErrorMsg (myError, status, errMsg);
       }
+#else
+	   sprintf(nt_log_msg, "%s%s: %s\n", extraInfo, prefix, bigString);
+	   rodsNtElog(nt_log_msg);
+#endif
    }
+
+#ifndef windows_platform
    fflush (errOrOut);
+#endif
 }
 
 /*
@@ -963,3 +1011,45 @@ rodsLogError(int level, int rodsErrorCode, char *formatStr, ...) {
 	      errName);
    }
 }
+
+#ifdef windows_platform
+static void rodsNtElog(char *msg)
+{
+	char log_fname[1024];
+	int fd;
+	int t;
+
+	if(ProcessType == CLIENT_PT)
+	  return;
+
+	t = strlen(msg);
+	if(msg[t-1] == '\n')
+	{
+		msg[t-1] = '\0';
+		t = t -1;
+	}
+
+	if(iRODSNtServerRunningConsoleMode())
+	{
+		t = strlen(msg);
+		if(msg[t-1] == '\n')
+			fprintf(stderr,"%s",msg);
+		else
+			fprintf(stderr,"%s\n",msg);
+		return;
+	}
+
+	t = strlen(msg);
+	if(msg[t-1] != '\n')
+	{
+		msg[t] = '\n';
+		msg[t+1] = '\0';
+		t = t +1;
+	}
+
+	iRODSNtGetLogFilenameWithPath(log_fname);
+	fd = iRODSNt_open(log_fname, O_APPEND|O_WRONLY,1);
+	_write(fd,msg,t);
+	_close(fd);
+}
+#endif
