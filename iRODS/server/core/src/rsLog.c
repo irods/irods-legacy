@@ -17,7 +17,6 @@ getLogfileName (char **logFile, char *logDir, char *logFileName)
     char *logfileIntStr;
     int logfileInt;
     int tm_mday = 1;
-#endif
     char myLogDir[MAX_NAME_LEN];
 
     /* Put together the full pathname of the logFile */
@@ -29,9 +28,6 @@ getLogfileName (char **logFile, char *logDir, char *logFileName)
     }
     *logFile = (char *) malloc(strlen (myLogDir) + strlen (logFileName) + 24);
 
-#ifdef _WIN32
-    sprintf (*logFile, "%-s/%-s", myLogDir, logFileName);
-#else
     LogfileLastChkTime = myTime = time (0);
     mytm = localtime (&myTime);
     if ((logfileIntStr = getenv (LOGFILE_INT)) == NULL) {
@@ -46,8 +42,12 @@ getLogfileName (char **logFile, char *logDir, char *logFileName)
 
     sprintf (*logFile, "%-s/%-s.%-d.%-d.%-d", myLogDir, logFileName,
       mytm->tm_year + 1900, mytm->tm_mon + 1, tm_mday);
+
+#else /* for Windows */
+	char tmpstr[1024];
+	iRODSNtGetLogFilenameWithPath(tmpstr);
+	*logFile = _strdup(tmpstr);
 #endif
-    return;
 }
 
 #ifndef _WIN32
