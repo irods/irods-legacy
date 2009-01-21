@@ -16,8 +16,13 @@
 /* server host configuration */
 
 #define RCAT_HOST_FILE  "server.config"
+#ifndef windows_platform
 #define HOST_CONFIG_FILE  "irodsHost"
 #define RE_RULES_FILE   "reRules"
+#else
+#define HOST_CONFIG_FILE  "irodsHost.txt"
+#define RE_RULES_FILE   "reRules.txt"
+#endif
 
 
 /* keywords for the RCAT_HOST_FILE */
