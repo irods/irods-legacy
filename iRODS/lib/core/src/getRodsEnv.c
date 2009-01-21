@@ -91,6 +91,20 @@ int getRodsEnv(rodsEnv *rodsEnvArg) {
    char ppidStr[BUF_LEN];
 
 #ifdef windows_platform
+   /* we handle env file differently in Windows */
+   if(ProcessType != CLIENT_PT)
+   {
+	   char rodsEnvFilenameWP[1024];
+	   char *tmpstr1;
+	   int t;
+	   tmpstr1 = iRODSNtGetServerConfigPath();
+	   sprintf(rodsEnvFilenameWP, "%s\\irodsEnv.txt", tmpstr1);
+	   t = getRodsEnvFromFile(rodsEnvFilenameWP, rodsEnvArg, LOG_DEBUG);
+	   if(t < 0)
+		   return t;
+	   return createRodsEnvDefaults(rodsEnvArg);
+   }
+
    getVar = iRODSNt_gethome();
 #else
 #ifdef UNI_CODE
@@ -321,6 +335,9 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
       rodsLog(errorLevel,
 	      "getRodsEnv() could not open environment file %s",
 	      fileName);
+#ifdef windows_platform
+	  return -1;
+#endif
    }
    return(0);
 }
