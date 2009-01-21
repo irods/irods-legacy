@@ -10,12 +10,16 @@
 #define UNIX_FILE_DRIVER_H
 
 #include <stdio.h>
+#ifndef _WIN32
 #include <sys/file.h>
 #include <sys/param.h>
+#endif
 #include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 #include <sys/types.h>
 #if defined(osx_platform)
 #include <sys/malloc.h>
@@ -23,9 +27,12 @@
 #include <malloc.h>
 #endif
 #include <fcntl.h>
+#ifndef _WIN32
 #include <sys/file.h>
+#include <unistd.h>  
+#endif
 #include <dirent.h>
-#include <unistd.h>     
+   
 #if defined(solaris_platform)
 #include <sys/statvfs.h>
 #endif
