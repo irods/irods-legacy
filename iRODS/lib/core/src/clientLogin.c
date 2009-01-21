@@ -125,8 +125,15 @@ clientLogin(rcComm_t *Conn)
    else {
       i = obfGetPw(md5Buf+CHALLENGE_LEN);
    }
+
    if (i != 0) {
-      int doStty=0;
+	   int doStty=0;
+
+#ifdef windows_platform
+	  if (ProcessType != CLIENT_PT)
+		return i;
+#endif
+      
       if (stat ("/bin/stty", &statbuf) == 0) {
 	 system("/bin/stty -echo");
 	 doStty=1;
