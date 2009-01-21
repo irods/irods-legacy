@@ -35,7 +35,7 @@
 
 
 #include <stdio.h>
-#ifndef _WIN32
+#ifndef windows_platform
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/timeb.h>
@@ -49,6 +49,7 @@
 #ifdef _WIN32
 #include "Unix2Nt.h"  /* May need something like this for Windows */ 
 #include "iRODSNtUtil.h"    /* May need something like this for Windows */
+#include "rcGlobalExtern.h"
 #endif
 
 #define TMP_FLAG "%TEMPORARY_PW%"
@@ -107,6 +108,16 @@ obfiGetFilename(char *fileName)
    }
 
 #ifdef windows_platform
+   if(ProcessType != CLIENT_PT)
+   {
+	   char *tmpstr1;
+	   int t;
+	   tmpstr1 = iRODSNtGetServerConfigPath();
+	   sprintf(fileName, "%s\\irodsA.txt", tmpstr1);
+	   return 0;
+   }
+
+   /* for clients */
    envVar = iRODSNt_gethome();
 #else
    envVar =  getenv ("HOME");
