@@ -11,7 +11,11 @@
 
 #include "rods.h"
 #include "fileDriver.h"
+#ifdef _WIN32
+#include "ntFileDriver.h"
+#else
 #include "unixFileDriver.h"
+#endif
 #include "miscServerFunct.h"
 
 #define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport 
@@ -34,10 +38,10 @@ fileDriver_t FileDriverTable[] = {
 #endif
 #else
 	{NT_FILE_TYPE, ntFileCreate, ntFileOpen, ntFileRead, ntFileWrite,
-    ntFileClose, ntFileUnlink, ntFileStat, ntFileFstat, ntFileLseek,
-    ntFileFsync, ntFileMkdir, ntFileChmod, ntFileRmdir, ntFileOpendir,
-    ntFileClosedir, ntFileReaddir, ntFileStage, ntFileRename,
-    ntFileGetFsFreeSpace, ntFileTruncate},
+    ntFileClose, ntFileUnlink, ntFileStat, NULL, ntFileLseek,
+    NULL, ntFileMkdir, ntFileChmod, ntFileRmdir, ntFileOpendir,
+    ntFileClosedir, ntFileReaddir, NULL, ntFileRename,
+    NULL, NULL},
 #endif
 };
 
