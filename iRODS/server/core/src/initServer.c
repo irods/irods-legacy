@@ -147,6 +147,12 @@ initServerInfo (rsComm_t *rsComm)
     queZone (rsComm->myEnv.rodsZone, rsComm->myEnv.rodsPort, NULL, NULL);
 
     status = initHostConfigByFile (rsComm);
+	if (status < 0) {
+        rodsLog (LOG_NOTICE,
+          "initServerInfo: initHostConfigByFile error, status = %d",
+          status);
+        return (status);
+    }
 
     status = initLocalServerHost (rsComm);
     if (status < 0) {
@@ -252,20 +258,36 @@ printServerHost (rodsServerHost_t *myServerHost)
     hostName_t *tmpHostName;
 
     if (myServerHost->localFlag == LOCAL_HOST) {
+#ifndef windows_platform
         fprintf (stderr, "    LocalHostName: ");
+#else
+		rodsLog (LOG_NOTICE,"    LocalHostName: ");
+#endif
     } else {
+#ifndef windows_platform
         fprintf (stderr, "    RemoteHostName: ");
+#else
+		rodsLog (LOG_NOTICE,"    RemoteHostName: ");
+#endif
     }
 
     tmpHostName = myServerHost->hostName;
 
     while (tmpHostName != NULL) {
+#ifndef windows_platform
         fprintf (stderr, " %s,", tmpHostName->name);
+#else
+		rodsLog (LOG_NOTICE," %s,", tmpHostName->name);
+#endif
         tmpHostName = tmpHostName->next;
     }
 
+#ifndef windows_platform
     fprintf (stderr, " Port Num: %d.\n\n", 
       ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
+#else
+	rodsLog (LOG_NOTICE," Port Num: %d.\n\n", ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
+#endif
 
     return (0);
 }
@@ -277,26 +299,55 @@ printZoneInfo ()
     rodsServerHost_t *tmpRodsServerHost;
 
     tmpZoneInfo = ZoneInfoHead;
+#ifndef windows_platform
     fprintf (stderr, "Zone Info:\n");
+#else
+	rodsLog (LOG_NOTICE,"Zone Info:\n");
+#endif
     while (tmpZoneInfo != NULL) {
 	/* print the master */
         tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->masterServerHost;
+#ifndef windows_platform
 	fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
+#else
+		rodsLog (LOG_NOTICE,"    ZoneName: %s   ", tmpZoneInfo->zoneName);
+#endif
 	if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
+#ifndef windows_platform
 	    fprintf (stderr, "Type: LOCAL_ICAT   "); 
+#else
+		rodsLog (LOG_NOTICE,"Type: LOCAL_ICAT   "); 
+#endif
 	} else {
+#ifndef windows_platform
 	    fprintf (stderr, "Type: REMOTE_ICAT   "); 
+#else
+		rodsLog (LOG_NOTICE,"Type: REMOTE_ICAT   ");
+#endif
 	}
+
+#ifndef windows_platform
         fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n", 
 	  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#else
+	rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n", 
+	  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#endif
 
 	/* print the slave */
         tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->slaveServerHost;
 	if (tmpRodsServerHost != NULL) { 
+#ifndef windows_platform
             fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
             fprintf (stderr, "Type: LOCAL_SLAVE_ICAT   ");
             fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n",
               tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#else
+		rodsLog (LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
+		rodsLog (LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   ");
+		rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
+              tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#endif
 	}
 
 	tmpZoneInfo = tmpZoneInfo->next;
@@ -312,7 +363,11 @@ printLocalResc ()
     rodsServerHost_t *tmpRodsServerHost;
     int localRescCnt = 0;
 
+#ifndef windows_platform
     fprintf (stderr, "Local Resource configuration: \n");
+#else
+	rodsLog (LOG_NOTICE,"Local Resource configuration: \n");
+#endif
 
     /* search the global RescGrpInfo */
 
@@ -322,17 +377,30 @@ printLocalResc ()
         myRescInfo = tmpRescGrpInfo->rescInfo;
 	tmpRodsServerHost = myRescInfo->rodsServerHost;
         if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
+#ifndef windows_platform
 	    fprintf (stderr, "   RescName: %s, VaultPath: %s\n",
 	      myRescInfo->rescName, myRescInfo->rescVaultPath); 
+#else
+			rodsLog (LOG_NOTICE,"   RescName: %s, VaultPath: %s\n",
+	      myRescInfo->rescName, myRescInfo->rescVaultPath); 
+#endif
 	    localRescCnt ++;
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
 
+#ifndef windows_platform
     fprintf (stderr, "\n");
+#else
+	rodsLog (LOG_NOTICE,"\n");
+#endif
 
     if (localRescCnt == 0) {
+#ifndef windows_platform
         fprintf (stderr, "   No Local Resource Configured\n");
+#else
+		rodsLog (LOG_NOTICE,"   No Local Resource Configured\n");
+#endif
     }
 
     return (0);
@@ -361,9 +429,13 @@ initRcatServerHostByFile (rsComm_t *rsComm)
     rcatCongFile =  (char *) malloc((strlen (getConfigDir()) +
         strlen(RCAT_HOST_FILE) + 24));
 
+#ifndef windows_platform
     sprintf (rcatCongFile, "%-s/%-s", getConfigDir(), RCAT_HOST_FILE);
-
     fptr = fopen (rcatCongFile, "r");
+#else
+	sprintf(rcatCongFile, "%s\\%s", getConfigDir(),RCAT_HOST_FILE);
+	fptr = iRODSNt_fopen(rcatCongFile, "r");
+#endif
 
     if (fptr == NULL) {
         rodsLog (LOG_SYS_FATAL, 
@@ -593,23 +665,31 @@ rodsServerHost_t *myRodsServerHost)
 char *
 getConfigDir()
 {
+#ifndef windows_platform
     char *myDir;
 
     if ((myDir = (char *) getenv("irodsConfigDir")) != (char *) NULL) {
         return (myDir);
     }
     return (DEF_CONFIG_DIR);
+#else
+	return iRODSNtGetServerConfigPath();
+#endif
 }
 
 char *
 getLogDir()
 {
+#ifndef windows_platform
     char *myDir;
 
     if ((myDir = (char *) getenv("irodsLogDir")) != (char *) NULL) {
         return (myDir);
     }
     return (DEF_LOG_DIR);
+#else
+	return iRODSNtServerGetLogDir;
+#endif
 }
 
 /* getAndConnRcatHost - get the rcat enabled host (result given in
@@ -631,7 +711,8 @@ rodsServerHost_t **rodsServerHost)
     status = getRcatHost (rcatType, rcatZoneHint, rodsServerHost);
 
     if (status < 0) {
-	return (status);
+		rodsLog (LOG_NOTICE, "initServer:getAndConnRcatHost:getRcatHost() failed. erro=%d", status);
+		return (status);
     }
 
     if ((*rodsServerHost)->localFlag == LOCAL_HOST) {
@@ -1505,9 +1586,13 @@ initHostConfigByFile (rsComm_t *rsComm)
     hostCongFile =  (char *) malloc((strlen (getConfigDir()) +
         strlen(HOST_CONFIG_FILE) + 24));
 
+#ifndef windows_platform
     sprintf (hostCongFile, "%-s/%-s", getConfigDir(), HOST_CONFIG_FILE);
-
-    fptr = fopen (hostCongFile, "r");
+	fptr = fopen (hostCongFile, "r");
+#else
+	sprintf(hostCongFile, "%s\\%s", getConfigDir(),HOST_CONFIG_FILE);
+	fptr = iRODSNt_fopen(hostCongFile, "r");
+#endif
 
     if (fptr == NULL) {
         rodsLog (LOG_NOTICE,
@@ -1936,13 +2021,21 @@ initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
         rstrcpy (rsComm->cliVersion.apiVersion, tmpStr, NAME_LEN);
 
         tmpStr = getenv (SP_OPTION);
+#ifndef windows_platform
         if (tmpStr == NULL) {
             rodsLog (LOG_NOTICE,
               "initRsCommWithStartupPack: env %s does not exist",
               SP_OPTION);
             return (SYS_GETSTARTUP_PACK_ERR);
         }
-        rstrcpy (rsComm->option, tmpStr, NAME_LEN);
+		rstrcpy (rsComm->option, tmpStr, NAME_LEN);
+#else
+		if(tmpStr != NULL)
+		{
+			rstrcpy (rsComm->option, tmpStr, NAME_LEN);
+		}
+#endif
+        
     }
 
     setLocalAddr (rsComm->sock, &rsComm->localAddr);
@@ -2111,3 +2204,4 @@ rodsServerHost_t **rodsServerHost)
         return (status);
     }
 }
+
