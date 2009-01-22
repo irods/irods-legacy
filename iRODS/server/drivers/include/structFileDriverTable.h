@@ -24,7 +24,7 @@ structFileDriver_t StructFileDriverTable[] = {
       haawSubStructFileUnlink, haawSubStructFileStat, haawSubStructFileFstat, 
       haawSubStructFileLseek, haawSubStructFileRename, haawSubStructFileMkdir,
       haawSubStructFileRmdir, haawSubStructFileOpendir, haawSubStructFileReaddir,
-      haawSubStructFileClosedir, haawSubStructFileTruncate haawStructFileSync,
+      haawSubStructFileClosedir, haawSubStructFileTruncate, haawStructFileSync,
       haawStructFileExtract},
 #else
     {HAAW_STRUCT_FILE_T, NO_SUB_STRUCT_FILE_FUNCTIONS},
