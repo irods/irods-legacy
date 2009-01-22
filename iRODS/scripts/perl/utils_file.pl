@@ -567,6 +567,57 @@ sub copyTemplateIfNeeded($)
 	return 0;
 }
 
+#
+# @brief	Copy template file if a file doesn't exist or if the
+#               template is newer (from a cvs update, for example).
+#
+# Like copyTemplateIfNeeded but will also copy the template if it
+# is newer than the config file.  Also, this version just checks
+# for the one template file as the rest are unneeded.
+#
+# @param	$configPath
+# 	the configuration file path
+# @return
+#	a numeric code indicating if an error occurred
+# 		0 = fail (no template, no permissions)
+# 		1 = config file already exists and is current
+# 		2 = template copied
+#
+sub copyTemplateIfNeededOrNewer($)
+{
+	my ($configPath) = @_;
+
+	# Extract the directory path from the config file path
+	my ($volume,$dirPath,$filename) = File::Spec->splitpath( $configPath );
+
+	my $template = ".template";
+	my $templatePath = File::Spec->catpath( $volume, $dirPath,
+						$filename . $template );
+
+	if (!-e $templatePath )	{
+	    return 0; 	    # Couldn't find template
+	}
+
+	# Get template modify time
+	my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+	    $atime,$mtimeT,$ctime,$blksize,$blocks) = stat($templatePath); 
+
+	# If the configuration file already exists, check if it is older
+	if ( -e $configPath ) {
+	    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+		$atime,$mtimeC,$ctime,$blksize,$blocks) = stat($configPath); 
+	    if ($mtimeT < $mtimeC) {
+		return 1;  # no need to copy, template is older
+	    }
+	}
+
+	if ( copy( $templatePath, $configPath ) != 1 )   {
+	    # Couldn't copy?  Permissions?
+	    return 0;
+	}
+	return 2;
+}
+
 
 
 

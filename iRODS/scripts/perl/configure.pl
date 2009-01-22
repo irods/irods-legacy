@@ -1042,9 +1042,11 @@ else
 #	See the comments above for config.mk.  Again, with platform.mk
 #	we don't want to write to the existing file if there are no
 #	changes.  This avoids the change triggering a rebuild.
+#       But if the template is newer (via a 'cvs update' for example),
+#       we do need to copy it so that new settings will take effect.
 printStatus( "Updating platform.mk...\n" );
 $platformMk = File::Spec->catfile( $configDir, "platform.mk" );
-$status = copyTemplateIfNeeded( $platformMk );
+$status = copyTemplateIfNeededOrNewer( $platformMk );
 if ( $status == 0 )
 {
 	printError( "\nConfiguration problem:\n" );
