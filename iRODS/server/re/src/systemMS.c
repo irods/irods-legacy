@@ -380,6 +380,7 @@ int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, r
   msParamArray_t *tmpParamArray, *aParamArray;
   msParamArray_t *outParamArray = NULL;
   char tmpStr[LONG_NAME_LEN];
+  char tmpStr1[LONG_NAME_LEN];
   /*
   char actionCall[MAX_ACTION_SIZE];  
   char recoveryActionCall[MAX_ACTION_SIZE];  
@@ -396,9 +397,16 @@ int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, r
   rstrcpy (execMyRuleInp.outParamDesc, ALL_MS_PARAM_KW, LONG_NAME_LEN);
   /*  rstrcpy (execMyRuleInp.addr.hostAddr, mPD->inOutStruct, LONG_NAME_LEN);*/
   rstrcpy (tmpStr, (char *) mPD->inOutStruct, LONG_NAME_LEN);
+#if 0
   i = evaluateExpression(tmpStr, execMyRuleInp.addr.hostAddr, rei);
   if (i < 0)
     return(i);
+#else
+  i = evaluateExpression(tmpStr, tmpStr1, rei);
+  if (i < 0)
+    return(i);
+  parseHostAddrStr (tmpStr1, &execMyRuleInp.addr);
+#endif
   snprintf(execMyRuleInp.myRule, META_STR_LEN, "remExec||%s|%s",  (char*)mPB->inOutStruct,(char*)mPC->inOutStruct);
   addKeyVal(&execMyRuleInp.condInput,"execCondition",mPA->inOutStruct);
   

@@ -200,6 +200,8 @@ int
 getLineInBuf (char **inbuf, char *outbuf, int bufLen);
 int
 freeRodsObjStat (rodsObjStat_t *rodsObjStat);
+int
+parseHostAddrStr (char *hostAddr, rodsHostAddr_t *addr);
 #ifdef  __cplusplus
 }
 #endif

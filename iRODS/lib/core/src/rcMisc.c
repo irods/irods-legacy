@@ -3032,3 +3032,19 @@ freeRodsObjStat (rodsObjStat_t *rodsObjStat)
     return 0;
 }
 
+int
+parseHostAddrStr (char *hostAddr, rodsHostAddr_t *addr)
+{
+    char port[NAME_LEN];
+
+    if (hostAddr == NULL || addr == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+
+    if (splitPathByKey (hostAddr, addr->hostAddr, port, ':') < 0) {
+        rstrcpy (addr->hostAddr, hostAddr, LONG_NAME_LEN);
+        addr->portNum = 0;
+    } else {
+        addr->portNum = atoi (port);
+    }
+    return 0;
+}
+

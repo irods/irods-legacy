@@ -1053,7 +1053,6 @@ initZone (rsComm_t *rsComm)
 
     for (i = 0;i < genQueryOut->rowCnt; i++) {
 	rodsHostAddr_t addr;
-	char port[NAME_LEN];
 
         tmpZoneName = &zoneName->value[zoneName->len * i];
         tmpZoneType = &zoneType->value[zoneType->len * i];
@@ -1075,12 +1074,16 @@ initZone (rsComm_t *rsComm)
  
         memset (&addr, 0, sizeof (addr));
 	/* assume address:port */
+        parseHostAddrStr (tmpZoneConn, &addr);
+        if (addr.portNum == 0) addr.portNum = ZoneInfoHead->portNum;
+#if 0
 	if (splitPathByKey (tmpZoneConn, addr.hostAddr, port, ':') < 0) {
             rstrcpy (addr.hostAddr, tmpZoneConn, LONG_NAME_LEN);
 	    addr.portNum = ZoneInfoHead->portNum;
 	} else {
 	    addr.portNum = atoi (port);
 	}
+#endif
         status = resolveHost (&addr, &tmpRodsServerHost);
 	if (status < 0) {
 	    rodsLog (LOG_ERROR,
