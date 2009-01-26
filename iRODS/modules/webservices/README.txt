@@ -26,7 +26,13 @@ There are two steps in using the web-servivces in micro-services.
    gcc -c -DWITH_NONAMESPACES envC.c
    gcc -c -DWITH_NONAMESPACES stdsoap2.c
    cp  envC.o  stdsoap2.o ../../obj
-
+4. Add a file called info.txt at the webservices directoryi if it is already not there.
+   The content of this file is similar to that of info.txt in modules/properties directory.
+5. Make sure that the value for Enabled in info.tct is yes (instead of no)
+6. Add the word 'webservices' (without quotes but separate by blank) to the line
+     MODULES=  
+   option in config/mk.config file at the iRODS directory.
+   Make sure that the line is also not commented out
 
 -------------   SECOND STEP (DONE FOR EACH WEB SERVICE)  ------------
 Here we show an example micro-service being built for getting stockQuotation.
