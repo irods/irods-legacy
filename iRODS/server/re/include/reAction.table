@@ -203,7 +203,7 @@ microsdef_t MicrosTable[] = {
   {"msiDataObjPhymv",6,(funcPtr) msiDataObjPhymv},
   {"msiDataObjRename",4,(funcPtr) msiDataObjRename},
   {"msiDataObjTrim",6,(funcPtr) msiDataObjTrim},
-  {"msiCollCreate",2,(funcPtr) msiCollCreate},
+  {"msiCollCreate",3,(funcPtr) msiCollCreate},
   {"msiRmColl",3,(funcPtr) msiRmColl},
   {"msiReplColl",4,(funcPtr) msiReplColl},
   {"msiCollRepl",3,(funcPtr) msiCollRepl},
