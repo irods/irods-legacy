@@ -1020,7 +1020,10 @@ static void rodsNtElog(char *msg)
 	int t;
 
 	if(ProcessType == CLIENT_PT)
-	  return;
+	{
+		fprintf(stderr,"%s", msg);
+	    return;
+	}
 
 	t = strlen(msg);
 	if(msg[t-1] == '\n')
