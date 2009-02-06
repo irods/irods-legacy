@@ -510,6 +510,12 @@ sub validateDatabaseVariables()
 	}
 	elsif ( $DATABASE_TYPE eq "mysql" )
 	{
+		# Use localhost as default
+		if ( !defined( $DATABASE_HOST ) || $DATABASE_HOST eq "" )
+		{
+			$DATABASE_HOST = "localhost";
+		}
+
 		# Database directories
 		$databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
 		if (defined( $DATABASE_LIB ) && $DATABASE_LIB ne "" ) {
