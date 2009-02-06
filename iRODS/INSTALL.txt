@@ -90,8 +90,9 @@ answering the prompts differently:
 
 	* Install iRODS server, iCAT, and commands
 		You will be prompted for information about an
-		existing Postgres or Oracle database.  The scripts
-		build and configure iRODS to use that database.
+		existing Postgres, Oracle or MySQL database.
+		The scripts build and configure iRODS to use that 
+		database.
 
 
 	* Install iRODS server, and commands
@@ -275,6 +276,93 @@ to get a list of options.
 
 The 'finishSetup' script will install iCAT tables if needed.
 
+
+
+2.4.  Installing with an existing MySQL database
+
+MySQL server has to be running already and properly configured. iRODS 
+requires MySQL version 5.0.3 or later. There are two critical 
+configuration options required for MySQL server to support iRODS: 
+
+    1.	InnoDB support has to be enabled, which is usually the case. 
+	It does not need to be set as default table type, the scripts 
+	that create tables specify table type explicitly.
+	
+    2.	Server must be running with the option 'lower_case_table_names=1'. 
+	This option is usually specified in the server configuration file 
+	(like /etc/my.cnf) or on the command line.
+
+An empty database has to be created for ICAT together with the user who
+has full control over that database (with a secure password). 
+
+iRODS uses ODBC to communicate with the MySQL server, and ODBC has to be 
+installed before you run iRODS setup scripts. If you dont have unixODBC 
+installed already on your system then you can get recent version from 
+http://www.unixodbc.org/. In addition to ODBC manager you will need ODBC 
+driver for MySQL, which is available from 
+http://dev.mysql.com/downloads/connector/odbc/. 
+
+After installing MySQL driver one has to define ODBC Data Source for 
+the MySQL server. This can be done conveniently with a GUI application
+ODBCConfig which comes with unixODBC or manually editing odbc.ini file.
+In addition to a regular parameters such as server host name and database
+name there is one critical parameter required by ICAT: 'Option'. It has
+to be set to a value 2, which corresponds to CLIENT_FOUND_ROWS MySQL 
+connection option. You can include other options in that value too
+(consult driver.h in mysql ODBC driver source) but always make sure
+that bit 0x2 in Option is set!
+
+Knowing the name of the ODBC Data Source and user name and password one 
+can proceed with the configuration of the iRODS.
+
+Create a new iRODS configuration file from a template.  The easiest
+way is to run 'scripts/irodsprompt' once to set up defaults:
+
+	scripts/irodsprompt
+
+Alternatively, you can copy a template as a starting point:
+
+	cp config/irods.config.template config/irods.config
+
+Edit 'config/irods.config' and set:
+
+	$DATABASE_TYPE = 'mysql';
+	$DATABASE_HOME = '/path/to/unixODBC';
+	$DATABASE_ODBC_TYPE = 'unix';
+	$DATABASE_HOST = '';
+	$DATABASE_PORT = '';
+	$DATABASE_ADMIN_NAME = 'mysql-user-account';
+	$DATABASE_ADMIN_PASSWORD = 'mysql-user-password';
+	$DB_NAME = 'ODBC Data Source Name';
+
+The DB_NAME variable must be set to the name of the ODBC Data Source that
+has been created before.
+
+Also set iRODS parameters:
+
+	$IRODS_HOME = '/path/to/irods';
+	$IRODS_PORT = '1247';
+	$IRODS_ADMIN_NAME = 'rods';
+	$IRODS_ADMIN_PASSWORD = 'rods';
+	$IRODS_ICAT_HOST = '';
+
+iRODS can be configured with servers running on multiple hosts.  Only
+one of those servers needs the iCAT enabled, so only one host needs
+Postgres installed.  The other iRODS servers on other hosts can be
+configured to communicate with the first iRODS server, its iCAT, and
+the iCAT's Postgres database.  If you are installing iRODS to talk
+to a remote iCAT, set $IRODS_ICAT_HOST to the name of the iCAT host.
+
+Run:
+	scripts/configure
+	make
+	scripts/finishSetup
+
+You may want to add command-line options to 'scripts/configure' to
+enable or disable special iRODS features.  Run 'scripts/configure --help'
+to get a list of options.
+
+The 'finishSetup' script will install iCAT tables if needed.
 
 
 

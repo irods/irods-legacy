@@ -119,6 +119,13 @@ INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
 endif
 endif
 
+ifdef MYICAT
+# Support Postgres
+SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+INCLUDES +=	-I$(UNIXODBC_HOME)/include
+CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
+endif
+
 ifdef DBMS_LIB
 LDFLAGS +=	$(DBMS_LIB)
 endif

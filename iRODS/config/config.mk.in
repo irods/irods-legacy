@@ -35,6 +35,8 @@
 #
 #	ORAICAT		A 1 if the iCAT uses an Oracle database.
 #
+#	MYICAT	    A 1 if the iCAT uses an MySQL database.
+#
 #	ORACLE_HOME	The home directory of Oracle, if ORAICAT = 1
 #
 #	NEW_ODBC	A 1 if the Postgres interface uses the unix ODBC.
@@ -53,6 +55,9 @@ MODULES=
 #POSTGRES_HOME=
 #NEW_ODBC=1
 #ORAICAT=1
+#MYICAT=1
+#UNIXODBC_HOME=
+#UNIXODBC_DATASOURCE=
 ifndef ORACLE_HOME
 ORACLE_HOME=
 endif
@@ -85,6 +90,12 @@ endif
 ifdef ORAICAT
 ORA_DBMS =  1
 endif
+
+# MySQL
+ifdef MYICAT
+MY_DBMS =  1
+endif
+
 endif
 
 
@@ -104,6 +115,15 @@ endif
 ifdef ORAICAT
 RODS_CAT = 1
 ORA_DBMS = 1
+endif
+
+
+#
+# Adjust for the MySQL iCAT
+#
+ifdef MYICAT
+RODS_CAT = 1
+MY_DBMS = 1
 endif
 
 
@@ -144,6 +164,22 @@ endif
 ORA_HDR_DIR = $(ORACLE_HOME)/rdbms/public
 DBMS_LIB+= -L$(ORA_LIB_DIR) -lclntsh
 DBMS_INCLUDE+= -I$(ORA_HDR_DIR)
+endif
+
+
+#
+# MySQL options
+#
+ifdef MY_DBMS
+ifeq ($(OS_platform), osx_platform)
+NSL=
+else
+NSL=-lnsl
+endif
+ODBC_LIB_DIR = $(UNIXODBC_HOME)/lib
+ODBC_HDR_DIR = $(UNIXODBC_HOME)/include
+DBMS_LIB+= -L$(ODBC_LIB_DIR) -lodbc $(NSL) -lm
+DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
 endif
 
 
@@ -201,4 +237,3 @@ RBUDP_TRANSFER = 1
 
 # UNI_CODE - support UTF-8 on linux and UTF-16 on windows
 # UNI_CODE = 1
-

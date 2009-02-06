@@ -229,6 +229,8 @@ foreach $arg ( @ARGV )
 	printNotice( "    --disable-psgcat            Disable Postgres database catalog\n" );
 	printNotice( "    --enable-oracat             Enable Oracle database catalog\n" );
 	printNotice( "    --disable-oracat            Disable Oracle database catalog\n" );
+	printNotice( "    --enable-mycat              Enable MySQL database catalog\n" );
+	printNotice( "    --disable-mycat             Disable MySQL database catalog\n" );
 	printNotice( "\n" );
 	printNotice( "    --enable-psghome=<DIR>      Set the Postgres directory\n" );
 	printNotice( "    --enable-newodbc            Use the new ODBC interface\n" );
@@ -281,6 +283,7 @@ foreach $arg ( @ARGV )
 $configMkVariables{ "RODS_CAT" } = "";	# Enable iCAT
 $configMkVariables{ "PSQICAT" }  = "";	# Enable Postgres iCAT
 $configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+$configMkVariables{ "MYICAT" }  = "";	# Disable MySQL iCAT
 $configMkVariables{ "NEW_ODBC" } = "1";	# New ODBC drivers
 $configMkVariables{ "PARA_OPR" } = "1";	# Parallel
 
@@ -380,6 +383,7 @@ if ( $DATABASE_TYPE =~ /postgres/i )
 	$configMkVariables{ "RODS_CAT" } = "1";	# Enable iCAT
 	$configMkVariables{ "PSQICAT" }  = "1";	# Enable Postgres iCAT
 	$configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+	$configMkVariables{ "MYICAT" }  = ""; # Disable MySQL iCAT
 }
 elsif ( $DATABASE_TYPE =~ /oracle/i )
 {
@@ -387,6 +391,15 @@ elsif ( $DATABASE_TYPE =~ /oracle/i )
 	$configMkVariables{ "RODS_CAT" } = "1";	# Enable iCAT
 	$configMkVariables{ "PSQICAT" }  = "";	# Disable Postgres iCAT
 	$configMkVariables{ "ORAICAT" }  = "1";	# Enable Oracle iCAT
+	$configMkVariables{ "MYICAT" }  = "";   # Disable MySQL iCAT
+}
+elsif ( $DATABASE_TYPE =~ /mysql/i )
+{
+	# MySQL.
+	$configMkVariables{ "RODS_CAT" } = "1";	# Enable iCAT
+	$configMkVariables{ "PSQICAT" }  = "";	# Disable Postgres iCAT
+	$configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+	$configMkVariables{ "MYICAT" }  = "1";	# Enable MySQL iCAT
 }
 else
 {
@@ -394,6 +407,7 @@ else
 	$configMkVariables{ "RODS_CAT" } = "";	# Disable iCAT
 	$configMkVariables{ "PSQICAT" }  = "";	# Disable Postgres iCAT
 	$configMkVariables{ "ORAICAT" }  = "";	# Disable Oracle iCAT
+	$configMkVariables{ "MYICAT" }  = ""; # Disable MySQL iCAT
 }
 
 
@@ -419,6 +433,7 @@ foreach $arg ( @ARGV )
 		$configMkVariables{ "PSQICAT" } = "1";
 		$configMkVariables{ "RODS_CAT" } = "1";
 		$configMkVariables{ "ORAICAT" } = "";
+		$configMkVariables{ "MYICAT" } = "";
 		next;
 	}
 
@@ -434,6 +449,23 @@ foreach $arg ( @ARGV )
 		$configMkVariables{ "PSQICAT" } = "";
 		$configMkVariables{ "RODS_CAT" } = "1";
 		$configMkVariables{ "ORAICAT" } = "1";
+		$configMkVariables{ "MYICAT" } = "";
+		next;
+	}
+
+	# MySQL iCAT
+	if ( $arg =~ /--disable-myi?cat/ )
+	{
+		$configMkVariables{ "MYICAT" } = "";
+		$configMkVariables{ "RODS_CAT" } = "";
+		next;
+	}
+	if ( $arg =~ /--enable-myi?cat/ )
+	{
+		$configMkVariables{ "PSQICAT" } = "";
+		$configMkVariables{ "RODS_CAT" } = "1";
+		$configMkVariables{ "ORAICAT" } = "";
+		$configMkVariables{ "MYICAT" } = "1";
 		next;
 	}
 
@@ -443,6 +475,7 @@ foreach $arg ( @ARGV )
 		$configMkVariables{ "PSQICAT" } = "";
 		$configMkVariables{ "RODS_CAT" } = "";
 		$configMkVariables{ "ORAICAT" } = "";
+		$configMkVariables{ "MYICAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--enable-icat/ )
@@ -450,6 +483,7 @@ foreach $arg ( @ARGV )
 		$configMkVariables{ "PSQICAT" } = "1";	# Default to Postgres
 		$configMkVariables{ "RODS_CAT" } = "1";
 		$configMkVariables{ "ORAICAT" } = "";
+		$configMkVariables{ "MYICAT" } = "";
 		next;
 	}
 	if ( $arg =~ /--icat-host=(.*)/ )
@@ -466,6 +500,7 @@ foreach $arg ( @ARGV )
 		$configMkVariables{ "PSQICAT" } = "1";	# Default to Postgres
 		$configMkVariables{ "RODS_CAT" } = "1";
 		$configMkVariables{ "ORAICAT" } = "";
+		$configMkVariables{ "MYICAT" } = "";
 		my $default = $irodsConfigVariables{ "DATABASE_HOME" };
 		my $psgdir_abs  = abs_path( $psgdir );
 		my $default_abs = abs_path( $default );
@@ -781,6 +816,29 @@ elsif ( $configMkVariables{ "ORAICAT" } eq "1" )
 	}
 
 	printStatus( "Oracle database found in $databaseHome\n" );
+}
+elsif ( $configMkVariables{ "MYICAT" } eq "1" )
+{
+	# Configuration has enabled MySQL.  Make sure the
+	# rest of the configuration matches.
+	$irodsConfigVariables{ "DATABASE_TYPE" } = "mysql";
+	$irodsConfigVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
+	$configMkVariables{ "UNIXODBC_HOME" } = $DATABASE_HOME;
+	$configMkVariables{ "UNIXODBC_DATASOURCE" } = $DB_NAME;
+
+	$databaseHome = $irodsConfigVariables{ "DATABASE_HOME" };
+	if ( ! -e $databaseHome )
+	{
+		printError( "\n" );
+		printError( "Configuration problem:\n" );
+		printError( "    Cannot find the unixODBC install directory.\n" );
+		printError( "        Directory:  $databaseHome\n" );
+		printError( "\n" );
+		printError( "Abort.  Please re-run this script after fixing this problem.\n" );
+		exit( 1 );
+	}
+
+	printStatus( "MySQL database found.\n" );
 }
 else
 {

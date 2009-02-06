@@ -1147,6 +1147,13 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
          deal with.  So instead, we handle this elsewhere by getting
          and disgarding rows. */
    }
+#elif MY_ICAT
+   /* MySQL/ODBC handles it nicely via just adding limit/offset */
+      snprintf (offsetStr, 20, "%d", genQueryInp.rowOffset);
+      rstrcat(combinedSQL, " limit ", MAX_SQL_SIZE);
+      rstrcat(combinedSQL, offsetStr, MAX_SQL_SIZE);
+      rstrcat(combinedSQL, ",18446744073709551615", MAX_SQL_SIZE);
+   }
 #else
    /* Postgres/ODBC handles it nicely via just adding offset */
       snprintf (offsetStr, 20, "%d", genQueryInp.rowOffset);

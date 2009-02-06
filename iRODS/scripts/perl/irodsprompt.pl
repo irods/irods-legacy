@@ -814,7 +814,7 @@ sub promptForDatabaseConfiguration()
 		"state information in a database.  You have two choices:\n",
 		"\n",
 		"    1.  Download and build a new Postgres DBMS system.\n",
-		"    2.  Use an existing Postgres or Oracle DBMS and database.\n",
+		"    2.  Use an existing Postgres, MySQL, or Oracle DBMS and database.\n",
 		"\n" );
 	}
 
@@ -827,7 +827,7 @@ sub promptForDatabaseConfiguration()
 	# irods.config file.  It's a good bet that the user wants
 	# to keep this choice, so do the prompts here in a different
 	# order for this case to give a fast path for Oracle.
-	my $showPrompt = ($databaseServerType =~ /oracle/i) ? 3 : 1;
+	my $showPrompt = ($databaseServerType =~ /oracle|mysql/i) ? 3 : 1;
 	if ( $isUpgrade ne "" ) {
 	    $showPrompt = 3;
 	}
@@ -892,7 +892,7 @@ sub promptForDatabaseConfiguration()
 			# What existing database should be used?
 			if ( $dontPrompt3Again == 0 )
 			{
-				if ( $databaseServerType !~ /oracle/i )
+				if ( $databaseServerType !~ /oracle|mysql/i )
 				{
 					# Explain if a prior install
 					# hasn't already indicated
@@ -906,7 +906,7 @@ sub promptForDatabaseConfiguration()
 						"\n" );
 				}
 				$databaseServerType = promptString(
-					"Database type (postgres or oracle)",
+					"Database type (postgres or mysql or oracle)",
 					(($databaseServerType ne "") ?
 					$databaseServerType : $DEFAULT_databaseServerType) );
 			}
@@ -1002,15 +1002,34 @@ sub promptForDatabaseConfiguration()
 				promptForExistingOracleDatabase( );
 				return;
 			}
-#			elsif ( $databaseServerType =~ /^mysql/i )
-#			{
-#				promptForExistingMysqlDatabase( );
-#				return;
-#			}
+ 			elsif ( $databaseServerType =~ /^m(ysql)?/i )
+ 			{
+				# Definitive answer.  It's
+				# a use of an existing
+				# MySQL install.  Prompt
+				# for it, then we're done.
+				$databaseServerType = "mysql";
+				if ( $oldDatabaseServerType !~ /$databaseServerType/i )
+				{
+					# The database choice changed,
+					# probably from Postgres to
+					# Oracle.
+					#
+					# The prior database parameters
+					# are almost certainly wrong.
+					$databaseServerPath = undef;
+					$databaseServerHost = undef;
+					$databaseServerPort = undef;
+					$databaseServerAccount = undef;
+					$databaseServerPassword = undef;
+				}
+				$databaseServerExclusive = 0;
+ 				promptForExistingMysqlDatabase( );
+ 				return;
+ 			}
 			printError(
-				"    iRODS currently only works with Postgres or Oracle\n",
-				"    database management systems.  Please select one of\n",
-				"    these two.\n\n" );
+				"    iRODS currently only works with Postgres, MySQL, or Oracle\n",
+				"    database management systems.  Please select one of these.\n\n" );
 
 			# Not that choice.  Try the first one
 			# again.
@@ -1412,6 +1431,54 @@ sub promptForExistingPostgresDatabase( )
 
 
 
+# @brief	Prompt for the configuration of an existing Oracle database
+#
+# Through a series of prompts, collect information for an existing Oracle
+# installation.  Results are returned through global variables.
+#
+sub promptForExistingMysqlDatabase( )
+{
+	$databaseServerOdbcType  = "unix";	# Already set.  No prompt.
+	$deleteDatabaseData      = 0;		# Never.  No prompt.
+	$databaseServerExclusive = 0;		# Never.  No prompt.
+
+	# Intro
+	printNotice(
+		"\n",
+		"iRODS uses ODBC for access to MySQL databases.\n",
+		"The iRODS build needs access to the include and\n",
+        "library files in the existing unixODBC installation.\n",
+		"\n" );
+
+	# Where is ODBC?
+	$databaseServerPath = promptString( "Existing unixODBC directory", $databaseServerPath );
+
+	# Server host can be "localhost" or any other host name
+	printNotice(
+		"\n",
+		"ODBC should have been configured by administrator already\n",
+		"to provide access to database via the 'Data Source'.\n",
+		"\n" );
+	$irodsDbName = promptString( "ODBC Data Source name", $irodsDbName );
+
+
+	# Account name and password
+	printNotice(
+		"\n",
+		"iRODS will need to use an existing database account.\n",
+		"\n" );
+	$databaseServerAccount = promptIdentifier(
+		 "Existing database login name",
+		((!defined($databaseServerAccount)||$databaseServerAccount eq "") ?
+			$DEFAULT_databaseServerAccount : $databaseServerAccount) );
+	$databaseServerPassword = promptIdentifier(
+		"Password",
+		$databaseServerPassword );
+
+}
+
+
+
 
 
 # @brief	Prompt for the configuration of an existing Oracle database
@@ -1501,6 +1568,7 @@ sub promptForExistingOracleDatabase( )
 
 
 
+
 # @brief	Prompt for confirmation of the prompted for values
 #
 # The collected information is shown to the user and they are prompted
@@ -1581,6 +1649,11 @@ sub promptForConfirmation( )
 		{
 			printNotice(
 				"    Use existing Oracle\n" );
+		}
+		elsif ( $databaseServerType eq "mysql" )
+		{
+			printNotice(
+				"    Use existing MySQL/ODBC Data Source\n" );
 		}
 
 		printNotice(

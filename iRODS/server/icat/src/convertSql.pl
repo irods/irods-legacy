@@ -18,7 +18,6 @@
 # arg1 is the db type, optional arg2 is the directory where the
 # scripts are (i.e. if not the cwd).
 
-$tmpFile="convertSql.TempFile1";
 ($arg1, $arg2)=@ARGV;
 
 if ($arg2) {
@@ -26,52 +25,24 @@ if ($arg2) {
 }
 
 if (!$arg1) {
-    print "Usage postgresql|oracle\n";
+    print "Usage postgresql|oracle|mysql\n";
     die("Invalid (null) argument");
 }
 
-if ($arg1 eq "oracle" || $arg1 eq "postgresql") {
+if ($arg1 eq "oracle" || $arg1 eq "postgresql" || $arg1 eq "mysql") {
 }
 else {
-    print "Usage postgresql|oracle\n";
+    print "Usage postgresql|oracle|mysql\n";
     die("Invalid argument");
 }
 
-if ($arg1 eq "oracle") {
-    print ("oracle\n");
+print ("$arg1\n");
 
-    unlink($tmpFile);
-    runCmd("cat icatSysTables.sql | sed s/bigint/integer/g > $tmpFile");
-    print "Moving $tmpFile to icatSysTables.sql\n";
-    unlink("icatSysTables.sql");
-    rename($tmpFile, "icatSysTables.sql");
+runCmd("cpp -D$arg1 icatSysTables.sql.pp | grep -v '^#' > icatSysTables.sql");
+print "Preprocess icatSysTables.sql.pp to icatSysTables.sql\n";
 
-    unlink($tmpFile);
-    runCmd("cat icatCoreTables.sql | sed s/bigint/integer/g > $tmpFile");
-    print "Moving $tmpFile to icatCoreTables.sql\n";
-    unlink("icatCoreTables.sql");
-    rename($tmpFile, "icatCoreTables.sql");
-
-    exit(0);
-}
-
-if ($arg1 eq "postgresql") {
-    print ("postgresql\n");
-
-    unlink($tmpFile);
-    runCmd("cat icatSysTables.sql | sed s/integer/bigint/g > $tmpFile");
-    print "Moving $tmpFile to icatSysTables.sql\n";
-    unlink("icatSysTables.sql");
-    rename($tmpFile, "icatSysTables.sql");
-
-    unlink($tmpFile);
-    runCmd("cat icatCoreTables.sql | sed s/integer/bigint/g > $tmpFile");
-    print "Moving $tmpFile to icatCoreTables.sql\n";
-    unlink("icatCoreTables.sql");
-    rename($tmpFile, "icatCoreTables.sql");
-
-    exit(0);
-}
+runCmd("cpp -D$arg1 icatCoreTables.sql.pp | grep -v '^#' > icatCoreTables.sql");
+print "Preprocess icatCoreTables.sql.pp to icatCoreTables.sql\n";
 
 exit(0);
 

@@ -312,12 +312,12 @@ sub validateDatabaseVariables()
 		# against it easier (i.e., always full name in lower case).
 		$DATABASE_TYPE = "oracle";
 	}
-#	elsif ( $DATABASE_TYPE =~ /mysql/i )
-#	{
-#		# Regularize the database type name to make further checks
-#		# against it easier (i.e., always full name in lower case).
-#		$DATABASE_TYPE = "mysql";
-#	}
+	elsif ( $DATABASE_TYPE =~ /mysql/i )
+	{
+		# Regularize the database type name to make further checks
+		# against it easier (i.e., always full name in lower case).
+		$DATABASE_TYPE = "mysql";
+	}
 	elsif ( $DATABASE_TYPE ne "" )
 	{
 		printError(
@@ -508,9 +508,101 @@ sub validateDatabaseVariables()
 			return 0;
 		}
 	}
-#	elsif ( $DATABASE_TYPE eq "mysql" )
-#	{
-#	}
+	elsif ( $DATABASE_TYPE eq "mysql" )
+	{
+		# Database directories
+		$databaseBinDir  = File::Spec->catdir( $DATABASE_HOME, "bin" );
+		if (defined( $DATABASE_LIB ) && $DATABASE_LIB ne "" ) {
+		    $databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, $DATABASE_LIB );
+		}
+		else {
+		    $databaseLibDir  = File::Spec->catdir( $DATABASE_HOME, "lib" );
+		}
+
+		# Database commands
+		$odbcinst = File::Spec->catfile( $databaseBinDir, "odbcinst" );
+		if ( ! -e $odbcinst )
+		{
+			printError(
+				"\n" .
+				"Configuration problem:\n" .
+				"    ODBC program directory is missing!\n" .
+				"\n" .
+				"    The iRODS configuration indicates the installed ODBC\n" .
+				"    directory, but the files aren't there.  Has the database been\n" .
+				"    fully installed?\n" .
+				"\n" .
+				"    Please check \$DATABASE_HOME in the configuration file.\n" .
+				"        Config file:   $irodsConfig\n" .
+				"        Database path: $DATABASE_HOME\n" .
+				"        Database commands:   $databaseBinDir\n" );
+			return 0;
+		}
+        
+        # buld parameter list for mysql - run odbcinst with the specified 
+        # data source name and extrac connection parameters for mysql
+        if ( ! open ( ODBCINST, "$odbcinst -q -s -n \"$DB_NAME\" 2>&1 |" ) ) {
+			printError(
+				"\n" .
+				"Configuration problem:\n" .
+				"    failed to run odbcinst application!\n" .
+				"\n" .
+				"    Please check \$DATABASE_HOME in the configuration file.\n" .
+				"        Config file:   $irodsConfig\n" .
+				"        Database path: $DATABASE_HOME\n" .
+				"        Database commands:   $databaseBinDir\n" );
+			return 0;
+        }
+		$mysql = "" ;
+		my $option = 0;
+		my $line;
+		foreach $line ( <ODBCINST> ) {
+			chomp( $line );
+			#
+			# workaround for odbcinst bug - it can "join" the lines if there
+			# is no value for the parameter
+			#
+			if ( $line =~ /=/ ) {
+				my @words = split ( /\s*=\s*/, $line, -1 );
+				
+				# If the last word is non-empty then it is the value and 
+				# preceeding one is a key
+				my $val = $words[$words-1] ;
+				if ( $val ne "" ) {
+					my $key = lc( $words[$words-2] );
+					if ( $key eq "server" ) {
+						$mysql = " -h\"" . $val . "\"" . $mysql;
+					} elsif ( $key eq "port" ) {
+						$mysql = " -P" . $val . $mysql;
+					} elsif ( $key eq "database" ) {
+						$mysql = $mysql . " \"" . $val . "\"" ;
+					} elsif ( $key eq "option" ) {
+						$option = $val;
+					}
+				}
+			}
+		}
+
+		close ( ODBCINST ) ;
+
+		# Verify that we have correct option passed to the driver, we need CLIENT_FOUND_ROWS=0x2
+		# which make it return "found rows" instead of "affected rows" for UPDATE statements.
+		if ( ! ( $option & 0x2 ) ) {
+			printError(
+				"\n" .
+				"Configuration problem:\n" .
+				"    CLIENT_FOUND_ROWS is not specified in MySQL ODBC driver options!\n" .
+				"\n" .
+				"    Please check the value of the \"Option\" in the odbc.ini and\n" .
+				"    set its value to contain mask 0x2, e.g. \"Option = 2\".\n" );
+			return 0;
+		}
+		
+		# 
+		# Good version of mysql command must be found in a path
+		#
+		$mysql = "mysql  -u\"$DATABASE_ADMIN_NAME\" -p\"$DATABASE_ADMIN_PASSWORD\" --skip-column-names " . $mysql;
+	}
 	else
 	{
 		# Unrecognized database.  If we don't know what

@@ -623,11 +623,12 @@ sub configureDatabaseUser
 	}
 
 	# MySQL
-#	if ( $DATABASE_TYPE eq "mysql" )
-#	{
-#		MySQL_ConfigureDatabaseUser( );
-#		return;
-#	}
+	if ( $DATABASE_TYPE eq "mysql" )
+	{
+		printStatus( "Skipped.  For MySQL, database configured by DBA.\n" );
+		printLog( "Skipped.  For MySQL, database configured by DBA.\n" );
+		return;
+	}
 
 	# Empty
 	if ( $DATABASE_TYPE eq "" )
@@ -813,26 +814,21 @@ sub createDatabaseAndTables
 		    `cat $sqlPathOrig | sed s/$IRODS_DEFAULT_ZONE/$ZONE_NAME/g > $sqlPath`;
 		}
 		
-		if ( $DATABASE_TYPE eq "oracle" )
+		printStatus( "    Converting SQL to $DATABASE_TYPE form.\n" );
+		printLog( "    Converting SQL to $DATABASE_TYPE form.\n" );
+		my $convertSqlScript = File::Spec->catfile( $serverSqlDir,"convertSql.pl");
+		($status,$output) = run( "$perl $convertSqlScript $DATABASE_TYPE $serverSqlDir" );
+		if ( $status != 0 )
 		{
-		    printStatus( "    Converting SQL to Oracle form.\n" );
-		    printLog( "    Converting SQL to Oracle form.\n" );
-		    my $convertSqlScript = File::Spec->catfile( $serverSqlDir,
-								"convertSql.pl");
-		    ($status,$output) = run( "$perl $convertSqlScript oracle $serverSqlDir" );
-		    if ( $status != 0 )
-		    {
-			printError( "\nInstall problem:\n" );
-			printError( "    Could not run $convertSqlScript\n" );
-			printError( "        ", $output );
-			printLog( "\nInstall problem:\n" );
-			printLog( "    Could not run $convertSqlScript\n" );
-			printLog( "    ", $output );
-			cleanAndExit( 1 );
-		    }
+		    printError( "\nInstall problem:\n" );
+		    printError( "    Could not run $convertSqlScript\n" );
+		    printError( "        ", $output );
+		    printLog( "\nInstall problem:\n" );
+		    printLog( "    Could not run $convertSqlScript\n" );
+		    printLog( "    ", $output );
+		    cleanAndExit( 1 );
 		}
-
-
+    
 		my $alreadyCreated = 0;
 		my $sqlfile;
 		printStatus( "    Inserting ICAT tables...\n" );
@@ -922,11 +918,13 @@ sub configureDatabaseSecurity
 	}
 
 	# MySQL
-#	if ( $DATABASE_TYPE eq "mysql" )
-#	{
-#		MySQL_ConfigureDatabaseSecurity( );
-#		return;
-#	}
+	if ( $DATABASE_TYPE eq "mysql" )
+	{
+		printStatus( "Configuring security...\n" );
+		printStatus( "    Skipped.  MySQL database security configured by DBA.\n" );
+		printLog( "    Skipped.  MySQL database security configured by DBA.\n" );
+		return;
+	}
 
 	# Empty
 	if ( $DATABASE_TYPE eq "" )
@@ -1767,10 +1765,10 @@ sub createDatabase()
 	}
 
 	# MySQL
-#	if ( $DATABASE_TYPE eq "mysql" )
-#	{
-#		return MySQL_CreateDatabase( );
-#	}
+	if ( $DATABASE_TYPE eq "mysql" )
+	{
+		return MySQL_CreateDatabase( );
+	}
 
 	# Empty
 	if ( $DATABASE_TYPE eq "" )
@@ -1820,10 +1818,10 @@ sub listDatabaseTables()
 	}
 
 	# MySQL
-#	if ( $DATABASE_TYPE eq "mysql" )
-#	{
-#		return MySQL_ListDatabaseTables( $dbname );
-#	}
+	if ( $DATABASE_TYPE eq "mysql" )
+	{
+		return MySQL_ListDatabaseTables( $dbname );
+	}
 
 	# Empty
 	if ( $DATABASE_TYPE eq "" )
@@ -1961,6 +1959,12 @@ sub stopIrods()
 	# Repeat to catch stragglers.  This time use kill -9.
 
 	my @pids = getFamilyProcessIds( $parentPid );
+	if ( $#pids >= 0 )
+	{
+		# make some short delay, let them die
+		sleep( 1 ) ;
+	}
+	my @pids = getFamilyProcessIds( $parentPid );
 	foreach $pid (@pids)
 	{
 	    	kill( 9, $pid );
@@ -2016,10 +2020,10 @@ sub startDatabase()
 		return 3;
 	}
 
-#	if ( $DATABASE_TYPE eq "mysql" )
-#	{
-#		return MySQL_startDatabase( );
-#	}
+	if ( $DATABASE_TYPE eq "mysql" )
+	{
+		return 3;
+	}
 
 	if ( $DATABASE_TYPE eq "" )
 	{
@@ -2062,10 +2066,10 @@ sub stopDatabase()
 		return 3;
 	}
 
-#	if ( $DATABASE_TYPE eq "mysql" )
-#	{
-#		return MySQL_stopDatabase( );
-#	}
+	if ( $DATABASE_TYPE eq "mysql" )
+	{
+		return 3;
+	}
 
 	if ( $DATABASE_TYPE eq "" )
 	{
@@ -2351,10 +2355,10 @@ sub execute_sql($$)
 	}
 
 	# MySQL
-#	if ( $DATABASE_TYPE eq "mysql" )
-#	{
-#		return MySQL_sql( $databaseName, $sqlFilename );
-#	}
+	if ( $DATABASE_TYPE eq "mysql" )
+	{
+		return MySQL_sql( $databaseName, $sqlFilename );
+	}
 
 	# Empty
 	if ( $DATABASE_TYPE eq "" )
@@ -2957,6 +2961,60 @@ sub Oracle_CreateDatabase()
 
 
 #
+# @brief	'Create' a MySQL database.
+#
+# Stub that corresponds to the function creates a database, but for
+# MySQL this is done by the DBA.
+#
+# @return
+# 	A numeric code indicating success or failure:
+# 		0 = failure
+# 		1 = success
+# 		2 = already created
+#
+sub MySQL_CreateDatabase()
+{
+    # If force mode, drop the tables (similar to dropping the db
+    # in postgres.  The tables are then inserted later, if not present.
+    if ( $force )
+    {
+        printStatus( "CreateDatabase: dropping tables...\n" );
+        printLog( "CreateDatabase: dropping tables...\n" );
+        my @sqlfiles = (
+                "icatPurgeRecycleBin.sql",
+                "icatDropCoreTables.sql",
+                "icatDropSysTables.sql",
+                "icatPurgeRecycleBin.sql");
+        my $sqlfile;
+        foreach $sqlfile (@sqlfiles)
+        {
+            printLog( "    $sqlfile...\n" );
+            printStatus ( "    $sqlfile...\n" );
+            my $sqlPath = File::Spec->catfile( $serverSqlDir, $sqlfile );
+            my ($status,$output) = MySQL_sql( $DB_NAME, $sqlPath );
+            if ( $status != 0 )
+            {
+                # Stop if any of the SQL scripts fail.
+                printError( "\nInstall problem:\n" );
+                printError( "    Could not drop the iCAT tables.\n" );
+                printError( "        ", $output );
+                printLog( "\nSQL failed:\n" );
+                printLog( "    ", $output );
+                cleanAndExit( 1 );
+            }
+        }
+    }
+    else 
+    {
+        printStatus( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
+        printLog( "CreateDatabase Skipped.  For MySQL, DBA creates the instance.\n" );
+    }
+    return 1;
+}
+
+
+
+#
 # @brief	Show a list of tables in the database.
 #
 # This function issues an appropriate command to the database to
@@ -3017,6 +3075,39 @@ sub Oracle_ListDatabaseTables($)
 		return $output;
 	}
 	printLog( "    Cannot get list of tables from Oracle:\n" );
+	printLog( "        ", $output );
+	return undef;
+}
+
+#
+# @brief	Show a list of tables in the database.
+#
+# This function issues an appropriate command to the database to
+# get a list of existing tables.
+#
+# Messages are output on errors.
+#
+# @param	$dbname
+# 	The database name (unused; see oracle_sql).
+# @return
+# 	A list of tables, or undef on error.
+#
+sub MySQL_ListDatabaseTables($)
+{
+	my ($dbname) = @_;
+
+	# Using mysql, issue the SQL command for a list of tables.
+	my $tmpSql = createTempFilePath( "sql" );
+	printLog( "    MySQL_ListDB\n" );
+	printToFile( $tmpSql, "show tables\n" );
+	($status,$output) = execute_sql( $dbname, $tmpSql );
+	unlink( $tmpSql );
+
+	if ( $status == 0 )
+	{
+		return $output;
+	}
+	printLog( "    Cannot get list of tables from MySQL:\n" );
 	printLog( "        ", $output );
 	return undef;
 }
@@ -3307,8 +3398,26 @@ sub Oracle_sql($$)
 	return run( "$sqlplus $connectArg < $sqlFilename" );
 }
 
-
-
+#
+# @brief	Send a file of SQL commands to the MySQL database.
+#
+# This function runs 'isql' and passes it the given SQL.
+#
+# @param	$databaseName
+# 	the name of the database
+# @param	$sqlFilename
+# 	the name of the file
+# @return
+# 	A 2-tuple including a numeric code indicating success
+# 	or failure, and the stdout/stderr of the command.
+# 		0 = failure
+# 		1 = success
+#
+sub MySQL_sql($$)
+{
+	my ($databaseName,$sqlFilename) = @_;
+	return run( "$mysql < $sqlFilename" );
+}
 
 
 #

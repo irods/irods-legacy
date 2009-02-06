@@ -48,6 +48,7 @@ SQLINTEGER columnLength[MAX_TOKEN];  /* change me ! */
 
 #include <stdio.h>
 #include <pwd.h>
+#include <ctype.h>
 
 static int didBegin=0;
 
@@ -64,7 +65,11 @@ logPsgError(int level, HENV henv, HDBC hdbc, HSTMT hstmt)
    int errorVal=-2;
    while (SQLError(henv, hdbc, hstmt, sqlstate, &sqlcode, msg,
 		   SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
+#ifdef MY_ICAT
+      if (strcmp(sqlstate,"23000") == 0 && strstr((char *)msg, "Duplicate entry")) {
+#else
       if (strstr((char *)msg, "duplicate key")) {
+#endif
          errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
       }
       rodsLog(level,"SQLSTATE: %s", sqlstate);
@@ -155,6 +160,15 @@ cllConnect(icatSessionStruct *icss) {
    }
 
    icss->connectPtr=myHdbc;
+
+#ifdef MY_ICAT
+   // MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT mode) to
+   // be able to understand Postgres SQL. STRICT_TRANS_TABLES must be st too,
+   // otherwise inserting NULL into NOT NULL column does not produce error.
+   cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
+   cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
+#endif
+
    return(0);
 }
 
@@ -208,6 +222,15 @@ cllConnectRda(icatSessionStruct *icss) {
    }
 
    icss->connectPtr=myHdbc;
+
+#ifdef MY_ICAT
+   // MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT mode) to
+   // be able to understand Postgres SQL. STRICT_TRANS_TABLES must be st too,
+   // otherwise inserting NULL into NOT NULL column does not produce error.
+   cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
+   cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
+#endif
+
    return(0);
 }
 
@@ -406,6 +429,27 @@ bindTheVariables(HSTMT myHstmt, char *sql) {
 }
 
 /*
+   Case-insensitive string comparison, first string can be any case and
+   contain leading and trailing spaces, second string must be lowercase, no spaces.
+*/
+static int cmp_stmt (char *str1, char *str2)
+{
+  /* skip leading spaces */
+  while ( isspace(*str1) ) ++str1 ;
+  
+  /* start comparing */
+  for ( ; *str1 && *str2 ; ++str1, ++str2 ) {
+    if ( tolower(*str1) != *str2 ) return 0 ;
+  }
+  
+  /* skip trailing spaces */
+  while ( isspace(*str1) ) ++str1 ;
+
+  /* if we are at the end of the strings then they are equal */
+  return *str1 == *str2 ;
+}
+
+/*
  Execute a SQL command which has no resulting table.  With optional
  bind variables.
  If option is 1, skip the bind variables.
@@ -463,13 +507,19 @@ _cllExecSqlNoResult(icatSessionStruct *icss, char *sql,
       result = 0;
       if (stat == SQL_NO_DATA_FOUND) result = CAT_SUCCESS_BUT_WITH_NO_INFO;
 #ifdef NEW_ODBC
-      /* Doesn't seem to return SQL_NO_DATA_FOUND, so check */
-      i = SQLRowCount (myHstmt, (SQLINTEGER *)&rowCount);
-      if (i) {
-	 /* error getting rowCount???, just call it no_info */
-	 result = CAT_SUCCESS_BUT_WITH_NO_INFO;
+      /* ODBC says that if statement is not UPDATE, INSERT, or DELETE then
+         SQLRowCount may return anything. So for BEGIN, COMMIT and ROLLBACK
+	 we don't want to call it but just return OK.
+      */
+      if ( ! cmp_stmt(sql,"begin") && ! cmp_stmt(sql,"commit") && ! cmp_stmt(sql,"rollback") ) {
+	 /* Doesn't seem to return SQL_NO_DATA_FOUND, so check */
+	 i = SQLRowCount (myHstmt, (SQLINTEGER *)&rowCount);
+	 if (i) {
+	    /* error getting rowCount???, just call it no_info */
+	    result = CAT_SUCCESS_BUT_WITH_NO_INFO;
+	 }
+	 if (rowCount==0) result = CAT_SUCCESS_BUT_WITH_NO_INFO;
       }
-      if (rowCount==0) result = CAT_SUCCESS_BUT_WITH_NO_INFO;
 #else
       rowCount=0; /* avoid compiler warning */
 #endif
@@ -930,7 +980,11 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
  */
 int
 cllNextValueString(char *itemName, char *outString, int maxSize) {
+#ifdef MY_ICAT
+   snprintf(outString, maxSize, "%s_nextval()", itemName);
+#else
    snprintf(outString, maxSize, "nextval('%s')", itemName);
+#endif
    return 0;
 }
 
@@ -951,7 +1005,11 @@ cllGetRowCount(icatSessionStruct *icss, int statementNumber) {
 
 int
 cllCurrentValueString(char *itemName, char *outString, int maxSize) {
+#ifdef MY_ICAT
+   snprintf(outString, maxSize, "%s_currval()", itemName);
+#else
    snprintf(outString, maxSize, "currval('%s')", itemName);
+#endif
    return 0;
 }
 
