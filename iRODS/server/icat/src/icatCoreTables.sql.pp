@@ -25,7 +25,7 @@
 
 #if defined(mysql)
 SET SESSION storage_engine='InnoDB';
-#fi
+#endif
 
 create table RCORE_SCHEMAS
  (

@@ -67,7 +67,7 @@
 
 #if defined(mysql)
 SET SESSION storage_engine='InnoDB';
-#fi
+#endif
 
 create table R_ZONE_MAIN
  (
@@ -331,6 +331,9 @@ delimiter ;
 
 /* For Oracle and Postgres just use regular sequence */
 create sequence R_ObjectId increment by 1 start with 10000;
+
+/* And use a blank VARCHAR_MAX_IDX_SIZE */
+#define VARCHAR_MAX_IDX_SIZE 
 
 #endif
 

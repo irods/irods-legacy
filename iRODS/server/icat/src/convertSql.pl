@@ -25,14 +25,14 @@ if ($arg2) {
 }
 
 if (!$arg1) {
-    print "Usage postgresql|oracle|mysql\n";
+    print "Usage postgres|oracle|mysql\n";
     die("Invalid (null) argument");
 }
 
-if ($arg1 eq "oracle" || $arg1 eq "postgresql" || $arg1 eq "mysql") {
+if ($arg1 eq "oracle" || $arg1 eq "postgres" || $arg1 eq "mysql") {
 }
 else {
-    print "Usage postgresql|oracle|mysql\n";
+    print "Usage postgres|oracle|mysql\n";
     die("Invalid argument");
 }
 
