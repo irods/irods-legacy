@@ -260,11 +260,16 @@ fillIntInMsParam (msParam_t *msParam, int myInt)
 int
 fillStrInMsParam (msParam_t *msParam, char *myStr)
 {
-    char *myInOutStruct;
 
     if (msParam != NULL) {
+	/* XXXX memory leak as fillMsParam will strdup too */
+#if 0
+        char *myInOutStruct;
         myInOutStruct = strdup (myStr);
         fillMsParam (msParam, NULL, STR_MS_T, myInOutStruct, NULL);
+#else
+        fillMsParam (msParam, NULL, STR_MS_T, myStr, NULL);
+#endif
     }
     return (0);
 }

@@ -583,7 +583,7 @@ int cookie, int windowSize)
     if (status < 0) {
 	rodsLog (LOG_NOTICE,
 	  "connectToRhostPortal: setSockAddr error for %s, errno = %d",
-	  errno); 
+	  rodsHost, errno); 
 	return (status);
     }
     sock = connectToRhostWithRaddr (&remoteAddr, windowSize, 0);
