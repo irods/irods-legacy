@@ -222,6 +222,16 @@ _rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
       L1desc[l1descInx].oprType != REPLICATE_DEST &&
       L1desc[l1descInx].oprType != PHYMV_DEST) {
         /* no write */
+#ifdef LOG_TRANSFERS
+       if (L1desc[l1descInx].oprType == GET_OPR) {
+	  logTransfer("get", L1desc[l1descInx].dataObjInfo->objPath,
+		      L1desc[l1descInx].dataObjInfo->dataSize,
+		      &L1desc[l1descInx].openStartTime,
+		      L1desc[l1descInx].dataObjInfo->rescName,
+		      rsComm->clientUser.userName,
+		      inet_ntoa (rsComm->remoteAddr.sin_addr));
+       }
+#endif
         return (status);
     }
 
