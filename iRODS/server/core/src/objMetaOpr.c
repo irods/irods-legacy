@@ -2,6 +2,9 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* objMetaOpr.c - metadata operation at the object level */
 
+#ifndef windows_platform
+#include <pthread.h>
+#endif
 #include "objMetaOpr.h"
 #include "modDataObjMeta.h"
 #include "ruleExecSubmit.h"
@@ -1234,13 +1237,14 @@ getReInfoById (rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut)
 }
 
 /* getNextQueuedRuleExec - get the next RuleExec in queue to run
- * statusFlag -   0 - run exeStatus = RE_IN_QUEUE and RE_RUNNING
+ * jobType -   0 - run exeStatus = RE_IN_QUEUE and RE_RUNNING
  * 		  RE_FAILED_STATUS -  run the RE_FAILED too
  */
   
 int
 getNextQueuedRuleExec (rsComm_t *rsComm, genQueryOut_t **inGenQueryOut, 
-int startInx, ruleExecSubmitInp_t *queuedRuleExec, int statusFlag)
+int startInx, ruleExecSubmitInp_t *queuedRuleExec, 
+reExec_t *reExec, int jobType)
 {
     sqlResult_t *ruleExecId, *ruleName, *reiFilePath, *userName, *exeAddress,
       *exeTime, *exeFrequency, *priority, *lastExecTime, *exeStatus,
@@ -1340,7 +1344,7 @@ int startInx, ruleExecSubmitInp_t *queuedRuleExec, int statusFlag)
 	exeTimeStr = &exeTime->value[exeTime->len * i];
 	ruleExecIdStr =  &ruleExecId->value[ruleExecId->len * i];
 	
-	if ((statusFlag & RE_FAILED_STATUS) == 0 && 
+	if ((jobType & RE_FAILED_STATUS) == 0 && 
 	  strcmp (exeStatusStr, RE_FAILED) == 0) {
 	    /* failed request */
 	    continue;
@@ -1349,9 +1353,15 @@ int startInx, ruleExecSubmitInp_t *queuedRuleExec, int statusFlag)
 	    continue;
         } else if (strcmp (exeStatusStr, RE_RUNNING) == 0) {
             /* is already running */
-            rodsLog (LOG_NOTICE,
-             "getNextQueuedRuleExec: reId %s in RUNNING state. Run again",
-              ruleExecIdStr);
+	    if (reExec->maxRunCnt > 1 &&	/* multiProc */
+	     matchRuleExecId (reExec, ruleExecIdStr, RE_THR_RUNNING)) {
+	        /* the job is running in multiProc env */
+		continue;
+	    } else {
+                rodsLog (LOG_NOTICE,
+                 "getNextQueuedRuleExec: reId %s in RUNNING state. Run again",
+                  ruleExecIdStr);
+	    }
 	}
 
         rstrcpy (queuedRuleExec->reiFilePath,
@@ -1432,6 +1442,8 @@ modExeInfoForRepeat(rsComm_t *rsComm, char *ruleExecId, char* pastTime,
 	ruleExecModInp_t ruleExecModInp;
     ruleExecDelInp_t ruleExecDelInp;
 
+    if (opStatus > 0) opStatus = 0;
+  
     rstrcpy (myTimeNext, pastTime, 200);
     getOffsetTimeStr((char*)&myTimeNow, "                      ");
 
@@ -1535,136 +1547,59 @@ regExeStatus (rsComm_t *rsComm, char *ruleExecId, char *exeStatus)
     return (status);
 }
 
+/* runQueuedRuleExec - given the job queue given in genQueryOut (from
+ * a getReInfo call), run the jobs with the input jobType.
+ * Valid jobType = 0 ==> normal job. 
+ * jobType = RE_FAILED_STATUS ==> job have failed as least once
+ */
+
 int
-runQueuedRuleExec (rsComm_t *rsComm, genQueryOut_t **genQueryOut,
-time_t endTime, int statusFlag)
+runQueuedRuleExec (rsComm_t *rsComm, reExec_t *reExec, 
+genQueryOut_t **genQueryOut, time_t endTime, int jobType)
 {
     int inx, status;
-    ruleExecSubmitInp_t queuedRuleExec;
-    ruleExecInfoAndArg_t *reiAndArg;
-    rsComm_t reComm;
+    ruleExecSubmitInp_t *myRuleExecInp;
     int runCnt = 0;
-
-    /* initialized the buf */
-
-    queuedRuleExec.packedReiAndArgBBuf =
-      (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
-    queuedRuleExec.packedReiAndArgBBuf->buf = malloc (REI_BUF_LEN);
-    queuedRuleExec.packedReiAndArgBBuf->len = REI_BUF_LEN;
-
-    /* init reComm */
-    memset (&reComm, 0, sizeof (reComm));
-    reComm.proxyUser = rsComm->proxyUser;
-    reComm.myEnv = rsComm->myEnv;
+    int thrInx;
 
     inx = -1;
-    while (time(NULL) <= endTime && 
-     (inx = getNextQueuedRuleExec (rsComm, genQueryOut, inx + 1,
-      &queuedRuleExec, statusFlag)) >= 0) {
+    while (time(NULL) <= endTime && (thrInx = allocReThr (reExec)) >= 0) {
+	myRuleExecInp = &reExec->reExecThr[thrInx].ruleExecSubmitInp;
+        if ((inx = getNextQueuedRuleExec (rsComm, genQueryOut, inx + 1,
+          myRuleExecInp, reExec, jobType)) < 0) {
+	    /* no job to run */
+	    freeReThr (reExec, thrInx);
+	    break;
+	} else {
+	    reExec->reExecThr[thrInx].jobType = jobType;
+	}
+
         /* mark running */
-        status = regExeStatus (rsComm, queuedRuleExec.ruleExecId, RE_RUNNING);
+        status = regExeStatus (rsComm, myRuleExecInp->ruleExecId, 
+	  RE_RUNNING);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-              "runQueuedRuleExec: regExeStatus of id %s failed, status = %d",
-              queuedRuleExec.ruleExecId, status);
+              "runQueuedRuleExec: regExeStatus of id %s failed,stat = %d",
+              myRuleExecInp->ruleExecId, status);
+	    freeReThr (reExec, thrInx);
             continue;
         }
-
-        reiAndArg = NULL;
-        status = unpackReiAndArg (&reComm, &reiAndArg,
-          queuedRuleExec.packedReiAndArgBBuf);
-
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "runQueuedRuleExec: unpackReiAndArg of id %s failed, status = %d",
-                  queuedRuleExec.ruleExecId, status);
-            regExeStatus (rsComm, queuedRuleExec.ruleExecId, RE_FAILED);
-            continue;
-        }
-
-        /* execute the rule */
-        status = applyRule (queuedRuleExec.ruleName, 
-	  reiAndArg->rei->msParamArray,
-          reiAndArg->rei, SAVE_REI);
 
 	runCnt ++;
-
-        if (reiAndArg->rei->status < 0) {
-            status = reiAndArg->rei->status;
-        }
-
-        freeRuleExecInfoStruct (reiAndArg->rei, 1);
-        free (reiAndArg);
-
-        if (status < 0) {
-	  /*** Jul 24, 2007 RAJA ADDED for repeats to be done even with failure  ***/
-	  if (strlen(queuedRuleExec.exeFrequency) > 0 ) {
-	    status = modExeInfoForRepeat(rsComm, queuedRuleExec.ruleExecId,
-					     queuedRuleExec.exeTime,
-					     queuedRuleExec.exeFrequency, -1);
-	  }
-	  else {
-            rodsLog (LOG_ERROR,
-              "runQueuedRuleExec: applyRuleArg of id %s failed, status = %d",
-              queuedRuleExec.ruleExecId, status);
-	    if ((statusFlag & RE_FAILED_STATUS) == 0) {
-		/* first time. just mark it RE_FAILED */
-                regExeStatus (rsComm, queuedRuleExec.ruleExecId, RE_FAILED);
-	    } else {
-              ruleExecDelInp_t ruleExecDelInp;
-
-		/* failed once already. delete the ruleExecId */
-                 rodsLog (LOG_ERROR,
-                   "runQueuedRuleExec: exec of %s: %s failed again. Removed",
-                       queuedRuleExec.ruleExecId, queuedRuleExec.ruleName);
-                 rstrcpy (ruleExecDelInp.ruleExecId, queuedRuleExec.ruleExecId,
-                       NAME_LEN);
-                 status = rsRuleExecDel (rsComm, &ruleExecDelInp);
-                 if (status < 0) {
-                     rodsLog (LOG_ERROR,
-                      "runQueuedRuleExec: rsRuleExecDel failed for %s, stat=%d",
-                       queuedRuleExec.ruleExecId, status);
-                 }
-	    }
-	  }
-        } else {
-	  /*** Jul 24, 2007 RAJA ADDED status as last arg in modExeInfoForRepeat call
-	   if (strlen(queuedRuleExec.exeFrequency) > 0 &&
-	   atoi(queuedRuleExec.exeFrequency ) > 0) { ***/
-  	   if (strlen(queuedRuleExec.exeFrequency) > 0 ) {
-	      /* change table items to run again */
-	      status = modExeInfoForRepeat(rsComm, queuedRuleExec.ruleExecId,
-					     queuedRuleExec.exeTime,
-					     queuedRuleExec.exeFrequency,0);
-	   }
-	   else {
-	      ruleExecDelInp_t ruleExecDelInp;
-
-	      rodsLog(LOG_NOTICE, "runQueuedRuleExec: exec of freq: %s",
-		      queuedRuleExec.exeFrequency);
-
-	      rstrcpy (ruleExecDelInp.ruleExecId, queuedRuleExec.ruleExecId,
-		       NAME_LEN);
-	      rodsLog (LOG_NOTICE,
-		       "runQueuedRuleExec: exec of %s done",
-		       queuedRuleExec.ruleExecId);
-	      status = rsRuleExecDel (rsComm, &ruleExecDelInp);
-	      if (status < 0) {
-		 rodsLog (LOG_ERROR,
-                  "runQueuedRuleExec: rsRuleExecDel failed for %s, status = %d",
-		   queuedRuleExec.ruleExecId, status);
-	      }
-	   }
-        }
-    }
-
-    if (queuedRuleExec.packedReiAndArgBBuf != NULL) {
-        if (queuedRuleExec.packedReiAndArgBBuf->buf != NULL) {
-            free (queuedRuleExec.packedReiAndArgBBuf->buf);
+	if (reExec->maxRunCnt == 1) {
+	    /* single thread. Just call runRuleExec */  
+	    status = runRuleExec (&reExec->reExecThr[thrInx]);
+            postProcRunRuleExec (rsComm, &reExec->reExecThr[thrInx]);
+            freeReThr (reExec, thrInx);
+            continue;
+	} else {
+#if 0	/* XXXX will do fork and exec */
+	    pthread_create (&reExec->reExecThr[thrInx].reThread,
+	     pthread_attr_default, (void *(*)(void *)) runRuleExec,
+	     &reExec->reExecThr[thrInx]); 
+#endif
 	}
-        free (queuedRuleExec.packedReiAndArgBBuf);
     }
-
     return (runCnt);
 }
 
@@ -2597,4 +2532,208 @@ removeAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
   return(0);
 }
 
+#ifndef windows_platform
+int
+initReExec (rsComm_t *rsComm, reExec_t *reExec)
+{
+    int i;
+
+    if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+
+    bzero (reExec, sizeof (reExec_t));
+
+    reExec->maxRunCnt = 1;	/* XXXX this should come from a 
+					 * rule */
+    pthread_mutex_init (&reExec->lock, NULL);
+    pthread_cond_init (&reExec->cond, NULL);
+
+    for (i = 0; i < MAX_RE_THREADS; i++) {
+	reExec->reExecThr[i].thrExecState = RE_THR_IDLE;
+        reExec->reExecThr[i].ruleExecSubmitInp.packedReiAndArgBBuf =
+          (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+        reExec->reExecThr[i].ruleExecSubmitInp.packedReiAndArgBBuf->buf = 
+	  malloc (REI_BUF_LEN);
+        reExec->reExecThr[i].ruleExecSubmitInp.packedReiAndArgBBuf->len = 
+	  REI_BUF_LEN;
+
+        /* init reComm */
+        reExec->reExecThr[i].reComm.proxyUser = rsComm->proxyUser;
+        reExec->reExecThr[i].reComm.myEnv = rsComm->myEnv;
+    }
+    return 0;
+}
+#endif
+
+int 
+allocReThr (reExec_t *reExec)
+{
+    int i;
+    int thrInx = SYS_NO_FREE_RE_THREAD;
+
+    if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+
+    if (reExec->maxRunCnt == 1) {
+	/* single thread */
+	reExec->runCnt = 1;
+	return 0;	
+    }
+
+    reExec->runCnt = 0;		/* reset each time */
+    for (i = 0; i < reExec->maxRunCnt; i++) {
+	if (reExec->reExecThr[i].thrExecState == RE_THR_IDLE) {
+	    if (thrInx == SYS_NO_FREE_RE_THREAD) {
+		thrInx = i;
+		reExec->reExecThr[i].thrExecState = RE_THR_RUNNING;
+	    }
+	} else {
+	    reExec->runCnt++;
+	}
+    }
+    return (thrInx);
+}
+
+int
+freeReThr (reExec_t *reExec, int thrInx)
+{
+    bytesBuf_t *packedReiAndArgBBuf;
+
+    if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+    if (thrInx < 0 || thrInx >= reExec->maxRunCnt) {
+        rodsLog (LOG_ERROR, "freeReThr: Bad input thrInx %d", thrInx);
+	return (SYS_BAD_RE_THREAD_INX);
+    }
+    reExec->runCnt--;
+    reExec->reExecThr[thrInx].thrExecState = RE_THR_IDLE;
+    reExec->reExecThr[thrInx].status = 0;
+    reExec->reExecThr[thrInx].jobType = 0;
+    /* save the packedReiAndArgBBuf */
+    packedReiAndArgBBuf = 
+    reExec->reExecThr[thrInx].ruleExecSubmitInp.packedReiAndArgBBuf;
+
+    bzero (packedReiAndArgBBuf->buf, REI_BUF_LEN);
+    bzero (&reExec->reExecThr[thrInx].ruleExecSubmitInp, 
+      sizeof (ruleExecSubmitInp_t));
+    reExec->reExecThr[thrInx].ruleExecSubmitInp.packedReiAndArgBBuf = 
+      packedReiAndArgBBuf;
+
+    return 0;
+}
+
+int
+runRuleExec (reExecThr_t *reExecThr)
+{
+    ruleExecSubmitInp_t *myRuleExec;
+    ruleExecInfoAndArg_t *reiAndArg = NULL;
+    rsComm_t *reComm;
+
+    if (reExecThr == NULL) {
+	rodsLog (LOG_ERROR, "runRuleExec: NULL reExecThr input");
+	reExecThr->status = SYS_INTERNAL_NULL_INPUT_ERR;
+	return reExecThr->status;
+    }
+	
+    reComm = &reExecThr->reComm;
+    myRuleExec = &reExecThr->ruleExecSubmitInp;
+
+    reExecThr->status = unpackReiAndArg (reComm, &reiAndArg,
+      myRuleExec->packedReiAndArgBBuf);
+
+    if (reExecThr->status < 0) {
+        rodsLog (LOG_ERROR,
+          "runRuleExec: unpackReiAndArg of id %s failed, status = %d",
+              myRuleExec->ruleExecId, reExecThr->status);
+        return reExecThr->status;
+    }
+
+    /* execute the rule */
+    reExecThr->status = applyRule (myRuleExec->ruleName,
+      reiAndArg->rei->msParamArray,
+      reiAndArg->rei, SAVE_REI);
+
+    if (reiAndArg->rei->status < 0) {
+        reExecThr->status = reiAndArg->rei->status;
+    }
+    freeRuleExecInfoStruct (reiAndArg->rei, 1);
+    free (reiAndArg);
+
+    return reExecThr->status;
+}
+
+int
+postProcRunRuleExec (rsComm_t *rsComm, reExecThr_t *reExecThr)
+{
+    int status;
+    int savedStatus = 0;
+    ruleExecDelInp_t ruleExecDelInp;
+    ruleExecSubmitInp_t *myRuleExecInp;
+
+    myRuleExecInp = &reExecThr->ruleExecSubmitInp;
+
+    if (strlen (myRuleExecInp->exeFrequency) > 0 ) {
+        rodsLog(LOG_NOTICE, "postProcRunRuleExec: exec of freq: %s",
+          myRuleExecInp->exeFrequency);
+
+        savedStatus = modExeInfoForRepeat (rsComm, myRuleExecInp->ruleExecId,
+          myRuleExecInp->exeTime, myRuleExecInp->exeFrequency, 
+	  reExecThr->status);
+    }
+
+
+    if (reExecThr->status < 0) {
+        rodsLog (LOG_ERROR,
+          "postProcRunRuleExec: ruleExec of id %s failed, status = %d",
+          myRuleExecInp->ruleExecId, reExecThr->status);
+        if ((reExecThr->jobType & RE_FAILED_STATUS) == 0) {
+            /* first time. just mark it RE_FAILED */
+            regExeStatus (rsComm, myRuleExecInp->ruleExecId, RE_FAILED);
+        } else {
+
+            /* failed once already. delete the ruleExecId */
+             rodsLog (LOG_ERROR,
+               "postProcRunRuleExec: ruleExec of %s: %s failed again.Removed",
+                   myRuleExecInp->ruleExecId, myRuleExecInp->ruleName);
+             rstrcpy (ruleExecDelInp.ruleExecId, myRuleExecInp->ruleExecId,
+                   NAME_LEN);
+             status = rsRuleExecDel (rsComm, &ruleExecDelInp);
+             if (status < 0) {
+                 rodsLog (LOG_ERROR,
+                  "postProcRunRuleExec: rsRuleExecDel failed for %s, stat=%d",
+                   myRuleExecInp->ruleExecId, status);
+             }
+        }
+    } else {
+        rstrcpy (ruleExecDelInp.ruleExecId, myRuleExecInp->ruleExecId,
+                 NAME_LEN);
+        rodsLog (LOG_NOTICE,
+          "postProcRunRuleExec: exec of %s done", myRuleExecInp->ruleExecId);
+        status = rsRuleExecDel (rsComm, &ruleExecDelInp);
+        if (status < 0) {
+           rodsLog (LOG_ERROR,
+            "postProcRunRuleExec: rsRuleExecDel failed for %s, status = %d",
+             myRuleExecInp->ruleExecId, status);
+        }
+    }
+    if (status >= 0 && savedStatus < 0) return savedStatus;
+
+    return status;
+}
+
+int
+matchRuleExecId (reExec_t *reExec, char *ruleExecIdStr, 
+thrExecState_t execState)
+{
+    int i;
+
+    if (reExec == NULL || ruleExecIdStr == NULL ||
+      execState == RE_THR_IDLE) return 0;
+
+    for (i = 0; i < reExec->maxRunCnt; i++) {
+        if (reExec->reExecThr[i].thrExecState == execState &&
+	  strcmp (reExec->reExecThr[i].ruleExecSubmitInp.ruleExecId,
+	  ruleExecIdStr) == 0) {
+	    return 1;
+	}
+    }
+    return 0;
+}
 

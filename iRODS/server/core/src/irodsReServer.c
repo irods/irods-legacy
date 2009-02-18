@@ -112,7 +112,9 @@ reServerMain (rsComm_t *rsComm)
     genQueryOut_t *genQueryOut = NULL;
     time_t endTime;
     int runCnt;
+    reExec_t reExec;
    
+    initReExec (rsComm, &reExec);
     while (1) {
 	chkAndResetRule (rsComm);
         rodsLog (LOG_NOTICE,
@@ -127,7 +129,7 @@ reServerMain (rsComm_t *rsComm)
             continue;
         }
         endTime = time (NULL) + RE_SERVER_EXEC_TIME;
-	runCnt = runQueuedRuleExec (rsComm, &genQueryOut, endTime, 0);
+	runCnt = runQueuedRuleExec (rsComm, &reExec, &genQueryOut, endTime, 0);
 	if (runCnt > 0 || 
 	  (genQueryOut != NULL && genQueryOut->continueInx > 0)) {
 	    /* need to refresh */
@@ -143,7 +145,8 @@ reServerMain (rsComm_t *rsComm)
 	/* run the failed job */
 
 	runCnt = 
-	  runQueuedRuleExec (rsComm, &genQueryOut, endTime, RE_FAILED_STATUS);
+	  runQueuedRuleExec (rsComm, &reExec, &genQueryOut, endTime, 
+	  RE_FAILED_STATUS);
 	svrCloseQueryOut (rsComm, genQueryOut);
         freeGenQueryOut (&genQueryOut);
 	if (runCnt > 0 ||

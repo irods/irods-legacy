@@ -26,6 +26,35 @@
 #define REQUE_MATCHED_RESC_INFO		0x2
 #define TRIM_MATCHED_OBJ_INFO		0x4
 #define TRIM_UNMATCHED_OBJ_INFO		0x8
+
+#define MAX_RE_THREADS	4
+
+typedef enum {
+    RE_THR_IDLE,
+    RE_THR_RUNNING,
+} thrExecState_t;
+    
+typedef struct {
+    rsComm_t reComm;
+    thrExecState_t thrExecState;
+    ruleExecSubmitInp_t ruleExecSubmitInp;
+#ifndef windows_platform
+    pthread_t reThread;
+#endif
+    int status;
+    int jobType;	/* 0 or RE_FAILED_STATUS */
+} reExecThr_t;
+
+typedef struct {
+    int runCnt;
+    int maxRunCnt;
+#ifndef windows_platform
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
+#endif
+    reExecThr_t reExecThr[MAX_RE_THREADS];
+} reExec_t;
+
 int
 getRescInfo (rsComm_t *rsComm, char *defaultResc, keyValPair_t *condInput, 
 rescGrpInfo_t **rescGrpInfo);
@@ -92,12 +121,13 @@ int
 getReInfoById (rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut);
 int
 getNextQueuedRuleExec (rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
-int startInx, ruleExecSubmitInp_t *queuedRuleExec, int statusFlag);
+int startInx, ruleExecSubmitInp_t *queuedRuleExec, 
+reExec_t *reExec, int jobType);
 int
 regExeStatus (rsComm_t *rsComm, char *ruleExecId, char *exeStatus);
 int
-runQueuedRuleExec (rsComm_t *rsComm, genQueryOut_t **genQueryOut,
-time_t endTime, int statusFlag);
+runQueuedRuleExec (rsComm_t *rsComm, reExec_t *reExec, 
+genQueryOut_t **genQueryOut, time_t endTime, int statusFlag);
 int
 svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut);
 int
@@ -169,4 +199,17 @@ regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
 rodsLong_t newSize);
 int
 isCollEmpty (rsComm_t *rsComm, char *collection);
+int
+initReExec (rsComm_t *rsComm, reExec_t *reExec);
+int
+allocReThr (reExec_t *reExec);
+int
+freeReThr (reExec_t *reExec, int thrInx);
+int
+runRuleExec (reExecThr_t *reExecThr);
+int
+postProcRunRuleExec (rsComm_t *rsComm, reExecThr_t *reExecThr);
+int
+matchRuleExecId (reExec_t *eeExec, char *ruleExecIdStr,
+thrExecState_t execState);
 #endif	/* OBJ_META_OPR_H */
