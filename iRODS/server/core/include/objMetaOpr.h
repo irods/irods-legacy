@@ -27,7 +27,8 @@
 #define TRIM_MATCHED_OBJ_INFO		0x4
 #define TRIM_UNMATCHED_OBJ_INFO		0x8
 
-#define MAX_RE_THREADS	4
+#define MAX_RE_PROCS	4
+#define DEF_NUM_RE_PROCS	1
 
 typedef enum {
     RE_PROC_IDLE,
@@ -46,7 +47,7 @@ typedef struct {
 typedef struct {
     int runCnt;
     int maxRunCnt;
-    reExecProc_t reExecProc[MAX_RE_THREADS];
+    reExecProc_t reExecProc[MAX_RE_PROCS];
 } reExec_t;
 
 int

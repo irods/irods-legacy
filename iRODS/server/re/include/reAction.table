@@ -268,3 +268,4 @@ microsdef_t MicrosTable[] = {
   {"msiRenameCollection",2,(funcPtr) msiRenameCollection},
   {"msiRemoveKeyValuePairsFromObj",3,(funcPtr) msiRemoveKeyValuePairsFromObj},
   {"msiDataObjPutWithOptions",6,(funcPtr) msiDataObjPutWithOptions},
+  {"msiSetReServerNumProc",1,(funcPtr) msiSetReServerNumProc},

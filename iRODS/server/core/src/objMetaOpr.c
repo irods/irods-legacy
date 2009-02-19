@@ -2583,14 +2583,29 @@ int
 initReExec (rsComm_t *rsComm, reExec_t *reExec)
 {
     int i;
+    ruleExecInfo_t rei;
+    int status;
 
     if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
 
     bzero (reExec, sizeof (reExec_t));
 
-    reExec->maxRunCnt = 4;	/* XXXX this should come from a 
-					 * rule */
-    for (i = 0; i < MAX_RE_THREADS; i++) {
+    
+    status = applyRule ("acSetReServerNumProc", NULL, &rei, NO_SAVE_REI);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "initReExec: rule acSetReServerNumProc error, status = %d",
+          status);
+	reExec->maxRunCnt = DEF_NUM_RE_PROCS;
+    } else {
+	reExec->maxRunCnt = rei.status;
+	if (reExec->maxRunCnt > MAX_RE_PROCS) {
+	    reExec->maxRunCnt = MAX_RE_PROCS;
+        } else if (reExec->maxRunCnt <= 0) {
+            reExec->maxRunCnt = DEF_NUM_RE_PROCS;
+        }
+    }
+    for (i = 0; i < reExec->maxRunCnt; i++) {
 	reExec->reExecProc[i].procExecState = RE_PROC_IDLE;
         reExec->reExecProc[i].ruleExecSubmitInp.packedReiAndArgBBuf =
           (bytesBuf_t *) malloc (sizeof (bytesBuf_t));

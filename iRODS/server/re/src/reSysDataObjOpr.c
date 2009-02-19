@@ -811,3 +811,26 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
     return (0);
 }
 
+int
+msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
+{
+    char *numProcStr;
+    int numProc;
+
+    numProcStr = xnumProc->inOutStruct;
+
+    if (strcmp (numProcStr, "default") == 0) {
+	numProc = DEF_NUM_RE_PROCS;
+    } else {
+	numProc = atoi (numProcStr);
+	if (numProc > MAX_RE_PROCS) {
+	    numProc = MAX_RE_PROCS;
+	} else if (numProc <= 0) {
+	    numProc = DEF_NUM_RE_PROCS;
+	}
+    }
+    rei->status = numProc;
+
+    return (numProc);
+}
+
