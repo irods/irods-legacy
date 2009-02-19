@@ -413,3 +413,95 @@ unixFileGetFsFreeSpace (rsComm_t *rsComm, char *path, int flag)
     return (fssize);
 }
 
+/* unixStageToCache - This routine is for testing the TEST_STAGE_FILE_TYPE.
+ * Just copy the file from filename to cacheFilename. optionalInfo info
+ * is not used.
+ * 
+ */
+  
+int
+unixStageToCache (rsComm_t *rsComm, char *filename, char *cacheFilename,
+msParam_t *optionalInfo)
+{
+    int status;
+
+    status = unixFileCopy (filename, cacheFilename);
+    return status;
+}
+
+/* unixSyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
+ * Just copy the file from cacheFilename to filename. optionalInfo info
+ * is not used.
+ *
+ */
+
+int
+unixSyncToArch (rsComm_t *rsComm, char *filename, char *cacheFilename,
+msParam_t *optionalInfo)
+{
+    int status;
+
+    status = unixFileCopy (cacheFilename, filename);
+    return status;
+}
+
+int
+unixFileCopy (char *srcFileName, char *destFileName) 
+{
+    int inFd, outFd;
+    char myBuf[TRANS_BUF_SZ];
+    rodsLong_t bytesCopied = 0;
+    int bytesRead;
+    int bytesWritten;
+    int status;
+    struct stat statbuf;
+
+    status = stat (srcFileName, &statbuf);
+
+    if (status < 0) {
+        status = UNIX_FILE_STAT_ERR - errno;
+        rodsLog (LOG_ERROR, "unixFileCopy: stat of %s error, status = %d",
+         srcFileName, status);
+	return status;
+    }
+
+    inFd = open (srcFileName, O_RDONLY, 0);
+    if (inFd < 0 || (statbuf.st_mode & S_IFREG) == 0) {
+	status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_ERROR,
+         "unixFileCopy: open error for srcFileName %s, status = %d",
+         srcFileName, status);
+	return status;
+    }
+
+    outFd = open (destFileName, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+    if (outFd < 0) {
+        status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_ERROR,
+         "unixFileCopy: open error for destFileName %s, status = %d",
+         destFileName, status);
+        return status;
+    }
+
+    while ((bytesRead = read (inFd, (void *) myBuf, TRANS_BUF_SZ)) > 0) {
+	bytesWritten = write (outFd, (void *) myBuf, bytesRead);
+	if (bytesWritten <= 0) {
+	    status = UNIX_FILE_WRITE_ERR - errno;
+            rodsLog (LOG_ERROR,
+             "unixFileCopy: write error for srcFileName %s, status = %d",
+             destFileName, status);
+            return status;
+	}
+	bytesCopied += bytesWritten;
+    }
+
+    if (bytesCopied != statbuf.st_size) {
+        rodsLog (LOG_ERROR,
+         "unixFileCopy: Copied size %lld does not match source size %lld of %s",
+         bytesCopied, statbuf.st_size, srcFileName);
+        return SYS_COPY_LEN_ERR;
+    } else {
+	return 0;
+    }
+}
+

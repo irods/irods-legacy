@@ -52,6 +52,7 @@
 
 #include "rods.h"
 #include "rcConnect.h"
+#include "msParam.h"
 
 int
 unixFileCreate (rsComm_t *rsComm, char *fileName, int mode);
@@ -93,4 +94,13 @@ int
 unixFileClosedir (rsComm_t *rsComm, void *dirPtr);
 int
 unixFileTruncate (rsComm_t *rsComm, char *filename, rodsLong_t dataSize);
+int
+unixStageToCache (rsComm_t *rsComm, char *filename, char *cacheFilename,
+msParam_t *optionalInfo);
+int
+unixSyncToArch (rsComm_t *rsComm, char *filename, char *cacheFilename,
+msParam_t *optionalInfo);
+int
+unixFileCopy (char *srcFileName, char *destFileName);
+
 #endif	/* UNIX_FILE_DRIVER_H */

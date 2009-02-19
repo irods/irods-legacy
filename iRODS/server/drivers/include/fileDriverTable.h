@@ -18,7 +18,7 @@
 #endif
 #include "miscServerFunct.h"
 
-#define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport 
+#define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport, intNoSupport, intNoSupport
 
 fileDriver_t FileDriverTable[] = {
 #ifndef windows_platform
@@ -26,13 +26,13 @@ fileDriver_t FileDriverTable[] = {
     unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
     unxiFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
     unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
-    unixFileGetFsFreeSpace, unixFileTruncate},
+    unixFileGetFsFreeSpace, unixFileTruncate, intNoSupport, intNoSupport},
 #ifdef HPSS
     {HPSS_FILE_TYPE, hpssFileCreate, hpssFileOpen, hpssFileRead, hpssFileWrite,
     hpssFileClose, hpssFileUnlink, hpssFileStat, hpssFileFstat, hpssFileLseek,
     unxiFileFsync, hpssFileMkdir, hpssFileChmod, hpssFileRmdir, hpssFileOpendir,
     hpssFileClosedir, hpssFileReaddir, hpssFileStage, hpssFileRename,
-    hpssFileGetFsFreeSpace, hpssFileTruncate},
+    hpssFileGetFsFreeSpace, hpssFileTruncate, hpssStageToCache, hpssSyncToArch},
 #else
     {HPSS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
@@ -43,6 +43,11 @@ fileDriver_t FileDriverTable[] = {
     ntFileClosedir, ntFileReaddir, NULL, ntFileRename,
     NULL, NULL},
 #endif
+    {TEST_STAGE_FILE_TYPE,intNoSupport,intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, unixFileUnlink, unixFileStat, unixFileFstat, longNoSupport,
+    intNoSupport, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
+    unixFileClosedir, unixFileReaddir, intNoSupport, unixFileRename,
+    unixFileGetFsFreeSpace, intNoSupport, unixStageToCache, unixSyncToArch},
 };
 
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);

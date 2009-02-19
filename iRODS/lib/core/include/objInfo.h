@@ -247,7 +247,8 @@ typedef enum {	/* resource category */
 typedef enum {
     UNIX_FILE_TYPE,
     HPSS_FILE_TYPE,
-	NT_FILE_TYPE,
+    NT_FILE_TYPE,
+    TEST_STAGE_FILE_TYPE,
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600
@@ -258,6 +259,10 @@ typedef enum {
 #define NO_CHK_PATH_PERM	0
 #define DO_CHK_PATH_PERM	1
 
+/* definition for stageFlag to specify whether staging is required */
+#define NO_STAGING        0
+#define DO_STAGING        1
+ 
 /* definition for trash policy */
 
 #define DO_TRASH_CAN	0
@@ -268,6 +273,7 @@ typedef struct RescTypeDef {
     rescCat_t rescCat;
     int driverType;
     int chkPathPerm;	/* whether to check path permission */
+    int stageFlag;
 } rescTypeDef_t;
 
 /* definition for classType */

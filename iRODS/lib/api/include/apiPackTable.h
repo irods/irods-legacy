@@ -81,6 +81,7 @@ packInstructArray_t ApiPackTable[] = {
         {"ChkObjPermAndStat_PI", ChkObjPermAndStat_PI},
         {"userAdminInp_PI", userAdminInp_PI},
         {"OpenStat_PI", OpenStat_PI},
+        {"fileStageSyncInp_PI", fileStageSyncInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

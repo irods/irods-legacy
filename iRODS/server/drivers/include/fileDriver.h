@@ -14,6 +14,7 @@
 #include "rods.h"
 #include "rcConnect.h"
 #include "objInfo.h"
+#include "msParam.h"
 
 typedef struct {
     fileDriverType_t	driverType; 
@@ -37,6 +38,8 @@ typedef struct {
     int         	(*fileRename)();
     rodsLong_t  	(*fileGetFsFreeSpace)();
     int         	(*fileTruncate)();
+    int			(*fileStageToCache)();
+    int			(*fileSyncToArch)();
 } fileDriver_t;
 
 int
@@ -92,4 +95,10 @@ fileFsync (fileDriverType_t myType, rsComm_t *rsComm, int fd);
 int
 fileTruncate (fileDriverType_t myType, rsComm_t *rsComm, char *path,
 rodsLong_t dataSize);
+int
+fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm,
+char *filename, char *cacheFilename, msParam_t *optionalInfo);
+int
+fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm,
+char *filename, char *cacheFilename, msParam_t *optionalInfo);
 #endif	/* FILE_DRIVER_H */

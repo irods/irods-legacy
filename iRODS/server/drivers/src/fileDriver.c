@@ -320,3 +320,37 @@ fileIndexLookup (fileDriverType_t myType)
     return (FILE_INDEX_LOOKUP_ERR);
 }
 
+int
+fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm, 
+char *filename, char *cacheFilename, msParam_t *optionalInfo)
+{
+    int fileInx;
+    int status;
+
+    if ((fileInx = fileIndexLookup (myType)) < 0) {
+        return (fileInx);
+    }
+
+    status = FileDriverTable[fileInx].fileStageToCache (rsComm, 
+      filename, cacheFilename, optionalInfo);
+
+    return (status);
+}
+
+int
+fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, 
+char *filename, char *cacheFilename, msParam_t *optionalInfo)
+{
+    int fileInx;
+    int status;
+
+    if ((fileInx = fileIndexLookup (myType)) < 0) {
+        return (fileInx);
+    }
+
+    status = FileDriverTable[fileInx].fileSyncToArch (rsComm,
+      filename, cacheFilename, optionalInfo);
+
+    return (status);
+}
+

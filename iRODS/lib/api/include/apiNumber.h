@@ -34,6 +34,8 @@
 #define CHK_N_V_PATH_PERM_AN 		521
 #define FILE_RENAME_AN 			522
 #define FILE_TRUNCATE_AN 		523
+#define FILE_STAGE_TO_CACHE_AN		524
+#define FILE_SYNC_TO_ARCH_AN 		525
 
 /* 600 - 699 - Object File I/O API calls */
 #define DATA_OBJ_CREATE_AN 		601
