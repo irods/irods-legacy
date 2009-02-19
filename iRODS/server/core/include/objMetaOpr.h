@@ -30,29 +30,23 @@
 #define MAX_RE_THREADS	4
 
 typedef enum {
-    RE_THR_IDLE,
-    RE_THR_RUNNING,
-} thrExecState_t;
+    RE_PROC_IDLE,
+    RE_PROC_RUNNING,
+} procExecState_t;
     
 typedef struct {
     rsComm_t reComm;
-    thrExecState_t thrExecState;
+    procExecState_t procExecState;
     ruleExecSubmitInp_t ruleExecSubmitInp;
-#ifndef windows_platform
-    pthread_t reThread;
-#endif
     int status;
     int jobType;	/* 0 or RE_FAILED_STATUS */
-} reExecThr_t;
+    pid_t pid;
+} reExecProc_t;
 
 typedef struct {
     int runCnt;
     int maxRunCnt;
-#ifndef windows_platform
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
-#endif
-    reExecThr_t reExecThr[MAX_RE_THREADS];
+    reExecProc_t reExecProc[MAX_RE_THREADS];
 } reExec_t;
 
 int
@@ -206,10 +200,14 @@ allocReThr (reExec_t *reExec);
 int
 freeReThr (reExec_t *reExec, int thrInx);
 int
-runRuleExec (reExecThr_t *reExecThr);
+runRuleExec (reExecProc_t *reExecProc);
 int
-postProcRunRuleExec (rsComm_t *rsComm, reExecThr_t *reExecThr);
+postProcRunRuleExec (rsComm_t *rsComm, reExecProc_t *reExecProc);
 int
 matchRuleExecId (reExec_t *eeExec, char *ruleExecIdStr,
-thrExecState_t execState);
+procExecState_t execState);
+int
+matchPidInReExec (reExec_t *reExec, pid_t pid);
+int
+waitAndFreeReThr (reExec_t *reExec);
 #endif	/* OBJ_META_OPR_H */

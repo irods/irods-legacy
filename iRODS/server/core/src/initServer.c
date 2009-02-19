@@ -967,6 +967,34 @@ disconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint)
     }
 }
 
+/* resetRcatHost is similar to disconnRcatHost except it does not disconnect */
+
+int
+resetRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint)
+{
+    int status;
+    rodsServerHost_t *rodsServerHost = NULL;
+
+    status = getRcatHost (rcatType, rcatZoneHint, &rodsServerHost);
+
+    if (status < 0) {
+        return (status);
+    }
+
+    if ((rodsServerHost)->localFlag == LOCAL_HOST) {
+        return (LOCAL_HOST);
+    }
+
+    if (rodsServerHost->conn != NULL) { /* a connection exists */
+	rodsServerHost->conn = NULL;
+    }
+    if (status >= 0) {
+	return (REMOTE_HOST);
+    } else {
+        return (status);
+    }
+}
+
 int
 initZone (rsComm_t *rsComm)
 {

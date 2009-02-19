@@ -83,4 +83,11 @@ disconnectRcat (rsComm_t *rsComm)
     return (status);
 }
 
+int
+resetRcat (rsComm_t *rsComm)
+{
+    IcatConnState = INITIAL_NOT_DONE;
+    return 0;
+}
+
 #endif

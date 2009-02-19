@@ -36,7 +36,7 @@ main(int argc, char **argv)
     signal(SIGTERM, signalExit);
     signal(SIGUSR1, signalExit);
     signal(SIGPIPE, rsPipSigalHandler);
-
+    signal(SIGCHLD, SIG_IGN);
 #endif
 
     /* Handle option to log sql commands */
