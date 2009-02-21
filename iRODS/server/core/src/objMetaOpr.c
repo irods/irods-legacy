@@ -2848,3 +2848,59 @@ procExecState_t execState)
     return 0;
 }
 
+
+int
+getRescStageFlag (rescInfo_t *rescInfo)
+{
+    int rescTypeInx;
+    int stageFlag; 
+
+    if (rescInfo == NULL) return USER__NULL_INPUT_ERR;
+
+    rescTypeInx = rescInfo->rescTypeInx;
+    stageFlag = RescTypeDef[rescTypeInx].stageFlag;
+
+    return stageFlag;
+}
+
+int
+getRescGrpcStageFlag (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
+{
+    rescInfo_t *tmpRescInfo;
+    rescGrpInfo_t *tmpRescGrpInfo = rescGrpInfo;
+
+    while (tmpRescGrpInfo != NULL) {
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (getRescStageFlag (tmpRescInfo) == DO_STAGING) {
+	    *outRescInfo = tmpRescInfo;
+	    return DO_STAGING;
+	}
+	tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    *outRescInfo = NULL;
+    return NO_STAGING;
+}
+
+int
+compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
+{
+    rodsHostAddr_t srcAddr;
+    rodsHostAddr_t destAddr;
+    rodsServerHost_t *srcServerHost = NULL;
+    rodsServerHost_t *destServerHost = NULL;
+
+    bzero (&srcAddr, sizeof (srcAddr));
+    bzero (&destAddr, sizeof (destAddr));
+
+    rstrcpy (srcAddr.hostAddr, srcRescInfo->rescLoc, NAME_LEN);
+    rstrcpy (destAddr.hostAddr, destRescInfo->rescLoc, NAME_LEN);
+
+    resolveHost (&srcAddr, &srcServerHost);
+    resolveHost (&destAddr, &destServerHost);
+
+    if (srcServerHost == destServerHost)
+	return 1;
+    else
+	return 0;
+}
+

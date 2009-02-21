@@ -52,6 +52,7 @@ typedef struct l1desc {
     struct timeval openStartTime;
 #endif
     int remoteL1descInx;
+    int stageFlag;
     rodsServerHost_t *remoteZoneHost;
 } l1desc_t;
 

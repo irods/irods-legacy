@@ -344,6 +344,17 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     int status;
     int destExist;
     int replStatus;
+    int destStageFlag = getRescStageFlag (destRescInfo);
+    int srcStageFlag = getRescStageFlag (inpSrcDataObjInfo->rescInfo);
+
+    /* some sanity check for DO_STAGING type resc */
+    if (destStageFlag == DO_STAGING && srcStageFlag == DO_STAGING) {
+	return SYS_SRC_DEST_RESC_STAGING_TYPE;
+    } else if (destStageFlag == DO_STAGING || srcStageFlag == DO_STAGING) {
+	if (compareRescAddr (destRescInfo, inpSrcDataObjInfo->rescInfo) == 0) {
+	    return SYS_CACHE_RESC_NOT_ON_SAME_HOST;
+	}
+    }
 
     /* open the dest */
 
@@ -382,11 +393,17 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
         L1desc[destL1descInx].oprType = REPLICATE_DEST;
     }
 
+    if (destStageFlag == DO_STAGING) {
+	L1desc[destL1descInx].stageFlag = STAGE_DEST;
+    } else if (srcStageFlag == DO_STAGING) {
+        L1desc[destL1descInx].stageFlag = STAGE_SRC;
+    }
+
     dataObjInp->numThreads = getNumThreads (rsComm, dataObjInp->dataSize, 
       dataObjInp->numThreads, NULL);
 
-
-    if (dataObjInp->numThreads > 0) {
+    if (dataObjInp->numThreads > 0 && 
+      L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	if (destExist > 0) {
             status = dataOpen (rsComm, destL1descInx);
 	} else {
@@ -428,7 +445,8 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
         L1desc[srcL1descInx].oprType = REPLICATE_SRC;
     }
 
-    if (dataObjInp->numThreads > 0) {
+    if (dataObjInp->numThreads > 0 &&
+      L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	dataObjCloseInp_t dataObjCloseInp;
 
 	dataObjInp->openFlags = O_RDONLY;

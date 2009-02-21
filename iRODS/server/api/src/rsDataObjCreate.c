@@ -112,24 +112,6 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     /* query rcat for resource info and sort it */
 
-#if 0
-    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-    status = applyRule ("acSetRescSchemeForCreate", NULL, &rei, NO_SAVE_REI);
-
-    if (status < 0) {
-	if (rei.status < 0)
-	    status = rei.status;
-        rodsLog (LOG_NOTICE,
-          "rsDataObjCreate: acSetRescSchemeForCreate error for %s, status = %d", 
-	  dataObjInp->objPath, status);
-        return (status);
-    } else {
-        myRescGrpInfo = rei.rgi;
-	if (myRescGrpInfo == NULL) {
-	    return (SYS_INVALID_RESC_INPUT);
-	}
-    }
-#endif
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
@@ -141,6 +123,13 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
 	tmpRescInfo = tmpRescGrpInfo->rescInfo;
+	if (getRescStageFlag (tmpRescInfo) == DO_STAGING) {
+	    /* cannot create directly in DO_STAGING type resource */
+            rodsLog (LOG_ERROR,
+              "rsDataObjCreate: Create obj in DO_STAGING resc %s rescGrp %s",
+	      tmpRescInfo->rescName, tmpRescGrpInfo->rescGroupName);
+            return (SYS_CANNOT_OPEN_STAGE_RESC);
+	}
 	status = l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp, 
 	  tmpRescInfo, myRescGrpInfo->rescGroupName);
 

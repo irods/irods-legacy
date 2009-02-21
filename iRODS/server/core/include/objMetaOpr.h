@@ -211,4 +211,10 @@ int
 matchPidInReExec (reExec_t *reExec, pid_t pid);
 int
 waitAndFreeReThr (reExec_t *reExec);
+int
+getRescStageFlag (rescInfo_t *rescInfo);
+int
+getRescGrpcStageFlag (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo);
+int
+compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo);
 #endif	/* OBJ_META_OPR_H */
