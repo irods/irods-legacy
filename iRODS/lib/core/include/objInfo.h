@@ -262,6 +262,8 @@ typedef enum {
 /* definition for stageFlag to specify whether staging is required */
 #define NO_STAGING        0
 #define DO_STAGING        1
+#define STAGE_SRC	  2
+#define STAGE_DEST	  3
  
 /* definition for trash policy */
 
