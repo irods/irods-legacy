@@ -55,7 +55,7 @@ main(int argc, char **argv)
          rodsLogLevel(LOG_NOTICE); /* default */
     }
 
-    while ((c=getopt(argc, argv,"sScvD:")) != EOF) {
+    while ((c=getopt(argc, argv,"sSvD:")) != EOF) {
         switch (c) {
 	    case 's':
 		runMode = SINGLE_PASS;
@@ -101,7 +101,9 @@ main(int argc, char **argv)
 
 int usage (char *prog)
 {
-    fprintf(stderr, "Usage: %s [-scva] [-D logDir] \n",prog);
+    fprintf(stderr, "Usage: %s [-sSv] [-D logDir] \n",prog);
+    fprintf(stderr, "-s   Run like a client process - no fork\n");
+    fprintf(stderr, "-S   Run like a daemon server process - forked\n");
     return 0;
 }
 
