@@ -324,6 +324,7 @@ void usage()
 "Usage: iqstat [-luvVh] [-u user] [rule name]", 
 "Show information about your pending iRODS rule executions", 
 "or for the entered user.",
+" -a        display requests of all users",
 " -l        for long format",
 " -u user   for the specified user",
 " rule_name for the specified rule",
