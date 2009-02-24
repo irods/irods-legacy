@@ -235,18 +235,24 @@ _rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
         return (status);
     }
 
-    newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
+    if (L1desc[l1descInx].stageFlag == NO_STAGING) {
+	/* don't check for size if it is DO_STAGING type because the
+	 * fileStat call may not be supported */ 
+        newSize = getSizeInVault (rsComm, L1desc[l1descInx].dataObjInfo);
 
-    /* check for consistency of the write operation */
+        /* check for consistency of the write operation */
 
-    if (L1desc[l1descInx].dataSize > 0) { 
-        if (newSize != L1desc[l1descInx].dataSize) {
-	    rodsLog (LOG_NOTICE,
-	      "_rsDataObjClose: size in vault %lld != target size %lld",
-	        newSize, L1desc[l1descInx].dataSize);
-	    return (SYS_COPY_LEN_ERR);
+        if (L1desc[l1descInx].dataSize > 0) { 
+            if (newSize != L1desc[l1descInx].dataSize) {
+	        rodsLog (LOG_NOTICE,
+	          "_rsDataObjClose: size in vault %lld != target size %lld",
+	            newSize, L1desc[l1descInx].dataSize);
+	        return (SYS_COPY_LEN_ERR);
+	    }
 	}
-    } 
+    } else {
+	newSize = L1desc[l1descInx].bytesWritten;
+    }
 
     memset (&regParam, 0, sizeof (regParam));
 

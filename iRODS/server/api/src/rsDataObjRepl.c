@@ -17,6 +17,8 @@
 #include "getRemoteZoneResc.h"
 #include "l3FileGetSingleBuf.h"
 #include "l3FilePutSingleBuf.h"
+#include "fileSyncToArch.h"
+#include "fileStageToCache.h"
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
@@ -394,7 +396,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     }
 
     if (destStageFlag == DO_STAGING) {
-	L1desc[destL1descInx].stageFlag = STAGE_DEST;
+	L1desc[destL1descInx].stageFlag = SYNC_DEST;
     } else if (srcStageFlag == DO_STAGING) {
         L1desc[destL1descInx].stageFlag = STAGE_SRC;
     }
@@ -577,9 +579,6 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
 	bytesRead = 0;
     } else {
         dataBBuf.buf = malloc (L1desc[srcL1descInx].dataSize);
-#if 0
-        bytesRead = l3FileGetSingleBuf (rsComm, srcL1descInx, &dataBBuf);
-#endif
         bytesRead = rsL3FileGetSingleBuf (rsComm, &srcL1descInx, &dataBBuf);
     }
 
@@ -587,9 +586,6 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
 	return (bytesRead);
     }
 
-#if 0
-    bytesWritten = l3FilePutSingleBuf (rsComm, l1descInx, &dataBBuf);
-#endif
     bytesWritten = rsL3FilePutSingleBuf (rsComm, &l1descInx, &dataBBuf);
  
     if (dataBBuf.buf != NULL) {
@@ -611,5 +607,116 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
     L1desc[l1descInx].bytesWritten = bytesWritten;
 
     return (0); 
+}
+
+int
+l3DataStageSync (rsComm_t *rsComm, int l1descInx)
+{
+    bytesBuf_t dataBBuf;
+    int srcL1descInx;
+    int status = 0;
+
+    memset (&dataBBuf, 0, sizeof (bytesBuf_t));
+
+    srcL1descInx = L1desc[l1descInx].srcL1descInx;
+    if (L1desc[srcL1descInx].dataSize < 0) {
+	rodsLog (LOG_ERROR,
+	  "l3DataStageSync: dataSize %lld for %s is negative",
+	  L1desc[srcL1descInx].dataSize, 
+	  L1desc[srcL1descInx].dataObjInfo->objPath); 
+	return (SYS_COPY_LEN_ERR);
+    } else if (L1desc[srcL1descInx].dataSize > 0) {
+	if (L1desc[l1descInx].stageFlag == SYNC_DEST) {
+	    /* dest a DO_STAGE type, sync */
+            status = l3FileSync (rsComm, srcL1descInx, l1descInx);
+	} else {
+	    /* src a DO_STAGE type, stage */
+            status = l3FileStage (rsComm, srcL1descInx, l1descInx);
+	}
+    }
+
+    if (status < 0) {
+	return (status);
+    }
+
+    L1desc[l1descInx].bytesWritten = L1desc[srcL1descInx].dataSize;
+
+    return (0); 
+}
+
+int
+l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
+{
+    dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
+    int rescTypeInx;
+    fileStageSyncInp_t fileSyncToArchInp;
+    dataObjInp_t *dataObjInp;
+    int status;
+
+    srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+    destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
+
+    rescTypeInx = destDataObjInfo->rescInfo->rescTypeInx;
+
+    switch (RescTypeDef[rescTypeInx].rescCat) {
+      case FILE_CAT:
+        memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
+        dataObjInp = L1desc[destL1descInx].dataObjInp;
+        fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileSyncToArchInp.addr.hostAddr,  
+	  destDataObjInfo->rescInfo->rescLoc, NAME_LEN);
+        rstrcpy (fileSyncToArchInp.filename, destDataObjInfo->filePath, 
+	  MAX_NAME_LEN);
+        rstrcpy (fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath, 
+	  MAX_NAME_LEN);
+        fileSyncToArchInp.mode = getFileMode (dataObjInp);
+        status = rsFileSyncToArch (rsComm, &fileSyncToArchInp);
+        break;
+      default:
+        rodsLog (LOG_ERROR,
+          "l3FileSync: rescCat type %d is not recognized",
+          RescTypeDef[rescTypeInx].rescCat);
+        status = SYS_INVALID_RESC_TYPE;
+        break;
+    }
+    return (status);
+}
+
+int
+l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
+{
+    dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
+    int rescTypeInx;
+    fileStageSyncInp_t fileSyncToArchInp;
+    dataObjInp_t *dataObjInp;
+    int status;
+
+    srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+    destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
+
+    rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
+
+    switch (RescTypeDef[rescTypeInx].rescCat) {
+      case FILE_CAT:
+        memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
+        dataObjInp = L1desc[destL1descInx].dataObjInp;
+        fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        rstrcpy (fileSyncToArchInp.addr.hostAddr,  
+	  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);
+        rstrcpy (fileSyncToArchInp.cacheFilename, destDataObjInfo->filePath, 
+	  MAX_NAME_LEN);
+        rstrcpy (fileSyncToArchInp.filename, srcDataObjInfo->filePath, 
+	  MAX_NAME_LEN);
+        fileSyncToArchInp.mode = getFileMode (dataObjInp);
+        status = rsFileStageToCache (rsComm, &fileSyncToArchInp);
+        break;
+      default:
+        rodsLog (LOG_ERROR,
+          "l3FileStage: rescCat type %d is not recognized",
+          RescTypeDef[rescTypeInx].rescCat);
+        status = SYS_INVALID_RESC_TYPE;
+        break;
+    }
+    return (status);
 }
 

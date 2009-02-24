@@ -101,8 +101,9 @@ _rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
      */
 
     status = fileSyncToArch (fileSyncToArchInp->fileType, rsComm, 
+      fileSyncToArchInp->mode,
       fileSyncToArchInp->filename, fileSyncToArchInp->cacheFilename, 
-      fileSyncToArchInp->optionalInfo);
+      &fileSyncToArchInp->condInput);
 
     if (status < 0) {
 	rodsLog (LOG_NOTICE, 

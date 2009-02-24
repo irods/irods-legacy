@@ -263,7 +263,7 @@ typedef enum {
 #define NO_STAGING        0
 #define DO_STAGING        1
 #define STAGE_SRC	  2
-#define STAGE_DEST	  3
+#define SYNC_DEST	  3
  
 /* definition for trash policy */
 

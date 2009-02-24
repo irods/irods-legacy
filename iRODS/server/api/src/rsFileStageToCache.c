@@ -101,8 +101,9 @@ _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
      */
 
     status = fileStageToCache (fileStageToCacheInp->fileType, rsComm, 
+      fileStageToCacheInp->mode,
       fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename, 
-      fileStageToCacheInp->optionalInfo);
+      &fileStageToCacheInp->condInput);
 
     if (status < 0) {
 	rodsLog (LOG_NOTICE, 

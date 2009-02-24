@@ -321,8 +321,8 @@ fileIndexLookup (fileDriverType_t myType)
 }
 
 int
-fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm, 
-char *filename, char *cacheFilename, msParam_t *optionalInfo)
+fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm, int mode,
+char *filename, char *cacheFilename, keyValPair_t *condInput)
 {
     int fileInx;
     int status;
@@ -331,15 +331,15 @@ char *filename, char *cacheFilename, msParam_t *optionalInfo)
         return (fileInx);
     }
 
-    status = FileDriverTable[fileInx].fileStageToCache (rsComm, 
-      filename, cacheFilename, optionalInfo);
+    status = FileDriverTable[fileInx].fileStageToCache (rsComm, mode,
+      filename, cacheFilename, condInput);
 
     return (status);
 }
 
 int
-fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, 
-char *filename, char *cacheFilename, msParam_t *optionalInfo)
+fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, int mode,
+char *filename, char *cacheFilename, keyValPair_t *condInput)
 {
     int fileInx;
     int status;
@@ -348,8 +348,8 @@ char *filename, char *cacheFilename, msParam_t *optionalInfo)
         return (fileInx);
     }
 
-    status = FileDriverTable[fileInx].fileSyncToArch (rsComm,
-      filename, cacheFilename, optionalInfo);
+    status = FileDriverTable[fileInx].fileSyncToArch (rsComm, mode,
+      filename, cacheFilename, condInput);
 
     return (status);
 }

@@ -420,12 +420,12 @@ unixFileGetFsFreeSpace (rsComm_t *rsComm, char *path, int flag)
  */
   
 int
-unixStageToCache (rsComm_t *rsComm, char *filename, char *cacheFilename,
-msParam_t *optionalInfo)
+unixStageToCache (rsComm_t *rsComm, int mode, char *filename, 
+char *cacheFilename,  keyValPair_t *condInput)
 {
     int status;
 
-    status = unixFileCopy (filename, cacheFilename);
+    status = unixFileCopy (mode, filename, cacheFilename);
     return status;
 }
 
@@ -436,17 +436,17 @@ msParam_t *optionalInfo)
  */
 
 int
-unixSyncToArch (rsComm_t *rsComm, char *filename, char *cacheFilename,
-msParam_t *optionalInfo)
+unixSyncToArch (rsComm_t *rsComm, int mode, char *filename, 
+char *cacheFilename, keyValPair_t *condInput)
 {
     int status;
 
-    status = unixFileCopy (cacheFilename, filename);
+    status = unixFileCopy (mode, cacheFilename, filename);
     return status;
 }
 
 int
-unixFileCopy (char *srcFileName, char *destFileName) 
+unixFileCopy (int mode, char *srcFileName, char *destFileName)
 {
     int inFd, outFd;
     char myBuf[TRANS_BUF_SZ];
@@ -474,7 +474,7 @@ unixFileCopy (char *srcFileName, char *destFileName)
 	return status;
     }
 
-    outFd = open (destFileName, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+    outFd = open (destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode);
     if (outFd < 0) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLog (LOG_ERROR,

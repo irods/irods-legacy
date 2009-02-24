@@ -42,6 +42,10 @@ int
 dataObjCopy (rsComm_t *rsComm, int l1descInx);
 int
 l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx);
+int
+l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
+int
+l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
 #else
 #define RS_DATA_OBJ_REPL NULL
 #endif
