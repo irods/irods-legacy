@@ -16,7 +16,7 @@ usage () {
 "Usage : iquest [ [hint] format]  selectConditionString ",
 "format is C format restricted to character strings.",
 "selectConditionString is of the form: SELECT <attribute> [, <attribute>]* [WHERE <condition> [ AND <condition>]*]",
-"attribute can be found using iattrs command",
+"attribute can be found using 'iquest attrs' command",
 "condition is of the form: <attribute> <rel-op> <value>",
 "rel-op is a relational operator: eg. =, <>, >,<, like, not like, between, etc.,",
 "value is either a constant or a wild-carded expression.",
@@ -105,6 +105,13 @@ main(int argc, char **argv) {
         exit (1);
     }
 
+    if (myRodsArgs.optind == 1) {
+       if (!strncmp(argv[argc-1], "attrs", 5)) {
+	  showAttrNames();
+	  exit(0);
+       }
+    }
+
     conn = rcConnect (myEnv.rodsHost, myEnv.rodsPort, myEnv.rodsUserName,
       myEnv.rodsZone, 0, &errMsg);
 
@@ -112,11 +119,10 @@ main(int argc, char **argv) {
         exit (2);
     }
 
-   status = clientLogin(conn);
-   if (status != 0) {
-      exit (3);
-   }
-
+    status = clientLogin(conn);
+    if (status != 0) {
+       exit (3);
+    }
 
     if (myRodsArgs.optind == (argc - 3)) 
       status = queryAndShowStrCond(conn, argv[argc-3], argv[argc-2], argv[argc-1]);
