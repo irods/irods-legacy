@@ -761,6 +761,18 @@ dataObjInp_t *dataObjInp)
         addKeyVal (&dataObjInp->condInput, ALL_KW, "");
     }
 
+#ifdef windows_platform
+    dataObjInp->numThreads = NO_THREADING;
+#else
+    if (rodsArgs->number == True) {
+        if (rodsArgs->numberValue == 0) {
+            dataObjInp->numThreads = NO_THREADING;
+        } else {
+            dataObjInp->numThreads = rodsArgs->numberValue;
+        }
+    }
+#endif
+
     if (rodsArgs->resource == True) {
         if (rodsArgs->resourceString == NULL) {
             rodsLog (LOG_ERROR,

@@ -24,7 +24,7 @@ main(int argc, char **argv) {
     int i;
     
 
-    optStr = "ahrR:svV";
+    optStr = "ahN:rR:svV";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -117,7 +117,7 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : irsync [-rahsvV] [-R resource] sourceFile|sourceDirectory [....]",
+"Usage : irsync [-rahsvV] [-N numThreads] [-R resource] sourceFile|sourceDirectory [....]",
 " targetFile|targetDirectory",
 " ",
 "Synchronize the data between a  local  copy  (local file  system)  and",
@@ -176,6 +176,9 @@ usage ()
 "always means the  synchronization  of  the local directory foo1 to collection",
 "foo2, no matter whether foo2 exists or not.",
 " ",
+" -N  numThreads - the number of thread to use for the transfer. A value of",
+"       0 means no threading. By default (-N option not used) the server",
+"       decides the number of threads to use.",
 " -R  resource - specifies the target resource. This can also be",
 "specified in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",
