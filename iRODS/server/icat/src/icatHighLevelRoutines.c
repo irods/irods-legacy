@@ -6237,3 +6237,96 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    return(status);
 }
+
+
+/* 
+ * chlRegServerLoad - Register a new iRODS server load row.
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+int chlRegServerLoad(rsComm_t *rsComm, 
+		     char *hostName, char *rescName,
+		     char *cpuUsed, char *memUsed, char *swapUsed, 
+		     char *runqLoad, char *diskSpace, char *netInput, 
+		     char *netOutput) {
+   char myTime[50];
+   int status;
+   int i;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRegServerLoad");
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   getNowStr(myTime);
+
+   i=0;
+   cllBindVars[i++]=hostName;
+   cllBindVars[i++]=rescName;
+   cllBindVars[i++]=cpuUsed;
+   cllBindVars[i++]=memUsed;
+   cllBindVars[i++]=swapUsed;
+   cllBindVars[i++]=runqLoad;
+   cllBindVars[i++]=diskSpace;
+   cllBindVars[i++]=netInput;
+   cllBindVars[i++]=netOutput;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+   if (logSQL) rodsLog(LOG_SQL, "chlRegServerLoad SQL 1");
+   status =  cmlExecuteNoAnswerSql(
+       "insert into R_SERVER_LOAD (host_name, resc_name, cpu_used, mem_used, swap_used, runq_load, disk_space, net_input, net_output, create_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+       &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegServerLoad cmlExecuteNoAnswerSql failure %d",status);
+      _rollback("chlRegServerLoad");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegServerLoad cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+
+   return(0);
+}
+
+/* 
+ * chlPurgeServerLoad - Purge some rows from iRODS server load table
+ * that are older than secondsAgo seconds ago.  
+ * Input - rsComm_t *rsComm - the server handle, 
+ *    int secondsAgo (age in seconds).
+ */
+int chlPurgeServerLoad(rsComm_t *rsComm, int secondsAgo) {
+
+   // delete from R_LOAD_SERVER where (%i -exe_time) > %i 
+   int status;
+   char nowStr[50];
+   static char thenStr[50];
+   time_t nowTime;
+   time_t thenTime;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoad");
+
+   getNowStr(nowStr);
+   nowTime=atoll(nowStr);
+   thenTime = nowTime - secondsAgo;
+   snprintf(thenStr, 15, "%011d", (uint) thenTime);
+
+   if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoad SQL 1");
+
+   cllBindVars[cllBindVarCount++]=thenStr;
+   status =  cmlExecuteNoAnswerSql(
+	         "delete from R_SERVER_LOAD where create_ts <?",
+		 &icss);
+   if (status) {
+      _rollback("chlPurgeServerLoad");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   return(status);
+}
