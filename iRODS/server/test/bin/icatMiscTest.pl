@@ -222,6 +222,10 @@ runCmd(0, "test_genu 2 test 100078 name1");
 # multiple open/close test
 runCmd(0, "test_chl open");
 
+# new serverLoad functions
+runCmd(0, "test_chl serverload 123");
+runCmd(0, "test_chl purgeload -1");
+
 # clean up
 runCmd(0, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin rmuser $User2");

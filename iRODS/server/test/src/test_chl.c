@@ -572,6 +572,24 @@ int testChmod(rsComm_t *rsComm, char *user, char *zone,
    return(status);
 }
 
+int testServerLoad(rsComm_t *rsComm, char *option) {
+   int status;
+
+   status = chlRegServerLoad(rsComm, "host", "resc", option, "2", "3", 
+			     "4", "5", "6", "7");
+   return(status);
+}
+
+int testPurgeServerLoad(rsComm_t *rsComm, char *option) {
+   int status;
+   int secondsAgo=2000;
+
+   if (option != NULL) secondsAgo = atoi(option);
+   status = chlPurgeServerLoad(rsComm, secondsAgo);
+
+   return(status);
+}
+
 
 int
 main(int argc, char **argv) {
@@ -760,6 +778,16 @@ main(int argc, char **argv) {
 
    if (strcmp(argv[1],"tpw")==0) {
       status = testTempPwCombined(Comm, argv[2]);
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"serverload")==0) {
+      status = testServerLoad(Comm, argv[2]);
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"purgeload")==0) {
+      status = testPurgeServerLoad(Comm, argv[2]);
       didOne=1;
    }
 
