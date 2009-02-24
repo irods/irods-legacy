@@ -2339,6 +2339,14 @@ getAttrIdFromAttrName(char *cname)
   return(NO_COLUMN_NAME_FOUND);
 }
 
+int
+showAttrNames() {
+  int i;
+  for (i = 0; i < NumOfColumnNames ; i++) {
+     printf("%s\n",columnNames[i].columnName);
+  }
+  return(0);
+}
 
 int
 separateSelFuncFromAttr(char *t, char **aggOp, char **colNm)
