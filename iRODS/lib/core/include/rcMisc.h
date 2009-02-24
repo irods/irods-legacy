@@ -188,6 +188,7 @@ int appendToByteBuf(bytesBuf_t *bytesBuf, char *str);
 
 char * getAttrNameFromAttrId(int cid);
 int getAttrIdFromAttrName(char *cname);
+int showAttrNames();
 
 int
 clearSendXmsgInfo (sendXmsgInfo_t *sendXmsgInfo);
