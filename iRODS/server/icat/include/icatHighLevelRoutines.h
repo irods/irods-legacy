@@ -89,6 +89,12 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName);
 int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName);
 int chlRenameColl(rsComm_t *rsComm, char *oldName, char *newName);
 
+int chlRegServerLoad(rsComm_t *rsComm, 
+    char *hostName, char *rescName,
+    char *cpuUsed, char *memUsed, char *swapUsed, char *runqLoad,
+    char *diskSpace, char *netInput, char *netOutput);
+int chlPurgeServerLoad(rsComm_t *rsComm, int secondsAgo);
+
 char *chlGetLocalZone();
 
 int sTableInit();
