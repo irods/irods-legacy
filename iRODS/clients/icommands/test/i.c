@@ -682,6 +682,49 @@ int doLongLs(rcComm_t *Conn, char *inStr, char *inRepl)
    return (0);
 }
 
+int
+doInsert(rcComm_t *Conn, char *tok1, char *tok2, char *tok3, char *tok4, 
+      char *tok5, char *tok6, char *tok7, char *tok8, char *tok9, char *tok10) {
+   int status;
+   generalRowInsertInp_t generalRowInsertInp;
+
+   memset (&generalRowInsertInp, 0, sizeof (generalRowInsertInp_t));
+
+   generalRowInsertInp.tableName = tok1;
+   generalRowInsertInp.arg1 = tok2;
+   generalRowInsertInp.arg2 = tok3;
+   generalRowInsertInp.arg3 = tok4;
+   generalRowInsertInp.arg4 = tok5;
+   generalRowInsertInp.arg5 = tok6;
+   generalRowInsertInp.arg6 = tok7;
+   generalRowInsertInp.arg7 = tok8;
+   generalRowInsertInp.arg8 = tok9;
+   generalRowInsertInp.arg9 = tok10;
+
+   status = rcGeneralRowInsert(Conn, &generalRowInsertInp);
+   if (status) {
+      rodsLogError(LOG_ERROR, status, "rcGeneralRowInsert failure");
+   }
+   return(status);
+}
+
+int
+doPurge(rcComm_t *Conn, char *tok1, char *tok2) {
+   int status;
+   generalRowPurgeInp_t generalRowPurgeInp;
+
+   memset (&generalRowPurgeInp, 0, sizeof (generalRowPurgeInp_t));
+
+   generalRowPurgeInp.tableName = tok1;
+   generalRowPurgeInp.secondsAgo = tok2;
+
+   status = rcGeneralRowPurge(Conn, &generalRowPurgeInp);
+   if (status) {
+      rodsLogError(LOG_ERROR, status, "rcGeneralRowPurge failure");
+   }
+   return(status);
+}
+
 /* Check to see if the user has read or better access to a dataObj */
 /* for example:
 login rods
@@ -824,6 +867,10 @@ main(int argc, char **argv) {
    char *tok5;
    char *tok6;
    char *tok7;
+   char *tok8;
+   char *tok9;
+   char *tok10;
+   char *tok11;
    int blankFlag;
    int didOne;
 
@@ -881,6 +928,10 @@ main(int argc, char **argv) {
       tok5="";
       tok6="";
       tok7="";
+      tok8="";
+      tok9="";
+      tok10="";
+      tok11="";
       ntokens=1;
       blankFlag=0;
       for (i=0;i<lenstr;i++) {
@@ -897,6 +948,10 @@ main(int argc, char **argv) {
 	       if (ntokens==5) tok5=(char *)&ttybuf[i];
 	       if (ntokens==6) tok6=(char *)&ttybuf[i];
 	       if (ntokens==7) tok7=(char *)&ttybuf[i];
+	       if (ntokens==8) tok8=(char *)&ttybuf[i];
+	       if (ntokens==9) tok9=(char *)&ttybuf[i];
+	       if (ntokens==10) tok10=(char *)&ttybuf[i];
+	       if (ntokens==11) tok11=(char *)&ttybuf[i];
 	    }
 	    blankFlag=0;
 	 }
@@ -972,6 +1027,15 @@ main(int argc, char **argv) {
       }
       if (strncmp(tok1, "acc", 3)==0) {
 	 doAccCheck(Conn, tok2, tok3, tok4, tok5, tok6, tok7);
+	 didOne=1;
+      }
+      if (strncmp(tok1, "insert", 6)==0) {
+	 doInsert(Conn, tok2, tok3, tok4, tok5, tok6, tok7, tok8, tok9,
+                  tok10, tok11);
+	 didOne=1;
+      }
+      if (strncmp(tok1, "purge", 5)==0) {
+	 doPurge(Conn, tok2, tok3);
 	 didOne=1;
       }
       if (strncmp(tok1,"cd",2)==0) {
