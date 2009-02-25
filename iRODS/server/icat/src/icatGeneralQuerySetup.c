@@ -28,7 +28,6 @@
   text to link them together.  This means that table1 and table2 can
   be related together via the sql text string.  This creates a tree
   structure describing the ICAT schema.
-
 */
 #include "rodsClient.h"
 #include "icatHighLevelRoutines.h"
