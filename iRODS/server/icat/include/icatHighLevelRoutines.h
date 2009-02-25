@@ -93,7 +93,9 @@ int chlRegServerLoad(rsComm_t *rsComm,
     char *hostName, char *rescName,
     char *cpuUsed, char *memUsed, char *swapUsed, char *runqLoad,
     char *diskSpace, char *netInput, char *netOutput);
-int chlPurgeServerLoad(rsComm_t *rsComm, int secondsAgo);
+int chlPurgeServerLoad(rsComm_t *rsComm, char *secondsAgo);
+int chlRegServerLoadDigest(rsComm_t *rsComm, char *rescName, char *loadFactor);
+int chlPurgeServerLoadDigest(rsComm_t *rsComm, char *secondsAgo);
 
 char *chlGetLocalZone();
 
