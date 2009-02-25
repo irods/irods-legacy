@@ -6400,7 +6400,6 @@ int chlRegServerLoadDigest(rsComm_t *rsComm,
  *    int secondsAgo (age in seconds).
  */
 int chlPurgeServerLoadDigest(rsComm_t *rsComm, char *secondsAgo) {
-
    /* delete from R_SERVER_LOAD_DIGEST where (%i -exe_time) > %i */
    int status;
    char nowStr[50];
