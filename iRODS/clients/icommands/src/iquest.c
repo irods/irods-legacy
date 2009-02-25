@@ -133,7 +133,7 @@ main(int argc, char **argv) {
     rcDisconnect(conn);
 
     if (status < 0) {
-      rodsLog (LOG_ERROR,"iquest Error: queryAndShowStrCond failed: %i\n", status);
+      rodsLogError(LOG_ERROR,status,"iquest Error: queryAndShowStrCond failed");
       exit (4);
     } else {
       exit(0);
