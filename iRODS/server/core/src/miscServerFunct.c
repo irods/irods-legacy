@@ -97,7 +97,8 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto)
         return SYS_INVALID_PROTOCOL_TYPE;
     }
 
-    if ((lsock = sockOpenForInConn (rsComm, &lport, &laddr, SOCK_STREAM)) < 0) {
+    if ((lsock = svrSockOpenForInConn (rsComm, &lport, &laddr, 
+      SOCK_STREAM)) < 0) {
         rodsLog (LOG_ERROR,
          "setupSrvPortal - sockOpenForInConn of SOCK_STREAM failed: status=%d",
           lsock);
@@ -126,7 +127,7 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto)
     listen (lsock, SOMAXCONN);
 
     if (proto == SOCK_DGRAM) {
-        if ((udpsock = sockOpenForInConn (rsComm, &udpport, &udpaddr, 
+        if ((udpsock = svrSockOpenForInConn (rsComm, &udpport, &udpaddr, 
           SOCK_DGRAM)) < 0) {
             rodsLog (LOG_ERROR,
              "setupSrvPortal- sockOpenForInConn of SOCK_DGRAM failed: stat=%d",
@@ -1814,8 +1815,9 @@ svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
     status = sockOpenForInConn (rsComm, portNum, addr, proto);
     if (status < 0) return status;
 
-    if (strcmp (*addr, "127.0.0.1") == 0 ||
-     strcmp (*addr, "0.0.0.0") == 0) { /* localhost */
+    if (addr != NULL && *addr != NULL &&
+     (strcmp (*addr, "127.0.0.1") == 0 || strcmp (*addr, "0.0.0.0") == 0)) { 
+	/* localhost */
 	char *myaddr;
 
 	myaddr = getLocalAddr ();

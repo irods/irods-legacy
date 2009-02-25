@@ -1496,7 +1496,7 @@ initAgent (rsComm_t *rsComm)
 
 #ifndef windows_platform
     if (rsComm->reconnFlag == RECONN_TIMEOUT) { 
-	rsComm->reconnSock = sockOpenForInConn (rsComm, &rsComm->reconnPort,
+	rsComm->reconnSock = svrSockOpenForInConn (rsComm, &rsComm->reconnPort,
 	  &rsComm->reconnAddr, SOCK_STREAM);
 	if (rsComm->reconnSock < 0) {
 	    rsComm->reconnPort = 0;
