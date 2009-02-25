@@ -340,3 +340,9 @@ LIB_API_OBJS += $(libApiObjDir)/rcFileStageToCache.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsFileSyncToArch.o
 LIB_API_OBJS += $(libApiObjDir)/rcFileSyncToArch.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGeneralRowInsert.o
+LIB_API_OBJS += $(libApiObjDir)/rcGeneralRowInsert.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGeneralRowPurge.o
+LIB_API_OBJS += $(libApiObjDir)/rcGeneralRowPurge.o

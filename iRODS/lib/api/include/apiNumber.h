@@ -127,5 +127,7 @@
 #define OPEN_COLLECTION_AN 			712
 #define READ_COLLECTION_AN 			713
 #define USER_ADMIN_AN 			714
+#define GENERAL_ROW_INSERT_AN 			715
+#define GENERAL_ROW_PURGE_AN 			716
 
 #endif	/* API_NUMBER_H */

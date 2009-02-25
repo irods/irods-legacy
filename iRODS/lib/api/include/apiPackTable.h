@@ -82,6 +82,8 @@ packInstructArray_t ApiPackTable[] = {
         {"userAdminInp_PI", userAdminInp_PI},
         {"OpenStat_PI", OpenStat_PI},
         {"fileStageSyncInp_PI", fileStageSyncInp_PI},
+        {"generalRowInsertInp_PI", generalRowInsertInp_PI},
+        {"generalRowPurgeInp_PI", generalRowPurgeInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 
