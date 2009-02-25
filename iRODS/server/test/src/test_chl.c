@@ -575,6 +575,8 @@ int testChmod(rsComm_t *rsComm, char *user, char *zone,
 int testServerLoad(rsComm_t *rsComm, char *option) {
    int status;
 
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
    status = chlRegServerLoad(rsComm, "host", "resc", option, "2", "3", 
 			     "4", "5", "6", "7");
    return(status);
@@ -582,10 +584,39 @@ int testServerLoad(rsComm_t *rsComm, char *option) {
 
 int testPurgeServerLoad(rsComm_t *rsComm, char *option) {
    int status;
-   int secondsAgo=2000;
 
-   if (option != NULL) secondsAgo = atoi(option);
-   status = chlPurgeServerLoad(rsComm, secondsAgo);
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   if (option == NULL) {
+      status = chlPurgeServerLoad(rsComm, "2000");
+   }
+   else {
+      status = chlPurgeServerLoad(rsComm, option);
+   }
+
+   return(status);
+}
+
+int testServerLoadDigest(rsComm_t *rsComm, char *option) {
+   int status;
+
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlRegServerLoadDigest(rsComm, "resc", option);
+   return(status);
+}
+
+int testPurgeServerLoadDigest(rsComm_t *rsComm, char *option) {
+   int status;
+
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   if (option == NULL) {
+      status = chlPurgeServerLoadDigest(rsComm, "2000");
+   }
+   else {
+      status = chlPurgeServerLoadDigest(rsComm, option);
+   }
 
    return(status);
 }
@@ -788,6 +819,16 @@ main(int argc, char **argv) {
 
    if (strcmp(argv[1],"purgeload")==0) {
       status = testPurgeServerLoad(Comm, argv[2]);
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"serverdigest")==0) {
+      status = testServerLoadDigest(Comm, argv[2]);
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"purgedigest")==0) {
+      status = testPurgeServerLoadDigest(Comm, argv[2]);
       didOne=1;
    }
 
