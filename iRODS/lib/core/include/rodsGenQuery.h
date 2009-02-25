@@ -253,4 +253,22 @@ primary ordering column.
 #define COL_COLL_USER_NAME    1300
 #define COL_COLL_USER_ZONE    1301
 
+/* R_SERVER_LOAD */
+#define COL_SL_HOST_NAME      1400
+#define COL_SL_RESC_NAME      1401
+#define COL_SL_CPU_USED       1402
+#define COL_SL_MEM_USED       1403
+#define COL_SL_SWAP_USED      1404
+#define COL_SL_RUNQ_LOAD      1405
+#define COL_SL_DISK_SPACE     1406
+#define COL_SL_NET_INPUT      1407
+#define COL_SL_NET_OUTPUT     1408
+#define COL_SL_NET_OUTPUT     1408
+#define COL_SL_CREATE_TIME    1409
+
+/* R_SERVER_LOAD_DIGEST */
+#define COL_SLD_RESC_NAME     1500
+#define COL_SLD_LOAD_FACTOR   1501
+#define COL_SLD_CREATE_TIME   1502
+
 #endif	/* RODS_GEN_QUERY_H */
