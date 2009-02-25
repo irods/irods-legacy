@@ -135,6 +135,10 @@ icatGeneralQuerySetup() {
 
   sTable( "r_objt_audit", "r_objt_audit", 0);
 
+  sTable( "r_server_load", "r_server_load", 0);
+
+  sTable( "r_server_load_digest", "r_server_load_digest", 0);
+
   /* Map the #define values to tables and columns */
 
   sColumn( COL_ZONE_ID, "r_zone_main", "zone_id");
@@ -276,6 +280,21 @@ icatGeneralQuerySetup() {
 
   sColumn(COL_COLL_USER_NAME, "r_coll_user_main", "user_name");
   sColumn(COL_COLL_USER_ZONE, "r_coll_user_main", "zone_name");
+
+  sColumn(COL_SL_HOST_NAME, "r_server_load", "resc_host");
+  sColumn(COL_SL_RESC_NAME, "r_server_load", "resc_name");
+  sColumn(COL_SL_CPU_USED, "r_server_load", "cpu_used");
+  sColumn(COL_SL_MEM_USED, "r_server_load", "mem_used");
+  sColumn(COL_SL_SWAP_USED, "r_server_load", "swap_used");
+  sColumn(COL_SL_RUNQ_LOAD, "r_server_load", "runq_load");
+  sColumn(COL_SL_DISK_SPACE, "r_server_load", "disk_space");
+  sColumn(COL_SL_NET_INPUT, "r_server_load", "net_input");
+  sColumn(COL_SL_NET_OUTPUT, "r_server_load", "net_output");
+  sColumn(COL_SL_CREATE_TIME, "r_server_load", "create_ts");
+
+  sColumn(COL_SLD_RESC_NAME, "r_server_load_digest", "resc_name");
+  sColumn(COL_SLD_LOAD_FACTOR, "r_server_load_digest", "load_factor");
+  sColumn(COL_SLD_CREATE_TIME, "r_server_load_digest", "create_ts");
 
   /* Define the Foreign Key links between tables */
   sFklink("r_coll_main", "r_data_main", "r_coll_main.coll_id = r_data_main.coll_id");

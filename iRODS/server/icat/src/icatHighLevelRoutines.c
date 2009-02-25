@@ -6254,6 +6254,11 @@ int chlRegServerLoad(rsComm_t *rsComm,
    int i;
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegServerLoad");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
    if (!icss.status) {
       return(CATALOG_NOT_CONNECTED);
    }
@@ -6298,22 +6303,28 @@ int chlRegServerLoad(rsComm_t *rsComm,
  * chlPurgeServerLoad - Purge some rows from iRODS server load table
  * that are older than secondsAgo seconds ago.  
  * Input - rsComm_t *rsComm - the server handle, 
- *    int secondsAgo (age in seconds).
+ *    char *secondsAgo (age in seconds).
  */
-int chlPurgeServerLoad(rsComm_t *rsComm, int secondsAgo) {
+int chlPurgeServerLoad(rsComm_t *rsComm, char *secondsAgo) {
 
-   // delete from R_LOAD_SERVER where (%i -exe_time) > %i 
+   /* delete from R_LOAD_SERVER where (%i -exe_time) > %i */
    int status;
    char nowStr[50];
    static char thenStr[50];
    time_t nowTime;
    time_t thenTime;
+   time_t secondsAgoTime;
 
    if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoad");
 
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
    getNowStr(nowStr);
    nowTime=atoll(nowStr);
-   thenTime = nowTime - secondsAgo;
+   secondsAgoTime=atoll(secondsAgo);
+   thenTime = nowTime - secondsAgoTime;
    snprintf(thenStr, 15, "%011d", (uint) thenTime);
 
    if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoad SQL 1");
@@ -6324,6 +6335,100 @@ int chlPurgeServerLoad(rsComm_t *rsComm, int secondsAgo) {
 		 &icss);
    if (status) {
       _rollback("chlPurgeServerLoad");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   return(status);
+}
+
+/* 
+ * chlRegServerLoadDigest - Register a new iRODS server load-digest row.
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+int chlRegServerLoadDigest(rsComm_t *rsComm, 
+			   char *rescName, char *loadFactor) {
+   char myTime[50];
+   int status;
+   int i;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRegServerLoadDigest");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+
+   getNowStr(myTime);
+
+   i=0;
+   cllBindVars[i++]=rescName;
+   cllBindVars[i++]=loadFactor;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlRegServerLoadDigest SQL 1");
+   status =  cmlExecuteNoAnswerSql(
+       "insert into R_SERVER_LOAD_DIGEST (resc_name, load_factor, create_ts) values (?, ?, ?)", 
+       &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegServerLoadDigest cmlExecuteNoAnswerSql failure %d", status);
+      _rollback("chlRegServerLoadDigest");
+      return(status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlRegServerLoadDigest cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+
+   return(0);
+}
+
+/* 
+ * chlPurgeServerLoadDigest - Purge some rows from iRODS server LoadDigest table
+ * that are older than secondsAgo seconds ago.  
+ * Input - rsComm_t *rsComm - the server handle, 
+ *    int secondsAgo (age in seconds).
+ */
+int chlPurgeServerLoadDigest(rsComm_t *rsComm, char *secondsAgo) {
+
+   /* delete from R_SERVER_LOAD_DIGEST where (%i -exe_time) > %i */
+   int status;
+   char nowStr[50];
+   static char thenStr[50];
+   time_t nowTime;
+   time_t thenTime;
+   time_t secondsAgoTime;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoadDigest");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   getNowStr(nowStr);
+   nowTime=atoll(nowStr);
+   secondsAgoTime=atoll(secondsAgo);
+   thenTime = nowTime - secondsAgoTime;
+   snprintf(thenStr, 15, "%011d", (uint) thenTime);
+
+   if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoadDigest SQL 1");
+
+   cllBindVars[cllBindVarCount++]=thenStr;
+   status =  cmlExecuteNoAnswerSql(
+	         "delete from R_SERVER_LOAD_DIGEST where create_ts <?",
+		 &icss);
+   if (status) {
+      _rollback("chlPurgeServerLoadDigest");
       return(status);
    }
 
