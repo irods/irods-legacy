@@ -2494,6 +2494,10 @@ fillGenQueryInpFromStrCond(char *str, genQueryInp_t *genQueryInp)
     }
   }
   else {
+   if (t==NULL) {
+     free(s);
+     return(INPUT_ARG_NOT_WELL_FORMED_ERR);
+    }
     if ((f = strstr(t,"where")) == NULL &&
 	(f = strstr(t,"WHERE")) == NULL ) {
       free(s);
