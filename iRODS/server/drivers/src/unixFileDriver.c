@@ -420,7 +420,8 @@ unixFileGetFsFreeSpace (rsComm_t *rsComm, char *path, int flag)
  */
   
 int
-unixStageToCache (rsComm_t *rsComm, int mode, char *filename, 
+unixStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType, 
+int mode, int flags, char *filename, 
 char *cacheFilename,  keyValPair_t *condInput)
 {
     int status;
@@ -436,8 +437,9 @@ char *cacheFilename,  keyValPair_t *condInput)
  */
 
 int
-unixSyncToArch (rsComm_t *rsComm, int mode, char *filename, 
-char *cacheFilename, keyValPair_t *condInput)
+unixSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType, 
+int mode, int flags, char *filename,
+char *cacheFilename,  keyValPair_t *condInput)
 {
     int status;
 
@@ -480,6 +482,7 @@ unixFileCopy (int mode, char *srcFileName, char *destFileName)
         rodsLog (LOG_ERROR,
          "unixFileCopy: open error for destFileName %s, status = %d",
          destFileName, status);
+	close (inFd);
         return status;
     }
 
@@ -490,10 +493,15 @@ unixFileCopy (int mode, char *srcFileName, char *destFileName)
             rodsLog (LOG_ERROR,
              "unixFileCopy: write error for srcFileName %s, status = %d",
              destFileName, status);
+	    close (inFd);
+	    close (outFd);
             return status;
 	}
 	bytesCopied += bytesWritten;
     }
+
+    close (inFd);
+    close (outFd);
 
     if (bytesCopied != statbuf.st_size) {
         rodsLog (LOG_ERROR,

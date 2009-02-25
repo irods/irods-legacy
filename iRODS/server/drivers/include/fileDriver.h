@@ -96,9 +96,11 @@ int
 fileTruncate (fileDriverType_t myType, rsComm_t *rsComm, char *path,
 rodsLong_t dataSize);
 int
-fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm, int mode,
+fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm,
+fileDriverType_t cacheFileType, int mode, int flag,
 char *filename, char *cacheFilename, keyValPair_t *condInput);
 int
-fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, int mode,
+fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, 
+fileDriverType_t cacheFileType, int mode, int flag,
 char *filename, char *cacheFilename, keyValPair_t *condInput);
 #endif	/* FILE_DRIVER_H */

@@ -8,6 +8,7 @@
 #include "fileSyncToArch.h"
 #include "fileOpr.h"
 #include "miscServerFunct.h"
+#include "dataObjOpr.h"
 
 int
 rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
@@ -101,15 +102,36 @@ _rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
      */
 
     status = fileSyncToArch (fileSyncToArchInp->fileType, rsComm, 
-      fileSyncToArchInp->mode,
+      fileSyncToArchInp->cacheFileType, 
+      fileSyncToArchInp->mode, fileSyncToArchInp->flags,
       fileSyncToArchInp->filename, fileSyncToArchInp->cacheFilename, 
       &fileSyncToArchInp->condInput);
 
     if (status < 0) {
-	rodsLog (LOG_NOTICE, 
-	  "_rsFileSyncToArch: fileSyncToArch for %s, status = %d",
-	  fileSyncToArchInp->filename, status);
-        return (status);
+        if (getErrno (status) == ENOENT) {
+            /* the directory does not exist */
+            mkDirForFilePath (fileSyncToArchInp->fileType, rsComm,
+              "/", fileSyncToArchInp->filename, fileSyncToArchInp->mode);
+        } else if (getErrno (status) == EEXIST) {
+            /* an empty dir may be there */
+            fileRmdir (fileSyncToArchInp->fileType, rsComm,
+             fileSyncToArchInp->filename);
+	} else {
+	    rodsLog (LOG_NOTICE, 
+	      "_rsFileSyncToArch: fileSyncToArch for %s, status = %d",
+	      fileSyncToArchInp->filename, status);
+            return (status);
+	}
+        status = fileSyncToArch (fileSyncToArchInp->fileType, rsComm,
+          fileSyncToArchInp->cacheFileType,
+          fileSyncToArchInp->mode, fileSyncToArchInp->flags,
+          fileSyncToArchInp->filename, fileSyncToArchInp->cacheFilename,
+          &fileSyncToArchInp->condInput);
+	if (status < 0) {
+            rodsLog (LOG_NOTICE,
+              "_rsFileSyncToArch: fileSyncToArch for %s, status = %d",
+              fileSyncToArchInp->filename, status);
+        }
     }
 
     return (status);

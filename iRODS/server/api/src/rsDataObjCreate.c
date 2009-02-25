@@ -128,7 +128,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             rodsLog (LOG_ERROR,
               "rsDataObjCreate: Create obj in DO_STAGING resc %s rescGrp %s",
 	      tmpRescInfo->rescName, tmpRescGrpInfo->rescGroupName);
-            return (SYS_CANNOT_OPEN_STAGE_RESC);
+            return (SYS_CANT_CREATE_IN_STAGE_RESC);
 	}
 	status = l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp, 
 	  tmpRescInfo, myRescGrpInfo->rescGroupName);

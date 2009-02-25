@@ -308,7 +308,9 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo)
         return (l1descInx);
     }
 
-    if (dataObjInp->numThreads == 0) {
+    if (L1desc[l1descInx].stageFlag != NO_STAGING) {
+	status = l3DataStageSync (rsComm, l1descInx);
+    } else if (dataObjInp->numThreads == 0) {
         status = l3DataCopySingleBuf (rsComm, l1descInx);
     } else {
         status = dataObjCopy (rsComm, l1descInx);
@@ -341,19 +343,28 @@ dataObjInfo_t *inpSrcDataObjInfo, rescInfo_t *destRescInfo,
 char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
 {
     dataObjInfo_t *myDestDataObjInfo, *srcDataObjInfo;
+    rescInfo_t *myDestRescInfo;
     int destL1descInx;
     int srcL1descInx;
     int status;
     int destExist;
     int replStatus;
-    int destStageFlag = getRescStageFlag (destRescInfo);
+    int destStageFlag;
     int srcStageFlag = getRescStageFlag (inpSrcDataObjInfo->rescInfo);
+
+    if (destRescInfo == NULL) {
+	myDestRescInfo = inpDestDataObjInfo->rescInfo;
+    } else {
+	myDestRescInfo = destRescInfo;
+    }
+    destStageFlag = getRescStageFlag (myDestRescInfo);
 
     /* some sanity check for DO_STAGING type resc */
     if (destStageFlag == DO_STAGING && srcStageFlag == DO_STAGING) {
 	return SYS_SRC_DEST_RESC_STAGING_TYPE;
     } else if (destStageFlag == DO_STAGING || srcStageFlag == DO_STAGING) {
-	if (compareRescAddr (destRescInfo, inpSrcDataObjInfo->rescInfo) == 0) {
+	if (compareRescAddr (myDestRescInfo, inpSrcDataObjInfo->rescInfo) 
+	  == 0) {
 	    return SYS_CACHE_RESC_NOT_ON_SAME_HOST;
 	}
     }
@@ -588,6 +599,8 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
 
     bytesWritten = rsL3FilePutSingleBuf (rsComm, &l1descInx, &dataBBuf);
  
+    L1desc[l1descInx].bytesWritten = bytesWritten;
+
     if (dataBBuf.buf != NULL) {
 	free (dataBBuf.buf);
 	memset (&dataBBuf, 0, sizeof (bytesBuf_t));
@@ -604,7 +617,6 @@ l3DataCopySingleBuf (rsComm_t *rsComm, int l1descInx)
 	}
     }
 	
-    L1desc[l1descInx].bytesWritten = bytesWritten;
 
     return (0); 
 }
@@ -636,19 +648,19 @@ l3DataStageSync (rsComm_t *rsComm, int l1descInx)
     }
 
     if (status < 0) {
-	return (status);
+	L1desc[l1descInx].bytesWritten = -1;
+    } else {
+        L1desc[l1descInx].bytesWritten = L1desc[srcL1descInx].dataSize;
     }
 
-    L1desc[l1descInx].bytesWritten = L1desc[srcL1descInx].dataSize;
-
-    return (0); 
+    return (status); 
 }
 
 int
 l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
 {
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
-    int rescTypeInx;
+    int rescTypeInx, cacheRescTypeInx;
     fileStageSyncInp_t fileSyncToArchInp;
     dataObjInp_t *dataObjInp;
     int status;
@@ -657,12 +669,15 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
 
     rescTypeInx = destDataObjInfo->rescInfo->rescTypeInx;
+    cacheRescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
         dataObjInp = L1desc[destL1descInx].dataObjInp;
         fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileSyncToArchInp.cacheFileType = 
+          RescTypeDef[cacheRescTypeInx].driverType;
         rstrcpy (fileSyncToArchInp.addr.hostAddr,  
 	  destDataObjInfo->rescInfo->rescLoc, NAME_LEN);
         rstrcpy (fileSyncToArchInp.filename, destDataObjInfo->filePath, 
@@ -686,7 +701,7 @@ int
 l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
 {
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
-    int rescTypeInx;
+    int rescTypeInx, cacheRescTypeInx;
     fileStageSyncInp_t fileSyncToArchInp;
     dataObjInp_t *dataObjInp;
     int status;
@@ -695,12 +710,16 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
 
     rescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
+    cacheRescTypeInx = destDataObjInfo->rescInfo->rescTypeInx;
+
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
         dataObjInp = L1desc[destL1descInx].dataObjInp;
         fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
+        fileSyncToArchInp.cacheFileType = 
+	  RescTypeDef[cacheRescTypeInx].driverType;
         rstrcpy (fileSyncToArchInp.addr.hostAddr,  
 	  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);
         rstrcpy (fileSyncToArchInp.cacheFilename, destDataObjInfo->filePath, 
