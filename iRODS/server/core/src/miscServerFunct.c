@@ -1805,3 +1805,48 @@ svrChkReconnAtReadEnd (rsComm_t *rsComm)
 }
 
 #endif
+
+int
+svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
+{
+    int status;
+
+    status = sockOpenForInConn (rsComm, portNum, addr, proto);
+    if (status < 0) return status;
+
+    if (strcmp (*addr, "127.0.0.1") == 0 ||
+     strcmp (*addr, "0.0.0.0") == 0) { /* localhost */
+	char *myaddr;
+
+	myaddr = getLocalAddr ();
+	if (myaddr != NULL) {
+	    free (*addr);
+	    *addr = strdup (myaddr);
+	} else {
+            rodsLog (LOG_NOTICE,
+              "svrSockOpenForInConn: problem resolving local host addr %s",
+              *addr);
+	}
+    }
+    return status;
+}
+
+
+char *
+getLocalAddr ()
+{
+    hostName_t *tmpHostName;
+
+    tmpHostName = LocalServerHost->hostName;
+    while (tmpHostName != NULL) {
+	if (strcmp (tmpHostName->name, "localhost") != 0 &&
+	  strcmp (tmpHostName->name, "127.0.0.1") != 0 &&
+	  strcmp (tmpHostName->name, "0.0.0.0") != 0 &&
+	  strchr (tmpHostName->name, '.') != NULL) {
+	    return (tmpHostName->name);
+	}
+	tmpHostName = tmpHostName->next;
+    }
+    return (NULL);
+}
+

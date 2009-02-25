@@ -99,4 +99,8 @@ svrChkReconnAtSendStart (rsComm_t *rsComm);
 int 
 svrChkReconnAtSendEnd (rsComm_t *rsComm);
 #endif
+int
+svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
+char *
+getLocalAddr ();
 #endif	/* MISC_SERVER_FUNCT_H */
