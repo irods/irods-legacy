@@ -1816,7 +1816,8 @@ svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
     if (status < 0) return status;
 
     if (addr != NULL && *addr != NULL &&
-     (strcmp (*addr, "127.0.0.1") == 0 || strcmp (*addr, "0.0.0.0") == 0)) { 
+     (strcmp (*addr, "127.0.0.1") == 0 || strcmp (*addr, "0.0.0.0") == 0 ||
+      strcmp (*addr, "localhost") == 0)) { 
 	/* localhost */
 	char *myaddr;
 
