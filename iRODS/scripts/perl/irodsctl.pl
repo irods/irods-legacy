@@ -189,7 +189,7 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # specified for the server's parallel I/O communication port. 
 # svrPortRangeStart specifies the first allowable port number and 
 # svrPortRangeEnd specifies the end of the range. 
-# $svrPortRangeStart=20000
+# $svrPortRangeStart=20000;
 # $svrPortRangeEnd=20199;
 
 # reServerOnIes - Specifies that the delayed rule exec server (irodsReServer) 
