@@ -34,6 +34,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
+	dataObjInp->openFlags = O_RDWR;
         status = _rsDataObjPut (rsComm, dataObjInp, dataObjInpBBuf,
           portalOprOut, BRANCH_MSG);
     } else {
