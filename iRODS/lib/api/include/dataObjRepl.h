@@ -48,6 +48,9 @@ int
 l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
 int
 l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
+int
+rsReplAndRequeDataObjInfo (rsComm_t *rsComm, 
+dataObjInfo_t **srcDataObjInfoHead, char *destRescName);
 #else
 #define RS_DATA_OBJ_REPL NULL
 #endif

@@ -211,10 +211,24 @@ int
 matchPidInReExec (reExec_t *reExec, pid_t pid);
 int
 waitAndFreeReThr (reExec_t *reExec);
+#if 0
 int
 getRescStageFlag (rescInfo_t *rescInfo);
 int
 getRescGrpcStageFlag (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo);
+#endif
+int
+getRescClass (rescInfo_t *rescInfo);
+int
+getRescGrpClass (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo);
 int
 compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo);
+int
+getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName, 
+char *inpMemberRescName, rescInfo_t **outCacheResc);
+int
+getRescGrpByRescInfo (rsComm_t *rsComm, char *inpMemberRescName,
+rescGrpInfo_t **outRescGrpInfo);
+int
+sortRescByType (rescGrpInfo_t **rescGrpInfo);
 #endif	/* OBJ_META_OPR_H */

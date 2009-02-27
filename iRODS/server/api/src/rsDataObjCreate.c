@@ -123,12 +123,12 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
 	tmpRescInfo = tmpRescGrpInfo->rescInfo;
-	if (getRescStageFlag (tmpRescInfo) == DO_STAGING) {
-	    /* cannot create directly in DO_STAGING type resource */
+	if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
+	    /* cannot create directly in COMPOUND_CL type resource */
             rodsLog (LOG_ERROR,
-              "rsDataObjCreate: Create obj in DO_STAGING resc %s rescGrp %s",
+              "rsDataObjCreate: Create obj in COMPOUND_CL resc %s rescGrp %s",
 	      tmpRescInfo->rescName, tmpRescGrpInfo->rescGroupName);
-            return (SYS_CANT_CREATE_IN_STAGE_RESC);
+            return (SYS_CANT_CREATE_IN_COMPOUND_RESC);
 	}
 	status = l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp, 
 	  tmpRescInfo, myRescGrpInfo->rescGroupName);

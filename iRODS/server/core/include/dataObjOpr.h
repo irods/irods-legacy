@@ -29,6 +29,11 @@
 #define REG_CHKSUM	1
 #define VERIFY_CHKSUM	2
 
+/* definition for the flag in queRescGrp and queResc */
+#define BOTTOM_FLAG	0
+#define TOP_FLAG	1
+#define BY_TYPE_FLAG	2
+
 /* values in l1desc_t is the desired value. values in dataObjInfo are
  * the values in rcat */
 typedef struct l1desc {

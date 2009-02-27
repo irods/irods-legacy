@@ -210,16 +210,26 @@ rescGrpInfo_t **rescGrpInfoHead, int topFlag)
 
 int 
 queRescGrp (rescGrpInfo_t **rescGrpInfoHead, rescGrpInfo_t *myRescGrpInfo, 
-int topFlag)
+int flag)
 {
+    rescInfo_t *tmpRescInfo, *myRescInfo;
     rescGrpInfo_t *tmpRescGrpInfo, *lastRescGrpInfo = NULL;
 
+    myRescInfo = myRescGrpInfo->rescInfo;
     tmpRescGrpInfo = *rescGrpInfoHead;
-    if (topFlag > 0) {
+    if (flag == TOP_FLAG) {
         *rescGrpInfoHead = myRescGrpInfo;
         myRescGrpInfo->next = tmpRescGrpInfo;
     } else {
         while (tmpRescGrpInfo != NULL) {
+	    tmpRescInfo = tmpRescGrpInfo->rescInfo;
+	    if (flag == BY_TYPE_FLAG && myRescInfo != NULL && 
+	      tmpRescInfo != NULL) { 
+		if (RescClass[myRescInfo->rescClassInx].classType > 
+		  RescClass[tmpRescInfo->rescClassInx].classType) {
+		    break;
+		}
+	    }
             lastRescGrpInfo = tmpRescGrpInfo;
             tmpRescGrpInfo = tmpRescGrpInfo->next;
         }
@@ -228,6 +238,7 @@ int topFlag)
             *rescGrpInfoHead = myRescGrpInfo;
         } else {
             lastRescGrpInfo->next = myRescGrpInfo;
+	    myRescGrpInfo->next = tmpRescGrpInfo;
         }
     }
 

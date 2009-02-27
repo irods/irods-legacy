@@ -187,6 +187,7 @@ rescGrpInfo_t **rescGrpInfo)
     if (status < 0) {
 	return (status);
     } else {
+#if 0
 	if (RescClass[myRescInfo->rescClassInx].classType == ARCHIVAL_CL) {
 	    /* que at bottom */
             queResc (myRescInfo, rescGroupName, rescGrpInfo, 0);
@@ -194,6 +195,8 @@ rescGrpInfo_t **rescGrpInfo)
 	    /* que at top */
             queResc (myRescInfo, rescGroupName, rescGrpInfo, 1);
 	}
+#endif
+	queResc (myRescInfo, rescGroupName, rescGrpInfo, BY_TYPE_FLAG);
 	return (0);
     }
 }
@@ -283,6 +286,8 @@ char *sortScheme)
         tmpRescGrpInfo->rescInfo = (*rescGrpInfo)->rescInfo;
         (*rescGrpInfo)->rescInfo = tmpRescInfo;
     } else if (strcmp (sortScheme, "byRescType") == 0) {
+	sortRescByType (rescGrpInfo);
+#if 0
 	tmpRescGrpInfo = *rescGrpInfo;
 	tmpRescInfo = tmpRescGrpInfo->rescInfo;
 	
@@ -301,12 +306,66 @@ char *sortScheme)
 	    }
 	    tmpRescGrpInfo = tmpRescGrpInfo->next;
 	}
+#endif
     } else {
 	    rodsLog (LOG_ERROR,
 	      "sortResc: unknown sortScheme %s", sortScheme);
     }
 
     return (0);
+}
+
+int 
+sortRescByType (rescGrpInfo_t **rescGrpInfo)
+{
+    rescGrpInfo_t *tmpRescGrpInfo, *tmp1RescGrpInfo;
+    rescInfo_t *tmpRescInfo, *tmp1RescInfo;
+
+    tmpRescGrpInfo = *rescGrpInfo;
+ 
+    /* float CACHE_CL to top */
+
+    while (tmpRescGrpInfo != NULL) {
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (RescClass[tmpRescInfo->rescClassInx].classType == CACHE_CL) {
+            /* find a slot to exchange rescInfo */
+	    tmp1RescGrpInfo = *rescGrpInfo;
+	    while (tmp1RescGrpInfo != NULL) {
+		if (tmp1RescGrpInfo == tmpRescGrpInfo) break;
+	        tmp1RescInfo = tmp1RescGrpInfo->rescInfo;
+		if (RescClass[tmp1RescInfo->rescClassInx].classType > CACHE_CL) {
+                    tmpRescGrpInfo->rescInfo = tmp1RescInfo;
+		    tmp1RescGrpInfo->rescInfo = tmpRescInfo;
+		    break;
+		}
+		tmp1RescGrpInfo = tmp1RescGrpInfo->next;
+	    }
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+
+    /* float ARCHIVAL_CL to second */
+
+    while (tmpRescGrpInfo != NULL) {
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (RescClass[tmpRescInfo->rescClassInx].classType == ARCHIVAL_CL) {
+            /* find a slot to exchange rescInfo */
+            tmp1RescGrpInfo = *rescGrpInfo;
+            while (tmp1RescGrpInfo != NULL) {
+                if (tmp1RescGrpInfo == tmpRescGrpInfo) break;
+                tmp1RescInfo = tmp1RescGrpInfo->rescInfo;
+                if (RescClass[tmp1RescInfo->rescClassInx].classType > ARCHIVAL_CL) {
+                    tmpRescGrpInfo->rescInfo = tmp1RescInfo;
+                    tmp1RescGrpInfo->rescInfo = tmpRescInfo;
+                    break;
+                }
+                tmp1RescGrpInfo = tmp1RescGrpInfo->next;
+            }
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+
+    return 0;
 }
 
 int
@@ -651,6 +710,8 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
     int rescClassInx;
     int topFlag;
+    dataObjInfo_t *currentCompInfo = NULL;
+    dataObjInfo_t *oldCompInfo = NULL;
 
     *currentArchInfo = *currentCacheInfo = *oldArchInfo = *oldCacheInfo = NULL;
 
@@ -679,18 +740,26 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
         if (tmpDataObjInfo->replStatus > 0) {
             if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
 		queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
+	    } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
+                queDataObjInfo (&currentCompInfo, tmpDataObjInfo, 1, topFlag);
 	    } else {
                 queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
 	    }
 	} else {
             if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
                 queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
+            } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
+                queDataObjInfo (&oldCompInfo, tmpDataObjInfo, 1, topFlag);
             } else {
                 queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
 	}
 	tmpDataObjInfo = nextDataObjInfo;
     }
+    /* combine ArchInfo and CompInfo */
+    queDataObjInfo (oldArchInfo, oldCompInfo, 0, 0);
+    queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
+
     return (0);
 }
 
@@ -959,7 +1028,7 @@ rescGrpInfo_t **rescGrpInfoHead, int trimjFlag)
                     } else {
                         prevRescGrpInfo->next = tmpRescGrpInfo->next;
                     }
-		    queRescGrp (rescGrpInfoHead, tmpRescGrpInfo, 0);
+		    queRescGrp (rescGrpInfoHead, tmpRescGrpInfo, BOTTOM_FLAG);
 		}
 	    }
 
@@ -2848,7 +2917,39 @@ procExecState_t execState)
     return 0;
 }
 
+int
+getRescClass (rescInfo_t *rescInfo)
+{
+    int classType;
 
+    if (rescInfo == NULL) return USER__NULL_INPUT_ERR;
+
+    classType = RescClass[rescInfo->rescClassInx].classType;
+
+    return classType;
+}
+
+int
+getRescGrpClass (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
+{
+    rescInfo_t *tmpRescInfo;
+    rescGrpInfo_t *tmpRescGrpInfo = rescGrpInfo;
+
+    while (tmpRescGrpInfo != NULL) {
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
+            *outRescInfo = tmpRescInfo;
+            return COMPOUND_CL;
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    *outRescInfo = NULL;
+    /* just use the top */
+    return (getRescClass(rescGrpInfo->rescInfo));
+}
+
+
+#if 0
 int
 getRescStageFlag (rescInfo_t *rescInfo)
 {
@@ -2880,6 +2981,7 @@ getRescGrpcStageFlag (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
     *outRescInfo = NULL;
     return NO_STAGING;
 }
+#endif
 
 int
 compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
@@ -2904,3 +3006,63 @@ compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
 	return 0;
 }
 
+int
+getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName, char *inpMemberRescName, 
+rescInfo_t **outCacheResc)
+{
+    int status; 
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo;
+
+    *outCacheResc = NULL;
+    if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
+	status = getRescGrpByRescInfo (rsComm, inpMemberRescName, &myRescGrpInfo); 
+        if (status < 0) {
+	    return status;
+	} else if (rescGroupName != NULL) {
+	    rstrcpy (rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
+	}
+    } else {
+	status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
+        if (status < 0) return status;
+    } 
+    tmpRescGrpInfo = myRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+	rescInfo_t *tmpRescInfo;
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (RescClass[tmpRescInfo->rescClassInx].classType == CACHE_CL) {
+	    *outCacheResc = tmpRescInfo;
+	    return 0;
+	}
+	tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    return SYS_NO_CACHE_RESC_IN_GRP;
+}
+
+int
+getRescGrpByRescInfo (rsComm_t *rsComm, char *inpMemberRescName, 
+rescGrpInfo_t **outRescGrpInfo)
+{
+    rescGrpInfo_t *tmpRescGrpInfo, *tmp1RescGrpInfo;
+
+    /* see if it is in cache */
+
+    tmpRescGrpInfo = CachedRescGrpInfo;
+
+    while (tmpRescGrpInfo != NULL) {
+	rescInfo_t *tmpRescInfo;
+	tmp1RescGrpInfo = tmpRescGrpInfo;
+	while (tmp1RescGrpInfo != NULL) {
+            tmpRescInfo = tmp1RescGrpInfo->rescInfo;
+	    if (strcmp (tmpRescInfo->rescName, inpMemberRescName) == 0) {
+                replRescGrpInfo (tmp1RescGrpInfo, outRescGrpInfo);
+                return 0;
+	    }
+            tmp1RescGrpInfo = tmp1RescGrpInfo->next;
+        }
+
+        tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
+    }
+    /* XXXXX need to do a query if not cached */
+    return SYS_UNMATCHED_RESC_GRP;
+}

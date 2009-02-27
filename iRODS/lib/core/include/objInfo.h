@@ -261,9 +261,8 @@ typedef enum {
 
 /* definition for stageFlag to specify whether staging is required */
 #define NO_STAGING        0
-#define DO_STAGING        1
-#define STAGE_SRC	  2
-#define SYNC_DEST	  3
+#define STAGE_SRC	  1
+#define SYNC_DEST	  2
  
 /* definition for trash policy */
 
@@ -275,13 +274,13 @@ typedef struct RescTypeDef {
     rescCat_t rescCat;
     int driverType;
     int chkPathPerm;	/* whether to check path permission */
-    int stageFlag;
 } rescTypeDef_t;
 
 /* definition for classType */
 
 #define CACHE_CL	0
 #define ARCHIVAL_CL	1
+#define COMPOUND_CL	2
 
 #define PRIMARY_FLAG	0x8000		/* primary class when this bit is set */
 typedef struct RescClass {

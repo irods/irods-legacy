@@ -1386,7 +1386,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 	rstrcpy (myRescInfo->rescCreate, tmpRescCreate, TIME_LEN);
 	rstrcpy (myRescInfo->rescModify, tmpRescModify, TIME_LEN);
 
-	queResc (myRescInfo, NULL, &RescGrpInfo, 0);
+	queResc (myRescInfo, NULL, &RescGrpInfo, BOTTOM_FLAG);
     }
     return (0);
 }

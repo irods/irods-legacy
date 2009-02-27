@@ -20,6 +20,7 @@
 #include "regReplica.h"
 #include "regDataObj.h"
 #include "dataObjClose.h"
+#include "dataObjRepl.h"
 
 int
 rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
@@ -98,7 +99,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         if (status < 0) return status;
     }
 
-    /* no sure why phyOpenFlag only - if (phyOpenFlag > 0 && writeFlag > 0) { */
     if (writeFlag > 0) {
 	/* put the copy with destResc on top */
 	status = requeDataObjInfoByDestResc (&dataObjInfoHead, 
@@ -112,9 +112,32 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                 rodsLog (LOG_ERROR,
                   "_rsDataObjOpen: createEmptyRepl of %s failed, status = %d",
           	  dataObjInfoHead->objPath, status);
+                freeAllDataObjInfo (dataObjInfoHead);
 		return status;
 	    }
 	}
+    }
+
+    if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+	rescInfo_t *cacheResc;
+        status = getCacheRescInGrp (rsComm, dataObjInfoHead->rescGroupName, 
+	  dataObjInfoHead->rescInfo->rescName, &cacheResc);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjOpen: getCacheRescInGrp of %s failed for %s stat=%d",
+              dataObjInfoHead->rescGroupName, dataObjInfoHead->objPath, status);
+            freeAllDataObjInfo (dataObjInfoHead);
+            return status;
+        }
+        status = rsReplAndRequeDataObjInfo (rsComm, &dataObjInfoHead, 
+          cacheResc->rescName);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjOpen: rsReplAndRequeDataObjInfo of %s failed stat=%d",
+              dataObjInfoHead->objPath, status);
+            freeAllDataObjInfo (dataObjInfoHead);
+            return status;
+        }
     }
 
     tmpDataObjInfo = dataObjInfoHead;

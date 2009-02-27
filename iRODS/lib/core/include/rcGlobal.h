@@ -121,10 +121,10 @@ COLL_ID_KW,
 "ENDOFLIST"};
 
 rescTypeDef_t RescTypeDef[] = {
-  {"unix",	FILE_CAT, UNIX_FILE_TYPE,  DO_CHK_PATH_PERM,  NO_STAGING},
-  {"hpss",	FILE_CAT, HPSS_FILE_TYPE,  DO_CHK_PATH_PERM,  NO_STAGING},
-  {"windows",   FILE_CAT, NT_FILE_TYPE,    DO_CHK_PATH_PERM,  NO_STAGING},
-  {"test stage",FILE_CAT, TEST_STAGE_FILE_TYPE, DO_CHK_PATH_PERM, DO_STAGING},
+  {"unix",	FILE_CAT, UNIX_FILE_TYPE,  DO_CHK_PATH_PERM},
+  {"hpss",	FILE_CAT, HPSS_FILE_TYPE,  DO_CHK_PATH_PERM},
+  {"windows",   FILE_CAT, NT_FILE_TYPE,    DO_CHK_PATH_PERM},
+  {"test stage",FILE_CAT, TEST_STAGE_FILE_TYPE, DO_CHK_PATH_PERM},
 };
 
 int NumRescTypeDef = sizeof (RescTypeDef) / sizeof (rescTypeDef_t);
@@ -136,7 +136,7 @@ rescClass_t RescClass[] = {
 	{"temporary",	CACHE_CL},
 	{"permanent",	ARCHIVAL_CL},
 	{"archive",	ARCHIVAL_CL},
-	{"compound",	ARCHIVAL_CL},	/* set it as ARCHIVAL_CL for now */ 
+	{"compound",	COMPOUND_CL},	/* set it as ARCHIVAL_CL for now */ 
 };
 
 int NumRescClass = sizeof (RescClass) / sizeof (rescClass_t);

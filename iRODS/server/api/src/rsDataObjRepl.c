@@ -349,20 +349,20 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     int status;
     int destExist;
     int replStatus;
-    int destStageFlag;
-    int srcStageFlag = getRescStageFlag (inpSrcDataObjInfo->rescInfo);
+    int destRescClass;
+    int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
 
     if (destRescInfo == NULL) {
 	myDestRescInfo = inpDestDataObjInfo->rescInfo;
     } else {
 	myDestRescInfo = destRescInfo;
     }
-    destStageFlag = getRescStageFlag (myDestRescInfo);
+    destRescClass = getRescClass (myDestRescInfo);
 
     /* some sanity check for DO_STAGING type resc */
-    if (destStageFlag == DO_STAGING && srcStageFlag == DO_STAGING) {
-	return SYS_SRC_DEST_RESC_STAGING_TYPE;
-    } else if (destStageFlag == DO_STAGING || srcStageFlag == DO_STAGING) {
+    if (destRescClass == COMPOUND_CL && srcRescClass == COMPOUND_CL) {
+	return SYS_SRC_DEST_RESC_COMPOUND_TYPE;
+    } else if (destRescClass == COMPOUND_CL || srcRescClass == COMPOUND_CL) {
 	if (compareRescAddr (myDestRescInfo, inpSrcDataObjInfo->rescInfo) 
 	  == 0) {
 	    return SYS_CACHE_RESC_NOT_ON_SAME_HOST;
@@ -391,7 +391,10 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     } else {
         initDataObjInfoForRepl (myDestDataObjInfo, srcDataObjInfo, 
 	 destRescInfo);
-	rstrcpy (myDestDataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+	if (rescGroupName != NULL && strlen (rescGroupName) > 0) {
+	    rstrcpy (myDestDataObjInfo->rescGroupName, rescGroupName, 
+	    NAME_LEN);
+	}
 	destExist = 0;
 	replStatus = srcDataObjInfo->replStatus;
     }
@@ -406,9 +409,9 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
         L1desc[destL1descInx].oprType = REPLICATE_DEST;
     }
 
-    if (destStageFlag == DO_STAGING) {
+    if (destRescClass == COMPOUND_CL) {
 	L1desc[destL1descInx].stageFlag = SYNC_DEST;
-    } else if (srcStageFlag == DO_STAGING) {
+    } else if (srcRescClass == COMPOUND_CL) {
         L1desc[destL1descInx].stageFlag = STAGE_SRC;
     }
 
@@ -737,5 +740,41 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
         break;
     }
     return (status);
+}
+
+int
+rsReplAndRequeDataObjInfo (rsComm_t *rsComm, 
+dataObjInfo_t **srcDataObjInfoHead, char *destRescName)
+{
+    dataObjInfo_t *dataObjInfoHead, *myDataObjInfo;
+    transStat_t transStat;
+    dataObjInp_t dataObjInp;
+    char tmpStr[NAME_LEN];
+    int status;
+
+    dataObjInfoHead = *srcDataObjInfoHead;
+    myDataObjInfo = malloc (sizeof (dataObjInfo_t));
+    memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
+    memset (&transStat, 0, sizeof (transStat));
+
+    rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);
+    snprintf (tmpStr, NAME_LEN, "%d", dataObjInfoHead->replNum);
+    addKeyVal (&dataObjInp.condInput, REPL_NUM_KW, tmpStr);
+    addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, destRescName);
+
+    status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp, &transStat, 
+      myDataObjInfo);
+
+    /* fix mem leak */
+    clearKeyVal (&dataObjInp.condInput);
+    if (status >= 0) {
+        status = 1;
+        /* que the cache copy at the top */
+        queDataObjInfo (srcDataObjInfoHead, myDataObjInfo, 0, 1);
+    } else {
+        freeAllDataObjInfo (myDataObjInfo);
+    }
+
+    return status;
 }
 
