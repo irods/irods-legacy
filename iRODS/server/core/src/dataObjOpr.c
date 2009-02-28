@@ -225,7 +225,7 @@ int flag)
 	    tmpRescInfo = tmpRescGrpInfo->rescInfo;
 	    if (flag == BY_TYPE_FLAG && myRescInfo != NULL && 
 	      tmpRescInfo != NULL) { 
-		if (RescClass[myRescInfo->rescClassInx].classType > 
+		if (RescClass[myRescInfo->rescClassInx].classType < 
 		  RescClass[tmpRescInfo->rescClassInx].classType) {
 		    break;
 		}

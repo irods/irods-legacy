@@ -755,6 +755,7 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName)
     dataObjInfoHead = *srcDataObjInfoHead;
     myDataObjInfo = malloc (sizeof (dataObjInfo_t));
     memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
+    memset (&dataObjInp, 0, sizeof (dataObjInp_t));
     memset (&transStat, 0, sizeof (transStat));
 
     rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);
