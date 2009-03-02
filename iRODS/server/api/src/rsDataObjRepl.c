@@ -259,7 +259,11 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
         srcDataObjInfo = srcDataObjInfoHead;
         while (srcDataObjInfo != NULL) {
             status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
+#if 0
               tmpRescInfo, tmpRescGrpInfo->rescGroupName, destDataObjInfo);
+#endif
+              tmpRescInfo, tmpRescGrpInfo->rescGroupName, inpDestDataObjInfo);
+
 
              if (status >= 0) {
                   break;
