@@ -29,6 +29,7 @@ int msiGetSystemTime(msParam_t* outParam,  msParam_t* inpParam, ruleExecInfo_t *
 int msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
 int msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei);
 int msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei);
+int msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei);
 
 int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei);
 int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei);
@@ -230,6 +231,7 @@ microsdef_t MicrosTable[] = {
   {"msiHumanToSystemTime", 2, (funcPtr) msiHumanToSystemTime},
   {"msiStrToBytesBuf", 2, (funcPtr) msiStrToBytesBuf},
   {"msiApplyDCMetadataTemplate", 2, (funcPtr) msiApplyDCMetadataTemplate},
+  {"msiListEnabledMS", 1, (funcPtr) msiListEnabledMS},
   {"msiSendStdoutAsEmail",2,(funcPtr) msiSendStdoutAsEmail},
   {"msiPrintKeyValPair",2,(funcPtr) msiPrintKeyValPair},
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},

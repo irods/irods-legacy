@@ -1,5 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+#include <string.h>
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 #include "execMyRule.h"
@@ -862,6 +863,121 @@ msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
 	fillBufLenInMsParam (buf_msp, outBuf->len, outBuf);
 	
 	return 0;
+}
+
+
+
+/**
+ * \fn msiListEnabledMS
+ * \author  Antoine de Torcy
+ * \date   2009-02-12
+ * \brief Returns the list of compiled microservices on the local iRODS server
+ * \note This microservice looks at reAction.h and returns the list of compiled 
+ *  microservices on the local iRODS server.
+ *      The results are written to a KeyValPair_MS_T. For each pair the keyword is the MS name 
+ *  while the value is the module where the microservice belongs. 
+ *  Standard non-module microservices are listed as "core".
+ * \param[in] 
+ *    None.
+ * \param[out] 
+ *    outKVPairs - A KeyValPair_MS_T containing the results.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei)
+{
+        FILE *radh;						/* reAction(dot)h */
+
+        keyValPair_t *results;			/* the output data structure */
+
+        char lineStr[LONG_NAME_LEN];	/* for line and string parsing */
+        char modName[NAME_LEN];
+        char *begPtr, *endPtr;
+
+
+        /* For testing mode when used with irule --test */
+        RE_TEST_MACRO ("    Calling msiEnabledMS")
+
+
+        /* Sanity test */
+        if (rei == NULL || rei->rsComm == NULL) {
+                rodsLog (LOG_ERROR, "msiListEnabledMS: input rei or rsComm is NULL.");
+                return (SYS_INTERNAL_NULL_INPUT_ERR);
+        }
+
+
+        /* Open reAction.h for reading */
+        radh = fopen ("../re/include/reAction.h", "r");
+        if(!radh) {
+                rodsLog (LOG_ERROR, "msiListEnabledMS: unable to open reAction.h for reading.");
+                return (UNIX_FILE_READ_ERR);
+        }
+
+
+        /* Skip the first part of the file */
+        while (fgets(lineStr, LONG_NAME_LEN, radh) != NULL)
+        {
+                if (strstr(lineStr, "microsdef_t MicrosTable[]") == lineStr)
+                {
+                        break;
+                }
+        }
+
+
+        /* Default microservices come first, will be listed are "core" */
+        strncpy(modName, "core", NAME_LEN); /* Pad with null chars in the process */
+
+
+        /* Allocate memory for our result struct */
+        results = (keyValPair_t*)malloc(sizeof(keyValPair_t));
+        memset (results, 0, sizeof (keyValPair_t));
+
+
+        /* Scan microservice table one line at a time*/
+        while (fgets(lineStr, LONG_NAME_LEN, radh) != NULL)
+        {
+                /* End of the table? */
+                if (strstr(lineStr, "};") == lineStr)
+                {
+                        break;
+                }
+
+                /* Get microservice name */
+                if ( (begPtr = strchr(lineStr, '\"')) && (endPtr = strrchr(lineStr, '\"')) )
+                {
+                        endPtr[0] = '\0';
+                        addKeyVal(results, &begPtr[1], modName);
+                }
+                else 
+                {
+                        /* New Module? */
+                        if (strstr(lineStr, "module microservices") )
+                        {
+                                /* Get name of module (between the first two spaces) */
+                                begPtr = strchr(lineStr, ' ');
+                                endPtr = strchr(++begPtr, ' ');
+                                endPtr[0] = '\0';
+
+                                strncpy(modName, begPtr, NAME_LEN-1);
+                        }
+                }
+        }
+
+
+        /* Done */
+        fclose(radh);
+
+
+        /* Send results out to outKVPairs */
+        fillMsParam (outKVPairs, NULL, KeyValPair_MS_T, results, NULL);
+
+
+        return 0;
 }
 
 
