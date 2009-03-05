@@ -421,10 +421,29 @@ foreach $arg (@ARGV)
 		doStatus( );
 		next;
 	}
-	if ( $arg =~ /^-?-?test$/ )		# Run iRODS tests
+	if ( $arg =~ /^-?-?testWithoutConfirmation$/ )	# Run iRODS tests
+# Undocumented command that does not warn user or prompts;
+# used for batch-mode testing.
 	{
 		$numberCommands++;
 		doTest( );
+		next;
+	}
+	if ( $arg =~ /^-?-?test$/ )	# Run iRODS tests
+	{
+		$numberCommands++;
+		printNotice( 
+    "Warning, this test is normally only run by iRODS developers as it\n");
+		printNotice( 
+    "performs some risky operations and requires certain default settings.\n");
+		printNotice (
+    "We do not recommend running this on production systems.  Basic\n");
+		printNotice( 
+    "testing, such as and iput and iget, is generally all that is needed.");
+		printNotice( "\n" );
+		if ( askYesNo( "    Run the test (yes/no)?  " ) == 1 ) {
+		    doTest( );
+		}
 		next;
 	}
 
@@ -1304,7 +1323,7 @@ sub printUsage
 	printNotice( "    stop          Stop the iRODS and database servers\n" );
 	printNotice( "    restart       Restart the iRODS and database servers\n" );
 	printNotice( "    status        Show the status of iRODS and database servers\n" );
-	printNotice( "    test          Test the iRODS installation\n" );
+	printNotice( "    test          Test the iRODS installation (developer tool)\n" );
 
 	setPrintVerbose( $oldVerbosity );
 }
