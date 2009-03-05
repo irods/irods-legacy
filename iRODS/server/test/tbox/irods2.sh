@@ -65,7 +65,7 @@ error2=0
 
 error3=0
 if [ $error1 -eq 0 ] ; then
-  ./irodsctl test
+  ./irodsctl testWithoutConfirmation
 # remember error code
   error3=$?
 fi 
