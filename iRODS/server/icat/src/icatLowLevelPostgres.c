@@ -430,8 +430,10 @@ bindTheVariables(HSTMT myHstmt, char *sql) {
 
 /*
    Case-insensitive string comparison, first string can be any case and
-   contain leading and trailing spaces, second string must be lowercase, no spaces.
+   contain leading and trailing spaces, second string must be lowercase, 
+   no spaces.
 */
+#ifdef NEW_ODBC
 static int cmp_stmt (char *str1, char *str2)
 {
   /* skip leading spaces */
@@ -448,6 +450,7 @@ static int cmp_stmt (char *str1, char *str2)
   /* if we are at the end of the strings then they are equal */
   return *str1 == *str2 ;
 }
+#endif
 
 /*
  Execute a SQL command which has no resulting table.  With optional
