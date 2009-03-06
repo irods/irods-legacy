@@ -25,7 +25,7 @@ set -x
 
 # Once a day, download and build postgres too
 myhour=`date | cut -b12-13`
-if [ $myhour =  13 ] ; then
+if [ $myhour =  23 ] ; then
   rm -rf pg* post* iRODS
   rm -f /tmp/postgresql* /tmp/unixODBC*
 fi
@@ -70,6 +70,50 @@ if [ $error1 -eq 0 ] ; then
   error3=$?
 fi 
 
+doJavaTest=1
+if [ $error1 -ne 0 ] ; then
+    doJavaTest=0
+fi
+if [ $error3 -ne 0 ] ; then
+    doJavaTest=0
+fi
+if [ $myhour -ne  11 ] ; then
+    doJavaTest=0
+fi
+
+error4=0
+if [ $doJavaTest -eq 1 ] ; then
+    # get password using known line
+    pw=`head -6 server/test/tbox/input1.txt.no.pg | tail -1` 
+    echo $pw
+    rm -f ~/.irods/.irodsA
+    echo $pw > ~/.irods/.irodsA
+    svn checkout http://extrods.googlecode.com/svn/trunk/clients/jargon
+    error4=$?
+    if [ $error4 -eq 0 ] ; then
+        cd jargon
+        ant
+        error4=$?
+        if [ $error4 -eq 0 ] ; then
+            cd bin
+            java Test -fullTest irods
+            error4=$?
+            if [ $error4 -eq 0 ] ; then
+                echo 'java Test -fullTest succeeded'
+            else 
+                echo 'java Test -fullTest failure'
+            fi
+            cd ..
+        else
+            echo 'ant error'
+        fi
+        cd ..
+    else
+        echo 'svn checkout error'
+    fi
+fi
+echo $error4
+
 # Record the test logs into the main log file available via the web
 ls -lt server/test/bin/*.log
 cat server/test/bin/icatTest.log
@@ -84,7 +128,7 @@ cat installLogs/installMake.log
 
 ./irodsctl stop
 # remember error code
-error4=$?
+error5=$?
 
 cd ..
 
@@ -95,7 +139,7 @@ pgsql/bin/pg_ctl status -D pgsql/data
 mypwd=`pwd`
 
 mydate=`date`
-total=$(( $error1 + $error2 + $error3 + $error4 ))
+total=$(( $error1 + $error2 + $error3 + $error4 + $error5))
 echo "$mydate $mypwd/irods2.sh exiting total=($total)"
 
 exit $total
