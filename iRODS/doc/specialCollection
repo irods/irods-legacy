@@ -1,0 +1,52 @@
+Special collections are mounted collections. A file system or other
+structured files can be mounted to a collection.
+
+metadata:
+
+3 collection metadata are used to define special collections. They are;
+
+COL_COLL_TYPE, COL_COLL_INFO1 and COL_COLL_INFO2.
+
+resolveSpecCollType() in ./core/src/rcMisc.c resolves the collection type
+based on these 3 metadata.
+
+The following definition in the objInfo.h file defines the collection types
+(COL_COLL_TYPE):
+
+#define HAAW_STRUCT_FILE_STR            "haawStructFile"
+#define TAR_STRUCT_FILE_STR             "tarStructFile"
+#define MOUNT_POINT_STR         "mountPoint"
+Normal collection if COL_COLL_TYPE=""
+
+1) COL_COLL_TYPE == MOUNT_POINT_STR ==>mounted file directory
+COL_COLL_INFO1 = the mounted UNIX file directory
+COL_COLL_INFO2 = the resource where this directory is located
+
+2) COL_COLL_TYPE == TAR_STRUCT_FILE_STR ==> mounted tar file
+COL_COLL_INFO1 = The path of the tar file
+COL_COLL_INFO2 = caching info.  
+
+COL_COLL_INFO1 and COL_COLL_INFO2 are normally important only to the server 
+codes.
+
+The queryCollInColl() function in miscUtil.c which queries for all 
+sub-collections in a collection gives and an example of queries using these
+3 metadata:
+
+    addInxIval (&genQueryInp->selectInp, COL_COLL_TYPE, 1);
+    addInxIval (&genQueryInp->selectInp, COL_COLL_INFO1, 1);
+    addInxIval (&genQueryInp->selectInp, COL_COLL_INFO2, 1);
+ 
+
+The rcQuerySpecColl is used to query (drip down) special (mounted) collections
+int
+rsQuerySpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+genQueryOut_t **genQueryOut)
+
+dataObjInp->objPath - path of the special collection
+dataObjInp->openFlags - > 0 ==> continueInx 
+
+genQueryOut contains COL_COLL_NAME, COL_DATA_NAME, COL_D_CREATE_TIME,
+COL_D_MODIFY_TIME, COL_DATA_SIZE
+
+if it is a collection, COL_DATA_NAME = ""
