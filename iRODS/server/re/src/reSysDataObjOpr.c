@@ -453,12 +453,10 @@ msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xallFlag,
 ruleExecInfo_t *rei)
 {
     int writeFlag;
-    dataObjInfo_t *dataObjInfoHead, *myDataObjInfo;
-    transStat_t transStat;
+    dataObjInfo_t *dataObjInfoHead;
     char *cacheResc;
     char *allFlag;
     dataObjInp_t dataObjInp;
-    char tmpStr[NAME_LEN];
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
 
@@ -493,6 +491,7 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
     myDataObjInfo = malloc (sizeof (dataObjInfo_t));
     memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
     memset (&transStat, 0, sizeof (transStat));
@@ -516,6 +515,12 @@ ruleExecInfo_t *rei)
 	freeAllDataObjInfo (myDataObjInfo);
     }
 
+#endif
+    rei->status = rsReplAndRequeDataObjInfo (rei->rsComm, &dataObjInfoHead, 
+     cacheResc);
+    if (rei->status >= 0) {
+	 rei->doi = dataObjInfoHead;
+    }
     return (rei->status);
 }
 
