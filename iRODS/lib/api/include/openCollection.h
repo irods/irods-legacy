@@ -15,9 +15,7 @@
 #include "initServer.h"
 #include "dataObjInpOut.h"
 
-#define NUM_COLL_HANDLE	30
-
-/* prototype for the client call */
+#ifdef COMPAT_201
 typedef struct OpenCollInp {
     char collName[MAX_NAME_LEN];
     int flags;
@@ -26,14 +24,28 @@ typedef struct OpenCollInp {
 } openCollInp_t;
 
 #define OpenCollInp_PI "str collName[MAX_NAME_LEN]; int flags; int dummy; struct KeyValPair_PI;"
+#endif
+
+#define NUM_COLL_HANDLE	30
 
 #if defined(RODS_SERVER)
 #define RS_OPEN_COLLECTION rsOpenCollection
 /* prototype for the server handler */
 int
-rsOpenCollection (rsComm_t *rsComm, openCollInp_t *openCollInp);
+rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp);
 #else
 #define RS_OPEN_COLLECTION NULL
+#endif
+
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_OPEN_COLLECTION201 rsOpenCollection201
+/* prototype for the server handler */
+int
+rsOpenCollection201 (rsComm_t *rsComm, openCollInp_t *openCollInp);
+#else
+#define RS_OPEN_COLLECTION201 NULL
+#endif
 #endif
 
 #ifdef  __cplusplus
@@ -43,7 +55,7 @@ extern "C" {
 /* prototype for the client call */
 
 int
-rcOpenCollection (rcComm_t *conn, openCollInp_t *openCollInp);
+rcOpenCollection (rcComm_t *conn, collInp_t *openCollInp);
 
 /* rcOpenCollection - Open a iRods collection.
  * Input -

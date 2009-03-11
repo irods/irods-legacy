@@ -35,7 +35,7 @@ typedef struct {
 typedef struct DataObjInp {
     char objPath[MAX_NAME_LEN];
     int createMode;
-    int openFlags;	/* used for specCollInx in rcQuerySpecColl */
+    int openFlags;      /* used for specCollInx in rcQuerySpecColl */
     rodsLong_t offset;
     rodsLong_t dataSize;
     int numThreads;
@@ -43,6 +43,16 @@ typedef struct DataObjInp {
     specColl_t *specColl;
     keyValPair_t condInput;   /* include chksum flag and value */
 } dataObjInp_t;
+
+typedef struct OpenedDataObjInp {
+    int l1descInx;              /* for read, write, close */
+    int len;                    /* length of operation for read, write */
+    int whence;                 /* used for lseek */
+    int oprType;
+    rodsLong_t offset;
+    rodsLong_t bytesWritten;    /* for close */
+    keyValPair_t condInput;   /* include chksum flag and value */
+} openedDataObjInp_t;
 
 typedef struct portalOprOut {
     int status;
@@ -69,9 +79,17 @@ typedef struct DataOprInp {
 
 typedef struct CollInp {
     char collName[MAX_NAME_LEN];
+    int flags;
+    int oprType;
     keyValPair_t condInput;
 } collInp_t;
 
+#ifdef COMPAT_201
+typedef struct CollInp201 {
+    char collName[MAX_NAME_LEN];
+    keyValPair_t condInput;
+} collInp201_t;
+#endif
 
 /* definition for oprType in dataObjInp_t, portalOpr_t and l1desc_t */
 

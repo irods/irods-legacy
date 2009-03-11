@@ -12,7 +12,7 @@
 #include "subStructFileRead.h"  /* XXXXX can be taken out when structFile api done */
 
 int
-rsDataObjWrite (rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp, 
+rsDataObjWrite (rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp, 
 bytesBuf_t *dataObjWriteInpBBuf)
 {
     int bytesWritten;
@@ -115,4 +115,23 @@ void *buf, int len)
     }
     return (bytesWritten);
 }
+
+#ifdef COMPAT_201
+int
+rsDataObjWrite201 (rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp,
+bytesBuf_t *dataObjWriteInpBBuf)
+{
+    openedDataObjInp_t openedDataObjInp;
+    int status;
+
+    bzero (&openedDataObjInp, sizeof (openedDataObjInp));
+
+    openedDataObjInp.l1descInx = dataObjWriteInp->l1descInx;
+    openedDataObjInp.len = dataObjWriteInp->len;
+
+    status = rsDataObjWrite (rsComm, &openedDataObjInp, dataObjWriteInpBBuf);
+
+    return status;
+}
+#endif
 

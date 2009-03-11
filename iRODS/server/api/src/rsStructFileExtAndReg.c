@@ -17,7 +17,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     int status;
     dataObjInp_t dataObjInp;
     dataObjInp_t dirRegInp;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
     structFileOprInp_t structFileOprInp;
@@ -65,6 +65,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
         rodsLog (LOG_ERROR,
           "rsStructFileExtAndReg: initStructFileOprInp of %s error. stat = %d",
           dataObjInp.objPath, status);
+	bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
         dataObjCloseInp.l1descInx = l1descInx;
         rsDataObjClose (rsComm, &dataObjCloseInp);
         return (status);
@@ -115,7 +116,7 @@ int
 chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
 {
     int status;
-    openCollInp_t openCollInp;
+    collInp_t openCollInp;
     collEnt_t *collEnt;
     int handleInx;
     collInp_t modCollInp;

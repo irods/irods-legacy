@@ -6,11 +6,11 @@
 #include "dataObjRead.h"
 
 int
-rcDataObjRead (rcComm_t *conn, dataObjReadInp_t *fileReadInp,
+rcDataObjRead (rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
 bytesBuf_t *dataObjReadOutBBuf)
 {
     int status;
-    status = procApiRequest (conn, DATA_OBJ_READ_AN,  fileReadInp, NULL, 
+    status = procApiRequest (conn, DATA_OBJ_READ_AN,  dataObjReadInp, NULL, 
         (void **) NULL, dataObjReadOutBBuf);
 
     return (status);

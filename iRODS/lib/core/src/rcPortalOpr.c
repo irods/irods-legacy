@@ -342,7 +342,7 @@ rodsLong_t dataSize)
 {
     int in_fd, status;
     bytesBuf_t dataObjWriteInpBBuf;
-    dataObjWriteInp_t dataObjWriteInp;
+    openedDataObjInp_t dataObjWriteInp;
     int bytesWritten;
     rodsLong_t totalWritten = 0;
     int bytesRead;
@@ -355,6 +355,7 @@ rodsLong_t dataSize)
         return (status);
     }
 
+    bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
     dataObjWriteInpBBuf.buf = malloc (TRANS_BUF_SZ);
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;
@@ -446,7 +447,7 @@ rodsLong_t dataSize)
 {
     int out_fd, status;
     bytesBuf_t dataObjReadInpBBuf;
-    dataObjReadInp_t dataObjReadInp;
+    openedDataObjInp_t dataObjReadInp;
     int bytesWritten, bytesRead;
     rodsLong_t totalWritten = 0;
 
@@ -464,6 +465,7 @@ rodsLong_t dataSize)
         return (status);
     }
 
+    bzero (&dataObjReadInp, sizeof (dataObjReadInp));
     dataObjReadInpBBuf.buf = malloc (TRANS_BUF_SZ);
     dataObjReadInpBBuf.len = dataObjReadInp.len = TRANS_BUF_SZ;
     dataObjReadInp.l1descInx = l1descInx;

@@ -6,7 +6,7 @@
 #include "dataObjWrite.h"
 
 int
-rcDataObjWrite (rcComm_t *conn, dataObjWriteInp_t *dataObjWriteInp,
+rcDataObjWrite (rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
 bytesBuf_t *dataObjWriteInpBBuf)
 {
     int status;

@@ -66,7 +66,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 {
 #ifdef RODS_CAT
     int status;
-    openCollInp_t openCollInp;
+    collInp_t openCollInp;
     collEnt_t *collEnt = NULL;
     collEnt_t *curCollEnt = NULL;
     int handleInx;

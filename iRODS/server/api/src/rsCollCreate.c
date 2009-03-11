@@ -119,3 +119,18 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     return (status);
 }
 
+#ifdef COMPAT_201
+int
+rsCollCreate201 (rsComm_t *rsComm, collInp201_t *collCreateInp)
+{
+    collInp_t collInp;
+    int status; 
+
+    collInp201ToCollInp (collCreateInp, &collInp);
+
+    status = rsCollCreate (rsComm, &collInp);
+
+    return status;
+}
+#endif
+

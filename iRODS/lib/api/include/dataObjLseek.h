@@ -23,13 +23,25 @@
 #define RS_DATA_OBJ_LSEEK rsDataObjLseek
 /* prototype for the server handler */
 int
-rsDataObjLseek (rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp, 
+rsDataObjLseek (rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp, 
 fileLseekOut_t **dataObjLseekOut);
 rodsLong_t
 _l3Lseek (rsComm_t *rsComm, int rescTypeInx, int l3descInx,
 rodsLong_t offset, int whence);
 #else
 #define RS_DATA_OBJ_LSEEK NULL
+#endif
+
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_DATA_OBJ_LSEEK201 rsDataObjLseek201
+/* prototype for the server handler */
+int
+rsDataObjLseek201 (rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp,
+fileLseekOut_t **dataObjLseekOut);
+#else
+#define RS_DATA_OBJ_LSEEK201 NULL
+#endif
 #endif
 
 #ifdef  __cplusplus
@@ -52,7 +64,7 @@ extern "C" {
  */
 
 int
-rcDataObjLseek (rcComm_t *conn, fileLseekInp_t *dataObjLseekInp,
+rcDataObjLseek (rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
 fileLseekOut_t **dataObjLseekOut);
 
 #ifdef  __cplusplus

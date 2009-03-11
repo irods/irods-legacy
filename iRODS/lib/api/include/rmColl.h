@@ -37,6 +37,18 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat);
 #define RS_RM_COLL NULL
 #endif
 
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_RM_COLL201 rsRmColl201
+/* prototype for the server handler */
+int
+rsRmColl201 (rsComm_t *rsComm, collInp201_t *rmCollInp,
+collOprStat_t **collOprStat);
+#else
+#define RS_RM_COLL201 NULL
+#endif
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

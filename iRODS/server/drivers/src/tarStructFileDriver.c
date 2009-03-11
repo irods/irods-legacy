@@ -676,7 +676,11 @@ tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int structFileInx;
     specColl_t *specColl;
     rescInfo_t *rescInfo;
+#if 0
     openCollInp_t openCollInp;
+#else
+    collInp_t openCollInp;
+#endif
     collEnt_t *collEnt = NULL;
     int handleInx;
     int status = 0;

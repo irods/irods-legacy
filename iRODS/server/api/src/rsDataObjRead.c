@@ -12,7 +12,7 @@
 
 
 int
-rsDataObjRead (rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp, 
+rsDataObjRead (rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp, 
 bytesBuf_t *dataObjReadOutBBuf)
 {
     int bytesRead;
@@ -110,3 +110,21 @@ void *buf, int len)
     return (bytesRead);
 }
 
+#ifdef COMPAT_201
+int
+rsDataObjRead201 (rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp,
+bytesBuf_t *dataObjReadOutBBuf)
+{
+    openedDataObjInp_t openedDataObjInp;
+    int status;
+
+    bzero (&openedDataObjInp, sizeof (openedDataObjInp));
+
+    openedDataObjInp.l1descInx = dataObjReadInp->l1descInx;
+    openedDataObjInp.len = dataObjReadInp->len;
+
+    status = rsDataObjRead (rsComm, &openedDataObjInp, dataObjReadOutBBuf);
+
+    return status;
+}
+#endif

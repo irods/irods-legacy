@@ -15,20 +15,22 @@
 #include "fileClose.h"
 #include "fileStat.h" 
 
+#ifdef COMPAT_201
 typedef struct {
     int l1descInx;
     rodsLong_t bytesWritten;
 } dataObjCloseInp_t;
-    
+
 #define dataObjCloseInp_PI "int l1descInx; double bytesWritten;"
+#endif
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_CLOSE rsDataObjClose
 /* prototype for the server handler */
 int
-rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp);
+rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
 int
-_rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp);
+_rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
 int
 l3Close (rsComm_t *rsComm, int l1descInx);
 int
@@ -37,6 +39,17 @@ int
 l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat);
 #else
 #define RS_DATA_OBJ_CLOSE NULL
+#endif
+
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_DATA_OBJ_CLOSE201 rsDataObjClose201
+/* prototype for the server handler */
+int
+rsDataObjClose201 (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp);
+#else
+#define RS_DATA_OBJ_CLOSE201 NULL
+#endif
 #endif
 
 #ifdef  __cplusplus
@@ -55,7 +68,7 @@ extern "C" {
  */
 
 int
-rcDataObjClose (rcComm_t *conn, dataObjCloseInp_t *dataObjCloseInp);
+rcDataObjClose (rcComm_t *conn, openedDataObjInp_t *dataObjCloseInp);
 
 #ifdef  __cplusplus
 }

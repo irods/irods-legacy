@@ -44,6 +44,10 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
             /* data included in buf */
             return status;
         } else {
+            /* have to allocate a local l1descInx to keep track of things
+             * since the file is in remote zone. It sets remoteL1descInx,
+             * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that  
+             * rsComplete knows what to do */
 	    l1descInx = allocAndSetL1descForZoneOpr (
 	      (*portalOprOut)->l1descInx, dataObjInp, rodsServerHost, NULL);
             if (l1descInx < 0) return l1descInx;
@@ -64,7 +68,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
     int l1descInx;
     char *chksumStr = NULL;
     int retval;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
 
 
     /* PHYOPEN_BY_SIZE ask it to check whether "dataInclude" should be done */
@@ -175,7 +179,7 @@ bytesBuf_t *dataObjOutBBuf, portalOprOut_t **portalOprOut)
 {
     int status = 0;
     int bytesRead;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *dataObjInfo;
 
     /* just malloc an empty portalOprOut */

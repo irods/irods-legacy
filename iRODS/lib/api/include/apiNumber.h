@@ -40,22 +40,15 @@
 /* 600 - 699 - Object File I/O API calls */
 #define DATA_OBJ_CREATE_AN 		601
 #define DATA_OBJ_OPEN_AN 		602
-#define DATA_OBJ_READ_AN 		603
-#define DATA_OBJ_WRITE_AN 		604
-#define DATA_OBJ_CLOSE_AN 		605
 #define DATA_OBJ_PUT_AN 		606
 #define DATA_PUT_AN 			607
 #define DATA_OBJ_GET_AN 		608
 #define DATA_GET_AN 			609
 #define DATA_OBJ_REPL_AN 		610
 #define DATA_COPY_AN 			611
-#define DATA_OBJ_LSEEK_AN 		612
 #define DATA_OBJ_COPY_AN 		613
 #define SIMPLE_QUERY_AN 		614
 #define DATA_OBJ_UNLINK_AN 		615
-#define COLL_CREATE_AN 			616
-#define RM_COLL_OLD_AN 			617
-#define REG_COLL_AN 			618
 #define REG_DATA_OBJ_AN 			619
 #define UNREG_DATA_OBJ_AN 			620
 #define REG_REPLICA_AN 			621
@@ -83,7 +76,6 @@
 #define SUB_STRUCT_FILE_LSEEK_AN 			643
 #define SUB_STRUCT_FILE_RENAME_AN 			644
 #define QUERY_SPEC_COLL_AN 			645
-#define MOD_COLL_AN 			646
 #define SUB_STRUCT_FILE_MKDIR_AN 			647
 #define SUB_STRUCT_FILE_RMDIR_AN 			648
 #define SUB_STRUCT_FILE_OPENDIR_AN 			649
@@ -99,8 +91,6 @@
 #define SYNC_MOUNTED_COLL_AN 			659
 #define STRUCT_FILE_SYNC_AN 			660
 #define CLOSE_COLLECTION_AN 			661
-#define COLL_REPL_AN 			662
-#define RM_COLL_AN 			663
 #define STRUCT_FILE_EXTRACT_AN 			664
 #define STRUCT_FILE_EXT_AND_REG_AN 			665
 #define STRUCT_FILE_BUNDLE_AN 			666
@@ -110,8 +100,31 @@
 #define L3_FILE_GET_SINGLE_BUF_AN 			670
 #define L3_FILE_PUT_SINGLE_BUF_AN 			671
 #define DATA_OBJ_CREATE_AND_STAT_AN 			672
+#ifdef COMPAT_201
+#define DATA_OBJ_READ201_AN             603
+#define DATA_OBJ_WRITE201_AN            604
+#define DATA_OBJ_CLOSE201_AN            605
+#define DATA_OBJ_LSEEK201_AN            612
+#define COLL_CREATE201_AN 		616
+#define RM_COLL_OLD201_AN 		617
+#define REG_COLL201_AN 			618
+#define MOD_COLL201_AN 			646
+#define COLL_REPL201_AN 		662
+#define RM_COLL201_AN                   663
+#define OPEN_COLLECTION201_AN           712
+#endif
+#define DATA_OBJ_CLOSE_AN               673
+#define DATA_OBJ_LSEEK_AN               674
+#define DATA_OBJ_READ_AN                675
+#define DATA_OBJ_WRITE_AN               676
+#define COLL_REPL_AN 			677
+#define OPEN_COLLECTION_AN              678
+#define RM_COLL_AN                      679
+#define MOD_COLL_AN 			680
+#define COLL_CREATE_AN 			681
+#define RM_COLL_OLD_AN 			682
+#define REG_COLL_AN 			683
 
-/* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700
 #define GENERAL_ADMIN_AN 		701
 #define GEN_QUERY_AN 			702
@@ -124,7 +137,6 @@
 #define GET_TEMP_PASSWORD_AN 		709
 #define GENERAL_UPDATE_AN 		710
 #define GSI_AUTH_REQUEST_AN		711
-#define OPEN_COLLECTION_AN 			712
 #define READ_COLLECTION_AN 			713
 #define USER_ADMIN_AN 			714
 #define GENERAL_ROW_INSERT_AN 			715

@@ -137,7 +137,7 @@ _rsPhyRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
 dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
 {
     int status;
-    openCollInp_t openCollInp;
+    collInp_t openCollInp;
     collEnt_t *collEnt;
     int handleInx;
     dataObjInp_t dataObjInp;
@@ -287,3 +287,19 @@ svrUnregColl (rsComm_t *rsComm, collInp_t *rmCollInp)
     return status;
 }
 
+#ifdef COMPAT_201
+int
+rsRmColl201 (rsComm_t *rsComm, collInp201_t *rmCollInp,
+collOprStat_t **collOprStat)
+{
+    collInp_t collInp;
+    int status; 
+
+    collInp201ToCollInp (rmCollInp, &collInp);
+
+    status = rsRmColl (rsComm, &collInp, collOprStat);
+
+    return status;
+}
+#endif
+    

@@ -124,7 +124,7 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam,
 ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
-    dataObjCloseInp_t dataObjCloseInp, *myDataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp, *myDataObjCloseInp;
 
     RE_TEST_MACRO ("    Calling msiDataObjClose")
 
@@ -190,7 +190,7 @@ msParam_t *inpParam3, msParam_t *outParam,
 ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
-    fileLseekInp_t dataObjLseekInp, *myDataObjLseekInp;
+    openedDataObjInp_t dataObjLseekInp, *myDataObjLseekInp;
     fileLseekOut_t *dataObjLseekOut = NULL;
 
     RE_TEST_MACRO ("    Calling msiDataObjLseek")
@@ -213,11 +213,11 @@ ruleExecInfo_t *rei)
     if (strcmp (inpParam1->type, STR_MS_T) == 0) {
 	/* str input */ 
 	memset (&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
-	dataObjLseekInp.fileInx = atoi (inpParam1->inOutStruct);
+	dataObjLseekInp.l1descInx = atoi (inpParam1->inOutStruct);
 	myDataObjLseekInp = &dataObjLseekInp;
     } else if (strcmp (inpParam1->type, INT_MS_T) == 0) {
         memset (&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
-        dataObjLseekInp.fileInx = *(int *)inpParam1->inOutStruct;
+        dataObjLseekInp.l1descInx = *(int *)inpParam1->inOutStruct;
         myDataObjLseekInp = &dataObjLseekInp;
     } else if (strcmp (inpParam1->type, DataObjLseekInp_MS_T) == 0) {
 	myDataObjLseekInp = inpParam1->inOutStruct;
@@ -313,7 +313,7 @@ msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
-    dataObjReadInp_t dataObjReadInp, *myDataObjReadInp;
+    openedDataObjInp_t dataObjReadInp, *myDataObjReadInp;
     bytesBuf_t *dataObjReadOutBBuf = NULL;
     int myInt;
 
@@ -395,7 +395,7 @@ msiDataObjWrite (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
-    dataObjWriteInp_t dataObjWriteInp, *myDataObjWriteInp;
+    openedDataObjInp_t dataObjWriteInp, *myDataObjWriteInp;
     int myInt;
 
     RE_TEST_MACRO ("    Calling msiDataObjWrite")
@@ -1928,20 +1928,18 @@ ruleExecInfo_t *rei)
 **/
 
 int
-msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ruleExecInfo_t *rei)
+msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, 
+ruleExecInfo_t *rei)
 {
 	/* for parsing collection input param */
 	collInp_t collInpCache, *collInp;
-
-	/* to pass as parameter to rsCollRepl */
-	dataObjInp_t collReplInp;
 
 	/* misc. to avoid repeating rei->rsComm */
 	rsComm_t *rsComm;
 
 
 
-	/*************************************  INIT **********************************/
+	/******************************  INIT *******************************/
 	
 	/* For testing mode when used with irule --test */
 	RE_TEST_MACRO ("    Calling msiCollRepl")
@@ -1956,20 +1954,22 @@ msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ru
 
 
 
-	/********************************** PARAM PARSING  *********************************/
+	/**************************** PARAM PARSING  ************************/
 
 	/* Parse target collection */
-	rei->status = parseMspForCollInp (collection, &collInpCache, &collInp, 0);
+	rei->status = 
+	  parseMspForCollInp (collection, &collInpCache, &collInp, 0);
 	
 	if (rei->status < 0) {
-		rodsLog (LOG_ERROR, "msiCollRepl: input collection error. status = %d", rei->status);
+	    rodsLog (LOG_ERROR, 
+	      "msiCollRepl: input collection error. status = %d", rei->status);
 		return (rei->status);
 	}
 
 
 	/* Parse resource name and directly write to collReplInp */
-	rei->status = parseMspForCondInp (targetResc, &(collReplInp.condInput), DEST_RESC_NAME_KW);
-	
+	rei->status = parseMspForCondInp (targetResc, 
+	  &collInp->condInput, DEST_RESC_NAME_KW); 
 	if (rei->status < 0) {
 	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
 		"msiCollRepl: input inpParam2 error. status = %d", rei->status);
@@ -1978,17 +1978,14 @@ msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, ru
 
 
 
-	/******************************** API SERVER CALL ***********************************/
-
-	/* Copy collection path to input struct */
-	strncpy (collReplInp.objPath, collInp->collName, MAX_NAME_LEN);
+	/************************ API SERVER CALL **************************/
 
 	/* Call rsCollRepl() */
-	rei->status = rsCollRepl (rsComm, &collReplInp, NULL);
+	rei->status = rsCollRepl (rsComm, collInp, NULL);
 
 
 
-	/********************************** OUTPUT PACKAGING *********************************/
+	/*************************** OUTPUT PACKAGING ***********************/
 
 	/* Send out op status */
 	fillIntInMsParam (status, rei->status);

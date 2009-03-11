@@ -203,6 +203,11 @@ int
 freeRodsObjStat (rodsObjStat_t *rodsObjStat);
 int
 parseHostAddrStr (char *hostAddr, rodsHostAddr_t *addr);
+#ifdef COMPAT_201
+int
+collInp201ToCollInp (collInp201_t *collInp201, collInp_t *collInp);
+#endif
+
 #ifdef  __cplusplus
 }
 #endif

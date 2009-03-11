@@ -10,7 +10,7 @@
 #include "rcGlobalExtern.h"
 
 int
-rsOpenCollection (rsComm_t *rsComm, openCollInp_t *openCollInp)
+rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
 {
     int status;
     int handleInx;
@@ -47,4 +47,22 @@ rsOpenCollection (rsComm_t *rsComm, openCollInp_t *openCollInp)
     return (handleInx);
 }
 
+#ifdef COMPAT_201
+int
+rsOpenCollection201 (rsComm_t *rsComm, openCollInp_t *openCollInp)
+{
+    collInp_t collInp;
+    int status;
+
+    bzero (&collInp, sizeof (collInp));
+
+    rstrcpy (collInp.collName, openCollInp->collName, MAX_NAME_LEN);
+    collInp.flags = openCollInp->flags;
+    collInp.condInput = openCollInp->condInput;
+
+    status = rsOpenCollection (rsComm, &collInp);
+
+    return status;
+}
+#endif
 

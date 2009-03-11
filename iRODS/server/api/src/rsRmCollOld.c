@@ -650,3 +650,18 @@ svrRmSpecCollRecur (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     return (savedStatus);
 }
 
+#ifdef COMPAT_201
+int
+rsRmCollOld201 (rsComm_t *rsComm, collInp201_t *rmCollInp)
+{
+    collInp_t collInp;
+    int status; 
+
+    collInp201ToCollInp (rmCollInp, &collInp);
+
+    status = rsRmCollOld (rsComm, &collInp);
+
+    return status;
+}
+#endif
+

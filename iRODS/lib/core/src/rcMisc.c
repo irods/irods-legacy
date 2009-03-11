@@ -3060,3 +3060,16 @@ parseHostAddrStr (char *hostAddr, rodsHostAddr_t *addr)
     return 0;
 }
 
+#ifdef COMPAT_201
+int
+collInp201ToCollInp (collInp201_t *collInp201, collInp_t *collInp)
+{
+    bzero (collInp, sizeof (collInp_t));
+
+    rstrcpy (collInp->collName, collInp201->collName, MAX_NAME_LEN);
+    collInp->condInput = collInp201->condInput;
+
+    return 0;
+}
+#endif
+

@@ -26,11 +26,11 @@
  */
 
 int
-rsCollRepl (rsComm_t *rsComm, dataObjInp_t *collReplInp,
+rsCollRepl (rsComm_t *rsComm, collInp_t *collReplInp,
 collOprStat_t **collOprStat)
 {
     int status;
-    openCollInp_t openCollInp;
+    dataObjInp_t dataObjInp;
     collEnt_t *collEnt;
     int handleInx;
     transStat_t myTransStat;
@@ -41,7 +41,9 @@ collOprStat_t **collOprStat)
     rodsServerHost_t *rodsServerHost;
 
     /* try to connect to dest resc */
-    remoteFlag = getAndConnRemoteZone (rsComm, collReplInp, &rodsServerHost,
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, collReplInp->collName, MAX_NAME_LEN);	
+    remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
       REMOTE_CREATE);
 
     if (remoteFlag < 0) {
@@ -57,14 +59,12 @@ collOprStat_t **collOprStat)
 
     fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
     if (collOprStat != NULL) *collOprStat = NULL;
-    memset (&openCollInp, 0, sizeof (openCollInp));
-    rstrcpy (openCollInp.collName, collReplInp->objPath, MAX_NAME_LEN);
-    openCollInp.flags = RECUR_QUERY_FG;
-    handleInx = rsOpenCollection (rsComm, &openCollInp);
+    collReplInp->flags = RECUR_QUERY_FG;
+    handleInx = rsOpenCollection (rsComm, collReplInp);
     if (handleInx < 0) {
         rodsLog (LOG_ERROR,
           "rsCollRepl: rsOpenCollection of %s error. status = %d",
-          openCollInp.collName, handleInx);
+          collReplInp->collName, handleInx);
         return (handleInx);
     }
 
@@ -76,7 +76,7 @@ collOprStat_t **collOprStat)
     if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
         rodsLog (LOG_ERROR,
           "rsCollRepl: unable to replicate mounted collection %s",
-          openCollInp.collName);
+          collReplInp->collName);
         rsCloseCollection (rsComm, &handleInx);
         return (0);
     }
@@ -86,11 +86,13 @@ collOprStat_t **collOprStat)
 	    if (totalFileCnt == 0) totalFileCnt = 
 		CollHandle[handleInx].dataObjSqlResult.totalRowCount;
 
-            snprintf (collReplInp->objPath, MAX_NAME_LEN, "%s/%s",
+	    bzero (&dataObjInp, sizeof (dataObjInp));
+            snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
               collEnt->collName, collEnt->dataName);
+	    dataObjInp.condInput = collReplInp->condInput;
 
     	    memset (&myTransStat, 0, sizeof (myTransStat));
-            status = rsDataObjReplWithOutDataObj (rsComm, collReplInp,
+            status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp,
 	      &myTransStat, NULL);
 
             if (status == SYS_COPY_ALREADY_IN_RESC) {
@@ -101,7 +103,7 @@ collOprStat_t **collOprStat)
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "rsCollRepl: rsDataObjRepl failed for %s. status = %d",
-                  collReplInp->objPath, status);
+                  dataObjInp.objPath, status);
 		savedStatus = status;
                 break;
             } else {
@@ -112,14 +114,14 @@ collOprStat_t **collOprStat)
 	    }
 	    if (collOprStat != NULL &&
 	      (*collOprStat)->filesCnt >= fileCntPerStatOut) {
-	        rstrcpy ((*collOprStat)->lastObjPath, collReplInp->objPath,
+	        rstrcpy ((*collOprStat)->lastObjPath, dataObjInp.objPath,
 	          MAX_NAME_LEN);
 	        (*collOprStat)->totalFileCnt = totalFileCnt;
 	        status = svrSendCollOprStat (rsComm, *collOprStat);
 	        if (status < 0) {
                     rodsLogError (LOG_ERROR, status,
                       "rsCollRepl: svrSendCollOprStat failed for %s. status = %d",
-                      collReplInp->objPath, status);
+                      dataObjInp.objPath, status);
 		    *collOprStat = NULL;
 	            savedStatus = status;
 	            break;
@@ -134,4 +136,25 @@ collOprStat_t **collOprStat)
 
     return (savedStatus);
 }
+
+#ifdef COMPAT_201
+int
+rsCollRepl201 (rsComm_t *rsComm, dataObjInp_t *collReplInp,
+collOprStat_t **collOprStat)
+{
+    collInp_t collInp;
+    int status;
+
+    bzero (&collInp, sizeof (collInp));
+
+    rstrcpy (collInp.collName, collReplInp->objPath, MAX_NAME_LEN);
+    collInp.flags = collReplInp->openFlags;
+    collInp.oprType = collReplInp->oprType;
+    collInp.condInput = collReplInp->condInput;
+
+    status = rsCollRepl (rsComm, &collInp, collOprStat);
+
+    return status;
+}
+#endif
 

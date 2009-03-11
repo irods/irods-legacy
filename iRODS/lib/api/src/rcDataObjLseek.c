@@ -6,7 +6,7 @@
 #include "dataObjLseek.h"
 
 int
-rcDataObjLseek (rcComm_t *conn, fileLseekInp_t *dataObjLseekInp,
+rcDataObjLseek (rcComm_t *conn, openedDataObjInp_t *dataObjLseekInp,
 fileLseekOut_t **dataObjLseekOut)
 {
     int status;

@@ -15,18 +15,20 @@
 #include "initServer.h"
 #include "fileRead.h"
 
+#ifdef COMPAT_201
 typedef struct {
     int l1descInx;
     int len;
 } dataObjReadInp_t;
     
 #define dataObjReadInp_PI "int l1descInx; int len;"
+#endif
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_READ rsDataObjRead
 /* prototype for the server handler */
 int
-rsDataObjRead (rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp, 
+rsDataObjRead (rsComm_t *rsComm, openedDataObjInp_t *dataObjReadInp, 
 bytesBuf_t *dataObjReadOutBBuf);
 int
 l3Read (rsComm_t *rsComm, int l1descInx, int len,
@@ -38,6 +40,18 @@ void *buf, int len);
 #define RS_DATA_OBJ_READ NULL
 #endif
 
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_DATA_OBJ_READ201 rsDataObjRead201
+/* prototype for the server handler */
+int
+rsDataObjRead201 (rsComm_t *rsComm, dataObjReadInp_t *dataObjReadInp,
+bytesBuf_t *dataObjReadOutBBuf);
+#else
+#define RS_DATA_OBJ_READ201 NULL
+#endif
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif
@@ -46,7 +60,7 @@ extern "C" {
 /* rcDataObjRead - Read an opened iRods data object descriptor.
  * Input -
  *   rcComm_t *conn - The client connection handle.
- *   dataObjReadInp_t *fileReadInp - Relevant items are:
+ *   dataObjInp_t *fileReadInp - Relevant items are:
  *      l1descInx - the iRods data object descriptor to read.
  *      len - the number of bytes to read
  *
@@ -56,7 +70,7 @@ extern "C" {
  */
 
 int
-rcDataObjRead (rcComm_t *conn, dataObjReadInp_t *fileReadInp,
+rcDataObjRead (rcComm_t *conn, openedDataObjInp_t *dataObjReadInp,
 bytesBuf_t *dataObjReadOutBBuf);
 
 #ifdef  __cplusplus

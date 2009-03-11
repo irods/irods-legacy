@@ -49,13 +49,19 @@
 
 #define DataObjInp_PI "str objPath[MAX_NAME_LEN]; int createMode; int openFlags; double offset; double dataSize; int numThreads; int oprType; struct *SpecColl_PI; struct KeyValPair_PI;"
 
+#define OpenedDataObjInp_PI "int l1descInx; int len; int whence; int oprType; double offset; double bytesWritten; struct KeyValPair_PI;"
+
 #define PortList_PI "int portNum; int cookie; int sock; int windowSize; str hostAddr[LONG_NAME_LEN];"
 
 #define PortalOprOut_PI "int status; int l1descInx; int numThreads; str chksum[NAME_LEN]; struct PortList_PI;"
 
 #define DataOprInp_PI "int oprType; int numThreads; int srcL3descInx; int destL3descInx; int srcRescTypeInx; int destRescTypeInx; double offset; double dataSize; struct KeyValPair_PI;"
 
-#define CollInp_PI "str collName[MAX_NAME_LEN]; struct KeyValPair_PI;"
+#define CollInp_PI "str collName[MAX_NAME_LEN]; int flags; int oprType; struct KeyValPair_PI;"
+
+#ifdef COMPAT_201
+#define CollInp201_PI "str collName[MAX_NAME_LEN]; struct KeyValPair_PI;"
+#endif
 
 #define GenQueryInp_PI "int maxRows; int continueInx; int partialStartIndex; int options; struct KeyValPair_PI; struct InxIvalPair_PI; struct InxValPair_PI;"
 #define SqlResult_PI "int attriInx; int reslen; str *value(rowCnt)(reslen);"  

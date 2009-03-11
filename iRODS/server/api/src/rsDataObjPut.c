@@ -45,7 +45,11 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
           getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
             return (status);
         } else {
-           l1descInx = allocAndSetL1descForZoneOpr (
+            /* have to allocate a local l1descInx to keep track of things
+             * since the file is in remote zone. It sets remoteL1descInx,
+             * oprType = REMOTE_ZONE_OPR and remoteZoneHost so that  
+             * rsComplete knows what to do */
+            l1descInx = allocAndSetL1descForZoneOpr (
               (*portalOprOut)->l1descInx, dataObjInp, rodsServerHost, NULL);
             if (l1descInx < 0) return l1descInx;
             (*portalOprOut)->l1descInx = l1descInx;
@@ -56,7 +60,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
     return (status);
 }
 
-/* l2DataObjPut - process put request 
+/* _rsDataObjPut - process put request 
  * The reply to this API can go off the main part of the API's
  * reuest/reply protocol and uses the sendAndRecvOffMainMsg call
  * to handle a sequence of reuest/reply until a return value of
@@ -72,7 +76,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     int status;
     int l1descInx;
     int retval;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     int allFlag;
     transStat_t *transStat = NULL;
     dataObjInp_t replDataObjInp;
@@ -180,7 +184,7 @@ bytesBuf_t *dataObjInpBBuf)
 {
     int status = 0;
     int bytesWritten;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     int l1descInx;
     dataObjInfo_t *myDataObjInfo;
 

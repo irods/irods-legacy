@@ -4,7 +4,7 @@
 #include "collRepl.h"
 
 int
-_rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp, 
+_rcCollRepl (rcComm_t *conn, collInp_t *collReplInp, 
 collOprStat_t **collOprStat)
 {
     int status;
@@ -18,7 +18,7 @@ collOprStat_t **collOprStat)
 }
 
 int
-rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp, int vFlag)
+rcCollRepl (rcComm_t *conn, collInp_t *collReplInp, int vFlag)
 {
     int status, retval;
     collOprStat_t *collOprStat = NULL;

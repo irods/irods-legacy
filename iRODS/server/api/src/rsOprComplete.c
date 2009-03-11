@@ -5,7 +5,7 @@
 
 int rsOprComplete (rsComm_t *rsComm, int *retval)
 {
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
 
     if (*retval >= 2) {
 	int l1descInx = *retval;

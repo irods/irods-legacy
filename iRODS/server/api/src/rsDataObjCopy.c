@@ -109,7 +109,7 @@ int
 _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag)
 {
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
     int srcL1descInx;
     int status;

@@ -21,11 +21,23 @@
 #define RS_COLL_REPL rsCollRepl
 /* prototype for the server handler */
 int
-rsCollRepl (rsComm_t *rsComm, dataObjInp_t *collReplInp, 
+rsCollRepl (rsComm_t *rsComm, collInp_t *collReplInp, 
 collOprStat_t **collOprStat);
 #else
 #define RS_COLL_REPL NULL
 #endif
+
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_COLL_REPL201 rsCollRepl201
+/* prototype for the server handler */
+int
+rsCollRepl201 (rsComm_t *rsComm, dataObjInp_t *collReplInp,
+collOprStat_t **collOprStat);
+#else
+#define RS_COLL_REPL201 NULL
+#endif
+#endif  /* COMPAT_201 */
 
 #ifdef  __cplusplus
 extern "C" {
@@ -33,9 +45,9 @@ extern "C" {
 
 /* prototype for the client call */
 int
-rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp, int vFlag);
+rcCollRepl (rcComm_t *conn, collInp_t *collReplInp, int vFlag);
 int
-_rcCollRepl (rcComm_t *conn, dataObjInp_t *collReplInp,
+_rcCollRepl (rcComm_t *conn, collInp_t *collReplInp,
 collOprStat_t **collOprStat);
 
 #ifdef  __cplusplus

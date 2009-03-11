@@ -303,7 +303,7 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo)
 {
     int status, status1;
     int l1descInx;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
 
     l1descInx = dataObjOpenForRepl (rsComm, dataObjInp, srcDataObjInfo,
       destRescInfo, rescGroupName, destDataObjInfo);
@@ -467,7 +467,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
 
     if (dataObjInp->numThreads > 0 &&
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
-	dataObjCloseInp_t dataObjCloseInp;
+	openedDataObjInp_t dataObjCloseInp;
 
 	dataObjInp->openFlags = O_RDONLY;
         status = dataOpen (rsComm, srcL1descInx);

@@ -14,18 +14,20 @@
 #include "initServer.h"
 #include "fileWrite.h"
 
+#ifdef COMPAT_201
 typedef struct {
     int l1descInx;
     int len;
 } dataObjWriteInp_t;
-    
+
 #define dataObjWriteInp_PI "int dataObjInx; int len;"
+#endif
 
 #if defined(RODS_SERVER)
 #define RS_DATA_OBJ_WRITE rsDataObjWrite
 /* prototype for the server handler */
 int
-rsDataObjWrite (rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp, 
+rsDataObjWrite (rsComm_t *rsComm, openedDataObjInp_t *dataObjWriteInp, 
 bytesBuf_t *dataObjWriteInpBBuf);
 int
 l3Write (rsComm_t *rsComm, int l1descInx, int len,                       
@@ -35,6 +37,18 @@ _l3Write (rsComm_t *rsComm, int destRescTypeInx, int l3descInx,
 void *buf, int len);
 #else
 #define RS_DATA_OBJ_WRITE NULL
+#endif
+
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_DATA_OBJ_WRITE201 rsDataObjWrite201
+/* prototype for the server handler */
+int
+rsDataObjWrite201 (rsComm_t *rsComm, dataObjWriteInp_t *dataObjWriteInp,
+bytesBuf_t *dataObjWriteInpBBuf);
+#else
+#define RS_DATA_OBJ_WRITE201 NULL
+#endif
 #endif
 
 #ifdef  __cplusplus
@@ -56,7 +70,7 @@ extern "C" {
  */
 
 int
-rcDataObjWrite (rcComm_t *conn, dataObjWriteInp_t *dataObjWriteInp,
+rcDataObjWrite (rcComm_t *conn, openedDataObjInp_t *dataObjWriteInp,
 bytesBuf_t *dataObjWriteInpBBuf);
 
 #ifdef  __cplusplus

@@ -21,11 +21,17 @@ packInstruct_t MiscSvrInfo_PIG = MiscSvrInfo_PI;
 
 packInstructArray_t ApiPackTable[] = {
         {"DataObjInp_PI", DataObjInp_PI},
-        {"DataCopyInp_PI", DataCopyInp_PI},
-        {"dataObjCloseInp_PI", dataObjCloseInp_PI},
-        {"DataObjCopyInp_PI", DataObjCopyInp_PI},
+        {"OpenedDataObjInp_PI", OpenedDataObjInp_PI},
+#ifdef COMPAT_201
         {"dataObjReadInp_PI", dataObjReadInp_PI},
         {"dataObjWriteInp_PI", dataObjWriteInp_PI},
+        {"dataObjCloseInp_PI", dataObjCloseInp_PI},
+        {"OpenCollInp_PI", OpenCollInp_PI},
+        {"CollInp201_PI", CollInp201_PI},
+#endif
+
+        {"DataCopyInp_PI", DataCopyInp_PI},
+        {"DataObjCopyInp_PI", DataObjCopyInp_PI},
         {"fileOpenInp_PI", fileOpenInp_PI},
         {"fileChksumInp_PI", fileChksumInp_PI},
         {"fileChksumOut_PI", fileChksumOut_PI},
@@ -76,7 +82,6 @@ packInstructArray_t ApiPackTable[] = {
         {"SendXmsgInp_PI", SendXmsgInp_PI},
         {"StructFileOprInp_PI", StructFileOprInp_PI},
         {"gsiAuthRequestOut_PI", gsiAuthRequestOut_PI},
-        {"OpenCollInp_PI", OpenCollInp_PI},
         {"StructFileExtAndRegInp_PI", StructFileExtAndRegInp_PI},
         {"ChkObjPermAndStat_PI", ChkObjPermAndStat_PI},
         {"userAdminInp_PI", userAdminInp_PI},

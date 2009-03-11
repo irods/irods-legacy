@@ -2576,7 +2576,7 @@ rodsLong_t newSize)
 int
 isCollEmpty (rsComm_t *rsComm, char *collection)
 {
-    openCollInp_t openCollInp;
+    collInp_t openCollInp;
     collEnt_t *collEnt;
     int handleInx;
     int entCnt = 0;

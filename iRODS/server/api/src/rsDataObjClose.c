@@ -31,11 +31,11 @@
 #endif
 
 int
-rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
+rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 {
     int status;
     int srcL1descInx;
-    dataObjCloseInp_t myDataObjCloseInp;
+    openedDataObjInp_t myDataObjCloseInp;
     int l1descInx;
     ruleExecInfo_t rei;
 #ifdef TEST_QUE_RULE
@@ -191,7 +191,7 @@ logTransfer (char *oprType, char *objPath, rodsLong_t fileSize,
 #endif
 
 int
-_rsDataObjClose (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
+_rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 {
     int status = 0;
     int l1descInx, l3descInx;
@@ -572,4 +572,22 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
     }
     return (status);
 }
+
+#ifdef COMPAT_201
+int
+rsDataObjClose201 (rsComm_t *rsComm, dataObjCloseInp_t *dataObjCloseInp)
+{
+    openedDataObjInp_t openedDataObjInp;
+    int status;
+
+    bzero (&openedDataObjInp, sizeof (openedDataObjInp));
+
+    openedDataObjInp.l1descInx = dataObjCloseInp->l1descInx;
+    openedDataObjInp.bytesWritten = dataObjCloseInp->bytesWritten;
+
+    status = rsDataObjClose (rsComm, &openedDataObjInp);
+
+    return status;
+}
+#endif
 

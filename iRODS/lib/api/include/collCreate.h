@@ -28,6 +28,17 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 #define RS_COLL_CREATE NULL
 #endif
 
+#ifdef COMPAT_201
+#if defined(RODS_SERVER)
+#define RS_COLL_CREATE201 rsCollCreate201
+/* prototype for the server handler */
+int
+rsCollCreate201 (rsComm_t *rsComm, collInp201_t *collCreateInp);
+#else
+#define RS_COLL_CREATE201 NULL
+#endif
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

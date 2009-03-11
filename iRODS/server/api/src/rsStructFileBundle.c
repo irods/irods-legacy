@@ -16,7 +16,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
 {
     int status;
     dataObjInp_t dataObjInp;
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
     structFileOprInp_t structFileOprInp;
     chkObjPermAndStat_t chkObjPermAndStatInp;
     int l1descInx;
@@ -74,6 +74,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: initStructFileOprInp of %s error. stat = %d",
           dataObjInp.objPath, status);
+	bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
         dataObjCloseInp.l1descInx = l1descInx;
         rsDataObjClose (rsComm, &dataObjCloseInp);
         return (status);

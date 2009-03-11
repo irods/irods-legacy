@@ -155,6 +155,10 @@ ifdef UNI_CODE
 MY_CFLAG+= -DUNI_CODE
 endif
 
+ifdef COMPAT_201
+MY_CFLAG+= -DCOMPAT_201
+endif
+
 # server specific LDADD
 
 ifdef TAR_STRUCT_FILE

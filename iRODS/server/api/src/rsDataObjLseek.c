@@ -13,7 +13,7 @@
 
 
 int
-rsDataObjLseek (rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp, 
+rsDataObjLseek (rsComm_t *rsComm, openedDataObjInp_t *dataObjLseekInp, 
 fileLseekOut_t **dataObjLseekOut)
 {
     int status;
@@ -21,7 +21,7 @@ fileLseekOut_t **dataObjLseekOut)
     int rescTypeInx;
     dataObjInfo_t *dataObjInfo;
 
-    l1descInx = dataObjLseekInp->fileInx;
+    l1descInx = dataObjLseekInp->l1descInx;
 
     if (l1descInx <= 2 || l1descInx >= NUM_L1_DESC) {
        rodsLog (LOG_NOTICE,
@@ -32,10 +32,10 @@ fileLseekOut_t **dataObjLseekOut)
 
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         /* cross zone operation */
-        dataObjLseekInp->fileInx = L1desc[l1descInx].remoteL1descInx;
+        dataObjLseekInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
         status = rcDataObjLseek (L1desc[l1descInx].remoteZoneHost->conn,
           dataObjLseekInp, dataObjLseekOut);
-        dataObjLseekInp->fileInx = l1descInx;
+        dataObjLseekInp->l1descInx = l1descInx;
 	return status;
     }
 
@@ -110,4 +110,24 @@ rodsLong_t offset, int whence)
         return (offset);
     }
 }
+
+#ifdef COMPAT_201
+int
+rsDataObjLseek201 (rsComm_t *rsComm, fileLseekInp_t *dataObjLseekInp,
+fileLseekOut_t **dataObjLseekOut)
+{
+    openedDataObjInp_t openedDataObjInp;
+    int status;
+
+    bzero (&openedDataObjInp, sizeof (openedDataObjInp));
+
+    openedDataObjInp.l1descInx = dataObjLseekInp->fileInx;
+    openedDataObjInp.offset = dataObjLseekInp->offset;
+    openedDataObjInp.whence = dataObjLseekInp->whence;
+
+    status = rsDataObjLseek (rsComm, &openedDataObjInp, dataObjLseekOut);
+
+    return status;
+}
+#endif
 

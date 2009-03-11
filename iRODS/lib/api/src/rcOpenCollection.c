@@ -4,7 +4,7 @@
 #include "openCollection.h"
 
 int
-rcOpenCollection (rcComm_t *conn, openCollInp_t *openCollInp)
+rcOpenCollection (rcComm_t *conn, collInp_t *openCollInp)
 {
     int status;
     status = procApiRequest (conn, OPEN_COLLECTION_AN, openCollInp, NULL, 
