@@ -4334,6 +4334,19 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    return(status);
 }
 
+int
+convertTypeOption(char *typeStr) {
+   if (strcmp(typeStr, "-d") == 0) return(1); /* dataObj */
+   if (strcmp(typeStr, "-D") == 0) return(1); /* dataObj */
+   if (strcmp(typeStr, "-c") == 0) return(2); /* collection */
+   if (strcmp(typeStr, "-C") == 0) return(2); /* collection */
+   if (strcmp(typeStr, "-r") == 0) return(3); /* resource */
+   if (strcmp(typeStr, "-R") == 0) return(3); /* resource */
+   if (strcmp(typeStr, "-u") == 0) return(4); /* user */
+   if (strcmp(typeStr, "-U") == 0) return(4); /* user */
+   return (0);
+}
+
 /*
 Check object - get an object's ID and check that the user has access.
 Called internally.
@@ -4363,11 +4376,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       return (CAT_INVALID_ARGUMENT);
    }
 
-   itype=0;
-   if (strcmp(type, "-d") == 0) itype=1; /* dataObj */
-   if (strcmp(type, "-c") == 0) itype=2; /* collection */
-   if (strcmp(type, "-r") == 0) itype=3; /* resource */
-   if (strcmp(type, "-u") == 0) itype=4; /* user */
+   itype = convertTypeOption(type);
    if (itype==0) return(CAT_INVALID_ARGUMENT);
 
    if (itype==1) {
@@ -4503,13 +4512,8 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
 
    if (units == NULL) units="";
 
-   itype=0;
-   if (strcmp(type, "-d") == 0) itype=1; /* dataObj */
-   if (strcmp(type, "-c") == 0) itype=2; /* collection */
-   if (strcmp(type, "-r") == 0) itype=3; /* resource */
-   if (strcmp(type, "-u") == 0) itype=4; /* user */
+   itype = convertTypeOption(type);
    if (itype==0) return(CAT_INVALID_ARGUMENT);
-
 
    if (itype==1) {
       status = splitPathByKey(name,
@@ -4753,11 +4757,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 
    if (units == NULL) units="";
 
-   itype=0;
-   if (strcmp(type, "-d") == 0) itype=1; /* dataObj */
-   if (strcmp(type, "-c") == 0) itype=2; /* collection */
-   if (strcmp(type, "-r") == 0) itype=3; /* resource */
-   if (strcmp(type, "-u") == 0) itype=4; /* user */
+   itype = convertTypeOption(type);
    if (itype==0) return(CAT_INVALID_ARGUMENT);
 
    if (itype==1) {
