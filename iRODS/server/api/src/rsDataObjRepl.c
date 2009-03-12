@@ -231,6 +231,7 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
     destDataObjInfo = inpDestDataObjInfo;
     while (destDataObjInfo != NULL) {
         if (destDataObjInfo->dataId > 0) {
+	    /* destDataObj exists */
 	    srcDataObjInfo = srcDataObjInfoHead;
 	    while (srcDataObjInfo != NULL) {
                 /* overwrite a specific destDataObjInfo */
@@ -253,6 +254,7 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
 	destDataObjInfo = destDataObjInfo->next;
     }
 	    
+    /* falls through here. destDataObj does not exist */
     tmpRescGrpInfo = destRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
@@ -287,6 +289,7 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
 /* _rsDataObjReplS - replicate a single obj 
  *   dataObjInfo_t *srcDataObjInfo - the src to be replicated. 
  *   rescInfo_t *destRescInfo - The dest resource info
+ *   rescGroupName - only meaningful if the destDataObj does not exist. 
  *   dataObjInfo_t *destDataObjInfo - This can be both input and output.
  *      If destDataObjInfo == NULL, dest is new and no output is required.
  *      If destDataObjInfo != NULL:
@@ -394,11 +397,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
 	dataObjInp->openFlags |= (O_TRUNC | O_WRONLY);
     } else {
         initDataObjInfoForRepl (myDestDataObjInfo, srcDataObjInfo, 
-	 destRescInfo);
-	if (rescGroupName != NULL && strlen (rescGroupName) > 0) {
-	    rstrcpy (myDestDataObjInfo->rescGroupName, rescGroupName, 
-	    NAME_LEN);
-	}
+	 destRescInfo, rescGroupName);
 	destExist = 0;
 	replStatus = srcDataObjInfo->replStatus;
     }

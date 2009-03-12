@@ -926,14 +926,24 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 
 int
 initDataObjInfoForRepl (dataObjInfo_t *destDataObjInfo, 
-dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo)
+dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, 
+char *destRescGroupName)
 {
+    /* XXXXX Need to check if the destResc is in the same resc group */ 
     memset (destDataObjInfo, 0, sizeof (dataObjInfo_t));
     *destDataObjInfo = *srcDataObjInfo;
     destDataObjInfo->filePath[0] = '\0';
     rstrcpy (destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN);
     destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
     destDataObjInfo->rescInfo = destRescInfo;
+
+    if (destRescGroupName != NULL && strlen (destRescGroupName) > 0) {
+        rstrcpy (destDataObjInfo->rescGroupName, destRescGroupName,
+        NAME_LEN);
+    } else if (strlen (destDataObjInfo->rescGroupName) > 0) {
+	/* XXXXX need to verify whether destRescInfo belongs to 
+	 * destDataObjInfo->rescGroupName */
+    }
 
     return (0);
 }
