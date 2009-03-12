@@ -382,6 +382,7 @@ setQueryInpForData (int flags, genQueryInp_t *genQueryInp)
         if ((flags & VERY_LONG_METADATA_FG) != 0) {
              addInxIval (&genQueryInp->selectInp, COL_D_DATA_PATH, 1);
              addInxIval (&genQueryInp->selectInp, COL_D_DATA_CHECKSUM, 1);
+             addInxIval (&genQueryInp->selectInp, COL_D_RESC_GROUP_NAME, 1);
 	}
     }
 
@@ -770,7 +771,7 @@ dataObjSqlResult_t *dataObjSqlResult)
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *dataName, *dataSize, *dataMode, *createTime, 
       *modifyTime, *chksum, *replStatus, *dataId, *resource, *phyPath, 
-      *ownerName, *replNum;
+      *ownerName, *replNum, *rescGrp;
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
       dataObjSqlResult == NULL)
@@ -857,6 +858,14 @@ dataObjSqlResult_t *dataObjSqlResult)
           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->resource = *resource;
+    }
+
+    if ((rescGrp = getSqlResultByInx (myGenQueryOut, COL_D_RESC_GROUP_NAME))
+      == NULL) {
+        setSqlResultValue (&dataObjSqlResult->resource, COL_D_RESC_GROUP_NAME,
+          "", myGenQueryOut->rowCnt);
+    } else {
+        dataObjSqlResult->rescGrp = *rescGrp;
     }
 
     if ((phyPath = getSqlResultByInx (myGenQueryOut, COL_D_DATA_PATH))
@@ -1391,6 +1400,10 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     value = dataObjSqlResult->phyPath.value;
     len = dataObjSqlResult->phyPath.len;
     outCollEnt->phyPath = &value[len * (collHandle->rowInx)];
+
+    value = dataObjSqlResult->rescGrp.value;
+    len = dataObjSqlResult->rescGrp.len;
+    outCollEnt->rescGrp = &value[len * (collHandle->rowInx)];
 
     collHandle->rowInx = nextInx;
     return (0);

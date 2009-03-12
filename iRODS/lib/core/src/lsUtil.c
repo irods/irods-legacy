@@ -166,7 +166,7 @@ genQueryOut_t *genQueryOut)
     int i;
     sqlResult_t *dataName, *replNum, *dataSize, *rescName, 
       *replStatus, *dataModify, *dataOwnerName, *dataId;
-    sqlResult_t *chksumStr, *dataPath;
+    sqlResult_t *chksumStr, *dataPath, *rescGrp;
     char *tmpDataId;
     int queryFlags;
 
@@ -188,6 +188,13 @@ genQueryOut_t *genQueryOut)
           == NULL) {
             rodsLog (LOG_ERROR,
               "printLsLong: getSqlResultByInx for COL_D_DATA_PATH failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
+        if ((rescGrp = getSqlResultByInx (genQueryOut, COL_D_RESC_GROUP_NAME))
+          == NULL) {
+            rodsLog (LOG_ERROR,
+             "printLsLong: getSqlResultByInx for COL_D_RESC_GROUP_NAME failed");
             return (UNMATCHED_KEY_OR_INDEX);
         }
     }
@@ -259,6 +266,7 @@ genQueryOut_t *genQueryOut)
         if (rodsArgs->veryLongOption == True) {
 	    collEnt.chksum = &chksumStr->value[chksumStr->len * i];
 	    collEnt.phyPath = &dataPath->value[dataPath->len * i];
+	    collEnt.rescGrp = &rescGrp->value[dataPath->len * i];
 	}
 
 	printDataCollEntLong (&collEnt, queryFlags);
@@ -458,7 +466,8 @@ printDataCollEntLong (collEnt_t *collEnt, int flags)
 
 
     if ((flags & VERY_LONG_METADATA_FG) != 0) {
-        printf ("    %s    %s\n", collEnt->chksum, collEnt->phyPath);
+        printf ("    %s    %s    %s\n", collEnt->chksum, collEnt->phyPath,
+	  collEnt->rescGrp);
     }
     return 0;
 }

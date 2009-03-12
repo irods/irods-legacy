@@ -48,6 +48,7 @@ typedef struct DataObjSqlResult {
     sqlResult_t phyPath;
     sqlResult_t ownerName;
     sqlResult_t replNum;
+    sqlResult_t rescGrp;
 } dataObjSqlResult_t;
 
 typedef struct DataObjMetaInfo {
@@ -118,6 +119,7 @@ typedef struct CollEnt {
     char *modifyTime;
     char *chksum;
     char *resource;
+    char *rescGrp;
     char *phyPath;
     char *ownerName;    	 /* valid for dataObj and collection */
     specColl_t specColl;	 /* valid only for collection */ 
