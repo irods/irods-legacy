@@ -1164,6 +1164,7 @@ int chlModRuleExec(rsComm_t *rsComm, char *ruleExecId,
 int chlDelRuleExec(rsComm_t *rsComm, 
 	       char *ruleExecId) {
    int status;
+   char userName[MAX_NAME_LEN+2];
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelRuleExec");
 
@@ -1172,11 +1173,23 @@ int chlDelRuleExec(rsComm_t *rsComm,
    }
 
    if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      if (rsComm->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH) {
+	 if (logSQL) rodsLog(LOG_SQL, "chlDelRuleExec SQL 1 ");
+	 status = cmlGetStringValueFromSql(
+	   "select user_name from R_RULE_EXEC where rule_exec_id=?",
+	   userName, MAX_NAME_LEN, ruleExecId, 0, 0, &icss);
+	 if (strncmp(userName, rsComm->clientUser.userName, MAX_NAME_LEN)
+	     != 0) {
+	    return(CAT_NO_ACCESS_PERMISSION);
+	 }
+      }
+      else {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
    }
 
    cllBindVars[cllBindVarCount++]=ruleExecId;
-   if (logSQL) rodsLog(LOG_SQL, "chlDelRuleExec SQL 1 ");
+   if (logSQL) rodsLog(LOG_SQL, "chlDelRuleExec SQL 2 ");
    status =  cmlExecuteNoAnswerSql(
 			   "delete from r_rule_exec where rule_exec_id=?",
 			   &icss);
