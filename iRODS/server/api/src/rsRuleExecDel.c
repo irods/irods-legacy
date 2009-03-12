@@ -46,10 +46,13 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
     genQueryOut_t *genQueryOut = NULL;
     int status, unlinkStatus, unlinkErrno;
     sqlResult_t *reiFilePath;
+    sqlResult_t *ruleUserName;
+
     char reiDir[MAX_NAME_LEN];
 
     status = getReInfoById (rsComm, ruleExecDelInp->ruleExecId, 
       &genQueryOut);
+
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -78,6 +81,24 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    /* First check permission (now that API is allowed for non-admin users) */
+    if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+       if (rsComm->proxyUser.authInfo.authFlag == LOCAL_USER_AUTH) {
+	  if ((ruleUserName = getSqlResultByInx (genQueryOut, 
+		 COL_RULE_EXEC_USER_NAME)) == NULL) {
+	     rodsLog (LOG_NOTICE,
+                "_rsRuleExecDel: getSqlResultByInx for COL_RULE_EXEC_USER_NAME failed");
+	     return (UNMATCHED_KEY_OR_INDEX);
+	  }
+	  if (strncmp(ruleUserName->value, 
+		      rsComm->clientUser.userName, MAX_NAME_LEN) != 0) {
+	     return(USER_ACCESS_DENIED);
+	  }
+       }
+       else {
+	  return (USER_ACCESS_DENIED);
+       }
+    }
 
     /* some sanity check */
     snprintf (reiDir, MAX_NAME_LEN,
