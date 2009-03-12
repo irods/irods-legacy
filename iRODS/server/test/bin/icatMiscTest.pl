@@ -177,6 +177,18 @@ runCmd(0, "iadmin moduser $User2 password 123");
 runCmd(0, "test_chl login $User2 123 $IRODS_ADMIN_PASSWORD");
 #delete $ENV{'irodsUserName'};
 
+# Check non-admin access for deleting a rule
+runCmd(0, "iadmin pv 2030-12-31");
+runCmd(0, "iqstat | grep msiVacuum");
+$ix = index($cmdStdout, " ");
+$id = substr($cmdStdout, 0, $ix);
+chomp($id);
+$ENV{'irodsUserName'}=$User2; 
+runCmd(2, "echo 123 | iqdel $id");
+runCmd(2, "test_chl rmrule $id $User2");
+delete $ENV{'irodsUserName'};
+runCmd(0, "iqdel $id");
+
 # Temporary password
 $ENV{'irodsUserName'}=$User2; 
 $prevAuthFileName=$ENV{'irodsAuthFileName'};  # old one, if any
