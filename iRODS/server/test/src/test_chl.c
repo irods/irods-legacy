@@ -337,10 +337,17 @@ int testDelColl(rsComm_t *rsComm, char *name) {
    return(chlDelColl(rsComm, &collInp));
 }
 
-int testDelRule(rsComm_t *rsComm, char *name) {
-   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
-   rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
-   return(chlDelRuleExec(rsComm, name));
+int testDelRule(rsComm_t *rsComm, char *ruleName, char *userName) {
+   if (userName!=NULL && strlen(userName)>0) {
+      rsComm->clientUser.authInfo.authFlag = LOCAL_USER_AUTH;
+      rsComm->proxyUser.authInfo.authFlag = LOCAL_USER_AUTH;
+      strncpy(rsComm->clientUser.userName, userName, MAX_NAME_LEN);
+   }
+   else {
+      rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+      rsComm->proxyUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+   }
+   return(chlDelRuleExec(rsComm, ruleName));
 }
 
 int testRegDataObj(rsComm_t *rsComm, char *name, 
@@ -707,7 +714,7 @@ main(int argc, char **argv) {
    }
 
    if (strcmp(argv[1],"rmrule")==0) {
-      status = testDelRule(Comm, argv[2]);
+      status = testDelRule(Comm, argv[2], argv[3]);
       didOne=1;
    }
 
