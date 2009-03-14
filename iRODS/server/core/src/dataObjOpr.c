@@ -925,11 +925,10 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 }
 
 int
-initDataObjInfoForRepl (dataObjInfo_t *destDataObjInfo, 
+initDataObjInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo, 
 dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, 
 char *destRescGroupName)
 {
-    /* XXXXX Need to check if the destResc is in the same resc group */ 
     memset (destDataObjInfo, 0, sizeof (dataObjInfo_t));
     *destDataObjInfo = *srcDataObjInfo;
     destDataObjInfo->filePath[0] = '\0';
@@ -941,8 +940,13 @@ char *destRescGroupName)
         rstrcpy (destDataObjInfo->rescGroupName, destRescGroupName,
         NAME_LEN);
     } else if (strlen (destDataObjInfo->rescGroupName) > 0) {
-	/* XXXXX need to verify whether destRescInfo belongs to 
+	/* need to verify whether destRescInfo belongs to 
 	 * destDataObjInfo->rescGroupName */
+	if (getRescInGrp (rsComm, destRescInfo->rescName, 
+	  destDataObjInfo->rescGroupName, NULL) < 0) {
+	    /* destResc is not in destRescGrp */
+	    destDataObjInfo->rescGroupName[0] = '\0';
+	}
     }
 
     return (0);

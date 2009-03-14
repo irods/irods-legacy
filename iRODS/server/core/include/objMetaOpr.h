@@ -227,8 +227,8 @@ int
 getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName, 
 char *inpMemberRescName, rescInfo_t **outCacheResc);
 int
-getRescGrpByRescInfo (rsComm_t *rsComm, char *inpMemberRescName,
-rescGrpInfo_t **outRescGrpInfo);
+getRescInGrp (rsComm_t *rsComm, char *rescName, char *rescGroupName,
+rescInfo_t **outRescInfo);
 int
 sortRescByType (rescGrpInfo_t **rescGrpInfo);
 #endif	/* OBJ_META_OPR_H */

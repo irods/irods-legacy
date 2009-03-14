@@ -3007,25 +3007,19 @@ compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
 }
 
 int
-getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName, char *inpMemberRescName, 
-rescInfo_t **outCacheResc)
+getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName, 
+char *inpMemberRescName, rescInfo_t **outCacheResc)
 {
     int status; 
     rescGrpInfo_t *myRescGrpInfo = NULL;
     rescGrpInfo_t *tmpRescGrpInfo;
 
     *outCacheResc = NULL;
-    if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
-	status = getRescGrpByRescInfo (rsComm, inpMemberRescName, &myRescGrpInfo); 
-        if (status < 0) {
-	    return status;
-	} else if (rescGroupName != NULL) {
-	    rstrcpy (rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
-	}
-    } else {
-	status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
-        if (status < 0) return status;
-    } 
+    if (rescGroupName == NULL || strlen (rescGroupName) == 0)
+        return USER__NULL_INPUT_ERR;
+
+    status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
+    if (status < 0) return status;
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
 	rescInfo_t *tmpRescInfo;
@@ -3040,29 +3034,33 @@ rescInfo_t **outCacheResc)
 }
 
 int
-getRescGrpByRescInfo (rsComm_t *rsComm, char *inpMemberRescName, 
-rescGrpInfo_t **outRescGrpInfo)
+getRescInGrp (rsComm_t *rsComm, char *rescName, char *rescGroupName,
+rescInfo_t **outRescInfo)
 {
-    rescGrpInfo_t *tmpRescGrpInfo, *tmp1RescGrpInfo;
+    int status;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo;
 
-    /* see if it is in cache */
+    if (rescGroupName == NULL || strlen (rescGroupName) == 0) 
+	return USER__NULL_INPUT_ERR;
 
-    tmpRescGrpInfo = CachedRescGrpInfo;
 
+    status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
+ 
+    if (status < 0) return status;
+
+    tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
-	rescInfo_t *tmpRescInfo;
-	tmp1RescGrpInfo = tmpRescGrpInfo;
-	while (tmp1RescGrpInfo != NULL) {
-            tmpRescInfo = tmp1RescGrpInfo->rescInfo;
-	    if (strcmp (tmpRescInfo->rescName, inpMemberRescName) == 0) {
-                replRescGrpInfo (tmp1RescGrpInfo, outRescGrpInfo);
-                return 0;
-	    }
-            tmp1RescGrpInfo = tmp1RescGrpInfo->next;
+        rescInfo_t *tmpRescInfo;
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (strcmp (tmpRescInfo->rescName, rescName) == 0) { 
+	    if (outRescInfo != NULL)
+                *outRescInfo = tmpRescInfo;
+            return 0;
         }
-
-        tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
-    /* XXXXX need to do a query if not cached */
-    return SYS_UNMATCHED_RESC_GRP;
+
+    return SYS_UNMATCHED_RESC_IN_RESC_GRP;
 }
+

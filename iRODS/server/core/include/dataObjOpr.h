@@ -125,7 +125,7 @@ getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 int
 initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType);
 int
-initDataObjInfoForRepl (dataObjInfo_t *destDataObjInfo,
+initDataObjInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo,
 dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, char *rescGroupName);
 int
 convL3descInx (int l3descInx);
