@@ -82,7 +82,8 @@ rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp);
 int
 _rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp,
 transStat_t **transStat);
-
+int
+stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead);
 #ifdef  __cplusplus
 }
 #endif
