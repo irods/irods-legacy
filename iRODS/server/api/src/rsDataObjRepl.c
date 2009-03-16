@@ -262,15 +262,16 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
         while (srcDataObjInfo != NULL) {
             status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
 #if 0
-              tmpRescInfo, tmpRescGrpInfo->rescGroupName, destDataObjInfo);
+            tmpRescInfo, tmpRescGrpInfo->rescGroupName, destDataObjInfo);
 #endif
-              tmpRescInfo, tmpRescGrpInfo->rescGroupName, inpDestDataObjInfo);
+	    tmpRescInfo, tmpRescGrpInfo->rescGroupName, inpDestDataObjInfo);
 
-
-             if (status >= 0) {
+	    if (status >= 0) {
                   break;
-              }
-              srcDataObjInfo = srcDataObjInfo->next;
+            } else {
+		savedStatus = status;
+	    }
+            srcDataObjInfo = srcDataObjInfo->next;
 	}
         if (status >= 0) {
             transStat->numThreads = dataObjInp->numThreads;
@@ -369,12 +370,33 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     /* some sanity check for DO_STAGING type resc */
     if (destRescClass == COMPOUND_CL && srcRescClass == COMPOUND_CL) {
 	return SYS_SRC_DEST_RESC_COMPOUND_TYPE;
+    } else if (destRescClass == COMPOUND_CL) {
+        if (getRescInGrp (rsComm, myDestRescInfo->rescName,
+          inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
+            /* not in the same group */
+            return SYS_UNMATCHED_RESC_IN_RESC_GRP;
+        }
+    } else if (srcRescClass == COMPOUND_CL) {
+	if (getRescInGrp (rsComm, myDestRescInfo->rescName,
+          inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
+	    status = stageDataFromCompToCache (rsComm, &inpSrcDataObjInfo);
+	    if (status < 0) return status;
+	}
+    }
+#if 0
     } else if (destRescClass == COMPOUND_CL || srcRescClass == COMPOUND_CL) {
+	if (getRescInGrp (rsComm, myDestRescInfo->rescName, 
+	  inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
+	    /* not in the same group */
+	    return SYS_UNMATCHED_RESC_IN_RESC_GRP;
+	}
+
 	if (compareRescAddr (myDestRescInfo, inpSrcDataObjInfo->rescInfo) 
 	  == 0) {
 	    return SYS_CACHE_RESC_NOT_ON_SAME_HOST;
 	}
     }
+#endif
 
     /* open the dest */
 
@@ -396,7 +418,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
 	addKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW, "");
 	dataObjInp->openFlags |= (O_TRUNC | O_WRONLY);
     } else {
-        initDataObjInfoForRepl (myDestDataObjInfo, srcDataObjInfo, 
+        initDataObjInfoForRepl (rsComm, myDestDataObjInfo, srcDataObjInfo, 
 	 destRescInfo, rescGroupName);
 	destExist = 0;
 	replStatus = srcDataObjInfo->replStatus;
@@ -780,5 +802,35 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName)
     }
 
     return status;
+}
+
+int
+stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
+{
+    int status;
+    rescInfo_t *cacheResc;
+    dataObjInfo_t *dataObjInfoHead = *compObjInfoHead;
+
+    if (getRescClass (dataObjInfoHead->rescInfo) != COMPOUND_CL) return 0;
+
+    status = getCacheRescInGrp (rsComm, dataObjInfoHead->rescGroupName,
+      dataObjInfoHead->rescInfo->rescName, &cacheResc);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "stageDataFromCompToCache: getCacheRescInGrp %s failed for %s stat=%d",
+          dataObjInfoHead->rescGroupName, dataObjInfoHead->objPath, status);
+        return status;
+    }
+    status = rsReplAndRequeDataObjInfo (rsComm, &dataObjInfoHead,
+      cacheResc->rescName);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "stageDataFromCompToCache:rsReplAndRequeDataObjInfo %s failed stat=%d",
+          dataObjInfoHead->objPath, status);
+        return status;
+    }
+
+    *compObjInfoHead = dataObjInfoHead;
+    return 0;
 }
 
