@@ -137,6 +137,9 @@ endif
 ifdef GSI_AUTH
 CFLAGS +=       -DGSI_AUTH
 endif
+ifdef KRB_AUTH
+CFLAGS +=       -DKRB_AUTH
+endif
 
 # re
 ifdef RULE_ENGINE
@@ -240,6 +243,14 @@ LIB_GSI_AUTH = \
 	-lltdl_$(GSI_INSTALL_TYPE) 
 
 LDFLAGS += $(LIB_GSI_AUTH)
+endif
+
+ifdef KRB_AUTH
+LIB_KRB_AUTH = \
+        -L$(KRB_LOC)/lib \
+        -lgssapi_krb5
+
+LDFLAGS += $(LIB_KRB_AUTH)
 endif
 
 #

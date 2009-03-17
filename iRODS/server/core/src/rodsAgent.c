@@ -127,6 +127,10 @@ agentMain (rsComm_t *rsComm)
 	    status = igsiServersideAuth(rsComm) ;
 	    rsComm->gsiRequest=0; 
         }
+        if (rsComm->gsiRequest==2) {
+	    status = ikrbServersideAuth(rsComm) ;
+	    rsComm->gsiRequest=0; 
+        }
 
 	status = readAndProcClientMsg (rsComm, 0);
 

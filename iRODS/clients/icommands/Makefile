@@ -127,6 +127,9 @@ CFLAGS_OPTIONS := -g $(CFLAGS) $(MY_CFLAG)
 ifdef GSI_AUTH
 CFLAGS_OPTIONS += -D GSI_AUTH
 endif
+ifdef KRB_AUTH
+CFLAGS_OPTIONS += -D KRB_AUTH
+endif
 
 CFLAGS =	$(CFLAGS_OPTIONS) $(LIB_INCLUDES) $(SVR_INCLUDES) $(MODULE_CFLAGS)
 
@@ -154,6 +157,13 @@ LIB_GSI_AUTH = \
 LDFLAGS += $(LIB_GSI_AUTH)
 endif
 
+ifdef KRB_AUTH
+LIB_KRB_AUTH = \
+        -L$(KRB_LOC)/lib \
+        -lgssapi_krb5
+
+LDFLAGS += $(LIB_GSI_KRB)
+endif
 
 # for checking memleak
 # LDFLAGS +=	-L/data/mwan/rods/ccmalloc/ccmalloc-0.4.0/lib

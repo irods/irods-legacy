@@ -66,6 +66,9 @@ LIB_CORE_OBJS =	\
 ifdef GSI_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
 endif
+ifdef KRB_AUTH
+LIB_CORE_OBJS += $(libCoreObjDir)/ikrb.o
+endif
 INCLUDES +=	-I$(libCoreIncDir)
 
 
@@ -90,6 +93,11 @@ endif
 # GSI
 ifdef GSI_AUTH
 INCLUDES += 	-I$(GLOBUS_LOCATION)/include/$(GSI_INSTALL_TYPE)
+endif
+
+# Kerberos
+ifdef KRB_AUTH
+INCLUDES += 	-I$(KRB_LOC)/include/gssapi -I$(KRB_LOC)/include
 endif
 
 # API (see api.mk, which is automatically generated)
@@ -118,6 +126,9 @@ MD5_CFLAGS += -O3
 endif
 ifdef GSI_AUTH
 CFLAGS_OPTIONS += -D GSI_AUTH
+endif
+ifdef KRB_AUTH
+CFLAGS_OPTIONS += -D KRB_AUTH
 endif
 
 
