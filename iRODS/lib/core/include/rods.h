@@ -28,6 +28,7 @@
 #include "obf.h"
 #include "rodsXmsg.h"
 #include "igsi.h"
+#include "ikrb.h"
 
 #ifdef _WIN32
 #include "IRodsLib3.h"
