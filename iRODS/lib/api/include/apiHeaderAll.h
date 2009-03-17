@@ -121,4 +121,5 @@
 #include "fileSyncToArch.h"
 #include "generalRowInsert.h"
 #include "generalRowPurge.h"
+#include "krbAuthRequest.h"
 #endif	/* API_HEADER_ALL_H */

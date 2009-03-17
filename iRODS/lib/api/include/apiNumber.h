@@ -141,5 +141,6 @@
 #define USER_ADMIN_AN 			714
 #define GENERAL_ROW_INSERT_AN 			715
 #define GENERAL_ROW_PURGE_AN 			716
+#define KRB_AUTH_REQUEST_AN 			717
 
 #endif	/* API_NUMBER_H */
