@@ -82,6 +82,58 @@ int clientLoginGsi(rcComm_t *Conn)
 }
 #endif
 
+#ifdef KRB_AUTH
+int clientLoginKrb(rcComm_t *Conn) 
+{
+   int status;
+   krbAuthRequestOut_t *krbAuthReqOut;
+   char *myName;
+   char *serverDN;
+
+   status = ikrbSetupCreds(Conn, NULL, NULL, &myName);
+   if (status) {
+      printError(Conn, status, "ikrbSetupCreds");
+      return(status);
+   }
+
+   printf("Client-side DN is:%s\n",myName);
+
+   status = rcKrbAuthRequest(Conn, &krbAuthReqOut);
+   if (status) {
+      printError(Conn, status, "rcKrbAuthRequest");
+      return(status);
+   }
+
+   printf("Server-side DN is:%s\n", krbAuthReqOut->serverDN);
+
+#if 0
+   serverDN = getenv("irodsServerDn"); /* Use irodsServerDn if defined */
+   if (serverDN == NULL) {
+      serverDN = getenv("SERVER_DN");  /* NULL or the SERVER_DN string */
+   }
+#endif
+   serverDN=  krbAuthReqOut->serverDN; /* // ? */
+   status = ikrbEstablishContextClientside(Conn, serverDN, 0);
+   /* //   status = ikrbEstablishContextClientside(Conn, 0, 0); */
+   if (status) {
+      printError(Conn, status, "ikrbEstablishContextClientside");
+      return(status);
+   }
+
+   /* Now, check if it actually succeeded */
+   status = rcKrbAuthRequest(Conn, &krbAuthReqOut);
+   if (status) {
+      printf("Error from iRODS Server:\n");
+      printError(Conn, status, "KRB Authentication");
+      return(status);
+   }
+
+   Conn->loggedIn = 1;
+
+   return(0);
+}
+#endif
+
 int 
 clientLogin(rcComm_t *Conn) 
 {   
@@ -106,6 +158,21 @@ clientLogin(rcComm_t *Conn)
       if (getVar != NULL && strncmp("GSI",getVar,3)==0) {
 	 status = clientLoginGsi(Conn);
 	 return(status);
+      }
+   }
+#endif
+
+#ifdef KRB_AUTH
+   if (ProcessType==CLIENT_PT) {
+      char *getVar;
+      getVar = getenv("irodsAuthScheme");
+      if (getVar != NULL) {
+	 if (strncmp("Kerberos",getVar,8)==0 ||
+	     strncmp("kerberos",getVar,8)==0 ||
+	     strncmp("KRB",getVar,3)==0) {
+	    status = clientLoginKrb(Conn);
+	    return(status);
+	 }
       }
    }
 #endif
