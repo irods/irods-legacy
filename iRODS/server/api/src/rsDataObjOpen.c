@@ -119,6 +119,15 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+	status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjOpen: stageAndRequeDataToCache of %s failed stat=%d",
+              dataObjInfoHead->objPath, status);
+            freeAllDataObjInfo (dataObjInfoHead);
+            return status;
+        }
+#if 0
 	rescInfo_t *cacheResc;
         status = getCacheRescInGrp (rsComm, dataObjInfoHead->rescGroupName, 
 	  dataObjInfoHead->rescInfo->rescName, &cacheResc);
@@ -138,6 +147,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             freeAllDataObjInfo (dataObjInfoHead);
             return status;
         }
+#endif
     }
 
     tmpDataObjInfo = dataObjInfoHead;

@@ -157,21 +157,6 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         }
     }
 
-#if 0
-    rei.doi = dataObjInfoHead;
-    status = applyRule ("acPreprocForDataObjOpen", NULL, &rei, NO_SAVE_REI);
-
-    if (status < 0) {
-        if (rei.status < 0)
-            status = rei.status;
-        rodsLog (LOG_NOTICE,
-         "rsDataObjRepl: acPreprocForDataObjOpen error for %s, status=%d",
-          dataObjInp->objPath, status);
-        return (status);
-    } else {
-        dataObjInfoHead = rei.doi;
-    }
-#endif
     status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
     if (status < 0) return status;
 
@@ -308,6 +293,7 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo)
     int status, status1;
     int l1descInx;
     openedDataObjInp_t dataObjCloseInp;
+    dataObjInfo_t *myDestDataObjInfo;
 
     l1descInx = dataObjOpenForRepl (rsComm, dataObjInp, srcDataObjInfo,
       destRescInfo, rescGroupName, destDataObjInfo);
@@ -327,11 +313,20 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo)
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
 
     dataObjCloseInp.l1descInx = l1descInx;
+    myDestDataObjInfo = L1desc[l1descInx].dataObjInfo;
+    L1desc[l1descInx].oprStatus = status;
     if (status >= 0) {
 	dataObjCloseInp.bytesWritten = L1desc[l1descInx].dataObjInfo->dataSize;
     }
 
     status1 = rsDataObjClose (rsComm, &dataObjCloseInp);
+
+    if (destDataObjInfo != NULL && destDataObjInfo->dataId <= 0 &&
+      myDestDataObjInfo != NULL) {
+        destDataObjInfo->dataId = myDestDataObjInfo->dataId;
+        destDataObjInfo->replNum = myDestDataObjInfo->replNum;
+    }
+    freeDataObjInfo (myDestDataObjInfo);
 
     if (status < 0) {
 	return status;
@@ -359,6 +354,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     int replStatus;
     int destRescClass;
     int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
+    dataObjInfo_t *cacheDataObjInfo = NULL;
 
     if (destRescInfo == NULL) {
 	myDestRescInfo = inpDestDataObjInfo->rescInfo;
@@ -379,24 +375,13 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     } else if (srcRescClass == COMPOUND_CL) {
 	if (getRescInGrp (rsComm, myDestRescInfo->rescName,
           inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
-	    status = stageDataFromCompToCache (rsComm, &inpSrcDataObjInfo);
+            cacheDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+	    status = stageDataFromCompToCache (rsComm, inpSrcDataObjInfo,
+	      cacheDataObjInfo);
 	    if (status < 0) return status;
+	    srcRescClass = getRescClass (cacheDataObjInfo->rescInfo);
 	}
     }
-#if 0
-    } else if (destRescClass == COMPOUND_CL || srcRescClass == COMPOUND_CL) {
-	if (getRescInGrp (rsComm, myDestRescInfo->rescName, 
-	  inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
-	    /* not in the same group */
-	    return SYS_UNMATCHED_RESC_IN_RESC_GRP;
-	}
-
-	if (compareRescAddr (myDestRescInfo, inpSrcDataObjInfo->rescInfo) 
-	  == 0) {
-	    return SYS_CACHE_RESC_NOT_ON_SAME_HOST;
-	}
-    }
-#endif
 
     /* open the dest */
 
@@ -406,8 +391,12 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     if (destL1descInx < 0) return destL1descInx;
 
     myDestDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
-    srcDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
-    *srcDataObjInfo = *inpSrcDataObjInfo;
+    if (cacheDataObjInfo == NULL) {
+        srcDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+        *srcDataObjInfo = *inpSrcDataObjInfo;
+    } else {
+	srcDataObjInfo = cacheDataObjInfo;
+    }
     if (inpDestDataObjInfo != NULL && inpDestDataObjInfo->dataId > 0) {
 	/* overwriting an existing replica */
 	/* inherit the replStatus of the src */
@@ -805,7 +794,42 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName)
 }
 
 int
-stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
+stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t *compObjInfo,
+dataObjInfo_t *outCacheObjInfo)
+{
+    int status;
+    rescInfo_t *cacheResc;
+    transStat_t transStat;
+    dataObjInp_t dataObjInp;
+
+    if (getRescClass (compObjInfo->rescInfo) != COMPOUND_CL) return 0;
+
+    status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
+      compObjInfo->rescInfo->rescName, &cacheResc);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "stageDataFromCompToCache: getCacheRescInGrp %s failed for %s stat=%d",
+          compObjInfo->rescGroupName, compObjInfo->objPath, status);
+        return status;
+    }
+    if (outCacheObjInfo != NULL)
+        memset (outCacheObjInfo, 0, sizeof (dataObjInfo_t));
+    memset (&dataObjInp, 0, sizeof (dataObjInp_t));
+    memset (&transStat, 0, sizeof (transStat));
+
+    rstrcpy (dataObjInp.objPath, compObjInfo->objPath, MAX_NAME_LEN);
+    snprintf (tmpStr, NAME_LEN, "%d", compObjInfo->replNum);
+    addKeyVal (&dataObjInp.condInput, REPL_NUM_KW, tmpStr);
+    addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, cacheResc->rescName);
+
+    status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp, &transStat,
+      outCacheObjInfo);
+    clearKeyVal (&dataObjInp.condInput);
+    return status;
+}
+
+int
+stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
 {
     int status;
     rescInfo_t *cacheResc;
@@ -829,7 +853,6 @@ stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
           dataObjInfoHead->objPath, status);
         return status;
     }
-
     *compObjInfoHead = dataObjInfoHead;
     return 0;
 }

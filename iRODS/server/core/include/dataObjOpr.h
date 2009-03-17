@@ -40,6 +40,7 @@ typedef struct l1desc {
     int l3descInx;
     int inuseFlag;
     int oprType;
+    int oprStatus;
     int dataObjInpReplFlag;
     dataObjInp_t *dataObjInp;
     dataObjInfo_t *dataObjInfo;

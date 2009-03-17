@@ -217,6 +217,11 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         }
     }
 
+    if (L1desc[l1descInx].oprStatus < 0) {
+        /* an error has occurred */ 
+	return L1desc[l1descInx].oprStatus;
+    }
+
     if (L1desc[l1descInx].bytesWritten <= 0 && 
       dataObjCloseInp->bytesWritten <= 0 &&
       L1desc[l1descInx].oprType != REPLICATE_DEST &&
@@ -356,6 +361,8 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
         } else {
 	    memset (&regReplicaInp, 0, sizeof (regReplicaInp));
+	    if (destDataObjInfo->dataId <= 0)
+		destDataObjInfo->dataId = srcDataObjInfo->dataId;
 	    regReplicaInp.srcDataObjInfo = srcDataObjInfo;
 	    regReplicaInp.destDataObjInfo = destDataObjInfo;
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
