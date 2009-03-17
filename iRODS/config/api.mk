@@ -346,3 +346,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcGeneralRowInsert.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGeneralRowPurge.o
 LIB_API_OBJS += $(libApiObjDir)/rcGeneralRowPurge.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsKrbAuthRequest.o
+LIB_API_OBJS += $(libApiObjDir)/rcKrbAuthRequest.o
