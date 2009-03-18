@@ -1752,7 +1752,7 @@ int packFlag, irodsProt_t irodsProt, char *packInstructInp)
 	doubleInStruct = 0;
 	tmpItem = packItemHead;
 	while (tmpItem != NULL) {
-#if defined(solaris_platform)
+#if defined(solaris_platform) && !defined(i86_hardware)
 	    if (tmpItem->pointerType == 0 &&  
 	      packTypeTable[tmpItem->typeInx].number == PACK_DOUBLE_TYPE) {
 		doubleInStruct = 1;
@@ -1766,7 +1766,7 @@ int packFlag, irodsProt_t irodsProt, char *packInstructInp)
             tmpItem = tmpItem->next;
         }
 	freePackedItem (packItemHead);
-#if defined(solaris_platform)
+#if defined(solaris_platform) && !defined(i86_hardware)
         /* seems that solaris align to 64 bit boundary if there is any
          * double in struct */
         if (doubleInStruct > 0) {
@@ -2525,7 +2525,7 @@ irodsProt_t irodsProt, char *packInstructInp)
         doubleInStruct = 0;
         tmpItem = unpackItemHead;
         while (tmpItem != NULL) {
-#if defined(solaris_platform)
+#if defined(solaris_platform) && !defined(i86_hardware)
             if (tmpItem->pointerType == 0 &&
               packTypeTable[tmpItem->typeInx].number == PACK_DOUBLE_TYPE) {
                 doubleInStruct = 1;
@@ -2539,7 +2539,7 @@ irodsProt_t irodsProt, char *packInstructInp)
             tmpItem = tmpItem->next;
         }
         freePackedItem (unpackItemHead);
-#if defined(solaris_platform)
+#if defined(solaris_platform) && !defined(i86_hardware)
         /* seems that solaris align to 64 bit boundary if there is any
          * double in struct */
         if (doubleInStruct > 0) {
