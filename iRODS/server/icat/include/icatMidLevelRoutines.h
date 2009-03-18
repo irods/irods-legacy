@@ -155,6 +155,8 @@ int cmlGetOneRowFromSql (char *sql,
 
 rodsLong_t cmlGetNextSeqVal(icatSessionStruct *icss);
 
+rodsLong_t cmlGetCurrentSeqVal(icatSessionStruct *icss);
+
 int cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss);
 
 rodsLong_t cmlCheckDir( char *dirName, char *userName, char *userZone, 
