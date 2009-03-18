@@ -615,6 +615,7 @@ int cmlTest( icatSessionStruct *icss) {
   char *cVal[2];
   char cValStr[MAX_INTEGER_SIZE+10];
   char sql[100];
+  rodsLong_t iVal;
 
   icss->databaseUsername="schroede";
   icss->databasePassword="";
@@ -640,6 +641,8 @@ int cmlTest( icatSessionStruct *icss) {
     printf("result = %s\n",cValStr);
     i = 0;
   }
+
+  iVal = cmlGetCurrentSeqVal(icss);
 
   return(i);
 

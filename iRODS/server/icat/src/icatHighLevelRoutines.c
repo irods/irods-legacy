@@ -1942,18 +1942,18 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       status =  cmlExecuteNoAnswerSql(tSQL, &icss);
 
       if (status == 0) {
+	 if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 5");
 #if ORA_ICAT
 	 char newCollectionID[MAX_NAME_LEN];
 	 /* 
-	    For Oracle, we can't use currStr2 string in a where clause so do another
-	    query to get the new collection id.
+	    For Oracle, we can't use currStr2 string in a where clause so
+	    do another query to get the new collection id.
 	 */
 	 status = cmlGetCurrentSeqVal(&icss);
 
 	 if (status > 0) {
 	    /* And then use it in the where clause for the update */
 	    snprintf(newCollectionID, MAX_SQL_SIZE, "%lld", status);
-	    if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 5");
 	    cllBindVars[cllBindVarCount++]="1";
 	    cllBindVars[cllBindVarCount++]=myTime;
 	    cllBindVars[cllBindVarCount++]=newCollectionID;
@@ -1966,7 +1966,6 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 	   For Postgres we can, use the currStr2 to get the current id
 	   and save a SQL interaction.
 	 */
-	 if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 5");
 	 cllBindVars[cllBindVarCount++]="1";
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 snprintf(tSQL, MAX_SQL_SIZE, 
