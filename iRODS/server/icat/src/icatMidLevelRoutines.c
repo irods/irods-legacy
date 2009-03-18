@@ -549,6 +549,39 @@ cmlGetNextSeqVal(icatSessionStruct *icss) {
    return(iVal);
 }
 
+rodsLong_t
+cmlGetCurrentSeqVal(icatSessionStruct *icss) {
+   char nextStr[STR_LEN];
+   char sql[STR_LEN];
+   int status;
+   rodsLong_t iVal;
+
+   if (logSQL_CML) rodsLog(LOG_SQL, "cmlGetCurrentSeqVal SQL 1 ");
+
+   nextStr[0]='\0';
+
+   cllCurrentValueString("R_ObjectID", nextStr, STR_LEN);
+      /* R_ObjectID is created in icatSysTables.sql as
+         the sequence item for objects */
+
+#ifdef ORA_ICAT
+   /* For Oracle, use the built-in one-row table */
+   snprintf(sql, STR_LEN, "select %s from DUAL", nextStr);
+#else
+   /* Postgres can just get the next value without a table */
+   snprintf(sql, STR_LEN, "select %s", nextStr);
+#endif
+
+   status = cmlGetIntegerValueFromSql (sql, &iVal, 0, 0, 0, 0, 0, icss);
+   if (status < 0) {
+      rodsLog(LOG_NOTICE, 
+	      "cmlGetCurrentSeqVal cmlGetIntegerValueFromSql failure %d",
+	      status);
+      return(status);
+   }
+   return(iVal);
+}
+
 int 
 cmlGetNextSeqStr(char *seqStr, int maxSeqStrLen, icatSessionStruct *icss) {
    char nextStr[STR_LEN];
