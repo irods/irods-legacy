@@ -1125,6 +1125,7 @@ usage(char *subOpt)
 "Type is the user type (see 'lt user_type' for a list)",
 "Zone is the user's zone (for remote-zone users)",
 "DN is the Distinguished Name for GSI authentication (optional)",
+"DN can also be the user principal name for Kerberos authentication (optional)",
 " ",
 "Tip: Use moduser to set a password, DN or other attributes of the user account.",
 ""};
@@ -1156,7 +1157,8 @@ usage(char *subOpt)
    char *moduserMsgs[]={
 " moduser Name[#Zone] [ type | zone | DN | comment | info | password ] newValue",
 "Modifies a field of an existing user definition.",
-"For GSI authentication, the DN can also be entered via mkuser.",
+"For GSI authentication, the DN can also be entered via mkuser",
+"(DN is also the principal name used for Kerberos authentication).",
 "For password authentication, use moduser to set the password.",
 "(The password is transferred in a scrambled form to be more secure.)",
 "Long forms of the field names may also be used:",
