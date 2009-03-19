@@ -300,7 +300,7 @@
 #define KRB_ERROR_DISPLAYING_NAME        -967000
 #define KRB_ERROR_RELEASING_NAME         -968000
 #define KRB_USER_DN_NOT_FOUND            -969000
-#define KRB_MULTIPLE_DNS_FOUND           -970000
+#define KRB_NAME_MATCHES_MULTIPLE_USERS  -970000
 #define KRB_QUERY_INTERNAL_ERROR         -971000
 
 /* 1,000,000 to 1,500,000  - Rule Engine errors */
