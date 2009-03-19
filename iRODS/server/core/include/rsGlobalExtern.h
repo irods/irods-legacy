@@ -40,6 +40,9 @@ extern char reRuleStr[];
 extern char reFuncMapStr[];
 extern char reVariableMapStr[];
 
+/* Kerberos server name */
+extern char KerberosName[];
+
 extern int InitialState;
 extern rsComm_t *ThisComm;
 

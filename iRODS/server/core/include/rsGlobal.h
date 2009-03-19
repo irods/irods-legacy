@@ -39,6 +39,9 @@ char reRuleStr[LONG_NAME_LEN];
 char reFuncMapStr[LONG_NAME_LEN];
 char reVariableMapStr[LONG_NAME_LEN];
 
+/* global Kerberos server-side name */
+char KerberosName[MAX_NAME_LEN];
+
 /* The stat of the Agent initialization */
 
 int InitialState = INITIAL_NOT_DONE;
