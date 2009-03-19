@@ -162,7 +162,7 @@ LIB_KRB_AUTH = \
         -L$(KRB_LOC)/lib \
         -lgssapi_krb5
 
-LDFLAGS += $(LIB_GSI_KRB)
+LDFLAGS += $(LIB_KRB_AUTH)
 endif
 
 # for checking memleak
