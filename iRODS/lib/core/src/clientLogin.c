@@ -61,8 +61,7 @@ int clientLoginGsi(rcComm_t *Conn)
       serverDN = getenv("SERVER_DN");  /* NULL or the SERVER_DN string */
    }
 
-   status = igsiEstablishContextClientside(Conn, serverDN,
-			       0);
+   status = igsiEstablishContextClientside(Conn, serverDN, 0);
    if (status) {
       printError(Conn, status, "igsiEstablishContextClientside");
       return(status);
@@ -88,7 +87,8 @@ int clientLoginKrb(rcComm_t *Conn)
    int status;
    krbAuthRequestOut_t *krbAuthReqOut;
    char *myName;
-   char *serverDN;
+   char *serverName;
+   static int KRB_debug=0;
 
    status = ikrbSetupCreds(Conn, NULL, NULL, &myName);
    if (status) {
@@ -96,7 +96,9 @@ int clientLoginKrb(rcComm_t *Conn)
       return(status);
    }
 
-   printf("Client-side DN is:%s\n",myName);
+   if (KRB_debug) {
+      printf("Client-side Name:%s\n",myName); 
+   }
 
    status = rcKrbAuthRequest(Conn, &krbAuthReqOut);
    if (status) {
@@ -104,17 +106,24 @@ int clientLoginKrb(rcComm_t *Conn)
       return(status);
    }
 
-   printf("Server-side DN is:%s\n", krbAuthReqOut->serverDN);
-
-#if 0
-   serverDN = getenv("irodsServerDn"); /* Use irodsServerDn if defined */
-   if (serverDN == NULL) {
-      serverDN = getenv("SERVER_DN");  /* NULL or the SERVER_DN string */
+   if (KRB_debug) {
+      printf("Server-side Name provided:%s\n", krbAuthReqOut->serverName);
    }
-#endif
-   serverDN=  krbAuthReqOut->serverDN; /* // ? */
-   status = ikrbEstablishContextClientside(Conn, serverDN, 0);
-   /* //   status = ikrbEstablishContextClientside(Conn, 0, 0); */
+
+   serverName = getenv("irodsServerDn"); /* Use irodsServerDn if defined */
+   if (serverName == NULL) {
+      serverName = getenv("SERVER_DN");  /* NULL or the SERVER_DN string */
+   }
+   if (serverName == NULL) {
+      /* if not provided, use the server's claimed Name */
+      serverName=  krbAuthReqOut->serverName; 
+   }
+
+   if (KRB_debug) {
+      printf("Server Name to connect to:%s\n", serverName);
+   }
+
+   status = ikrbEstablishContextClientside(Conn, serverName, 0);
    if (status) {
       printError(Conn, status, "ikrbEstablishContextClientside");
       return(status);
