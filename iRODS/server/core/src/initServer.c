@@ -477,6 +477,14 @@ initRcatServerHostByFile (rsComm_t *rsComm)
                        keyWdName);
 		    return (SYS_CONFIG_FILE_ERR);
 		}
+	    } else if (strcmp (keyWdName, KERBEROS_NAME_KW) == 0) {
+               if ((bytesCopied = getStrInBuf (&inPtr, KerberosName,
+	          &lineLen, LONG_NAME_LEN)) < 0) {
+                     rodsLog (LOG_SYS_FATAL,
+                        "initRcatServerHostByFile: parsing error for keywd %s",
+                        keyWdName);
+		     return (SYS_CONFIG_FILE_ERR);
+               }
 	    } else if (strcmp (keyWdName, ICAT_HOST_KW) == 0) { 
 		if ((bytesCopied = getStrInBuf (&inPtr, addr.hostAddr,
           	 &lineLen, LONG_NAME_LEN)) > 0) {
