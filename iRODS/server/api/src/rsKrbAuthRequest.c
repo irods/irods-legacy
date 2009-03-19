@@ -6,7 +6,7 @@
 #include "krbAuthRequest.h"
 #include "authResponse.h"
 #include "genQuery.h"
-#include "reGlobalsExtern.h"
+#include "rsGlobalExtern.h"
 
 static int krbAuthReqStatus=0;
 static int krbAuthReqError=0;
@@ -33,11 +33,8 @@ rsKrbAuthRequest (rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut)
     result = *krbAuthRequestOut;
 
 #if defined(KRB_AUTH)
-    /* // temporary, need configuration option */
-    status = ikrbSetupCreds(NULL, rsComm, "irods/zuri.sdsc.edu@SDSC.EDU",
-    			    &result->serverDN);
-
-/*  fprintf(stderr,"rsKrbAuthRequest ikrbSetupCreds status=%d\n",status); */
+    status = ikrbSetupCreds(NULL, rsComm, KerberosName,
+    			    &result->serverName);
     if (status==0) {
         rsComm->gsiRequest=2;
     }
@@ -50,7 +47,7 @@ rsKrbAuthRequest (rsComm_t *rsComm, krbAuthRequestOut_t **krbAuthRequestOut)
     return (status);
 #endif
 
-} 
+}
 
 int ikrbServersideAuth(rsComm_t *rsComm) {
    int status;
@@ -90,7 +87,8 @@ int ikrbServersideAuth(rsComm_t *rsComm) {
 		clientName);
       addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition2);
 
-/*    snprintf (condition2, MAX_NAME_LEN*2, "='local'");
+/*    The user's principal name should be sufficient
+      snprintf (condition2, MAX_NAME_LEN*2, "='local'");
       addInxVal (&genQueryInp.sqlCondInp, COL_ZONE_TYPE, condition2); */
 
       addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
@@ -119,8 +117,8 @@ int ikrbServersideAuth(rsComm_t *rsComm) {
    }
 
    if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 2) {
-      krbAuthReqError = KRB_MULTIPLE_DNS_FOUND;
-      return(KRB_MULTIPLE_DNS_FOUND);
+      krbAuthReqError = KRB_NAME_MATCHES_MULTIPLE_USERS;
+      return(KRB_NAME_MATCHES_MULTIPLE_USERS);
    }
 
 #ifdef KRB_DEBUG
@@ -143,7 +141,7 @@ int ikrbServersideAuth(rsComm_t *rsComm) {
       clientPrivLevel = LOCAL_PRIV_USER_AUTH;
    }
 
-   /*   status = chkProxyUserPriv (rsComm, privLevel); // ? */
+   status = chkProxyUserPriv (rsComm, privLevel);
 
    if (status < 0) {
       krbAuthReqError = status;
