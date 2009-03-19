@@ -3064,3 +3064,43 @@ rescInfo_t **outRescInfo)
     return SYS_UNMATCHED_RESC_IN_RESC_GRP;
 }
 
+int
+getCacheDataInfoForRepl (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo, 
+dataObjInfo_t **outDataObjInfo)
+{
+    char *rescGroupName;
+    dataObjInfo_t *srcDataObjInfo;
+
+    rescGroupName = compDataObjInfo->rescGroupName;
+
+    srcDataObjInfo = srcDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (strcmp (srcDataObjInfo->rescGroupName, rescGroupName) == 0) {
+	    /* same group */
+	    if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+		*outDataObjInfo = srcDataObjInfo;
+		return 0;
+	    }
+	}
+	srcDataObjInfo = srcDataObjInfo->next;
+    }
+
+    /* try destDataObjInfoHead but up to compDataObjInfo because
+     * they have been updated */
+
+    srcDataObjInfo = destDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (srcDataObjInfo == compDataObjInfo) break;
+        if (strcmp (srcDataObjInfo->rescGroupName, rescGroupName) == 0) {
+            /* same group */
+            if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+                *outDataObjInfo = srcDataObjInfo;
+                return 0;
+            }
+        }
+        srcDataObjInfo = srcDataObjInfo->next;
+    }
+    return SYS_NO_CACHE_RESC_IN_GRP;
+}
+

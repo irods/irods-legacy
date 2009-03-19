@@ -231,4 +231,8 @@ getRescInGrp (rsComm_t *rsComm, char *rescName, char *rescGroupName,
 rescInfo_t **outRescInfo);
 int
 sortRescByType (rescGrpInfo_t **rescGrpInfo);
+int
+getCacheDataInfoForRepl (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
+dataObjInfo_t **outDataObjInfo);
 #endif	/* OBJ_META_OPR_H */

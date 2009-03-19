@@ -119,6 +119,13 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+	if (writeFlag > 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjOpen: %s - cannot directly write iinto COMPOUND resc",
+              dataObjInfoHead->objPath);
+            freeAllDataObjInfo (dataObjInfoHead);
+            return SYS_CANT_DIRECTLY_ACC_COMPOUND_RESC;
+	}
 	status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
         if (status < 0) {
             rodsLog (LOG_ERROR,

@@ -128,7 +128,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             rodsLog (LOG_ERROR,
               "rsDataObjCreate: Create obj in COMPOUND_CL resc %s rescGrp %s",
 	      tmpRescInfo->rescName, tmpRescGrpInfo->rescGroupName);
-            return (SYS_CANT_CREATE_IN_COMPOUND_RESC);
+            return (SYS_CANT_DIRECTLY_ACC_COMPOUND_RESC);
 	}
 	status = l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp, 
 	  tmpRescInfo, myRescGrpInfo->rescGroupName);

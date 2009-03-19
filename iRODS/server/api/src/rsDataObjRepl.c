@@ -217,15 +217,35 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
     while (destDataObjInfo != NULL) {
         if (destDataObjInfo->dataId > 0) {
 	    /* destDataObj exists */
-	    srcDataObjInfo = srcDataObjInfoHead;
-	    while (srcDataObjInfo != NULL) {
-                /* overwrite a specific destDataObjInfo */
-                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-                  NULL, "", destDataObjInfo);
-		if (status >= 0) {
-		    break;
+	    if (getRescClass (destDataObjInfo->rescInfo) == COMPOUND_CL) {
+		/* need to get a copy in cache first */
+		if ((status = getCacheDataInfoForRepl (srcDataObjInfoHead, 
+		  inpDestDataObjInfo, destDataObjInfo, &srcDataObjInfo)) < 0) {
+		    /* we don't have a good cache copy, make one */
+		    status = replToCacheRescOfCompObj (rsComm, dataObjInp,
+		      srcDataObjInfoHead, destDataObjInfo, &srcDataObjInfo);
+		    if (status < 0) {
+        	        rodsLog (LOG_ERROR,
+         	        "_rsDataObjRepl: replToCacheRescOfCompObj failed for %s stat=%d",
+          	        destDataObjInfo->objPath, status);
+        		return status;
+    		    }
+		    /* save it */
+		    queDataObjInfo (&srcDataObjInfoHead, srcDataObjInfo, 1, 0);
 		}
-		srcDataObjInfo = srcDataObjInfo->next;
+		status = _rsDataObjReplS (rsComm, dataObjInp,
+                  srcDataObjInfo, NULL, "", destDataObjInfo);
+	    } else {
+	        srcDataObjInfo = srcDataObjInfoHead;
+	        while (srcDataObjInfo != NULL) {
+                    /* overwrite a specific destDataObjInfo */
+                    status = _rsDataObjReplS (rsComm, dataObjInp, 
+		      srcDataObjInfo, NULL, "", destDataObjInfo);
+		    if (status >= 0) {
+		        break;
+		    }
+		    srcDataObjInfo = srcDataObjInfo->next;
+		}
 	    }
             if (status >= 0) {
                 transStat->numThreads = dataObjInp->numThreads;
@@ -321,10 +341,14 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo)
 
     status1 = rsDataObjClose (rsComm, &dataObjCloseInp);
 
-    if (destDataObjInfo != NULL && destDataObjInfo->dataId <= 0 &&
-      myDestDataObjInfo != NULL) {
-        destDataObjInfo->dataId = myDestDataObjInfo->dataId;
-        destDataObjInfo->replNum = myDestDataObjInfo->replNum;
+    if (destDataObjInfo != NULL) {
+        if (destDataObjInfo->dataId <= 0 && myDestDataObjInfo != NULL) {
+            destDataObjInfo->dataId = myDestDataObjInfo->dataId;
+            destDataObjInfo->replNum = myDestDataObjInfo->replNum;
+        } else {
+	    /* the size could change */
+            destDataObjInfo->dataSize = myDestDataObjInfo->dataSize;
+	}
     }
     freeDataObjInfo (myDestDataObjInfo);
 
@@ -855,5 +879,42 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
     }
     *compObjInfoHead = dataObjInfoHead;
     return 0;
+}
+
+int
+replToCacheRescOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *compObjInfo, 
+dataObjInfo_t **outDestDataObjInfo)
+{
+    int status = 0;
+    rescInfo_t *cacheResc;
+    dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
+
+    status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
+      compObjInfo->rescInfo->rescName, &cacheResc);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "replToCacheRescOfCompObj: getCacheRescInGrp %s failed for %s stat=%d",
+         compObjInfo->rescGroupName, compObjInfo->objPath, status);
+        return status;
+    }
+
+    if (outDestDataObjInfo == NULL) {
+	destDataObjInfo = NULL;
+    } else {
+        destDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+    }
+    srcDataObjInfo = srcDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+        status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
+          cacheResc, compObjInfo->rescGroupName, destDataObjInfo);
+        if (status >= 0) {
+	    if (destDataObjInfo != NULL) *outDestDataObjInfo = destDataObjInfo;
+            break;
+        }
+        srcDataObjInfo = srcDataObjInfo->next;
+    }
+
+    return status;
 }
 
