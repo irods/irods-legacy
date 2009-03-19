@@ -449,23 +449,27 @@ msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
  * resource.
  */
 int
-msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xallFlag,
+msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xflag,
 ruleExecInfo_t *rei)
 {
     int writeFlag;
     dataObjInfo_t *dataObjInfoHead;
     char *cacheResc;
-    char *allFlag;
+    char *flag = NULL;
+#if 0
     dataObjInp_t dataObjInp;
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
+#endif
 
     cacheResc = (char *) xcacheResc->inOutStruct;
-    if (xallFlag != NULL && xallFlag->inOutStruct != NULL) {
-        allFlag = (char *) xallFlag->inOutStruct;
+    if (xflag != NULL && xflag->inOutStruct != NULL) {
+        flag = (char *) xflag->inOutStruct;
+#if 0
 	if (strcmp (allFlag, ALL_KW) == 0) {
     	    addKeyVal (&dataObjInp.condInput, ALL_KW, "");
 	}
+#endif
     }
     
     RE_TEST_MACRO ("    Calling msiSysReplDataObj")
@@ -517,7 +521,7 @@ ruleExecInfo_t *rei)
 
 #endif
     rei->status = rsReplAndRequeDataObjInfo (rei->rsComm, &dataObjInfoHead, 
-     cacheResc);
+     cacheResc, flag);
     if (rei->status >= 0) {
 	 rei->doi = dataObjInfoHead;
     }

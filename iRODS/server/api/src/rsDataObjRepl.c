@@ -782,7 +782,7 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
 
 int
 rsReplAndRequeDataObjInfo (rsComm_t *rsComm, 
-dataObjInfo_t **srcDataObjInfoHead, char *destRescName)
+dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr)
 {
     dataObjInfo_t *dataObjInfoHead, *myDataObjInfo;
     transStat_t transStat;
@@ -795,6 +795,15 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName)
     memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
     memset (&dataObjInp, 0, sizeof (dataObjInp_t));
     memset (&transStat, 0, sizeof (transStat));
+
+    if (flagStr != NULL) {
+        if (strstr (flagStr, ALL_KW) != NULL) {
+            addKeyVal (&dataObjInp.condInput, ALL_KW, "");
+	}
+        if (strstr (flagStr, RBUDP_TRANSFER_KW) != NULL) {
+            addKeyVal (&dataObjInp.condInput, RBUDP_TRANSFER_KW, "");
+	}
+    }
 
     rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);
     snprintf (tmpStr, NAME_LEN, "%d", dataObjInfoHead->replNum);
@@ -870,7 +879,7 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
         return status;
     }
     status = rsReplAndRequeDataObjInfo (rsComm, &dataObjInfoHead,
-      cacheResc->rescName);
+      cacheResc->rescName, NULL);
     if (status < 0) {
         rodsLog (LOG_ERROR,
          "stageDataFromCompToCache:rsReplAndRequeDataObjInfo %s failed stat=%d",

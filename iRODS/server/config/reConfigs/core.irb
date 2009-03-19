@@ -107,12 +107,17 @@ acSetMultiReplPerResc||nop|nop
 # in sequence by these rules. 
 #    msiExtractNaraMetadata - extract and register metadata from the just 
 #     upload NARA files.
-#    msiSysReplDataObj(replResc, allFlag) - can be used to replicate a copy of 
+#    msiSysReplDataObj(replResc, flag) - can be used to replicate a copy of 
 #    the file just uploaded or copied data object to the specified replResc 
-#    The allFlag is only meaningful if the replResc is a resource group. In
-#    this case, setting allFlag to "all" means a copy will be made in all 
-#    the resources in the resource group. A "null" input means a single
-#    will be made in one of the resource in the resource group   
+#    Valid values for the "flag" input are "all", "updateRepl" and 
+#    "rbudpTransfer". More than one flag values can be set using the 
+#    "%" character as seperator. e.g., "all%updateRepl". "updateRepl" means 
+#    update an existing stale copy to the latest copy. The "all" flag means 
+#    replicate to all resources in a resource group or update all stale 
+#    copies if the "updateRepl" flag is also set. "rbudpTransfer" means
+#    the RBUDP protocol will be used for the transfer.
+#    A "null" input means a single will be made in one of the resource 
+#    in the resource group.  
 #
 #    msiSysChksumDataObj - checksum the just uploaded or copied data object.
 # acPostProcForPut||msiSysChksumDataObj##msiSysReplDataObj(demoResc8,all)|nop##nop

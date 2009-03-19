@@ -50,7 +50,7 @@ int
 l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx);
 int
 rsReplAndRequeDataObjInfo (rsComm_t *rsComm, 
-dataObjInfo_t **srcDataObjInfoHead, char *destRescName);
+dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr);
 int
 replToCacheRescOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *compObjInfo,
