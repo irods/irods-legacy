@@ -862,7 +862,7 @@ dataObjSqlResult_t *dataObjSqlResult)
 
     if ((rescGrp = getSqlResultByInx (myGenQueryOut, COL_D_RESC_GROUP_NAME))
       == NULL) {
-        setSqlResultValue (&dataObjSqlResult->resource, COL_D_RESC_GROUP_NAME,
+        setSqlResultValue (&dataObjSqlResult->rescGrp, COL_D_RESC_GROUP_NAME,
           "", myGenQueryOut->rowCnt);
     } else {
         dataObjSqlResult->rescGrp = *rescGrp;
