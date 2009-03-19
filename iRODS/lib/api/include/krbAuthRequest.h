@@ -20,10 +20,10 @@ extern "C" {
 #endif
 
 typedef struct {
-   char *serverDN;
+   char *serverName;
 } krbAuthRequestOut_t;
     
-#define krbAuthRequestOut_PI "str *ServerDN;"
+#define krbAuthRequestOut_PI "str *ServerName;"
 
 
 #if defined(RODS_SERVER)
