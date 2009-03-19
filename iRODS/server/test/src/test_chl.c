@@ -11,8 +11,12 @@
 #include "rodsUser.h"
 
 #include "icatHighLevelRoutines.h"
+#include "icatMidLevelRoutines.h"
 
 #include <string.h>
+
+extern icatSessionStruct *chlGetRcs();
+
 
 /*
 int testCml(rsComm_t *rsComm)
@@ -628,6 +632,16 @@ int testPurgeServerLoadDigest(rsComm_t *rsComm, char *option) {
    return(status);
 }
 
+rodsLong_t
+testCurrent(rsComm_t *rsComm) {
+   rodsLong_t status;
+   icatSessionStruct *icss;
+
+   icss = chlGetRcs();
+
+   status = cmlGetCurrentSeqVal(icss);
+   return(status);
+}
 
 int
 main(int argc, char **argv) {
@@ -786,6 +800,8 @@ main(int argc, char **argv) {
 
    if (strcmp(argv[1],"rename")==0) {
       status = testRename(Comm, argv[2], argv[3]);
+      testCurrent(Comm);  /* exercise this as part of rename;
+                             testCurrent needs a SQL context */
       didOne=1;
    }
 
