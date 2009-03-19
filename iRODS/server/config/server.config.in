@@ -23,3 +23,7 @@ DBUsername schroede
 reRuleSet   core
 reFuncMapSet  core
 reVariableMapSet  core
+#
+# For Kerberos, define the principal name in the server-side Keytab file
+# For example, for host zuri.unc.edu in the Kerberos domain UNC.EDU:
+# KerberosName irods/zuri.unc.edu@UNC.EDU
