@@ -29,7 +29,7 @@ typedef enum {
 } fileDriverType_t;
 
 4) Add a line in the RescTypeDef[] table in rcGlobal.h. e.g.,
-  {"xyzFs",      FILE_CAT, XYZ_FILE_TYPE,  DO_CHK_PATH_PERM},
+  {"xyzFs file system",      FILE_CAT, XYZ_FILE_TYPE,  DO_CHK_PATH_PERM},
 
 
 This table associates a physical resource name "xyzFs" with the XYZ_FILE_TYPE
