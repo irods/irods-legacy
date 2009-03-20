@@ -1,12 +1,3 @@
-Hello Thomas and Jean-Yves,
-
-As discussed at the Lyon workshop, I am incoperating get/put type driver
-functions to make it easier to integrate HPSS into iRods. You can
-download the new iRods code at our anonymous ftp site - ftp.sdsc.edu in
-pub/outgoing/mwan/irods/iRODS030209.tar. I have added a "compound"
-resource class for this purpose. A description of the "compound" resource
-class is given below:
- 
 A compound resource is a class where the POSIX type I/O calls such as open, 
 read, write, lseek, close, etc are not readily available. Instead,
 it uses put and get calls to transfer entire files. Examples of the 
