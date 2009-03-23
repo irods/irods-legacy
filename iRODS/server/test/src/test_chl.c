@@ -224,6 +224,9 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
 			 userNameAndZone,
 			 &userPrivLevel, &clientPrivLevel);
 
+   if (status == 0) {
+      printf("clientPrivLevel=%d\n",clientPrivLevel);
+   }
    return(status);
 
 }
