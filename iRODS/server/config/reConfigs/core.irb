@@ -57,17 +57,17 @@ acGetUserByDN(*arg,*OUT)||nop|nop
 #    msiSetRescSortScheme(sortScheme) - set the scheme for 
 #      for selecting the best resource to use when creating a data object.  
 #      sortScheme - The sorting scheme. Valid scheme are "default", 
-#        "random" and "byRescType". The "byRescType" scheme will put the
+#        "random" and "byRescClass". The "byRescClass" scheme will put the
 #        cache class of resource on the top of the list. The scheme 
-#        "random" and "byRescType" can be applied in sequence. e.g.,
-#        msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)
+#        "random" and "byRescClass" can be applied in sequence. e.g.,
+#        msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)
 #        will select randomly a cache class resource and put it on the
 #        top of the list.
 # acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
-# acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)|nop##nop##nop
+# acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
 # acSetRescSchemeForCreate||msiSetDefaultResc(demoResc7%demoResc8,preferred)|nop
 acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
-#acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,noForce)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)|nop##nop##nop
+#acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,noForce)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
 #
 # 2) acPreprocForDataObjOpen - Preprocess rule for opening an existing
 # data object which is used by the get, copy and replicate operations. 
@@ -82,7 +82,13 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 #      opening an object. The copy stored in this resource will not be picked
 #      unless this is the only copy.
 #    msiSortDataObj(sortingScheme) - Sort the copies of the data object using
-#      this scheme. Currently, "random" sorting scheme is supported.
+#      this scheme. Currently, "random" and "byRescClass" sorting scheme are
+#      supported. If "byRescClass" is set, data objects in the "cache" 
+#      resources will be placed ahead of of those in the "archive" resources. 
+#      The sorting schemes can also be chained. e.g.,
+#      msiSortDataObj(random)##msiSortDataObj(byRescClass) means that
+#      the data objects will be sorted randomly first and then seperated
+#      by class. 
 #    msiStageDataObj(cacheResc) - stage a copy of the data object in the 
 #      cacheResc before opening the data object. 
 # acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop

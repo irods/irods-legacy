@@ -285,7 +285,7 @@ char *sortScheme)
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
         tmpRescGrpInfo->rescInfo = (*rescGrpInfo)->rescInfo;
         (*rescGrpInfo)->rescInfo = tmpRescInfo;
-    } else if (strcmp (sortScheme, "byRescType") == 0) {
+    } else if (strcmp (sortScheme, "byRescClass") == 0) {
 	sortRescByType (rescGrpInfo);
 #if 0
 	tmpRescGrpInfo = *rescGrpInfo;
