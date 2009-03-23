@@ -439,7 +439,7 @@ foreach $arg (@ARGV)
 		printNotice (
     "We do not recommend running this on production systems.  Basic\n");
 		printNotice( 
-    "testing, such as and iput and iget, is generally all that is needed.");
+    "testing, such as iput and iget, is generally all that is needed.");
 		printNotice( "\n" );
 		if ( askYesNo( "    Run the test (yes/no)?  " ) == 1 ) {
 		    doTest( );
