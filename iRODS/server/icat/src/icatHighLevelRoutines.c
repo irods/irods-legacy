@@ -3228,7 +3228,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
 	 status = cmlGetStringValueFromSql(
 	       "select user_type_name from r_user_main where user_name=? and zone_name=?",
-	       userType, MAX_NAME_LEN, userName2,
+	       userType, MAX_NAME_LEN, rsComm->clientUser.userName,
 	       myUserZone, 0, &icss);
 
 	 if (status !=0) {
