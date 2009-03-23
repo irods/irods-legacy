@@ -18,6 +18,9 @@
 # To use with checkIcatLog.pl, redirect stdout to a file.  Since test_chl
 # is using the ICAT code directly, the calls are not being logged.
 
+# Corresponds to a .h value for regular user authentication level:
+$LOCAL_USER_AUTH="3";
+
 # get our zone name
 runCmd(0, "ienv | grep irodsZone | tail -1");
 chomp($cmdStdout);
@@ -216,6 +219,13 @@ runCmd(1, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin mkuser $UserAdmin2 rodsadmin");
 runCmd(0, "iadmin moduser $UserAdmin2 password abc");
 runCmd(0, "test_chl checkauth $UserAdmin2 $User2 $myZone");
+$temp2=$cmdStdout;
+chomp($temp2);
+$ix2=index($temp2,"clientPrivLevel=$LOCAL_USER_AUTH");
+if ($ix2 < 0) {
+    printf("stdout is:$temp2:");
+    die("For checkauth on $user2 the clientPrivLevel is not $LOCAL_USER_AUTH");
+}
 
 # modColl test
 runCmd(1, "imkdir $DIR1");
