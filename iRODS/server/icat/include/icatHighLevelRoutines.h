@@ -36,7 +36,8 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
     int format, 
     int *control, char *outBuf, int maxOutBuf);
 int chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result);
-int chlGenQueryAccessControlSetup(char *user, char *zone, int priv);
+int chlGenQueryAccessControlSetup(char *user, char *zone, int priv, 
+    int controlFlag);
 
 int chlGeneralUpdate(generalUpdateInp_t generalUpdateInp);
 
