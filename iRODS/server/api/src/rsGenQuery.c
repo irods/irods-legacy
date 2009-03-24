@@ -52,14 +52,55 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 {
     int status;
 
+    static int ruleExecuted=0;
+    ruleExecInfo_t rei;
+    static int ruleResult=0;
+
     /*  printGenQI(genQueryInp);  for debug */
 
     *genQueryOut = malloc(sizeof(genQueryOut_t));
     memset((char *)*genQueryOut, 0, sizeof(genQueryOut_t));
 
+    if (ruleExecuted==0) {
+#if 0
+       msParam_t *outMsParam;
+#endif
+       memset((char*)&rei,0,sizeof(rei));
+       status = applyRule ("acAclPolicy", NULL, &rei, NO_SAVE_REI);
+       ruleResult = rei.status;
+       if (status==0) {
+	  ruleExecuted=1; /* No need to retry next time since it
+                             succeeded.  Since this is called at
+                             startup, the Rule Engine may not be
+                             initialized yet, in which case the
+                             default setting is fine and we should
+                             retry next time. */
+#if 0
+	  /* No longer need this as msiAclPolicy calls
+	     chlGenQueryAccessControlSetup to set the flag.  Leaving
+	     it in the code for now in case needed later. */
+	  outMsParam = getMsParamByLabel(&rei.inOutMsParamArray, "STRICT");
+	  printf("outMsParam=%x\n",(int)outMsParam);
+	  if (outMsParam != NULL) {
+	     ruleResult=1;
+	  }
+#endif
+       }
+       printf("rsGenQuery rule status=%d ruleResult=%d\n",status,ruleResult);
+    }
+
     chlGenQueryAccessControlSetup(rsComm->clientUser.userName, 
 			      rsComm->clientUser.rodsZone,
-			      rsComm->proxyUser.authInfo.authFlag);
+	 		      rsComm->clientUser.authInfo.authFlag,
+			      -1);
+#if 0
+    rodsLog (LOG_NOTICE, 
+	     "_rsGenQuery debug: client %s %d proxy %s %d", 
+	     rsComm->clientUser.userName, 
+	     rsComm->clientUser.authInfo.authFlag,
+	     rsComm->proxyUser.userName, 
+	     rsComm->proxyUser.authInfo.authFlag);
+#endif
 
     status = chlGenQuery(*genQueryInp, *genQueryOut);
 
