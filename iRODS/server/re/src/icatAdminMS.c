@@ -188,3 +188,47 @@ int msiRenameCollection(msParam_t* oldName, msParam_t* newName,
 #endif
    return(status);
 }
+
+/* msiAclPolicy -
+ *
+ * When called (e.g. from acAclPolicy) and with "STRICT" as the
+ * argument, this will set the ACL policy (for GeneralQuery) to be
+ * extended (most strict).  See core.irb.
+ *
+ */
+int
+msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
+{
+#if 0
+   msParamArray_t *myMsParamArray;
+   int flag=1;
+#endif
+   char *inputArg;
+
+   inputArg =  (char *) msParam->inOutStruct;
+   if (inputArg != NULL) {
+      if (strncmp(inputArg,"STRICT",6)==0) {
+#if 0
+	 /* No longer need this as we're calling
+	    chlGenQueryAccessControlSetup directly below (in case
+	    msiAclPolicy will be called in a different manner than via
+	    acAclPolicy sometime).
+	    Leaving it in (ifdef'ed out tho) in case needed later.
+	 */
+	 myMsParamArray = mallocAndZero (sizeof (msParamArray_t));
+	 addMsParamToArray (myMsParamArray, "STRICT", INT_MS_T, &flag,
+			    NULL, 0);
+	 rei->inOutMsParamArray=*myMsParamArray;
+#endif
+#ifdef RODS_CAT
+	 chlGenQueryAccessControlSetup(NULL, NULL, 0, 2);
+#endif
+      }
+   }
+   else {
+#ifdef RODS_CAT
+      chlGenQueryAccessControlSetup(NULL, NULL, 0, 0);
+#endif
+   }
+   return (0);
+}

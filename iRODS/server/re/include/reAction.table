@@ -134,6 +134,7 @@ int msiRenameLocalZone(msParam_t *oldName, msParam_t *newName,
                        ruleExecInfo_t *rei);
 int msiRenameCollection(msParam_t *oldName, msParam_t *newName,
                        ruleExecInfo_t *rei);
+int msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei);
 int msiRemoveKeyValuePairsFromObj(msParam_t *metadataParam, 
                                   msParam_t* objParam,
                                   msParam_t* typeParam,
@@ -268,6 +269,7 @@ microsdef_t MicrosTable[] = {
   {"msiRdaRollback",0,(funcPtr) msiRdaRollback},
   {"msiRenameLocalZone",2,(funcPtr) msiRenameLocalZone},
   {"msiRenameCollection",2,(funcPtr) msiRenameCollection},
+  {"msiAclPolicy",1,(funcPtr)msiAclPolicy},
   {"msiRemoveKeyValuePairsFromObj",3,(funcPtr) msiRemoveKeyValuePairsFromObj},
   {"msiDataObjPutWithOptions",6,(funcPtr) msiDataObjPutWithOptions},
   {"msiSetReServerNumProc",1,(funcPtr) msiSetReServerNumProc},
