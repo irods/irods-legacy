@@ -57,6 +57,7 @@ int fromCount;
 char accessControlUserName[MAX_NAME_LEN];
 char accessControlZone[MAX_NAME_LEN];
 int accessControlPriv;
+int accessControlControlFlag=0;
 
 struct tlinks {
    int table1;
@@ -960,26 +961,38 @@ insertWhere(char *condition, int option) {
 }
 
 /* 
- Only used if GEN_QUERY_AC is compiled in (which normally isn't)
- or if the user is anonymous.
- This restricts data_main info to only users with access.
- Something similar could be done for collections too.
+ Only used if requested by msiAclPolicy (acAclPolicy rule) (which
+ normally isn't) or if the user is anonymous.  This restricts
+ r_data_main anc r_coll_main info to only users with access.
+ If client user is the local admin, do not restrict.
  */
 int
 genqAppendAccessCheck() {
-   /* if client user is the local admin, do not restrict */
    int doCheck=0;
+   int ACDebug=0;
+
+   if (ACDebug) printf("genqAC 1\n");
+
    if (accessControlPriv==LOCAL_PRIV_USER_AUTH) return(0); 
 
-#if GEN_QUERY_AC
-   doCheck=1;
-#endif
+   if (ACDebug) printf("genqAC 2 accessControlControlFlag=%d\n",
+		       accessControlControlFlag);
+
+   if (accessControlControlFlag > 1) {
+      doCheck=1;
+   }
+
+   if (ACDebug) printf("genqAC 3\n");
+
    if (doCheck==0) {
       if (strncmp(accessControlUserName,ANONYMOUS_USER, MAX_NAME_LEN)==0) {
 	 doCheck=1;
       }
    }
+
    if (doCheck==0) return(0);
+
+   if (ACDebug)  printf("genqAC 4\n");
 
    /* if an item in r_data_main is being accessed, add a
       (complicated) addition to the where clause to check access */
@@ -1146,21 +1159,19 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
          but there are a number of subtle problems/special cases to
          deal with.  So instead, we handle this elsewhere by getting
          and disgarding rows. */
-   }
 #elif MY_ICAT
    /* MySQL/ODBC handles it nicely via just adding limit/offset */
       snprintf (offsetStr, 20, "%d", genQueryInp.rowOffset);
       rstrcat(combinedSQL, " limit ", MAX_SQL_SIZE);
       rstrcat(combinedSQL, offsetStr, MAX_SQL_SIZE);
       rstrcat(combinedSQL, ",18446744073709551615", MAX_SQL_SIZE);
-   }
 #else
    /* Postgres/ODBC handles it nicely via just adding offset */
       snprintf (offsetStr, 20, "%d", genQueryInp.rowOffset);
       cllBindVars[cllBindVarCount++]=offsetStr;
       rstrcat(combinedSQL, " offset ?", MAX_SQL_SIZE);
-   }
 #endif
+   }
 
    if (debug) printf("combinedSQL=:%s:\n",combinedSQL);
    strncpy(resultingSQL, combinedSQL, MAX_SQL_SIZE);
@@ -1278,12 +1289,21 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    return(status);
 }
 
-/* Save some pre-provided parameters if GEN_QUERY_AC is being used */
+/* Save some pre-provided parameters if msiAclPolicy is STRICT.
+   Called with user == NULL to set the controlFlag, else with the
+   user info.
+ */
 int 
-chlGenQueryAccessControlSetup(char *user, char *zone, int priv) {
-    rstrcpy(accessControlUserName, user, MAX_NAME_LEN);
-    rstrcpy(accessControlZone, zone, MAX_NAME_LEN);
-    accessControlPriv=priv;
+chlGenQueryAccessControlSetup(char *user, char *zone, int priv, 
+                              int controlFlag) {
+    if (user != NULL ) {
+        rstrcpy(accessControlUserName, user, MAX_NAME_LEN);
+	rstrcpy(accessControlZone, zone, MAX_NAME_LEN);
+	accessControlPriv=priv;
+    }
+    if (controlFlag >= 0 ) {
+       accessControlControlFlag=controlFlag;
+    }
     return(0);
 }
 
