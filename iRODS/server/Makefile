@@ -130,10 +130,6 @@ ifdef DBMS_LIB
 LDFLAGS +=	$(DBMS_LIB)
 endif
 
-ifdef GEN_QUERY_AC
-CFLAGS +=	-DGEN_QUERY_AC
-endif
-
 ifdef GSI_AUTH
 CFLAGS +=       -DGSI_AUTH
 endif

@@ -194,10 +194,6 @@ CCMALLOC_DIR=/data/mwan/rods/ccmalloc/ccmalloc-0.4.0
 endif
 
 
-# Defines whether GeneralQuery Access Control is enabled
-# (Normally not set)
-# GEN_QUERY_AC = 1
-
 # IRODS_FS - specify that irodsFuse should be built
 # The latest version is 26 for release 2.7. It default to 21 if not defined
 # IRODS_FS = 1
