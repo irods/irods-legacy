@@ -809,6 +809,27 @@ modCopyAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
       rodsLog (LOG_ERROR, "rcModAVUMetadata failed with error %d %s %s",
 	       status, myName, mySubName);
    }
+
+   if (status == CAT_UNKNOWN_FILE) {
+      char tempName[LONG_NAME_LEN]="/";
+      int len;
+      int isRemote=0;
+      strncat(tempName, myEnv.rodsZone, MAX_NAME_LEN);
+      len = strlen(tempName);
+      if (strncmp(tempName, fullName1, len) != 0) {
+	 printf("Cannot copy metadata from a remote zone.\n");
+	 isRemote=1;
+      }
+      if (strncmp(tempName, fullName2, len) != 0) {
+	 printf("Cannot copy metadata to a remote zone.\n");
+	 isRemote=1;
+      }
+      if (isRemote) {
+	 printf("Copying of metadata is done via SQL within each ICAT\n");
+	 printf("for efficiency.  Copying metadata between zones is\n");
+	 printf("not implemented.\n");
+      }
+   }
    return(status);
 }
 
