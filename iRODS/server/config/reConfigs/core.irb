@@ -34,6 +34,26 @@ acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(/*oldZone,*newZone)##m
 acGetUserByDN(*arg,*OUT)||nop|nop
 #
 # --------------------------------------------------------------------------
+# The following rule is for setting Access Control List policy.  If
+# not called or called with an argument other than STRICT, the
+# STANDARD setting is in effect, which is fine for many sites.  By
+# default, users are allowed to see certain metadata, for example the
+# data-object and sub-collection names in each other's collections.
+# When made STRICT by calling msiAclPolicy(STRICT), the General Query
+# Access Control is applied on collections and dataobject metadata
+# which means that ils, etc, will need 'read' access or better to the
+# collection to return the collection contents (name of data-objects,
+# sub-collections, etc).  Formerly this was controlled at build-time
+# via a GEN_QUERY_AC flag in config.mk.  Default is the normal,
+# non-strict level, allowing users to see other collections.  In all
+# cases, access control to the data-objects is enforced.  Even with
+# STRICT access control, the admin user is not restricted so various
+# microservices and queries will still be able to evaluate system-wide
+# information.
+acAclPolicy||nop|nop
+#acAclPolicy||msiAclPolicy(STRICT)|nop
+#
+# --------------------------------------------------------------------------
 # The following are rules for data object operation
 # 1) acSetRescSchemeForCreate - This is the preprossing rule for setting
 # the resource selection scheme when creating a data object which is used 
