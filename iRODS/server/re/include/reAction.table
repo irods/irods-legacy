@@ -272,4 +272,6 @@ microsdef_t MicrosTable[] = {
   {"msiAclPolicy",1,(funcPtr)msiAclPolicy},
   {"msiRemoveKeyValuePairsFromObj",3,(funcPtr) msiRemoveKeyValuePairsFromObj},
   {"msiDataObjPutWithOptions",6,(funcPtr) msiDataObjPutWithOptions},
+  {"msiDataObjReplWithOptions",4,(funcPtr) msiDataObjReplWithOptions},
+  {"msiDataObjChksumWithOptions",4,(funcPtr) msiDataObjChksumWithOptions},
   {"msiSetReServerNumProc",1,(funcPtr) msiSetReServerNumProc},

@@ -2107,3 +2107,191 @@ msiDataObjPutWithOptions(msParam_t *inpParam1, msParam_t *inpParam2,
     return (rei->status);
 }
 
+/*
+ * \fn msiDataObjReplWithOptions
+ * \author Thomas Ledoux
+ * \date 2009-03-24
+ * \brief This microservice is the same as msiDataObjRepl but with more
+ *   input options
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ * i.e., rule execution initiated by clients and should not be called
+ * internally by the server since it interacts with the client through
+ * the normal client/server socket connection.
+ * \param[in]
+ * inpParam1 - It can be a DataObjInp_MS_T or
+ * STR_MS_T which would be the obj Path.
+ * inpParam2 - Optional - a STR_MS_T which specifies the resource.
+ * inpParam3 - Optional - a STR_MS_T which specifies an additional
+ *     param like all (ALL_KW), irodsAdmin (IRODS_ADMIN_KW)
+ * \param[out] - outParam - a INT_MS_T for the status.
+ *
+ */
+int
+msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2, 
+msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+     rsComm_t *rsComm;
+     dataObjInp_t dataObjInp, *myDataObjInp;
+     transStat_t *transStat = NULL;
+
+     RE_TEST_MACRO (" Calling msiDataObjReplWithOptions")
+
+     if (rei == NULL || rei->rsComm == NULL) {
+         rodsLog (LOG_ERROR,
+           "msiDataObjReplWithOptions: input rei or rsComm is NULL");
+         return (SYS_INTERNAL_NULL_INPUT_ERR);
+     }
+
+     rsComm = rei->rsComm;
+
+     /* parse inpParam1 */
+     rei->status = parseMspForDataObjInp (inpParam1, &dataObjInp,
+       &myDataObjInp, 0);
+
+     if (rei->status < 0) {
+         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+           "msiDataObjReplWithOptions: input inpParam1 error. status = %d",
+           rei->status);
+         return (rei->status);
+     }
+
+     rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput,
+       DEST_RESC_NAME_KW);
+
+     if (rei->status < 0) {
+         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+           "msiDataObjReplWithOptions: input inpParam2 error. status = %d",
+           rei->status);
+         return (rei->status);
+     }
+
+     if ((rei->status = parseMspForCondKw (inpParam3, &myDataObjInp->condInput))
+       < 0) {
+         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+           "msiDataObjReplWithOptions: input inpParam3 error. status = %d",
+            rei->status);
+         return (rei->status);
+     }
+
+     rei->status = rsDataObjRepl (rsComm, myDataObjInp, &transStat);
+
+     if (myDataObjInp == &dataObjInp) {
+         clearKeyVal (&myDataObjInp->condInput);
+     }
+
+     if (transStat != NULL) {
+         free (transStat);
+     }
+
+     if (rei->status >= 0) {
+         fillIntInMsParam (outParam, rei->status);
+     } else {
+         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+           "msiDataObjReplWithOptions: rsDataObjRepl failed %s, status = %d",
+           myDataObjInp->objPath, rei->status);
+     }
+
+     return (rei->status);
+}
+
+/*
+ * \fn msiDataObjChksumWithOptions
+ * \author Thomas Ledoux
+ * \date 2009-03-24
+ * \brief This microservice calls rsDataObjChksum to chksum the iput data
+ *    object as part of a workflow execution.
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ * i.e., rule execution initiated by clients and should not be called
+ * internally by the server since it interacts with the client through
+ * the normal client/server socket connection.
+ * \param[in]
+ * inpParam1 - It can be a DataObjInp_MS_T or
+ *     a STR_MS_T which would be taken as dataObj path.
+ * inpParam2 - optional - a STR_MS_T which specifies "verifyChksum"
+ *    (VERIFY_CHKSUM_KW) or "forceChksum"(FORCE_CHKSUM_KW).
+ * inpParam3 - optional - a STR_MS_T which specifies the "ChksumAll"
+ *   (CHKSUM_ALL_KW) or a INT which gives the replica number.
+ * \param[out] a STR_MS_T containing the chksum value.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug no known bugs
+ */
+
+int
+msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+{
+     rsComm_t *rsComm;
+     dataObjInp_t dataObjInp, *myDataObjInp;
+     char *chksum = NULL;
+
+     RE_TEST_MACRO (" Calling msiDataObjChksumWithOptions")
+
+     if (rei == NULL || rei->rsComm == NULL) {
+         rodsLog (LOG_ERROR,
+           "msiDataObjChksumRepl: input rei or rsComm is NULL");
+         return (SYS_INTERNAL_NULL_INPUT_ERR);
+     }
+
+     rsComm = rei->rsComm;
+
+     /* parse inpParam1 */
+     rei->status = parseMspForDataObjInp (inpParam1, &dataObjInp,
+       &myDataObjInp, 1);
+
+     if (rei->status < 0) {
+         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+           "msiDataObjChksumWithOptions: input inpParam1 error. status = %d",
+           rei->status);
+         return (rei->status);
+     }
+
+     if ((rei->status = parseMspForCondKw (inpParam2,
+      &myDataObjInp->condInput)) < 0) {
+         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+           "msiDataObjChksumWithOptions: input inpParam2 error. status = %d",
+            rei->status);
+         return (rei->status);
+     }
+
+     if (inpParam3 != NULL && strcmp( inpParam3->type, STR_MS_T) == 0) {
+         if (strcmp ((char *) inpParam3->inOutStruct, CHKSUM_ALL_KW) == 0) {
+             if ((rei->status = parseMspForCondKw (inpParam3,
+               &myDataObjInp->condInput)) < 0) {
+                 rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+                   "msiDataObjChksumWithOptions: input inpParam3 error.stat=%d",
+                   rei->status);
+                 return (rei->status);
+             }
+         } else {
+             /* replica number */
+             if ((rei->status = parseMspForCondInp (inpParam3,
+              &myDataObjInp->condInput, REPL_NUM_KW)) < 0) {
+                 rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+                   "msiDataObjChksumWithOptions: input inpParam3 error.stat=%d",
+                  rei->status);
+                 return (rei->status);
+             }
+         }
+     }
+     rei->status = rsDataObjChksum (rsComm, myDataObjInp, &chksum);
+
+     if (myDataObjInp == &dataObjInp) {
+         clearKeyVal (&myDataObjInp->condInput);
+     }
+
+     if (rei->status >= 0) {
+         fillStrInMsParam (outParam, chksum);
+         free (chksum);
+     } else {
+         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+           "msiDataObjChksumWithOptions: rsDataObjChksum failed for %s,stat=%d",
+           myDataObjInp->objPath, rei->status);
+     }
+
+     return (rei->status);
+}
+
