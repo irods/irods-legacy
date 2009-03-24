@@ -698,15 +698,12 @@ main(int argc, char **argv) {
 	 exit (1);
       }
 
-#if GEN_QUERY_AC
-      /* The GEN_QUERY_AC (access control) option restricts access to
-         data_object metadata based on user id and privilege level.
-      */
+
+      /* This is no longer ifdef'ed GEN_QUERY_AC (since msiAclPolicy
+	 now used), so just do it.   */
       chlGenQueryAccessControlSetup(myEnv.rodsUserName,
 				myEnv.rodsZone,
-				LOCAL_PRIV_USER_AUTH);
-#endif
-
+				LOCAL_PRIV_USER_AUTH, 1);
 
       if (strstr(myEnv.rodsDebug, "CAT") != NULL) {
 	 chlDebug(myEnv.rodsDebug);
