@@ -204,7 +204,7 @@ $pw=substr($temp1, $ixPw+1);
 unlink($tmpPwFile);
 unlink($tmpAuthFile);
 runCmd(0, "echo $pw > $tmpPwFile");
-runCmd(0, "ils < $tmpPwFile");
+runCmd(0, "ils ../$User2 < $tmpPwFile");
 delete $ENV{'irodsUserName'};
 if ($prevAuthFileName eq "") {
     delete $ENV{'irodsAuthFileName'};
