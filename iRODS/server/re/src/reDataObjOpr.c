@@ -784,15 +784,52 @@ int
 msiDataObjGet (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
+    rei->status = msiDataObjGetWithOptions (inpParam1, inpParam2,
+      NULL, outParam, rei);
+
+    return (rei->status);
+}
+
+/*
+ * \fn msiDataObjGetWithOptions
+ * \author  Michael Wan, modified by Romain GUINOT
+ * \date   2007-02-12
+ * \brief This microservice requests the client to call a rcDataObjget API
+ *   as part of a workflow execution.
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection. Also, it should never
+ *  be called through delayExec since it requires client interaction.
+ * \param[in]
+ *    inpParam1 - It can be a DataObjInp_MS_T or
+ *      a STR_MS_T which would be taken as dataObj path.
+ *    inpParam2 - Optional - a STR_MS_T which specifies the client's local
+ *      file path.
+ *    srcrescParam - Optional - a STR_MS_T which specifies the source 
+ *      resource.
+ * \param[out] a INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+
+int
+msiDataObjGetWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
+{
     rsComm_t *rsComm;
     dataObjInp_t *dataObjInp, *myDataObjInp;
     msParamArray_t *myMsParamArray;
 
-    RE_TEST_MACRO ("    Calling msiDataObjGet")
+    RE_TEST_MACRO ("    Calling msiDataObjGetWithOptions")
 
     if (rei == NULL || rei->rsComm == NULL) {
         rodsLog (LOG_ERROR,
-          "msiDataObjGet: input rei or rsComm is NULL");
+          "msiDataObjGetWithOptions: input rei or rsComm is NULL");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
@@ -805,7 +842,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjGet: input inpParam1 error. status = %d", rei->status);
+          "msiDataObjGetWithOptions: input inpParam1 error. status = %d", 
+	  rei->status);
         return (rei->status);
     }
 
@@ -814,7 +852,18 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjGet: input inpParam2 error. status = %d", rei->status);
+          "msiDataObjGetWithOptions: input inpParam2 error. status = %d", 
+	  rei->status);
+        return (rei->status);
+    }
+
+    rei->status = parseMspForCondInp (srcrescParam, &dataObjInp->condInput,
+      RESC_NAME_KW);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjGetWithOptions: input srcrescParam error. status = %d", 
+	  rei->status);
         return (rei->status);
     }
 
@@ -826,7 +875,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjGet: addMsParam error. status = %d", rei->status);
+          "msiDataObjGetWithOptions: addMsParam error. status = %d", 
+	  rei->status);
         return (rei->status);
     }
 
@@ -838,9 +888,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         fillIntInMsParam (outParam, rei->status);
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjGet: rsDataObjGet failed for %s, status = %d",
-			    dataObjInp->objPath,
-          rei->status);
+          "msiDataObjGetWithOptions: rsDataObjGet failed for %s, status = %d",
+	  dataObjInp->objPath, rei->status);
     }
 
     return (rei->status);
