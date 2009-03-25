@@ -57,10 +57,10 @@
 
 #define DataOprInp_PI "int oprType; int numThreads; int srcL3descInx; int destL3descInx; int srcRescTypeInx; int destRescTypeInx; double offset; double dataSize; struct KeyValPair_PI;"
 
-#define CollInp_PI "str collName[MAX_NAME_LEN]; int flags; int oprType; struct KeyValPair_PI;"
+#define CollInpNew_PI "str collName[MAX_NAME_LEN]; int flags; int oprType; struct KeyValPair_PI;"
 
 #ifdef COMPAT_201
-#define CollInp201_PI "str collName[MAX_NAME_LEN]; struct KeyValPair_PI;"
+#define CollInp_PI "str collName[MAX_NAME_LEN]; struct KeyValPair_PI;"
 #endif
 
 #define GenQueryInp_PI "int maxRows; int continueInx; int partialStartIndex; int options; struct KeyValPair_PI; struct InxIvalPair_PI; struct InxValPair_PI;"

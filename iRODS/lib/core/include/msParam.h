@@ -35,7 +35,7 @@ extern "C" {
 #define DataObjLseekOut_MS_T    "fileLseekOut_PI"
 #define KeyValPair_MS_T         "KeyValPair_PI"
 #define TagStruct_MS_T          "TagStruct_PI"
-#define CollInp_MS_T            "CollInp_PI"
+#define CollInp_MS_T            "CollInpNew_PI"
 #define ExecCmd_MS_T            "ExecCmd_PI"
 #define ExecCmdOut_MS_T         "ExecCmdOut_PI"
 #define RodsObjStat_MS_T        "RodsObjStat_PI"

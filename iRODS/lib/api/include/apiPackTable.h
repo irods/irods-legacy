@@ -27,7 +27,7 @@ packInstructArray_t ApiPackTable[] = {
         {"dataObjWriteInp_PI", dataObjWriteInp_PI},
         {"dataObjCloseInp_PI", dataObjCloseInp_PI},
         {"OpenCollInp_PI", OpenCollInp_PI},
-        {"CollInp201_PI", CollInp201_PI},
+        {"CollInp_PI", CollInp_PI},
 #endif
 
         {"DataCopyInp_PI", DataCopyInp_PI},
@@ -58,7 +58,7 @@ packInstructArray_t ApiPackTable[] = {
         {"ModDataObjMeta_PI", ModDataObjMeta_PI},
         {"authRequestOut_PI", authRequestOut_PI},
         {"authResponseInp_PI", authResponseInp_PI},
-        {"CollInp_PI", CollInp_PI},
+        {"CollInpNew_PI", CollInpNew_PI},
         {"ExecMyRuleInp_PI", ExecMyRuleInp_PI},
         {"simpleQueryInp_PI", simpleQueryInp_PI},
         {"generalAdminInp_PI", generalAdminInp_PI},

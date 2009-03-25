@@ -153,7 +153,7 @@ apidef_t RcApiTable[] = {
       NO_USER_AUTH|XMSG_SVR_ALSO, NO_USER_AUTH|XMSG_SVR_ALSO,
       NULL, 0, "krbAuthRequestOut_PI", 0, (funcPtr) RS_KRB_AUTH_REQUEST},
     {OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
-      "CollInp_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
+      "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
 #ifdef COMPAT_201
     {OPEN_COLLECTION201_AN, RODS_API_VERSION, REMOTE_USER_AUTH,REMOTE_USER_AUTH,
       "OpenCollInp_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION201},
@@ -171,16 +171,16 @@ apidef_t RcApiTable[] = {
     {CLOSE_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
       "INT_PI", 0, NULL, 0, (funcPtr) RS_CLOSE_COLLECTION},
     {COLL_REPL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
-      "CollInp_PI", 0, "CollOprStat_PI", 0, (funcPtr) RS_COLL_REPL},
+      "CollInpNew_PI", 0, "CollOprStat_PI", 0, (funcPtr) RS_COLL_REPL},
 #ifdef COMPAT_201
     {COLL_REPL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
       "DataObjInp_PI", 0, "CollOprStat_PI", 0, (funcPtr) RS_COLL_REPL201},
 #endif
     {RM_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
-      "CollInp_PI", 0, "CollOprStat_PI", 0, (funcPtr) RS_RM_COLL},
+      "CollInpNew_PI", 0, "CollOprStat_PI", 0, (funcPtr) RS_RM_COLL},
 #ifdef COMPAT_201
     {RM_COLL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-      "CollInp201_PI", 0, "CollOprStat_PI", 0, (funcPtr) RS_RM_COLL201},
+      "CollInp_PI", 0, "CollOprStat_PI", 0, (funcPtr) RS_RM_COLL201},
 #endif
     {MOD_AVU_METADATA_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "ModAVUMetadataInp_PI", 0, NULL, 0, (funcPtr) RS_MOD_AVU_METADATA},
@@ -253,10 +253,10 @@ apidef_t RcApiTable[] = {
       "DataObjInp_PI", 0, "GenQueryOut_PI", 0, 
       (funcPtr) RS_QUERY_SPEC_COLL},
     {MOD_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
-      "CollInp_PI", 0, NULL, 0, (funcPtr) RS_MOD_COLL},
+      "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_MOD_COLL},
 #ifdef COMPAT_201
     {MOD_COLL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-      "CollInp201_PI", 0, NULL, 0, (funcPtr) RS_MOD_COLL201},
+      "CollInp_PI", 0, NULL, 0, (funcPtr) RS_MOD_COLL201},
 #endif
     {SUB_STRUCT_FILE_MKDIR_AN, RODS_API_VERSION, REMOTE_USER_AUTH, 
       REMOTE_PRIV_USER_AUTH, "SubFile_PI", 0, NULL, 0, 
@@ -295,16 +295,16 @@ apidef_t RcApiTable[] = {
     {STRUCT_FILE_SYNC_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "StructFileOprInp_PI", 0, NULL, 0, (funcPtr) RS_STRUCT_FILE_SYNC},
     {COLL_CREATE_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-       "CollInp_PI", 0, NULL, 0, (funcPtr) RS_COLL_CREATE},
+       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_COLL_CREATE},
 #ifdef COMPAT_201
     {COLL_CREATE201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-       "CollInp201_PI", 0, NULL, 0, (funcPtr) RS_COLL_CREATE201},
+       "CollInp_PI", 0, NULL, 0, (funcPtr) RS_COLL_CREATE201},
 #endif
     {RM_COLL_OLD_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
-      "CollInp_PI", 0, NULL, 0, (funcPtr) RS_RM_COLL_OLD},
+      "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_RM_COLL_OLD},
 #ifdef COMPAT_201
     {RM_COLL_OLD201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-      "CollInp201_PI", 0, NULL, 0, (funcPtr) RS_RM_COLL_OLD201},
+      "CollInp_PI", 0, NULL, 0, (funcPtr) RS_RM_COLL_OLD201},
 #endif
     {STRUCT_FILE_EXTRACT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
        "StructFileOprInp_PI", 0, NULL, 0, (funcPtr) RS_STRUCT_FILE_EXTRACT},
@@ -325,10 +325,10 @@ apidef_t RcApiTable[] = {
     {DATA_OBJ_CREATE_AND_STAT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "DataObjInp_PI", 0, "OpenStat_PI", 0, (funcPtr) RS_DATA_OBJ_CREATE_AND_STAT},
     {REG_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
-      "CollInp_PI", 0, NULL, 0, (funcPtr) RS_REG_COLL},
+      "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_REG_COLL},
 #ifdef COMPAT_201
     {REG_COLL201_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
-      "CollInp201_PI", 0, NULL, 0, (funcPtr) RS_REG_COLL201},
+      "CollInp_PI", 0, NULL, 0, (funcPtr) RS_REG_COLL201},
 #endif
     {REG_DATA_OBJ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "DataObjInfo_PI", 0, "DataObjInfo_PI", 0, (funcPtr) RS_REG_DATA_OBJ},
