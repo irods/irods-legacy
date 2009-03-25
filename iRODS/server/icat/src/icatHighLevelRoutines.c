@@ -5451,6 +5451,20 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       _rollback("chlModAccessControl");
       return(status);
    }
+
+   cllBindVars[cllBindVarCount++]=userIdStr;
+   cllBindVars[cllBindVarCount++]=pathName;
+   cllBindVars[cllBindVarCount++]=pathStartLen;
+   cllBindVars[cllBindVarCount++]=pathStart;
+
+   if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
+   status =  cmlExecuteNoAnswerSql(
+               "delete from r_objt_access where user_id=? and object_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?)",
+	       &icss);
+   if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      _rollback("chlModAccessControl");
+      return(status);
+   }
    if (rmFlag) {  /* just removing */
 
       /* Audit */
@@ -5482,7 +5496,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    cllBindVars[cllBindVarCount++]=pathName;
    cllBindVars[cllBindVarCount++]=pathStartLen;
    cllBindVars[cllBindVarCount++]=pathStart;
-   if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
+   if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 10");
 #if ORA_ICAT
    /* For Oracle cast is to integer, for Postgres to bigint, for MySQL to signed integer */
    status =  cmlExecuteNoAnswerSql(
@@ -5495,6 +5509,35 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 #else
    status =  cmlExecuteNoAnswerSql(
 	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
+		 &icss);
+#endif
+   if (status) {
+      _rollback("chlModAccessControl");
+      return(status);
+   }
+
+
+   /* Now set the collections */
+   cllBindVars[cllBindVarCount++]=userIdStr;
+   cllBindVars[cllBindVarCount++]=myAccessLev;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=pathName;
+   cllBindVars[cllBindVarCount++]=pathStartLen;
+   cllBindVars[cllBindVarCount++]=pathStart;
+   if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 11");
+#if ORA_ICAT
+   /* For Oracle cast is to integer, for Postgres to bigint, for MySQL to signed integer */
+   status =  cmlExecuteNoAnswerSql(
+	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?)",
+		 &icss);
+#elif MY_ICAT
+   status =  cmlExecuteNoAnswerSql(
+	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as signed integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
+		 &icss);
+#else
+   status =  cmlExecuteNoAnswerSql(
+	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?)",
 		 &icss);
 #endif
    if (status) {
