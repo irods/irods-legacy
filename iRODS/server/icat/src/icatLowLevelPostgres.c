@@ -162,9 +162,10 @@ cllConnect(icatSessionStruct *icss) {
    icss->connectPtr=myHdbc;
 
 #ifdef MY_ICAT
-   // MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT mode) to
-   // be able to understand Postgres SQL. STRICT_TRANS_TABLES must be st too,
-   // otherwise inserting NULL into NOT NULL column does not produce error.
+   /* MySQL must be running in ANSI mode (or at least in
+   PIPES_AS_CONCAT mode) to be able to understand Postgres
+   SQL. STRICT_TRANS_TABLES must be st too, otherwise inserting NULL
+   into NOT NULL column does not produce error. */
    cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
    cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
 #endif
@@ -224,9 +225,12 @@ cllConnectRda(icatSessionStruct *icss) {
    icss->connectPtr=myHdbc;
 
 #ifdef MY_ICAT
-   // MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT mode) to
-   // be able to understand Postgres SQL. STRICT_TRANS_TABLES must be st too,
-   // otherwise inserting NULL into NOT NULL column does not produce error.
+   /*
+    MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT
+    mode) to be able to understand Postgres SQL. STRICT_TRANS_TABLES
+    must be st too, otherwise inserting NULL into NOT NULL column does
+    not produce error.
+   */
    cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
    cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
 #endif
@@ -284,12 +288,31 @@ cllCheckPending(char *sql, int option) {
    /* if there are some non-Audit pending SQL, log them */
    if (pendingCount > pendingAudits) {
       int i, max;
+#ifdef MY_ICAT
+      int skip;
+#endif
       /* but ignore a single pending "begin" which can be normal */
       if (pendingIx == 1) {
 	 if (strncmp((char *)&pBuffer[0], "begin", 5)==0) {
 	    return(0);
 	 }
       }
+#ifdef MY_ICAT
+      /* For mySQL, may have a few SET SESSION sql too, which we
+	 should ignore */
+      skip=1;
+      if (strncmp((char *)&pBuffer[0], "begin", 5)!=0) skip=0;
+      max = maxPendingToRecord;
+      if (pendingIx < max) max = pendingIx;
+      for (i=1;i<max && skip==1;i++) {
+	 if (strncmp((char *)&pBuffer[i*pendingRecordSize],
+		     "SET SESSION",11) !=0) {
+	    skip=0;
+	 }
+      }
+      if (skip) return(0);
+#endif
+
       rodsLog(LOG_NOTICE, "Warning, pending SQL at cllDisconnect, count: %d",
 	      pendingCount);
       max = maxPendingToRecord;
