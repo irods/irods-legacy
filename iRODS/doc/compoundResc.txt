@@ -49,6 +49,10 @@ type resource:
     unixFileClosedir, unixFileReaddir, intNoSupport, unixFileRename,
     unixFileGetFsFreeSpace, intNoSupport, unixStageToCache, unixSyncToArch},
 
+      unixStageToCache is the "get" function that get a file from the
+      compound resource and put it in the local cache. unixSyncToArch
+      is the "put" function which put a file from the local cache
+      and store it in the compound resource.
       Note that many of the functions such as open, read, write, close, etc 
       are not supported in TEST_STAGE_FILE_TYPE. Instead we have 
       unixStageToCache (stage a file from compound to cache) and
