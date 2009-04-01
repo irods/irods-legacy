@@ -340,6 +340,7 @@ end
 drop function if exists R_ObjectId_currval %%
 create function R_ObjectId_currval() 
 returns bigint 
+deterministic
 begin
     return @R_ObjectId_val ;
 end
