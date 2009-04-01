@@ -280,6 +280,9 @@ The 'finishSetup' script will install iCAT tables if needed.
 
 2.4.  Installing with an existing MySQL database
 
+Also see the MySQL page on the iRODS web site for more information:
+https://www.irods.org/index.php/MySQL
+
 MySQL server has to be running already and properly configured. iRODS 
 requires MySQL version 5.0.3 or later. There are two critical 
 configuration options required for MySQL server to support iRODS: 
@@ -290,7 +293,7 @@ configuration options required for MySQL server to support iRODS:
 	
     2.	Server must be running with the option 'lower_case_table_names=1'. 
 	This option is usually specified in the server configuration file 
-	(like /etc/my.cnf) or on the command line.
+	(like /etc/my.cnf or /etc/mysql/my.cnf) or on the command line.
 
 An empty database has to be created for ICAT together with the user who
 has full control over that database (with a secure password). 
@@ -314,6 +317,10 @@ that bit 0x2 in Option is set!
 
 Knowing the name of the ODBC Data Source and user name and password one 
 can proceed with the configuration of the iRODS.
+
+Instead of the following, you could instead run 'irodssetup' to
+complete the installation.  See the MySQL page on the iRODS web site
+for more information: https://www.irods.org/index.php/MySQL
 
 Create a new iRODS configuration file from a template.  The easiest
 way is to run 'scripts/irodsprompt' once to set up defaults:
