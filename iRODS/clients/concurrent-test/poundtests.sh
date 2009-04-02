@@ -12,8 +12,8 @@ OS=Darwin
 
 TMP_DIR=TMP
 thistest=putget
-#testdirs="zerofiles smallfiles bigfiles"
-testdirs="zerofiles"
+testdirs="zerofiles smallfiles bigfiles"
+#testdirs="zerofiles"
 
 irodshome="../../"
 
@@ -65,16 +65,24 @@ makefiles () {
 	done
 }
 
-echo "beginning poundtest"
+now=`date`
+echo "Beginning poundtest at $now"
+echo "Beginning poundtest at $now" >> $0.log
+
 
 if [ "$1" = "" ]; 
 then 
 	usage 
 fi
 
+
 # make our test directories
 makefiles
 
+firstProcCount=`ps | wc -l`
+testIds=""
+
+numberOfTests=0;
 for testdir in $testdirs; do
 
 	i=0
@@ -95,33 +103,63 @@ for testdir in $testdirs; do
 		
 		numtest=`expr $i + 1`
 		echo $numtest of $1:$thistest $testid began at `date`
-		sh -ex $irodshome/clients/concurrent-test/$thistest $testid $testdir > $testid.irods 2>&1
-		# check for failure
+		sh -ex $irodshome/clients/concurrent-test/$thistest $testid $testdir > $testid.irods 2>&1 &
+		# check for startup failure
 		if [ "$?" -ne 0 ]; then
 			echo "$testid FAILED, exiting"
 			exit 3
 		fi
-		echo $numtest of $1:$thistest $testid ended at `date`
-		
+
+		testIds=`echo $testIds $testid`
 
 		i=`expr $i +  1`
 		numtest=`expr $i +  1`
+		numberOfTests=`expr $numberOfTests + 1`
+		
 		sleep 3
 
 		now=`date`
-		echo "Success: Test $testid completed at $now" >> $0.log
-		echo "$testid ended Successfully"
+		echo "Test $testid started at $now" >> $0.log
+		echo "Test $testid started at $now"
 	done
 
 done
+
+#Wait for the background tests to complete
+procCount=`expr $firstProcCount + 1`
+while [ $procCount -gt $firstProcCount ]; do
+    sleep 5
+    procCount=`ps | wc -l`
+done
+
+numberOtTests=`expr $numtest - 1`
+echo All $numberOfTests of $thistest completed as of `date`
+echo All $numberOfTests of $thistest completed as of `date` >> $0.log
+
+#Check the results
+for testid in $testIds; do
+    result=`tail -1 $testid.irods | grep 'exit 0' | wc -l`
+    if [ $result -eq 1 ]; then
+	echo "$testid ended Successfully" >> $0.log
+	echo "$testid ended Successfully"
+    else
+	echo "$testid Failed" >> $0.log
+	echo "$testid Failed"
+	exit 4
+    fi
+done
+
+# Do one irmtrash (not multiple) or else can get errors
+../../clients/icommands/bin/irmtrash
 
 #Clean up locally
 for testdir in $testdirs; do
 	/bin/rm -rf $testdir
 done
+/bin/rm -rf TMP Isub1 Isub2
 
-
+now=`date`
+echo "$0 completed successfully at $now" >> $0.log
+echo "$0 completed successfully at $now"
 
 exit 0
-
-

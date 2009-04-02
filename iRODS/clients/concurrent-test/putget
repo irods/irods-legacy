@@ -73,7 +73,7 @@ for myresc in $resourceset ; do
 	for file in $FILES ; do
 		$iDir/imv Isub1/$file Isub2
 		echo "moving file \"$file\""
- 		attname=`$iDir/imeta qu -d $file-A  = $file-B | grep dataObj | awk {'print $2'}`
+ 		attname=`$iDir/imeta qu -d $file-A  = $file-B | grep -A 1 $testid | grep dataObj | awk {'print $2'}`
 		echo $attname
 	 	if [ "$attname" != "$file" ]; then
 			echo "attribute name not retrieved correctly (or something)"
@@ -107,11 +107,11 @@ done
 # Remove IRODS space test directories and end session
 $iDir/icd 
 $iDir/irm -r $testid
-$iDir/irmtrash
+#$iDir/irmtrash  (let caller do this or a failure may occur)
 $iDir/iexit
 
 # Clean up locally
-/bin/rm -rf TMP Isub1 Isub2
+#/bin/rm -rf TMP Isub1 Isub2  (let caller do this so it is only once; avoid error)
 
 # SDL need proper return values
 exit 0
