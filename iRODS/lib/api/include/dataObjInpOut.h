@@ -118,6 +118,7 @@ typedef struct CollInp201 {
 #define RENAME_UNKNOWN_TYPE     22
 #define CREATE_OPR     		23
 #define REMOTE_ZONE_OPR         24
+#define OPEN_OPR         	25
 
 typedef struct PortalOpr {
     int oprType;
