@@ -100,30 +100,18 @@
 #define L3_FILE_GET_SINGLE_BUF_AN 			670
 #define L3_FILE_PUT_SINGLE_BUF_AN 			671
 #define DATA_OBJ_CREATE_AND_STAT_AN 			672
-#ifdef COMPAT_201
-#define DATA_OBJ_READ201_AN             603
-#define DATA_OBJ_WRITE201_AN            604
-#define DATA_OBJ_CLOSE201_AN            605
-#define DATA_OBJ_LSEEK201_AN            612
-#define COLL_CREATE201_AN 		616
-#define RM_COLL_OLD201_AN 		617
-#define REG_COLL201_AN 			618
-#define MOD_COLL201_AN 			646
-#define COLL_REPL201_AN 		662
-#define RM_COLL201_AN                   663
-#define OPEN_COLLECTION201_AN           712
-#endif
 #define DATA_OBJ_CLOSE_AN               673
 #define DATA_OBJ_LSEEK_AN               674
 #define DATA_OBJ_READ_AN                675
 #define DATA_OBJ_WRITE_AN               676
-#define COLL_REPL_AN 			677
+#define COLL_REPL_AN                    677
 #define OPEN_COLLECTION_AN              678
 #define RM_COLL_AN                      679
-#define MOD_COLL_AN 			680
-#define COLL_CREATE_AN 			681
-#define RM_COLL_OLD_AN 			682
-#define REG_COLL_AN 			683
+#define MOD_COLL_AN                     680
+#define COLL_CREATE_AN                  681
+#define RM_COLL_OLD_AN                  682
+#define REG_COLL_AN                     683
+#define PHY_BUNDLE_COLL_AN 		684
 
 #define GET_MISC_SVR_INFO_AN		700
 #define GENERAL_ADMIN_AN 		701
@@ -142,5 +130,19 @@
 #define GENERAL_ROW_INSERT_AN 			715
 #define GENERAL_ROW_PURGE_AN 			716
 #define KRB_AUTH_REQUEST_AN 			717
+
+#ifdef COMPAT_201
+#define DATA_OBJ_READ201_AN             603
+#define DATA_OBJ_WRITE201_AN            604
+#define DATA_OBJ_CLOSE201_AN            605
+#define DATA_OBJ_LSEEK201_AN            612
+#define COLL_CREATE201_AN               616
+#define RM_COLL_OLD201_AN               617
+#define REG_COLL201_AN                  618
+#define MOD_COLL201_AN                  646
+#define COLL_REPL201_AN                 662
+#define RM_COLL201_AN                   663
+#define OPEN_COLLECTION201_AN           712
+#endif
 
 #endif	/* API_NUMBER_H */

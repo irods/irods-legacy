@@ -1,0 +1,25 @@
+1) add a resource class bundle
+2) mqke a resource bundleResc - unix type, bundle class, localhost, /tmp vault
+3) add a data type "tar bundle"
+rcPhyBundleColl - input collection, resource, optional input - bundle size,
+dataType = "tar bundle"
+default max num files - 500 - MAX_SQL_ROWS
+
+bundle file name = /myZone/bundle/collection.random
+mkdir phy dir in /vault/.../collection.random
+link phy files to /vault/.../collection.random/objID  
+tar the collection.random to collection.random
+rm phy file and register as bundleResc with phypath = /myZone/bundle/collection.random
+unlink collection and content
+chlRegReplica - src - srcDataObjInfo->objPath - only used for checking perm
+srcDataObjInfo->dataId,srcDataObjInfo->replNum,dstDataObjInfo->rescName,
+dstDataObjInfo->rescGroupName,dstDataObjInfo->filePath
+IRODS_ADMIN_KW for condInput
+
+typedef struct BunReplCache {
+    rodsLong_t  dataId;
+    char objPath[MAX_NAME_LEN];		/* optional for IRODS_ADMIN_KW */ 
+    int srcReplNum;
+    struct BunReplCache *next;
+} bunReplCache_t;
+

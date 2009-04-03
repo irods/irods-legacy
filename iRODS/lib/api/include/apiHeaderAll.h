@@ -122,4 +122,5 @@
 #include "generalRowInsert.h"
 #include "generalRowPurge.h"
 #include "krbAuthRequest.h"
+#include "phyBundleColl.h"
 #endif	/* API_HEADER_ALL_H */

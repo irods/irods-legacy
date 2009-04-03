@@ -2172,6 +2172,26 @@ rodsServerHost_t **rodsServerHost)
 }
 
 int
+isLocalZone (char *zoneHint)
+{
+    int status;
+    rodsServerHost_t *icatServerHost = NULL;
+
+    status = getRcatHost (MASTER_RCAT, zoneHint, &icatServerHost);
+
+    if (status < 0) {
+        return (0);
+    }
+
+    if (icatServerHost->rcatEnabled != REMOTE_ICAT) {
+        /* local zone. */
+        return 1;
+    } else {
+	return 0;
+    }
+}
+
+int
 getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t **rodsServerHost, char *remotZoneOpr)
 {

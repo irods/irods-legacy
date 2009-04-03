@@ -189,6 +189,8 @@ int
 getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t **rodsServerHost, char *remotZoneOpr);
 int
+isLocalZone (char *zoneHint);
+int
 convZoneSockError (int inStatus);
 int
 resetRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint);
