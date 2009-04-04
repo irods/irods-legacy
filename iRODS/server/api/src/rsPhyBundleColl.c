@@ -12,6 +12,8 @@
 #include "dataObjRepl.h"
 #include "dataObjCreate.h"
 
+static rodsLong_t OneGig = (1024*1024*1024);
+
 int
 rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
 {
@@ -65,12 +67,18 @@ rescGrpInfo_t *rescGrpInfo)
     char objPath[MAX_NAME_LEN];
     char collName[MAX_NAME_LEN];
     char dataName[MAX_NAME_LEN];
+    rodsLong_t dataId;
     char phyBunDir[MAX_NAME_LEN];
-    char phyBunSubPath[MAX_NAME_LEN];
+    char subPhyPath[MAX_NAME_LEN];
+    char cachePhyPath[MAX_NAME_LEN];
+    int cacheReplNum;
+    rodsLong_t subFileSize;
+    int bundled;
     int handleInx;
     int status, l1descInx;
     dataObjInp_t dataObjInp;
     dataObjInfo_t dataObjInfo;
+    bunReplCacheHeader_t bunReplCacheHeader;
 
     myRescInfo = rescGrpInfo->rescInfo;
     myRescName = myRescInfo->rescName;
@@ -101,39 +109,148 @@ rescGrpInfo_t *rescGrpInfo)
 
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir);
 
+    bzero (&bunReplCacheHeader, sizeof (bunReplCacheHeader));
     objPath[0] = '\0';
     collName[0] = '\0';
     dataName[0] = '\0';
-    phyBunSubPath[0] = '\0';
+    subPhyPath[0] = '\0';
+    cachePhyPath[0] = '\0';
+    bundled = 0;
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
 	if (collEnt->objType == DATA_OBJ_T) {
 	    if (collName[0] == '\0') {
 		/* a new dataObj.  */
 		rstrcpy (collName, collEnt->collName, MAX_NAME_LEN);
 		rstrcpy (dataName, collEnt->dataName, MAX_NAME_LEN);
+		dataId = strtoll (collEnt->dataId, 0, 0);
 	    } else if (strcmp (collName, collEnt->collName) != 0 ||
 	      strcmp (collName, collEnt->collName) != 0) {
-		/* next dataObj. See if we need to replicate */
-		if (phyBunSubPath[0] == '\0') {
-		    /* don't have a good copy yet */
-		    status = replDataObjForBundle (rsComm, collName, dataName,
-		      myRescName, &dataObjInfo);
+		if (bunReplCacheHeader.numSubFiles >= MAX_SUB_FILE_CNT ||
+		  bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
+		  MAX_BUNDLE_SIZE * OneGig) {
+		    status = bundlleAndRegSubFiles (rsComm, l1descInx,
+		      phyBunDir, &bunReplCacheHeader);
+                    if (status < 0) {
+                        /* XXXX need to handle error */
+                        rodsLog (LOG_ERROR,
+                        "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stst=%d",
+                          phyBundleCollInp->collection, status);
+                    }
 		}
+		if (bundled == 0) {
+		    /* next dataObj. See if we need to replicate */
+		    if (subPhyPath[0] == '\0') {
+		        /* don't have a good cache copy yet. make one */
+		        status = replDataObjForBundle (rsComm, collName, 
+			  dataName, myRescName, &dataObjInfo);
+		        if (status >= 0) {
+		            setSubPhyPath (phyBunDir, collEnt->dataId, 
+		              subPhyPath);
+			    rstrcpy (cachePhyPath, dataObjInfo.filePath, 
+		              MAX_NAME_LEN);
+			    cacheReplNum = dataObjInfo.replNum;
+			    subFileSize = dataObjInfo.dataSize;
+		        }
+		    }
+		    /* add sub file to be bundled */
+		    status = addSubFileToDir (subPhyPath, cachePhyPath, 
+		      cacheReplNum, dataId, collName, dataName, subFileSize,
+		      &bunReplCacheHeader);
+		    if (status < 0) { 
+			/* XXXX need to handle error */
+        		rodsLog (LOG_ERROR,
+          		"_rsPhyBundleColl:addSubFileToDir error for %s,stst=%d",
+			    subPhyPath, status);
+		    }
+		} else {
+		    /* already bundled. nothing to do */
+		    bundled = 0;
+		}
+                rstrcpy (collName, collEnt->collName, MAX_NAME_LEN);
+                rstrcpy (dataName, collEnt->dataName, MAX_NAME_LEN);
+		dataId = strtoll (collEnt->dataId, 0, 0);
 	    }
  
-#if 0
-	    if (isDataObjBundled (&collEnt)) {
+	    if (bundled > 0) {
+		/* already bundled. skip */
+	    } else if (isDataObjBundled (rsComm, collEnt)) {
 		/* already bundled, skip */
-		objPath[0] = '\0';
-	
-	    if (objPath[0] == '\0') {
-		snprintf (objPath, MAX_NAME_LEN, "%s/%s",
-		  collEnt.collName, collEnt.dataName); 
-#endif
+		bundled = 1;
+    		subPhyPath[0] = '\0';
+    		cachePhyPath[0] = '\0';
+	    } else if (collEnt->replStatus > 0 && 
+	      strcmp (collEnt->resource, myRescName) == 0) {
+		/* have a good copy in cache resource */
+                setSubPhyPath (phyBunDir, collEnt->dataId, subPhyPath);
+                rstrcpy (cachePhyPath, collEnt->phyPath, MAX_NAME_LEN);
+                cacheReplNum = collEnt->replNum;
+		subFileSize = collEnt->dataSize;
+	    }
 	}
+	free (collEnt);     /* just free collEnt but not content */
     }
 
     return status;
+}
+
+int
+bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
+bunReplCacheHeader_t *bunReplCacheHeader)
+{
+    return 0;
+}
+
+int
+addSubFileToDir (char *subPhyPath, char *cachePhyPath, int cacheReplNum, 
+rodsLong_t dataId, char *collName, char *dataName, rodsLong_t subFileSize,
+bunReplCacheHeader_t *bunReplCacheHeader)
+{
+    int status;
+    bunReplCache_t *bunReplCache;
+
+    /* add a link */
+    status = link (cachePhyPath, subPhyPath);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "addSubFileToDir: link error %s to %s. errno = %d",
+	  cachePhyPath, subPhyPath, errno);
+	return (UNIX_FILE_LINK_ERR - errno);
+    }
+    bunReplCache = malloc (sizeof (bunReplCache_t));
+    bzero (bunReplCache, sizeof (bunReplCache_t));
+    bunReplCache->dataId = dataId;
+    snprintf (bunReplCache->objPath, MAX_NAME_LEN, "%s/%s", collName, dataName);
+    bunReplCache->srcReplNum = cacheReplNum;
+    bunReplCache->next = bunReplCacheHeader->bunReplCacheHead;
+    bunReplCacheHeader->bunReplCacheHead = bunReplCache;
+    bunReplCacheHeader->numSubFiles++;
+    bunReplCacheHeader->totSubFileSize += subFileSize;
+
+    subPhyPath[0] = cachePhyPath[0] = '\0';
+
+    return 0;
+}
+    
+int
+setSubPhyPath (char *phyBunDir, char *dataId, char *subPhyPath)
+{
+    snprintf (subPhyPath, MAX_NAME_LEN, "%s/%s", phyBunDir, dataId);
+    return 0;
+}
+
+int
+isDataObjBundled (rsComm_t *rsComm, collEnt_t *collEnt)
+{
+    if (strcmp (collEnt->resource, BUNDLE_RESC) == 0) {
+	if (collEnt->replStatus > 0) { 
+	    return 1;
+	} else {
+	    /* XXXXXX need to remove this outdated copy */
+	    return 0;
+	}
+    } else {
+	return 0;
+    }
 }
 
 int

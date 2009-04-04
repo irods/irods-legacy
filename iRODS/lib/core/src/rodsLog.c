@@ -183,6 +183,7 @@
     UNIX_FILE_CHMOD_ERR, 
     UNIX_FILE_RENAME_ERR, 
     UNIX_FILE_TRUNCATE_ERR, 
+    UNIX_FILE_LINK_ERR, 
     CATALOG_NOT_CONNECTED, 
     CAT_ENV_ERR, 
     CAT_CONNECT_ERR, 
@@ -563,6 +564,7 @@
     "UNIX_FILE_CHMOD_ERR", 
     "UNIX_FILE_RENAME_ERR", 
     "UNIX_FILE_TRUNCATE_ERR", 
+    "UNIX_FILE_LINK_ERR", 
     "CATALOG_NOT_CONNECTED", 
     "CAT_ENV_ERR", 
     "CAT_CONNECT_ERR", 
@@ -783,7 +785,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 378;
+int irodsErrorCount= 379;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

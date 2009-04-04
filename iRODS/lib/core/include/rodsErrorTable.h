@@ -188,6 +188,7 @@
 #define UNIX_FILE_CHMOD_ERR		-527000 
 #define UNIX_FILE_RENAME_ERR		-528000 
 #define UNIX_FILE_TRUNCATE_ERR		-529000 
+#define UNIX_FILE_LINK_ERR		-530000 
 
 /* 800,000 to 880,000 - Catalog library errors  */
 #define CATALOG_NOT_CONNECTED           -801000

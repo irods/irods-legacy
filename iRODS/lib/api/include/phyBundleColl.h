@@ -15,6 +15,27 @@
 #include "apiNumber.h"
 #include "initServer.h"
 #include "structFileExtAndReg.h"
+#include "miscUtil.h"
+
+#define BUNDLE_RESC	"bundleResc"
+#define TAR_BUNDLE_TYPE	"tar bundle"
+#define BUNDLE_RESC_CLASS	"bundle"
+
+#define MAX_BUNDLE_SIZE		4	/* 4 G */
+#define MAX_SUB_FILE_CNT	512
+
+typedef struct BunReplCache {
+    rodsLong_t  dataId;
+    char objPath[MAX_NAME_LEN];         /* optional for IRODS_ADMIN_KW */
+    int srcReplNum;
+    struct BunReplCache *next;
+} bunReplCache_t;
+
+typedef struct BunReplCacheHeader {
+    int numSubFiles;
+    rodsLong_t totSubFileSize;
+    bunReplCache_t *bunReplCacheHead;
+} bunReplCacheHeader_t;
 
 #if defined(RODS_SERVER)
 #define RS_PHY_BUNDLE_COLL rsPhyBundleColl
@@ -40,6 +61,17 @@ int myRanNum);
 int
 replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
 char *rescName, dataObjInfo_t *outCacheObjInfo);
+int
+isDataObjBundled (rsComm_t *rsComm, collEnt_t *collEnt);
+int
+setSubPhyPath (char *phyBunDir, char *dataId, char *subBunPhyPath);
+int
+addSubFileToDir (char *subPhyPath, char *cachePhyPath, int cacheReplNum, 
+rodsLong_t dataId, char *collName, char *dataName, rodsLong_t subFileSize,
+bunReplCacheHeader_t *bunReplCacheHeader);
+int
+bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
+bunReplCacheHeader_t *bunReplCacheHeader);
 #else
 #define RS_PHY_BUNDLE_COLL NULL
 #endif
