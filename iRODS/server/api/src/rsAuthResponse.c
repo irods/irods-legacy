@@ -114,15 +114,27 @@ rsAuthResponse (rsComm_t *rsComm, authResponseInp_t *authResponseInp)
 	    }
 	 }
       }
-   }     
+   }
+
+   /* Set the clientUser zone if it is null. */
+   if (strlen(rsComm->clientUser.rodsZone)==0) {
+      zoneInfo_t *tmpZoneInfo;
+      status = getLocalZoneInfo (&tmpZoneInfo);
+      if (status < 0) {
+	 free (authCheckOut);
+	 return status;
+      }
+      strncpy(rsComm->clientUser.rodsZone,
+	      tmpZoneInfo->zoneName, NAME_LEN);
+   }
+
 
    /* have to modify privLevel if the icat is a foreign icat because
     * a local user in a foreign zone is not a local user in this zone
     * and vice vera for a remote user
     */
-
-    if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
-	/* proxy is easy because rodsServerHost is based on proxy user */
+   if (rodsServerHost->rcatEnabled == REMOTE_ICAT) {
+      /* proxy is easy because rodsServerHost is based on proxy user */
         if (authCheckOut->privLevel == LOCAL_PRIV_USER_AUTH)
             authCheckOut->privLevel = REMOTE_PRIV_USER_AUTH;
         else if (authCheckOut->privLevel == LOCAL_PRIV_USER_AUTH)
