@@ -26,7 +26,7 @@ echo thisdir: $thisdir
 
 
 usage () {
-	echo "Usage: $0 <numtests>"
+	echo "Usage: $0 <numtests> [bigfilesize-in-KB]"
 	exit 1
 }
 
@@ -53,8 +53,8 @@ makefiles () {
 
 		"bigfiles")
 			cd src; make clean; make; cd ..
-			echo "making bigfiles"
-			$thisdir/src/writebigfile
+			echo "making bigfiles ($inSize KB)"
+			$thisdir/src/writebigfile $inSize
 			for ((i=1;i<=$numbigfiles;i+=1)); do
 				cp bigfile bigfiles/bigfile$i				
 			done
@@ -77,6 +77,7 @@ fi
 
 
 # make our test directories
+inSize=$2
 makefiles
 
 firstProcCount=`ps | wc -l`
