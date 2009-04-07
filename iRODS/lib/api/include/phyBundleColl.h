@@ -71,7 +71,10 @@ rodsLong_t dataId, char *collName, char *dataName, rodsLong_t subFileSize,
 bunReplCacheHeader_t *bunReplCacheHeader);
 int
 bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
-bunReplCacheHeader_t *bunReplCacheHeader);
+char *collection, bunReplCacheHeader_t *bunReplCacheHeader);
+int
+phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
+char *collection);
 #else
 #define RS_PHY_BUNDLE_COLL NULL
 #endif

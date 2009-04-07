@@ -73,7 +73,8 @@ OBJS =		\
 		$(objDir)/imcoll.o \
 		$(objDir)/ierror.o \
 		$(objDir)/ipasswd.o	\
-		$(objDir)/ibun.o
+		$(objDir)/ibun.o	\
+		$(objDir)/iphybun.o
 
 BINS =		\
 		$(binDir)/iadmin \
