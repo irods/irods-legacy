@@ -429,7 +429,7 @@ foreach $arg (@ARGV)
 		doTest( );
 		next;
 	}
-	if ( $arg =~ /^-?-?test$/ )	# Run iRODS tests
+	if ( $arg =~ /^-?-?devtest$/ )	# Run iRODS developer tests
 	{
 		$numberCommands++;
 		printNotice( 
@@ -445,6 +445,12 @@ foreach $arg (@ARGV)
 		    doTest( );
 		}
 		next;
+	}
+	if ( $arg =~ /^-?-?loadtest$/ )	# Run concurrent-tests
+	{
+	    $numberCommands++;
+	    doLoadTest( );
+	    next;
 	}
 
 	printError( "Unknown command:  $arg\n" );
@@ -673,10 +679,17 @@ sub doDrop
 #
 # @brief	Test installation.
 #
-# Run the standard iRODS tests.
+# Run the developer iRODS tests.
 #
 sub doTest
 {
+        # get password first if needed (no server on this host)
+	if ($IRODS_ADMIN_PASSWORD eq "") {
+	    print "Please enter your irods password: ";
+	    my $answer = <STDIN>;
+	    chomp( $answer );
+	    $IRODS_ADMIN_PASSWORD = $answer;
+	}
 	# Start the servers first, if needed.
 	my %serverPids = getIrodsProcessIds( );
 	if ( (scalar keys %serverPids) == 0 )
@@ -703,8 +716,11 @@ sub doTest
 	# Note that the tests assume i-commands are in the path so we can too.
 	# Need to re-iinit first for svr to svr connections, non-ICAT hosts.
 	my $output  = `$iinit $IRODS_ADMIN_PASSWORD 2>&1`;  
+	my $outEnv = `ienv | grep irodsHost | tail -1`;
 	my $outMisc = `imiscsvrinfo`;
-	if ( $outMisc =~ /RCAT_ENABLED/) {
+        my $myHostName = getCurrentHostName( );
+	if ( $outEnv =~ /$myHostName/ &&
+	     $outMisc =~ /RCAT_ENABLED/) {
 	    # Test iCAT
 	    printSubtitle( "\nTesting iCAT...\n" );
 	    doTestIcat( );
@@ -722,6 +738,50 @@ sub doTest
 	return(0);
 
 	printNotice( "\nDone.\n" );
+
+	setPrintVerbose( $verbosity );
+}
+
+#
+# @brief	Test installation.
+#
+# Run the concurrent/load/pound tests.
+#
+sub doLoadTest
+{
+	# Always verbose during testing.
+	my $verbosity = isPrintVerbose( );
+	setPrintVerbose( 1 );
+
+	printStatus(
+"This test takes about 10 minutes and requires about 3 GB of space at\n" .
+"the peak.  It will get and put files and set and check user-defined\n" .
+"metadata, running multiple processes doing so at the same time.  This\n" .
+"will put a substantial load on your computer and network (if the\n" .
+"resource is remote).  It will use 'demoResc' which can be changed by\n" .
+"editing clients/concurrent-test/ResourcesToTest.\n\n");
+
+	printStatus( getCurrentDateTime( ) .
+		     " Starting concurrent-tests\n");
+
+	my $startDir = cwd( );
+	chdir( $startDir . "/clients/concurrent-test" );
+# old form: my $output = `./poundtests.sh 1 `;
+#
+
+# 100 MB files to trigger parallel threads:
+	`./poundtests.sh 1 100000 >> /dev/tty`;
+# small files to be quicker and use less space:
+#	`./poundtests.sh 1 25000 >> /dev/tty`;
+
+	if ( $? != 0 ) {
+	    printError( "Failed\n" );
+	}
+	else {
+	    printStatus( getCurrentDateTime( ) . 
+			 " All concurrent-tests were successful\n");
+	}
+	chdir( $startDir);
 
 	setPrintVerbose( $verbosity );
 }
@@ -1323,7 +1383,8 @@ sub printUsage
 	printNotice( "    stop          Stop the iRODS and database servers\n" );
 	printNotice( "    restart       Restart the iRODS and database servers\n" );
 	printNotice( "    status        Show the status of iRODS and database servers\n" );
-	printNotice( "    test          Test the iRODS installation (developer tool)\n" );
+	printNotice( "    devtest       Run a developer test suite\n" );
+	printNotice( "    loadtest      Run a concurrency (load/pound) test suite\n" );
 
 	setPrintVerbose( $oldVerbosity );
 }
