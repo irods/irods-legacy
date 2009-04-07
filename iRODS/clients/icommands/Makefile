@@ -112,7 +112,8 @@ BINS =		\
 		$(binDir)/imcoll \
 		$(binDir)/ierror \
 		$(binDir)/ipasswd	\
-		$(binDir)/ibun
+		$(binDir)/ibun	\
+		$(binDir)/iphybun
 
 
 
