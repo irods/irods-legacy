@@ -11,6 +11,8 @@
 #include "closeCollection.h"
 #include "dataObjRepl.h"
 #include "dataObjCreate.h"
+#include "syncMountedColl.h"
+#include "regReplica.h"
 
 static rodsLong_t OneGig = (1024*1024*1024);
 
@@ -129,12 +131,24 @@ rescGrpInfo_t *rescGrpInfo)
 		  bunReplCacheHeader.totSubFileSize + collEnt->dataSize > 
 		  MAX_BUNDLE_SIZE * OneGig) {
 		    status = bundlleAndRegSubFiles (rsComm, l1descInx,
-		      phyBunDir, &bunReplCacheHeader);
+		      phyBunDir, phyBundleCollInp->collection,
+		      &bunReplCacheHeader);
                     if (status < 0) {
                         /* XXXX need to handle error */
                         rodsLog (LOG_ERROR,
                         "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stst=%d",
                           phyBundleCollInp->collection, status);
+                    } else {
+                        /* create a new bundle file */
+                        l1descInx = createPhyBundleDataObj (rsComm,
+                          phyBundleCollInp->collection, rescGrpInfo,
+                          &dataObjInp);
+
+                        /* XXXXX need to handle error */
+                        if (l1descInx < 0) return l1descInx;
+
+                        createPhyBundleDir (rsComm,
+                          L1desc[l1descInx].dataObjInfo, phyBunDir);
                     }
 		}
 		if (bundled == 0) {
@@ -189,15 +203,132 @@ rescGrpInfo_t *rescGrpInfo)
 	}
 	free (collEnt);     /* just free collEnt but not content */
     }
-
+    /* handle any remaining */
+    status = bundlleAndRegSubFiles (rsComm, l1descInx, phyBunDir, 
+      phyBundleCollInp->collection, &bunReplCacheHeader);
+    if (status < 0) {
+        /* XXXX need to handle error */
+        rodsLog (LOG_ERROR,
+          "_rsPhyBundleColl:bunAndRegSubFiles err for %s,stst=%d",
+          phyBundleCollInp->collection, status);
+    }
     return status;
 }
 
 int
 bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
-bunReplCacheHeader_t *bunReplCacheHeader)
+char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
 {
-    return 0;
+    int status;
+    openedDataObjInp_t dataObjCloseInp;
+    bunReplCache_t *tmpBunReplCache, *nextBunReplCache;
+    regReplica_t regReplicaInp;
+
+    bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
+    status = phyBundle (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
+      collection);
+    if (status < 0) {
+	/* XXXXX need to handle error */
+        rodsLog (LOG_ERROR,
+          "rsStructFileBundle: rsStructFileSync of %s error. stat = %d",
+          L1desc[l1descInx].dataObjInfo->objPath, status);
+	return status;
+    } else {
+        /* mark it was written so the size would be adjusted */
+        L1desc[l1descInx].bytesWritten = 1;
+    }
+
+    dataObjCloseInp.l1descInx = l1descInx;
+    rsDataObjClose (rsComm, &dataObjCloseInp);
+
+    /* now register a replica for each subfile */
+    tmpBunReplCache = bunReplCacheHeader->bunReplCacheHead;
+
+    bzero (&regReplicaInp, sizeof (regReplicaInp));
+    regReplicaInp.srcDataObjInfo = malloc (sizeof (dataObjInfo_t));
+    regReplicaInp.destDataObjInfo = malloc (sizeof (dataObjInfo_t));
+    bzero (regReplicaInp.srcDataObjInfo, sizeof (dataObjInfo_t));
+    bzero (regReplicaInp.destDataObjInfo, sizeof (dataObjInfo_t));
+    addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+    rstrcpy (regReplicaInp.destDataObjInfo->rescName, BUNDLE_RESC, NAME_LEN);
+    rstrcpy (regReplicaInp.destDataObjInfo->filePath, 
+      L1desc[l1descInx].dataObjInfo->filePath, MAX_NAME_LEN);
+    
+    while (tmpBunReplCache != NULL) {
+	char subPhyPath[MAX_NAME_LEN];
+
+	nextBunReplCache = tmpBunReplCache->next;
+	/* rm the hard link here */
+	snprintf (subPhyPath, MAX_NAME_LEN, "%s/%lld", phyBunDir, 
+	  tmpBunReplCache->dataId);
+	unlink (subPhyPath);
+	/* register the replica */
+        rstrcpy (regReplicaInp.srcDataObjInfo->objPath, 
+	  tmpBunReplCache->objPath, MAX_NAME_LEN);
+	regReplicaInp.srcDataObjInfo->dataId = 
+	  regReplicaInp.destDataObjInfo->dataId =
+	  tmpBunReplCache->dataId; 
+	regReplicaInp.srcDataObjInfo->replNum = tmpBunReplCache->srcReplNum;
+	status = rsRegReplica (rsComm, &regReplicaInp);
+	if (status < 0) {
+            /* XXXXX need to handle error */
+            rodsLog (LOG_ERROR,
+              "rsStructFileBundle: rsRegReplica error for %s. stat = %d",
+              tmpBunReplCache->objPath, status);
+	}
+	free (tmpBunReplCache);
+        tmpBunReplCache = nextBunReplCache;
+    }
+    clearKeyVal (&regReplicaInp.condInput);
+    free (regReplicaInp.srcDataObjInfo);
+    free (regReplicaInp.destDataObjInfo);
+    bzero (bunReplCacheHeader, sizeof (bunReplCacheHeader_t)); 
+    rmdir (phyBunDir);
+
+    return status;
+}
+
+int
+phyBundle (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *phyBunDir,
+char *collection)
+{
+    structFileOprInp_t structFileOprInp;
+    int status;
+
+    bzero (&structFileOprInp, sizeof (structFileOprInp));
+
+    structFileOprInp.specColl = malloc (sizeof (specColl_t));
+    memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
+    structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
+
+    /* collection and objPath are only important for reg CollInfo2 */
+    rstrcpy (structFileOprInp.specColl->collection,
+      collection, MAX_NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->objPath,
+      dataObjInfo->objPath, MAX_NAME_LEN);
+    structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
+    rstrcpy (structFileOprInp.specColl->resource, dataObjInfo->rescName,
+      NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->phyPath,
+      dataObjInfo->filePath, MAX_NAME_LEN);
+    rstrcpy (structFileOprInp.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
+      NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
+    structFileOprInp.specColl->cacheDirty = 1;
+    /* don't reg CollInfo2 */
+    structFileOprInp.oprType = NO_REG_COLL_INFO;
+
+    status = rsStructFileSync (rsComm, &structFileOprInp);
+
+    free (structFileOprInp.specColl);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "rsStructFileBundle: rsStructFileSync of %s error. stat = %d",
+          dataObjInfo->objPath, status);
+    }
+
+    return status;
 }
 
 int
@@ -303,21 +434,26 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
         return SYS_INVALID_RESC_TYPE;
     }
 	
-    bzero (dataObjInp, sizeof (dataObjInp_t));
-    myRanNum = random ();
-    status = rsMkBundlePath (rsComm, collection, dataObjInp->objPath, myRanNum);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "createPhyBundleFile: getPhyBundlePath error for %s. status = %d",
-          collection, status);
-        return status;
-    }
+    do {
+        bzero (dataObjInp, sizeof (dataObjInp_t));
+        myRanNum = random ();
+        status = rsMkBundlePath (rsComm, collection, dataObjInp->objPath, 
+	  myRanNum);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "createPhyBundleFile: getPhyBundlePath error for %s. status = %d",
+              collection, status);
+            return status;
+        }
 
-    addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
-    addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, "tar bundle");
+        addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
+        addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, "tar bundle");
 
-    l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp,
-      rescGrpInfo->rescInfo, rescGrpInfo->rescGroupName);
+        l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp,
+          rescGrpInfo->rescInfo, rescGrpInfo->rescGroupName);
+
+        clearKeyVal (&dataObjInp->condInput);
+    } while (l1descInx == OVERWITE_WITHOUT_FORCE_FLAG);
 
     return l1descInx;
 }
