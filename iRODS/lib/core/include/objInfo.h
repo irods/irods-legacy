@@ -280,7 +280,8 @@ typedef struct RescTypeDef {
 
 #define CACHE_CL	0
 #define ARCHIVAL_CL	1
-#define COMPOUND_CL	2
+#define BUNDLE_CL	2
+#define COMPOUND_CL	3
 
 #define PRIMARY_FLAG	0x8000		/* primary class when this bit is set */
 typedef struct RescClass {

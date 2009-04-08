@@ -136,7 +136,8 @@ rescClass_t RescClass[] = {
 	{"temporary",	CACHE_CL},
 	{"permanent",	ARCHIVAL_CL},
 	{"archive",	ARCHIVAL_CL},
-	{"compound",	COMPOUND_CL},	/* set it as ARCHIVAL_CL for now */ 
+	{"bundle",	BUNDLE_CL},
+	{"compound",	COMPOUND_CL},
 };
 
 int NumRescClass = sizeof (RescClass) / sizeof (rescClass_t);

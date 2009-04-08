@@ -37,6 +37,17 @@ typedef struct BunReplCacheHeader {
     bunReplCache_t *bunReplCacheHead;
 } bunReplCacheHeader_t;
 
+typedef struct CurSubFileCond {
+    char collName[MAX_NAME_LEN];
+    char dataName[MAX_NAME_LEN];
+    rodsLong_t dataId;
+    char subPhyPath[MAX_NAME_LEN];
+    char cachePhyPath[MAX_NAME_LEN];
+    int cacheReplNum;
+    rodsLong_t subFileSize;
+    int bundled;
+} curSubFileCond_t;
+
 #if defined(RODS_SERVER)
 #define RS_PHY_BUNDLE_COLL rsPhyBundleColl
 /* prototype for the server handler */
@@ -64,11 +75,13 @@ char *rescName, dataObjInfo_t *outCacheObjInfo);
 int
 isDataObjBundled (rsComm_t *rsComm, collEnt_t *collEnt);
 int
-setSubPhyPath (char *phyBunDir, char *dataId, char *subBunPhyPath);
+setSubPhyPath (char *phyBunDir, rodsLong_t dataId, char *subBunPhyPath);
 int
-addSubFileToDir (char *subPhyPath, char *cachePhyPath, int cacheReplNum, 
-rodsLong_t dataId, char *collName, char *dataName, rodsLong_t subFileSize,
+addSubFileToDir (curSubFileCond_t *curSubFileCond,
 bunReplCacheHeader_t *bunReplCacheHeader);
+int
+replAndAddSubFileToDir (rsComm_t *rsComm, curSubFileCond_t *curSubFileCond,
+char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader);
 int
 bundlleAndRegSubFiles (rsComm_t *rsComm, int l1descInx, char *phyBunDir, 
 char *collection, bunReplCacheHeader_t *bunReplCacheHeader);
