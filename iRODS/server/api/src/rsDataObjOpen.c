@@ -119,13 +119,16 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
 
     if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
-	if (writeFlag > 0) {
+#if 0	/* not sure we need this */
+	if (writeFlag > 0 && 
+	  getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
             rodsLog (LOG_ERROR,
               "_rsDataObjOpen: %s - cannot directly write iinto COMPOUND resc",
               dataObjInfoHead->objPath);
             freeAllDataObjInfo (dataObjInfoHead);
             return SYS_CANT_DIRECTLY_ACC_COMPOUND_RESC;
 	}
+#endif
 	status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -134,27 +137,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             freeAllDataObjInfo (dataObjInfoHead);
             return status;
         }
-#if 0
-	rescInfo_t *cacheResc;
-        status = getCacheRescInGrp (rsComm, dataObjInfoHead->rescGroupName, 
-	  dataObjInfoHead->rescInfo->rescName, &cacheResc);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "_rsDataObjOpen: getCacheRescInGrp of %s failed for %s stat=%d",
-              dataObjInfoHead->rescGroupName, dataObjInfoHead->objPath, status);
-            freeAllDataObjInfo (dataObjInfoHead);
-            return status;
-        }
-        status = rsReplAndRequeDataObjInfo (rsComm, &dataObjInfoHead, 
-          cacheResc->rescName);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "_rsDataObjOpen: rsReplAndRequeDataObjInfo of %s failed stat=%d",
-              dataObjInfoHead->objPath, status);
-            freeAllDataObjInfo (dataObjInfoHead);
-            return status;
-        }
-#endif
     }
 
     tmpDataObjInfo = dataObjInfoHead;
