@@ -762,11 +762,11 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
 	}
 	tmpDataObjInfo = nextDataObjInfo;
     }
-    /* combine ArchInfo and CompInfo. BUNDLE_CL before COMPOUND_CL */
-    queDataObjInfo (oldArchInfo, oldBundleInfo, 0, 0);
+    /* combine ArchInfo and CompInfo. COMPOUND_CL before BUNDLE_CL */
     queDataObjInfo (oldArchInfo, oldCompInfo, 0, 0);
-    queDataObjInfo (currentArchInfo, currentBundleInfo, 0, 0);
+    queDataObjInfo (oldArchInfo, oldBundleInfo, 0, 0);
     queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
+    queDataObjInfo (currentArchInfo, currentBundleInfo, 0, 0);
 
     return (0);
 }
