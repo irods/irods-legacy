@@ -227,12 +227,10 @@ int
 l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 {
     int rescTypeInx;
-    int rescClassInx;
     fileUnlinkInp_t fileUnlinkInp;
     int status;
 
-    rescClassInx = dataObjInfo->rescInfo->rescClassInx;
-    if (RescClass[rescClassInx].classType == BUNDLE_CL) return 0;
+    if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
 
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
