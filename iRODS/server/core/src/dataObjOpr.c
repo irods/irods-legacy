@@ -1233,6 +1233,9 @@ dataObjInfo_t *dataObjInfo)
     keyValPair_t regParam;
     vaultPathPolicy_t vaultPathPolicy;
 
+    if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
+	return 0;
+
     status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
     if (status < 0) {
 	rodsLog (LOG_NOTICE,

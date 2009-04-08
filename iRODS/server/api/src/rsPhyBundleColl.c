@@ -540,7 +540,7 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
 #if 0
         addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
 #endif
-        addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, "tar bundle");
+        addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_TYPE);
 
         l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp,
           rescGrpInfo->rescInfo, rescGrpInfo->rescGroupName);

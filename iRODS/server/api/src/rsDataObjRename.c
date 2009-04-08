@@ -7,6 +7,7 @@
 #include "subStructFileRename.h"
 #include "icatHighLevelRoutines.h"
 #include "dataObjUnlink.h"
+#include "phyBundleColl.h"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
@@ -131,16 +132,11 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     multiCopyFlag = getMultiCopyPerResc ();
 
     if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
-	if (multiCopyFlag == 0) {
-	    status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
-              ACCESS_DELETE_OBJECT, 0);
-	    if (status >= 0) {
-		srcId = dataObjInfoHead->dataId;
-	    }
-	} else {
-            status = isData (rsComm, srcDataObjInp->objPath, &srcId);
-	}
-        if (status < 0) {
+	status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
+          ACCESS_DELETE_OBJECT, 0);
+	if (status >= 0) {
+	    srcId = dataObjInfoHead->dataId;
+        } else {
             rodsLog (LOG_ERROR,
               "_rsDataObjRename: src data %s does not exist, status = %d",
               srcDataObjInp->objPath, status);
@@ -162,6 +158,14 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 		rsDataObjUnlink (rsComm, destDataObjInp);
 	    }	
 	    srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_DATA_OBJ;
+            status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
+              ACCESS_DELETE_OBJECT, 0);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "_rsDataObjRename: src data %s does not exist, status = %d",
+                  srcDataObjInp->objPath, status);
+                return (status);
+            }
 	} else if ((status = isColl (rsComm, srcDataObjInp->objPath, &srcId))
 	 >= 0) {
 	    srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_COLL;
@@ -170,6 +174,15 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
               "_rsDataObjRename: src obj %s does not exist, status = %d",
               srcDataObjInp->objPath, status);
             return (status);
+	}
+    }
+
+    if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
+	if (strcmp (dataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjRename: cannot rename tar bundle type obj %s",
+              srcDataObjInp->objPath);
+	    return CANT_RM_MV_BUNDLE_TYPE;
 	}
     }
 

@@ -710,6 +710,8 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
     int rescClassInx;
     int topFlag;
+    dataObjInfo_t *currentBundleInfo = NULL;
+    dataObjInfo_t *oldBundleInfo = NULL;
     dataObjInfo_t *currentCompInfo = NULL;
     dataObjInfo_t *oldCompInfo = NULL;
 
@@ -742,6 +744,8 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
 		queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
 	    } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
                 queDataObjInfo (&currentCompInfo, tmpDataObjInfo, 1, topFlag);
+	    } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
+                queDataObjInfo (&currentBundleInfo, tmpDataObjInfo, 1, topFlag);
 	    } else {
                 queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
 	    }
@@ -750,14 +754,18 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
                 queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
             } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
                 queDataObjInfo (&oldCompInfo, tmpDataObjInfo, 1, topFlag);
+            } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
+                queDataObjInfo (&oldBundleInfo, tmpDataObjInfo, 1, topFlag);
             } else {
                 queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
             }
 	}
 	tmpDataObjInfo = nextDataObjInfo;
     }
-    /* combine ArchInfo and CompInfo */
+    /* combine ArchInfo and CompInfo. BUNDLE_CL before COMPOUND_CL */
+    queDataObjInfo (oldArchInfo, oldBundleInfo, 0, 0);
     queDataObjInfo (oldArchInfo, oldCompInfo, 0, 0);
+    queDataObjInfo (currentArchInfo, currentBundleInfo, 0, 0);
     queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
 
     return (0);
