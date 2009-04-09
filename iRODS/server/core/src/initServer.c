@@ -97,6 +97,26 @@ rodsServerHost_t **rodsServerHost)
     return (remoteFlag);
 }
 
+int
+resolveHostByRescInfo (rescInfo_t *rescInfo, rodsServerHost_t **rodsServerHost)
+{
+    rodsHostAddr_t addr;
+    int remoteFlag;
+
+    if (rescInfo == NULL || rescInfo->rescLoc == NULL) {
+        rodsLog (LOG_NOTICE,
+          "resolveHostByRescInfo: NULL input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    memset (&addr, 0, sizeof (addr));
+    rstrcpy (addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
+
+    remoteFlag = resolveHost (&addr, rodsServerHost);
+
+    return (remoteFlag);
+}
+
 rodsServerHost_t *
 mkServerHost (char *myHostAddr, char *zoneName)
 {

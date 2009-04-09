@@ -68,6 +68,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *tmpDataObjInfo; 
     int l1descInx;
     int writeFlag;
+    int rescClass;
     int phyOpenFlag = DO_PHYOPEN;
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
@@ -118,7 +119,8 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	}
     }
 
-    if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+    rescClass = getRescClass (dataObjInfoHead->rescInfo);
+    if (rescClass == COMPOUND_CL) {
 #if 0	/* not sure we need this */
 	if (writeFlag > 0 && 
 	  getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
@@ -133,6 +135,15 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         if (status < 0) {
             rodsLog (LOG_ERROR,
               "_rsDataObjOpen: stageAndRequeDataToCache of %s failed stat=%d",
+              dataObjInfoHead->objPath, status);
+            freeAllDataObjInfo (dataObjInfoHead);
+            return status;
+        }
+    } else if (rescClass == BUNDLE_CL) {
+	status = stageBundledData (rsComm, &dataObjInfoHead);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjOpen: stageBundledData of %s failed stat=%d",
               dataObjInfoHead->objPath, status);
             freeAllDataObjInfo (dataObjInfoHead);
             return status;

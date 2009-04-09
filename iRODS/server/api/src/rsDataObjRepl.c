@@ -927,3 +927,46 @@ dataObjInfo_t **outDestDataObjInfo)
     return status;
 }
 
+int
+stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead)
+{
+    int status;
+    rescInfo_t *cacheResc;
+    dataObjInfo_t *dataObjInfoHead = *subfileObjInfoHead;
+    dataObjInp_t dataObjInp;
+    dataObjInfo_t *bunfileObjInfoHead;
+
+    if (getRescClass (dataObjInfoHead->rescInfo) != BUNDLE_CL) return 0;
+
+    /* query the bundle dataObj */
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, dataObjInfoHead->filePath, MAX_NAME_LEN);
+    
+    status = getDataObjInfo (rsComm, &dataObjInp, &bunfileObjInfoHead, NULL, 1);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "stageBundledData: getDataObjInfo of bunfile %s failed. stat=%d",
+          dataObjInp.objPath, status);
+        return status;
+    }
+
+    sortObjInfoForOpen (&bunfileObjInfoHead, NULL, 0);
+
+    if (getRescClass (bunfileObjInfoHead->rescInfo) != CACHE_CL) {
+	/* don't have a good copy on cache yet */
+        status = getCacheRescInGrp (rsComm, bunfileObjInfoHead->rescGroupName,
+          bunfileObjInfoHead->rescInfo->rescName, &cacheResc);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "stageBundledData: getCacheRescInGrp %s failed for %s stat=%d",
+              bunfileObjInfoHead->rescGroupName, bunfileObjInfoHead->objPath, 
+	      status);
+	    freeAllDataObjInfo (bunfileObjInfoHead);
+            return status;
+        }
+    } else {
+	cacheResc = bunfileObjInfoHead->rescInfo;
+    }
+    return status;
+}
+
