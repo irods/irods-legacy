@@ -91,6 +91,8 @@ stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t *compObjInfo,
 dataObjInfo_t *outCacheObjInfo);
 int
 stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead);
+int
+stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead);
 #ifdef  __cplusplus
 }
 #endif
