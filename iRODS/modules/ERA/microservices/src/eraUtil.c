@@ -808,9 +808,9 @@ getCollectionACL(collInp_t *myCollInp, char *label, bytesBuf_t *mybuf, rsComm_t 
 int
 loadMetadataFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 {
-	dataObjReadInp_t dataObjReadInp;
-	dataObjCloseInp_t dataObjCloseInp;
-	fileLseekInp_t dataObjLseekInp;
+	openedDataObjInp_t dataObjReadInp;
+	openedDataObjInp_t dataObjCloseInp;
+	openedDataObjInp_t dataObjLseekInp;
 	fileLseekOut_t *dataObjLseekOut;
 	bytesBuf_t *readBuf;
 	int status;
@@ -850,7 +850,7 @@ loadMetadataFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 	dataObjReadInp.len = readBuf->len;/* 200; */
 
 	/* init offset */
-	dataObjLseekInp.fileInx = objID;
+	dataObjLseekInp.l1descInx = objID;
 	dataObjLseekInp.offset = 0;
 	
 
@@ -1412,9 +1412,9 @@ getUserACL(char *userName, bytesBuf_t *mybuf, rsComm_t *rsComm)
 int
 genAdminOpFromDataObj(dataObjInp_t *dataObjInp, generalAdminInp_t *generalAdminInp, rsComm_t *rsComm)
 {
-	dataObjReadInp_t dataObjReadInp;
-	dataObjCloseInp_t dataObjCloseInp;
-	fileLseekInp_t dataObjLseekInp;
+	openedDataObjInp_t dataObjReadInp;
+	openedDataObjInp_t dataObjCloseInp;
+	openedDataObjInp_t dataObjLseekInp;
 	fileLseekOut_t *dataObjLseekOut;
 	bytesBuf_t *readBuf;
 	int status;
@@ -1460,7 +1460,7 @@ genAdminOpFromDataObj(dataObjInp_t *dataObjInp, generalAdminInp_t *generalAdminI
 	dataObjReadInp.len = readBuf->len;/* 200; */
 
 	/* init offset */
-	dataObjLseekInp.fileInx = objID;
+	dataObjLseekInp.l1descInx = objID;
 	dataObjLseekInp.offset = 0;
 	
 
@@ -1708,9 +1708,9 @@ parseGenAdminLine(char *inpLine, generalAdminInp_t *generalAdminInp, rsComm_t *r
 int
 loadACLFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 {
-	dataObjReadInp_t dataObjReadInp;
-	dataObjCloseInp_t dataObjCloseInp;
-	fileLseekInp_t dataObjLseekInp;
+	openedDataObjInp_t dataObjReadInp;
+	openedDataObjInp_t dataObjCloseInp;
+	openedDataObjInp_t dataObjLseekInp;
 	fileLseekOut_t *dataObjLseekOut;
 	bytesBuf_t *readBuf;
 	int status;
@@ -1750,7 +1750,7 @@ loadACLFromDataObj(dataObjInp_t *dataObjInp, rsComm_t *rsComm)
 	dataObjReadInp.len = readBuf->len;/* 200; */
 
 	/* init offset */
-	dataObjLseekInp.fileInx = objID;
+	dataObjLseekInp.l1descInx = objID;
 	dataObjLseekInp.offset = 0;
 	
 
