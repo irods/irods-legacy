@@ -55,6 +55,17 @@ int
 replToCacheRescOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *compObjInfo,
 dataObjInfo_t **outDestDataObjInfo);
+int
+stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead);
+int
+unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath);
+int
+stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t *compObjInfo,
+dataObjInfo_t *outCacheObjInfo);
+int
+stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead);
+int
+stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead);
 #else
 #define RS_DATA_OBJ_REPL NULL
 #endif
@@ -86,13 +97,6 @@ rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp);
 int
 _rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp,
 transStat_t **transStat);
-int
-stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t *compObjInfo,
-dataObjInfo_t *outCacheObjInfo);
-int
-stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead);
-int
-stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead);
 #ifdef  __cplusplus
 }
 #endif

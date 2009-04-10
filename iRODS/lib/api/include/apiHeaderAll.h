@@ -123,4 +123,5 @@
 #include "generalRowPurge.h"
 #include "krbAuthRequest.h"
 #include "phyBundleColl.h"
+#include "unbunAndRegPhyBunfile.h"
 #endif	/* API_HEADER_ALL_H */

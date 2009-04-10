@@ -13,6 +13,7 @@
 #include "dataObjCreate.h"
 #include "syncMountedColl.h"
 #include "regReplica.h"
+#include "unbunAndRegPhyBunfile.h"
 
 static rodsLong_t OneGig = (1024*1024*1024);
 

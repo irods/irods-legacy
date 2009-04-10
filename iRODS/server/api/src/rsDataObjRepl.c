@@ -931,21 +931,31 @@ int
 stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead)
 {
     int status;
-    rescInfo_t *cacheResc;
     dataObjInfo_t *dataObjInfoHead = *subfileObjInfoHead;
-    dataObjInp_t dataObjInp;
-    dataObjInfo_t *bunfileObjInfoHead;
 
     if (getRescClass (dataObjInfoHead->rescInfo) != BUNDLE_CL) return 0;
 
+    status = unbunAndStageBunfileObj (rsComm, dataObjInfoHead->filePath);
+
+    return status;
+}
+
+int
+unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath)
+{
+    rescInfo_t *cacheResc;
+    dataObjInp_t dataObjInp;
+    dataObjInfo_t *bunfileObjInfoHead;
+    int status;
+
     /* query the bundle dataObj */
     bzero (&dataObjInp, sizeof (dataObjInp));
-    rstrcpy (dataObjInp.objPath, dataObjInfoHead->filePath, MAX_NAME_LEN);
+    rstrcpy (dataObjInp.objPath, bunfileObjPath, MAX_NAME_LEN);
     
     status = getDataObjInfo (rsComm, &dataObjInp, &bunfileObjInfoHead, NULL, 1);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-         "stageBundledData: getDataObjInfo of bunfile %s failed. stat=%d",
+         "unbunAndStageBunfileObj: getDataObjInfo of bunfile %s failed.stat=%d",
           dataObjInp.objPath, status);
         return status;
     }
@@ -958,15 +968,27 @@ stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead)
           bunfileObjInfoHead->rescInfo->rescName, &cacheResc);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-             "stageBundledData: getCacheRescInGrp %s failed for %s stat=%d",
+            "unbunAndStageBunfileObj:getCacheRescInGrp %s err for %s stat=%d",
               bunfileObjInfoHead->rescGroupName, bunfileObjInfoHead->objPath, 
 	      status);
 	    freeAllDataObjInfo (bunfileObjInfoHead);
             return status;
         }
-    } else {
-	cacheResc = bunfileObjInfoHead->rescInfo;
+	/* XXXXXX need to take care of permission */
+        status = rsReplAndRequeDataObjInfo (rsComm, &bunfileObjInfoHead,
+          cacheResc->rescName, NULL);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "unbunAndStageBunfileObj:rsReplAndRequeDataObjInfo %s err stat=%d",
+              bunfileObjInfoHead->objPath, status);
+            return status;
+        }
     }
+    addKeyVal (&dataObjInp.condInput, FILE_PATH_KW, 
+      bunfileObjInfoHead->filePath);
+    status = _rsUnbunAndRegPhyBunfile (rsComm, &dataObjInp, 
+      bunfileObjInfoHead->rescInfo);
+
     return status;
 }
 

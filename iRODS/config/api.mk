@@ -352,3 +352,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcKrbAuthRequest.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsPhyBundleColl.o
 LIB_API_OBJS += $(libApiObjDir)/rcPhyBundleColl.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsUnbunAndRegPhyBunfile.o
+LIB_API_OBJS += $(libApiObjDir)/rcUnbunAndRegPhyBunfile.o
