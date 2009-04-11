@@ -115,6 +115,12 @@ int reconnFlag)
 #ifndef windows_platform
     if (reconnFlag == RECONN_TIMEOUT && conn->svrVersion != NULL &&
        conn->svrVersion->reconnPort > 0) {
+        if (strcmp ( conn->svrVersion->reconnAddr, "127.0.0.1") == 0 || 
+	  strcmp ( conn->svrVersion->reconnAddr , "0.0.0.0") == 0 ||
+	  strcmp ( conn->svrVersion->reconnAddr , "localhost")) { 
+	    /* localhost. just use conn->host */
+	    rstrcpy (conn->svrVersion->reconnAddr, conn->host, NAME_LEN);
+	}
         pthread_mutex_init (&conn->lock, NULL);
         pthread_cond_init (&conn->cond, NULL);
         status = pthread_create  (&conn->reconnThr, pthread_attr_default,
