@@ -1,6 +1,6 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* rsStructFileExtAndReg.c. See structFileExtAndReg.h for a description of 
+/* rsStructFileExtAndReg.c. See unbunAndRegPhyBunfile.h for a description of 
  * this API call.*/
 
 #include "unbunAndRegPhyBunfile.h"
@@ -44,6 +44,8 @@ rescInfo_t *rescInfo)
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    char *bunFilePath;
+    char phyBunDir[MAX_NAME_LEN];
 
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
@@ -53,6 +55,131 @@ rescInfo_t *rescInfo)
 	status = remoteUnbunAndRegPhyBunfile (rsComm, dataObjInp, 
 	  rodsServerHost);
     }
+    /* process this locally */
+    if ((bunFilePath = getValByKey (&dataObjInp->condInput, FILE_PATH_KW))
+      == NULL) {
+        rodsLog (LOG_ERROR,
+          "_rsUnbunAndRegPhyBunfile: No filePath input for %s",
+          dataObjInp->objPath);
+        return (SYS_INVALID_FILE_PATH);
+    }
+
+    createPhyBundleDir (rsComm, bunFilePath, phyBunDir);
+
+    status = unbunPhyBunFile (rsComm, dataObjInp, rescInfo, bunFilePath,
+      phyBunDir);
+
+    if (status < 0) return status;
+
+    return status;
+}
+
+int 
+regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
+{
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+    char subfilePath[MAX_NAME_LEN];
+    dataObjInp_t dataObjInp;
+    int status;
+    dataObjInfo_t *dataObjInfoHead = NULL; 
+    dataObjInfo_t *dataObjInfoHead = NULL; 
+
+    dirPtr = opendir (phyBunDir);
+    if (dirPtr == NULL) {
+        rodsLog (LOG_ERROR,
+        "regUnbunphySubfiles: opendir error for %s, errno = %d",
+         phyBunDir, errno);
+        return (UNIX_FILE_OPENDIR_ERR - errno);
+    }
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, rescInfo->rescName);
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
+          phyBunDir, myDirent->d_name);
+
+        status = stat (subfilePath, &statbuf);
+
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+              "regUnbunphySubfiles: stat error for %s, errno = %d",
+              subfilePath, errno);
+            closedir (dirPtr);
+            return (UNIX_FILE_STAT_ERR - errno);
+        }
+
+        if ((statbuf.st_mode & S_IFREG) == 0) continue;
+
+	/* do the registration */
+	addKeyVal (&dataObjInp.condInput, QUERY_BY_DATA_ID_KW, 
+	  myDirent->d_name);
+	status = getDataObjInfo (rsComm, &dataObjInp, &dataObjInfoHead,
+	  NULL, 1);
+       if (status < 0) {
+            rodsLog (LOG_DEBUG,
+              "regUnbunphySubfiles: getDataObjInfo error for %s, status = %d",
+              subfilePath, status);
+	    /* don't terminate beause the data Obj may be deleted */
+	    unlink (subfilePath);
+	    continue;
+        }
+	requeDataObjInfoByResc (&dataObjInfoHead, BUNDLE_RESC, 1, 1);
+	if (strcmp (dataObjInfoHead->rescName, BUNDLE_RESC) != 0) {
+	    /* no match */
+	    rodsLog (LOG_DEBUG,
+              "regUnbunphySubfiles: No copy in BUNDLE_RESC for %s",
+              dataObjInfoHead->objPath);
+            /* don't terminate beause the copy may be deleted */
+	    unlink (subfilePath);
+            continue;
+        }
+	sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp.condInput, 1);`
+	/* The copy in DEST_RESC_NAME_KW should be on top */
+	if (strcmp (dataObjInfoHead->rescName, rescInfo->rescName) != 0) {
+ 
+    }
+    clearKeyVal (&dataObjInp.condInput);
+    closedir (dirPtr);
+    return status;
+}
+
+int
+unbunPhyBunFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
+{
+    int status;
+    structFileOprInp_t structFileOprInp;
+
+    /* untar the bunfile */
+    memset (&structFileOprInp, 0, sizeof (structFileOprInp_t));
+    structFileOprInp.specColl = malloc (sizeof (specColl_t));
+    memset (structFileOprInp.specColl, 0, sizeof (specColl_t));
+    structFileOprInp.specColl->type = TAR_STRUCT_FILE_T;
+    snprintf (structFileOprInp.specColl->collection, MAX_NAME_LEN,
+      "%s.dir", dataObjInp->objPath);
+    rstrcpy (structFileOprInp.specColl->objPath,
+      dataObjInp->objPath, MAX_NAME_LEN);
+    structFileOprInp.specColl->collClass = STRUCT_FILE_COLL;
+    rstrcpy (structFileOprInp.specColl->resource, rescInfo->rescName,
+      NAME_LEN);
+    rstrcpy (structFileOprInp.specColl->phyPath, bunFilePath, MAX_NAME_LEN);
+    rstrcpy (structFileOprInp.addr.hostAddr, rescInfo->rescLoc,
+      NAME_LEN);
+    /* set the cacheDir */
+    rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
+
+    status = rsStructFileSync (rsComm, &structFileOprInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "unbunPhyBunFile: rsStructFileSync err for %s. status = %d",
+          dataObjInp->objPath, status);
+    }
+    free (structFileOprInp.specColl);
 
     return (status);
 }

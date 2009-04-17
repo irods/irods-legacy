@@ -114,7 +114,8 @@ rescGrpInfo_t *rescGrpInfo)
 
     if (l1descInx < 0) return l1descInx;
 
-    createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir);
+    createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath, 
+      phyBunDir);
 
     bzero (&bunReplCacheHeader, sizeof (bunReplCacheHeader));
 #if 0
@@ -158,7 +159,7 @@ rescGrpInfo_t *rescGrpInfo)
                         if (l1descInx < 0) return l1descInx;
 
                         createPhyBundleDir (rsComm,
-                          L1desc[l1descInx].dataObjInfo, phyBunDir);
+                          L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
                     }
 		}
 #if 0
@@ -500,11 +501,11 @@ char *rescName, dataObjInfo_t *outCacheObjInfo)
 }
 
 int
-createPhyBundleDir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
+createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath, 
 char *outPhyBundleDir)
 {
     /* the dir where we put the files to bundle is in phyPath.dir */
-    snprintf (outPhyBundleDir, MAX_NAME_LEN, "%s.dir",  dataObjInfo->filePath);
+    snprintf (outPhyBundleDir, MAX_NAME_LEN, "%s.dir",  bunFilePath);
     mkdirR ("/", outPhyBundleDir, 0750);
     return (0);
 }

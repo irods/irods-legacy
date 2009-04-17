@@ -422,12 +422,12 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
       *rescGroupName, *rescName, *filePath, *dataOwnerName, *dataOwnerZone,
       *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId, 
-      *dataComments, *dataCreate, *dataModify, *dataMode;
+      *dataComments, *dataCreate, *dataModify, *dataMode, *dataName;
     char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType, 
       *tmpDataSize, *tmpRescGroupName, *tmpRescName, *tmpFilePath, 
       *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString, 
       *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments, 
-      *tmpDataCreate, *tmpDataModify, *tmpDataMode;
+      *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName;
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
 
@@ -450,6 +450,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
     }
 
     addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_COLL_ID, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_VERSION, 1);
@@ -506,6 +507,13 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
       getSqlResultByInx (genQueryOut, COL_D_OWNER_NAME)) == NULL) {
         rodsLog (LOG_NOTICE,
           "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataName =
+      getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
@@ -643,8 +651,9 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
         memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
 
+#if 0
         rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
-
+#endif
         tmpDataId = &dataId->value[dataId->len * i];
         tmpCollId = &collId->value[collId->len * i];
         tmpReplNum = &replNum->value[replNum->len * i];
@@ -665,7 +674,9 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         tmpDataCreate = &dataCreate->value[dataCreate->len * i];
         tmpDataModify = &dataModify->value[dataModify->len * i];
         tmpDataMode = &dataMode->value[dataMode->len * i];
+        tmpDataName = &dataName->value[dataName->len * i];
 
+        rstrcpy (dataObjInfo->objPath, tmpDataName, MAX_NAME_LEN);
 	rstrcpy (dataObjInfo->rescName, tmpRescName, NAME_LEN);
         status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
 	if (status < 0) {
@@ -1154,23 +1165,28 @@ int ignoreCondInput)
     int status;
     int qcondCnt = 0;
 
-    memset (myColl, 0, MAX_NAME_LEN);
-    memset (myData, 0, MAX_NAME_LEN);
-
-    if ((status = splitPathByKey (
-      dataObjInp->objPath, myColl, myData, '/')) < 0) {
-        rodsLog (LOG_NOTICE,
-          "initDataObjInfoQuery: splitPathByKey for %s error, status = %d",
-          dataObjInp->objPath, status);
-        return (status);
-    }
-
     memset (genQueryInp, 0, sizeof (genQueryInp_t));
 
-    snprintf (condStr, MAX_NAME_LEN, "='%s'", myColl);
-    addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, condStr);
-    snprintf (condStr, MAX_NAME_LEN, "='%s'", myData);
-    addInxVal (&genQueryInp->sqlCondInp, COL_DATA_NAME, condStr);
+    if ((tmpStr = getValByKey (&dataObjInp->condInput, QUERY_BY_DATA_ID_KW)) 
+      == NULL) {
+        memset (myColl, 0, MAX_NAME_LEN);
+        memset (myData, 0, MAX_NAME_LEN);
+
+        if ((status = splitPathByKey (
+          dataObjInp->objPath, myColl, myData, '/')) < 0) {
+            rodsLog (LOG_NOTICE,
+              "initDataObjInfoQuery: splitPathByKey for %s error, status = %d",
+              dataObjInp->objPath, status);
+            return (status);
+        }
+        snprintf (condStr, MAX_NAME_LEN, "='%s'", myColl);
+        addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, condStr);
+        snprintf (condStr, MAX_NAME_LEN, "='%s'", myData);
+        addInxVal (&genQueryInp->sqlCondInp, COL_DATA_NAME, condStr);
+    } else {
+        snprintf (condStr, MAX_NAME_LEN, "='%s'", tmpStr);
+        addInxVal (&genQueryInp->sqlCondInp, COL_D_DATA_ID, condStr);
+    }
 
     if (ignoreCondInput == 0 && (tmpStr =
       getValByKey (&dataObjInp->condInput, REPL_NUM_KW)) != NULL) {

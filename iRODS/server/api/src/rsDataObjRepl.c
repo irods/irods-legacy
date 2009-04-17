@@ -19,6 +19,7 @@
 #include "l3FilePutSingleBuf.h"
 #include "fileSyncToArch.h"
 #include "fileStageToCache.h"
+#include "unbunAndRegPhyBunfile.h"
 
 /* rsDataObjRepl - The Api handler of the rcDataObjRepl call - Replicate
  * a data object.
