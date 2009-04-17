@@ -84,7 +84,7 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
     dataObjInp_t dataObjInp;
     int status;
     dataObjInfo_t *dataObjInfoHead = NULL; 
-    dataObjInfo_t *dataObjInfoHead = NULL; 
+    dataObjInfo_t *bunDataObjInfo= NULL; 	/* the copy in BUNDLE_RESC */
 
     dirPtr = opendir (phyBunDir);
     if (dirPtr == NULL) {
@@ -138,9 +138,11 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
 	    unlink (subfilePath);
             continue;
         }
-	sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp.condInput, 1);`
+	sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp.condInput, 1);
 	/* The copy in DEST_RESC_NAME_KW should be on top */
 	if (strcmp (dataObjInfoHead->rescName, rescInfo->rescName) != 0) {
+	    bunDataObjInfo = dataObjInfoHead;
+	}
  
     }
     clearKeyVal (&dataObjInp.condInput);
