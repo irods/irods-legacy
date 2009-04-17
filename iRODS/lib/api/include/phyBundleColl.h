@@ -64,7 +64,7 @@ int
 createPhyBundleDataObj (rsComm_t *rsComm, char *collection,
 rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp);
 int
-createPhyBundleDir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+createPhyBundleDir (rsComm_t *rsComm, char *bunFilePath,
 char *outPhyBundleDir);
 int
 rsMkBundlePath (rsComm_t *rsComm, char *collection, char *outPath,  

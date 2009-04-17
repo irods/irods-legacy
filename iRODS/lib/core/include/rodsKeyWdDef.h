@@ -73,6 +73,7 @@
 #define ZONE_KW    		"zone"
 #define REMOTE_ZONE_OPR_KW    	"remoteZoneOpr"
 #define REPL_DATA_OBJ_INP_KW   	"replDataObjInp"
+#define QUERY_BY_DATA_ID_KW   	"queryByDataID"
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

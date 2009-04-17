@@ -28,6 +28,11 @@ rescInfo_t *rescInfo);
 int
 remoteUnbunAndRegPhyBunfile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t *rodsServerHost);
+int
+unbunPhyBunFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir);
+int
+regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir);
 #else
 #define RS_UNBUN_AND_REG_PHY_BUNFILE NULL
 #endif
