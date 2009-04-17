@@ -38,6 +38,13 @@ transStat_t **transStat)
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
 
+    if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
+	/* To SU, cannot be called by normal user directly */ 
+        if (rsComm->proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH) {
+            return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+        }
+    }
+
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_OPEN);
 
@@ -71,7 +78,9 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     char *accessPerm;
     int backupFlag;
 
-    if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
+    if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
+	accessPerm = NULL;
+    } else if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
         if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }
@@ -804,6 +813,9 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr)
         if (strstr (flagStr, RBUDP_TRANSFER_KW) != NULL) {
             addKeyVal (&dataObjInp.condInput, RBUDP_TRANSFER_KW, "");
 	}
+        if (strstr (flagStr, SU_CLIENT_USER_KW) != NULL) {
+            addKeyVal (&dataObjInp.condInput, SU_CLIENT_USER_KW, "");
+        }
     }
 
     rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);

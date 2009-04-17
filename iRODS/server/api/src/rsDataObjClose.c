@@ -369,6 +369,10 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	    regReplicaInp.srcDataObjInfo = srcDataObjInfo;
 	    regReplicaInp.destDataObjInfo = destDataObjInfo;
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
+              SU_CLIENT_USER_KW) != NULL) {
+                addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
+                addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+            } else if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
               IRODS_ADMIN_KW) != NULL) {
                 addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
             }

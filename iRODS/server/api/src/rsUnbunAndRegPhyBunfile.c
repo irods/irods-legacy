@@ -94,7 +94,6 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
         return (UNIX_FILE_OPENDIR_ERR - errno);
     }
     bzero (&dataObjInp, sizeof (dataObjInp));
-    addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, rescInfo->rescName);
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -129,6 +128,7 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
 	    continue;
         }
 	requeDataObjInfoByResc (&dataObjInfoHead, BUNDLE_RESC, 1, 1);
+	bunDataObjInfo = NULL;
 	if (strcmp (dataObjInfoHead->rescName, BUNDLE_RESC) != 0) {
 	    /* no match */
 	    rodsLog (LOG_DEBUG,
@@ -137,16 +137,89 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
             /* don't terminate beause the copy may be deleted */
 	    unlink (subfilePath);
             continue;
-        }
-	sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp.condInput, 1);
-	/* The copy in DEST_RESC_NAME_KW should be on top */
-	if (strcmp (dataObjInfoHead->rescName, rescInfo->rescName) != 0) {
+        } else {
 	    bunDataObjInfo = dataObjInfoHead;
 	}
- 
+	requeDataObjInfoByResc (&dataObjInfoHead, rescInfo->rescName, 1, 1);
+	/* The copy in DEST_RESC_NAME_KW should be on top */
+	if (strcmp (dataObjInfoHead->rescName, rescInfo->rescName) != 0) {
+	    /* no copy. stage it */
+	    status = regPhySubFile (rsComm, subfilePath, bunDataObjInfo, 
+	      rescInfo);
+	} else {
+	    /* have a copy. don't do anything for now */
+            unlink (subfilePath);
+            continue;
+	}
     }
     clearKeyVal (&dataObjInp.condInput);
     closedir (dirPtr);
+    return status;
+}
+
+int
+regPhySubFile (rsComm_t *rsComm, char *subfilePath, 
+dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo)
+{
+    dataObjInfo_t stageDataObjInfo;
+    dataObjInp_t dataObjInp;
+    struct stat statbuf;
+    int status;
+    regReplica_t regReplicaInp;
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    bzero (&stageDataObjInfo, sizeof (stageDataObjInfo));
+    rstrcpy (dataObjInp.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN);
+    rstrcpy (stageDataObjInfo.objPath, bunDataObjInfo->objPath, MAX_NAME_LEN);
+    rstrcpy (stageDataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+    stageDataObjInfo.rescInfo = rescInfo;
+
+    status = getFilePathName (rsComm, &stageDataObjInfo, &dataObjInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "regPhySubFile: getFilePathName err for %s. status = %d",
+          dataObjInp.objPath, status);
+        return (status);
+    }
+
+    status = stat (stageDataObjInfo.filePath, &statbuf);
+    if (status == 0 || errno != ENOENT) {
+	status = resolveDupFilePath (rsComm, &stageDataObjInfo, &dataObjInp);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "regPhySubFile: resolveDupFilePath err for %s. status = %d",
+              stageDataObjInfo.filePath, status);
+            return (status);
+	}
+    }
+    /* make the necessary dir */
+    mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", stageDataObjInfo.filePath,
+      DEFAULT_DIR_MODE);
+    /* add a link */
+    status = link (subfilePath, stageDataObjInfo.filePath);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "regPhySubFile: link error %s to %s. errno = %d",
+          subfilePath, stageDataObjInfo.filePath, errno);
+        return (UNIX_FILE_LINK_ERR - errno);
+    }
+
+    bzero (&regReplicaInp, sizeof (regReplicaInp));
+    regReplicaInp.srcDataObjInfo = bunDataObjInfo;
+    regReplicaInp.destDataObjInfo = &stageDataObjInfo;
+    addKeyVal (&regReplicaInp.condInput, SU_CLIENT_USER_KW, "");
+    addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
+
+    status = rsRegReplica (rsComm, &regReplicaInp);
+
+    clearKeyVal (&regReplicaInp.condInput);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "regPhySubFile: rsRegReplica error for %s. status = %d",
+          bunDataObjInfo->objPath, status);
+        return status;
+    }
+
     return status;
 }
 

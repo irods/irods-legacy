@@ -42,12 +42,22 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     int status;
     dataObjInfo_t *srcDataObjInfo;
     dataObjInfo_t *destDataObjInfo;
+    int savedClientAuthFlag;
 
     srcDataObjInfo = regReplicaInp->srcDataObjInfo;
     destDataObjInfo = regReplicaInp->destDataObjInfo;
 
-    status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
-      &regReplicaInp->condInput);
+    if (getValByKey (&regReplicaInp->condInput, SU_CLIENT_USER_KW) != NULL) {
+	savedClientAuthFlag = rsComm->clientUser.authInfo.authFlag;
+	rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+        status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
+          &regReplicaInp->condInput);
+	/* restore it */
+	rsComm->clientUser.authInfo.authFlag = savedClientAuthFlag;
+    } else {
+        status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
+          &regReplicaInp->condInput);
+    }
     return (status);
 #else
     return (SYS_NO_RCAT_SERVER_ERR);
