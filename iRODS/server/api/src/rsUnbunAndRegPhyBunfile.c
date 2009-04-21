@@ -146,6 +146,12 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
 	    /* no copy. stage it */
 	    status = regPhySubFile (rsComm, subfilePath, bunDataObjInfo, 
 	      rescInfo);
+            unlink (subfilePath);
+            if (status < 0) {
+                rodsLog (LOG_DEBUG,
+                  "regUnbunphySubfiles: regPhySubFile err for %s, status = %d",
+                  bunDataObjInfo->objPath, status);
+	    }
 	} else {
 	    /* have a copy. don't do anything for now */
             unlink (subfilePath);
