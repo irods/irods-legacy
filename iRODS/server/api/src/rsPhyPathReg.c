@@ -441,10 +441,12 @@ unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 	/* a struct file */
         status = _rsSyncMountedColl (rsComm, rodsObjStatOut->specColl,
           PURGE_STRUCT_FILE_CACHE);
+#if 0
 	if (status < 0) {
 	    free (rodsObjStatOut);
 	    return (status);
 	}
+#endif
     }
 
     free (rodsObjStatOut);
