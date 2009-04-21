@@ -3570,7 +3570,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	       userIdStr, MAX_NAME_LEN, userName2, zoneName, 0, &icss);
       if (i != 0 && i !=CAT_NO_ROWS_FOUND) return(i);
       if (i == 0) {
-	 snprintf(tSQL, MAX_SQL_SIZE, form3);
+	 rstrcpy(tSQL, form3, MAX_SQL_SIZE);
 	 cllBindVars[cllBindVarCount++]=decoded;
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 cllBindVars[cllBindVarCount++]=userIdStr;
@@ -3578,7 +3578,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       }
       else {
 	 opType=4;
-	 snprintf(tSQL, MAX_SQL_SIZE, form4);
+	 rstrcpy(tSQL, form4, MAX_SQL_SIZE);
 	 cllBindVars[cllBindVarCount++]=userName2;
 	 cllBindVars[cllBindVarCount++]=zoneName;
 	 cllBindVars[cllBindVarCount++]=decoded;

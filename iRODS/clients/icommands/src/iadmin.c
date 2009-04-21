@@ -60,16 +60,16 @@ printSimpleQuery(char *buf) {
       }
    }
    if (cpTime==NULL) {
-      printf(buf);
+      printf("%s", buf);
       return(0);
    }
    endOfLine=strstr(cpTime,"\n");
    if (endOfLine-cpTime > 30) {
-      printf(buf);
+      printf("%s",buf);
    }
    else {
       *endOfLine='\0';
-      printf(buf);
+      printf("%s",buf);
       getLocalTimeFromRodsTime(cpTime+fieldLen, localTime);
       printf(" : %s\n", localTime);
       printSimpleQuery(endOfLine+1);

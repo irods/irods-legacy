@@ -186,7 +186,6 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
 
    char response[RESPONSE_LEN+2];
    char challenge[CHALLENGE_LEN+2];
-   //   char user[10]="rods";
    int userPrivLevel;
    int clientPrivLevel;
    int status, i;
@@ -496,7 +495,8 @@ int testModRuleMeta(rsComm_t *rsComm, char *id,
 
    memset (&regParam, 0, sizeof (regParam));
 
-   snprintf (tmpStr, LONG_NAME_LEN, attrValue);
+   rstrcpy (tmpStr, attrValue, LONG_NAME_LEN);
+
    addKeyVal (&regParam, attrName, tmpStr);
 
    strcpy(ruleId, id);
@@ -568,12 +568,12 @@ int testSimpleQ(rsComm_t *rsComm, char *sql, char *arg1, char *format) {
 
    status = chlSimpleQuery(rsComm, sql, arg1, 0, 0, 0, 
                            form, &control, bigBuf, 1000);
-   if (status==0) printf(bigBuf);
+   if (status==0) printf("%s",bigBuf);
 
    while (control && (status==0) ) {
       status = chlSimpleQuery(rsComm, sql, 0, 0, 0, 0,
 			      form, &control, bigBuf, 1000);
-      if (status==0) printf(bigBuf);
+      if (status==0) printf("%s",bigBuf);
    }
    return(status);
 }
