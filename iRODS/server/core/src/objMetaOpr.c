@@ -422,12 +422,12 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
     sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
       *rescGroupName, *rescName, *filePath, *dataOwnerName, *dataOwnerZone,
       *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId, 
-      *dataComments, *dataCreate, *dataModify, *dataMode, *dataName;
+      *dataComments, *dataCreate, *dataModify, *dataMode, *dataName, *collName;
     char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType, 
       *tmpDataSize, *tmpRescGroupName, *tmpRescName, *tmpFilePath, 
       *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString, 
       *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments, 
-      *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName;
+      *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName;
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
 
@@ -451,6 +451,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 
     addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_D_COLL_ID, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
     addInxIval (&genQueryInp.selectInp, COL_DATA_VERSION, 1);
@@ -514,6 +515,13 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
       getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == NULL) {
         rodsLog (LOG_NOTICE,
           "getDataObjInfo: getSqlResultByInx for COL_DATA_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((collName =
+      getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_COLL_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
@@ -675,8 +683,10 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         tmpDataModify = &dataModify->value[dataModify->len * i];
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpDataName = &dataName->value[dataName->len * i];
+        tmpCollName = &collName->value[collName->len * i];
 
-        rstrcpy (dataObjInfo->objPath, tmpDataName, MAX_NAME_LEN);
+        snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
+	  tmpCollName, tmpDataName);
 	rstrcpy (dataObjInfo->rescName, tmpRescName, NAME_LEN);
         status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
 	if (status < 0) {
