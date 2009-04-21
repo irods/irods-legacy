@@ -548,6 +548,7 @@ char *subPath, dataObjInfo_t **dataObjInfo)
 	dataObjInp_t myDataObjInp;
 	dataObjInfo_t *tmpDataObjInfo;
 
+	bzero (&myDataObjInp, sizeof (myDataObjInp));
         rstrcpy (myDataObjInp.objPath, specColl->objPath, MAX_NAME_LEN);
         status = getDataObjInfo (rsComm, &myDataObjInp, dataObjInfo, NULL, 1);
         if (status < 0) {
