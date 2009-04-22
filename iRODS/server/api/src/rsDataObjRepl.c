@@ -959,7 +959,7 @@ stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead)
     /* query the bundle dataObj */
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);
-    addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, cacheResc->rescName);
+    addKeyVal (&dataObjInp.condInput, RESC_NAME_KW, cacheResc->rescName);
     status = getDataObjInfo (rsComm, &dataObjInp, &cacheObjInfo, NULL, 0);
     clearKeyVal (&dataObjInp.condInput);
     if (status < 0) {
@@ -1021,6 +1021,8 @@ rescInfo_t **outCacheResc)
               bunfileObjInfoHead->objPath, status);
             return status;
         }
+    } else {
+	*outCacheResc = bunfileObjInfoHead->rescInfo;
     }
     addKeyVal (&dataObjInp.condInput, FILE_PATH_KW, 
       bunfileObjInfoHead->filePath);
