@@ -58,7 +58,8 @@ dataObjInfo_t **outDestDataObjInfo);
 int
 stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead);
 int
-unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath);
+unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath,
+rescInfo_t **outCacheResc);
 int
 stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t *compObjInfo,
 dataObjInfo_t *outCacheObjInfo);
