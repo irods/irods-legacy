@@ -1014,7 +1014,7 @@ rescInfo_t **outCacheResc)
 
 	/* XXXXXX need to take care of permission */
         status = rsReplAndRequeDataObjInfo (rsComm, &bunfileObjInfoHead,
-          cacheResc->rescName, NULL);
+          cacheResc->rescName, SU_CLIENT_USER_KW);
         if (status < 0) {
             rodsLog (LOG_ERROR,
              "unbunAndStageBunfileObj:rsReplAndRequeDataObjInfo %s err stat=%d",
