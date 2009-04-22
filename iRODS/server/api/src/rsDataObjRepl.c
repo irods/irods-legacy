@@ -945,16 +945,39 @@ stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead)
 {
     int status;
     dataObjInfo_t *dataObjInfoHead = *subfileObjInfoHead;
+    rescInfo_t *cacheResc;
+    dataObjInp_t dataObjInp;
+    dataObjInfo_t *cacheObjInfo;
 
     if (getRescClass (dataObjInfoHead->rescInfo) != BUNDLE_CL) return 0;
 
-    status = unbunAndStageBunfileObj (rsComm, dataObjInfoHead->filePath);
+    status = unbunAndStageBunfileObj (rsComm, dataObjInfoHead->filePath,
+      &cacheResc);
+
+    if (status < 0) return status;
+
+    /* query the bundle dataObj */
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);
+    addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, cacheResc->rescName);
+    status = getDataObjInfo (rsComm, &dataObjInp, &cacheObjInfo, NULL, 0);
+    clearKeyVal (&dataObjInp.condInput);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "unbunAndStageBunfileObj: getDataObjInfo of subfile %s failed.stat=%d",
+          dataObjInp.objPath, status);
+        return status;
+    }
+    /* que the cache copy at the top */
+    queDataObjInfo (subfileObjInfoHead, cacheObjInfo, 0, 1);
+
 
     return status;
 }
 
 int
-unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath)
+unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath, 
+rescInfo_t **outCacheResc)
 {
     rescInfo_t *cacheResc;
     dataObjInp_t dataObjInp;
@@ -987,6 +1010,8 @@ unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath)
 	    freeAllDataObjInfo (bunfileObjInfoHead);
             return status;
         }
+	*outCacheResc = cacheResc;
+
 	/* XXXXXX need to take care of permission */
         status = rsReplAndRequeDataObjInfo (rsComm, &bunfileObjInfoHead,
           cacheResc->rescName, NULL);

@@ -69,7 +69,20 @@ rescInfo_t *rescInfo)
     status = unbunPhyBunFile (rsComm, dataObjInp, rescInfo, bunFilePath,
       phyBunDir);
 
-    if (status < 0) return status;
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+        "_rsUnbunAndRegPhyBunfile:unbunPhyBunFile err for %s to dir %s.stat=%d",
+          bunFilePath, phyBunDir, status);
+	return status;
+    }
+
+    status = regUnbunPhySubfiles (rsComm, rescInfo, phyBunDir);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "_rsUnbunAndRegPhyBunfile: regUnbunPhySubfiles for dir %s. stat = %d",
+          phyBunDir, status);
+    }
 
     return status;
 }
@@ -254,10 +267,11 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
     /* set the cacheDir */
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
 
-    status = rsStructFileSync (rsComm, &structFileOprInp);
+    rmFilesInUnixDir (phyBunDir);
+    status = rsStructFileExtract (rsComm, &structFileOprInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "unbunPhyBunFile: rsStructFileSync err for %s. status = %d",
+          "unbunPhyBunFile: rsStructFileExtract err for %s. status = %d",
           dataObjInp->objPath, status);
     }
     free (structFileOprInp.specColl);
@@ -284,5 +298,38 @@ rodsServerHost_t *rodsServerHost)
     status = rcUnbunAndRegPhyBunfile (rodsServerHost->conn, dataObjInp);
 
     return status;
+}
+
+int
+rmFilesInUnixDir (char *phyBunDir)
+{
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+    char subfilePath[MAX_NAME_LEN];
+    int status;
+
+    dirPtr = opendir (phyBunDir);
+    if (dirPtr == NULL) return 0;
+
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
+          phyBunDir, myDirent->d_name);
+
+        status = stat (subfilePath, &statbuf);
+
+        if (status != 0) {
+	    continue;
+        }
+
+        if ((statbuf.st_mode & S_IFREG) == 0) continue;
+
+	unlink (subfilePath);
+    }
+    return 0;
 }
 
