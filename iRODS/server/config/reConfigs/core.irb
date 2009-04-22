@@ -113,7 +113,7 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 #      cacheResc before opening the data object. 
 # acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
 # acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
-acPreprocForDataObjOpen||msiSortDataObj(random)|nop
+acPreprocForDataObjOpen||nop|nop
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
 # data object. Currently, one preprocessing function can be used 
 # by this rule. 
