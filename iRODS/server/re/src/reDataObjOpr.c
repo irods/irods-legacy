@@ -98,6 +98,9 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+	myDataObjInp->openFlags = O_RDWR;
+    } 
     rei->status = rsDataObjOpen (rsComm, myDataObjInp);
     if (rei->status >= 0) {
         fillIntInMsParam (outParam, rei->status);
