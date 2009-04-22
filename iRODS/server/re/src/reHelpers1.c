@@ -224,6 +224,8 @@ _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, i
        sprintf(res,"%d", x >= y);
      else if (!strcmp(oper1, "!="))
        sprintf(res,"%d", x != y);
+     else if (!strcmp(oper1, "++"))
+       sprintf(res,"%d",  (int) (x + y));
      else if (!strcmp(oper1, "+"))
        sprintf(res,"%f",  x + y);
      else if (!strcmp(oper1, "-"))

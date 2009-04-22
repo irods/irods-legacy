@@ -415,7 +415,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm = rei->rsComm;
 
     if (inpParam1 == NULL || (inpParam2->inpOutBuf == NULL &&
-     inpParam2->inOutStruct)) {
+     inpParam2->inOutStruct == NULL)) {
 	rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
 	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjWrite: input inpParam1 or inpOutBuf is NULL");

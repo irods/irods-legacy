@@ -629,6 +629,7 @@ beginOpr(char *e,char **eoper) {
 	strncmp(e," >= ",4) == 0 ||
 	strncmp(e," <= ",4) == 0 ||
 	strncmp(e," == ",4) == 0 ||
+        strncmp(e," ++ ",4) == 0 ||
 	strncmp(e," != ",4) == 0 ) {
       *eoper = e + 4;
       return(1);
