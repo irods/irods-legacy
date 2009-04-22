@@ -384,8 +384,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 /* msiDataObjjWrite - msi for DataObjjWrite.
  * inpParam1 - It can be a DataObjWriteInp_MS_T or
  *    INT_MS_T or a STR_MS_T which would be the descriptor.
- * inpParam2 - Optional - It can be a BUF_LEN_MS_T or a STR_MS_T which would be
- *    the length of the buffer and the buffer in the BBuf.
+ * inpParam2 - Optional - It can be a BUF_LEN_MS_T or a STR_MS_T, the input 
+ *    is inpOutBuf and the length of the buffer and the buffer in the BBuf. If it is STR_MS_T,
+ *    the input is a string.
  * outParam - a INT_MS_T for the length written.
  *
  */
@@ -397,6 +398,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm_t *rsComm; 
     openedDataObjInp_t dataObjWriteInp, *myDataObjWriteInp;
     int myInt;
+    bytesBuf_t tmpBBuf, *myBBuf;
+
 
     RE_TEST_MACRO ("    Calling msiDataObjWrite")
 
@@ -432,21 +435,28 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if (inpParam2 != NULL) {
-	myInt = parseMspForPosInt (inpParam2);
-        if (myInt < 0) {
-            if (myInt != SYS_NULL_INPUT) {
-                rei->status = myInt;
-                rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-                  "msiDataObjRead: parseMspForPosInt error for param2.");
-                return (rei->status);
+	if (strcmp (inpParam2->type, STR_MS_T) == 0) {
+	    tmpBBuf.len = myDataObjWriteInp->len = 
+	      strlen (inpParam2->inOutStruct) + 1;
+	    tmpBBuf.buf = inpParam2->inOutStruct;
+	    myBBuf = &tmpBBuf;
+	} else {
+	    myInt = parseMspForPosInt (inpParam2);
+            if (myInt < 0) {
+                if (myInt != SYS_NULL_INPUT) {
+                    rei->status = myInt;
+                    rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+                      "msiDataObjRead: parseMspForPosInt error for param2.");
+                    return (rei->status);
+		}
+            } else {
+                myDataObjWriteInp->len = myInt;
             }
-        } else {
-            myDataObjWriteInp->len = myInt;
-        }
+	    myBBuf = inpParam2->inpOutBuf;
+	}
     }
 
-    rei->status = rsDataObjWrite (rsComm, myDataObjWriteInp, 
-      inpParam2->inpOutBuf);
+    rei->status = rsDataObjWrite (rsComm, myDataObjWriteInp, myBBuf);
 
     if (rei->status >= 0) {
         fillIntInMsParam (outParam, rei->status);
