@@ -18,6 +18,8 @@
 #include "dataObjRename.h"
 #include "subStructFileUnlink.h"
 #include "modDataObjMeta.h"
+#include "phyBundleColl.h"
+#include "dataObjRepl.h"
 
 int
 rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
@@ -84,6 +86,29 @@ dataObjInfo_t *dataObjInfoHead)
     int status;
     int retVal = 0;
     dataObjInfo_t *tmpDataObjInfo;
+
+    if (strcmp (dataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+        if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+            return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
+	}
+	if (getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL) {
+	    return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
+	}
+	status = _unbunAndStageBunfileObj (rsComm, &dataObjInfoHead, NULL, 1);
+	if (status < 0) {
+            rodsLog (LOG_NOTICE,
+            "_rsDataObjUnlink:_unbunAndStageBunfileObj error for %s, stat=%d",
+              dataObjInfoHead->objPath, status);
+            return (status);
+        }
+	/* dataObjInfoHead may be outdated */
+        freeAllDataObjInfo (dataObjInfoHead);  
+	dataObjInfoHead = NULL;
+        status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp,
+          &dataObjInfoHead);
+
+        if (status < 0) return (status);
+    }
 
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
@@ -275,6 +300,10 @@ dataObjInfo_t *dataObjInfoHead)
     ruleExecInfo_t rei;
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;
+
+    if (strcmp (dataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+	return SYS_CANT_MV_BUNDLE_DATA_TO_TRASH;
+    }
 
     if (getValByKey (&dataObjInp->condInput, DATA_ACCESS_KW) == NULL) {
         addKeyVal (&dataObjInp->condInput, DATA_ACCESS_KW,

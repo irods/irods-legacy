@@ -46,6 +46,7 @@ rescInfo_t *rescInfo)
     rodsServerHost_t *rodsServerHost;
     char *bunFilePath;
     char phyBunDir[MAX_NAME_LEN];
+    int rmBunCopyFlag;
 
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
@@ -76,7 +77,13 @@ rescInfo_t *rescInfo)
 	return status;
     }
 
-    status = regUnbunPhySubfiles (rsComm, rescInfo, phyBunDir);
+    if (getValByKey (&dataObjInp->condInput, RM_BUN_COPY_KW) == NULL) {
+	rmBunCopyFlag = 0;
+    } else {
+	rmBunCopyFlag = 1;
+    }
+
+    status = regUnbunPhySubfiles (rsComm, rescInfo, phyBunDir, rmBunCopyFlag);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -88,14 +95,18 @@ rescInfo_t *rescInfo)
 }
 
 int 
-regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
+regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir,
+int rmBunCopyFlag)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
     struct stat statbuf;
     char subfilePath[MAX_NAME_LEN];
     dataObjInp_t dataObjInp;
+    dataObjInp_t dataObjUnlinkInp;
     int status;
+    int savedStatus = 0;
+
     dataObjInfo_t *dataObjInfoHead = NULL; 
     dataObjInfo_t *bunDataObjInfo= NULL; 	/* the copy in BUNDLE_RESC */
 
@@ -107,6 +118,11 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
         return (UNIX_FILE_OPENDIR_ERR - errno);
     }
     bzero (&dataObjInp, sizeof (dataObjInp));
+    if (rmBunCopyFlag > 0) {
+        bzero (&dataObjUnlinkInp, sizeof (dataObjUnlinkInp));
+        addKeyVal (&dataObjUnlinkInp.condInput, IRODS_ADMIN_KW, "");
+    }
+
     while ((myDirent = readdir (dirPtr)) != NULL) {
         if (strcmp (myDirent->d_name, ".") == 0 ||
           strcmp (myDirent->d_name, "..") == 0) {
@@ -166,14 +182,30 @@ regUnbunPhySubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *phyBunDir)
                   bunDataObjInfo->objPath, status);
 	    }
 	} else {
-	    /* have a copy. don't do anything for now */
+	    /* XXXXXX have a copy. don't do anything for now */
             unlink (subfilePath);
-            continue;
 	}
+	if (rmBunCopyFlag > 0) {
+	    rstrcpy (dataObjUnlinkInp.objPath, bunDataObjInfo->objPath, 
+	      MAX_NAME_LEN);
+	    status = dataObjUnlinkS (rsComm, &dataObjUnlinkInp, bunDataObjInfo);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "regUnbunphySubfiles: dataObjUnlinkS err for %s, status = %d",
+                  bunDataObjInfo->objPath, status);
+		savedStatus = status;
+	    }
+        }
+	freeAllDataObjInfo (dataObjInfoHead);
+
     }
     clearKeyVal (&dataObjInp.condInput);
     closedir (dirPtr);
-    return status;
+    if (status >= 0 && savedStatus < 0) {
+	return savedStatus;
+    } else {
+        return status;
+    }
 }
 
 int

@@ -979,9 +979,8 @@ int
 unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath, 
 rescInfo_t **outCacheResc)
 {
-    rescInfo_t *cacheResc;
-    dataObjInp_t dataObjInp;
     dataObjInfo_t *bunfileObjInfoHead;
+    dataObjInp_t dataObjInp;
     int status;
 
     /* query the bundle dataObj */
@@ -995,39 +994,61 @@ rescInfo_t **outCacheResc)
           dataObjInp.objPath, status);
         return status;
     }
+    status = _unbunAndStageBunfileObj (rsComm, &bunfileObjInfoHead, 
+      outCacheResc, 0);
 
-    sortObjInfoForOpen (&bunfileObjInfoHead, NULL, 0);
+    freeAllDataObjInfo (bunfileObjInfoHead);
+    
+    return status;
+}
 
-    if (getRescClass (bunfileObjInfoHead->rescInfo) != CACHE_CL) {
+int
+_unbunAndStageBunfileObj (rsComm_t *rsComm, dataObjInfo_t **bunfileObjInfoHead,
+rescInfo_t **outCacheResc, int rmBunCopyFlag)
+{
+    int status;
+    rescInfo_t *cacheResc;
+    dataObjInp_t dataObjInp;
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, (*bunfileObjInfoHead)->objPath, MAX_NAME_LEN);
+    sortObjInfoForOpen (bunfileObjInfoHead, NULL, 0);
+
+    if (getRescClass ((*bunfileObjInfoHead)->rescInfo) != CACHE_CL) {
 	/* don't have a good copy on cache yet */
-        status = getCacheRescInGrp (rsComm, bunfileObjInfoHead->rescGroupName,
-          bunfileObjInfoHead->rescInfo->rescName, &cacheResc);
+        status = getCacheRescInGrp (rsComm, 
+	  (*bunfileObjInfoHead)->rescGroupName,
+          (*bunfileObjInfoHead)->rescInfo->rescName, &cacheResc);
         if (status < 0) {
             rodsLog (LOG_ERROR,
             "unbunAndStageBunfileObj:getCacheRescInGrp %s err for %s stat=%d",
-              bunfileObjInfoHead->rescGroupName, bunfileObjInfoHead->objPath, 
-	      status);
-	    freeAllDataObjInfo (bunfileObjInfoHead);
+              (*bunfileObjInfoHead)->rescGroupName, 
+	      (*bunfileObjInfoHead)->objPath, status);
             return status;
         }
-	*outCacheResc = cacheResc;
+	if (outCacheResc != NULL)
+	    *outCacheResc = cacheResc;
 
 	/* XXXXXX need to take care of permission */
-        status = rsReplAndRequeDataObjInfo (rsComm, &bunfileObjInfoHead,
+        status = rsReplAndRequeDataObjInfo (rsComm, bunfileObjInfoHead,
           cacheResc->rescName, SU_CLIENT_USER_KW);
         if (status < 0) {
             rodsLog (LOG_ERROR,
              "unbunAndStageBunfileObj:rsReplAndRequeDataObjInfo %s err stat=%d",
-              bunfileObjInfoHead->objPath, status);
+              (*bunfileObjInfoHead)->objPath, status);
             return status;
         }
     } else {
-	*outCacheResc = bunfileObjInfoHead->rescInfo;
+	if (outCacheResc != NULL)
+	    *outCacheResc = (*bunfileObjInfoHead)->rescInfo;
     }
     addKeyVal (&dataObjInp.condInput, FILE_PATH_KW, 
-      bunfileObjInfoHead->filePath);
+      (*bunfileObjInfoHead)->filePath);
+    if (rmBunCopyFlag > 0) {
+        addKeyVal (&dataObjInp.condInput, RM_BUN_COPY_KW, "");
+    }
     status = _rsUnbunAndRegPhyBunfile (rsComm, &dataObjInp, 
-      bunfileObjInfoHead->rescInfo);
+      (*bunfileObjInfoHead)->rescInfo);
 
     return status;
 }

@@ -61,6 +61,9 @@ int
 unbunAndStageBunfileObj (rsComm_t *rsComm, char *bunfileObjPath,
 rescInfo_t **outCacheResc);
 int
+_unbunAndStageBunfileObj (rsComm_t *rsComm, dataObjInfo_t **bunfileObjInfoHead,
+rescInfo_t **outCacheResc, int rmBunCopyFlag);
+int
 stageDataFromCompToCache (rsComm_t *rsComm, dataObjInfo_t *compObjInfo,
 dataObjInfo_t *outCacheObjInfo);
 int
