@@ -55,6 +55,7 @@ rescInfo_t *rescInfo)
 	  rescInfo->rescName);
 	status = remoteUnbunAndRegPhyBunfile (rsComm, dataObjInp, 
 	  rodsServerHost);
+	return status;
     }
     /* process this locally */
     if ((bunFilePath = getValByKey (&dataObjInp->condInput, FILE_PATH_KW))
