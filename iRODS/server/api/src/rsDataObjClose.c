@@ -377,7 +377,6 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
                 addKeyVal (&regReplicaInp.condInput, IRODS_ADMIN_KW, "");
             }
             status = rsRegReplica (rsComm, &regReplicaInp);
-	    if (status >= 0) destDataObjInfo->replNum = status;
             clearKeyVal (&regReplicaInp.condInput);
 	}
 	if (chksumStr != NULL)
