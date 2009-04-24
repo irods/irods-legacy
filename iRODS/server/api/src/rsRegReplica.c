@@ -57,6 +57,7 @@ _rsRegReplica (rsComm_t *rsComm, regReplica_t *regReplicaInp)
     } else {
         status = chlRegReplica (rsComm, srcDataObjInfo, destDataObjInfo,
           &regReplicaInp->condInput);
+	if (status >= 0) status = destDataObjInfo->replNum;
     }
     return (status);
 #else

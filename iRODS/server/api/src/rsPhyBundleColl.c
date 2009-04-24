@@ -362,7 +362,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
 	if (status < 0) {
             /* XXXXX need to handle error */
             rodsLog (LOG_ERROR,
-              "rsStructFileBundle: rsRegReplica error for %s. stat = %d",
+              "bundlleAndRegSubFiles: rsRegReplica error for %s. stat = %d",
               tmpBunReplCache->objPath, status);
 	}
 	free (tmpBunReplCache);
