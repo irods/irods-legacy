@@ -198,7 +198,7 @@ main(int argc, char **argv) {
       execCmdOut_t *execCmdOut;
       rodsLogError (LOG_ERROR, status, "rcExecMyRule error. ");
       printErrorStack (conn->rError); 
-      if ((mP = getMsParamByLabel (outParamArray, "ruleExecOut")) != NULL) {
+      if ((mP = getMsParamByType (outParamArray, ExecCmdOut_MS_T)) != NULL) {
 	execCmdOut = (execCmdOut_t *) mP->inOutStruct;
 	if (execCmdOut->stdoutBuf.buf != NULL) 
 	  fprintf(stdout,"%s", (char *) execCmdOut->stdoutBuf.buf);
@@ -216,7 +216,7 @@ main(int argc, char **argv) {
     else {
       msParam_t *mP;
       execCmdOut_t *execCmdOut;
-      if ((mP = getMsParamByLabel (outParamArray, "ruleExecOut")) != NULL) {
+      if ((mP = getMsParamByType (outParamArray, ExecCmdOut_MS_T)) != NULL) {
 	execCmdOut = (execCmdOut_t *) mP->inOutStruct;
 	if (execCmdOut->stdoutBuf.buf != NULL) 
 	  fprintf(stdout,"%s",(char *) execCmdOut->stdoutBuf.buf);

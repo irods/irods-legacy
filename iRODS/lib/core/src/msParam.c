@@ -369,6 +369,23 @@ getMsParamByLabel (msParamArray_t *msParamArray, char *label)
     return (NULL);
 }
 
+msParam_t *
+getMsParamByType (msParamArray_t *msParamArray, char *type)
+{
+    int i;
+
+    if (msParamArray == NULL || type == NULL) {
+        return NULL;
+    }
+
+    for (i = 0; i < msParamArray->len; i++) {
+        if (strcmp (msParamArray->msParam[i]->type, type) == 0) {
+            return (msParamArray->msParam[i]);
+        }
+    }
+    return (NULL);
+}
+
 void 
 *getMspInOutStructByLabel (msParamArray_t *msParamArray, char *label) 
 {

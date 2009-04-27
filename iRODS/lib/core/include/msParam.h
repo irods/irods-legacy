@@ -90,6 +90,8 @@ fillMsParam (msParam_t *msParam, char *label,
 char *type, void *inOutStruct, bytesBuf_t *inpOutBuf);
 msParam_t *
 getMsParamByLabel (msParamArray_t *msParamArray, char *label);
+msParam_t *
+getMsParamByType (msParamArray_t *msParamArray, char *type);
 int
 rmMsParamByLabel (msParamArray_t *msParamArray, char *label, int freeStruct);
 int
