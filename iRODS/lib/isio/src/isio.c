@@ -33,6 +33,11 @@
 #define ISIO_MAX_OPEN_FILES 20
 #define ISIO_MIN_OPEN_FD 5
 
+//#define ISIO_INITIAL_BUF_SIZE  65536
+#define ISIO_INITIAL_BUF_SIZE  6
+#define ISIO_MAX_BUF_SIZE    2097152
+//#define ISIO_MAX_BUF_SIZE    8
+
 int debug=1;
 
 long openFiles[ISIO_MAX_OPEN_FILES]={0,0,0,0,0,0,0,0,0,0,
@@ -42,8 +47,15 @@ struct {
    FILE *fd;
    char *base;
    int bufferSize;
-   char *cptr;
-   int *count;
+   char *ptr;
+   int count;
+   char endFlag; /* 'b' beginning of file is in buffer,
+                    'e' end-of-file is in the buffer,
+                    'a' all (both begin and end) in buffer,
+                    'n' none of the above. */
+   char usingUsersBuffer; /* y or n when active */
+//   char written; /* contains bytes written (but buffered): y or n */
+   int written; /* contains count of bytes written */
 } cacheInfo[ISIO_MAX_OPEN_FILES];
 
 
@@ -117,9 +129,12 @@ FILE *isioFileOpen(char *filename, char *modes) {
      return(NULL);
    }
 
+   /* Set the openFlags based on the input mode (incomplete
+    * currently) // */
    dataObjInp.openFlags = O_RDONLY;
    if (strncmp(modes,"w",1)==0) {
       dataObjInp.openFlags = O_WRONLY;
+      /* Need to handle other cases sometime */
    }
 
    status = rcDataObjOpen (Comm, &dataObjInp);
@@ -133,7 +148,17 @@ FILE *isioFileOpen(char *filename, char *modes) {
       return(NULL);
    }
    openFiles[i]=status;
-   cacheInfo[i].base=NULL;
+   cacheInfo[i].base=(char *)malloc(sizeof(char) * ISIO_INITIAL_BUF_SIZE);
+   if (cacheInfo[i].base==NULL) {
+      fprintf(stderr,"Memory Allocation error\n");
+      return(NULL);
+   }
+   cacheInfo[i].bufferSize = sizeof(char) * ISIO_INITIAL_BUF_SIZE;
+   cacheInfo[i].ptr=cacheInfo[i].base;
+   cacheInfo[i].count = 0;
+   cacheInfo[i].endFlag = 'n';
+   cacheInfo[i].usingUsersBuffer = 'n';
+   cacheInfo[i].written = 0;
    return((FILE *)i);
 }
 
@@ -153,13 +178,142 @@ FILE *irodsfopen(char *filename, char *modes) {
 }
 
 int
-isioFileRead(int fileIndex, void *buffer, int maxToRead) {
-   int status;
+isioFillBuffer(int fileIndex) {
+   int status, i;
    openedDataObjInp_t dataObjReadInp;
    bytesBuf_t dataObjReadOutBBuf;
 
+   if (debug) printf("isioFillBuffer: %d\n", fileIndex);
+
+   i = fileIndex;
+   dataObjReadOutBBuf.buf = cacheInfo[i].base;
+   dataObjReadOutBBuf.len = cacheInfo[i].bufferSize;
+
+   memset(&dataObjReadInp, 0, sizeof (dataObjReadInp));
+
+   dataObjReadInp.l1descInx = openFiles[fileIndex];
+   dataObjReadInp.len = cacheInfo[i].bufferSize;
+
+   status = rcDataObjRead (Comm, &dataObjReadInp,
+			   &dataObjReadOutBBuf);
+
+   if (debug) printf("isioFillBuffer rcDataObjRead stat: %d\n", status);
+   if (status < 0) return(status);
+
+   cacheInfo[i].ptr = cacheInfo[i].base;
+   cacheInfo[i].count = status;
+   if (status < cacheInfo[i].bufferSize) {
+      if (cacheInfo[i].endFlag=='n' || cacheInfo[i].endFlag=='b') {
+	 cacheInfo[i].endFlag='a';  /* cache has it all */
+      }
+      else {
+	 cacheInfo[i].endFlag='e';  /* cache has the end */
+      }
+   }
+   else {
+      if (cacheInfo[i].endFlag=='n') {
+	 cacheInfo[i].endFlag='b';  /* cache has the beginning */
+      }
+   }
+   return(0);
+}
+
+int
+isioFileRead(int fileIndex, void *buffer, int maxToRead) {
+   int status, i;
+   int reqSize;
+   char *myPtr;
+   openedDataObjInp_t dataObjReadInp;
+   bytesBuf_t dataObjReadOutBBuf;
+   int count;
+   int toMove;
+   int newBufSize;
+
    if (debug) printf("isioFileRead: %d\n", fileIndex);
 
+   /* If the buffer had been used for writing, flush it */
+   status = isioFlush(fileIndex);
+   if (status<0) return(status);
+
+   reqSize = maxToRead;
+   myPtr = buffer;
+   if (cacheInfo[fileIndex].count > 0) {
+      if (cacheInfo[fileIndex].count >= reqSize) {
+	 memcpy(myPtr,cacheInfo[fileIndex].ptr, reqSize);
+	 cacheInfo[fileIndex].ptr += reqSize;
+	 cacheInfo[fileIndex].count -= reqSize;
+	 return(maxToRead);
+      }
+      else {
+	 memcpy(myPtr,cacheInfo[fileIndex].ptr, cacheInfo[fileIndex].count);
+	 cacheInfo[fileIndex].ptr += cacheInfo[fileIndex].count;
+	 cacheInfo[fileIndex].count -=  cacheInfo[fileIndex].count;
+	 reqSize -=  cacheInfo[fileIndex].count;
+	 myPtr += cacheInfo[fileIndex].count;
+      }
+   }
+
+   newBufSize=(2*maxToRead)+8;
+   i = fileIndex;
+
+   if (cacheInfo[i].usingUsersBuffer == 'y') {
+      /* previous time we used user's buffer, this time either
+         allocate a new one or use their's this time too. */
+      cacheInfo[i].bufferSize = 0;
+   }
+
+   if (newBufSize > cacheInfo[i].bufferSize) {
+      if (newBufSize<=ISIO_MAX_BUF_SIZE) {
+	 if (cacheInfo[i].usingUsersBuffer=='n') {
+	    if (debug) printf("isioFileRead calling free\n");
+	    free(cacheInfo[i].base);
+	 }
+	 if (debug) printf("isioFileRead calling malloc\n");
+	 cacheInfo[i].base=(char *)malloc(newBufSize);
+	 if (cacheInfo[i].base==NULL) {
+	    fprintf(stderr,"Memory Allocation error\n");
+	    return(0);
+	 }
+	 cacheInfo[i].bufferSize = newBufSize;
+	 cacheInfo[i].usingUsersBuffer = 'n';
+      }
+      else {
+         /* Use user's buffer */
+	 cacheInfo[i].base=buffer;
+	 cacheInfo[i].bufferSize = maxToRead;
+	 cacheInfo[i].usingUsersBuffer = 'y';
+      }
+      cacheInfo[i].ptr=cacheInfo[i].base;
+      cacheInfo[i].count = 0;
+      cacheInfo[i].endFlag = 'n';
+   }
+
+   status = isioFillBuffer(fileIndex);
+   if (status<0) return(status);
+
+   if (cacheInfo[i].usingUsersBuffer=='y') {
+      count = cacheInfo[fileIndex].count;
+      cacheInfo[fileIndex].count = 0;
+      if (debug) printf("isioFileRead return1: %d\n", count);
+      return(count);
+   }
+   if (cacheInfo[fileIndex].count > 0) {
+      toMove = reqSize;
+      if (cacheInfo[fileIndex].count < reqSize) {
+	 toMove=cacheInfo[fileIndex].count;
+      }
+      memcpy(myPtr,cacheInfo[fileIndex].ptr, toMove);
+      cacheInfo[fileIndex].ptr += toMove;
+      cacheInfo[fileIndex].count -= toMove;
+      myPtr += toMove;
+      reqSize -= toMove;
+   }
+   count = (void *)myPtr-buffer;
+   if (debug) printf("isioFileRead return2: %d\n", count);
+   return(count);
+
+#if 0
+   /* equivalent without caching */
    dataObjReadOutBBuf.buf = buffer;
    dataObjReadOutBBuf.len = maxToRead;
 
@@ -170,6 +324,7 @@ isioFileRead(int fileIndex, void *buffer, int maxToRead) {
 
    return(rcDataObjRead (Comm, &dataObjReadInp,
 			 &dataObjReadOutBBuf));
+#endif
 }
 
 size_t irodsfread(void *buffer, size_t itemsize, int nitems, FILE *fi_stream) {
@@ -187,30 +342,107 @@ size_t irodsfread(void *buffer, size_t itemsize, int nitems, FILE *fi_stream) {
 }
 
 int
-isioFileWrite(int fileIndex, void *buffer, int maxToWrite) {
+isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
    int status;
+   int spaceInBuffer;
+   int newBufSize;
+
    openedDataObjInp_t dataObjWriteInp;
    bytesBuf_t dataObjWriteOutBBuf;
 
    if (debug) printf("isioFileWrite: %d\n", fileIndex);
 
+   spaceInBuffer = cacheInfo[fileIndex].bufferSize -
+                   cacheInfo[fileIndex].written;
+                   
+   if (debug) printf("isioFileWrite: spaceInBuffer %d\n", spaceInBuffer);
+   if (countToWrite < spaceInBuffer) {
+      /* Fits in the buffer, just cache it */
+      if (debug) printf("isioFileWrite: caching 1 %x %d\n", 
+			(int) cacheInfo[fileIndex].ptr, countToWrite);
+      memcpy(cacheInfo[fileIndex].ptr, buffer, countToWrite);
+      cacheInfo[fileIndex].ptr += countToWrite;
+      cacheInfo[fileIndex].count -= countToWrite; //??
+      cacheInfo[fileIndex].written += countToWrite;
+      return(countToWrite);
+   }
+
+   status = isioFlush(fileIndex); /* if anything is buffered, flush it */
+   if (status < 0) return(status);
+
+   if (countToWrite > ISIO_MAX_BUF_SIZE) {
+      /* Too big to cache, just send it */
+      dataObjWriteOutBBuf.buf = buffer;
+      dataObjWriteOutBBuf.len = countToWrite;
+
+      memset(&dataObjWriteInp, 0, sizeof (dataObjWriteInp));
+
+      dataObjWriteInp.l1descInx = openFiles[fileIndex];
+      dataObjWriteInp.len = countToWrite;
+
+      status = rcDataObjWrite (Comm, &dataObjWriteInp,
+				&dataObjWriteOutBBuf);
+      if (status < 0) return(status);
+
+      return(status);  /* total bytes written */
+   }
+
+   newBufSize=(2*countToWrite)+8;  /* Possible next size */
+   if (newBufSize > ISIO_MAX_BUF_SIZE) {
+      newBufSize = ISIO_MAX_BUF_SIZE;
+   }
+
+   if (newBufSize > cacheInfo[fileIndex].bufferSize) {
+       /* free old and make new larger buffer */
+       /* May need to handle case where read data is buffered // */
+      int i=fileIndex;
+      if (cacheInfo[i].usingUsersBuffer=='n') {
+	 if (debug) printf("isioFilewrite calling free\n");
+	 free(cacheInfo[i].base);
+      }
+      if (debug) printf("isioFilewrite calling malloc %d\n",
+			newBufSize);
+      cacheInfo[i].base=(char *)malloc(newBufSize);
+      if (cacheInfo[i].base==NULL) {
+	 fprintf(stderr,"Memory Allocation error\n");
+	 return(0);
+      }
+      cacheInfo[i].bufferSize = newBufSize;
+      cacheInfo[i].usingUsersBuffer = 'n';
+      cacheInfo[i].ptr=cacheInfo[i].base;
+      cacheInfo[i].count = 0;
+      cacheInfo[i].endFlag = 'n';
+   }
+
+   /* Now it fits in the buffer, so cache it */
+   if (debug) printf("isioFileWrite: caching 2 %x %d\n", 
+		     (int) cacheInfo[fileIndex].ptr, countToWrite);
+   memcpy(cacheInfo[fileIndex].ptr, buffer, countToWrite);
+   cacheInfo[fileIndex].ptr += countToWrite;
+   cacheInfo[fileIndex].count -= countToWrite; //??
+   cacheInfo[fileIndex].written += countToWrite;
+   return(countToWrite);
+
+#if 0
+/* non-caching version */
    dataObjWriteOutBBuf.buf = buffer;
-   dataObjWriteOutBBuf.len = maxToWrite;
+   dataObjWriteOutBBuf.len = countToWrite;
 
    memset(&dataObjWriteInp, 0, sizeof (dataObjWriteInp));
 
    dataObjWriteInp.l1descInx = openFiles[fileIndex];
-   dataObjWriteInp.len = maxToWrite;
+   dataObjWriteInp.len = countToWrite;
 
    return(rcDataObjWrite (Comm, &dataObjWriteInp,
 			 &dataObjWriteOutBBuf));
+#endif
 }
 
 size_t 
 irodsfwrite(void *buffer, size_t itemsize, int nitems, FILE *fi_stream) {
    int i;
    i = (int)fi_stream;
-   if (debug) printf("isiofwrite: %d\n", i);
+   if (debug) printf("irodsfwrite: %d\n", i);
    if (i<ISIO_MAX_OPEN_FILES && i>=ISIO_MIN_OPEN_FD && openFiles[i]>0) {
       return(isioFileWrite(i, buffer, itemsize*nitems));
    }
@@ -222,9 +454,28 @@ irodsfwrite(void *buffer, size_t itemsize, int nitems, FILE *fi_stream) {
 int
 isioFileClose(int fileIndex) {
    openedDataObjInp_t dataObjCloseInp;
+   int i, status;
+
    if (debug) printf("isioFileClose: %d\n", fileIndex);
+
+   /* If the buffer had been used for writing, flush it */
+   status = isioFlush(fileIndex);
+   if (status<0) return(status);
+
+
    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
    dataObjCloseInp.l1descInx = openFiles[fileIndex];
+
+   openFiles[fileIndex]=0;
+
+   i = fileIndex;
+   if (cacheInfo[i].usingUsersBuffer == 'n') {
+      if (debug) printf("isioFileClose calling free\n");
+      free(cacheInfo[i].base);
+   }
+
+   cacheInfo[i].usingUsersBuffer = ' ';
+
    return(rcDataObjClose(Comm, &dataObjCloseInp));
 }
 
@@ -248,6 +499,7 @@ isioFileSeek(int fileIndex, long offset, int whence) {
    fileLseekOut_t* seekResult = NULL;
    int status;
    if (debug) printf("isioFileSeek: %d\n", fileIndex);
+#if 0
    memset( &seekParam,  0, sizeof(fileLseekInp_t) );
    seekParam.l1descInx = openFiles[fileIndex];
    seekParam.offset  = offset;
@@ -256,6 +508,8 @@ isioFileSeek(int fileIndex, long offset, int whence) {
    if ( status < 0 ) {
       rodsLogError (LOG_ERROR, status, "isioFileSeek");
    }
+#endif
+   status=0;//
    return(status);
 }
 
@@ -268,7 +522,97 @@ irodsfseek(FILE *fi_stream, long offset, int whence) {
       return(isioFileSeek(i,offset,whence));
    }
    else {
-      return(fclose(fi_stream));
+      return(fseek(fi_stream, offset, whence));
+   }
+}
+
+int
+isioFlush(int fileIndex) {
+   int i;
+   int status;
+   openedDataObjInp_t dataObjWriteInp;
+   bytesBuf_t dataObjWriteOutBBuf;
+
+   i = fileIndex;
+   if (debug) printf("isioFlush: %d\n", i);
+   if (cacheInfo[i].written > 0) {
+
+      dataObjWriteOutBBuf.buf = cacheInfo[i].base;
+      dataObjWriteOutBBuf.len = cacheInfo[i].written;
+
+      memset(&dataObjWriteInp, 0, sizeof (dataObjWriteInp));
+
+      dataObjWriteInp.l1descInx = openFiles[fileIndex];
+      dataObjWriteInp.len = cacheInfo[i].written;
+
+      if (debug) printf("isioFlush: writing %d\n", 
+			cacheInfo[i].written);
+      status = rcDataObjWrite (Comm, &dataObjWriteInp,
+			       &dataObjWriteOutBBuf);
+      if (status >=0) {
+	 cacheInfo[i].ptr = cacheInfo[i].base;
+	 cacheInfo[i].written = 0;
+      }
+      return(status);
+
+   }
+   return(0);
+}
+
+
+int
+irodsfflush(FILE *fi_stream) {
+   int i;
+   i = (int)fi_stream;
+   if (debug) printf("isiofflush: %d\n", i);
+   if (i<ISIO_MAX_OPEN_FILES && i>=ISIO_MIN_OPEN_FD && openFiles[i]>0) {
+      return(isioFlush(i));
+   }
+   else {
+      return(fflush(fi_stream));
+   }
+}
+
+int
+isioFilePutc(int inchar, int fileIndex) {
+   int mychar;
+   mychar = inchar;
+   return (isioFileWrite(fileIndex, (void*)&mychar, 1));
+}
+
+int
+irodsfputc(int inchar, FILE *fi_stream) {
+   int i;
+   i = (int)fi_stream;
+   if (debug) printf("isiofputc: %d\n", i);
+   if (i<ISIO_MAX_OPEN_FILES && i>=ISIO_MIN_OPEN_FD && openFiles[i]>0) {
+      return(isioFilePutc(inchar, i));
+   }
+   else {
+      return(fputc(inchar, fi_stream));
+   }
+}
+
+int
+isioFileGetc(int fileIndex) {
+   int mychar=0;
+   int status;
+   status = isioFileRead(fileIndex, (void*)&mychar, 1);
+   if (status==0) return(EOF);
+   if (status<0) return(status);
+   return(mychar);
+}
+
+int
+irodsfgetc(FILE *fi_stream) {
+   int i;
+   i = (int)fi_stream;
+   if (debug) printf("isiofgetc: %d\n", i);
+   if (i<ISIO_MAX_OPEN_FILES && i>=ISIO_MIN_OPEN_FD && openFiles[i]>0) {
+      return(isioFileGetc(i));
+   }
+   else {
+      return(fgetc(fi_stream));
    }
 }
 

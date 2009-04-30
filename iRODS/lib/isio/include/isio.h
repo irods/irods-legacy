@@ -10,10 +10,9 @@
 #define exit(A) irodsexit(A)
 #define fwrite(A,B,C,D) irodsfwrite(A,B,C,D)
 #define fseek(A,B,C) irodsfseek(A,B,C)
-#if 0
 #define fflush(A) irodsfflush(A)
-#endif
-
+#define fputc(A, B) irodsfputc(A,B)
+#define fgetc(A) irodsfgetc(A)
 #include <stdio.h>
 
 #endif /* IRODS_IO_H */

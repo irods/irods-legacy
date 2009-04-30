@@ -13,11 +13,10 @@ char **argv;
     FILE *FI, *FO;
     int i1,i2,i3;
     int count, rval, wval;
-    char buf[1024*100];
-    int bufsize;
+    int ichar;
  
     if (argc < 3) {
-      printf("a.out file-in file-out [seek-position] [buffersize] \n");
+      printf("a.out file-in file-out [seek-position]\n");
       exit(-1);
     }
 
@@ -40,37 +39,19 @@ char **argv;
        fseek(FO, seekPos, SEEK_SET);
     }
 
-    bufsize = sizeof(buf);
-
-    if (argc >= 5) {
-       int i;
-       i = atoi(argv[4]);
-       if (i > bufsize) {
-	  perror("buffer size is too big");
-	  exit(-4);
-       }
-       if (i <= 0) {
-	  perror("invalid buffer size");
-	  exit(-5);
-       }
-       bufsize=i;
-    }
 
     do {
-      memset(buf, 0, sizeof(buf));
-      printf("buffer size=%d\n",bufsize);
-      rval = fread(&buf[0], 1, bufsize, FI);
-      printf("rval=%d\n",rval);
-      if (rval < 0) {
-	perror("read stream message");
-      }
-      if (rval > 0) {
-	wval = fwrite(&buf[0], 1, rval, FO);
-	if (wval < 0) {
-	  perror("fwriting data:");
-	}
-      }
-    } while (rval > 0);
+       ichar = fgetc(FI);
+       if (ichar < 0) {
+	  perror("fgetc");
+       }
+       if (ichar != EOF) {
+	  wval = fputc(ichar, FO);
+	  if (wval < 0) {
+	     perror("fputc");
+	  }
+       }
+    } while (ichar != EOF);
     fclose(FI);
     fclose(FO);
     exit(0);
