@@ -17,3 +17,6 @@ experience developing SRB.
 See the above URLs for additional information.  https://www.irods.org
 is a Wiki system and includes documentation, descriptions,
 publications, presentations, and other information.
+
+Mailing list:
+http://groups.google.com/group/iROD-Chat?hl=en
