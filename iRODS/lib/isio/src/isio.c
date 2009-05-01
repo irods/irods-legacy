@@ -136,6 +136,9 @@ FILE *isioFileOpen(char *filename, char *modes) {
       dataObjInp.openFlags = O_WRONLY;
       /* Need to handle other cases sometime */
    }
+   if (strncmp(modes,"r+",2)==0) {
+      dataObjInp.openFlags = O_RDWR;
+   }
 
    status = rcDataObjOpen (Comm, &dataObjInp);
 
@@ -352,6 +355,18 @@ isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
 
    if (debug) printf("isioFileWrite: %d\n", fileIndex);
 
+   if (cacheInfo[fileIndex].count > 0) {
+      /* buffer has read data in it, so seek to where the
+         the app thinks the pointer is and disgard the buffered
+         read data */
+      long offset;
+      offset = - cacheInfo[fileIndex].count;
+      status = isioFileSeek(fileIndex, offset, SEEK_CUR);
+      if (status) return(status);
+      cacheInfo[fileIndex].ptr=cacheInfo[fileIndex].base;
+      cacheInfo[fileIndex].count = 0;
+   }
+
    spaceInBuffer = cacheInfo[fileIndex].bufferSize -
                    cacheInfo[fileIndex].written;
                    
@@ -362,7 +377,7 @@ isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
 			(int) cacheInfo[fileIndex].ptr, countToWrite);
       memcpy(cacheInfo[fileIndex].ptr, buffer, countToWrite);
       cacheInfo[fileIndex].ptr += countToWrite;
-      cacheInfo[fileIndex].count -= countToWrite; //??
+//      cacheInfo[fileIndex].count -= countToWrite; //??
       cacheInfo[fileIndex].written += countToWrite;
       return(countToWrite);
    }
@@ -382,6 +397,7 @@ isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
 
       status = rcDataObjWrite (Comm, &dataObjWriteInp,
 				&dataObjWriteOutBBuf);
+      if (debug) printf("isioFileWrite: rcDataWrite 2 %d\n", status);
       if (status < 0) return(status);
 
       return(status);  /* total bytes written */
@@ -410,7 +426,7 @@ isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
       cacheInfo[i].bufferSize = newBufSize;
       cacheInfo[i].usingUsersBuffer = 'n';
       cacheInfo[i].ptr=cacheInfo[i].base;
-      cacheInfo[i].count = 0;
+//      cacheInfo[i].count = 0;
       cacheInfo[i].endFlag = 'n';
    }
 
@@ -499,7 +515,7 @@ isioFileSeek(int fileIndex, long offset, int whence) {
    fileLseekOut_t* seekResult = NULL;
    int status;
    if (debug) printf("isioFileSeek: %d\n", fileIndex);
-#if 0
+//#if 0
    memset( &seekParam,  0, sizeof(fileLseekInp_t) );
    seekParam.l1descInx = openFiles[fileIndex];
    seekParam.offset  = offset;
@@ -508,8 +524,8 @@ isioFileSeek(int fileIndex, long offset, int whence) {
    if ( status < 0 ) {
       rodsLogError (LOG_ERROR, status, "isioFileSeek");
    }
-#endif
-   status=0;//
+//#endif
+//   status=0;//
    return(status);
 }
 
