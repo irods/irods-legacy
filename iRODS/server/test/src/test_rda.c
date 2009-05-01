@@ -88,7 +88,7 @@ main(int argc, char **argv) {
 	 printf("error %d\n", status);
       }
       else {
-	 printf(outBuf);
+	 printf("%s",outBuf);
       }
       didOne=1;
    }
