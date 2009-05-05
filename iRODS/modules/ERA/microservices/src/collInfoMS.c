@@ -299,3 +299,105 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
 
 
 
+/**
+ * \fn msiStructFileBundle
+ * \author  Antoine de Torcy
+ * \date   2009-04-21
+ * \brief Bundles a collection for export
+ * \note This microservice creates a bundle from an iRods collection on a target resource.
+ *		Files in the collection are first replicated onto the target resource. If no resource
+ *		is given the default resource will be used.
+ * \param[in] 
+ *    collection - A CollInp_MS_T or a STR_MS_T with the irods path of the collection to bundle.
+ *	  bundleObj - a DataObjInp_MS_T or a STR_MS_T with the bundle object's path.
+ *    resource - Optional - a STR_MS_T which specifies the target resource.
+ * \param[out] 
+ *    status - an INT_MS_T containing the operation status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *resource, msParam_t *status, ruleExecInfo_t *rei)
+{
+	collInp_t collInpCache, *collInp;				/* for parsing collection input param */
+	dataObjInp_t destObjInpCache, *destObjInp;		/* for parsing bundle object inp. param */
+	structFileExtAndRegInp_t *structFileBundleInp; 	/* input for rsStructfileBundle */
+	
+	
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiStructfileBundle")
+	
+	
+	/* Sanity test */
+	if (rei == NULL || rei->rsComm == NULL) {
+			rodsLog (LOG_ERROR, "msistructFileBundle: input rei or rsComm is NULL.");
+			return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/* Parse collection input */
+	rei->status = parseMspForCollInp (collection, &collInpCache, &collInp, 0);
+	
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiStructFileBundle: input collection error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+
+	/* Get path of destination bundle object */
+	rei->status = parseMspForDataObjInp (bundleObj, &destObjInpCache, &destObjInp, 0);
+	
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiStructFileBundle: input bundleObj error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+	
+	/* Parse resource input */
+	rei->status = parseMspForCondInp (resource, &collInp->condInput, DEST_RESC_NAME_KW);
+      
+    if (rei->status < 0)  {
+        rodsLog (LOG_ERROR, "msistructFileBundle: input resource error. status = %d", rei->status);
+        return (rei->status);
+    }
+    
+    
+    /* Replicate collection to target resource */
+    rei->status = rsCollRepl (rei->rsComm, collInp, NULL);
+    
+    
+    /* Set up input for rsStructFileBundle */
+    structFileBundleInp = (structFileExtAndRegInp_t *) malloc (sizeof(structFileExtAndRegInp_t));
+    memset (structFileBundleInp, 0, sizeof (structFileExtAndRegInp_t));
+    rstrcpy (structFileBundleInp->objPath, destObjInp->objPath, MAX_NAME_LEN);
+    rstrcpy (structFileBundleInp->collection, collInp->collName, MAX_NAME_LEN);
+    
+    /* Add resource info to structFileBundleInp */
+    replKeyVal (&collInp->condInput, &structFileBundleInp->condInput);
+    
+    /* Set data type of target object to tar file (required by rsStructFileBundle) */
+    addKeyVal (&structFileBundleInp->condInput, DATA_TYPE_KW, "tar file");
+    
+    
+    /* And now... let's see what's happens */
+    rei->status = rsStructFileBundle (rei->rsComm, structFileBundleInp);
+
+
+	/* Return operation status */
+	fillIntInMsParam (status, rei->status);
+
+
+	return 0;
+}
+
+
+
+
+
+

@@ -25,3 +25,4 @@
 {"msiGuessDataType",			3,		(funcPtr) msiGuessDataType},
 {"msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport},
 {"msiGetCollectionSize",		3,		(funcPtr) msiGetCollectionSize},
+{"msiStructFileBundle",		4,		(funcPtr) msiStructFileBundle},
