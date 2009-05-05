@@ -385,7 +385,7 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
     addKeyVal (&structFileBundleInp->condInput, DATA_TYPE_KW, "tar file");
     
     
-    /* And now... let's see what's happens */
+    /* And now... let's see what happens */
     rei->status = rsStructFileBundle (rei->rsComm, structFileBundleInp);
 
 
