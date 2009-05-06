@@ -188,7 +188,7 @@ unixFileLseek (rsComm_t *rsComm, int fd, rodsLong_t offset, int whence)
 }
 
 int
-unxiFileFsync (rsComm_t *rsComm, int fd)
+unixFileFsync (rsComm_t *rsComm, int fd)
 {
     int status;
 
@@ -197,7 +197,7 @@ unxiFileFsync (rsComm_t *rsComm, int fd)
     if (status < 0) {
         status = UNIX_FILE_FSYNC_ERR - errno;
         rodsLog (LOG_NOTICE, 
-          "unxiFileFsync: fsync of fd %d error, status = %d", fd, status);
+          "unixFileFsync: fsync of fd %d error, status = %d", fd, status);
     }
     return (status);
 }

@@ -24,13 +24,13 @@ fileDriver_t FileDriverTable[] = {
 #ifndef windows_platform
     {UNIX_FILE_TYPE, unixFileCreate, unixFileOpen, unixFileRead, unixFileWrite,
     unixFileClose, unixFileUnlink, unixFileStat, unixFileFstat, unixFileLseek,
-    unxiFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
+    unixFileFsync, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
     unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
     unixFileGetFsFreeSpace, unixFileTruncate, intNoSupport, intNoSupport},
 #ifdef HPSS
     {HPSS_FILE_TYPE, hpssFileCreate, hpssFileOpen, hpssFileRead, hpssFileWrite,
     hpssFileClose, hpssFileUnlink, hpssFileStat, hpssFileFstat, hpssFileLseek,
-    unxiFileFsync, hpssFileMkdir, hpssFileChmod, hpssFileRmdir, hpssFileOpendir,
+    hpssFileFsync, hpssFileMkdir, hpssFileChmod, hpssFileRmdir, hpssFileOpendir,
     hpssFileClosedir, hpssFileReaddir, hpssFileStage, hpssFileRename,
     hpssFileGetFsFreeSpace, hpssFileTruncate, hpssStageToCache, hpssSyncToArch},
 #else

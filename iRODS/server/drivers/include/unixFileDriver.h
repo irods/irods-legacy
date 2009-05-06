@@ -71,7 +71,7 @@ unixFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf);
 int
 unixFileFstat (rsComm_t *rsComm, int fd, struct stat *statbuf);
 int
-unxiFileFsync (rsComm_t *rsComm, int fd);
+unixFileFsync (rsComm_t *rsComm, int fd);
 int
 unixFileMkdir (rsComm_t *rsComm, char *filename, int mode);
 int
