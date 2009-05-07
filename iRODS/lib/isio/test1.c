@@ -17,7 +17,7 @@ char **argv;
     int bufsize;
  
     if (argc < 3) {
-      printf("a.out file-in file-out [seek-position] [buffersize] \n");
+      printf("test1 file-in file-out [seek-position] [buffersize] \n");
       exit(-1);
     }
 

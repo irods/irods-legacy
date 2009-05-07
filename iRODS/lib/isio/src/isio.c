@@ -33,12 +33,12 @@
 #define ISIO_MAX_OPEN_FILES 20
 #define ISIO_MIN_OPEN_FD 5
 
-//#define ISIO_INITIAL_BUF_SIZE  65536
-#define ISIO_INITIAL_BUF_SIZE  6
+/* The following two numberic values are also used by the
+   test script (modified to be smaller as a test) */
+#define ISIO_INITIAL_BUF_SIZE  65536
 #define ISIO_MAX_BUF_SIZE    2097152
-//#define ISIO_MAX_BUF_SIZE    8
 
-int debug=1;
+int debug=0;
 
 long openFiles[ISIO_MAX_OPEN_FILES]={0,0,0,0,0,0,0,0,0,0,
 				     0,0,0,0,0,0,0,0,0,0};
@@ -49,12 +49,7 @@ struct {
    int bufferSize;
    char *ptr;
    int count;
-   char endFlag; /* 'b' beginning of file is in buffer,
-                    'e' end-of-file is in the buffer,
-                    'a' all (both begin and end) in buffer,
-                    'n' none of the above. */
    char usingUsersBuffer; /* y or n when active */
-//   char written; /* contains bytes written (but buffered): y or n */
    int written; /* contains count of bytes written */
 } cacheInfo[ISIO_MAX_OPEN_FILES];
 
@@ -159,7 +154,6 @@ FILE *isioFileOpen(char *filename, char *modes) {
    cacheInfo[i].bufferSize = sizeof(char) * ISIO_INITIAL_BUF_SIZE;
    cacheInfo[i].ptr=cacheInfo[i].base;
    cacheInfo[i].count = 0;
-   cacheInfo[i].endFlag = 'n';
    cacheInfo[i].usingUsersBuffer = 'n';
    cacheInfo[i].written = 0;
    return((FILE *)i);
@@ -205,19 +199,7 @@ isioFillBuffer(int fileIndex) {
 
    cacheInfo[i].ptr = cacheInfo[i].base;
    cacheInfo[i].count = status;
-   if (status < cacheInfo[i].bufferSize) {
-      if (cacheInfo[i].endFlag=='n' || cacheInfo[i].endFlag=='b') {
-	 cacheInfo[i].endFlag='a';  /* cache has it all */
-      }
-      else {
-	 cacheInfo[i].endFlag='e';  /* cache has the end */
-      }
-   }
-   else {
-      if (cacheInfo[i].endFlag=='n') {
-	 cacheInfo[i].endFlag='b';  /* cache has the beginning */
-      }
-   }
+
    return(0);
 }
 
@@ -250,9 +232,9 @@ isioFileRead(int fileIndex, void *buffer, int maxToRead) {
       else {
 	 memcpy(myPtr,cacheInfo[fileIndex].ptr, cacheInfo[fileIndex].count);
 	 cacheInfo[fileIndex].ptr += cacheInfo[fileIndex].count;
-	 cacheInfo[fileIndex].count -=  cacheInfo[fileIndex].count;
 	 reqSize -=  cacheInfo[fileIndex].count;
 	 myPtr += cacheInfo[fileIndex].count;
+	 cacheInfo[fileIndex].count = 0;
       }
    }
 
@@ -288,7 +270,6 @@ isioFileRead(int fileIndex, void *buffer, int maxToRead) {
       }
       cacheInfo[i].ptr=cacheInfo[i].base;
       cacheInfo[i].count = 0;
-      cacheInfo[i].endFlag = 'n';
    }
 
    status = isioFillBuffer(fileIndex);
@@ -377,7 +358,6 @@ isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
 			(int) cacheInfo[fileIndex].ptr, countToWrite);
       memcpy(cacheInfo[fileIndex].ptr, buffer, countToWrite);
       cacheInfo[fileIndex].ptr += countToWrite;
-//      cacheInfo[fileIndex].count -= countToWrite; //??
       cacheInfo[fileIndex].written += countToWrite;
       return(countToWrite);
    }
@@ -410,7 +390,6 @@ isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
 
    if (newBufSize > cacheInfo[fileIndex].bufferSize) {
        /* free old and make new larger buffer */
-       /* May need to handle case where read data is buffered // */
       int i=fileIndex;
       if (cacheInfo[i].usingUsersBuffer=='n') {
 	 if (debug) printf("isioFilewrite calling free\n");
@@ -426,8 +405,6 @@ isioFileWrite(int fileIndex, void *buffer, int countToWrite) {
       cacheInfo[i].bufferSize = newBufSize;
       cacheInfo[i].usingUsersBuffer = 'n';
       cacheInfo[i].ptr=cacheInfo[i].base;
-//      cacheInfo[i].count = 0;
-      cacheInfo[i].endFlag = 'n';
    }
 
    /* Now it fits in the buffer, so cache it */
@@ -510,13 +487,11 @@ size_t irodsfclose(FILE *fi_stream) {
 
 int
 isioFileSeek(int fileIndex, long offset, int whence) {
-//   fileLseekInp_t seekParam;
    openedDataObjInp_t seekParam;
    fileLseekOut_t* seekResult = NULL;
    int status;
    if (debug) printf("isioFileSeek: %d\n", fileIndex);
-//#if 0
-   memset( &seekParam,  0, sizeof(fileLseekInp_t) );
+   memset( &seekParam,  0, sizeof(openedDataObjInp_t) );
    seekParam.l1descInx = openFiles[fileIndex];
    seekParam.offset  = offset;
    seekParam.whence  = whence;
@@ -524,8 +499,6 @@ isioFileSeek(int fileIndex, long offset, int whence) {
    if ( status < 0 ) {
       rodsLogError (LOG_ERROR, status, "isioFileSeek");
    }
-//#endif
-//   status=0;//
    return(status);
 }
 

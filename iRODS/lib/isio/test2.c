@@ -16,7 +16,7 @@ char **argv;
     int ichar;
  
     if (argc < 3) {
-      printf("a.out file-in file-out [seek-position]\n");
+      printf("test2 file-in file-out [seek-position]\n");
       exit(-1);
     }
 
