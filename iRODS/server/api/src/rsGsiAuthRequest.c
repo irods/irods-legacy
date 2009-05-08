@@ -93,6 +93,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 
       addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
       addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
+      addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
 
       genQueryInp.maxRows = 2;
 
@@ -113,6 +114,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
       addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
       addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
+      addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
 
       genQueryInp.maxRows = 2;
 
@@ -122,6 +124,10 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       	 strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
       		 NAME_LEN);
        	 strncpy(rsComm->proxyUser.userName, genQueryOut->sqlResult[2].value,
+		 NAME_LEN);
+      	 strncpy(rsComm->clientUser.rodsZone, genQueryOut->sqlResult[3].value,
+      		 NAME_LEN);
+       	 strncpy(rsComm->proxyUser.rodsZone, genQueryOut->sqlResult[3].value,
 		 NAME_LEN);
       }
 
@@ -181,12 +187,34 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	       if (execCmdOut != NULL && execCmdOut->stdoutBuf.buf != NULL) {
 		  len = strlen(execCmdOut->stdoutBuf.buf);
 		  if (len > 1) {
+		     char userName[NAME_LEN];
+		     char userZone[NAME_LEN];
+		     char userNameAndZoneInput[NAME_LEN];
 		     len--; /* skip trailing \n */
 		     if (len > NAME_LEN) len=NAME_LEN;
-		     strncpy(rsComm->clientUser.userName, 
+		     strncpy(userNameAndZoneInput, 
 			     execCmdOut->stdoutBuf.buf, len);
-		     strncpy(rsComm->proxyUser.userName, 
-			     execCmdOut->stdoutBuf.buf, len);
+		     if (parseUserName(userNameAndZoneInput, 
+				       userName, userZone) == 0) {
+			/* input was in user#zone form */
+			strcpy(rsComm->clientUser.userName, userName);
+			strcpy(rsComm->proxyUser.userName, userName);
+			strcpy(rsComm->clientUser.rodsZone, userZone);
+			strcpy(rsComm->proxyUser.rodsZone, userZone);
+		     }
+		     else {
+			/* This was the previous code, without the
+			 above if parseUserName clause but it didn't
+			 set the zone so the session would not work
+			 properly.  Maybe should return an error in
+			 this case, once the external applications are
+			 modified. Or maybe set the zone to the local
+			 zone.*/
+			strncpy(rsComm->clientUser.userName, 
+				execCmdOut->stdoutBuf.buf, len);
+			strncpy(rsComm->proxyUser.userName, 
+				execCmdOut->stdoutBuf.buf, len);
+		     }
 #ifdef GSI_DEBUG
 		     fprintf(stdout,"set to '%s'\n",
 			     rsComm->clientUser.userName);
@@ -214,6 +242,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	    addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
 	    addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
 	    addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
+	    addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
 
 	    genQueryInp.maxRows = 2;
 
@@ -223,6 +252,10 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	       strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
 		       NAME_LEN);
 	       strncpy(rsComm->proxyUser.userName, genQueryOut->sqlResult[2].value,
+		       NAME_LEN);
+	       strncpy(rsComm->clientUser.rodsZone, genQueryOut->sqlResult[3].value,
+		       NAME_LEN);
+	       strncpy(rsComm->proxyUser.rodsZone, genQueryOut->sqlResult[3].value,
 		       NAME_LEN);
 	    }
 	 }
@@ -255,13 +288,13 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    }
 
    if (noNameMode==0) {
-      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 2) {
+      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 3) {
 	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
 	 return(GSI_QUERY_INTERNAL_ERROR);
       }
    }
    else {
-      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 3) {
+      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 4) {
 	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
 	 return(GSI_QUERY_INTERNAL_ERROR);
       }
