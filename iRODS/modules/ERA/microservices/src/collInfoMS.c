@@ -5,6 +5,76 @@
 #include "eraUtil.h"
 
 
+
+/**
+ * \fn msiIsColl
+ * \author  Antoine de Torcy
+ * \date   2009-05-08
+ * \brief Checks if an iRods path is a collection. For use in workflows.
+ * \note This microservice takes an iRods path and returns the corresponding collection ID,
+ *		or zero if the object is not a collection or does not exist.
+ *		Avoid path names ending with '/' as they can be misparsed by lower level routines
+ *		(eg: /tempZone/home instead of /tempZone/home/).
+ * \param[in] 
+ *    targetPath - A CollInp_MS_T or a STR_MS_T with the irods path.
+ * \param[out] 
+ *	  collId - an INT_MS_T containing the collection ID.
+ *    status - an INT_MS_T containing the operation status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecInfo_t *rei)
+{
+	collInp_t collInpCache, *collInp;				/* for parsing collection input param */
+	rodsLong_t coll_id;								/* collection ID */
+	
+	
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiIsColl")
+	
+	
+	/* Sanity test */
+	if (rei == NULL || rei->rsComm == NULL) {
+			rodsLog (LOG_ERROR, "msiIsColl: input rei or rsComm is NULL.");
+			return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/* Parse collection input */
+	rei->status = parseMspForCollInp (targetPath, &collInpCache, &collInp, 0);
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiIsColl: input targetPath error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+
+	/* Call isColl()*/
+	rei->status = isColl (rei->rsComm, collInp->collName, &coll_id);
+	
+    
+    /* Return 0 if no object was found */
+    if (rei->status == CAT_NO_ROWS_FOUND)
+    {
+    	coll_id = 0;
+    	rei->status = 0;
+    }
+
+	/* Return collection ID and operation status */
+	fillIntInMsParam (collId, (int)coll_id);
+	fillIntInMsParam (status, rei->status);
+
+	/* Done */
+	return rei->status;
+}
+
+
+
 /**
  * \fn msiGetCollectionContentsReport
  * \author  Antoine de Torcy

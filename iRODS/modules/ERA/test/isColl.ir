@@ -1,0 +1,3 @@
+Test rule||msiIsColl(*collPath, *collID, *Status)##writePosInt(stdout, *collID)##writeLine(stdout, "")|nop
+*collPath=$1
+ruleExecOut
