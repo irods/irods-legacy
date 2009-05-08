@@ -120,6 +120,12 @@ rodsPathInp_t *rodsPathInp)
             addKeyVal (&structFileExtAndRegInp->condInput, RESC_NAME_KW,
               rodsArgs->resourceString);
         }
+    } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
+        /* use rodsDefResource but set the DEF_RESC_NAME_KW instead.
+         * Used by dataObjCreate. Will only make a new replica only if
+         * DEST_RESC_NAME_KW is set */
+        addKeyVal (&structFileExtAndRegInp->condInput, DEF_RESC_NAME_KW,
+          myRodsEnv->rodsDefResource);
     } 
 
     if (rodsArgs->force == True && rodsArgs->condition == True) {
