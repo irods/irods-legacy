@@ -1,3 +1,6 @@
+/*** Copyright (c), The Regents of the University of California            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
+
 #include "reDataObjOpr.h"
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
@@ -2077,16 +2080,15 @@ ruleExecInfo_t *rei)
  * \param[out] a INT_MS_T containing the status.
  * \return integer
  * \retval 0 on success
- * \sa msiDataObjPuy
+ * \sa msiDataObjPut
  * \post
  * \pre
  * \bug  no known bugs
 **/
 int
-msiDataObjPutWithOptions(msParam_t *inpParam1, msParam_t *inpParam2,
-               msParam_t *inpParam3, msParam_t *outParam, 
-               msParam_t *inpOverwriteParam,msParam_t *inpAllCopiesParam,
-               ruleExecInfo_t *rei)
+msiDataObjPutWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *inpParam3,msParam_t *inpOverwriteParam,
+msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t *dataObjInp, *myDataObjInp;
@@ -2132,13 +2134,13 @@ msiDataObjPutWithOptions(msParam_t *inpParam1, msParam_t *inpParam2,
         return (rei->status);
     }
 
-    if (inpOverwriteParam !=NULL && 
-        strcmp(inpOverwriteParam->inOutStruct, "forceFlag") == 0 )
+    if (inpOverwriteParam != NULL && 
+        strcmp(inpOverwriteParam->inOutStruct, UPDATE_REPL_KW) == 0 )
       rei->status = parseMspForCondInp (inpOverwriteParam, 
-                                        &dataObjInp->condInput,FORCE_FLAG_KW);
+                                        &dataObjInp->condInput,UPDATE_REPL_KW);
 
     if (inpAllCopiesParam !=NULL && 
-        strcmp(inpAllCopiesParam->inOutStruct, "all") == 0 )
+        strcmp(inpAllCopiesParam->inOutStruct, ALL_KW) == 0 )
       rei->status = parseMspForCondInp (inpAllCopiesParam, 
                                         &dataObjInp->condInput,ALL_KW);
 
