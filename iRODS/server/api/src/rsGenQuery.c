@@ -86,7 +86,9 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 	  }
 #endif
        }
+#if 0
        printf("rsGenQuery rule status=%d ruleResult=%d\n",status,ruleResult);
+#endif
     }
 
     chlGenQueryAccessControlSetup(rsComm->clientUser.userName, 
