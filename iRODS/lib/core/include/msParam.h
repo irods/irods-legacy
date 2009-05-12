@@ -129,6 +129,10 @@ parseMspForExecCmdInp (msParam_t *inpParam,
 execCmd_t *execCmdInpCache, execCmd_t **ouExecCmdInp);
 void 
 *getMspInOutStructByLabel (msParamArray_t *msParamArray, char *label);
+int
+getStdoutInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr);
+int
+getStderrInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr);
 #ifdef  __cplusplus
 }
 #endif

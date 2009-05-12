@@ -860,4 +860,51 @@ execCmd_t *execCmdInpCache, execCmd_t **ouExecCmdInp)
     }
     return (0);
 }
+int
+getStdoutInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr)
+{
+    execCmdOut_t *execCmdOut;
+
+    if (inpExecCmdOut == NULL) {
+        rodsLog (LOG_ERROR,
+          "getStdoutInExecCmdOut input inpParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (strcmp (inpExecCmdOut->type, ExecCmdOut_MS_T) == 0) {
+	execCmdOut = (execCmdOut_t *) inpExecCmdOut->inOutStruct;
+	if (execCmdOut == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+	*outStr = execCmdOut->stdoutBuf.buf;
+	return 0;
+    } else {
+        rodsLog (LOG_ERROR,
+          "getStdoutInExecCmdOut: Unsupported input Param type %s",
+          inpExecCmdOut->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+}
+
+int
+getStderrInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr)
+{
+    execCmdOut_t *execCmdOut;
+
+    if (inpExecCmdOut == NULL) {
+        rodsLog (LOG_ERROR,
+          "getStderrInExecCmdOut input inpParam is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (strcmp (inpExecCmdOut->type, ExecCmdOut_MS_T) == 0) {
+        execCmdOut = (execCmdOut_t *) inpExecCmdOut->inOutStruct;
+        if (execCmdOut == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+        *outStr = execCmdOut->stderrBuf.buf;
+        return 0;
+    } else {
+        rodsLog (LOG_ERROR,
+          "getStderrInExecCmdOut: Unsupported input Param type %s",
+          inpExecCmdOut->type);
+        return (USER_PARAM_TYPE_ERR);
+    }
+}
 
