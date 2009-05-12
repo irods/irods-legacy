@@ -26,16 +26,16 @@ typedef int64_t u_longlong_t;
 #if defined(linux_platform) || defined(alpha_platform)
 typedef long long rodsLong_t;
 typedef unsigned long long rodsULong_t;
-#else
+#else	/* linux_platform */
 #if defined(windows_platform)
 typedef unsigned int uint;
 typedef __int64 rodsLong_t;
 typedef unsigned __int64 rodsULong_t;
-#else	/* PORTNAME_linux */
+#else	/* windows_platform */
 typedef long long rodsLong_t;
 typedef unsigned long long rodsULong_t;
-#endif	/* linux_platform */
 #endif	/* windows_platform */
+#endif	/* linux_platform */
 #endif	/* sgi_platform */
 #endif	/* osx_platform */
 
