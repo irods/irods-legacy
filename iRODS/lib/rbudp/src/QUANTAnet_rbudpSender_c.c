@@ -312,7 +312,7 @@ int packetSize, int bufSize )
    long long bytesread;
    
    while((bytesread = readn( fromfd, buf, bufSize )) > 0) {
-      long long nread = htonll( bytesread );
+      long long nread = rb_htonll( bytesread );
       if (writen(tcpSockfd, (char *)&nread, sizeof(nread)) != sizeof(nread))
         {
 	  {
@@ -379,7 +379,7 @@ int fd)
   long long filesize = filestat.st_size;
   if (verbose > 0) fprintf(stderr,"The size of the file is %lld\n", filesize);
 
-  long long nfilesize = htonll(filesize);
+  long long nfilesize = rb_htonll(filesize);
   if (verbose > 0) fprintf(stderr,"write %d bytess.\n", (int) sizeof(nfilesize));
 
   // Send the file size to the receiver.
@@ -458,7 +458,7 @@ int  sendfilelist(rbudpSender_t *rbudpSender, int sendRate, int packetSize)
   long long filesize = filestat.st_size;
   if (verbose > 0) fprintf(stderr,"The size of the file is %lld\n", filesize);
 
-  long long nfilesize = htonll(filesize);
+  long long nfilesize = rb_htonll(filesize);
 
   // Send the file size to the receiver.
    if (writen(tcpSockfd, (char *)&nfilesize, sizeof(nfilesize)) != sizeof(nfilesize))

@@ -336,7 +336,7 @@ int  getstream(rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize )
 	 return(FAILED);
        }
 
-       bufSize = ntohll( nbufSize );
+       bufSize = rb_ntohll( nbufSize );
 
        if(bufSize <= 0)
 	 break;
@@ -409,7 +409,7 @@ getfileByFd (rbudpReceiver_t *rbudpReceiver, int fd, int packetSize)
    }
 
    /* Can't use ntohl() on long longs! */
-   filesize = ntohll(filesize);
+   filesize = rb_ntohll(filesize);
    if (verbose > 0) fprintf(stderr,"The size of the file is %lld.\n", filesize);
    
    ftruncate(fd, filesize);
@@ -485,7 +485,7 @@ int packetSize)
      return(FAILED);
    }
 
-   filesize = ntohll(filesize);
+   filesize = rb_ntohll(filesize);
    fprintf(stderr,"The size of the file is %lld.\n", filesize);
 
    int fd = open(destFName, O_RDWR|O_CREAT|O_TRUNC, 0666);

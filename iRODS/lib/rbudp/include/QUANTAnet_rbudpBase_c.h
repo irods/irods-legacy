@@ -143,8 +143,8 @@ typedef struct  QUANTAnet_rbudpBase_c
 
   static const int FAILED = -1;
 
-  long long htonll( long long lll);	/* conditional byte-swapping of 8-byte quantities */
-  long long ntohll( long long nll);
+  long long rb_htonll( long long lll);	/* conditional byte-swapping of 8-byte quantities */
+  long long rb_ntohll( long long nll);
   int       swab32( int );	/* unconditional byte-swapping of 4-byte quantity */
 	
 	/// Connect to a remote UDP server with the default UDP port

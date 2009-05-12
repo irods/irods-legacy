@@ -413,7 +413,7 @@ int swab32( int val )
 	   | ((val&0xFF00)<<8) | ((val&0xFF)<<24) );
 }
 
-long long htonll( long long lll )
+long long rb_htonll( long long lll )
 {
    long long nll = 0;
    unsigned char *cp = (unsigned char *)&nll;
@@ -430,7 +430,7 @@ long long htonll( long long lll )
    return nll;
 }
 
-long long ntohll( long long nll )
+long long rb_ntohll( long long nll )
 {
    unsigned char *cp = (unsigned char *)&nll;
 
