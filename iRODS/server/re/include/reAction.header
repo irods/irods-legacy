@@ -11,6 +11,7 @@
 #include "objInfo.h"
 #include "regExpMatch.h"
 #include "reSysDataObjOpr.h"
+#include "msiHelper.h"
 #include "reDataObjOpr.h"
 #include "reNaraMetaData.h"
 #include "reIn2p3SysRule.h"

@@ -276,3 +276,5 @@ microsdef_t MicrosTable[] = {
   {"msiDataObjChksumWithOptions",4,(funcPtr) msiDataObjChksumWithOptions},
   {"msiDataObjGetWithOptions",4,(funcPtr) msiDataObjGetWithOptions},
   {"msiSetReServerNumProc",1,(funcPtr) msiSetReServerNumProc},
+  {"msiGetStdoutInExecCmdOut",2,(funcPtr) msiGetStdoutInExecCmdOut},
+  {"msiGetStderrInExecCmdOut",2,(funcPtr) msiGetStderrInExecCmdOut},
