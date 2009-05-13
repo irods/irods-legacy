@@ -129,6 +129,7 @@ usage ()
 " -N  numThreads - the number of thread to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.",
+" -p physicalPath - the physical path of the uploaded file on the sever ",
 " -Q  use RBUDP (datagram) protocol for the data transfer",
 " -R  resource - specifies the resource to store to. This can also be specified",
 "     in your environment or via a rule set up by the administrator.",
