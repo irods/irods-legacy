@@ -221,10 +221,20 @@ endif
 # Uncomment '# GSI_AUTH=1' and specify your GLOBUS_LOCATION and 
 # GSI_INSTALL_TYPE (the examples of these below work at SDSC).
 #
+# Some versions/installations of Globus will use the system SSL and
+# Crypto libraries.  If GSI_SSL and/or GSI_CRYPTO are set, the
+# Makefiles will use system libs instead of the Globus ones.
+# 'configure' will set these if the globus ssl and crypto libraries do
+# not exist in $(GLOBUS_LOCATION)/lib (setting GSI_SSL to ssl and
+# GSI_CRYPTO to crypto).
+#
+#
 # GSI_AUTH = 1
 ifdef GSI_AUTH
 GLOBUS_LOCATION=/usr/local/apps/globus-4.0.1
 GSI_INSTALL_TYPE=gcc32dbg
+GSI_SSL=
+GSI_CRYPTO=
 endif
 
 # RBUDP_TRANSFER - specify whether RBUDP file transfer mechanism will be

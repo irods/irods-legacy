@@ -220,6 +220,19 @@ LDFLAGS +=	$(LDADD) $(LIBRARY)
 
 
 ifdef GSI_AUTH
+
+# GSI_SSL is set to ssl to use the system's SSL library, else use
+# regular Globus version.
+ifndef GSI_SSL
+GSI_SSL = ssl_$(GSI_INSTALL_TYPE)
+endif
+
+# GSI_CRYPTO is set to crypto to use the system's Crypto library, else
+# use regular Globus version.
+ifndef GSI_CRYPTO
+GSI_CRYPTO = crypto_$(GSI_INSTALL_TYPE)
+endif
+
 LIB_GSI_AUTH = \
         -L$(GLOBUS_LOCATION)/lib \
         -lglobus_gss_assist_$(GSI_INSTALL_TYPE) \
@@ -233,8 +246,8 @@ LIB_GSI_AUTH = \
 	-lglobus_openssl_error_$(GSI_INSTALL_TYPE) \
 	-lglobus_openssl_$(GSI_INSTALL_TYPE) \
 	-lglobus_proxy_ssl_$(GSI_INSTALL_TYPE) \
-	-lssl_$(GSI_INSTALL_TYPE) \
-	-lcrypto_$(GSI_INSTALL_TYPE) \
+	-l$(GSI_SSL) \
+	-l$(GSI_CRYPTO) \
 	-lglobus_common_$(GSI_INSTALL_TYPE) \
 	-lglobus_callout_$(GSI_INSTALL_TYPE) \
 	-lltdl_$(GSI_INSTALL_TYPE) 
