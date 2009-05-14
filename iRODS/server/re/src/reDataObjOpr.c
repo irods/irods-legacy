@@ -526,13 +526,33 @@ ruleExecInfo_t *rei)
 /* msiDataObjjRepl - msi for DataObjjRepl.
  * inpParam1 - It can be a DataObjInp_MS_T or
  *    STR_MS_T which would be the obj Path.
- * inpParam2 - Optional - a STR_MS_T which specifies the resource.
+ *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *      If the keyWd is not specified (without the '=' char), the value is
+ *      assumed to be the target resource ("destRescName") for backward
+ *      compatibility..
+ *    Valid keyWds are : "localPath" - the client's local file path.
+ *                       "destRescName" - the target resource to replicate to.
+ *                       "backupRescName" - the target resource to backup 
+ *			    the data. If this keyWd is used, the backup mode
+ *			    will be switched on.
+ *                       "rescName" - the resource of the source copy.
+ *			 "updateRepl" - update other replicas with the 
+ *			    latest copy. this keyWd has no value. But 
+ *			    the '=' character is still needed.
+ *                       "replNum" - the replica number to use as source.
+ *                       "all" - replicate to all resources in the resource 
+ *			    group.
+ *			 "irodsAdmin" - admin user replicate other users' files.
+ *                       "verifyChksum" - verify the transfer using checksum.
+ *                          this keyWd has no value. But the '=' character is
+ *                          still needed.
  * outParam - a INT_MS_T for the status.
  *
  */
 
 int
-msiDataObjRepl (msParam_t *inpParam1, msParam_t *inpParam2, 
+msiDataObjRepl (msParam_t *inpParam1, msParam_t *msKeyValStr, 
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
@@ -559,12 +579,17 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
     rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput,
       DEST_RESC_NAME_KW);
+#else
+    rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
+      DEST_RESC_NAME_KW);
+#endif
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjRepl: input inpParam2 error. status = %d", rei->status);
+          "msiDataObjRepl: input msKeyValStr error. status = %d", rei->status);
         return (rei->status);
     }
 
@@ -686,8 +711,23 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *    inpParam1 - It can be a DataObjInp_MS_T or
  *      a STR_MS_T which would be taken as dataObj path.
  *    inpParam2 - Optional - a STR_MS_T which specifies the resource.
- *    inpParam3 - Optional - a STR_MS_T which specifies the client's local 
- *      file path.
+ *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *      If the keyWd is not specified (without the '=' char), the value is
+ *      assumed to be the client's local file path ("localPath") for backward
+ *      compatibility..
+ *    Valid keyWds are : "localPath" - the client's local file path.
+ *                       "destRescName" - the resource to put.
+			 "all" - upload to all resources
+ *                       "forceFlag" - overwrite current copy. This keyWd has
+ *                          no value. But the '=' character is still needed
+ *                       "replNum" - the replica number to overwrite.
+ *			 "filePath" - The physical file path of the uploaded
+ *			    file on the server.
+ *			 "dataType" - the data type of the file.
+ *                       "verifyChksum" - verify the transfer using checksum.
+ *                          this keyWd has no value. But the '=' character is
+ *                          still needed.
  * \param[out] a INT_MS_T containing the status.
  * \return integer
  * \retval 0 on success
@@ -699,7 +739,7 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 
 int
 msiDataObjPut (msParam_t *inpParam1, msParam_t *inpParam2,
-msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t *dataObjInp, *myDataObjInp;
@@ -735,12 +775,18 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
     rei->status = parseMspForCondInp (inpParam3, &dataObjInp->condInput,
       LOCAL_PATH_KW);
+#else
+    rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
+      LOCAL_PATH_KW);
+#endif
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjPut: input inpParam3 error. status = %d", rei->status);
+         "msiDataObjPut: parseMsKeyValStrForDataObjInp msKeyValStr err.stat=%d",
+	 rei->status);
         return (rei->status);
     }
 
@@ -786,8 +832,19 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] 
  *    inpParam1 - It can be a DataObjInp_MS_T or
  *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - Optional - a STR_MS_T which specifies the client's local 
- *      file path.
+ *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *	format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *      If the keyWd is not specified (without the '=' char), the value is 
+ *	assumed to be the client's local file path ("localPath") for backward
+ *	compatibility..
+ *    Valid keyWds are : "localPath" - the client's local file path.
+ *			 "rescName" - the resource of the copy to get.
+ *			 "replNum" - the replica number of the copy to get. 
+ *			 "forceFlag" - overwrite local copy. This keyWd has
+ *			    no value. But the '=' character is still needed
+ *      		 "verifyChksum" - verify the transfer using checksum.
+ *			    this keyWd has no value. But the '=' character is 
+ *			    still needed.
  * \param[out] a INT_MS_T containing the status.
  * \return integer
  * \retval 0 on success
@@ -798,11 +855,74 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 **/
 
 int
-msiDataObjGet (msParam_t *inpParam1, msParam_t *inpParam2,
+msiDataObjGet (msParam_t *inpParam1, msParam_t *msKeyValStr,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
-    rei->status = msiDataObjGetWithOptions (inpParam1, inpParam2,
-      NULL, outParam, rei);
+    rsComm_t *rsComm;
+    dataObjInp_t *dataObjInp, *myDataObjInp;
+    msParamArray_t *myMsParamArray;
+
+    RE_TEST_MACRO ("    Calling msiDataObjGetWithOptions")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiDataObjGet: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    dataObjInp = malloc (sizeof (dataObjInp_t));
+    /* parse inpParam1 */
+    rei->status = parseMspForDataObjInp (inpParam1, dataObjInp,
+      &myDataObjInp, 1);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjGet: input inpParam1 error. status = %d", 
+	  rei->status);
+        return (rei->status);
+    }
+
+#if 0
+    rei->status = parseMspForCondInp (inpParam2, &dataObjInp->condInput,
+      LOCAL_PATH_KW);
+#else
+    rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
+      LOCAL_PATH_KW);
+#endif
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+         "msiDataObjGet: parseMsKeyValStrForDataObjInp msKeyValStr err.stat=%d",
+	  rei->status);
+        return (rei->status);
+    }
+
+    myMsParamArray = malloc (sizeof (msParamArray_t));
+    memset (myMsParamArray, 0, sizeof (msParamArray_t));
+
+    rei->status = addMsParam (myMsParamArray, CL_GET_ACTION, DataObjInp_MS_T,
+      (void *) dataObjInp, NULL);
+
+    if (rei->status < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjGet: addMsParam error. status = %d", 
+	  rei->status);
+        return (rei->status);
+    }
+
+    /* tell the client to do the put */
+    rei->status = sendAndRecvBranchMsg (rsComm, rsComm->apiInx,
+     SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
+
+    if (rei->status >= 0) {
+        fillIntInMsParam (outParam, rei->status);
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjGet: rsDataObjGet failed for %s, status = %d",
+	  dataObjInp->objPath, rei->status);
+    }
 
     return (rei->status);
 }
@@ -905,8 +1025,8 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
         fillIntInMsParam (outParam, rei->status);
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjGetWithOptions: rsDataObjGet failed for %s, status = %d",
-	  dataObjInp->objPath, rei->status);
+          "msiDataObjGetWithOptions: rsDataObjGet failed, status = %d",
+	  rei->status);
     }
 
     return (rei->status);
