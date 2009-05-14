@@ -66,6 +66,16 @@ typedef struct MsParamArray {
     msParam_t **msParam;
 } msParamArray_t;
 
+#define MS_INP_SEP_STR	"++++"		/* the separator str for msInp */
+#define MS_NULL_STR	"null"		/* no input */
+typedef struct ParsedMsKeyValStr {
+    char *inpStr;
+    char *endPtr;	/* end pointer */
+    char *curPtr;	/* current position */
+    char *kwPtr;
+    char *valPtr;
+} parsedMsKeyValStr_t;
+
 int
 resetMsParam (msParam_t *msParam);
 int
@@ -133,6 +143,15 @@ int
 getStdoutInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr);
 int
 getStderrInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr);
+int
+initParsedMsKeyValStr (char *inpStr, parsedMsKeyValStr_t *parsedMsKeyValStr);
+int
+clearParsedMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr);
+int
+getNextKeyValFromMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr);
+int
+parseMsKeyValStrForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInp,
+char *hintForMissingKw);
 #ifdef  __cplusplus
 }
 #endif

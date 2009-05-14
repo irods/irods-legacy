@@ -165,6 +165,8 @@
     USER_INPUT_FORMAT_ERR, 
     USER_ACCESS_DENIED, 
     CANT_RM_MV_BUNDLE_TYPE, 
+    NO_MORE_RESULT, 
+    NO_KEY_WD_IN_MS_INP_STR, 
     FILE_INDEX_LOOKUP_ERR, 
     UNIX_FILE_OPEN_ERR, 
     UNIX_FILE_CREATE_ERR, 
@@ -549,6 +551,8 @@
     "USER_INPUT_FORMAT_ERR", 
     "USER_ACCESS_DENIED", 
     "CANT_RM_MV_BUNDLE_TYPE", 
+    "NO_MORE_RESULT", 
+    "NO_KEY_WD_IN_MS_INP_STR", 
     "FILE_INDEX_LOOKUP_ERR", 
     "UNIX_FILE_OPEN_ERR", 
     "UNIX_FILE_CREATE_ERR", 
@@ -791,7 +795,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 382;
+int irodsErrorCount= 384;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

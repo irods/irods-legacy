@@ -357,7 +357,7 @@ getMsParamByLabel (msParamArray_t *msParamArray, char *label)
 {
     int i;
 
-    if (msParamArray == NULL || label == NULL) {
+    if (msParamArray == NULL || msParamArray->msParam == NULL ||label == NULL) {
 	return NULL;
     }
 
@@ -374,7 +374,7 @@ getMsParamByType (msParamArray_t *msParamArray, char *type)
 {
     int i;
 
-    if (msParamArray == NULL || type == NULL) {
+    if (msParamArray == NULL || msParamArray->msParam == NULL || type == NULL) {
         return NULL;
     }
 
@@ -908,3 +908,141 @@ getStderrInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr)
     }
 }
 
+int
+initParsedMsKeyValStr (char *inpStr, parsedMsKeyValStr_t *parsedMsKeyValStr)
+{
+    if (inpStr == NULL || parsedMsKeyValStr == NULL) {
+        rodsLog (LOG_ERROR,
+          "initParsedMsKeyValStr: input inpStr or parsedMsKeyValStr is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    bzero (parsedMsKeyValStr, sizeof (parsedMsKeyValStr_t));
+    parsedMsKeyValStr->inpStr = parsedMsKeyValStr->curPtr = strdup (inpStr);
+    parsedMsKeyValStr->endPtr = parsedMsKeyValStr->inpStr + 
+      strlen (parsedMsKeyValStr->inpStr);
+
+    return 0;
+}
+
+int
+clearParsedMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr)
+{
+    if (parsedMsKeyValStr == NULL) {
+        rodsLog (LOG_ERROR,
+          "clearParsedMsKeyValStr: input parsedMsKeyValStr is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    if (parsedMsKeyValStr->inpStr != NULL)
+        free (parsedMsKeyValStr->inpStr);
+
+    bzero (parsedMsKeyValStr, sizeof (parsedMsKeyValStr_t));
+
+    return 0;
+}
+
+/* getNextKeyValFromMsKeyValStr - parse the inpStr for keyWd value pair.
+ * The str is expected to have the format keyWd=value separated by
+ * 4 "+" char. e.g. keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ * If the char "=" is not present, the entire string is assumed to
+ * be value with a NULL value for kwPtr.
+ */
+int
+getNextKeyValFromMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr)
+{
+    char *tmpEndPtr;
+    char *equalPtr;
+
+    if (parsedMsKeyValStr == NULL) {
+        rodsLog (LOG_ERROR,
+          "getNextKeyValFromMsKeyValStr: input parsedMsKeyValStr is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    if (parsedMsKeyValStr->curPtr >= parsedMsKeyValStr->endPtr)
+	return NO_MORE_RESULT;
+
+    if ((tmpEndPtr = strstr (parsedMsKeyValStr->curPtr, MS_INP_SEP_STR)) != 
+      NULL) {
+	/* NULL terminate the str we are trying to parse */
+	*tmpEndPtr = '\0';
+    } else {
+	tmpEndPtr = parsedMsKeyValStr->endPtr;
+    }
+
+    if (strcmp (parsedMsKeyValStr->curPtr, MS_NULL_STR) == 0)
+	return NO_MORE_RESULT;
+
+    if ((equalPtr = strstr (parsedMsKeyValStr->curPtr, "=")) != NULL) {
+	*equalPtr = '\0';
+	parsedMsKeyValStr->kwPtr = parsedMsKeyValStr->curPtr;
+	if (equalPtr + 1 == tmpEndPtr) {
+	    /* pair has no value */
+	    parsedMsKeyValStr->valPtr = equalPtr;
+	} else {
+	    parsedMsKeyValStr->valPtr = equalPtr + 1;
+	}
+    } else {
+        parsedMsKeyValStr->kwPtr = NULL;
+        parsedMsKeyValStr->valPtr = parsedMsKeyValStr->curPtr;
+    }
+
+    /* advance curPtr */
+    parsedMsKeyValStr->curPtr = tmpEndPtr + strlen (MS_INP_SEP_STR);
+
+    return 0;
+}
+
+/* parseMsKeyValStrForDataObjInp - parse the msKeyValStr for keyWd value pair
+ * and put the kw/value pairs in dataObjInp->condInput.
+ * The msKeyValStr is expected to have the format keyWd=value separated by
+ * 4 "+" char. e.g. keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ * If the char "=" is not present, the entire string is assumed to
+ * be value and hintForMissingKw will provide the missing keyWd.
+ */
+
+int
+parseMsKeyValStrForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInp,
+char *hintForMissingKw)
+{
+    char *msKeyValStr;
+    keyValPair_t *condInput; 
+    parsedMsKeyValStr_t parsedMsKeyValStr;
+    int status;
+
+
+    if (inpParam == NULL || dataObjInp == NULL) {
+        rodsLog (LOG_ERROR,
+        "parseMsKeyValStrForDataObjInp: input inpParam or dataObjInp is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (strcmp(inpParam->type, STR_MS_T) != 0) return USER_PARAM_TYPE_ERR;
+
+    msKeyValStr = (char *) inpParam->inOutStruct;
+
+    condInput = &dataObjInp->condInput;
+
+    if ((status = initParsedMsKeyValStr (msKeyValStr, &parsedMsKeyValStr)) < 0)
+	return status;
+
+    while (getNextKeyValFromMsKeyValStr (&parsedMsKeyValStr) >= 0) {
+	if (parsedMsKeyValStr.kwPtr == NULL) {
+	    if (hintForMissingKw == NULL) {
+		status = NO_KEY_WD_IN_MS_INP_STR;
+                rodsLogError (LOG_ERROR, status,
+      		 "parseMsKeyValStrForDataObjInp: no keyWd for %s",
+		  parsedMsKeyValStr.valPtr);
+		clearParsedMsKeyValStr (&parsedMsKeyValStr);
+        	return status;
+	    } else {
+		parsedMsKeyValStr.kwPtr = hintForMissingKw;
+	    }
+	}
+        addKeyVal (condInput, parsedMsKeyValStr.kwPtr, parsedMsKeyValStr.valPtr); 
+    }
+
+    clearParsedMsKeyValStr (&parsedMsKeyValStr);
+
+    return 0;
+}
+ 
