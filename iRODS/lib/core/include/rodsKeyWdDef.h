@@ -76,6 +76,7 @@
 #define QUERY_BY_DATA_ID_KW   	"queryByDataID"
 #define SU_CLIENT_USER_KW   	"suClientUser"
 #define RM_BUN_COPY_KW   	"rmBunCopy"
+#define KEY_WORD_KW   		"keyWord"   /* the msKeyValStr is a keyword */ 
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

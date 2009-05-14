@@ -1034,11 +1034,16 @@ char *hintForMissingKw)
 		  parsedMsKeyValStr.valPtr);
 		clearParsedMsKeyValStr (&parsedMsKeyValStr);
         	return status;
+	    } else if (strcmp (hintForMissingKw, KEY_WORD_KW) == 0) {
+		/* the value should be treated at keyWd */
+		parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
+		parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
 	    } else {
 		parsedMsKeyValStr.kwPtr = hintForMissingKw;
 	    }
 	}
-        addKeyVal (condInput, parsedMsKeyValStr.kwPtr, parsedMsKeyValStr.valPtr); 
+        addKeyVal (condInput, parsedMsKeyValStr.kwPtr, 
+	  parsedMsKeyValStr.valPtr); 
     }
 
     clearParsedMsKeyValStr (&parsedMsKeyValStr);

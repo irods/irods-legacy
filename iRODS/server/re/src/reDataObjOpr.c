@@ -1045,9 +1045,17 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] 
  *    inpParam1 - It can be a DataObjInp_MS_T or
  *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - optional - a STR_MS_T which specifies the "ChksumAll"
- *      (CHKSUM_ALL_KW). "verifyChksum"(VERIFY_CHKSUM_KW) or 
- *      "forceChksum"(FORCE_CHKSUM_KW).
+ *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *      If the keyWd is not specified (without the '=' char), the value is
+ *      assumed to be a keyword for backward compatibility.
+ *    Valid keyWds are : "ChksumAll" - checksum all replicas. This keyWd has 
+ *			    no value. But the '=' character is still needed.
+ *                       "forceChksum" - checksum data-objects even if a 
+ *			    checksum alreay exists in iCAT. This keyWd has no 
+ *			    value.
+ *                       "replNum" - the replica number to checksum. This
+ *			    keyWd has no value.
  * \param[out] a STR_MS_T containing the chksum value.
  * \return integer
  * \retval 0 on success
@@ -1058,7 +1066,7 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
 **/
 
 int
-msiDataObjChksum (msParam_t *inpParam1, msParam_t *inpParam2, 
+msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, 
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
@@ -1085,10 +1093,16 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
    if ((rei->status = parseMspForCondKw (inpParam2, &myDataObjInp->condInput))
       < 0) {
+#else
+   if ((rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, 
+      myDataObjInp, KEY_WORD_KW))
+      < 0) {
+#endif
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjChksum: input inpParam2 error. status = %d", rei->status);
+          "msiDataObjChksum: input msKeyValStr error. status=%d", rei->status);
         return (rei->status);
     }
 
