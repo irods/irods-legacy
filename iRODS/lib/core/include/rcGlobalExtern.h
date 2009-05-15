@@ -9,6 +9,7 @@
 #include "packStruct.h"
 #include "apiHandler.h"
 #include "objInfo.h"
+#include "msParam.h"
 
 extern packConstantArray_t PackConstantTable[];
 extern packInstructArray_t RodsPackTable[];
@@ -29,5 +30,7 @@ extern rescClass_t RescClass[];
 extern int NumRescClass;
 extern structFileTypeDef_t StructFileTypeDef[];
 extern int NumStructFileType;
+extern validKeyWd_t DataObjInpKeyWd[];
+extern int NumDataObjInpKeyWd;
 
 #endif	/* RC_GLOBAL_EXTERN_H */

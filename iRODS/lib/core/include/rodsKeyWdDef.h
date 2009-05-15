@@ -77,6 +77,13 @@
 #define SU_CLIENT_USER_KW   	"suClientUser"
 #define RM_BUN_COPY_KW   	"rmBunCopy"
 #define KEY_WORD_KW   		"keyWord"   /* the msKeyValStr is a keyword */ 
+#define CREATE_MODE_KW   	"createMode" /* a msKeyValStr keyword */ 
+#define OPEN_FLAGS_KW   	"openFlags" /* a msKeyValStr keyword */ 
+#define OPEN_FLAGS_KW   	"openFlags" /* a msKeyValStr keyword */ 
+#define OFFSET_KW   		"offset" /* a msKeyValStr keyword */ 
+/* DATA_SIZE_KW already defined */ 
+#define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */ 
+#define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */ 
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

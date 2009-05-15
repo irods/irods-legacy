@@ -76,6 +76,33 @@ typedef struct ParsedMsKeyValStr {
     char *valPtr;
 } parsedMsKeyValStr_t;
 
+typedef struct ValidKeyWd {
+    int flag;
+    char *keyWd; 
+} validKeyWd_t;
+
+/* valid keyWd flags for dataObjInp_t */
+
+#define RESC_NAME_FLAG		0x1
+#define DEST_RESC_NAME_FLAG 	0x2
+#define BACKUP_RESC_NAME_FLAG 	0x4
+#define FORCE_FLAG_FLAG 	0x8
+#define ALL_FLAG 		0x10
+#define LOCAL_PATH_FLAG 	0x20
+#define VERIFY_CHKSUM_FLAG	0x40
+#define IRODS_ADMIN_FLAG 	0x80
+#define UPDATE_REPL_FLAG 	0x100
+#define REPL_NUM_FLAG 		0x200
+#define DATA_TYPE_FLAG 		0x400
+#define CHKSUM_ALL_FLAG 	0x800
+#define FORCE_CHKSUM_FLAG 	0x1000
+#define FILE_PATH_FLAG 		0x2000
+#define CREATE_MODE_FLAG 	0x4000
+#define OPEN_FLAGS_FLAG		0x8000
+#define DATA_SIZE_FLAGS		0x10000
+#define NUM_THREADS_FLAG	0x20000
+#define OPR_TYPE_FLAG		0x40000
+
 int
 resetMsParam (msParam_t *msParam);
 int
@@ -151,7 +178,9 @@ int
 getNextKeyValFromMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr);
 int
 parseMsKeyValStrForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInp,
-char *hintForMissingKw);
+char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
+int
+chkDataObjInpKw (char *keyWd, int validKwFlags);
 #ifdef  __cplusplus
 }
 #endif

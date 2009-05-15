@@ -9,6 +9,7 @@
  * inpParam1 - It can be a DataObjInp_MS_T or 
  *    a STR_MS_T which would be taken as dataObj path.
  * inpParam2 - Optional - a STR_MS_T which specifies the resource.
+FORCE_FLAG_KW dataSize createMode 
  * outParam - a INT_MS_T containing the descriptor of the create.
  *
  */ 
@@ -531,22 +532,21 @@ ruleExecInfo_t *rei)
  *      If the keyWd is not specified (without the '=' char), the value is
  *      assumed to be the target resource ("destRescName") for backward
  *      compatibility..
- *    Valid keyWds are : "localPath" - the client's local file path.
- *                       "destRescName" - the target resource to replicate to.
+ *    Valid keyWds are : "destRescName" - the target resource to replicate to.
  *                       "backupRescName" - the target resource to backup 
  *			    the data. If this keyWd is used, the backup mode
  *			    will be switched on.
  *                       "rescName" - the resource of the source copy.
  *			 "updateRepl" - update other replicas with the 
- *			    latest copy. this keyWd has no value. But 
+ *			    latest copy. This keyWd has no value. But 
  *			    the '=' character is still needed.
  *                       "replNum" - the replica number to use as source.
  *                       "all" - replicate to all resources in the resource 
- *			    group.
+ *			    group. This keyWd has no value.
  *			 "irodsAdmin" - admin user replicate other users' files.
+ *			    This keyWd has no value.
  *                       "verifyChksum" - verify the transfer using checksum.
- *                          this keyWd has no value. But the '=' character is
- *                          still needed.
+ *                          This keyWd has no value. 
  * outParam - a INT_MS_T for the status.
  *
  */
@@ -558,6 +558,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
     transStat_t *transStat = NULL;
+    char *outBadKeyWd;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjRepl")
 
@@ -583,13 +585,24 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput,
       DEST_RESC_NAME_KW);
 #else
+    validKwFlags = DEST_RESC_NAME_FLAG | 
+      BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
+      REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
-      DEST_RESC_NAME_KW);
+      DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
 #endif
 
     if (rei->status < 0) {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjRepl: input msKeyValStr error. status = %d", rei->status);
+	if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjRepl: input keyWd %s error. status = %d", 
+	      outBadKeyWd, rei->status);
+	    free (outBadKeyWd);
+	} else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjRepl: input msKeyValStr error. status = %d", 
+	      rei->status);
+	}
         return (rei->status);
     }
 
@@ -744,6 +757,8 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm_t *rsComm;
     dataObjInp_t *dataObjInp, *myDataObjInp;
     msParamArray_t *myMsParamArray;
+    char *outBadKeyWd;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjPut")
 
@@ -779,14 +794,24 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (inpParam3, &dataObjInp->condInput,
       LOCAL_PATH_KW);
 #else
+    validKwFlags = LOCAL_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
+      REPL_NUM_FLAG | DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
+      ALL_FLAG | FORCE_FLAG_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
-      LOCAL_PATH_KW);
+      LOCAL_PATH_KW, validKwFlags, &outBadKeyWd);
 #endif
 
     if (rei->status < 0) {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-         "msiDataObjPut: parseMsKeyValStrForDataObjInp msKeyValStr err.stat=%d",
-	 rei->status);
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjPut: input keyWd %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjPut: input msKeyValStr error. status = %d",
+              rei->status);
+        }
         return (rei->status);
     }
 
@@ -861,6 +886,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm_t *rsComm;
     dataObjInp_t *dataObjInp, *myDataObjInp;
     msParamArray_t *myMsParamArray;
+    char *outBadKeyWd;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjGetWithOptions")
 
@@ -888,14 +915,23 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (inpParam2, &dataObjInp->condInput,
       LOCAL_PATH_KW);
 #else
+    validKwFlags = LOCAL_PATH_FLAG | FORCE_FLAG_FLAG |
+      RESC_NAME_FLAG | REPL_NUM_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
-      LOCAL_PATH_KW);
+      LOCAL_PATH_KW, validKwFlags, &outBadKeyWd);
 #endif
 
     if (rei->status < 0) {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-         "msiDataObjGet: parseMsKeyValStrForDataObjInp msKeyValStr err.stat=%d",
-	  rei->status);
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjGet: input keyWd %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjGet: input msKeyValStr error. status = %d",
+              rei->status);
+        }
         return (rei->status);
     }
 
@@ -1072,6 +1108,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
     char *chksum = NULL;
+    char *outBadKeyWd;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjChksum")
 
@@ -1097,12 +1135,20 @@ msParam_t *outParam, ruleExecInfo_t *rei)
    if ((rei->status = parseMspForCondKw (inpParam2, &myDataObjInp->condInput))
       < 0) {
 #else
+    validKwFlags = CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG;
    if ((rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, 
-      myDataObjInp, KEY_WORD_KW))
-      < 0) {
+      myDataObjInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd)) < 0) {
 #endif
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjChksum: input msKeyValStr error. status=%d", rei->status);
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjChksum: input keyWd %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjChksum: input msKeyValStr error. status = %d",
+              rei->status);
+        }
         return (rei->status);
     }
 

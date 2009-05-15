@@ -1002,7 +1002,7 @@ getNextKeyValFromMsKeyValStr (parsedMsKeyValStr_t *parsedMsKeyValStr)
 
 int
 parseMsKeyValStrForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInp,
-char *hintForMissingKw)
+char *hintForMissingKw, int validKwFlags, char **outBadKeyWd)
 {
     char *msKeyValStr;
     keyValPair_t *condInput; 
@@ -1022,6 +1022,8 @@ char *hintForMissingKw)
 
     condInput = &dataObjInp->condInput;
 
+    if (outBadKeyWd != NULL) *outBadKeyWd = NULL;
+
     if ((status = initParsedMsKeyValStr (msKeyValStr, &parsedMsKeyValStr)) < 0)
 	return status;
 
@@ -1035,12 +1037,26 @@ char *hintForMissingKw)
 		clearParsedMsKeyValStr (&parsedMsKeyValStr);
         	return status;
 	    } else if (strcmp (hintForMissingKw, KEY_WORD_KW) == 0) {
+		/* XXXXX need to check if keywd is allowed */
 		/* the value should be treated at keyWd */
 		parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
 		parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
+		if ((status = chkDataObjInpKw (parsedMsKeyValStr.kwPtr,
+		  validKwFlags)) < 0) {
+		    if (outBadKeyWd != NULL) 
+			*outBadKeyWd = strdup (parsedMsKeyValStr.kwPtr);
+		    return status;
+		}
 	    } else {
 		parsedMsKeyValStr.kwPtr = hintForMissingKw;
 	    }
+	} else {
+            if ((status = chkDataObjInpKw (parsedMsKeyValStr.kwPtr,
+              validKwFlags)) < 0) {
+                if (outBadKeyWd != NULL) 
+                    *outBadKeyWd = strdup (parsedMsKeyValStr.kwPtr);
+                return status;
+            }
 	}
         addKeyVal (condInput, parsedMsKeyValStr.kwPtr, 
 	  parsedMsKeyValStr.valPtr); 
@@ -1051,3 +1067,23 @@ char *hintForMissingKw)
     return 0;
 }
  
+int
+chkDataObjInpKw (char *keyWd, int validKwFlags)
+{
+    int i;
+
+    if (keyWd == NULL) return 0;
+    for (i = 0; i < NumDataObjInpKeyWd; i++) {
+	if (strcmp (DataObjInpKeyWd[i].keyWd, keyWd) == 0) {
+	    if ((DataObjInpKeyWd[i].flag & validKwFlags) == 0) {
+		/* not valid */
+		break;
+	    } else {
+		/* OK */
+		return 0;
+	    }
+	}
+    }
+    return USER_BAD_KEYWORD_ERR;
+}
+
