@@ -1041,22 +1041,46 @@ char *hintForMissingKw, int validKwFlags, char **outBadKeyWd)
 		/* the value should be treated at keyWd */
 		parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
 		parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
-		if ((status = chkDataObjInpKw (parsedMsKeyValStr.kwPtr,
-		  validKwFlags)) < 0) {
-		    if (outBadKeyWd != NULL) 
-			*outBadKeyWd = strdup (parsedMsKeyValStr.kwPtr);
-		    return status;
-		}
 	    } else {
+		/* use the input hintForMissingKw */
 		parsedMsKeyValStr.kwPtr = hintForMissingKw;
 	    }
-	} else {
-            if ((status = chkDataObjInpKw (parsedMsKeyValStr.kwPtr,
-              validKwFlags)) < 0) {
-                if (outBadKeyWd != NULL) 
-                    *outBadKeyWd = strdup (parsedMsKeyValStr.kwPtr);
-                return status;
-            }
+	} 
+        if ((status = chkDataObjInpKw (parsedMsKeyValStr.kwPtr,
+          validKwFlags)) < 0) {
+            if (outBadKeyWd != NULL) 
+                *outBadKeyWd = strdup (parsedMsKeyValStr.kwPtr);
+            return status;
+        }
+	/* check for some of the special keyWd */
+	if (status == CREATE_MODE_FLAG) {
+	    dataObjInp->createMode = atoi (parsedMsKeyValStr.valPtr);
+	    continue;
+	} else if (status == OPEN_FLAGS_FLAG) {
+	    if (strstr (parsedMsKeyValStr.valPtr, "O_RDWR") != NULL)
+		dataObjInp->openFlags |= O_RDWR;
+	    else if (strstr (parsedMsKeyValStr.valPtr, "O_WRONLY") != NULL)
+		dataObjInp->openFlags |= O_WRONLY;
+	    else if (strstr (parsedMsKeyValStr.valPtr, "O_RDONLY") != NULL)
+		dataObjInp->openFlags |= O_RDONLY;
+	    if (strstr (parsedMsKeyValStr.valPtr, "O_CREAT") != NULL)
+		dataObjInp->openFlags |= O_CREAT;
+	    if (strstr (parsedMsKeyValStr.valPtr, "O_TRUNC") != NULL)
+		dataObjInp->openFlags |= O_TRUNC;
+	    continue;
+	} else if (status == DATA_SIZE_FLAGS) {
+	    dataObjInp->dataSize =  strtoll (parsedMsKeyValStr.valPtr, 0, 0);
+	    continue;
+        } else if (status == NUM_THREADS_FLAG) {
+	    dataObjInp->numThreads = atoi (parsedMsKeyValStr.valPtr);
+	    continue;
+        } else if (status == OPR_TYPE_FLAG) {
+	    dataObjInp->oprType = atoi (parsedMsKeyValStr.valPtr);
+            continue;
+	} else if (status == OBJ_PATH_FLAG) {
+            rstrcpy (dataObjInp->objPath, parsedMsKeyValStr.valPtr,
+	      MAX_NAME_LEN);
+            continue;
 	}
         addKeyVal (condInput, parsedMsKeyValStr.kwPtr, 
 	  parsedMsKeyValStr.valPtr); 
@@ -1080,7 +1104,7 @@ chkDataObjInpKw (char *keyWd, int validKwFlags)
 		break;
 	    } else {
 		/* OK */
-		return 0;
+		return DataObjInpKeyWd[i].flag;
 	    }
 	}
     }

@@ -172,6 +172,7 @@ validKeyWd_t DataObjInpKeyWd[] = {
 	{DATA_SIZE_FLAGS,	DATA_SIZE_KW},
 	{NUM_THREADS_FLAG,	NUM_THREADS_KW},
 	{OPR_TYPE_FLAG,		OPR_TYPE_KW},
+	{OBJ_PATH_FLAG,		OBJ_PATH_KW},
 };
 
 int NumDataObjInpKeyWd = sizeof (DataObjInpKeyWd) / sizeof (validKeyWd_t);

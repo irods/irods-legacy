@@ -102,6 +102,7 @@ typedef struct ValidKeyWd {
 #define DATA_SIZE_FLAGS		0x10000
 #define NUM_THREADS_FLAG	0x20000
 #define OPR_TYPE_FLAG		0x40000
+#define OBJ_PATH_FLAG		0x80000
 
 int
 resetMsParam (msParam_t *msParam);
