@@ -79,7 +79,6 @@
 #define KEY_WORD_KW   		"keyWord"   /* the msKeyValStr is a keyword */ 
 #define CREATE_MODE_KW   	"createMode" /* a msKeyValStr keyword */ 
 #define OPEN_FLAGS_KW   	"openFlags" /* a msKeyValStr keyword */ 
-#define OPEN_FLAGS_KW   	"openFlags" /* a msKeyValStr keyword */ 
 #define OFFSET_KW   		"offset" /* a msKeyValStr keyword */ 
 /* DATA_SIZE_KW already defined */ 
 #define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */ 
