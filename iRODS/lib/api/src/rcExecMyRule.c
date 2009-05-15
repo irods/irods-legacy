@@ -52,6 +52,7 @@ msParamArray_t **outParamArray)
 	}
 	clearMsParamArray (*outParamArray, 1);
 	free (*outParamArray);
+	*outParamArray = NULL;
 
 	/* read the reply from the eariler call */
 
