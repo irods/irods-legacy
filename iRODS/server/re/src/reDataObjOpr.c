@@ -8,18 +8,30 @@
 /* msiDataObjCreate - msi for DataObjCreate.
  * inpParam1 - It can be a DataObjInp_MS_T or 
  *    a STR_MS_T which would be taken as dataObj path.
- * inpParam2 - Optional - a STR_MS_T which specifies the resource.
-FORCE_FLAG_KW dataSize createMode 
+ * msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *   If the keyWd is not specified (without the '=' char), the value is
+ *   assumed to be the target resource ("destRescName") for backward
+ *   compatibility..
+ *    Valid keyWds are : "destRescName" - the target resource.
+ *			 "forceFlag" - overwrite existing copy. This keyWd has
+ *                          no value. But the '=' character is still needed
+ *			 "createMode" - the file mode of the data object.
+ *			 "dataType" - the data type of the data object.
+ *			 "dataSize" - the size of the data object. This input
+ *			    is optional.
  * outParam - a INT_MS_T containing the descriptor of the create.
  *
  */ 
 
 int
-msiDataObjCreate (msParam_t *inpParam1, msParam_t *inpParam2, 
+msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr, 
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
+    char *outBadKeyWd;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjCreate")
 
@@ -41,12 +53,27 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
     rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput, 
      DEST_RESC_NAME_KW);
+#else
+    validKwFlags = DEST_RESC_NAME_FLAG | CREATE_MODE_FLAG | DATA_TYPE_FLAG | 
+      FORCE_FLAG_FLAG | DATA_SIZE_FLAGS;
+    rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
+      DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
+#endif
 
     if (rei->status < 0) {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjCreate: input inpParam2 error. status = %d", rei->status);
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjCreate: input keyWd - %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjCreate: input msKeyValStr error. status = %d",
+              rei->status);
+        }
         return (rei->status);
     }
 
@@ -70,7 +97,20 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
 /* msiDataObjOpen - msi for DataObjOpen.
  * inpParam - It can be a DataObjInp_MS_T or a STR_MS_T which would be
- *    taken as dataObj path.
+ *    taken as msKeyValStr.
+ * msKeyValStr -  This is the special msKeyValStr
+ *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *   If the keyWd is not specified (without the '=' char), the value is
+ *   assumed to be the path of the data object("objPath") for backward
+ *   compatibility..
+ *    Valid keyWds are : "objPath" - the path of the data object to open.
+ *			 "rescName" - the resource of the data object to open.
+ *			 "replNum" - the replica number of the copy to open.
+ *			 "openFlags" - the open flags. valid open flags are:
+ *			   O_RDONLY, O_WRONLY, O_RDWR and O_TRUNC. These
+ *			   flags can be combined by concatenation, e.g.
+ *			   O_WRONLYO_TRUNC (without the '|' character). The
+ *			   default open flag is O_RDONLY.
  * outParam - a INT_MS_T containing the descriptor of the open.
  *
  */
@@ -81,6 +121,8 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
+    char *outBadKeyWd = NULL;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjOpen")
 
@@ -92,19 +134,38 @@ ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
-    /* parse inpParam1 */
-    rei->status = parseMspForDataObjInp (inpParam, &dataObjInp, 
-      &myDataObjInp, 0);
+    /* parse inpParam */
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+	bzero (&dataObjInp, sizeof (dataObjInp));
+	myDataObjInp = &dataObjInp;
+        validKwFlags = OBJ_PATH_FLAG | RESC_NAME_FLAG | OPEN_FLAGS_FLAG |
+          REPL_NUM_FLAG;
+        rei->status = parseMsKeyValStrForDataObjInp (inpParam, myDataObjInp,
+          OBJ_PATH_KW, validKwFlags, &outBadKeyWd);
+    }else {
+        rei->status = parseMspForDataObjInp (inpParam, &dataObjInp, 
+          &myDataObjInp, 0);
+    }
 
     if (rei->status < 0) {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjOpen: input inpParam1 error. status = %d", rei->status);
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjOpen: input keyWd - %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjOpen: input msKeyValStr error. status = %d",
+              rei->status);
+        }
         return (rei->status);
     }
 
+#if 0	/* not needed with ability to input openFlags */
     if (strcmp (inpParam->type, STR_MS_T) == 0) {
 	myDataObjInp->openFlags = O_RDWR;
     } 
+#endif
     rei->status = rsDataObjOpen (rsComm, myDataObjInp);
     if (rei->status >= 0) {
         fillIntInMsParam (outParam, rei->status);
@@ -541,6 +602,7 @@ ruleExecInfo_t *rei)
  *			    latest copy. This keyWd has no value. But 
  *			    the '=' character is still needed.
  *                       "replNum" - the replica number to use as source.
+ *                       "numThreads" - the number of threads to use.
  *                       "all" - replicate to all resources in the resource 
  *			    group. This keyWd has no value.
  *			 "irodsAdmin" - admin user replicate other users' files.
@@ -585,7 +647,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput,
       DEST_RESC_NAME_KW);
 #else
-    validKwFlags = DEST_RESC_NAME_FLAG | 
+    validKwFlags = DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
       BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
       REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
@@ -731,10 +793,11 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *      compatibility..
  *    Valid keyWds are : "localPath" - the client's local file path.
  *                       "destRescName" - the resource to put.
-			 "all" - upload to all resources
- *                       "forceFlag" - overwrite current copy. This keyWd has
+ *			 "all" - upload to all resources
+ *                       "forceFlag" - overwrite existing copy. This keyWd has
  *                          no value. But the '=' character is still needed
  *                       "replNum" - the replica number to overwrite.
+ *                       "numThreads" - the number of threads to use.
  *			 "filePath" - The physical file path of the uploaded
  *			    file on the server.
  *			 "dataType" - the data type of the file.
@@ -796,7 +859,7 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 #else
     validKwFlags = LOCAL_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
       REPL_NUM_FLAG | DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
-      ALL_FLAG | FORCE_FLAG_FLAG;
+      ALL_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
       LOCAL_PATH_KW, validKwFlags, &outBadKeyWd);
 #endif
@@ -865,6 +928,7 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  *    Valid keyWds are : "localPath" - the client's local file path.
  *			 "rescName" - the resource of the copy to get.
  *			 "replNum" - the replica number of the copy to get. 
+ *                       "numThreads" - the number of threads to use.
  *			 "forceFlag" - overwrite local copy. This keyWd has
  *			    no value. But the '=' character is still needed
  *      		 "verifyChksum" - verify the transfer using checksum.
@@ -915,7 +979,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (inpParam2, &dataObjInp->condInput,
       LOCAL_PATH_KW);
 #else
-    validKwFlags = LOCAL_PATH_FLAG | FORCE_FLAG_FLAG |
+    validKwFlags = LOCAL_PATH_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG |
       RESC_NAME_FLAG | REPL_NUM_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
       LOCAL_PATH_KW, validKwFlags, &outBadKeyWd);
