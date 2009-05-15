@@ -1072,7 +1072,7 @@ chkDataObjInpKw (char *keyWd, int validKwFlags)
 {
     int i;
 
-    if (keyWd == NULL) return 0;
+    if (keyWd == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
     for (i = 0; i < NumDataObjInpKeyWd; i++) {
 	if (strcmp (DataObjInpKeyWd[i].keyWd, keyWd) == 0) {
 	    if ((DataObjInpKeyWd[i].flag & validKwFlags) == 0) {
