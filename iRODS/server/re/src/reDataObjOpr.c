@@ -595,7 +595,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     if (rei->status < 0) {
 	if (outBadKeyWd != NULL) {
             rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-              "msiDataObjRepl: input keyWd %s error. status = %d", 
+              "msiDataObjRepl: input keyWd - %s error. status = %d", 
 	      outBadKeyWd, rei->status);
 	    free (outBadKeyWd);
 	} else {
@@ -804,7 +804,7 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
     if (rei->status < 0) {
         if (outBadKeyWd != NULL) {
             rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-              "msiDataObjPut: input keyWd %s error. status = %d",
+              "msiDataObjPut: input keyWd - %s error. status = %d",
               outBadKeyWd, rei->status);
             free (outBadKeyWd);
         } else {
@@ -924,7 +924,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     if (rei->status < 0) {
         if (outBadKeyWd != NULL) {
             rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-              "msiDataObjGet: input keyWd %s error. status = %d",
+              "msiDataObjGet: input keyWd - %s error. status = %d",
               outBadKeyWd, rei->status);
             free (outBadKeyWd);
         } else {
@@ -1141,7 +1141,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 #endif
         if (outBadKeyWd != NULL) {
             rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-              "msiDataObjChksum: input keyWd %s error. status = %d",
+              "msiDataObjChksum: input keyWd - %s error. status = %d",
               outBadKeyWd, rei->status);
             free (outBadKeyWd);
         } else {
