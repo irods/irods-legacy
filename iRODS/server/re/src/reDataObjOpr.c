@@ -540,7 +540,17 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
 /* msiDataObjjUnlink - msi for DataObjjUnlink.
  * inpParam - It can be a DataObjInp_MS_T or
- *    STR_MS_T which would be the obj Path.
+ *    STR_MS_T which would tbe aken as msKeyValStr.
+* msKeyValStr -  This is the special msKeyValStr
+ *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *   If the keyWd is not specified (without the '=' char), the value is
+ *   assumed to be the path of the data object("objPath") for backward
+ *   compatibility..
+ *    Valid keyWds are : "objPath" - the path of the data object to remove.
+ *                       "replNum" - the replica number of the copy to remove.
+ *                       "forceFlag" - Remove the data object instead putting
+ *			    it in trash. This keyWd has no value. But the 
+ *			    '=' character is still needed
  * outParam - a INT_MS_T for the status.
  *
  */
@@ -551,6 +561,8 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjInp_t dataObjInp, *myDataObjInp;
+    char *outBadKeyWd = NULL;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjUnlink")
 
@@ -563,12 +575,28 @@ ruleExecInfo_t *rei)
     rsComm = rei->rsComm;
 
     /* parse inpParam */
-    rei->status = parseMspForDataObjInp (inpParam, &dataObjInp, 
-      &myDataObjInp, 0);
+    if (strcmp (inpParam->type, STR_MS_T) == 0) {
+        bzero (&dataObjInp, sizeof (dataObjInp));
+        myDataObjInp = &dataObjInp;
+        validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG;
+        rei->status = parseMsKeyValStrForDataObjInp (inpParam, myDataObjInp,
+          OBJ_PATH_KW, validKwFlags, &outBadKeyWd);
+    }else {
+        rei->status = parseMspForDataObjInp (inpParam, &dataObjInp, 
+          &myDataObjInp, 0);
+    }
 
     if (rei->status < 0) {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjUnlink: input inpParam error. status = %d", rei->status);
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjUnlink: input keyWd - %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjUnlink: input msKeyValStr error. status = %d",
+              rei->status);
+        }
         return (rei->status);
     }
 
@@ -690,13 +718,28 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjjCopy - msi for DataObjjCopy.
+/* msiDataObjCopy - msi for DataObjjCopy.
  * inpParam1 - It can be a DataObjCopyInp_MS_T or
  *    DataObjInp_MS_T which is the src DataObjInp or
  *    STR_MS_T which would be the src obj Path.
  * inpParam2 - Optional - It can be a DataObjInp_MS_T which is the dest
  *    DataObjInp or 
  *    STR_MS_T which would be the dest obj Path.
+ *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *      If the keyWd is not specified (without the '=' char), the value is
+ *      assumed to be the target resource ("destRescName") for backward
+ *      compatibility..
+ *    Valid keyWds are : "destRescName" - the resource to copy to.
+ *                       "forceFlag" - overwrite existing copy. This keyWd has
+ *                          no value. But the '=' character is still needed
+ *                       "numThreads" - the number of threads to use.
+ *                       "filePath" - The physical file path of the uploaded
+ *                          file on the server.
+ *                       "dataType" - the data type of the file.
+ *                       "verifyChksum" - verify the transfer using checksum.
+ *                          this keyWd has no value. But the '=' character is
+ *                          still needed.
  * inpParam3 - Optional - a STR_MS_T which specifies the resource.
  * outParam - a INT_MS_T for the status.
  *
@@ -704,12 +747,14 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
 int
 msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2, 
-msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
     dataObjInp_t *myDataObjInp;
     transStat_t *transStat = NULL;
+    char *outBadKeyWd;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiDataObjCopy")
 
@@ -741,8 +786,31 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
     rei->status = parseMspForCondInp (inpParam3, 
       &myDataObjCopyInp->destDataObjInp.condInput, DEST_RESC_NAME_KW);
+#else
+    validKwFlags = DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
+      DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
+      FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
+    rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, 
+      &myDataObjCopyInp->destDataObjInp, DEST_RESC_NAME_KW, validKwFlags, 
+      &outBadKeyWd);
+#endif
+
+    if (rei->status < 0) {
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjCopy: input keyWd - %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiDataObjCopy: input msKeyValStr error. status = %d",
+              rei->status);
+        }
+        return (rei->status);
+    }
 
     if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
