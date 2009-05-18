@@ -241,8 +241,8 @@ int flag)
             *rescGrpInfoHead = myRescGrpInfo;
         } else {
             lastRescGrpInfo->next = myRescGrpInfo;
-	    myRescGrpInfo->next = tmpRescGrpInfo;
         }
+	myRescGrpInfo->next = tmpRescGrpInfo;
     }
 
     return (0);
