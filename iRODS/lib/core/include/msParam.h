@@ -103,6 +103,8 @@ typedef struct ValidKeyWd {
 #define NUM_THREADS_FLAG	0x20000
 #define OPR_TYPE_FLAG		0x40000
 #define OBJ_PATH_FLAG		0x80000
+#define IRODS_RMTRASH_FLAG	0x100000
+#define IRODS_ADMIN_RMTRASH_FLAG 0x200000
 
 int
 resetMsParam (msParam_t *msParam);

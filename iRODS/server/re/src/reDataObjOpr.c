@@ -551,6 +551,10 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *                       "forceFlag" - Remove the data object instead putting
  *			    it in trash. This keyWd has no value. But the 
  *			    '=' character is still needed
+ *			  "irodsAdminRmTrash" - Admin rm trash. This keyWd 
+ *			    has no value.
+ *      		  "irodsRmTrash" - rm trash. This keyWd has no value.
+
  * outParam - a INT_MS_T for the status.
  *
  */
@@ -578,7 +582,8 @@ ruleExecInfo_t *rei)
     if (strcmp (inpParam->type, STR_MS_T) == 0) {
         bzero (&dataObjInp, sizeof (dataObjInp));
         myDataObjInp = &dataObjInp;
-        validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG;
+        validKwFlags = OBJ_PATH_FLAG | FORCE_FLAG_FLAG | REPL_NUM_FLAG |
+	  IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG;
         rei->status = parseMsKeyValStrForDataObjInp (inpParam, myDataObjInp,
           OBJ_PATH_KW, validKwFlags, &outBadKeyWd);
     }else {
