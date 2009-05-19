@@ -28,8 +28,8 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     ruleExecInfo_t rei;
     int trashPolicy;
     dataObjInfo_t *dataObjInfoHead = NULL;
-
     rodsServerHost_t *rodsServerHost = NULL;
+    int rmTrashFlag = 0;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT,
      dataObjUnlinkInp->objPath, &rodsServerHost);
@@ -49,6 +49,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         if (isTrashPath (dataObjUnlinkInp->objPath) == False) {
             return (SYS_INVALID_FILE_PATH);
         }
+	rmTrashFlag = 1;
     }
 
     dataObjUnlinkInp->openFlags = O_WRONLY;  /* set the permission checking */
@@ -59,7 +60,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
 
     if (getValByKey (&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
       getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL ||
-      dataObjInfoHead->specColl != NULL) {
+      dataObjInfoHead->specColl != NULL || rmTrashFlag == 1) {
         status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp, dataObjInfoHead);
     } else {
         initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);

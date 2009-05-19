@@ -105,7 +105,9 @@ collOprStat_t **collOprStat)
         return status;
     } else if (status != COLL_OBJ_T || dataObjInfo->specColl == NULL) {
 	/* a normal coll */
-	if (getValByKey (&rmCollInp->condInput, FORCE_FLAG_KW) == NULL) {
+	if (getValByKey (&rmCollInp->condInput, FORCE_FLAG_KW) == NULL &&
+	  getValByKey (&rmCollInp->condInput, IRODS_RMTRASH_KW) == NULL &&
+	  getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) == NULL) {
             initReiWithDataObjInp (&rei, rsComm, NULL);
             status = applyRule ("acTrashPolicy", NULL, &rei, NO_SAVE_REI);
             trashPolicy = rei.status;
