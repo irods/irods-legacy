@@ -2063,6 +2063,55 @@ isTrashHome (char *myPath)
     }
 }
 
+/* isHomeColl - see if the path is /myZone/home or 
+ * /myZone/home/myName.
+ * return 0 if it is not
+ * return 1 if it is.
+ */
+  
+int
+isHomeColl (char *myPath)
+{
+    char *tmpPtr, *tmpPtr1;
+
+    tmpPtr = myPath;
+
+    /* start with a '/' */
+    if (*tmpPtr != '/') {
+	return 0;
+    }
+
+    tmpPtr++;
+    if ((tmpPtr1 = strchr (tmpPtr, '/')) == NULL) {
+	return 0;
+    }
+
+    tmpPtr = tmpPtr1 + 1;
+
+    if (strncmp (tmpPtr, "home", 4) != 0) {
+        return 0;
+    }
+
+    tmpPtr += 4;
+
+    if (*tmpPtr == '\0') {
+	/* /myZone/home */
+	return (1);
+    } else if (*tmpPtr != '/') {
+	return (0);
+    }
+
+    tmpPtr++;
+
+    if (strchr (tmpPtr, '/') == NULL) {
+	/* /myZone/home/myName */
+	return 1;
+    } else {
+	/* /myZone/home/myName/... Not a trash home */
+	return 0;
+    }
+}
+
 int
 openRestartFile (char *restartFile, rodsRestart_t *rodsRestart, 
 rodsArguments_t *rodsArgs)

@@ -147,6 +147,7 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     int rmtrashFlag =0;
     int savedStatus = 0;
     int fileCntPerStatOut = FILE_CNT_PER_STAT_OUT;
+    int entCnt = 0;
 
     memset (&openCollInp, 0, sizeof (openCollInp));
     rstrcpy (openCollInp.collName, rmCollInp->collName, MAX_NAME_LEN);
@@ -189,6 +190,12 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
     }
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
+	if (entCnt == 0) {
+	    entCnt ++;
+	    /* cannot rm non-empty home collection */
+	    if (isHomeColl (rmCollInp->collName)) 
+		return (CANT_RM_NON_EMPTY_HOME_COLL);
+	} 
         if (collEnt->objType == DATA_OBJ_T) {
             snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
               collEnt->collName, collEnt->dataName);
