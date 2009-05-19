@@ -16,7 +16,7 @@
  *		Avoid path names ending with '/' as they can be misparsed by lower level routines
  *		(eg: /tempZone/home instead of /tempZone/home/).
  * \param[in] 
- *    targetPath - A CollInp_MS_T or a STR_MS_T with the irods path.
+ *    targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
  * \param[out] 
  *	  collId - an INT_MS_T containing the collection ID.
  *    status - an INT_MS_T containing the operation status.
@@ -30,8 +30,8 @@
 int
 msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecInfo_t *rei)
 {
-	collInp_t collInpCache, *collInp;				/* for parsing collection input param */
-	rodsLong_t coll_id;								/* collection ID */
+	char *targetPathStr;				/* for parsing input path */
+	rodsLong_t coll_id;					/* collection ID */
 	
 	
 	
@@ -46,16 +46,27 @@ msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecI
 	}
 	
 	
-	/* Parse collection input */
-	rei->status = parseMspForCollInp (targetPath, &collInpCache, &collInp, 0);
-	if (rei->status < 0) {
+	/* Check for NULL input */
+    if (!targetPath) 
+    {
+    	rei->status = USER__NULL_INPUT_ERR;
 		rodsLog (LOG_ERROR, "msiIsColl: input targetPath error. status = %d", rei->status);
 		return (rei->status);
+    }
+    
+	
+	/* Parse targetPath input */
+	targetPathStr = (char *) targetPath->inOutStruct;
+	if ( !targetPathStr || !strlen(targetPathStr) || strlen(targetPathStr) > MAX_NAME_LEN )
+	{
+		rei->status = USER_INPUT_PATH_ERR;
+		rodsLog (LOG_ERROR, "msiIsColl: input targetPath error. status = %d", rei->status);
+		return (rei->status);	
 	}
 
 
 	/* Call isColl()*/
-	rei->status = isColl (rei->rsComm, collInp->collName, &coll_id);
+	rei->status = isColl (rei->rsComm, targetPathStr, &coll_id);
 	
     
     /* Return 0 if no object was found */
@@ -67,6 +78,84 @@ msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecI
 
 	/* Return collection ID and operation status */
 	fillIntInMsParam (collId, (int)coll_id);
+	fillIntInMsParam (status, rei->status);
+
+	/* Done */
+	return rei->status;
+}
+
+
+
+/**
+ * \fn msiIsData
+ * \author  Antoine de Torcy
+ * \date   2009-05-08
+ * \brief Checks if an iRods path is a data object (an iRods file). For use in workflows.
+ * \note This microservice takes an iRods path and returns the corresponding object ID,
+ *		or zero if the object is not a data object or does not exist.
+ * \param[in] 
+ *    targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
+ * \param[out] 
+ *	  dataId - an INT_MS_T containing the data object ID.
+ *    status - an INT_MS_T containing the operation status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecInfo_t *rei)
+{
+	char *targetPathStr;				/* for parsing input path */
+	rodsLong_t data_id;					/* collection ID */
+	
+	
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiIsData")
+	
+	
+	/* Sanity test */
+	if (rei == NULL || rei->rsComm == NULL) {
+			rodsLog (LOG_ERROR, "msiIsData: input rei or rsComm is NULL.");
+			return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/* Check for NULL input */
+    if (!targetPath) 
+    {
+    	rei->status = USER__NULL_INPUT_ERR;
+		rodsLog (LOG_ERROR, "msiIsData: input targetPath error. status = %d", rei->status);
+		return (rei->status);
+    }
+    
+	
+	/* Parse targetPath input */
+	targetPathStr = (char *) targetPath->inOutStruct;
+	if ( !targetPathStr || !strlen(targetPathStr) || strlen(targetPathStr) > MAX_NAME_LEN )
+	{
+		rei->status = USER_INPUT_PATH_ERR;
+		rodsLog (LOG_ERROR, "msiIsData: input targetPath error. status = %d", rei->status);
+		return (rei->status);	
+	}
+
+
+	/* Call isData()*/
+	rei->status = isData (rei->rsComm, targetPathStr, &data_id);
+	
+    
+    /* Return 0 if no object was found */
+    if (rei->status == CAT_NO_ROWS_FOUND)
+    {
+    	data_id = 0;
+    	rei->status = 0;
+    }
+
+	/* Return object ID and operation status */
+	fillIntInMsParam (dataId, (int)data_id);
 	fillIntInMsParam (status, rei->status);
 
 	/* Done */
@@ -455,7 +544,7 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
     addKeyVal (&structFileBundleInp->condInput, DATA_TYPE_KW, "tar file");
     
     
-    /* And now... let's see what happens */
+    /* Invoke rsStructFileBundle and hope for the best */
     rei->status = rsStructFileBundle (rei->rsComm, structFileBundleInp);
 
 
@@ -468,6 +557,143 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
 
 
 
+/**
+ * \fn msiCollectionSpider
+ * \author  Antoine de Torcy
+ * \date   2009-05-09
+ * \brief Applies a microservice sequence to all data objects in a collection, recursively.
+ * \note 
+ *
+ * \param[in] 
+ *    collection - A CollInp_MS_T or a STR_MS_T with the irods path.
+ *	  objects - Added for clarity. Only the label is required here.
+ *	  action - A STR_MS_T (for now) with the microservice sequence. Would need a new type.
+ * \param[out] 
+ *    status - an INT_MS_T containing the operation status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action, msParam_t *status, ruleExecInfo_t *rei)
+{
+	char *actionStr;						/* will contain the microservice sequence */
+	collInp_t collInpCache, *collInp;		/* input for rsOpenCollection */
+	collEnt_t *collEnt;						/* input for rsReadCollection */
+	int handleInx;							/* collection handler */
+	msParam_t *msParam;						/* temporary pointer for parameter substitution */
+	dataObjInp_t dataObjInp;				/* will contain pathnames for each object (one at a time) */
+
+	
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiCollectionSpider")
+	
+	
+	/* Sanity test */
+	if (rei == NULL || rei->rsComm == NULL) {
+			rodsLog (LOG_ERROR, "msiCollectionSpider: input rei or rsComm is NULL.");
+			return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/* Parse collection input */
+	rei->status = parseMspForCollInp (collection, &collInpCache, &collInp, 0);
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiIsCollectionSpider: input collection error. status = %d", rei->status);
+		return (rei->status);
+	}
+	
+	
+	/* Check if "objects" input has proper label */
+	if (!objects->label || !strlen(objects->label))
+	{
+		rei->status = USER_PARAM_LABEL_ERR;
+		rodsLog (LOG_ERROR, "msiIsCollectionSpider: input objects error. status = %d", rei->status);
+		return (rei->status);
+	}
+	
+	
+	/* Parse action input */
+	if (parseMspForStr(action))
+	{
+		/* Allocated size is an educated guess from reading code in systemMS.c */
+		actionStr = (char *)malloc(strlen(parseMspForStr(action)) + 15 + MAX_COND_LEN * 2);
+		snprintf(actionStr, strlen(parseMspForStr(action)) + 15 + MAX_COND_LEN * 2, "%s|nop", parseMspForStr(action));
+    }
+    else
+    {
+    	rei->status = USER_PARAM_TYPE_ERR;
+    	rodsLog (LOG_ERROR, "msiIsCollectionSpider: input action error. status = %d", rei->status);
+		return (rei->status);
+    }
+
+
+	/* In our array of msParams, fill the one whose label is the same as 'objects' with a pointer to dataObjInp */
+	msParam = getMsParamByLabel(rei->msParamArray, objects->label);
+	resetMsParam (msParam);
+	msParam->type = strdup (DataObjInp_MS_T);
+	msParam->inOutStruct = (void *) &dataObjInp;
+
+
+
+	/* Open collection in recursive mode */
+	collInp->flags = RECUR_QUERY_FG;
+	handleInx = rsOpenCollection (rei->rsComm, collInp);
+	if (handleInx < 0)
+	{
+		rodsLog (LOG_ERROR, "msiCollectionSpider: rsOpenCollection of %s error. status = %d", collInp->collName, handleInx);
+		free(actionStr);
+		return (handleInx);
+	}
+	
+		
+	/* Read our collection one object at a time */
+	while ((rei->status = rsReadCollection (rei->rsComm, &handleInx, &collEnt)) >= 0) 
+	{
+		
+		/* Skip collection entries */
+		if (collEnt->objType == DATA_OBJ_T)
+		{
+			/* Write our current object's path in dataObjInp, where the inOutStruct in 'objects' points to */
+			memset(&dataObjInp, 0, sizeof(dataObjInp_t));
+			snprintf(dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
+		
+		
+			/* And finally... run actionStr on our object */
+			rei->status = execMyRule(actionStr, rei->msParamArray, rei);	
+			if (rei->status < 0)
+			{
+				/* If an error occurs, log incident but keep going */			
+				rodsLog (LOG_ERROR, "msiCollectionSpider: execMyRule error. status = %d", rei->status);
+			}
+		
+		}
+
+		
+		/* Free collEnt only. Content will be freed by rsCloseCollection() */
+		if (collEnt)
+		{
+			free(collEnt);	    
+		}
+	}
+	
+			
+	/* Close collection */
+	rei->status = rsCloseCollection (rei->rsComm, &handleInx);
+
+
+	/* Return operation status */
+	fillIntInMsParam (status, rei->status);
+	
+
+	/* Done */
+  	free(actionStr);
+	return rei->status;
+}
 
 
 
