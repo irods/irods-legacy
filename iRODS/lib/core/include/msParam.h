@@ -99,10 +99,12 @@ typedef struct ValidKeyWd {
 #define FILE_PATH_FLAG 		0x2000
 #define CREATE_MODE_FLAG 	0x4000
 #define OPEN_FLAGS_FLAG		0x8000
+#define COLL_FLAGS_FLAG		0x8000
 #define DATA_SIZE_FLAGS		0x10000
 #define NUM_THREADS_FLAG	0x20000
 #define OPR_TYPE_FLAG		0x40000
 #define OBJ_PATH_FLAG		0x80000
+#define COLL_NAME_FLAG		0x80000
 #define IRODS_RMTRASH_FLAG	0x100000
 #define IRODS_ADMIN_RMTRASH_FLAG 0x200000
 
@@ -184,6 +186,11 @@ parseMsKeyValStrForDataObjInp (msParam_t *inpParam, dataObjInp_t *dataObjInp,
 char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
 int
 chkDataObjInpKw (char *keyWd, int validKwFlags);
+int
+parseMsKeyValStrForCollInp (msParam_t *inpParam, collInp_t *collInp,
+char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
+int
+chkCollInpKw (char *keyWd, int validKwFlags);
 #ifdef  __cplusplus
 }
 #endif

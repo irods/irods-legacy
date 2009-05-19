@@ -541,7 +541,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 /* msiDataObjjUnlink - msi for DataObjjUnlink.
  * inpParam - It can be a DataObjInp_MS_T or
  *    STR_MS_T which would tbe aken as msKeyValStr.
-* msKeyValStr -  This is the special msKeyValStr
+ * msKeyValStr -  This is the special msKeyValStr
  *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *   If the keyWd is not specified (without the '=' char), the value is
  *   assumed to be the path of the data object("objPath") for backward
@@ -554,7 +554,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *			  "irodsAdminRmTrash" - Admin rm trash. This keyWd 
  *			    has no value.
  *      		  "irodsRmTrash" - rm trash. This keyWd has no value.
-
+ *
  * outParam - a INT_MS_T for the status.
  *
  */
@@ -586,7 +586,7 @@ ruleExecInfo_t *rei)
 	  IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG;
         rei->status = parseMsKeyValStrForDataObjInp (inpParam, myDataObjInp,
           OBJ_PATH_KW, validKwFlags, &outBadKeyWd);
-    }else {
+    } else {
         rei->status = parseMspForDataObjInp (inpParam, &dataObjInp, 
           &myDataObjInp, 0);
     }
@@ -1610,7 +1610,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
  * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
+ *    inpParam1 - It can be a CollInp_MS_T or
  *      a STR_MS_T which would be taken as dataObj path.
  *    inpParam2 - A STR_MS_T which specifies the flags integer. A flags of
  *	1 means the parent collections will be created too.
@@ -1683,11 +1683,20 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
  * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
+ *    inpParam1 - It can be a CollInp_MS_T or
  *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - optional - a STR_MS_T which specifies the "forceFlag"
- *      (FORCE_FLAG_KW). "irodsAdminRmTrash"(IRODS_ADMIN_RMTRASH_KW) or
- *      "irodsRmTrash"(IRODS_RMTRASH_KW).
+ * msKeyValStr -  This is the special msKeyValStr
+ *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *   If the keyWd is not specified (without the '=' char), the value is
+ *   assumed to be one of the keywaord listed below for backward
+ *   compatibility..
+ *    Valid keyWds are :
+ *                       "forceFlag" - Remove the data object instead putting
+ *                          it in trash. This keyWd has no value. But the
+ *                          '=' character is still needed
+ *                        "irodsAdminRmTrash" - Admin rm trash. This keyWd
+ *                          has no value.
+ *                        "irodsRmTrash" - rm trash. This keyWd has no value.
  * \param[out] a INT_MS_T containing the status.
  * \return integer
  * \retval 0 on success
@@ -1698,11 +1707,13 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 **/
 
 int
-msiRmColl (msParam_t *inpParam1, msParam_t *inpParam2,
+msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr,
 msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     collInp_t rmCollInp, *myRmCollInp;
+    char *outBadKeyWd;
+    int validKwFlags;
 
     RE_TEST_MACRO ("    Calling msiRmColl")
 
@@ -1724,12 +1735,31 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
     if ((rei->status = parseMspForCondKw (inpParam2, &myRmCollInp->condInput))
       < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiRmColl: input inpParam2 error. status = %d", rei->status);
         return (rei->status);
     }
+#else
+    validKwFlags = IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG | 
+      FORCE_CHKSUM_FLAG;
+    if ((rei->status = parseMsKeyValStrForCollInp (msKeyValStr,
+      myRmCollInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd)) < 0) {
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiRmColl: input keyWd - %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiRmColl: input msKeyValStr error. status = %d",
+              rei->status);
+        }
+        return (rei->status);
+    }
+#endif
 
     addKeyVal (&myRmCollInp->condInput, RECURSIVE_OPR__KW, "");
 
@@ -1765,7 +1795,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
  * \param[in]
- *    coll     : It can be a collInp_t or a STR_MS_T which would be taken 
+ *    coll     : It can be a CollInp_MS_T or a STR_MS_T which would be taken 
  *               as destination collection path.
  *    destResc : STR_MS_T destination resource name
  *    options  : STR_MS_T a group of options in a string delimited by '%%'.
@@ -2294,12 +2324,34 @@ ruleExecInfo_t *rei)
  * \fn  msiCollRepl
  * \author  Antoine de Torcy
  * \date  2008-08-19
- * \brief  This microservice wraps the rsCollRepl() routine to replicate a collection.
+ * \brief  This microservice wraps the rsCollRepl() routine to replicate a 
+ * collection.
  * \note  This call does not require client interaction, which means
  *	it can be used through rcExecMyRule (irule) or internally by the server.
  * \param[in]
- *    collection - A CollInp_MS_T or a STR_MS_T with the irods path of the collection to replicate.
- *    targetResc - A STR_MS_T which specifies the resource where replicated objects should be stored.
+ *    collection - A CollInp_MS_T or a STR_MS_T with the irods path of the 
+ *	collection to replicate.
+*    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *      If the keyWd is not specified (without the '=' char), the value is
+ *      assumed to be the target resource ("destRescName") for backward
+ *      compatibility..
+ *    Valid keyWds are : "destRescName" - the target resource to replicate to.
+ *                       "backupRescName" - the target resource to backup
+ *                          the data. If this keyWd is used, the backup mode
+ *                          will be switched on.
+ *                       "rescName" - the resource of the source copy.
+ *                       "updateRepl" - update other replicas with the
+ *                          latest copy. This keyWd has no value. But
+ *                          the '=' character is still needed.
+ *                       "replNum" - the replica number to use as source.
+ *                       "numThreads" - the number of threads to use.
+ *                       "all" - replicate to all resources in the resource
+ *                          group. This keyWd has no value.
+ *                       "irodsAdmin" - admin user replicate other users' files.
+ *                          This keyWd has no value.
+ *                       "verifyChksum" - verify the transfer using checksum.
+ *                          This keyWd has no value.
  * \param[out] 
  *    status - a CollOprStat_t for detailed operation status.
  * \return integer
@@ -2311,70 +2363,81 @@ ruleExecInfo_t *rei)
 **/
 
 int
-msiCollRepl (msParam_t *collection, msParam_t *targetResc, msParam_t *status, 
+msiCollRepl (msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status, 
 ruleExecInfo_t *rei)
 {
-	/* for parsing collection input param */
-	collInp_t collInpCache, *collInp;
+    /* for parsing collection input param */
+    collInp_t collInpCache, *collInp;
+    char *outBadKeyWd;
+    int validKwFlags;
 
-	/* misc. to avoid repeating rei->rsComm */
-	rsComm_t *rsComm;
+    /* misc. to avoid repeating rei->rsComm */
+    rsComm_t *rsComm;
 
 
-
-	/******************************  INIT *******************************/
+    /******************************  INIT *******************************/
 	
-	/* For testing mode when used with irule --test */
-	RE_TEST_MACRO ("    Calling msiCollRepl")
+    /* For testing mode when used with irule --test */
+    RE_TEST_MACRO ("    Calling msiCollRepl")
 	
-	/* Sanity checks */
-	if (rei == NULL || rei->rsComm == NULL) {
-		rodsLog (LOG_ERROR, "msiCollRepl: input rei or rsComm is NULL.");
-		return (SYS_INTERNAL_NULL_INPUT_ERR);
-	}
+    /* Sanity checks */
+    if (rei == NULL || rei->rsComm == NULL) {
+	rodsLog (LOG_ERROR, "msiCollRepl: inp rei or rsComm is NULL.");
+	    return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
 
-	rsComm = rei->rsComm;
+    rsComm = rei->rsComm;
 
+    /**************************** PARAM PARSING  ************************/
 
-
-	/**************************** PARAM PARSING  ************************/
-
-	/* Parse target collection */
-	rei->status = 
-	  parseMspForCollInp (collection, &collInpCache, &collInp, 0);
+    /* Parse target collection */
+    rei->status = 
+      parseMspForCollInp (collection, &collInpCache, &collInp, 0);
 	
-	if (rei->status < 0) {
-	    rodsLog (LOG_ERROR, 
-	      "msiCollRepl: input collection error. status = %d", rei->status);
-		return (rei->status);
-	}
-
-
-	/* Parse resource name and directly write to collReplInp */
-	rei->status = parseMspForCondInp (targetResc, 
-	  &collInp->condInput, DEST_RESC_NAME_KW); 
-	if (rei->status < 0) {
-	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-		"msiCollRepl: input inpParam2 error. status = %d", rei->status);
+    if (rei->status < 0) {
+	rodsLog (LOG_ERROR, 
+	  "msiCollRepl: input collection error. status = %d", rei->status);
 	return (rei->status);
-	}
+    }
 
 
+    /* Parse resource name and directly write to collReplInp */
+#if 0
+    rei->status = parseMspForCondInp (targetResc, 
+      &collInp->condInput, DEST_RESC_NAME_KW); 
+#else
+    validKwFlags = DEST_RESC_NAME_FLAG |
+      BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
+      REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
+    rei->status = parseMsKeyValStrForCollInp (msKeyValStr, collInp,
+      DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
+#endif
 
-	/************************ API SERVER CALL **************************/
+    if (rei->status < 0) {
+        if (outBadKeyWd != NULL) {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiCollRepl: input keyWd - %s error. status = %d",
+              outBadKeyWd, rei->status);
+            free (outBadKeyWd);
+        } else {
+            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+              "msiCollRepl: input msKeyValStr error. status = %d",
+              rei->status);
+        }
+        return (rei->status);
+    }
 
-	/* Call rsCollRepl() */
-	rei->status = rsCollRepl (rsComm, collInp, NULL);
+    /************************ API SERVER CALL **************************/
 
+    /* Call rsCollRepl() */
+    rei->status = rsCollRepl (rsComm, collInp, NULL);
 
+    /*************************** OUTPUT PACKAGING ***********************/
 
-	/*************************** OUTPUT PACKAGING ***********************/
+    /* Send out op status */
+    fillIntInMsParam (status, rei->status);
 
-	/* Send out op status */
-	fillIntInMsParam (status, rei->status);
-
-
-	return (rei->status);
+    return (rei->status);
 }
 
 /**

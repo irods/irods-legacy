@@ -83,7 +83,9 @@
 /* DATA_SIZE_KW already defined */ 
 #define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */ 
 #define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */ 
-#define OBJ_PATH_KW   		"objPath" /* a msKeyValStr keyword */ 
+#define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */ 
+/* OBJ_PATH_KW already defined */ 
+/* COLL_NAME_KW already defined */ 
 
 /* The following are the keyWord definition for the rescCond key/value pair */
 /* RESC_NAME_KW is defined above */

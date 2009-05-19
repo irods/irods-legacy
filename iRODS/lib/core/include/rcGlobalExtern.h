@@ -32,5 +32,7 @@ extern structFileTypeDef_t StructFileTypeDef[];
 extern int NumStructFileType;
 extern validKeyWd_t DataObjInpKeyWd[];
 extern int NumDataObjInpKeyWd;
+extern validKeyWd_t CollInpKeyWd[];
+extern int NumCollInpKeyWd;
 
 #endif	/* RC_GLOBAL_EXTERN_H */

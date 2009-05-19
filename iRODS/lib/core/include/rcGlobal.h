@@ -179,4 +179,24 @@ validKeyWd_t DataObjInpKeyWd[] = {
 
 int NumDataObjInpKeyWd = sizeof (DataObjInpKeyWd) / sizeof (validKeyWd_t);
  
+/* valid keyWds for collInp_t */
+validKeyWd_t CollInpKeyWd[] = {
+        {RESC_NAME_FLAG,        RESC_NAME_KW},
+        {DEST_RESC_NAME_FLAG,   DEST_RESC_NAME_KW},
+        {BACKUP_RESC_NAME_FLAG, BACKUP_RESC_NAME_KW},
+        {FORCE_FLAG_FLAG,       FORCE_FLAG_KW},
+	{ALL_FLAG,		ALL_KW},
+        {VERIFY_CHKSUM_FLAG,    VERIFY_CHKSUM_KW},
+        {IRODS_ADMIN_FLAG,      IRODS_ADMIN_KW},
+        {UPDATE_REPL_FLAG,      UPDATE_REPL_KW},
+        {REPL_NUM_FLAG,         REPL_NUM_KW},
+        {COLL_FLAGS_FLAG,       COLL_FLAGS_KW},
+        {OPR_TYPE_FLAG,         OPR_TYPE_KW},
+        {COLL_NAME_FLAG,         COLL_NAME_KW},
+        {IRODS_RMTRASH_FLAG,    IRODS_RMTRASH_KW},
+        {IRODS_ADMIN_RMTRASH_FLAG,      IRODS_ADMIN_RMTRASH_KW},
+};
+
+int NumCollInpKeyWd = sizeof (CollInpKeyWd) / sizeof (validKeyWd_t);
+
 #endif	/* RC_GLOBAL_H */

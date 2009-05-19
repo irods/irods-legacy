@@ -1111,3 +1111,95 @@ chkDataObjInpKw (char *keyWd, int validKwFlags)
     return USER_BAD_KEYWORD_ERR;
 }
 
+int
+parseMsKeyValStrForCollInp (msParam_t *inpParam, collInp_t *collInp,
+char *hintForMissingKw, int validKwFlags, char **outBadKeyWd)
+{
+    char *msKeyValStr;
+    keyValPair_t *condInput; 
+    parsedMsKeyValStr_t parsedMsKeyValStr;
+    int status;
+
+
+    if (inpParam == NULL || collInp == NULL) {
+        rodsLog (LOG_ERROR,
+        "parseMsKeyValStrForCollInp: input inpParam or collInp is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (strcmp(inpParam->type, STR_MS_T) != 0) return USER_PARAM_TYPE_ERR;
+
+    msKeyValStr = (char *) inpParam->inOutStruct;
+
+    condInput = &collInp->condInput;
+
+    if (outBadKeyWd != NULL) *outBadKeyWd = NULL;
+
+    if ((status = initParsedMsKeyValStr (msKeyValStr, &parsedMsKeyValStr)) < 0)
+	return status;
+
+    while (getNextKeyValFromMsKeyValStr (&parsedMsKeyValStr) >= 0) {
+	if (parsedMsKeyValStr.kwPtr == NULL) {
+	    if (hintForMissingKw == NULL) {
+		status = NO_KEY_WD_IN_MS_INP_STR;
+                rodsLogError (LOG_ERROR, status,
+      		 "parseMsKeyValStrForCollInp: no keyWd for %s",
+		  parsedMsKeyValStr.valPtr);
+		clearParsedMsKeyValStr (&parsedMsKeyValStr);
+        	return status;
+	    } else if (strcmp (hintForMissingKw, KEY_WORD_KW) == 0) {
+		/* XXXXX need to check if keywd is allowed */
+		/* the value should be treated at keyWd */
+		parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
+		parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
+	    } else {
+		/* use the input hintForMissingKw */
+		parsedMsKeyValStr.kwPtr = hintForMissingKw;
+	    }
+	} 
+        if ((status = chkCollInpKw (parsedMsKeyValStr.kwPtr,
+          validKwFlags)) < 0) {
+            if (outBadKeyWd != NULL) 
+                *outBadKeyWd = strdup (parsedMsKeyValStr.kwPtr);
+            return status;
+        }
+	/* check for some of the special keyWd */
+	if (status == COLL_FLAGS_FLAG) {
+	    collInp->flags = atoi (parsedMsKeyValStr.valPtr);
+	    continue;
+        } else if (status == OPR_TYPE_FLAG) {
+	    collInp->oprType = atoi (parsedMsKeyValStr.valPtr);
+            continue;
+	} else if (status == COLL_NAME_FLAG) {
+            rstrcpy (collInp->collName, parsedMsKeyValStr.valPtr,
+	      MAX_NAME_LEN);
+            continue;
+	}
+        addKeyVal (condInput, parsedMsKeyValStr.kwPtr, 
+	  parsedMsKeyValStr.valPtr); 
+    }
+
+    clearParsedMsKeyValStr (&parsedMsKeyValStr);
+
+    return 0;
+}
+ 
+int
+chkCollInpKw (char *keyWd, int validKwFlags)
+{
+    int i;
+
+    if (keyWd == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+    for (i = 0; i < NumCollInpKeyWd; i++) {
+        if (strcmp (CollInpKeyWd[i].keyWd, keyWd) == 0) {
+            if ((CollInpKeyWd[i].flag & validKwFlags) == 0) {
+                /* not valid */
+                break;
+            } else {
+                /* OK */
+                return CollInpKeyWd[i].flag;            }
+        }
+    }
+    return USER_BAD_KEYWORD_ERR;
+}
+
