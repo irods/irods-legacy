@@ -278,3 +278,4 @@ microsdef_t MicrosTable[] = {
   {"msiSetReServerNumProc",1,(funcPtr) msiSetReServerNumProc},
   {"msiGetStdoutInExecCmdOut",2,(funcPtr) msiGetStdoutInExecCmdOut},
   {"msiGetStderrInExecCmdOut",2,(funcPtr) msiGetStderrInExecCmdOut},
+  {"msiAddKeyValToMspStr",3,(funcPtr) msiAddKeyValToMspStr},

@@ -33,3 +33,12 @@ ruleExecInfo_t *rei)
     return rei->status;
 }
 
+int
+msiAddKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, 
+msParam_t *msKeyValStr, ruleExecInfo_t *rei)
+{
+    rei->status = addKeyValToMspStr (keyStr, valStr, msKeyValStr);
+
+    return rei->status;
+}
+

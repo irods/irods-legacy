@@ -1203,3 +1203,59 @@ chkCollInpKw (char *keyWd, int validKwFlags)
     return USER_BAD_KEYWORD_ERR;
 }
 
+int
+addKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, 
+msParam_t *msKeyValStr)
+{
+    int keyLen, valLen;
+    char *valPtr, *keyPtr, *oldKeyValPtr, *newKeyValPtr, *tmpPtr;
+    int oldLen, newLen;
+
+    if ((keyStr == NULL && valStr == NULL) || msKeyValStr == NULL) 
+	return SYS_INTERNAL_NULL_INPUT_ERR;
+
+    if (msKeyValStr->type == NULL) fillStrInMsParam (msKeyValStr, NULL);
+
+    keyPtr = parseMspForStr (keyStr);
+    if (keyPtr == NULL || strcmp (keyPtr, MS_NULL_STR) == 0) {
+	keyLen = 0;
+    } else {
+	keyLen = strlen (keyPtr);
+    }
+
+    valPtr = parseMspForStr (valStr);
+    if (valPtr == NULL || strcmp (valPtr, MS_NULL_STR) == 0) {
+        valLen = 0;
+    } else {
+        valLen = strlen (valPtr);
+    }
+    if (valLen + keyLen <= 0) return 0;
+
+    oldKeyValPtr = parseMspForStr (msKeyValStr);
+    if (oldKeyValPtr == NULL) {
+	oldLen = 0;
+	newLen = valLen + keyLen + 10;
+	newKeyValPtr = malloc (newLen);
+	*newKeyValPtr = '\0';
+	tmpPtr = newKeyValPtr;
+    } else {
+	oldLen = strlen (oldKeyValPtr);
+	newLen = oldLen + valLen + keyLen + 10;
+	newKeyValPtr = malloc (newLen);
+	snprintf (newKeyValPtr, newLen, "%s%s", oldKeyValPtr, MS_INP_SEP_STR);
+	tmpPtr = newKeyValPtr + oldLen + 4;
+	free (oldKeyValPtr);
+    }
+
+    if (keyLen > 0) {
+	snprintf (tmpPtr, keyLen + 2, "%s=", keyPtr);
+	tmpPtr += keyLen + 1;
+    }
+    if (valLen > 0) {
+        snprintf (tmpPtr, valLen + 2, "%s", valPtr);
+    }
+    msKeyValStr->inOutStruct = (void *) newKeyValPtr;
+
+    return 0;
+}
+

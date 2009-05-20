@@ -191,6 +191,9 @@ parseMsKeyValStrForCollInp (msParam_t *inpParam, collInp_t *collInp,
 char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
 int
 chkCollInpKw (char *keyWd, int validKwFlags);
+int
+addKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, 
+msParam_t *msKeyValStr);
 #ifdef  __cplusplus
 }
 #endif

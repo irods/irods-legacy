@@ -23,7 +23,9 @@ ruleExecInfo_t *rei);
 int
 msiGetStderrInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr,
 ruleExecInfo_t *rei);
-
+int
+msiAddKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr,
+msParam_t *msKeyValStr, ruleExecInfo_t *rei);
 
 #endif  /* MSI_HELPER_H */
 
