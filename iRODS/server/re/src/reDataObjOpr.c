@@ -58,7 +58,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
      DEST_RESC_NAME_KW);
 #else
     validKwFlags = DEST_RESC_NAME_FLAG | CREATE_MODE_FLAG | DATA_TYPE_FLAG | 
-      FORCE_FLAG_FLAG | DATA_SIZE_FLAGS;
+      FORCE_FLAG_FLAG | DATA_SIZE_FLAGS | OBJ_PATH_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
       DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
 #endif
@@ -680,7 +680,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (inpParam2, &myDataObjInp->condInput,
       DEST_RESC_NAME_KW);
 #else
-    validKwFlags = DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
+    validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
       BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
       REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
@@ -795,7 +795,7 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (inpParam3, 
       &myDataObjCopyInp->destDataObjInp.condInput, DEST_RESC_NAME_KW);
 #else
-    validKwFlags = DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
+    validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
       DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
       FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, 
@@ -932,7 +932,7 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 #else
     validKwFlags = LOCAL_PATH_FLAG | DEST_RESC_NAME_FLAG | FILE_PATH_FLAG |
       REPL_NUM_FLAG | DATA_TYPE_FLAG | VERIFY_CHKSUM_FLAG |
-      ALL_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG;
+      ALL_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG | OBJ_PATH_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
       LOCAL_PATH_KW, validKwFlags, &outBadKeyWd);
 #endif
@@ -1053,7 +1053,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
       LOCAL_PATH_KW);
 #else
     validKwFlags = LOCAL_PATH_FLAG | FORCE_FLAG_FLAG | NUM_THREADS_FLAG |
-      RESC_NAME_FLAG | REPL_NUM_FLAG | VERIFY_CHKSUM_FLAG;
+      RESC_NAME_FLAG | REPL_NUM_FLAG | VERIFY_CHKSUM_FLAG | OBJ_PATH_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, dataObjInp,
       LOCAL_PATH_KW, validKwFlags, &outBadKeyWd);
 #endif
@@ -1272,7 +1272,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
    if ((rei->status = parseMspForCondKw (inpParam2, &myDataObjInp->condInput))
       < 0) {
 #else
-    validKwFlags = CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG;
+    validKwFlags = CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG |
+      OBJ_PATH_FLAG;
    if ((rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, 
       myDataObjInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd)) < 0) {
 #endif
@@ -1744,7 +1745,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
 #else
     validKwFlags = IRODS_RMTRASH_FLAG | IRODS_ADMIN_RMTRASH_FLAG | 
-      FORCE_CHKSUM_FLAG;
+      FORCE_CHKSUM_FLAG | COLL_NAME_FLAG;
     if ((rei->status = parseMsKeyValStrForCollInp (msKeyValStr,
       myRmCollInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd)) < 0) {
         if (outBadKeyWd != NULL) {
@@ -2406,7 +2407,7 @@ ruleExecInfo_t *rei)
     rei->status = parseMspForCondInp (targetResc, 
       &collInp->condInput, DEST_RESC_NAME_KW); 
 #else
-    validKwFlags = DEST_RESC_NAME_FLAG |
+    validKwFlags = COLL_NAME_FLAG | DEST_RESC_NAME_FLAG |
       BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
       REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
     rei->status = parseMsKeyValStrForCollInp (msKeyValStr, collInp,
