@@ -62,8 +62,8 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
         if (status >= 0) {
 	    if (L1desc[l1descInx].oprType == PUT_OPR || 
-	      L1desc[l1descInx].oprType == CREATE_OPR ||
-    	      (L1desc[l1descInx].oprType == OPEN_OPR && 
+	      L1desc[l1descInx].openType == CREATE_TYPE ||
+    	      (L1desc[l1descInx].openType == OPEN_FOR_WRITE_TYPE && 
 	      (L1desc[l1descInx].bytesWritten > 0 ||
       	      dataObjCloseInp->bytesWritten > 0))) {
                 initReiWithDataObjInp (&rei, rsComm, 

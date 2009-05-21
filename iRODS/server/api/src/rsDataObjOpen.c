@@ -161,7 +161,11 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	    /* copiesNeeded condition met */
             queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 1, 1);
             L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
-	    L1desc[l1descInx].oprType = OPEN_OPR;
+	    if (writeFlag > 0) {
+	        L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
+	    } else {
+               L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
+	    };
             return (l1descInx);
 	}
         tmpDataObjInfo = nextDataObjInfo;
