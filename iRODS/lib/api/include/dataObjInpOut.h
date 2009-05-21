@@ -116,9 +116,16 @@ typedef struct CollInp201 {
 #define QUERY_COLL_OBJ          20
 #define QUERY_COLL_OBJ_RECUR    21
 #define RENAME_UNKNOWN_TYPE     22
-#define CREATE_OPR     		23
 #define REMOTE_ZONE_OPR         24
+#if 0
+#define CREATE_OPR     		23
 #define OPEN_OPR         	25
+#endif
+
+/* definition for openType in l1desc_t */
+#define CREATE_TYPE         	1
+#define OPEN_FOR_READ_TYPE      2
+#define OPEN_FOR_WRITE_TYPE     3
 
 typedef struct PortalOpr {
     int oprType;
