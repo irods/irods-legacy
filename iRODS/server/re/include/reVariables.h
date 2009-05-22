@@ -34,6 +34,7 @@ rulevardef_t RuleVarTable[] = {
   {FILE_PATH_KW, "", (char *) "rei->doi->filePath"},
   {REPL_NUM_KW, "", (char *) "rei->doi->replNum"},
   {REPL_STATUS_KW, "", (char *) "rei->doi->replStatus"},
+  {WRITE_FLAG_KW, "", (char *) "rei->doi->writeFlag"},
   {DATA_OWNER_KW, "", (char *) "rei->doi->dataOwnerName"},
   {DATA_OWNER_ZONE_KW, "", (char *) "rei->doi->dataOwnerZone"},
   {DATA_EXPIRY_KW, "", (char *) "rei->doi-dataExpiry"},

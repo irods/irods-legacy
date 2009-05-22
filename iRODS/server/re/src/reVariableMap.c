@@ -391,6 +391,8 @@ getSetValFromDataObjInfo(char *varMap, dataObjInfo_t **inptr, char **varValue, v
   else  if (!strcmp(varName, "replStatus") )
     i = getSetLeafValue(varValue,&(ptr->replStatus), (void *) ptr->replStatus, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->replStatus); */
+  else  if (!strcmp(varName, "writeFlag") )
+    i = getSetLeafValue(varValue,&(ptr->writeFlag), (void *) ptr->writeFlag, newVarValue, RE_INT);
   else  if (!strcmp(varName, "statusString") )
     i = getSetLeafValue(varValue,&(ptr->statusString), (void *) ptr->statusString , newVarValue,RE_STR);
     /* *varValue = ptr->statusString; */

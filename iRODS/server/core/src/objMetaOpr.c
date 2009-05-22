@@ -430,6 +430,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
       *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName;
     char accStr[LONG_NAME_LEN];
     int qcondCnt;
+    int writeFlag;
 
     *dataObjInfoHead = NULL;
 
@@ -655,6 +656,8 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    writeFlag = getWriteFlag (dataObjInp->openFlags);
+
    for (i = 0;i < genQueryOut->rowCnt; i++) {
         dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
         memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
@@ -714,6 +717,7 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 	rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, NAME_LEN);
 	rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
 	rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
+	dataObjInfo->writeFlag = writeFlag;
 
 	queDataObjInfo (dataObjInfoHead, dataObjInfo, 1, 0);
     }
@@ -2476,6 +2480,10 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
           "resolveSpecColl: specCollSubStat error for %s, status = %d",
           dataObjInp->objPath, status);
         return (status);
+    } else {
+        if (*dataObjInfo != NULL) {
+	    (*dataObjInfo)->writeFlag = writeFlag;
+	}
     }
 
     return (status);

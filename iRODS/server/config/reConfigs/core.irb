@@ -112,6 +112,8 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 #    msiStageDataObj(cacheResc) - stage a copy of the data object in the 
 #      cacheResc before opening the data object. 
 # acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
+# acPreprocForDataObjOpen|$writeFlag == 0|msiStageDataObj(demoResc8)|nop
+# acPreprocForDataObjOpen|$writeFlag == 1|nop|nop
 # acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
 acPreprocForDataObjOpen||nop|nop
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
@@ -184,7 +186,7 @@ acSetNumThreads||msiSetNumThreads(default,16,default)|nop
 #    acDataDeletePolicy|$rescName == demoResc8|msiDeleteDisallowed|nop
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
-# acDataDeletePolicy|$objPath like /temp/home/rods/*|msiDeleteDisallowed|nop
+# acDataDeletePolicy|$objPath like /tempZone/home/rods/*|msiDeleteDisallowed|nop
 acDataDeletePolicy||nop|nop
 #
 # 9) acNoChkFilePathPerm - This rule set the policy for checking the

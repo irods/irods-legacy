@@ -169,6 +169,7 @@ typedef struct DataObjInfo {
     char dataModify[TIME_LEN];
     char dataAccess[NAME_LEN];
     int  dataAccessInx;
+    int  writeFlag;
     char destRescName[NAME_LEN];
     char backupRescName[NAME_LEN];
     char subPath[MAX_NAME_LEN];

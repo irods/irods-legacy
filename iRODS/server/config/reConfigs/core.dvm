@@ -24,6 +24,7 @@ version||rei->doi->version
 filePath||rei->doi->filePath
 replNum||rei->doi->replNum
 replStatus||rei->doi->replStatus
+writeFlag||rei->doi->writeFlag
 dataOwner||rei->doi->dataOwnerName
 dataOwnerZone||rei->doi->dataOwnerZone
 dataExpiry||rei->doi-dataExpiry
