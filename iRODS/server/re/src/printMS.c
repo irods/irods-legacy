@@ -9,6 +9,14 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
   int i;
   char tmp[3];
   char *ptr;
+  char *writeId = (char *) where->inOutStruct;
+
+  if (writeId != NULL && strcmp (writeId, "serverLog") == 0 &&
+   inString->inOutStruct != NULL) {
+    rodsLog (LOG_NOTICE, "writeLine: inString = %s", inString->inOutStruct);
+    return 0;
+  }
+
   i = writeString(where, inString,rei);
   if (i < 0)
     return(i);
