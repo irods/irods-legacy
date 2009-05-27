@@ -67,7 +67,8 @@ resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
     }
 
     /* assume it is remote */
-    tmpRodsServerHost->localFlag = REMOTE_HOST;
+    if (tmpRodsServerHost->localFlag == UNKNOWN_HOST_LOC)
+        tmpRodsServerHost->localFlag = REMOTE_HOST;
 
     status = queRodsServerHost (&ServerHostHead, tmpRodsServerHost);
     *rodsServerHost = tmpRodsServerHost;
@@ -1672,6 +1673,8 @@ initHostConfigByFile (rsComm_t *rsComm)
 		/* first host */
 		tmpRodsServerHost = malloc (sizeof (rodsServerHost_t));
                 memset (tmpRodsServerHost, 0, sizeof (rodsServerHost_t));
+		/* assume it is remote */
+		tmpRodsServerHost->localFlag = REMOTE_HOST;
 		/* local zone */
 		tmpRodsServerHost->zoneInfo = ZoneInfoHead;
 		status = queRodsServerHost (&HostConfigHead, tmpRodsServerHost);
@@ -1723,6 +1726,8 @@ matchHostConfig (rodsServerHost_t *myRodsServerHost)
                 tmpHostName = myRodsServerHost->hostName;
                 while (tmpHostName != NULL) {
 		    if (strcmp (tmpHostName->name, tmpConfigName->name) == 0) {
+			myRodsServerHost->localFlag = 
+			  tmpRodsServerHost->localFlag;
 		        status = queConfigName (tmpRodsServerHost,
 		          myRodsServerHost);
                         return (0);
