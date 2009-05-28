@@ -55,10 +55,11 @@ acAclPolicy||nop|nop
 #
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
-# 1) acSetRescSchemeForCreate - This is the preprossing rule for setting
-# the resource selection scheme when creating a data object which is used 
-# by the put, copy and replicate operations. Currently, three preprocessing 
-# functions can be used by this rule:
+# 1) acSetRescSchemeForCreate - This is the preprossing rule for creating a
+# data object. It can be used for setting the resource selection scheme 
+# when creating a data object which is used by the put, copy and 
+# replicate operations. Currently, three preprocessing functions can be 
+# used by this rule:
 #    msiSetNoDirectRescInp(rescList) - sets a list of resources that cannot
 #      be used by a normal user directly. More than one resources can be 
 #      input using the character "%" as seperator. e.g., resc1%resc2%resc3.  
@@ -182,18 +183,19 @@ acPostProcForOpen||nop|nop
 # for all transfer 
 # acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
 acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
-# 10) acPreProcForDelete - This rule set the policy for deleting data objects.
+# 10) acDataDeletePolicy - This rule set the policy for deleting data objects.
+#     This is the PreProcessing rule for delete.
 # Only one function can be called:
 #    msiDeleteDisallowed() - Disallow the deletion of the data object. 
 # Examples:
-#    acPreProcForDelete|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
+#    acDataDeletePolicy|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
 #      this rule prevents the deletion of any data objects or collections
 #      beneath the collection /foo/bar/
-#    acPreProcForDelete|$rescName == demoResc8|msiDeleteDisallowed|nop
+#    acDataDeletePolicy|$rescName == demoResc8|msiDeleteDisallowed|nop
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
-# acPreProcForDelete|$objPath like /tempZone/home/rods/*|msiDeleteDisallowed|nop
-acPreProcForDelete||nop|nop
+# acDataDeletePolicy|$objPath like /tempZone/home/rods/*|msiDeleteDisallowed|nop
+acDataDeletePolicy||nop|nop
 #
 # 11) acPostProcForDelete - This rule set the post-processing policy for 
 # deleting data objects.  Currently there is no function written specifically
