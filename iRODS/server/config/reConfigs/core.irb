@@ -116,6 +116,7 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 # acPreprocForDataObjOpen|$writeFlag == 1|nop|nop
 # acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
 acPreprocForDataObjOpen||nop|nop
+# acPreprocForDataObjOpen||writeLine(serverLog,$rescName)|nop
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
 # data object. Currently, one preprocessing function can be used 
 # by this rule. 
@@ -176,18 +177,19 @@ acPostProcForFilePathReg||nop|nop
 # for all transfer 
 # acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
 acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
-# 8) acDataDeletePolicy - This rule set the policy for deleting data objects.
+# 8) acPreProcForDelete - This rule set the policy for deleting data objects.
 # Only one function can be called:
 #    msiDeleteDisallowed() - Disallow the deletion of the data object. 
 # Examples:
-#    acDataDeletePolicy|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
+#    acPreProcForDelete|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
 #      this rule prevents the deletion of any data objects or collections
 #      beneath the collection /foo/bar/
-#    acDataDeletePolicy|$rescName == demoResc8|msiDeleteDisallowed|nop
+#    acPreProcForDelete|$rescName == demoResc8|msiDeleteDisallowed|nop
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
-# acDataDeletePolicy|$objPath like /tempZone/home/rods/*|msiDeleteDisallowed|nop
-acDataDeletePolicy||nop|nop
+# acPreProcForDelete|$objPath like /tempZone/home/rods/*|msiDeleteDisallowed|nop
+# acPreProcForDelete||nop|nop
+acPreProcForDelete||nop|nop
 #
 # 9) acNoChkFilePathPerm - This rule set the policy for checking the
 # file path permission when registering physical file path using commands

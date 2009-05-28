@@ -28,10 +28,10 @@ int
 l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
 int
 _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
-dataObjInfo_t *dataObjInfoHead);
+dataObjInfo_t **dataObjInfoHead);
 int
 rsMvDataObjToTrash (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfoHead);
+dataObjInfo_t **dataObjInfoHead);
 int
 resolveDataObjReplStatus (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp);
 #else

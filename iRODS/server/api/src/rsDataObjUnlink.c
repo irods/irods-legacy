@@ -58,10 +58,30 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
 
     if (status < 0) return (status);
 
+    initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
+    rei.doi = dataObjInfoHead;
+
+    status = applyRule ("acPreProcForDelete", NULL, &rei, NO_SAVE_REI);
+
+    if (status < 0 && status != NO_MORE_RULES_ERR &&
+      status != SYS_DELETE_DISALLOWED) {
+        rodsLog (LOG_NOTICE,
+          "rsDataObjUnlink: acPreProcForDelete error for %s. status = %d",
+          dataObjUnlinkInp->objPath, status);
+        return (status);
+    }
+
+    if (rei.status == SYS_DELETE_DISALLOWED) {
+        rodsLog (LOG_NOTICE,
+        "rsDataObjUnlink:disallowed for %s via acPreProcForDelete,status=%d",
+          dataObjUnlinkInp->objPath, rei.status);
+        return (rei.status);
+    }
+
     if (getValByKey (&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
       getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL ||
       dataObjInfoHead->specColl != NULL || rmTrashFlag == 1) {
-        status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp, dataObjInfoHead);
+        status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp, &dataObjInfoHead);
     } else {
         initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
         status = applyRule ("acTrashPolicy", NULL, &rei, NO_SAVE_REI);
@@ -69,49 +89,61 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
 
         if (trashPolicy != NO_TRASH_CAN) {
             status = rsMvDataObjToTrash (rsComm, dataObjUnlinkInp, 
-	      dataObjInfoHead);
+	      &dataObjInfoHead);
             return status;
         } else {
             status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp, 
-	      dataObjInfoHead);
+	      &dataObjInfoHead);
         }
     }
+
+    rei.doi = dataObjInfoHead;
+    rei.status = applyRule ("acPostProcForDelete", NULL, &rei, NO_SAVE_REI);
+
+    if (rei.status < 0) {
+        rodsLog (LOG_NOTICE,
+          "rsDataObjUnlink: acPostProcForDelete error for %s. status = %d",
+          dataObjUnlinkInp->objPath, rei.status);
+    }
+
+    /* dataObjInfoHead may be outdated */
+    freeAllDataObjInfo (dataObjInfoHead);
 
     return (status);
 }
 
 int
 _rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
-dataObjInfo_t *dataObjInfoHead)
+dataObjInfo_t **dataObjInfoHead)
 {
     int status;
     int retVal = 0;
-    dataObjInfo_t *tmpDataObjInfo;
+    dataObjInfo_t *tmpDataObjInfo, *myDataObjInfoHead;
 
-    if (strcmp (dataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+    myDataObjInfoHead = *dataObjInfoHead;
+    if (strcmp (myDataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
         if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
             return CAT_INSUFFICIENT_PRIVILEGE_LEVEL;
 	}
 	if (getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL) {
 	    return SYS_CANT_MV_BUNDLE_DATA_BY_COPY;
 	}
-	status = _unbunAndStageBunfileObj (rsComm, &dataObjInfoHead, NULL, 1);
+	status = _unbunAndStageBunfileObj (rsComm, dataObjInfoHead, NULL, 1);
 	if (status < 0) {
             rodsLog (LOG_NOTICE,
             "_rsDataObjUnlink:_unbunAndStageBunfileObj error for %s, stat=%d",
-              dataObjInfoHead->objPath, status);
+              myDataObjInfoHead->objPath, status);
             return (status);
         }
 	/* dataObjInfoHead may be outdated */
-        freeAllDataObjInfo (dataObjInfoHead);  
 	dataObjInfoHead = NULL;
         status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp,
-          &dataObjInfoHead);
+          dataObjInfoHead);
 
         if (status < 0) return (status);
     }
 
-    tmpDataObjInfo = dataObjInfoHead;
+    tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
 	status = dataObjUnlinkS (rsComm, dataObjUnlinkInp, tmpDataObjInfo);
 	if (status < 0) {
@@ -124,9 +156,8 @@ dataObjInfo_t *dataObjInfoHead)
 	tmpDataObjInfo = tmpDataObjInfo->next;
     }
 
-    if (dataObjInfoHead->specColl == NULL)
+    if ((*dataObjInfoHead)->specColl == NULL)
         resolveDataObjReplStatus (rsComm, dataObjUnlinkInp);
-    freeAllDataObjInfo (dataObjInfoHead);  
 
     return (retVal);
 }
@@ -194,27 +225,6 @@ dataObjInfo_t *dataObjInfo)
 {
     int status;
     unregDataObj_t unregDataObjInp;
-    ruleExecInfo_t rei;
-
-    initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
-    rei.doi = dataObjInfo;
-
-    status = applyRule ("acDataDeletePolicy", NULL, &rei, NO_SAVE_REI);
-
-    if (status < 0 && status != NO_MORE_RULES_ERR && 
-      status != SYS_DELETE_DISALLOWED) {
-        rodsLog (LOG_NOTICE,
-          "dataObjUnlinkS: acDataDeletePolicy error for %s. status = %d",
-          dataObjUnlinkInp->objPath, status);
-        return (status);
-    }
-
-    if (rei.status == SYS_DELETE_DISALLOWED) {
-        rodsLog (LOG_NOTICE,
-        "dataObjUnlinkS:disallowed for %s via DataDeletePolicy,status=%d",
-          dataObjUnlinkInp->objPath, rei.status);
-	return (rei.status);
-    }
 
     if (dataObjInfo->specColl == NULL) {
         unregDataObjInp.dataObjInfo = dataObjInfo;
@@ -295,14 +305,14 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
 int
 rsMvDataObjToTrash (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfoHead)
+dataObjInfo_t **dataObjInfoHead)
 {
     int status;
     ruleExecInfo_t rei;
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;
 
-    if (strcmp (dataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
+    if (strcmp ((*dataObjInfoHead)->dataType, TAR_BUNDLE_TYPE) == 0) {
 	return SYS_CANT_MV_BUNDLE_DATA_TO_TRASH;
     }
 
@@ -311,7 +321,7 @@ dataObjInfo_t *dataObjInfoHead)
           ACCESS_DELETE_OBJECT);
     }
 
-    status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead,
+    status = getDataObjInfo (rsComm, dataObjInp, dataObjInfoHead,
       ACCESS_DELETE_OBJECT, 0);
 
     if (status < 0) {
@@ -322,7 +332,7 @@ dataObjInfo_t *dataObjInfoHead)
     }
 
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-    rei.doi = dataObjInfoHead;
+    rei.doi = *dataObjInfoHead;
 
     status = applyRule ("acDataDeletePolicy", NULL, &rei, NO_SAVE_REI);
 

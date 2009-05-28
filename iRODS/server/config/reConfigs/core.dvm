@@ -12,9 +12,10 @@ otherUserName||rei->uoio->userName
 otherUserZone||rei->uoio->rodsZone
 otherUserType||rei->uoio->userType
 otherSysUidClient||rei->uoio->sysUid
-rescName|resc_modify|rei->rgi->rescInfo->rescName
-objPath||rei->doi->objPath
 rescName||rei->doi->rescName
+rescName||rei->rgi->rescInfo->rescName
+objPath||rei->doi->objPath
+objPath||rei->doinp->objPath
 destRescName||rei->doi->destRescName
 backupRescName||rei->doi->backupRescName
 dataType||rei->doi->dataType
