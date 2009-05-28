@@ -32,6 +32,9 @@ main(int argc, char *argv[])
     signal(SIGINT, signalExit);
     signal(SIGHUP, signalExit);
     signal(SIGTERM, signalExit);
+    /* set to SIG_DFL as recommended by andy.salnikov so that system()
+     * call returns real values instead of 1 */
+    signal(SIGCHLD, SIG_DFL);
     signal(SIGUSR1, signalExit);
     signal(SIGPIPE, rsPipSigalHandler);
 #endif
