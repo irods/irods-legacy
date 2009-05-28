@@ -61,6 +61,27 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         status = _rsDataObjClose (rsComm, dataObjCloseInp);
 
         if (status >= 0) {
+	    /* note : this may overlap with acPostProcForPut or 
+	     * acPostProcForCopy */
+	    if (L1desc[l1descInx].openType == CREATE_TYPE) {
+                initReiWithDataObjInp (&rei, rsComm,
+                  L1desc[l1descInx].dataObjInp);
+                rei.doi = L1desc[l1descInx].dataObjInfo;
+                status = applyRule ("acPostProcForCreate", NULL, &rei,
+                  NO_SAVE_REI);
+                /* doi might have changed */
+                L1desc[l1descInx].dataObjInfo = rei.doi;
+	    } else if (L1desc[l1descInx].openType == OPEN_FOR_READ_TYPE ||
+	      L1desc[l1descInx].openType == OPEN_FOR_WRITE_TYPE) {
+                initReiWithDataObjInp (&rei, rsComm,
+                  L1desc[l1descInx].dataObjInp);
+                rei.doi = L1desc[l1descInx].dataObjInfo;
+                status = applyRule ("acPostProcForOpen", NULL, &rei,
+                  NO_SAVE_REI);
+                /* doi might have changed */
+                L1desc[l1descInx].dataObjInfo = rei.doi;
+	    }
+
 	    if (L1desc[l1descInx].oprType == PUT_OPR || 
 	      L1desc[l1descInx].openType == CREATE_TYPE ||
     	      (L1desc[l1descInx].openType == OPEN_FOR_WRITE_TYPE && 
