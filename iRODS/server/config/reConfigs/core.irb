@@ -188,24 +188,28 @@ acSetNumThreads||msiSetNumThreads(default,16,default)|nop
 #      this rule prevents the deletion of any data objects that are stored
 #      in the demoResc8 resource.
 # acPreProcForDelete|$objPath like /tempZone/home/rods/*|msiDeleteDisallowed|nop
-# acPreProcForDelete||nop|nop
 acPreProcForDelete||nop|nop
 #
-# 9) acNoChkFilePathPerm - This rule set the policy for checking the
+# 9) acPostProcForDelete - This rule set the post-processing policy for 
+# deleting data objects.  Currently there is no function written specifically
+# for this rule.
+acPostProcForDelete||nop|nop
+#
+# 10) acNoChkFilePathPerm - This rule set the policy for checking the
 # file path permission when registering physical file path using commands
 # such as ireg. Only one function can be called:
 #    msiNoChkFilePathPerm() - Do not check file path permission when registering
 #    a file. WARNING - This function can create a security problem if used.
 acNoChkFilePathPerm||nop|nop
 #
-# 10) acTrashPolicy - This rule set the policy for whether the trash can
+# 11) acTrashPolicy - This rule set the policy for whether the trash can
 # should be used. The default policy is the trash can will be used. Only
 # one function can be called.
 #    msiNoTrashCan() - Set the policy to no trash can.
 acTrashPolicy||nop|nop
 # acTrashPolicy||msiNoTrashCan|nop
 #
-# 11) acSetPublicUserPolicy - This rule set the policy for the set of 
+# 12) acSetPublicUserPolicy - This rule set the policy for the set of 
 # operations that are allowable for the user "public" Only one function can 
 # be called.
 #    msiSetPublicUserOpr(oprList) - Sets a list of operations that can
@@ -215,7 +219,7 @@ acTrashPolicy||nop|nop
 #      e.g., read%query.
 # acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
 acSetPublicUserPolicy||nop|nop
-# 12) acChkHostAccessControl - This rule checks the access control by host
+# 13) acChkHostAccessControl - This rule checks the access control by host
 # and user based on the the policy given in the HostAccessControl file.
 # The msi is developed by Jean-Yves Nief of IN2P3. Only one function can
 # be called.
@@ -223,7 +227,7 @@ acSetPublicUserPolicy||nop|nop
 #     based on the the policy given in the HostAccessControl file.
 # acChkHostAccessControl||msiCheckHostAccessControl|nop
 acChkHostAccessControl||nop|nop
-# 13) acSetVaultPathPolicy - This rule set the policy for creating the physical
+# 14) acSetVaultPathPolicy - This rule set the policy for creating the physical
 # path in the iRods resource vault. Two functions can be called:
 #    msiSetGraftPathScheme(addUserName,trimDirCnt) - Set the VaultPath scheme
 #      to GRAFT_PATH - graft (add) the logical path to the vault path of the
@@ -248,7 +252,7 @@ acChkHostAccessControl||nop|nop
 # acSetVaultPathPolicy||msiSetRandomScheme|nop
 acSetVaultPathPolicy||msiSetGraftPathScheme(no,1)|nop
 #      
-# 14) acSetReServerNumProc - This rule set the policy for the number of processes
+# 15) acSetReServerNumProc - This rule set the policy for the number of processes
 # to use when running jobs in the irodsReServer. The irodsReServer can now
 # muli-task such that one or two long running jobs cannot block the execution
 # of other jobs. One function can be called:
