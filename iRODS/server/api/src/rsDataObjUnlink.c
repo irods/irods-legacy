@@ -61,19 +61,19 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
     rei.doi = dataObjInfoHead;
 
-    status = applyRule ("acPreProcForDelete", NULL, &rei, NO_SAVE_REI);
+    status = applyRule ("acDataDeletePolicy", NULL, &rei, NO_SAVE_REI);
 
     if (status < 0 && status != NO_MORE_RULES_ERR &&
       status != SYS_DELETE_DISALLOWED) {
         rodsLog (LOG_NOTICE,
-          "rsDataObjUnlink: acPreProcForDelete error for %s. status = %d",
+          "rsDataObjUnlink: acDataDeletePolicy error for %s. status = %d",
           dataObjUnlinkInp->objPath, status);
         return (status);
     }
 
     if (rei.status == SYS_DELETE_DISALLOWED) {
         rodsLog (LOG_NOTICE,
-        "rsDataObjUnlink:disallowed for %s via acPreProcForDelete,status=%d",
+        "rsDataObjUnlink:disallowed for %s via acDataDeletePolicy,status=%d",
           dataObjUnlinkInp->objPath, rei.status);
         return (rei.status);
     }
