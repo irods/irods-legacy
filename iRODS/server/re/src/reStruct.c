@@ -274,6 +274,35 @@ dataObjInp_t *dataObjInp)
 }
 
 int
+initReiWithCollInp (ruleExecInfo_t *rei, rsComm_t *rsComm,
+collInp_t *collCreateInp, collInfo_t *collInfo)
+{
+    int status;
+
+    memset (rei, 0, sizeof (ruleExecInfo_t));
+    memset (collInfo, 0, sizeof (collInfo_t));
+    rei->coi = collInfo;
+    /* try to fill out as much info in collInfo as possible */
+    if ((status = splitPathByKey (collCreateInp->collName, 
+      collInfo->collParentName, collInfo->collName, '/')) < 0) {
+	rodsLog (LOG_ERROR,
+          "initReiWithCollInp: splitPathByKey for %s error, status = %d",
+	  collCreateInp->collName, status);
+	return status;
+    } else {
+	rstrcpy (collInfo->collName, collCreateInp->collName, MAX_NAME_LEN);
+    }
+    rstrcpy (collInfo->collOwnerName, rsComm->clientUser.userName, NAME_LEN);
+    rei->rsComm = rsComm;
+    if (rsComm != NULL) {
+        rei->uoic = &rsComm->clientUser;
+        rei->uoip = &rsComm->proxyUser;
+    }
+
+    return (0);
+}
+
+int
 packRei (rsComm_t *rsComm, ruleExecInfo_t *rei,
 bytesBuf_t **packedReiBBuf)
 {

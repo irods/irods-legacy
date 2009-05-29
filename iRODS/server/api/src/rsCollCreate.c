@@ -18,18 +18,36 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 {
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
+    ruleExecInfo_t rei;
+    collInfo_t collInfo;
 
+    /* XXXXX why getAndConnRemoteZone is not called ? */
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
                                 &rodsServerHost);
     if (status < 0) {
        return(status);
     }
 
+    initReiWithCollInp (&rei, rsComm, collCreateInp, &collInfo);
+
+    status = applyRule ("acPreprocForCollCreate", NULL, &rei, NO_SAVE_REI);
+
+    if (status < 0) {
+        if (rei.status < 0) {
+            status = rei.status;
+        }
+        rodsLog (LOG_ERROR,
+         "rsCollCreate:acPreprocForCollCreate error for %s,stat=%d",
+          collCreateInp->collName, status);
+        return status;
+    }
+
     if (rodsServerHost->localFlag == LOCAL_HOST) {
-        if (getValByKey (&collCreateInp->condInput, RECURSIVE_OPR__KW) != NULL) {
+        if (getValByKey (&collCreateInp->condInput, RECURSIVE_OPR__KW) != 
+	  NULL) {
 	    status = rsMkCollR (rsComm, "/", collCreateInp->collName);
 	    return (status);
-    }
+        }
 #ifdef RODS_CAT
         dataObjInp_t dataObjInp;
         dataObjInfo_t *dataObjInfo = NULL;
@@ -71,6 +89,18 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 #endif
     } else {
         status = rcCollCreate (rodsServerHost->conn, collCreateInp);
+    }
+
+    status = applyRule ("acPostProcForCollCreate", NULL, &rei, NO_SAVE_REI);
+
+    if (status < 0) {
+        if (rei.status < 0) {
+            status = rei.status;
+        }
+        rodsLog (LOG_ERROR,
+         "rsCollCreate:acPostProcForCollCreate error for %s,stat=%d",
+          collCreateInp->collName, status);
+        return status;
     }
 
     return (status);

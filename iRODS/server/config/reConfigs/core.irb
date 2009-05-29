@@ -266,6 +266,17 @@ acSetVaultPathPolicy||msiSetGraftPathScheme(no,1)|nop
 #    msiSetReServerNumProc(numProc) - numProc can be "default" or a number
 #    in the range 1-4. numProc will be set to 1 if "default" is the input. 
 acSetReServerNumProc||msiSetReServerNumProc(default)|nop
+#
+# 18) acPreprocForCollCreate - This is the PreProcessing rule for creating
+#     a collection. Currently there is no function written specifically
+# for this rule.
+acPreprocForCollCreate||nop|nop
+#
+# 19) acPostProcForCollCreate - This rule set the post-processing policy for
+# creating a collection.  Currently there is no function written specifically
+# for this rule.
+acPostProcForCollCreate||nop|nop
+
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate||acSetCreateConditions##acDOC|nop##null

@@ -157,8 +157,8 @@ int mapExternalFuncToInternalProc( char *funcName);
 int zeroRuleExecInfoStruct(ruleExecInfo_t *rei);
 int initReiWithDataObjInp (ruleExecInfo_t *rei, rsComm_t *rsComm,
     dataObjInp_t *dataObjIn);
-int initReiWithDataObjInp (ruleExecInfo_t *rei, rsComm_t *rsComm,
-    dataObjInp_t *dataObjInp);
+int initReiWithCollInp (ruleExecInfo_t *rei, rsComm_t *rsComm,
+collInp_t *collCreateInp, collInfo_t *collInfo);
 int packRei (rsComm_t *rsComm, ruleExecInfo_t *rei, bytesBuf_t **packedReiBBuf);
 int unpackRei (rsComm_t *rsComm, ruleExecInfo_t **rei, bytesBuf_t *packedReiBBuf);
 int touchupPackedRei (rsComm_t *rsComm, ruleExecInfo_t *myRei);
