@@ -292,7 +292,6 @@ collInp_t *collCreateInp, collInfo_t *collInfo)
     } else {
 	rstrcpy (collInfo->collName, collCreateInp->collName, MAX_NAME_LEN);
     }
-    rstrcpy (collInfo->collOwnerName, rsComm->clientUser.userName, NAME_LEN);
     rei->rsComm = rsComm;
     if (rsComm != NULL) {
         rei->uoic = &rsComm->clientUser;
