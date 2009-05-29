@@ -98,6 +98,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     }
 
     rei.doi = dataObjInfoHead;
+    rei.status = status;
     rei.status = applyRule ("acPostProcForDelete", NULL, &rei, NO_SAVE_REI);
 
     if (rei.status < 0) {

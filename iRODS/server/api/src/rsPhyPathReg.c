@@ -232,7 +232,8 @@ rescInfo_t *rescInfo)
         ruleExecInfo_t rei;
         initReiWithDataObjInp (&rei, rsComm, phyPathRegInp);
 	rei.doi = &dataObjInfo;
-        status = applyRule ("acPostProcForFilePathReg", NULL, &rei,
+	rei.status = status;
+        rei.status = applyRule ("acPostProcForFilePathReg", NULL, &rei,
           NO_SAVE_REI);
     }
 

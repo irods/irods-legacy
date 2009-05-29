@@ -67,7 +67,8 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
                 initReiWithDataObjInp (&rei, rsComm,
                   L1desc[l1descInx].dataObjInp);
                 rei.doi = L1desc[l1descInx].dataObjInfo;
-                status = applyRule ("acPostProcForCreate", NULL, &rei,
+		rei.status = status;
+                rei.status = applyRule ("acPostProcForCreate", NULL, &rei,
                   NO_SAVE_REI);
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -76,7 +77,8 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
                 initReiWithDataObjInp (&rei, rsComm,
                   L1desc[l1descInx].dataObjInp);
                 rei.doi = L1desc[l1descInx].dataObjInfo;
-                status = applyRule ("acPostProcForOpen", NULL, &rei,
+		rei.status = status;
+                rei.status = applyRule ("acPostProcForOpen", NULL, &rei,
                   NO_SAVE_REI);
                 /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -112,7 +114,8 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 		    }
 	        }
 #else
-	        status = applyRule ("acPostProcForPut", NULL, &rei, 
+		rei.status = status;
+	        rei.status = applyRule ("acPostProcForPut", NULL, &rei, 
 	          NO_SAVE_REI);
 	        /* doi might have changed */
 	        L1desc[l1descInx].dataObjInfo = rei.doi;
@@ -120,8 +123,9 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	    } else if (L1desc[l1descInx].oprType == COPY_DEST) {
                 initReiWithDataObjInp (&rei, rsComm, 
 		  L1desc[l1descInx].dataObjInp);
-		  rei.doi = L1desc[l1descInx].dataObjInfo;
-		  status = applyRule ("acPostProcForCopy", NULL, &rei,
+		rei.doi = L1desc[l1descInx].dataObjInfo;
+		rei.status = status;
+		rei.status = applyRule ("acPostProcForCopy", NULL, &rei,
 		    NO_SAVE_REI);
             /* doi might have changed */
                 L1desc[l1descInx].dataObjInfo = rei.doi;
