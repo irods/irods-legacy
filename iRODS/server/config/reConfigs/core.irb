@@ -276,6 +276,20 @@ acPreprocForCollCreate||nop|nop
 # creating a collection.  Currently there is no function written specifically
 # for this rule.
 acPostProcForCollCreate||nop|nop
+#
+# 20) acPreProcForModifyUser - This rule set the post-processing policy for
+# modifying the properties of a user. 
+# Option specifies the modifying-action being performed by the administraor
+#
+acPreProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
+#
+# 21) acPostProcForModifyUser - This rule set the post-processing policy for
+# modifying the properties of a user.
+# Option specifies the modifying-action being performed by the administraor
+#
+acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
+
+
 
 # ----------------------------------------------------------------------------
 # These rules are for testing only
@@ -297,3 +311,4 @@ acGetIcatResults(*Action,*Condition,*GenQOut)|*Action == list|msiMakeQuery("DATA
 ##
 acPurgeFiles(*Condition)|(*Condition == null) %% (*Condition == '')|msiGetIcatTime(*Time,unix)##acGetIcatResults(remove,DATA_EXPIRY < '*Time',*List)##forEachExec(*List,msiDataObjUnlink(*List,*Status)##msiGetValByKey(*List,DATA_NAME,*D)##msiGetValByKey(*List,COLL_NAME,*E)##writeLine(stdout,Purged File *E/*D at *Time ),nop)|nop##nop
 acPurgeFiles(*Condition)||msiGetIcatTime(*Time,unix)##acGetIcatResults(remove,DATA_EXPIRY < '*Time' AND *Condition,*List)##forEachExec(*List,msiDataObjUnlink(*List,*Status)##msiGetValByKey(*List,DATA_NAME,*D)##msiGetValByKey(*List,COLL_NAME,*E)##writeLine(stdout,Purged File *E/*D at *Time ),nop)|nop##nop
+acConvertToInt(*R)||assign(*A,$sysUidClient)##assign($sysUidClient,*R)##assign(*K, $sysUidClient)##assign(*R,*K)##assign($sysUidClient,*A)|nop
