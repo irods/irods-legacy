@@ -45,17 +45,55 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
 {
     int status;
 
+    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    int i, argc;
+    ruleExecInfo_t rei;
+ 
     rodsLog (LOG_DEBUG,
 	     "_rsUserAdmin arg0=%s", 
 	     userAdminInp->arg0);
 
     if (strcmp(userAdminInp->arg0,"userpw")==0) {
+
+      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+      args[0] = userAdminInp->arg1; /* username */
+      args[1] = userAdminInp->arg2; /* option */ 
+      args[2] = userAdminInp->arg3; /* newValue */
+      argc = 3;
+      i =  applyRuleArg("acPreProcForModifyUser",args,argc, &rei, NO_SAVE_REI);
+      if (i < 0) {
+	if (rei.status < 0) {
+	  i = rei.status;
+	}
+	rodsLog (LOG_ERROR,
+		 "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d",
+		 userAdminInp->arg1,userAdminInp->arg2, i);
+	return i;
+      }
+      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
        status = chlModUser(rsComm, 
 			   userAdminInp->arg1,
 			   userAdminInp->arg2,
 			   userAdminInp->arg3);
        if (status != 0) chlRollback(rsComm);
        return(status);
+
+      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+       i =  applyRuleArg("acPostProcForModifyUser",args,argc, &rei, NO_SAVE_REI);
+       if (i < 0) {
+	 if (rei.status < 0) {
+	   i = rei.status;
+	 }
+	 rodsLog (LOG_ERROR,
+		 "rsUserAdmin:acPostProcForModifyUser error for %s and option %s,stat=%d",
+		 userAdminInp->arg1,userAdminInp->arg2, i);
+	 return i;
+       }
+ 
+      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
+
     }
 
     return(CAT_INVALID_ARGUMENT);
