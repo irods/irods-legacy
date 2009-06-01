@@ -11,8 +11,9 @@ printHello||print_hello|nop
 ##
 ## These are sys admin rules for creating and deleting users and renaming
 ## the local zone.
-acCreateUser|$otherUserName == anonymous|msiCreateUser##msiCommit|msiRollback##nop
-acCreateUser||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
+acCreateUser||acPreProcForCreateUser##acCreateUserF1##acPostProcForCreateUser|nop##nop##nop
+acCreateUserF1|$otherUserName == anonymous|msiCreateUser##msiCommit|msiRollback##nop
+acCreateUserF1||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
 acVacuum(*arg1)||delayExec(*arg1,msiVacuum,nop)|nop
 acCreateDefaultCollections||acCreateUserZoneCollections|nop
 acCreateUserZoneCollections||acCreateCollByAdmin(/$rodsZoneProxy/home,$otherUserName)##acCreateCollByAdmin(/$rodsZoneProxy/trash/home,$otherUserName)|nop##nop
@@ -20,7 +21,8 @@ acCreateUserZoneCollections||acCreateCollByAdmin(/$rodsZoneProxy/home,$otherUser
 acCreateCollByAdmin(*parColl,*childColl)||msiCreateCollByAdmin(*parColl,*childColl)|nop
 #
 #
-acDeleteUser||acDeleteDefaultCollections##msiDeleteUser##msiCommit|msiRollback##msiRollback##nop
+acDeleteUser||acPreProcForDeleteUser##acDeleteUserF1##acPostProcForDeleteUser|nop##nop##nop
+acDeleteUserF1||acDeleteDefaultCollections##msiDeleteUser##msiCommit|msiRollback##msiRollback##nop
 acDeleteDefaultCollections||acDeleteUserZoneCollections|nop
 acDeleteUserZoneCollections||acDeleteCollByAdmin(/$rodsZoneProxy/home,$otherUserName)##acDeleteCollByAdmin(/$rodsZoneProxy/trash/home,$otherUserName)|nop##nop
 #acDeleteCollByAdmin||msiDeleteCollByAdmin($ARG[0],$ARG[1])|nop
@@ -277,7 +279,7 @@ acPreprocForCollCreate||nop|nop
 # for this rule.
 acPostProcForCollCreate||nop|nop
 #
-# 20) acPreProcForModifyUser - This rule set the post-processing policy for
+# 20) acPreProcForModifyUser - This rule set the pre-processing policy for
 # modifying the properties of a user. 
 # Option specifies the modifying-action being performed by the administraor
 #
@@ -288,9 +290,41 @@ acPreProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 # Option specifies the modifying-action being performed by the administraor
 #
 acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
-
-
-
+#
+# 22) acPreProcForModifyAVUmetadata - This rule set the pre-processing policy for
+# adding/deleting and copying the AVUmetadata for data, collection, user and resources.
+# option= add, adda, rm, rmw, rmi, cp
+# item type= -d,-d,-c,-C,-r,-R,-u,-U 
+#
+acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
+#
+# 23) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
+# adding/deleting and copying the AVUmetadata for data, collection, user and resources.
+# option= add, adda, rm, rmw, rmi, cp
+# item type= -d,-d,-c,-C,-r,-R,-u,-U
+#
+acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
+#
+# 24) acPreProcForCreateUser - This rule set the pre-processing policy for
+# creating a new user.
+#
+acPreProcForCreateUser||nop|nop
+#
+# 25) acPostProcForCreateUser - This rule set the post-processing policy for
+# creating a new user.
+#
+acPostProcForCreateUser||nop|nop
+#
+# 26) acPreProcForDeleteUser - This rule set the pre-processing policy for
+# deleting an old user.
+#
+acPreProcForDeleteUser||nop|nop
+#
+# 27) acPostProcForDeleteUser - This rule set the post-processing policy for
+# deleting an old user.
+#
+acPostProcForDeleteUser||nop|nop
+#
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate||acSetCreateConditions##acDOC|nop##null
