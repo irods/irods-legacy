@@ -114,9 +114,12 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 #      by class. 
 #    msiStageDataObj(cacheResc) - stage a copy of the data object in the 
 #      cacheResc before opening the data object. 
-# acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
+#    The $writeFlag session variable has been created to be used as a condition
+#    for differentiating between open for read ($writeFlag == 0) and 
+#    write ($writeFlag == 1). e.g. :
 # acPreprocForDataObjOpen|$writeFlag == 0|msiStageDataObj(demoResc8)|nop
 # acPreprocForDataObjOpen|$writeFlag == 1|nop|nop
+# acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
 # acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
 acPreprocForDataObjOpen||nop|nop
 # acPreprocForDataObjOpen||writeLine(serverLog,$rescName)|nop
@@ -270,7 +273,7 @@ acSetVaultPathPolicy||msiSetGraftPathScheme(no,1)|nop
 acSetReServerNumProc||msiSetReServerNumProc(default)|nop
 #
 # 18) acPreprocForCollCreate - This is the PreProcessing rule for creating
-#     a collection. Currently there is no function written specifically
+# a collection. Currently there is no function written specifically
 # for this rule.
 acPreprocForCollCreate||nop|nop
 #
@@ -278,49 +281,58 @@ acPreprocForCollCreate||nop|nop
 # creating a collection.  Currently there is no function written specifically
 # for this rule.
 acPostProcForCollCreate||nop|nop
+# 20) acPreprocForRmColl - This is the PreProcessing rule for removing
+# a collection. Currently there is no function written specifically
+# for this rule.
+acPreprocForRmColl||nop|nop
 #
-# 20) acPreProcForModifyUser - This rule set the pre-processing policy for
+# 21) acPostProcForRmColl - This rule set the post-processing policy for
+# removing a collection. Currently there is no function written specifically
+# for this rule.
+acPostProcForRmColl||nop|nop
+#
+# 22) acPreProcForModifyUser - This rule set the pre-processing policy for
 # modifying the properties of a user. 
 # Option specifies the modifying-action being performed by the administraor
 #
 acPreProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 #
-# 21) acPostProcForModifyUser - This rule set the post-processing policy for
+# 23) acPostProcForModifyUser - This rule set the post-processing policy for
 # modifying the properties of a user.
 # Option specifies the modifying-action being performed by the administraor
 #
 acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 #
-# 22) acPreProcForModifyAVUmetadata - This rule set the pre-processing policy for
+# 24) acPreProcForModifyAVUmetadata - This rule set the pre-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
 # option= add, adda, rm, rmw, rmi, cp
 # item type= -d,-d,-c,-C,-r,-R,-u,-U 
 #
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
 #
-# 23) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
+# 25) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
 # option= add, adda, rm, rmw, rmi, cp
 # item type= -d,-d,-c,-C,-r,-R,-u,-U
 #
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
 #
-# 24) acPreProcForCreateUser - This rule set the pre-processing policy for
+# 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
 #
 acPreProcForCreateUser||nop|nop
 #
-# 25) acPostProcForCreateUser - This rule set the post-processing policy for
+# 27) acPostProcForCreateUser - This rule set the post-processing policy for
 # creating a new user.
 #
 acPostProcForCreateUser||nop|nop
 #
-# 26) acPreProcForDeleteUser - This rule set the pre-processing policy for
+# 28) acPreProcForDeleteUser - This rule set the pre-processing policy for
 # deleting an old user.
 #
 acPreProcForDeleteUser||nop|nop
 #
-# 27) acPostProcForDeleteUser - This rule set the post-processing policy for
+# 29) acPostProcForDeleteUser - This rule set the post-processing policy for
 # deleting an old user.
 #
 acPostProcForDeleteUser||nop|nop
