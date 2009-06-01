@@ -93,9 +93,8 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
 				  modAVUMetadataInp->arg5);
-       if (status < 0) return(status);
     }
-    if (strcmp(modAVUMetadataInp->arg0,"adda")==0) {
+    else if (strcmp(modAVUMetadataInp->arg0,"adda")==0) {
        status = chlAddAVUMetadata(rsComm, 1,
 				  modAVUMetadataInp->arg1,
 				  modAVUMetadataInp->arg2,
