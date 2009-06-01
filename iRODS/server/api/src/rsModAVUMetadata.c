@@ -61,6 +61,31 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 {
     int status;
 
+    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    int i, argc;
+    ruleExecInfo_t rei;
+
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    args[0] = modAVUMetadataInp->arg0; /* option add, adda, rm, rmw, rmi, cp*/
+    args[1] = modAVUMetadataInp->arg1; /* item type -d,-d,-c,-C,-r,-R,-u,-U */
+    args[2] = modAVUMetadataInp->arg2; /* item name */
+    args[3] = modAVUMetadataInp->arg3; /* attr name */
+    args[4] = modAVUMetadataInp->arg4; /* attr val */
+    args[5] = modAVUMetadataInp->arg5; /* attr unit */
+    argc = 6;
+    i =  applyRuleArg("acPreProcForModifyAVUMetadata",args,argc, &rei, NO_SAVE_REI);
+    if (i < 0) {
+      if (rei.status < 0) {
+	i = rei.status;
+      }
+      rodsLog (LOG_ERROR,
+	       "rsModAVUMetadata:acPreProcForModifyAVUMetadata error for %s of type %s and option %s,stat=%d",
+	       modAVUMetadataInp->arg2,modAVUMetadataInp->arg1,modAVUMetadataInp->arg0, i);
+      return i;
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
+
     if (strcmp(modAVUMetadataInp->arg0,"add")==0) {
        status = chlAddAVUMetadata(rsComm, 0,
 				  modAVUMetadataInp->arg1,
@@ -68,7 +93,7 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
 				  modAVUMetadataInp->arg5);
-       return(status);
+       if (status < 0) return(status);
     }
     if (strcmp(modAVUMetadataInp->arg0,"adda")==0) {
        status = chlAddAVUMetadata(rsComm, 1,
@@ -77,45 +102,55 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
 				  modAVUMetadataInp->arg5);
-       return(status);
     }
-    if (strcmp(modAVUMetadataInp->arg0,"rmw")==0) {
+    else if (strcmp(modAVUMetadataInp->arg0,"rmw")==0) {
        status = chlDeleteAVUMetadata(rsComm, 1,
 				  modAVUMetadataInp->arg1,
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
 				  modAVUMetadataInp->arg5);
-       return(status);
     }
-    if (strcmp(modAVUMetadataInp->arg0,"rmi")==0) {
+    else if (strcmp(modAVUMetadataInp->arg0,"rmi")==0) {
        status = chlDeleteAVUMetadata(rsComm, 2,
 				  modAVUMetadataInp->arg1,
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
 				  modAVUMetadataInp->arg5);
-       return(status);
     }
-    if (strcmp(modAVUMetadataInp->arg0,"rm")==0) {
+    else if (strcmp(modAVUMetadataInp->arg0,"rm")==0) {
        status = chlDeleteAVUMetadata(rsComm, 0,
 				  modAVUMetadataInp->arg1,
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
 				  modAVUMetadataInp->arg5);
-       return(status);
     }
-    if (strcmp(modAVUMetadataInp->arg0,"cp")==0) {
+    else if (strcmp(modAVUMetadataInp->arg0,"cp")==0) {
        status = chlCopyAVUMetadata(rsComm, 
 				  modAVUMetadataInp->arg1,
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4);
-       return(status);
     }
+    else {
+      return(CAT_INVALID_ARGUMENT);
+    }      
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    i =  applyRuleArg("acPostProcForModifyAVUMetadata",args,argc, &rei, NO_SAVE_REI);
+    if (i < 0) {
+      if (rei.status < 0) {
+        i = rei.status;
+      }
+      rodsLog (LOG_ERROR,
+               "rsModAVUMetadata:acPostProcForModifyAVUMetadata error for %s of type %s and option %s,stat=%d",
+               modAVUMetadataInp->arg2,modAVUMetadataInp->arg1,modAVUMetadataInp->arg0, i);
+      return i;
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-    return(CAT_INVALID_ARGUMENT);
+    return(status);
 
 } 
 #endif
