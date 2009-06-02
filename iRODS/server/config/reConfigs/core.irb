@@ -295,11 +295,15 @@ acPostProcForRmColl||nop|nop
 # modifying the properties of a user. 
 # Option specifies the modifying-action being performed by the administraor
 #
+#acPreProcForModifyUser(*UserName,*Option,*NewValue)||writeLine(serverLog,"TEST:acPreProcForModifyUser: *UserName,*Option,*NewValue")|nop
+#
 acPreProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 #
 # 23) acPostProcForModifyUser - This rule set the post-processing policy for
 # modifying the properties of a user.
 # Option specifies the modifying-action being performed by the administraor
+#
+#acPostProcForModifyUser(*UserName,*Option,*NewValue)||writeLine(serverLog,"TEST:acPostProcForModifyUser: *UserName,*Option,*NewValue")|nop
 #
 acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 #
@@ -324,21 +328,26 @@ acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit
 # 26) acPreProcForCreateUser - This rule set the pre-processing policy for
 # creating a new user.
 #
-acPreProcForCreateUser||nop|nop
+#acPreProcForCreateUser||writeLine(serverLog,"TEST:acPreProcForCreateUser")|nop
 #
+acPreProcForCreateUser||nop|nop
 # 27) acPostProcForCreateUser - This rule set the post-processing policy for
 # creating a new user.
+#
+#acPostProcForCreateUser||writeLine(serverLog,"TEST:acPostProcForCreateUser")|nop
 #
 acPostProcForCreateUser||nop|nop
 #
 # 28) acPreProcForDeleteUser - This rule set the pre-processing policy for
 # deleting an old user.
 #
+#acPreProcForDeleteUser||writeLine(serverLog,"TEST:acPreProcForDeleteUser")|nop
 acPreProcForDeleteUser||nop|nop
 #
 # 29) acPostProcForDeleteUser - This rule set the post-processing policy for
 # deleting an old user.
 #
+#acPostProcForDeleteUser||writeLine(serverLog,"TEST:acPostProcForDeleteUser")|nop
 acPostProcForDeleteUser||nop|nop
 #
 # 28) acPreProcForCreateResource - This rule set the pre-processing policy for
@@ -429,22 +438,30 @@ acPostProcForModifyCollMeta||nop|nop
 # 44) acPreProcForModifyDataObjMeta - This rule set the pre-processing policy for
 # modifying system metadata of a data object.
 #
+#acPreProcForModifyDataObjMeta||writeLine(serverLog,"TEST:acPreProcForModifyDataObjMeta")|nop
+#
 acPreProcForModifyDataObjMeta||nop|nop
 #
 # 43) acPostProcForModifyDataObjMeta - This rule set the post-processing policy for
 # modifying system metadata of a data object.
+#
+#acPostProcForModifyDataObjMeta||writeLine(serverLog,"TEST:acPostProcForModifyDataObjMeta")|nop
 #
 acPostProcForModifyDataObjMeta||nop|nop
 #
 # 44) acPreProcForModifyAccessControl - This rule set the pre-processing policy for
 # access control 
 #
-acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*path)||nop|nop
+#acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||writeLine(serverLog,"TEST:acPreProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path")|nop
+#
+acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||nop|nop
 #
 # 45) acPostProcForModifyAccessControl - This rule set the post-processing policy for
 # access control
 #
-acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*path)||nop|nop
+#acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||writeLine(serverLog,"TEST:acPostProcForModifyAccessControl: *RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path")|nop
+#
+acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||nop|nop
 #
 # ----------------------------------------------------------------------------
 # These rules are for testing only
