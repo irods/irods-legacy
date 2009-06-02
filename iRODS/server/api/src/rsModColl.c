@@ -38,6 +38,12 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
     collInfo_t collInfo;
     char *tmpStr;
 
+    int i;
+    ruleExecInfo_t rei2;
+
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    rei2.rsComm = rsComm;
+
     memset (&collInfo, 0, sizeof (collInfo));
 
     rstrcpy (collInfo.collName, modCollInp->collName, MAX_NAME_LEN);
@@ -54,8 +60,37 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
       COLLECTION_INFO2_KW)) != NULL) {
         rstrcpy (collInfo.collInfo2, tmpStr, MAX_NAME_LEN);
     }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    rei2.coi = &collInfo;
+    i =  applyRule("acPreProcForModifyColl",NULL, &rei2, NO_SAVE_REI);
+    if (i < 0) {
+      if (rei2.status < 0) {
+	i = rei2.status;
+      }
+      rodsLog (LOG_ERROR,
+	       "rsGeneralAdmin:acPreProcForModifyColl error for %s,stat=%d",
+	       modCollInp->collName, i);
+      return i;
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
     status = chlModColl (rsComm, &collInfo);
+
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    if (status >= 0) {
+      i =  applyRule("acPostProcForModifyColl",NULL, &rei2, NO_SAVE_REI);
+      if (i < 0) {
+	if (rei2.status < 0) {
+	  i = rei2.status;
+	}
+	rodsLog (LOG_ERROR,
+		 "rsGeneralAdmin:acPostProcForModifyColl error for %s,stat=%d",
+		 modCollInp->collName, i);
+	return i;
+      }
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
     /* XXXX need to commit */
     if (status >= 0) status = chlCommit(rsComm);
 

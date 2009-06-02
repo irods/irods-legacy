@@ -52,6 +52,9 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
     int i, argc;
     ruleExecInfo_t rei2;
 
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    rei2.rsComm = rsComm;
+
     rodsLog (LOG_DEBUG,
 	     "_rsGeneralAdmin arg0=%s", 
 	     generalAdminInp->arg0);

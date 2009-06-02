@@ -47,8 +47,11 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
     int i, argc;
-    ruleExecInfo_t rei;
+    ruleExecInfo_t rei2;
  
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    rei2.rsComm = rsComm;
+
     rodsLog (LOG_DEBUG,
 	     "_rsUserAdmin arg0=%s", 
 	     userAdminInp->arg0);
@@ -60,10 +63,10 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
       args[1] = userAdminInp->arg2; /* option */ 
       args[2] = userAdminInp->arg3; /* newValue */
       argc = 3;
-      i =  applyRuleArg("acPreProcForModifyUser",args,argc, &rei, NO_SAVE_REI);
+      i =  applyRuleArg("acPreProcForModifyUser",args,argc, &rei2, NO_SAVE_REI);
       if (i < 0) {
-	if (rei.status < 0) {
-	  i = rei.status;
+	if (rei2.status < 0) {
+	  i = rei2.status;
 	}
 	rodsLog (LOG_ERROR,
 		 "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d",
@@ -80,10 +83,10 @@ _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
        return(status);
 
       /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-       i =  applyRuleArg("acPostProcForModifyUser",args,argc, &rei, NO_SAVE_REI);
+       i =  applyRuleArg("acPostProcForModifyUser",args,argc, &rei2, NO_SAVE_REI);
        if (i < 0) {
-	 if (rei.status < 0) {
-	   i = rei.status;
+	 if (rei2.status < 0) {
+	   i = rei2.status;
 	 }
 	 rodsLog (LOG_ERROR,
 		 "rsUserAdmin:acPostProcForModifyUser error for %s and option %s,stat=%d",

@@ -43,6 +43,12 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     dataObjInfo_t *dataObjInfo;
     keyValPair_t *regParam;
 
+    int i;
+    ruleExecInfo_t rei2;
+
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    rei2.rsComm = rsComm;
+
     regParam = modDataObjMetaInp->regParam;
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
@@ -53,7 +59,36 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     /* In dataObjInfo, need just dataId. But it will accept objPath too,
      * but less efficient 
      */
+
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    rei2.doi = dataObjInfo;
+    i =  applyRule("acPreProcForModifyDataObjMeta",NULL, &rei2, NO_SAVE_REI);
+    if (i < 0) {
+      if (rei2.status < 0) {
+        i = rei2.status;
+      }
+      rodsLog (LOG_ERROR,
+               "rsGeneralAdmin:acPreProcForModifyDataObjMeta error stat=%d", i);
+      return i;
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
     status = chlModDataObjMeta (rsComm, dataObjInfo, regParam);
+
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    if (status >= 0) {
+      i =  applyRule("acPostProcForModifyDataObjMeta",NULL, &rei2, NO_SAVE_REI);
+      if (i < 0) {
+        if (rei2.status < 0) {
+          i = rei2.status;
+        }
+        rodsLog (LOG_ERROR,
+                 "rsGeneralAdmin:acPostProcForModifyDataObjMeta error stat=%d",i);
+        return i;
+      }
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+
     return (status);
 #else
     return (SYS_NO_RCAT_SERVER_ERR);
