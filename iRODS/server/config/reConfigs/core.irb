@@ -417,15 +417,15 @@ acPreProcForModifyResourceGroup(*ResourceGroupName,*Option,*ResourceName)||nop|n
 #
 acPostProcForModifyResourceGroup(*ResourceGroupName,*Option,*ResourceName)||nop|nop
 #
-# 42) acPreProcForModifyColl - This rule set the pre-processing policy for
+# 42) acPreProcForModifyCollMeta - This rule set the pre-processing policy for
 # modifying system metadata of a collection.
 # 
-acPreProcForModifyColl||nop|nop
+acPreProcForModifyCollMeta||nop|nop
 #
-# 43) acPostProcForModifyColl - This rule set the post-processing policy for
+# 43) acPostProcForModifyCollMeta - This rule set the post-processing policy for
 # modifying system metadata of a collection.
 #
-acPostProcForModifyColl||nop|nop
+acPostProcForModifyCollMeta||nop|nop
 # 44) acPreProcForModifyDataObjMeta - This rule set the pre-processing policy for
 # modifying system metadata of a data object.
 #

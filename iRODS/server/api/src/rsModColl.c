@@ -62,13 +62,13 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     rei2.coi = &collInfo;
-    i =  applyRule("acPreProcForModifyColl",NULL, &rei2, NO_SAVE_REI);
+    i =  applyRule("acPreProcForModifyCollMeta",NULL, &rei2, NO_SAVE_REI);
     if (i < 0) {
       if (rei2.status < 0) {
 	i = rei2.status;
       }
       rodsLog (LOG_ERROR,
-	       "rsGeneralAdmin:acPreProcForModifyColl error for %s,stat=%d",
+	       "rsGeneralAdmin:acPreProcForModifyCollMeta error for %s,stat=%d",
 	       modCollInp->collName, i);
       return i;
     }
@@ -78,13 +78,13 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     if (status >= 0) {
-      i =  applyRule("acPostProcForModifyColl",NULL, &rei2, NO_SAVE_REI);
+      i =  applyRule("acPostProcForModifyCollMeta",NULL, &rei2, NO_SAVE_REI);
       if (i < 0) {
 	if (rei2.status < 0) {
 	  i = rei2.status;
 	}
 	rodsLog (LOG_ERROR,
-		 "rsGeneralAdmin:acPostProcForModifyColl error for %s,stat=%d",
+		 "rsGeneralAdmin:acPostProcForModifyCollMeta error for %s,stat=%d",
 		 modCollInp->collName, i);
 	return i;
       }
