@@ -499,10 +499,11 @@ off_t offset)
 {
     int status, myError;
     char irodsPath[MAX_NAME_LEN];
-    dataObjWriteInp_t dataObjWriteInp;
+    openedDataObjInp_t dataObjWriteInp;
     bytesBuf_t dataObjWriteInpBBuf;
 
 
+    bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
         dataObjWriteInpBBuf.buf = (void *) buf;
         dataObjWriteInpBBuf.len = size;
@@ -623,10 +624,11 @@ off_t offset)
     int status;
 
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
-        dataObjReadInp_t dataObjReadInp;
+        openedDataObjInp_t dataObjReadInp;
 	bytesBuf_t dataObjReadOutBBuf;
 	int myError;
 
+        bzero (&dataObjReadInp, sizeof (dataObjReadInp));
         dataObjReadOutBBuf.buf = buf;
         dataObjReadOutBBuf.len = size;
         dataObjReadInp.l1descInx = IFuseDesc[descInx].iFd;
@@ -659,10 +661,11 @@ ifuseLseek (char *path, int descInx, off_t offset)
 
     if (IFuseDesc[descInx].offset != offset) {
 	if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
-            fileLseekInp_t dataObjLseekInp;
+            openedDataObjInp_t dataObjLseekInp;
             fileLseekOut_t *dataObjLseekOut = NULL;
 
-            dataObjLseekInp.fileInx = IFuseDesc[descInx].iFd;
+	    bzero (&dataObjLseekInp, sizeof (dataObjLseekInp));
+            dataObjLseekInp.l1descInx = IFuseDesc[descInx].iFd;
             dataObjLseekInp.offset = offset;
             dataObjLseekInp.whence = SEEK_SET;
 
@@ -832,8 +835,9 @@ closeIrodsFd (int fd)
 {
     int status;
 
-    dataObjCloseInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjCloseInp;
 
+    bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = fd;
     status = rcDataObjClose (DefConn.conn, &dataObjCloseInp);
 
