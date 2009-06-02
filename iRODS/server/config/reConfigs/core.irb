@@ -386,37 +386,65 @@ acPostProcForDeleteResource(*RescName)||nop|nop
 # 36) acPreProcForDeleteToken - This rule set the pre-processing policy for
 # deleting an old token.
 #
-acPreProcForCreateToken(*TNameSpace,*TName)||nop|nop
+acPreProcForDeleteToken(*TNameSpace,*TName)||nop|nop
 #
 # 37) acPostProcForDeleteToken - This rule set the post-processing policy for
 # deleting an old token.
 #
-acPostProcForCreateToken(*TNameSpace,*TName)||nop|nop
+acPostProcForDeleteToken(*TNameSpace,*TName)||nop|nop
 #
 # 38) acPreProcForModifyResource - This rule set the pre-processing policy for
 # modifying the properties of a resource.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPreProcForModifyUser(*ResourceName,*Option,*NewValue)||nop|nop
+acPreProcForModifyResource(*ResourceName,*Option,*NewValue)||nop|nop
 #
 # 39) acPostProcForModifyResource - This rule set the post-processing policy for
 # modifying the properties of a resource.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPostProcForModifyUser(*ResourceName,*Option,*NewValue)||nop|nop
+acPostProcForModifyResource(*ResourceName,*Option,*NewValue)||nop|nop
 #
 # 40) acPreProcForModifyResourceGroup - This rule set the pre-processing policy for
 # modifying membership of a resource group.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPreProcForModifyUserGroup(*ResourceGroupName,*Option,*ResourceName)||nop|nop
+acPreProcForModifyResourceGroup(*ResourceGroupName,*Option,*ResourceName)||nop|nop
 #
 # 41) acPostProcForModifyResourceGroup - This rule set the post-processing policy for
 # modifying membership of a resource group.
 # Option specifies the modifying-action being performed by the administraor
 #
-acPostProcForModifyUserGroup(*ResourceGroupName,*Option,*ResourceName)||nop|nop
-
+acPostProcForModifyResourceGroup(*ResourceGroupName,*Option,*ResourceName)||nop|nop
+#
+# 42) acPreProcForModifyColl - This rule set the pre-processing policy for
+# modifying system metadata of a collection.
+# 
+acPreProcForModifyColl||nop|nop
+#
+# 43) acPostProcForModifyColl - This rule set the post-processing policy for
+# modifying system metadata of a collection.
+#
+acPostProcForModifyColl||nop|nop
+# 44) acPreProcForModifyDataObjMeta - This rule set the pre-processing policy for
+# modifying system metadata of a data object.
+#
+acPreProcForModifyDataObjMeta||nop|nop
+#
+# 43) acPostProcForModifyDataObjMeta - This rule set the post-processing policy for
+# modifying system metadata of a data object.
+#
+acPostProcForModifyDataObjMeta||nop|nop
+#
+# 44) acPreProcForModifyAccessControl - This rule set the pre-processing policy for
+# access control 
+#
+acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*path)||nop|nop
+#
+# 45) acPostProcForModifyAccessControl - This rule set the post-processing policy for
+# access control
+#
+acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*path)||nop|nop
 #
 # ----------------------------------------------------------------------------
 # These rules are for testing only
