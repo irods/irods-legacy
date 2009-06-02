@@ -308,12 +308,16 @@ acPostProcForModifyUser(*UserName,*Option,*NewValue)||nop|nop
 # option= add, adda, rm, rmw, rmi, cp
 # item type= -d,-d,-c,-C,-r,-R,-u,-U 
 #
+#acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine(serverLog,"TEST:acPreProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
+#
 acPreProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
 #
 # 25) acPostProcForModifyAVUmetadata - This rule set the post-processing policy for
 # adding/deleting and copying the AVUmetadata for data, collection, user and resources.
 # option= add, adda, rm, rmw, rmi, cp
 # item type= -d,-d,-c,-C,-r,-R,-u,-U
+#
+#acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||writeLine(serverLog,"TEST:acPostProcForModifyAVUMetadata:*Option,*ItemType,*ItemName")|nop
 #
 acPostProcForModifyAVUMetadata(*Option,*ItemType,*ItemName,*AName,*AValue,*AUnit)||nop|nop
 #
@@ -336,6 +340,83 @@ acPreProcForDeleteUser||nop|nop
 # deleting an old user.
 #
 acPostProcForDeleteUser||nop|nop
+#
+# 28) acPreProcForCreateResource - This rule set the pre-processing policy for
+# creating a new resource.
+#
+acPreProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescZoneName)||nop|nop
+#
+# 29) acPostProcForCreateResource - This rule set the post-processing policy for
+# creating a new resource.
+#
+acPostProcForCreateResource(*RescName,*RescType,*RescClass,*RescLoc,*RescVaultPath,*RescZoneName)||nop|nop
+#
+# 30) acPreProcForCreateToken - This rule set the pre-processing policy for
+# creating a new token.
+#
+acPreProcForCreateToken(*TNameSpace,*TName,*ValueOne,*ValueTwo,*ValueThree,*TComment)||nop|nop
+#
+# 31) acPostProcForCreateToken - This rule set the post-processing policy for
+# creating a new token.
+#
+acPostProcForCreateToken(*TNameSpace,*TName,*ValueOne,*ValueTwo,*ValueThree,*TComment)||nop|nop
+#
+# 32) acPreProcForModifyUserGroup - This rule set the pre-processing policy for
+# modifying membership of a user group.
+# Option specifies the modifying-action being performed by the administraor
+#
+acPreProcForModifyUserGroup(*GroupName,*Option,*UserName,*ZoneName)||nop|nop
+#
+# 33) acPostProcForModifyUserGroup - This rule set the post-processing policy for
+# modifying membership of a user group.
+# Option specifies the modifying-action being performed by the administraor
+#
+acPostProcForModifyUserGroup(*GroupName,*Option,*UserName,*ZoneName)||nop|nop
+#
+# 34) acPreProcForDeleteResource - This rule set the pre-processing policy for
+# deleting an old resource.
+#
+acPreProcForDeleteResource(*RescName)||nop|nop
+#
+# 35) acPostProcForDeleteResource - This rule set the post-processing policy for
+# deleting an old resource.
+#
+acPostProcForDeleteResource(*RescName)||nop|nop
+#
+# 36) acPreProcForDeleteToken - This rule set the pre-processing policy for
+# deleting an old token.
+#
+acPreProcForCreateToken(*TNameSpace,*TName)||nop|nop
+#
+# 37) acPostProcForDeleteToken - This rule set the post-processing policy for
+# deleting an old token.
+#
+acPostProcForCreateToken(*TNameSpace,*TName)||nop|nop
+#
+# 38) acPreProcForModifyResource - This rule set the pre-processing policy for
+# modifying the properties of a resource.
+# Option specifies the modifying-action being performed by the administraor
+#
+acPreProcForModifyUser(*ResourceName,*Option,*NewValue)||nop|nop
+#
+# 39) acPostProcForModifyResource - This rule set the post-processing policy for
+# modifying the properties of a resource.
+# Option specifies the modifying-action being performed by the administraor
+#
+acPostProcForModifyUser(*ResourceName,*Option,*NewValue)||nop|nop
+#
+# 40) acPreProcForModifyResourceGroup - This rule set the pre-processing policy for
+# modifying membership of a resource group.
+# Option specifies the modifying-action being performed by the administraor
+#
+acPreProcForModifyUserGroup(*ResourceGroupName,*Option,*ResourceName)||nop|nop
+#
+# 41) acPostProcForModifyResourceGroup - This rule set the post-processing policy for
+# modifying membership of a resource group.
+# Option specifies the modifying-action being performed by the administraor
+#
+acPostProcForModifyUserGroup(*ResourceGroupName,*Option,*ResourceName)||nop|nop
+
 #
 # ----------------------------------------------------------------------------
 # These rules are for testing only
