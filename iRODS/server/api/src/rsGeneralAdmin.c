@@ -517,7 +517,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 
 	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
           if (status == 0) {
-            i =  applyRuleArg("acPostProcFoDeleteToken", args, argc, &rei2, NO_SAVE_REI);
+            i =  applyRuleArg("acPostProcForDeleteToken", args, argc, &rei2, NO_SAVE_REI);
             if (i < 0) {
               if (rei2.status < 0) {
                 i = rei2.status;
