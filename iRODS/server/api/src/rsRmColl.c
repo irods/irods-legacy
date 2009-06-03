@@ -248,6 +248,7 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
             status = l3Rmdir (rsComm, dataObjInfo);
         } else {
             status = svrUnregColl (rsComm, rmCollInp);
+	    if (status < 0) savedStatus = status;
 	}
     }
 

@@ -980,6 +980,7 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
    RETCODE stat;
    int nCols, i;
    icatStmtStrct *myStatement;
+   int logGetRows=0;
 
    myStatement=icss->stmtPtr[statementNumber];
    hstmt = myStatement->stmtPtr;
@@ -994,8 +995,19 @@ cllGetRow(icatSessionStruct *icss, int statementNumber) {
       return(-1);
    }
    if (stat == SQL_NO_DATA_FOUND) {
+      if (logGetRows) {
+	 rodsLogSql("cllGetRow: NO DATA FOUND");
+      }
       _cllFreeStatementColumns(icss,statementNumber);
       myStatement->numOfCols=0;
+   }
+   else {
+      if (logGetRows) {
+	 char tmpstr[210];
+	 snprintf(tmpstr, 200, "cllGetRow columns:%d first column: %s", nCols, 
+		  myStatement->resultValue[0]);
+	 rodsLogSql(tmpstr);
+      }
    }
    return(0);
 }

@@ -2958,18 +2958,22 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       return(CAT_COLLECTION_NOT_EMPTY);
    }
 
-   /* delete the row if it exists and is owned by the user */
+   /* delete the row if it exists */
+   /* The use of coll_id isn't really needed but may add a little safety.
+      Previously, we included a check that it was owned by the user but
+      the above cmlCheckDir is more accurate (handles group access). */
    cllBindVars[cllBindVarCount++]=collInfo->collName;
-   cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+   cllBindVars[cllBindVarCount++]=collIdNum;
    if (logSQL) rodsLog(LOG_SQL, "_delColl SQL 4");
    status =  cmlExecuteNoAnswerSql(
-		   "delete from r_coll_main where coll_name=? and coll_owner_name=?",
+		   "delete from r_coll_main where coll_name=? and coll_id=?",
 		   &icss);
    if (status) {  /* error, odd one as everything checked above */
       rodsLog(LOG_NOTICE,
 	      "_delColl cmlExecuteNoAnswerSql delete failure %d",
 	      status);
       _rollback("_delColl");
+      return(status);
    }
 
    /* remove any access rows */
