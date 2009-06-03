@@ -153,7 +153,7 @@ computeExpression( char *expr, ruleExecInfo_t *rei, int reiSaveFlag , char *res)
 {
 
    int i;
-   char expr1[MAX_COND_LEN], expr2[MAX_COND_LEN];
+   char expr1[MAX_COND_LEN], expr2[MAX_COND_LEN], expr3[MAX_COND_LEN];
    char oper1[MAX_OPER_LEN];
    static int k;
    if (strlen(expr) == 0) {
@@ -164,8 +164,43 @@ computeExpression( char *expr, ruleExecInfo_t *rei, int reiSaveFlag , char *res)
    if ((i = splitExpression(expr,expr1,expr2,oper1)) < 0)
      return(i);
    if (strlen(oper1) == 0) {
-     strcpy(res,expr);
-     return(TRUE);
+     if (strlen(expr2) == 0) {
+       /*
+       if (expr1[0] == '(' && expr1[strlen(expr1)-1] == ')') {
+	 expr1[0] = ' ';
+	 expr1[strlen(expr1)-1] ='\0';
+	 if (goodExpr(expr1) != 0) {
+           strcpy(res,expr);
+	   return(TRUE);	   
+	 }
+	 trimWS(expr1);
+         strcpy(expr3,expr1);
+	 if ((i = splitExpression(expr3,expr1,expr2,oper1)) < 0)
+	   return(i);
+	 if (strlen(oper1) == 0) {
+	   strcpy(res,expr);
+           return(TRUE);
+         }
+       }
+       else {
+	 strcpy(res,expr);
+	 return(TRUE);
+       }
+       */
+       trimWS(expr1);
+       strcpy(expr3,expr1);
+       if ((i = splitExpression(expr3,expr1,expr2,oper1)) < 0)
+	 return(i);
+       if (strlen(oper1) == 0) {
+	 strcpy(res,expr);
+	 return(TRUE);
+       }
+
+     }
+     else {
+       strcpy(res,expr);
+       return(TRUE);
+     }
    }
    k++;
 
@@ -238,19 +273,13 @@ _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, i
        return(-2);
      return(atoi(res));
    }
+   /********RAJA remove May 29 2009 being done later anyway
    else if (isNumber(expr1)) {
      iii = computeExpression(expr2, rei, reiSaveFlag,inres1);
      if (iii < 0)
        return(iii);
      i = _computeExpression(expr1,inres1,oper1, rei, reiSaveFlag,res);
      return(i);
-     /*
-     if (iii != expr2) {
-       sprintf(aaa,"%d",iii);
-       i = _computeExpression(expr1,aaa,oper1, rei, reiSaveFlag);
-       return(i);
-     }
-     */
    }
    else if (isNumber(expr2)) {
      iii = computeExpression(expr1, rei, reiSaveFlag,inres1);
@@ -258,14 +287,8 @@ _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, i
        return(iii);
      i = _computeExpression(inres1,expr2, oper1, rei, reiSaveFlag, res);
      return(i);
-     /*
-     if (iii != expr1) {
-       sprintf(aaa,"%d",iii);
-       iii = _computeExpression(aaa,expr2, oper1, rei, reiSaveFlag);
-       return(iii);
-     }
-     */
    }
+   ************/
    else if (isAFunction(expr1) || isAFunction(expr2)) {
      if (isAFunction(expr1)) {
        if (executeRuleAction(expr1, rei, reiSaveFlag) == 0)
