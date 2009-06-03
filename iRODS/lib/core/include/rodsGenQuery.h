@@ -253,6 +253,10 @@ primary ordering column.
 #define COL_COLL_USER_NAME    1300
 #define COL_COLL_USER_ZONE    1301
 
+/* R_DATA_USER_MAIN (r_user_main for Data information specifically) */
+#define COL_DATA_USER_NAME    1310
+#define COL_DATA_USER_ZONE    1311
+
 /* R_SERVER_LOAD */
 #define COL_SL_HOST_NAME      1400
 #define COL_SL_RESC_NAME      1401

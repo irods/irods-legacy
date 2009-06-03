@@ -280,6 +280,9 @@ icatGeneralQuerySetup() {
   sColumn(COL_COLL_USER_NAME, "r_coll_user_main", "user_name");
   sColumn(COL_COLL_USER_ZONE, "r_coll_user_main", "zone_name");
 
+  sColumn(COL_DATA_USER_NAME, "r_data_user_main", "user_name");
+  sColumn(COL_DATA_USER_ZONE, "r_data_user_main", "zone_name");
+
   sColumn(COL_SL_HOST_NAME, "r_server_load", "resc_host");
   sColumn(COL_SL_RESC_NAME, "r_server_load", "resc_name");
   sColumn(COL_SL_CPU_USED, "r_server_load", "cpu_used");

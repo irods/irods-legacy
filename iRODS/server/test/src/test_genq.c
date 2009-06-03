@@ -583,6 +583,129 @@ doTest11(char *userName, char *rodsZone, char *accessPerm, char *collection,
 }
 
 int
+doTest12(char *userName, char *rodsZone, char *accessPerm, char *collection) {
+    genQueryInp_t genQueryInp;
+    genQueryOut_t genQueryOut;
+    char condStr[MAX_NAME_LEN];
+    char condStr2[MAX_NAME_LEN];
+    int status;
+    char accStr[LONG_NAME_LEN];
+    int doAccessControlToQuery=0;
+
+    printf("dotest12\n");
+    rodsLogSqlReq(1);
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+
+    if (doAccessControlToQuery) {
+       snprintf (accStr, LONG_NAME_LEN, "%s", userName);
+       addKeyVal (&genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr);
+
+       snprintf (accStr, LONG_NAME_LEN, "%s", rodsZone);
+       addKeyVal (&genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr);
+
+       snprintf (accStr, LONG_NAME_LEN, "%s", accessPerm);
+       addKeyVal (&genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr);
+    }
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", collection);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+    addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
+
+    snprintf (condStr2, LONG_NAME_LEN, "='%s'", userName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_USER_NAME, condStr2);
+
+    snprintf (condStr2, LONG_NAME_LEN, "='%s'", rodsZone);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_USER_ZONE, condStr2);
+
+    addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_NAME, ORDER_BY);
+
+#if 0
+    addInxIval (&genQueryInp.selectInp, COL_COLL_ACCESS_USER_ID, 1);
+#endif
+
+    genQueryInp.maxRows = 10;
+
+    /*  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut); */
+
+    status  = chlGenQuery(genQueryInp, &genQueryOut);
+    printf("chlGenQuery status=%d\n",status);
+
+    printf("genQueryOut->totalRowCount=%d\n", genQueryOut.totalRowCount);
+
+    if (status == 0) {
+       printGenQOut(&genQueryOut);
+    }
+
+    return(0);
+}
+
+int
+doTest13(char *userName, char *rodsZone, char *accessPerm, char *collection,
+	 char *fileName) {
+    genQueryInp_t genQueryInp;
+    genQueryOut_t genQueryOut;
+    char condStr[MAX_NAME_LEN];
+    char condStr2[MAX_NAME_LEN];
+    int status;
+    char accStr[LONG_NAME_LEN];
+    int doAccessControlToQuery=0;
+
+    printf("dotest13\n");
+    rodsLogSqlReq(1);
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+
+    if (doAccessControlToQuery) {
+       snprintf (accStr, LONG_NAME_LEN, "%s", userName);
+       addKeyVal (&genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr);
+
+       snprintf (accStr, LONG_NAME_LEN, "%s", rodsZone);
+       addKeyVal (&genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr);
+
+       snprintf (accStr, LONG_NAME_LEN, "%s", accessPerm);
+       addKeyVal (&genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr);
+    }
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", collection);
+    addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", fileName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_NAME, condStr);
+
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+
+    snprintf (condStr2, LONG_NAME_LEN, "='%s'", userName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_USER_NAME, condStr2);
+
+    snprintf (condStr2, LONG_NAME_LEN, "='%s'", rodsZone);
+    addInxVal (&genQueryInp.sqlCondInp, COL_DATA_USER_ZONE, condStr2);
+
+    addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_NAME, ORDER_BY);
+
+#if 0
+    addInxIval (&genQueryInp.selectInp, COL_DATA_ACCESS_USER_ID, 1);
+#endif
+
+    genQueryInp.maxRows = 10;
+
+    /*  status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut); */
+
+    status  = chlGenQuery(genQueryInp, &genQueryOut);
+    printf("chlGenQuery status=%d\n",status);
+
+    printf("genQueryOut->totalRowCount=%d\n", genQueryOut.totalRowCount);
+
+    if (status == 0) {
+       printGenQOut(&genQueryOut);
+    }
+
+    return(0);
+}
+
+
+int
 main(int argc, char **argv) {
    int i1, i2, i3, i;
    genQueryInp_t genQueryInp;
@@ -618,6 +741,8 @@ main(int argc, char **argv) {
       if (strcmp(argv[1],"gen9")==0) mode=10;
       if (strcmp(argv[1],"gen10")==0) mode=11;
       if (strcmp(argv[1],"gen11")==0) mode=12;
+      if (strcmp(argv[1],"gen12")==0) mode=13;
+      if (strcmp(argv[1],"gen13")==0) mode=14;
    }
 
    if (argc ==3 && mode==0) {
@@ -774,6 +899,16 @@ main(int argc, char **argv) {
 
       if (mode==12) {
 	 status = doTest11(argv[2], argv[3], argv[4], argv[5], argv[6]);
+	 if (status <0) exit(2);
+	 exit(0);
+      }
+      if (mode==13) {
+	 status = doTest12(argv[2], argv[3], argv[4], argv[5]);
+	 if (status <0) exit(2);
+	 exit(0);
+      }
+      if (mode==14) {
+	 status = doTest13(argv[2], argv[3], argv[4], argv[5], argv[6]);
 	 if (status <0) exit(2);
 	 exit(0);
       }
