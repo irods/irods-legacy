@@ -95,6 +95,11 @@ _irodsGetattr (const char *path, struct stat *stbuf, pathCache_t **outPathCache)
 	fillDirStat (stbuf, 
 	  atoi (rodsObjStatOut->createTime), atoi (rodsObjStatOut->modifyTime),
 	  atoi (rodsObjStatOut->modifyTime));
+    } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+#ifdef CACHE_FUSE_PATH
+            addPathToCache ((char *) path, NonExistPathArray, stbuf, NULL);
+#endif
+            return -ENOENT;
     } else {
 	fillFileStat (stbuf, rodsObjStatOut->dataMode, rodsObjStatOut->objSize,
 	  atoi (rodsObjStatOut->createTime), atoi (rodsObjStatOut->modifyTime),
