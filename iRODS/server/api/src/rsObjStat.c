@@ -446,6 +446,7 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
         rstrcpy ((*rodsObjStatOut)->modifyTime, specCollCache->modifyTime, 
 	  NAME_LEN);
 	freeAllDataObjInfo (dataObjInfo);
+	/* XXXXX 0 return is creating a problem for fuse */
 	return (0);
     } else {
 	(*rodsObjStatOut)->objType = status;
