@@ -29,10 +29,10 @@ main(int argc, char **argv)
     rErrMsg_t errMsg;
     dataObjInp_t dataObjCreateInp;
     dataObjInp_t dataObjOpenInp;
-    dataObjCloseInp_t dataObjCloseInp;
-    dataObjWriteInp_t dataObjWriteInp;
+    openedDataObjInp_t dataObjCloseInp;
+    openedDataObjInp_t dataObjWriteInp;
     bytesBuf_t dataObjWriteInpBBuf;
-    dataObjReadInp_t dataObjReadInp;
+    openedDataObjInp_t dataObjReadInp;
     bytesBuf_t dataObjReadOutBBuf;
     dataObjInp_t dataObjOprInp;
     bytesBuf_t dataObjInpBBuf;
@@ -41,7 +41,7 @@ main(int argc, char **argv)
     int bytesWritten, bytesRead, total;
     int in_fd, out_fd;
     int l1descInx1, l1descInx2, l1descInx3;
-    fileLseekInp_t dataObjLseekInp;
+    openedDataObjInp_t dataObjLseekInp;
     fileLseekOut_t *dataObjLseekOut = NULL;
     dataObjCopyInp_t dataObjCopyInp;
     collInp_t collCreateInp;
@@ -448,7 +448,7 @@ main(int argc, char **argv)
     
     memset (&dataObjLseekInp, 0, sizeof (dataObjLseekInp));
 
-    dataObjLseekInp.fileInx = l1descInx2;
+    dataObjLseekInp.l1descInx = l1descInx2;
     dataObjLseekInp.offset = 1000;
     dataObjLseekInp.whence = SEEK_SET;
 
