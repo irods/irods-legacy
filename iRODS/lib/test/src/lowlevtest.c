@@ -115,7 +115,7 @@ main(int argc, char **argv)
 
     fileCreateInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileCreateInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileCreateInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileCreateInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileCreateInp.fileName, FILE_NAME, MAX_NAME_LEN);
     fileCreateInp.mode = 0640;
     fileCreateInp.dataSize = -1;
@@ -189,7 +189,7 @@ main(int argc, char **argv)
 
     fileStageInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileStageInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileStageInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileStageInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileStageInp.fileName, FILE_NAME, MAX_NAME_LEN);
     fileStageInp.flag = 0;
 
@@ -219,7 +219,7 @@ main(int argc, char **argv)
 
     fileChksumInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileChksumInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileChksumInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileChksumInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileChksumInp.fileName, FILE_NAME, MAX_NAME_LEN);
 
     status = rcFileChksum (conn, &fileChksumInp, &chksumStrOut);
@@ -236,7 +236,7 @@ main(int argc, char **argv)
 
     fileGetFsFreeSpaceInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileGetFsFreeSpaceInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileGetFsFreeSpaceInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileGetFsFreeSpaceInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileGetFsFreeSpaceInp.fileName, FILE_NAME, MAX_NAME_LEN);
     fileGetFsFreeSpaceInp.flag = 0;
     
@@ -257,7 +257,7 @@ main(int argc, char **argv)
 
     fileOpenInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileOpenInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileOpenInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileOpenInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileOpenInp.fileName, FILE_NAME, MAX_NAME_LEN);
     fileOpenInp.mode = 0640;
     fileOpenInp.flags = O_RDONLY;
@@ -330,7 +330,7 @@ main(int argc, char **argv)
 
     fileChmodInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileChmodInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileChmodInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileChmodInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileChmodInp.fileName, FILE_NAME, MAX_NAME_LEN);
     fileChmodInp.mode = MY_MODE;
 
@@ -346,7 +346,7 @@ main(int argc, char **argv)
 
     fileStatInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileStatInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileStatInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileStatInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileStatInp.fileName, FILE_NAME, MAX_NAME_LEN);
 
     status = rcFileStat (conn, &fileStatInp, &fileStatOut);
@@ -362,7 +362,7 @@ main(int argc, char **argv)
 
     fileMkdirInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileMkdirInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileMkdirInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileMkdirInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileMkdirInp.dirName, DIR_NAME, MAX_NAME_LEN);
     fileMkdirInp.mode = MY_MODE;
 
@@ -378,7 +378,7 @@ main(int argc, char **argv)
 
     fileOpendirInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileOpendirInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileOpendirInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileOpendirInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileOpendirInp.dirName, PAR_DIR_NAME, MAX_NAME_LEN);
 
     dir_fd = rcFileOpendir (conn, &fileOpendirInp);
@@ -418,7 +418,7 @@ main(int argc, char **argv)
 
     fileUnlinkInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileUnlinkInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileUnlinkInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileUnlinkInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileUnlinkInp.fileName, FILE_NAME, MAX_NAME_LEN);
 
     status = rcFileUnlink (conn, &fileUnlinkInp);
@@ -433,7 +433,7 @@ main(int argc, char **argv)
 
     fileRmdirInp.fileType = UNIX_FILE_TYPE;
     rstrcpy (fileRmdirInp.addr.hostAddr, ADDR, NAME_LEN);
-    rstrcpy (fileRmdirInp.addr.rodsZone, myRodsEnv.rodsZone, NAME_LEN);
+    rstrcpy (fileRmdirInp.addr.zoneName, myRodsEnv.rodsZone, NAME_LEN);
     rstrcpy (fileRmdirInp.dirName, DIR_NAME, MAX_NAME_LEN);
 
     status = rcFileRmdir (conn, &fileRmdirInp);
