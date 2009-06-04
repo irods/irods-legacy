@@ -19,10 +19,10 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 
-TESTOBJS = lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
+TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o
 
-TARGETS = lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
+TARGETS = luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll
 
 ifdef TAR_STRUCT_FILE
@@ -74,6 +74,9 @@ lowlevtest: lowlevtest.o
 	$(LDR) -o $@ $^ $(LDFLAGS)
 
 packtest: packtest.o
+	$(LDR) -o $@ $^ $(LDFLAGS)
+
+luketest: luketest.o
 	$(LDR) -o $@ $^ $(LDFLAGS)
 
 l1test: l1test.o
