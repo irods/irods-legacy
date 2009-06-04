@@ -6011,7 +6011,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 8");
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main where coll_id=? and (select access_type_id from R_OBJT_ACCESS where object_id = coll_id and user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?)) >= (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = 'own')",
+	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	    cVal, iVal, 2, objIdString, rsComm->clientUser.userName, 
 	    rsComm->clientUser.rodsZone, &icss);
    if (status == 0) { 
