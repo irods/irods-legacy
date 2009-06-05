@@ -1208,6 +1208,7 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
    char *zoneName;
    static char prevDataId[LONG_NAME_LEN];
    static char prevUser[LONG_NAME_LEN];
+   static char prevAccess[LONG_NAME_LEN];
    static int prevStatus;
 
    for (i=0;i<genQueryInp.condInput.len;i++) {
@@ -1247,7 +1248,10 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
          if (strcmp(prevDataId, 
                 icss->stmtPtr[statementNum]->resultValue[dataIx])==0) {
 	    if (strcmp(prevUser, genQueryInp.condInput.value[userIx])==0) {
+	       if (strcmp(prevAccess, 
+			  genQueryInp.condInput.value[accessIx])==0) {
 	       	    return(prevStatus);
+	       }
 	    }
          }
       }
@@ -1255,6 +1259,8 @@ checkCondInputAccess(genQueryInp_t genQueryInp, int statementNum,
       strncpy(prevDataId, icss->stmtPtr[statementNum]->resultValue[dataIx],
 	      LONG_NAME_LEN);
       strncpy(prevUser, genQueryInp.condInput.value[userIx], 
+              LONG_NAME_LEN);
+      strncpy(prevAccess, genQueryInp.condInput.value[accessIx], 
               LONG_NAME_LEN);
       prevStatus=0;
 
@@ -1349,6 +1355,9 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 	 else {
 	    rodsLog(LOG_SQL, "chlGenQuery SQL 2");
 	 }
+#if 0
+	 rodsLog(LOG_SQL, "combinedSQL: %s", combinedSQL);
+#endif
       }
 
       if (genQueryInp.options & RETURN_TOTAL_ROW_COUNT) {
