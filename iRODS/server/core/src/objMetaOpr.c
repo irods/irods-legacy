@@ -2899,9 +2899,7 @@ postProcRunRuleExec (rsComm_t *rsComm, reExecProc_t *reExecProc)
           myRuleExecInp->exeTime, myRuleExecInp->exeFrequency, 
 	  reExecProc->status);
     }
-
-
-    if (reExecProc->status < 0) {
+    else if (reExecProc->status < 0) {
         rodsLog (LOG_ERROR,
           "postProcRunRuleExec: ruleExec of id %s failed, status = %d",
           myRuleExecInp->ruleExecId, reExecProc->status);
@@ -2928,14 +2926,12 @@ postProcRunRuleExec (rsComm_t *rsComm, reExecProc_t *reExecProc)
                  NAME_LEN);
         rodsLog (LOG_NOTICE,
           "postProcRunRuleExec: exec of %s done", myRuleExecInp->ruleExecId);
-	/*** RAJA removed as it does not make sense to remove the rule here 
         status = rsRuleExecDel (rsComm, &ruleExecDelInp);
         if (status < 0) {
            rodsLog (LOG_ERROR,
             "postProcRunRuleExec: rsRuleExecDel failed for %s, status = %d",
              myRuleExecInp->ruleExecId, status);
         }
-	RAJA removed as it does not make sense to remove the rule here ***/
     }
     if (status >= 0 && savedStatus < 0) return savedStatus;
 
