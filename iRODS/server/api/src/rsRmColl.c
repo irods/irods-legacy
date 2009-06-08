@@ -18,7 +18,8 @@ rsRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
 collOprStat_t **collOprStat)
 {
     int status;
-
+    ruleExecInfo_t rei;
+    collInfo_t collInfo;
     rodsServerHost_t *rodsServerHost = NULL;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT,
@@ -31,6 +32,20 @@ collOprStat_t **collOprStat)
         retval = _rcRmColl (rodsServerHost->conn, rmCollInp, collOprStat);
 	status = svrSendZoneCollOprStat (rsComm, rodsServerHost->conn,
 	  *collOprStat, retval);
+        return status;
+    }
+
+    initReiWithCollInp (&rei, rsComm, rmCollInp, &collInfo);
+
+    status = applyRule ("acPreprocForRmColl", NULL, &rei, NO_SAVE_REI);
+
+    if (status < 0) {
+        if (rei.status < 0) {
+            status = rei.status;
+        }
+        rodsLog (LOG_ERROR,
+         "rsRmColl:acPreprocForRmColl error for %s,stat=%d",
+          rmCollInp->collName, status);
         return status;
     }
 
@@ -47,6 +62,16 @@ collOprStat_t **collOprStat)
 	}
         status = _rsRmCollRecur (rsComm, rmCollInp, collOprStat);
     }
+    rei.status = status;
+    rei.status = applyRule ("acPostProcForRmColl", NULL, &rei,
+      NO_SAVE_REI);
+
+    if (rei.status < 0) {
+        rodsLog (LOG_ERROR,
+         "rsRmColl:acPostProcForRmColl error for %s,stat=%d",
+          rmCollInp->collName, status);
+    }
+
     return status;
 }
 
