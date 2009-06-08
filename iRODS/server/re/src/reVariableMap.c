@@ -237,10 +237,12 @@ getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei,
     /* sprintf(*varValue, "%d",rei->l1descInx);*/
   else  if (!strcmp(varName, "doinp") )
     i = getSetValFromDataObjInp(varMapCPtr, &(rei->doinp), varValue, newVarValue);
+#if 0	/* XXXXX deplicate dinp and finp */
   else  if (!strcmp(varName, "dinp") )
     i = getSetValFromDataOprInp(varMapCPtr, &(rei->dinp), varValue, newVarValue);
   else  if (!strcmp(varName, "finp") )
     i = getSetValFromFileOpenInp(varMapCPtr, &(rei->finp), varValue, newVarValue);
+#endif
   else  if (!strcmp(varName, "doi") )
     i = getSetValFromDataObjInfo(varMapCPtr, &(rei->doi), varValue, newVarValue);
   else  if (!strcmp(varName, "rgi") )
@@ -251,6 +253,7 @@ getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei,
     i = getSetValFromUserInfo(varMapCPtr, &(rei->uoip), varValue, newVarValue);
   else  if (!strcmp(varName, "coi") )
     i = getSetValFromCollInfo(varMapCPtr, &(rei->coi), varValue, newVarValue);
+#if 0	/* XXXXX deplicate doinpo, dinpo, finpo, rgio */
   else  if (!strcmp(varName, "doinpo") )
     i = getSetValFromDataObjInp(varMapCPtr, &(rei->doinpo), varValue, newVarValue);
   else  if (!strcmp(varName, "dinpo") )
@@ -259,6 +262,7 @@ getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei,
     i = getSetValFromFileOpenInp(varMapCPtr, &(rei->finpo), varValue, newVarValue);
   else  if (!strcmp(varName, "rgio") )
     i = getSetValFromRescGrpInfo(varMapCPtr, &(rei->rgio), varValue, newVarValue);
+#endif
   else  if (!strcmp(varName, "uoio") )
     i = getSetValFromUserInfo(varMapCPtr, &(rei->uoio), varValue, newVarValue);
   else  if (!strcmp(varName, "condInputData") )
