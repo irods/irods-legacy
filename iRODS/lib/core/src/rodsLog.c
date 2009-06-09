@@ -830,15 +830,14 @@ rodsLog(int level, char *formatStr, ...) {
 
 #ifdef IRODS_SYSLOG
    char *myZone = getenv("spProxyRodsZone");
-   int okToLog = 0;
 #endif
+   int okToLog = 0;
 
    char extraInfo[100];
 #ifdef windows_platform
    char nt_log_msg[2048];
 #endif
 
-#ifdef IRODS_SYSLOG
    if (level <= verbosityLevel)
    {
       okToLog = 1;
@@ -850,9 +849,6 @@ rodsLog(int level, char *formatStr, ...) {
    }
 
    if (!okToLog) return;
-#else
-   if (level < verbosityLevel) return;
-#endif
 
    va_start(ap, formatStr);
    i = vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
@@ -889,9 +885,12 @@ rodsLog(int level, char *formatStr, ...) {
    if (level == LOG_DEBUG2) prefix="DEBUG2";
    if (level == LOG_DEBUG3) prefix="DEBUG3";
    if (ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
-     ProcessType == RE_SERVER_PT) 
+       ProcessType == RE_SERVER_PT) 
 #else
-   if (level <= LOG_DEBUG) prefix="DEBUG";
+   if (level == LOG_DEBUG) prefix="DEBUG";
+   if (level == LOG_DEBUG1) prefix="DEBUG1";
+   if (level == LOG_DEBUG2) prefix="DEBUG2";
+   if (level == LOG_DEBUG3) prefix="DEBUG3";
    if (bigString[strlen(bigString)-1]=='\n')
 #endif
    {
