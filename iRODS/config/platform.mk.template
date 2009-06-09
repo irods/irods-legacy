@@ -141,9 +141,14 @@ MY_CFLAG+= -DHAAW_STRUCT_FILE
 endif
 
 ifdef TAR_STRUCT_FILE
-MY_CFLAG+= -DTAR_STRUCT_FILE -I$(tarDir) -I$(tarDir)/listhash \
+MY_CFLAG+= -DTAR_STRUCT_FILE
+ifdef TAR_EXEC_PATH
+MY_CFLAG+= -DTAR_EXEC_PATH=$(TAR_EXEC_PATH)
+else
+MY_CFLAG+= -I$(tarDir) -I$(tarDir)/listhash \
                   -I${tarDir}/lib \
                   -I${tarDir}/compat
+endif
 endif
 
 ifdef RBUDP_TRANSFER
@@ -162,6 +167,8 @@ endif
 # server specific LDADD
 
 ifdef TAR_STRUCT_FILE
+ifndef TAR_EXEC_PATH
 LDADD+=-L$(tarDir)/lib -ltar
+endif
 endif
 
