@@ -263,7 +263,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
       collection);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "rsStructFileBundle: rsStructFileSync of %s error. stat = %d",
+          "bundlleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
           L1desc[l1descInx].dataObjInfo->objPath, status);
         rmFilesInUnixDir (phyBunDir);
         rmdir (phyBunDir);
@@ -384,7 +384,7 @@ char *collection)
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "rsStructFileBundle: rsStructFileSync of %s error. stat = %d",
+          "phyBundle: rsStructFileSync of %s error. stat = %d",
           dataObjInfo->objPath, status);
     }
 
