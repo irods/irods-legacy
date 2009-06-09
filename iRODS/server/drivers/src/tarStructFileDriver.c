@@ -3,6 +3,7 @@
 /* tarSubStructFileDriver.c - Module of the tar structFile driver.
  */
 
+#ifndef TAR_EXEC_PATH
 #include <libtar.h>
 
 #ifdef HAVE_LIBZ
@@ -10,6 +11,7 @@
 #endif
 
 #include <compat.h>
+#endif	/* TAR_EXEC_PATH */
 
 #include "tarSubStructFileDriver.h"
 #include "rsGlobalExtern.h"
@@ -20,6 +22,7 @@
 int
 rmTmpDirAll (char *myDir);
 
+#ifndef TAR_EXEC_PATH
 /* prototype here because typedef TAR */
 int
 writeDirToTarStruct (rsComm_t *rsComm, char *fileDir, int fileType,
@@ -28,6 +31,7 @@ specColl_t *specColl, TAR *t);
 tartype_t irodstype = { (openfunc_t) irodsTarOpen, (closefunc_t) irodsTarClose,
         (readfunc_t) irodsTarRead, (writefunc_t) irodsTarWrite
 };
+#endif
 
 int
 tarSubStructFileCreate (rsComm_t *rsComm, subFile_t *subFile)
@@ -661,13 +665,16 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int status;
 
     if ((structFileOprInp->oprType & LOGICAL_BUNDLE) != 0) {
+#ifndef TAR_EXEC_PATH	/* XXXXX take out temporarily */
 	status = tarLogStructFileSync (rsComm, structFileOprInp);
+#endif
     } else {
 	status = tarPhyStructFileSync (rsComm, structFileOprInp);
     }
     return (status);
 }
 
+#ifndef TAR_EXEC_PATH	/* XXXXX take out temporarily */
 /* tarLogStructFileSync - bundle files in the cacheDir UNIX directory,
  */
 int
@@ -676,11 +683,7 @@ tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int structFileInx;
     specColl_t *specColl;
     rescInfo_t *rescInfo;
-#if 0
-    openCollInp_t openCollInp;
-#else
     collInp_t openCollInp;
-#endif
     collEnt_t *collEnt = NULL;
     int handleInx;
     int status = 0;
@@ -778,6 +781,7 @@ tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 
     return 0;
 }
+#endif
     
 int
 rmTmpDirAll (char *myDir)
@@ -886,10 +890,6 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     int structFileInx;
     int status;
     specColl_t *specColl;
-#if 0
-    int fileType;
-    rescInfo_t *rescInfo;
-#endif
 
     if (rsComm == NULL || structFileOprInp == NULL || 
       structFileOprInp->specColl == NULL) {
@@ -917,14 +917,6 @@ tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
         freeStructFileDesc (structFileInx);
         return (status);
     }
-
-
-#if 0
-    rescInfo = StructFileDesc[structFileInx].rescInfo;
-    fileType = RescTypeDef[rescInfo->rescTypeInx].driverType;
-
-    mkFileDirR (fileType, rsComm, "/", specColl->cacheDir, DEFAULT_DIR_MODE);
-#endif
 
     status = extractTarFile (structFileInx);
     if (status < 0) {
@@ -961,9 +953,6 @@ rsTarStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
         return (structFileInx);
     }
 
-#if 0
-    StructFileDesc[structFileInx].specColl = specColl;
-#endif
     /* Have to do this because specColl could come from a remote host */
     if ((status = getSpecCollCache (rsComm, specColl->collection, 0,
       &specCollCache)) >= 0) {
@@ -977,12 +966,6 @@ rsTarStructFileOpen (rsComm_t *rsComm, specColl_t *specColl)
 	}
     } else {
 	StructFileDesc[structFileInx].specColl = specColl;
-#if 0	/* not real spec coll */
-        rodsLog (LOG_NOTICE,
-          "rsTarStructFileOpen: getSpecCollCache error for %s, status = %d",
-          specColl->collection, status);
-	return (status);
-#endif
     }
 
     StructFileDesc[structFileInx].rsComm = rsComm;
@@ -1060,25 +1043,6 @@ stageTarStructFile (int structFileInx)
 	/* register the CacheDir */
 	status = modCollInfo2 (rsComm, specColl, 0);
         if (status < 0) return status;
-
-#if 0
-	memset (&modCollInp, 0, sizeof (modCollInp));
-
-        rstrcpy (modCollInp.collName, specColl->collection, MAX_NAME_LEN);
-	makeCachedStructFileStr (collInfo2, specColl);
-        addKeyVal (&modCollInp.condInput, COLLECTION_TYPE_KW, 
-	  TAR_STRUCT_FILE_STR);	/* need this or rsModColl fail */
-        addKeyVal (&modCollInp.condInput, COLLECTION_INFO2_KW, collInfo2);
-	status = rsModColl (rsComm, &modCollInp);
-	if (status < 0) {
-	    /* XXXX need to remove the cacheDir too */
-            rodsLog (LOG_NOTICE,
-             "stageTarStructFile:rsModColl error for specColl %s,status=%d",
-             modCollInp.collName, status);
-            /* may need to delete the cacheDir */
-	    return status;
-	}
-#endif
     }
     return (0);
 }
@@ -1288,6 +1252,27 @@ specColl_t **specColl)
 int
 extractTarFile (int structFileInx)
 {
+    int status; 
+#ifdef TAR_EXEC_PATH
+    status = extractTarFileWithExec (structFileInx);
+#else
+    status = extractTarFileWithLib (structFileInx);
+#endif
+    return status;
+}
+
+int
+extractTarFileWithExec (int structFileInx)
+{
+    int status;
+
+    return status;
+}
+
+#ifndef TAR_EXEC_PATH
+int
+extractTarFileWithLib (int structFileInx)
+{
     TAR *t;
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
     int myMode;
@@ -1339,6 +1324,7 @@ extractTarFile (int structFileInx)
 
     return 0;
 }
+#endif	/*TAR_EXEC_PATH */
 
 /* getSubStructFilePhyPath - get the phy path in the cache dir */
 int
@@ -1351,24 +1337,6 @@ char *subFilePath)
      * the logical path of the tar file. So we need to substitude the
      * objPath with cacheDir */ 
 
-
-#if 0
-    if (strcmp (subFilePath, specColl->collection) == 0) {
-	/* the top collection */
-	rstrcpy (phyPath, specColl->cacheDir, MAX_NAME_LEN);
-    } else {
-        len = strlen (specColl->objPath);
-        if (strncmp (specColl->objPath, subFilePath, len) != 0) {
-            rodsLog (LOG_NOTICE,
-             "getSubStructFilePhyPath: objPath %s subFilePath %s mismatch",
-	      specColl->objPath, subFilePath); 
-            return (SYS_STRUCT_FILE_PATH_ERR);
-        }
-
-        snprintf (phyPath, MAX_NAME_LEN, "%s%s", specColl->cacheDir,
-         subFilePath + len);
-    }
-#endif
     len = strlen (specColl->collection);
     if (strncmp (specColl->collection, subFilePath, len) != 0) {
             rodsLog (LOG_NOTICE,
@@ -1387,9 +1355,7 @@ char *subFilePath)
 int
 syncCacheDirToTarfile (int structFileInx, int oprType)
 {
-    TAR *t;
     int status;
-    int myMode;
     int rescTypeInx;
     fileStatInp_t fileStatInp;
     rodsStat_t *fileStatOut = NULL;
@@ -1397,44 +1363,12 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
     rsComm_t *rsComm = StructFileDesc[structFileInx].rsComm;
 
 
-    if (specColl == NULL || specColl->cacheDirty <= 0 || 
-      strlen (specColl->cacheDir) == 0) return 0;
-
-    myMode = encodeIrodsTarfd (structFileInx, DEFAULT_FILE_MODE);
-
-    status = tar_open (&t, specColl->phyPath, &irodstype,
-      O_WRONLY, myMode, TAR_GNU);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE,
-          "syncCacheDirToTarfile: tar_open error for %s, errno = %d",
-          specColl->phyPath, errno);
-        return (SYS_TAR_OPEN_ERR - errno);
-    }
-
-    status = tar_append_tree (t, specColl->cacheDir, ".");
-
-    if (status != 0) {
-        rodsLog (LOG_NOTICE,
-          "syncCacheDirToTarfile: tar_append_tree error for %s, errno = %d",
-          specColl->cacheDir, errno);
-        if (status < 0) {
-            return (status);
-        } else {
-            return (SYS_TAR_APPEND_ERR - errno);
-        }
-    }
-
-   if ((status = tar_close(t)) != 0) {
-        rodsLog (LOG_NOTICE,
-          "syncCacheDirToTarfile: tar_close error for %s, errno = %d",
-          specColl->phyPath, errno);
-	if (status < 0) {
-	    return (status);
-	} else {
-            return (SYS_TAR_CLOSE_ERR - errno);
-	}
-    }
+#ifdef TAR_EXEC_PATH
+    status = bundleCacheDirWithExec (structFileInx);
+#else
+    status = bundleCacheDirWithLib (structFileInx);
+#endif
+    if (status < 0) return status;
 
     /* register size change */
     memset (&fileStatInp, 0, sizeof (fileStatInp));
@@ -1463,6 +1397,65 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
 
     return (status);
 }
+
+int
+bundleCacheDirWithExec (int structFileInx)
+{
+    int status;
+
+    return status;
+}
+
+#ifndef TAR_EXEC_PATH
+int
+bundleCacheDirWithLib (int structFileInx)
+{
+    TAR *t;
+    int status;
+    int myMode;
+
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    if (specColl == NULL || specColl->cacheDirty <= 0 ||
+      strlen (specColl->cacheDir) == 0) return 0;
+
+    myMode = encodeIrodsTarfd (structFileInx, DEFAULT_FILE_MODE);
+
+    status = tar_open (&t, specColl->phyPath, &irodstype,
+      O_WRONLY, myMode, TAR_GNU);
+
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+          "syncCacheDirToTarfile: tar_open error for %s, errno = %d",
+          specColl->phyPath, errno);
+        return (SYS_TAR_OPEN_ERR - errno);
+    }
+    status = tar_append_tree (t, specColl->cacheDir, ".");
+
+    if (status != 0) {
+        rodsLog (LOG_NOTICE,
+          "syncCacheDirToTarfile: tar_append_tree error for %s, errno = %d",
+          specColl->cacheDir, errno);
+        if (status < 0) {
+            return (status);
+        } else {
+            return (SYS_TAR_APPEND_ERR - errno);
+        }
+    }
+
+   if ((status = tar_close(t)) != 0) {
+        rodsLog (LOG_NOTICE,
+          "syncCacheDirToTarfile: tar_close error for %s, errno = %d",
+          specColl->phyPath, errno);
+        if (status < 0) {
+            return (status);
+        } else {
+            return (SYS_TAR_CLOSE_ERR - errno);
+        }
+    }
+
+    return 0;
+}
+#endif 	/* TAR_EXEC_PATH */
 
 int
 initTarSubFileDesc ()

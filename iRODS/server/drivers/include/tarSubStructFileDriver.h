@@ -80,6 +80,10 @@ decodeIrodsTarfd (int inpInt, int *upperInt, int *lowerInt);
 int
 extractTarFile (int structFileInx);
 int
+extractTarFileWithExec (int structFileInx);
+int
+extractTarFileWithLib (int structFileInx);
+int
 matchStructFileDesc (specColl_t *specColl);
 int
 getSubStructFilePhyPath (char *phyPath, specColl_t *specColl,
@@ -94,6 +98,10 @@ int
 tarStructFileExtract (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp);
 int
 syncCacheDirToTarfile (int structFileInx, int oprType);
+int
+bundleCacheDirWithExec (int structFileInx);
+int
+bundleCacheDirWithLib (int structFileInx);
 int
 initTarSubFileDesc ();
 int
