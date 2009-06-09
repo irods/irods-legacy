@@ -205,7 +205,7 @@ readMsgHeader (int sock, msgHeader_t *myHeader)
          return (SYS_HEADER_READ_LEN_ERR - errno);
     }
 
-    if (getRodsLogLevel () <= LOG_DEBUG3) {
+    if (getRodsLogLevel () >= LOG_DEBUG3) {
         printf ("received header: len = %d\n%s\n", myLen, tmpBuf);
     }
 
@@ -245,7 +245,7 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
         return status;
     }
 
-    if (getRodsLogLevel () <= LOG_DEBUG3) {
+    if (getRodsLogLevel () >= LOG_DEBUG3) {
         printf ("sending header: len = %d\n%s\n", headerBBuf->len, 
 	  (char *) headerBBuf->buf);
     }
@@ -1061,7 +1061,7 @@ irodsProt_t irodsProt)
     /* send the rest */
 
     if (msgHeader.msgLen > 0) {
-        if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
+        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
             printf ("sending msg: \n%s\n", (char *) msgBBuf->buf);
         }
         status = myWrite (sock, msgBBuf->buf, msgBBuf->len, SOCK_TYPE, NULL);
@@ -1070,7 +1070,7 @@ irodsProt_t irodsProt)
     }
 
     if (msgHeader.errorLen > 0) {
-        if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
+        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
             printf ("sending error msg: \n%s\n", (char *) errorBBuf->buf);
         }
         status = myWrite (sock, errorBBuf->buf, errorBBuf->len, SOCK_TYPE, 
@@ -1129,7 +1129,7 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
         nbytes = myRead (sock, inputStructBBuf->buf, myHeader->msgLen, 
 	  SOCK_TYPE, NULL);
 
-        if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
+        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
             printf ("received msg: \n%s\n", (char *) inputStructBBuf->buf);
         }
 
@@ -1153,7 +1153,7 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
         nbytes = myRead (sock, errorBBuf->buf, myHeader->errorLen,
 	  SOCK_TYPE, NULL);
 
-        if (irodsProt == XML_PROT && getRodsLogLevel () <= LOG_DEBUG3) {
+        if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
             printf ("received error msg: \n%s\n", (char *) errorBBuf->buf);
         }
 

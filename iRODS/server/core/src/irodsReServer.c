@@ -11,6 +11,7 @@
 #include "objMetaOpr.h"
 #include "rsApiHandler.h"
 #include "rsIcatOpr.h"
+#include <syslog.h>
 
 extern int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei);
 
@@ -42,7 +43,12 @@ main(int argc, char **argv)
     /* Handle option to log sql commands */
     tmpStr = getenv (SP_LOG_SQL);
     if (tmpStr != NULL) {
+#ifdef IRODS_SYSLOG
+       int j = atoi(tmpStr);
+       rodsLogSqlReq(j);
+#else
        rodsLogSqlReq(1);
+#endif
     }
 
     /* Set the logging level */
@@ -54,6 +60,11 @@ main(int argc, char **argv)
     } else {
          rodsLogLevel(LOG_NOTICE); /* default */
     }
+
+#ifdef IRODS_SYSLOG
+/* Open a connection to syslog */
+    openlog("rodsReServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
+#endif
 
     while ((c=getopt(argc, argv,"sSvD:")) != EOF) {
         switch (c) {

@@ -280,13 +280,21 @@ printServerHost (rodsServerHost_t *myServerHost)
 
     if (myServerHost->localFlag == LOCAL_HOST) {
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE,"    LocalHostName: ");
+#else /* IRODS_SYSLOG */
         fprintf (stderr, "    LocalHostName: ");
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE,"    LocalHostName: ");
 #endif
     } else {
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE,"    RemoteHostName: ");
+#else /* IRODS_SYSLOG */
         fprintf (stderr, "    RemoteHostName: ");
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE,"    RemoteHostName: ");
 #endif
@@ -296,7 +304,11 @@ printServerHost (rodsServerHost_t *myServerHost)
 
     while (tmpHostName != NULL) {
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE," %s,", tmpHostName->name);
+#else /* IRODS_SYSLOG */
         fprintf (stderr, " %s,", tmpHostName->name);
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE," %s,", tmpHostName->name);
 #endif
@@ -304,8 +316,12 @@ printServerHost (rodsServerHost_t *myServerHost)
     }
 
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+	rodsLog (LOG_NOTICE," Port Num: %d.\n\n", ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
+#else /* IRODS_SYSLOG */
     fprintf (stderr, " Port Num: %d.\n\n", 
       ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
+#endif /* IRODS_SYSLOG */
 #else
 	rodsLog (LOG_NOTICE," Port Num: %d.\n\n", ((zoneInfo_t *)myServerHost->zoneInfo)->portNum);
 #endif
@@ -321,7 +337,11 @@ printZoneInfo ()
 
     tmpZoneInfo = ZoneInfoHead;
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+	rodsLog (LOG_NOTICE,"Zone Info:\n");
+#else /* IRODS_SYSLOG */
     fprintf (stderr, "Zone Info:\n");
+#endif /* IRODS_SYSLOG */
 #else
 	rodsLog (LOG_NOTICE,"Zone Info:\n");
 #endif
@@ -329,27 +349,44 @@ printZoneInfo ()
 	/* print the master */
         tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->masterServerHost;
 #ifndef windows_platform
-	fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE,"    ZoneName: %s   ", tmpZoneInfo->zoneName);
+#else /* IRODS_SYSLOG */
+		fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE,"    ZoneName: %s   ", tmpZoneInfo->zoneName);
 #endif
 	if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE,"Type: LOCAL_ICAT   "); 
+#else /* IRODS_SYSLOG */
 	    fprintf (stderr, "Type: LOCAL_ICAT   "); 
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE,"Type: LOCAL_ICAT   "); 
 #endif
 	} else {
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE,"Type: REMOTE_ICAT   ");
+#else /* IRODS_SYSLOG */
 	    fprintf (stderr, "Type: REMOTE_ICAT   "); 
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE,"Type: REMOTE_ICAT   ");
 #endif
 	}
 
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+	rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n", 
+	  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#else /* IRODS_SYSLOG */
         fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n", 
 	  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#endif /* IRODS_SYSLOG */
 #else
 	rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n", 
 	  tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
@@ -359,10 +396,17 @@ printZoneInfo ()
         tmpRodsServerHost = (rodsServerHost_t *) tmpZoneInfo->slaveServerHost;
 	if (tmpRodsServerHost != NULL) { 
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
+		rodsLog (LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   ");
+		rodsLog (LOG_NOTICE, " HostAddr: %s   PortNum: %d\n\n",
+              tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#else /* IRODS_SYSLOG */
             fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
             fprintf (stderr, "Type: LOCAL_SLAVE_ICAT   ");
             fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n",
               tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
 		rodsLog (LOG_NOTICE, "Type: LOCAL_SLAVE_ICAT   ");
@@ -385,7 +429,11 @@ printLocalResc ()
     int localRescCnt = 0;
 
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+	rodsLog (LOG_NOTICE,"Local Resource configuration: \n");
+#else /* IRODS_SYSLOG */
     fprintf (stderr, "Local Resource configuration: \n");
+#endif /* IRODS_SYSLOG */
 #else
 	rodsLog (LOG_NOTICE,"Local Resource configuration: \n");
 #endif
@@ -399,8 +447,13 @@ printLocalResc ()
 	tmpRodsServerHost = myRescInfo->rodsServerHost;
         if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+			rodsLog (LOG_NOTICE,"   RescName: %s, VaultPath: %s\n",
+	      myRescInfo->rescName, myRescInfo->rescVaultPath); 
+#else /* IRODS_SYSLOG */
 	    fprintf (stderr, "   RescName: %s, VaultPath: %s\n",
 	      myRescInfo->rescName, myRescInfo->rescVaultPath); 
+#endif /* IRODS_SYSLOG */
 #else
 			rodsLog (LOG_NOTICE,"   RescName: %s, VaultPath: %s\n",
 	      myRescInfo->rescName, myRescInfo->rescVaultPath); 
@@ -411,14 +464,22 @@ printLocalResc ()
     }
 
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+	rodsLog (LOG_NOTICE,"\n");
+#else /* IRODS_SYSLOG */
     fprintf (stderr, "\n");
+#endif /* IRODS_SYSLOG */
 #else
 	rodsLog (LOG_NOTICE,"\n");
 #endif
 
     if (localRescCnt == 0) {
 #ifndef windows_platform
+#ifdef IRODS_SYSLOG
+		rodsLog (LOG_NOTICE,"   No Local Resource Configured\n");
+#else /* IRODS_SYSLOG */
         fprintf (stderr, "   No Local Resource Configured\n");
+#endif /* IRODS_SYSLOG */
 #else
 		rodsLog (LOG_NOTICE,"   No Local Resource Configured\n");
 #endif
@@ -1930,7 +1991,11 @@ int
 logFileOpen (int runMode, char *logDir, char *logFileName)
 {
     char *logFile = NULL;
+#ifdef IRODS_SYSLOG
+    int logFd = 0;
+#else
     int logFd;
+#endif
 
     if (runMode == SINGLE_PASS && logDir == NULL) {
         return (1);
@@ -1943,7 +2008,9 @@ logFileOpen (int runMode, char *logDir, char *logFileName)
 
     getLogfileName (&logFile, logDir, logFileName);
 
+#ifndef IRODS_SYSLOG
     logFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0666);
+#endif
     if (logFd < 0) {
         fprintf (stderr, "logFileOpen: Unable to open %s. errno = %d\n",
           logFile, errno);

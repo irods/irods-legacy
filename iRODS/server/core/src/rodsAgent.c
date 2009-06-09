@@ -4,6 +4,7 @@
 /* rodsAgent.c - The main code for rodsAgent
  */
 
+#include <syslog.h>
 #include "rodsAgent.h"
 #include "rsApiHandler.h"
 #include "icatHighLevelRoutines.h"
@@ -58,7 +59,12 @@ main(int argc, char *argv[])
     /* Handle option to log sql commands */
     tmpStr = getenv (SP_LOG_SQL);
     if (tmpStr != NULL) {
+#ifdef IRODS_SYSLOG
+       int j = atoi(tmpStr);
+       rodsLogSqlReq(j);
+#else
        rodsLogSqlReq(1);
+#endif
     }
 
     /* Set the logging level */
@@ -70,6 +76,11 @@ main(int argc, char *argv[])
     } else {
        rodsLogLevel(LOG_NOTICE); /* default */
     }
+
+#ifdef IRODS_SYSLOG
+/* Open a connection to syslog */
+    openlog("rodsAgent",LOG_ODELAY|LOG_PID,LOG_DAEMON);
+#endif
 
     status = getRodsEnv (&rsComm.myEnv);
 

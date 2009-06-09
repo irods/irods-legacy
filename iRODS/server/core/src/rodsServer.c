@@ -3,6 +3,8 @@
 
 #include "rodsServer.h"
 
+#include <syslog.h>
+
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -31,6 +33,11 @@ int irodsWinMain(int argc, char **argv)
     ProcessType = SERVER_PT;	/* I am a server */
 
     rodsLogLevel (LOG_NOTICE);
+
+#ifdef IRODS_SYSLOG
+/* Open a connection to syslog */
+	openlog("rodsServer",LOG_ODELAY|LOG_PID,LOG_DAEMON);
+#endif
     
     ServerBootTime = time (0);
     while ((c = getopt(argc, argv,"uvVqsh")) != EOF) {
@@ -126,10 +133,13 @@ serverize (char *logDir)
     getLogfileName (&logFile, logDir, RODS_LOGFILE);
 
 #ifndef windows_platform
-    LogFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0644);
+#ifdef IRODS_SYSLOG
+    LogFd = 0;
 #else
-	
-	LogFd = iRODSNt_open(logFile, O_CREAT|O_APPEND|O_WRONLY, 1);
+    LogFd = open (logFile, O_CREAT|O_WRONLY|O_APPEND, 0644);
+#endif
+#else
+    LogFd = iRODSNt_open(logFile, O_CREAT|O_APPEND|O_WRONLY, 1);
 #endif
 
     if (LogFd < 0) {
@@ -147,17 +157,23 @@ serverize (char *logDir)
 	     "serverize: setsid failed, errno = %d\n", errno);
             exit(1);
 	}
+#ifndef IRODS_SYSLOG
         (void) dup2 (LogFd, 0);
         (void) dup2 (LogFd, 1);
         (void) dup2 (LogFd, 2);
         close (LogFd);
         LogFd = 2;
+#endif
     }
 #else
 	_close(LogFd);
 #endif
 
+#ifdef IRODS_SYSLOG
+    return (0);
+#else
     return (LogFd);
+#endif
 }
 
 int 

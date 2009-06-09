@@ -255,3 +255,6 @@ COMPAT_201=1
 ifdef KRB_AUTH
 KRB_LOC=/usr/kerberos
 endif
+
+# Syslog logging
+#IRODS_SYSLOG = 1

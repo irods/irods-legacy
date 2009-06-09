@@ -131,7 +131,9 @@ endif
 ifdef KRB_AUTH
 CFLAGS_OPTIONS += -D KRB_AUTH
 endif
-
+ifdef IRODS_SYSLOG
+CFLAGS_OPTIONS += -D IRODS_SYSLOG
+endif
 
 #
 # Princpal Targets

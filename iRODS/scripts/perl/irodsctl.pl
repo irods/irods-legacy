@@ -168,18 +168,8 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # overrides the value set in the .irodEnv file.
 # $irodsPort = "5678";
 
-# spLogLevel defines the verbosity level of the server log. The levels are:
-#	9-LOG_SQL
-#	8-LOG_SYS_FATAL
-#	7-LOG_SYS_WARNING
-#	6-LOG_ERROR
-#	5-LOG_NOTICE
-#	4-LOG_DEBUG
-#	3-LOG_DEBUG3
-#	2-LOG_DEBUG2
-#	1-LOG_DEBUG1.
-# The lower the level, the more verbose is the log. The default level 
-# is 5-LOG_NOTICE
+# spLogLevel defines the verbosity level of the server log.   See  rodsLog.c
+# and rodsLog.h for what they are. The default level is LOG_NOTICE.
 # $spLogLevel = "3";
 
 # spLogSql defines if sql will be logged or not.  The default is no logging.
@@ -1054,6 +1044,7 @@ sub setupEnvironment
 sub startIrods
 {
 	# Make sure the server is available
+        my $status;
 	if ( ! -e $irodsServer )
 	{
 		printError( "Configuration problem:\n" );
@@ -1066,15 +1057,23 @@ sub startIrods
 	my $startingDir = cwd( );
 	chdir( $serverBinDir );
 	umask( 077 );
-
 	# Start the server
-	my $output = `$irodsServer 2>&1`;
-	if ( $? )
+	my $syslogStat = `grep IRODS_SYSLOG $configDir/config.mk | grep -v \'#'`;
+	if ($syslogStat) {
+#           syslog enabled, need to start differently
+	    my $status = system("$irodsServer&");
+	}
+	else {
+	    my $output = `$irodsServer 2>&1`;
+	    my $status = $?;
+	}
+	if ( $status )
 	{
 		printError( "iRODS server failed to start\n" );
 		printError( "    $output\n" );
 		return 0;
 	}
+
 	chdir( $startingDir );
 
 	# Sleep a bit to give the server time to start and possibly exit

@@ -1059,7 +1059,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
       table = setTable(genQueryInp.selectInp.inx[i], 1, 
 		       genQueryInp.selectInp.value[i]&0xf);
       if (table < 0) {
-	 printf("Table for column %d not found\n",
+	 rodsLog(LOG_ERROR,"Table for column %d not found\n",
 		genQueryInp.selectInp.inx[i]);
 	 return(CAT_UNKNOWN_TABLE);
       }
@@ -1081,7 +1081,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
       }
       table = setTable(genQueryInp.sqlCondInp.inx[i], 0, 0);
       if (table < 0) {
-	 printf("Table for column %d not found\n",
+	 rodsLog(LOG_ERROR,"Table for column %d not found\n",
 		genQueryInp.sqlCondInp.inx[i]);
 	 return(CAT_UNKNOWN_TABLE);
       }
@@ -1107,7 +1107,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 
    keepVal = tScan(table, -1);
    if (keepVal!=1 || nToFind!=0) {
-      printf("error failed to link tables\n");
+      rodsLog(LOG_ERROR,"error failed to link tables\n");
       return(CAT_FAILED_TO_LINK_TABLES);
    }
    else {

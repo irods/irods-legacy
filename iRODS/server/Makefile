@@ -136,6 +136,9 @@ endif
 ifdef KRB_AUTH
 CFLAGS +=       -DKRB_AUTH
 endif
+ifdef IRODS_SYSLOG
+CFLAGS +=		-DIRODS_SYSLOG
+endif
 
 # re
 ifdef RULE_ENGINE

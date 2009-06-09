@@ -3,6 +3,12 @@
 
 #include "rods.h"
 
+#ifdef IRODS_SYSLOG
+#ifndef windows_platform
+#include <syslog.h>
+#endif
+#endif
+
 #include "rodsLog.h"
 #include "rcGlobalExtern.h"
 #include "rcMisc.h"
@@ -804,7 +810,6 @@ static int verbosityLevel=LOG_ERROR;
 static int sqlVerbosityLevel=0;
 static pid_t myPid=0;
 
-
 #ifdef windows_platform
 static void rodsNtElog(char *msg);
 #endif
@@ -823,13 +828,31 @@ rodsLog(int level, char *formatStr, ...) {
    FILE *errOrOut;
    va_list ap;
 
+#ifdef IRODS_SYSLOG
+   char *myZone = getenv("spProxyRodsZone");
+   int okToLog = 0;
+#endif
+
    char extraInfo[100];
 #ifdef windows_platform
    char nt_log_msg[2048];
 #endif
 
-   if (level < verbosityLevel) return;
+#ifdef IRODS_SYSLOG
+   if (level <= verbosityLevel)
+   {
+      okToLog = 1;
+   }
+   
+   if (level == LOG_SQL && sqlVerbosityLevel == 1)
+   {
+      okToLog = 1;
+   }
 
+   if (!okToLog) return;
+#else
+   if (level < verbosityLevel) return;
+#endif
 
    va_start(ap, formatStr);
    i = vsnprintf(bigString, BIG_STRING_LEN-1, formatStr, ap);
@@ -860,14 +883,27 @@ rodsLog(int level, char *formatStr, ...) {
    if (level == LOG_SYS_WARNING) prefix="SYSTEM WARNING";
    if (level == LOG_ERROR) prefix="ERROR";
    if (level == LOG_NOTICE) prefix="NOTICE";
+#ifdef IRODS_SYSLOG
+   if (level == LOG_DEBUG) prefix="DEBUG";
+   if (level == LOG_DEBUG1) prefix="DEBUG1";
+   if (level == LOG_DEBUG2) prefix="DEBUG2";
+   if (level == LOG_DEBUG3) prefix="DEBUG3";
+   if (ProcessType == SERVER_PT || ProcessType == AGENT_PT ||
+     ProcessType == RE_SERVER_PT) 
+#else
    if (level <= LOG_DEBUG) prefix="DEBUG";
-   if (bigString[strlen(bigString)-1]=='\n') 
+   if (bigString[strlen(bigString)-1]=='\n')
+#endif
    {
+#ifdef IRODS_SYSLOG
+		syslog(LOG_DAEMON|LOG_NOTICE,"%s - %s: %s", myZone, prefix, bigString);
+#else
 #ifndef windows_platform
       fprintf(errOrOut, "%s%s: %s", extraInfo, prefix, bigString);
 #else
 	  sprintf(nt_log_msg, "%s%s: %s", extraInfo, prefix, bigString);
 	  rodsNtElog(nt_log_msg);
+#endif
 #endif
    }
    else 

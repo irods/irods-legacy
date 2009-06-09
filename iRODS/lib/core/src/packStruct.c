@@ -45,7 +45,7 @@ packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt)
 	/* add a NULL termination */
 	extendPackedOutput (&packedOutput, 1, (void **) &outPtr);
 	*outPtr = '\0';
-        if (getRodsLogLevel () <= LOG_DEBUG2) {
+        if (getRodsLogLevel () >= LOG_DEBUG2) {
 	    printf ("packed XML: \n%s\n", (char *) packedOutput.bBuf->buf);
 	}
     }
