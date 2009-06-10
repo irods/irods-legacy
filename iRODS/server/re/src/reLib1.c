@@ -347,6 +347,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
 
+
   if (GlobalAllRuleExecFlag != 0) {
     ii = GlobalAllRuleExecFlag;
     i = applyAllRules(inAction, inMsParamArray, rei, reiSaveFlag, GlobalAllRuleExecFlag);
@@ -456,7 +457,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
       freeRuleExecInfoStruct(saveRei, 0);
   }
   if (i == NO_MORE_RULES_ERR) {
-    rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, i);
+    rodsLog (LOG_NOTICE,"applyRule Failed for action 1: %s with status %i",action, i);
     return(i);
   }
 
@@ -464,7 +465,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 
 
   if (status < 0) {
-      rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, status);
+      rodsLog (LOG_NOTICE,"applyRule Failed for action 2: %s with status %i",action, status);
   }
   return(status);
 }
@@ -502,13 +503,13 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
     i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
-    GlobalAllRuleExecFlag = 0;
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
     return(i);
   }
 
   i = parseAction(inAction,action,args, &argc);
   if (i != 0) {
-    GlobalAllRuleExecFlag = 0;
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
     return(i);
   }
 
@@ -521,7 +522,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     i = executeMicroServiceNew(action,inMsParamArray,rei);
 #endif
     i = executeMicroServiceNew(inAction,inMsParamArray,rei);
-    GlobalAllRuleExecFlag = 0;
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
     return(i);
   }
 
@@ -531,7 +532,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
     if (outMsParamArray == NULL) {
       i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
       if (i != 0) {
-	GlobalAllRuleExecFlag = 0;
+	if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
 	return(i);
       }
       outMsParamArray = rei->msParamArray;
@@ -578,7 +579,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
 	  /**** finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
-		GlobalAllRuleExecFlag = 0;
+		if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
 		return(status); ***/
 	  success = 1;
 	}
@@ -586,7 +587,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
 	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);
-	  GlobalAllRuleExecFlag = 0;
+	  if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
 	  return(status);
 	}
 	else if ( status == RETRY_WITHOUT_RECOVERY_ERR) {
@@ -611,20 +612,21 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
       freeRuleExecInfoStruct(saveRei, 0);
   }
   if (i == NO_MORE_RULES_ERR) {
-    rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, i);
-    GlobalAllRuleExecFlag = 0;
+    if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
     if (success == 1)
       return(0);
-    else
+    else {
+      rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, i);
       return(i);
+    }
   }
 
   finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
 
   if (status < 0) {
-      rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, status);
+      rodsLog (LOG_NOTICE,"applyRule Failed for action 4: %s with status %i",action, status);
   }
-  GlobalAllRuleExecFlag = 0;
+  if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
   if (success == 1)
     return(0);
   else
@@ -788,6 +790,8 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
     reTestFlag = 0;
     reLoopBackFlag = 0;
   }
+  if (getenv("GLOBALALLRULEEXECFLAG") != NULL)
+    GlobalAllRuleExecFlag = 9;
 
   delayStack.size = NAME_LEN;
   delayStack.len = 0;
