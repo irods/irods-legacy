@@ -31,6 +31,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
     int l1descInx;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    int savedStatus = 0;
 
     /* open the structured file */
     memset (&dataObjInp, 0, sizeof (dataObjInp));
@@ -52,20 +53,15 @@ structFileExtAndRegInp_t *structFileBundleInp)
         return status;
     }
 
-    addKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW, "");
-    l1descInx = _rsDataObjOpen (rsComm, &dataObjInp);
-
+    l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
     if (l1descInx < 0) {
-	    rmKeyVal (&dataObjInp.condInput, NO_OPEN_FLAG_KW);
-	    l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
-
-	if (l1descInx < 0) {
-            rodsLog (LOG_ERROR,
-              "rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
-              dataObjInp.objPath, l1descInx);
-            return (l1descInx);
-	}
+        rodsLog (LOG_ERROR,
+          "rsStructFileBundle: rsDataObjCreate of %s error. status = %d",
+          dataObjInp.objPath, l1descInx);
+        return (l1descInx);
     }
+    l3Close (rsComm, l1descInx);
+    L1desc[l1descInx].l3descInx = 0;
 
 #if 0
     status = initStructFileOprInp (rsComm, &structFileOprInp, 
@@ -165,6 +161,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
           "rsStructFileBundle: phyBundle of %s error. stat = %d",
           L1desc[l1descInx].dataObjInfo->objPath, status);
 	L1desc[l1descInx].bytesWritten = 0;
+	savedStatus = status;
     } else {
         /* mark it was written so the size would be adjusted */
         L1desc[l1descInx].bytesWritten = 1;
@@ -175,8 +172,11 @@ structFileExtAndRegInp_t *structFileBundleInp)
     rmdir (phyBunDir);
 
     dataObjCloseInp.l1descInx = l1descInx;
-    rsDataObjClose (rsComm, &dataObjCloseInp);
+    status = rsDataObjClose (rsComm, &dataObjCloseInp);
 
-    return (status);
+    if (status >= 0)
+	return savedStatus;
+    else
+        return (status);
 }
 

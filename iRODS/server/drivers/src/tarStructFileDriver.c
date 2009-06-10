@@ -657,24 +657,20 @@ tarSubStructFileTruncate (rsComm_t *rsComm, subFile_t *subFile)
     return status;
 }
 
-/* this is the driver handler for structFileSync */
-
+#if 0	/* no long use tarLogStructFileSync */
 int
 tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 {
     int status;
 
     if ((structFileOprInp->oprType & LOGICAL_BUNDLE) != 0) {
-#ifndef TAR_EXEC_PATH	/* XXXXX take out temporarily */
 	status = tarLogStructFileSync (rsComm, structFileOprInp);
-#endif
     } else {
 	status = tarPhyStructFileSync (rsComm, structFileOprInp);
     }
     return (status);
 }
 
-#ifndef TAR_EXEC_PATH	/* XXXXX take out temporarily */
 /* tarLogStructFileSync - bundle files in the cacheDir UNIX directory,
  */
 int
@@ -807,10 +803,12 @@ rmTmpDirAll (char *myDir)
 }
 
 
-/* tarPhyStructFileSync - bundle files in the cacheDir UNIX directory,
+/* this is the driver handler for structFileSync */
+
+/* tarStructFileSync - bundle files in the cacheDir UNIX directory,
  */
 int
-tarPhyStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
+tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 {
     int structFileInx;
     specColl_t *specColl;
@@ -1261,15 +1259,44 @@ extractTarFile (int structFileInx)
     return status;
 }
 
+#ifdef TAR_EXEC_PATH
 int
 extractTarFileWithExec (int structFileInx)
 {
     int status;
+    char cmdStr[MAX_NAME_LEN];
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+
+    if (StructFileDesc[structFileInx].inuseFlag <= 0) {
+        rodsLog (LOG_NOTICE,
+          "extractTarFileWithExec: structFileInx %d not in use", 
+	  structFileInx);
+        return (SYS_STRUCT_FILE_DESC_ERR);
+    }
+
+    if (specColl == NULL || strlen (specColl->cacheDir) == 0 ||
+     strlen (specColl->phyPath) == 0) {
+        rodsLog (LOG_NOTICE,
+          "extractTarFileWithExec: Bad specColl for structFileInx %d ",
+          structFileInx);
+        return (SYS_STRUCT_FILE_DESC_ERR);
+    }
+
+    snprintf (cmdStr, MAX_NAME_LEN, "%s -xf %s -C %s",
+      TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
+
+    status = system (cmdStr);
+
+    if (status != 0) {
+        rodsLog (LOG_ERROR,
+          "extractTarFileWithExec:: tar of %s to %s failed. stat = %d",
+          specColl->cacheDir, specColl->phyPath, status);
+        status = SYS_EXEC_TAR_ERR;
+    }
 
     return status;
 }
-
-#ifndef TAR_EXEC_PATH
+#else	/* TAR_EXEC_PATH */
 int
 extractTarFileWithLib (int structFileInx)
 {
@@ -1398,15 +1425,60 @@ syncCacheDirToTarfile (int structFileInx, int oprType)
     return (status);
 }
 
+#ifdef TAR_EXEC_PATH
 int
 bundleCacheDirWithExec (int structFileInx)
 {
     int status;
+#if 0
+    execCmd_t execCmdInp;
+    execCmdOut_t *execCmdOut = NULL;
+    rsComm_t *rsComm = StructFileDesc[structFileInx].rsComm;
+#endif
+    char cmdStr[MAX_NAME_LEN];
 
+    specColl_t *specColl = StructFileDesc[structFileInx].specColl;
+    if (specColl == NULL || specColl->cacheDirty <= 0 ||
+      strlen (specColl->cacheDir) == 0) return 0;
+
+    snprintf (cmdStr, MAX_NAME_LEN, "%s -chlf %s -C %s .",
+      TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
+
+    status = system (cmdStr);
+
+    if (status != 0) {
+        rodsLog (LOG_ERROR,
+          "bundleCacheDirWithExec: tar of %s to %s failed. stat = %d",
+          specColl->cacheDir, specColl->phyPath, status);
+	status = SYS_EXEC_TAR_ERR;
+    }
+#if 0
+    bzero (&execCmdInp, sizeof (execCmdInp));
+
+    rstrcpy (execCmdInp.cmd, "tar", LONG_NAME_LEN);
+    snprintf (execCmdInp.cmdArgv, MAX_NAME_LEN, "-chlf %s -C %s .", 
+       specColl->phyPath, specColl->cacheDir);
+
+    status = rsExecCmd (rsComm, &execCmdInp, &execCmdOut);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "bundleCacheDirWithExec: rsExecCmd of %s to %s failed. stat = %d",
+          specColl->cacheDir, specColl->phyPath, status);
+        if (execCmdOut != NULL) {
+            if (execCmdOut->stderrBuf.buf != NULL) {
+                rodsLog (LOG_ERROR,
+                  "error msg from tar: %s", 
+		  (char *) execCmdOut->stderrBuf.buf);
+            }
+	}
+    }
+    /* XXXXX need to free execCmdOut */
+#endif
     return status;
 }
 
-#ifndef TAR_EXEC_PATH
+#else 	/* TAR_EXEC_PATH */
 int
 bundleCacheDirWithLib (int structFileInx)
 {
