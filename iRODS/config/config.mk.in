@@ -212,11 +212,12 @@ endif
 # into irodsAgent. TAR_EXEC_PATH specifies the path of the tar executable
 # is located if the tar executable is to be used for tar operation.
 # Otherwise tarDir can be used to specify the directory path of libtar.
-# Both TAR_EXEC_PATH  and tarDir should NOT be specified.
-# TAR_STRUCT_FILE = 1
+# Both TAR_EXEC_PATH  and tarDir should NOT be specified. By default, 
+# TAR_EXEC_PATH is on and tarDir is off.
+TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
-# TAR_EXEC_PATH=/bin/tar
-tarDir=/data/mwan/tar/libtar-1.2.11
+TAR_EXEC_PATH=/bin/tar
+# tarDir=/data/mwan/tar/libtar-1.2.11
 endif
 
 #
