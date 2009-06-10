@@ -463,6 +463,19 @@ acPreProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Pat
 #
 acPostProcForModifyAccessControl(*RecursiveFlag,*AccessLevel,*UserName,*Zone,*Path)||nop|nop
 #
+# 46) acPreProcForObjRename - This rule set the pre-processing policy for
+# renaming (logicaly moving) data and collections
+#
+#acPreProcForObjRename(*sourceObject,*destObject)||writeLine(serverLog,"TEST:acPreProcForObjRename from *sourceObject to *destObject")|nop
+acPreProcForObjRename(*sourceObject,*destObject)||nop|nop
+#
+# 47) acPostProcForObjRename - This rule set the post-processing policy for
+# renaming (logicaly moving) data and collections
+#
+#acPostProcForObjRename(*sourceObject,*destObject)||writeLine(serverLog,"TEST:acPostProcForObjRename from *sourceObject to *destObject")|nop
+acPostProcForObjRename(*sourceObject,*destObject)||nop|nop
+#
+#
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate||acSetCreateConditions##acDOC|nop##null
