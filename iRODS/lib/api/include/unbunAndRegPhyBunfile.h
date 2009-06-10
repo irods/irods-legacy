@@ -38,7 +38,7 @@ int
 regPhySubFile (rsComm_t *rsComm, char *subfilePath,
 dataObjInfo_t *bunDataObjInfo, rescInfo_t *rescInfo);
 int
-rmFilesInUnixDir (char *phyBunDir);
+rmLinkedFilesInUnixDir (char *phyBunDir);
 #else
 #define RS_UNBUN_AND_REG_PHY_BUNFILE NULL
 #endif

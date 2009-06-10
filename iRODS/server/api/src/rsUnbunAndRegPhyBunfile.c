@@ -300,7 +300,7 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
     /* set the cacheDir */
     rstrcpy (structFileOprInp.specColl->cacheDir, phyBunDir, MAX_NAME_LEN);
 
-    rmFilesInUnixDir (phyBunDir);
+    rmLinkedFilesInUnixDir (phyBunDir);
     status = rsStructFileExtract (rsComm, &structFileOprInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -334,7 +334,7 @@ rodsServerHost_t *rodsServerHost)
 }
 
 int
-rmFilesInUnixDir (char *phyBunDir)
+rmLinkedFilesInUnixDir (char *phyBunDir)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
@@ -359,9 +359,20 @@ rmFilesInUnixDir (char *phyBunDir)
 	    continue;
         }
 
-        if ((statbuf.st_mode & S_IFREG) == 0) continue;
-
-	unlink (subfilePath);
+        if ((statbuf.st_mode & S_IFREG) != 0) {
+	    if (statbuf.st_nlink >= 2) {
+		/* only unlink files with multi-links */
+	        unlink (subfilePath);
+	    } else {
+        	rodsLog (LOG_ERROR,
+        	  "rmLinkedFilesInUnixDir: st_nlink if %s is only %d",
+        	  subfilePath, statbuf.st_nlink);
+	    }
+	} else {	/* a directory */
+	    status = rmLinkedFilesInUnixDir (subfilePath);
+	    /* rm subfilePath but not phyBunDir */
+            rmdir (subfilePath);
+	}
     }
     return 0;
 }

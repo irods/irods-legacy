@@ -142,7 +142,8 @@ structFileExtAndRegInp_t *structFileBundleInp)
                 snprintf (tmpPath, MAX_NAME_LEN, "%s/%s/%s",
                   phyBunDir, collEnt->collName + collLen, collEnt->dataName);
             }
-	    mkdirR (phyBunDir, collEnt->collName, DEFAULT_DIR_MODE);
+	    mkDirForFilePath (UNIX_FILE_TYPE, rsComm, phyBunDir, 
+	      tmpPath, DEFAULT_DIR_MODE);
             /* add a link */
             status = link (collEnt->phyPath, tmpPath);
             if (status < 0) {
@@ -163,14 +164,15 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: phyBundle of %s error. stat = %d",
           L1desc[l1descInx].dataObjInfo->objPath, status);
-        rmFilesInUnixDir (phyBunDir);
-        rmdir (phyBunDir);
 	L1desc[l1descInx].bytesWritten = 0;
-        return status;
     } else {
         /* mark it was written so the size would be adjusted */
         L1desc[l1descInx].bytesWritten = 1;
     }
+
+    /* XXXXX need to recursive rm. But this could be dangerous */
+    rmLinkedFilesInUnixDir (phyBunDir);
+    rmdir (phyBunDir);
 
     dataObjCloseInp.l1descInx = l1descInx;
     rsDataObjClose (rsComm, &dataObjCloseInp);

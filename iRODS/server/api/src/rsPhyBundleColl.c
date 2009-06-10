@@ -265,7 +265,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
         rodsLog (LOG_ERROR,
           "bundlleAndRegSubFiles: rsStructFileSync of %s error. stat = %d",
           L1desc[l1descInx].dataObjInfo->objPath, status);
-        rmFilesInUnixDir (phyBunDir);
+        rmLinkedFilesInUnixDir (phyBunDir);
         rmdir (phyBunDir);
         rsDataObjClose (rsComm, &dataObjCloseInp);
         tmpBunReplCache = bunReplCacheHeader->bunReplCacheHead;
