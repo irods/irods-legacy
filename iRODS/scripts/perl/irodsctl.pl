@@ -209,6 +209,12 @@ $reServerOnIes = 1;
 # use 1 to make it log
 # $RETESTFLAG=1;
 
+# GLOBALALLRULEEXECFLAG - turn this on if you want to
+# every rule invocation to try every alternative of the rule definition
+# use 1 to turn it on and comment it out for single-successful execution
+#
+# $GLOBALALLRULEEXECFLAG=1;
+
 				  $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
 if ($irodsEnvFile)		{ $ENV{'irodsEnvFile'}        = $irodsEnvFile; }
 if ($irodsPort)			{ $ENV{'irodsPort'}           = $irodsPort; }
@@ -221,7 +227,7 @@ if ($reServerOnThisServer)	{ $ENV{'reServerOnThisServer'}= $reServerOnThisServer
 if ($reServerOption)		{ $ENV{'reServerOption'}      = $reServerOption; }
 if ($irodsReconnect)		{ $ENV{'irodsReconnect'}    = $irodsReconnect; }
 if ($RETESTFLAG)		{ $ENV{'RETESTFLAG'}          = $RETESTFLAG; }
-
+if ($GLOBALALLRULEEXECFLAG)    { $ENV{'GLOBALALLRULEEXECFLAG'} = $GLOBALALLRULEEXECFLAG; }
 
 
 
