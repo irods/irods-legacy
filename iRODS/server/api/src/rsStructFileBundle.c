@@ -184,9 +184,9 @@ structFileExtAndRegInp_t *structFileBundleInp)
             } else {
                 snprintf (tmpPath, MAX_NAME_LEN, "%s/%s/%s",
                   phyBunDir, collEnt->collName + collLen, collEnt->dataName);
+	        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, phyBunDir, 
+	          tmpPath, DEFAULT_DIR_MODE);
             }
-	    mkDirForFilePath (UNIX_FILE_TYPE, rsComm, phyBunDir, 
-	      tmpPath, DEFAULT_DIR_MODE);
             /* add a link */
             status = link (collEnt->phyPath, tmpPath);
             if (status < 0) {
