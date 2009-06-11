@@ -489,7 +489,17 @@ makeAction(char *outAction,char *action, char *args[], int argc, int len)
   for (i = 0; i < argc; i++) {
     if (i != 0)
       strcat(outAction,",");
-    rstrcat(outAction, args[i],len);
+    if (args[i][0] != '"') {
+      if (strstr(args[i], ",") != 0) {
+	strcat(outAction,"\"");
+	rstrcat(outAction, args[i],len);
+	strcat(outAction,"\"");
+      }
+      else
+	rstrcat(outAction, args[i],len);
+    }
+    else
+      rstrcat(outAction, args[i],len);
   }
   rstrcat(outAction,")",len);
   return(0);
