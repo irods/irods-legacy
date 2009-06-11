@@ -137,7 +137,7 @@ dataObjInfo_t **dataObjInfoHead)
             return (status);
         }
 	/* dataObjInfoHead may be outdated */
-	dataObjInfoHead = NULL;
+	*dataObjInfoHead = NULL;
         status = getDataObjInfoIncSpecColl (rsComm, dataObjUnlinkInp,
           dataObjInfoHead);
 
