@@ -20,7 +20,23 @@ structFileExtAndRegInp_t *structFileBundleInp)
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
     rodsHostAddr_t rescAddr;
+    dataObjInp_t dataObjInp;
     rescGrpInfo_t *rescGrpInfo = NULL;
+
+    memset (&dataObjInp, 0, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, structFileBundleInp->objPath,
+      MAX_NAME_LEN);
+
+    remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
+      REMOTE_CREATE);
+
+    if (remoteFlag < 0) {
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
+        status = rcStructFileBundle (rodsServerHost->conn,
+          structFileBundleInp);
+        return status;
+    }
 
     if ((destRescName = 
      getValByKey (&structFileBundleInp->condInput, DEST_RESC_NAME_KW)) == NULL 
@@ -29,10 +45,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
         return USER_NO_RESC_INPUT_ERR;
     }
 
-    if (isLocalZone (structFileBundleInp->collection) == 0) {
-        /* can only do local zone */
-        return SYS_INVALID_ZONE_NAME;
-    }
     status = _getRescInfo (rsComm, destRescName, &rescGrpInfo);
     if (status < 0) {
          rodsLog (LOG_ERROR,
@@ -76,8 +88,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
 #endif
     chkObjPermAndStat_t chkObjPermAndStatInp;
     int l1descInx;
-    int remoteFlag;
-    rodsServerHost_t *rodsServerHost;
     int savedStatus = 0;
 
     /* open the structured file */
@@ -89,16 +99,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
     replKeyVal (&structFileBundleInp->condInput, &dataObjInp.condInput);
 
     dataObjInp.openFlags = O_WRONLY;  
-    remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
-      REMOTE_CREATE);
-
-    if (remoteFlag < 0) {
-        return (remoteFlag);
-    } else if (remoteFlag == REMOTE_HOST) {
-        status = rcStructFileBundle (rodsServerHost->conn, 
-	  structFileBundleInp);
-        return status;
-    }
 
     l1descInx = rsDataObjCreate (rsComm, &dataObjInp);
     if (l1descInx < 0) {
@@ -196,6 +196,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
                 return (UNIX_FILE_LINK_ERR - errno);
             }
         } else {        /* a collection */
+	    if (strlen (collEnt->collName) + 1 <= collLen) continue;
             snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",
               phyBunDir, collEnt->collName + collLen);
             mkdirR (phyBunDir, tmpPath, DEFAULT_DIR_MODE);
