@@ -22,6 +22,13 @@
 int
 rsStructFileBundle (rsComm_t *rsComm, 
 structFileExtAndRegInp_t *structFileBundleInp);
+int
+_rsStructFileBundle (rsComm_t *rsComm,
+structFileExtAndRegInp_t *structFileBundleInp);
+int
+remoteStructFileBundle (rsComm_t *rsComm,
+structFileExtAndRegInp_t *structFileBundleInp, 
+rodsServerHost_t *rodsServerHost);
 #else
 #define RS_STRUCT_FILE_BUNDLE NULL
 #endif
