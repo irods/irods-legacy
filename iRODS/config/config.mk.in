@@ -216,7 +216,7 @@ endif
 # TAR_EXEC_PATH is on and tarDir is off.
 TAR_STRUCT_FILE = 1
 ifdef TAR_STRUCT_FILE
-TAR_EXEC_PATH=/bin/tar
+TAR_EXEC_PATH=tar
 # tarDir=/data/mwan/tar/libtar-1.2.11
 endif
 
