@@ -165,7 +165,10 @@ char *destDir, int mode)
               tmpPath, status);
             return status;
         }
+#if 0	/* a fix from AndyS */
         while (tmpLen && tmpPath[tmpLen] != '\0')
+#endif
+        while (tmpPath[tmpLen] != '\0')
             tmpLen ++;
     }
     return 0;
