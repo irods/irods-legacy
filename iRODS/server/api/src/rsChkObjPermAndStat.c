@@ -147,11 +147,16 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
                     freeCollEntForChkColl (curCollEnt);
                     curCollEnt = NULL;
                     if (curCopyGood == False) {
-                        rodsLog (LOG_ERROR,
-                         "chkCollForBundleOpr: %s does not have a good copy in %s",
-                          myPath, resource);
-			rsCloseCollection (rsComm, &handleInx);
-                        return SYS_COPY_NOT_EXIST_IN_RESC;
+			status = replDataObjForBundle (rsComm, 
+			  curCollEnt->collName, curCollEnt->dataName, 
+			  resource, 0, NULL);
+			if (status < 0) {
+                            rodsLog (LOG_ERROR,
+                             "chkCollForBundleOpr: %s no good copy in %s",
+                              myPath, resource);
+			    rsCloseCollection (rsComm, &handleInx);
+                            return SYS_COPY_NOT_EXIST_IN_RESC;
+			}
                     }
                     /* we have a good copy. Check the permission */
                     myId = checkAndGetObjectId (rsComm, "-d", myPath,
@@ -183,10 +188,14 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
     /* handle what's left */
     if (curCollEnt != NULL) {
 	if (curCopyGood == False) {
-            rodsLog (LOG_ERROR,
-             "chkCollForBundleOpr:a file in %s does not have a good copy in %s",
-              chkObjPermAndStatInp->objPath, resource);
-            status = SYS_COPY_NOT_EXIST_IN_RESC;
+            status = replDataObjForBundle (rsComm, curCollEnt->collName, 
+	      curCollEnt->dataName, resource, 0, NULL);
+	    if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "chkCollForBundleOpr:%s does not have a good copy in %s",
+                  chkObjPermAndStatInp->objPath, resource);
+                status = SYS_COPY_NOT_EXIST_IN_RESC;
+	    }
 	} else {
 	    freeCollEntForChkColl (curCollEnt);
 	}

@@ -228,7 +228,7 @@ char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader)
     if (curSubFileCond->subPhyPath[0] == '\0') {
         /* don't have a good cache copy yet. make one */
         status = replDataObjForBundle (rsComm, curSubFileCond->collName,
-          curSubFileCond->dataName, myRescName, &dataObjInfo);
+          curSubFileCond->dataName, myRescName, 1, &dataObjInfo);
         if (status >= 0) {
             setSubPhyPath (phyBunDir, curSubFileCond->dataId, 
 	      curSubFileCond->subPhyPath);
@@ -444,7 +444,7 @@ isDataObjBundled (rsComm_t *rsComm, collEnt_t *collEnt)
 
 int
 replDataObjForBundle (rsComm_t *rsComm, char *collName, char *dataName,
-char *rescName, dataObjInfo_t *outCacheObjInfo)
+char *rescName, int adminFlag, dataObjInfo_t *outCacheObjInfo)
 {
     transStat_t transStat;
     dataObjInp_t dataObjInp;
@@ -457,7 +457,8 @@ char *rescName, dataObjInfo_t *outCacheObjInfo)
 
     snprintf (dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collName, dataName);
     addKeyVal (&dataObjInp.condInput, BACKUP_RESC_NAME_KW, rescName);
-    addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_KW, "");
+    if (adminFlag > 0) 
+        addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_KW, "");
 
     status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp, &transStat,
       outCacheObjInfo);
