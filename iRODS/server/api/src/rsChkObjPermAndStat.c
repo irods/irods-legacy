@@ -144,8 +144,6 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
                     snprintf (myPath, MAX_NAME_LEN, "%s/%s", 
 		      curCollEnt->collName,
                       curCollEnt->dataName);
-                    freeCollEntForChkColl (curCollEnt);
-                    curCollEnt = NULL;
                     if (curCopyGood == False) {
 			status = replDataObjForBundle (rsComm, 
 			  curCollEnt->collName, curCollEnt->dataName, 
@@ -155,9 +153,13 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
                              "chkCollForBundleOpr: %s no good copy in %s",
                               myPath, resource);
 			    rsCloseCollection (rsComm, &handleInx);
+                    	    freeCollEntForChkColl (curCollEnt);
                             return SYS_COPY_NOT_EXIST_IN_RESC;
 			}
                     }
+                    freeCollEntForChkColl (curCollEnt);
+                    curCollEnt = NULL;
+
                     /* we have a good copy. Check the permission */
                     myId = checkAndGetObjectId (rsComm, "-d", myPath,
                       ACCESS_READ_OBJECT);

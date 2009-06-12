@@ -173,6 +173,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rodsLog (LOG_ERROR,
           "rsStructFileBundle: rsOpenCollection of %s error. status = %d",
           collInp.collName, handleInx);
+        rmdir (phyBunDir);
         return (handleInx);
     }
 
@@ -195,6 +196,8 @@ structFileExtAndRegInp_t *structFileBundleInp)
                 rodsLog (LOG_ERROR,
                   "rsStructFileBundle: link error %s to %s. errno = %d",
                   collEnt->phyPath, tmpPath, errno);
+                rmLinkedFilesInUnixDir (phyBunDir);
+                rmdir (phyBunDir);
                 return (UNIX_FILE_LINK_ERR - errno);
             }
         } else {        /* a collection */
@@ -217,7 +220,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
         L1desc[l1descInx].bytesWritten = 1;
     }
 
-    /* XXXXX need to recursive rm. But this could be dangerous */
     rmLinkedFilesInUnixDir (phyBunDir);
     rmdir (phyBunDir);
 
