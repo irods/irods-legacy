@@ -1224,6 +1224,7 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *      assumed to be a keyword for backward compatibility.
  *    Valid keyWds are : "ChksumAll" - checksum all replicas. This keyWd has 
  *			    no value. But the '=' character is still needed.
+ *			 "verifyChksum" - verify the chksum value.
  *                       "forceChksum" - checksum data-objects even if a 
  *			    checksum alreay exists in iCAT. This keyWd has no 
  *			    value.
@@ -1273,7 +1274,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
       < 0) {
 #else
     validKwFlags = CHKSUM_ALL_FLAG | FORCE_CHKSUM_FLAG | REPL_NUM_FLAG |
-      OBJ_PATH_FLAG;
+      OBJ_PATH_FLAG | VERIFY_CHKSUM_FLAG;
    if ((rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, 
       myDataObjInp, KEY_WORD_KW, validKwFlags, &outBadKeyWd)) < 0) {
 #endif
