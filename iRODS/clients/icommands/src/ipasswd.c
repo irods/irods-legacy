@@ -130,18 +130,22 @@ main(int argc, char **argv)
        printf("Error getting current password\n");
        exit(1);
     }
+#if 0
     obfEncodeByKey(buf0, buf1, buf2);
+#else
+    obfEncodeByKeyV2(buf0, buf1, getSessionSignitureClientside(), buf2);
+#endif
 
     userAdminInp.arg0 = "userpw";
     userAdminInp.arg1 = myEnv.rodsUserName;
     userAdminInp.arg2 = "password";
     userAdminInp.arg3 = buf2;
-	userAdminInp.arg4 = "";
-	userAdminInp.arg5 = "";
-	userAdminInp.arg6 = "";
-	userAdminInp.arg7 = "";
-	userAdminInp.arg8 = "";
-	userAdminInp.arg9 = "";
+    userAdminInp.arg4 = "";
+    userAdminInp.arg5 = "";
+    userAdminInp.arg6 = "";
+    userAdminInp.arg7 = "";
+    userAdminInp.arg8 = "";
+    userAdminInp.arg9 = "";
 
     status = rcUserAdmin(Conn, &userAdminInp);
     if (status != 0) {

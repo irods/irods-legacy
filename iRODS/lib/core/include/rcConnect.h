@@ -151,6 +151,9 @@ cleanRcComm (rcComm_t *conn);
 int
 clientLogin(rcComm_t *conn);
 
+char *
+getSessionSignitureClientside();
+
 int
 clientLoginWithPassword(rcComm_t *conn, char* password);
 #if 0

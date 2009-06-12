@@ -532,7 +532,7 @@ int
 doCommand(char *cmdToken[]) {
    char buf0[MAX_PASSWORD_LEN+10];
    char buf1[MAX_PASSWORD_LEN+10];
-   char buf2[MAX_PASSWORD_LEN+10];
+   char buf2[MAX_PASSWORD_LEN+100];
    if (veryVerbose) {
       int i;
       printf("executing command:");
@@ -636,6 +636,7 @@ doCommand(char *cmdToken[]) {
       if (strcmp(cmdToken[2],"password") ==0) {
 	 int i, len, lcopy;
 	 struct stat statbuf;
+	 char *key2;
 	 /* this is a random string used to pad, arbitrary, but must match
 	    the server side: */
 	 char rand[]="1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs"; 
@@ -662,7 +663,8 @@ doCommand(char *cmdToken[]) {
 	    return(0);
 #endif
 	 }
-	 obfEncodeByKey(buf0, buf1, buf2);
+	 key2 = getSessionSignitureClientside();
+	 obfEncodeByKeyV2(buf0, buf1, key2, buf2);
 	 cmdToken[3]=buf2;
       }
       generalAdmin("modify", "user", cmdToken[1], cmdToken[2],
@@ -852,7 +854,27 @@ doCommand(char *cmdToken[]) {
       printf("Converted to local time: %s\n", myString);
       return(0);
    }
-
+   /* test is only used for testing so is not included in the help */
+   if (strcmp(cmdToken[0],"test") == 0) {
+      char* result;
+      result = obfGetMD5Hash(cmdToken[1]);
+      printf("md5:%s\n",result);
+      return(0);
+   }
+   /* 2spass is only used for testing so is not included in the help */
+   if (strcmp(cmdToken[0],"2spass") == 0) {
+      char scrambled[MAX_PASSWORD_LEN+10];
+      obfEncodeByKeyV2(cmdToken[1], cmdToken[2], cmdToken[3], scrambled);
+      printf("Version 2 scrambled form is:%s\n", scrambled);
+      return(0);
+   }
+   /* 2dspass is only used for testing so is not included in the help */
+   if (strcmp(cmdToken[0],"2dspass") == 0) {
+      char unscrambled[MAX_PASSWORD_LEN+10];
+      obfDecodeByKeyV2(cmdToken[1], cmdToken[2], cmdToken[3], unscrambled);
+      printf("Version 2 unscrambled form is:%s\n", unscrambled);
+      return(0);
+   }
    if (*cmdToken[0] != '\0') {
       printf("unrecognized command, try 'help'\n");
       return(-2);

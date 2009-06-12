@@ -61,6 +61,8 @@ int timeVal=0;
 int isTemp=0;
 int doTemp=0;
 
+int cipherBlockChaining=0;
+
 /* 
   What can be a main routine for some simple tests.
  */
@@ -280,7 +282,7 @@ obfSavePw(int promptOpt, int fileOpt, int printOpt, char *pwArg)
 
   }
   else {
-    strncpy(inbuf, pwArg, MAX_PASSWORD_LEN);
+    strncpy(inbuf, pwArg, MAX_PASSWORD_LEN); 
   }
   i = strlen(inbuf);
   if (i < 1) return NO_PASSWORD_ENTERED;
@@ -779,6 +781,8 @@ obfEncodeByKey(char *in, char *key, char *out) {
    int wheel[26+26+10+15];
 
    int i, j;
+   int pc;    /* previous character */
+
    unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
    char keyBuf[100];
    char *cpIn, *cpOut;
@@ -818,6 +822,7 @@ obfEncodeByKey(char *in, char *key, char *out) {
    cpIn=in;
    cpOut=out;
    cpKey=buffer;
+   pc = 0;
    for (;;cpIn++) {
       int k, found;
       k = (int)*cpKey++;
@@ -825,9 +830,13 @@ obfEncodeByKey(char *in, char *key, char *out) {
       found=0;
       for (i=0;i<wheel_len;i++) {
 	 if (*cpIn == (char)wheel[i]) {
-	    j = i + k;
+	    j = i + k + pc;
 	    j = j % wheel_len;
 	    *cpOut++ = (char)wheel[j];
+	    if (cipherBlockChaining) {
+	       pc = *(cpOut-1);
+	       pc = pc & 0xff;
+	    }
 	    found = 1;
 	    break;
 	 }
@@ -841,6 +850,48 @@ obfEncodeByKey(char *in, char *key, char *out) {
       }
    }
 }
+
+/*
+  Obfuscate a string using an input key, version 2.  Version two is
+  like the original but uses two key and a hash of them instead of the
+  key itself (to keep the key itself even more undiscoverable).  The
+  second key is a session signiture (based on the challenge) (not
+  secret but known to both client and server and unique for each
+  connection).  It also uses a quasi-cipher-block-chaining alrogithm
+  and adds a random character (so the 'out' is different even with the
+  same 'in' each time).
+*/
+#define V2_Prefix "A.ObfV2"
+
+void
+obfEncodeByKeyV2(char *in, char *key, char *key2, char *out) {
+   struct timeval nowtime;
+   char *myKey2;
+   char myKey[200];
+   char myIn[200];
+   int rval;
+
+   strncpy(myIn, V2_Prefix, 10);
+   strncat(myIn, in, 150);
+
+   strncpy(myKey, key, 90);
+   strncat(myKey, key2, 100);
+
+/*
+ get a pseudo random number
+*/
+   (void)gettimeofday(&nowtime, (struct timezone *)0);
+   rval = nowtime.tv_usec & 0x1f;
+   myIn[0]+=rval;  /* and add it to the leading character */
+
+
+   myKey2 = obfGetMD5Hash(myKey);
+
+   cipherBlockChaining=1;
+   obfEncodeByKey(myIn, myKey2, out);
+   cipherBlockChaining=0;
+   return;
+}  
 
 
 /*
@@ -856,6 +907,7 @@ obfDecodeByKey(char *in, char *key, char *out) {
    int wheel[26+26+10+15];
 
    int i, j;
+   int pc;
    unsigned char buffer[65]; /* each digest is 16 bytes, 4 of them */
    char keyBuf[100];
    char *cpIn, *cpOut;
@@ -894,6 +946,7 @@ obfDecodeByKey(char *in, char *key, char *out) {
    cpIn=in;
    cpOut=out;
    cpKey=buffer;
+   pc = 0;
    for (;;cpIn++) {
       int k, found;
       k = (int)*cpKey++;
@@ -901,11 +954,15 @@ obfDecodeByKey(char *in, char *key, char *out) {
       found=0;
       for (i=0;i<wheel_len;i++) {
 	 if (*cpIn == (char)wheel[i]) {
-	    j = i - k;
+	    j = i - k - pc;
 	    while (j<0) {
 	       j+=wheel_len;
 	    }
 	    *cpOut++ = (char)wheel[j];
+	    if (cipherBlockChaining) {
+	       pc = *cpIn;
+	       pc = pc & 0xff;
+	    }
 	    found = 1;
 	    break;
 	 }
@@ -918,4 +975,72 @@ obfDecodeByKey(char *in, char *key, char *out) {
 	 else {*cpOut++=*cpIn;}
       }
    }
+}
+
+/* Version 2, undoes V2 encoding.
+   If encoding is not V2, handles is at V1 (original)
+*/
+void
+obfDecodeByKeyV2(char *in, char *key, char *key2, char *out) {
+   char *myKey2;
+   static char myOut[200];
+   int i, len, matches;
+   char match[60];
+   char myKey[200];
+
+   strncpy(myKey, key, 90);
+   strncat(myKey, key2, 100);
+
+   myKey2 = obfGetMD5Hash(myKey);
+   cipherBlockChaining=1;
+   obfDecodeByKey(in, myKey2, myOut);
+   cipherBlockChaining=0;
+
+   strncpy(match, V2_Prefix, 10);
+   len=strlen(V2_Prefix);
+   matches=1;
+   for (i=1;i<len;i++) {
+      if (match[i]!=myOut[i]) matches=0;
+   }
+   if (matches==0) {
+      return(obfDecodeByKey(in, key, out));
+   }
+
+   strncpy(out, myOut+len, MAX_PASSWORD_LEN); /* skip prefix */
+   return;
+}
+
+/*
+  Hash an input string
+*/
+char *
+obfGetMD5Hash(char *stringToHash) {
+/*
+ Set up an array of characters that we will transpose.
+*/
+   MD5_CTX context;
+
+   unsigned char buffer[20]; /* the digest is 16 bytes */
+   char keyBuf[100];
+
+   static char outBuf[50];
+
+   memset(keyBuf, 0, 100);
+   strncpy(keyBuf, stringToHash, 100);
+
+   memset(buffer, 0, 20);
+
+/* 
+  Get the MD5 digest of the key
+*/
+   MD5Init (&context);
+   MD5Update (&context, (unsigned char*)keyBuf, 100);
+   MD5Final (buffer, &context);
+
+   sprintf(outBuf,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+	   buffer[0], buffer[1], buffer[2], buffer[3], 
+	   buffer[4], buffer[5], buffer[6], buffer[7], 
+	   buffer[8], buffer[9], buffer[10], buffer[11], 
+	   buffer[12], buffer[13], buffer[14], buffer[15]);
+   return(outBuf);
 }

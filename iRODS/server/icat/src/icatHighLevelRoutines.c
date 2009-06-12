@@ -24,6 +24,9 @@
 
 extern int get64RandomBytes(char *buf);
 
+extern char *getSessionSignitureServerside();
+
+
 /* 
    Legal values for accessLevel in  chlModAccessControl (Access Parameter).
    Defined here since other code does not need them (except for help messages)
@@ -3379,6 +3382,7 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
    char upassword[MAX_PASSWORD_LEN+10];
    char rand[]=
       "1gCBizHWbwIYyWLo";  /* must match clients */
+   char *psig;
 
    if (logSQL) rodsLog(LOG_SQL, "decodePw - SQL 1 ");
    status = cmlGetStringValueFromSql(
@@ -3399,7 +3403,8 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
 
    icatDescramble(password);
 
-   obfDecodeByKey(in, password, upassword);
+   psig = getSessionSignitureServerside();
+   obfDecodeByKeyV2(in, password, psig, upassword);
    memset(password, 0, MAX_PASSWORD_LEN);
 
    cp = strstr(upassword, rand);
