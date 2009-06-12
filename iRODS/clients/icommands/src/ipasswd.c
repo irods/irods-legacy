@@ -130,11 +130,7 @@ main(int argc, char **argv)
        printf("Error getting current password\n");
        exit(1);
     }
-#if 0
     obfEncodeByKey(buf0, buf1, buf2);
-#else
-    obfEncodeByKeyV2(buf0, buf1, getSessionSignitureClientside(), buf2);
-#endif
 
     userAdminInp.arg0 = "userpw";
     userAdminInp.arg1 = myEnv.rodsUserName;

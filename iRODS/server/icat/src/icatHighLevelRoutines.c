@@ -24,7 +24,9 @@
 
 extern int get64RandomBytes(char *buf);
 
-extern char *getSessionSignitureServerside();
+static char prevChalSig[200]; /* a 'signiture' of the previous
+   challenge.  This is used as a sessionSigniture on the ICAT server
+   side.  Also see getSessionSignitureClientside function. */
 
 
 /* 
@@ -3061,6 +3063,18 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    *userPrivLevel = NO_USER_AUTH;
    *clientPrivLevel = NO_USER_AUTH;
 
+   memset(md5Buf, 0, sizeof(md5Buf));
+   strncpy(md5Buf, challenge, CHALLENGE_LEN);
+   snprintf(prevChalSig,200,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+	    (unsigned char)md5Buf[0], (unsigned char)md5Buf[1], 
+	    (unsigned char)md5Buf[2], (unsigned char)md5Buf[3],
+	    (unsigned char)md5Buf[4], (unsigned char)md5Buf[5], 
+	    (unsigned char)md5Buf[6], (unsigned char)md5Buf[7],
+	    (unsigned char)md5Buf[8], (unsigned char)md5Buf[9], 
+	    (unsigned char)md5Buf[10],(unsigned char)md5Buf[11],
+	    (unsigned char)md5Buf[12],(unsigned char)md5Buf[13], 
+	    (unsigned char)md5Buf[14],(unsigned char)md5Buf[15]);
+
    status = parseUserName(username, userName2, userZone);
    if (userZone[0]=='\0') {
       status = getLocalZone();
@@ -3382,7 +3396,7 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
    char upassword[MAX_PASSWORD_LEN+10];
    char rand[]=
       "1gCBizHWbwIYyWLo";  /* must match clients */
-   char *psig;
+   int pwLen1, pwLen2;
 
    if (logSQL) rodsLog(LOG_SQL, "decodePw - SQL 1 ");
    status = cmlGetStringValueFromSql(
@@ -3403,12 +3417,26 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
 
    icatDescramble(password);
 
-   psig = getSessionSignitureServerside();
-   obfDecodeByKeyV2(in, password, psig, upassword);
+   obfDecodeByKeyV2(in, password, prevChalSig, upassword);
+
+   pwLen1=strlen(upassword);
+
    memset(password, 0, MAX_PASSWORD_LEN);
 
    cp = strstr(upassword, rand);
    if (cp !=NULL) *cp='\0';
+
+   pwLen2 = strlen(upassword);
+
+   if (pwLen2 > MAX_PASSWORD_LEN-5 && pwLen2==pwLen1) {
+      /* probable failure */
+      char errMsg[105];
+      int i;
+      snprintf(errMsg, 100, 
+	       "Error with password encoding, try connecting directly to ICAT host");
+      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      return(CAT_PASSWORD_ENCODING_ERROR);
+   }
    strcpy(out, upassword);
    memset(upassword, 0, MAX_PASSWORD_LEN);
 

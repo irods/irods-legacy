@@ -13,8 +13,6 @@
 #include "rodsGenQueryNames.h"
 #include "rodsType.h"
 
-static char prevChalSig[200]; /* a 'signiture' of the previous challenge */
-
 /* check with the input path is a valid path -
  * 1 - valid
  * 0 - not valid
@@ -1119,37 +1117,7 @@ int get64RandomBytes(char *buf) {
     }
     buffer[64]='\0';
     strncpy(buf,buffer,65);
-
-/* Save a representation of some of the buffer, to be used as a 
-   session signiture */
-    snprintf(prevChalSig,200,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
-	     (unsigned char)buffer[0], 
-	     (unsigned char)buffer[1], 
-	     (unsigned char)buffer[2], 
-	     (unsigned char)buffer[3],
-	     (unsigned char)buffer[4], 
-	     (unsigned char)buffer[5], 
-	     (unsigned char)buffer[6], 
-	     (unsigned char)buffer[7],
-	     (unsigned char)buffer[8], 
-	     (unsigned char)buffer[9], 
-	     (unsigned char)buffer[10], 
-	     (unsigned char)buffer[11],
-	     (unsigned char)buffer[12], 
-	     (unsigned char)buffer[13], 
-	     (unsigned char)buffer[14], 
-	     (unsigned char)buffer[15]);
     return(0);
-}
-
-/* 
- Return a session signiture (based on the challenge done during
- authentication).  Also see getSessionSignitureClientside which will
- have the same signiture pattern for the same connection.
- */
-char *
-getSessionSignitureServerside() {
-   return(prevChalSig);
 }
 
 sqlResult_t *
