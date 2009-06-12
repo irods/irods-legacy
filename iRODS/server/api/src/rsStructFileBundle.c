@@ -165,7 +165,9 @@ structFileExtAndRegInp_t *structFileBundleInp)
     bzero (&collInp, sizeof (collInp));
     rstrcpy (collInp.collName, structFileBundleInp->collection, MAX_NAME_LEN);
     collInp.flags = RECUR_QUERY_FG | VERY_LONG_METADATA_FG |
-      NO_TRIM_REPL_FG;
+      NO_TRIM_REPL_FG | INCLUDE_CONDINPUT_IN_QUERY;
+    addKeyVal (&collInp.condInput, RESC_NAME_KW, 
+      L1desc[l1descInx].dataObjInfo->rescName);
     handleInx = rsOpenCollection (rsComm, &collInp);
     if (handleInx < 0) {
         rodsLog (LOG_ERROR,
