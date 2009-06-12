@@ -31,6 +31,8 @@ clearBBuf (bytesBuf_t *myBBuf);
 int
 freeRError (rError_t *myError);
 int
+replErrorStack (rError_t *srcRError, rError_t *destRError);
+int
 freeRErrorContent (rError_t *myError);
 int
 parseUserName(char *fullUserNameIn, char *userName, char *userZone);

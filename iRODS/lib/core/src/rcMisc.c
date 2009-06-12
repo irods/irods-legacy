@@ -108,6 +108,25 @@ addRErrorMsg (rError_t *myError, int status, char *msg)
     return (0);
 }
 
+int 
+replErrorStack (rError_t *srcRError, rError_t *destRError)
+{
+    int i, len;
+    rErrMsg_t *errMsg;
+
+    if (srcRError == NULL || destRError == NULL) {
+        return USER__NULL_INPUT_ERR;
+    }
+
+    len = srcRError->len;
+
+    for (i = 0;i < len; i++) {
+        errMsg = srcRError->errMsg[i];
+	addRErrorMsg (destRError, errMsg->status, errMsg->msg); 
+    }
+    return 0;
+}
+
 int
 freeRError (rError_t *myError)
 {
