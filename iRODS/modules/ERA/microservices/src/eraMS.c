@@ -1595,9 +1595,12 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
  *	it is moved to the master collection.
  *	2) If there is a corresponding object in the master collection, their 
  *	checksums are compared.
- *		2a)	If the checksums do not match the object is flagged for manual check.
- *		2b)	If the checksums match the object is registered as a replica of 
- *			its equivalent in the master collection.
+ *		2a)	If the checksums match the object is registered as a replica of 
+ *			the master object. Its physical file is rearranged accordingly to ensure
+ *			consistency between logical and physical paths. 
+ *		2b)	If the checksums do not match the object is flagged for manual check:
+ *			It gets a new metadata attribute whose name is "CHECKSUM_MISMATCH" and
+ *			whose value is the checksum of the master object.
  * \param[in] 
  *    objPath - a DataObjInp_MS_T or a STR_MS_T with the target object's path.
  *	  currentColl - A CollInp_MS_T or a STR_MS_T with the current collection's path.
@@ -1618,17 +1621,17 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
 	dataObjInp_t masterObjInp;	 						/* for manipulating master object */
 	collInp_t currentCollInpCache, *currentCollInp;		/* for parsing current coll path */
 	collInp_t masterCollInpCache, *masterCollInp;		/* for parsing master coll path */
-	dataObjCopyInp_t dataObjRenameInp;					/* input for rsDataObjRename */
+	dataObjCopyInp_t dataObjRenameInp;					/* input for rsDataObjRename() */
 	
     execCmd_t execCmdInp;								/* input and output of rsExecCmd() */
     execCmdOut_t *execCmdOut = NULL;
     
     char tmpPath[MAX_NAME_LEN];							/* placeholder for file paths */
     
-    dataObjInfo_t *currentDataObjInfo = NULL;			/* output of getDataObjInfo, and destination input for rsRegReplica */
-    dataObjInfo_t *masterDataObjInfo = NULL;			/* source input for rsRegReplica */
+    dataObjInfo_t *currentDataObjInfo = NULL;			/* output of getDataObjInfo, and destination input for rsRegReplica() */
+    dataObjInfo_t *masterDataObjInfo = NULL;			/* source input for rsRegReplica() */
     
-    regReplica_t regReplicaInp;							/* input for rsRegReplica */
+    regReplica_t regReplicaInp;							/* input for rsRegReplica() */
     
 	rodsLong_t masterObjId = -1;						/* master object ID */
 	char *objChksm = NULL, *masterChksm = NULL;			/* object checksums */
