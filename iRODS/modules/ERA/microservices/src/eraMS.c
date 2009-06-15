@@ -1,6 +1,8 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
+#include <stdlib.h>
+#include <unistd.h>
 #include "eraMS.h"
 #include "eraUtil.h"
 
@@ -1582,6 +1584,267 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
 
 
 
+/**
+ * \fn msiMergeDataCopies
+ * \author  Antoine de Torcy
+ * \date   2009-05-22
+ * \brief Custom microservice for NARA consolidation rule.
+ * \note  Custom microservice for NARA consolidation rule.
+ *	Takes an object, a current home collection and a master collection:
+ *	1) If the object is an orphan (no corresponding object in the master collection) 
+ *	it is moved to the master collection.
+ *	2) If there is a corresponding object in the master collection, their 
+ *	checksums are compared.
+ *		2a)	If the checksums do not match the object is flagged for manual check.
+ *		2b)	If the checksums match the object is registered as a replica of 
+ *			its equivalent in the master collection.
+ * \param[in] 
+ *    objPath - a DataObjInp_MS_T or a STR_MS_T with the target object's path.
+ *	  currentColl - A CollInp_MS_T or a STR_MS_T with the current collection's path.
+ *	  masterColl - A CollInp_MS_T or a STR_MS_T with the master collection's path.
+ * \param[out] 
+ *    status - an INT_MS_T containing the operation status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *masterColl, msParam_t *status, ruleExecInfo_t *rei)
+{
+	dataObjInp_t currentObjInpCache, *currentObjInp;	/* for parsing and manipulating current object */
+	dataObjInp_t masterObjInp;	 						/* for manipulating master object */
+	collInp_t currentCollInpCache, *currentCollInp;		/* for parsing current coll path */
+	collInp_t masterCollInpCache, *masterCollInp;		/* for parsing master coll path */
+	dataObjCopyInp_t dataObjRenameInp;					/* input for rsDataObjRename */
+	
+    execCmd_t execCmdInp;								/* input and output of rsExecCmd() */
+    execCmdOut_t *execCmdOut = NULL;
+    
+    char tmpPath[MAX_NAME_LEN];							/* placeholder for file paths */
+    
+    dataObjInfo_t *currentDataObjInfo = NULL;			/* output of getDataObjInfo, and destination input for rsRegReplica */
+    dataObjInfo_t *masterDataObjInfo = NULL;			/* source input for rsRegReplica */
+    
+    regReplica_t regReplicaInp;							/* input for rsRegReplica */
+    
+	rodsLong_t masterObjId = -1;						/* master object ID */
+	char *objChksm = NULL, *masterChksm = NULL;			/* object checksums */
+		
+	modAVUMetadataInp_t modAVUMetadataInp;				/* for new AVU creation */
+	
+	
+	/************************************* INIT **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiMergeDataCopies")
+	
+	
+	/* Sanity test */
+	if (rei == NULL || rei->rsComm == NULL) {
+			rodsLog (LOG_ERROR, "msiMergeDataCopies: input rei or rsComm is NULL.");
+			return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/********************************** PARAM PARSING  *********************************/
+	
+	/* Parse objPath */
+	rei->status = parseMspForDataObjInp (objPath, &currentObjInpCache, &currentObjInp, 0);
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiMergeDataCopies: input objPath error. status = %d", rei->status);
+		return (rei->status);
+	}
+	
 
+	/* Parse current collection input */
+	rei->status = parseMspForCollInp (currentColl, &currentCollInpCache, &currentCollInp, 0);
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiMergeDataCopies: input currentColl error. status = %d", rei->status);
+		return (rei->status);
+	}
+	
+
+	/* Parse master collection input */
+	rei->status = parseMspForCollInp (masterColl, &masterCollInpCache, &masterCollInp, 0);
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiMergeDataCopies: input masterColl error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+	
+	/* Check for null input */
+    if (!strlen(currentObjInp->objPath) || !strlen(currentCollInp->collName) || !strlen(masterCollInp->collName) ) 
+    {
+    	rei->status = USER__NULL_INPUT_ERR;
+		rodsLog (LOG_ERROR, "msiMergeDataCopies: Missing input. status = %d", rei->status);
+		return (rei->status);
+    }
+    
+    
+    /******************************** OBJECT IS AN ORPHAN *******************************/
+    
+    /* Substitute current collection with master collection in object path, and write to master object path */
+    memset (&masterObjInp, 0, sizeof(dataObjInp_t));
+    snprintf(masterObjInp.objPath, MAX_NAME_LEN, "%s/%s", masterCollInp->collName, 
+    	currentObjInp->objPath + strlen(currentCollInp->collName) + 1);
+    	
+    /* Look if master object path is valid */
+    rei->status = isData (rei->rsComm, masterObjInp.objPath, &masterObjId);
+    
+    /* If not, move the object to the master collection */
+    if (masterObjId <= 0)
+    {
+    	/* Set up the source and destination fields of our dataObjCopyInp_t */
+    	memset (&dataObjRenameInp, 0, sizeof(dataObjCopyInp_t));
+    	strncpy (dataObjRenameInp.srcDataObjInp.objPath, currentObjInp->objPath, MAX_NAME_LEN-1);
+    	strncpy (dataObjRenameInp.destDataObjInp.objPath, masterObjInp.objPath, MAX_NAME_LEN-1);
+    	
+    	/* Invoke rsDataObjRename */
+    	rei->status = rsDataObjRename (rei->rsComm, &dataObjRenameInp);
+    	
+    	/* And we're done */
+    	fillIntInMsParam (status, rei->status);
+		return (rei->status);
+    }
+
+
+    /******************************** COMPARE AND MERGE COPIES *******************************/
+    
+    /* Get checksum of current object */
+    rei->status = rsDataObjChksum (rei->rsComm, currentObjInp, &objChksm);
+    
+    /* Get checksum of master object */
+    rei->status = rsDataObjChksum (rei->rsComm, &masterObjInp, &masterChksm);
+    
+    /* Objects must have checksums */
+    if ( !(objChksm && strlen(objChksm) && masterChksm && strlen(masterChksm)) )
+    {
+    	rei->status = USER_CHKSUM_MISMATCH; /* Not ideal but relevant enough... */
+		rodsLog (LOG_ERROR, "msiMergeDataCopies: Missing checksum(s). status = %d", rei->status);
+		return (rei->status);
+    }
+    
+    
+    /* If checksums match, merge copies */
+    if (!strcmp(masterChksm, objChksm))
+    {
+    	/* Get extended info of current and master objects */
+    	rei->status = getDataObjInfo(rei->rsComm, currentObjInp, &currentDataObjInfo, ACCESS_READ_OBJECT, 0);
+    	rei->status = getDataObjInfo(rei->rsComm, &masterObjInp, &masterDataObjInfo, ACCESS_READ_OBJECT, 0);
+    	
+    
+    	/* We may have to create missing directories on the resource before we can make links */
+    	snprintf(tmpPath, MAX_NAME_LEN, "%s/%s", currentDataObjInfo->rescInfo->rescVaultPath, 
+    		masterCollInp->collName + strlen(currentDataObjInfo->rescInfo->zoneName) + 2);
+    	
+    	/* Set up input for rsExecCmd */
+    	memset(&execCmdInp, 0, sizeof(execCmd_t));
+    	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
+    	rstrcpy(execCmdInp.cmd, "mkdir", LONG_NAME_LEN);
+    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "-p %s", tmpPath);
+    	
+    	
+		/* Invoke rsExecCmd for remote mkdir on resource */
+		rei->status = rsExecCmd (rei->rsComm, &execCmdInp, &execCmdOut);
+		
+		if (rei->status < 0) {
+			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsExecCmd failed for %s %s. status = %d", 
+				execCmdInp.cmd, execCmdInp.cmdArgv, rei->status);
+			return (rei->status);
+		}
+		
+		
+		/* Build target path for hard link */
+		snprintf(tmpPath, MAX_NAME_LEN, "%s%s", tmpPath, currentObjInp->objPath + strlen(currentCollInp->collName));
+		
+		/* Reset input for rsExecCmd */
+    	memset(&execCmdInp, 0, sizeof(execCmd_t));
+    	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
+    	rstrcpy(execCmdInp.cmd, "link", LONG_NAME_LEN);
+    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "%s %s", currentDataObjInfo->filePath, tmpPath);
+    	
+    	
+    	/* Create hard link on resource */
+		rei->status = rsExecCmd (rei->rsComm, &execCmdInp, &execCmdOut);
+		
+		if (rei->status < 0) {
+			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsExecCmd failed for %s %s. status = %d", 
+				execCmdInp.cmd, execCmdInp.cmdArgv, rei->status);
+			return (rei->status);
+		}
+		
+		
+		/* Register new path as replica, and unlink old object */
+    	
+    	/* Update file and object path in currentDataObjInfo */
+		rstrcpy(currentDataObjInfo->filePath, tmpPath, MAX_NAME_LEN);
+		rstrcpy(currentDataObjInfo->objPath, masterObjInp.objPath, MAX_NAME_LEN);
+
+ 	
+    	/* Set up regReplicaInp */
+    	memset(&regReplicaInp, 0, sizeof(regReplica_t));
+    	regReplicaInp.srcDataObjInfo = masterDataObjInfo;
+    	regReplicaInp.destDataObjInfo = currentDataObjInfo;
+    	
+    	
+		/* Invoke rsRegReplica */
+		rei->status = rsRegReplica (rei->rsComm, &regReplicaInp);
+		
+		if (rei->status < 0) {
+			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsRegReplica failed for %s. status = %d",
+				currentDataObjInfo->filePath, rei->status);
+			return (rei->status);
+		}
+		
+		
+		/* Unlink old object (for good!) */
+		addKeyVal (&currentObjInp->condInput, FORCE_FLAG_KW, ""); 
+		rei->status = rsDataObjUnlink (rei->rsComm, currentObjInp);
+		
+		if (rei->status < 0) {
+			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsDataObjUnlink failed for %s. status = %d",
+				currentObjInp->objPath, rei->status);
+			return (rei->status);
+		}
+		
+		
+		/* And if we've made it this far, we're done */
+    	fillIntInMsParam (status, rei->status);
+		return (rei->status);
+        	
+    }
+    
+    
+    /*********** FLAG OBJECT WHOSE CHECKSUM DOESN'T MATCH MASTER OBJECT CHECKSUM *************/
+    
+	/* init modAVU input */
+	memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
+	modAVUMetadataInp.arg0 = "add";
+	modAVUMetadataInp.arg1 = "-d";
+	modAVUMetadataInp.arg2 = currentObjInp->objPath;
+	modAVUMetadataInp.arg3 = "CHECKSUM_MISMATCH";
+	modAVUMetadataInp.arg4 = masterChksm;
+	modAVUMetadataInp.arg5 = NULL;
+	
+	/* invoke rsModAVUMetadata() */
+	rei->status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+	
+	if (rei->status < 0) {
+		rodsLog (LOG_ERROR, "msiMergeDataCopies: rsModAVUMetadata failed for %s. status = %d",
+			currentObjInp->objPath, rei->status);
+	}
+    
+
+	/*********************************** DONE ********************************/
+	
+	/* Return operation status */
+	fillIntInMsParam (status, rei->status);
+
+	/* Done */
+	return (rei->status);
+}
 
 

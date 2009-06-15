@@ -23,6 +23,7 @@
 {"msiGetAuditTrailInfoByTimeStamp",	4,		(funcPtr) msiGetAuditTrailInfoByTimeStamp},
 {"msiSetDataType",				4,		(funcPtr) msiSetDataType},
 {"msiGuessDataType",			3,		(funcPtr) msiGuessDataType},
+{"msiMergeDataCopies",			4,		(funcPtr) msiMergeDataCopies},
 {"msiIsColl",					3,		(funcPtr) msiIsColl},
 {"msiIsData",					3,		(funcPtr) msiIsData},
 {"msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport},

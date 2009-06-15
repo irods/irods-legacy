@@ -109,7 +109,7 @@ int
 msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecInfo_t *rei)
 {
 	char *targetPathStr;				/* for parsing input path */
-	rodsLong_t data_id;					/* collection ID */
+	rodsLong_t data_id;					/* data object ID */
 	
 	
 	
@@ -562,8 +562,9 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
  * \author  Antoine de Torcy
  * \date   2009-05-09
  * \brief Applies a microservice sequence to all data objects in a collection, recursively.
- * \note 
- *
+ * \note This microservice crawls an iRods colelction recursively, and for each data object 
+ *		found a sequence of microservices/actions is executed. The data object can be passed
+ * 		as a DataObjInp_MS_T to this microservice sequence, through 'objects'.
  * \param[in] 
  *    collection - A CollInp_MS_T or a STR_MS_T with the irods path.
  *	  objects - Added for clarity. Only the label is required here.

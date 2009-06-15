@@ -31,6 +31,7 @@ int msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExec
 int msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei);
 int msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei);
 int msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei);
+int msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *masterColl, msParam_t *status, ruleExecInfo_t *rei);
 
 #endif	/* ERAMS_H */
 
