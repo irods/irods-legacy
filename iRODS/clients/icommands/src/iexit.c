@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rods.h"
 #include "parseCommandLine.h"
+#include "rcMisc.h"
 
 void usage (char *prog);
 
@@ -60,4 +61,5 @@ void usage (char *prog)
    printf(" -v  verbose\n");
    printf(" -V  very verbose\n");
    printf(" -h  this help\n");
+   printReleaseInfo("iexit");
 }

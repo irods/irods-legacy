@@ -242,5 +242,6 @@ void usage (char *prog)
   fprintf(stderr, " -v  verbose\n");
   fprintf(stderr, " -V  Very verbose\n");
   fprintf(stderr, " -h  this help\n");
+  printReleaseInfo("iiinit");
 }
 

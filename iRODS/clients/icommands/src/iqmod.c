@@ -110,5 +110,5 @@ void usage()
 	  RULE_NOTIFICATION_ADDR_KW, RULE_LAST_EXE_TIME_KW,RULE_EXE_STATUS_KW);
    printf("\n");
    printf("Also see iqstat and iqdel.\n");
-
+   printReleaseInfo("iqmod");
 }

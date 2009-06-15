@@ -141,5 +141,5 @@ usage ()
        if (strlen(msgs[i])==0) break;
        printf("%s\n",msgs[i]);
     }
+    printReleaseInfo("icp");
 }
-

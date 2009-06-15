@@ -42,4 +42,5 @@ void usage (char *prog)
   printf(" -v  verbose\n");
   printf(" -V  very verbose\n");
   printf(" -h  this help\n");
+  printReleaseInfo("ipwd");
 }

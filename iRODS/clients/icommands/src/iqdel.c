@@ -99,5 +99,5 @@ void usage()
    printf(" multiple ruleIds may be included on the command line.\n");
    printf("\n");
    printf("Also see iqstat and iqmod.\n");
-
+   printReleaseInfo("iqdel");
 }

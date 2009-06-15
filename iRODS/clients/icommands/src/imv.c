@@ -95,5 +95,5 @@ usage (char *program)
        if (strlen(msgs[i])==0) break;
        printf("%s\n",msgs[i]);
     }
+    printReleaseInfo("imv");
 }
-

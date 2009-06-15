@@ -1268,7 +1268,7 @@ main(int argc, char **argv) {
 /*
 Print the main usage/help information.
  */
-int usageMain()
+void usageMain()
 {
    char *msgs[]={
 "Usage: imeta [-vVhz] [command]", 
@@ -1320,9 +1320,10 @@ int usageMain()
 ""};
    int i;
    for (i=0;;i++) {
-      if (strlen(msgs[i])==0) return(0);
+      if (strlen(msgs[i])==0) break;
       printf("%s\n",msgs[i]);
    }
+   printReleaseInfo("imeta");
 }
 
 /*

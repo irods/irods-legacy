@@ -373,4 +373,5 @@ usage(char *option)
 ""};
 
    printMsgs(Msgs);
+   printReleaseInfo("isysmeta");
 }

@@ -1068,6 +1068,7 @@ void usageMain()
 "Also see 'irmtrash -M -u user' for the admin mode of removing trash.",
 ""};
    printMsgs(Msgs);
+   printReleaseInfo("iadmin");
 }
 
 void

@@ -38,9 +38,10 @@ usage () {
 ""};
    int i;
    for (i=0;;i++) {
-      if (strlen(msgs[i])==0) return;
+      if (strlen(msgs[i])==0) break;
       printf("%s\n",msgs[i]);
    }
+   printReleaseInfo("iquest");
 }
 
 int

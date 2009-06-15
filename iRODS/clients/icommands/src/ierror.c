@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rods.h"
 #include "parseCommandLine.h"
+#include "rcMisc.h"
 
 void usage (char *prog);
 
@@ -40,4 +41,5 @@ void usage (char *prog)
   printf("Usage: %s [-vVh] errorNumber\n", prog);
   printf("The errorNumber can be preceeded with minus sign (-) or not\n");
   printf(" -h  this help\n");
+  printReleaseInfo("ierror");
 }
