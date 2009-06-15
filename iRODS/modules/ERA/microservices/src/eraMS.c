@@ -1626,7 +1626,7 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     execCmd_t execCmdInp;								/* input and output of rsExecCmd() */
     execCmdOut_t *execCmdOut = NULL;
     
-    char tmpPath[MAX_NAME_LEN];							/* placeholder for file paths */
+    char tmpPath[MAX_NAME_LEN], *tmpPtr;				/* placeholder for temporary paths */
     
     dataObjInfo_t *currentDataObjInfo = NULL;			/* output of getDataObjInfo, and destination input for rsRegReplica() */
     dataObjInfo_t *masterDataObjInfo = NULL;			/* source input for rsRegReplica() */
@@ -1638,7 +1638,7 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
 		
 	modAVUMetadataInp_t modAVUMetadataInp;				/* for new AVU creation */
 	
-	
+
 	/************************************* INIT **********************************/
 	
 	/* For testing mode when used with irule --test */
@@ -1741,7 +1741,16 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     
     	/* We may have to create missing directories on the resource before we can make links */
     	snprintf(tmpPath, MAX_NAME_LEN, "%s/%s", currentDataObjInfo->rescInfo->rescVaultPath, 
-    		masterCollInp->collName + strlen(currentDataObjInfo->rescInfo->zoneName) + 2);
+    		masterObjInp.objPath + strlen(currentDataObjInfo->rescInfo->zoneName) + 2);
+    	
+    	/* First, separate file from parent directory in physical path */
+    	tmpPtr = &tmpPath[strlen(tmpPath)-1];
+    	while (*tmpPtr != '/' && tmpPtr > tmpPath)
+    	{
+    		tmpPtr--;
+    	}
+    	*tmpPtr = '\0';
+    		
     	
     	/* Set up input for rsExecCmd */
     	memset(&execCmdInp, 0, sizeof(execCmd_t));
@@ -1760,8 +1769,8 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
 		}
 		
 		
-		/* Build target path for hard link */
-		snprintf(tmpPath, MAX_NAME_LEN, "%s%s", tmpPath, currentObjInp->objPath + strlen(currentCollInp->collName));
+		/* Rebuild full target path for hard link */
+		*tmpPtr = '/';
 		
 		/* Reset input for rsExecCmd */
     	memset(&execCmdInp, 0, sizeof(execCmd_t));
