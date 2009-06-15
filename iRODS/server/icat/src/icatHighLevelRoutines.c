@@ -3430,10 +3430,10 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
 
    if (pwLen2 > MAX_PASSWORD_LEN-5 && pwLen2==pwLen1) {
       /* probable failure */
-      char errMsg[105];
+      char errMsg[160];
       int i;
-      snprintf(errMsg, 100, 
-	       "Error with password encoding, try connecting directly to ICAT host");
+      snprintf(errMsg, 150, 
+	       "Error with password encoding.\nPlease try connecting directly to the ICAT host (setenv irodsHost)");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       return(CAT_PASSWORD_ENCODING_ERROR);
    }

@@ -30,11 +30,13 @@ rsGeneralAdmin (rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
     else {
        status = rcGeneralAdmin(rodsServerHost->conn,
 			       generalAdminInp);
+       if (status < 0) {
+	  replErrorStack (rodsServerHost->conn->rError, &rsComm->rError);
+       }
     }
-
     if (status < 0) { 
        rodsLog (LOG_NOTICE,
-		"rsGeneralAdmin: rcGeneralAdmin failed");
+		"rsGeneralAdmin: rcGeneralAdmin error %d", status);
     }
     return (status);
 }
