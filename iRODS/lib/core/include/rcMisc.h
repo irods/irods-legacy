@@ -211,6 +211,8 @@ parseHostAddrStr (char *hostAddr, rodsHostAddr_t *addr);
 int
 collInp201ToCollInp (collInp201_t *collInp201, collInp_t *collInp);
 #endif
+void
+printReleaseInfo (char *cmdName);
 
 #ifdef  __cplusplus
 }

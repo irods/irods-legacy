@@ -3141,3 +3141,16 @@ collInp201ToCollInp (collInp201_t *collInp201, collInp_t *collInp)
 }
 #endif
 
+/*
+ Print some release information.
+ Used by the i-commands when printting the help text.
+ */
+void
+printReleaseInfo(char *cmdName) {
+   char tmp[40];
+   strncpy(tmp, RODS_REL_VERSION, 40);   /* to skip over the 'rods' part 
+					    of the string */
+   printf("\niRODS Version %s                  %s                      %s\n",
+	  (char*)&tmp[4], RODS_RELEASE_DATE, cmdName);
+   return;
+}

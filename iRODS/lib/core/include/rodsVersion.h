@@ -11,6 +11,7 @@
 
 #define RODS_REL_VERSION	"rods2.0.1"
 #define RODS_API_VERSION	"d"
+#define RODS_RELEASE_DATE       "June 2009"
 
 
 #endif	/* RODS_VERSION_H */
