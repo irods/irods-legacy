@@ -8,9 +8,9 @@
 /* This is for logging SQL statements.  These are only logged when
    specifically requested and so are a high priority at this level. */
 
-#define LOG_DEBUG3  10
+#define LOG_DEBUG1  10
 #define LOG_DEBUG2  9
-#define LOG_DEBUG1  8
+#define LOG_DEBUG3  8
 #define LOG_DEBUG   7
 /*
   The DEBUG messages are for the software engineer to analyze and
