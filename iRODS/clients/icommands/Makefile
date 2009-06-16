@@ -74,7 +74,8 @@ OBJS =		\
 		$(objDir)/ierror.o \
 		$(objDir)/ipasswd.o	\
 		$(objDir)/ibun.o	\
-		$(objDir)/iphybun.o
+		$(objDir)/iphybun.o    \
+		$(objDir)/ihelp.o
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -113,7 +114,8 @@ BINS =		\
 		$(binDir)/ierror \
 		$(binDir)/ipasswd	\
 		$(binDir)/ibun	\
-		$(binDir)/iphybun
+		$(binDir)/iphybun \
+		$(binDir)/ihelp 
 
 
 
