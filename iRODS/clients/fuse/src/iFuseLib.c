@@ -414,10 +414,12 @@ ifuseClose (char *path, int descInx)
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
 	status = closeIrodsFd (IFuseDesc[descInx].iFd);
     } else {	/* cached */
+#if 0
 	if (strcmp (path, IFuseDesc[descInx].localPath) != 0) {
 	    /* the path has been renamed */
 	    path = IFuseDesc[descInx].localPath;
 	}
+#endif
         if (IFuseDesc[descInx].newFlag > 0 || 
 	  IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
             pathCache_t *tmpPathCache;
