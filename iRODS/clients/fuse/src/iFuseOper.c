@@ -441,8 +441,22 @@ irodsRename (const char *from, const char *to)
 {
     dataObjCopyInp_t dataObjRenameInp;
     int status;
+    pathCache_t *fromPathCache;
+
 
     rodsLog (LOG_DEBUG, "irodsRename: %s to %s", from, to);
+
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    if (matchPathInPathCache ((char *) from, PathArray, &fromPathCache) == 1 &&
+      fromPathCache->locCacheState == HAVE_NEWLY_CREATED_CACHE &&
+      fromPathCache->locCachePath != NULL) {
+        status = renmeOpenedIFuseDesc (fromPathCache, (char *) to);
+        if (status >= 0) {
+	    rmPathFromCache ((char *) from, PathArray);
+            return (0);
+        }
+    }
+#endif
 
     /* test rcDataObjRename */
 
@@ -594,8 +608,21 @@ irodsTruncate (const char *path, off_t size)
 {
     dataObjInp_t dataObjInp;
     int status;
+    pathCache_t *tmpPathCache;
 
     rodsLog (LOG_DEBUG, "irodsTruncate: %s", path);
+
+#ifdef CACHE_FILE_FOR_NEWLY_CREATED
+    if (matchPathInPathCache ((char *) path, PathArray, &tmpPathCache) == 1 &&
+      tmpPathCache->locCacheState == HAVE_NEWLY_CREATED_CACHE &&
+      tmpPathCache->locCachePath != NULL) {
+        status = truncate (tmpPathCache->locCachePath, size);
+	if (status >= 0) {
+	    updatePathCacheStat (tmpPathCache);
+	    return (0);
+	}
+    }
+#endif
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     status = parseRodsPathStr ((char *) (path + 1) , &MyRodsEnv,

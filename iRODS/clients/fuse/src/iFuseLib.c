@@ -414,6 +414,10 @@ ifuseClose (char *path, int descInx)
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
 	status = closeIrodsFd (IFuseDesc[descInx].iFd);
     } else {	/* cached */
+	if (strcmp (path, IFuseDesc[descInx].localPath) != 0) {
+	    /* the path has been renamed */
+	    path = IFuseDesc[descInx].localPath;
+	}
         if (IFuseDesc[descInx].newFlag > 0 || 
 	  IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
             pathCache_t *tmpPathCache;
@@ -1144,3 +1148,40 @@ getNewlyCreatedDescByPath (char *path)
     pthread_mutex_unlock (&DescLock);
     return (-1);
 }
+
+int
+renmeOpenedIFuseDesc (pathCache_t *fromPathCache, char *to)
+{
+    int descInx;
+    int status;
+    pathCache_t *tmpPathCache = NULL;
+
+    if ((descInx = getNewlyCreatedDescByPath (
+      (char *)fromPathCache->filePath)) >= 3) {
+        rmPathFromCache ((char *) to, PathArray);
+        rmPathFromCache ((char *) to, NonExistPathArray);
+	addPathToCache ((char *) to, PathArray, &fromPathCache->stbuf, 
+	  &tmpPathCache);
+        tmpPathCache->locCachePath = fromPathCache->locCachePath;
+	fromPathCache->locCachePath = NULL;
+        tmpPathCache->locCacheState = HAVE_NEWLY_CREATED_CACHE;
+	fromPathCache->locCacheState = NO_FILE_CACHE;
+	if (IFuseDesc[descInx].objPath != NULL) 
+	    free (IFuseDesc[descInx].objPath);
+	IFuseDesc[descInx].objPath = malloc (MAX_NAME_LEN);
+        status = parseRodsPathStr ((char *) (to + 1) , &MyRodsEnv,
+          IFuseDesc[descInx].objPath);
+        if (status < 0) {
+            rodsLogError (LOG_ERROR, status,
+              "renmeOpenedIFuseDesc: parseRodsPathStr of %s error", to);
+            return -ENOTDIR;
+        }
+	if (IFuseDesc[descInx].localPath != NULL) 
+	    free (IFuseDesc[descInx].localPath);
+        IFuseDesc[descInx].localPath = strdup (to);
+	return 0;
+    } else {
+	return -ENOTDIR;
+    }
+}
+
