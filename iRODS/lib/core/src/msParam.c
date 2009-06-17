@@ -1259,3 +1259,100 @@ msParam_t *msKeyValStr)
     return 0;
 }
 
+int
+parseMsKeyValStrForStructFileExtAndRegInp (msParam_t *inpParam, 
+structFileExtAndRegInp_t *structFileExtAndRegInp,
+char *hintForMissingKw, int validKwFlags, char **outBadKeyWd)
+{
+    char *msKeyValStr;
+    keyValPair_t *condInput; 
+    parsedMsKeyValStr_t parsedMsKeyValStr;
+    int status;
+
+
+    if (inpParam == NULL || structFileExtAndRegInp == NULL) {
+        rodsLog (LOG_ERROR,
+        "parseMsKeyValStrForStructFile:inpParam or structFileInp is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (strcmp(inpParam->type, STR_MS_T) != 0) return USER_PARAM_TYPE_ERR;
+
+    msKeyValStr = (char *) inpParam->inOutStruct;
+
+    condInput = &structFileExtAndRegInp->condInput;
+
+    if (outBadKeyWd != NULL) *outBadKeyWd = NULL;
+
+    if ((status = initParsedMsKeyValStr (msKeyValStr, &parsedMsKeyValStr)) < 0)
+	return status;
+
+    while (getNextKeyValFromMsKeyValStr (&parsedMsKeyValStr) >= 0) {
+	if (parsedMsKeyValStr.kwPtr == NULL) {
+	    if (hintForMissingKw == NULL) {
+		status = NO_KEY_WD_IN_MS_INP_STR;
+                rodsLogError (LOG_ERROR, status,
+      		 "parseMsKeyValStrForStructFileExtAndRegInp: no keyWd for %s",
+		  parsedMsKeyValStr.valPtr);
+		clearParsedMsKeyValStr (&parsedMsKeyValStr);
+        	return status;
+	    } else if (strcmp (hintForMissingKw, KEY_WORD_KW) == 0) {
+		/* the value should be treated at keyWd */
+		parsedMsKeyValStr.kwPtr = parsedMsKeyValStr.valPtr;
+		parsedMsKeyValStr.valPtr = parsedMsKeyValStr.endPtr;
+	    } else {
+		/* use the input hintForMissingKw */
+		parsedMsKeyValStr.kwPtr = hintForMissingKw;
+	    }
+	} 
+        if ((status = chkStructFileExtAndRegInpKw (parsedMsKeyValStr.kwPtr,
+          validKwFlags)) < 0) {
+            if (outBadKeyWd != NULL) 
+                *outBadKeyWd = strdup (parsedMsKeyValStr.kwPtr);
+            return status;
+        }
+	/* check for some of the special keyWd */
+	if (status == COLL_FLAGS_FLAG) {
+	    structFileExtAndRegInp->flags = atoi (parsedMsKeyValStr.valPtr);
+	    continue;
+        } else if (status == OPR_TYPE_FLAG) {
+	    structFileExtAndRegInp->oprType = atoi (parsedMsKeyValStr.valPtr);
+            continue;
+        } else if (status == OBJ_PATH_FLAG) {
+            rstrcpy (structFileExtAndRegInp->objPath, 
+              parsedMsKeyValStr.valPtr, MAX_NAME_LEN);
+            continue;
+	} else if (status == COLL_NAME_FLAG) {
+            rstrcpy (structFileExtAndRegInp->collection, 
+	      parsedMsKeyValStr.valPtr, MAX_NAME_LEN);
+            continue;
+	}
+        addKeyVal (condInput, parsedMsKeyValStr.kwPtr, 
+	  parsedMsKeyValStr.valPtr); 
+    }
+
+    clearParsedMsKeyValStr (&parsedMsKeyValStr);
+
+    return 0;
+}
+
+int
+chkStructFileExtAndRegInpKw (char *keyWd, int validKwFlags)
+{
+    int i;
+
+    if (keyWd == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
+    for (i = 0; i < NumStructFileExtAndRegInpKeyWd; i++) {
+        if (strcmp (StructFileExtAndRegInpKeyWd[i].keyWd, keyWd) == 0) {
+            if ((StructFileExtAndRegInpKeyWd[i].flag & validKwFlags) 
+	      == 0) {
+                /* not valid */
+                break;
+            } else {
+                /* OK */
+                return StructFileExtAndRegInpKeyWd[i].flag;            }
+        }
+    }
+    return USER_BAD_KEYWORD_ERR;
+}
+

@@ -34,5 +34,7 @@ extern validKeyWd_t DataObjInpKeyWd[];
 extern int NumDataObjInpKeyWd;
 extern validKeyWd_t CollInpKeyWd[];
 extern int NumCollInpKeyWd;
+extern validKeyWd_t StructFileExtAndRegInpKeyWd[];
+extern int NumStructFileExtAndRegInpKeyWd;
 
 #endif	/* RC_GLOBAL_EXTERN_H */

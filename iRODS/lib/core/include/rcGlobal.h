@@ -156,6 +156,7 @@ validKeyWd_t DataObjInpKeyWd[] = {
 	{RESC_NAME_FLAG,	RESC_NAME_KW},
 	{DEST_RESC_NAME_FLAG,	DEST_RESC_NAME_KW},
 	{BACKUP_RESC_NAME_FLAG,	BACKUP_RESC_NAME_KW},
+	{DEF_RESC_NAME_FLAG,	DEF_RESC_NAME_KW},
 	{FORCE_FLAG_FLAG,	FORCE_FLAG_KW},
 	{ALL_FLAG,		ALL_KW},
 	{LOCAL_PATH_FLAG,	LOCAL_PATH_KW},
@@ -183,6 +184,7 @@ int NumDataObjInpKeyWd = sizeof (DataObjInpKeyWd) / sizeof (validKeyWd_t);
 validKeyWd_t CollInpKeyWd[] = {
         {RESC_NAME_FLAG,        RESC_NAME_KW},
         {DEST_RESC_NAME_FLAG,   DEST_RESC_NAME_KW},
+        {DEF_RESC_NAME_FLAG,    DEF_RESC_NAME_KW},
         {BACKUP_RESC_NAME_FLAG, BACKUP_RESC_NAME_KW},
         {FORCE_FLAG_FLAG,       FORCE_FLAG_KW},
 	{ALL_FLAG,		ALL_KW},
@@ -198,5 +200,19 @@ validKeyWd_t CollInpKeyWd[] = {
 };
 
 int NumCollInpKeyWd = sizeof (CollInpKeyWd) / sizeof (validKeyWd_t);
+
+/* valid keyWds for structFileExtAndRegInp */
+validKeyWd_t StructFileExtAndRegInpKeyWd[] = {
+        {RESC_NAME_FLAG,        RESC_NAME_KW},
+        {DEST_RESC_NAME_FLAG,   DEST_RESC_NAME_KW},
+        {DEF_RESC_NAME_FLAG,    DEF_RESC_NAME_KW},
+        {COLL_FLAGS_FLAG,       COLL_FLAGS_KW},
+        {OPR_TYPE_FLAG,         OPR_TYPE_KW},
+	{OBJ_PATH_FLAG,		OBJ_PATH_KW},
+        {COLL_NAME_FLAG,         COLL_NAME_KW},
+};
+
+int NumStructFileExtAndRegInpKeyWd = sizeof 
+  (StructFileExtAndRegInpKeyWd) / sizeof (validKeyWd_t);
 
 #endif	/* RC_GLOBAL_H */

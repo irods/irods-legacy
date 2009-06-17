@@ -13,6 +13,7 @@
 #include "rodsError.h"
 #include "objInfo.h"
 #include "dataObjCopy.h"
+#include "structFileExtAndReg.h"
 #include "execCmd.h"
 #include "rodsPath.h"
 
@@ -50,6 +51,7 @@ extern "C" {
 #define SendXmsgInp_MS_T        "SendXmsgInp_PI"
 #define RcvXmsgInp_MS_T         "RcvXmsgInp_PI"
 #define RcvXmsgOut_MS_T         "RcvXmsgOut_PI"
+#define StructFileExtAndRegInp_MS_T         "StructFileExtAndRegInp_PI"
 
 /* micro service input/output parameter */
 typedef struct MsParam {
@@ -107,6 +109,7 @@ typedef struct ValidKeyWd {
 #define COLL_NAME_FLAG		0x80000
 #define IRODS_RMTRASH_FLAG	0x100000
 #define IRODS_ADMIN_RMTRASH_FLAG 0x200000
+#define DEF_RESC_NAME_FLAG 	0x400000
 
 int
 resetMsParam (msParam_t *msParam);
@@ -194,6 +197,12 @@ chkCollInpKw (char *keyWd, int validKwFlags);
 int
 addKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, 
 msParam_t *msKeyValStr);
+int
+chkStructFileExtAndRegInpKw (char *keyWd, int validKwFlags);
+int
+parseMsKeyValStrForStructFileExtAndRegInp (msParam_t *inpParam,
+structFileExtAndRegInp_t *structFileExtAndRegInp,
+char *hintForMissingKw, int validKwFlags, char **outBadKeyWd);
 #ifdef  __cplusplus
 }
 #endif
