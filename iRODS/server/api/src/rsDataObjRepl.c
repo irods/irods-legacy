@@ -78,6 +78,7 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     char *accessPerm;
     int backupFlag;
 
+    bzero (&rei, sizeof (ruleExecInfo_t)); /* RAJA ADDED June 17. 2009 */
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	accessPerm = NULL;
     } else if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {

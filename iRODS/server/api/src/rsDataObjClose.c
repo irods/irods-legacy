@@ -42,7 +42,7 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     bytesBuf_t *packedReiAndArgBBuf = NULL;;
     ruleExecSubmitInp_t ruleExecSubmitInp;
 #endif
-
+    bzero (&rei, sizeof (ruleExecInfo_t)); /* RAJA ADDED June 17. 2009 */
     l1descInx = dataObjCloseInp->l1descInx;
     if (l1descInx <= 2 || l1descInx >= NUM_L1_DESC) {
        rodsLog (LOG_NOTICE,

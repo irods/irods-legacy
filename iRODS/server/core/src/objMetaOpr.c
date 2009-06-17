@@ -2700,7 +2700,7 @@ initReExec (rsComm_t *rsComm, reExec_t *reExec)
     if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
 
     bzero (reExec, sizeof (reExec_t));
-
+    bzero (&rei, sizeof (ruleExecInfo_t)); /* RAJA ADDED June 17. 2009 */
     
     status = applyRule ("acSetReServerNumProc", NULL, &rei, NO_SAVE_REI);
     if (status < 0) {
