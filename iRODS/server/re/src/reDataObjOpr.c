@@ -2742,3 +2742,286 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
      return (rei->status);
 }
 
+/*
+ * \fn msiTarFileExtract
+ * \author Jean-Yves Neif 
+ * \date   2009-06-15
+ * \brief This microservice calls rsStructFileExtAndReg to extract a tar 
+ * file (inpParam1) into a target collection(inpParam2).  the content of 
+ * the target collection is stored in the phys resource inpParam3.
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection.
+ * \param[in]
+ *    inpParam1 - It can be a StructFileExtAndRegInp_MS_T or
+ *      a STR_MS_T which would be taken as dataObj path.
+ *    irpParam2 - a STR_MS_T which specifies the target collection.
+ *    irpParam3 - optional - a STR_MS_T which specifies the target resource.
+ * \param[out] a INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+
+/* msiTarFileExtract - micro-service used to extract a tar file (inpParam1) 
+into a target collection(inpParam2).
+the content of the target collection is stored in the phys resource inpParam3. 
+*/
+
+int 
+msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
+{
+    rsComm_t *rsComm;
+    structFileExtAndRegInp_t structFileExtAndRegInp,
+      *myStructFileExtAndRegInp;
+    keyValPair_t regParam;
+    modDataObjMeta_t modDataObjMetaInp;
+    int rc1;
+    char origDataType[NAME_LEN];
+
+    RE_TEST_MACRO (" Calling msiTarFileExtract")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+        "msiTarFileExtract: input rei or rsComm is NULL");
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    rsComm = rei->rsComm;
+
+    /* start building the structFileExtAndRegInp instance.
+    extract from inpParam1 the tar file object path: tarFilePath
+    and from inpParam2 the collection target: colTarget */
+
+    if ( inpParam1 == NULL || inpParam2 == NULL ) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiTarFileExtract: input Param1 and/or Param2 are NULL");
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (inpParam1->type, STR_MS_T) == 0) {
+        bzero (&structFileExtAndRegInp, sizeof (structFileExtAndRegInp));
+        myStructFileExtAndRegInp = &structFileExtAndRegInp;
+        strncpy (myStructFileExtAndRegInp->objPath, inpParam1->inOutStruct, 
+	  MAX_NAME_LEN);
+    } else if (strcmp (inpParam1->type, StructFileExtAndRegInp_MS_T) == 0) {
+	myStructFileExtAndRegInp = 
+	  (structFileExtAndRegInp_t *) inpParam1->inOutStruct;
+    } else {
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    if ( strcmp (inpParam2->type, STR_MS_T) == 0 ) {
+        if (strcmp ((char *) inpParam2->inOutStruct, "null") != 0) {
+            strncpy (myStructFileExtAndRegInp->collection, 
+	      inpParam2->inOutStruct, MAX_NAME_LEN);
+	}
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiTarFileExtract: Unsupported input Param2 type %s",
+        inpParam2->type);
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    if ( strcmp (inpParam3->type, STR_MS_T) == 0 && inpParam3 != NULL &&
+    strcmp ( (char *) inpParam3->inOutStruct, "null") != 0) {
+        addKeyVal(&myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW,
+        (char *) inpParam3->inOutStruct);
+	/* RESC_NAME_KW is needed so Open will pick this resource */
+        addKeyVal(&myStructFileExtAndRegInp->condInput, RESC_NAME_KW,
+        (char *) inpParam3->inOutStruct);
+    }
+
+    if (rei->doi != NULL) { /* rei->doi may not exist */ 
+        /* retrieve the input object data_type in order to rollback in case 
+	 * of a tar extraction problem */
+        strncpy(origDataType, rei->doi->dataType, NAME_LEN);
+        /* modify the input object data_type to "tar file" */
+        memset(&regParam, 0, sizeof(regParam));
+        addKeyVal(&regParam, DATA_TYPE_KW, "tar file");
+        modDataObjMetaInp.dataObjInfo = rei->doi;
+        modDataObjMetaInp.regParam = &regParam;
+        rc1 = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
+    }
+
+    /* tar file extraction */
+    rei->status = rsStructFileExtAndReg (rsComm, myStructFileExtAndRegInp);
+    if ( rei->status < 0 && rei->doi != NULL) {
+        rodsLog (LOG_ERROR, "msiTarFileExtract: tar file extraction failed");
+        /* switch back to the original input object data_type as tar 
+	 * extraction failed */
+        memset(&regParam, 0, sizeof(regParam));
+        addKeyVal(&regParam, DATA_TYPE_KW, origDataType);
+        rc1 = rsModDataObjMeta(rsComm, &modDataObjMetaInp);
+    }
+
+    fillIntInMsParam (outParam, rei->status);
+
+    return (rei->status);
+}
+
+/*
+ * \fn msiTarFileCreate
+ * \author Jean-Yves Neif
+ * \date   2009-06-15
+ * \brief This microservice calls rsStructFileBundle to create a tar file 
+ * (inpParam1) from a target collection(inpParam2). The content of the 
+ * target collection is stored in the phys resource inpParam3. 
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection.
+ * \param[in]
+ *    inpParam1 - It can be a StructFileExtAndRegInp_MS_T or
+ *      a STR_MS_T which would be taken as dataObj path.
+ *    irpParam2 - a STR_MS_T which specifies the target collection.
+ *    irpParam3 - optional - a STR_MS_T which specifies the target resource.
+ * \param[out] a INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+
+int 
+msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
+{
+    rsComm_t *rsComm;
+    structFileExtAndRegInp_t structFileExtAndRegInp, 
+      *myStructFileExtAndRegInp;
+
+    RE_TEST_MACRO (" Calling msiTarFileCreate")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+        "msiTarFileCreate: input rei or rsComm is NULL");
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    rsComm = rei->rsComm;
+
+    /* start building the structFileExtAndRegInp instance.
+    extract from inpParam1 the tar file object path: tarFilePath
+    and from inpParam2 the target collection: colTarget */
+
+    if ( inpParam1 == NULL || inpParam2 == NULL ) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiTarFileCreate: input Param1 and/or Param2 are NULL");
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (inpParam1->type, STR_MS_T) == 0) {
+        bzero (&structFileExtAndRegInp, sizeof (structFileExtAndRegInp));
+        myStructFileExtAndRegInp = &structFileExtAndRegInp;
+        strncpy (myStructFileExtAndRegInp->objPath, inpParam1->inOutStruct,
+          MAX_NAME_LEN);
+    } else if (strcmp (inpParam1->type, StructFileExtAndRegInp_MS_T) == 0) {
+        myStructFileExtAndRegInp =
+          (structFileExtAndRegInp_t *) inpParam1->inOutStruct;
+    } else {
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    if ( strcmp (inpParam2->type, STR_MS_T) == 0 ) {
+        if (strcmp ((char *) inpParam2->inOutStruct, "null") != 0) {
+            strncpy (myStructFileExtAndRegInp->collection,
+              inpParam2->inOutStruct, MAX_NAME_LEN);
+        }
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiTarFileExtract: Unsupported input Param2 type %s",
+        inpParam2->type);
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    if ( strcmp (inpParam3->type, STR_MS_T) == 0 && inpParam3 != NULL &&
+      strcmp ( (char *) inpParam3->inOutStruct, "null") != 0) {
+        addKeyVal(&myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW,
+        (char *) inpParam3->inOutStruct);
+    }
+
+    /* tar file extraction */
+    rei->status = rsStructFileBundle (rsComm, myStructFileExtAndRegInp);
+
+    fillIntInMsParam (outParam, rei->status);
+
+    return (rei->status);
+
+}
+
+
+/*
+ * \fn msiWriteRodsLog
+ * \author Jean-Yves Neif
+ * \date   2009-06-15
+ * \brief This micro-service can be used to write message into server rodsLog.
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection.
+ * \param[in]
+ *    irpParam1 - a STR_MS_T which specifies the message to log.
+ * \param[out] a INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+int 
+msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, 
+ruleExecInfo_t *rei) 
+{
+    rsComm_t *rsComm;
+
+    RE_TEST_MACRO (" Calling msiWriteRodsLog")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+        "msiWriteRodsLog: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    if ( inpParam1 == NULL ) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiWriteRodsLog: input Param1 is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if ( strcmp (inpParam1->type, STR_MS_T) ) {
+        rodsLog(LOG_NOTICE, 
+          "msiWriteRodsLog message: %s", inpParam1->inOutStruct);
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiWriteRodsLog: Unsupported input Param1 types %s",
+        inpParam1->type);
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    rei->status = 0;
+
+    fillIntInMsParam (outParam, rei->status);
+
+    return (rei->status);
+}

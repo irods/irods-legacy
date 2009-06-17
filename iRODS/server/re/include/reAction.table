@@ -279,3 +279,6 @@ microsdef_t MicrosTable[] = {
   {"msiGetStdoutInExecCmdOut",2,(funcPtr) msiGetStdoutInExecCmdOut},
   {"msiGetStderrInExecCmdOut",2,(funcPtr) msiGetStderrInExecCmdOut},
   {"msiAddKeyValToMspStr",3,(funcPtr) msiAddKeyValToMspStr},
+  {"msiTarFileExtract",4,(funcPtr) msiTarFileExtract},
+  {"msiTarFileCreate",4,(funcPtr) msiTarFileCreate},
+  {"msiWriteRodsLog",2,(funcPtr) msiWriteRodsLog},
