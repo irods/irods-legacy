@@ -583,6 +583,7 @@ performAction(inStruct Sentries)
     char ruleSet[RULE_SET_DEF_LENGTH];
     hrtime_t ht1, ht2, ht3;
 
+    bzero (&rei, sizeof (ruleExecInfo_t)); /* RAJA ADDED June 17. 2009 */
     /*
      sprintf(configDirEV,"irodsConfigDir=/scratch/s1/sekar/irods/RODS/server/config");
      sprintf(configDirEV,"irodsConfigDir=/misc/www/projects/srb-secure/cgi-bin");
