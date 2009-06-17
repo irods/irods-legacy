@@ -4,6 +4,12 @@
 #ifndef RE_FUNCDEFS_H
 #define RE_FUNCDEFS_H
 
+/* definition for freeSpeialStructFlag in freeRuleExecInfoStruct and
+ * freeRuleExecInfoInternals
+ */
+#define FREE_MS_PARAM	0x1
+#define FREE_DOINP	0x2
+
 int initRuleStruct(char *ruleSet, char *dvmSet, char *fnmSet);
 
 int readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct);
@@ -92,9 +98,9 @@ void *mallocAndZero(int s);
 
 int copyRuleExecInfo(ruleExecInfo_t *from, ruleExecInfo_t *to);
 
-int freeRuleExecInfoStruct(ruleExecInfo_t *rs, int freeMsParamFlag);
+int freeRuleExecInfoStruct(ruleExecInfo_t *rs, int freeSpeialStructFlag);
 
-int freeRuleExecInfoInternals(ruleExecInfo_t *rs, int freeMsParamFlag);
+int freeRuleExecInfoInternals(ruleExecInfo_t *rs, int freeSpeialStructFlag);
 
 int copyDataObjInfo(dataObjInfo_t *from, dataObjInfo_t *to);
 

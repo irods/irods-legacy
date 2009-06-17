@@ -2875,7 +2875,7 @@ runRuleExec (reExecProc_t *reExecProc)
     if (reiAndArg->rei->status < 0) {
         reExecProc->status = reiAndArg->rei->status;
     }
-    freeRuleExecInfoStruct (reiAndArg->rei, 1);
+    freeRuleExecInfoStruct (reiAndArg->rei, FREE_MS_PARAM | FREE_DOINP);
     free (reiAndArg);
 
     return reExecProc->status;

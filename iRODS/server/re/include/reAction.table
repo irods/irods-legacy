@@ -282,3 +282,6 @@ microsdef_t MicrosTable[] = {
   {"msiTarFileExtract",4,(funcPtr) msiTarFileExtract},
   {"msiTarFileCreate",4,(funcPtr) msiTarFileCreate},
   {"msiWriteRodsLog",2,(funcPtr) msiWriteRodsLog},
+  {"msiServerMonPerf",2,(funcPtr) msiServerMonPerf},
+  {"msiFlushMonStat",2,(funcPtr) msiFlushMonStat},
+  {"msiDigestMonStat",7,(funcPtr) msiDigestMonStat},
