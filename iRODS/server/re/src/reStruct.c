@@ -99,23 +99,23 @@ copyRuleExecInfo(ruleExecInfo_t *from, ruleExecInfo_t *to)
 }
 
 int 
-freeRuleExecInfoStruct(ruleExecInfo_t *rs, int freeMsParamFlag)
+freeRuleExecInfoStruct(ruleExecInfo_t *rs, int freeSpeialStructFlag)
 {
-  freeRuleExecInfoInternals(rs, freeMsParamFlag);
+  freeRuleExecInfoInternals(rs, freeSpeialStructFlag);
   free(rs);
   return(0);
 }
 int 
-freeRuleExecInfoInternals(ruleExecInfo_t *rs, int freeMsParamFlag)
+freeRuleExecInfoInternals(ruleExecInfo_t *rs, int freeSpeialStructFlag)
 {
-  if (rs->msParamArray != NULL && freeMsParamFlag > 0) {
+  if (rs->msParamArray != NULL && (freeSpeialStructFlag & FREE_MS_PARAM) > 0) {
     clearMsParamArray (rs->msParamArray, 1);
     free (rs->msParamArray);
   }
 
-  if (rs->doinp != NULL) {
-      clearDataObjInp (rs->doinp);
-      free (rs->doinp);
+  if (rs->doinp != NULL && (freeSpeialStructFlag & FREE_DOINP) > 0) {
+     clearDataObjInp (rs->doinp);
+     free (rs->doinp);
   }
  
   if (rs->doi != NULL) 
@@ -137,7 +137,7 @@ freeRuleExecInfoInternals(ruleExecInfo_t *rs, int freeMsParamFlag)
   if (rs->condInputData != NULL) 
     freeKeyValPairStruct(rs->condInputData);
   if (rs->next != NULL) 
-    freeRuleExecInfoStruct(rs->next, freeMsParamFlag);
+    freeRuleExecInfoStruct(rs->next, freeSpeialStructFlag);
   return(0);
 }
 
