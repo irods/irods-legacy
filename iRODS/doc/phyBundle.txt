@@ -69,3 +69,21 @@ use
 int
 tar_extract_glob(TAR *t, char *globname, char *prefix)
 toextract invividual file- prefix is the dir of output file
+
+Need to create resc_class token "bundle"
+
+iadmin at resc_class bundle
+
+need to create this resource:
+
+resource name: bundleResc
+resc id: 532221
+zone: tempZone
+type: unix file system
+class: bundle
+location: localhost
+vault: /tmp
+
+admin mkresc bundleResc "unix file system" bundle localhost /tmp
+
+
