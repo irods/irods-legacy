@@ -42,7 +42,7 @@
 #define MAX_NSERVERS 40 /* max number of servers that can be monitored (load balancing) */
 #define TIMEOUT 20 /* number of seconds after which the request (the thread taking care of it) 
 		      for server load is canceled */
-#define MON_OUTPUT_NO_ANSWER "#-1#-1#-1#-1#-1#-1#-1#" /* used if no monitoring output from
+#define MON_OUTPUT_NO_ANSWER "#-1#-1#-1#-1#-1#-1#-1#-1#" /* used if no monitoring output from
 							 remote server */
 #define LEN_SECONDS 4 /* length in bytes for the encoding of number of seconds */
 

@@ -26,7 +26,11 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   tps = time(NULL);
   struct tm *now = localtime(&tps);
   
-  sprintf(msg, "server=%s resource=%s result=%s\n", serverName, resc, output);
+  strSplit(output, delim, splc);
+
+  sprintf(msg, "server=%s resource=%s cpu=%s, mem=%s, swp=%s, rql=%s, dsk=%s, nin=%s, nout=%s, dskAv(MB)=%s\n",
+                serverName, resc, splc[0], splc[1], splc[2],
+                splc[3], splc[4], splc[5], splc[6], splc[7]);
   sprintf(suffix, "%d.%d.%d", now->tm_year+1900, now->tm_mon+1, now->tm_mday);
   sprintf(fname, "%s.%s", OUTPUT_MON_PERF, suffix);
   day = now->tm_mday;
@@ -40,7 +44,6 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   }
   
   /* log the result into the database as well */
-  strSplit(output, delim, splc);
   generalRowInsertInp.tableName = "serverload";
   generalRowInsertInp.arg1 = serverName;
   generalRowInsertInp.arg2 = resc;
