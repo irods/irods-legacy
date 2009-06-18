@@ -20,3 +20,6 @@ create table R_SERVER_LOAD_DIGEST
      load_factor INTEGER,
      create_ts varchar(32)
 );
+
+insert into R_TOKN_MAIN values ('resc_class',502,'compound','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('resc_class',503,'bundle','','','','','1170000000','1170000000');

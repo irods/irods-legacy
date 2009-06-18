@@ -48,6 +48,8 @@ insert into R_TOKN_MAIN values ('resc_type',402,'windows file system','','','','
 
 insert into R_TOKN_MAIN values ('resc_class',500,'cache','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',501,'archive','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('resc_class',502,'compound','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('resc_class',503,'bundle','','','','','1170000000','1170000000');
 
 insert into R_TOKN_MAIN values ('rulexec_type',600,'immediate','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('rulexec_type',601,'delayed','','','','','1170000000','1170000000');
