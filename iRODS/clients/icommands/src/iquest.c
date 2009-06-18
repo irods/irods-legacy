@@ -67,6 +67,22 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, char *selectCondit
   if (i < 0)
     return(i);
 
+
+  while (i==0 && genQueryOut->continueInx > 0) {
+     char inbuf[100];
+     printf("Continue? [Y/n]");
+     fgets(inbuf, 90, stdin);
+     if (strncmp(inbuf, "n", 1)==0) break;
+
+     genQueryInp.continueInx=genQueryOut->continueInx;
+     i = rcGenQuery (conn, &genQueryInp, &genQueryOut);
+     if (i < 0)
+	return(i);
+     i = printGenQueryOut(stdout, format,hint,  genQueryOut);
+     if (i < 0)
+	return(i);
+  }
+
   return(0);
 
 }
