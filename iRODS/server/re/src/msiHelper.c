@@ -189,7 +189,7 @@ ruleExecInfo_t *rei)
     char errMsg[ERR_MSG_LEN];
     rsComm_t *rsComm;
 
-    RE_TEST_MACRO (" Calling msiGetSessionVar")
+    RE_TEST_MACRO (" Calling msiGetSessionVarValue")
 
     if (rei == NULL) {
         rodsLog (LOG_ERROR,
@@ -200,7 +200,7 @@ ruleExecInfo_t *rei)
 
     if (inpVar == NULL || outputMode == NULL) {
         rodsLog (LOG_ERROR,
-          "msiGetSessionVar: input inpVar or outputMode is NULL");
+          "msiGetSessionVarValue: input inpVar or outputMode is NULL");
         rei->status = USER__NULL_INPUT_ERR;
         return (rei->status);
     }
@@ -208,7 +208,7 @@ ruleExecInfo_t *rei)
     if (strcmp (inpVar->type, STR_MS_T) != 0 || 
       strcmp (outputMode->type, STR_MS_T) != 0) {
         rodsLog (LOG_ERROR,
-        "msiGetSessionVar: Unsupported *inpVar or outputMode type");
+        "msiGetSessionVarValue: Unsupported *inpVar or outputMode type");
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
 	return (rei->status);
     }
@@ -218,7 +218,7 @@ ruleExecInfo_t *rei)
 
     if (inpVarStr == NULL || outputModeStr == NULL) {
         rodsLog (LOG_ERROR,
-          "msiGetSessionVar: input inpVar or outputMode is NULL");
+          "msiGetSessionVarValue: input inpVar or outputMode is NULL");
         rei->status = USER__NULL_INPUT_ERR;
         return (rei->status);
     }
@@ -240,7 +240,7 @@ ruleExecInfo_t *rei)
               strcmp (outputModeStr, "all") == 0) {
 		for (i = 0; i < varKeyVal.len; i++) {
                     snprintf (errMsg, ERR_MSG_LEN,
-                      "msiGetSessionVar: %s=%s\n", 
+                      "msiGetSessionVarValue: %s=%s\n", 
 		        varKeyVal.keyWord[i], varKeyVal.value[i]);
                     addRErrorMsg (&rsComm->rError, 0, errMsg);
 		}
@@ -253,12 +253,12 @@ ruleExecInfo_t *rei)
 	if (rei->status >= 0) {
 	    if (strcmp (outputModeStr, "server") == 0 ||
 	      strcmp (outputModeStr, "all") == 0) {
-	        printf ("msiGetSessionVar: %s=%s\n", inpVarStr, outStr);
+	        printf ("msiGetSessionVarValue: %s=%s\n", inpVarStr, outStr);
 	    }
             if (strcmp (outputModeStr, "client") == 0 ||
               strcmp (outputModeStr, "all") == 0) {
                 snprintf (errMsg, ERR_MSG_LEN, 
-		  "msiGetSessionVar: %s=%s\n", inpVarStr, outStr);
+		  "msiGetSessionVarValue: %s=%s\n", inpVarStr, outStr);
 		addRErrorMsg (&rsComm->rError, 0, errMsg);
             }
 	}
