@@ -13,7 +13,7 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 
   if (writeId != NULL && strcmp (writeId, "serverLog") == 0 &&
    inString->inOutStruct != NULL) {
-    rodsLog (LOG_NOTICE, "writeLine: inString = %s", inString->inOutStruct);
+    rodsLog (LOG_NOTICE, "writeLine: inString = %s\n", inString->inOutStruct);
     return 0;
   }
 
@@ -59,6 +59,10 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
   msParam_t *mP;
   execCmdOut_t *myExecCmdOut;
     
+  if (writeId != NULL && strcmp (writeId, "serverLog") == 0) {
+    rodsLog (LOG_NOTICE, "writeString: inString = %s", writeStr);
+    return 0;
+  }
   mP = NULL;
   inMsParamArray = rei->msParamArray;
   if (((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) &&
