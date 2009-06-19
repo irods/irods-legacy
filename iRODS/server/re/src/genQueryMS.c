@@ -289,3 +289,65 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
 
 
 
+int
+msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
+{
+  genQueryInp_t *genQueryInp;
+  int i, j;
+  char *writeId;
+  char writeStr[MAX_NAME_LEN * 2];
+  int len;
+  int *ip1, *ip2;
+  char *cp;
+  char **cpp;
+
+  RE_TEST_MACRO ("    Calling msiPrintGenQueryInp");
+    
+  if (rei == NULL || rei->rsComm == NULL) {
+    rodsLog (LOG_ERROR, "msiPrintGenQueryInp: input rei or rsComm is NULL.");
+    return (SYS_INTERNAL_NULL_INPUT_ERR);
+  }
+  if (!where) {
+    rodsLog (LOG_ERROR, "msiPrintGenQueryInp: No destination provided for writing.");
+    return (USER__NULL_INPUT_ERR);
+  }
+  /* where are we writing to? */
+  if (where->inOutStruct != NULL) {
+    writeId = where->inOutStruct;
+  }
+  else {
+    writeId = where->label;
+  }
+
+  genQueryInp = (genQueryInp_t *)  strtol((char *)genQueryInpParam->inOutStruct,
+					  (char **) NULL,0);
+
+
+  /* print each selection  pair to writeStr */
+  len = genQueryInp->selectInp.len;
+  ip1 = genQueryInp->selectInp.inx;
+  ip2 = genQueryInp->selectInp.value;
+  for (i=0;i<len;i++) {
+    sprintf(writeStr,"Selected Column %d With Option %d\n",*ip1, *ip2);
+    j = _writeString(writeId, writeStr, rei);
+    if (j < 0)
+      return(j);
+    ip1++;
+    ip2++;
+  }
+
+  len = genQueryInp->sqlCondInp.len;
+  ip1 = genQueryInp->sqlCondInp.inx;
+  cpp = genQueryInp->sqlCondInp.value;
+  cp = *cpp;
+  for (i=0;i<len;i++) {
+    sprintf(writeStr,"Condition Column %d %s\n", *ip1, cp);
+    j = _writeString(writeId, writeStr, rei);
+    if (j < 0)
+      return(j);
+    ip1++;
+    cpp++;
+    cp = *cpp;
+  }
+  return(0);
+}
