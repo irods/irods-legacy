@@ -152,3 +152,100 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
     }
     return (rei->status);
 }
+
+/*
+ * \fn msiGetSessionVarValue
+ * \author Michael Wan
+ * \date   2009-06-15
+ * \brief This micro-service can be used to get the values of session 
+ *    variables in the rei.
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection.
+ * \param[in]
+ *    inpVar - a STR_MS_T which specifies the name of the session
+ *	variable to output. The input session variable should NOT start
+ *      the "$" character. An input value of "all" means
+ *      output all valid session variables. 
+ *    outputMode - a STR_MS_T which specifies the output mode. Valid modes
+ *      are:    "server" - log the output to the server log.
+ *		"client" - send the output to the client in rError.
+ *		"all" - both client and server.
+ * \param[out] - none
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+
+int
+msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode,
+ruleExecInfo_t *rei)
+{
+    RE_TEST_MACRO (" Calling msiGetSessionVar")
+
+    if (rei == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiGetSessionVar: input rei is NULL");
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (inpVar == NULL || outputMode == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiGetSessionVar: input inpVar or outputMode is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (inpVar->type, STR_MS_T) != 0 || 
+      strcmp (outputMode->type, STR_MS_T) != 0) {
+        rodsLog (LOG_ERROR,
+        "msiGetSessionVar: Unsupported *inpVar or outputMode type");
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+	return (rei->status);
+    }
+    return (rei->status);
+}
+
+int 
+getAllSessionVarValue (char *action, ruleExecInfo_t *rei,
+keyValPair_t *varValues)
+{
+  int i;
+
+  for (i = 0; i < coreRuleVarDef.MaxNumOfDVars; i++) {
+  }
+  return i;
+}
+
+int
+getSessionVarValue (char *action, char *varName, ruleExecInfo_t *rei, 
+char **varValue)
+{
+  char *varMap;
+  int i, vinx;
+
+  vinx = getVarMap(action,varName, &varMap, 0);
+  while (vinx >= 0) {
+    i = getVarValue(varMap, rei, varValue);
+    if (i >= 0) {
+      free(varMap);
+      return(i);
+    } else if (i == NULL_VALUE_ERR) {
+      free(varMap);
+      vinx = getVarMap(action,varName, &varMap, vinx+1);
+    } else {
+      free(varMap);
+      return(i);
+    }
+  }
+  if (vinx < 0) {
+    return(vinx);
+  }
+  return(i);
+}
+
