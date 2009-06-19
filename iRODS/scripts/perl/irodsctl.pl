@@ -214,6 +214,10 @@ $reServerOnIes = 1;
 # use 1 to turn it on and comment it out for single-successful execution
 #
 # $GLOBALALLRULEEXECFLAG=1;
+# PREPOSTPROCFORGENQUERYFLAG - turn this on if you want to allow
+# pre and post rule processing for general query.
+# note that this can lead to slower performance
+# $PREPOSTPROCFORGENQUERYFLAG=1;
 
 				  $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
 if ($irodsEnvFile)		{ $ENV{'irodsEnvFile'}        = $irodsEnvFile; }
@@ -228,7 +232,7 @@ if ($reServerOption)		{ $ENV{'reServerOption'}      = $reServerOption; }
 if ($irodsReconnect)		{ $ENV{'irodsReconnect'}    = $irodsReconnect; }
 if ($RETESTFLAG)		{ $ENV{'RETESTFLAG'}          = $RETESTFLAG; }
 if ($GLOBALALLRULEEXECFLAG)    { $ENV{'GLOBALALLRULEEXECFLAG'} = $GLOBALALLRULEEXECFLAG; }
-
+if ($PREPOSTPROCFORGENQUERYFLAG)    { $ENV{'PREPOSTPROCFORGENQUERYFLAG'} = $PREPOSTPROCFORGENQUERYFLAG; }
 
 
 
