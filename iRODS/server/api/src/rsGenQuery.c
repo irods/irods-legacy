@@ -56,6 +56,22 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     ruleExecInfo_t rei;
     static int ruleResult=0;
 
+
+    static int PrePostProcForGenQueryFlag = -2;    
+    int i, argc;
+    ruleExecInfo_t rei2;
+    char *args[MAX_NUM_OF_ARGS_IN_ACTION];
+    
+    if (PrePostProcForGenQueryFlag < 0) {
+      if (getenv("PREPOSTPROCFORGENQUERYFLAG") != NULL)
+	PrePostProcForGenQueryFlag = 1;
+      else
+	PrePostProcForGenQueryFlag = 0;
+    }
+
+    memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
+    rei2.rsComm = rsComm;
+
     /*  printGenQI(genQueryInp);  for debug */
 
     *genQueryOut = malloc(sizeof(genQueryOut_t));
@@ -103,8 +119,45 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 	     rsComm->proxyUser.userName, 
 	     rsComm->proxyUser.authInfo.authFlag);
 #endif
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    if (PrePostProcForGenQueryFlag == 1) {
+      args[0] = (char *) malloc(300);
+      sprintf(args[0],"%ld",genQueryInp);
+      argc = 1;
+      i =  applyRuleArg("acPreProcForGenQuery",args,argc, &rei2, NO_SAVE_REI);
+      free(args[0]);
+      if (i < 0) {
+	rodsLog (LOG_ERROR,
+		 "rsGenQuery:acPreProcForGenQuery error,stat=%d", i);
+        if (i != NO_MICROSERVICE_FOUND_ERR)
+	  return i;
+      }
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
     status = chlGenQuery(*genQueryInp, *genQueryOut);
+
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+    if (PrePostProcForGenQueryFlag == 1) {
+      args[0] = (char *) malloc(300);
+      args[1] = (char *) malloc(300);
+      args[2] = (char *) malloc(300);
+      sprintf(args[0],"%ld",genQueryInp);
+      sprintf(args[1],"%ld",*genQueryOut);
+      sprintf(args[2],"%d",status);
+      argc = 3;
+      i =  applyRuleArg("acPostProcForGenQuery",args,argc, &rei2, NO_SAVE_REI);
+      free(args[0]);
+      free(args[1]);
+      free(args[2]);
+      if (i < 0) {
+        rodsLog (LOG_ERROR,
+                 "rsGenQuery:acPostProcForGenQuery error,stat=%d", i);
+	if (i != NO_MICROSERVICE_FOUND_ERR)
+	  return i;
+      }
+    }
+    /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
     if (status < 0) {
        clearGenQueryOut (*genQueryOut);
