@@ -148,6 +148,9 @@ int msiDataObjPutWithOptions (msParam_t *inpParam1,
                               msParam_t *outParam, 
                               ruleExecInfo_t *rei);
 
+int
+msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
+
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
   {"print_hello_arg", 1, (funcPtr) print_hello_arg},
@@ -279,6 +282,7 @@ microsdef_t MicrosTable[] = {
   {"msiGetStdoutInExecCmdOut",2,(funcPtr) msiGetStdoutInExecCmdOut},
   {"msiGetStderrInExecCmdOut",2,(funcPtr) msiGetStderrInExecCmdOut},
   {"msiAddKeyValToMspStr",3,(funcPtr) msiAddKeyValToMspStr},
+  {"msiPrintGenQueryInp",2,(funcPtr) msiPrintGenQueryInp},
   {"msiTarFileExtract",4,(funcPtr) msiTarFileExtract},
   {"msiTarFileCreate",4,(funcPtr) msiTarFileCreate},
   {"msiWriteRodsLog",2,(funcPtr) msiWriteRodsLog},
