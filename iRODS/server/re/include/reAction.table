@@ -286,3 +286,4 @@ microsdef_t MicrosTable[] = {
   {"msiFlushMonStat",2,(funcPtr) msiFlushMonStat},
   {"msiDigestMonStat",7,(funcPtr) msiDigestMonStat},
   {"msiSplitPath",3,(funcPtr) msiSplitPath},
+  {"msiGetSessionVarValue",2,(funcPtr) msiGetSessionVarValue},

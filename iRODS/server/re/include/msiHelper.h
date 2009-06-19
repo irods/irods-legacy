@@ -32,6 +32,9 @@ ruleExecInfo_t *rei);
 int
 msiSplitPath (msParam_t *inpPath,  msParam_t *outParentColl, 
 msParam_t *outChildName, ruleExecInfo_t *rei);
+int
+msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode,
+ruleExecInfo_t *rei);
 #endif  /* MSI_HELPER_H */
 
 

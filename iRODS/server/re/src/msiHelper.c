@@ -185,6 +185,10 @@ int
 msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode,
 ruleExecInfo_t *rei)
 {
+    char *inpVarStr, *outputModeStr;
+    char errMsg[ERR_MSG_LEN];
+    rsComm_t *rsComm;
+
     RE_TEST_MACRO (" Calling msiGetSessionVar")
 
     if (rei == NULL) {
@@ -208,44 +212,58 @@ ruleExecInfo_t *rei)
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
 	return (rei->status);
     }
-    return (rei->status);
-}
+    rsComm = rei->rsComm;
+    inpVarStr = (char *) inpVar->inOutStruct;
+    outputModeStr = (char *) outputMode->inOutStruct;
 
-int 
-getAllSessionVarValue (char *action, ruleExecInfo_t *rei,
-keyValPair_t *varValues)
-{
-  int i;
-
-  for (i = 0; i < coreRuleVarDef.MaxNumOfDVars; i++) {
-  }
-  return i;
-}
-
-int
-getSessionVarValue (char *action, char *varName, ruleExecInfo_t *rei, 
-char **varValue)
-{
-  char *varMap;
-  int i, vinx;
-
-  vinx = getVarMap(action,varName, &varMap, 0);
-  while (vinx >= 0) {
-    i = getVarValue(varMap, rei, varValue);
-    if (i >= 0) {
-      free(varMap);
-      return(i);
-    } else if (i == NULL_VALUE_ERR) {
-      free(varMap);
-      vinx = getVarMap(action,varName, &varMap, vinx+1);
-    } else {
-      free(varMap);
-      return(i);
+    if (inpVarStr == NULL || outputModeStr == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiGetSessionVar: input inpVar or outputMode is NULL");
+        rei->status = USER__NULL_INPUT_ERR;
+        return (rei->status);
     }
-  }
-  if (vinx < 0) {
-    return(vinx);
-  }
-  return(i);
+
+    if (strcmp (inpVarStr, "all") == 0) {
+	keyValPair_t varKeyVal;
+	int i;
+	bzero (&varKeyVal, sizeof (varKeyVal));
+	rei->status = getAllSessionVarValue ("", rei, &varKeyVal);
+	if (rei->status >= 0) {
+            if (strcmp (outputModeStr, "server") == 0 ||
+              strcmp (outputModeStr, "all") == 0) {
+		for (i = 0; i < varKeyVal.len; i++) {
+                    printf ("msiGetSessionVar: %s=%s\n", 
+		      varKeyVal.keyWord[i], varKeyVal.value[i]);
+		}
+            }
+            if (strcmp (outputModeStr, "client") == 0 ||
+              strcmp (outputModeStr, "all") == 0) {
+		for (i = 0; i < varKeyVal.len; i++) {
+                    snprintf (errMsg, ERR_MSG_LEN,
+                      "msiGetSessionVar: %s=%s\n", 
+		        varKeyVal.keyWord[i], varKeyVal.value[i]);
+                    addRErrorMsg (&rsComm->rError, 0, errMsg);
+		}
+	    }
+	    clearKeyVal (&varKeyVal);
+	}
+    } else {
+        char *outStr = NULL;
+	rei->status = getSessionVarValue ("", inpVarStr, rei, &outStr);
+	if (rei->status >= 0) {
+	    if (strcmp (outputModeStr, "server") == 0 ||
+	      strcmp (outputModeStr, "all") == 0) {
+	        printf ("msiGetSessionVar: %s=%s\n", inpVarStr, outStr);
+	    }
+            if (strcmp (outputModeStr, "client") == 0 ||
+              strcmp (outputModeStr, "all") == 0) {
+                snprintf (errMsg, ERR_MSG_LEN, 
+		  "msiGetSessionVar: %s=%s\n", inpVarStr, outStr);
+		addRErrorMsg (&rsComm->rError, 0, errMsg);
+            }
+	}
+	if (outStr != NULL) free (outStr);
+    }
+    return (rei->status);
 }
 

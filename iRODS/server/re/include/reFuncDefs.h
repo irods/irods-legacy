@@ -265,4 +265,10 @@ int carryOverMsParam(msParamArray_t *sourceMsParamArray,msParamArray_t *targetMs
 int checkFilePerms(char *fileName);
 int evaluateExpression(char *expr, char *res, ruleExecInfo_t *rei);
 int removeTmpVarName(msParamArray_t *msParamArray);
+int
+getAllSessionVarValue (char *action, ruleExecInfo_t *rei,
+keyValPair_t *varValues);
+int
+getSessionVarValue (char *action, char *varName, ruleExecInfo_t *rei,
+char **varValue);
 #endif  /* RE_FUNCDEFS_H */

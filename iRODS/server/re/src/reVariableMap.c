@@ -1207,4 +1207,59 @@ getSetValFrom(char *varMap, _t **inptr, char **varValue, void *newVarValue)
 }
 *****************/
 
+int
+getAllSessionVarValue (char *action, ruleExecInfo_t *rei,
+keyValPair_t *varKeyVal)
+{
+  int i, status;
+  char *varValue;
+  char *lastVar = NULL; 	/* last var that has data */
+
+  if (varKeyVal == NULL || rei == NULL) {
+    rodsLog (LOG_ERROR,
+      "getAllSessionVarValue: input rei or varKeyVal is NULL");
+      return SYS_INTERNAL_NULL_INPUT_ERR;
+  }
+
+  for (i = 0; i < coreRuleVarDef.MaxNumOfDVars; i++) {
+    if (lastVar == NULL || strcmp (lastVar, coreRuleVarDef.varName[i]) != 0) {
+      status = getSessionVarValue ("", coreRuleVarDef.varName[i], rei,
+        &varValue);
+      if (status >= 0 && varValue != NULL) {
+        lastVar = coreRuleVarDef.varName[i];
+        addKeyVal (varKeyVal, lastVar, varValue);
+	free (varValue);
+      }
+    }
+  }
+  return 0;
+}
+
+int
+getSessionVarValue (char *action, char *varName, ruleExecInfo_t *rei,
+char **varValue)
+{
+  char *varMap;
+  int i, vinx;
+
+  vinx = getVarMap (action,varName, &varMap, 0);
+  while (vinx >= 0) {
+    i = getVarValue (varMap, rei, varValue);
+    if (i >= 0) {
+      free(varMap);
+      return(i);
+    } else if (i == NULL_VALUE_ERR) {
+      free(varMap);
+      vinx = getVarMap (action,varName, &varMap, vinx+1);
+    } else {
+      free(varMap);
+      return(i);
+    }
+  }
+  if (vinx < 0) {
+    return(vinx);
+  }
+  return(i);
+}
+
 
