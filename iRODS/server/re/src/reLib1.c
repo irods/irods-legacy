@@ -424,13 +424,13 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	}
 	status = 
 	   executeRuleBodyNew(action, ruleAction, ruleRecovery, outMsParamArray, rei, reiSaveFlag);
-	if ( status == 0) {
+	if ( status == 0  || status == CUT_ACTION_ON_SUCCESS_PROCESSED_ERR) {
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
 	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
-	  return(status);
+	  return(0);
 	}
-	else if ( status == CUT_ACTION_PROCESSED_ERR) {
+	else if ( status == CUT_ACTION_PROCESSED_ERR ) {
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
 	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);
@@ -590,6 +590,13 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
 	  return(status);
 	}
+        else if ( status == CUT_ACTION_ON_SUCCESS_PROCESSED_ERR) {
+          if (reiSaveFlag == SAVE_REI)
+            freeRuleExecInfoStruct(saveRei, 0);
+          finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);
+          if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
+          return(0);
+        }
 	else if ( status == RETRY_WITHOUT_RECOVERY_ERR) {
 	  reTryWithoutRecovery = 1;
 	  /*** finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,0);***/
@@ -613,10 +620,12 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
   }
   if (i == NO_MORE_RULES_ERR) {
     if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
-    if (success == 1)
+    if (success == 1) {
+      finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
       return(0);
+    }
     else {
-      rodsLog (LOG_NOTICE,"applyRule Failed for action : %s with status %i",action, i);
+      rodsLog (LOG_NOTICE,"applyRule Failed for action 3: %s with status %i",action, i);
       return(i);
     }
   }
@@ -792,6 +801,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   }
   if (getenv("GLOBALALLRULEEXECFLAG") != NULL)
     GlobalAllRuleExecFlag = 9;
+
 
   delayStack.size = NAME_LEN;
   delayStack.len = 0;

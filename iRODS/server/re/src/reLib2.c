@@ -181,7 +181,10 @@ executeRuleBodyNew(char *action, char *ruleAction, char *ruleRecovery,
       free (recoveryArray[i]);
     }
   }
-
+  if (cutFlag == 1)
+    return(CUT_ACTION_ON_SUCCESS_PROCESSED_ERR);
+  /** this allows use of cut as the last msi in the body so that other rules will not be processed
+      even when the current rule succeeds **/
   return(0);
 }
 
