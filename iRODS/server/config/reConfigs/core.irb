@@ -475,6 +475,41 @@ acPreProcForObjRename(*sourceObject,*destObject)||nop|nop
 #acPostProcForObjRename(*sourceObject,*destObject)||writeLine(serverLog,"TEST:acPostProcForObjRename from *sourceObject to *destObject")|nop
 acPostProcForObjRename(*sourceObject,*destObject)||nop|nop
 #
+# 48) acPreProcForGenQuery - This rule set the pre-processing policy for
+# general query
+#The *genQueryInpStr is a pointer converted to a string and sent as a character string
+# You need to convert as follows:
+# genQueryInp = (genQueryInp_t *)  strtol((char *)genQueryInpStr->inOutStruct,
+#                                       (char **) NULL,0);
+#acPreProcForGenQuery(*genQueryInpStr)||writeLine(serverLog,"TEST:acPreProcForGenQuery from")|nop
+#acPreProcForGenQuery(*genQueryInpStr)||msiPrintGenQueryInp(serverLog,*genQueryInpStr)|nop
+acPreProcForGenQuery(*genQueryInpStr)||nop|nop
+#
+# 49) acPostProcForGenQuery - This rule set the post-processing policy for
+# general query
+#The *genQueryInpStr is a pointer converted to a string and sent as a character string
+# You need to convert as follows:
+#  genQueryInp_t *genQueryInp;
+#
+# genQueryInp = (genQueryInp_t *)  strtol((char *)genQueryInpStr->inOutStruct,
+#                                       (char **) NULL,0);
+#
+# The *genQueryOutStr is also a pointer sent out as a character string
+# You need to convert as follows:
+#  genQueryOut_t *genQueryOut;
+#
+# genQueryOut = (genQueryOut_t *)  strtol((char *)genQueryOutStr->inOutStruct,
+#                                       (char **) NULL,0);
+#
+#The *genQueryStatusStr is an integer but sent as a character string
+#You need to convert as follows:
+#  int genQueryStatus;
+#
+# genQueryStatus = atoi((char *)genQueryStatusStr->inOutStruct);
+#
+#acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||writeLine(serverLog,"TEST:acPostProcForGenQuery and Status = *genQueryStatusStr")|nop
+acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||nop|nop
+#
 #
 # ----------------------------------------------------------------------------
 # These rules are for testing only
@@ -488,9 +523,9 @@ acRegisterData||msiRegisterData|msiRollback
 #These are actions for getting iCAT results for performing iRODS operations.
 #These rules generate the genQueryOut_ structure for each action for the given condition
 #
-acGetIcatResults(*Action,*Condition,*GenQOut)|(*Action == replicate) %% (*Action == trim) %% (*Action == chksum) %% (*Action == copy) %% (*Action == remove) |msiMakeQuery("DATA_NAME, COLL_NAME",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
-acGetIcatResults(*Action,*Condition,*GenQOut)|(*Action == chksumRescLoc) |msiMakeQuery("DATA_NAME, COLL_NAME, RESC_LOC",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
-acGetIcatResults(*Action,*Condition,*GenQOut)|*Action == list|msiMakeQuery("DATA_NAME, COLL_NAME, DATA_RESC_NAME, DATA_REPL_NUM, DATA_SIZE",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)|nop##nop
+acGetIcatResults(*Action,*Condition,*GenQOut)|(*Action == replicate) %% (*Action == trim) %% (*Action == chksum) %% (*Action == copy) %% (*Action == remove) |msiMakeQuery("DATA_NAME, COLL_NAME",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)##cut|nop##nop
+acGetIcatResults(*Action,*Condition,*GenQOut)|(*Action == chksumRescLoc) |msiMakeQuery("DATA_NAME, COLL_NAME, RESC_LOC",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)##cut|nop##nop
+acGetIcatResults(*Action,*Condition,*GenQOut)|*Action == list|msiMakeQuery("DATA_NAME, COLL_NAME, DATA_RESC_NAME, DATA_REPL_NUM, DATA_SIZE",*Condition,*Query)##msiExecStrCondQuery(*Query, *GenQOut)##cut|nop##nop
 ##
 ##rules for purging a file which have expired
 ##
