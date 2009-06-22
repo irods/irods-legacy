@@ -53,7 +53,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
       rei2.uoip = &rsComm->proxyUser;
     }
     rei2.doi = modDataObjMetaInp->dataObjInfo;
-
+    rei2.condInputData = modDataObjMetaInp->regParam;
     regParam = modDataObjMetaInp->regParam;
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
 
