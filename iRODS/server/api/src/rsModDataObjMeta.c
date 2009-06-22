@@ -52,6 +52,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
       rei2.uoic = &rsComm->clientUser;
       rei2.uoip = &rsComm->proxyUser;
     }
+    rei2.doi = modDataObjMetaInp->dataObjInfo;
 
     regParam = modDataObjMetaInp->regParam;
     dataObjInfo = modDataObjMetaInp->dataObjInfo;
