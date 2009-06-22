@@ -56,6 +56,10 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     rei2.rsComm = rsComm;
+    if (rsComm != NULL) {
+      rei2.uoic = &rsComm->clientUser;
+      rei2.uoip = &rsComm->proxyUser;
+    }
 
     rodsLog (LOG_DEBUG,
 	     "_rsGeneralAdmin arg0=%s", 

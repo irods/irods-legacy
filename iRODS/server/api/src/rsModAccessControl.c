@@ -51,6 +51,11 @@ _rsModAccessControl (rsComm_t *rsComm,
     char rFlag[15];
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     rei2.rsComm = rsComm;
+    if (rsComm != NULL) {
+      rei2.uoic = &rsComm->clientUser;
+      rei2.uoip = &rsComm->proxyUser;
+    }
+
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     sprintf(rFlag,"%d",modAccessControlInp->recursiveFlag);

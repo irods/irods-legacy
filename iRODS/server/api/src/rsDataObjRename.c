@@ -116,6 +116,10 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     rei2.rsComm = rsComm;
+    if (rsComm != NULL) {
+      rei2.uoic = &rsComm->clientUser;
+      rei2.uoip = &rsComm->proxyUser;
+    }
 
     srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
     destDataObjInp = &dataObjRenameInp->destDataObjInp;
@@ -138,7 +142,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 
     multiCopyFlag = getMultiCopyPerResc ();
 
-    if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
+     if (srcDataObjInp->oprType == RENAME_DATA_OBJ) {
 	status = getDataObjInfo (rsComm, srcDataObjInp, &dataObjInfoHead,
           ACCESS_DELETE_OBJECT, 0);
 	if (status >= 0) {
@@ -178,7 +182,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 	    srcDataObjInp->oprType = destDataObjInp->oprType = RENAME_COLL;
 	} else {
             rodsLog (LOG_ERROR,
-              "_rsDataObjRename: src obj %s does not exist, status = %d",
+               "_rsDataObjRename: src obj %s does not exist, status = %d",
               srcDataObjInp->objPath, status);
             return (status);
 	}

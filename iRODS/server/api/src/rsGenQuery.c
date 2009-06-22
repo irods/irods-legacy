@@ -71,6 +71,10 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
 
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     rei2.rsComm = rsComm;
+    if (rsComm != NULL) {
+      rei2.uoic = &rsComm->clientUser;
+      rei2.uoip = &rsComm->proxyUser;
+    }
 
     /*  printGenQI(genQueryInp);  for debug */
 
