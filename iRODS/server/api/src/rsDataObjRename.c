@@ -120,6 +120,7 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
       rei2.uoic = &rsComm->clientUser;
       rei2.uoip = &rsComm->proxyUser;
     }
+    rei2.doinp = &dataObjRenameInp->srcDataObjInp;
 
     srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
     destDataObjInp = &dataObjRenameInp->destDataObjInp;
