@@ -147,3 +147,4 @@ connectReconnSock||rei->rsComm->reconnSock
 connectReconnPort||rei->rsComm->reconnPort
 connectReconnAddr||rei->rsComm->reconnAddr
 ConnectCookie||rei->rsComm->cookie
+KVPairs||rei->condInputData
