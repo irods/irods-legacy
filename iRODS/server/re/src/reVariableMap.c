@@ -285,6 +285,7 @@ getSetValFromRsComm(char *varMap, rsComm_t **inptr, char **varValue, void *newVa
   char *varMapCPtr;
   int i;
   rsComm_t *ptr;
+  userInfo_t *userInfo;
 
   ptr = *inptr;
 
@@ -305,9 +306,16 @@ getSetValFromRsComm(char *varMap, rsComm_t **inptr, char **varValue, void *newVa
     i = getSetLeafValue(varValue,&(ptr->connectCnt),(void *) ptr->connectCnt, newVarValue, RE_INT);
     /*sprintf(*varValue, "%d",ptr->connectCnt);*/
   else  if (!strcmp(varName, "proxyUser") )
-    i = getSetValFromUserInfo(varMapCPtr, (void *) &(ptr->proxyUser), varValue, newVarValue);
-  else  if (!strcmp(varName, "clientUser") )
-    i = getSetValFromUserInfo(varMapCPtr, (void *)&(ptr->clientUser), varValue, newVarValue);
+  {
+    userInfo = &(ptr->proxyUser);
+    i = getSetValFromUserInfo(varMapCPtr, (void *) &userInfo, varValue, 
+      newVarValue);
+  }
+  else  if (!strcmp(varName, "clientUser") ) 
+  {
+    userInfo = &(ptr->clientUser);
+    i = getSetValFromUserInfo(varMapCPtr, &userInfo, varValue, newVarValue);
+  }
   else  if (!strcmp(varName, "cliVersion") )
     i = getSetValFromVersion(varMapCPtr, (void *)&(ptr->cliVersion), varValue, newVarValue);
   else  if (!strcmp(varName, "option") )
@@ -670,6 +678,7 @@ getSetValFromUserInfo(char *varMap, userInfo_t **inptr, char **varValue, void *n
   char *varMapCPtr;
   int i;
   userInfo_t *ptr;
+  authInfo_t *authInfo;
 
   ptr = *inptr;
 
@@ -704,7 +713,11 @@ getSetValFromUserInfo(char *varMap, userInfo_t **inptr, char **varValue, void *n
     i = getSetLeafValue(varValue,&(ptr->sysUid), (void *) ptr->sysUid, newVarValue, RE_INT);
   /*   sprintf(*varValue, "%d",ptr->sysUid);*/
   else  if (!strcmp(varName, "authInfo") )
-    i = getSetValFromAuthInfo(varMapCPtr, (void *) &(ptr->authInfo), varValue, newVarValue);
+  {
+    authInfo = &(ptr->authInfo);
+    i = getSetValFromAuthInfo(varMapCPtr, &authInfo, varValue, 
+      newVarValue);
+  }
   else  if (!strcmp(varName, "userOtherInfo") )
     i = getSetValFromUserOtherInfo(varMapCPtr, (void *) &(ptr->userOtherInfo), varValue, newVarValue);
   else 
