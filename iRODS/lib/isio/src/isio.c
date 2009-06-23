@@ -1,19 +1,16 @@
 /* 
-   irods standard i/o emulation library
+   irods standard i/o emulation library  (initial version)
    
-   This is an initial, very incomplete, and experimental
-   version, but I wanted to have it in CVS.
-
-   This package converts Unix standard I/O calls (stdio.h; fopen,
+   This package converts Unix standard I/O calls (stdio.h: fopen,
    fread, fwrite, etc) to the equivalent irods calls.  To convert an
-   application you just need to add an include file (isio.h) and
-   recompile and relink with irods libraries.  fopen calls on files
-   that include the IRODS_PREFIX string will be opened and handled as
-   iRODS files; without the prefix this package will call the fopen
-   family to handle them as regular local files.
+   application you just need to add an include statement (isio.h) and
+   recompile and relink with irods libraries.  fopen calls with input
+   filenames that include the IRODS_PREFIX string ('irods:') will be
+   opened and handled as iRODS files; without the prefix this package
+   will call the fopen family to handle them as regular local files.
 
-   Like the fopen family, this library does (will do) some caching to
-   avoid small I/O (network) calls.
+   Like the fopen family, this library does some caching to avoid
+   small I/O (network) calls, greatly improving performance.
 
    The user callable functions are defined in the isio.h and are of
    the form irodsNAME, such as irodsfopen.  Internal function names
@@ -22,6 +19,9 @@
    The irods environment is assummed.  That is, like i-commands, this
    library needs to read the user's .irodsEnv and authentication files
    to be able to connect to an iRODS server.
+
+   See the ../include/isio.h, ../test*.c files, and ../Makefile for
+   more information.
 
  */
 
