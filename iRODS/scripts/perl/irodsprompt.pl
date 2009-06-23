@@ -146,6 +146,8 @@ foreach $arg (@ARGV)
 $DEFAULT_irodsAccount		= "rods";
 $DEFAULT_irodsPassword  	= "rods";
 $DEFAULT_irodsPort		= "1247";
+$DEFAULT_svrPortRangeStart	= "20000";
+$DEFAULT_svrPortRangeEnd	= "20199";
 $DEFAULT_irodsDbName		= "ICAT";
 $DEFAULT_irodsDbKey		= "123";
 $DEFAULT_irodsResourceName	= "demoResc";
@@ -164,6 +166,8 @@ $DEFAULT_databaseServerAccount	= $thisUser;
 $irodsAccount		= $DEFAULT_irodsAccount;	# Prompt.
 $irodsPassword		= $DEFAULT_irodsPassword;	# Prompt.
 $irodsPort		= $DEFAULT_irodsPort;		# Prompt [advanced].
+$svrPortRangeStart	= undef;		        # Prompt [advanced].
+$svrPortRangeEnd	= undef;		        # Prompt [advanced].
 $irodsDbName		= $DEFAULT_irodsDbName;		# Prompt [advanced].
 $irodsDbKey		= $DEFAULT_irodsDbKey;		# Prompt [advanced].
 $irodsResourceName	= $DEFAULT_irodsResourceName;	# Prompt [advanced].
@@ -282,6 +286,9 @@ if ( -e $irodsConfig )
 	$irodsPassword     = $IRODS_ADMIN_PASSWORD;
 	$catalogServerHost = $IRODS_ICAT_HOST;
 	$irodsPort         = $IRODS_PORT;
+	$svrPortRangeStart = $SVR_PORT_RANGE_START;
+	$svrPortRangeEnd   = $SVR_PORT_RANGE_END;
+
 	$irodsDbName       = $DB_NAME;
 	$irodsDbKey        = $DB_KEY;
 	$irodsResourceName = $RESOURCE_NAME;
@@ -455,6 +462,9 @@ sub promptForIrodsConfiguration( )
 		$irodsPassword		= undef;
 		$catalogServerHost	= undef;
 		$irodsPort		= undef;
+		$svrPortRangeStart      = undef;
+		$svrPortRangeEnd        = undef;
+
 		$irodsDbName		= undef;
 		$irodsDbKey		= undef;
 		$irodsResourceName	= undef;
@@ -623,6 +633,23 @@ sub promptForIrodsConfiguration( )
 			((!defined($irodsPort)||$irodsPort eq "") ?
 				$DEFAULT_irodsPort : $irodsPort) );
 
+		# port start and range
+		printNotice(
+			"\n",
+			"[Advanced option]\n",
+			"You can specify which dynamic port numbers to use (start and end)\n",
+		        "in case you need to open these thru a firewall.\n",
+			"\n" );
+		$svrPortRangeStart = promptInteger(
+			"Starting Server Port",
+			((!defined($svrPortRangeStart)||$svrPortRangeStart eq "") ?
+				$DEFAULT_svrPortRangeStart : $svrPortRangeStart) );
+		$svrPortRangeEnd = promptInteger(
+			"Ending Server Port",
+			((!defined($svrPortRangeEnd)||$svrPortRangeEnd eq "") ?
+				$DEFAULT_svrPortRangeEnd : $svrPortRangeEnd) );
+
+
 		if ( $installCatalogServer == 1 ) {
 
 		    # iRODS database name
@@ -689,6 +716,10 @@ sub promptForIrodsConfiguration( )
 
 		$irodsPort = ((!defined($irodsPort)||$irodsPort eq "") ?
 			$DEFAULT_irodsPort : $irodsPort);
+		$svrPortRangeStart = ((!defined($svrPortRangeStart)||$svrPortRangeStart eq "") ?
+			"" : $svrPortRangeStart);
+		$svrPortRangeEnd = ((!defined($svrPortRangeEnd)||$svrPortRangeEnd eq "") ?
+			"" : $svrPortRangeEnd);
 		$irodsZone = ((!defined($irodsZone)||$irodsZone eq "") ?
 			$DEFAULT_irodsZone : $irodsZone);
 		$irodsDbName = ((!defined($irodsDbName)||$irodsDbName eq "") ?
@@ -1604,6 +1635,8 @@ sub promptForConfirmation( )
 			printNotice(
 				"        directory     '$IRODS_HOME'\n",
 				"        port          '$irodsPort'\n",
+				"        start svrPort '$svrPortRangeStart'\n",
+				"        end svrPort   '$svrPortRangeEnd'\n",
 				"        account       '$irodsAccount'\n",
 				"        password      '$irodsPassword'\n",
 				"        zone          '$irodsZone'\n",
@@ -1739,6 +1772,8 @@ sub configureIrods( )
 	my %configure = (
 		"IRODS_HOME",			$IRODS_HOME,
 		"IRODS_PORT",			$irodsPort,
+		"SVR_PORT_RANGE_START",		$svrPortRangeStart,
+		"SVR_PORT_RANGE_END",		$svrPortRangeEnd,
 		"IRODS_ADMIN_NAME",		$irodsAccount,
 		"IRODS_ADMIN_PASSWORD",		$irodsPassword,
 		"IRODS_ICAT_HOST",		$catalogServerHost,

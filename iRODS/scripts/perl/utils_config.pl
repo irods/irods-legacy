@@ -130,6 +130,8 @@ sub loadIrodsConfigAndValidate($)
 	$IRODS_ADMIN_NAME     = undef;
 	$IRODS_ADMIN_PASSWORD = undef;
 	$IRODS_PORT           = undef;
+	$SVR_PORT_RANGE_START = undef;
+	$SVR_PORT_RANGE_END   = undef;
 	$IRODS_HOST           = undef;
 
 	$DB_KEY        = undef;

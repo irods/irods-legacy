@@ -178,7 +178,9 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # svrPortRangeStart and svrPortRangeEnd - A range of port numbers can be 
 # specified for the server's parallel I/O communication port. 
 # svrPortRangeStart specifies the first allowable port number and 
-# svrPortRangeEnd specifies the end of the range. 
+# svrPortRangeEnd specifies the end of the range.
+# These can also be set via irodssetup which adjusts the 
+# config/irods.config file (setting SVR_PORT_RANGE_START/END).
 # $svrPortRangeStart=20000;
 # $svrPortRangeEnd=20199;
 
@@ -224,6 +226,8 @@ if ($irodsEnvFile)		{ $ENV{'irodsEnvFile'}        = $irodsEnvFile; }
 if ($irodsPort)			{ $ENV{'irodsPort'}           = $irodsPort; }
 if ($spLogLevel)		{ $ENV{'spLogLevel'}          = $spLogLevel; }
 if ($spLogSql)			{ $ENV{'spLogSql'}            = $spLogSql; }
+if ($SVR_PORT_RANGE_START)	{ $ENV{'svrPortRangeStart'}   = $SVR_PORT_RANGE_START; }
+if ($SVR_PORT_RANGE_END)	{ $ENV{'svrPortRangeEnd'}     = $SVR_PORT_RANGE_END; }
 if ($svrPortRangeStart)		{ $ENV{'svrPortRangeStart'}   = $svrPortRangeStart; }
 if ($svrPortRangeEnd)		{ $ENV{'svrPortRangeEnd'}     = $svrPortRangeEnd; }
 if ($reServerOnIes)		{ $ENV{'reServerOnIes'}       = $reServerOnIes; }
