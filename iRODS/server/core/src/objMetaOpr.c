@@ -2702,6 +2702,7 @@ initReExec (rsComm_t *rsComm, reExec_t *reExec)
     bzero (reExec, sizeof (reExec_t));
     bzero (&rei, sizeof (ruleExecInfo_t)); /* RAJA ADDED June 17. 2009 */
     
+    rei.rsComm = rsComm;
     status = applyRule ("acSetReServerNumProc", NULL, &rei, NO_SAVE_REI);
     if (status < 0) {
         rodsLog (LOG_ERROR,
