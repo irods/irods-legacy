@@ -27,7 +27,7 @@ int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
     if (i < 0 ) 
       return(i);
     /*    if (strcmp(eaVal, aVal))*/
-    rodsLog (LOG_NOTICE,"BEFORE:uioc=%s,uiop=%s:cp=%d,pp=%d\n",rei->uoic->userName,rei->uoip->userName, rei->uoic,rei->uoip);
+    rodsLog (LOG_NOTICE,"BEFORE:uioc=%s,uiop=%s:cp=%d,pp=%d,eaval=%s\n",rei->uoic->userName,rei->uoip->userName, rei->uoic,rei->uoip,eaVal);
     i = setVarValue(varMap,rei, eaVal);
     rodsLog (LOG_NOTICE,"AFTER:uioc=%s,uiop=%s:cp=%d,pp=%d\n",rei->uoic->userName,rei->uoip->userName, rei->uoic,rei->uoip);
   }
