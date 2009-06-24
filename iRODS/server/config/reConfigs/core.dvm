@@ -28,7 +28,7 @@ dataAccessInx||rei->doi->dataAccessInx
 dataId||rei->doi->dataId
 collId||rei->doi->collId
 statusString||rei->doi->statusString
-dataMapId||rei->doi->dataMapId
+# dataMapId||rei->doi->dataMapId
 destRescName||rei->doi->destRescName
 backupRescName||rei->doi->backupRescName
 rescName||rei->doi->rescName
@@ -58,10 +58,10 @@ freeSpaceTimeStamp||rei->doi->rescInfo->freeSpaceTimeStamp
 freeSpaceTimeStamp||rei->rgi->rescInfo->freeSpaceTimeStamp
 rescInfo||rei->doi->rescInfo->rescInfo
 rescInfo||rei->rgi->rescInfo->rescInfo
-numOpenPorts||rei->doi->rescInfo->numOpenPorts
-paraOpr||rei->doi->rescInfo->paraOpr
+# numOpenPorts||rei->doi->rescInfo->numOpenPorts
+# paraOpr||rei->doi->rescInfo->paraOpr
 rescId||rei->doi->rescInfo->rescId
-gateWayAddr||rei->doi->rescInfo->gateWayAddr
+# gateWayAddr||rei->doi->rescInfo->gateWayAddr
 rescMaxObjSize||rei->doi->rescInfo->rescMaxObjSize
 rescComments||rei->doi->rescInfo->rescComments
 rescCreate||rei->doi->rescInfo-rescCreate
@@ -73,14 +73,14 @@ userNameClient||rei->uoic->userName
 userNameClient||rei->rsComm->clientUser->userName
 rodsZoneClient||rei->uoic->rodsZone
 rodsZoneClient||rei->rsComm->clientUser->rodsZone
-userTypeClient||rei->uoic->userType
-userTypeClient||rei->rsComm->clientUser->userType
-sysUidClient||rei->uoic->sysUid
-sysUidClient||rei->rsComm->clientUser->sysUid
+# userTypeClient||rei->uoic->userType
+# userTypeClient||rei->rsComm->clientUser->userType
+# sysUidClient||rei->uoic->sysUid
+# sysUidClient||rei->rsComm->clientUser->sysUid
 privClient||rei->uoic->authInfo->authFlag
 privClient||rei->rsComm->clientUser->authInfo->authFlag
-hostClient||rei->uoic->authInfo->host
-hostClient||rei->rsComm->clientUser->authInfo->host
+# hostClient||rei->uoic->authInfo->host
+# hostClient||rei->rsComm->clientUser->authInfo->host
 authStrClient||rei->uoic->authInfo->authStr
 authStrClient||rei->rsComm->clientUser->authInfo->authStr
 userAuthSchemeClient||rei->uoic->authInfo->authScheme
@@ -99,14 +99,14 @@ userNameProxy||rei->uoip->userName
 userNameProxy||rei->rsComm->proxyUser->userName
 rodsZoneProxy||rei->uoip->rodsZone
 rodsZoneProxy||rei->rsComm->proxyUser->rodsZone
-userTypeProxy||rei->uoip->userType
-userTypeProxy||rei->rsComm->proxyUser->userType
-sysUidProxy||rei->uoip->sysUid
-sysUidProxy||rei->rsComm->proxyUser->sysUid
+# userTypeProxy||rei->uoip->userType
+# userTypeProxy||rei->rsComm->proxyUser->userType
+# sysUidProxy||rei->uoip->sysUid
+# sysUidProxy||rei->rsComm->proxyUser->sysUid
 privProxy||rei->uoip->authInfo->authFlag
 privProxy||rei->rsComm->proxyUser->authInfo->authFlag
-hostProxy||rei->uoip->authInfo->host
-hostProxy||rei->rsComm->proxyUser->authInfo->host
+# hostProxy||rei->uoip->authInfo->host
+# hostProxy||rei->rsComm->proxyUser->authInfo->host
 authStrProxy||rei->uoip->authInfo->authStr
 authStrProxy||rei->rsComm->proxyUser->authInfo->authStr
 userAuthSchemeProxy||rei->uoip->authInfo->authScheme
@@ -129,22 +129,22 @@ collCreate||rei->coi-collCreate
 collModify||rei->coi-collModify
 collAccess||rei->coi->collAccess
 collAccessInx||rei->coi->collAccessInx
-collMapId||rei->coi->collMapId
+# collMapId||rei->coi->collMapId
 collInheritance||rei->coi->collInheritance
 otherUser||rei->uoio
 otherUserName||rei->uoio->userName
 otherUserZone||rei->uoio->rodsZone
 otherUserType||rei->uoio->userType
-otherSysUidClient||rei->uoio->sysUid
+# otherSysUidClient||rei->uoio->sysUid
 connectCnt||rei->rsComm->connectCnt
 connectSock||rei->rsComm->sock
 connectOption||rei->rsComm->option
 connectStatus||rei->rsComm->status
 connectApiTnx||rei->rsComm->apiInx
-connectWindowSize||rei->rsComm->windowSize
-connectReconnFlag||rei->rsComm->reconnFlag
-connectReconnSock||rei->rsComm->reconnSock
-connectReconnPort||rei->rsComm->reconnPort
-connectReconnAddr||rei->rsComm->reconnAddr
-ConnectCookie||rei->rsComm->cookie
 KVPairs||rei->condInputData
+# connectWindowSize||rei->rsComm->windowSize
+# connectReconnFlag||rei->rsComm->reconnFlag
+# connectReconnSock||rei->rsComm->reconnSock
+# connectReconnPort||rei->rsComm->reconnPort
+# connectReconnAddr||rei->rsComm->reconnAddr
+# ConnectCookie||rei->rsComm->cookie
