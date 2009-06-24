@@ -1003,7 +1003,8 @@ obfDecodeByKeyV2(char *in, char *key, char *key2, char *out) {
       if (match[i]!=myOut[i]) matches=0;
    }
    if (matches==0) {
-      return(obfDecodeByKey(in, key, out));
+      obfDecodeByKey(in, key, out);
+      return;
    }
 
    strncpy(out, myOut+len, MAX_PASSWORD_LEN); /* skip prefix */
