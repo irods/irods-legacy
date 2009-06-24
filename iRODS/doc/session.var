@@ -1,0 +1,79 @@
+The availability of each session variable within rule hooks 
+(defined in core.irb) depends on the nature of the operation when the rule 
+is invoked. For example, when the server is performing operations on
+a data object when the rule is invoked, data object type session variables 
+will generally be available for the microservices handling the rule. 
+
+The available session variables can be grouped into 5 sets - SuserAndConn,
+SdataObj1, SdataObj2, SrescInfo and Scollection.
+
+SuserAndConn are session variables relating to informations on the client
+user and the current client/server connection, This set of session variables
+should be available in all rules.
+
+SdataObj1 contains just one session variable - objPath. It is available in
+pre-processing rules before a data object is created.
+
+SdataObj2 contains session variables relating to informations on a data object.
+
+SrescInfo contains session variables relating to informations on a resource.
+
+Scollection contains session variables relating to informations on a 
+collection.
+
+The session variables for each set are defined in the following:
+
+SuserAndConn:
+userNameClient ,rodsZoneClient ,privClient ,authStrClient
+,userAuthSchemeClient ,userNameProxy ,rodsZoneProxy ,privProxy ,authStrProxy
+,userAuthSchemeProxy ,otherUser ,connectCnt ,connectSock ,connectOption
+,connectStatus ,connectApiTnx
+
+SdataObj1:
+objPath
+
+SdataObj2:
+objPath ,dataType ,dataSize ,chksum ,version ,filePath ,replNum ,replStatus
+,writeFlag ,dataOwner ,dataOwnerZone ,dataComments ,dataAccess
+,dataAccessInx ,dataId ,collId ,statusString ,destRescName ,backupRescName
+
+SrescInfo:
+rescName ,rescGroupName ,zoneName ,rescLoc ,rescType ,rescTypeInx
+,rescClass ,rescClassInx ,rescVaultPath ,rescMaxObjSize ,freeSpace
+,freeSpaceTimeStamp ,rescInfo ,rescId ,rescComments 
+
+Scollection:
+collName ,collParentName
+
+
+1) acSetRescSchemeForCreate - SdataObj1 + SuserAndConn
+2) acPreprocForDataObjOpen - SdataObj2 + SrescInfo + SuserAndConn
+3) acSetMultiReplPerResc - SuserAndConn
+4) acPostProcForPut - SdataObj2 + SrescInfo + SuserAndConn
+5) acPostProcForCopy - SdataObj2 + SrescInfo + SuserAndConn
+6) acPostProcForFilePathReg - SdataObj2 + SrescInfo + SuserAndConn
+7) acPostProcForCreate -  SdataObj2 + SrescInfo + SuserAndConn
+8) acPostProcForOpen -  SdataObj2 + SrescInfo + SuserAndConn
+9) acSetNumThreads - SuserAndConn
+10) acDataDeletePolicy - SdataObj2 + SrescInfo + SuserAndConn
+11) acPostProcForDelete - SdataObj2 + SrescInfo + SuserAndConn
+12) acNoChkFilePathPerm - SdataObj2 + SrescInfo + SuserAndConn
+13) acTrashPolicy - SdataObj1 + SuserAndConn
+14) acSetPublicUserPolicy - SuserAndConn
+15) acSetPublicUserPolicy - SuserAndConn
+16) acSetVaultPathPolicy - SdataObj2 + SrescInfo + SuserAndConn
+17) acSetReServerNumProc - SuserAndConn
+18) acPreprocForCollCreate - Scollection + SuserAndConn
+19) acPostProcForCollCreate - Scollection + SuserAndConn
+20) acPostProcForRmColl - Scollection + SuserAndConn
+21) acPostProcForRmColl - Scollection + SuserAndConn
+
+When microservices are executed using the irule command, only the 
+SuserAndConn set will be available for these microservices.
+
+
+Need the same for the following hooks
+
+22) - 47) Raja
+
+Wayne's hook - acCreateUser, acCreateUserF1, etc
