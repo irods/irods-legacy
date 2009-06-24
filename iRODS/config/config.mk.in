@@ -262,4 +262,6 @@ KRB_LOC=/usr/kerberos
 endif
 
 # Syslog logging
+# Uncomment this line to log into syslog instead of the usual
+# server/log/ log files.
 #IRODS_SYSLOG = 1
