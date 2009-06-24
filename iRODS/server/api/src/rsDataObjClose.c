@@ -42,7 +42,6 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     bytesBuf_t *packedReiAndArgBBuf = NULL;;
     ruleExecSubmitInp_t ruleExecSubmitInp;
 #endif
-    bzero (&rei, sizeof (ruleExecInfo_t)); /* RAJA ADDED June 17. 2009 */
     l1descInx = dataObjCloseInp->l1descInx;
     if (l1descInx <= 2 || l1descInx >= NUM_L1_DESC) {
        rodsLog (LOG_NOTICE,
@@ -84,7 +83,18 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
                 L1desc[l1descInx].dataObjInfo = rei.doi;
 	    }
 
-	    if (L1desc[l1descInx].oprType == PUT_OPR || 
+            if (L1desc[l1descInx].oprType == COPY_DEST) {
+		/* have to put copy first because the next test could
+		 * trigger put rule for copy operation */
+                initReiWithDataObjInp (&rei, rsComm,
+                  L1desc[l1descInx].dataObjInp);
+                rei.doi = L1desc[l1descInx].dataObjInfo;
+                rei.status = status;
+                rei.status = applyRule ("acPostProcForCopy", NULL, &rei,
+                    NO_SAVE_REI);
+                /* doi might have changed */
+                L1desc[l1descInx].dataObjInfo = rei.doi;
+	    } else if (L1desc[l1descInx].oprType == PUT_OPR || 
 	      L1desc[l1descInx].openType == CREATE_TYPE ||
     	      (L1desc[l1descInx].openType == OPEN_FOR_WRITE_TYPE && 
 	      (L1desc[l1descInx].bytesWritten > 0 ||
@@ -120,15 +130,6 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	        /* doi might have changed */
 	        L1desc[l1descInx].dataObjInfo = rei.doi;
 #endif
-	    } else if (L1desc[l1descInx].oprType == COPY_DEST) {
-                initReiWithDataObjInp (&rei, rsComm, 
-		  L1desc[l1descInx].dataObjInp);
-		rei.doi = L1desc[l1descInx].dataObjInfo;
-		rei.status = status;
-		rei.status = applyRule ("acPostProcForCopy", NULL, &rei,
-		    NO_SAVE_REI);
-            /* doi might have changed */
-                L1desc[l1descInx].dataObjInfo = rei.doi;
 	    }
 	}
     }
