@@ -78,7 +78,6 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     char *accessPerm;
     int backupFlag;
 
-    bzero (&rei, sizeof (ruleExecInfo_t)); /* RAJA ADDED June 17. 2009 */
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	accessPerm = NULL;
     } else if (getValByKey (&dataObjInp->condInput, IRODS_ADMIN_KW) != NULL) {
@@ -94,7 +93,7 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
-
+    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
         multiCopyFlag = 1;

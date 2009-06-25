@@ -81,6 +81,7 @@ transStat_t **transStat)
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
+    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
     if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
         multiCopyFlag = 1;
