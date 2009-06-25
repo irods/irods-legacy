@@ -162,6 +162,7 @@ char **outChksumStr)
         rodsLog (LOG_ERROR,
           "dataObjChksumAndRegInfo: _dataObjChksum error for %s, status = %d",
           dataObjInfo->objPath, status);
+	return status;
     }
 
     if (dataObjInfo->specColl != NULL) {
