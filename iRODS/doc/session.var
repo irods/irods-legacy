@@ -72,8 +72,40 @@ Session variable sets available for each rule
 17) acSetReServerNumProc - SuserAndConn
 18) acPreprocForCollCreate - Scollection + SuserAndConn
 19) acPostProcForCollCreate - Scollection + SuserAndConn
-20) acPostProcForRmColl - Scollection + SuserAndConn
+20) acPretProcForRmColl - Scollection + SuserAndConn
 21) acPostProcForRmColl - Scollection + SuserAndConn
+22) acPreProcForModifyUser - SuserAndConn
+23) acPostProcForModifyUser - SuserAndConn
+24) acPreProcForModifyAVUmetadata - SuserAndConn
+25) acPostProcForModifyAVUmetadata - SuserAndConn
+26) acPreProcForCreateUser - SuserAndConn
+27) acPostProcForCreateUser - SuserAndConn
+28) acPreProcForDeleteUser - SuserAndConn
+29) acPostProcForDeleteUser - SuserAndConn
+28) acPreProcForCreateResource - SuserAndConn
+29) acPostProcForCreateResource - SuserAndConn
+30) acPreProcForCreateToken - SuserAndConn
+31) acPostProcForCreateToken - SuserAndConn
+32) acPreProcForModifyUserGroup - SuserAndConn
+33) acPostProcForModifyUserGroup - SuserAndConn
+34) acPreProcForDeleteResource - SuserAndConn
+35) acPostProcForDeleteResource - SuserAndConn
+36) acPreProcForDeleteToken - SuserAndConn
+37) acPostProcForDeleteToken - SuserAndConn
+38) acPreProcForModifyResource - SuserAndConn
+39) acPostProcForModifyResource - SuserAndConn
+40) acPreProcForModifyResourceGroup - SuserAndConn
+41) acPostProcForModifyResourceGroup - SuserAndConn
+42) acPreProcForModifyCollMeta - Scollection + SuserAndConn
+43) acPostProcForModifyCollMeta - Scollection  + SuserAndConn
+44) acPreProcForModifyDataObjMeta - SdataObj1 + SuserAndConn
+43) acPostProcForModifyDataObjMeta - SdataObj1 + SuserAndConn
+44) acPreProcForModifyAccessControl - SuserAndConn
+45) acPostProcForModifyAccessControl - SuserAndConn
+46) acPreProcForObjRename - SdataObj1 + SuserAndConn
+47) acPostProcForObjRename - SdataObj1 + SuserAndConn
+48) acPreProcForGenQuery - SuserAndConn
+49) acPostProcForGenQuery - SuserAndConn
 
 When microservices are executed using the irule command, only the 
 SuserAndConn set will be available for these microservices.
@@ -85,7 +117,5 @@ acPostProcForRmColl||msiGetSessionVarValue(all,all)|nop
 
 
 Need the same for the following hooks
-
-22) - 47) Raja
 
 Wayne's hook - acCreateUser, acCreateUserF1, etc
