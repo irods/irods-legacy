@@ -30,21 +30,28 @@ userNameClient ,rodsZoneClient ,privClient ,authStrClient
 ,connectStatus ,connectApiTnx
 
 SdataObj1:
+----------
 objPath
 
 SdataObj2:
+----------
 objPath ,dataType ,dataSize ,chksum ,version ,filePath ,replNum ,replStatus
 ,writeFlag ,dataOwner ,dataOwnerZone ,dataComments ,dataAccess
 ,dataAccessInx ,dataId ,collId ,statusString ,destRescName ,backupRescName
 
 SrescInfo:
+----------
 rescName ,rescGroupName ,zoneName ,rescLoc ,rescType ,rescTypeInx
 ,rescClass ,rescClassInx ,rescVaultPath ,rescMaxObjSize ,freeSpace
 ,freeSpaceTimeStamp ,rescInfo ,rescId ,rescComments 
 
 Scollection:
+------------
 collName ,collParentName
 
+
+Session variable sets available for each rule
+----------------------------------------------
 
 1) acSetRescSchemeForCreate - SdataObj1 + SuserAndConn
 2) acPreprocForDataObjOpen - SdataObj2 + SrescInfo + SuserAndConn
@@ -70,6 +77,11 @@ collName ,collParentName
 
 When microservices are executed using the irule command, only the 
 SuserAndConn set will be available for these microservices.
+
+Note: The msiGetSessionVarValue can be used to list all available
+session variables for each rule in the log file. e.g.,
+acPostProcForRmColl||msiGetSessionVarValue(all,all)|nop
+
 
 
 Need the same for the following hooks
