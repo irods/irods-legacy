@@ -1307,7 +1307,14 @@ chlGenQueryAccessControlSetup(char *user, char *zone, int priv,
 	rstrcpy(accessControlZone, zone, MAX_NAME_LEN);
 	accessControlPriv=priv;
     }
-    if (controlFlag >= 0 ) {
+    if (controlFlag > 0 ) {
+       /*
+	 If the caller is making this STRICT, then allow the change as
+         this will be an initial acAclPolicy call which is setup in
+         core.irb.  But don't let users override this admin setting
+         via their own calls to the msiAclPolicy; once it is STRICT,
+         it stays strict.
+       */
        accessControlControlFlag=controlFlag;
     }
     return(0);
