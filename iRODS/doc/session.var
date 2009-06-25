@@ -7,19 +7,22 @@ will generally be available for the microservices handling the rule.
 The available session variables can be grouped into 5 sets - SuserAndConn,
 SdataObj1, SdataObj2, SrescInfo and Scollection.
 
-SuserAndConn are session variables relating to informations on the client
-user and the current client/server connection, This set of session variables
+SuserAndConn are session variables relating to information on the client
+user and the current client/server connection. This set of session variables
 should be available in all rules.
 
 SdataObj1 contains just one session variable - objPath. It is available in
 pre-processing rules before a data object is created.
 
-SdataObj2 contains session variables relating to informations on a data object.
+SdataObj2 contains session variables relating to information on a data object.
 
-SrescInfo contains session variables relating to informations on a resource.
+SrescInfo contains session variables relating to information on a resource.
 
-Scollection contains session variables relating to informations on a 
+Scollection contains session variables relating to information on a 
 collection.
+
+SuserAdmin contains session variables relating to information on users
+for administration purposes.
 
 The session variables for each set are defined in the following:
 
@@ -49,6 +52,16 @@ Scollection:
 ------------
 collName ,collParentName
 
+SuserAdmin1:
+------------
+otherUserName
+otherUserZone
+otherUserType
+
+SuserAdmin2:
+------------
+otherUserName
+otherUserZone
 
 Session variable sets available for each rule
 ----------------------------------------------
@@ -107,6 +120,23 @@ Session variable sets available for each rule
 48) acPreProcForGenQuery - SuserAndConn
 49) acPostProcForGenQuery - SuserAndConn
 
+Administrative rules:
+
+acCreateUser - SuserAdmin + SuserAndConn 
+acCreateUserF1 - SuserAdmin1 + SuserAndConn 
+acVacuum - SuserAndConn
+acCreateDefaultCollections - SuserAdmin1 + SuserAndConn 
+acCreateUserZoneCollections - SuserAdmin1 + SuserAndConn 
+acCreateCollByAdmin - SuserAndConn 
+acDeleteUser - SuserAdmin2 + SuserAndConn 
+acDeleteUserF1 - SuserAdmin2 + SuserAndConn 
+acDeleteDefaultCollections - SuserAdmin2 + SuserAndConn 
+acDeleteUserZoneCollections - SuserAndConn
+acDeleteCollByAdmin - SuserAndConn
+acRenameLocalZone - SuserAndConn
+acGetUserByDN - SuserAndConn
+acAclPolicy - None
+
 When microservices are executed using the irule command, only the 
 SuserAndConn set will be available for these microservices.
 
@@ -116,6 +146,3 @@ acPostProcForRmColl||msiGetSessionVarValue(all,all)|nop
 
 
 
-Need the same for the following hooks
-
-Wayne's hook - acCreateUser, acCreateUserF1, etc
