@@ -849,7 +849,7 @@ rodsLog(int level, char *formatStr, ...) {
       okToLog = 1;
    }
    
-   if (level == LOG_SQL && sqlVerbosityLevel == 1)
+   if (level == LOG_SQL)
    {
       okToLog = 1;
    }
@@ -875,7 +875,7 @@ rodsLog(int level, char *formatStr, ...) {
    }
    else {
 #ifndef windows_platform
-      if (level >= LOG_ERROR) errOrOut=stderr;
+      if (level <= LOG_ERROR) errOrOut=stderr;
 #endif
    }
 
@@ -964,7 +964,7 @@ char *formatStr, ...) {
       snprintf(extraInfo, 100-1, "%s pid:%d ", timeBuf+4, myPid);
    }
    else {
-      if (level >= LOG_ERROR) errOrOut=stderr;
+      if (level <= LOG_ERROR) errOrOut=stderr;
    }
 
    prefix="";
