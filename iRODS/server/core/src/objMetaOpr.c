@@ -3056,8 +3056,11 @@ char *inpMemberRescName, rescInfo_t **outCacheResc)
     rescGrpInfo_t *tmpRescGrpInfo;
 
     *outCacheResc = NULL;
-    if (rescGroupName == NULL || strlen (rescGroupName) == 0)
-        return USER__NULL_INPUT_ERR;
+    if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
+	rodsLog (LOG_ERROR,
+	  "getCacheRescInGrp: no rescGroupName input");
+        return SYS_NO_CACHE_RESC_IN_GRP;
+    }
 
     status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
     if (status < 0) return status;
