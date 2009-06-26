@@ -1,4 +1,4 @@
-myTestRule||writeLine(stdout,begin)##remoteExec(andal.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,open remote write in andal)##remoteExec(srbbrick14.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,remote of a remote write in srbbrick1),nop)##remoteExec(srbbrick14.sdsc.edu,null,remoteExec(andal.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,remote of a remote of a remote write in andal),nop),nop)##msiSleep(10,0)##writeLine(stdout,close remote write in andal),nop)##writeLine(stdout,end)|nop
+myTestRule||writeLine(stdout,begin)##remoteExec(srbbrick11.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,open remote write in srbbrick11)##remoteExec(srbbrick14.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,remote of a remote write in srbbrick14),nop)##remoteExec(srbbrick14.sdsc.edu,null,remoteExec(srbbrick11.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,remote of a remote of a remote write in srbbrick11),nop),nop)##msiSleep(10,0)##writeLine(stdout,close remote write in srbbrick11),nop)##writeLine(stdout,end)|nop
 null
 ruleExecOut
 
