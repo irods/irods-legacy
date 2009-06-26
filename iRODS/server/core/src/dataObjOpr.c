@@ -775,8 +775,13 @@ _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
 {
     fileChksumInp_t fileChksumInp;
     int rescTypeInx;
+    int rescClass;
     int status;
     rescInfo_t *rescInfo = dataObjInfo->rescInfo;
+
+    rescClass = getRescClass (rescInfo);
+    if (rescClass == COMPOUND_CL) return SYS_CANT_CHKSUM_COMP_RESC_DATA;
+    else if (rescClass == BUNDLE_CL) return SYS_CANT_CHKSUM_BUNDLED_DATA;
 
     rescTypeInx = rescInfo->rescTypeInx;
 

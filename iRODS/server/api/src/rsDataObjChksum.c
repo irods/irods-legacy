@@ -111,7 +111,22 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
     tmpDataObjInfo = *dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
 	char *tmpChksumStr;
-
+	dataObjInfo_t *outDataObjInfo = NULL;
+	int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
+	if (rescClass  == COMPOUND_CL) {
+	    /* do we have a good cache copy ? */
+            if ((status = getCacheDataInfoForRepl (*dataObjInfoHead,
+                  NULL, tmpDataObjInfo, &outDataObjInfo)) >= 0) {
+		tmpDataObjInfo = tmpDataObjInfo->next;
+		status = 0;
+		continue;
+	    }
+	} else if (rescClass == BUNDLE_CL) {
+	    /* don't do BUNDLE_CL. should be done on the bundle file */
+            tmpDataObjInfo = tmpDataObjInfo->next;
+            status = 0;
+            continue;
+	}
 	if (strlen (tmpDataObjInfo->chksum) == 0) {
 	    /* need to chksum no matter what */ 
 	    status = dataObjChksumAndRegInfo (rsComm, tmpDataObjInfo,
