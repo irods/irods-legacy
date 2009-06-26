@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hKfarvVn:";
+    optStr = "hKfarR:vVn:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status < 0) {
@@ -92,6 +92,7 @@ usage ()
 " -K  verify the checksum value in iCAT. If the checksum value does not exist,",
 "     compute and register one.",
 " -n  replNum  - the replica to checksum; use -a to checksum all replicas.",
+" -R  resource  - the resource of the replica to checksum,",
 " -r  recursive - checksum the whole subtree; the collection, all data-objects",
 "     in the collection, and any subcollections and sub-data-objects in the",
 "     collection.",
