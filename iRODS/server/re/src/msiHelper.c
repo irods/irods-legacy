@@ -191,9 +191,9 @@ ruleExecInfo_t *rei)
 
     RE_TEST_MACRO (" Calling msiGetSessionVarValue")
 
-    if (rei == NULL) {
+    if (rei == NULL || rei->rsComm == NULL) {
         rodsLog (LOG_ERROR,
-          "msiGetSessionVar: input rei is NULL");
+          "msiGetSessionVar: input rei or rei->rsComm is NULL");
         rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
         return (rei->status);
     }

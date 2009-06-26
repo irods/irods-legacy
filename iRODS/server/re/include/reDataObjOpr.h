@@ -107,4 +107,7 @@ msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *outParam, ruleExecInfo_t *rei);
 #endif	/* RE_DATA_OBJ_OPR_H */

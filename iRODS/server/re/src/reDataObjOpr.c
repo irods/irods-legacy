@@ -2965,3 +2965,86 @@ msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei)
 
 }
 
+/*
+ * \fn msiPhyBundleColl
+ * \author Jean-Yves Neif
+ * \date   2009-06-15
+ * \brief This microservice calls rsPhyBundleColl to bundle files in a 
+ *  collection into a number of tar files to make it more efficient to 
+ *  store these files on tape. This microservice has the same functionality
+ *  as the iphybun command.
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection.
+ * \param[in]
+ *    inpParam1 - It can be a StructFileExtAndRegInp_MS_T or
+ *      a STR_MS_T which would be taken as the collection for the phybun.
+ *    irpParam2 - optional - a STR_MS_T which specifies the target resource.
+ * \param[out] a INT_MS_T containing the status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+ */
+
+int 
+msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *outParam, ruleExecInfo_t *rei) 
+{
+    rsComm_t *rsComm;
+    structFileExtAndRegInp_t structFileExtAndRegInp, 
+      *myStructFileExtAndRegInp;
+
+    RE_TEST_MACRO (" Calling msiPhyBundleColl")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+        "msiPhyBundleColl: input rei or rsComm is NULL");
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    rsComm = rei->rsComm;
+
+    /* start building the structFileExtAndRegInp instance.
+    extract from inpParam1 the tar file object path: tarFilePath
+    and from inpParam2 the target collection: colTarget */
+
+    if ( inpParam1 == NULL) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiPhyBundleColl: input Param1 is NULL");
+        rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (inpParam1->type, STR_MS_T) == 0) {
+        bzero (&structFileExtAndRegInp, sizeof (structFileExtAndRegInp));
+        myStructFileExtAndRegInp = &structFileExtAndRegInp;
+        strncpy (myStructFileExtAndRegInp->collection, inpParam1->inOutStruct,
+          MAX_NAME_LEN);
+    } else if (strcmp (inpParam1->type, StructFileExtAndRegInp_MS_T) == 0) {
+        myStructFileExtAndRegInp =
+          (structFileExtAndRegInp_t *) inpParam1->inOutStruct;
+    } else {
+        rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
+        return (rei->status);
+    }
+
+    if ( strcmp (inpParam2->type, STR_MS_T) == 0 && inpParam2 != NULL &&
+      strcmp ( (char *) inpParam2->inOutStruct, "null") != 0) {
+        addKeyVal(&myStructFileExtAndRegInp->condInput, DEST_RESC_NAME_KW,
+        (char *) inpParam2->inOutStruct);
+    }
+
+    /* tar file extraction */
+    rei->status = rsPhyBundleColl (rsComm, myStructFileExtAndRegInp);
+
+    fillIntInMsParam (outParam, rei->status);
+
+    return (rei->status);
+
+}
+
