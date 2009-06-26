@@ -12,35 +12,35 @@ EP			(e|E)(\+|-)?
 %%
 
 "/**"(.|\n)*"**/"          { count();  }
-"delay"			{ count(); return(DELAY); }
-"remote"			{ count(); return(REMOTE); }
+"delayExec"			{ count(); return(DELAY); }
+"remoteExec"			{ count(); return(REMOTE); }
 "parallel"			{ count(); return(PARALLEL); }
 "oneof"			{ count(); return(ONEOF); }
 "someof"		{ count(); return(SOMEOF); }
-"foreach"		{ count(); return(FOREACH); }
+"forEachExec"		{ count(); return(FOREACH); }
 "like"			{ count(); return(LIKE); }
 "not"			{ count(); return(NOT); }
-"for"			{ count(); return(FOR); }
-"if"			{ count(); return(IF); }
+"forExec"			{ count(); return(FOR); }
+"ifExec"			{ count(); return(IF); }
 "then"			{ count(); return(THEN); }
 "else"			{ count(); return(ELSE); }
-"while"			{ count(); return(WHILE); }
+"whileExec"			{ count(); return(WHILE); }
 "on"			{ count(); return(ON); }
 "or"			{ count(); return(OR); }
 "oron"			{ count(); return(ORON); }
-"DELAY"			{ count(); return(DELAY); }
-"REMOTE"			{ count(); return(REMOTE); }
+"DELAYEXEC"			{ count(); return(DELAY); }
+"REMOTEEXEC"			{ count(); return(REMOTE); }
 "PARALLEL"			{ count(); return(PARALLEL); }
 "ONEOF"			{ count(); return(ONEOF); }
 "SOMEOF"		{ count(); return(SOMEOF); }
-"FOREACH"		{ count(); return(FOREACH); }
+"FOREACHEXEC"		{ count(); return(FOREACH); }
 "LIKE"			{ count(); return(LIKE); }
 "NOT"			{ count(); return(NOT); }
-"FOR"			{ count(); return(FOR); }
-"IF"			{ count(); return(IF); }
+"FOREXEC"			{ count(); return(FOR); }
+"IFEXEC"			{ count(); return(IF); }
 "THEN"			{ count(); return(THEN); }
 "ELSE"			{ count(); return(ELSE); }
-"WHILE"			{ count(); return(WHILE); }
+"WHILEEXEC"			{ count(); return(WHILE); }
 "ON"			{ count(); return(ON); }
 "OR"			{ count(); return(OR); }
 "ORON"			{ count(); return(ORON); }

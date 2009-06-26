@@ -275,6 +275,7 @@ void *stitch(int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4)
     sprintf(tmpStr,"assign(%s,%s):::nop", arg1, arg2);
     break;
   case INPASS:
+    stripEndQuotes(arg2);
     sprintf(tmpStr,"%s=%s", arg1, arg2);
     break;
   case INPASSLIST:
@@ -541,7 +542,7 @@ void *stitch(int typ, void *inarg1, void  *inarg2, void  *inarg3, void  *inarg4)
     sprintf(tmpStr,"%s", arg1);
     break;
   case Q_STR_LIT:
-    sprintf(tmpStr,"%s", arg1);
+    sprintf(tmpStr,"\"%s\"", arg1);
     stripEscFromQuotedStr(tmpStr);
     break;
   case NUM_LIT:
@@ -592,6 +593,21 @@ print_final ( char *out, char* input, char *output)
  fprintf(outf,"%s\n",s);
  fprintf(outf,"%s\n%s\n", input, output);
  return(0);
+}
+
+int 
+stripEndQuotes(char *s)
+{
+  char *t;
+
+  if (*s == '\'' ||*s == '"' ) {
+    memmove(s,s+1,strlen(s+1)+1);
+    t = s+strlen(s)-1;
+    if (*t == '\'' ||*t == '"' )
+      *t = '\0';
+  }
+  /* made it so that end quotes are removed only if quoted initially */
+  return (0);
 }
 
 int
