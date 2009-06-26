@@ -224,7 +224,7 @@ main(int argc, char **argv) {
 	  fprintf(stderr,"%s", (char *) execCmdOut->stderrBuf.buf);
       }
     }
-    if (conn->rError != NULL) {
+    if (myRodsArgs.verbose == True && conn->rError != NULL) {
 	int i, len;
 	rErrMsg_t *errMsg;
 	len = conn->rError->len;
