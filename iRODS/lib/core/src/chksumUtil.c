@@ -164,6 +164,11 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
 	  rodsArgs->replNumValue);
     }
 
+    if (rodsArgs->resource == True) {
+        addKeyVal (&dataObjInp->condInput, RESC_NAME_KW,
+          rodsArgs->resourceString);
+    }
+
     /* XXXXX need to add -u register cond */
 
     dataObjInp->openFlags = O_RDONLY;
