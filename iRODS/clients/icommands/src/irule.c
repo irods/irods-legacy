@@ -224,6 +224,16 @@ main(int argc, char **argv) {
 	  fprintf(stderr,"%s", (char *) execCmdOut->stderrBuf.buf);
       }
     }
+    if (conn->rError != NULL) {
+	int i, len;
+	rErrMsg_t *errMsg;
+	len = conn->rError->len;
+        for (i = 0;i < len; i++) {
+            errMsg = conn->rError->errMsg[i];
+            printf ("%s\n", errMsg->msg);
+	}
+    }
+
     rcDisconnect(conn);
     exit(0);	
 
