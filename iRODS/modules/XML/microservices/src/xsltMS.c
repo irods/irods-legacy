@@ -101,6 +101,12 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	dataObjReadInp.len = (int)rodsObjStatOut->objSize;
 
 	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xsltBuf);
+	
+	/* Make sure that the result is null terminated */
+	if (strlen(xsltBuf.buf) > dataObjReadInp.len)
+	{
+		((char*)xsltBuf.buf)[dataObjReadInp.len-1]='\0';
+	}	
 
 
 	/* Close XSLT file */
@@ -132,6 +138,12 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	dataObjReadInp.len = (int)rodsObjStatOut->objSize;
 
 	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
+
+	/* Make sure that the result is null terminated */
+	if (strlen(xmlBuf.buf) > dataObjReadInp.len)
+	{
+		((char*)xmlBuf.buf)[dataObjReadInp.len-1]='\0';
+	}
 
 
 	/* Close XML file */

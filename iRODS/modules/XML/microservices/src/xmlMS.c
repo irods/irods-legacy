@@ -160,7 +160,10 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
 	
 	/* Make sure that the result is null terminated */
-	((char*)xmlBuf.buf)[dataObjReadInp.len]='\0';
+	if (strlen(xmlBuf.buf) > dataObjReadInp.len)
+	{
+		((char*)xmlBuf.buf)[dataObjReadInp.len-1]='\0';
+	}
 
 
 	/* Close XML file */
