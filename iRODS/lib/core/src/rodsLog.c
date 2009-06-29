@@ -177,6 +177,7 @@
     NO_MORE_RESULT, 
     NO_KEY_WD_IN_MS_INP_STR, 
     CANT_RM_NON_EMPTY_HOME_COLL, 
+    CANT_UNREG_IN_VAULT_FILE, 
     FILE_INDEX_LOOKUP_ERR, 
     UNIX_FILE_OPEN_ERR, 
     UNIX_FILE_CREATE_ERR, 
@@ -569,6 +570,7 @@
     "NO_MORE_RESULT", 
     "NO_KEY_WD_IN_MS_INP_STR", 
     "CANT_RM_NON_EMPTY_HOME_COLL", 
+    "CANT_UNREG_IN_VAULT_FILE", 
     "FILE_INDEX_LOOKUP_ERR", 
     "UNIX_FILE_OPEN_ERR", 
     "UNIX_FILE_CREATE_ERR", 
@@ -813,7 +815,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 390;
+int irodsErrorCount= 391;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

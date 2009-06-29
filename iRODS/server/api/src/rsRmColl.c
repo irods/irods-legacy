@@ -130,7 +130,8 @@ collOprStat_t **collOprStat)
         return status;
     } else if (status != COLL_OBJ_T || dataObjInfo->specColl == NULL) {
 	/* a normal coll */
-	if (getValByKey (&rmCollInp->condInput, FORCE_FLAG_KW) == NULL &&
+	if (rmCollInp->oprType != UNREG_OPR &&
+	  getValByKey (&rmCollInp->condInput, FORCE_FLAG_KW) == NULL &&
 	  getValByKey (&rmCollInp->condInput, IRODS_RMTRASH_KW) == NULL &&
 	  getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) == NULL) {
             initReiWithDataObjInp (&rei, rsComm, NULL);
@@ -193,6 +194,8 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     memset (&tmpCollInp, 0, sizeof (tmpCollInp));
+    /* catch the UNREG_OPR */
+    dataObjInp.oprType = tmpCollInp.oprType = rmCollInp->oprType;
     addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
     addKeyVal (&tmpCollInp.condInput, FORCE_FLAG_KW, "");
     if (getValByKey (&rmCollInp->condInput, IRODS_ADMIN_RMTRASH_KW) != NULL) {

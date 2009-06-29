@@ -80,7 +80,8 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     }
 #endif
 
-    if (getValByKey (&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
+    if (dataObjUnlinkInp->oprType == UNREG_OPR ||
+      getValByKey (&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
       getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL ||
       dataObjInfoHead->specColl != NULL || rmTrashFlag == 1) {
         status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp, &dataObjInfoHead);
@@ -252,6 +253,25 @@ dataObjInfo_t *dataObjInfo)
     unregDataObj_t unregDataObjInp;
 
     if (dataObjInfo->specColl == NULL) {
+	if (dataObjUnlinkInp->oprType == UNREG_OPR && 
+	  rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
+	    char *outVaultPath;
+	    rodsServerHost_t *rodsServerHost;
+	    status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
+	      &rodsServerHost);
+	    if (status < 0) return status;
+	    /* unregistering but not an admin user */
+	    /* XXXXX need to check the rule */
+	    status = matchVaultPath (rsComm, dataObjInfo->filePath, 
+	      rodsServerHost, &outVaultPath);
+	    if (status != 0) {
+		/* in the vault */
+                rodsLog (LOG_DEBUG,
+                  "dataObjUnlinkS: unregistering in vault file %s",
+                  dataObjInfo->filePath);
+                return CANT_UNREG_IN_VAULT_FILE;
+	    }
+	}
         unregDataObjInp.dataObjInfo = dataObjInfo;
         unregDataObjInp.condInput = &dataObjUnlinkInp->condInput;
         status = rsUnregDataObj (rsComm, &unregDataObjInp);
@@ -264,20 +284,21 @@ dataObjInfo_t *dataObjInfo)
         }
     }
     
-    status = l3Unlink (rsComm, dataObjInfo);
-
-    if (status < 0) {
-	int myError = getErrno (status);
-        rodsLog (LOG_NOTICE,
-          "dataObjUnlinkS: l3Unlink error for %s. status = %d",
-          dataObjUnlinkInp->objPath, status);
-	/* allow ENOENT to go on and unregister */
-	if (myError != ENOENT && myError != EACCES) {
+    if (dataObjUnlinkInp->oprType != UNREG_OPR) {
+        status = l3Unlink (rsComm, dataObjInfo);
+        if (status < 0) {
+	    int myError = getErrno (status);
             rodsLog (LOG_NOTICE,
-              "dataObjUnlinkS: orphan file %s", dataObjInfo->filePath);
-	    return (status);
-	} else {
-	    status = 0;
+              "dataObjUnlinkS: l3Unlink error for %s. status = %d",
+              dataObjUnlinkInp->objPath, status);
+	    /* allow ENOENT to go on and unregister */
+	    if (myError != ENOENT && myError != EACCES) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjUnlinkS: orphan file %s", dataObjInfo->filePath);
+	        return (status);
+	    } else {
+	        status = 0;
+	    }
 	}
     }
 

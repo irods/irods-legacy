@@ -121,6 +121,10 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
 	return (0);
     }
 
+    if (rodsArgs->unmount == True) {
+	dataObjInp->oprType = collInp->oprType = UNREG_OPR;
+    }
+
     if (rodsArgs->force == True) { 
         addKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW, "");
         addKeyVal (&collInp->condInput, FORCE_FLAG_KW, "");

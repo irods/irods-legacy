@@ -21,7 +21,7 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hfruvVfn:";
+    optStr = "hfruUvVfn:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status < 0) {
@@ -99,6 +99,7 @@ usage ()
 "     in the collection, and any subcollections and sub-data-objects in the",
 "     collection.",
 " -u  user",
+" -U  unregister the file or collection",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",
