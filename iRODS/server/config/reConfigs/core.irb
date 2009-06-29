@@ -90,6 +90,7 @@ acAclPolicy||nop|nop
 # acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
 # acSetRescSchemeForCreate||msiSetDefaultResc(demoResc7%demoResc8,preferred)|nop
 acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
+# acSetRescSchemeForCreate||msiGetSessionVarValue(all,all)##msiSetDefaultResc(demoResc,null)|nop
 #acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,noForce)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
 #
 # 2) acPreprocForDataObjOpen - Preprocess rule for opening an existing
@@ -122,7 +123,8 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 # acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
 # acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
 acPreprocForDataObjOpen||nop|nop
-# acPreprocForDataObjOpen||writeLine(serverLog,$rescName)|nop
+# acPreprocForDataObjOpen||msiGetSessionVarValue(all,all)|nop
+# acPreprocForDataObjOpen|$writeFlag == 0|writeLine(serverLog,$objPath)|nop
 # 3) acSetMultiReplPerResc - Preprocess rule for replicating an existing
 # data object. Currently, one preprocessing function can be used 
 # by this rule. 
@@ -130,6 +132,7 @@ acPreprocForDataObjOpen||nop|nop
 #       resource. This micro-service sets the number of copies per resource
 #       to unlimited.   
 acSetMultiReplPerResc||nop|nop
+# acSetMultiReplPerResc||msiGetSessionVarValue(all,all)|nop
 #
 # 4) acPostProcForPut - Rule for post processing the put operation.
 #acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
@@ -161,6 +164,8 @@ acSetMultiReplPerResc||nop|nop
 # acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
 # acPostProcForPut||msiSysChksumDataObj|nop
 # acPostProcForPut||delayExec(<A></A>,msiSysReplDataObj(demoResc8,all),nop)|nop
+# acWriteLine(*A,*B)||writeLine(*A,*B)|nop
+# acPostProcForPut||delayExec(<PLUSET>1m</PLUSET>,acWriteLine(serverLog,"delayed by a minute message1")##acWriteLine(serverLog,"delayed by a minute message2"),nop)|nop
 # acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
 #acPostProcForPut||msiSetDataTypeFromExt|nop
 acPostProcForPut||nop|nop
@@ -209,7 +214,11 @@ acPostProcForDelete||nop|nop
 #
 # 12) acNoChkFilePathPerm - This rule set the policy for checking the
 # file path permission when registering physical file path using commands
-# such as ireg. Only one function can be called:
+# such as ireg. This rule also set the policy for checking the file path
+# when unregistering a data object without deleting the physical file.
+# Normally, a normal user cannot unregister a data object if the physical
+# file is located in a resource vault. The msiNoChkFilePathPerm allows 
+# this check to be bypassed. Only one function can be called:
 #    msiNoChkFilePathPerm() - Do not check file path permission when registering
 #    a file. WARNING - This function can create a security problem if used.
 acNoChkFilePathPerm||nop|nop
@@ -289,6 +298,7 @@ acPreprocForRmColl||nop|nop
 # 21) acPostProcForRmColl - This rule set the post-processing policy for
 # removing a collection. Currently there is no function written specifically
 # for this rule.
+# acPostProcForRmColl||msiGetSessionVarValue(all,all)|nop
 acPostProcForRmColl||nop|nop
 #
 # 22) acPreProcForModifyUser - This rule set the pre-processing policy for
