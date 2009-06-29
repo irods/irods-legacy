@@ -830,8 +830,17 @@ sub doTestIcommands
 	my $program     = File::Spec->catfile( $icommandsTestDir, "testiCommands.pl" );
 	my $tmpDir      = File::Spec->tmpdir( );
 	my $passwordTmp = File::Spec->catfile( $tmpDir, "irods_test_$$.tmp" );
-	my $logFile     = File::Spec->catfile( $tmpDir, "testSurvey_" . hostname( ) . ".log" );
-	my $outputFile  = File::Spec->catfile( $tmpDir, "testSurvey_" . hostname( ) . ".txt" );
+
+# Use the same technique to get the hostname as testiCommands.pl
+# (instead of hostname( )) so that this name will be the same on all
+# hosts (was a problem on NMI AIX (perhaps others)).
+	my $hostname2 = hostname();
+	if ( $hostname2 =~ '.' ) {
+	@words = split( /\./, $hostname2 );
+	$hostname2  = $words[0];
+}
+	my $logFile     = File::Spec->catfile( $tmpDir, "testSurvey_" . $hostname2 . ".log" );
+	my $outputFile  = File::Spec->catfile( $tmpDir, "testSurvey_" . $hostname2 . ".txt" );
 
 	printToFile( $passwordTmp, "\n$IRODS_ADMIN_PASSWORD\n" );
 	chmod( 0600, $passwordTmp );
@@ -857,6 +866,8 @@ sub doTestIcommands
 	#	can count the failures and let the user know
 	#	there's more information in the log file.
 	my $failsFound = 0;
+	my $lineCount = 0;
+	printf("logFile=%s\n",$logFile);
 	open( LOG, "<$logFile" );
 	foreach $line ( <LOG> )
 	{
@@ -864,9 +875,9 @@ sub doTestIcommands
 		{
 			++$failsFound;
 		}
+		++$lineCount;
 	}
 	close( LOG );
-
 
 	if ( $failsFound )
 	{
@@ -877,10 +888,18 @@ sub doTestIcommands
 	}
 	else
 	{
-		printStatus( "All tests were successful.\n" );
+	    if ( $lineCount ) {
+		printStatus( "All testiCommands.pl tests were successful.\n" );
 		printStatus( "Check log files for details:\n" );
 		printStatus( "    Log:     $logFile\n" );
 		printStatus( "    Output:  $outputFile\n" );
+	    }
+	    else {
+		printError( "Test failure.  Log file is empty\n" );
+		printError( "    Log:     $logFile\n" );
+		printError( "    Output:  $outputFile\n" );
+		$doTestExitValue++;
+	    }
 	}
 }
 
@@ -962,7 +981,7 @@ sub doTestIcat
 	    $doTestExitValue++;
 	}
 	else {
-	    printStatus("All ICAT tests completed successfully.\n");
+	    printStatus("All ICAT tests were successful.\n");
 	}
 	printStatus( "Test report:\n" );
 	printStatus( "    $totalLine\n" );
