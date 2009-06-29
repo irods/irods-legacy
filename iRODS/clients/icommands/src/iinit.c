@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "rods.h"
 #include "parseCommandLine.h"
+#include "rcMisc.h"
 
 void usage (char *prog);
 

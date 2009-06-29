@@ -173,11 +173,14 @@ if ( $thisUserID == 0 )
 # Install
 #
 
+
 if ( $isUpgrade ne "") {
-    printNotice("\nNote: When upgrading from 1.1 to 2.0, you will need to\n");
-    printNotice("run psg-patch-v1.1Tov2.0.sql via psql (for Postgres)\n");
-    printNotice("or ora-patch-v1.1Tov2.0.sql via sqlplus (for Oracle)\n");
-    printNotice("before running this script.\n\n");
+    printNotice("\nNote: When upgrading from 2.0.1 (or 2.0) to 2.1, you\n");
+    printNotice("need to run psg-patch-v2.0.1Tov2.1.sql via psql (for Postgres)\n");
+    printNotice("or ora-patch-v2.0.1Tov2.1.sql via sqlplus (for Oracle)\n");
+    printNotice("before running this script.\n");
+    printNotice("If you have an older iRODS, you need to run the\n");
+    printNotice("1.0 to v1.1 and/or 1.1 to 2.0 scripts in sequence.\n\n");
 
     my $answer = promptYesNo(
 			     "Have you run one of those?",
