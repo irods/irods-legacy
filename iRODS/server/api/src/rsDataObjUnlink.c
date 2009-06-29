@@ -255,21 +255,28 @@ dataObjInfo_t *dataObjInfo)
     if (dataObjInfo->specColl == NULL) {
 	if (dataObjUnlinkInp->oprType == UNREG_OPR && 
 	  rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
-	    char *outVaultPath;
-	    rodsServerHost_t *rodsServerHost;
-	    status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
-	      &rodsServerHost);
-	    if (status < 0) return status;
-	    /* unregistering but not an admin user */
-	    /* XXXXX need to check the rule */
-	    status = matchVaultPath (rsComm, dataObjInfo->filePath, 
-	      rodsServerHost, &outVaultPath);
-	    if (status != 0) {
-		/* in the vault */
-                rodsLog (LOG_DEBUG,
-                  "dataObjUnlinkS: unregistering in vault file %s",
-                  dataObjInfo->filePath);
-                return CANT_UNREG_IN_VAULT_FILE;
+	    ruleExecInfo_t rei;
+
+            initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
+            rei.doi = dataObjInfo;
+            rei.status = CHK_PERM_FLAG;         /* default */
+            applyRule ("acNoChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
+            if (rei.status == CHK_PERM_FLAG) {
+                char *outVaultPath;
+                rodsServerHost_t *rodsServerHost;
+	        status = resolveHostByRescInfo (dataObjInfo->rescInfo, 
+	          &rodsServerHost);
+	        if (status < 0) return status;
+	        /* unregistering but not an admin user */
+	        status = matchVaultPath (rsComm, dataObjInfo->filePath, 
+	          rodsServerHost, &outVaultPath);
+	        if (status != 0) {
+		    /* in the vault */
+                    rodsLog (LOG_DEBUG,
+                      "dataObjUnlinkS: unregistering in vault file %s",
+                      dataObjInfo->filePath);
+                    return CANT_UNREG_IN_VAULT_FILE;
+		}
 	    }
 	}
         unregDataObjInp.dataObjInfo = dataObjInfo;
