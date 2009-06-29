@@ -867,7 +867,6 @@ sub doTestIcommands
 	#	there's more information in the log file.
 	my $failsFound = 0;
 	my $lineCount = 0;
-	printf("logFile=%s\n",$logFile);
 	open( LOG, "<$logFile" );
 	foreach $line ( <LOG> )
 	{
