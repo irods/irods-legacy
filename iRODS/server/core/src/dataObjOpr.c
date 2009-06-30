@@ -1656,10 +1656,6 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
     l1descInx = allocL1desc ();
     if (l1descInx < 0) return l1descInx;
     L1desc[l1descInx].remoteL1descInx = remoteL1descInx;
-#if 0
-    L1desc[l1descInx].remoteL1descInx = l3descInx & 0xffff;
-    L1desc[l1descInx].l3descInx = (l3descInx & 0xffff0000) >> 16;
-#endif
     L1desc[l1descInx].oprType = REMOTE_ZONE_OPR;
     L1desc[l1descInx].remoteZoneHost = remoteZoneHost;
     L1desc[l1descInx].dataObjInp = dataObjInp;

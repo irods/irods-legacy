@@ -680,18 +680,7 @@ queAddr (rodsServerHost_t *rodsServerHost, char *myHostName)
     }
 
     if (strcasecmp (myHostName, hostEnt->h_name) != 0) {
-#if 0	/* rollback - change in createSrvPortal instead */ 
-        if (rodsServerHost->localFlag == LOCAL_HOST && 
-	  rodsServerHost->hostName != NULL &&
-	  strcmp (rodsServerHost->hostName->name, "localhost") == 0) {
-	    /* put it on top */
-            queHostName (rodsServerHost, hostEnt->h_name, 1);
-	} else {
-            queHostName (rodsServerHost, hostEnt->h_name, 0);
-	}
-#else
         queHostName (rodsServerHost, hostEnt->h_name, 0);
-#endif
     }
     return (0);
 }
@@ -935,61 +924,7 @@ rodsServerHost_t **rodsServerHost)
         *rodsServerHost = myZoneInfo->slaveServerHost;
         return (myZoneInfo->slaveServerHost->localFlag);
     }
-
-#if 0
-    zoneInfo_t *tmpZoneInfo;
-    int zoneInput;
-    char zoneName[NAME_LEN];
- 
-    if (rcatZoneHint == NULL || strlen (rcatZoneHint) == 0) {
-	zoneInput = 0;
-    } else {
-	zoneInput = 1;
-	getZoneNameFromHint (rcatZoneHint, zoneName, NAME_LEN);
-    }
-
-    tmpZoneInfo = ZoneInfoHead;
-    while (tmpZoneInfo != NULL) {
-	if (zoneInput == 0) {	/* assume local */
-	    tmpRodsServerHost = tmpZoneInfo->masterServerHost;
-	    if (tmpRodsServerHost->rcatEnabled == LOCAL_ICAT) {
-		myZoneInfo = tmpZoneInfo;
-	    }
-        } else {        /* remote zone */
-            if (strcmp (zoneName, tmpZoneInfo->zoneName) == 0) {
-                myZoneInfo = tmpZoneInfo;
-            }
-        }
-
-	if (myZoneInfo != NULL) {
-	    if (rcatType == MASTER_RCAT || 
-	      myZoneInfo->slaveServerHost == NULL) {
-	        *rodsServerHost = myZoneInfo->masterServerHost;
-		return (myZoneInfo->masterServerHost->localFlag);
-	    } else {
-	        *rodsServerHost = myZoneInfo->slaveServerHost;
-		return (myZoneInfo->slaveServerHost->localFlag);
-	    }
-	}
-	tmpZoneInfo = tmpZoneInfo->next;
-    }
-
-    if (zoneInput == 0) {
-        rodsLog (LOG_ERROR,
-          "getRcatHost: No local Rcat"); 
-	return (SYS_INVALID_ZONE_NAME);
-    } else {
-        rodsLog (LOG_DEBUG,
-          "getRcatHost: Invalid zone name from hint %s", rcatZoneHint);
-	status = getRcatHost (rcatType, NULL, &tmpRodsServerHost);
-	if (status < 0) {
-            return (SYS_INVALID_ZONE_NAME);
-	} else {
-	    *rodsServerHost = tmpRodsServerHost;
-	    return (tmpRodsServerHost->localFlag);
-	}
-    }
-#endif
+    return 0;
 }
 
 int
@@ -1115,16 +1050,6 @@ initZone (rsComm_t *rsComm)
     ZoneInfoHead->slaveServerHost = slaveServerHost;
     /* queZone (myEnv->rodsZone, masterServerHost, slaveServerHost); */
 
-#if 0
-    /* initialize all hosts to local zone */
-
-    tmpRodsServerHost = ServerHostHead;
-    while (tmpRodsServerHost != NULL) {
-	tmpRodsServerHost->zoneInfo = ZoneInfoHead;
-        tmpRodsServerHost = tmpRodsServerHost->next;
-    }
-#endif
-
     memset (&genQueryInp, 0, sizeof (genQueryInp));
     addInxIval (&genQueryInp.selectInp, COL_ZONE_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_ZONE_TYPE, 1);
@@ -1194,14 +1119,6 @@ initZone (rsComm_t *rsComm)
 	/* assume address:port */
         parseHostAddrStr (tmpZoneConn, &addr);
         if (addr.portNum == 0) addr.portNum = ZoneInfoHead->portNum;
-#if 0
-	if (splitPathByKey (tmpZoneConn, addr.hostAddr, port, ':') < 0) {
-            rstrcpy (addr.hostAddr, tmpZoneConn, LONG_NAME_LEN);
-	    addr.portNum = ZoneInfoHead->portNum;
-	} else {
-	    addr.portNum = atoi (port);
-	}
-#endif
         status = resolveHost (&addr, &tmpRodsServerHost);
 	if (status < 0) {
 	    rodsLog (LOG_ERROR,
@@ -1596,9 +1513,6 @@ initAgent (rsComm_t *rsComm)
 	}
 	pthread_mutex_init (&rsComm->lock, NULL);
 	pthread_cond_init (&rsComm->cond, NULL);
-#if 0
-	rsComm->reconnTimeout = time (0) + RECONN_TIMEOUT_TIME;
-#endif
         status = pthread_create  (&rsComm->reconnThr, pthread_attr_default,
               (void *(*)(void *)) reconnManager,
               (void *) rsComm);
@@ -1675,18 +1589,6 @@ rsPipSigalHandler ()
 	rodsLog (LOG_NOTICE,
          "caught a broken pipe signal. Attempt to reconnect");
 #ifndef _WIN32
-#if 0	/* XXXXX redo */
-	int status;
-	status = svrReconnect (ThisComm);
-	if (status >= 0) {
-            rodsLog (LOG_NOTICE,
-             "rsPipSigalHandler: reconnected");
-	} else {
-            rodsLog (LOG_ERROR,
-             "rsPipSigalHandler: reconnect failed, existing");
-            cleanupAndExit (SYS_CAUGHT_SIGNAL);
-	}
-#endif
         signal(SIGPIPE, (void (*)(int)) rsPipSigalHandler);
 #endif
 
@@ -1841,83 +1743,6 @@ disconnectAllSvrToSvrConn ()
     }
     return (0);
 }
-
-#if 0	/* XXXXX redo */
-int
-svrReconnect (rsComm_t *rsComm)
-{
-    fd_set sockMask;
-    int numSock;
-    int newSock;
-    struct timeval reconnTimeout;
-    reconnMsg_t *reconnMsg;
-    int status;
-
-    if (rsComm == NULL || rsComm->reconnSock <= 0) {
-        return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-
-    if (rsComm->reconnTime > 0 && time (0) <= rsComm->reconnTime + 10) {
-	rodsLog (LOG_NOTICE, 
-	  "svrReconnect: reconnection done recently - no action"); 
-	return (0);
-    }
-    irodsCloseSock (rsComm->sock);
-
-    listen (rsComm->reconnSock, MAX_LISTEN_QUE);
-
-    FD_ZERO(&sockMask);
-    FD_SET(rsComm->reconnSock, &sockMask);
-
-    rodsLog (LOG_NOTICE, "rodsAgent reconnecting on sock %d port %d",
-      rsComm->reconnSock, rsComm->reconnPort);
-
-    memset (&reconnTimeout, 0, sizeof (reconnTimeout));
-   reconnTimeout.tv_sec = RECONNECT_WAIT_TIME;
-
-#ifndef _WIN32
-    /* ignore SIGPIPE because it probably would get one */
-    signal(SIGPIPE, SIG_IGN);
-#endif
-    if ((numSock = select (rsComm->reconnSock + 1, &sockMask,
-      (fd_set *) NULL, (fd_set *) NULL,
-      (struct timeval *) &reconnTimeout)) <= 0) {
-        irodsCloseSock (rsComm->reconnSock);
-	rsComm->reconnSock = 0;
-        rodsLog (LOG_NOTICE, "rodsAgent No reconnection");
-        return (SYS_SOCK_OPEN_ERR);
-    }
-#ifndef _WIN32
-    /* put back SIGPIPE */
-    signal(SIGPIPE, (void (*)(int)) rsPipSigalHandler);
-#endif
-
-    rsComm->sock = rsComm->reconnSock;
-    newSock = rsAcceptConn (rsComm);
-
-    if (newSock > 0) {
-        rsComm->sock = newSock;
-        if ((status = readReconMsg (newSock, &reconnMsg)) < 0) {
-            rodsLog (LOG_ERROR,
-              "svrReconnect: readReconMsg error, status = %d", status);
-            return (status);
-	} else if (reconnMsg->cookie != rsComm->cookie) {
-            rodsLog (LOG_ERROR,
-	    "svrReconnect: cookie mistach, got = %d vs %d", 
-	      reconnMsg->cookie, rsComm->cookie);
-	    free (reconnMsg);
-	    status = SYS_PORT_COOKIE_ERR;
-	}
-
-	if (status < 0) {
-	    return status;
-	}
-	rsComm->reconnOpr = reconnMsg->reconnOpr;
-	rsComm->reconnTime = time (0);
-    }
-    return (newSock);
-}
-#endif
 
 int
 initRsComm (rsComm_t *rsComm)

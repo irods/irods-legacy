@@ -187,15 +187,6 @@ rescGrpInfo_t **rescGrpInfo)
     if (status < 0) {
 	return (status);
     } else {
-#if 0
-	if (RescClass[myRescInfo->rescClassInx].classType == ARCHIVAL_CL) {
-	    /* que at bottom */
-            queResc (myRescInfo, rescGroupName, rescGrpInfo, 0);
-	} else {
-	    /* que at top */
-            queResc (myRescInfo, rescGroupName, rescGrpInfo, 1);
-	}
-#endif
 	queResc (myRescInfo, rescGroupName, rescGrpInfo, BY_TYPE_FLAG);
 	return (0);
     }
@@ -287,26 +278,6 @@ char *sortScheme)
         (*rescGrpInfo)->rescInfo = tmpRescInfo;
     } else if (strcmp (sortScheme, "byRescClass") == 0) {
 	sortRescByType (rescGrpInfo);
-#if 0
-	tmpRescGrpInfo = *rescGrpInfo;
-	tmpRescInfo = tmpRescGrpInfo->rescInfo;
-	
-        if (RescClass[tmpRescInfo->rescClassInx].classType == CACHE_CL) {
-	    /* a cache is already on top */
-	    return (0);
-	}
-	while (tmpRescGrpInfo != NULL) {
-	    tmpRescInfo = tmpRescGrpInfo->rescInfo;
-	    if (RescClass[tmpRescInfo->rescClassInx].classType == CACHE_CL) {
-                /* exchange rescInfo with the head */
-
-		tmpRescGrpInfo->rescInfo = (*rescGrpInfo)->rescInfo;
-		(*rescGrpInfo)->rescInfo = tmpRescInfo;
-		break;
-	    }
-	    tmpRescGrpInfo = tmpRescGrpInfo->next;
-	}
-#endif
     } else {
 	    rodsLog (LOG_ERROR,
 	      "sortResc: unknown sortScheme %s", sortScheme);
@@ -662,9 +633,6 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
         dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
         memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
 
-#if 0
-        rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
-#endif
         tmpDataId = &dataId->value[dataId->len * i];
         tmpCollId = &collId->value[collId->len * i];
         tmpReplNum = &replNum->value[replNum->len * i];
@@ -2989,40 +2957,6 @@ getRescGrpClass (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
     return (getRescClass(rescGrpInfo->rescInfo));
 }
 
-
-#if 0
-int
-getRescStageFlag (rescInfo_t *rescInfo)
-{
-    int rescTypeInx;
-    int stageFlag; 
-
-    if (rescInfo == NULL) return USER__NULL_INPUT_ERR;
-
-    rescTypeInx = rescInfo->rescTypeInx;
-    stageFlag = RescTypeDef[rescTypeInx].stageFlag;
-
-    return stageFlag;
-}
-
-int
-getRescGrpcStageFlag (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
-{
-    rescInfo_t *tmpRescInfo;
-    rescGrpInfo_t *tmpRescGrpInfo = rescGrpInfo;
-
-    while (tmpRescGrpInfo != NULL) {
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        if (getRescStageFlag (tmpRescInfo) == DO_STAGING) {
-	    *outRescInfo = tmpRescInfo;
-	    return DO_STAGING;
-	}
-	tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-    *outRescInfo = NULL;
-    return NO_STAGING;
-}
-#endif
 
 int
 compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)

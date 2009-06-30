@@ -211,12 +211,6 @@ int
 matchPidInReExec (reExec_t *reExec, pid_t pid);
 int
 waitAndFreeReThr (reExec_t *reExec);
-#if 0
-int
-getRescStageFlag (rescInfo_t *rescInfo);
-int
-getRescGrpcStageFlag (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo);
-#endif
 int
 getRescClass (rescInfo_t *rescInfo);
 int
