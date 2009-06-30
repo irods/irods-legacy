@@ -460,20 +460,10 @@ ruleExecInfo_t *rei)
     dataObjInfo_t *dataObjInfoHead;
     char *cacheResc;
     char *flag = NULL;
-#if 0
-    dataObjInp_t dataObjInp;
-
-    memset (&dataObjInp, 0, sizeof (dataObjInp));
-#endif
 
     cacheResc = (char *) xcacheResc->inOutStruct;
     if (xflag != NULL && xflag->inOutStruct != NULL) {
         flag = (char *) xflag->inOutStruct;
-#if 0
-	if (strcmp (allFlag, ALL_KW) == 0) {
-    	    addKeyVal (&dataObjInp.condInput, ALL_KW, "");
-	}
-#endif
     }
     
     RE_TEST_MACRO ("    Calling msiSysReplDataObj")
@@ -499,31 +489,6 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-#if 0
-    myDataObjInfo = malloc (sizeof (dataObjInfo_t));
-    memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
-    memset (&transStat, 0, sizeof (transStat));
-
-    rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);
-    snprintf (tmpStr, NAME_LEN, "%d", dataObjInfoHead->replNum);
-    addKeyVal (&dataObjInp.condInput, REPL_NUM_KW, tmpStr);
-    addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, cacheResc);
-
-    rei->status = rsDataObjReplWithOutDataObj (rei->rsComm, &dataObjInp,
-      &transStat, myDataObjInfo);
-
-    /* fix mem leak */
-    clearKeyVal (&dataObjInp.condInput);
-    if (rei->status >= 0) {
-	rei->status = 1;
-	/* que the cache copy at the top */
-	queDataObjInfo (&dataObjInfoHead, myDataObjInfo, 0, 1);
-	rei->doi = dataObjInfoHead;
-    } else {
-	freeAllDataObjInfo (myDataObjInfo);
-    }
-
-#endif
     rei->status = rsReplAndRequeDataObjInfo (rei->rsComm, &dataObjInfoHead, 
      cacheResc, flag);
     if (rei->status >= 0) {

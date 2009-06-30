@@ -1430,11 +1430,6 @@ int
 bundleCacheDirWithExec (int structFileInx)
 {
     int status;
-#if 0
-    execCmd_t execCmdInp;
-    execCmdOut_t *execCmdOut = NULL;
-    rsComm_t *rsComm = StructFileDesc[structFileInx].rsComm;
-#endif
     char cmdStr[MAX_NAME_LEN];
 
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
@@ -1452,29 +1447,6 @@ bundleCacheDirWithExec (int structFileInx)
           specColl->cacheDir, specColl->phyPath, status);
 	status = SYS_EXEC_TAR_ERR;
     }
-#if 0
-    bzero (&execCmdInp, sizeof (execCmdInp));
-
-    rstrcpy (execCmdInp.cmd, "tar", LONG_NAME_LEN);
-    snprintf (execCmdInp.cmdArgv, MAX_NAME_LEN, "-chlf %s -C %s .", 
-       specColl->phyPath, specColl->cacheDir);
-
-    status = rsExecCmd (rsComm, &execCmdInp, &execCmdOut);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "bundleCacheDirWithExec: rsExecCmd of %s to %s failed. stat = %d",
-          specColl->cacheDir, specColl->phyPath, status);
-        if (execCmdOut != NULL) {
-            if (execCmdOut->stderrBuf.buf != NULL) {
-                rodsLog (LOG_ERROR,
-                  "error msg from tar: %s", 
-		  (char *) execCmdOut->stderrBuf.buf);
-            }
-	}
-    }
-    /* XXXXX need to free execCmdOut */
-#endif
     return status;
 }
 
