@@ -28,21 +28,6 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
 
     status = _rcDataObjGet (conn, dataObjInp, &portalOprOut, &dataObjOutBBuf);
 
-#if 0
-    memset (&conn->transStat, 0, sizeof (transStat_t));
-
-    memset (&dataObjOutBBuf, 0, sizeof (bytesBuf_t));
-
-    dataObjInp->oprType = GET_OPR;
-
-#ifndef PARA_OPR
-    addKeyVal (&dataObjInp->condInput, NO_PARA_OP_KW, "");
-#endif
-
-    status = procApiRequest (conn, DATA_OBJ_GET_AN,  dataObjInp, NULL, 
-        (void **) &portalOprOut, &dataObjOutBBuf);
-#endif
-
     if (status < 0) {
         if (portalOprOut != NULL) free (portalOprOut);
         return (status);

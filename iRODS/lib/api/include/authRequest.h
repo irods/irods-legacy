@@ -26,11 +26,7 @@ typedef struct {
    char *challenge;
 } authRequestOut_t;
     
-#if 0
-#define authRequestOut_PI "str *challenge;"
-#else
 #define authRequestOut_PI "bin *challenge(CHALLENGE_LEN);"
-#endif
 
 #if defined(RODS_SERVER)
 #define RS_AUTH_REQUEST rsAuthRequest

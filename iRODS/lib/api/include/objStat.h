@@ -24,11 +24,7 @@ extern "C" {
 typedef struct rodsObjStat {
     rodsLong_t          objSize;        /* file size */
     objType_t           objType;        /* DATA_OBJ_T or COLL_OBJ_T */
-#if 0
-    int                 numCopies;
-#else
     uint                 dataMode;
-#endif
     char                dataId[NAME_LEN];
     char                chksum[NAME_LEN];
     char                ownerName[NAME_LEN];

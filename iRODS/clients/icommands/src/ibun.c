@@ -49,14 +49,6 @@ main(int argc, char **argv) {
         exit (1);
     }
 
-#if 0
-    if (*argv[optind] != '/' || *argv[optind + 1] != '/') { 
-	rodsLog (LOG_ERROR,
-	 "Input path must be absolute");
-	exit (1);
-    }
-#endif
-
     status = parseCmdLinePath (argc, argv, optind, &myEnv,
       UNKNOWN_OBJ_T, UNKNOWN_OBJ_T, 0, &rodsPathInp);
 
