@@ -151,6 +151,12 @@ int msiDataObjPutWithOptions (msParam_t *inpParam1,
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei);
 
+int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+                                  msParam_t* zeroResultsIsOK,
+                                  msParam_t* maxReturnedRowsParam,
+                                  msParam_t* genQueryOutParam,
+                                  ruleExecInfo_t *rei);
+
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
   {"print_hello_arg", 1, (funcPtr) print_hello_arg},
@@ -244,6 +250,7 @@ microsdef_t MicrosTable[] = {
   {"break",0,(funcPtr) breakExec},
   {"applyAllRules",3,(funcPtr) msiApplyAllRules},
   {"msiExecStrCondQuery",2,(funcPtr) msiExecStrCondQuery},
+  {"msiExecStrCondQueryWithOptions",4,(funcPtr) msiExecStrCondQueryWithOptions},
   {"msiExecGenQuery",2,(funcPtr) msiExecGenQuery},
   {"msiMakeQuery",3,(funcPtr) msiMakeQuery},
   {"msiMakeGenQuery",3,(funcPtr) msiMakeGenQuery},
