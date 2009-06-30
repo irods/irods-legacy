@@ -126,7 +126,7 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     if (PrePostProcForGenQueryFlag == 1) {
       args[0] = (char *) malloc(300);
-      sprintf(args[0],"%ld",genQueryInp);
+      sprintf(args[0],"%ld",(long) genQueryInp);
       argc = 1;
       i =  applyRuleArg("acPreProcForGenQuery",args,argc, &rei2, NO_SAVE_REI);
       free(args[0]);
@@ -146,8 +146,8 @@ _rsGenQuery (rsComm_t *rsComm, genQueryInp_t *genQueryInp,
       args[0] = (char *) malloc(300);
       args[1] = (char *) malloc(300);
       args[2] = (char *) malloc(300);
-      sprintf(args[0],"%ld",genQueryInp);
-      sprintf(args[1],"%ld",*genQueryOut);
+      sprintf(args[0],"%ld",(long) genQueryInp);
+      sprintf(args[1],"%ld",(long) *genQueryOut);
       sprintf(args[2],"%d",status);
       argc = 3;
       i =  applyRuleArg("acPostProcForGenQuery",args,argc, &rei2, NO_SAVE_REI);
