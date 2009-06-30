@@ -63,7 +63,7 @@ getSetLeafValue(char **varValue, void *leafPtr, void **leafPtrVal, char *newVarV
     sprintf(*varValue, "%lld",(void *) *leafPtrVal);
 #else
     /*    sprintf(*varValue, "%p",(void *) *leafPtrVal); */
-    sprintf(*varValue, "%ld",(void *) *leafPtrVal);
+    sprintf(*varValue, "%ld",(long) *leafPtrVal);
 #endif
     if (newVarValue != NULL) {
 #ifdef ADDR_64BITS      
