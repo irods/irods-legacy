@@ -98,10 +98,6 @@ typedef struct {
     int reconnectedSock;
     char *reconnAddr;
     int cookie;
-#if 0
-    time_t reconnTime;
-    time_t reconnTimeout;
-#endif
 
 #ifndef windows_platform
     pthread_t reconnThr;
@@ -156,10 +152,6 @@ getSessionSignitureClientside();
 
 int
 clientLoginWithPassword(rcComm_t *conn, char* password);
-#if 0
-int
-rcReconnect (rcComm_t *conn, reconnOpr_t reconnOpr);
-#endif
 rcComm_t *
 rcConnectXmsg (rodsEnv *myRodsEnv, rErrMsg_t *errMsg);
 void

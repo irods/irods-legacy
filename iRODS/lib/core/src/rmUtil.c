@@ -180,11 +180,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
     }
 
     rstrcpy (collInp->collName, srcColl, MAX_NAME_LEN);
-#if 0
-    status = rcRmCollOld (conn, collInp);
-#else
     status = rcRmColl (conn, collInp, rodsArgs->verbose);
-#endif
 
     return (status);
 }

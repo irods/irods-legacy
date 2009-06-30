@@ -171,39 +171,7 @@ bytesBuf_t *inputBsBBuf)
         }
 #endif
 
-#if 0	/* XXXXX redo */
-        if (conn->svrVersion->reconnPort > 0) {
-            if ((status = rcReconnect (conn, RECONN_SEND_OPR)) >= 0) {
-                status = sendRodsMsg (conn->sock, RODS_API_REQ_T, 
-		  myInputStructBBuf, inputBsBBuf, NULL, 
-		  RcApiTable[apiInx].apiNumber, conn->irodsProt);
-		if (status >= 0) {
-		    fprintf (stderr,
-                     "sendApiRequest: reconnected and sendRodsMsg\n");
-		} else {
-                    rodsLogError (LOG_ERROR, status,
-                    "sendApiRequest: reconnected but sendRodsMsg failed");
-    		    freeBBuf (inputStructBBuf);
-		    return status;
-                }
-            } else {
-                rodsLog (LOG_ERROR,
-                 "sendApiRequest: reconnect failed. status = %d \n",
-                  status);
-    		freeBBuf (inputStructBBuf);
-                return status;
-            }
-        } else {
-    	    freeBBuf (inputStructBBuf);
-            return (status);
-        }
-#endif
     }
-#if 0	/* keep the send state intact */
-#ifndef windows_platform
-    cliChkReconnAtSendEnd (conn);
-#endif
-#endif
 
     freeBBuf (inputStructBBuf);
 
@@ -277,29 +245,6 @@ bytesBuf_t *outBsBBuf)
         }
 #else
         return (status);
-#endif
-
-#if 0	/* XXXXXX redo */
-	if (conn->svrVersion->reconnPort > 0) {
-            if ((status = rcReconnect (conn, RECONN_RCV_OPR)) >= 0) {
-		status = readMsgHeader (conn->sock, &myHeader);
-		if (status >= 0) {
-		    fprintf (stderr,
-                     "readAndProcApiReply: reconnected and readMsgHeader\n");
-		} else {
-        	    rodsLogError (LOG_ERROR, status,
-                     "readAndProcApiReply:reconnected but readMsgHeader failed");
-		    return (savedStatus);
-	        }
-	    } else {
-	        rodsLog (LOG_ERROR,
-                 "readAndProcApiReply: reconnect failed. status = %d \n",
-                  status);
-                return savedStatus;
-	    }
-	} else {
-            return (savedStatus);
-	}
 #endif
     }
 

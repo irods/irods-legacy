@@ -30,9 +30,6 @@ rodsPathInp_t *rodsPathInp)
         rstrcpy (collCreateInp.collName, rodsPathInp->srcPath[i].outPath, 
 	  MAX_NAME_LEN);
         status = rcCollCreate (conn, &collCreateInp);
-#if 0
-	status = mkColl (conn, rodsPathInp->srcPath[i].outPath);
-#endif
 	if (status < 0) {
 	    rodsLogError (LOG_ERROR, status,
 	     "mkdirUtil: mkColl of %s error.", 
