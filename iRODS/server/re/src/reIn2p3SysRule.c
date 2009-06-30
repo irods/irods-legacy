@@ -169,6 +169,7 @@ void *startMonScript(void *arg) {
   char *output;
   msParam_t msp1, msp2, msp3, msp4, msp5, msout;
   int thrid,  status;
+  int retval;
   
   thrInp_t *tinput = (thrInp_t*)arg;
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
@@ -189,7 +190,8 @@ void *startMonScript(void *arg) {
     rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, 
 		   &(tinput->rei));
     threadIsAlive[thrid] = 1;
-    pthread_exit(-1);
+    retval = -1;
+    pthread_exit((void *)&retval);
   }
   
   if (&msout != NULL) {
@@ -204,7 +206,8 @@ void *startMonScript(void *arg) {
       rodsMonPerfLog(tinput->execAddr, tinput->rescName, 
 		     noanswer, &(tinput->rei));
       threadIsAlive[thrid] = 1;
-      pthread_exit(-1);
+      retval = -1;
+      pthread_exit((void *)&retval);
     }
   }
   else {
@@ -213,12 +216,14 @@ void *startMonScript(void *arg) {
     rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, 
 		   &(tinput->rei));
     threadIsAlive[thrid] = 1;
-    pthread_exit(-1);		       
+    retval = -1;
+    pthread_exit((void *)&retval);
   }
   
   threadIsAlive[thrid] = 1;
   
-  pthread_exit(0);
+  retval = 0;
+  pthread_exit((void *)&retval);
 }
 
 int checkIPaddress(char *IP, unsigned char IPcomp[IPV4]) {
@@ -231,7 +236,7 @@ int checkIPaddress(char *IP, unsigned char IPcomp[IPV4]) {
   i = atoi(strtok(IPclone, delimIP));
   if ( i < 0 || i > 255 ) return -1;
   IPcomp[0] = i;
-  while ( eltstrIP = strtok(NULL, delimIP) ) {
+  while ( (eltstrIP = strtok(NULL, delimIP)) ) {
     nelt++;
     i = atoi(eltstrIP);
     if ( i < 0 || i > 255 ) return -1;
@@ -267,7 +272,7 @@ int checkHostAccessControl (char *username, char *hostclient,
   /* parse the list of groups for the user from the groupsname char */
   nelt = 0;
   strncpy(grouplist[0], strtok(groupsname, delim), MAXSTR);
-  while ( eltstr = strtok(NULL, delim) ) {
+  while ( (eltstr = strtok(NULL, delim)) ) {
     nelt++;
     strncpy(grouplist[nelt], eltstr, MAXSTR);
   }
@@ -278,7 +283,7 @@ int checkHostAccessControl (char *username, char *hostclient,
       if ( line[0] != '#' && line[0] != '\n' ) {  /* Comment or empty line, ignore */
 	eltstr = strtok(line, delim);
 	strncpy(tempArr[indxc], eltstr, MAXSTR);
-	while ( eltstr = strtok(NULL, delim) ) {
+	while ( (eltstr = strtok(NULL, delim)) ) {
 	  indxc++;
 	  strncpy(tempArr[indxc], eltstr, MAXSTR);
 	}
