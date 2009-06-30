@@ -6,6 +6,68 @@
 
 int _makeQuery( char *sel, char *cond, char **sql);
 
+/****************vvvvvvv PROVIDED BY GUINOT vvvvvvv*********************/
+int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+				   msParam_t* zeroResultsIsOK,
+				   msParam_t* maxReturnedRowsParam, 
+				   msParam_t* genQueryOutParam, 
+				   ruleExecInfo_t *rei)
+{
+    genQueryInp_t genQueryInp;
+    int i;
+    genQueryOut_t *genQueryOut = NULL;
+    char *query;
+    char *maxReturnedRowsStr;
+    int maxReturnedRows;
+
+    query = (char *) malloc(strlen(queryParam->inOutStruct) + 10 + MAX_COND_LEN * 8);
+    strcpy(query, queryParam->inOutStruct);
+
+    i  = replaceVariablesAndMsParams("",query, rei->msParamArray, rei);
+    if (i < 0)
+      return(i);
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+    i = fillGenQueryInpFromStrCond(query, &genQueryInp);
+    if (i < 0)
+      return(i);
+    
+    if(maxReturnedRowsParam != NULL)
+      {
+	maxReturnedRowsStr = (char *) maxReturnedRowsParam->inOutStruct;
+	maxReturnedRows = atoi (maxReturnedRowsStr);
+	genQueryInp.maxRows= maxReturnedRows;
+      }
+    else
+      genQueryInp.maxRows= MAX_SQL_ROWS;
+    
+    genQueryInp.continueInx=0;
+    
+    i = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+    //if (i < 0)
+    if (zeroResultsIsOK !=NULL && strcmp(zeroResultsIsOK->inOutStruct, "zeroOK") == 0 )
+      {
+	if (i < 0 && i != CAT_NO_ROWS_FOUND)
+	  return(i);
+	else if (i == CAT_NO_ROWS_FOUND)
+	  {
+	    genQueryOutParam->type = strdup(STR_MS_T);
+	    fillStrInMsParam (genQueryOutParam,"emptySet");
+	    return(0);
+	  }
+	
+      }
+    else
+      {
+	if (i < 0)
+          return(i);
+      }
+    
+    genQueryOutParam->type = strdup(GenQueryOut_MS_T);
+    genQueryOutParam->inOutStruct = genQueryOut;
+    return(0);
+}
+
+/***********^^^^^ PROVIDED BY GUINOT ^^^^^*********************/
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
 {
   genQueryInp_t genQueryInp;
