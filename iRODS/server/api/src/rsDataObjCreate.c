@@ -53,14 +53,6 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (l1descInx);
     }
 
-#if 0
-    if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
-	phyOpenFlag = DO_NOT_PHYOPEN;
-    } else {
-	phyOpenFlag = DO_PHYOPEN;
-    }
-#endif
-
     /* dataObj only */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
     status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 

@@ -76,16 +76,12 @@ structFileExtAndRegInp_t *structFileBundleInp)
     int status;
     dataObjInp_t dataObjInp;
     openedDataObjInp_t dataObjCloseInp;
-#if 0
-    structFileOprInp_t structFileOprInp;
-#else
     collInp_t collInp;
     collEnt_t *collEnt;
     int handleInx;
     int collLen;
     char phyBunDir[MAX_NAME_LEN];
     char tmpPath[MAX_NAME_LEN];
-#endif
     chkObjPermAndStat_t chkObjPermAndStatInp;
     int l1descInx;
     int savedStatus = 0;
@@ -110,21 +106,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
     l3Close (rsComm, l1descInx);
     L1desc[l1descInx].l3descInx = 0;
 
-#if 0
-    status = initStructFileOprInp (rsComm, &structFileOprInp, 
-      structFileBundleInp, L1desc[l1descInx].dataObjInfo);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileBundle: initStructFileOprInp of %s error. stat = %d",
-          dataObjInp.objPath, status);
-	bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
-        dataObjCloseInp.l1descInx = l1descInx;
-        rsDataObjClose (rsComm, &dataObjCloseInp);
-        return (status);
-    }
-#endif
-
     memset (&chkObjPermAndStatInp, 0, sizeof (chkObjPermAndStatInp));
     rstrcpy (chkObjPermAndStatInp.objPath, 
       structFileBundleInp->collection, MAX_NAME_LEN); 
@@ -142,22 +123,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rsDataObjClose (rsComm, &dataObjCloseInp);
         return (status);
     }
-
-#if 0
-    structFileOprInp.oprType = NO_REG_COLL_INFO | LOGICAL_BUNDLE;
-    structFileOprInp.specColl->cacheDirty = 1;
-
-    status = rsStructFileSync (rsComm, &structFileOprInp);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileBundle: rsStructFileSync of %s error. stat = %d",
-          dataObjInp.objPath, status);
-    } else {
-	/* mark it was written so the size would be adjusted */
-	L1desc[l1descInx].bytesWritten = 1;
-    }
-#endif
 
     createPhyBundleDir (rsComm, L1desc[l1descInx].dataObjInfo->filePath,
       phyBunDir);

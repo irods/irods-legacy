@@ -58,28 +58,6 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
 
     if (status < 0) return (status);
 
-#if 0	/* moved */
-    initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
-    rei.doi = dataObjInfoHead;
-
-    status = applyRule ("acDataDeletePolicy", NULL, &rei, NO_SAVE_REI);
-
-    if (status < 0 && status != NO_MORE_RULES_ERR &&
-      status != SYS_DELETE_DISALLOWED) {
-        rodsLog (LOG_NOTICE,
-          "rsDataObjUnlink: acDataDeletePolicy error for %s. status = %d",
-          dataObjUnlinkInp->objPath, status);
-        return (status);
-    }
-
-    if (rei.status == SYS_DELETE_DISALLOWED) {
-        rodsLog (LOG_NOTICE,
-        "rsDataObjUnlink:disallowed for %s via acDataDeletePolicy,status=%d",
-          dataObjUnlinkInp->objPath, rei.status);
-        return (rei.status);
-    }
-#endif
-
     if (dataObjUnlinkInp->oprType == UNREG_OPR ||
       getValByKey (&dataObjUnlinkInp->condInput, FORCE_FLAG_KW) != NULL ||
       getValByKey (&dataObjUnlinkInp->condInput, REPL_NUM_KW) != NULL ||
