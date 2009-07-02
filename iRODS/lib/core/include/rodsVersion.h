@@ -9,9 +9,9 @@
 #ifndef RODS_VERSION_H
 #define RODS_VERSION_H
 
-#define RODS_REL_VERSION	"rods2.0.1"
+#define RODS_REL_VERSION	"rods2.1"
 #define RODS_API_VERSION	"d"
-#define RODS_RELEASE_DATE       "June 2009"
+#define RODS_RELEASE_DATE       "July 2009"
 
 
 #endif	/* RODS_VERSION_H */
