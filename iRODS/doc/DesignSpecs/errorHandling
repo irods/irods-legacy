@@ -27,7 +27,7 @@ is for nothing to be displayed.
 The rest of this document describes this logging system.
 
 The rodsLog routine has #defines that should be used for the first
-parameter.  When you write iRods code, you should add many error
+parameter.  When you write iRODS code, you should add many error
 checks and call rodsLog and return an error code if something is
 wrong.  When you call rodsLog, pick one of the #define levels based on
 what is most appropriate for the situation.

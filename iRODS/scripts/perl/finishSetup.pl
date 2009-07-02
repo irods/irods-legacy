@@ -63,7 +63,7 @@ $version{"finishSetup.pl"} = "2.0";
 #
 # Confirm execution from the top-level iRODS directory.
 #
-$IRODS_HOME = cwd( );	# Might not be actual iRods home.  Fixed below.
+$IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.
@@ -430,7 +430,7 @@ my $currentStep = 0;
 # Initially, assume a database restart is not needed.  Any of the
 # steps that might change database configuration files will change
 # this flag to indicate that a restart is needed.  That restart
-# happens just before configuring the iRods server.
+# happens just before configuring the iRODS server.
 my $databaseRestartNeeded = 0;
 
 if ( $IRODS_ADMIN_NAME eq "" )

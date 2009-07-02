@@ -1,10 +1,9 @@
-/**
- * @file	imageMSutil.c
+/*
+ * @file  imageMSutil.c
  *
- * @brief	Helper functions for manipulating images
- * 		for the image microservices.
+ * @brief Helper functions for manipulating images for the image microservices.
  *
- * @author	David R. Nadeau / University of California, San Diego
+ * @author  David R. Nadeau / University of California, San Diego
  *
  * Copyright(c), The Regents of the University of California.
  * For more information, please refer to files in the
@@ -12,8 +11,8 @@
  */
 
 /* ImageMagick */
-/* 	Due to conflicts between ImageMagick and iRODS includes, */
-/* 	ImageMagick needs to be included first. */
+/*  Due to conflicts between ImageMagick and iRODS includes, */
+/*  ImageMagick needs to be included first. */
 #include <magick/MagickCore.h>
 
 /* iRODS */
@@ -497,7 +496,7 @@ _ImageWriteFile( rsComm_t* rsComm, char* messageBase,
 		free( (char*)format );
 	}
 
-/** TODO:  add properties **/
+/**** TODO:  add properties ****/
 
 
 	/* Convert the image into a raw byte buffer in the */

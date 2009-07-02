@@ -22,7 +22,7 @@ Authentication auth
 We will also use common Unix abbreviations, such as mkdir, pwd, ls,
 etc.
 
-We are now calling the system iRods, so the commands will be "i"
+We are now calling the system iRODS, so the commands will be "i"
 commands.  Sample icommands:
 
 iregresc   Register resource

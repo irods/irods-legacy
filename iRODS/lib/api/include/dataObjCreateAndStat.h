@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjCreateAndStat - Create And Stat a iRods data object. This is the same 
+/* rcDataObjCreateAndStat - Create And Stat a iRODS data object. This is the same 
  * as the rcDataObjCreate call except it returns a openStat_t output.
  * Input - 
  *   rcComm_t *conn - The client connection handle.

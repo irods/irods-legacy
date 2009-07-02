@@ -2,15 +2,14 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /**
- * @file	nedMS.c
+ * @file  nedMS.c
  *
- * @brief	Access to web services from NVO for NASA/IPAC Extragalactic Database (NED)
+ * @brief   Access to web services from NVO for NASA/IPAC Extragalactic Database (NED)
  *
- * This microservices handles communication with http://voservices.net/NED/ws_v2_0/NED.asmx
- * and provides answers to queries to the NED database. 
+ * These microservices handle communication with http://voservices.net/NED/ws_v2_0/NED.asmx
+ * and provide answers to queries to the NED database. 
  * 
- *
- * @author	Arcot Rajasekar / University of California, San Diego, Jan 2008
+ * @author  Arcot Rajasekar / University of California, San Diego, Jan 2008
  */
 
 #include "rsApiHandler.h"
@@ -19,6 +18,53 @@
 #include "ned.nsmap"
 
 
+/**
+ * \fn msiObjByName(msParam_t* inObjByNameParam, msParam_t* outRaParam, msParam_t* outDecParam, msParam_t* outTypParam, ruleExecInfo_t* rei )
+ *
+ * \brief  This microservice executes a web service to retrieve astronomy image by name. It returns position and type of an astronomical object given a 
+ *         name from the NASA/IPAC Extragalactic Database (NED) using web service at http://voservices.net/NED/ws_v2_0/NED.asmx.
+ *
+ * \module webservices
+ *
+ * \since pre-2.1
+ *
+ * \author   Arcot Rajasekar
+ * \date     2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-24
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest30.ir
+ *
+ * myTestRule||msiObjByName(*objName,*RA,*DEC,*TYPE)|nop
+ * *objName=$m100
+ * *objName%*RA%*DEC%*TYPE
+ *
+ * \param[in] inObjByNameParam - a msParam of type STR_MS_T which is an astronomical object name.
+ * \param[out] outRaParam - a msParam of type STR_MS_T which is a Right Ascension as float as string.
+ * \param[out] outDecParam - a msParam of type STR_MS_T which is a Declination as float as string.
+ * \param[out] outTypParam - a msParam of type STR_MS_T which is a type of object (eg star, galaxy,...).
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiObjByName(msParam_t* inObjByNameParam, 
 	     msParam_t* outRaParam, 

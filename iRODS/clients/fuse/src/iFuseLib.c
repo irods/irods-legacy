@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* iFuseLib.c - The misc lib functions for the iRods/Fuse server. 
+/* iFuseLib.c - The misc lib functions for the iRODS/Fuse server. 
  */
 
 #include <stdio.h>
@@ -543,7 +543,7 @@ off_t offset)
 	    char *mybuf;
 	    rodsLong_t myoffset;
 
-	    /* need to write it to iRods */
+	    /* need to write it to iRODS */
 	    irodsFd = dataObjCreateByFusePath (path, 
 	      IFuseDesc[descInx].createMode, irodsPath);
 	    if (irodsFd < 0) {

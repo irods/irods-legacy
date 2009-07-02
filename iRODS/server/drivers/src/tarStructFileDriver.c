@@ -1090,7 +1090,7 @@ mkTarCacheDir (int structFileInx)
 }
 
 /* this set of codes irodsTarXYZ are used by libtar to perform file level
- * I/O in iRods */
+ * I/O in iRODS */
  
 int
 irodsTarOpen (char *pathname, int oflags, int mode)

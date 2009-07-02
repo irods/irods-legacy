@@ -79,7 +79,7 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjRepl - Replicate an iRods data object.
+/* rcDataObjRepl - Replicate an iRODS data object.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

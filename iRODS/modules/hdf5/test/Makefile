@@ -1,4 +1,4 @@
-# irodsBuildDir is the directory where the iRods server is built
+# irodsBuildDir is the directory where the iRODS server is built
 
 # buildDir is the directory where the irods lib is located
 ifndef buildDir

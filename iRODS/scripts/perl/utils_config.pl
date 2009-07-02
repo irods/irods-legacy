@@ -216,7 +216,7 @@ sub validateIrodsVariables()
 			printError(
 				"\n" .
 				"Configuration problem:\n" .
-				"    iRods administrator password is not set.\n" .
+				"    iRODS administrator password is not set.\n" .
 				"\n" .
 				"    The iRODS configuration file does not set the administrator\n" .
 				"    account password.  Possible typo in the variable name?\n" .

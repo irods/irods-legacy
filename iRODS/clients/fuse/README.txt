@@ -4,8 +4,8 @@ iRODS/clients/fuse	- iRODS/fuse implementation
 DESCRIPTION
 	This directory, and its subdirectories, contain modules for
 	building the irodsFs binary which can be used to mount an
-	iRods collection to a local directory. Then the files and
-        sub-collections in this mounted iRods collection can be
+	iRODS collection to a local directory. Then the files and
+        sub-collections in this mounted iRODS collection can be
 	accessed using regular UNIX commands through this local directory.
 
 FUSE (Filesystem in Userspace) is a free Unix kernel module that allows 
@@ -18,10 +18,10 @@ The iRODS FUSE implementation allows normal users to access data stored
 in iRODS using standard UNIX commands (ls, cp, etc) and system calls 
 (open, read, write, etc).
 
-The user's iRods passwd or credential will be used for authentication at 
+The user's iRODS passwd or credential will be used for authentication at 
 the time of the mount. e.g., doing a iinit before the mount and he/she will 
 be able to access all files/collections he/she is allowed to access under 
-iRods. The user will need to set the appropriate UNIX permission (mode) of 
+iRODS. The user will need to set the appropriate UNIX permission (mode) of 
 the UNIX mount directory to control access to the mounted data.
 
 
@@ -54,7 +54,7 @@ Running irods Fuse:
 
     mkdir /usr/tmp/fmount
 
-3) Setup the iRods client env (~/irods/.irodsEnv) so that iCommands will
+3) Setup the iRODS client env (~/irods/.irodsEnv) so that iCommands will
 work. Type in:
     iinit
 
@@ -69,7 +69,7 @@ irodsFs (step 5).
 5) Mount the home collection to the local directory by typing in:
 ./irodsFs /usr/tmp/fmount
 
-The user's home collection is now mounted. The iRods files and sub-collections 
+The user's home collection is now mounted. The iRODS files and sub-collections 
 in the user's home collection should be accessible with normal UNIX commands 
 through the /usr/tmp/fmount directory. 
 
@@ -92,7 +92,7 @@ WARNING
 -------
 1) Our current FUSE implmentation does not support parallel operations but
 fuse-2.7.1 and later releases deploy "Read Ahead" which is a parallel
-operation and can cause iRods Fuse to hang. The work around is:
+operation and can cause iRODS Fuse to hang. The work around is:
 
 a) install fuse-2.7.0 
 

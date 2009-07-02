@@ -2,16 +2,16 @@ A compound resource is a class where the POSIX type I/O calls such as open,
 read, write, lseek, close, etc are not readily available. Instead,
 it uses put and get calls to transfer entire files. Examples of the 
 compound resource class are FTP, gridFTP, the HPSS parallel I/O and UK's ADS. 
-The compound resource implementation in iRods requires a cache class resource 
+The compound resource implementation in iRODS requires a cache class resource 
 to be configured in the same resource group as the compound resource. 
 Data stored in the compound resource cannot be accessed directly but through 
 the cache resource with staging and synchronizing using the put/get driver 
 functions.  The compound resource implementation makes it easier to integrate
-HPSS, FTP and ADS type resources into iRods. 
+HPSS, FTP and ADS type resources into iRODS. 
 
-The iRods "compound" resource implementation is different than the SRB
+The iRODS "compound" resource implementation is different than the SRB
 implementation. In SRB, a compound resource actually contains 2 resources -
-a cache resource and a tape resource. In iRods, a compound resource
+a cache resource and a tape resource. In iRODS, a compound resource
 contains only one resource, but it must be used in a resource group
 containing a "cache" resource on the same host as the compound resource.
 e.g., a HPSS resource can be configured as a compound resource. 

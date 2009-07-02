@@ -25,20 +25,27 @@
 
 
 
-
-
 /**
- * @brief		Read a source image file and write it
- * 			out as a new image file in a chosen
- * 			format.
+ * \fn msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
+ *  msParam_t *destParam, msParam_t *destProp, ruleExecInfo_t *rei )
  *
- * The source and destination image files may be specified as:
+ * \brief   Read a source image file and write it out as a new image file in a chosen format.
  *
- * 	@li A string file path
- * 	@li An integer file descriptor for an open file
- * 	@li A data object
+ * \module image
  *
- * The destination file will be created if needed.
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-30
+ *
+ * \note The source and destination image files may be specified as:
+ *    \li A string file path
+ *    \li An integer file descriptor for an open file
+ *    \li A data object
+ *
+ * \note The destination file will be created if needed.
  *
  * The source and destination files have optional property lists.
  * The source property list may select the file format to use
@@ -48,14 +55,30 @@
  * in the destination property list will be added to the image
  * if they don't conflict with the output format and if the
  * output format supports them.
+ *    
+ * \usage None
  *
- * @param[in]	sourceParam	the source file
- * @param[in]	sourceProp	the source properties
- * @param[in]	destParam	the destination file
- * @param[in]	destProp	the destination properties
- * @param	rei		the rule execution information
- * @return			the status code, 0 on success
- */
+ * \param[in] sourceParam - the source file
+ * \param[in] sourceProp - the source properties
+ * \param[in] destParam - the destination file
+ * \param[in] destProp - the destination properties
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 	msParam_t *destParam, msParam_t *destProp, ruleExecInfo_t *rei )
@@ -152,21 +175,50 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 	return rei->status;
 }
 
+
 /**
- * @brief		Get the properties of an image file.
+ * \fn msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
+ * msParam_t *listParam, ruleExecInfo_t *rei )
  *
- * The source and destination image files may be specified as:
+ * \brief   Get the properties of an image file.
  *
- * 	@li A string file path
- * 	@li An integer file descriptor for an open file
- * 	@li A data object
+ * \module image
  *
- * @param[in]	sourceParam	the source file
- * @param[in]	sourceProp	the source file properties
- * @param[out]	listParam	the returned properties list
- * @param	rei		the rule execution information
- * @return			the status code, 0 on success
- */
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-30
+ *
+ * \note The source and destination image files may be specified as:
+ *
+ *    \li A string file path
+ *    \li An integer file descriptor for an open file
+ *    \li A data object
+ *    
+ * \usage None
+ *
+ * \param[in] sourceParam - the source file
+ * \param[in] sourceProp - the source properties
+ * \param[out] listParam - the returned properties list
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
 	msParam_t *listParam, ruleExecInfo_t *rei )
@@ -252,18 +304,29 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
 }
 
 /**
- * @brief		Read a source image file, scale it up
- * 			or down in size, and write it
- * 			out as a new image file in a chosen
- * 			format.
+ * \fn msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,
+ * msParam_t* xScaleFactor, msParam_t* yScaleFactor,
+ * msParam_t* destParam, msParam_t* destProp, ruleExecInfo_t* rei )
  *
- * The source and destination image files may be specified as:
+ * \brief   Read a source image file, scale it up or down in size, and write it
+ *    out as a new image file in a chosen format.
  *
- * 	@li A string file path
- * 	@li An integer file descriptor for an open file
- * 	@li A data object
+ * \module image
  *
- * The destination file will be created if needed.
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-30
+ *
+ * \note The source and destination image files may be specified as:
+ *
+ *    \li A string file path
+ *    \li An integer file descriptor for an open file
+ *    \li A data object
+ *    
+ * \note The destination file will be created if needed.
  *
  * The source and destination files have optional property lists.
  * The source property list may select the file format to use
@@ -274,17 +337,33 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
  * if they don't conflict with the output format and if the
  * output format supports them.
  *
- * The source image is scaled by the given X and Y scale factors.
+ * \note The source image is scaled by the given X and Y scale factors.
  *
- * @param[in]	sourceParam	the source file
- * @param[in]	sourceProp	the source properties
- * @param[in]	xScaleFactor	the X scale factor
- * @param[in]	yScaleFactor	the Y scale factor
- * @param[in]	destParam	the destination file
- * @param[in]	destProp	the destination properties
- * @param	rei		the rule execution information
- * @return			the status code, 0 on success
- */
+ * \usage None
+ *
+ * \param[in] sourceParam - the source file
+ * \param[in] sourceProp - the source properties
+ * \param[in] xScaleFactor - the X scale factor
+ * \param[in] yScaleFactor - the Y scale factor
+ * \param[in] destParam - the destination file
+ * \param[in] destProp - the destination properties
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiImageScale( msParam_t* sourceParam, msParam_t* sourceProp,
 	msParam_t* xScaleFactor, msParam_t* yScaleFactor,

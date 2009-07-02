@@ -3,7 +3,7 @@ DIRECTORY
 
 DESCRIPTION
 	This directory, and its subdirectories, contain functions created
-	by developers for testing the iRods client APIs.  But they can be
+	by developers for testing the iRODS client APIs.  But they can be
         used by users as examples of using the client APIs. But be warned 
 	that these are not production quality codes.   
 

@@ -1,3 +1,8 @@
+/**
+ * @file	xmlMS.c
+ *
+ */ 
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -53,14 +58,52 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
 }
 
 
+/**
+ * \fn msiLoadMetadataFromXml (msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice parses an XML iRODS file to extract metadata tags.
+ *
+ * \module XML
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ *  As seen in modules/XML/test/loadMetadataFromXml.ir
+ * 
+ *  testrule||msiLoadMetadataFromXml(*targetObjPath, *xmlObjPath)|nop
+ *  *xmlObjPath=/tempZone/home/antoine/formattedDDI.xml%*targetObjPath=/tempZone/home/antoine/contact.txt
+ *  ruleExecOut
+ *  
+ * \param[in] targetObj - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[in] xmlObj - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 
 
-/*
- * msiLoadMetadataFromXml() - Prototype
- *
- * Requires XPAth support
- *
- */
 #if defined(LIBXML_XPATH_ENABLED) && \
     defined(LIBXML_SAX1_ENABLED) && \
     defined(LIBXML_OUTPUT_ENABLED)
@@ -68,7 +111,7 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
 int 
 msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *rei) 
 {
-	/* for parsing msParams and to open iRods objects */
+	/* for parsing msParams and to open iRODS objects */
 	dataObjInp_t xmlDataObjInp, *myXmlDataObjInp;
 	dataObjInp_t targetObjInp, *myTargetObjInp;
 	int xmlObjID;
@@ -76,7 +119,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	/* for getting size of objects to read from */
 	rodsObjStat_t *rodsObjStatOut = NULL;
 
-	/* for reading from iRods objects */
+	/* for reading from iRODS objects */
 	dataObjReadInp_t dataObjReadInp;
 	dataObjCloseInp_t dataObjCloseInp;
 	bytesBuf_t xmlBuf;
@@ -258,6 +301,9 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 /* Default stub if no XPath support */
 #else
+/**
+ * \fn msiLoadMetadataFromXml (msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *rei)
+**/
 int 
 msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *rei) 
 {
@@ -268,14 +314,56 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 
 
-/*
- * msiXmlDocSchemaValidate()
+/**
+ * \fn msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status, ruleExecInfo_t *rei)
  *
- */
+ * \brief  This microservice validates an XML file against an XSD schema, both iRODS objects.
+ * 
+ * \module xml
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-29
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in modules/XML/test/xmlDocSchemaValidate.ir
+ *
+ * Validate XML Doc against XSD schema in iRODS||msiXmlDocSchemaValidate(*xmlObj, *xsdObj, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")
+ * ##writeBytesBuf(stdout,*status)|nop
+ * *xmlObj=/tempZone/home/antoine/XML_tests/example.xml%*xsdObj=/tempZone/home/antoine/XML_tests/example.xsd
+ * ruleExecOut
+ *
+ * \param[in] xmlObj - a msParam of type DataObjInp_MS_T or STR_MS_T which is irods path of the XML object.
+ * \param[in] xsdObj - a msParam of type DataObjInp_MS_T or STR_MS_T which is irods path of the XSD object.
+ * \param[out] status - a msParam of type INT_MS_T which is a validation result.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int 
 msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status, ruleExecInfo_t *rei) 
 {
-	/* for parsing msParams and to open iRods objects */
+	/* for parsing msParams and to open iRODS objects */
 	dataObjInp_t xmlObjInp, *myXmlObjInp;
 	dataObjInp_t xsdObjInp, *myXsdObjInp;
 	int xmlObjID, xsdObjID;
@@ -283,7 +371,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	/* for getting size of objects to read from */
 	rodsObjStat_t *rodsObjStatOut = NULL;
 
-	/* for reading from iRods objects */
+	/* for reading from iRODS objects */
 	dataObjReadInp_t dataObjReadInp;
 	dataObjCloseInp_t dataObjCloseInp;
 	bytesBuf_t xmlBuf;

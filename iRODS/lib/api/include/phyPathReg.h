@@ -61,7 +61,7 @@ extern "C" {
 int
 rcPhyPathReg (rcComm_t *conn, dataObjInp_t *phyPathRegInp);
 
-/* rcPhyPathReg - Reg a iRods data object.
+/* rcPhyPathReg - Reg a iRODS data object.
  * Input - 
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

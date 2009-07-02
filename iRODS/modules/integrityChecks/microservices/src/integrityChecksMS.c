@@ -1,26 +1,55 @@
+/**
+ * @file integrityChecksMS.c
+ *
+ */
+
 #include "integrityChecksMS.h"
 #include "icutils.h"
 
 /* Check and see if the owner is in a comma separated list */
+
 /**
- * \fn	msiVerifyOwner
- * \module	integrityChecks
- * \author	Susan Lindsey
- * \date	August 2008
- * \brief	Check if files in a given collection have a consistent owner
+ * \fn msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice checks if files in a given collection have a consistent owner.
+ *
+ * \module integrityChecks
+ *
+ * \since pre-2.1
+ *
+ * \author  Susan Lindsey
+ * \date    August 2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
  * \note
- * \param[in]
- * \param[out]
- * \DolVarDependence	none
- * \DolVarModified		none
- * \iCatAtrDependence	none
- * \iCatAttrModified	none
+ *
+ * \usage None
+ *
+ * \param[in] collinp - a STR_MS_T containing the collection's name
+ * \param[in] ownerinp - a STR_MS_T containing comma separated list of owner usernames
+ * \param[out] bufout - a STR_MS_T containing the output string
+ * \param[out] statout - the returned status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect
- * \return	integer
- * \retval	0 on success
- * \bug		no known bugs
+ *
+ * \return integer
+ * \retval rei->status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
 **/
-int msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei) {
+int
+msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei)
+{
 
 	genQueryInp_t genQueryInp;
 	genQueryOut_t *genQueryOut = NULL;
@@ -140,8 +169,63 @@ int msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, 
 	return(rei->status);
 
 }
-int msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msParam_t* notflaginp, 
-	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei) {
+
+/**
+ * \fn msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msParam_t* notflaginp, 
+ *    msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei)
+ *
+ * \brief Check the ACL on a collection
+ *
+ * \module integrityChecks
+ *
+ * \since pre-2.1
+ *
+ * \author  Susan Lindsey
+ * \date    August 2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-30
+ *
+ * \note
+ *    This function can perform three different checks, depending on flags set via input parameters:
+ *    1. check that its ACL contains the same set of user-authorization pairs as others in its collection
+ *    2. check that its ACL contains at least a given set of user-authorization pairs
+ *    3. check that its ACL does not contain a given set of user-authorization pairs 
+ *    
+ *    We have four input parameters: Collection Name, User Name, Authorization Type & NOT flag
+ *    For the above conditions, the following are examples of how to call the rule
+ *    1. collname=/sdscZone/home/rods%*User=rods%*Auth=own  
+ *    2. collname=/sdscZone/home/rods  
+ *    3. collname=/sdscZone/home/rods%*User=rods%*Auth=own*Notflag=1  
+ *    
+ * \usage None
+ *
+ * \param[in] collinp - a STR_MS_T containing the collection's name
+ * \param[in] userinp - Optional - a STR_MS_T containing comma separated list of owner usernames
+ * \param[in] authinp - Optional - a STR_MS_T containing comma separated list 
+ * \param[in] notflaginp - Optional - a STR_MS_T
+ * \param[out] bufout - a STR_MS_T containing the output string
+ * \param[out] statout - the returned status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval rei->status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msParam_t* notflaginp, 
+	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei)
+{
 
 	int i,j;
 	int querytype=0;
@@ -299,24 +383,48 @@ int msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, ms
 }
 
 /**
- * \fn msiVerifyExpiry
- * \module	integrityChecks
- * \author	Susan Lindsey
- * \date	September 2008
- * \brief	Checks whether files in a collection have expired or not expired
- * \note	none 
- * \param[in]	 collinp=string=collection name, timeinp=string=date, typeinp=string=type{EXPIRED|NOTEXPIRED}
- * \param[out]	 none
- * \DolVarDependence	none
- * \DolVarModified		none
- * \iCatAtrDependence	none
- * \iCatAttrModified	none
+ * \fn msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
+ *
+ * \brief This microservice checks whether files in a collection have expired or not expired.
+ *
+ * \module integrityChecks
+ *
+ * \since pre-2.1
+ *
+ * \author  Susan Lindsey
+ * \date    September 2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] collinp - a STR_MS_T containing the collection's name
+ * \param[in] timeinp - a STR_MS_T containing a date
+ * \param[in] typeinp - a STR_MS_T containing one of {EXPIRED or NOTEXPIRED}
+ * \param[out] bufout - a STR_MS_T containing the output string
+ * \param[out] statout - the returned status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect
+ *
  * \return integer
  * \retval rei->status
- * \bug no known bugs
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
 **/
-int msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei) {
+int
+msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
+{
 
 	rsComm_t *rsComm;
 	genQueryInp_t gqin;
@@ -430,27 +538,52 @@ int msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp,
 }
 
 
-/* See if all files in a collection match a given AVU */
 /**
- * \fn	msiVerifyAVU
- * \module	integrityChecks
- * \author	Susan Lindsey
- * \date	August 2008
- * \brief	Performs operations on the AVU metadata on files in a given collection
- * \note
- * \param[in]
- * \param[out]
- * \DolVarDependence	none
- * \DolVarModified		none
- * \iCatAtrDependence	none
- * \iCatAttrModified	none
+ * \fn msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp, msParam_t* avuattrsinp, 
+ *    msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
+ *
+ * \brief This microservice performs operations on the AVU metadata on files in a given collection.
+ *
+ * \module integrityChecks
+ *
+ * \since pre-2.1
+ *
+ * \author  Susan Lindsey
+ * \date    August 2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
+ * \note See if all files in a collection match a given AVU.
+ *
+ * \usage None
+ *
+ * \param[in] collinp - a STR_MS_T containing the collection's name
+ * \param[in] avunameinp - a STR_MS_T containing the AVU name to check
+ * \param[in] avuvalueinp - a STR_MS_T containing the AVU value to check
+ * \param[in] avuattrsinp - a STR_MS_T containing the AVU attrs to check
+ * \param[out] bufout - a STR_MS_T containing the output string
+ * \param[out] statout - the returned status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect
- * \return	integer
- * \retval	0 on success
- * \bug		no known bugs
+ *
+ * \return integer
+ * \retval rei->status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
 **/
-int msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp, msParam_t* avuattrsinp, 
-	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei) {
+int
+msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp, msParam_t* avuattrsinp, 
+  msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
+{
 
 	genQueryInp_t gqin;
 	genQueryOut_t *gqout1 = NULL;
@@ -617,24 +750,47 @@ int msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalue
 
 
 /**
- * \fn	msiVerifyDataType
- * \module	integrityChecks
- * \author	Susan Lindsey
- * \date	August 2008
- * \brief	Check if files in a given collection are of a given data type(s)
+ * \fn msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
+ *
+ * \brief This microservice checks if files in a given collection are of a given data type(s).
+ *
+ * \module integrityChecks
+ *
+ * \since pre-2.1
+ *
+ * \author  Susan Lindsey
+ * \date    August 2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
  * \note
- * \param[in]
- * \param[out]
- * \DolVarDependence	none
- * \DolVarModified		none
- * \iCatAtrDependence	none
- * \iCatAttrModified	none
+ *
+ * \usage None
+ *
+ * \param[in] collinp - a STR_MS_T containing the collection's name
+ * \param[in] datatypeinp - a STR_MS_T containing the comma delimited datatype list
+ * \param[out] bufout - a STR_MS_T containing the output string
+ * \param[out] statout - the returned status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect
- * \return	integer
- * \retval	0 on success
- * \bug		no known bugs
+ *
+ * \return integer
+ * \retval rei->status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
 **/
-int msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei) {
+int
+msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout, msParam_t* statout, ruleExecInfo_t* rei)
+{
 
 	genQueryInp_t genQueryInp;
 	genQueryOut_t *genQueryOut = NULL;
@@ -716,25 +872,50 @@ int msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bu
 }
 
 /**
- * \fn	msiVerifyFileSizeRange
- * \module	integrityChecks
- * \author	Susan Lindsey
- * \date	August 2008
- * \brief	Check to see if file sizes are NOT within a certain range
+ * \fn msiVerifyFileSizeRange (msParam_t* collinp, msParam_t* minsizeinp, msParam_t* maxsizeinp, 
+ *  msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice checks to see if file sizes are NOT within a certain range.
+ *
+ * \module integrityChecks
+ *
+ * \since pre-2.1
+ *
+ * \author  Susan Lindsey
+ * \date    August 2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
  * \note
- * \param[in] collinp=string=collection name, minsizeinp=lower limit on filesize, maxsizeinp=upper limit on filesize
- * \param[out]
- * \DolVarDependence	none
- * \DolVarModified		none
- * \iCatAtrDependence	none
- * \iCatAttrModified	none
+ *
+ * \usage None
+ *
+ * \param[in] collinp - a STR_MS_T containing the collection's name
+ * \param[in] minsizeinp - a STR_MS_T containing the lower limit on filesize
+ * \param[in] maxsizeinp - a STR_MS_T containing the upper limit on filesize
+ * \param[out] bufout - a STR_MS_T containing the output string
+ * \param[out] statout - the returned status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect
- * \return	integer
- * \retval	0 on success
- * \bug		no known bugs
+ *
+ * \return integer
+ * \retval rei->status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
 **/
-int msiVerifyFileSizeRange (msParam_t* collinp, msParam_t* minsizeinp, msParam_t* maxsizeinp, 
-	msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei) {
+int
+msiVerifyFileSizeRange (msParam_t* collinp, msParam_t* minsizeinp, msParam_t* maxsizeinp, 
+  msParam_t* bufout, msParam_t* statout, ruleExecInfo_t *rei)
+{
 
 	genQueryInp_t genQueryInp;
 	genQueryOut_t *genQueryOut = NULL;

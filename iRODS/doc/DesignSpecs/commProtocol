@@ -1,14 +1,14 @@
-iRods messages
+iRODS messages
 --------------
 
-The iRods clients and servers communicate with each other by sending
-iRods messages.
+The iRODS clients and servers communicate with each other by sending
+iRODS messages.
 
-Each iRods message can contain up to 5 parts described below:
+Each iRODS message can contain up to 5 parts described below:
 
 1) A 4 bytes integer specifying the length of the Message Header that follows.
 
-2) The iRods message header in XML format. In C, the message header is
+2) The iRODS message header in XML format. In C, the message header is
 represented by the msgHeader_t struct defined as follows: 
 
 typedef struct msgHeader {
@@ -90,12 +90,12 @@ typedef struct {
 
 The rError_t struct is packed with the packStruct() routine and the length
 of the error message is given in the "errorLen" element of the message header.
-In most iRods messages, errorLen is 0 meaning no the error message.
+In most iRODS messages, errorLen is 0 meaning no the error message.
    
 5) The Bytes Stream - The "error message" is followed by a "Bytes Stream"
 which is a buffer of raw data (mostly for data transfer). The length
 of the "Bytes Stream" is given in the "bsLen" element of the message header.
-In most iRods messages, bsLen is 0 meaning no raw data in the message.
+In most iRODS messages, bsLen is 0 meaning no raw data in the message.
 
 
 Communication Protocol:
@@ -108,8 +108,8 @@ Protocol for the initial connection:
 
 2) rods client connect to the rodsServer.
 
-3) rods client send a RODS_CONNECT_T iRods message which includes a 
-startupPack_t struct. Remember that a iRods message can contain up to 5 parts. 
+3) rods client send a RODS_CONNECT_T iRODS message which includes a 
+startupPack_t struct. Remember that a iRODS message can contain up to 5 parts. 
 
 #define RODS_CONNECT_T 	"RODS_CONNECT"
 
@@ -127,7 +127,7 @@ typedef struct startupPack {
 
 The RODS_CONNECT_T type message is always packed using the XML protocol, 
 but the "irodsProt" element in the startupPack_t struct specifies the 
-protocol to be used for all subsequent iRods messages. One of the following 
+protocol to be used for all subsequent iRODS messages. One of the following 
 two protocols can be used:
 
 /* protocol */
@@ -172,7 +172,7 @@ output structs, flags to indicate whether there are input/output
 "Bytes Streams", authorization levels and the server handler for this API.
 The client packs the input struct based on the PI given in the 
 RcApiTable[] table. The message header, the packed main message and the
-"Bytes stream" (if any) are send to the server as a single iRods message.
+"Bytes stream" (if any) are send to the server as a single iRODS message.
 
 #define RODS_API_REQ_T    "RODS_API_REQ"
 

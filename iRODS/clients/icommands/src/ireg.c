@@ -113,7 +113,7 @@ usage ()
 " ",
 "An admin user will be able to mount any Unix directory. But for a regular",
 "user, he/she needs to have a UNIX account on the server with the same name as",
-"his/her iRods user account and only UNIX directories created with this",
+"his/her iRODS user account and only UNIX directories created with this",
 "account can be mounted by the user. Access control to the mounted data",
 "will be based on the access permission of the mounted collection.",
 " ",

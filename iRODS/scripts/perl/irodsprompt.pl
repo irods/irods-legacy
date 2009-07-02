@@ -28,7 +28,7 @@ $version{"irodsprompt.pl"} = "1.0";
 #
 # Confirm execution from the top-level iRODS directory.
 #
-$IRODS_HOME = cwd( );	# Might not be actual iRods home.  Fixed below.
+$IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.
@@ -162,7 +162,7 @@ $DEFAULT_databaseServerAccount	= $thisUser;
 # No default database password
 # No default database directory
 
-# Set the initial iRods configuration to the defaults
+# Set the initial iRODS configuration to the defaults
 $irodsAccount		= $DEFAULT_irodsAccount;	# Prompt.
 $irodsPassword		= $DEFAULT_irodsPassword;	# Prompt.
 $irodsPort		= $DEFAULT_irodsPort;		# Prompt [advanced].
@@ -1336,7 +1336,7 @@ sub promptForNewPostgresConfiguration( $ )
 			"is not being used for anything else besides iRODS.\n",
 			"\n" );
 		$databaseServerExclusive = promptYesNo(
-			"Start and stop the database along with iRods",
+			"Start and stop the database along with iRODS",
 			(($databaseServerExclusive==1)?"yes":"no") );
 	}
 	else
@@ -1456,7 +1456,7 @@ sub promptForExistingPostgresDatabase( )
 		"Postgres primarily for iRODS.\n",
 		"\n" );
 	$databaseServerExclusive = promptYesNo(
-		"Start and stop the database along with iRods",
+		"Start and stop the database along with iRODS",
 		"yes" );
 }
 

@@ -1,3 +1,8 @@
+/**
+ * @file eraMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -10,22 +15,47 @@
 
 
 /**
- * \fn msiRecursiveCollCopy
- * \author  Antoine de Torcy
- * \date   2007-09-26
+ * \fn msiRecursiveCollCopy(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief Copies a collection and its contents recursively
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note This microservice copies a collection and its contents recursively.
- *	Collection and data object metadata AVUs are also copied over to the new objects and collections.
- * \param[in] 
- *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the destination collection.
- *    inpParam2 - A CollInp_MS_T or a STR_MS_T with the irods path of the source collection.
- * \param[out] 
- *    outParam - An INT_MS_T containing the status.
+ *    Collection and data object metadata AVUs are also copied over to the new objects and collections.
+ *
+ * \usage
+ * As seen in modules/ERA/test/recursiveCollCopy.ir
+ * 
+ * testrule||msiRecursiveCollCopy(*DestColl,*SourceColl,*Status)|nop
+ * *SourceColl=/tempZone/home/testuser%*DestColl=/tempZone/home/antoine/copy/testuser
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the destination collection.
+ * \param[in] inpParam2 - A CollInp_MS_T or a STR_MS_T with the irods path of the source collection.
+ * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -88,22 +118,41 @@ msiRecursiveCollCopy(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outP
 
 
 /**
- * \fn msiCopyAVUMetadata
+ * \fn msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Copies metadata triplets from one iRODS object to another
+ *
  * \author  Antoine de Torcy
- * \date   2007-09-26
- * \brief Copies metadata triplets from an iRODS object to another one
- * \note This microservice copies metadata triplets from an iRODS object to another one.
- *	The source and destination can be a data object or a collection, independently.
- * \param[in] 
- *    inpParam1 - A STR_MS_T with the irods path of the source object.
- *    inpParam2 - A STR_MS_T with the irods path of the destination object.
- * \param[out] 
- *    outParam - An INT_MS_T containing the status.
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-15
+ *
+ * \note This microservice copies metadata triplets from one iRODS object to another.
+ *    The source and destination can be a data object or a collection, independently.
+ *
+ * \usage
+ * testrule||msiCopyAVUMetadata(*A, *B, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * *A=/tempZone/rods/test1.txt%*B=/tempZone/rods/test2.txt
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A STR_MS_T with the irods path of the source object.
+ * \param[in] inpParam2 - A STR_MS_T with the irods path of the destination object.
+ * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -145,24 +194,49 @@ msiCopyAVUMetadata(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPar
 
 
 /**
- * \fn msiExportRecursiveCollMeta
- * \author  Antoine de Torcy
- * \date   2007-09-26
+ * \fn msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief Exports metadata AVU triplets for a collection and its contents
- * \note This microservice recursively exports user defined metadata attributes (AVUs) for
- *	a collection and all collections and data objects in this collection.
- *	The output is written to a bytesBuf_t buffer in pipe separated format, one
- *	line per attribute as in the example below:
- *	/tempZone/home/testuser/myFile|myAttr|myVal|myUnits
- * \param[in] 
- *    inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
- * \param[out] 
- *    outParam - A BUF_LEN_MS_T containing the results.
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-15
+ *
+ * \note This microservice recursively exports user-defined metadata attributes (AVUs) for
+ *    a collection and all collections and data objects in this collection.
+ *    The output is written to a bytesBuf_t buffer in pipe separated format, one
+ *    line per attribute as in the example below:
+ *      /tempZone/home/testuser/myFile|myAttr|myVal|myUnits
+ *
+ * \usage
+ * As seen in modules/ERA/test/exportRecursiveCollMeta.ir
+ * 
+ * testrule||msiExportRecursiveCollMeta(*Source_Path, *BUF)##writeBytesBuf(stdout,*BUF)|nop
+ * *Source_Path=/tempZone/home/rods
+ * ruleExecOut
+ *
+ * \param[in] inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] outParam - A BUF_LEN_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -322,20 +396,40 @@ msiExportRecursiveCollMeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 
 
 /**
- * \fn msiGetDataObjAVUs
+ * \fn msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice retrieves the metadata AVU triplets for a data object
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date   2007-09-26
- * \brief Retrieves metadata AVU triplets for a data object
- * \note Retrieves metadata AVU triplets for a data object and returns them as an XML file.
- * \param[in] 
- *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
- * \param[out] 
- *    outParam - A BUF_LEN_MS_T containing the results.
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note This microservice retrieves the metadata AVU triplets for a data object and returns them as an XML file.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ * \param[out] outParam - A BUF_LEN_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -469,21 +563,41 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 
 /**
- * \fn msiGetDataObjPSmeta
+ * \fn msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice retrieves the metadata AVU triplets for a data object
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date   2007-09-26
- * \brief Retrieves metadata AVU triplets for a data object
- * \note Retrieves metadata AVU triplets for a data object. Similar to msiGetDataObjAVUs
- *	except that the results are returned in a pipe separated format.
- * \param[in] 
- *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
- * \param[out] 
- *    outParam - A BUF_LEN_MS_T containing the results.
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note This microservice retrieves the metadata AVU triplets for a data object.
+ *    Similar to msiGetDataObjAVUs except that the results are returned in a pipe separated format.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ * \param[out] outParam - A BUF_LEN_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -534,20 +648,40 @@ msiGetDataObjPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *re
 
 
 /**
- * \fn msiGetCollectionPSmeta
- * \author  Antoine de Torcy
- * \date   2007-09-26
+ * \fn msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief Retrieves metadata AVU triplets for a collection
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
  * \note Retrieves metadata AVU triplets for a collection and returns the results in a pipe separated format.
- * \param[in] 
- *    inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
- * \param[out] 
- *    outParam - A BUF_LEN_MS_T containing the results.
+ *
+ * \usage  None
+ *
+ * \param[in] inpParam - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] outParam - A BUF_LEN_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -598,33 +732,61 @@ msiGetCollectionPSmeta(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t 
 
 
 /**
- * \fn msiLoadMetadataFromDataObj
+ * \fn msiLoadMetadataFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Parses an iRODS object for new metadata AVUs
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date   2007-09-26
- * \brief Parses an iRods object for new metadata AVUs
- * \note Parses an iRods object (file) for new metadata AVUs and adds them to the ICAT.
- *	The metadata file is read as a text file and must contain one AVU per line.
- *	See example below:
+ * \date    2007-09-26
  *
- *	C-/tempZone/home/antoine/testColl |CollAttr000 |CollVal00 |CollUnits00
- *	/tempZone/home/antoine/testColl/file00.txt |myAttr000 |myVal001
- *	/tempZone/home/antoine/testColl/file00.txt |myAttr001 |myVal001 |myUnits001
- *	# Some comments
- *	/tempZone/home/antoine/testColl/file01.txt |myAttr011 |myVal011
- *	/tempZone/home/antoine/testColl/file01.txt |myAttr010 |myVal011
+ * \remark Terrell Russell - msi documentation, 2009-06-17
  *
- *	Collection paths must start with C-
- *	Units in AVUs are optional
- *	Lines starting with # won't be parsed
- * \param[in] 
- *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the metadata file.
- * \param[out] 
- *    outParam - An INT_MS_T containing the status.
+ * \note This microservice parses an iRODS object (file) for new metadata AVUs and adds them to the iCAT.
+ *    The metadata file is read as a text file and must contain one AVU per line.
+ *
+ *    See example file snippet below:
+ *
+ *    C-/tempZone/home/antoine/testColl |CollAttr000 |CollVal00 |CollUnits00
+ *    /tempZone/home/antoine/testColl/file00.txt |myAttr000 |myVal001
+ *    /tempZone/home/antoine/testColl/file00.txt |myAttr001 |myVal001 |myUnits001
+ *    # Some comments
+ *    /tempZone/home/antoine/testColl/file01.txt |myAttr011 |myVal011
+ *    /tempZone/home/antoine/testColl/file01.txt |myAttr010 |myVal011
+ *
+ *    Collection paths must start with C-.
+ *
+ *    Units in AVUs are optional.
+ *
+ *    Lines starting with # won't be parsed.
+ *
+ * \usage
+ * As seen in modules/ERA/test/loadMetadata.ir
+ * 
+ * testrule||msiGetSystemTime(*Start_time, null)##msiLoadMetadataFromDataObj(*ObjPath,*Status)##msiGetSystemTime(*End_time, null)##msiGetDiffTime(*Start_time, *End_time, human, *Duration)##writeLine(stdout,"")##writeLine(stdout, *Duration)|nop
+ * *ObjPath=/tempZone/home/narauser/tstColl.mdf
+ * ruleExecOut
+ *
+ * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the metadata file.
+ * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -667,21 +829,41 @@ msiLoadMetadataFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 
 
 /**
- * \fn msiGetDataObjAIP
+ * \fn msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice gets the Archival Information Package of a data object.
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
  * \date   2007-09-26
- * \brief Gets the Archival Information Package of a data object.
- * \note Gets the Archival Information Package of a data object.
- * 	The results are returned as an XML file.
- * \param[in] 
- *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
- * \param[out] 
- *    outParam - A BUF_LEN_MS_T containing the results.
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note This microservice gets the Archival Information Package of a data object.
+ *    The results are returned as an XML file.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the iRODS path of the target object.
+ * \param[out] outParam - A BUF_LEN_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -988,21 +1170,41 @@ msiGetDataObjAIP(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 
 /**
- * \fn msiGetDataObjACL
- * \author  Antoine de Torcy
- * \date   2007-09-26
+ * \fn msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief Gets ACL (Access Control List) for a data object.
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
  * \note Gets ACL (Access Control List) for a data object.
- * 	The results are returned in a pipe-separated format.
- * \param[in] 
- *    inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
- * \param[out] 
- *    outParam - A BUF_LEN_MS_T containing the results.
+ *    The results are returned in a pipe-separated format.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam - A DataObjInp_MS_T or a STR_MS_T with the irods path of the target object.
+ * \param[out] outParam - A BUF_LEN_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -1051,22 +1253,45 @@ msiGetDataObjACL(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
 
 /**
- * \fn msiGetCollectionACL
- * \author  Antoine de Torcy
- * \date   2007-09-26
+ * \fn msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief Gets ACL (Access Control List) for a collection.
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2007-09-26
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
  * \note Gets ACL (Access Control List) for a data object.
- * 	The results are returned in a pipe-separated format.
- * \param[in] 
- *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
- *    inpParam2 - Optional - A STR_MS_T. Set it to "recursive" to perform the operation recursively. 
- * \param[out] 
- *    outParam - A BUF_LEN_MS_T containing the results.
+ *    The results are returned in a pipe-separated format.
+ *
+ * \usage
+ * testrule||msiGetCollectionACL(*objPath, null, *Status)##writeLine(stdout,"")|nop
+ * *objPath=/tempZone/home/test.txt
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[in] inpParam2 - Optional - A STR_MS_T. Set it to "recursive" to perform the operation recursively. 
+ * \param[out] outParam - A BUF_LEN_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -1114,10 +1339,49 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
 
 
 
-/*
+/**
+ * \fn msiGetUserInfo (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
+ * \brief   This function gets information about a user
  *
- */
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in modules/ERA/test/getUserInfo.ir
+ * 
+ * testrule||msiGetUserInfo(*Username,*BUF,*Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *
+ * \param[in] inpParam1 - a msParam of type STR_MS_T
+ * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1170,10 +1434,46 @@ msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 
 
 
-/*
- * msiCreateUserAccountsFromDataObj()
- *
- */
+/**
+* \fn msiCreateUserAccountsFromDataObj (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
+*
+* \brief   This creates a new user from information in an existing iRODS data object
+*
+* \module ERA  
+*
+* \since pre-2.1
+*
+* \author  
+* \date  
+*
+* \remark Jewel Ward - msi documentation, 2009-06-18
+* \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+*
+* \note
+*
+* \usage
+* 
+* As seen in modules/ERA/test/loadUserAccounts.ir
+*
+* testrule||msiCreateUserAccountsFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+*
+* \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
+* \param[out] outParam - a msParam of operation status INT_MS_T
+* \param[in,out] rei - Required - the RuleExecInfo structure
+*
+* \DolVarDependence 
+* \DolVarModified 
+* \iCatAttrDependence 
+* \iCatAttrModified 
+* \sideeffect 
+*
+* \return integer
+* \retval 0 on success
+* \pre
+* \post
+* \sa
+* \bug  no known bugs
+**/
 int
 msiCreateUserAccountsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1220,10 +1520,50 @@ msiCreateUserAccountsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleE
 
 
 
-/*
- * msiLoadUserModsFromDataObj()
+/**
+ * \fn msiLoadUserModsFromDataObj (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This microservice modifies user information from information in an iRODS data object
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in modules/ERA/test/modUserAccounts.ir
+ *
+ * testrule||msiLoadUserModsFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * *ObjPath=/tempZone/home/rods/user_mods.txt
+ * ruleExecOut
+ *
+ * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiLoadUserModsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1270,10 +1610,48 @@ msiLoadUserModsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 
 
 
-/*
- * msiDeleteUsersFromDataObj()
+/**
+ * \fn msiDeleteUsersFromDataObj (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This microservice will parse an iRODS object for user accounts to delete.
+ *
+ * \module ERA  
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in modules/ERA/test/deleteUserAccounts.ir
+ *
+ * testrule||msiDeleteUsersFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *
+ * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1320,10 +1698,50 @@ msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo
 
 
 
-/*
- * msiLoadACLFromDataObj()
+/**
+ * \fn msiLoadACLFromDataObj (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This microservice parses an iRODS object for access permissions to update/create.
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ *  As seen in modules/ERA/test/addACL.ir
+ * 
+ *  testrule||msiLoadACLFromDataObj(*ObjPath,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *  *ObjPath=/tempZone/home/antoine/addACL.txt
+ *  ruleExecOut
+ *  
+ * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[out] outParam - status as a msParam of type INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1363,10 +1781,49 @@ msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *
 
 
 
-/*
- * gets ACL for user
+/**
+ * \fn msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief Gets ACL for a single user
+ *
+ * \module ERA
+ *
+ * \since 
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note
+ *
+ * \usage
+ * As seen in modules/ERA/test/getUserACL.ir
+ *
+ * testrule||msiGetUserACL(*Username,*BUF,*Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * *Username=theusername
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A STR_MS_T containing the username
+ * \param[in] inpParam2 - A BUF_LEN_MS_T containing the ACL results in pipe delimited form
+ * \param[out] outParam - an INT_MS_T containing the status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1410,7 +1867,7 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
 	/* return operation status through outParam */
 	fillIntInMsParam (outParam, rei->status);
 
-	/* send result buffer, even if length is 0, to inParam2 */
+	/* send result buffer, even if length is 0, to inpParam2 */
 	fillBufLenInMsParam (inpParam2, strlen(mybuf->buf), mybuf);
 	
 	return (rei->status);
@@ -1419,10 +1876,50 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
 
 
 
-/*
- * msiSetDataType - Sets the data_type_name attribute of a data object
+/**
+ * \fn msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief Sets the data_type_name attribute of a data object
+ *
+ * \module ERA
+ *
+ * \since 
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note
+ *
+ * \usage
+ * As seen in modules/ERA/test/setDataTypeForObjPath.ir
+ *
+ * testrule||msiSetDataType(null,*objPath,Text,*Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * *objPath=/tempZone/home/test/tmp.txt
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A STR_MS_T containing the object ID
+ * \param[in] inpParam2 - A STR_MS_T containing the object's iRODS path
+ * \param[in] inpParam3 - A STR_MS_T containing the data type to be set
+ * \param[out] outParam - an INT_MS_T containing the status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1495,10 +1992,49 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
 
 
 
-/*
- * msiGuessDataType - Guesses the data type of an object based on its file extension
+/**
+ * \fn msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief Guesses the data type of an object based on its file extension
+ *
+ * \module ERA
+ *
+ * \since 
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note
+ *
+ * \usage
+ * As seen in modules/ERA/test/guessDataType.ir
+ *
+ * testrule||msiGuessDataType(*objPath,*dataType,*Status)##writeLine(stdout,*dataType)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * *objPath=/tempZone/home/test/tmp.txt
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A STR_MS_T containing the object's iRODS path
+ * \param[in] inpParam2 - A STR_MS_T to be filled with the object's data type
+ * \param[out] outParam - an INT_MS_T containing the status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {

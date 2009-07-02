@@ -1,3 +1,8 @@
+/**
+ * @file  extractAvuMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -17,33 +22,51 @@
 extern char *__loc1;
 
 
-int
-msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExecInfo_t *rei)
-{
 /**
- * \fn msiReadMDTemplateIntoTagStruct
+ * \fn msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice parses a buffer containing a template-style file
+ *  and stores the tags in a tag structure.
+ *
  * \author  Arcot Rajasekar
- * \date   2007-02-01
- * \brief   this function parses a buffer containing a template-style file
- *  and stores the tags  in a tag structure.
- * \note  the template buffer should contain triplets be of the form 
- *  <PRETAG>re1</PRETAG>kw<POSTTAG>re2</POSTTAG>
- *  re1 identifies the pre-string and re2 ientifies the post-string and 
+ * \date    2007-02-01
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note  The template buffer should contain triplets of the form:
+ *  <PRETAG>re1</PRETAG>kw<POSTTAG>re2</POSTTAG>.
+ *  re1 identifies the pre-string and re2 identifies the post-string and 
  *  any value between re1 and re2 in a metadata buffer can be 
  *  associated with keyword kw.
- * \param[in] tempObjBuf   is a msParam of type BUF_MS_T
- * \param[out] tagStruct is a msParam of type TagStruct_MS_T
+ *
+ * \usage None
+ *
+ * \param[in] bufParam - a msParam of type BUF_LEN_MS_T
+ * \param[out] tagParam - a return msParam of type TagStruct_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
+ * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
  * \retval INVALID_REGEXP if the tags are not correct
  * \retval NO_VALUES_FOUND if there are no tags identified
  * \retval from addTagStruct
- * \sa addTagStruct
- * \post
  * \pre
+ * \post
+ * \sa addTagStruct
  * \bug  no known bugs
 **/
+int
+msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExecInfo_t *rei)
+{
 
   bytesBuf_t *tmplObjBuf;
   tagStruct_t *tagValues;
@@ -183,9 +206,54 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
   
 }
 
-
+/**
+ * \fn msiGetTaggedValueFromString (msParam_t *inTagParam, msParam_t *inStrParam, msParam_t *outValueParam, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice gets a tagged value from a string; given a tag-name gets the value from a file in tagged-format (pseudo-XML).
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date    2007-02-01
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-19
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note This performs some regular expression matching. Given a regular expression as a tag-value 't', it identifies the
+ * corresponding string in the match string with a string that matches a sub-string value: '<t>.*</t>'.
+ * The service is used for processing a tagged structure.
+ *
+ *
+ * \usage
+ * 
+ *  As seen in clients/icommands/test/ruleTest29.ir
+ * 
+ * #testrule||msiGetQuote(*Symbol,*InStr)##msiGetTaggedValueFromString(*InTag,*InStr,*Val)##msiConvertCurrency(*InCurr,*OutCurr,*Rate)##assign(*A, *Val * *Rate)##writeLine(stdout,Last Value of *Symbol = USD *Val or *OutCurr *A)|nop
+ * 
+ * \param[in] inTagParam - a msParam of type STR_MS_T
+ * \param[in] inStrParam - a msParam of type STR_MS_T
+ * \param[out] outValueParam - a msParam of type INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
-				msParam_t *outValueParam, ruleExecInfo_t *rei)
+  msParam_t *outValueParam, ruleExecInfo_t *rei)
 {
 
 
@@ -237,34 +305,56 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
     return(0);
 }
 
+/**
+ * \fn msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam, msParam_t *metadataParam, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice parses a buffer containing metadata 
+ *  and uses the tags to identify Key-Value Pairs.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date    2007-02-01
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note  The template structure identifies triplets 
+ *  <pre-string-regexp,post-string-regexp,keyword> and the metadata buffer 
+ *  is searched for the pre and post regular expressions and the string
+ *  between them is associated with the keyword.
+ *  A.l  <key,value> pairs found are stored in keyValPair_t structure.
+ *
+ * \usage None
+ *
+ * \param[in] bufParam - a msParam of type BUF_MS_T
+ * \param[in] tagParam - a msParam of type TagStruct_MS_T
+ * \param[out] metadataParam - a msParam of type KeyValPair_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval INVALID_REGEXP if the tags are not correct
+ * \retval from addKeyVal
+ * \pre
+ * \post
+ * \sa addKeyVal
+ * \bug  no known bugs
+**/
 int
 msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam, 
 			   msParam_t *metadataParam, ruleExecInfo_t *rei)
 {
-/**
- * \fn msiExtractTemplateMDFromBuf
- * \author  Arcot Rajasekar
- * \date   2007-02-01
- * \brief   this function parses a buffer containing metadata 
- *  and uses the tags to identify Key-Value Pairs.
- * \note  the template structure identifies triplets 
- *  <pre-string-regexp,post-string-regexp,keyword> and the metadata buffer 
- *  is searched for the pre and post regular expressions and the string
- *  between them are associated with the keyword.
- *  A.l  <key,value> pairs found is stored in keyValPair_t structure.
- * \param[in] bufParam   is a msParam of type BUF_MS_T
- * \param[in] tagParam is a msParam of type TagStruct_MS_T
- * \param[out] metadataParam is a msParam of type KeyValPair_MS_T
- * \return integer
- * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
- * \retval INVALID_REGEXP if the tags are not correct
- * \retval from addKeyVal
- * \sa addKeyVal
- * \post
- * \pre
- * \bug  no known bugs
-**/
 
 
   bytesBuf_t *metaObjBuf;
@@ -366,31 +456,60 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
   return(0);
 }
 
+/**
+ * \fn msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam, 
+ *        msParam_t* typeParam, ruleExecInfo_t *rei)
+ * 
+ * \brief This microservice associates <key,value> p pairs
+ *  from a given keyValPair_t structure with an object.
+ * 
+ * \module framework
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date   2007-02-01
+ * 
+ * \remark Terrell Russell - msi documentation, 2009-06-13
+ *
+ * \note The object type is also needed:
+ *  \li -d for data object
+ *  \li -R for resource
+ *  \li -C for collection
+ *  \li -u for user
+ * 
+ * \usage
+ * testrule||msiString2KeyValPair(*A,*B)##msiAssociateKeyValuePairsToObj(*B,*C,*D)##writeLine(stdout,"")|nop
+ * *A="foo=bar%foz=baz"%*C=/tempZone/testing/KVtest.txt%*D=-d
+ * ruleExecOut
+ * 
+ * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
+ * \param[in] objParam - a msParam of type STR_MS_T
+ * \param[in] typeParam - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ * 
+ * \return integer
+ * \retval 0 on success
+ * \retval USER_PARAM_TYP_ERROR when input parameters don't match the type from addAVUMetadataFromKVPairs
+ * \pre
+ * \post
+ * \sa addAVUMetadataFromKVPairs
+ * \bug  no known bugs
+**/
 int
 msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam, 
 			       msParam_t* typeParam, 
 			       ruleExecInfo_t *rei)
 {
 
-/**
- * \fn msiAssociateKeyValuePairsToObj
- * \author  Arcot Rajasekar
- * \date   2007-02-01
- * \brief this function associateds with an object <key,value> p pairs
- *  from a given keyValPair_t structure. 
- * \note The object Type is also needed.
- * \param[in] metadataParam is a msParam of type KeyValPair_MS_T
- * \param[in] objParam   is a msParam of type STR_MS_T
- * \param[in] typeParam is a msParam of type STR_MS_T
- * \return integer
- * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
- * \retval from addAVUMetadataFromKVPairs
- * \sa addAVUMetadataFromKVPairs
- * \post
- * \pre
- * \bug  no known bugs
-**/
 
   char *objName;
   char *objType;
@@ -414,26 +533,52 @@ msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
 }
 
 
+/**
+ * \fn msiGetObjType(msParam_t *objParam, msParam_t *typeParam, ruleExecInfo_t *rei)
+ * 
+ * \brief This microservice gets an object's type from the iCAT.
+ * 
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date    2007-02-01
+ * 
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note 
+ *
+ * \usage
+ * testrule||msiGetObjType(*A,*Status)|nop
+ * *A=/tempZone/home/rods/test.txt
+ * ruleExecOut%*Status
+ *
+ * \param[in] objParam  - a msParam of type STR_MS_T, the path of the iRODS object
+ * \param[out] typeParam - a msParam of type STR_MS_T, will be set by this microservice
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ * 
+ * \return integer
+ * \retval 0 on success
+ * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
+ * \retval  getObjType
+ * \pre
+ * \post
+ * \sa getObjType
+ * \bug  no known bugs
+**/
 int
 msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
 	      ruleExecInfo_t *rei)
 {
-/**
- * \fn msiGetObjType
- * \author  Arcot Rajasekar
- * \date   2007-02-01
- * \brief this function finds from the iCat the type of a given object
- * \param[in] objParam   is a msParam of type STR_MS_T
- * \param[out] typeParam is a msParam of type STR_MS_T
- * \return integer
- * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
- * \retval  getObjType
- * \sa getObjType
- * \post
- * \pre
- * \bug  no known bugs
-**/
 
 
   char *objName;
@@ -455,31 +600,58 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
 }
 
 
+/**
+ * \fn msiRemoveKeyValuePairsFromObj(msParam_t *metadataParam, msParam_t* objParam,
+ *                              msParam_t* typeParam, 
+ *                              ruleExecInfo_t *rei)
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \brief This microservice removes with an object <key,value> p pairs
+ *  from a given keyValPair_t structure. 
+ *
+ * \author  Romain Guinot
+ * \date    2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note The object type is also needed:
+ *  \li -d for data object
+ *  \li -R for resource
+ *  \li -C for collection
+ *  \li -u for user
+ *
+ * \usage None
+ *
+ * \param[in] metadataParam - a msParam of type KeyValPair_MS_T
+ * \param[in] objParam - a msParam of type STR_MS_T
+ * \param[in] typeParam - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
+ * \retval from removeAVUMetadataFromKVPairs
+ * \pre
+ * \post
+ * \sa removeAVUMetadataFromKVPairs
+ * \bug  no known bugs
+**/
 int
 msiRemoveKeyValuePairsFromObj(msParam_t *metadataParam, msParam_t* objParam,
                                msParam_t* typeParam, 
                                ruleExecInfo_t *rei)
 {
-
-/**
- * \fn msiRemoveKeyValuePairsFromObj
- * \author  Romain Guinot
- * \date   2008
- * \brief this function removes with an object <key,value> p pairs
- *  from a given keyValPair_t structure. 
- * \note The object Type is also needed.
- * \param[in] metadataParam is a msParam of type KeyValPair_MS_T
- * \param[in] objParam   is a msParam of type STR_MS_T
- * \param[in] typeParam is a msParam of type STR_MS_T
- * \return integer
- * \retval 0 on success
- * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
- * \retval from removeAVUMetadataFromKVPairs
- * \sa removeAVUMetadataFromKVPairs
- * \post
- * \pre
- * \bug  no known bugs
-**/
 
   char *objName;
   char *objType;

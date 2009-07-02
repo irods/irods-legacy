@@ -41,7 +41,7 @@ extern "C" {
 int
 rcDataObjTruncate (rcComm_t *conn, dataObjInp_t *dataObjInp);
 
-/* rcDataObjTruncate - Truncate a iRods data object.
+/* rcDataObjTruncate - Truncate a iRODS data object.
  * Input - 
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

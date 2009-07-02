@@ -1,6 +1,47 @@
+/**
+ * @file reNaraMetaData.c
+ *
+ */
+
 #include "reNaraMetaData.h"
 #include "apiHeaderAll.h"
 
+/**
+ * \fn msiExtractNaraMetadata (ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice extracts NARA style metadata from AVU triplets. 
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-25
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage None
+ * 
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
 msiExtractNaraMetadata (ruleExecInfo_t *rei)
 {

@@ -1,3 +1,8 @@
+/**
+ * @file reIn2p3SysRule.c
+ *
+ */
+
 /*** Copyright (c), CCIN2P3            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* The module is written by Jean-Yves Nief of CCIN2P3 */
@@ -319,6 +324,50 @@ int checkHostAccessControl (char *username, char *hostclient,
   return (-1);
 }
 
+/**
+ * \fn msiCheckHostAccessControl (ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets the access control policy. It checks the
+ *  access control by host and user based on the the policy given in the
+ *  HostAccessControl file.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author 
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-25
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acChkHostAccessControl||msiCheckHostAccessControl|nop
+ * null
+ * ruleExecOut
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
 /* this micro-service is aimed to control the access to the iRODS service
    based on the information in the host based access configuration file:

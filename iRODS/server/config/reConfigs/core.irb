@@ -249,7 +249,7 @@ acSetPublicUserPolicy||nop|nop
 # acChkHostAccessControl||msiCheckHostAccessControl|nop
 acChkHostAccessControl||nop|nop
 # 16) acSetVaultPathPolicy - This rule set the policy for creating the physical
-# path in the iRods resource vault. Two functions can be called:
+# path in the iRODS resource vault. Two functions can be called:
 #    msiSetGraftPathScheme(addUserName,trimDirCnt) - Set the VaultPath scheme
 #      to GRAFT_PATH - graft (add) the logical path to the vault path of the
 #      resource when generating the physical path for a data object. The first

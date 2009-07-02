@@ -31,7 +31,7 @@ $version{"uninstallPostgres.pl"} = "2.0";
 #
 # Confirm execution from the top-level iRODS directory.
 #
-$IRODS_HOME = cwd( );	# Might not be actual iRods home.  Fixed below.
+$IRODS_HOME = cwd( );	# Might not be actual iRODS home.  Fixed below.
 
 # Where is the configuration directory for iRODS?  This is where
 # support scripts are kept.

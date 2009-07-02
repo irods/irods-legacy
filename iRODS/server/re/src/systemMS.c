@@ -1,3 +1,8 @@
+/**
+ * @file systemMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include <string.h>
@@ -9,6 +14,56 @@ int
 fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedReiAndArgBBuf, 
         ruleExecSubmitInp_t *ruleSubmitInfo,  ruleExecInfo_t *rei);
 
+/**
+ * \fn assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice assigns a value to a variable.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest8.ir
+ *
+ * myTestRule||assign(*A,0)##whileExec( *A < 20 , assign(*A, *A + 4), nop)|nop##nop 
+ * *A=1000%*D= (199 * 2) + 200
+ * *Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut
+ *
+ * Also:
+ *
+ * myTestRule||assign(*A,0)##whileExec(*A < 20, writeLine(stdout, *A)##assign(*A, *A + 4), nop)|nop##nop
+ * null
+ * ruleExecOut
+ * 
+ * \param[in] var - var is a msParam of type STR_MS_T which is a variable name or a Dollar Variable.
+ * \param[in] value - value is a msParam of type STR_MS_T that is computed and value assigned to variable.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence depends upon the variable being modified
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
 {
   char *varName;
@@ -59,6 +114,58 @@ int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
 }
 
 
+/**
+ * \fn whileExec(msParam_t* condition, msParam_t* whileBody, msParam_t* recoverWhileBody, ruleExecInfo_t *rei)
+ *
+ * \brief  It is a while loop in the rule language. It executes a while loop.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note The first argument is a condition that will be checked on each loop iteration.
+ *  The second argument is the body of the while loop, given as a sequence of
+ *  microservices, and the third argument is the recoveryBody for recovery
+ *  from failures.
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest33.ir
+ *
+ * myTestRule||assign(*A,0)##whileExec( *A < 20 , ifExec(*A > 10, assign(*A,400)##break,nop,nop,nop)##assign(*A, *A + 4), writeLine(stdout,*A) nop)|nop##nop 
+ * *A=1000%*D= (199 * 2) + 200
+ * *Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut
+ * 
+ * Also:
+ *
+ * myTestRule||assign(*A,0)##whileExec(*A < 20, writeLine(stdout, *A)##assign(*A, *A + 4), nop)|nop##nop
+ * null
+ * ruleExecOut
+ *
+ * \param[in] condition - a msParam of type STR_MS_T which is a logical expression computing to TRUE or FALSE.
+ * \param[in] whileBody - a msParam of type STR_MS_T which is a statement list - microservices and ruleNames separated by ##
+ * \param[in] recoverWhileBody - a msParam of type STR_MS_T which is a statement list  as above.
+ * \param[in,out] rei Required - the RuleExecInfo structure.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int whileExec(msParam_t* condition, msParam_t* whileBody,
 	      msParam_t* recoverWhileBody, ruleExecInfo_t *rei)
 {
@@ -96,6 +203,53 @@ int whileExec(msParam_t* condition, msParam_t* whileBody,
 }
 
 
+/**
+ * \fn forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, msParam_t* forBody, msParam_t* recoverForBody, ruleExecInfo_t *rei)
+ *
+ * \brief  It is a for loop in rule language.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest9.ir
+ *
+ * myTestRule||forExec(assign(*A,0), *A < *D , assign(*A,*A + 4), writeLine(stdout,*A),nop)|nop
+ * *A=1000%*D= (199 * 2) + 200
+ * *Action%*Condition%*A%*D%ruleExecOut
+ *
+ * \param[in] initial - a msParam of type STR_MS_T which is an nitial assignment statement for the loop variable.
+ * \param[in] condition - a msParam of type STR_MS_T which is a logical expression checking a condition.
+ * \param[in] step - a msParam of type STR_MS_T which is an increment/decrement of loop variable.
+ * \param[in] forBody - a msParam of type STR_MS_T which is a statement list - micro-services and ruleNames separated by ##.
+ * \param[in] recoverForBody - a msParam of type STR_MS_T which is a statement list as above.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, 
 	    msParam_t* forBody, msParam_t* recoverForBody, ruleExecInfo_t *rei)
 {
@@ -141,6 +295,59 @@ int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step,
   return(0);
 }
 
+/**
+ * \fn ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei)
+ *
+ * \brief  It is an if-then-else construct in the rule language. It executes an
+ *    if-then-else statement.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note The first argument is a conditional check.  If the
+ *    check is successful (TRUE), the microservice sequence in the second argument
+ *    will be executed. If the check fails, then the microservice sequence in the
+ *    fourth argument will be executed. The third argument is the recoveryBody for
+ *    recovery from failures for the then-part, and the fifth argument is the
+ *    recoveryBody for recovery from failures for the else-part.
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest33.ir
+ *
+ * myTestRule||assign(*A,0)##whileExec( *A < 20 , ifExec(*A > 10, assign(*A,400)##break,nop,nop,nop)##assign(*A, *A + 4), writeLine(stdout,*A) nop)|nop##nop 
+ * *A=1000%*D= (199 * 2) + 200
+ * *Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut
+ *
+ * \param[in] condition - a msParam of type STR_MS_T which is a logical expression computing to TRUE or FALSE.
+ * \param[in] thenC - a msParam of type STR_MS_T which is a statement list - microservices and ruleNames separated by ##
+ * \param[in] recoverThen - a msParam of type STR_MS_T which is a tatement list - microservices and ruleNames separated by ##
+ * \param[in] elseC - a msParam of type STR_MS_T which is a statement list - microservices and ruleNames separated by ##.
+ * \param[in] recoverElse - a msParam of type STR_MS_T which is a statement list - microservices and ruleNames separated by ##
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
 	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei)
 {
@@ -181,10 +388,108 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
 
 }
 
+/**
+ * \fn breakExec(ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice is used to break whileEval, forEval and forEachEval loops.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-29
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest33.ir
+ *
+ * myTestRule||assign(*A,0)##whileExec( *A < 20 , ifExec(*A > 10, assign(*A,400)##break,nop,nop,nop)##assign(*A, *A + 4), writeLine(stdout,*A) nop)|nop##nop 
+ * *A=1000%*D= (199 * 2) + 200
+ * *Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval BREAK_ACTION_ENCOUNTERED_ERR (used internally to break the loops)
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int breakExec(ruleExecInfo_t *rei)
 {
   return (BREAK_ACTION_ENCOUNTERED_ERR);
 }
+
+/**
+ * \fn forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody, ruleExecInfo_t *rei)
+ *
+ * \brief  It is a for loop in each language looping over a list. It takes a table
+ *    (or list of strings, or %-separated string list), and for each item in the list,
+ *    executes the corresponding body of the for-loop. The first parameter specifies the
+ *    variable that has the list (the same variable name is used in the body of the loop
+ *    to denote an item of the list!). The second parameter is the body given as a
+ *    sequence of Micro-Services, and the third parameter is the recoveryBody for
+ *    recovery from failures.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest14.ir
+ *
+ * myTestRule||forEachExec(*A,writeLine(stdout,*A),nop)|nop
+ * *A=123,345,567,aa,bb,678
+ * *Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut
+ *
+ * \param[in] inlist - a msParam of type STR_MS_T which is a comma separated
+ *    string or StrArray_MS_T which is an array of string or IntArray_MS_T which
+ *    is an array of integers or GenQueryOut_MS_T which is an iCAT query result.
+ * \param[in] body - a msParam of type STR_MS_T which is a statement
+ *    list - micro-services and ruleNames separated by ##.
+ * \param[in] recoverBody - a msParam of type STR_MS_T
+ *    which is a statement list as above.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
 	      ruleExecInfo_t *rei)
 {
@@ -274,6 +579,81 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
   return(i);
 }
 
+/**
+ * \fn delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice is a set of statements to be delayed until delayCondition
+ *    is true. The condition also supports repeating of the body until success or until
+ *    some other condition is satisfied. This microservice takes the delayCondition as
+ *    the first parameter, the Micro-service/rule chain that needs to be executed as
+ *    the second parameter, and the recovery-Micro-service chain as the third parameter.
+ *    The delayCondition is given as a tagged condition. In this case, there are two
+ *    conditions that are specified. 
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in server/config/reConfigs/rajatest.irb
+ *
+ * acPostProcForPut||delayExec(msiReplDataObj(demoResc8),nop)|nop
+ *
+ * \param[in] mPA - mPA is a msParam of type STR_MS_T which is a delayCondition about when to execute the body.
+ *  		   These are tagged with the following tags:
+ * 			\li EA - execAddress - host where the delayed execution needs to be performed 
+ *			\li ET - execTime - absolute time when it needs to be performed. 
+ * 			\li PLUSET - relExeTime - relative to current time when it needs to execute 
+ * 			\li EF - execFreq - frequency (in time widths) it needs to be performed. 
+ * 			The format for EF is quite rich: 
+ * 			The EF value is of the format: 
+ *			nnnnU <directive>  where 
+ *			nnnn is a number, and 
+ *     			U is the unit of the number (s-sec,m-min,h-hour,d-day,y-year), 
+ * 			The <directive> can be for the form: 
+ *     			<empty-directive>    - equal to REPEAT FOR EVER 
+ *     			REPEAT FOR EVER 
+ *     			REPEAT UNTIL SUCCESS 
+ *     			REPEAT nnnn TIMES    - where nnnn is an integer 
+ *     			REPEAT UNTIL <time>  - where <time> is of the time format supported by checkDateFormat function below. 
+ *     			REPEAT UNTIL SUCCESS OR UNTIL <time> 
+ *     			REPEAT UNTIL SUCCESS OR nnnn TIMES 
+ *     			DOUBLE FOR EVER 
+ *     			DOUBLE UNTIL SUCCESS   - delay is doubled every time. 
+ *     			DOUBLE nnnn TIMES 
+ *     			DOUBLE UNTIL <time> 
+ *     			DOUBLE UNTIL SUCCESS OR UNTIL <time> 
+ *     			DOUBLE UNTIL SUCCESS OR nnnn TIMES 
+ *     			DOUBLE UNTIL SUCCESS UPTO <time>  
+ *			Example: <PLUSET>1m</PLUSET><EF>10m<//EF>  means start after 1 minute and repeat every 20 minutes
+ * \param[in] mPB - mPB is a msParam of type STR_MS_T which is a body Micro-service/Rule list separated by ##
+ * \param[in] mPC - mPC is a msParam of type STR_MS_T which is a recoveryBody - Micro-service/Rule list  separted by ##                 
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
 {
   int i;
@@ -374,6 +754,54 @@ int recover_delayExec(msParam_t *actionCall, msParam_t *delayCondition,  ruleExe
 }
 
 
+/**
+ * \fn remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
+ *
+ * \brief  A set of statements to be remotely executed
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest21.ir
+ *
+ * myTestRule||writeLine(stdout,begin)##remoteExec(andal.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,open remote write in andal)
+ * ##remoteExec(srbbrick14.sdsc.edu,null,msiSleep(10,0)##writeLine(stdout,remote of a remote write in srbbrick1),nop)
+ * ##remoteExec(srbbrick14.sdsc.edu,null,remoteExec(andal.sdsc.edu,null,msiSleep(10,0)
+ * ##writeLine(stdout,remote of a remote of a remote write in andal),nop),nop)##msiSleep(10,0)
+ * ##writeLine(stdout,close * remote write in andal),nop)##writeLine(stdout,end)|nop
+ * null
+ * ruleExecOut
+ *
+ * \param[in] mPD - a msParam of type STR_MS_T which is a host name of the server where the body need to be executed.
+ * \param[in] mPA - a msParam of type STR_MS_T which is a delayCondition about when to execute the body.
+ * \param[in] mPB - a msParam of type STR_MS_T which is a body. A statement list - micro-services and ruleNames separated by ##
+ * \param[in] mPC - a msParam of type STR_MS_T which is arecoverBody. A statement list - micro-services and ruleNames separated by ##
+ * \param[in,out] rei Required - the RuleExecInfo structure.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
 {
   int i;
@@ -553,6 +981,43 @@ doForkExec(char *prog, char *arg1)
 }
 
 
+/**
+ * \fn msiGoodFailure(ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice performs no operations but fails the current rule application
+ *    immediately even if the body still has some more microservices. But other definitions
+ *    of the rule are not retried upon this failure. It is useful when you want to fail
+ *    but no recovery initiated.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2006-06
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note useful when you want to fail a rule without retries.
+ *
+ * \usage None
+ *
+ * \param[in,out] rei Required - the RuleExecInfo structure.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval negative number
+ * \pre
+ * \post
+ * \sa fail
+ * \bug  no known bugs
+**/
 int
 msiGoodFailure(ruleExecInfo_t *rei)
 {
@@ -587,6 +1052,45 @@ checkFilePerms(char *fileName) {
    return(0);
 }
 
+/**
+ * \fn msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice frees a named buffer
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.fnm
+ *
+ * freeBuf|msiFreeBuffer
+ *
+ * \param[in] memoryParam - the buffer to free
+ * \param[in,out] rei Required - the RuleExecInfo structure.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int 
 msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
 {
@@ -602,6 +1106,50 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
 
 }
 
+/**
+ * \fn msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
+ *
+ * \brief  Sleep for some amount of time
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date 2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest23.ir
+ *
+ * myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiGetValByKey(*B,RESC_LOC,*R)##remoteExec(*R,null,msiSleep(20,0)
+ * ##msiDataObjChksum(*B,*Operation,*C),nop)##msiGetValByKey(*B,DATA_NAME,*D)##msiGetValByKey(*B,COLL_NAME,*E)
+ * ##writeLine(stdout,CheckSum of *E/*D at *R is *C),nop)|nop##nop
+ * *Action=chksumRescLoc%*Condition=COLL_NAME = '/tempZone/home/rods/loopTest'%*Operation=ChksumAll
+ * *Action%*Condition%*Operation%*C%ruleExecOut
+ * 
+ * \param[in] secPtr - secPtr is a msParam of type STR_MS_T which is seconds
+ * \param[in] microsecPtr - microsecPrt is a msParam of type STR_MS_T which is microseconds
+ * \param[in,out] rei Required - the RuleExecInfo structure.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
 msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
 {
@@ -615,6 +1163,57 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
   return(0);
 }
 
+/**
+ * \fn msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei)
+ *
+ * \brief  This micro-service executes all applicable rules for a given action name.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-26
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest25.ir
+ *
+ * myTestRule||msiAdmAddAppRuleStruct(*B,,)##writeLine(stdout,a test for all rule application - begin)##applyAllRules(aa,0,*DepthAllRuleBinaryFlag)
+ * ##writeLine(stdout,a test for all rule application - end)|nop
+ * *B=core4%*DepthAllRuleBinaryFlag=$1
+ * ruleExecOut
+ *
+ * \param[in] actionParam - a msParam of type STR_MS_T which is the name of an action to be executed.
+ * \param[in] reiSaveFlagParam - a msParam of type STR_MS_T which is 0 or 1 value used to
+ *    check if the rei structure needs to be saved at every rule invocation inside the
+ *    execution. This helps to save time if the rei structure is known not to be
+ *    changed when executing the underlying rules.
+ * \param[in] allRuleExecFlagParam - allRuleExecFlagParam is a msParam of type STR_MS_T which
+ *    is 0 or 1 whether the "apply all rule" condition applies only to the actionParam
+ *    invocation or is recursively done at all levels of invocation of every rule inside the execution.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
 msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam, 
 		 msParam_t* allRuleExecFlagParam, ruleExecInfo_t *rei)
@@ -634,23 +1233,48 @@ msiApplyAllRules(msParam_t *actionParam, msParam_t* reiSaveFlagParam,
 
 
 /**
- * \fn msiGetDiffTime
- * \author  Antoine de Torcy
- * \date   2007-09-19
+ * \fn msiGetDiffTime(msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3, msParam_t* outParam, ruleExecInfo_t *rei)
+ *
  * \brief This microservice returns the difference between two system times
- * \note If we have arithmetic MSs in the future we should use DOUBLE_MS_T instead of strings
- *       Default output format is in seconds, use 'human' as 3d input param for human readable format.
- * \param[in] 
- *    inpParam1 - Required - a STR_MS_T containing the start date (system time in seconds)
- *    inpParam2 - Required - a STR_MS_T containing the end date (system time in seconds)
- *    inpParam3 - Optional - a STR_MS_T containing the desired output format
- * \param[out] 
- *    outParam - a STR_MS_T containing the time elapsed between the two dates
+ *
+ * \module framework
+ *
+ * \since 2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2007-09-19
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
+ * \note If we have arithmetic MSs in the future we should use DOUBLE_MS_T instead of strings.
+ *       Default output format is in seconds, use 'human' as the third input param for human readable format.
+ *
+ * \usage
+ * As seen in modules/ERA/test/getDiffTime.ir
+ * 
+ * testrule||msiGetSystemTime(*Start_time, null)##msiSleep(3, 0)##msiGetSystemTime(*End_time, null)##msiGetDiffTime(*Start_time, *End_time, human, *Duration)##writeLine(stdout, *Duration)|nop
+ * null
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - a STR_MS_T containing the start date (system time in seconds)
+ * \param[in] inpParam2 - a STR_MS_T containing the end date (system time in seconds)
+ * \param[in] inpParam3 - Optional - a STR_MS_T containing the desired output format
+ * \param[out] outParam - a STR_MS_T containing the time elapsed between the two dates
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -714,20 +1338,45 @@ msiGetDiffTime(msParam_t* inpParam1, msParam_t* inpParam2, msParam_t* inpParam3,
 
 
 /**
- * \fn msiGetSystemTime
- * \author  Antoine de Torcy
- * \date   2007-09-19
+ * \fn msiGetSystemTime(msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei)
+ *
  * \brief This microservice returns the local system time
+ *
+ * \module framework
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2007-09-19
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
  * \note Default output format is system time in seconds, use 'human' as input param for human readable format.
- * \param[in] 
- *    inpParam - Optional - a STR_MS_T containing the desired output format
- * \param[out] 
- *    outParam - a STR_MS_T containing the time
+ *
+ * \usage
+ * As seen in modules/ERA/test/getSystemTime.ir
+ * 
+ * testrule||msiGetSystemTime(*Time, human)##writeLine(stdout, *Time)|nop
+ * null
+ * ruleExecOut
+ *
+ * \param[out] outParam - a STR_MS_T containing the time
+ * \param[in] inpParam - Optional - a STR_MS_T containing the desired output format
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -764,20 +1413,45 @@ msiGetSystemTime(msParam_t* outParam, msParam_t* inpParam, ruleExecInfo_t *rei)
 
 
 /**
- * \fn msiHumanToSystemTime
- * \author  Antoine de Torcy
- * \date   2008-03-11
+ * \fn msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei)
+ *
  * \brief Converts a human readable date to a system timestamp
+ *
+ * \module framework
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2008-03-11
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
  * \note Expects an input date in the form: YYYY-MM-DD-hh.mm.ss
- * \param[in] 
- *    inpParam - a STR_MS_T containing the input date
- * \param[out] 
- *    outParam - a STR_MS_T containing the timestamp
+ *
+ * \usage
+ * As seen in modules/ERA/test/convertDateToTimestamp.ir
+ * 
+ * testrule||msiHumanToSystemTime(*date, *timestamp)##writeString(stdout,*timestamp)##writeLine(stdout,"")|nop
+ * *date=2008-03-14-15.13.01
+ * ruleExecOut
+ *
+ * \param[in] inpParam - a STR_MS_T containing the input date
+ * \param[out] outParam - a STR_MS_T containing the timestamp
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -821,21 +1495,45 @@ msiHumanToSystemTime(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *r
 
 
 /**
- * \fn msiStrToByteBuf
- * \author  Antoine de Torcy
- * \date   2008-09-16
+ * \fn msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
+ *
  * \brief Converts a string to a bytesBuf_t
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2008-09-16
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-15
+ *
  * \note Following discussion on iRODS_Chat. For easily passing parameters to
- *	microservices that require a BUF_LEN_MS_T
- * \param[in] 
- *    inpParam - a STR_MS_T
- * \param[out] 
- *    outParam - a BUF_LEN_MS_T
+ *    microservices that require a BUF_LEN_MS_T
+ *
+ * \usage
+ * 
+ * testrule||msiStrToBytesBuf(*A, *Buff)##writeLine(stdout,"")|nop
+ * *A=Astring
+ * ruleExecOut
+ *
+ * \param[in] str_msp - a STR_MS_T
+ * \param[out] buf_msp - a BUF_LEN_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -868,24 +1566,48 @@ msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
 
 
 /**
- * \fn msiListEnabledMS
- * \author  Antoine de Torcy
- * \date   2009-02-12
+ * \fn msiListEnabledMS(msParam_t *outKVPairs, ruleExecInfo_t *rei)
+ *
  * \brief Returns the list of compiled microservices on the local iRODS server
+ *
+ * \module framework
+ *
+ * \since 2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2009-02-12
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
  * \note This microservice looks at reAction.h and returns the list of compiled 
  *  microservices on the local iRODS server.
  *      The results are written to a KeyValPair_MS_T. For each pair the keyword is the MS name 
  *  while the value is the module where the microservice belongs. 
  *  Standard non-module microservices are listed as "core".
- * \param[in] 
- *    None.
- * \param[out] 
- *    outKVPairs - A KeyValPair_MS_T containing the results.
+ *
+ * \usage
+ * As seen in clients/icommands/test/listMS.ir
+ * 
+ * testrule||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout, *KVPairs, ": ")|nop
+ * null
+ * ruleExecOut
+ *
+ * \param[out] outKVPairs - A KeyValPair_MS_T containing the results.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int

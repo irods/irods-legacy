@@ -21,7 +21,7 @@
 ?>
 <html>
 <head>
-  <title>iRods Rich Web Client</title>
+  <title>iRODS Rich Web Client</title>
   <link rel="stylesheet" type="text/css" href="extjs/docs/resources/collapser.css" />
 	<link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css" />
   <link rel="stylesheet" type="text/css" href="browse.css" />
@@ -73,7 +73,7 @@
         <div class="x-box-tl"><div class="x-box-tr"><div class="x-box-tc"></div></div></div>
         <div class="x-box-ml"><div class="x-box-mr"><div class="x-box-mc" style="text-align:left;">
             <div id="form-login-err" style="color:red">&nbsp;</div>
-            <h3 style="margin-bottom:5px;"> Sign on to iRods </h3>
+            <h3 style="margin-bottom:5px;"> Sign on to iRODS </h3>
             <div id="form-login">
               
             </div>

@@ -30,7 +30,7 @@ rodsPathInp_t *rodsPathInp)
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	if (myRodsArgs->mountCollection == True) {
-            destPath = &rodsPathInp->destPath[i];	/* iRods path */
+            destPath = &rodsPathInp->destPath[i];	/* iRODS path */
             srcPath = &rodsPathInp->srcPath[i];	/* file Path */
 
             getRodsObjType (conn, destPath);

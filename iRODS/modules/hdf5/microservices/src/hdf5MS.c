@@ -1,3 +1,7 @@
+/**
+ * @file hdf5MS.c
+ *
+ */
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Copyright by the Board of Trustees of the University of Illinois.         *
@@ -18,13 +22,45 @@
 #include "miscServerFunct.h"
 #include "rsGlobalExtern.h"
 
-/* msiH5File_open - msi for opening a H5File.
- * inpH5FileParam - The input H5File to open. Must be h5File_MS_T.
- * inpFlagParam - Input flag - INT_MS_T
- * outH5FileParam - the output H5File - Must be h5File_MS_T.
+/**
+ * \fn msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
+ * msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief This microservice opens a H5File.
+ *
+ * \module hdf5
+ *
+ * \since pre-2.1
+ *
+ * \author uiuc.edu
+ * \date  
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpH5FileParam - The input H5File to open. Must be h5File_MS_T.
+ * \param[in] inpFlagParam - Input flag - INT_MS_T.
+ * \param[out] outH5FileParam - the output H5File - Must be h5File_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
 msParam_t *outH5FileParam, ruleExecInfo_t *rei)
@@ -123,7 +159,7 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 
     if (remoteFlag == LOCAL_HOST) {
 	outf = malloc (sizeof (H5File));
-        /* replace iRods file with local file */
+        /* replace iRODS file with local file */
         if (inf->filename != NULL) {
             free (inf->filename);
         }
@@ -163,13 +199,43 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiH5File_close - msi for closing a H5File.
- * inpH5FileParam - The input H5File to close. Must be h5File_MS_T.
- * outH5FileParam - the output H5File - Must be h5File_MS_T.
- * outParam - a INT_MS_T containing the status.
+/**
+ * \fn msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief This microservice closes a H5File.
+ *
+ * \module hdf5
+ *
+ * \since pre-2.1
+ *
+ * \author uiuc.edu
+ * \date  
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpH5FileParam - The input H5File to close. Must be h5File_MS_T.
+ * \param[out] outH5FileParam - the output H5File - Must be h5File_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outH5FileParam,
 ruleExecInfo_t *rei)
@@ -253,12 +319,44 @@ ruleExecInfo_t *rei)
     return rei->status;
 }
 
-/* msiH5Dataset_read - msi for reading a dataset from an opened H5File.
- * inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
- * outH5DatasetParam - the output H5Dataset - Must be h5Dataset_MS_T.
+/**
+ * \fn msiH5Dataset_read (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam,
+ * ruleExecInfo_t *rei)
  *
- */
-
+ * \brief This microservice is for reading a dataset from an opened H5File.
+ *
+ * \module hdf5
+ *
+ * \since pre-2.1
+ *
+ * \author uiuc.edu
+ * \date  
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
+ * \param[out] outH5DatasetParam - The output H5Dataset - Must be h5Dataset_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiH5Dataset_read (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam,
 ruleExecInfo_t *rei)
@@ -335,16 +433,45 @@ ruleExecInfo_t *rei)
     return rei->status;
 }
 
-/* msiH5Dataset_read_attribute - msi for reading attribute of a dataset from 
- * an opened H5File.
- * inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
- * outH5DatasetParam - the output H5Dataset - Must be h5Dataset_MS_T.
+/**
+ * \fn msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief This microservice is for reading attribute of a dataset from an opened H5File.
+ *
+ * \module hdf5
+ *
+ * \since pre-2.1
+ *
+ * \author uiuc.edu
+ * \date  
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpH5DatasetParam - The input H5Dataset. Must be h5Dataset_MS_T.
+ * \param[out] outH5DatasetParam - The output H5Dataset - Must be h5Dataset_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
-msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, 
-msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
+msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     H5Dataset *ind;
@@ -419,13 +546,43 @@ msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
     return rei->status;
 }
 
-/* msiH5Group_read_attribute - msi for reading attribute of a dataset from 
- * an opened H5File.
- * inpH5GroupParam - The input H5Group. Must be h5Dataset_MS_T.
- * outH5GroupParam - the output H5Group - Must be h5Dataset_MS_T.
+/**
+ * \fn msiH5Group_read_attribute (msParam_t *inpH5GroupParam, msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief This microservice is for reading attribute of a dataset from an opened H5Group.
+ *
+ * \module hdf5
+ *
+ * \since pre-2.1
+ *
+ * \author uiuc.edu
+ * \date  
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-18
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpH5GroupParam - The input H5Group. Must be h5Dataset_MS_T.
+ * \param[out] outH5GroupParam - The output H5Group - Must be h5Dataset_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiH5Group_read_attribute (msParam_t *inpH5GroupParam, 
 msParam_t *outH5GroupParam, ruleExecInfo_t *rei)

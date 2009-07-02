@@ -1,10 +1,61 @@
+/**
+ * @file	keyValPairMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 
 
-int msiGetValByKey(msParam_t* inKVPair,   msParam_t* inKey, msParam_t* outVal,  ruleExecInfo_t *rei)
+/**
+ * \fn msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei)
+ *
+ * \brief  Given a list of KVPairs and a Key, this microservice gets the corresponding value.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date 2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-19
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest22.ir
+ *
+ * myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,remoteExec(andal.sdsc.edu,null,msiDataObjChksum(*B,*Operation,*C),nop)
+ * ##msiGetValByKey(*B,DATA_NAME,*D)##msiGetValByKey(*B,COLL_NAME,*E)##writeLine(stdout,CheckSum of *E/*D is *C),nop)|nop##nop
+ * *Action=chksum%*Condition=COLL_NAME = '/tempZone/home/rods/loopTest'%*Operation=ChksumAll
+ * *Action%*Condition%*Operation%*C%ruleExecOut
+ *
+ * \param[in] inKVPair - This msParam is of type KeyValPair_PI which is a KeyValPair List.
+ * \param[in] inKey - This msParam is of type STR_MS_T which is a key.
+ * \param[out] outVal - This msParam is of type STR_MS_T which is a value corresponding to key.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei)
 {
    keyValPair_t *kvp;
    char *s, *k;
@@ -24,6 +75,52 @@ int msiGetValByKey(msParam_t* inKVPair,   msParam_t* inKey, msParam_t* outVal,  
    return(i);
 }
 
+/**
+ * \fn msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *rei)
+ *
+ * \brief  Given a List of KVPairs, this microservice prints it to rei->ruleExecOut. It takes a row-structure from GenQueryOut_MS_T and prints it as a
+ *         ColumnName=Value pair. The Rule uses the result (tabular) from execution of a iCAT query. The Micro-service msiExecStrCondQuery is used to 
+ *         run the query:  SELECT DATA_NAME, DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE ‘foo%’.
+ *         The result is printed using the msiPrintKeyValPair microservice, which prints each row as an attribute-value pair. A separator line is 
+ *         printed after each row.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-19
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest16.ir
+ *
+ * myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop##nop
+ *
+ * \param[in] where - a msParam of type STR_MS_T which is either stderr or stdout.
+ * \param[in] inkvpair - a msParam of type KeyValPair_PI which is a KeyValPair list (structure).
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *rei)
 {
   int i,l,m,j;
@@ -58,6 +155,50 @@ int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *re
   return(0);
 }
 
+/**
+ * \fn msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice converts a %-separated key=value pair strings into keyValPair structure.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-19
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in modules/ERA/test/computeChksumAndAddAVU.ir
+ *
+ * testrule||msiDataObjChksum(*objPath,null,*ChksumStr)##msiGetSystemTime(*Date, human)##msiString2KeyValPair(Checksum.*Date=*ChksumStr,*KVPair)##msiAssociateKeyValuePairsToObj(*KVPair,*objPath,-d)|nop
+ * *objPath=/tempZone/home/antoine/tmp.txt
+ * ruleExecOut
+ *
+ * \param[in] inBufferP - a msParam of type STR_MS_T which is key=value pairs separated by %-sign.
+ * \param[out] outKeyValPairP - a msParam of type KeyValPair_MS_T which is a keyValuePair structure.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei)
 {
    keyValPair_t *kvp;
@@ -97,6 +238,44 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
 }
 
 
+/**
+ * \fn msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei)
+ *
+ * \brief  Array of Strings converted to a string separated by %-signs
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-19
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ *
+ * \note 
+ *
+ * \usage None
+ *
+ * \param[in] inSAParam - a msParam of type strArr_MS_T which is an array of strings.
+ * \param[out] outStr - a msParam of type STR_MS_T which a string with %-separators.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei)
 {
   int i;

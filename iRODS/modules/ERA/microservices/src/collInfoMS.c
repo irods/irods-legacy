@@ -1,3 +1,8 @@
+/**
+ * @file collInfoMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -7,24 +12,49 @@
 
 
 /**
- * \fn msiIsColl
+ * \fn msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief Checks if an iRODS path is a collection. For use in workflows.
+ *
+ * \module ERA
+ *
+ * \since 2.1
+ *
  * \author  Antoine de Torcy
- * \date   2009-05-08
- * \brief Checks if an iRods path is a collection. For use in workflows.
- * \note This microservice takes an iRods path and returns the corresponding collection ID,
- *		or zero if the object is not a collection or does not exist.
- *		Avoid path names ending with '/' as they can be misparsed by lower level routines
- *		(eg: /tempZone/home instead of /tempZone/home/).
- * \param[in] 
- *    targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
- * \param[out] 
- *	  collId - an INT_MS_T containing the collection ID.
- *    status - an INT_MS_T containing the operation status.
+ * \date    2009-05-08
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
+ * \note This microservice takes an iRODS path and returns the corresponding collection ID,
+ *    or zero if the object is not a collection or does not exist.
+ *    Avoid path names ending with '/' as they can be misparsed by lower level routines
+ *    (eg: use /tempZone/home instead of /tempZone/home/).
+ *
+ * \usage
+ * As seen in modules/ERA/test/isColl.ir
+ * 
+ * testrule||msiIsColl(*collPath, *collID, *Status)##writePosInt(stdout, *collID)##writeLine(stdout, "")|nop
+ * *collPath=$1
+ * ruleExecOut
+ *
+ * \param[in] targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
+ * \param[out] collId - an INT_MS_T containing the collection ID.
+ * \param[out] status - an INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -87,22 +117,47 @@ msiIsColl(msParam_t *targetPath, msParam_t *collId, msParam_t *status, ruleExecI
 
 
 /**
- * \fn msiIsData
+ * \fn msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief Checks if an iRODS path is a data object (an iRODS file). For use in workflows.
+ *
+ * \module ERA
+ *
+ * \since 2.1
+ *
  * \author  Antoine de Torcy
- * \date   2009-05-08
- * \brief Checks if an iRods path is a data object (an iRods file). For use in workflows.
- * \note This microservice takes an iRods path and returns the corresponding object ID,
- *		or zero if the object is not a data object or does not exist.
- * \param[in] 
- *    targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
- * \param[out] 
- *	  dataId - an INT_MS_T containing the data object ID.
- *    status - an INT_MS_T containing the operation status.
+ * \date    2009-05-08
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-15
+ *
+ * \note This microservice takes an iRODS path and returns the corresponding object ID,
+ *    or zero if the object is not a data object or does not exist.
+ *
+ * \usage
+ * As seen in modules/ERA/test/isData.ir
+ * 
+ * testrule||msiIsData(*objPath, *objID, *Status)##writePosInt(stdout, *objID)##writeLine(stdout, "")|nop
+ * *objPath=$1
+ * ruleExecOut
+ *
+ * \param[in] targetPath - An msParam_t of any type whose inOutStruct is a string (the object's path).
+ * \param[out] dataId - an INT_MS_T containing the data object ID.
+ * \param[out] status - an INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -165,22 +220,48 @@ msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecI
 
 
 /**
- * \fn msiGetCollectionContentsReport
- * \author  Antoine de Torcy
- * \date   2008-03-17
+ * \fn msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief Returns the number of objects in a collection by data type
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2008-03-17
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
  * \note This microservice returns the number of objects for each known data type in a collection, recursively.
- *	The results are written to a KeyValPair_MS_T, with a keyword for each data type plus "unknown".
- * \param[in] 
- *    inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
- * \param[out] 
- *    inpParam2 (poorly named...) - A KeyValPair_MS_T containing the results.
- *    outParam - an INT_MS_T containing the status.
+ *    The results are written to a KeyValPair_MS_T, with a keyword for each data type plus "unknown" for objects
+ *    of unknown data type, and the number of data objects of that type.
+ *
+ * \usage
+ * As seen in modules/ERA/test/getCollectionContentsReport.ir
+ * 
+ * testrule||msiGetCollectionContentsReport(*collPath, *KVPairs, *Status)##writeKeyValPairs(stdout, *KVPairs, ": ")##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
+ * *collPath=/tempZone/home/antoine
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] inpParam2 (poorly named...) - A KeyValPair_MS_T containing the results.
+ * \param[out] outParam - an INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -312,23 +393,48 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 
 
 /**
- * \fn msiGetCollectionSize
- * \author  Antoine de Torcy
- * \date   2008-10-31
+ * \fn msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *status, ruleExecInfo_t *rei)
+ *
  * \brief Returns the object count and total disk usage of a collection
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2008-10-31
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note This microservice returns the object count and total disk usage for all objects in a collection, recursively.
- *	The results are written to a KeyValPair_MS_T whose keyword strings are "Size" and "Object Count".
- *	Might be merged with msiGetCollectionContentsReport()...
- * \param[in] 
- *    collPath - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
- * \param[out] 
- *    outKVPairs - A KeyValPair_MS_T containing the results.
- *    status - an INT_MS_T containing the status.
+ *    The results are written to a KeyValPair_MS_T whose keyword strings are "Size" and "Object Count".
+ *    Might be merged with msiGetCollectionContentsReport()...
+ *
+ * \usage
+ * As seen in modules/ERA/test/getCollSize.ir
+ * 
+ * testrule||msiGetCollectionSize(*collPath, *KVPairs, *Status)##writeKeyValPairs(stdout, *KVPairs, ": ")|nop
+ * *collPath=$1
+ * ruleExecOut
+ *
+ * \param[in] collPath - A CollInp_MS_T or a STR_MS_T with the irods path of the target collection.
+ * \param[out] outKVPairs - A KeyValPair_MS_T containing the results.
+ * \param[out] status - an INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -457,26 +563,50 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
 }
 
 
-
 /**
- * \fn msiStructFileBundle
- * \author  Antoine de Torcy
- * \date   2009-04-21
+ * \fn msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *resource, msParam_t *status, ruleExecInfo_t *rei)
+ *
  * \brief Bundles a collection for export
- * \note This microservice creates a bundle from an iRods collection on a target resource.
- *		Files in the collection are first replicated onto the target resource. If no resource
- *		is given the default resource will be used.
- * \param[in] 
- *    collection - A CollInp_MS_T or a STR_MS_T with the irods path of the collection to bundle.
- *	  bundleObj - a DataObjInp_MS_T or a STR_MS_T with the bundle object's path.
- *    resource - Optional - a STR_MS_T which specifies the target resource.
- * \param[out] 
- *    status - an INT_MS_T containing the operation status.
+ *
+ * \module ERA
+ *
+ * \since 2.1
+ *
+ * \author  Antoine de Torcy
+ * \date    2009-04-21
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
+ * \note This microservice creates a bundle for export from an iRODS collection on a target resource.
+ *    Files in the collection are first replicated onto the target resource. If no resource
+ *    is given the default resource will be used.
+ *
+ * \usage
+ * As seen in modules/ERA/test/bundleCollection.ir
+ * 
+ * testrule||msiStructFileBundle(*collPath, *bundleObjPath, null, *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
+ * *collPath=/tempZone/home/rods/testcoll%*bundleObjPath=/tempZone/home/rods/testcoll.tar
+ * ruleExecOut
+ *
+ * \param[in] collection - A CollInp_MS_T or a STR_MS_T with the irods path of the collection to bundle.
+ * \param[in] bundleObj - a DataObjInp_MS_T or a STR_MS_T with the bundle object's path.
+ * \param[in] resource - Optional - a STR_MS_T which specifies the target resource.
+ * \param[out] status - an INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int

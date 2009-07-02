@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjPhymv - Move an iRods data object from one resource to another.
+/* rcDataObjPhymv - Move an iRODS data object from one resource to another.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

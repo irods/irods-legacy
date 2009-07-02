@@ -48,7 +48,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp);
 int
 rcChkObjPermAndStat (rcComm_t *conn, chkObjPermAndStat_t *chkObjPermAndStatInp);
 
-/* rcChkObjPermAndStat - Unregister a iRods dataObject.
+/* rcChkObjPermAndStat - Unregister a iRODS dataObject.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   chkObjPermAndStat_t *chkObjPermAndStatInp - the dataObjInfo to unregister

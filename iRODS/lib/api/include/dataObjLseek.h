@@ -49,11 +49,11 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjLseek - Lseek an opened iRods data object descriptor.
+/* rcDataObjLseek - Lseek an opened iRODS data object descriptor.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   fileLseekInp_t *dataObjLseekInp - Relevant items are:
- *      l1descInx - the iRods data object descriptor to lseek.
+ *      l1descInx - the iRODS data object descriptor to lseek.
  *	offset - the offset
  *	whence - SEEK_SET, SEEK_CUR and SEEK_END
  *

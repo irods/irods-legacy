@@ -1,3 +1,8 @@
+/**
+ * @file ftpMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -68,23 +73,47 @@ static size_t createAndWriteToDataObj(void *buffer, size_t size, size_t nmemb, v
 
 
 /**
- * \fn msiFtpGet
+ * \fn msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice gets a remote file using FTP and writes it to an iRODS object.
+ *
+ * \module URL
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date   2008-09-24
- * \brief Gets a remote file using FTP and writes it to an iRODS object
+ * \date    2008-09-24
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
  * \note This microservice uses libcurl to open an ftp session with a remote server and read from a remote file.
- *	The results are written to a newly created iRODS object, one block at a time until the whole file is read.
- * \param[in] 
- *    target - Required - a STR_MS_T containing the remote URL.
- * \param[in] 
- *    destObj - Required - a DataObjInp_MS_T or a STR_MS_T which would be taken as the object's path.
- * \param[out] 
- *    status - a INT_MS_T containing the status.
+ *    The results are written to a newly created iRODS object, one block at a time until the whole file is read.
+ *
+ * \usage
+ * As seen in modules/URL/test/ftpGet.ir
+ *
+ * testrule||msiFtpGet(*target, *destObj, *status)##writePosInt(stdout, *status)##writeLine(stdout, "")|nop
+ * *target=$1%*destObj=$2
+ * ruleExecOut
+ *
+ * \param[in] target - Required - a STR_MS_T containing the remote URL.
+ * \param[in] destObj - Required - a DataObjInp_MS_T or a STR_MS_T which would be taken as the object's path.
+ * \param[out] status - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExecInfo_t *rei)
@@ -204,8 +233,4 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
 	
 	return (rei->status);
 }
-
-
-
-
 

@@ -1,13 +1,13 @@
 
 /**
- * @file	guinotMS.c
+ * @file  guinotMS.c
  *
- * @brief	Microservices contributed by Romain Guinot
+ * @brief Microservices contributed by Romain Guinot
  *
  * To be added later to core afterwards
  * 
  *
- * @author	Romain Guinot
+ * @author  Romain Guinot
  */
 
 #include "rsApiHandler.h"
@@ -35,26 +35,52 @@ getFormattedLocalTimeFromRodsTime(char *timeStrIn,
 
 
 /**
- * \fn msiGetFormattedSystemTime
- * \author  Romain Guinot
- * \date   2008
+ * \fn msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,
+ *          msParam_t* inpFormatParam, ruleExecInfo_t *rei)
+ *
  * \brief This microservice returns the local system time
+ *
+ * \module guinot
+ *
+ * \since pre-2.1
+ *
+ * \author  Romain Guinot
+ * \date    2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
  * \note Default output format is system time in seconds, use 'human' as input 
-         aram for human readable format.
- * \param[in] 
- *    inpParam - Optional - a STR_MS_T containing the desired output format
- * \param[out] 
- *    outParam - a STR_MS_T containing the time
+ *       parameter for human readable format.
+ *
+ * \usage
+ * This will return system time in seconds:
+ * testrule||msiGetFormattedSystemTime(*Out,null,null)##writeLine(stdout,*Out)|nop
+ * null
+ * ruleExecOut
+ *
+ * \param[out] outParam - a STR_MS_T containing the time
+ * \param[in] inpParam - Optional - a STR_MS_T containing the desired output format (human)
+ * \param[in] inpFormatParam - Optional - a STR_MS_T containing printf formatting (if inpParam was human)
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
-msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,msParam_t* i
-			   npFormatParam, ruleExecInfo_t *rei)
+msiGetFormattedSystemTime(msParam_t* outParam, msParam_t* inpParam,
+        msParam_t* inpFormatParam, ruleExecInfo_t *rei)
 {
   char *format;
   char *dateFormat;

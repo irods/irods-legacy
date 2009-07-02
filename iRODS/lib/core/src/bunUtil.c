@@ -26,8 +26,8 @@ rodsPathInp_t *rodsPathInp)
     if (status < 0) return status;
     
     for (i = 0; i < rodsPathInp->numSrc; i++) {
-        collPath = &rodsPathInp->destPath[i];	/* iRods Collection */
-        structFilePath = &rodsPathInp->srcPath[i];	/* iRods StructFile */
+        collPath = &rodsPathInp->destPath[i];	/* iRODS Collection */
+        structFilePath = &rodsPathInp->srcPath[i];	/* iRODS StructFile */
 
         getRodsObjType (conn, collPath);
 

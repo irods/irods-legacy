@@ -60,7 +60,7 @@ int
 _rcRmColl (rcComm_t *conn, collInp_t *rmCollInp, 
 collOprStat_t **collOprStat);
 
-/* rcRmColl - Recursively Remove a iRods collection.
+/* rcRmColl - Recursively Remove a iRODS collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   collInp_t *collInp - generic coll input. Relevant items are:

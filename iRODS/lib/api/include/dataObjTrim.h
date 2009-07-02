@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjTrim - Trim the copies (replica) of an iRods data object.
+/* rcDataObjTrim - Trim the copies (replica) of an iRODS data object.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

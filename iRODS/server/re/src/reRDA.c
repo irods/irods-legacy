@@ -1,8 +1,13 @@
+/**
+ * @file reRDA.c
+ *
+ * /brief Microservices for the Rule-based Database Access (RDA).
+ */
+
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/*
- Microservices for the Rule-based Database Access (RDA).
- */
+
 #include "reGlobalsExtern.h"
 
 #include "rdaHighLevelRoutines.h"
@@ -11,27 +16,52 @@
 /* For now, uncomment this line to build RDA #define BUILD_RDA 1  */
 /* Do same in rdaHighLevelRoutines.c */
 
-/*
- * \fn msiRdaStdout
+/**
+ * \fn msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
+ *      msParam_t *inpParam1, msParam_t *inpParam2, 
+ *      msParam_t *inpParam3, msParam_t *inpParam4, 
+ *      ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls new RDA functions to interface
+ *    to an arbitrary database (under iRODS access control), getting results
+ *    (i.e. from a query) and returning them in stdout.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author Wayne Schroeder
  * \date   2008-05-12
- * \brief This microservice calls new RDA functions to interface
- * to an arbitrary database (under iRODS access control), getting results
- * (i.e. from a query) and returning them in stdout.
- * \note 
- * \param[in]
- *    inpRdaName - string, name of the RDA being used
- *    inpSQL - string, the SQL to use
- *    inpParam1-4 optional - STR_MS_T parameters (bind variables) to
- *    the SQL.
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
+ * \param[in] inpSQL -  a STR_MS_T which is the SQL
+ * \param[in] inpParam1 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam2 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam3 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam4 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa 
  * \bug  no known bugs
- */
-
+**/
 int
 msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
 	      msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -123,26 +153,53 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
 
 }
 
-/*
- * \fn msiRdaToDataObj
+/**
+ * \fn msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL, 
+ *      msParam_t *inpParam1, msParam_t *inpParam2, 
+ *      msParam_t *inpParam3, msParam_t *inpParam4, 
+ *      msParam_t *inpOutObj, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls new RDA functions to interface
+ *    to an arbitrary database (under iRODS access control), getting results
+ *    (i.e. from a query) and writing them to an open DataObject.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author Wayne Schroeder
  * \date   2008-05-15
- * \brief This microservice calls new RDA functions to interface
- * to an arbitrary database (under iRODS access control), getting results
- * (i.e. from a query) and writing them to an open DataObject.
- * \note 
- * \param[in]
- *    inpRdaName - string, name of the RDA being used
- *    inpSQL - STR_MS_T which is the SQL.
- *    inpParam2-5 optional - STR_MS_T parameters (bind variables) to the SQL,
- *    inpOutObj - open descriptor to write results to.
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
+ * \param[in] inpSQL - a STR_MS_T which is the SQL
+ * \param[in] inpParam1 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam2 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam3 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam4 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpOutObj - a INT_MS_T, open descriptor to write results to.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa 
  * \bug  no known bugs
- */
+**/
 int
 msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL, 
 	      msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -255,27 +312,52 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
 
 }
 
-/*
- * \fn msiRdaNoResults
+/**
+ * \fn msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
+ *      msParam_t *inpParam1, msParam_t *inpParam2, 
+ *      msParam_t *inpParam3, msParam_t *inpParam4, 
+ *      ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls new RDA functions to interface
+ *    to an arbitrary database (under iRODS access control), performing
+ *    a SQL that does not return results.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author Wayne Schroeder
  * \date   2008-06-03
- * \brief This microservice calls new RDA functions to interface
- * to an arbitrary database (under iRODS access control), performing
- * a SQL that does not return results.
- * \note 
- * \param[in]
- *    inpRdaName - string, name of the RDA being used
- *    inpSQL - string, the SQL to use
- *    inpParam1-4 optional - STR_MS_T parameters (bind variables) to
- *    the SQL.
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
+ * \param[in] inpSQL - a STR_MS_T which is the SQL
+ * \param[in] inpParam1 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam2 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam3 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in] inpParam4 - Optional - STR_MS_T parameters (bind variables) to the SQL.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa 
  * \bug  no known bugs
- */
-
+**/
 int
 msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
 	      msParam_t *inpParam1, msParam_t *inpParam2, 
@@ -360,24 +442,46 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
 
 }
 
-
-/*
- * \fn msiRdaCommit
+/**
+ * \fn msiRdaCommit(ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls new RDA functions to interface
+ *    to an arbitrary database (under iRODS access control), performing
+ *    a commit operation.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author Wayne Schroeder
  * \date   2008-06-03
- * \brief This microservice calls new RDA functions to interface
- * to an arbitrary database (under iRODS access control), performing
- * a commit operation.
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa 
  * \bug  no known bugs
- */
-
+**/
 int
-msiRdaCommit(ruleExecInfo_t *rei) {
+msiRdaCommit(ruleExecInfo_t *rei)
+{
 #if defined(BUILD_RDA) 
     rsComm_t *rsComm; 
     int status;
@@ -398,23 +502,46 @@ msiRdaCommit(ruleExecInfo_t *rei) {
 #endif
 }
 
-/*
- * \fn msiRdaRollback
+/**
+ * \fn msiRdaRollback(ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls new RDA functions to interface
+ *    to an arbitrary database (under iRODS access control), performing
+ *    a rollback operation.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author Wayne Schroeder
  * \date   2008-08-05
- * \brief This microservice calls new RDA functions to interface
- * to an arbitrary database (under iRODS access control), performing
- * a rollback operation.
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa 
  * \bug  no known bugs
- */
-
+**/
 int
-msiRdaRollback(ruleExecInfo_t *rei) {
+msiRdaRollback(ruleExecInfo_t *rei)
+{
 #if defined(BUILD_RDA) 
     rsComm_t *rsComm; 
     int status;

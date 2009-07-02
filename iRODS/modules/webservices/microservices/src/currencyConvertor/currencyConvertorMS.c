@@ -1,3 +1,8 @@
+/**
+ * @file currencyConvertorMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -6,7 +11,7 @@
  *
  * @brief	convert currency from one country to another
  * 
- * currencyConvertor can be used to convert currencies from one  to another
+ * currencyConvertor can be used to convert currencies from one to another via the
  * web service provided by http://www.webserviceX.NET/
  *
  * @author	Arcot Rajasekar / University of California, San Diego
@@ -190,6 +195,51 @@ int getIdFromCountryCodes(char *incc) {
   return(-100);
 }
 
+
+/**
+ * \fn msiConvertCurrency (msParam_t *inConvertFromParam, msParam_t *inConvertToParam, msParam_t *outRateParam, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice returns conversion rates for currencies from one country to 
+ * another, using web service provided by http://www.webserviceX.NET
+ *
+ * \module webservices
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date  May 2008
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in clients/icommands/test/ruleTest28.ir
+ *
+ * testrule||msiConvertCurrency(*InCurr,*OutCurr,*Rate)|nop
+ *
+ * \param[in] inConvertFromParam - a msParam of type STR_MS_T; 3-letter country code enumerated in  structure char *countryCodeNames[]
+ * \param[in] inConvertToParam - a msParam of type STR_MS_T; 3-letter country code (same as above)
+ * \param[out] outRateParam - a msParam of operation status STR_MS_T; float number printed onto string
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiConvertCurrency(msParam_t* inConvertFromParam, msParam_t* inConvertToParam, 
 	    msParam_t* outRateParam, 

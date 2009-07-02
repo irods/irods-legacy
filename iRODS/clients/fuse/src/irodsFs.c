@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* irodsFs.c - The main program of the iRods/Fuse server. It is to be run to
+/* irodsFs.c - The main program of the iRODS/Fuse server. It is to be run to
  * serve a single client 
  */
 
@@ -147,7 +147,7 @@ usage ()
 {
    char *msgs[]={
    "Usage : irodsFs [-hd] [-o opt,[opt...]]",
-"Single user iRods/Fuse server",
+"Single user iRODS/Fuse server",
 "Options are:",
 " -h  this help",
 " -d  FUSE debug mode",

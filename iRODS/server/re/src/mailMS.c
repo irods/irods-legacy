@@ -1,8 +1,58 @@
+/**
+ * @file	mailMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 
+/**
+ * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sends e-mail using the mail command in the unix system. The first argument is the e-mail address of the receiver. The 
+ *         second argument is the subject string and the third argument is the body of the e-mail. No attachments are supported. The sender of the e-mail 
+ *         is the unix uxr-id running the irodsServer.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-19
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleInp5
+ *
+ * myTestRule||msiSendMail(moore@sdsc.edu,irods test,mail sent by an msi.did you get this)|nop
+ *
+ * \param[in] xtoAddr - a msParam of type STR_MS_T which is an address of the receiver.
+ * \param[in] xsubjectLine - a msParam of type STR_MS_T which is a subject of the message.
+ * \param[in] xbody - a msParam of type STR_MS_T which is a body of the message.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none 
+ * \sideeffect An e-mail sent to the specified recipient.
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei)
 {
   char *mailStr;
@@ -75,6 +125,51 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
 }
 
 
+/**
+ * \fn msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sends contents of the buffer rei->ruleExecOut->stdoutBuf.buf as email. It is a microservice which, given a toAddr parameter 
+ *         (an e-mail address) and a subjectLine parameter, sends out the stdout buffer as the body of the e-mail.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008-05
+ * 
+ * \remark Ketan Palshikar - created msi documentation, 2009-06-19
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/purgeCollAndEmail.ir
+ *
+ * purgeRule(*Condition,*MailTo)||acPurgeFiles(*Condition)##msiSendStdoutAsEmail(*MailTo,Purge Results)|nop##nop
+ * *Condition= COLL_NAME =  '/tempZone/home/rods/loopTest'%*MailTo=sekar@sdsc.edu
+ * *Condition%ruleExecOut
+ *
+ * \param[in] xtoAddr - a msParam of type STR_MS_T which is the address of the receiver.
+ * \param[in] xsubjectLine - a msParam of type STR_MS_T which is the subject of the message.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none 
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei)
 {
   int i;

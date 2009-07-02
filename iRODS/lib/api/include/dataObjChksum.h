@@ -44,7 +44,7 @@ int
 rcDataObjChksum (rcComm_t *conn, dataObjInp_t *dataObjChksumInp, 
 char **outChksum);
 
-/* rcDataObjChksum - Chksum a iRods data object.
+/* rcDataObjChksum - Chksum a iRODS data object.
  * Input - 
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

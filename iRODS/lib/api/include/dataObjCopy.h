@@ -39,7 +39,7 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjCopy - Copy a iRods data object.
+/* rcDataObjCopy - Copy a iRODS data object.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjCopyInp_t *dataObjCopyInp - Relevant items are:

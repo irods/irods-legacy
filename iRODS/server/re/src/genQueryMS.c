@@ -1,3 +1,10 @@
+/**
+ * @file	genQueryMS.c
+ *
+ */
+
+
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
@@ -110,6 +117,48 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
   return(0);
 }
 
+/**
+ * \fn msiExecGenQuery (msParam_t *genQueryInParam, msParam_t *genQueryOutParam, ruleExecInfo_t *rei)
+ *
+ * \brief   This function executes a given general query structure and returns results
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   2008
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note Takes a SQL-like iRODS query (no FROM clause) and returns a table structure. Use #msiGetMoreRows to get all rows.
+ *
+ * \usage
+ * 
+ *  As seen in clients/icommands/test/queryContinueExple.ir
+ * 
+ * continue test||assign(*ContInx, 1)##msiMakeGenQuery("DATA_NAME, COLL_NAME",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)##whileExec(*ContInx > 0,msiGetMoreRows(*GenQInp,*GenQOut,*ContInx)##forEachExec(*GenQOut,msiGetValByKey(*GenQOut, "COLL_NAME",*DataObj)##writeString(stdout,*DataObj)##writeString(stdout,"/")##msiGetValByKey(*GenQOut, "DATA_NAME",*DataObj)##writeString(stdout,*DataObj)##writeLine(stdout,""), nop), nop)|nop
+ *
+ * \param[in] genQueryInParam - a msParam of type GenQueryInp_MS_T
+ * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa msiGetMoreRows and msiExecStrCondQuery
+ * \bug  no known bugs
+**/
 int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
 {
   genQueryInp_t *genQueryInp;
@@ -138,6 +187,44 @@ _makeQuery( char *sel, char *cond, char **sql)
   return(0);
 }
 
+/**
+ * \fn msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam, msParam_t* queryOutParam, ruleExecInfo_t *rei)
+ * 
+ * \brief Creates sql query from parameter list and conditions.
+ *
+ * \module core
+ *
+ * \since 
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] selectListParam - a STR_MS_T containing the parameters.
+ * \param[in] conditionsParam - a STR_MS_T containing the conditions.
+ * \param[out] queryOutParam - a STR_MS_T containing the parameters and conditions as sql.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam, 
 	     msParam_t* queryOutParam, ruleExecInfo_t *rei)
@@ -155,22 +242,41 @@ msiMakeQuery(msParam_t* selectListParam, msParam_t* conditionsParam,
 
 
 /**
- * \fn msiGetMoreRows
+ * \fn msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t *continueInx, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice continues an unfinished query.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date   2008-09-18
- * \brief Continues an unfinished query
- * \note Gets the next batch of rows for an open ICAT query. Likely to follow msiMakeGenQuery and msiExecGenQuery.
- * \param[in] 
- *    query_msp - Required - a GenQueryInp_MS_T containing the query parameters and conditions.
- * \param[in] 
- *    genQueryOut_msp - Required - a GenQueryOut_MS_T to write results to. If its continuation index is 0 the query will be closed.
- * \param[out] 
- *    continueInx - a INT_MS_T containing the new continuation index (after the query).
+ * \date    2008-09-18
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
+ * \note This microservice gets the next batch of rows for an open iCAT query. Likely to follow msiMakeGenQuery and msiExecGenQuery.
+ *
+ * \usage None
+ *
+ * \param[in] genQueryInp_msp - Required - a GenQueryInp_MS_T containing the query parameters and conditions.
+ * \param[in] genQueryOut_msp - Required - a GenQueryOut_MS_T to write results to. If its continuation index is 0 the query will be closed.
+ * \param[out] continueInx - a INT_MS_T containing the new continuation index (after the query).
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -254,23 +360,42 @@ msiGetMoreRows(msParam_t *genQueryInp_msp, msParam_t *genQueryOut_msp, msParam_t
 
 
 /**
- * \fn msiMakeGenQuery
+ * \fn msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice sets up a GenQueryInp_MS_T from a list of parameters and conditions
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date   2008-09-19
- * \brief Sets up a GenQueryInp_MS_T from a list of parameters and conditions
+ * \date    2008-09-19
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-17
+ *
  * \note This microservice sets up a genQueryInp_t data structure needed by calls to rsGenQuery().
- *	To be used before msiExecGenQuery and msiGetMoreRows.
- * \param[in] 
- *    selectListParam - Required - a STR_MS_T containing the parameters.
- * \param[in] 
- *    onditionsParam - Required - a STR_MS_T containing the conditions 
- * \param[out] 
- *    genQueryInpParam - a GenQueryInp_MS_T containing the parameters and conditions.
+ *    To be used before msiExecGenQuery and msiGetMoreRows.
+ *
+ * \usage None
+ *
+ * \param[in] selectListStr - Required - a STR_MS_T containing the parameters.
+ * \param[in] condStr - Required - a STR_MS_T containing the conditions 
+ * \param[out] genQueryInpParam - a GenQueryInp_MS_T containing the parameters and conditions.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int

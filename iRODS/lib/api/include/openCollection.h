@@ -57,7 +57,7 @@ extern "C" {
 int
 rcOpenCollection (rcComm_t *conn, collInp_t *openCollInp);
 
-/* rcOpenCollection - Open a iRods collection.
+/* rcOpenCollection - Open a iRODS collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   openCollInp_t *collInp - generic coll input. Relevant items are:

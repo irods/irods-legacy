@@ -57,11 +57,11 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjRead - Read an opened iRods data object descriptor.
+/* rcDataObjRead - Read an opened iRODS data object descriptor.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *fileReadInp - Relevant items are:
- *      l1descInx - the iRods data object descriptor to read.
+ *      l1descInx - the iRODS data object descriptor to read.
  *      len - the number of bytes to read
  *
  * OutPut -

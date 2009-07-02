@@ -1051,7 +1051,7 @@ rodsLogSqlResult(char *stat) {
 }
 
 /* 
-Convert an iRods error code to the corresponding name.
+Convert an iRODS error code to the corresponding name.
  */
 char *
 rodsErrorName(int errorValue, char **subName)

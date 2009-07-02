@@ -42,7 +42,7 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjPut - Put (upload) a local file to iRods.
+/* rcDataObjPut - Put (upload) a local file to iRODS.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

@@ -142,7 +142,7 @@ usage ()
 " ", 
 "Options are:",
 " -H  hostAddr - the host address where the command will be executed.",
-" -p  hintPath - A full iRods file path. The command will be executed on",
+" -p  hintPath - A full iRODS file path. The command will be executed on",
 "      the host where this file is stored.",
 " -P  hintPath - Same as the -p option except that the resolved pphysical",
 "      path from the logical hintPath will be used as the first argument",

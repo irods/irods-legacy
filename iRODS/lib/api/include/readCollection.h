@@ -37,7 +37,7 @@ int
 rcReadCollection (rcComm_t *conn, int handleInxInp,
 collEnt_t **collEnt);
 
-/* rcReadCollection - Read a iRods collection. rcOpenCollection must be
+/* rcReadCollection - Read a iRODS collection. rcOpenCollection must be
  *    called first.
  * Input -
  *   rcComm_t *conn - The client connection handle.

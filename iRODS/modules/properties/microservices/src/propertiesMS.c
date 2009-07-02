@@ -1,16 +1,21 @@
+/**
+ * @file propertiesMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /**
- * @file	propertiesMS.c
+ * @file  propertiesMS.c
  *
- * @brief	Manage a list of keyword-value pair properties.
+ * @brief Manage a list of keyword-value pair properties.
  *
  * Properties can be used to store metadata extracted from a file or
  * database, or to build up a list of options to control how a
- * microservice prcesses data.
+ * microservice processes data.
  *
- * @author	David R. Nadeau / University of California, San Diego
+ * @author  David R. Nadeau / University of California, San Diego
  */
 
 #include "rsApiHandler.h"
@@ -19,17 +24,44 @@
 
 
 
-
 /**
- * Create a new empty property list.
+ * \fn msiPropertiesNew( msParam_t *listParam, ruleExecInfo_t *rei )
  *
- * @param[out]		listParam	the returned new property list
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \brief Create a new empty property list
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[out] listParam - a KeyValPair_MS_T, the newly created property list
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
-msiPropertiesNew( msParam_t *listParam,
-	ruleExecInfo_t *rei )
+msiPropertiesNew( msParam_t *listParam, ruleExecInfo_t *rei )
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesNew" );
 
@@ -40,15 +72,43 @@ msiPropertiesNew( msParam_t *listParam,
 }
 
 /**
- * Clear a property list.
+ * \fn msiPropertiesClear( msParam_t *listParam, ruleExecInfo_t *rei )
  *
- * @param[in,out]	listParam	the property list to clear
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \brief Clear a property list
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] listParam - a KeyValPair_MS_T, the property list to clear
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
-msiPropertiesClear( msParam_t *listParam,
-	ruleExecInfo_t *rei )
+msiPropertiesClear( msParam_t *listParam, ruleExecInfo_t *rei )
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesClear" );
 
@@ -62,13 +122,42 @@ msiPropertiesClear( msParam_t *listParam,
 }
 
 /**
- * Clone a property list, returning a new property list.
+ * \fn msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t *rei )
  *
- * @param[in]		listParam	the property list to clone
- * @param[out]		cloneParam	the returned property list clone
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \brief Clone a property list, returning a new property list
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] listParam - a KeyValPair_MS_T, the property list to clone
+ * \param[out] cloneParam - a KeyValPair_MS_T, the returned clone (new property list)
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t *rei )
 {
@@ -86,23 +175,47 @@ msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t 
 
 
 
-
-
-
 /**
- * Add a property and value to a property list.  If the property is already
- * in the list, its value is changed.  Otherwise the property is added.
+ * \fn msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
  *
- * @param[in,out]	listParam	the property list to be added to
- * @param[in]		keywordParam	a keyword to add
- * @param[in]		valueParam	a value to add
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- * @see	#msiPropertiesSet
- */
+ * \brief Add a property and value to a property list.  If the property is already
+ *    in the list, its value is changed.  Otherwise the property is added.
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] listParam - a KeyValPair_MS_T, the property list to be added to
+ * \param[in] keywordParam - a STR_MS_T, a keyword to add
+ * \param[in] valueParam - a STR_MS_T, a value to add
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa #msiPropertiesSet
+ * \bug  no known bugs
+**/
 int
-msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam,
-	ruleExecInfo_t *rei )
+msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesAdd" );
 
@@ -122,16 +235,44 @@ msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
 }
 
 /**
- * Remove a property from the list.
+ * \fn msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo_t *rei )
  *
- * @param[in,out]	listParam	the property list to be removed from
- * @param[in]		keywordParam	a keyword to remove
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \brief Remove a property from the list.
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] listParam - a KeyValPair_MS_T, the property list to be removed from
+ * \param[in] keywordParam - a STR_MS_T, a keyword to remove
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
-msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam,
-	ruleExecInfo_t *rei )
+msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo_t *rei )
 {
 	RE_TEST_MACRO( "    Calling msiPropertiesRemove" );
 
@@ -148,18 +289,45 @@ msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam,
 }
 
 /**
- * Get the value of a property in a property list.  The property list is
- * left unmodified.
+ * \fn msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
  *
- * @param[in]		listParam	the property list to get from
- * @param[in]		keywordParam	a keyword to get
- * @param[out]		valueParam	a value
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \brief Get the value of a property in a property list.  The property list is left unmodified.
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] listParam - a KeyValPair_MS_T, the property list to be queried
+ * \param[in] keywordParam - a STR_MS_T, a keyword to get
+ * \param[out] valueParam - a STR_MS_T, the returned value
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
-msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam,
-	ruleExecInfo_t *rei )
+msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
 {
 	char* value = NULL;
 
@@ -179,37 +347,91 @@ msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
 }
 
 /**
- * Set the value of a property in a property list.  If the property is already
- * in the list, its value is changed.  Otherwise the property is added.
- * Same as {@link #msiPropertiesAdd}.
+ * \fn msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
  *
- * @param[in,out]	listParam	the property list to set within
- * @param[in]		keywordParam	a keyword to set
- * @param[in]		valueParam	a value
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- * @see	#msiPropertiesAdd
- */
+ * \brief Set the value of a property in a property list.  If the property is already
+ * in the list, its value is changed.  Otherwise the property is added. Same as {@link #msiPropertiesAdd}.
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] listParam - a KeyValPair_MS_T, the property list to set within
+ * \param[in] keywordParam - a STR_MS_T, a keyword to set
+ * \param[out] valueParam - a STR_MS_T, a value
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa #msiPropertiesAdd
+ * \bug  no known bugs
+**/
 int
-msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam,
-	ruleExecInfo_t *rei )
+msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valueParam, ruleExecInfo_t *rei )
 {
 	return msiPropertiesAdd( listParam, keywordParam, valueParam, rei );
 }
 
 /**
- * Return true (integer 1) if the keyword has a property value in the property list,
+ * \fn msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* trueFalseParam, ruleExecInfo_t *rei )
+ *
+ * \brief Return true (integer 1) if the keyword has a property value in the property list,
  * and false (integer 0) otherwise.  The property list is unmodified.
  *
- * @param[in]		listParam	the property list to look in
- * @param[in]		keywordParam	a keyword to get
- * @param[out]		trueFalseParam	true if set
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in,out] listParam - a KeyValPair_MS_T, the property list to look in
+ * \param[in] keywordParam - a STR_MS_T, a keyword to set
+ * \param[out] trueFalseParam - a INT_MS_T, true if set
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
-msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* trueFalseParam,
-	ruleExecInfo_t *rei )
+msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* trueFalseParam, ruleExecInfo_t *rei )
 {
 	char* value = NULL;
 
@@ -234,17 +456,44 @@ msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* t
 
 
 /**
- * Convert a property list into a string buffer.  The property list is
- * left unmodified.
+ * \fn msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam, ruleExecInfo_t *rei )
  *
- * @param[in]		listParam	the property list
- * @param[out]		stringParam	a string buffer
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \brief Convert a property list into a string buffer.  The property list is left unmodified.
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] listParam - a KeyValPair_MS_T, the property list
+ * \param[out] stringParam - a STR_MS_T, a string buffer
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
-msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam,
-	ruleExecInfo_t *rei )
+msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam, ruleExecInfo_t *rei )
 {
 	char* string = NULL;
 
@@ -261,17 +510,44 @@ msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam,
 }
 
 /**
- * Parse a string into a new property list.  The existing property list,
- * if any, is deleted.
+ * \fn msiPropertiesFromString( msParam_t *stringParam, msParam_t* listParam, ruleExecInfo_t *rei )
  *
- * @param[in]		stringParam	a string buffer
- * @param[out]		listParam	the property list with the strings added
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- */
+ * \brief Parse a string into a new property list.  The existing property list, if any, is deleted.
+ *
+ * \module properties
+ *
+ * \since pre-2.1
+ *
+ * \author  David R. Nadeau / University of California, San Diego
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] stringParam - a STR_MS_T, a string buffer
+ * \param[out] listParam - a KeyValPair_MS_T, the property list with the strings added
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
-msiPropertiesFromString( msParam_t *stringParam, msParam_t* listParam,
-	ruleExecInfo_t *rei )
+msiPropertiesFromString( msParam_t *stringParam, msParam_t* listParam, ruleExecInfo_t *rei )
 {
 	keyValPair_t* list = NULL;
 

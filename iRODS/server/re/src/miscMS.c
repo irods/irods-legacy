@@ -1,3 +1,8 @@
+/**
+ * @file  miscMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -12,6 +17,46 @@
 #include "miscUtil.h"
 
 
+/**
+ * \fn msiRegisterData(ruleExecInfo_t *rei)
+ *
+ * \brief Register a new data object 
+ *
+ * \module framework
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-30
+ *
+ * \note
+ *
+ * \usage
+ * As seen in modules/ERA/test/applyDCmetadata.ir
+ * 
+ * testrule||msiApplyDCMetadataTemplate(*objPath, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * *objPath=/tempZone/home/antoine/NARA_MS.txt
+ * ruleExecOut
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiRegisterData(ruleExecInfo_t *rei)
 {  
@@ -60,7 +105,7 @@ recover_msiRegisterData(ruleExecInfo_t *rei)
   }
   /**** This is Just a Test Stub  ****/
 
-  msiRollback(rei); /** rolling back **/
+  msiRollback(rei); /* rolling back */
   return(0);
 
 }
@@ -122,7 +167,7 @@ recover_print_hello_arg(msParam_t* xs, ruleExecInfo_t *rei)
 
 int 
 msitest1 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
-{ /** A is IN, B is IN, C is OUT **/
+{ /* A is IN, B is IN, C is OUT */
   msParam_t *mPA, *mPB, *mPC;
 
   char tmpStr[200];
@@ -141,7 +186,7 @@ msitest1 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
 }
 int 
 msitest2 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
-{ /** A is IN, B is OUT, C is OUT **/
+{ /* A is IN, B is OUT, C is OUT */
   msParam_t *mPA, *mPB, *mPC;
 
   char tmpStr[200];
@@ -163,7 +208,7 @@ msitest2 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
 
 int 
 msitest3 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
-{ /** A is IN, B is IN C is IN **/
+{ /* A is IN, B is IN C is IN */
   msParam_t *mPA, *mPB, *mPC;
 
   char tmpStr[200];
@@ -182,20 +227,45 @@ msitest3 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
 
 
 /**
- * \fn msiApplyDCMetadataTemplate
+ * \fn msiApplyDCMetadataTemplate(msParam_t* inpParam, msParam_t* outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice adds 15 empty Dublin Core Metadata fields to an object or collection.
+ *
+ * \module framework
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date   2008-04-04
- * \brief Adds Dublin Core Metadata fields to an object or collection
- * \note 
- * \param[in] 
- *    inpParam - a STR_MS_T containing the target object's path
- * \param[out] 
- *    outParam - an INT_MS_T containing the status
+ * \date    2008-04-04
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
+ * \note
+ *
+ * \usage
+ * As seen in modules/ERA/test/applyDCmetadata.ir
+ * 
+ * testrule||msiApplyDCMetadataTemplate(*objPath, *Status)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ * *objPath=/tempZone/home/antoine/NARA_MS.txt
+ * ruleExecOut
+ *
+ * \param[in] inpParam - a STR_MS_T containing the target object's path
+ * \param[out] outParam - an INT_MS_T containing the status
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 upon success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int

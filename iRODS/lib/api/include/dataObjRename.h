@@ -34,7 +34,7 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName);
 #endif
 
 /* prototype for the client call */
-/* rcDataObjRename - Rename a iRods data object or collection.
+/* rcDataObjRename - Rename a iRODS data object or collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjCopyInp_t *dataObjRenameInp - Relevant items are:

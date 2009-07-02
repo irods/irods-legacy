@@ -87,7 +87,7 @@ msiChkRechkRecompChkSum4DatObjVol2 (msParam_t *coll, msParam_t * inpParam2, msPa
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiChkRechkRecompChkSum4DatObjVol2: input inpParam1 error. status = %d", rei->status);
 	sprintf (strOut,
-                 "usage 'foo iRods_collection size_min size_max', ERROR:  msiChkRechkRecompChkSum4DatObjVol2(), input inpParam1 error\n");
+                 "usage 'foo iRODS_collection size_min size_max', ERROR:  msiChkRechkRecompChkSum4DatObjVol2(), input inpParam1 error\n");
         rodsLog (LOG_ERROR,
 		 "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam1 error.");
         i = fillStrInMsParam (outParam, strOut);        // MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
@@ -103,7 +103,7 @@ msiChkRechkRecompChkSum4DatObjVol2 (msParam_t *coll, msParam_t * inpParam2, msPa
     else
       {
 	sprintf (strOut,
-		 "usage 'foo iRods_collection size_min size_max', ERROR:  msiChkRechkRecompChkSum4DatObjVol2(), input inpParam2 error\n");
+		 "usage 'foo iRODS_collection size_min size_max', ERROR:  msiChkRechkRecompChkSum4DatObjVol2(), input inpParam2 error\n");
 	rodsLog (LOG_ERROR,
 	       "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam2 error.");
 	i = fillStrInMsParam (outParam, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
@@ -118,7 +118,7 @@ msiChkRechkRecompChkSum4DatObjVol2 (msParam_t *coll, msParam_t * inpParam2, msPa
     else
       {
 	sprintf (strOut,
-		 "usage 'foo iRods_collection size_min size_max', ERROR:  msiChkRechkRecompChkSum4DatObjVol2(), input inpParam3 error\n");
+		 "usage 'foo iRODS_collection size_min size_max', ERROR:  msiChkRechkRecompChkSum4DatObjVol2(), input inpParam3 error\n");
 	rodsLog (LOG_ERROR,
 	       "msiChkRechkRecompChkSum4DatObjVol2(),  input inpParam3 error.");
 	i = fillStrInMsParam (outParam, strOut);	// MsParam.c parse  addformatedtrsing to bytes WriteBytesBuff printMsParam.c
@@ -263,7 +263,7 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
 	  // rei->status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 	  
 	  rodsLog (LOG_ERROR,
-		   "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 failed, (%s) is not an iRods data object (dataObj == NULL), istatus=%d, rei->status=%d", myCollInp->collName, status, rei->status);
+		   "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 failed, (%s) is not an iRODS data object (dataObj == NULL), istatus=%d, rei->status=%d", myCollInp->collName, status, rei->status);
 	  rei->status=UNMATCHED_KEY_OR_INDEX;
 	  return (rei->status);
 	}
@@ -274,7 +274,7 @@ printf("GJKa2b myGlbPar1=(%s), myCollInp->collName=(%s)\n", myGlbPar1, myCollInp
 	  // GJK return(0);
 	}
 	rodsLog (LOG_ERROR,
-		 "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 failed, (%s) is not an iRods collection, rei->status=%d", myCollInp->collName, rei->status);
+		 "msiChkRechkRecompChkSum4DatObjVol2: msiChkRechkRecompChkSum4DatObjVol2 failed, (%s) is not an iRODS collection, rei->status=%d", myCollInp->collName, rei->status);
 	rei->status=UNMATCHED_KEY_OR_INDEX;  
 	return (rei->status);
       }
@@ -477,7 +477,7 @@ strCreaTime = NULL;
 
 /*
  
-Input : iRods absulute path of an object or collection,
+Input : iRODS absulute path of an object or collection,
 Unix time in seconds for the time , if the file wa not checket after that input time, than check it and recompute the sum
 and updata the AVY time stamp
 */
@@ -617,7 +617,7 @@ intChkRechkRecompChkSum4DatObjVol2  (rsComm_t * rsComm, char *strFullDataPath,
 	  char *dataObjChksumStr = NULL;
 	  dataObjInfo_t *dataObjInfoHead = NULL;
 
-	  /* zero the struct and fill in the iRods object/file name */
+	  /* zero the struct and fill in the iRODS object/file name */
 	  memset (&dataObjInp, 0, sizeof (dataObjInp));
 	  // fix '...foo.pl/' pozdeji   
 	  rstrcpy (dataObjInp.objPath, strFullDataPath, MAX_NAME_LEN);
@@ -640,7 +640,7 @@ intChkRechkRecompChkSum4DatObjVol2  (rsComm_t * rsComm, char *strFullDataPath,
 	  if (rei->status != 0)
 	    {
 	      rodsLog (LOG_ERROR,
-		       "GJK-P P.994.27.1b. ERROR in intChkRechkRecompChkSum4DatObjVol2() in _rsDataObjChksum(), iRods object (%s), returned check sum (%s)\n",
+		       "GJK-P P.994.27.1b. ERROR in intChkRechkRecompChkSum4DatObjVol2() in _rsDataObjChksum(), iRODS object (%s), returned check sum (%s)\n",
 		       dataObjInp.objPath, dataObjChksumStr);
 	      return (-2);
 	    }
@@ -651,7 +651,7 @@ intChkRechkRecompChkSum4DatObjVol2  (rsComm_t * rsComm, char *strFullDataPath,
 	  if (iErr != 0)
 	    {
 	      rodsLog (LOG_ERROR,
-		       "GJK-P P.994.27.1c. ERROR in intChkRechkRecompChkSum4DatObjVol2() in intAddChkSumDateAvuMetadataVol2(),  iRods object (%s), returned check status %d\n",
+		       "GJK-P P.994.27.1c. ERROR in intChkRechkRecompChkSum4DatObjVol2() in intAddChkSumDateAvuMetadataVol2(),  iRODS object (%s), returned check status %d\n",
 		    `   strFullDataPath, status);
 	      return (-3);
 	    }
@@ -946,7 +946,7 @@ int intAddChkSumDateAvuMetadataVol2 (rsComm_t * rsComm, char *objPath, time_t t1
 #endif
     {
       (void) rodsLog (LOG_ERROR,
-		      "The Unix time (%d) is out of reasonable bounds for intAddChkSumDateAvuMetadataVol2() for iRods data object (%s) ",
+		      "The Unix time (%d) is out of reasonable bounds for intAddChkSumDateAvuMetadataVol2() for iRODS data object (%s) ",
 		      (int) t1, objPath);
       return (-1);
     }
@@ -1121,7 +1121,7 @@ msiAddDataObjChksumsTimeStampsToAVUVol2 (msParam_t * inpParam1,
 }
 
 /*
- * Get all Dates of Performed Checksum Operations from metadata AVUs for a given iRods data object.
+ * Get all Dates of Performed Checksum Operations from metadata AVUs for a given iRODS data object.
  * 
  */
 

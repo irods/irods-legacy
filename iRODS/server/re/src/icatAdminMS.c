@@ -1,9 +1,60 @@
+/**
+ * @file	icatAdminMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 
 
+/**
+ * \fn msiCreateUser (ruleExecInfo_t *rei)	
+ *
+ * \brief   This microservice creates a new user
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acCreateUserF1||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
+ *
+ * From the irods wiki: https://www.irods.org/index.php/Rules
+ *
+ * The "acCreateUser" rule, for example, calls "msiCreateUser". 
+ * If that succeeds it invokes the "acCreateDefaultCollections" rule (which calls other rules and msi routines). 
+ * Then, if they all succeed, the "msiCommit" function is called to save persistent state information.
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval (i)
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiCreateUser(ruleExecInfo_t *rei)
 {
   int i;
@@ -28,6 +79,48 @@ int msiCreateUser(ruleExecInfo_t *rei)
   return(i);
 }
 
+/**
+ * \fn msiCreateCollByAdmin (msParam_t *xparColl, msParam_t *xchildName, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice creates a collection by an administrator
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acCreateCollByAdmin(*parColl,*childColl)||msiCreateCollByAdmin(*parColl,*childColl)|nop
+ *
+ * \param[in] xparColl - a msParam of type STR_MS_T
+ * \param[in] xchildName - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval (i)
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
 {
     int i;
@@ -63,6 +156,49 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
   return(i);
 }
 
+/**
+ * \fn msiDeleteCollByAdmin (msParam_t *xparColl, msParam_t *xchildName, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice deletes a collection by administrator 
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acDeleteCollByAdmin(*parColl,*childColl)||msiDeleteCollByAdmin(*parColl,*childColl)|nop
+ *
+ *
+ * \param[in] xparColl - a msParam of type STR_MS_T
+ * \param[in] xchildName - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval (i)
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
 {
    int i;
@@ -105,8 +241,50 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
    return(i);
 }
 
+/**
+ * \fn msiDeleteUser (ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice deletes a user
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acDeleteUserF1||acDeleteDefaultCollections##msiDeleteUser##msiCommit|msiRollback##msiRollback##nop
+ *
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval (i)
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int 
-msiDeleteUser(ruleExecInfo_t *rei) {
+msiDeleteUser(ruleExecInfo_t *rei)
+{
   int i;
   /**** This is Just a Test Stub  ****/
   if (reTestFlag > 0 ) {
@@ -128,8 +306,51 @@ msiDeleteUser(ruleExecInfo_t *rei) {
   return(i);
 }
 
+/**
+ * \fn msiAddUserToGroup (msParam_t *msParam, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice adds a user to a group
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * testrule||msiCreateUser##acCreateDefaultCollections##msiAddUserToGroup(public)##msiCommit|msiRollback##msiRollback##msiRollback##nop
+ *
+ *
+ * \param[in] msParam - a msParam of type STR_MS_T, the name of the group
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval (i)
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int 
-msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei) {
+msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
+{
   int i;
 #ifdef RODS_CAT
   char *groupName;
@@ -157,8 +378,51 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei) {
   return(i);
 }
 
-int msiRenameLocalZone(msParam_t* oldName, msParam_t* newName,
-		       ruleExecInfo_t *rei) {
+/**
+ * \fn msiRenameLocalZone (msParam_t *oldName, msParam_t *newName, ruleExecInfo_t *rei)
+ *
+ * \brief   This microservice renames the local zone by updating various tables
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(/*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
+ *
+ * \param[in] oldName - a msParam of type STR_MS_T
+ * \param[in] newName - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
+{
    int status;
    char *oldNameStr;
    char *newNameStr;
@@ -173,8 +437,51 @@ int msiRenameLocalZone(msParam_t* oldName, msParam_t* newName,
    return(status);
 }
 
-int msiRenameCollection(msParam_t* oldName, msParam_t* newName,
-		       ruleExecInfo_t *rei) {
+/**
+ * \fn msiRenameCollection (msParam_t *oldName, msParam_t *newName, ruleExecInfo_t *rei)
+ *
+ * \brief   This function renames a collection; used via a Rule with #msiRenameLocalZone
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-18
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(/*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
+ *
+ * \param[in] oldName - a msParam of type STR_MS_T
+ * \param[in] newName - a msParam of type STR_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
+{
    int status;
    char *oldNameStr;
    char *newNameStr;
@@ -189,13 +496,44 @@ int msiRenameCollection(msParam_t* oldName, msParam_t* newName,
    return(status);
 }
 
-/* msiAclPolicy -
+/**
+ * \fn msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
  *
- * When called (e.g. from acAclPolicy) and with "STRICT" as the
- * argument, this will set the ACL policy (for GeneralQuery) to be
- * extended (most strict).  See core.irb.
+ * \brief   When called (e.g. from acAclPolicy) and with "STRICT" as the
+ *    argument, this will set the ACL policy (for GeneralQuery) to be
+ *    extended (most strict).  
  *
- */
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date  
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-30
+ *
+ * \note See core.irb
+ *
+ * \usage None
+ *
+ * \param[in] msParam - a msParam of type STR_MS_T - can have value 'STRICT'
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval status
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiAclPolicy(msParam_t *msParam, ruleExecInfo_t *rei)
 {

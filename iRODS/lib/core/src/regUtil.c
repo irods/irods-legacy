@@ -23,7 +23,7 @@ rodsPathInp_t *rodsPathInp)
     initCondForReg (myRodsEnv, myRodsArgs, &dataObjOprInp, rodsPathInp);
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
-        destPath = &rodsPathInp->destPath[i];	/* iRods path */
+        destPath = &rodsPathInp->destPath[i];	/* iRODS path */
         srcPath = &rodsPathInp->srcPath[i];	/* file Path */
 
         getRodsObjType (conn, destPath);
@@ -31,7 +31,7 @@ rodsPathInp_t *rodsPathInp)
 	if (destPath->objState == EXIST_ST &&
 	 myRodsArgs->mountCollection == False) {
 	    rodsLog (LOG_ERROR,
-	      "regUtil: iRodsPath %s already exist", destPath->outPath);
+	      "regUtil: iRODSPath %s already exist", destPath->outPath);
 	    return (CAT_NAME_EXISTS_AS_DATAOBJ);
 	}
 

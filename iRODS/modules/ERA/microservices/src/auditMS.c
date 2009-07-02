@@ -1,3 +1,8 @@
+/**
+ * @file auditMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -5,10 +10,51 @@
 #include "auditUtil.h"
 
 
-/*
- * Retrieves Audit Trail information for a user ID
+/**
+ * \fn msiGetAuditTrailInfoByUserID (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This microservice gets audit trail information by the user identifier
+ *
+ * \module ERA  
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ *  
+ *  As seen in modules/ERA/test/getATinfoByUserID.ir
+ *  
+ *  testrule||msiGetAuditTrailInfoByUserID(10009, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *  null
+ *  ruleExecOut
+ * 
+ * \param[in] inpParam1 - a msParam of type STR_MS_T
+ * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -66,10 +112,51 @@ msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam
 
 
 
-/*
- * Retrieves Audit Trail information for an object ID
+/**
+ * \fn msiGetAuditTrailInfoByObjectID (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This function gets audit trail information by the object identifier
+ *  
+ * \module ERA
+ *  
+ * \since pre-2.1
+ *  
+ * \author 
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ *  As seen in modules/ERA/test/getATinfoByObjectID.ir
+ * 
+ *  testrule||msiGetAuditTrailInfoByObjectID(10474, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *  null
+ *  ruleExecOut
+ *  
+ * \param[in] inpParam1 - a msParam of type STR_MS_T
+ * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
 msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -127,10 +214,51 @@ msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 
 
 
-/*
- * Retrieves Audit Trail information for an action ID
+/**
+ * \fn msiGetAuditTrailInfoByActionID (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This function gets audit trail information by the action identifier
+ *
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ *  As seen in modules/ERA/test/getATinfoByActionID.ir
+ * 
+ *  testrule||msiGetAuditTrailInfoByActionID(1000, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *  null
+ *  ruleExecOut
+ *  
+ * \param[in] inpParam1 - a msParam of type STR_MS_T
+ * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -188,10 +316,51 @@ msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 
 
 
-/*
- * Retrieves Audit Trail information by keywords in the comment field
+/**
+ * \fn msiGetAuditTrailInfoByKeywords (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This function gets audit trail information by keywords in the comment field
+ *  
+ * \module ERA
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ * 
+ * \note
+ *
+ * \usage
+ *
+ *  ~/iRODS/modules/ERA/test/getATinfoByKeywords.ir
+ * 
+ *  testrule||msiGetAuditTrailInfoByKeywords(de%use, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *  null
+ *  ruleExecOut
+ *  
+ * \param[in] inpParam1 - a msParam of type STR_MS_T
+ * \param[in] inpParam2 - a msParam of type BUF_LEN_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
 msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -249,11 +418,52 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
 
 
 
-/*
- * Retrieves Audit Trail information by timestamp
- * 
+/**
+ * \fn msiGetAuditTrailInfoByTimeStamp (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This microservice gets audit trail information by the timestamp
+ *
+ * \module ERA   
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
+ *
+ * \note
+ *
+ * \usage
+ * 
+ *  As seen in modules/ERA/test/getATinfoByTimeStamp.ir
+ * 
+ *  testrule||msiGetAuditTrailInfoByTimeStamp(01203636827, 01204678305, *BUF, *Status)##writeBytesBuf(stdout,*BUF)##writePosInt(stdout,*Status)##writeLine(stdout,"")|nop
+ *  null
+ *  ruleExecOut
+ *  
+ * \param[in] inpParam1 - a msParam of type STR_MS_T
+ * \param[in] inpParam2 - a msParam of type STR_MS_T
+ * \param[in] inpParam3 - a msParam of type BUF_LEN_MS_T
+ * \param[out] outParam - a msParam of operation status INT_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGetAuditTrailInfoByTimeStamp(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {

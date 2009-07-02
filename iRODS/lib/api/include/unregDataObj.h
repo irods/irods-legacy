@@ -37,7 +37,7 @@ _rsUnregDataObj (rsComm_t *rsComm, unregDataObj_t *unregDataObjInp);
 int
 rcUnregDataObj (rcComm_t *conn, unregDataObj_t *unregDataObjInp);
 
-/* rcUnregDataObj - Unregister a iRods dataObject.
+/* rcUnregDataObj - Unregister a iRODS dataObject.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   unregDataObj_t *unregDataObjInp - the dataObjInfo to unregister

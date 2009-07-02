@@ -1,4 +1,4 @@
-Basic descriptions of the Packing/Unpacking scheme used in iRods
+Basic descriptions of the Packing/Unpacking scheme used in iRODS
 ----------------------------------------------------------------  
 The packStruct() and unpackStruct() routines in packStruct.c are used to
 pack and unpack arbitrary C structs. 
@@ -39,7 +39,7 @@ and as an example, this packing instruction is named as structFoo1_PI. e.g.,
 
 #deine structFoo1_PI "int myint1; double myint64;"
 
-Each packing instruction has a name and those that are used by iRods 
+Each packing instruction has a name and those that are used by iRODS 
 internally are defined in clientLib/include/packStruct.h. Each of these packing
 instruction are also included in the RodsPackTable[] table in rodsPackTable.h.
 So to add a new packing instruction to iRODS, you'll need to define the

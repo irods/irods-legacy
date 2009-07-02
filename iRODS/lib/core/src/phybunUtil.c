@@ -26,7 +26,7 @@ rodsPathInp_t *rodsPathInp)
     if (status < 0) return status;
     
     for (i = 0; i < rodsPathInp->numSrc; i++) {
-        collPath = &rodsPathInp->srcPath[i];	/* iRods Collection */
+        collPath = &rodsPathInp->srcPath[i];	/* iRODS Collection */
 
         getRodsObjType (conn, collPath);
 

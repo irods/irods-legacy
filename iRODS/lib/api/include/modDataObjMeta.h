@@ -41,7 +41,7 @@ extern "C" {
 int
 rcModDataObjMeta (rcComm_t *conn, modDataObjMeta_t *modDataObjMetaInp);
 
-/* rcModDataObjMeta - Modify the metadata of a iRods dataObject.
+/* rcModDataObjMeta - Modify the metadata of a iRODS dataObject.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register

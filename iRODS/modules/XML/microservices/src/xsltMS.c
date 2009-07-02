@@ -1,3 +1,8 @@
+/**
+ * @file	xsltMS.c
+ *
+ */ 
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -10,14 +15,55 @@ extern int xmlLoadExtDtdDefaultValue;
 
 
 
-/*
- * msiXsltApply()
+/**
+ * \fn msiXsltApply (msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleExecInfo_t *rei)
  *
- */
+ * \brief   This function applies an XSL stylesheet to an XML file, both existing iRODS objects.
+ *
+ * \module XML 
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date   
+ *
+ * \remark Jewel Ward - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
+ *
+ * \note
+ *
+ * \usage
+ * 
+ * As seen in modules/XML/test/applyXslt.ir
+ *
+ * testrule||msiXsltApply(*xsltObjPath, *xmlObjPath, *BUF)##writeBytesBuf(stdout,*BUF)|nop
+ * *xmlObjPath=/tempZone/home/antoine/AIP/XML/I0024590A_jpg.xml%*xsltObjPath=/tempZone/home/antoine/AIP/templates/AIPtoDIP.xsl
+ * ruleExecOut
+ *
+ * \param[in] xsltObj - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[in] xmlObj - a msParam of type DataObjInp_MS_T or STR_MS_T
+ * \param[out] msParamOut - a msParam of operation status BUF_LEN_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleExecInfo_t *rei)
 {
-	/* for parsing msParams and to open iRods objects */
+	/* for parsing msParams and to open iRODS objects */
 	dataObjInp_t xmlDataObjInp, *myXmlDataObjInp;
 	dataObjInp_t xsltDataObjInp, *myXsltDataObjInp;
 	int xmlObjID, xsltObjID;
@@ -25,7 +71,7 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	/* for getting size of objects to read from */
 	rodsObjStat_t *rodsObjStatOut = NULL;
 
-	/* for reading from iRods objects */
+	/* for reading from iRODS objects */
 	dataObjReadInp_t dataObjReadInp;
 	dataObjCloseInp_t dataObjCloseInp;
 	bytesBuf_t xmlBuf, xsltBuf;

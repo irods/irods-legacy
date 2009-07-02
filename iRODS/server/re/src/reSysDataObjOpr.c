@@ -1,3 +1,8 @@
+/**
+ * @file reSysDataObjOpr.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -7,13 +12,55 @@
 #include "genQuery.h"
 
 
-/* msiSetDefaultResc - Rule handler for setting the scheme for
- * for setting the default resource.
- * defaultResc - the default resource if a resource is not specified
- * optionStr - Thr string "force" indicate that the defaultResc will
- * be used regardless of the user input.
- */
- 
+/**
+ * \fn msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets the default resource and query resource metadata for
+ *    the subsequent use based on an input array and condition given
+ *    in the dataObject Input Structure.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Mike Wan
+ * \date    2006-11
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-15
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note This function is mandatory even no defaultResc is specified (null) and should be executed right after the screening function msiSetNoDirectRescInp.
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
+ *
+ * \param[in] xdefaultRescList - Required - a msParam of type STR_MS_T which is a list
+ *    of %-delimited resourceNames. It is a resource to use if no resource is input.
+ *    A "null" means there is no defaultResc.
+ * \param[in] xoptionStr - a msParam of type STR_MS_T which is an option (preferred, forced, random)
+ *    with random as default. A "forced" input means the defaultResc will be used regardless
+ *    of the user input. The forced action only apply to to users with normal privilege.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence rei->doinp->condInput, 
+ *                    rei->rsComm->proxyUser.authInfo.authFlag
+ * \DolVarModified rei->rgi gets set to a group (possibly singleton) list of resources in the preferred order.
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
 {
@@ -118,11 +165,49 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
     return (rei->status);
 }
 
-/* msiSetRescSortScheme - Rule handler for setting the scheme for
- * for selecting the best resource to use when creating a data object.
- * sortScheme - The sorting scheme. Valid scheme are "default" and "random".
- */
- 
+/**
+ * \fn msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets the scheme for selecting the best resource to use when creating a data object.  
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation 2009-06-15
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescType)|nop##nop##nop
+ *
+ * \param[in] xsortScheme - The sorting scheme. Valid schemes are "default", "random" and
+ *    "byRescType". The "byRescType" scheme will put the cache class of resource on the top
+ *    of the list. The scheme "random" and "byRescType" can be applied in sequence.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
 {
@@ -144,10 +229,52 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
     return(0);
 }
 
-/* msiSetNoDirectRescInp - Set a list of resources that cannot be
- * input directly by a normal user. The resources are seperated by %
- */
 
+/**
+ * \fn msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets a list of resources that cannot be used by a normal
+ *  user directly.  It checks a given list of taboo-resources against the
+ *  user provided resource name and disallows if the resource is in the list of taboo-resources.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Mike Wan
+ * \date    2006-11
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-16
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note This microservice is optional, but if used, should be the first function to execute because it screens the resource input.
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
+ *
+ * \param[in] xrescList - InpParam is a xrescList of type STR_MS_T which is a list of %-delimited resourceNames e.g., resc1%resc2%resc3.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence rei->doinp->condInput - user set  resource list
+ *                   rei->rsComm->proxyUser.authInfo.authFlag
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 if user set resource is allowed or user is privileged.
+ * \retval USER_DIRECT_RESC_INPUT_ERR  if resource is taboo.
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
 {
@@ -204,6 +331,51 @@ msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
     return (0);
 }
 
+/**
+ * \fn msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
+ *
+ * \brief  If the data has multiple copies, this microservice specifies the preferred copy to use.
+ * It sets the preferred resources of the opened object.
+ *
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-16
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note The copy stored in this preferred resource will be picked if it exists. More than
+ * one resource can be input using the character "%" as separator.
+ * e.g., resc1%resc2%resc3. The most preferred resource should be at the top of the list.
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acPreprocForDataObjOpen||msiSetDataObjPreferredResc(demoResc7%demoResc8)|nop
+ * 
+ *
+ * \param[in] xpreferredRescList - a msParam of type STR_MS_T, comma-delimited list of resources
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int 
 msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
 {
@@ -246,6 +418,42 @@ msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice specifies the copy to avoid.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Terrell Russell, msi documentation 2009-06-30
+ * 
+ * \note 
+ *  
+ * \usage None
+ *
+ * \param[in] xavoidResc - a msParam of type STR_MS_T - the name of the resource to avoid
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
 {
@@ -269,6 +477,47 @@ msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sorts the copies of the data object using this scheme. Currently, "random" sorting scheme is supported.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-16
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *  
+ * \usage
+ *
+ *  As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
+ *
+ * \param[in] xsortScheme - input sorting scheme.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
 {
@@ -289,9 +538,46 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
 }
 
 
-/* msiSysChksumDataObj - this rule handling routine to checksum a dataObj 
+/**
+ * \fn msiSysChksumDataObj (ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice performs a checksum on the uploaded or copied data object.
  * 
- */
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-16
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acPostProcForPut||msiSysChksumDataObj|nop 
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSysChksumDataObj (ruleExecInfo_t *rei)
 {
@@ -325,21 +611,43 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
 }
 
 /**
- * \fn msiSetDataTypeFromExt
- * \author  Wayne Schroeder
- * \date   2007-02-09
+ * \fn msiSetDataTypeFromExt (ruleExecInfo_t *rei)
+ *
  * \brief This microservice checks if the filename has an extension
- * (string following a .) and if so, checks if the iCAT has a matching
- * entry for it, and if so sets the dataObj data_type.
+ *    (string following a period (.)) and if so, checks if the iCAT has a matching
+ *    entry for it, and if so sets the dataObj data_type.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author Wayne Schroeder
+ * \date   2007-02-09
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-22
+ *
  * \note  Always returns success since it is only doing an attempt;
  *   that is, failure is common and not really a failure.
- * \param[in] just the rei
- * \param[out] nothing
+ *
+ * \usage As seen in the core.irb
+ *
+ * #acPostProcForPut||msiSetDataTypeFromExt|nop
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa 
- * \post
  * \pre
+ * \post
+ * \sa 
  * \bug  no known bugs
 **/
 int
@@ -376,7 +684,7 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
 			    logicalFileName1, logicalFileNameExt, '.');
     if (strlen(logicalFileNameExt)<=0) return(0);
 
-    /* see if there's an entry in the catalog for  this extension */
+    /* see if there's an entry in the catalog for this extension */
     memset (&genQueryInp, 0, sizeof (genQueryInp));
 
     addInxIval (&genQueryInp.selectInp, COL_TOKEN_NAME, 1);
@@ -412,9 +720,49 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
     return (0);
 }
 
-/* msiStageDataObj - this rule stage an data obj to a cache resource
+/**
+ * \fn msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice stages the data object to the specified resource
+ *    before operation. It stages a copy of the data object in the cacheResc before
+ *    opening the data object.
  * 
- */
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-16
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acPreprocForDataObjOpen||msiSortDataObj(random)##msiSetDataObjPreferredResc(xyz%demoResc8%abc)##msiStageDataObj(demoResc8)|nop##nop##nop
+ * 
+ * \param[in] xcacheResc - The resource name in which to cache the object
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
 {
@@ -449,9 +797,49 @@ msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
     return (status);
 }
 
-/* msiSysReplDataObj - this rule handling routine replicate a dataObj to the
- * resource.
- */
+/**
+ * \fn msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xflag, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice replicates a data object. It can be used to replicate
+ *  a copy of the file just uploaded or copied data object to the specified
+ *  replResc. 
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-16
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note The allFlag is only meaningful if the replResc is a resource group.
+ *  In this case, setting allFlag to "all" means a copy will be made in all the
+ *  resources in the resource group. A "null" input means a single copy will be made in
+ *  one of the resources in the resource group.
+ *  
+ * \usage None
+ * 
+ * \param[in] xcacheResc - 
+ * \param[in] xflag - 
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSysReplDataObj (msParam_t *xcacheResc, msParam_t *xflag,
 ruleExecInfo_t *rei)
@@ -497,6 +885,54 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiSetNumThreads (msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr, msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice specifies the parameters for determining the number of
+ *    threads to use for data transfer. It sets the number of threads and the TCP window size. 
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-16
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note The msiSetNumThreads function must be present or no thread will be used for all transfer.
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ *  acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
+ * 
+ * \param[in] xsizePerThrInMbStr - The number of threads is computed
+ *    using: numThreads = fileSizeInMb / sizePerThrInMb + 1 where sizePerThrInMb
+ *    is an integer value in MBytes. It also accepts the word "default" which sets
+ *    sizePerThrInMb to a default value of 32.
+ * \param[in] xmaxNumThrStr - The maximum number of threads to use. It accepts integer
+ *    value up to 16. It also accepts the word "default" which sets maxNumThr to a default value of 4.
+ * \param[in] xwindowSizeStr - The TCP window size in Bytes for the parallel transfer. A value of 0 or "dafault" means a default size of 1,048,576 Bytes.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetNumThreads (msParam_t *xsizePerThrInMbStr, msParam_t *xmaxNumThrStr, 
 msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
@@ -567,9 +1003,48 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
 
 }
 
-/* msiDeleteDisallowed - 
+/**
+ * \fn msiDeleteDisallowed (ruleExecInfo_t *rei)
  *
- */
+ * \brief  This microservice sets the policy for determining that certain data cannot be deleted.   
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-17
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note 
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acDataDeletePolicy|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
+ *
+ * This rule prevents the deletion of any data objects or collections beneath the collection /foo/bar/
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDeleteDisallowed (ruleExecInfo_t *rei)
 {
@@ -580,6 +1055,42 @@ msiDeleteDisallowed (ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/**
+ * \fn msiSetMultiReplPerResc (ruleExecInfo_t *rei)
+ *
+ * \brief  By default, the system allows one copy per resource. This microservice sets the number of copies per resource to unlimited.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-17
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *  
+ * \usage None
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetMultiReplPerResc (ruleExecInfo_t *rei)
 {
@@ -587,6 +1098,44 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
     return (0);
 }
 
+/**
+ * \fn msiNoChkFilePathPerm (ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice does not check file path permissions when registering a file.  
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author
+ * \date 
+ * 
+ * \remark Ketan Palshikar - created msi documentation, 2009-06-17
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \warning WARNING - This function can create a security problem if used incorrectly.
+ *  
+ * \note 
+ *  
+ * \usage None
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval NO_CHK_PATH_PERM
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiNoChkFilePathPerm (ruleExecInfo_t *rei)
 {
@@ -594,6 +1143,46 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
     return (NO_CHK_PATH_PERM);
 }
 
+/**
+ * \fn msiNoTrashCan (ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets the policy to no trash can.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-17
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acTrashPolicy||msiNoTrashCan|nop
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval NO_TRASH_CAN
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiNoTrashCan (ruleExecInfo_t *rei)
 {
@@ -601,6 +1190,48 @@ msiNoTrashCan (ruleExecInfo_t *rei)
     return (NO_TRASH_CAN);
 }
 
+/**
+ * \fn msiSetPublicUserOpr (msParam_t *xoprList, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets a list of operations that can be performed by the user "public".
+ *  
+ * \module core
+ *  
+ * \since pre-2.1
+ *  
+ * \author
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-17
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
+ *
+ * \param[in] xoprList - Only 2 operations are allowed - "read" - read files; "query" - browse some system level metadata. More than one operation can be
+ *                       input using the character "%" as seperator. e.g., read%query.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetPublicUserOpr (msParam_t *xoprList, ruleExecInfo_t *rei)
 {
@@ -697,6 +1328,56 @@ setApiPerm (int apiNumber, int proxyPerm, int clientPerm)
     return (0);
 }
 
+/**
+ * \fn msiSetGraftPathScheme (msParam_t *xaddUserName, msParam_t *xtrimDirCnt, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets the VaultPath scheme to GRAFT_PATH.
+ *    It grafts (adds) the logical path to the vault path of the resource
+ *    when generating the physical path for a data object.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-17
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acSetVaultPathPolicy||msiSetGraftPathScheme(no,2)|nop
+ *
+ * \param[in] xaddUserName - This msParam specifies whether the userName should
+ *      be added to the physical path. e.g. $vaultPath/$userName/$logicalPath.
+ *      "xaddUserName" can have two values - yes or no.
+ * \param[in] xtrimDirCnt - This msParam specifies the number of leading directory
+ *      elements of the logical path to trim. Sometimes it may not be desirable to
+ *      graft the entire logical path. e.g.,for a logicalPath /myZone/home/me/foo/bar,
+ *      it may be desirable to graft just the part "foo/bar" to the vaultPath.
+ *      "xtrimDirCnt" should be set to 3 in this case.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetGraftPathScheme (msParam_t *xaddUserName, msParam_t *xtrimDirCnt,
 ruleExecInfo_t *rei)
@@ -758,6 +1439,48 @@ ruleExecInfo_t *rei)
     return (0);
 }
 
+/**
+ * \fn msiSetRandomScheme (ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets the scheme for composing the physical path in the vault to RANDOM.  A randomly generated path is appended to the 
+ *         vaultPath when generating the physical path. e.g., $vaultPath/$userName/$randomPath. The advantage with the RANDOM scheme is renaming 
+ *         operations (imv, irm) are much faster because there is no need to rename the corresponding physical path. 
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-17
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb.orig
+ *
+ * acSetVaultPathPolicy||msiSetRandomScheme|nop
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetRandomScheme (ruleExecInfo_t *rei)
 {
@@ -789,6 +1512,45 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
     return (0);
 }
 
+
+/**
+ * \fn msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
+ *
+ * \brief  Sets number of processes for the rule engine server
+ * 
+ * \module core
+ * 
+ * \since 2.1
+ * 
+ * \author
+ * \date 
+ * 
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note
+ *  
+ * \usage None
+ *
+ *
+ * \param[in] xnumProc - a STR_MS_T representing number of processes
+ *     - this value can be "default" or an integer
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
 {

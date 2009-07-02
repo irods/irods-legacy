@@ -37,7 +37,7 @@ typedef enum {
 } readCacheState_t;
 
 typedef struct IFuseDesc {
-    rcComm_t *conn;     /* The iRods client connection */
+    rcComm_t *conn;     /* The iRODS client connection */
     bufCache_t  bufCache[MAX_BUF_CACHE];
     int actCacheInx;    /* (cacheInx + 1) currently active. 0 means no cache */
     int inuseFlag;      /* 0 means not in use */

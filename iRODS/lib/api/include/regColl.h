@@ -45,7 +45,7 @@ extern "C" {
 int
 rcRegColl (rcComm_t *conn, collInp_t *regCollInp);
 
-/* rcRegColl - Register a iRods collection.
+/* rcRegColl - Register a iRODS collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   collInp_t *collInp - generic coll input. Relevant items are:

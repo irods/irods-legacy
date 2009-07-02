@@ -43,7 +43,7 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcDataObjGet - Get (download) a iRods data object.
+/* rcDataObjGet - Get (download) a iRODS data object.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

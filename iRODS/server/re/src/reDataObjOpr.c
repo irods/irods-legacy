@@ -1,3 +1,8 @@
+/**
+ * @file  reDataObjOpr.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -5,25 +10,56 @@
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
 
-/* msiDataObjCreate - msi for DataObjCreate.
- * inpParam1 - It can be a DataObjInp_MS_T or 
- *    a STR_MS_T which would be taken as dataObj path.
- * msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+/**
+ * \fn msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr, 
+ *        msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Creates a data object in the iCAT.
+ *
+ * \module core
+ *
+ * \since 2.1
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
  *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *   If the keyWd is not specified (without the '=' char), the value is
  *   assumed to be the target resource ("destRescName") for backward
  *   compatibility..
- *    Valid keyWds are : "destRescName" - the target resource.
- *			 "forceFlag" - overwrite existing copy. This keyWd has
- *                          no value. But the '=' character is still needed
- *			 "createMode" - the file mode of the data object.
- *			 "dataType" - the data type of the data object.
- *			 "dataSize" - the size of the data object. This input
- *			    is optional.
- * outParam - a INT_MS_T containing the descriptor of the create.
+ *   Valid keyWds are:
+ *    \li "destRescName" - the target resource.
+ *    \li "forceFlag" - overwrite existing copy. This keyWd has
+ *        no value. But the '=' character is still needed
+ *    \li "createMode" - the file mode of the data object.
+ *    \li "dataType" - the data type of the data object.
+ *    \li "dataSize" - the size of the data object. This input is optional.
+ * \param[out] outParam - a INT_MS_T containing the descriptor of the create.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
  *
- */ 
-
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr, 
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -88,33 +124,71 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjCreate: rsDataObjCreate failed for %s, status = %d",
-			    myDataObjInp->objPath,
+            myDataObjInp->objPath,
           rei->status);
     }
 
     return (rei->status);
 }
 
-/* msiDataObjOpen - msi for DataObjOpen.
- * inpParam - It can be a DataObjInp_MS_T or a STR_MS_T which would be
- *    taken as msKeyValStr.
- * msKeyValStr -  This is the special msKeyValStr
- *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
- *   If the keyWd is not specified (without the '=' char), the value is
- *   assumed to be the path of the data object("objPath") for backward
- *   compatibility..
- *    Valid keyWds are : "objPath" - the path of the data object to open.
- *			 "rescName" - the resource of the data object to open.
- *			 "replNum" - the replica number of the copy to open.
- *			 "openFlags" - the open flags. valid open flags are:
- *			   O_RDONLY, O_WRONLY, O_RDWR and O_TRUNC. These
- *			   flags can be combined by concatenation, e.g.
- *			   O_WRONLYO_TRUNC (without the '|' character). The
- *			   default open flag is O_RDONLY.
- * outParam - a INT_MS_T containing the descriptor of the open.
+/**
+ * \fn msiDataObjOpen (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief  This a microservice performs a low-level open for existing data object
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Mike Wan
+ * \date    2007
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-07
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  Can be called by client through iRule
+ *
+ * \usage
+ *
+ * As seen in test.irb
+ *
+ * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
+ *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
+ *  *R_BUF\%*W_LEN
+ *
+ * \param[in] inpParam - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as msKeyValStr.
+ *  msKeyValStr -  This is the special msKeyValStr
+ *    format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *    If the keyWd is not specified (without the '=' char), the value is
+ *    assumed to be the path of the data object("objPath") for backward
+ *    compatibility.
+ *    	Valid keyWds are:
+ *          \li "objPath" - the path of the data object to open.
+ *          \li "rescName" - the resource of the data object to open.
+ *          \li  "replNum" - the replica number of the copy to open.
+ *          \li "openFlags" - the open flags. valid open flags are:
+ *            O_RDONLY, O_WRONLY, O_RDWR and O_TRUNC. These
+ *            can be combined by concatenation, e.g.
+ *            O_WRONLYO_TRUNC (without the '|' character). The
+ *            default open flag is O_RDONLY.
+ * \param[out] outParam - a msParam of type INT_MS_T containing the descriptor of the open.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval positive on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjOpen (msParam_t *inpParam, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -179,17 +253,52 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjClose - msi for DataObjClose.
- * inpParam - It can be a DataObjCloseInp_MS_T or
- * INT_MS_T or a STR_MS_T which would be taken as descriptor from a create 
- *    or open.
- * outParam - a INT_MS_T containing the status.
+/**
+ * \fn msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief  This microservice performs a low-level close for an opened/created data object.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Mike Wan
+ * \date    2007
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-06
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  Can be called by client through iRule
+ *
+ * \usage
+ *
+ * As seen in test.irb
+ *
+ * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
+ *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
+ *  *R_BUF\%*W_LEN
+ *
+ * \param[in] inpParam - inpParam is a msParam of type INT_MS_T or STR_MS_T.
+ * \param[out] outParam - outParam is a msParam of type INT_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
-msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, 
-ruleExecInfo_t *rei)
+msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     openedDataObjInp_t dataObjCloseInp, *myDataObjCloseInp;
@@ -241,17 +350,52 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjLseek - msi for DataObjLseek.
- * inpParam1 - It can be a DataObjLseekInp_MS_T or 
- *    INT_MS_T or a STR_MS_T which would be the descriptor.
- * inpParam2 - Optional - It can be a DOUBLE_MS_T or a STR_MS_T which would be 
- *    the offset.
- * inpParam3 - Optional - It can be a INT_MS_T or a STR_MS_T which would be 
- *    the whence.
- * outParam - a DataObjLseekOut_MS_T.
+/**
+ * \fn msiDataObjLseek (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief  This a microservice performs a low-level (file) seek of an opened data object.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Mike Wan 
+ * \date    2007
+ * 
+ * \remark Ketan Palshikar - created msi documentation, 2009-06-11
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  Can be called by client through iRule
+ *
+ * \usage
+ *
+ * As seen in test.irb
+ *
+ * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
+ *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
+ *  *R_BUF\%*W_LEN
+ *
+ * \param[in] inpParam1 - a msParam of type DataObjLseekInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
+ * \param[in] inpParam2 - Optional - a msParam of type DOUBLE_MS_T or a STR_MS_T which would be the offset.
+ * \param[in] inpParam3 - Optional - a msParam of type INT_MS_T or a STR_MS_T which would be from where. Can be SEEK_SET, SEEK_CUR, and SEEK_END.
+ * \param[out] outParam - a msParam of type Double_MS_T or DataObjLseekOut_MS_T which is the return status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval positive on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjLseek (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3, msParam_t *outParam, 
@@ -367,18 +511,53 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjRead - msi for DataObjRead.
- * inpParam1 - It can be a DataObjReadInp_MS_T or
- *    INT_MS_T or a STR_MS_T which would be the descriptor.
- * inpParam2 - Optional - It can be a INT_MS_T or a STR_MS_T which would be
- *    the length.
- * outParam - a BUF_LEN_MS_T.
+/**
+ * \fn msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief  This microservice performs a low-level read of an opened data object
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Mike Wan
+ * \date    2007
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-07
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  Can be called by client through iRule
+ *
+ * \usage
+ *
+ * As seen in test.irb
+ *
+ * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
+ *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
+ *  *R_BUF\%*W_LEN
+ *
+ * \param[in] inpParam1 - a msParam of type DataObjReadInp_MS_T or INT_MS_T or STR_MS_T which would be the descriptor.
+ * \param[in] inpParam2 - Optional - a msParam of type INT_MS_T or STR_MS_T which would be the length.
+ * \param[out] outParam - a msParam of type BUF_LEN_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval positive on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
-msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2,
-msParam_t *outParam, ruleExecInfo_t *rei)
+msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     openedDataObjInp_t dataObjReadInp, *myDataObjReadInp;
@@ -449,16 +628,52 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjjWrite - msi for DataObjjWrite.
- * inpParam1 - It can be a DataObjWriteInp_MS_T or
- *    INT_MS_T or a STR_MS_T which would be the descriptor.
- * inpParam2 - Optional - It can be a BUF_LEN_MS_T or a STR_MS_T, the input 
- *    is inpOutBuf and the length of the buffer and the buffer in the BBuf. If it is STR_MS_T,
- *    the input is a string.
- * outParam - a INT_MS_T for the length written.
+/**
+ * \fn msiDataObjWrite (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- */
-
+ * \brief  This a microservice performs a low-level write to an opened data object
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Mike Wan
+ * \date    2007
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-12
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note Can be called by client through iRule
+ *
+ * \usage
+ *
+ * As seen in test.irb
+ *
+ * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
+ *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
+ *  *R_BUF\%*W_LEN
+ *
+ *
+ * \param[in] inpParam1 - a msParam of type DataObjWriteInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
+ * \param[in] inpParam2 - Optional - a msParam of type BUF_LEN_MS_T or a STR_MS_T, the input is inpOutBuf and the length of the buffer in the BBuf.
+ * \param[out] outParam - a msParam of type INT_MS_T for the length written.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval positive on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjWrite (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -538,27 +753,64 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjjUnlink - msi for DataObjjUnlink.
- * inpParam - It can be a DataObjInp_MS_T or
- *    STR_MS_T which would tbe aken as msKeyValStr.
- * msKeyValStr -  This is the special msKeyValStr
- *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
- *   If the keyWd is not specified (without the '=' char), the value is
- *   assumed to be the path of the data object("objPath") for backward
- *   compatibility..
- *    Valid keyWds are : "objPath" - the path of the data object to remove.
- *                       "replNum" - the replica number of the copy to remove.
- *                       "forceFlag" - Remove the data object instead putting
- *			    it in trash. This keyWd has no value. But the 
- *			    '=' character is still needed
- *			  "irodsAdminRmTrash" - Admin rm trash. This keyWd 
- *			    has no value.
- *      		  "irodsRmTrash" - rm trash. This keyWd has no value.
+/**
+ * \fn msiDataObjUnlink (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * outParam - a INT_MS_T for the status.
+ * \brief  This microservice deletes an existing data object
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author    Mike Wan
+ * \date      2007
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-13
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  Can be called by client through iRule
  *
- */
-
+ * \usage
+ *
+ * As seen in test.irb
+ *
+ * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null 
+ *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
+ *  *R_BUF\%*W_LEN
+ *
+ * \param[in] inpParam - a msParam of type DataObjInp_MS_T or STR_MS_T which would be taken as msKeyValStr.
+ *    msKeyValStr -  This is the special msKeyValStr
+ *    format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *    If the keyWd is not specified (without the '=' char), the value is
+ *    assumed to be the path of the data object("objPath") for backward
+ *    compatibility.
+ *    Valid keyWds are:
+ *        \li "objPath" - the path of the data object to remove.
+ *        \li "replNum" - the replica number of the copy to remove.
+ *        \li "forceFlag" - Remove the data object instead putting
+ *            it in trash. This keyWd has no value. But the 
+ *            '=' character is still needed
+ *        \li "irodsAdminRmTrash" - Admin rm trash. This keyWd has no value.
+ *        \li "irodsRmTrash" - rm trash. This keyWd has no value.
+ *
+ * \param[out] outParam - a msParam of type INT_MS_T for the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjUnlink (msParam_t *inpParam, msParam_t *outParam, 
 ruleExecInfo_t *rei)
@@ -618,34 +870,77 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjjRepl - msi for DataObjjRepl.
- * inpParam1 - It can be a DataObjInp_MS_T or
- *    STR_MS_T which would be the obj Path.
- *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+/**
+ * \fn msiDataObjRepl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice replicates a file in a Collection (it assigns a different
+ *    replica number to the new copy in the iCAT Metadata Catalog).
+ *  
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Mike Wan
+ * \date    2007
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-10
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  Can be called by client through iRule
+ * 
+ * \note The replica is physically stored in the ‘tgReplResc’ Resource. *Junk contains
+ * the status of the operation. In the Rule, the resource is provided as part 
+ * of the call instead of as an input through a *parameter.
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleInp3
+ *
+ * myTestRule||msiExecCmd(hello,x y x,null,null,null,*HELLO_OUT)##msiDataObjPut(*A,null,../bin/ils,*junk9)##msiCollCreate(*C,0,*junk10)##msiDataObj(*F,null,../bin/ils,*junk1)##msiDataObjChksum(*A,null,*CHKSUM)##msiDataObjPhymv(*A,demoResc7,null,null,null,*junk2)##msiDataObjRename(*A,*B,null,*junk3)##msiDataObjRepl(*B,demoLResc1,*junk4)##msiDataObjRepl(*B,demoLResc1,*junk5)##msiDataObjTrim(*B,demoResc8,null,null,null,*junk6)##msiRmColl(*C,forceFlag,*junk7)##msiPhyPathReg(*D,demoResc8,*E,null,*junk8)##msiObjStat(*D,*MY_STAT) 
+ * *F=/tempZone/home/rods/dir1/foo4%*A=/tempZone/home/rods/foo4%*B=/tempZone/home/rods/foo5%*C=/tempZone/home/rods/dir1%*D=/tempZone/home/rods/foo6%*E=/scratch/slocal/mwan/srb/irods/RODS/clients/icommands/test/foo6
+ * *CHKSUM%*MY_STAT%*HELLO_OUT
+ *
+ * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or STR_MS_T which would be the obj Path.
+ * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
  *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *      If the keyWd is not specified (without the '=' char), the value is
  *      assumed to be the target resource ("destRescName") for backward
- *      compatibility..
- *    Valid keyWds are : "destRescName" - the target resource to replicate to.
- *                       "backupRescName" - the target resource to backup 
- *			    the data. If this keyWd is used, the backup mode
- *			    will be switched on.
- *                       "rescName" - the resource of the source copy.
- *			 "updateRepl" - update other replicas with the 
- *			    latest copy. This keyWd has no value. But 
- *			    the '=' character is still needed.
- *                       "replNum" - the replica number to use as source.
- *                       "numThreads" - the number of threads to use.
- *                       "all" - replicate to all resources in the resource 
- *			    group. This keyWd has no value.
- *			 "irodsAdmin" - admin user replicate other users' files.
- *			    This keyWd has no value.
- *                       "verifyChksum" - verify the transfer using checksum.
- *                          This keyWd has no value. 
- * outParam - a INT_MS_T for the status.
+ *      compatibility.
+ *    Valid keyWds are:
+ *          \li "destRescName" - the target resource to replicate to.
+ *          \li "backupRescName" - the target resource to backup 
+ *                the data. If this keyWd is used, the backup mode
+ *                will be switched on.
+ *          \li "rescName" - the resource of the source copy.
+ *          \li "updateRepl" - update other replicas with the 
+ *                latest copy. This keyWd has no value. But 
+ *                the '=' character is still needed.
+ *          \li "replNum" - the replica number to use as source.
+ *          \li "numThreads" - the number of threads to use.
+ *          \li "all" - replicate to all resources in the resource 
+ *                group. This keyWd has no value.
+ *          \li "irodsAdmin" - admin user replicate other users' files.
+ *                This keyWd has no value.
+ *          \li "verifyChksum" - verify the transfer using checksum.
+ *                This keyWd has no value.
+ * \param[out] outParam - a msParam of type INT_MS_T which is a status of the operation.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
  *
- */
-
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjRepl (msParam_t *inpParam1, msParam_t *msKeyValStr, 
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -723,36 +1018,76 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/* msiDataObjCopy - msi for DataObjjCopy.
- * inpParam1 - It can be a DataObjCopyInp_MS_T or
- *    DataObjInp_MS_T which is the src DataObjInp or
- *    STR_MS_T which would be the src obj Path.
- * inpParam2 - Optional - It can be a DataObjInp_MS_T which is the dest
- *    DataObjInp or 
- *    STR_MS_T which would be the dest obj Path.
- *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+/**
+ * \fn msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2, 
+ *  msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * This microservice copies a file from one logical (source) collection to another
+ * logical (destination) collection that is physically located in the input resource
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-02-12
+ *
+ * \remark Ketan Palshikar - msi documentation, 2009-06-11
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ *
+ * \note This call should only be used through the rcExecMyRule (irule) call
+ *  i.e., rule execution initiated by clients and should not be called 
+ *  internally by the server since it interacts with the client through
+ *  the normal client/server socket connection. Also, it should never
+ *  be called through delayExec since it requires client interaction.   
+ *
+ * \usage
+ * testrule||msiDataObjPut(*A,null,../test/directory/testing.txt,*junk)|nop 
+ * *A=/tempZone/home/rods/foo4
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - a DataObjCopyInp_MS_T or
+ *    DataObjInp_MS_T which is the source DataObjInp or
+ *    STR_MS_T which would be the source object path.
+ * \param[in] inpParam2 - Optional - a DataObjInp_MS_T which is the destination
+ *    DataObjInp or STR_MS_T which would be the destination object path.
+ * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
  *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *      If the keyWd is not specified (without the '=' char), the value is
  *      assumed to be the target resource ("destRescName") for backward
- *      compatibility..
- *    Valid keyWds are : "destRescName" - the resource to copy to.
- *                       "forceFlag" - overwrite existing copy. This keyWd has
- *                          no value. But the '=' character is still needed
- *                       "numThreads" - the number of threads to use.
- *                       "filePath" - The physical file path of the uploaded
- *                          file on the server.
- *                       "dataType" - the data type of the file.
- *                       "verifyChksum" - verify the transfer using checksum.
- *                          this keyWd has no value. But the '=' character is
- *                          still needed.
- * inpParam3 - Optional - a STR_MS_T which specifies the resource.
- * outParam - a INT_MS_T for the status.
+ *      compatibility.
+ *    Valid keyWds are:
+ *             \li "destRescName" - the resource to copy to.
+ *             \li "forceFlag" - overwrite existing copy. This keyWd has
+                      no value. But the '=' character is still needed
+ *             \li "numThreads" - the number of threads to use.
+ *             \li "filePath" - The physical file path of the uploaded
+ *                    file on the server.
+ *             \li "dataType" - the data type of the file.
+ *             \li "verifyChksum" - verify the transfer using checksum.
+ *                    this keyWd has no value. But the '=' character is
+ *                    still needed.
+ * \param[out] outParam - a INT_MS_T for the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
  *
- */
-
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2, 
-msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
+  msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm; 
     dataObjCopyInp_t dataObjCopyInp, *myDataObjCopyInp;
@@ -845,47 +1180,71 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 /**
- * \fn msiDataObjPut
- * \author  Michael Wan
- * \date   2007-02-12
+ * \fn msiDataObjPut (msParam_t *inpParam1, msParam_t *inpParam2,
+ * msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief This microservice requests the client to call a rcDataObjPut API
  *   as part of a workflow execution.  
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-02-12
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called 
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.   
- * \param[in] 
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - Optional - a STR_MS_T which specifies the resource.
- *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *
+ * \usage
+ * testrule||msiDataObjPut(*A,null,../test/directory/testing.txt,*junk)|nop 
+ * *A=/tempZone/home/rods/foo4
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
+ * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
  *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *      If the keyWd is not specified (without the '=' char), the value is
  *      assumed to be the client's local file path ("localPath") for backward
- *      compatibility..
- *    Valid keyWds are : "localPath" - the client's local file path.
- *                       "destRescName" - the resource to put.
- *			 "all" - upload to all resources
- *                       "forceFlag" - overwrite existing copy. This keyWd has
- *                          no value. But the '=' character is still needed
- *                       "replNum" - the replica number to overwrite.
- *                       "numThreads" - the number of threads to use.
- *			 "filePath" - The physical file path of the uploaded
- *			    file on the server.
- *			 "dataType" - the data type of the file.
- *                       "verifyChksum" - verify the transfer using checksum.
- *                          this keyWd has no value. But the '=' character is
- *                          still needed.
- * \param[out] a INT_MS_T containing the status.
+ *      compatibility.
+ *      Valid keyWds are:
+ *          \li "localPath" - the client's local file path.
+ *          \li "destRescName" - the target resource - where the object should go.
+ *          \li "all" - upload to all resources
+ *          \li "forceFlag" - overwrite existing copy. This keyWd has
+ *                no value. But the '=' character is still needed
+ *          \li "replNum" - the replica number to overwrite.
+ *          \li "numThreads" - the number of threads to use.
+ *          \li "filePath" - The physical file path of the uploaded
+ *                file on the server.
+ *          \li "dataType" - the data type of the file.
+ *          \li "verifyChksum" - verify the transfer using checksum.
+ *                this keyWd has no value. But the '=' character is
+ *                still needed.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiDataObjPut (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -979,43 +1338,64 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiDataObjGet
- * \author  Michael Wan
- * \date   2007-02-12
- * \brief This microservice requests the client to call a rcDataObjget API
+/**
+ * \fn msiDataObjGet (msParam_t *inpParam1, msParam_t *msKeyValStr,
+ * msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice requests the client to call a rcDataObjGet API
  *   as part of a workflow execution.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-02-12
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-20
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call  
  *  i.e., rule execution initiated by clients and should not be called  
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.
- * \param[in] 
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
- *	format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *      If the keyWd is not specified (without the '=' char), the value is 
- *	assumed to be the client's local file path ("localPath") for backward
- *	compatibility..
- *    Valid keyWds are : "localPath" - the client's local file path.
- *			 "rescName" - the resource of the copy to get.
- *			 "replNum" - the replica number of the copy to get. 
- *                       "numThreads" - the number of threads to use.
- *			 "forceFlag" - overwrite local copy. This keyWd has
- *			    no value. But the '=' character is still needed
- *      		 "verifyChksum" - verify the transfer using checksum.
- *			    this keyWd has no value. But the '=' character is 
- *			    still needed.
- * \param[out] a INT_MS_T containing the status.
+ *      assumed to be the client's local file path ("localPath") for backward
+ *      compatibility..
+ *      Valid keyWds are:
+ *          \li "localPath" - the client's local file path.
+ *          \li "rescName" - the resource of the copy to get.
+ *          \li "replNum" - the replica number of the copy to get. 
+ *          \li "numThreads" - the number of threads to use.
+ *          \li "forceFlag" - overwrite local copy. This keyWd has
+ *                no value. But the '=' character is still needed
+ *          \li "verifyChksum" - verify the transfer using checksum.
+ *                this keyWd has no value. But the '=' character is 
+ *                still needed.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiDataObjGet (msParam_t *inpParam1, msParam_t *msKeyValStr,
 msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1085,7 +1465,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    /* tell the client to do the put */
+    /* tell the client to do the get */
     rei->status = sendAndRecvBranchMsg (rsComm, rsComm->apiInx,
      SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
 
@@ -1100,33 +1480,51 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiDataObjGetWithOptions
+/**
+ * \fn msiDataObjGetWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
+ * msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice requests the client to call a rcDataObjGet API
+ *   as part of a workflow execution, with options.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Michael Wan, modified by Romain GUINOT
- * \date   2007-02-12
- * \brief This microservice requests the client to call a rcDataObjget API
- *   as part of a workflow execution.
+ * \date    2007-02-12
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.
- * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - Optional - a STR_MS_T which specifies the client's local
- *      file path.
- *    srcrescParam - Optional - a STR_MS_T which specifies the source 
- *      resource.
- * \param[out] a INT_MS_T containing the status.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the client's local file path.
+ * \param[in] srcrescParam - Optional - a STR_MS_T which specifies the source resource.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiDataObjGetWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1190,7 +1588,7 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    /* tell the client to do the put */
+    /* tell the client to do the get */
     rei->status = sendAndRecvBranchMsg (rsComm, rsComm->apiInx,
      SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
 
@@ -1310,32 +1708,53 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiDataObjPhymv
- * \author  Michael Wan
- * \date   2007-04-02
+/**
+ * \fn msiDataObjPhymv (msParam_t *inpParam1, msParam_t *inpParam2, 
+ * msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
+ * msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief This microservice calls rsDataObjPhymv to physically move the iput 
- * dat object to another resource.
+ *    data object to another resource.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. 
- * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    irpParam2 - optional - a STR_MS_T which specifies the dest resourceName.
- *    irpParam3 - optional - a STR_MS_T which specifies the src resourceName.
- *    inpParam4 - optional - a STR_MS_T which specifies the replNum.
- *    inpParam5 - optional - a STR_MS_T which specifies the IRODS_ADMIN_KW.
- * \param[out] a INT_MS_T containing the status.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the dest resourceName.
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the src resourceName.
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the replNum.
+ * \param[in] inpParam5 - Optional - a STR_MS_T which specifies the IRODS_ADMIN_KW.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
- */
-
+**/
 int
 msiDataObjPhymv (msParam_t *inpParam1, msParam_t *inpParam2, 
 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
@@ -1414,32 +1833,52 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiDataObjRename
- * \author  Michael Wan
- * \date   2007-04-02
+/**
+ * \fn msiDataObjRename (msParam_t *inpParam1, msParam_t *inpParam2,
+ * msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief This microservice calls rsDataObjRename to rename the iput
- * data object or collection to another path.
+ *     data object or collection to another path.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a taObjCopyInp_MS_T or
- *      a STR_MS_T which would be taken as the src dataObj path.
- *    irpParam2 - optional - It can be a DataObjInp_MS_T which is the dest
- *       DataObjInp or STR_MS_T which would be the dest obj Path.
- *    irpParam3 - optional - a INT_MS_T or STR_MS_T which specifies the 
- I       the object type. A 0 means data obj and > 0 mean collection. 
- * \param[out] a INT_MS_T containing the status.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A taObjCopyInp_MS_T or STR_MS_T which would be taken as the src dataObj path.
+ * \param[in] inpParam2 - Optional - A DataObjInp_MS_T which is the destination
+ *              DataObjInp or STR_MS_T which would be the destination object Path.
+ * \param[in] inpParam3 - Optional - a INT_MS_T or STR_MS_T which specifies the 
+ *              object type. A 0 means data obj and > 0 mean collection. 
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
- */
-
+**/
 int
 msiDataObjRename (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -1502,33 +1941,53 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiDataObjTrim
- * \author  Michael Wan
- * \date   2007-04-02
+/**
+ * \fn msiDataObjTrim (msParam_t *inpParam1, msParam_t *inpParam2,
+ * msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
+ * msParam_t *outParam, ruleExecInfo_t *rei)
+ *
  * \brief This microservice calls rsDataObjTrim to trim down the number
- * of replica of a data object.
+ * of replicas of a data object.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-11
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    irpParam2 - optional - a STR_MS_T which specifies the resourceName.
- *    inpParam3 - optional - a STR_MS_T which specifies the replNum.
- *    irpParam4 - optional - a STR_MS_T which specifies the minimum number of 
- *      copies to keep.
- *    inpParam5 - optional - a STR_MS_T which specifies the IRODS_ADMIN_KW.
- * \param[out] a INT_MS_T containing the status.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resourceName.
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the replNum.
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the minimum number of copies to keep.
+ * \param[in] inpParam5 - Optional - a STR_MS_T which specifies the IRODS_ADMIN_KW.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
- */
-
+**/
 int
 msiDataObjTrim (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *inpParam5,
@@ -1601,30 +2060,53 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiCollCreate
+/**
+ * \fn msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls rsCollCreate to create a collection
+ *    as part of a workflow execution.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Michael Wan
- * \date   2007-04-02
- * \brief This microservice calls rsCollCreate to recursively rm a collection
- *  as part of a workflow  execution.
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-13
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a CollInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - A STR_MS_T which specifies the flags integer. A flags of
- *	1 means the parent collections will be created too.
- * \param[out] a INT_MS_T containing the status.
+ *
+ * \usage
+ * testrule||msiCollCreate(*A,0,*junk)##writeLine(stdout,"")|nop
+ * *A/tempZone/home/rods/dir1
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - a CollInp_MS_T or a STR_MS_T which
+ *    would be taken as dataObj path.
+ * \param[in] inpParam2 - a STR_MS_T which specifies the flags integer. A
+ *    flags value of 1 means the parent collections will be created too.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -1663,54 +2145,75 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiCollCreate: rsCollCreate failed %s, status = %d",
-			collCreateInp.collName,  
+          collCreateInp.collName,  
           rei->status);
     }
 
     if (myCollCreateInp == &collCreateInp) {
-	clearKeyVal (&myCollCreateInp->condInput);
+      clearKeyVal (&myCollCreateInp->condInput);
     }
 
     return (rei->status);
 }
 
-/*
- * \fn msiRmColl
+
+/**
+ * \fn msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
+ * 
+ * \brief This microservice calls rsRmColl to recursively remove a collection
+ *    as part of a workflow execution.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Michael Wan
- * \date   2007-04-02
- * \brief This microservice calls rsRmColl to recursively rm a collection
- *  as part of a workflow  execution.
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-11
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a CollInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- * msKeyValStr -  This is the special msKeyValStr
+ *
+ * \usage
+ * testrule||msiCollCreate(*A,0,*junk1)##msiRmColl(*A,forceFlag,*junk2)##writeLine(stdout,"")|nop
+ * *A/tempZone/home/rods/dir1
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - a CollInp_MS_T or a STR_MS_T which would be taken as dataObj path.
+ * \param[in] msKeyValStr - This is the special msKeyValStr
  *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *   If the keyWd is not specified (without the '=' char), the value is
- *   assumed to be one of the keywaord listed below for backward
- *   compatibility..
- *    Valid keyWds are :
- *                       "forceFlag" - Remove the data object instead putting
- *                          it in trash. This keyWd has no value. But the
- *                          '=' character is still needed
- *                        "irodsAdminRmTrash" - Admin rm trash. This keyWd
- *                          has no value.
- *                        "irodsRmTrash" - rm trash. This keyWd has no value.
- * \param[out] a INT_MS_T containing the status.
+ *   assumed to be one of the keywords listed below for backwards
+ *   compatibility.
+ *   Valid keyWds are :
+ *        \li "forceFlag" - Remove the data object instead of putting
+ *                      it in the trash. This keyWd has no value. But the
+ *                      '=' character is still needed.
+ *        \li "irodsAdminRmTrash" - Admin remove trash. This keyWd has no value.
+ *        \li "irodsRmTrash" - Remove trash. This keyWd has no value.
+ * \param[out] outParam - an INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
-msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr,
-msParam_t *outParam, ruleExecInfo_t *rei)
+msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     collInp_t rmCollInp, *myRmCollInp;
@@ -1783,39 +2286,61 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * XXXXXX this microservice is being phased out. The new microservice
- * for replicating a collection is  msiCollRepl 
- * \fn msiReplColl
+
+/**
+ * \fn msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
+ *  msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice iterates through a collection and calls 
+ *  rsDataObjRepl to recursively replicate the collection
+ *  as part of a workflow execution.
+ *
+ * \deprecated The new microservice for replicating a collection is msiCollRepl 
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Sifang Lu
- * \date   2007-10-01
- * \brief This microservice iterate through collection, and calls 
- *  rsDataObjRepl to recursively replication a collection
- *  as part of a workflow  execution.
+ * \date    2007-10-01
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-20
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
- * \param[in]
- *    coll     : It can be a CollInp_MS_T or a STR_MS_T which would be taken 
+ *
+ * \usage None
+ *
+ * \param[in] coll - Required - A CollInp_MS_T or a STR_MS_T which would be taken 
  *               as destination collection path.
- *    destResc : STR_MS_T destination resource name
- *    options  : STR_MS_T a group of options in a string delimited by '%%'.
+ * \param[in] destRescName - A STR_MS_T destination resource name.
+ * \param[in] options - A STR_MS_T - a group of options in a string delimited by '%%'.
  *               If the string is empty ("\0") or null ("NULL") it will not 
  *               be used.  
- *               The options can be the following
- *              - "all"(ALL_KW) 
- *              - "irodsAdmin" (IRODS_ADMIN_KW).
- *              - "backupMode" if specified, it will try to use 'backup mode' 
+ *               The options can be the following:
+ *              \li "all"(ALL_KW) 
+ *              \li "irodsAdmin" (IRODS_ADMIN_KW).
+ *              \li "backupMode" if specified, it will try to use 'backup mode' 
  *                to the destination resource. Means if a good copy already
  *                exists in destination resource, it will not throw an error
+ * \param[out] outParam - an INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
  *
- * \param[out] a INT_MS_T containing the status.
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -1968,34 +2493,56 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
     return (rei->status);
 }
 
-/*
- * \fn msiPhyPathReg
- * \author  Michael Wan
- * \date   2007-04-02
+/**
+ * \fn msiPhyPathReg (msParam_t *inpParam1, msParam_t *inpParam2,
+ * msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam, 
+ * ruleExecInfo_t *rei)
+ *
  * \brief This microservice calls rsPhyPathReg to register a physical path
- * with the iCat. recursively rm a collection
- *  as part of a workflow  execution.
+ * with the iCAT.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    irpParam2 - optional - a STR_MS_T which specifies the dest resourceName.
- *    irpParam3 - optional - a STR_MS_T which specifies the physical path to
- *      be registered.
- *    inpParam4 - optional - a STR_MS_T which specifies the "collection"
+ *
+ * \usage
+ * testrule||msiPhyPathReg(*D,demoResc8,*E,null,*junk)|nop
+ * *D=/tempZone/home/rods/foo6%*E=/scratch/localfile/test.txt
+ * ruleExecOut
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the dest resourceName.
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the physical path to be registered.
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the "collection"
  *      (COLLECTION_KW) indicating the path to be registered is a directory. 
- * \param[out] a INT_MS_T containing the status.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiPhyPathReg (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam, 
@@ -2063,29 +2610,47 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiObjStat
+/**
+ * \fn msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls rsObjStat to get the stat of an iRODS path 
+ *  as part of a workflow execution.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Michael Wan
- * \date   2007-04-02
- * \brief This microservice calls rsObjStat to get the stat of an iRods path 
- *  as part of a workflow  execution.
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- * \param[out] a INT_MS_T containing an integer with value COLL_OBJ_T or 
- *    DATA_OBJ_T.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[out] outParam - a INT_MS_T containing an integer with value COLL_OBJ_T or DATA_OBJ_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
 {
@@ -2128,35 +2693,56 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
 }
 
 /**
- * \fn msiDataObjRsync
- * \author  Michael Wan
- * \date   2007-02-12
+ * \fn msiDataObjRsync (msParam_t *inpParam1, msParam_t *inpParam2,
+ *    msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam, 
+ *    ruleExecInfo_t *rei)
+ *
  * \brief This microservice requests the client to call a rcDataObjRsync API
  *   as part of a workflow execution.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-02-12
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
  *  be called through delayExec since it requires client interaction.
- * \param[in]
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
  *      (RSYNC_MODE_KW). Valid modes are IRODS_TO_LOCAL, LOCAL_TO_IRODS 
- *	and IRODS_TO_IRODS
- *    inpParam3 - Optional - a STR_MS_T which specifies the chksum value
+ *      and IRODS_TO_IRODS
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the chksum value
  *      (RSYNC_CHKSUM_KW).
- *    inpParam4 - Optional - a STR_MS_T which specifies the dest path
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the dest path
  *      (RSYNC_DEST_PATH_KW). Valid only for IRODS_TO_IRODS mode.
- * \param[out] a INT_MS_T containing the status.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiDataObjRsync (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam, 
@@ -2229,34 +2815,61 @@ ruleExecInfo_t *rei)
 }
 
 /**
- * \fn msiExecCmd
- * \author  Michael Wan
- * \date   2007-05-08
+ * \fn msiExecCmd (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
+ * msParam_t *inpParam4, msParam_t *inpParam5, msParam_t *outParam, 
+ * ruleExecInfo_t *rei)
+ *
  * \brief This microservice requests the client to call a rcExecCmd API
- *   to fork and exec a command in the server/ibn/cmd directory.
- * \param[in]
- *    inpParam1 - It can be a ExecCmd_MS_T or
- *      a STR_MS_T which specify the command (cmd) to execute.
- *    inpParam2 - Optional - a STR_MS_T which specifies the argv (cmdArgv) 
- *	of the command
- *    inpParam3 - Optional - a STR_MS_T which specifies the host address
- *      (execAddr) to execute to command.
- *    inpParam4 - Optional - a STR_MS_T which specifies an iRods file path
- *	(hintPath). The command will be executed on the host where this 
- *	file is stored. 
- *    inpParam5 - Optional - A INT_MS_T or a STR_MS_T which specifies 
- *	which the resolved physical path from the hintPath (inpParam4)
- *	will be part of the argv. 
- * \param[out] a ExecCmdOut_MS_T containing the status of the command
- *	execution and the stdout/strerr output.
+ *   to fork and execute a command that resides in the server/ibn/cmd directory.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Michael Wan
+ * \date    2007-05-08
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
+ * \note  This call does not require client interaction, which means
+ *  it can be used through rcExecMyRule (irule) or internally by the server.
+ *
+ * \usage
+ * testrule||msiExecCmd(hello_script,x y x,null,null,null,*HELLO_OUT)|nop
+ * null
+ * ruleExecOut 
+ *
+ * \param[in] inpParam1 - a ExecCmd_MS_T or
+ *    a STR_MS_T which specify the command (cmd) to execute.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the argv (cmdArgv) 
+ *    of the command
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the host address
+ *    (execAddr) to execute to command.
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies an iRODS file path
+ *    (hintPath). The command will be executed on the host where this 
+ *    file is stored. 
+ * \param[in] inpParam5 - Optional - A INT_MS_T or a STR_MS_T which specifies 
+ *    which the resolved physical path from the hintPath (inpParam4)
+ *    will be part of the argv. 
+ * \param[out] outParam - a ExecCmdOut_MS_T containing the status of the command
+ *    execution and the stdout/strerr output.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiExecCmd (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
 msParam_t *inpParam4, msParam_t *inpParam5, msParam_t *outParam, 
@@ -2323,47 +2936,70 @@ ruleExecInfo_t *rei)
 
 
 /**
- * \fn  msiCollRepl
+ * \fn msiCollRepl (msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status, 
+ * ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice wraps the rsCollRepl() routine to replicate a collection.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Antoine de Torcy
- * \date  2008-08-19
- * \brief  This microservice wraps the rsCollRepl() routine to replicate a 
- * collection.
+ * \date    2008-08-19
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-12
+ *
  * \note  This call does not require client interaction, which means
- *	it can be used through rcExecMyRule (irule) or internally by the server.
- * \param[in]
- *    collection - A CollInp_MS_T or a STR_MS_T with the irods path of the 
- *	collection to replicate.
-*    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *  it can be used through rcExecMyRule (irule) or internally by the server.
+ *
+ * \usage
+ * testrule||msiCollRepl(*A, *B, *status)|nop
+ * *A=/tempZone/home/rods/testcoll%*B=destRescName=newResc
+ * ruleExecOut
+ *
+ * \param[in] collection - A CollInp_MS_T or a STR_MS_T with the irods path of the 
+ *      collection to replicate.
+ * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
  *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *      If the keyWd is not specified (without the '=' char), the value is
  *      assumed to be the target resource ("destRescName") for backward
- *      compatibility..
- *    Valid keyWds are : "destRescName" - the target resource to replicate to.
- *                       "backupRescName" - the target resource to backup
- *                          the data. If this keyWd is used, the backup mode
- *                          will be switched on.
- *                       "rescName" - the resource of the source copy.
- *                       "updateRepl" - update other replicas with the
- *                          latest copy. This keyWd has no value. But
- *                          the '=' character is still needed.
- *                       "replNum" - the replica number to use as source.
- *                       "numThreads" - the number of threads to use.
- *                       "all" - replicate to all resources in the resource
- *                          group. This keyWd has no value.
- *                       "irodsAdmin" - admin user replicate other users' files.
- *                          This keyWd has no value.
- *                       "verifyChksum" - verify the transfer using checksum.
- *                          This keyWd has no value.
- * \param[out] 
- *    status - a CollOprStat_t for detailed operation status.
+ *      compatibility.
+ *      Valid keyWds are:
+ *        \li "destRescName" - the target resource to replicate to.
+ *        \li "backupRescName" - the target resource to backup
+ *              the data. If this keyWd is used, the backup mode
+ *              will be switched on.
+ *        \li "rescName" - the resource of the source copy.
+ *        \li "updateRepl" - update other replicas with the
+ *              latest copy. This keyWd has no value. But
+ *              the '=' character is still needed.
+ *        \li "replNum" - the replica number to use as source.
+ *        \li "numThreads" - the number of threads to use.
+ *        \li "all" - replicate to all resources in the resource
+ *              group. This keyWd has no value.
+ *        \li "irodsAdmin" - admin user replicate other users' files.
+ *              This keyWd has no value.
+ *        \li "verifyChksum" - verify the transfer using checksum.
+ *              This keyWd has no value.
+ * \param[out] status - a CollOprStat_t for detailed operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiCollRepl (msParam_t *collection, msParam_t *msKeyValStr, msParam_t *status, 
 ruleExecInfo_t *rei)
@@ -2443,28 +3079,50 @@ ruleExecInfo_t *rei)
 }
 
 /**
- * \fn msiDataObjPutWithOptions
+ * \fn msiDataObjPutWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
+ * msParam_t *inpParam3,msParam_t *inpOverwriteParam,
+ * msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice requests the client to call a rcDataObjPut API
+ *   as part of a workflow execution, with options.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Romain Guinot
- * \date   2008
- * \brief This microservice is  a variation of msiDataObjPut
- * \param[in] 
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    inpParam2 - Optional - a STR_MS_T which specifies the resource.
- *    inpParam3 - Optional - a STR_MS_T which specifies the client's local 
- *      file path.
- *    inpOverwriteParam - Optional - a STR_MS_T which specifies if the put 
-        should do an overwrite if content already exists in the resource.
-      to trigger an overwrite, "forceFlag" keyword is expected
- *    inpAllCopiesParam - Optional - a STR_MS_T which specifies if that 
-        in case of an overwrite,the operation should overwrite all 
-        existing copies 
- * \param[out] a INT_MS_T containing the status.
+ * \date    2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
+ * \note 
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - a DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the client's local file path.
+ * \param[in] inpOverwriteParam - Optional - a STR_MS_T which specifies if the put 
+ *      should do an overwrite if content already exists in the resource.
+ *      To trigger an overwrite, "forceFlag" keyword is expected
+ * \param[in] inpAllCopiesParam - Optional - a STR_MS_T which specifies if that 
+ *        in case of an overwrite,the operation should overwrite all existing copies 
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa msiDataObjPut
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -2554,28 +3212,53 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiDataObjReplWithOptions
- * \author Thomas Ledoux
- * \date 2009-03-24
- * \brief This microservice is the same as msiDataObjRepl but with more
- *   input options
+/**
+ * \fn msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2, 
+ *    msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice is the same as msiDataObjRepl, but with more input options.
+ *
+ * \module core
+ *
+ * \since 2.1
+ *
+ * \author  Thomas Ledoux
+ * \date    2009-03-24
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  * i.e., rule execution initiated by clients and should not be called
  * internally by the server since it interacts with the client through
  * the normal client/server socket connection.
- * \param[in]
- * inpParam1 - It can be a DataObjInp_MS_T or
- * STR_MS_T which would be the obj Path.
- * inpParam2 - Optional - a STR_MS_T which specifies the resource.
- * inpParam3 - Optional - a STR_MS_T which specifies an additional
- *     param like all (ALL_KW), irodsAdmin (IRODS_ADMIN_KW)
- * \param[out] - outParam - a INT_MS_T for the status.
  *
- */
+ * \usage None
+ *
+ * \param[in] inpParam1 - a DataObjInp_MS_T or STR_MS_T which would be the obj Path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies an additional
+ *     param like all (ALL_KW), irodsAdmin (IRODS_ADMIN_KW)
+ * \param[out] outParam - a INT_MS_T for the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2, 
-msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+  msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {
      rsComm_t *rsComm;
      dataObjInp_t dataObjInp, *myDataObjInp;
@@ -2641,35 +3324,55 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
      return (rei->status);
 }
 
-/*
- * \fn msiDataObjChksumWithOptions
- * \author Thomas Ledoux
- * \date 2009-03-24
- * \brief This microservice calls rsDataObjChksum to chksum the iput data
- *    object as part of a workflow execution.
+/**
+ * \fn msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
+ *  msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls rsDataObjChksum to checksum the iput data
+ *    object as part of a workflow execution, with options.
+ *
+ * \module core
+ *
+ * \since 2.1
+ *
+ * \author  Thomas Ledoux
+ * \date    2009-03-24
+ *
+ * \remark Terrell Russell - msi documentation, 2009-06-23
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call
  * i.e., rule execution initiated by clients and should not be called
  * internally by the server since it interacts with the client through
  * the normal client/server socket connection.
- * \param[in]
- * inpParam1 - It can be a DataObjInp_MS_T or
- *     a STR_MS_T which would be taken as dataObj path.
- * inpParam2 - optional - a STR_MS_T which specifies "verifyChksum"
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - a DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - Optional - a STR_MS_T which specifies "verifyChksum"
  *    (VERIFY_CHKSUM_KW) or "forceChksum"(FORCE_CHKSUM_KW).
- * inpParam3 - optional - a STR_MS_T which specifies the "ChksumAll"
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the "ChksumAll"
  *   (CHKSUM_ALL_KW) or a INT which gives the replica number.
- * \param[out] a STR_MS_T containing the chksum value.
+ * \param[out] outParam - a STR_MS_T containing the chksum value.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
- * \bug no known bugs
- */
-
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
-msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
+  msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {
      rsComm_t *rsComm;
      dataObjInp_t dataObjInp, *myDataObjInp;

@@ -4,9 +4,9 @@
 /**
  * @file	stockQuoteMS.c
  *
- * @brief	Acces to stock quotation web services
+ * @brief	Access to stock quotation web services
  *
- * This microservices handles comminication with http://www.webserviceX.NET
+ * This microservice handles comminication with http://www.webserviceX.NET
  * and provides stock quotation - delayed by the web server. 
  * 
  *
@@ -19,6 +19,50 @@
 #include "stockQuote.nsmap"
 
 
+/**
+ * \fn msiGetQuote(msParam_t* inSymbolParam, msParam_t* outQuoteParam, ruleExecInfo_t* rei )
+ *
+ * \brief  This microservice returns stock quotation (delayed by web service) using web service provided by http://www.webserviceX.NET
+ * 
+ * \module webservices
+ * 
+ * \since pre-2.1
+ * 
+ * \author   Arcot Rajasekar
+ * \date     2008-05
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-25
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleTest26.ir
+ *
+ * myTestRule||msiGetQuote(*A,*B)|nop
+ * *A=$ORCL
+ * *A%*B
+ *
+ * \param[in] inSymbolParam - a msParam of type STR_MS_T which is a stock symbol.
+ * \param[out] outQuoteParam - a msParam of type STR_MS_T which is a stock quotation as a float printed onto string.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int
 msiGetQuote(msParam_t* inSymbolParam, msParam_t* outQuoteParam, ruleExecInfo_t* rei )
 {

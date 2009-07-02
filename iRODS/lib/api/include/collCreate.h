@@ -47,7 +47,7 @@ extern "C" {
 int
 rcCollCreate (rcComm_t *conn, collInp_t *collCreateInp);
 
-/* rcCollCreate - Create a iRods collection.
+/* rcCollCreate - Create a iRODS collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   collInp_t *collInp - generic coll input. Relevant items are:

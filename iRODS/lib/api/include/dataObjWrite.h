@@ -57,11 +57,11 @@ extern "C" {
 
 /* prototype for the client call */
 /* rcDataObjWrite - Write the content of dataObjWriteInpBBuf to 
- * an opened iRods data object descriptor.
+ * an opened iRODS data object descriptor.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjWriteInp_t *dataObjWriteInp - Relevant items are:
- *      l1descInx - the iRods data object descriptor to write.
+ *      l1descInx - the iRODS data object descriptor to write.
  *      len - the number of bytes to write
  *   bytesBuf_t *dataObjWriteInpBBuf - the bytesBuf for the write input.
  *

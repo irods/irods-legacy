@@ -42,7 +42,7 @@ extern "C" {
 int
 rcRegReplica (rcComm_t *conn, regReplica_t *regReplicaInp);
 
-/* rcRegReplica - Unregister a iRods dataObject.
+/* rcRegReplica - Unregister a iRODS dataObject.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   regReplica_t *regReplicaInp - the dataObj to replicate

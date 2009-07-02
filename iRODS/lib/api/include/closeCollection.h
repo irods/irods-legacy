@@ -33,7 +33,7 @@ extern "C" {
 int
 rcCloseCollection (rcComm_t *conn, int handleInxInp);
 
-/* rcCloseCollection - Close a iRods collection.
+/* rcCloseCollection - Close a iRODS collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   int handleInxInp - the handleInx (collection handle index) to close.

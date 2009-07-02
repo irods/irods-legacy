@@ -65,7 +65,7 @@ extern "C" {
 int
 rcRmCollOld (rcComm_t *conn, collInp_t *rmCollInp);
 
-/* rcRmCollOld - Remove a iRods collection.
+/* rcRmCollOld - Remove a iRODS collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   collInp_t *collInp - generic coll input. Relevant items are:

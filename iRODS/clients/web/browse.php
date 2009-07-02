@@ -4,7 +4,7 @@
 
 <html>
 <head>
-  <title>iRods Rich Web Client</title>
+  <title>iRODS Rich Web Client</title>
   <link rel="stylesheet" type="text/css" href="extjs/docs/resources/collapser.css" />
 	<link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css" />
 	<link rel="stylesheet" type="text/css" href="extjs/resources/css/xtheme-aero.css" />

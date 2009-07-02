@@ -1,9 +1,61 @@
+/**
+ * @file	printMS.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 
-
+/**
+ * \fn writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice writes a given string followed by a new-line character into the target buffer in ruleExecOut Parameter.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-24
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleInp5
+ *
+ * myTestRule||writeLine(stdout,alpha beta gamma)##writeLine(stdout,alpha beta gamma)##writeLine(stderr,Error:blah)|nop
+ *
+ * Also:
+ *
+ * myTestRule||assign(*A,0)##whileExec(*A < 20, writeLine(stdout, *A)##assign(*A, *A + 4), nop)|nop##nop
+ * null
+ * ruleExecOut
+ *
+ * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. Currently stdout and stderr.
+ * \param[in] inString - a msParam of type STR_MS_T which is a string to be written into buffer.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect ruleExecOut structure in msParamArray gets modified
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
   int i;
@@ -28,6 +80,49 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
   return(i);
   
 }
+
+/**
+ * \fn writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice writes a given string into the target buffer in ruleExecOut parameter
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date    2008
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-24
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in clients/icommands/test/ruleInp5
+ *
+ * myTestRule||writeString(stdout,alpha beta gamma)##writeString(stdout,alpha beta gamma)##writeString(stderr,Error:blah)|nop
+ *
+ * \param[in] where - where is a msParam of type STR_MS_T which is the buffer name in ruleExecOut. Currently stdout and stderr.
+ * \param[in] inString - inString is a msParam of type STR_MS_T which is a string to be written into buffer
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect ruleExecOut structure in msParamArray gets modified.
+ *
+ * \return integer
+ * \retval
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
 {
   int i;
@@ -104,6 +199,50 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
 }
 
 
+/**
+ * \fn writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice writes a positive integer into a buffer.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-24
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in modules/integrityChecks/test/testwriteposint.ir
+ *
+ * msiTestWritePosInt||msiTestWritePosInt(*A)##writePosInt(stdout, *A)##writeLine(stdout,"xxx")|nop
+ * null
+ * ruleExecOut
+ *
+ * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut.
+ * \param[in] inInt - the integer to write
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
 {
 	char *writeId;
@@ -130,6 +269,50 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
 }
 
 
+/**
+ * \fn writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice writes the buffer in an inOutStruct to stdout or stderr.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-24
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in modules/integrityChecks/test/listACL.ir
+ *
+ * msiListCollACL||msiListCollACL(*Collection,*BUF,*STATUS)##writeBytesBuf(stdout,*BUF)##writeLine(stdout,"")|nop
+ * *Collection=/homeZone/home/rods/bigcollection
+ * ruleExecOut%*STATUS
+ *
+ * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. It can be stdout or stderr.
+ * \param[in] inBuf - a msParam of type STR_MS_T - related to the status output
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
 {
 	char *writeId;
@@ -161,8 +344,51 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
 	return (status);
 }
 
-
-
+/**
+ * \fn writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice writes keyword value pairs to stdout or stderr, using the given separator.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author  
+ * \date 
+ * 
+ * \remark Ketan Palshikar - msi documentation, 2009-06-24
+ * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * 
+ * \note  
+ *
+ * \usage
+ *
+ * As seen in modules/integrityChecks/test/verifyDataType.ir
+ *
+ * msiCheckFileDatatypes||msiCheckFileDatatypes(*Collection,*Datatype,*Status)##writeKeyValPairs(stdout, *B, ": ")##writeLine(stdout,"")|nop
+ * *A=/homeZone/home/rods%*B=generic,xml,kitten,mmCIF, ,
+ * ruleExecOut%*STATUS
+ *
+ * \param[in] where - a msParam of type STR_MS_T which is the buffer name in ruleExecOut. It can be stdout or stderr.
+ * \param[in] inKVPair - a msParam of type KeyValPair_MS_T
+ * \param[in] separator - Optional - a msParam of type STR_MS_T, the desired parameter
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei)
 {
 	keyValPair_t *KVPairs;
@@ -242,8 +468,4 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
 
 	return (rei->status);
 }
-
-
-
-
 

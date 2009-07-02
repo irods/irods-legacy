@@ -46,7 +46,7 @@ int
 rcModColl (rcComm_t *conn, collInp_t *modCollInp);
 
 /* rcModColl - Modify the collType, collInfo1 and collInfo2 of a 
- * iRods collection.
+ * iRODS collection.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   collInp_t *collInp - generic coll input. Relevant items are:

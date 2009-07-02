@@ -45,7 +45,7 @@ rescGrpInfo_t **myRescGrpInfo);
 #endif
 
 /* prototype for the client call */
-/* rcDataObjCreate - Create a iRods data object.
+/* rcDataObjCreate - Create a iRODS data object.
  * Input - 
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInp_t *dataObjInp - generic dataObj input. Relevant items are:

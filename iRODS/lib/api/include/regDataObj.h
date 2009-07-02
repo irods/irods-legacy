@@ -38,7 +38,7 @@ int
 rcRegDataObj (rcComm_t *conn, dataObjInfo_t *dataObjInfo,
 dataObjInfo_t **outDataObjInfo);
 
-/* rcRegDataObj - Register a iRods dataObject.
+/* rcRegDataObj - Register a iRODS dataObject.
  * Input -
  *   rcComm_t *conn - The client connection handle.
  *   dataObjInfo_t *dataObjInfo - the dataObjInfo to register

@@ -21,7 +21,7 @@ sub logMsg {
 # Adjustable parameters:
 $sleepSecs=70;
 $sleepRetries=10;
-$minutesInactive=4;  # minutes iRods must be inactive
+$minutesInactive=4;  # minutes iRODS must be inactive
 
 #
 # Set $myDir the directory containing this script.
