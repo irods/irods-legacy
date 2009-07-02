@@ -65,13 +65,21 @@ int chlDebug(char *debugMode) {
       logSQL=1;
       chlDebugGenQuery(1);
       chlDebugGenUpdate(1);
-      cmlDebug(1);
+      cmlDebug(2);
    }
    else {
-      logSQL=0;
-      chlDebugGenQuery(0);
-      chlDebugGenUpdate(0);
-      cmlDebug(0);
+      if (strstr(debugMode, "sql")) {
+	 logSQL=1;
+	 chlDebugGenQuery(1);
+	 chlDebugGenUpdate(1);
+	 cmlDebug(1);
+      }
+      else {
+	 logSQL=0;
+	 chlDebugGenQuery(0);
+	 chlDebugGenUpdate(0);
+	 cmlDebug(0);
+      }
    }
    return(0);
 }

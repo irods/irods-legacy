@@ -28,8 +28,14 @@ int auditEnabled=0;  /* for debug, later will have better control */
 
 int cmlDebug(int mode) {
    logSQL_CML = mode;
-   auditEnabled=1;  /* for debug, later will have better control */
-                    /* but need to, to test each sql form and pass 'test' */
+   if (mode > 1) {
+      auditEnabled=1; 
+      /* This is needed for testing each sql form, which is needed for
+	 the 'irodsctl devtest' to pass */
+   }
+   else {
+      auditEnabled=0;
+   }
    return(0);
 }
 
