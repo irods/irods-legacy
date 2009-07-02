@@ -1026,7 +1026,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     char *outBadKeyWd;
     int validKwFlags;
 
-    RE_TEST_MACRO ("    Calling msiDataObjGetWithOptions")
+    RE_TEST_MACRO ("    Calling msiDataObjGet")
 
     if (rei == NULL || rei->rsComm == NULL) {
         rodsLog (LOG_ERROR,
