@@ -84,7 +84,7 @@ void
 usage ()
 {
    char *msgs[]={
-   "Usage : ichksum [-harvV] [-K|f] [-n replNum] dataObj|collection ... ",
+   "Usage : ichksum [-harvV] [-K|f] [-n replNum] [-R resource] dataObj|collection ... ",
 "Checksum one or more data-object or collection from iRODS space.",
 "Options are:",
 " -f  force - checksum data-objects even if a checksum alreay exists in iCAT",
