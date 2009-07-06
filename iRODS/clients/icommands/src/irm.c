@@ -84,7 +84,7 @@ void
 usage ()
 {
    char *msgs[]={
-   "Usage : irm [-rufvVh] [-n replNum] dataObj|collection ... ",
+   "Usage : irm [-rUfvVh] [-n replNum] dataObj|collection ... ",
 "Remove one or more data-object or collection from iRODS space. By default, ",
 "the data-objects are moved to the trash collection (/myZone/trash) unless",
 "either the -f option or the -n option is used.",
@@ -104,7 +104,6 @@ usage ()
 " -r  recursive - remove the whole subtree; the collection, all data-objects",
 "     in the collection, and any subcollections and sub-data-objects in the",
 "     collection.",
-" -u  user",
 " -U  unregister the file or collection",
 " -v  verbose",
 " -V  Very verbose",
