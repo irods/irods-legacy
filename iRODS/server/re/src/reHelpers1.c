@@ -220,6 +220,7 @@ _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, i
    /*   char aaa[MAX_COND_LEN], bbb[MAX_COND_LEN];*/
    char inres1[MAX_COND_LEN * 2];
    char inres2[MAX_COND_LEN * 2];
+
    if (isLogical(oper1)) {
      if ((i = computeExpression(expr1,rei, reiSaveFlag,inres1)) < 0) 
        return(i);
@@ -261,16 +262,31 @@ _computeExpression(char *expr1, char *expr2, char *oper1, ruleExecInfo_t *rei, i
        sprintf(res,"%d", x != y);
      else if (!strcmp(oper1, "++"))
        sprintf(res,"%d",  (int) (x + y));
-     else if (!strcmp(oper1, "+"))
-       sprintf(res,"%f",  x + y);
-     else if (!strcmp(oper1, "-"))
-       sprintf(res,"%f",  x - y);
-     else if (!strcmp(oper1, "*"))
-       sprintf(res,"%f",  x * y);
-     else if (!strcmp(oper1, "/"))
-       sprintf(res,"%f",  x / y);
-     else
-       return(-2);
+     else if ( (strchr(expr1,'.') != NULL) || 
+	       (strchr(expr2,'.') != NULL) ) {
+       if (!strcmp(oper1, "+"))
+	 sprintf(res,"%f",  x + y);
+       else if (!strcmp(oper1, "-"))
+	 sprintf(res,"%f",  x - y);
+       else if (!strcmp(oper1, "*"))
+	 sprintf(res,"%f",  x * y);
+       else if (!strcmp(oper1, "/"))
+	 sprintf(res,"%f",  x / y);
+       else
+	 return(-2);
+     }
+     else { /* both are integers */
+       if (!strcmp(oper1, "+"))
+         sprintf(res,"%d", (int) (x + y));
+       else if (!strcmp(oper1, "-"))
+         sprintf(res,"%d", (int) (x - y));
+       else if (!strcmp(oper1, "*"))
+         sprintf(res,"%d", (int) (x * y));
+       else if (!strcmp(oper1, "/"))
+         sprintf(res,"%d", (int) (x / y));
+       else
+         return(-2);
+     }
      return(atoi(res));
    }
    /********RAJA remove May 29 2009 being done later anyway

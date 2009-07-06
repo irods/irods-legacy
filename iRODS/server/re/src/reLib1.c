@@ -79,7 +79,7 @@ applyRule(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
 	  else if (rei != NULL && rei->rsComm != NULL && rei->rsComm->rError != NULL)
-	    rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	    rodsLog(LOG_NOTICE,&(rei->rsComm->rError),-1,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
 	}
 
       i = checkRuleCondition(action,  ruleCondition, args, argc, rei, reiSaveFlag);
@@ -100,7 +100,7 @@ applyRule(char *action, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Executing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
 	  else if (rei != NULL && rei->rsComm != NULL && rei->rsComm->rError != NULL)
-	    rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
+	    rodsLog (LOG_NOTICE,"+Executing Rule Number:%i for Action:%s\n",ruleInx,action);
 	}
 	status = 
 	   executeRuleBody(action, ruleAction, ruleRecovery, args, argc, rei, reiSaveFlag);
@@ -399,7 +399,7 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
 	  else if (rei != 0 && rei->rsComm != 0 && &(rei->rsComm->rError) != 0)
-	    rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	    rodsLog (LOG_NOTICE,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
 	}
 
       i = checkRuleConditionNew(action,  ruleCondition, outMsParamArray, rei, reiSaveFlag);
@@ -550,7 +550,7 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Testing Rule Number:<FONT COLOR=#FF0000>%i</FONT> for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",ruleInx,action);
 	  else if (rei != 0 && rei->rsComm != 0 && &(rei->rsComm->rError) != 0)
-	    rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
+	    rodsLog (LOG_NOTICE,"+Testing Rule Number:%i for Action:%s\n",ruleInx,action);
 	}
 
       i = checkRuleConditionNew(action,  ruleCondition, outMsParamArray, rei, reiSaveFlag);
@@ -719,7 +719,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
     else if (reTestFlag == HTML_TEST_1)
       fprintf(stdout,"+Testing MyRule for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",inAction);
     else if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-      rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"+Testing MyRule for Action:%s\n",inAction);
+      rodsLog (LOG_NOTICE,"+Testing MyRule for Action:%s\n",inAction);
   }
 
   i = checkRuleConditionNew(action,  ruleCondition, inMsParamArray, rei, reiSaveFlag);
@@ -730,7 +730,7 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
 	  else if (reTestFlag == HTML_TEST_1)
 	    fprintf(stdout,"+Executing MyRule for Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",action);
 	  else if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	    rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"+Executing MyRule for Action:%s\n",action);
+	    rodsLog (LOG_NOTICE,"+Executing MyRule for Action:%s\n",action);
     }
     status = 
 	   executeMyRuleBody(action, ruleAction, ruleRecovery, inMsParamArray, rei, reiSaveFlag);

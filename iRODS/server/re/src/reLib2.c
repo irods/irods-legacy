@@ -35,7 +35,7 @@ executeRuleBody(char *action, char *ruleAction, char *ruleRecovery,
 	    fprintf(stdout,"<FONT COLOR=#FF0000>!!!Processing a cut</FONT><BR>\n");
 	else  if (reTestFlag == LOG_TEST_1)
 	   if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	     rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"!!!Processing a cut\n");
+	     rodsLog (LOG_NOTICE,"!!!Processing a cut\n");
       }
       cutFlag = 1;
       j = 0;
@@ -118,7 +118,7 @@ executeRuleBodyNew(char *action, char *ruleAction, char *ruleRecovery,
 	    fprintf(stdout,"<FONT COLOR=#FF0000>!!!Processing a cut</FONT><BR>\n");
 	else  if (reTestFlag == LOG_TEST_1)
 	   if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	     rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"!!!Processing a cut\n");
+	     rodsLog (LOG_NOTICE,"!!!Processing a cut\n");
       }
       cutFlag = 1;
       j = 0;
@@ -222,7 +222,7 @@ executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery,
 	    fprintf(stdout,"<FONT COLOR=#FF0000>!!!Processing a cut</FONT><BR>\n");
 	else  if (reTestFlag == LOG_TEST_1)
 	   if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	     rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"!!!Processing a cut\n");
+	     rodsLog (LOG_NOTICE,"!!!Processing a cut\n");
       }
       cutFlag = 1;
       j = 0;
@@ -335,7 +335,7 @@ executeRuleRecovery(char *ruleRecovery, ruleExecInfo_t *rei, int reiSaveFlag)
 	    fprintf(stdout,"<FONT COLOR=#FF0000>***RollingBack</FONT><BR>\n");
     else  if (reTestFlag == LOG_TEST_1)
        if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	 rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"***RollingBack\n");
+	 rodsLog (LOG_NOTICE,"***RollingBack\n");
   }
   return(executeRuleAction(ruleRecovery, rei, reiSaveFlag));
 }
@@ -352,7 +352,7 @@ executeRuleRecoveryNew(char *ruleRecovery, msParamArray_t *inMsParamArray, ruleE
 	    fprintf(stdout,"<FONT COLOR=#FF0000>***RollingBack</FONT><BR>\n");
     else  if (reTestFlag == LOG_TEST_1)
        if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	 rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"***RollingBack\n");
+	 rodsLog (LOG_NOTICE,"***RollingBack\n");
   }
   return(executeRuleActionNew(ruleRecovery, inMsParamArray,  rei, reiSaveFlag));
 }
@@ -369,7 +369,7 @@ executeMyRuleRecovery(char *ruleRecovery, msParamArray_t *inMsParamArray, ruleEx
 	    fprintf(stdout,"<FONT COLOR=#FF0000>***RollingBack</FONT><BR>\n");
     else  if (reTestFlag == LOG_TEST_1)
        if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	 rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"***RollingBack\n");
+	 rodsLog (LOG_NOTICE,"***RollingBack\n");
   }
   return(executeMyRuleAction(ruleRecovery, inMsParamArray, rei, reiSaveFlag));
 }
@@ -543,7 +543,7 @@ executeRuleAction(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag)
 	    fprintf(stdout,"...Performing Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",inAction);
       else if (reTestFlag == LOG_TEST_1)
 	 if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	   rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"...Performing Action:%s\n",inAction);
+	   rodsLog (LOG_NOTICE,"...Performing Action:%s\n",inAction);
       if (j == 1) {
 	if (reTestFlag == COMMAND_TEST_1) 
 	  fprintf(stdout,"------Mapping Action:%s  To %s\n", oldaction,action);
@@ -552,7 +552,7 @@ executeRuleAction(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag)
 		  oldaction,action);
 	else if (reTestFlag == LOG_TEST_1)
 	   if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	     rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"------Mapping Action:%s  To %s\n",  oldaction,action);
+	     rodsLog (LOG_NOTICE,"------Mapping Action:%s  To %s\n",  oldaction,action);
       }
     }
     actionInx = applyRuleArg(action,args,argc, rei, reiSaveFlag);
@@ -572,7 +572,7 @@ executeRuleAction(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag)
       fprintf(stdout,"...Performing Function:<FONT COLOR=#5500FF>%s</FONT><BR>\n",inAction);
     else if (reTestFlag == LOG_TEST_1)
        if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	 rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"...Performing Function:%s\n",inAction);
+	 rodsLog (LOG_NOTICE,"...Performing Function:%s\n",inAction);
     if (j == 1) {
       if (reTestFlag == COMMAND_TEST_1 || reTestFlag == COMMAND_TEST_MSI) 
 	fprintf(stdout,"------Mapping Function:%s  To %s\n", oldaction,action);
@@ -581,7 +581,7 @@ executeRuleAction(char *inAction, ruleExecInfo_t *rei, int reiSaveFlag)
 		oldaction,action);
       else if (reTestFlag == LOG_TEST_1)
 	 if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	   rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"------Mapping Function/Action:%s  To %s\n", oldaction,action);
+	   rodsLog (LOG_NOTICE,"------Mapping Function/Action:%s  To %s\n", oldaction,action);
     }
 
   }
@@ -658,7 +658,7 @@ executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, ruleExecIn
 	    fprintf(stdout,"...Performing Action:<FONT COLOR=#0000FF>%s</FONT><BR>\n",inAction);
       else if (reTestFlag == LOG_TEST_1)
 	 if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	   rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"...Performing Action:%s\n",inAction);
+	   rodsLog (LOG_NOTICE,"...Performing Action:%s\n",inAction);
       if (j == 1) {
 	if (reTestFlag == COMMAND_TEST_1) 
 	  fprintf(stdout,"------Mapping Action:%s  To %s\n", oldaction,action);
@@ -667,7 +667,7 @@ executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, ruleExecIn
 		  oldaction,action);
 	else if (reTestFlag == LOG_TEST_1)
 	   if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	     rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"------Mapping Action:%s  To %s\n",  oldaction,action);
+	     rodsLog (LOG_NOTICE,"------Mapping Action:%s  To %s\n",  oldaction,action);
       }
     }
     actionInx = applyRuleArgPA(action,args, argc, inMsParamArray, rei, reiSaveFlag);
@@ -687,7 +687,7 @@ executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, ruleExecIn
       fprintf(stdout,"...Performing Function:<FONT COLOR=#5500FF>%s</FONT><BR>\n",inAction);
     else if (reTestFlag == LOG_TEST_1)
        if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	 rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"...Performing Function:%s\n",inAction);
+	 rodsLog (LOG_NOTICE,"...Performing Function:%s\n",inAction);
     if (j == 1) {
       if (reTestFlag == COMMAND_TEST_1 || reTestFlag == COMMAND_TEST_MSI) 
 	fprintf(stdout,"------Mapping Function:%s  To %s\n", oldaction,action);
@@ -696,7 +696,7 @@ executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, ruleExecIn
 		oldaction,action);
       else if (reTestFlag == LOG_TEST_1)
 	 if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	   rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"------Mapping Function/Action:%s  To %s\n", oldaction,action);
+	   rodsLog (LOG_NOTICE,"------Mapping Function/Action:%s  To %s\n", oldaction,action);
     }
 
   }
@@ -732,7 +732,7 @@ executeMyRuleAction(char *inAction,  msParamArray_t *inMsParamArray, ruleExecInf
       fprintf(stdout,"...Performing Function:<FONT COLOR=#5500FF>%s</FONT><BR>\n",inAction);
     else if (reTestFlag == LOG_TEST_1)
        if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	 rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"...Performing Function:%s\n",inAction);
+	 rodsLog (LOG_NOTICE,"...Performing Function:%s\n",inAction);
     if (j == 1) {
       if (reTestFlag == COMMAND_TEST_1 || reTestFlag == COMMAND_TEST_MSI) 
 	fprintf(stdout,"------Mapping Function:%s  To %s\n", oldaction,action);
@@ -741,7 +741,7 @@ executeMyRuleAction(char *inAction,  msParamArray_t *inMsParamArray, ruleExecInf
 		oldaction,action);
       else if (reTestFlag == LOG_TEST_1)
 	 if (rei != NULL && rei->rsComm != NULL && &(rei->rsComm->rError) != NULL)
-	   rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1,"------Mapping Function/Action:%s  To %s\n", oldaction,action);
+	   rodsLog (LOG_NOTICE,"------Mapping Function/Action:%s  To %s\n", oldaction,action);
     }
 
   }
