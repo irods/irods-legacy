@@ -98,7 +98,7 @@ usage ()
 " ",
 "A tar file containing many small files can be created with normal unix",
 "tar command on the client and then uploaded to the iRODS server as a",
-"normal iRODS file. The 'ibun -x' command can the be used to extract/untar",
+"normal iRODS file. The 'ibun -x' command can then be used to extract/untar",
 "the uploaded tar file. The extracted subfiles and subdirectories will",
 "appeared as normal iRODS files and sub-collections. The 'ibun -c' command",
 "can be used to tar/bundle an iRODS collection into a tar file.",
