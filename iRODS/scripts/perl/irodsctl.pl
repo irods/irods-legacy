@@ -207,7 +207,7 @@ $reServerOnIes = 1;
 # broken due to timeout or other reason. The default is on. 
 # $irodsReconnect=1;
 
-# RETESTFLAG - option for logging
+# RETESTFLAG - option for logging micro-service calls
 # use 1 to make it log
 # $RETESTFLAG=1;
 
