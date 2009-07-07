@@ -31,9 +31,12 @@
  * As seen in clients/icommands/test/ruleTest22.ir
  *
  * myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,remoteExec(andal.sdsc.edu,null,msiDataObjChksum(*B,*Operation,*C),nop)
- * ##msiGetValByKey(*B,DATA_NAME,*D)##msiGetValByKey(*B,COLL_NAME,*E)##writeLine(stdout,CheckSum of *E/*D is *C),nop)|nop##nop
+ * ##msiGetValByKey(*B,DATA_NAME,*D)##msiGetValByKey(*B,COLL_NAME,*E)##writeLine(stdout,CheckSum of *E\*D is *C),nop)|nop##nop
  * *Action=chksum%*Condition=COLL_NAME = '/tempZone/home/rods/loopTest'%*Operation=ChksumAll
  * *Action%*Condition%*Operation%*C%ruleExecOut
+ * (note that the \ should be a forward slash but to avoid a compiler
+ *  warning about a / * (no blank) within a comment this was changed.)
+ *
  *
  * \param[in] inKVPair - This msParam is of type KeyValPair_PI which is a KeyValPair List.
  * \param[in] inKey - This msParam is of type STR_MS_T which is a key.

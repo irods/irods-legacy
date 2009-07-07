@@ -1129,9 +1129,11 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
  *
  * myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiGetValByKey(*B,RESC_LOC,*R)##remoteExec(*R,null,msiSleep(20,0)
  * ##msiDataObjChksum(*B,*Operation,*C),nop)##msiGetValByKey(*B,DATA_NAME,*D)##msiGetValByKey(*B,COLL_NAME,*E)
- * ##writeLine(stdout,CheckSum of *E/*D at *R is *C),nop)|nop##nop
+ * ##writeLine(stdout,CheckSum of *E\*D at *R is *C),nop)|nop##nop
  * *Action=chksumRescLoc%*Condition=COLL_NAME = '/tempZone/home/rods/loopTest'%*Operation=ChksumAll
  * *Action%*Condition%*Operation%*C%ruleExecOut
+ * (Note that the \ should be / but was changed to avoid a compiler warning
+ * about a slash * in a comment.)
  * 
  * \param[in] secPtr - secPtr is a msParam of type STR_MS_T which is seconds
  * \param[in] microsecPtr - microsecPrt is a msParam of type STR_MS_T which is microseconds

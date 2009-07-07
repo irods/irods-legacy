@@ -287,7 +287,9 @@ This documentation is generated from the iRODS code.
  * 
  *  As seen in server/config/reConfigs/core.irb
  * 
- * acPurgeFiles(*Condition)|(*Condition == null) %% (*Condition == '')|msiGetIcatTime(*Time,unix)##acGetIcatResults(remove,DATA_EXPIRY < '*Time',*List)##forEachExec(*List,msiDataObjUnlink(*List,*Status)##msiGetValByKey(*List,DATA_NAME,*D)##msiGetValByKey(*List,COLL_NAME,*E)##writeLine(stdout,Purged File *E/*D at *Time ),nop)|nop##nop
+ * acPurgeFiles(*Condition)|(*Condition == null) %% (*Condition == '')|msiGetIcatTime(*Time,unix)##acGetIcatResults(remove,DATA_EXPIRY < '*Time',*List)##forEachExec(*List,msiDataObjUnlink(*List,*Status)##msiGetValByKey(*List,DATA_NAME,*D)##msiGetValByKey(*List,COLL_NAME,*E)##writeLine(stdout,Purged File *E\*D at *Time ),nop)|nop##nop
+ * (note that the \* should be a forward slash * but to avoid a compiler
+ *  warning about a / * (no blank) within a comment this was changed.)
  *
  * \param[out] timeOutParam - a msParam of type STR_MS_T
  * \param[in] typeInParam - a msParam of type STR_MS_T
@@ -408,8 +410,10 @@ msiVacuum(ruleExecInfo_t *rei)
  * 
  *  As seen in server/config/reConfigs/nvo.irb
  * 
- * acRegisterData|$objPath like /home/collections.nvo/2mass/fits-images/*|cut##acCheckDataType(fits image)##msiSetResource(nvo-image-resource)##msiRegisterData|nop
- *  
+ * acRegisterData|$objPath like /home/collections.nvo/2mass/fits-images\*|cut##acCheckDataType(fits image)##msiSetResource(nvo-image-resource)##msiRegisterData|nop
+ * (note that the \* should be a forward slash * but to avoid a compiler
+ * warning about a / * (no blank) within a comment this was changed.)
+
  *
  * \param[in] xrescName - is a msParam of type STR_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically

@@ -1024,7 +1024,9 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
  *
  * As seen in server/config/reConfigs/core.irb.orig
  *
- * acDataDeletePolicy|$objPath like /foo/bar/*|msiDeleteDisallowed|nop 
+ * acDataDeletePolicy|$objPath like /foo/bar\*|msiDeleteDisallowed|nop 
+ * (the \ should be / but was changed to avoid a compiler warning about
+ * a slash* in a comment.)
  *
  * This rule prevents the deletion of any data objects or collections beneath the collection /foo/bar/
  *

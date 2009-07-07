@@ -399,7 +399,9 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
  * 
  * As seen in server/config/reConfigs/core.irb
  *
- * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(/*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
+ * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(\*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
+ * (Note that the \ should be / but was changed to avoid a compiler warning
+ *  about a slash * appearing in a comment.)
  *
  * \param[in] oldName - a msParam of type STR_MS_T
  * \param[in] newName - a msParam of type STR_MS_T
@@ -458,7 +460,9 @@ msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  * 
  * As seen in server/config/reConfigs/core.irb
  *
- * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(/*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
+ * acRenameLocalZone(*oldZone,*newZone)||msiRenameCollection(\*oldZone,*newZone)##msiRenameLocalZone(*oldZone,*newZone)##msiCommit|msiRollback##msiRollback##nop
+ * (Note that the \ should be / but was changed to avoid a compiler warning
+ *  about a slash * appearing in a comment.)
  *
  * \param[in] oldName - a msParam of type STR_MS_T
  * \param[in] newName - a msParam of type STR_MS_T
