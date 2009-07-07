@@ -222,6 +222,8 @@ icatGeneralQuerySetup() {
   sColumn( COL_META_DATA_ATTR_VALUE, "r_data_meta_main", "meta_attr_value");
   sColumn( COL_META_DATA_ATTR_UNITS, "r_data_meta_main", "meta_attr_unit");
   sColumn( COL_META_DATA_ATTR_ID,   "r_data_meta_main", "meta_id");
+  sColumn( COL_META_DATA_CREATE_TIME, "r_data_main", "create_ts");
+  sColumn( COL_META_DATA_MODIFY_TIME, "r_data_meta_main", "modify_ts");
  
   sColumn( COL_META_COLL_ATTR_NAME, "r_coll_meta_main", "meta_attr_name");
   sColumn( COL_META_COLL_ATTR_VALUE, "r_coll_meta_main", "meta_attr_value");
