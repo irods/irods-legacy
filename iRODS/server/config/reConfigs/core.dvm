@@ -11,6 +11,7 @@ objPath||rei->doi->objPath
 objPath||rei->doinp->objPath
 dataType||rei->doi->dataType
 dataSize||rei->doi->dataSize
+dataSize||rei->doinp->dataSize
 chksum||rei->doi->chksum
 version||rei->doi->version
 filePath||rei->doi->filePath
