@@ -222,7 +222,12 @@ bytesBuf_t *dataObjInpBBuf)
 	    }
         }
         /* myDataObjInfo->dataSize = bytesWritten; update size problem */
-        L1desc[l1descInx].bytesWritten = bytesWritten;
+	if (bytesWritten == 0 && myDataObjInfo->dataSize > 0) {
+	    /* overwrite with 0 len file */
+	    L1desc[l1descInx].bytesWritten = 1;
+        } else {
+	    L1desc[l1descInx].bytesWritten = bytesWritten;
+	}
     }
  
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
