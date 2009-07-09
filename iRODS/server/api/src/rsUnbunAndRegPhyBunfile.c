@@ -87,7 +87,7 @@ rescInfo_t *rescInfo)
     status = regUnbunPhySubfiles (rsComm, rescInfo, phyBunDir, rmBunCopyFlag);
 
     if (status == CAT_NO_ROWS_FOUND) {
-        /* some subfiles has been deleted. harmless */
+        /* some subfiles have been deleted. harmless */
         status = 0;
     } else if (status < 0) {
         rodsLog (LOG_ERROR,
