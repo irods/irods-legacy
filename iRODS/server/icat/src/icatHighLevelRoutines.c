@@ -2566,7 +2566,7 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
    }
 
    cllBindVars[cllBindVarCount++]=zoneName;
-   if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3");
+   if (logSQL) rodsLog(LOG_SQL, "chlDelZone 2");
    status =  cmlExecuteNoAnswerSql(
 		"delete from r_zone_main where zone_name = ?",
 		&icss);
