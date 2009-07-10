@@ -407,6 +407,8 @@ dataObjInfo_t **dataObjInfoHead)
             rodsLog (LOG_ERROR,
               "rsMvDataObjToTrash: rsDataObjRename error for %s",
               dataObjRenameInp.destDataObjInp.objPath);
+	} else {
+	    status = 0;
 	}
     }
 
