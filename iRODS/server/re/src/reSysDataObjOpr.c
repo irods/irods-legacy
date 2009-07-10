@@ -145,6 +145,9 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
             rei->status = getRescInfo (rei->rsComm, defaultResc, condInput,
               &myRescGrpInfo);
 	}
+    } else if (strcmp (optionStr, "forced") == 0) {
+        rei->status = getRescInfo (rei->rsComm, defaultResc, NULL,
+          &myRescGrpInfo);
     } else {
         rei->status = getRescInfo (rei->rsComm, defaultResc, condInput, 
           &myRescGrpInfo);
