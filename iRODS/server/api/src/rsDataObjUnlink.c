@@ -400,13 +400,13 @@ dataObjInfo_t **dataObjInfoHead)
     status = rsDataObjRename (rsComm, &dataObjRenameInp);
 
     if (status < 0) {
+	int status1;
         appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
-	status = rsDataObjRename (rsComm, &dataObjRenameInp);
-        if (status < 0) {
+	status1 = rsDataObjRename (rsComm, &dataObjRenameInp);
+        if (status1 < 0) {
             rodsLog (LOG_ERROR,
               "rsMvDataObjToTrash: rsDataObjRename error for %s",
               dataObjRenameInp.destDataObjInp.objPath);
-            return (status);
 	}
     }
 
