@@ -37,7 +37,7 @@
 
 /* Macro for the Re  Test Stub */
 
-/*
+
 #define RE_TEST_MACRO(msg)      \
   if (reTestFlag > 0 ) {        \
     if (reTestFlag == LOG_TEST_1) {     \
@@ -48,8 +48,8 @@
   }
 
 
-*/
 
+/*
 #define RE_TEST_MACRO(msg)      \
   if (reTestFlag > 0 ) {        \
      if (reTestFlag == LOG_TEST_1) {     \
@@ -59,5 +59,5 @@
        return(0);        \
   }
 
-
+*/
 #endif /* RE_DEFINES_H */
