@@ -2856,7 +2856,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
 		      &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
-	      "chlModColl cmlAudit4 failure %d",
+	      "chlDelCollByAdmin cmlAudit4 failure %d",
 	      status);
       _rollback("chlDelCollByAdmin");
       return(status);
