@@ -483,7 +483,6 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    return status;
 }
 
-
 /* 
  * chlRegDataObj - Register a new iRODS file (data object)
  * Input - rsComm_t *rsComm  - the server handle
