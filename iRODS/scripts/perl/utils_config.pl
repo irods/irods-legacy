@@ -21,7 +21,7 @@
 use File::Spec;
 use Cwd "abs_path";
 
-$version{"utils_config.pl"} = "2.0";
+$version{"utils_config.pl"} = "July 2009";
 
 
 

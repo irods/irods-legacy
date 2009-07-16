@@ -31,7 +31,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"finishSetup.pl"} = "2.0";
+$version{"finishSetup.pl"} = "July 2009";
 
 
 
