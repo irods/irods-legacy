@@ -258,6 +258,10 @@ runCmd(0, "imeta rm -d $F3 a b c");
 runCmd(0, "imeta rm -d $F1 a b c");
 runCmd(0, "imeta adda -d $F1 x y z");
 runCmd(0, "imeta rm -d $F1 x y z");
+runCmd(0, "imeta add -d $F1 testAVUnumber 14");
+runCmd(0, "imeta qu -d testAVUnumber '<' 6 | wc -l", "2");
+runCmd(0, "imeta qu -d testAVUnumber 'n<' 6 | grep 'No rows found'");
+runCmd(0, "imeta rm -d $F1 testAVUnumber 14");
 runCmd(0, "irm -f $F3");
 
 runCmd(0, "imeta add -C $D1 a b c");
