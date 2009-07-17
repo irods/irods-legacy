@@ -507,8 +507,9 @@ int findCycles(int startTable)
  selectSQL, fromSQL, whereSQL, and groupBySQL (which is sometimes
  used).  if selectOption is set, then input may be one of the SELECT_*
  modifiers (min, max, etc).
+ If the castOption is set, cast the column to a decimal (numeric).
  */
-int setTable(int column, int sel, int selectOption) {
+int setTable(int column, int sel, int selectOption, int castOption) {
    int colIx;
    int i;
    int selectOptFlag;
@@ -585,9 +586,18 @@ int setTable(int column, int sel, int selectOption) {
 	 else {
 
 	    if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
+	    if (castOption==1) {
+	       rstrcat(whereSQL, "cast (", MAX_SQL_SIZE);
+	    }
 	    rstrcat(whereSQL, Tables[i].tableName, MAX_SQL_SIZE);
 	    rstrcat(whereSQL, ".", MAX_SQL_SIZE);
 	    rstrcat(whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE);
+	    if (castOption==1) {
+               /* In PostgreSQL and Oracle 'decimal' is the same as
+                  'numeric', MySQL allows 'decimal' but not 'numeric',
+                  so we cast it to decimal for any of them. */
+	       rstrcat(whereSQL, " as decimal)", MAX_SQL_SIZE);
+	    }
 	 }
 	 if (debug>1) printf("table index=%d, nToFind=%d\n",i, nToFind);
 	 return(i);
@@ -1057,7 +1067,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 
    for (i=0;i<genQueryInp.selectInp.len;i++) {
       table = setTable(genQueryInp.selectInp.inx[i], 1, 
-		       genQueryInp.selectInp.value[i]&0xf);
+		       genQueryInp.selectInp.value[i]&0xf, 0);
       if (table < 0) {
 	 rodsLog(LOG_ERROR,"Table for column %d not found\n",
 		genQueryInp.selectInp.inx[i]);
@@ -1075,11 +1085,29 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 
    for (i=0;i<genQueryInp.sqlCondInp.len;i++) {
       int prevWhereLen;
+      int castOption;
+      char *cptr;
+
       prevWhereLen = strlen(whereSQL);
       if (genQueryInp.sqlCondInp.inx[i]==COL_META_DATA_ATTR_NAME) {
 	 N_col_meta_data_attr_name++;
       }
-      table = setTable(genQueryInp.sqlCondInp.inx[i], 0, 0);
+/*
+  Using an input condition, determine if the associated column is being
+  requested to be cast as an int.  That is, if the input is n< n> or n=.
+ */
+      castOption=0;
+      cptr = genQueryInp.sqlCondInp.value[i];
+      while (*cptr==' ') cptr++;
+      if ( (*cptr=='n' && *(cptr+1)=='<') ||
+           (*cptr=='n' && *(cptr+1)=='>') ||
+           (*cptr=='n' && *(cptr+1)=='=') ) {
+	 castOption=1;
+	 *cptr=' ';   /* clear the 'n' that was just checked so what
+                         remains is proper SQL */
+      }
+      table = setTable(genQueryInp.sqlCondInp.inx[i], 0, 0,
+		       castOption);
       if (table < 0) {
 	 rodsLog(LOG_ERROR,"Table for column %d not found\n",
 		genQueryInp.sqlCondInp.inx[i]);

@@ -1426,9 +1426,17 @@ usage(char *subOpt)
 " ",
 "When querying dataObjects (-d) additional conditions (AttName Op AttVal)",
 "may be given separated by 'and', for example:",
-"qu -d a = b and c '<' 10",
+" qu -d a = b and c '<' 10",
 "Or a single 'or' can be given for the same AttName, for example",
-"qu -d r '<' 5 or '>' 7",
+" qu -d r '<' 5 or '>' 7",
+" ",
+"You can also query in numeric mode (instead of as strings) by adding 'n'",
+"in front of the test condition, for example:",
+" qu -d r 'n<' 123",
+"which causes it to cast the AVU column to numeric (decimal) in the SQL.",
+"In numeric mode, if any of the named AVU values are non-numeric, a SQL",
+"error will occur but this avoids problems when comparing numeric strings",
+"of different lengths.",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);
