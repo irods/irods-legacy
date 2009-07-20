@@ -1465,6 +1465,22 @@ int chlDelResc(rsComm_t *rsComm,
       return(status);
    }
 
+   /* Remove it from resource groups, if any */
+   cllBindVars[cllBindVarCount++]=rescId;
+   if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 4");
+   status =  cmlExecuteNoAnswerSql(
+      "delete from r_resc_group where resc_id=?",
+      &icss);
+   if (status != 0 && 
+       status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      rodsLog(LOG_NOTICE,
+	      "chlDelResc delete from r_resc_group failure %d",
+	      status);
+      _rollback("chlDelResc");
+      return(status);
+   }
+
+
    /* Audit */
    status = cmlAudit3(AU_DELETE_RESOURCE,  
 		      rescId,
