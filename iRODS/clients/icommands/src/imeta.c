@@ -193,7 +193,7 @@ showColl(char *name, char *attrName, int wild)
    char v2[BIG_STR];
    char fullName[LONG_NAME_LEN];
    int  status;
-   char *columnNames[]={"attribute", "value", "unit"};
+   char *columnNames[]={"attribute", "value", "units"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
@@ -290,7 +290,7 @@ showResc(char *name, char *attrName, int wild)
    char v1[BIG_STR];
    char v2[BIG_STR];
    int  status;
-   char *columnNames[]={"attribute", "value", "unit"};
+   char *columnNames[]={"attribute", "value", "units"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
@@ -378,7 +378,7 @@ showUser(char *name, char *attrName, int wild)
    char v2[BIG_STR];
    char v3[BIG_STR];
    int status;
-   char *columnNames[]={"attribute", "value", "unit"};
+   char *columnNames[]={"attribute", "value", "units"};
 
    char userName[NAME_LEN];
    char userZone[NAME_LEN];
