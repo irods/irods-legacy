@@ -96,7 +96,13 @@ _rsModColl (rsComm_t *rsComm, collInp_t *modCollInp)
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
     /* XXXX need to commit */
-    if (status >= 0) status = chlCommit(rsComm);
+    if (status >= 0) {
+       status = chlCommit(rsComm);
+    }
+    else {
+       int status1;
+       status1 = chlRollback(rsComm);
+    }
 
     return (status);
 #else

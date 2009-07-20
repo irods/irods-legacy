@@ -312,9 +312,17 @@ _rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
 	    }
 	}
     } else {
+        int status1;
+        status1 = chlRollback(rsComm);
         return (status);
     }
-    if (status==0) status = chlCommit(rsComm);
+    if (status==0) {
+       status = chlCommit(rsComm);
+    }
+    else {
+       int status1;
+       status1 = chlRollback(rsComm);
+    }
     return(status);
 #else
     return SYS_NO_ICAT_SERVER_ERR;
