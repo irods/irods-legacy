@@ -200,6 +200,34 @@
 #define UNIX_FILE_TRUNCATE_ERR		-529000 
 #define UNIX_FILE_LINK_ERR		-530000 
 
+#define HPSS_AUTH_NOT_SUPPORTED		-600000
+#define HPSS_FILE_OPEN_ERR              -610000
+#define HPSS_FILE_CREATE_ERR            -611000
+#define HPSS_FILE_READ_ERR              -612000
+#define HPSS_FILE_WRITE_ERR             -613000
+#define HPSS_FILE_CLOSE_ERR             -614000
+#define HPSS_FILE_UNLINK_ERR            -615000
+#define HPSS_FILE_STAT_ERR              -616000
+#define HPSS_FILE_FSTAT_ERR             -617000
+#define HPSS_FILE_LSEEK_ERR             -618000
+#define HPSS_FILE_FSYNC_ERR             -619000
+#define HPSS_FILE_MKDIR_ERR             -620000
+#define HPSS_FILE_RMDIR_ERR             -621000
+#define HPSS_FILE_OPENDIR_ERR           -622000
+#define HPSS_FILE_CLOSEDIR_ERR          -623000
+#define HPSS_FILE_READDIR_ERR           -624000
+#define HPSS_FILE_STAGE_ERR             -625000
+#define HPSS_FILE_GET_FS_FREESPACE_ERR  -626000
+#define HPSS_FILE_CHMOD_ERR             -627000
+#define HPSS_FILE_RENAME_ERR            -628000
+#define HPSS_FILE_TRUNCATE_ERR          -629000
+#define HPSS_FILE_LINK_ERR              -630000
+#define HPSS_AUTH_ERR              	-631000
+#define HPSS_WRITE_LIST_ERR             -632000
+#define HPSS_READ_LIST_ERR              -633000
+#define HPSS_TRANSFER_ERR               -634000
+#define HPSS_MOVER_PROT_ERR             -635000
+
 /* 800,000 to 880,000 - Catalog library errors  */
 #define CATALOG_NOT_CONNECTED           -801000
 #define CAT_ENV_ERR                     -802000

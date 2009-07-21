@@ -139,7 +139,7 @@ typedef struct  QUANTAnet_rbudpBase_c
 
   static const int UDPSOCKBUF = 8388608;
 
-  static const int SUCCESS = 1;
+  static const int RB_SUCCESS = 1;
 
   static const int FAILED = -1;
 

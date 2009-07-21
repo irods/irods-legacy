@@ -326,7 +326,7 @@ int packetSize, int bufSize )
    }
    close(fromfd);
    free(buf);
-   return ((bytesread == 0) ? SUCCESS /*clean EOF*/ : FAILED /*error*/);
+   return ((bytesread == 0) ? RB_SUCCESS /*clean EOF*/ : FAILED /*error*/);
 }
 
 int  rbSendfile(rbudpSender_t *rbudpSender, int sendRate, int packetSize,
@@ -484,7 +484,7 @@ int  sendfilelist(rbudpSender_t *rbudpSender, int sendRate, int packetSize)
   else 
     isFinished = 1; 
   }
-   return(SUCCESS);
+   return(RB_SUCCESS);
 }
 
 /* sendRate: Kbps */

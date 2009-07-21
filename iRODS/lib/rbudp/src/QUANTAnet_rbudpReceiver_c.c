@@ -324,7 +324,7 @@ int  getstream(rbudpReceiver_t *rbudpReceiver, int tofd, int packetSize )
 
    long long curSize = -1;
    char *buf = 0;
-   int ok = SUCCESS;
+   int ok = RB_SUCCESS;
 
    for(;;) {
 
@@ -515,7 +515,7 @@ int packetSize)
   }
 
   fclose(fp);
-   return SUCCESS;
+   return RB_SUCCESS;
 }
 
 /* sendRate: Mbps */

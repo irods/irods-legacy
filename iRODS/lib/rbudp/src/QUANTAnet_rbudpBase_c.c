@@ -29,7 +29,7 @@
 // in subclasses but not in this class, or something.
 const int SIZEOFFILENAME;
 const int UDPSOCKBUF;
-const int SUCCESS;
+const int RB_SUCCESS;
 const int FAILED;
 #endif
 

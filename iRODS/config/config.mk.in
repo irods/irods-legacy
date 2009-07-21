@@ -265,3 +265,12 @@ endif
 # Uncomment this line to log into syslog instead of the usual
 # server/log/ log files.
 #IRODS_SYSLOG = 1
+
+# HPSS - Define whether HPSS is supported on this server.
+# HPSS=1
+
+ifdef HPSS
+HPSS_LIB_DIR=/opt/hpss/lib
+HPSS_HDR_DIR=/opt/hpss/include
+endif
+

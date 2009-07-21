@@ -21,6 +21,13 @@ RANLIB=
 AR=
 PERL=
 
+ifeq ($(OS_platform), aix_platform)
+ifdef HPSS
+CC=xlc_r -q32
+LDR=xlc_r
+CC_IS_GCC=0
+endif
+endif
 
 
 
@@ -169,6 +176,27 @@ endif
 ifdef TAR_STRUCT_FILE
 ifndef TAR_EXEC_PATH
 LDADD+=-L$(tarDir)/lib -ltar
+endif
+endif
+
+# HPSS support
+ifdef HPSS
+MY_CFLAG+= -DHPSS
+ifeq ($(OS_platform), linux_platform)
+MY_CFLAG+= -m32 -Duchar=u_char -DLITTLEEND
+LDADD+= -m32
+CL_LDADD+= -m32
+# XXXX looks like the hpss lib is in 32 bit. ADDR_64BITS in config.mk should
+# be undefined too
+endif
+LDADD+=-L$(HPSS_LIB_DIR) -lhpss
+ifeq ($(OS_platform), solaris_platform)
+MY_CFLAG+= -I$(HPSS_HDR_DIR) -DNO_DCE -DNO_H_ERRNO -Dsolaris -Dsolaris_2_5 \
+        -DTHREADS_ENABLED -DPTHREADS
+else
+# XXXX assume linux for now
+MY_CFLAG+= -I$(HPSS_HDR_DIR) -DNO_DCE -DNO_H_ERRNO -Dlinux \
+        -DTHREADS_ENABLED -DPTHREADS
 endif
 endif
 
