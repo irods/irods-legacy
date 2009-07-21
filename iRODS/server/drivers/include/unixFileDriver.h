@@ -79,7 +79,7 @@ unixFileChmod (rsComm_t *rsComm, char *filename, int mode);
 int
 unixFileOpendir (rsComm_t *rsComm, char *dirname, void **outDirPtr);
 int
-unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct  dirent **direntPtr);
+unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct  dirent *direntPtr);
 int
 unixFileStage (rsComm_t *rsComm, char *path, int flag);
 int
@@ -97,11 +97,13 @@ unixFileTruncate (rsComm_t *rsComm, char *filename, rodsLong_t dataSize);
 int
 unixStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 int mode, int flags, char *filename,
-char *cacheFilename,  keyValPair_t *condInput);
+char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput);
 int
 unixSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 int mode, int flags, char *filename,
-char *cacheFilename,  keyValPair_t *condInput);
+char *cacheFilename,  rodsLong_t dataSize,
+keyValPair_t *condInput);
 int
 unixFileCopy (int mode, char *srcFileName, char *destFileName);
 

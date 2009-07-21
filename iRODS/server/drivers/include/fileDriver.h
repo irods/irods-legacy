@@ -81,7 +81,7 @@ int
 fileClosedir (fileDriverType_t myType, rsComm_t *rsComm, void *dirPtr);
 int
 fileReaddir (fileDriverType_t myType, rsComm_t *rsComm, void *dirPtr,
-struct dirent **direntPtr);
+struct dirent *direntPtr);
 int
 fileStage (fileDriverType_t myType, rsComm_t *rsComm, char *path, int flag);
 int
@@ -98,9 +98,11 @@ rodsLong_t dataSize);
 int
 fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm,
 fileDriverType_t cacheFileType, int mode, int flag,
-char *filename, char *cacheFilename, keyValPair_t *condInput);
+char *filename, char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput);
 int
 fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, 
 fileDriverType_t cacheFileType, int mode, int flag,
-char *filename, char *cacheFilename, keyValPair_t *condInput);
+char *filename, char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput);
 #endif	/* FILE_DRIVER_H */

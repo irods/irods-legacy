@@ -291,14 +291,15 @@ unixFileClosedir (rsComm_t *rsComm, void *dirPtr)
 }
 
 int
-unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent **direntPtr)
+unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
 {
     int status;
+    struct dirent *tmpDirentPtr;
 
     errno = 0;
-    *direntPtr = readdir (dirPtr);
+    tmpDirentPtr = readdir (dirPtr);
 
-    if (*direntPtr == NULL) {
+    if (tmpDirentPtr == NULL) {
 	if (errno == 0) {
 	    /* just the end */
 	    status = -1;
@@ -309,6 +310,7 @@ unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent **direntPtr)
 	}
     } else {
 	status = 0;
+	*direntPtr = *tmpDirentPtr;
     }
     return (status);
 }
@@ -422,7 +424,8 @@ unixFileGetFsFreeSpace (rsComm_t *rsComm, char *path, int flag)
 int
 unixStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType, 
 int mode, int flags, char *filename, 
-char *cacheFilename,  keyValPair_t *condInput)
+char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput)
 {
     int status;
 
@@ -439,7 +442,8 @@ char *cacheFilename,  keyValPair_t *condInput)
 int
 unixSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType, 
 int mode, int flags, char *filename,
-char *cacheFilename,  keyValPair_t *condInput)
+char *cacheFilename,  rodsLong_t dataSize,
+keyValPair_t *condInput)
 {
     int status;
 

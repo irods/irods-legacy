@@ -76,7 +76,7 @@ _rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
 rodsDirent_t **fileReaddirOut)
 {
     int status;
-    struct dirent *myFileDirent = NULL;
+    struct dirent myFileDirent;
 
     status = fileReaddir (FileDesc[fileReaddirInp->fileInx].fileType, rsComm, 
       FileDesc[fileReaddirInp->fileInx].driverDep, &myFileDirent);
@@ -92,7 +92,7 @@ rodsDirent_t **fileReaddirOut)
 
     *fileReaddirOut = malloc (sizeof (rodsDirent_t));
 
-    status = direntToRodsDirent (*fileReaddirOut, myFileDirent);
+    status = direntToRodsDirent (*fileReaddirOut, &myFileDirent);
 
     if (status < 0) {
 	free (*fileReaddirOut);

@@ -105,7 +105,7 @@ _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
       fileStageToCacheInp->cacheFileType,
       fileStageToCacheInp->mode, fileStageToCacheInp->flags,
       fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename, 
-      &fileStageToCacheInp->condInput);
+      fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput);
 
     if (status < 0) {
         if (getErrno (status) == ENOENT) {
@@ -127,7 +127,7 @@ _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
           fileStageToCacheInp->cacheFileType,
           fileStageToCacheInp->mode, fileStageToCacheInp->flags,
           fileStageToCacheInp->filename, fileStageToCacheInp->cacheFilename,
-          &fileStageToCacheInp->condInput);
+          fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput);
 	if (status < 0) {
             rodsLog (LOG_NOTICE,
               "_rsFileStageToCache: fileStageToCache for %s, status = %d",

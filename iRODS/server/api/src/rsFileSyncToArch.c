@@ -105,7 +105,7 @@ _rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
       fileSyncToArchInp->cacheFileType, 
       fileSyncToArchInp->mode, fileSyncToArchInp->flags,
       fileSyncToArchInp->filename, fileSyncToArchInp->cacheFilename, 
-      &fileSyncToArchInp->condInput);
+      fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput);
 
     if (status < 0) {
         if (getErrno (status) == ENOENT) {
@@ -126,7 +126,7 @@ _rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
           fileSyncToArchInp->cacheFileType,
           fileSyncToArchInp->mode, fileSyncToArchInp->flags,
           fileSyncToArchInp->filename, fileSyncToArchInp->cacheFilename,
-          &fileSyncToArchInp->condInput);
+          fileSyncToArchInp->dataSize, &fileSyncToArchInp->condInput);
 	if (status < 0) {
             rodsLog (LOG_NOTICE,
               "_rsFileSyncToArch: fileSyncToArch for %s, status = %d",

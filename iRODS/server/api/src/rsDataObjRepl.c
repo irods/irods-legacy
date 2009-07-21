@@ -705,6 +705,7 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
       case FILE_CAT:
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
         dataObjInp = L1desc[destL1descInx].dataObjInp;
+	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
         fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
         fileSyncToArchInp.cacheFileType = 
           RescTypeDef[cacheRescTypeInx].driverType;
@@ -747,6 +748,7 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
       case FILE_CAT:
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
         dataObjInp = L1desc[destL1descInx].dataObjInp;
+	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
         fileSyncToArchInp.fileType = RescTypeDef[rescTypeInx].driverType;
         fileSyncToArchInp.cacheFileType = 
 	  RescTypeDef[cacheRescTypeInx].driverType;

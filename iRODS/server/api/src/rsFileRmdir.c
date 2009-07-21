@@ -76,7 +76,7 @@ _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp)
 	 * it is only used to remove cache directory of structured 
 	 * files */
 	void *dirPtr = NULL;
-	struct dirent *myFileDirent = NULL;
+	struct dirent myFileDirent;
 
 	if (strstr (fileRmdirInp->dirName, CACHE_DIR_STR) == NULL) {
             rodsLog (LOG_ERROR,
@@ -100,16 +100,14 @@ _rsFileRmdir (rsComm_t *rsComm, fileRmdirInp_t *fileRmdirInp)
 	    struct stat statbuf;
 	    char myPath[MAX_NAME_LEN];
 	
-            if (strcmp (myFileDirent->d_name, ".") == 0 ||
-              strcmp (myFileDirent->d_name, "..") == 0) {
-		myFileDirent = NULL;
+            if (strcmp (myFileDirent.d_name, ".") == 0 ||
+              strcmp (myFileDirent.d_name, "..") == 0) {
                 continue;
             }
 
             snprintf (myPath, MAX_NAME_LEN, "%s/%s",
-                  fileRmdirInp->dirName, myFileDirent->d_name);
+                  fileRmdirInp->dirName, myFileDirent.d_name);
 
-	    myFileDirent = NULL;
 	    status = fileStat (fileRmdirInp->fileType, rsComm, 
 	      myPath, &statbuf);
 	    if (status < 0) {

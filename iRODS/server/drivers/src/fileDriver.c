@@ -228,7 +228,7 @@ fileClosedir (fileDriverType_t myType, rsComm_t *rsComm, void *dirPtr)
 
 int
 fileReaddir (fileDriverType_t myType, rsComm_t *rsComm, void *dirPtr, 
-struct dirent **direntPtr)
+struct dirent *direntPtr)
 {
     int fileInx;
     int status;
@@ -236,6 +236,8 @@ struct dirent **direntPtr)
     if ((fileInx = fileIndexLookup (myType)) < 0) {
         return (fileInx);
     }
+
+    bzero (direntPtr, sizeof (struct dirent));
 
     status = FileDriverTable[fileInx].fileReaddir (rsComm, dirPtr, direntPtr);
 
@@ -323,7 +325,8 @@ fileIndexLookup (fileDriverType_t myType)
 int
 fileStageToCache (fileDriverType_t myType, rsComm_t *rsComm, 
 fileDriverType_t cacheFileType, int mode, int flags,
-char *filename, char *cacheFilename, keyValPair_t *condInput)
+char *filename, char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput)
 {
     int fileInx;
     int status;
@@ -333,7 +336,7 @@ char *filename, char *cacheFilename, keyValPair_t *condInput)
     }
 
     status = FileDriverTable[fileInx].fileStageToCache (rsComm, cacheFileType,
-      mode, flags, filename, cacheFilename, condInput);
+      mode, flags, filename, cacheFilename, dataSize, condInput);
 
     return (status);
 }
@@ -341,7 +344,8 @@ char *filename, char *cacheFilename, keyValPair_t *condInput)
 int
 fileSyncToArch (fileDriverType_t myType, rsComm_t *rsComm, 
 fileDriverType_t cacheFileType, int mode, int flags,
-char *filename, char *cacheFilename, keyValPair_t *condInput)
+char *filename, char *cacheFilename, rodsLong_t dataSize,
+keyValPair_t *condInput)
 {
     int fileInx;
     int status;
@@ -351,7 +355,7 @@ char *filename, char *cacheFilename, keyValPair_t *condInput)
     }
 
     status = FileDriverTable[fileInx].fileSyncToArch (rsComm, cacheFileType,
-      mode, flags, filename, cacheFilename, condInput);
+      mode, flags, filename, cacheFilename, dataSize, condInput);
 
     return (status);
 }

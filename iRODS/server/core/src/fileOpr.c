@@ -178,7 +178,7 @@ int
 chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 {
     void *dirPtr = NULL;
-    struct dirent *myFileDirent = NULL;
+    struct dirent myFileDirent;
     int status;
     char childPath[MAX_NAME_LEN];
     struct stat myFileStat;
@@ -191,12 +191,12 @@ chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir)
 
     while ((status = fileReaddir (fileType, rsComm, dirPtr, &myFileDirent))
       >= 0) {
-        if (strcmp (myFileDirent->d_name, ".") == 0 ||
-          strcmp (myFileDirent->d_name, "..") == 0) {
+        if (strcmp (myFileDirent.d_name, ".") == 0 ||
+          strcmp (myFileDirent.d_name, "..") == 0) {
             continue;
         }
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", cacheDir, 
-	  myFileDirent->d_name);
+	  myFileDirent.d_name);
 
         status = fileStat (fileType, rsComm, childPath, &myFileStat);
 

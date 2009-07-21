@@ -17,6 +17,9 @@
 #include "unixFileDriver.h"
 #endif
 #include "miscServerFunct.h"
+#ifdef HPSS
+#include "hpssFileDriver.h"
+#endif
 
 #define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport, intNoSupport, intNoSupport
 
@@ -28,11 +31,11 @@ fileDriver_t FileDriverTable[] = {
     unixFileClosedir, unixFileReaddir, unixFileStage, unixFileRename,
     unixFileGetFsFreeSpace, unixFileTruncate, intNoSupport, intNoSupport},
 #ifdef HPSS
-    {HPSS_FILE_TYPE, hpssFileCreate, hpssFileOpen, hpssFileRead, hpssFileWrite,
-    hpssFileClose, hpssFileUnlink, hpssFileStat, hpssFileFstat, hpssFileLseek,
-    hpssFileFsync, hpssFileMkdir, hpssFileChmod, hpssFileRmdir, hpssFileOpendir,
-    hpssFileClosedir, hpssFileReaddir, hpssFileStage, hpssFileRename,
-    hpssFileGetFsFreeSpace, hpssFileTruncate, hpssStageToCache, hpssSyncToArch},
+    {HPSS_FILE_TYPE, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, hpssFileUnlink, hpssFileStat, intNoSupport, longNoSupport,
+    intNoSupport, hpssFileMkdir, hpssFileChmod, hpssFileRmdir, hpssFileOpendir,
+    hpssFileClosedir, hpssFileReaddir, intNoSupport, hpssFileRename,
+    hpssFileGetFsFreeSpace, intNoSupport, hpssStageToCache, hpssSyncToArch},
 #else
     {HPSS_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
 #endif
