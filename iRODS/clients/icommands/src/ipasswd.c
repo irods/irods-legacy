@@ -21,6 +21,7 @@ main(int argc, char **argv)
     struct stat statbuf;
     int doStty=0;
     char newPw[MAX_PASSWORD_LEN+10];
+    char newPw2[MAX_PASSWORD_LEN+10];
     int len, lcopy;
 
     char buf0[MAX_PASSWORD_LEN+10];
@@ -33,7 +34,7 @@ main(int argc, char **argv)
        the server side: */
     char rand[]="1gCBizHWbwIYyWLoysGzTe6SyzqFKMniZX05faZHWAwQKXf6Fs"; 
 
-    status = parseCmdLineOpt(argc, argv, "ehvVl", 0, &myRodsArgs);
+    status = parseCmdLineOpt(argc, argv, "ehfvVl", 0, &myRodsArgs);
     if (status != 0) {
        printf("Use -h for help.\n");
        exit(1);
@@ -98,9 +99,11 @@ main(int argc, char **argv)
 #ifdef windows_platform
 	 iRODSNtGetUserPasswdInputInConsole(newPw, "Enter your new iRODS password:", echoFlag);
 #else
-    if (stat ("/bin/stty", &statbuf) == 0) {
-	 system("/bin/stty -echo");
-	 doStty=1;
+    if (!echoFlag) {
+       if (stat ("/bin/stty", &statbuf) == 0) {
+	  system("/bin/stty -echo");
+	  doStty=1;
+       }
     }
     len = 0;
     for (;len < 4;) {
@@ -111,6 +114,21 @@ main(int argc, char **argv)
 	  printf("\nYour password must be at least 3 characters long.\n");
        }
     }
+    if (myRodsArgs.force!=True) {
+       if (!echoFlag) printf("\n");
+       printf("Reenter your new iRODS password:");
+       fgets(newPw2, MAX_PASSWORD_LEN, stdin);
+       if (strncmp(newPw,newPw2,MAX_PASSWORD_LEN) != 0) {
+	  if (!echoFlag) printf("\n");
+	  printf("Entered passwords do not match\n");
+	  if (doStty) {
+	     system("/bin/stty echo");
+	  }
+	  rcDisconnect(Conn);
+	  exit (8);
+       }
+    }
+
     if (doStty) {
        system("/bin/stty echo");
        printf("\n");
@@ -168,6 +186,9 @@ void usage (char *prog)
    fprintf(stderr, "Usage: %s [-hvVl]\n", prog);
    fprintf(stderr, " -v  verbose\n");
    fprintf(stderr, " -V  Very verbose\n");
+   fprintf(stderr, " -l  long format (somewhat verbose)\n");
+   fprintf(stderr, " -e  echo the password as entered\n");
+   fprintf(stderr, " -f  force: do not ask user to reenter the new password\n");
    fprintf(stderr, " -h  this help\n");
    printReleaseInfo("ipasswd");
 }
