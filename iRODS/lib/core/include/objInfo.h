@@ -250,6 +250,7 @@ typedef enum {
     HPSS_FILE_TYPE,
     NT_FILE_TYPE,
     TEST_STAGE_FILE_TYPE,
+    S3_FILE_TYPE,
 } fileDriverType_t;
 
 #define DEFAULT_FILE_MODE	0600

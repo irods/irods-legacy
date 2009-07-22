@@ -46,6 +46,15 @@ fileDriver_t FileDriverTable[] = {
     ntFileClosedir, ntFileReaddir, NULL, ntFileRename,
     NULL, NULL},
 #endif
+#ifdef AMAZON_S3
+    {S3_FILE_TYPE, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, s3FileUnlink, s3FileStat, intNoSupport, longNoSupport,
+    intNoSupport, s3FileMkdir, s3FileChmod, s3FileRmdir, s3FileOpendir,
+    s3FileClosedir, s3FileReaddir, intNoSupport, intNoSupport,
+    s3FileGetFsFreeSpace, intNoSupport, s3StageToCache, s3SyncToArch},
+#else
+    {S3_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},
+#endif
     {TEST_STAGE_FILE_TYPE,intNoSupport,intNoSupport, intNoSupport, intNoSupport,
     intNoSupport, unixFileUnlink, unixFileStat, unixFileFstat, longNoSupport,
     intNoSupport, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,

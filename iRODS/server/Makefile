@@ -76,6 +76,10 @@ ifdef TAR_STRUCT_FILE
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/tarStructFileDriver.o
 endif
 
+ifdef AMAZON_S3
+SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/s3FileDriver.o
+endif
+
 ifdef HPSS
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/hpssFileDriver.o
 endif
