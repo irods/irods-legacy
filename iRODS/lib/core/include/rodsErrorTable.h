@@ -228,6 +228,13 @@
 #define HPSS_TRANSFER_ERR               -634000
 #define HPSS_MOVER_PROT_ERR             -635000
 
+/* Amazon S3 error */
+#define S3_INIT_ERROR			-701000
+#define S3_PUT_ERROR			-702000
+#define S3_GET_ERROR			-703000
+#define S3_FILE_UNLINK_ERR		-715000
+#define S3_FILE_STAT_ERR		-716000
+
 /* 800,000 to 880,000 - Catalog library errors  */
 #define CATALOG_NOT_CONNECTED           -801000
 #define CAT_ENV_ERR                     -802000

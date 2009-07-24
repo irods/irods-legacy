@@ -88,6 +88,7 @@
 #define MIN_SZ_FOR_PARA_TRAN     (1*1024*1024)
 #define TRANS_BUF_SZ    (4*1024*1024)
 #define TRANS_SZ        (40*1024*1024)
+#define LARGE_SPACE     1000000000
 
 #ifdef PARA_OPR
 #define MAX_NUM_TRAN_THR        4

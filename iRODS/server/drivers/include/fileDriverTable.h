@@ -20,6 +20,9 @@
 #ifdef HPSS
 #include "hpssFileDriver.h"
 #endif
+#ifdef AMAZON_S3
+#include "s3FileDriver.h"
+#endif
 
 #define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport, intNoSupport, intNoSupport
 
@@ -49,8 +52,8 @@ fileDriver_t FileDriverTable[] = {
 #ifdef AMAZON_S3
     {S3_FILE_TYPE, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     intNoSupport, s3FileUnlink, s3FileStat, intNoSupport, longNoSupport,
-    intNoSupport, s3FileMkdir, s3FileChmod, s3FileRmdir, s3FileOpendir,
-    s3FileClosedir, s3FileReaddir, intNoSupport, intNoSupport,
+    intNoSupport, s3FileMkdir, s3FileChmod, s3FileRmdir, intNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     s3FileGetFsFreeSpace, intNoSupport, s3StageToCache, s3SyncToArch},
 #else
     {S3_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},

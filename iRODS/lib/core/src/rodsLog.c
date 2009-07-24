@@ -227,6 +227,11 @@
     HPSS_READ_LIST_ERR, 
     HPSS_TRANSFER_ERR, 
     HPSS_MOVER_PROT_ERR, 
+    S3_INIT_ERROR, 
+    S3_PUT_ERROR, 
+    S3_GET_ERROR, 
+    S3_FILE_UNLINK_ERR, 
+    S3_FILE_STAT_ERR, 
     CATALOG_NOT_CONNECTED, 
     CAT_ENV_ERR, 
     CAT_CONNECT_ERR, 
@@ -647,6 +652,11 @@
     "HPSS_READ_LIST_ERR", 
     "HPSS_TRANSFER_ERR", 
     "HPSS_MOVER_PROT_ERR", 
+    "S3_INIT_ERROR", 
+    "S3_PUT_ERROR", 
+    "S3_GET_ERROR", 
+    "S3_FILE_UNLINK_ERR", 
+    "S3_FILE_STAT_ERR", 
     "CATALOG_NOT_CONNECTED", 
     "CAT_ENV_ERR", 
     "CAT_CONNECT_ERR", 
@@ -869,7 +879,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 418;
+int irodsErrorCount= 423;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

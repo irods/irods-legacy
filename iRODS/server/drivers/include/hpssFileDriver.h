@@ -59,7 +59,6 @@
 #include "hpss_errno.h"
 #include "hpss_String.h"
 
-#define LARGE_SPACE	1000000000
 #define HPSS_BUF_SIZE	(2*1024*1024)  /* 2 MB buf size */
 #define HPSS_AUTH_FILE	"hpssAuth"
 
