@@ -64,7 +64,7 @@ executeRuleBody(char *action, char *ruleAction, char *ruleRecovery,
   if (j < 0) {
     sprintf(tmpStr,"executeRuleAction Failed for %s",actionArray[i]);
     rodsLogError(LOG_ERROR,j,tmpStr);
-
+    rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",actionArray[i],j);
     for ( ; i >= 0 ; i--) {
       if (!strcmp(recoveryArray[i],"nop"))
 	continue;
@@ -150,7 +150,7 @@ executeRuleBodyNew(char *action, char *ruleAction, char *ruleRecovery,
   if (j < 0) {
     sprintf(tmpStr,"executeRuleAction Failed for %s",actionArray[i]);
     rodsLogError(LOG_ERROR,j,tmpStr);
-
+    rodsLog (LOG_NOTICE,"executeRuleBody: Micro-service or Action %s Failed with status %i",actionArray[i],j);
     for ( ; i >= 0 ; i--) {
       if (!strcmp(recoveryArray[i],"nop") || !strcmp(recoveryArray[i],"null"))
 	continue;
