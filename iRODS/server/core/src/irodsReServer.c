@@ -37,7 +37,10 @@ main(int argc, char **argv)
     signal(SIGTERM, signalExit);
     signal(SIGUSR1, signalExit);
     signal(SIGPIPE, rsPipSigalHandler);
-    signal(SIGCHLD, SIG_IGN);
+    /* XXXXX switched to SIG_DFL for embedded python. child process 
+     * went away. But probably have to call waitpid. 
+     * signal(SIGCHLD, SIG_IGN); */
+    signal(SIGCHLD, SIG_DFL);
 #endif
 
     /* Handle option to log sql commands */
