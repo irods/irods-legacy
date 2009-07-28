@@ -89,8 +89,9 @@ usage (char *program)
 "another, data-object or collection.  Options are:",
 "-v verbose - display various messages while processing",
 "-V very verbose",
+"-h help - this help",
 ""};
-    printf ("Usage : %s [-vV] srcDataObj|srcColl ...  destDataObj|destColl\n", program);
+    printf ("Usage : %s [-hvV] srcDataObj|srcColl ...  destDataObj|destColl\n", program);
     for (i=0;;i++) {
        if (strlen(msgs[i])==0) break;
        printf("%s\n",msgs[i]);

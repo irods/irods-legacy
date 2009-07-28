@@ -20,7 +20,7 @@ usage () {
 "condition is of the form: <attribute> <rel-op> <value>",
 "rel-op is a relational operator: eg. =, <>, >,<, like, not like, between, etc.,",
 "value is either a constant or a wild-carded expression.",
-"One can also use a few aggregation operatos such as sum,count,min,max and avg.",
+"One can also use a few aggregation operators such as sum,count,min,max and avg.",
 "Use % and _ as wild-cards, and use \\ to escape them",
 "Options are:",
 " -h  this help",
