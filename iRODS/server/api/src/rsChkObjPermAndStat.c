@@ -158,6 +158,7 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 			}
                     }
                     freeCollEntForChkColl (curCollEnt);
+		    curCopyGood = False;
                     curCollEnt = NULL;
 
                     /* we have a good copy. Check the permission */
