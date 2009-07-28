@@ -1047,7 +1047,7 @@ void usageMain()
 " mkdir Name [username] (make directory(collection))",
 " rmdir Name (remove directory) ",
 " mkresc Name Type Class Host Path (make Resource)",
-" modresc Name [type, class, host, path, comment, info, freespace] Value (mod Resc)",
+" modresc Name [type, class, host, path, status, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
 " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
 " modzone Name [ name | conn | comment ] newValue  (modify zone)",
@@ -1223,12 +1223,18 @@ usage(char *subOpt)
 ""};
 
    char *modrescMsgs[]={
-" modresc Name [type, class, host, path, comment, info, or freespace] Value",
+" modresc Name [type, class, host, path, status, comment, info, or freespace] Value",
 "         (modify Resource)",
 "Change some attribute of a resource.  For example:",
 "    modresc demoResc comment 'test resource'",
 "The 'host' field is the DNS host name, for example 'datastar.sdsc.edu',",
 "this is displayed as 'resc_net', the resource network address.",
+" ",
+"Setting the resource status to 'down' will cause iRODS to ignore that",
+"resource and bypass communications with that server.  'up' or other strings",
+"without 'down' in them will restore use of the resource.  'auto' will allow",
+"the Resource Monitoring System (if running) to set the resource status",
+"to 'auto-up' or 'auto-down'.",
 ""};
 
    char *rmrescMsgs[]={

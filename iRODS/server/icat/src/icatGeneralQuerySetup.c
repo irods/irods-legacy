@@ -166,6 +166,7 @@ icatGeneralQuerySetup() {
   sColumn( COL_R_FREE_SPACE, "r_resc_main", "free_space");
   sColumn( COL_R_RESC_INFO, "r_resc_main", "resc_info");
   sColumn( COL_R_RESC_COMMENT, "r_resc_main", "r_comment");
+  sColumn( COL_R_RESC_STATUS, "r_resc_main", "resc_status");
   sColumn( COL_R_CREATE_TIME, "r_resc_main", "create_ts");
   sColumn( COL_R_MODIFY_TIME, "r_resc_main", "modify_ts ");
 

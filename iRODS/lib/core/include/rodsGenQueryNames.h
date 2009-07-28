@@ -45,6 +45,7 @@ columnName_t columnNames[] = {
    { COL_R_RESC_COMMENT,"RESC_COMMENT", },
    { COL_R_CREATE_TIME, "RESC_CREATE_TIME", },
    { COL_R_MODIFY_TIME, "RESC_MODIFY_TIME", },
+   { COL_R_RESC_STATUS, "RESC_STATUS", },
 
    { COL_D_DATA_ID,        "DATA_ID", },
    { COL_D_COLL_ID,        "DATA_COLL_ID", },

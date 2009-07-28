@@ -76,7 +76,8 @@ showResc(char *name, int longOption)
    int i, status;
    int printCount;
    char *columnNames[]={"resource name", "resc id", "zone", "type", "class",
-			 "location",  "vault", "free space", "info", "comment",
+			"location",  "vault", "free space", "status",
+			"info", "comment",
 			"create time", "modify time"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -92,6 +93,7 @@ showResc(char *name, int longOption)
       i1a[i++]=COL_R_LOC;
       i1a[i++]=COL_R_VAULT_PATH;
       i1a[i++]=COL_R_FREE_SPACE;
+      i1a[i++]=COL_R_RESC_STATUS;
       i1a[i++]=COL_R_RESC_INFO;
       i1a[i++]=COL_R_RESC_COMMENT;
       i1a[i++]=COL_R_CREATE_TIME;

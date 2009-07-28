@@ -464,6 +464,7 @@ runCmd(2, "iadmin modresc $Resc2 type 'badType'");
 runCmd(0, "iadmin modresc $Resc2 type 'unix file system'");
 runCmd(0, "iadmin modresc $Resc2 path /tmp/v1");
 runCmd(0, "iadmin modresc $Resc2 path $Resc2Path");
+runCmd(0, "iadmin modresc $Resc2 status up");
 
 runCmd(0, "iadmin lr $Resc2");
 runCmd(0, "iput -R $Resc2 $F1");

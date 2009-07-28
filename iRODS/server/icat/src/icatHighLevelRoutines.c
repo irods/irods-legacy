@@ -4040,6 +4040,24 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       OK=1;
    }
 
+   if (strcmp(option, "status")==0) {
+      if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 11");
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=rescId;
+      status =  cmlExecuteNoAnswerSql(
+		 "update r_resc_main set resc_status=?, modify_ts=? where resc_id=?",
+		 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 _rollback("chlModResc");
+	 return(status);
+      }
+      OK=1;
+   }
+
    if (OK==0) {
       return (CAT_INVALID_ARGUMENT);
    }

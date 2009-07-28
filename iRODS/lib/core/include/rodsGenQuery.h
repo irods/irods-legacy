@@ -128,6 +128,7 @@ primary ordering column.
 #define COL_R_RESC_COMMENT 310
 #define COL_R_CREATE_TIME 311
 #define COL_R_MODIFY_TIME 312
+#define COL_R_RESC_STATUS 313
 
 /* R_DATA_MAIN: */
 #define COL_D_DATA_ID 401

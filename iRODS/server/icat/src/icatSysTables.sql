@@ -96,6 +96,7 @@ create table R_RESC_MAIN
    free_space_ts       varchar(32),
    resc_info           varchar(1000),
    r_comment           varchar(1000),
+   resc_status         varchar(32),
    create_ts           varchar(32),
    modify_ts           varchar(32)
  );
