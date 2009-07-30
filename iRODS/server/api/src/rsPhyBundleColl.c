@@ -513,8 +513,10 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
         clearKeyVal (&dataObjInp->condInput);
     } while (l1descInx == OVERWITE_WITHOUT_FORCE_FLAG);
 
-    l3Close (rsComm, l1descInx);
-    L1desc[l1descInx].l3descInx = 0;
+    if (l1descInx >= 0) {
+        l3Close (rsComm, l1descInx);
+        L1desc[l1descInx].l3descInx = 0;
+    }
 
     return l1descInx;
 }
