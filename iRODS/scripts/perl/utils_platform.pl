@@ -463,6 +463,19 @@ sub _getCurrentHostAttributes()
 		    $HOSTNAME = "localhost";
 		}
 	}
+
+# Also allow this override on non-Mac hosts too.
+# If USE_LOCALHOST is defined, and non-empty, use "localhost" as the
+# host name.
+# 
+# The $USE_LOCAL_HOST != "" doesn't work correctly on some hosts
+# (Ubuntu at least) altho it does on Macs (at least some), so use the
+# alternative !$USE_LOCALHOST == "" form.
+	$USE_LOCALHOST = $ENV{"USE_LOCALHOST"};
+	if ( defined( $USE_LOCALHOST ) && !$USE_LOCALHOST == "" )
+	{
+	    $HOSTNAME = "localhost";
+	}
 }
 
 
