@@ -255,4 +255,8 @@ runCmd(0, "iadmin rmuser $User2");
 runCmd(0, "iadmin rmresc $Resc2");
 runCmd(0, "rm -rf $Resc2Path");
 
+# Check that an invalid simpleQuery does fail
+$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name != " . "?" . "\" /$myZone/home/rods 1";
+runCmd(2, $testCmd);
+
 printf("Success\n");

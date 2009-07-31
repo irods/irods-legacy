@@ -2649,8 +2649,8 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    int stmtNum, status, nCols, i, needToGet, didGet;
    int rowSize;
    int rows;
+   int OK;
 
-   int allowedSQLForms=19;
    char *allowedSQL[]={
 "select token_name from r_tokn_main where token_namespace = 'token_namespace'",
 "select token_name from r_tokn_main where token_namespace = ?",
@@ -2685,10 +2685,15 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    }
 
    /* check that the input sql is one of the allowed forms */
-   for (i=0;i<allowedSQLForms;i++) {
-      if (strcmp(allowedSQL[i], sql)==0) break;
+   OK=0;
+   for (i=0;;i++) {
+      if (strlen(allowedSQL[i]) < 1) break;
+      if (strcmp(allowedSQL[i], sql)==0) {
+	 OK=1;
+	 break;
+      }
    }
-   if (i > allowedSQLForms) return(CAT_INVALID_ARGUMENT);
+   if (OK == 0) return(CAT_INVALID_ARGUMENT);
 
    /* done with multiple log calls so that each form will be checked
       via checkIcatLog.pl */
