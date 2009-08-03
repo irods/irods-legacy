@@ -141,6 +141,8 @@ usage ()
 " -X  restartFile - specifies that the restart option is on and the",
 "     restartFile input specifies a local file that contains the restart info.",
 " -h  this help",
+" ",
+"Also see 'irsync' for other types of iRODS/local synchronization.",
 ""};
    int i;
    for (i=0;;i++) {

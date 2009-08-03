@@ -188,6 +188,9 @@ usage ()
 " -a   synchronize to all replica if the target is a  iRODS file/collection.",
 " -s   use the size instead of the checksum value for determining", 
 "      synchronization.",
+" ",
+"Also see 'irepl' for the replication and synchronization of physical",
+"copies (replica).",
 ""};
    int i;
    for (i=0;;i++) {
