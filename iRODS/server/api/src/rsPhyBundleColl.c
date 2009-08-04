@@ -491,7 +491,10 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
           "createPhyBundleFile: resource %s is not UNIX_FILE_TYPE",
           rescGrpInfo->rescInfo->rescName);
         return SYS_INVALID_RESC_TYPE;
+    } else if (getRescClass (rescGrpInfo->rescInfo) != CACHE_CL) {
+	return SYS_NO_CACHE_RESC_IN_GRP;
     }
+
 	
     do {
         bzero (dataObjInp, sizeof (dataObjInp_t));
