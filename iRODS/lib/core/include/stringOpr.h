@@ -17,6 +17,7 @@ extern "C" {
 
 char *rstrcpy (char *dest, char *src, int maxLen);
 char *rstrcat (char *dest, char *src, int maxLen);
+char *rstrncat (char *dest, char *src, int srcLen, int maxLen);
 
 int
 rSplitStr (char *inStr, char* outStr1, int maxOutLen1,

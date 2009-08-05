@@ -97,6 +97,32 @@ char *rstrcat (char *dest, char *src, int maxLen)
   return(strncat(dest, src, slen));
 }
 
+/*  rods strncat: like strncat but make sure the dest doesn't overflow.
+    maxLen is the max length that can be stored in dest,
+    srcLen is the length to copy.
+*/
+char *rstrncat (char *dest, char *src, int srcLen, int maxLen)
+{
+
+  int dlen, slen;
+  
+  if (dest == NULL || src == NULL) {
+     return NULL;
+  }
+
+  dlen = strlen (dest);
+  slen = srcLen;
+
+  if (slen+dlen >= maxLen) {
+     rodsLog(LOG_ERROR, 
+	     "rstrncat not enough space in dest, slen:%d, dlen:%d, maxLen:%d",
+	     slen, dlen, maxLen);
+     return(NULL);
+  }
+
+  return(strncat(dest, src, slen));
+}
+
 int
 rSplitStr (char *inStr, char* outStr1, int maxOutLen1, 
 char* outStr2, int maxOutLen2, char key)

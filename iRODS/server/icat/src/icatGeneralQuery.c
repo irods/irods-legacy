@@ -854,6 +854,8 @@ checkCondition(char *condition) {
    }
    cp = strstr(tmpStr,"begin_of");
    if (cp != NULL) setBlank(cp, 8);
+   cp = strstr(tmpStr,"parent_of");
+   if (cp != NULL) setBlank(cp, 9);
    cp = strstr(tmpStr,"not");
    if (cp != NULL) setBlank(cp, 3);
    cp = strstr(tmpStr,"NOT");
@@ -877,6 +879,34 @@ checkCondition(char *condition) {
    return(0);
 }
 
+
+/*
+add an IN clause to the whereSQL string
+ */
+void
+addInClauseToWhere(char *inArg) {
+   int i, len;
+   int nput=0;
+   rstrcat(whereSQL, " IN (", MAX_SQL_SIZE);
+   len = strlen(inArg);
+   for (i=0;i<len+1;i++) {
+      if (inArg[i]=='/' || inArg[i]==' ' || inArg[i]=='\0') {
+	 int ncopy=i;
+	 if (nput==0) ncopy++;
+	 if (nput==0) {
+	    rstrcat(whereSQL, "'", MAX_SQL_SIZE);
+	 }
+	 else {
+	    rstrcat(whereSQL, ", '", MAX_SQL_SIZE);
+	 }
+	 nput++;
+	 rstrncat(whereSQL, inArg, ncopy, MAX_SQL_SIZE);
+	 rstrcat(whereSQL, "'", MAX_SQL_SIZE);
+      }
+   }
+   rstrcat(whereSQL, ")", MAX_SQL_SIZE);
+}
+
 /*
 insert a new where clause using bind-variables
  */
@@ -890,7 +920,6 @@ insertWhere(char *condition, int option) {
    char *thisBindVar;
    char tmpStr[20];
    char myCondition[20];
-   char tmpStr2[MAX_SQL_SIZE];
 
    /*  Old way 
    rstrcat(whereSQL, " ", MAX_SQL_SIZE);
@@ -942,6 +971,7 @@ insertWhere(char *condition, int option) {
 
    cp = strstr(myCondition,"begin_of");
    if (cp != NULL) {
+      char tmpStr2[MAX_SQL_SIZE];
       cp1=whereSQL+strlen(whereSQL)-1;
       while (*cp1!=' ') cp1--;
       cp1++;
@@ -961,12 +991,22 @@ insertWhere(char *condition, int option) {
       rstrcat(whereSQL, ")>0", MAX_SQL_SIZE);
    }
    else {
-      tmpStr[i++]='?';
-      tmpStr[i++]=' ';
-      tmpStr[i++]='\0';
-      rstrcat(whereSQL, tmpStr, MAX_SQL_SIZE);
+      cp = strstr(myCondition, "parent_of");
+      if (cp != NULL) {
+	 /* New version to replace begin_of in a call from
+            rsObjStat.c, as suggested by Andy Salnikov; add an IN
+            clause with each of the possible parent collection names;
+            this is faster, sometimes very much faster. */
+	 cllBindVarCount--; /* undo bind-var as it is not included now */
+	 addInClauseToWhere(thisBindVar);
+      }
+      else {
+	 tmpStr[i++]='?';
+	 tmpStr[i++]=' ';
+	 tmpStr[i++]='\0';
+	 rstrcat(whereSQL, tmpStr, MAX_SQL_SIZE);
+      }
    }
-
    return(checkCondition(myCondition));
 }
 

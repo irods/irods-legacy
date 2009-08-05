@@ -477,7 +477,7 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
     /* see if objPath is in the path of a spec collection */
     memset (&genQueryInp, 0, sizeof (genQueryInp));
 
-    snprintf (condStr, MAX_NAME_LEN, "begin_of '%s'", objPath);
+    snprintf (condStr, MAX_NAME_LEN, "parent_of '%s'", objPath);
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, condStr);
     rstrcpy (condStr, "like '_%'", MAX_NAME_LEN);
     addInxVal (&genQueryInp.sqlCondInp, COL_COLL_TYPE, condStr);
