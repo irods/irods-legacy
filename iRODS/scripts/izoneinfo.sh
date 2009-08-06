@@ -59,25 +59,32 @@ rm -f $outFile
 # If not there, ask for iRODS dir.
 
 startDir=`echo $0 | sed s/izoneinfo.sh//g`
-
-config=`find $startDir -maxdepth 2 -name config.mk`
+if [ -z $startDir ]; then
+    startDir="./"
+fi
+maxDepth="-maxdepth 2"
+os=`uname -s`
+if [ $os = "SunOS" ]; then
+    maxDepth=""
+fi
+config=`find $startDir $maxDepth -name config.mk`
 if [ -z $config ]; then
-   config=`find $startDir.. -maxdepth 2 -name config.mk`
+   config=`find $startDir.. $maxDepth -name config.mk`
 fi
 if [ ! -f $config ]; then
     $startdir=`pwd`
-    config=`find $startDir -maxdepth 2 -name config.mk`
+    config=`find $startDir $maxDepth -name config.mk`
     if [ -z $config ]; then
-	config=`find $startDir/.. -maxdepth 2 -name config.mk`
+	config=`find $startDir/.. $maxDepth -name config.mk`
     fi
 fi
 if [ -z $config ]; then
     echo "Could not find config.mk file (near this command or cwd)"
     printf "Please enter the full path of the iRODS build directory:"
     read startDir
-    config=`find $startDir -maxdepth 2 -name config.mk`
+    config=`find $startDir $maxDepth -name config.mk`
     if [ -z $config ]; then
-	config=`find $startDir/.. -maxdepth 2 -name config.mk`
+	config=`find $startDir/.. $maxDepth -name config.mk`
     fi
 fi
 if [ -z $config ]; then
