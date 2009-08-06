@@ -59,6 +59,7 @@
 #include "hpss_errno.h"
 #include "hpss_String.h"
 
+#define LARGE_SPACE	1000000000
 #define HPSS_BUF_SIZE	(2*1024*1024)  /* 2 MB buf size */
 #define HPSS_AUTH_FILE	"hpssAuth"
 
@@ -101,10 +102,12 @@ typedef struct HpssSession {
     struct sockaddr_in mySocketAddr;
     unsigned long   ipAddr;	/* ipAddr of local host */
     pthread_mutex_t myMutex;
+    pthread_t moverConnManagerThr;
     hpssThrInfo_t thrInfo[MAX_HPSS_CONNECTIONS];
     int         thrCnt;        /* the number of threads */
     u_signed64  totalBytesMoved64; /* Actual bytes sent from Movers */
-    int         firstTimeOpen; /* First time the file is created */
+    int         createFlag; /* First time the file is created */
+    int createMode;
 } hpssSession_t;
 
 int
@@ -165,7 +168,7 @@ seqHpssGet (char *srcHpssFile, char *destUnixFile, int mode, int flags,
 rodsLong_t dataSize);
 int
 initHpssSession (hpssSession_t *hpssSession, int operation, char *unixFilePath,
-rodsLong_t fileSize);
+rodsLong_t fileSize, int createMode);
 int
 createControlSocket (hpssSession_t *hpssSession);
 int
@@ -177,5 +180,22 @@ void
 getMover (hpssThrInfo_t *thrInfo);
 void
 putMover (hpssThrInfo_t *thrInfo);
+int
+paraHpssGet (char *srcHpssFile, char *destUnixFile, int mode, int flags,
+rodsLong_t mySize);
+int
+procMoverInitmsg (hpssThrInfo_t *thrInfo, initiator_msg_t *initMessage,
+initiator_msg_t *initReply);
+int
+procTransferListenSocket (hpssThrInfo_t *thrInfo, initiator_ipaddr_t *ipAddr,
+int *transferListenSocket);
+int
+procTransferSocketFd (hpssThrInfo_t *thrInfo, int transferListenSocket,
+int *transferSocketFd);
+int
+initHpssIodForRead (hpss_IOD_t *iod, iod_srcsinkdesc_t *src,
+iod_srcsinkdesc_t *sink, int hpssSrcFd, hpssSession_t *hpssSession);
+int
+postProcSessionThr (hpssSession_t *myHpssSession, char *hpssPath);
 
 #endif	/* HPSS_FILE_DRIVER_H */

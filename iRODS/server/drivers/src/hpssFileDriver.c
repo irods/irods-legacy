@@ -8,14 +8,18 @@
 #include "hpssFileDriver.h"
 #include "pdata.h"
 #include "rsGlobalExtern.h"
+#include "miscServerFunct.h"
 
 struct hpssCosDef *HpssCosHead = NULL;
 int HpssDefCos = COS_NOT_INIT;
+int HpssAuthFlag = 0;
 
 int
 hpssFileUnlink (rsComm_t *rsComm, char *filename)
 {
     int status;
+
+    if ((status = initHpssAuth ()) < 0) return status;
 
     status = hpss_Unlink (filename);
 
@@ -34,6 +38,7 @@ hpssFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
     int status;
     hpss_stat_t hpssstat;
 
+    if ((status = initHpssAuth ()) < 0) return status;
     status = hpss_Stat (filename, &hpssstat);
 
     if (status < 0) {
@@ -52,6 +57,7 @@ hpssFileMkdir (rsComm_t *rsComm, char *filename, int mode)
 {
     int status;
 
+    if ((status = initHpssAuth ()) < 0) return status;
     status = hpss_Mkdir (filename, mode);
 
     if (status < 0) {
@@ -70,6 +76,7 @@ hpssFileChmod (rsComm_t *rsComm, char *filename, int mode)
 {
     int status;
 
+    if ((status = initHpssAuth ()) < 0) return status;
     status = hpss_Chmod (filename, mode);
 
     if (status < 0) {
@@ -87,6 +94,7 @@ hpssFileRmdir (rsComm_t *rsComm, char *filename)
 {
     int status;
 
+    if ((status = initHpssAuth ()) < 0) return status;
     status = hpss_Rmdir (filename);
 
     if (status < 0) {
@@ -105,6 +113,7 @@ hpssFileOpendir (rsComm_t *rsComm, char *dirname, void **outDirPtr)
     int status;
     int *intPtr;
 
+    if ((status = initHpssAuth ()) < 0) return status;
     status = hpss_Opendir (dirname);
     if (status < 0) {
         status = HPSS_FILE_OPENDIR_ERR + status;
@@ -156,6 +165,9 @@ int
 hpssFileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName)
 {
     int status;
+
+    if ((status = initHpssAuth ()) < 0) return status;
+
     status = hpss_Rename (oldFileName, newFileName);
 
     if (status < 0) {
@@ -189,7 +201,34 @@ keyValPair_t *condInput)
 {
     int status;
 
-    status = seqHpssGet (filename, cacheFilename, mode, flags, dataSize);
+    struct stat statbuf;
+    rodsLong_t mySize;
+
+    if ((status = initHpssAuth ()) < 0) return status;
+
+    status = hpssFileStat (NULL, filename, &statbuf);
+
+    if (status < 0 || (statbuf.st_mode & S_IFREG) == 0) {
+        status = HPSS_FILE_STAT_ERR + status;
+        rodsLog (LOG_ERROR, "hpssStageToCache: stat of %s error, status = %d",
+         filename, status);
+        return status;
+    }
+
+
+    if (dataSize > 0 && dataSize != statbuf.st_size) {
+        rodsLog (LOG_ERROR,
+          "hpssStageToCache: %s inp dataSize %lld does not match size %lld",
+         filename, dataSize, statbuf.st_size);
+        return SYS_COPY_LEN_ERR;
+    }
+    mySize = statbuf.st_size;
+
+    if (dataSize > MAX_SZ_FOR_SINGLE_BUF) {
+        status = paraHpssGet (filename, cacheFilename, mode, flags, mySize);
+    } else {
+        status = seqHpssGet (filename, cacheFilename, mode, flags, mySize);
+    }
     return status;
 
 }
@@ -207,6 +246,8 @@ char *cacheFilename,  rodsLong_t dataSize, keyValPair_t *condInput)
 {
     int status;
     struct stat statbuf;
+
+    if ((status = initHpssAuth ()) < 0) return status;
 
     status = stat (cacheFilename, &statbuf);
 
@@ -312,27 +353,6 @@ rodsLong_t dataSize)
     rodsLong_t bytesCopied = 0;
     int bytesRead, bytesWritten;
     int status;
-    struct stat statbuf;
-    rodsLong_t mySize;
-
-    status = hpssFileStat (NULL, srcHpssFile, &statbuf);
-
-    if (status < 0 || (statbuf.st_mode & S_IFREG) == 0) {
-        status = HPSS_FILE_STAT_ERR + status;
-        rodsLog (LOG_ERROR, "seqHpssGet: stat of %s error, status = %d",
-         srcHpssFile, status);
-        return status;
-    }
-
-
-    if (dataSize > 0 && dataSize != statbuf.st_size) {
-        rodsLog (LOG_ERROR, 
-	  "seqHpssGet: %s inp dataSize %lld does not match actual size %lld",
-         srcHpssFile, dataSize, statbuf.st_size);
-	return SYS_COPY_LEN_ERR;
-    }
-
-    mySize = statbuf.st_size;
 
     srcFd = hpssOpenForRead (srcHpssFile, O_RDONLY);
     if (srcFd < 0) {
@@ -367,10 +387,10 @@ rodsLong_t dataSize)
         bytesCopied += bytesWritten;
     }
 
-    if (mySize != bytesCopied) {
+    if (dataSize != bytesCopied) {
         rodsLog (LOG_ERROR, 
           "seqHpssPut: %s bytesCopied %lld does not match actual size %lld",
-           srcHpssFile, bytesCopied, mySize);
+           srcHpssFile, bytesCopied, dataSize);
         status = SYS_COPY_LEN_ERR;
     } else {
 	status = 0;
@@ -450,74 +470,6 @@ hpssOpenForRead (char *srcHpssFile, int flags)
     return srcFd;
 }
 
-/* XXXXX take me out */
-
-int
-hpssFileCopy (int mode, char *srcFileName, char *destFileName)
-{
-    int inFd, outFd;
-    char myBuf[TRANS_BUF_SZ];
-    rodsLong_t bytesCopied = 0;
-    int bytesRead;
-    int bytesWritten;
-    int status;
-    struct stat statbuf;
-
-    status = stat (srcFileName, &statbuf);
-
-    if (status < 0) {
-        status = HPSS_FILE_STAT_ERR - errno;
-        rodsLog (LOG_ERROR, "hpssFileCopy: stat of %s error, status = %d",
-         srcFileName, status);
-	return status;
-    }
-
-    inFd = open (srcFileName, O_RDONLY, 0);
-    if (inFd < 0 || (statbuf.st_mode & S_IFREG) == 0) {
-	status = HPSS_FILE_OPEN_ERR - errno;
-        rodsLog (LOG_ERROR,
-         "hpssFileCopy: open error for srcFileName %s, status = %d",
-         srcFileName, status);
-	return status;
-    }
-
-    outFd = open (destFileName, O_WRONLY | O_CREAT | O_TRUNC, mode);
-    if (outFd < 0) {
-        status = HPSS_FILE_OPEN_ERR - errno;
-        rodsLog (LOG_ERROR,
-         "hpssFileCopy: open error for destFileName %s, status = %d",
-         destFileName, status);
-	close (inFd);
-        return status;
-    }
-
-    while ((bytesRead = read (inFd, (void *) myBuf, TRANS_BUF_SZ)) > 0) {
-	bytesWritten = write (outFd, (void *) myBuf, bytesRead);
-	if (bytesWritten <= 0) {
-	    status = HPSS_FILE_WRITE_ERR - errno;
-            rodsLog (LOG_ERROR,
-             "hpssFileCopy: write error for srcFileName %s, status = %d",
-             destFileName, status);
-	    close (inFd);
-	    close (outFd);
-            return status;
-	}
-	bytesCopied += bytesWritten;
-    }
-
-    close (inFd);
-    close (outFd);
-
-    if (bytesCopied != statbuf.st_size) {
-        rodsLog (LOG_ERROR,
-         "hpssFileCopy: Copied size %lld does not match source size %lld of %s",
-         bytesCopied, statbuf.st_size, srcFileName);
-        return SYS_COPY_LEN_ERR;
-    } else {
-	return 0;
-    }
-}
-
 int
 hpssStatToStat (hpss_stat_t *hpssstat, struct stat *statbuf)
 {
@@ -554,6 +506,10 @@ initHpssAuth ()
     char hpssUser[MAX_NAME_LEN], hpssAuthInfo[MAX_NAME_LEN];
     int status;
 
+    if (HpssAuthFlag) return 0;
+
+    HpssAuthFlag = 1;
+    
     if ((status = readHpssAuthInfo (hpssUser, hpssAuthInfo)) < 0) {
         rodsLog (LOG_ERROR,
           "initHpssAuth: readHpssAuthInfo error. status = %d", status);
@@ -755,16 +711,14 @@ paraHpssPut (char *srcUnixFile, char *destHpssFile, int mode, int flags,
 rodsLong_t mySize)
 {
     int destFd;
-    int status, i;
+    int status;
     hpssSession_t myHpssSession;
-    pthread_t moverConnManagerThr;
     hpss_IOD_t      iod;         	/* IOD passed to hpss_WriteList */
     hpss_IOR_t      ior;         	/* IOR returned from hpss_WriteList */
     iod_srcsinkdesc_t   srcDesc, sinkDesc;  /* IOD source/sink descriptors */
-    int pthreadStatus;
 
     status = initHpssSession (&myHpssSession, HPSS_PUT_OPR, 
-      srcUnixFile, mySize);
+      srcUnixFile, mySize, mode);
     if (status < 0) return status;
 
     destFd = hpssOpenForWrite (destHpssFile, mode, flags, mySize);
@@ -775,7 +729,7 @@ rodsLong_t mySize)
     status = createControlSocket (&myHpssSession);
     if (status < 0) return status;
 
-    pthread_create(&moverConnManagerThr, pthread_attr_default,
+    pthread_create(&myHpssSession.moverConnManagerThr, pthread_attr_default,
       (void *(*)(void *)) moverConnManager,
       (void *) &myHpssSession);
 
@@ -790,7 +744,7 @@ rodsLong_t mySize)
         if (ior.Status != HPSS_E_NOERROR) {
 	    status = HPSS_WRITE_LIST_ERR + ior.Status;
             rodsLog (LOG_ERROR,
-              "paraHpssPut: hpss_WriteList error for %s. ststus = %d",
+              "paraHpssPut: hpss_WriteList error for %s. ior ststus = %d",
                destHpssFile, status);
              myHpssSession.status = status;
         } else if (myHpssSession.status == HPSS_E_NOERROR) {
@@ -802,84 +756,36 @@ rodsLong_t mySize)
     }
     hpss_Close(destFd);
 
-    /* make sure that all data has been sent before killing any active 
-     * transfer threads */
-    pthread_mutex_lock (&myHpssSession.myMutex);
-    if (neq64m (myHpssSession.fileSize64, myHpssSession.totalBytesMoved64)) {
-#if defined(aix_platform)
-	struct timespec delay = {1, 0};   /* 1 second */
-#else
-        int delay = 1;
-#endif
-        pthread_mutex_unlock (&myHpssSession.myMutex);
-        /* Wait for all transfer threads to complete before moving on */
-        for (i = 0; i < MAX_HPSS_CONNECTIONS; i++) {
-            pthread_mutex_lock (&myHpssSession.myMutex);
-            while (myHpssSession.thrInfo[i].active) {
-                pthread_mutex_unlock (&myHpssSession.myMutex);
-#if defined(aix_platform)
-                (void) pthread_delay_np (&delay);
-#else
-                rodsSleep (delay, 0);
-#endif
-                pthread_mutex_lock (&myHpssSession.myMutex);
-            }
-            pthread_mutex_unlock (&myHpssSession.myMutex);
-        }
-    }
-    pthread_mutex_unlock(&myHpssSession.myMutex);
-
-   /*
-    * Now cancel the manage_mover_connections thread
-    */
-   (void) pthread_cancel (moverConnManagerThr);
-
-    for (i = 0; i < myHpssSession.thrCnt; i++) {
-        if (myHpssSession.thrInfo[i].threadId != 0)
-            (void) pthread_join (myHpssSession.thrInfo[i].threadId, NULL);
-    }
-
-#if !defined (solaris_platform)
-     /* For solaris, pthread_join will hang.*/
-    if (moverConnManagerThr != 0)
-       (void) pthread_join (moverConnManagerThr, (void **) &pthreadStatus);
-#endif
-
-    if (myHpssSession.status == HPSS_E_NOERROR ||
-      myHpssSession.status == HPSS_ECONN) {
-        rodsLong_t bytesWritten;
-	CONVERT_U64_TO_LONGLONG(myHpssSession.totalBytesMoved64, bytesWritten);
-	if (bytesWritten != mySize) {
-            rodsLog (LOG_ERROR,
-              "paraHpssPut: %s transfer size %lld not equal file size %lld",
-             bytesWritten, mySize);
-            status = SYS_COPY_LEN_ERR;
-	} else {
-	    status = 0;
-	}
-    } else {
-        status = myHpssSession.status;
-    }
+    status = postProcSessionThr (&myHpssSession, destHpssFile);
     return status;
 }
 
 int
 initHpssSession (hpssSession_t *hpssSession, int operation, char *unixFilePath,
-rodsLong_t fileSize)
+rodsLong_t fileSize, int createMode)
 {
     struct hostent *hostEntry;
     char *hostname;
+    char myhostname[NAME_LEN];
     
     bzero (hpssSession, sizeof (hpssSession_t));
     hpssSession->fileSize64 = cast64m (fileSize);
     hpssSession->operation = operation;
     hpssSession->unixFilePath = unixFilePath;
-    hpssSession->firstTimeOpen = 1;
+    hpssSession->createFlag = 0;
+    hpssSession->createMode = createMode;
     hpssSession->status = HPSS_E_NOERROR;
     hpssSession->requestId = getpid();
 
-    if ((hostname = getenv("IRODS_HPSS_HOSTNAME")) == NULL) {
-	hostname = LocalServerHost->hostName->name;
+    if ((hostname = getenv("IRODS_HPSS_HOSTNAME")) == NULL &&
+      (hostname = getLocalAddr ()) == NULL) { 
+         if (gethostname (myhostname, NAME_LEN) < 0) {
+             rodsLog (LOG_ERROR,
+               "initHpssSession: gethostname error, errno=%d", errno);
+             return (SYS_INVALID_SERVER_HOST - errno);
+	} else {
+	    hostname = myhostname;
+	}
     }
     hostEntry = gethostbyname (hostname);
     if (hostEntry == NULL) {
@@ -1045,16 +951,150 @@ moverConnManager (hpssSession_t *hpssSession)
 void 
 getMover (hpssThrInfo_t *thrInfo)
 {
+    int status = 0;
+    int             transferListenSocket = -1;   /* Socket listen descriptors */
+    int             transferSocketFd = -1;    /* accepted socket */
+    int             bytesReceived;
+    initiator_msg_t initMessage, initReply;
+    initiator_ipaddr_t ipAddr;   /* TCP socket address info */
+    completion_msg_t completionMessage;
+    char buffer[HPSS_BUF_SIZE];
+    int destFd = -1;
+    rodsLong_t offset = -1;
+    rodsLong_t curoffset = 0;
+    hpssSession_t *mySession = (hpssSession_t *) thrInfo->hpssSession;
+    int bytesWritten;
+    int length = 0;
+
+    pthread_mutex_lock(&mySession->myMutex);
+    if (mySession->createFlag == 0) {
+	/* noone has created the file yet */
+        destFd = open (mySession->unixFilePath, O_WRONLY | O_CREAT | O_TRUNC, 
+	  mySession->createMode);
+	mySession->createFlag = 1;
+    } else {
+        destFd = open (mySession->unixFilePath, O_WRONLY, 
+	  mySession->createMode);
+    }
+    pthread_mutex_unlock(&mySession->myMutex);
+    
+    if (destFd < 0) {
+        mySession->status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_ERROR,
+         "getMover: open error for destUnixFile %s, status = %d",
+         mySession->unixFilePath, mySession->status);
+        return;
+    }
+
+    /* Loop until we reach a condition to discontinue talking with Mover */
+    while (mySession->status == HPSS_E_NOERROR) {
+        /* Get the next transfer initiation message from the Mover. HPSS_ECONN
+         * will be returned when the Mover is done.  */
+        status = procMoverInitmsg (thrInfo, &initMessage, &initReply);
+        if (status == HPSS_ECONN) {
+             break;                 /* break out of the while loop */
+        } else if (status != HPSS_E_NOERROR) {
+            mySession->status = status;
+            continue;
+        }
+
+        status = procTransferListenSocket (thrInfo, &ipAddr,
+          &transferListenSocket);
+        if (status != HPSS_E_NOERROR) {
+            mySession->status = status;
+            continue;
+        }
+        /*
+         * Wait for the new Mover socket connection, if you don't already
+         * have one
+         */
+        status = procTransferSocketFd (thrInfo, transferListenSocket,
+          &transferSocketFd);
+        if (status != HPSS_E_NOERROR) {
+            mySession->status = status;
+            continue;
+        }
+
+        /*
+         * Send the data to the Mover via our socket
+         */
+        status = mover_socket_recv_data(transferSocketFd,
+                                cast64m(mySession->requestId),
+                                initMessage.Offset,
+                                buffer,
+                                low32m(initReply.Length),
+                                &bytesReceived, 1);
+
+        if (status <= 0) {
+            rodsLog (LOG_ERROR,
+             "getMover: mover_socket_recv_data error, status = %d", status);
+            mySession->status = HPSS_MOVER_PROT_ERR + status;
+            continue;
+        } else {
+            length = low32m (initReply.Length);
+	}
+        CONVERT_U64_TO_LONGLONG(initMessage.Offset, offset);
+        if (offset != curoffset) {
+            lseek (destFd, offset, SEEK_SET);
+            curoffset = offset;
+        }
+        bytesWritten = write (destFd, (void *) buffer, length);
+	if (bytesWritten <= 0) {
+            mySession->status = UNIX_FILE_WRITE_ERR - errno;
+            rodsLog (LOG_ERROR,
+             "getMover: write error for destUnixFile %s, status = %d",
+             mySession->unixFilePath, mySession->status);
+	    continue;
+	} else if (bytesWritten != length) {
+            mySession->status = SYS_COPY_LEN_ERR;
+            rodsLog (LOG_ERROR,
+             "getMover: write error for unixFile %s, towrite %d != written %d",
+             mySession->unixFilePath, length, bytesWritten);
+            continue;
+	} else {
+            curoffset += length;
+
+	}
+        /*
+         * Get a transfer completion message from the Mover
+         */
+        status = mvrprot_recv_compmsg( thrInfo->moverSocket,
+          &completionMessage);
+        if (status != HPSS_E_NOERROR) {
+            rodsLog (LOG_ERROR,
+             "getMover: mvrprot_recv_compmsg error, status = %d",
+             status);
+            mySession->status = HPSS_MOVER_PROT_ERR + status;
+            continue;
+        }
+        pthread_mutex_lock(&mySession->myMutex);
+        inc64m (mySession->totalBytesMoved64, completionMessage.BytesMoved);
+        if (ge64m(mySession->totalBytesMoved64, mySession->fileSize64)) {
+            mySession->status = 0;
+            pthread_mutex_unlock(&mySession->myMutex);
+            break;
+        }
+        pthread_mutex_unlock(&mySession->myMutex);
+    }                            /* end while loop */
+
+    /* Close down the TCP transfer socket if it got opened */
+    if (transferSocketFd != -1) (void) close(transferSocketFd);
+    if (transferListenSocket != -1) (void) close(transferListenSocket);
+    close (destFd);
+
+    pthread_mutex_lock(&mySession->myMutex);
+    (void) close(thrInfo->moverSocket);
+    thrInfo->active = 0;
+    pthread_mutex_unlock(&mySession->myMutex);
     return;
 }
 
 void 
 putMover (hpssThrInfo_t *thrInfo)
 {
-    int             status, tmp; /* Return, temporary values */
+    int status = 0;
     int             transferListenSocket = -1;   /* Socket listen descriptors */
-    int             transferSocketFd;    /* accepted socket */
-    struct sockaddr_in transferSocketAddr;    /* Transfer socket address */
+    int             transferSocketFd = -1;    /* accepted socket */
     int             bytesSent;
     initiator_msg_t initMessage, initReply;
     initiator_ipaddr_t ipAddr;   /* TCP socket address info */
@@ -1062,10 +1102,10 @@ putMover (hpssThrInfo_t *thrInfo)
     char buffer[HPSS_BUF_SIZE];
     int srcFd;
     rodsLong_t offset = -1;
+    rodsLong_t curoffset = 0;
     hpssSession_t *mySession = (hpssSession_t *) thrInfo->hpssSession;
+    int length = 0;
 
-
-    transferListenSocket = transferSocketFd = -1;
 
     srcFd = open (mySession->unixFilePath, O_RDONLY, 0);
     if (srcFd < 0) {
@@ -1080,148 +1120,44 @@ putMover (hpssThrInfo_t *thrInfo)
     while (mySession->status == HPSS_E_NOERROR) {
         /* Get the next transfer initiation message from the Mover. HPSS_ECONN
          * will be returned when the Mover is done.  */
-        status = mvrprot_recv_initmsg (thrInfo->moverSocket, &initMessage);
-        if (status == HPSS_ECONN) {
+	status = procMoverInitmsg (thrInfo, &initMessage, &initReply);
+	if (status == HPSS_ECONN) {
              break;                 /* break out of the while loop */
-        } else if (status != HPSS_E_NOERROR) {
-             mySession->status = HPSS_MOVER_PROT_ERR + status;
-             rodsLog (LOG_ERROR, 
-               "putMover: mvrprot_recv_initmsg err, status = %d",
-                mySession->status);
-             continue;
-        }
-        /* Tell the Mover we will send the address next */
-        initReply.Flags = MVRPROT_COMP_REPLY | MVRPROT_ADDR_FOLLOWS;
-        /*
-         * Let's agree to use the transfer protocol selected by the Mover and
-         * let's accept the offset. However, the number of bytes the Mover can
-         * transfer at one time is limited by our buffer size, so we tell the
-         * Mover how much of the data he has offerred that we are willing to
-         * accept.
-         */
-        initReply.Type = initMessage.Type;
-        initReply.Offset = initMessage.Offset;
-        if (gt64m(initMessage.Length, cast64m(HPSS_BUF_SIZE)))
-            initReply.Length = cast64m(HPSS_BUF_SIZE);
-        else
-            initReply.Length = initMessage.Length;
-        /*
-         * Send our response back to the Mover
-         */
-        status = mvrprot_send_initmsg( thrInfo->moverSocket, &initReply);
+	} else if (status != HPSS_E_NOERROR) {
+	    mySession->status = status;
+	    continue;
+	}
+
+        status = procTransferListenSocket (thrInfo, &ipAddr, 
+	  &transferListenSocket);
         if (status != HPSS_E_NOERROR) {
-            mySession->status = HPSS_MOVER_PROT_ERR + status;
-            rodsLog (LOG_ERROR,
-              "putMover: mvrprot_send_initmsg err, status = %d",
-               mySession->status);
-            continue;
-        }
-        /*
-         * Based on the type of transfer protocol, allocate memory, send
-         * address information, and send the data to the HPSS Mover
-         */
-        if (initMessage.Type != NET_ADDRESS) {
-            mySession->status = HPSS_MOVER_PROT_ERR;
-            rodsLog (LOG_ERROR, "putMover: initMessage.Type != NET_ADDRESS");
+            mySession->status = status;
             continue;
         }
 
-        /*
-         * The first time through, allocate the memory buffer and data
-         * transfer socket
-         */
-        if (transferListenSocket < 0) {
-            transferListenSocket = socket(AF_INET, SOCK_STREAM, 0);
-            if (transferListenSocket == -1) {
-                rodsLog (LOG_ERROR, 
-                 "putMover: socket error, errno = %d", errno);
-                mySession->status = SYS_SOCK_OPEN_ERR - errno;
-                continue;
-            }
-
-            (void) memset(&transferSocketAddr, 0, sizeof(transferSocketAddr));
-            transferSocketAddr.sin_family = AF_INET;
-            transferSocketAddr.sin_port = 0;
-            /*
-             * Select the hostname (IP address) in a round-robin fashion
-             */
-            pthread_mutex_lock(&mySession->myMutex);
-            transferSocketAddr.sin_addr.s_addr = mySession->ipAddr;
-            pthread_mutex_unlock(&mySession->myMutex);
-            if (bind(transferListenSocket,
-                     (const struct sockaddr *) &transferSocketAddr,
-                     sizeof(transferSocketAddr)) == -1) {
-                rodsLog (LOG_ERROR,
-                 "putMover: socket bind error, errno=%d", errno);
-                mySession->status = SYS_SOCK_BIND_ERR - errno;
-                continue;
-            }
-            tmp = sizeof(transferSocketAddr);
-            (void) memset(&transferSocketAddr, 0, sizeof(transferSocketAddr));
-            if (getsockname(transferListenSocket,
-                            (struct sockaddr *) & transferSocketAddr,
-                            (size_t *) & tmp) == -1) {
-                rodsLog (LOG_ERROR,
-                 "putMover: getsockname error, errno=%d", errno);
-                mySession->status = SYS_SOCK_OPEN_ERR - errno;
-                continue;
-            }
-            if (listen(transferListenSocket, SOMAXCONN) == -1) {
-                rodsLog (LOG_ERROR,
-                 "putMover: listen error, errno=%d", errno);
-                mySession->status = SYS_SOCK_OPEN_ERR - errno;
-                continue;
-            }
-
-            memset(&ipAddr, 0, sizeof(ipAddr));
-            ipAddr.IpAddr.SockTransferID =
-              cast64m(mySession->requestId);
-            ipAddr.IpAddr.SockAddr.family = transferSocketAddr.sin_family;
-            ipAddr.IpAddr.SockAddr.addr = transferSocketAddr.sin_addr.s_addr;
-            ipAddr.IpAddr.SockAddr.port = transferSocketAddr.sin_port;
-            ipAddr.IpAddr.SockOffset = cast64m(0);
-        }
-        /*
-         * Tell the Mover what socket to receive the data from
-         */
-        status = mvrprot_send_ipaddr(thrInfo->moverSocket, &ipAddr);
-        if (status != HPSS_E_NOERROR) {
-            rodsLog (LOG_ERROR,
-             "putMover: mvrprot_send_ipaddr error, errno=%d", errno);
-            mySession->status = HPSS_MOVER_PROT_ERR + status;
-            continue;
-        }
         /*
          * Wait for the new Mover socket connection, if you don't already
          * have one
          */
-        if (transferSocketFd == -1) {
-            tmp = sizeof(transferSocketAddr);
-            while ((transferSocketFd =
-                    accept(transferListenSocket,
-                           (struct sockaddr *) & transferSocketAddr,
-                           (size_t *) & tmp)) < 0) {
-                if ((errno != EINTR) && (errno != EAGAIN)) {
-                    rodsLog (LOG_ERROR,
-                     "putMover: accept error, errno=%d", errno);
-                    mySession->status = SYS_SOCK_OPEN_ERR - errno;
-                    break;
-                }
-            }                   /* end while */
-            if (transferSocketFd < 0) continue;
-            rodsSetSockOpt (transferSocketFd, 0);
-            CONVERT_U64_TO_LONGLONG(initMessage.Offset, offset);
+        status = procTransferSocketFd (thrInfo, transferListenSocket,
+	  &transferSocketFd);
+        if (status != HPSS_E_NOERROR) {
+            mySession->status = status;
+            continue;
+        }
+
+        CONVERT_U64_TO_LONGLONG(initMessage.Offset, offset);
+	if (offset != curoffset) {
             lseek (srcFd, offset, SEEK_SET);
-        } else {
-            CONVERT_U64_TO_LONGLONG(initMessage.Offset, offset);
+	    curoffset = offset;
         } 
-        tmp = low32m (initMessage.Length);
+        length = low32m (initReply.Length);
 
-        status = read (srcFd, buffer, tmp);
+        status = read (srcFd, buffer, length);
 
-	if (status != tmp) {
+	if (status != length) {
             rodsLog (LOG_ERROR,
-             "putMover: bytes read %s != requested %d", status, tmp);
+             "putMover: bytes read %d != requested %d", status, length);
             mySession->status = SYS_COPY_LEN_ERR;
             continue;
         }
@@ -1241,7 +1177,9 @@ putMover (hpssThrInfo_t *thrInfo)
              status);
             mySession->status = HPSS_MOVER_PROT_ERR + status;
             continue;
-        }
+        } else {
+	    curoffset += length;
+	}
         /*
          * Get a transfer completion message from the Mover
          */
@@ -1266,13 +1204,10 @@ putMover (hpssThrInfo_t *thrInfo)
     }                            /* end while loop */
 
     /* Close down the TCP transfer socket if it got opened */
-    if (transferSocketFd != -1) {
-        (void) close(transferSocketFd);
-    }
-
+    if (transferSocketFd != -1) (void) close(transferSocketFd);
+    if (transferListenSocket != -1) (void) close(transferListenSocket);
     close (srcFd);
 
-    (void) close(transferListenSocket);
     pthread_mutex_lock(&mySession->myMutex);
     (void) close(thrInfo->moverSocket);
     thrInfo->active = 0;
@@ -1280,4 +1215,374 @@ putMover (hpssThrInfo_t *thrInfo)
     return;
 }
 
+int
+procMoverInitmsg (hpssThrInfo_t *thrInfo, initiator_msg_t *initMessage, 
+initiator_msg_t *initReply)
+{
+    int status;
+    hpssSession_t *mySession = (hpssSession_t *) thrInfo->hpssSession;
 
+    /* Get the next transfer initiation message from the Mover. HPSS_ECONN
+     * will be returned when the Mover is done.  */
+
+    status = mvrprot_recv_initmsg (thrInfo->moverSocket, initMessage);
+    if (status != HPSS_E_NOERROR) {
+	 if (status == HPSS_ECONN) return HPSS_ECONN;      /* done */
+         status = HPSS_MOVER_PROT_ERR + status;
+         rodsLog (LOG_ERROR,
+           "procMoverInitmsg: mvrprot_recv_initmsg err, status = %d",
+            mySession->status);
+	return status;
+    }
+
+    /* Tell the Mover we will send the address next */
+    initReply->Flags = MVRPROT_COMP_REPLY | MVRPROT_ADDR_FOLLOWS;
+    /*
+     * Let's agree to use the transfer protocol selected by the Mover and
+     * let's accept the offset. However, the number of bytes the Mover can
+     * transfer at one time is limited by our buffer size, so we tell the
+     * Mover how much of the data he has offerred that we are willing to
+     * accept.
+     */
+
+    initReply->Type = initMessage->Type;
+    initReply->Offset = initMessage->Offset;
+    if (gt64m(initMessage->Length, cast64m(HPSS_BUF_SIZE)))
+        initReply->Length = cast64m(HPSS_BUF_SIZE);
+    else
+        initReply->Length = initMessage->Length;
+    /*
+     * Send our response back to the Mover
+     */
+    status = mvrprot_send_initmsg( thrInfo->moverSocket, initReply);
+    if (status != HPSS_E_NOERROR) {
+        status = HPSS_MOVER_PROT_ERR + status;
+        rodsLog (LOG_ERROR,
+          "procMoverInitmsg: mvrprot_send_initmsg err, status = %d", status);
+        return status;
+    }
+    /*
+     * Based on the type of transfer protocol, allocate memory, send
+     * address information, and send the data to the HPSS Mover
+     */
+    if (initMessage->Type != NET_ADDRESS) {
+        status = HPSS_MOVER_PROT_ERR;
+        rodsLog (LOG_ERROR, 
+	  "procMoverInitmsg: initMessage.Type != NET_ADDRESS");
+        return status;
+    }
+
+    return HPSS_E_NOERROR;
+}
+
+int
+procTransferListenSocket (hpssThrInfo_t *thrInfo, initiator_ipaddr_t *ipAddr,
+int *transferListenSocket)
+{
+    int status;
+    struct sockaddr_in transferSocketAddr;    /* Transfer socket address */
+    int tmp;
+    hpssSession_t *mySession = (hpssSession_t *) thrInfo->hpssSession;
+
+    if (*transferListenSocket < 0) {
+        *transferListenSocket = socket(AF_INET, SOCK_STREAM, 0);
+        if (*transferListenSocket == -1) {
+            rodsLog (LOG_ERROR,
+             "procTransferListenSocket: socket error, errno = %d", errno);
+            status = SYS_SOCK_OPEN_ERR - errno;
+	    return status;
+        }
+
+        (void) memset(&transferSocketAddr, 0, sizeof(transferSocketAddr));
+        transferSocketAddr.sin_family = AF_INET;
+        transferSocketAddr.sin_port = 0;
+        /*
+         * Select the hostname (IP address) in a round-robin fashion
+         */
+        pthread_mutex_lock(&mySession->myMutex);
+        transferSocketAddr.sin_addr.s_addr = mySession->ipAddr;
+        pthread_mutex_unlock(&mySession->myMutex);
+        if (bind(*transferListenSocket,
+                 (const struct sockaddr *) &transferSocketAddr,
+                 sizeof(transferSocketAddr)) == -1) {
+            rodsLog (LOG_ERROR,
+             "procTransferListenSocket: socket bind error, errno=%d", errno);
+            status = SYS_SOCK_BIND_ERR - errno;
+            return status;;
+        }
+        tmp = sizeof(transferSocketAddr);
+        (void) memset(&transferSocketAddr, 0, sizeof(transferSocketAddr));
+        if (getsockname(*transferListenSocket,
+                        (struct sockaddr *) & transferSocketAddr,
+                        (size_t *) & tmp) == -1) {
+            rodsLog (LOG_ERROR,
+             "procTransferListenSocket: getsockname error, errno=%d", errno);
+            status = SYS_SOCK_OPEN_ERR - errno;
+            return status;;
+        }
+        if (listen(*transferListenSocket, SOMAXCONN) == -1) {
+            rodsLog (LOG_ERROR,
+             "procTransferListenSocket: listen error, errno=%d", errno);
+            status = SYS_SOCK_OPEN_ERR - errno;
+            return status;;
+        }
+
+        memset(ipAddr, 0, sizeof(ipAddr));
+        ipAddr->IpAddr.SockTransferID =
+          cast64m(mySession->requestId);
+        ipAddr->IpAddr.SockAddr.family = transferSocketAddr.sin_family;
+        ipAddr->IpAddr.SockAddr.addr = transferSocketAddr.sin_addr.s_addr;
+        ipAddr->IpAddr.SockAddr.port = transferSocketAddr.sin_port;
+        ipAddr->IpAddr.SockOffset = cast64m(0);
+    }
+    status = mvrprot_send_ipaddr(thrInfo->moverSocket, ipAddr);
+    if (status != HPSS_E_NOERROR) {
+        rodsLog (LOG_ERROR,
+         "procTransferListenSocket: mvrprot_send_ipaddr err, errno=%d",errno);
+        status = HPSS_MOVER_PROT_ERR + status;
+    }
+
+    return status;
+}
+
+int
+procTransferSocketFd (hpssThrInfo_t *thrInfo, int transferListenSocket,
+int *transferSocketFd)
+{
+    int status, tmp;
+    struct sockaddr_in transferSocketAddr;    /* Transfer socket address */
+
+    /*
+     * Wait for the new Mover socket connection, if you don't already
+     * have one
+     */
+    if (*transferSocketFd >= 0) return HPSS_E_NOERROR;
+    tmp = sizeof(transferSocketAddr);
+    while ((*transferSocketFd = accept(transferListenSocket,
+                   (struct sockaddr *) &transferSocketAddr,
+                   (size_t *) & tmp)) < 0) {
+        if ((errno != EINTR) && (errno != EAGAIN)) {
+            rodsLog (LOG_ERROR,
+             "procTransferSocketFd: accept error, errno=%d", errno);
+            status = SYS_SOCK_OPEN_ERR - errno;
+            return status;
+        }
+    } 
+
+    if (*transferSocketFd < 0) {
+	/* should not be here */
+        rodsLog (LOG_ERROR,
+         "procTransferSocketFd: accept error, errno=%d", errno);
+	status = SYS_SOCK_OPEN_ERR - errno;
+        return status;
+    }
+    rodsSetSockOpt (*transferSocketFd, 0);
+
+    return HPSS_E_NOERROR;
+}
+
+int
+paraHpssGet (char *srcHpssFile, char *destUnixFile, int mode, int flags,
+rodsLong_t mySize)
+{
+    int srcFd;
+    int status;
+    hpssSession_t myHpssSession;
+    hpss_IOD_t      iod;                /* IOD passed to hpss_WriteList */
+    hpss_IOR_t      ior;                /* IOR returned from hpss_WriteList */
+    iod_srcsinkdesc_t   srcDesc, sinkDesc;  /* IOD source/sink descriptors */
+    u_signed64      bytesMoved;  /* Bytes transferred, as returned from IOR */
+    u_signed64 gapLength;        /* Number of "gap" bytes within the file */
+    int readListFlags = 0;       /* hpss_ReadList call - could be set
+                                  * to HPSS_READ_SEQUENTIAL */
+
+
+
+    status = initHpssSession (&myHpssSession, HPSS_GET_OPR,
+      destUnixFile, mySize, mode);
+    if (status < 0) return status;
+
+    srcFd = hpssOpenForRead (srcHpssFile, O_RDONLY);
+    if (srcFd < 0) {
+        return srcFd;
+    }
+
+    status = createControlSocket (&myHpssSession);
+    if (status < 0) return status;
+
+    pthread_create(&myHpssSession.moverConnManagerThr, pthread_attr_default,
+      (void *(*)(void *)) moverConnManager,
+      (void *) &myHpssSession);
+
+#if !defined(solaris_platform)
+    sched_yield();
+#endif
+    initHpssIodForRead (&iod, &srcDesc, &sinkDesc, srcFd, &myHpssSession);
+
+    gapLength = bytesMoved = cast64m(0);
+
+    /*
+     * Loop as long as the total bytes moved plus all reported gaps are less
+     * than the total size of the file AND no transfer error has been
+     * encountered
+     */
+    while (lt64m(add64m(bytesMoved, gapLength), myHpssSession.fileSize64) &&
+      myHpssSession.status == HPSS_E_NOERROR) {
+        /*
+         * Set the source/sink length to the number of bytes we want
+         */
+        srcDesc.Offset = sinkDesc.Offset = add64m(bytesMoved, gapLength);
+        srcDesc.Length = sinkDesc.Length = 
+	  sub64m(myHpssSession.fileSize64, srcDesc.Offset);
+        srcDesc.SrcSinkAddr.Addr_u.ClientFileAddr.FileOffset = srcDesc.Offset;
+        memset(&ior, 0, sizeof(ior));
+        status = hpss_ReadList(&iod, readListFlags, &ior);
+        if (status) {
+            if (ior.Status != HPSS_E_NOERROR) {
+		rodsLog (LOG_ERROR,
+                 "paraHpssGet: hpss_ReadList error,status=%d,ior status=%d",
+                 status, ior.Status);
+                 myHpssSession.status = HPSS_READ_LIST_ERR + ior.Status;
+            } else if (myHpssSession.status == HPSS_E_NOERROR) {
+		rodsLog (LOG_ERROR,
+                  "paraHpssGet: hpss_ReadList error, status= %d", status);
+                myHpssSession.status = HPSS_READ_LIST_ERR + status;
+            }
+        } else {
+            inc64m(bytesMoved, ior.SinkReplyList->BytesMoved);
+            /*
+             * See if data transfer stopped at a gap (hole)
+             */
+            if (ior.Flags & HPSS_IOR_GAPINFO_VALID) {
+                inc64m (gapLength,
+                  ior.ReqSpecReply->ReqReply_s.ReqReply_u.GapInfo.Length);
+            }
+            if (ior.SrcReplyList) free (ior.SrcReplyList);
+            if (ior.SinkReplyList) free (ior.SinkReplyList);
+        }
+    }   /* end while */
+
+   /*
+    * Close the HPSS file
+    */
+    status = hpss_Close(srcFd);
+
+    status = postProcSessionThr (&myHpssSession, srcHpssFile);
+    return status;
+
+}
+
+/* initHpssIodForRead - Must be done after initSession and initControlSocket
+ */
+
+int
+initHpssIodForRead (hpss_IOD_t *iod, iod_srcsinkdesc_t *src, 
+iod_srcsinkdesc_t *sink, int hpssSrcFd, hpssSession_t *hpssSession)
+{
+
+    memset(iod, 0, sizeof(hpss_IOD_t));
+    memset(src, 0, sizeof(iod_srcsinkdesc_t));
+    memset(sink, 0, sizeof(iod_srcsinkdesc_t));
+
+    sink->Flags = HPSS_IOD_XFEROPT_IP;
+    sink->Flags |= HPSS_IOD_CONTROL_ADDR; 
+    src->SrcSinkAddr.Type = CLIENTFILE_ADDRESS;
+    src->SrcSinkAddr.Addr_u.ClientFileAddr.FileDes = hpssSrcFd;
+    hpssSession->requestId = getpid();
+    sink->SrcSinkAddr.Type = NET_ADDRESS;
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockTransferID =
+     cast64m(hpssSession->requestId);
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.addr =
+    hpssSession->ipAddr;
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockOffset = cast64m(0);
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.port =
+      hpssSession->mySocketAddr.sin_port; 
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.family =
+      hpssSession->mySocketAddr.sin_family;;
+    iod->Function = HPSS_IOD_READ;
+    iod->RequestID = hpssSession->requestId;
+    iod->SrcDescLength = 1;
+    iod->SinkDescLength = 1;
+    iod->SrcDescList = src;
+    iod->SinkDescList = sink;
+
+    hpssSession->totalBytesMoved64 = cast64m(0);
+    hpssSession->status = HPSS_E_NOERROR;
+
+   return (0);
+}
+
+int
+postProcSessionThr (hpssSession_t *myHpssSession, char *hpssPath)
+{
+    int i;
+    int status;
+    int pthreadStatus;
+
+    /* make sure that all data has been sent before killing any active
+     * transfer threads */
+    pthread_mutex_lock (&myHpssSession->myMutex);
+    if (neq64m (myHpssSession->fileSize64, myHpssSession->totalBytesMoved64)) {
+#if defined(aix_platform)
+        struct timespec delay = {1, 0};   /* 1 second */
+#else
+        int delay = 1;
+#endif
+        pthread_mutex_unlock (&myHpssSession->myMutex);
+        /* Wait for all transfer threads to complete before moving on */
+        for (i = 0; i < MAX_HPSS_CONNECTIONS; i++) {
+            pthread_mutex_lock (&myHpssSession->myMutex);
+            while (myHpssSession->thrInfo[i].active) {
+                pthread_mutex_unlock (&myHpssSession->myMutex);
+#if defined(aix_platform)
+                (void) pthread_delay_np (&delay);
+#else
+                rodsSleep (delay, 0);
+#endif
+                pthread_mutex_lock (&myHpssSession->myMutex);
+            }
+            pthread_mutex_unlock (&myHpssSession->myMutex);
+        }
+    }
+    pthread_mutex_unlock(&myHpssSession->myMutex);
+
+   /*
+    * Now cancel the manage_mover_connections thread
+    */
+   (void) pthread_cancel (myHpssSession->moverConnManagerThr);
+
+    for (i = 0; i < myHpssSession->thrCnt; i++) {
+        if (myHpssSession->thrInfo[i].threadId != 0)
+            (void) pthread_join (myHpssSession->thrInfo[i].threadId, NULL);
+    }
+
+#if !defined (solaris_platform)
+     /* For solaris, pthread_join will hang.*/
+    if (myHpssSession->moverConnManagerThr != 0)
+       (void) pthread_join (myHpssSession->moverConnManagerThr, 
+         (void **) &pthreadStatus);
+#endif
+
+    if (myHpssSession->status == HPSS_E_NOERROR ||
+      myHpssSession->status == HPSS_ECONN) {
+        rodsLong_t bytesWritten;
+	rodsLong_t mySize;
+	
+        CONVERT_U64_TO_LONGLONG(myHpssSession->totalBytesMoved64, bytesWritten);
+        CONVERT_U64_TO_LONGLONG(myHpssSession->fileSize64, mySize);
+        if (bytesWritten != mySize) {
+            rodsLog (LOG_ERROR,
+              "postProcSessionThr: %s transfer size %lld != file size %lld",
+               hpssPath, bytesWritten, mySize);
+            status = SYS_COPY_LEN_ERR;
+        } else {
+            status = 0;
+        }
+    } else {
+        status = myHpssSession->status;
+    }
+    return status;
+
+
+    return HPSS_E_NOERROR;
+}

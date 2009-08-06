@@ -16,6 +16,9 @@
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
+#ifdef HPSS
+#include "hpssFileDriver.h"
+#endif
 
 int
 resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
@@ -1477,6 +1480,7 @@ initAgent (rsComm_t *rsComm)
     initStructFileDesc ();
     initTarSubFileDesc ();
 #endif
+
     status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
     if (status < 0) {
         rodsLog (LOG_ERROR,
