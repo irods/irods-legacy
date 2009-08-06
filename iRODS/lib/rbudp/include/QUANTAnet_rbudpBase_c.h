@@ -75,8 +75,8 @@ need to instantiate a QUANTAnet_rbudpReceiver_c object.
 
  */
 
-#define FALSE 0
-#define TRUE 1
+#define RB_FALSE 0
+#define RB_TRUE 1
 
 typedef struct  QUANTAnet_rbudpBase_c
 {

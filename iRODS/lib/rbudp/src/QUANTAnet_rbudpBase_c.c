@@ -328,7 +328,7 @@ void initErrorBitmap(rbudpBase_t *rbudpBase)
 	 * Let's assume that it's like us, but keep a flag
 	 * to set if we see unreasonable-looking sequence numbers.
 	 */
-	rbudpBase->peerswap = FALSE;
+	rbudpBase->peerswap = RB_FALSE;
 }
 
 int ptohseq(rbudpBase_t *rbudpBase, int origseq )
@@ -340,7 +340,7 @@ int ptohseq(rbudpBase_t *rbudpBase, int origseq )
 
     if(seq < 0 || (seq >> 3) >= rbudpBase->sizeofErrorBitmap-1) {
 	if(!rbudpBase->peerswap) {
-	    rbudpBase->peerswap = TRUE;
+	    rbudpBase->peerswap = RB_TRUE;
 	    if(rbudpBase->verbose) fprintf(stderr, "peer has different endian-ness from ours\n");
 	    return ptohseq(rbudpBase, seq );
 	} else {
@@ -361,7 +361,7 @@ void updateErrorBitmap(rbudpBase_t *rbudpBase, long long seq)
 	    seq = swab32(seq);
 	if(seq < 0 || (seq >> 3) >= rbudpBase->sizeofErrorBitmap-1) {
 	    if(!rbudpBase->peerswap) {
-		rbudpBase->peerswap = TRUE;
+		rbudpBase->peerswap = RB_TRUE;
 		if(rbudpBase->verbose) fprintf(stderr, "peer has opposite endian-ness to ours, swapping seqno bytes\n");
 	    }
 	    seq = swab32(seq);
