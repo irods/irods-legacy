@@ -710,7 +710,8 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
         fileSyncToArchInp.cacheFileType = 
           RescTypeDef[cacheRescTypeInx].driverType;
         rstrcpy (fileSyncToArchInp.addr.hostAddr,  
-	  destDataObjInfo->rescInfo->rescLoc, NAME_LEN);
+	  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);
+	  /* use cache addr destDataObjInfo->rescInfo->rescLoc, NAME_LEN); */
         rstrcpy (fileSyncToArchInp.filename, destDataObjInfo->filePath, 
 	  MAX_NAME_LEN);
         rstrcpy (fileSyncToArchInp.cacheFilename, srcDataObjInfo->filePath, 
@@ -753,7 +754,8 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
         fileSyncToArchInp.cacheFileType = 
 	  RescTypeDef[cacheRescTypeInx].driverType;
         rstrcpy (fileSyncToArchInp.addr.hostAddr,  
-	  srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);
+	  destDataObjInfo->rescInfo->rescLoc, NAME_LEN);
+	  /* use the cache addr srcDataObjInfo->rescInfo->rescLoc, NAME_LEN);*/
         rstrcpy (fileSyncToArchInp.cacheFilename, destDataObjInfo->filePath, 
 	  MAX_NAME_LEN);
         rstrcpy (fileSyncToArchInp.filename, srcDataObjInfo->filePath, 
