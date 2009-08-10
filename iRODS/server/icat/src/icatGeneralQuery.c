@@ -514,11 +514,11 @@ int setTable(int column, int sel, int selectOption, int castOption) {
    int i;
    int selectOptFlag;
 
-   colIx=0;
+   colIx=-1;
    for (i=0;i<nColumns;i++) {
       if (Columns[i].defineValue == column) colIx=i;
    }
-   if (colIx == 0) return(CAT_UNKNOWN_TABLE);
+   if (colIx == -1) return(CAT_UNKNOWN_TABLE);
       
    for (i=0; i<nTables;i++) {
       if (strcmp(Tables[i].tableName, Columns[colIx].tableName) == 0) {
