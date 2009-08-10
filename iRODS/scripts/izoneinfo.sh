@@ -21,8 +21,9 @@
 
 set -e   # exit if anything fails
 
-outFile="/tmp/izoneinfo.txt"
-tmpFile="/tmp/zoneInfoTmpFile123"
+userName=`whoami`
+outFile="/tmp/izoneinfo.""$userName"".txt"
+tmpFile="/tmp/zoneInfoTmpFile123.""$userName"
 
 
 if [ ! -z "$1" ]; then
@@ -54,6 +55,11 @@ fi
 
 rm -f $outFile
 
+#
+# Record the starting date/time
+#
+date | tee -a $outFile
+
 # Look for config.mk starting at this command's path and up one level,
 # searching down 2 levels.  If not there, try same with current directory.
 # If not there, ask for iRODS dir.
@@ -62,35 +68,54 @@ startDir=`echo $0 | sed s/izoneinfo.sh//g`
 if [ -z $startDir ]; then
     startDir="./"
 fi
-maxDepth="-maxdepth 2"
-os=`uname -s`
-if [ $os = "SunOS" ]; then
-    maxDepth=""
-fi
-config=`find $startDir $maxDepth -name config.mk`
+
+set +e   # the ls will fail if file not there
+config=`ls $startDir/config.mk 2> /dev/null`
 if [ -z $config ]; then
-   config=`find $startDir.. $maxDepth -name config.mk`
+   config=`ls  $startDir/config/config.mk 2> /dev/null`
 fi
-if [ ! -f $config ]; then
-    $startdir=`pwd`
-    config=`find $startDir $maxDepth -name config.mk`
-    if [ -z $config ]; then
-	config=`find $startDir/.. $maxDepth -name config.mk`
-    fi
+if [ -z $config ]; then
+   config=`ls  $startDir../config.mk 2> /dev/null`
 fi
+if [ -z $config ]; then
+   config=`ls  $startDir../config/config.mk 2> /dev/null`
+fi
+if [ -z $config ]; then
+    startdir=`pwd`
+    config=`ls $startDir/config.mk 2> /dev/null`
+fi
+if [ -z $config ]; then
+   config=`ls  $startDir/config/config.mk 2> /dev/null`
+fi
+if [ -z $config ]; then
+   config=`ls  $startDir/../config.mk 2> /dev/null`
+fi
+if [ -z $config ]; then
+   config=`ls  $startDir/../config/config.mk 2> /dev/null`
+fi
+
 if [ -z $config ]; then
     echo "Could not find config.mk file (near this command or cwd)"
     printf "Please enter the full path of the iRODS build directory:"
     read startDir
-    config=`find $startDir $maxDepth -name config.mk`
-    if [ -z $config ]; then
-	config=`find $startDir/.. $maxDepth -name config.mk`
-    fi
+    config=`ls $startDir/config.mk 2> /dev/null`
 fi
+if [ -z $config ]; then
+   config=`ls  $startDir/config/config.mk 2> /dev/null`
+fi
+if [ -z $config ]; then
+   config=`ls  $startDir/../config.mk 2> /dev/null`
+fi
+if [ -z $config ]; then
+   config=`ls  $startDir/../config/config.mk 2> /dev/null`
+fi
+
 if [ -z $config ]; then
     echo "Can not find config.mk"
     exit 1
 fi
+
+set -e   # exit if anything fails
 
 #
 # Do a series of iquest commands to get basic information
@@ -189,7 +214,7 @@ echo "SvrInfo:" | tee -a $outFile
 echo $svrinfo | tee -a $outFile
 
 #
-# And the date/time
+# Record the ending date/time
 #
 date | tee -a $outFile
 
