@@ -22,6 +22,8 @@ columnName_t columnNames[] = {
    { COL_ZONE_TYPE,        "ZONE_TYPE", },
    { COL_ZONE_CONNECTION,  "ZONE_CONNECTION", },
    { COL_ZONE_COMMENT,     "ZONE_COMMENT", },
+   { COL_ZONE_CREATE_TIME, "ZONE_CREATE_TIME", },
+   { COL_ZONE_MODIFY_TIME, "ZONE_MODIFY_TIME", },
 
    { COL_USER_ID,          "USER_ID", },
    { COL_USER_NAME,        "USER_NAME", },
@@ -41,6 +43,7 @@ columnName_t columnNames[] = {
    { COL_R_LOC,         "RESC_LOC", },
    { COL_R_VAULT_PATH,  "RESC_VAULT_PATH", },
    { COL_R_FREE_SPACE,  "RESC_FREE_SPACE", },
+   { COL_R_FREE_SPACE_TIME,  "RESC_FREE_SPACE_TIME", },
    { COL_R_RESC_INFO,   "RESC_INFO", },
    { COL_R_RESC_COMMENT,"RESC_COMMENT", },
    { COL_R_CREATE_TIME, "RESC_CREATE_TIME", },

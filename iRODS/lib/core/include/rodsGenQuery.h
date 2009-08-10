@@ -103,6 +103,8 @@ primary ordering column.
 #define COL_ZONE_TYPE 103
 #define COL_ZONE_CONNECTION 104
 #define COL_ZONE_COMMENT 105
+#define COL_ZONE_CREATE_TIME 106
+#define COL_ZONE_MODIFY_TIME 107
 
 /* R_USER_MAIN: */
 #define COL_USER_ID 201
@@ -129,6 +131,7 @@ primary ordering column.
 #define COL_R_CREATE_TIME 311
 #define COL_R_MODIFY_TIME 312
 #define COL_R_RESC_STATUS 313
+#define COL_R_FREE_SPACE_TIME 314
 
 /* R_DATA_MAIN: */
 #define COL_D_DATA_ID 401

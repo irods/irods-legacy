@@ -145,6 +145,8 @@ icatGeneralQuerySetup() {
   sColumn( COL_ZONE_TYPE, "r_zone_main", "zone_type_name");
   sColumn( COL_ZONE_CONNECTION, "r_zone_main", "zone_conn_string");
   sColumn( COL_ZONE_COMMENT, "r_zone_main", "r_comment");
+  sColumn( COL_ZONE_CREATE_TIME, "r_zone_main", "create_ts");
+  sColumn( COL_ZONE_MODIFY_TIME, "r_zone_main", "modify_ts");
 
   sColumn( COL_USER_ID,   "r_user_main", "user_id");
   sColumn( COL_USER_NAME, "r_user_main", "user_name");
@@ -164,6 +166,7 @@ icatGeneralQuerySetup() {
   sColumn( COL_R_LOC, "r_resc_main", "resc_net");
   sColumn( COL_R_VAULT_PATH, "r_resc_main", "resc_def_path ");
   sColumn( COL_R_FREE_SPACE, "r_resc_main", "free_space");
+  sColumn( COL_R_FREE_SPACE_TIME, "r_resc_main", "free_space_ts");
   sColumn( COL_R_RESC_INFO, "r_resc_main", "resc_info");
   sColumn( COL_R_RESC_COMMENT, "r_resc_main", "r_comment");
   sColumn( COL_R_RESC_STATUS, "r_resc_main", "resc_status");
