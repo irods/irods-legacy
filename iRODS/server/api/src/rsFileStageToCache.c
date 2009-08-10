@@ -101,6 +101,12 @@ _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
      * when RCAT is available 
      */
 
+    /* need to make this now. It will be difficult to do it with
+     * parallel I/O */
+    mkDirForFilePath (fileStageToCacheInp->cacheFileType, rsComm,
+      "/", fileStageToCacheInp->cacheFilename,
+      fileStageToCacheInp->mode);
+
     status = fileStageToCache (fileStageToCacheInp->fileType, rsComm, 
       fileStageToCacheInp->cacheFileType,
       fileStageToCacheInp->mode, fileStageToCacheInp->flags,
@@ -108,12 +114,7 @@ _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
       fileStageToCacheInp->dataSize, &fileStageToCacheInp->condInput);
 
     if (status < 0) {
-        if (getErrno (status) == ENOENT) {
-            /* the directory does not exist */
-            mkDirForFilePath (fileStageToCacheInp->cacheFileType, rsComm,
-              "/", fileStageToCacheInp->cacheFilename, 
-	      fileStageToCacheInp->mode);
-        } else if (getErrno (status) == EEXIST) {
+        if (getErrno (status) == EEXIST) {
             /* an empty dir may be there */
             fileRmdir (fileStageToCacheInp->cacheFileType, rsComm,
              fileStageToCacheInp->cacheFilename);
