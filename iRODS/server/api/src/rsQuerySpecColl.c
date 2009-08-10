@@ -299,6 +299,9 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
 	      SpecCollDesc[parentInx].dataObjInfo->objPath, MAX_NAME_LEN);
             status = _rsQuerySpecColl (rsComm, parentInx,
               &newDataObjInp, genQueryOut, continueFlag);
+	} else {
+	    /* no more */
+	    genQueryOut->continueInx = -1;
 	}
         if (status == EOF || status == CAT_NO_ROWS_FOUND) {
             status = 0;

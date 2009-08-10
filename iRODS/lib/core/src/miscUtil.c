@@ -1076,6 +1076,7 @@ genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
         /* query */
         addKeyVal (&collHandle->dataObjInp.condInput,
           SEL_OBJ_TYPE_KW, "collection");
+	collHandle->dataObjInp.openFlags = 0;    /* start over */
         status = (*queryHandle->querySpecColl) ((rcComm_t *) queryHandle->conn, 
           &collHandle->dataObjInp, &genQueryOut);
 
