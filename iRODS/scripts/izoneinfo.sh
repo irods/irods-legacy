@@ -4,19 +4,13 @@
 #	zone-info [-m |-mf]
 #
 # This shell script collects and displays some basic information on
-# the local iRODS instance.
+# the local iRODS instance and optionally sends the information to
+# DICE Research (the iRODS team).
 #
 # This should be run from the irods admin account on the ICAT-enabled
 # host, with the i-commands in the path and 'iinit' run.
-# If run from the build directory, it not need to prompt for the 
+# If run from the build directory, it does not need to prompt for the 
 # config.mk file location.
-#
-# Without options: collect and show information about the local
-#    iRODS instance.
-# Options: -m   email the results to the DICE team, using output 
-#               from a previous run if available.
-#          -mf  email the results to the DICE team, but always re-running
-#               the commands to get current results (f: force).
 #
 
 set -e   # exit if anything fails
@@ -24,34 +18,6 @@ set -e   # exit if anything fails
 userName=`whoami`
 outFile="/tmp/izoneinfo.""$userName"".txt"
 tmpFile="/tmp/zoneInfoTmpFile123.""$userName"
-
-
-if [ ! -z "$1" ]; then
-    if [ $1 = "-m" ]; then
-	if [ ! -f $outFile ]; then
-#           run this same command, without without -m and with -quiet 
-	    $0 -quiet
-#           then email the results
-	    mailx -s zone-info schroeder@diceresearch.org < $outFile
-	    echo "Thank you for providing this information to DICE"
-	    exit 0
-
-	else 
-#           email previous run's output
-	    mailx -s zone-information schroeder@diceresearch.org < $outFile
-	    echo "Thank you for providing this information to DICE"
-	    exit 0
-	fi
-    fi
-    if [ $1 = "-mf" ]; then
-#       run this same command, without -mf and with -quiet 
-	$0 -quiet
-#       then email the results
-	mailx -s zone-info schroeder@diceresearch.org < $outFile
-	echo "Thank you for providing this information to DICE"
-	exit 0
-    fi
-fi
 
 rm -f $outFile
 
@@ -219,9 +185,14 @@ echo $svrinfo | tee -a $outFile
 date | tee -a $outFile
 
 # 
-# Request sending this to DICE
-if [ -z "$1" ]; then
-    echo "To send this information to DICE, please run 'izoneinfo.sh -m'"
+# Optionally send this to DICE
+printf "Please enter yes or y to send the above information to the iRODS team:"
+read response
+if [ ! -z $response ]; then
+    if [ $response = "y" ] || [ $response = "yes" ]; then
+	mailx -s zone-info schroeder@diceresearch.org < $outFile
+	echo "Thank you for sharing this information with DICE Research"
+    fi
 fi
 
 exit 0
