@@ -17,6 +17,7 @@
 #include "modDataObjMeta.h"
 #include "subStructFileTruncate.h"
 #include "getRemoteZoneResc.h"
+#include "phyBundleColl.h"
 
 int
 rsDataObjTruncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp)
@@ -79,7 +80,16 @@ dataObjTruncateS (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
 dataObjInfo_t *dataObjInfo)
 {
     int status;
+    keyValPair_t regParam;
+    modDataObjMeta_t modDataObjMetaInp;
+    char tmpStr[MAX_NAME_LEN];
 
+    if (dataObjInfo->dataSize == dataObjTruncateInp->dataSize) return 0;
+
+    /* don't do anything for BUNDLE_RESC for now */
+    if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0) return 0;
+
+    dataObjInfo->dataSize = dataObjTruncateInp->dataSize;
     status = l3Truncate (rsComm, dataObjInfo);
 
     if (status < 0) {
@@ -95,8 +105,6 @@ dataObjInfo_t *dataObjInfo)
 
     if (dataObjInfo->specColl == NULL) {
 	/* reigister the new size */
-        keyValPair_t regParam;
-	modDataObjMeta_t modDataObjMetaInp;
 
 	memset (&regParam, 0, sizeof (regParam));
 	memset (&modDataObjMetaInp, 0, sizeof (modDataObjMetaInp));
