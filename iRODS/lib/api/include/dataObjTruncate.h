@@ -28,7 +28,8 @@ int
 dataObjTruncateS (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
 dataObjInfo_t *dataObjInfo);
 int
-l3Truncate (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
+l3Truncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
+dataObjInfo_t *dataObjInfo);
 #else
 #define RS_DATA_OBJ_TRUNCATE NULL
 #endif

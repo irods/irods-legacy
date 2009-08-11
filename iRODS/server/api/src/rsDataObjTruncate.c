@@ -89,8 +89,7 @@ dataObjInfo_t *dataObjInfo)
     /* don't do anything for BUNDLE_RESC for now */
     if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0) return 0;
 
-    dataObjInfo->dataSize = dataObjTruncateInp->dataSize;
-    status = l3Truncate (rsComm, dataObjInfo);
+    status = l3Truncate (rsComm, dataObjTruncateInp, dataObjInfo);
 
     if (status < 0) {
 	int myError = getErrno (status);
@@ -127,7 +126,8 @@ dataObjInfo_t *dataObjInfo)
 }
 
 int
-l3Truncate (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
+l3Truncate (rsComm_t *rsComm, dataObjInp_t *dataObjTruncateInp,
+dataObjInfo_t *dataObjInfo)
 {
     int rescTypeInx;
     fileOpenInp_t fileTruncateInp;
@@ -141,7 +141,7 @@ l3Truncate (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
-	subFile.offset = fileTruncateInp.dataSize;
+	subFile.offset = dataObjTruncateInp->dataSize;
         status = rsSubStructFileTruncate (rsComm, &subFile);
     } else {
         rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
@@ -154,7 +154,7 @@ l3Truncate (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 	      MAX_NAME_LEN);
             rstrcpy (fileTruncateInp.addr.hostAddr, 
 	      dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-	    fileTruncateInp.dataSize = dataObjInfo->dataSize;
+	    fileTruncateInp.dataSize = dataObjTruncateInp->dataSize;
             status = rsFileTruncate (rsComm, &fileTruncateInp);
             break;
 
