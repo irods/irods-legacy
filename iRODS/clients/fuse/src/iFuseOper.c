@@ -550,6 +550,7 @@ irodsChmod (const char *path, mode_t mode)
     memset (&regParam, 0, sizeof (regParam));
     snprintf (dataMode, SHORT_STR_LEN, "%d", mode);
     addKeyVal (&regParam, DATA_MODE_KW, dataMode);
+    addKeyVal (&regParam, ALL_KW, "");
 
     memset(&dataObjInfo, 0, sizeof(dataObjInfo));
 
