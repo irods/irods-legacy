@@ -449,12 +449,14 @@ ifuseClose (char *path, int descInx)
                    path);
 		savedStatus = -EBADF;
 	    }
+#if 0	/* Not sure this is really a problem */
         } else {
 	    /* should not be here */
             rodsLog (LOG_ERROR,
               "ifuseClose: bytesWritten to not newly created cache for %s",
                path);
 	    savedStatus = -EBADF;
+#endif
 	}
 	status = close (IFuseDesc[descInx].iFd);
 	if (status < 0) {
