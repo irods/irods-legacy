@@ -5,6 +5,7 @@
 
 #include "modDataObjMeta.h"
 #include "icatHighLevelRoutines.h"
+#include "objMetaOpr.h"
 
 int
 rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
@@ -42,7 +43,6 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
     int status;
     dataObjInfo_t *dataObjInfo;
     keyValPair_t *regParam;
-
     int i;
     ruleExecInfo_t rei2;
 
@@ -73,12 +73,37 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
         i = rei2.status;
       }
       rodsLog (LOG_ERROR,
-               "rsGeneralAdmin:acPreProcForModifyDataObjMeta error stat=%d", i);
+               "_rsModDataObjMeta:acPreProcForModifyDataObjMeta error stat=%d", i);
       return i;
     }
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 
-    status = chlModDataObjMeta (rsComm, dataObjInfo, regParam);
+    if (getValByKey (regParam, ALL_KW) != NULL) {
+	/* all copies */
+	dataObjInfo_t *dataObjInfoHead = NULL;
+	dataObjInfo_t *tmpDataObjInfo;
+	dataObjInp_t dataObjInp;
+
+	bzero (&dataObjInp, sizeof (dataObjInp));
+	rstrcpy (dataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
+        status = getDataObjInfoIncSpecColl (rsComm, &dataObjInp,
+          &dataObjInfoHead);
+	if (status < 0) return status;
+	tmpDataObjInfo = dataObjInfoHead;
+        while (tmpDataObjInfo != NULL) {
+	    if (tmpDataObjInfo->specColl != NULL) break;
+            status = chlModDataObjMeta (rsComm, tmpDataObjInfo, regParam);
+	    if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "_rsModDataObjMeta:chlModDataObjMeta %s error stat=%d",
+	          tmpDataObjInfo->objPath, status);
+	    }
+	    tmpDataObjInfo = tmpDataObjInfo->next;
+	}
+	freeAllDataObjInfo (dataObjInfoHead);
+    } else {
+        status = chlModDataObjMeta (rsComm, dataObjInfo, regParam);
+    }
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
     if (status >= 0) {
@@ -88,7 +113,7 @@ _rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)
           i = rei2.status;
         }
         rodsLog (LOG_ERROR,
-                 "rsGeneralAdmin:acPostProcForModifyDataObjMeta error stat=%d",i);
+           "_rsModDataObjMeta:acPostProcForModifyDataObjMeta error stat=%d",i);
         return i;
       }
     }
