@@ -275,3 +275,11 @@ HPSS_HDR_DIR=/opt/hpss/include
 ADDR_64BITS=
 endif
 
+# AMAZON_S3 - Define whether AMAZON S3 is supported on this server.
+# AMAZON_S3=1
+
+ifdef AMAZON_S3
+S3_LIB_DIR=/data1/mwan/s3/libs3-1.4/build/lib
+S3_HDR_DIR=/data1/mwan/s3/libs3-1.4/build/include
+endif
+
