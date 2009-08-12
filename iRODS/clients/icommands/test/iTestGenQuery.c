@@ -230,6 +230,50 @@ doTest3(rcComm_t *Conn,
 }
 
 int
+doTest4(rcComm_t *Conn,
+	 char *userName, char *userDN) {
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut;
+    int status;
+    char condition1[MAX_NAME_LEN];
+    char condition2[MAX_NAME_LEN];
+
+    printf("dotest4\n");
+    rodsLogSqlReq(1);
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp));
+
+    snprintf (condition1, MAX_NAME_LEN, "='%s'", userDN);
+    addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
+    printf("condition1 %s\n", condition1);
+
+    if (strlen(userName) > 0) {
+       snprintf (condition2, MAX_NAME_LEN, "='%s'", 
+		 userName);
+       addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, condition2);
+       printf("adding condition2 %s\n", condition2);
+    }
+
+    addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
+    addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
+
+    genQueryInp.maxRows = 2;
+
+    status =  rcGenQuery (Conn, &genQueryInp, &genQueryOut); 
+
+    printf("GenQuery status=%d\n",status);
+
+    if (status == 0) {
+       printf("genQueryOut->totalRowCount=%d\n", genQueryOut->totalRowCount);
+
+       printGenQOut(genQueryOut);
+    }
+
+    return(0);
+}
+
+int
 main(int argc, char **argv)
 {
     int ix, status;
@@ -307,6 +351,9 @@ main(int argc, char **argv)
        if (strcmp(argv[1],"resc")==0) {
 	  doTest3(Conn, "rods", "tempZone", argv[2], argv[3], argv[4]);
        }
+       if (strcmp(argv[1],"DN")==0) {
+	  doTest4(Conn, argv[2], argv[3]);
+       }
     }
 
     rcDisconnect(Conn);
@@ -317,12 +364,14 @@ main(int argc, char **argv)
 
 void usage (char *prog)
 {
-   fprintf(stderr, "Changes your irods password and, like iinit, stores your new iRODS\n");
-   fprintf(stderr, "password in a scrambled form to be used automatically by the icommands.\n");
-   fprintf(stderr, "Prompts for your old and new passwords.\n");
-   fprintf(stderr, "Usage: %s [-hvVl]\n", prog);
-   fprintf(stderr, " -v  verbose\n");
-   fprintf(stderr, " -V  Very verbose\n");
-   fprintf(stderr, " -h  this help\n");
-   printReleaseInfo("ipasswd");
+   char *msgs[]={
+      "Test program for developers debug/test",
+      "See source code",
+      ""};
+   int i;
+   for (i=0;;i++) {
+      if (strlen(msgs[i])==0) break;
+      printf("%s\n",msgs[i]);
+   }
+   printReleaseInfo("iTestGenQuery.c");
 }

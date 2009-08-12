@@ -17,6 +17,7 @@ drop table R_OBJT_DENY_ACCESS;
 drop table R_OBJT_AUDIT;
 drop table R_SERVER_LOAD;
 drop table R_SERVER_LOAD_DIGEST;
+drop table R_USER_AUTH;
 drop sequence R_ObjectId;
 drop sequence R_TokenId;
 drop index idx_zone_main1;

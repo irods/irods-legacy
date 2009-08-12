@@ -138,6 +138,8 @@ icatGeneralQuerySetup() {
 
   sTable( "r_server_load_digest", "r_server_load_digest", 0);
 
+  sTable( "r_user_auth", "r_user_auth", 0);
+
   /* Map the #define values to tables and columns */
 
   sColumn( COL_ZONE_ID, "r_zone_main", "zone_id");
@@ -152,11 +154,14 @@ icatGeneralQuerySetup() {
   sColumn( COL_USER_NAME, "r_user_main", "user_name");
   sColumn( COL_USER_TYPE, "r_user_main", "user_type_name");
   sColumn( COL_USER_ZONE, "r_user_main", "zone_name");
-  sColumn( COL_USER_DN,   "r_user_main", "user_distin_name");
   sColumn( COL_USER_INFO, "r_user_main", "user_info");
   sColumn( COL_USER_COMMENT,     "r_user_main", "r_comment");
   sColumn( COL_USER_CREATE_TIME, "r_user_main", "create_ts");
   sColumn( COL_USER_MODIFY_TIME, "r_user_main", "modify_ts");
+
+  sColumn( COL_USER_AUTH_ID, "r_user_auth", "user_id");
+  sColumn( COL_USER_DN,   "r_user_auth", "user_auth_name");
+
 
   sColumn( COL_R_RESC_ID, "r_resc_main", "resc_id");
   sColumn( COL_R_RESC_NAME, "r_resc_main", "resc_name");
@@ -381,6 +386,7 @@ icatGeneralQuerySetup() {
   sFklink("r_rule_au_user_group", "r_rule_au_user_main", "r_rule_au_user_group.user_id = r_rule_au_user_main.user_id");
   sFklink("r_met2_au_user_group", "r_met2_au_user_main", "r_met2_au_user_group.user_id = r_met2_au_user_main.user_id");
   sFklink("r_user_main", "r_user_password", "r_user_main.user_id = r_user_password.user_id");
+  sFklink("r_user_main", "r_user_auth", "r_user_main.user_id = r_user_auth.user_id");
   sFklink("r_user_main", "r_user_session_key", "r_user_main.user_id = r_user_session_key.user_id");
   sFklink("r_user_main", "r_data_access", "r_user_main.user_id = r_data_access.user_id");
   sFklink("r_user_main", "r_user_group", "r_user_main.user_id = r_user_group.user_id");

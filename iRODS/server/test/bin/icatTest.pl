@@ -394,8 +394,12 @@ $UA = $U2 . "a";
 runCmd(2, "iadmin moduser $U2 type badUserType");
 runCmd(0, "iadmin moduser $U2 type rodsadmin");
 runCmd(0, "iadmin moduser $U2 type rodsuser");
-runCmd(0, "iadmin moduser $U2 DN asdfsadfsadf/dfadsf/dadf/d/");
-runCmd(0, "iadmin moduser $U2 DN ''");
+runCmd(0, "iadmin aua $U2 asdfsadfsadf/dfadsf/dadf/d/");
+runCmd(0, "iadmin lua $U2");
+runCmd(0, "iadmin lua $U2#$myZone");
+runCmd(0, "iadmin lua");
+runCmd(0, "iadmin luan asdfsadfsadf/dfadsf/dadf/d/");
+runCmd(0, "iadmin rua $U2 asdfsadfsadf/dfadsf/dadf/d/");
 #runCmd(0, "iadmin moduser $U2 zone badZone");
 
 runCmd(0, "iadmin moduser $U2 zone $myZone");

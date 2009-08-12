@@ -111,11 +111,14 @@ primary ordering column.
 #define COL_USER_NAME 202
 #define COL_USER_TYPE 203
 #define COL_USER_ZONE 204
-#define COL_USER_DN 205
 #define COL_USER_INFO 206
 #define COL_USER_COMMENT 207
 #define COL_USER_CREATE_TIME 208
 #define COL_USER_MODIFY_TIME 209
+
+/* R_USER_AUTH (for GSI/KRB) */
+#define COL_USER_AUTH_ID 1600
+#define COL_USER_DN      1601
 
 /* R_RESC_MAIN: */
 #define COL_R_RESC_ID 301

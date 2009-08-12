@@ -341,6 +341,48 @@ showUser(char *user)
 }
 
 int
+showUserAuth(char *user, char *zone)
+{
+   simpleQueryInp_t simpleQueryInp;
+
+   memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
+   simpleQueryInp.control = 0;
+   simpleQueryInp.form = 1;
+   if (*user!='\0') {
+      if (*zone=='\0') {
+	 simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=?";
+	 simpleQueryInp.arg1 = user;
+      }
+      else {
+	 simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=? and r_user_main.zone_name=?";
+	 simpleQueryInp.arg1 = user;
+	 simpleQueryInp.arg2 = zone;
+      }
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   else {
+      simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id";
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   return (doSimpleQuery(simpleQueryInp));
+}
+
+int
+showUserAuthName(char *authName)
+
+{
+   simpleQueryInp_t simpleQueryInp;
+
+   memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
+   simpleQueryInp.control = 0;
+   simpleQueryInp.form = 1;
+   simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_auth.user_auth_name=?";
+   simpleQueryInp.arg1 = authName;
+   simpleQueryInp.maxBufSize = 1024;
+   return (doSimpleQuery(simpleQueryInp));
+}
+
+int
 showUserOfZone(char *zone, char *user)
 {
    simpleQueryInp_t simpleQueryInp;
@@ -669,6 +711,33 @@ doCommand(char *cmdToken[]) {
       }
       generalAdmin("modify", "user", cmdToken[1], cmdToken[2],
 		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"aua") == 0) {
+      generalAdmin("modify", "user", cmdToken[1], "addAuth", 
+		  cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5]);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"rua") == 0) {
+      generalAdmin("modify", "user", cmdToken[1], "rmAuth", 
+		  cmdToken[2], cmdToken[3], cmdToken[4], cmdToken[5]);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"lua") == 0) {
+      char userName[NAME_LEN];
+      char zoneName[NAME_LEN];
+      int status;
+      status = parseUserName(cmdToken[1], userName, zoneName);
+      if (zoneName[0]!='\0') {
+	 showUserAuth(userName, zoneName);
+      }
+      else {
+	 showUserAuth(cmdToken[1], "");
+      }
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"luan") == 0) {
+      showUserAuthName(cmdToken[1]);
       return(0);
    }
    if (strcmp(cmdToken[0],"mkdir") == 0) {
@@ -1033,6 +1102,8 @@ void usageMain()
 "Single or double quotes can be used to enter items with blanks.",
 "Commands are:",
 " lu [name[#Zone]] (list user info; details if name entered)",
+" lua [name[#Zone]] (list user authentication (GSI/Kerberos Names, if any))",
+" luan Name (list users associated with auth name (GSI/Kerberos)",
 " lt [name] [subname] (list token info)",
 " lr [name] (list resource info)",
 " ls [name] (list directory: subdirs and files)",
@@ -1041,8 +1112,10 @@ void usageMain()
 " lgd name  (list group details)",
 " lrg [name] (list resource group info)",
 " lf DataId (list file details; DataId is the number (from ls))",
-" mkuser Name[#Zone] Type [DN] (make user)",
-" moduser Name[#Zone] [ type | zone | DN | comment | info | password ] newValue",
+" mkuser Name[#Zone] Type (make user)",
+" moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
+" aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
+" rua Name[#Zone] Auth-Name (remove user authentication name (GSI/Kerberos)",
 " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
 " mkdir Name [username] (make directory(collection))",
 " rmdir Name (remove directory) ",
@@ -1082,6 +1155,22 @@ usage(char *subOpt)
 "Usernames can include the zone preceeded by #, for example rods#tempZone.",
 "Users are listed in the userName#ZoneName form.",
 "Also see the luz and lz and the iuserinfo command.",
+""};
+   char *luaMsgs[]={
+"lua [name[#Zone]] (list user authentication (GSI/Kerberos Names), if any)",
+"list user authentication-names for one or all users",
+"Just 'lua' will list all the GSI/Kerberos names currently defined",
+"for all users along with the associated iRODS user names.",
+"If you include a user name, then the auth-names for that user are listed.",
+"Usernames can include the zone preceeded by #, for example rods#tempZone.",
+"Also see the 'luan', 'aua' and 'rua' and the 'iuserinfo' command.",
+""};
+   char *luanMsgs[]={
+"luan Name (list users associated with auth name (GSI/Kerberos)",
+"list the user(s) associated with a give Authentication-Name  ",
+"For example:",
+"  luan '/C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder'",
+"will list the iRODS user(s) with the GSI DN, if any.",
 ""};
    char *luzMsgs[]={
 "luz Zone [User] (list user info for a Zone; details if name entered)",
@@ -1141,16 +1230,15 @@ usage(char *subOpt)
 
 ""};
    char *mkuserMsgs[]={
-" mkuser Name[#Zone] Type [DN] (make user)",
+" mkuser Name[#Zone] Type (make user)",
 "Create a new iRODS user in the ICAT database",
 " ",
 "Name is the user name to create",
 "Type is the user type (see 'lt user_type' for a list)",
 "Zone is the user's zone (for remote-zone users)",
-"DN is the Distinguished Name for GSI authentication (optional)",
-"DN can also be the user principal name for Kerberos authentication (optional)",
 " ",
-"Tip: Use moduser to set a password, DN or other attributes of the user account.",
+"Tip: Use moduser to set a password or other attributes, "
+"     use 'aua' to add a user auth name (GSI DN or Kerberos Principal name)",
 ""};
 
    char *atrgMsgs[]={
@@ -1178,20 +1266,40 @@ usage(char *subOpt)
 
 
    char *moduserMsgs[]={
-" moduser Name[#Zone] [ type | zone | DN | comment | info | password ] newValue",
+" moduser Name[#Zone] [ type | zone | comment | info | password ] newValue",
 "Modifies a field of an existing user definition.",
-"For GSI authentication, the DN can also be entered via mkuser",
-"(DN is also the principal name used for Kerberos authentication).",
 "For password authentication, use moduser to set the password.",
 "(The password is transferred in a scrambled form to be more secure.)",
 "Long forms of the field names may also be used:",
-"user_name, user_type_name, zone_name, user_distin_name, user_info, or ",
+"user_name, user_type_name, zone_name, user_info, or ",
 "r_comment",
 "These are the names listed by 'lu' (and are the database table column names).",
 "Modifying the user's name (user_name) is not allowed; instead remove the user",
-"and create a new one.  rmuser/mkuser will remove (if empty) and create the needed",
-"collections too.",
+"and create a new one.  rmuser/mkuser will remove (if empty) and create the",
+"needed collections too.",
+"For GSI or Kerberos authentication, use 'aua' to add one or more",
+"user auth names (GSI Distinquished Name (DN) or Kerberos principal name).",
 ""};
+
+   char *auaMsgs[]={
+" aua Name[#Zone] Auth-Name (add user authentication-name (GSI/Kerberos)",
+"Add a user authentication name, a GSI  Distinquished Name (DN) or",
+"Kerberos Principal name, to an iRODS user.  Multiple DNs and/or Principal",
+"names can be associated with each user.",
+"This is used with Kerberos and/or GSI authentication, if enabled.",
+"For example:",
+"  aua rods /C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder",
+"Also see 'rua', 'lua', and 'luan'.",
+""};
+
+   char *ruaMsgs[]={
+" rua Name[#Zone] Auth-Name (remove user authentication-name (GSI/Kerberos)",
+"Remove a user authentication name, a GSI  Distinquished Name (DN) or",
+"Kerberos Principal name, from being associated with an iRODS user.",
+"These are used with Kerberos and/or GSI authentication, if enabled.",
+"Also see 'aua', 'lua', and 'luan'.",
+""};
+
    char *rmuserMsgs[]={
 " rmuser Name[#Zone] (remove user, where userName: name[@department][#zone])",
 " Remove an irods user.",
@@ -1348,9 +1456,11 @@ usage(char *subOpt)
       ""};
    */
 
-   char *subCmds[]={"lu", "luz", "lt", "lr", "ls", "lz",
+   char *subCmds[]={"lu", "lua", "luan", "luz", "lt", "lr",
+		    "ls", "lz",
 		    "lg", "lgd", "lrg", "lf", "mkuser",
-		    "moduser", "rmuser", "mkdir", "rmdir", "mkresc",
+		    "moduser", "aua", "rua",
+		    "rmuser", "mkdir", "rmdir", "mkresc",
 		    "modresc", "rmresc", 
 		    "mkzone", "modzone", "rmzone",
 		    "mkgroup", "rmgroup", "atg",
@@ -1358,9 +1468,11 @@ usage(char *subOpt)
 		    "pv", "ctime", "help", "h",
 		    ""};
 
-   char **pMsgs[]={ luMsgs, luzMsgs, ltMsgs, lrMsgs, lsMsgs, lzMsgs, 
+   char **pMsgs[]={ luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs, 
+		    lsMsgs, lzMsgs, 
 		    lgMsgs, lgdMsgs, lrgMsgs, lfMsgs, mkuserMsgs, 
-		    moduserMsgs, rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs, 
+		    moduserMsgs, auaMsgs, ruaMsgs,
+		    rmuserMsgs, mkdirMsgs, rmdirMsgs, mkrescMsgs, 
 		    modrescMsgs, rmrescMsgs, 
 		    mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
 		    mkgroupMsgs, rmgroupMsgs,atgMsgs, 

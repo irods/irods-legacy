@@ -72,10 +72,11 @@ showUser(char *name)
    char v1[BIG_STR];
    int i, status;
    int printCount;
-   char *columnNames[]={"name", "id", "type", "zone", "dn", "info", "comment",
+   char *columnNames[]={"name", "id", "type", "zone", "info", "comment",
                         "create time", "modify time"};
 
    char *columnNames2[]={"member of group"};
+   char *columnNames3[]={"GSI DN or Kerberos Principal Name"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
    printCount=0;
@@ -84,7 +85,6 @@ showUser(char *name)
    i1a[i++]=COL_USER_ID;
    i1a[i++]=COL_USER_TYPE;
    i1a[i++]=COL_USER_ZONE;
-   i1a[i++]=COL_USER_DN;
    i1a[i++]=COL_USER_INFO;
    i1a[i++]=COL_USER_COMMENT;
    i1a[i++]=COL_USER_CREATE_TIME;
@@ -121,6 +121,40 @@ showUser(char *name)
    }
 
    printCount+= printGenQueryResults(Conn, status, genQueryOut, columnNames);
+
+
+   printCount=0;
+   i1a[0]=COL_USER_DN;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 1;
+
+   i2a[0]=COL_USER_NAME;
+   sprintf(v1,"='%s'",name);
+   condVal[0]=v1;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.condInput.len=0;
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+   }
+   else {
+      printCount+= printGenQueryResults(Conn, status, genQueryOut,
+					columnNames3);
+
+      while (status==0 && genQueryOut->continueInx > 0) {
+	 genQueryInp.continueInx=genQueryOut->continueInx;
+	 status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+	 printCount+= printGenQueryResults(Conn, status, genQueryOut, 
+					   columnNames3);
+      }
+   }
 
    printCount=0;
    i1a[0]=COL_USER_GROUP_NAME;

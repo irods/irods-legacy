@@ -76,7 +76,6 @@ create table R_USER_MAIN
    user_name           varchar(250) not null,
    user_type_name      varchar(250) not null,
    zone_name           varchar(250) not null,
-   user_distin_name    varchar(1000),
    user_info           varchar(1000),
    r_comment           varchar(1000),
    create_ts           varchar(32),
@@ -301,6 +300,17 @@ create table R_SERVER_LOAD_DIGEST
     resc_name   varchar(250) not null,
     load_factor INTEGER,
     create_ts varchar(32)
+);
+
+/*
+ Optional user authentication information,
+ GSI DN(s) or Kerberos Principal name(s)
+*/
+create table R_USER_AUTH
+(
+   user_id             bigint not null,
+   user_auth_name      varchar(1000),
+   create_ts varchar(32)
 );
 
 

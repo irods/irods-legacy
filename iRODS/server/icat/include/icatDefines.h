@@ -84,10 +84,13 @@
 #define AU_MOD_USER_NAME                       2070
 #define AU_MOD_USER_TYPE                       2071
 #define AU_MOD_USER_ZONE                       2072
-#define AU_MOD_USER_DN                         2073
+#define AU_MOD_USER_DN                         2073  /* no longer used */
 #define AU_MOD_USER_INFO                       2074
 #define AU_MOD_USER_COMMENT                    2075
 #define AU_MOD_USER_PASSWORD                   2076
+
+#define AU_ADD_USER_AUTH_NAME                  2077
+#define AU_DELETE_USER_AUTH_NAME               2078
 
 #define AU_MOD_GROUP                           2080
 #define AU_MOD_RESC                            2090

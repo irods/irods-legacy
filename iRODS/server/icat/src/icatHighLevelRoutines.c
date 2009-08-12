@@ -1644,6 +1644,25 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       return(status);
    }
 
+   /* Remove any r_user_auth rows for this user */
+   cllBindVars[cllBindVarCount++]=iValStr;
+   if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 4");
+   status = cmlExecuteNoAnswerSql(
+	    "delete from r_user_auth where user_id=?",
+	    &icss);
+   if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      int i;
+      char errMsg[MAX_NAME_LEN+40];
+      rodsLog(LOG_NOTICE,
+	      "chlDelUserRE delete user_auth entries failure %d",
+	      status);
+      snprintf(errMsg, MAX_NAME_LEN+40, "Error removing user_auth entries");
+      i = addRErrorMsg (&rsComm->rError, 0, errMsg);
+      _rollback("chlDelUserRE");
+      return(status);
+   }
+
+
    /* Audit */
    snprintf(userStr, 190, "%s#%s",
 	    userName2, zoneToUse);
@@ -2672,6 +2691,10 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 "select * from r_user_main where user_name=? and zone_name=?",
 "select user_name from r_user_main where zone_name=? and user_type_name != 'rodsgroup'",
 "select zone_name from R_ZONE_MAIN where zone_type_name=?",
+"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=?",
+"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=? and r_user_main.zone_name=?",
+"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id",
+"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_auth.user_auth_name=?",
 ""
    };
 
@@ -2716,6 +2739,10 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    if (i==16 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 17");
    if (i==17 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 18");
    if (i==18 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 19");
+   if (i==19 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 20");
+   if (i==20 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 21");
+   if (i==21 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 22");
+   if (i==22 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 23");
 
    outBuf[0]='\0';
    needToGet=1;
@@ -3485,7 +3512,8 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    char form2[]="update r_user_main set %s=%s, modify_ts=? where user_name=? and zone_name=?";
    char form3[]="update r_user_password set rcat_password=?, modify_ts=? where user_id=?";
    char form4[]="insert into r_user_password (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)";
-
+   char form5[]="insert into r_user_auth (user_id, user_auth_name, create_ts) values ((select user_id from r_user_main where user_name=? and zone_name=?), ?, ?)";
+   char form6[]="delete from r_user_auth where user_id = (select user_id from r_user_main where user_name=? and zone_name=?) and user_auth_name = ?";
    char myTime[50];
    rodsLong_t iVal;
 
@@ -3585,18 +3613,28 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       strncpy(auditComment, newValue, 100);
       strncpy(auditUserName,userName,100);
    }
-   if (strcmp(option,"DN")==0 ||
-       strcmp(option,"user_distin_name")==0) {
-      snprintf(tSQL, MAX_SQL_SIZE, form1,
-	       "user_distin_name");
-      cllBindVars[cllBindVarCount++]=newValue;
-      cllBindVars[cllBindVarCount++]=myTime;
+   if (strcmp(option,"addAuth")==0) {
+      opType=4;
+      rstrcpy(tSQL, form5, MAX_SQL_SIZE);
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneName;
+      cllBindVars[cllBindVarCount++]=newValue;
+      cllBindVars[cllBindVarCount++]=myTime;
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 4");
-      auditId = AU_MOD_USER_DN;
+      auditId = AU_ADD_USER_AUTH_NAME;
       strncpy(auditComment, newValue, 100);
    }
+   if (strcmp(option,"rmAuth")==0) {
+      rstrcpy(tSQL, form6, MAX_SQL_SIZE);
+      cllBindVars[cllBindVarCount++]=userName2;
+      cllBindVars[cllBindVarCount++]=zoneName;
+      cllBindVars[cllBindVarCount++]=newValue;
+      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 5");
+      auditId = AU_DELETE_USER_AUTH_NAME;
+      strncpy(auditComment, newValue, 100);
+
+   }
+
    if (strcmp(option,"info")==0 ||
        strcmp(option,"user_info")==0) {
       snprintf(tSQL, MAX_SQL_SIZE, form1,
@@ -3605,7 +3643,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneName;
-      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 5");
+      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 6");
       auditId = AU_MOD_USER_INFO;
       strncpy(auditComment, newValue, 100);
    }
@@ -3617,7 +3655,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=userName2;
       cllBindVars[cllBindVarCount++]=zoneName;
-      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 6");
+      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 7");
       auditId = AU_MOD_USER_COMMENT;
       strncpy(auditComment, newValue, 100);
    }
@@ -3629,7 +3667,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       icatScramble(decoded); 
 
       if (i) return(i);
-      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 7");
+      if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 8");
       i = cmlGetStringValueFromSql(
 	       "select r_user_password.user_id from r_user_password, r_user_main where r_user_main.user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id",
 	       userIdStr, MAX_NAME_LEN, userName2, zoneName, 0, &icss);
@@ -3639,7 +3677,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 cllBindVars[cllBindVarCount++]=decoded;
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 cllBindVars[cllBindVarCount++]=userIdStr;
-	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 8");
+	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 9");
       }
       else {
 	 opType=4;
@@ -3650,7 +3688,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 cllBindVars[cllBindVarCount++]="9999-12-31-23.59.01";
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 cllBindVars[cllBindVarCount++]=myTime;
-	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 9");
+	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 10");
       }
       auditId = AU_MOD_USER_PASSWORD;
    }
@@ -3665,7 +3703,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    if (status != 0 ) {  /* error */
       if (opType==1) { /* doing a type change, check if user_type problem */
 	 int status2;
-	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 10");
+	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 11");
 	 status2 = cmlGetIntegerValueFromSql(
              "select token_name from r_tokn_main where token_namespace='user_type' and token_name=?", 
 	     &iVal, newValue, 0, 0, 0, 0, &icss);
@@ -3681,10 +3719,11 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	    return(CAT_INVALID_USER_TYPE);
 	 }
       }
-      if (opType==4) { /* trying to insert password */
+      if (opType==4) { /* trying to insert password or auth-name */
 	 /* check if user exists */
 	 int status2;
-	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 11");
+	 _rollback("chlModUser");
+	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 12");
 	 status2 = cmlGetIntegerValueFromSql(
            "select user_id from r_user_main where user_name=? and zone_name=?",
 	   &iVal, userName2, zoneName, 0, 0, 0, &icss);
@@ -4388,13 +4427,12 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    cllBindVars[cllBindVarCount++]=userName2;
    cllBindVars[cllBindVarCount++]=userTypeTokenName;
    cllBindVars[cllBindVarCount++]=userZone;
-   cllBindVars[cllBindVarCount++]=userInfo->authInfo.authStr;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 3");
    status =  cmlExecuteNoAnswerSql(
-             "insert into r_user_main (user_id, user_name, user_type_name, zone_name, user_distin_name, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?)",
+             "insert into r_user_main (user_id, user_name, user_type_name, zone_name, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
 	     &icss);
 
    if (status) {
@@ -4428,6 +4466,23 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 	      "chlRegUserRE insert into r_user_group failure %d",status);
       _rollback("chlRegUserRE");
       return(status);
+   }
+
+
+/*
+  The case where the caller is specifying an authstring is used in
+  some specialized cases.  Using the new table (Aug 12, 2009), this
+  is now set via the chlModUser call below.  This is untested tho.
+ */
+   if (strlen(userInfo->authInfo.authStr) > 0) {
+      status = chlModUser(rsComm, userInfo->userName, "addAuth",
+			  userInfo->authInfo.authStr);
+      if (status) {
+	 rodsLog(LOG_NOTICE,
+		 "chlRegUserRE chlModUser insert auth failure %d",status);
+	 _rollback("chlRegUserRE");
+	 return(status);
+      }
    }
 
    /* Audit */
