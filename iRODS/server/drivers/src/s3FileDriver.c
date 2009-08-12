@@ -1,7 +1,7 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
-/* s3FileDriver.c - The HPSS file driver
+/* s3FileDriver.c - The S3 file driver
  */
 
 
@@ -178,7 +178,7 @@ void *callbackData)
 }
 
 int 
-putObjectDataCallback(int bufferSize, char *buffer, void *callbackData)
+putObjectDataCallback (int bufferSize, char *buffer, void *callbackData)
 {
     put_object_callback_data *data =
         (put_object_callback_data *) callbackData;
@@ -194,92 +194,122 @@ putObjectDataCallback(int bufferSize, char *buffer, void *callbackData)
 }
 
 int 
-putFileIntoS3(char *fileName, char *s3ObjName)
+putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 {
 
-  S3Status status;
-  int intstatus;
-  char *key;
-  struct stat statBuf;
-  uint64_t fileSize;
-  char *accessKeyId;
-  char *secretAccessKey;
-  put_object_callback_data data;
+    S3Status status;
+    char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
+    s3Auth_t s3Auth;
+    put_object_callback_data data;
 
 
-  accessKeyId = getenv("S3_ACCESS_KEY_ID");
-  if (accessKeyId == NULL) {
-    printf("S3_ACCESS_KEY_ID environment variable is undefined");
-    return(-1);
-  }
+    bzero (&data, sizeof (data));
 
-  secretAccessKey = getenv("S3_SECRET_ACCESS_KEY");
-  if (secretAccessKey == NULL) {
-    printf("S3_SECRET_ACCESS_KEY environment variable is undefined");
-    return(-1);
-  }
-
-  bzero (&data, sizeof (data));
-
-  key = (char *) strchr(s3ObjName, '/');
-  if (key == NULL) {
-    printf("S3 Key for the Object Not defined\n");
-    return(-1);
-  }
-  *key = '\0';
-  key++;
-  if (stat(fileName, &statBuf) == -1) {
-    printf("Unknown input file");
-    return(-1);
-  }
-  fileSize = statBuf.st_size;
+    if ((status = parseS3Path (s3ObjName, myBucket, key)) < 0) return status;
 
     data.fd = open (fileName, O_RDONLY, 0);
     if (data.fd < 0) {
-        data.status = UNIX_FILE_OPEN_ERR - errno;
+        status = UNIX_FILE_OPEN_ERR - errno;
         rodsLog (LOG_ERROR,
          "putFileIntoS3: open error for fileName %s, status = %d",
-         fileName, data.status);
-        return -1;
+         fileName, status);
+        return status;
     }
 
-  S3BucketContext bucketContext =
-    {s3ObjName,  1, 0, accessKeyId, secretAccessKey};
-  S3PutObjectHandler putObjectHandler =
-    {
+    S3BucketContext bucketContext =
+      {myBucket,  1, 0, s3Auth.accessKeyId, s3Auth.secretAccessKey};
+    S3PutObjectHandler putObjectHandler = {
       { &responsePropertiesCallback, &responseCompleteCallback },
       &putObjectDataCallback
     };
 
 
-  if ((status = myS3Init ()) != S3StatusOK) return (status);
+    if ((status = myS3Init (&s3Auth)) != S3StatusOK) return (status);
 
-  S3_put_object(&bucketContext, key, fileSize, NULL, 0,
+    S3_put_object(&bucketContext, key, fileSize, NULL, 0,
                 &putObjectHandler, &data);
-  if (data.status != S3StatusOK) {
-        intstatus = myS3Error (data.status, S3_PUT_ERROR);
-  } else {
-	intstatus = 0;
-  }
-  /* S3_deinitialize(); */
+    if (data.status != S3StatusOK) {
+        status = myS3Error (data.status, S3_PUT_ERROR);
+    }
+    /* S3_deinitialize(); */
 
-  close (data.fd);
-  return (intstatus);
+    close (data.fd);
+    return (status);
 }
 
 int
-myS3Init ()
+myS3Init (s3Auth_t *s3Auth)
 {
-    int status;
+    int status = -1;
     if (S3Initialized) return 0;
+
+    S3Initialized = 1;
+
+    if ((s3Auth->accessKeyId = getenv("S3_ACCESS_KEY_ID")) != NULL) {
+        if ((s3Auth->secretAccessKey = getenv("S3_SECRET_ACCESS_KEY")) 
+	  != NULL) {
+	    status = 0;
+	}
+    }
+
+    if (status < 0) {
+        if ((status = readS3AuthInfo (s3Auth)) < 0) {
+            rodsLog (LOG_ERROR,
+              "initHpssAuth: readHpssAuthInfo error. status = %d", status);
+            return status;
+        }
+    }
 
     if ((status = S3_initialize ("s3", S3_INIT_ALL)) != S3StatusOK) {
 	status = myS3Error (status, S3_INIT_ERROR);
-    } else {
-	S3Initialized = 1;
     }
 
     return status;
+}
+
+int
+readS3AuthInfo (s3Auth_t *s3Auth)
+{
+    FILE *fptr;
+    char s3AuthFile[MAX_NAME_LEN];
+    char inbuf[MAX_NAME_LEN];
+    int lineLen, bytesCopied;
+    int linecnt = 0;
+
+    snprintf (s3AuthFile, MAX_NAME_LEN, "%-s/%-s",
+      getConfigDir(), S3_AUTH_FILE);
+
+    fptr = fopen (s3AuthFile, "r");
+
+    if (fptr == NULL) {
+        rodsLog (LOG_ERROR,
+          "readS3AuthInfo: open S3_AUTH_FILE file %s err. ernro = %d",
+          s3AuthFile, errno);
+        return (SYS_CONFIG_FILE_ERR);
+    }
+    while ((lineLen = getLine (fptr, inbuf, MAX_NAME_LEN)) > 0) {
+        char *inPtr = inbuf;
+        if (linecnt == 0) {
+            while ((bytesCopied = getStrInBuf (&inPtr, 
+	      s3Auth->accessKeyId, &lineLen, LONG_NAME_LEN)) > 0) {
+                linecnt ++;
+                break;
+            }
+        } else if (linecnt == 1) {
+            while ((bytesCopied = getStrInBuf (&inPtr, 
+	      s3Auth->secretAccessKey, &lineLen, LONG_NAME_LEN)) > 0) {
+                linecnt ++;
+                break;
+            }
+        }
+    }
+    if (linecnt != 2)  {
+        rodsLog (LOG_ERROR,
+          "readS3AuthInfo: read %d lines in S3_AUTH_FILE file",
+          linecnt);
+        return (SYS_CONFIG_FILE_ERR);
+    }
+    return 0;
 }
 
 int
@@ -291,3 +321,31 @@ myS3Error (int status, int irodsErrorCode)
          "myS3Error: error:%s", S3_get_status_name(status));
     return (irodsErrorCode - status);
 }
+
+int
+parseS3Path (char *s3ObjName, char *bucket, char *key)
+{
+    char tmpPath[MAX_NAME_LEN];
+    char *tmpBucket, *tmpKey;
+
+    rstrcpy (tmpPath, s3ObjName, MAX_NAME_LEN);
+    /* skip the leading '/' */
+    if (tmpPath[0] == '/') {
+        tmpBucket = tmpPath + 1;
+    } else {
+        tmpBucket = tmpPath;
+    }
+    tmpKey = (char *) strchr (tmpBucket, '/');
+    if (tmpKey == NULL) {
+        rodsLog (LOG_ERROR,
+         "putFileIntoS3:  problem parsing  %s", s3ObjName);
+        return SYS_INVALID_FILE_PATH;
+    }
+    *tmpKey = '\0';
+    tmpKey++;
+    rstrcpy (bucket, tmpBucket, MAX_NAME_LEN);
+    rstrcpy (key, tmpKey, MAX_NAME_LEN);
+
+    return 0;
+}
+

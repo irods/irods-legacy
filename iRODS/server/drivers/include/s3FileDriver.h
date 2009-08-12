@@ -53,12 +53,19 @@
 #include "msParam.h"
 #include "libs3.h"
 
+#define S3_AUTH_FILE "s3Auth"
+
 typedef struct put_object_callback_data
 {
     int fd;
     rodsLong_t contentLength, originalContentLength;
     int status;
 } put_object_callback_data;
+
+typedef struct S3Auth {
+  char *accessKeyId;
+  char *secretAccessKey;
+} s3Auth_t;
 
 int
 s3FileUnlink (rsComm_t *rsComm, char *filename);
@@ -91,9 +98,14 @@ void *callbackData);
 int 
 putObjectDataCallback(int bufferSize, char *buffer, void *callbackData);
 int
-putFileIntoS3(char *fileName, char *s3ObjName);
+putFileIntoS3(char *fileName, char *s3ObjName, rodsLong_t fileSize);
 int
-myS3Init ();
+myS3Init (s3Auth_t *s3Auth);
+int
+readS3AuthInfo (s3Auth_t *s3Auth);
 int
 myS3Error (int status, int irodsErrorCode);
+int
+parseS3Path (char *s3ObjName, char *bucket, char *key);
+
 #endif	/* S3_FILE_DRIVER_H */
