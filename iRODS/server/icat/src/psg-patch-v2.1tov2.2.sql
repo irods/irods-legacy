@@ -13,3 +13,4 @@ insert into R_USER_AUTH ( user_id, user_auth_name ) select user_id, user_distin_
 
 alter table R_USER_MAIN drop column user_distin_name;
 
+insert into R_TOKN_MAIN values ('data_type',1694,'tar bundle','','','','','1170000000','1170000000');
