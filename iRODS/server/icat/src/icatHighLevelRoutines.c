@@ -410,13 +410,18 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    whereValues[0]=idVal;
    numConditions=1;
 
-   /* up here since this is usually called to modify the metadata of a
-    * single repl */
-   j = numConditions;
-   whereColsAndConds[j]="data_repl_num=";
-   snprintf(replNum1, MAX_NAME_LEN, "%d", dataObjInfo->replNum);
-   whereValues[j]=replNum1;
-   numConditions++;
+   /* This is up here since this is usually called to modify the
+    * metadata of a single repl.  If ALL_KW is included, then apply
+    * this change to all replicas (by not restricting the update to
+    * only one).
+    */
+   if (getValByKey(regParam, ALL_KW) == NULL) { 
+      j = numConditions;
+      whereColsAndConds[j]="data_repl_num=";
+      snprintf(replNum1, MAX_NAME_LEN, "%d", dataObjInfo->replNum);
+      whereValues[j]=replNum1;
+      numConditions++;
+   }
 
    mode =0;
    if (getValByKey(regParam, ALL_REPL_STATUS_KW)) { 
