@@ -45,6 +45,7 @@ insert into R_TOKN_MAIN values ('object_type',307,'token','','','','','117000000
 insert into R_TOKN_MAIN values ('resc_type',400,'unix file system','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',401,'hpss file system','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',402,'windows file system','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('resc_type',403,'s3','','','','','1250100000','1250100000');
 
 insert into R_TOKN_MAIN values ('resc_class',500,'cache','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',501,'archive','','','','','1170000000','1170000000');
@@ -180,7 +181,7 @@ insert into R_TOKN_MAIN values ('data_type',1690,'orb data','','','','','1170000
 insert into R_TOKN_MAIN values ('data_type',1691,'datascope data','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('data_type',1692,'DICOM header','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('data_type',1693,'XML Schema','text/xml','|.xsd|','','','1170000000','1170000000');
-insert into R_TOKN_MAIN values ('data_type',1694,'tar bundle','','','','','1170000000','1170000000');
+insert into R_TOKN_MAIN values ('data_type',1694,'tar bundle','','','','','1250100000','1250100000');
 
 
 insert into R_TOKN_MAIN values ('action_type',1800,'generic','','','','','1170000000','1170000000');
@@ -200,3 +201,5 @@ insert into R_COLL_MAIN values (9003,'/','/','rods','tempZone',0,'','','','','',
 
 insert into R_OBJT_ACCESS values (9003,9001,1130,'1170000000','1170000000');
 insert into R_OBJT_ACCESS values (9003,9002,1200,'1170000000','1170000000');
+
+insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/tmp', '', '', '', '', '', '1250100000','1250100000');
