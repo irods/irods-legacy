@@ -55,17 +55,34 @@
 
 #define S3_AUTH_FILE "s3Auth"
 
-typedef struct put_object_callback_data
-{
-    int fd;
-    rodsLong_t contentLength, originalContentLength;
-    int status;
-} put_object_callback_data;
-
 typedef struct S3Auth {
   char *accessKeyId;
   char *secretAccessKey;
 } s3Auth_t;
+
+typedef struct put_object_callback_data
+{
+    FILE *fd;
+    rodsLong_t contentLength, originalContentLength;
+    int status;
+} put_object_callback_data;
+
+typedef struct s3Stat
+{
+    char key[MAX_NAME_LEN];
+    rodsLong_t size;
+    time_t lastModified;
+} s3Stat_t;
+
+typedef struct list_bucket_callback_data
+{
+    int isTruncated;
+    char nextMarker[1024];
+    int keyCount;
+    int allDetails;
+    s3Stat_t s3Stat;    /* should be a pointer if keyCount > 1 */
+    int status;
+} list_bucket_callback_data;
 
 int
 s3FileUnlink (rsComm_t *rsComm, char *filename);
@@ -100,12 +117,19 @@ putObjectDataCallback(int bufferSize, char *buffer, void *callbackData);
 int
 putFileIntoS3(char *fileName, char *s3ObjName, rodsLong_t fileSize);
 int
-myS3Init (s3Auth_t *s3Auth);
+myS3Init (void);
 int
-readS3AuthInfo (s3Auth_t *s3Auth);
+readS3AuthInfo (void);
 int
 myS3Error (int status, int irodsErrorCode);
 int
 parseS3Path (char *s3ObjName, char *bucket, char *key);
+int
+list_bucket(const char *bucketName, const char *prefix, const char *marker,
+const char *delimiter, int maxkeys, int allDetails, s3Stat_t *s3Stat);
+S3Status 
+listBucketCallback(int isTruncated, const char *nextMarker, int contentsCount,
+const S3ListBucketContent *contents, int commonPrefixesCount,
+const char **commonPrefixes, void *callbackData);
 
 #endif	/* S3_FILE_DRIVER_H */

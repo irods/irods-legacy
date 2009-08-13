@@ -9,6 +9,9 @@
 #include "rsGlobalExtern.h"
 
 static int S3Initialized = 0;
+s3Auth_t S3Auth;
+
+
 
 int
 s3FileUnlink (rsComm_t *rsComm, char *filename)
@@ -24,8 +27,32 @@ int
 s3FileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf)
 {
     int status;
-    
-    status = 0;
+    char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
+    s3Stat_t s3Stat;
+    int len;
+
+    len = strlen (filename);
+
+    bzero (statbuf, sizeof (struct stat));
+
+    if (filename[len - 1] == '/') {
+	/* a directory */
+	statbuf->st_mode = S_IFDIR;
+	return 0;
+    }
+	
+    if ((status = parseS3Path (filename, myBucket, key)) < 0) return status;
+    status = list_bucket (myBucket, key, NULL, NULL, 1, 1, &s3Stat);
+
+    if (status == 0) {
+	statbuf->st_mode = S_IFREG;
+	statbuf->st_nlink = 1;
+	statbuf->st_uid = getuid ();
+	statbuf->st_gid = getgid ();
+        statbuf->st_atime = statbuf->st_mtime = statbuf->st_ctime = 
+	s3Stat.lastModified;
+	statbuf->st_size = s3Stat.size;
+    }
 
     return (status);
 }
@@ -95,7 +122,7 @@ keyValPair_t *condInput)
 
 int
 s3SyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType, 
-int mode, int flags, char *filename,
+int mode, int flags, char *s3ObjName,
 char *cacheFilename,  rodsLong_t dataSize, keyValPair_t *condInput)
 {
     int status;
@@ -124,6 +151,8 @@ char *cacheFilename,  rodsLong_t dataSize, keyValPair_t *condInput)
         return SYS_COPY_LEN_ERR;
     }
     dataSize = statbuf.st_size;
+
+    status = putFileIntoS3 (cacheFilename, s3ObjName, dataSize);
 
     return status;
 }
@@ -187,7 +216,7 @@ putObjectDataCallback (int bufferSize, char *buffer, void *callbackData)
     if (data->contentLength) {
         int length = ((data->contentLength > (unsigned) bufferSize) ?
                       (unsigned) bufferSize : data->contentLength);
-        ret = read (data->fd, buffer, length);
+        ret = fread (buffer, 1, length, data->fd);
     }
     data->contentLength -= ret;
     return ret;
@@ -199,7 +228,6 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 
     S3Status status;
     char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
-    s3Auth_t s3Auth;
     put_object_callback_data data;
 
 
@@ -207,8 +235,8 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 
     if ((status = parseS3Path (s3ObjName, myBucket, key)) < 0) return status;
 
-    data.fd = open (fileName, O_RDONLY, 0);
-    if (data.fd < 0) {
+    data.fd = fopen (fileName, "r");
+    if (data.fd == NULL) {
         status = UNIX_FILE_OPEN_ERR - errno;
         rodsLog (LOG_ERROR,
          "putFileIntoS3: open error for fileName %s, status = %d",
@@ -216,15 +244,16 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
         return status;
     }
 
+    data.contentLength = data.originalContentLength = fileSize;
+
+    if ((status = myS3Init ()) != S3StatusOK) return (status);
+
     S3BucketContext bucketContext =
-      {myBucket,  1, 0, s3Auth.accessKeyId, s3Auth.secretAccessKey};
+      {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
     S3PutObjectHandler putObjectHandler = {
       { &responsePropertiesCallback, &responseCompleteCallback },
       &putObjectDataCallback
     };
-
-
-    if ((status = myS3Init (&s3Auth)) != S3StatusOK) return (status);
 
     S3_put_object(&bucketContext, key, fileSize, NULL, 0,
                 &putObjectHandler, &data);
@@ -233,27 +262,29 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
     }
     /* S3_deinitialize(); */
 
-    close (data.fd);
+    fclose (data.fd);
     return (status);
 }
 
 int
-myS3Init (s3Auth_t *s3Auth)
+myS3Init (void)
 {
     int status = -1;
     if (S3Initialized) return 0;
 
     S3Initialized = 1;
 
-    if ((s3Auth->accessKeyId = getenv("S3_ACCESS_KEY_ID")) != NULL) {
-        if ((s3Auth->secretAccessKey = getenv("S3_SECRET_ACCESS_KEY")) 
+    bzero (&S3Auth, sizeof (S3Auth));
+
+    if ((S3Auth.accessKeyId = getenv("S3_ACCESS_KEY_ID")) != NULL) {
+        if ((S3Auth.secretAccessKey = getenv("S3_SECRET_ACCESS_KEY")) 
 	  != NULL) {
 	    status = 0;
 	}
     }
 
     if (status < 0) {
-        if ((status = readS3AuthInfo (s3Auth)) < 0) {
+        if ((status = readS3AuthInfo ()) < 0) {
             rodsLog (LOG_ERROR,
               "initHpssAuth: readHpssAuthInfo error. status = %d", status);
             return status;
@@ -268,7 +299,7 @@ myS3Init (s3Auth_t *s3Auth)
 }
 
 int
-readS3AuthInfo (s3Auth_t *s3Auth)
+readS3AuthInfo (void)
 {
     FILE *fptr;
     char s3AuthFile[MAX_NAME_LEN];
@@ -291,13 +322,13 @@ readS3AuthInfo (s3Auth_t *s3Auth)
         char *inPtr = inbuf;
         if (linecnt == 0) {
             while ((bytesCopied = getStrInBuf (&inPtr, 
-	      s3Auth->accessKeyId, &lineLen, LONG_NAME_LEN)) > 0) {
+	      S3Auth.accessKeyId, &lineLen, LONG_NAME_LEN)) > 0) {
                 linecnt ++;
                 break;
             }
         } else if (linecnt == 1) {
             while ((bytesCopied = getStrInBuf (&inPtr, 
-	      s3Auth->secretAccessKey, &lineLen, LONG_NAME_LEN)) > 0) {
+	      S3Auth.secretAccessKey, &lineLen, LONG_NAME_LEN)) > 0) {
                 linecnt ++;
                 break;
             }
@@ -349,3 +380,57 @@ parseS3Path (char *s3ObjName, char *bucket, char *key)
     return 0;
 }
 
+int
+list_bucket(const char *bucketName, const char *prefix, const char *marker, 
+const char *delimiter, int maxkeys, int allDetails, s3Stat_t *s3Stat)
+{
+    int status;
+    list_bucket_callback_data data;
+
+    if ((status = myS3Init ()) != S3StatusOK) return (status);
+
+    S3BucketContext bucketContext = {
+        bucketName, 1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+
+    S3ListBucketHandler listBucketHandler = {
+        { &responsePropertiesCallback, &responseCompleteCallback },
+        &listBucketCallback
+    };
+
+    snprintf(data.nextMarker, sizeof(data.nextMarker), "%s", marker);
+    data.keyCount = 0;
+    data.allDetails = allDetails;
+
+    S3_list_bucket(&bucketContext, prefix, data.nextMarker,
+      delimiter, maxkeys, 0, &listBucketHandler, &data);
+
+    if (data.keyCount > 0) {
+	*s3Stat = data.s3Stat;
+	status = 0;
+    } else {
+        status = S3_FILE_STAT_ERR;
+    }
+    return status;
+}
+
+S3Status
+listBucketCallback(int isTruncated, const char *nextMarker, int contentsCount,
+const S3ListBucketContent *contents, int commonPrefixesCount,
+const char **commonPrefixes, void *callbackData)
+{
+    list_bucket_callback_data *data =
+        (list_bucket_callback_data *) callbackData;
+
+    if (contentsCount <= 0) {
+	data->keyCount = 0;
+	return S3StatusOK;
+    } else if (contentsCount > 1) {
+        rodsLog (LOG_ERROR,
+	  "listBucketCallback: contentsCount %d > 1 for %s", 
+	  contentsCount, contents->key);
+    }
+
+    return S3StatusOK;
+}
+
+    
