@@ -702,7 +702,16 @@ l3FileSync (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     cacheRescTypeInx = srcDataObjInfo->rescInfo->rescTypeInx;
 
     switch (RescTypeDef[rescTypeInx].rescCat) {
+	dataObjInfo_t tmpDataObjInfo;
       case FILE_CAT:
+	/* make sure the fileName is not already taken */
+	status = chkOrphanFile (rsComm, destDataObjInfo->filePath,
+	  destDataObjInfo->rescName, &tmpDataObjInfo);
+	if (status == 0 && tmpDataObjInfo.dataId != destDataObjInfo->dataId) {
+	    /* someone is using it */
+	    snprintf (destDataObjInfo->filePath, MAX_NAME_LEN, 
+	      "%s.%-d", destDataObjInfo->filePath, (int) random());
+	}
         memset (&fileSyncToArchInp, 0, sizeof (fileSyncToArchInp));
         dataObjInp = L1desc[destL1descInx].dataObjInp;
 	fileSyncToArchInp.dataSize = srcDataObjInfo->dataSize;
