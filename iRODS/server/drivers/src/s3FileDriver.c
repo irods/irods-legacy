@@ -271,14 +271,16 @@ myS3Init (void)
 {
     int status = -1;
     if (S3Initialized) return 0;
+    char *tmpPtr;
 
     S3Initialized = 1;
 
     bzero (&S3Auth, sizeof (S3Auth));
 
-    if ((S3Auth.accessKeyId = getenv("S3_ACCESS_KEY_ID")) != NULL) {
-        if ((S3Auth.secretAccessKey = getenv("S3_SECRET_ACCESS_KEY")) 
-	  != NULL) {
+    if ((tmpPtr = getenv("S3_ACCESS_KEY_ID")) != NULL) {
+	rstrcpy (S3Auth.accessKeyId, tmpPtr, MAX_NAME_LEN);
+        if ((tmpPtr = getenv("S3_SECRET_ACCESS_KEY")) != NULL) {
+	    rstrcpy (S3Auth.secretAccessKey, tmpPtr, MAX_NAME_LEN);
 	    status = 0;
 	}
     }

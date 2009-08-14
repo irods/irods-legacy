@@ -56,8 +56,8 @@
 #define S3_AUTH_FILE "s3Auth"
 
 typedef struct S3Auth {
-  char *accessKeyId;
-  char *secretAccessKey;
+  char accessKeyId[MAX_NAME_LEN];
+  char secretAccessKey[MAX_NAME_LEN];
 } s3Auth_t;
 
 typedef struct put_object_callback_data
