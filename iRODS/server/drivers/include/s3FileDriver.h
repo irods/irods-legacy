@@ -60,13 +60,6 @@ typedef struct S3Auth {
   char secretAccessKey[MAX_NAME_LEN];
 } s3Auth_t;
 
-typedef struct put_object_callback_data
-{
-    FILE *fd;
-    rodsLong_t contentLength, originalContentLength;
-    int status;
-} put_object_callback_data;
-
 typedef struct s3Stat
 {
     char key[MAX_NAME_LEN];
@@ -74,15 +67,17 @@ typedef struct s3Stat
     time_t lastModified;
 } s3Stat_t;
 
-typedef struct list_bucket_callback_data
+typedef struct callback_data
 {
+    FILE *fd;
+    rodsLong_t contentLength, originalContentLength;
     int isTruncated;
     char nextMarker[1024];
     int keyCount;
     int allDetails;
     s3Stat_t s3Stat;    /* should be a pointer if keyCount > 1 */
     int status;
-} list_bucket_callback_data;
+} callback_data_t;
 
 int
 s3FileUnlink (rsComm_t *rsComm, char *filename);

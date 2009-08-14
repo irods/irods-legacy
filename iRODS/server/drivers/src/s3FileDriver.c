@@ -14,11 +14,33 @@ s3Auth_t S3Auth;
 
 
 int
-s3FileUnlink (rsComm_t *rsComm, char *filename)
+s3FileUnlink (rsComm_t *rsComm, char *s3ObjName)
 {
     int status;
+    char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
+    callback_data_t data;
 
-    status = 0;
+    bzero (&data, sizeof (data));
+
+    if ((status = parseS3Path (s3ObjName, myBucket, key)) < 0) return status;
+
+
+    if ((status = myS3Init ()) != S3StatusOK) return (status);
+
+    S3BucketContext bucketContext =
+      {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+
+    S3ResponseHandler responseHandler = {
+        0, &responseCompleteCallback
+    };
+
+    S3_delete_object(&bucketContext, key, 0, &responseHandler, &data);
+
+    if (data.status != S3StatusOK) {
+        status = myS3Error (data.status, S3_PUT_ERROR);
+    } else {
+	status = 0;
+    }
 
     return (status);
 }
@@ -162,7 +184,7 @@ responseCompleteCallback (S3Status status, const S3ErrorDetails *error,
 void *callbackData)
 {
     int i;
-    put_object_callback_data *data = (put_object_callback_data *) callbackData;
+    callback_data_t *data = (callback_data_t *) callbackData;
 
     if (status > S3StatusOK) {
 	if (data->status >= S3StatusOK) data->status = status;
@@ -209,8 +231,8 @@ void *callbackData)
 int 
 putObjectDataCallback (int bufferSize, char *buffer, void *callbackData)
 {
-    put_object_callback_data *data =
-        (put_object_callback_data *) callbackData;
+    callback_data_t *data =
+        (callback_data_t *) callbackData;
     int ret = 0;
 
     if (data->contentLength) {
@@ -228,7 +250,7 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
 
     S3Status status;
     char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
-    put_object_callback_data data;
+    callback_data_t data;
 
 
     bzero (&data, sizeof (data));
@@ -387,7 +409,7 @@ list_bucket(const char *bucketName, const char *prefix, const char *marker,
 const char *delimiter, int maxkeys, int allDetails, s3Stat_t *s3Stat)
 {
     int status;
-    list_bucket_callback_data data;
+    callback_data_t data;
 
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
@@ -420,8 +442,8 @@ listBucketCallback(int isTruncated, const char *nextMarker, int contentsCount,
 const S3ListBucketContent *contents, int commonPrefixesCount,
 const char **commonPrefixes, void *callbackData)
 {
-    list_bucket_callback_data *data =
-        (list_bucket_callback_data *) callbackData;
+    callback_data_t *data =
+        (callback_data_t *) callbackData;
 
     if (contentsCount <= 0) {
 	data->keyCount = 0;
