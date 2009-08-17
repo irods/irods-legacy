@@ -234,6 +234,7 @@
 #define S3_GET_ERROR			-703000
 #define S3_FILE_UNLINK_ERR		-715000
 #define S3_FILE_STAT_ERR		-716000
+#define S3_FILE_COPY_ERR		-717000
 
 /* 800,000 to 880,000 - Catalog library errors  */
 #define CATALOG_NOT_CONNECTED           -801000
