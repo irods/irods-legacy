@@ -53,7 +53,7 @@ fileDriver_t FileDriverTable[] = {
     {S3_FILE_TYPE, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     intNoSupport, s3FileUnlink, s3FileStat, intNoSupport, longNoSupport,
     intNoSupport, s3FileMkdir, s3FileChmod, s3FileRmdir, intNoSupport,
-    intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, s3FileRename,
     s3FileGetFsFreeSpace, intNoSupport, s3StageToCache, s3SyncToArch},
 #else
     {S3_FILE_TYPE, NO_FILE_DRIVER_FUNCTIONS},

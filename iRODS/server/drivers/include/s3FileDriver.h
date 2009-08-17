@@ -87,6 +87,8 @@ int
 s3FileMkdir (rsComm_t *rsComm, char *filename, int mode);
 int
 s3FileChmod (rsComm_t *rsComm, char *filename, int mode);
+int
+s3FileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName);
 rodsLong_t
 s3FileGetFsFreeSpace (rsComm_t *rsComm, char *path, int flag);
 int
@@ -130,5 +132,6 @@ int
 getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize);
 S3Status
 getObjectDataCallback(int bufferSize, const char *buffer, void *callbackData);
-
+int
+copyS3Obj (char *srcObj, char *destObj);
 #endif	/* S3_FILE_DRIVER_H */

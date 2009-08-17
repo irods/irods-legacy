@@ -37,7 +37,7 @@ s3FileUnlink (rsComm_t *rsComm, char *s3ObjName)
     S3_delete_object(&bucketContext, key, 0, &responseHandler, &data);
 
     if (data.status != S3StatusOK) {
-        status = myS3Error (data.status, S3_PUT_ERROR);
+        status = myS3Error (data.status, S3_FILE_UNLINK_ERR);
     } else {
 	status = 0;
     }
@@ -107,6 +107,29 @@ s3FileRmdir (rsComm_t *rsComm, char *filename)
     status = 0;
 
     return (status);
+}
+
+/* s3FileRename - S3 does not support rename. do a copy and delete.
+ * very expensive */
+
+int
+s3FileRename (rsComm_t *rsComm, char *oldFileName, char *newFileName)
+{
+    int status;
+
+    status = copyS3Obj (oldFileName, newFileName);
+    if (status < 0) {
+        rodsLog (LOG_ERROR, "s3FileRename: copyS3Obj of %s error, status = %d",
+         oldFileName, status);
+        return status;
+    }
+    status = s3FileUnlink (rsComm, oldFileName);
+    if (status < 0) {
+        rodsLog (LOG_ERROR, 
+	  "s3FileRename: s3FileUnlink of %s error, status = %d",
+          oldFileName, status);
+    }
+    return status;
 }
 
 rodsLong_t
@@ -515,7 +538,7 @@ getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
     S3_get_object (&bucketContext, key, NULL, 0, fileSize, 0,
                 &getObjectHandler, &data);
     if (data.status != S3StatusOK) {
-        status = myS3Error (data.status, S3_PUT_ERROR);
+        status = myS3Error (data.status, S3_GET_ERROR);
     }
     /* S3_deinitialize(); */
 
@@ -533,5 +556,42 @@ S3Status getObjectDataCallback(int bufferSize, const char *buffer,
 
   return ((wrote < (size_t) bufferSize) ?
           S3StatusAbortedByCallback : S3StatusOK);
+}
+
+int
+copyS3Obj (char *srcObj, char *destObj)
+{
+    S3Status status;
+    char srcKey[MAX_NAME_LEN], srcBucket[MAX_NAME_LEN];
+    char destKey[MAX_NAME_LEN], destBucket[MAX_NAME_LEN];
+    callback_data_t data;
+    rodsLong_t lastModified;
+    char eTag[256];
+
+
+
+    bzero (&data, sizeof (data));
+
+    if ((status = parseS3Path (srcObj, srcBucket, srcKey)) < 0) return status;
+    if ((status = parseS3Path (destObj, destBucket, destKey)) < 0) 
+	return status;
+
+    if ((status = myS3Init ()) != S3StatusOK) return (status);
+
+    S3BucketContext bucketContext =
+      {srcBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+
+    S3ResponseHandler responseHandler = {
+        &responsePropertiesCallback,
+        &responseCompleteCallback
+    };
+
+    S3_copy_object(&bucketContext, srcKey, destBucket,
+                       destKey, NULL, &lastModified, sizeof(eTag), eTag, 0,
+                       &responseHandler, 0);
+    if (data.status != S3StatusOK) {
+        status = myS3Error (data.status, S3_FILE_COPY_ERR);
+    }
+    return (status);
 }
 
