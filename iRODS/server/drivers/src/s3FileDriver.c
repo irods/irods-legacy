@@ -588,7 +588,7 @@ copyS3Obj (char *srcObj, char *destObj)
 
     S3_copy_object(&bucketContext, srcKey, destBucket,
                        destKey, NULL, &lastModified, sizeof(eTag), eTag, 0,
-                       &responseHandler, 0);
+                       &responseHandler, &data);
     if (data.status != S3StatusOK) {
         status = myS3Error (data.status, S3_FILE_COPY_ERR);
     }
