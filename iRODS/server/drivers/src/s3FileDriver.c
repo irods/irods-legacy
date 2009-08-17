@@ -124,16 +124,33 @@ s3FileGetFsFreeSpace (rsComm_t *rsComm, char *path, int flag)
   
 int
 s3StageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType, 
-int mode, int flags, char *filename, 
+int mode, int flags, char *s3ObjName, 
 char *cacheFilename,  rodsLong_t dataSize,
 keyValPair_t *condInput)
 {
     int status;
+    struct stat statbuf;
+    rodsLong_t mySize;
 
-    status = 0;
+    status = s3FileStat (rsComm, s3ObjName, &statbuf);
+
+    if (status < 0 || (statbuf.st_mode & S_IFREG) == 0) {
+        rodsLog (LOG_ERROR, "s3StageToCache: stat of %s error, status = %d",
+         s3ObjName, status);
+        return status;
+    }
+
+    if (dataSize > 0 && dataSize != statbuf.st_size) {
+        rodsLog (LOG_ERROR,
+          "s3StageToCache: %s inp dataSize %lld does not match size %lld",
+         s3ObjName, dataSize, statbuf.st_size);
+        return SYS_COPY_LEN_ERR;
+    }
+    mySize = statbuf.st_size;
+
+    status = getFileFromS3 (cacheFilename, s3ObjName, mySize);
 
     return status;
-
 }
 
 /* s3SyncToArch - This routine is for testing the TEST_STAGE_FILE_TYPE.
@@ -421,7 +438,8 @@ const char *delimiter, int maxkeys, int allDetails, s3Stat_t *s3Stat)
         &listBucketCallback
     };
 
-    snprintf(data.nextMarker, sizeof(data.nextMarker), "%s", marker);
+    if (marker != NULL)
+        snprintf(data.nextMarker, sizeof(data.nextMarker), "%s", marker);
     data.keyCount = 0;
     data.allDetails = allDetails;
 
@@ -453,8 +471,67 @@ const char **commonPrefixes, void *callbackData)
 	  "listBucketCallback: contentsCount %d > 1 for %s", 
 	  contentsCount, contents->key);
     }
+    data->keyCount = contentsCount;
+    data->s3Stat.size = contents->size;
+    data->s3Stat.lastModified = contents->lastModified;
+    rstrcpy (data->s3Stat.key, (char *) contents->key, MAX_NAME_LEN);
 
     return S3StatusOK;
 }
 
-    
+int
+getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
+{
+
+    S3Status status;
+    char key[MAX_NAME_LEN], myBucket[MAX_NAME_LEN];
+    callback_data_t data;
+
+
+    bzero (&data, sizeof (data));
+
+    if ((status = parseS3Path (s3ObjName, myBucket, key)) < 0) return status;
+
+    data.fd = fopen (fileName, "w+");
+    if (data.fd == NULL) {
+        status = UNIX_FILE_OPEN_ERR - errno;
+        rodsLog (LOG_ERROR,
+         "getFileFromS3: open error for fileName %s, status = %d",
+         fileName, status);
+        return status;
+    }
+ 
+    data.contentLength = data.originalContentLength = fileSize;
+
+    if ((status = myS3Init ()) != S3StatusOK) return (status);
+
+    S3BucketContext bucketContext =
+      {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+    S3GetObjectHandler getObjectHandler = {
+      { &responsePropertiesCallback, &responseCompleteCallback },
+      &getObjectDataCallback
+    };
+
+    S3_get_object (&bucketContext, key, NULL, 0, fileSize, 0,
+                &getObjectHandler, &data);
+    if (data.status != S3StatusOK) {
+        status = myS3Error (data.status, S3_PUT_ERROR);
+    }
+    /* S3_deinitialize(); */
+
+    fclose (data.fd);
+    return (status);
+}
+
+S3Status getObjectDataCallback(int bufferSize, const char *buffer,
+                                      void *callbackData)
+{
+    callback_data_t *data =
+        (callback_data_t *) callbackData;
+
+  size_t wrote = fwrite(buffer, 1, bufferSize, data->fd);
+
+  return ((wrote < (size_t) bufferSize) ?
+          S3StatusAbortedByCallback : S3StatusOK);
+}
+

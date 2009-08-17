@@ -126,5 +126,9 @@ S3Status
 listBucketCallback(int isTruncated, const char *nextMarker, int contentsCount,
 const S3ListBucketContent *contents, int commonPrefixesCount,
 const char **commonPrefixes, void *callbackData);
+int
+getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize);
+S3Status
+getObjectDataCallback(int bufferSize, const char *buffer, void *callbackData);
 
 #endif	/* S3_FILE_DRIVER_H */
