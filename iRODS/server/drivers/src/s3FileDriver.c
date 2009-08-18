@@ -41,6 +41,7 @@ s3FileUnlink (rsComm_t *rsComm, char *s3ObjName)
     } else {
 	status = 0;
     }
+    /* S3_deinitialize(); */
 
     return (status);
 }
@@ -226,11 +227,7 @@ void *callbackData)
     int i;
     callback_data_t *data = (callback_data_t *) callbackData;
 
-    if (status > S3StatusOK) {
-	if (data->status >= S3StatusOK) data->status = status;
-    } else {
-        data->status = status;
-    }
+    data->status = status;
 
     if (error) {
         if (error->message) {
@@ -332,10 +329,15 @@ int
 myS3Init (void)
 {
     int status = -1;
-    if (S3Initialized) return 0;
     char *tmpPtr;
 
+    if (S3Initialized) return 0;
+
     S3Initialized = 1;
+
+    if ((status = S3_initialize ("s3", S3_INIT_ALL)) != S3StatusOK) {
+        status = myS3Error (status, S3_INIT_ERROR);
+    }
 
     bzero (&S3Auth, sizeof (S3Auth));
 
@@ -343,20 +345,14 @@ myS3Init (void)
 	rstrcpy (S3Auth.accessKeyId, tmpPtr, MAX_NAME_LEN);
         if ((tmpPtr = getenv("S3_SECRET_ACCESS_KEY")) != NULL) {
 	    rstrcpy (S3Auth.secretAccessKey, tmpPtr, MAX_NAME_LEN);
-	    status = 0;
+	    return 0;
 	}
     }
 
-    if (status < 0) {
-        if ((status = readS3AuthInfo ()) < 0) {
-            rodsLog (LOG_ERROR,
-              "initHpssAuth: readHpssAuthInfo error. status = %d", status);
-            return status;
-        }
-    }
-
-    if ((status = S3_initialize ("s3", S3_INIT_ALL)) != S3StatusOK) {
-	status = myS3Error (status, S3_INIT_ERROR);
+    if ((status = readS3AuthInfo ()) < 0) {
+        rodsLog (LOG_ERROR,
+          "initHpssAuth: readHpssAuthInfo error. status = %d", status);
+        return status;
     }
 
     return status;
@@ -410,7 +406,7 @@ readS3AuthInfo (void)
 int
 myS3Error (int status, int irodsErrorCode)
 {
-    if (status <= 0) return status;
+    if (status < 0) return status;
      
      rodsLogError (LOG_ERROR, irodsErrorCode,
          "myS3Error: error:%s", S3_get_status_name(status));
@@ -461,20 +457,26 @@ const char *delimiter, int maxkeys, int allDetails, s3Stat_t *s3Stat)
         &listBucketCallback
     };
 
+#if 0
     if (marker != NULL)
         snprintf(data.nextMarker, sizeof(data.nextMarker), "%s", marker);
+    else
+	 data.nextMarker[0] = '\0';
+#endif
     data.keyCount = 0;
     data.allDetails = allDetails;
 
-    S3_list_bucket(&bucketContext, prefix, data.nextMarker,
+    S3_list_bucket(&bucketContext, prefix, marker,
       delimiter, maxkeys, 0, &listBucketHandler, &data);
 
     if (data.keyCount > 0) {
 	*s3Stat = data.s3Stat;
 	status = 0;
     } else {
-        status = S3_FILE_STAT_ERR;
+	 status = myS3Error (data.status, S3_FILE_STAT_ERR);
     }
+    /* S3_deinitialize(); */
+
     return status;
 }
 
@@ -592,6 +594,8 @@ copyS3Obj (char *srcObj, char *destObj)
     if (data.status != S3StatusOK) {
         status = myS3Error (data.status, S3_FILE_COPY_ERR);
     }
+    /* S3_deinitialize(); */
+
     return (status);
 }
 
