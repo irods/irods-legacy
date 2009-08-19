@@ -12,7 +12,11 @@
 
 #include <compat.h>
 #endif	/* TAR_EXEC_PATH */
-
+#ifndef windows_platform
+#include <sys/wait.h>
+#else
+#include "Unix2Nt.h"
+#endif
 #include "tarSubStructFileDriver.h"
 #include "rsGlobalExtern.h"
 #include "modColl.h"
@@ -1264,7 +1268,11 @@ int
 extractTarFileWithExec (int structFileInx)
 {
     int status;
+#if 0
     char cmdStr[MAX_NAME_LEN];
+#else
+     char *av[NAME_LEN];
+#endif
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
 
     if (StructFileDesc[structFileInx].inuseFlag <= 0) {
@@ -1282,6 +1290,7 @@ extractTarFileWithExec (int structFileInx)
         return (SYS_STRUCT_FILE_DESC_ERR);
     }
 
+#if 0
     snprintf (cmdStr, MAX_NAME_LEN, "%s -xf %s -C %s",
       TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
 
@@ -1293,9 +1302,21 @@ extractTarFileWithExec (int structFileInx)
           specColl->cacheDir, specColl->phyPath, status);
         status = SYS_EXEC_TAR_ERR;
     }
+#else
+    bzero (av, sizeof (av));
+    av[0] = "/bin/tar";
+    av[1] = "-x";
+    av[2] = "-f";
+    av[3] = specColl->phyPath;
+    av[4] = "-C";
+    av[5] = specColl->cacheDir;
+
+    status = forkAndExec (av);
+#endif
 
     return status;
 }
+
 #else	/* TAR_EXEC_PATH */
 int
 extractTarFileWithLib (int structFileInx)
@@ -1430,12 +1451,17 @@ int
 bundleCacheDirWithExec (int structFileInx)
 {
     int status;
+#if 0
     char cmdStr[MAX_NAME_LEN];
+#else
+     char *av[NAME_LEN];
+#endif
 
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
     if (specColl == NULL || specColl->cacheDirty <= 0 ||
       strlen (specColl->cacheDir) == 0) return 0;
 
+#if 0
     snprintf (cmdStr, MAX_NAME_LEN, "%s -chlf %s -C %s .",
       TAR_EXEC_PATH, specColl->phyPath, specColl->cacheDir);
 
@@ -1447,6 +1473,20 @@ bundleCacheDirWithExec (int structFileInx)
           specColl->cacheDir, specColl->phyPath, status);
 	status = SYS_EXEC_TAR_ERR;
     }
+#else
+    bzero (av, sizeof (av));
+    av[0] = "/bin/tar";
+    av[1] = "-c";
+    av[2] = "-h";
+    av[3] = "-f";
+    av[4] = specColl->phyPath;
+    av[5] = "-C";
+    av[6] = specColl->cacheDir;
+    av[7] = ".";
+
+    status = forkAndExec (av);
+#endif
+
     return status;
 }
 
@@ -1539,5 +1579,45 @@ freeTarSubFileDesc (int tarSubFileInx)
     memset (&TarSubFileDesc[tarSubFileInx], 0, sizeof (tarSubFileDesc_t));
 
     return (0);
+}
+
+int
+forkAndExec (char *av[])
+{
+    int childPid = 0;
+    int status = -1;
+    int childStatus = 0;
+
+
+#ifndef windows_platform   /* UNIX */
+    childPid = RODS_FORK ();
+
+    if (childPid == 0) {
+        /* child */
+        execv(av[0], av);
+        /* gets here. must be bad */
+        exit(1);
+    } else if (childPid < 0) {
+        rodsLog (LOG_ERROR,
+         "exectar: RODS_FORK failed. errno = %d", errno);
+        return (SYS_FORK_ERROR);
+    }
+
+    /* parent */
+
+    status = waitpid (childPid, &childStatus, 0);
+    if (status >= 0 && childStatus != 0) {
+        rodsLog (LOG_ERROR,
+         "forkAndExec: waitpid status = %d, childStatus = %d",
+          status, childStatus);
+        status = EXEC_CMD_ERROR;
+    }
+#else
+    rodsLog (LOG_ERROR,
+         "forkAndExec: fork and exec not supported");
+
+    status = SYS_NOT_SUPPORTED;
+#endif
+    return status;
 }
 
