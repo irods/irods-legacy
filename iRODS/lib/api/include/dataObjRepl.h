@@ -29,7 +29,8 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo);
 int
 _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transStat_t *transStat, dataObjInfo_t *destDataObjInfo);
+transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t *destDataObjInfo);
 int
 _rsDataObjReplS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, 
@@ -54,7 +55,7 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr);
 int
 replToCacheRescOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *compObjInfo,
-dataObjInfo_t **outDestDataObjInfo);
+dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo);
 int
 stageBundledData (rsComm_t *rsComm, dataObjInfo_t **subfileObjInfoHead);
 int

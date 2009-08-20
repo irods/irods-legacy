@@ -122,7 +122,7 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
 	/* update old repl to new repl */
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead,
-          NULL, transStat, oldDataObjInfoHead);
+          NULL, transStat, NULL, oldDataObjInfoHead);
         freeAllDataObjInfo (dataObjInfoHead);
         freeAllDataObjInfo (oldDataObjInfoHead);
         freeAllRescGrpInfo (myRescGrpInfo);
@@ -154,13 +154,13 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 
     if (destDataObjInfo != NULL) {
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 
-          myRescGrpInfo, transStat, destDataObjInfo);
+          myRescGrpInfo, transStat, oldDataObjInfoHead, destDataObjInfo);
 	if (status >= 0 && outDataObjInfo != NULL) {
 	    *outDataObjInfo = *destDataObjInfo;
 	}
     } else {
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 
-          myRescGrpInfo, transStat, outDataObjInfo);
+          myRescGrpInfo, transStat, oldDataObjInfoHead, outDataObjInfo);
     }
 
     freeAllDataObjInfo (dataObjInfoHead);
@@ -183,12 +183,16 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
  *	    msiStageDataObj which need a copy of destDataObjInfo.
  *	    If destDataObjInfo->dataId > 0, the dest repl exists. Need to
  *          overwrite it. 
+ *    dataObjInfo_t *oldDataObjInfo - this is for destDataObjInfo is a
+ *       COMPOUND_CL resource. If it is, need to find an old copy of
+ *	 the resource in the same group so that it can be updated first.
  */
 
 int
 _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
-transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo) 
+transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t *inpDestDataObjInfo) 
 {
     dataObjInfo_t *destDataObjInfo;
     dataObjInfo_t *srcDataObjInfo;
@@ -215,7 +219,8 @@ transStat_t *transStat, dataObjInfo_t *inpDestDataObjInfo)
 		  inpDestDataObjInfo, destDataObjInfo, &srcDataObjInfo)) < 0) {
 		    /* we don't have a good cache copy, make one */
 		    status = replToCacheRescOfCompObj (rsComm, dataObjInp,
-		      srcDataObjInfoHead, destDataObjInfo, &srcDataObjInfo);
+		      srcDataObjInfoHead, destDataObjInfo, oldDataObjInfo,
+		      &srcDataObjInfo);
 		    if (status < 0) {
         	        rodsLog (LOG_ERROR,
          	        "_rsDataObjRepl: replToCacheRescOfCompObj failed for %s stat=%d",
@@ -898,11 +903,12 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
 int
 replToCacheRescOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *compObjInfo, 
-dataObjInfo_t **outDestDataObjInfo)
+dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
 {
     int status = 0;
     rescInfo_t *cacheResc;
     dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
+    dataObjInfo_t *tmpDestDataObjInfo = NULL;
 
     status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
       compObjInfo->rescInfo->rescName, &cacheResc);
@@ -913,17 +919,27 @@ dataObjInfo_t **outDestDataObjInfo)
         return status;
     }
 
+    if ((status = getCacheDataInfoForRepl (oldDataObjInfo, NULL, compObjInfo, 
+      &tmpDestDataObjInfo)) >= 0) {
+	cacheResc = oldDataObjInfo->rescInfo;
+    }
     if (outDestDataObjInfo == NULL) {
-	destDataObjInfo = NULL;
+	destDataObjInfo = tmpDestDataObjInfo;
     } else {
-        destDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+        destDataObjInfo = malloc (sizeof (dataObjInfo_t));
+	if (tmpDestDataObjInfo == NULL) {
+	    bzero (destDataObjInfo, sizeof (dataObjInfo_t));
+	} else {
+	    *destDataObjInfo = *tmpDestDataObjInfo;
+	}
     }
     srcDataObjInfo = srcDataObjInfoHead;
     while (srcDataObjInfo != NULL) {
         status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
           cacheResc, compObjInfo->rescGroupName, destDataObjInfo);
         if (status >= 0) {
-	    if (destDataObjInfo != NULL) *outDestDataObjInfo = destDataObjInfo;
+	    if (outDestDataObjInfo != NULL) 
+	        *outDestDataObjInfo = destDataObjInfo;
             break;
         }
         srcDataObjInfo = srcDataObjInfo->next;

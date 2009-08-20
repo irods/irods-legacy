@@ -3065,7 +3065,7 @@ dataObjInfo_t **outDataObjInfo)
     }
 
     /* try destDataObjInfoHead but up to compDataObjInfo because
-     * they have been updated */
+     * they have been updated and are good copies */
 
     srcDataObjInfo = destDataObjInfoHead;
     while (srcDataObjInfo != NULL) {
