@@ -102,6 +102,16 @@ rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp);
 int
 _rcDataObjRepl (rcComm_t *conn, dataObjInp_t *dataObjInp,
 transStat_t **transStat);
+int
+getCacheDataInfoOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t **outDataObjInfo);
+int
+getCacheDataInfoOfCompResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
+rescGrpInfo_t *compRescGrpInfo, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t **outDataObjInfo);
 #ifdef  __cplusplus
 }
 #endif

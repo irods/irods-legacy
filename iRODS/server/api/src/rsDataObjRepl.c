@@ -201,6 +201,7 @@ dataObjInfo_t *inpDestDataObjInfo)
     int status;
     int allFlag;
     int savedStatus = 0;
+    int replCnt = 0;
 
     if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
 	allFlag = 1;
@@ -211,66 +212,76 @@ dataObjInfo_t *inpDestDataObjInfo)
     transStat->bytesWritten = srcDataObjInfoHead->dataSize;
     destDataObjInfo = inpDestDataObjInfo;
     while (destDataObjInfo != NULL) {
-        if (destDataObjInfo->dataId > 0) {
-	    /* destDataObj exists */
-	    if (getRescClass (destDataObjInfo->rescInfo) == COMPOUND_CL) {
-		/* need to get a copy in cache first */
-		if ((status = getCacheDataInfoForRepl (srcDataObjInfoHead, 
-		  inpDestDataObjInfo, destDataObjInfo, &srcDataObjInfo)) < 0) {
-		    /* we don't have a good cache copy, make one */
-		    status = replToCacheRescOfCompObj (rsComm, dataObjInp,
-		      srcDataObjInfoHead, destDataObjInfo, oldDataObjInfo,
-		      &srcDataObjInfo);
-		    if (status < 0) {
-        	        rodsLog (LOG_ERROR,
-         	        "_rsDataObjRepl: replToCacheRescOfCompObj failed for %s stat=%d",
-          	        destDataObjInfo->objPath, status);
-        		return status;
-    		    }
-		    /* save it */
-		    queDataObjInfo (&srcDataObjInfoHead, srcDataObjInfo, 1, 0);
-		}
-		status = _rsDataObjReplS (rsComm, dataObjInp,
-                  srcDataObjInfo, NULL, "", destDataObjInfo);
-	    } else {
-	        srcDataObjInfo = srcDataObjInfoHead;
-	        while (srcDataObjInfo != NULL) {
-                    /* overwrite a specific destDataObjInfo */
-                    status = _rsDataObjReplS (rsComm, dataObjInp, 
-		      srcDataObjInfo, NULL, "", destDataObjInfo);
-		    if (status >= 0) {
-		        break;
-		    }
-		    srcDataObjInfo = srcDataObjInfo->next;
-		}
+	if (destDataObjInfo->dataId == 0) {
+	    destDataObjInfo = destDataObjInfo->next;
+	    continue;
+	}
+
+	/* destDataObj exists */
+        if (getRescClass (destDataObjInfo->rescInfo) == COMPOUND_CL) {
+            /* need to get a copy in cache first */
+	    if ((status = getCacheDataInfoOfCompObj (rsComm, dataObjInp,
+	      srcDataObjInfoHead, inpDestDataObjInfo, destDataObjInfo,
+	      oldDataObjInfo, &srcDataObjInfo)) < 0) {
+		return status;
 	    }
-            if (status >= 0) {
-                transStat->numThreads = dataObjInp->numThreads;
-		if (allFlag == 0) {
-                    return 0;
+            status = _rsDataObjReplS (rsComm, dataObjInp,
+              srcDataObjInfo, NULL, "", destDataObjInfo);
+	} else {
+	    srcDataObjInfo = srcDataObjInfoHead;
+	    while (srcDataObjInfo != NULL) {
+                /* overwrite a specific destDataObjInfo */
+                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo, 
+		  NULL, "", destDataObjInfo);
+		if (status >= 0) {
+		    break;
 		}
-            } else {
-                savedStatus = status;
-            }
+		srcDataObjInfo = srcDataObjInfo->next;
+	    }
+	}
+        if (status >= 0) {
+            transStat->numThreads = dataObjInp->numThreads;
+	    if (allFlag == 0) {
+                return 0;
+	    }
+        } else {
+            savedStatus = status;
+	    replCnt ++;
 	}
 	destDataObjInfo = destDataObjInfo->next;
     }
 	    
+    if (replCnt > 0) return savedStatus;
+
     /* falls through here. destDataObj does not exist */
     tmpRescGrpInfo = destRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        srcDataObjInfo = srcDataObjInfoHead;
-        while (srcDataObjInfo != NULL) {
-            status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-	    tmpRescInfo, tmpRescGrpInfo->rescGroupName, inpDestDataObjInfo);
+        if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
+            /* need to get a copy in cache first */
+	    /* XXXX this will not work because it is likely that
+	     * rescGrpName will be blank */
+            if ((status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+              srcDataObjInfoHead, NULL, tmpRescGrpInfo,
+              oldDataObjInfo, &srcDataObjInfo)) < 0) {
+                return status;
+            }
+	    status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
+            tmpRescInfo, tmpRescGrpInfo->rescGroupName, inpDestDataObjInfo);
+	} else {
+            srcDataObjInfo = srcDataObjInfoHead;
+            while (srcDataObjInfo != NULL) {
+                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
+	          tmpRescInfo, tmpRescGrpInfo->rescGroupName, 
+		  inpDestDataObjInfo);
 
-	    if (status >= 0) {
-                  break;
-            } else {
-		savedStatus = status;
+	        if (status >= 0) {
+                    break;
+                } else {
+		    savedStatus = status;
+	        }
+                srcDataObjInfo = srcDataObjInfo->next;
 	    }
-            srcDataObjInfo = srcDataObjInfo->next;
 	}
         if (status >= 0) {
             transStat->numThreads = dataObjInp->numThreads;
@@ -1057,6 +1068,63 @@ rescInfo_t **outCacheResc, int rmBunCopyFlag)
     }
     status = _rsUnbunAndRegPhyBunfile (rsComm, &dataObjInp, 
       (*bunfileObjInfoHead)->rescInfo);
+
+    return status;
+}
+
+/* getCacheDataInfoOfCompObj - get the Cache DataInfo belong to the 
+ * same resource group as the compDataObjInfo. If one does not
+ * exist, make one.
+ * srcDataObjInfoHead - the source DataObjInfo where the Cache copy
+ *    may have already existed.
+ * destDataObjInfoHead - the list may be searched to by getCacheDataInfoForRepl
+ *    when searching for the existence of the cache copy.
+ *
+ */
+
+int
+getCacheDataInfoOfCompObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,  
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t **outDataObjInfo)
+{
+    int status;
+
+    if ((status = getCacheDataInfoForRepl (srcDataObjInfoHead,
+      destDataObjInfoHead, compDataObjInfo, outDataObjInfo)) < 0) {
+        /* we don't have a good cache copy, make one */
+        status = replToCacheRescOfCompObj (rsComm, dataObjInp,
+          srcDataObjInfoHead, compDataObjInfo, oldDataObjInfo, 
+	  outDataObjInfo);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "_rsDataObjRepl: replToCacheRescOfCompObj of %s error stat=%d",
+            srcDataObjInfoHead->objPath, status);
+            return status;
+        }
+        /* save it */
+        queDataObjInfo (&srcDataObjInfoHead, *outDataObjInfo, 1, 0);
+    }
+    return status;
+}
+
+int
+getCacheDataInfoOfCompResc (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
+rescGrpInfo_t *compRescGrpInfo, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t **outDataObjInfo)
+{
+    int status;
+    dataObjInfo_t compDataObjInfo;
+
+    /* craft a fake compDataObjInfo */
+    bzero (&compDataObjInfo, sizeof (compDataObjInfo));
+    rstrcpy (compDataObjInfo.rescGroupName, compRescGrpInfo->rescGroupName,
+      NAME_LEN);
+    compDataObjInfo.rescInfo = compRescGrpInfo->rescInfo;
+    status = getCacheDataInfoOfCompObj (rsComm, dataObjInp,
+      srcDataObjInfoHead, destDataObjInfoHead, &compDataObjInfo, 
+      oldDataObjInfo, outDataObjInfo);
 
     return status;
 }
