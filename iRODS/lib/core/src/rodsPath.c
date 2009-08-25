@@ -676,8 +676,10 @@ clearRodsPath (rodsPath_t *rodsPath)
 
     if (rodsPath->rodsObjStat == NULL) return;
 
+#if 0	/* this is freed in freeRodsObjStat */
     if (rodsPath->rodsObjStat->specColl != NULL) 
 	free (rodsPath->rodsObjStat->specColl);
+#endif
 
     freeRodsObjStat (rodsPath->rodsObjStat);
 
