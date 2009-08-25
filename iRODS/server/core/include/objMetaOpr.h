@@ -219,7 +219,7 @@ int
 compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo);
 int
 getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName, 
-char *inpMemberRescName, rescInfo_t **outCacheResc);
+rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc);
 int
 getRescInGrp (rsComm_t *rsComm, char *rescName, char *rescGroupName,
 rescInfo_t **outRescInfo);

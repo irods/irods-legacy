@@ -391,12 +391,12 @@ dataObjInfo_t **dataObjInfoHead)
 	  NAME_LEN);
         status = getFilePathName (rsComm, myDataObjInfo, dataObjInp);
 	if (status < 0) {
-	    myRescGrpInfo = myRescGrpInfo->next;
+	    tmpRescGrpInfo = tmpRescGrpInfo->next;
 	    continue;
 	}
 	status = l3CreateByObjInfo (rsComm, dataObjInp, myDataObjInfo);
 	if (status < 0) {
-            myRescGrpInfo = myRescGrpInfo->next;
+	    tmpRescGrpInfo = tmpRescGrpInfo->next;
             continue;
         }
 	/* close it */

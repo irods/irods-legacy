@@ -2989,23 +2989,43 @@ compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
 	return 0;
 }
 
+/* getCacheRescInGrp - get the cache resc in the resource group specified
+ * by rescGroupName. If rescGroupName does not exist, find the rescGroupName
+ * that include memberRescInfo. Either rescGroupName or memberRescInfo must
+ * exist. If rescGroupName is zero len, the rescGroupName will be updated.
+ */
 int
 getCacheRescInGrp (rsComm_t *rsComm, char *rescGroupName, 
-char *inpMemberRescName, rescInfo_t **outCacheResc)
+rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
 {
     int status; 
     rescGrpInfo_t *myRescGrpInfo = NULL;
     rescGrpInfo_t *tmpRescGrpInfo;
 
     *outCacheResc = NULL;
-    if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
-	rodsLog (LOG_ERROR,
-	  "getCacheRescInGrp: no rescGroupName input");
-        return SYS_NO_CACHE_RESC_IN_GRP;
-    }
 
-    status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
-    if (status < 0) return status;
+    if (rescGroupName == NULL || strlen (rescGroupName) == 0) {
+
+	if (memberRescInfo == NULL) {
+            rodsLog (LOG_ERROR,
+              "getCacheRescInGrp: no rescGroupName input");
+            return SYS_NO_CACHE_RESC_IN_GRP;
+        }
+
+        /* no input rescGrp. Try to find one that matches rescInfo. */
+        status = getRescGrpOfResc (rsComm, memberRescInfo, &myRescGrpInfo);
+        if (status < 0) {
+            rodsLog (LOG_NOTICE,
+              "getCacheRescInGrp:getRescGrpOfResc err for %s. stat=%d",
+              memberRescInfo->rescName, status);
+	    return status;
+        } else if (rescGroupName != NULL) {
+	    rstrcpy (rescGroupName, myRescGrpInfo->rescGroupName, NAME_LEN);
+	}
+    } else {
+        status = resolveRescGrp (rsComm, rescGroupName, &myRescGrpInfo);
+        if (status < 0) return status;
+    }
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
 	rescInfo_t *tmpRescInfo;
@@ -3167,7 +3187,7 @@ rescGrpInfo_t **rescGrpInfo)
 		*rescGrpInfo = outRescGrpInfo;
 		break;
             }
-            tmpRescGrpInfo = tmpRescGrpInfo->next;
+            myRescGrpInfo = myRescGrpInfo->next;
 	}
 
         tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;

@@ -395,12 +395,14 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     /* some sanity check for DO_STAGING type resc */
     if (destRescClass == COMPOUND_CL && srcRescClass == COMPOUND_CL) {
 	return SYS_SRC_DEST_RESC_COMPOUND_TYPE;
+#if 0	/* assume it is OK */
     } else if (destRescClass == COMPOUND_CL) {
         if (getRescInGrp (rsComm, myDestRescInfo->rescName,
           inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
             /* not in the same group */
             return SYS_UNMATCHED_RESC_IN_RESC_GRP;
         }
+#endif
     } else if (srcRescClass == COMPOUND_CL) {
 	if (getRescInGrp (rsComm, myDestRescInfo->rescName,
           inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
@@ -859,7 +861,7 @@ dataObjInfo_t *outCacheObjInfo)
     if (getRescClass (compObjInfo->rescInfo) != COMPOUND_CL) return 0;
 
     status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
-      compObjInfo->rescInfo->rescName, &cacheResc);
+      compObjInfo->rescInfo, &cacheResc);
     if (status < 0) {
         rodsLog (LOG_ERROR,
          "stageDataFromCompToCache: getCacheRescInGrp %s failed for %s stat=%d",
@@ -892,7 +894,7 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
     if (getRescClass (dataObjInfoHead->rescInfo) != COMPOUND_CL) return 0;
 
     status = getCacheRescInGrp (rsComm, dataObjInfoHead->rescGroupName,
-      dataObjInfoHead->rescInfo->rescName, &cacheResc);
+      dataObjInfoHead->rescInfo, &cacheResc);
     if (status < 0) {
         rodsLog (LOG_ERROR,
          "stageDataFromCompToCache: getCacheRescInGrp %s failed for %s stat=%d",
@@ -921,6 +923,7 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
     dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
     dataObjInfo_t *tmpDestDataObjInfo = NULL;
 
+#if 0
     status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
       compObjInfo->rescInfo->rescName, &cacheResc);
     if (status < 0) {
@@ -929,11 +932,23 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
          compObjInfo->rescGroupName, compObjInfo->objPath, status);
         return status;
     }
+#endif
 
     if ((status = getCacheDataInfoForRepl (rsComm, oldDataObjInfo, NULL, 
       compObjInfo, &tmpDestDataObjInfo)) >= 0) {
 	cacheResc = oldDataObjInfo->rescInfo;
+    } else {
+	/* no old copy */
+        status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
+          compObjInfo->rescInfo, &cacheResc);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "replToCacheRescOfCompObj:getCacheRescInGrp %s err for %s stat=%d",
+             compObjInfo->rescGroupName, compObjInfo->objPath, status);
+            return status;
+        }
     }
+
     if (outDestDataObjInfo == NULL) {
 	destDataObjInfo = tmpDestDataObjInfo;
     } else {
@@ -1037,7 +1052,7 @@ rescInfo_t **outCacheResc, int rmBunCopyFlag)
 	/* don't have a good copy on cache yet */
         status = getCacheRescInGrp (rsComm, 
 	  (*bunfileObjInfoHead)->rescGroupName,
-          (*bunfileObjInfoHead)->rescInfo->rescName, &cacheResc);
+          (*bunfileObjInfoHead)->rescInfo, &cacheResc);
         if (status < 0) {
             rodsLog (LOG_ERROR,
             "unbunAndStageBunfileObj:getCacheRescInGrp %s err for %s stat=%d",
