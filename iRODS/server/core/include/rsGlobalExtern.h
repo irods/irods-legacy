@@ -29,6 +29,7 @@ extern rodsServerHost_t *HostConfigHead;
 extern zoneInfo_t *ZoneInfoHead;
 extern rescGrpInfo_t *RescGrpInfo;
 extern rescGrpInfo_t *CachedRescGrpInfo;
+extern int RescGrpInit;
 extern fileDesc_t FileDesc[];
 extern l1desc_t L1desc[];
 extern specCollDesc_t SpecCollDesc[];

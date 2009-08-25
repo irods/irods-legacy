@@ -226,7 +226,16 @@ rescInfo_t **outRescInfo);
 int
 sortRescByType (rescGrpInfo_t **rescGrpInfo);
 int
-getCacheDataInfoForRepl (dataObjInfo_t *srcDataObjInfoHead,
+getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
 dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
 dataObjInfo_t **outDataObjInfo);
+int
+getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
+int
+initRescGrp (rsComm_t *rsComm);
+int
+getRescGrpOfResc (rsComm_t *rsComm, rescInfo_t * rescInfo,
+rescGrpInfo_t **rescGrpInfo);
 #endif	/* OBJ_META_OPR_H */

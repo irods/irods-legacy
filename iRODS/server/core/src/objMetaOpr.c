@@ -64,10 +64,14 @@ resolveRescGrp (rsComm_t *rsComm, char *rescGroupName,
 rescGrpInfo_t **rescGrpInfo)
 {
     rescGrpInfo_t *tmpRescGrpInfo;
+#if 0
     genQueryOut_t *genQueryOut = NULL;
     sqlResult_t *rescName;
     char *rescNameStr;
-    int status, i;
+#endif
+    int status;
+
+    if ((status = initRescGrp (rsComm)) < 0) return status;
 
     /* see if it is in cache */
 
@@ -83,6 +87,9 @@ rescGrpInfo_t **rescGrpInfo)
 	tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
     }
 
+    return CAT_NO_ROWS_FOUND;
+
+#if 0	/* replaced with initRescGrp */
     /* not in cache, query it */
 
     status = queryRescInRescGrp (rsComm, rescGroupName, &genQueryOut);
@@ -122,6 +129,7 @@ rescGrpInfo_t **rescGrpInfo)
     }
 
     return (status);
+#endif
 }
 
 int
@@ -3004,10 +3012,12 @@ char *inpMemberRescName, rescInfo_t **outCacheResc)
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
         if (RescClass[tmpRescInfo->rescClassInx].classType == CACHE_CL) {
 	    *outCacheResc = tmpRescInfo;
+	    freeAllRescGrpInfo (myRescGrpInfo);
 	    return 0;
 	}
 	tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
+    freeAllRescGrpInfo (myRescGrpInfo);
     return SYS_NO_CACHE_RESC_IN_GRP;
 }
 
@@ -3034,23 +3044,68 @@ rescInfo_t **outRescInfo)
         if (strcmp (tmpRescInfo->rescName, rescName) == 0) { 
 	    if (outRescInfo != NULL)
                 *outRescInfo = tmpRescInfo;
+	    freeAllRescGrpInfo (myRescGrpInfo);
             return 0;
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
-
+    freeAllRescGrpInfo (myRescGrpInfo);
     return SYS_UNMATCHED_RESC_IN_RESC_GRP;
 }
 
 int
-getCacheDataInfoForRepl (dataObjInfo_t *srcDataObjInfoHead,
+getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
 dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo, 
 dataObjInfo_t **outDataObjInfo)
 {
     char *rescGroupName;
-    dataObjInfo_t *srcDataObjInfo;
+    int status;
 
     rescGroupName = compDataObjInfo->rescGroupName;
+
+    if (strlen (rescGroupName) == 0) {
+	rescGrpInfo_t *rescGrpInfo = NULL;
+	rescGrpInfo_t *tmpRescGrpInfo;
+ 
+        /* no input rescGrp. Try to find one that matches rescInfo. */
+	status = getRescGrpOfResc (rsComm, compDataObjInfo->rescInfo,
+	  &rescGrpInfo);
+	if (status < 0) {
+	    rodsLog (LOG_NOTICE,
+              "getCacheDataInfoForRepl:getRescGrpOfResc err for %s. stat=%d",
+              compDataObjInfo->rescInfo->rescName, status);
+	    return status;
+	}
+        tmpRescGrpInfo = rescGrpInfo;
+
+        while (tmpRescGrpInfo != NULL) {
+	    status = getCacheDataInfoInRescGrp (srcDataObjInfoHead,
+	      destDataObjInfoHead, tmpRescGrpInfo->rescGroupName,
+	      compDataObjInfo, outDataObjInfo);
+	    if (status >= 0) {
+		/* update the rescGroupName */
+		rstrcpy (compDataObjInfo->rescGroupName, 
+		  tmpRescGrpInfo->rescGroupName, NAME_LEN);
+		freeAllRescGrpInfo (rescGrpInfo);
+		return 0;
+	    }
+            tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
+	}
+	freeAllRescGrpInfo (rescGrpInfo);
+	status = SYS_NO_CACHE_RESC_IN_GRP;
+    } else {
+        status = getCacheDataInfoInRescGrp (srcDataObjInfoHead,
+          destDataObjInfoHead, rescGroupName, compDataObjInfo, outDataObjInfo);
+    }
+    return status;
+}
+
+int
+getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo)
+{
+    dataObjInfo_t *srcDataObjInfo;
 
     srcDataObjInfo = srcDataObjInfoHead;
     while (srcDataObjInfo != NULL) {
@@ -3082,3 +3137,129 @@ dataObjInfo_t **outDataObjInfo)
     return SYS_NO_CACHE_RESC_IN_GRP;
 }
 
+/* getRescGrpOfResc - given the rescInfo, find a rescGrpInfo that this
+ * resource belongs. The output is a link list of rescGrpInfo_t pointed to by
+ * cacheNext.
+ */
+
+int
+getRescGrpOfResc (rsComm_t *rsComm, rescInfo_t * rescInfo, 
+rescGrpInfo_t **rescGrpInfo)
+{
+    rescGrpInfo_t *tmpRescGrpInfo, *myRescGrpInfo;
+    rescGrpInfo_t *outRescGrpInfo = NULL;
+    rescInfo_t *myRescInfo;
+    int status;
+
+    *rescGrpInfo = NULL;
+
+    if ((status = initRescGrp (rsComm)) < 0) return status;
+
+    /* in cache ? */
+    tmpRescGrpInfo = CachedRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+	myRescGrpInfo = tmpRescGrpInfo;
+	while (myRescGrpInfo != NULL) {
+            myRescInfo = myRescGrpInfo->rescInfo;
+            if (strcmp (rescInfo->rescName, myRescInfo->rescName) == 0) {
+		replRescGrpInfo (tmpRescGrpInfo, &outRescGrpInfo);
+		outRescGrpInfo->cacheNext = *rescGrpInfo;
+		*rescGrpInfo = outRescGrpInfo;
+		break;
+            }
+            tmpRescGrpInfo = tmpRescGrpInfo->next;
+	}
+
+        tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
+    }
+
+    if (*rescGrpInfo == NULL)
+        return SYS_NO_CACHE_RESC_IN_GRP;
+    else
+	return 0;
+}
+
+/* initRescGrp - Initialize the CachedRescGrpInfo queue
+ */
+
+int
+initRescGrp (rsComm_t *rsComm)
+{
+    genQueryInp_t genQueryInp;
+    rescGrpInfo_t *tmpRescGrpInfo;
+    genQueryOut_t *genQueryOut = NULL;
+    sqlResult_t *rescName, *rescGrpName;
+    char *rescNameStr, *rescGrpNameStr;
+    char *curRescGrpNameStr = NULL;
+    int i;
+    int status = 0;
+
+    if (RescGrpInit > 0) return 0;
+
+    RescGrpInit = 1;
+
+    /* query all resource groups */
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+    addInxIval (&genQueryInp.selectInp, COL_R_RESC_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_RESC_GROUP_NAME, ORDER_BY);
+
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+    clearGenQueryInp (&genQueryInp);
+
+    if (status < 0) {
+	if (status == CAT_NO_ROWS_FOUND)
+	    return 0;
+	else
+	    return status;
+    }
+
+    if ((rescName = getSqlResultByInx (genQueryOut, COL_R_RESC_NAME)) ==
+      NULL) {
+        rodsLog (LOG_NOTICE,
+          "initRescGrp: getSqlResultByInx for COL_R_RESC_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((rescGrpName = getSqlResultByInx (genQueryOut, COL_RESC_GROUP_NAME)) ==
+      NULL) {
+        rodsLog (LOG_NOTICE,
+          "initRescGrp: getSqlResultByInx for COL_RESC_GROUP_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    tmpRescGrpInfo = NULL;
+    for (i = 0;i < genQueryOut->rowCnt; i++) {
+        rescNameStr = &rescName->value[rescName->len * i];
+        rescGrpNameStr = &rescGrpName->value[rescGrpName->len * i];
+	if (tmpRescGrpInfo != NULL && curRescGrpNameStr != NULL) {
+	    if (strcmp (rescGrpNameStr, curRescGrpNameStr) != 0) {
+		/* a new rescGrp. queue the current one */
+        	tmpRescGrpInfo->cacheNext = CachedRescGrpInfo;
+        	CachedRescGrpInfo = tmpRescGrpInfo;
+		tmpRescGrpInfo = NULL;
+	    }
+	}
+	curRescGrpNameStr = rescGrpNameStr;
+        status = resolveAndQueResc (rescNameStr, rescGrpNameStr,
+          &tmpRescGrpInfo);
+        if (status < 0) {
+            rodsLog (LOG_NOTICE,
+              "initRescGrp: resolveAndQueResc error for %s. status = %d",
+              rescNameStr, status);
+            freeGenQueryOut (&genQueryOut);
+            return (status);
+        }
+    }
+
+    /* query the remaining in cache */
+    if (tmpRescGrpInfo != NULL) {
+        tmpRescGrpInfo->cacheNext = CachedRescGrpInfo;
+        CachedRescGrpInfo = tmpRescGrpInfo;
+    }
+
+    return 0;
+}

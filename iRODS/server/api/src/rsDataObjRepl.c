@@ -930,8 +930,8 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
         return status;
     }
 
-    if ((status = getCacheDataInfoForRepl (oldDataObjInfo, NULL, compObjInfo, 
-      &tmpDestDataObjInfo)) >= 0) {
+    if ((status = getCacheDataInfoForRepl (rsComm, oldDataObjInfo, NULL, 
+      compObjInfo, &tmpDestDataObjInfo)) >= 0) {
 	cacheResc = oldDataObjInfo->rescInfo;
     }
     if (outDestDataObjInfo == NULL) {
@@ -1090,7 +1090,7 @@ dataObjInfo_t **outDataObjInfo)
 {
     int status;
 
-    if ((status = getCacheDataInfoForRepl (srcDataObjInfoHead,
+    if ((status = getCacheDataInfoForRepl (rsComm, srcDataObjInfoHead,
       destDataObjInfoHead, compDataObjInfo, outDataObjInfo)) < 0) {
         /* we don't have a good cache copy, make one */
         status = replToCacheRescOfCompObj (rsComm, dataObjInp,

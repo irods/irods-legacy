@@ -1247,13 +1247,18 @@ int
 freeAllRescGrpInfo (rescGrpInfo_t *rescGrpInfoHead)
 {
     rescGrpInfo_t *tmpRescGrpInfo, *nextRescGrpInfo;
+    rescGrpInfo_t *cacheRescGrpInfo, *nextCacheRescGrpInfo;
 
-    tmpRescGrpInfo = rescGrpInfoHead;
-
-    while (tmpRescGrpInfo != NULL) {
-	nextRescGrpInfo = tmpRescGrpInfo->next;
-	free (tmpRescGrpInfo);
-	tmpRescGrpInfo = nextRescGrpInfo;
+    cacheRescGrpInfo = rescGrpInfoHead;
+    while (cacheRescGrpInfo != NULL) {
+	tmpRescGrpInfo = cacheRescGrpInfo;
+	nextCacheRescGrpInfo = cacheRescGrpInfo->cacheNext;
+        while (tmpRescGrpInfo != NULL) {
+	    nextRescGrpInfo = tmpRescGrpInfo->next;
+	    free (tmpRescGrpInfo);
+	    tmpRescGrpInfo = nextRescGrpInfo;
+	}
+	cacheRescGrpInfo = nextCacheRescGrpInfo;
     }
     return (0);
 }

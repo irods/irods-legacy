@@ -115,7 +115,7 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
 	int rescClass = getRescClass (tmpDataObjInfo->rescInfo);
 	if (rescClass  == COMPOUND_CL) {
 	    /* do we have a good cache copy ? */
-            if ((status = getCacheDataInfoForRepl (*dataObjInfoHead,
+            if ((status = getCacheDataInfoForRepl (rsComm, *dataObjInfoHead,
                   NULL, tmpDataObjInfo, &outDataObjInfo)) >= 0) {
 		tmpDataObjInfo = tmpDataObjInfo->next;
 		status = 0;
