@@ -115,6 +115,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
 	tmpRescInfo = tmpRescGrpInfo->rescInfo;
+#if 0	/* try to handle COMPOUND_CL */
 	if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
 	    /* cannot create directly in COMPOUND_CL type resource */
             rodsLog (LOG_ERROR,
@@ -122,6 +123,7 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	      tmpRescInfo->rescName, tmpRescGrpInfo->rescGroupName);
             return (SYS_CANT_DIRECTLY_ACC_COMPOUND_RESC);
 	}
+#endif
 	status = l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp, 
 	  tmpRescInfo, myRescGrpInfo->rescGroupName);
 
@@ -215,14 +217,38 @@ rescInfo_t *rescInfo, char *rescGroupName)
     int l1descInx;
     int status;
 
-    dataObjInfo = malloc (sizeof (dataObjInfo_t));
-    initDataObjInfoWithInp (dataObjInfo, dataObjInp);
-    dataObjInfo->replStatus = NEWLY_CREATED_COPY;
-    dataObjInfo->rescInfo = rescInfo;
-    rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
-    rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
     l1descInx = allocL1desc ();
     if (l1descInx < 0) return l1descInx;
+
+    dataObjInfo = malloc (sizeof (dataObjInfo_t));
+    initDataObjInfoWithInp (dataObjInfo, dataObjInp);
+#if 0	/* not needed */
+    dataObjInfo->replStatus = NEWLY_CREATED_COPY;
+#endif
+    if (getRescClass (rescInfo) == COMPOUND_CL) {
+	rescInfo_t *cacheResc = NULL;
+	char myRescGroupName[NAME_LEN];
+
+	rstrcpy (myRescGroupName, rescGroupName, NAME_LEN);
+        status = getCacheRescInGrp (rsComm, myRescGroupName, rescInfo, 
+	  &cacheResc);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "DataObjCreateWithResInfo:getCacheRescInGrp %s err for %s stat=%d",
+             rescGroupName, dataObjInfo->objPath, status);
+	    free (dataObjInfo);
+	    freeL1desc (l1descInx);
+            return status;
+        }
+	L1desc[l1descInx].replRescInfo = rescInfo;	/* repl to this resc */
+        dataObjInfo->rescInfo = cacheResc;
+        rstrcpy (dataObjInfo->rescName, cacheResc->rescName, NAME_LEN);
+        rstrcpy (dataObjInfo->rescGroupName, myRescGroupName, NAME_LEN);
+    } else {
+        dataObjInfo->rescInfo = rescInfo;
+        rstrcpy (dataObjInfo->rescName, rescInfo->rescName, NAME_LEN);
+        rstrcpy (dataObjInfo->rescGroupName, rescGroupName, NAME_LEN);
+    }
     fillL1desc (l1descInx, dataObjInp, dataObjInfo, NEWLY_CREATED_COPY,
       dataObjInp->dataSize);
 

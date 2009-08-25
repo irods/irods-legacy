@@ -22,6 +22,7 @@
 #include "subStructFileStat.h"
 #include "subStructFileClose.h"
 #include "regDataObj.h"
+#include "dataObjRepl.h"
 
 #ifdef LOG_TRANSFERS
 #include <sys/time.h>
@@ -456,10 +457,6 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         if (status < 0) {
             return (status);
         }
-
-        if (status < 0) {
-            return (status);
-        }
     }
 
     /* XXXXXX need to replicate to moreRescGrpInfo */
@@ -467,6 +464,19 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     /* for post processing */
     L1desc[l1descInx].bytesWritten = myDataObjInfo->dataSize = newSize;
 
+    if (L1desc[l1descInx].replRescInfo != NULL && 
+      getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
+	status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp, 
+	  myDataObjInfo, L1desc[l1descInx].replRescInfo, 
+	  myDataObjInfo->rescGroupName, NULL);
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
+                myDataObjInfo->objPath, status);
+	    return status;
+        }
+    }
+	
 #ifdef LOG_TRANSFERS
     /* transfer logging */
     if (L1desc[l1descInx].oprType == PUT_OPR ||
