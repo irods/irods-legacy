@@ -61,6 +61,8 @@ typedef struct l1desc {
     int remoteL1descInx;
     int stageFlag;
     rescInfo_t *replRescInfo;	/* if non NULL, repl to this resc on close */
+    dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
+				     * on close */
     rodsServerHost_t *remoteZoneHost;
 } l1desc_t;
 

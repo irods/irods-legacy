@@ -132,6 +132,10 @@ freeL1desc (int l1descInx)
         freeAllDataObjInfo (L1desc[l1descInx].otherDataObjInfo);
     }
 
+    if (L1desc[l1descInx].replDataObjInfo != NULL) {
+        freeDataObjInfo (L1desc[l1descInx].replDataObjInfo);
+    }
+
     if (L1desc[l1descInx].dataObjInpReplFlag == 1 &&
       L1desc[l1descInx].dataObjInp != NULL) {
 	clearDataObjInp (L1desc[l1descInx].dataObjInp);

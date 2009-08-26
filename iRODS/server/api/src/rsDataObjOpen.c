@@ -66,6 +66,9 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *otherDataObjInfo = NULL;
     dataObjInfo_t *nextDataObjInfo = NULL;
     dataObjInfo_t *tmpDataObjInfo; 
+    dataObjInfo_t *replDataObjInfo = NULL;
+    dataObjInfo_t *cacheDataObjInfo = NULL;
+    rescInfo_t *compRescInfo = NULL;
     int l1descInx;
     int writeFlag;
     int rescClass;
@@ -107,15 +110,36 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	/* status < 0 means there is no copy in the DEST_RESC */
 	if (status < 0 && getStructFileType (dataObjInfoHead->specColl) < 0 &&
 	  getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
+	    rescGrpInfo_t *myRescGrpInfo = NULL;
 	    /* we don't have a copy in the DEST_RESC_NAME */
-	    status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
-	    if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "_rsDataObjOpen: createEmptyRepl of %s failed, status = %d",
-          	  dataObjInfoHead->objPath, status);
-                freeAllDataObjInfo (dataObjInfoHead);
-		return status;
+            status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+            if (status < 0) return status;
+	    if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
+		status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+		  dataObjInfoHead, NULL, myRescGrpInfo, NULL, 
+		  &cacheDataObjInfo);
+                if (status < 0) {
+                    rodsLog (LOG_ERROR,
+                      "_rsDataObjOpen: getCacheDataInfo of %s failed, stat=%d",
+                      dataObjInfoHead->objPath, status);
+                    freeAllDataObjInfo (dataObjInfoHead);
+                    freeAllRescGrpInfo (myRescGrpInfo);
+                    return status;
+                } else {
+		    compRescInfo = myRescGrpInfo->rescInfo;
+		}
+	    } else {
+	        status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
+	        if (status < 0) {
+                    rodsLog (LOG_ERROR,
+                      "_rsDataObjOpen: createEmptyRepl of %s failed, stat=%d",
+          	      dataObjInfoHead->objPath, status);
+                    freeAllDataObjInfo (dataObjInfoHead);
+	    	    freeAllRescGrpInfo (myRescGrpInfo);
+		    return status;
+	        }
 	    }
+	    freeAllRescGrpInfo (myRescGrpInfo);
 	}
     }
 
@@ -131,8 +155,13 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             return SYS_CANT_DIRECTLY_ACC_COMPOUND_RESC;
 	}
 #endif
+        if (writeFlag > 0) {
+            /* save it. It can be taken out by stageAndRequeDataToCache */
+            replDataObjInfo = malloc (sizeof (dataObjInfo_t));
+	    *replDataObjInfo = *dataObjInfoHead;
+	}
 	status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
-        if (status < 0) {
+        if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
             rodsLog (LOG_ERROR,
               "_rsDataObjOpen: stageAndRequeDataToCache of %s failed stat=%d",
               dataObjInfoHead->objPath, status);
@@ -154,6 +183,18 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
+	if (writeFlag > 0) {
+	    if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
+	        if (replDataObjInfo != NULL) freeDataObjInfo (replDataObjInfo);
+	        replDataObjInfo = tmpDataObjInfo;
+	        tmpDataObjInfo = nextDataObjInfo;
+	        continue;
+	    } else if (cacheDataObjInfo != NULL && 
+	      tmpDataObjInfo != cacheDataObjInfo) {
+                replDataObjInfo = tmpDataObjInfo;
+                tmpDataObjInfo = nextDataObjInfo;
+	    }
+	}
 	status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,
 	  phyOpenFlag, tmpDataObjInfo);
 
@@ -161,11 +202,16 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	    /* copiesNeeded condition met */
             queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 1, 1);
             L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
+	    if (replDataObjInfo != NULL) {
+		 L1desc[l1descInx].replDataObjInfo = replDataObjInfo;
+	    } else if (compRescInfo != NULL) {
+		L1desc[l1descInx].replRescInfo = compRescInfo;
+	    }
 	    if (writeFlag > 0) {
 	        L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;
 	    } else {
                L1desc[l1descInx].openType = OPEN_FOR_READ_TYPE;
-	    };
+	    }
             return (l1descInx);
 	}
         tmpDataObjInfo = nextDataObjInfo;

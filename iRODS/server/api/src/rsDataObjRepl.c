@@ -138,6 +138,10 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         status = resolveSingleReplCopy (&dataObjInfoHead, &oldDataObjInfoHead,
           &myRescGrpInfo, &destDataObjInfo, &dataObjInp->condInput);
         if (status == HAVE_GOOD_COPY || status == CAT_NO_ROWS_FOUND) {
+	    if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
+		/* pass back the GOOD_COPY */
+		*outDataObjInfo = *destDataObjInfo;
+	    }
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
             freeAllRescGrpInfo (myRescGrpInfo);
@@ -897,7 +901,7 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
       dataObjInfoHead->rescInfo, &cacheResc);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-         "stageDataFromCompToCache: getCacheRescInGrp %s failed for %s stat=%d",
+         "stageAndRequeDataToCache: getCacheRescInGrp %s failed for %s stat=%d",
           dataObjInfoHead->rescGroupName, dataObjInfoHead->objPath, status);
         return status;
     }

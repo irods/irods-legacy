@@ -252,8 +252,13 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	return L1desc[l1descInx].oprStatus;
     }
 
+    if (dataObjCloseInp->bytesWritten > 0 &&
+      L1desc[l1descInx].bytesWritten <= 0) {
+        L1desc[l1descInx].bytesWritten =
+          dataObjCloseInp->bytesWritten;
+    }
+
     if (L1desc[l1descInx].bytesWritten <= 0 && 
-      dataObjCloseInp->bytesWritten <= 0 &&
       L1desc[l1descInx].oprType != REPLICATE_DEST &&
       L1desc[l1descInx].oprType != PHYMV_DEST) {
         /* no write */
@@ -459,11 +464,6 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         }
     }
 
-    /* XXXXXX need to replicate to moreRescGrpInfo */
-
-    /* for post processing */
-    L1desc[l1descInx].bytesWritten = myDataObjInfo->dataSize = newSize;
-
     if (L1desc[l1descInx].replRescInfo != NULL && 
       getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
 	status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp, 
@@ -475,8 +475,29 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
                 myDataObjInfo->objPath, status);
 	    return status;
         }
+    } else if (L1desc[l1descInx].replDataObjInfo != NULL &&
+      getRescClass (L1desc[l1descInx].replDataObjInfo->rescInfo) == 
+      COMPOUND_CL) {
+	if (L1desc[l1descInx].bytesWritten > 0)
+	    myDataObjInfo->replStatus |= NEWLY_CREATED_COPY;
+	L1desc[l1descInx].replDataObjInfo->replStatus = 
+	  myDataObjInfo->replStatus;
+        status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp,
+          myDataObjInfo, L1desc[l1descInx].replDataObjInfo->rescInfo,
+          myDataObjInfo->rescGroupName, L1desc[l1descInx].replDataObjInfo);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
+                myDataObjInfo->objPath, status);
+            return status;
+        }
     }
-	
+
+    /* XXXXXX need to replicate to moreRescGrpInfo */
+
+    /* for post processing */
+    L1desc[l1descInx].bytesWritten = myDataObjInfo->dataSize = newSize;
+
 #ifdef LOG_TRANSFERS
     /* transfer logging */
     if (L1desc[l1descInx].oprType == PUT_OPR ||

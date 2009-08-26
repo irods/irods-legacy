@@ -1791,7 +1791,8 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
     if ((*destRescGrpInfo)->next == NULL ||
       strlen ((*destRescGrpInfo)->rescGroupName) == 0) {
         /* single target resource */
-        if (chkCopyInResc (*dataObjInfoHead, *destRescGrpInfo) != NULL) {
+        if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
+	  *destRescGrpInfo)) != NULL) {
             /* have a good copy already */
             return (HAVE_GOOD_COPY);
 	}
