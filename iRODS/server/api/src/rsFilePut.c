@@ -84,6 +84,8 @@ bytesBuf_t *filePutInpBBuf, rodsServerHost_t *rodsServerHost)
 
     /* XXXXX this test does not seem to work for i86 solaris */
     if ((filePutInp->otherFlags & FORCE_FLAG) != 0) {
+	/* create on if it does not exist */
+	filePutInp->flags |= O_CREAT;
         fd = _rsFileOpen (rsComm, filePutInp);
     } else {
 	fd = _rsFileCreate (rsComm, filePutInp, rodsServerHost);
