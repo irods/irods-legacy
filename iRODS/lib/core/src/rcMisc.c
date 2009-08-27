@@ -1238,6 +1238,9 @@ clearDataObjCopyInp (dataObjCopyInp_t *dataObjCopyInp)
     clearKeyVal (&dataObjCopyInp->destDataObjInp.condInput);
     clearKeyVal (&dataObjCopyInp->srcDataObjInp.condInput);
 
+    if (dataObjCopyInp->srcDataObjInp.specColl != NULL)
+	free (dataObjCopyInp->srcDataObjInp.specColl);
+
     memset (dataObjCopyInp, 0, sizeof (dataObjCopyInp_t));
 
     return (0);
