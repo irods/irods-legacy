@@ -115,6 +115,9 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
             if (status < 0) return status;
 	    if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
+		/* have to save dataSize because it could be changed in
+		 * getCacheDataInfoOfCompResc */
+		rodsLong_t dataSize = dataObjInp->dataSize;
 		status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
 		  dataObjInfoHead, NULL, myRescGrpInfo, NULL, 
 		  &cacheDataObjInfo);
@@ -127,6 +130,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                     return status;
                 } else {
 		    compRescInfo = myRescGrpInfo->rescInfo;
+		     dataObjInp->dataSize = dataSize;
 		}
 	    } else {
 	        status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
@@ -191,8 +195,13 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	        continue;
 	    } else if (cacheDataObjInfo != NULL && 
 	      tmpDataObjInfo != cacheDataObjInfo) {
+		/* skip anything that does not match cacheDataObjInfo */
+                queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
+#if 0
                 replDataObjInfo = tmpDataObjInfo;
+#endif
                 tmpDataObjInfo = nextDataObjInfo;
+		continue;
 	    }
 	}
 	status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,
@@ -200,6 +209,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
         if (status >= 0) {
 	    /* copiesNeeded condition met */
+	    /* XXXXXX should  singleInfoFlag set to zero ? */
             queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 1, 1);
             L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
 	    if (replDataObjInfo != NULL) {

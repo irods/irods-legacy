@@ -442,6 +442,8 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         if (myDataObjInfo == NULL || myDataObjInfo->dataSize != newSize) {
             snprintf (tmpStr, MAX_NAME_LEN, "%lld", newSize);
             addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
+	    /* update this in case we need to replicate it */
+	    myDataObjInfo->dataSize = newSize;
 	}
 
 	if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
@@ -466,6 +468,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
     if (L1desc[l1descInx].replRescInfo != NULL && 
       getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
+	L1desc[l1descInx].dataObjInp->dataSize = myDataObjInfo->dataSize;
 	status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp, 
 	  myDataObjInfo, L1desc[l1descInx].replRescInfo, 
 	  myDataObjInfo->rescGroupName, NULL);
@@ -478,6 +481,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     } else if (L1desc[l1descInx].replDataObjInfo != NULL &&
       getRescClass (L1desc[l1descInx].replDataObjInfo->rescInfo) == 
       COMPOUND_CL) {
+	L1desc[l1descInx].dataObjInp->dataSize = myDataObjInfo->dataSize;
 	if (L1desc[l1descInx].bytesWritten > 0)
 	    myDataObjInfo->replStatus |= NEWLY_CREATED_COPY;
 	L1desc[l1descInx].replDataObjInfo->replStatus = 
