@@ -142,7 +142,10 @@ structFileExtAndRegInp_t *structFileBundleInp)
         return (handleInx);
     }
 
+#if 0
     collLen = strlen (collInp.collName) + 1;
+#endif
+    collLen = strlen (collInp.collName);
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->objType == DATA_OBJ_T) {
@@ -151,7 +154,10 @@ structFileExtAndRegInp_t *structFileBundleInp)
                   phyBunDir, collEnt->dataName);
             } else {
                 snprintf (tmpPath, MAX_NAME_LEN, "%s/%s/%s",
+#if 0
                   phyBunDir, collEnt->collName + collLen, collEnt->dataName);
+#endif            
+                 phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName);               
 	        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, phyBunDir, 
 	          tmpPath, DEFAULT_DIR_MODE);
             }
