@@ -115,6 +115,8 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
             if (status < 0) return status;
 	    if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
+	        /* get here because the comp object does not exist. Find
+		 * a cache copy. If one does not exist, stage one to cache */
 		/* have to save dataSize because it could be changed in
 		 * getCacheDataInfoOfCompResc */
 		rodsLong_t dataSize = dataObjInp->dataSize;
@@ -149,18 +151,10 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     rescClass = getRescClass (dataObjInfoHead->rescInfo);
     if (rescClass == COMPOUND_CL) {
-#if 0	/* not sure we need this */
-	if (writeFlag > 0 && 
-	  getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
-            rodsLog (LOG_ERROR,
-              "_rsDataObjOpen: %s - cannot directly write iinto COMPOUND resc",
-              dataObjInfoHead->objPath);
-            freeAllDataObjInfo (dataObjInfoHead);
-            return SYS_CANT_DIRECTLY_ACC_COMPOUND_RESC;
-	}
-#endif
+	/* The comp Object exist */
         if (writeFlag > 0) {
-            /* save it. It can be taken out by stageAndRequeDataToCache */
+            /* save the comp object. It can be requeued by 
+	     * stageAndRequeDataToCache */
             replDataObjInfo = malloc (sizeof (dataObjInfo_t));
 	    *replDataObjInfo = *dataObjInfoHead;
 	}
@@ -197,9 +191,6 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	      tmpDataObjInfo != cacheDataObjInfo) {
 		/* skip anything that does not match cacheDataObjInfo */
                 queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
-#if 0
-                replDataObjInfo = tmpDataObjInfo;
-#endif
                 tmpDataObjInfo = nextDataObjInfo;
 		continue;
 	    }
