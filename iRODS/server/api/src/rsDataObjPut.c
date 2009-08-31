@@ -216,6 +216,10 @@ bytesBuf_t *dataObjInpBBuf)
                   "l3DataPutSingleBuf: rsRegDataObj for %s failed, status = %d",
                   myDataObjInfo->objPath, status);
 		l3Unlink (rsComm, myDataObjInfo);
+                memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+                dataObjCloseInp.l1descInx = l1descInx;
+		L1desc[l1descInx].bytesWritten = 0;
+                rsDataObjClose (rsComm, &dataObjCloseInp);
                 return (status);
 	    } else {
                 myDataObjInfo->replNum = status;
