@@ -906,7 +906,7 @@ uint mtime, uint atime)
     stbuf->st_blocks = (stbuf->st_size / FILE_BLOCK_SZ) + 1;
 
     stbuf->st_nlink = 1;
-    stbuf->__st_ino = stbuf->st_ino = random ();
+    stbuf->st_ino = random ();
     stbuf->st_ctime = ctime;
     stbuf->st_mtime = mtime;
     stbuf->st_atime = atime;
@@ -923,7 +923,7 @@ fillDirStat (struct stat *stbuf, uint ctime, uint mtime, uint atime)
     stbuf->st_size = DIR_SZ;
 
     stbuf->st_nlink = 2;
-    stbuf->__st_ino = stbuf->st_ino = random ();
+    stbuf->st_ino = random ();
     stbuf->st_ctime = ctime;
     stbuf->st_mtime = mtime;
     stbuf->st_atime = atime;
