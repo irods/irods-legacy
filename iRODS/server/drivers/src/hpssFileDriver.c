@@ -411,6 +411,9 @@ hpssOpenForWrite (char *destHpssFile, int mode, int flags, rodsLong_t dataSize)
     int myCos;
     int destFd;
     int myFlags;
+    int status;
+
+    if ((status = initHpssAuth ()) < 0) return status;
 
     myFlags = O_CREAT | O_TRUNC | O_RDWR;
     (void) hpss_Umask((mode_t) 0000);
@@ -446,7 +449,7 @@ hpssOpenForWrite (char *destHpssFile, int mode, int flags, rodsLong_t dataSize)
              "hpssOpenForWrite: hpss_Open error, status = %d\n",
              destFd);
 	}
-        destFd = HPSS_FILE_RENAME_ERR + destFd;
+        destFd = HPSS_FILE_OPEN_ERR + destFd;
     }
     return destFd;
 }
@@ -457,6 +460,10 @@ hpssOpenForRead (char *srcHpssFile, int flags)
     int srcFd;
     int myFlags;
 
+    int status;
+
+    if ((status = initHpssAuth ()) < 0) return status;
+
     myFlags = O_RDONLY;
     srcFd = hpss_Open (srcHpssFile, myFlags, 0, NULL, NULL, NULL);
 
@@ -465,7 +472,7 @@ hpssOpenForRead (char *srcHpssFile, int flags)
             rodsLog (LOG_ERROR,
              "hpssOpenForRead: hpss_Open error, status = %d\n", srcFd);
         }
-        srcFd = HPSS_FILE_RENAME_ERR + srcFd;
+        srcFd = HPSS_FILE_OPEN_ERR + srcFd;
     }
     return srcFd;
 }
