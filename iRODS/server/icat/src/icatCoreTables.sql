@@ -1,15 +1,21 @@
 
+/*******************************************************************************
+  These are the Core Tables in the RODS Catalog 
+    RSYSOCORE_SCHEMAS        - Schemas defines in the RODS catalog
+    RCORE_TABLES         - Tables in the RCORE_SCHEMAS
+    RCORE_ATTRIBUTES     - ATtributes in RCORE_TABLES
+    RCORE_FK_RELATIONS   - Relationships across two tables
+    RCORE_USER_SCHEMAS   - User Schemas 
+    RCORE_USCHEMA_ATTR   - Attributes in User Schemas
 
+  The column lengths are used as follows:
+    ids                - bigint (64 bits)
+    dates              - varchar(32)
+    short strings      - varchar(250)
+    long strings       - varchar(1000)
+    very long strings  - varchar(2700)
 
-
-
-
-
-
-
-
-
-
+*******************************************************************************/
 
 create table RCORE_SCHEMAS
  (

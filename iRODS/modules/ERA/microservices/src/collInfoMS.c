@@ -716,7 +716,7 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 	collEnt_t *collEnt;						/* input for rsReadCollection */
 	int handleInx;							/* collection handler */
 	msParam_t *msParam;						/* temporary pointer for parameter substitution */
-	dataObjInp_t *dataObjInp;				/* will contain pathnames for each object (one at a time) */
+	dataObjInp_t dataObjInp;				/* will contain pathnames for each object (one at a time) */
 
 	
 	
@@ -761,17 +761,13 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
     	rodsLog (LOG_ERROR, "msiIsCollectionSpider: input action error. status = %d", rei->status);
 		return (rei->status);
     }
-    
-    
-    /* Allocate memory for dataObjInp. Needs to be persistent since will be freed later along with other msParams */
-    dataObjInp = (dataObjInp_t *)malloc(sizeof(dataObjInp_t));
 
 
-	/* In our array of msParams, fill the one whose label is the same as 'objects' with a pointer to *dataObjInp */
+	/* In our array of msParams, fill the one whose label is the same as 'objects' with a pointer to dataObjInp */
 	msParam = getMsParamByLabel(rei->msParamArray, objects->label);
 	resetMsParam (msParam);
-	msParam->type = strdup(DataObjInp_MS_T);
-	msParam->inOutStruct = (void *)dataObjInp;
+	msParam->type = strdup (DataObjInp_MS_T);
+	msParam->inOutStruct = (void *) &dataObjInp;
 
 
 
@@ -794,8 +790,8 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 		if (collEnt->objType == DATA_OBJ_T)
 		{
 			/* Write our current object's path in dataObjInp, where the inOutStruct in 'objects' points to */
-			memset(dataObjInp, 0, sizeof(dataObjInp_t));
-			snprintf(dataObjInp->objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
+			memset(&dataObjInp, 0, sizeof(dataObjInp_t));
+			snprintf(dataObjInp.objPath, MAX_NAME_LEN, "%s/%s", collEnt->collName, collEnt->dataName);
 		
 		
 			/* And finally... run actionStr on our object */

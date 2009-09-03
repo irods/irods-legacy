@@ -556,8 +556,7 @@ msiGetDataObjAVUs(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 
   fillBufLenInMsParam (outParam, strlen(mybuf->buf), mybuf);
 
-  /* rei->status may be CAT_NO_ROWS_FOUND, so don't return it */
-  return (0);
+  return (rei->status);
 
 }
 
@@ -1925,7 +1924,6 @@ int
 msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
 {
 	char *dataTypeStr, *dataIdStr;		/* for parsing of input params */
-	dataObjInp_t dataObjInp, *myDataObjInp;
 	
 	modDataObjMeta_t modDataObjMetaInp;	/* for rsModDataObjMeta() */
 	dataObjInfo_t dataObjInfo;		/* for rsModDataObjMeta() */
@@ -1947,8 +1945,8 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
 
 
 	/* parse inpParam2: data object path */
-	if ( parseMspForDataObjInp (inpParam2, &dataObjInp, &myDataObjInp, 0) >= 0) {
-		strncpy(dataObjInfo.objPath, dataObjInp.objPath, MAX_NAME_LEN);
+	if (parseMspForStr(inpParam2)) {
+		strncpy(dataObjInfo.objPath, parseMspForStr(inpParam2), MAX_NAME_LEN);
 	}
 
 
@@ -2041,8 +2039,6 @@ int
 msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
 	char *pathStr, *extStr;			/* for parsing of input params */
-	dataObjInp_t dataObjInp, *myDataObjInp;
-	
 	genQueryInp_t genQueryInp;		/* for query inputs */
 	char condStr[MAX_NAME_LEN];		/* for query condition */
 	genQueryOut_t *genQueryOut;		/* for query results */
@@ -2058,12 +2054,10 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
 
 
 	/* parse inpParam1: data object path */
-	rei->status = parseMspForDataObjInp (inpParam1, &dataObjInp, &myDataObjInp, 0);
-	if (rei->status < 0) {
+	if ((pathStr = parseMspForStr(inpParam1)) == NULL)  {
 		rodsLog (LOG_ERROR, "msiGuessDataType: No data object path provided.");
-		return (rei->status);
-	}	
-	pathStr = dataObjInp.objPath;
+		return (USER__NULL_INPUT_ERR);
+	}
 
 	
 	/* get the file extension. If no extension, data type is 'generic' */
@@ -2170,8 +2164,6 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     
     char tmpPath[MAX_NAME_LEN], *tmpPtr;				/* placeholder for temporary paths */
     
-    collInp_t collCreateInp;							/* for creating missing parent collections under master coll */
-    
     dataObjInfo_t *currentDataObjInfo = NULL;			/* output of getDataObjInfo, and destination input for rsRegReplica() */
     dataObjInfo_t *masterDataObjInfo = NULL;			/* source input for rsRegReplica() */
     
@@ -2244,23 +2236,6 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     /* If not, move the object to the master collection */
     if (masterObjId <= 0)
     {
-    	/* Create missing parent collections if needed */
-    	memset (&collCreateInp, 0, sizeof(collInp_t));
-    	addKeyVal (&collCreateInp.condInput, RECURSIVE_OPR__KW, "");
-    	
-    	/* Separate parent collection from target object */
-    	strncpy (collCreateInp.collName, masterObjInp.objPath, MAX_NAME_LEN-1);
-    	tmpPtr = strrchr(collCreateInp.collName, '/');
-    	*tmpPtr = '\0';
-
-		/* Invoke rsCollCreate */
-    	rei->status = rsCollCreate (rei->rsComm, &collCreateInp);
-    	if (rei->status < 0) {
-			rodsLog (LOG_ERROR, "msiMergeDataCopies: rsCollCreate error. status = %d", rei->status);
-			return (rei->status);
-		}
-    	
-    	
     	/* Set up the source and destination fields of our dataObjCopyInp_t */
     	memset (&dataObjRenameInp, 0, sizeof(dataObjCopyInp_t));
     	strncpy (dataObjRenameInp.srcDataObjInp.objPath, currentObjInp->objPath, MAX_NAME_LEN-1);
