@@ -3107,8 +3107,23 @@ dataObjInfo_t **outDataObjInfo)
 		/* update the rescGroupName */
 		rstrcpy (compDataObjInfo->rescGroupName, 
 		  tmpRescGrpInfo->rescGroupName, NAME_LEN);
+		rstrcpy ((*outDataObjInfo)->rescGroupName, 
+		  tmpRescGrpInfo->rescGroupName, NAME_LEN);
 		freeAllRescGrpInfo (rescGrpInfo);
 		return 0;
+	    } else {
+	        status = getNonGrpCacheDataInfoInRescGrp (srcDataObjInfoHead,
+                  destDataObjInfoHead, tmpRescGrpInfo,
+                  compDataObjInfo, outDataObjInfo);
+                if (status >= 0) {
+                    /* update the rescGroupName */
+                    rstrcpy (compDataObjInfo->rescGroupName,
+                      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+		    rstrcpy ((*outDataObjInfo)->rescGroupName, 
+		      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+                    freeAllRescGrpInfo (rescGrpInfo);
+                    return 0;
+		}
 	    }
             tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
 	}
@@ -3119,6 +3134,55 @@ dataObjInfo_t **outDataObjInfo)
           destDataObjInfoHead, rescGroupName, compDataObjInfo, outDataObjInfo);
     }
     return status;
+}
+
+/* getNonGrpCacheDataInfoInRescGrp - get the cache dataObjInfo even
+ * if it does not belong to the same group */
+
+int
+getNonGrpCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, rescGrpInfo_t *rescGrpInfo,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo)
+{
+    dataObjInfo_t *srcDataObjInfo;
+    rescGrpInfo_t *tmpRescGrpInfo;
+
+    srcDataObjInfo = srcDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+	    tmpRescGrpInfo = rescGrpInfo;
+	    while (tmpRescGrpInfo != NULL) {
+		if (strcmp (srcDataObjInfo->rescInfo->rescName,
+		  tmpRescGrpInfo->rescInfo->rescName) == 0) {
+		    *outDataObjInfo = srcDataObjInfo;
+		    return 0;
+		}
+		tmpRescGrpInfo = tmpRescGrpInfo->next;
+	    }
+	}
+	srcDataObjInfo = srcDataObjInfo->next;
+    }
+
+    /* try destDataObjInfoHead but up to compDataObjInfo because
+     * they have been updated and are good copies */
+
+    srcDataObjInfo = destDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (srcDataObjInfo == compDataObjInfo) break;
+        if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+            tmpRescGrpInfo = rescGrpInfo;
+            while (tmpRescGrpInfo != NULL) {
+                if (strcmp (srcDataObjInfo->rescInfo->rescName,
+                  tmpRescGrpInfo->rescInfo->rescName) == 0) {
+                    *outDataObjInfo = srcDataObjInfo;
+                    return 0;
+                }
+                tmpRescGrpInfo = tmpRescGrpInfo->next;
+            }
+        }
+        srcDataObjInfo = srcDataObjInfo->next;
+    }
+    return SYS_NO_CACHE_RESC_IN_GRP;
 }
 
 int

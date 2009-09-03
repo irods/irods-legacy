@@ -863,6 +863,9 @@ dataObjInfo_t *outCacheObjInfo)
     dataObjInp_t dataObjInp;
 
     if (getRescClass (compObjInfo->rescInfo) != COMPOUND_CL) return 0;
+    /* this check prevent infinite rsDataObjReplWithOutDataObj call */
+    if (strlen (compObjInfo->rescGroupName) == 0)
+	return SYS_NO_CACHE_RESC_IN_GRP;
 
     status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
       compObjInfo->rescInfo, &cacheResc);
@@ -884,6 +887,7 @@ dataObjInfo_t *outCacheObjInfo)
 
     status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp, &transStat,
       outCacheObjInfo);
+
     clearKeyVal (&dataObjInp.condInput);
     return status;
 }

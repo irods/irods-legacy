@@ -230,6 +230,10 @@ getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
 dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
 dataObjInfo_t **outDataObjInfo);
 int
+getNonGrpCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, rescGrpInfo_t *rescGrpInfo,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
+int
 getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
 dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
 dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
