@@ -1,63 +1,15 @@
 
-/*****************************************************************************
-  These are the System Tables in the RODS Catalog 
-    R_DATA_xxx            - Tables defining Data Info
-    R_ZONE_xxx            - Tables defining Zone Info
-    R_USER_xxx            - Tables defining User Info
-    R_RESC_xxx            - Tables defining Resource Info
-    R_COLL_xxx            - Tables defining Collection Info
-    R_META_xxx            - Tables defining Metadata Info
-    R_TOKN_xxx            - Tables defining Token Info
-    R_RULE_xxx            - Tables defining Rules Info 
-    R_OBJT_xxx            - Tables defining info applicable to multiple 
-                                 first-class objects
-  The column lengths are used as follows:
-    ids                - bigint (64 bit)
-    dates              - varchar(32)
-    short strings      - varchar(250)
-    long strings       - varchar(1000)
-    very long strings  - varchar(2700)
 
-  R_TOKN_MAIN table is like a meta table for holding all
-    reserved keywords/tokens/systemic ontologies that are used by
-    the other RODS table. For example, one may store information
-    about the data_types in here instead of storing them in a 
-    separate table. 
-    
-    Hence rows such as 
-        token_id        = 1000
-        token_namespace = 'data_type' 
-        token_name      = 'gif image'
-    or
-        token_id        = 20
-        token_namespace = 'access_type'
-        token_name      = 'write'
-        token_value     = '020' 
-    will provide the keyword for the different token types.
 
-    This is actually a multi-hierarchy table because what is used in the
-    'token_namespace' column should be validated. To assist with that, 
-    we use the string 'token_namespace' as a reserved keyword and use it to
-    boot-strap the other tokens. Hence, on installation, there will be a 
-    namespace called 'token_namespace' with the following token_names: 
-         'data_type', 'object_type','zone_type','resc_type',
-          'user_type','action_type','rulexec_type','access_type',
-          'resc_class','coll_map', 'data_type_dot_ext', 'data_type_mime',
-	  'auth_scheme_type'.
 
-    On installation, each of the above mentioned namespaces will have  
-    at least one token_name called 'generic' associated with them.
-    On installation, other values might be populated for a few 
-    token_namespaces.
-    
-    Whenever a new value for a token is introduced. the token_type is checked 
-    to see if the token_namespace is a valid one, and the triple
-    (token_namespace, token_name, token_value) is checked for uniqueness 
-    before being added.
 
-    Wheneever a token value is filled in any other table, it is checked 
-    against the R_TOKN_MAIN table for validity.
-*******************************************************/
+
+
+
+
+
+
+
 
 create table R_ZONE_MAIN
  (
@@ -118,10 +70,10 @@ create table R_COLL_MAIN
    modify_ts           varchar(32)
  );
 
-/* 
-  The data_is_dirty column is replStatus in the DataObjStatus structure.
-  The data_status column is statusString (unused, currently).
-*/
+
+
+
+
 create table R_DATA_MAIN
  (
    data_id             bigint not null,
@@ -302,10 +254,10 @@ create table R_SERVER_LOAD_DIGEST
     create_ts varchar(32)
 );
 
-/*
- Optional user authentication information,
- GSI DN(s) or Kerberos Principal name(s)
-*/
+
+
+
+
 create table R_USER_AUTH
 (
    user_id             bigint not null,
@@ -314,7 +266,14 @@ create table R_USER_AUTH
 );
 
 
+
+
 create sequence R_ObjectId increment by 1 start with 10000;
+
+
+
+
+
 
 create unique index idx_zone_main1 on R_ZONE_MAIN (zone_id);
 create unique index idx_zone_main2 on R_ZONE_MAIN (zone_name);
@@ -323,9 +282,9 @@ create unique index idx_user_main2 on R_USER_MAIN (user_name,zone_name);
 create index idx_resc_main1 on R_RESC_MAIN (resc_id);
 create unique index idx_resc_main2 on R_RESC_MAIN (zone_name,resc_name);
 create index idx_coll_main1 on R_COLL_MAIN (coll_id);
-create unique index idx_coll_main2 on R_COLL_MAIN (parent_coll_name,coll_name);
+create unique index idx_coll_main2 on R_COLL_MAIN (parent_coll_name ,coll_name );
 create index idx_data_main1 on R_DATA_MAIN (data_id);
-create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name,data_repl_num,data_version);
+create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name ,data_repl_num,data_version);
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
 create unique index idx_rule_main1 on R_RULE_MAIN (rule_id);
 create unique index idx_rule_exec on R_RULE_EXEC (rule_exec_id);
