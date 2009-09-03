@@ -43,7 +43,7 @@ INCLUDE_FLAGS =	-I$(MSIncDir)
 # xml2-config and xslt-config on your platform to get the values below.
 #
 INCLUDE_FLAGS += -I/usr/include/libxml2
-LIBS =		-L/usr/lib -lxslt -lxml2
+LIBS =	-L/usr/lib -lxslt -lxml2 -lz -lpthread -licucore -lm	
 
 
 

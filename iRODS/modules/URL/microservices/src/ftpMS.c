@@ -21,11 +21,11 @@
 /* custom callback function for the cURL handler */
 static size_t createAndWriteToDataObj(void *buffer, size_t size, size_t nmemb, void *stream)
 {
-	dataObjFtpInp_t *dataObjFtpInp;		/* the "file descriptor" for our destination object */
-	dataObjInp_t dataObjInp;		/* input structure for rsDataObjCreate */
-	dataObjWriteInp_t dataObjWriteInp;	/* input structure for rsDataObjWrite */
-	bytesBuf_t bytesBuf;			/* input buffer for rsDataObjWrite */
-	size_t written;				/* output value */
+	dataObjFtpInp_t *dataObjFtpInp;			/* the "file descriptor" for our destination object */
+	dataObjInp_t dataObjInp;				/* input structure for rsDataObjCreate */
+	openedDataObjInp_t openedDataObjInp;	/* input structure for rsDataObjWrite */
+	bytesBuf_t bytesBuf;					/* input buffer for rsDataObjWrite */
+	size_t written;							/* output value */
 
 
 	/* retrieve dataObjFtpInp_t input */
@@ -34,7 +34,7 @@ static size_t createAndWriteToDataObj(void *buffer, size_t size, size_t nmemb, v
 
 	/* to avoid unpleasant surprises */
 	memset(&dataObjInp, 0, sizeof(dataObjInp_t));
-	memset(&dataObjWriteInp, 0, sizeof(dataObjWriteInp_t));
+	memset(&openedDataObjInp, 0, sizeof(openedDataObjInp_t));
 
 
 	/* If this is the first call we need to create our data object before writing to it */
@@ -58,12 +58,12 @@ static size_t createAndWriteToDataObj(void *buffer, size_t size, size_t nmemb, v
 
 
 	/* set up input data structure for rsDataObjWrite */
-	dataObjWriteInp.l1descInx = dataObjFtpInp->l1descInx;
-	dataObjWriteInp.len = bytesBuf.len;
+	openedDataObjInp.l1descInx = dataObjFtpInp->l1descInx;
+	openedDataObjInp.len = bytesBuf.len;
 
 
 	/* write to data object */
-	written = rsDataObjWrite(dataObjFtpInp->rsComm, &dataObjWriteInp, &bytesBuf);
+	written = rsDataObjWrite(dataObjFtpInp->rsComm, &openedDataObjInp, &bytesBuf);
 
 	return (written);
 }
@@ -124,7 +124,7 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
 	dataObjFtpInp_t dataObjFtpInp;			/* custom file descriptor for our callback function */
 
 	dataObjInp_t destObjInp, *myDestObjInp;		/* for parsing input params */
-	dataObjCloseInp_t dataObjCloseInp;
+	openedDataObjInp_t openedDataObjInp;
 	char *target_str;
 
 	int isCurlErr;					/* transfer success/failure boolean */
@@ -146,7 +146,7 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
 	/* pad data structures with null chars */
 	memset(&dataObjFtpInp, 0, sizeof(dataObjFtpInp_t));
 	memset(&destObjInp, 0, sizeof(dataObjInp_t));
-	memset(&dataObjCloseInp, 0, sizeof(dataObjCloseInp_t));
+	memset(&openedDataObjInp, 0, sizeof(openedDataObjInp_t));
 
 
 
@@ -212,8 +212,8 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
 	/* close irods object */
 	if (dataObjFtpInp.l1descInx)
 	{
-		dataObjCloseInp.l1descInx = dataObjFtpInp.l1descInx;
-		rei->status = rsDataObjClose(rei->rsComm, &dataObjCloseInp);
+		openedDataObjInp.l1descInx = dataObjFtpInp.l1descInx;
+		rei->status = rsDataObjClose(rei->rsComm, &openedDataObjInp);
 	}
 
 
@@ -233,4 +233,157 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
 	
 	return (rei->status);
 }
+
+
+
+
+/**
+ * \fn msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *message, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice posts a message on twitter.com.
+ *
+ * \module URL
+ *
+ *
+ * \author  Antoine de Torcy
+ * \date    2009-07-23
+ *
+ *
+ * \note This microservice posts a message on twitter.com, aka a "tweet". 
+ *		A valid twitter account name and password must be provided. 
+ *		Special characters in the message can affect parsing of the POST form and 
+ *		create unexpected results. Avoid if possible, or use quotes.
+ *
+ * \usage
+ *
+ *
+ * \param[in] twittername - Required - a STR_MS_T containing the twitter username.
+ * \param[in] twitterpass - Required - a STR_MS_T containing the twitter password.
+ * \param[in] message - Required - a STR_MS_T containing the message to post.
+ * \param[out] status - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *message, msParam_t *status, ruleExecInfo_t *rei)
+{
+	CURL *curl;								/* curl handler */
+	CURLcode res;
+
+	char *username, *passwd, *tweet;		/* twitter account and msg. */
+	
+	char userpwd[LONG_NAME_LEN];			/* input for POST request */
+	char form_msg[160];
+
+	int isCurlErr;							/* transfer success/failure boolean */
+
+
+
+	/*************************************  INIT **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiTwitterPost")
+	
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL) 
+	{
+		rodsLog (LOG_ERROR, "msiTwitterPost: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/********************************** PARAM PARSING  *********************************/
+
+	/* parse twitter name */
+	if ((username = parseMspForStr(twittername)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiTwitterPost: input twittername is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+	
+	/* parse twitter password */
+	if ((passwd = parseMspForStr(twitterpass)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiTwitterPost: input twitterpass is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	/* parse message */
+	if ((tweet = parseMspForStr(message)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiTwitterPost: input message is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+
+	/* prepare form and truncate tweet to 140 chars */
+	strcpy(form_msg, "status=");
+	strncat(form_msg, tweet, 140);
+
+	/* Prepare userpwd */
+	snprintf(userpwd, LONG_NAME_LEN, "%s:%s", username, passwd);
+
+
+	/************************** SET UP AND INVOKE CURL HANDLER **************************/
+
+	/* curl easy handler init */
+	curl_global_init(CURL_GLOBAL_DEFAULT);
+	curl = curl_easy_init();
+
+	isCurlErr = 0;
+
+	if(curl) 
+	{
+		/* Set up curl easy handler */
+		curl_easy_setopt(curl, CURLOPT_URL, "http://twitter.com/statuses/update.xml");
+		curl_easy_setopt(curl, CURLOPT_USERPWD, userpwd);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, form_msg);
+		
+		/* For debugging */
+// 		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+		
+		/* let curl do its thing */
+		res = curl_easy_perform(curl);
+		
+		/* cleanup curl handler */
+		curl_easy_cleanup(curl);
+		
+		/* how did it go? */
+		if(CURLE_OK != res)
+		{
+			rodsLog (LOG_ERROR, "msiTwitterPost: libcurl error: %d", res);
+			isCurlErr = 1;
+		}
+	}
+
+
+	/*********************************** DONE ********************************/
+
+	/* cleanup and return status */
+	curl_global_cleanup();
+
+	if (isCurlErr)
+	{
+		/* -1 for now. should add an error code for this */
+		rei->status = -1;
+	}
+
+	fillIntInMsParam (status, rei->status);
+	
+	return (rei->status);
+}
+
 

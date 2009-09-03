@@ -24,8 +24,8 @@ extern int xmlLoadExtDtdDefaultValue;
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author	Antoine de Torcy
+ * \date	05/29/2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
@@ -72,8 +72,7 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 	rodsObjStat_t *rodsObjStatOut = NULL;
 
 	/* for reading from iRODS objects */
-	dataObjReadInp_t dataObjReadInp;
-	dataObjCloseInp_t dataObjCloseInp;
+	openedDataObjInp_t openedDataObjInp;
 	bytesBuf_t xmlBuf, xsltBuf;
 
 	/* misc. to avoid repeating rei->rsComm */
@@ -142,24 +141,21 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 
 	/* Read XSLT file */
-	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
-	dataObjReadInp.l1descInx = xsltObjID;
-	dataObjReadInp.len = (int)rodsObjStatOut->objSize;
+	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
+	openedDataObjInp.l1descInx = xsltObjID;
+	openedDataObjInp.len = (int)rodsObjStatOut->objSize;
 
-	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xsltBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xsltBuf);
 	
 	/* Make sure that the result is null terminated */
-	if (strlen(xsltBuf.buf) > dataObjReadInp.len)
+	if (strlen(xsltBuf.buf) > openedDataObjInp.len)
 	{
-		((char*)xsltBuf.buf)[dataObjReadInp.len-1]='\0';
+		((char*)xsltBuf.buf)[openedDataObjInp.len-1]='\0';
 	}	
 
 
 	/* Close XSLT file */
-	memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-	dataObjCloseInp.l1descInx = xsltObjID;
-	
-	rei->status = rsDataObjClose (rsComm, &dataObjCloseInp);
+	rei->status = rsDataObjClose (rsComm, &openedDataObjInp);
 
 
 	/* Cleanup. Needed before using rodsObjStatOut for a new rsObjStat() call */
@@ -179,24 +175,21 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 
 	/* Read XML file */
-	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
-	dataObjReadInp.l1descInx = xmlObjID;
-	dataObjReadInp.len = (int)rodsObjStatOut->objSize;
+	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
+	openedDataObjInp.l1descInx = xmlObjID;
+	openedDataObjInp.len = (int)rodsObjStatOut->objSize;
 
-	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 
 	/* Make sure that the result is null terminated */
-	if (strlen(xmlBuf.buf) > dataObjReadInp.len)
+	if (strlen(xmlBuf.buf) > openedDataObjInp.len)
 	{
-		((char*)xmlBuf.buf)[dataObjReadInp.len-1]='\0';
+		((char*)xmlBuf.buf)[openedDataObjInp.len-1]='\0';
 	}
 
 
 	/* Close XML file */
-	memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-	dataObjCloseInp.l1descInx = xmlObjID;
-	
-	rei->status = rsDataObjClose (rsComm, &dataObjCloseInp);
+	rei->status = rsDataObjClose (rsComm, &openedDataObjInp);
 
 	/* cleanup */
 	freeRodsObjStat (rodsObjStatOut);
@@ -210,11 +203,11 @@ msiXsltApply(msParam_t *xsltObj, msParam_t *xmlObj, msParam_t *msParamOut, ruleE
 
 
 	/* Parse xsltBuf.buf into an xmlDocPtr, and the xmlDocPtr into an xsltStylesheetPtr */
-	xslSheet = xmlParseDoc((const xmlChar*)xsltBuf.buf);
+	xslSheet = xmlParseDoc((xmlChar*)xsltBuf.buf);
 	style = xsltParseStylesheetDoc(xslSheet);
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	doc = xmlParseDoc((const xmlChar*)xmlBuf.buf);
+	doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
 
 	/* And the magic happens */
 	res = xsltApplyStylesheet(style, doc, NULL);

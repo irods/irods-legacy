@@ -67,8 +67,8 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author	Antoine de Torcy
+ * \date	05/29/2008  
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
@@ -120,8 +120,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 	rodsObjStat_t *rodsObjStatOut = NULL;
 
 	/* for reading from iRODS objects */
-	dataObjReadInp_t dataObjReadInp;
-	dataObjCloseInp_t dataObjCloseInp;
+	openedDataObjInp_t openedDataObjInp;
 	bytesBuf_t xmlBuf;
 
 	/* misc. to avoid repeating rei->rsComm */
@@ -196,24 +195,21 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 
 	/* Read XML file */
-	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
-	dataObjReadInp.l1descInx = xmlObjID;
-	dataObjReadInp.len = (int)rodsObjStatOut->objSize;
+	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
+	openedDataObjInp.l1descInx = xmlObjID;
+	openedDataObjInp.len = (int)rodsObjStatOut->objSize;
 
-	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 	
 	/* Make sure that the result is null terminated */
-	if (strlen(xmlBuf.buf) > dataObjReadInp.len)
+	if (strlen(xmlBuf.buf) > openedDataObjInp.len)
 	{
-		((char*)xmlBuf.buf)[dataObjReadInp.len-1]='\0';
+		((char*)xmlBuf.buf)[openedDataObjInp.len-1]='\0';
 	}
 
 
 	/* Close XML file */
-	memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-	dataObjCloseInp.l1descInx = xmlObjID;
-	
-	rei->status = rsDataObjClose (rsComm, &dataObjCloseInp);
+	rei->status = rsDataObjClose (rsComm, &openedDataObjInp);
 
 	/* cleanup */
 	freeRodsObjStat (rodsObjStatOut);
@@ -227,7 +223,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
 
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	doc = xmlParseDoc((const xmlChar*)xmlBuf.buf);
+	doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
 
 
 	/* Create xpath evaluation context */
@@ -323,8 +319,8 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date 
+ * \author	Antoine de Torcy
+ * \date	05/29/2008
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -372,8 +368,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	rodsObjStat_t *rodsObjStatOut = NULL;
 
 	/* for reading from iRODS objects */
-	dataObjReadInp_t dataObjReadInp;
-	dataObjCloseInp_t dataObjCloseInp;
+	openedDataObjInp_t openedDataObjInp;
 	bytesBuf_t xmlBuf;
 	char *tail;
 
@@ -457,22 +452,19 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 
 
 	/* Read content of XML file */
-	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
-	dataObjReadInp.l1descInx = xmlObjID;
-	dataObjReadInp.len = (int)rodsObjStatOut->objSize + 1;	/* extra byte to add a null char */
+	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
+	openedDataObjInp.l1descInx = xmlObjID;
+	openedDataObjInp.len = (int)rodsObjStatOut->objSize + 1;	/* extra byte to add a null char */
 
-	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 
 	/* add terminating null character */
 	tail = xmlBuf.buf;
-	tail[dataObjReadInp.len - 1] = '\0';
+	tail[openedDataObjInp.len - 1] = '\0';
 
 
 	/* Close XML file */
-	memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-	dataObjCloseInp.l1descInx = xmlObjID;
-	
-	rei->status = rsDataObjClose (rsComm, &dataObjCloseInp);
+	rei->status = rsDataObjClose (rsComm, &openedDataObjInp);
 
 	/* cleanup */
 	freeRodsObjStat (rodsObjStatOut);
@@ -482,7 +474,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	/*************************************** PARSE XML DOCUMENT **************************************/
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	doc = xmlParseDoc((const xmlChar*)xmlBuf.buf);
+	doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
 	clearBBuf(&xmlBuf);
 
 	if (doc == NULL)
@@ -515,22 +507,19 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 
 
 	/* Read entire schema file */
-	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
-	dataObjReadInp.l1descInx = xsdObjID;
-	dataObjReadInp.len = (int)rodsObjStatOut->objSize + 1;	/* to add null char */
+	memset (&openedDataObjInp, 0, sizeof (openedDataObjInp_t));
+	openedDataObjInp.l1descInx = xsdObjID;
+	openedDataObjInp.len = (int)rodsObjStatOut->objSize + 1;	/* to add null char */
 
-	rei->status = rsDataObjRead (rsComm, &dataObjReadInp, &xmlBuf);
+	rei->status = rsDataObjRead (rsComm, &openedDataObjInp, &xmlBuf);
 
 	/* add terminating null character */
 	tail = xmlBuf.buf;
-	tail[dataObjReadInp.len - 1] = '\0';
+	tail[openedDataObjInp.len - 1] = '\0';
 
 
 	/* Close schema file */
-	memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-	dataObjCloseInp.l1descInx = xsdObjID;
-	
-	rei->status = rsDataObjClose (rsComm, &dataObjCloseInp);
+	rei->status = rsDataObjClose (rsComm, &openedDataObjInp);
 
 	/* cleanup */
 	freeRodsObjStat (rodsObjStatOut);
@@ -540,7 +529,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	/*************************************** PARSE XSD DOCUMENT **************************************/
 
 	/* Parse xmlBuf.buf into an xmlDocPtr */
-	xsd_doc = xmlParseDoc((const xmlChar*)xmlBuf.buf);
+	xsd_doc = xmlParseDoc((xmlChar*)xmlBuf.buf);
 	clearBBuf(&xmlBuf);
 
 	if (xsd_doc == NULL)

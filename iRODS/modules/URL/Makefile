@@ -43,7 +43,7 @@ INCLUDE_FLAGS =	-I$(MSIncDir)
 # on your system and edit the following two lines accordingly.
 #
 # INCLUDE_FLAGS += 
-LIBS =	-L/usr/lib -lcurl -L/usr/lib -lgssapi_krb5 -lkrb5 -lk5crypto -lcom_err -lkrb5support -lresolv -lidn -lssl -lcrypto -ldl -lssl -lcrypto -lz
+LIBS = -L/usr/lib -lcurl -lssl -lcrypto -lz
 
 
 
