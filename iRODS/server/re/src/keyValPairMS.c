@@ -303,3 +303,106 @@ int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *
   free(s);
   return(0);
 }
+
+
+
+/**
+ * \fn msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice adds a new key and value to a keyValPair_t.
+ *
+ * \module core
+ *
+ *
+ * \author  Antoine de Torcy
+ * \date    2009-09-03
+ *
+ *
+ * \note This microservice adds a new key and value to a keyValPair_t. 
+ *		 A new keyValPair_t is created if inKeyValPair is NULL.
+ *
+ * \usage
+ *
+ *
+ * \param[in,out] inKeyValPair - Optional - a KeyValPair_MS_T
+ * \param[in] key - Required - a STR_MS_T containing the key.
+ * \param[in] value - Optional - a STR_MS_T containing the value.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei)
+{
+	char *key_str, *value_str;
+	keyValPair_t *newKVP;
+
+	/*************************************  INIT **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiAddKeyVal")
+	
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL) 
+	{
+		rodsLog (LOG_ERROR, "msiAddKeyVal: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/********************************** PARAM PARSING  *********************************/
+
+	/* Parse key */
+	if ((key_str = parseMspForStr(key)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiAddKeyVal: input key is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+	/* Parse value */
+	value_str = parseMspForStr(value);
+
+	/* Check for wrong parameter type */
+	 if (inKeyValPair->type && strcmp(inKeyValPair->type, KeyValPair_MS_T))
+	 {
+		rodsLog (LOG_ERROR, "msiAddKeyVal: inKeyValPair is not of type KeyValPair_MS_T.");
+		return (USER_PARAM_TYPE_ERR);	 
+	 }
+
+	/* Parse inKeyValPair. Create new one if empty. */
+	if (!inKeyValPair->inOutStruct)
+	{
+		/* Set content */
+		newKVP = (keyValPair_t*)malloc(sizeof(keyValPair_t));
+		memset(newKVP, 0, sizeof(keyValPair_t));
+		inKeyValPair->inOutStruct = (void*)newKVP;
+		
+		/* Set type */
+		if (!inKeyValPair->type)
+		{
+			inKeyValPair->type = strdup(KeyValPair_MS_T);
+		}		   		
+	}
+	
+	
+	/******************************* ADD NEW PAIR AND DONE ******************************/
+
+	rei->status = addKeyVal(inKeyValPair->inOutStruct, key_str, value_str);
+
+	/* Done */
+	return (rei->status);
+}
+
+

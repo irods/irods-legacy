@@ -35,6 +35,7 @@ int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei);
 int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei);
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inKVPair,  ruleExecInfo_t *rei);
 int msiGetValByKey(msParam_t* inKVPair,  msParam_t* inKey, msParam_t* outVal,  ruleExecInfo_t *rei);
+int msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei);
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei);
 int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
 	   msParam_t* elseC, msParam_t* recoverElse, ruleExecInfo_t *rei);
@@ -245,6 +246,7 @@ microsdef_t MicrosTable[] = {
   {"msiSendStdoutAsEmail",2,(funcPtr) msiSendStdoutAsEmail},
   {"msiPrintKeyValPair",2,(funcPtr) msiPrintKeyValPair},
   {"msiGetValByKey",3,(funcPtr) msiGetValByKey},
+  {"msiAddKeyVal",3,(funcPtr) msiAddKeyVal},
   {"assign",2,(funcPtr) assign},
   {"ifExec",5,(funcPtr) ifExec},
   {"break",0,(funcPtr) breakExec},
