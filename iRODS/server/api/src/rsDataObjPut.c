@@ -215,7 +215,8 @@ bytesBuf_t *dataObjInpBBuf)
                 rodsLog (LOG_NOTICE,
                   "l3DataPutSingleBuf: rsRegDataObj for %s failed, status = %d",
                   myDataObjInfo->objPath, status);
-		l3Unlink (rsComm, myDataObjInfo);
+		if (status != CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME)
+		    l3Unlink (rsComm, myDataObjInfo);
                 return (status);
 	    } else {
                 myDataObjInfo->replNum = status;
