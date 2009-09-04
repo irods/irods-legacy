@@ -103,4 +103,6 @@ int
 svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
 char *
 getLocalAddr ();
+int
+forkAndExec (char *av[]);
 #endif	/* MISC_SERVER_FUNCT_H */

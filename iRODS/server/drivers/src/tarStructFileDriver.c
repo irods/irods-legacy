@@ -22,6 +22,7 @@
 #include "modColl.h"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
+#include "miscServerFunct.h"
 
 int
 rmTmpDirAll (char *myDir);
@@ -1304,7 +1305,7 @@ extractTarFileWithExec (int structFileInx)
     }
 #else
     bzero (av, sizeof (av));
-    av[0] = "/bin/tar";
+    av[0] = TAR_EXEC_PATH;
     av[1] = "-x";
     av[2] = "-f";
     av[3] = specColl->phyPath;
@@ -1475,7 +1476,7 @@ bundleCacheDirWithExec (int structFileInx)
     }
 #else
     bzero (av, sizeof (av));
-    av[0] = "/bin/tar";
+    av[0] = TAR_EXEC_PATH;
     av[1] = "-c";
     av[2] = "-h";
     av[3] = "-f";
@@ -1579,45 +1580,5 @@ freeTarSubFileDesc (int tarSubFileInx)
     memset (&TarSubFileDesc[tarSubFileInx], 0, sizeof (tarSubFileDesc_t));
 
     return (0);
-}
-
-int
-forkAndExec (char *av[])
-{
-    int childPid = 0;
-    int status = -1;
-    int childStatus = 0;
-
-
-#ifndef windows_platform   /* UNIX */
-    childPid = RODS_FORK ();
-
-    if (childPid == 0) {
-        /* child */
-        execv(av[0], av);
-        /* gets here. must be bad */
-        exit(1);
-    } else if (childPid < 0) {
-        rodsLog (LOG_ERROR,
-         "exectar: RODS_FORK failed. errno = %d", errno);
-        return (SYS_FORK_ERROR);
-    }
-
-    /* parent */
-
-    status = waitpid (childPid, &childStatus, 0);
-    if (status >= 0 && childStatus != 0) {
-        rodsLog (LOG_ERROR,
-         "forkAndExec: waitpid status = %d, childStatus = %d",
-          status, childStatus);
-        status = EXEC_CMD_ERROR;
-    }
-#else
-    rodsLog (LOG_ERROR,
-         "forkAndExec: fork and exec not supported");
-
-    status = SYS_NOT_SUPPORTED;
-#endif
-    return status;
 }
 
