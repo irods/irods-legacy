@@ -91,7 +91,8 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     if (fileChksumStr == NULL) {
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing");
+          "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing for %s",
+	  dataObjInp->objPath);
         return (CHKSUM_EMPTY_IN_STRUCT_ERR);
     }
 
@@ -100,8 +101,9 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing");
-        return (CHKSUM_EMPTY_IN_STRUCT_ERR);
+          "rsRsyncDataToFile: _rsDataObjChksum of %s error. status = %d",
+	  dataObjInp->objPath, status);
+        return (status);
     }
 
     freeAllDataObjInfo (dataObjInfoHead);
@@ -156,8 +158,8 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "rsRsyncDataToFile: RSYNC_CHKSUM_KW input is missing");
-        return (CHKSUM_EMPTY_IN_STRUCT_ERR);
+          "rsRsyncFileToData: _rsDataObjChksum of %s error. status = %d",
+          dataObjInp->objPath, status);
     }
 
     freeAllDataObjInfo (dataObjInfoHead);
