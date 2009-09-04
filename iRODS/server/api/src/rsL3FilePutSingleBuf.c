@@ -20,7 +20,7 @@ bytesBuf_t *dataObjInBBuf)
 {
     int bytesWritten;
 
-    if (dataObjInBBuf->len > 0) {
+    if (dataObjInBBuf->len >= 0) {
         if (L1desc[*l1descInx].remoteZoneHost != NULL) {
 	    bytesWritten = rcL3FilePutSingleBuf (
 	      L1desc[*l1descInx].remoteZoneHost->conn,
