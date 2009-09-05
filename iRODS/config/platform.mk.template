@@ -200,3 +200,8 @@ MY_CFLAG+= -I$(HPSS_HDR_DIR) -DNO_DCE -DNO_H_ERRNO -Dlinux \
 endif
 endif
 
+ifdef AMAZON_S3
+MY_CFLAG+= -DAMAZON_S3 -I$(S3_HDR_DIR)
+LDADD+=-L$(S3_LIB_DIR) -ls3 -lcurl -lxml2
+endif
+
