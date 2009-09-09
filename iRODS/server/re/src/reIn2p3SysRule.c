@@ -19,17 +19,27 @@ short threadIsAlive[MAX_NSERVERS];
 
 int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *rei) {
 
-  char fname[MAX_NAME_LEN], msg[MAX_MESSAGE_SIZE], splc[MAX_VALUE][MAX_NAME_LEN], 
-    suffix[MAX_VALUE];
+  char condstr[MAX_NAME_LEN], fname[MAX_NAME_LEN], msg[MAX_MESSAGE_SIZE], splc[MAX_VALUE][MAX_NAME_LEN], 
+    monStatus[MAX_NAME_LEN], suffix[MAX_VALUE], *result;
   const char *delim = "#";
-  int timestamp, day, rc1, rc2;
+  int timestamp, day, rc1, rc2, rc3, rc4;
   FILE *foutput;
   time_t tps;
   generalRowInsertInp_t generalRowInsertInp;
-  generalAdminInp_t generalAdminInp;
-	
+  generalAdminInp_t generalAdminInp1, generalAdminInp2;
+  genQueryInp_t genQueryInp;
+  
+  genQueryOut_t *genQueryOut = NULL;
   tps = time(NULL);
   struct tm *now = localtime(&tps);
+  
+  /* a quick test in order to see if the resource is up or down (needed to update the "status" metadata) */
+  if ( strcmp(output, MON_OUTPUT_NO_ANSWER) == 0 ) {
+	strncpy(monStatus, "auto-down", MAX_NAME_LEN);
+  }
+  else {
+	strncpy(monStatus, "auto-up", MAX_NAME_LEN);
+  }
   
   strSplit(output, delim, splc);
 
@@ -59,23 +69,47 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   generalRowInsertInp.arg7 = splc[4];
   generalRowInsertInp.arg8 = splc[5];
   generalRowInsertInp.arg9 = splc[6];
-  generalAdminInp.arg0 = "modify";
-  generalAdminInp.arg1 = "resource";
-  generalAdminInp.arg2 = resc;
-  generalAdminInp.arg3 = "freespace";
-  generalAdminInp.arg4 = splc[7];
+  /* prepare DB request to modify resource metadata: freespace and status */
+  generalAdminInp1.arg0 = "modify";
+  generalAdminInp1.arg1 = "resource";
+  generalAdminInp1.arg2 = resc;
+  generalAdminInp1.arg3 = "freespace";
+  generalAdminInp1.arg4 = splc[7];
+  generalAdminInp2.arg0 = "modify";
+  generalAdminInp2.arg1 = "resource";
+  generalAdminInp2.arg2 = resc;
+  generalAdminInp2.arg3 = "status";
+  generalAdminInp2.arg4 = monStatus;
+  memset(&genQueryInp, 0, sizeof (genQueryInp));
+  addInxIval(&genQueryInp.selectInp, COL_R_RESC_STATUS, 1);
+  snprintf(condstr, MAX_NAME_LEN, "= '%s'", resc);
+  addInxVal(&genQueryInp.sqlCondInp, COL_R_RESC_NAME, condstr);
+  genQueryInp.maxRows = MAX_SQL_ROWS;
   pthread_mutex_lock(&my_mutex);
   rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
-  rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp);
+  rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp1);
+  rc3 = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+  if ( rc3 >= 0 ) {
+		result = genQueryOut->sqlResult[0].value;
+        if ( strcmp(result, "\0") == 0 || ( strncmp(result,"auto-",5) == 0 && strcmp(result, monStatus) != 0 ) ) {
+			rc4 = rsGeneralAdmin(rei->rsComm, &generalAdminInp2);
+		}
+  } else {
+	rodsLog(LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", resc);
+  }
   pthread_mutex_unlock(&my_mutex);
   if ( rc1 != 0 ) {
     fprintf(foutput, "time=%i : unable to insert the entries for server %s into the iCAT\n", 
 	    timestamp, serverName);
   }
   if ( rc2 != 0 ) {
-    rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register free space for the rescource %s", resc);
+    rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register the free space metadata for the resource %s", resc);
   }
-  
+  if ( rc4 != 0 ) {
+    rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register the status metadata for the resource %s", resc);
+  }
+  clearGenQueryInp(&genQueryInp);
+  freeGenQueryOut(&genQueryOut);
   fclose(foutput);
   
   return (0);
@@ -496,7 +530,7 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
     /* close the configuration file */
     fclose(filein);
   }
-  getListOfResc(rsComm, serverList, nservers, rescList, &nresc); /*  &rescList JYYYYY */
+  getListOfResc(rsComm, serverList, nservers, rescList, &nresc);
   
   strcpy(cmd, MON_PERF_SCRIPT);
   pthread_t *threads = malloc(sizeof(pthread_t) * nresc);
