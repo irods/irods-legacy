@@ -1017,7 +1017,7 @@ char *formatStr, ...) {
    char nt_log_msg[2048];
 #endif
 
-   if (level < verbosityLevel) return;
+   if (level > verbosityLevel) return;
 
 
    va_start(ap, formatStr);
@@ -1179,7 +1179,7 @@ rodsLogError(int level, int rodsErrorCode, char *formatStr, ...) {
    char *errSubName;
    va_list ap;
 
-   if (level < verbosityLevel) return;
+   if (level > verbosityLevel) return;
 
    
    va_start(ap, formatStr);

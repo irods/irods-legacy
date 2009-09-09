@@ -24,17 +24,21 @@
 #define AUDIT_COMMENT_MAX_SIZE       1000
 
 int logSQL_CML=0;
-int auditEnabled=0;  /* for debug, later will have better control */
+int auditEnabled=0;  /* Set this to 2 and rebuild to enable iRODS
+                        auditing (non-zero means auditing but 1 will
+                        allow cmlDebug to modify it, so 2 means
+                        permanently enabled).  We plan to change this
+                        sometime to have better control. */
 
 int cmlDebug(int mode) {
    logSQL_CML = mode;
    if (mode > 1) {
-      auditEnabled=1; 
+      if (auditEnabled==0) auditEnabled=1; 
       /* This is needed for testing each sql form, which is needed for
 	 the 'irodsctl devtest' to pass */
    }
    else {
-      auditEnabled=0;
+      if (auditEnabled==1) auditEnabled=0;
    }
    return(0);
 }
