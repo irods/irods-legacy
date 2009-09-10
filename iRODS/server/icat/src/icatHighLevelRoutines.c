@@ -28,6 +28,14 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
    challenge.  This is used as a sessionSigniture on the ICAT server
    side.  Also see getSessionSignitureClientside function. */
 
+/* If you are doing many deletions of user-defined-metadata (AVUs) and
+ * notice it getting slow, you can uncomment the define below so the
+ * code won't automatically remove all unused AVUs each time one is
+ * deleted.  You can then do the SQL to delete unused AVUs by hand
+ * instead.  Once in a while, perhaps daily, should be sufficient.
+ * The SQL is: " delete from r_meta_main where meta_id not in (select
+ * meta_id from r_objt_metamap) ". : */
+/* #define DISABLE_METADATA_CLEANUP "MANUAL" */
 
 /* 
    Legal values for accessLevel in  chlModAccessControl (Access Parameter).
@@ -815,6 +823,58 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
 }
 
 /*
+ * removeMetaMapAndAVU - remove AVU (user defined metadata) for an object,
+ *   the metadata mapping information, if any.  Optionally, also remove
+ *   any unused AVUs, if any, if some mapping information was removed.
+ * 
+ */
+void removeMetaMapAndAVU(char *dataObjNumber) {
+   char tSQL[MAX_SQL_SIZE];
+   int status;
+   cllBindVars[0]=dataObjNumber;
+   cllBindVarCount=1;
+   if (logSQL) rodsLog(LOG_SQL, "removeMetaMapAndAVU SQL 1 ");
+   snprintf(tSQL, MAX_SQL_SIZE, 
+	       "delete from r_objt_metamap where object_id=?");
+   status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+
+/* Note, the status will be CAT_SUCCESS_BUT_WITH_NO_INFO (not 0) if
+   there were no rows deleted from r_objt_metamap, in which case there
+   is no need to do the SQL below.
+ */
+   rodsLog (LOG_NOTICE, "removeMetaMapAndAVU 1 status=%d\n",status);
+   if (status == 0) {
+#ifndef DISABLE_METADATA_CLEANUP
+      if (logSQL) rodsLog(LOG_SQL, "removeMetaMapAndAVU SQL 2");
+      cllBindVarCount=0;
+      snprintf(tSQL, MAX_SQL_SIZE, 
+	       "delete from r_meta_main where meta_id not in (select meta_id from r_objt_metamap)"); 
+      status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+      rodsLog (LOG_NOTICE, "removeMetaMapAndAVU 2 status=%d\n",status);
+#endif
+   }
+   return;
+}
+
+/*
+ * removeAVU - remove unused AVU (user defined metadata), if any.
+ */
+void removeAVU() {
+   char tSQL[MAX_SQL_SIZE];
+   int status;
+
+#ifndef DISABLE_METADATA_CLEANUP
+   if (logSQL) rodsLog(LOG_SQL, "removeAVU SQL 1 ");
+   cllBindVarCount=0;
+   snprintf(tSQL, MAX_SQL_SIZE, 
+	    "delete from r_meta_main where meta_id not in (select meta_id from r_objt_metamap)"); 
+   status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+   rodsLog (LOG_NOTICE, "removeAVU status=%d\n",status);
+#endif
+   return;
+}
+
+/*
  * unregDataObj - Unregister a data object
  * Input - rsComm_t *rsComm  - the server handle
  *         dataObjInfo_t *dataObjInfo - contains info about the data object.
@@ -960,6 +1020,9 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 3");
       status = cmlExecuteNoAnswerSql(
 	       "delete from r_objt_access where object_id=? and not exists (select * from r_data_main where data_id=?)", &icss);
+      if (status == 0) {
+	  removeMetaMapAndAVU(dataObjNumber); /* remove AVU metadata, if any */
+      }
    }
 
    /* Audit */
@@ -1486,6 +1549,10 @@ int chlDelResc(rsComm_t *rsComm,
    }
 
 
+   /* Remove associated AVUs, if any */
+   removeMetaMapAndAVU(rescId);
+
+
    /* Audit */
    status = cmlAudit3(AU_DELETE_RESOURCE,  
 		      rescId,
@@ -1667,6 +1734,8 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       return(status);
    }
 
+   /* Remove associated AVUs, if any */
+   removeMetaMapAndAVU(iValStr);
 
    /* Audit */
    snprintf(userStr, 190, "%s#%s",
@@ -2838,6 +2907,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    rodsLong_t iVal;
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
+   char collIdNum[MAX_NAME_LEN];
    int status;
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin");
@@ -2897,6 +2967,10 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
 	      status);
       _rollback("chlDelCollByAdmin");
    }
+
+   /* Remove associated AVUs, if any */
+   snprintf(collIdNum, MAX_NAME_LEN, "%lld", iVal);
+   removeMetaMapAndAVU(collIdNum);
 
    /* Audit (before it's deleted) */
    status = cmlAudit4(AU_DELETE_COLL_BY_ADMIN,  
@@ -3054,6 +3128,8 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       _rollback("_delColl");
    }
 
+   /* Remove associated AVUs, if any */
+   removeMetaMapAndAVU(collIdNum);
 
    /* Audit */
    status = cmlAudit3(AU_DELETE_COLL,
@@ -5041,6 +5117,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 return(status);
       }
 
+      /* Remove unused AVU rows, if any */
+      removeAVU();
+
       /* Audit */
       status = cmlAudit3(AU_DELETE_AVU_METADATA,  
 			 objIdStr,
@@ -5114,6 +5193,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       _rollback("chlDeleteAVUMetadata");
       return(status);
    }
+
+   /* Remove unused AVU rows, if any */
+   removeAVU();
 
    /* Audit */
    status = cmlAudit3(AU_DELETE_AVU_METADATA,  

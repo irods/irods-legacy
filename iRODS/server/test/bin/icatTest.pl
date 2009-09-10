@@ -133,6 +133,11 @@ runCmd(2, "irm -f $D1");
 runCmd(0, "irm -f -r $D1");
 runCmd(0, "ils");
 
+# metadata rm test
+runCmd(0, "iput $F1");
+runCmd(0, "imeta add -d $F1 a b");
+runCmd(0, "irm -f $F1");
+
 #
 # Multiple imkdir's should return an error now.
 # ICAT should give CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME error
