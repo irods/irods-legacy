@@ -1,4 +1,4 @@
-#ACTION|CONDITIONS SEPERATED BY &&|CALL_FUNCTIONS SEPARATED BY ##|ROLLBACK_FUNCTIONS SEPARATED BY ##
+#ACTION|CONDITIONS SEPARATED BY &&|CALL_FUNCTIONS SEPARATED BY ##|ROLLBACK_FUNCTIONS SEPARATED BY ##
 #|||
 register_data|$objPath like /home/collections.nvo/2mass/fits-images/*|cut##check_data_type(fits image)##get_resource(nvo-image-resource)##registerData##addACLForDataToUser(2massusers.nvo,write)##extractMetadataForFitsImage|nop##nop##nop##recover_registerData##recover_addACLForDataToUser##recover_extractMetadataForFitsImage
 register_data|$objPath like /home/collections.nvo/2mass/*|get_resource(2mass-other-resource)##registerData##addACLForDataToUser(2massusers.nvo,write)|nop##recover_registerData##recover_addACLForDataToUser
