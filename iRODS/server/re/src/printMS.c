@@ -413,9 +413,14 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
 		return (USER__NULL_INPUT_ERR);
 	}
 
-	
+	/* empty? */
+	if (!inKVPair || !inKVPair->inOutStruct)
+	{
+		return 0;
+	}
+
 	/* check for proper input type and get keyValPair input */
-	if (strcmp(inKVPair->type, KeyValPair_MS_T)) {
+	if (inKVPair->type && strcmp(inKVPair->type, KeyValPair_MS_T)) {
 		rodsLog (LOG_ERROR, "writeKeyValPairs: input parameter is not of KeyValPair_MS_T type.");
 		return(USER_PARAM_TYPE_ERR);
 	}
