@@ -1603,40 +1603,58 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiDataObjChksum
+/**
+* \fn msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice calls rsDataObjChksum to chksum the iput data object as part of a workflow execution.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
  * \author  Michael Wan
- * \date   2007-04-02
- * \brief This microservice calls rsDataObjChksum to chksum the iput dat object
- *  as part of a workflow  execution.
+ * \date    2007-04-02
+ *
+ * \remark Terrell Russell - msi documentation, 2009-09-10
+ *
  * \note This call should only be used through the rcExecMyRule (irule) call  
  *  i.e., rule execution initiated by clients and should not be called  
  *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection. 
- * \param[in] 
- *    inpParam1 - It can be a DataObjInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
+ *  the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
+ * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
  *      format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *      If the keyWd is not specified (without the '=' char), the value is
- *      assumed to be a keyword for backward compatibility.
- *    Valid keyWds are : "ChksumAll" - checksum all replicas. This keyWd has 
- *			    no value. But the '=' character is still needed.
- *			 "verifyChksum" - verify the chksum value.
- *                       "forceChksum" - checksum data-objects even if a 
- *			    checksum alreay exists in iCAT. This keyWd has no 
- *			    value.
- *                       "replNum" - the replica number to checksum. This
- *			    keyWd has no value.
- * \param[out] a STR_MS_T containing the chksum value.
+ *      assumed to be the target resource ("destRescName") for backward
+ *      compatibility.
+ *      Valid keyWds are:
+ *        \li "ChksumAll" - checksum all replicas. This keyWd has no value.
+ *            But the '=' character is still needed.
+ *        \li "verifyChksum" - verify the chksum value.
+ *        \li "forceChksum" - checksum data-objects even if a 
+ *            checksum alreay exists in iCAT. This keyWd has no value.
+ *        \li "replNum" - the replica number to checksum. This keyWd has no value.
+ * \param[out] outParam - a STR_MS_T containing the chksum value.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
-
 int
 msiDataObjChksum (msParam_t *inpParam1, msParam_t *msKeyValStr, 
 msParam_t *outParam, ruleExecInfo_t *rei)
