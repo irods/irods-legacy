@@ -49,7 +49,7 @@ This documentation is generated from the iRODS code.
   - #remoteExec       - remote execution of micro-services or rules
   - #msiApplyAllRules - apply all applicable rules when executing a given rule
 
- \subsection msilowlevel Data Object Low-level  Microservices
+ \subsection msilowlevel Data Object Low-level Microservices
   Can be called by client through irule.
   - #msiDataObjCreate - create a data object
   - #msiDataObjOpen - open a data object
@@ -73,7 +73,7 @@ This documentation is generated from the iRODS code.
   - #msiDataObjPhymv - move a data object from one resource to another
   - #msiDataObjRename - rename a data object 
   - #msiDataObjTrim - trim the replica
-  - #msiPhyPathReg - register a physical file into iRods
+  - #msiPhyPathReg - register a physical file into iRODS
   - #msiObjStat - Stat an object
   - #msiDataObjRsync - Rsync a data between iRods and local file 
   - #msiGetObjType - finds if a given value is a data,coll,resc,...
@@ -99,18 +99,18 @@ This documentation is generated from the iRODS code.
   - #msiCreateCollByAdmin  - creating a collection by administrator
   - #msiDeleteCollByAdmin  - deleting a collection by administrator
   - #msiRenameLocalZone  - renames the local zone by updating various tables
-  - #msiRenameCollection  - renames a collection; used via a rule with the above msiRenameLocalZone
+  - #msiRenameCollection  - renames a collection; used via a rule with the above #msiRenameLocalZone
   - #msiExecStrCondQuery - given a condition string creates an iCAT query, executes it and returns the values
-  - #msiExecStrCondQueryWithOptions - like msiExecStrCondQuery, with extra options
+  - #msiExecStrCondQueryWithOptions - like #msiExecStrCondQuery, with extra options
   - #msiExecGenQuery - executes a given general query structure and returns results
   - #msiMakeQuery - given a select list and a condition list creates a psuedo-SQL query
-  - #msiGetMoreRows - Continues an unfinished query and msiExecStrCondQuery and returns results
-  - #msiMakeGenQuery  - a combination of msiMakeQuery and msiExecGenQuery and returns the results of the execution
+  - #msiGetMoreRows - Continues an unfinished query and #msiExecStrCondQuery and returns results
+  - #msiMakeGenQuery  - a combination of #msiMakeQuery and #msiExecGenQuery and returns the results of the execution
   - #msiAclPolicy - set the ACL policy
 
  \subsection msirda Rule-oriented Database Access Microservices
   - #msiRdaToStdout   - Calls new RDA functions to interface to an arbitrary database returning results in standard-out.
-  - #msiRdaToDataObj  - As above but stores results in an iRods DataObject.
+  - #msiRdaToDataObj  - As above but stores results in an iRODS DataObject.
   - #msiRdaNoResults   - As above, performs a SQL operation but without resulting output.
   - #msiRdaCommit     - Commit changes to the database.
   - #msiRdaRollback   - Rollback (don't commit) changes to the database.
@@ -160,7 +160,7 @@ This documentation is generated from the iRODS code.
   - #msiSetMultiReplPerResc - sets the number of copies per resource to unlimited
   - #msiSetDataObjPreferredResc - if the data has multiple copies, specify thepreferred copy to use
   - #msiSetDataObjAvoidResc - specify the copy to avoid 
-  - #msiSetGraftPathScheme - Set the scheme for composing the physical path in the vault to GRAFT_PATH.
+  - #msiSetGraftPathScheme - set the scheme for composing the physical path in the vault to GRAFT_PATH.
   - #msiSetRandomScheme - set the the scheme for composing the physical path in the vault to RANDOM. 
   - #msiSetResource  - sets the resource from default
   - #msiSortDataObj - Sort the replica randomly when choosing which copy to use
@@ -198,7 +198,7 @@ This documentation is generated from the iRODS code.
   - #msiLoadACLFromDataObj - Loads ACL  from information in an iRODS data object
   - #msiGetAuditTrailInfoByUserID - Retrieves Audit Trail information for a user ID
   - #msiGetAuditTrailInfoByObjectID - Retrieves Audit Trail information for an object ID
-  - #msiGetAuditTrailInfoByActionID - Retrieves Audit Trail information for a given action  ID
+  - #msiGetAuditTrailInfoByActionID - Retrieves Audit Trail information for a given action ID
   - #msiGetAuditTrailInfoByKeywords - Retrieves Audit Trail information by keywords in the comment field
   - #msiGetAuditTrailInfoByTimeStamp - Retrieves Audit Trail information by timestamp period
   - #msiSetDataType  - Sets data type for an object
@@ -237,7 +237,7 @@ This documentation is generated from the iRODS code.
   - #msiH5File_close - close an HDF file
   - #msiH5Dataset_read - read data from an HDF file
   - #msiH5Dataset_read_attribute - read data attribute from an HDF file
-  - #msiH5Group_read_attribute - read attributes of a group in  an HDF file
+  - #msiH5Group_read_attribute - read attributes of a group in an HDF file
 
  \subsection msiproperties Properties
   - #msiPropertiesNew - Create a new empty property list
@@ -252,14 +252,14 @@ This documentation is generated from the iRODS code.
   - #msiPropertiesFromString - Parse a string into a new property list.  The existing property list, if any, is deleted.
 
  \subsection msiwebservices Web Services
-  - #msiGetQuote - returns stock quotation (delayed by web service) using web service provided by http://www.webserviceX.NET
+  - #msiGetQuote - Returns stock quotation (delayed by web service) using web service provided by http://www.webserviceX.NET
   - #msiIp2location - Returns host name and other details given an ipaddress using web service provided by http://ws.fraudlabs.com/
   - #msiConvertCurrency - Returns conversion rate for currencies from one country to another using web service provided by http://www.webserviceX.NET/
-  - #msiObjByName - returns position and type of an astronomical object given a name from the NASA/IPAC Extragalactic Database (NED) using web service at http://voservices.net/NED/ws_v2_0/NED.asmx
-  - #msiSdssImgCutout_GetJpeg - returns an image buffer given a position and cutout from the SDSS Image Cut Out service using web service provided by http://skyserver.sdss.org
+  - #msiObjByName - Returns position and type of an astronomical object given a name from the NASA/IPAC Extragalactic Database (NED) using web service at http://voservices.net/NED/ws_v2_0/NED.asmx
+  - #msiSdssImgCutout_GetJpeg - Returns an image buffer given a position and cutout from the SDSS Image Cut Out service using web service provided by http://skyserver.sdss.org
 
  \subsection msiguinot Guinot
-  - #msiGetFormattedSystemTime - returns the local system time
+  - #msiGetFormattedSystemTime - Returns the local system time
 
 **/
 
