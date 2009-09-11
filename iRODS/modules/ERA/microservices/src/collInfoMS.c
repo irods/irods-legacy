@@ -686,26 +686,49 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
 }
 
 
-
 /**
- * \fn msiCollectionSpider
+ * \fn msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief   Applies a microservice sequence to all data objects in a collection, recursively.
+ *
+ * \module core
+ *
+ * \since 2.1
+ *
  * \author  Antoine de Torcy
- * \date   2009-05-09
- * \brief Applies a microservice sequence to all data objects in a collection, recursively.
- * \note This microservice crawls an iRods colelction recursively, and for each data object 
- *		found a sequence of microservices/actions is executed. The data object can be passed
- * 		as a DataObjInp_MS_T to this microservice sequence, through 'objects'.
- * \param[in] 
- *    collection - A CollInp_MS_T or a STR_MS_T with the irods path.
- *	  objects - Added for clarity. Only the label is required here.
- *	  action - A STR_MS_T (for now) with the microservice sequence. Would need a new type.
- * \param[out] 
- *    status - an INT_MS_T containing the operation status.
+ * \date    2009-05-09
+ *
+ * \remark Terrell Russell - msi documentation, 2009-09-10
+ *
+ * \note This microservice crawls an iRods collection recursively, and executes a sequence of
+ *    microservices/actions for each data object. The data object can be passed as a
+ *    DataObjInp_MS_T to this microservice sequence, through 'objects'.
+ *
+ * \usage
+ * 
+ *  As seen in modules/ERA/test/collectionSpider.ir
+ * 
+ * Collection Spider||msiCollectionSpider(*Collection, *Objects, msiIsData(*Objects, *dataID, *foo)##writePosInt(stdout, *dataID)##writeLine(stdout, ""), *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
+ *
+ * \param[in] collection - A CollInp_MS_T or a STR_MS_T with the iRODS path
+ * \param[in] objects - Added for clarity. Only the label is required here.
+ * \param[in] action - A STR_MS_T (for now) with the microservice sequence. Would need a new type.
+ * \param[out] status - An INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
  * \return integer
  * \retval 0 on success
- * \sa
- * \post
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
