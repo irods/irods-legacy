@@ -13,7 +13,49 @@
 
 int _makeQuery( char *sel, char *cond, char **sql);
 
-/****************vvvvvvv PROVIDED BY GUINOT vvvvvvv*********************/
+/**
+ * \fn msiExecStrCondQueryWithOptions(msParam_t* queryParam,
+ *        msParam_t* zeroResultsIsOK,
+ *        msParam_t* maxReturnedRowsParam, 
+ *        msParam_t* genQueryOutParam, 
+ *        ruleExecInfo_t *rei)
+ *
+ * \brief   This function takes a given condition string and options, creates an iCAT query, executes it and returns the values
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Romain Guinot
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2009-09-10
+ *
+ * \note 
+ *
+ * \usage None
+ *
+ * \param[in] queryParam - a msParam of type GenQueryInp_MS_T
+ * \param[in] zeroResultsIsOK - Optional - a msParam of type STR_MS_T - must equal "zeroOK"
+ * \param[in] maxReturnedRowsParam - Optional - a msParam of type STR_MS_T - as integer
+ * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
 				   msParam_t* zeroResultsIsOK,
 				   msParam_t* maxReturnedRowsParam, 
@@ -74,7 +116,49 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
     return(0);
 }
 
-/***********^^^^^ PROVIDED BY GUINOT ^^^^^*********************/
+
+/**
+ * \fn msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
+ *
+ * \brief   This function takes a given condition string, creates an iCAT query, executes it and returns the values
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date    2008
+ *
+ * \remark Terrell Russell - msi documentation, 2009-09-10
+ *
+ * \note 
+ *
+ * \usage
+ * As seen in clients/icommands/test/ruleTest15.ir
+ *
+ * myTestRule||msiExecStrCondQuery(*A 'foo%' ,*B)##forEachExec(*B,msiPrintKeyValPair(stdout,*B)##writeLine(stdout,*K),nop)|nop
+ * *A=SELECT DATA_NAME , DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE  %*K=--------HAHAHAHAH-------------
+ * *Action%*Condition%*A%*B%*C%*D%*E%ruleExecOut%*K
+ *
+ * \param[in] queryParam - a msParam of type GenQueryInp_MS_T
+ * \param[out] genQueryOutParam - a msParam of type GenQueryOut_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
 {
   genQueryInp_t genQueryInp;
@@ -118,7 +202,7 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
 }
 
 /**
- * \fn msiExecGenQuery (msParam_t *genQueryInParam, msParam_t *genQueryOutParam, ruleExecInfo_t *rei)
+ * \fn msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
  *
  * \brief   This function executes a given general query structure and returns results
  *
