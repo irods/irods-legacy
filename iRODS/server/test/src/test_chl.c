@@ -359,6 +359,7 @@ int testDelRule(rsComm_t *rsComm, char *ruleName, char *userName) {
 int testRegDataObj(rsComm_t *rsComm, char *name, 
 		   char *dataType, char *filePath) {
    dataObjInfo_t dataObjInfo;
+   memset(&dataObjInfo,0,sizeof(dataObjInfo_t));
 
    strcpy(dataObjInfo.objPath, name);
    dataObjInfo.replNum=1;
@@ -366,12 +367,44 @@ int testRegDataObj(rsComm_t *rsComm, char *name,
    strcpy(dataObjInfo.dataType, dataType);
    dataObjInfo.dataSize=42;
 
-   strcpy(dataObjInfo.rescName, "resc A");
+   strcpy(dataObjInfo.rescName, "demoResc");
    strcpy(dataObjInfo.filePath, filePath);
 
    dataObjInfo.replStatus=5;
 
    return (chlRegDataObj(rsComm, &dataObjInfo));
+}
+
+/*
+ Do multiple data registrations.  If you comment out the commit in
+ chlRegDataObj and then build this, it can add phony data-objects at
+ about 8 times the speed of lots of iput's of small files.  This can
+ come in handy for creating simulated large instances for DBMS
+ performance testing and tuning.  In this source file, you might also
+ want to change rodsLogLevel(LOG_NOTICE) to rodsLogLevel(LOG_ERROR)
+ and comment out rodsLogSqlReq(1);.
+ */
+int testRegDataMulti(rsComm_t *rsComm, char *count, 
+		     char *nameBase,  char *dataType, char *filePath) {
+   int status;
+   int myCount=100;
+   int i;
+   char myName[MAX_NAME_LEN];
+
+   myCount = atoi(count);
+   if (myCount <=0) {
+      printf("Invalid input: count\n");
+      return(USER_INPUT_OPTION_ERR);
+   }
+
+   for (i=0;i<myCount;i++) {
+      snprintf (myName, MAX_NAME_LEN, "%s.%d", nameBase, i);
+      status = testRegDataObj(rsComm, myName, dataType, filePath);
+      if (status) return(status);
+   }
+
+   status = chlCommit(rsComm);
+   return(status);
 }
 
 int testModDataObjMeta(rsComm_t *rsComm, char *name, 
@@ -707,6 +740,10 @@ main(int argc, char **argv) {
    didOne=0;
    if (strcmp(argv[1],"reg")==0) {
       status = testRegDataObj(Comm, argv[2], argv[3], argv[4]);
+      didOne=1;
+   }
+   if (strcmp(argv[1],"regmulti")==0) {
+      status = testRegDataMulti(Comm, argv[2], argv[3], argv[4], argv[5]);
       didOne=1;
    }
 
