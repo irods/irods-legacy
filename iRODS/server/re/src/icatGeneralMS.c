@@ -90,7 +90,7 @@ This documentation is generated from the iRODS code.
 
  \subsection msiicat iCAT Microservices
  iCAT System Services
-  - #msiVacuum - Postgres vacumm - done periodically
+  - #msiVacuum - Postgres vacuum - done periodically
   - #msiCommit  - commiting the database transaction
   - #msiRollback - rolling back the database transaction
   - #msiCreateUser - creating a new user
@@ -101,6 +101,7 @@ This documentation is generated from the iRODS code.
   - #msiRenameLocalZone  - renames the local zone by updating various tables
   - #msiRenameCollection  - renames a collection; used via a rule with the above msiRenameLocalZone
   - #msiExecStrCondQuery - given a condition string creates an iCAT query, executes it and returns the values
+  - #msiExecStrCondQueryWithOptions - like msiExecStrCondQuery, with extra options
   - #msiExecGenQuery - executes a given general query structure and returns results
   - #msiMakeQuery - given a select list and a condition list creates a psuedo-SQL query
   - #msiGetMoreRows - Continues an unfinished query and msiExecStrCondQuery and returns results
