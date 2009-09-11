@@ -111,7 +111,7 @@ acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 #      resources will be placed ahead of of those in the "archive" resources. 
 #      The sorting schemes can also be chained. e.g.,
 #      msiSortDataObj(random)##msiSortDataObj(byRescClass) means that
-#      the data objects will be sorted randomly first and then seperated
+#      the data objects will be sorted randomly first and then separated
 #      by class. 
 #    msiStageDataObj(cacheResc) - stage a copy of the data object in the 
 #      cacheResc before opening the data object. 

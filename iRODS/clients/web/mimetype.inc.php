@@ -120,7 +120,7 @@
          "rtf" => "text/rtf",
          "sgml" => "text/sgml",
          "sgm" => "text/sgml",
-         "tsv" => "text/tab-seperated-values",
+         "tsv" => "text/tab-separated-values",
          "wml" => "text/vnd.wap.wml",
          "wmls" => "text/vnd.wap.wmlscript",
          "etx" => "text/x-setext",

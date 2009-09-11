@@ -20,7 +20,7 @@ typedef struct {
     char myRule[META_STR_LEN];
     rodsHostAddr_t addr;
     keyValPair_t condInput;
-    char outParamDesc[LONG_NAME_LEN];  /* output labels seperated by "%" */  
+    char outParamDesc[LONG_NAME_LEN];  /* output labels separated by "%" */  
     msParamArray_t *inpParamArray;
 } execMyRuleInp_t;
 
