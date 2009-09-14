@@ -531,10 +531,8 @@ replaceRescVar( char *start, int size,  rescInfo_t *roi)
       return(RESCVAULTPATH_EMPTY_IN_STRUCT_ERR);
     i = replaceStrValue(start,size,roi->rescVaultPath,strlen(RESC_VAULT_PATH_KW)+1);
   }
-  else if (strstr(t1,NUM_OPEN_PORTS_KW) == t1) {
-    if (roi->numOpenPorts == 0)
-      return(NUMOPEN_ORTS_EMPTY_IN_STRUCT_ERR);
-    i = replaceIntValue(start,size,roi->numOpenPorts,strlen(NUM_OPEN_PORTS_KW)+1);
+  else if (strstr(t1,RESC_STATUS_KW) == t1) {
+    i = replaceIntValue(start,size,roi->rescStatus,strlen(RESC_STATUS_KW)+1);
   }
   else if (strstr(t1,PARA_OPR_KW) == t1) {
     if (roi->paraOpr == 0)

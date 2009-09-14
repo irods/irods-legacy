@@ -1223,6 +1223,7 @@ initResc (rsComm_t *rsComm)
     addInxIval (&genQueryInp.selectInp, COL_R_RESC_COMMENT, 1);
     addInxIval (&genQueryInp.selectInp, COL_R_CREATE_TIME, 1);
     addInxIval (&genQueryInp.selectInp, COL_R_MODIFY_TIME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_R_RESC_STATUS, 1);
 
     genQueryInp.maxRows = MAX_SQL_ROWS;
 
@@ -1255,10 +1256,10 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 {
     sqlResult_t *rescId, *rescName, *zoneName, *rescType, *rescClass;
     sqlResult_t *rescLoc, *rescVaultPath, *freeSpace, *rescInfo;
-    sqlResult_t *rescComments, *rescCreate, *rescModify;
+    sqlResult_t *rescComments, *rescCreate, *rescModify, *rescStatus;
     char *tmpRescId, *tmpRescName, *tmpZoneName, *tmpRescType, *tmpRescClass;
     char *tmpRescLoc, *tmpRescVaultPath, *tmpFreeSpace, *tmpRescInfo;
-    char *tmpRescComments, *tmpRescCreate, *tmpRescModify;
+    char *tmpRescComments, *tmpRescCreate, *tmpRescModify, *tmpRescStatus;
     int i, status;
     rodsHostAddr_t addr;
     rodsServerHost_t *tmpRodsServerHost;
@@ -1338,6 +1339,13 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    if ((rescStatus = getSqlResultByInx (genQueryOut, COL_R_RESC_STATUS))
+      == NULL) {
+        rodsLog (LOG_NOTICE,
+         "procAndQueResResult:getSqlResultByInx for COL_R_RESC_STATUS failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
     for (i = 0;i < genQueryOut->rowCnt; i++) {
 
 	tmpRescId = &rescId->value[rescId->len * i];
@@ -1352,6 +1360,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 	tmpRescComments = &rescComments->value[rescComments->len * i];
 	tmpRescCreate = &rescCreate->value[rescCreate->len * i];
 	tmpRescModify = &rescModify->value[rescModify->len * i];
+	tmpRescStatus = &rescStatus->value[rescStatus->len * i];
 
 	/* queue the host. XXXXX resolveHost does not deal with zone yet.
 	 * need to do so */
@@ -1395,7 +1404,11 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 	myRescInfo->freeSpace = strtoll (tmpFreeSpace, 0, 0);
 	rstrcpy (myRescInfo->rescCreate, tmpRescCreate, TIME_LEN);
 	rstrcpy (myRescInfo->rescModify, tmpRescModify, TIME_LEN);
-
+	if (strstr (tmpRescStatus, RESC_DOWN) != NULL) {
+	    myRescInfo->rescStatus = INT_RESC_STATUS_DOWN;
+	} else {
+	    myRescInfo->rescStatus = INT_RESC_STATUS_UP;
+	}
 	queResc (myRescInfo, NULL, &RescGrpInfo, BOTTOM_FLAG);
     }
     return (0);

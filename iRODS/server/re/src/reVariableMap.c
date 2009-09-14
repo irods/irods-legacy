@@ -600,8 +600,8 @@ getSetValFromRescInfo(char *varMap, rescInfo_t **inptr, char **varValue, void *n
   else  if (!strcmp(varName, "rescVaultPath") )
     i = getSetLeafValue(varValue,&(ptr->rescVaultPath), (void *)ptr->rescVaultPath  , newVarValue,RE_STR);
     /* *varValue = ptr->rescVaultPath; */
-  else  if (!strcmp(varName, "numOpenPorts") )
-    i = getSetLeafValue(varValue,&(ptr->numOpenPorts), (void *)ptr->numOpenPorts , newVarValue, RE_INT);
+  else  if (!strcmp(varName, RESC_STATUS_KW) )
+    i = getSetLeafValue(varValue,&(ptr->rescStatus), (void *)ptr->rescStatus , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->numOpenPorts); */
   else  if (!strcmp(varName, "paraOpr") )
     i = getSetLeafValue(varValue,&(ptr->paraOpr), (void *)ptr->paraOpr , newVarValue, RE_INT);

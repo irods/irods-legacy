@@ -211,6 +211,16 @@ typedef struct startupPack {
 #define SP_LOG_LEVEL	"spLogLevel"
 #define SERVER_BOOT_TIME "serverBootTime"
 
+/* Definition for resource status. If it is empty (strlen == 0), it is
+ * assumed to be up */
+#define RESC_DOWN	"down"
+#define RESC_UP		"up"
+#define RESC_AUTO_UP	"auto_up"
+#define RESC_AUTO_DOWN	"auto_down"
+
+#define  INT_RESC_STATUS_UP 	0
+#define  INT_RESC_STATUS_DOWN 	1
+
 /* The strct sent with RODS_VERSION type by server */
 
 typedef struct {

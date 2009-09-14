@@ -45,7 +45,7 @@ typedef struct RescInfo
     char rescClass[NAME_LEN];
     int rescClassInx;
     char rescVaultPath[MAX_NAME_LEN];
-    int numOpenPorts;
+    int rescStatus;
     int paraOpr;
     char rescInfo[LONG_NAME_LEN];
     char rescComments[LONG_NAME_LEN];

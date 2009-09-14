@@ -59,7 +59,7 @@ freeSpaceTimeStamp||rei->doi->rescInfo->freeSpaceTimeStamp
 freeSpaceTimeStamp||rei->rgi->rescInfo->freeSpaceTimeStamp
 rescInfo||rei->doi->rescInfo->rescInfo
 rescInfo||rei->rgi->rescInfo->rescInfo
-# numOpenPorts||rei->doi->rescInfo->numOpenPorts
+rescStatus||rei->doi->rescInfo->rescStatus
 # paraOpr||rei->doi->rescInfo->paraOpr
 rescId||rei->doi->rescInfo->rescId
 # gateWayAddr||rei->doi->rescInfo->gateWayAddr
