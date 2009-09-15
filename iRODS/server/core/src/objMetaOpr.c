@@ -48,10 +48,9 @@ rescGrpInfo_t **rescGrpInfo)
     /* a resource ? */
 
     status = resolveAndQueResc (rescGroupName, NULL, rescGrpInfo);
-    if (status >= 0) {
+    if (status >= 0 || status == SYS_RESC_IS_DOWN) {
 	return (status);
     }
-
     /* assume it is a rescGrp */
 
     status = resolveRescGrp (rsComm, rescGroupName, rescGrpInfo);
@@ -194,6 +193,8 @@ rescGrpInfo_t **rescGrpInfo)
 
     if (status < 0) {
 	return (status);
+    } else if (myRescInfo->rescStatus == INT_RESC_STATUS_DOWN) {
+	return SYS_RESC_IS_DOWN;
     } else {
 	queResc (myRescInfo, rescGroupName, rescGrpInfo, BY_TYPE_FLAG);
 	return (0);
@@ -3331,7 +3332,7 @@ initRescGrp (rsComm_t *rsComm)
 	curRescGrpNameStr = rescGrpNameStr;
         status = resolveAndQueResc (rescNameStr, rescGrpNameStr,
           &tmpRescGrpInfo);
-        if (status < 0) {
+        if (status < 0 && status != SYS_RESC_IS_DOWN) {
             rodsLog (LOG_NOTICE,
               "initRescGrp: resolveAndQueResc error for %s. status = %d",
               rescNameStr, status);
