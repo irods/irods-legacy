@@ -2317,7 +2317,7 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     	memset(&execCmdInp, 0, sizeof(execCmd_t));
     	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
     	rstrcpy(execCmdInp.cmd, "mkdir", LONG_NAME_LEN);
-    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "-p %s", tmpPath);
+    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "-p '%s'", tmpPath);
     	
     	
 		/* Invoke rsExecCmd for remote mkdir on resource */
@@ -2337,7 +2337,7 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
     	memset(&execCmdInp, 0, sizeof(execCmd_t));
     	rstrcpy(execCmdInp.execAddr, currentDataObjInfo->rescInfo->rescLoc, LONG_NAME_LEN);
     	rstrcpy(execCmdInp.cmd, "link", LONG_NAME_LEN);
-    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "%s %s", currentDataObjInfo->filePath, tmpPath);
+    	snprintf(execCmdInp.cmdArgv, MAX_NAME_LEN, "'%s' '%s'", currentDataObjInfo->filePath, tmpPath);
     	
     	
     	/* Create hard link on resource */
