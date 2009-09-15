@@ -83,6 +83,51 @@ fi
 
 set -e   # exit if anything fails
 
+
+#
+# Function to add commas to a number to make it more readable and also
+# summarize the size (billions, etc).  Should work fine on most
+# platforms: tested on Mac OS X, Linux Ubuntu, and Solaris.
+#
+function convertNumber {
+    str=$1
+    len=${#str}
+    set +e
+    extra=`expr $len % 3`
+    groups=`expr $len / 3`
+    set -e
+    convertedNumber=${str:0:$extra}
+    pos=$extra
+    for ((i=1;i<=$groups;i+=1)); do
+	if [ "$i" -eq 1 ]; then
+	    if [ "$extra" -ne 0 ]; then
+		convertedNumber="$convertedNumber,"
+	    fi
+	else
+	    convertedNumber="$convertedNumber,"
+	fi
+	convertedNumber=$convertedNumber${str:$pos:3}
+	pos=`expr $pos + 3`
+    done
+    set +e
+    t=`expr $str / 1000000000000`
+    if [ "$t" -gt 0 ]; then
+	convertedNumber="$convertedNumber ($t trillion)"
+    else
+	b=`expr $str / 1000000000`
+	if [ "$b" -gt 0 ]; then
+	    convertedNumber="$convertedNumber ($b billion)"
+	else
+	    m=`expr $str / 1000000`
+	    if [ "$m" -gt 0 ]; then
+		convertedNumber="$convertedNumber ($m million)"
+	    fi
+	fi
+    fi
+    set -e
+}
+
+
 #
 # Do a series of iquest commands to get basic information
 #
@@ -107,10 +152,16 @@ rescs=`iquest "%s" "select count(RESC_ID)"`
 echo "Number of resources: $rescs" | tee -a $outFile
 
 colls=`iquest "%s" "select count(COLL_ID)"`
-echo "Number of collections: $colls" | tee -a $outFile
+convertNumber $colls
+echo "Number of collections: $convertedNumber" | tee -a $outFile
 
 dataObjs=`iquest "%s" "select count(DATA_ID)"`
-echo "Number of data-objects: $dataObjs" | tee -a $outFile
+convertNumber $dataObjs
+echo "Number of data-objects: $convertedNumber" | tee -a $outFile
+
+dataTotal=`iquest "%s" "select sum(DATA_SIZE)"`
+convertNumber $dataTotal
+echo "Total data size (bytes): $convertedNumber" | tee -a $outFile
 
 rm -rf $tmpFile
 dataDistribution=`iquest "%20s bytes in %12s files in '%s'" "SELECT sum(DATA_SIZE),count(DATA_NAME),RESC_NAME" > $tmpFile`
