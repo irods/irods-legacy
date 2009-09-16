@@ -177,7 +177,8 @@ SVR_RE_OBJS =	\
 		$(svrReObjDir)/systemMS.o \
 		$(svrReObjDir)/xmsgMS.o \
 		$(svrReObjDir)/reRDA.o \
-		$(svrReObjDir)/testMS.o
+		$(svrReObjDir)/testMS.o \
+                $(svrReObjDir)/reAutoReplicateService.o
 INCLUDES +=	-I$(svrReIncDir)
 SERVER_BINS +=	$(serverBinDir)/irodsReServer
 SERVER_OBJS +=	$(svrCoreObjDir)/irodsReServer.o
