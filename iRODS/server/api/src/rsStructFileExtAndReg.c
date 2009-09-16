@@ -89,6 +89,8 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     rstrcpy (dirRegInp.objPath, structFileExtAndRegInp->collection, 
       MAX_NAME_LEN);
     addKeyVal (&dirRegInp.condInput, COLLECTION_KW, "");
+    /* collection permission was checked in chkCollForExtAndReg */
+    addKeyVal (&dirRegInp.condInput, NO_CHK_FILE_PERM_KW, "");
     addKeyVal (&dirRegInp.condInput, DEST_RESC_NAME_KW, 
       dataObjInfo->rescName);
 
