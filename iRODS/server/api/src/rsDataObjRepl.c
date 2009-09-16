@@ -117,7 +117,9 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         return (status);
     }
 
-    sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead, multiCopyFlag);
+    status = sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead, 
+      multiCopyFlag);
+    if (status < 0) return status;
 
     if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
 	/* update old repl to new repl */
@@ -394,6 +396,15 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     } else {
 	myDestRescInfo = destRescInfo;
     }
+
+    if (inpSrcDataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) {
+        return SYS_RESC_IS_DOWN;
+    }
+
+    if (myDestRescInfo->rescStatus == INT_RESC_STATUS_DOWN) {
+        return SYS_RESC_IS_DOWN;
+    }
+
     destRescClass = getRescClass (myDestRescInfo);
 
     /* some sanity check for DO_STAGING type resc */
@@ -1054,7 +1065,8 @@ rescInfo_t **outCacheResc, int rmBunCopyFlag)
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, (*bunfileObjInfoHead)->objPath, MAX_NAME_LEN);
-    sortObjInfoForOpen (bunfileObjInfoHead, NULL, 0);
+    status = sortObjInfoForOpen (rsComm, bunfileObjInfoHead, NULL, 0);
+    if (status < 0) return status;
 
     if (getRescClass ((*bunfileObjInfoHead)->rescInfo) != CACHE_CL) {
 	/* don't have a good copy on cache yet */

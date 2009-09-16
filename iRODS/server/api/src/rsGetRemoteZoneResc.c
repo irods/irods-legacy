@@ -49,10 +49,11 @@ rodsHostAddr_t **rescAddr)
 	    int writeFlag;
 	    /* exist */
 	    writeFlag = getWriteFlag (dataObjInp->openFlags);
-	    sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp->condInput,
-             writeFlag);
-           status = applyPreprocRuleForOpen (rsComm, dataObjInp, 
-	    &dataObjInfoHead);
+	    status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, 
+	      &dataObjInp->condInput, writeFlag);
+	    if (status < 0) return status;
+            status = applyPreprocRuleForOpen (rsComm, dataObjInp, 
+	     &dataObjInfoHead);
 	    if (status < 0) {
 		freeAllDataObjInfo (dataObjInfoHead);
 		return status;

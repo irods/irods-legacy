@@ -38,6 +38,33 @@ rescGrpInfo_t **rescGrpInfo)
 }
 
 int
+getRescStatus (rsComm_t *rsComm, char *inpRescName, keyValPair_t *condInput)
+{
+    char *rescName;
+    int status;
+    rescGrpInfo_t *rescGrpInfo = NULL;
+
+    if (inpRescName == NULL) {
+        if ((rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) == NULL &&
+          (rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) == NULL &&
+          (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) == NULL) { 
+            return (INT_RESC_STATUS_DOWN);
+	}
+    } else {
+	rescName = inpRescName;
+    }
+    status = _getRescInfo (rsComm, rescName, &rescGrpInfo);
+
+    freeAllRescGrpInfo (rescGrpInfo);
+
+    if (status < 0) {
+	return INT_RESC_STATUS_DOWN;
+    } else {
+	return INT_RESC_STATUS_UP;
+    }
+}
+
+int
 _getRescInfo (rsComm_t *rsComm, char *rescGroupName, 
 rescGrpInfo_t **rescGrpInfo)
 {
@@ -707,7 +734,8 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 int
 sortObjInfo (dataObjInfo_t **dataObjInfoHead, 
 dataObjInfo_t **currentArchInfo, dataObjInfo_t **currentCacheInfo, 
-dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
+dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo, 
+dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo)
 {
     dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
     int rescClassInx;
@@ -718,6 +746,7 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
     dataObjInfo_t *oldCompInfo = NULL;
 
     *currentArchInfo = *currentCacheInfo = *oldArchInfo = *oldCacheInfo = NULL;
+    *downCurrentInfo = *downOldInfo = NULL;
 
     tmpDataObjInfo = *dataObjInfoHead;
 
@@ -726,9 +755,20 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
 
+	    
 	if (tmpDataObjInfo->rescInfo == NULL || 
 	 tmpDataObjInfo->rescInfo->rodsServerHost == NULL) {
 	    topFlag = 0;
+	} else if (tmpDataObjInfo->rescInfo->rescStatus == 
+	  INT_RESC_STATUS_DOWN) {
+	    /* the resource is down */
+	    if (tmpDataObjInfo->replStatus > 0) {
+		queDataObjInfo (downCurrentInfo, tmpDataObjInfo, 1, 1);
+	    } else {
+		queDataObjInfo (downOldInfo, tmpDataObjInfo, 1, 1);
+	    }
+	    tmpDataObjInfo = nextDataObjInfo;
+	    continue;
 	} else {
 	    rodsServerHost_t *rodsServerHost =
 	      (rodsServerHost_t *) tmpDataObjInfo->rescInfo->rodsServerHost;
@@ -773,33 +813,73 @@ dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo)
     return (0);
 }
 
+/* sortObjInfoForOpen - Sort the dataObjInfo in dataObjInfoHead for open.
+ * If it is for read (writeFlag == 0), discard old copies, then cache first,
+ * archval second.
+ * If it is for write, (writeFlag > 0), resource in DEST_RESC_NAME_KW first,
+ * then current cache, current archival, old cache and old archival.
+ */ 
 int
-sortObjInfoForOpen (dataObjInfo_t **dataObjInfoHead, keyValPair_t *condInput, 
-int writeFlag)
+sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
+keyValPair_t *condInput, int writeFlag)
 {
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo, 
-     *oldCacheInfo;
+     *oldCacheInfo, *downCurrentInfo, *downOldInfo;
+    int status = 0;
+
     sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
-      &oldArchInfo, &oldCacheInfo);
+      &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
 
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
     if (*dataObjInfoHead != NULL && writeFlag == 0) {
-	/* For read only. we already have a good copy */
-	freeAllDataObjInfo (oldCacheInfo);
-	freeAllDataObjInfo (oldArchInfo);
-    } else {
+	/* For read only */
+	if (*dataObjInfoHead != NULL) {
+	    /* we already have a good copy */
+	    freeAllDataObjInfo (oldCacheInfo);
+	    freeAllDataObjInfo (oldArchInfo);
+	} else if (downCurrentInfo != NULL) {
+	    /* don't have a good copy */
+	    /* the old current copy is not available */
+            freeAllDataObjInfo (oldCacheInfo);
+            freeAllDataObjInfo (oldArchInfo);
+	    status = SYS_RESC_IS_DOWN;
+	} else {
+	    /* don't have a good copy. use the old one */
+            queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
+            queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
+	}
+        freeAllDataObjInfo (downCurrentInfo);
+    	freeAllDataObjInfo (downOldInfo);
+    } else {	/* write */
 	char *rescName; 
         queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
         queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
-        if (((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL ||
-	  (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) &&
-	  writeFlag >0) {
-	    requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, 1);
+	if (*dataObjInfoHead == NULL) {
+	    /* no working copy. */
+	    if (getRescStatus (rsComm, NULL, condInput) == 
+	      INT_RESC_STATUS_DOWN) {
+                freeAllDataObjInfo (downCurrentInfo);
+                freeAllDataObjInfo (downOldInfo);
+		status = SYS_RESC_IS_DOWN;
+	    } else {
+                queDataObjInfo (dataObjInfoHead, downCurrentInfo, 0, 0);
+                queDataObjInfo (dataObjInfoHead, downOldInfo, 0, 0);
+	    }
+	} else {
+            freeAllDataObjInfo (downCurrentInfo);
+    	    freeAllDataObjInfo (downOldInfo);
+            if ((rescName = 
+	      getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL ||
+	      (rescName = 
+	      getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL ||
+	      (rescName = 
+	      getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL) {
+	        requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag,1);
+	    }
 	}
     }
-
-    return (0);
+    return (status);
 }
 
 int
@@ -882,7 +962,7 @@ char *preferredResc, int writeFlag, int topFlag)
     dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
     int status = -1;
 
-    if (preferredResc == NULL) {
+    if (preferredResc == NULL || *dataObjInfoHead == NULL) {
 	return (0);
     }
 
@@ -1086,12 +1166,14 @@ sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead,
 dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
 {
     dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
-     *oldCacheInfo;
+     *oldCacheInfo, *downCurrentInfo, *downOldInfo;
     sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
-      &oldArchInfo, &oldCacheInfo);
+      &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
 
+    freeAllDataObjInfo (downOldInfo);
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
+    queDataObjInfo (dataObjInfoHead, downCurrentInfo, 0, 0);
     if (*dataObjInfoHead != NULL) {
         if (deleteOldFlag == 0) {  
 	    /* multi copy not allowed. have to keep old copy in  
@@ -1106,8 +1188,10 @@ dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
         queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
         queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
     }
-
-    return (0);
+    if (*dataObjInfoHead == NULL) 
+	return SYS_RESC_IS_DOWN;
+    else
+        return (0);
 }
 
 /* dataObjExist - check whether the data object given in dataObjInp exist.

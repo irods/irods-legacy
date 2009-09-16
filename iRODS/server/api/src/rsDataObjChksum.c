@@ -69,7 +69,10 @@ char **outChksumStr, dataObjInfo_t **dataObjInfoHead)
         return status;
     } else if (allFlag == 0) {
         /* screen out any stale copies */
-        sortObjInfoForOpen (dataObjInfoHead, &dataObjInp->condInput, 0);
+        status = sortObjInfoForOpen (rsComm, dataObjInfoHead, 
+	  &dataObjInp->condInput, 0);
+	if (status < 0) return status;
+
         tmpDataObjInfo = *dataObjInfoHead;
         if (tmpDataObjInfo->next == NULL) {
             /* the only copy */

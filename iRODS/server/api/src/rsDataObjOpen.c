@@ -96,8 +96,9 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	}
     } else {
         /* screen out any stale copies */
-        sortObjInfoForOpen (&dataObjInfoHead, &dataObjInp->condInput,
-         writeFlag);
+        status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, 
+	  &dataObjInp->condInput, writeFlag);
+        if (status < 0) return status;
 
         status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
         if (status < 0) return status;

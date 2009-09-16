@@ -47,7 +47,9 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 	      execCmdInp->hintPath);  
             return (status);
 	}
-        sortObjInfoForOpen (&dataObjInfoHead, &execCmdInp->condInput, 0);
+        status = sortObjInfoForOpen (rsComm, &dataObjInfoHead, 
+	  &execCmdInp->condInput, 0);
+	if (status < 0) return status;
 
 	if (execCmdInp->addPathToArgv > 0) {
 	    char tmpArgv[LONG_NAME_LEN];

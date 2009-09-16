@@ -54,6 +54,8 @@ int
 getRescInfo (rsComm_t *rsComm, char *defaultResc, keyValPair_t *condInput, 
 rescGrpInfo_t **rescGrpInfo);
 int
+getRescStatus (rsComm_t *rsComm, char *inpRescName, keyValPair_t *condInput);
+int
 _getRescInfo (rsComm_t *rsComm, char *rescName, rescGrpInfo_t **rescGrpInfo);
 int
 resolveAndQueResc (char *rescName, char *rescGrpName,  
@@ -81,8 +83,8 @@ int
 sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead, 
 dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag);
 int
-sortObjInfoForOpen ( dataObjInfo_t **dataObjInfoHead, keyValPair_t *condInput,
-int writeFlag);
+sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
+keyValPair_t *condInput, int writeFlag);
 int
 sortDataObjInfoRandom (dataObjInfo_t **dataObjInfoHead);
 int
@@ -101,7 +103,8 @@ int ignoreCondInput);
 int
 sortObjInfo (dataObjInfo_t **dataObjInfoHead,
 dataObjInfo_t **dirtyArchInfo, dataObjInfo_t **dirtyCacheInfo,
-dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo);
+dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo,
+dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo);
 int
 chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
 dataObjInfo_t *dataObjInfo);

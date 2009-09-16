@@ -561,7 +561,14 @@ char *subPath, dataObjInfo_t **dataObjInfo)
         }
 
         /* screen out any stale copies */
-        sortObjInfoForOpen (dataObjInfo, &myDataObjInp.condInput, 0);
+        status = sortObjInfoForOpen (rsComm, dataObjInfo, 
+	  &myDataObjInp.condInput, 0);
+	if (status < 0) {
+	    rodsLog (LOG_ERROR,
+              "specCollSubStat: sortObjInfoForOpen error for %s. status = %d",
+              myDataObjInp.objPath, status);
+	    return status;
+	}
 
 	if (strlen (specColl->resource) > 0) {
 	    if (requeDataObjInfoByResc (dataObjInfo, specColl->resource, 

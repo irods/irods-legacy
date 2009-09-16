@@ -529,15 +529,15 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
     sortScheme = (char *) xsortScheme->inOutStruct;
     RE_TEST_MACRO ("    Calling msiSortDataObj")
 
+    rei->status = 0;
     if (sortScheme != NULL) {
 	if (strcmp (sortScheme, "random") == 0) {
             sortDataObjInfoRandom (&rei->doi);
         } else if (strcmp (sortScheme, "byRescClass") == 0) {
-	    sortObjInfoForOpen (&rei->doi, NULL, 1);
+	    rei->status = sortObjInfoForOpen (rei->rsComm, &rei->doi, NULL, 1);
 	}
     }
-    rei->status = 0;
-    return (0);
+    return (rei->status);
 }
 
 
