@@ -94,7 +94,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     addKeyVal (&dirRegInp.condInput, DEST_RESC_NAME_KW, 
       dataObjInfo->rescName);
 
-    status = rsPhyPathReg (rsComm, &dirRegInp);
+    status = irsPhyPathReg (rsComm, &dirRegInp);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
