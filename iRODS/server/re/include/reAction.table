@@ -158,6 +158,20 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
                                   msParam_t* genQueryOutParam,
                                   ruleExecInfo_t *rei);
 
+int msiAutoReplicateService(msParam_t *xColl,
+                            msParam_t *xRecursive,
+                            msParam_t *xRequireNumReplicas,
+                            msParam_t *xRescGroup,
+                            msParam_t *xEmailAccountToNotify,
+                            ruleExecInfo_t *rei);
+
+int msiDataObjAutoMove(msParam_t *inpParam1,
+                       msParam_t *inpParam2,
+                       msParam_t *inpParam3,
+                       msParam_t *inpParam4,
+                       msParam_t *inpParam5,
+                       ruleExecInfo_t *rei);
+
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
   {"print_hello_arg", 1, (funcPtr) print_hello_arg},
@@ -301,3 +315,5 @@ microsdef_t MicrosTable[] = {
   {"msiDigestMonStat",7,(funcPtr) msiDigestMonStat},
   {"msiSplitPath",3,(funcPtr) msiSplitPath},
   {"msiGetSessionVarValue",2,(funcPtr) msiGetSessionVarValue},
+  {"msiAutoReplicateService", 5, (funcPtr)msiAutoReplicateService},
+  {"msiDataObjAutoMove", 5, (funcPtr)msiDataObjAutoMove},
