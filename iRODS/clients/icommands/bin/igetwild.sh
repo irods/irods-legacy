@@ -6,10 +6,10 @@
 # end or middle).
 #
 # For example:
-# iget.sh /newZone/home/rods .txt e
+# igetwild.sh /newZone/home/rods .txt e
 # will get each irods file that ends with '.txt' in the collection.
 #
-#iget.sh /newZone/home/rods .txt e
+#igetwild.sh /newZone/home/rods .txt e
 #   foo.txt                         0.000 MB | 0.164 sec | 0 thr |  0.000 MB/s
 #   foo2.txt                        0.000 MB | 0.101 sec | 0 thr |  0.000 MB/s
 
