@@ -1096,11 +1096,12 @@ int replStatus)
       rsComm, filePath, rescInfo->rescName, &myDataObjInfo)) == 0) {
         rstrcpy (fileRenameInp.oldFileName, filePath, MAX_NAME_LEN);
 	/* not an orphan file */
-	if (replStatus > OLD_COPY) {
+	if (replStatus > OLD_COPY || isTrashPath (myDataObjInfo.objPath)) {
             modDataObjMeta_t modDataObjMetaInp;
             keyValPair_t regParam;
 
-	    /* a new copy. rename and reg the path of the old one */
+	    /* a new copy or the current path is in trash. 
+	     * rename and reg the path of the old one */
             status = renameFilePathToNewDir (rsComm, REPL_DIR, &fileRenameInp, 
 	      rescInfo, 1);
             if (status < 0) {
