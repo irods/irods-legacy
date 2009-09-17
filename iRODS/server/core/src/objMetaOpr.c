@@ -270,8 +270,8 @@ getNumResc (rescGrpInfo_t *rescGrpInfo)
 }
 
 int
-sortResc (rescGrpInfo_t **rescGrpInfo, keyValPair_t *condInput, 
-char *sortScheme)
+sortResc (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo, 
+keyValPair_t *condInput, char *sortScheme)
 {
     int i, order;
     rescGrpInfo_t *tmpRescGrpInfo;

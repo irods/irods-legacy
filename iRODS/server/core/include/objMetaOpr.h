@@ -68,8 +68,8 @@ resolveResc (char *rescName, rescInfo_t **rescInfo);
 int
 getNumResc (rescGrpInfo_t *rescGrpInfo);
 int
-sortResc (rescGrpInfo_t **rescGrpInfo, keyValPair_t *condInput, 
-char *sortScheme);
+sortResc (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo, 
+keyValPair_t *condInput, char *sortScheme);
 int
 getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfoHead, char *accessPerm, int ignoreCondInput);

@@ -227,7 +227,7 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
 	rei->status = SYS_INVALID_RESC_INPUT;
 	return (0);
     }
-    sortResc (&myRescGrpInfo, &rei->doinp->condInput, sortScheme);
+    sortResc (rei->rsComm, &myRescGrpInfo, &rei->doinp->condInput, sortScheme);
     rei->rgi = myRescGrpInfo;
     return(0);
 }
