@@ -832,7 +832,7 @@ keyValPair_t *condInput, int writeFlag)
 
     *dataObjInfoHead = currentCacheInfo;
     queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
-    if (*dataObjInfoHead != NULL && writeFlag == 0) {
+    if (writeFlag == 0) {
 	/* For read only */
 	if (*dataObjInfoHead != NULL) {
 	    /* we already have a good copy */
