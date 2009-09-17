@@ -215,8 +215,8 @@ typedef struct startupPack {
  * assumed to be up */
 #define RESC_DOWN	"down"
 #define RESC_UP		"up"
-#define RESC_AUTO_UP	"auto_up"
-#define RESC_AUTO_DOWN	"auto_down"
+#define RESC_AUTO_UP	"auto-up"
+#define RESC_AUTO_DOWN	"auto-down"
 
 #define  INT_RESC_STATUS_UP 	0
 #define  INT_RESC_STATUS_DOWN 	1
