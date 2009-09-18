@@ -1263,6 +1263,9 @@ dataObjInfo_t *dataObjInfo)
 	return (0);
     }
 
+     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN)
+        return SYS_RESC_IS_DOWN;
+
     /* Save the current objPath */
     memset (&fileRenameInp, 0, sizeof (fileRenameInp));
     rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, 

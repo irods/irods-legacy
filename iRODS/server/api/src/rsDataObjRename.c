@@ -362,6 +362,9 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
     fileRenameInp_t fileRenameInp;
     int status;
 
+     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN)
+        return SYS_RESC_IS_DOWN;
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
 	subStructFileRenameInp_t subStructFileRenameInp;
         memset (&subStructFileRenameInp, 0, sizeof (subStructFileRenameInp));

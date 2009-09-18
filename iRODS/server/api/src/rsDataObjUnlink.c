@@ -304,6 +304,9 @@ l3Unlink (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
 
     if (getRescClass (dataObjInfo->rescInfo) == BUNDLE_CL) return 0;
 
+     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN) 
+	return SYS_RESC_IS_DOWN;
+
     if (getStructFileType (dataObjInfo->specColl) >= 0) {
         subFile_t subFile;
         memset (&subFile, 0, sizeof (subFile));
