@@ -175,12 +175,13 @@ if ( $thisUserID == 0 )
 
 
 if ( $isUpgrade ne "") {
-    printNotice("\nNote: When upgrading from 2.0.1 (or 2.0) to 2.1, you\n");
-    printNotice("need to run psg-patch-v2.0.1Tov2.1.sql via psql (for Postgres)\n");
-    printNotice("or ora-patch-v2.0.1Tov2.1.sql via sqlplus (for Oracle)\n");
+    printNotice("\nNote: When upgrading from 2.1 to 2.2, you need to run\n");
+    printNotice("psg-patch-v2.1tov2.2.sql via psql (for Postgres)\n");
+    printNotice("or ora-patch-v2.1tov2.2.sql via sqlplus (for Oracle)\n");
+    printNotice("or mys-patch-v2.1tov2.2.sql via mysql (for MySQL)\n");
     printNotice("before running this script.\n");
     printNotice("If you have an older iRODS, you need to run the\n");
-    printNotice("1.0 to v1.1 and/or 1.1 to 2.0 scripts in sequence.\n\n");
+    printNotice("other patch scripts in sequence.\n\n");
 
     my $answer = promptYesNo(
 			     "Have you run one of those?",
