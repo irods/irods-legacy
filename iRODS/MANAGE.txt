@@ -1,5 +1,5 @@
 		    Scripts for managing iRODS servers
-				January 2008
+			Last updated September 2009
 
 
 The iRODS distribution includes shell/Perl scripts to manage iRODS
@@ -69,12 +69,26 @@ This lists the iRODS and database servers running, and their process IDs.
 2.  Testing the servers
 ------------------------------------------------------------------------
 
-Run:
-	./irodsctl test
+Normally, a simple iput and iget is all you need to run to test much
+of the irods installation.  This will verify that the clients and
+servers can communicate, that the server can communicate with the
+DBMS, and that other infrastructure is in place and set up properly.
 
-This runs an extensive set of tests to be sure the installation is
-working properly.  Normally, you do not need to run this.  It will
-completely succeed only on the ICAT-Enabled Server host and only if a
-number of default settings are used (resource names, etc).  A simple
-iput, ils, and iget is also a good test of many aspects of the
-installation.
+
+Run:
+	iinit
+	ls > testfile
+	iput testfile
+	ils -l
+	rm testfile
+	iget testfile
+	irm testfile
+	irmtrash
+
+
+There is also a 'irodsctl devtest' which runs an extensive set of
+tests but normally you do not need to run this.  It will completely
+succeed only on the ICAT-Enabled Server host and only if a number of
+default settings are used (resource names, etc).  We run the 'irodsctl
+devtest' test suite as part of our continuous build/test system to
+verify that the current code base builds and runs properly.

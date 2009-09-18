@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-				June 2008
+			Last updated September 2009
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -7,13 +7,29 @@ scripts to build the iRODS system.  See MANAGE.txt for information about
 scripts to manage iRODS after it has been installed.
 
 
-0.  Upgrading an existing iRODS installation (1.0 to 1.1)
+0.  Upgrading an existing iRODS installation
 
 If you are upgrading to a new version of iRODS and want to keep your
 existing state information (the ICAT, information on dataObjects,
-collections, resources, users, etc), run either of these (they are
-equivalent):
+collections, resources, users, etc), first run the patch file for
+either PostgreSQL, Oracle, or MySQL to make some needed updates to
+tables (if any).  Assuming your iCAT database is named ICAT, this
+would be, for example:
 
+        psql ICAT < server/icat/patch/psg-patch-v2.1tov2.2.sql
+
+    or 
+        sqlplus name@instance
+        @server/icat/patch/ora-patch-v2.1tov2.2.sql
+
+    or
+        mysql ICAT < server/icat/patch/mys-patch-v2.1tov2.2.sql
+
+If you are upgrading from an older version, you'll need to apply the
+patch file for each released version that has one, in sequence.
+See the server/icat/patch directory for the set of patch files.
+
+Then run either of these (they are equivalent):
         ./irodsupgrade
     or
         ./irodssetup --upgrade
@@ -22,49 +38,34 @@ and follow the prompts.  This runs in a similar manner as irodssetup
 as described below, but with fewer prompts and default settings for
 upgrading an existing ICAT.
 
-After that (or before if you wish) run the patch file for either
-PostgreSQL or Oracle to make some minor changes to some tables.
-Assuming your iCAT database is named ICAT, this would be:
+The system will then be updated and new features and bug fixes will be
+installed.  Others features, such as GSI, can be enabled via your
+answers to the script.  And others are enabled in other ways.
 
-        psql ICAT < server/icat/src/psg-patch-v1.0Tov1.1.sql
-
-    or 
-        sqlplus name@instance
-        @server/icat/src/ora-patch-v1.0Tov1.1.sql
-
-And you are done.  Many new features and bug fixes will then be
-installed.  Others, such as GSI, can be enabled via your answers to
-'irodsupgrade'.  And others, others are enabled in other ways.
-
-Note that there has been a small protocol change between 1.0 and 1.1
-and so 1.0 clients will get an error when attempting to connect to 1.1
-servers.  Be sure to upgrade all your clients to 1.1.
+See the irods web site release notes for information on the new
+features and bug fixes, and other information.
 
 
 
-1.  Installing iRODS using 'irodssetup'
+1.  Installing iRODS for the first time: use 'irodssetup'
 ------------------------------------------------------------------------
 
-To install iRODS, execute the setup script in the iRODS home directory:
+To install iRODS where you have no previous version (from scratch),
+execute the setup script in the iRODS home directory:
 
 	./irodssetup
 
 The script prompts you for what to install and where to install it,
-then does the job.  This typically takes 1/2 hour or more and is the
+then does the job.  This typically takes 1/2 hour or so and is the
 recommended way to install iRODS.
 
-This script saves its work in two configuration files:
-
-	config/installPostgres.config
-		Used to configure a Postgres install.
-
-	config/irods.config
-		Used to configure the iRODS install.
+This script saves its work in configuration files in the config
+subdirectory, the main one being: config/irods.config
 
 Normally, there is no need for you to view or edit these files,
 however you can edit irods.config.  If you rerun irodssetup, the saved
-settings of irods.config will be the default choices.  Both files
-include comments that explain their settings.
+settings of irods.config will be the default choices.  The config
+files include comments that explain their settings.
 
 More detailed logs are in ./installLogs with names corresponding to
 the subscripts that are run (see below), for eaxmple:
@@ -104,7 +105,6 @@ answering the prompts differently:
 
 
 	* Install iRODS commands 
-
 		The scripts configure and build the i-commands.  No
 		new server or database is needed.  You will then need
 		to set up your ~/.irods/.irodsEnv file to connect to
@@ -119,14 +119,16 @@ The 'irodssetup' script runs five steps for the installation that you
 can run directly, if finer control is needed.  However, we recommend
 that you try the 'irodssetup' script first because it already supports
 a large number of common options, and it will give you a starting
-point for adjusting your installation.
+point for adjusting your installation.  'irodssetup' asks if you want
+to use advanced settings, which, when selected, will provide
+additional prompts and options for you to choose.
 
 The five install steps are:
 
 	scripts/irodsprompt
 		Prompt for configuration settings.  Initial settings
 		are read from 'config/irods.config', and new settings
-		are written back to the file.
+		are written back to that file.
 
 	scripts/installPostgres
 		Download and build Postgres and ODBC distribtions.  Uses
