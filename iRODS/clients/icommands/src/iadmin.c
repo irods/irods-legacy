@@ -1338,11 +1338,11 @@ usage(char *subOpt)
 "The 'host' field is the DNS host name, for example 'datastar.sdsc.edu',",
 "this is displayed as 'resc_net', the resource network address.",
 " ",
-"Setting the resource status to 'down' will cause iRODS to ignore that",
-"resource and bypass communications with that server.  'up' or other strings",
-"without 'down' in them will restore use of the resource.  'auto' will allow",
+"Setting the resource status to '" RESC_DOWN "' will cause iRODS to ignore that",
+"resource and bypass communications with that server.  '" RESC_UP "' or other strings",
+"without '" RESC_DOWN "' in them will restore use of the resource.  'auto' will allow",
 "the Resource Monitoring System (if running) to set the resource status",
-"to 'auto-up' or 'auto-down'.",
+"to '" RESC_AUTO_UP "' or '" RESC_AUTO_DOWN "'.",
 ""};
 
    char *rmrescMsgs[]={
