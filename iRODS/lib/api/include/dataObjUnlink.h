@@ -34,6 +34,9 @@ rsMvDataObjToTrash (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfoHead);
 int
 resolveDataObjReplStatus (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp);
+int
+chkPreProcDeleteRule (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
+dataObjInfo_t *dataObjInfoHead);
 #else
 #define RS_DATA_OBJ_UNLINK NULL
 #endif

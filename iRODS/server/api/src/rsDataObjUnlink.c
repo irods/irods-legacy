@@ -102,8 +102,12 @@ dataObjInfo_t **dataObjInfoHead)
     int status;
     int retVal = 0;
     dataObjInfo_t *tmpDataObjInfo, *myDataObjInfoHead;
-    ruleExecInfo_t rei;
 
+    status = chkPreProcDeleteRule (rsComm, dataObjUnlinkInp, *dataObjInfoHead);
+    if (status < 0) return status;
+
+#if 0	/* done in chkPreProcDeleteRule */
+    ruleExecInfo_t rei;
     initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
     rei.doi = *dataObjInfoHead;
 
@@ -119,10 +123,11 @@ dataObjInfo_t **dataObjInfoHead)
 
     if (rei.status == SYS_DELETE_DISALLOWED) {
         rodsLog (LOG_NOTICE,
-        "_rsDataObjUnlink:disallowed for %s via acDataDeletePolicy,status=%d",
+        "_rsDataObjUnlink:disallowed for %s via acDataDeletePolicy,stat=%d",
           dataObjUnlinkInp->objPath, rei.status);
         return (rei.status);
     }
+#endif
 
     myDataObjInfoHead = *dataObjInfoHead;
     if (strcmp (myDataObjInfoHead->dataType, TAR_BUNDLE_TYPE) == 0) {
@@ -339,7 +344,6 @@ rsMvDataObjToTrash (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfoHead)
 {
     int status;
-    ruleExecInfo_t rei;
     char trashPath[MAX_NAME_LEN];
     dataObjCopyInp_t dataObjRenameInp;
 
@@ -362,6 +366,11 @@ dataObjInfo_t **dataObjInfoHead)
         return (status);
     }
 
+    status = chkPreProcDeleteRule (rsComm, dataObjInp, *dataObjInfoHead);
+    if (status < 0) return status;
+
+#if 0   /* done in chkPreProcDeleteRule */
+
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     rei.doi = *dataObjInfoHead;
 
@@ -381,6 +390,7 @@ dataObjInfo_t **dataObjInfoHead)
           dataObjInp->objPath, rei.status);
         return (rei.status);
     }
+#endif
 
     status = rsMkTrashPath (rsComm, dataObjInp->objPath, trashPath);
 
@@ -415,3 +425,37 @@ dataObjInfo_t **dataObjInfoHead)
     return (status);
 }
 
+int
+chkPreProcDeleteRule (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp,
+dataObjInfo_t *dataObjInfoHead)
+{
+    dataObjInfo_t *tmpDataObjInfo;
+    ruleExecInfo_t rei;
+    int status = 0;
+
+    initReiWithDataObjInp (&rei, rsComm, dataObjUnlinkInp);
+    tmpDataObjInfo = dataObjInfoHead;
+    while (tmpDataObjInfo != NULL) {
+        /* have to go through the loop to test each copy (resource). */
+        rei.doi = tmpDataObjInfo;
+
+        status = applyRule ("acDataDeletePolicy", NULL, &rei, NO_SAVE_REI);
+
+        if (status < 0 && status != NO_MORE_RULES_ERR &&
+          status != SYS_DELETE_DISALLOWED) {
+            rodsLog (LOG_ERROR,
+              "chkPreProcDeleteRule: acDataDeletePolicy err for %s. stat = %d",
+              dataObjUnlinkInp->objPath, status);
+            return (status);
+        }
+
+        if (rei.status == SYS_DELETE_DISALLOWED) {
+            rodsLog (LOG_ERROR,
+            "chkPreProcDeleteRule:acDataDeletePolicy disallowed delete of %s",
+              dataObjUnlinkInp->objPath);
+            return (rei.status);
+        }
+        tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+    return status;
+}
