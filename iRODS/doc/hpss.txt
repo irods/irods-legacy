@@ -14,7 +14,7 @@ A. Building a HPSS enabled server
 	 HPSS_UNIX_PASSWD_AUTH=1
 2) cd to the irods home directory and type in "make" to re-make the server.
 
-B. Configuration a HPSS enabled server
+B. Configurating a HPSS enabled server
 
 1) cd to the server/config directory and use the template files 
    hpssAuth.template and hpssCosConfig.template for the hpssAuth and
@@ -29,11 +29,12 @@ B. Configuration a HPSS enabled server
 
 2) create a HPSS resource - The HPSS driver is implemented as a compound
    class resource because of the parallel transfer mode of HPSS. As explained
-   in this link: https://www.irods.org/index.php/resource, the implementation
-   requires a cache class resource to be configured in the same resource 
-   group as the compound resource. Data stored in the compound resource 
-   cannot be accessed directly but through the cache resource. The 
-   following gives an example of creating a HPSS resource using iadmin:
+   in this link: https://www.irods.org/index.php/resource, the compound
+   resource implementation requires a cache class resource to be configured 
+   in the same resource group as the compound resource. Data stored in 
+   the compound resource cannot be accessed directly but through the cache 
+   resource. The following gives an example of creating a HPSS resource 
+   using iadmin:
       iadmin mkresc hpssResc hpss compound nacho.sdsc.edu /home/irods/Vault 
    
 3) Add the HPSS and cache resources to a resource group. e.g.,
