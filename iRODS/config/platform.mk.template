@@ -182,6 +182,9 @@ endif
 # HPSS support
 ifdef HPSS
 MY_CFLAG+= -DHPSS
+ifdef HPSS_UNIX_PASSWD_AUTH
+MY_CFLAG+= -DHPSS_UNIX_PASSWD_AUTH
+endif
 ifeq ($(OS_platform), linux_platform)
 MY_CFLAG+= -m32 -Duchar=u_char -DLITTLEEND
 LDADD+= -m32

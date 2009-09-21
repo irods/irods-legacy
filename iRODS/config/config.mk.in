@@ -266,10 +266,13 @@ endif
 # server/log/ log files.
 #IRODS_SYSLOG = 1
 
-# HPSS - Define whether HPSS is supported on this server.
+# HPSS - Define whether HPSS is supported on this server. HPSS_UNIX_PASSWD_AUTH
+# specifies whether the UNix password authentication should be used. The
+# default is using the keytab file.
 # HPSS=1
 
 ifdef HPSS
+# HPSS_UNIX_PASSWD_AUTH=1
 HPSS_LIB_DIR=/opt/hpss/lib
 HPSS_HDR_DIR=/opt/hpss/include
 ADDR_64BITS=
