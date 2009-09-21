@@ -90,11 +90,10 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
       MAX_NAME_LEN);
     addKeyVal (&dirRegInp.condInput, COLLECTION_KW, "");
     /* collection permission was checked in chkCollForExtAndReg */
-    addKeyVal (&dirRegInp.condInput, NO_CHK_FILE_PERM_KW, "");
     addKeyVal (&dirRegInp.condInput, DEST_RESC_NAME_KW, 
       dataObjInfo->rescName);
 
-    status = irsPhyPathReg (rsComm, &dirRegInp);
+    status = phyPathRegNoChkPerm (rsComm, &dirRegInp);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
