@@ -33,7 +33,7 @@ rsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     int status;
 
     if (getValByKey (&phyPathRegInp->condInput, NO_CHK_FILE_PERM_KW) != NULL &&
-      rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
 	return SYS_NO_API_PRIV;
     }
 
