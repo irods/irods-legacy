@@ -35,10 +35,10 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   
   /* a quick test in order to see if the resource is up or down (needed to update the "status" metadata) */
   if ( strcmp(output, MON_OUTPUT_NO_ANSWER) == 0 ) {
-	strncpy(monStatus, "auto-down", MAX_NAME_LEN);
+	strncpy(monStatus, RESC_AUTO_DOWN, MAX_NAME_LEN);
   }
   else {
-	strncpy(monStatus, "auto-up", MAX_NAME_LEN);
+	strncpy(monStatus, RESC_AUTO_UP, MAX_NAME_LEN);
   }
   
   strSplit(output, delim, splc);
