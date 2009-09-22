@@ -78,12 +78,14 @@ This documentation is generated from the iRODS code.
   - #msiDataObjRsync - Rsync a data between iRods and local file 
   - #msiGetObjType - finds if a given value is a data,coll,resc,...
   - #msiCheckPermission - check if an data Object permission is the same as the one given
-  - #msiCheckOwner - check if the user is the woner of the data Object.
+  - #msiCheckOwner - check if the user is the owner of the data object
 
  \subsection msicollection Collection Microservices
   - #msiCollCreate - create a collection
   - #msiCollRepl - replicate all files in a collection
   - #msiRmColl - delete a collection
+  - #msiAutoReplicateService - checks and repairs up to n replicas
+  - #msiDataObjAutoMove - used to automatically move the newly created file into a destination collection
 
  \subsection msiproxy Proxy Command Microservices
   - #msiExecCmd - remote execute a command
@@ -152,7 +154,7 @@ This documentation is generated from the iRODS code.
   - #msiExtractTemplateMDFromBuf     - extracting AVU info using template
   - #msiReadMDTemplateIntoTagStruct  - loading template file contents into Tag structure
 
- \subsection msisystem System Micro-services
+ \subsection msisystem System Microservices
   Can only be called by the server process
   - #msiSetDefaultResc - set the default resource
   - #msiSetNoDirectRescInp - sets a list of resources that cannot be used by a normal user directly.
