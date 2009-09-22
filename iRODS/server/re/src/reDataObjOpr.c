@@ -1635,7 +1635,7 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *            But the '=' character is still needed.
  *        \li "verifyChksum" - verify the chksum value.
  *        \li "forceChksum" - checksum data-objects even if a 
- *            checksum alreay exists in iCAT. This keyWd has no value.
+ *            checksum already exists in iCAT. This keyWd has no value.
  *        \li "replNum" - the replica number to checksum. This keyWd has no value.
  * \param[out] outParam - a STR_MS_T containing the chksum value.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
