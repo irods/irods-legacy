@@ -33,11 +33,24 @@
 #define HTML_TEST_MSI          4
 #define COMMAND_TEST_MSI       5
 #define LOOP_BACK_1            1
+#define LOG_TEST_2            10
+
+
 /** Flags for testing the Rule Execution **/
 
 /* Macro for the Re  Test Stub */
 
+#define RE_TEST_MACRO(msg)      \
+  if (reTestFlag > 0 ) {        \
+    if (reTestFlag == LOG_TEST_2) {     \
+      rodsLogAndErrorMsg (LOG_NOTICE,&(rei->rsComm->rError),-1, msg);	\
+    }   \
+    if (reLoopBackFlag > 0)     \
+      return(0);        \
+  }
 
+
+/*
 #define RE_TEST_MACRO(msg)      \
   if (reTestFlag > 0 ) {        \
     if (reTestFlag == LOG_TEST_1) {     \
@@ -46,8 +59,8 @@
     if (reLoopBackFlag > 0)     \
       return(0);        \
   }
-
-
+ 
+*/
 
 /*
 #define RE_TEST_MACRO(msg)      \
