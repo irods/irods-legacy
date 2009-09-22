@@ -1,27 +1,11 @@
+/**
+ * @file  reAutoReplicateService.c
+ *
+ */
+
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
 #include "objMetaOpr.h"
-
-
-/*********************************************************************
- Author: Bing Zhu
-         July, 2009
- msiAutoReplicateService(): The 'msiAutoReplicateService' is a micro-service 
-   to handle digital preservation rule, intially requested by CineGrid project.
-   It is supposed to be run as a periodic service to check if a number of 
-   required good copies of data is in the system. 
-     - For a registered copy, it check if the the copy still exits. Remove
-       it from iCAT if the local file is already removed by data owner.
-     - For each copy, including registered one or the one inn vault, run
-       the checksum and verify that the copy is still good.
-     - If a bad copy is detected, delete it.
-     - Make necessary replicas to the required number of copies.
-
-   Here is an example of running the service every week.
-
- msiDataObjAutoMove(): automatically move a newly created object into
-   a disignated place.
- *********************************************************************/
 
 
 typedef struct __replicas_check_status_
@@ -179,6 +163,59 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
    return 0;
 }
 
+/**
+ * \fn msiAutoReplicateService(msParam_t *xColl, msParam_t *xRecursive, 
+ *         msParam_t *xRequireNumReplicas, msParam_t *xRescGroup, 
+ *           msParam_t *xEmailAccountToNotify,
+ *         ruleExecInfo_t *rei)
+ *
+ * \brief This microservice is used to handle digital preservation rules, intially requested by CineGrid project.
+ *
+ * \module 
+ *
+ * \since 2.2
+ *
+ * \author  Bing Zhu
+ * \date    2009-07
+ *
+ * \remark Terrell Russell - msi documentation, 2009-09-21
+ *
+ * \note   This microservice is supposed to be run as a periodic service to check if a designated number of 
+ * required good copies of data is in the system. 
+ *   \li For a registered copy, it checks if the copy still exits, and removes
+ *     it from the iCAT if the local file is already removed by the data owner.
+ *   \li For each copy, including the registered one or the one in vault, runs
+ *     the checksum and verifies that the copy is still good.
+ *   \li If a bad copy is detected, deletes it.
+ *   \li Makes necessary replicas to meet the required number of copies.
+ *
+ * \usage None
+ *
+ * \param[in] xColl - a STR_MS_T containing the collection or object name
+ * \param[in] xRecursive - a STR_MS_T determining whether should be run recursively
+ *                      \li true - will run recursively
+ *                      \li false - default - will not run recursively
+ * \param[in] xRequireNumReplicas - a STR_MS_T containing the number of replicas
+ *                      \li must be at least 1
+ * \param[in] xRescGroup - Optional - a STR_MS_T containing the target resource group name
+ * \param[in] xEmailAccountToNotify - Optional - a STR_MS_T containing the notification email address
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiAutoReplicateService(msParam_t *xColl, msParam_t *xRecursive, 
           msParam_t *xRequireNumReplicas, msParam_t *xRescGroup, 
           msParam_t *xEmailAccountToNotify,
@@ -226,7 +263,7 @@ int msiAutoReplicateService(msParam_t *xColl, msParam_t *xRecursive,
    nRequiredNumOfReplica = atoi(sTmpstr);
    if(nRequiredNumOfReplica <= 0)
    {
-      rodsLog (LOG_ERROR, "msiAutoReplicateService(): xRequireNumReplicas must be at leats 1.");
+      rodsLog (LOG_ERROR, "msiAutoReplicateService(): xRequireNumReplicas must be at least 1.");
       return SYS_INTERNAL_NULL_INPUT_ERR;
    }
 
@@ -456,7 +493,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
          if((pReplicaStatus[i].chksum_status == USER_CHKSUM_MISMATCH)||(pReplicaStatus[i].chksum_status==UNIX_FILE_OPEN_ERR)||(adchksum==UNIX_FILE_OPEN_ERR))
            /* USER_CHKSUM_MISMATCH  -> indicates the registered file is changed.
             * UNIX_FILE_OPEN_ERR --> indicates the registered file is removed by original owner.
-            * -510002 is traneformed UNIX open error.
+            * -510002 is transformed UNIX open error.
             */
          {
             rodsLog(LOG_NOTICE,"msiAutoReplicateService():process_single_obj(): registered copy will be removed: %s, repl=%d", myDataObjInp.objPath, pReplicaStatus[i].repl_num);
@@ -574,16 +611,50 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
    return 0;
 }
 
-/*******************************************************************************
- The program is used to automatically move the newly created file into 
- a destination collection.
- inpParam1: object name with path. It usually comes from query like "$objPat like /zone/../%"
-            in the deployed micro-service.
- inpParam2: the leading collection name to be truncated.
- inpParam3: detination collection.
- inpParam4: new owner
- inpParam5: a flag indicates if the checksum should be computed.
- *******************************************************************************/
+/**
+ * \fn msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
+ *                      msParam_t *inpParam4, msParam_t *inpParam5, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice is used to automatically move the newly created file into a destination collection.
+ *
+ * \module 
+ *
+ * \since 2.2
+ *
+ * \author  Bing Zhu
+ * \date    2009-07
+ *
+ * \remark Terrell Russell - msi documentation, 2009-09-21
+ *
+ * \note
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - a STR_MS_T containing the object name with path. It usually comes from query as "$objPat
+ *                          like /zone/../%" in the deployed microservice
+ * \param[in] inpParam2 - a STR_MS_T containing the leading collection name to be truncated
+ * \param[in] inpParam3 - a STR_MS_T containing the destination collection
+ * \param[in] inpParam4 - a STR_MS_T containing the new owner
+ * \param[in] inpParam5 - a STR_MS_T containing a flag for whether the checksum should be computed
+                        \li true - default - will compute the checksum
+                        \li false - will not compute the checksum
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
                        msParam_t *inpParam4, msParam_t *inpParam5, ruleExecInfo_t *rei)
 {
@@ -657,7 +728,7 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
    }
 
    if(inpParam4 == NULL) {
-      rodsLog(LOG_ERROR, "msiDataObjAutoMove: input new_owner (inpParam4) is null.");
+      rodsLog(LOG_ERROR, "msiDataObjAutoMove: input new_owner (inpParam4) is NULL.");
       return SYS_INTERNAL_NULL_INPUT_ERR;
    }
    new_owner = (char *)inpParam4->inOutStruct;
