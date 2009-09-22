@@ -1,26 +1,38 @@
 
-Introduction.
+Introduction
 ------------
-rulegen is a parser that takes rules written in  a nicer language to 
-the cryptic one needed by irule and core.irb. The input files for the 
-rulgen is recommended  to be *.r (.r extensions) and the output created
-by the rulegen is inthe form of *.ir (.ir extensions). The grammar for
-the langauge of the input files are given at the end of this note.
+rulegen is a parser that takes rules written in a nicer language to 
+the cryptic one needed by irule and core.irb. The input files for 
+rulgen is recommended to be *.r (.r extensions) and the output created
+by rulegen is in the form of *.ir (.ir extensions). The grammar for
+the language of the input files are given at the end of this note.
 
-How to use the parser.
+How to use the parser
 ---------------------
-There are two steps. First is creating the parser. This is done by 
-executing
+There are two steps.
+
+1) Creating the parser. This is done by executing
    gmake
 in this directory and the binary file 'rulegen' is created in ../bin
 directory. 
 
-The second step is used for parsing a *.r file into the *.ir format. This 
-is done by running  the rulegen as shown in example below:
+2) Parsing a *.r file into the *.ir format. This 
+is done by running rulegen as shown in example below:
 
   ../bin/rulegen -s test1.r > test1.ir
 
 Then, test1.ir can be used as an input file for the irule command.
+
+  irule -F test1.ir
+
+
+Examples
+--------
+Example use cases can be found in:
+
+  test1.r
+  test2.r
+  test3.r
 
 
 Grammar of the rulegen language
