@@ -41,7 +41,7 @@ msParamArray_t **outParamArray)
       !strcmp(iFlag,"true")) {
         oldReTestFlag = reTestFlag;
         oldReLoopBackFlag = reLoopBackFlag;
-        reTestFlag = LOG_TEST_1;
+        reTestFlag = LOG_TEST_2;
         reLoopBackFlag = LOOP_BACK_1;
     }
 
