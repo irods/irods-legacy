@@ -66,7 +66,8 @@ INCLUDES +=	-I$(svrApiIncDir)
 SVR_DRIVERS_OBJS = \
 		$(svrDriversObjDir)/structFileDriver.o \
 		$(svrDriversObjDir)/fileDriver.o \
-		$(svrDriversObjDir)/unixFileDriver.o
+		$(svrDriversObjDir)/unixFileDriver.o \
+		$(svrDriversObjDir)/univMSSDriver.o
 
 ifdef HAAW_STRUCT_FILE
 SVR_DRIVERS_OBJS+=$(svrDriversObjDir)/haawStructFileDriver.o
