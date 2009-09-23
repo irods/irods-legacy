@@ -23,6 +23,7 @@
 #ifdef AMAZON_S3
 #include "s3FileDriver.h"
 #endif
+#include "univMSSDriver.h"
 
 #define NO_FILE_DRIVER_FUNCTIONS intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,longNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport,intNoSupport, intNoSupport, longNoSupport, intNoSupport, intNoSupport, intNoSupport
 
@@ -63,6 +64,11 @@ fileDriver_t FileDriverTable[] = {
     intNoSupport, unixFileMkdir, unixFileChmod, unixFileRmdir, unixFileOpendir,
     unixFileClosedir, unixFileReaddir, intNoSupport, unixFileRename,
     unixFileGetFsFreeSpace, intNoSupport, unixStageToCache, unixSyncToArch},
+    {UNIV_MSS_FILE_TYPE,intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    intNoSupport, univMSSFileUnlink, intNoSupport, intNoSupport, longNoSupport,
+    intNoSupport, univMSSFileMkdir, univMSSFileChmod, intNoSupport, intNoSupport,
+    intNoSupport, intNoSupport, intNoSupport, intNoSupport,
+    longNoSupport, intNoSupport, univMSSStageToCache, univMSSSyncToArch},
 };
 
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);

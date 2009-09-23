@@ -126,6 +126,7 @@ rescTypeDef_t RescTypeDef[] = {
   {"windows",   FILE_CAT, NT_FILE_TYPE,    DO_CHK_PATH_PERM},
   {"test stage",FILE_CAT, TEST_STAGE_FILE_TYPE, DO_CHK_PATH_PERM},
   {"s3",FILE_CAT, S3_FILE_TYPE, DO_CHK_PATH_PERM},
+  {"MSS universal driver", FILE_CAT, UNIV_MSS_FILE_TYPE,  DO_CHK_PATH_PERM},
 };
 
 int NumRescTypeDef = sizeof (RescTypeDef) / sizeof (rescTypeDef_t);
