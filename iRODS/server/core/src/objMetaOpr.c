@@ -3368,6 +3368,51 @@ rescGrpInfo_t **rescGrpInfo)
 	return 0;
 }
 
+/* isRescsInSameGrp - check if 2 rescources are in the same rescGroup
+ * returns 1 if match, 0 for no match.
+ */
+
+int
+isRescsInSameGrp (rsComm_t *rsComm, char *rescName1, char *rescName2,
+rescGrpInfo_t **outRescGrpInfo)
+{
+    rescGrpInfo_t *tmpRescGrpInfo, *myRescGrpInfo;
+    rescInfo_t *myRescInfo;
+    int status;
+    int match1, match2;
+
+    if (outRescGrpInfo != NULL)
+        *outRescGrpInfo = NULL;
+
+    if ((status = initRescGrp (rsComm)) < 0) return status;
+
+    /* in cache ? */
+    tmpRescGrpInfo = CachedRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+        myRescGrpInfo = tmpRescGrpInfo;
+	match1 = match2 = 0;
+        while (myRescGrpInfo != NULL) {
+            myRescInfo = myRescGrpInfo->rescInfo;
+	    if (match1 == 0 && 
+	      strcmp (rescName1, myRescInfo->rescName) == 0) {
+		match1 = 1;
+	    } else if (match2 == 0 && 
+	      strcmp (rescName2, myRescInfo->rescName) == 0) {
+		match2 = 1;
+	    }
+	    if (match1 == 1 && match2 == 1) {
+                if (outRescGrpInfo != NULL) *outRescGrpInfo = tmpRescGrpInfo;
+		return 1;
+	    }
+            myRescGrpInfo = myRescGrpInfo->next;
+        }
+
+        tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
+    }
+    return 0;
+}
+
+
 /* initRescGrp - Initialize the CachedRescGrpInfo queue
  */
 

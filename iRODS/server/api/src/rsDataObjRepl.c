@@ -419,7 +419,16 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
         }
 #endif
     } else if (srcRescClass == COMPOUND_CL) {
-	if (getRescInGrp (rsComm, myDestRescInfo->rescName,
+	rescGrpInfo_t *myRescGrpInfo;
+	if (destRescClass == CACHE_CL && isRescsInSameGrp (rsComm, 
+	  myDestRescInfo->rescName, inpSrcDataObjInfo->rescInfo->rescName,
+	  &myRescGrpInfo)) {
+	    /* src and dest in same resc group. no need to stage */
+	    if (strlen (inpSrcDataObjInfo->rescGroupName) == 0) {
+		rstrcpy (inpSrcDataObjInfo->rescGroupName, 
+		  myRescGrpInfo->rescGroupName, NAME_LEN);
+	    }
+	} else if (getRescInGrp (rsComm, myDestRescInfo->rescName,
           inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
             cacheDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
 	    status = stageDataFromCompToCache (rsComm, inpSrcDataObjInfo,

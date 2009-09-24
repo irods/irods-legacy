@@ -245,4 +245,7 @@ initRescGrp (rsComm_t *rsComm);
 int
 getRescGrpOfResc (rsComm_t *rsComm, rescInfo_t * rescInfo,
 rescGrpInfo_t **rescGrpInfo);
+int
+isRescsInSameGrp (rsComm_t *rsComm, char *rescName1, char *rescName2,
+rescGrpInfo_t **outRescGrpInfo);
 #endif	/* OBJ_META_OPR_H */
