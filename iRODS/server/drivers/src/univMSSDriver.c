@@ -23,7 +23,7 @@ int univMSSSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 	lastpart = strrchr(filename, '/');
 	lenDir = strlen(filename) - strlen(lastpart);
 	strncpy(dirname, filename, lenDir);
-	mode = 750;   /* to be modified in the near future */
+	mode = DEFAULT_ACL;   /* to be modified in the near future */
 	status = univMSSFileMkdir (rsComm, dirname, mode);
 	if ( status == 0 ) {
 		rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
@@ -39,6 +39,7 @@ int univMSSSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 			rc = univMSSFileChmod (rsComm, filename, mode);
 		}
 		else {
+			status = UNIV_MSS_SYNCTOARCH_ERR - errno;
 			rodsLog (LOG_ERROR, "univMSSSyncToArch: copy of %s to %s failed, status = %d",
 					cacheFilename, filename, status);
 		}
@@ -69,7 +70,7 @@ int univMSSStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
 	
 	if (status < 0) {
-        /*status = UNIX_FILE_UNLINK_ERR - errno; */ 
+        status = UNIV_MSS_STAGETOCACHE_ERR - errno; 
 		rodsLog (LOG_ERROR, "univMSSStageToCache: staging from %s to %s failed, status = %d",
          filename, cacheFilename, status);
     }
@@ -96,7 +97,7 @@ int univMSSFileUnlink (rsComm_t *rsComm, char *filename) {
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
 
     if (status < 0) {
-        /*status = UNIX_FILE_UNLINK_ERR - errno; */ 
+        status = UNIV_MSS_UNLINK_ERR - errno;
 		rodsLog (LOG_ERROR, "univMSSFileUnlink: unlink of %s error, status = %d",
          filename, status);
     }
@@ -122,7 +123,7 @@ int univMSSFileMkdir (rsComm_t *rsComm, char *dirname, int mode) {
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
 	
 	if (status < 0) {
-		/*status = UNIX_FILE_UNLINK_ERR - errno; */
+		status = UNIV_MSS_MKDIR_ERR - errno;
 		rodsLog (LOG_NOTICE, "univMSSFileMkdir: cannot create directory for %s error, status = %d",
 		         dirname, status);
     }
@@ -154,7 +155,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
 	
 	if (status < 0) {
-		/* status = UNIX_FILE_UNLINK_ERR - errno; */
+		status = UNIV_MSS_CHMOD_ERR - errno;
 		rodsLog (LOG_NOTICE, "univMSSFileChmod: cannot chmod for %s, status = %d",
 		         name, status);
     }
