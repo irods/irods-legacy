@@ -76,7 +76,6 @@ def main()
   doxy_keys = ["PROJECT_NAME", "PROJECT_NUMBER", "OUTPUT_DIRECTORY",
   "STRIP_FROM_PATH", "INPUT", "GENERATE_HTML", "GENERATE_RTF", "GENERATE_LATEX"]
 
-
   # Check for doxygen in path
   if (!executable_exists("doxygen"))
     puts("Error: doxygen executable not found in your path or not installed\n\n")
@@ -84,61 +83,63 @@ def main()
   end
   
   # Check whether this script has been run already
+  response = ""
   if (File.exist?(output_file))
     puts("\nAttention: [#{output_file}] already exists.")
     puts("\Use previous settings? y/n [n]:")
     response = gets()
-    if (response.strip() =~ /n/)
-
-      # Read included config file
-      doxy_cfg = read_config(input_file, doxy_keys)
-
-      # Prompt for custom values of configuration parameters
-      puts("\n---\n\nThis script can generate RTF, LATEX, and HTML documentation for iRODS.\n\n")
-      puts("Enter your config parameter values. The default values are in brackets.")
-      puts("Your saved configuration values will be written to [#{output_file}]\n\n")
-      for key in doxy_cfg.keys.sort.reverse
-        # Skip the strip_from_path it is the same as the input
-        if ((key =~ /STRIP_FROM_PATH/) != nil): next end
-        if (doxy_cfg[key] != nil) then
-          puts("Enter #{key} [#{doxy_cfg[key]}]:")
-          tvalue = gets()
-          value = tvalue.strip()
-          if (value.length() > 0): doxy_cfg[key] = value end
-        else
-          puts("Enter #{key} []:")
-          tvalue = gets()
-          value = tvalue.strip()
-          if (value.length() > 0): doxy_cfg[key] = value end
-        end
-      end
-  
-      doxy_cfg["STRIP_FROM_PATH"] = doxy_cfg["OUTPUT_DIRECTORY"]
-
-      # Write out the customized Doxygen output file.
-      in_file = File.new(input_file, "r")
-      out_file = File.new(output_file, "w")
-      while (line = in_file.gets()) do
-        if (line =~ /=/) then
-          tkey, tvalue = line.split("=")
-          key = tkey.strip()
-          if (doxy_keys.include?(key)) then
-            line = [tkey, doxy_cfg[key]].join(" = ")
-          end
-        end
-        out_file.puts(line)
-      end
-      in_file.close()
-      out_file.close()
-  
-    # Entered 'y', so continue with existing saved config file
-    else
-      doxy_cfg = read_config(output_file, doxy_keys)
-      doxy_cfg["STRIP_FROM_PATH"] = doxy_cfg["OUTPUT_DIRECTORY"]
-      puts("Re-running Doxygen with the previously saved configuration...")
-    end
   end
 
+  # Determine whether to read config file
+  if (!File.exist?(output_file) || response.strip() =~ /n/)
+
+    # Read included config file
+    doxy_cfg = read_config(input_file, doxy_keys)
+
+    # Prompt for custom values of configuration parameters
+    puts("\n---\n\nThis script can generate RTF, LATEX, and HTML documentation for iRODS.\n\n")
+    puts("Enter your configuration parameter values.\nThe default values are in brackets.")
+    puts("Your saved configuration values will be written to [#{output_file}]\n\n")
+    for key in doxy_cfg.keys.sort.reverse
+      # Skip the strip_from_path it is the same as the input
+      if ((key =~ /STRIP_FROM_PATH/) != nil): next end
+      if (doxy_cfg[key] != nil) then
+        puts("Enter #{key} [#{doxy_cfg[key]}]:")
+        tvalue = gets()
+        value = tvalue.strip()
+        if (value.length() > 0): doxy_cfg[key] = value end
+      else
+        puts("Enter #{key} []:")
+        tvalue = gets()
+        value = tvalue.strip()
+        if (value.length() > 0): doxy_cfg[key] = value end
+      end
+    end
+
+    doxy_cfg["STRIP_FROM_PATH"] = doxy_cfg["OUTPUT_DIRECTORY"]
+
+    # Write out the customized Doxygen output file.
+    in_file = File.new(input_file, "r")
+    out_file = File.new(output_file, "w")
+    while (line = in_file.gets()) do
+      if (line =~ /=/) then
+        tkey, tvalue = line.split("=")
+        key = tkey.strip()
+        if (doxy_keys.include?(key)) then
+          line = [tkey, doxy_cfg[key]].join(" = ")
+        end
+      end
+      out_file.puts(line)
+    end
+    in_file.close()
+    out_file.close()
+
+  # Entered 'y', so continue with existing saved config file
+  else
+    doxy_cfg = read_config(output_file, doxy_keys)
+    doxy_cfg["STRIP_FROM_PATH"] = doxy_cfg["OUTPUT_DIRECTORY"]
+    puts("Re-running Doxygen with the previously saved configuration...")
+  end
 
   # Remove any earlier generated documentation
   system("rm -r #{doxy_cfg["OUTPUT_DIRECTORY"]}/html/")
@@ -168,14 +169,14 @@ def main()
   # Friendly output
   puts("\n---\n")
   if (doxy_cfg["GENERATE_RTF"] == "YES")
-    puts("RTF documentation -> #{doxy_cfg["OUTPUT_DIRECTORY"]}/rtf/refman.rtf")
+    puts("RTF documentation   -> #{doxy_cfg["OUTPUT_DIRECTORY"]}/rtf/refman.rtf")
   end
   if (doxy_cfg["GENERATE_LATEX"] == "YES")
     puts("LATEX documentation -> #{doxy_cfg["OUTPUT_DIRECTORY"]}/latex/")
-    puts("PDF documentation -> #{doxy_cfg["OUTPUT_DIRECTORY"]}/latex/refman.pdf")
+    puts("PDF documentation   -> #{doxy_cfg["OUTPUT_DIRECTORY"]}/latex/refman.pdf")
   end
   if (doxy_cfg["GENERATE_HTML"] == "YES")
-    puts("HTML documentation -> #{doxy_cfg["OUTPUT_DIRECTORY"]}/html/index.html")
+    puts("HTML documentation  -> #{doxy_cfg["OUTPUT_DIRECTORY"]}/html/index.html")
   end
 
 end
