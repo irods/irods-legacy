@@ -17,6 +17,8 @@ typedef struct __replicas_check_status_
    char resc[200];
 }ReplicaCheckStatusStruct;
 
+static int repl_storage_error;
+
 static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
         int required_num_replicas, char *grpRescForReplication, char *emailToNotify);
 static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath);
@@ -129,12 +131,12 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
       return(t);
    } 
 
+   repl_storage_error = 0;
    loop_stop = 0;
    do
    {
-      fprintf(stderr, "rowCnt=%d\n", genQueryOut->rowCnt);
-      for(i=0;i<genQueryOut->rowCnt; i++)
-      {
+      /* fprintf(stderr, "rowCnt=%d\n", genQueryOut->rowCnt); */
+      for(i=0;i<genQueryOut->rowCnt; i++) {
          collNameStruct = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
          dataNameStruct = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
 
@@ -142,21 +144,26 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
          dataName = &dataNameStruct->value[dataNameStruct->len*i];
 
          t = process_single_obj(conn, collName, dataName, requiredNumReplicas, rescGroup, emailToNotify);
+
+         if((t < 0) && (repl_storage_error == 1)) {
+            rodsLog(LOG_ERROR, "_myAutoReplicateService():process_single_obj() returned a storage eror. The service quits.");
+            loop_stop = 1;
+         }
       }
 
-      fprintf(stderr, "t=%d, continueInx=%d\n", t, genQueryOut->continueInx);
-      if(genQueryOut->continueInx == 0)
-      {
-         loop_stop = 1;
-      }
-      else
-      {
-         genQueryInp.continueInx=genQueryOut->continueInx;
-         t = rsGenQuery (conn, &genQueryInp, &genQueryOut);
-         loop_stop = 0;
+      if(loop_stop ==0) {
+         /* fprintf(stderr, "t=%d, continueInx=%d\n", t, genQueryOut->continueInx); */
+         if(genQueryOut->continueInx == 0) {
+            loop_stop = 1;
+         }
+         else {
+            genQueryInp.continueInx=genQueryOut->continueInx;
+            t = rsGenQuery (conn, &genQueryInp, &genQueryOut);
+            loop_stop = 0;
+         }
       }
    }
-   while ((t==0) && (loop_stop == 0));
+   while ((t == 0) && (loop_stop == 0));
 
    freeGenQueryOut(&genQueryOut);
    
@@ -314,6 +321,7 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
 
    int at_least_one_copy_is_good = 0;
    int newN;
+   int rn;
 
    /* fprintf(stderr,"msiAutoReplicateService():process_single_obj()\n");  */
 
@@ -422,10 +430,11 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       myDataObjInp.openFlags = O_RDONLY;
       sprintf(tmpstr, "%d", pReplicaStatus[i].repl_num);
       addKeyVal (&myDataObjInp.condInput, REPL_NUM_KW, tmpstr);
+      rn = pReplicaStatus[i].repl_num;
       t = rsDataObjOpen(conn, &myDataObjInp);
       if(t < 0)
       {
-         /* fprintf(stderr,"%d. %s/%s, %d failed to open and has checksum status=%d\n", i, parColl, fileName, pReplicaStatus[i].repl_num, t); */
+         /* fprintf(stderr,"%d. %s/%s, %d failed to open and has checksum status=%d\n", i, parColl, fileName, rn, t); */
          pReplicaStatus[i].chksum_status = t;
       }
       else {
@@ -438,12 +447,11 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
          addKeyVal (&myDataObjInp.condInput, REPL_NUM_KW, tmpstr);
          t = rsDataObjChksum(conn, &myDataObjInp, &chksum_str);
          pReplicaStatus[i].chksum_status = t;     /* t == USER_CHKSUM_MISMATCH means a bad copy */
-         /* fprintf(stderr,"%d. %s/%s, %d has checksum status=%d\n", i, parColl, fileName, pReplicaStatus[i].repl_num, t); */
+         /* fprintf(stderr,"%d. %s/%s, %d has checksum status=%d\n", i, parColl, fileName, rn, t); */
          if(t >= 0) {
             if(strlen(pReplicaStatus[i].checksum) > 0) {
                if(strcmp(pReplicaStatus[i].checksum, chksum_str) != 0)    /* mismatch */
                {
-                  /* fprintf(stderr,"BC2->%s/%s, v=%d, USER_CHKSUM_MISMATCH\n", parColl, fileName, pReplicaStatus[i].repl_num); */
                   pReplicaStatus[i].chksum_status = USER_CHKSUM_MISMATCH;
                }
                else {
@@ -484,55 +492,56 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       sprintf(myDataObjInp.objPath, "%s/%s", parColl, fileName);
       sprintf(tmpstr, "%d", pReplicaStatus[i].repl_num);
       addKeyVal (&myDataObjInp.condInput, REPL_NUM_KW, tmpstr);
+      rn = pReplicaStatus[i].repl_num;
       if(pReplicaStatus[i].registered == 1)
       {
          /* here is the catch. iRODS. */
          int adchksum;
-         /* fprintf(stderr,"CD->%s/%s, v=%d, is a registered copy.\n", parColl, fileName,pReplicaStatus[i].repl_num); */
+         /* fprintf(stderr,"CD->%s/%s, v=%d, is a registered copy.\n", parColl, fileName, rn); */
          adchksum = ((int)(pReplicaStatus[i].chksum_status/1000))*1000;
          if((pReplicaStatus[i].chksum_status == USER_CHKSUM_MISMATCH)||(pReplicaStatus[i].chksum_status==UNIX_FILE_OPEN_ERR)||(adchksum==UNIX_FILE_OPEN_ERR))
            /* USER_CHKSUM_MISMATCH  -> indicates the registered file is changed.
             * UNIX_FILE_OPEN_ERR --> indicates the registered file is removed by original owner.
-            * -510002 is transformed UNIX open error.
+            * -510002 is transformed from UNIX open error.
             */
          {
-            rodsLog(LOG_NOTICE,"msiAutoReplicateService():process_single_obj(): registered copy will be removed: %s, repl=%d", myDataObjInp.objPath, pReplicaStatus[i].repl_num);
-            /*
-            t = rsDataObjUnlink(conn, &myDataObjInp);
-            if(t >= 0) {
-                newN = newN -1;
-            }
-            else {
-               rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjUnlink(): error. erStat=%d", t);
-            }
-            */
-            /* t = getDataObjInfoIncSpecColl(conn, &myDataObjInp, &myDataObjInfo); */
+            rodsLog(LOG_NOTICE,"msiAutoReplicateService():process_single_obj(): registered copy will be removed: %s, repl=%d", myDataObjInp.objPath, rn);
             t = getDataObjInfo(conn, &myDataObjInp, &myDataObjInfo, NULL, 0);
-            fprintf(stderr,"MN-> msiAutoReplicateService():getDataObjInfo() returns t=%d.\n", t);
             if(t >= 0) {
                myUnregDataObjInp.dataObjInfo = myDataObjInfo;
                myUnregDataObjInp.condInput = &myDataObjInp.condInput;
                t = rsUnregDataObj(conn, &myUnregDataObjInp);
-               if(t >= 0)
+               if(t >= 0) {
                   newN = newN -1;
+               }
+               else  {
+                  rodsLog(LOG_ERROR, "msiAutoReplicateService():rsUnregDataObj(): failed for %s/%s:%d. erStat=%d", parColl, fileName, rn, t);
+                  return t;
+               }
             }
             else {
-               rodsLog(LOG_ERROR, "msiAutoReplicateService():getDataObjInfo(): error, erStat=%d", t);
+               rodsLog(LOG_ERROR, "msiAutoReplicateService():getDataObjInfo(): failed for %s/%s:%d. erStat=%d", parColl, fileName, rn, t);
+               return t;
             }
          }
          else
          {
-            rodsLog(LOG_ERROR,"%s, v=%d, a registered copy has error checksum status=%d. The system will not remove data item in iCAT.\n", myDataObjInp.objPath, pReplicaStatus[i].repl_num, pReplicaStatus[i].chksum_status);
+            rodsLog(LOG_ERROR,"%s:%d, the registered copy has errored checksum status=%d.", myDataObjInp.objPath, rn, pReplicaStatus[i].chksum_status);
+            return t;
          }
       }
-      else
+      else   /* the data file is in vault */
       {
-         /* fprintf(stderr,"CD->%s/%s, v=%d, is a vaulted copy.\n", parColl, fileName,pReplicaStatus[i].repl_num); */
          if(pReplicaStatus[i].chksum_status == USER_CHKSUM_MISMATCH)
          {
             t = rsDataObjUnlink(conn, &myDataObjInp);
-            if(t >= 0)
+            if(t >= 0) {
               newN = newN -1;
+            }
+            else  {
+               rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjUnlink() for %s:%d failed. errStat=%d", myDataObjInp.objPath, rn, t);
+               return t;
+            }
          }
       }
    }
@@ -549,12 +558,13 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
          t = rsDataObjRepl(conn, &myDataObjInp, &transStat);
          if(t < 0)
          {
-            rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjRepl() failed for %s/%s. err code=%d", parColl, fileName, t);
+            rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjRepl() failed for %s/%s:%d into '%s'. err code=%d.", parColl, fileName, rn, grpRescForReplication, t);
+            repl_storage_error = 1;
+            return t;
          }
       }
    }
 
-   /* rodsLog(LOG_NOTICE,"msiAutoReplicateService():process_single_obj(): ends");  */
    return 0;
 }
 
