@@ -2538,11 +2538,14 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  * *D=/tempZone/home/rods/foo6%*E=/scratch/localfile/test.txt
  * ruleExecOut
  *
- * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken 
+ *	as object path. The path can be a data object or a collection path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the dest resourceName.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the physical path to be registered.
- * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the "collection"
- *      (COLLECTION_KW) indicating the path to be registered is a directory. 
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies whether the
+ *	path to be registered is a directory. A keyword string "collection" 
+ *	indicates the path is a directory. A "null" string indicates the path 
+ *	is a file.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
