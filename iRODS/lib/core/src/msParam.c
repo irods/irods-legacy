@@ -588,16 +588,15 @@ dataObjInp_t **outDataObjInp, int outputToCache)
 
     if (strcmp (inpParam->type, STR_MS_T) == 0) {
         /* str input */
+        if (dataObjInpCache == NULL) {
+            dataObjInpCache = (dataObjInp_t *)malloc (sizeof (dataObjInp_t));
+        }
+        memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
+	*outDataObjInp = dataObjInpCache;
 	if (strcmp ((char *) inpParam->inOutStruct, "null") != 0) {
-	    if (dataObjInpCache == NULL) {
-		dataObjInpCache = (dataObjInp_t *)malloc (sizeof (dataObjInp_t));
-	    }
-            memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
             rstrcpy (dataObjInpCache->objPath, (char*)inpParam->inOutStruct, 
 	      MAX_NAME_LEN);
 	}
-	*outDataObjInp = dataObjInpCache;
-	    
         return (0);
     } else if (strcmp (inpParam->type, DataObjInp_MS_T) == 0) {
 	if (outputToCache == 1) {
@@ -658,14 +657,14 @@ collInp_t **outCollInp, int outputToCache)
 
     if (strcmp (inpParam->type, STR_MS_T) == 0) {
         /* str input */
+        if (collInpCache == NULL) {
+            collInpCache = (collInp_t *)malloc (sizeof (collInp_t));
+        }
+        memset (collInpCache, 0, sizeof (collInp_t));
+	*outCollInp = collInpCache;
 	if (strcmp ((char *) inpParam->inOutStruct, "null") != 0) {
-            if (collInpCache == NULL) {
-                collInpCache = (collInp_t *)malloc (sizeof (collInp_t));
-            }
-            memset (collInpCache, 0, sizeof (collInp_t));
             rstrcpy (collInpCache->collName, (char*)inpParam->inOutStruct, 
 	      MAX_NAME_LEN);
-	    *outCollInp = collInpCache;
 	}
         return (0);
     } else if (strcmp (inpParam->type, CollInp_MS_T) == 0) {
