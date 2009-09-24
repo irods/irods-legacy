@@ -595,8 +595,9 @@ dataObjInp_t **outDataObjInp, int outputToCache)
             memset (dataObjInpCache, 0, sizeof (dataObjInp_t));
             rstrcpy (dataObjInpCache->objPath, (char*)inpParam->inOutStruct, 
 	      MAX_NAME_LEN);
-	    *outDataObjInp = dataObjInpCache;
 	}
+	*outDataObjInp = dataObjInpCache;
+	    
         return (0);
     } else if (strcmp (inpParam->type, DataObjInp_MS_T) == 0) {
 	if (outputToCache == 1) {
