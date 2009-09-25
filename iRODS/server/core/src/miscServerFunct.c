@@ -96,14 +96,14 @@ createSrvPortal (rsComm_t *rsComm, portList_t *thisPortList, int proto)
     
     if (proto != SOCK_DGRAM && proto != SOCK_STREAM) {
         rodsLog (LOG_ERROR,
-         "setupSrvPortal() -- invalid input protocol %d", proto);
+         "createSrvPortal: invalid input protocol %d", proto);
         return SYS_INVALID_PROTOCOL_TYPE;
     }
 
     if ((lsock = svrSockOpenForInConn (rsComm, &lport, &laddr, 
       SOCK_STREAM)) < 0) {
         rodsLog (LOG_ERROR,
-         "setupSrvPortal - sockOpenForInConn of SOCK_STREAM failed: status=%d",
+         "createSrvPortal: svrSockOpenForInConn failed: status=%d",
           lsock);
         return lsock;
     }
