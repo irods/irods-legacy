@@ -1,10 +1,10 @@
--- run these SQL statements, using the MySQL client mysql
+-- run these SQL statements, using the Oracle client sqlplus
 
 alter table R_RESC_MAIN add column resc_status varchar(32);
 
 create table R_USER_AUTH
 (
-   user_id             bigint not null,
+   user_id             integer not null,
    user_auth_name      varchar(1000),
    create_ts varchar(32)
 );

@@ -46,6 +46,7 @@ insert into R_TOKN_MAIN values ('resc_type',400,'unix file system','','','','','
 insert into R_TOKN_MAIN values ('resc_type',401,'hpss file system','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',402,'windows file system','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_type',403,'s3','','','','','1250100000','1250100000');
+insert into R_TOKN_MAIN values ('resc_type',404,'MSS universal driver','','','','','1250100000','1250100000');
 
 insert into R_TOKN_MAIN values ('resc_class',500,'cache','','','','','1170000000','1170000000');
 insert into R_TOKN_MAIN values ('resc_class',501,'archive','','','','','1170000000','1170000000');
