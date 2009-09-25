@@ -2730,7 +2730,10 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-12
  *
- * \note This call should only be used through the rcExecMyRule (irule) call
+ * \note For now, this micro-service should only be used for IRODS_TO_IRODS
+ * mode because of the logistic difficulty with the microservice getting the 
+ * checksum values of the local file. 
+ *  Also, this call should only be used through the rcExecMyRule (irule) call
  *  i.e., rule execution initiated by clients and should not be called
  *  internally by the server since it interacts with the client through
  *  the normal client/server socket connection. Also, it should never
@@ -2744,8 +2747,9 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *      and IRODS_TO_IRODS
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the chksum value
  *      (RSYNC_CHKSUM_KW).
- * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the dest path
- *      (RSYNC_DEST_PATH_KW). Valid only for IRODS_TO_IRODS mode.
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the 
+ *      (RSYNC_DEST_PATH_KW). For IRODS_TO_LOCAL and LOCAL_TO_IRODS, this is
+ *	the local path. If it is IRODS_TO_IRODS, it is the target path.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -2771,6 +2775,7 @@ ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
+    msParamArray_t *outParamArray = NULL;
 
     RE_TEST_MACRO ("    Calling msiDataObjRsync")
 
@@ -2807,8 +2812,8 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-    if ((rei->status = parseMspForCondInp (inpParam3, &myDataObjInp->condInput,
-      RSYNC_CHKSUM_KW)) < 0) {
+    if ((rei->status = parseMspForCondInp (inpParam4, &myDataObjInp->condInput,
+      RSYNC_DEST_PATH_KW)) < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjRsync: input inpParam3 error. status = %d", rei->status);
         return (rei->status);
@@ -2817,8 +2822,12 @@ ruleExecInfo_t *rei)
     /* just call rsDataObjRsync for now. client must supply the chksum of
      * the local file. Could ask the client to do a chksum first */
 
-    rei->status = rsDataObjRsync (rsComm, myDataObjInp, NULL);
+    rei->status = rsDataObjRsync (rsComm, myDataObjInp, &outParamArray);
 
+    if (outParamArray != NULL) {
+        clearMsParamArray (outParamArray, 1);
+	free (outParamArray);
+    }
     if (myDataObjInp == &dataObjInp) {
         clearKeyVal (&myDataObjInp->condInput);
     }
