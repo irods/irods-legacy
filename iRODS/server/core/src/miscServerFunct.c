@@ -361,6 +361,7 @@ svrPortalPutGet (rsComm_t *rsComm)
                 retVal = myInput[i].status;
             }
         }
+        CLOSE_SOCK (lsock);
 	return (retVal);
 
 #else	/* PARA_OPR */
