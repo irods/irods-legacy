@@ -566,6 +566,13 @@ rodsSetSockOpt (int sock, int windowSize)
       &temp, sizeof (temp));
     if (status < 0)
         savedStatus = status;
+
+    /* reuse the socket. Otherwise will be kept for 2-4 minutes */
+    status = setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, 
+      &temp, sizeof (temp));
+    if (status < 0)
+        savedStatus = status;
+
 #endif
 
     return (savedStatus);
