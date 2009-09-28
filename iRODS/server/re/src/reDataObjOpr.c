@@ -923,6 +923,12 @@ ruleExecInfo_t *rei)
  *                This keyWd has no value.
  *          \li "verifyChksum" - verify the transfer using checksum.
  *                This keyWd has no value.
+ *          \li "rbudpTransfer" - use RBUDP (datagram) protocol for the 
+ *		  data transfer. This keyWd has no value.
+ *          \li "rbudpSendRate" - Valid only if "rbudpTransfer" is on. This
+ *		  is the send rate in kbits/sec. The default is 600,000.
+ *          \li "rbudpPackSize" - Valid only if "rbudpTransfer" is on. This
+ *		  is the packet size in bytes. The default is 8192.
  * \param[out] outParam - a msParam of type INT_MS_T which is a status of the operation.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -977,7 +983,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 #else
     validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
       BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
-      REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG;
+      REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
+      RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG;
     rei->status = parseMsKeyValStrForDataObjInp (msKeyValStr, myDataObjInp,
       DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
 #endif
