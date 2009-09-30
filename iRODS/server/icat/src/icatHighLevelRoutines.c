@@ -842,7 +842,6 @@ void removeMetaMapAndAVU(char *dataObjNumber) {
    there were no rows deleted from r_objt_metamap, in which case there
    is no need to do the SQL below.
  */
-   rodsLog (LOG_NOTICE, "removeMetaMapAndAVU 1 status=%d\n",status);
    if (status == 0) {
 #ifndef DISABLE_METADATA_CLEANUP
       if (logSQL) rodsLog(LOG_SQL, "removeMetaMapAndAVU SQL 2");
@@ -850,7 +849,6 @@ void removeMetaMapAndAVU(char *dataObjNumber) {
       snprintf(tSQL, MAX_SQL_SIZE, 
 	       "delete from r_meta_main where meta_id not in (select meta_id from r_objt_metamap)"); 
       status =  cmlExecuteNoAnswerSql(tSQL, &icss);
-      rodsLog (LOG_NOTICE, "removeMetaMapAndAVU 2 status=%d\n",status);
 #endif
    }
    return;
