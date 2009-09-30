@@ -109,6 +109,8 @@ int
 chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
 dataObjInfo_t *dataObjInfo);
 int
+chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName);
+int
 getNumDataObjInfo (dataObjInfo_t *dataObjInfoHead);
 int
 replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, 

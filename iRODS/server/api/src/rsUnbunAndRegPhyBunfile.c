@@ -305,6 +305,29 @@ rescInfo_t *rescInfo, char *bunFilePath, char *phyBunDir)
 
     rmLinkedFilesInUnixDir (phyBunDir);
     status = rsStructFileExtract (rsComm, &structFileOprInp);
+    if (status == SYS_DIR_IN_VAULT_NOT_EMPTY) {
+	/* phyBunDir is not empty */
+	if (chkOrphanDir (rsComm, phyBunDir, rescInfo->rescName) > 0) {
+	    /* it is a orphan dir */
+	    fileRenameInp_t fileRenameInp;
+	    bzero (&fileRenameInp, sizeof (fileRenameInp));
+            rstrcpy (fileRenameInp.oldFileName, phyBunDir, MAX_NAME_LEN);
+            status = renameFilePathToNewDir (rsComm, ORPHAN_DIR, 
+	      &fileRenameInp, rescInfo, 1);
+
+            if (status >= 0) {
+                rodsLog (LOG_NOTICE,
+                  "unbunPhyBunFile: %s has been moved to ORPHAN_DIR.stat=%d",
+                  phyBunDir, status);
+		status = rsStructFileExtract (rsComm, &structFileOprInp);
+            } else {
+        	rodsLog (LOG_ERROR,
+        	  "unbunPhyBunFile: renameFilePathToNewDir err for %s.stat=%d",
+          	  phyBunDir, status);
+		status = SYS_DIR_IN_VAULT_NOT_EMPTY;
+            }
+	}
+    }
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "unbunPhyBunFile: rsStructFileExtract err for %s. status = %d",

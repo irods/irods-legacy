@@ -1277,6 +1277,8 @@ int ignoreCondInput)
  *    return - 1 - the file is orphan.
  *	       0 - 0 the file is not an orphan.
  *	       -ive - query error.
+ *	       If it is not orphan and dataObjInfo != NULL, output ObjID, 
+ *	       replNum and objPath to dataObjInfo.
  */
 
 int
@@ -1346,16 +1348,75 @@ dataObjInfo_t *dataObjInfo)
             return (UNMATCHED_KEY_OR_INDEX);
         }
 
-	dataObjInfo->dataId = strtoll (dataId->value, 0, 0);
-	dataObjInfo->replNum = atoi (replNum->value);
-	snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
-	  collName->value, dataName->value);
+	if (dataObjInfo != NULL) {
+	    dataObjInfo->dataId = strtoll (dataId->value, 0, 0);
+	    dataObjInfo->replNum = atoi (replNum->value);
+	    snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
+	      collName->value, dataName->value);
+        }
 
         clearGenQueryInp (&genQueryInp);
         freeGenQueryOut (&genQueryOut);
 
 	return (0);
     }
+}
+
+/* chkOrphanDir - check whether a filePath is a orphan directory.
+ *    return - 1 - the dir is orphan.
+ *             0 - 0 the dir is not an orphan.
+ *             -ive - query error.
+ */
+
+int
+chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
+{
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+    char subfilePath[MAX_NAME_LEN];
+    int savedStatus = 1;
+    int status = 0;
+
+    dirPtr = opendir (dirPath);
+    if (dirPtr == NULL) {
+        rodsLog (LOG_ERROR,
+        "chkOrphanDir: opendir error for %s, errno = %d",
+         dirPath, errno);
+        return (UNIX_FILE_OPENDIR_ERR - errno);
+    }
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
+          dirPath, myDirent->d_name);
+
+        status = stat (subfilePath, &statbuf);
+
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+              "chkOrphanDir: stat error for %s, errno = %d",
+              subfilePath, errno);
+	    savedStatus = UNIX_FILE_STAT_ERR - errno;
+            continue;
+        }
+        if ((statbuf.st_mode & S_IFDIR) != 0) {
+	    status = chkOrphanDir (rsComm, subfilePath, rescName);
+	} else if ((statbuf.st_mode & S_IFREG) != 0) {
+	    status = chkOrphanFile (rsComm, subfilePath, rescName, NULL);
+	}
+	if (status == 0) {
+	     /* not orphan */
+	    closedir (dirPtr);
+	    return status;    
+	} else if (status < 0) {
+	    savedStatus = status;
+	}
+    }
+    closedir (dirPtr);
+    return savedStatus;
 }
 
 int 
