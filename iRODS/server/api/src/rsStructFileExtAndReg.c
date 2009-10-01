@@ -25,6 +25,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     rodsServerHost_t *rodsServerHost;
     char *bunFilePath;
     char phyBunDir[MAX_NAME_LEN];
+    int flags;
 #if 0
     dataObjInp_t dirRegInp;
     structFileOprInp_t structFileOprInp;
@@ -107,8 +108,15 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
         return status;
     }
 
+   /* XXXXX use 1 for now */
+    if (getValByKey (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW) 
+      != NULL) {
+	flags = 1;
+    } else {
+	flags = 0;
+    }
     status = regUnbunSubfiles (rsComm, rescInfo, 
-      structFileExtAndRegInp->collection, phyBunDir);
+      structFileExtAndRegInp->collection, phyBunDir, flags);
 
     if (status == CAT_NO_ROWS_FOUND) {
         /* some subfiles have been deleted. harmless */
@@ -274,7 +282,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
 
 int
 regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
-char *phyBunDir)
+char *phyBunDir, int flags)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
@@ -325,7 +333,7 @@ char *phyBunDir)
 		continue;
 	    }
 	    status = regUnbunSubfiles (rsComm, rescInfo, subObjPath,
-	      subfilePath);
+	      subfilePath, flags);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "regUnbunSubfiles: regUnbunSubfiles of %s error. status=%d",
@@ -335,7 +343,7 @@ char *phyBunDir)
             }
         } else if ((statbuf.st_mode & S_IFREG) != 0) {
 	    status = regSubfile (rsComm, rescInfo, subObjPath, subfilePath,
-	      statbuf.st_size);
+	      statbuf.st_size, flags);
 	    unlink (subfilePath);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
@@ -353,12 +361,13 @@ char *phyBunDir)
 
 int
 regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize)
+char *subfilePath, rodsLong_t dataSize, int flags)
 {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
     struct stat statbuf;
     int status;
+    int overWriteFlag = 0;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     bzero (&dataObjInfo, sizeof (dataObjInfo));
@@ -379,12 +388,39 @@ char *subfilePath, rodsLong_t dataSize)
 
     status = stat (dataObjInfo.filePath, &statbuf);
     if (status == 0 || errno != ENOENT) {
-        status = resolveDupFilePath (rsComm, &dataObjInfo, &dataObjInp);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "regSubFile: resolveDupFilePath err for %s. status = %d",
-              dataObjInfo.filePath, status);
-            return (status);
+        if ((statbuf.st_mode & S_IFDIR) != 0) {
+	    return SYS_PATH_IS_NOT_A_FILE;
+	}
+
+        if (chkOrphanFile (rsComm, dataObjInfo.filePath, rescInfo->rescName, 
+	  &dataObjInfo) > 0) {
+	    /* an orphan file. just rename it */
+	    fileRenameInp_t fileRenameInp;
+	    bzero (&fileRenameInp, sizeof (fileRenameInp));
+            rstrcpy (fileRenameInp.oldFileName, dataObjInfo.filePath, 
+	      MAX_NAME_LEN);
+            status = renameFilePathToNewDir (rsComm, ORPHAN_DIR, 
+	      &fileRenameInp, rescInfo, 1);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "regSubFile: renameFilePathToNewDir err for %s. status = %d",
+                  fileRenameInp.oldFileName, status);
+                return (status);
+	    }
+	} else {
+	    /* not an orphan file */
+	    if (flags > 0 && dataObjInfo.dataId > 0 && 
+	      strcmp (dataObjInfo.objPath, subObjPath) == 0) {
+		/* overwrite the current file */
+		overWriteFlag = 1;
+		unlink (dataObjInfo.filePath);
+	    } else {
+		status = SYS_COPY_ALREADY_IN_RESC;
+                rodsLog (LOG_ERROR,
+                  "regSubFile: phypath %s is already in use. status = %d",
+                  dataObjInfo.filePath, status);
+                return (status);
+	    }
         }
     }
     /* make the necessary dir */
@@ -399,7 +435,28 @@ char *subfilePath, rodsLong_t dataSize)
         return (UNIX_FILE_LINK_ERR - errno);
     }
 
-    status = svrRegDataObj (rsComm, &dataObjInfo);
+    if (overWriteFlag == 0) {
+        status = svrRegDataObj (rsComm, &dataObjInfo);
+    } else {
+        char tmpStr[MAX_NAME_LEN];
+        modDataObjMeta_t modDataObjMetaInp;
+	keyValPair_t regParam;
+
+	bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
+	bzero (&regParam, sizeof (regParam));
+        snprintf (tmpStr, MAX_NAME_LEN, "%lld", dataSize);
+        addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
+        addKeyVal (&regParam, ALL_REPL_STATUS_KW, tmpStr);
+        snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
+        addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
+
+        modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+        modDataObjMetaInp.regParam = &regParam;
+
+        status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+
+        clearKeyVal (&regParam);
+    }
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
