@@ -172,6 +172,9 @@ int msiDataObjAutoMove(msParam_t *inpParam1,
                        msParam_t *inpParam5,
                        ruleExecInfo_t *rei);
 
+int
+msiGetContInxFromGenQueryOut(msParam_t* genQueryOutParam, msParam_t* continueInx, ruleExecInfo_t *rei);
+
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
   {"print_hello_arg", 1, (funcPtr) print_hello_arg},
@@ -317,3 +320,4 @@ microsdef_t MicrosTable[] = {
   {"msiGetSessionVarValue",2,(funcPtr) msiGetSessionVarValue},
   {"msiAutoReplicateService", 5, (funcPtr)msiAutoReplicateService},
   {"msiDataObjAutoMove", 5, (funcPtr)msiDataObjAutoMove},
+  {"msiGetContInxFromGenQueryOut",2,(funcPtr) msiGetContInxFromGenQueryOut},
