@@ -116,6 +116,8 @@ primary ordering column.
 #define COL_USER_CREATE_TIME 208
 #define COL_USER_MODIFY_TIME 209
 
+#define COL_USER_DN_INVALID 205 /* For backward compatibility, irods 2.1 DN */
+
 /* R_USER_AUTH (for GSI/KRB) */
 #define COL_USER_AUTH_ID 1600
 #define COL_USER_DN      1601
