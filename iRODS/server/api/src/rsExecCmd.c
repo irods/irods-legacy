@@ -314,7 +314,7 @@ execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd)
 int
 initCmdArg (char *av[], char *cmdArgv, char *cmdPath)
 {
-    int avInx = 0;
+  int avInx = 0, i;
     char *startPtr, *curPtr;
     int quoteCnt, curLen;
     char tmpCmdArgv[MAX_NAME_LEN];
@@ -342,6 +342,12 @@ initCmdArg (char *av[], char *cmdArgv, char *cmdPath)
 		/* skip over a leading blank */
 		curPtr++;
 		startPtr = curPtr;
+    /**  Added by Raja to take care of escaped quotes Oct 28 09 */
+	    } else if ( (*curPtr == '\'' || *curPtr == '\"') 
+			&& (*(curPtr-1) == '\\') ) {
+	      curPtr++;
+	      curLen++;
+    /**  Added by Raja to take care of escaped quotes Oct 28 09 */
 	    } else if (*curPtr == '\'' || *curPtr == '\"') {
 		quoteCnt++;
 		/* skip over the quote */
@@ -365,6 +371,22 @@ initCmdArg (char *av[], char *cmdArgv, char *cmdPath)
     /* put a NULL on the last one */
 
     av[avInx] = NULL;
+
+    /**  Added by Raja to take care of escaped quotes Oct 28 09 */
+    for (i = 0; i < avInx ; i++) {
+      curPtr = av[i];
+      startPtr = curPtr;
+      while (*curPtr != '\0') {
+	if (*curPtr == '\\' && (*(curPtr+1) == '\'' || *(curPtr+1) == '\"')) {
+          curPtr++;
+	}
+	*startPtr = *curPtr;
+	curPtr++;
+	startPtr++;
+      }
+      *startPtr = '\0';
+    }
+    /**  Added by Raja to take care of escaped quotes Oct 28 09 */
 
     return (0);
 }
