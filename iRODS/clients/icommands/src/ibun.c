@@ -115,8 +115,8 @@ usage ()
 "'tar file' is associated with mydir.tar. The 'ibun -x' command extracts the",  
 "tar file into the mydir collection. The target mydir collection does",
 "not have to exist nor be empty. If a subfile already exists in the",
-"target collection, the ingestion of this subfile will fail but the process",
-"will continue.",
+"target collection, the ingestion of this subfile will fail (unless the -f",
+"flag is set) but the process will continue.",
 " ",
 "If the -Dtar flag of the iput command is not set when uploading the tar",
 "file, the subsequent ibun -x command will fail. But the tar dataType can",
@@ -143,7 +143,7 @@ usage ()
 "     under the input irodsCollection", 
 " -c  bundle the files and sub-collection underneath the input irodsCollection",
 "     and store it in the structFilePath",  
-" -f  force overwrite the struct file. Valid only with -c option", 
+" -f  force overwrite the struct file (-c) or the subfiles (-x).", 
 " -h  this help",
 ""};
    int i;

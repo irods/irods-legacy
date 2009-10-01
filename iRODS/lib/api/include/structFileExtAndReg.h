@@ -37,10 +37,10 @@ int
 chkCollForExtAndReg (rsComm_t *rsComm, char *collection);
 int
 regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
-char *phyBunDir);
+char *phyBunDir, int flags);
 int
 regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize);
+char *subfilePath, rodsLong_t dataSize, int flags);
 #else
 #define RS_STRUCT_FILE_EXT_AND_REG NULL
 #endif

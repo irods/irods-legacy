@@ -130,7 +130,7 @@ rodsPathInp_t *rodsPathInp)
           myRodsEnv->rodsDefResource);
     } 
 
-    if (rodsArgs->force == True && rodsArgs->condition == True) {
+    if (rodsArgs->force == True) {
         addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
     }
 
