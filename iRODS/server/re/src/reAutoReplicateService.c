@@ -780,7 +780,7 @@ int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *in
    if(compute_checksum == 1) {
       chksum_str =  NULL;
       memset(&myDataObjInp, 0, sizeof(dataObjInp_t));
-      sprintf(myDataObjInp.objPath, obj_path);
+      strncpy(myDataObjInp.objPath, obj_path, MAX_NAME_LEN);
       addKeyVal (&myDataObjInp.condInput, VERIFY_CHKSUM_KW, "");
       sprintf(tmpstr, "%d", 0);
       addKeyVal (&myDataObjInp.condInput, REPL_NUM_KW, tmpstr);
