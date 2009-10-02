@@ -16,18 +16,18 @@ either PostgreSQL, Oracle, or MySQL to make some needed updates to
 tables (if any).  Assuming your iCAT database is named ICAT, this
 would be, for example:
 
-        psql ICAT < server/icat/patch/psg-patch-v2.1tov2.2.sql
+        psql ICAT < server/icat/patches/psg-patch-v2.1tov2.2.sql
 
     or 
         sqlplus name@instance
-        @server/icat/patch/ora-patch-v2.1tov2.2.sql
+        @server/icat/patches/ora-patch-v2.1tov2.2.sql
 
     or
-        mysql ICAT < server/icat/patch/mys-patch-v2.1tov2.2.sql
+        mysql ICAT < server/icat/patches/mys-patch-v2.1tov2.2.sql
 
 If you are upgrading from an older version, you'll need to apply the
 patch file for each released version that has one, in sequence.
-See the server/icat/patch directory for the set of patch files.
+See the server/icat/patches directory for the set of patch files.
 
 Then run either of these (they are equivalent):
         ./irodsupgrade
