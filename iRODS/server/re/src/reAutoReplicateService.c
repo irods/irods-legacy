@@ -90,15 +90,13 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
    int t;
    int loop_stop;
 
+   rodsLog(LOG_NOTICE,"_myAutoReplicateService(): topColl=%s, recursiveFlag=%d, requiredNumReplicas=%d, rescGroup=%s, emailToNotify=NULL\n",
+           topColl, recursiveFlag, requiredNumReplicas, rescGroup);
+
    if((emailToNotify!=NULL)&&(strlen(emailToNotify)>0))
    {
       fprintf(stderr,"_myAutoReplicateService(): topColl=%s, recursiveFlag=%d, requiredNumReplicas=%d, rescGroup=%s, emailToNotify=%s\n", 
            topColl, recursiveFlag, requiredNumReplicas, rescGroup, emailToNotify);
-   }
-   else
-   {
-      fprintf(stderr,"_myAutoReplicateService(): topColl=%s, recursiveFlag=%d, requiredNumReplicas=%d, rescGroup=%s, emailToNotify=NULL\n", 
-           topColl, recursiveFlag, requiredNumReplicas, rescGroup);
    }
 
    if(recursiveFlag)
@@ -125,9 +123,10 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
    {
       if(t == CAT_NO_ROWS_FOUND)   /* no data is found */
       {
-         rodsLog(LOG_ERROR, "_myAutoReplicateService():rsGenQuery(): no data is found.");
+         rodsLog(LOG_ERROR, "_myAutoReplicateService():rsGenQuery(): no data is found. The service ended.");
          return 0;
       }
+      rodsLog(LOG_ERROR, "_myAutoReplicateService():rsGenQuery(): failed. err code=%d. The service quit.", t);
       return(t);
    } 
 
@@ -144,9 +143,15 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
          dataName = &dataNameStruct->value[dataNameStruct->len*i];
 
          t = process_single_obj(conn, collName, dataName, requiredNumReplicas, rescGroup, emailToNotify);
+         rodsLog(LOG_DEBUG, "_myAutoReplicateService(): finished processing obj %s/%s\n", collName, dataName);
+
+         if(t == SYS_OUT_OF_FILE_DESC) {   /* this is an fatal error. the service quit. */
+            rodsLog(LOG_ERROR, "_myAutoReplicateService():process_single_obj() returned SYS_OUT_OF_FILE_DESC. The service quit.");
+            return t;
+         }
 
          if((t < 0) && (repl_storage_error == 1)) {
-            rodsLog(LOG_ERROR, "_myAutoReplicateService():process_single_obj() returned a storage eror. The service quits.");
+            rodsLog(LOG_ERROR, "_myAutoReplicateService():process_single_obj() returned a storage eror. The service quit.");
             loop_stop = 1;
          }
       }
@@ -166,6 +171,8 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
    while ((t == 0) && (loop_stop == 0));
 
    freeGenQueryOut(&genQueryOut);
+
+   rodsLog(LOG_NOTICE,"_myAutoReplicateService(): topColl=%s ended.\n", topColl);
    
    return 0;
 }
@@ -284,6 +291,7 @@ int msiAutoReplicateService(msParam_t *xColl, msParam_t *xRecursive,
    if(sRescGroup == NULL)
    {
       rodsLog(LOG_NOTICE, "msiAutoReplicateService(): sRescGroup is null.");
+      return SYS_INTERNAL_NULL_INPUT_ERR;
    }
 
    t = _myAutoReplicateService(rei->rsComm, sColl, nRecursive, nRequiredNumOfReplica, sRescGroup, emailAccount);
@@ -435,9 +443,19 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       if(t < 0)
       {
          /* fprintf(stderr,"%d. %s/%s, %d failed to open and has checksum status=%d\n", i, parColl, fileName, rn, t); */
-         pReplicaStatus[i].chksum_status = t;
+         if(t == SYS_OUT_OF_FILE_DESC) {
+            return t;
+         }
+         else {
+            pReplicaStatus[i].chksum_status = t;
+         }
       }
       else {
+         openedDataObjInp_t myDataObjCloseInp;
+         memset (&myDataObjCloseInp, 0, sizeof(openedDataObjInp_t));
+         myDataObjCloseInp.l1descInx = t;
+         t = rsDataObjClose(conn, &myDataObjCloseInp);
+
          chksum_str =  NULL;
          /* compute checksum rsDataObjChksum() */
          memset(&myDataObjInp, 0, sizeof(dataObjInp_t));
