@@ -76,8 +76,8 @@ rodsZoneClient||rei->uoic->rodsZone
 rodsZoneClient||rei->rsComm->clientUser->rodsZone
 # userTypeClient||rei->uoic->userType
 # userTypeClient||rei->rsComm->clientUser->userType
-# sysUidClient||rei->uoic->sysUid
-# sysUidClient||rei->rsComm->clientUser->sysUid
+sysUidClient||rei->uoic->sysUid
+sysUidClient||rei->rsComm->clientUser->sysUid
 privClient||rei->uoic->authInfo->authFlag
 privClient||rei->rsComm->clientUser->authInfo->authFlag
 # hostClient||rei->uoic->authInfo->host
