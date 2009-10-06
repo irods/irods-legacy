@@ -182,13 +182,20 @@ endif
 # HPSS support
 ifdef HPSS
 MY_CFLAG+= -DHPSS
+ifdef HPSS7
+MY_CFLAG+= -DHPSS7
+endif
 ifdef HPSS_UNIX_PASSWD_AUTH
 MY_CFLAG+= -DHPSS_UNIX_PASSWD_AUTH
 endif
 ifeq ($(OS_platform), linux_platform)
+ifdef ADDR_64BITS
+MY_CFLAG+= -Duchar=u_char -DLITTLEEND
+else
 MY_CFLAG+= -m32 -Duchar=u_char -DLITTLEEND
 LDADD+= -m32
 CL_LDADD+= -m32
+endif
 # XXXX looks like the hpss lib is in 32 bit. ADDR_64BITS in config.mk should
 # be undefined too
 endif

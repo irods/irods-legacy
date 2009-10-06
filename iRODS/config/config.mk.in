@@ -273,6 +273,14 @@ endif
 
 ifdef HPSS
 # HPSS_UNIX_PASSWD_AUTH=1
+
+# HPSS7 - Defines whether the HPSS v7 library or later is used. The default
+# is HPSS v6
+# HPSS7=1
+
+# HPSS_LIB_DIR is the directory of the HPSS library and HPSS_HDR_DIR is the
+# directory of the HPSS header files. When building iRODS, be sure to add the 
+# path defined by HPSS_LIB_DIR to the path in the LD_LIBRARY_PATH env variable.
 HPSS_LIB_DIR=/opt/hpss/lib
 HPSS_HDR_DIR=/opt/hpss/include
 ADDR_64BITS=
