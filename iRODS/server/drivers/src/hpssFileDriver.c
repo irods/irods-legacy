@@ -836,7 +836,7 @@ createControlSocket (hpssSession_t *hpssSession)
     myLen = sizeof (struct sockaddr_in);
 
     status = getsockname (hpssSession->mySocket,
-      (struct sockaddr *) &hpssSession->mySocketAddr, (size_t *) &myLen);
+      (struct sockaddr *) &hpssSession->mySocketAddr, (socklen_t *) &myLen);
 
     if (status < 0) {
          rodsLog (LOG_ERROR,
@@ -876,12 +876,19 @@ iod_srcsinkdesc_t *sinkDesc, int destFd, hpssSession_t *hpssSession)
     srcDesc->SrcSinkAddr.Type = NET_ADDRESS;
     srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockTransferID =
      cast64m(hpssSession->requestId);
+#ifdef HPSS7
+    srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockAddr.Addr.hpss_saddr_u.ipv4_addr =
+     hpssSession->ipAddr;
+    srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockAddr.Addr.family =
+     hpssSession->mySocketAddr.sin_family;
+#else
     srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockAddr.addr =
      hpssSession->ipAddr;
-    srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockAddr.port = 
-     hpssSession->mySocketAddr.sin_port;
     srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockAddr.family =
      hpssSession->mySocketAddr.sin_family;
+#endif
+    srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockAddr.port = 
+     hpssSession->mySocketAddr.sin_port;
     srcDesc->SrcSinkAddr.Addr_u.NetAddr.SockOffset = cast64m(0);
     iod->Function = HPSS_IOD_WRITE;
     iod->RequestID = hpssSession->requestId;
@@ -907,7 +914,7 @@ moverConnManager (hpssSession_t *hpssSession)
     for (;;) {
         len = sizeof(socketAddr);
         while ((moverSocket = accept (hpssSession->mySocket,
-          (struct sockaddr *) &socketAddr, (size_t *) &len)) < 0) {
+          (struct sockaddr *) &socketAddr, (socklen_t *) &len)) < 0) {
              if ((errno != EINTR) && (errno != EAGAIN)) {
                  rodsLog (LOG_ERROR,
                    "moverConnManager: socket accept error, errno=%d", errno);
@@ -1321,7 +1328,7 @@ int *transferListenSocket)
         (void) memset(&transferSocketAddr, 0, sizeof(transferSocketAddr));
         if (getsockname(*transferListenSocket,
                         (struct sockaddr *) & transferSocketAddr,
-                        (size_t *) & tmp) == -1) {
+                        (socklen_t *) & tmp) == -1) {
             rodsLog (LOG_ERROR,
              "procTransferListenSocket: getsockname error, errno=%d", errno);
             status = SYS_SOCK_OPEN_ERR - errno;
@@ -1337,8 +1344,14 @@ int *transferListenSocket)
         memset(ipAddr, 0, sizeof(ipAddr));
         ipAddr->IpAddr.SockTransferID =
           cast64m(mySession->requestId);
+#ifdef HPSS7
+        ipAddr->IpAddr.SockAddr.Addr.family = transferSocketAddr.sin_family;
+        ipAddr->IpAddr.SockAddr.Addr.hpss_saddr_u.ipv4_addr = 
+	  transferSocketAddr.sin_addr.s_addr;
+#else
         ipAddr->IpAddr.SockAddr.family = transferSocketAddr.sin_family;
         ipAddr->IpAddr.SockAddr.addr = transferSocketAddr.sin_addr.s_addr;
+#endif
         ipAddr->IpAddr.SockAddr.port = transferSocketAddr.sin_port;
         ipAddr->IpAddr.SockOffset = cast64m(0);
     }
@@ -1367,7 +1380,7 @@ int *transferSocketFd)
     tmp = sizeof(transferSocketAddr);
     while ((*transferSocketFd = accept(transferListenSocket,
                    (struct sockaddr *) &transferSocketAddr,
-                   (size_t *) & tmp)) < 0) {
+                   (socklen_t *) & tmp)) < 0) {
         if ((errno != EINTR) && (errno != EAGAIN)) {
             rodsLog (LOG_ERROR,
              "procTransferSocketFd: accept error, errno=%d", errno);
@@ -1499,13 +1512,20 @@ iod_srcsinkdesc_t *sink, int hpssSrcFd, hpssSession_t *hpssSession)
     sink->SrcSinkAddr.Type = NET_ADDRESS;
     sink->SrcSinkAddr.Addr_u.NetAddr.SockTransferID =
      cast64m(hpssSession->requestId);
+#ifdef HPSS7
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.Addr.hpss_saddr_u.ipv4_addr =
+    hpssSession->ipAddr;
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.Addr.family =
+      hpssSession->mySocketAddr.sin_family;;
+#else
     sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.addr =
     hpssSession->ipAddr;
+    sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.family =
+      hpssSession->mySocketAddr.sin_family;;
+#endif
     sink->SrcSinkAddr.Addr_u.NetAddr.SockOffset = cast64m(0);
     sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.port =
       hpssSession->mySocketAddr.sin_port; 
-    sink->SrcSinkAddr.Addr_u.NetAddr.SockAddr.family =
-      hpssSession->mySocketAddr.sin_family;;
     iod->Function = HPSS_IOD_READ;
     iod->RequestID = hpssSession->requestId;
     iod->SrcDescLength = 1;
