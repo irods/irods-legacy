@@ -31,7 +31,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"finishSetup.pl"} = "July 2009";
+$version{"finishSetup.pl"} = "Oct 2009";
 
 
 
@@ -73,11 +73,11 @@ if ( ! -e $configDir )
 	# Configuration directory does not exist.  Perhaps this
 	# script was run from the scripts or scripts/perl subdirectories.
 	# Look up one directory.
-	$IRODS_HOME = File::Spec->updir( );
+	$IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
 	$configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
 	if ( ! -e $configDir )
 	{
-		$IRODS_HOME = File::Spec->updir( );
+		$IRODS_HOME = File::Spec->catdir( $IRODS_HOME, File::Spec->updir( ));
 		$configDir  = File::Spec->catdir( $IRODS_HOME, "config" );
 		if ( ! -e $configDir )
 		{
