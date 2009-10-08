@@ -425,7 +425,7 @@ char *subfilePath, rodsLong_t dataSize, int flags)
     }
     /* make the necessary dir */
     mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", dataObjInfo.filePath,
-      DEFAULT_DIR_MODE);
+      getDefDirMode ());
     /* add a link */
     status = link (subfilePath, dataObjInfo.filePath);
     if (status < 0) {

@@ -198,5 +198,9 @@ dataObjInfo_t *dataObjInfo);
 int
 allocAndSetL1descForZoneOpr (int l3descInx, dataObjInp_t *dataObjInp,
 rodsServerHost_t *remoteZoneHost, openStat_t *openStat);
+int
+getDefFileMode ();
+int
+getDefDirMode ();
 #endif	/* DATA_OBJ_OPR */
 

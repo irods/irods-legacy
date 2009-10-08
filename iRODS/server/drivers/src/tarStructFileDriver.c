@@ -720,7 +720,7 @@ tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
         return (handleInx);
     }
 
-    myMode = encodeIrodsTarfd (structFileInx, DEFAULT_FILE_MODE);
+    myMode = encodeIrodsTarfd (structFileInx, getDefFileMode ());
 
     status = tar_open (&t, specColl->phyPath, &irodstype,
       O_WRONLY, myMode, TAR_GNU);
@@ -762,7 +762,7 @@ tarLogStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
 	   /* have to mkdir to fool tar_append_file */
 	    snprintf (tmpDir, MAX_NAME_LEN, "/tmp/%s", 
 	     collEnt->collName + parLen);
-	    mkdirR ("/tmp", tmpDir, DEFAULT_DIR_MODE);
+	    mkdirR ("/tmp", tmpDir, getDefDirMode ());
 	    status = tar_append_file (t, tmpDir, savepath);
             if (status != 0) {
                 rodsLog (LOG_NOTICE,
@@ -1341,7 +1341,7 @@ extractTarFileWithLib (int structFileInx)
 	  structFileInx);
         return (SYS_STRUCT_FILE_DESC_ERR);
     }
-    myMode = encodeIrodsTarfd (structFileInx, DEFAULT_FILE_MODE);
+    myMode = encodeIrodsTarfd (structFileInx, getDefFileMode ());
 
     if (myMode < 0) {
         return (myMode);
@@ -1503,7 +1503,7 @@ bundleCacheDirWithLib (int structFileInx)
     if (specColl == NULL || specColl->cacheDirty <= 0 ||
       strlen (specColl->cacheDir) == 0) return 0;
 
-    myMode = encodeIrodsTarfd (structFileInx, DEFAULT_FILE_MODE);
+    myMode = encodeIrodsTarfd (structFileInx, getDefFileMode ());
 
     status = tar_open (&t, specColl->phyPath, &irodstype,
       O_WRONLY, myMode, TAR_GNU);

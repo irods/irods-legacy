@@ -386,7 +386,7 @@ rescInfo_t *rescInfo)
 	memset (&fileMkdirInp, 0, sizeof (fileMkdirInp));
 	rstrcpy (fileMkdirInp.dirName, filePath, MAX_NAME_LEN);
         fileMkdirInp.fileType = RescTypeDef[rescTypeInx].driverType;
-	fileMkdirInp.mode = DEFAULT_DIR_MODE;
+	fileMkdirInp.mode = getDefDirMode ();
         rstrcpy (fileMkdirInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
 	status = rsFileMkdir (rsComm, &fileMkdirInp);
 	if (status < 0) {

@@ -287,16 +287,18 @@ int
 getFileMode (dataObjInp_t *dataObjInp)
 {
     int createMode;
+    int defFileMode;
 
+    defFileMode = getDefFileMode ();
     if (dataObjInp != NULL && 
       (dataObjInp->createMode & 0110) != 0) {
-	if ((DEFAULT_FILE_MODE & 0070) != 0) {
-	    createMode = DEFAULT_FILE_MODE | 0110;
+	if ((defFileMode & 0070) != 0) {
+	    createMode = defFileMode | 0110;
 	} else {
-	    createMode = DEFAULT_FILE_MODE | 0100;
+	    createMode = defFileMode | 0100;
 	}
     } else {
-	createMode = DEFAULT_FILE_MODE;
+	createMode = defFileMode;
     }
 
     return (createMode);
@@ -1684,5 +1686,29 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
     }
 
     return l1descInx;
+}
+
+int
+getDefFileMode ()
+{
+    int defFileMode;
+    if (getenv ("DefFileMode") != NULL) {
+        defFileMode = strtol (getenv ("DefFileMode"), 0, 0);
+    } else {
+        defFileMode = DEFAULT_FILE_MODE;
+    }
+    return defFileMode;
+}
+
+int
+getDefDirMode ()
+{
+    int defDirMode;
+    if (getenv ("DefDirMode") != NULL) { 
+        defDirMode = strtol (getenv ("DefDirMode"), 0, 0);
+    } else {
+        defDirMode = DEFAULT_DIR_MODE;
+    }
+    return defDirMode;
 }
 

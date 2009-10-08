@@ -159,7 +159,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
 #endif            
                  phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName);               
 	        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, phyBunDir, 
-	          tmpPath, DEFAULT_DIR_MODE);
+	          tmpPath, getDefDirMode ());
             }
             /* add a link */
             status = link (collEnt->phyPath, tmpPath);
@@ -175,7 +175,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
 	    if (strlen (collEnt->collName) + 1 <= collLen) continue;
             snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",
               phyBunDir, collEnt->collName + collLen);
-            mkdirR (phyBunDir, tmpPath, DEFAULT_DIR_MODE);
+            mkdirR (phyBunDir, tmpPath, getDefDirMode ());
 	}
     }
     status = phyBundle (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,

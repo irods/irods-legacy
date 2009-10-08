@@ -114,7 +114,7 @@ procCacheDir (rsComm_t *rsComm, char *cacheDir, char *resource)
         return (status);
     }
 
-    mkFileDirR (fileType, rsComm, "/", cacheDir, DEFAULT_DIR_MODE);
+    mkFileDirR (fileType, rsComm, "/", cacheDir, getDefDirMode ());
 
     return (status);
 }

@@ -115,7 +115,7 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
         memset (&subFile, 0, sizeof (subFile));
         rstrcpy (subFile.subFilePath, dataObjInfo->subPath,
           MAX_NAME_LEN);
-        subFile.mode = DEFAULT_DIR_MODE;
+        subFile.mode = getDefDirMode ();
         rstrcpy (subFile.addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
           NAME_LEN);
         subFile.specColl = dataObjInfo->specColl;
