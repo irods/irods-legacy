@@ -221,6 +221,14 @@ $reServerOnIes = 1;
 # note that this can lead to slower performance
 # $PREPOSTPROCFORGENQUERYFLAG=1;
 
+# $DefFileMode - the mode of the file created in the resource vault. 
+# The default value is 0600 (DEFAULT_FILE_MODE).
+# $DefFileMode=0640
+
+# $DefDirMode - the mode of the directory created in the resource vault.
+# The default value is 0750 (DEFAULT_DIR_MODE).
+# $DefDirMode=0700
+
 				  $ENV{'irodsConfigDir'}      = $irodsServerConfigDir;
 if ($irodsEnvFile)		{ $ENV{'irodsEnvFile'}        = $irodsEnvFile; }
 if ($irodsPort)			{ $ENV{'irodsPort'}           = $irodsPort; }
@@ -237,6 +245,8 @@ if ($irodsReconnect)		{ $ENV{'irodsReconnect'}    = $irodsReconnect; }
 if ($RETESTFLAG)		{ $ENV{'RETESTFLAG'}          = $RETESTFLAG; }
 if ($GLOBALALLRULEEXECFLAG)    { $ENV{'GLOBALALLRULEEXECFLAG'} = $GLOBALALLRULEEXECFLAG; }
 if ($PREPOSTPROCFORGENQUERYFLAG)    { $ENV{'PREPOSTPROCFORGENQUERYFLAG'} = $PREPOSTPROCFORGENQUERYFLAG; }
+if ($DefFileMode)		{ $ENV{'DefFileMode'}    = $DefFileMode; }
+if ($DefDirMode)		{ $ENV{'DefDirMode'}    = $DefDirMode; }
 
 
 
