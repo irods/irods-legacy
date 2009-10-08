@@ -279,7 +279,8 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
  * \note The resulting continueInx can be used to determine whether there are remaining rows to retrieve from the generated query.
  *
  * \usage This example first prints out the returned values, then checks, and gets any remaining results.
- 
+ *
+ *     <pre>
  *     GenQueryTest
  *     {
  *     # construct the query
@@ -314,7 +315,7 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
  *     }
  *     INPUT *Condition= "COLL_NAME like '/trelboxzone/home/rods%%'"
  *     OUTPUT ruleExecOut
- *     
+ *     </pre>
  *
  * \param[in] genQueryOutParam - Required - of type GenQueryOut_MS_T.
  * \param[out] continueInx - a INT_MS_T containing the new continuation index (after the query).
