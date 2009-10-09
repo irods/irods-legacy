@@ -111,7 +111,7 @@ _rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)
         if (getErrno (status) == ENOENT) {
             /* the directory does not exist */
             mkDirForFilePath (fileSyncToArchInp->fileType, rsComm,
-              "/", fileSyncToArchInp->filename, fileSyncToArchInp->mode);
+              "/", fileSyncToArchInp->filename, getDefDirMode ());
         } else if (getErrno (status) == EEXIST) {
             /* an empty dir may be there */
             fileRmdir (fileSyncToArchInp->fileType, rsComm,

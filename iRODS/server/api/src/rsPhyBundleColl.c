@@ -472,7 +472,7 @@ char *outPhyBundleDir)
 {
     /* the dir where we put the files to bundle is in phyPath.dir */
     snprintf (outPhyBundleDir, MAX_NAME_LEN, "%s.dir",  bunFilePath);
-    mkdirR ("/", outPhyBundleDir, 0750);
+    mkdirR ("/", outPhyBundleDir, getDefDirMode ());
     return (0);
 }
 

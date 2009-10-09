@@ -8,6 +8,7 @@
 #include "fileRename.h"
 #include "miscServerFunct.h"
 #include "fileOpr.h"
+#include "dataObjOpr.h"
 
 int
 rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)
@@ -77,7 +78,7 @@ rodsServerHost_t *rodsServerHost)
      */
 
     mkDirForFilePath (fileRenameInp->fileType, rsComm,
-              "/", fileRenameInp->newFileName, 0750);
+              "/", fileRenameInp->newFileName, getDefDirMode ());
 
     status = fileRename (fileRenameInp->fileType, rsComm, 
       fileRenameInp->oldFileName, fileRenameInp->newFileName);

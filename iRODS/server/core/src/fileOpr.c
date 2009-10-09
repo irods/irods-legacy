@@ -110,7 +110,7 @@ char *filePath, int mode)
 	return (status);
     }
 
-    status = mkFileDirR (fileType, rsComm, startDir, myDir, mode|0110);
+    status = mkFileDirR (fileType, rsComm, startDir, myDir, mode);
 
     return (status);
 }
