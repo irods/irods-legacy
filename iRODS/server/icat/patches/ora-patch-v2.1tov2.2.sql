@@ -4,7 +4,7 @@
 -- user_distin_name;' but we do not so that if one switches back to an
 -- older version of iRODS servers, it will still function.
 
-alter table R_RESC_MAIN add column resc_status varchar(32);
+alter table R_RESC_MAIN add (resc_status varchar(32));
 
 create table R_USER_AUTH
 (
@@ -13,7 +13,7 @@ create table R_USER_AUTH
    create_ts varchar(32)
 );
 
-insert into R_USER_AUTH ( user_id, user_auth_name ) select user_id, user_distin_name from r_user_main where user_distin_name <> '';
+insert into R_USER_AUTH ( user_id, user_auth_name ) select user_id, user_distin_name from r_user_main where length(user_distin_name) > 0;
 
 insert into R_TOKN_MAIN values ('data_type',1694,'tar bundle','','','','','1250100000','1250100000');
 insert into R_TOKN_MAIN values ('resc_type',403,'s3','','','','','1250100000','1250100000');
