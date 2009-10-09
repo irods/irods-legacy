@@ -103,7 +103,7 @@ rodsServerHost_t *rodsServerHost)
 	if (getErrno (fd) == ENOENT) {
 	    /* the directory does not exist */
 	    mkDirForFilePath (fileCreateInp->fileType, rsComm, 
-	      "/", fileCreateInp->fileName, fileCreateInp->mode); 
+	      "/", fileCreateInp->fileName, getDefDirMode ()); 
 	    fd = fileCreate (fileCreateInp->fileType, rsComm, 
 	      fileCreateInp->fileName, fileCreateInp->mode, 
 	      fileCreateInp->dataSize);

@@ -104,8 +104,7 @@ _rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)
     /* need to make this now. It will be difficult to do it with
      * parallel I/O */
     mkDirForFilePath (fileStageToCacheInp->cacheFileType, rsComm,
-      "/", fileStageToCacheInp->cacheFilename,
-      fileStageToCacheInp->mode);
+      "/", fileStageToCacheInp->cacheFilename, getDefDirMode ());
 
     status = fileStageToCache (fileStageToCacheInp->fileType, rsComm, 
       fileStageToCacheInp->cacheFileType,
