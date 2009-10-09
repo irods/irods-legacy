@@ -28,7 +28,11 @@ s3FileUnlink (rsComm_t *rsComm, char *s3ObjName)
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
     S3BucketContext bucketContext =
-      {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+      /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
+      /* XXXXX using S3UriStyleVirtualHost causes operation containing
+       * the sub-string "S3" to fail. use S3UriStylePath instead */
+      {myBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
+        S3Auth.secretAccessKey};
 
     S3ResponseHandler responseHandler = {
         0, &responseCompleteCallback
@@ -308,7 +312,11 @@ putFileIntoS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
     S3BucketContext bucketContext =
-      {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+      /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
+      /* XXXXX using S3UriStyleVirtualHost causes operation containing
+       * the sub-string "S3" to fail. use S3UriStylePath instead */
+      {myBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId, 
+	S3Auth.secretAccessKey};
     S3PutObjectHandler putObjectHandler = {
       { &responsePropertiesCallback, &responseCompleteCallback },
       &putObjectDataCallback
@@ -449,8 +457,12 @@ const char *delimiter, int maxkeys, int allDetails, s3Stat_t *s3Stat)
 
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
-    S3BucketContext bucketContext = {
-        bucketName, 1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+    S3BucketContext bucketContext =
+      /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
+      /* XXXXX using S3UriStyleVirtualHost causes operation containing
+       * the sub-string "S3" to fail. use S3UriStylePath instead */
+      {bucketName,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
+        S3Auth.secretAccessKey};
 
     S3ListBucketHandler listBucketHandler = {
         { &responsePropertiesCallback, &responseCompleteCallback },
@@ -531,7 +543,11 @@ getFileFromS3 (char *fileName, char *s3ObjName, rodsLong_t fileSize)
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
     S3BucketContext bucketContext =
-      {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+      /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
+      /* XXXXX using S3UriStyleVirtualHost causes operation containing
+       * the sub-string "S3" to fail. use S3UriStylePath instead */
+      {myBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
+        S3Auth.secretAccessKey};
     S3GetObjectHandler getObjectHandler = {
       { &responsePropertiesCallback, &responseCompleteCallback },
       &getObjectDataCallback
@@ -581,7 +597,11 @@ copyS3Obj (char *srcObj, char *destObj)
     if ((status = myS3Init ()) != S3StatusOK) return (status);
 
     S3BucketContext bucketContext =
-      {srcBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey};
+      /* {myBucket,  1, 0, S3Auth.accessKeyId, S3Auth.secretAccessKey}; */
+      /* XXXXX using S3UriStyleVirtualHost causes operation containing
+       * the sub-string "S3" to fail. use S3UriStylePath instead */
+      {srcBucket,  S3ProtocolHTTPS, S3UriStylePath, S3Auth.accessKeyId,
+        S3Auth.secretAccessKey};
 
     S3ResponseHandler responseHandler = {
         &responsePropertiesCallback,
