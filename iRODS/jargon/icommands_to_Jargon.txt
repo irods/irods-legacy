@@ -1,0 +1,83 @@
+The iRODS icommands C client does the following:
+Unix-like commands:
+	ibun		- Upload and download structured (e.g. tar) files. 
+	icd		- Like cd, change the iRODS current working directory
+	ichksum		- Checksum one or more data-object or collection from iRODS space.
+	ichmod 		- Like chmod, allow (or later restrict) access to your data objects by other users.
+	icp		- Like cp or rcp, copy an iRODS data object
+	iexecmd		- Remotely Execute (fork and exec) a command on the server.
+	iexit		- Logout (use 'iexit full' to remove your scrambled password from the disk)
+	iget		- Get a file
+	iinit		- Initialize - Store your password in a scrambled form for automatic use by other icommands.
+	ils 		- Like ls, list iRODS data objects (files) and collections (directories)
+	imcoll		- Manage (mount, unmount, synchronize and purge of cache) mounted iRODS collections and the associated cache.
+	imkdir		- Like mkdir, make an iRODS collection (similar to a directory or Windows folder)
+	imv 		- Moves/renames an irods data-object or collection.
+	ipasswd		- Change your irods password.
+	iphymv 		- Physically move files in iRODS to another storage resource.
+	iput 		- Store a file
+	ipwd 		- Like pwd, print the iRODS current working directory
+	ireg 		- Register a file or a directory of files and subdirectory into iRODS.
+	irepl 		- Replicate data objects.
+	irm 		- Like rm, remove an iRODS data object
+	irmtrash 	- Remove one or more data-object or collection from a RODS trash bin.
+	irsync 		- Synchronize the data between a local copy and the copy stored in iRODS or between two iRODS copies.
+	itrim 		- Trim down the number of replica of a file in iRODS by deleting some replicas.
+
+Metadata:
+	imeta 		- Add, remove, list, or query user-defined Attribute-Value-Unit triplets metadata
+	iquest 		- Query (pose a question to) the ICAT, via a SQL-like interface 
+	isysmeta 	- Show or modify system metadata
+
+Informational:
+	ienv 		- Show current iRODS environment
+	ilsresc 	- List resources
+	imiscsvrinfo 	- Get basic server information; test communication. 
+	iuserinfo 	- List users
+
+Administration:
+	iadmin 		- Administration commands: add/remove/modify users, resources, etc. 
+
+Rules and Delayed rule execution:
+	iqdel 		- Removes delayed rules from the queue.
+	iqmod 		- Modifies delayed rules in the queue. 
+	iqstat		- Show pending iRODS rule executions.
+	irule 		- Submit a user defined rule to be executed by an irods server.
+	
+	
+	
+	
+These iRODS icommand equivalents are currently available in this API:
+Unix-like commands:
+	ibun		- IRODSFileSystem.createTarFile and extractTarFile
+	icd		- IRODSFile constructor
+	ichksum		- IRODSFile.checksum
+	ichmod 		- IRODSFile.changePermissions
+	icp		- IRODSFile.copyTo
+	iexit		- IRODSFileSystem finalize
+	iget		- IRODSFile.copyTo
+	iinit		- IRODSFileSystem constructor
+	ils 		- IRODSFile.list
+	imkdir		- IRODSFile.mkdir
+	imv 		- IRODSFile.renameTo
+	iphymv 		- IRODSFile.renameTo
+	iput 		- IRODSFile.copyFrom
+	ipwd 		- IRODSFile.getAbsolutePath
+	irepl 		- IRODSFile.replicate
+	irm 		- IRODSFile.delete
+
+Metadata:
+	imeta 		- IRODSFile.modifyMetaData
+	isysmeta 	- IRODSFile or IRODSFileSystem.query
+
+Informational:
+	ienv 		- IRODSAccount
+	ilsresc 	- IRODSFileSystem.query( MetaDataSet.newSelection( ResourceMetaData.RESOURCE_NAME ) )
+	imiscsvrinfo 	- IRODSFileSystem.query
+	iuserinfo 	- IRODSFileSystem.query
+
+Administration:
+	iadmin 		- IRODSAdmin
+
+Rules and Delayed rule execution:
+	irule 		- IRODSFileSystem.executeRule

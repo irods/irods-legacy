@@ -1,0 +1,70 @@
+<!-- Ant makefile for JARGON -->
+
+<project name="Jargon" default="compile">
+  <description>
+      Build file for JARGON API, a client api for all your datagrid needs.
+  </description>
+  <property name="libraries" location="lib/gsi-classes.jar:lib/ij.jar:lib/jlfgr-1_0.jar:lib/activation.jar:lib/mail.jar"/>
+  
+  <target name="compile" description="Compile everything.">
+    <!-- First, ensure the build directory exists. -->
+    <mkdir dir="bin" />
+    <!-- Build all the core source files -->
+    <javac srcdir="src/api" source="1.5" target="1.5" classpath="${libraries}" destdir="bin">
+      <exclude name="" />
+    </javac>
+    <!-- Build all the test source files -->
+    <javac srcdir="src/test" source="1.5" target="1.5" classpath="${libraries}" destdir="bin">
+      <exclude name="" />
+    </javac>
+  </target>
+
+
+  <target name="build" depends="compile" description="Build jargon.jar.">
+    <!-- First, ensure the lib directory exists. -->
+    <mkdir dir="lib" />
+    <!-- Build jargon.jar. -->
+    <jar destfile="lib/jargon.jar" basedir="bin" manifest="lib/MANIFEST.MF">
+    </jar> 
+  </target>
+
+
+  <target name="run" depends="build" description="Runs the Test.java program.">
+    <java jar="lib/jargon.jar" classpath="lib/jargon.jar:${libraries}" fork="true" />
+  </target>
+
+
+  <target name="srb" depends="build" description="Build and test SRB.">
+    <java jar="lib/jargon.jar" classpath="lib/jargon.jar:${libraries}" args="srb" fork="true" />
+  </target>
+
+
+  <target name="clean" description="Delete the build files.">
+    <delete dir="bin" />
+    <delete file="lib/jargon.jar" />
+  </target>
+
+
+  <target name="gsi" description="Build with gsi files.">
+    <!-- Deprecated -->
+    <delete file="src/api/edu/sdsc/grid/io/srb/GSIAuth.java" />
+    <copy overwrite="true" file="src/api/edu/sdsc/grid/io/srb/GSIAuth.java_real" tofile="src/api/edu/sdsc/grid/io/srb/GSIAuth.java"/>
+    <antcall target="build"></antcall>
+  </target>
+  
+
+  <target name="javadocs" description="Build the JavaDocs.">
+    <!-- First, ensure the doc directory exists. -->
+    <mkdir dir="doc" />
+    <javadoc
+           sourcepath="src/api"
+           packagenames="edu.*"
+           destdir="doc"
+           author="true"
+           version="true"
+           use="true"
+           windowtitle="Jargon API">
+    </javadoc>
+  </target>
+
+</project>

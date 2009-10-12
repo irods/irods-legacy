@@ -1,0 +1,4 @@
+Due to their large size, complexity, and possible legal concerns, the GSI libraries are contained in a separate jar file. If I correctly understand the various licenses and accompanying legalese I can distribute the class files as long as I include their license. So for now the GSI class files used by Jargon will be available on the Jargon website, if not already included in this distribution.
+http://www.sdsc.edu/srb/jargon/gsi-classes.jar
+
+You can specify by way of the make or ant files whether Jargon should be compiled with these libraries, e.g. gmake gsi   or gmake notgsi.   I’ve really just got two class files that overwrite the GSIAuth class that is referenced in the Jargon code. One of them is a dummy class, which doesn’t use the gsi libraries and if you try to use the GSI authentication will throw an UnsupportedOperationException during runtime. I didn’t know of a java ifdef, so send an email if you do. iktome@sdsc.edu
