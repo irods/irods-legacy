@@ -83,29 +83,23 @@ if [ $doJavaTest -eq 1 ] ; then
     echo $pw
     rm -f ~/.irods/.irodsA
     echo $pw > ~/.irods/.irodsA
-    svn checkout http://extrods.googlecode.com/svn/trunk/clients/jargon
+    cd jargon
+    ant
     error4=$?
     if [ $error4 -eq 0 ] ; then
-        cd jargon
-        ant
+        cd bin
+        java Test -fullTest irods
         error4=$?
         if [ $error4 -eq 0 ] ; then
-            cd bin
-            java Test -fullTest irods
-            error4=$?
-            if [ $error4 -eq 0 ] ; then
-                echo 'java Test -fullTest succeeded'
-            else 
-                echo 'java Test -fullTest failure'
-            fi
-            cd ..
-        else
-            echo 'ant error'
+            echo 'java Test -fullTest succeeded'
+        else 
+            echo 'java Test -fullTest failure'
         fi
         cd ..
     else
-        echo 'svn checkout error'
+        echo 'ant error'
     fi
+    cd ..
 fi
 echo $error4
 
