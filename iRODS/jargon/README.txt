@@ -32,6 +32,23 @@ CONTENT
 	src/		-  Source code
 
 
+To build Jargon:
+
+1) Download JVM from SUN (other versions of java do not seem to work).
+2) cd jargon; ant build
+
+To test jargon
+
+1) set up the ~/.irods/.irodsEnv file (same as the icommand) and put the
+plain text password in the ~/.irods/.irodsA file (scrambled password does
+not work).
+2) cd bin
+   java Test irods
+or
+   java Test -fullTest irods
+
+for the full test
+
 
 LICENSE - BSD
 Copyright (c) 2009, Regents of the University of California All rights reserved.
