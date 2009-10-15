@@ -13,6 +13,8 @@
 #include "unregDataObj.h"
 #ifndef windows_platform
 #include <pthread.h>
+#include <setjmp.h>
+jmp_buf Jenv;
 #endif
 
 int
@@ -390,7 +392,7 @@ handlePortalOpr (rsComm_t *rsComm)
 }
     
 int
-readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
+readAndProcClientMsg (rsComm_t *rsComm, int flags)
 {
     int status = 0;
     msgHeader_t myHeader;
@@ -405,7 +407,25 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
 
     /* read the header */
 
+#ifdef windows_platform
     status = readMsgHeader (rsComm->sock, &myHeader);
+#else
+    if ((flags & READ_HEADER_TIMEOUT) != 0) {
+	signal (SIGALRM, readTimeoutHandler);
+        if (setjmp (Jenv) == 0) {
+            alarm(READ_HEADER_TIMEOUT_IN_SEC);
+            status = readMsgHeader (rsComm->sock, &myHeader);
+            alarm(0);
+	} else {
+            rodsLog (LOG_ERROR,
+              "readAndProcClientMsg: readMsgHeader by pid %d hs timedout.",
+              getpid ());
+	    return USER_SOCK_CONNECT_TIMEDOUT;
+	}
+    } else {
+        status = readMsgHeader (rsComm->sock, &myHeader);
+    }
+#endif
 
     if (status < 0) {
 #ifndef windows_platform
@@ -459,7 +479,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
         clearBBuf (&inputStructBBuf);
         clearBBuf (&bsBBuf);
         clearBBuf (&errorBBuf);
-	if (retApiStatus > 0) {
+	if ((flags & RET_API_STATUS) != 0) {
 	    return (status);
 	} else {
 	    return (0);
@@ -472,7 +492,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int retApiStatus)
         rodsLog (LOG_NOTICE,
           "readAndProcClientMsg: received reconnect msg from client");
 	/* call itself again. be careful */
-	status = readAndProcClientMsg (rsComm, retApiStatus);
+	status = readAndProcClientMsg (rsComm, flags);
 	return status;
     } else {
         rodsLog (LOG_NOTICE,
@@ -514,7 +534,7 @@ void *myOutStruct, bytesBuf_t *myOutBsBBuf)
     }
 
     while (1)  {
-        retval = readAndProcClientMsg (rsComm, 1);
+        retval = readAndProcClientMsg (rsComm, RET_API_STATUS);
         if (retval >= 0 || retval == SYS_NO_HANDLER_REPLY_MSG) {
 	    /* more to come */
 	    continue;
@@ -588,4 +608,15 @@ collOprStat_t *collOprStat, int retval)
     }
     return (status);
 }
+
+#ifndef windows_platform
+void
+readTimeoutHandler (int sig)
+{
+    rodsLog (LOG_ERROR,
+      "readTimeoutHandler: read header by %d has timed out", getpid ());
+    alarm(0);
+    longjmp(Jenv, 2);
+}
+#endif
 

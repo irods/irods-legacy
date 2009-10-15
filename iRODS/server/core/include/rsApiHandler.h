@@ -24,6 +24,13 @@
 #define INTERNAL_SVR_CALL 0x2   /* called internally. not from the handler.
 				 * error msg will be handled differently */
 
+/* definition for flags in readAndProcClientMsg */
+#define RET_API_STATUS	0x1	/* return the status of the API instead of
+				 * the status of the readAndProcClientMsg
+				 * call */
+#define READ_HEADER_TIMEOUT 0x2 /* timeout when reading the header */
+
+#define READ_HEADER_TIMEOUT_IN_SEC	86400	/* timeout in sec */
 int
 rsApiHandler (rsComm_t *rsComm, int apiNumber, bytesBuf_t *inputStructBBuf,
 bytesBuf_t *bsBBuf);
@@ -50,5 +57,7 @@ _svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat);
 int
 svrSendZoneCollOprStat (rsComm_t *rsComm, rcComm_t *conn,
 collOprStat_t *collOprStat, int retval);
+void
+readTimeoutHandler (int sig);
 
 #endif	/* RS_API_HANDLER_H */

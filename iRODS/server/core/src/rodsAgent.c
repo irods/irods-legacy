@@ -146,7 +146,10 @@ agentMain (rsComm_t *rsComm)
 	    rsComm->gsiRequest=0; 
         }
 
+	status = readAndProcClientMsg (rsComm, READ_HEADER_TIMEOUT);
+#if 0
 	status = readAndProcClientMsg (rsComm, 0);
+#endif
 
 	if (status >= 0) {
 	    retryCnt = 0;
