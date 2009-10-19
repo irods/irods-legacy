@@ -31,6 +31,10 @@
 #define READ_HEADER_TIMEOUT 0x2 /* timeout when reading the header */
 
 #define READ_HEADER_TIMEOUT_IN_SEC	86400	/* timeout in sec */
+/* deinition for return value of readTimeoutHandler */
+#define L1DESC_INUSE	1
+#define READ_HEADER_TIMED_OUT 2
+#define MAX_READ_HEADER_RETRY 3
 int
 rsApiHandler (rsComm_t *rsComm, int apiNumber, bytesBuf_t *inputStructBBuf,
 bytesBuf_t *bsBBuf);

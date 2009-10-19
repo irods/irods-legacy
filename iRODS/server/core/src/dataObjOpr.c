@@ -48,6 +48,19 @@ allocL1desc ()
 }
 
 int
+isL1descInuse ()
+{
+    int i;
+
+    for (i = 3; i < NUM_L1_DESC; i++) {
+        if (L1desc[i].inuseFlag == FD_INUSE) {
+	    return 1;
+        };
+    }
+    return 0;
+}
+
+int
 initSpecCollDesc ()
 {
     memset (SpecCollDesc, 0, sizeof (specCollDesc_t) * NUM_SPEC_COLL_DESC);

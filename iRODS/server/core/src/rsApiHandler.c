@@ -411,16 +411,26 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     status = readMsgHeader (rsComm->sock, &myHeader);
 #else
     if ((flags & READ_HEADER_TIMEOUT) != 0) {
-	signal (SIGALRM, readTimeoutHandler);
-        if (setjmp (Jenv) == 0) {
-            alarm(READ_HEADER_TIMEOUT_IN_SEC);
-            status = readMsgHeader (rsComm->sock, &myHeader);
-            alarm(0);
-	} else {
-            rodsLog (LOG_ERROR,
-              "readAndProcClientMsg: readMsgHeader by pid %d hs timedout.",
-              getpid ());
-	    return USER_SOCK_CONNECT_TIMEDOUT;
+	int retryCnt = 0;
+	int retVal = 0;
+	while (1) {
+	    signal (SIGALRM, readTimeoutHandler);
+            if ((retVal = setjmp (Jenv)) == 0) {
+                alarm(READ_HEADER_TIMEOUT_IN_SEC);
+                status = readMsgHeader (rsComm->sock, &myHeader);
+                alarm(0);
+		break;
+	    } else {
+		if (retVal == L1DESC_INUSE && 
+		  retryCnt < MAX_READ_HEADER_RETRY) {
+		    retryCnt++;
+		    continue;
+		}
+                rodsLog (LOG_ERROR,
+                  "readAndProcClientMsg: readMsgHeader by pid %d hs timedout.",
+                  getpid ());
+	        return USER_SOCK_CONNECT_TIMEDOUT;
+	    }
 	}
     } else {
         status = readMsgHeader (rsComm->sock, &myHeader);
@@ -613,10 +623,18 @@ collOprStat_t *collOprStat, int retval)
 void
 readTimeoutHandler (int sig)
 {
-    rodsLog (LOG_ERROR,
-      "readTimeoutHandler: read header by %d has timed out", getpid ());
     alarm(0);
-    longjmp(Jenv, 2);
+    if (isL1descInuse ()) {
+        rodsLog (LOG_ERROR,
+          "readTimeoutHandler: read header by %d timed out. Lidesc is busy.", 
+          getpid ());
+        longjmp (Jenv, L1DESC_INUSE);
+    } else {
+        rodsLog (LOG_ERROR,
+          "readTimeoutHandler: read header by %d has timed out.",
+          getpid ());
+        longjmp (Jenv, READ_HEADER_TIMED_OUT);
+    }
 }
 #endif
 

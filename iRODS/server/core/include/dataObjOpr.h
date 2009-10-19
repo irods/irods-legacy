@@ -202,5 +202,7 @@ int
 getDefFileMode ();
 int
 getDefDirMode ();
+int
+isL1descInuse ();
 #endif	/* DATA_OBJ_OPR */
 
