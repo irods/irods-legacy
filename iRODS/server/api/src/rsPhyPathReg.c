@@ -51,6 +51,8 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     int rescCnt;
     rodsHostAddr_t addr;
     char *tmpStr = NULL;
+    char *rescGroupName = NULL;
+    rescInfo_t *tmpRescInfo = NULL;
 
     if ((tmpStr = getValByKey (&phyPathRegInp->condInput,
       COLLECTION_TYPE_KW)) != NULL && strcmp (tmpStr, UNMOUNT_STR) == 0) {
@@ -79,6 +81,19 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
           "rsPhyPathReg: The input resource is not unique for %s",
           phyPathRegInp->objPath);
         return (SYS_INVALID_RESC_TYPE);
+    }
+
+    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput,
+      RESC_GROUP_NAME_KW)) != NULL) {
+        status = getRescInGrp (rsComm, rescGrpInfo->rescInfo->rescName, 
+	  rescGroupName, &tmpRescInfo);
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "rsPhyPathReg: resc %s not in rescGrp %s for %s",
+              rescGrpInfo->rescInfo->rescName, rescGroupName,
+	      phyPathRegInp->objPath);
+            return SYS_UNMATCHED_RESC_IN_RESC_GRP;
+	}
     }
 
     memset (&addr, 0, sizeof (addr));
@@ -208,8 +223,13 @@ rescInfo_t *rescInfo)
 {
     dataObjInfo_t dataObjInfo;
     int status;
+    char *rescGroupName = NULL;
 
     initDataObjInfoWithInp (&dataObjInfo, phyPathRegInp);
+    if ((rescGroupName = getValByKey (&phyPathRegInp->condInput, 
+      RESC_GROUP_NAME_KW)) != NULL) {
+	rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
+    }      
     dataObjInfo.replStatus = NEWLY_CREATED_COPY;
     dataObjInfo.rescInfo = rescInfo;
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);

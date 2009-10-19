@@ -35,6 +35,8 @@ typedef struct {
    int file;
    char *fileString;
    int global;
+   int rescGroup;
+   char *rescGroupString;
    int help;
    int hostAddr;
    char *hostAddrString;

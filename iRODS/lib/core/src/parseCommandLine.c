@@ -132,6 +132,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
       case 'g':
          rodsArgs->global=True;
          break;
+      case 'G':
+         rodsArgs->rescGroup=True;
+         rodsArgs->rescGroupString=optarg;
+         break;
       case 'H':
          rodsArgs->hostAddr=True;
          rodsArgs->hostAddrString=optarg;

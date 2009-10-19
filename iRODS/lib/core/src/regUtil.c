@@ -103,6 +103,21 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
           myRodsEnv->rodsDefResource);
     } 
 
+    if (rodsArgs->rescGroup == True) {
+	if (rodsArgs->resource != True) {
+            rodsLog (LOG_ERROR,
+            "initCondForReg: rescGroup must be input together with -Rresource");
+            return (USER__NULL_INPUT_ERR);
+        } else if (rodsArgs->rescGroupString == NULL) {
+            rodsLog (LOG_ERROR,
+              "initCondForReg: NULL rescGroupString error");
+            return (USER__NULL_INPUT_ERR);
+        } else {
+            addKeyVal (&dataObjOprInp->condInput, RESC_GROUP_NAME_KW,
+              rodsArgs->rescGroupString);
+        }
+    }
+
     return (0);
 }
 
