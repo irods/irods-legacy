@@ -29,6 +29,7 @@
 #define ICAT_HOST_KW		"icatHost"
 #define SLAVE_ICAT_HOST_KW	"slaveIcatHost"
 
+#define RE_HOST_KW		"reHost"
 
 /* Keywords for the RULE ENGINE initialization */
 #define RE_RULESET_KW           "reRuleSet"
@@ -74,6 +75,7 @@ typedef struct rodsServerHost {
     hostName_t *hostName;
     rcComm_t *conn;
     int rcatEnabled;
+    int reHostFlag;
     int localFlag;
     int status;
     void *zoneInfo;
@@ -196,4 +198,8 @@ int
 convZoneSockError (int inStatus);
 int
 resetRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint);
+int
+getReHost (rodsServerHost_t **rodsServerHost);
+int
+getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost);
 #endif	/* INIT_SERVER_H */

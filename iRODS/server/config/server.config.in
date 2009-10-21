@@ -3,6 +3,9 @@
 # Keywords supported are:
 # icatHost - the address of the master icat host
 # slaveIcatHost - the address of the slave Icat host (optional)
+# reHost - the address where the irodsReServer runs. If it is not defined,
+# it is assumed that it runs on icatHost. Note that if "reHost" is used,
+# the same configuration needs to be applied to all servers.
 #
 # For RCAT-Enabled hosts:
 # DBPassword - the database password

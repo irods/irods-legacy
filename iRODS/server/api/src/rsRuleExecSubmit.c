@@ -19,8 +19,12 @@ char **ruleExecId)
        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+#if 0
     status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL,
                                 &rodsServerHost);
+#else
+    status = getAndConnReHost (rsComm, &rodsServerHost);
+#endif
     if (status < 0) {
        return(status);
     }
@@ -37,6 +41,14 @@ char **ruleExecId)
        return (SYS_NO_ICAT_SERVER_ERR);
 #endif
     } else {
+	if (getValByKey (&ruleExecSubmitInp->condInput, EXEC_LOCALLY_KW) != 
+	  NULL) {
+            rodsLog (LOG_ERROR,
+              "rsRuleExecSubmit: reHost config error. reServer not running locally");
+	    return SYS_CONFIG_FILE_ERR;
+	} else {
+	    addKeyVal (&ruleExecSubmitInp->condInput, EXEC_LOCALLY_KW, "");
+	}
         status = rcRuleExecSubmit(rodsServerHost->conn, ruleExecSubmitInp,
 	  ruleExecId);
     }

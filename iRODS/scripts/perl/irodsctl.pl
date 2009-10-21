@@ -184,11 +184,9 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # $svrPortRangeStart=20000;
 # $svrPortRangeEnd=20199;
 
-# reServerOnIes - Specifies that the delayed rule exec server (irodsReServer) 
-# to be run on the same host as the IES (ICAT enabled server). Please note that
-# only one irodsReServer should be run in each zone. reServerOnIes is on
-# by default
-$reServerOnIes = 1;
+# reServerOnIes and reServerOnThisServer have been deplicated.
+# The "reHost" parameter in the server/config/server.config file is now
+# used to configure the location of irodsReServer.
 
 # reServerOnThisServer - Specifies that the delayed rule exec server 
 # (irodsReServer) to be run on this server. This allows the irodsReServer
@@ -238,8 +236,6 @@ if ($SVR_PORT_RANGE_START)	{ $ENV{'svrPortRangeStart'}   = $SVR_PORT_RANGE_START
 if ($SVR_PORT_RANGE_END)	{ $ENV{'svrPortRangeEnd'}     = $SVR_PORT_RANGE_END; }
 if ($svrPortRangeStart)		{ $ENV{'svrPortRangeStart'}   = $svrPortRangeStart; }
 if ($svrPortRangeEnd)		{ $ENV{'svrPortRangeEnd'}     = $svrPortRangeEnd; }
-if ($reServerOnIes)		{ $ENV{'reServerOnIes'}       = $reServerOnIes; }
-if ($reServerOnThisServer)	{ $ENV{'reServerOnThisServer'}= $reServerOnThisServer; }
 if ($reServerOption)		{ $ENV{'reServerOption'}      = $reServerOption; }
 if ($irodsReconnect)		{ $ENV{'irodsReconnect'}    = $irodsReconnect; }
 if ($RETESTFLAG)		{ $ENV{'RETESTFLAG'}          = $RETESTFLAG; }

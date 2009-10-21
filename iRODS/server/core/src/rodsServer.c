@@ -188,6 +188,7 @@ serverMain (char *logDir)
     agentProc_t *agentProcHead = NULL;
     int loopCnt = 0;
     int acceptErrCnt = 0;
+    rodsServerHost_t *reServerHost = NULL;
 
 
     memset (&svrComm, 0, sizeof (svrComm));
@@ -233,12 +234,15 @@ serverMain (char *logDir)
 
     /* start the irodsReServer */
 #ifndef windows_platform   /* tempoarily set Windows don't need to to have reServer */
+#if 0	/* use reHost in server.config instead */
 #ifdef RODS_CAT
     if (getenv ("reServerOnIes") != NULL) 
 #else
     if (getenv ("reServerOnThisServer") != NULL) 
 #endif
-	{
+#endif
+    getReHost (&reServerHost);
+    if (reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST) {
         if (RODS_FORK () == 0) {  /* child */
             char *reServerOption = NULL;
             char *av[NAME_LEN];

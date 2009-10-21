@@ -420,6 +420,29 @@ printZoneInfo ()
 
 	tmpZoneInfo = tmpZoneInfo->next;
     }
+    /* print the reHost */
+    if (getReHost (&tmpRodsServerHost) >= 0) {
+#ifndef windows_platform
+#ifdef IRODS_SYSLOG
+        rodsLog (LOG_NOTICE,"reHost:   %s", tmpRodsServerHost->hostName->name);
+#else /* IRODS_SYSLOG */
+        fprintf (stderr, "reHost:   %s", tmpRodsServerHost->hostName->name);
+#endif /* IRODS_SYSLOG */
+#else
+        rodsLog (LOG_NOTICE,"reHost:   %s", tmpRodsServerHost->hostName->name);
+#endif
+    } else {
+#ifndef windows_platform
+#ifdef IRODS_SYSLOG
+        rodsLog (LOG_ERROR,"reHost error");
+#else /* IRODS_SYSLOG */
+        fprintf (stderr,"reHost error");
+#endif /* IRODS_SYSLOG */
+#else
+        rodsLog (LOG_ERROR,"reHost error");
+#endif
+    }
+
     return (0);
 }
 
@@ -588,6 +611,23 @@ initRcatServerHostByFile (rsComm_t *rsComm)
                        keyWdName);
 		    return (SYS_CONFIG_FILE_ERR);
 		}
+            } else if (strcmp (keyWdName, RE_HOST_KW) == 0) {
+                if ((bytesCopied = getStrInBuf (&inPtr, addr.hostAddr,
+                 &lineLen, LONG_NAME_LEN)) > 0) {
+                    remoteFlag = resolveHost (&addr, &tmpRodsServerHost);
+                    if (remoteFlag < 0) {
+                        rodsLog (LOG_SYS_FATAL,
+                          "initRcatServerHostByFile: resolveHost error for %s, status = %d",
+                          addr.hostAddr, remoteFlag);
+                        return (remoteFlag);
+                    }
+                    tmpRodsServerHost->reHostFlag = 1;
+                } else {
+                    rodsLog (LOG_SYS_FATAL,
+                      "initRcatServerHostByFile: parsing error for keywd %s",
+                       keyWdName);
+                    return (SYS_CONFIG_FILE_ERR);
+                }
 	    } else if (strcmp (keyWdName, SLAVE_ICAT_HOST_KW) == 0) {
                 if ((bytesCopied = getStrInBuf (&inPtr, addr.hostAddr,
                  &lineLen, LONG_NAME_LEN)) > 0) {
@@ -793,8 +833,9 @@ rodsServerHost_t **rodsServerHost)
     status = getRcatHost (rcatType, rcatZoneHint, rodsServerHost);
 
     if (status < 0) {
-		rodsLog (LOG_NOTICE, "initServer:getAndConnRcatHost:getRcatHost() failed. erro=%d", status);
-		return (status);
+	rodsLog (LOG_NOTICE, 
+	 "getAndConnRcatHost:getRcatHost() failed. erro=%d", status);
+	return (status);
     }
 
     if ((*rodsServerHost)->localFlag == LOCAL_HOST) {
@@ -2189,6 +2230,63 @@ rodsServerHost_t **rodsServerHost)
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "resolveAndConnHost: svrToSvrConnect to %s failed",
+          (*rodsServerHost)->hostName->name);
+    }
+    if (status >= 0) {
+        return (REMOTE_HOST);
+    } else {
+        return (status);
+    }
+}
+
+int
+getReHost (rodsServerHost_t **rodsServerHost)
+{
+    int status;
+
+    rodsServerHost_t *tmpRodsServerHost;
+
+    tmpRodsServerHost = ServerHostHead;
+    while (tmpRodsServerHost != NULL) {
+        if (tmpRodsServerHost->reHostFlag == 1) {
+	    *rodsServerHost = tmpRodsServerHost;
+            return 0;
+        }
+        tmpRodsServerHost = tmpRodsServerHost->next;
+    }
+    status = getRcatHost (MASTER_RCAT, NULL, rodsServerHost);
+
+    return status;    
+}
+
+/* getAndConnReHost - Get the irodsReServer host (result given in
+ * rodsServerHost).
+ * If the is remote, it will automatically connect to the server where 
+ * irodsReServer is run.
+ */
+
+int
+getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost)
+{
+    int status;
+
+    status = getReHost (rodsServerHost);
+
+    if (status < 0) {
+        rodsLog (LOG_NOTICE, 
+	  "getAndConnReHost:getReHost() failed. erro=%d", status);
+         return (status);
+    }
+
+    if ((*rodsServerHost)->localFlag == LOCAL_HOST) {
+        return (LOCAL_HOST);
+    }
+
+    status = svrToSvrConnect (rsComm, *rodsServerHost);
+
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+          "getAndConnReHost: svrToSvrConnect to %s failed",
           (*rodsServerHost)->hostName->name);
     }
     if (status >= 0) {
