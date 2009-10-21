@@ -407,7 +407,7 @@ printZoneInfo ()
 #else /* IRODS_SYSLOG */
             fprintf (stderr, "    ZoneName: %s   ", tmpZoneInfo->zoneName);
             fprintf (stderr, "Type: LOCAL_SLAVE_ICAT   ");
-            fprintf (stderr, " HostAddr: %s   PortNum: %d\n\n",
+            fprintf (stderr, " HostAddr: %s   PortNum: %d\nn",
               tmpRodsServerHost->hostName->name, tmpZoneInfo->portNum);
 #endif /* IRODS_SYSLOG */
 #else
@@ -426,7 +426,7 @@ printZoneInfo ()
 #ifdef IRODS_SYSLOG
         rodsLog (LOG_NOTICE,"reHost:   %s", tmpRodsServerHost->hostName->name);
 #else /* IRODS_SYSLOG */
-        fprintf (stderr, "reHost:   %s", tmpRodsServerHost->hostName->name);
+        fprintf (stderr, "reHost:   %s\n\n", tmpRodsServerHost->hostName->name);
 #endif /* IRODS_SYSLOG */
 #else
         rodsLog (LOG_NOTICE,"reHost:   %s", tmpRodsServerHost->hostName->name);
