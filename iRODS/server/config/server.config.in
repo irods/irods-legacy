@@ -3,8 +3,9 @@
 # Keywords supported are:
 # icatHost - the address of the master icat host
 # slaveIcatHost - the address of the slave Icat host (optional)
-# reHost - the address where the irodsReServer runs. If it is not defined,
-# it is assumed that it runs on icatHost. Note that if "reHost" is used,
+# reHost - This is only needed if the irods system is using more than one
+# master icat enabled servers. This points to the master icat host that will
+# run the irodsReServer.  Note that if "reHost" is used,
 # the same configuration needs to be applied to all servers.
 #
 # For RCAT-Enabled hosts:
@@ -14,6 +15,7 @@
 # More keywords will be supported as we move forward.
 icatHost zuri.sdsc.edu
 # slaveIcatHost srbbrick9.sdsc.edu
+# reHost srbbrick10.sdsc.edu
 DBUsername schroede
 #
 # The following keywords are needed for Rule Engine Initialization.
