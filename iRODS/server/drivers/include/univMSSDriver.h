@@ -15,6 +15,7 @@
 #include "rods.h"
 #include "rcConnect.h"
 #include "msParam.h"
+#include "reIn2p3SysRule.h"
 
 int
 univMSSFileUnlink (rsComm_t *rsComm, char *filename);
@@ -22,6 +23,7 @@ int
 univMSSFileMkdir (rsComm_t *rsComm, char *filename, int mode);
 int
 univMSSFileChmod (rsComm_t *rsComm, char *filename, int mode);
+int univMSSFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf);
 int
 univMSSStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 int mode, int flags, char *filename,

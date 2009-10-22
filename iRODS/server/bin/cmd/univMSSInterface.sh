@@ -1,7 +1,8 @@
 #!/bin/sh
 
 # This script is a template which must be updated if one wants to use the universal MSS driver.
-# Functions to modify: syncToArch, stageToCache, mkdir, chmod, rm
+# Your working version should be in this directory server/bin/cmd/univMSSInterface.sh.
+# Functions to modify: syncToArch, stageToCache, mkdir, chmod, rm, stat
 # These functions need one or two input parameters which should be named $1 and $2.
 # If some of these functions are not implemented for your MSS, just let this function as it is.
 #	
@@ -41,6 +42,31 @@ rm () {
 	# e.g: /usr/local/bin/rfrm rfioServerFoo:$1
 	return
 }
+
+# function to do a stat on a file $1 stored in the MSS
+stat () {
+	# <your command to retrieve stats on the file> $1
+	# e.g: output=`/usr/local/bin/rfstat rfioServerFoo:$1`
+	error=$?
+	if [ $error != 0 ] # if file does not exist or information not available
+	then
+		return $error
+	fi
+	# parse the output.
+	# Parameters to retrieve: device ID of device containing file("device"), 
+	#                         file serial number ("inode"), ACL mode in octal ("mode"),
+	#                         number of hard links to the file ("nlink"),
+	#                         user id of file ("uid"), group id of file ("gid"),
+	#                         device id ("devid"), file size ("size"), last access time ("atime"),
+	#                         last modification time ("mtime"), last change time ("ctime"),
+	#                         block size in bytes ("blksize"), number of blocks ("blkcnt")
+	# e.g: device=`echo $output | awk '{print $3}'`	
+	# Note 1: if some of these parameters are not relevant, set them to 0.
+	# Note 2: the time should have this format: YYYY-MM-dd-hh.mm.ss with: 
+	#                                           YYYY = 1900 to 2xxxx, MM = 1 to 12, dd = 1 to 31,
+	#                                           hh = 0 to 24, mm = 0 to 59, ss = 0 to 59
+	echo "$device:$inode:$mode:$nlink:$uid:$gid:$devid:$size:$blksize:$blkcnt:$atime:$mtime:$ctime"
+	return
 
 #############################################
 # below this line, nothing should be changed.

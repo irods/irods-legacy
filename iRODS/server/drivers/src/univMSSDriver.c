@@ -124,7 +124,7 @@ int univMSSFileMkdir (rsComm_t *rsComm, char *dirname, int mode) {
 	
 	if (status < 0) {
 		status = UNIV_MSS_MKDIR_ERR - errno;
-		rodsLog (LOG_NOTICE, "univMSSFileMkdir: cannot create directory for %s error, status = %d",
+		rodsLog (LOG_ERROR, "univMSSFileMkdir: cannot create directory for %s error, status = %d",
 		         dirname, status);
     }
 	
@@ -156,9 +156,84 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	
 	if (status < 0) {
 		status = UNIV_MSS_CHMOD_ERR - errno;
-		rodsLog (LOG_NOTICE, "univMSSFileChmod: cannot chmod for %s, status = %d",
+		rodsLog (LOG_ERROR, "univMSSFileChmod: cannot chmod for %s, status = %d",
 		         name, status);
     }
 	
 	return (status);
+}
+
+/* univMSSFileStat - This function returns the stats of the file stored in the MSS. 
+ */
+ int univMSSFileStat (rsComm_t *rsComm, char *filename, struct stat *statbuf) {
+ 
+	int i, status;
+	execCmd_t execCmdInp;
+	char cmdArgv[MAX_NAME_LEN] = "";
+	char splchain1[13][MAX_NAME_LEN], splchain2[4][MAX_NAME_LEN], splchain3[3][MAX_NAME_LEN], strmode[4];
+	char *outputStr;
+	const char *delim1 = ":\n";
+	const char *delim2 = "-";
+	const char *delim3 = ".";
+	execCmdOut_t *execCmdOut = NULL;
+	struct tm mytm;
+	time_t myTime;
+	
+	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
+	strcat(cmdArgv, "stat");
+	strcat(cmdArgv, " ");
+	strcat(cmdArgv, filename);
+	rstrcpy(execCmdInp.cmdArgv, cmdArgv, MAX_NAME_LEN);
+	rstrcpy(execCmdInp.execAddr, "localhost", LONG_NAME_LEN);
+	status = _rsExecCmd(rsComm, &execCmdInp, &execCmdOut);
+	
+	if (status == 0) {
+		if ( execCmdOut->stdoutBuf.buf != NULL) {
+			outputStr = execCmdOut->stdoutBuf.buf;
+			memset(&splchain1, 0, sizeof(splchain1));
+			strSplit(outputStr, delim1, splchain1);
+			statbuf->st_dev = atoi(splchain1[0]);
+			statbuf->st_ino = atoi(splchain1[1]);
+			statbuf->st_mode = atoi(splchain1[2]);
+			statbuf->st_nlink = atoi(splchain1[3]);
+			statbuf->st_uid = atoi(splchain1[4]);
+			statbuf->st_gid = atoi(splchain1[5]);
+			statbuf->st_rdev = atoi(splchain1[6]);
+			statbuf->st_size = atoi(splchain1[7]);
+			statbuf->st_blksize = atoi(splchain1[8]);
+			statbuf->st_blocks = atoi(splchain1[9]);
+			for (i = 0; i < 3; i++) {
+				memset(&splchain2, 0, sizeof(splchain2));
+				memset(&splchain3, 0, sizeof(splchain3));
+				strSplit(splchain1[10+i], delim2, splchain2);
+				mytm.tm_year = atoi(splchain2[0]) - 1900;
+				mytm.tm_mon = atoi(splchain2[1]) - 1;
+				mytm.tm_mday = atoi(splchain2[2]);
+				strSplit(splchain2[3], delim3, splchain3);
+				mytm.tm_hour = atoi(splchain3[0]);
+				mytm.tm_min = atoi(splchain3[1]);
+				mytm.tm_sec = atoi(splchain3[2]);
+				myTime = mktime(&mytm);
+				switch (i) {
+					case 0:
+						statbuf->st_atime = myTime;
+						break;
+					case 1:
+						statbuf->st_mtime = myTime;
+						break;
+					case 2:
+						statbuf->st_ctime = myTime;
+						break;
+				}
+			}
+		}
+	} 
+	else {
+		status = UNIV_MSS_STAT_ERR - errno;
+		rodsLog (LOG_ERROR, "univMSSFileStat: cannot have stat informations for %s, status = %d",
+				filename, status);
+	}
+ 
+	return (status);
+	
 }

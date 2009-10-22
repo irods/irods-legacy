@@ -206,6 +206,7 @@
     UNIV_MSS_UNLINK_ERR, 
     UNIV_MSS_MKDIR_ERR, 
     UNIV_MSS_CHMOD_ERR, 
+    UNIV_MSS_STAT_ERR, 
     HPSS_AUTH_NOT_SUPPORTED, 
     HPSS_FILE_OPEN_ERR, 
     HPSS_FILE_CREATE_ERR, 
@@ -638,6 +639,7 @@
     "UNIV_MSS_UNLINK_ERR", 
     "UNIV_MSS_MKDIR_ERR", 
     "UNIV_MSS_CHMOD_ERR", 
+    "UNIV_MSS_STAT_ERR", 
     "HPSS_AUTH_NOT_SUPPORTED", 
     "HPSS_FILE_OPEN_ERR", 
     "HPSS_FILE_CREATE_ERR", 
@@ -893,7 +895,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 430;
+int irodsErrorCount= 431;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

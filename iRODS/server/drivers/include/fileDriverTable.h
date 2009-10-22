@@ -65,7 +65,7 @@ fileDriver_t FileDriverTable[] = {
     unixFileClosedir, unixFileReaddir, intNoSupport, unixFileRename,
     unixFileGetFsFreeSpace, intNoSupport, unixStageToCache, unixSyncToArch},
     {UNIV_MSS_FILE_TYPE,intNoSupport, intNoSupport, intNoSupport, intNoSupport,
-    intNoSupport, univMSSFileUnlink, intNoSupport, intNoSupport, longNoSupport,
+    intNoSupport, univMSSFileUnlink, univMSSFileStat, intNoSupport, longNoSupport,
     intNoSupport, univMSSFileMkdir, univMSSFileChmod, intNoSupport, intNoSupport,
     intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     longNoSupport, intNoSupport, univMSSStageToCache, univMSSSyncToArch},
