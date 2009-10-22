@@ -3162,3 +3162,19 @@ printReleaseInfo(char *cmdName) {
 	  (char*)&tmp[4], RODS_RELEASE_DATE, cmdName);
    return;
 }
+
+unsigned int
+seedRandom ()
+{
+    unsigned int seed;
+
+    seed = time(0) & (getpid() << 10);
+#ifdef windows_platform
+    srand (seed);
+#else
+    srandom (seed);
+#endif
+
+    return seed;
+}
+

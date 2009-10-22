@@ -149,12 +149,15 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
 
     dataObjInp->openFlags = O_RDONLY;
 
+    seedRandom ();
+#if 0
 #ifdef _WIN32
 	_ftime64( &timebuffer );
 	srand(timebuffer.time);
 #else
 
     srandom((unsigned int) time(0) % getpid());
+#endif
 #endif
 
     return (0);

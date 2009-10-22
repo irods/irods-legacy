@@ -213,7 +213,8 @@ collInp201ToCollInp (collInp201_t *collInp201, collInp_t *collInp);
 #endif
 void
 printReleaseInfo (char *cmdName);
-
+unsigned int
+seedRandom ();
 #ifdef  __cplusplus
 }
 #endif

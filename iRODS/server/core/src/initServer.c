@@ -1557,7 +1557,7 @@ initAgent (rsComm_t *rsComm)
 	}
     }
 
-    srandom((unsigned int) time(0) % getpid());
+    seedRandom ();
 
 #ifndef windows_platform
     if (rsComm->reconnFlag == RECONN_TIMEOUT) { 

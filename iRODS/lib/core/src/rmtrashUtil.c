@@ -176,11 +176,7 @@ dataObjInp_t *dataObjInp, collInp_t *collInp)
     }
 
 
-#ifdef windows_platform
-	srand((unsigned int) time(0) % getpid());
-#else
-    srandom((unsigned int) time(0) % getpid());
-#endif
+    seedRandom ();
 
     return (0);
 }
