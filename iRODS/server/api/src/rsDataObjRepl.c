@@ -850,6 +850,9 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr)
         if (strstr (flagStr, SU_CLIENT_USER_KW) != NULL) {
             addKeyVal (&dataObjInp.condInput, SU_CLIENT_USER_KW, "");
         }
+        if (strstr (flagStr, UPDATE_REPL_KW) != NULL) {
+            addKeyVal (&dataObjInp.condInput, UPDATE_REPL_KW, "");
+        }
     }
 
     rstrcpy (dataObjInp.objPath, dataObjInfoHead->objPath, MAX_NAME_LEN);
