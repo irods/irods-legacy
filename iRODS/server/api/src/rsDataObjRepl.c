@@ -559,6 +559,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
     dataCopyInp_t dataCopyInp;
     dataOprInp_t *dataOprInp;
     int srcRemoteFlag, destRemoteFlag;
+    dataObjInfo_t *dataObjInfo;
 
 
     dataOprInp = &dataCopyInp.dataOprInp;
@@ -584,12 +585,13 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
       destRemoteFlag != REMOTE_ZONE_HOST &&
       FileDesc[srcL3descInx].rodsServerHost == 
       FileDesc[destL3descInx].rodsServerHost) {
-	dataObjInfo_t *dataObjInfo;
 
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, SAME_HOST_COPY_OPR);
 	/* source and dest on the same host */
 
 	dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+	/* have to correct the source's dataSize */
+	dataOprInp->dataSize = dataObjInfo->dataSize;
 	dataOprInp->srcL3descInx = srcL3descInx;
 	dataOprInp->srcRescTypeInx = 
 	  dataObjInfo->rescInfo->rescTypeInx;
@@ -609,6 +611,10 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
     } else if (srcRemoteFlag != LOCAL_HOST && destRemoteFlag == LOCAL_HOST) {
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_LOCAL_OPR);
+        dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+        /* have to correct the source's dataSize */
+        dataOprInp->dataSize = dataObjInfo->dataSize;
+
         status = l2DataObjGet (rsComm, srcL1descInx, &portalOprOut);
        if (status < 0) {
             rodsLog (LOG_NOTICE,
@@ -620,6 +626,10 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         dataCopyInp.portalOprOut = *portalOprOut;
     } else {
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_LOCAL_OPR);
+        dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+        /* have to correct the source's dataSize */
+        dataOprInp->dataSize = dataObjInfo->dataSize;
+
         status = l2DataObjGet (rsComm, srcL1descInx, &portalOprOut);
 
        if (status < 0) {
