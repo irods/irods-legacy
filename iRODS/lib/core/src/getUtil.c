@@ -107,8 +107,14 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 
 
     rstrcpy (dataObjOprInp->objPath, srcPath, MAX_NAME_LEN);
-    /* XXXXX need to modify rcDataObjGet to verify dataSize if given */
-    dataObjOprInp->dataSize = srcSize;
+    /* rcDataObjGet verifies dataSize if given */
+    if (rodsArgs->replNum == True || rodsArgs->resource == True) {
+	/* don't verify because it may be an old copy and hence the size  
+	 * could be wrong */
+	dataObjOprInp->dataSize = 0;
+    } else {
+        dataObjOprInp->dataSize = srcSize;
+    }
 
     status = rcDataObjGet (conn, dataObjOprInp, targPath);
 
