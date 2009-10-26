@@ -3297,6 +3297,24 @@ dataObjInfo_t **outDataObjInfo)
     } else {
         status = getCacheDataInfoInRescGrp (srcDataObjInfoHead,
           destDataObjInfoHead, rescGroupName, compDataObjInfo, outDataObjInfo);
+	if (status < 0) {
+	    rescGrpInfo_t *tmpRescGrpInfo;
+	    /* maybe the cache copy does not have a group associated with it */
+	    status = resolveRescGrp (rsComm, rescGroupName, &tmpRescGrpInfo);
+	    if (status >= 0) {
+                status = getNonGrpCacheDataInfoInRescGrp (srcDataObjInfoHead,
+                  destDataObjInfoHead, tmpRescGrpInfo,
+                  compDataObjInfo, outDataObjInfo);
+                if (status >= 0) {
+                    /* update the rescGroupName */
+                    rstrcpy (compDataObjInfo->rescGroupName,
+                      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+                    rstrcpy ((*outDataObjInfo)->rescGroupName,
+                      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+                }
+                freeAllRescGrpInfo (tmpRescGrpInfo);
+	    }
+	}
     }
     return status;
 }
