@@ -21,7 +21,9 @@ usage () {
 "rel-op is a relational operator: eg. =, <>, >,<, like, not like, between, etc.,",
 "value is either a constant or a wild-carded expression.",
 "One can also use a few aggregation operators such as sum,count,min,max and avg.",
-"Use % and _ as wild-cards, and use \\ to escape them",
+"Use % and _ as wild-cards, and use \\ to escape them.",
+"If 'no-distinct' appears before the selectConditionString, the normal",
+"distinct option on the SQL will bypassed (this is useful in rare cases).",
 "Options are:",
 " -h  this help",
 "Examples:\n",
@@ -30,6 +32,7 @@ usage () {
 " iquest \"SELECT COLL_NAME WHERE COLL_NAME like '/tempZone/home/%'\"",
 " iquest \"User %-6.6s has %-5.5s access to file %s\" \"SELECT USER_NAME,  DATA_ACCESS_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \" %-5.5s access has been given to user %-6.6s for the file %s\" \"SELECT DATA_ACCESS_NAME, USER_NAME, DATA_NAME WHERE COLL_NAME = '/tempZone/home/rods'\"",
+" iquest no-distinct \"select META_DATA_ATTR_NAME\"",
 " iquest \"SELECT RESC_NAME, RESC_LOC, RESC_VAULT_PATH, DATA_PATH WHERE DATA_NAME = 't2' AND COLL_NAME = '/tempZone/home/rods'\"",
 " iquest \"User %-9.9s uses %14.14s bytes in %8.8s files in '%s'\" \"SELECT USER_NAME, sum(DATA_SIZE),count(DATA_NAME),RESC_NAME\"",
 " iquest \"select sum(DATA_SIZE) where COLL_NAME = '/tempZone/home/rods'\"",
@@ -45,8 +48,12 @@ usage () {
 }
 
 int
-queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, char *selectConditionString)
+queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, 
+		    char *selectConditionString, int noDistinctFlag)
 {
+/*
+  NoDistinctFlag is 1 if the user is requesting 'distinct' to be skipped.
+ */
 
   genQueryInp_t genQueryInp;
   int i;
@@ -57,6 +64,9 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, char *selectCondit
   if (i < 0)
     return(i);
 
+  if (noDistinctFlag) {
+     genQueryInp.options = NO_DISTINCT;
+  }
   genQueryInp.maxRows= MAX_SQL_ROWS;
   genQueryInp.continueInx=0;
   i = rcGenQuery (conn, &genQueryInp, &genQueryOut);
@@ -95,11 +105,18 @@ main(int argc, char **argv) {
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
     char *optStr;
-    
+    int noDistinctFlag=0;
 
     optStr = "h";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+
+    if (myRodsArgs.optind < argc) {
+       if (!strcmp(argv[myRodsArgs.optind], "no-distinct")) {
+	  noDistinctFlag=1;
+	  myRodsArgs.optind++;
+       }
+    }
 
     if (status < 0) {
         printf("Use -h for help\n");
@@ -114,6 +131,7 @@ main(int argc, char **argv) {
       usage();
       exit(0);
     }
+
 
     status = getRodsEnv (&myEnv);
 
@@ -141,12 +159,18 @@ main(int argc, char **argv) {
        exit (3);
     }
 
-    if (myRodsArgs.optind == (argc - 3)) 
-      status = queryAndShowStrCond(conn, argv[argc-3], argv[argc-2], argv[argc-1]);
-    else if (myRodsArgs.optind == (argc - 2)) 
-      status = queryAndShowStrCond(conn, NULL, argv[argc-2], argv[argc-1]);
-    else 
-      status = queryAndShowStrCond(conn, NULL, NULL, argv[argc-1]);
+    if (myRodsArgs.optind == (argc - 3)) {
+       status = queryAndShowStrCond(conn, argv[argc-3], 
+				    argv[argc-2], argv[argc-1], noDistinctFlag);
+    }
+    else if (myRodsArgs.optind == (argc - 2)) {
+       status = queryAndShowStrCond(conn, NULL, argv[argc-2], argv[argc-1], 
+				    noDistinctFlag);
+    }
+    else {
+       status = queryAndShowStrCond(conn, NULL, NULL, argv[argc-1],
+				    noDistinctFlag);
+    }
     rcDisconnect(conn);
 
     if (status < 0) {

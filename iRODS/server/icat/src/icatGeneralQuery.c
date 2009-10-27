@@ -48,6 +48,7 @@ extern icatSessionStruct *chlGetRcs();
 int firstCall=1;
 
 char selectSQL[MAX_SQL_SIZE];
+int selectSQLInitFlag;
 char fromSQL[MAX_SQL_SIZE];
 char whereSQL[MAX_SQL_SIZE];
 char orderBySQL[MAX_SQL_SIZE];
@@ -530,7 +531,9 @@ int setTable(int column, int sel, int selectOption, int castOption) {
 	 }
 	 Tables[i].flag=1;
 	 if (sel) {
-	    if (strlen(selectSQL)>19) rstrcat(selectSQL, ",", MAX_SQL_SIZE);
+	    if (selectSQLInitFlag==0) rstrcat(selectSQL, ",", MAX_SQL_SIZE); 
+	    selectSQLInitFlag=0;  /* no longer empty of columns */
+
 	    selectOptFlag=0;
 	    if (selectOption != 0) {
 	       if (selectOption == SELECT_MIN) {
@@ -1096,7 +1099,15 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    }
 
    insertWhere("",1); /* initialize */
-   rstrcpy(selectSQL, "select distinct ", MAX_SQL_SIZE);
+
+   if (genQueryInp.options & NO_DISTINCT) {
+      rstrcpy(selectSQL, "select ", MAX_SQL_SIZE);
+   }
+   else {
+      rstrcpy(selectSQL, "select distinct ", MAX_SQL_SIZE);
+   }
+   selectSQLInitFlag=1;   /* selectSQL is currently initialized (no Columns) */
+
    rstrcpy(fromSQL, "from ", MAX_SQL_SIZE);
    fromCount=0;
    rstrcpy(whereSQL, "where ", MAX_SQL_SIZE);

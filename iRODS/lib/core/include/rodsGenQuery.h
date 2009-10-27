@@ -12,8 +12,8 @@
 
 #include "objInfo.h"
 
-#define MAX_SQL_ATTR	50
-#define MAX_SQL_ROWS	500
+#define MAX_SQL_ATTR    50
+#define MAX_SQL_ROWS   500
 
 /* In genQueryInp_t, selectInp is a int index, int value pair. The index
  * represents the attribute index. 
@@ -22,7 +22,7 @@
  */
 
 typedef struct GenQueryInp {
-    int maxRows;	     /* max number of rows to return, if 0 
+    int maxRows;             /* max number of rows to return, if 0 
                                 close out the SQL statement call (i.e. instead
                                 of getting more rows until it is finished). */
     int continueInx;         /* if non-zero, this is the value returned in
@@ -32,25 +32,28 @@ typedef struct GenQueryInp {
     int rowOffset;           /* if positive, return rows starting with
                                 this index (skip earlier ones), 0-origin  */
     int options;             /* Bits for special options, currently:
-			        If RETURN_TOTAL_ROW_COUNT is set, the total
+                                If RETURN_TOTAL_ROW_COUNT is set, the total
                                 number of available rows will be returned
                                 in totalRowCount (causes a little overhead
                                 so only request it if needed).  If rowOffset
                                 is also used, totalRowCount will include
-                                the skipped rows. */
+                                the skipped rows.
+                                If NO_DISTINCT is set, the normal 'distinct'
+                                keyword is not included in the SQL query.
+                             */
     keyValPair_t condInput;
     inxIvalPair_t selectInp; /* 1st int array is columns to return (select),
-				2nd int array has bits for special options:
+                                2nd int array has bits for special options:
                                 currently ORDER_BY and ORDER_BY_DESC */
     inxValPair_t sqlCondInp; /* 1st array is columns for conditions (where),
-				2nd array has strings for the conditions. */
+                                2nd array has strings for the conditions. */
 } genQueryInp_t;
 
 
 typedef struct SqlResult {
-    int attriInx;	/* attribute index */
-    int len;		/* strlen of each attribute */
-    char *value;	/* char array of [rowCnt][len] */
+    int attriInx;        /* attribute index */
+    int len;             /* strlen of each attribute */
+    char *value;         /* char array of [rowCnt][len] */
 } sqlResult_t;
 
 typedef struct GenQueryOut {
@@ -73,6 +76,8 @@ primary ordering column.
 /*
  */
 #define RETURN_TOTAL_ROW_COUNT 0x20
+#define NO_DISTINCT 0x40
+
 
 
 /* 
@@ -286,4 +291,4 @@ primary ordering column.
 #define COL_SLD_LOAD_FACTOR   1501
 #define COL_SLD_CREATE_TIME   1502
 
-#endif	/* RODS_GEN_QUERY_H */
+#endif /* RODS_GEN_QUERY_H */

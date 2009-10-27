@@ -138,6 +138,9 @@ runCmd(0, "iput $F1");
 runCmd(0, "imeta add -d $F1 a b");
 runCmd(0, "irm -f $F1");
 
+# basic exercise of without-distinct query
+runCmd(0, "iquest no-distinct \"select RESC_ID\" ");
+
 # basic resource-down test
 runCmd(0, "iadmin modresc $Resc status down");
 runCmd(2, "iput -R $Resc $F1");
