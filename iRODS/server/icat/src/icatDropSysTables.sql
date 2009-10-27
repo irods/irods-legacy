@@ -28,6 +28,7 @@ drop index idx_resc_main1;
 drop index idx_resc_main2;
 drop index idx_coll_main1;
 drop index idx_coll_main2;
+drop index idx_coll_main3;
 drop index idx_data_main1;
 drop index idx_data_main2;
 drop index idx_meta_main1;

@@ -324,6 +324,7 @@ create index idx_resc_main1 on R_RESC_MAIN (resc_id);
 create unique index idx_resc_main2 on R_RESC_MAIN (zone_name,resc_name);
 create index idx_coll_main1 on R_COLL_MAIN (coll_id);
 create unique index idx_coll_main2 on R_COLL_MAIN (parent_coll_name,coll_name);
+create unique index idx_coll_main3 on R_COLL_MAIN (coll_name);
 create index idx_data_main1 on R_DATA_MAIN (data_id);
 create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name,data_repl_num,data_version);
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
