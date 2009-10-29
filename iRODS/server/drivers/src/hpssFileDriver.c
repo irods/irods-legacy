@@ -13,6 +13,7 @@
 struct hpssCosDef *HpssCosHead = NULL;
 int HpssDefCos = COS_NOT_INIT;
 int HpssAuthFlag = 0;
+api_config_t      Api_config;
 
 int
 hpssFileUnlink (rsComm_t *rsComm, char *filename)
@@ -512,6 +513,7 @@ initHpssAuth ()
 {
     char hpssUser[MAX_NAME_LEN], hpssAuthInfo[MAX_NAME_LEN];
     int status;
+    hpss_authn_mech_t mech_type;
 
     if (HpssAuthFlag) return 0;
 
@@ -523,12 +525,31 @@ initHpssAuth ()
 	return status;
     }
 
-    hpss_authn_mech_t mech_type;
+
+   /* Set the authentication type to use
+     */
+
+    status = hpss_GetConfiguration(&Api_config);
+    if(status != 0) {
+      exit( status );
+    }
+
+    Api_config.AuthnMech = hpss_authn_mech_unix;
+    Api_config.Flags |= API_USE_CONFIG;
+
+    status = hpss_SetConfiguration(&Api_config);
+    if(status != 0) {
+        rodsLog (LOG_ERROR,
+          "initHpssAuth: hpss_SetConfiguration error. status = %d", status);
+	return (status + HPSS_AUTH_ERR);
+    }
+
     status = hpss_AuthnMechTypeFromString("unix", &mech_type);
     if(status != 0) {
 	rodsLog (LOG_ERROR,
           "initHpssAuth: invalid authentication type unix");
-        status = HPSS_AUTH_NOT_SUPPORTED;
+        status = HPSS_AUTH_NOT_SUPPORTED + status;
+	return status;
     }
 #ifdef HPSS_UNIX_PASSWD_AUTH
     status = hpss_SetLoginCred (hpssUser, mech_type, hpss_rpc_cred_client,
@@ -542,7 +563,9 @@ initHpssAuth ()
 	return status;
     }
 #else	/* use unix keytab. default */
+#if 0
     mech_type = hpss_authn_mech_unix;
+#endif
     status = hpss_SetLoginCred(hpssUser, mech_type, hpss_rpc_cred_client,
       hpss_rpc_auth_type_keytab, hpssAuthInfo);
     if(status != 0) {
