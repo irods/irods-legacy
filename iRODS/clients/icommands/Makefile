@@ -179,7 +179,9 @@ ifdef KRB_AUTH
 LIB_KRB_AUTH = \
         -L$(KRB_LOC)/lib \
         -lgssapi_krb5
-
+ifdef GSI_AUTH
+LIB_KRB_AUTH += -ldl
+endif
 LDFLAGS += $(LIB_KRB_AUTH)
 endif
 

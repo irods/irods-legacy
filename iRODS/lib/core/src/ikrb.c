@@ -5,10 +5,12 @@
 These functions provide a relatively simple interface to the Kerberos
 authentication system, similar to the igsi.c GSS-API interface to GSI.
 
-We call the k5b_gss* functions instead of the gss* functions so we may
-be able to link with both kerberos and GSI enabled (altho this has not
-been tested).  Also, it helps prevent accidentally linking with the
-GSI functions when Kerberos is requested.
+Normally, we call the gss* functions which have the same names as
+those used by GSI (they are both using the Generic Security Services
+API).  To be able to link with both kerberos and GSI at the same time,
+the gss* functions are mapped to krb_gss* functions which are defined
+in ikrbGSSAPIWrapper.c which in turn explicitly find the functions in
+the DLL and call them.
 
 All functions called from outside have names that start with 'ikrb'.
 Internal routines start with '_ikrb'.
@@ -31,6 +33,9 @@ sets up the login session.
 
 #if defined(KRB_AUTH)
 #include <gssapi.h>
+#if defined(GSI_AUTH)
+#include "ikrbGSSAPIWrapper.h"
+#endif
 #endif
 
 #include <stdio.h>
@@ -38,6 +43,35 @@ sets up the login session.
 #include <string.h>
 
 #include "rodsErrorTable.h"
+
+#if defined(KRB_AUTH) && defined(GSI_AUTH)
+/* When both KRB and GSI are used at the same time, redefine the
+   function names to be our KRB wrapper functions that interface
+   differently (see ikrbGSSAPIWrapper.c */
+#define GSS_DISPLAY_STATUS     krb_gss_display_status
+#define GSS_RELEASE_BUFFER     krb_gss_release_buffer
+#define GSS_IMPORT_NAME        krb_gss_import_name
+#define GSS_ACQUIRE_CRED       krb_gss_acquire_cred
+#define GSS_RELEASE_NAME       krb_gss_release_name
+#define GSS_INQUIRE_CRED       krb_gss_inquire_cred
+#define GSS_DISPLAY_NAME       krb_gss_display_name
+#define GSS_ACCEPT_SEC_CONTEXT krb_gss_accept_sec_context
+#define GSS_DELETE_SEC_CONTEXT krb_gss_delete_sec_context
+#define GSS_RELEASE_CRED       krb_gss_release_cred
+#define GSS_INIT_SEC_CONTEXT   krb_gss_init_sec_context
+#else
+#define GSS_DISPLAY_STATUS     gss_display_status
+#define GSS_RELEASE_BUFFER     gss_release_buffer
+#define GSS_IMPORT_NAME        gss_import_name
+#define GSS_ACQUIRE_CRED       gss_acquire_cred
+#define GSS_RELEASE_NAME       gss_release_name
+#define GSS_INQUIRE_CRED       gss_inquire_cred
+#define GSS_DISPLAY_NAME       gss_display_name
+#define GSS_ACCEPT_SEC_CONTEXT gss_accept_sec_context
+#define GSS_DELETE_SEC_CONTEXT gss_delete_sec_context
+#define GSS_RELEASE_CRED       gss_release_cred
+#define GSS_INIT_SEC_CONTEXT   gss_init_sec_context
+#endif
 
 rError_t *ikrb_rErrorPtr;
 
@@ -346,13 +380,13 @@ static void _ikrbLogError_1(char *callerMsg, OM_uint32 code, int type)
     msg_ctx = 0;
     status = KRB_ERROR_FROM_KRB_LIBRARY;
     while (1) {
-        majorStatus =    gss_display_status(&minorStatus, code,
+        majorStatus =    GSS_DISPLAY_STATUS(&minorStatus, code,
 				     type, GSS_C_NULL_OID,
 				     &msg_ctx, &msg);
 	rodsLogAndErrorMsg( LOG_ERROR, ikrb_rErrorPtr, status,
 			    "%sGSS-API error %s: %s", whichSide, callerMsg,
 			    (char *) msg.value);
-	(void)    gss_release_buffer(&minorStatus, &msg);
+	(void)    GSS_RELEASE_BUFFER(&minorStatus, &msg);
 
         if (!msg_ctx)
             break;
@@ -465,7 +499,7 @@ int ikrbSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     if (specifiedName != NULL) {
         name_buf.value = specifiedName;
         name_buf.length = strlen(name_buf.value) + 1;
-	majorStatus =    gss_import_name(&minorStatus, &name_buf,
+	majorStatus =    GSS_IMPORT_NAME(&minorStatus, &name_buf,
 				   (gss_OID) gss_nt_service_name_krb,
 				   &myName);
         if (majorStatus != GSS_S_COMPLETE) {
@@ -477,12 +511,12 @@ int ikrbSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
 
     if (myCreds == GSS_C_NO_CREDENTIAL) {
        if (specifiedName != NULL) {
-	  majorStatus =    gss_acquire_cred(&minorStatus, myName, 0,
+	  majorStatus =    GSS_ACQUIRE_CRED(&minorStatus, myName, 0,
 					    GSS_C_NULL_OID_SET, GSS_C_ACCEPT,
 					    &myCreds, NULL, NULL);
        }
        else {
-	  majorStatus =    gss_acquire_cred(&minorStatus, myName, 0,
+	  majorStatus =    GSS_ACQUIRE_CRED(&minorStatus, myName, 0,
 					    GSS_C_NULL_OID_SET, GSS_C_INITIATE,
 					    &myCreds, NULL, NULL);
        }
@@ -495,9 +529,9 @@ int ikrbSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
        _ikrbLogError("acquiring credentials", majorStatus, minorStatus);
        return KRB_ERROR_ACQUIRING_CREDS;
     }
-    (void)    gss_release_name(&minorStatus, &myName);
+    (void)    GSS_RELEASE_NAME(&minorStatus, &myName);
 
-    majorStatus =    gss_inquire_cred(&minorStatus, myCreds, &myName2, 
+    majorStatus =    GSS_INQUIRE_CRED(&minorStatus, myCreds, &myName2, 
 				      NULL, NULL, NULL);
     if (majorStatus != GSS_S_COMPLETE) {
        _ikrbLogError("inquire_cred", majorStatus, minorStatus);
@@ -505,7 +539,7 @@ int ikrbSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     }
 
     majorStatus =
-          gss_display_name(&minorStatus, myName2, &client_name2, &doid2);
+          GSS_DISPLAY_NAME(&minorStatus, myName2, &client_name2, &doid2);
     if (majorStatus != GSS_S_COMPLETE) {
        _ikrbLogError("displaying name", majorStatus, minorStatus);
        return KRB_ERROR_DISPLAYING_NAME;
@@ -519,14 +553,14 @@ int ikrbSetupCreds(rcComm_t *Comm, rsComm_t *rsComm, char *specifiedName,
     }
 
     /* release the name structure */
-    majorStatus =    gss_release_name(&minorStatus, &myName2);
+    majorStatus =    GSS_RELEASE_NAME(&minorStatus, &myName2);
 
     if (majorStatus != GSS_S_COMPLETE) {
        _ikrbLogError("releasing name", majorStatus, minorStatus);
        return KRB_ERROR_RELEASING_NAME;
        }
     
-    (void)    gss_release_buffer(&minorStatus, &client_name2);
+    (void)    GSS_RELEASE_BUFFER(&minorStatus, &client_name2);
 
 
 #if defined(IKRB_TIMING)
@@ -609,7 +643,7 @@ int ikrbEstablishContextServerside(rsComm_t *rsComm, char *clientName,
             _ikrbPrintToken(&recv_buffer);
         }
 	
-        majorStatus =    gss_accept_sec_context(&minorStatus, 
+        majorStatus =    GSS_ACCEPT_SEC_CONTEXT(&minorStatus, 
                            &context[fd], myCreds, &recv_buffer, 
                            GSS_C_NO_CHANNEL_BINDINGS, &client, &doid, 
                            &send_buffer, &context_flags, 
@@ -647,7 +681,7 @@ int ikrbEstablishContextServerside(rsComm_t *rsComm, char *clientName,
 
     /* convert name (internally represented) to a string */
     majorStatus =
-               gss_display_name(&minorStatus, client, &client_name, &doid);
+               GSS_DISPLAY_NAME(&minorStatus, client, &client_name, &doid);
     if (majorStatus != GSS_S_COMPLETE) {
         _ikrbLogError("displaying name", majorStatus, minorStatus);
         return KRB_ERROR_DISPLAYING_NAME;
@@ -662,14 +696,14 @@ int ikrbEstablishContextServerside(rsComm_t *rsComm, char *clientName,
         clientName[client_name.length] = '\0';
 
     /* release the name structure */
-    majorStatus =    gss_release_name(&minorStatus, &client);
+    majorStatus =    GSS_RELEASE_NAME(&minorStatus, &client);
 
     if (majorStatus != GSS_S_COMPLETE) {
         _ikrbLogError("releasing name", majorStatus, minorStatus);
         return KRB_ERROR_RELEASING_NAME;
     }
 
-    (void)    gss_release_buffer(&minorStatus, &client_name);
+    (void)    GSS_RELEASE_BUFFER(&minorStatus, &client_name);
 
 #if defined(IKRB_TIMING)
     (void) gettimeofday(&endTimeFunc, (struct timezone *) 0);
@@ -703,7 +737,7 @@ void ikrbClose(int fd)
 #if defined(KRB_AUTH)
     OM_uint32 majorStatus, minorStatus;
 
-    majorStatus =    gss_delete_sec_context(&minorStatus, 
+    majorStatus =    GSS_DELETE_SEC_CONTEXT(&minorStatus, 
 					    &context[fd], NULL);
 
     if (majorStatus != GSS_S_COMPLETE && ikrbDebugFlag > 0) {
@@ -724,7 +758,7 @@ void ikrbCloseAll()
     int i;
 
     if (myCreds != 0) {
-        majorStatus =    gss_release_cred(&minorStatus, &myCreds);
+        majorStatus =    GSS_RELEASE_CRED(&minorStatus, &myCreds);
         if (majorStatus != GSS_S_COMPLETE) {
             _ikrbLogError("releasing cred", majorStatus, minorStatus);
         }
@@ -790,7 +824,7 @@ int ikrbEstablishContextClientside(rcComm_t *Comm, char *serviceName,
        name_buffer.value = serviceName;
        name_buffer.length = strlen(serviceName) + 1;
 
-       majorStatus =    gss_import_name(&minorStatus, &name_buffer,
+       majorStatus =    GSS_IMPORT_NAME(&minorStatus, &name_buffer,
 			       (gss_OID) gss_nt_service_name_krb,
 			       &target_name);
 
@@ -830,7 +864,7 @@ int ikrbEstablishContextClientside(rcComm_t *Comm, char *serviceName,
             fprintf(stderr, "--> calling gss_init_sec_context\n");
 
 	if (serviceName != 0 && strlen(serviceName)>0) {
-	   majorStatus =    gss_init_sec_context(&minorStatus,
+	   majorStatus =    GSS_INIT_SEC_CONTEXT(&minorStatus,
                        myCreds, &context[fd], target_name, oid, 
                        flags, 0, 
                        NULL,   /* no channel bindings */
@@ -839,7 +873,7 @@ int ikrbEstablishContextClientside(rcComm_t *Comm, char *serviceName,
                        NULL);   /* ignore time_rec */
 	}
 	else {
-	   majorStatus =    gss_init_sec_context(&minorStatus,
+	   majorStatus =    GSS_INIT_SEC_CONTEXT(&minorStatus,
                        myCreds, &context[fd], GSS_C_NO_NAME, oid, 
                        flags, 0, 
                        NULL,   /* no channel bindings */
@@ -856,7 +890,7 @@ int ikrbEstablishContextClientside(rcComm_t *Comm, char *serviceName,
             && majorStatus != GSS_S_CONTINUE_NEEDED) {
 	    _ikrbLogError("initializing context", 
 			       majorStatus, minorStatus);
-	    (void)    gss_release_name(&minorStatus, &target_name);
+	    (void)    GSS_RELEASE_NAME(&minorStatus, &target_name);
             return KRB_ERROR_INIT_SECURITY_CONTEXT;
         }
 
@@ -866,13 +900,13 @@ int ikrbEstablishContextClientside(rcComm_t *Comm, char *serviceName,
 	        rodsLogAndErrorMsg( LOG_ERROR, ikrb_rErrorPtr, status,
                         "Sending init_sec_context token (size=%d)\n",
                         send_tok.length);
-		(void)    gss_release_buffer(&minorStatus, &send_tok);
-		(void)    gss_release_name(&minorStatus, &target_name);
+		(void)    GSS_RELEASE_BUFFER(&minorStatus, &send_tok);
+		(void)    GSS_RELEASE_NAME(&minorStatus, &target_name);
 		return status; /* KRB_SOCKET_WRITE_ERROR */
 	    }
 	}
 
-        (void)    gss_release_buffer(&minorStatus, &send_tok);
+        (void)    GSS_RELEASE_BUFFER(&minorStatus, &send_tok);
 
         if (majorStatus == GSS_S_CONTINUE_NEEDED) {
             if (ikrbDebugFlag > 0)
@@ -880,7 +914,7 @@ int ikrbEstablishContextClientside(rcComm_t *Comm, char *serviceName,
             recv_tok.value = &ikrbScratchBuffer;
             recv_tok.length = SCRATCH_BUFFER_SIZE;
             if (_ikrbRcvToken(fd, &recv_tok) <= 0) {
-	       (void)    gss_release_name(&minorStatus, &target_name);
+	       (void)    GSS_RELEASE_NAME(&minorStatus, &target_name);
                 return KRB_ERROR_RELEASING_NAME;
             }
             tokenPtr = &recv_tok;
@@ -888,7 +922,7 @@ int ikrbEstablishContextClientside(rcComm_t *Comm, char *serviceName,
     } while (majorStatus == GSS_S_CONTINUE_NEEDED);
 
     if (serviceName != 0 && strlen(serviceName)>0) {
-       (void)    gss_release_name(&minorStatus, &target_name);
+       (void)    GSS_RELEASE_NAME(&minorStatus, &target_name);
     }
 
     if (ikrbDebugFlag > 0)

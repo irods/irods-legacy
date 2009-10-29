@@ -69,6 +69,10 @@ LIB_CORE_OBJS += $(libCoreObjDir)/igsi.o
 endif
 ifdef KRB_AUTH
 LIB_CORE_OBJS += $(libCoreObjDir)/ikrb.o
+ifdef GSI_AUTH
+# when using both KRB and GSI, include the KRB wrapper
+LIB_CORE_OBJS += $(libCoreObjDir)/ikrbGSSAPIWrapper.o
+endif
 endif
 INCLUDES +=	-I$(libCoreIncDir)
 
