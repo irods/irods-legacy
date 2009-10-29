@@ -531,7 +531,9 @@ initHpssAuth ()
 
     status = hpss_GetConfiguration(&Api_config);
     if(status != 0) {
-      exit( status );
+        rodsLog (LOG_ERROR,
+          "initHpssAuth: hpss_GetConfiguration error. status = %d", status);
+        return (status + HPSS_AUTH_ERR);
     }
 
     Api_config.AuthnMech = hpss_authn_mech_unix;
