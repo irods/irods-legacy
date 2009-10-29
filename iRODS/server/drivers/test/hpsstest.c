@@ -45,7 +45,23 @@ main(int argc, char **argv)
     long long mySize;
     char myBuf[BUF_SIZE];
     int srcFd;
+    api_config_t      api_config;
 
+    /* Set the authentication type to use
+     */
+
+    status = hpss_GetConfiguration(&api_config);
+    if(status != 0) {
+      exit( status );
+    }
+
+    api_config.AuthnMech = hpss_authn_mech_unix;
+    api_config.Flags |= API_USE_CONFIG;
+
+    status = hpss_SetConfiguration(&api_config);
+    if(status != 0) {
+      exit( status );
+    }
 
     status = hpss_AuthnMechTypeFromString("unix", &mech_type);
     if(status != 0) {
@@ -55,7 +71,9 @@ main(int argc, char **argv)
 	exit (1);
     }
 
+#if 0
     mech_type = hpss_authn_mech_unix;
+#endif
     status = hpss_SetLoginCred(HPSS_USER_ID, mech_type, hpss_rpc_cred_client,
       hpss_rpc_auth_type_keytab, HPSS_KEYtAB_FILE);
     if(status != 0) {
