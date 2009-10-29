@@ -1365,7 +1365,7 @@ usage(char *subOpt)
 "zuri.unc.edu:1247",
 "The name of the local zone can be changed via some special processing and",
 "since it also requires some manual changes, iadmin will explain those and",
-"prompt for comfirmation in this case.",
+"prompt for confirmation in this case.",
 ""};
 
    char *rmzoneMsgs[]={

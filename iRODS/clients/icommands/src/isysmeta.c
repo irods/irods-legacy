@@ -27,7 +27,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 	       char *tResult;
 	       tResult = genQueryOut->sqlResult[j].value;
 	       tResult += i*genQueryOut->sqlResult[j].len;
-	       if (*descriptions[j]!='\0') {
+	       if (descriptions !=0 && *descriptions[j]!='\0') {
 		  if (strstr(descriptions[j],"_ts")!=0) {
 		     getLocalTimeFromRodsTime(tResult, localTime);
 		     if (atoll(tResult)==0) rstrcpy(localTime, "None", 20);
@@ -159,6 +159,58 @@ doLs(rcComm_t *Conn, char *objPath, int longOption) {
    return (1);
 }
 
+/* perform the list data-types command */
+int
+doListDataTypes(rcComm_t *Conn) {
+   
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int select_inx[3];
+   int select_value[3]={0,0,0};
+   int condition_inx[3];
+   char *condition_value[10];
+   char value1[MAX_NAME_LEN+10]="='data_type'";
+   int i, status;
+   int printCount;
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   printCount=0;
+
+   printf("Defined data-types:\n");
+
+   i=0;
+   select_inx[i++]=COL_TOKEN_NAME;
+   
+   genQueryInp.selectInp.inx = select_inx;
+   genQueryInp.selectInp.value = select_value;
+   genQueryInp.selectInp.len = i;
+
+   genQueryInp.sqlCondInp.inx = condition_inx;
+   genQueryInp.sqlCondInp.value = condition_value;
+   condition_inx[0]=COL_TOKEN_NAMESPACE;
+   condition_value[0]=value1;
+   genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      printf("None exist.\n");
+      return(0);
+   }
+
+   printCount+= printGenQueryResults(Conn, status, genQueryOut, 0, 
+				     0);
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      printCount+= printGenQueryResults(Conn, status, genQueryOut, 
+					0, 0);
+   }
+
+   return (1);
+}
+
 
 /* perform the modify command */
 int 
@@ -274,6 +326,12 @@ main(int argc, char **argv)
       exit (3);
    }
 
+   if (strcmp(cmdToken[0],"ldt")==0) {
+      if (*cmdToken[1]=='\0') {
+	 cmdToken[1]=" ";  /* just for subsequent checks below */
+      }
+   }
+
    if (*cmdToken[1]=='\0') {
       usage("");
       exit(1);
@@ -293,6 +351,10 @@ main(int argc, char **argv)
       if (myRodsArgs.longOption) longOption=1;
       if (myRodsArgs.verbose) longOption=1;
       doLs(Conn, objPath, longOption);
+      didOne=1;
+   }
+   if (strcmp(cmdToken[0],"ldt")==0) {
+      doListDataTypes(Conn);
       didOne=1;
    }
 
@@ -360,16 +422,19 @@ usage(char *option)
 " mod DataObjectName Time (modify expire time)",
 " mod DataObjectName datatype Type (modify data-type)",
 " ls [-lvV] Name (list dataObject, -l -v for long form)",
-"Time can be full or partial date/time: '2007-12-01' or '2007-12-11.12:03' etc, or",
-"a delta time '+1h' (one hour from now), etc.",
+" ldt (list data types (those available))",
+" ",
+"Time can be full or partial date/time: '2009-12-01' or '2009-12-11.12:03'",
+"etc, or a delta time '+1h' (one hour from now), etc.",
 " ",
 "Examples:",
-" isysmeta mod foo +1h  (change the expire time for the file foo to an hour from now)",
-" isysmeta mod /tempZone/home/rods/foo 2007-12-01",
+" isysmeta mod foo +1h (set the expire time for file 'foo' to an hour from now)",
+" isysmeta mod /tempZone/home/rods/foo 2009-12-01",
 " isysmeta mod /tempZone/home/rods/foo datatype 'tar file'",
 " isysmeta ls foo",
 " isysmeta -l ls foo",
 " isysmeta ls -l foo",
+" isysmeta ldt",
 ""};
 
    printMsgs(Msgs);
