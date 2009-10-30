@@ -426,11 +426,15 @@ rescGrpInfo_t **myRescGrpInfo)
         rodsLog (LOG_NOTICE,
          "getRescGrpForCreate:acSetRescSchemeForCreate error for %s,status=%d",
           dataObjInp->objPath, status);
+	return (status);
+    }
+    if (rei.rgi == NULL) {
+        /* def resc group has not been initialized yet */
+        status = setDefaultResc (rsComm, NULL, NULL,
+          &dataObjInp->condInput, myRescGrpInfo);
+        if (status < 0) status = SYS_INVALID_RESC_INPUT;
     } else {
         *myRescGrpInfo = rei.rgi;
-        if (myRescGrpInfo == NULL) {
-            status = SYS_INVALID_RESC_INPUT;
-        }
     }
 
     return (status);

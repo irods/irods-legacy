@@ -67,10 +67,10 @@ acAclPolicy||nop|nop
 #      input using the character "%" as seperator. e.g., resc1%resc2%resc3.  
 #      This function is optional, but if used, should be the first function
 #      to execute because it screens the resource input. 
-#    msiSetDefaultResc(defaultRescList, optionStr) - sets the default resource
-#      and query resource metadata for the subsequent use. This function
-#      is mandatory even no defaultResc is specified (null) and should be
-#      executed right after the screening function msiSetNoDirectRescInp.
+#    msiSetDefaultResc(defaultRescList, optionStr) - sets the default resource.
+#      From version 2.3 onward, this function is no longer mandatory, but
+#      if it is used, if should be executed right after the screening
+#      function msiSetNoDirectRescInp.
 #      defaultResc - the resource to use if no resource is input. A "null"
 #        means there is no defaultResc. More than one resources can be
 #      input using the character "%" as seperator.

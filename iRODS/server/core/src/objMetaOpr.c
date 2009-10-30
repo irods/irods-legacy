@@ -273,9 +273,6 @@ int
 sortResc (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo, 
 keyValPair_t *condInput, char *sortScheme)
 {
-    int i, order;
-    rescGrpInfo_t *tmpRescGrpInfo;
-    rescInfo_t *tmpRescInfo;
     int numResc;
 
     if (sortScheme == NULL) {
@@ -297,6 +294,8 @@ keyValPair_t *condInput, char *sortScheme)
     }
 
     if (strcmp (sortScheme, "random") == 0) {
+	sortRescRandom (rescGrpInfo);
+#if 0
         order = random() % numResc;
 	if (order == 0) {
 	    return (0);
@@ -312,12 +311,78 @@ keyValPair_t *condInput, char *sortScheme)
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
         tmpRescGrpInfo->rescInfo = (*rescGrpInfo)->rescInfo;
         (*rescGrpInfo)->rescInfo = tmpRescInfo;
+#endif
     } else if (strcmp (sortScheme, "byRescClass") == 0) {
 	sortRescByType (rescGrpInfo);
     } else {
 	    rodsLog (LOG_ERROR,
 	      "sortResc: unknown sortScheme %s", sortScheme);
     }
+
+    return (0);
+}
+
+int
+sortRescRandom (rescGrpInfo_t **rescGrpInfo)
+{
+    int *randomArray;
+    int numResc;
+    int i, j, status;
+    rescGrpInfo_t *tmpRescGrpInfo;
+    rescInfo_t **rescInfoArray;
+
+
+    tmpRescGrpInfo = *rescGrpInfo;
+    numResc = getNumResc (tmpRescGrpInfo);
+
+    if (numResc <= 1) {
+        return (0);
+    }
+    if ((status = getRandomArray (&randomArray, numResc)) < 0) return status;
+    rescInfoArray = malloc (numResc * sizeof (rescInfo_t *));
+    for (i = 0; i < numResc; i++) {
+	j = randomArray[i] - 1;
+	rescInfoArray[j] = tmpRescGrpInfo->rescInfo;
+	tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    tmpRescGrpInfo = *rescGrpInfo;
+    for (i = 0; i < numResc; i++) {
+        tmpRescGrpInfo->rescInfo = rescInfoArray[i];
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    free (rescInfoArray);
+    free (randomArray);
+    return 0;
+}
+
+int
+getRandomArray (int **randomArray, int size)
+{
+    int *myArray;
+    int i, j, k;
+
+    if (size < 0) {
+        *randomArray = NULL;
+        return -1;
+    }
+
+    myArray = (int *) malloc (size * sizeof (int));
+    bzero (myArray, size * sizeof (int));
+    for (i = size ; i > 0; i --) {
+	int ranNum;
+	/* get a number between 0 and i-1 */
+        ranNum = (random() >> 2) % i;
+        k = 0;
+	/* find the ranNum th empty slot  */
+        for (j = 0; j < size ; j ++) {
+            if (myArray[j] == 0) {
+                k++;
+            }
+	    if (k > ranNum) break;
+        }
+        myArray[j] = i;
+    }
+    *randomArray = myArray;
 
     return (0);
 }
@@ -3576,3 +3641,104 @@ initRescGrp (rsComm_t *rsComm)
 
     return 0;
 }
+
+int
+setDefaultResc (rsComm_t *rsComm, char *defaultRescList, char *optionStr,
+keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
+{
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
+    char *value = NULL;
+    strArray_t strArray;
+    int i, status;
+    char *defaultResc;
+    int startInx;
+
+    if (defaultRescList != NULL && strcmp (defaultRescList, "null") != 0 &&
+      optionStr != NULL &&  strcmp (optionStr, "force") == 0 &&
+      rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+        condInput = NULL;
+    }
+
+    memset (&strArray, 0, sizeof (strArray));
+
+    status = parseMultiStr (defaultRescList, &strArray);
+
+#if 0	/* this will produce no output */
+    if (status <= 0)
+        return (0);
+#endif
+
+    value = strArray.value;
+    if (strArray.len <= 1) {
+        startInx = 0;
+        defaultResc = value;
+    } else {
+        /* select one on the list randomly */
+        startInx = random() % strArray.len;
+        defaultResc = &value[startInx * strArray.size];
+    }
+
+
+    if (optionStr == NULL) {
+        status = getRescInfo (rsComm, defaultResc, condInput,
+          &myRescGrpInfo);
+    } else if (strcmp (optionStr, "preferred") == 0) {
+        status = getRescInfo (rsComm, NULL, condInput,
+          &myRescGrpInfo);
+        if (status >= 0) {
+            if (strlen (myRescGrpInfo->rescGroupName) > 0) {
+                for (i = 0; i < strArray.len; i++) {
+                    int j;
+                    j = startInx + i;
+                    if (j >= strArray.len) {
+                        /* wrap around */
+                        j = strArray.len - j;
+                    }
+                    tmpRescGrpInfo = myRescGrpInfo;
+                    prevRescGrpInfo = NULL;
+                    while (tmpRescGrpInfo != NULL) {
+                        if (strcmp (&value[j * strArray.size],
+                          tmpRescGrpInfo->rescInfo->rescName) == 0) {
+                            /* put it on top */
+                            if (prevRescGrpInfo != NULL) {
+                                prevRescGrpInfo->next = tmpRescGrpInfo->next;
+                                tmpRescGrpInfo->next = myRescGrpInfo;
+                                myRescGrpInfo = tmpRescGrpInfo;
+                            }
+                            break;
+                        }
+                        prevRescGrpInfo = tmpRescGrpInfo;
+                        tmpRescGrpInfo = tmpRescGrpInfo->next;
+                    }
+                }
+            }
+        } else {
+            /* error may mean there is no input resource. try to use the
+             * default resource by dropping down */
+            status = getRescInfo (rsComm, defaultResc, condInput,
+              &myRescGrpInfo);
+        }
+    } else if (strcmp (optionStr, "forced") == 0) {
+        status = getRescInfo (rsComm, defaultResc, NULL,
+          &myRescGrpInfo);
+    } else {
+        status = getRescInfo (rsComm, defaultResc, condInput,
+          &myRescGrpInfo);
+    }
+
+    if (status == CAT_NO_ROWS_FOUND)
+      status = SYS_RESC_DOES_NOT_EXIST;
+
+    if (value != NULL)
+        free (value);
+
+    if (status >= 0) {
+        *outRescGrpInfo = myRescGrpInfo;
+    } else {
+        *outRescGrpInfo = NULL;
+    }
+
+    return (status);
+}
+

@@ -62,18 +62,12 @@
  * \bug  no known bugs
 **/
 int
-msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecInfo_t *rei)
+msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, 
+ruleExecInfo_t *rei)
 {
-    rescGrpInfo_t *myRescGrpInfo = NULL;
-    rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
-    keyValPair_t *condInput;
-    char *value = NULL;
-    strArray_t strArray;
-    int i, status;
-    char *defaultResc;
     char *defaultRescList;
     char *optionStr;
-    int startInx; 
+    rescGrpInfo_t *myRescGrpInfo = NULL;
 
     defaultRescList = (char *) xdefaultRescList->inOutStruct;
 
@@ -81,14 +75,34 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 
     RE_TEST_MACRO ("    Calling msiSetDefaultResc")
 
-    rei->status = 0;
+    rei->status = setDefaultResc (rei->rsComm, defaultRescList, optionStr,  
+      &rei->doinp->condInput, &myRescGrpInfo);
+
+    if (rei->status >= 0) {
+        rei->rgi = myRescGrpInfo;
+    } else {
+        rei->rgi = NULL;
+    }
+    return (rei->status);
+}
+
+#if 0
+int
+setDefaultResc (rsComm_t *rsComm, char *defaultRescList, char *optionStr, 
+keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
+{
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
+    char *value = NULL;
+    strArray_t strArray;
+    int i, status;
+    char *defaultResc;
+    int startInx; 
 
     if (defaultRescList != NULL && strcmp (defaultRescList, "null") != 0 && 
       optionStr != NULL &&  strcmp (optionStr, "force") == 0 &&
-      rei->rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
 	condInput = NULL;
-    } else {
-	condInput = &rei->doinp->condInput;
     }
 
     memset (&strArray, 0, sizeof (strArray));
@@ -110,9 +124,9 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 
 
     if (strcmp (optionStr, "preferred") == 0) {
-        rei->status = getRescInfo (rei->rsComm, NULL, condInput,
+        status = getRescInfo (rsComm, NULL, condInput,
           &myRescGrpInfo);
-	if (rei->status >= 0) {
+	if (status >= 0) {
 	    if (strlen (myRescGrpInfo->rescGroupName) > 0) {
 	        for (i = 0; i < strArray.len; i++) {
 		    int j;
@@ -142,31 +156,32 @@ msiSetDefaultResc (msParam_t *xdefaultRescList, msParam_t *xoptionStr, ruleExecI
 	} else {
 	    /* error may mean there is no input resource. try to use the 
 	     * default resource by dropping down */
-            rei->status = getRescInfo (rei->rsComm, defaultResc, condInput,
+            status = getRescInfo (rsComm, defaultResc, condInput,
               &myRescGrpInfo);
 	}
     } else if (strcmp (optionStr, "forced") == 0) {
-        rei->status = getRescInfo (rei->rsComm, defaultResc, NULL,
+        status = getRescInfo (rsComm, defaultResc, NULL,
           &myRescGrpInfo);
     } else {
-        rei->status = getRescInfo (rei->rsComm, defaultResc, condInput, 
+        status = getRescInfo (rsComm, defaultResc, condInput, 
           &myRescGrpInfo);
     }
 
-    if (rei->status == CAT_NO_ROWS_FOUND) 
-      rei->status = SYS_RESC_DOES_NOT_EXIST;
+    if (status == CAT_NO_ROWS_FOUND) 
+      status = SYS_RESC_DOES_NOT_EXIST;
 
     if (value != NULL)
         free (value);
 
-    if (rei->status >= 0) {
-        rei->rgi = myRescGrpInfo;
+    if (status >= 0) {
+        *outRescGrpInfo = myRescGrpInfo;
     } else {
-	rei->rgi = NULL;
+	*outRescGrpInfo = NULL;
     }
 
-    return (rei->status);
+    return (status);
 }
+#endif
 
 /**
  * \fn msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
@@ -222,10 +237,22 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
     RE_TEST_MACRO ("    Calling msiSetRescSortScheme")
 
     rei->status = 0;
-    myRescGrpInfo = rei->rgi;
-    if (myRescGrpInfo == NULL) {
-	rei->status = SYS_INVALID_RESC_INPUT;
-	return (0);
+
+    if (sortScheme != NULL && strlen (sortScheme) > 0) {
+	strncat (rei->statusStr, sortScheme, MAX_NAME_LEN);
+	strncat (rei->statusStr, "%", MAX_NAME_LEN);
+    }
+    if (rei->rgi == NULL) {
+	/* def resc group has not been initialized yet */
+        rei->status = setDefaultResc (rei->rsComm, NULL, NULL, 
+	  &rei->doinp->condInput, &myRescGrpInfo);
+	if (rei->status >= 0) {
+	    rei->rgi = myRescGrpInfo;
+	} else {
+	    return (rei->status);
+	}
+    } else {
+        myRescGrpInfo = rei->rgi;
     }
     sortResc (rei->rsComm, &myRescGrpInfo, &rei->doinp->condInput, sortScheme);
     rei->rgi = myRescGrpInfo;
