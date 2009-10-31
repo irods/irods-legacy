@@ -2240,6 +2240,20 @@ rodsServerHost_t **rodsServerHost)
 }
 
 int
+isLocalHost (char *hostAddr)
+{
+    int remoteFlag;
+    rodsServerHost_t *rodsServerHost;
+    rodsHostAddr_t addr;
+
+    bzero (&addr, sizeof (addr));
+    rstrcpy (addr.hostAddr, hostAddr, NAME_LEN);
+    remoteFlag = resolveHost (&addr, &rodsServerHost);
+
+    return remoteFlag;
+}
+
+int
 getReHost (rodsServerHost_t **rodsServerHost)
 {
     int status;

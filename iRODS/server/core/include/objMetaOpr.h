@@ -231,6 +231,8 @@ rescInfo_t **outRescInfo);
 int
 sortRescByType (rescGrpInfo_t **rescGrpInfo);
 int
+sortRescByLocation (rescGrpInfo_t **rescGrpInfo);
+int
 getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
 dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
 dataObjInfo_t **outDataObjInfo);

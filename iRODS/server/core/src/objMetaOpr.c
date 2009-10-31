@@ -440,6 +440,44 @@ sortRescByType (rescGrpInfo_t **rescGrpInfo)
     return 0;
 }
 
+/* sortRescByLocation - float LOCAL_HOST resources to the top */
+int
+sortRescByLocation (rescGrpInfo_t **rescGrpInfo)
+{
+    rescGrpInfo_t *tmpRescGrpInfo, *tmp1RescGrpInfo;
+    rescInfo_t *tmpRescInfo, *tmp1RescInfo;
+
+    tmpRescGrpInfo = *rescGrpInfo;
+
+    /* float CACHE_CL to top */
+
+    while (tmpRescGrpInfo != NULL) {
+	int tmpClass, tmp1Class;
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (isLocalHost (tmpRescInfo->rescLoc) == LOCAL_HOST) {
+	    tmpClass = RescClass[tmpRescInfo->rescClassInx].classType;
+            /* find a slot to exchange rescInfo */
+            tmp1RescGrpInfo = *rescGrpInfo;
+            while (tmp1RescGrpInfo != NULL) {
+                if (tmp1RescGrpInfo == tmpRescGrpInfo) break;
+                tmp1RescInfo = tmp1RescGrpInfo->rescInfo;
+		tmp1Class = RescClass[tmp1RescInfo->rescClassInx].classType;
+                if (tmp1Class > tmpClass ||
+		 (tmp1Class == tmpClass && 
+		  isLocalHost (tmp1RescInfo->rescLoc) != LOCAL_HOST)) {
+                    tmpRescGrpInfo->rescInfo = tmp1RescInfo;
+                    tmp1RescGrpInfo->rescInfo = tmpRescInfo;
+                    break;
+                }
+                tmp1RescGrpInfo = tmp1RescGrpInfo->next;
+            }
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+
+    return 0;
+}
+
 int
 checkCollAccessPerm (rsComm_t *rsComm, char *collection, char *accessPerm)
 {

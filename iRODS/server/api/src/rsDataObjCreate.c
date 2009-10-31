@@ -437,6 +437,11 @@ rescGrpInfo_t **myRescGrpInfo)
         *myRescGrpInfo = rei.rgi;
     }
 
+    if (strstr (rei.statusStr, "random") == NULL) {
+	/* not a random scheme */
+	sortRescByLocation (myRescGrpInfo);
+    }
+
     return (status);
 }
 

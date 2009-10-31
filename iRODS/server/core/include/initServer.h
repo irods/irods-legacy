@@ -202,4 +202,6 @@ int
 getReHost (rodsServerHost_t **rodsServerHost);
 int
 getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost);
+int
+isLocalHost (char *hostAddr);
 #endif	/* INIT_SERVER_H */
