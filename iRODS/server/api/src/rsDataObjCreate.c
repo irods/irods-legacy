@@ -408,6 +408,13 @@ dataObjInfo_t *dataObjInfo)
     return (l3descInx);
 }
 
+/* getRescGrpForCreate - given the resource input in dataObjInp, get the
+ * rescGrpInfo_t of the resource after applying the acSetRescSchemeForCreate
+ * rule. 
+ * Return 1 of the "random" sorting scheme is used. Otherwise return 0
+ * or an error code.
+ */
+
 int
 getRescGrpForCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rescGrpInfo_t **myRescGrpInfo)
@@ -440,8 +447,10 @@ rescGrpInfo_t **myRescGrpInfo)
     if (strstr (rei.statusStr, "random") == NULL) {
 	/* not a random scheme */
 	sortRescByLocation (myRescGrpInfo);
+	return 0;
+    } else {
+	return 1;
     }
 
-    return (status);
 }
 
