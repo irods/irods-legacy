@@ -2249,8 +2249,10 @@ isLocalHost (char *hostAddr)
     bzero (&addr, sizeof (addr));
     rstrcpy (addr.hostAddr, hostAddr, NAME_LEN);
     remoteFlag = resolveHost (&addr, &rodsServerHost);
-
-    return remoteFlag;
+    if (remoteFlag == LOCAL_HOST)
+	return 1;
+    else 
+	return 0;
 }
 
 int

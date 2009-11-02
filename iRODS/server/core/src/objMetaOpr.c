@@ -454,7 +454,7 @@ sortRescByLocation (rescGrpInfo_t **rescGrpInfo)
     while (tmpRescGrpInfo != NULL) {
 	int tmpClass, tmp1Class;
         tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        if (isLocalHost (tmpRescInfo->rescLoc) == LOCAL_HOST) {
+        if (isLocalHost (tmpRescInfo->rescLoc)) {
 	    tmpClass = RescClass[tmpRescInfo->rescClassInx].classType;
             /* find a slot to exchange rescInfo */
             tmp1RescGrpInfo = *rescGrpInfo;
@@ -464,7 +464,7 @@ sortRescByLocation (rescGrpInfo_t **rescGrpInfo)
 		tmp1Class = RescClass[tmp1RescInfo->rescClassInx].classType;
                 if (tmp1Class > tmpClass ||
 		 (tmp1Class == tmpClass && 
-		  isLocalHost (tmp1RescInfo->rescLoc) != LOCAL_HOST)) {
+		  isLocalHost (tmp1RescInfo->rescLoc) == 0)) {
                     tmpRescGrpInfo->rescInfo = tmp1RescInfo;
                     tmp1RescGrpInfo->rescInfo = tmpRescInfo;
                     break;
