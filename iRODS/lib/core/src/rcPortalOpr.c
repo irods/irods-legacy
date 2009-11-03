@@ -351,7 +351,11 @@ rodsLong_t dataSize)
     rodsLong_t totalWritten = 0;
     int bytesRead;
 
+#ifdef windows_platform
+	in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
+#else
     in_fd = open (locFilePath, O_RDONLY, 0);
+#endif
     if (in_fd < 0) { /* error */
         status = USER_FILE_DOES_NOT_EXIST - errno;
         rodsLogError (LOG_ERROR, status,
@@ -459,7 +463,11 @@ rodsLong_t dataSize)
 	/* streaming to stdout */
         out_fd =1;
     } else {
+#ifdef windows_platform
+		out_fd = iRODSNt_bopen(locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#else
         out_fd = open (locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#endif
     }
  
     if (out_fd < 0) { /* error */
@@ -563,7 +571,11 @@ char *locFilePath, rodsLong_t dataSize)
         if (sock < 0) {
             return (sock);
         }
+#ifdef windows_platform
+		out_fd = iRODSNt_bopen(locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#else
         out_fd = open (locFilePath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#endif
         if (out_fd < 0) { /* error */
 	    retVal = USER_FILE_DOES_NOT_EXIST - errno;
             rodsLogError (LOG_ERROR, retVal,
