@@ -568,10 +568,10 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
     msParam->inpOutBuf = msParamBuf;
     msParam->type = typ;
   }
-  /*** 
+  /*** RAJA removed commenting out Nov 3, 2009 to stop a memory leak  ***/
        clearMsParamArray (list,1);
        free(list);
-  ***/
+  /***/
   if (i == BREAK_ACTION_ENCOUNTERED_ERR) 
       return(0);
   if (i == NO_VALUES_FOUND)
