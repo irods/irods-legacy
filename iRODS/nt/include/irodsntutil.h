@@ -18,6 +18,8 @@
 extern "C" {
 #endif
 
+#define irodsntstat  _stat
+
 void iRODSNtAgentInit(int ac, char **av);
 int iRODSNtGetServiceName(char *service_name);
 void iRODSNtServerCheckExecMode(int targc, char **targv);
@@ -37,7 +39,8 @@ int iRODSNt_open(const char *filename,int oflag, int istextfile);
 int iRODSNt_bopen(const char *filename,int oflag, int pmode);
 int iRODSNt_bcreate(const char *filename);
 int iRODSNt_unlink(char *filename);
-int iRODSNt_stat(const char *filename,struct stat *stat_p);
+
+int iRODSNt_stat(const char *filename,struct irodsntstat *stat_p);
 int iRODSNt_mkdir(char *dir,int mode);
 
 char *iRODSNt_gethome();
