@@ -277,7 +277,11 @@ rodsRestart_t *rodsRestart)
     int savedStatus = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef windows_platform
     struct stat statbuf;
+#else
+	struct irodsntstat statbuf;
+#endif
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
     objType_t childObjType;
     rcComm_t *conn;
@@ -327,7 +331,11 @@ rodsRestart_t *rodsRestart)
         snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s", 
 	  srcDir, myDirent->d_name);
 
+#ifndef windows_platform
         status = stat (srcChildPath, &statbuf);
+#else
+		status = iRODSNt_stat(srcChildPath, &statbuf);
+#endif
 
         if (status != 0) {
             rodsLog (LOG_ERROR,
