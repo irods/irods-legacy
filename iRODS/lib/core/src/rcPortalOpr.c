@@ -152,7 +152,11 @@ char *locFilePath, rodsLong_t dataSize)
         if (sock < 0) {
 	    return (sock);
         }
+#ifdef windows_platform
+		in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
+#else
         in_fd = open (locFilePath, O_RDONLY, 0);
+#endif
         if (in_fd < 0) { /* error */
             retVal = USER_FILE_DOES_NOT_EXIST - errno;
             rodsLogError (LOG_ERROR, retVal,
