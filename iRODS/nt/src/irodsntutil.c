@@ -331,11 +331,11 @@ int iRODSNt_unlink(char *filename)
 	return _unlink(ntfp);
 }
 
-int iRODSNt_stat(const char *filename,struct stat *stat_p)
+int iRODSNt_stat(const char *filename,struct irodsntstat *stat_p)
 {
         char ntfp[2048];
         iRODSPathToNtPath(ntfp,filename);
-        return stat(ntfp,stat_p);
+        return _stat(ntfp,stat_p);
 }
 
 int iRODSNt_mkdir(char *dir,int mode)
