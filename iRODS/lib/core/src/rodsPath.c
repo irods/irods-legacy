@@ -228,12 +228,20 @@ parseLocalPath (rodsPath_t *rodsPath)
 int
 getFileType (rodsPath_t *rodsPath)
 {
+#ifndef windows_platform
     struct stat statbuf;
+#else
+	struct irodsntstat statbuf;
+#endif
     int status;
 
     /* XXXX need to use lstat to follow symbolic link. to be done later. 
      * also needs to call symlink to get the real path */
+#ifndef windows_platform
     status = stat (rodsPath->outPath, &statbuf);
+#else
+	status = iRODSNt_stat(rodsPath->outPath, &statbuf);
+#endif
 
     if (status < 0) {
 	rodsPath->objType = UNKNOWN_FILE_T;
