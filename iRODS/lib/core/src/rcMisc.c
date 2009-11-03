@@ -21,6 +21,7 @@
 int
 isPath (char *path)
 {
+#ifndef windows_platform
     struct stat statbuf;
 
     if (stat (path, &statbuf) == 0) {
@@ -28,11 +29,21 @@ isPath (char *path)
     } else {
         return (0);
     }
+#else
+	struct irodsntstat statbuf;
+	if(iRODSNt_stat(path, &statbuf) == 0)
+	{
+		return 1;
+	}
+
+	return 0;
+#endif
 }
 
 rodsLong_t
 getFileSize (char *path)
 {
+#ifndef windows_platform
     struct stat statbuf;
 
     if (stat (path, &statbuf) == 0) {
@@ -40,6 +51,14 @@ getFileSize (char *path)
     } else {
 	return (-1);
     }
+#else
+	struct irodsntstat statbuf;
+	if(iRODSNt_stat(path, &statbuf) == 0)
+	{
+		return statbuf.st_size;
+	}
+	return -1;
+#endif
 }
 
 
@@ -2143,16 +2162,28 @@ int
 openRestartFile (char *restartFile, rodsRestart_t *rodsRestart, 
 rodsArguments_t *rodsArgs)
 {
+#ifndef windows_platform
     struct stat statbuf;
+#else
+	struct irodsntstat statbuf;
+#endif
     char buf[MAX_NAME_LEN * 3];
     char *inptr;
     char tmpStr[MAX_NAME_LEN];
     int status; 
 
+#ifndef windows_platform
     status = stat (restartFile, &statbuf);
+#else
+	status = iRODSNt_stat(restartFile, &statbuf);
+#endif
 
     if (status < 0 || statbuf.st_size == 0) {
+#ifndef windows_platform
 	rodsRestart->fd = open (restartFile, O_RDWR|O_CREAT, 0644);
+#else
+	rodsRestart->fd = iRODSNt_bopen(restartFile, O_RDWR|O_CREAT, 0644);
+#endif
 	if (rodsRestart->fd < 0) {
 	    status = UNIX_FILE_OPEN_ERR - errno;
             rodsLogError (LOG_ERROR, status,
@@ -2169,7 +2200,11 @@ rodsArguments_t *rodsArgs)
           "openRestartFile: %s is not a file", restartFile);
         return UNIX_FILE_OPEN_ERR;
     } else {
+#ifndef windows_platform
         rodsRestart->fd = open (restartFile, O_RDWR, 0644);
+#else
+		rodsRestart->fd = iRODSNt_bopen(restartFile, O_RDWR, 0644);
+#endif
         if (rodsRestart->fd < 0) {
             status = UNIX_FILE_OPEN_ERR - errno;
             rodsLogError (LOG_ERROR, status, 
