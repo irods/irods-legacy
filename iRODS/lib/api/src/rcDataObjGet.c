@@ -14,16 +14,26 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
     int status;
     portalOprOut_t *portalOprOut = NULL;
     bytesBuf_t dataObjOutBBuf;
+#ifndef windows_platform
     struct stat statbuf;
+#else
+	struct irodsntstat statbuf;
+#endif
 
     if (strcmp (locFilePath, STDOUT_FILE_NAME) == 0) {
 	/* no parallel I/O if pipe to stdout */
 	dataObjInp->numThreads = NO_THREADING;
-    } else if (stat (locFilePath, &statbuf) >= 0) {
+    } 
+#ifndef windows_platform
+	else if (stat (locFilePath, &statbuf) >= 0) 
+#else
+	else if(iRODSNt_stat(locFilePath, &statbuf) >= 0)
+#endif
+	{
 	/* local file exists */
 	if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
 	    return (OVERWITE_WITHOUT_FORCE_FLAG);
-	}
+		}
     }
 
     status = _rcDataObjGet (conn, dataObjInp, &portalOprOut, &dataObjOutBBuf);
