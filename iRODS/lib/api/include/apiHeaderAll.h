@@ -124,4 +124,5 @@
 #include "krbAuthRequest.h"
 #include "phyBundleColl.h"
 #include "unbunAndRegPhyBunfile.h"
+#include "getHostForPut.h"
 #endif	/* API_HEADER_ALL_H */

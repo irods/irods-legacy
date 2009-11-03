@@ -104,6 +104,9 @@ int
 isReadMsgError (int status);
 int svrSwitchConnect (rsComm_t *rsComm);
 int cliSwitchConnect (rcComm_t *conn);
+int 
+redirectConnToRescSvr (rcComm_t **conn, dataObjInp_t *dataObjInp, 
+rodsEnv *myEnv, int reconnFlag);
 #ifdef  __cplusplus
 }
 #endif

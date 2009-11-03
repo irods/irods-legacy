@@ -113,6 +113,7 @@
 #define REG_COLL_AN                     683
 #define PHY_BUNDLE_COLL_AN 		684
 #define UNBUN_AND_REG_PHY_BUNFILE_AN 	685
+#define GET_HOST_FOR_PUT_AN 			686
 
 #define GET_MISC_SVR_INFO_AN		700
 #define GENERAL_ADMIN_AN 		701

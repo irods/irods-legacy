@@ -146,6 +146,9 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
       case 'i':
          rodsArgs->input=True;
          break;
+      case 'I':
+         rodsArgs->redirectConn=True;	/* connect directly to resc server */
+         break;
       case 'k':
          rodsArgs->checksum=True;
          break;

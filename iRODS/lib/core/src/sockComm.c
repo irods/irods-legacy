@@ -7,6 +7,7 @@
 #include "rcMisc.h"
 #include "rcGlobalExtern.h"
 #include "miscServerFunct.h"
+#include "getHostForPut.h"
 #ifdef RBUDP_TRANSFER
 #include "QUANTAnet_rbudpBase_c.h"
 #endif  /* RBUDP_TRANSFER */
@@ -1428,4 +1429,33 @@ isReadMsgError (int status)
     } else {
 	return 0;
     }
+}
+
+int 
+redirectConnToRescSvr (rcComm_t **conn, dataObjInp_t *dataObjInp, 
+rodsEnv *myEnv, int reconnFlag)
+{
+    int status;
+    char *outHost = NULL;
+    rcComm_t *newConn = NULL;
+    rErrMsg_t errMsg;
+
+    status = rcGetHostForPut (*conn, dataObjInp, &outHost);
+
+    if (status < 0 || outHost == NULL || strcmp (outHost, THIS_ADDRESS) == 0)
+	return status;
+
+    newConn =  rcConnect (outHost, myEnv->rodsPort, myEnv->rodsUserName,
+      myEnv->rodsZone, reconnFlag, &errMsg);
+
+    if (newConn != NULL) {
+        status = clientLogin(newConn);
+        if (status != 0) {
+           rcDisconnect(newConn);
+	    return status;
+	}
+	rcDisconnect (*conn);
+	*conn = newConn;
+    }
+    return 0;
 }

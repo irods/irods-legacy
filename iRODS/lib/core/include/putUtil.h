@@ -14,7 +14,7 @@ extern "C" {
 #endif
 
 int
-putUtil (rcComm_t *conn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, 
+putUtil (rcComm_t **myConn, rodsEnv *myEnv, rodsArguments_t *myRodsArgs, 
 rodsPathInp_t *rodsPathInp);
 int
 putFileUtil (rcComm_t *conn, char *srcPath, char *targPath, 
@@ -24,7 +24,7 @@ int
 initCondForPut (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart);
 int
-putDirUtil (rcComm_t *conn, char *srcDir, char *targColl,
+putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
 rodsRestart_t *rodsRestart);
 

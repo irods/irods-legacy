@@ -355,3 +355,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcPhyBundleColl.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsUnbunAndRegPhyBunfile.o
 LIB_API_OBJS += $(libApiObjDir)/rcUnbunAndRegPhyBunfile.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsGetHostForPut.o
+LIB_API_OBJS += $(libApiObjDir)/rcGetHostForPut.o

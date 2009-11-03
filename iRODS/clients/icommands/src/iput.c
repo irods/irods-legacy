@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "aD:fhkKn:N:p:rR:QTvVX:";
+    optStr = "aD:fhIkKn:N:p:rR:QTvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -70,7 +70,7 @@ main(int argc, char **argv) {
         exit (7);
     }
 
-    status = putUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
+    status = putUtil (&conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
     rcDisconnect(conn);
 
@@ -86,10 +86,10 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-fkKQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-fIkKQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-fkKQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-fIkKQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -109,6 +109,12 @@ usage ()
 "if a copy in the specified resource does not already exist. The irepl",
 "command should be used to make a replica of an existing copy.", 
 " ",
+"The -I option specifies the redirection of the connection so that it can",
+"be connected directly to the resource server. This option can improve",
+"the performance of uploading a large number of small (<32 Mbytes) files.", 
+"This option is only effective if the source is a directory and the -f ",
+"option is not used", 
+" ",
 "The -Q option specifies the use of the RBUDP transfer mechanism which uses",
 "the UDP protocol for data transfer. The UDP protocol is very efficient",
 "if the network is very robust with few packet losses. Two environment",
@@ -124,6 +130,8 @@ usage ()
 "Options are:",
 " -D  dataType - the data type string",
 " -f  force - write data-object even it exists already; overwrite it",
+" -I  redirect connection - redirect the connection to connect directly",
+"       to the resource server.",
 " -k  checksum - calculate a checksum on the data",
 " -K  verify checksum - calculate and verify the checksum on the data",
 " -N  numThreads - the number of thread to use for the transfer. A value of",

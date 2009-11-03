@@ -10,8 +10,8 @@
 #include "miscUtil.h"
 
 int
-putUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-rodsPathInp_t *rodsPathInp)
+putUtil (rcComm_t **myConn, rodsEnv *myRodsEnv, 
+rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 {
     int i;
     int status; 
@@ -19,6 +19,7 @@ rodsPathInp_t *rodsPathInp)
     rodsPath_t *targPath;
     dataObjInp_t dataObjOprInp;
     rodsRestart_t rodsRestart;
+    rcComm_t *conn = *myConn;
 
     if (rodsPathInp == NULL) {
 	return (USER__NULL_INPUT_ERR);
@@ -43,7 +44,7 @@ rodsPathInp_t *rodsPathInp)
 	       myRodsArgs, &dataObjOprInp);
 	} else if (targPath->objType == COLL_OBJ_T) {
 	    setStateForRestart (conn, &rodsRestart, targPath, myRodsArgs);
-	    status = putDirUtil (conn, rodsPathInp->srcPath[i].outPath,
+	    status = putDirUtil (myConn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
 	      &rodsRestart);
             if (rodsRestart.fd > 0 && status < 0) {
@@ -268,7 +269,7 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 }
 
 int
-putDirUtil (rcComm_t *conn, char *srcDir, char *targColl, 
+putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
 rodsRestart_t *rodsRestart)
 {
@@ -279,6 +280,7 @@ rodsRestart_t *rodsRestart)
     struct stat statbuf;
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
     objType_t childObjType;
+    rcComm_t *conn;
 
     if (srcDir == NULL || targColl == NULL) {
        rodsLog (LOG_ERROR,
@@ -293,6 +295,18 @@ rodsRestart_t *rodsRestart)
         return (USER_INPUT_OPTION_ERR);
     }
 
+    if (rodsArgs->redirectConn == True && rodsArgs->force != True) {
+        int reconnFlag;
+        if (rodsArgs->reconnect == True) {
+            reconnFlag = RECONN_TIMEOUT;
+        } else {
+            reconnFlag = NO_RECONN;
+        }
+	/* reconnect to the resource server */
+	redirectConnToRescSvr (myConn, dataObjOprInp, myRodsEnv, reconnFlag);
+    }
+
+    conn = *myConn;
     dirPtr = opendir (srcDir);
     if (dirPtr == NULL) {
 	rodsLog (LOG_ERROR,
@@ -374,7 +388,8 @@ rodsRestart_t *rodsRestart)
                   "putDirUtil: mkColl error for %s", targChildPath);
 	    }
 
-            status = putDirUtil (conn, srcChildPath, targChildPath, 
+	    rodsArgs->redirectConn = 0;    /* only do it once */
+            status = putDirUtil (myConn, srcChildPath, targChildPath, 
               myRodsEnv, rodsArgs, dataObjOprInp, rodsRestart);
 	    if (rodsRestart->fd > 0 && status < 0) {
 		closedir (dirPtr);

@@ -41,6 +41,7 @@ typedef struct {
    int hostAddr;
    char *hostAddrString;
    int input;
+   int redirectConn;
    int checksum;
    int verifyChecksum;
    int dataType;
