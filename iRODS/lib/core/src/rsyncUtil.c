@@ -492,7 +492,11 @@ dataObjInp_t *dataObjOprInp)
     int savedStatus = 0;
     DIR *dirPtr;
     struct dirent *myDirent;
+#ifndef windows_platform
     struct stat statbuf;
+#else
+	struct irodsntstat statbuf;
+#endif
     char *srcDir, *targColl;
     rodsPath_t mySrcPath, myTargPath;
 
@@ -537,7 +541,11 @@ dataObjInp_t *dataObjOprInp)
         snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
           srcDir, myDirent->d_name);
 
+#ifndef windows_platform
         status = stat (mySrcPath.outPath, &statbuf);
+#else
+		status = iRODSNt_stat(mySrcPath.outPath, &statbuf);
+#endif
 
         if (status != 0) {
             rodsLog (LOG_ERROR,
