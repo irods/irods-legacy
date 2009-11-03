@@ -87,6 +87,21 @@ executeRuleBody(char *action, char *ruleAction, char *ruleRecovery,
 }
 
 int
+freeActionRecoveryList(char *actionArray[], char *recoveryArray[], int n)
+{
+  int i;
+  for (i = 0; i < n; i++) {
+    if (actionArray[i] != NULL) {
+      free (actionArray[i]);
+    }
+    if (recoveryArray[i] != NULL) {
+      free (recoveryArray[i]);
+    }
+  }
+  return(0);
+}
+
+int
 executeRuleBodyNew(char *action, char *ruleAction, char *ruleRecovery, 
 		msParamArray_t *inMsParamArray,
 		ruleExecInfo_t *rei, int reiSaveFlag )
@@ -137,16 +152,22 @@ executeRuleBodyNew(char *action, char *ruleAction, char *ruleRecovery,
       break;
     }
     j  = replaceVariablesNew(action, actionArray[i], inMsParamArray, rei);
-    if (j != 0) 
+    if (j != 0) {
+      freeActionRecoveryList(actionArray,recoveryArray,n);
       return(j);
+    }
     j = executeRuleActionNew(actionArray[i], inMsParamArray, rei, reiSaveFlag);
     if (j < 0) 
       break;
   }
-  if (j == BREAK_ACTION_ENCOUNTERED_ERR)
+  if (j == BREAK_ACTION_ENCOUNTERED_ERR) {
+    freeActionRecoveryList(actionArray,recoveryArray,n);
     return(j);
-  if (j == RETRY_WITHOUT_RECOVERY_ERR)
+  }
+  if (j == RETRY_WITHOUT_RECOVERY_ERR) {
+    freeActionRecoveryList(actionArray,recoveryArray,n);
     return(j);
+  }
   if (j < 0) {
     sprintf(tmpStr,"executeRuleAction Failed for %s",actionArray[i]);
     rodsLogError(LOG_ERROR,j,tmpStr);
@@ -155,18 +176,22 @@ executeRuleBodyNew(char *action, char *ruleAction, char *ruleRecovery,
       if (!strcmp(recoveryArray[i],"nop") || !strcmp(recoveryArray[i],"null"))
 	continue;
       k  = replaceVariablesNew(action, recoveryArray[i], inMsParamArray, rei);
-      if (k != 0) 
+      if (k != 0) {
+	freeActionRecoveryList(actionArray,recoveryArray,n);
 	return(k);
+      }
       k = executeRuleRecoveryNew(recoveryArray[i], inMsParamArray, rei, reiSaveFlag);
       if (k < 0) {
 	  sprintf(tmpStr,"executeRuleRecovery Failed for %s",recoveryArray[i]);
 	  rodsLogError(LOG_ERROR,k,tmpStr);
+	  freeActionRecoveryList(actionArray,recoveryArray,n);
 	  if (cutFlag== 1)
 	    return(CUT_ACTION_PROCESSED_ERR);
 	  else
 	    return(k);
       }
     }
+    freeActionRecoveryList(actionArray,recoveryArray,n);
     if (cutFlag == 1)
       return(CUT_ACTION_PROCESSED_ERR);
     else
@@ -241,8 +266,10 @@ executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery,
       break;
     }
     j  = replaceVariablesNew(action, actionArray[i], inMsParamArray, rei);
-    if (j != 0) 
+    if (j != 0) {
+      freeActionRecoveryList(actionArray,recoveryArray,n);
       return(j);    
+    }
     /*** RAJA June 20, 2008 -- changed to executeRuleActionNew ***
     j = executeMyRuleAction(actionArray[i], inMsParamArray, rei, reiSaveFlag);
     *** RAJA June 20, 2008 -- changed to executeRuleActionNew ***/
@@ -250,10 +277,14 @@ executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery,
     if (j < 0) 
       break;
   }
-  if (j == BREAK_ACTION_ENCOUNTERED_ERR)
+  if (j == BREAK_ACTION_ENCOUNTERED_ERR) {
+    freeActionRecoveryList(actionArray,recoveryArray,n);
     return(j);
-  if (j == RETRY_WITHOUT_RECOVERY_ERR)
+  }
+  if (j == RETRY_WITHOUT_RECOVERY_ERR) {
+    freeActionRecoveryList(actionArray,recoveryArray,n);
     return(j);
+  }
   if (j < 0) {
     sprintf(tmpStr,"executeMyRuleBody: executeRuleAction Failed for %s",actionArray[i]);
     rodsLogError(LOG_ERROR,j,tmpStr);
@@ -262,8 +293,10 @@ executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery,
       if (!strcmp(recoveryArray[i],"nop") || !strcmp(recoveryArray[i],"null"))
 	continue;
       k  = replaceVariablesNew(action, recoveryArray[i], inMsParamArray, rei);
-      if (k != 0) 
+      if (k != 0) {
+	freeActionRecoveryList(actionArray,recoveryArray,n);
 	return(k);
+      }
       /*** RAJA June 20, 2008 -- changed to executeMyRuleRecovery ***
       k = executeMyRuleRecovery(recoveryArray[i], inMsParamArray, rei, reiSaveFlag);
       *** RAJA June 20, 2008 -- changed to executeMyRuleRecovery ***/
@@ -271,17 +304,20 @@ executeMyRuleBody(char *action, char *ruleAction, char *ruleRecovery,
       if (k < 0) {
 	  sprintf(tmpStr,"executeMyRuleRecovery Failed for %s",recoveryArray[i]);
 	  rodsLogError(LOG_ERROR,k,tmpStr);
+	  freeActionRecoveryList(actionArray,recoveryArray,n);
 	  if (cutFlag== 1)
 	    return(CUT_ACTION_PROCESSED_ERR);
 	  else
 	    return(k);
       }
     }
+    freeActionRecoveryList(actionArray,recoveryArray,n);
     if (cutFlag == 1)
       return(CUT_ACTION_PROCESSED_ERR);
     else
       return(j);
   }
+  freeActionRecoveryList(actionArray,recoveryArray,n);
   return(0);
 }
 
