@@ -86,7 +86,11 @@ mkdirR (char *startDir, char *destDir, int mode)
     int startLen;
     int pathLen, tmpLen;
     char tmpPath[MAX_NAME_LEN];
+#ifndef windows_platform
     struct stat statbuf;
+#else
+	struct irodsntstat statbuf;
+#endif
 
     startLen = strlen (startDir);
     pathLen = strlen (destDir);
@@ -96,7 +100,11 @@ mkdirR (char *startDir, char *destDir, int mode)
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
+#ifndef windows_platform
 	if ((status = stat (tmpPath, &statbuf)) >= 0) break;
+#else
+	if ((status = iRODSNt_stat(tmpPath, &statbuf)) >= 0) break;
+#endif
         if (status >= 0) {
 	    break;
         }
