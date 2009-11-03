@@ -225,11 +225,19 @@ obfRmPw(int opt)
    system (NFS on a VM host, for example), it would fail. */
 int
 obfiSetTimeFromFile(int fd) {
+#ifndef windows_platform
    struct stat statBuf;
+#else
+	struct irodsntstat statBuf;
+#endif
    int wval, fval, lval;  
    wval = write(fd," ",1);
    if (wval != 1) return FILE_WRITE_ERR;
+#ifndef windows_platform
    fval = fstat(fd, &statBuf);
+#else
+   fval = _fstat64(fd, &statBuf);
+#endif
    if (fval<0) {
       timeVal=0;
       return UNABLE_TO_STAT_FILE;
@@ -338,10 +346,19 @@ int obfTempOps(int tmpOpt)
 int
 obfiGetTv(char *fileName)
 {
+#ifndef windows_platform
    struct stat statBuf;
+#else
+	struct irodsntstat statBuf;
+#endif
    int fval;
 
+#ifndef windows_platform
    fval = stat(fileName,&statBuf); 
+#else
+   fval = iRODSNt_stat(fileName,&statBuf);
+#endif
+
    if (fval<0) {
       timeVal=0;
       return UNABLE_TO_STAT_FILE;
