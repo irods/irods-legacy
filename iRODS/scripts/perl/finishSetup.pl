@@ -1133,12 +1133,26 @@ sub configureIrodsServer
 		    mkdir( $userIrodsDir, 0700 );
 		}
 
+		# Set the four key irods user env variables so iinit
+		# will not attempt to create .irodsEnv (and prompt and
+		# hang).  The .irodsEnv is created properly later.
+		$ENV{"irodsHost"}=$thisHost;
+		$ENV{"irodsPort"}=$IRODS_PORT;
+		$ENV{"irodsUserName"}=$IRODS_ADMIN_NAME;
+		$ENV{"irodsZone"}=$ZONE_NAME;
+
 		printStatus( "Running 'iinit' to enable server to server connections...\n" );
 		printLog( "Running 'iinit' to enable server to server connections...\n" );
 		my ($status,$output) = run( "$iinit $IRODS_ADMIN_PASSWORD" );
 
 		printStatus( "Using ICAT-enabled server on '$IRODS_ICAT_HOST'\n" );
 		printLog( "Using ICAT-enabled server on '$IRODS_ICAT_HOST'\n" );
+
+		# Unset environment variables temporarily set above.
+		delete $ENV{"irodsHost"};
+		delete $ENV{"irodsPort"};
+		delete $ENV{"irodsUserName"};
+		delete $ENV{"irodsZone"};
 		return;
 	}
 
