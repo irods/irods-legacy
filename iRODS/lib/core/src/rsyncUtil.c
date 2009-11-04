@@ -443,7 +443,7 @@ dataObjInp_t *dataObjOprInp)
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "rsyncCollUtil: rsyncDataObjUtil failed for %s. status = %d",
-                  srcChildPath, status);
+                  mySrcPath.outPath, status);
                 /* need to set global error here */
                 savedStatus = status;
                 status = 0;
