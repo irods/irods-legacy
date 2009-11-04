@@ -88,10 +88,12 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     } else {
         accessPerm = ACCESS_READ_OBJECT;
     }
+#if 0
     /* query rcat for resource info and sort it */
 
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
+#endif
 
     initReiWithDataObjInp (&rei, rsComm, dataObjInp);
     status = applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
@@ -127,9 +129,13 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
           NULL, transStat, NULL, oldDataObjInfoHead);
         freeAllDataObjInfo (dataObjInfoHead);
         freeAllDataObjInfo (oldDataObjInfoHead);
-        freeAllRescGrpInfo (myRescGrpInfo);
+        /* freeAllRescGrpInfo (myRescGrpInfo); */
 	return status;
     }
+
+    /* query rcat for resource info and sort it */
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    if (status < 0) return status;
 
     if (getValByKey (&dataObjInp->condInput, BACKUP_RESC_NAME_KW) != NULL) {
 	backupFlag = 1;
