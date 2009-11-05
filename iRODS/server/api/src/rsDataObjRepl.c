@@ -77,6 +77,8 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     int multiCopyFlag;
     char *accessPerm;
     int backupFlag;
+    int allFlag;
+    int savedStatus = 0;
 
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	accessPerm = NULL;
@@ -126,8 +128,14 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         if (status < 0) return status;
 
 	/* update old repl to new repl */
+	status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,
+	  oldDataObjInfoHead, transStat, NULL);
+#if 0
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead,
           NULL, transStat, NULL, oldDataObjInfoHead);
+#endif
+        if (status >= 0 && outDataObjInfo != NULL) 
+	    *outDataObjInfo = *oldDataObjInfoHead;
         freeAllDataObjInfo (dataObjInfoHead);
         freeAllDataObjInfo (oldDataObjInfoHead);
         /* freeAllRescGrpInfo (myRescGrpInfo); */
@@ -181,6 +189,36 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 
     /* If destDataObjInfo is not NULL, we will overwrite it. Otherwise
      * replicate to myRescGrpInfo */ 
+
+    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
+        allFlag = 1;
+    } else {
+        allFlag = 0;
+    }
+
+    if (destDataObjInfo != NULL) {
+        status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,
+          destDataObjInfo, transStat, NULL);
+        if (status >= 0) {
+            if (outDataObjInfo != NULL) *outDataObjInfo = *destDataObjInfo;
+	    if (allFlag == 0) {
+		freeAllDataObjInfo (dataObjInfoHead);
+		freeAllDataObjInfo (oldDataObjInfoHead);
+		freeAllRescGrpInfo (myRescGrpInfo);
+		return 0;
+	    }
+	} else {
+	    savedStatus = status;
+	}
+    }
+
+    if (myRescGrpInfo != NULL) {
+	/* new kreplication to the resource group */
+	status = _rsDataObjReplNewCopy (rsComm, dataObjInp, dataObjInfoHead,
+	  myRescGrpInfo, transStat, oldDataObjInfoHead, outDataObjInfo);
+	if (status < 0) savedStatus = status;
+    }
+#if 0
     if (destDataObjInfo != NULL) {
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 
           myRescGrpInfo, transStat, oldDataObjInfoHead, destDataObjInfo);
@@ -191,14 +229,174 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 
           myRescGrpInfo, transStat, oldDataObjInfoHead, outDataObjInfo);
     }
-
+#endif
     freeAllDataObjInfo (dataObjInfoHead);
     freeAllDataObjInfo (oldDataObjInfoHead);
     freeAllRescGrpInfo (myRescGrpInfo);
 
-    return (status);
+    return (savedStatus);
 } 
 
+/* _rsDataObjRepl - Update existing copies from srcDataObjInfoHead to
+ *	destDataObjInfoHead.
+ * Additinal input -
+ *   dataObjInfo_t *srcDataObjInfoHead _ a link list of the src to be
+ *     replicated. Only one will be picked.
+ *   dataObjInfo_t *destDataObjInfoHead -  a link of copies to be updated.
+ *     The dataSize in this struct will also be updated.
+ *   dataObjInfo_t *oldDataObjInfo - this is for destDataObjInfo is a
+ *       COMPOUND_CL resource. If it is, need to find an old copy of
+ *       the resource in the same group so that it can be updated first.
+ */
+
+int
+_rsDataObjReplUpdate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
+transStat_t *transStat, dataObjInfo_t *oldDataObjInfo)
+{
+    dataObjInfo_t *destDataObjInfo;
+    dataObjInfo_t *srcDataObjInfo;
+    int status;
+    int allFlag;
+    int savedStatus = 0;
+    int replCnt = 0;
+
+    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
+        allFlag = 1;
+    } else {
+        allFlag = 0;
+    }
+
+    transStat->bytesWritten = srcDataObjInfoHead->dataSize;
+    destDataObjInfo = destDataObjInfoHead;
+    while (destDataObjInfo != NULL) {
+        if (destDataObjInfo->dataId == 0) {
+            destDataObjInfo = destDataObjInfo->next;
+            continue;
+        }
+
+        /* destDataObj exists */
+        if (getRescClass (destDataObjInfo->rescInfo) == COMPOUND_CL) {
+            /* need to get a copy in cache first */
+            if ((status = getCacheDataInfoOfCompObj (rsComm, dataObjInp,
+              srcDataObjInfoHead, destDataObjInfoHead, destDataObjInfo,
+              oldDataObjInfo, &srcDataObjInfo)) < 0) {
+                return status;
+            }
+            status = _rsDataObjReplS (rsComm, dataObjInp,
+              srcDataObjInfo, NULL, "", destDataObjInfo);
+        } else {
+            srcDataObjInfo = srcDataObjInfoHead;
+            while (srcDataObjInfo != NULL) {
+                /* overwrite a specific destDataObjInfo */
+                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
+                  NULL, "", destDataObjInfo);
+                if (status >= 0) {
+                    break;
+                }
+                srcDataObjInfo = srcDataObjInfo->next;
+            }
+        }
+        if (status >= 0) {
+            transStat->numThreads = dataObjInp->numThreads;
+            if (allFlag == 0) {
+                return 0;
+            }
+        } else {
+            savedStatus = status;
+            replCnt ++;
+        }
+        destDataObjInfo = destDataObjInfo->next;
+    }
+
+    return savedStatus;
+}
+
+/* _rsDataObjReplNewCopy - Replicate new copies to destRescGrpInfo.
+ * Additinal input -
+ *   dataObjInfo_t *srcDataObjInfoHead _ a link list of the src to be
+ *     replicated. Only one will be picked.
+ *   rescGrpInfo_t *destRescGrpInfo - The dest resource info
+ *   dataObjInfo_t *oldDataObjInfo - this is for destDataObjInfo is a
+ *       COMPOUND_CL resource. If it is, need to find an old copy of
+ *       the resource in the same group so that it can be updated first.
+ *   dataObjInfo_t *outDataObjInfo - If it is not NULL, output the last
+ *       dataObjInfo_t of the new copy.
+ */
+
+int
+_rsDataObjReplNewCopy (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
+transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t *outDataObjInfo)
+{
+    dataObjInfo_t *srcDataObjInfo;
+    rescGrpInfo_t *tmpRescGrpInfo;
+    rescInfo_t *tmpRescInfo;
+    int status;
+    int allFlag;
+    int savedStatus = 0;
+
+    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
+        allFlag = 1;
+    } else {
+        allFlag = 0;
+    }
+
+    transStat->bytesWritten = srcDataObjInfoHead->dataSize;
+    tmpRescGrpInfo = destRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+        if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
+            /* need to get a copy in cache first */
+            /* XXXX this will not work because it is likely that
+             * rescGrpName will be blank */
+            if ((status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
+              srcDataObjInfoHead, NULL, tmpRescGrpInfo,
+              oldDataObjInfo, &srcDataObjInfo)) < 0) {
+                return status;
+            }
+            /* have to zero out inpDestDataObjInfo because _rsDataObjReplS
+             * could replicate to the wrong resource */
+            if (outDataObjInfo != NULL)
+                bzero (outDataObjInfo, sizeof (dataObjInfo_t));
+            status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
+            tmpRescInfo, tmpRescGrpInfo->rescGroupName, outDataObjInfo);
+        } else {
+            srcDataObjInfo = srcDataObjInfoHead;
+            while (srcDataObjInfo != NULL) {
+                /* have to zero out outDataObjInfo because _rsDataObjReplS
+                 * could replicate to the wrong resource */
+                if (outDataObjInfo != NULL)
+                    bzero (outDataObjInfo, sizeof (dataObjInfo_t));
+
+                status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
+                  tmpRescInfo, tmpRescGrpInfo->rescGroupName,
+                  outDataObjInfo);
+
+                if (status >= 0) {
+                    break;
+                } else {
+                    savedStatus = status;
+                }
+                srcDataObjInfo = srcDataObjInfo->next;
+            }
+        }
+        if (status >= 0) {
+            transStat->numThreads = dataObjInp->numThreads;
+            if (allFlag == 0) {
+                return 0;
+            }
+        } else {
+            savedStatus = status;
+        }
+        tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+
+    return (savedStatus);
+}
+
+#if 0	/* deplicated */
 /* _rsDataObjRepl - An internal version of rsDataObjRepl with the 
  * Additinal input - 
  *   dataObjInfo_t *srcDataObjInfoHead _ a link list of the src to be 
@@ -334,6 +532,7 @@ dataObjInfo_t *inpDestDataObjInfo)
 
     return (savedStatus);
 }
+#endif
 
 /* _rsDataObjReplS - replicate a single obj 
  *   dataObjInfo_t *srcDataObjInfo - the src to be replicated. 

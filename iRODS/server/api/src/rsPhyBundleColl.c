@@ -224,6 +224,7 @@ char *myRescName, char *phyBunDir, bunReplCacheHeader_t *bunReplCacheHeader)
         return 0; 
     }
 
+    bzero (&dataObjInfo, sizeof (dataObjInfo));
     /* next dataObj. See if we need to replicate */
     if (curSubFileCond->subPhyPath[0] == '\0') {
         /* don't have a good cache copy yet. make one */
