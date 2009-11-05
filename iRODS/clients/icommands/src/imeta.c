@@ -904,10 +904,17 @@ getInput(char *cmdToken[], int maxTokens) {
    int nTokens;
    int tokenFlag; /* 1: start reg, 2: start ", 3: start ' */
    char *cpTokenStart;
+   char *stat;
 
    memset(ttybuf, 0, BIG_STR);
    fputs("imeta>",stdout);
-   fgets(ttybuf, BIG_STR, stdin);
+   stat = fgets(ttybuf, BIG_STR, stdin);
+   if (stat==0) {
+      printf("\n");
+      rcDisconnect(Conn);
+      if (lastCommandStatus != 0) exit(4);
+      exit(0);
+   }
    lenstr=strlen(ttybuf);
    for (i=0;i<maxTokens;i++) {
       cmdToken[i]="";
