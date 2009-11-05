@@ -596,12 +596,12 @@ cllExecSqlWithResult(icatSessionStruct *icss, int *stmtNum, char *sql) {
    int statementNumber;
    char *status;
 
-   if (didBegin==0) {
-      int stat;
-      stat = _cllExecSqlNoResult(icss, "begin", 1);
-      if (stat != SQL_SUCCESS) return(stat);
-   }
-   didBegin=1;
+/* In 2.2 and some versions before, this would call
+   _cllExecSqlNoResult with "begin", similar to how cllExecSqlNoResult
+   does.  But since this function is called for 'select's, this is not
+   needed here, and in fact causes postgres processes to be in the
+   'idle in transaction' state which prevents some operations (such as
+   backup).  So this was removed. */
 
    myHdbc = icss->connectPtr;
    rodsLog(LOG_DEBUG1, sql);
