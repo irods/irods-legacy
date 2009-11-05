@@ -2029,6 +2029,9 @@ svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut)
  * HAVE_GOOD_COPY. Otherwise, trim the resc in the rescGroup so only the one 
  * with no copies are left. The copies required to be overwritten are
  * placed in destDataObjInfo.
+ * A returned value of CAT_NO_ROWS_FOUND mean there is condition in
+ * condInput but none in dataObjInfoHead or oldDataObjInfoHead match
+ * the condition. i.e., no source for the replication
  */ 
 int 
 resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead, 
@@ -2405,6 +2408,8 @@ genQueryInp_t *genQueryInp, genQueryOut_t **genQueryOut)
  * put all DataObjInfo that match condInput into matchedDataObjInfo and
  * matchedOldDataObjInfo. The unmatch one stay in dataObjInfoHead and
  * oldDataObjInfoHead.
+ * A CAT_NO_ROWS_FOUND means there is condition in CondInput, but none 
+ * in dataObjInfoHead or oldDataObjInfoHead matches the condition 
  */ 
 
 int

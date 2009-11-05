@@ -109,6 +109,8 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead,
           accessPerm, 0);
     } else {
+	/* No multiCopy allowed. ignoreCondInput - need to find all copies
+	 * to make sure no multiCopy in the same resource */
         status = getDataObjInfo (rsComm, dataObjInp, &dataObjInfoHead,
           accessPerm, 1);
     }
@@ -118,12 +120,11 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
           "rsDataObjRepl: getDataObjInfo for %s", dataObjInp->objPath);
         return (status);
     }
-
-    status = sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead, 
-      multiCopyFlag);
-    if (status < 0) return status;
-
+    
     if (getValByKey (&dataObjInp->condInput, UPDATE_REPL_KW) != NULL) {
+        status = sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead, 0);
+        if (status < 0) return status;
+
 	/* update old repl to new repl */
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead,
           NULL, transStat, NULL, oldDataObjInfoHead);
@@ -132,6 +133,11 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         /* freeAllRescGrpInfo (myRescGrpInfo); */
 	return status;
     }
+
+    /* if multiCopy allowed, remove old so they won't be overwritten */
+    status = sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead,
+      multiCopyFlag);
+    if (status < 0) return status;
 
     /* query rcat for resource info and sort it */
     status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
@@ -143,6 +149,13 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 	backupFlag = 0;
     }
     if (multiCopyFlag == 0 || backupFlag == 1) {
+	/* if one copy per resource, see if a good copy already exist, 
+	 * If it does, the copy is returned in destDataObjInfo. 
+	 * Otherwise, the copies need to be overwritten is returned
+         * in destDataObjInfo.
+	 * CAT_NO_ROWS_FOUND means there is condition in condInp but has
+	 * no match in dataObjInfoHead or oldDataObjInfoHead for the condition.
+	 * i.e., no source for the repl */
         status = resolveSingleReplCopy (&dataObjInfoHead, &oldDataObjInfoHead,
           &myRescGrpInfo, &destDataObjInfo, &dataObjInp->condInput);
         if (status == HAVE_GOOD_COPY || status == CAT_NO_ROWS_FOUND) {
@@ -155,6 +168,8 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
             freeAllRescGrpInfo (myRescGrpInfo);
 	    if (status == HAVE_GOOD_COPY && backupFlag == 0) {
 		return (SYS_COPY_ALREADY_IN_RESC);
+	    } else if (status < 0) {
+		return status;
 	    } else {
                 return (0);
 	    }
@@ -164,6 +179,8 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     status = applyPreprocRuleForOpen (rsComm, dataObjInp, &dataObjInfoHead);
     if (status < 0) return status;
 
+    /* If destDataObjInfo is not NULL, we will overwrite it. Otherwise
+     * replicate to myRescGrpInfo */ 
     if (destDataObjInfo != NULL) {
         status = _rsDataObjRepl (rsComm, dataObjInp, dataObjInfoHead, 
           myRescGrpInfo, transStat, oldDataObjInfoHead, destDataObjInfo);
@@ -188,16 +205,16 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
  *     replicated. Only one will be picked. 
  *   rescGrpInfo_t *destRescGrpInfo - The dest resource info
  *   dataObjInfo_t *destDataObjInfo - This can be both input and output.
- *      If destDataObjInfo == NULL, dest is new and no output is required.
- *      If destDataObjInfo != NULL:
- *	    If destDataObjInfo->dataId <= 0, no input but put output in
- *	    destDataObjInfo. This is needed by msiSysReplDataObj and
- *	    msiStageDataObj which need a copy of destDataObjInfo.
- *	    If destDataObjInfo->dataId > 0, the dest repl exists. Need to
- *          overwrite it. 
  *    dataObjInfo_t *oldDataObjInfo - this is for destDataObjInfo is a
  *       COMPOUND_CL resource. If it is, need to find an old copy of
  *	 the resource in the same group so that it can be updated first.
+ *   If inpDestDataObjInfo == NULL, dest is new and no output is required.
+ *   If inpDestDataObjInfo != NULL:
+ *       If inpDestDataObjInfo->dataId <= 0, no input but put output in
+ *       inpDestDataObjInfo. This is needed by msiSysReplDataObj and
+ *       msiStageDataObj which need a copy of destDataObjInfo.
+ *       If inpDestDataObjInfo->dataId > 0, the dest repl exists. Need to
+ *       overwrite it.
  */
 
 int
@@ -263,7 +280,7 @@ dataObjInfo_t *inpDestDataObjInfo)
 	destDataObjInfo = destDataObjInfo->next;
     }
 	    
-    if (replCnt > 0) return savedStatus;
+    if (replCnt > 0 && allFlag == 0) return savedStatus;
 
     /* falls through here. destDataObj does not exist */
     tmpRescGrpInfo = destRescGrpInfo;
@@ -278,11 +295,20 @@ dataObjInfo_t *inpDestDataObjInfo)
               oldDataObjInfo, &srcDataObjInfo)) < 0) {
                 return status;
             }
+	    /* have to zero out inpDestDataObjInfo because _rsDataObjReplS
+	     * could replicate to the wrong resource */
+	    if (inpDestDataObjInfo != NULL)
+		bzero (inpDestDataObjInfo, sizeof (dataObjInfo_t));
 	    status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
             tmpRescInfo, tmpRescGrpInfo->rescGroupName, inpDestDataObjInfo);
 	} else {
             srcDataObjInfo = srcDataObjInfoHead;
             while (srcDataObjInfo != NULL) {
+                /* have to zero out inpDestDataObjInfo because _rsDataObjReplS
+                 * could replicate to the wrong resource */
+                if (inpDestDataObjInfo != NULL)
+                    bzero (inpDestDataObjInfo, sizeof (dataObjInfo_t));
+
                 status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
 	          tmpRescInfo, tmpRescGrpInfo->rescGroupName, 
 		  inpDestDataObjInfo);
