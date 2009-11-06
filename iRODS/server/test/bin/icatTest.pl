@@ -426,8 +426,8 @@ runCmd(0, "iadmin moduser $U2 password 'abc'");
 runCmd(0, "iadmin moduser $U2 password '1234'");
 runCmd(2, "iadmin moduser $UA password '1234'");
 
-# Auth as non-admin user
-
+# Auth as non-admin user and test groupadmin SQL
+runCmd(0, "iadmin moduser $U2 type groupadmin");
 unlink($F2);
 $MYHOME=$ENV{'HOME'};
 $authFile="$MYHOME/.irods/.irodsA";
@@ -439,6 +439,7 @@ runCmd(0, "mv $authFile $F2"); # save the auth file
 runCmd(2, "iinit 1234");
 $ENV{'irodsUserName'}=$U2; 
 runCmd(0, "iinit 1234");
+runCmd(2, "iadmin atg g1 user3"); # test SQL (just needs to be groupadmin to)
 runCmd(0, "iexit full");
 runCmd(0, "mv $F2 $authFile"); # restore auth file
 delete $ENV{'irodsUserName'};

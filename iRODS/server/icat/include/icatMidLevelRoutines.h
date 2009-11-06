@@ -182,6 +182,9 @@ rodsLong_t cmlCheckDataObjOnly( char *dirName, char *dataName, char *userName,
 rodsLong_t cmlCheckDataObjOwn( char *dirName, char *dataName, char *userName,
 			       char *userZone, icatSessionStruct *icss);
 
+int cmlCheckGroupAdminAccess(char *userName, char *userZone, 
+			     char *groupName, icatSessionStruct *icss);
+
 int cmlDebug(int mode);
 
 int cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser, 

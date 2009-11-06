@@ -29,12 +29,12 @@ rsUserAdmin (rsComm_t *rsComm, userAdminInp_t *userAdminInp )
     }
     else {
        status = rcUserAdmin(rodsServerHost->conn,
-			       userAdminInp);
+                            userAdminInp);
     }
 
     if (status < 0) { 
        rodsLog (LOG_NOTICE,
-		"rsUserAdmin: rcUserAdmin failed");
+                "rsUserAdmin: rcUserAdmin failed");
     }
     return (status);
 }
@@ -43,66 +43,97 @@ rsUserAdmin (rsComm_t *rsComm, userAdminInp_t *userAdminInp )
 int
 _rsUserAdmin(rsComm_t *rsComm, userAdminInp_t *userAdminInp )
 {
-    int status;
+    int status, status2;
 
     char *args[MAX_NUM_OF_ARGS_IN_ACTION];
-    int i, argc;
+    char errString1[]=
+       "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d";
+    char errString2[]=
+       "rsUserAdmin:acPreProcForModifyUserGroup error for %s and option %s,stat=%d";
+    char errString3[]=
+       "rsUserAdmin:acPostProcForModifyUserGroup error for %s and option %s,stat=%d";
+
+    int argc;
     ruleExecInfo_t rei2;
  
     memset ((char*)&rei2, 0, sizeof (ruleExecInfo_t));
     rei2.rsComm = rsComm;
     if (rsComm != NULL) {
-      rei2.uoic = &rsComm->clientUser;
-      rei2.uoip = &rsComm->proxyUser;
+       rei2.uoic = &rsComm->clientUser;
+       rei2.uoip = &rsComm->proxyUser;
     }
 
     rodsLog (LOG_DEBUG,
-	     "_rsUserAdmin arg0=%s", 
-	     userAdminInp->arg0);
+             "_rsUserAdmin arg0=%s", 
+             userAdminInp->arg0);
 
     if (strcmp(userAdminInp->arg0,"userpw")==0) {
-
-      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-      args[0] = userAdminInp->arg1; /* username */
-      args[1] = userAdminInp->arg2; /* option */ 
-      args[2] = userAdminInp->arg3; /* newValue */
-      argc = 3;
-      i =  applyRuleArg("acPreProcForModifyUser",args,argc, &rei2, NO_SAVE_REI);
-      if (i < 0) {
-	if (rei2.status < 0) {
-	  i = rei2.status;
-	}
-	rodsLog (LOG_ERROR,
-		 "rsUserAdmin:acPreProcForModifyUser error for %s and option %s,stat=%d",
-		 userAdminInp->arg1,userAdminInp->arg2, i);
-	return i;
-      }
-      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-
-       status = chlModUser(rsComm, 
-			   userAdminInp->arg1,
-			   userAdminInp->arg2,
-			   userAdminInp->arg3);
-       if (status != 0) chlRollback(rsComm);
-       return(status);
-
-      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-       i =  applyRuleArg("acPostProcForModifyUser",args,argc, &rei2, NO_SAVE_REI);
-       if (i < 0) {
-	 if (rei2.status < 0) {
-	   i = rei2.status;
-	 }
-	 rodsLog (LOG_ERROR,
-		 "rsUserAdmin:acPostProcForModifyUser error for %s and option %s,stat=%d",
-		 userAdminInp->arg1,userAdminInp->arg2, i);
-	 return i;
+       args[0] = userAdminInp->arg1; /* username */
+       args[1] = userAdminInp->arg2; /* option */ 
+       args[2] = userAdminInp->arg3; /* newValue */
+       argc = 3;
+       status2 = applyRuleArg("acPreProcForModifyUser",
+                              args,argc, &rei2, NO_SAVE_REI);
+       if (status2 < 0) {
+          if (rei2.status < 0) {
+             status2 = rei2.status;
+          }
+          rodsLog (LOG_ERROR,
+                   userAdminInp->arg1,userAdminInp->arg2, status2);
+          return status2;
        }
- 
-      /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
+       status = chlModUser(rsComm, 
+                           userAdminInp->arg1,
+                           userAdminInp->arg2,
+                           userAdminInp->arg3);
+       if (status != 0) chlRollback(rsComm);
 
-
+       status2 = applyRuleArg("acPostProcForModifyUser",args,argc, 
+                              &rei2,NO_SAVE_REI);
+       if (status2 < 0) {
+          if (rei2.status < 0) {
+             status2 = rei2.status;
+          }
+          rodsLog (LOG_ERROR, errString1,
+                   userAdminInp->arg1,userAdminInp->arg2, status2);
+          return status2;
+       }
+       return(status);
     }
+    if (strcmp(userAdminInp->arg0,"modify")==0) {
+       if (strcmp(userAdminInp->arg1,"group")==0) {
+          args[0] = userAdminInp->arg2; /* groupname */
+          args[1] = userAdminInp->arg3; /* option */
+          args[2] = userAdminInp->arg4; /* username */
+          args[3] = userAdminInp->arg5; /* zonename */
+          argc = 4;
+          status2 = applyRuleArg("acPreProcForModifyUserGroup",
+                                 args,argc, &rei2, NO_SAVE_REI);
+          if (status2 < 0) {
+             if (rei2.status < 0) {
+                status2 = rei2.status;
+             }
+             rodsLog (LOG_ERROR, errString2,args[0],args[1], status2);
+             return status2;
+          }
 
+          status = chlModGroup(rsComm, userAdminInp->arg2,
+                               userAdminInp->arg3, userAdminInp->arg4,
+                               userAdminInp->arg5);
+          if (status == 0) {
+             status2 = applyRuleArg("acPostProcForModifyUserGroup",args,argc, 
+                               &rei2, NO_SAVE_REI);
+             if (status2 < 0) {
+                if (rei2.status < 0) {
+                   status2 = rei2.status;
+                }
+                rodsLog (LOG_ERROR, errString3, args[0],args[1], status2);
+                return status2;
+             }
+          }
+          return(status);
+       }
+    } 
     return(CAT_INVALID_ARGUMENT);
-} 
+}
 #endif

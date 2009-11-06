@@ -3864,11 +3864,13 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
       return (CAT_INVALID_ARGUMENT);
    }
 
-   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
-   }
-   if (rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH ||
+       rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	  int status2;
+	  status2  = cmlCheckGroupAdminAccess(
+	     rsComm->clientUser.userName,
+	     rsComm->clientUser.rodsZone, groupName, &icss);
+	  if (status2) return(status2);
    }
 
    status = getLocalZone();

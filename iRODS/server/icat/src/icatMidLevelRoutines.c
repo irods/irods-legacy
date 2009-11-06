@@ -901,6 +901,35 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
    return(status);
 }
 
+/* 
+ Check that the user has permission to add or remover a user to a
+ group (other than rodsadmin).  The user must be of type 'groupadmin'
+ and a member of the specified group.
+ */
+int cmlCheckGroupAdminAccess(char *userName, char *userZone, 
+			     char *groupName, icatSessionStruct *icss) {
+   int status;
+   char sVal[MAX_NAME_LEN];
+   rodsLong_t iVal;
+
+   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 1 ");
+
+   status = cmlGetStringValueFromSql(
+      "select user_id from r_user_main where user_name=? and zone_name=? and user_type_name='groupadmin'",
+      sVal, MAX_NAME_LEN, userName, userZone, 0, icss);
+   if (status==CAT_NO_ROWS_FOUND) return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   if (status) return(status);
+
+   if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 ");
+
+   status = cmlGetIntegerValueFromSql(
+      "select group_user_id from r_user_group where user_id=? and group_user_id = (select user_id from r_user_main where user_type_name='rodsgroup' and user_name=?)",
+      &iVal, sVal,  groupName, 0, 0, 0, icss);
+   if (status==CAT_NO_ROWS_FOUND) return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   if (status) return(status);
+   return(0);
+}
+
 /*********************************************************************
 The following are the auditing functions, different forms.  cmlAudit1,
 2, 3, 4, and 5 each audit (record activity in the audit table) but
