@@ -66,6 +66,9 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
         }
         conn->transStat.numThreads = portalOprOut->numThreads;
         if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
+            printf ("From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
+              portalOprOut->numThreads, portalOprOut->portList.hostAddr,
+              portalOprOut->portList.portNum, portalOprOut->portList.cookie);
             veryVerbose = 2;
         } else {
             veryVerbose = 0;
@@ -85,6 +88,11 @@ rcDataObjGet (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
             status = getFile (conn, portalOprOut->l1descInx,
               locFilePath, dataObjInp->dataSize);
         } else {
+        if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
+            printf ("From server: NumThreads=%d, addr:%s, port:%d, cookie=%d\n",
+              portalOprOut->numThreads, portalOprOut->portList.hostAddr,
+              portalOprOut->portList.portNum, portalOprOut->portList.cookie);
+        }
             /* some sanity check */
             if (portalOprOut->numThreads >= 20 * MAX_NUM_TRAN_THR) {
                 rcOprComplete (conn, SYS_INVALID_PORTAL_OPR);
