@@ -30,3 +30,4 @@
 {"msiGetCollectionSize",		3,		(funcPtr) msiGetCollectionSize},
 {"msiStructFileBundle",			4,		(funcPtr) msiStructFileBundle},
 {"msiCollectionSpider",			4,		(funcPtr) msiCollectionSpider},
+{"msiFlagDataObjwithAVU",		3,		(funcPtr) msiFlagDataObjwithAVU},

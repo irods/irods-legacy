@@ -166,6 +166,8 @@ msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecI
 	char *targetPathStr;				/* for parsing input path */
 	rodsLong_t data_id;					/* data object ID */
 	
+	char id_str[LONG_NAME_LEN];			/* placeholder for temporary mod */
+	
 	
 	
 	/* For testing mode when used with irule --test */
@@ -209,8 +211,16 @@ msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecI
     	rei->status = 0;
     }
 
+
+	
+	/***********  ANT1 TMP MOD **************/
+	snprintf(id_str, LONG_NAME_LEN, "%d", (int)data_id);	
+	fillStrInMsParam (dataId, id_str);
+	/****************************************/
+
+
 	/* Return object ID and operation status */
-	fillIntInMsParam (dataId, (int)data_id);
+//	fillIntInMsParam (dataId, (int)data_id);
 	fillIntInMsParam (status, rei->status);
 
 	/* Done */

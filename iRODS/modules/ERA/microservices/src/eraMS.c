@@ -2421,3 +2421,93 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
 }
 
 
+
+/**
+ * \fn msiFlagDataObjWithAVU
+ * \author  Antoine de Torcy
+ * \date   2009-11-05
+ * \brief Flags a data object with an AVU.
+ * \note  This microservice flags a data object by adding it an AVU.
+ *        The attribute name is the flag and the value is 1. No unit.
+ * \param[in] 
+ *    dataObj - a DataObjInp_MS_T or a STR_MS_T with the target object's path.
+ *	  flag - A STR_MS_T with the flag name.
+ * \param[out] 
+ *    status - an INT_MS_T containing the operation status.
+ * \return integer
+ * \retval 0 on success
+ * \sa
+ * \post
+ * \pre
+ * \bug  no known bugs
+**/
+int
+msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ruleExecInfo_t *rei)
+{
+	/* for parsing msParams */
+	dataObjInp_t dataObjInp, *myDataObjInp;
+	char *flagStr;
+	
+	/* for new AVU creation */
+	modAVUMetadataInp_t modAVUMetadataInp;
+	
+
+	/*********************************  USUAL INIT PROCEDURE **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiFlagDataObjWithAVU")
+
+
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiFlagDataObjWithAVU: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/********************************** PARSE INPUT **************************************/
+
+	/* Get path of target object */
+	rei->status = parseMspForDataObjInp (dataObj, &dataObjInp, &myDataObjInp, 0);
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiFlagDataObjWithAVU: input dataObj error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+	/* Get flag string */
+	flagStr = parseMspForStr(flag);
+	if (!flagStr || !strlen(flagStr))
+	{
+		rodsLog (LOG_ERROR, "msiFlagDataObjWithAVU: flag string is empty or NULL.");
+		return (USER__NULL_INPUT_ERR);		
+	}
+
+
+	/********************************** API CALL ******************************************/
+
+	/* init modAVU input */
+	memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
+	modAVUMetadataInp.arg0 = "add";
+	modAVUMetadataInp.arg1 = "-d";
+	modAVUMetadataInp.arg2 = myDataObjInp->objPath;
+	modAVUMetadataInp.arg3 = flagStr;
+	modAVUMetadataInp.arg4 = "1";
+	modAVUMetadataInp.arg5 = "";  /* Will be NULL once bug is fixed */
+	
+	/* invoke rsModAVUMetadata() */
+	rei->status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+	
+	
+	/********************************** DONE ******************************************/
+
+	/* Return operation status */
+	fillIntInMsParam (status, rei->status);
+	return (rei->status);
+}
+
+
+
+
+
