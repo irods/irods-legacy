@@ -92,7 +92,7 @@ collOprStat_t **collOprStat)
 	    dataObjInp.condInput = collReplInp->condInput;
 
     	    memset (&myTransStat, 0, sizeof (myTransStat));
-            status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp,
+            status = _rsDataObjRepl (rsComm, &dataObjInp,
 	      &myTransStat, NULL);
 
             if (status == SYS_COPY_ALREADY_IN_RESC) {

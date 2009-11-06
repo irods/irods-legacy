@@ -461,7 +461,7 @@ char *rescName, int adminFlag, dataObjInfo_t *outCacheObjInfo)
     if (adminFlag > 0) 
         addKeyVal (&dataObjInp.condInput, IRODS_ADMIN_KW, "");
 
-    status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp, &transStat,
+    status = _rsDataObjRepl (rsComm, &dataObjInp, &transStat,
       outCacheObjInfo);
     clearKeyVal (&dataObjInp.condInput);
     return status;

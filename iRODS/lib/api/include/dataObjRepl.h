@@ -24,13 +24,24 @@ int
 rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 transStat_t **transStat);
 int
-rsDataObjReplWithOutDataObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+_rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 transStat_t *transStat, dataObjInfo_t *outDataObjInfo);
+#if 0
 int
 _rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
 transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
 dataObjInfo_t *destDataObjInfo);
+#endif
+int
+_rsDataObjReplUpdate (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, dataObjInfo_t *destDataObjInfoHead,
+transStat_t *transStat, dataObjInfo_t *oldDataObjInfo);
+int
+_rsDataObjReplNewCopy (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t *srcDataObjInfoHead, rescGrpInfo_t *destRescGrpInfo,
+transStat_t *transStat, dataObjInfo_t *oldDataObjInfo,
+dataObjInfo_t *outDataObjInfo);
 int
 _rsDataObjReplS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, 

@@ -59,13 +59,13 @@ transStat_t **transStat)
     *transStat = malloc (sizeof (transStat_t));
     memset (*transStat, 0, sizeof (transStat_t));
 
-    status = rsDataObjReplWithOutDataObj (rsComm, dataObjInp, 
+    status = _rsDataObjRepl (rsComm, dataObjInp, 
      *transStat, NULL); 
     return (status);
 }
     
 int
-rsDataObjReplWithOutDataObj (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+_rsDataObjRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 {
     int status;
@@ -1101,7 +1101,7 @@ dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr)
     addKeyVal (&dataObjInp.condInput, REPL_NUM_KW, tmpStr);
     addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, destRescName);
 
-    status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp, &transStat, 
+    status = _rsDataObjRepl (rsComm, &dataObjInp, &transStat, 
       myDataObjInfo);
 
     /* fix mem leak */
@@ -1127,7 +1127,7 @@ dataObjInfo_t *outCacheObjInfo)
     dataObjInp_t dataObjInp;
 
     if (getRescClass (compObjInfo->rescInfo) != COMPOUND_CL) return 0;
-    /* this check prevent infinite rsDataObjReplWithOutDataObj call */
+    /* this check prevent infinite _rsDataObjRepl call */
     if (strlen (compObjInfo->rescGroupName) == 0)
 	return SYS_NO_CACHE_RESC_IN_GRP;
 
@@ -1149,7 +1149,7 @@ dataObjInfo_t *outCacheObjInfo)
     addKeyVal (&dataObjInp.condInput, REPL_NUM_KW, tmpStr);
     addKeyVal (&dataObjInp.condInput, DEST_RESC_NAME_KW, cacheResc->rescName);
 
-    status = rsDataObjReplWithOutDataObj (rsComm, &dataObjInp, &transStat,
+    status = _rsDataObjRepl (rsComm, &dataObjInp, &transStat,
       outCacheObjInfo);
 
     clearKeyVal (&dataObjInp.condInput);
