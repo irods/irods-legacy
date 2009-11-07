@@ -123,7 +123,7 @@ transStat_t *transStat, int multiCopyFlag)
 	    /* use _rsDataObjReplS for the phymv */ 
 	    dataObjInp->oprType = PHYMV_OPR;	/* should be set already */
             status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-              tmpRescInfo, tmpRescGrpInfo->rescGroupName, NULL);
+              tmpRescInfo, tmpRescGrpInfo->rescGroupName, NULL, 0);
 
 	    if (multiCopyFlag == 0) {
 		if (status >= 0) {

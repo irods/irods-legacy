@@ -1174,14 +1174,17 @@ chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo)
 
 int
 matchAndTrimRescGrp (dataObjInfo_t **dataObjInfoHead, 
-rescGrpInfo_t **rescGrpInfoHead, int trimjFlag)
+rescGrpInfo_t **rescGrpInfoHead, int trimjFlag, 
+dataObjInfo_t **trimmedDataObjInfo)
 {
     rescGrpInfo_t *tmpRescGrpInfo;
     rescGrpInfo_t *prevRescGrpInfo;
     rescInfo_t *tmpRescInfo;
-    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
+    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo, *nextDataObjInfo;
     int matchFlag; 
     char rescGroupName[NAME_LEN];
+
+    if (trimmedDataObjInfo != NULL) *trimmedDataObjInfo = NULL;
 
     if (*rescGrpInfoHead != NULL) {
 	rstrcpy (rescGroupName, (*rescGrpInfoHead)->rescGroupName, NAME_LEN);
@@ -1193,6 +1196,7 @@ rescGrpInfo_t **rescGrpInfoHead, int trimjFlag)
     prevDataObjInfo = NULL;
     while (tmpDataObjInfo != NULL) {
 	matchFlag = 0;
+	nextDataObjInfo = tmpDataObjInfo->next;
         tmpRescGrpInfo = *rescGrpInfoHead;
 	prevRescGrpInfo = NULL;
         while (tmpRescGrpInfo != NULL) {
@@ -1231,7 +1235,11 @@ rescGrpInfo_t **rescGrpInfoHead, int trimjFlag)
                 } else {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
                 }
-                free (tmpDataObjInfo);
+                if (trimmedDataObjInfo != NULL) {
+                    queDataObjInfo (trimmedDataObjInfo, tmpDataObjInfo, 1, 0);
+                } else {
+                    free (tmpDataObjInfo); 
+		}
             } else {
 		prevDataObjInfo = tmpDataObjInfo;
 	    }
@@ -1247,12 +1255,16 @@ rescGrpInfo_t **rescGrpInfoHead, int trimjFlag)
                 } else {
                     prevDataObjInfo->next = tmpDataObjInfo->next;
                 }
-		free (tmpDataObjInfo);
+                if (trimmedDataObjInfo != NULL) {
+                    queDataObjInfo (trimmedDataObjInfo, tmpDataObjInfo, 1, 0);
+                } else {
+		    free (tmpDataObjInfo);
+		}
 	    } else {
 	        prevDataObjInfo = tmpDataObjInfo;
 	    }
 	}
-        tmpDataObjInfo = tmpDataObjInfo->next;
+        tmpDataObjInfo = nextDataObjInfo;
     }
 
     return (0);
@@ -2070,7 +2082,7 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
     } else {
         /* target resource is a resource group with multi resources */
         matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
-	  TRIM_MATCHED_RESC_INFO);
+	  TRIM_MATCHED_RESC_INFO, NULL);
         if (*destRescGrpInfo == NULL) {
             /* have a good copy in all resc in resc group */
             return (HAVE_GOOD_COPY);
@@ -2078,19 +2090,20 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
     }
     /* handle the old dataObj */
     if (getValByKey (condInput, ALL_KW) != NULL) {
+	dataObjInfo_t *trimmedDataObjInfo = NULL;
 	/* replicate to all resc. trim the resc that has a match and
 	 * the DataObjInfo that does not have a match */ 
 	matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
-	  TRIM_MATCHED_RESC_INFO|TRIM_UNMATCHED_OBJ_INFO);
+	  TRIM_MATCHED_RESC_INFO|TRIM_UNMATCHED_OBJ_INFO, &trimmedDataObjInfo);
 	*destDataObjInfo = *oldDataObjInfoHead;
-	*oldDataObjInfoHead = NULL;
+	*oldDataObjInfoHead = trimmedDataObjInfo;
     } else {
         *destDataObjInfo = chkCopyInResc (*oldDataObjInfoHead, 
 	  *destRescGrpInfo);
         if (*destDataObjInfo != NULL) {
             /* see if there is any resc that is not used */
             matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
-	      TRIM_MATCHED_RESC_INFO);
+	      TRIM_MATCHED_RESC_INFO, NULL);
             if (*destRescGrpInfo != NULL) {
                 /* just creat a new one in myRescGrpInfo */
                 *destDataObjInfo = NULL;
@@ -2126,14 +2139,14 @@ keyValPair_t *condInput, int multiCopyFlag)
 
     if (multiCopyFlag) {
         matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo,
-          REQUE_MATCHED_RESC_INFO);
+          REQUE_MATCHED_RESC_INFO, NULL);
         matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo,
-          REQUE_MATCHED_RESC_INFO);
+          REQUE_MATCHED_RESC_INFO, NULL);
     } else {
         matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
-          TRIM_MATCHED_RESC_INFO|TRIM_MATCHED_OBJ_INFO);
+          TRIM_MATCHED_RESC_INFO|TRIM_MATCHED_OBJ_INFO, NULL);
         matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
-          TRIM_MATCHED_RESC_INFO);
+          TRIM_MATCHED_RESC_INFO, NULL);
     }
 
     if (*destRescGrpInfo == NULL) {

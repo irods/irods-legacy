@@ -468,10 +468,11 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
     if (L1desc[l1descInx].replRescInfo != NULL && 
       getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
+	/* repl a new copy */
 	L1desc[l1descInx].dataObjInp->dataSize = myDataObjInfo->dataSize;
 	status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp, 
 	  myDataObjInfo, L1desc[l1descInx].replRescInfo, 
-	  myDataObjInfo->rescGroupName, NULL);
+	  myDataObjInfo->rescGroupName, NULL, 0);
 	if (status < 0) {
             rodsLog (LOG_ERROR,
               "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
@@ -481,6 +482,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     } else if (L1desc[l1descInx].replDataObjInfo != NULL &&
       getRescClass (L1desc[l1descInx].replDataObjInfo->rescInfo) == 
       COMPOUND_CL) {
+	/* update an existing copy */
 	L1desc[l1descInx].dataObjInp->dataSize = myDataObjInfo->dataSize;
 	if (L1desc[l1descInx].bytesWritten > 0)
 	    myDataObjInfo->replStatus |= NEWLY_CREATED_COPY;
@@ -488,7 +490,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	  myDataObjInfo->replStatus;
         status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp,
           myDataObjInfo, L1desc[l1descInx].replDataObjInfo->rescInfo,
-          myDataObjInfo->rescGroupName, L1desc[l1descInx].replDataObjInfo);
+          myDataObjInfo->rescGroupName, L1desc[l1descInx].replDataObjInfo, 1);
         if (status < 0) {
             rodsLog (LOG_ERROR,
               "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",

@@ -198,7 +198,7 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 
     if (destDataObjInfo != NULL) {
         status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,
-          destDataObjInfo, transStat, NULL);
+          destDataObjInfo, transStat, oldDataObjInfoHead);
         if (status >= 0) {
             if (outDataObjInfo != NULL) *outDataObjInfo = *destDataObjInfo;
 	    if (allFlag == 0) {
@@ -284,13 +284,13 @@ transStat_t *transStat, dataObjInfo_t *oldDataObjInfo)
                 return status;
             }
             status = _rsDataObjReplS (rsComm, dataObjInp,
-              srcDataObjInfo, NULL, "", destDataObjInfo);
+              srcDataObjInfo, NULL, "", destDataObjInfo, 1);
         } else {
             srcDataObjInfo = srcDataObjInfoHead;
             while (srcDataObjInfo != NULL) {
                 /* overwrite a specific destDataObjInfo */
                 status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-                  NULL, "", destDataObjInfo);
+                  NULL, "", destDataObjInfo, 1);
                 if (status >= 0) {
                     break;
                 }
@@ -356,23 +356,26 @@ dataObjInfo_t *outDataObjInfo)
               oldDataObjInfo, &srcDataObjInfo)) < 0) {
                 return status;
             }
+#if 0	/* not needed with updateFlag */
             /* have to zero out inpDestDataObjInfo because _rsDataObjReplS
              * could replicate to the wrong resource */
             if (outDataObjInfo != NULL)
                 bzero (outDataObjInfo, sizeof (dataObjInfo_t));
+#endif
             status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-            tmpRescInfo, tmpRescGrpInfo->rescGroupName, outDataObjInfo);
+            tmpRescInfo, tmpRescGrpInfo->rescGroupName, outDataObjInfo, 0);
         } else {
             srcDataObjInfo = srcDataObjInfoHead;
             while (srcDataObjInfo != NULL) {
+#if 0	/* not needed with updateFlag */
                 /* have to zero out outDataObjInfo because _rsDataObjReplS
                  * could replicate to the wrong resource */
                 if (outDataObjInfo != NULL)
                     bzero (outDataObjInfo, sizeof (dataObjInfo_t));
-
+#endif
                 status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
                   tmpRescInfo, tmpRescGrpInfo->rescGroupName,
-                  outDataObjInfo);
+                  outDataObjInfo, 0);
 
                 if (status >= 0) {
                     break;
@@ -541,16 +544,16 @@ dataObjInfo_t *inpDestDataObjInfo)
  *   dataObjInfo_t *destDataObjInfo - This can be both input and output.
  *      If destDataObjInfo == NULL, dest is new and no output is required.
  *      If destDataObjInfo != NULL:
- *          If destDataObjInfo->dataId <= 0, no input but put output in
- *          destDataObjInfo. This is needed by msiSysReplDataObj and
+ *          If updateFlag == 0, Output only.  Output the dataObjInfo
+ *	    of the replicated copy. This is needed by msiSysReplDataObj and
  *          msiStageDataObj which need a copy of destDataObjInfo.
- *          If destDataObjInfo->dataId > 0, the dest repl exists. Need to
- *          overwrite it.
+ *          If updateFlag > 0, the dest repl exists. Need to
+ *          update it.
  */
 int
 _rsDataObjReplS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, 
-char *rescGroupName, dataObjInfo_t *destDataObjInfo)
+char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag)
 {
     int status, status1;
     int l1descInx;
@@ -558,7 +561,7 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo)
     dataObjInfo_t *myDestDataObjInfo;
 
     l1descInx = dataObjOpenForRepl (rsComm, dataObjInp, srcDataObjInfo,
-      destRescInfo, rescGroupName, destDataObjInfo);
+      destRescInfo, rescGroupName, destDataObjInfo, updateFlag);
 
     if (l1descInx < 0) {
         return (l1descInx);
@@ -609,7 +612,7 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo)
 int 
 dataObjOpenForRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t *inpSrcDataObjInfo, rescInfo_t *destRescInfo,
-char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
+char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 {
     dataObjInfo_t *myDestDataObjInfo, *srcDataObjInfo;
     rescInfo_t *myDestRescInfo;
@@ -683,7 +686,13 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
     } else {
 	srcDataObjInfo = cacheDataObjInfo;
     }
-    if (inpDestDataObjInfo != NULL && inpDestDataObjInfo->dataId > 0) {
+    if (inpDestDataObjInfo != NULL && updateFlag > 0) {
+	if(inpDestDataObjInfo->dataId <= 0) {
+            rodsLog (LOG_ERROR,
+              "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
+              srcDataObjInfo->objPath);
+            return (SYS_UPDATE_REPL_INFO_ERR);
+	}
 	/* overwriting an existing replica */
 	/* inherit the replStatus of the src */
 	inpDestDataObjInfo->replStatus = srcDataObjInfo->replStatus;
@@ -744,7 +753,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo)
 	}
     }
 
-    if (inpDestDataObjInfo != NULL && inpDestDataObjInfo->dataId == 0) {
+    if (inpDestDataObjInfo != NULL && updateFlag == 0) {
         /* a new replica */
         *inpDestDataObjInfo = *myDestDataObjInfo;
     }
@@ -1194,6 +1203,7 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
     rescInfo_t *cacheResc;
     dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
     dataObjInfo_t *tmpDestDataObjInfo = NULL;
+    int updateFlag;
 
 #if 0
     status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
@@ -1209,6 +1219,7 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
     if ((status = getCacheDataInfoForRepl (rsComm, oldDataObjInfo, NULL, 
       compObjInfo, &tmpDestDataObjInfo)) >= 0) {
 	cacheResc = oldDataObjInfo->rescInfo;
+	updateFlag = 1;
     } else {
 	/* no old copy */
         status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
@@ -1219,6 +1230,7 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
              compObjInfo->rescGroupName, compObjInfo->objPath, status);
             return status;
         }
+	updateFlag = 0;
     }
 
     if (outDestDataObjInfo == NULL) {
@@ -1234,7 +1246,7 @@ dataObjInfo_t *oldDataObjInfo, dataObjInfo_t **outDestDataObjInfo)
     srcDataObjInfo = srcDataObjInfoHead;
     while (srcDataObjInfo != NULL) {
         status = _rsDataObjReplS (rsComm, dataObjInp, srcDataObjInfo,
-          cacheResc, compObjInfo->rescGroupName, destDataObjInfo);
+          cacheResc, compObjInfo->rescGroupName, destDataObjInfo, updateFlag);
         if (status >= 0) {
 	    if (outDestDataObjInfo != NULL) 
 	        *outDestDataObjInfo = destDataObjInfo;
