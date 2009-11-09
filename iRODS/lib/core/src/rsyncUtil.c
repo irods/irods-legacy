@@ -382,7 +382,7 @@ dataObjInp_t *dataObjOprInp)
     int status = 0;
     int savedStatus = 0;
     char *srcColl, *targDir;
-    char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
+    char targChildPath[MAX_NAME_LEN];
     int collLen;
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
