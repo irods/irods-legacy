@@ -159,28 +159,31 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     if (multiCopyFlag == 0 || backupFlag == 1) {
 	/* if one copy per resource, see if a good copy already exist, 
 	 * If it does, the copy is returned in destDataObjInfo. 
-	 * Otherwise, the copies need to be overwritten is returned
-         * in destDataObjInfo.
-	 * CAT_NO_ROWS_FOUND means there is condition in condInp but has
-	 * no match in dataObjInfoHead or oldDataObjInfoHead for the condition.
-	 * i.e., no source for the repl */
+	 * Otherwise, Resources in &myRescGrpInfo are trimmed. Only those
+         ( target resources remained are left in &myRescGrpInfo.
+	 * Also, the copies need to be overwritten is returned
+         * in destDataObjInfo. */
         status = resolveSingleReplCopy (&dataObjInfoHead, &oldDataObjInfoHead,
           &myRescGrpInfo, &destDataObjInfo, &dataObjInp->condInput);
-        if (status == HAVE_GOOD_COPY || status == CAT_NO_ROWS_FOUND) {
-	    if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
-		/* pass back the GOOD_COPY */
-		*outDataObjInfo = *destDataObjInfo;
+        if (status == HAVE_GOOD_COPY) {
+            if (outDataObjInfo != NULL && destDataObjInfo != NULL) {
+                /* pass back the GOOD_COPY */
+                *outDataObjInfo = *destDataObjInfo;
+            }
+	    if (backupFlag == 0) {
+                status = SYS_COPY_ALREADY_IN_RESC;
+	    } else {
+	        status = 0;
 	    }
             freeAllDataObjInfo (dataObjInfoHead);
             freeAllDataObjInfo (oldDataObjInfoHead);
             freeAllRescGrpInfo (myRescGrpInfo);
-	    if (status == HAVE_GOOD_COPY && backupFlag == 0) {
-		return (SYS_COPY_ALREADY_IN_RESC);
-	    } else if (status < 0) {
-		return status;
-	    } else {
-                return (0);
-	    }
+	    return status;
+	} else if (status < 0) {
+            freeAllDataObjInfo (dataObjInfoHead);
+            freeAllDataObjInfo (oldDataObjInfoHead);
+            freeAllRescGrpInfo (myRescGrpInfo);
+            return status;
         }
     }
 
@@ -578,13 +581,13 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag)
     memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
 
     dataObjCloseInp.l1descInx = l1descInx;
-    myDestDataObjInfo = L1desc[l1descInx].dataObjInfo;
+    /* myDestDataObjInfo = L1desc[l1descInx].dataObjInfo; */
     L1desc[l1descInx].oprStatus = status;
     if (status >= 0) {
 	dataObjCloseInp.bytesWritten = L1desc[l1descInx].dataObjInfo->dataSize;
     }
 
-    status1 = rsDataObjClose (rsComm, &dataObjCloseInp);
+    status1 = irsDataObjClose (rsComm, &dataObjCloseInp, &myDestDataObjInfo);
 
     if (destDataObjInfo != NULL) {
         if (destDataObjInfo->dataId <= 0 && myDestDataObjInfo != NULL) {
@@ -619,7 +622,6 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     int destL1descInx;
     int srcL1descInx;
     int status;
-    int destExist;
     int replStatus;
     int destRescClass;
     int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
@@ -641,10 +643,9 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 
     destRescClass = getRescClass (myDestRescInfo);
 
-    /* some sanity check for DO_STAGING type resc */
+#if 0	/* assume it is OK */
     if (destRescClass == COMPOUND_CL && srcRescClass == COMPOUND_CL) {
 	return SYS_SRC_DEST_RESC_COMPOUND_TYPE;
-#if 0	/* assume it is OK */
     } else if (destRescClass == COMPOUND_CL) {
         if (getRescInGrp (rsComm, myDestRescInfo->rescName,
           inpSrcDataObjInfo->rescGroupName, NULL) < 0) {
@@ -652,7 +653,9 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
             return SYS_UNMATCHED_RESC_IN_RESC_GRP;
         }
 #endif
-    } else if (srcRescClass == COMPOUND_CL) {
+    /* Setup the srcDataObjInfo. If inpSrcDataObjInfo is in COMPOUND_CL,
+     * stage it */
+    if (srcRescClass == COMPOUND_CL) {
 	rescGrpInfo_t *myRescGrpInfo;
 	if (destRescClass == CACHE_CL && isRescsInSameGrp (rsComm, 
 	  myDestRescInfo->rescName, inpSrcDataObjInfo->rescInfo->rescName,
@@ -668,8 +671,16 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 	    status = stageDataFromCompToCache (rsComm, inpSrcDataObjInfo,
 	      cacheDataObjInfo);
 	    if (status < 0) return status;
+	    /* srcRescClass is now CACHE_CL */
 	    srcRescClass = getRescClass (cacheDataObjInfo->rescInfo);
 	}
+    }
+
+    if (cacheDataObjInfo == NULL) {
+        srcDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
+        *srcDataObjInfo = *inpSrcDataObjInfo;
+    } else {
+        srcDataObjInfo = cacheDataObjInfo;
     }
 
     /* open the dest */
@@ -680,31 +691,23 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     if (destL1descInx < 0) return destL1descInx;
 
     myDestDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
-    if (cacheDataObjInfo == NULL) {
-        srcDataObjInfo = calloc (1, sizeof (dataObjInfo_t));
-        *srcDataObjInfo = *inpSrcDataObjInfo;
-    } else {
-	srcDataObjInfo = cacheDataObjInfo;
-    }
-    if (inpDestDataObjInfo != NULL && updateFlag > 0) {
-	if(inpDestDataObjInfo->dataId <= 0) {
+    if (updateFlag > 0) {
+	/* update an existing copy */
+	if(inpDestDataObjInfo == NULL || inpDestDataObjInfo->dataId <= 0) {
             rodsLog (LOG_ERROR,
               "dataObjOpenForRepl: dataId of %s copy to be updated not defined",
               srcDataObjInfo->objPath);
             return (SYS_UPDATE_REPL_INFO_ERR);
 	}
-	/* overwriting an existing replica */
 	/* inherit the replStatus of the src */
 	inpDestDataObjInfo->replStatus = srcDataObjInfo->replStatus;
 	*myDestDataObjInfo = *inpDestDataObjInfo;
-	destExist = 1;
 	replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
 	addKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW, "");
 	dataObjInp->openFlags |= (O_TRUNC | O_WRONLY);
-    } else {
+    } else {	/* a new copy */
         initDataObjInfoForRepl (rsComm, myDestDataObjInfo, srcDataObjInfo, 
 	 destRescInfo, rescGroupName);
-	destExist = 0;
 	replStatus = srcDataObjInfo->replStatus;
     }
 
@@ -729,7 +732,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 
     if (dataObjInp->numThreads > 0 && 
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
-	if (destExist > 0) {
+	if (updateFlag > 0) {
             status = dataOpen (rsComm, destL1descInx);
 	} else {
             status = getFilePathName (rsComm, myDestDataObjInfo,
@@ -743,7 +746,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 	    return (status);
         }
     } else {
-	if (destExist == 0) {
+	if (updateFlag == 0) {
 	    status = getFilePathName (rsComm, myDestDataObjInfo, 
 	     L1desc[destL1descInx].dataObjInp);
             if (status < 0) {

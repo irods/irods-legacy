@@ -35,6 +35,16 @@ int
 rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 {
     int status;
+
+    status = irsDataObjClose (rsComm, dataObjCloseInp, NULL);
+    return status;
+}
+
+int
+irsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp,
+dataObjInfo_t **outDataObjInfo)
+{
+    int status;
     int srcL1descInx;
     openedDataObjInp_t myDataObjCloseInp;
     int l1descInx;
@@ -51,9 +61,13 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
 
+    if (outDataObjInfo != NULL) *outDataObjInfo = NULL;
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
 	/* cross zone operation */
 	dataObjCloseInp->l1descInx = L1desc[l1descInx].remoteL1descInx;
+	/* XXXXX outDataObjInfo will not be returned in this call.
+	 * The only call that requires outDataObjInfo to be returned is
+	 * _rsDataObjReplS which does a remote repl early for cross zone */
 	status = rcDataObjClose (L1desc[l1descInx].remoteZoneHost->conn, 
 	  dataObjCloseInp);
 	dataObjCloseInp->l1descInx = l1descInx;
@@ -142,6 +156,11 @@ rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         memset (&myDataObjCloseInp, 0, sizeof (myDataObjCloseInp));
         myDataObjCloseInp.l1descInx = srcL1descInx;
         rsDataObjClose (rsComm, &myDataObjCloseInp);
+    }
+
+    if (outDataObjInfo != NULL) {
+	*outDataObjInfo = L1desc[l1descInx].dataObjInfo;
+	L1desc[l1descInx].dataObjInfo = NULL;
     }
 
     freeL1desc (l1descInx);

@@ -30,6 +30,9 @@ typedef struct {
 int
 rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
 int
+irsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp,
+dataObjInfo_t **outDataObjInfo);
+int
 _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp);
 int
 l3Close (rsComm_t *rsComm, int l1descInx);

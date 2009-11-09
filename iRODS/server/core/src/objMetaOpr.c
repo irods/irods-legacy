@@ -2040,7 +2040,9 @@ svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut)
  * If there is a good copy in every resc in the rescGroup, return 
  * HAVE_GOOD_COPY. Otherwise, trim the resc in the rescGroup so only the one 
  * with no copies are left. The copies required to be overwritten are
- * placed in destDataObjInfo.
+ * placed in destDataObjInfo. The old dataObjInfo that do not need to
+ * be overwritten are placed in oldDataObjInfoHead which may be needed
+ * for compound resource staging.
  * A returned value of CAT_NO_ROWS_FOUND mean there is condition in
  * condInput but none in dataObjInfoHead or oldDataObjInfoHead match
  * the condition. i.e., no source for the replication
@@ -2054,7 +2056,7 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
     dataObjInfo_t *matchedDataObjInfo = NULL;
     dataObjInfo_t *matchedOldDataObjInfo = NULL;
 
-
+    /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
     status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
       condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
@@ -2063,10 +2065,12 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
     }
 
     if (matchedDataObjInfo != NULL) {
+	/* que the matched one on top */
 	queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
 	queDataObjInfo (oldDataObjInfoHead, matchedOldDataObjInfo, 0, 1);
     } else if (matchedOldDataObjInfo != NULL) {
-	/* queue dataObjInfoHead to oldDataObjInfoHead */ 
+	/* The source of replication is an old copy. Queue dataObjInfoHead 
+	 * to oldDataObjInfoHead */ 
 	queDataObjInfo (oldDataObjInfoHead, *dataObjInfoHead, 0, 1);
 	*dataObjInfoHead = matchedOldDataObjInfo;
     }

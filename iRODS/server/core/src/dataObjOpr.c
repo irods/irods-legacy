@@ -135,10 +135,14 @@ freeL1desc (int l1descInx)
 	if (L1desc[l1descInx].remoteZoneHost != NULL &&
 	  L1desc[l1descInx].dataObjInfo->rescInfo != NULL)
 	    free (L1desc[l1descInx].dataObjInfo->rescInfo);
+#if 0	/* no longer need this with irsDataObjClose */
 	/* will be freed in _rsDataObjReplS since it needs the new 
 	 * replNum and dataID */ 
 	if (L1desc[l1descInx].oprType != REPLICATE_DEST)
             freeDataObjInfo (L1desc[l1descInx].dataObjInfo);
+#endif
+	if (L1desc[l1descInx].dataObjInfo != NULL)
+	    free (L1desc[l1descInx].dataObjInfo);
     }
 
     if (L1desc[l1descInx].otherDataObjInfo != NULL) {
