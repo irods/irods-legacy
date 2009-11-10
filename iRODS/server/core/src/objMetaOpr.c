@@ -314,6 +314,8 @@ keyValPair_t *condInput, char *sortScheme)
 #endif
     } else if (strcmp (sortScheme, "byRescClass") == 0) {
 	sortRescByType (rescGrpInfo);
+	} else if (strcmp (sortScheme, "byLoad") == 0) {
+	sortRescByLoad (rsComm, rescGrpInfo);
     } else {
 	    rodsLog (LOG_ERROR,
 	      "sortResc: unknown sortScheme %s", sortScheme);
@@ -438,6 +440,76 @@ sortRescByType (rescGrpInfo_t **rescGrpInfo)
     }
 
     return 0;
+}
+
+int 
+sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
+{
+	int i, j, loadmin, loadList[MAX_NSERVERS], nresc, status, timeList[MAX_NSERVERS];
+	char rescList[MAX_NSERVERS][MAX_NAME_LEN], *tResult;
+	rescGrpInfo_t *tmpRescGrpInfo, *tmp1RescGrpInfo;
+	rescInfo_t *tmpRescInfo;
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut = NULL;
+	time_t timenow;
+	
+	/* query the database in order to retrieve the information on the resources' load */
+	memset(&genQueryInp, 0, sizeof (genQueryInp));
+	addInxIval(&genQueryInp.selectInp, COL_SLD_RESC_NAME, 1);
+	addInxIval(&genQueryInp.selectInp, COL_SLD_LOAD_FACTOR, 1);
+	addInxIval(&genQueryInp.selectInp, COL_SLD_CREATE_TIME, SELECT_MAX);
+	genQueryInp.maxRows = MAX_SQL_ROWS;
+	status =  rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+	if ( status == 0 ) {
+		nresc = genQueryOut->rowCnt;
+		for (i=0; i<genQueryOut->attriCnt; i++) {
+           for (j=0; j<nresc; j++) {
+				tResult = genQueryOut->sqlResult[i].value;
+				tResult += j*genQueryOut->sqlResult[i].len;
+				switch (i) {
+					case 0:
+						rstrcpy(rescList[j], tResult, genQueryOut->sqlResult[i].len);
+						break;
+					case 1:
+						loadList[j] = atoi(tResult);
+						break;
+					case 2:
+						timeList[j] = atoi(tResult);
+						break;
+				}
+			}
+        }
+	}
+	else {
+		return (0);
+	}
+	clearGenQueryInp(&genQueryInp);
+	freeGenQueryOut(&genQueryOut);
+	
+	/* find the least loaded resource among the ones for which the information is available */
+	tmpRescGrpInfo = *rescGrpInfo;
+	tmpRescInfo = tmpRescGrpInfo->rescInfo;
+	tmp1RescGrpInfo = tmpRescGrpInfo;
+	loadmin = 100;
+	/* retrieve local time in order to check if the load information is up to date, ie less than MAX_ELAPSE_TIME seconds old */
+	(void) time(&timenow);
+    while (tmpRescGrpInfo != NULL) {
+		for (i=0; i<nresc; i++) {
+			if ( strcmp(rescList[i], tmpRescGrpInfo->rescInfo->rescName) == 0 ) {
+				if ( loadList[i] >= 0 && loadmin > loadList[i] && (timenow - timeList[i]) < MAX_ELAPSE_TIME ) {
+					loadmin = loadList[i];
+					tmpRescInfo = tmpRescGrpInfo->rescInfo;
+					tmp1RescGrpInfo = tmpRescGrpInfo;
+				}
+			}
+		}
+		tmpRescGrpInfo = tmpRescGrpInfo->next;
+	}
+	/* exchange rescInfo with the head */
+	tmp1RescGrpInfo->rescInfo = (*rescGrpInfo)->rescInfo;
+	(*rescGrpInfo)->rescInfo = tmpRescInfo;
+
+	return 0;
 }
 
 /* sortRescByLocation - float LOCAL_HOST resources to the top */

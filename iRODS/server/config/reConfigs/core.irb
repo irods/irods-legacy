@@ -80,9 +80,12 @@ acAclPolicy||nop|nop
 #    msiSetRescSortScheme(sortScheme) - set the scheme for 
 #      for selecting the best resource to use when creating a data object.  
 #      sortScheme - The sorting scheme. Valid scheme are "default", 
-#        "random" and "byRescClass". The "byRescClass" scheme will put the
-#        cache class of resource on the top of the list. The scheme 
-#        "random" and "byRescClass" can be applied in sequence. e.g.,
+#        "random", "byLoad" and "byRescClass". The "byRescClass" scheme will put the
+#        cache class of resource on the top of the list. The "byLoad" scheme will put
+#        the least loaded resource on the top of the list: in order to work properly, 
+#        the RMS system must be switched on in order to pick up the load information
+#        for each server in the resource group list.
+#        The scheme "random" and "byRescClass" can be applied in sequence. e.g.,
 #        msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)
 #        will select randomly a cache class resource and put it on the
 #        top of the list.

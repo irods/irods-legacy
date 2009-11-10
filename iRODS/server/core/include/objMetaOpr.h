@@ -16,6 +16,7 @@
 #include "ruleExecSubmit.h"
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.h"
+#include "reIn2p3SysRule.h"
 
 /* definition for return value of resolveSingleReplCopy */
 #define NO_GOOD_COPY	0
@@ -26,6 +27,9 @@
 #define REQUE_MATCHED_RESC_INFO		0x2
 #define TRIM_MATCHED_OBJ_INFO		0x4
 #define TRIM_UNMATCHED_OBJ_INFO		0x8
+
+/* definition for sortRescByLoad */
+#define MAX_ELAPSE_TIME 1800 /* max time in seconds above which the load info is considered to be out of date */
 
 #define MAX_RE_PROCS	4
 #define DEF_NUM_RE_PROCS	1
@@ -233,6 +237,8 @@ int
 sortRescByType (rescGrpInfo_t **rescGrpInfo);
 int
 sortRescByLocation (rescGrpInfo_t **rescGrpInfo);
+int 
+sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo);
 int
 getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
 dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
