@@ -1077,6 +1077,14 @@ l3FileStage (rsComm_t *rsComm, int srcL1descInx, int destL1descInx)
     return (status);
 }
 
+/* rsReplAndRequeDataObjInfo - This routine handle the msiSysReplDataObj
+ * micro-service. It replicates from srcDataObjInfoHead to destRescName
+ * and support options flags given in flagStr.
+ * Flags supported are: ALL_KW, RBUDP_TRANSFER_KW, SU_CLIENT_USER_KW
+ * and UPDATE_REPL_KW. Multiple flags can be input with % as seperator.
+ * The replicated DataObjInfoHead will be put on top of the queue.
+ */
+ 
 int
 rsReplAndRequeDataObjInfo (rsComm_t *rsComm, 
 dataObjInfo_t **srcDataObjInfoHead, char *destRescName, char *flagStr)
@@ -1139,9 +1147,11 @@ dataObjInfo_t *outCacheObjInfo)
     dataObjInp_t dataObjInp;
 
     if (getRescClass (compObjInfo->rescInfo) != COMPOUND_CL) return 0;
+#if 0
     /* this check prevent infinite _rsDataObjRepl call */
     if (strlen (compObjInfo->rescGroupName) == 0)
 	return SYS_NO_CACHE_RESC_IN_GRP;
+#endif
 
     status = getCacheRescInGrp (rsComm, compObjInfo->rescGroupName,
       compObjInfo->rescInfo, &cacheResc);
@@ -1172,9 +1182,19 @@ int
 stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
 {
     int status;
+    dataObjInfo_t *outCacheObjInfo;
+
+    outCacheObjInfo = malloc (sizeof (dataObjInfo_t));
+    bzero (outCacheObjInfo, sizeof (dataObjInfo_t));
+    status = stageDataFromCompToCache (rsComm, *compObjInfoHead,
+      outCacheObjInfo);
+
+    if (status < 0) return 0;
+
+    queDataObjInfo (compObjInfoHead, outCacheObjInfo, 0, 1);
+#if 0
     rescInfo_t *cacheResc;
     dataObjInfo_t *dataObjInfoHead = *compObjInfoHead;
-
     if (getRescClass (dataObjInfoHead->rescInfo) != COMPOUND_CL) return 0;
 
     status = getCacheRescInGrp (rsComm, dataObjInfoHead->rescGroupName,
@@ -1194,6 +1214,8 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
         return status;
     }
     *compObjInfoHead = dataObjInfoHead;
+#endif
+
     return 0;
 }
 
