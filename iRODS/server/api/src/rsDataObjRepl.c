@@ -802,8 +802,6 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
     dataCopyInp_t dataCopyInp;
     dataOprInp_t *dataOprInp;
     int srcRemoteFlag, destRemoteFlag;
-    dataObjInfo_t *dataObjInfo;
-
 
     dataOprInp = &dataCopyInp.dataOprInp;
     srcL1descInx = L1desc[l1descInx].srcL1descInx;
@@ -828,21 +826,23 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
       destRemoteFlag != REMOTE_ZONE_HOST &&
       FileDesc[srcL3descInx].rodsServerHost == 
       FileDesc[destL3descInx].rodsServerHost) {
-
+	/* local zone same host copy */
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, SAME_HOST_COPY_OPR);
-	/* source and dest on the same host */
-
+#if 0	/* done in initDataOprInp */
 	dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
 	/* have to correct the source's dataSize */
 	dataOprInp->dataSize = dataObjInfo->dataSize;
 	dataOprInp->srcL3descInx = srcL3descInx;
 	dataOprInp->srcRescTypeInx = 
 	  dataObjInfo->rescInfo->rescTypeInx;
+#endif
 	if (srcRemoteFlag == LOCAL_HOST) {
 	    addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
 	}
     } else if (srcRemoteFlag == LOCAL_HOST && destRemoteFlag != LOCAL_HOST) {
-        initDataOprInp (&dataCopyInp.dataOprInp, srcL1descInx, COPY_TO_REM_OPR);
+        initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_REM_OPR);
+	/* copy from local to remote */
+	/* l2DataObjPut only establish &portalOprOut without data transfer */
 	status = l2DataObjPut (rsComm, destL1descInx, &portalOprOut);
        if (status < 0) {
             rodsLog (LOG_NOTICE,
@@ -853,11 +853,14 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         dataCopyInp.portalOprOut = *portalOprOut;
         addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
     } else if (srcRemoteFlag != LOCAL_HOST && destRemoteFlag == LOCAL_HOST) {
+	/* copy from remote to local */
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_LOCAL_OPR);
+#if 0   /* done in initDataOprInp */
         dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
         /* have to correct the source's dataSize */
         dataOprInp->dataSize = dataObjInfo->dataSize;
-
+#endif
+	/* l2DataObjGet only establish &portalOprOut without data transfer */
         status = l2DataObjGet (rsComm, srcL1descInx, &portalOprOut);
        if (status < 0) {
             rodsLog (LOG_NOTICE,
@@ -868,11 +871,14 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
         dataCopyInp.portalOprOut = *portalOprOut;
     } else {
+	/* remote to remote or remote zone copy */
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_LOCAL_OPR);
+#if 0   /* done in initDataOprInp */
         dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
         /* have to correct the source's dataSize */
         dataOprInp->dataSize = dataObjInfo->dataSize;
-
+#endif
+	/* l2DataObjGet only establish &portalOprOut without data transfer */
         status = l2DataObjGet (rsComm, srcL1descInx, &portalOprOut);
 
        if (status < 0) {

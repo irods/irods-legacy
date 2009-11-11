@@ -152,10 +152,8 @@ l2DataObjGet (rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut)
 {
     int l3descInx;
     int status;
-    dataObjInp_t *dataObjInp;
     dataOprInp_t dataOprInp;
 
-    dataObjInp = L1desc[l1descInx].dataObjInp;
     l3descInx = L1desc[l1descInx].l3descInx;
 
     initDataOprInp (&dataOprInp, l1descInx, GET_OPR);

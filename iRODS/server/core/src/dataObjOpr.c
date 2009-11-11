@@ -893,6 +893,7 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
     char *tmpStr;
 #endif
 
+
     dataObjInfo = L1desc[l1descInx].dataObjInfo;
     dataObjInp = L1desc[l1descInx].dataObjInp;
 
@@ -901,6 +902,57 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
     dataOprInp->oprType = oprType;
     dataOprInp->numThreads = dataObjInp->numThreads;
     dataOprInp->offset = dataObjInp->offset;
+    if (oprType == PUT_OPR) {
+	if (dataObjInp->dataSize > 0) 
+	    dataOprInp->dataSize = dataObjInp->dataSize;
+        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
+        if (L1desc[l1descInx].remoteZoneHost == NULL)
+            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+    } else if (oprType == GET_OPR) {
+	if (dataObjInfo->dataSize > 0) {
+            dataOprInp->dataSize = dataObjInfo->dataSize;
+        } else {
+            dataOprInp->dataSize = dataObjInp->dataSize;
+        }
+        dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
+        if (L1desc[l1descInx].remoteZoneHost == NULL)
+            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+    } else if (oprType == SAME_HOST_COPY_OPR) {
+	int srcL1descInx = L1desc[l1descInx].srcL1descInx;
+	int srcL3descInx = L1desc[srcL1descInx].l3descInx;
+        dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
+        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
+        if (L1desc[l1descInx].remoteZoneHost == NULL)
+            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+        dataOprInp->srcL3descInx = srcL3descInx;
+        dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+    } else if (oprType == COPY_TO_REM_OPR) {
+        int srcL1descInx = L1desc[l1descInx].srcL1descInx;
+        int srcL3descInx = L1desc[srcL1descInx].l3descInx;
+        dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
+        dataOprInp->srcL3descInx = srcL3descInx;
+        if (L1desc[srcL1descInx].remoteZoneHost == NULL) {
+            dataOprInp->srcRescTypeInx = 
+	      L1desc[srcL1descInx].dataObjInfo->rescInfo->rescTypeInx;
+	}
+#if 0
+        if (dataObjInfo->dataSize > 0) {
+            dataOprInp->dataSize = dataObjInfo->dataSize;
+        } else {
+            dataOprInp->dataSize = dataObjInp->dataSize;
+        }
+        dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
+        if (L1desc[l1descInx].remoteZoneHost == NULL)
+            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+#endif
+    }  else if (oprType == COPY_TO_LOCAL_OPR) {
+        int srcL1descInx = L1desc[l1descInx].srcL1descInx;
+        dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
+        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
+        if (L1desc[l1descInx].remoteZoneHost == NULL)
+            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
+    }
+#if 0
     if (oprType == PUT_OPR && dataObjInp->dataSize > 0) {
 	dataOprInp->dataSize = dataObjInp->dataSize;
     } else if (dataObjInfo->dataSize > 0) { 
@@ -918,6 +970,7 @@ initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
 	if (L1desc[l1descInx].remoteZoneHost == NULL)
             dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
     }
+#endif
     if (getValByKey (&dataObjInp->condInput, STREAMING_KW) != NULL) {
         addKeyVal (&dataOprInp->condInput, STREAMING_KW, "");
     }
