@@ -1241,7 +1241,7 @@ getUserInfo(char *userName, bytesBuf_t *mybuf, rsComm_t *rsComm)
 	addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
 	addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
 	addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
-	addInxIval (&genQueryInp.selectInp, COL_USER_DN, 1);
+//	addInxIval (&genQueryInp.selectInp, COL_USER_DN, 1);   /* No such column in r_user_main anymore */
 	addInxIval (&genQueryInp.selectInp, COL_USER_INFO, 1);
 	addInxIval (&genQueryInp.selectInp, COL_USER_COMMENT, 1);
 	addInxIval (&genQueryInp.selectInp, COL_USER_CREATE_TIME, 1);
