@@ -19,8 +19,8 @@ AUTHOR
 
 
 CONTACT
-	Lucas Ammon Gilbert, San Diego Supercomputer Center
-	iktome@sdsc.edu
+	Mike Conway, DICE Center, UNC Chapel Hill
+	michael_conway@unc.edu
 
 
 CONTENT
