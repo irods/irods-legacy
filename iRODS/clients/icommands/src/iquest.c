@@ -13,7 +13,10 @@ void usage ();
 void
 usage () {
    char *msgs[]={
-"Usage : iquest [ [hint] format]  selectConditionString ",
+"Usage : iquest [-hz] [ [hint] format]  selectConditionString ",
+"Options are:",
+" -h  this help",
+" -z Zonename   the zone to query (default or invalid uses the local zone)",
 "format is C format restricted to character strings.",
 "selectConditionString is of the form: SELECT <attribute> [, <attribute>]* [WHERE <condition> [ AND <condition>]*]",
 "attribute can be found using 'iquest attrs' command",
@@ -24,8 +27,7 @@ usage () {
 "Use % and _ as wild-cards, and use \\ to escape them.",
 "If 'no-distinct' appears before the selectConditionString, the normal",
 "distinct option on the SQL will bypassed (this is useful in rare cases).",
-"Options are:",
-" -h  this help",
+" ",
 "Examples:\n",
 " iquest \"SELECT DATA_NAME, DATA_CHECKSUM WHERE DATA_RESC_NAME like 'demo%'\"",
 " iquest \"For %-12.12s size is %s\" \"SELECT DATA_NAME ,  DATA_SIZE  WHERE COLL_NAME = '/tempZone/home/rods'\"",
@@ -49,7 +51,8 @@ usage () {
 
 int
 queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, 
-		    char *selectConditionString, int noDistinctFlag)
+		    char *selectConditionString, int noDistinctFlag,
+                    char *zoneArgument)
 {
 /*
   NoDistinctFlag is 1 if the user is requesting 'distinct' to be skipped.
@@ -67,6 +70,12 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format,
   if (noDistinctFlag) {
      genQueryInp.options = NO_DISTINCT;
   }
+
+  if (zoneArgument!=0 && zoneArgument[0]!='\0') {
+     addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+     printf("Zone is %s\n",zoneArgument);
+  }
+
   genQueryInp.maxRows= MAX_SQL_ROWS;
   genQueryInp.continueInx=0;
   i = rcGenQuery (conn, &genQueryInp, &genQueryOut);
@@ -107,7 +116,7 @@ main(int argc, char **argv) {
     char *optStr;
     int noDistinctFlag=0;
 
-    optStr = "h";
+    optStr = "hz:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -126,6 +135,7 @@ main(int argc, char **argv) {
        usage();
        exit(0);
     }
+
     if (myRodsArgs.optind == argc) {
       printf("StringCondition needed\n");
       usage();
@@ -161,15 +171,16 @@ main(int argc, char **argv) {
 
     if (myRodsArgs.optind == (argc - 3)) {
        status = queryAndShowStrCond(conn, argv[argc-3], 
-				    argv[argc-2], argv[argc-1], noDistinctFlag);
+				    argv[argc-2], argv[argc-1], 
+				    noDistinctFlag, myRodsArgs.zoneName);
     }
     else if (myRodsArgs.optind == (argc - 2)) {
        status = queryAndShowStrCond(conn, NULL, argv[argc-2], argv[argc-1], 
-				    noDistinctFlag);
+				    noDistinctFlag, myRodsArgs.zoneName);
     }
     else {
        status = queryAndShowStrCond(conn, NULL, NULL, argv[argc-1],
-				    noDistinctFlag);
+				    noDistinctFlag, myRodsArgs.zoneName);
     }
     rcDisconnect(conn);
 
