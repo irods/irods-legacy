@@ -26,7 +26,7 @@ int
 _rsDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag);
 int
-l2DataObjPut (rsComm_t *rsComm, int l1descInx, 
+preProcParaPut (rsComm_t *rsComm, int l1descInx, 
 portalOprOut_t **portalOprOut);
 int
 l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,

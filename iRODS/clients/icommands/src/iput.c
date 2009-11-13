@@ -86,10 +86,10 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-fIkKQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-afIkKQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-fIkKQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-afIkKQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -128,6 +128,7 @@ usage ()
 "sockets getting timed out by the firewall as reported by some users.",
 " ",
 "Options are:",
+" -a  all - update all existing copy",
 " -D  dataType - the data type string",
 " -f  force - write data-object even it exists already; overwrite it",
 " -I  redirect connection - redirect the connection to connect directly",

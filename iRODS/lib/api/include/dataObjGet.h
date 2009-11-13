@@ -26,7 +26,7 @@ int
 _rsDataObjGet (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag);
 int
-l2DataObjGet (rsComm_t *rsComm, int l1descInx, 
+preProcParaGet (rsComm_t *rsComm, int l1descInx, 
 portalOprOut_t **portalOprOut);
 int
 l3DataGetSingleBuf (rsComm_t *rsComm, int l1descInx, 

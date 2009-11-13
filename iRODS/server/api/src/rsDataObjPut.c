@@ -88,17 +88,20 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     }
 
     if (getValByKey (&dataObjInp->condInput, DATA_INCLUDED_KW) != NULL) {
+	/* single buffer put */
         status = l3DataPutSingleBuf (rsComm, dataObjInp, dataObjInpBBuf);
         if (status >= 0 && allFlag == 1) {
 	    /* update the rest of copies */
 	    addKeyVal (&dataObjInp->condInput, UPDATE_REPL_KW, "");
 	    status = rsDataObjRepl (rsComm, dataObjInp, &transStat);
 	    if (transStat!= NULL) free (transStat);
+            clearKeyVal (&replDataObjInp.condInput);
 	}
 	if (status > 0) status = 0;
         return (status);
     }
 
+    /* get down here. will do parallel I/O */
     /* so that mmap will work */
     dataObjInp->openFlags |= O_RDWR;
 
@@ -110,7 +113,7 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     L1desc[l1descInx].oprType = PUT_OPR;
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
 
-    status = l2DataObjPut (rsComm, l1descInx, portalOprOut);
+    status = preProcParaPut (rsComm, l1descInx, portalOprOut);
 
     if (status < 0) {
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
@@ -124,8 +127,11 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
 	memset (&replDataObjInp, 0, sizeof (replDataObjInp));
 	rstrcpy (replDataObjInp.objPath, dataObjInp->objPath, MAX_NAME_LEN);
 	addKeyVal (&replDataObjInp.condInput, UPDATE_REPL_KW, "");
+	addKeyVal (&replDataObjInp.condInput, ALL_KW, "");
     }
 
+    /* return portalOprOut to the client and wait for the rcOprComplete
+     * call. That is when the parallel I/O is done */
     retval = sendAndRecvBranchMsg (rsComm, rsComm->apiInx, status,
       (void *) *portalOprOut, NULL);
 
@@ -149,12 +155,12 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut, int handlerFlag)
     }
 }
 
-/* l2DataObjPut - process put request other than DATA_INCLUDED type
- * Data transfer is not done here
+/* preProcParaPut - preprocessing for parallel put. Basically it calls
+ * rsDataPut to setup portalOprOut with the resource server.
  */
 
 int
-l2DataObjPut (rsComm_t *rsComm, int l1descInx, 
+preProcParaPut (rsComm_t *rsComm, int l1descInx, 
 portalOprOut_t **portalOprOut)
 {
     int l3descInx;

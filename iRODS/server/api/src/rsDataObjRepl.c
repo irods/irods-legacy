@@ -842,11 +842,11 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
     } else if (srcRemoteFlag == LOCAL_HOST && destRemoteFlag != LOCAL_HOST) {
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_REM_OPR);
 	/* copy from local to remote */
-	/* l2DataObjPut only establish &portalOprOut without data transfer */
-	status = l2DataObjPut (rsComm, destL1descInx, &portalOprOut);
+	/* preProcParaPut only establish &portalOprOut without data transfer */
+	status = preProcParaPut (rsComm, destL1descInx, &portalOprOut);
        if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "dataObjCopy: l2DataObjPut error for %s",
+              "dataObjCopy: preProcParaPut error for %s",
               L1desc[srcL1descInx].dataObjInfo->objPath);
             return (status);
         }
@@ -860,11 +860,11 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         /* have to correct the source's dataSize */
         dataOprInp->dataSize = dataObjInfo->dataSize;
 #endif
-	/* l2DataObjGet only establish &portalOprOut without data transfer */
-        status = l2DataObjGet (rsComm, srcL1descInx, &portalOprOut);
+	/* preProcParaGet only establish &portalOprOut without data transfer */
+        status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
        if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "dataObjCopy: l2DataObjGet error for %s",
+              "dataObjCopy: preProcParaGet error for %s",
               L1desc[srcL1descInx].dataObjInfo->objPath);
             return (status);
         }
@@ -878,12 +878,12 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         /* have to correct the source's dataSize */
         dataOprInp->dataSize = dataObjInfo->dataSize;
 #endif
-	/* l2DataObjGet only establish &portalOprOut without data transfer */
-        status = l2DataObjGet (rsComm, srcL1descInx, &portalOprOut);
+	/* preProcParaGet only establish &portalOprOut without data transfer */
+        status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
 
        if (status < 0) {
             rodsLog (LOG_NOTICE,
-              "dataObjCopy: l2DataObjGet error for %s", 
+              "dataObjCopy: preProcParaGet error for %s", 
 	      L1desc[srcL1descInx].dataObjInfo->objPath);
             return (status);
         }

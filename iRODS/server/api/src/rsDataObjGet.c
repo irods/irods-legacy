@@ -111,7 +111,7 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
     }
 
 
-    status = l2DataObjGet (rsComm, l1descInx, portalOprOut);
+    status = preProcParaGet (rsComm, l1descInx, portalOprOut);
 
     if (status < 0) {
         memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
@@ -123,12 +123,14 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
         return (status);
     }
 
-    status = l1descInx;		/* means file no included */
+    status = l1descInx;		/* means file not included */
     if (chksumStr != NULL) {
         rstrcpy ((*portalOprOut)->chksum, chksumStr, NAME_LEN);
         free (chksumStr);
     }
 
+    /* return portalOprOut to the client and wait for the rcOprComplete
+     * call. That is when the parallel I/O is done */
     retval = sendAndRecvBranchMsg (rsComm, rsComm->apiInx, status,
       (void *) *portalOprOut, dataObjOutBBuf);
 
@@ -147,8 +149,11 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf, int handlerFlag)
     }
 }
 
+/* preProcParaGet - preprocessing for parallel get. Basically it calls
+ * rsDataGet to setup portalOprOut with the resource server.
+ */
 int
-l2DataObjGet (rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut)
+preProcParaGet (rsComm_t *rsComm, int l1descInx, portalOprOut_t **portalOprOut)
 {
     int l3descInx;
     int status;
