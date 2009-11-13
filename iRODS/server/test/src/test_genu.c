@@ -59,6 +59,60 @@ doTest2(char *arg1, char *arg2, char *arg3, char *arg4) {
 }
 
 int
+doTest3(char *arg1, char *arg2, char *arg3, char *arg4) {
+    generalUpdateInp_t generalUpdateInp;
+    int status;
+
+    printf("dotest3\n");
+    rodsLogSqlReq(1);
+
+    memset (&generalUpdateInp, 0, sizeof (generalUpdateInp));
+
+    addInxVal (&generalUpdateInp.values, COL_RULE_ID, GU_NEXT_SEQ_VALUE);
+    addInxVal (&generalUpdateInp.values, COL_RULE_NAME, arg1);
+    addInxVal (&generalUpdateInp.values, COL_RULE_BASE_NAME, arg2);
+    addInxVal (&generalUpdateInp.values, COL_RULE_BODY, arg3);
+
+    addInxVal (&generalUpdateInp.values, COL_RULE_EVENT, "e");
+    addInxVal (&generalUpdateInp.values, COL_RULE_RECOVERY, "r");
+    addInxVal (&generalUpdateInp.values, COL_RULE_OWNER_NAME, "on");
+    addInxVal (&generalUpdateInp.values, COL_RULE_OWNER_ZONE, "oz");
+
+    addInxVal (&generalUpdateInp.values, COL_RULE_CREATE_TIME, GU_NOW_TIME);
+    addInxVal (&generalUpdateInp.values, COL_RULE_MODIFY_TIME, GU_NOW_TIME);
+
+    generalUpdateInp.type = GENERAL_UPDATE_INSERT;
+
+    status  = chlGeneralUpdate(generalUpdateInp);
+    printf("chlGenUpdate status=%d\n",status);
+
+    return(status);
+}
+
+int
+doTest4(char *arg1, char *arg2, char *arg3, char *arg4) {
+    generalUpdateInp_t generalUpdateInp;
+    int status;
+
+    printf("dotest2\n");
+    rodsLogSqlReq(1);
+
+    memset (&generalUpdateInp, 0, sizeof (generalUpdateInp));
+
+    addInxVal (&generalUpdateInp.values, COL_RULE_ID, arg1);
+    if (arg2 !=0 && *arg2 !='\0') {
+       addInxVal (&generalUpdateInp.values, COL_RULE_NAME, arg2);
+    }
+
+    generalUpdateInp.type = GENERAL_UPDATE_DELETE;
+
+    status  = chlGeneralUpdate(generalUpdateInp);
+    printf("chlGenUpdate status=%d\n",status);
+
+    return(status);
+}
+
+int
 main(int argc, char **argv) {
    int mode;
    rodsServerConfig_t serverConfig;
@@ -74,6 +128,8 @@ main(int argc, char **argv) {
    mode = 0;
    if (strcmp(argv[1],"1")==0) mode=1;
    if (strcmp(argv[1],"2")==0) mode=2;
+   if (strcmp(argv[1],"3")==0) mode=3;
+   if (strcmp(argv[1],"4")==0) mode=4;
 
    memset((char *)&myEnv, 0, sizeof(myEnv));
    status = getRodsEnv (&myEnv);
@@ -104,6 +160,16 @@ main(int argc, char **argv) {
    }
    if (mode==2) {
       status = doTest2(argv[2], argv[3], argv[4], argv[5]);
+      if (status <0) exit(2);
+      exit(0);
+   }
+   if (mode==3) {
+      status = doTest3(argv[2], argv[3], argv[4], argv[5]);
+      if (status <0) exit(2);
+      exit(0);
+   }
+   if (mode==4) {
+      status = doTest4(argv[2], argv[3], argv[4], argv[5]);
       if (status <0) exit(2);
       exit(0);
    }

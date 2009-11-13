@@ -9,7 +9,8 @@
 
  Currently, updates can only be done on a single table at a time.
 
- Initially, this will be used as part of the notification service.
+ Initially, this was developed for use with a notification service which
+ was postponed and now may be used with rule tables.
 */
 #include "rodsGeneralUpdate.h"
 
@@ -22,6 +23,8 @@ extern icatSessionStruct *chlGetRcs();
 
 extern int icatGeneralQuerySetup();
 
+int updateDebug=0;
+
 int logSQLGenUpdate=0;
 char tSQL[MAX_SQL_SIZE];
 
@@ -30,26 +33,48 @@ generalInsert(generalUpdateInp_t generalUpdateInp) {
    int i, j;
    char *tableName, *columnName;
    char *firstTableName;
+   char nextSeqValueIndex=-1;
+   static char nextStr[MAX_NAME_LEN];
+   int doBind;
+   static char myTime[50];
 
    rstrcpy(tSQL, "insert into ", MAX_SQL_SIZE);
 
    for (i=0;i<generalUpdateInp.values.len;i++) { 
       j = sGetColumnInfo(generalUpdateInp.values.inx[i],
 			  &tableName, &columnName);
-      printf("j=%d\n",j);
+      if (updateDebug) printf("j=%d\n",j);
       if (j==0) {
-	 printf("tableName=%s\n",tableName);
-	 printf("columnName=%s\n",columnName);
+	 if (updateDebug) printf("tableName=%s\n",tableName);
+	 if (updateDebug) printf("columnName=%s\n",columnName);
       }
       else {
 	 return(j);
+      }
+
+      doBind=1;
+      if (strncmp(generalUpdateInp.values.value[i], 
+		  GU_NEXT_SEQ_VALUE, MAX_NAME_LEN)==0) {
+         /* caller requesting a next sequence */
+	 cllNextValueString("R_ObjectID", nextStr, MAX_NAME_LEN);
+	 nextSeqValueIndex=i;
+	 doBind=0;
       }
       if (i==0) {
 	 firstTableName=tableName;
 	 rstrcat(tSQL, tableName, MAX_SQL_SIZE);
 	 rstrcat(tSQL, " (", MAX_SQL_SIZE);
 	 rstrcat(tSQL, columnName, MAX_SQL_SIZE);
-	 cllBindVars[cllBindVarCount++]=generalUpdateInp.values.value[i];
+	 if (doBind) {
+	    if (strncmp(generalUpdateInp.values.value[i], 
+			GU_NOW_TIME, MAX_NAME_LEN) == 0) {
+	       getNowStr(myTime);
+	       cllBindVars[cllBindVarCount++]=myTime;
+	    }
+	    else {
+	       cllBindVars[cllBindVarCount++]=generalUpdateInp.values.value[i];
+	    }
+	 }
       }
       else {
 	 if (strcmp(tableName, firstTableName) !=0) {
@@ -57,15 +82,36 @@ generalInsert(generalUpdateInp_t generalUpdateInp) {
 	 }
 	 rstrcat(tSQL, ", ", MAX_SQL_SIZE);
 	 rstrcat(tSQL, columnName, MAX_SQL_SIZE);
-	 cllBindVars[cllBindVarCount++]=generalUpdateInp.values.value[i];
+	 if (doBind) {
+	    if (strncmp(generalUpdateInp.values.value[i], 
+			GU_NOW_TIME, MAX_NAME_LEN) == 0) {
+	       getNowStr(myTime);
+	       cllBindVars[cllBindVarCount++]=myTime;
+	    }
+	    else {
+	       cllBindVars[cllBindVarCount++]=generalUpdateInp.values.value[i];
+	    }
+	 }   
       }
    }
-   rstrcat(tSQL, ") values (?", MAX_SQL_SIZE);
+   if (nextSeqValueIndex==0) {
+      rstrcat(tSQL, ") values (", MAX_SQL_SIZE);
+      rstrcat(tSQL, nextStr, MAX_SQL_SIZE);
+   }
+   else {
+      rstrcat(tSQL, ") values (?", MAX_SQL_SIZE);
+   }
    for (i=1;i<generalUpdateInp.values.len;i++) { 
-      rstrcat(tSQL, ", ?", MAX_SQL_SIZE);
+      if (nextSeqValueIndex==i) {
+	 rstrcat(tSQL, ", ", MAX_SQL_SIZE);
+	 rstrcat(tSQL, nextStr, MAX_SQL_SIZE);
+      }
+      else {
+	 rstrcat(tSQL, ", ?", MAX_SQL_SIZE);
+      }
    }
    rstrcat(tSQL, ")", MAX_SQL_SIZE);
-   printf("tSQL: %s\n", tSQL);
+   if (updateDebug) printf("tSQL: %s\n", tSQL);
 
    return(0);
 }
@@ -81,10 +127,10 @@ generalDelete(generalUpdateInp_t generalUpdateInp) {
    for (i=0;i<generalUpdateInp.values.len;i++) { 
       j = sGetColumnInfo(generalUpdateInp.values.inx[i],
 			  &tableName, &columnName);
-      printf("j=%d\n",j);
+      if (updateDebug) printf("j=%d\n",j);
       if (j==0) {
-	 printf("tableName=%s\n",tableName);
-	 printf("columnName=%s\n",columnName);
+	 if (updateDebug) printf("tableName=%s\n",tableName);
+	 if (updateDebug) printf("columnName=%s\n",columnName);
       }
       else {
 	 return(j);
@@ -107,7 +153,7 @@ generalDelete(generalUpdateInp_t generalUpdateInp) {
 	 cllBindVars[cllBindVarCount++]=generalUpdateInp.values.value[i];
       }
    }
-   printf("tSQL: %s\n", tSQL);
+   if (updateDebug) printf("tSQL: %s\n", tSQL);
    return(0);
 }
 

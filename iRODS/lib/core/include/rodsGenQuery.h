@@ -123,10 +123,6 @@ primary ordering column.
 
 #define COL_USER_DN_INVALID 205 /* For backward compatibility, irods 2.1 DN */
 
-/* R_USER_AUTH (for GSI/KRB) */
-#define COL_USER_AUTH_ID 1600
-#define COL_USER_DN      1601
-
 /* R_RESC_MAIN: */
 #define COL_R_RESC_ID 301
 #define COL_R_RESC_NAME 302
@@ -290,5 +286,53 @@ primary ordering column.
 #define COL_SLD_RESC_NAME     1500
 #define COL_SLD_LOAD_FACTOR   1501
 #define COL_SLD_CREATE_TIME   1502
+
+/* R_USER_AUTH (for GSI/KRB) */
+#define COL_USER_AUTH_ID 1600
+#define COL_USER_DN      1601
+
+/* R_RULE_MAIN */
+#define COL_RULE_ID           1700
+#define COL_RULE_VERSION      1701
+#define COL_RULE_BASE_NAME    1702
+#define COL_RULE_NAME         1703
+#define COL_RULE_EVENT        1704
+#define COL_RULE_CONDITION    1705
+#define COL_RULE_BODY         1706
+#define COL_RULE_RECOVERY     1707
+#define COL_RULE_STATUS       1708
+#define COL_RULE_OWNER_NAME   1709
+#define COL_RULE_OWNER_ZONE   1710
+#define COL_RULE_COMMENT      1711
+#define COL_RULE_CREATE_TIME  1712
+#define COL_RULE_MODIFY_TIME  1713
+
+/* R_RULE_DVM (Data Variable Mapping) */
+#define COL_DVM_ID            1800
+#define COL_DVM_VERSION       1801
+#define COL_DVM_BASE_NAME     1802
+#define COL_DVM_EXT_VAR_NAME  1803
+#define COL_DVM_CONDITION     1804
+#define COL_DVM_INT_MAP_PATH  1805
+#define COL_DVM_STATUS        1806
+#define COL_DVM_OWNER_NAME    1807
+#define COL_DVM_OWNER_ZONE    1808
+#define COL_DVM_COMMENT       1809
+#define COL_DVM_CREATE_TIME   1810
+#define COL_DVM_MODIFY_TIME   1811
+
+/* R_RULE_FNM (Function Name Mapping) */
+#define COL_FNM_ID            1900
+#define COL_FNM_VERSION       1901
+#define COL_FNM_BASE_NAME     1902
+#define COL_FNM_EXT_FUNC_NAME 1903
+#define COL_FNM_INT_FUNC_NAME 1904
+#define COL_FNM_STATUS        1905
+#define COL_FNM_OWNER_NAME    1906
+#define COL_FNM_OWNER_ZONE    1907
+#define COL_FNM_COMMENT       1908
+#define COL_FNM_CREATE_TIME   1909
+#define COL_FNM_MODIFY_TIME   1910
+
 
 #endif /* RODS_GEN_QUERY_H */

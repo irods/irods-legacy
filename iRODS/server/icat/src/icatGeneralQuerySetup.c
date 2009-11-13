@@ -140,6 +140,9 @@ icatGeneralQuerySetup() {
 
   sTable( "r_user_auth", "r_user_auth", 0);
 
+  sTable( "r_rule_dvm",  "r_rule_dvm", 0);
+  sTable( "r_rule_fnm",  "r_rule_fnm", 0);
+
   /* Map the #define values to tables and columns */
 
   sColumn( COL_ZONE_ID, "r_zone_main", "zone_id");
@@ -317,6 +320,46 @@ icatGeneralQuerySetup() {
   sColumn(COL_SLD_RESC_NAME, "r_server_load_digest", "resc_name");
   sColumn(COL_SLD_LOAD_FACTOR, "r_server_load_digest", "load_factor");
   sColumn(COL_SLD_CREATE_TIME, "r_server_load_digest", "create_ts");
+
+  sColumn(COL_RULE_ID,         "r_rule_main", "rule_id");
+  sColumn(COL_RULE_VERSION,    "r_rule_main", "rule_version");
+  sColumn(COL_RULE_BASE_NAME,  "r_rule_main", "rule_base_name");
+  sColumn(COL_RULE_NAME,       "r_rule_main", "rule_name");
+  sColumn(COL_RULE_EVENT,      "r_rule_main", "rule_event");
+  sColumn(COL_RULE_CONDITION,  "r_rule_main", "rule_condition");
+  sColumn(COL_RULE_BODY,       "r_rule_main", "rule_body");
+  sColumn(COL_RULE_RECOVERY,   "r_rule_main", "rule_recovery");
+  sColumn(COL_RULE_STATUS,     "r_rule_main", "rule_status");
+  sColumn(COL_RULE_OWNER_NAME, "r_rule_main", "rule_owner_name");
+  sColumn(COL_RULE_OWNER_ZONE, "r_rule_main", "rule_owner_zone");
+  sColumn(COL_RULE_COMMENT,    "r_rule_main", "r_comment");
+  sColumn(COL_RULE_CREATE_TIME,"r_rule_main", "create_ts");
+  sColumn(COL_RULE_MODIFY_TIME,"r_rule_main", "modify_ts");
+
+  sColumn(COL_DVM_ID,           "r_rule_dvm", "dvm_id");
+  sColumn(COL_DVM_VERSION,      "r_rule_dvm", "dvm_version");
+  sColumn(COL_DVM_BASE_NAME,    "r_rule_dvm", "dvm_base_name");
+  sColumn(COL_DVM_EXT_VAR_NAME, "r_rule_dvm_ext_var_name", "dvm_name");
+  sColumn(COL_DVM_CONDITION,    "r_rule_dvm", "dvm_condition");
+  sColumn(COL_DVM_INT_MAP_PATH, "r_rule_dvm_int_map_path", "dvm_name");
+  sColumn(COL_DVM_STATUS,       "r_rule_dvm", "dvm_status");
+  sColumn(COL_DVM_OWNER_NAME,   "r_rule_dvm", "dvm_owner_name");
+  sColumn(COL_DVM_OWNER_ZONE,   "r_rule_dvm", "dvm_owner_zone");
+  sColumn(COL_DVM_COMMENT,      "r_rule_dvm", "r_comment");
+  sColumn(COL_DVM_CREATE_TIME,  "r_rule_dvm", "create_ts");
+  sColumn(COL_DVM_MODIFY_TIME,  "r_rule_dvm", "modify_ts");
+
+  sColumn(COL_FNM_ID,           "r_rule_fnm", "fnm_id");
+  sColumn(COL_FNM_VERSION,      "r_rule_fnm", "fnm_version");
+  sColumn(COL_FNM_BASE_NAME,    "r_rule_fnm", "fnm_base_name");
+  sColumn(COL_FNM_EXT_FUNC_NAME,"r_rule_fnm_ext_func_name", "fnm_ext_func_name");
+  sColumn(COL_FNM_INT_FUNC_NAME,"r_rule_fnm_int_func_name", "fnm_int_func_name");
+  sColumn(COL_FNM_STATUS,       "r_rule_fnm", "fnm_status");
+  sColumn(COL_FNM_OWNER_NAME,   "r_rule_fnm", "fnm_owner_name");
+  sColumn(COL_FNM_OWNER_ZONE,   "r_rule_fnm", "fnm_owner_zone");
+  sColumn(COL_FNM_COMMENT,      "r_rule_fnm", "r_comment");
+  sColumn(COL_FNM_CREATE_TIME,  "r_rule_fnm", "create_ts");
+  sColumn(COL_FNM_MODIFY_TIME,  "r_rule_fnm", "modify_ts");
 
   /* Define the Foreign Key links between tables */
   sFklink("r_coll_main", "r_data_main", "r_coll_main.coll_id = r_data_main.coll_id");
