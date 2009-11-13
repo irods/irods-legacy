@@ -385,18 +385,24 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             modDataObjMetaInp.dataObjInfo = destDataObjInfo;
             modDataObjMetaInp.regParam = &regParam;
             status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+	    /* have to handle the l3Close here because the need to 
+	     * unlink the srcDataObjInfo */
             if (status >= 0) {
-		int status1;
-	        status1 = l3Close (rsComm, srcL1descInx);
-		if (status1 < 0) {
-                    rodsLog (LOG_NOTICE,
-              	      "_rsDataObjClose: l3Close of %s error. status = %d",
-              	      srcDataObjInfo->objPath, status1);
+               if (L1desc[srcL1descInx].l3descInx > 2) {
+		    int status1;
+	            status1 = l3Close (rsComm, srcL1descInx);
+		    if (status1 < 0) {
+                        rodsLog (LOG_NOTICE,
+              	          "_rsDataObjClose: l3Close of %s error. status = %d",
+              	          srcDataObjInfo->objPath, status1);
+		    }
 		}
-
                 l3Unlink (rsComm, srcDataObjInfo);
-	        freeL1desc (srcL1descInx);
+	    } else {
+		if (L1desc[srcL1descInx].l3descInx > 2)
+		    l3Close (rsComm, srcL1descInx);
 	    }
+	    freeL1desc (srcL1descInx);
         } else if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
 	    /* overwrite an existing repl */
             snprintf (tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus);
