@@ -594,7 +594,8 @@ int cookie, int windowSize)
 	  rodsHost, errno); 
 	return (status);
     }
-    sock = connectToRhostWithRaddr (&remoteAddr, windowSize, 0);
+    /* set timeout 11/13/2009 */
+    sock = connectToRhostWithRaddr (&remoteAddr, windowSize, 1);
 
     if (sock < 0) {
 	rodsLog (LOG_ERROR,
