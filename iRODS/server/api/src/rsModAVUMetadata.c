@@ -81,7 +81,11 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     args[3] = modAVUMetadataInp->arg3; /* attr name */
     args[4] = modAVUMetadataInp->arg4; /* attr val */
     args[5] = modAVUMetadataInp->arg5; /* attr unit */
-    argc = 6;
+    if (args[5]) {
+    	argc = 6;
+    } else {
+    	argc = 5;
+    }
     i =  applyRuleArg("acPreProcForModifyAVUMetadata",args,argc, &rei2, NO_SAVE_REI);
     if (i < 0) {
       if (rei2.status < 0) {
