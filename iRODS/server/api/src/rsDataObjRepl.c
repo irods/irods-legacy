@@ -890,6 +890,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 
         dataCopyInp.portalOprOut = *portalOprOut;
     }
+    /* rsDataCopy - does the physical data transfer */
     status =  rsDataCopy (rsComm, &dataCopyInp);
 
     if (status >= 0 && portalOprOut != NULL && 

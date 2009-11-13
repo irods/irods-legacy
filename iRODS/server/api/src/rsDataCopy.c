@@ -9,7 +9,24 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
-
+/* rsDataCopy - Do the copy data transfer. 
+ * Input -
+ *   dataCopyInp_t dataCopyInp:
+ *      dataOprInp:  - mostly setup by initDataOprInp()
+ *         int oprType - SAME_HOST_COPY_OPR, COPY_TO_REM_OPR, COPY_TO_LOCAL_OPR
+ *         int numThreads
+ *         int srcL3descInx - the source L3descInx
+ *         int destL3descInx - the target L3descInx
+ *         int srcRescTypeInx;
+ *         int destRescTypeInx;
+ *         rodsLong_t offset
+ *         rodsLong_t dataSize
+ *         keyValPair_t condInput - valid input -
+ *            EXEC_LOCALLY_KW - all operations except remote-remote copy
+ *               have the keyword set.
+ *               
+ *   portalOprOut_t portalOprOut - the resource server portal info.	    
+ */
 int
 rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 {

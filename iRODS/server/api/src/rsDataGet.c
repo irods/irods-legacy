@@ -8,6 +8,10 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+/* rsDataGet - this routine setup portalOprOut with the resource server
+ * for parallel get operation.
+ */
+
 int
 rsDataGet (rsComm_t *rsComm, dataOprInp_t *dataOprInp, 
 portalOprOut_t **portalOprOut)

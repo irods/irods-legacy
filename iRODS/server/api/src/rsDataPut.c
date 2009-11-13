@@ -9,6 +9,10 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+/* rsDataPut - this routine setup portalOprOut with the resource server
+ * for parallel put operation.
+ */
+
 int
 rsDataPut (rsComm_t *rsComm, dataOprInp_t *dataOprInp, 
 portalOprOut_t **portalOprOut)
