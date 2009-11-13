@@ -481,9 +481,9 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	{
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: XML document cannot be loaded or is not well-formed.");
 
-	        xmlCleanupParser();
+	    xmlCleanupParser();
 
-	        return (USER_INPUT_FORMAT_ERR);
+	    return (USER_INPUT_FORMAT_ERR);
 	}
 
 
@@ -496,7 +496,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		rodsLog (LOG_ERROR, "msiXmlDocSchemaValidate: Cannot open XSD data object. status = %d", xsdObjID);
 
 		xmlFreeDoc(doc);
-	        xmlCleanupParser();
+	    xmlCleanupParser();
 
 		return (xsdObjID);
 	}
@@ -539,7 +539,7 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlFreeDoc(doc);
 		xmlCleanupParser();
 
-	        return (USER_INPUT_FORMAT_ERR);
+	    return (USER_INPUT_FORMAT_ERR);
 	}
 
 
@@ -554,9 +554,9 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 
 		xmlFreeDoc(xsd_doc);
 		xmlFreeDoc(doc);
-	        xmlCleanupParser();
+	    xmlCleanupParser();
 
-	        return (USER_INPUT_FORMAT_ERR);
+	    return (USER_INPUT_FORMAT_ERR);
 	}
 
 
@@ -569,9 +569,9 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlSchemaFreeParserCtxt(parser_ctxt);
 		xmlFreeDoc(doc);
 		xmlFreeDoc(xsd_doc);
-        	xmlCleanupParser();
+        xmlCleanupParser();
 
-	        return (USER_INPUT_FORMAT_ERR);
+	    return (USER_INPUT_FORMAT_ERR);
 	}
 
 
@@ -585,9 +585,9 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 		xmlSchemaFreeParserCtxt(parser_ctxt);
 		xmlFreeDoc(xsd_doc);
 		xmlFreeDoc(doc);
-	        xmlCleanupParser();
+	    xmlCleanupParser();
 
-	        return (USER_INPUT_FORMAT_ERR);
+	    return (USER_INPUT_FORMAT_ERR);
 	}
 
 
@@ -613,9 +613,9 @@ msiXmlDocSchemaValidate(msParam_t *xmlObj, msParam_t *xsdObj, msParam_t *status,
 	xmlSchemaFreeParserCtxt(parser_ctxt);
 	xmlFreeDoc(doc);
 	xmlFreeDoc(xsd_doc);
-        xmlCleanupParser();
+	xmlCleanupParser();
 
-	return (rei->status);
+	return (-rei->status);
 }
 
 
