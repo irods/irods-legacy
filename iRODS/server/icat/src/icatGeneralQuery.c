@@ -42,7 +42,7 @@ int insertWhere(char *condition, int option);
 
 extern icatSessionStruct *chlGetRcs();
 
-#define MAX_LINKS_TABLES_OR_COLUMNS 150
+#define MAX_LINKS_TABLES_OR_COLUMNS 200
 #define MAX_TSQL 100
 
 int firstCall=1;

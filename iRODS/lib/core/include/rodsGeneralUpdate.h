@@ -17,15 +17,17 @@
 #define GENERAL_UPDATE_INSERT 23451
 #define GENERAL_UPDATE_DELETE 23452
 
+/* Use this value to use the next sequence value in a column (for an id) */
+#define GU_NEXT_SEQ_VALUE "gq_next_sequence_value_core"
+
+/* Use this value to insert the current time into a column*/
+#define GU_NOW_TIME "gq_now_time"
+
 #define GeneralUpdateInp_PI "int type; struct InxValPair_PI;"
 typedef struct GeneralUpdateInp {
    int type;  /* GEN_UPDATE_INSERT or DELETE */
    inxValPair_t values;  /* Column IDs (from rodsGenQuery.h) and values */
 } generalUpdateInp_t;
 
-
-/*typedef struct GenUpdateOut {
-    int rowCount;
-} genUpdateOut_t; */
 
 #endif	/* RODS_GENERAL_UPDATE_H */
