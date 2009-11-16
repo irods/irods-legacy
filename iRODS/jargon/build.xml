@@ -1,70 +1,180 @@
 <!-- Ant makefile for JARGON -->
-
-<project name="Jargon" default="compile">
-  <description>
+<project name="Jargon" default="build" basedir=".">
+	<description>
       Build file for JARGON API, a client api for all your datagrid needs.
   </description>
-  <property name="libraries" location="lib/gsi-classes.jar:lib/ij.jar:lib/jlfgr-1_0.jar:lib/activation.jar:lib/mail.jar"/>
-  
-  <target name="compile" description="Compile everything.">
-    <!-- First, ensure the build directory exists. -->
-    <mkdir dir="bin" />
-    <!-- Build all the core source files -->
-    <javac srcdir="src/api" source="1.5" target="1.5" classpath="${libraries}" destdir="bin">
-      <exclude name="" />
-    </javac>
-    <!-- Build all the test source files -->
-    <javac srcdir="src/test" source="1.5" target="1.5" classpath="${libraries}" destdir="bin">
-      <exclude name="" />
-    </javac>
-  </target>
 
+	<property file="build.properties" />
 
-  <target name="build" depends="compile" description="Build jargon.jar.">
-    <!-- First, ensure the lib directory exists. -->
-    <mkdir dir="lib" />
-    <!-- Build jargon.jar. -->
-    <jar destfile="lib/jargon.jar" basedir="bin" manifest="lib/MANIFEST.MF">
-    </jar> 
-  </target>
+	<!--
+		include all jar files in the ./lib directory in the compile classpath
+	-->
+	<path id="class.path">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+			<include name="**/*.zip" />
+		</fileset>
+	</path>
 
+	<target name="clean">
+		<echo message="clean task..." />
+		<delete dir="${build.dir}" />
+	</target>
 
-  <target name="run" depends="build" description="Runs the Test.java program.">
-    <java jar="lib/jargon.jar" classpath="lib/jargon.jar:${libraries}" fork="true" />
-  </target>
+	<target name="init">
+		<echo message="Init task..." />
+		<property name="project_name" value="Jargon" />
+		<property name="jar_name" value="${dist.dir}/${project_name}.jar" />
+		<tstamp />
+		<echo message="Creating directory structure for build..." />
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${src.build.dir}" />
+		<mkdir dir="${unittest.build.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${scratch.dir}" />
+		<mkdir dir="${javadoc.dir}" />
+		<mkdir dir="${code.coverage.report.dir}" />
 
+	</target>
 
-  <target name="srb" depends="build" description="Build and test SRB.">
-    <java jar="lib/jargon.jar" classpath="lib/jargon.jar:${libraries}" args="srb" fork="true" />
-  </target>
+	<path id="class.path.test">
+		<pathelement location="${unittest.build.dir}" />
+		<path refid="class.path" />
+		<pathelement location="${src.build.dir}" />
+	</path>
 
+	<!--  properly set the flag for generating debug info in compile, will override default
+			if generating a code coverage report -->
+	<target name="set_compile_debug">
+		<echo message="default compile.with.debug setting in build.properties=${compile.with.debug}" />
+		<condition property="set.java.debug" value="on">
+			<or>
+				<istrue value="${compile.debug.override}" />
+				<istrue value="${compile.with.debug}" />
+			</or>
+		</condition>
+		<condition property="set.java.debug" value="off">
+			<not>
+				<isset property="set.java.debug" />
+			</not>
+		</condition>
+	</target>
 
-  <target name="clean" description="Delete the build files.">
-    <delete dir="bin" />
-    <delete file="lib/jargon.jar" />
-  </target>
+	<!-- compile jargon library source code -->
+	<target name="compile_src" depends="init, set_compile_debug">
+		<echo message="Compiling Java sources..." />
+		<echo message="compiling java with debug setting of=${set.java.debug}" />
+		<!--  if debug is 'off' debuglevel will be ignored   debug="${set.java.debug}" -->
+		<javac destdir="${src.build.dir}" debug="${set.java.debug}" debuglevel="vars,lines,source" source="1.5" target="1.5">
+			<src path="${src.dir}" />
+			<classpath refid="class.path" />
+		</javac>
+		<echo message="copying any properties XML and manifest files to build dir after compile..." />
+		<copy todir="${src.build.dir}">
+			<fileset dir="${src.dir}">
+				<include name="**/*.xml" />
+				<include name="**/*.properties" />
+				<include name="**/*.MF" />
+			</fileset>
+		</copy>
+	</target>
 
+	<!-- compile jargon library test source code -->
+	<target name="compile_test">
+		<echo message="Compiling unit test Java sources..." />
+		<javac destdir="${unittest.build.dir}" source="1.5" target="1.5" debug="${set.java.debug}" debuglevel="vars,lines,source">
+			<src path="${unittest.src.dir}" />
+			<classpath refid="class.path.test" />
+		</javac>
+		<echo message="copying any XML and manifest files to build dir after compile..." />
+		<copy todir="${unittest.build.dir}">
+			<fileset dir="${unittest.src.dir}">
+				<include name="**/*.xml" />
+				<include name="**/*.properties" />
+				<include name="**/*.MF" />
+			</fileset>
+		</copy>
+	</target>
 
-  <target name="gsi" description="Build with gsi files.">
-    <!-- Deprecated -->
-    <delete file="src/api/edu/sdsc/grid/io/srb/GSIAuth.java" />
-    <copy overwrite="true" file="src/api/edu/sdsc/grid/io/srb/GSIAuth.java_real" tofile="src/api/edu/sdsc/grid/io/srb/GSIAuth.java"/>
-    <antcall target="build"></antcall>
-  </target>
-  
+	<target name="compile" depends="init, set_compile_debug, compile_src, compile_test">
+		<echo message="compiling source and test..." />
+	</target>
 
-  <target name="javadocs" description="Build the JavaDocs.">
-    <!-- First, ensure the doc directory exists. -->
-    <mkdir dir="doc" />
-    <javadoc
-           sourcepath="src/api"
-           packagenames="edu.*"
-           destdir="doc"
-           author="true"
-           version="true"
-           use="true"
-           windowtitle="Jargon API">
-    </javadoc>
-  </target>
+	<target name="build" depends="compile">
+		<echo message="creating a jargon library jar file..." />
+		<jar basedir="${src.build.dir}" jarfile="${dist.dir}/${project_name}.jar" includes="**/*.*" manifest="${src.dir}/MANIFEST.MF" />
+		<echo message="creating a jargon-test jar file..." />
+		<jar basedir="${unittest.build.dir}" jarfile="${dist.dir}/${project_name}-test.jar" includes="**/*.*" manifest="${unittest.src.dir}/MANIFEST.MF" />
+	</target>
+
+	<target name="rebuild" depends="clean, build" />
+
+	<target name="run" depends="build" description="Runs the Test.java program.">
+		<java classname="Test" fork="true">
+			<classpath>
+				<pathelement location="${dist.dir}/${project_name}-test.jar" />
+				<pathelement path="class.path" />
+				<pathelement location="${dist.dir}/${project_name}.jar" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="run_irods" depends="build">
+		<echo message="running only irods portion of original Jargon tests..." />
+		<java classname="Test" fork="true" args="irods">
+			<classpath>
+				<pathelement location="${dist.dir}/${project_name}-test.jar" />
+				<pathelement path="class.path" />
+				<pathelement location="${dist.dir}/${project_name}.jar" />
+			</classpath>
+		</java>
+	</target>
+	
+	<target name="run_irods_fulltest" depends="build">
+			<echo message="running only irods portion of original Jargon tests..." />
+			<java classname="Test" fork="true" args="-fulltest irods ">
+				<classpath>
+					<pathelement location="${dist.dir}/${project_name}-test.jar" />
+					<pathelement path="class.path" />
+					<pathelement location="${dist.dir}/${project_name}.jar" />
+				</classpath>
+			</java>
+		</target>
+
+	<target name="srb" depends="build" description="Build and test SRB.">
+		<java classname="Test" args="srb" fork="true">
+			<classpath>
+				<pathelement location="${dist.dir}/${project_name}-test.jar" />
+				<pathelement path="class.path" />
+				<pathelement location="${dist.dir}/${project_name}.jar" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="gsi" description="Build with gsi files.">
+		<!-- Deprecated  TODO: removed in next release! MCC-->
+		<delete file="${src.dir}/edu/sdsc/grid/io/srb/GSIAuth.java" />
+		<copy overwrite="true" file="${src.dir}/edu/sdsc/grid/io/srb/GSIAuth.java_real" tofile="${src.dir}/edu/sdsc/grid/io/srb/GSIAuth.java" />
+		<antcall target="build">
+		</antcall>
+	</target>
+
+	<target name="javadocs" description="Build the JavaDocs.">
+		<javadoc sourcepath="${src.dir}" packagenames="edu.*" destdir="${javadoc.dir}" author="true" version="true" use="true" windowtitle="Jargon API">
+		</javadoc>
+	</target>
+
+	<target name="unit_test" depends="init, compile">
+		<echo message="running all junit tests..." />
+		<echo message="warning...JUnit not yet added...empty target!!!" />
+		<!--<junit fork="${junit.fork}" haltonfailure="${fail.on.junit.error}">
+			
+			<classpath location="${instrumented.code.dir}" />
+			<classpath refid="class.path.test" />
+			<formatter type="brief" usefile="false" />
+			<test name="edu.sdsc.jargon.unittest.AllTests" />
+		</junit>
+		<echo message="running clean target will clean up unit test scratch directories..." />-->
+	</target>
 
 </project>

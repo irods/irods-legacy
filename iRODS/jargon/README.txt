@@ -24,12 +24,15 @@ CONTACT
 
 
 CONTENT
-	build.xml	-  ANT build, Makes the API and test applications
-	README.txt	-  This file
-	bin/		-  Class files
-	doc/		-  Documentation
-	lib/		-  Most recently built JARs
-	src/		-  Source code
+	build.xml	                 -  ANT build, Makes the API and test applications
+	build.properties             -  Customization properties for build behavior
+	README.txt	                 -  This file
+	RELEASE_NOTES.txt	         -  Text copy of release notes
+	doc/		                 -  Documentation
+	lib/		                 -  Compile, test, and run libraries
+	src/		                 -  Source code
+	target/                      -  Build-generated directory for output of build tasks
+	   target/dist               -  Distribution directory for built Jargon .jar files
 
 
 To build Jargon:
@@ -42,12 +45,7 @@ To test jargon
 1) set up the ~/.irods/.irodsEnv file (same as the icommand) and put the
 plain text password in the ~/.irods/.irodsA file (scrambled password does
 not work).
-2) cd bin
-   java Test irods
-or
-   java Test -fullTest irods
-
-for the full test
+2)run the run_irods or run_irods_fulltest (for the full test) ANT tasks
 
 
 LICENSE - BSD
