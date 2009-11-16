@@ -72,9 +72,9 @@ fi
 if [ $error3 -ne 0 ] ; then
     doJavaTest=0
 fi
-if [ $myhour -ne  11 ] ; then
-    doJavaTest=0
-fi
+#if [ $myhour -ne  11 ] ; then
+#    doJavaTest=0
+#fi
 
 error4=0
 if [ $doJavaTest -eq 1 ] ; then
@@ -87,15 +87,13 @@ if [ $doJavaTest -eq 1 ] ; then
     ant
     error4=$?
     if [ $error4 -eq 0 ] ; then
-        cd bin
-        java Test -fullTest irods
+        ant run_irods
         error4=$?
         if [ $error4 -eq 0 ] ; then
-            echo 'java Test -fullTest succeeded'
+            echo 'jargon test succeeded'
         else 
-            echo 'java Test -fullTest failure'
+            echo 'javgon test failure'
         fi
-        cd ..
     else
         echo 'ant error'
     fi
