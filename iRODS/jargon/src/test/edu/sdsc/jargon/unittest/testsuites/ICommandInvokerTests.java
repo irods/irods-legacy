@@ -3,15 +3,16 @@
  */
 package edu.sdsc.jargon.unittest.testsuites;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-
-import edu.sdsc.grid.io.irods.IRODSFileOutputStreamTest;
-import edu.sdsc.grid.io.irods.IRODSFileTest;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IchksumCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IrmCommandTest;
+
+import org.junit.runner.RunWith;
+
+import org.junit.runners.Suite;
+
 
 /**
  * Test suite for icommand wrapper libraries
@@ -19,13 +20,11 @@ import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IrmCommandTest;
  * @since 10/10/2009
  */
 @RunWith(Suite.class)
-/*@Suite.SuiteClasses({
-  IRODSFileOutputStreamTest.class, IRODSFileTest.class
-})*/
-
-@Suite.SuiteClasses({
-  IlsCommandTest.class, ImkdirCommandTest.class, IputCommandTest.class, IrmCommandTest.class
+@Suite.SuiteClasses({IlsCommandTest.class,
+    ImkdirCommandTest.class,
+    IputCommandTest.class,
+    IrmCommandTest.class,
+    IchksumCommandTest.class
 })
 public class ICommandInvokerTests {
-	
 }

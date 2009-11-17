@@ -105,9 +105,7 @@ public class IcommandInvoker {
         
         //env.put("irodsPassword", "blah");
         env.put("irodsDefResource", irodsInvocationContext.getIrodsResource());
-        
-        // FIXME: currently points by default at scratch dir, may need to be more explicit if we want to generalize this
-        
+                
         StringBuilder envBuilder = new StringBuilder();
         envBuilder.append('/');
         envBuilder.append(irodsInvocationContext.getIrodsZone());

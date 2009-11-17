@@ -31,6 +31,7 @@ public class IRODSFileOutputStreamTest {
     private static ScratchFileUtils scratchFileUtils = null;
     public static final String IRODS_TEST_SUBDIR_PATH = "IRODSFileOutputStreamTest";
     private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
+    private static AssertionHelper assertionHelper = null;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -41,6 +42,7 @@ public class IRODSFileOutputStreamTest {
         irodsTestSetupUtilities = new IRODSTestSetupUtilities();
         irodsTestSetupUtilities.initializeIrodsScratchDirectory();
         irodsTestSetupUtilities.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+        assertionHelper = new AssertionHelper();
     }
 
     @AfterClass
@@ -126,8 +128,11 @@ public class IRODSFileOutputStreamTest {
     @Ignore
     public final void testParallelFilePut() throws Exception {
         // make up a test file that triggers parallel transfer
-        String testFileName = FileGenerator.generateFileOfFixedLength(testingProperties.getProperty(
-                    GENERATED_FILE_DIRECTORY_KEY), (70000 * 1024));
+    	String testFileName = "testFilePut.csv";
+        // make up a test file of 20kb
+        String testFileFullPath =  FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
+                GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH + '/', testFileName, (70000 * 1024));
+       
         System.out.println("generating test file:" + testFileName);
 
         IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
@@ -152,7 +157,7 @@ public class IRODSFileOutputStreamTest {
         IRODSFile destFile = (IRODSFile) FileFactory.newFile(irodsUri);
         irodsFileSystem.commands.put(sourceFile, destFile, false);
         
-        // FIXME: add assert check of file in-place
+        assertionHelper.assertIrodsFileOrCollectionExists(IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
         
         irodsFileSystem.close();
     }

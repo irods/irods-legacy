@@ -10,7 +10,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
@@ -25,19 +28,14 @@ import edu.sdsc.jargon.testutils.TestingUtilsException;
  *        for unit testing
  */
 
-// FIXME: validation of trailing '/' on path in props?
 
 public class ScratchFileUtils {
 	private Properties testingProperties = new Properties();
 	private TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 
-	public ScratchFileUtils(Properties testingProperties) {
+	public ScratchFileUtils(Properties testingProperties) throws TestingUtilsException {
 		this.testingProperties = testingProperties;
-	}
-	
-	public ScratchFileUtils() throws TestingUtilsException {
-		// go ahead and try and derive properties from a known properties file location
-		testingProperties = testingPropertiesHelper.getTestProperties();
+		checkTrailingSlash(testingProperties.getProperty(GENERATED_FILE_DIRECTORY_KEY ));
 	}
 
 	/**
@@ -104,41 +102,67 @@ public class ScratchFileUtils {
 	}
 
 	/**
-	 * @param pathUnderScratch <code>String</code> with relative file path under scratch (no leading '/')
+	 * @param pathUnderScratch
+	 *            <code>String</code> with relative file path under scratch (no
+	 *            leading '/')
 	 * @return <code>long</code> with the file's checksum value
 	 * @throws TestingUtilsException
 	 */
-	public long computeFileCheckSum(String pathUnderScratch) throws TestingUtilsException {
+	public byte[] computeFileCheckSum(String pathUnderScratch)
+			throws TestingUtilsException {
 
 		StringBuilder pathBuilder = new StringBuilder();
 		pathBuilder.append(testingProperties
 				.getProperty(GENERATED_FILE_DIRECTORY_KEY));
 		pathBuilder.append(pathUnderScratch);
-		
-		
-		long checksum = 0;
-		
+
+		InputStream fis = null;
+
+		MessageDigest complete;
 		try {
-			FileInputStream file = new FileInputStream(pathBuilder.toString());
-			CheckedInputStream check = new CheckedInputStream(file, new CRC32());
-			BufferedInputStream in = new BufferedInputStream(check);
-			while (in.read() != -1) {
-				// Read file in completely
+			fis = new FileInputStream(pathBuilder.toString());
+
+			byte[] buffer = new byte[1024];
+			complete = MessageDigest.getInstance("MD5");
+			int numRead;
+			do {
+				numRead = fis.read(buffer);
+				if (numRead > 0) {
+					complete.update(buffer, 0, numRead);
+				}
+			} while (numRead != -1);
+		} catch (FileNotFoundException fnfe) {
+			StringBuilder message = new StringBuilder();
+			message.append("could not find file to checksum at:");
+			message.append(pathBuilder);
+			throw new TestingUtilsException(message.toString(), fnfe);
+		} catch (NoSuchAlgorithmException nsae) {
+			StringBuilder message = new StringBuilder();
+			throw new TestingUtilsException(
+					"could not MD5 algorithim for checksum", nsae);
+		} catch (IOException ioe) {
+			StringBuilder message = new StringBuilder();
+			message.append("io exception generating checksum for file:");
+			message.append(pathBuilder);
+			throw new TestingUtilsException(message.toString(), ioe);
+		} finally {
+			try {
+				fis.close();
+			} catch (Exception e) {
+				// ignore
 			}
-			checksum = check.getChecksum().getValue();
-		} catch (FileNotFoundException e) {
-			StringBuilder builder = new StringBuilder();
-			builder.append("file not found when computing checksum:");
-			builder.append(pathBuilder.toString());
-			throw new TestingUtilsException(builder.toString(), e);
-		} catch (IOException e) {
-			StringBuilder builder = new StringBuilder();
-			builder.append("ioexception when computing checksum on file:");
-			builder.append(pathBuilder.toString());
-			throw new TestingUtilsException(builder.toString(), e);
 		}
-		
-		return checksum;
+
+		return complete.digest();
+
+	}
+	
+	private void checkTrailingSlash(String path) throws TestingUtilsException {
+		String trimmedPath = path.trim();
+		String lastChar = trimmedPath.substring(trimmedPath.length() - 1);
+		if (!lastChar.equals("/")) {
+			throw new TestingUtilsException("please set the test.data.directory property in testing.properties to have a trailing / char ");
+		}
 	}
 
 }

@@ -95,27 +95,6 @@ public class FileGenerator {
 		fileName.append(generateRandomExtension());
 		return fileName.toString();
 	}
-
-	/**
-	 * Given a directory, generate a randomly named file with random data of
-	 * provided length.
-	 * 
-	 * @param fileDirectory
-	 *            <code>String</code> containing a valid directory on the local
-	 *            file system
-	 * @param length
-	 *            <code>long</code> containing the desired length of the file
-	 * @return <code>String</code> containing the full path to the generated
-	 *         file
-	 * @throws TestingUtilsException
-	 */
-	public static String generateFileOfFixedLength(String fileDirectory,
-			long length) throws TestingUtilsException {
-		
-		String fileName = generateRandomFileName(5);
-		
-		return generateFileOfFixedLengthGivenName(fileDirectory, fileName, length);
-	}
 	
 	/**
 	 * Given a directory, generate a randomly named file with random data of

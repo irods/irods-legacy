@@ -77,7 +77,7 @@ public class TestingPropertiesHelper {
 	}
 
 	
-	// FIXME fix comment with usage example
+	
 	/**
 	 * Get a URI in IRODS format that points to a scratch file, given the file name and any additional path
 	 * to that file without a leading '/'.  For example:

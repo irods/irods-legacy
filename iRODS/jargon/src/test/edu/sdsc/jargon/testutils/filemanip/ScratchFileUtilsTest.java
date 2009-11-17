@@ -16,6 +16,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
+import edu.sdsc.jargon.testutils.TestingUtilsException;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
@@ -30,11 +31,15 @@ public class ScratchFileUtilsTest {
 	private static Properties testingProperties = new Properties();
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	public static final String IRODS_TEST_SUBDIR_PATH = "ScratchFileUtilsTest";
+	private static ScratchFileUtils scratchFileUtils = null;
+	private static String scratchFileSubdir = "";
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
 		testingProperties = testingPropertiesLoader.getTestProperties();
+		scratchFileUtils = new ScratchFileUtils(testingProperties);
+		scratchFileSubdir = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH); 
 	}
 
 	@AfterClass
@@ -50,7 +55,7 @@ public class ScratchFileUtilsTest {
 	}
 
 	@Test
-	public final void testCreateScratchDirIfNotExists() {
+	public final void testCreateScratchDirIfNotExists() throws Exception {
 		Properties props = new Properties();
 		props.setProperty(GENERATED_FILE_DIRECTORY_KEY, 
 				testingProperties.getProperty(GENERATED_FILE_DIRECTORY_KEY));
@@ -59,7 +64,7 @@ public class ScratchFileUtilsTest {
 	}
 	
 	@Test
-	public final void testCreateScratchDirWhenNotExists() {
+	public final void testCreateScratchDirWhenNotExists() throws Exception {
 		Properties props = new Properties();
 		props.setProperty(GENERATED_FILE_DIRECTORY_KEY, 
 				testingProperties.getProperty(GENERATED_FILE_DIRECTORY_KEY));
@@ -70,7 +75,7 @@ public class ScratchFileUtilsTest {
 	}
 	
 	@Test
-	public final void testCheckFileExistsUnderScratch() {
+	public final void testCheckFileExistsUnderScratch() throws Exception {
 		Properties props = new Properties();
 		String testingDir = "testutils";
 		
@@ -86,24 +91,31 @@ public class ScratchFileUtilsTest {
 		TestCase.assertTrue("did not find scratch file just added", foundDir);
 	}
 	
-	@Test
-	public final void testCreateAndReturnScratchPathToFileName() {
+	@Test(expected=TestingUtilsException.class)
+	public final void testCatchMalformedGeneratedFilePath() throws Exception {
 		Properties props = new Properties();
-		String testingDir = "testutils/createandreturnscratchpath/";
+		props.setProperty(GENERATED_FILE_DIRECTORY_KEY, "C:/temp/bogus");
+		ScratchFileUtils utils = new ScratchFileUtils(props);
+	}
+	
+	@Test
+	public final void testCreateAndReturnScratchPathToFileName() throws Exception {
+		Properties props = new Properties();
+		String testingDir = "createandreturnscratchpath";
 		String testingFileName = "hello1.txt";
 		// setup a dir
 		
 		props.setProperty(GENERATED_FILE_DIRECTORY_KEY, 
 				testingProperties.getProperty(GENERATED_FILE_DIRECTORY_KEY));
 		
-		ScratchFileUtils scratchFileUtils = new ScratchFileUtils(props);
 		StringBuilder pathBuilder = new StringBuilder();
 		pathBuilder.append(testingDir);
+		pathBuilder.append('/');
 		pathBuilder.append(testingFileName);
 		String newPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(testingDir);
 		
 		// now I should find that dir
-		boolean foundDir = scratchFileUtils.checkIfFileExistsInScratch(testingDir + testingFileName);
+		boolean foundDir = scratchFileUtils.checkIfFileExistsInScratch(testingDir);
 		TestCase.assertTrue("did not find scratch file just added", foundDir);
 	}
 	
@@ -140,9 +152,9 @@ public class ScratchFileUtilsTest {
 		// now create a file using the path
 		String fullPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		FileGenerator.generateFileOfFixedLengthGivenName(fullPath, testingFileName, 11);
-		long actualChecksum = scratchFileUtils.computeFileCheckSum(IRODS_TEST_SUBDIR_PATH + '/' + testingFileName);
+		byte[] actualChecksum = scratchFileUtils.computeFileCheckSum(IRODS_TEST_SUBDIR_PATH + '/' + testingFileName);
 		
-		TestCase.assertTrue("no checksum generated", actualChecksum > 0);
+		TestCase.assertTrue("no checksum generated", actualChecksum.length > 0);
 	}
 
 }

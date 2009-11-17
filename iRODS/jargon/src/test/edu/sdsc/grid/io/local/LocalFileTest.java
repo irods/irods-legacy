@@ -129,50 +129,7 @@ public class LocalFileTest {
             res.indexOf(targetFileName) > -1);
     }
     
-    /**
-     * Test method for
-     * {@link edu.sdsc.grid.io.local.LocalFile#copyTo(edu.sdsc.grid.io.GeneralFile)}
-     * .
-     */
-    @Ignore // FIXME: not working locally!
-    public final void testCopyToGeneralFileUsingLargerSourceFile()
-        throws Exception {
-    	
-    	long targetLength = 921600l * 1024l;  // TODO: set to IRODSCommands TRANSFER_THREAD_SIZE + 1 when that is visible
-        GeneralAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        GeneralFileSystem fileSystem = FileFactory.newFileSystem(account);
-        String targetCollection = testingPropertiesHelper.buildIRODSCollectionRelativePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH);
-        String targetFileName = "testCopyToGeneralFileUsingLargerSourceFile.txt";
-
-        GeneralFile file = FileFactory.newFile(fileSystem, targetCollection);
-
-        String fullPathToLocalFile = FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(GENERATED_FILE_DIRECTORY_KEY), targetFileName, targetLength);
-        GeneralFile localFile = new LocalFile(fullPathToLocalFile);
-
-        if (localFile.canRead()) {
-            GeneralFile remoteFile = FileFactory.newFile(file,
-                    localFile.getName());
-            localFile.copyTo(remoteFile, true);
-        }
-
-        
-        // FIXME: add checksum pre and post, did not catch 0 length file 
-        // NOTE: file exists but no data when 0 threads allocated...handle as error in irodsCommands put?
-       
-        // now check if file exists in irods
-        // TODO: violates DRY, create an AssertHelper class with stuff like this below
-        IlsCommand ilsCommand = new IlsCommand();
-        targetCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH);
-        ilsCommand.setIlsBasePath(targetCollection);
-        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
-        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-        String res = invoker.invokeCommandAndGetResultAsString(ilsCommand);
-        TestCase.assertTrue("did not find file I just put",
-            res.indexOf(targetFileName) > -1);
-    }
-
+   
     /**
      * Test method for
      * {@link edu.sdsc.grid.io.local.LocalFile#copyTo(edu.sdsc.grid.io.GeneralFile, boolean)}

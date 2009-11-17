@@ -9,6 +9,7 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 
 import junit.framework.Assert;
+import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -16,8 +17,10 @@ import static org.junit.Assert.*;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Properties;
 
 
@@ -38,6 +41,7 @@ public class IchksumCommandTest {
     public static void setUpBeforeClass() throws Exception {
         testingProperties = testingPropertiesHelper.getTestProperties();
         scratchFileUtils = new ScratchFileUtils(testingProperties);
+        scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
         irodsTestSetupUtilities = new IRODSTestSetupUtilities();
         irodsTestSetupUtilities.initializeIrodsScratchDirectory();
         irodsTestSetupUtilities.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
@@ -55,26 +59,18 @@ public class IchksumCommandTest {
     public void tearDown() throws Exception {
     }
 
-    @Test
-    public final void testBuildCommand() {
-        fail("Not yet implemented");
-    }
 
-    @Test
+    @Ignore // work in progress
     public void testPutThenChecksumAFile() throws Exception {
-    	fail("Not yet implemented");
         String testFileName = "testQueryForResource.txt";
-
-        // FIXME: finish implementing and test
-        
+ 
         // generate a file and put into irods
         String fullPathToTestFile = FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
                     GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH +
                 "/", testFileName, 7);
 
         // get the actual checksum
-        long actualChecksum = scratchFileUtils.computeFileCheckSum(testingProperties.getProperty(
-                    GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH +
+        byte[] expectedChecksum = scratchFileUtils.computeFileCheckSum(IRODS_TEST_SUBDIR_PATH +
                 "/" + testFileName);
 
         IputCommand iputCommand = new IputCommand();
@@ -87,14 +83,14 @@ public class IchksumCommandTest {
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
         invoker.invokeCommandAndGetResultAsString(iputCommand);
         
+        
+        // FIXME: fix code for comparing a generated MD5 with a checksum returned from an ichksum command...
         // I have put the file, now assert that the file I put has the same checksum as the file I generated
         IchksumCommand chksumCommand = new IchksumCommand();
-        chksumCommand.setIrodsFileName(IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+        chksumCommand.setIrodsFileName(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(
+        		testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName));
         String chksumResult = invoker.invokeCommandAndGetResultAsString(chksumCommand);
-        // FIXME: how to parse result?  add that code to the Ichksum command as a static helper method that returns a long checksum
-        
-        
-        
-        
+        String expectedChecksumString = Arrays.toString(expectedChecksum);
+        TestCase.assertTrue("did not compute checksum, expected:" + expectedChecksumString + " actual:" + chksumResult, chksumResult.indexOf(expectedChecksumString) > -1);
     }
 }

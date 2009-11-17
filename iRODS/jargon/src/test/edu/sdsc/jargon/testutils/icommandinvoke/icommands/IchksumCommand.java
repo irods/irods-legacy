@@ -34,7 +34,7 @@ public class IchksumCommand implements Icommand {
 		}
 		
 		List<String> checksumCommand = new ArrayList<String>();
-		checksumCommand.add("chksum");
+		checksumCommand.add("ichksum");
 		
 		checksumCommand.add(irodsFileName);
 		return checksumCommand;

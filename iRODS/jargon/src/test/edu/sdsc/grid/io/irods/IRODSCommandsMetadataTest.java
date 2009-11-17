@@ -58,6 +58,10 @@ public class IRODSCommandsMetadataTest {
     public void tearDown() throws Exception {
     }
 
+    /**
+     * test relevant to BUG: 24 Inconsistant return of resource
+     * @throws Exception
+     */
     @Test
     public final void testQueryForResourceViaIRODSFile() throws Exception {
     	
@@ -80,9 +84,7 @@ public class IRODSCommandsMetadataTest {
          invoker.invokeCommandAndGetResultAsString(iputCommand);
          
          IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH));
-         
-         // FIXME test development in progress for aan bug...
-         
+           
          String filename = irodsFile.getName();
          System.out.println(irodsFile.getAbsolutePath());
          long size = irodsFile.length();

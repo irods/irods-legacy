@@ -86,7 +86,7 @@ public class AssertionHelperTest {
 		String absolutePathToTestFile = FileGenerator.generateFileOfFixedLengthGivenName(scratchFileSubdir, testFileName, fileLength);
 		
 		// get the checksum of this file
-		long actualChecksum = scratchFileUtils.computeFileCheckSum(IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		byte[] actualChecksum = scratchFileUtils.computeFileCheckSum(IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
 		
 		// now assert that the file has this checksum
 		AssertionHelper assertionHelper = new AssertionHelper();

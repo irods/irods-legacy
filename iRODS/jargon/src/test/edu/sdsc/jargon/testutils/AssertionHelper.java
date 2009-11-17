@@ -4,6 +4,7 @@
 package edu.sdsc.jargon.testutils;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Properties;
 import edu.sdsc.jargon.testutils.filemanip.*;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
@@ -12,8 +13,6 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
-
-// FIXME: implement and testing of this, add to test utils suite
 
 /**
  * Helpful assertions for unit testing IRODS
@@ -25,12 +24,13 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 public class AssertionHelper {
 	private Properties testingProperties = new Properties();
 	private TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
-	private ScratchFileUtils scratchFileUtils = new ScratchFileUtils();
+	private ScratchFileUtils scratchFileUtils = null;
 	private static final String ASSERTION_ERROR_MESSAGE = "assertion failed -- ";
 	private static final String FILE_DOES_NOT_EXIST_ERROR = "requested file does not exist!";
 
 	public AssertionHelper() throws TestingUtilsException {
 		testingProperties = testingPropertiesHelper.getTestProperties();
+		scratchFileUtils = new ScratchFileUtils(testingProperties);
 	}
 
 	/**
@@ -82,12 +82,13 @@ public class AssertionHelper {
 	 * @param actualChecksum2 <code>long</code> value with the anticipated MD5 checksum
 	 * @throws IRODSTestAssertionException
 	 */
-	public void assertLocalFileHasChecksum(String filePathRelativeToScratch, long expectedChecksum) throws IRODSTestAssertionException {
-		long actualChecksum = 0;
+	public void assertLocalFileHasChecksum(String filePathRelativeToScratch, byte[] expectedChecksum) throws IRODSTestAssertionException {
+		byte[] actualChecksum;
 		
 		try {
 			actualChecksum = scratchFileUtils.computeFileCheckSum(filePathRelativeToScratch);
-			if (actualChecksum != expectedChecksum) {
+			boolean areEqual = Arrays.equals(actualChecksum,expectedChecksum);
+			if (!areEqual) {
 				StringBuilder errorMessage = new StringBuilder();
 				errorMessage.append(ASSERTION_ERROR_MESSAGE);
 				errorMessage.append("checksum error, expected:");
@@ -115,7 +116,6 @@ public class AssertionHelper {
 		return fullPathToLocalFile;
 	}
 	
-	// TODO: implement me
 	
 	public void assertIrodsFileMatchesLocalFileChecksum(String relativeIRODSPathUnderScratch, String relativeLocalFileUnderScratch) throws IRODSTestAssertionException {
 	
