@@ -166,15 +166,13 @@
 
 	<target name="unit_test" depends="init, compile">
 		<echo message="running all junit tests..." />
-		<echo message="warning...JUnit not yet added...empty target!!!" />
-		<!--<junit fork="${junit.fork}" haltonfailure="${fail.on.junit.error}">
-			
+		<junit fork="${junit.fork}" haltonfailure="${fail.on.junit.error}">
 			<classpath location="${instrumented.code.dir}" />
 			<classpath refid="class.path.test" />
 			<formatter type="brief" usefile="false" />
-			<test name="edu.sdsc.jargon.unittest.AllTests" />
+			<test name="edu.sdsc.jargon.unittest.testsuites.AllTests" />
 		</junit>
-		<echo message="running clean target will clean up unit test scratch directories..." />-->
+		<echo message="running clean target will clean up unit test scratch directories..." />
 	</target>
 
 </project>
