@@ -23,8 +23,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({IlsCommandTest.class,
     ImkdirCommandTest.class,
     IputCommandTest.class,
-    IrmCommandTest.class,
-    IchksumCommandTest.class
+    IrmCommandTest.class
+    //IchksumCommandTest.class TODO: add after tests are implemented
 })
 public class ICommandInvokerTests {
 }

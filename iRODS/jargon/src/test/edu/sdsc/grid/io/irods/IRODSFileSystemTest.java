@@ -81,6 +81,11 @@ public class IRODSFileSystemTest {
          
     }
     
+    @Test(expected=SecurityException.class)
+    public void testCreateWithDefaultConstructorNoGsi() throws Exception {
+    	IRODSFileSystem IRODSFileSystem = new IRODSFileSystem();
+    }
+    
     @Test
     public void testBasicCanCreateValidIrodsFileSystemAsCollection() throws Exception {
     	
@@ -102,11 +107,12 @@ public class IRODSFileSystemTest {
      * @throws Exception
      * BUG: 24
      */
-    @Ignore
+    @Test(expected=NullPointerException.class)
     public void testDoesntIgnoreNullResource() throws Exception {
     	
-    	 IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-    	 account.setDefaultStorageResource(null);
+    	 Properties noResourceProperties = (Properties) testingProperties.clone();
+    	 noResourceProperties.remove(IRODS_RESOURCE_KEY);
+    	 IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(noResourceProperties);
          IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
          String testFileName = "testDoesntIgnoreNullResource.txt";
          
@@ -165,8 +171,7 @@ public class IRODSFileSystemTest {
     	 TestCase.assertTrue("file system not aware this is a file", irodsFile.isFile());
     	 TestCase.assertFalse("thinks this is a file and a directory", irodsFile.isDirectory());
     	 TestCase.assertEquals("does not have the resource from the account", testingProperties.getProperty(IRODS_RESOURCE_KEY), irodsFile.getResource());
-    	 irodsFileSystem.close();
-         
+    	 irodsFileSystem.close();    
     }
     
 }

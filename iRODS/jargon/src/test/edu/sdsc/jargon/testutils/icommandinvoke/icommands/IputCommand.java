@@ -18,6 +18,9 @@ public class IputCommand implements Icommand {
 	
 	private String localFileName = "";
 	private String irodsFileName = "";
+	private String irodsResource = "";
+	
+
 	private boolean forceOverride = false;
 
 	/* (non-Javadoc)
@@ -34,6 +37,13 @@ public class IputCommand implements Icommand {
 		
 		if (forceOverride) {
 			putCommand.add("-f");
+		}
+		
+		if (irodsResource != null && irodsResource.length() > 0) {
+			StringBuilder resourceProperty = new StringBuilder();
+			resourceProperty.append("-R");
+			resourceProperty.append(irodsResource);
+			putCommand.add(resourceProperty.toString());
 		}
 		
 		putCommand.add(localFileName);
@@ -85,6 +95,14 @@ public class IputCommand implements Icommand {
 	 */
 	public void setForceOverride(boolean forceOverride) {
 		this.forceOverride = forceOverride;
+	}
+	
+	public String getIrodsResource() {
+		return irodsResource;
+	}
+
+	public void setIrodsResource(String irodsResource) {
+		this.irodsResource = irodsResource;
 	}
 
 }

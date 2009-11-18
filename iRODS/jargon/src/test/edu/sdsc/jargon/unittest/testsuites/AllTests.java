@@ -20,10 +20,7 @@ import edu.sdsc.grid.io.irods.IRODSFileTest;
   TestingUtilitiesTest.class, 
   IRODSTests.class, 
   ICommandInvokerTests.class,
-  LocalFileTests.class,
-  IRODSCommandsMetadataTest.class,
-  IRODSFileOutputStreamTest.class,
-  IRODSFileTest.class
+  LocalFileTests.class
 })
 
 public class AllTests {

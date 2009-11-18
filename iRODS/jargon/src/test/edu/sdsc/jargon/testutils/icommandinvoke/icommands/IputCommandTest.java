@@ -22,6 +22,7 @@ import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
 /**
  * @author Mike Conway, DICE (www.irods.org)
@@ -30,11 +31,10 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 public class IputCommandTest {
     private static Properties testingProperties = new Properties();
     private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
-    public static final String IPUT_COMMAND_TEST_PATH = "IputCommandTest";
+    public static final String IRODS_TEST_SUBDIR_PATH = "IputCommandTest";
     private static ScratchFileUtils scratchFileUtils = null;
     private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
     
-
     
     /**
      * @throws java.lang.Exception
@@ -45,7 +45,7 @@ public class IputCommandTest {
         scratchFileUtils = new ScratchFileUtils(testingProperties);
         irodsTestSetupUtilities = new IRODSTestSetupUtilities();
         irodsTestSetupUtilities.initializeIrodsScratchDirectory();
-        irodsTestSetupUtilities.initializeDirectoryForTest(IPUT_COMMAND_TEST_PATH);
+        irodsTestSetupUtilities.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
     }
 
     /**
@@ -85,15 +85,37 @@ public class IputCommandTest {
         IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
 
         // generate testing file
-        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IPUT_COMMAND_TEST_PATH);
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
         String absPathToFile = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
             20);
 
         IputCommand iputCommand = new IputCommand();
 
         iputCommand.setLocalFileName(absPathToFile);
-        iputCommand.setIrodsFileName(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IPUT_COMMAND_TEST_PATH ));
-        //iputCommand.setIrodsFileName("test-scratch/IputCommandTest");
+        iputCommand.setIrodsFileName(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH ));
+        
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+    }
+    
+    @Test
+    public void testPutSecondaryResource() throws Exception {
+    	// 	no exception = passed
+        String testFileName = "testPutSecondaryResource.txt";
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+
+        // generate testing file
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String absPathToFile = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            20);
+
+        IputCommand iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(absPathToFile);
+        iputCommand.setIrodsFileName(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH ));
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
         
         iputCommand.setForceOverride(true);
 
@@ -108,7 +130,7 @@ public class IputCommandTest {
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
         
         // generate testing file and get absolute path
-        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IPUT_COMMAND_TEST_PATH);
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
         FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
             20);
 
@@ -116,7 +138,7 @@ public class IputCommandTest {
         localFileName.append(absPath);
         localFileName.append(testFileName);
         
-        String actualCollectionPath = testingPropertiesHelper.buildIRODSCollectionRelativePathFromTestProperties(testingProperties, IPUT_COMMAND_TEST_PATH);
+        String actualCollectionPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH);
 
         // now put the file
         IputCommand iputCommand = new IputCommand();

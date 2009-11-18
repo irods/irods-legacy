@@ -10,6 +10,9 @@ import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
+import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -57,68 +60,6 @@ public class IRODSFileOutputStreamTest {
     public void tearDown() throws Exception {
     }
 
-    @Ignore
-    public final void testWriteByteArrayIntInt() {
-        fail("Not yet implemented");
-    }
-
-    @Ignore
-    public final void testClose() {
-        fail("Not yet implemented");
-    }
-
-    @Ignore
-    public final void testOpen() {
-        fail("Not yet implemented");
-    }
-
-    @Ignore
-    public final void testIRODSFileOutputStreamIRODSFileSystemString() {
-        fail("Not yet implemented");
-    }
-
-    @Ignore
-    public final void testIRODSFileOutputStreamIRODSFile() {
-        fail("Not yet implemented");
-    }
-
-    
-    
-    /**
-     * This may be intermittent, based on the state of the local irods ENV.  When the URI is created for the
-     * Dest file, it may be null, in which case the put may fail with a -78000 due to no resource being found.
-     * @throws Exception
-     * BUG: 31
-     */
-    @Test
-    public final void testFilePutCreateDestFileByUri() throws Exception {
-    	String testFileName = "testFilePut.csv";
-        // make up a test file of 20kb
-        String testFileFullPath =  FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
-                GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH + '/', testFileName, 17);
-        IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-
-        // point to the local file I just built
-         StringBuilder sourceFileName = new StringBuilder();
-        sourceFileName.append("file:///");
-        sourceFileName.append(testFileFullPath);
-
-        GeneralFile sourceFile = FileFactory.newFile(new URI(
-                    sourceFileName.toString()));
-
-        // point to an irods file and put it
-        URI irodsUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
-        IRODSFile destFile = (IRODSFile) FileFactory.newFile(irodsUri);
-
-        irodsFileSystem.commands.put(sourceFile, destFile, true);
-        
-        AssertionHelper assertionHelper = new AssertionHelper();
-        assertionHelper.assertIrodsFileOrCollectionExists(destFile.getAbsolutePath());
-        irodsFileSystem.close();
-    }
-
-    
     
     /**
      * TODO: Was not working locally on original install of IRODS, may be an error due to running on 

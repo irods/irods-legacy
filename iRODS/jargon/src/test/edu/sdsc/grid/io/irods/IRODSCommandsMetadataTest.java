@@ -106,6 +106,8 @@ public class IRODSCommandsMetadataTest {
              System.out.println(filename + "\t" + size + "\t" + resource + "\t" + physicalResource);
          }
          
-         irodsFileSystem.close();     
+         irodsFileSystem.close();    
+         
+         // FIXME: add asserts
     }    
 }
