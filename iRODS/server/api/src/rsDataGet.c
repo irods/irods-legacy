@@ -51,6 +51,13 @@ int
 _rsDataGet (rsComm_t *rsComm, dataOprInp_t *dataOprInp,
 portalOprOut_t **portalOprOut)
 {
+    int status;
+
+    status = setupSrvPortalForParaOpr (rsComm, dataOprInp, GET_OPR,
+      portalOprOut);
+
+    return status;
+#if 0
    portalOprOut_t *myDataObjGetOut;
     int portalSock;
     int proto;
@@ -105,6 +112,7 @@ portalOprOut_t **portalOprOut)
         myPortalOpr->dataOprInp.numThreads = myDataObjGetOut->numThreads;
     }
     return (0);
+#endif
 }
 
 int

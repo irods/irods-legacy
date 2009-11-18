@@ -79,6 +79,76 @@ svrToSvrConnect (rsComm_t *rsComm, rodsServerHost_t *rodsServerHost)
     }
 }
 
+/* setupSrvPortalForParaOpr - Setup the portal on this server for
+ * parallel or RBUDP transfer. It call createSrvPortal to create
+ * the portal socket, malloc the portalOprOut struct, put the
+ * server address, portNumber, etc in this struct. Aslo malloc
+ * the rsComm->portalOpr struct and fill in the struct. This struct
+ * will be used later by the server after sending reply to the client.
+ * If RBUDP_TRANSFER_KW is set in dataOprInp->condInput, RBUDP transfer
+ * is assumed.
+ */
+
+int
+setupSrvPortalForParaOpr (rsComm_t *rsComm, dataOprInp_t *dataOprInp,
+int oprType, portalOprOut_t **portalOprOut)
+{
+    portalOprOut_t *myDataObjPutOut;
+    int portalSock;
+    int proto;
+
+#ifdef RBUDP_TRANSFER
+    if (getValByKey (&dataOprInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
+        proto = SOCK_DGRAM;
+    } else {
+        proto = SOCK_STREAM;
+    }
+#else
+    proto = SOCK_STREAM;
+#endif  /* RBUDP_TRANSFER */
+
+    myDataObjPutOut = (portalOprOut_t *) malloc (sizeof (portalOprOut_t));
+    memset (myDataObjPutOut, 0, sizeof (portalOprOut_t));
+
+    *portalOprOut = myDataObjPutOut;
+
+    if (getValByKey (&dataOprInp->condInput, STREAMING_KW) != NULL ||
+      proto == SOCK_DGRAM) {
+        /* streaming or udp - use only one thread */
+        myDataObjPutOut->numThreads = 1;
+    } else {
+        myDataObjPutOut->numThreads =
+          myDataObjPutOut->numThreads = getNumThreads (rsComm,
+           dataOprInp->dataSize, dataOprInp->numThreads,
+           &dataOprInp->condInput);
+    }
+
+    if (myDataObjPutOut->numThreads == 0) {
+        return 0;
+    } else {
+        portalOpr_t *myPortalOpr;
+
+        /* setup the portal */
+        portalSock = createSrvPortal (rsComm, &myDataObjPutOut->portList,
+          proto);
+        if (portalSock < 0) {
+            rodsLog (LOG_NOTICE,
+              "setupSrvPortalForParaOpr: createSrvPortal error, ststus = %d", 
+	      portalSock);
+              myDataObjPutOut->status = portalSock;
+              return portalSock;
+        }
+        myPortalOpr = rsComm->portalOpr =
+          (portalOpr_t *) malloc (sizeof (portalOpr_t));
+        myPortalOpr->oprType = oprType;
+        myPortalOpr->portList = myDataObjPutOut->portList;
+        myPortalOpr->dataOprInp = *dataOprInp;
+        memset (&dataOprInp->condInput, 0, sizeof (dataOprInp->condInput));
+        myPortalOpr->dataOprInp.numThreads = myDataObjPutOut->numThreads;
+    }
+    return (0);
+}
+
 /* createSrvPortal - create a server socket portal.
  * proto can be SOCK_STREAM or SOCK_DGRAM.
  * if proto == SOCK_DGRAM, create a tcp (control) and a udp socket
