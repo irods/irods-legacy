@@ -1,4 +1,4 @@
-Jargon 2.2.1 Release Notes 
+Jargon 2.2.1 Release Notes
 
 ***************** work in progress for 2.2.1 Release *******************************************
 ************************************************************************************************
@@ -28,7 +28,7 @@ libraries
 
 
 ================================================================================================
-Features and Changes 
+Features and Changes
 
 This release is a bug-fix release to bring Jargon up-to-date.  Jargon 2.2.1 will incorporate any outstanding
 patches that were not committed for the 2.2.0 release, as well as any new issues identified in Jargon 2.2.0
@@ -42,34 +42,37 @@ patches that were not committed for the 2.2.0 release, as well as any new issues
   * Moved manifest files out of lib
   * Moved test code out of Jargon.jar, into it's own Jargon-test.jar file
   * Added a JUnit task
-  
--------------
-Add of JUnit testing support.  
 
-This is being used for internal development, with the intent to make these facilities generally available. 
+-------------
+Add of JUnit testing support.
+
+This is being used for internal development, with the intent to make these facilities generally available.
 Consider the JUnit testing to be experimental.
 
 -------------
 Testing and patches for  Bug 24 -  Inconsistent return of resource on IRODSFile
-
+*return physical resource for IRODSFile.getResource() when it is a File
 -------------
 Testing and patches for  Bug 31 -  Create IRODS file by URI and do put - null resource causes -78000 IRODS error
+*created test cases to capture bug
 
 -------------
-Testing and patches for  Bug 32 -   copyTo when dest file is from URI results in -78000 resource not found 
+Testing and patches for  Bug 32 -   copyTo when dest file is from URI results in -78000 resource not found
+*created test cases to capture bug
+-------------
+Testing for Bug 29 - problem with Jargon physically deleting a file
+*created test cases to capture bug
+
+
+================================================================================================
+Outstanding Issues
+
 
 
 
 
 ================================================================================================
-Outstanding Issues 
-
-
-
-
-
-================================================================================================
-Documentation and Installation 
+Documentation and Installation
 
 -See the README.txt in this distribution
 -Review Jargon documentation at: http://www.irods.org/index.php/Jargon

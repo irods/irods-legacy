@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package edu.sdsc.jargon.testutils;
 
@@ -13,12 +13,11 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
-
 /**
  * Helpful assertions for unit testing IRODS
- * 
+ *
  * @author Mike Conway, DICE (www.irods.org)
- * @since 
+ * @since
  *
  */
 public class AssertionHelper {
@@ -34,11 +33,15 @@ public class AssertionHelper {
 	}
 
 	/**
-	 * Ensures that a file exists given the path/file name 
-	 * @param filePathRelativeToScratch <code>String</code> that gives the relative file path under scratch, with no leading separator character
+	 * Ensures that a file exists given the path/file name
+	 *
+	 * @param filePathRelativeToScratch
+	 *            <code>String</code> that gives the relative file path under
+	 *            scratch, with no leading separator character
 	 * @throws IRODSTestAssertionException
 	 */
-	public void assertLocalFileExistsInScratch(String filePathRelativeToScratch) throws IRODSTestAssertionException {
+	public void assertLocalFileExistsInScratch(String filePathRelativeToScratch)
+			throws IRODSTestAssertionException {
 		StringBuilder fullPathToLocalFile = computeFullPathToLocalFile(filePathRelativeToScratch);
 		StringBuilder errorMessage = new StringBuilder();
 		errorMessage.append(ASSERTION_ERROR_MESSAGE);
@@ -48,16 +51,22 @@ public class AssertionHelper {
 		if (!localFile.exists()) {
 			throw new IRODSTestAssertionException(errorMessage.toString());
 		}
-		
+
 	}
-	
+
 	/**
 	 * Ensures that the given file has the expected length
-	 * @param filePathRelativeToScratch <code>String</code> that gives the relative file path under scratch, with no leading separator character
-	 * @param expectedLength <code>long</code> with length in KB of file that is expected
+	 *
+	 * @param filePathRelativeToScratch
+	 *            <code>String</code> that gives the relative file path under
+	 *            scratch, with no leading separator character
+	 * @param expectedLength
+	 *            <code>long</code> with length in KB of file that is expected
 	 * @throws IRODSTestAssertionException
 	 */
-	public void assertLocalScratchFileLengthEquals(String filePathRelativeToScratch, long expectedLength) throws IRODSTestAssertionException {
+	public void assertLocalScratchFileLengthEquals(
+			String filePathRelativeToScratch, long expectedLength)
+			throws IRODSTestAssertionException {
 		StringBuilder fullPathToLocalFile = computeFullPathToLocalFile(filePathRelativeToScratch);
 		File localFile = new File(fullPathToLocalFile.toString());
 		if (!localFile.exists()) {
@@ -75,19 +84,26 @@ public class AssertionHelper {
 			throw new IRODSTestAssertionException(errorMessage.toString());
 		}
 	}
-	
+
 	/**
-	 * Ensure that the given local file exists and has the expected checksum value
-	 * @param filePathRelativeToScratch <code>String</code> that gives the relative file path under scratch, with no leading separator character
-	 * @param actualChecksum2 <code>long</code> value with the anticipated MD5 checksum
+	 * Ensure that the given local file exists and has the expected checksum
+	 * value
+	 *
+	 * @param filePathRelativeToScratch
+	 *            <code>String</code> that gives the relative file path under
+	 *            scratch, with no leading separator character
+	 * @param actualChecksum2
+	 *            <code>long</code> value with the anticipated MD5 checksum
 	 * @throws IRODSTestAssertionException
 	 */
-	public void assertLocalFileHasChecksum(String filePathRelativeToScratch, byte[] expectedChecksum) throws IRODSTestAssertionException {
+	public void assertLocalFileHasChecksum(String filePathRelativeToScratch,
+			byte[] expectedChecksum) throws IRODSTestAssertionException {
 		byte[] actualChecksum;
-		
+
 		try {
-			actualChecksum = scratchFileUtils.computeFileCheckSum(filePathRelativeToScratch);
-			boolean areEqual = Arrays.equals(actualChecksum,expectedChecksum);
+			actualChecksum = scratchFileUtils
+					.computeFileCheckSum(filePathRelativeToScratch);
+			boolean areEqual = Arrays.equals(actualChecksum, expectedChecksum);
 			if (!areEqual) {
 				StringBuilder errorMessage = new StringBuilder();
 				errorMessage.append(ASSERTION_ERROR_MESSAGE);
@@ -98,7 +114,7 @@ public class AssertionHelper {
 				errorMessage.append(" for file:");
 				errorMessage.append(filePathRelativeToScratch);
 				throw new IRODSTestAssertionException(errorMessage.toString());
-				
+
 			}
 		} catch (TestingUtilsException e) {
 			StringBuilder message = new StringBuilder();
@@ -111,45 +127,102 @@ public class AssertionHelper {
 	protected StringBuilder computeFullPathToLocalFile(
 			String filePathRelativeToScratch) {
 		StringBuilder fullPathToLocalFile = new StringBuilder();
-		fullPathToLocalFile.append(testingProperties.get(GENERATED_FILE_DIRECTORY_KEY));
+		fullPathToLocalFile.append(testingProperties
+				.get(GENERATED_FILE_DIRECTORY_KEY));
 		fullPathToLocalFile.append(filePathRelativeToScratch);
 		return fullPathToLocalFile;
 	}
-	
-	
-	public void assertIrodsFileMatchesLocalFileChecksum(String relativeIRODSPathUnderScratch, String relativeLocalFileUnderScratch) throws IRODSTestAssertionException {
-	
+
+	public void assertIrodsFileMatchesLocalFileChecksum(
+			String relativeIRODSPathUnderScratch,
+			String relativeLocalFileUnderScratch)
+			throws IRODSTestAssertionException {
+
 	}
-	
+
 	/**
 	 * Make sure that a file or collection is in IRODS
-	 * @param relativeIrodsPathUnderScratch <code>String</code> with relative path (no leading '/', or a path and filename to look for
+	 *
+	 * @param relativeIrodsPathUnderScratch
+	 *            <code>String</code> with relative path (no leading '/', or a
+	 *            path and filename to look for
 	 * @throws IRODSTestAssertionException
 	 */
-	public void assertIrodsFileOrCollectionExists(String relativeIrodsPathUnderScratch) throws IRODSTestAssertionException {
+	public void assertIrodsFileOrCollectionExists(
+			String relativeIrodsPathUnderScratch)
+			throws IRODSTestAssertionException {
 		IlsCommand ilsCommand = new IlsCommand();
 		ilsCommand.setIlsBasePath(relativeIrodsPathUnderScratch);
-		IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		
+
 		try {
-			String result = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+			String result = invoker
+					.invokeCommandAndGetResultAsString(ilsCommand);
 			if (result.indexOf(relativeIrodsPathUnderScratch) == -1) {
-				
-					StringBuilder errorMessage = new StringBuilder();
-					errorMessage.append(ASSERTION_ERROR_MESSAGE);
-					errorMessage.append("assert file or collection exists error, expected to find:");
-					errorMessage.append(relativeIrodsPathUnderScratch);
-					throw new IRODSTestAssertionException(errorMessage.toString());
+
+				StringBuilder errorMessage = new StringBuilder();
+				errorMessage.append(ASSERTION_ERROR_MESSAGE);
+				errorMessage
+						.append("assert file or collection exists error, expected to find:");
+				errorMessage.append(relativeIrodsPathUnderScratch);
+				throw new IRODSTestAssertionException(errorMessage.toString());
 			}
-			
+
 		} catch (IcommandException ice) {
 			StringBuilder message = new StringBuilder();
 			message.append("error ocurred processing assertion on ils path:");
 			message.append(relativeIrodsPathUnderScratch);
 			throw new IRODSTestAssertionException(message.toString(), ice);
 		}
-	
-	
+
 	}
+
+	/**
+	 * Make sure that a file or collection is not in IRODS
+	 *
+	 * @param relativeIrodsPathUnderScratch
+	 *            <code>String</code> with relative path (no leading '/', or a
+	 *            path and filename to look for
+	 * @throws IRODSTestAssertionException
+	 */
+	public void assertIrodsFileOrCollectionDoesNotExist(
+			String relativeIrodsPathUnderScratch)
+			throws IRODSTestAssertionException {
+		IlsCommand ilsCommand = new IlsCommand();
+		ilsCommand.setIlsBasePath(relativeIrodsPathUnderScratch);
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+
+		try {
+			String result = invoker
+					.invokeCommandAndGetResultAsString(ilsCommand);
+			if (result.indexOf(relativeIrodsPathUnderScratch) != -1) {
+
+				StringBuilder errorMessage = new StringBuilder();
+				errorMessage.append(ASSERTION_ERROR_MESSAGE);
+				errorMessage
+						.append("assert file/collection does not exist in irods, did not expect to find:");
+				errorMessage.append(relativeIrodsPathUnderScratch);
+				throw new IRODSTestAssertionException(errorMessage.toString());
+			}
+
+		} catch (IcommandException ice) {
+			// an exception due to a not exists is actually ok
+			if (ice.getMessage().indexOf("does not exist") > -1) {
+				// just fine, what I want
+			} else {
+
+				StringBuilder message = new StringBuilder();
+				message
+						.append("error ocurred processing assertion on ils path:");
+				message.append(relativeIrodsPathUnderScratch);
+				throw new IRODSTestAssertionException(message.toString(), ice);
+			}
+		}
+
+	}
+
 }
