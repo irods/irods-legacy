@@ -318,13 +318,14 @@ public class IRODSFile extends RemoteFile
           password,
           homeDirectory,
           zone,
-          "" )) //default resource
+          "" )) //default resource see 
         );
-        //resource = getAvailableResource( iRODSFileSystem );
+        
         //iRODSFileSystem.setDefaultStorageResource( resource );
       }
 
       setFileName( uri.getPath() );
+      //resource = getAvailableResource();
     }
     else {
       throw new URISyntaxException(uri.toString(), "Wrong URI scheme");
@@ -364,19 +365,18 @@ public class IRODSFile extends RemoteFile
    * Just pick one at random then use that for the default resource of
    * the fileSystem object as well.
    */
-  static String getAvailableResource( IRODSFileSystem fs )
+  // FIXME work in progress, does not work for files that don't exist yet
+  protected String getAvailableResource()
     throws IOException
   {
-    MetaDataRecordList[] rl = fs.query(
-      MetaDataSet.newSelection( ResourceMetaData.RESOURCE_NAME ) );
+    MetaDataRecordList[] recordList = this.query(new String[] {
+            IRODSMetaDataSet.RESOURCE_NAME});
 
-    if (rl != null) {
-      //The first one was sometimes causing trouble,
-      //pick a random one so it works some of the time at least
-      int random = (int)Math.round((rl.length-1)*Math.random());
-      return rl[random].getStringValue( 0 );
+    if (recordList != null && recordList.length > 0) {
+      return recordList[0].getStringValue( 0 );
+    } else {
+    	throw new IOException( "No resources available" );
     }
-    throw new IOException( "No resources available" );
   }
 
 //----------------------------------------------------------------------
@@ -647,6 +647,9 @@ public class IRODSFile extends RemoteFile
    * @throws  NullPointerException If file is null.
    * @throws IOException If an IOException occurs.
    */
+  // FIXME: BUG: 31 - files created with URI have no resource, does not work with this function
+  // this is probably the root cause, a copy with no resource defined should probably be handled
+  // on the server?
   public void copyTo( GeneralFile file, boolean forceOverwrite )
     throws IOException
   {
@@ -1045,31 +1048,32 @@ public class IRODSFile extends RemoteFile
 
 
   /**
-   * @return resource the physical resource where this file is stored.
-   *    Will not query the server if this abstract pathname is a directory.
-   *     Returns null if the file is a directory or does not exist.
+   * Return the first physical resource found where the file is stored, if available.  Otherwise, will return
+   * the default resource set by the IRODSAccount, if available.  Otherwise, will return null.
+   * 
+   * @return <code>String</code> containing the resource for the file
    *
    * @throws IOException If an IOException occurs during the system query.
    */
   public String getResource( )
     throws IOException
-  {
-    if (resource != null) {
-      return resource;
-    }    
-    resource = ((IRODSFileSystem)fileSystem).getDefaultStorageResource();    
-    if (resource != null && !resource.equals("")) {
-      return resource;
-    }
+  {  
+	// I may have set the resource already
+    if (resource == null) {
+    	// for files, get the actual resource associated with the file, otherwise,
+	    // get any default set by the IRODS account
+    	if (this.isFile()) {
+        	resource = firstQueryResult( ResourceMetaData.RESOURCE_NAME );
+        } else {
+        	resource = ((IRODSFileSystem)fileSystem).getDefaultStorageResource();   
+        }
+    } else {
+    	// note that there is some inconsistency between nulls and "" values for resource, try and
+    	// standardize on null.  This probably needs more work.
+    } 
     
-    if (isDirectory(false)) {
-      return null;
-    }
-    
-    //no filesystem default
-    //query the server, null if does not exist
-    resource = firstQueryResult( ResourceMetaData.RESOURCE_NAME );
-    return resource;    
+    return resource;
+   
   }
   
 

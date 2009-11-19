@@ -142,7 +142,7 @@ public class IRODSFileSystemTest {
     /**
      * This is related to bug 24, given a null resource in the account, IRODSFile or IRODSFileSystem do not attempt to discern the default resource
      * @throws Exception
-     * BUG: 24
+     * BUG: 24 
      */
     @Ignore
     public void testDoesntIgnoreBogusResource() throws Exception {

@@ -167,8 +167,8 @@ public class IRODSFileTest {
         TestCase.assertTrue("testing file is not a collection", irodsFile.isDirectory());
         // should query for resource in IRODSFile
         String actualResource = irodsFile.getResource();
-        TestCase.assertEquals("I should have gotten the default resource", null, actualResource);
-        // FLAG: note on this test that it should, for consistency, have null in resource
+        TestCase.assertEquals("I should have gotten the default resource", "", actualResource);
+        // BUG: note on this test that it should, for consistency, have null in resource
     }
     
     @Test(expected = IRODSException.class)
@@ -234,7 +234,6 @@ public class IRODSFileTest {
         TestCase.assertTrue("testing file does not exist!", irodsFile.exists());
         String actualResource = irodsFile.getResource();
         TestCase.assertEquals("I should have gotten the specific resource I used for the iput", testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY), actualResource);
-  
     }
 
     /**

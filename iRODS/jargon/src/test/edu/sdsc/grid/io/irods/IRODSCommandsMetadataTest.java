@@ -86,7 +86,6 @@ public class IRODSCommandsMetadataTest {
          IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH));
            
          String filename = irodsFile.getName();
-         System.out.println(irodsFile.getAbsolutePath());
          long size = irodsFile.length();
 
          // query(String[]) defined in GeneralFile
@@ -103,7 +102,6 @@ public class IRODSCommandsMetadataTest {
          for (MetaDataRecordList l : lists) {
              String resource = l.getStringValue(0);
              String physicalResource = l.getStringValue(1);
-             System.out.println(filename + "\t" + size + "\t" + resource + "\t" + physicalResource);
          }
          
          irodsFileSystem.close();    

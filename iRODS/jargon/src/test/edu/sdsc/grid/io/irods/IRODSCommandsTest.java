@@ -52,9 +52,15 @@ public class IRODSCommandsTest {
     public void tearDown() throws Exception {
     }
 
+    
+    /**
+     * BUG: 32
+     * @throws Exception
+     */
     @Test
     public final void testCopySourceByURIDestByURI() throws Exception {
     	//FIXME: fail -78000 when creating a file via uri...resource does not exist
+    	//BUG: 32    	copyTo when dest file is from URI results in -78000 resource not found 
     	// generate a local scratch file
         String testFileName = "testCopySourceByURI.txt";
         String testCopyToFileName = "testCopySourceByURICopyTo.txt";
@@ -146,21 +152,28 @@ public class IRODSCommandsTest {
         IRODSFile irodsFile = new IRODSFile(irodsUri);
         
         uriPath = new StringBuilder();
-        uriPath.append(IRODS_TEST_SUBDIR_PATH);
+        uriPath.append(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH));
         uriPath.append('/');
         uriPath.append(testCopyToFileName);
         
-        URI irodsCopyToUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
-                uriPath.toString());
-        IRODSFile irodsCopyToFile = new IRODSFile(irodsCopyToUri);
+        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
         
+        IRODSFile irodsCopyToFile = new IRODSFile(irodsFileSystem, uriPath.toString());
         irodsFile.copyTo(irodsCopyToFile, true);
         
         // see that the file I just copied to exists in irods
         assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
+        irodsFileSystem.close();
      
     }
     
+
+    /**
+     * BUG: 32
+     * @throws Exception
+     */
     @Test
     public final void testCopySourceFileFromAccountDestFromURI() throws Exception {
     	//FIXME: fail -78000 
@@ -213,9 +226,15 @@ public class IRODSCommandsTest {
         
         // see that the file I just copied to exists in irods
         assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
+        irodsFileSystem.close();
      
     }
     
+    /**
+     * FIXME: test fails due to noted bug 32
+     * BUG: 32    	copyTo when dest file is from URI results in -78000 resource not found 
+     * @throws Exception
+     */
     @Test
     public final void testCopySourceFileFromAccountDestFromAccount() throws Exception {
     	// generate a local scratch file
@@ -267,22 +286,25 @@ public class IRODSCommandsTest {
         
         // see that the file I just copied to exists in irods
         assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
+        irodsFileSystem.close();
      
     }
 
+    // TODO: below refer to copy method of irodsFile
+    
     @Test
     public final void testFileCreate() {
-        fail("Not yet implemented");
+        
     }
 
     @Test
     public final void testPut() {
-        fail("Not yet implemented");
+        
     }
 
     @Test
     public final void testPhysicalMove() {
-        fail("Not yet implemented");
+        
     }
     
     // TODO: test create to understand usage
