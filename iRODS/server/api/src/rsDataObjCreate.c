@@ -53,7 +53,8 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (l1descInx);
     }
 
-    /* dataObj only */
+    /* Gets here means local zone operation */
+    /* stat dataObj */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
     status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
     resolveStatForStructFileOpr (&dataObjInp->condInput, rodsObjStatOut);
@@ -64,13 +65,16 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (rodsObjStatOut == NULL || 
       (rodsObjStatOut->objType == UNKNOWN_OBJ_T &&
       rodsObjStatOut->specColl == NULL)) {
+	/* does not exist. have to create one */
         l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
+	/* newly created. take out FORCE_FLAG since it could be used by put */
         rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
     } else if (rodsObjStatOut->specColl != NULL &&
       rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
         dataObjInp->specColl = rodsObjStatOut->specColl;
 	rodsObjStatOut->specColl = NULL;
         l1descInx = specCollSubCreate (rsComm, dataObjInp);
+	/* newly created. take out FORCE_FLAG since it could be used by put */
         rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW);
     } else {
 	/* dataObj exist */
@@ -115,15 +119,6 @@ _rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     tmpRescGrpInfo = myRescGrpInfo;
     while (tmpRescGrpInfo != NULL) {
 	tmpRescInfo = tmpRescGrpInfo->rescInfo;
-#if 0	/* try to handle COMPOUND_CL */
-	if (getRescClass (tmpRescInfo) == COMPOUND_CL) {
-	    /* cannot create directly in COMPOUND_CL type resource */
-            rodsLog (LOG_ERROR,
-              "rsDataObjCreate: Create obj in COMPOUND_CL resc %s rescGrp %s",
-	      tmpRescInfo->rescName, tmpRescGrpInfo->rescGroupName);
-            return (SYS_CANT_DIRECTLY_ACC_COMPOUND_RESC);
-	}
-#endif
 	status = l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp, 
 	  tmpRescInfo, myRescGrpInfo->rescGroupName);
 

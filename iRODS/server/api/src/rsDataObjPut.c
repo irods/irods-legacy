@@ -188,11 +188,16 @@ int
 l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 bytesBuf_t *dataObjInpBBuf)
 {
-    int status = 0;
     int bytesWritten;
-    openedDataObjInp_t dataObjCloseInp;
     int l1descInx;
     dataObjInfo_t *myDataObjInfo;
+    char rescGroupName[NAME_LEN];
+    rescInfo_t *rescInfo;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo;
+    rescInfo_t *tmpRescInfo;
+    int status;
+    openedDataObjInp_t dataObjCloseInp;
 
     /* don't actually physically open the file */
     addKeyVal (&dataObjInp->condInput, NO_OPEN_FLAG_KW, "");
@@ -208,7 +213,88 @@ bytesBuf_t *dataObjInpBBuf)
 	    return l1descInx;
 	}
     }
+    bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp,
+      dataObjInpBBuf);
+
+    if (bytesWritten < 0) {
+        myDataObjInfo = L1desc[l1descInx].dataObjInfo;
+        if (getStructFileType (myDataObjInfo->specColl) < 0 &&
+          strlen (myDataObjInfo->rescGroupName) > 0 &&
+          getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
+            /* File not in specColl and resc is a resc group and not 
+	     * overwriting existing data. Save resc info in case the put fail 
+	     */
+            rstrcpy (rescGroupName, myDataObjInfo->rescGroupName, NAME_LEN);
+            rescInfo = myDataObjInfo->rescInfo;
+        } else {
+            rescGroupName[0] = '\0';
+            rescInfo = NULL;
+        }
+    }
+    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
+    dataObjCloseInp.l1descInx = l1descInx;
+    status = rsDataObjClose (rsComm, &dataObjCloseInp);
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+          "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
+            l1descInx, status);
+    }
+
+    if (bytesWritten >= 0) {
+	return status;
+    } else if (strlen (rescGroupName) == 0) {
+	return bytesWritten;
+    }
+
+    /* get here when Put failed. and rescGroupName is a valid resc group. 
+     * Try other resc in the resc group */
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    if (status < 0) return bytesWritten;
+    tmpRescGrpInfo = myRescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+        tmpRescInfo = tmpRescGrpInfo->rescInfo;
+	if (rescInfo == tmpRescInfo) {
+	    /* already tried this resc */
+	    tmpRescGrpInfo = tmpRescGrpInfo->next;
+	    continue;
+	}
+        l1descInx = _rsDataObjCreateWithRescInfo (rsComm, 
+	  dataObjInp, tmpRescInfo, myRescGrpInfo->rescGroupName);
+        if (l1descInx <= 2) {
+            if (l1descInx >= 0) {
+                rodsLog (LOG_ERROR,
+                 "l3DataPutSingleBuf:_rsDataObjCreateWithRI %s err,stat = %d",
+                  dataObjInp->objPath, l1descInx);
+	    }
+	} else {
+            bytesWritten = _l3DataPutSingleBuf (rsComm, l1descInx, dataObjInp,
+              dataObjInpBBuf);
+            dataObjCloseInp.l1descInx = l1descInx;
+            status = rsDataObjClose (rsComm, &dataObjCloseInp);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
+                    l1descInx, status);
+            }
+            if (bytesWritten >= 0) {
+                bytesWritten = status;
+		break;
+	    }
+	}
+	tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+    freeAllRescGrpInfo (myRescGrpInfo);
+    return bytesWritten;
+}
  
+int
+_l3DataPutSingleBuf (rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
+bytesBuf_t *dataObjInpBBuf)
+{
+    int status = 0;
+    int bytesWritten;
+    dataObjInfo_t *myDataObjInfo;
+
     myDataObjInfo = L1desc[l1descInx].dataObjInfo;
     
     bytesWritten = l3FilePutSingleBuf (rsComm, l1descInx, dataObjInpBBuf);
@@ -236,22 +322,9 @@ bytesBuf_t *dataObjInpBBuf)
 	    L1desc[l1descInx].bytesWritten = bytesWritten;
 	}
     }
- 
     L1desc[l1descInx].dataSize = dataObjInp->dataSize;
-    memset (&dataObjCloseInp, 0, sizeof (dataObjCloseInp));
-    dataObjCloseInp.l1descInx = l1descInx;
-    status = rsDataObjClose (rsComm, &dataObjCloseInp);
-    if (status < 0) {
-	rodsLog (LOG_NOTICE,
-	  "l3DataPutSingleBuf: rsDataObjClose of %d error, status = %d",
-	    l1descInx, status);
-    }
 
-    if (bytesWritten < 0)
-        return (bytesWritten);
-    else
-	return status;
-
+    return (bytesWritten);
 }
 
 int
