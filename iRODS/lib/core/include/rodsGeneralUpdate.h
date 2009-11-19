@@ -18,10 +18,10 @@
 #define GENERAL_UPDATE_DELETE 23452
 
 /* Use this value to use the next sequence value in a column (for an id) */
-#define GU_NEXT_SEQ_VALUE "gq_next_sequence_value_core"
+#define UPDATE_NEXT_SEQ_VALUE "update_next_sequence_value"
 
 /* Use this value to insert the current time into a column*/
-#define GU_NOW_TIME "gq_now_time"
+#define UPDATE_NOW_TIME "update_now_time"
 
 #define GeneralUpdateInp_PI "int type; struct InxValPair_PI;"
 typedef struct GeneralUpdateInp {

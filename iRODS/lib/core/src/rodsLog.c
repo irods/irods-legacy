@@ -282,6 +282,7 @@
     CAT_OCI_ERROR, 
     CAT_PASSWORD_EXPIRED, 
     CAT_PASSWORD_ENCODING_ERROR, 
+    CAT_TABLE_ACCESS_DENIED, 
     RDA_NOT_COMPILED_IN, 
     RDA_NOT_CONNECTED, 
     RDA_ENV_ERR, 
@@ -716,6 +717,7 @@
     "CAT_OCI_ERROR", 
     "CAT_PASSWORD_EXPIRED", 
     "CAT_PASSWORD_ENCODING_ERROR", 
+    "CAT_TABLE_ACCESS_DENIED", 
     "RDA_NOT_COMPILED_IN", 
     "RDA_NOT_CONNECTED", 
     "RDA_ENV_ERR", 
@@ -897,7 +899,7 @@
     "SYS_HANDLER_DONE_NO_ERROR", 
     "SYS_NO_HANDLER_REPLY_MSG", 
 };
-int irodsErrorCount= 432;
+int irodsErrorCount= 433;
 /* END generated code */
 
 static int verbosityLevel=LOG_ERROR;

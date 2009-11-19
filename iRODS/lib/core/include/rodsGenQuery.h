@@ -96,11 +96,18 @@ primary ordering column.
 #define SELECT_COUNT 6
 
 
+/*
+  For the integer values below (the COL_* defines), up to 10,000 is
+  reserved the core tables and above 10,000 for the extended icat
+  table columns (see modules/extendedICAT ).  The type can be
+  determined by comparing with this value. */
+#define MAX_CORE_TABLE_VALUE 10000
+
+
 /* 
   These are the Table Column names used with the GenQuery.  Also see
   the rcatGeneralQuerySetup routine which associates these values with
-  tables and columns.
-*/
+  tables and columns. */
 
 /* R_ZONE_MAIN: */
 #define COL_ZONE_ID 101
@@ -334,5 +341,7 @@ primary ordering column.
 #define COL_FNM_CREATE_TIME   1909
 #define COL_FNM_MODIFY_TIME   1910
 
+/* The range beginning with 10,000 is reserved for the extended icat (
+   see modules/extendedICAT ). */
 
 #endif /* RODS_GEN_QUERY_H */

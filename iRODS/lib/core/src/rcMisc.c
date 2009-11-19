@@ -12,6 +12,11 @@
 #include "rcGlobalExtern.h"
 #include "rodsGenQueryNames.h"
 #include "rodsType.h"
+#ifdef EXTENDED_ICAT
+#define EXTENDED_ICAT_TABLES_1 1 /* have extendedICAT.h 
+				    set up the set 1 tables */
+#include "extendedICAT.h"
+#endif
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -2447,6 +2452,12 @@ getAttrIdFromAttrName(char *cname)
     if (!strcmp(columnNames[i].columnName, cname))
       return(columnNames[i].columnId);
   }
+#ifdef EXTENDED_ICAT
+  for (i = 0; i < NumOfExtColumnNames ; i++) {
+    if (!strcmp(extColumnNames[i].columnName, cname))
+      return(extColumnNames[i].columnId);
+  }
+#endif
   return(NO_COLUMN_NAME_FOUND);
 }
 
@@ -2456,6 +2467,11 @@ showAttrNames() {
   for (i = 0; i < NumOfColumnNames ; i++) {
      printf("%s\n",columnNames[i].columnName);
   }
+#ifdef EXTENDED_ICAT
+  for (i = 0; i < NumOfExtColumnNames ; i++) {
+     printf("%s\n",extColumnNames[i].columnName);
+  }
+#endif
   return(0);
 }
 
@@ -2507,6 +2523,12 @@ getAttrNameFromAttrId(int cid)
     if (columnNames[i].columnId == cid)
       return(columnNames[i].columnName);
   }
+#ifdef EXTENDED_ICAT
+  for (i = 0; i < NumOfExtColumnNames ; i++) {
+    if (extColumnNames[i].columnId == cid)
+      return(extColumnNames[i].columnName);
+  }
+#endif
   return(NULL);
 }
 

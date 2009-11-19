@@ -288,6 +288,7 @@
 #define CAT_OCI_ERROR                    -839000
 #define CAT_PASSWORD_EXPIRED             -840000
 #define CAT_PASSWORD_ENCODING_ERROR      -850000
+#define CAT_TABLE_ACCESS_DENIED          -851000
 
 /* 880,000 to 900,000  RDA errors  */
 #define RDA_NOT_COMPILED_IN             -880000

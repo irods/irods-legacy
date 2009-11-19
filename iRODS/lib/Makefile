@@ -76,6 +76,10 @@ endif
 endif
 INCLUDES +=	-I$(libCoreIncDir)
 
+ifdef EXTENDED_ICAT
+CFLAGS +=	-DEXTENDED_ICAT
+INCLUDES +=	-I$(svrExtIcatIncDir)
+endif
 
 # Logging (automatically generated source)
 LOG_SRC =	$(libCoreSrcDir)/rodsLog.c

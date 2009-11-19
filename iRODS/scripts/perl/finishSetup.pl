@@ -860,6 +860,43 @@ sub createDatabaseAndTables
 				cleanAndExit( 1 );
 			}
 		}
+
+                # Now apply the site-defined ICAT tables, if any 
+		my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtTables.sql" );
+		if (-e $sqlPath) {
+		    printStatus( "    Inserting ICAT Extension tables...\n" );
+		    printLog( "    Inserting ICAT Extension tables...\n" );
+		    printLog( "    $sqlPath...\n" );
+		    ($status,$output) = execute_sql( $DB_NAME, $sqlPath );
+		    if ( $status != 0 || $output =~ /error/i )
+		    {
+			printStatus( "\nInstall problem (but continuing):\n" );
+			printStatus( "    Could not create the extended iCAT tables.\n" );
+			printStatus( "        ", $output );
+			printLog( "\nInstall problem:\n" );
+			printLog( "    Could not create the extended iCAT tables.\n" );
+		    }
+		    printLog( "        ", $output );
+		}
+		my $sqlPath = File::Spec->catfile( $extendedIcatDir, "icatExtInserts.sql" );
+		if (-e $sqlPath) {
+		    printStatus( "    Inserting ICAT Extension table rows...\n" );
+		    printLog( "    Inserting ICAT Extension table rows...\n" );
+		    printLog( "    $sqlPath...\n" );
+		    ($status,$output) = execute_sql( $DB_NAME, $sqlPath );
+		    if ( $status != 0 || $output =~ /error/i )
+		    {
+			printStatus( "\nInstall problem (but continuing):\n" );
+			printStatus( "    Could not insert the extended iCAT rows.\n" );
+			printStatus( "        ", $output );
+			printLog( "\nInstall problem:\n" );
+			printLog( "    Could not insert the extended iCAT tables.\n" );
+		    }
+		    printLog( "        ", $output );
+		}
+
+#		
+
 	}
 	if ( $tablesAlreadyCreated )
 	{

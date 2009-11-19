@@ -236,10 +236,11 @@ runCmd(0, "test_chl modc $DIR1 NULL_SPECIAL_VALUE '' ''");
 runCmd(0, "irm -rf $DIR1");
 
 # generalUpdate tests
-runCmd(1, "test_genu 2 test 100078 name1");
-runCmd(0, "test_genu 1 test 100078 name1");
-runCmd(2, "test_genu 2 test 100099 name1");
-runCmd(0, "test_genu 2 test 100078 name1");
+# (no longer used for non-Extension ICAT tables)
+#runCmd(1, "test_genu 2 test 100078 name1");
+#runCmd(0, "test_genu 1 test 100078 name1");
+#runCmd(2, "test_genu 2 test 100099 name1");
+#runCmd(0, "test_genu 2 test 100078 name1");
 
 # multiple open/close test
 runCmd(0, "test_chl open");

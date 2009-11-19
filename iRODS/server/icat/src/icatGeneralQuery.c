@@ -32,6 +32,10 @@
                                  access to the audit tables by
                                  non-privileged users */
 
+#ifdef EXTENDED_ICAT
+#include "extendedICAT.h"
+#endif
+
 int logSQLGenQuery=0;
 
 void icatGeneralQuerySetup();
@@ -42,7 +46,12 @@ int insertWhere(char *condition, int option);
 
 extern icatSessionStruct *chlGetRcs();
 
+#ifdef EXTENDED_ICAT
+#define MAX_LINKS_TABLES_OR_COLUMNS 200+EXTENDED_TABLES_AND_COLUMNS
+#else
 #define MAX_LINKS_TABLES_OR_COLUMNS 200
+#endif
+
 #define MAX_TSQL 100
 
 int firstCall=1;

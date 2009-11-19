@@ -35,6 +35,7 @@ $icommandsTestDir = File::Spec->catdir( $IRODS_HOME, "clients", "icommands", "te
 
 $serverBinDir     = File::Spec->catdir( $IRODS_HOME, "server",  "bin" );
 $serverSqlDir     = File::Spec->catdir( $IRODS_HOME, "server",  "icat", "src" );
+$extendedIcatDir  = File::Spec->catdir( $IRODS_HOME, "modules",  "extendedICAT" );
 $serverTestBinDir = File::Spec->catdir( $IRODS_HOME, "server",  "test", "bin" );
 $serverConfigDir  = File::Spec->catdir( $IRODS_HOME, "server",  "config" );
 

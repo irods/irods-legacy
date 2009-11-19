@@ -31,10 +31,16 @@
 */
 #include "rodsClient.h"
 #include "icatHighLevelRoutines.h"
+#ifdef EXTENDED_ICAT
+#define EXTENDED_ICAT_TABLES_2 1
+#include "extendedICAT.h"
+#endif
 
 void
 icatGeneralQuerySetup() {
-
+#ifdef EXTENDED_ICAT
+  int i;
+#endif
   sTableInit();   /* initialize */
 
   sTable( "r_user_password",  "r_user_password", 0);
@@ -444,4 +450,21 @@ icatGeneralQuerySetup() {
   sFklink("r_user_main", "r_user_group", "r_user_main.user_id = r_user_group.user_id");
   sFklink("r_user_group", "r_group_main", "r_user_group.group_user_id = r_group_main.user_id");
   sFklink("r_user_main", "r_objt_audit", "r_user_main.user_id = r_objt_audit.user_id");
+
+/*
+  If using the extended ICAT, establish those tables and columns too.
+  Currently, links are not done (may be needed later).
+*/
+#ifdef EXTENDED_ICAT
+  for (i=0;i<NumOfExtTables;i++) {
+     sTable(extTables[i].tableName, extTables[i].tableAlias, 0);
+  }
+  for (i=0;i<NumOfExtColumns;i++) {
+     sColumn(extColumns[i].column_id, 
+	     extColumns[i].column_table_name, 
+	     extColumns[i].column_name);
+  }
+#endif
+
+
 }

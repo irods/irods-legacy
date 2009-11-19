@@ -148,6 +148,10 @@ endif
 ifdef IRODS_SYSLOG
 CFLAGS +=		-DIRODS_SYSLOG
 endif
+ifdef EXTENDED_ICAT
+CFLAGS +=		-DEXTENDED_ICAT
+INCLUDES +=	-I$(svrExtIcatIncDir)
+endif
 
 # re
 ifdef RULE_ENGINE

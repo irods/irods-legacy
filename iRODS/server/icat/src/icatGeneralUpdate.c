@@ -43,6 +43,9 @@ generalInsert(generalUpdateInp_t generalUpdateInp) {
    for (i=0;i<generalUpdateInp.values.len;i++) { 
       j = sGetColumnInfo(generalUpdateInp.values.inx[i],
 			  &tableName, &columnName);
+      if (generalUpdateInp.values.inx[i] < MAX_CORE_TABLE_VALUE) {
+	 return(CAT_TABLE_ACCESS_DENIED); /* only extended icat tables allowed*/
+      }
       if (updateDebug) printf("j=%d\n",j);
       if (j==0) {
 	 if (updateDebug) printf("tableName=%s\n",tableName);
@@ -54,9 +57,9 @@ generalInsert(generalUpdateInp_t generalUpdateInp) {
 
       doBind=1;
       if (strncmp(generalUpdateInp.values.value[i], 
-		  GU_NEXT_SEQ_VALUE, MAX_NAME_LEN)==0) {
+		  UPDATE_NEXT_SEQ_VALUE, MAX_NAME_LEN)==0) {
          /* caller requesting a next sequence */
-	 cllNextValueString("R_ObjectID", nextStr, MAX_NAME_LEN);
+	 cllNextValueString("R_ExtObjectID", nextStr, MAX_NAME_LEN);
 	 nextSeqValueIndex=i;
 	 doBind=0;
       }
@@ -67,7 +70,7 @@ generalInsert(generalUpdateInp_t generalUpdateInp) {
 	 rstrcat(tSQL, columnName, MAX_SQL_SIZE);
 	 if (doBind) {
 	    if (strncmp(generalUpdateInp.values.value[i], 
-			GU_NOW_TIME, MAX_NAME_LEN) == 0) {
+			UPDATE_NOW_TIME, MAX_NAME_LEN) == 0) {
 	       getNowStr(myTime);
 	       cllBindVars[cllBindVarCount++]=myTime;
 	    }
@@ -84,7 +87,7 @@ generalInsert(generalUpdateInp_t generalUpdateInp) {
 	 rstrcat(tSQL, columnName, MAX_SQL_SIZE);
 	 if (doBind) {
 	    if (strncmp(generalUpdateInp.values.value[i], 
-			GU_NOW_TIME, MAX_NAME_LEN) == 0) {
+			UPDATE_NOW_TIME, MAX_NAME_LEN) == 0) {
 	       getNowStr(myTime);
 	       cllBindVars[cllBindVarCount++]=myTime;
 	    }
@@ -125,6 +128,9 @@ generalDelete(generalUpdateInp_t generalUpdateInp) {
    rstrcpy(tSQL, "delete from ", MAX_SQL_SIZE);
 
    for (i=0;i<generalUpdateInp.values.len;i++) { 
+      if (generalUpdateInp.values.inx[i] < MAX_CORE_TABLE_VALUE) {
+	 return(CAT_TABLE_ACCESS_DENIED); /* only extended icat tables allowed*/
+      }
       j = sGetColumnInfo(generalUpdateInp.values.inx[i],
 			  &tableName, &columnName);
       if (updateDebug) printf("j=%d\n",j);
@@ -174,13 +180,16 @@ chlGeneralUpdate(generalUpdateInp_t generalUpdateInp) {
    if (generalUpdateInp.type == GENERAL_UPDATE_INSERT) {
       status = generalInsert(generalUpdateInp);
       if (status) return (status);
-      if (logSQLGenUpdate) rodsLog(LOG_SQL, "chlGeneralUpdate SQL 1");
+      /* Since the sql string is lower case, this is not checked for
+         in ICAT test suite; removed since now this is only for
+         extented tables and so would be difficult to test */
+      if (logSQLGenUpdate) rodsLog(LOG_SQL, "chlGeneralUpdate sql 1");
    }
    else {
       if (generalUpdateInp.type == GENERAL_UPDATE_DELETE) {
 	 status = generalDelete(generalUpdateInp);
 	 if (status) return (status);
-	 if (logSQLGenUpdate) rodsLog(LOG_SQL, "chlGeneralUpdate SQL 2");
+	 if (logSQLGenUpdate) rodsLog(LOG_SQL, "chlGeneralUpdate sql 2");
       }
       else {
 	 return(CAT_INVALID_ARGUMENT);

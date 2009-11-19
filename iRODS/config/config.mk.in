@@ -294,3 +294,8 @@ S3_LIB_DIR=/data1/mwan/s3/libs3-1.4/build/lib
 S3_HDR_DIR=/data1/mwan/s3/libs3-1.4/build/include
 endif
 
+# Extensible ICAT
+
+# See modules/extendedICAT/README.txt.  Uncomment this line, and add
+# modules/extendedICAT/extendedICAT.h, to enable the extensible ICAT:
+# EXTENDED_ICAT = 1

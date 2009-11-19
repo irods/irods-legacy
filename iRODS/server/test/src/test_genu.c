@@ -68,7 +68,7 @@ doTest3(char *arg1, char *arg2, char *arg3, char *arg4) {
 
     memset (&generalUpdateInp, 0, sizeof (generalUpdateInp));
 
-    addInxVal (&generalUpdateInp.values, COL_RULE_ID, GU_NEXT_SEQ_VALUE);
+    addInxVal (&generalUpdateInp.values, COL_RULE_ID, UPDATE_NEXT_SEQ_VALUE);
     addInxVal (&generalUpdateInp.values, COL_RULE_NAME, arg1);
     addInxVal (&generalUpdateInp.values, COL_RULE_BASE_NAME, arg2);
     addInxVal (&generalUpdateInp.values, COL_RULE_BODY, arg3);
@@ -78,8 +78,10 @@ doTest3(char *arg1, char *arg2, char *arg3, char *arg4) {
     addInxVal (&generalUpdateInp.values, COL_RULE_OWNER_NAME, "on");
     addInxVal (&generalUpdateInp.values, COL_RULE_OWNER_ZONE, "oz");
 
-    addInxVal (&generalUpdateInp.values, COL_RULE_CREATE_TIME, GU_NOW_TIME);
-    addInxVal (&generalUpdateInp.values, COL_RULE_MODIFY_TIME, GU_NOW_TIME);
+    addInxVal (&generalUpdateInp.values, COL_RULE_CREATE_TIME, 
+	       UPDATE_NOW_TIME);
+    addInxVal (&generalUpdateInp.values, COL_RULE_MODIFY_TIME, 
+	       UPDATE_NOW_TIME);
 
     generalUpdateInp.type = GENERAL_UPDATE_INSERT;
 
@@ -112,6 +114,75 @@ doTest4(char *arg1, char *arg2, char *arg3, char *arg4) {
     return(status);
 }
 
+
+/*
+ Now that only extension tables are allowed, I added this test
+ so the the columns could be referenced by number.  This
+ makes it easier to test various extension table columns, which may 
+ conditionally defined.
+ For example, with the example2 extension tables, this works:
+   bin/test_genu 5 10003 'B' 10001 'archive' 10002 'test'
+
+ With example1, using the string values of UPDATE_NEXT_SEQ_VALUE and
+ UPDATE_NOW_TIME, this works:
+   bin/test_genu 5 10001 gq_next_sequence_value_core 10002 n1 10003 update_now_time
+ */
+int
+doTest5(char *arg1, char *arg2, char *arg3, char *arg4,
+	char *arg5, char *arg6) {
+    generalUpdateInp_t generalUpdateInp;
+    int status;
+
+    printf("dotest2\n");
+    rodsLogSqlReq(1);
+
+    memset (&generalUpdateInp, 0, sizeof (generalUpdateInp));
+
+    addInxVal (&generalUpdateInp.values, atoi(arg1), arg2);
+
+    if (arg3 !=0 && *arg3 !='\0' &&
+	arg4 !=0 && *arg4 !='\0' ) { 
+       addInxVal (&generalUpdateInp.values, atoi(arg3), arg4);
+    }
+
+    if (arg5 !=0 && *arg5 !='\0' &&
+	arg6 !=0 && *arg6 !='\0' ) { 
+       addInxVal (&generalUpdateInp.values, atoi(arg5), arg6);
+    }
+
+    generalUpdateInp.type = GENERAL_UPDATE_INSERT;
+
+    status  = chlGeneralUpdate(generalUpdateInp);
+    printf("chlGenUpdate status=%d\n",status);
+
+    return(status);
+}
+
+int
+doTest6(char *arg1, char *arg2, char *arg3, char *arg4) {
+    generalUpdateInp_t generalUpdateInp;
+    int status;
+
+    printf("dotest2\n");
+    rodsLogSqlReq(1);
+
+    memset (&generalUpdateInp, 0, sizeof (generalUpdateInp));
+
+    addInxVal (&generalUpdateInp.values, atoi(arg1), arg2);
+
+    if (arg3 !=0 && *arg3 !='\0' &&
+	arg4 !=0 && *arg4 !='\0' ) { 
+       addInxVal (&generalUpdateInp.values, atoi(arg3), arg4);
+    }
+
+    generalUpdateInp.type = GENERAL_UPDATE_DELETE;
+    
+    status  = chlGeneralUpdate(generalUpdateInp);
+    printf("chlGenUpdate status=%d\n",status);
+
+    return(status);
+}
+
 int
 main(int argc, char **argv) {
    int mode;
@@ -130,6 +201,8 @@ main(int argc, char **argv) {
    if (strcmp(argv[1],"2")==0) mode=2;
    if (strcmp(argv[1],"3")==0) mode=3;
    if (strcmp(argv[1],"4")==0) mode=4;
+   if (strcmp(argv[1],"5")==0) mode=5;
+   if (strcmp(argv[1],"6")==0) mode=6;
 
    memset((char *)&myEnv, 0, sizeof(myEnv));
    status = getRodsEnv (&myEnv);
@@ -170,6 +243,16 @@ main(int argc, char **argv) {
    }
    if (mode==4) {
       status = doTest4(argv[2], argv[3], argv[4], argv[5]);
+      if (status <0) exit(2);
+      exit(0);
+   }
+   if (mode==5) {
+      status = doTest5(argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]);
+      if (status <0) exit(2);
+      exit(0);
+   }
+   if (mode==6) {
+      status = doTest6(argv[2], argv[3], argv[4], argv[5]);
       if (status <0) exit(2);
       exit(0);
    }
