@@ -118,9 +118,11 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	    if (getRescClass (myRescGrpInfo->rescInfo) == COMPOUND_CL) {
 	        /* get here because the comp object does not exist. Find
 		 * a cache copy. If one does not exist, stage one to cache */
+#if 0	/* not needed since we changed dataObjOpenForRepl */
 		/* have to save dataSize because it could be changed in
 		 * getCacheDataInfoOfCompResc */
 		rodsLong_t dataSize = dataObjInp->dataSize;
+#endif
 		status = getCacheDataInfoOfCompResc (rsComm, dataObjInp,
 		  dataObjInfoHead, NULL, myRescGrpInfo, NULL, 
 		  &cacheDataObjInfo);
@@ -133,7 +135,9 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                     return status;
                 } else {
 		    compRescInfo = myRescGrpInfo->rescInfo;
+#if 0
 		     dataObjInp->dataSize = dataSize;
+#endif
 		}
 	    } else {
 	        status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
@@ -406,6 +410,9 @@ dataObjInfo_t **dataObjInfoHead)
     return (status);
 }
 
+/* createEmptyRepl - Physically create a zero length file and register
+ * as a replica and queue the dataObjInfo on the top of dataObjInfoHead.
+ */
 int
 createEmptyRepl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfoHead)
