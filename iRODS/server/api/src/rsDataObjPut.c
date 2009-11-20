@@ -301,7 +301,12 @@ bytesBuf_t *dataObjInpBBuf)
 
     if (bytesWritten >= 0) {
 	if (L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY && 
-	  myDataObjInfo->specColl == NULL) {
+	  myDataObjInfo->specColl == NULL && 
+	  L1desc[l1descInx].remoteZoneHost == NULL) {
+	    /* the check for remoteZoneHost host is not needed because
+	     * the put would have done in the remote zone. But it make
+	     * the code easier to read (similar ro copy). 
+	     */
             status = svrRegDataObj (rsComm, myDataObjInfo);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,

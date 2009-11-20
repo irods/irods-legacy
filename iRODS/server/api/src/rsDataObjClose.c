@@ -450,9 +450,14 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	}
     } else if (L1desc[l1descInx].dataObjInfo->specColl == NULL) {
 	if (l3descInx < 2 &&
+#if 0
 	  L1desc[l1descInx].dataObjInpReplFlag == 1 &&
 	  getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
 	  REPL_DATA_OBJ_INP_KW) != NULL &&
+#else
+          getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
+          CROSS_ZONE_CREATE_KW) != NULL &&
+#endif
 	  L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
 	    /* the comes from a cross zone copy. have not been
 	     * registered yet */

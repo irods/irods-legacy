@@ -173,14 +173,23 @@ dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize)
     condInput = &dataObjInp->condInput;
 
     if (dataObjInp != NULL) { 
-        if (getValByKey (&dataObjInp->condInput, REPL_DATA_OBJ_INP_KW) != NULL) {
+#if 0
+        if (getValByKey (&dataObjInp->condInput, REPL_DATA_OBJ_INP_KW) != 
+          NULL) {
 	    L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
 	    replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
 	    L1desc[l1descInx].dataObjInpReplFlag = 1;
 	} else {
 	    L1desc[l1descInx].dataObjInp = dataObjInp;
 	}
+#else
+        /* always repl the .dataObjInp */
+        L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
+        replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
+        L1desc[l1descInx].dataObjInpReplFlag = 1;
+#endif
     } else {
+	/* XXXX this can be a problem in rsDataObjClose */
 	L1desc[l1descInx].dataObjInp = NULL; 
     }
  
@@ -1738,7 +1747,14 @@ rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
     L1desc[l1descInx].remoteL1descInx = remoteL1descInx;
     L1desc[l1descInx].oprType = REMOTE_ZONE_OPR;
     L1desc[l1descInx].remoteZoneHost = remoteZoneHost;
+#if 0
     L1desc[l1descInx].dataObjInp = dataObjInp;
+#else
+    /* always repl the .dataObjInp */
+    L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
+    replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
+    L1desc[l1descInx].dataObjInpReplFlag = 1;
+#endif
     dataObjInfo = L1desc[l1descInx].dataObjInfo =
       malloc (sizeof (dataObjInfo_t));
     bzero (dataObjInfo, sizeof (dataObjInfo_t));

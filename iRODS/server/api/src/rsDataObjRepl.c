@@ -572,7 +572,7 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag)
 
     if (L1desc[l1descInx].stageFlag != NO_STAGING) {
 	status = l3DataStageSync (rsComm, l1descInx);
-    } else if (dataObjInp->numThreads == 0) {
+    } else if (L1desc[l1descInx].dataObjInp->numThreads == 0) {
         status = l3DataCopySingleBuf (rsComm, l1descInx);
     } else {
         status = dataObjCopy (rsComm, l1descInx);
@@ -626,6 +626,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     int destRescClass;
     int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
     dataObjInfo_t *cacheDataObjInfo = NULL;
+    dataObjInp_t myDataObjInp, *l1DataObjInp;
 
     if (destRescInfo == NULL) {
 	myDestRescInfo = inpDestDataObjInfo->rescInfo;
@@ -684,8 +685,13 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     }
 
     /* open the dest */
-
+#if 0
     dataObjInp->dataSize = inpSrcDataObjInfo->dataSize;
+#else
+    myDataObjInp = *dataObjInp;
+    myDataObjInp.dataSize = inpSrcDataObjInfo->dataSize;
+#endif
+
     destL1descInx = allocL1desc ();
 
     if (destL1descInx < 0) return destL1descInx;
@@ -703,17 +709,18 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 	inpDestDataObjInfo->replStatus = srcDataObjInfo->replStatus;
 	*myDestDataObjInfo = *inpDestDataObjInfo;
 	replStatus = srcDataObjInfo->replStatus | OPEN_EXISTING_COPY;
-	addKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW, "");
-	dataObjInp->openFlags |= (O_TRUNC | O_WRONLY);
+	addKeyVal (&myDataObjInp.condInput, FORCE_FLAG_KW, "");
+	myDataObjInp.openFlags |= (O_TRUNC | O_WRONLY);
     } else {	/* a new copy */
         initDataObjInfoForRepl (rsComm, myDestDataObjInfo, srcDataObjInfo, 
 	 destRescInfo, rescGroupName);
 	replStatus = srcDataObjInfo->replStatus;
     }
 
-    fillL1desc (destL1descInx, dataObjInp, myDestDataObjInfo, 
+    fillL1desc (destL1descInx, &myDataObjInp, myDestDataObjInfo, 
       replStatus, srcDataObjInfo->dataSize);
-    if (dataObjInp->oprType == PHYMV_OPR) {
+    l1DataObjInp = L1desc[destL1descInx].dataObjInp;
+    if (l1DataObjInp->oprType == PHYMV_OPR) {
 	L1desc[destL1descInx].oprType = PHYMV_DEST;
 	myDestDataObjInfo->replNum = srcDataObjInfo->replNum;
 	myDestDataObjInfo->dataId = srcDataObjInfo->dataId;
@@ -727,10 +734,11 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
         L1desc[destL1descInx].stageFlag = STAGE_SRC;
     }
 
-    dataObjInp->numThreads = getNumThreads (rsComm, dataObjInp->dataSize, 
-      dataObjInp->numThreads, NULL);
+    l1DataObjInp->numThreads = dataObjInp->numThreads =
+      getNumThreads (rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
+      NULL);
 
-    if (dataObjInp->numThreads > 0 && 
+    if (l1DataObjInp->numThreads > 0 && 
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	if (updateFlag > 0) {
             status = dataOpen (rsComm, destL1descInx);
@@ -765,19 +773,21 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
 
     srcL1descInx = allocL1desc ();
     if (srcL1descInx < 0) return srcL1descInx;
-    fillL1desc (srcL1descInx, dataObjInp, srcDataObjInfo, 
+    fillL1desc (srcL1descInx, &myDataObjInp, srcDataObjInfo, 
      srcDataObjInfo->replStatus, srcDataObjInfo->dataSize);
-    if (dataObjInp->oprType == PHYMV_OPR) {
+    l1DataObjInp = L1desc[srcL1descInx].dataObjInp;
+    l1DataObjInp->numThreads = dataObjInp->numThreads;
+    if (l1DataObjInp->oprType == PHYMV_OPR) {
         L1desc[srcL1descInx].oprType = PHYMV_SRC;
     } else {
         L1desc[srcL1descInx].oprType = REPLICATE_SRC;
     }
 
-    if (dataObjInp->numThreads > 0 &&
+    if (l1DataObjInp->numThreads > 0 &&
       L1desc[destL1descInx].stageFlag == NO_STAGING) {
 	openedDataObjInp_t dataObjCloseInp;
 
-	dataObjInp->openFlags = O_RDONLY;
+	l1DataObjInp->openFlags = O_RDONLY;
         status = dataOpen (rsComm, srcL1descInx);
 	if (status < 0) {
 	    freeL1desc (srcL1descInx);

@@ -74,6 +74,8 @@
 #define ZONE_KW    		"zone"
 #define REMOTE_ZONE_OPR_KW    	"remoteZoneOpr"
 #define REPL_DATA_OBJ_INP_KW   	"replDataObjInp"
+#define CROSS_ZONE_CREATE_KW   	"replDataObjInp"  /* use the same for backward
+						   * compatibility */
 #define QUERY_BY_DATA_ID_KW   	"queryByDataID"
 #define SU_CLIENT_USER_KW   	"suClientUser"
 #define RM_BUN_COPY_KW   	"rmBunCopy"

@@ -128,6 +128,8 @@ _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag)
 	if (status >= 0 && existFlag == 0 && 
 	  destDataObjInfo->specColl == NULL &&
 	  L1desc[destL1descInx].remoteZoneHost == NULL) {
+	    /* If the dest is in remote zone, register in _rsDataObjClose
+	     * there */
             status = svrRegDataObj (rsComm, destDataObjInfo);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,

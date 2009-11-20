@@ -32,6 +32,9 @@ int
 l3DataPutSingleBuf (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 bytesBuf_t *dataObjInpBBuf);
 int
+_l3DataPutSingleBuf (rsComm_t *rsComm, int l1descInx, dataObjInp_t *dataObjInp,
+bytesBuf_t *dataObjInpBBuf);
+int
 l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf);
 #else
 #define RS_DATA_OBJ_PUT NULL
