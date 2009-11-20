@@ -220,7 +220,8 @@ bytesBuf_t *dataObjInpBBuf)
         myDataObjInfo = L1desc[l1descInx].dataObjInfo;
         if (getStructFileType (myDataObjInfo->specColl) < 0 &&
           strlen (myDataObjInfo->rescGroupName) > 0 &&
-          getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) {
+	  (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) == 0) {
+          /* getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) == NULL) { */
             /* File not in specColl and resc is a resc group and not 
 	     * overwriting existing data. Save resc info in case the put fail 
 	     */
@@ -356,7 +357,11 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
         subFile.specColl = dataObjInfo->specColl;
         subFile.mode = getFileMode (dataObjInp);
         subFile.flags = O_WRONLY | dataObjInp->openFlags;
+#if 0
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+#else
+	if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
+#endif
             subFile.flags |= FORCE_FLAG;
         }
         bytesWritten = rsSubStructFilePut (rsComm, &subFile, dataObjInpBBuf);
@@ -368,7 +373,11 @@ l3FilePutSingleBuf (rsComm_t *rsComm, int l1descInx, bytesBuf_t *dataObjInpBBuf)
     switch (RescTypeDef[rescTypeInx].rescCat) {
       case FILE_CAT:
         memset (&filePutInp, 0, sizeof (filePutInp));
+#if 0
 	if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+#else
+	if ((L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) != 0) {
+#endif
 	    filePutInp.otherFlags |= FORCE_FLAG;
 	}
         filePutInp.fileType = RescTypeDef[rescTypeInx].driverType;

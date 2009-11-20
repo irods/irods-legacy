@@ -107,4 +107,7 @@ char *
 getLocalAddr ();
 int
 forkAndExec (char *av[]);
+int
+setupSrvPortalForParaOpr (rsComm_t *rsComm, dataOprInp_t *dataOprInp,
+int oprType, portalOprOut_t **portalOprOut);
 #endif	/* MISC_SERVER_FUNCT_H */
