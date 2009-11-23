@@ -66,12 +66,11 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     dataObjInfo_t *otherDataObjInfo = NULL;
     dataObjInfo_t *nextDataObjInfo = NULL;
     dataObjInfo_t *tmpDataObjInfo; 
-    dataObjInfo_t *replDataObjInfo = NULL;
+    dataObjInfo_t *compDataObjInfo = NULL;
     dataObjInfo_t *cacheDataObjInfo = NULL;
     rescInfo_t *compRescInfo = NULL;
     int l1descInx;
     int writeFlag;
-    int rescClass;
     int phyOpenFlag = DO_PHYOPEN;
 
     if (getValByKey (&dataObjInp->condInput, NO_OPEN_FLAG_KW) != NULL) {
@@ -104,12 +103,14 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         if (status < 0) return status;
     }
 
-    if (writeFlag > 0) {
+    if (getStructFileType (dataObjInfoHead->specColl) >= 0) {
+	/* special coll. Nothing to do */
+    } else if (writeFlag > 0) {
 	/* put the copy with destResc on top */
 	status = requeDataObjInfoByDestResc (&dataObjInfoHead, 
 	  &dataObjInp->condInput, writeFlag, 1);
 	/* status < 0 means there is no copy in the DEST_RESC */
-	if (status < 0 && getStructFileType (dataObjInfoHead->specColl) < 0 &&
+	if (status < 0 &&
 	  getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) != NULL) {
 	    rescGrpInfo_t *myRescGrpInfo = NULL;
 	    /* we don't have a copy in the DEST_RESC_NAME */
@@ -139,7 +140,7 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 		     dataObjInp->dataSize = dataSize;
 #endif
 		}
-	    } else {
+	    } else {     /* dest resource is not a compound resource */
 	        status = createEmptyRepl (rsComm, dataObjInp, &dataObjInfoHead);
 	        if (status < 0) {
                     rodsLog (LOG_ERROR,
@@ -151,18 +152,22 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	        }
 	    }
 	    freeAllRescGrpInfo (myRescGrpInfo);
+	} else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+	    /* The target data object exists and it is a COMPOUND_CL. Save the 
+	     * comp object. It can be requeued by stageAndRequeDataToCache */
+	    compDataObjInfo = dataObjInfoHead;
+            status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
+                if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
+                rodsLog (LOG_ERROR,
+                  "_rsDataObjOpen:stageAndRequeDataToCache %s failed stat=%d",
+                  dataObjInfoHead->objPath, status);
+                freeAllDataObjInfo (dataObjInfoHead);
+                return status;
+            }
+	    cacheDataObjInfo = dataObjInfoHead;
 	}
-    }
-
-    rescClass = getRescClass (dataObjInfoHead->rescInfo);
-    if (rescClass == COMPOUND_CL) {
-	/* The comp Object exist */
-        if (writeFlag > 0) {
-            /* save the comp object. It can be requeued by 
-	     * stageAndRequeDataToCache */
-            replDataObjInfo = malloc (sizeof (dataObjInfo_t));
-	    *replDataObjInfo = *dataObjInfoHead;
-	}
+    } else if (getRescClass (dataObjInfoHead->rescInfo) == COMPOUND_CL) {
+	/* open for read */
 	status = stageAndRequeDataToCache (rsComm, &dataObjInfoHead);
         if (status < 0 && status != SYS_COPY_ALREADY_IN_RESC) {
             rodsLog (LOG_ERROR,
@@ -171,7 +176,10 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             freeAllDataObjInfo (dataObjInfoHead);
             return status;
         }
-    } else if (rescClass == BUNDLE_CL) {
+	cacheDataObjInfo = dataObjInfoHead;
+    }
+
+    if (getRescClass (dataObjInfoHead->rescInfo) == BUNDLE_CL) {
 	status = stageBundledData (rsComm, &dataObjInfoHead);
         if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -182,36 +190,53 @@ _rsDataObjOpen (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         }
     }
 
+    /* If cacheDataObjInfo != NULL, this is the staged copy of
+     * the compound obj. This copy must be opened. If compDataObjInfo != NULL,
+     * an existing COMPOUND_CL DataObjInfo exist. Need to replicate to
+     * this DataObjInfo in rsdataObjClose. If compRescInfo != NULL,
+     * writing to a compound resource where there is no existing copy in 
+     * the resource. Need to replicate to this resource in rsdataObjClose.  
+     */
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
         nextDataObjInfo = tmpDataObjInfo->next;
         tmpDataObjInfo->next = NULL;
-	if (writeFlag > 0) {
-	    if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
-	        if (replDataObjInfo != NULL) freeDataObjInfo (replDataObjInfo);
-	        replDataObjInfo = tmpDataObjInfo;
-	        tmpDataObjInfo = nextDataObjInfo;
-	        continue;
-	    } else if (cacheDataObjInfo != NULL && 
-	      tmpDataObjInfo != cacheDataObjInfo) {
-		/* skip anything that does not match cacheDataObjInfo */
-                queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
-                tmpDataObjInfo = nextDataObjInfo;
-		continue;
-	    }
+	if (getRescClass (tmpDataObjInfo->rescInfo) == COMPOUND_CL) {
+	    if (compDataObjInfo != tmpDataObjInfo) 
+		queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
+#if 0
+	    if (replDataObjInfo != NULL) freeDataObjInfo (replDataObjInfo);
+	    replDataObjInfo = tmpDataObjInfo;
+#endif
+	    tmpDataObjInfo = nextDataObjInfo;
+	    continue;
+	} else if (writeFlag > 0 && cacheDataObjInfo != NULL && 
+	  tmpDataObjInfo != cacheDataObjInfo) {
+	    /* skip anything that does not match cacheDataObjInfo */
+            queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 1, 1);
+            tmpDataObjInfo = nextDataObjInfo;
+	    continue;
 	}
 	status = l1descInx = _rsDataObjOpenWithObjInfo (rsComm, dataObjInp,
 	  phyOpenFlag, tmpDataObjInfo);
 
         if (status >= 0) {
-	    /* copiesNeeded condition met */
-	    /* XXXXXX should  singleInfoFlag set to zero ? */
-            queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 1, 1);
-            L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
-	    if (replDataObjInfo != NULL) {
-		 L1desc[l1descInx].replDataObjInfo = replDataObjInfo;
-	    } else if (compRescInfo != NULL) {
-		L1desc[l1descInx].replRescInfo = compRescInfo;
+	    if (compDataObjInfo != NULL) {
+		/* don't put compDataObjInfo in the otherDataObjInfo queue */
+		tmpDataObjInfo = nextDataObjInfo;
+		while (tmpDataObjInfo != NULL) {
+		    if (tmpDataObjInfo != compDataObjInfo) {
+			queDataObjInfo (&otherDataObjInfo, tmpDataObjInfo, 
+			  1, 1);
+		    }
+		    tmpDataObjInfo = tmpDataObjInfo->next;
+		}
+		 L1desc[l1descInx].replDataObjInfo = compDataObjInfo;
+	    } else {
+                queDataObjInfo (&otherDataObjInfo, nextDataObjInfo, 1, 1);
+                L1desc[l1descInx].otherDataObjInfo = otherDataObjInfo;
+		if (compRescInfo != NULL)
+		    L1desc[l1descInx].replRescInfo = compRescInfo;
 	    }
 	    if (writeFlag > 0) {
 	        L1desc[l1descInx].openType = OPEN_FOR_WRITE_TYPE;

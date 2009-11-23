@@ -1195,6 +1195,11 @@ dataObjInfo_t *outCacheObjInfo)
     return status;
 }
 
+/* stageAndRequeDataToCache - stage the compund copy in compObjInfoHead
+ * to a cache resource. Put the cache copy on to on the compObjInfoHead
+ * queue
+ */ 
+
 int
 stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
 {
@@ -1206,9 +1211,18 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
     status = stageDataFromCompToCache (rsComm, *compObjInfoHead,
       outCacheObjInfo);
 
-    if (status < 0) return 0;
-
-    queDataObjInfo (compObjInfoHead, outCacheObjInfo, 0, 1);
+    if (status < 0) {
+        /* if (status == SYS_COPY_ALREADY_IN_RESC) { */
+	if (outCacheObjInfo->dataId > 0) {
+	    /* put the cache copy on top */
+	    requeDataObjInfoByReplNum (compObjInfoHead, 
+	      outCacheObjInfo->replNum);
+	    status = 0;
+	}
+	free (outCacheObjInfo);
+    } else {
+        queDataObjInfo (compObjInfoHead, outCacheObjInfo, 0, 1);
+    }
 #if 0
     rescInfo_t *cacheResc;
     dataObjInfo_t *dataObjInfoHead = *compObjInfoHead;
@@ -1233,7 +1247,7 @@ stageAndRequeDataToCache (rsComm_t *rsComm, dataObjInfo_t **compObjInfoHead)
     *compObjInfoHead = dataObjInfoHead;
 #endif
 
-    return 0;
+    return status;
 }
 
 int
@@ -1419,8 +1433,13 @@ rescInfo_t **outCacheResc, int rmBunCopyFlag)
  * exist, make one.
  * srcDataObjInfoHead - the source DataObjInfo where the Cache copy
  *    may have already existed.
- * destDataObjInfoHead - the list may be searched to by getCacheDataInfoForRepl
+ * destDataObjInfoHead - the list may be searched by getCacheDataInfoForRepl
  *    when searching for the existence of the cache copy.
+ * oldDataObjInfo - the list may be searched by replToCacheRescOfCompObj
+ *    as a target.
+ * outDataObjInfo - points to the resulting cache dataObjInfo. No new
+ *    dataObjInfo is allocated. The new dataObjInfo is in destDataObjInfoHead
+ *    or destDataObjInfoHead.
  *
  */
 
@@ -1444,7 +1463,8 @@ dataObjInfo_t **outDataObjInfo)
             srcDataObjInfoHead->objPath, status);
             return status;
         }
-        /* save it */
+        /* save newly created. It is OK to use &srcDataObjInfoHead
+         * because it will be queued at the end */
         queDataObjInfo (&srcDataObjInfoHead, *outDataObjInfo, 1, 0);
     }
     return status;
