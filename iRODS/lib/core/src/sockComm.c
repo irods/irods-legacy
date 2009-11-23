@@ -591,7 +591,7 @@ int cookie, int windowSize)
     if (status < 0) {
 	rodsLog (LOG_NOTICE,
 	  "connectToRhostPortal: setSockAddr error for %s, errno = %d",
-	  rodsHost, errno); 
+	  rodsHost, rodsPort, errno); 
 	return (status);
     }
     /* set timeout 11/13/2009 */
@@ -599,7 +599,7 @@ int cookie, int windowSize)
 
     if (sock < 0) {
 	rodsLog (LOG_ERROR,
-	  "connectToRhostPortal: connectTo Rhost %s error, status = %d",
+	  "connectToRhostPortal: connectTo Rhost %s port %d error, status = %d",
 	  rodsHost, sock);
 	return (sock);
     }
