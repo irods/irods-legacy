@@ -399,6 +399,24 @@ runCmd(0, "echo 'test\nrmi -d $F1 $metaId\nquit' > $IN_FILE");
 runCmd(0, "imeta < $IN_FILE");
 unlink($IN_FILE);
 
+# imeta mod command
+runCmd(0, "imeta add -d $F1 a b c");
+runCmd(0, "imeta mod -d $F1 a b c v:b2");
+runCmd(0, "imeta mod -d $F1 a b2 c n:a2");
+runCmd(0, "imeta mod -d $F1 a2 b2 c u:c2");
+runCmd(0, "imeta mod -d $F1 a2 b2 c2 n:a3 v:b3 u:c3");
+runCmd(0, "imeta rm -d $F1 a3 b3 c3");
+runCmd(0, "imeta add -u $U1 aaaaa bbbbb ccccc");
+runCmd(0, "imeta mod -u $U1 aaaaa bbbbb ccccc v:b222");
+runCmd(0, "imeta rm -u $U1 aaaaa b222 ccccc");
+runCmd(0, "imeta add -c $D1 aaaaa bbbbb ccccc");
+runCmd(0, "imeta mod -c $D1 aaaaa bbbbb ccccc v:b222");
+runCmd(0, "imeta rm -c $D1 aaaaa b222 ccccc");
+runCmd(0, "imeta add -r $Resc aaaaa bbbbb");
+runCmd(0, "imeta mod -r $Resc aaaaa bbbbb n:a1");
+runCmd(2, "imeta rm -r $Resc aaaaa bbbbb");
+runCmd(0, "imeta rm -r $Resc a1 bbbbb");
+
 runCmd(0, "irm -f $F1");
 runCmd(0, "irm -f -r $D1");
 

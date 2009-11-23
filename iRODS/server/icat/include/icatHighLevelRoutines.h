@@ -61,9 +61,12 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
 int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type, 
     char *name, char *attribute, char *value,  char *units);
 int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type, 
-    char *name, char *attribute, char *value,  char *units);
+    char *name, char *attribute, char *value,  char *units, int noCommit);
 int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2, 
     char *name1, char *name2);
+int chlModAVUMetadata(rsComm_t *rsComm, char *type, char *name, 
+		      char *attribute, char *value, char *unitsOrChange0,
+		      char *change1, char *change2, char *change3);
 int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 			char* accessLevel, char *userName, char *zone, 
 			char* pathName);

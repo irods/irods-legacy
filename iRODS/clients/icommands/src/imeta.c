@@ -838,7 +838,7 @@ modCopyAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
  */
 int
 modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3, 
-	     char *arg4, char *arg5, char *arg6, char *arg7) {
+	       char *arg4, char *arg5, char *arg6, char *arg7, char *arg8) {
    modAVUMetadataInp_t modAVUMetadataInp;
    int status;
    char *mySubName;
@@ -869,7 +869,7 @@ modAVUMetadata(char *arg0, char *arg1, char *arg2, char *arg3,
    modAVUMetadataInp.arg5 = arg5;
    modAVUMetadataInp.arg6 = arg6;
    modAVUMetadataInp.arg7 = arg7;
-   modAVUMetadataInp.arg8 ="";
+   modAVUMetadataInp.arg8 = arg8;
    modAVUMetadataInp.arg9 ="";
 
    status = rcModAVUMetadata(Conn, &modAVUMetadataInp);
@@ -1000,34 +1000,40 @@ doCommand(char *cmdToken[]) {
    if (strcmp(cmdToken[0],"adda") == 0) {
       modAVUMetadata("adda", cmdToken[1], cmdToken[2], 
 		     cmdToken[3], cmdToken[4], cmdToken[5],
-		     cmdToken[6], cmdToken[7]);
+		     cmdToken[6], cmdToken[7], "");
       return(0);
    }
    if (strcmp(cmdToken[0],"add") == 0) {
       modAVUMetadata("add", cmdToken[1], cmdToken[2], 
 		     cmdToken[3], cmdToken[4], cmdToken[5],
-		     cmdToken[6], cmdToken[7]);
+		     cmdToken[6], cmdToken[7], "");
       return(0);
    }
    if (strcmp(cmdToken[0],"rmw") == 0) {
       modAVUMetadata("rmw", cmdToken[1], cmdToken[2], 
 		     cmdToken[3], cmdToken[4], cmdToken[5],
-		     cmdToken[6], cmdToken[7]);
+		     cmdToken[6], cmdToken[7], "");
       return(0);
    }
    if (strcmp(cmdToken[0],"rm") == 0) {
       modAVUMetadata("rm", cmdToken[1], cmdToken[2], 
 		     cmdToken[3], cmdToken[4], cmdToken[5],
-		     cmdToken[6], cmdToken[7]);
+		     cmdToken[6], cmdToken[7], "");
       return(0);
    }
    if (testMode) {
       if (strcmp(cmdToken[0],"rmi") == 0) {
 	 modAVUMetadata("rmi", cmdToken[1], cmdToken[2], 
 			cmdToken[3], cmdToken[4], cmdToken[5],
-			cmdToken[6], cmdToken[7]);
+			cmdToken[6], cmdToken[7], "");
 	 return(0);
       }
+   }
+   if (strcmp(cmdToken[0],"mod") == 0) {
+      modAVUMetadata("mod", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7], cmdToken[8]);
+      return(0);
    }
    doLs=0;
    if (strcmp(cmdToken[0],"lsw") == 0) {
@@ -1287,6 +1293,8 @@ void usageMain()
 " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triplet)", 
 " rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)", 
 " rmw -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)", 
+" mod -d|C|R|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]", 
+"      (modify AVU; new name (n:), value(v:), and/or units(u:)",
 " ls  -d|C|R|u Name [AttName] (List existing AVUs for item Name)", 
 " lsw -d|C|R|u Name [AttName] (List existing AVUs, use Wildcards)", 
 " qu -d|C|R|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
@@ -1389,6 +1397,22 @@ usage(char *subOpt)
 "the rmw command still do matching using them as wildcards, so you may",
 "need to use rm instead.",
 "Also see lsw.",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      if (strcmp(subOpt,"mod")==0) {
+	 char *msgs[]={
+" mod -d|C|R|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]", 
+"      (modify AVU; new name (n:), value(v:), and/or units(u:)",
+"Modify a defined AVU for the specified item (object)",
+"Example: mod -d file1 distance 14 miles v:27",
+" ",
+"Only the AVU associated with this object is modified.  Internally, the system",
+"removes the old AVU from the object and creates a new one (ensuring",
+"consistency), and performs a single 'commit' if all is valid.",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);

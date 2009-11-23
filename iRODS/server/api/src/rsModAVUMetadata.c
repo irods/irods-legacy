@@ -26,6 +26,8 @@ rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
         myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"cp")==0) {
         myHint = modAVUMetadataInp->arg3;
+    } else if (strcmp(modAVUMetadataInp->arg0,"mod")==0) {
+        myHint = modAVUMetadataInp->arg2;
     } else {
 	/* assume local */
 	myHint = NULL;
@@ -75,7 +77,8 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 
 
     /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
-    args[0] = modAVUMetadataInp->arg0; /* option add, adda, rm, rmw, rmi, cp*/
+    args[0] = modAVUMetadataInp->arg0; /* option add, adda, rm, rmw, rmi, cp,
+					  or mod */
     args[1] = modAVUMetadataInp->arg1; /* item type -d,-d,-c,-C,-r,-R,-u,-U */
     args[2] = modAVUMetadataInp->arg2; /* item name */
     args[3] = modAVUMetadataInp->arg3; /* attr name */
@@ -121,7 +124,8 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
-				  modAVUMetadataInp->arg5);
+				  modAVUMetadataInp->arg5,
+				  0);
     }
     else if (strcmp(modAVUMetadataInp->arg0,"rmi")==0) {
        status = chlDeleteAVUMetadata(rsComm, 2,
@@ -129,7 +133,8 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
-				  modAVUMetadataInp->arg5);
+				  modAVUMetadataInp->arg5,
+				  0);
     }
     else if (strcmp(modAVUMetadataInp->arg0,"rm")==0) {
        status = chlDeleteAVUMetadata(rsComm, 0,
@@ -137,7 +142,8 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4,
-				  modAVUMetadataInp->arg5);
+			          modAVUMetadataInp->arg5, 
+				  0);
     }
     else if (strcmp(modAVUMetadataInp->arg0,"cp")==0) {
        status = chlCopyAVUMetadata(rsComm, 
@@ -145,6 +151,17 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,
 				  modAVUMetadataInp->arg4);
+    }
+    else if (strcmp(modAVUMetadataInp->arg0,"mod")==0) {
+       status = chlModAVUMetadata(rsComm, 
+				  modAVUMetadataInp->arg1,
+				  modAVUMetadataInp->arg2,
+				  modAVUMetadataInp->arg3,
+				  modAVUMetadataInp->arg4,
+				  modAVUMetadataInp->arg5,
+				  modAVUMetadataInp->arg6,
+				  modAVUMetadataInp->arg7,
+				  modAVUMetadataInp->arg8);
     }
     else {
       return(CAT_INVALID_ARGUMENT);

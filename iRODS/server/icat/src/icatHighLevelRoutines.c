@@ -4972,10 +4972,105 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
    return(status);
 }
 
+/*
+ check a chlModAVUMetadata argument; returning the type.
+ */
+int
+checkModArgType(char *arg) {
+   if (arg == NULL || *arg=='\0') 
+      return(CAT_INVALID_ARGUMENT);
+   if (*(arg+1)!=':') return(0); /* not one */
+   if (*arg=='n') return(1);
+   if (*arg=='v') return(2);
+   if (*arg=='u') return(3);
+   return(0);
+}
+
+/* Modify an Attribute-Value [Units] pair/triple metadata item of an object*/
+int chlModAVUMetadata(rsComm_t *rsComm, char *type, 
+		      char *name, char *attribute, char *value,  
+		      char *unitsOrArg0, char *arg1, char *arg2, char *arg3) {
+   int status, atype;
+   char myUnits[MAX_NAME_LEN]="";
+   char *addAttr="", *addValue="", *addUnits="";
+   if (unitsOrArg0 == NULL || *unitsOrArg0=='\0') 
+      return(CAT_INVALID_ARGUMENT);
+   atype = checkModArgType(unitsOrArg0);
+   if (atype==0) strncpy(myUnits, unitsOrArg0, MAX_NAME_LEN);
+
+   status = chlDeleteAVUMetadata(rsComm, 0, type, name, attribute, value, 
+				 myUnits, 1);
+   if (status) {
+      _rollback("chlModAVUMetadata");
+      return(status);
+   }
+
+   if (atype==1) {
+      addAttr=unitsOrArg0+2;
+   }
+   if (atype==2) {
+      addValue=unitsOrArg0+2;
+   }
+   if (atype==3) {
+      addUnits=unitsOrArg0+2;
+   }
+
+   atype = checkModArgType(arg1);
+   if (atype==1) {
+      addAttr=arg1+2;
+   }
+   if (atype==2) {
+      addValue=arg1+2;
+   }
+   if (atype==3) {
+      addUnits=arg1+2;
+   }
+
+   atype = checkModArgType(arg2);
+   if (atype==1) {
+      addAttr=arg2+2;
+   }
+   if (atype==2) {
+      addValue=arg2+2;
+   }
+   if (atype==3) {
+      addUnits=arg2+2;
+   }
+
+   atype = checkModArgType(arg3);
+   if (atype==1) {
+      addAttr=arg3+2;
+   }
+   if (atype==2) {
+      addValue=arg3+2;
+   }
+   if (atype==3) {
+      addUnits=arg3+2;
+   }
+
+   if (*addAttr=='\0' &&
+       *addValue=='\0' &&
+       *addUnits=='\0') {
+      _rollback("chlModAVUMetadata");
+      return (CAT_INVALID_ARGUMENT);
+   }
+
+   if (*addAttr=='\0') addAttr=attribute;
+   if (*addValue=='\0') addValue=value;
+   if (*addUnits=='\0') addUnits=myUnits;
+
+   status = chlAddAVUMetadata(rsComm, 0, type, name, addAttr, addValue,
+			      addUnits);
+   return(status);
+
+}
+
 /* Delete an Attribute-Value [Units] pair/triple metadata item from an object*/
 /* option is 0: normal, 1: use wildcards, 2: input is id not type,name,units */
+/* noCommit: if 1: skip the commit (only used by chlModAVUMetadata) */
 int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type, 
-		  char *name, char *attribute, char *value,  char *units) {
+			 char *name, char *attribute, char *value,  
+			 char *units, int noCommit ) {
    int itype;
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
@@ -5135,12 +5230,14 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 return(status);
       }
 
-      status =  cmlExecuteNoAnswerSql("commit", &icss);
-      if (status != 0) {
-	 rodsLog(LOG_NOTICE,
+      if (noCommit != 1) {
+	 status =  cmlExecuteNoAnswerSql("commit", &icss);
+	 if (status != 0) {
+	    rodsLog(LOG_NOTICE,
 		"chlDeleteAVUMetadata cmlExecuteNoAnswerSql commit failure %d",
 		 status);
-	 return(status);
+	    return(status);
+	 }
       }
       return(status);
    }
@@ -5212,12 +5309,14 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       return(status);
    }
 
-   status =  cmlExecuteNoAnswerSql("commit", &icss);
-   if (status != 0) {
-      rodsLog(LOG_NOTICE,
+   if (noCommit != 1) {
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
 	      "chlDeleteAVUMetadata cmlExecuteNoAnswerSql commit failure %d",
 	      status);
-      return(status);
+	 return(status);
+      }
    }
 
    return(status);
