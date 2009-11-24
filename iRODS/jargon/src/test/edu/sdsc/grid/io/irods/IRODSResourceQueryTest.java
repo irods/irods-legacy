@@ -28,7 +28,7 @@ import java.util.Properties;
  * @since
  *
  */
-public class IRODSCommandsMetadataTest {
+public class IRODSResourceQueryTest {
     private static Properties testingProperties = new Properties();
     private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
     private static ScratchFileUtils scratchFileUtils = null;

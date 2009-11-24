@@ -86,13 +86,13 @@ public class IRODSCommandsDeleteTest {
 		uriPath.append('/');
 		uriPath.append(testFileName);
 
-		// can I use jargon to access the file on IRODS and verify that it
-		// indeed exists?
 		URI irodsUri = testingPropertiesHelper
 				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
 						uriPath.toString());
 		IRODSFile irodsFile = new IRODSFile(irodsUri);
+		System.out.println("doing delete>>>>>>>>>>>>");
 		irodsFile.delete(true);
+		System.out.println("delete done");
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(uriPath
 				.toString());
 	}
@@ -156,8 +156,8 @@ public class IRODSCommandsDeleteTest {
 								testingProperties, deleteCollectionSubdir));
 
 		boolean deleteResult = irodsFile.delete(true);
-		TestCase.assertTrue("delete was unsuccessful", deleteResult);
 		irodsFileSystem.close();
+		TestCase.assertTrue("delete was unsuccessful", deleteResult);
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 
 	}

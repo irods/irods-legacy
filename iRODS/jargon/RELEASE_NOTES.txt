@@ -62,6 +62,8 @@ Testing and patches for  Bug 32 -   copyTo when dest file is from URI results in
 -------------
 Testing for Bug 29 - problem with Jargon physically deleting a file
 *created test cases to capture bug
+--------------
+Testing and fix for Bug 34  -  resource not found when doing irodsFileSystem.createTarFile
 
 
 ================================================================================================
