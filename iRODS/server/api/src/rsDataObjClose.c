@@ -247,8 +247,12 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     keyValPair_t regParam;
     rodsLong_t newSize;
     char tmpStr[MAX_NAME_LEN];
-    dataObjInfo_t *myDataObjInfo;
     modDataObjMeta_t modDataObjMetaInp;
+    char *chksumStr = NULL;
+    dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
+    int srcL1descInx;
+    regReplica_t regReplicaInp;
+
 
     l1descInx = dataObjCloseInp->l1descInx;
 
@@ -273,13 +277,18 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
     if (dataObjCloseInp->bytesWritten > 0 &&
       L1desc[l1descInx].bytesWritten <= 0) {
+	/* dataObjCloseInp->bytesWritten is used to specify bytesWritten
+	 * for cross zone operation */
         L1desc[l1descInx].bytesWritten =
           dataObjCloseInp->bytesWritten;
     }
 
+    /* note that bytesWritten only indicates whether the file has been written
+     * to. Not necessarily the size of the file */
     if (L1desc[l1descInx].bytesWritten <= 0 && 
       L1desc[l1descInx].oprType != REPLICATE_DEST &&
-      L1desc[l1descInx].oprType != PHYMV_DEST) {
+      L1desc[l1descInx].oprType != PHYMV_DEST &&
+      L1desc[l1descInx].oprType != COPY_DEST) {
         /* no write */
 #ifdef LOG_TRANSFERS
        if (L1desc[l1descInx].oprType == GET_OPR) {
@@ -310,11 +319,18 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	    }
 	}
     } else {
-	newSize = L1desc[l1descInx].bytesWritten;
+	/* SYNC_DEST or STAGE_SRC operation */
+	/* newSize = L1desc[l1descInx].bytesWritten; */
+	newSize = L1desc[l1descInx].dataSize;
     }
 
-    memset (&regParam, 0, sizeof (regParam));
+    status = procChksumForClose (rsComm, l1descInx, &chksumStr);
 
+    if (status < 0) return status;
+
+    memset (&regParam, 0, sizeof (regParam));
+#if 0
+    memset (&regParam, 0, sizeof (regParam));
     myDataObjInfo = L1desc[l1descInx].dataObjInfo;
 
     if (strlen (myDataObjInfo->chksum) > 0 && 
@@ -333,23 +349,9 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             return (status);
         }
     }
+#endif
 
-    if (L1desc[l1descInx].oprType == REPLICATE_DEST || 
-      L1desc[l1descInx].oprType == PHYMV_DEST) {
-	dataObjInfo_t *destDataObjInfo, *srcDataObjInfo;
-	int srcL1descInx;
-	regReplica_t regReplicaInp;
-	char *chksumStr = NULL;
-
-  	destDataObjInfo = L1desc[l1descInx].dataObjInfo;
-	srcL1descInx = L1desc[l1descInx].srcL1descInx;
-	if (srcL1descInx <= 2) {
-            rodsLog (LOG_NOTICE,
-              "_rsDataObjClose: srcL1descInx %d out of range",
-              srcL1descInx);
-             return (SYS_FILE_DESC_OUT_OF_RANGE);
-	}
-	srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+#if 0
 	if (strlen (srcDataObjInfo->chksum) > 0 &&
 	  srcDataObjInfo->replStatus > 0) {
 	    /* the source has chksum. Must verify chksum */ 
@@ -369,42 +371,65 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 		}
 	    }
 	}
-	if (L1desc[l1descInx].oprType == PHYMV_DEST) {
-	    /* a phymv */
-            if (chksumStr != NULL) {
-                addKeyVal (&regParam, CHKSUM_KW, chksumStr);
-            }
-	    addKeyVal (&regParam, FILE_PATH_KW, destDataObjInfo->filePath);
-	    addKeyVal (&regParam, RESC_NAME_KW, destDataObjInfo->rescName);
-	    addKeyVal (&regParam, RESC_GROUP_NAME_KW, 
-	      destDataObjInfo->rescGroupName);
-	    if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput, 
-	      IRODS_ADMIN_KW) != NULL) {
-		addKeyVal (&regParam, IRODS_ADMIN_KW, "");
-	    }
-            modDataObjMetaInp.dataObjInfo = destDataObjInfo;
-            modDataObjMetaInp.regParam = &regParam;
-            status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
-	    /* have to handle the l3Close here because the need to 
-	     * unlink the srcDataObjInfo */
-            if (status >= 0) {
-               if (L1desc[srcL1descInx].l3descInx > 2) {
-		    int status1;
-	            status1 = l3Close (rsComm, srcL1descInx);
-		    if (status1 < 0) {
-                        rodsLog (LOG_NOTICE,
-              	          "_rsDataObjClose: l3Close of %s error. status = %d",
-              	          srcDataObjInfo->objPath, status1);
-		    }
+#endif
+    if (L1desc[l1descInx].oprType == PHYMV_DEST) {
+	/* a phymv */
+        destDataObjInfo = L1desc[l1descInx].dataObjInfo;
+        srcL1descInx = L1desc[l1descInx].srcL1descInx;
+        if (srcL1descInx <= 2) {
+            rodsLog (LOG_NOTICE,
+              "_rsDataObjClose: srcL1descInx %d out of range",
+              srcL1descInx);
+             return (SYS_FILE_DESC_OUT_OF_RANGE);
+        }
+        srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+
+        if (chksumStr != NULL) {
+            addKeyVal (&regParam, CHKSUM_KW, chksumStr);
+        }
+	addKeyVal (&regParam, FILE_PATH_KW, destDataObjInfo->filePath);
+	addKeyVal (&regParam, RESC_NAME_KW, destDataObjInfo->rescName);
+	addKeyVal (&regParam, RESC_GROUP_NAME_KW, 
+	  destDataObjInfo->rescGroupName);
+	if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput, 
+	  IRODS_ADMIN_KW) != NULL) {
+	    addKeyVal (&regParam, IRODS_ADMIN_KW, "");
+	}
+        modDataObjMetaInp.dataObjInfo = destDataObjInfo;
+        modDataObjMetaInp.regParam = &regParam;
+        status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+	/* have to handle the l3Close here because the need to 
+	 * unlink the srcDataObjInfo */
+        if (status >= 0) {
+           if (L1desc[srcL1descInx].l3descInx > 2) {
+		int status1;
+	        status1 = l3Close (rsComm, srcL1descInx);
+		if (status1 < 0) {
+                    rodsLog (LOG_NOTICE,
+              	      "_rsDataObjClose: l3Close of %s error. status = %d",
+              	      srcDataObjInfo->objPath, status1);
 		}
-                l3Unlink (rsComm, srcDataObjInfo);
-	    } else {
-		if (L1desc[srcL1descInx].l3descInx > 2)
-		    l3Close (rsComm, srcL1descInx);
 	    }
-	    freeL1desc (srcL1descInx);
-        } else if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
-	    /* overwrite an existing repl */
+            l3Unlink (rsComm, srcDataObjInfo);
+	} else {
+	    if (L1desc[srcL1descInx].l3descInx > 2)
+		l3Close (rsComm, srcL1descInx);
+	}
+	freeL1desc (srcL1descInx);
+	L1desc[l1descInx].srcL1descInx = 0;
+    } else if (L1desc[l1descInx].oprType == REPLICATE_DEST) {
+        destDataObjInfo = L1desc[l1descInx].dataObjInfo;
+        srcL1descInx = L1desc[l1descInx].srcL1descInx;
+        if (srcL1descInx <= 2) {
+            rodsLog (LOG_NOTICE,
+              "_rsDataObjClose: srcL1descInx %d out of range",
+              srcL1descInx);
+             return (SYS_FILE_DESC_OUT_OF_RANGE);
+        }
+        srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+
+        if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
+	    /* repl to an existing copy */
             snprintf (tmpStr, MAX_NAME_LEN, "%d", srcDataObjInfo->replStatus);
              addKeyVal (&regParam, REPL_STATUS_KW, tmpStr);
             snprintf (tmpStr, MAX_NAME_LEN, "%lld", srcDataObjInfo->dataSize);
@@ -420,6 +445,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             modDataObjMetaInp.regParam = &regParam;
             status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
         } else {
+	    /* repl to a new copy */
 	    memset (&regReplicaInp, 0, sizeof (regReplicaInp));
 	    if (destDataObjInfo->dataId <= 0)
 		destDataObjInfo->dataId = srcDataObjInfo->dataId;
@@ -442,13 +468,14 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         clearKeyVal (&regParam);
 
 	if (status < 0) {
-	    l3Unlink (rsComm, myDataObjInfo);
+	    l3Unlink (rsComm, L1desc[l1descInx].dataObjInfo);
             rodsLog (LOG_NOTICE,
-              "_rsDataObjClose: rsRegReplica or rsModDataObjMeta of %s error. status = %d",
+              "_rsDataObjClose: RegReplica/ModDataObjMeta %s err. stat = %d",
               destDataObjInfo->objPath, status);
 	    return (status);
 	}
     } else if (L1desc[l1descInx].dataObjInfo->specColl == NULL) {
+	/* put or copy */
 	if (l3descInx < 2 &&
 #if 0
 	  L1desc[l1descInx].dataObjInpReplFlag == 1 &&
@@ -461,20 +488,25 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	  L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
 	    /* the comes from a cross zone copy. have not been
 	     * registered yet */
-            status = svrRegDataObj (rsComm, myDataObjInfo);
+            status = svrRegDataObj (rsComm, L1desc[l1descInx].dataObjInfo);
             if (status < 0) {
                 rodsLog (LOG_NOTICE,
                   "_rsDataObjClose: svrRegDataObj for %s failed, status = %d",
-                  myDataObjInfo->objPath, status);
+                  L1desc[l1descInx].dataObjInfo->objPath, status);
             }
 	}
 	      
-        if (myDataObjInfo == NULL || myDataObjInfo->dataSize != newSize) {
+        if (L1desc[l1descInx].dataObjInfo == NULL || 
+	  L1desc[l1descInx].dataObjInfo->dataSize != newSize) {
             snprintf (tmpStr, MAX_NAME_LEN, "%lld", newSize);
             addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
 	    /* update this in case we need to replicate it */
-	    myDataObjInfo->dataSize = newSize;
+	    L1desc[l1descInx].dataObjInfo->dataSize = newSize;
 	}
+
+        if (chksumStr != NULL) {
+            addKeyVal (&regParam, CHKSUM_KW, chksumStr);
+        }
 
 	if (L1desc[l1descInx].replStatus & OPEN_EXISTING_COPY) {
 	    addKeyVal (&regParam, ALL_REPL_STATUS_KW, tmpStr);
@@ -489,6 +521,9 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
         status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
 
+        if (chksumStr != NULL)
+            free (chksumStr);
+
         clearKeyVal (&regParam);
 
         if (status < 0) {
@@ -499,32 +534,36 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     if (L1desc[l1descInx].replRescInfo != NULL && 
       getRescClass (L1desc[l1descInx].replRescInfo) == COMPOUND_CL) {
 	/* repl a new copy */
-	L1desc[l1descInx].dataObjInp->dataSize = myDataObjInfo->dataSize;
+	L1desc[l1descInx].dataObjInp->dataSize = 
+	  L1desc[l1descInx].dataObjInfo->dataSize;
 	status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp, 
-	  myDataObjInfo, L1desc[l1descInx].replRescInfo, 
-	  myDataObjInfo->rescGroupName, NULL, 0);
+	  L1desc[l1descInx].dataObjInfo, L1desc[l1descInx].replRescInfo, 
+	  L1desc[l1descInx].dataObjInfo->rescGroupName, NULL, 0);
 	if (status < 0) {
             rodsLog (LOG_ERROR,
               "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
-                myDataObjInfo->objPath, status);
+                L1desc[l1descInx].dataObjInfo->objPath, status);
 	    return status;
         }
     } else if (L1desc[l1descInx].replDataObjInfo != NULL &&
       getRescClass (L1desc[l1descInx].replDataObjInfo->rescInfo) == 
       COMPOUND_CL) {
 	/* update an existing copy */
-	L1desc[l1descInx].dataObjInp->dataSize = myDataObjInfo->dataSize;
+	L1desc[l1descInx].dataObjInp->dataSize = 
+	  L1desc[l1descInx].dataObjInfo->dataSize;
 	if (L1desc[l1descInx].bytesWritten > 0)
-	    myDataObjInfo->replStatus |= NEWLY_CREATED_COPY;
+	    L1desc[l1descInx].dataObjInfo->replStatus |= NEWLY_CREATED_COPY;
 	L1desc[l1descInx].replDataObjInfo->replStatus = 
-	  myDataObjInfo->replStatus;
+	  L1desc[l1descInx].dataObjInfo->replStatus;
         status = _rsDataObjReplS (rsComm,  L1desc[l1descInx].dataObjInp,
-          myDataObjInfo, L1desc[l1descInx].replDataObjInfo->rescInfo,
-          myDataObjInfo->rescGroupName, L1desc[l1descInx].replDataObjInfo, 1);
+          L1desc[l1descInx].dataObjInfo, 
+	  L1desc[l1descInx].replDataObjInfo->rescInfo,
+          L1desc[l1descInx].dataObjInfo->rescGroupName, 
+	  L1desc[l1descInx].replDataObjInfo, 1);
         if (status < 0) {
             rodsLog (LOG_ERROR,
               "_rsDataObjClose: _rsDataObjReplS of %s error, status = %d",
-                myDataObjInfo->objPath, status);
+                L1desc[l1descInx].dataObjInfo->objPath, status);
             return status;
         }
     }
@@ -532,7 +571,8 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     /* XXXXXX need to replicate to moreRescGrpInfo */
 
     /* for post processing */
-    L1desc[l1descInx].bytesWritten = myDataObjInfo->dataSize = newSize;
+    L1desc[l1descInx].bytesWritten = 
+      L1desc[l1descInx].dataObjInfo->dataSize = newSize;
 
 #ifdef LOG_TRANSFERS
     /* transfer logging */
@@ -678,6 +718,162 @@ l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat)
 	}
     }
     return (status);
+}
+
+/* procChksumForClose - handle checksum issues on close. Returns a non-null
+ * chksumStr if it needs to be registered.
+ */
+int
+procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
+{
+    int status = 0;
+    dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
+    int oprType = L1desc[l1descInx].oprType;
+    int srcL1descInx;
+    dataObjInfo_t *srcDataObjInfo;
+
+    *chksumStr = NULL;
+    if (oprType == REPLICATE_DEST || oprType == PHYMV_DEST) {
+        srcL1descInx = L1desc[l1descInx].srcL1descInx;
+        if (srcL1descInx <= 2) {
+            rodsLog (LOG_NOTICE,
+              "procChksumForClose: srcL1descInx %d out of range",
+              srcL1descInx);
+             return (SYS_FILE_DESC_OUT_OF_RANGE);
+        }
+        srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+        if (strlen (srcDataObjInfo->chksum) > 0 &&
+          srcDataObjInfo->replStatus > 0) {
+            /* the source has chksum. Must verify chksum */
+
+            status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                 "procChksumForClose: _dataObjChksum error for %s, status = %d",
+                  dataObjInfo->objPath, status);
+		return status;
+            } else {
+                if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
+                    free (*chksumStr);
+		    *chksumStr = NULL;
+                    rodsLog (LOG_NOTICE,
+                     "procChksumForClose: chksum mismatch for for %s",
+                     dataObjInfo->objPath);
+                    return USER_CHKSUM_MISMATCH;
+                } else {
+		    return 0;
+		}
+            }
+        }
+    }
+
+    /* overwriting an old copy. need to verify the chksum again */
+    if (strlen (L1desc[l1descInx].dataObjInfo->chksum) > 0)
+        L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
+
+    if (L1desc[l1descInx].chksumFlag == 0) {
+	return 0;
+    } else if (L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM) {
+        status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+        if (status < 0)  return (status);
+
+        if (strlen (L1desc[l1descInx].chksum) > 0) {
+            /* from a put type operation */
+            /* verify against the input value. */
+            if (strcmp (L1desc[l1descInx].chksum, *chksumStr) != 0) {
+                rodsLog (LOG_NOTICE,
+                 "procChksumForClose: mismach chksum for %s.inp=%s,compute %s",
+                  dataObjInfo->objPath,
+                  L1desc[l1descInx].chksum, *chksumStr);
+                free (*chksumStr);
+		*chksumStr = NULL;
+                return (USER_CHKSUM_MISMATCH);
+            }
+            if (strcmp (dataObjInfo->chksum, *chksumStr) == 0) {
+                /* the same as in rcat */
+                free (*chksumStr);
+                *chksumStr = NULL;
+            }
+       } else if (oprType == REPLICATE_DEST) {
+            if (strlen (dataObjInfo->chksum) > 0) {
+                /* for replication, the chksum in dataObjInfo was duplicated */
+                if (strcmp (dataObjInfo->chksum, *chksumStr) != 0) {
+                    rodsLog (LOG_NOTICE,
+                     "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
+                     dataObjInfo->objPath, dataObjInfo->chksum, *chksumStr);
+                    status = USER_CHKSUM_MISMATCH;
+                } else {
+                    /* not need to register because reg repl will do it */
+		    free (*chksumStr);
+                    *chksumStr = NULL;
+                    status = 0;
+                }
+            }
+            return (status);
+        } else if (oprType == COPY_DEST) {
+            /* created through copy */
+            srcL1descInx = L1desc[l1descInx].srcL1descInx;
+            if (srcL1descInx <= 2) {
+                /* not a valid srcL1descInx */
+                rodsLog (LOG_NOTICE,
+                  "procChksumForClose: invalid srcL1descInx %d for copy",
+                  srcL1descInx);
+                /* just register it for now */
+                return 0;
+            }
+            srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+
+            if (strlen (srcDataObjInfo->chksum) > 0) {
+                if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
+                    rodsLog (LOG_NOTICE,
+                     "procChksumForClose:mismach chksum for %s.Rcat=%s,comp %s",
+                     dataObjInfo->objPath, srcDataObjInfo->chksum, *chksumStr);
+                    free (*chksumStr);
+                    *chksumStr = NULL;
+                     return USER_CHKSUM_MISMATCH;
+		}
+	    }
+	    /* just register it */
+	    return 0;
+	} else {
+            /* just register it */
+            return 0;
+	}
+    } else {	/* REG_CHKSUM */
+        status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
+        if (status < 0)  return (status);
+
+        if (strlen (L1desc[l1descInx].chksum) > 0) {
+            /* from a put type operation */
+
+            if (strcmp (dataObjInfo->chksum, L1desc[l1descInx].chksum) == 0) {
+		/* same as in icat */
+                free (*chksumStr);
+                *chksumStr = NULL;
+            }
+            return (0);
+        } else if (oprType == COPY_DEST) {
+            /* created through copy */
+            srcL1descInx = L1desc[l1descInx].srcL1descInx;
+            if (srcL1descInx <= 2) {
+                /* not a valid srcL1descInx */
+                rodsLog (LOG_NOTICE,
+                  "procChksumForClose: invalid srcL1descInx %d fopy copy",
+                  srcL1descInx);
+                /* do nothing */
+                free (*chksumStr);
+                *chksumStr = NULL;
+                return (0);
+            }
+            srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
+            if (strlen (srcDataObjInfo->chksum) == 0) {
+                free (*chksumStr);
+                *chksumStr = NULL;
+	    }
+        }
+        return (0);
+    }
+    return status;
 }
 
 #ifdef COMPAT_201

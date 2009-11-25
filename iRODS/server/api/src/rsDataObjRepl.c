@@ -584,7 +584,12 @@ char *rescGroupName, dataObjInfo_t *destDataObjInfo, int updateFlag)
     /* myDestDataObjInfo = L1desc[l1descInx].dataObjInfo; */
     L1desc[l1descInx].oprStatus = status;
     if (status >= 0) {
+#if 0
 	dataObjCloseInp.bytesWritten = L1desc[l1descInx].dataObjInfo->dataSize;
+#else
+	L1desc[l1descInx].bytesWritten =  
+	  L1desc[l1descInx].dataObjInfo->dataSize;
+#endif
     }
 
     status1 = irsDataObjClose (rsComm, &dataObjCloseInp, &myDestDataObjInfo);
@@ -992,7 +997,8 @@ l3DataStageSync (rsComm_t *rsComm, int l1descInx)
     if (status < 0) {
 	L1desc[l1descInx].bytesWritten = -1;
     } else {
-        L1desc[l1descInx].bytesWritten = L1desc[srcL1descInx].dataSize;
+        L1desc[l1descInx].bytesWritten = L1desc[l1descInx].dataSize =
+	  L1desc[srcL1descInx].dataSize;
     }
 
     return (status); 

@@ -679,6 +679,9 @@ getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
     }
 }
 
+/* dataObjChksum - this function has been replaced by procChksumForClose
+ */
+#if 0
 int
 dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam)
 {
@@ -801,6 +804,7 @@ dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam)
     }
     return (0);
 }
+#endif
 
 int 
 _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)

@@ -40,6 +40,8 @@ int
 _l3Close (rsComm_t *rsComm, int rescTypeInx, int l3descInx);
 int
 l3Stat (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, rodsStat_t **myStat);
+int
+procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr);
 #else
 #define RS_DATA_OBJ_CLOSE NULL
 #endif
