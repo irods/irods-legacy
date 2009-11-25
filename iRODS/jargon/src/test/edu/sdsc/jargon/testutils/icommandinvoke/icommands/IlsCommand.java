@@ -13,7 +13,16 @@ import java.util.List;
 public class IlsCommand implements Icommand {
 
 	private String ilsBasePath = "";
-	
+	private boolean longFormat = false;
+
+	public boolean isLongFormat() {
+		return longFormat;
+	}
+
+	public void setLongFormat(boolean longFormat) {
+		this.longFormat = longFormat;
+	}
+
 	public String getIlsBasePath() {
 		return ilsBasePath;
 	}
@@ -22,19 +31,22 @@ public class IlsCommand implements Icommand {
 		this.ilsBasePath = ilsBasePath;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 *
 	 * @see org.irods.jargon.icommandinvoke.icommands.Icommand#buildCommand()
 	 */
 	@Override
 	public List<String> buildCommand() {
 		List<String> commandProps = new ArrayList<String>();
 		commandProps.add("ils");
+		if (longFormat) {
+			commandProps.add("-l");
+		}
 		if (ilsBasePath.length() > 0) {
 			commandProps.add(ilsBasePath);
 		}
 		return commandProps;
 	}
-
-	
 
 }

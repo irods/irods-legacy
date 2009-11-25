@@ -65,6 +65,10 @@ Testing and patches for Bug 29 - problem with Jargon physically deleting a file
 --------------
 Testing and fix for Bug 34  -  resource not found when doing irodsFileSystem.createTarFile
 
+--------------
+Added IRODSFile.getAllResources() which will return all resources for an IRODS File
+for feature request:  Bug 35 -  add getResources() method
+
 ================================================================================================
 Outstanding Issues
 
