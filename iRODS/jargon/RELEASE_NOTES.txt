@@ -23,9 +23,7 @@ libraries
 ---------
 
 -gsi-classes.jar (packaged in lib directory)
-
-
-
+-junit-4.7.jar (packaged in lib)
 
 ================================================================================================
 Features and Changes
@@ -52,6 +50,7 @@ Consider the JUnit testing to be experimental.
 -------------
 Testing and patches for  Bug 24 -  Inconsistent return of resource on IRODSFile
 *return physical resource for IRODSFile.getResource() when it is a File
+
 -------------
 Testing and patches for  Bug 31 -  Create IRODS file by URI and do put - null resource causes -78000 IRODS error
 *created test cases to capture bug
@@ -59,12 +58,12 @@ Testing and patches for  Bug 31 -  Create IRODS file by URI and do put - null re
 -------------
 Testing and patches for  Bug 32 -   copyTo when dest file is from URI results in -78000 resource not found
 *created test cases to capture bug
+
 -------------
-Testing for Bug 29 - problem with Jargon physically deleting a file
-*created test cases to capture bug
+Testing and patches for Bug 29 - problem with Jargon physically deleting a file
+
 --------------
 Testing and fix for Bug 34  -  resource not found when doing irodsFileSystem.createTarFile
-
 
 ================================================================================================
 Outstanding Issues

@@ -101,8 +101,6 @@ public class IRODSCommandsDeleteTest {
 	 * BUG: 29 - problem with Jargon physically deleting a file Testing delete
 	 * code in collection to trigger status report
 	 *
-	 * FIXME: captures bug by failure
-	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -113,7 +111,73 @@ public class IRODSCommandsDeleteTest {
 		String testFileNamePrefix = "del15file";
 		String testFileExtension = ".txt";
 		String deleteCollectionSubdir = IRODS_TEST_SUBDIR_PATH + "/del15dir";
-		int numberOfTestFiles = 15;  //FIXME: bump back up
+		int numberOfTestFiles = 15;
+
+		// create collection to zap
+		String deleteCollectionAbsPath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, deleteCollectionSubdir);
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		ImkdirCommand imkdrCommand = new ImkdirCommand();
+		imkdrCommand.setCollectionName(deleteCollectionAbsPath);
+		invoker.invoke(imkdrCommand);
+
+		IputCommand iputCommand = new IputCommand();
+		String genFileName = "";
+		String fullPathToTestFile = "";
+
+		// generate a number of files in the subdir
+		for (int i = 0; i < numberOfTestFiles; i++) {
+			genFileName = testFileNamePrefix + String.valueOf(i)
+					+ testFileExtension;
+			fullPathToTestFile = FileGenerator
+					.generateFileOfFixedLengthGivenName(testingProperties
+							.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+							+ "/", genFileName, 1);
+
+			iputCommand.setLocalFileName(fullPathToTestFile);
+			iputCommand.setIrodsFileName(deleteCollectionAbsPath);
+			iputCommand.setForceOverride(true);
+			invoker.invokeCommandAndGetResultAsString(iputCommand);
+		}
+
+		// now try and delete the collecton
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				testingPropertiesHelper
+						.buildIRODSCollectionAbsolutePathFromTestProperties(
+								testingProperties, deleteCollectionSubdir));
+
+		boolean deleteResult = irodsFile.delete(true);
+		irodsFileSystem.close();
+		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
+
+	}
+
+	/**
+	 * BUG: 29 - problem with Jargon physically deleting a file Testing delete
+	 * code in collection to trigger status report
+	 *
+	 * This tests an edge case where the number of files lines up with the status
+	 * message boundary size
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void testDeleteAtStatusBoundaryByDeletingCollection()
+			throws Exception {
+
+		// test tuning variables
+		String testFileNamePrefix = "delBoundaryfile";
+		String testFileExtension = ".txt";
+		String deleteCollectionSubdir = IRODS_TEST_SUBDIR_PATH + "/delboundarydir";
+		int numberOfTestFiles = 20;
 
 		// create collection to zap
 		String deleteCollectionAbsPath = testingPropertiesHelper
