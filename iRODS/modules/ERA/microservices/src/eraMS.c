@@ -2494,7 +2494,7 @@ msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ru
 	modAVUMetadataInp.arg2 = myDataObjInp->objPath;
 	modAVUMetadataInp.arg3 = flagStr;
 	modAVUMetadataInp.arg4 = "1";
-	modAVUMetadataInp.arg5 = "";  /* Will be NULL once bug is fixed */
+	modAVUMetadataInp.arg5 = NULL;
 	
 	/* invoke rsModAVUMetadata() */
 	rei->status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);

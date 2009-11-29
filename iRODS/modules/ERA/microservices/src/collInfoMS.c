@@ -418,7 +418,7 @@ msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  *
  * \note This microservice returns the object count and total disk usage for all objects in a collection, recursively.
  *    The results are written to a KeyValPair_MS_T whose keyword strings are "Size" and "Object Count".
- *    Might be merged with msiGetCollectionContentsReport()...
+ *    
  *
  * \usage
  * As seen in modules/ERA/test/getCollSize.ir
@@ -461,9 +461,7 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
 	rodsLong_t size, objCount;		/* to store total size and file count */
 	char tmpStr[21];			/* to store total size and file count */
 	
-	char *resultStringToken;		/* for parsing key-value pairs from genQueryOut */
 	sqlResult_t *sqlResult;			/* for parsing key-value pairs from genQueryOut */
-	int i;					/* for parsing key-value pairs from genQueryOut */
 
 
 	RE_TEST_MACRO ("    Calling msiGetCollectionSize")
@@ -488,69 +486,39 @@ msiGetCollectionSize(msParam_t *collPath, msParam_t *outKVPairs, msParam_t *stat
 	memset (res, 0, sizeof (keyValPair_t));
 
 
-	/* Wanted fields. We use coll_id to do a join query on r_data_main and r_coll_main */
+	/* Wanted fields. */
 	memset (&genQueryInp, 0, sizeof (genQueryInp));
-	addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
-	addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
-	addInxIval (&genQueryInp.selectInp, COL_COLL_ID, 1);
+	addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, SELECT_SUM);
+	addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, SELECT_COUNT);
+	addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
 
 
 	/* Make condition for getting all objects under a collection */
 	genAllInCollQCond (outCollInp->collName, collQCond);
 	addInxVal (&genQueryInp.sqlCondInp, COL_COLL_NAME, collQCond);
 	genQueryInp.maxRows = MAX_SQL_ROWS;
-	genQueryInp.options = RETURN_TOTAL_ROW_COUNT;
 
 
 	/* Query */
 	rei->status  = rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
 
 
-	/* intit counters */
+	/* Zero counters, in case no rows found */
 	size = 0;
 	objCount = 0;
 
 
-	/* Parse results */
+	/* Parse results. Easy here since we have only one "row". */
 	if (rei->status == 0) {
-
-		/* add row count to previous total */
-		objCount += genQueryOut->totalRowCount;
-
-		/* for each row */
-		for (i=0;i<genQueryOut->rowCnt;i++) {
 	
-			/* get COL_DATA_SIZE result */
-			sqlResult = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
+		/* get COL_DATA_SIZE result */
+		sqlResult = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
+		size = atoll(sqlResult->value);
+		
+		/* get COL_D_DATA_ID result */
+		sqlResult = getSqlResultByInx (genQueryOut, COL_D_DATA_ID);
+		objCount = atoll(sqlResult->value);
 
-			/* retrieve value for this row */
-			resultStringToken = sqlResult->value + i*sqlResult->len;
-
-			/* add to previous total */
-			size += atoll(resultStringToken);
-		}
-
-		/* not done? */
-		while (rei->status==0 && genQueryOut->continueInx > 0) {
-			genQueryInp.continueInx=genQueryOut->continueInx;
-			rei->status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
-	
-			/* add row count to previous total */
-			objCount += genQueryOut->totalRowCount;
-
-			/* for each row */
-			for (i=0;i<genQueryOut->rowCnt;i++) {
-			
-				/* get COL_DATA_SIZE result */
-				sqlResult = getSqlResultByInx (genQueryOut, COL_DATA_SIZE);
-	
-				/* retrieve value for this row */
-				resultStringToken = sqlResult->value + i*sqlResult->len;
-	
-				/* add to previous total */
-				size += atoll(resultStringToken);
-			}
-		}
 	}
 
 
