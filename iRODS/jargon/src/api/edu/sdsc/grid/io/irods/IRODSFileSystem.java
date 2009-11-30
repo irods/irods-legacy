@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 
 
@@ -149,26 +150,26 @@ public class IRODSFileSystem extends RemoteFileSystem
     {
       MetaDataRecordList[] rl = null;
       try {
-        rl = query( 
+        rl = query(
           new MetaDataCondition[] {
             MetaDataSet.newCondition(
               IRODSMetaDataSet.USER_DN,
               MetaDataCondition.EQUAL,
-              iRODSAccount.getGSSCredential().getName().toString()) 
+              iRODSAccount.getGSSCredential().getName().toString())
             },
-            new MetaDataSelect[] { 
+            new MetaDataSelect[] {
               MetaDataSet.newSelection(IRODSMetaDataSet.USER_NAME),
-              MetaDataSet.newSelection(IRODSMetaDataSet.USER_ZONE) 
+              MetaDataSet.newSelection(IRODSMetaDataSet.USER_ZONE)
           }, 10
-        ); 
+        );
       } catch (Exception e) {
         IOException x = new IOException();
         x.initCause(e);
-        if (DEBUG > 0) 
+        if (DEBUG > 0)
           x.printStackTrace();
       }
 
-    
+
       if(rl != null&& rl.length > 0) {
           iRODSAccount.setUserName(rl[0].getStringValue(0));
           iRODSAccount.setZone(rl[0].getStringValue(1));
@@ -293,7 +294,7 @@ public class IRODSFileSystem extends RemoteFileSystem
     return ((IRODSAccount) account).getVersionNumber();
   }
 
-  public String getZone( ) 
+  public String getZone( )
   {
     return ((IRODSAccount) account).getZone();
   }
@@ -324,9 +325,9 @@ public class IRODSFileSystem extends RemoteFileSystem
 
 //TODO
   /**
-   * 
-   * 
-   * @param ruleStream 
+   *
+   *
+   * @param ruleStream
    * @return
    * @throws java.io.IOException
    */
@@ -340,8 +341,8 @@ public class IRODSFileSystem extends RemoteFileSystem
     }
     return map;
   }
-  
-  
+
+
 /*
   Bundle file operations. This command allows structured files such as
 tar files to be uploaded and downloaded to/from iRods.
@@ -391,9 +392,9 @@ Please contact all@diceresearch.org for this mod.
   public void extractTarFile( IRODSFile tarFile, IRODSFile extractLocation )
     throws IOException
   {
-    commands.extractBundle( tarFile, extractLocation );    
+    commands.extractBundle( tarFile, extractLocation );
   }
-  
+
 //----------------------------------------------------------------------
 // GeneralFileSystem methods
 //----------------------------------------------------------------------
@@ -471,9 +472,6 @@ Please contact all@diceresearch.org for this mod.
     return commands.isClosed();
   }
 
-
-
-  
   /**
    * Queries the file server to find all files that
    * match the set of conditions in <code>conditions</code>. For all those that
@@ -485,10 +483,10 @@ Please contact all@diceresearch.org for this mod.
    * @param selects The attributes to be returned from those values that
    *     met the conditions, like SELECT in SQL.
    * @param numberOfRecordsWanted Maximum number of results of this query that
-   *    should be included in the return value. Default is 
+   *    should be included in the return value. Default is
    *    <code>DEFAULT_RECORDS_WANTED</code>. If more results are available, they
    *    can be obtained using <code>MetaDataRecordList.getMoreResults</code>
-   * @return The metadata results from the filesystem, 
+   * @return The metadata results from the filesystem,
    *    returns <code>null</code> if there are no results.
    */
   public MetaDataRecordList[] query( MetaDataCondition[] conditions,
@@ -498,7 +496,7 @@ Please contact all@diceresearch.org for this mod.
     return query( conditions, selects, numberOfRecordsWanted, Namespace.FILE );
   }
 
-  
+
   /**
    * Queries the file server to find all files that
    * match the set of conditions in <code>conditions</code>. For all those that
@@ -509,20 +507,20 @@ Please contact all@diceresearch.org for this mod.
    *    the values to query the server, like WHERE in SQL.
    * @param selects The attributes to be returned from those values that
    *     met the conditions, like SELECT in SQL.
-   * @param namespace Defines which namepsace is appropriate when querying 
+   * @param namespace Defines which namepsace is appropriate when querying
    *    the AVU metadata of files, directories, resources or users.
-   * @return The metadata results from the filesystem, 
+   * @return The metadata results from the filesystem,
    *    returns <code>null</code> if there are no results.
    */
   public MetaDataRecordList[] query( MetaDataCondition[] conditions,
     MetaDataSelect[] selects, Namespace namespace )
     throws IOException
   {
-    return query( conditions, selects, GeneralFileSystem.DEFAULT_RECORDS_WANTED, 
+    return query( conditions, selects, GeneralFileSystem.DEFAULT_RECORDS_WANTED,
       namespace );
   }
-  
-  
+
+
   /**
    * Queries the file server to find all files that
    * match the set of conditions in <code>conditions</code>. For all those that
@@ -534,13 +532,13 @@ Please contact all@diceresearch.org for this mod.
    * @param selects The attributes to be returned from those values that
    *     met the conditions, like SELECT in SQL.
    * @param numberOfRecordsWanted Maximum number of results of this query that
-   *    should be included in the return value. Default is 
-   *    <code>DEFAULT_RECORDS_WANTED</code>. 
-   *    If more results are available, they can be obtained using 
+   *    should be included in the return value. Default is
+   *    <code>DEFAULT_RECORDS_WANTED</code>.
+   *    If more results are available, they can be obtained using
    *    <code>MetaDataRecordList.getMoreResults</code>
-   * @param namespace Defines which namepsace is appropriate when querying 
+   * @param namespace Defines which namepsace is appropriate when querying
    *    the AVU metadata of files, directories, resources or users.
-   * @return The metadata results from the filesystem, 
+   * @return The metadata results from the filesystem,
    *    returns <code>null</code> if there are no results.
    */
   public MetaDataRecordList[] query( MetaDataCondition[] conditions,
@@ -550,12 +548,12 @@ Please contact all@diceresearch.org for this mod.
     //TODO Duplicates? maybe they are && conditions
     conditions = (MetaDataCondition[]) cleanNulls(conditions);
     selects = (MetaDataSelect[]) cleanNulls(selects);
-    return commands.query( 
+    return commands.query(
       conditions, selects, numberOfRecordsWanted, namespace );
   }
 
-  
-  
+
+
 //----------------------------------------------------------------------
 //
 //----------------------------------------------------------------------
@@ -624,7 +622,7 @@ Please contact all@diceresearch.org for this mod.
     return temp.toArray((Object[]) Array.newInstance(temp.get(0).getClass(), 0));
   }
 
-  String miscServerInfo( ) 
+  String miscServerInfo( )
     throws IOException
   {
     return commands.miscServerInfo();

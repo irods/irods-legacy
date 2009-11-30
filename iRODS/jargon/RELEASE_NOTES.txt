@@ -69,6 +69,12 @@ Testing and fix for Bug 34  -  resource not found when doing irodsFileSystem.cre
 Added IRODSFile.getAllResources() which will return all resources for an IRODS File
 for feature request:  Bug 35 -  add getResources() method
 
+--------------
+Removed static IRODSFileSystem in IRODSAdmin and adjusted constructors, removed static methods in
+Domain, User, Resource.  This is an API change, but seemed unavoidable.
+
+for feature request:   Bug 30 -  query a resource list for a user shows all resources user has files in
+
 ================================================================================================
 Outstanding Issues
 
