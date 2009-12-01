@@ -611,6 +611,7 @@ sub configureDatabaseUser
 	if ( $DATABASE_TYPE eq "postgres" )
 	{
 		Postgres_ConfigureDatabaseUser( );
+		Postgres_CreateAlternateDatabaseUser( );
 		return;
 	}
 
@@ -2508,6 +2509,41 @@ sub printUsage()
 #  	but none exit directly.
 #
 
+
+#
+# @brief	Create an Alternate Database User (if requested).
+#
+# This function creates the additional postgres user if the specified
+# name it is not the same as the OS usename.
+#
+sub Postgres_CreateAlternateDatabaseUser( )
+{
+	if ( $thisUser eq $DATABASE_ADMIN_NAME ) {
+		# Typical case, using the OS username for the DB user.
+		return;
+	}
+    
+	# Create the postgres user.
+	#   If this is an initial build/install of Postgres, no
+	#   password will be needed (yet) but to avoid the possibility
+	#   of getting stuck on a prompt, we include the password in 
+	#   an input file.
+	printStatus( "    Creating Postgres database user...\n" );
+	printLog( "\n    Creating Postgres database user...\n" );
+	my $tmpPassword = createTempFilePath( "create" );
+	printToFile( $tmpPassword, "$DATABASE_ADMIN_PASSWORD\n" );
+	chmod( 0600, $tmpPassword );
+	($status,$output) = run( "$createuser -U $thisUser -s $DATABASE_ADMIN_NAME < $tmpPassword" );
+	if ( $status != 0 ) {
+		printStatus( "        Create user failed (which may be OK)...\n" );
+		printLog( "\n        Create user failed (which may be OK)...\n" );
+		printLog( "        $createuser \n" );
+		printLog( "        $output" );
+		printLog( "        status: $status\n");
+	}
+	unlink( $tmpPassword );
+}
+
 #
 # @brief	Configure user accounts for a Postgres database.
 #
@@ -2526,7 +2562,7 @@ sub Postgres_ConfigureDatabaseUser()
 
 	# The new line for .pgpass:
 	#              hostname:port:database:username:password
-	my $newline = "*:$DATABASE_PORT:$DB_NAME:$thisUser:$DATABASE_ADMIN_PASSWORD\n";
+	my $newline = "*:$DATABASE_PORT:$DB_NAME:$DATABASE_ADMIN_NAME:$DATABASE_ADMIN_PASSWORD\n";
 
 
 	# If the .pgpass file doesn't exist, make one with a line for the

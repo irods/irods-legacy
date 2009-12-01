@@ -456,6 +456,7 @@ sub validateDatabaseVariables()
 		}
 		$psql     = File::Spec->catfile( $databaseBinDir, "psql" );
 		$createdb = File::Spec->catfile( $databaseBinDir, "createdb" );
+		$createuser = File::Spec->catfile( $databaseBinDir, "createuser" );
 		$dropdb   = File::Spec->catfile( $databaseBinDir, "dropdb" );
 		$vacuumdb = File::Spec->catfile( $databaseBinDir, "vacuumdb" );
 
