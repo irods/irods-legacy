@@ -438,6 +438,32 @@ rescInfo_t *rescInfo)
        status = rsRegColl (rsComm, &collCreateInp);
     }
 
+    if (status >= 0) {
+        char outLogPath[MAX_NAME_LEN];
+	int status1;
+	/* see if the phyPath is mapped into a real collection */
+	if (getLogPathFromPhyPath (filePath, rescInfo, outLogPath) >= 0 &&
+	  strcmp (outLogPath, phyPathRegInp->objPath) != 0) {
+	    /* log path not the same as input objPath */
+	    if (isColl (rsComm, outLogPath, NULL) >= 0) {
+		modAccessControlInp_t modAccessControl;
+		/* it is a real collection. better set the collection
+		 * to read-only mode because any modification to files
+		 * through this mounted collection can be trouble */
+		bzero (&modAccessControl, sizeof (modAccessControl));
+		modAccessControl.accessLevel = "read";
+		modAccessControl.userName = rsComm->clientUser.userName;
+		modAccessControl.zone = rsComm->clientUser.rodsZone;
+		modAccessControl.path = phyPathRegInp->objPath;
+                status1 = rsModAccessControl(rsComm, &modAccessControl);
+                if (status1 < 0) {
+                    rodsLog (LOG_NOTICE, 
+		      "mountFileDir: rsModAccessControl err for %s, stat = %d",
+                      phyPathRegInp->objPath, status1);
+		}
+	    }
+	}
+    }
     return (status);
 }
 

@@ -425,6 +425,10 @@ vaultPathPolicy_t *outVaultPathPolicy)
         *outVaultPathPolicy = *((vaultPathPolicy_t *) msParam->inOutStruct);
         clearMsParamArray (&rei.inOutMsParamArray, 1);
     }
+    /* make sure trimDirCnt is <= 1 */
+    if (outVaultPathPolicy->trimDirCnt > DEF_TRIM_DIR_CNT)
+	outVaultPathPolicy->trimDirCnt = DEF_TRIM_DIR_CNT;
+
     return (0);
 }
 
@@ -1800,5 +1804,39 @@ getDefDirMode ()
         defDirMode = DEFAULT_DIR_MODE;
     }
     return defDirMode;
+}
+
+int
+getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath)
+{
+    int len;
+    char *tmpPtr;
+    zoneInfo_t *tmpZoneInfo = NULL;
+    int status;
+
+    if (phyPath == NULL || rescInfo == NULL || outLogPath == NULL)
+	return USER__NULL_INPUT_ERR;
+
+    len = strlen (rescInfo->rescVaultPath);
+    if (strncmp (rescInfo->rescVaultPath, phyPath, len) != 0) return -1;
+    tmpPtr = phyPath + len;
+
+    if (*tmpPtr != '/') return -1;
+
+    tmpPtr ++;
+    status = getLocalZoneInfo (&tmpZoneInfo);
+    if (status < 0) return status;
+
+    len = strlen (tmpZoneInfo->zoneName);   
+    if (strncmp (tmpZoneInfo->zoneName, tmpPtr, len) == 0 &&
+      *(tmpPtr + len) == '/') {
+	/* start with zoneName */
+	tmpPtr += (len + 1);
+    }
+
+    snprintf (outLogPath, MAX_NAME_LEN, "/%s/%s", tmpZoneInfo->zoneName,
+      tmpPtr);
+
+    return 0;
 }
 

@@ -204,5 +204,7 @@ int
 getDefDirMode ();
 int
 isL1descInuse ();
+int
+getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
 #endif	/* DATA_OBJ_OPR */
 
