@@ -2640,6 +2640,9 @@ keyValPair_t *condInput)
 	    /* see if we can trim some old copies */
 	    matchedOldDataObjInfo = oldDataObjInfoHead;
 	    oldDataObjInfoHead = NULL;
+	    /* also trim good copy too since there is no condiftion 12/1/09 */
+            matchedDataObjInfo = *dataObjInfoHead;
+            *dataObjInfoHead = NULL;
 	} else {
 	    /* don't trim anything */
             freeAllDataObjInfo (*dataObjInfoHead);
