@@ -288,13 +288,29 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    }
 
    if (noNameMode==0) {
-      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 3) {
+      if (genQueryOut->rowCnt > 1) {
+	 gsiAuthReqError = GSI_MULTIPLE_MATCHING_DN_FOUND;
+	 return(GSI_MULTIPLE_MATCHING_DN_FOUND);
+      }
+      if (genQueryOut->rowCnt < 1) {
+	 gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
+	 return(GSI_NO_MATCHING_DN_FOUND);
+      }
+      if (genQueryOut->attriCnt != 3) {
 	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
 	 return(GSI_QUERY_INTERNAL_ERROR);
       }
    }
    else {
-      if (genQueryOut->rowCnt !=1 || genQueryOut->attriCnt != 4) {
+      if (genQueryOut->rowCnt > 1) {
+	 gsiAuthReqError = GSI_MULTIPLE_MATCHING_DN_FOUND;
+	 return(GSI_MULTIPLE_MATCHING_DN_FOUND);
+      }
+      if (genQueryOut->rowCnt < 1) {
+	 gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
+	 return(GSI_NO_MATCHING_DN_FOUND);
+      }
+      if (genQueryOut->attriCnt != 4) {
 	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
 	 return(GSI_QUERY_INTERNAL_ERROR);
       }
