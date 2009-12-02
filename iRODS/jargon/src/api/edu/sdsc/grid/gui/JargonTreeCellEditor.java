@@ -75,7 +75,9 @@ import edu.sdsc.grid.io.srb.SRBMetaDataSet;
  * @see JargonTreeModel
  * @see JargonTreeCellRenderer
  * @since JARGON1.5
+ * @deprecated - GUI code will go away in future releases
  */
+@Deprecated
 public class JargonTreeCellEditor implements TreeCellEditor
 {
 	/**

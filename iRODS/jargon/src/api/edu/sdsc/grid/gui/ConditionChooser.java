@@ -56,8 +56,10 @@ import javax.swing.JTextField;
  * @author Lucas Ammon Gilbert
  * @see SelectionChooser
  * @see QueryComponentPanel
- * @since JARGON1.5
+ * @since JARGON1.5 
+ * @deprecated - GUI code will go away in future releases
  */
+@Deprecated
 public class ConditionChooser extends SelectionChooser
 {
 //----------------------------------------------------------------------

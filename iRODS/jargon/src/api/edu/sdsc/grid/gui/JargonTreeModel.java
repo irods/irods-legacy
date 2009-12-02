@@ -88,7 +88,9 @@ import javax.swing.tree.TreePath;
  * @author Lucas Ammon Gilbert
  * @see JargonGui
  * @since version 1.4
+ * @deprecated - GUI code will go away in future releases
  */
+@Deprecated
 public class JargonTreeModel implements TreeModel
 {
 //----------------------------------------------------------------------
@@ -448,22 +450,22 @@ for every refresh and change.
 	 * (that is index >= 0 && index < getChildCount(parent)).
 	 */
 	public Object getChild( Object parent, int index )
-	{	
+	{
     //          if (index==0)
     //            {
     //               MetaDataDisplay header = new MetaDataDisplay( (MetaDataRecordList)resultTable.get( (GeneralFile)parent ) );
     //               return header.getTableHeader();
     //            }
-            
-  /*          
-                
+
+  /*
+
                 if (index==0)
                 {
                     JComponent currentComponent = new MetaDataDisplay(file, rl[0]);
                     return ((JTable)currentComponent).getTableHeader(null);
                 }
-*/                
-			
+*/
+
 			System.out.println("index in getChild is " + index);
 		if (parent instanceof String) {
 			if (parent.equals(TOP_LEVEL)) {
@@ -483,9 +485,9 @@ for every refresh and change.
 //			System.out.println("3rd if statement = " + header.getTableHeader() );
 //			return header.getTableHeader();
 //		}
-	
+
 			System.out.println("testing ");
-			
+
 		String[] list = (String[]) table.get(parent);
 
 		if (list == null) {
@@ -618,7 +620,7 @@ for every refresh and change.
         return true;
       }
     }
-    else 
+    else
       return true;
 	}
 

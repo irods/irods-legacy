@@ -70,7 +70,9 @@ import java.awt.event.*;
  * @author Lucas Ammon Gilbert
  * @see JargonGui
  * @since JARGON1.5
+ * @deprecated
  */
+@Deprecated
 public class TransferStatusPanel extends JPanel implements Runnable
 {
 //-----------------------------------------------------------------------
@@ -429,11 +431,11 @@ public class TransferStatusPanel extends JPanel implements Runnable
         progressBars[index].setValue(bytesCopied);
         progressBars[index].paintImmediately(
           progressBars[index].getVisibleRect());
-        
+
 				//TODO not way to check for other General
 				if (sources[index] instanceof SRBFile)
 				{
-          
+
 					while (((int)((SRBFile)
 						sources[index]).fileCopyStatus() < fileLengths[index]) &&
 						copyThread.isAlive())
@@ -612,7 +614,7 @@ public class TransferStatusPanel extends JPanel implements Runnable
 
       try {
         fs = new SRBFileSystem( account );
-        
+
         if (args[0].indexOf("-upload") >= 0) {
           sources[0] = new LocalFile( args[i] );
           destinations[0] = FileFactory.newFile( fs, args[i+1] );

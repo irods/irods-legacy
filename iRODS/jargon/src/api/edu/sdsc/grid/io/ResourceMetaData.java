@@ -55,6 +55,7 @@ public interface ResourceMetaData extends StandardMetaData
 //  Constants
 //----------------------------------------------------------------------
   //public static final String RESOURCE_ID = "Resource Identifier";
+  public static final String COLL_RESOURCE_NAME = "Coll Resource Name";
   public static final String RESOURCE_NAME = "Resource Name";
   public static final String RESOURCE_ZONE = "Resource Zone Name";
   public static final String RESOURCE_TYPE = "Resource Type";

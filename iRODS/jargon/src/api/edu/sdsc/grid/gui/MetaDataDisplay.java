@@ -88,7 +88,9 @@ import javax.swing.table.TableModel;
  * @see JargonTreeCellEditor
  * @see MetaDataTableDisplay
  * @since JARGON1.5
+ * @deprecated
  */
+@Deprecated
 public class MetaDataDisplay extends JTable
 {
 //-----------------------------------------------------------------------
@@ -222,22 +224,22 @@ static FontMetrics fontMetrics;
       String fileName = null, directory = null;
       Object temp = null;
 			createResultsTable(rl);
-      
+
       //extract query objects
       if (fileSystem != null) {
         for (int i=0;i<rl.length;i++) {
           temp = rl[i].getValue(SRBMetaDataSet.FILE_NAME);
           if (temp != null) {
             fileName = temp.toString();
-          
+
             temp = rl[i].getValue(SRBMetaDataSet.DIRECTORY_NAME);
             if (temp != null) {
               directory = temp.toString();
-              
-              queryObj[i] = FileFactory.newFile( 
+
+              queryObj[i] = FileFactory.newFile(
                 fileSystem, directory, fileName );
             }
-          }          
+          }
         }
       }
 		}
@@ -594,7 +596,7 @@ return jTable;
 		String originalValue;
 		int currentRow = -1, currentColumn = -1;
 
-    /** 
+    /**
      *
      * @param table To modify the outer class.
      */
@@ -853,8 +855,8 @@ if (obj != null)
 		return obj.getClass();
 return String.class;
 	  }
-    
-    public void setValueAt( Object value, int row, int column ) 
+
+    public void setValueAt( Object value, int row, int column )
     {
       if ((row < data.length) && (column < data[row].length)) {
         data[row][column] = value;

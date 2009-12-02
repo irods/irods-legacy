@@ -90,7 +90,9 @@ import javax.swing.*;
  * @see JargonTreeCellRenderer
  * @see JargonTreeCellEditor
  * @since JARGON1.5
+ * @deprecated - GUI code will go away in future releases
  */
+@Deprecated
 public class JargonTree extends JTree implements ActionListener
 {
 //----------------------------------------------------------------------

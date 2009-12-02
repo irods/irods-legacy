@@ -58,8 +58,10 @@ import java.awt.event.*;
 /**
  *
  * @author  iktome
+ * @deprecated
  */
 //TODO no, I want to create a table model
+@Deprecated
 class MetaDataTableDisplay extends javax.swing.JTable
 {
 	private MetaDataTable table;

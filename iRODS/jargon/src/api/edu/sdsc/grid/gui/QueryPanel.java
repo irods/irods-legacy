@@ -67,8 +67,11 @@ import java.util.*;
  * @see JargonGui
  * @see ClausesPanel
  * @since JARGON1.5
+ * @deprecated
  */
-/*TODO public */class QueryPanel extends JScrollPane implements ActionListener
+/*TODO public */
+@Deprecated
+class QueryPanel extends JScrollPane implements ActionListener
 {
 //----------------------------------------------------------------------
 //  Constants

@@ -56,7 +56,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
 {
 //----------------------------------------------------------------------
 //  Metadata attribute names
-//----------------------------------------------------------------------  
+//----------------------------------------------------------------------
   //irods file access, beyond FileMetaData
   public static final String FILE_REPLICA_STATUS = "File Replica Status";
   public static final String FILE_RESOURCE_GROUP = "File Resource Group Name";
@@ -66,7 +66,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
   public static final String FILE_MAP_ID = "File Map Identifier";
 
   public static final String FILE_ACCESS_TYPE = "File Access Type";
-  
+
   /**
    * File access constraint/permissions.
    */
@@ -74,13 +74,13 @@ public final class IRODSMetaDataSet extends MetaDataSet
   //not entirely sure what these are for...
   static final String FILE_TOKEN_NAMESPACE = "File Access Token Namespace";
 
-  
-  //for the various possible types of iRODS directories, 
+
+  //for the various possible types of iRODS directories,
   //like mounted or tarfile
   /**
    * Directory Type
    */
-  public static final String DIRECTORY_TYPE = "Directory Type";  
+  public static final String DIRECTORY_TYPE = "Directory Type";
   public static final String DIRECTORY_TOKEN_NAMESPACE = "Directory Access Token Namespace";
   public static final String DIRECTORY_USER_NAME = "Directory User Name";
   public static final String DIRECTORY_USER_ZONE = "Directory User Zone";
@@ -89,170 +89,170 @@ public final class IRODSMetaDataSet extends MetaDataSet
   //special for file permissions
   static final String FILE_PERMISSION_USER_NAME = "COL_DATA_USER_NAME";
   static final String FILE_PERMISSION_USER_ZONE = "COL_DATA_USER_ZONE";
-  
-  
-  
+
+
+
   //R_RULE_EXEC--------------------------------------------------------------
   /**
    * Rule Execution Identifier
    */
   public static final String RULE_ID = "Rule Execution Identifier";
-  
+
   /**
    * Rule Execution Name
    */
   public static final String RULE_NAME = "Rule Execution Name";
-  
+
   /**
    * Rule Execution REI (Rule Execution Information) File Path
    */
-  public static final String RULE_REI_FILE_PATH = 
+  public static final String RULE_REI_FILE_PATH =
           "Rule Execution REI (Rule Execution Information) File Path";
-  
+
   /**
    * Rule Execution User Name
    */
   public static final String RULE_USER_NAME = "Rule Execution User Name";
-  
+
   /**
    * Rule Execution Address (hostname, if specified)
    */
-  public static final String RULE_ADDRESS = 
+  public static final String RULE_ADDRESS =
           "Rule Execution Address (hostname, if specified)";
-  
+
   /**
    * Rule Execution Time (when to execute)
    */
-  public static final String RULE_TIME = 
+  public static final String RULE_TIME =
           "Rule Execution Time (when to execute)";
-  
+
   /**
    * Rule Execution Frequency (when to repeat (seconds))
    */
-  public static final String RULE_FREQUENCY = 
+  public static final String RULE_FREQUENCY =
           "Rule Execution Frequency (when to repeat (seconds))";
-  
+
   /**
    * Rule Execution Priority
    */
   public static final String RULE_PRIORITY = "Rule Execution Priority";
-  
+
   /**
    * Rule Execution Estimated Exectuion Time (if specified)
    */
-  public static final String RULE_ESTIMATED_EXE_TIME = 
+  public static final String RULE_ESTIMATED_EXE_TIME =
           "Rule Execution Estimated Exectuion Time (if specified)";
-  
+
   /**
    * Rule Execution Notification Address (if specified)
    */
-  public static final String RULE_NOTIFICATION_ADDR = 
+  public static final String RULE_NOTIFICATION_ADDR =
           "Rule Execution Notification Address (if specified)";
-  
+
   /**
    * Rule Execution Last Execution Time (if repeating)
    */
-  public static final String RULE_LAST_EXE_TIME = 
+  public static final String RULE_LAST_EXE_TIME =
           "Rule Execution Last Execution Time (if repeating)";
-  
-  
+
+
   /**
    * Rule Execution Status
    */
   public static final String RULE_STATUS = "Rule Execution Status";
-  
-  
-  
+
+
+
   //iRODS AVU, user definable metadata----------------------------------------
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute names of all file AVU which match the query conditions.
    */
-  public static final String META_DATA_ATTR_NAME = 
+  public static final String META_DATA_ATTR_NAME =
           "Definable metadata attribute name for files";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute values of all file AVU which match the query conditions.
    */
-  public static final String META_DATA_ATTR_VALUE = 
+  public static final String META_DATA_ATTR_VALUE =
           "Definable metadata value name for files";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute units of all file AVU which match the query conditions.
    */
-  public static final String META_DATA_ATTR_UNITS = 
+  public static final String META_DATA_ATTR_UNITS =
           "Definable metadata units name for files";
-  
-  
+
+
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute names of all collection AVU which match the query conditions.
    */
-  public static final String META_COLL_ATTR_NAME = 
+  public static final String META_COLL_ATTR_NAME =
           "Definable metadata attribute name for collections";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute values of all collection AVU which match the query conditions.
    */
-  public static final String META_COLL_ATTR_VALUE = 
+  public static final String META_COLL_ATTR_VALUE =
           "Definable metadata value name for collections";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute units of all collection AVU which match the query conditions.
    */
-  public static final String META_COLL_ATTR_UNITS = 
+  public static final String META_COLL_ATTR_UNITS =
           "Definable metadata units name for collections";
-  
-  
+
+
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute names of all resource AVU which match the query conditions.
    */
-  public static final String META_RESOURCE_ATTR_NAME = 
+  public static final String META_RESOURCE_ATTR_NAME =
           "Definable metadata attribute name for resources";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute values of all resource AVU which match the query conditions.
    */
-  public static final String META_RESOURCE_ATTR_VALUE = 
+  public static final String META_RESOURCE_ATTR_VALUE =
           "Definable metadata value name for resources";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute units of all resource AVU which match the query conditions.
    */
-  public static final String META_RESOURCE_ATTR_UNITS = 
+  public static final String META_RESOURCE_ATTR_UNITS =
           "Definable metadata units name for resources";
-  
-  
+
+
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute names of all user AVU which match the query conditions.
    */
-  public static final String META_USER_ATTR_NAME = 
+  public static final String META_USER_ATTR_NAME =
           "Definable metadata attribute name for users";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute values of all user AVU which match the query conditions.
    */
-  public static final String META_USER_ATTR_VALUE = 
+  public static final String META_USER_ATTR_VALUE =
           "Definable metadata value name for users";
   /**
    * iRODS AVU, user definable metadata. When used as a select, will return
    * all the attribute units of all user AVU which match the query conditions.
    */
-  public static final String META_USER_ATTR_UNITS = 
+  public static final String META_USER_ATTR_UNITS =
           "Definable metadata units name for users";
-  
-  
-  
+
+
+
   //Internal only ----------------------------------------------------------
   static final String FILE_ID = "File Identifier";
   static final String DIRECTORY_ID = "Directory Identifier";
   static final String RESOURCE_ID = "Resource Identifier";
   static final String USER_ID = "User Identifier";
   static final String ZONE_ID = "Zone Identifier";
-  
-  
+
+
   //TODO public? not sure what they are for.
   //R_TOKN_MAIN
   static final String TOKEN_NAMESPACE = "Token Namespace";
@@ -267,12 +267,12 @@ public final class IRODSMetaDataSet extends MetaDataSet
   static final String META_NAMESPACE_DATA = "Token Comment";
   static final String META_NAMESPACE_RESC = "Token Comment";
   static final String META_NAMESPACE_USER = "Token Comment";
-  
-  
-  
+
+
+
 //----------------------------------------------------------------------
 //  Other internal metadata attributes (and other things)
-//----------------------------------------------------------------------    
+//----------------------------------------------------------------------
   private static int TOTAL_METADATA_FIELDS = 250; //TODO estimate, probably less
   private static HashMap jargonToIRODS = new HashMap(TOTAL_METADATA_FIELDS);
   private static HashMap iRODSToJargon = new HashMap(TOTAL_METADATA_FIELDS);
@@ -281,7 +281,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
 
   final static String DEFINABLE_METADATA = "jargonUserDefinableAttribute";
 
-  
+
 
   /*
     These are the Table Column names used with the GenQuery.  Also see
@@ -459,7 +459,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
 
   /**Time that this record was last modified (Unix Time)*/
   static final Integer COL_COLL_MODIFY_TIME = new Integer(509);
-  
+
   static final Integer COL_COLL_TYPE = new Integer(510);
   static final Integer COL_COLL_INFO1 = new Integer(511);
   static final Integer COL_COLL_INFO2 = new Integer(512);
@@ -477,7 +477,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
   static final Integer COL_META_DATA_ATTR_UNITS = new Integer(602);
 
   static final Integer COL_META_DATA_ATTR_ID = new Integer(603);
-  
+
 
 
   /**Metadata for a Collection: Attribute Name*/
@@ -488,9 +488,9 @@ public final class IRODSMetaDataSet extends MetaDataSet
 
   /**Metadata for a Collection: Attribute Units*/
   static final Integer COL_META_COLL_ATTR_UNITS = new Integer(612);
-  
+
   static final Integer COL_META_COLL_ATTR_ID = new Integer(613);
-  
+
 
 
 
@@ -517,8 +517,8 @@ public final class IRODSMetaDataSet extends MetaDataSet
   static final Integer COL_META_RESC_ATTR_UNITS = new Integer(632);
 
   static final Integer COL_META_RESC_ATTR_ID = new Integer(633);
-  
-  
+
+
 
   /**Metadata for a User: Attribute Name*/
   static final Integer COL_META_USER_ATTR_NAME = new Integer(640);
@@ -530,7 +530,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
   static final Integer COL_META_USER_ATTR_UNITS = new Integer(642);
 
   static final Integer COL_META_USER_ATTR_ID = new Integer(643);
-  
+
 
 
    /* R_OBJT_ACCESS */
@@ -556,8 +556,8 @@ public final class IRODSMetaDataSet extends MetaDataSet
   static final Integer COL_COLL_ACCESS_USER_ID = new Integer(713);
   static final Integer COL_COLL_ACCESS_COLL_ID = new Integer(714);
 
-  
-  
+
+
    /* R_RESC_GROUP */
   /**Resource Group Resource Identifier*/
   static final Integer COL_RESC_GROUP_RESC_ID = new Integer(800);
@@ -635,7 +635,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
   static final Integer COL_TOKEN_COMMENT = new Integer(1106);
 
 
-  
+
   /* R_OBJT_AUDIT */
   static final Integer COL_AUDIT_OBJ_ID = new Integer(1200);
   static final Integer COL_AUDIT_USER_ID = new Integer(1201);
@@ -802,7 +802,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
 
 
 
-  
+
 
   static {
     if (protocol == null) {
@@ -827,7 +827,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
 
     //  R_RESC_MAIN:
     jargonToIRODS.put( RESOURCE_ID, COL_R_RESC_ID );
-    jargonToIRODS.put( RESOURCE_NAME, COL_R_RESC_NAME );
+    jargonToIRODS.put( COLL_RESOURCE_NAME, COL_R_RESC_NAME );
     jargonToIRODS.put( RESOURCE_ZONE, COL_R_ZONE_NAME );
     jargonToIRODS.put( RESOURCE_TYPE, COL_R_TYPE_NAME );
     jargonToIRODS.put( RESOURCE_CLASS, COL_R_CLASS_NAME );
@@ -849,7 +849,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     jargonToIRODS.put( FILE_TYPE, COL_DATA_TYPE_NAME );
     jargonToIRODS.put( SIZE, COL_DATA_SIZE );
     jargonToIRODS.put( FILE_RESOURCE_GROUP, COL_D_RESC_GROUP_NAME );
-    jargonToIRODS.put( RESOURCE_NAME, COL_D_RESC_NAME );
+    jargonToIRODS.put( RESOURCE_NAME, COL_D_RESC_NAME );  // FIXME: duplicate overrides coll_r_resc_name bug 36
     jargonToIRODS.put( PATH_NAME, COL_D_DATA_PATH );
     jargonToIRODS.put( OWNER, COL_D_OWNER_NAME );
     jargonToIRODS.put( FILE_OWNER_ZONE, COL_D_OWNER_ZONE );
@@ -877,7 +877,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     jargonToIRODS.put( DIRECTORY_TYPE, COL_COLL_TYPE );
 //TODO COL_COLL_INFO1        - information field 1
 // COL_COLL_INFO2        - information field 1
-    
+
     //  R_META_MAIN
     jargonToIRODS.put( META_DATA_ATTR_NAME, COL_META_DATA_ATTR_NAME );
     jargonToIRODS.put( META_DATA_ATTR_VALUE, COL_META_DATA_ATTR_VALUE );
@@ -899,7 +899,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     jargonToIRODS.put( META_USER_ATTR_NAME, COL_META_USER_ATTR_NAME );
     jargonToIRODS.put( META_USER_ATTR_VALUE, COL_META_USER_ATTR_VALUE );
     jargonToIRODS.put( META_USER_ATTR_UNITS, COL_META_USER_ATTR_UNITS );
-    
+
     //  R_OBJT_ACCESS
     jargonToIRODS.put( FILE_ACCESS_TYPE, COL_DATA_ACCESS_TYPE );
     jargonToIRODS.put( FILE_ACCESS_NAME, COL_DATA_ACCESS_NAME );
@@ -913,9 +913,9 @@ public final class IRODSMetaDataSet extends MetaDataSet
     jargonToIRODS.put( DIRECTORY_TOKEN_NAMESPACE, COL_COLL_TOKEN_NAMESPACE );
 // COL_COLL_ACCESS_USER_ID  - user id
 // COL_COLL_ACCESS_COLL_ID  - collection id
-    
-    
-    
+
+
+
     //  R_RESC_GROUP
     jargonToIRODS.put( RESOURCE_GROUP_ID, COL_RESC_GROUP_RESC_ID );
     jargonToIRODS.put( RESOURCE_GROUP, COL_RESC_GROUP_NAME );
@@ -962,7 +962,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     // R_DATA_USER_MAIN (r_user_main for Data information specifically)
     jargonToIRODS.put( FILE_PERMISSION_USER_NAME, COL_DATA_USER_NAME );
     jargonToIRODS.put( FILE_PERMISSION_USER_ZONE, COL_DATA_USER_ZONE );
-    
+
     //R_ZONE_MAIN:
     iRODSToJargon.put( COL_ZONE_ID, ZONE_ID );
     iRODSToJargon.put( COL_ZONE_NAME, ZONE_NAME );
@@ -1026,7 +1026,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     iRODSToJargon.put( COL_COLL_CREATE_TIME, DIRECTORY_CREATE_TIMESTAMP );
     iRODSToJargon.put( COL_COLL_MODIFY_TIME, DIRECTORY_MODIFY_DATE );
     iRODSToJargon.put( COL_COLL_TYPE, DIRECTORY_TYPE );
-    
+
     //R_META_MAIN
     iRODSToJargon.put( COL_META_DATA_ATTR_NAME, META_DATA_ATTR_NAME );
     iRODSToJargon.put( COL_META_DATA_ATTR_VALUE, META_DATA_ATTR_VALUE );
@@ -1060,8 +1060,8 @@ public final class IRODSMetaDataSet extends MetaDataSet
     iRODSToJargon.put( COL_COLL_ACCESS_TYPE, DIRECTORY_ACCESS_TYPE  );
     iRODSToJargon.put( COL_COLL_ACCESS_NAME, DIRECTORY_ACCESS_CONSTRAINT );
     iRODSToJargon.put( COL_COLL_TOKEN_NAMESPACE, DIRECTORY_TOKEN_NAMESPACE );
-    
-    
+
+
     //R_RESC_GROUP
     iRODSToJargon.put( COL_RESC_GROUP_RESC_ID, RESOURCE_GROUP_ID );
     iRODSToJargon.put( COL_RESC_GROUP_NAME, RESOURCE_GROUP );
@@ -1092,7 +1092,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     iRODSToJargon.put( COL_TOKEN_VALUE2, TOKEN_VALUE2 );
     iRODSToJargon.put( COL_TOKEN_VALUE3, TOKEN_VALUE3 );
     iRODSToJargon.put( COL_TOKEN_COMMENT, TOKEN_COMMENT );
-    
+
     //R_COLL_USER_MAIN
     iRODSToJargon.put( COL_COLL_USER_NAME, DIRECTORY_USER_NAME );
     iRODSToJargon.put( COL_COLL_USER_ZONE, DIRECTORY_USER_ZONE );
@@ -1167,7 +1167,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     group = new MetaDataGroup( GROUP_RESOURCE,
       "Core information about iRODS resources." );
     group.add( new MetaDataField( RESOURCE_ID, "Resource Identifier (a number)", MetaDataField.STRING, protocol ) );
-    group.add( new MetaDataField( RESOURCE_NAME, "Resource Name", MetaDataField.STRING, protocol ) );
+    group.add( new MetaDataField( COLL_RESOURCE_NAME, "Resource Name", MetaDataField.STRING, protocol ) );
     group.add( new MetaDataField( RESOURCE_ZONE, "Zone Name", MetaDataField.STRING, protocol ) );
     group.add( new MetaDataField( RESOURCE_TYPE, "Resource Type", MetaDataField.STRING, protocol ) );
     group.add( new MetaDataField( RESOURCE_CLASS, "Resource Class", MetaDataField.STRING, protocol ) );
@@ -1227,9 +1227,9 @@ public final class IRODSMetaDataSet extends MetaDataSet
     group.add( new MetaDataField( META_NAMESPACE_USER, "(Used internally to ICAT)", MetaDataField.STRING, protocol ) );
 */
     add( group );
-    
+
 /* TODO - internal only?
-    //File access  
+    //File access
     group = new MetaDataGroup( GROUP_FILE_ACCES,
       "Core information about Data Access." );
     group.add( new MetaDataField( FILE_TOKEN_NAMESPACE, "Data Access Token Namespace (used internally to specify name types)", MetaDataField.STRING, protocol ) );
@@ -1237,7 +1237,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     group.add( new MetaDataField( FILE_ACCESS_DATA_ID, "Data Access Data Identifier", MetaDataField.STRING, protocol ) );
     add( group );
 */
-/* TODO Admin?    
+/* TODO Admin?
     //Resource Group
     group = new MetaDataGroup( GROUP_RESOURCE_GROUP,
       "Information about Resource Groups." );
@@ -1245,7 +1245,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     group.add( new MetaDataField( RESOURCE_GROUP_NAME, "Resource Group, Resource Name", MetaDataField.STRING, protocol ) );
     add( group );
 */
-/* TODO Admin?   
+/* TODO Admin?
     //User Group
     group = new MetaDataGroup( GROUP_USER_GROUP,
       "Information about User Groups." );
@@ -1306,7 +1306,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
 
 //----------------------------------------------------------------------
 //  Methods
-//----------------------------------------------------------------------  
+//----------------------------------------------------------------------
   /**
    * Given the string <code>fieldName</code> return the appropriate
    * MetaDataField for use in a metadata query.

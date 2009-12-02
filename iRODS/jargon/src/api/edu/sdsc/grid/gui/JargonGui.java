@@ -102,8 +102,11 @@ import edu.sdsc.SrbAdmin.mcatAdmin;
  *
  * @author Lucas Ammon Gilbert
  * @since JARGON1.5
+ * * @deprecated - GUI code will go away in future releases
  */
-/*TODO public*/ class JargonGui extends JFrame implements ActionListener
+/*TODO public*/ 
+@Deprecated
+class JargonGui extends JFrame implements ActionListener
 {
 //----------------------------------------------------------------------
 // Constants

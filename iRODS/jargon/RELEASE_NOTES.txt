@@ -75,6 +75,12 @@ Domain, User, Resource.  This is an API change, but seemed unavoidable.
 
 for feature request:   Bug 30 -  query a resource list for a user shows all resources user has files in
 
+--------------
+Testing and fix for  Bug 36 -  resource added with icommand does not show up in Jargon query
+
+Added new metadata to query resource name by collection, IRODSMetaDataSet.COLL_RESOURCE_NAME,
+see testQueryMetaDataSelectArray() in GeneralFileSystem for usage example.
+
 ================================================================================================
 Outstanding Issues
 

@@ -1,6 +1,9 @@
 package edu.sdsc.grid.io.irods;
 
 import static org.junit.Assert.*;
+
+import java.util.Properties;
+
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -9,19 +12,32 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
+import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 
-public class ResourceTest extends IRODSTestCase {
-	public static final String IRODS_TEST_SUBDIR_PATH = "IRODSResourceTest";
+public class ResourceTest{
+	protected static Properties testingProperties = new Properties();
+	protected static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
+	protected static ScratchFileUtils scratchFileUtils = null;
+	public static String IRODS_TEST_SUBDIR_PATH = "IRODSResourceTest";
+	protected static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		IRODSTestCase.setUpBeforeClass();
+		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
+		testingProperties = testingPropertiesLoader.getTestProperties();
+		scratchFileUtils = new ScratchFileUtils(testingProperties);
+		scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
+		irodsTestSetupUtilities = new IRODSTestSetupUtilities();
+		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
+		irodsTestSetupUtilities
+				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		IRODSTestCase.tearDownAfterClass();
+
 	}
 
 	@Before

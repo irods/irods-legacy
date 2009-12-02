@@ -64,7 +64,9 @@ import javax.swing.JPanel;
  * @author Lucas Ammon Gilbert
  * @see QueryComponentPanel
  * @since JARGON1.5
+ * @deprecated
  */
+@Deprecated
 public class SelectionChooser extends JPanel
 {
 //----------------------------------------------------------------------

@@ -32,12 +32,13 @@ import junit.framework.TestCase;
  * @since
  *
  */
-public class IRODSResourceQueryTest {
-	private static Properties testingProperties = new Properties();
-	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
-	private static ScratchFileUtils scratchFileUtils = null;
-	public static final String IRODS_TEST_SUBDIR_PATH = "IRODSCommandsMetadataTest";
-	private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
+public class IRODSResourceQueryTest  {
+
+	protected static Properties testingProperties = new Properties();
+	protected static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
+	protected static ScratchFileUtils scratchFileUtils = null;
+	public static String IRODS_TEST_SUBDIR_PATH = "IRODSResourceQueryTest";
+	protected static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -61,6 +62,42 @@ public class IRODSResourceQueryTest {
 
 	@After
 	public void tearDown() throws Exception {
+	}
+
+	/**
+	 * test relevant to BUG: 36 resource added with icommand does not show up in
+	 * Jargon query
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public final void testQueryForResourceViaIRODSFileSystem() throws Exception {
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		MetaDataRecordList[] lists = irodsFileSystem
+				.query(new String[] { IRODSMetaDataSet.RESOURCE_NAME });
+
+		boolean foundResc1 = false;
+		boolean foundResc2 = false;
+
+		for (MetaDataRecordList l : lists) {
+			String resource = l.getStringValue(0);
+
+			if (resource.equals(testingProperties
+					.getProperty(IRODS_RESOURCE_KEY))) {
+				foundResc1 = true;
+			} else if (resource.equals(testingProperties
+					.getProperty(IRODS_SECONDARY_RESOURCE_KEY))) {
+				foundResc2 = true;
+			}
+		}
+
+		irodsFileSystem.close();
+		TestCase.assertTrue("did not find first resource", foundResc1);
+		TestCase.assertTrue("did not find second resource", foundResc2);
 	}
 
 	/**
@@ -150,14 +187,17 @@ public class IRODSResourceQueryTest {
 		// replicate this file to the secondary resource
 
 		IreplCommand ireplCommand = new IreplCommand();
-		ireplCommand.setObjectToReplicate(iputCommand.getIrodsFileName() + '/' + testFileName);
-		ireplCommand.setDestResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+		ireplCommand.setObjectToReplicate(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		ireplCommand.setDestResource(testingProperties
+				.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
 		invoker.invokeCommandAndGetResultAsString(ireplCommand);
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				testingPropertiesHelper
 						.buildIRODSCollectionAbsolutePathFromTestProperties(
-								testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName));
+								testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+										+ testFileName));
 
 		List<String> resources = irodsFile.getAllResourcesForFile();
 		irodsFileSystem.close();
@@ -166,9 +206,11 @@ public class IRODSResourceQueryTest {
 		boolean foundResc2 = false;
 
 		for (String rescName : resources) {
-			if (rescName.equals(testingProperties.getProperty(IRODS_RESOURCE_KEY))) {
+			if (rescName.equals(testingProperties
+					.getProperty(IRODS_RESOURCE_KEY))) {
 				foundResc1 = true;
-			} else if (rescName.equals(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY))) {
+			} else if (rescName.equals(testingProperties
+					.getProperty(IRODS_SECONDARY_RESOURCE_KEY))) {
 				foundResc2 = true;
 			} else {
 				TestCase.fail("unknown resource found:" + rescName);
@@ -179,7 +221,6 @@ public class IRODSResourceQueryTest {
 		TestCase.assertTrue("did not find second resource", foundResc2);
 
 	}
-
 
 	/**
 	 * test relevant to BUG: 24 Inconsistant return of resource
@@ -217,16 +258,14 @@ public class IRODSResourceQueryTest {
 						.buildIRODSCollectionAbsolutePathFromTestProperties(
 								testingProperties, IRODS_TEST_SUBDIR_PATH));
 
-
-
-
 		List<String> resources = irodsFile.getAllResourcesForFile();
 
 		irodsFileSystem.close();
 
-		TestCase.assertEquals("should not have returned resources for the collection", 0, resources.size());
+		TestCase.assertEquals(
+				"should not have returned resources for the collection", 0,
+				resources.size());
 
 	}
-
 
 }

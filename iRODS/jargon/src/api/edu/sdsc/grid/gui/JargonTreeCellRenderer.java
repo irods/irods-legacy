@@ -64,7 +64,9 @@ import edu.sdsc.grid.io.local.LocalFile;
  * @see JargonTreeModel
  * @see JargonTreeCellEditor
  * @since JARGON1.5
+ * @deprecated - GUI code will go away in future releases
  */
+@Deprecated
 public class JargonTreeCellRenderer implements TreeCellRenderer
 {
 	/**

@@ -77,8 +77,11 @@ import javax.swing.*;
  * @see SelectionChooser
  * @see QueryPanel
  * @since JARGON1.5
+ * @deprecated - GUI code will go away in future releases
  */
-/*public*/ class ClausesPanel
+/*public*/ 
+@Deprecated
+class ClausesPanel
 	extends JPanel implements ActionListener
 {
 //----------------------------------------------------------------------
