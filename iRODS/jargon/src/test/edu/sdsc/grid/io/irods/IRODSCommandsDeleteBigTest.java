@@ -70,7 +70,7 @@ public class IRODSCommandsDeleteBigTest {
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		ImkdirCommand imkdrCommand = new ImkdirCommand();
 		imkdrCommand.setCollectionName(deleteCollectionAbsPath);
-		invoker.invoke(imkdrCommand);
+		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
 
 		IputCommand iputCommand = new IputCommand();
 		String genFileName = "";

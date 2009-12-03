@@ -38,6 +38,7 @@ public class TestingPropertiesHelper {
 	public static String IRODS_CONFIRM_TESTING_KEY = "test.confirm";
 	public static String IRODS_ADMIN_USER_KEY = "test.irods.admin";
 	public static String IRODS_ADMIN_PASSWORD_KEY = "test.irods.admin.password";
+	public static String MAC_ICOMMANDS_PATH="test.mac.icommand.path";
 
 	public static String IRODS_CONFIRM_TESTING_TRUE = "true";
 	public static String IRODS_CONFIRM_TESTING_FALSE = "false";

@@ -78,7 +78,7 @@ public class IRODSResourceQueryTest  {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
 		MetaDataRecordList[] lists = irodsFileSystem
-				.query(new String[] { IRODSMetaDataSet.RESOURCE_NAME });
+				.query(new String[] { IRODSMetaDataSet.COLL_RESOURCE_NAME });
 
 		boolean foundResc1 = false;
 		boolean foundResc2 = false;

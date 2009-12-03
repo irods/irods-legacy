@@ -111,7 +111,7 @@ public class IrmCommandTest {
 		IrmCommand rmCommand = new IrmCommand();
 		rmCommand.setForce(true);
 		rmCommand.setObjectName(testingDirName);
-		invoker.invoke(rmCommand);
+		invoker.invokeCommandAndGetResultAsString(rmCommand);
 		
 		// now make sure the dir is gone
 		ilsCommand = new IlsCommand();

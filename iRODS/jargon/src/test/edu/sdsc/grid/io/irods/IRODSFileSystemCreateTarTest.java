@@ -85,7 +85,7 @@ public class IRODSFileSystemCreateTarTest {
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		ImkdirCommand imkdrCommand = new ImkdirCommand();
 		imkdrCommand.setCollectionName(collectionAbsPath);
-		invoker.invoke(imkdrCommand);
+		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
 
 		IputCommand iputCommand = new IputCommand();
 		String genFileName = "";

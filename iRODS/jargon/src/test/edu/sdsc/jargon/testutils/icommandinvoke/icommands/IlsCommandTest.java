@@ -26,7 +26,7 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
 /**
  * @author Mike Conway, DICE (www.renci.org)
- * @since 11/05/2009
+ * @since 2.2.1
  */
 public class IlsCommandTest {
 
