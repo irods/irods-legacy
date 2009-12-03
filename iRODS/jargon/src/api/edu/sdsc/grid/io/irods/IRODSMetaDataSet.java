@@ -312,9 +312,11 @@ public final class IRODSMetaDataSet extends MetaDataSet
   /**User Zone*/
   static final Integer COL_USER_ZONE = new Integer(204);
 
-  /**User GSI Distinguished Name (currently unused)*/
-  static final Integer COL_USER_DN = new Integer(205);
-
+  /**User GSI Distinguished Name, the COL_USER_DN value is the current value in the irods 2.2 api, the
+   * COL_USER_DN_INVALID is for backwards compatability, and is deprecated as of irods 2.2 */
+  static final Integer COL_USER_DN_INVALID = new Integer(205);
+  static final Integer COL_USER_DN = new Integer(1601);
+  
   /**User Information (set by the admin, like comment)*/
   static final Integer COL_USER_INFO = new Integer(206);
 
@@ -820,6 +822,7 @@ public final class IRODSMetaDataSet extends MetaDataSet
     jargonToIRODS.put( USER_TYPE, COL_USER_TYPE );
     jargonToIRODS.put( USER_ZONE, COL_USER_ZONE );
     jargonToIRODS.put( USER_DN, COL_USER_DN );
+    jargonToIRODS.put( USER_DN_2_1, COL_USER_DN_INVALID );
     jargonToIRODS.put( USER_INFO, COL_USER_INFO );
     jargonToIRODS.put( USER_COMMENT, COL_USER_COMMENT );
     jargonToIRODS.put( USER_CREATE_DATE, COL_USER_CREATE_TIME );

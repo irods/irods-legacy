@@ -42,6 +42,22 @@ public class TestingPropertiesHelper {
 
 	public static String IRODS_CONFIRM_TESTING_TRUE = "true";
 	public static String IRODS_CONFIRM_TESTING_FALSE = "false";
+	
+	public int getPortAsInt(Properties testingProperties) throws TestingUtilsException {
+		String portString = (String) testingProperties.get(IRODS_PORT_KEY);
+		if (portString == null || portString.length() == 0) {
+			throw new TestingUtilsException("missing or invalid test.irods.port in testing.properties");
+		}
+		int retVal = 0; 
+		
+		try {
+			retVal = Integer.parseInt(portString);
+		} catch (NumberFormatException nfe) {
+			throw new TestingUtilsException("port is in valid format to convert to int:" + portString, nfe);
+		}
+		
+		return retVal;
+	}
 
 
 	/**

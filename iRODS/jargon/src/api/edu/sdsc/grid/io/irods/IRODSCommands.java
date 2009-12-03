@@ -513,6 +513,10 @@ class IRODSCommands {
 	 * Used in Debug mode
 	 */
 	private long date;
+	
+	private String reportedIRODSVersion = "";
+
+	
 
 	/**
 	 * Creates a new instance of IRODSCommands
@@ -614,6 +618,21 @@ class IRODSCommands {
 		account.serverDN = readMessage(false).getTag(ServerDN).getStringValue();
 		new GSIAuth(account, connection, out, in);
 	}
+	
+	/**
+	 * <code>String</code> containing the IRODS version as reported by the connected IRODS version
+	 * @return <code>String</code> with value returned in response to IRODS startup packet
+	 */
+	public synchronized String getReportedIRODSVersion() {
+		return reportedIRODSVersion;
+	}
+
+	/**
+	 * @param reportedIRODSVersion
+	 */
+	protected synchronized void setReportedIRODSVersion(String reportedIRODSVersion) {
+		this.reportedIRODSVersion = reportedIRODSVersion;
+	}
 
 	/**
 	 * Close the connection to the server. This method has been sycnhronized so
@@ -686,8 +705,13 @@ class IRODSCommands {
 		send(createHeader(RODS_CONNECT, out.length(), 0, 0, 0));
 		send(out);
 		flush();
-
-		return readMessage();
+		Tag responseMessage = readMessage();
+		
+		// look for and retain the version of IRODS I am talking to
+		String reportedRelVersion = responseMessage.getTag(relVersion).value;
+		this.setReportedIRODSVersion(reportedRelVersion);
+		
+		return responseMessage;
 	}
 
 	/**
@@ -3125,25 +3149,6 @@ class IRODSCommands {
 					}
 				}
 			}
-			/*
-			 * if (secondLength > 0) { synchronized(System.out) {
-			 * System.out.println( "\n start thread: "+which ); //read the
-			 * header operation = readInt(); //TODO hmm... unknown1 = readInt();
-			 * //Where to seek into the data offset = readLong(); //How much to
-			 * read/write length = readLong();
-			 *
-			 * System.out.println( "\n operation: "+operation );
-			 * System.out.println( "\n unknown1: "+unknown1 );
-			 * System.out.println( "\n offset: "+offset ); System.out.println(
-			 * "\n length: "+length );
-			 *
-			 * buffer = new byte[OUTPUT_BUFFER_LENGTH]; read = in.read(buffer);
-			 * System.out.print("\n read: "+read); /* for(int i=0;i<read;i++) {
-			 * if (buffer[i]>32) System.out.print((char)buffer[i]); if
-			 * (buffer[i]==10) System.out.print("\n"); else {
-			 * System.out.print(" "+buffer[i]+" "); } } System.out.println(
-			 * "\n\n end thread: "+which ); } }
-			 */
 		}
 	}
 }

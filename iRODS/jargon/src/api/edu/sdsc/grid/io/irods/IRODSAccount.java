@@ -92,13 +92,21 @@ public class IRODSAccount extends RemoteAccount
    * iRODS version 1.1
    */
   public static final String IRODS_VERSION_2 = "rods2.0jargon2.0.5";
-
+  
+  /**
+   * iRODS version 1.1
+   */
+  public static final String IRODS_VERSION_2_2 = "rods2.2jargon2.2.1";
+  
+  // TODO: split into rods and jargon, in the meantime use the following:
+  
+  public static final String IRODS_JARGON_RELEASE_NUMBER = "rods2.2";
+  
   /**
    * iRODS API version "d"
    */
   public static final String IRODS_API_VERSION = "d";
 
-  
   /**
    * User name for anonymous login
    */
@@ -156,7 +164,7 @@ public class IRODSAccount extends RemoteAccount
   /**
    * The iRODS version.
    */
-  protected static String version = IRODS_VERSION_2;
+  protected static String version = IRODS_VERSION_2_2;
 
   /**
    * The iRODS API version.
@@ -173,6 +181,8 @@ public class IRODSAccount extends RemoteAccount
     versionNumber.put( IRODS_VERSION_1_0, new Float( 1 ) );
     versionNumber.put( IRODS_VERSION_1_0, new Float( 1.1 ) );
     versionNumber.put( IRODS_VERSION_1_0, new Float( 1.2 ) );
+    versionNumber.put( IRODS_VERSION_2_2, new Float( 2.2 ) );
+
 
 //    internalSetVersion( null );
   }

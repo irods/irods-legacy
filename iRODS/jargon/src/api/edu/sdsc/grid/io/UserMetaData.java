@@ -89,6 +89,8 @@ public interface UserMetaData extends StandardMetaData
   public static final String USER_TYPE = "User Type";
   public static final String USER_ZONE = "User Zone";
   public static final String USER_DN  = "User DN";
+  public static final String USER_DN_2_1  = "User DN 2.1";
+
   public static final String USER_INFO = "User Information";
   public static final String USER_COMMENT = "User Comment";
   public static final String USER_CREATE_DATE = "User Time created (Unix Time)";

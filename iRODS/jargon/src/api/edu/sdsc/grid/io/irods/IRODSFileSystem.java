@@ -55,6 +55,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Vector;
 
+import org.ietf.jgss.GSSException;
+
 
 
 /**
@@ -152,10 +154,7 @@ public class IRODSFileSystem extends RemoteFileSystem
       try {
         rl = query(
           new MetaDataCondition[] {
-            MetaDataSet.newCondition(
-              IRODSMetaDataSet.USER_DN,
-              MetaDataCondition.EQUAL,
-              iRODSAccount.getGSSCredential().getName().toString())
+            buildMetaDataConditionForGSIUser(iRODSAccount)
             },
             new MetaDataSelect[] {
               MetaDataSet.newSelection(IRODSMetaDataSet.USER_NAME),
@@ -183,6 +182,35 @@ public class IRODSFileSystem extends RemoteFileSystem
     }
     setAccount( iRODSAccount );
   }
+
+
+/**
+ * @param {@link edu.sdsc.grid.io.irods.IRODSAccount IRODSAccount} containing the connect information for this file system. 
+ * @return (@link edu.sdsc.grid.io.MetaDataCondtion MetaDataCondition} that contains the correct query for the user dn
+ * @throws GSSException
+ */
+protected MetaDataCondition buildMetaDataConditionForGSIUser(
+		IRODSAccount iRODSAccount) throws GSSException {
+	
+	// check the version number and obtain the user dn using alternative metadata values, the rods2.2 version
+	// saw a change in the metadata value for user DN from 205 to 1601
+	int versionValue = commands.getReportedIRODSVersion().compareTo("rods2.2");
+	if (versionValue < 0) {
+		//reported version is less than the 'arguement', or prior to the protocol change
+		return MetaDataSet.newCondition(
+				  IRODSMetaDataSet.USER_DN_2_1,
+				  MetaDataCondition.EQUAL,
+				  iRODSAccount.getGSSCredential().getName().toString());
+		
+	} else {
+		// version is after the rods2.2 cutoff
+		return MetaDataSet.newCondition(
+				  IRODSMetaDataSet.USER_DN,
+				  MetaDataCondition.EQUAL,
+				  iRODSAccount.getGSSCredential().getName().toString());
+	}
+	
+}
 
 
   /**
