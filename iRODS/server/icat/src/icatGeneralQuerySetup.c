@@ -464,6 +464,19 @@ icatGeneralQuerySetup() {
 	     extColumns[i].column_table_name, 
 	     extColumns[i].column_name);
   }
+
+#ifdef EXTENDED_ICAT_TABLE_LINKS
+  for (i=0;i<NumOfExtTableLinks;i++) {
+     char linkString[200];
+     snprintf(linkString, 200, "%s.%s = %s.%s",
+	      extLinks[i].table1_name, 
+	      extLinks[i].col1_name,
+	      extLinks[i].table2_name,
+	      extLinks[i].col2_name);
+     sFklink(extLinks[i].table1_name, extLinks[i].table2_name, linkString);
+  }
+#endif
+
 #endif
 
 

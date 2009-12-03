@@ -12,14 +12,17 @@ using a DBMS sequence) (see lib/core/include/rodsGeneralUpdate.h).
 To enable this:
 
 1) Create an extendedICAT.h in this directory with the various
-definitions of your tables and columns.  There are examples in
-example1 and example2.
+definitions of your tables, columns, and possibly links between
+tables.  There are examples in the example1, example2, and example3
+subdirectories.  See example3 for creating links (foreign keys)
+between tables.  You can just copy the example .h and perhaps the
+corresponding .sql file to this directory.
 
 2) If you want, create a icatExtTables.sql and icatExtInserts.sql in
 this directory.  If these exist, they will be invoked by irodssetup
 during the installation process. You can also do this manually after
-installation, if your prefer.  For these too, there are examples in
-example1 and example2.
+installation, if you prefer.  For these too, there are examples in
+the example subdirectories.
 
 3) After installation, enable this module by editing config/config.mk,
 uncommenting out the line:
