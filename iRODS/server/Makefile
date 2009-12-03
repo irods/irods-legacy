@@ -21,7 +21,7 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-
+extendedICAT.h = 	$(buildDir)/modules/extendedICAT/extendedICAT.h
 
 
 #
@@ -392,9 +392,12 @@ $(SVR_DRIVERS_OBJS):	$(svrDriversObjDir)/%.o: $(svrDriversSrcDir)/%.c $(DEPEND)
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build server ICAT
-$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(DEPEND)
+$(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $(DEPEND)
 	@echo "Compile icat `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
+$(extendedICAT.h): 
+	@touch $(extendedICAT.h)
+
 
 # Builder server rule engine
 $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)

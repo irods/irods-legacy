@@ -20,14 +20,12 @@ corresponding .sql file to this directory.
 
 2) If you want, create a icatExtTables.sql and icatExtInserts.sql in
 this directory.  If these exist, they will be invoked by irodssetup
-during the installation process. You can also do this manually after
-installation, if you prefer.  For these too, there are examples in
-the example subdirectories.
+during the installation process. You can also execute this SQL
+manually (via, for example, psql) after installation, if you prefer.
+For these too, there are examples in the example subdirectories.
 
 3) After installation, enable this module by editing config/config.mk,
 uncommenting out the line:
 # EXTENDED_ICAT = 1
 
-4) You then run 'make clean' and 'make'.  The 'make clean' is needed
-because the make system (via our Makefiles) is not aware of the
-dependencies on the optionally included .h file.
+4) Then run 'make'.

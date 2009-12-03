@@ -19,7 +19,7 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
-
+extendedICAT.h =	$(buildDir)/modules/extendedICAT/extendedICAT.h
 
 
 
@@ -214,9 +214,11 @@ clean:
 # Compilation Targets
 #
 # Build core
-$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.c $(DEPEND)
+$(LIB_CORE_OBJS):  $(libCoreObjDir)/%.o: $(libCoreSrcDir)/%.c $(extendedICAT.h) $(DEPEND)
 	@echo "Compile core `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
+$(extendedICAT.h): 
+	@touch $(extendedICAT.h)
 
 # Build API
 $(LIB_API_OBJS):  $(libApiObjDir)/%.o: $(libApiSrcDir)/%.c $(DEPEND)
