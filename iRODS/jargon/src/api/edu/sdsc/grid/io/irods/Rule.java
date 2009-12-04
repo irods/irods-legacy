@@ -86,7 +86,7 @@ Parameter[] inputs;
 //  Constructor
 //----------------------------------------------------------------------
 //TODO no good?
-  Rule( String label, String type, Object parameter )
+  public Rule( String label, String type, Object parameter )
   {
     
     this.label = label;
@@ -94,7 +94,7 @@ Parameter[] inputs;
     this.parameter = parameter;
   }
   
-  Rule( String ruleName, Method[] microservices, Parameter[] outputs )
+  public Rule( String ruleName, Method[] microservices, Parameter[] outputs )
   {
     this.ruleName = ruleName;
     methods = microservices;

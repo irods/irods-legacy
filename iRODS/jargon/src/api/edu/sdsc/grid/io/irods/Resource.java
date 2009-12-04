@@ -39,7 +39,7 @@ import java.io.IOException;
 public class Resource extends Domain
 {
   static final String iName = "resource";
-  Resource(IRODSFileSystem irodsFileSystem)
+  public Resource(IRODSFileSystem irodsFileSystem)
   {
     super(irodsFileSystem, "resource", "resc_type", "r_resc_main");
   }

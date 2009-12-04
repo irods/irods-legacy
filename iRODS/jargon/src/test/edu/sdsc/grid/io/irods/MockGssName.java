@@ -12,10 +12,11 @@ import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 
 public class MockGssName implements GSSName {
 	
-	private TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
+	private TestingPropertiesHelper testingPropertiesHelper;
 	private Properties testingProperties;
 
 	public MockGssName() {
+		testingPropertiesHelper = new TestingPropertiesHelper();
 		try {
 		testingProperties = testingPropertiesHelper.getTestProperties();
 		} catch (Exception e) {
@@ -23,39 +24,28 @@ public class MockGssName implements GSSName {
 		}
 	}
 
-	@Override
 	public GSSName canonicalize(Oid mech) throws GSSException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public boolean equals(GSSName another) throws GSSException {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public byte[] export() throws GSSException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Oid getStringNameType() throws GSSException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
+	
 	public boolean isAnonymous() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean isMN() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	

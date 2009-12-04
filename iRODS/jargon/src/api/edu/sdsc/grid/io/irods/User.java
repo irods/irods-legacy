@@ -34,7 +34,7 @@ import java.io.IOException;
  * @author iktome
  */
 public class User extends Domain {
-	User(IRODSFileSystem fileSystem) {
+	public User(IRODSFileSystem fileSystem) {
 		super(fileSystem, "user", "user_type", "r_user_main");
 	}
 
