@@ -9,6 +9,7 @@ import org.junit.runners.Suite;
 import edu.sdsc.grid.io.irods.IRODSAccountTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsCopyToTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
+import edu.sdsc.grid.io.irods.IRODSFileCommandsTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemCreateTarTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemGsiHandlingTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemMetadataQueryTest;
@@ -35,6 +36,7 @@ import edu.sdsc.grid.io.irods.ResourceTest;
   IRODSFileSystemMetadataQueryTest.class,
   //IRODSFileOutputStreamTest.class,
   IRODSFileSystemTest.class,
+  IRODSFileCommandsTest.class,
   IRODSAccountTest.class,
   IRODSFileSystemCreateTarTest.class,
   ResourceTest.class,

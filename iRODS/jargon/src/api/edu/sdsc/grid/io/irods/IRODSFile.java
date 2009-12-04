@@ -205,18 +205,6 @@ public class IRODSFile extends RemoteFile {
 	public IRODSFile(IRODSFileSystem fileSystem, String parent, String child) {
 		super(fileSystem, parent, child);
 		resource = iRODSFileSystem.getDefaultStorageResource();
-		/*
-		 * actually the server will do it now. if (resource == null) { try {
-		 * resource = getAvailableResource( iRODSFileSystem );
-		 * fileSystem.setDefaultStorageResource( resource ); iRODSFileSystem =
-		 * (IRODSFileSystem) fileSystem; } catch (IOException e) { //why did I
-		 * comment out IOException?! if (IRODSFileSystem.DEBUG > 1)
-		 * e.printStackTrace(); // Not really that important if the default
-		 * resource isn't set... //RuntimeException x = new RuntimeException();
-		 * //x.initCause(e); //throw x;
-		 *
-		 * } }
-		 */
 		makePathCanonical(parent);
 	}
 

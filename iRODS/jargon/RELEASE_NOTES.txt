@@ -84,9 +84,16 @@ see testQueryMetaDataSelectArray() in GeneralFileSystem for usage example.
 --------------
 Testing and fix for Bug 33 -  GSI Support in Jargon 
 Send correct USER_DN metadata query value, which changed in 2.2, with backward compatability for pre irods2.2
+
+-------------
+Testing and fix for Bug 40 -  IRODSCommands.fileRead() with length of 0 causes null message from irods
+
+-------------
+Testing for  Bug 26 -  Jargon uses int for file length
 	
 ================================================================================================
 Outstanding Issues
+
 
 
 

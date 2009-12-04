@@ -1771,11 +1771,25 @@ class IRODSCommands {
 	 */
 	synchronized int fileRead(int fd, OutputStream destination, long length)
 			throws IOException {
+		
+		// shim code for  Bug 40 -  IRODSCommands.fileRead() with length of 0 causes null message from irods 
+		if (length == 0) {
+			length = 1;
+		}
+		
+		if (fd == 0 || destination == null) {
+			throw new IllegalArgumentException("invalid parameters for fileRead");
+		}
+		
+		// FIXME: test other file read methods with length 0
+		
+		// XXX: length param is unused
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(len, length), });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_READ_AN);
 		// Need the total dataSize
+		// FIXME: length of zero causes message to be null
 		length = message.getTag(MsgHeader_PI).getTag(bsLen).getIntValue();
 
 		// read the message byte stream into the local file
@@ -1791,6 +1805,7 @@ class IRODSCommands {
 	 */
 	synchronized int fileRead(int fd, byte buffer[], int offset, int length)
 			throws IOException {
+		
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(len, length), });
 
