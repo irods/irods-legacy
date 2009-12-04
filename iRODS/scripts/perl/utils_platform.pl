@@ -476,6 +476,17 @@ sub _getCurrentHostAttributes()
 	{
 	    $HOSTNAME = "localhost";
 	}
+
+#
+# Another override; let the user set their local host name, for
+# example, to an IP address.  This can be used in cases where the DNS
+# does not have an entry (useful for CineGrid).
+#
+	$LOCAL_HOST_NAME = $ENV{"LOCAL_HOST_NAME"};
+	if ( defined( $LOCAL_HOST_NAME ) && !$LOCAL_HOST_NAME == "" )
+	{
+	    $HOSTNAME = $LOCAL_HOST_NAME;
+	}
 }
 
 
