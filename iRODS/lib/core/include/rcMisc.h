@@ -195,6 +195,12 @@ int getAttrIdFromAttrName(char *cname);
 int showAttrNames();
 
 int
+separateSelFuncFromAttr(char *t, char **aggOp, char **colNm);
+
+int
+getSelVal(char *c);
+
+int
 clearSendXmsgInfo (sendXmsgInfo_t *sendXmsgInfo);
 
 int
