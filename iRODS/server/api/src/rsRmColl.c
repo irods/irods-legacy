@@ -80,17 +80,19 @@ _rsRmColl (rsComm_t *rsComm, collInp_t *rmCollInp,
 collOprStat_t **collOprStat)
 {
     int status;
-    dataObjInp_t dataObjInp;
     dataObjInfo_t *dataObjInfo = NULL;
 
     if (getValByKey (&rmCollInp->condInput, UNREG_COLL_KW) != NULL) {
         status = svrUnregColl (rsComm, rmCollInp);
     } else {
 	/* need to check if it is spec coll */
+#if 0
+        dataObjInp_t dataObjInp;
         memset (&dataObjInp, 0, sizeof (dataObjInp));
         rstrcpy (dataObjInp.objPath, rmCollInp->collName, MAX_NAME_LEN);
-        status = resolveSpecColl (rsComm, &dataObjInp, &dataObjInfo, 1);
-
+#endif
+        status = resolvePathInSpecColl (rsComm, rmCollInp->collName, 
+	  WRITE_COLL_PERM, 0, &dataObjInfo);
         if (status < 0 && status != CAT_NO_ROWS_FOUND) {
 	    return status;
         } else if (status == COLL_OBJ_T && dataObjInfo->specColl != NULL) {
@@ -116,15 +118,18 @@ _rsRmCollRecur (rsComm_t *rsComm, collInp_t *rmCollInp,
 collOprStat_t **collOprStat)
 {
     int status;
-    dataObjInp_t dataObjInp;
     ruleExecInfo_t rei;
     int trashPolicy;
     dataObjInfo_t *dataObjInfo = NULL;
+#if 0
+    dataObjInp_t dataObjInp;
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, rmCollInp->collName, MAX_NAME_LEN);
+#endif
     /* check for specColl and permission */
-    status = resolveSpecColl (rsComm, &dataObjInp, &dataObjInfo, 1);
+    status = resolvePathInSpecColl (rsComm, rmCollInp->collName, 
+      WRITE_COLL_PERM, 0, &dataObjInfo);
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
         return status;

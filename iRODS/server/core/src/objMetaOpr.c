@@ -2764,6 +2764,7 @@ keyValPair_t *condInput, int writeFlag, int topFlag)
     return (0);
 }
 
+#if 0	/* replaced by resolvePathInSpecColl */
 int
 resolveSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 dataObjInfo_t **dataObjInfo, int writeFlag)
@@ -2830,6 +2831,7 @@ dataObjInfo_t **dataObjInfo, int writeFlag)
 
     return (status);
 }
+#endif
 
 int
 getStructFileType (specColl_t *specColl)
@@ -2850,26 +2852,34 @@ getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfo)
 {
     int status, writeFlag;
- 
+    specCollPerm_t specCollPerm;
+
     writeFlag = getWriteFlag (dataObjInp->openFlags);
-    if (writeFlag > 0 &&
-      rsComm->clientUser.authInfo.authFlag <= PUBLIC_USER_AUTH) {
-        rodsLog (LOG_NOTICE,
-         "getDataObjInfoIncSpecColl:open for write not allowed for user %s",
-          rsComm->clientUser.userName);
-        return (SYS_NO_API_PRIV);
+    if (writeFlag > 0) {
+        specCollPerm = WRITE_COLL_PERM;
+        if (rsComm->clientUser.authInfo.authFlag <= PUBLIC_USER_AUTH) {
+            rodsLog (LOG_NOTICE,
+             "getDataObjInfoIncSpecColl:open for write not allowed for user %s",
+              rsComm->clientUser.userName);
+            return (SYS_NO_API_PRIV);
+        }
+    } else {
+        specCollPerm = READ_COLL_PERM;
     }
 
     if (dataObjInp->specColl != NULL) {
-        status = resolveSpecColl (rsComm, dataObjInp, dataObjInfo,
-          writeFlag);
+        status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+          specCollPerm, 0, dataObjInfo);
         if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
           dataObjInfo != NULL) {
             freeDataObjInfo (*dataObjInfo);
             dataObjInfo = NULL;
         }
+    } else if ((status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+      specCollPerm, 1, dataObjInfo)) >= 0) {
+        /* check if specColl in cache. May be able to save one query */
     } else if (getValByKey (&dataObjInp->condInput,
-      IRODS_ADMIN_RMTRASH_KW) != NULL && 
+      IRODS_ADMIN_RMTRASH_KW) != NULL &&
       rsComm->proxyUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH) {
         status = getDataObjInfo (rsComm, dataObjInp, dataObjInfo,
           NULL, 0);
@@ -2883,17 +2893,21 @@ dataObjInfo_t **dataObjInfo)
 
     if (status < 0 && dataObjInp->specColl == NULL) {
         int status2;
-        status2 = resolveSpecColl (rsComm, dataObjInp, dataObjInfo, 
-	  writeFlag);
+        status2 = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+          specCollPerm, 0, dataObjInfo);
         if (status2 < 0) {
             if (status2 == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
               dataObjInfo != NULL) {
                 freeDataObjInfo (*dataObjInfo);
-		*dataObjInfo = NULL;
+                *dataObjInfo = NULL;
             }
         }
-	if (status2==CAT_NO_ROWS_FOUND) return(status);
-	return(status2);
+        if (status2==CAT_NO_ROWS_FOUND) return(status);
+        return(status2);
+    }
+    if (*dataObjInfo != NULL && getStructFileType ((*dataObjInfo)->specColl)
+      >= 0) {
+        dataObjInp->numThreads = NO_THREADING;
     }
     return(status);
 }

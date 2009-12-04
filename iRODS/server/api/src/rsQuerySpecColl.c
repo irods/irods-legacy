@@ -70,7 +70,8 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
     int status;
     int l3descInx;
 
-    status = resolveSpecColl (rsComm, dataObjInp, &dataObjInfo, 0);
+    status = resolvePathInSpecColl (rsComm, dataObjInp->objPath, 
+      READ_COLL_PERM, 0, &dataObjInfo);
 
     if (status < 0) {
         rodsLog (LOG_NOTICE,

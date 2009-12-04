@@ -47,12 +47,16 @@ int
 _rsRmCollOld (rsComm_t *rsComm, collInp_t *rmCollInp)
 {
     int status;
-    dataObjInp_t dataObjInp;
     dataObjInfo_t *dataObjInfo = NULL;
 
+#if 0
+    dataObjInp_t dataObjInp;
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, rmCollInp->collName, MAX_NAME_LEN);
-    status = resolveSpecColl (rsComm, &dataObjInp, &dataObjInfo, 1);
+#endif
+    status = resolvePathInSpecColl (rsComm, rmCollInp->collName, 
+      WRITE_COLL_PERM, 0, &dataObjInfo);
+
 
     if (status == COLL_OBJ_T && dataObjInfo->specColl != NULL) {
 	status = svrRmSpecColl (rsComm, rmCollInp, dataObjInfo);

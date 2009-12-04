@@ -171,7 +171,8 @@ specCollSubCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int l1descInx;
     dataObjInfo_t *dataObjInfo = NULL;
 
-    status = resolveSpecColl (rsComm, dataObjInp, &dataObjInfo, 1);
+    status = resolvePathInSpecColl (rsComm, dataObjInp->objPath, 
+      WRITE_COLL_PERM, 0, &dataObjInfo);
     if (status >= 0) {
         rodsLog (LOG_ERROR,
           "specCollSubCreate: phyPath %s already exist", 

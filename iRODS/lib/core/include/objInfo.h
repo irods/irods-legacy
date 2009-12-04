@@ -124,7 +124,7 @@ typedef struct SpecColl {
 
 typedef enum {
     UNKNOW_COLL_PERM,
-    READ__COLL_PERM,
+    READ_COLL_PERM,
     WRITE_COLL_PERM,
 } specCollPerm_t;
 
@@ -138,6 +138,11 @@ typedef struct SpecCollCache {
     char modifyTime[NAME_LEN];
     struct SpecCollCache *next;
 } specCollCache_t;
+
+typedef struct PathCache {
+    char path[MAX_NAME_LEN];
+    struct PathCache *next;
+} pathCache_t;
 
 /* definition for replStatus (isDirty) */
 #define OLD_COPY        0x0

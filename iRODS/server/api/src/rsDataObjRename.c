@@ -37,11 +37,11 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         return (SAME_SRC_DEST_PATHS_ERR);
     }
 
-    srcType = resolveSpecColl (rsComm, srcDataObjInp, 
-      &srcDataObjInfo, 1);
+    srcType = resolvePathInSpecColl (rsComm, srcDataObjInp->objPath, 
+      WRITE_COLL_PERM, 0, &srcDataObjInfo);
 
-    destType = resolveSpecColl (rsComm, destDataObjInp,
-      &destDataObjInfo, 1);
+    destType = resolvePathInSpecColl (rsComm, destDataObjInp->objPath,
+      WRITE_COLL_PERM, 0, &destDataObjInfo);
 
     if (destType >= 0) {
         rodsLog (LOG_ERROR,

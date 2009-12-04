@@ -48,15 +48,18 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 	    return (status);
         }
 #ifdef RODS_CAT
-        dataObjInp_t dataObjInp;
         dataObjInfo_t *dataObjInfo = NULL;
 
         /* for STRUCT_FILE_COLL to make a directory in the structFile, the
          * COLLECTION_TYPE_KW must be set */
 
+#if 0
+        dataObjInp_t dataObjInp;
 	memset (&dataObjInp, 0, sizeof (dataObjInp));
 	rstrcpy (dataObjInp.objPath, collCreateInp->collName, MAX_NAME_LEN);
-        status = resolveSpecColl (rsComm, &dataObjInp, &dataObjInfo, 1);
+#endif
+        status = resolvePathInSpecColl (rsComm, collCreateInp->collName, 
+	  WRITE_COLL_PERM, 0, &dataObjInfo);
 	if (status >= 0) {
 	    if (status == COLL_OBJ_T) {
 		return (0);

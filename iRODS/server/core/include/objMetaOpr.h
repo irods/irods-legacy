@@ -189,9 +189,11 @@ keyValPair_t *condInput, int writeFlag, int topFlag);
 int
 requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
 keyValPair_t *condInput, int writeFlag, int topFlag);
+#if 0	/* replaced by resolveSpecCollInPath */
 int 
 resolveSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 dataObjInfo_t **dataObjInfo, int writeFlag);
+#endif
 int
 getStructFileType (specColl_t *specColl);
 int

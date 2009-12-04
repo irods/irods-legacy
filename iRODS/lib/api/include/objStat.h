@@ -56,7 +56,7 @@ queueSpecCollCacheWithObjStat (rodsObjStat_t *rodsObjStatOut);
 specCollCache_t *
 matchSpecCollCache (char *objPath);
 int
-querySubInSpecColl (rsComm_t *rsComm, char *objPath,
+statPathInSpecColl (rsComm_t *rsComm, char *objPath,
 int inCachOnly, rodsObjStat_t **rodsObjStatOut);
 int
 specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
@@ -70,6 +70,9 @@ rodsObjStat_t **rodsObjStatOut);
 int
 dataObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut);
+int
+resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
+specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo);
 #else
 #define RS_OBJ_STAT NULL
 #endif

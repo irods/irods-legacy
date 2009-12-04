@@ -23,8 +23,11 @@ rodsObjStat_t **rodsObjStatOut)
     return (status);
 }
 
-/* __rsObjStat - internal version of __rsObjStat. Mostly to deal with
- * specColl
+/* __rsObjStat - internal version of __rsObjStat. Given the object path given
+ * in dataObjInp->objPath, stat the path and put the output in rodsObjStatOut.
+ * intenFlag specifies whether it is called internally instead of from the
+ * client API. If it is called internally, (*rodsObjStatOut)->specColl
+ * is from the Globsl cache and should not be freed.
  */
 
 int
@@ -46,7 +49,9 @@ rodsObjStat_t **rodsObjStatOut)
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     } else {
-        status = querySubInSpecColl (rsComm, dataObjInp->objPath, 1,
+	/* see if it is a sub path of a specColl cached locally. If it is,
+	 * it will save time resolving it */
+        status = statPathInSpecColl (rsComm, dataObjInp->objPath, 1,
           rodsObjStatOut);
 
 	if (status < 0) {
@@ -59,7 +64,7 @@ rodsObjStat_t **rodsObjStatOut)
 		    queueSpecCollCacheWithObjStat (*rodsObjStatOut);
 		    if (intenFlag > 0) {
 			specCollCache_t *specCollCache; 
-			/* use the cache copy instead */
+			/* Internal call, use the global cache copy instead */
 			specCollCache = matchSpecCollCache (
 			  (*rodsObjStatOut)->specColl->collection);
 			free ((*rodsObjStatOut)->specColl);
@@ -113,7 +118,7 @@ rodsObjStat_t **rodsObjStatOut)
 
     /* now check specColl */
     /* XXXX need to check a rule if it supports spec collection */
-    status = querySubInSpecColl (rsComm, dataObjInp->objPath, 0,
+    status = statPathInSpecColl (rsComm, dataObjInp->objPath, 0,
       rodsObjStatOut);
     if (status < 0) status = USER_FILE_DOES_NOT_EXIST;
 
@@ -410,8 +415,15 @@ int inCachOnly, specCollCache_t **specCollCache)
     return (0);
 }
 
+/* statPathInSpecColl - stat the path given in objPath assuming it is
+ * in the path of a special collection. The inCachOnly flag asks it to
+ * check the specColl in the global cache only. The output of the 
+ * stat is given in rodsObjStatOut.
+ *
+ */
+
 int
-querySubInSpecColl (rsComm_t *rsComm, char *objPath, 
+statPathInSpecColl (rsComm_t *rsComm, char *objPath, 
 int inCachOnly, rodsObjStat_t **rodsObjStatOut)
 {
     int status;
@@ -424,7 +436,7 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
 	if (status != SYS_SPEC_COLL_NOT_IN_CACHE && 
 	  status != CAT_NO_ROWS_FOUND){
             rodsLog (LOG_ERROR,
-              "querySubInSpecColl: getSpecCollCache for %s, status = %d",
+              "statPathInSpecColl: getSpecCollCache for %s, status = %d",
               objPath, status);
 	}
         return (status);
@@ -505,6 +517,12 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
     return (0);
 }
 
+/* specCollSubStat - Given specColl and the object path (subPath),
+ * returns a dataObjInfo struct with dataObjInfo->specColl != NULL.
+ * Returns COLL_OBJ_T if the path is a collection or DATA_OBJ_T if the
+ * path is a data oobject.
+ */
+
 int
 specCollSubStat (rsComm_t *rsComm, specColl_t *specColl, 
 char *subPath, dataObjInfo_t **dataObjInfo)
@@ -513,6 +531,8 @@ char *subPath, dataObjInfo_t **dataObjInfo)
     int objType;
     rodsStat_t *rodsStat = NULL;
 
+    if (dataObjInfo == NULL) return USER__NULL_INPUT_ERR;
+    *dataObjInfo = NULL;
     if (specColl->collClass == MOUNTED_COLL) {
 	dataObjInfo_t *myDataObjInfo;
 
@@ -798,5 +818,83 @@ matchSpecCollCache (char *objPath)
 	tmpSpecCollCache = tmpSpecCollCache->next;
     }
     return (NULL);
+}
+
+/* resolvePathInSpecColl - given the object path in dataObjInp->objPath, see if
+ * it is in the path of a special collection (mounted or structfile).
+ * If it is not in a special collection, returns a -ive value.
+ * The inCachOnly flag asks it to check the specColl in the global cache only
+ * If it is, returns a dataObjInfo struct with dataObjInfo->specColl != NULL.
+ * Returns COLL_OBJ_T if the path is a collection or DATA_OBJ_T if the
+ * path is a data oobject.
+ */
+int
+resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
+specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
+{
+    specCollCache_t *specCollCache;
+    specColl_t *cachedSpecColl;
+    int status;
+    char *accessStr;
+
+    if (objPath == NULL) {
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if ((status = getSpecCollCache (rsComm, objPath, inCachOnly,
+      &specCollCache)) < 0) {
+        return (status);
+    } else {
+        cachedSpecColl = &specCollCache->specColl;
+    }
+
+    if (specCollPerm != UNKNOW_COLL_PERM) {
+        if (specCollPerm == WRITE_COLL_PERM) {
+            accessStr = ACCESS_DELETE_OBJECT;
+        } else {
+            accessStr = ACCESS_READ_OBJECT;
+        }
+
+        if (specCollCache->perm < specCollPerm) {
+            status = checkCollAccessPerm (rsComm, cachedSpecColl->collection,
+              accessStr);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "resolveSpecColl: checkCollAccessPerm err for %s, stat = %d",
+                  cachedSpecColl->collection, status);
+                return (status);
+            } else {
+                specCollCache->perm = specCollPerm;
+            }
+        }
+    }
+
+    status = specCollSubStat (rsComm, cachedSpecColl, objPath,
+      dataObjInfo);
+
+#if 0
+    if (*dataObjInfo != NULL && getStructFileType ((*dataObjInfo)->specColl)
+      >= 0) {
+        dataObjInp->numThreads = NO_THREADING;
+    }
+#endif
+
+    if (status < 0) {
+        if (*dataObjInfo != NULL) {
+           /* does not exist. return the dataObjInfo anyway */
+            return (SYS_SPEC_COLL_OBJ_NOT_EXIST);
+        }
+        rodsLog (LOG_ERROR,
+          "resolveSpecColl: specCollSubStat error for %s, status = %d",
+          objPath, status);
+        return (status);
+    } else {
+        if (*dataObjInfo != NULL) {
+            if (specCollPerm == WRITE_COLL_PERM)
+                (*dataObjInfo)->writeFlag = 1;
+        }
+    }
+
+    return (status);
 }
 
