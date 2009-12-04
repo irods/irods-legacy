@@ -186,7 +186,7 @@ public class IRODSFileSystem extends RemoteFileSystem
 
 /**
  * @param {@link edu.sdsc.grid.io.irods.IRODSAccount IRODSAccount} containing the connect information for this file system. 
- * @return (@link edu.sdsc.grid.io.MetaDataCondtion MetaDataCondition} that contains the correct query for the user dn
+ * @return (@link edu.sdsc.grid.io.MetaDataCondition MetaDataCondition} that contains the correct query for the user dn
  * @throws GSSException
  */
 protected MetaDataCondition buildMetaDataConditionForGSIUser(

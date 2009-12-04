@@ -1,34 +1,21 @@
 package edu.sdsc.grid.io.irods;
 
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
-import edu.sdsc.grid.io.MetaDataCondition;
-import edu.sdsc.grid.io.MetaDataRecordList;
-import edu.sdsc.grid.io.MetaDataSelect;
-import edu.sdsc.grid.io.UserMetaData;
-import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
-import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
-import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
+import java.util.Properties;
 
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSManager;
+import junit.framework.TestCase;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Properties;
-import java.util.TimeZone;
-
-import junit.framework.TestCase;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.UserMetaData;
+import edu.sdsc.grid.io.irods.mocks.MockGssCredential;
+import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
+import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
+import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 
 public class IRODSFileSystemGsiHandlingTest {
 	private static Properties testingProperties = new Properties();
@@ -44,9 +31,7 @@ public class IRODSFileSystemGsiHandlingTest {
 		scratchFileUtils = new ScratchFileUtils(testingProperties);
 		scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
 		irodsTestSetupUtilities = new IRODSTestSetupUtilities();
-		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
-		irodsTestSetupUtilities
-				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+		
 	}
 
 	@AfterClass
@@ -61,6 +46,10 @@ public class IRODSFileSystemGsiHandlingTest {
 	public void tearDown() throws Exception {
 	}
 
+	/**
+	 *  BUG 33 -  GSI Support in Jargon 
+	 * @throws Exception
+	 */
 	@Test
 	public void testBuildsRightUserDNQueryForOldIrods() throws Exception {
 		MockGssCredential credential = new MockGssCredential();
@@ -79,6 +68,11 @@ public class IRODSFileSystemGsiHandlingTest {
 
 	}
 	
+
+	/**
+	 *  BUG 33 -  GSI Support in Jargon 
+	 * @throws Exception
+	 */
 	@Test
 	public void testBuildsRightUserDNQueryForNewIrods() throws Exception {
 		MockGssCredential credential = new MockGssCredential();
@@ -96,4 +90,31 @@ public class IRODSFileSystemGsiHandlingTest {
 		TestCase.assertEquals("did not derive expected metadata name for this version", UserMetaData.USER_DN, condition.getField().getName());
 
 	}
+	
+
+	/**
+	 *  BUG 33 -  GSI Support in Jargon 
+	 * @throws Exception
+	 */
+	@Test 
+	public void testGetOldIrodsMetaDataid() throws Exception {
+		String id = IRODSMetaDataSet.getID(IRODSMetaDataSet.USER_DN_2_1);
+		TestCase.assertEquals("did not find prev version metadata id", "205", id);
+		
+	
+	}
+	
+
+	/**
+	 *  BUG 33 -  GSI Support in Jargon 
+	 * @throws Exception
+	 */
+	@Test 
+	public void testGetNewIrodsMetaDataid() throws Exception {
+		String id = IRODSMetaDataSet.getID(IRODSMetaDataSet.USER_DN);
+		TestCase.assertEquals("did not find prev version metadata id", "1601", id);
+		
+	
+	}
+	
 }

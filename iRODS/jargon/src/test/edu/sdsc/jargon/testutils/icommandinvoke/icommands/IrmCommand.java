@@ -46,7 +46,6 @@ public class IrmCommand implements Icommand {
     /* (non-Javadoc)
      * @see org.irods.jargon.icommandinvoke.icommands.Icommand#buildCommand()
      */
-    @Override
     public List<String> buildCommand() throws IcommandException {
         if ((objectName == null) || (objectName.length() == 0)) {
             throw new IllegalArgumentException("no object name specified");
@@ -63,7 +62,6 @@ public class IrmCommand implements Icommand {
         	commands.add("-vv");
         }
 
-        // TODO right now assume recursive...might need to be smarter about this
         commands.add("-r");
         commands.add(objectName);
 

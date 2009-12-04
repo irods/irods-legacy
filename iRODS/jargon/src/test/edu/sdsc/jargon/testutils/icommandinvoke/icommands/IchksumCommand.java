@@ -27,7 +27,6 @@ public class IchksumCommand implements Icommand {
 	/* (non-Javadoc)
 	 * @see org.irods.jargon.icommandinvoke.icommands.Icommand#buildCommand()
 	 */
-	@Override
 	public List<String> buildCommand() throws IcommandException{
 		if (irodsFileName.length() <= 0) {
 			throw new IcommandException("no irods file name provided");

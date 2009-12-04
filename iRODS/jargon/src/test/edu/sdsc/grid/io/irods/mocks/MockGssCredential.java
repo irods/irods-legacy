@@ -1,4 +1,4 @@
-package edu.sdsc.grid.io.irods;
+package edu.sdsc.grid.io.irods.mocks;
 
 import java.util.Properties;
 

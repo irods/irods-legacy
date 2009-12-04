@@ -81,6 +81,10 @@ Testing and fix for  Bug 36 -  resource added with icommand does not show up in 
 Added new metadata to query resource name by collection, IRODSMetaDataSet.COLL_RESOURCE_NAME,
 see testQueryMetaDataSelectArray() in GeneralFileSystem for usage example.
 
+--------------
+Testing and fix for Bug 33 -  GSI Support in Jargon 
+Send correct USER_DN metadata query value, which changed in 2.2, with backward compatability for pre irods2.2
+	
 ================================================================================================
 Outstanding Issues
 
