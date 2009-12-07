@@ -253,7 +253,6 @@ tablePresent(char *table, char *sqlText) {
    }
 
    /* have to check if the token appears in the first or second position */
-   tokens=0;
    blank=1;
    cp1=sqlText;
    for(;;) {
@@ -261,6 +260,7 @@ tablePresent(char *table, char *sqlText) {
       if (cp2==NULL) {
 	 return(0);
       }
+      tokens=0;
       for (;*cp2!='\0' && *cp2!=',';cp2++) {
 	 if (*cp2==' ') {
 	    if (blank==0) tokens++;
