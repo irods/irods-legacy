@@ -10,11 +10,13 @@ import edu.sdsc.grid.io.irods.IRODSAccountTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsCopyToTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
 import edu.sdsc.grid.io.irods.IRODSFileCommandsTest;
+import edu.sdsc.grid.io.irods.IRODSFileInputStreamTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemCreateTarTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemGsiHandlingTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemMetadataQueryTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemTest;
 import edu.sdsc.grid.io.irods.IRODSFileTest;
+import edu.sdsc.grid.io.irods.IRODSRandomAccessFileTest;
 import edu.sdsc.grid.io.irods.IRODSResourceQueryTest;
 import edu.sdsc.grid.io.irods.ResourceTest;
 
@@ -40,7 +42,9 @@ import edu.sdsc.grid.io.irods.ResourceTest;
   IRODSAccountTest.class,
   IRODSFileSystemCreateTarTest.class,
   ResourceTest.class,
-  IRODSFileSystemGsiHandlingTest.class
+  IRODSFileSystemGsiHandlingTest.class,
+  IRODSFileInputStreamTest.class,
+  IRODSRandomAccessFileTest.class
 })
 public class IRODSTests {
 

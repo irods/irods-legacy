@@ -162,6 +162,11 @@ class Tag implements Cloneable
   {
     return Integer.parseInt(value);
   }
+  
+  long getLongValue( )
+  {
+    return Long.parseLong(value);
+  }
 
   String getStringValue( )
   {

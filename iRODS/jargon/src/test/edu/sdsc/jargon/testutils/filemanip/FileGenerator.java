@@ -143,7 +143,7 @@ public class FileGenerator {
 				
 				// if more than chunk size to go, just write the chunk
 				nextChunkSize = length - generatedFileLength;
-				if (nextChunkSize > 1024l) {
+				if (nextChunkSize > chunkSize) {
 					outStream.write(fileChunk);
 					generatedFileLength += chunkSize;
 				} else {

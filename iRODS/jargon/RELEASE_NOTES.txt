@@ -88,8 +88,9 @@ Send correct USER_DN metadata query value, which changed in 2.2, with backward c
 -------------
 Testing and fix for Bug 40 -  IRODSCommands.fileRead() with length of 0 causes null message from irods
 
+
 -------------
-Testing for  Bug 26 -  Jargon uses int for file length
+Testing and fix for  Bug 26 -  Jargon uses int for file length
 	
 ================================================================================================
 Outstanding Issues

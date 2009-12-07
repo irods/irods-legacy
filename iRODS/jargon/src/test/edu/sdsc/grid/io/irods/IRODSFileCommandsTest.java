@@ -2,6 +2,7 @@ package edu.sdsc.grid.io.irods;
 
 import edu.sdsc.grid.io.FileFactory;
 import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
 
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
@@ -30,6 +31,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URI;
@@ -243,5 +245,109 @@ public class IRODSFileCommandsTest {
         TestCase.assertTrue("did not get same buffer back", Arrays.equals(inputBytes, buff));
     }
     
+    @Test
+    public final void testFileReadIntoBufferUsingOffsetToReadTwice() throws Exception {
+    	// generate a local scratch file
+    	int fileSizeKb = 2;
+        String testFileName = "testfilereadbuffertwice.txt";
+        String readbackFileName = "testfilereadbuffertwice_readback.txt";
+
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String inputFileName = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            fileSizeKb);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        // I've put the file on IRODS, retrieve it back, using the 'offset' feature of the read to bring it back in two chunks
+        // accumulate these in a byte arroy output stream and then compare what I got back to the original file
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        int fileDescriptor = irodsFileSystem.commands.fileOpen(irodsFile, true, true);
+        byte[] buff = new byte[1024];
+        byte[] buff2 = new byte[1024];
+
+        String readbackFileAbsPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH) + readbackFileName;
+        
+        
+        // here I'm saving the source file as a byte array as my 'expected' value for my test assertion
+        BufferedInputStream fis = new BufferedInputStream(new FileInputStream(inputFileName));
+        byte[] inputBytes = new byte[fileSizeKb * 1024];
+        fis.read(inputBytes);
+        fis.close();
+        
+        
+        ByteArrayOutputStream actualReadByteStream = new ByteArrayOutputStream(); 
+        // here I'm doing the actual operation using IRODSbyte[] accumBuff = new byte[fileSizeKb * 1024];
+        irodsFileSystem.commands.fileRead(fileDescriptor, buff, 0, 1024);
+        actualReadByteStream.write(buff);
+        irodsFileSystem.commands.fileRead(fileDescriptor, buff2, 1024, 1024);
+        actualReadByteStream.write(buff2);
+        
+        irodsFileSystem.commands.fileClose(fileDescriptor);
+        irodsFileSystem.close();
+        
+        TestCase.assertTrue("did not get same buffer back", Arrays.equals(inputBytes, actualReadByteStream.toByteArray()));
+    }
+    
+    
+    @Test
+    public final void testFileSeek() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testfileseek.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        // now try to do the seek
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        int fileDescriptor = irodsFileSystem.commands.fileOpen(irodsFile, true, true);
+          
+        irodsFileSystem.commands.fileSeek(fileDescriptor, 1024, GeneralRandomAccessFile.SEEK_CURRENT);
+        irodsFileSystem.commands.fileSeek(fileDescriptor, 1024, GeneralRandomAccessFile.SEEK_END);
+        irodsFileSystem.commands.fileSeek(fileDescriptor, 1024, GeneralRandomAccessFile.SEEK_START);
+        
+        irodsFileSystem.commands.fileClose(fileDescriptor);
+        irodsFileSystem.close();
+        
+    }
     
 }

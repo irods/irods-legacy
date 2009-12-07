@@ -153,7 +153,7 @@ class IRODSCommands {
 	 * Max number of SQL attributes a query can return?
 	 */
 	static final int MAX_SQL_ATTR = 50;
-
+	
 	// Various iRODS message types, in include/rodsDef.h
 	static final String RODS_CONNECT = "RODS_CONNECT";
 	static final String RODS_VERSION = "RODS_VERSION";
@@ -475,9 +475,6 @@ class IRODSCommands {
 		}
 	}
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
 	/**
 	 * The iRODS socket connection through which all socket activity is
 	 * directed.
@@ -1829,13 +1826,33 @@ class IRODSCommands {
 		}
 	}
 
-	int fileSeek(int fd, long seek, int whence) throws IOException {
+	/**
+	 * Set the file position for the IRODS file to the specified position
+	 * @param fd <code>int</code> with the file descriptor created by the {@link #fileOpen(IRODSFile, boolean, boolean) fileOpen} method
+	 * @param seek <code>long</code> that is the offset value
+	 * @param whence <code>int</code> that specifies the postion to compute the offset from //FIXME: enumeration?  what values?
+	 * @return <code>long</code with the new offset.
+	 * @throws IOException
+	 */
+	long fileSeek(int fd, long seek, int whence) throws IOException {
+		
+		if (whence == GeneralRandomAccessFile.SEEK_START || whence == GeneralRandomAccessFile.SEEK_CURRENT || whence == GeneralRandomAccessFile.SEEK_END) {
+			//ok
+		} else {
+			throw new IllegalArgumentException("whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
+		}
+		
+		if (fd <= 0) {
+			throw new IllegalArgumentException("no valid file handle provided");
+		}
+		
+		
 		Tag message = new Tag(fileLseekInp_PI, new Tag[] {
 				new Tag(fileInx, fd), new Tag(offset, seek),
 				new Tag(this.whence, whence), });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_LSEEK_AN);
-		return message.getTag(offset).getIntValue();
+		return message.getTag(offset).getLongValue();
 	}
 
 	/**
