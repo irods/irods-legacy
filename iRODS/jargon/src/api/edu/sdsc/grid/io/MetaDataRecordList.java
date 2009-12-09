@@ -27,14 +27,6 @@ package edu.sdsc.grid.io;
 import java.io.IOException;
 import java.util.Vector;
 
-/*TODO um, well, I remember feeling something was weird about when
- *I first built this. Now, much too late do I notice what it was...
- *I meant for this to be a list of results. What is currently a
- *MetaDataRecordList should've been something like a MetaDataRecord class
- *and MetaDataRecordList would've held a bunch of those...um, oops.
- *Well...and it has already been released...how to recover from that...
- */
-
 
 /**
  * A "meta data record list" is a list of results from a metadata query.

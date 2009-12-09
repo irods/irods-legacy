@@ -55,12 +55,12 @@ public class ImetaRemoveCommand extends ImetaCommand {
 			throw new IllegalArgumentException("must supply an object path");
 		}
 
-		if (attribName == null) {
+		if (attribName == null || attribValue == null) {
 			throw new IllegalArgumentException(
 					"attrib name, value, and units must not be null, leave as spaces if not used");
 		}
 		
-		if (attribName.length() == 0) {
+		if (attribName.length() == 0 || attribValue.length() == 0) {
 			throw new IllegalArgumentException("attrib name and value are required");
 
 		}

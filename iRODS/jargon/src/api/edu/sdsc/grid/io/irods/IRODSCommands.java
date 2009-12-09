@@ -2093,13 +2093,22 @@ class IRODSCommands {
 		}
 	}
 
+	/**
+	 * Add or update an AVU value for a data object or collection
+	 * @param file {@line edu.sdsc.grid.io.irods.IRODSFile IRODSFile} describing the object or collection
+	 * @param values <code>String[]</code> containing an AVU in the form (attrib name, attrib value) or (attrib name, attrib value, attrib units)
+	 * @throws IOException
+	 */
 	void modifyMetaData(IRODSFile file, String[] values) throws IOException {
-		/*
-		 * delete all: <ModAVUMetadataInp_PI> <arg0>rmw</arg0> <arg1>-d</arg1>
-		 * <arg2>/tempZone/home/rods/README.txt</arg2> <arg3>%</arg3>
-		 * <arg4>%</arg4> <arg5>%</arg5> <arg6></arg6> <arg7></arg7>
-		 * <arg8></arg8> <arg9></arg9> </ModAVUMetadataInp_PI>
-		 */
+		
+		if (file == null) {
+			throw new IllegalArgumentException("irods file must not be null");
+		}
+		
+		if (values.length < 2 || values.length > 3) {
+			throw new IllegalArgumentException("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+		}
+		
 		Tag message = new Tag(ModAVUMetadataInp_PI, new Tag[] { new Tag("arg0",
 				"add"), });
 		if (file.isDirectory()) {

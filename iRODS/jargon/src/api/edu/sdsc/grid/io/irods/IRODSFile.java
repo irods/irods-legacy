@@ -64,7 +64,7 @@ import edu.sdsc.grid.io.*;
  * Instances of the IRODSFile class are immutable; that is, once created, the
  * abstract pathname represented by a IRODSFile object will never change.
  *<P>
- *
+ * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON2.0
  * @see java.io.File
@@ -166,7 +166,7 @@ public class IRODSFile extends RemoteFile {
 	 * Creates a new IRODSFile instance by converting the given pathname string
 	 * into an abstract pathname.
 	 *<P>
-	 *
+	 * 
 	 * @param fileSystem
 	 *            The connection to the iRODS server
 	 * @param filePath
@@ -194,7 +194,7 @@ public class IRODSFile extends RemoteFile {
 	 * converted into an abstract pathname and the child abstract pathname is
 	 * resolved against the parent.
 	 *<P>
-	 *
+	 * 
 	 * @param fileSystem
 	 *            The connection to the iRODS server
 	 * @param parent
@@ -226,7 +226,7 @@ public class IRODSFile extends RemoteFile {
 	 * string is converted into an abstract pathname and the child abstract
 	 * pathname is resolved against the parent.
 	 *<P>
-	 *
+	 * 
 	 * @param parent
 	 *            The parent abstract pathname
 	 * @param child
@@ -246,7 +246,7 @@ public class IRODSFile extends RemoteFile {
 	 *<P>
 	 * example:<br>
 	 * irods://irods@irods.sdsc.edu:21/pub/testfile.txt
-	 *
+	 * 
 	 * @param uri
 	 *            An absolute, hierarchical URI using a supported scheme.
 	 * @throws NullPointerException
@@ -322,7 +322,7 @@ public class IRODSFile extends RemoteFile {
 	// ----------------------------------------------------------------------
 	/**
 	 * Step three of IRODSFile( uri )
-	 *
+	 * 
 	 * Query the file system to determine this IRODSFile's storage resource,
 	 * Currently iRODS does not have access control on resources. Just pick one
 	 * at random then use that for the default resource of the fileSystem object
@@ -347,7 +347,7 @@ public class IRODSFile extends RemoteFile {
 	 * Sets the file system used of this GeneralFile object. The file system
 	 * object must be a subclass of the GeneralFileSystem matching this file
 	 * object. eg. XYZFile requires XYZFileSystem.
-	 *
+	 * 
 	 * @param fileSystem
 	 *            The file system to be used.
 	 * @throws IllegalArgumentException
@@ -368,7 +368,7 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Set the file name.
-	 *
+	 * 
 	 * @param fleName
 	 *            The file name or fileName plus some or all of the directory
 	 *            path.
@@ -417,7 +417,7 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Set the directory.
-	 *
+	 * 
 	 * @param dir
 	 *            The directory path, need not be absolute.
 	 */
@@ -469,7 +469,7 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Helper for setting the directory to an absolute path
-	 *
+	 * 
 	 * @param dir
 	 *            Used to determine if the path is absolute.
 	 */
@@ -597,7 +597,7 @@ public class IRODSFile extends RemoteFile {
 	 * destination file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
-	 *
+	 * 
 	 * @param file
 	 *            The file to receive the data.
 	 * @throws NullPointerException
@@ -664,7 +664,7 @@ public class IRODSFile extends RemoteFile {
 	 * destination file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
-	 *
+	 * 
 	 * @param file
 	 *            The file to receive the data.
 	 * @throws NullPointerException
@@ -715,7 +715,7 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * iRODS does md5 by default.
-	 *
+	 * 
 	 * @return the md5 string for this file
 	 * @throws java.io.IOException
 	 */
@@ -811,7 +811,7 @@ public class IRODSFile extends RemoteFile {
 	 * Queries metadata specific to this file object, selecting one metadata
 	 * value, <code>fieldName</code>, and returns the first result of that
 	 * query. Returns null if the query had no results.
-	 *
+	 * 
 	 * @param fieldName
 	 *            The string name used to form the select object.
 	 * @return The metadata values for this file refered to by
@@ -827,47 +827,24 @@ public class IRODSFile extends RemoteFile {
 		} catch (IllegalArgumentException e) {
 			if (IRODSFileSystem.DEBUG > 2)
 				e.printStackTrace();
-			/*
-			 * <GenQueryInp_PI> <maxRows>10</maxRows>
-			 * <continueInx>0</continueInx>
-			 * <partialStartIndex>0</partialStartIndex> <options>0</options>
-			 * <KeyValPair_PI> <ssLen>0</ssLen> </KeyValPair_PI>
-			 * <InxIvalPair_PI> <iiLen>3</iiLen> <inx>600</inx> <inx>601</inx>
-			 * <inx>602</inx> <ivalue>0</ivalue> <ivalue>0</ivalue>
-			 * <ivalue>0</ivalue> </InxIvalPair_PI> <InxValPair_PI>
-			 * <isLen>2</isLen> <inx>501</inx> <inx>403</inx>
-			 * <svalue>='/tempZone/home/rods'</svalue>
-			 * <svalue>='deletey'</svalue> </InxValPair_PI> </GenQueryInp_PI>
-			 */
 		}
 		return null;
 	}
 
-	/**
-	 * Used to modify the metadata associated with this file object.
-	 */
-	/*
-	 * public void modifyMetaData( MetaDataRecordList metaDataRecordList )
-	 * throws IOException { String[] values = {
-	 * metaDataRecordList.getFieldName(0), metaDataRecordList.getStringValue(0)
-	 * }; iRODSFileSystem.commands.modifyMetaData(this, values); }
-	 */
+	
 	/**
 	 * Used to modify the metadata associated with this file object. Does not
 	 * overwrite. If an already existing value conflicts, inserts new metadata
 	 * value. If duplicate metadata is reentered, no action is taken.
-	 *
-	 * @param metaData
-	 *            Must contain at least an attribute and value, ie. metaData[0]
-	 *            and metaData[1]. Can also include units, metaData[2]. Or even
-	 *            metaData[3-9], but most clients will not display these values.
+	 * 
+	 * @param values <code>String[]</code> containing an AVU in the form (attrib name, attrib value) or (attrib name, attrib value, attrib units)
 	 */
 	public void modifyMetaData(String[] metaData) throws IOException {
-		if (metaData == null || metaData.length < 2) {
-			throw new IllegalArgumentException(
-					"The metadata must contain at least "
-							+ "an attribute and value.");
-		} else if (metaData[0].equals("") || metaData[1].equals("")) {
+		if (metaData.length < 2 || metaData.length > 3) {
+			throw new IllegalArgumentException("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+		}
+		
+		if (metaData[0].equals("") || metaData[1].equals("")) {
 			throw new IllegalArgumentException(
 					"The metadata attribute and value " + "cannot be empty.");
 		}
@@ -904,7 +881,7 @@ public class IRODSFile extends RemoteFile {
 	 * Deletes this <code>metadata</code> associated with this file object. The
 	 * String array <code>metadata</code> must include the complete AVU to be
 	 * deleted.
-	 *
+	 * 
 	 * Metadata strings may contain wildcards: % allows you to match any string
 	 * of any length (including zero length). _ allows you to match on a single
 	 * character.
@@ -936,10 +913,10 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Sets the physical resource this IRODSFile object will be stored on. If
 	 * null, a default resource will be chosen by the irods server.
-	 *
+	 * 
 	 * This setter refers to the object parameter only, to move a file to a new
 	 * physical resource see renameTo(GeneralFile)
-	 *
+	 * 
 	 * @param resource
 	 *            The name of resource to be used.
 	 * @throws IllegalArgumentException
@@ -968,9 +945,9 @@ public class IRODSFile extends RemoteFile {
 	 * Return the first physical resource found where the file is stored, if
 	 * available. Otherwise, will return the default resource set by the
 	 * IRODSAccount, if available. Otherwise, will return null.
-	 *
+	 * 
 	 * @return <code>String</code> containing the resource for the file
-	 *
+	 * 
 	 * @throws IOException
 	 *             If an IOException occurs during the system query.
 	 */
@@ -997,8 +974,9 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	/**
-	 * For a file, get all of the resources where the file is stored.  If called on a collection,
-	 * will return an empty list.
+	 * For a file, get all of the resources where the file is stored. If called
+	 * on a collection, will return an empty list.
+	 * 
 	 * @return <code>List<String></code> with the resource names for a file.
 	 * @throws IOException
 	 */
@@ -1021,7 +999,7 @@ public class IRODSFile extends RemoteFile {
 	 * @return dataType The dataType string of this file. Will not query the
 	 *         server if this abstract pathname is a directory. Returns null if
 	 *         the file does not exist.
-	 *
+	 * 
 	 * @throws IOException
 	 *             If an IOException occurs during the system query.
 	 */
@@ -1051,7 +1029,7 @@ public class IRODSFile extends RemoteFile {
 	 * attempting to change permissions inapproriate to object type, e.g.
 	 * setting a file to "inherit".
 	 * <P>
-	 *
+	 * 
 	 * @param permission
 	 *            "w" - write;"r" - read;"own" or "all" - owner;"n" - null;
 	 * @param userName
@@ -1105,7 +1083,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Tests whether the application can read the file denoted by this abstract
 	 * pathname.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file specified by this
 	 *         abstract pathname exists <em>and</em> can be read; otherwise
 	 *         <code>false</code>.
@@ -1148,7 +1126,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Tests whether the application can modify to the file denoted by this
 	 * abstract pathname.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file system actually
 	 *         contains a file denoted by this abstract pathname <em>and</em>
 	 *         the application is allowed to write to the file; otherwise
@@ -1193,7 +1171,7 @@ public class IRODSFile extends RemoteFile {
 	 * Get the permissions of the current user for this file: write, read, all,
 	 * or null.
 	 * <P>
-	 *
+	 * 
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
@@ -1281,11 +1259,11 @@ public class IRODSFile extends RemoteFile {
 	 * <P>
 	 * Note: this method should <i>not</i> be used for file-locking, as the
 	 * resulting protocol cannot be made to work reliably.
-	 *
+	 * 
 	 * @return <code>true</code> if the named file does not exist and was
 	 *         successfully created; <code>false</code> if the named file
 	 *         already exists
-	 *
+	 * 
 	 * @throws IOException
 	 *             If an I/O error occurred
 	 */
@@ -1315,7 +1293,7 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Used by RandomAccessFile and streams
-	 *
+	 * 
 	 * @param rw
 	 *            true if read-write, false if read-only
 	 * @return the irods file descriptor, so doesn't need to be opened again.
@@ -1355,25 +1333,25 @@ public class IRODSFile extends RemoteFile {
 	 * Creates a new empty file in the specified directory, using the given
 	 * prefix and suffix strings to generate its name. If this method returns
 	 * successfully then it is guaranteed that:
-	 *
+	 * 
 	 * <ol>
 	 * <li>The file denoted by the returned abstract pathname did not exist
 	 * before this method was invoked, and
 	 * <li>Neither this method nor any of its variants will return the same
 	 * abstract pathname again in the current invocation of the virtual machine.
 	 * </ol>
-	 *
+	 * 
 	 * This method provides only part of a temporary-file facility. To arrange
 	 * for a file created by this method to be deleted automatically, use the
 	 * <code>{@link #deleteOnExit}</code> method.
-	 *
+	 * 
 	 * <p>
 	 * The <code>prefix</code> argument must be at least three characters long.
 	 * It is recommended that the prefix be a short, meaningful string such as
 	 * <code>"hjb"</code> or <code>"mail"</code>. The <code>suffix</code>
 	 * argument may be <code>null</code>, in which case the suffix
 	 * <code>".tmp"</code> will be used.
-	 *
+	 * 
 	 * <p>
 	 * To create the new file, the prefix and the suffix may first be adjusted
 	 * to fit the limitations of the underlying platform. If the prefix is too
@@ -1384,7 +1362,7 @@ public class IRODSFile extends RemoteFile {
 	 * be preserved. Once these adjustments have been made the name of the new
 	 * file will be generated by concatenating the prefix, five or more
 	 * internally-generated characters, and the suffix.
-	 *
+	 * 
 	 * <p>
 	 * If the <code>directory</code> argument is <code>null</code> then the
 	 * default temporary-file directory will be used. Since iRODS does not have
@@ -1395,27 +1373,27 @@ public class IRODSFile extends RemoteFile {
 	 * directory/.irods. That is the information that will be used when storing
 	 * the temporary file. This comprimise is necessary to maintain the designs
 	 * unity with the java.io.File class.
-	 *
+	 * 
 	 * @param prefix
 	 *            The prefix string to be used in generating the file's name;
 	 *            must be at least three characters long
-	 *
+	 * 
 	 * @param suffix
 	 *            The suffix string to be used in generating the file's name;
 	 *            may be <code>null</code>, in which case the suffix
 	 *            <code>".tmp"</code> will be used
-	 *
+	 * 
 	 * @param directory
 	 *            The directory in which the file is to be created, or
 	 *            <code>null</code> if the default temporary-file directory is
 	 *            to be used
-	 *
+	 * 
 	 * @return An abstract pathname denoting a newly-created empty file
-	 *
+	 * 
 	 * @throws IllegalArgumentException
 	 *             If the <code>prefix</code> argument contains fewer than three
 	 *             characters
-	 *
+	 * 
 	 * @throws IOException
 	 *             If a file could not be created
 	 */
@@ -1453,7 +1431,7 @@ public class IRODSFile extends RemoteFile {
 	 * Deletes the file or directory denoted by this abstract pathname. If this
 	 * pathname denotes a directory, then the directory must be empty in order
 	 * to be deleted.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file or directory is
 	 *         successfully deleted; <code>false</code> otherwise
 	 */
@@ -1465,7 +1443,7 @@ public class IRODSFile extends RemoteFile {
 	 * Deletes the file or directory denoted by this abstract pathname. If this
 	 * pathname denotes a directory, then the directory must be empty in order
 	 * to be deleted.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file or directory is
 	 *         successfully deleted; <code>false</code> otherwise
 	 */
@@ -1487,7 +1465,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Deletes only the replica of this file named in the <code>resource</code>.
 	 * Nothing occurs if this pathname denotes a directory, returns false.
-	 *
+	 * 
 	 * @param resource
 	 *            Name of the resource where the file is deleted from, returns
 	 *            false if resource is null or does not exist.
@@ -1515,11 +1493,11 @@ public class IRODSFile extends RemoteFile {
 	 * deleted when the virtual machine terminates. Deletion will be attempted
 	 * only for normal termination of the virtual machine, as defined by the
 	 * Java Language Specification.
-	 *
+	 * 
 	 * <p>
 	 * Once deletion has been requested, it is not possible to cancel the
 	 * request. This method should therefore be used with care.
-	 *
+	 * 
 	 * <P>
 	 * Note: this method should <i>not</i> be used for file-locking, as the
 	 * resulting protocol cannot be made to work reliably.
@@ -1541,10 +1519,10 @@ public class IRODSFile extends RemoteFile {
 	 * and is an abstract pathname that denotes the same file or directory as
 	 * this abstract pathname on the same filesystem. Does not compare other
 	 * user or host information of the filesystems.
-	 *
+	 * 
 	 * @param obj
 	 *            The object to be compared with this abstract pathname
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
@@ -1566,7 +1544,7 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Tests whether the file denoted by this abstract pathname exists.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname exists; <code>false</code> otherwise
 	 */
@@ -1624,10 +1602,10 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Returns the canonical pathname string of this abstract pathname.
-	 *
+	 * 
 	 * @return The canonical pathname string denoting the same file or directory
 	 *         as this abstract pathname
-	 *
+	 * 
 	 * @throws IOException
 	 *             If an I/O error occurs, which is possible because the
 	 *             construction of the canonical pathname may require filesystem
@@ -1654,7 +1632,7 @@ public class IRODSFile extends RemoteFile {
 	 * Computes a hash code for this abstract pathname. The hash code of an
 	 * abstract pathname is equal to the exclusive <em>or</em> of its pathname
 	 * string and the decimal value <code>1234321</code>.
-	 *
+	 * 
 	 * @return A hash code for this abstract pathname
 	 */
 	public int hashCode() {
@@ -1664,7 +1642,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Tests whether this abstract pathname is absolute. A pathname is absolute
 	 * if its prefix is <code>"/"</code>.
-	 *
+	 * 
 	 * @return <code>true</code> if this abstract pathname is absolute,
 	 *         <code>false</code> otherwise
 	 */
@@ -1686,7 +1664,7 @@ public class IRODSFile extends RemoteFile {
 	 * collection can be stored in heterogeneous storage devices. There is one
 	 * obvious restriction, the name given to a data set in a collection or
 	 * sub-collection should be unique in that collection.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname exists <em>and</em> is a directory;
 	 *         <code>false</code> otherwise
@@ -1703,7 +1681,7 @@ public class IRODSFile extends RemoteFile {
 	 * Tests whether the file denoted by this abstract pathname is a directory.
 	 * Also known on iRODS as a collection.
 	 *<P>
-	 *
+	 * 
 	 * @param update
 	 *            If true, send a new query to iRODS to determine if this
 	 *            abstract pathname refers to a directory. If false, this method
@@ -1755,7 +1733,7 @@ public class IRODSFile extends RemoteFile {
 	 * database is a data set. Importantly, note that a data set is not a set of
 	 * data objects/files. Each data set in iRODS is given a unique internal
 	 * identifier by iRODS. A dataset is associated with a collection.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname exists <em>and</em> is a normal file;
 	 *         <code>false</code> otherwise
@@ -1772,7 +1750,7 @@ public class IRODSFile extends RemoteFile {
 	 * Tests whether the file denoted by this abstract pathname is a file. Also
 	 * known on iRODS as a dataset.
 	 *<P>
-	 *
+	 * 
 	 * @param update
 	 *            If true, send a new query to iRODS to determine if this
 	 *            abstract pathname refers to a file. If false, this method will
@@ -1818,7 +1796,7 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Tests whether the file named by this abstract pathname is a hidden file.
-	 *
+	 * 
 	 * @return <code>true</code> if and only if the file denoted by this
 	 *         abstract pathname is hidden.
 	 */
@@ -1829,7 +1807,7 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Returns the time that the file denoted by this abstract pathname was last
 	 * modified.
-	 *
+	 * 
 	 * @return A <code>long</code> value representing the time the file was last
 	 *         modified, measured in milliseconds since the epoch (00:00:00 GMT,
 	 *         January 1, 1970), or <code>0L</code> if the file does not exist
@@ -1874,7 +1852,7 @@ public class IRODSFile extends RemoteFile {
 	 * directories with a large number of files may take a very long time. The
 	 * more generic IRODSFile.query() method could be used to iterate through
 	 * the file list piecewise.
-	 *
+	 * 
 	 * @return An array of strings naming the files and directories in the
 	 *         directory denoted by this abstract pathname.
 	 */
@@ -1886,7 +1864,7 @@ public class IRODSFile extends RemoteFile {
 	 * Returns the array of strings naming the files and directories in the
 	 * directory denoted by this abstract pathname and which match a query
 	 * formed using these <code>conditions</code>.
-	 *
+	 * 
 	 * @see list()
 	 */
 	public String[] list(MetaDataCondition[] conditions) {
@@ -1984,7 +1962,7 @@ public class IRODSFile extends RemoteFile {
 	 * the next group in the set, unless reset is true. If there are no more
 	 * results it returns null. If reset is true the list starts from the
 	 * beginning.
-	 *
+	 * 
 	 * @param reset
 	 *            start a new list
 	 * @return
@@ -2107,13 +2085,13 @@ public class IRODSFile extends RemoteFile {
 	 * Whether or not this method can move a file from one filesystem to another
 	 * is platform-dependent. The return value should always be checked to make
 	 * sure that the rename operation was successful.
-	 *
+	 * 
 	 * After an unsuccessful attempt, some errors may cause a whole/partial copy
 	 * of this file/directory to be left at <code>dest</code>.
-	 *
+	 * 
 	 * After a successful move, this file object is no longer valid, only the
 	 * <code>dest</code> file object should be used.
-	 *
+	 * 
 	 * @param dest
 	 *            The new abstract pathname for the named file
 	 * @throws NullPointerException
@@ -2152,32 +2130,32 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Constructs a <tt>irods:</tt> URI that represents this abstract pathname.
-	 *
+	 * 
 	 * <p>
 	 * The exact form of the URI is according to iRODS. If it can be determined
 	 * that the file denoted by this abstract pathname is a directory, then the
 	 * resulting URI will end with a slash.
-	 *
+	 * 
 	 * <p>
 	 * For a given abstract pathname <i>f</i>, it is guaranteed that
-	 *
+	 * 
 	 * <blockquote><tt>
 	 * new {@link #IRODSFile(java.net.URI) IRODSFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
    * </tt>
 	 * </blockquote>
-	 *
+	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
 	 * Java virtual machine. However, this relationship typically does not hold
 	 * when a <tt>irods:</tt> URI that is created in a virtual machine on one
 	 * operating system is converted into an abstract pathname in a virtual
 	 * machine on a different operating system.
-	 *
+	 * 
 	 * @return An absolute, hierarchical URI with a scheme equal to
 	 *         <tt>"irods"</tt>, a path representing this abstract pathname, and
 	 *         undefined authority, query, and fragment components
-	 *
+	 * 
 	 * @see #IRODSFile(java.net.URI)
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
@@ -2205,32 +2183,32 @@ public class IRODSFile extends RemoteFile {
 
 	/**
 	 * Constructs a <tt>irods:</tt> URI that represents this abstract pathname.
-	 *
+	 * 
 	 * <p>
 	 * The exact form of the URI is according to the IRODS. If it can be
 	 * determined that the file denoted by this abstract pathname is a
 	 * directory, then the resulting URI will end with a slash.
-	 *
+	 * 
 	 * <p>
 	 * For a given abstract pathname <i>f</i>, it is guaranteed that
-	 *
+	 * 
 	 * <blockquote><tt>
 	 * new {@link #IRODSFile(java.net.URI) IRODSFile}
 	 * (</tt><i>&nbsp;f</i><tt>.toURI()).equals(</tt><i>&nbsp;f</i><tt>)
    * </tt>
 	 * </blockquote>
-	 *
+	 * 
 	 * so long as the original abstract pathname, the URI, and the new abstract
 	 * pathname are all created in (possibly different invocations of) the same
 	 * Java virtual machine. However, this relationship typically does not hold
 	 * when a <tt>irods:</tt> URI that is created in a virtual machine on one
 	 * operating system is converted into an abstract pathname in a virtual
 	 * machine on a different operating system.
-	 *
+	 * 
 	 * @return An absolute, hierarchical URI with a scheme equal to
 	 *         <tt>"irods"</tt>, a path representing this abstract pathname, and
 	 *         undefined authority, query, and fragment components
-	 *
+	 * 
 	 * @see #IRODSFile(java.net.URI)
 	 * @see java.net.URI
 	 * @see java.net.URI#toURL()
