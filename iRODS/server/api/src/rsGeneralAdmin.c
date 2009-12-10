@@ -549,7 +549,19 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  return(status);
        }
     }
+    if (strcmp(generalAdminInp->arg0,"calculate-usage")==0) {
+       status = chlCalcUsage(rsComm);
+       return(status);
+    }
+    if (strcmp(generalAdminInp->arg0,"set-quota")==0) {
+       status = chlSetQuota(rsComm,
+			    generalAdminInp->arg1, 
+			    generalAdminInp->arg2, 
+			    generalAdminInp->arg3, 
+			    generalAdminInp->arg4);
 
+       return(status);
+    }
     return(CAT_INVALID_ARGUMENT);
 } 
 #endif

@@ -13,11 +13,10 @@
   more meaningful name to the client and allows the Where clause to do
   multiple comparisons of fields in the same table in different ways.
 
-  The last argument to sTable is 0 or 1 to indicate if the table
-  is a 'cycler'.  When 1, the the sql generation function will stop
-  at this table to avoid cycles in the graph.  We had some set but
-  currently all are 0 because they are natural terminators; that is,
-  each table has either links that can be used or no further links.
+  The last argument to sTable is 0 or 1 to indicate if the table is a
+  'cycler'.  When 1, the the sql generation function will stop at this
+  table to avoid cycles in the graph.  This is being used for the
+  quota tables to avoid finding extraneous links.
 
   A series for sColumns calls are made to map the #define values to
   tables and columns.
@@ -110,6 +109,10 @@ icatGeneralQuerySetup() {
   sTable( "r_met2_au_user_main", "r_user_main r_met2_au_user_main", 0);
   sTable( "r_rule_au_user_main", "r_user_main r_rule_au_user_main", 0);
 
+  sTable( "r_quota_user_main", "r_user_main r_quota_user_main", 1); 
+  sTable( "r_quota_user_group", "r_user_main r_quota_user_group", 1);
+  sTable( "r_quota_resc_main", "r_resc_main r_quota_resc_main", 1);
+
   sTable( "r_resc_tokn_accs", "r_tokn_main r_resc_tokn_accs", 0);
   sTable( "r_coll_tokn_accs", "r_tokn_main r_coll_tokn_accs", 0);
   sTable( "r_data_tokn_accs", "r_tokn_main r_data_tokn_accs", 0);
@@ -148,6 +151,9 @@ icatGeneralQuerySetup() {
 
   sTable( "r_rule_dvm",  "r_rule_dvm", 0);
   sTable( "r_rule_fnm",  "r_rule_fnm", 0);
+
+  sTable( "r_quota_main", "r_quota_main", 1);
+  sTable( "r_quota_usage", "r_quota_usage", 1);
 
   /* Map the #define values to tables and columns */
 
@@ -367,7 +373,23 @@ icatGeneralQuerySetup() {
   sColumn(COL_FNM_CREATE_TIME,  "r_rule_fnm", "create_ts");
   sColumn(COL_FNM_MODIFY_TIME,  "r_rule_fnm", "modify_ts");
 
+  sColumn(COL_QUOTA_USER_ID, "r_quota_main", "user_id");
+  sColumn(COL_QUOTA_RESC_ID, "r_quota_main", "resc_id");
+  sColumn(COL_QUOTA_LIMIT,   "r_quota_main", "quota_limit");
+  sColumn(COL_QUOTA_OVER,    "r_quota_main", "quota_over");
+  sColumn(COL_QUOTA_MODIFY_TIME,"r_quota_main", "modify_time");
+
+  sColumn(COL_QUOTA_USAGE_USER_ID, "r_quota_usage", "user_id");
+  sColumn(COL_QUOTA_USAGE_RESC_ID, "r_quota_usage", "resc_id");
+  sColumn(COL_QUOTA_USAGE,   "r_quota_usage", "quota_usage");
+  sColumn(COL_QUOTA_USAGE_MODIFY_TIME,"r_quota_usage", "modify_time");
+
+  sColumn( COL_QUOTA_USER_NAME, "r_quota_user_main", "user_name");
+  sColumn( COL_QUOTA_USER_TYPE, "r_quota_user_group", "user_type_name");
+  sColumn( COL_QUOTA_RESC_NAME, "r_quota_resc_main", "resc_name");
+
   /* Define the Foreign Key links between tables */
+
   sFklink("r_coll_main", "r_data_main", "r_coll_main.coll_id = r_data_main.coll_id");
   sFklink("r_resc_group", "r_resc_main", "r_resc_group.resc_id = r_resc_main.resc_id");
   sFklink("r_resc_main", "r_resc_metamap", "r_resc_main.resc_id = r_resc_metamap.object_id");
@@ -450,6 +472,11 @@ icatGeneralQuerySetup() {
   sFklink("r_user_main", "r_user_group", "r_user_main.user_id = r_user_group.user_id");
   sFklink("r_user_group", "r_group_main", "r_user_group.group_user_id = r_group_main.user_id");
   sFklink("r_user_main", "r_objt_audit", "r_user_main.user_id = r_objt_audit.user_id");
+
+  sFklink("r_quota_main", "r_quota_user_main", "r_quota_main.user_id = r_quota_user_main.user_id");
+  sFklink("r_quota_main", "r_quota_resc_main", "r_quota_main.resc_id = r_quota_resc_main.resc_id");
+  sFklink("r_quota_usage", "r_quota_user_main", "r_quota_usage.user_id = r_quota_user_main.user_id");
+  sFklink("r_quota_usage", "r_quota_resc_main", "r_quota_usage.resc_id = r_quota_resc_main.resc_id");
 
 /*
   If using the extended ICAT, establish those tables and columns too.

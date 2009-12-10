@@ -1,3 +1,4 @@
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /*****************************************************************************/
@@ -100,6 +101,10 @@ int chlRegServerLoad(rsComm_t *rsComm,
 int chlPurgeServerLoad(rsComm_t *rsComm, char *secondsAgo);
 int chlRegServerLoadDigest(rsComm_t *rsComm, char *rescName, char *loadFactor);
 int chlPurgeServerLoadDigest(rsComm_t *rsComm, char *secondsAgo);
+
+int chlCalcUsage(rsComm_t *rsComm);
+int chlSetQuota(rsComm_t *rsComm, char *type, char *name, char *rescName,
+   char *limit);
 
 char *chlGetLocalZone();
 

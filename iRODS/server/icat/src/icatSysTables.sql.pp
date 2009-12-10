@@ -324,6 +324,24 @@ create table R_USER_AUTH
 );
 
 
+create table R_QUOTA_MAIN
+(
+   user_id INT64TYPE,
+   resc_id INT64TYPE,
+   quota_limit INT64TYPE,
+   quota_over INT64TYPE,
+   modify_ts varchar(32)
+);
+
+create table R_QUOTA_USAGE
+(
+   user_id INT64TYPE,
+   resc_id INT64TYPE,
+   quota_usage INT64TYPE,
+   modify_ts varchar(32)
+);
+
+
 #ifdef mysql
 
 #define VARCHAR_MAX_IDX_SIZE (767)

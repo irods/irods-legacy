@@ -52,3 +52,21 @@ r_comment varchar(1000),
 create_ts varchar(32) ,
 modify_ts varchar(32)
 );
+
+create table R_QUOTA_MAIN
+(
+user_id bigint,
+resc_id bigint,
+quota_limit bigint,
+quota_over bigint,
+modify_ts varchar(32)
+);
+
+create table R_QUOTA_USAGE
+(
+user_id bigint,
+resc_id bigint,
+quota_usage bigint,
+modify_ts varchar(32)
+);
+

@@ -341,6 +341,24 @@ primary ordering column.
 #define COL_FNM_CREATE_TIME   1909
 #define COL_FNM_MODIFY_TIME   1910
 
+/* R_QUOTA_MAIN */
+#define COL_QUOTA_USER_ID     2000
+#define COL_QUOTA_RESC_ID     2001
+#define COL_QUOTA_LIMIT       2002
+#define COL_QUOTA_OVER        2003
+#define COL_QUOTA_MODIFY_TIME 2004
+
+/* R_QUOTA_USAGE */
+#define COL_QUOTA_USAGE_USER_ID     2010
+#define COL_QUOTA_USAGE_RESC_ID     2011
+#define COL_QUOTA_USAGE             2012
+#define COL_QUOTA_USAGE_MODIFY_TIME 2013
+
+/* For use with quotas */
+#define COL_QUOTA_RESC_NAME  2020
+#define COL_QUOTA_USER_NAME  2021
+#define COL_QUOTA_USER_TYPE  2022
+
 /* The range beginning with 10,000 is reserved for the extended icat (
    see modules/extendedICAT ). */
 

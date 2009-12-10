@@ -760,6 +760,23 @@ doCommand(char *cmdToken[]) {
       showUserAuthName(cmdToken[1]);
       return(0);
    }
+   if (strcmp(cmdToken[0],"cu") == 0) {
+      generalAdmin(0, "calculate-usage", "", "", "", 
+		   "", "", "", "");
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"suq") == 0) {
+      generalAdmin(0, "set-quota", "user", 
+		   cmdToken[1], cmdToken[2], cmdToken[3], 
+		   "", "", "");
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"sgq") == 0) {
+      generalAdmin(0, "set-quota", "group", 
+		   cmdToken[1], cmdToken[2], cmdToken[3], 
+		   "", "", "");
+      return(0);
+   }
    if (strcmp(cmdToken[0],"mkdir") == 0) {
       generalAdmin(0, "add", "dir", cmdToken[1], cmdToken[2], 
 		  cmdToken[3], cmdToken[4], cmdToken[5], cmdToken[6]);
@@ -1157,6 +1174,9 @@ void usageMain()
 " dspass Password Key (descramble a password and print it)",
 " pv [date-time] [repeat-time(minutes)] (initiate a periodic rule to vacuum the DB)",
 " ctime Time (convert an iRODS time (integer) to local time; & other forms)",
+" suq User ResourceName-or-'total' Value (set user quota)",
+" sgq Group ResourceName-or-'total' Value (set group quota)",
+" cu (calulate usage (for quotas))",
 " help (or h) [command] (this help, or more details on a command)",
 "Also see 'irmtrash -M -u user' for the admin mode of removing trash.",
 ""};
@@ -1467,6 +1487,29 @@ usage(char *subOpt)
 " ",
 ""};
 
+   char *suqMsgs[]={
+" suq User ResourceName-or-'total' Value (set user quota)",
+"Set a quota for a particular user for either a resource or all irods",
+"usage (total).  Use 0 for the value to remove quota limit.  Value is",
+"in bytes.",
+"Also see sgq and cu.",
+""};
+
+   char *sgqMsgs[]={
+" sgq Group ResourceName-or-'total' Value (set group quota)",
+"Set a quota for a user-group for either a resource or all irods",
+"usage (total).  Use 0 for the value to remove quota limit.  Value is",
+"in bytes.",
+"Also see suq and cu.",
+""};
+
+   char *cuMsgs[]={
+" cu (calulate usage (for quotas))",
+"Calculate (via DBMS SQL) the usage on resources for each user and",
+"determine if users are over quota.",
+"Also see suq and sgq.",
+""};
+
    char *helpMsgs[]={
 " help (or h) [command] (general help, or more details on a command)",
 " If you specify a command, a brief description of that command",
@@ -1488,7 +1531,9 @@ usage(char *subOpt)
 		    "mkzone", "modzone", "rmzone",
 		    "mkgroup", "rmgroup", "atg",
 		    "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
-		    "pv", "ctime", "help", "h",
+		    "pv", "ctime", 
+		    "suq", "sgq", "cu",
+		    "help", "h",
 		    ""};
 
    char **pMsgs[]={ luMsgs, luaMsgs, luanMsgs, luzMsgs, ltMsgs, lrMsgs, 
@@ -1500,7 +1545,9 @@ usage(char *subOpt)
 		    mkzoneMsgs, modzoneMsgs, rmzoneMsgs,
 		    mkgroupMsgs, rmgroupMsgs,atgMsgs, 
 		    rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
-		    dspassMsgs, pvMsgs, ctimeMsgs, helpMsgs, helpMsgs };
+		    dspassMsgs, pvMsgs, ctimeMsgs, 
+		    suqMsgs, sgqMsgs, cuMsgs,
+		    helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {
       usageMain();
