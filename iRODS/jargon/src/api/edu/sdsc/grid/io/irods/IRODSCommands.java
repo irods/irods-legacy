@@ -2373,97 +2373,30 @@ class IRODSCommands {
 		return null;
 	}
 
-	// ---------------------------------------------------------
-	// Rule methods
-	// ---------------------------------------------------------
 
 	/**
-	 *
-	 * @param parameters
-	 *            integer, string or byte array input parameters for usage of
-	 *            the rule.
+	 * @deprecated this method apparently only returns null, and will be removed in a later release.  This method will
+	 * throw a RuntimeException if invoked. {@see executeRule(String, Parameter[], Parameter[]) executeRule(String, Parameter[], Parameter{}}
 	 */
 	Parameter[] executeRule(Rule rule) throws IOException {
-		if (rule == null)
-			return null;
-
-		/*
-		 * TODO Method[] methods = rule.getMethods(); int methodsLength =
-		 * methods.length;
-		 *
-		 * Parameter[] inputs = rule.getInputs(); int inputsLength =
-		 * inputs.length;
-		 *
-		 * Parameter[] outputs = rule.getOutputs(); int outputsLength =
-		 * outputs.length;
-		 *
-		 * /* <ExecMyRuleInp_PI> <myRule>msiExecCmd(*A,*B,,,,*C)</myRule>
-		 * <RHostAddr_PI> <hostAddr></hostAddr> <rodsZone></rodsZone>
-		 * <port>0</port> <dummyInt>0</dummyInt> </RHostAddr_PI> <KeyValPair_PI>
-		 * <ssLen>0</ssLen> </KeyValPair_PI> <outParamDesc>*C</outParamDesc>
-		 * <MsParamArray_PI> ....... </MsParamArray_PI> </ExecMyRuleInp_PI>
-		 *
-		 *
-		 *
-		 * //create the rule tag Tag message = new Tag(ExecMyRuleInp_PI, new
-		 * Tag[]{ new Tag(myRule, rule.getMethodsString()), //TODO just rule?
-		 * new Tag(RHostAddr_PI, new Tag[] { new Tag(hostAddr, ""), //TODO what
-		 * is this? new Tag(rodsZone, ""), //TODO what is this? new Tag(port,
-		 * 0), //TODO what is this? new Tag(dummyInt, 0), //TODO what is this?
-		 * seriously, dummyInt? } ), createKeyValueTag( null ), } );
-		 *
-		 * //add rule parameter tags if (inputsLength > 0) { for (Parameter in :
-		 * inputs) { Tag paramArray = new Tag(MsParamArray_PI, new Tag[]{ new
-		 * Tag(paramLen, inputsLength), new Tag(oprType, 0), //TODO what is
-		 * this? 0? } ); for (int i=0;i<rulesLength;i++) { paramArray.addTag(
-		 * rules[i].createRuleTag() ); } message.addTag(paramArray); } } if
-		 * (outputsLength > 0) { for (Parameter out : outputs) {
-		 * message.addTag(new Tag(out.getUniqueName(), out.getStringValue())); }
-		 * }
-		 *
-		 * //send rule tag message = irodsFunction( RODS_API_REQ, message,
-		 * EXEC_MY_RULE_AN );
-		 *
-		 * //TODO what tag is message? //also what is oprType rulesLength =
-		 * message.getTag(paramLen).getIntValue(); if (rulesLength <= 0) {
-		 * return null; } return Rule.readResult( message );
-		 *
-		 * /* received msg: <MsParamArray_PI> <paramLen>0</paramLen>
-		 * <oprType>0</oprType> </MsParamArray_PI>
-		 *
-		 *
-		 * or
-		 *
-		 * <MsParamArray_PI> <paramLen>3</paramLen> <oprType>0</oprType>
-		 *
-		 *
-		 * <MsParam_PI> <label>*A</label> <type>STR_PI</type> <STR_PI>
-		 * <myStr>/tempZone/home/rods/foo1</myStr> </STR_PI> </MsParam_PI>
-		 *
-		 *
-		 * <MsParam_PI> <label>*R_BUF</label> <type>BUF_LEN_PI</type>
-		 * <BUF_LEN_PI> <myInt>3803</myInt> </BUF_LEN_PI> <BinBytesBuf_PI>
-		 * <buflen>3803</buflen> <buf>AA1JSER...3803...K5CYII=</buf>
-		 * </BinBytesBuf_PI> </MsParam_PI>
-		 *
-		 *
-		 * <MsParam_PI> <label>*W_LEN</label> <type>INT_PI</type> <INT_PI>
-		 * <myInt>3803</myInt> </INT_PI> </MsParam_PI>
-		 *
-		 *
-		 * </MsParamArray_PI>
-		 */
-		// length = message.getTag(MsgHeader_PI).getTag(bsLen).getIntValue();
-		// TODO um what exactly does that return mean?
-		return null;
+		throw new RuntimeException("Unimplemented functionality");
+	
 	}
 
-	// TODO String? output?
+	
 	/**
-	 *
-	 * @param parameters
-	 *            integer, string or byte array input parameters for usage of
-	 *            the rule.
+	 * Execute an IRODS rule and return the result as a <code>Tag</code>.  Note that the result in <code>Tag</code> format can be processed by 
+	 * {@link edu.sdsc.grid.io.irods.Rule#readResult(IRODSFileSystem, Tag) edu.sdsc.grio.io.irods.Rule.readResult(IRODSFileSystem, Tag)}
+	 * 
+	 * Note that this method currently can return null.  This behavior will be corrected in upcoming versions of Jargon.  The Rule.readResult() method
+	 * was updated to return an empty Parameter[] and to tolerate a null input to ensure that NullPointerExceptions do not occur.  These are interim 
+	 * fixes...this entire arrangement will be reconsidered.
+	 * 
+	 * @param rule <code>String</code> with the text of the rule to be executed
+	 * @param input {@link edu.sdsc.grid.io.irods.Parameter Parameter[]} for inputs to the rule
+	 * @param output {@link edu.sdsc.grid.io.irods.Parameter Parameter[]} containing rule output
+	 * @return {@link edu.sdsc.grid.io.irods.Tag Tag} containing the response from IRODS for the rule invocation.  
+	 * @throws IOException
 	 */
 	Tag executeRule(String rule, Parameter[] input, Parameter[] output)
 			throws IOException {
@@ -2473,7 +2406,6 @@ class IRODSCommands {
 				new Tag(RHostAddr_PI, new Tag[] { new Tag(hostAddr, ""),
 						new Tag(rodsZone, ""), new Tag(port, 0),
 						new Tag(dummyInt, 0), }), createKeyValueTag(null),
-		// createKeyValueTag( "looptest", "true" ),
 				});
 
 		// add output parameter tags
@@ -2490,11 +2422,7 @@ class IRODSCommands {
 		// add input parameter tags
 		if (input != null) {
 			Tag paramArray = new Tag(MsParamArray_PI, new Tag[] {
-					new Tag(paramLen, input.length), new Tag(oprType, 0), // TODO
-			// what
-					// is
-					// this?
-					// 0?
+					new Tag(paramLen, input.length), new Tag(oprType, 0)
 					});
 			for (Parameter in : input) {
 				paramArray.addTag(in.createMsParamArray());

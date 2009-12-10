@@ -73,10 +73,10 @@ for feature request:  Bug 35 -  add getResources() method
 Removed static IRODSFileSystem in IRODSAdmin and adjusted constructors, removed static methods in
 Domain, User, Resource.  This is an API change, but seemed unavoidable.
 
-for feature request:   Bug 30 -  query a resource list for a user shows all resources user has files in
+for feature request:  Bug 30 -  query a resource list for a user shows all resources user has files in
 
 --------------
-Testing and fix for  Bug 36 -  resource added with icommand does not show up in Jargon query
+Testing and fix for Bug 36 -  resource added with icommand does not show up in Jargon query
 
 Added new metadata to query resource name by collection, IRODSMetaDataSet.COLL_RESOURCE_NAME,
 see testQueryMetaDataSelectArray() in GeneralFileSystem for usage example.
@@ -88,9 +88,15 @@ Send correct USER_DN metadata query value, which changed in 2.2, with backward c
 -------------
 Testing and fix for Bug 40 -  IRODSCommands.fileRead() with length of 0 causes null message from irods
 
+-------------
+Testing and fix for Bug 26 -  Jargon uses int for file length
 
 -------------
-Testing and fix for  Bug 26 -  Jargon uses int for file length
+Testing and fix for Bug 37 -  Add AVU allows more than 3 fields 
+
+-------------
+Testing and fix (interem) for  Bug 41 -  Exec rule with = sign causes IllegalArgumentException
+Rule processing will be clarifed in upcoming versions, this fixes the specific = sign issue
 	
 ================================================================================================
 Outstanding Issues

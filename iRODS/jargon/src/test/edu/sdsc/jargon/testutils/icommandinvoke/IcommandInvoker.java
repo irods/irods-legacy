@@ -154,8 +154,14 @@ public class IcommandInvoker {
 			}
 
 			if (errData.length() > 0) {
-				throw new IcommandException("error executing command:"
-						+ errData);
+				if (errData.indexOf("CAT_SUCCESS") > -1) {
+					// this is an ok status
+				} else {
+					StringBuilder message = new StringBuilder();
+					message.append("error executing icommand:");
+					message.append(errData);
+					throw new IcommandException(message.toString());
+				}
 			}
 		} catch (IOException ioe) {
 			throw new IcommandException("error invoking icommand", ioe);

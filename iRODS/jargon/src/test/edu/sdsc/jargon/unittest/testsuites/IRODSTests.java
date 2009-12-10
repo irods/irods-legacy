@@ -20,6 +20,7 @@ import edu.sdsc.grid.io.irods.IRODSFileTest;
 import edu.sdsc.grid.io.irods.IRODSRandomAccessFileTest;
 import edu.sdsc.grid.io.irods.IRODSResourceQueryTest;
 import edu.sdsc.grid.io.irods.ResourceTest;
+import edu.sdsc.grid.io.irods.RuleTest;
 
 /**
  * Test suite for Irods functionality within Jargon libraries
@@ -46,7 +47,8 @@ import edu.sdsc.grid.io.irods.ResourceTest;
   IRODSFileSystemGsiHandlingTest.class,
   IRODSFileInputStreamTest.class,
   IRODSRandomAccessFileTest.class,
-  IRODSFileAVUTest.class
+  IRODSFileAVUTest.class,
+  RuleTest.class
 })
 public class IRODSTests {
 
