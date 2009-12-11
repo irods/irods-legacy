@@ -479,12 +479,14 @@ runCmd(0, "iadmin rmgroup $G1");
 # basic quota tests 
 runCmd(1, "irm -f $F1");
 runCmd(0, "iput $F1");
-runCmd(0, "iadmin suq $U1 $Resc 100000");
+runCmd(0, "iadmin suq $U1 $Resc 10");
+runCmd(1, "iadmin rmgroup $G1");
 runCmd(0, "iadmin mkgroup $G1");
-runCmd(0, "iadmin sgq $G1 $Resc 100000");
+runCmd(0, "iadmin atg $G1 $U1");
+runCmd(0, "iadmin sgq $G1 $Resc 10");
 runCmd(0, "iadmin cu");
-runCmd(0, "iadmin suq $U1 total 200000");
-runCmd(0, "iadmin sgq $G1 total 200000");
+runCmd(0, "iadmin suq $U1 total 20");
+runCmd(0, "iadmin sgq $G1 total 20");
 runCmd(0, "iadmin cu");
 runCmd(0, "iadmin suq $U1 total 0");
 runCmd(0, "iadmin sgq $G1 total 0");

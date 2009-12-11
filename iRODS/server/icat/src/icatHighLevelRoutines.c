@@ -3465,7 +3465,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
       }
    }
    hashValue[j]='\0';
-   printf("hashValue=%s\n", hashValue);
+/*   printf("hashValue=%s\n", hashValue); */
 
    /* calcuate the temp password (a hash of the user's main pw and
       the hashValue) */
@@ -3478,7 +3478,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    MD5Final (digest, &context);
 
    md5ToStr(digest, newPw);
-   printf("newPw=%s\n", newPw);
+/*   printf("newPw=%s\n", newPw); */
 
    rstrcpy(pwValueToHash, hashValue, MAX_PASSWORD_LEN);
 
@@ -6895,23 +6895,23 @@ int setOverQuota(rsComm_t *rsComm) {
 	 status = cmlGetNextRowFromStatement(statementNum, &icss);
       }
       if (status) break;
-      printf("value0:%s\n",icss.stmtPtr[statementNum]->resultValue[0]);
-      printf("value1:%s\n",icss.stmtPtr[statementNum]->resultValue[1]);
+/*      printf("value0:%s\n",icss.stmtPtr[statementNum]->resultValue[0]); */
+/*      printf("value1:%s\n",icss.stmtPtr[statementNum]->resultValue[1]); */
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-      if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL 5");
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 5");
       status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
 				      &icss);
       if (status2) return(status2);
    }
-   printf("group rows=%d\n",rowsFound);
+/*   printf("group rows=%d\n",rowsFound); */
    if (status==CAT_NO_ROWS_FOUND) status=0;
    if (status) return(status);
 
    /* Handle group quotas on total usage */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL 6");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 6");
    getNowStr(myTime);
    for (rowsFound=0;;rowsFound++) {
       int status2;
@@ -6923,13 +6923,13 @@ int setOverQuota(rsComm_t *rsComm) {
 	 status = cmlGetNextRowFromStatement(statementNum, &icss);
       }
       if (status) break;
-/* //     printf("value0:%s\n",icss.stmtPtr[statementNum]->resultValue[0]); */
+/*      printf("value0:%s\n",icss.stmtPtr[statementNum]->resultValue[0]); */
 /*      printf("value1:%s\n",icss.stmtPtr[statementNum]->resultValue[1]); */
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-      if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL 7");
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 7");
       status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
 				      &icss);
       if (status2) return(status2);
