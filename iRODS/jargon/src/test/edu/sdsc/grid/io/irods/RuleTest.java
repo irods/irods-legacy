@@ -102,20 +102,52 @@ public class RuleTest {
 		//ruleStringBuilder.append("*R_BUF%*W_LEN%*A");
 	}
 	
-	/**
-	 *  Bug 41 -  Exec rule with = sign causes IllegalArgumentException
-	 * @throws Exception
-	 */
+	
 	@Test
 	public void testExecuteRuleViaStreamWithEqualSign() throws Exception {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
 				testingPropertiesHelper
 						.buildIRODSAccountFromTestProperties(testingProperties));
-		String ruleString = "List Available MS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\nnull\nruleExecOut";
+		//String ruleString = "List Available MS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\n null\n ruleExecOut";
+		
+		String ruleString = "List Available MS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\n*A=hello\n ruleExecOut";
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
-		TestCase.assertNotNull(result);
+		// if I complete, it tolerated the = sign
 	}
+	
+	/**
+	 *  Bug 41 -  Exec rule with = sign causes IllegalArgumentException
+	 * @throws Exception
+	 */
+	@Test
+	public void testExecuteRuleViaStreamWithNoEqualSign() throws Exception {
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));	
+		String ruleString = "List Available MS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\nnull\n ruleExecOut";
+		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
+		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
+		irodsFileSystem.close();
+		// if I complete, it tolerated the = sign
+	}
+	
+	/**
+	 *  Bug 41 -  Exec rule with = sign causes IllegalArgumentException
+	 * @throws Exception
+	 */
+	@Test
+	public void testExecuteRuleViaStreamWithNoEqualSignSayHello() throws Exception {
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));	
+		String ruleString = "printHello||print_hello|nop\nnull\nruleExecOut";
+		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
+		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
+		irodsFileSystem.close();
+		// if I complete, it tolerated the = sign
+	}
+
 
 }

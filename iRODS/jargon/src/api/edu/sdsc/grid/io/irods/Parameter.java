@@ -25,6 +25,10 @@
 //
 package edu.sdsc.grid.io.irods;
 
+import java.lang.reflect.Array;
+
+import edu.sdsc.grid.io.Base64;
+
 
 
 /**
@@ -137,10 +141,31 @@ class Parameter
     }
   }
   
-  String getStringValue()
-  {
-    return value.toString();
-  }
+	String getStringValue() {
+		// FIXME: patch under test ref 
+		// csaba patch start
+		if (value.getClass().isArray() && type.equals(ExecCmdOut_PI)) {
+
+			String stringValue = "";
+			String msg = new String();
+			int alength = Array.getLength(value);
+			for (int ij = 0; ij < alength; ij++) {
+				if (Array.get(value, ij) != null) {
+					msg = Array.get(value, ij).toString();
+					if (msg != null) {
+						msg = new String(Base64.fromString(msg));
+						if (msg != null) {
+							stringValue += msg;
+						}
+					}
+				}
+			}
+			return stringValue;
+		} else {
+			// csaba patch end
+			return value.toString();
+		}
+	}
   
   byte[] getByteValue() 
   {

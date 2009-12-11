@@ -128,7 +128,10 @@ class Rule {
 	}
 
 	/**
-	 * ?deprecated {@see edu.sdsc.grid.io.irods.IRODSCommands#executeRule(String, Parameter[], Parameter[])
+	 * ?to be deprecated {@see edu.sdsc.grid.io.irods.IRODSCommands#executeRule(String, Parameter[], Parameter[]) 
+	 * *need a cleaner way to do this
+	 * *class visibility issues
+	 * *use of deprecated StringBufferInputStream?  just take a string as a param
 	 * @param fileSystem
 	 * @param ruleStream
 	 * @return
@@ -138,20 +141,47 @@ class Rule {
 	static Parameter[] executeRule(IRODSFileSystem fileSystem,
 			InputStream ruleStream) throws IOException {
 		String total = null;
+		Vector<Parameter> inputs = new Vector<Parameter>();
+		Vector<Parameter> outputs = new Vector<Parameter>();
+		
 		// Probably should just read the whole thing in one buffer, but what
 		// size?
 		byte[] b = new byte[RULE_SIZE_BUFFER];
 		int read;
+		
 		while ((read = ruleStream.read(b)) != -1) {
 			total += new String(b, 0, read);
 		}
 
 		StringTokenizer tokens = new StringTokenizer(total, "\n");
-		String rule = "";
-		Vector<Parameter> inputs = new Vector();
-		Vector<Parameter> outputs = new Vector();
-		int index = 0, index2 = 0;
+		
+		//FIXME: weird 'null' at head of rule, why?
+		String rule = processRuleBody(tokens);
 
+		// if formatting error, such as only one line, below breaks
+		if (!tokens.hasMoreTokens())
+			throw new IllegalArgumentException("Rule stream is malformed");
+		
+		// process the rule attributes
+		processRuleAttributesLine(tokens, inputs);
+
+		// if formatting error, such as only one line, below breaks
+		if (!tokens.hasMoreTokens())
+			throw new IllegalArgumentException("Rule stream is malformed");
+		
+		processRuleOutputLine(tokens, outputs);
+
+		return Rule.readResult(fileSystem, fileSystem.commands.executeRule(
+				rule, inputs.toArray(new Parameter[0]), outputs
+						.toArray(new Parameter[0])));
+	}
+
+	/**
+	 * @param tokens
+	 * @return
+	 */
+	private static String processRuleBody(StringTokenizer tokens) {
+		String total;
 		// if formatting error, such as only one line, below breaks
 		if (!tokens.hasMoreTokens())
 			throw new IllegalArgumentException("Rule stream is malformed");
@@ -162,53 +192,73 @@ class Rule {
 			total = tokens.nextToken();
 		}
 		// find the rule
-		rule = total;
+		return total;
+	}
 
-		// if formatting error, such as only one line, below breaks
-		if (!tokens.hasMoreTokens())
-			throw new IllegalArgumentException("Rule stream is malformed");
-		// find the labels
-		total = tokens.nextToken();
-		index = total.indexOf('%');
+	/**
+	 * @param tokens
+	 * @param outputs
+	 */
+	private static void processRuleOutputLine(StringTokenizer tokens,
+			Vector<Parameter> outputs) {
+		String ruleOutputLine;
+		int index;
+		// find the outputs
+		ruleOutputLine = tokens.nextToken();
+		index = ruleOutputLine.indexOf('%');
 		while (index >= 0) {
-			index2 = total.indexOf('=');
+			outputs.add(new Parameter(ruleOutputLine.substring(0, index), null, null));
+			ruleOutputLine = ruleOutputLine.substring(index + 1);
+			index = ruleOutputLine.indexOf("%");
+		}
+		// add the final one
+		outputs.add(new Parameter(ruleOutputLine, null, null));
+	}
+
+	/**
+	 * @param tokens
+	 * @param inputs
+	 */
+	private static void processRuleAttributesLine(StringTokenizer tokens,
+			Vector<Parameter> inputs) {
+		String attribLine;
+		int index;
+		int index2;
+		// find the labels
+		attribLine = tokens.nextToken();
+		// looking for parameters on second line of rule, separated by %
+		// there may not be one if only 'null' on second line
+		if (attribLine.trim().equals("null")) {
+			// do what?  need to add a null param
+			inputs.add(new Parameter());
+		} else {
+
+			index = attribLine.indexOf('%');
+			while (index >= 0) {
+				index2 = attribLine.indexOf('=');
+				if (index2 < 0)
+					throw new IllegalArgumentException(
+							"Rule stream is malformed");
+				inputs
+						.add(new Parameter(
+						// label
+								attribLine.substring(0, index2),
+								// value
+								attribLine.substring(index2 + 1, attribLine.indexOf('%',
+										index2))));
+				attribLine = attribLine.substring(index + 1); // TODO yes, I know.
+				index = attribLine.indexOf("%");
+			}
+			index2 = attribLine.indexOf('=');
 			if (index2 < 0)
 				throw new IllegalArgumentException("Rule stream is malformed");
+			// add the final one
 			inputs.add(new Parameter(
 			// label
-					total.substring(0, index2),
+					attribLine.substring(0, index2),
 					// value
-					total.substring(index2 + 1, total.indexOf('%', index2))));
-			total = total.substring(index + 1); // TODO yes, I know.
-			index = total.indexOf("%");
+					attribLine.substring(index2 + 1)));
 		}
-		/*index2 = total.indexOf('=');
-		if (index2 < 0)
-			throw new IllegalArgumentException("Rule stream is malformed");*/
-		// add the final one
-		inputs.add(new Parameter(
-		// label
-				total.substring(0, index2),
-				// value
-				total.substring(index2 + 1)));
-
-		// if formatting error, such as only one line, below breaks
-		if (!tokens.hasMoreTokens())
-			throw new IllegalArgumentException("Rule stream is malformed");
-		// find the outputs
-		total = tokens.nextToken();
-		index = total.indexOf('%');
-		while (index >= 0) {
-			outputs.add(new Parameter(total.substring(0, index), null, null));
-			total = total.substring(index + 1);
-			index = total.indexOf("%");
-		}
-		// add the final one
-		outputs.add(new Parameter(total, null, null));
-
-		return Rule.readResult(fileSystem, fileSystem.commands.executeRule(
-				rule, inputs.toArray(new Parameter[0]), outputs
-						.toArray(new Parameter[0])));
 	}
 
 	/**

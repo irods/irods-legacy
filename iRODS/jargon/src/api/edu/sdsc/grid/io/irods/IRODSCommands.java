@@ -2413,13 +2413,13 @@ class IRODSCommands {
 		if (output != null) {
 			String temp = "";
 			for (Parameter out : output)
-				temp += out.getUniqueName() + "%";
+				temp += out.getUniqueName() + "%";  // FIXME: what if only one, should this % be here?
 
 			message.addTag(new Tag(outParamDesc, temp.substring(0, temp
 					.length() - 1)));
 		}
 
-		// add input parameter tags
+		// add input parameter tags  //FIXME: what if no params (e.g. null)??
 		if (input != null) {
 			Tag paramArray = new Tag(MsParamArray_PI, new Tag[] {
 					new Tag(paramLen, input.length), new Tag(oprType, 0)
