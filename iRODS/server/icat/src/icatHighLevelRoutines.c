@@ -6929,7 +6929,7 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 7");
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL 7");
       status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
 				      &icss);
       if (status2) return(status2);
