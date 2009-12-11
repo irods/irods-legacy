@@ -6901,7 +6901,7 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 5");
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL 5");
       status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
 				      &icss);
       if (status2) return(status2);
@@ -6911,7 +6911,7 @@ int setOverQuota(rsComm_t *rsComm) {
    if (status) return(status);
 
    /* Handle group quotas on total usage */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 6");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL 6");
    getNowStr(myTime);
    for (rowsFound=0;;rowsFound++) {
       int status2;
