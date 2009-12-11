@@ -180,7 +180,7 @@ class Rule {
 	 * @param tokens
 	 * @return
 	 */
-	private static String processRuleBody(StringTokenizer tokens) {
+	static String processRuleBody(StringTokenizer tokens) {
 		String total;
 		// if formatting error, such as only one line, below breaks
 		if (!tokens.hasMoreTokens())
@@ -199,7 +199,7 @@ class Rule {
 	 * @param tokens
 	 * @param outputs
 	 */
-	private static void processRuleOutputLine(StringTokenizer tokens,
+	static void processRuleOutputLine(StringTokenizer tokens,
 			Vector<Parameter> outputs) {
 		String ruleOutputLine;
 		int index;
@@ -219,7 +219,7 @@ class Rule {
 	 * @param tokens
 	 * @param inputs
 	 */
-	private static void processRuleAttributesLine(StringTokenizer tokens,
+	static void processRuleAttributesLine(StringTokenizer tokens,
 			Vector<Parameter> inputs) {
 		String attribLine;
 		int index;
@@ -246,7 +246,7 @@ class Rule {
 								// value
 								attribLine.substring(index2 + 1, attribLine.indexOf('%',
 										index2))));
-				attribLine = attribLine.substring(index + 1); // TODO yes, I know.
+				attribLine = attribLine.substring(index + 1);
 				index = attribLine.indexOf("%");
 			}
 			index2 = attribLine.indexOf('=');
@@ -291,9 +291,10 @@ class Rule {
 	}
 
 	/**
+	 * Take the raw output of the rule and process into a set of Parameter objects
 	 * @param fileSystem
-	 * @param rulesTag
-	 * @return
+	 * @param rulesTag {@link edu.sdsc.grid.io.irods.Tag Tag} containing the response from IRODS for this rule execution
+	 * @return {@link edu.sdsc.grid.io.irods.Parameter Parameter} containing the parsed-out response of the <code>Tag</code> that came back from IRODS
 	 * @throws IOException
 	 */
 	private static Parameter[] processNonNullRuleResult(

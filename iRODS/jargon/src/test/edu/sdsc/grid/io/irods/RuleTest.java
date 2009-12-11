@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.io.StringBufferInputStream;
 import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 import junit.framework.TestCase;
 
@@ -17,7 +19,11 @@ import org.junit.Test;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
+import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
+import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 public class RuleTest {
 
@@ -52,57 +58,7 @@ public class RuleTest {
 	public void tearDown() throws Exception {
 	}
 
-	@Test
-	public void testExecRuleViaCommandExecute() throws Exception {
 
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
-				testingPropertiesHelper
-						.buildIRODSAccountFromTestProperties(testingProperties));
-		String ruleString = "printHello||print_hello|nop";
-		Parameter[] inputParms = { new Parameter() };
-		//Parameter[] outputParms = { new Parameter("out") };
-		Parameter[] outputParms = { new Parameter() };
-
-		Tag ruleResult = null;
-		ruleResult = irodsFileSystem.commands.executeRule(ruleString,
-				inputParms, outputParms);
-		
-		irodsFileSystem.close();
-		// currently, the rule invocation returns null.  This will be corrected in a later version.  For now, a non-error execution of this rule
-		// is a successful test
-		//TestCase.assertNotNull(ruleResult);
-	}
-	
-	@Test 
-	public void textExecRuleWithNoParmsAndReadResult() throws Exception {
-		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
-				testingPropertiesHelper
-						.buildIRODSAccountFromTestProperties(testingProperties));
-		String ruleString = "printHello||print_hello|nop";
-		Parameter[] inputParms = { new Parameter() };
-		//Parameter[] outputParms = { new Parameter("out") };
-		Parameter[] outputParms = { new Parameter() };
-
-		Tag ruleResult = null;
-		ruleResult = irodsFileSystem.commands.executeRule(ruleString,
-				inputParms, outputParms);
-		irodsFileSystem.close();
-		Parameter[] readResult = Rule.readResult(irodsFileSystem, ruleResult);
-		TestCase.assertNotNull(readResult);
-		
-	}
-	
-	@Ignore
-	public void testExecRuleWithInputParams() throws Exception {
-		StringBuilder ruleStringBuilder = new StringBuilder();
-		ruleStringBuilder.append("myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,null,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF)##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy(*B,*C,null,*junk4)##delayExec(<PLUSET>2m</PLUSET>,msiDataObjRepl(*C,*Resource,*junk5),nop)|nop\n");
-		ruleStringBuilder.append("*A=/tempZone/home/rods/foo1%*B=/tempZone/home/rods/foo2%*C=/tempZone/home/rods/foo3%*Resource=nvoReplResc\n");
-		// FIXME: finish implementing test, consider visibility of Parameter
-		
-		//ruleStringBuilder.append("*R_BUF%*W_LEN%*A");
-	}
-	
-	
 	@Test
 	public void testExecuteRuleViaStreamWithEqualSign() throws Exception {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
@@ -114,7 +70,7 @@ public class RuleTest {
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
-		// if I complete, it tolerated the = sign
+		// if I complete, it tolerated the = sign, this rule is just to check parsing of attributes
 	}
 	
 	/**
@@ -130,7 +86,7 @@ public class RuleTest {
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
-		// if I complete, it tolerated the = sign
+		// if I complete, it tolerated the = sign, this rule is just to check parsing of attributes
 	}
 	
 	/**
@@ -146,8 +102,86 @@ public class RuleTest {
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
-		// if I complete, it tolerated the = sign
+		
+		TestCase.assertNotNull("null response, no data back from rule", result);
+		TestCase.assertTrue("I expected to get the ruleExec out from this hello command", result.length > 0);		
+		TestCase.assertTrue("did not get hello in response", result[0].getStringValue().indexOf("Hello") > -1);
+
 	}
+	
+	@Test
+	public void testParseWithEqualsInCondition() throws Exception {
+		String attribTestLine = "*Condition=COLL_NAME='/Bergen/home/csaba/01f760ac-7084-4233-93db-659a8b2d5c9f'";
+		StringTokenizer tokenizer = new StringTokenizer(attribTestLine);
+		Vector<Parameter> parameters = new Vector<Parameter>();
+		Rule.processRuleAttributesLine(tokenizer, parameters);
+		TestCase.assertTrue(parameters.size() > 0);
+		TestCase.assertEquals("did not parse out parameter name", "*Condition", parameters.get(0).getUniqueName());
+		TestCase.assertEquals("Did not get entire condition as value","COLL_NAME='/Bergen/home/csaba/01f760ac-7084-4233-93db-659a8b2d5c9f'", parameters.get(0).getStringValue());
+	}
+	
+	@Test
+	public void testRuleContainsConditionWithEqualsInAttrib() throws Exception {
+		
+		// put a collection out to do a checksum on
+		String testFileName = "testRuleChecksum1.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				100);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		StringBuilder ruleBuilder = new StringBuilder();
+		ruleBuilder.append("myTestRule||acGetIcatResults(*Action,*Condition,*B)##forEachExec(*B,msiGetValByKey(*B,RESC_LOC,*R)##remoteExec(*R,null,msiDataObjChksum(*B,*Operation,*C),nop)##msiGetValByKey(*B,DATA_NAME,*D)##msiGetValByKey(*B,COLL_NAME,*E)##writeLine(stdout,CheckSum of *E/*D at *R is *C),nop)|nop##nop\n");
+		ruleBuilder.append("*Action=chksumRescLoc%*Condition=COLL_NAME = '");
+		ruleBuilder.append(iputCommand.getIrodsFileName());
+		ruleBuilder.append("'%*Operation=ChksumAll\n");
+		ruleBuilder.append("*Action%*Condition%*Operation%*C%ruleExecOut");
+		String ruleString = ruleBuilder.toString();
+		
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));	
+		
+		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
+		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
+		irodsFileSystem.close();
+		TestCase.assertNotNull("did not get a response", result);
+		TestCase.assertEquals("did not get results for each output parameter", 5, result.length);
+		
+		// I need to find the parameter for the condition, so I can see if the full condition with the = sign was preserved
+		boolean foundCondition=false;
+		for (int i=0;i < result.length; i++) {
+			if (result[i].getUniqueName().equals("*Condition")) {
+				foundCondition=true;
+				TestCase.assertEquals("did not get the condition, including the = sign", "COLL_NAME = '" + iputCommand.getIrodsFileName() + "'",result[i].getStringValue());
+
+			}
+		}
+		
+		TestCase.assertTrue("did not find the 'condition' returned as output from the rule", foundCondition);
+	}
+	
 
 
 }

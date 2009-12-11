@@ -353,7 +353,7 @@ protected MetaDataCondition buildMetaDataConditionForGSIUser(
 
 //TODO
   /**
-   *
+   * 
    *
    * @param ruleStream
    * @return
