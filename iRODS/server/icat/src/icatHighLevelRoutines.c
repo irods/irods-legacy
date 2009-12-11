@@ -6860,14 +6860,14 @@ int setOverQuota(rsComm_t *rsComm) {
 
 
    /* Clear out the old over-quota flags, if any */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL1");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 1");
    status =  cmlExecuteNoAnswerSql(
       "update r_quota_main set quota_over = 0", &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(0); /* no quotas, done */
    if (status) return(status);
 
    /* Set the over-quota flags for per-resource, if any */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL2");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 2");
    status =  cmlExecuteNoAnswerSql(
       "update r_quota_main set quota_over = quota_usage - quota_limit from r_quota_usage where quota_usage > quota_limit and r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
       &icss);
@@ -6875,7 +6875,7 @@ int setOverQuota(rsComm_t *rsComm) {
    if (status) return(status);
 
    /* Set the over-quota flags for irods-total, if any */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL3");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 3");
    status =  cmlExecuteNoAnswerSql(
       "update r_quota_main set quota_over = (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit from r_quota_usage where  (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit > 0",
       &icss);
@@ -6883,7 +6883,7 @@ int setOverQuota(rsComm_t *rsComm) {
    if (status) return(status);
 
    /* Handle group quotas on resources */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL4");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 4");
    getNowStr(myTime);
    for (rowsFound=0;;rowsFound++) {
       int status2;
@@ -6901,7 +6901,7 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL5");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 5");
       status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
 				      &icss);
       if (status2) return(status2);
@@ -6911,7 +6911,7 @@ int setOverQuota(rsComm_t *rsComm) {
    if (status) return(status);
 
    /* Handle group quotas on total usage */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL6");
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 6");
    getNowStr(myTime);
    for (rowsFound=0;;rowsFound++) {
       int status2;
@@ -6929,7 +6929,7 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-      if (logSQL) rodsLog(LOG_SQL, "setOverQuota S//QL7");
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 7");
       status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
 				      &icss);
       if (status2) return(status2);
@@ -6953,7 +6953,7 @@ int chlCalcUsage(rsComm_t *rsComm) {
    getNowStr(myTime);
 
    /* Delete the old rows from r_quota_usage */
-   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsage S//QL1");
+   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsage SQL 1");
    cllBindVars[cllBindVarCount++]=myTime;
    status =  cmlExecuteNoAnswerSql(
       "delete from r_quota_usage where modify_ts < ?", &icss);
@@ -6963,7 +6963,7 @@ int chlCalcUsage(rsComm_t *rsComm) {
    }
 
    /* Add a row to r_quota_usage for each user's usage on each resource */
-   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsage S//QL2");
+   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsage SQL 2");
    cllBindVars[cllBindVarCount++]=myTime;
    status =  cmlExecuteNoAnswerSql(
       "insert into r_quota_usage (quota_usage, resc_id, user_id, modify_ts) (select sum(r_data_main.data_size), r_resc_main.resc_id, r_user_main.user_id, ? from r_data_main, r_user_main, r_resc_main where r_user_main.user_name = r_data_main.data_owner_name and r_user_main.zone_name = r_data_main.data_owner_zone and r_resc_main.resc_name = r_data_main.resc_name group by r_resc_main.resc_id, user_id)",
@@ -7006,7 +7006,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
    /* Get the resource id; use rescId=0 for 'total' */
    rescId=0;
    if (strncmp(rescName,"total",5)!=0) { 
-      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota S//QL1");
+      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 1");
       status = cmlGetIntegerValueFromSql(
 	 "select resc_id from r_resc_main where resc_name=? and zone_name=?",
 	 &rescId, rescName, localZone, 0, 0, 0, &icss);
@@ -7025,7 +7025,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
 
    if (itype==1) {
       userId=0;
-      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota S//QL2");
+      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 2");
       status = cmlGetIntegerValueFromSql(
 	 "select user_id from r_user_main where user_name=? and zone_name=?",
 	 &userId, userName, userZone, 0, 0, 0, &icss);
@@ -7037,7 +7037,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
    }
    else {
       userId=0;
-      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota S//QL3");
+      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 3");
       status = cmlGetIntegerValueFromSql(
 	 "select user_id from r_user_main where user_name=? and zone_name=? and user_type_name='rodsgroup'",
 	 &userId, userName, userZone, 0, 0, 0, &icss);
@@ -7054,7 +7054,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
    /* first delete previous one, if any */
    cllBindVars[cllBindVarCount++]=userIdStr;
    cllBindVars[cllBindVarCount++]=rescIdStr;
-   if (logSQL) rodsLog(LOG_SQL, "chlSetQuota S//QL4");
+   if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 4");
    status =  cmlExecuteNoAnswerSql(
       "delete from r_quota_main where user_id=? and resc_id=?",
       &icss);
@@ -7069,7 +7069,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
       cllBindVars[cllBindVarCount++]=rescIdStr;
       cllBindVars[cllBindVarCount++]=limit;
       cllBindVars[cllBindVarCount++]=myTime;
-      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota S//QL5");
+      if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 5");
       status =  cmlExecuteNoAnswerSql(
 	 "insert into r_quota_main (user_id, resc_id, quota_limit, modify_ts) values (?, ?, ?, ?)",
 	 &icss);

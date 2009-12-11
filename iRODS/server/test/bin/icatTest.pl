@@ -476,6 +476,23 @@ runCmd(0, "iadmin rfg $G1 $U2");
 runCmd(2, "iadmin rfg $G1 $U2");
 runCmd(0, "iadmin rmgroup $G1");
 
+# basic quota tests 
+runCmd(1, "irm -f $F1");
+runCmd(0, "iput $F1");
+runCmd(0, "iadmin suq $U1 $Resc 100000");
+runCmd(0, "iadmin mkgroup $G1");
+runCmd(0, "iadmin sgq $G1 $Resc 100000");
+runCmd(0, "iadmin cu");
+runCmd(0, "iadmin suq $U1 total 200000");
+runCmd(0, "iadmin sgq $G1 total 200000");
+runCmd(0, "iadmin cu");
+runCmd(0, "iadmin suq $U1 total 0");
+runCmd(0, "iadmin sgq $G1 total 0");
+runCmd(0, "iadmin suq $U1 $Resc 0");
+runCmd(0, "iadmin sgq $G1 $Resc 0");
+runCmd(0, "iadmin rmgroup $G1");
+runCmd(0, "irm -f $F1");
+
 # RegResource; use the same host as demoResc is defined on so
 # this script can run from any client host
 runCmd(0, "iadmin lr $Resc | grep resc_net:");
