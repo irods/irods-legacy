@@ -351,7 +351,6 @@ protected MetaDataCondition buildMetaDataConditionForGSIUser(
       "", null);
   }
 
-//TODO
   /**
    * 
    *

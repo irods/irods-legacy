@@ -41,7 +41,7 @@ import edu.sdsc.grid.io.local.LocalFile;
  * @since JARGON2.0
  */
 class Rule {
-	
+
 	static final String INT_PI = "INT_PI";
 	static final String myInt = "myInt";
 	static final String STR_PI = "STR_PI";
@@ -58,7 +58,7 @@ class Rule {
 	static final String buf = "buf";
 
 	private static final int RULE_SIZE_BUFFER = 64000;
-	
+
 	String label;
 
 	String type;
@@ -72,10 +72,14 @@ class Rule {
 	Method[] methods;
 	Parameter[] outputs;
 
-	// internal
 	Parameter[] inputs;
 
-	
+	/**
+	 * @deprecated This constructor initializes unread fields
+	 * @param label
+	 * @param type
+	 * @param parameter
+	 */
 	public Rule(String label, String type, Object parameter) {
 
 		this.label = label;
@@ -83,13 +87,18 @@ class Rule {
 		this.parameter = parameter;
 	}
 
+	/**
+	 * @deprecated This constructor initializes unread fields
+	 * @param ruleName
+	 * @param microservices
+	 * @param outputs
+	 */
 	public Rule(String ruleName, Method[] microservices, Parameter[] outputs) {
 		this.ruleName = ruleName;
 		methods = microservices;
 		this.outputs = outputs;
 	}
 
-	// internal
 	Rule(String ruleName, Parameter[] inputs, Parameter[] outputs) {
 		this.ruleName = ruleName;
 		this.inputs = inputs;
@@ -100,7 +109,7 @@ class Rule {
 	 * @return the parameter value of the parameter tag. Other values, like
 	 *         buffer length, can be derived from it, if the type is known.
 	 */
-	static Object getParameter(String type, Tag parameterTag) {
+	static Object getParameter(final String type, final Tag parameterTag) {
 		if (type.equals(INT_PI)) {
 			return parameterTag.getTag(INT_PI).getTag(myInt).getIntValue() + "";
 		} else if (type.equals(BUF_LEN_PI)) {
@@ -113,8 +122,8 @@ class Rule {
 			int length = exec.getLength() - 1;
 			String[] results = new String[length];
 			for (int i = 0; i < length; i++) {
-				// TODO not always BinBytesBuf_PI return?
-				if (exec.getTag(BinBytesBuf_PI, i).getTag(buflen).getIntValue() > 0) {
+				if (exec.getTag(BinBytesBuf_PI, i).getTag(buflen)
+						.getIntValue() > 0) {
 					results[i] = exec.getTag(BinBytesBuf_PI, i).getTag(buf)
 							.getStringValue();
 				}
@@ -122,12 +131,12 @@ class Rule {
 			return results;
 		} else if (type.equals(STR_PI)) {
 			return parameterTag.getTag(STR_PI).getTag(myStr).getStringValue();
-		} else { // TODO return everything else as tag?
+		} else {
 			return parameterTag.getTag(type);
 		}
 	}
 
-	/**
+/**
 	 * ?to be deprecated {@see edu.sdsc.grid.io.irods.IRODSCommands#executeRule(String, Parameter[], Parameter[]) 
 	 * *need a cleaner way to do this
 	 * *class visibility issues
@@ -138,37 +147,37 @@ class Rule {
 	 * @throws IOException
 	 * FIXME: deprecate this or clean it up...cleanup causes necessary changes in visibility of Parameter?
 	 */
-	static Parameter[] executeRule(IRODSFileSystem fileSystem,
+	static Parameter[] executeRule(final IRODSFileSystem fileSystem,
 			InputStream ruleStream) throws IOException {
 		String total = null;
 		Vector<Parameter> inputs = new Vector<Parameter>();
 		Vector<Parameter> outputs = new Vector<Parameter>();
-		
+
 		// Probably should just read the whole thing in one buffer, but what
 		// size?
 		byte[] b = new byte[RULE_SIZE_BUFFER];
 		int read;
-		
+
 		while ((read = ruleStream.read(b)) != -1) {
 			total += new String(b, 0, read);
 		}
 
 		StringTokenizer tokens = new StringTokenizer(total, "\n");
-		
-		//FIXME: weird 'null' at head of rule, why?
+
+		// FIXME: weird 'null' at head of rule, why?
 		String rule = processRuleBody(tokens);
 
 		// if formatting error, such as only one line, below breaks
 		if (!tokens.hasMoreTokens())
 			throw new IllegalArgumentException("Rule stream is malformed");
-		
+
 		// process the rule attributes
 		processRuleAttributesLine(tokens, inputs);
 
 		// if formatting error, such as only one line, below breaks
 		if (!tokens.hasMoreTokens())
 			throw new IllegalArgumentException("Rule stream is malformed");
-		
+
 		processRuleOutputLine(tokens, outputs);
 
 		return Rule.readResult(fileSystem, fileSystem.commands.executeRule(
@@ -180,7 +189,7 @@ class Rule {
 	 * @param tokens
 	 * @return
 	 */
-	static String processRuleBody(StringTokenizer tokens) {
+	static String processRuleBody(final StringTokenizer tokens) {
 		String total;
 		// if formatting error, such as only one line, below breaks
 		if (!tokens.hasMoreTokens())
@@ -199,7 +208,7 @@ class Rule {
 	 * @param tokens
 	 * @param outputs
 	 */
-	static void processRuleOutputLine(StringTokenizer tokens,
+	static void processRuleOutputLine(final StringTokenizer tokens,
 			Vector<Parameter> outputs) {
 		String ruleOutputLine;
 		int index;
@@ -207,7 +216,8 @@ class Rule {
 		ruleOutputLine = tokens.nextToken();
 		index = ruleOutputLine.indexOf('%');
 		while (index >= 0) {
-			outputs.add(new Parameter(ruleOutputLine.substring(0, index), null, null));
+			outputs.add(new Parameter(ruleOutputLine.substring(0, index), null,
+					null));
 			ruleOutputLine = ruleOutputLine.substring(index + 1);
 			index = ruleOutputLine.indexOf("%");
 		}
@@ -219,7 +229,7 @@ class Rule {
 	 * @param tokens
 	 * @param inputs
 	 */
-	static void processRuleAttributesLine(StringTokenizer tokens,
+	static void processRuleAttributesLine(final StringTokenizer tokens,
 			Vector<Parameter> inputs) {
 		String attribLine;
 		int index;
@@ -229,7 +239,7 @@ class Rule {
 		// looking for parameters on second line of rule, separated by %
 		// there may not be one if only 'null' on second line
 		if (attribLine.trim().equals("null")) {
-			// do what?  need to add a null param
+			// do what? need to add a null param
 			inputs.add(new Parameter());
 		} else {
 
@@ -239,13 +249,9 @@ class Rule {
 				if (index2 < 0)
 					throw new IllegalArgumentException(
 							"Rule stream is malformed");
-				inputs
-						.add(new Parameter(
-						// label
-								attribLine.substring(0, index2),
-								// value
-								attribLine.substring(index2 + 1, attribLine.indexOf('%',
-										index2))));
+				inputs.add(new Parameter(attribLine.substring(0, index2),
+						attribLine.substring(index2 + 1, attribLine.indexOf(
+								'%', index2))));
 				attribLine = attribLine.substring(index + 1);
 				index = attribLine.indexOf("%");
 			}
@@ -253,10 +259,7 @@ class Rule {
 			if (index2 < 0)
 				throw new IllegalArgumentException("Rule stream is malformed");
 			// add the final one
-			inputs.add(new Parameter(
-			// label
-					attribLine.substring(0, index2),
-					// value
+			inputs.add(new Parameter(attribLine.substring(0, index2),
 					attribLine.substring(index2 + 1)));
 		}
 	}
@@ -278,7 +281,7 @@ class Rule {
 	 *         now will return an empty <code>Parameter[]</code>.
 	 * @throws IOException
 	 */
-	static Parameter[] readResult(IRODSFileSystem fileSystem, Tag rulesTag)
+	static Parameter[] readResult(IRODSFileSystem fileSystem, final Tag rulesTag)
 			throws IOException {
 
 		Parameter[] result;
@@ -291,14 +294,20 @@ class Rule {
 	}
 
 	/**
-	 * Take the raw output of the rule and process into a set of Parameter objects
+	 * Take the raw output of the rule and process into a set of Parameter
+	 * objects.
+	 * 
 	 * @param fileSystem
-	 * @param rulesTag {@link edu.sdsc.grid.io.irods.Tag Tag} containing the response from IRODS for this rule execution
-	 * @return {@link edu.sdsc.grid.io.irods.Parameter Parameter} containing the parsed-out response of the <code>Tag</code> that came back from IRODS
+	 * @param rulesTag
+	 *            {@link edu.sdsc.grid.io.irods.Tag Tag} containing the response
+	 *            from IRODS for this rule execution
+	 * @return {@link edu.sdsc.grid.io.irods.Parameter Parameter} containing the
+	 *         parsed-out response of the <code>Tag</code> that came back from
+	 *         IRODS
 	 * @throws IOException
 	 */
 	private static Parameter[] processNonNullRuleResult(
-			IRODSFileSystem fileSystem, Tag rulesTag) throws IOException {
+			final IRODSFileSystem fileSystem, final Tag rulesTag) throws IOException {
 		int parametersLength = rulesTag.getTag(IRODSCommands.paramLen)
 				.getIntValue();
 
@@ -323,7 +332,7 @@ class Rule {
 			fileSystem.commands.operationComplete(0);
 			return parameters;
 		}
-		
+
 		return new Parameter[0];
 	}
 
@@ -355,7 +364,7 @@ class Rule {
 	 */
 
 	protected static Object processRuleClientRequest(
-			IRODSFileSystem fileSystem, String label, String type,
+			final IRODSFileSystem fileSystem, final String label, final String type,
 			Object value, Tag msParam) throws IOException {
 		{
 
@@ -372,8 +381,6 @@ class Rule {
 			GeneralFile otherFile = null;
 			if (otherFileType.equals("localPath")) {
 				otherFile = new LocalFile(otherFilePath);
-			} else if (false) {
-				// TODO what is the irods type also what other types are there?
 			} else {
 				throw new IllegalArgumentException(
 						"Rule requests tranfer from unknown protocol");
@@ -384,12 +391,8 @@ class Rule {
 					throw new IOException(otherFile + " already exists");
 				}
 				fileSystem.commands.get(irodsFile, otherFile);
-
-				// return the destination? should return something...
 				value = otherFile;
 			} else if (label.equals(CL_PUT_ACTION)) {
-				// can't check overwrite, causes problems search commands for
-				// RError
 				fileSystem.commands.put(otherFile, irodsFile, false);
 				value = irodsFile;
 			} else {

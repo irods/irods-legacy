@@ -141,12 +141,15 @@ class Parameter
     }
   }
   
+	/**
+	 * Get the value part of the parameter as a <code>String/code>.  Note that arrays are translated into Strings.
+	 * @return <code>String</code> containing the value of the Parameter.
+	 */
 	String getStringValue() {
-		// FIXME: patch under test ref 
 		// csaba patch start
 		if (value.getClass().isArray() && type.equals(ExecCmdOut_PI)) {
 
-			String stringValue = "";
+			StringBuilder stringValue = new StringBuilder();
 			String msg = new String();
 			int alength = Array.getLength(value);
 			for (int ij = 0; ij < alength; ij++) {
@@ -155,12 +158,12 @@ class Parameter
 					if (msg != null) {
 						msg = new String(Base64.fromString(msg));
 						if (msg != null) {
-							stringValue += msg;
+							stringValue.append(msg);
 						}
 					}
 				}
 			}
-			return stringValue;
+			return stringValue.toString();
 		} else {
 			// csaba patch end
 			return value.toString();

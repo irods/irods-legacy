@@ -182,6 +182,4 @@ public class RuleTest {
 		TestCase.assertTrue("did not find the 'condition' returned as output from the rule", foundCondition);
 	}
 	
-
-
 }
