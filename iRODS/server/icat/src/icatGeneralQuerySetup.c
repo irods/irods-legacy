@@ -152,8 +152,8 @@ icatGeneralQuerySetup() {
   sTable( "r_rule_dvm",  "r_rule_dvm", 0);
   sTable( "r_rule_fnm",  "r_rule_fnm", 0);
 
-  sTable( "r_quota_main", "r_quota_main", 1);
-  sTable( "r_quota_usage", "r_quota_usage", 1);
+  sTable( "r_quota_main", "r_quota_main", 0);
+  sTable( "r_quota_usage", "r_quota_usage", 0);
 
   /* Map the #define values to tables and columns */
 
@@ -377,12 +377,12 @@ icatGeneralQuerySetup() {
   sColumn(COL_QUOTA_RESC_ID, "r_quota_main", "resc_id");
   sColumn(COL_QUOTA_LIMIT,   "r_quota_main", "quota_limit");
   sColumn(COL_QUOTA_OVER,    "r_quota_main", "quota_over");
-  sColumn(COL_QUOTA_MODIFY_TIME,"r_quota_main", "modify_time");
+  sColumn(COL_QUOTA_MODIFY_TIME,"r_quota_main", "modify_ts");
 
   sColumn(COL_QUOTA_USAGE_USER_ID, "r_quota_usage", "user_id");
   sColumn(COL_QUOTA_USAGE_RESC_ID, "r_quota_usage", "resc_id");
   sColumn(COL_QUOTA_USAGE,   "r_quota_usage", "quota_usage");
-  sColumn(COL_QUOTA_USAGE_MODIFY_TIME,"r_quota_usage", "modify_time");
+  sColumn(COL_QUOTA_USAGE_MODIFY_TIME,"r_quota_usage", "modify_ts");
 
   sColumn( COL_QUOTA_USER_NAME, "r_quota_user_main", "user_name");
   sColumn( COL_QUOTA_USER_TYPE, "r_quota_user_group", "user_type_name");
@@ -475,8 +475,10 @@ icatGeneralQuerySetup() {
 
   sFklink("r_quota_main", "r_quota_user_main", "r_quota_main.user_id = r_quota_user_main.user_id");
   sFklink("r_quota_main", "r_quota_resc_main", "r_quota_main.resc_id = r_quota_resc_main.resc_id");
+  sFklink("r_quota_main", "r_quota_user_group", "r_quota_main.user_id = r_quota_user_group.user_id");
   sFklink("r_quota_usage", "r_quota_user_main", "r_quota_usage.user_id = r_quota_user_main.user_id");
   sFklink("r_quota_usage", "r_quota_resc_main", "r_quota_usage.resc_id = r_quota_resc_main.resc_id");
+  sFklink("r_quota_usage", "r_quota_user_group", "r_quota_usage.user_id = r_quota_user_group.user_id");
 
 /*
   If using the extended ICAT, establish those tables and columns too.

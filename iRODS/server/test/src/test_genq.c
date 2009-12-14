@@ -776,6 +776,14 @@ main(int argc, char **argv) {
 	    i = findCycles(j);
 	    printf("starting with table %d status = %d\n", j, i);
 	 }
+	 if (j > 70 && i == CAT_INVALID_ARGUMENT) {
+	    printf(
+	       "Success: Searched all tables (0 to %d) and no cycles found\n",
+	       j-1);
+	    exit(0);
+	 } else {
+	    exit(5);
+	 }
       }
       done++;
    }

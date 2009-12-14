@@ -105,6 +105,9 @@ runCmd(0, "test_genq gen7 i 0 8 10"); # test totalRowCount
 runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_GOOD $HOME");
 runCmd(0, "test_genq gen10 $USER $myZone $ACCESS_BAD $HOME");
 
+# Scan the tables for possible cycles in the links between tables.
+runCmd(0, "test_genq -1");
+
 # Mod resource freespace
 runCmd(0, "test_chl modrfs $Resc 123456789");
 runCmd(0, "iadmin lr $Resc | grep -i free_space: | grep 123456789");

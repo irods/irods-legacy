@@ -443,6 +443,11 @@ tCycleChk(int table, int link, int thisTreeNum) {
    }
    Tables[table].flag = thisTreeNum;
 
+   if (Tables[table].cycler==1) {
+      if (debug>1) printf("%d returning cycler\n", table);
+      return(thisKeep); /* do no more for cyclers */
+   }
+
    for (i=0;i<nLinks; i++) {
       if (Links[i].table1 == table && link!=i ) {
 	 if (debug>1) printf("%d trying link %d forward\n", table, i);
@@ -1083,7 +1088,7 @@ Called by chlGenQuery to generate the SQL.
 int
 generateSQL(genQueryInp_t genQueryInp, char *resultingSQL, 
 	    char *resultingCountSQL) {
-   int i, table;
+   int i, table, startingTable=0;
    int keepVal;
    char *condition;
    int status;
@@ -1141,6 +1146,9 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 	 }
       }
 #endif
+      if (Tables[table].cycler<1) {
+	 startingTable = table;  /* start with a non-cycler */
+      }
    }
 
    for (i=0;i<genQueryInp.sqlCondInp.len;i++) {
@@ -1173,6 +1181,9 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 		genQueryInp.sqlCondInp.inx[i]);
 	 return(CAT_UNKNOWN_TABLE);
       }
+      if (Tables[table].cycler<1) {
+	 startingTable = table;  /* start with a non-cycler */
+      }
       condition = genQueryInp.sqlCondInp.value[i];
       if (strstr(condition, "||") != NULL ||
 	  strstr(condition, "&&") != NULL) {
@@ -1193,7 +1204,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 #endif
    }
 
-   keepVal = tScan(table, -1);
+   keepVal = tScan(startingTable, -1);
    if (keepVal!=1 || nToFind!=0) {
       rodsLog(LOG_ERROR,"error failed to link tables\n");
       return(CAT_FAILED_TO_LINK_TABLES);
