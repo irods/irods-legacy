@@ -335,7 +335,7 @@ int iRODSNt_stat(const char *filename,struct irodsntstat *stat_p)
 {
         char ntfp[2048];
         iRODSPathToNtPath(ntfp,filename);
-        return _stat(ntfp,stat_p);
+        return _stat64(ntfp,stat_p);    /* _stat */
 }
 
 int iRODSNt_mkdir(char *dir,int mode)
