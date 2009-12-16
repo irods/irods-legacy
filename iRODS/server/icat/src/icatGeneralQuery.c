@@ -904,6 +904,9 @@ void
 addInClauseToWhere(char *inArg) {
    int i, len;
    int nput=0;
+   char tmpStr[MAX_SQL_SIZE];
+   static char inStrings[MAX_SQL_SIZE];
+   int inStrIx=0;
    rstrcat(whereSQL, " IN (", MAX_SQL_SIZE);
    len = strlen(inArg);
    for (i=0;i<len+1;i++) {
@@ -911,14 +914,21 @@ addInClauseToWhere(char *inArg) {
 	 int ncopy=i;
 	 if (nput==0) ncopy++;
 	 if (nput==0) {
-	    rstrcat(whereSQL, "'", MAX_SQL_SIZE);
+	    rstrcat(whereSQL, "?", MAX_SQL_SIZE);
 	 }
 	 else {
-	    rstrcat(whereSQL, ", '", MAX_SQL_SIZE);
+	    rstrcat(whereSQL, ", ?", MAX_SQL_SIZE);
 	 }
 	 nput++;
-	 rstrncat(whereSQL, inArg, ncopy, MAX_SQL_SIZE);
-	 rstrcat(whereSQL, "'", MAX_SQL_SIZE);
+
+         /* Add the substing as a bind variable in case there are quotes */
+	 tmpStr[0]='\0';
+	 rstrncat(tmpStr, inArg, ncopy, MAX_SQL_SIZE);
+	 rstrcpy((char *)&inStrings[inStrIx], tmpStr,
+		  MAX_SQL_SIZE-inStrIx);
+	 inStrings[inStrIx+ncopy]='\0';
+	 cllBindVars[cllBindVarCount++]=(char *)&inStrings[inStrIx];
+	 inStrIx = inStrIx+ncopy+1;
       }
    }
    rstrcat(whereSQL, ")", MAX_SQL_SIZE);
