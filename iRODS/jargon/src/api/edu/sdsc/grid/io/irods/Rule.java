@@ -135,36 +135,15 @@ class Rule {
 		}
 	}
 
-/**
-	 * ?to be deprecated {@see edu.sdsc.grid.io.irods.IRODSCommands#executeRule(String, Parameter[], Parameter[]) 
-	 * *need a cleaner way to do this
-	 * *class visibility issues
-	 * *use of deprecated StringBufferInputStream?  just take a string as a param
-	 * @param fileSystem
-	 * @param ruleStream
-	 * @return
-	 * @throws IOException
-	 * FIXME: deprecate this or clean it up...cleanup causes necessary changes in visibility of Parameter?
-	 */
-	static Parameter[] executeRule(final IRODSFileSystem fileSystem,
-			InputStream ruleStream) throws IOException {
-		String total = null;
+	
+	static Parameter[] executeRule(final IRODSFileSystem irodsFileSystem, String rule) throws IOException {
 		Vector<Parameter> inputs = new Vector<Parameter>();
 		Vector<Parameter> outputs = new Vector<Parameter>();
-
-		// Probably should just read the whole thing in one buffer, but what
-		// size?
-		byte[] b = new byte[RULE_SIZE_BUFFER];
-		int read;
-
-		while ((read = ruleStream.read(b)) != -1) {
-			total += new String(b, 0, read);
-		}
-
-		StringTokenizer tokens = new StringTokenizer(total, "\n");
+		
+		StringTokenizer tokens = new StringTokenizer(rule, "\n");
 
 		// FIXME: weird 'null' at head of rule, why?
-		String rule = processRuleBody(tokens);
+		String ruleBody = processRuleBody(tokens);
 
 		// if formatting error, such as only one line, below breaks
 		if (!tokens.hasMoreTokens())
@@ -179,9 +158,37 @@ class Rule {
 
 		processRuleOutputLine(tokens, outputs);
 
-		return Rule.readResult(fileSystem, fileSystem.commands.executeRule(
-				rule, inputs.toArray(new Parameter[0]), outputs
+		return Rule.readResult(irodsFileSystem, irodsFileSystem.commands.executeRule(
+				ruleBody, inputs.toArray(new Parameter[0]), outputs
 						.toArray(new Parameter[0])));
+
+		
+	}
+	
+/**
+	 * ?to be deprecated {@see edu.sdsc.grid.io.irods.IRODSCommands#executeRule(String, Parameter[], Parameter[]) 
+	 * *need a cleaner way to do this
+	 * *class visibility issues
+	 * *use of deprecated StringBufferInputStream?  just take a string as a param
+	 * @param fileSystem
+	 * @param ruleStream
+	 * @return
+	 * @throws IOException
+	 * FIXME: deprecate this or clean it up...cleanup causes necessary changes in visibility of Parameter?
+	 */
+	static Parameter[] executeRule(final IRODSFileSystem fileSystem,
+			InputStream ruleStream) throws IOException {
+		StringBuilder rule = new StringBuilder();
+		// Probably should just read the whole thing in one buffer, but what
+		// size?
+		byte[] b = new byte[RULE_SIZE_BUFFER];
+		int read;
+
+		while ((read = ruleStream.read(b)) != -1) {
+			rule.append(new String(b, 0, read));
+		}
+		
+		return executeRule(fileSystem, rule.toString());
 	}
 
 	/**

@@ -354,6 +354,8 @@ protected MetaDataCondition buildMetaDataConditionForGSIUser(
 
   /**
    * Execute a rule and return the results as a <code>HashMap</code> of <code>String</code> objects.
+   * Note that for complex structures (such as an array of results from an execGenQuery), this method is 
+   * not particularly useful.
    *
    * @param ruleStream <code>java.io.InputStream</code> containing the rule to be executed
    * @return <code>HashMap<String, String></code> with the result of the rule execution
@@ -363,6 +365,26 @@ protected MetaDataCondition buildMetaDataConditionForGSIUser(
     throws IOException
   {
     Parameter[] parameters = Rule.executeRule( this, ruleStream );
+    HashMap map = new HashMap<String,String>(parameters.length);
+    for (Parameter p : parameters) {
+      map.put(p.getUniqueName(), p.getStringValue());
+    }
+    return map;
+  }
+  
+  /**
+   * Execute a rule and return the results as a <code>HashMap</code> of <code>String</code> objects.
+   * Note that for complex structures (such as an array of results from an execGenQuery), this method is 
+   * not particularly useful.
+   *
+   * @param rule <code>String</code> containing the rule to be executed
+   * @return <code>HashMap<String, String></code> with the result of the rule execution
+   * @throws java.io.IOException
+   */
+  public HashMap<String, String> executeRule(String rule)
+    throws IOException
+  {
+    Parameter[] parameters = Rule.executeRule( this, rule );
     HashMap map = new HashMap<String,String>(parameters.length);
     for (Parameter p : parameters) {
       map.put(p.getUniqueName(), p.getStringValue());
@@ -382,6 +404,25 @@ protected MetaDataCondition buildMetaDataConditionForGSIUser(
     throws IOException
   {
     Parameter[] parameters = Rule.executeRule( this, ruleStream );
+    HashMap<String, Object> map = new HashMap<String,Object>(parameters.length);
+    for (Parameter p : parameters) {
+      map.put(p.getUniqueName(), p.getValue());
+    }
+    return map;
+  }
+  
+  /**
+   * Execute a rule and return the results as a <code>HashMap</code> of <code>Object</code> objects that can be cast to
+   * the appropriate type.  This method is especially useful when dealing with rules that return String Arrays
+   *
+   * @param rule <code>String</code> containing the rule to be executed
+   * @return <code>HMap<String, String></code> with the result of the rule execution
+   * @throws java.io.IOException
+   */
+  public Map<String, Object> executeRuleReturnObjects(String rule)
+    throws IOException
+  {
+    Parameter[] parameters = Rule.executeRule(this, rule);
     HashMap<String, Object> map = new HashMap<String,Object>(parameters.length);
     for (Parameter p : parameters) {
       map.put(p.getUniqueName(), p.getValue());

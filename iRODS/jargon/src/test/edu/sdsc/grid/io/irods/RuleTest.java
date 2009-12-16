@@ -112,6 +112,7 @@ public class RuleTest {
 		TestCase.assertTrue(
 				"I expected to get the ruleExec out from this hello command",
 				result.length > 0);
+		TestCase.assertEquals("should only have the string response", 1, result.length);
 		TestCase.assertTrue("did not get hello in response", result[0]
 				.getStringValue().indexOf("Hello") > -1);
 
@@ -219,10 +220,53 @@ public class RuleTest {
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
 		TestCase.assertNotNull("null response, no data back from rule", result);
+		TestCase.assertEquals("should only have the rule data", 1, result.length);
 		TestCase.assertEquals(result[0].getType(), "GenQueryOut_PI");
 
 	}
 	
+	
+	@Test
+	public void testFileSystemExecuteRuleWithStringRule() throws Exception {
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+		StringBuilder builder = new StringBuilder();
+		builder
+				.append("testExecReturnArray||msiMakeGenQuery(\"RESC_NAME, RESC_LOC\",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)|nop\n");
+		builder.append("*Condition=RESC_NAME > 'a'\n");
+		builder.append("*GenQOut");
+		
+		Map<String,String> response = irodsFileSystem.executeRule(builder.toString());
+		
+		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
+		
+		irodsFileSystem.close();
+		TestCase.assertNotNull("null response, no data back from rule", response);
+		TestCase.assertEquals("should only have the string result of the rule", 1, response.size());
+
+	}
+	
+	@Test
+	public void testFileSystemExecuteRuleWithStringRuleReturnObjects() throws Exception {
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+		StringBuilder builder = new StringBuilder();
+		builder
+				.append("testExecReturnArray||msiMakeGenQuery(\"RESC_NAME, RESC_LOC\",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)|nop\n");
+		builder.append("*Condition=RESC_NAME > 'a'\n");
+		builder.append("*GenQOut");
+		
+		Map<String,Object> response = irodsFileSystem.executeRuleReturnObjects(builder.toString());
+		
+		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
+		
+		irodsFileSystem.close();
+		TestCase.assertNotNull("null response, no data back from rule", response);
+		TestCase.assertEquals("should only have the string result of the rule", 1, response.size());
+
+	}
 	
 	@Test
 	public void testFileSystemExecuteRuleReturnString() throws Exception {
@@ -239,14 +283,37 @@ public class RuleTest {
 		
 		Map<String,String> response = irodsFileSystem.executeRule(sbis);
 		
-		//FIXME:  just got the string "GenQueryOut_PI", is this right?
+		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
 		
 		irodsFileSystem.close();
 		TestCase.assertNotNull("null response, no data back from rule", response);
+		TestCase.assertEquals("should only have the string result of the rule", 1, response.size());
 
 	}
 	
+	@Test
+	public void testFileSystemExecuteRuleReturnObjects() throws Exception {
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+		StringBuilder builder = new StringBuilder();
+		builder
+				.append("testExecReturnArray||msiMakeGenQuery(\"RESC_NAME, RESC_LOC\",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)|nop\n");
+		builder.append("*Condition=RESC_NAME > 'a'\n");
+		builder.append("*GenQOut");
+		StringBufferInputStream sbis = new StringBufferInputStream(builder
+				.toString());
+		
+		Map<String,Object> response = irodsFileSystem.executeRuleReturnObjects(sbis);
+		
+		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
+		
+		irodsFileSystem.close();
+		TestCase.assertNotNull("null response, no data back from rule", response);
+		TestCase.assertEquals("should only have the gen query result of the rule", 1, response.size());
 
+	}
+	
 	@Test
 	public void testExecuteRequestClientActionGetStringValue()
 			throws Exception {
@@ -281,6 +348,7 @@ public class RuleTest {
 		String resVal = result[0].getStringValue();
 		TestCase.assertTrue("should have the uri of the file", resVal
 				.indexOf("foo.txt") > -1);
+		TestCase.assertEquals("should only have the file result", 1, result.length);
 
 	}
 	
