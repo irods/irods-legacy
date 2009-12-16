@@ -99,6 +99,12 @@ Testing and fix for Bug 37 -  Add AVU allows more than 3 fields
 Testing and fix (interem) for  Bug 41 -  Exec rule with = sign causes IllegalArgumentException
 Rule processing will be clarifed in upcoming versions, this fixes the specific = sign issue.  This patch also addresses
 Bug 27 -  In IRODSFileSystem, rule execution method always returns a String
+
+-------------
+Testing and fixes in progress for  Bug 27 -  In IRODSFileSystem, rule execution method always returns a String
+Corrected response to CL_PUT_ACTION and CL_GET_ACTION, which was being invoked even when a client request was not being returned.
+Adding new methods in IRODSFile and Rule to allow rules to be invoked with the rule as a String, as opposed to an InputStream.  Added a method
+to return the rule invocation as a Map<String, String> as well as a Map<String, Object> based on user requests.
 	
 ================================================================================================
 Outstanding Issues

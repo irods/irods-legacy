@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.ietf.jgss.GSSException;
@@ -352,23 +353,41 @@ protected MetaDataCondition buildMetaDataConditionForGSIUser(
   }
 
   /**
-   * 
+   * Execute a rule and return the results as a <code>HashMap</code> of <code>String</code> objects.
    *
-   * @param ruleStream
-   * @return
+   * @param ruleStream <code>java.io.InputStream</code> containing the rule to be executed
+   * @return <code>HashMap<String, String></code> with the result of the rule execution
    * @throws java.io.IOException
    */
-  public HashMap executeRule( java.io.InputStream ruleStream )
+  public HashMap<String, String> executeRule( java.io.InputStream ruleStream )
     throws IOException
   {
     Parameter[] parameters = Rule.executeRule( this, ruleStream );
-    HashMap map = new HashMap(parameters.length);
+    HashMap map = new HashMap<String,String>(parameters.length);
     for (Parameter p : parameters) {
       map.put(p.getUniqueName(), p.getStringValue());
     }
     return map;
   }
 
+  /**
+   * Execute a rule and return the results as a <code>HashMap</code> of <code>Object</code> objects that can be cast to
+   * the appropriate type.  This method is especially useful when dealing with rules that return String Arrays
+   *
+   * @param ruleStream <code>java.io.InputStream</code> containing the rule to be executed
+   * @return <code>HMap<String, String></code> with the result of the rule execution
+   * @throws java.io.IOException
+   */
+  public Map<String, Object> executeRuleReturnObjects( java.io.InputStream ruleStream )
+    throws IOException
+  {
+    Parameter[] parameters = Rule.executeRule( this, ruleStream );
+    HashMap<String, Object> map = new HashMap<String,Object>(parameters.length);
+    for (Parameter p : parameters) {
+      map.put(p.getUniqueName(), p.getValue());
+    }
+    return map;
+  }
 
 /*
   Bundle file operations. This command allows structured files such as

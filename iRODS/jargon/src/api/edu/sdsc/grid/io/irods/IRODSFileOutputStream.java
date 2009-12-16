@@ -212,44 +212,6 @@ public class IRODSFileOutputStream extends RemoteFileOutputStream
     }
   }
 
-  /**
-   * Returns the file descriptor associated with this stream.
-   *
-   * @return  the <code>FileDescriptor</code> object that represents
-   *          the connection to the file in the file system being used
-   *          by this <code>FileOutputStream</code> object.
-   *
-   * @exception  IOException  if an I/O error occurs.
-   * @see        java.io.FileDescriptor
-   */
-/*
-  public final FileDescriptor getFD()  throws IOException {
- //Why is it final?!!
-  }
-*/
-  /**
-   * Returns the unique {@link java.nio.channels.FileChannel FileChannel}
-   * object associated with this file output stream. </p>
-   *
-   * <p> The initial {@link java.nio.channels.FileChannel#position()
-   * </code>position<code>} of the returned channel will be equal to the
-   * number of bytes written to the file so far unless this stream is in
-   * append mode, in which case it will be equal to the size of the file.
-   * Writing bytes to this stream will increment the channel's position
-   * accordingly.  Changing the channel's position, either explicitly or by
-   * writing, will change this stream's file position.
-   *
-   * @return  the file channel associated with this file output stream
-   */
-/*
-  public FileChannel getChannel() {
-    synchronized (this) {
-      if (channel == null)
-        channel = FileChannelImpl.open(fd, false, true, this, append);
-        return channel;
-      }
-  }
-*/
 }
 
 

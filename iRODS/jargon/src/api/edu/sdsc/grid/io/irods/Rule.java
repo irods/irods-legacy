@@ -122,8 +122,7 @@ class Rule {
 			int length = exec.getLength() - 1;
 			String[] results = new String[length];
 			for (int i = 0; i < length; i++) {
-				if (exec.getTag(BinBytesBuf_PI, i).getTag(buflen)
-						.getIntValue() > 0) {
+				if (exec.getTag(BinBytesBuf_PI, i).getTag(buflen).getIntValue() > 0) {
 					results[i] = exec.getTag(BinBytesBuf_PI, i).getTag(buf)
 							.getStringValue();
 				}
@@ -288,6 +287,7 @@ class Rule {
 		if (rulesTag == null) {
 			result = new Parameter[0];
 		} else {
+			// FIXME: should not be null, was null when putting a file that did not exist
 			result = processNonNullRuleResult(fileSystem, rulesTag);
 		}
 		return result;
@@ -307,9 +307,14 @@ class Rule {
 	 * @throws IOException
 	 */
 	private static Parameter[] processNonNullRuleResult(
-			final IRODSFileSystem fileSystem, final Tag rulesTag) throws IOException {
+			final IRODSFileSystem fileSystem, final Tag rulesTag)
+			throws IOException {
 		int parametersLength = rulesTag.getTag(IRODSCommands.paramLen)
 				.getIntValue();
+
+		// for client action has TagName "MsParam_PI, value "CL_PUT_ACTION"
+
+		// for GenQOut has MsParam_PI, value GenQOut
 
 		if (parametersLength > 0) {
 			String label = null;
@@ -322,11 +327,16 @@ class Rule {
 				label = msParam.getTag(IRODSCommands.label).getStringValue();
 				type = msParam.getTag(IRODSCommands.type).getStringValue();
 				value = getParameter(type, msParam);
+				// FIXME: need to differentiate tag that is client request from
+				// tag that is an array
+				if (label.equals("CL_PUT_ACTION")
+						|| label.equals("CL_GET_ACTION")) {
 
-				if (value instanceof Tag)
-					value = processRuleClientRequest(fileSystem, label, type,
+					value = processRuleResponseTag(fileSystem, label, type,
 							value, msParam);
-				parameters[i] = new Parameter(label, value, type);
+
+				} 
+					parameters[i] = new Parameter(label, value, type);
 			}
 
 			fileSystem.commands.operationComplete(0);
@@ -363,10 +373,15 @@ class Rule {
 	 *             "CL_GET_ACTION" #define CL_ZONE_OPR_INX "CL_ZONE_OPR_INX"
 	 */
 
-	protected static Object processRuleClientRequest(
-			final IRODSFileSystem fileSystem, final String label, final String type,
-			Object value, Tag msParam) throws IOException {
+	protected static Object processRuleResponseTag(
+			final IRODSFileSystem fileSystem, final String label,
+			final String type, Object value, Tag msParam) throws IOException {
 		{
+
+			// FIXME: a tag may be returned from a rule containing an array,
+			// e.g. exec gen query.
+			// determine if this is indeed a client request. Gets NPE when
+			// trying to construct the IRODSFile below
 
 			// server is requesting client action
 			Tag fileAction = msParam.getTag(type);

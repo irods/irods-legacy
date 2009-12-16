@@ -47,7 +47,6 @@ class Parameter
   static final String buf = "buf";
   static final String NULL_PI = "NULL_PI";
   
-  //A unique parameter name.
   String uniqueName = "";
   
   Object value;  
@@ -73,13 +72,11 @@ class Parameter
     this( null, value, BUF_LEN_PI );
   } 
   
-  //private
   Parameter( String name, String value )
   {
     this( name, value, STR_PI );    
   }
   
-  //private
   Parameter( String name, Object value, String type )
   {
     if (value == null) setNullValue();
@@ -92,7 +89,6 @@ class Parameter
       uniqueName = name;
     }
     else {
-      //TODO like so? or global variable that gets incremented?
       for (int i=0;i<8;i++)
         uniqueName += ((char) (65 + Math.random() * 25));
     }
@@ -146,7 +142,7 @@ class Parameter
 	 * @return <code>String</code> containing the value of the Parameter.
 	 */
 	String getStringValue() {
-		// csaba patch start
+		// csaba patch start  FIXME: decide on patch inclusion
 		if (value.getClass().isArray() && type.equals(ExecCmdOut_PI)) {
 
 			StringBuilder stringValue = new StringBuilder();
@@ -184,9 +180,6 @@ class Parameter
   }
   
   
-  //----------------------------------------------------
-  //internal 
-  //----------------------------------------------------
   String getUniqueName( )
   {
     return uniqueName;
@@ -238,7 +231,7 @@ class Parameter
         new Tag(BUF_LEN_PI, new Tag[] {
           //send a byte buffer
           new Tag(buflen, getByteValue().length),
-//TODO so maybe convert to Base64?
+          //maybe convert to Base64?
           new Tag(buf, new String(getByteValue())),
         } )
       );

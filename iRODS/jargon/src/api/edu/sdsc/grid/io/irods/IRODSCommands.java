@@ -1045,7 +1045,6 @@ class IRODSCommands {
 				length -= n;
 				destination.write(temp, 0, n);
 			} else {
-				// TODO? always just EOF?
 				length = n;
 			}
 		}
@@ -1159,10 +1158,8 @@ class IRODSCommands {
 					+ " millisecs");
 		}
 
-		// TODO probably shouldn't be so hardcoded...
 		String type = header.tags[0].getStringValue();
 		if (true) {// type.equals()) {
-			// TODO which types?
 			int messageLength = header.tags[1].getIntValue();
 			int errorLength = header.tags[2].getIntValue();
 			int bytesLength = header.tags[3].getIntValue();
@@ -1190,7 +1187,6 @@ class IRODSCommands {
 					// query with no results
 					return null;
 				} else if (info == IRODSException.OVERWITE_WITHOUT_FORCE_FLAG) {
-					// TODO keep?
 					throw new IRODSException(
 							"Attempt to overwrite file without force flag. ",
 							info);
@@ -1202,6 +1198,7 @@ class IRODSCommands {
 
 						throw new IRODSException("IRODS error occured "
 								+ errorTag.getTag(RErrMsg_PI).getTag(msg), info);
+						//FIXME: not filling in underlying irods exception
 					}
 					throw new IRODSException("IRODS error occured " + info,
 							info);
@@ -1220,6 +1217,7 @@ class IRODSCommands {
 			if (messageLength > 0) {
 				message = readMessageBody(messageLength, decode);
 			}
+			
 			if (bytesLength != 0 || info > 0) {
 				if (message == null) {
 					message = new Tag(MsgHeader_PI);
@@ -1329,26 +1327,16 @@ class IRODSCommands {
 	private int readHeaderLength() throws IOException {
 		byte[] headerInt = new byte[HEADER_INT_LENGTH];
 		read(headerInt, 0, HEADER_INT_LENGTH);
-		/*
-		 * int hi = Host.castToInt(headerInt); if (hi > 0){
-		 * System.out.print(hi+" "); } while (hi == 808333322) {
-		 * System.out.print( new String(headerInt)); read(headerInt, 0,
-		 * HEADER_INT_LENGTH); hi = Host.castToInt(headerInt); return 142; }
-		 */
 		return Host.castToInt(headerInt);
 	}
 
-	/*
-	 * private Tag readMessageBody( int length ) throws IOException { return
-	 * readMessageBody(length, true); }
-	 */
+	
 	private Tag readMessageBody(int length, boolean decode) throws IOException {
 		byte[] body = new byte[length];
 		read(body, 0, length);
 		return readNextTag(body, decode);
 	}
 
-	// TODO maybe can make this just one function instead of two...
 	/**
 	 * Read the data buffer to discover the first tag. Fill the values of that
 	 * tag according to the above defined static final values.
@@ -1372,7 +1360,6 @@ class IRODSCommands {
 		}
 		// remove the random '\n'
 		// had to find the end, sometimes '\n' is there, sometimes not.
-		// TODO probably isn't best way
 		d = d.replaceAll(CLOSE_END_TAG + "\n", "" + CLOSE_END_TAG);
 
 		int start = d.indexOf(OPEN_START_TAG), end = d.indexOf(CLOSE_START_TAG,
@@ -1392,7 +1379,6 @@ class IRODSCommands {
 			// send the rest of the bytes read
 			offset = readSubTag(tag, d, offset, decode);
 		}
-		// if (value.length > 1) TODO?
 
 		return tag;
 	}
@@ -1821,7 +1807,6 @@ class IRODSCommands {
 		if (read == message.getTag(MsgHeader_PI).getTag(intInfo).getIntValue()) {
 			return read;
 		} else {
-			// TODO exception ok?
 			throw new ProtocolException("Bytes read mismatch");
 		}
 	}
@@ -1920,8 +1905,7 @@ class IRODSCommands {
 				int pass = message.getTag(PortList_PI).getTag(cookie)
 						.getIntValue();
 
-				// TODO check windowsize, l1descInx or sock?
-
+			
 				Thread[] transferThreads = new Thread[threads];
 				TransferThread[] transfer = new TransferThread[threads];
 				for (int i = 0; i < threads; i++) {
@@ -1953,7 +1937,6 @@ class IRODSCommands {
 			read(FileFactory.newRandomAccessFile(destination, "rw"), length);
 		}
 
-		// TODO can also match the checksum in the message
 	}
 
 	/**
@@ -1975,9 +1958,10 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, COLL_CREATE_AN);
 	}
 
-	// TODO needed by send(datastream)? synchronized
 	void put(GeneralFile source, IRODSFile destination, boolean overwriteFlag)
 			throws IOException {
+		
+		// FIXME: need test for put of non-existent file, no error thrown?
 		String resource = destination.getResource();
 		long length = source.length();
 
@@ -2002,7 +1986,6 @@ class IRODSCommands {
 			message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PUT_AN);
 
 			if (message == null) {
-				// TODO error?!
 				return;
 			}
 
@@ -2250,7 +2233,7 @@ class IRODSCommands {
 
 		irodsFunction(RODS_API_REQ, message, OBJ_STAT_AN);
 
-		// TODO convert result
+		
 		/*
 		 * <RodsObjStat_PI> <objSize>0</objSize> <objType>2</objType>
 		 * <numCopies>0</numCopies> <dataId>10548</dataId> <chksum></chksum>
@@ -2440,7 +2423,7 @@ class IRODSCommands {
 	}
 
 	/**
-	 * TODO not really sure. send when certain rules are finished?
+	 *send when certain rules are finished?
 	 */
 	void operationComplete(int status) throws IOException {
 		Tag message = new Tag(Rule.INT_PI, new Tag[] { new Tag(Rule.myInt,
@@ -2503,7 +2486,7 @@ class IRODSCommands {
 	 */
 	String[] simpleQuery(String statement, String arg) throws IOException {
 		Tag message = null;
-		// TODO could be more args?
+		
 		if (arg == null) {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {
 					new Tag(sql, statement), new Tag(control, 0), // don't know
@@ -2531,7 +2514,6 @@ class IRODSCommands {
 	// ---------------------------------------------------------
 	// New query methods
 	// ---------------------------------------------------------
-	// TODO sigh, find a better way and remove synchronized
 	MetaDataCondition[] conditions;
 
 	/**
@@ -2548,12 +2530,10 @@ class IRODSCommands {
 		Tag[] subTags = null;
 		int j = 1;
 		String[] selectedAVU = new String[selects.length];
-		// TODO fix silly global conditions
 		conditions = tempConditions;
 
 		// package the selects
 		if (selects == null) {
-			// TODO error?
 			throw new NullPointerException(
 					"Query must have at least one select value");
 		} else {
@@ -2621,15 +2601,13 @@ class IRODSCommands {
 		MetaDataField[] fields = new MetaDataField[attributes];
 		MetaDataRecordList[] rl = new MetaDataRecordList[rows];
 		for (int i = 0; i < attributes; i++) {
-			// TODO just hard-coded the first "SqlResult_PI" result location...
-			// definately TODO
+			
 			fields[i] = IRODSMetaDataSet.getField(message.tags[4 + i].getTag(
 					attriInx).getStringValue());
 		}
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
-				// TODO just hard-coded the first "SqlResult_PI" result
-				// location...
+				
 				results[j] = message.tags[4 + j].tags[2 + i].getStringValue();
 			}
 			if (continuation > 0) {
@@ -2965,7 +2943,7 @@ class IRODSCommands {
 			byte[] b = new byte[8];
 			int read = in.read(b);
 			if (read != 8) {
-				// TODO
+				
 			}
 			return Host.castToLong(b);
 		}
@@ -2988,18 +2966,7 @@ class IRODSCommands {
 			// garbage collector can be too slow
 			if (out != null) {
 				try {
-					/*
-					 * TODO not sure if necessary
-					 * System.out.println("writing to out at close, thread "
-					 * +which);
-					 *
-					 * String closeMessage =
-					 * "<MsgHeader_PI><type>RODS_API_REQ</type>" +
-					 * "<msgLen>35</msgLen><errorLen>0</errorLen><bsLen>0</bsLen>"
-					 * + "<intInfo>626</intInfo></MsgHeader_PI>" +
-					 * "<INT_PI><myInt>3</myInt> </INT_PI>";
-					 * out.write(closeMessage.getBytes(encoding));
-					 */
+					
 					out.close();
 				} catch (IOException e) {
 					throw new RuntimeException("IOException in thread.", e);
@@ -3066,7 +3033,6 @@ class IRODSCommands {
 			int read = 0;
 
 			if (operation != GET_OPR) {
-				// TODO got confused somehow?
 				if (IRODSCommands.DEBUG > 0)
 					System.err.println("Parallel transfer expected GET, "
 							+ "server requested " + operation);
@@ -3109,9 +3075,7 @@ class IRODSCommands {
 
 						// subtract the status message, an int = 9999, and a
 						// bunch of 0's
-						// TODO local.write(buffer, 0, read+(int)length);
 					} else if (length < 0) {
-						// oops? Not sure it's even be logically possible
 						throw new ProtocolException();
 					} else {
 						local.write(buffer, 0, read);

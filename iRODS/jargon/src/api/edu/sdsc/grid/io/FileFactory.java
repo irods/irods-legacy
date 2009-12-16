@@ -66,10 +66,7 @@ import org.ietf.jgss.GSSCredential;
  */
 public final class FileFactory
 {
-  //Er, oops, I stuck all kinds of factories in here that I probably
-  //shouldn't have. Or at least the name FILEfactory is not longer correct.
-  //Its not too bad, creating a bunch of little classes isn't great either...
-
+ 
   /**
    * Registration for other file types so they are known and used by
    * the FileFactory methods.
@@ -84,19 +81,8 @@ public final class FileFactory
   private static final int OUTPUT = 2;
   private static final int RECORD_LIST = 3;
 
-  static {      /*TODO maybe not
-    try {
-      //register local
-      FileFactory.registerFileSystem( new URI( "file://fake" ),
-        LocalAccount.class, LocalFileSystem.class, LocalFile.class,
-        LocalRandomAccessFile.class, LocalFileInputStream.class,
-        LocalFileOutputStream.class, LocalMetaDataRecordList.class
-      );
-    } catch (URISyntaxException e) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
-    }*/
-
-//TODO move to the respective filesystem classes
+  static {      
+    
     try {
       //register SRB
       FileFactory.registerFileSystem( new URI( "srb://fake" ),
@@ -119,7 +105,6 @@ public final class FileFactory
       if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
     }
 
-    //TODO?
     //Could also handle anything of URLConnection: mailto, gopher, others...
     try {
       //register http
@@ -148,26 +133,13 @@ public final class FileFactory
     } catch (URISyntaxException e) {
       if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
     }
-/*
-    try {
-      //register gridftp
-      FileFactory.registerFileSystem( new URI( "gridftp://fake" ),
-        GridFTPAccount.class, GridFTPFileSystem.class, GridFTPFile.class,
-        null, null, null, null
-      );
-    } catch (URISyntaxException e) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
-    }
-*/
+
   }
 
 //----------------------------------------------------------------------
 // Utility Methods
 //----------------------------------------------------------------------
-//TODO not sure what I want to make public
-//the  (General..., General... ...)
-//would require a valid connection for some filesystems
-//the class one isn't strict enough
+
   /**
    * Stores these class types for later use. Does not use the values from this
    * object. The connection of a GeneralFileSystem will not be used when
@@ -573,8 +545,6 @@ public final class FileFactory
     String userInfo = uri.getUserInfo();
     String userName, domain, password = null;
 
-//TODO irods
-//TODO move this part to SRBFile. make the reflection part work.
     if (uri.getScheme().equals( "srb" )) {
       if ((userInfo == null) || (userInfo.equals(""))) {
         //anon. login
@@ -609,7 +579,6 @@ public final class FileFactory
     else if (uri.getScheme().equals( "irods" )) {
       if ((userInfo == null) || (userInfo.equals(""))) {
         //anon. login
-//TODO what is it?        
         userName = "public";
       }
       else {
@@ -818,8 +787,7 @@ public final class FileFactory
    * Clearly this will only work on fileSystem which support querying
    * and symbolic links.
    */
-  /*TODO? public*/
-//TODO make generic?
+  
   static GeneralFile newFile( GeneralFileSystem fileSystem, String filePath,
     MetaDataCondition[] conditions )
     throws NullPointerException, IOException
@@ -839,7 +807,6 @@ public final class FileFactory
       ((SRBFile) newFile(fileSystem,
           rl[i].getStringValue(1), rl[i].getStringValue(0))).link(
         ((SRBFile) newFile(dir, rl[i].getStringValue(0)+"_"+i)));
- //TODO GeneralFile should have link?
     }
 
     return dir;

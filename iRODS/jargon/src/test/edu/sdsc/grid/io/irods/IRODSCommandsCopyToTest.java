@@ -291,21 +291,4 @@ public class IRODSCommandsCopyToTest {
 
     }
 
-    // FIXME: implement these tests
-
-    @Ignore
-    public final void testFileCreate() {
-
-    }
-
-    @Ignore
-    public final void testPut() {
-
-    }
-
-    @Ignore
-    public final void testPhysicalMove() {
-
-    }
-
 }
