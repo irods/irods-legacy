@@ -309,7 +309,7 @@ int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *
 /**
  * \fn msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei)
  *
- * \brief This microservice adds a new key and value to a keyValPair_t.
+ * \brief  Adds a new key and value to a keyValPair_t
  *
  * \module core
  *
@@ -317,16 +317,18 @@ int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *
  * \author  Antoine de Torcy
  * \date    2009-09-03
  *
+ * \remark Terrell Russell - reviewed msi documentation, 2009-12-17
+ *
  *
  * \note This microservice adds a new key and value to a keyValPair_t. 
- *		 A new keyValPair_t is created if inKeyValPair is NULL.
+ *       A new keyValPair_t is created if inKeyValPair is NULL.
  *
  * \usage
  *
  *
  * \param[in,out] inKeyValPair - Optional - a KeyValPair_MS_T
- * \param[in] key - Required - a STR_MS_T containing the key.
- * \param[in] value - Optional - a STR_MS_T containing the value.
+ * \param[in] key - Required - A STR_MS_T containing the key
+ * \param[in] value - Optional - A STR_MS_T containing the value
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.

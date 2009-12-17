@@ -3482,39 +3482,55 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
      return (rei->status);
 }
 
-/*
- * \fn msiTarFileExtract
- * \author Jean-Yves Neif 
- * \date   2009-06-15
- * \brief This microservice calls rsStructFileExtAndReg to extract a tar 
- * file (inpParam1) into a target collection(inpParam2).  the content of 
- * the target collection is stored in the phys resource inpParam3.
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a StructFileExtAndRegInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    irpParam2 - a STR_MS_T which specifies the target collection.
- *    irpParam3 - optional - a STR_MS_T which specifies the target resource.
- * \param[out] a INT_MS_T containing the status.
+/**
+ * \fn msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Extracts a tar object file into a target collection
+ *
+ * \module 
+ *
+ * \since 2.3
+ *
+ * \author  Jean-Yves Neif
+ * \date    2009-06-15
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note  This microservice calls rsStructFileExtAndReg to extract a tar 
+ *        file (inpParam1) into a target collection (inpParam2).  The content of 
+ *        the target collection is stored on the physical resource inpParam3.
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or
+ *              a STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - A STR_MS_T which specifies the target collection.
+ * \param[in] inpParam3 - optional - A STR_MS_T which specifies the target resource.
+ * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
- */
-
-/* msiTarFileExtract - micro-service used to extract a tar file (inpParam1) 
-into a target collection(inpParam2).
-the content of the target collection is stored in the phys resource inpParam3. 
-*/
-
+**/
 int 
-msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2,
-msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
+msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
 {
     rsComm_t *rsComm;
     structFileExtAndRegInp_t structFileExtAndRegInp,
@@ -3609,34 +3625,54 @@ msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiTarFileCreate
- * \author Jean-Yves Neif
- * \date   2009-06-15
- * \brief This microservice calls rsStructFileBundle to create a tar file 
- * (inpParam1) from a target collection(inpParam2). The content of the 
- * target collection is stored in the phys resource inpParam3. 
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a StructFileExtAndRegInp_MS_T or
- *      a STR_MS_T which would be taken as dataObj path.
- *    irpParam2 - a STR_MS_T which specifies the target collection.
- *    irpParam3 - optional - a STR_MS_T which specifies the target resource.
- * \param[out] a INT_MS_T containing the status.
+/**
+ * \fn msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Creates a tar object file from a target collection
+ *
+ * \module 
+ *
+ * \since 2.3
+ *
+ * \author  Jean-Yves Neif
+ * \date    2009-06-15
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note  This microservice calls rsStructFileBundle to create a tar file 
+ *        (inpParam1) from a target collection (inpParam2). The content of the 
+ *        target collection is stored on the physical resource (inpParam3).
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as dataObj path.
+ * \param[in] inpParam2 - A STR_MS_T which specifies the target collection.
+ * \param[in] inpParam3 - optional - A STR_MS_T which specifies the target resource.
+ * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
- */
-
+**/
 int 
-msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2,
-msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
+msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
 {
     rsComm_t *rsComm;
     structFileExtAndRegInp_t structFileExtAndRegInp, 
@@ -3705,34 +3741,56 @@ msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei)
 
 }
 
-/*
- * \fn msiPhyBundleColl
- * \author Jean-Yves Neif
- * \date   2009-06-15
- * \brief This microservice calls rsPhyBundleColl to bundle files in a 
- *  collection into a number of tar files to make it more efficient to 
- *  store these files on tape. This microservice has the same functionality
- *  as the iphybun command.
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- * \param[in]
- *    inpParam1 - It can be a StructFileExtAndRegInp_MS_T or
- *      a STR_MS_T which would be taken as the collection for the phybun.
- *    irpParam2 - optional - a STR_MS_T which specifies the target resource.
- * \param[out] a INT_MS_T containing the status.
- * \return integer
- * \retval 0 on success
- * \sa
- * \post
- * \pre
- * \bug  no known bugs
- */
 
+
+/**
+ * \fn msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Bundles a collection into a number of tar files, similar to the iphybun command
+ *
+ * \module 
+ *
+ * \since 2.3
+ *
+ * \author  Jean-Yves Neif
+ * \date    2009-06-15
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note  This microservice calls rsPhyBundleColl to bundle files in a 
+ *        collection into a number of tar files to make it more efficient to 
+ *        store these files on tape. This microservice has the same functionality
+ *        as the iphybun command.
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as the collection for the phybun.
+ * \param[in] inpParam2 - optional - a STR_MS_T which specifies the target resource.
+ * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int 
-msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2,
-msParam_t *outParam, ruleExecInfo_t *rei) 
+msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
     structFileExtAndRegInp_t structFileExtAndRegInp, 

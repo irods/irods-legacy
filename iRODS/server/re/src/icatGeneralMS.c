@@ -27,8 +27,7 @@ This documentation is generated from the iRODS code.
   - #msiAdmClearAppRuleStruct - Clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine
   - #msiAdmShowIRB      - Displays the currently loaded rules
   - #msiAdmShowDVM      - Displays the currently loaded variable name mappings
-  - #msiAdmShowFNM      - Displays the currently loaded microservices/Actions name mappings
-
+  - #msiAdmShowFNM      - Displays the currently loaded microservices and actions name mappings
 
  \subsection msiworkflow Workflow Microservices
   - #nop, #null       - No action
@@ -45,9 +44,14 @@ This documentation is generated from the iRODS code.
   - #writeLine        - Writes a line (with end-of-line) to stdout buffer
   - #assign           - Assigns a value to a parameter
   - #ifExec           - If-then-else conditional branch
-  - #delayExec        - Delays an execution of micro-services or rules
+  - #delayExec        - Delays an execution of microservices or rules
   - #remoteExec       - Invokes remote execution of microservices or rules
   - #msiApplyAllRules - Applies all applicable rules when executing a given rule
+
+ \subsection msihelper Helper Microservices
+  Can be called by client through irule.
+  - #msiGetSessionVarValue - Gets the value of a session variable in the rei
+  - #msiWriteRodsLog - Writes a message into the server rodsLog
 
  \subsection msilowlevel Data Object Low-level Microservices
   Can be called by client through irule.
@@ -86,6 +90,9 @@ This documentation is generated from the iRODS code.
   - #msiRmColl - Delete a collection
   - #msiAutoReplicateService - Checks and repairs up to n replicas
   - #msiDataObjAutoMove - Used to automatically move the newly created file into a destination collection
+  - #msiTarFileExtract - Extracts a tar object file into a target collection
+  - #msiTarFileCreate - Creates a tar object file from a target collection
+  - #msiPhyBundleColl - Bundles a collection into a number of tar files, similar to the iphybun command
 
  \subsection msiproxy Proxy Command Microservices
   - #msiExecCmd - Remotely execute a command
@@ -112,11 +119,11 @@ This documentation is generated from the iRODS code.
   - #msiAclPolicy - Set the ACL policy
 
  \subsection msirda Rule-oriented Database Access Microservices
-  - #msiRdaToStdout   - Calls new RDA functions to interface to an arbitrary database returning results in standard-out.
-  - #msiRdaToDataObj  - As above but stores results in an iRODS DataObject.
-  - #msiRdaNoResults  - As above, performs a SQL operation but without resulting output.
-  - #msiRdaCommit     - Commit changes to the database.
-  - #msiRdaRollback   - Rollback (don't commit) changes to the database.
+  - #msiRdaToStdout   - Calls new RDA functions to interface to an arbitrary database returning results in stdout
+  - #msiRdaToDataObj  - As above but stores results in an iRODS DataObject
+  - #msiRdaNoResults  - As above, performs a SQL operation but without resulting output
+  - #msiRdaCommit     - Commit changes to the database
+  - #msiRdaRollback   - Rollback (don't commit) changes to the database
 
  \subsection msixmsg XMessaging System Microservices
   - #msiXmsgServerConnect - Connects to the XMessage Server as designate by iRODS Environment file/variable
@@ -134,10 +141,11 @@ This documentation is generated from the iRODS code.
   - #writeKeyValPairs - Writes key-value pairs to stdout or stderr and with given separator
   - #msiPrintKeyValPair - Prints key-value pairs to rei's stdout separated by =
   - #msiGetValByKey  - Extracts the corresponding value, given a key and a keyValPair struct
-  - #msiString2KeyValPair - Converts a %-separated key=value pair strings into keyValPair structure
-  - #msiStrArray2String - Converts an array of strings to a string separated by %-signs
+  - #msiString2KeyValPair - Converts a \%-separated key=value pair strings into keyValPair structure
+  - #msiStrArray2String - Converts an array of strings to a string separated by \%-signs
   - #msiAssociateKeyValuePairsToObj  - Ingests object metadata into iCAT from a AVU structure
   - #msiRemoveKeyValuePairsFromObj  - Removes object metadata from iCAT using a AVU structure
+  - #msiAddKeyVal - Adds a new key and value to a keyValPair_t 
 
  \subsection msiotheruser Other User Microservices
   - #msiExtractNaraMetadata - Extracts NARA style metadata from AVU triplets
@@ -206,6 +214,8 @@ This documentation is generated from the iRODS code.
   - #msiGetAuditTrailInfoByTimeStamp - Retrieves Audit Trail information by timestamp period
   - #msiSetDataType  - Sets data type for an object
   - #msiGuessDataType - Guesses the data type of an object based on its file extension
+  - #msiMergeDataCopies - Custom microservice for NARA consolidation rule
+  - #msiFlagDataObjwithAVU - Flags a data object with an AVU
   - #msiGetCollectionContentsReport - Returns the number of objects in a collection by data type
   - #msiGetCollectionSize - Returns the object count and total disk usage of a collection
   - #msiCollectionSpider - Applies a microservice sequence to all data objects in a collection, recursively
@@ -215,6 +225,7 @@ This documentation is generated from the iRODS code.
 
  \subsection msiurl URL
   - #msiFtpGet - Gets a remote file using FTP and writes it to an iRODS object
+  - #msiTwitterPost - Posts a message to twitter.com
 
  \subsection msixml XML
   - #msiLoadMetadataFromXml - Loads AVU metadata from an XML file of AVU triplets

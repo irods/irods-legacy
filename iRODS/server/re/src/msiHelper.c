@@ -1,3 +1,8 @@
+/**
+ * @file  msiHelper.c
+ *
+ */
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 /* reHelper.c */
@@ -33,28 +38,48 @@ ruleExecInfo_t *rei)
     return rei->status;
 }
 
-/*
- * \fn msiWriteRodsLog
- * \author Jean-Yves Neif
- * \date   2009-06-15
- * \brief This micro-service can be used to write message into server rodsLog.
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- * \param[in]
- *    irpParam1 - a STR_MS_T which specifies the message to log.
- * \param[out] a INT_MS_T containing the status.
+/**
+ * \fn msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei)
+ *
+ * \brief Writes a message into the server rodsLog
+ *
+ * \module ERA
+ *
+ * \since 2.3
+ *
+ * \author  Jean-Yves Neif
+ * \date    2009-06-15
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - A STR_MS_T which specifies the message to log.
+ * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
- */
+**/
 int
-msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam,
-ruleExecInfo_t *rei)
+msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei)
 {
     rsComm_t *rsComm;
 
@@ -153,37 +178,54 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * \fn msiGetSessionVarValue
- * \author Michael Wan
- * \date   2009-06-15
- * \brief This micro-service can be used to get the values of session 
- *    variables in the rei.
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- * \param[in]
- *    inpVar - a STR_MS_T which specifies the name of the session
- *	variable to output. The input session variable should NOT start
- *      the "$" character. An input value of "all" means
- *      output all valid session variables. 
- *    outputMode - a STR_MS_T which specifies the output mode. Valid modes
- *      are:    "server" - log the output to the server log.
- *		"client" - send the output to the client in rError.
- *		"all" - both client and server.
- * \param[out] - none
+/**
+ * \fn msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t *rei)
+ *
+ * \brief Gets the value of a session variable in the rei
+ *
+ * \module 
+ *
+ * \since 2.3
+ *
+ * \author  Michael Wan
+ * \date    2009-06-15
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpVar - A STR_MS_T which specifies the name of the session
+ *             variable to output. The input session variable should NOT start
+ *             with the "$" character. An input value of "all" means
+ *             output all valid session variables. 
+ * \param[in] outputMode - A STR_MS_T which specifies the output mode. Valid modes are:
+ *      \li "server" - log the output to the server log
+ *      \li "client" - send the output to the client in rError
+ *      \li "all" - both client and server
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
- */
-
+**/
 int
-msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode,
-ruleExecInfo_t *rei)
+msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t *rei)
 {
     char *inpVarStr, *outputModeStr;
     char errMsg[ERR_MSG_LEN];

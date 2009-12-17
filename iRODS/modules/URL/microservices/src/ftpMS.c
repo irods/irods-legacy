@@ -240,19 +240,21 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
 /**
  * \fn msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *message, msParam_t *status, ruleExecInfo_t *rei)
  *
- * \brief This microservice posts a message on twitter.com.
+ * \brief Posts a message to twitter.com
  *
  * \module URL
  *
+ * \since 2.3
  *
  * \author  Antoine de Torcy
  * \date    2009-07-23
  *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
  *
  * \note This microservice posts a message on twitter.com, aka a "tweet". 
- *		A valid twitter account name and password must be provided. 
- *		Special characters in the message can affect parsing of the POST form and 
- *		create unexpected results. Avoid if possible, or use quotes.
+ *       A valid twitter account name and password must be provided. 
+ *       Special characters in the message can affect parsing of the POST form and 
+ *       create unexpected results. Avoid if possible, or use quotes.
  *
  * \usage
  *
@@ -260,7 +262,7 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  * \param[in] twittername - Required - a STR_MS_T containing the twitter username.
  * \param[in] twitterpass - Required - a STR_MS_T containing the twitter password.
  * \param[in] message - Required - a STR_MS_T containing the message to post.
- * \param[out] status - a INT_MS_T containing the status.
+ * \param[out] status - An INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.

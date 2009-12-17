@@ -2127,33 +2127,53 @@ msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam
 
 
 /**
- * \fn msiMergeDataCopies
+ * \fn msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *masterColl, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief Custom microservice for NARA consolidation rule
+ *
+ * \module ERA
+ *
+ * \since 2.2
+ *
  * \author  Antoine de Torcy
- * \date   2009-05-22
- * \brief Custom microservice for NARA consolidation rule.
- * \note  Custom microservice for NARA consolidation rule.
- *	Takes an object, a current home collection and a master collection:
- *	1) If the object is an orphan (no corresponding object in the master collection) 
- *	it is moved to the master collection.
- *	2) If there is a corresponding object in the master collection, their 
- *	checksums are compared.
- *		2a)	If the checksums match the object is registered as a replica of 
- *			the master object. Its physical file is rearranged accordingly to ensure
- *			consistency between logical and physical paths. 
- *		2b)	If the checksums do not match the object is flagged for manual check:
- *			It gets a new metadata attribute whose name is "CHECKSUM_MISMATCH" and
- *			whose value is the checksum of the master object.
- * \param[in] 
- *    objPath - a DataObjInp_MS_T or a STR_MS_T with the target object's path.
- *	  currentColl - A CollInp_MS_T or a STR_MS_T with the current collection's path.
- *	  masterColl - A CollInp_MS_T or a STR_MS_T with the master collection's path.
- * \param[out] 
- *    status - an INT_MS_T containing the operation status.
+ * \date    2009-05-22
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
+ * \note
+ *   Takes an object, a current home collection and a master collection:
+ *   1) If the object is an orphan (no corresponding object in the master collection) 
+ *      it is moved to the master collection.
+ *   2) If there is a corresponding object in the master collection, their 
+ *      checksums are compared.
+ *      2a) If the checksums match, the object is registered as a replica of 
+ *          the master object. Its physical file is rearranged accordingly to ensure
+ *          consistency between logical and physical paths. 
+ *      2b) If the checksums do not match, the object is flagged for manual check:
+ *          It gets a new metadata attribute whose name is "CHECKSUM_MISMATCH" and
+ *          whose value is the checksum of the master object.
+ *
+ * \usage None
+ *
+ * \param[in] objPath - A DataObjInp_MS_T or a STR_MS_T with the target object's path.
+ * \param[in] currentColl - A CollInp_MS_T or a STR_MS_T with the current collection's path.
+ * \param[in] masterColl - A CollInp_MS_T or a STR_MS_T with the master collection's path.
+ * \param[out] status - An INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
@@ -2423,22 +2443,42 @@ msiMergeDataCopies(msParam_t *objPath, msParam_t *currentColl, msParam_t *master
 
 
 /**
- * \fn msiFlagDataObjWithAVU
+ * \fn msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief Flags a data object with an AVU
+ *
+ * \module ERA
+ *
+ * \since 2.3
+ *
  * \author  Antoine de Torcy
- * \date   2009-11-05
- * \brief Flags a data object with an AVU.
+ * \date    2009-11-05
+ *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
+ *
  * \note  This microservice flags a data object by adding it an AVU.
  *        The attribute name is the flag and the value is 1. No unit.
- * \param[in] 
- *    dataObj - a DataObjInp_MS_T or a STR_MS_T with the target object's path.
- *	  flag - A STR_MS_T with the flag name.
- * \param[out] 
- *    status - an INT_MS_T containing the operation status.
+ *
+ * \usage None
+ *
+ * \param[in] dataObj - A DataObjInp_MS_T or a STR_MS_T with the target object's path.
+ * \param[in] flag - A STR_MS_T with the flag name.
+ * \param[out] status - An INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
  * \return integer
- * \retval 0 on success
- * \sa
- * \post
+ * \retval 0 upon success
  * \pre
+ * \post
+ * \sa
  * \bug  no known bugs
 **/
 int
