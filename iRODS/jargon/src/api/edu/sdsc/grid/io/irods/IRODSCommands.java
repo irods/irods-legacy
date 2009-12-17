@@ -501,9 +501,6 @@ class IRODSCommands {
 	 */
 	private int outputOffset = 0;
 
-	/**
-	 * Hold the iRODS account info
-	 */
 	IRODSAccount account;
 
 	/**
@@ -512,12 +509,10 @@ class IRODSCommands {
 	private long date;
 	
 	private String reportedIRODSVersion = "";
+	
+	MetaDataCondition[] conditions;
 
 	
-
-	/**
-	 * Creates a new instance of IRODSCommands
-	 */
 	IRODSCommands() {
 
 	}
@@ -2431,9 +2426,7 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, OPR_COMPLETE_AN);
 	}
 
-	// ---------------------------------------------------------
 	// Admin methods
-	// ---------------------------------------------------------
 
 	/**
 	 * General iRODS Admin commands. See also iadmin
@@ -2442,7 +2435,6 @@ class IRODSCommands {
 		if (args == null || args.length <= 0)
 			return;
 		else if (args.length != 10) {
-			// ...I have the feeling the server won't like to receive any less.
 			String[] temp = new String[10];
 			System.arraycopy(args, 0, temp, 0, args.length);
 			args = temp;
@@ -2463,10 +2455,9 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, GENERAL_ADMIN_AN);
 	}
 
-	// ---------------------------------------------------------
-	// Query methods
-	// ---------------------------------------------------------
+	
 	/**
+	 * @deprecated Use {@link #query(MetaDataCondition[], MetaDataSelect[], int, Namespace) 
 	 * Made before the general query was available. Allowed queries:
 	 * "select token_name from r_tokn_main where token_namespace = 'token_namespace'"
 	 * , "select token_name from r_tokn_main where token_namespace = ?",
@@ -2501,20 +2492,12 @@ class IRODSCommands {
 		}
 
 		message = irodsFunction(RODS_API_REQ, message, SIMPLE_QUERY_AN);
-		if (message == null) {// TODO um? ||
-			// message.getTag(paramLen).getIntValue() <= 0)
-			// {
+		if (message == null) {
 			return null;
 		}
-		// TODO odd...
 		String output = message.getTag(outBuf).getStringValue();
 		return output.split("\n");
 	}
-
-	// ---------------------------------------------------------
-	// New query methods
-	// ---------------------------------------------------------
-	MetaDataCondition[] conditions;
 
 	/**
 	 * Send a query to iRODS
@@ -2525,7 +2508,7 @@ class IRODSCommands {
 		Tag message = new Tag(GenQueryInp_PI, new Tag[] {
 				new Tag(maxRows, numberOfRecordsWanted),
 				new Tag(continueInx, 0), // new query
-				new Tag(partialStartIndex, 0), // not sure
+				new Tag(partialStartIndex, 0), 
 				createKeyValueTag(null), });
 		Tag[] subTags = null;
 		int j = 1;
@@ -2584,8 +2567,7 @@ class IRODSCommands {
 			message.addTag(new Tag(InxValPair_PI, new Tag(isLen, 0)));
 		}
 
-		// send command to
-		// server***************************************************
+		// send command to server
 		message = irodsFunction(RODS_API_REQ, message, GEN_QUERY_AN);
 
 		if (message == null) {
@@ -2682,15 +2664,13 @@ class IRODSCommands {
 		MetaDataField[] fields = new MetaDataField[attributes];
 		MetaDataRecordList[] rl = new MetaDataRecordList[rows];
 		for (int i = 0; i < attributes; i++) {
-			// TODO just hard-coded the first "SqlResult_PI" result location...
-			// definately TODO
+			
 			fields[i] = IRODSMetaDataSet.getField(message.tags[4 + i].getTag(
 					attriInx).getStringValue());
 		}
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
-				// TODO just hard-coded the first "SqlResult_PI" result
-				// location...
+				
 				results[j] = message.tags[4 + j].tags[2 + i].getStringValue();
 			}
 			if (continuation > 0) {
@@ -2706,7 +2686,6 @@ class IRODSCommands {
 		return rl;
 	}
 
-	// user definable query functions----------------------------------------
 	/**
 	 * Checks to see if any of these conditions are really a user definable
 	 * metadata AVU. And if so convert it to something irods will understand.
@@ -2788,12 +2767,7 @@ class IRODSCommands {
 				conditions = newConditions.toArray(conditions);
 			} else {
 				conditions = newConditions.toArray(new MetaDataCondition[0]);
-				/*
-				 * throw new RuntimeException(
-				 * "Must instantiate an IRODSFileSystem at least once " +
-				 * "(for the static variables) " +
-				 * "before creating query selects or conditions for iRODS");
-				 */
+				
 			}
 
 			// join the selects
@@ -2813,6 +2787,7 @@ class IRODSCommands {
 	 * @return
 	 */
 	boolean checkForAVU(MetaDataField field) {
+		// note that the getExtensibleName(null) call below will always return DEFINABLE_METADATA
 		String ext = field.getExtensibleName(null);
 		if ((ext != null) && ext.equals(IRODSMetaDataSet.DEFINABLE_METADATA))
 			return true;
@@ -2851,7 +2826,6 @@ class IRODSCommands {
 	// ---------------------------------------------------------
 	// Parallel transfer
 	// ---------------------------------------------------------
-	// TODO for testing
 	int incThread = 0;
 
 	class TransferThread implements Runnable {
@@ -3021,7 +2995,6 @@ class IRODSCommands {
 		void get() throws IOException {
 			// read the header
 			int operation = readInt();
-			// TODO not sure what flags there can be
 			int flags = readInt();
 			// Where to seek into the data
 			long offset = readLong();

@@ -41,7 +41,6 @@
 //
 package edu.sdsc.grid.io;
 
-import java.util.HashMap;
 
 
 /**
@@ -60,9 +59,7 @@ import java.util.HashMap;
  */
 public final class MetaDataField implements Comparable
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+
   /**
    * The value type for the field.
    * Types include: INT, LONG, FLOAT, STRING, DATE, TABLE.
@@ -100,12 +97,6 @@ public final class MetaDataField implements Comparable
   public static final int TABLE = MetaDataCondition.TABLE;
 
 
-
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
   /**
    * The attribute name
    */
@@ -137,11 +128,6 @@ public final class MetaDataField implements Comparable
   private Protocol[] protocols = new Protocol[1];
 
 
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Constructs a field description.
    * If a type argument is given, the field is marked as
@@ -187,9 +173,6 @@ public final class MetaDataField implements Comparable
   }
 
 
-//----------------------------------------------------------------------
-// Getters
-//----------------------------------------------------------------------
   /**
    * Returns the name of the field.
    */
@@ -240,7 +223,6 @@ public final class MetaDataField implements Comparable
     return protocols[index];
   }
 
-  //TODO public?
   /**
    * @return The extra extensible schema or table name used to make this
    *    value uniquely refer to a certain metadata attribute.
@@ -256,7 +238,6 @@ public final class MetaDataField implements Comparable
         }
       }
       else {
-        //TODO for now can only be
         return MetaDataSet.DEFINABLE_METADATA; 
       }
     }
@@ -416,9 +397,7 @@ public final class MetaDataField implements Comparable
 
   public int compareTo( Object obj )
   {
-    //TODO why not compare anything...
-    //if (obj instanceof MetaDataGroup)
-
+  
     return toString().compareTo( obj.toString() );
   }
 }

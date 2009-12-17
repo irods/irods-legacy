@@ -45,51 +45,36 @@ package edu.sdsc.grid.io.irods;
 
 import edu.sdsc.grid.io.Protocol;
 
-
 /**
  * Used by the api to track which querying protocol should be used.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
- * @since   JARGON2.0
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
+ * @since JARGON2.0
  */
-public class IRODSProtocol extends Protocol
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-  final static String IRODS_PROTOCOL_NAME = "IRODSProtocol";
-  final static String IRODS_PROTOCOL_HELP = "";
+public class IRODSProtocol extends Protocol {
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	final static String IRODS_PROTOCOL_NAME = "IRODSProtocol";
+	final static String IRODS_PROTOCOL_HELP = "";
 
+	/**
+	 * Sets up the metadata querying for iRODS, if not already done.
+	 */
+	public IRODSProtocol() {
+		super(IRODS_PROTOCOL_NAME, IRODS_PROTOCOL_HELP);
+		metaDataSet = new IRODSMetaDataSet(this);
+	}
 
+	/**
+	 * If and only if the object is an instance of IRODSProtocol.
+	 */
+	public boolean equals(Object obj) {
+		if (obj != null) {
+			if (obj instanceof IRODSProtocol) {
+				return true;
+			}
+		}
 
-//----------------------------------------------------------------------
-//  Methods
-//----------------------------------------------------------------------
-  /**
-   * Sets up the metadata querying for iRODS, if not already done.
-   */
-  public IRODSProtocol( )
-  {
-    super( IRODS_PROTOCOL_NAME, IRODS_PROTOCOL_HELP );
-    metaDataSet = new IRODSMetaDataSet(this);
-  }
-
-
-  /**
-   * If and only if the object is an instance of IRODSProtocol.
-   */
-  public boolean equals( Object obj ) {
-    if (obj != null) {
-      if (obj instanceof IRODSProtocol) {
-        return true;
-      }
-    }
-
-    return false;
-  }
+		return false;
+	}
 
 }

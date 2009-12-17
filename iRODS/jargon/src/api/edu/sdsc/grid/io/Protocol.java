@@ -103,15 +103,6 @@ public abstract class Protocol
   }
 
 
-  /**
-   * Factory
-   */
-/*
-  public static Protocol newProtocol()
-  {
-    return null; //TODO
-  }
-*/
 
   /**
    * The standard java equals(Object), but it is abstract to insure

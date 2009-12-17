@@ -64,8 +64,7 @@ public class ProtocolCatalog
 //----------------------------------------------------------------------
   private static Vector protocols = new Vector();
 
-//TODO yeah, not much here. It only exists because some tricky stuff
-//was needed to get around certain 'static' problems.
+
   ProtocolCatalog()
   {
     super();
