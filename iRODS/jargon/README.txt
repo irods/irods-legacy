@@ -1,38 +1,38 @@
 DESCRIPTION
-	This directory contains the source code and documentation for
-	the SDSC JARGON Project.
+  This directory contains the source code and documentation for
+  the SDSC JARGON Project.
 
 URLS
-	https://www.irods.org/index.php/Jargon - Project home page
+  https://www.irods.org/index.php/Jargon - Project home page
 
 
 AUTHOR
-	Principal Author,
-	Lucas Ammon Gilbert, San Diego Supercomputer Center
+  Principal Author,
+  Lucas Ammon Gilbert, San Diego Supercomputer Center
 
-	Designers,
-		Lucas Ammon Gilbert, San Diego Supercomputer Center
-	version 1.0
-		Lucas Ammon Gilbert, San Diego Supercomputer Center
-		David R. Nadeau, San Diego Supercomputer Center
-		John Moreland, San Diego Supercomputer Center
+  Designers,
+    Lucas Ammon Gilbert, San Diego Supercomputer Center
+  version 1.0
+    Lucas Ammon Gilbert, San Diego Supercomputer Center
+    David R. Nadeau, San Diego Supercomputer Center
+    John Moreland, San Diego Supercomputer Center
 
 
 CONTACT
-	Mike Conway, DICE Center, UNC Chapel Hill
-	michael_conway@unc.edu
+  Mike Conway, DICE Center, UNC Chapel Hill
+  michael_conway@unc.edu
 
 
 CONTENT
-	build.xml	                 -  ANT build, Makes the API and test applications
-	build.properties             -  Customization properties for build behavior
-	README.txt	                 -  This file
-	RELEASE_NOTES.txt	         -  Text copy of release notes
-	doc/		                 -  Documentation
-	lib/		                 -  Compile, test, and run libraries
-	src/		                 -  Source code
-	target/                      -  Build-generated directory for output of build tasks
-	   target/dist               -  Distribution directory for built Jargon .jar files
+  build.xml                -  ANT build, Makes the API and test applications
+  build.properties         -  Customization properties for build behavior
+  README.txt               -  This file
+  RELEASE_NOTES.txt        -  Text copy of release notes
+  doc/                     -  Documentation
+  lib/                     -  Compile, test, and run libraries
+  src/                     -  Source code
+  target/                  -  Build-generated directory for output of build tasks
+     target/dist              -  Distribution directory for built Jargon .jar files
 
 
 To build Jargon:
