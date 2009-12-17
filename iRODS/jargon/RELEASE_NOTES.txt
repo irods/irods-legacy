@@ -108,6 +108,12 @@ Adding new methods in IRODSFile and Rule to allow rules to be invoked with the r
 to return the rule invocation as a Map<String, String> as well as a Map<String, Object> based on user requests.
 
 Also note that new methods were added to IRODSFileSytem to execute rules with the rule text in a string parameter, versus the former InputStream.
+
+-------------
+Additional tests developed for 2.1 through 2.3 compatibility testing, and for other reported issues
+
+-------------
+A lorge number of 'small' fixes and cleanups
 	
 ================================================================================================
 Outstanding Issues
