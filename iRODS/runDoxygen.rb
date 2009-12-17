@@ -86,7 +86,7 @@ def main()
   response = ""
   if (File.exist?(output_file))
     puts("\nAttention: [#{output_file}] already exists.")
-    puts("\Use previous settings? y/n [n]:")
+    puts("\Use previous settings? y/n [y]:")
     response = gets()
   end
 
