@@ -113,7 +113,7 @@ Also note that new methods were added to IRODSFileSytem to execute rules with th
 Additional tests developed for 2.1 through 2.3 compatibility testing, and for other reported issues
 
 -------------
-A lorge number of 'small' fixes and cleanups
+A large number of 'small' fixes and cleanups
 	
 ================================================================================================
 Outstanding Issues
@@ -125,3 +125,4 @@ Documentation and Installation
 -See the README.txt in this distribution
 -Review Jargon documentation at: http://www.irods.org/index.php/Jargon
 -Review information at the IRODS web site: http://www.irods.org
+
