@@ -353,7 +353,7 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
+ * \author  Antoine de Torcy
  * \date 
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
@@ -473,4 +473,6 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
 
 	return (rei->status);
 }
+
+
 

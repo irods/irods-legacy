@@ -569,7 +569,7 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
     msParam->type = typ;
   }
   /*** RAJA removed commenting out Nov 3, 2009 to stop a memory leak  ***/
-       clearMsParamArray (list,1);
+       // clearMsParamArray (list,1);  /* Re-commented out on 11/20/09 to prevent segfault until it is fixed. */
        free(list);
   /***/
   if (i == BREAK_ACTION_ENCOUNTERED_ERR) 

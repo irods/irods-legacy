@@ -10,6 +10,7 @@
 #include "reGlobalsExtern.h"
 #include "genQuery.h"
 #include "reHelpers1.h"
+#include "rcMisc.h"
 
 int _makeQuery( char *sel, char *cond, char **sql);
 
@@ -725,3 +726,377 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
   }
   return(0);
 }
+
+
+
+/**
+ * \fn msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice sets a select field in a genQueryInp_t.
+ *
+ * \module core
+ *
+ *
+ * \author  Antoine de Torcy
+ * \date    2009-11-28
+ *
+ *
+ * \note This microservice sets a select field in a genQueryInp_t, from two parameters. One is an iCAT attribute index given 
+ *			without its 'COL_' prefix. The second one is the optional SQL operator.		 
+ *			A new genQueryInp_t is created if queryInput is NULL.
+ *			Followed with msiExecGenQuery, msiAddSelectFieldToGenQuery allows to take the results of other 
+ *			microservices to build and execute queries within a rule.
+ *
+ * \usage None
+ *
+ * \param[in] select - Required - a STR_MS_T with the select field.
+ * \param[in] function - Optional - a STR_MS_T with the function. Valid values are [MIN|MAX|SUM|AVG|COUNT]
+ * \param[in,out] queryInput - Optional - a GenQueryInp_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei)
+{
+	char *column_str;
+	int column_inx, function_inx;
+	genQueryInp_t *genQueryInp;
+
+	/*************************************  INIT **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiAddSelectFieldToGenQuery")
+	
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL) 
+	{
+		rodsLog (LOG_ERROR, "msiAddSelectFieldToGenQuery: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/********************************** PARAM PARSING  *********************************/
+
+	/* Parse select */
+	if ((column_str = parseMspForStr(select)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiAddSelectFieldToGenQuery: input select is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+	
+	/* Parse function and convert to index directly, getSelVal() returns 1 if string is NULL or empty. */
+	function_inx = getSelVal(parseMspForStr(function));
+	
+	/* Check for proper parameter type for queryInput */
+	 if (queryInput->type && strcmp(queryInput->type, GenQueryInp_MS_T))
+	 {
+		rodsLog (LOG_ERROR, "msiAddSelectfieldToGenQuery: queryInput is not of type GenQueryInp_MS_T.");
+		return (USER_PARAM_TYPE_ERR);	 
+	 }
+
+	/* Parse queryInput. Create new structure if empty. */
+	if (!queryInput->inOutStruct)
+	{
+		/* Set content */
+		genQueryInp = (genQueryInp_t*)malloc(sizeof(genQueryInp_t));
+		memset(genQueryInp, 0, sizeof(genQueryInp_t));
+		genQueryInp->maxRows = MAX_SQL_ROWS;
+		queryInput->inOutStruct = (void*)genQueryInp;
+		
+		/* Set type */
+		if (!queryInput->type)
+		{
+			queryInput->type = strdup(GenQueryInp_MS_T);
+		}
+	}
+	else 
+	{
+		genQueryInp = (genQueryInp_t*)queryInput->inOutStruct;
+	}
+
+	
+	/***************************** ADD INDEXES TO QUERY INPUT  *****************************/
+
+	/* Get column index */
+	column_inx = getAttrIdFromAttrName(column_str);
+	
+	/* Error? */
+	if (column_inx < 0) {
+		rodsLog (LOG_ERROR, "msiAddSelectfieldToGenQuery: Unable to get valid ICAT column index.");
+		return(column_inx);
+	}
+	
+	/* Add column and function to genQueryInput */
+	addInxIval (&genQueryInp->selectInp, column_inx, function_inx);
+	
+	
+	/*********************************** DONE *********************************************/
+	return 0;
+}
+
+
+/**
+ * \fn msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice adds a condition a genQueryInp_t.
+ *
+ * \module core
+ *
+ *
+ * \author  Antoine de Torcy
+ * \date    2009-12-07
+ *
+ *
+ * \note This microservice adds a condition to an existing genQueryInp_t, from three parameters. One is an iCAT attribute index given 
+ *			without its 'COL_' prefix. The second one is the SQL operator. The third one is the value and may contain wildcards. 
+ *			To be used with msiAddSelectFieldToGenQuery and msiExecGenQuery to build queries from the results of other 
+ *			microservices or actions within an iRods rule.
+ *
+ * \usage None
+ *
+ * \param[in] attribute - Required - a STR_MS_T with the iCAT attribute name (see www.irods.org/index.php/icatAttributes).
+ * \param[in] operator - Required - a STR_MS_T with the operator.
+ * \param[in] value - Required - a STR_MS_T with the value.
+ * \param[in,out] queryInput - Required - a GenQueryInp_MS_T.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
+{
+	genQueryInp_t *genQueryInp;
+	char condStr[MAX_NAME_LEN];
+	char *att_str, *op_str, *val_str;
+	int att_inx;
+	
+	/*************************************  INIT **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiAddConditionToGenQuery")
+	
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL) 
+	{
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/********************************** PARAM PARSING  *********************************/
+	
+	/* Parse attribute */
+	if ((att_str = parseMspForStr(attribute)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input attribute is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+	
+	/* Parse operator */
+	if ((op_str = parseMspForStr(operator)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input operator is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+	
+	/* Parse value */
+	if ((val_str = parseMspForStr(value)) == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input value is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+	
+	/* Check for proper parameter type for queryInput */
+	if (queryInput->type && strcmp(queryInput->type, GenQueryInp_MS_T))
+	{
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: queryInput is not of type GenQueryInp_MS_T.");
+		return (USER_PARAM_TYPE_ERR);	 
+	}
+	
+	/* Parse queryInput. Must not be empty. */
+	if (!queryInput->inOutStruct)
+	{
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: input queryInput is NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+	else 
+	{
+		genQueryInp = (genQueryInp_t*)queryInput->inOutStruct;
+	}
+	
+	
+	/***************************** ADD CONDITION TO QUERY INPUT  *****************************/
+
+	/* Get attribute index */
+	att_inx = getAttrIdFromAttrName(att_str);
+	
+	/* Error? */
+	if (att_inx < 0) {
+		rodsLog (LOG_ERROR, "msiAddConditionToGenQuery: Unable to get valid ICAT column index.");
+		return(att_inx);
+	}
+	
+	/* Make the condition */
+	snprintf (condStr, MAX_NAME_LEN, " %s '%s'", op_str, val_str);
+
+	/* Add condition to genQueryInput */
+	addInxVal (&genQueryInp->sqlCondInp, att_inx, condStr);   /* condStr gets strdup'ed */
+	
+	
+	/*********************************** DONE *********************************************/
+	return 0;
+}
+
+
+
+/**
+ * \fn msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
+ *
+ * \module core
+ *
+ *
+ * \author  Antoine de Torcy
+ * \date    2009-12-16
+ *
+ *
+ * \note This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T. The results can be formatted 
+ *			 with an optional C-style format string the same way it is done in iquest.
+ *
+ *
+ *
+ * \usage None
+ *
+ * \param[in] queryOut - Required - a GenQueryOut_MS_T.
+ * \param[in] format - Optional - a STR_MS_T with a C-style format string, like in iquest.
+ * \param[out] buffer - a BUF_LEN_MS_T
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int 
+msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei)
+{
+	genQueryOut_t *genQueryOut;
+	char *format_str;
+	bytesBuf_t *bytesBuf;
+	FILE *stream;
+	char readbuffer[MAX_NAME_LEN];
+
+	/*************************************  INIT **********************************/
+	
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiPrintGenQueryOutToBuffer")
+	
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL) 
+	{
+		rodsLog (LOG_ERROR, "msiPrintGenQueryOutToBuffer: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+	
+	
+	/********************************** PARAM PARSING  *********************************/
+	
+	/* Check for proper param type */
+	if (!queryOut || !queryOut->inOutStruct || !queryOut->type || strcmp(queryOut->type, GenQueryOut_MS_T)) 
+	{
+		rodsLog (LOG_ERROR, "msiPrintGenQueryOutToBuffer: Invalid input for queryOut.");
+		return(USER_PARAM_TYPE_ERR);
+	}
+	genQueryOut = (genQueryOut_t *)queryOut->inOutStruct;
+
+
+	/* Parse format */
+	format_str = parseMspForStr(format);
+	
+	
+	/********************************** EXTRACT SQL RESULTS  *********************************/
+	
+	/* Let's use printGenQueryOut() here for the sake of consistency over efficiency (somewhat). It needs a stream. */
+	stream = tmpfile();
+	if (!stream)   /* Since it won't be caught by printGenQueryOut */
+	{
+		rodsLog (LOG_ERROR, "msiPrintGenQueryOutToBuffer: tmpfile() failed.");
+		return(FILE_OPEN_ERR);   /* accurate enough */
+	}
+	
+	/* Write results to temp file */
+	rei->status = printGenQueryOut(stream, format_str, NULL, genQueryOut);
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiPrintGenQueryOutToBuffer: printGenQueryOut() failed, status = %d", rei->status);
+		return(rei->status);
+	}	
+	
+	/* bytesBuf init */
+	bytesBuf = (bytesBuf_t *)malloc(sizeof(bytesBuf_t));
+	memset (bytesBuf, 0, sizeof (bytesBuf_t));	
+	
+	/* Read from temp file and write to bytesBuf */
+	rewind(stream);
+    while (fgets(readbuffer, MAX_NAME_LEN, stream) != NULL)
+    {
+    	appendToByteBuf(bytesBuf, readbuffer);
+    }
+    
+	
+	/********************************* RETURN AND DONE **********************************/
+	
+	/* Free memory previously allocated for previous result batches (when used in loop). */
+	if (buffer && buffer->inpOutBuf)
+	{
+		freeBBuf(buffer->inpOutBuf);
+	}
+	resetMsParam(buffer);
+		
+	/* Fill bytesBuf in our buffer output */
+	fillBufLenInMsParam (buffer, bytesBuf->len, bytesBuf);
+	
+	return 0;
+	
+}
+
+
+
