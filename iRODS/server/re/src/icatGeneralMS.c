@@ -21,163 +21,163 @@ This documentation is generated from the iRODS code.
 \section msicore Core Microservices
 
  \subsection msiruleengine Rule Engine Microservices
-  - #msiAdmChangeCoreIRB    - changing the core.irb file from the client
-  - #msiAdmAppendToTopOfCoreIRB - prepends another irb file to the core.irb file
-  - #msiAdmAddAppRuleStruct - adds application level IRB rules and DVM and FNM mappings to the rule engine.
-  - #msiAdmClearAppRuleStruct - clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine.
-  - #msiAdmShowIRB      - displaying the currently loaded rules
-  - #msiAdmShowDVM      - displaying the currently loaded variable name mappings
-  - #msiAdmShowFNM      - displaying the currently loaded microservices/Actions name mappings
+  - #msiAdmChangeCoreIRB    - Changes the core.irb file from the client
+  - #msiAdmAppendToTopOfCoreIRB - Prepends another irb file to the core.irb file
+  - #msiAdmAddAppRuleStruct - Adds application level IRB rules and DVM and FNM mappings to the rule engine
+  - #msiAdmClearAppRuleStruct - Clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine
+  - #msiAdmShowIRB      - Displays the currently loaded rules
+  - #msiAdmShowDVM      - Displays the currently loaded variable name mappings
+  - #msiAdmShowFNM      - Displays the currently loaded microservices/Actions name mappings
 
 
  \subsection msiworkflow Workflow Microservices
-  - #nop, #null       - no action
-  - #cut              - not to retry any other applicable rules for this action
-  - #succeed          - succeed immediately
-  - #fail             - fail immediately - recovery and retries are possible
-  - #msiGoodFailure   - useful when you want to fail but no recovery initiated.
-  - #msiSleep         - sleep
-  - #whileExec        - while loop
-  - #forExec          - for loop with initial,step and end condition
-  - #forEachExec      - for loop iterating over a row of tables or a list
-  - #breakExec        - breaks out of while, for and forEach loops
-  - #writeString      - writing a string to stdout buffer
-  - #writeLine        - writing a line (with end-of-line) to stdout buffer
-  - #assign           - assigning a value to a parameter
-  - #ifExec           - if-then-else conditional branch
-  - #delayExec        - delaying an execution of micro-services or rules
-  - #remoteExec       - remote execution of micro-services or rules
-  - #msiApplyAllRules - apply all applicable rules when executing a given rule
+  - #nop, #null       - No action
+  - #cut              - Not to retry any other applicable rules for this action
+  - #succeed          - Succeed immediately
+  - #fail             - Fail immediately - recovery and retries are possible
+  - #msiGoodFailure   - Useful when you want to fail but no recovery initiated
+  - #msiSleep         - Sleep
+  - #whileExec        - While loop
+  - #forExec          - For loop with initial, step and end condition
+  - #forEachExec      - For loop iterating over a row of tables or a list
+  - #breakExec        - Breaks out of while, for and forEach loops
+  - #writeString      - Writes a string to stdout buffer
+  - #writeLine        - Writes a line (with end-of-line) to stdout buffer
+  - #assign           - Assigns a value to a parameter
+  - #ifExec           - If-then-else conditional branch
+  - #delayExec        - Delays an execution of micro-services or rules
+  - #remoteExec       - Invokes remote execution of microservices or rules
+  - #msiApplyAllRules - Applies all applicable rules when executing a given rule
 
  \subsection msilowlevel Data Object Low-level Microservices
   Can be called by client through irule.
-  - #msiDataObjCreate - create a data object
-  - #msiDataObjOpen - open a data object
-  - #msiDataObjClose - close an opened data object
-  - #msiDataObjLseek - lseek
-  - #msiDataObjRead - read an opened data object 
-  - #msiDataObjWrite - write
+  - #msiDataObjCreate - Create a data object
+  - #msiDataObjOpen - Open a data object
+  - #msiDataObjClose - Close an opened data object
+  - #msiDataObjLseek - Repositions the read/write offset of an open data object
+  - #msiDataObjRead - Read an opened data object 
+  - #msiDataObjWrite - Write to an opened data object
 
  \subsection msidataobject Data Object Microservices
   Can be called by client through irule.
-  - #msiDataObjUnlink - delete
-  - #msiDataObjRepl - replicate
-  - #msiDataObjReplWithOptions - replicate, with options
-  - #msiDataObjCopy - copy  
-  - #msiDataObjGet - get
-  - #msiDataObjGetWithOptions - get, with options
-  - #msiDataObjPut - put
-  - #msiDataObjPutWithOptions - put with options
-  - #msiDataObjChksum - checksum a data object
-  - #msiDataObjChksumWithOptions - checksum a data object, with options
-  - #msiDataObjPhymv - move a data object from one resource to another
-  - #msiDataObjRename - rename a data object 
-  - #msiDataObjTrim - trim the replica
-  - #msiPhyPathReg - register a physical file into iRODS
-  - #msiObjStat - Stat an object
-  - #msiDataObjRsync - Rsync a data between iRods and local file 
-  - #msiGetObjType - finds if a given value is a data,coll,resc,...
-  - #msiCheckPermission - check if an data Object permission is the same as the one given
-  - #msiCheckOwner - check if the user is the owner of the data object
+  - #msiDataObjUnlink - Delete a data object
+  - #msiDataObjRepl - Replicate a data object
+  - #msiDataObjReplWithOptions - Replicate a data object, with options
+  - #msiDataObjCopy - Copy a data object
+  - #msiDataObjGet - Get a data object
+  - #msiDataObjGetWithOptions - Get a data object, with options
+  - #msiDataObjPut - Put a data object
+  - #msiDataObjPutWithOptions - Put a data object, with options
+  - #msiDataObjChksum - Checksum a data object
+  - #msiDataObjChksumWithOptions - Checksum a data object, with options
+  - #msiDataObjPhymv - Move a data object from one resource to another
+  - #msiDataObjRename - Rename a data object 
+  - #msiDataObjTrim - Trim the replicas of a data object
+  - #msiPhyPathReg - Register a physical file into iRODS
+  - #msiObjStat - Stat an iRODS object
+  - #msiDataObjRsync - Rsync a data between iRODS and a local file 
+  - #msiGetObjType - Finds if a given value is a data, coll, resc, ...
+  - #msiCheckPermission - Check if a data object permission is the same as the one given
+  - #msiCheckOwner - Check if the user is the owner of the data object
 
  \subsection msicollection Collection Microservices
-  - #msiCollCreate - create a collection
-  - #msiCollRepl - replicate all files in a collection
-  - #msiRmColl - delete a collection
-  - #msiAutoReplicateService - checks and repairs up to n replicas
-  - #msiDataObjAutoMove - used to automatically move the newly created file into a destination collection
+  - #msiCollCreate - Create a collection
+  - #msiCollRepl - Replicate all files in a collection
+  - #msiRmColl - Delete a collection
+  - #msiAutoReplicateService - Checks and repairs up to n replicas
+  - #msiDataObjAutoMove - Used to automatically move the newly created file into a destination collection
 
  \subsection msiproxy Proxy Command Microservices
-  - #msiExecCmd - remote execute a command
+  - #msiExecCmd - Remotely execute a command
 
  \subsection msiicat iCAT Microservices
  iCAT System Services
   - #msiVacuum - Postgres vacuum - done periodically
-  - #msiCommit  - commiting the database transaction
-  - #msiRollback - rolling back the database transaction
-  - #msiCreateUser - creating a new user
-  - #msiDeleteUser - deleting a user
-  - #msiAddUserToGroup - adds a user to a group
-  - #msiCreateCollByAdmin  - creating a collection by administrator
-  - #msiDeleteCollByAdmin  - deleting a collection by administrator
-  - #msiRenameLocalZone  - renames the local zone by updating various tables
-  - #msiRenameCollection  - renames a collection; used via a rule with the above #msiRenameLocalZone
-  - #msiExecStrCondQuery - given a condition string creates an iCAT query, executes it and returns the values
-  - #msiExecStrCondQueryWithOptions - like #msiExecStrCondQuery, with extra options
-  - #msiExecGenQuery - executes a given general query structure and returns results
-  - #msiMakeQuery - given a select list and a condition list creates a psuedo-SQL query
+  - #msiCommit  - Commits the database transaction
+  - #msiRollback - Rollback the current database transaction
+  - #msiCreateUser - Creates a new user
+  - #msiDeleteUser - Deletes a user
+  - #msiAddUserToGroup - Adds a user to a group
+  - #msiCreateCollByAdmin  - Creates a collection by administrator
+  - #msiDeleteCollByAdmin  - Deletes a collection by administrator
+  - #msiRenameLocalZone  - Renames the local zone by updating various tables
+  - #msiRenameCollection  - Renames a collection; used via a rule with the above #msiRenameLocalZone
+  - #msiExecStrCondQuery - Creates an iCAT query, given a condition string, and executes it and returns the values
+  - #msiExecStrCondQueryWithOptions - Like #msiExecStrCondQuery, with extra options
+  - #msiExecGenQuery - Executes a given general query structure and returns results
+  - #msiMakeQuery - Creates a psuedo-SQL query, given a select list and a condition list
   - #msiGetMoreRows - Continues an unfinished query and #msiExecStrCondQuery and returns results
-  - #msiMakeGenQuery  - a combination of #msiMakeQuery and #msiExecGenQuery and returns the results of the execution
-  - #msiGetContInxFromGenQueryOut - gets continue index value generated by #msiExecGenQuery
-  - #msiAclPolicy - set the ACL policy
+  - #msiMakeGenQuery  - A combination of #msiMakeQuery and #msiExecGenQuery and returns the results of the execution
+  - #msiGetContInxFromGenQueryOut - Gets continue index value generated by #msiExecGenQuery
+  - #msiAclPolicy - Set the ACL policy
 
  \subsection msirda Rule-oriented Database Access Microservices
   - #msiRdaToStdout   - Calls new RDA functions to interface to an arbitrary database returning results in standard-out.
   - #msiRdaToDataObj  - As above but stores results in an iRODS DataObject.
-  - #msiRdaNoResults   - As above, performs a SQL operation but without resulting output.
+  - #msiRdaNoResults  - As above, performs a SQL operation but without resulting output.
   - #msiRdaCommit     - Commit changes to the database.
   - #msiRdaRollback   - Rollback (don't commit) changes to the database.
 
  \subsection msixmsg XMessaging System Microservices
-  - #msiXmsgServerConnect - connects to the XMessage Server as designate by iRODS Environment file/variable
-  - #msiXmsgCreateStream - creates a new Message Stream
-  - #msiCreateXmsgInp  - creates an Xmsg packet, given all information values
-  - #msiSendXmsg - send an Xmsg packet
-  - #msiRcvXmsg -  receive an Xmsg packet
-  - #msiXmsgServerDisConnect  - disconnect from the XMessage Server
+  - #msiXmsgServerConnect - Connects to the XMessage Server as designate by iRODS Environment file/variable
+  - #msiXmsgCreateStream - Creates a new Message Stream
+  - #msiCreateXmsgInp  - Creates an Xmsg packet, given all information values
+  - #msiSendXmsg - Sends an Xmsg packet
+  - #msiRcvXmsg -  Receives an Xmsg packet
+  - #msiXmsgServerDisConnect  - Disconnects from the XMessage Server
 
  \subsection msiemail Email Microservices
-  - #msiSendMail   - sends email
-  - #msiSendStdoutAsEmail - sends rei's stdout as email
+  - #msiSendMail   - Sends email
+  - #msiSendStdoutAsEmail - Sends rei's stdout as email
 
  \subsection msikv Key-Value (Attr-Value) Microservices
-  - #writeKeyValPairs - write key-value pairs to stdout or stderr and with given separator
-  - #msiPrintKeyValPair - printing key-value pairs to rei's stdout separated by =
-  - #msiGetValByKey  - given a key and a keyValPair struct, extract the corresponding value
-  - #msiString2KeyValPair - Convert a %-separated key=value pair strings into keyValPair Structure
-  - #msiStrArray2String - Array of Strings converted to a string separated by %-signs
-  - #msiAssociateKeyValuePairsToObj  - ingesting object metadata into iCAT from a AVU structure
-  - #msiRemoveKeyValuePairsFromObj  - removing object metadata from iCAT using a AVU structure
+  - #writeKeyValPairs - Writes key-value pairs to stdout or stderr and with given separator
+  - #msiPrintKeyValPair - Prints key-value pairs to rei's stdout separated by =
+  - #msiGetValByKey  - Extracts the corresponding value, given a key and a keyValPair struct
+  - #msiString2KeyValPair - Converts a %-separated key=value pair strings into keyValPair structure
+  - #msiStrArray2String - Converts an array of strings to a string separated by %-signs
+  - #msiAssociateKeyValuePairsToObj  - Ingests object metadata into iCAT from a AVU structure
+  - #msiRemoveKeyValuePairsFromObj  - Removes object metadata from iCAT using a AVU structure
 
  \subsection msiotheruser Other User Microservices
-  - #msiExtractNaraMetadata - extracts NARA style metadata from AVU triplets
+  - #msiExtractNaraMetadata - Extracts NARA style metadata from AVU triplets
   - #msiApplyDCMetadataTemplate - Adds Dublin Core Metadata fields to an object or collection
-  - #msiRegisterData - Register a new data object
-  - #writeBytesBuf - writes the buffer in an inOutStruct to stdout or stderr
+  - #msiRegisterData - Registers a new data object
+  - #writeBytesBuf - Writes the buffer in an inOutStruct to stdout or stderr
   - #msiStrToBytesBuf - Converts a string to a bytesBuf_t
-  - #msiFreeBuffer - frees a buffer in an inOutStruct
-  - #writePosInt  - writes an integer to stdout or stderr
-  - #msiGetDiffTime - returns the difference between two system timestamps given in unix format (stored in string)
-  - #msiGetSystemTime - returns the local system time of server
+  - #msiFreeBuffer - Frees a buffer in an inOutStruct
+  - #writePosInt  - Writes an integer to stdout or stderr
+  - #msiGetDiffTime - Returns the difference between two system timestamps given in unix format (stored in string)
+  - #msiGetSystemTime - Returns the local system time of server
   - #msiHumanToSystemTime - Converts a human readable date to a system timestamp
-  - #msiGetIcatTime - returns the system time for the iCAT server
-  - #msiGetTaggedValueFromString  - Given a Tag-Name gets the value from a file in tagged-format (psuedo-XML)
-  - #msiExtractTemplateMDFromBuf     - extracting AVU info using template
-  - #msiReadMDTemplateIntoTagStruct  - loading template file contents into Tag structure
+  - #msiGetIcatTime - Returns the system time for the iCAT server
+  - #msiGetTaggedValueFromString  - Gets the value from a file in tagged-format (psuedo-XML), given a tag-name
+  - #msiExtractTemplateMDFromBuf     - Extracts AVU info using template
+  - #msiReadMDTemplateIntoTagStruct  - Loads template file contents into tag structure
 
  \subsection msisystem System Microservices
   Can only be called by the server process
-  - #msiSetDefaultResc - set the default resource
-  - #msiSetNoDirectRescInp - sets a list of resources that cannot be used by a normal user directly.
-  - #msiSetRescSortScheme - set the scheme for selecting the best resource to use
-  - #msiSetMultiReplPerResc - sets the number of copies per resource to unlimited
-  - #msiSetDataObjPreferredResc - if the data has multiple copies, specify thepreferred copy to use
-  - #msiSetDataObjAvoidResc - specify the copy to avoid 
-  - #msiSetGraftPathScheme - set the scheme for composing the physical path in the vault to GRAFT_PATH.
-  - #msiSetRandomScheme - set the the scheme for composing the physical path in the vault to RANDOM. 
+  - #msiSetDefaultResc - Sets the default resource
+  - #msiSetNoDirectRescInp - Sets a list of resources that cannot be used by a normal user directly
+  - #msiSetRescSortScheme - Sets the scheme for selecting the best resource to use
+  - #msiSetMultiReplPerResc - Sets the number of copies per resource to unlimited
+  - #msiSetDataObjPreferredResc - Specifies the preferred copy to use, if the data has multiple copies
+  - #msiSetDataObjAvoidResc - Specifies the copy to avoid 
+  - #msiSetGraftPathScheme - Sets the scheme for composing the physical path in the vault to GRAFT_PATH
+  - #msiSetRandomScheme - Sets the the scheme for composing the physical path in the vault to RANDOM
   - #msiSetResource  - sets the resource from default
   - #msiSortDataObj - Sort the replica randomly when choosing which copy to use
-  - #msiSetNumThreads - specify the parameters for determining the number of threads to use for data transfer.
-  - #msiSysChksumDataObj - checksum a data object.
-  - #msiSysReplDataObj - replicate a data object.
-  - #msiStageDataObj - stage the data object to the specified resource before operation.
-  - #msiNoChkFilePathPerm - Do not check file path permission when registering
-  - #msiNoTrashCan - Set the policy to no trash can.
-  - #msiSetPublicUserOpr - Sets a list of operations that can be performed by the user "public".
-  - #msiCheckHostAccessControl - Set the access control policy.
-  - #msiDeleteDisallowed - Set the policy for determining certain data cannot be deleted.
-  - #msiSetDataTypeFromExt        - get data type based on file name extension
-  - #msiSetReServerNumProc        - Sets number of processes for the rule engine server
+  - #msiSetNumThreads - specify the parameters for determining the number of threads to use for data transfer
+  - #msiSysChksumDataObj - Checksums a data object
+  - #msiSysReplDataObj - Replicates a data object
+  - #msiStageDataObj - Stages the data object to the specified resource before operation
+  - #msiNoChkFilePathPerm - Does not check file path permission when registering
+  - #msiNoTrashCan - Sets the policy to no trash can
+  - #msiSetPublicUserOpr - Sets a list of operations that can be performed by the user "public"
+  - #msiCheckHostAccessControl - Sets the access control policy.
+  - #msiDeleteDisallowed - Sets the policy for determining certain data cannot be deleted
+  - #msiSetDataTypeFromExt        - Gets the data type based on file name extension
+  - #msiSetReServerNumProc        - Sets the number of processes for the rule engine server
   - #msiListEnabledMS      - Returns the list of compiled microservices on the local iRODS server
 
  \section msimodules Module Microservices
@@ -194,11 +194,11 @@ This documentation is generated from the iRODS code.
   - #msiExportRecursiveCollMeta - Exports metadata AVU triplets for a collection and its contents in | separated format
   - #msiCopyAVUMetadata - Copies metadata triplets from an iRODS object to another
   - #msiGetUserInfo - Gets Information about user
-  - #msiGetUserACL  - gets User ACL for all objects and collections
-  - #msiCreateUserAccountsFromDataObj - Create new user from information in an iRODS data object
-  - #msiLoadUserModsFromDataObj - Modify user information  from information in an iRODS data object
-  - #msiDeleteUsersFromDataObj - Delete user  from information in an iRODS data object
-  - #msiLoadACLFromDataObj - Loads ACL  from information in an iRODS data object
+  - #msiGetUserACL  - Gets User ACL for all objects and collections
+  - #msiCreateUserAccountsFromDataObj - Creates new user from information in an iRODS data object
+  - #msiLoadUserModsFromDataObj - Modifies user information  from information in an iRODS data object
+  - #msiDeleteUsersFromDataObj - Deletes user from information in an iRODS data object
+  - #msiLoadACLFromDataObj - Loads ACL from information in an iRODS data object
   - #msiGetAuditTrailInfoByUserID - Retrieves Audit Trail information for a user ID
   - #msiGetAuditTrailInfoByObjectID - Retrieves Audit Trail information for an object ID
   - #msiGetAuditTrailInfoByActionID - Retrieves Audit Trail information for a given action ID
@@ -209,50 +209,50 @@ This documentation is generated from the iRODS code.
   - #msiGetCollectionContentsReport - Returns the number of objects in a collection by data type
   - #msiGetCollectionSize - Returns the object count and total disk usage of a collection
   - #msiCollectionSpider - Applies a microservice sequence to all data objects in a collection, recursively
-  - #msiIsColl - Checks if an iRODS path is a collection. For use in workflows.
-  - #msiIsData - Checks if an iRODS path is a data object (an iRODS file). For use in workflows.
+  - #msiIsColl - Checks if an iRODS path is a collection. For use in workflows
+  - #msiIsData - Checks if an iRODS path is a data object (an iRODS file). For use in workflows
   - #msiStructFileBundle - Bundles a collection for export
 
  \subsection msiurl URL
-  - #msiFtpGet - gets a remote file using FTP and writes it to an iRODS object
+  - #msiFtpGet - Gets a remote file using FTP and writes it to an iRODS object
 
  \subsection msixml XML
-  - #msiLoadMetadataFromXml - loads AVU metadata from an XML file of AVU triplets
-  - #msiXmlDocSchemaValidate - validates an XML file against an XSD schema, both iRODS objects.
-  - #msiXsltApply - given an xml object and an xslt object returns the xml object after applying the xslt transformation
+  - #msiLoadMetadataFromXml - Loads AVU metadata from an XML file of AVU triplets
+  - #msiXmlDocSchemaValidate - Validates an XML file against an XSD schema, both iRODS objects
+  - #msiXsltApply - Returns the xml object after applying the xslt transformation, given an xml object and an xslt object
  
  \subsection msiimage Image
-  - #msiImageConvert - Read a source image file and write it out as a new image file in a chosen format
-  - #msiImageGetProperties - Get the properties of an image file
-  - #msiImageScale - Read a source image file, scale it up or down in size, and write it out as a new image file in a chosen format
+  - #msiImageConvert - Reads a source image file and write it out as a new image file in a chosen format
+  - #msiImageGetProperties - Gets the properties of an image file
+  - #msiImageScale - Reads a source image file, scale it up or down in size, and write it out as a new image file in a chosen format
 
  \subsection msiintegritychecks Integrity Checks
-  - #msiVerifyOwner - checks if files in a given collection have a consistent owner
-  - #msiVerifyACL - Check the ACL on a collection
-  - #msiVerifyExpiry - checks whether files in a collection have expired or not expired
-  - #msiVerifyAVU - performs operations on the AVU metadata on files in a given collection
-  - #msiVerifyDataType - checks if files in a given collection are of a given data type(s)
-  - #msiVerifyFileSizeRange - checks to see if file sizes are NOT within a certain range
+  - #msiVerifyOwner - Checks if files in a given collection have a consistent owner
+  - #msiVerifyACL - Checks the ACL on a collection
+  - #msiVerifyExpiry - Checks whether files in a collection have expired or not expired
+  - #msiVerifyAVU - Performs operations on the AVU metadata on files in a given collection
+  - #msiVerifyDataType - Checks if files in a given collection are of a given data type(s)
+  - #msiVerifyFileSizeRange - Checks to see if file sizes are NOT within a certain range
 
 
  \subsection msihdf HDF
-  - #msiH5File_open - open an HDF file
-  - #msiH5File_close - close an HDF file
-  - #msiH5Dataset_read - read data from an HDF file
-  - #msiH5Dataset_read_attribute - read data attribute from an HDF file
-  - #msiH5Group_read_attribute - read attributes of a group in an HDF file
+  - #msiH5File_open - Opens an HDF file
+  - #msiH5File_close - Closes an HDF file
+  - #msiH5Dataset_read - Reads data from an HDF file
+  - #msiH5Dataset_read_attribute - Reads data attribute from an HDF file
+  - #msiH5Group_read_attribute - Reads attributes of a group in an HDF file
 
  \subsection msiproperties Properties
-  - #msiPropertiesNew - Create a new empty property list
-  - #msiPropertiesClear - Clear a property list
-  - #msiPropertiesClone - Clone a property list, returning a new property list
-  - #msiPropertiesAdd - Add a property and value to a property list.  If the property is already in the list, its value is changed.  Otherwise the property is added.
-  - #msiPropertiesRemove - Remove a property from the list
-  - #msiPropertiesGet - Get the value of a property in a property list.  The property list is left unmodified.
-  - #msiPropertiesSet - Set the value of a property in a property list.  If the property is already in the list, its value is changed.  Otherwise the property is added.
-  - #msiPropertiesExists - Return true (integer 1) if the keyword has a property value in the property list, and false (integer 0) otherwise.  The property list is unmodified.
-  - #msiPropertiesToString - Convert a property list into a string buffer.  The property list is left unmodified
-  - #msiPropertiesFromString - Parse a string into a new property list.  The existing property list, if any, is deleted.
+  - #msiPropertiesNew - Creates a new empty property list
+  - #msiPropertiesClear - Clears a property list
+  - #msiPropertiesClone - Clones a property list, returning a new property list
+  - #msiPropertiesAdd - Adds a property and value to a property list.  If the property is already in the list, its value is changed.  Otherwise the property is added.
+  - #msiPropertiesRemove - Removes a property from the list
+  - #msiPropertiesGet - Gets the value of a property in a property list.  The property list is left unmodified.
+  - #msiPropertiesSet - Sets the value of a property in a property list.  If the property is already in the list, its value is changed.  Otherwise the property is added.
+  - #msiPropertiesExists - Returns true (integer 1) if the keyword has a property value in the property list, and false (integer 0) otherwise.  The property list is unmodified.
+  - #msiPropertiesToString - Converts a property list into a string buffer.  The property list is left unmodified.
+  - #msiPropertiesFromString - Parses a string into a new property list.  The existing property list, if any, is deleted.
 
  \subsection msiwebservices Web Services
   - #msiGetQuote - Returns stock quotation (delayed by web service) using web service provided by http://www.webserviceX.NET
