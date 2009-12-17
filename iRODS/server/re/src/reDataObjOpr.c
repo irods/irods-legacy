@@ -3498,7 +3498,7 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \note  This microservice calls rsStructFileExtAndReg to extract a tar 
  *        file (inpParam1) into a target collection (inpParam2).  The content of 
- *        the target collection is stored on the physical resource inpParam3.
+ *        the target collection is stored on the physical resource (inpParam3).
  *
  * \note  This call should only be used through the rcExecMyRule (irule) call
  *        i.e., rule execution initiated by clients and should not be called
