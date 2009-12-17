@@ -12,7 +12,9 @@
     - Only *.c files, no images
   - Set this new Doxyfile as default
   - Runs in under one minute
-  - Compiles PDF from LATEX source
+  - Compiles HTML
+  - Can compile RTF
+  - Can compile PDF from LATEX source
   - Better output/feedback
 
   -----
