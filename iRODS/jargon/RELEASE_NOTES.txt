@@ -1,17 +1,10 @@
-Jargon 2.2.1 Release Notes
+Jargon 2.2.1beta1 Release Notes
 
-***************** work in progress for 2.2.1 Release *******************************************
-************************************************************************************************
-                   See /tags/Jargon_2_2_0 tag for current release
-************************************************************************************************
-************************************************************************************************
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 11/12/2009
-Release Version: 2.2.1
-
-These notes serve as a work log, and will become the release notes for Jargon version 2.2.1
+Date: 12/18/2009
+Release Version: 2.2.1beta1
 
 ================================================================================================
 Requirements
@@ -118,6 +111,9 @@ A large number of 'small' fixes and cleanups
 ================================================================================================
 Outstanding Issues
 
+Please consult https://www.irods.org/bugzilla/buglist.cgi?query_format=specific&order=relevance+desc&bug_status=__open__&product=&content=jargon
+
+for the latest open bugs and Jargon feature requests
 
 ================================================================================================
 Documentation and Installation
