@@ -255,10 +255,9 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  *       A valid twitter account name and password must be provided. 
  *       Special characters in the message can affect parsing of the POST form and 
  *       create unexpected results. Avoid if possible, or use quotes.
- *		 This is intended for fun and for use in demos. Since your twitter password is
- *		 passed unencrypted here, do not use this with a twitter account you do not
- *		 wish to be compromised. Or if you do, change your password afterwards. 
- *		 
+ *       This is intended for fun and for use in demos. Since your twitter password is
+ *       passed unencrypted here, do not use this with a twitter account you do not
+ *       wish to be compromised. Or if you do, change your password afterwards. 
  *
  * \usage
  *
