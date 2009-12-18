@@ -732,7 +732,7 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
 /**
  * \fn msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *queryInput, ruleExecInfo_t *rei)
  *
- * \brief This microservice sets a select field in a genQueryInp_t.
+ * \brief  Sets a select field in a genQueryInp_t
  *
  * \module core
  *
@@ -740,18 +740,20 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
  * \author  Antoine de Torcy
  * \date    2009-11-28
  *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
  *
- * \note This microservice sets a select field in a genQueryInp_t, from two parameters. One is an iCAT attribute index given 
- *			without its 'COL_' prefix. The second one is the optional SQL operator.		 
- *			A new genQueryInp_t is created if queryInput is NULL.
- *			Followed with msiExecGenQuery, msiAddSelectFieldToGenQuery allows to take the results of other 
- *			microservices to build and execute queries within a rule.
+ * \note This microservice sets a select field in a genQueryInp_t, from two parameters.
+ *       One is an iCAT attribute index given without its 'COL_' prefix.
+ *       The second one is the optional SQL operator.
+ *       A new genQueryInp_t is created if queryInput is NULL.
+ *       Followed with msiExecGenQuery, msiAddSelectFieldToGenQuery allows to take the
+ *       results of other microservices to build and execute queries within a rule.
  *
  * \usage None
  *
- * \param[in] select - Required - a STR_MS_T with the select field.
- * \param[in] function - Optional - a STR_MS_T with the function. Valid values are [MIN|MAX|SUM|AVG|COUNT]
- * \param[in,out] queryInput - Optional - a GenQueryInp_MS_T.
+ * \param[in] select - Required - A STR_MS_T with the select field.
+ * \param[in] function - Optional - A STR_MS_T with the function. Valid values are [MIN|MAX|SUM|AVG|COUNT]
+ * \param[in,out] queryInput - Optional - A GenQueryInp_MS_T.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -852,7 +854,7 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
 /**
  * \fn msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *value, msParam_t *queryInput, ruleExecInfo_t *rei)
  *
- * \brief This microservice adds a condition a genQueryInp_t.
+ * \brief Adds a condition to a genQueryInp_t
  *
  * \module core
  *
@@ -860,18 +862,20 @@ msiAddSelectFieldToGenQuery(msParam_t *select, msParam_t *function, msParam_t *q
  * \author  Antoine de Torcy
  * \date    2009-12-07
  *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
  *
- * \note This microservice adds a condition to an existing genQueryInp_t, from three parameters. One is an iCAT attribute index given 
- *			without its 'COL_' prefix. The second one is the SQL operator. The third one is the value and may contain wildcards. 
- *			To be used with msiAddSelectFieldToGenQuery and msiExecGenQuery to build queries from the results of other 
- *			microservices or actions within an iRods rule.
+ * \note This microservice adds a condition to an existing genQueryInp_t, from three parameters.
+ *       One is an iCAT attribute index given without its 'COL_' prefix.
+ *       The second one is the SQL operator. The third one is the value and may contain wildcards. 
+ *       To be used with msiAddSelectFieldToGenQuery and msiExecGenQuery to build queries from the
+ *       results of other microservices or actions within an iRODS rule.
  *
  * \usage None
  *
- * \param[in] attribute - Required - a STR_MS_T with the iCAT attribute name (see www.irods.org/index.php/icatAttributes).
- * \param[in] operator - Required - a STR_MS_T with the operator.
- * \param[in] value - Required - a STR_MS_T with the value.
- * \param[in,out] queryInput - Required - a GenQueryInp_MS_T.
+ * \param[in] attribute - Required - A STR_MS_T with the iCAT attribute name (see www.irods.org/index.php/icatAttributes).
+ * \param[in] operator - Required - A STR_MS_T with the operator.
+ * \param[in] value - Required - A STR_MS_T with the value.
+ * \param[in,out] queryInput - Required - A GenQueryInp_MS_T.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -979,7 +983,7 @@ msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *
 /**
  * \fn msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei)
  *
- * \brief This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
+ * \brief  Writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
  *
  * \module core
  *
@@ -987,17 +991,16 @@ msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam_t *
  * \author  Antoine de Torcy
  * \date    2009-12-16
  *
+ * \remark Terrell Russell - msi documentation, 2009-12-17
  *
- * \note This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T. The results can be formatted 
- *			 with an optional C-style format string the same way it is done in iquest.
- *
- *
+ * \note This microservice writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T.
+ *       The results can be formatted with an optional C-style format string the same way it is done in iquest.
  *
  * \usage None
  *
- * \param[in] queryOut - Required - a GenQueryOut_MS_T.
- * \param[in] format - Optional - a STR_MS_T with a C-style format string, like in iquest.
- * \param[out] buffer - a BUF_LEN_MS_T
+ * \param[in] queryOut - Required - A GenQueryOut_MS_T.
+ * \param[in] format - Optional - A STR_MS_T with a C-style format string, like in iquest.
+ * \param[out] buffer - A BUF_LEN_MS_T
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
