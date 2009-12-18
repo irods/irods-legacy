@@ -323,7 +323,7 @@ serverMain (char *logDir)
             continue;
         } else {
             rodsLog (LOG_NOTICE,
-	     "Agent proccess %d started for for puser=%s and cuser=%s from %s",
+	     "Agent process %d started for puser=%s and cuser=%s from %s",
               agentProcHead->pid, startupPack->proxyUser, 
 	      startupPack->clientUser, 
 	      inet_ntoa (svrComm.remoteAddr.sin_addr));
@@ -381,10 +381,10 @@ procChildren (agentProc_t **agentProcHead)
     while ((childPid = waitpid (-1, &status, WNOHANG | WUNTRACED)) > 0) {
 	tmpAgentProc = getAgentProcByPid (childPid, agentProcHead);
 	if (tmpAgentProc != NULL) {
-	    rodsLog (LOG_NOTICE, "Agent proccess %s exited", childPid);
+	    rodsLog (LOG_NOTICE, "Agent process %s exited", childPid);
 	    free (tmpAgentProc);
 	} else {
-	    rodsLog (LOG_NOTICE, "Agent proccess %s exited but not in queue",
+	    rodsLog (LOG_NOTICE, "Agent process %s exited but not in queue",
 	      childPid); 
 	}
     }
