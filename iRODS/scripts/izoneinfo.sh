@@ -208,7 +208,7 @@ modules=`grep MODULES $config | grep = | grep -v "#"`
 echo $modules | tee -a $outFile
 
 set +e
-pgdb=`grep PSQICAT $config | grep = | grep -v "#"`
+pgdb=`grep PSQICAT $config | grep = | grep -v "#" | grep -v "DPSQICAT"`
 oradb=`grep ORAICAT $config | grep = | grep -v "#"`
 mysqldb=`grep MYICAT $config | grep = | grep -v "#"`
 set -e
