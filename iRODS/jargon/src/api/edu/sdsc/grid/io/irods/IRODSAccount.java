@@ -184,15 +184,11 @@ public class IRODSAccount extends RemoteAccount
     versionNumber.put( IRODS_VERSION_2_2, new Float( 2.2 ) );
 
 
-//    internalSetVersion( null );
   }
-  //TODO
   public static boolean defaultObfuscate = false;
   int obfuscate = 0;
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
+
   /**
    * This constructor uses the default info found in the iRODS environment files
    * in the user's local home directory.
@@ -263,28 +259,6 @@ public class IRODSAccount extends RemoteAccount
     setUserInfo( envFile );
   }
 
-
-
-  /**
-   * Creates an object to hold iRODS account information.
-   * This constructor does not use any default info.
-   * <P>
-   * @param  host the iRODS server domain name
-   * @param  port the port on the iRODS server
-   * @param  userName the user name
-   * @param  password the password
-   * @param  homeDirectory home directory on the iRODS
-   * @param  defaultStorageResource default storage resource
-   */
-/*  public IRODSAccount( String host, int port, String userName, String password,
-    String homeDirectory, String defaultStorageResource )
-  {
-    super( host, port, userName, password, homeDirectory );
-
-    setUserName( userName );
-    setDefaultStorageResource( defaultStorageResource );
-  }
-*/
 
   /**
    * Creates an object to hold iRODS account information.
@@ -360,10 +334,6 @@ public class IRODSAccount extends RemoteAccount
   }
 
 
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
   /**
    * Sets the port of this IRODSAccount. Port numbers can not be negative.
    */
@@ -583,10 +553,6 @@ public class IRODSAccount extends RemoteAccount
     return gssCredential;
   }
 
-  
-//----------------------------------------------------------------------
-// Object Methods
-//----------------------------------------------------------------------
   /**
    * Tests this local file system account object for equality with the
    * given object.
@@ -616,9 +582,7 @@ public class IRODSAccount extends RemoteAccount
       if (!getPassword().equals(temp.getPassword()))
         return false;
 
-//TODO correct? everything included?
 
-      //else //everything is equal
         return true;
     } catch (ClassCastException e) {
       return false;
@@ -659,12 +623,6 @@ public class IRODSAccount extends RemoteAccount
     return uri;
   }
 
-
-
-//----------------------------------------------------------------------
-// UserInfo Methods
-//----------------------------------------------------------------------
-
   
   /**
    * 
@@ -672,14 +630,12 @@ public class IRODSAccount extends RemoteAccount
   public static void hidePassword( GeneralFile passwordFile, String password )
     throws Throwable
   {
-    //TODO don't touch for now
     /* \u002a\u002f\u006e\u0065\u0077\u0020\u004c\u0075\u0063\u0069\u0064\u0028
     \u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0046\u0069\u006c\u0065
     \u0029\u002e\u006c\u0039\u0031\u0028
     \u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0029\u003b\u002f\u002a */
   }
 
-//TODO
   /**
    * Reads the iRODS enviroment files to set the user info.
    *
@@ -817,7 +773,6 @@ public class IRODSAccount extends RemoteAccount
       env = FileFactory.newFile( userInfo, "irodsA" );
     }
     if (obfuscate == 1 || (defaultObfuscate && !(obfuscate == 0))) {
-      //TODO don't touch for now
 /* 
 \u002a\u002f\u0073\u0065\u0074\u0050\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0028
 \u0065\u006e\u0076\u002e\u0074\u006f\u0055\u0052\u0049\u0028

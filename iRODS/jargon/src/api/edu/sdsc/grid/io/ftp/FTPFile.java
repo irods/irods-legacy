@@ -372,25 +372,7 @@ public class FTPFile extends RemoteFile
 		}
 	}
 
-  /**
-   * GridFTP has its own MD5 checksum method.
-   */
-/*TODO more recent version that in gsi-class.jar
-  protected String checksumMD5( )
-    throws IOException
-  {
-    if (((FTPAccount)fileSystem.getAccount()).useGridFTP) {
-      return ((GridFTPClient)ftpClient).checksum(
-        ChecksumAlgorithm.MD5, 0, length(), getPath());
-    }
-    else {
-      return super.checksumMD5();
-    }
-  }
-*/
-//----------------------------------------------------------------------
-// java.io.File Methods
-//----------------------------------------------------------------------
+  
 	/**
 	 * Tests whether the application can read the file denoted by
 	 * this abstract pathname.
@@ -401,7 +383,6 @@ public class FTPFile extends RemoteFile
 	 */
 	public boolean canRead()
 	{
-		//TODO
     return true;
 	}
 
@@ -417,7 +398,6 @@ public class FTPFile extends RemoteFile
 	 */
 	public boolean canWrite()
 	{
-		//TODO
     return false;
 	}
   
@@ -483,7 +463,6 @@ public class FTPFile extends RemoteFile
 	 */
 	public boolean isDirectory()
 	{
-		//TODO!
     return false;
 	}
 
@@ -497,7 +476,6 @@ public class FTPFile extends RemoteFile
 	 */
 	public boolean isFile()
 	{
-		//TODO!
     return true;
 	}
   
@@ -555,7 +533,6 @@ public class FTPFile extends RemoteFile
 	public String[] list()
 	{
     try {
-      //TODO which list?
       Vector list = ftpClient.list(getPath());
       Object[] listO = list.toArray();
       String[] listS = new String[listO.length];
@@ -609,7 +586,6 @@ public class FTPFile extends RemoteFile
           ftpClient.rename(getPath(), dest.getPath());
         }
         else {
-          //TODO some ftp to ftp copy...
 
 
 if (!dest.exists()) {

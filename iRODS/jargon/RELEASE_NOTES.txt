@@ -23,7 +23,7 @@ libraries
 Features and Changes
 
 This release is a bug-fix release to bring Jargon up-to-date.  Jargon 2.2.1 will incorporate any outstanding
-patches that were not committed for the 2.2.0 release, as well as any new issues identified in Jargon 2.2.0
+patches that were not committed for the 2.2.0 release, as well as new issues identified in Jargon 2.2.0
 
 ------------
 * Upgrade to ANT build
@@ -104,6 +104,9 @@ Also note that new methods were added to IRODSFileSytem to execute rules with th
 
 -------------
 Additional tests developed for 2.1 through 2.3 compatibility testing, and for other reported issues
+
+-------------
+Testing and fix for Bug 46 - Querying multiple metadata values returns no result
 
 -------------
 A large number of 'small' fixes and cleanups

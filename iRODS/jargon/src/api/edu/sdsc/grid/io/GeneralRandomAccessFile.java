@@ -263,23 +263,6 @@ public abstract class GeneralRandomAccessFile
   }
 
 
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
-  /**
-   * Sets the file system used of this GeneralRandomAccessFile object.
-   * The file system object must be a subclass of GeneralFileSystem
-   * matching this object.
-   *
-   * @param fileSystem The file system server to be used.
-   * @throws IllegalArgumentException - if the argument is null.
-   * @throws ClassCastException -
-   *     if the argument is not an object of the approriate subclass.
-   */
-//  protected abstract void setFileSystem( GeneralFileSystem fileSystem )
-//    throws IllegalArgumentException, ClassCastException;
-
-
   /**
    * Sets the boolean rw value according to the mode and checks that such
    * permissions are available.
@@ -350,7 +333,6 @@ public abstract class GeneralRandomAccessFile
    */
   public GeneralFile getFile()
   {
-//TODO?    return file.clone();
     return file;
   }
 
@@ -382,37 +364,6 @@ public abstract class GeneralRandomAccessFile
     throws IOException;
 
 
-//----------------------------------------------------------------------
-//  Object methods
-//----------------------------------------------------------------------
-/*
-  protected Object clone( )
-    throws IOException
-  {
-
-  }
-
-
-  public boolean equals( Object obj )
-    throws IOException
-  {
-    try {
-      if (obj == null)
-        return false;
-
-      GeneralRandomAccessFile temp = (GeneralRandomAccessFile) obj;
-
-      if (!getFile().equals(temp.getFile()))
-        return false;
-
-
-      //else //everything is equal
-        return true;
-    } catch (ClassCastException e) {
-      return false;
-    }
-  }
-*/
 
   public String toString( )
   {
@@ -431,9 +382,6 @@ public abstract class GeneralRandomAccessFile
   }
 
 
-//----------------------------------------------------------------------
-//  Read methods
-//----------------------------------------------------------------------
   /**
    * Reads a byte of data from this file. The byte is returned as an
    * integer in the range 0 to 255 (<code>0x00-0x0ff</code>). This
@@ -601,10 +549,6 @@ public abstract class GeneralRandomAccessFile
   }
 
 
-
-//----------------------------------------------------------------------
-//  Write methods
-//----------------------------------------------------------------------
   /**
    * Writes the specified byte to this file. The write starts at
    * the current file pointer.
@@ -678,9 +622,6 @@ public abstract class GeneralRandomAccessFile
 
 
 
-//----------------------------------------------------------------------
-//  Random access methods
-//----------------------------------------------------------------------
   /**
    * Returns the current offset in this file.
    *
@@ -792,10 +733,6 @@ public abstract class GeneralRandomAccessFile
   }
 
 
-
-//----------------------------------------------------------------------
-//  Data methods
-//----------------------------------------------------------------------
   /**
    * Reads a <code>boolean</code> from this file. This method reads a
    * single byte from the file, starting at the current file pointer.
@@ -1284,7 +1221,6 @@ public abstract class GeneralRandomAccessFile
   public String readUTF()
     throws IOException
   {
-//TODO
     throw new UnsupportedOperationException();
   }
 
@@ -1581,8 +1517,7 @@ public abstract class GeneralRandomAccessFile
   public void writeUTF(String str)
     throws IOException
   {
-//TODO
-//    throw new UnsupportedOperationException();
+
 
     byte buffer[] = null;
     int i = 0, n = 0, m = 0;

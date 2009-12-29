@@ -212,7 +212,7 @@ public abstract class RemoteAccount extends GeneralAccount
    */
   public URI toURI( boolean includePassword )
   {
-    //TODO
+    
     try {
       return new URI(toString());  
     } catch ( URISyntaxException e ) {

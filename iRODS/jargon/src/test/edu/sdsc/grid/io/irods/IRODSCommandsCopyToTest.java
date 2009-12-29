@@ -232,7 +232,6 @@ public class IRODSCommandsCopyToTest {
     }
 
     /**
-     * FIXME: test fails due to noted bug 32
      * BUG: 32    	copyTo when dest file is from URI results in -78000 resource not found
      * @throws Exception
      */

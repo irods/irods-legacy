@@ -330,7 +330,6 @@ public abstract class MetaDataRecordList extends Object
   }
 
 
-//TODO ?
   /*
    * The request vs. actual type gets these results:
    *<P>
@@ -363,7 +362,7 @@ public abstract class MetaDataRecordList extends Object
     if (records[index] == null)
       throw new NullPointerException("Value at index is null." ); //TODO
 
-/*TODO I'd like to do this, but the other is safer
+/* I'd like to do this, but the other is safer
     if (fields[index].getType() == MetaDataField.TABLE) {
       throw new IllegalArgumentException(
         "Value at this index is a table.");
@@ -450,9 +449,9 @@ public abstract class MetaDataRecordList extends Object
   public String getStringValue( int index )
   {
     if (records == null)
-      throw new NullPointerException(); //TODO exception
+      throw new NullPointerException(); 
     if (records[index] == null)
-      return null; //TODO
+      return null; 
 /*
     if (fields[index].getType() == MetaDataField.TABLE) {
       throw new IllegalArgumentException(

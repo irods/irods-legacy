@@ -251,7 +251,7 @@ public class SRBAccount extends RemoteAccount
    * The srb version.
    */
   protected static String version = SRB_VERSION_3_5;
-  //TODO
+ 
   public static boolean defaultObfuscate = false;
   int obfuscate = 0;
 
@@ -260,7 +260,6 @@ public class SRBAccount extends RemoteAccount
    */
   static HashMap versionNumber = new HashMap( 10, 1 );
   static {
-//TODO sigh, setting the versionNumber to 3.4 causes unexplained problems.
     versionNumber.put( SRB_VERSION_3_5, new Float( 3.5 ) );
     versionNumber.put( SRB_VERSION_3_4, new Float( 3.4 ) );
     versionNumber.put( SRB_VERSION_3_3_1, new Float( 3.31 ) );
@@ -617,10 +616,6 @@ public class SRBAccount extends RemoteAccount
 
 
 
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
-  //From GeneralAccount
   /**
    * Sets the home directory of this RemoteAccount.
    *
@@ -945,10 +940,6 @@ public class SRBAccount extends RemoteAccount
 
 
 
-
-//----------------------------------------------------------------------
-// Object Methods
-//----------------------------------------------------------------------
   /**
    * Tests this account object for equality with the
    * given object.
@@ -1056,11 +1047,6 @@ public class SRBAccount extends RemoteAccount
   }
 
 
-
-
-//----------------------------------------------------------------------
-// UserInfo Methods
-//----------------------------------------------------------------------
   /**
    * 
    */
@@ -1292,7 +1278,6 @@ public class SRBAccount extends RemoteAccount
     throws FileNotFoundException, IOException
   {
     if (obfuscate == 1 || (obfuscate == 0 && defaultObfuscate)) {
-      //TODO don't touch for now
       /* 
       \u002a\u002f\u0073\u0065\u0074\u0050\u0061\u0073\u0073\u0077\u006f\u0072\u0064
       \u0028\u006d\u0064\u0061\u0073\u0041\u0075\u0074\u0068\u0046\u0069\u006c\u0065

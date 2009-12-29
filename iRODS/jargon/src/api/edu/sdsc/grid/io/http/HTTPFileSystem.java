@@ -164,8 +164,6 @@ public class HTTPFileSystem extends RemoteFileSystem
  * Create a new connection to the HTTP server everytime because URLConnection
  * doesn't behave like a regular socket.
  *
- * obviously,
- * TODO
  */
   URLConnection getNewConn( )
     throws IOException

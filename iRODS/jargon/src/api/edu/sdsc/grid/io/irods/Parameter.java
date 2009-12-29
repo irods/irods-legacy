@@ -142,7 +142,6 @@ class Parameter
 	 * @return <code>String</code> containing the value of the Parameter.
 	 */
 	String getStringValue() {
-		// csaba patch start  FIXME: decide on patch inclusion
 		if (value.getClass().isArray() && type.equals(ExecCmdOut_PI)) {
 
 			StringBuilder stringValue = new StringBuilder();
@@ -161,7 +160,6 @@ class Parameter
 			}
 			return stringValue.toString();
 		} else {
-			// csaba patch end
 			return value.toString();
 		}
 	}

@@ -35,7 +35,6 @@ import java.io.IOException;
 public class IRODSAdmin
 {
 
-  //FIXME: static use of file system here, will not work on multi-user environment
   private IRODSFileSystem fileSystem;
 
   public final Domain ACCESS = new Domain(fileSystem, "access", "access_type", "");

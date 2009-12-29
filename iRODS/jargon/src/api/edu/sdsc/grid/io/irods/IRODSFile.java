@@ -901,10 +901,8 @@ public class IRODSFile extends RemoteFile {
 	/**
 	 * Deletes all <code>metadata</code> associated with this file object.
 	 */
-	/* public */void deleteMetaData() throws IOException {
-		// TODO
-		// rmw delete all with wildcards
-		// or just allow wildcards in above method
+	void deleteMetaData() throws IOException {
+		throw new RuntimeException("not implemented");
 	}
 
 	// ----------------------------------------------------------------------

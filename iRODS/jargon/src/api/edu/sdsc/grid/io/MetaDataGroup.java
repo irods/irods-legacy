@@ -246,27 +246,12 @@ public class MetaDataGroup implements Comparable
 
   public int compareTo( Object obj )
   {
-    //TODO why not compare anything...
-    //if (obj instanceof MetaDataGroup)
+    
 
     return toString().compareTo( obj.toString() );
   }
 
 
-//----------------------------------------------------------------------
-// Reverse mapping
-//----------------------------------------------------------------------
-  /**
-   * Returns the index of the field in the 0 to n list of
-   * fields for the meta data group. A -1 is returned if
-   * the field is not recognized.
-   */
-/*TODO what index?
-  public int getFieldIndex( String fieldName )
-  {
-    return 0;//TODO
-  }
-*/
 
   /**
    * Returns true if the given field name is part of

@@ -191,128 +191,13 @@ public class HTTPFile extends RemoteFile
 		throws IOException, URISyntaxException
 	{
 		super( uri );
-//TODO just allow anything handled by URLConnection?    
-//    if (uri.getScheme().equals( "http" )) {
       setFileSystem( new HTTPFileSystem(uri) );
       setFileName( uri.getPath() );
       httpFileSystem = (HTTPFileSystem)fileSystem;
-/*    }
-    else {
-      throw new URISyntaxException(uri.toString(), "Wrong URI scheme");
-    }
- */
+
 	}
 
 
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
-
-  
-  
-  
-//----------------------------------------------------------------------
-// GeneralFile Methods
-//----------------------------------------------------------------------
-	/**
-	 * Copies this file to another file. This object is the source file.
-	 * The destination file is given as the argument.
-	 * If the destination file, does not exist a new one will be created.
-	 * Otherwise the source file will be appended to the destination file.
-	 * Directories will be copied recursively.
-	 *
-	 * @param file	The file to receive the data.
-	 * @throws  NullPointerException If file is null.
-	 * @throws IOException If an IOException occurs.
-	 *//*
-	public void copyTo( GeneralFile file, boolean forceOverwrite )
-		throws IOException
-	{
-		if (file == null) {
-			throw new NullPointerException();
-		}
-
-		if (isDirectory()) {
-			//recursive copy
-			GeneralFile[] fileList = listFiles();
-
-			file.mkdir();
-			if (fileList != null) {
-				for (int i=0;i<fileList.length;i++) {
-					fileList[i].copyTo(
-						FileFactory.newFile( file.getFileSystem(), file.getAbsolutePath(),
-              fileList[i].getName()), forceOverwrite );
-				}
-			}
-		}
-		else {
-			if (file.isDirectory()) {
-				//change the destination from a directory to a file
-				file = FileFactory.newFile( file, getName() );
-			}
-      if (file instanceof LocalFile) {
-        super.copyTo(file);
-      }
-      else if (file instanceof HTTPFile) {
-//TODO
-      }
-      else {
-        super.copyTo( file );
-      }
-		}    
-  }
-  */
-
-	/**
-	 * Copies this file to another file. This object is the source file.
-	 * The destination file is given as the argument.
-	 * If the destination file, does not exist a new one will be created.
-	 * Otherwise the source file will be appended to the destination file.
-	 * Directories will be copied recursively.
-	 *
-	 * @param file	The file to receive the data.
-	 * @throws  NullPointerException If file is null.
-	 * @throws IOException If an IOException occurs.
-	 */
-/*	public void copyFrom( GeneralFile file, boolean forceOverwrite )
-		throws IOException
-	{
-		if (file == null) {
-			throw new NullPointerException();
-		}
-
-		if (file.isDirectory()) {
-			//recursive copy
-			GeneralFile[] fileList = file.listFiles();
-
-			mkdir();
-			if (fileList != null) {
-				for (int i=0;i<fileList.length;i++) {
-					FileFactory.newFile( this, fileList[i].getName() ).copyFrom(
-						fileList[i], forceOverwrite );
-				}
-			}
-		}
-		else {
-			if (isDirectory()) {
-				//change the destination from a directory to a file
-				GeneralFile subFile = FileFactory.newFile( this, file.getName() );
-				subFile.copyFrom( file );
-				return;
-			}
-      if (file instanceof LocalFile) {
-//TODO
-      }
-      else if (file instanceof HTTPFile) {
-//TODO
-      }
-      else {
-        super.copyFrom( file );
-      }
-		}
-	}
-*/
 	/**
 	 * @return resource the physical resource where this RemoteFile is stored.
 	 * 		Returns null if this abstract pathname is a directory or does not exist.
@@ -348,9 +233,6 @@ public class HTTPFile extends RemoteFile
 		throw new UnsupportedOperationException();    
   }
   
-//----------------------------------------------------------------------
-// java.io.File Methods
-//----------------------------------------------------------------------	
   /**
    * Tests this abstract pathname for equality with the given object. 
    * Returns true if and only if the argument is not null and is an 
@@ -382,7 +264,6 @@ public class HTTPFile extends RemoteFile
         }
       }
     } catch (ClassCastException e) {
-      //TODO
     }
     return false;
   }
@@ -399,7 +280,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean canRead()
 	{
-		//TODO
     return true;
 	}
 
@@ -415,7 +295,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean canWrite()
 	{
-    //TODO
     return false;
 	}
 	/**
@@ -424,7 +303,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean createNewFile() throws IOException
 	{
-		//TODO possible?
     return false;
 	}
 
@@ -433,7 +311,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean delete()
 	{
-    //TODO httpURLConnection.setRequestMethod(DELETE)
     return false;
 	}
   
@@ -455,7 +332,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean exists()
 	{
-//TODO
     return true;
 	}
 
@@ -481,7 +357,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean isDirectory()
 	{
-		//TODO...
     return false;
 	}
 
@@ -495,7 +370,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean isFile()
 	{
-		//TODO...
     return true;
 	}
 
@@ -508,7 +382,6 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean isHidden()
 	{
-		//TODO...
     return false;
 	}
 
@@ -556,18 +429,7 @@ public class HTTPFile extends RemoteFile
 	 */
 	public String[] list()
 	{
-/*TODO there is a way to do it sometimes at least
-//    try {
-      Vector list = null;//TODO can depending on server
-      Object[] listO = list.toArray();
-      String[] listS = new String[listO.length];
-      for (int i=0;i<listO.length;i++) {
-        listS[i] = listO[i].toString();
-      }
-      return listS;
-//    } catch( IOException e ) {
-//      return null;
-//    }*/return null;
+		throw new RuntimeException("not implemented");
 	}
   
   
@@ -576,7 +438,7 @@ public class HTTPFile extends RemoteFile
 	 */
 	public boolean mkdir()
 	{
-//TODO probably can't
+
     return false;
 	}
   
@@ -599,21 +461,7 @@ public class HTTPFile extends RemoteFile
 	{
     try {
       if (dest instanceof HTTPFile) {
-        /*TODO probably can't
-        if (httpFileSystem.conn.equals(((HTTPFile)dest).httpFileSystem.conn)) {
-
-        }
-        else {
-          //TODO some http to http copy...
-
-          if (!dest.exists()) {
-            copyTo( dest );
-            delete();
-          }
-          else
-            return false;
-        }
-        */ return false;
+         return false;
       }
       else {
         if (!dest.exists()) {
@@ -626,10 +474,8 @@ public class HTTPFile extends RemoteFile
     } catch( IOException e ) {
       return false;
     }
-    
-//    return true;
-//TODO can't really
-return false;
+ 
+    return false;
 	}
    
   

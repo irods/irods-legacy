@@ -671,14 +671,10 @@ panel.add(display.getTableHeader(), gridBagConstraints);
 	 *
 	 * @see displayRecordList( boolean )
 	 */
-	/*TODO? public*/ void displayGraph( )
+	 void displayGraph( )
 	{
-//TODO
 	}
 
-//----------------------------------------------------------------------
-//	Listeners and related
-//----------------------------------------------------------------------
 	/**
 	 * Invoked when an action occurs.
 	 */

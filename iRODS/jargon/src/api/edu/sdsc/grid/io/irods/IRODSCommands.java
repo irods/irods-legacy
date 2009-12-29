@@ -1193,7 +1193,6 @@ class IRODSCommands {
 
 						throw new IRODSException("IRODS error occured "
 								+ errorTag.getTag(RErrMsg_PI).getTag(msg), info);
-						//FIXME: not filling in underlying irods exception
 					}
 					throw new IRODSException("IRODS error occured " + info,
 							info);
@@ -1392,7 +1391,6 @@ class IRODSCommands {
 		// even though they are very similar.
 		int start = data.indexOf(OPEN_START_TAG, offset);
 		if (start < 0) {
-			// TODO
 			return 1;
 		}
 		int closeStart = data.indexOf(CLOSE_START_TAG, start);
@@ -1415,7 +1413,6 @@ class IRODSCommands {
 			}
 			return offset + tagName.length() + 3; // endTagLocation + </endTag>
 		}
-		// if (value.length > 1) TODO?
 	}
 
 	/**
@@ -1759,7 +1756,6 @@ class IRODSCommands {
 			throw new IllegalArgumentException("invalid parameters for fileRead");
 		}
 		
-		// FIXME: test other file read methods with length 0
 		
 		// XXX: length param is unused
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
@@ -1767,7 +1763,6 @@ class IRODSCommands {
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_READ_AN);
 		// Need the total dataSize
-		// FIXME: length of zero causes message to be null
 		length = message.getTag(MsgHeader_PI).getTag(bsLen).getIntValue();
 
 		// read the message byte stream into the local file
@@ -2397,7 +2392,7 @@ class IRODSCommands {
 					.length() - 1)));
 		}
 
-		// add input parameter tags  //FIXME: what if no params (e.g. null)??
+		// add input parameter tags  
 		if (input != null) {
 			Tag paramArray = new Tag(MsParamArray_PI, new Tag[] {
 					new Tag(paramLen, input.length), new Tag(oprType, 0)
@@ -2543,7 +2538,7 @@ class IRODSCommands {
 		// package the conditions
 		if (conditions != null) {
 			// fix the conditions if there are AVU parts, also remove nulls
-			conditions = (MetaDataCondition[]) IRODSFileSystem
+			conditions = (MetaDataCondition[]) IRODSFileSystem // FIXME: in right order here
 					.cleanNullsAndDuplicates(checkForAVU(conditions, namespace));
 
 			subTags = new Tag[conditions.length * 2 + 1];
@@ -2570,7 +2565,7 @@ class IRODSCommands {
 		// send command to server
 		message = irodsFunction(RODS_API_REQ, message, GEN_QUERY_AN);
 
-		if (message == null) {
+		if (message == null) {  //FIXME: method is returning null !!!
 			// query had no results
 			return null;
 		}
@@ -2696,7 +2691,8 @@ class IRODSCommands {
 	MetaDataCondition[] checkForAVU(MetaDataCondition[] conditions,
 			Namespace namespace) {
 		Vector<MetaDataCondition> newConditions = null;
-		for (int i = conditions.length - 1; i >= 0; i--) {
+		for (int i = 0; i < conditions.length; i++) {  
+
 			if (checkForAVU(conditions[i].getField())) {
 				if (newConditions == null) {
 					newConditions = new Vector();
@@ -2908,7 +2904,6 @@ class IRODSCommands {
 			byte[] b = new byte[4];
 			int read = in.read(b);
 			if (read != 4) {
-				// TODO
 			}
 			return Host.castToInt(b);
 		}
