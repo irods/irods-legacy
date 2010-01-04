@@ -1627,6 +1627,14 @@ class IRODSCommands {
 
 				boolean done = false;
 				Tag ackResult = null;
+				
+				// if the total file count is 0, then I will continue and send the coll stat reply, otherwise, just ignore and 
+				// don't send the reply.  
+				
+				Tag fileCountTag = reply.getTag("totalFileCnt");
+				if (Integer.parseInt((String) fileCountTag.getValue()) > 0) {
+					done = true;
+				}
 
 				/*
 				 * There is a known issue here.  The client status messages returned only have a file count.  If
@@ -1651,7 +1659,7 @@ class IRODSCommands {
 						continue;
 					}
 					if (reply.tagName.equals(CollOprStat_PI)) {
-						Tag fileCountTag = reply.getTag("filesCnt");
+						fileCountTag = reply.getTag("filesCnt");
 						if (Integer.parseInt((String) fileCountTag.getValue()) < SYS_CLI_TO_SVR_COLL_STAT_SIZE) {
 							done = true;
 							continue;

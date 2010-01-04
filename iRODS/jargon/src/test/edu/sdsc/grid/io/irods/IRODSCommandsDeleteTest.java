@@ -90,9 +90,7 @@ public class IRODSCommandsDeleteTest {
 				.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
 						uriPath.toString());
 		IRODSFile irodsFile = new IRODSFile(irodsUri);
-		System.out.println("doing delete>>>>>>>>>>>>");
 		irodsFile.delete(true);
-		System.out.println("delete done");
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(uriPath
 				.toString());
 	}

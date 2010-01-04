@@ -118,6 +118,9 @@ public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
 Tests for  Bug 45 -  SYS_UNMATCHED_API_NUM (-12000) when attempting to get a file
 
 -------------
+Test and Patch for  Bug 48 -  NPE on Delete
+
+-------------
 A large number of 'small' fixes and cleanups
 	
 ================================================================================================
