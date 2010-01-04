@@ -12,6 +12,7 @@
 #include "objInfo.h" 
 #include "rodsGenQuery.h" 
 #include "rodsGeneralUpdate.h" 
+#include "irodsGuiProgressCallback.h"
 
 int ProcessType = CLIENT_PT;
 
@@ -219,5 +220,15 @@ validKeyWd_t StructFileExtAndRegInpKeyWd[] = {
 
 int NumStructFileExtAndRegInpKeyWd = sizeof 
   (StructFileExtAndRegInpKeyWd) / sizeof (validKeyWd_t);
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+irodsGuiProgressCallbak gGuiProgressCB = NULL;
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif	/* RC_GLOBAL_H */
