@@ -10,6 +10,7 @@
 #include "apiHandler.h"
 #include "objInfo.h"
 #include "msParam.h"
+#include "irodsGuiProgressCallback.h"
 
 extern packConstantArray_t PackConstantTable[];
 extern packInstructArray_t RodsPackTable[];
@@ -36,5 +37,16 @@ extern validKeyWd_t CollInpKeyWd[];
 extern int NumCollInpKeyWd;
 extern validKeyWd_t StructFileExtAndRegInpKeyWd[];
 extern int NumStructFileExtAndRegInpKeyWd;
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+extern irodsGuiProgressCallbak gGuiProgressCB;
+
+#ifdef  __cplusplus
+}
+#endif
+
 
 #endif	/* RC_GLOBAL_EXTERN_H */
