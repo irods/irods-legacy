@@ -9,6 +9,7 @@ import org.junit.runners.Suite;
 import edu.sdsc.grid.io.irods.IRODSAccountTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsCopyToTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
+import edu.sdsc.grid.io.irods.IRODSCommandsGetTest;
 import edu.sdsc.grid.io.irods.IRODSFileAVUTest;
 import edu.sdsc.grid.io.irods.IRODSFileCommandsTest;
 import edu.sdsc.grid.io.irods.IRODSFileInputStreamTest;
@@ -48,7 +49,8 @@ import edu.sdsc.grid.io.irods.RuleTest;
   IRODSFileInputStreamTest.class,
   IRODSRandomAccessFileTest.class,
   IRODSFileAVUTest.class,
-  RuleTest.class
+  RuleTest.class,
+  IRODSCommandsGetTest.class
 })
 public class IRODSTests {
 

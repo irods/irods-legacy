@@ -1,5 +1,7 @@
 package edu.sdsc.grid.io.irods;
 
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -22,11 +24,11 @@ import java.net.URI;
 import java.util.Properties;
 
 
-public class IRODSCommandsCopyToTest {
+public class IRODSCommandsGetTest {
     private static Properties testingProperties = new Properties();
     private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
     private static ScratchFileUtils scratchFileUtils = null;
-    public static final String IRODS_TEST_SUBDIR_PATH = "IrodsCommandsCopyToTest";
+    public static final String IRODS_TEST_SUBDIR_PATH = "IrodsCommandsGetTest";
     private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
     private static AssertionHelper assertionHelper = null;
 
@@ -54,22 +56,15 @@ public class IRODSCommandsCopyToTest {
     }
 
 
-    /**
-     * BUG: 32
-     * @throws Exception
-     */
-    @Ignore
-    public final void testCopySourceByURIDestByURI() throws Exception {
-    	//FIXME: fail -78000 when creating a file via uri...resource does not exist
-    	//BUG: 32    	copyTo when dest file is from URI results in -78000 resource not found
+    @Test
+    public final void testGetSpecifyingResource() throws Exception {
     	// generate a local scratch file
-        String testFileName = "testCopySourceByURI.txt";
-        String testCopyToFileName = "testCopySourceByURICopyTo.txt";
+        String testFileName = "testGetSpecifyingResource.txt";
         String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
         FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
             1);
 
-        // put scratch file into irods in the right place
+        // put scratch file into irods in the right place on the first resource
         IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
         IputCommand iputCommand = new IputCommand();
 
@@ -83,6 +78,7 @@ public class IRODSCommandsCopyToTest {
 
         iputCommand.setLocalFileName(fileNameAndPath.toString());
         iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
         iputCommand.setForceOverride(true);
 
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
@@ -98,32 +94,31 @@ public class IRODSCommandsCopyToTest {
                 uriPath.toString());
         IRODSFile irodsFile = new IRODSFile(irodsUri);
 
-        uriPath = new StringBuilder();
-        uriPath.append(IRODS_TEST_SUBDIR_PATH);
-        uriPath.append('/');
-        uriPath.append(testCopyToFileName);
+        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
-        URI irodsCopyToUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
-                uriPath.toString());
-        IRODSFile irodsCopyToFile = new IRODSFile(irodsCopyToUri);
+        // create a GeneralFile (local) for the get results
+        
+        String getTargetFilePath = absPath + "GetResult" + testFileName;
+        GeneralFile localFile = new LocalFile(getTargetFilePath);
 
-        irodsFile.copyTo(irodsCopyToFile, true);
+        irodsFileSystem.commands.get(irodsFile, localFile, testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+        
+        irodsFileSystem.close();
 
-        // see that the file I just copied to exists in irods
-        assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
-
+        assertionHelper.assertLocalFileExistsInScratch(IRODS_TEST_SUBDIR_PATH + "/" + "GetResult" + testFileName);
+        
     }
-
+    
     @Test
-    public final void testCopySourceByURIDestByAccount() throws Exception {
+    public final void testGet() throws Exception {
     	// generate a local scratch file
-        String testFileName = "testCopySourceByURI.txt";
-        String testCopyToFileName = "testCopySourceByURICopyTo.txt";
+        String testFileName = "testGet.txt";
         String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
         FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
             1);
 
-        // put scratch file into irods in the right place
+        // put scratch file into irods in the right place on the first resource
         IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
         IputCommand iputCommand = new IputCommand();
 
@@ -137,6 +132,7 @@ public class IRODSCommandsCopyToTest {
 
         iputCommand.setLocalFileName(fileNameAndPath.toString());
         iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
         iputCommand.setForceOverride(true);
 
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
@@ -152,41 +148,31 @@ public class IRODSCommandsCopyToTest {
                 uriPath.toString());
         IRODSFile irodsFile = new IRODSFile(irodsUri);
 
-        uriPath = new StringBuilder();
-        uriPath.append(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH));
-        uriPath.append('/');
-        uriPath.append(testCopyToFileName);
-
         IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
-        IRODSFile irodsCopyToFile = new IRODSFile(irodsFileSystem, uriPath.toString());
-        irodsFile.copyTo(irodsCopyToFile, true);
+        // create a GeneralFile (local) for the get results
+        
+        String getTargetFilePath = absPath + "GetResult" + testFileName;
+        GeneralFile localFile = new LocalFile(getTargetFilePath);
 
-        // see that the file I just copied to exists in irods
-        assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
+        irodsFileSystem.commands.get(irodsFile, localFile);
+        
         irodsFileSystem.close();
 
+        assertionHelper.assertLocalFileExistsInScratch(IRODS_TEST_SUBDIR_PATH + "/" + "GetResult" + testFileName);
+        
     }
     
-    
-
-    /**
-     * BUG: 32
-     * @throws Exception
-     */
-    @Ignore
-    public final void testCopySourceFileFromAccountDestFromURI() throws Exception {
-    	//FIXME: fail -78000
+    @Test
+    public final void testGetSpecifyingDifferentResource() throws Exception {
     	// generate a local scratch file
-        String testFileName = "testCopySourceFileFromAccount.pdf";
-        String testCopyToFileName = "testCopySourceFileFromAccountCopyTo.pdf";
+        String testFileName = "testGetSpecifyingDifferentResource.txt";
         String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
         FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
             1);
 
-        // put scratch file into irods in the right place
+        // put scratch file into irods in the right place on the first resource
         IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
         IputCommand iputCommand = new IputCommand();
 
@@ -200,94 +186,36 @@ public class IRODSCommandsCopyToTest {
 
         iputCommand.setLocalFileName(fileNameAndPath.toString());
         iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
         iputCommand.setForceOverride(true);
 
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
         invoker.invokeCommandAndGetResultAsString(iputCommand);
 
         StringBuilder uriPath = new StringBuilder();
-        uriPath.append(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH));
-        uriPath.append('/');
-        uriPath.append(testFileName);
-
-        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
-        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, uriPath.toString());
-
-        uriPath = new StringBuilder();
         uriPath.append(IRODS_TEST_SUBDIR_PATH);
         uriPath.append('/');
-        uriPath.append(testCopyToFileName);
-
-        URI irodsCopyToUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
-                uriPath.toString());
-        IRODSFile irodsCopyToFile = new IRODSFile(irodsCopyToUri);
-
-        irodsFile.copyTo(irodsCopyToFile, true);
-
-        // see that the file I just copied to exists in irods
-        assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
-        irodsFileSystem.close();
-
-    }
-
-    /**
-     * @throws Exception
-     */
-    @Test
-    public final void testCopySourceFileFromAccountDestFromAccount() throws Exception {
-    	// generate a local scratch file
-        String testFileName = "SourceFileFromAccountDestFromAccount.pdf";
-        String testCopyToFileName = "SourceFileFromAccountDestFromAccountCopyTo.pdf";
-        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
-        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
-            1);
-
-        // put scratch file into irods in the right place
-        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
-        IputCommand iputCommand = new IputCommand();
-
-        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH);
-
-        StringBuilder fileNameAndPath = new StringBuilder();
-        fileNameAndPath.append(absPath);
-
-        fileNameAndPath.append(testFileName);
-
-        iputCommand.setLocalFileName(fileNameAndPath.toString());
-        iputCommand.setIrodsFileName(targetIrodsCollection);
-        iputCommand.setForceOverride(true);
-
-        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-        invoker.invokeCommandAndGetResultAsString(iputCommand);
-
-        StringBuilder uriPath = new StringBuilder();
-        uriPath.append(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH));
-        uriPath.append('/');
         uriPath.append(testFileName);
+
+        // can I use jargon to access the file on IRODS and verify that it indeed exists?
+        URI irodsUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
+                uriPath.toString());
+        IRODSFile irodsFile = new IRODSFile(irodsUri);
 
         IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
-        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, uriPath.toString());
 
-        uriPath = new StringBuilder();
-        uriPath.append(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
-                IRODS_TEST_SUBDIR_PATH));
-        uriPath.append('/');
-        uriPath.append(testCopyToFileName);
+        // create a GeneralFile (local) for the get results
+        
+        String getTargetFilePath = absPath + "GetResult" + testFileName;
+        GeneralFile localFile = new LocalFile(getTargetFilePath);
 
-
-        IRODSFile irodsCopyToFile = new IRODSFile(irodsFileSystem, uriPath.toString());
-
-        irodsFile.copyTo(irodsCopyToFile, true);
-
-        // see that the file I just copied to exists in irods
-        assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
+        irodsFileSystem.commands.get(irodsFile, localFile, testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
+        
         irodsFileSystem.close();
 
+        assertionHelper.assertLocalFileNotExistsInScratch(IRODS_TEST_SUBDIR_PATH + "/" + "GetResult" + testFileName);
+        
     }
 
 }

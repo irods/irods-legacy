@@ -109,6 +109,15 @@ Additional tests developed for 2.1 through 2.3 compatibility testing, and for ot
 Testing and fix for Bug 46 - Querying multiple metadata values returns no result
 
 -------------
+Feature request  Bug 49 -  -R option to specify resource on a get  (edit)  
+Added a new method to IRODSFile to provide the same functionality as an iget -R option, allowing you to specify the particular resource to 'get' the file from 	
+
+public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
+
+-------------
+Tests for  Bug 45 -  SYS_UNMATCHED_API_NUM (-12000) when attempting to get a file
+
+-------------
 A large number of 'small' fixes and cleanups
 	
 ================================================================================================

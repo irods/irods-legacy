@@ -17,6 +17,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -191,9 +194,76 @@ public class IRODSRandomAccessFileTest {
 		System.arraycopy(inputBytes, 200, expectedBytes, 0, 20);
 
 		irodsFileSystem.close();
-		
-		TestCase.assertTrue("did not seek and read the same data that I originally wrote", Arrays.equals(expectedBytes, bytesToRead));
 
+		TestCase.assertTrue(
+				"did not seek and read the same data that I originally wrote",
+				Arrays.equals(expectedBytes, bytesToRead));
+
+	}
+
+	/**
+	 *  Bug 45 -  SYS_UNMATCHED_API_NUM (-12000) when attempting to get a file
+	 * @throws Exception
+	 */
+	@Test
+	public void testUnmatchedAPIWhenReadingRAFile() throws Exception {
+
+		String testFileName = "testfileForApi.txt";
+		int fileLength = 2;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String inputFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName,
+						fileLength);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+
+		GeneralFile file = FileFactory.newFile(irodsFileSystem, iputCommand
+				.getIrodsFileName()
+				+ '/' + testFileName);
+		TestCase.assertTrue("file does not exist in IRODS, setup issue", file
+				.exists());
+		TestCase.assertTrue("file is not a file in IRODS, setup issue", file
+				.isFile());
+
+		GeneralRandomAccessFile raFile = FileFactory.newRandomAccessFile(file,
+				"r");
+
+		int nbytes = 0;
+		int offset = 0;
+		byte data[] = new byte[4096];
+		boolean dataRead = false;
+
+		while ((nbytes = raFile.read(data, offset, 4096)) > 0) {
+			offset += nbytes;
+			dataRead = true;
+		}
+		
+		TestCase.assertTrue("did not read back any data", dataRead);
 	}
 
 }

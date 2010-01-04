@@ -605,15 +605,37 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	// FIXME: BUG: 31 - files created with URI have no resource, does not work
-	// with this function
-	// this is probably the root cause, a copy with no resource defined should
-	// probably be handled
-	// on the server?
+	
 	public void copyTo(GeneralFile file, boolean forceOverwrite)
 			throws IOException {
+		copyTo(file, forceOverwrite, "");
+	}
+
+	/**
+	 * Copy a file from IRODS (get) specifying a particular resource. This is
+	 * equivalent to an iget with a -R
+	 * 
+	 * Copies this file to another file. This object is the source file. The
+	 * destination file is given as the argument. If the destination file, does
+	 * not exist a new one will be created. Otherwise the source file will be
+	 * appended to the destination file. Directories will be copied recursively.
+	 * 
+	 * @param file
+	 *            {@link GeneralFile GeneralFile} is the local file that will be
+	 *            copied to
+	 * @param forceOverwrite
+	 * @param resource <code>String</code> containing the name of the resource from which the source file will be copied.
+	 * @throws IOException
+	 */
+	public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
+			throws IOException {
 		if (file == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("file cannot be null");
+		}
+
+		if (resource == null) {
+			throw new IllegalArgumentException(
+					"resource cannot be null, set to blank if not used");
 		}
 
 		if (isDirectory()) {
@@ -644,7 +666,9 @@ public class IRODSFile extends RemoteFile {
 									"File exists and overwriting not allowed");
 						}
 					}
-					iRODSFileSystem.commands.get(this, file);
+
+					iRODSFileSystem.commands.get(this, file, resource);
+
 				} else if (file instanceof IRODSFile) {
 					iRODSFileSystem.commands.copy(this, (IRODSFile) file,
 							forceOverwrite);
@@ -831,19 +855,22 @@ public class IRODSFile extends RemoteFile {
 		return null;
 	}
 
-	
 	/**
 	 * Used to modify the metadata associated with this file object. Does not
 	 * overwrite. If an already existing value conflicts, inserts new metadata
 	 * value. If duplicate metadata is reentered, no action is taken.
 	 * 
-	 * @param values <code>String[]</code> containing an AVU in the form (attrib name, attrib value) or (attrib name, attrib value, attrib units)
+	 * @param values
+	 *            <code>String[]</code> containing an AVU in the form (attrib
+	 *            name, attrib value) or (attrib name, attrib value, attrib
+	 *            units)
 	 */
 	public void modifyMetaData(String[] metaData) throws IOException {
 		if (metaData.length < 2 || metaData.length > 3) {
-			throw new IllegalArgumentException("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+			throw new IllegalArgumentException(
+					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
 		}
-		
+
 		if (metaData[0].equals("") || metaData[1].equals("")) {
 			throw new IllegalArgumentException(
 					"The metadata attribute and value " + "cannot be empty.");

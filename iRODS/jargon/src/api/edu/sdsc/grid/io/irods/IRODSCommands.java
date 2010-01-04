@@ -1854,15 +1854,30 @@ class IRODSCommands {
 				offset, length, DATA_OBJ_WRITE_AN);
 		return message.getTag(MsgHeader_PI).getTag(intInfo).getIntValue();
 	}
+	
+	synchronized void get(IRODSFile source, GeneralFile destination, String resource) throws IOException {
+		
+		/*
+		 * #define DataObjInp_PI "str objPath[MAX_NAME_LEN]; int createMode; int openFlags; 
+		 * double offset; double dataSize; int numThreads; int oprType; struct *SpecColl_PI; struct KeyValPair_PI;"
 
-	synchronized void get(IRODSFile source, GeneralFile destination)
-			throws IOException {
+		 */
+		
+		Tag rescKeyValueTag;
+		
+		if (resource == null || resource.length() ==0) {
+			rescKeyValueTag = createKeyValueTag(null);
+		} else {
+			String[][] kvArray = {{IRODSMetaDataSet.RESC_NAME_KW, resource}};
+			rescKeyValueTag = createKeyValueTag(kvArray);
+		}
+		
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
 				new Tag(objPath, source.getAbsolutePath()),
 				new Tag(createMode, 0), new Tag(openFlags, 0),
 				new Tag(offset, 0), new Tag(dataSize, 0),
 				new Tag(numThreads, 0), new Tag(oprType, GET_OPR),
-				createKeyValueTag(null), });
+				rescKeyValueTag, });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_GET_AN);
 
@@ -1926,6 +1941,14 @@ class IRODSCommands {
 			// read the message byte stream into the local file
 			read(FileFactory.newRandomAccessFile(destination, "rw"), length);
 		}
+		
+		
+	}
+
+	synchronized void get(IRODSFile source, GeneralFile destination)
+			throws IOException {
+		
+		get(source, destination, "");
 
 	}
 

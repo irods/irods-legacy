@@ -33,6 +33,28 @@ public class AssertionHelper {
 	}
 
 	/**
+	 * Ensures that a scratch file does not exist given the path/file name
+	 *
+	 * @param filePathRelativeToScratch
+	 *            <code>String</code> that gives the relative file path under
+	 *            scratch, with no leading separator character
+	 * @throws IRODSTestAssertionException
+	 */
+	public void assertLocalFileNotExistsInScratch(String filePathRelativeToScratch)
+			throws IRODSTestAssertionException {
+		StringBuilder fullPathToLocalFile = computeFullPathToLocalFile(filePathRelativeToScratch);
+		StringBuilder errorMessage = new StringBuilder();
+		errorMessage.append(ASSERTION_ERROR_MESSAGE);
+		errorMessage.append("local file exists and should not");
+		errorMessage.append(fullPathToLocalFile);
+		File localFile = new File(fullPathToLocalFile.toString());
+		if (localFile.exists()) {
+			throw new IRODSTestAssertionException(errorMessage.toString());
+		}
+
+	}
+	
+	/**
 	 * Ensures that a file exists given the path/file name
 	 *
 	 * @param filePathRelativeToScratch
