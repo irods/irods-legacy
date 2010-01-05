@@ -72,7 +72,7 @@ public class IRODSFileDeleteTest {
     @Test
     public void testExistsOnDeletedDirectory() throws Exception {
     	
-    	String testNewDir = "testExistsOnDeletedDir";
+    	String testNewDir = "testExistsOnDeletedNoForcedDir";
     	String testNewDirIrodsPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
     			testNewDir);
     	String testNewFileName = "testExistsOnDeletedFile.csv";
@@ -93,6 +93,62 @@ public class IRODSFileDeleteTest {
     	TestCase.assertFalse("file I just deleted should not exist", newFile.exists());
 
     	TestCase.assertTrue("unable to delete folder I just created", newFolder.delete());
+    	TestCase.assertFalse("folder I just deleted should not exist", newFolder.exists());
+    	irodsFileSystem.close();
+
+    }
+    
+    /**
+     *   Bug 50 -  forced delete on directory does not work, moves files to trash
+     * @throws Exception
+     */
+    @Test
+    public void testForcedDeleteDirectory() throws Exception {
+    	
+    	String testNewDir = "testForcedDeleteDir";
+    	String testNewDirIrodsPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
+    			testNewDir);
+    	String testNewFileName = "testExistsForcedDelete.csv";
+    	
+    	
+    	IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+        
+    	IRODSFile newFolder = new IRODSFile(irodsFileSystem, testNewDirIrodsPath);
+    	IRODSFile newFile = new IRODSFile(irodsFileSystem, newFolder.getAbsolutePath(), testNewFileName);
+
+    	newFolder.mkdir();
+    	TestCase.assertTrue("directory I just created should exist", newFolder.exists());
+    	newFile.createNewFile();
+    	TestCase.assertTrue("file I just created should exist", newFile.exists());
+
+    	TestCase.assertTrue("unable to delete folder I just created", newFolder.delete(true));
+    	TestCase.assertFalse("folder I just deleted should not exist", newFolder.exists());
+    	irodsFileSystem.close();
+
+    }
+    
+    @Test
+    public void testUnForcedDeleteDirectory() throws Exception {
+    	
+    	String testNewDir = "testUnforcedDeleteDir";
+    	String testNewDirIrodsPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
+    			testNewDir);
+    	String testNewFileName = "testExistsUnforcedDelete.csv";
+    	
+    	
+    	IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+        
+    	IRODSFile newFolder = new IRODSFile(irodsFileSystem, testNewDirIrodsPath);
+    	IRODSFile newFile = new IRODSFile(irodsFileSystem, newFolder.getAbsolutePath(), testNewFileName);
+
+    	newFolder.mkdir();
+    	TestCase.assertTrue("directory I just created should exist", newFolder.exists());
+    	newFile.createNewFile();
+    	TestCase.assertTrue("file I just created should exist", newFile.exists());
+
+    	TestCase.assertTrue("unable to delete folder I just created", newFolder.delete(false));
     	TestCase.assertFalse("folder I just deleted should not exist", newFolder.exists());
     	irodsFileSystem.close();
 

@@ -71,9 +71,9 @@ import java.security.GeneralSecurityException;
  * Instances of this class support socket I/O to a iRODS server.
  *<P>
  * Handles socket level protocol for interacting with the iRODS.
- *
+ * 
  * <P>
- *
+ * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON2.0
  */
@@ -153,7 +153,7 @@ class IRODSCommands {
 	 * Max number of SQL attributes a query can return?
 	 */
 	static final int MAX_SQL_ATTR = 50;
-	
+
 	// Various iRODS message types, in include/rodsDef.h
 	static final String RODS_CONNECT = "RODS_CONNECT";
 	static final String RODS_VERSION = "RODS_VERSION";
@@ -507,12 +507,11 @@ class IRODSCommands {
 	 * Used in Debug mode
 	 */
 	private long date;
-	
+
 	private String reportedIRODSVersion = "";
-	
+
 	MetaDataCondition[] conditions;
 
-	
 	IRODSCommands() {
 
 	}
@@ -521,7 +520,7 @@ class IRODSCommands {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 *<P>
-	 *
+	 * 
 	 * @throws IOException
 	 *             If can't close socket.
 	 */
@@ -540,7 +539,7 @@ class IRODSCommands {
 
 	/**
 	 * Handles connection protocol.
-	 *
+	 * 
 	 * @throws IOException
 	 *             if the host cannot be opened or created.
 	 */
@@ -610,10 +609,13 @@ class IRODSCommands {
 		account.serverDN = readMessage(false).getTag(ServerDN).getStringValue();
 		new GSIAuth(account, connection, out, in);
 	}
-	
+
 	/**
-	 * <code>String</code> containing the IRODS version as reported by the connected IRODS version
-	 * @return <code>String</code> with value returned in response to IRODS startup packet
+	 * <code>String</code> containing the IRODS version as reported by the
+	 * connected IRODS version
+	 * 
+	 * @return <code>String</code> with value returned in response to IRODS
+	 *         startup packet
 	 */
 	public synchronized String getReportedIRODSVersion() {
 		return reportedIRODSVersion;
@@ -622,14 +624,15 @@ class IRODSCommands {
 	/**
 	 * @param reportedIRODSVersion
 	 */
-	protected synchronized void setReportedIRODSVersion(String reportedIRODSVersion) {
+	protected synchronized void setReportedIRODSVersion(
+			String reportedIRODSVersion) {
 		this.reportedIRODSVersion = reportedIRODSVersion;
 	}
 
 	/**
 	 * Close the connection to the server. This method has been sycnhronized so
 	 * the socket will not be blocked when the socket.close() call is made.
-	 *
+	 * 
 	 * @throws IOException
 	 *             Socket error
 	 */
@@ -645,7 +648,7 @@ class IRODSCommands {
 
 	/**
 	 * Returns the closed state of the socket.
-	 *
+	 * 
 	 * @return true if the socket has been closed, or is not connected
 	 */
 	synchronized boolean isClosed() throws IOException {
@@ -666,7 +669,7 @@ class IRODSCommands {
 	 * Handles sending the userinfo connection protocol. First, sends initial
 	 * handshake with IRODS.
 	 * <P>
-	 *
+	 * 
 	 * @throws IOException
 	 *             if the host cannot be opened or created.
 	 */
@@ -698,11 +701,11 @@ class IRODSCommands {
 		send(out);
 		flush();
 		Tag responseMessage = readMessage();
-		
+
 		// look for and retain the version of IRODS I am talking to
 		String reportedRelVersion = responseMessage.getTag(relVersion).value;
 		this.setReportedIRODSVersion(reportedRelVersion);
-		
+
 		return responseMessage;
 	}
 
@@ -771,7 +774,7 @@ class IRODSCommands {
 	// ----------------------------------------------------------------------
 	/**
 	 * Open a connection to the server.
-	 *
+	 * 
 	 * @param host
 	 *            Name of the host to connect to
 	 * @param port
@@ -826,7 +829,7 @@ class IRODSCommands {
 
 	/**
 	 * Writes value.length bytes to this output stream.
-	 *
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @throws NullPointerException
@@ -867,7 +870,7 @@ class IRODSCommands {
 	 * Writes a certain length of bytes at some offset in the value array to the
 	 * output stream, by converting the value to a byte array and calling send(
 	 * byte[] value ).
-	 *
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @param offset
@@ -887,7 +890,7 @@ class IRODSCommands {
 
 	/**
 	 * Writes value.length bytes to this output stream.
-	 *
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @throws IOException
@@ -900,7 +903,7 @@ class IRODSCommands {
 	/**
 	 * Writes an int to the output stream as four bytes, network order (high
 	 * byte first).
-	 *
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @throws IOException
@@ -915,7 +918,7 @@ class IRODSCommands {
 
 	/**
 	 * Writes an int to the output stream as four bytes, low byte first.
-	 *
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @throws IOException
@@ -932,7 +935,7 @@ class IRODSCommands {
 
 	/**
 	 * Writes an long to the output stream as eight bytes, low byte first.
-	 *
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @throws IOException
@@ -949,7 +952,7 @@ class IRODSCommands {
 
 	/**
 	 * Writes an long to the output stream as eight bytes, low byte first.
-	 *
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @throws IOException
@@ -969,7 +972,7 @@ class IRODSCommands {
 
 	/**
 	 * Flushes all data in the output stream and sends it to the server.
-	 *
+	 * 
 	 * @throws NullPointerException
 	 *             Send buffer empty
 	 * @throws IOException
@@ -990,7 +993,7 @@ class IRODSCommands {
 	//
 	/**
 	 * Reads a byte from the server.
-	 *
+	 * 
 	 * @throws IOException
 	 *             If an IOException occurs
 	 */
@@ -1048,7 +1051,7 @@ class IRODSCommands {
 	/**
 	 * Reads a byte array from the server. Blocks until <code>length</code>
 	 * number of bytes are read.
-	 *
+	 * 
 	 * @param length
 	 *            length of byte array to be read
 	 * @return byte[] bytes read from the server
@@ -1211,7 +1214,7 @@ class IRODSCommands {
 			if (messageLength > 0) {
 				message = readMessageBody(messageLength, decode);
 			}
-			
+
 			if (bytesLength != 0 || info > 0) {
 				if (message == null) {
 					message = new Tag(MsgHeader_PI);
@@ -1245,7 +1248,7 @@ class IRODSCommands {
 			 * message length in front of the message. Causing unexpected
 			 * results when attempting to parse the message, ie. <REr are
 			 * interpreted as the message length.
-			 *
+			 * 
 			 * <RError_PI> <count>1 </count> <RErrMsg_PI> <status>-808000
 			 * </status> <msg>ERROR: msiDataObjPut: rsDataObjPut failed for
 			 * <MsgHeader_PI> <type>RODS_API_REPLY </type> <msgLen>0 </msgLen>
@@ -1324,7 +1327,6 @@ class IRODSCommands {
 		return Host.castToInt(headerInt);
 	}
 
-	
 	private Tag readMessageBody(int length, boolean decode) throws IOException {
 		byte[] body = new byte[length];
 		read(body, 0, length);
@@ -1334,7 +1336,7 @@ class IRODSCommands {
 	/**
 	 * Read the data buffer to discover the first tag. Fill the values of that
 	 * tag according to the above defined static final values.
-	 *
+	 * 
 	 * @throws UnsupportedEncodingException
 	 *             shouldn't throw, already tested for
 	 */
@@ -1380,7 +1382,7 @@ class IRODSCommands {
 	/**
 	 * Read the data buffer to discover a sub tag. Fill the values of that tag
 	 * according to the above defined static final values.
-	 *
+	 * 
 	 * @throws UnsupportedEncodingException
 	 *             shouldn't throw, already tested for
 	 */
@@ -1525,7 +1527,7 @@ class IRODSCommands {
 	 */
 
 	/**
-	 *
+	 * 
 	 * @return various server information
 	 * @throws java.io.IOException
 	 */
@@ -1587,9 +1589,12 @@ class IRODSCommands {
 
 	/**
 	 * Delete the given collection from IRODS.
-	 * @param file {@link IRODSFile IRODSFile} that is a collection to be deleted
-	 * @param force <code>boolean</code> indicates Immediate removal of data-objects
-	 * without putting them in trash
+	 * 
+	 * @param file
+	 *            {@link IRODSFile IRODSFile} that is a collection to be deleted
+	 * @param force
+	 *            <code>boolean</code> indicates Immediate removal of
+	 *            data-objects without putting them in trash
 	 * @throws IOException
 	 */
 	void deleteDirectory(IRODSFile file, boolean force) throws IOException {
@@ -1617,60 +1622,45 @@ class IRODSCommands {
 
 	/**
 	 * Respond to client status messages for an operation until exhausted.
-	 * @param reply <code>Tag</code> containing status messages from IRODS
+	 * 
+	 * @param reply
+	 *            <code>Tag</code> containing status messages from IRODS
 	 * @throws IOException
 	 */
 	private void processClientStatusMessages(Tag reply) throws IOException {
-		if (reply.getLength() > 0) {
-			if (reply.tagName.equals(CollOprStat_PI)) {
-				// formulate an answer status reply
 
-				boolean done = false;
-				Tag ackResult = null;
-				
-				// if the total file count is 0, then I will continue and send the coll stat reply, otherwise, just ignore and 
-				// don't send the reply.  
-				
-				Tag fileCountTag = reply.getTag("totalFileCnt");
-				if (Integer.parseInt((String) fileCountTag.getValue()) > 0) {
-					done = true;
-				}
+		boolean done = false;
+		Tag ackResult = reply;
+	
+		while (!done) {
+			if (ackResult.getLength() > 0) {
+				if (ackResult.tagName.equals(CollOprStat_PI)) {
+					// formulate an answer status reply
 
-				/*
-				 * There is a known issue here.  The client status messages returned only have a file count.  If
-				 * I get a file count less than the known threshold, then I know I'm done.  However, there is an edge case
-				 * Where I get a file count equal to the theshold, but there are no more files to process.  Currently this
-				 * results in an NPE, but needs to be addressed within IRODS. As a work-around, the npe is trapped and treated
-				 * as the end of the operation.
-				 */
+					// if the total file count is 0, then I will continue and
+					// send
+					// the coll stat reply, otherwise, just ignore and
+					// don't send the reply.
 
-				while (!done) {
-					sendInNetworkOrder(SYS_CLI_TO_SVR_COLL_STAT_REPLY);
-					flush();
-					try {
-						ackResult = readMessage();
-					} catch (NullPointerException npe) {
-						if (IRODSCommands.DEBUG > 0) {
-							System.err
-									.println("Boundary error on SYS_CLI_TO_SVR_COLL_STAT_REPLY, ignored");
-						}
-						// treat npe the same as a valid end of status messages condition
+					Tag totalFilesTag = ackResult.getTag("totalFileCnt");
+					int totalFiles = Integer.parseInt((String) totalFilesTag
+							.getValue());
+					Tag fileCountTag = ackResult.getTag("filesCnt");
+					int fileCount = Integer.parseInt((String) fileCountTag
+							.getValue());
+
+					if (fileCount < SYS_CLI_TO_SVR_COLL_STAT_SIZE) {
 						done = true;
-						continue;
-					}
-					if (reply.tagName.equals(CollOprStat_PI)) {
-						fileCountTag = reply.getTag("filesCnt");
-						if (Integer.parseInt((String) fileCountTag.getValue()) < SYS_CLI_TO_SVR_COLL_STAT_SIZE) {
-							done = true;
-							continue;
-						}
-						continue;
 					} else {
-						done = true;
+
+						sendInNetworkOrder(SYS_CLI_TO_SVR_COLL_STAT_REPLY);
+						flush();
+						ackResult = readMessage();
 					}
 				}
 			}
 		}
+
 	}
 
 	void deleteFile(IRODSFile file, boolean force) throws IOException {
@@ -1754,17 +1744,18 @@ class IRODSCommands {
 	 */
 	synchronized int fileRead(int fd, OutputStream destination, long length)
 			throws IOException {
-		
-		// shim code for  Bug 40 -  IRODSCommands.fileRead() with length of 0 causes null message from irods 
+
+		// shim code for Bug 40 - IRODSCommands.fileRead() with length of 0
+		// causes null message from irods
 		if (length == 0) {
 			length = 1;
 		}
-		
+
 		if (fd == 0 || destination == null) {
-			throw new IllegalArgumentException("invalid parameters for fileRead");
+			throw new IllegalArgumentException(
+					"invalid parameters for fileRead");
 		}
-		
-		
+
 		// XXX: length param is unused
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(len, length), });
@@ -1786,7 +1777,7 @@ class IRODSCommands {
 	 */
 	synchronized int fileRead(int fd, byte buffer[], int offset, int length)
 			throws IOException {
-		
+
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(len, length), });
 
@@ -1811,25 +1802,33 @@ class IRODSCommands {
 
 	/**
 	 * Set the file position for the IRODS file to the specified position
-	 * @param fd <code>int</code> with the file descriptor created by the {@link #fileOpen(IRODSFile, boolean, boolean) fileOpen} method
-	 * @param seek <code>long</code> that is the offset value
-	 * @param whence <code>int</code> that specifies the postion to compute the offset from //FIXME: enumeration?  what values?
+	 * 
+	 * @param fd
+	 *            <code>int</code> with the file descriptor created by the
+	 *            {@link #fileOpen(IRODSFile, boolean, boolean) fileOpen} method
+	 * @param seek
+	 *            <code>long</code> that is the offset value
+	 * @param whence
+	 *            <code>int</code> that specifies the postion to compute the
+	 *            offset from //FIXME: enumeration? what values?
 	 * @return <code>long</code with the new offset.
 	 * @throws IOException
 	 */
 	long fileSeek(int fd, long seek, int whence) throws IOException {
-		
-		if (whence == GeneralRandomAccessFile.SEEK_START || whence == GeneralRandomAccessFile.SEEK_CURRENT || whence == GeneralRandomAccessFile.SEEK_END) {
-			//ok
+
+		if (whence == GeneralRandomAccessFile.SEEK_START
+				|| whence == GeneralRandomAccessFile.SEEK_CURRENT
+				|| whence == GeneralRandomAccessFile.SEEK_END) {
+			// ok
 		} else {
-			throw new IllegalArgumentException("whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
+			throw new IllegalArgumentException(
+					"whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
 		}
-		
+
 		if (fd <= 0) {
 			throw new IllegalArgumentException("no valid file handle provided");
 		}
-		
-		
+
 		Tag message = new Tag(fileLseekInp_PI, new Tag[] {
 				new Tag(fileInx, fd), new Tag(offset, seek),
 				new Tag(this.whence, whence), });
@@ -1862,24 +1861,25 @@ class IRODSCommands {
 				offset, length, DATA_OBJ_WRITE_AN);
 		return message.getTag(MsgHeader_PI).getTag(intInfo).getIntValue();
 	}
-	
-	synchronized void get(IRODSFile source, GeneralFile destination, String resource) throws IOException {
-		
-		/*
-		 * #define DataObjInp_PI "str objPath[MAX_NAME_LEN]; int createMode; int openFlags; 
-		 * double offset; double dataSize; int numThreads; int oprType; struct *SpecColl_PI; struct KeyValPair_PI;"
 
+	synchronized void get(IRODSFile source, GeneralFile destination,
+			String resource) throws IOException {
+
+		/*
+		 * #define DataObjInp_PI "str objPath[MAX_NAME_LEN]; int createMode; int
+		 * openFlags; double offset; double dataSize; int numThreads; int
+		 * oprType; struct *SpecColl_PI; struct KeyValPair_PI;"
 		 */
-		
+
 		Tag rescKeyValueTag;
-		
-		if (resource == null || resource.length() ==0) {
+
+		if (resource == null || resource.length() == 0) {
 			rescKeyValueTag = createKeyValueTag(null);
 		} else {
-			String[][] kvArray = {{IRODSMetaDataSet.RESC_NAME_KW, resource}};
+			String[][] kvArray = { { IRODSMetaDataSet.RESC_NAME_KW, resource } };
 			rescKeyValueTag = createKeyValueTag(kvArray);
 		}
-		
+
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
 				new Tag(objPath, source.getAbsolutePath()),
 				new Tag(createMode, 0), new Tag(openFlags, 0),
@@ -1918,7 +1918,6 @@ class IRODSCommands {
 				int pass = message.getTag(PortList_PI).getTag(cookie)
 						.getIntValue();
 
-			
 				Thread[] transferThreads = new Thread[threads];
 				TransferThread[] transfer = new TransferThread[threads];
 				for (int i = 0; i < threads; i++) {
@@ -1949,13 +1948,12 @@ class IRODSCommands {
 			// read the message byte stream into the local file
 			read(FileFactory.newRandomAccessFile(destination, "rw"), length);
 		}
-		
-		
+
 	}
 
 	synchronized void get(IRODSFile source, GeneralFile destination)
 			throws IOException {
-		
+
 		get(source, destination, "");
 
 	}
@@ -1981,7 +1979,7 @@ class IRODSCommands {
 
 	void put(GeneralFile source, IRODSFile destination, boolean overwriteFlag)
 			throws IOException {
-		
+
 		// FIXME: need test for put of non-existent file, no error thrown?
 		String resource = destination.getResource();
 		long length = source.length();
@@ -2099,20 +2097,27 @@ class IRODSCommands {
 
 	/**
 	 * Add or update an AVU value for a data object or collection
-	 * @param file {@line edu.sdsc.grid.io.irods.IRODSFile IRODSFile} describing the object or collection
-	 * @param values <code>String[]</code> containing an AVU in the form (attrib name, attrib value) or (attrib name, attrib value, attrib units)
+	 * 
+	 * @param file
+	 *            {@line edu.sdsc.grid.io.irods.IRODSFile IRODSFile} describing
+	 *            the object or collection
+	 * @param values
+	 *            <code>String[]</code> containing an AVU in the form (attrib
+	 *            name, attrib value) or (attrib name, attrib value, attrib
+	 *            units)
 	 * @throws IOException
 	 */
 	void modifyMetaData(IRODSFile file, String[] values) throws IOException {
-		
+
 		if (file == null) {
 			throw new IllegalArgumentException("irods file must not be null");
 		}
-		
+
 		if (values.length < 2 || values.length > 3) {
-			throw new IllegalArgumentException("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+			throw new IllegalArgumentException(
+					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
 		}
-		
+
 		Tag message = new Tag(ModAVUMetadataInp_PI, new Tag[] { new Tag("arg0",
 				"add"), });
 		if (file.isDirectory()) {
@@ -2254,7 +2259,6 @@ class IRODSCommands {
 
 		irodsFunction(RODS_API_REQ, message, OBJ_STAT_AN);
 
-		
 		/*
 		 * <RodsObjStat_PI> <objSize>0</objSize> <objType>2</objType>
 		 * <numCopies>0</numCopies> <dataId>10548</dataId> <chksum></chksum>
@@ -2275,7 +2279,7 @@ class IRODSCommands {
 	/**
 	 * Take an existing IRODS collection and create a tar file in irods from the
 	 * objects in the collection
-	 *
+	 * 
 	 * @param tarFile
 	 *            {@link edu.sdsc.grid.io.irods.IRODSFile IRODSFile} that will
 	 *            be the destination <code>.tar</code> file
@@ -2377,29 +2381,39 @@ class IRODSCommands {
 		return null;
 	}
 
-
 	/**
-	 * @deprecated this method apparently only returns null, and will be removed in a later release.  This method will
-	 * throw a RuntimeException if invoked. {@see executeRule(String, Parameter[], Parameter[]) executeRule(String, Parameter[], Parameter{}}
+	 * @deprecated this method apparently only returns null, and will be removed
+	 *             in a later release. This method will throw a RuntimeException
+	 *             if invoked. {@see executeRule(String, Parameter[],
+	 *             Parameter[]) executeRule(String, Parameter[], Parameter
 	 */
 	Parameter[] executeRule(Rule rule) throws IOException {
 		throw new RuntimeException("Unimplemented functionality");
-	
+
 	}
 
-	
 	/**
-	 * Execute an IRODS rule and return the result as a <code>Tag</code>.  Note that the result in <code>Tag</code> format can be processed by 
-	 * {@link edu.sdsc.grid.io.irods.Rule#readResult(IRODSFileSystem, Tag) edu.sdsc.grio.io.irods.Rule.readResult(IRODSFileSystem, Tag)}
+	 * Execute an IRODS rule and return the result as a <code>Tag</code>. Note
+	 * that the result in <code>Tag</code> format can be processed by
+	 * {@link edu.sdsc.grid.io.irods.Rule#readResult(IRODSFileSystem, Tag)
+	 * edu.sdsc.grio.io.irods.Rule.readResult(IRODSFileSystem, Tag)}
 	 * 
-	 * Note that this method currently can return null.  This behavior will be corrected in upcoming versions of Jargon.  The Rule.readResult() method
-	 * was updated to return an empty Parameter[] and to tolerate a null input to ensure that NullPointerExceptions do not occur.  These are interim 
+	 * Note that this method currently can return null. This behavior will be
+	 * corrected in upcoming versions of Jargon. The Rule.readResult() method
+	 * was updated to return an empty Parameter[] and to tolerate a null input
+	 * to ensure that NullPointerExceptions do not occur. These are interim
 	 * fixes...this entire arrangement will be reconsidered.
 	 * 
-	 * @param rule <code>String</code> with the text of the rule to be executed
-	 * @param input {@link edu.sdsc.grid.io.irods.Parameter Parameter[]} for inputs to the rule
-	 * @param output {@link edu.sdsc.grid.io.irods.Parameter Parameter[]} containing rule output
-	 * @return {@link edu.sdsc.grid.io.irods.Tag Tag} containing the response from IRODS for the rule invocation.  
+	 * @param rule
+	 *            <code>String</code> with the text of the rule to be executed
+	 * @param input
+	 *            {@link edu.sdsc.grid.io.irods.Parameter Parameter[]} for
+	 *            inputs to the rule
+	 * @param output
+	 *            {@link edu.sdsc.grid.io.irods.Parameter Parameter[]}
+	 *            containing rule output
+	 * @return {@link edu.sdsc.grid.io.irods.Tag Tag} containing the response
+	 *         from IRODS for the rule invocation.
 	 * @throws IOException
 	 */
 	Tag executeRule(String rule, Parameter[] input, Parameter[] output)
@@ -2409,25 +2423,24 @@ class IRODSCommands {
 				new Tag(myRule, rule),
 				new Tag(RHostAddr_PI, new Tag[] { new Tag(hostAddr, ""),
 						new Tag(rodsZone, ""), new Tag(port, 0),
-						new Tag(dummyInt, 0), }), createKeyValueTag(null),
-				});
+						new Tag(dummyInt, 0), }), createKeyValueTag(null), });
 
 		// add output parameter tags
 		// They get cat together seperated by '%'
 		if (output != null) {
 			String temp = "";
 			for (Parameter out : output)
-				temp += out.getUniqueName() + "%";  // FIXME: what if only one, should this % be here?
+				temp += out.getUniqueName() + "%"; // FIXME: what if only one,
+			// should this % be here?
 
 			message.addTag(new Tag(outParamDesc, temp.substring(0, temp
 					.length() - 1)));
 		}
 
-		// add input parameter tags  
+		// add input parameter tags
 		if (input != null) {
 			Tag paramArray = new Tag(MsParamArray_PI, new Tag[] {
-					new Tag(paramLen, input.length), new Tag(oprType, 0)
-					});
+					new Tag(paramLen, input.length), new Tag(oprType, 0) });
 			for (Parameter in : input) {
 				paramArray.addTag(in.createMsParamArray());
 			}
@@ -2481,29 +2494,33 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, GENERAL_ADMIN_AN);
 	}
 
-	
 	/**
-	 * @deprecated Use {@link #query(MetaDataCondition[], MetaDataSelect[], int, Namespace) 
-	 * Made before the general query was available. Allowed queries:
-	 * "select token_name from r_tokn_main where token_namespace = 'token_namespace'"
-	 * , "select token_name from r_tokn_main where token_namespace = ?",
-	 * "select * from r_tokn_main where token_namespace = ? and token_name like ?"
-	 * , "select resc_name from r_resc_main",
-	 * "select * from r_resc_main where resc_name=?",
-	 * "select zone_name from r_zone_main",
-	 * "select * from r_zone_main where zone_name=?",
-	 * "select user_name from r_user_main where user_type_name='rodsgroup'","select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)"
-	 * , "select * from r_data_main where data_id=?","select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)"
-	 * , "select coll_name from r_coll_main where parent_coll_name=?",
-	 * "select * from r_user_main where user_name=?",
-	 * "select user_name from r_user_main where user_type_name != 'rodsgroup'","select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?"
-	 * , "select distinct resc_group_name from r_resc_group",
-	 * "select coll_id from r_coll_main where coll_name = ?"
-	 *
+	 * @deprecated Use
+	 *             {@link #query(MetaDataCondition[], MetaDataSelect[], int, Namespace)
+	 *             Made before the general query was available. Allowed queries:
+	 *             "select token_name from r_tokn_main where token_namespace = 'token_namespace'"
+	 *             ,
+	 *             "select token_name from r_tokn_main where token_namespace = ?"
+	 *             ,
+	 *             "select * from r_tokn_main where token_namespace = ? and token_name like ?"
+	 *             , "select resc_name from r_resc_main",
+	 *             "select * from r_resc_main where resc_name=?",
+	 *             "select zone_name from r_zone_main",
+	 *             "select * from r_zone_main where zone_name=?",
+	 *             "select user_name from r_user_main where user_type_name='rodsgroup'"
+	 *             ,"select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)"
+	 *             , "select * from r_data_main where data_id=?","select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)"
+	 *             ,
+	 *             "select coll_name from r_coll_main where parent_coll_name=?",
+	 *             "select * from r_user_main where user_name=?",
+	 *             "select user_name from r_user_main where user_type_name != 'rodsgroup'"
+	 *             ,"select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?"
+	 *             , "select distinct resc_group_name from r_resc_group",
+	 *             "select coll_id from r_coll_main where coll_name = ?" *
 	 */
 	String[] simpleQuery(String statement, String arg) throws IOException {
 		Tag message = null;
-		
+
 		if (arg == null) {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {
 					new Tag(sql, statement), new Tag(control, 0), // don't know
@@ -2534,8 +2551,7 @@ class IRODSCommands {
 		Tag message = new Tag(GenQueryInp_PI, new Tag[] {
 				new Tag(maxRows, numberOfRecordsWanted),
 				new Tag(continueInx, 0), // new query
-				new Tag(partialStartIndex, 0), 
-				createKeyValueTag(null), });
+				new Tag(partialStartIndex, 0), createKeyValueTag(null), });
 		Tag[] subTags = null;
 		int j = 1;
 		String[] selectedAVU = new String[selects.length];
@@ -2569,7 +2585,9 @@ class IRODSCommands {
 		// package the conditions
 		if (conditions != null) {
 			// fix the conditions if there are AVU parts, also remove nulls
-			conditions = (MetaDataCondition[]) IRODSFileSystem // FIXME: in right order here
+			conditions = (MetaDataCondition[]) IRODSFileSystem // FIXME: in
+					// right order
+					// here
 					.cleanNullsAndDuplicates(checkForAVU(conditions, namespace));
 
 			subTags = new Tag[conditions.length * 2 + 1];
@@ -2596,7 +2614,7 @@ class IRODSCommands {
 		// send command to server
 		message = irodsFunction(RODS_API_REQ, message, GEN_QUERY_AN);
 
-		if (message == null) {  //FIXME: method is returning null !!!
+		if (message == null) { // FIXME: method is returning null !!!
 			// query had no results
 			return null;
 		}
@@ -2609,13 +2627,13 @@ class IRODSCommands {
 		MetaDataField[] fields = new MetaDataField[attributes];
 		MetaDataRecordList[] rl = new MetaDataRecordList[rows];
 		for (int i = 0; i < attributes; i++) {
-			
+
 			fields[i] = IRODSMetaDataSet.getField(message.tags[4 + i].getTag(
 					attriInx).getStringValue());
 		}
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
-				
+
 				results[j] = message.tags[4 + j].tags[2 + i].getStringValue();
 			}
 			if (continuation > 0) {
@@ -2690,13 +2708,13 @@ class IRODSCommands {
 		MetaDataField[] fields = new MetaDataField[attributes];
 		MetaDataRecordList[] rl = new MetaDataRecordList[rows];
 		for (int i = 0; i < attributes; i++) {
-			
+
 			fields[i] = IRODSMetaDataSet.getField(message.tags[4 + i].getTag(
 					attriInx).getStringValue());
 		}
 		for (int i = 0; i < rows; i++) {
 			for (j = 0; j < attributes; j++) {
-				
+
 				results[j] = message.tags[4 + j].tags[2 + i].getStringValue();
 			}
 			if (continuation > 0) {
@@ -2715,14 +2733,14 @@ class IRODSCommands {
 	/**
 	 * Checks to see if any of these conditions are really a user definable
 	 * metadata AVU. And if so convert it to something irods will understand.
-	 *
+	 * 
 	 * @param conditions
 	 * @return
 	 */
 	MetaDataCondition[] checkForAVU(MetaDataCondition[] conditions,
 			Namespace namespace) {
 		Vector<MetaDataCondition> newConditions = null;
-		for (int i = 0; i < conditions.length; i++) {  
+		for (int i = 0; i < conditions.length; i++) {
 
 			if (checkForAVU(conditions[i].getField())) {
 				if (newConditions == null) {
@@ -2794,7 +2812,7 @@ class IRODSCommands {
 				conditions = newConditions.toArray(conditions);
 			} else {
 				conditions = newConditions.toArray(new MetaDataCondition[0]);
-				
+
 			}
 
 			// join the selects
@@ -2809,12 +2827,13 @@ class IRODSCommands {
 	/**
 	 * Just checks the extensible value of this field to see if it was declared
 	 * DEFINABLE_METADATA during the conditions creation.
-	 *
+	 * 
 	 * @param field
 	 * @return
 	 */
 	boolean checkForAVU(MetaDataField field) {
-		// note that the getExtensibleName(null) call below will always return DEFINABLE_METADATA
+		// note that the getExtensibleName(null) call below will always return
+		// DEFINABLE_METADATA
 		String ext = field.getExtensibleName(null);
 		if ((ext != null) && ext.equals(IRODSMetaDataSet.DEFINABLE_METADATA))
 			return true;
@@ -2885,7 +2904,7 @@ class IRODSCommands {
 
 		/**
 		 * Used by client parallel transfer put
-		 *
+		 * 
 		 * @param host
 		 * @param port
 		 * @param cookie
@@ -2943,7 +2962,7 @@ class IRODSCommands {
 			byte[] b = new byte[8];
 			int read = in.read(b);
 			if (read != 8) {
-				
+
 			}
 			return Host.castToLong(b);
 		}
@@ -2966,7 +2985,7 @@ class IRODSCommands {
 			// garbage collector can be too slow
 			if (out != null) {
 				try {
-					
+
 					out.close();
 				} catch (IOException e) {
 					throw new RuntimeException("IOException in thread.", e);

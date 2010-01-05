@@ -121,6 +121,9 @@ Tests for  Bug 45 -  SYS_UNMATCHED_API_NUM (-12000) when attempting to get a fil
 Test and Patch for  Bug 48 -  NPE on Delete
 
 -------------
+Test and patch for  Bug 50 -  forced delete on directory does not work, moves files to trash
+
+-------------
 A large number of 'small' fixes and cleanups
 	
 ================================================================================================
