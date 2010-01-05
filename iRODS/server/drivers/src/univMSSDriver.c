@@ -170,7 +170,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	int i, status;
 	execCmd_t execCmdInp;
 	char cmdArgv[MAX_NAME_LEN] = "";
-	char splchain1[13][MAX_NAME_LEN], splchain2[4][MAX_NAME_LEN], splchain3[3][MAX_NAME_LEN], strmode[4];
+	char splchain1[13][MAX_NAME_LEN], splchain2[4][MAX_NAME_LEN], splchain3[3][MAX_NAME_LEN];
 	char *outputStr;
 	const char *delim1 = ":\n";
 	const char *delim2 = "-";
