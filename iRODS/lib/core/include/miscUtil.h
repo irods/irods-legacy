@@ -7,6 +7,7 @@
 
 #include "rodsPath.h"
 #include "parseCommandLine.h"
+#include "irodsGuiProgressCallback.h"
 
 #define	INIT_UMASK_VAL	99999999
 typedef struct CollSqlResult {
@@ -215,6 +216,10 @@ getZoneHintForGenQuery (genQueryInp_t *genQueryInp);
 int
 getZoneType (rcComm_t *conn, char *icatZone, char *inZoneName, 
 char *outZoneType);
+int
+getCollSize (rcComm_t *conn, char *srcColl, operProgress_t *operProgress);
+int
+getDirSize (char *srcDir, operProgress_t *operProgress);
 #ifdef  __cplusplus
 }
 #endif

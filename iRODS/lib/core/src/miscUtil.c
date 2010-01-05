@@ -1568,3 +1568,105 @@ char *outZoneType)
     return 0;
 }
 
+/* getCollSize - Calculate the totalNumFiles and totalFileSize and
+ * put it in the operProgress struct.
+ * Note that operProgress->totalNumFiles and operProgress->totalFileSize  
+ * needs to be initialized since it can be a recursive operation and
+ * cannot be initialized in this routine.
+ */
+int
+getCollSize (rcComm_t *conn, char *srcColl, operProgress_t *operProgress)
+{
+    int status = 0;
+    collHandle_t collHandle;
+    collEnt_t collEnt;
+
+    status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
+      &collHandle);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "getCollSize: rclOpenCollection of %s error. status = %d",
+          srcColl, status);
+        return status;
+    }
+
+    while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
+        if (collEnt.objType == DATA_OBJ_T) {
+	    operProgress->totalNumFiles++;
+	    operProgress->totalFileSize += collEnt.dataSize;
+        } else if (collEnt.objType == COLL_OBJ_T) {
+            if (collEnt.specColl.collClass != NO_SPEC_COLL) {
+                /* the child is a spec coll. need to drill down */
+                status = getCollSize (conn, collEnt.collName, operProgress);
+                if (status < 0 && status != CAT_NO_ROWS_FOUND) return (status);
+            }
+	}
+    }
+    if (status == CAT_NO_ROWS_FOUND) 
+        return 0;
+    else
+        return status;
+}
+
+/* getDirSize - Calculate the totalNumFiles and totalFileSize and
+ * put it in the operProgress struct.
+ * Note that operProgress->totalNumFiles and operProgress->totalFileSize
+ * needs to be initialized since it can be a recursive operation and
+ * cannot be initialized in this routine.
+ */
+int
+getDirSize (char *srcDir, operProgress_t *operProgress)
+{
+    int status = 0;
+    DIR *dirPtr;
+    struct dirent *myDirent;
+#ifndef windows_platform
+    struct stat statbuf;
+#else
+    struct irodsntstat statbuf;
+#endif
+    char srcChildPath[MAX_NAME_LEN];
+
+    dirPtr = opendir (srcDir);
+    if (dirPtr == NULL) {
+        rodsLog (LOG_ERROR,
+        "getDirSize: opendir local dir error for %s, errno = %d\n",
+         srcDir, errno);
+        return (USER_INPUT_PATH_ERR);
+    }
+
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
+          srcDir, myDirent->d_name);
+
+#ifndef windows_platform
+        status = stat (srcChildPath, &statbuf);
+#else
+        status = iRODSNt_stat(srcChildPath, &statbuf);
+#endif
+
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+              "getDirSize: stat error for %s, errno = %d\n",
+              srcChildPath, errno);
+            closedir (dirPtr);
+            return (USER_INPUT_PATH_ERR);
+        }
+
+        if (statbuf.st_mode & S_IFREG) {
+            operProgress->totalNumFiles++;
+            operProgress->totalFileSize += statbuf.st_size;
+        } else if (statbuf.st_mode & S_IFDIR) {
+            status = getDirSize (srcChildPath, operProgress);
+            if (status < 0) return (status);
+
+	}
+    }
+    return status;
+}
+
