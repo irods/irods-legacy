@@ -8,83 +8,85 @@
 #include "rods.h"
 #include "rodsClient.h"
 
-#define MAX_SQL 300
 #define BIG_STR 200
 
-char cwd[BIG_STR];
-
 int debug=0;
-
+char quotaTime[20]="";
 int printedFlag[3]={0,0,0};
-char *header[3]={
-   "User quotas:\n    Resource         User        Limit         Over     Time-set",
-   "\nGroup quotas:       Group ",
-   "Group quotas:\n    Resource        Group        Limit         Over     Time-set",
-};
-/*  123456789012|123456789012|123456789012|123456789012|123456789012| */
-
 rcComm_t *Conn;
 rodsEnv myEnv;
 
 
 void usage();
 
+
 /*
- Print a header if it hasn't already.
+ print a number nicely, that is with commas and summary magnitude
  */
 int
-printHdr(int ix) {
-   if (printedFlag[ix]==0) {
-      printedFlag[ix]=1;
-      printf("%s\n", header[ix]);
-      return(1);
+printNice(char *inArg, int minLen, char *Units) {
+   int i, n, k, len;
+   int nextComma, firstComma, commaCount;
+   char niceString[40];
+   char firstPart[10];
+   char *numberName;
+   char blanks[]="                                        ";
+   len=strlen(inArg);
+   nextComma = len % 3;
+   if (nextComma == 0) nextComma=3;
+   n = 0;
+   k = 0;
+   firstComma=0;
+   commaCount=0;
+   for (i=0;i<len;i++) {
+      niceString[n++]=inArg[i];
+      if (firstComma==0) {
+	 firstPart[k++]=inArg[i];
+      }
+      nextComma--;
+      if (nextComma==0 && i<len-1) {
+	 niceString[n++]=',';
+	 nextComma=3;
+	 firstComma=1;
+	 commaCount++;
+      }
+   }
+   niceString[n]='\0';
+   firstPart[k]='\0';
+   numberName="";
+   if (commaCount == 1) numberName="thousand";
+   if (commaCount == 2) numberName="million";
+   if (commaCount == 3) numberName="billion";
+   if (commaCount == 4) numberName="trillion";
+   if (commaCount == 5) numberName="quadrillion";
+   if (commaCount == 6) numberName="quintillion";
+   if (commaCount == 7) numberName="sextillion";
+   if (commaCount == 8) numberName="septillion";
+   if (commaCount > 8) numberName="very many";
+   len = strlen(niceString);
+   if (len < minLen) {
+      i = minLen-len;
+      blanks[i]='\0';
+      printf("%s", blanks);
+      blanks[i]=' ';
+   }
+   if (commaCount==0) {
+      printf("%s %s", niceString, Units);
+   }
+   else {
+      printf("%s (%s %s) %s", niceString, 
+	       firstPart, numberName, Units);
    }
    return(0);
 }
 
-/* 
- print the results of a general query.
- */
-int
-printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, 
-		     char *descriptions[])
-{
-   int printCount;
-   int i, j;
-   char localTime[20];
-   printCount=0;
-   if (status!=0) {
-      printError(Conn, status, "rcGenQuery");
-   }
-   else {
-      if (status !=CAT_NO_ROWS_FOUND) {
-	 for (i=0;i<genQueryOut->rowCnt;i++) {
-	    for (j=0;j<genQueryOut->attriCnt;j++) {
-	       char *tResult;
-	       tResult = genQueryOut->sqlResult[j].value;
-	       tResult += i*genQueryOut->sqlResult[j].len;
-	       if (strstr(descriptions[j],"time")!=0) {
-		  getLocalTimeFromRodsTime(tResult, localTime);
-		  printf("%s: %s: %s\n", descriptions[j], tResult, 
-			 localTime);
-	       } 
-	       else {
-		  printf("%s: %s\n", descriptions[j], tResult);
-	       }
-	       printCount++;
-	    }
-	 }
-      }
-   }
-   return(printCount);
-}
 
 
 /*
   Show user quota information
 */
 int
-showUserLimits(char *userName, int userOrGroup, int rescOrGlobal) 
+showQuotas(char *userName, int userOrGroup, int rescOrGlobal) 
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -96,35 +98,34 @@ showUserLimits(char *userName, int userOrGroup, int rescOrGlobal)
    char v2[BIG_STR];
    char v3[BIG_STR];
    int i, j, k, status;
-   char localTime[20];
+   int  localiTime=0;
    int printCount;
-
-   char *pad[13]={"            ",
-		  "           ",
-		  "          ",
-		  "         ",
-		  "        ",
-		  "       ",
-		  "      ",
-		  "     ",
-		  "    ",
-		  "   ",
-		  "  ",
-		  " ",
-		  ""};
+   static int printedTime=0;
+   char *colName[10];
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
    printCount=0;
    i=0;
    if (rescOrGlobal==0) {
+      colName[i]="Resource: ";
       inputInx[i++]=COL_QUOTA_RESC_NAME;
    }
    else {
+      colName[i]="Resource: ";
       inputInx[i++]=COL_QUOTA_RESC_ID;
    }
+   if (userOrGroup==0) {
+      colName[i]="User:  ";
+   }
+   else {
+      colName[i]="Group:  ";
+   }
    inputInx[i++]=COL_QUOTA_USER_NAME;
+   colName[i]="Quota: ";
    inputInx[i++]=COL_QUOTA_LIMIT;
+   colName[i]="Over:  ";
    inputInx[i++]=COL_QUOTA_OVER;
+   colName[i]="Time";
    inputInx[i++]=COL_QUOTA_MODIFY_TIME;
 
    genQueryInp.selectInp.inx = inputInx;
@@ -166,24 +167,7 @@ showUserLimits(char *userName, int userOrGroup, int rescOrGlobal)
    genQueryInp.continueInx=0;
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
    if (status == CAT_NO_ROWS_FOUND) {
-      if (rescOrGlobal==0) {
-      if (userOrGroup==1) {
-	 if (userName[0]!='\0') {
-	    printf("No quotas set for group %s\n", userName);
-	 }
-	 else {
-	    printf("No group quotas set\n");
-	 }
-      }
-      else {
-	 if (userName[0]!='\0') {
-	    printf("No quotas set for user %s\n", userName);
-	 }
-	 else {
-	    printf("No user quotas set\n");
-	 }
-      }
-      }
+      printf("None\n\n");
       return(0);
    }
    if (status!=0) {
@@ -191,35 +175,51 @@ showUserLimits(char *userName, int userOrGroup, int rescOrGlobal)
       return(status);
    }
 
-   if (userOrGroup==0) { /* user */
-      printHdr(0);
-   }
-   else {  /* group */
-      if (printedFlag[0]==1) {
-	 printHdr(1);
-      }
-      else {
-	 printHdr(2);
-      }
-   }
+   if (genQueryOut->rowCnt > 0 && printedTime==0) {
+      for (i=0;i<1;i++) {
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    long itime;
 
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    if (j==4) {
+	       itime = atoll(tResult);
+	       if (itime > localiTime) {
+		  localiTime = itime;
+		  getLocalTimeFromRodsTime(tResult, quotaTime);
+	       }
+	    }
+	 }
+      }
+   }
    printCount=0;
    for (i=0;i<genQueryOut->rowCnt;i++) {
       for (j=0;j<genQueryOut->attriCnt;j++) {
 	 char *tResult;
+	 long itime;
 	 tResult = genQueryOut->sqlResult[j].value;
 	 tResult += i*genQueryOut->sqlResult[j].len;
 	 if (j==4) {
-	    getLocalTimeFromRodsTime(tResult, localTime);
-	    printf("%s ", localTime);
+	    itime = atoll(tResult);
+	    if (itime > localiTime) {
+	       localiTime = itime;
+	       getLocalTimeFromRodsTime(tResult, quotaTime);
+	    }
 	 }
 	 else {
+	    printf("  %s",colName[j]);
 	    if (rescOrGlobal==1 && j==0) {
 	       tResult="All";
 	    }
-	    k = strlen(tResult);
-	    if (k < 12) printf("%s",pad[k]);
-	    printf("%s ",tResult);
+	    if (j==3 || j==2) {
+	       printNice(tResult, 0, "bytes");
+	       printf("\n");
+	    }
+	    else {
+	       k = strlen(tResult);
+	       printf("%s\n",tResult);
+	    }
 	    printCount++;
 	 }
       }
@@ -232,7 +232,7 @@ showUserLimits(char *userName, int userOrGroup, int rescOrGlobal)
   Show user quota information
 */
 int
-showUserQuotas(char *userName, int mode) 
+showUserUsage(char *userName) 
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -241,22 +241,11 @@ showUserQuotas(char *userName, int mode)
    int inputCond[20];
    char *condVal[10];
    char v1[BIG_STR];
-   int i, j, status;
-   char localTime[20];
+   int i, j, k, status;
    int printCount;
    char *tResult;
-/*
-   char *columnNames[3][8]={
-      {"resc", "user", "usage", "limit", "over", "modify time", ""},
-      {"resc", "user", "user-type", "limit", "over", "modify time", ""},
-      {"resc", "user", "user-type", "usage", "modify time", "", ""}
-   };
-*/
-   char *header[3]={
-      "h 1",
-   "    Resource   User/Group    User-type        Limit         Over      Time-set",
-      "Resource User    User-type  Usage"
-   };
+   char header[]=
+      "Resource     User         User-type       Data-stored (bytes)";
    char *pad[13]={"            ",
 		  "           ",
 		  "          ",
@@ -270,38 +259,22 @@ showUserQuotas(char *userName, int mode)
 		  "  ",
 		  " ",
 		  ""};
+   int  localiTime=0;
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
    printCount=0;
    i=0;
-   if (mode ==0 ) {
-      inputInx[i++]=COL_QUOTA_MODIFY_TIME;
-      inputInx[i++]=COL_QUOTA_RESC_NAME;
-      inputInx[i++]=COL_QUOTA_USER_NAME;
-      inputInx[i++]=COL_QUOTA_USAGE;
-      inputInx[i++]=COL_QUOTA_LIMIT;
-      inputInx[i++]=COL_QUOTA_OVER;
-   }
-   if (mode ==1 ) {
-      inputInx[i++]=COL_QUOTA_RESC_NAME;
-      inputInx[i++]=COL_QUOTA_USER_NAME;
-      inputInx[i++]=COL_QUOTA_USER_TYPE;
-      inputInx[i++]=COL_QUOTA_LIMIT;
-      inputInx[i++]=COL_QUOTA_OVER;
-      inputInx[i++]=COL_QUOTA_MODIFY_TIME;
-   }
-   if (mode ==2 ) {
-      inputInx[i++]=COL_QUOTA_USAGE_MODIFY_TIME;
-      inputInx[i++]=COL_QUOTA_RESC_NAME;
-      inputInx[i++]=COL_QUOTA_USER_NAME;
-      inputInx[i++]=COL_QUOTA_USER_TYPE;
-      inputInx[i++]=COL_QUOTA_USAGE;
-   }
+   inputInx[i++]=COL_QUOTA_USAGE_MODIFY_TIME;
+   inputInx[i++]=COL_QUOTA_RESC_NAME;
+   inputInx[i++]=COL_QUOTA_USER_NAME;
+   inputInx[i++]=COL_QUOTA_USER_TYPE;
+   inputInx[i++]=COL_QUOTA_USAGE;
 
    genQueryInp.selectInp.inx = inputInx;
    genQueryInp.selectInp.value = inputVal;
    genQueryInp.selectInp.len = i;
 
+   genQueryInp.sqlCondInp.len=0;
    if (userName[0]!='\0') {
       inputCond[0]=COL_QUOTA_USER_NAME;
       sprintf(v1,"='%s'",userName);
@@ -309,19 +282,16 @@ showUserQuotas(char *userName, int mode)
 
       genQueryInp.sqlCondInp.inx = inputCond;
       genQueryInp.sqlCondInp.value = condVal;
-      genQueryInp.sqlCondInp.len=1; //
-   }
-   else {
-      genQueryInp.sqlCondInp.len=0;
+      genQueryInp.sqlCondInp.len++;
    }
 
    genQueryInp.condInput.len=0;
 
-   genQueryInp.maxRows=20;
+   genQueryInp.maxRows=MAX_SQL_ROWS;
    genQueryInp.continueInx=0;
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
    if (status == CAT_NO_ROWS_FOUND) {
-      printf("No quotas set for user %s\n", userName);
+      printf("No records found, run 'iadmin cu' to set calcuate usage\n");
       return(0);
    }
    if (status!=0) {
@@ -329,47 +299,35 @@ showUserQuotas(char *userName, int mode)
       return(status);
    }
 
-   if (mode==1) {
-      printf("%s\n", header[mode]);
-      printCount=0;
-      for (i=0;i<genQueryOut->rowCnt;i++) {
-	 for (j=0;j<genQueryOut->attriCnt;j++) {
-	    char *tResult;
-	    int k;
-	    tResult = genQueryOut->sqlResult[j].value;
-	    tResult += i*genQueryOut->sqlResult[j].len;
-	    if (j==5) {
-	       getLocalTimeFromRodsTime(tResult, localTime);
-	       printf("%s ", localTime);
-       	    }
-	    else {
-	       k = strlen(tResult);
-	       if (k < 12) printf("%s",pad[k]);
-	       printf("%s ",tResult);
-	       printCount++;
-	    }
-	 }
-	 printf("\n");
-      }
-   }
-   if (mode==2) {
-      tResult = genQueryOut->sqlResult[0].value;
-      getLocalTimeFromRodsTime(tResult, localTime);
-      printf("Time usages set: %s\n", localTime);
-      printf("%s\n", header[mode]);
-      printCount=0;
-      for (i=0;i<genQueryOut->rowCnt;i++) {
-	 for (j=1;j<genQueryOut->attriCnt;j++) {
-	    char *tResult;
-	    tResult = genQueryOut->sqlResult[j].value;
-	    tResult += i*genQueryOut->sqlResult[j].len;
-	    printf("%s ",tResult);
-	    printCount++;
-	 }
-	 printf("\n");
-      }
-   }
+   printf("%s\n", header);
+   printCount=0;
 
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      for (j=1;j<genQueryOut->attriCnt;j++) {
+	 char *tResult;
+	 tResult = genQueryOut->sqlResult[j].value;
+	 tResult += i*genQueryOut->sqlResult[j].len;
+	 if (j==4) {
+	    printNice(tResult, 14, "");
+	 }
+	 else {
+	    printf("%s ",tResult);
+	 }
+	 k = strlen(tResult);
+	 if (k < 20) printf("%s",pad[k]);
+	 printCount++;
+      }
+      printf("\n");
+   }
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      long itime;
+      tResult = genQueryOut->sqlResult[i].value;
+      itime = atoll(tResult);
+      if (itime > localiTime) {
+	 localiTime = itime;
+	 getLocalTimeFromRodsTime(tResult, quotaTime);
+      }
+   }
    return (0);
 }
 
@@ -378,7 +336,6 @@ main(int argc, char **argv) {
    int status, nArgs;
    rErrMsg_t errMsg;
    char userName[NAME_LEN];
-   int mode;
 
    rodsArguments_t myRodsArgs;
 
@@ -419,20 +376,39 @@ main(int argc, char **argv) {
 
    nArgs = argc - myRodsArgs.optind;
 
-   mode = 0;
    if (nArgs > 0) {
-      if ((strncmp(argv[myRodsArgs.optind],"limits",6)==0) ||
-	  strncmp(argv[myRodsArgs.optind],"limit",5)==0) {
-	 mode=1;
-	 status = showUserLimits(userName, 0, 0); /* users, resc */
-	 status = showUserLimits(userName, 0, 1); /* users, global */
-	 status = showUserLimits("", 1, 0);       /* all groups, resc */
-	 status = showUserLimits("", 1, 1);       /* all groups, global */
-      }
       if (strncmp(argv[myRodsArgs.optind],"usage",5)==0) {
-	 mode=2;
-	 status = showUserQuotas(userName, mode);
+	 status = showUserUsage(userName);
       }
+      else {
+	 usage();
+      }
+   }
+   else {
+      if (userName[0]=='\0') {
+	 printf("Resource quotas for users:\n");
+      }
+      else {
+	 printf("Resource quotas for user %s:\n", userName);
+      }
+      status = showQuotas(userName, 0, 0); /* users, resc */
+
+      if (userName[0]=='\0') {
+	 printf("Global (total) quotas for users:\n");
+      }
+      else {
+	 printf("Global (total) quotas for user %s:\n", userName);
+      }
+      status = showQuotas(userName, 0, 1); /* users, global */
+
+      printf("Group quotas on resources:\n");
+      status = showQuotas("", 1, 0);       /* all groups, resc */
+
+      printf("Group global (total) quotas:\n");
+      status = showQuotas("", 1, 1);       /* all groups, global */
+   }
+   if (quotaTime[0]!='\0') {
+      printf("Information was set at %s\n", quotaTime);
    }
    
    rcDisconnect(Conn);
@@ -446,15 +422,14 @@ Print the main usage/help information.
 void usage()
 {
    char *msgs[]={
-"Usage: iquota [-uavVh] [UserName] [usage] [limits]", 
+"Usage: iquota [-uavVh] [UserName] [usage]", 
 " ", 
-"Show information iRODS iquotas (if any)", 
+"Show information on iRODS quotas (if any)", 
 "By default, information is displayed for the current iRODS user",
 "Options",
 "-a All users",
 "-u UserName  - for the specified user",
-"usage  - show only usage information",
-"limits - show only the defined limits",
+"usage  - show usage information",
 ""};
    int i;
    for (i=0;;i++) {

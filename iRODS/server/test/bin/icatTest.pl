@@ -492,6 +492,8 @@ runCmd(0, "iadmin suq $U1 total 0");
 runCmd(0, "iadmin sgq $G1 total 0");
 runCmd(0, "iadmin suq $U1 $Resc 0");
 runCmd(0, "iadmin sgq $G1 $Resc 0");
+runCmd(0, "iadmin lq");
+runCmd(0, "iadmin lq $U1");
 runCmd(0, "iadmin rmgroup $G1");
 runCmd(0, "irm -f $F1");
 

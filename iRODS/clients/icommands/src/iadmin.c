@@ -450,6 +450,28 @@ simpleQueryCheck()
 }
 
 int
+showQuotas(char *userOrGroup) 
+{
+   simpleQueryInp_t simpleQueryInp;
+
+   memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
+   simpleQueryInp.control = 0;
+   if (userOrGroup==0 || *userOrGroup=='\0') {
+      simpleQueryInp.form = 2;
+      simpleQueryInp.sql = 
+	 "select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id";
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   else {
+      simpleQueryInp.form = 2;
+      simpleQueryInp.sql = "select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=?";
+      simpleQueryInp.arg1 = userOrGroup;
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   return (doSimpleQuery(simpleQueryInp));
+}
+
+int
 generalAdmin(int userOption, char *arg0, char *arg1, char *arg2, char *arg3, 
 	     char *arg4, char *arg5, char *arg6, char *arg7) {
 /* If userOption is 1, try userAdmin if generalAdmin gets a permission
@@ -775,6 +797,10 @@ doCommand(char *cmdToken[]) {
       generalAdmin(0, "set-quota", "group", 
 		   cmdToken[1], cmdToken[2], cmdToken[3], 
 		   "", "", "");
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"lq") == 0) {
+      showQuotas(cmdToken[1]);
       return(0);
    }
    if (strcmp(cmdToken[0],"mkdir") == 0) {
@@ -1176,6 +1202,7 @@ void usageMain()
 " ctime Time (convert an iRODS time (integer) to local time; & other forms)",
 " suq User ResourceName-or-'total' Value (set user quota)",
 " sgq Group ResourceName-or-'total' Value (set group quota)",
+" lq [Name] List Quotas",
 " cu (calulate usage (for quotas))",
 " help (or h) [command] (this help, or more details on a command)",
 "Also see 'irmtrash -M -u user' for the admin mode of removing trash.",
@@ -1492,7 +1519,7 @@ usage(char *subOpt)
 "Set a quota for a particular user for either a resource or all irods",
 "usage (total).  Use 0 for the value to remove quota limit.  Value is",
 "in bytes.",
-"Also see sgq and cu.",
+"Also see sgq, lq and cu.",
 ""};
 
    char *sgqMsgs[]={
@@ -1500,14 +1527,21 @@ usage(char *subOpt)
 "Set a quota for a user-group for either a resource or all irods",
 "usage (total).  Use 0 for the value to remove quota limit.  Value is",
 "in bytes.",
-"Also see suq and cu.",
+"Also see suq, lq, and cu.",
+""};
+
+   char *lqMsgs[]={
+" lq [Name] List Quotas",
+"List the quotas that have been set (if any).",
+"If Name is provided, list only that user or group.",
+"Also see suq, sgq, cu, and the 'iquota' command.",
 ""};
 
    char *cuMsgs[]={
 " cu (calulate usage (for quotas))",
 "Calculate (via DBMS SQL) the usage on resources for each user and",
 "determine if users are over quota.",
-"Also see suq and sgq.",
+"Also see suq, sgq, and lq.",
 ""};
 
    char *helpMsgs[]={
@@ -1532,7 +1566,7 @@ usage(char *subOpt)
 		    "mkgroup", "rmgroup", "atg",
 		    "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
 		    "pv", "ctime", 
-		    "suq", "sgq", "cu",
+		    "suq", "sgq", "lq", "cu",
 		    "help", "h",
 		    ""};
 
@@ -1546,7 +1580,7 @@ usage(char *subOpt)
 		    mkgroupMsgs, rmgroupMsgs,atgMsgs, 
 		    rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
 		    dspassMsgs, pvMsgs, ctimeMsgs, 
-		    suqMsgs, sgqMsgs, cuMsgs,
+		    suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
 		    helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {

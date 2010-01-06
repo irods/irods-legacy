@@ -868,6 +868,7 @@ checkCondition(char *condition) {
       if (*cp=='<') *cp=' ';
       if (*cp=='>') *cp=' ';
       if (*cp=='=') *cp=' ';
+      if (*cp=='!') *cp=' ';
    }
    cp = strstr(tmpStr,"begin_of");
    if (cp != NULL) setBlank(cp, 8);
@@ -1156,8 +1157,8 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
 	 }
       }
 #endif
-      if (Tables[table].cycler<1) {
-	 startingTable = table;  /* start with a non-cycler */
+      if (Tables[table].cycler<1 || startingTable==0) {
+	 startingTable = table;  /* start with a non-cycler, if possible */
       }
    }
 

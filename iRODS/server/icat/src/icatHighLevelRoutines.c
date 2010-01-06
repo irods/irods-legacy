@@ -2767,6 +2767,8 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=? and r_user_main.zone_name=?",
 "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id",
 "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_auth.user_auth_name=?",
+"select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id",
+"select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=?",
 ""
    };
 
@@ -2815,6 +2817,9 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    if (i==20 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 21");
    if (i==21 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 22");
    if (i==22 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 23");
+   if (i==23 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 24");
+   if (i==24 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 25");
+   if (i==25 && logSQL) rodsLog(LOG_SQL, "chlSimpleQuery SQL 26");
 
    outBuf[0]='\0';
    needToGet=1;
