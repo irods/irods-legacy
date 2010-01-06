@@ -81,7 +81,8 @@ public class User extends Domain {
 		if (DN == null)
 			DN = "";
 
-		String[] args = { "add", "user", userName, userType, DN };
+		//5th arg is zone, which is blank to take default
+		String[] args = { "add", "user", userName, userType, "", DN }; 
 		irodsFileSystem.commands.admin(args);
 	}
 
@@ -103,7 +104,7 @@ public class User extends Domain {
 	}
 
 	public void modifyDN(String userName, String newValue) throws IOException {
-		String[] args = { "modify", "user", userName, "dn", newValue };
+		String[] args = { "modify", "user", userName, "addAuth", newValue }; // FIXME: added blank 4th parm for zone
 		irodsFileSystem.commands.admin(args);
 	}
 

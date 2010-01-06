@@ -15,6 +15,7 @@ import edu.sdsc.grid.io.irods.IRODSFileAVUTest;
 import edu.sdsc.grid.io.irods.IRODSFileCommandsTest;
 import edu.sdsc.grid.io.irods.IRODSFileDeleteTest;
 import edu.sdsc.grid.io.irods.IRODSFileInputStreamTest;
+import edu.sdsc.grid.io.irods.IRODSFileOutputStreamTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemCreateTarTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemGsiHandlingTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemMetadataQueryTest;
@@ -24,6 +25,7 @@ import edu.sdsc.grid.io.irods.IRODSRandomAccessFileTest;
 import edu.sdsc.grid.io.irods.IRODSResourceQueryTest;
 import edu.sdsc.grid.io.irods.ResourceTest;
 import edu.sdsc.grid.io.irods.RuleTest;
+import edu.sdsc.grid.io.irods.UserTest;
 
 /**
  * Test suite for Irods functionality within Jargon libraries
@@ -41,7 +43,6 @@ import edu.sdsc.grid.io.irods.RuleTest;
   IRODSCommandsCopyToTest.class,
   IRODSCommandsDeleteTest.class,
   IRODSFileSystemMetadataQueryTest.class,
-  //IRODSFileOutputStreamTest.class,
   IRODSFileSystemTest.class,
   IRODSFileCommandsTest.class,
   IRODSAccountTest.class,
@@ -54,7 +55,9 @@ import edu.sdsc.grid.io.irods.RuleTest;
   RuleTest.class,
   IRODSCommandsGetTest.class,
   IRODSFileDeleteTest.class,
-  IRODSCommandsDeleteBigTest.class
+  IRODSFileOutputStreamTest.class,
+  UserTest.class
+ //IRODSCommandsDeleteBigTest.class
 })
 public class IRODSTests {
 

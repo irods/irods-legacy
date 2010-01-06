@@ -1,105 +1,141 @@
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.FileFactory;
-import edu.sdsc.grid.io.GeneralFile;
-import edu.sdsc.grid.io.local.LocalFile;
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
+import static org.junit.Assert.*;
 
-import edu.sdsc.jargon.testutils.AssertionHelper;
-import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
-import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
-import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
-import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
+import java.net.URI;
+import java.util.Properties;
+
+import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URI;
-
-import java.util.Properties;
-
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.local.LocalFile;
+import edu.sdsc.jargon.testutils.AssertionHelper;
+import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
+import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
+import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
+import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 
 public class IRODSFileOutputStreamTest {
-    private static Properties testingProperties = new Properties();
-    private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
-    private static ScratchFileUtils scratchFileUtils = null;
-    public static final String IRODS_TEST_SUBDIR_PATH = "IRODSFileOutputStreamTest";
-    private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
-    private static AssertionHelper assertionHelper = null;
 
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
-        testingProperties = testingPropertiesLoader.getTestProperties();
-        scratchFileUtils = new ScratchFileUtils(testingProperties);
-        scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
-        irodsTestSetupUtilities = new IRODSTestSetupUtilities();
-        irodsTestSetupUtilities.initializeIrodsScratchDirectory();
-        irodsTestSetupUtilities.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
-        assertionHelper = new AssertionHelper();
-    }
+	private static Properties testingProperties = new Properties();
+	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
+	private static ScratchFileUtils scratchFileUtils = null;
+	public static final String IRODS_TEST_SUBDIR_PATH = "IRODSFileOutputStreamTest";
+	private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
+	private static AssertionHelper assertionHelper = null;
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
+		testingProperties = testingPropertiesLoader.getTestProperties();
+		scratchFileUtils = new ScratchFileUtils(testingProperties);
+		scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
+		irodsTestSetupUtilities = new IRODSTestSetupUtilities();
+		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
+		irodsTestSetupUtilities
+				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+		assertionHelper = new AssertionHelper();
+	}
 
-    @Before
-    public void setUp() throws Exception {
-    }
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
 
-    @After
-    public void tearDown() throws Exception {
-    }
+	@Before
+	public void setUp() throws Exception {
+	}
 
-    
-    /**
-     * TODO: Was not working locally on original install of IRODS, may be an error due to running on 
-     * VirtualBox (ports).  Need to re-test
-     * @throws Exception
-     */
-    @Ignore
-    public final void testParallelFilePut() throws Exception {
-        // make up a test file that triggers parallel transfer
-    	String testFileName = "testFilePut.csv";
-        // make up a test file of 20kb
-        String testFileFullPath =  FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
-                GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH + '/', testFileName, (70000 * 1024));
-       
-        System.out.println("generating test file:" + testFileName);
+	@After
+	public void tearDown() throws Exception {
+	}
 
-        IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+	@Test
+	public final void testWriteByteArrayIntInt() throws Exception {
+		String testFileName = "testFileWriteByteArray.csv";
+		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
+    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
 
-        // point to the local file I just built
-        StringBuilder sourceFileName = new StringBuilder();
-        sourceFileName.append("file:///");
-        sourceFileName.append(testingProperties.getProperty(
-                GENERATED_FILE_DIRECTORY_KEY));
-        sourceFileName.append(LocalFile.PATH_SEPARATOR_CHAR);
-        sourceFileName.append(testFileName);
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFileSystem, testIRODSFileName);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
+		
+		irodsFileOutputStream.open(irodsFile);
+		TestCase.assertTrue("file I created does not exist", irodsFile.exists());
+		// get a simple byte array
+		String myBytes = "ajjjjjjjjjjjjjjjjjjjjjjjjfeiiiiiiiiiiiiiii54454545";
+		byte[] myBytesArray = myBytes.getBytes();
+		irodsFileOutputStream.write(myBytesArray);
+		irodsFileOutputStream.close();		
+		long length = irodsFile.length();
+		
+		TestCase.assertEquals("file length does not match bytes written", myBytesArray.length, length);
+		
+		irodsFileSystem.close();	}
 
-        System.out.println("generated file name:" + testFileName);
+	@Test
+	public final void testOpen() throws Exception {
+		String testFileName = "testFileOpen.csv";
+		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
+    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
 
-        GeneralFile sourceFile = FileFactory.newFile(new URI(
-                    sourceFileName.toString()));
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFileSystem, testIRODSFileName);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
+		
+		irodsFileOutputStream.open(irodsFile);
+		TestCase.assertTrue("file I created does not exist", irodsFile.exists());
+		irodsFileOutputStream.close();		
+		irodsFileSystem.close();
+	}
 
-        // point to an irods file and put it
-        URI irodsUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
-                testFileName);
-        IRODSFile destFile = (IRODSFile) FileFactory.newFile(irodsUri);
-        irodsFileSystem.commands.put(sourceFile, destFile, false);
-        
-        assertionHelper.assertIrodsFileOrCollectionExists(IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
-        
-        irodsFileSystem.close();
-    }
+	@Test
+	public final void testIRODSFileOutputStreamIRODSFileSystemString()
+			throws Exception {
+		String testFileName = "testFilePut.csv";
+		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
+    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(irodsFile);
+
+		irodsFileSystem.close();
+
+	}
+
+	@Test
+	public final void testIRODSFileOutputStreamIRODSFile() throws Exception {
+		String testFileName = "testFilePut.csv";
+		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
+    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
+
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(irodsFile);
+		TestCase.assertNotNull("did not create fileOutputStream",
+				irodsFileOutputStream);
+
+		irodsFileSystem.close();	
+	}
+
 }

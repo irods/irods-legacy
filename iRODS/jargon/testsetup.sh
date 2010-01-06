@@ -1,5 +1,5 @@
 #!/bin/sh
-exec `iadmin mkuser test1 rodsuser`
+exec `iadmin mkuser test1 rodsadmin`
 
 exec `iadmin moduser test1 password test`
 

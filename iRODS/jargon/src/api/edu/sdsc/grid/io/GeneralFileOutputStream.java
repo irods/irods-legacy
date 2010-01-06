@@ -62,7 +62,7 @@ import java.io.*;
  * @author  Lucas Gilbert
  * @since   JARGON1.4
  */
-public abstract class GeneralFileOutputStream extends OutputStream //extends FileOuputStream
+public abstract class GeneralFileOutputStream extends OutputStream 
 {
 //----------------------------------------------------------------------
 //  Constants
@@ -136,9 +136,6 @@ public abstract class GeneralFileOutputStream extends OutputStream //extends Fil
       throw new NullPointerException("File cannot be null.");
     }
 
-//    if (!file.exists())
-  //    file.createNewFile();
-
     open( file );
   }
 
@@ -154,11 +151,7 @@ public abstract class GeneralFileOutputStream extends OutputStream //extends Fil
   protected void finalize()
     throws IOException
   {
-    /*TODO flush doesn't do anything, because there is no buffer
-    if (bytes left) {
-      flush();
-    }
-    */
+   
     close();
   }
 
@@ -232,50 +225,5 @@ public abstract class GeneralFileOutputStream extends OutputStream //extends Fil
    */
   public abstract void close() throws IOException;
 
-  /**
-   * Returns the file descriptor associated with this stream.
-   *
-   * @return  the <code>FileDescriptor</code> object that represents
-   *          the connection to the file in the file system being used
-   *          by this <code>FileOutputStream</code> object.
-   *
-   * @exception  IOException  if an I/O error occurs.
-   * @see        java.io.FileDescriptor
-   */
-/*
-  public final FileDescriptor getFD()
-    throws IOException
-  {
-    if (fd != null) return fd;
-    throw new IOException();
-  }
-*/
-  /**
-   * Returns the unique {@link java.nio.channels.FileChannel FileChannel}
-   * object associated with this file output stream. </p>
-   *
-   * <p> The initial {@link java.nio.channels.FileChannel#position()
-   * </code>position<code>} of the returned channel will be equal to the
-   * number of bytes written to the file so far unless this stream is in
-   * append mode, in which case it will be equal to the size of the file.
-   * Writing bytes to this stream will increment the channel's position
-   * accordingly.  Changing the channel's position, either explicitly or by
-   * writing, will change this stream's file position.
-   *
-   * @return  the file channel associated with this file output stream
-   *
-   * @since 1.4
-   * @spec JSR-51
-   */
-/*
-  public FileChannel getChannel()
-  {
-    synchronized (this) {
-      if (channel == null)
-        channel = FileChannelImpl.open(fd, false, true, this, append);
-        return channel;
-      }
-  }
-*/
 }
 

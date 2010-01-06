@@ -124,6 +124,9 @@ Test and Patch for  Bug 48 -  NPE on Delete
 Test and patch for  Bug 50 -  forced delete on directory does not work, moves files to trash
 
 -------------
+Added tests for irods User class, fixed several failing methods in User
+
+-------------
 A large number of 'small' fixes and cleanups
 	
 ================================================================================================

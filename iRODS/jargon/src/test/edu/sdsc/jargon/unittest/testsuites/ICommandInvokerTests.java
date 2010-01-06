@@ -3,16 +3,16 @@
  */
 package edu.sdsc.jargon.unittest.testsuites;
 
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IchksumCommandTest;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommandTest;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IreplCommandTest;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IrmCommandTest;
-
-import org.junit.runner.RunWith;
-
-import org.junit.runners.Suite;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.UsersCommandTest;
 
 
 /**
@@ -26,6 +26,10 @@ import org.junit.runners.Suite;
     IputCommandTest.class,
     IrmCommandTest.class,
     IlsCommandTest.class,
+    UsersCommandTest.class,
+    ImkdirCommandTest.class,
+    ImetaCommandTest.class,
+    IreplCommandTest.class,
     ImetaCommandTest.class
     //IchksumCommandTest.class TODO: add after tests are implemented
 })

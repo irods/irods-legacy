@@ -66,16 +66,6 @@ import java.io.*;
  */
 public class IRODSFileOutputStream extends RemoteFileOutputStream
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-
-
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
   /**
    * Holds the server connection used by this stream.
    */
@@ -156,10 +146,6 @@ public class IRODSFileOutputStream extends RemoteFileOutputStream
   }
 
 
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
   /**
    * Opens the given file for use by this stream.
    *
