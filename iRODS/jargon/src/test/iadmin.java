@@ -55,10 +55,10 @@ public class iadmin
     String fakeUser = "myFakeJargonUserName";
         
     //Add a new type
-    admin.USER.addType(fakeType);
+    admin.user.addType(fakeType);
     
     //list the types
-    String[] types = admin.USER.listTypes();
+    String[] types = admin.user.listTypes();
     //print results
     System.out.println("\n");
     for (String t : types)
@@ -75,7 +75,7 @@ public class iadmin
     }
     
     //alternate listing of the users, 'list the subjects'
-    users = admin.USER.listSubjects();
+    users = admin.user.listSubjects();
     //print results
     System.out.println("\n");
     for (String user : users ) {
@@ -83,7 +83,7 @@ public class iadmin
     }
     
     //add a user
-    admin.USER.addUser(fakeUser, fakeType);
+    admin.user.addUser(fakeUser, fakeType);
     //print results
     users = admin.listUsers();
     System.out.println("\n");
@@ -92,7 +92,7 @@ public class iadmin
     }
     
     //delete a user
-    admin.USER.deleteUser(fakeUser);
+    admin.user.deleteUser(fakeUser);
     //print results
     users = admin.listUsers();
     System.out.println("\n");
@@ -103,10 +103,10 @@ public class iadmin
     
     
     //delete a type
-    admin.USER.deleteType(fakeType);   
+    admin.user.deleteType(fakeType);   
     //print results
     System.out.println("\n");
-    for (String s : admin.USER.listTypes())
+    for (String s : admin.user.listTypes())
       System.out.println(s);
   }
   

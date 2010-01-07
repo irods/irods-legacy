@@ -2523,14 +2523,23 @@ class IRODSCommands {
 
 		if (arg == null) {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {
-					new Tag(sql, statement), new Tag(control, 0), // don't know
-					new Tag(form, 1), // don't know
+					new Tag(sql, statement), 
+					new Tag(arg1, ""),
+					new Tag(arg2, ""),
+					new Tag(arg3, ""),
+					new Tag(arg4, ""),
+					new Tag(control, 0),
+					new Tag(form, 1),
 					new Tag(maxBufSize, 1024), });
 		} else {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {
-					new Tag(sql, statement), new Tag(arg1, arg),
-					new Tag(control, 0), // don't know
-					new Tag(form, 1), // don't know
+					new Tag(sql, statement), 
+					new Tag(arg1, arg),
+					new Tag(arg2, ""),
+					new Tag(arg3, ""),
+					new Tag(arg4, ""),
+					new Tag(control, 0),
+					new Tag(form, 1),
 					new Tag(maxBufSize, 1024), });
 		}
 

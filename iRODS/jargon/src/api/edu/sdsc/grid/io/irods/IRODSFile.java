@@ -328,7 +328,6 @@ public class IRODSFile extends RemoteFile {
 	 * at random then use that for the default resource of the fileSystem object
 	 * as well.
 	 */
-	// FIXME work in progress, does not work for files that don't exist yet
 	protected String getAvailableResource() throws IOException {
 		MetaDataRecordList[] recordList = this
 				.query(new String[] { IRODSMetaDataSet.RESOURCE_NAME });
@@ -1581,15 +1580,7 @@ public class IRODSFile extends RemoteFile {
 			// if it is a file
 			MetaDataCondition conditions[] = null;
 
-			/*
-			 * TODO? if (getReplicaNumber() >= 0) { conditions = new
-			 * MetaDataCondition[2]; conditions[0] = MetaDataSet.newCondition(
-			 * GeneralMetaData.DIRECTORY_NAME, operator, getParent() );
-			 * conditions[1] = MetaDataSet.newCondition(
-			 * GeneralMetaData.FILE_NAME, operator, getName() ); conditions[1] =
-			 * MetaDataSet.newCondition( IRODSMetaDataSet.FILE_REPLICATION_ENUM,
-			 * operator, replicaNumber ); } else {
-			 */
+			
 			conditions = new MetaDataCondition[2];
 			conditions[0] = MetaDataSet.newCondition(
 					GeneralMetaData.DIRECTORY_NAME, operator, getParent());
@@ -1826,7 +1817,7 @@ public class IRODSFile extends RemoteFile {
 	 *         abstract pathname is hidden.
 	 */
 	public boolean isHidden() {
-		return false; // TODO has hidden?
+		return false; 
 	}
 
 	/**

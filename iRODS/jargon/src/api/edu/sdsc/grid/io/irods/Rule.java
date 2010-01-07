@@ -294,7 +294,6 @@ class Rule {
 		if (rulesTag == null) {
 			result = new Parameter[0];
 		} else {
-			// FIXME: should not be null, was null when putting a file that did not exist
 			result = processNonNullRuleResult(fileSystem, rulesTag);
 		}
 		return result;
@@ -334,7 +333,7 @@ class Rule {
 				label = msParam.getTag(IRODSCommands.label).getStringValue();
 				type = msParam.getTag(IRODSCommands.type).getStringValue();
 				value = getParameter(type, msParam);
-				// FIXME: need to differentiate tag that is client request from
+				// need to differentiate tag that is client request from
 				// tag that is an array
 				if (label.equals("CL_PUT_ACTION")
 						|| label.equals("CL_GET_ACTION")) {
@@ -385,7 +384,7 @@ class Rule {
 			final String type, Object value, Tag msParam) throws IOException {
 		{
 
-			// FIXME: a tag may be returned from a rule containing an array,
+			// a tag may be returned from a rule containing an array,
 			// e.g. exec gen query.
 			// determine if this is indeed a client request. Gets NPE when
 			// trying to construct the IRODSFile below

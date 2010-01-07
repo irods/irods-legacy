@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 import edu.sdsc.grid.io.irods.IRODSAccountTest;
+import edu.sdsc.grid.io.irods.IRODSAdminTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsCopyToTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteBigTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
@@ -56,7 +57,8 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSCommandsGetTest.class,
   IRODSFileDeleteTest.class,
   IRODSFileOutputStreamTest.class,
-  UserTest.class
+  UserTest.class,
+  IRODSAdminTest.class
  //IRODSCommandsDeleteBigTest.class
 })
 public class IRODSTests {

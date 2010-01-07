@@ -174,5 +174,16 @@
 		</junit>
 		<echo message="running clean target will clean up unit test scratch directories..." />
 	</target>
+	
+	<target name="unit_test_long" depends="init, compile">
+			<echo message="running all junit tests, including long-running tests..." />
+			<junit fork="${junit.fork}" haltonfailure="${fail.on.junit.error}">
+				<classpath location="${instrumented.code.dir}" />
+				<classpath refid="class.path.test" />
+				<formatter type="brief" usefile="false" />
+				<test name="edu.sdsc.jargon.unittest.testsuites.LongRunningTests" />
+			</junit>
+			<echo message="running clean target will clean up unit test scratch directories..." />
+		</target>
 
 </project>

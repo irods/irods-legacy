@@ -47,8 +47,8 @@ public class User extends Domain {
 	public String[] listSubjects() throws IOException {
 		return irodsFileSystem.commands
 				.simpleQuery(
-						"select user_name from r_user_main where user_type_name != 'rodsgroup'",
-						null);
+						"select user_name from r_user_main where zone_name=? and user_type_name != 'rodsgroup'",
+						irodsFileSystem.getZone());
 	}
 
 	// ------------------------------------------------------------------------

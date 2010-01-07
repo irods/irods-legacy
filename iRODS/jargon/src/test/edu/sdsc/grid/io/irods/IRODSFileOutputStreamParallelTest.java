@@ -62,11 +62,11 @@ public class IRODSFileOutputStreamParallelTest {
 
     
     /**
-     * TODO: Was not working locally on original install of IRODS, may be an error due to running on 
-     * VirtualBox (ports).  Need to re-test
+     * Was not working locally on original install of IRODS, may be an error due to running on 
+     * VirtualBox (ports).  This test is running when local to the server
      * @throws Exception
      */
-    @Ignore
+    @Test
     public final void testParallelFilePut() throws Exception {
         // make up a test file that triggers parallel transfer
     	String testFileName = "testFilePut.csv";
@@ -74,7 +74,6 @@ public class IRODSFileOutputStreamParallelTest {
         String testFileFullPath =  FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
                 GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH + '/', testFileName, (70000 * 1024));
        
-        System.out.println("generating test file:" + testFileName);
 
         IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
@@ -82,12 +81,8 @@ public class IRODSFileOutputStreamParallelTest {
         // point to the local file I just built
         StringBuilder sourceFileName = new StringBuilder();
         sourceFileName.append("file:///");
-        sourceFileName.append(testingProperties.getProperty(
-                GENERATED_FILE_DIRECTORY_KEY));
-        sourceFileName.append(LocalFile.PATH_SEPARATOR_CHAR);
-        sourceFileName.append(testFileName);
+        sourceFileName.append(testFileFullPath);
 
-        System.out.println("generated file name:" + testFileName);
 
         GeneralFile sourceFile = FileFactory.newFile(new URI(
                     sourceFileName.toString()));

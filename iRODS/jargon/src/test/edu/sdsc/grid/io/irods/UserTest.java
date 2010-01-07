@@ -53,8 +53,7 @@ public class UserTest {
 	public void tearDown() throws Exception {
 	}
 
-	@Ignore
-	// FIXME: currently failing
+	@Test
 	public final void testListSubjects() throws Exception {
 		IRODSAccount testAccount = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
