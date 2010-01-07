@@ -30,7 +30,7 @@ package edu.sdsc.grid.io.irods;
 import java.io.IOException;
 
 /**
- *
+ * 
  * @author iktome
  */
 public class User extends Domain {
@@ -41,7 +41,7 @@ public class User extends Domain {
 	/**
 	 * Queries the fileSystem to aqcuire all the values for this domain. So the
 	 * user domain returns all the users.
-	 *
+	 * 
 	 * @return
 	 */
 	public String[] listSubjects() throws IOException {
@@ -56,7 +56,7 @@ public class User extends Domain {
 	// user-type: rodsAdmin, normal, group, public, ...
 
 	/**
-	 *
+	 * 
 	 * @param userName
 	 * @param userType
 	 *            rodsgroup, rodsadmin, rodsuser, domainadmin, groupadmin,
@@ -68,7 +68,7 @@ public class User extends Domain {
 	}
 
 	/**
-	 *
+	 * 
 	 * @param userName
 	 * @param userType
 	 *            rodsgroup, rodsadmin, rodsuser, domainadmin, groupadmin,
@@ -81,14 +81,14 @@ public class User extends Domain {
 		if (DN == null)
 			DN = "";
 
-		//5th arg is zone, which is blank to take default
-		String[] args = { "add", "user", userName, userType, "", DN }; 
+		// 5th arg is zone, which is blank to take default
+		String[] args = { "add", "user", userName, userType, "", DN };
 		irodsFileSystem.commands.admin(args);
 	}
 
 	// rmuser Name (remove user, where userName: name[@department][#zone])
 	/**
-	 *
+	 * 
 	 * @param userName
 	 *            name[@department][#zone]
 	 * @throws java.io.IOException
@@ -104,8 +104,14 @@ public class User extends Domain {
 	}
 
 	public void modifyDN(String userName, String newValue) throws IOException {
-		String[] args = { "modify", "user", userName, "addAuth", newValue }; 
-		irodsFileSystem.commands.admin(args);
+		if (irodsFileSystem.commands.getReportedIRODSVersion().equals("rods2.1")) {
+			//String[] args = { "modify", "user", userName, "dn", newValue };
+			//irodsFileSystem.commands.admin(args);
+			throw new UnsupportedOperationException("operation not supported in 2.1");
+		} else {
+			String[] args = { "modify", "user", userName, "addAuth", newValue };
+			irodsFileSystem.commands.admin(args);
+		}
 	}
 
 	public void modifyComment(String userName, String newValue)

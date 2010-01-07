@@ -137,12 +137,18 @@ public class UserTest {
 		TestCase.assertTrue("did not find user I just added", result
 				.indexOf(testUser) > -1);
 
-		// verify the DN
-		ListUserDnCommand dnCommand = new ListUserDnCommand();
-		dnCommand.setUserDn(expectedDn);
-		result = invoker.invokeCommandAndGetResultAsString(dnCommand);
-		TestCase.assertTrue("did not find user dn",
-				result.indexOf(expectedDn) > -1);
+		// skip this for irods2.1, icommand does not work
+
+		if (!irodsFileSystem.commands.getReportedIRODSVersion().equals(
+				"rods2.1")) {
+
+			// verify the DN
+			ListUserDnCommand dnCommand = new ListUserDnCommand();
+			dnCommand.setUserDn(expectedDn);
+			result = invoker.invokeCommandAndGetResultAsString(dnCommand);
+			TestCase.assertTrue("did not find user dn", result
+					.indexOf(expectedDn) > -1);
+		}
 
 		// cleanup...delete the user, also provides an additional check that the
 		// user had indeed been added
@@ -211,6 +217,12 @@ public class UserTest {
 			String result = invoker.invokeCommandAndGetResultAsString(command);
 		} catch (IcommandException ice) {
 			// ignore, might already be present
+		}
+		
+		// FIXME: currently not working with 2.1
+		
+		if (irodsFileSystem.commands.getReportedIRODSVersion().equals("rods2.1")) {
+			return;
 		}
 
 		// modify the DN for the user
@@ -315,5 +327,6 @@ public class UserTest {
 		// cleanup, delete user
 		RemoveUserCommand removeCommand = new RemoveUserCommand();
 		removeCommand.setUserName(testUser);
-		result = invoker.invokeCommandAndGetResultAsString(removeCommand);	}
+		result = invoker.invokeCommandAndGetResultAsString(removeCommand);
+	}
 }
