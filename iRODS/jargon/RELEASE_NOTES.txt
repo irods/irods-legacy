@@ -127,6 +127,9 @@ Test and patch for  Bug 50 -  forced delete on directory does not work, moves fi
 Added tests for irods User class, fixed several failing methods in User
 
 -------------
+Added tests for IRODSAdmin class, fixed failing methods
+
+
 A large number of 'small' fixes and cleanups
 	
 ================================================================================================

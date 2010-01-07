@@ -61,9 +61,6 @@ public class GeneralFileSystemTest {
 	 * test relevant to BUG: 36 resource added with icommand does not show up in
 	 * Jargon query
 	 * 
-	 * FIXME: this test really needs to add the resource in code, requiring
-	 * login of 'rods' user?
-	 * 
 	 * @throws Exception
 	 */
 	@Test

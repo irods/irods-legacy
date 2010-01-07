@@ -65,7 +65,7 @@ public class RuleTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
 				testingPropertiesHelper
 						.buildIRODSAccountFromTestProperties(testingProperties));
-		
+
 		String ruleString = "List Available MS||msiListEnabledMS(*KVPairs)##writeKeyValPairs(stdout,*KVPairs, \": \")|nop\n*A=hello\n ruleExecOut";
 		StringBufferInputStream sbis = new StringBufferInputStream(ruleString);
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
@@ -112,7 +112,8 @@ public class RuleTest {
 		TestCase.assertTrue(
 				"I expected to get the ruleExec out from this hello command",
 				result.length > 0);
-		TestCase.assertEquals("should only have the string response", 1, result.length);
+		TestCase.assertEquals("should only have the string response", 1,
+				result.length);
 		TestCase.assertTrue("did not get hello in response", result[0]
 				.getStringValue().indexOf("Hello") > -1);
 
@@ -220,12 +221,12 @@ public class RuleTest {
 		Parameter[] result = Rule.executeRule(irodsFileSystem, sbis);
 		irodsFileSystem.close();
 		TestCase.assertNotNull("null response, no data back from rule", result);
-		TestCase.assertEquals("should only have the rule data", 1, result.length);
+		TestCase.assertEquals("should only have the rule data", 1,
+				result.length);
 		TestCase.assertEquals(result[0].getType(), "GenQueryOut_PI");
 
 	}
-	
-	
+
 	@Test
 	public void testFileSystemExecuteRuleWithStringRule() throws Exception {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
@@ -236,19 +237,24 @@ public class RuleTest {
 				.append("testExecReturnArray||msiMakeGenQuery(\"RESC_NAME, RESC_LOC\",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)|nop\n");
 		builder.append("*Condition=RESC_NAME > 'a'\n");
 		builder.append("*GenQOut");
-		
-		Map<String,String> response = irodsFileSystem.executeRule(builder.toString());
-		
-		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
-		
+
+		Map<String, String> response = irodsFileSystem.executeRule(builder
+				.toString());
+
+		// just gets the string "GenQueryOut_PI for a execGenQuery...this
+		// particular method is not very useful when processing query results.
+
 		irodsFileSystem.close();
-		TestCase.assertNotNull("null response, no data back from rule", response);
-		TestCase.assertEquals("should only have the string result of the rule", 1, response.size());
+		TestCase.assertNotNull("null response, no data back from rule",
+				response);
+		TestCase.assertEquals("should only have the string result of the rule",
+				1, response.size());
 
 	}
-	
+
 	@Test
-	public void testFileSystemExecuteRuleWithStringRuleReturnObjects() throws Exception {
+	public void testFileSystemExecuteRuleWithStringRuleReturnObjects()
+			throws Exception {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
 				testingPropertiesHelper
 						.buildIRODSAccountFromTestProperties(testingProperties));
@@ -257,17 +263,18 @@ public class RuleTest {
 				.append("testExecReturnArray||msiMakeGenQuery(\"RESC_NAME, RESC_LOC\",*Condition,*GenQInp)##msiExecGenQuery(*GenQInp, *GenQOut)|nop\n");
 		builder.append("*Condition=RESC_NAME > 'a'\n");
 		builder.append("*GenQOut");
-		
-		Map<String,Object> response = irodsFileSystem.executeRuleReturnObjects(builder.toString());
-		
-		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
-		
+
+		Map<String, Object> response = irodsFileSystem
+				.executeRuleReturnObjects(builder.toString());
+
 		irodsFileSystem.close();
-		TestCase.assertNotNull("null response, no data back from rule", response);
-		TestCase.assertEquals("should only have the string result of the rule", 1, response.size());
+		TestCase.assertNotNull("null response, no data back from rule",
+				response);
+		TestCase.assertEquals("should only have the string result of the rule",
+				1, response.size());
 
 	}
-	
+
 	@Test
 	public void testFileSystemExecuteRuleReturnString() throws Exception {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
@@ -280,17 +287,17 @@ public class RuleTest {
 		builder.append("*GenQOut");
 		StringBufferInputStream sbis = new StringBufferInputStream(builder
 				.toString());
-		
-		Map<String,String> response = irodsFileSystem.executeRule(sbis);
-		
-		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
-		
+
+		Map<String, String> response = irodsFileSystem.executeRule(sbis);
+
 		irodsFileSystem.close();
-		TestCase.assertNotNull("null response, no data back from rule", response);
-		TestCase.assertEquals("should only have the string result of the rule", 1, response.size());
+		TestCase.assertNotNull("null response, no data back from rule",
+				response);
+		TestCase.assertEquals("should only have the string result of the rule",
+				1, response.size());
 
 	}
-	
+
 	@Test
 	public void testFileSystemExecuteRuleReturnObjects() throws Exception {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
@@ -303,20 +310,21 @@ public class RuleTest {
 		builder.append("*GenQOut");
 		StringBufferInputStream sbis = new StringBufferInputStream(builder
 				.toString());
-		
-		Map<String,Object> response = irodsFileSystem.executeRuleReturnObjects(sbis);
-		
-		//FIXME:  just got the string "GenQueryOut_PI for a execGenQuery...this particular method is not very useful when processing query results.  
-		
+
+		Map<String, Object> response = irodsFileSystem
+				.executeRuleReturnObjects(sbis);
+
 		irodsFileSystem.close();
-		TestCase.assertNotNull("null response, no data back from rule", response);
-		TestCase.assertEquals("should only have the gen query result of the rule", 1, response.size());
+		TestCase.assertNotNull("null response, no data back from rule",
+				response);
+		TestCase.assertEquals(
+				"should only have the gen query result of the rule", 1,
+				response.size());
 
 	}
-	
+
 	@Test
-	public void testExecuteRequestClientActionGetStringValue()
-			throws Exception {
+	public void testExecuteRequestClientActionGetStringValue() throws Exception {
 		// create a local file to put
 		// put a collection out to do a checksum on
 		String testFileName = "testClientAction.txt";
@@ -348,13 +356,13 @@ public class RuleTest {
 		String resVal = result[0].getStringValue();
 		TestCase.assertTrue("should have the uri of the file", resVal
 				.indexOf("foo.txt") > -1);
-		TestCase.assertEquals("should only have the file result", 1, result.length);
+		TestCase.assertEquals("should only have the file result", 1,
+				result.length);
 
 	}
-	
+
 	@Test
-	public void testExecuteRequestClientActionGetObjectValue()
-			throws Exception {
+	public void testExecuteRequestClientActionGetObjectValue() throws Exception {
 		// create a local file to put
 		// put a collection out to do a checksum on
 		String testFileName = "testClientActionGetObject.txt";
@@ -384,8 +392,9 @@ public class RuleTest {
 		TestCase.assertEquals("expected the result of the put in the parms", 1,
 				result.length);
 		Object resVal = result[0].getValue();
-		TestCase.assertTrue("I should have an irods file, which is my request result", resVal instanceof IRODSFile);
-		
+		TestCase.assertTrue(
+				"I should have an irods file, which is my request result",
+				resVal instanceof IRODSFile);
 
 	}
 

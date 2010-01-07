@@ -2208,7 +2208,7 @@ static boolean USE_BULKCOPY = true;
           && bulkCopy
           && (USE_BULKCOPY || bulkCopy)))
       {
-        //TODO a query for big files to be done in parallel,
+        //maybe a query for big files to be done in parallel,
         //server-side changes?
         if(bulkCopy) {
           if (forceOverwrite)

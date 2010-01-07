@@ -31,7 +31,6 @@ import edu.sdsc.jargon.testutils.icommandinvoke.icommands.UsersCommandTest;
     ImetaCommandTest.class,
     IreplCommandTest.class,
     ImetaCommandTest.class
-    //IchksumCommandTest.class TODO: add after tests are implemented
 })
 public class ICommandInvokerTests {
 }

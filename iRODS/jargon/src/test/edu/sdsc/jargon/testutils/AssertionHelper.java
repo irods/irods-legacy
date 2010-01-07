@@ -165,16 +165,16 @@ public class AssertionHelper {
 	/**
 	 * Make sure that a file or collection is in IRODS
 	 *
-	 * @param relativeIrodsPathUnderScratch
-	 *            <code>String</code> with relative path (no leading '/', or a
+	 * @param absoluteIrodsPathUnderScratch
+	 *            <code>String</code> with absolute path (nleading '/', or a
 	 *            path and filename to look for
 	 * @throws IRODSTestAssertionException
 	 */
 	public void assertIrodsFileOrCollectionExists(
-			String relativeIrodsPathUnderScratch)
+			String absoluteIrodsPathUnderScratch)
 			throws IRODSTestAssertionException {
 		IlsCommand ilsCommand = new IlsCommand();
-		ilsCommand.setIlsBasePath(relativeIrodsPathUnderScratch);
+		ilsCommand.setIlsBasePath(absoluteIrodsPathUnderScratch);
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
@@ -182,20 +182,20 @@ public class AssertionHelper {
 		try {
 			String result = invoker
 					.invokeCommandAndGetResultAsString(ilsCommand);
-			if (result.indexOf(relativeIrodsPathUnderScratch) == -1) {
+			if (result.indexOf(absoluteIrodsPathUnderScratch) == -1) {
 
 				StringBuilder errorMessage = new StringBuilder();
 				errorMessage.append(ASSERTION_ERROR_MESSAGE);
 				errorMessage
 						.append("assert file or collection exists error, expected to find:");
-				errorMessage.append(relativeIrodsPathUnderScratch);
+				errorMessage.append(absoluteIrodsPathUnderScratch);
 				throw new IRODSTestAssertionException(errorMessage.toString());
 			}
 
 		} catch (IcommandException ice) {
 			StringBuilder message = new StringBuilder();
 			message.append("error ocurred processing assertion on ils path:");
-			message.append(relativeIrodsPathUnderScratch);
+			message.append(absoluteIrodsPathUnderScratch);
 			throw new IRODSTestAssertionException(message.toString(), ice);
 		}
 

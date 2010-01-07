@@ -60,7 +60,6 @@ public class IRODSCommandsCopyToTest {
      */
     @Ignore
     public final void testCopySourceByURIDestByURI() throws Exception {
-    	//FIXME: fail -78000 when creating a file via uri...resource does not exist
     	//BUG: 32    	copyTo when dest file is from URI results in -78000 resource not found
     	// generate a local scratch file
         String testFileName = "testCopySourceByURI.txt";
@@ -178,7 +177,7 @@ public class IRODSCommandsCopyToTest {
      */
     @Ignore
     public final void testCopySourceFileFromAccountDestFromURI() throws Exception {
-    	//FIXME: fail -78000
+    	//fail -78000
     	// generate a local scratch file
         String testFileName = "testCopySourceFileFromAccount.pdf";
         String testCopyToFileName = "testCopySourceFileFromAccountCopyTo.pdf";

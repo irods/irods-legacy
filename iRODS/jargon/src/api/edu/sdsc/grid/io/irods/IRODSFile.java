@@ -284,7 +284,7 @@ public class IRODSFile extends RemoteFile {
 					homeDirectory = uri.getPath();
 				}
 
-				// TODO connection pool? insecure?
+				// connection pool? insecure?
 				setFileSystem(new IRODSFileSystem(new IRODSAccount(uri
 						.getHost(), uri.getPort(), userName, password,
 						homeDirectory, zone, "")) // default resource see

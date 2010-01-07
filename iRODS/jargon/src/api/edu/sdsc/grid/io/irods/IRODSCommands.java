@@ -1021,7 +1021,6 @@ class IRODSCommands {
 				length -= n;
 				destination.write(temp, 0, n);
 			} else {
-				// TODO? always just EOF?
 				length = n;
 			}
 		}
@@ -1810,7 +1809,7 @@ class IRODSCommands {
 	 *            <code>long</code> that is the offset value
 	 * @param whence
 	 *            <code>int</code> that specifies the postion to compute the
-	 *            offset from //FIXME: enumeration? what values?
+	 *            offset from 
 	 * @return <code>long</code with the new offset.
 	 * @throws IOException
 	 */
@@ -1980,7 +1979,6 @@ class IRODSCommands {
 	void put(GeneralFile source, IRODSFile destination, boolean overwriteFlag)
 			throws IOException {
 
-		// FIXME: need test for put of non-existent file, no error thrown?
 		String resource = destination.getResource();
 		long length = source.length();
 
@@ -2209,7 +2207,7 @@ class IRODSCommands {
 	void physicalMove(IRODSFile source, IRODSFile destination)
 			throws IOException {
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
-				new Tag(collName, source.getAbsolutePath()),
+				new Tag(objPath, source.getAbsolutePath()),
 				new Tag(createMode, 0),
 				new Tag(openFlags, 0),
 				new Tag(offset, 0),
@@ -2219,7 +2217,7 @@ class IRODSCommands {
 				createKeyValueTag(IRODSMetaDataSet.DEST_RESC_NAME_KW,
 						destination.getResource()) });
 
-		irodsFunction(RODS_API_REQ, message, DATA_OBJ_PHYMV_AN);
+		Tag response = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PHYMV_AN);
 	}
 
 	void replicate(IRODSFile file, String newResource) throws IOException {
@@ -2332,9 +2330,11 @@ class IRODSCommands {
 			throws IOException {
 		Tag message = new Tag(ExecCmd_PI, new Tag[] {
 				new Tag(cmd, command),
-				new Tag(cmdArgv, args), // TODO string array?
-				new Tag(execAddr, hostAddress), new Tag(hintPath, ""),
-				new Tag(addPathToArgv, 0), createKeyValueTag(null) });
+				new Tag(cmdArgv, args), 
+				new Tag(execAddr, hostAddress), 
+				new Tag(hintPath, ""),
+				new Tag(addPathToArgv, 0), 
+				createKeyValueTag(null) });
 		String buffer = "";
 
 		try {
@@ -2430,7 +2430,7 @@ class IRODSCommands {
 		if (output != null) {
 			String temp = "";
 			for (Parameter out : output)
-				temp += out.getUniqueName() + "%"; // FIXME: what if only one,
+				temp += out.getUniqueName() + "%"; 
 			// should this % be here?
 
 			message.addTag(new Tag(outParamDesc, temp.substring(0, temp
@@ -2623,7 +2623,7 @@ class IRODSCommands {
 		// send command to server
 		message = irodsFunction(RODS_API_REQ, message, GEN_QUERY_AN);
 
-		if (message == null) { // FIXME: method is returning null !!!
+		if (message == null) {
 			// query had no results
 			return null;
 		}

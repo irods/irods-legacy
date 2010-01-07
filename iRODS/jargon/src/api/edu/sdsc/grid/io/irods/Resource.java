@@ -30,7 +30,6 @@ package edu.sdsc.grid.io.irods;
 
 import java.io.IOException;
 
-// TODO: uses deprecated methods of querying data
 
 /**
  *

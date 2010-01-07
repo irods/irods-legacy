@@ -278,7 +278,6 @@ public abstract class MetaDataRecordList extends Object
         return fields[index].getName();
     }
     return null;
-//TODO should this be expanded, iOR error?
   }
 
 
@@ -358,25 +357,10 @@ public abstract class MetaDataRecordList extends Object
   public int getIntValue( int index )
   {
     if (records == null)
-      throw new NullPointerException(); //TODO exception
+      throw new NullPointerException(); 
     if (records[index] == null)
-      throw new NullPointerException("Value at index is null." ); //TODO
+      throw new NullPointerException("Value at index is null." ); 
 
-/* I'd like to do this, but the other is safer
-    if (fields[index].getType() == MetaDataField.TABLE) {
-      throw new IllegalArgumentException(
-        "Value at this index is a table.");
-    }
-    else if (fields[index].getType() == MetaDataField.INT) {
-       return ((Integer) records[index]).intValue();
-    }
-    else if (fields[index].getType() == MetaDataField.FLOAT) {
-       return ((Float) records[index]).intValue();
-    }
-    else {
-      return Integer.parseInt(records[index].toString());
-    }
-*/
     if (records[index] instanceof MetaDataTable ) {
       throw new IllegalArgumentException(
         "Value at this index is a table.");
@@ -404,24 +388,10 @@ public abstract class MetaDataRecordList extends Object
   public float getFloatValue( int index )
   {
     if (records == null)
-      throw new NullPointerException(); //TODO exception
+      throw new NullPointerException(); 
     if (records[index] == null)
-      throw new NullPointerException("Value at index is null." ); //TODO
-/*
-    if (fields[index].getType() == MetaDataField.TABLE) {
-      throw new IllegalArgumentException(
-        "Value at this index is a table.");
-    }
-    else if (fields[index].getType() == MetaDataField.INT) {
-       return ((Integer) records[index]).floatValue();
-    }
-    else if (fields[index].getType() == MetaDataField.FLOAT) {
-       return ((Float) records[index]).floatValue();
-    }
-    else {
-      return Float.parseFloat(records[index].toString());
-    }
-*/
+      throw new NullPointerException("Value at index is null." ); 
+
     if (records[index] instanceof MetaDataTable ) {
       throw new IllegalArgumentException(
         "Value at this index is a table.");
@@ -495,18 +465,10 @@ public abstract class MetaDataRecordList extends Object
   public MetaDataTable getTableValue( int index )
   {
     if (records == null)
-      throw new NullPointerException(); //TODO exception
+      throw new NullPointerException();
     if (records[index] == null)
-      return null; //TODO
-/*
-    if (fields[index].getType() == MetaDataField.TABLE) {
-      try {
-        return (MetaDataTable) records[index];
-      } catch (ClassCastException e) {
-        //only if programming error
-      }
-    }
-*/
+      return null; 
+
     if (records[index] instanceof MetaDataTable ) {
       try {
         return (MetaDataTable) records[index];
@@ -516,8 +478,7 @@ public abstract class MetaDataRecordList extends Object
     }
 
 return null;
-//    throw new IllegalArgumentException(
-//      "Value at this index is not a table.");
+
   }
 
 
@@ -562,10 +523,6 @@ return null;
   }
 
 
-
-//----------------------------------------------------------------------
-//  Setters and Record Modification methods
-//----------------------------------------------------------------------
   public void setValue( int index, int value )
     throws ArrayIndexOutOfBoundsException
   {
@@ -805,13 +762,9 @@ return null;
 
 
 
-//----------------------------------------------------------------------
-//  Iterator methods
-//----------------------------------------------------------------------
   /**
    * Tests if the query has more values to be retrieved.
    */
-//TODO better name, reverse true and false
   public abstract boolean isQueryComplete();
 
 
@@ -868,9 +821,6 @@ return null;
   }
 
 
-//----------------------------------------------------------------------
-//  Object methods
-//----------------------------------------------------------------------
   public String toString()
   {
     int length = getRecordCount();
@@ -933,7 +883,6 @@ return null;
         exists = false;
       }
     } catch (ClassCastException e) {
-//      if (SRBCommands.DEBUG > 0) e.printStackTrace();
       return false;
     }
     return true;

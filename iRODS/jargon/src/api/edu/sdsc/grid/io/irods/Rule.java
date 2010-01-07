@@ -174,7 +174,6 @@ class Rule {
 	 * @param ruleStream
 	 * @return
 	 * @throws IOException
-	 * FIXME: deprecate this or clean it up...cleanup causes necessary changes in visibility of Parameter?
 	 */
 	static Parameter[] executeRule(final IRODSFileSystem fileSystem,
 			InputStream ruleStream) throws IOException {

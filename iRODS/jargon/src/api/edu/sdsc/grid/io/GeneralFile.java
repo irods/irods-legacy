@@ -454,20 +454,6 @@ public class GeneralFile extends Object implements Comparable
   }
   
   /**
-   * Iterates through the directory/collection/container list.
-   *
-   * @return Iterator
-   */
-/*
-  public Iterator listIterator( ) throws IOException
-  {
-//TODO haven't done in the subclasses?
-    throw new UnsupportedOperationException();
-  }
-*/
-
-
-  /**
    * Queries metadata specific to this file object, selecting one
    * metadata value, <code>fieldName</code>, and returns the first result
    * of that query. Returns null if the query had no results.
@@ -877,7 +863,7 @@ public class GeneralFile extends Object implements Comparable
       if (read > 0) {
         length -= read;
         if (length < 0) {
-          //TODO end of transfer, check the extra bit starts with 9999
+          //end of transfer, check the extra bit starts with 9999
 
           //subtract the status message, an int = 9999, and a bunch of 0's
           md5.update(input, 0, read+(int)length);

@@ -104,7 +104,7 @@ public class User extends Domain {
 	}
 
 	public void modifyDN(String userName, String newValue) throws IOException {
-		String[] args = { "modify", "user", userName, "addAuth", newValue }; // FIXME: added blank 4th parm for zone
+		String[] args = { "modify", "user", userName, "addAuth", newValue }; 
 		irodsFileSystem.commands.admin(args);
 	}
 

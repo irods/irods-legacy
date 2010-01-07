@@ -128,6 +128,5 @@ public class IRODSAccountTest {
 		
 	}
 	
-	// TODO: add test of IRODSAccountCreate with a contrived .irodsEnv file (need a generator) with no default storage resource, etc
 
 }

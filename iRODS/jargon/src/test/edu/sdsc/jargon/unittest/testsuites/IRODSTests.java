@@ -12,6 +12,9 @@ import edu.sdsc.grid.io.irods.IRODSCommandsCopyToTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteBigTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsGetTest;
+import edu.sdsc.grid.io.irods.IRODSCommandsMiscTest;
+import edu.sdsc.grid.io.irods.IRODSCommandsPutTest;
+import edu.sdsc.grid.io.irods.IRODSExecuteCommandsTest;
 import edu.sdsc.grid.io.irods.IRODSFileAVUTest;
 import edu.sdsc.grid.io.irods.IRODSFileCommandsTest;
 import edu.sdsc.grid.io.irods.IRODSFileDeleteTest;
@@ -34,9 +37,6 @@ import edu.sdsc.grid.io.irods.UserTest;
  * @since 10/10/2009
  */
 @RunWith(Suite.class)
-/*@Suite.SuiteClasses({
-  IRODSFileOutputStreamTest.class, IRODSFileTest.class
-})*/
 
 @Suite.SuiteClasses({
   IRODSFileTest.class,
@@ -58,8 +58,10 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSFileDeleteTest.class,
   IRODSFileOutputStreamTest.class,
   UserTest.class,
-  IRODSAdminTest.class
- //IRODSCommandsDeleteBigTest.class
+  IRODSAdminTest.class,
+  IRODSCommandsPutTest.class,
+  IRODSExecuteCommandsTest.class,
+  IRODSCommandsMiscTest.class
 })
 public class IRODSTests {
 

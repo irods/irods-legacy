@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Mike
+ * @author Mike Conway - DICE (www.irods.org)
  *
  */
 public class IlsCommand implements Icommand {

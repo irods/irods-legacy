@@ -45,16 +45,23 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
-import java.io.IOException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.ProtocolException;
 import java.net.URL;
 
 import org.ietf.jgss.GSSCredential;
+
+import edu.sdsc.grid.io.GeneralAccount;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.GeneralFileSystem;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.ProtocolCatalog;
+import edu.sdsc.grid.io.RemoteFileSystem;
 
 
 
@@ -79,9 +86,7 @@ import org.ietf.jgss.GSSCredential;
  */
 public class SRBFileSystem extends RemoteFileSystem
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+
   /**
    * The SRB only has one root, "/".
    */
@@ -91,8 +96,6 @@ public class SRBFileSystem extends RemoteFileSystem
     roots = new String[]{ SRB_ROOT };
   }
 
-  //used by srbDeleteValue(),
-  //TODO not really for anything?
   public static final int DELETE_TYPE_LOCATION = 1;
   public static final int DELETE_TYPE_USER = 2;
   public static final int DELETE_TYPE_RESOURCE = 3;
@@ -133,30 +136,10 @@ public class SRBFileSystem extends RemoteFileSystem
    */
   public static final int PORTAL_STD_IN_OUT = 2; // 0x00000002
 
-
-  //When updating for new SRB versions, and
-  //adding metadata attribute pairs, need to change
-  //SRBFileSystem.TOTAL_METADATA_ATTRIBUTES
-  //to match, 1 + last DCS-ATTRIBUTE-INDEX
-  //see also c client, catalog/include/mdasC_db2_externs.h
-  //and SRBMetaDataSet class.
-  //static int TOTAL_METADATA_ATTRIBUTES = 180; //default for SRB1.1.8
-  //static int TOTAL_METADATA_ATTRIBUTES = 300; //default for SRB2.0
-  //static int TOTAL_METADATA_ATTRIBUTES = 500; //default for SRB3.0
   static int TOTAL_METADATA_ATTRIBUTES; //set in constructor
-
-  //length of query string conditional,
-  //used esp. by SRBMetaDataCommands.srbGetDataDirInfo()
-  //this value changed in version 3.0,
-  //static int MAX_TOKEN = 200; //SRB2.0 (and before?)
-  //static int MAX_TOKEN = 500; //SRB3.0
+ 
   static int MAX_TOKEN; //set in constructor
 
-  //length of a value returned in the returnSRBMetaDataRecordList
-  //this value changed in version 3.0,
-  //static int MAX_FILE_SIZE = 400; //SRB2.0 (and before?)
-  //static int MAX_FILE_SIZE = 500; //SRB3.0.0
-  //static int MAX_FILE_SIZE = 2700; //SRB3.0.2
   static int MAX_FILE_SIZE; //set in constructor
 
   /**
@@ -177,9 +160,6 @@ public class SRBFileSystem extends RemoteFileSystem
    */
   public static final String PATH_SEPARATOR = SRBFile.separator;
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
   /**
    * This object handles the socket protocol and
    * communications with the Srb server.
@@ -195,7 +175,6 @@ public class SRBFileSystem extends RemoteFileSystem
    */
   private SRBAccount srbAccount;
 
-//TODO actually needed? already stored in SRBCommands
   /**
    * Keep a seperate version string here. Have to keep track of the
    * version on a per object basis, but SRBAccount.version is a
@@ -209,27 +188,23 @@ public class SRBFileSystem extends RemoteFileSystem
    * Used to specify a port range available through a firewall.
    * Needed because some SRB commands open new ports on the client machine.
    */
-  /*static*/ int MIN_PORT = -1;
+  int MIN_PORT = -1;
 
 
   /**
    * Used to specify a port range available through a firewall.
    * Needed because some SRB commands open new ports on the client machine.
    */
-  /*static*/ int MAX_PORT = -1;
+  int MAX_PORT = -1;
 
 
 
-  //Add the metadata query attributes
   static {
     if (!ProtocolCatalog.has( new SRBProtocol() ))
       ProtocolCatalog.add( new SRBProtocol() );
   }
 
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Opens a socket connection to read from and write to.
    * Loads the default SRB user account information from their home directory.
@@ -281,7 +256,6 @@ public class SRBFileSystem extends RemoteFileSystem
           TICKET_USER, "", "", TICKET_USER_DOMAIN, "" );
         SRBFileSystem ticketFileSystem = new SRBFileSystem( tempAccount );
 
-        //TODO getDN actually calls getCredential...
         String dn = GSIAuth.getDN( srbAccount );
         GSSCredential credential = null;
         try {
@@ -345,7 +319,7 @@ public class SRBFileSystem extends RemoteFileSystem
       System.err.println( "SRB client/server version mismatch. " +
         "Trying alternate handshake. error: " +status);
 
-      setVersion( srbAccount.getVersion() );
+			setVersion(SRBAccount.getVersion() );
       commands = new SRBCommands(  );
       status = commands.connect( srbAccount, createUserInfoBuffer(srbAccount) );
     }
@@ -399,10 +373,6 @@ public class SRBFileSystem extends RemoteFileSystem
 
 
 
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
 //General
   /**
    * Loads the account information for this file system.
@@ -416,10 +386,9 @@ public class SRBFileSystem extends RemoteFileSystem
     srbAccount = (SRBAccount) account.clone();
     this.account = srbAccount;
 
-    setVersion( srbAccount.getVersion() );
+    setVersion( SRBAccount.getVersion() );
   }
 
-//private? protected
   private void setVersion( String version )
   {
     if (version == null) {
@@ -427,7 +396,7 @@ public class SRBFileSystem extends RemoteFileSystem
     }
 
     this.version = version;
-    versionNumber = srbAccount.getVersionNumber();
+    versionNumber = SRBAccount.getVersionNumber();
     if ( versionNumber >= 3.3 ) {
       TOTAL_METADATA_ATTRIBUTES = 500;
       MAX_TOKEN = 500;
@@ -482,9 +451,6 @@ public class SRBFileSystem extends RemoteFileSystem
   }
 
 
-
-
-//SRB
   /**
    * Set the default storage resource. Only used when there wasn't one provided
    * and we had to query the SRB for it.
@@ -507,8 +473,6 @@ public class SRBFileSystem extends RemoteFileSystem
   {
     srbAccount.setMcatZone( zone );
   }
-
-
 
   /**
    * Used to specify a port range available through a firewall.
@@ -664,9 +628,8 @@ public class SRBFileSystem extends RemoteFileSystem
   }
 
 
-//----------------------------------------------------------------------
 // GeneralFileSystem methods
-//----------------------------------------------------------------------
+  
   /**
    * Queries the file server to find all files that
    * match a set of conditions. For all those that
@@ -783,7 +746,6 @@ public class SRBFileSystem extends RemoteFileSystem
    * results. The programmer using this API should never
    * see the internal field names.
    */
-//TODO test for fileSystem valid query field
 //if (protocol == SRB)
     boolean hasZone = false;
     if (conditions != null) {
@@ -952,8 +914,8 @@ typedef struct StartupInfo {
     byte messageType = 7; //see SRB c client list of message types
     String temp = null;
 
-    if (account.getVersion().equals(SRBAccount.SRB_VERSION_2) ||
-        account.getVersion().equals(SRBAccount.SRB_VERSION_1_1_8))
+    if (SRBAccount.getVersion().equals(SRBAccount.SRB_VERSION_2) ||
+        SRBAccount.getVersion().equals(SRBAccount.SRB_VERSION_1_1_8))
     {
       userInfoBuffer = new byte[USER_INFO_BUFFER_LENGTH];
 
@@ -985,8 +947,8 @@ typedef struct StartupInfo {
       userInfoBuffer[136] = (byte) account.getOptions();
 
       //Version
-      System.arraycopy( account.getVersion().getBytes(), 0, userInfoBuffer, 264,
-        account.getVersion().length() );
+      System.arraycopy( SRBAccount.getVersion().getBytes(), 0, userInfoBuffer, 264,
+        SRBAccount.getVersion().length() );
     }
     else
     {
@@ -1035,8 +997,8 @@ typedef struct StartupInfo {
 
       //these two got switched
       //Version
-      System.arraycopy( account.getVersion().getBytes(), 0, userInfoBuffer, 
-        200, account.getVersion().length() );
+      System.arraycopy( SRBAccount.getVersion().getBytes(), 0, userInfoBuffer, 
+        200, SRBAccount.getVersion().length() );
 
       //Options
       userInfoBuffer[264] = (byte) account.getOptions();
@@ -2557,18 +2519,13 @@ return 0;
     if (containerName == null) {
       throw new NullPointerException("No container given");
     }
-/*TODO see SRB
-    if ((openFlag > O_RDWR) || (openFlag < O_RDONLY)) {
-      openFlag = O_RDONLY;
-    }
-*/
+
     return commands.srbContainerOpen( catType, containerName, openFlag );
   }
 
 
   /**
-   * Close an opened a container.
-   *
+   * Close an opened a container.   *
    * @param catType - catalog type - 0 - MCAT
    * @param confFd - The fd returned from srbContainerOpen ().
    */
@@ -2693,9 +2650,8 @@ return 0;
 
 
 
-//--------------------------------------------------------------------
 // SRB 3.0 functions
-//--------------------------------------------------------------------
+  
   /**
    * Ensures all variables have reason values,
    * then calls the SRBCommand function of the same name.
