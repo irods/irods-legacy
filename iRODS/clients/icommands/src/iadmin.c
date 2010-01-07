@@ -450,13 +450,50 @@ simpleQueryCheck()
 }
 
 int
-showQuotas(char *userOrGroup) 
+showGlobalQuotas(char *inputUserOrGroup)
 {
    simpleQueryInp_t simpleQueryInp;
 
+   if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
+      printf("\nGlobal (total usage) quotas (if any) for users/groups:\n");
+   }
+   else {
+      printf("\nGlobal (total usage) quotas (if any) for user/group %s:\n",
+	 inputUserOrGroup);
+   }
    memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
    simpleQueryInp.control = 0;
-   if (userOrGroup==0 || *userOrGroup=='\0') {
+   if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
+      simpleQueryInp.form = 2;
+      simpleQueryInp.sql = 
+	 "select user_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0";
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   else {
+      simpleQueryInp.form = 2;
+      simpleQueryInp.sql = 
+	 "select user_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0 and user_name=?";
+      simpleQueryInp.arg1 = inputUserOrGroup;
+      simpleQueryInp.maxBufSize = 1024;
+   }
+   return (doSimpleQuery(simpleQueryInp));
+}
+
+int
+showResourceQuotas(char *inputUserOrGroup) 
+{
+   simpleQueryInp_t simpleQueryInp;
+
+   if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
+      printf("Per resource quotas (if any) for users/groups:\n");
+   }
+   else {
+      printf("Per resource quotas (if any) for user/group %s:\n",
+	     inputUserOrGroup);
+   }
+   memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
+   simpleQueryInp.control = 0;
+   if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
 	 "select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id";
@@ -465,7 +502,7 @@ showQuotas(char *userOrGroup)
    else {
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = "select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=?";
-      simpleQueryInp.arg1 = userOrGroup;
+      simpleQueryInp.arg1 = inputUserOrGroup;
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -800,7 +837,8 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
    if (strcmp(cmdToken[0],"lq") == 0) {
-      showQuotas(cmdToken[1]);
+      showResourceQuotas(cmdToken[1]);
+      showGlobalQuotas(cmdToken[1]);
       return(0);
    }
    if (strcmp(cmdToken[0],"mkdir") == 0) {
