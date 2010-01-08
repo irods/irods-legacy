@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "aD:fhIkKn:N:p:rR:QTvVX:";
+    optStr = "aD:fhIkKn:N:p:PrR:QTvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -86,10 +86,10 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-afIkKQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-afIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-afIkKQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-afIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -121,7 +121,9 @@ usage ()
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
 "data transfer. rbudpSendRate is used to throttle the send rate in ",
 "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
-"to set the packet size. The dafault rbudpPackSize is 8192.",
+"to set the packet size. The dafault rbudpPackSize is 8192. The -V option", 
+"can be used to show the loss rate of the transfer. If the lost rate is", 
+"more than a few %, the sendrate should be reduced.",
 " ",
 "The -T option will renew the socket connection between the client and ",
 "server after 10 minutes of connection. This gets around the problem of",
@@ -140,6 +142,7 @@ usage ()
 "       decides the number of threads to use.",
 " -p physicalPath - the physical path of the uploaded file on the sever ",
 " -Q  use RBUDP (datagram) protocol for the data transfer",
+" -P  output the progress of the upload.",
 " -R  resource - specifies the resource to store to. This can also be specified",
 "     in your environment or via a rule set up by the administrator.",
 " -r  recursive - store the whole subdirectory",

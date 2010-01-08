@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "hfKN:n:rQvVX:R:T";
+    optStr = "hfKN:n:PQrvVX:R:T";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -87,11 +87,11 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage: iget [-fKQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage: iget [-fKPQrUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection ... destLocalFile|destLocalDir",
-"Usage : iget [-fKQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj|srcCollection",
-"Usage : iget [-fKQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
+"Usage : iget [-fKPQUvVT] [-n replNumber] [-N numThreads] [-X restartFile]",
 "[-R resource] srcDataObj ... -",
 "Get data-objects or collections from irods space, either to the specified",
 "local area or to the current working directory.",
@@ -114,7 +114,9 @@ usage () {
 "variables - rbudpSendRate and rbudpPackSize are used to tune the RBUDP",
 "data transfer. rbudpSendRate is used to throttle the send rate in ",
 "kbits/sec. The default rbudpSendRate is 600,000. rbudpPackSize is used",
-"to set the packet size. The dafault rbudpPackSize is 8192.",
+"to set the packet size. The dafault rbudpPackSize is 8192. The -V option",
+"can be used to show the loss rate of the transfer. If the lost rate is",
+"more than a few %, the sendrate should be reduced.",
 " ",
 "The -T option will renew the socket connection between the client and ",
 "server after 10 minutes of connection. This gets around the problem of",
@@ -128,6 +130,7 @@ usage () {
 " -N  numThreads - the number of thread to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.", 
+" -P  output the progress of the download.",
 " -r  recursive - retrieve subcollections",
 " -R  resource - the preferred resource",
 " -T  renew socket connection after 10 minutes",
