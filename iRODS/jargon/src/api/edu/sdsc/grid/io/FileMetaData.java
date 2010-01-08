@@ -53,11 +53,6 @@ package edu.sdsc.grid.io;
  */
 public interface FileMetaData extends GeneralMetaData
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-
-//public static final String FILE_DATA_ID = "File Identifier";
 
   public static final String FILE_COMMENTS = "File Comments";
   public static final String FILE_TYPE = "File Type";
@@ -66,37 +61,6 @@ public interface FileMetaData extends GeneralMetaData
   public static final String FILE_REPLICA_NUM = "File Replica Number";
   public final static String PATH_NAME = "PATH_NAME";
 
-
-/*TODO which are general enough?
-  //srb
-  public final static String OWNER_EMAIL = "OWNER_EMAIL";
-  public final static String OWNER_DOMAIN = "OWNER_DOMAIN";
-  public final static String FILE_IS_COMPRESSED = "FILE_IS_COMPRESSED";
-  public final static String FILE_IS_ENCRYPTED = "FILE_IS_ENCRYPTED";
-  public final static String IS_DIRTY = "IS_DIRTY";
-  public final static String FILE_IS_DELETED = "FILE_IS_DELETED";
-  public final static String FILE_HIDE = "FILE_HIDE";
-  public final static String FILE_REPLICATION_ENUM = "FILE_REPLICATION_ENUM";
-  public final static String FILE_ACCESS_LIST = "FILE_ACCESS_LIST";
-  public final static String FILE_GROUP_ID = "FILE_GROUP_ID";
-  public final static String FILE_AUDITFLAG = "FILE_AUDITFLAG";
-  public final static String FILE_LOCK_EXPIRY = "FILE_LOCK_EXPIRY";
-  public final static String FILE_PIN_VAL = "FILE_PIN_VAL";
-  public final static String FILE_PIN_OWNER_NAME = "FILE_PIN_OWNER_NAME";
-  public final static String FILE_PIN_OWNER_DOMAIN = "FILE_PIN_OWNER_DOMAIN";
-  public final static String FILE_PIN_EXPIRY = "FILE_PIN_EXPIRY";
-  public final static String FILE_EXPIRY_DATE = "FILE_EXPIRY_DATE";
-  public final static String FILE_EXPIRE_DATE_2 = "FILE_EXPIRE_DATE_2";
-  public final static String FILE_SEG_NUM = "FILE_SEG_NUM";
-  public final static String FILE_CLASS_NAME = "FILE_CLASS_NAME";
-  public final static String FILE_CLASS_TYPE = "FILE_CLASS_TYPE";
-  public final static String FILE_LAST_ACCESS_TIMESTAMP = "FILE_LAST_ACCESS_TIMESTAMP";
-  public final static String FILE_VER_NUM = "FILE_VER_NUM";
-  public final static String FILE_LOCK_NUM = "FILE_LOCK_NUM";
-  public final static String FILE_LOCK_DESCRIPTION = "FILE_LOCK_DESCRIPTION";
-  public final static String FILE_LOCK_OWNER_NAME = "FILE_LOCK_OWNER_NAME";
-  public final static String FILE_LOCK_OWNER_DOMAIN = "FILE_LOCK_OWNER_DOMAIN";
-*/
   
   
   /**
@@ -108,15 +72,6 @@ public interface FileMetaData extends GeneralMetaData
    * File Access User Identifier
    */
   public static final String FILE_ACCESS_USER_ID = "File Access User Identifier";
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
 
 
 }

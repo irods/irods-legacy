@@ -161,10 +161,6 @@ public class FTPFileInputStream extends RemoteFileInputStream
 	}
 
 
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
 	/**
 	 * Opens the given file for use by this stream.
 	 *
@@ -174,7 +170,6 @@ public class FTPFileInputStream extends RemoteFileInputStream
 	protected void open( GeneralFile file )
 		throws IOException
 	{
-    //TODO ugly
     //Download the file to temp, read it from there
     this.file = file; //save for later, just in case;
     GeneralFile temp = LocalFile.createTempFile(""+(int)(Math.random()*999),

@@ -16,7 +16,7 @@ import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 
-public class ResourceTest{
+public class ResourceTest {
 	protected static Properties testingProperties = new Properties();
 	protected static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	protected static ScratchFileUtils scratchFileUtils = null;
@@ -49,8 +49,9 @@ public class ResourceTest{
 	}
 
 	/**
-	 * BUG: 30 -  query a resource list for a user shows all resources user has files in
-	 * Test case for work-around
+	 * BUG: 30 - query a resource list for a user shows all resources user has
+	 * files in Test case for work-around
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -64,16 +65,15 @@ public class ResourceTest{
 		boolean resc1Found = false;
 		boolean resc2Found = false;
 
-		String actualResc1 =  testingProperties
-		.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
-		String actualResc2 =  testingProperties
-		.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY);
+		String actualResc1 = testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
+		String actualResc2 = testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY);
 
 		for (int i = 0; i < resources.length; i++) {
 			if (resources[i].trim().equals(actualResc1)) {
 				resc1Found = true;
-			} else if (resources[i].trim()
-					.equals(actualResc2)) {
+			} else if (resources[i].trim().equals(actualResc2)) {
 				resc2Found = true;
 			}
 		}

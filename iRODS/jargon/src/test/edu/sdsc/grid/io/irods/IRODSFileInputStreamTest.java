@@ -56,10 +56,6 @@ public class IRODSFileInputStreamTest {
 	public void tearDown() throws Exception {
 	}
 
-	@Ignore
-	public final void testRead() {
-		fail("Not yet implemented");
-	}
 
 	@Ignore
 	public final void testReadByteArrayIntInt() {
@@ -122,6 +118,108 @@ public class IRODSFileInputStreamTest {
 		
         irodsFileSystem.close();       
 		TestCase.assertEquals("I did not skip and then read the remainder of the specified file", fileLengthInBytes, skipped + numberBytesReadAfterSkip);
+	}
+	
+	@Test
+	public final void testRead() throws Exception {
+		// generate a local scratch file
+        String testFileName = "testread.txt";
+        int fileLengthInKb = 4;
+        long fileLengthInBytes = fileLengthInKb * 1024;
+        
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            fileLengthInBytes);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        ByteArrayOutputStream actualFileContents = new ByteArrayOutputStream();
+        
+        // now try to do the read
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        IRODSFileInputStream fis = new IRODSFileInputStream(irodsFile);
+        
+        // read the rest
+        int bytesRead = 0;
+        
+        int readBytes;
+		while((readBytes = fis.read()) > -1) {
+			
+        	actualFileContents.write(readBytes);
+        	bytesRead++;
+        }
+		
+        irodsFileSystem.close();       
+		TestCase.assertEquals("whole file not read back", fileLengthInBytes, bytesRead);
+	}
+	
+	@Test
+	public final void testReadLenOffset() throws Exception {
+		// generate a local scratch file
+        String testFileName = "testreadlenoffset.txt";
+        int fileLengthInKb = 10;
+        long fileLengthInBytes = fileLengthInKb * 1024;
+        
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            fileLengthInBytes);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        ByteArrayOutputStream actualFileContents = new ByteArrayOutputStream();
+        
+        // now try to do the read
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        IRODSFileInputStream fis = new IRODSFileInputStream(irodsFile);
+        
+        // read the rest
+        
+        int readBytes;
+        byte[] readBytesBuffer = new byte[512];
+		while((readBytes = (fis.read(readBytesBuffer, 0, readBytesBuffer.length))) > -1) {
+        	actualFileContents.write(readBytesBuffer);
+        }
+		
+        irodsFileSystem.close();       
+		TestCase.assertEquals("I did not skip and then read the remainder of the specified file", fileLengthInBytes, actualFileContents.size());
 	}
 
 }

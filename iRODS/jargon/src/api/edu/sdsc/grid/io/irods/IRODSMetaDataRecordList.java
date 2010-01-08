@@ -65,18 +65,8 @@ import java.io.IOException;
  */
 public class IRODSMetaDataRecordList extends MetaDataRecordList
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
 
-
-
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-  /**
+	/**
    * If the query returned a partial list, this value is used to obtain
    * more records from the server.
    */
@@ -87,15 +77,10 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList
    * each record in the query. Used to get the number of results expected
    * and all their user definable metadata.
    */
-//  private IRODSMetaDataRecordList[] metaDataNums;
-//  private int metaDataNumAt;
   
   
   private IRODSCommands irodsConnection;
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Load the IRODSMetaDataRecordList internal field list
    * with the selectFields passed to the constructor.
@@ -173,9 +158,6 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList
 
 
 
-//----------------------------------------------------------------------
-//  Methods
-//----------------------------------------------------------------------
   /**
    * Used by IRODSCommands during a query return.
    * if all the fields that this and <code>recordList</code> have in common
@@ -186,7 +168,6 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList
    */
   boolean combineRecordLists( MetaDataRecordList recordList )
   {
-    //TODO er, not actually used by iRODS? just copied over from SRB
     if (recordList != null) {
       for (int i=0;i<fields.length;i++) {
         for (int j=0;j<recordList.getFieldCount();j++) {

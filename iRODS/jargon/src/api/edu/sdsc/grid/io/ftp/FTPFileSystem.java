@@ -90,14 +90,10 @@ public class FTPFileSystem extends RemoteFileSystem
    */
   static int DEBUG = GeneralFileSystem.DEBUG;
   
-  //TODO workaround to test if closed
   boolean closed = false;
 
 
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
 	/**
 	 * Opens a socket connection to read from and write to. Opens the account
 	 * held in the FTPAccount object. The account information stored in this
@@ -153,7 +149,6 @@ public class FTPFileSystem extends RemoteFileSystem
 	{
 		setAccount( uri );
     
-    //TODO should I just return the ServerException, 
     //or just the IOException because I already use so many other places?
     try {
       ftpClient = new FTPClient( ftpAccount.getHost(), ftpAccount.getPort() );   
@@ -170,9 +165,6 @@ public class FTPFileSystem extends RemoteFileSystem
 	}
 
 
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
 	/**
 	 * Loads the account information for this file system.
 	 */

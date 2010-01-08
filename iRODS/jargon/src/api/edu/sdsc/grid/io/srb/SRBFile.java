@@ -491,7 +491,6 @@ static boolean USE_BULKCOPY = true;
         getAvailableResource(  srbFileSystem ) );
 
       //established the filesystem parameters.
-      //TODO uriTest no longer necessary with the new uriAccountTest?
       setFileSystem( uriTest( srbFileSystem ) );
     }
 
@@ -651,7 +650,6 @@ static boolean USE_BULKCOPY = true;
   static String getLocalZone( SRBFileSystem fs )
     throws IOException
   {
-//TODO should I use the file zone? does it have one?
     //Query file system to determine this SRB user's zone,
     //then use that for the zone of its account object
     if (fs.getVersionNumber() >= 3)
@@ -732,7 +730,6 @@ static boolean USE_BULKCOPY = true;
     //having multiple connections to the same filesystem is bad
     //users can open a thousand files, which will open 1000 filesystem
     //connections and might even crash the SRB.
-    //TODO? synchronized
     SRBFileSystem uriTest = null;
     for (int i=0;i<uriFileSystems.size();i++) {
       uriTest = (SRBFileSystem) uriFileSystems.get( i );
@@ -760,7 +757,6 @@ static boolean USE_BULKCOPY = true;
     //having multiple connections to the same filesystem is bad
     //users can open a thousand files, which will open 1000 filesystem
     //connections and might even crash the SRB.
-    //TODO? synchronized
     SRBFileSystem uriTest = null;
     for (int i=0;i<uriFileSystems.size();i++) {
       uriTest = (SRBFileSystem) uriFileSystems.get( i );
@@ -782,7 +778,6 @@ static boolean USE_BULKCOPY = true;
       if (!exists())
         resource = srbFileSystem.getDefaultStorageResource();
       else {
-//TODO throws IOException...
 //also slows things down a bit with the added network call.
         //resource = getResource();
       }
@@ -1083,7 +1078,6 @@ static boolean USE_BULKCOPY = true;
           }
         }
         if (move) {
-//TODO maybe a better function available?
           srbFileSystem.srbObjMove( catalogType, fileName, getParent(),
             null, resource, serverLocalPath, null );
         }
@@ -1344,7 +1338,6 @@ static boolean USE_BULKCOPY = true;
 //----------------------------------------------------------------------
 // GeneralFile Methods
 //----------------------------------------------------------------------
-//TODO add ResultSet executeQuery( ... )
 
   /**
    * Queries metadata specific to this SRBFile object and selects one
@@ -1946,21 +1939,7 @@ static boolean USE_BULKCOPY = true;
           }
         }
       }
-/*TODO not really in API
-      else if (fieldName == SRBMetaDataSet.same as for STRING)
-      {
-        if (delete) {
-          retractionType =
-            SRBMetaDataSet.D_DELETE_USER_DEFINED_INTEGER_META_DATA;
-        }
-        else
-        {
-          retractionType =
-            SRBMetaDataSet.D_INSERT_USER_DEFINED_INTEGER_META_DATA;
-          dataValue1 = record.getStringValue(i);
-        }
-      }
-*/
+
       else if (fieldName == SRBMetaDataSet.CONTAINER_FOR_DIRECTORY)
       {
 //oldContainerName, not_used  if the oldContainerName is used as a
@@ -1969,31 +1948,6 @@ static boolean USE_BULKCOPY = true;
         retractionType = SRBMetaDataSet.D_UPDATE_CONTAINER_FOR_COLLECTION;
         dataValue1 = record.getStringValue(i);
       }
-/*different class or method
-      else if (fieldName == SRBMetaDataSet.)
-      {
-//newContainerCollName, newContainerDataName  copies access control
-//(and some other metadata) from data_name to the new one.
-//(used internally by SRB server)
-        retractionType =
-          SRBMetaDataSet.D_COPY_META_DATA_FROM_CONTAINER_TO_NEW_CONTAINER;
-        dataValue1 = record.getStringValue(i);
-      //@@@
-      }
-      else if (fieldName == SRBMetaDataSet.)
-      {
-//sourceCollName, sourceDataName  copies user-defined metadata from  source to data_name.
-        retractionType = SRBMetaDataSet.D_COPY_META_DATA_FROM_DATA_TO_DATA;
-        dataValue1 = record.getStringValue(i);
-      //@@@
-      }
-      else if (fieldName == SRBMetaDataSet.)
-      {
-//sourceCollName, not_used  copies user-defined metadata from  source to data_name.
-        retractionType = SRBMetaDataSet.D_COPY_META_DATA_FROM_COLL_TO_DATA;
-        dataValue1 = record.getStringValue(i);
-      }
-*/
 
 //-----------------------
 //SRB3.2
@@ -2059,7 +2013,6 @@ static boolean USE_BULKCOPY = true;
           extTableName = record.getField(i).getExtensibleName(protocol);
         }
         //else if
-        //TODO they are using fields with different extensible?
 
         if (extAttributes == null) {
           extAttributes = "DATA_ID";
@@ -2717,7 +2670,6 @@ upto 4 registration threads
 
 
     //thread to transfer all the data
-//TODO use parallel put?
     load = new LoadThread( raf, loadBuffer, this );
 
     // Now start copying
@@ -2737,7 +2689,6 @@ upto 4 registration threads
           raf[i].close();
         }
         if ( registration[i] != null ) {
-          //TODO
           //The last bulkFile wasn't getting its filepath set.
           //Causing a -3201 DATA_NOT_IN_CAT srb error, when the old bulkFile
           //(that had already been registered) attempted to get re-registered
@@ -2891,7 +2842,6 @@ I guess, if a LocalFile is a file:
         if (SRBCommands.DEBUG > 0) e.printStackTrace();
         return;
       } catch ( IOException e ) {
-        //TODO better to catch the specific SRBException that means
         //"trying to open a file that does not exist"
 
         //file I/O problem, maybe it will recover...
@@ -3668,7 +3618,6 @@ try {//HACK ?
       }
     }
 
-//TODO what is going on here, if update is false, then always return null?
     return null;
   }
 
@@ -4334,12 +4283,6 @@ try {//HACK ?
 
       if (obj instanceof SRBFile) {
         SRBFile temp = (SRBFile) obj;
-//TODO March 18, 2008, 
-//should maybe compare SRBFileSystems? or just zone?
-/*        if (temp.srbFileSystem.getMcatZone().equals(
-          srbFileSystem.getMcatZone())) 
-        {
- */
         if (temp.srbFileSystem.equals(srbFileSystem)) 
         { 
           return getAbsolutePath().equals(temp.getAbsolutePath());         
@@ -4956,10 +4899,7 @@ try {//HACK ?
     if (dest instanceof SRBFile) {
       try {
         if (isFile()) {
-/*TODO          if (!dest.getServerLocalPath.equals( serverLocalPath )) {
-
-          }
-          else */if (getParent().equals(dest.getParent())) {
+        	if (getParent().equals(dest.getParent())) {
             //only renaming data
             srbFileSystem.srbModifyDataset( catalogType, fileName, getParent(),
               "", serverLocalPath, dest.getName(), "", SRBMetaDataSet.D_CHANGE_DNAME);

@@ -722,7 +722,6 @@ class IRODSCommands {
 
 		if (account.getObf()) {
 			try {
-				// TODO don't touch for now
 				/*
         \u002a\u002f\u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064 \u003d \u006e\u0065\u0077 \u004c\u0075\u0063\u0069\u0064\u0028
 						\u0046\u0069\u006c\u0065\u0046\u0061\u0063\u0074\u006f\u0072\u0079
@@ -998,7 +997,7 @@ class IRODSCommands {
 	 *             If an IOException occurs
 	 */
 	private byte read() throws IOException {
-		return (byte) in.read();
+		return (byte) in.read(); 
 	}
 
 	private int read(byte[] value) throws ClosedChannelException,
@@ -1261,8 +1260,7 @@ class IRODSCommands {
 
 			// to recover from some protocol errors, (slowly and if lucky)
 			// read until a new message header is found.
-			boolean cont = true; // TODO thread to eventually end this when
-			// blocked
+			boolean cont = true; // thread to eventually end this when blocked
 			int sigh;
 			byte[] temp = new byte[13];
 			String newHeader = "MsgHeader_PI>";
@@ -1755,7 +1753,7 @@ class IRODSCommands {
 					"invalid parameters for fileRead");
 		}
 
-		// XXX: length param is unused
+		// length param is unused
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(len, length), });
 
@@ -1783,7 +1781,7 @@ class IRODSCommands {
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_READ_AN);
 		// Need the total dataSize
 		if (message == null)
-			return -1; // TODO um, return -1?
+			return -1; 
 
 		length = message.getTag(MsgHeader_PI).getTag(bsLen).getIntValue();
 
@@ -2594,9 +2592,7 @@ class IRODSCommands {
 		// package the conditions
 		if (conditions != null) {
 			// fix the conditions if there are AVU parts, also remove nulls
-			conditions = (MetaDataCondition[]) IRODSFileSystem // FIXME: in
-					// right order
-					// here
+			conditions = (MetaDataCondition[]) IRODSFileSystem 
 					.cleanNullsAndDuplicates(checkForAVU(conditions, namespace));
 
 			subTags = new Tag[conditions.length * 2 + 1];

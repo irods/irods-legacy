@@ -79,24 +79,6 @@ import org.ietf.jgss.GSSException;
 //All functionality of Jargon, including GSI authentication.
 class GSIAuth
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-
-
-
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-
-
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Checks the authentication using GSI of a iRODS connection which has already
    * passed the uner info part of the handshake.
@@ -115,11 +97,6 @@ class GSIAuth
   }
 
 
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
   /**
    * GSI authorization method. Makes a connection to the iRODS using
    * the GSI authorization scheme.
@@ -146,7 +123,7 @@ class GSIAuth
       credential = getCredential( account );
 
       if (caLocations != null) {
-//TODO they said there is no other way to do this.
+// there is no other way to do this.
 //so I'm overwriting the default then changing it back.
         cog = CoGProperties.getDefault();
         defaultCA = cog.getCaCertLocations();
@@ -309,4 +286,3 @@ class GSIAuth
     return credential;
   }
 }
-// End GSIAuth-----

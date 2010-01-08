@@ -72,7 +72,6 @@ public final class FileFactory
    * the FileFactory methods.
    *
    *
-   * TODO Not sure about making the registration public yet.
    */
   static HashMap classToType = new HashMap();
 
@@ -484,7 +483,6 @@ public final class FileFactory
     int index = -1;
     String userInfo = uri.getUserInfo();
     Class file = (Class) classToType.get(uri.getScheme());
-//TODO move this part to SRBFile. make the reflection part work.
     if (file != null && password != null)
     {
       if (uri.getScheme().equals("file")) {

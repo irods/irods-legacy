@@ -365,7 +365,6 @@ public class Test
          * null = none, "r" = read, "w" = write, "rw" = all
          * Equivalent to Schmod in the SRB Scommands command-line tools.
          */
-        //TODO other remote file systems will support?
         if (fileSystem instanceof SRBFileSystem) {
   System.out.println("\n Add read/write permissions to the file for \"testuser\".");
           String permission = "rw";
@@ -507,7 +506,6 @@ public class Test
             CopyTest.superCopy(localFile, 
               FileFactory.newFile( fileSystem, TEST_DIR, "Copy"+TEST_DIR ), 
               connections, threadsPerConnection);       
-            //TODO compare?
           }
           else {
             CopyTest copyTest = new CopyTest( localFile,
@@ -516,7 +514,7 @@ public class Test
             try {           
               if (fileSystem instanceof SRBFileSystem)
                 err = copyTest.compare() ? 0 : 1;
-              else {     //TODO md5 for irods
+              else {     
                 err = MoreTests.fileCompare( 
                         copyTest.getSource(), 
                         copyTest.getReturnDestination() ) ? 0 : 1;

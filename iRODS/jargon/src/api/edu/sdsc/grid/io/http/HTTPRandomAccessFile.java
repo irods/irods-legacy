@@ -66,9 +66,6 @@ import java.net.URLConnection;
  */
 public class HTTPRandomAccessFile extends RemoteRandomAccessFile
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
 	private InputStream in;
   private OutputStream out;
   
@@ -80,9 +77,6 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile
   private long length;
   private HTTPFile httpFile;
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
 	/**
 	 * Creates a random access file stream to read from, and optionally to
 	 * write to, the file specified by the {@link String} argument. A new
@@ -170,9 +164,6 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile
     httpFile = file;
 	}
 
-//----------------------------------------------------------------------
-//  Setters and Getters
-//----------------------------------------------------------------------
 	protected void open( GeneralFile file ) throws IOException
 	{
     close();
@@ -191,10 +182,6 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile
     length = file.length();
   }
 
-
-//----------------------------------------------------------------------
-//	Read methods
-//----------------------------------------------------------------------
 	protected int readBytes(byte b[], int offset, int len) throws IOException
 	{
 		int read = in.read(b, offset, len);
@@ -205,22 +192,13 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile
 	}
 
 
-
-//----------------------------------------------------------------------
-//  Write methods
-//----------------------------------------------------------------------
 	//Private method in wrapper, so call public.
 	protected void writeBytes(byte b[], int offset, int len) throws IOException
 	{
     out.write(b, offset, len);
-    //TODO??? filePointer
 	}
 
 
-
-//----------------------------------------------------------------------
-//  Random access methods
-//----------------------------------------------------------------------
 	/**
 	 * Returns the current offset in this file.
 	 *
@@ -285,13 +263,12 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile
 				filePointer += in.skip( position+getFilePointer() );
 				break;
 			case 2:
-        //TODO kind of pointless, always read only.
+        //kind of pointless, always read only.
 				filePointer += in.skip( position+length-getFilePointer() );
 				break;
 			case 0:
 			default:
         if (position < filePointer) {
-          //TODO inefficient...
           open(httpFile);
           in.skip(position);
         }
@@ -311,7 +288,6 @@ public class HTTPRandomAccessFile extends RemoteRandomAccessFile
 	 */
 	public long length() throws IOException
 	{
-    //TODO not the best...
     return length;
 	}
 

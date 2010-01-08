@@ -219,7 +219,7 @@ public class UserTest {
 			// ignore, might already be present
 		}
 		
-		// FIXME: currently not working with 2.1
+		//  currently not working with 2.1
 		
 		if (irodsFileSystem.commands.getReportedIRODSVersion().equals("rods2.1")) {
 			return;

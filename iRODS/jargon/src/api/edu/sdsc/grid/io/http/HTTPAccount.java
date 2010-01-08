@@ -61,22 +61,10 @@ import java.net.URL;
  */
 public class HTTPAccount extends RemoteAccount
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
 
   URI uri;
 
 
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
 	/**
 	 * Constructs an object to hold the user information used when connecting
 	 * to a http server.
@@ -87,7 +75,6 @@ public class HTTPAccount extends RemoteAccount
 	 * @param	password the password
 	 * @param	homeDirectory home directory on the http system
 	 */
-//TODO public?  
 	HTTPAccount( String host, int port, String userName, String password,
 		String homeDirectory )
 	{

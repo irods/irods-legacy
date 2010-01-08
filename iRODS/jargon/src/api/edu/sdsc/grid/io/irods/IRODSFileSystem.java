@@ -632,7 +632,6 @@ Please contact all@diceresearch.org for this mod.
     MetaDataSelect[] selects, int numberOfRecordsWanted, Namespace namespace )
     throws IOException
   {
-    //TODO Duplicates? maybe they are && conditions
     conditions = (MetaDataCondition[]) cleanNulls(conditions);
     selects = (MetaDataSelect[]) cleanNulls(selects);
     return commands.query(
@@ -640,10 +639,6 @@ Please contact all@diceresearch.org for this mod.
   }
 
 
-
-//----------------------------------------------------------------------
-//
-//----------------------------------------------------------------------
   /**
    * Removes null values from an array.
    */

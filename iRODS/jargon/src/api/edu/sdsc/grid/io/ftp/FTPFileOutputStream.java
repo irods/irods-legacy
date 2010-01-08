@@ -247,7 +247,7 @@ public class FTPFileOutputStream extends RemoteFileOutputStream
         ""+(int)(Math.random()*999), ""+new java.util.Date().getTime());
       file.copyTo(temp2);
 
-      //TODO I should create a new DataSource and append the existing files
+      //should create a new DataSource and append the existing files
       //during the upload, that'd be a little faster at least...
       out = FileFactory.newFileOutputStream(temp2);
       InputStream in = FileFactory.newFileInputStream(temp);

@@ -150,19 +150,12 @@ public class HTTPFileOutputStream extends RemoteFileOutputStream
 	protected void finalize()
 		throws IOException
 	{
-		/*TODO flush doesn't do anything, because there is no buffer
-		if (bytes left) {
-			flush();
-		}
-		*/
+		//flush doesn't do anything, because there is no buffer
+		
 		close();
 	}
 
 
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
 	/**
 	 * Opens the given file for use by this stream.
 	 *

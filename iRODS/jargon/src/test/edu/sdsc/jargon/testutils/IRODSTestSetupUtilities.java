@@ -16,8 +16,6 @@ import java.util.Properties;
 /**
  * Common utilities to prep the test irods for unit tests
  *
- * TODO: NB on windows, the current path is affected by the current path, look
- * at ways to detach by better setting of cwd
  *
  * @author Mike Conway, DICE (www.irods.org)
  *

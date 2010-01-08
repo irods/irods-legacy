@@ -64,31 +64,11 @@ import java.io.*;
  */
 public abstract class GeneralFileInputStream extends InputStream //extends FileInputStream
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
 
-
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
   /**
    * Holds the file descriptor information used by this stream.
    */
   protected int fd = -1;
-
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  //for some reason getFD is final
-  //also the FileDescriptor class is final even though
-  //the class FileDescriptor is just an object wrapping an int.
-  //why should that be final?
-//  private FileDescriptor fd = null;
 
   /**
    * Creates a <code>FileInputStream</code> by
@@ -161,10 +141,6 @@ public abstract class GeneralFileInputStream extends InputStream //extends FileI
   }
 
 
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
   /**
    * Opens the given file for use by this stream.
    *
@@ -349,42 +325,6 @@ public abstract class GeneralFileInputStream extends InputStream //extends FileI
    */
   public abstract void close() throws IOException;
 
-
-  /**
-   * Returns the <code>FileDescriptor</code>
-   * object  that represents the connection to
-   * the actual file in the file system being
-   * used by this <code>FileInputStream</code>.
-   *
-   * @return     the file descriptor object associated with this stream.
-   * @exception  IOException  if an I/O error occurs.
-   * @see        java.io.FileDescriptor
-   */
-/*    public final FileDescriptor getFD()
-    throws IOException
-  {
-
-  }
-*/
-
-  /**
-   * Returns the unique {@link java.nio.channels.FileChannel FileChannel}
-   * object associated with this file input stream.
-   *
-   * <p> The initial {@link java.nio.channels.FileChannel#position()
-   * </code>position<code>} of the returned channel will be equal to the
-   * number of bytes read from the file so far.  Reading bytes from this
-   * stream will increment the channel's position.  Changing the channel's
-   * position, either explicitly or by reading, will change this stream's
-   * file position.
-   *
-   * @return  the file channel associated with this file input stream
-   */
-/*    public FileChannel getChannel()
-  {
-
-  }
-*/
 
 }
 

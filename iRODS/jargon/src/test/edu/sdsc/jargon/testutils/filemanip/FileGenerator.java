@@ -122,7 +122,7 @@ public class FileGenerator {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		int generatedLength = 0;
 		
-		while (generatedLength < chunkSize) {
+		while (generatedLength < chunkSize) {  
 			bos.write(RANDOM.nextInt());
 			generatedLength += 1;
 		}

@@ -1491,7 +1491,6 @@ public abstract class GeneralRandomAccessFile
   public void writeChars(String s)
     throws IOException
   {
-//TODO I'm sure this is very slow
     char[] chars = s.toCharArray();
     for (int i=0;i<s.length();i++) {
       writeChar(chars[i]);

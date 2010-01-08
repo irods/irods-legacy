@@ -274,7 +274,6 @@ public class HTTPFileSystem extends RemoteFileSystem
 	public void close( ) 
     throws IOException
 	{
-//TODO?		conn.close();
     conn = null;
 	}
   

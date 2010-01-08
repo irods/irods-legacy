@@ -1344,9 +1344,6 @@ public class IRODSFile extends RemoteFile {
 			if (IRODSFileSystem.DEBUG > 0)
 				e.printStackTrace();
 			// catch already exists and just return false
-			// TODO equivalent
-			// if (e.getType() != -3210)
-			// throw e;
 		}
 
 		return -1;
@@ -2068,7 +2065,6 @@ public class IRODSFile extends RemoteFile {
 			}
 			return list.toArray(new GeneralFile[0]);
 		} else {
-			// TODO?
 			// for now shouldn't use this method if this object is a file.
 			return listFiles();
 		}

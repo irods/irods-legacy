@@ -127,7 +127,6 @@ class SRBMetaDataCommands
       return " "+MetaDataCondition.getOperatorString(operator)+ " ";
   }
 
-//TODO redundant, should change references to direct MetaDataCondition call.
   static String getOperator( int operator )
   {
     if (operator == MetaDataCondition.IN) {
@@ -204,7 +203,6 @@ class SRBMetaDataCommands
 
     for (int i=0; i<rowCount; i++) {
       for (int j=0; j<columnCount; j++) {
-//TODO should this LIKE affect only the second column?
         if ((j == 1) &&
             ((table.getOperator(i) == MetaDataCondition.LIKE) ||
             (table.getOperator(i) == MetaDataCondition.NOT_LIKE )) ||
@@ -299,7 +297,6 @@ class SRBMetaDataCommands
     if (operator == MetaDataCondition.IN ||
         operator == MetaDataCondition.NOT_IN )
     {
-//TODO test improper protocol on query formed here? operator table attr IN value value...
       queryStatement = "'"+table.getStringValue(row,0)+"'\u0000 "+
         MetaDataCondition.getOperatorString(operator) +" (";
       String list = table.getStringValue( row, 1 );
@@ -536,21 +533,7 @@ class SRBMetaDataCommands
         qValCondition += setTableGenQuery( table, condition );
 
         if (table.getRowCount() > 5) {
-/*TODO if need more talk to raja
-            table.removeRow(0);
-            table.removeRow(1);
-            table.removeRow(2);
-            table.removeRow(3);
-          //users and resources don't have fifth row.
-          if ((fieldName.equals( SRBMetaDataSet.DEFINABLE_METADATA_FOR_FILES ) ||
-            (fieldName.equals( SRBMetaDataSet.DEFINABLE_METADATA_FOR_DIRECTORIES ))
-          {
-            table.removeRow(4);
-          }
-          condition = MetaDataSet.newCondition(
-            condition.getFieldName(), table );
-          srbGetDataDirInfo( catType, conditions, selects, rowsWanted);
-*/
+
         }
         break;
       default:
@@ -629,7 +612,6 @@ class SRBMetaDataCommands
     //and bytes in the correct order in packedQuery[]
     String queryString = "";
     //the byte string sent to the SRB as the query
-    //TODO size, should be how big?
     byte[] packedQuery = new byte[2700];
 
 

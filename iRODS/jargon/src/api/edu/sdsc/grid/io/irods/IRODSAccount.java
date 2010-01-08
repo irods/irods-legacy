@@ -98,7 +98,6 @@ public class IRODSAccount extends RemoteAccount
    */
   public static final String IRODS_VERSION_2_2 = "rods2.2jargon2.2.1";
   
-  // TODO: split into rods and jargon, in the meantime use the following:
   
   public static final String IRODS_JARGON_RELEASE_NUMBER = "rods2.2";
   
@@ -122,9 +121,6 @@ public class IRODSAccount extends RemoteAccount
   static final String GSI_PASSWORD = "GSI";
   
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
   /**
    * The default storage resource.
    */

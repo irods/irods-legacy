@@ -54,7 +54,6 @@ public class Domain
   }
 
 
-  //------------------------------------------------------------------------
   public void addType( String newType )
     throws IOException
   {
@@ -62,7 +61,6 @@ public class Domain
   }
 
   // at tokenNamespace Name Value [Value2] [Value3] (add token)
-  //TODO don't know what the 3 values are
   public void addType( String newType,
     String value, String value2, String value3 )
     throws IOException

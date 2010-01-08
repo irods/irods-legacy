@@ -142,7 +142,6 @@ class Rule {
 		
 		StringTokenizer tokens = new StringTokenizer(rule, "\n");
 
-		// FIXME: weird 'null' at head of rule, why?
 		String ruleBody = processRuleBody(tokens);
 
 		// if formatting error, such as only one line, below breaks

@@ -85,53 +85,10 @@ public class IcommandInvoker {
 		 * irodsUserName 'rods' irodsZone 'tempZone'
 		 */
 
-		// TODO: right now ensure proper dir by invoking an icd command before
-		// the actual command
-		// move into a method in test setup?
 
-		// point test user at correct directory
-		// do not recursively call initializeCdCommand!
-		/*
-		 * if (!(icommand instanceof InitializeCdCommand)) { InitializeCdCommand
-		 * initializeCdCommand = new InitializeCdCommand(); StringBuilder
-		 * cdBuilder = new StringBuilder(); cdBuilder.append('/');
-		 * cdBuilder.append(irodsInvocationContext.getIrodsZone());
-		 * cdBuilder.append('/'); cdBuilder.append("home");
-		 * cdBuilder.append('/');
-		 * cdBuilder.append(irodsInvocationContext.getIrodsUser());
-		 * 
-		 * initializeCdCommand.setTargetCollection(cdBuilder.toString());
-		 * invokeCommandAndGetResultAsString(initializeCdCommand); }
-		 */
 
 		ProcessBuilder pb = new ProcessBuilder(icommand.buildCommand());
 		Map<String, String> env = pb.environment();
-		/*
-		 * env.put("irodsHost", irodsInvocationContext.getIrodsHost());
-		 * env.put("irodsPort",
-		 * String.valueOf(irodsInvocationContext.getIrodsPort()));
-		 * env.put("irodsZone", irodsInvocationContext.getIrodsZone());
-		 * env.put("irodsUserName", irodsInvocationContext.getIrodsUser());
-		 * env.put("irodsPassword", irodsInvocationContext.getIrodsPassword());
-		 * 
-		 * //env.put("irodsPassword", "blah"); env.put("irodsDefResource",
-		 * irodsInvocationContext.getIrodsResource());
-		 * 
-		 * StringBuilder envBuilder = new StringBuilder();
-		 * envBuilder.append('/');
-		 * envBuilder.append(irodsInvocationContext.getIrodsZone());
-		 * envBuilder.append('/'); envBuilder.append("home");
-		 * envBuilder.append('/');
-		 * envBuilder.append(irodsInvocationContext.getIrodsUser());
-		 * 
-		 * // this is irods home env.put("irodsHome", envBuilder.toString());
-		 * 
-		 * //envBuilder.append('/');
-		 * //envBuilder.append(irodsInvocationContext.getIrodsScratchDir());
-		 * 
-		 * // set cwd to scratch area env.put("irodsCwd",
-		 * envBuilder.toString());
-		 */
 
 		Process p;
 		BufferedInputStream bis;
@@ -221,7 +178,6 @@ public class IcommandInvoker {
 					.getTestProperties();
 			icommandFullPath.append(testingProperties
 					.getProperty(TestingPropertiesHelper.MAC_ICOMMANDS_PATH));
-			// icommandFullPath.append('/');
 		} catch (TestingUtilsException e1) {
 			e1.printStackTrace();
 			throw new IcommandException(
@@ -246,8 +202,6 @@ public class IcommandInvoker {
 			executor.setStreamHandler(pumpStreamHandler);
 			exitValue = executor.execute(cl);
 		} catch (ExecuteException e) {
-			// e.printStackTrace();
-			// throw new IcommandException(e);
 			String errors = bosErrors.toString();
 
 		} catch (IOException e) {
@@ -256,9 +210,6 @@ public class IcommandInvoker {
 		}
 
 		if (exitValue != 0) {
-			// throw new
-			// IcommandException("received an invalid exit code from the icommand:"
-			// + String.valueOf(exitValue));
 		}
 
 		// now get the output of the command

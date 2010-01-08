@@ -1,16 +1,17 @@
-Jargon 2.2.1beta1 Release Notes
+Jargon 2.2.1 Release Notes
 
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 12/18/2009
-Release Version: 2.2.1beta1
+Date: 01/08/2010
+Release Version: 2.2.1
 
 ================================================================================================
 Requirements
 
 -Jargon depends on Java 1.5+
 -Jargon is built using Apache ANT
+-Jargon has been tested against IRODS 2.1 and IRODS2.2
 
 libraries
 ---------

@@ -60,14 +60,10 @@ import java.io.FileNotFoundException;
  */
 public class LocalFileSystem extends GeneralFileSystem
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
   /**
    * Default number of records returned by a query
    */
   static final int DEFAULT_RECORDS_WANTED = 300;
-//TODO why is this even here?
   
   
   
@@ -76,17 +72,6 @@ public class LocalFileSystem extends GeneralFileSystem
    */
   static int DEBUG = GeneralFileSystem.DEBUG;
   
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-
-
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Opens a socket connection to read from and write to.
    * Loads the default Local user account information from their home directory.

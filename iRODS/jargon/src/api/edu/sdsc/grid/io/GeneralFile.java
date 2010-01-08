@@ -830,7 +830,6 @@ public class GeneralFile extends Object implements Comparable
         if (in != null) in.close();
       }
       if ((length-length()) != 0) {
-        //TODO error?
       }
 
       long sigh = (value & 0xffff) + (((value & 0xffffffff) >> 16) & 0xffff);
@@ -873,7 +872,6 @@ public class GeneralFile extends Object implements Comparable
         }
       }
       else if (read < 0) {
-        //TODO error?
         if (GeneralFileSystem.DEBUG > 0) System.err.print(" "+read);
       }
     }    
@@ -1613,7 +1611,6 @@ public class GeneralFile extends Object implements Comparable
       GeneralFile dir = FileFactory.newFile( fileSystem,
         directory.get(0).toString() );
 
-      //TODO this is kind of slow. better way?
       for (int i=1;i<dirNum;i++) {
         dir = FileFactory.newFile( dir, directory.get(i).toString() );
         if (!dir.exists()) {

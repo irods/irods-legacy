@@ -223,11 +223,6 @@ public class LocalFile extends GeneralFile
     wrapper = null;
   }
 
-
-
-//----------------------------------------------------------------------
-// GeneralFile Methods
-//----------------------------------------------------------------------
   /**
    * Iterates through the directory/collection/container list.
    *
@@ -236,16 +231,10 @@ public class LocalFile extends GeneralFile
   public Iterator listIterator( )
     throws IOException
   {
-//TODO what does this return?
 return null;
   }
 
 
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
   /**
    * Set the directory.
    */

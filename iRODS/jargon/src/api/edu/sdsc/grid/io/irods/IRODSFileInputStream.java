@@ -48,14 +48,11 @@ import java.io.*;
  */
 public class IRODSFileInputStream extends RemoteFileInputStream
 {
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+
   /**
    * Position of read/write pointer in file.
    */
   long filePointer = 0;
-
 
   /**
    * Holds the server connection used by this stream.
@@ -68,10 +65,6 @@ public class IRODSFileInputStream extends RemoteFileInputStream
    */
   IRODSFile file;
 
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Creates a <code>IRODSFileInputStream</code> by
    * opening a connection to an actual file,
@@ -152,10 +145,6 @@ public class IRODSFileInputStream extends RemoteFileInputStream
   }
 
 
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
   /**
    * Sets the IRODS server used of this IRODSRandomAccessFile object.
    *
@@ -230,7 +219,7 @@ public class IRODSFileInputStream extends RemoteFileInputStream
           return -1;
         //if temp = 0 is an error?
         filePointer += temp; //0 or 1
-        return buffer[0];
+        return (int) (buffer[0] & 0xFF);
       }
     } catch (IRODSException e) {
       //-1 just means EOF
@@ -409,39 +398,4 @@ public class IRODSFileInputStream extends RemoteFileInputStream
     return "Input: "+file;
   }
 
-  /**
-   * Returns the <code>FileDescriptor</code>
-   * object  that represents the connection to
-   * the actual file in the file system being
-   * used by this <code>IRODSFileInputStream</code>.
-   *
-   * @return     the file descriptor object associated with this stream.
-   * @exception  IOException  if an I/O error occurs.
-   * @see        java.io.FileDescriptor
-   */
-/*    public final FileDescriptor getFD()
-    throws IOException
-  {
-
-  }
-*/
-  /**
-   * Returns the unique {@link java.nio.channels.FileChannel FileChannel}
-   * object associated with this file input stream.
-   *
-   * <p> The initial {@link java.nio.channels.FileChannel#position()
-   * </code>position<code>} of the returned channel will be equal to the
-   * number of bytes read from the file so far.  Reading bytes from this
-   * stream will increment the channel's position.  Changing the channel's
-   * position, either explicitly or by reading, will change this stream's
-   * file position.
-   *
-   * @return  the file channel associated with this file input stream
-   */
-/*
-  public FileChannel getChannel()
-  {
-
-  }
-*/
 }

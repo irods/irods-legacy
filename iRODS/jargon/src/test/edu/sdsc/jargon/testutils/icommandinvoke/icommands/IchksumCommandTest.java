@@ -84,7 +84,7 @@ public class IchksumCommandTest {
         invoker.invokeCommandAndGetResultAsString(iputCommand);
         
         
-        // FIXME: fix code for comparing a generated MD5 with a checksum returned from an ichksum command...
+        // fix code for comparing a generated MD5 with a checksum returned from an ichksum command...
         // I have put the file, now assert that the file I put has the same checksum as the file I generated
         IchksumCommand chksumCommand = new IchksumCommand();
         chksumCommand.setIrodsFileName(testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(

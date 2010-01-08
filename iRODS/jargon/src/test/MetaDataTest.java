@@ -272,7 +272,6 @@ System.out.println("\n Set the SRB definable metadata.");
 		//	defined metadata matching: (see below)
 		//	a = 1 
 		//	b <= 2
-    //TODO?
     MetaDataTable metaDataTable = null;
     metaDataTable = 
       new MetaDataTable( operators, definableMetaDataValues );

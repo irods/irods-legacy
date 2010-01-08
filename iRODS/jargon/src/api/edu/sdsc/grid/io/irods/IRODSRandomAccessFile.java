@@ -83,23 +83,7 @@ import java.io.FileNotFoundException;
  */
 public class IRODSRandomAccessFile extends RemoteRandomAccessFile
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-/*TODO still?
-  // IRODS open flag values as ints
-  static final int O_RDONLY    = 0; //00 octal
-  static final int O_WRONLY    = 1; //01 octal
-  static final int O_RDWR      = 2; //02 octal
-  static final int O_APPEND    = 1024; //02000 octal
-  static final int O_SYNC      = 4096; //010000 octal
-  static final int O_DSYNC      = O_SYNC; //Doesn't exist?
-*/
 
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
   /**
    * Position of read/write pointer in file.
    */
@@ -112,9 +96,6 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile
   IRODSFileSystem fileSystem;
 
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Creates a random access file stream to read from, and optionally
    * to write to, a file with the specified name. A new
@@ -236,11 +217,6 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile
   }
 
 
-
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
   /**
    * Opens this file.
    * The file is opened in read-write mode if writeable is true, else
@@ -362,7 +338,6 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile
   public int read( )
     throws IOException
   {
-// TODO    on a network this is a bad thing to do
     byte buffer[] = new byte[1];
     int offset = 0;
     int read = fileSystem.commands.fileRead(fd, buffer, offset, 1);
@@ -373,7 +348,6 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile
     }
     return -1;
  
-//throw new UnsupportedOperationException();
   }
 
 
@@ -514,7 +488,6 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile
   public void setLength( long newLength )
     throws IOException
   {
-//TODO is it still the same as SRB?
     long length = length();
 
     if (newLength > length) {
