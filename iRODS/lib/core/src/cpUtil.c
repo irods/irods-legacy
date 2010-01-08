@@ -33,6 +33,24 @@ rodsPathInp_t *rodsPathInp)
 
     initCondForCp (myRodsEnv, myRodsArgs, &dataObjCopyInp, &rodsRestart);
 
+    /* initialize the progress struct */
+    if (gGuiProgressCB != NULL) {
+        bzero (&conn->operProgress, sizeof (conn->operProgress));
+        for (i = 0; i < rodsPathInp->numSrc; i++) {
+            targPath = &rodsPathInp->targPath[i];
+            if (targPath->objType == DATA_OBJ_T) {
+                conn->operProgress.totalNumFiles++;
+                if (rodsPathInp->srcPath[i].size > 0) {
+                    conn->operProgress.totalFileSize +=
+                      rodsPathInp->srcPath[i].size;
+                }
+            } else {
+                getCollSizeForProgStat (conn, rodsPathInp->srcPath[i].outPath,
+                  &conn->operProgress);
+            }
+        }
+    }
+
     for (i = 0; i < rodsPathInp->numSrc; i++) {
         targPath = &rodsPathInp->targPath[i];
 
@@ -109,16 +127,33 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjCopyInp_t *dataObjCopyInp)
         (void) gettimeofday(&startTime, (struct timezone *)0);
     }
 
+    if (gGuiProgressCB != NULL) {
+        rstrcpy (conn->operProgress.curFileName, srcPath, MAX_NAME_LEN);
+        conn->operProgress.curFileSize = srcSize;
+        conn->operProgress.curFileSizeDone = 0;
+        conn->operProgress.flag = 0;
+        gGuiProgressCB (&conn->operProgress);
+    }
+
     rstrcpy (dataObjCopyInp->destDataObjInp.objPath, targPath, MAX_NAME_LEN);
     rstrcpy (dataObjCopyInp->srcDataObjInp.objPath, srcPath, MAX_NAME_LEN);
+#if 0
     dataObjCopyInp->srcDataObjInp.dataSize = srcSize;
+#endif
+    dataObjCopyInp->srcDataObjInp.dataSize = -1;
 
     status = rcDataObjCopy (conn, dataObjCopyInp);
 
-    if (status >= 0 && rodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, dataObjCopyInp->destDataObjInp.objPath, 
-	  conn->transStat.bytesWritten, NULL, &startTime, &endTime);
+    if (status >= 0) {
+        if (rodsArgs->verbose == True) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTiming (conn, dataObjCopyInp->destDataObjInp.objPath, 
+	      conn->transStat.bytesWritten, NULL, &startTime, &endTime);
+	}
+        if (gGuiProgressCB != NULL) {
+            conn->operProgress.totalNumFilesDone++;
+            conn->operProgress.totalFileSizeDone += srcSize;
+        }
     }
 
     return (status);
@@ -306,7 +341,10 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
             }
 
             status = cpFileUtil (conn, srcChildPath, targChildPath,
+              collEnt.dataSize, myRodsEnv, rodsArgs, dataObjCopyInp);
+#if 0
               -1, myRodsEnv, rodsArgs, dataObjCopyInp);
+#endif
 
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,

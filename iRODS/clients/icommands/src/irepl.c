@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "aBQMhrvVn:R:S:TX:U";
+    optStr = "aBQMhrvVn:PR:S:TX:U";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -77,6 +77,10 @@ main(int argc, char **argv) {
         exit (7);
     }
 
+    if (myRodsArgs.progressFlag == True) {
+        gGuiProgressCB = (irodsGuiProgressCallbak) iCommandProgStat;
+    }
+
     status = replUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
     rcDisconnect(conn);
@@ -94,7 +98,7 @@ usage ()
 {
 
    char *msgs[]={
-"Usage : irepl [-aBMQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
+"Usage : irepl [-aBMPQrTvV] [-n replNum] [-R destResource] [-S srcResource]",
 "[-X restartFile]  dataObj|collection ... ",
 " ",
 "Replicate a file in iRODS to another storage resource.",
@@ -124,6 +128,7 @@ usage ()
 "     Replicate to all the resources in the resource group.",
 " -B  Backup mode - if a good copy already exists in this",
 "     resource, don't make another copy.",
+" -P  output the progress of the replication.",
 " -Q  use RBUDP (datagram) protocol for the data transfer",
 " -U  Update (Synchronize) all old replica with the latest copy.",
 " -M  admin - admin user uses this option to backup/replicate other users files",

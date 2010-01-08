@@ -7,6 +7,7 @@ extern "C" {
 
 typedef struct OperProgress {
     int oprType;
+    int flag;
     rodsLong_t totalNumFiles;	/* total number of files */
     rodsLong_t totalFileSize;	/* total size of files for this operation */
     rodsLong_t totalNumFilesDone;  /* total number of files done */

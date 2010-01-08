@@ -1672,3 +1672,42 @@ getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress)
     return status;
 }
 
+/* iCommandProgStat - the irodsGuiProgressCallbak for icommand
+ */
+irodsGuiProgressCallbak 
+iCommandProgStat (operProgress_t *operProgress)
+{
+    char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
+    int status;
+
+    if ((status = splitPathByKey (operProgress->curFileName, 
+      myDir, myFile, '/')) < 0) {
+        rodsLogError (LOG_NOTICE, status,
+          "iCommandProgStat: splitPathByKey for %s error, status = %d",
+          operProgress->curFileName, status);
+        return NULL;
+    }
+
+    if (operProgress->flag == 0) {
+	printf (
+          "%-lld/%-lld - %5.2f%% of files done   ", 
+	  operProgress->totalNumFilesDone, operProgress->totalNumFiles, 
+	  (float) operProgress->totalNumFilesDone/operProgress->totalNumFiles *
+	  100.0);
+	printf ("%-.3f/%-.3f MB - %5.2f%% of file sizes done\n",
+	  (float) operProgress->totalFileSizeDone / 1048600.0,
+	  (float) operProgress->totalFileSize / 1048600.0,
+	  (float) operProgress->totalFileSizeDone/operProgress->totalFileSize *
+	  100.0);
+        printf ("Processing %s - %-.3f MB\n", myFile,
+         (float) operProgress->curFileSize / 1048600.0);
+    } else {
+        printf ("%s - %-.3f/%-.3f MB - %5.2f%% done\n", myFile,
+         (float) operProgress->curFileSizeDone / 1048600.0,
+         (float) operProgress->curFileSize / 1048600.0,
+         (float) operProgress->curFileSizeDone/operProgress->curFileSize *
+         100.0);
+    }
+    return NULL;
+}
+

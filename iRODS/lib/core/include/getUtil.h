@@ -22,7 +22,7 @@ rodsLong_t srcSize, uint dataMode, rodsEnv *myRodsEnv,
 rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp);
 
 int
-initCondForGet (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
+initCondForGet (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart);
 
 int

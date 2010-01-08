@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "QhfkKN:p:rR:TvVX:";
+    optStr = "QhfkKN:p:PrR:TvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
     if (status) {
@@ -75,6 +75,10 @@ main(int argc, char **argv) {
         exit (7);
     }
 
+    if (myRodsArgs.progressFlag == True) {
+        gGuiProgressCB = (irodsGuiProgressCallbak) iCommandProgStat;
+    }
+
     status = cpUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
     rcDisconnect(conn);
@@ -93,7 +97,7 @@ usage ()
    int i;
 
    char *msgs[]={
-"Usage : icp [-fkKQrTvV] [-N numThreads] [-p physicalPath] [-R resource]", 
+"Usage : icp [-fkKPQrTvV] [-N numThreads] [-p physicalPath] [-R resource]", 
 "-X restartFile] srcDataObj|srcColl ...  destDataObj|destColl",
 "icp copies an irods data-object (file) or collection (directory) to another",
 "data-object or collection.",  
@@ -127,6 +131,7 @@ usage ()
 "           is used to determine the best value.",
 "-p physicalPath  specifies the path on the storage resource on which to store.",
 "       Normally, you let the irods system automatically determine this.",
+" -P  output the progress of the copy.",
 "-R resource - specifies the resource to store to. This can also be specified",
 "       in your environment or via a rule set up by the administrator.",
 "-r recursive - copy the whole subtree",

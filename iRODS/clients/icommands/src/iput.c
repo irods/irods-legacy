@@ -70,6 +70,10 @@ main(int argc, char **argv) {
         exit (7);
     }
 
+    if (myRodsArgs.progressFlag == True) {
+        gGuiProgressCB = (irodsGuiProgressCallbak) iCommandProgStat;
+    }
+
     status = putUtil (&conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
     rcDisconnect(conn);

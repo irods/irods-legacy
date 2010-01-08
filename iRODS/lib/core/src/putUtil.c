@@ -34,6 +34,24 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
         return (status);
     }
 
+    /* initialize the progress struct */
+    if (gGuiProgressCB != NULL) {
+        bzero (&conn->operProgress, sizeof (conn->operProgress));
+        for (i = 0; i < rodsPathInp->numSrc; i++) {
+            targPath = &rodsPathInp->targPath[i];
+            if (targPath->objType == DATA_OBJ_T) {
+                conn->operProgress.totalNumFiles++;
+                if (rodsPathInp->srcPath[i].size > 0) {
+                    conn->operProgress.totalFileSize +=
+                      rodsPathInp->srcPath[i].size;
+                }
+            } else {
+                getDirSizeForProgStat (rodsPathInp->srcPath[i].outPath,
+                  &conn->operProgress);
+            }
+        }
+    }
+
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	targPath = &rodsPathInp->targPath[i];
 
@@ -97,6 +115,14 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 	(void) gettimeofday(&startTime, (struct timezone *)0);
     }
 
+    if (gGuiProgressCB != NULL) {
+        rstrcpy (conn->operProgress.curFileName, srcPath, MAX_NAME_LEN);
+        conn->operProgress.curFileSize = srcSize;
+        conn->operProgress.curFileSizeDone = 0;
+        conn->operProgress.flag = 0;
+        gGuiProgressCB (&conn->operProgress);
+    }
+
     /* have to take care of checksum here since it needs to be recalcuated */ 
     if (rodsArgs->checksum == True) {
         status = rcChksumLocFile (srcPath, REG_CHKSUM_KW,
@@ -123,10 +149,16 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 
     status = rcDataObjPut (conn, dataObjOprInp, srcPath);
 
-    if (status >= 0 && rodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-	printTiming (conn, dataObjOprInp->objPath, srcSize, srcPath,
-	 &startTime, &endTime);
+    if (status >= 0) {
+        if (rodsArgs->verbose == True) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+	    printTiming (conn, dataObjOprInp->objPath, srcSize, srcPath,
+	     &startTime, &endTime);
+	}
+        if (gGuiProgressCB != NULL) {
+            conn->operProgress.totalNumFilesDone++;
+            conn->operProgress.totalFileSizeDone += srcSize;
+        }
     }
 
     return (status);

@@ -27,17 +27,37 @@ rodsPathInp_t *rodsPathInp)
     initCondForRepl (myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart);
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
-	if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T) {
-	    getRodsObjType (conn, &rodsPathInp->srcPath[i]);
-	    if (rodsPathInp->srcPath[i].objState == NOT_EXIST_ST) {
+        if (rodsPathInp->srcPath[i].objType == UNKNOWN_OBJ_T) {
+            getRodsObjType (conn, &rodsPathInp->srcPath[i]);
+            if (rodsPathInp->srcPath[i].objState == NOT_EXIST_ST) {
                 rodsLog (LOG_ERROR,
                   "replUtil: srcPath %s does not exist",
                   rodsPathInp->srcPath[i].outPath);
-		savedStatus = USER_INPUT_PATH_ERR;
-		continue;
-	    }
-	}
+                savedStatus = USER_INPUT_PATH_ERR;
+                continue;
+            }
+        }
+    }
 
+    /* initialize the progress struct */
+    if (gGuiProgressCB != NULL) {
+        bzero (&conn->operProgress, sizeof (conn->operProgress));
+        for (i = 0; i < rodsPathInp->numSrc; i++) {
+            if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
+                conn->operProgress.totalNumFiles++;
+                if (rodsPathInp->srcPath[i].size > 0) {
+                    conn->operProgress.totalFileSize +=
+                      rodsPathInp->srcPath[i].size;
+		    dataObjInp.dataSize = rodsPathInp->srcPath[i].size;
+                }
+            } else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+                getCollSizeForProgStat (conn, rodsPathInp->srcPath[i].outPath,
+                  &conn->operProgress);
+            }
+        }
+    }
+
+    for (i = 0; i < rodsPathInp->numSrc; i++) {
 	if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
 	    status = replDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	     myRodsEnv, myRodsArgs, &dataObjInp);
@@ -92,14 +112,28 @@ dataObjInp_t *dataObjInp)
         (void) gettimeofday(&startTime, (struct timezone *)0);
     }
 
+    if (gGuiProgressCB != NULL) {
+        rstrcpy (conn->operProgress.curFileName, srcPath, MAX_NAME_LEN);
+        conn->operProgress.curFileSize = dataObjInp->dataSize;
+        conn->operProgress.curFileSizeDone = 0;
+        conn->operProgress.flag = 0;
+        gGuiProgressCB (&conn->operProgress);
+    }
+
     rstrcpy (dataObjInp->objPath, srcPath, MAX_NAME_LEN);
 
     status = rcDataObjRepl (conn, dataObjInp);
 
-    if (status >= 0 && rodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, dataObjInp->objPath, conn->transStat.bytesWritten, 
-	  NULL, &startTime, &endTime);
+    if (status >= 0) {
+        if (rodsArgs->verbose == True) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTiming (conn, dataObjInp->objPath, 
+	      conn->transStat.bytesWritten, NULL, &startTime, &endTime);
+	}
+        if (gGuiProgressCB != NULL) {
+            conn->operProgress.totalNumFilesDone++;
+            conn->operProgress.totalFileSizeDone += dataObjInp->dataSize;
+        }
     }
 
     return (status);
@@ -272,6 +306,7 @@ rodsRestart_t *rodsRestart)
                 continue;
             }
 
+	    if (collEnt.dataSize > 0) dataObjInp->dataSize = collEnt.dataSize;
             status = replDataObjUtil (conn, srcChildPath,
              myRodsEnv, rodsArgs, dataObjInp);
 

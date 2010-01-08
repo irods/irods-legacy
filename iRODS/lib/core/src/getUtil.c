@@ -25,7 +25,7 @@ rodsPathInp_t *rodsPathInp)
 	return (USER__NULL_INPUT_ERR);
     }
 
-    initCondForGet (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
+    initCondForGet (myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
 
     status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, 1);
     if (status < 0) {
@@ -35,7 +35,8 @@ rodsPathInp_t *rodsPathInp)
     }
 
     /* initialize the progress struct */
-    if (myRodsArgs->progressFlag == True) {
+    if (gGuiProgressCB != NULL) {
+        bzero (&conn->operProgress, sizeof (conn->operProgress));
 	for (i = 0; i < rodsPathInp->numSrc; i++) {
 	    targPath = &rodsPathInp->targPath[i];
             if (targPath->objType == LOCAL_FILE_T) {
@@ -122,6 +123,13 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
         (void) gettimeofday(&startTime, (struct timezone *)0);
     }
 
+    if (gGuiProgressCB != NULL) {
+	rstrcpy (conn->operProgress.curFileName, srcPath, MAX_NAME_LEN);
+	conn->operProgress.curFileSize = srcSize;
+	conn->operProgress.curFileSizeDone = 0;
+	conn->operProgress.flag = 0;
+	gGuiProgressCB (&conn->operProgress); 
+    }
 
     rstrcpy (dataObjOprInp->objPath, srcPath, MAX_NAME_LEN);
     /* rcDataObjGet verifies dataSize if given */
@@ -144,13 +152,17 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
             printTiming (conn, dataObjOprInp->objPath, srcSize, targPath,
              &startTime, &endTime);
 	}
+        if (gGuiProgressCB != NULL) {
+	    conn->operProgress.totalNumFilesDone++;
+	    conn->operProgress.totalFileSizeDone += srcSize;
+	}
     }
 
     return (status);
 }
 
 int
-initCondForGet (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+initCondForGet (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 {
 #ifdef RBUDP_TRANSFER
@@ -240,10 +252,6 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
             rodsArgs->restartFileString);
             return (status);
         }
-    }
-
-    if (rodsArgs->progressFlag == True) {
-	bzero (&conn->operProgress, sizeof (conn->operProgress));
     }
 
     dataObjOprInp->openFlags = O_RDONLY;
