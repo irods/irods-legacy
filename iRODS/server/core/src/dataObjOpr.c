@@ -1594,6 +1594,24 @@ rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl)
 	rstrcpy (collCreateInp.collName, tmpPath, MAX_NAME_LEN);
         status = rsCollCreate (rsComm, &collCreateInp);
 
+	if (status == CAT_NAME_EXISTS_AS_DATAOBJ && isTrashPath (tmpPath)) {
+	    /* name conflict with a data object in the trash collection */
+	    dataObjCopyInp_t dataObjRenameInp;
+    	    memset (&dataObjRenameInp, 0, sizeof (dataObjRenameInp));
+
+    	    dataObjRenameInp.srcDataObjInp.oprType =
+      	    dataObjRenameInp.destDataObjInp.oprType = RENAME_DATA_OBJ;
+	    rstrcpy (dataObjRenameInp.srcDataObjInp.objPath, tmpPath,
+  	      MAX_NAME_LEN);
+	    rstrcpy (dataObjRenameInp.destDataObjInp.objPath, tmpPath, 
+	      MAX_NAME_LEN);
+	    appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
+
+ 	    status = rsDataObjRename (rsComm, &dataObjRenameInp);
+	    if (status >= 0) {
+		status = rsCollCreate (rsComm, &collCreateInp);
+	    }
+	}
         if (status < 0) {
             rodsLog (LOG_ERROR,
              "rsMkCollR: rsCollCreate failed for %s, status =%d",
