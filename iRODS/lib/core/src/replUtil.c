@@ -48,7 +48,6 @@ rodsPathInp_t *rodsPathInp)
                 if (rodsPathInp->srcPath[i].size > 0) {
                     conn->operProgress.totalFileSize +=
                       rodsPathInp->srcPath[i].size;
-		    dataObjInp.dataSize = rodsPathInp->srcPath[i].size;
                 }
             } else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
                 getCollSizeForProgStat (conn, rodsPathInp->srcPath[i].outPath,
@@ -60,7 +59,7 @@ rodsPathInp_t *rodsPathInp)
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
 	    status = replDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
-	     myRodsEnv, myRodsArgs, &dataObjInp);
+	     rodsPathInp->srcPath[i].size, myRodsEnv, myRodsArgs, &dataObjInp);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
             setStateForRestart (conn, &rodsRestart, &rodsPathInp->srcPath[i], 
 	      myRodsArgs);
@@ -95,7 +94,7 @@ rodsPathInp_t *rodsPathInp)
 }
 
 int
-replDataObjUtil (rcComm_t *conn, char *srcPath, 
+replDataObjUtil (rcComm_t *conn, char *srcPath, rodsLong_t srcSize,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjInp)
 {
@@ -114,7 +113,7 @@ dataObjInp_t *dataObjInp)
 
     if (gGuiProgressCB != NULL) {
         rstrcpy (conn->operProgress.curFileName, srcPath, MAX_NAME_LEN);
-        conn->operProgress.curFileSize = dataObjInp->dataSize;
+        conn->operProgress.curFileSize = srcSize;
         conn->operProgress.curFileSizeDone = 0;
         conn->operProgress.flag = 0;
         gGuiProgressCB (&conn->operProgress);
@@ -132,7 +131,7 @@ dataObjInp_t *dataObjInp)
 	}
         if (gGuiProgressCB != NULL) {
             conn->operProgress.totalNumFilesDone++;
-            conn->operProgress.totalFileSizeDone += dataObjInp->dataSize;
+            conn->operProgress.totalFileSizeDone += srcSize;
         }
     }
 
@@ -306,8 +305,7 @@ rodsRestart_t *rodsRestart)
                 continue;
             }
 
-	    if (collEnt.dataSize > 0) dataObjInp->dataSize = collEnt.dataSize;
-            status = replDataObjUtil (conn, srcChildPath,
+            status = replDataObjUtil (conn, srcChildPath, collEnt.dataSize,
              myRodsEnv, rodsArgs, dataObjInp);
 
             if (status == SYS_COPY_ALREADY_IN_RESC) {
