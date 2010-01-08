@@ -253,6 +253,10 @@ runCmd(0, "test_chl serverload 123");
 runCmd(0, "test_chl purgeload -1");
 runCmd(0, "test_chl serverdigest 456");
 runCmd(0, "test_chl purgedigest -1");
+
+# quota check
+runCmd(0, "test_chl checkquota $User2 $Resc");
+
 # clean up
 runCmd(0, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin rmuser $User2");

@@ -33,6 +33,9 @@ printNice(char *inArg, int minLen, char *Units) {
    char blanks[]="                                        ";
    len=strlen(inArg);
    nextComma = len % 3;
+   if (inArg[0]=='-') {
+      nextComma = (len-1) % 3;
+   }
    if (nextComma == 0) nextComma=3;
    n = 0;
    k = 0;
@@ -43,7 +46,9 @@ printNice(char *inArg, int minLen, char *Units) {
       if (firstComma==0) {
 	 firstPart[k++]=inArg[i];
       }
-      nextComma--;
+      if (inArg[i]!='-') {
+	 nextComma--;
+      }
       if (nextComma==0 && i<len-1) {
 	 niceString[n++]=',';
 	 nextComma=3;
@@ -424,12 +429,24 @@ void usage()
    char *msgs[]={
 "Usage: iquota [-uavVh] [UserName] [usage]", 
 " ", 
-"Show information on iRODS quotas (if any)", 
-"By default, information is displayed for the current iRODS user",
-"Options",
+"Show information on iRODS quotas (if any).", 
+"By default, information is displayed for the current iRODS user.",
+" ",
+"The 'over' values indicate whether the user or group is over quota",
+"or not and by how much; positive values are over-quota.",
+"The 'usage' information shows how much data is stored on each resource,",
+"when last determined.",
+" ",
+"Options:",
 "-a All users",
 "-u UserName  - for the specified user",
-"usage  - show usage information",
+"usage     - show usage information",
+" ",
+"Examples:",
+"iquota",
+"iquota -a",
+"iquota usage",
+"iqouta -a usage",
 ""};
    int i;
    for (i=0;;i++) {

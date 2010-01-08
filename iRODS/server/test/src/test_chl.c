@@ -383,6 +383,14 @@ int testRegDataObj(rsComm_t *rsComm, char *name,
  performance testing and tuning.  In this source file, you might also
  want to change rodsLogLevel(LOG_NOTICE) to rodsLogLevel(LOG_ERROR)
  and comment out rodsLogSqlReq(1);.
+
+name is the objPath (collection/dataObj)
+objPath = /newZone/home/rods/ws/f3"
+filePath is the physical path
+filePath = "/home/schroeder/iRODS/Vault/home/rods/ws/f3"
+
+Example:
+bin/test_chl regmulti 1000 /newZone/home/rods/ws2/f1 generic /tmp/vault/f1
  */
 int testRegDataMulti(rsComm_t *rsComm, char *count, 
 		     char *nameBase,  char *dataType, char *filePath) {
@@ -668,6 +676,16 @@ int testPurgeServerLoadDigest(rsComm_t *rsComm, char *option) {
    return(status);
 }
 
+int testCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
+   int status;
+
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlCheckQuota(rsComm, userName, rescName);
+
+   return(status);
+}
+
 rodsLong_t
 testCurrent(rsComm_t *rsComm) {
    rodsLong_t status;
@@ -892,6 +910,11 @@ main(int argc, char **argv) {
 
    if (strcmp(argv[1],"purgedigest")==0) {
       status = testPurgeServerLoadDigest(Comm, argv[2]);
+      didOne=1;
+   }
+
+   if (strcmp(argv[1],"checkquota")==0) {
+      status = testCheckQuota(Comm, argv[2], argv[3]);
       didOne=1;
    }
 

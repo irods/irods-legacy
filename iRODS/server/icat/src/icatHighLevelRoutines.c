@@ -6848,9 +6848,12 @@ int chlPurgeServerLoadDigest(rsComm_t *rsComm, char *secondsAgo) {
 }
 
 /*
- Set the over-quota flags (if any) using the limits and 
+ Set the over_quota values (if any) using the limits and 
  and the current usage; handling the various types: per-user per-resource,
  per-user total-usage, group per-resource, and group-total.
+
+ The over_quota column is positive if over_quota and the negative value
+ indicates how much space is left before reaching the quota.  
  */
 int setOverQuota(rsComm_t *rsComm) {
    int status;
@@ -6868,25 +6871,28 @@ int setOverQuota(rsComm_t *rsComm) {
 /* //r_quota_usage.resc_id != 0  ? needed */
 
 
-   /* Clear out the old over-quota flags, if any */
+   /* Initialize over_quota values (if any) to the no-usage value
+      which is the negative of the limit.  */
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 1");
    status =  cmlExecuteNoAnswerSql(
-      "update r_quota_main set quota_over = 0", &icss);
+      "update r_quota_main set quota_over = -quota_limit", &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(0); /* no quotas, done */
    if (status) return(status);
 
-   /* Set the over-quota flags for per-resource, if any */
+   /* Set the over_quota values for per-resource, if any */
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 2");
    status =  cmlExecuteNoAnswerSql(
-      "update r_quota_main set quota_over = quota_usage - quota_limit from r_quota_usage where quota_usage > quota_limit and r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
+      "update r_quota_main set quota_over = quota_usage - quota_limit from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
       &icss);
-   if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* no over-quota */
+   if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* none */
    if (status) return(status);
 
-   /* Set the over-quota flags for irods-total, if any */
+   /* Set the over_quota values for irods-total, if any, and only if
+      the this over_quota value is higher than the previous. */
+
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 3");
    status =  cmlExecuteNoAnswerSql(
-      "update r_quota_main set quota_over = (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit from r_quota_usage where  (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit > 0",
+      "update r_quota_main set quota_over = (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit from r_quota_usage where  (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit > quota_over",
       &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
    if (status) return(status);
@@ -6911,8 +6917,9 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
       if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 5");
-      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
+      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over",
 				      &icss);
+      if (status2 == CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
       if (status2) return(status2);
    }
 /*   printf("group rows=%d\n",rowsFound); */
@@ -6939,8 +6946,9 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
       if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 7");
-      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > 0",
+      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over",
 				      &icss);
+      if (status2 == CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
       if (status2) return(status2);
    }
 /* //  printf("group rows=%d\n",rowsFound); */
@@ -6948,7 +6956,7 @@ int setOverQuota(rsComm_t *rsComm) {
    if (status) return(status);
 
 /* To simplify the query, if either of the above group operations
-   found some over-quota, will probably want to update and insert rows
+   found some over_quota, will probably want to update and insert rows
    for each user into r_quota_main.  To-be-done. */
 
    return(status);
@@ -6982,7 +6990,7 @@ int chlCalcUsage(rsComm_t *rsComm) {
       return(status);
    }
 
-   /* Set the over-quota flags where appropriate */
+   /* Set the over_quota flags where appropriate */
    status = setOverQuota(rsComm);
    if (status) {
       _rollback("chlCalcUsage");
@@ -7091,13 +7099,75 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
       }
    }
 
-   /* Reset the over-quota flags based on previous usage info */
+#if 0
+   No longer do this automatically from this function.  Let the
+   admin run the 'iadmin cu' once, after setting all the quotas.
+
+   /* Reset the over_quota flags based on previous usage info */
    status = setOverQuota(rsComm);
    if (status) {
       _rollback("chlCalcUsage");
       return(status);
    }
+#endif
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
+   return(status);
+}
+
+
+int 
+chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
+/* 
+ Check on a user's quota status, returning the most-over or
+ nearest-over value.
+
+ A single query is done which gets the four possible types of quotas
+ for this user on this resource (and ordered so the first row is the
+ result).  The types of quotas are: user per-resource, user global,
+ group per-resource, and group global.
+ */
+   int status;
+   int statementNum;
+
+   char mySQL1[]="select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
+
+   if (logSQL) rodsLog(LOG_SQL, "chlCheckQuota SQL 1");
+   cllBindVars[cllBindVarCount++]=userName;
+   cllBindVars[cllBindVarCount++]=userName;
+   cllBindVars[cllBindVarCount++]=rescName;
+
+   status = cmlGetFirstRowFromSql(mySQL1, &statementNum, 
+				  0, &icss);
+   
+   if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+      rodsLog(LOG_NOTICE,
+	      "chlCheckQuota - CAT_SUCCESS_BUT_WITH_NO_INFO");
+      return(0);
+   }
+
+   if (status == CAT_NO_ROWS_FOUND) {
+      rodsLog(LOG_NOTICE,
+	      "chlCheckQuota - CAT_NO_ROWS_FOUND");
+      return(0);
+   }
+
+   if (status) return(status);
+
+#if 0
+   for (i=0;i<4;i++) {
+      rodsLog(LOG_NOTICE, "checkvalue: %s", 
+	      icss.stmtPtr[statementNum]->resultValue[i]);
+   }
+#endif
+
+/* for debug: */
+   rodsLog(LOG_NOTICE, "checkQuota: inUser:%s inResc:%s return:%s", 
+	   userName, rescName, 
+	   icss.stmtPtr[statementNum]->resultValue[3]); /* quota_over column */
+
+
+   cmlFreeStatement(statementNum, &icss); /* only need the one row */
+
    return(status);
 }
