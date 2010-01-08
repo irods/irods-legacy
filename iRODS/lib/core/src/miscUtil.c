@@ -1568,14 +1568,15 @@ char *outZoneType)
     return 0;
 }
 
-/* getCollSize - Calculate the totalNumFiles and totalFileSize and
+/* getCollSizeForProgStat - Calculate the totalNumFiles and totalFileSize and
  * put it in the operProgress struct.
  * Note that operProgress->totalNumFiles and operProgress->totalFileSize  
  * needs to be initialized since it can be a recursive operation and
  * cannot be initialized in this routine.
  */
 int
-getCollSize (rcComm_t *conn, char *srcColl, operProgress_t *operProgress)
+getCollSizeForProgStat (rcComm_t *conn, char *srcColl, 
+operProgress_t *operProgress)
 {
     int status = 0;
     collHandle_t collHandle;
@@ -1586,7 +1587,7 @@ getCollSize (rcComm_t *conn, char *srcColl, operProgress_t *operProgress)
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "getCollSize: rclOpenCollection of %s error. status = %d",
+          "getCollSizeForProgStat: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }
@@ -1598,7 +1599,8 @@ getCollSize (rcComm_t *conn, char *srcColl, operProgress_t *operProgress)
         } else if (collEnt.objType == COLL_OBJ_T) {
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
                 /* the child is a spec coll. need to drill down */
-                status = getCollSize (conn, collEnt.collName, operProgress);
+                status = getCollSizeForProgStat (conn, collEnt.collName, 
+		  operProgress);
                 if (status < 0 && status != CAT_NO_ROWS_FOUND) return (status);
             }
 	}
@@ -1609,14 +1611,14 @@ getCollSize (rcComm_t *conn, char *srcColl, operProgress_t *operProgress)
         return status;
 }
 
-/* getDirSize - Calculate the totalNumFiles and totalFileSize and
+/* getDirSizeForProgStat - Calculate the totalNumFiles and totalFileSize and
  * put it in the operProgress struct.
  * Note that operProgress->totalNumFiles and operProgress->totalFileSize
  * needs to be initialized since it can be a recursive operation and
  * cannot be initialized in this routine.
  */
 int
-getDirSize (char *srcDir, operProgress_t *operProgress)
+getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress)
 {
     int status = 0;
     DIR *dirPtr;
@@ -1631,7 +1633,7 @@ getDirSize (char *srcDir, operProgress_t *operProgress)
     dirPtr = opendir (srcDir);
     if (dirPtr == NULL) {
         rodsLog (LOG_ERROR,
-        "getDirSize: opendir local dir error for %s, errno = %d\n",
+        "getDirSizeForProgStat: opendir local dir error for %s, errno = %d\n",
          srcDir, errno);
         return (USER_INPUT_PATH_ERR);
     }
@@ -1652,7 +1654,7 @@ getDirSize (char *srcDir, operProgress_t *operProgress)
 
         if (status != 0) {
             rodsLog (LOG_ERROR,
-              "getDirSize: stat error for %s, errno = %d\n",
+              "getDirSizeForProgStat: stat error for %s, errno = %d\n",
               srcChildPath, errno);
             closedir (dirPtr);
             return (USER_INPUT_PATH_ERR);
@@ -1662,7 +1664,7 @@ getDirSize (char *srcDir, operProgress_t *operProgress)
             operProgress->totalNumFiles++;
             operProgress->totalFileSize += statbuf.st_size;
         } else if (statbuf.st_mode & S_IFDIR) {
-            status = getDirSize (srcChildPath, operProgress);
+            status = getDirSizeForProgStat (srcChildPath, operProgress);
             if (status < 0) return (status);
 
 	}

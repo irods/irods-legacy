@@ -188,6 +188,7 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
       case 'P':
          rodsArgs->logicalPath=True;
          rodsArgs->logicalPathString=optarg;
+         rodsArgs->progressFlag = True;
          break;
       case 'q':
          rodsArgs->query=True;

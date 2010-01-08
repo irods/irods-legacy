@@ -25,13 +25,30 @@ rodsPathInp_t *rodsPathInp)
 	return (USER__NULL_INPUT_ERR);
     }
 
-    initCondForGet (myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
+    initCondForGet (conn, myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
 
     status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, 1);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "getUtil: resolveRodsTarget");
         return (status);
+    }
+
+    /* initialize the progress struct */
+    if (myRodsArgs->progressFlag == True) {
+	for (i = 0; i < rodsPathInp->numSrc; i++) {
+	    targPath = &rodsPathInp->targPath[i];
+            if (targPath->objType == LOCAL_FILE_T) {
+                conn->operProgress.totalNumFiles++;
+		if (rodsPathInp->srcPath[i].size > 0) {
+                    conn->operProgress.totalFileSize += 
+		      rodsPathInp->srcPath[i].size;
+		}
+	    } else {
+		getCollSizeForProgStat (conn, rodsPathInp->srcPath[i].outPath,
+		  &conn->operProgress);
+	    }
+	}
     }
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
@@ -133,7 +150,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 }
 
 int
-initCondForGet (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
+initCondForGet (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
 dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 {
 #ifdef RBUDP_TRANSFER
@@ -223,6 +240,10 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
             rodsArgs->restartFileString);
             return (status);
         }
+    }
+
+    if (rodsArgs->progressFlag == True) {
+	bzero (&conn->operProgress, sizeof (conn->operProgress));
     }
 
     dataObjOprInp->openFlags = O_RDONLY;

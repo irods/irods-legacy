@@ -19,6 +19,7 @@
 #include "getRodsEnv.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
+#include "irodsGuiProgressCallback.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -67,6 +68,7 @@ typedef struct {
     procState_t agentState;
     procState_t clientState;
     procState_t reconnThrState;
+    operProgress_t operProgress;
 } rcComm_t;
 
 typedef struct {

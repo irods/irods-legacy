@@ -58,6 +58,7 @@ typedef struct {
    char *physicalPathString;
    int logicalPath;
    char *logicalPathString;
+   int progressFlag;
    int option;
    char *optionString;
    int prompt;

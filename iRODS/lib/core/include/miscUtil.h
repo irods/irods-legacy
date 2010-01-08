@@ -217,9 +217,10 @@ int
 getZoneType (rcComm_t *conn, char *icatZone, char *inZoneName, 
 char *outZoneType);
 int
-getCollSize (rcComm_t *conn, char *srcColl, operProgress_t *operProgress);
+getCollSizeForProgStat (rcComm_t *conn, char *srcColl, 
+operProgress_t *operProgress);
 int
-getDirSize (char *srcDir, operProgress_t *operProgress);
+getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress);
 #ifdef  __cplusplus
 }
 #endif
