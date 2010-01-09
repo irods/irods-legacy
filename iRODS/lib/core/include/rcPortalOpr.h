@@ -22,6 +22,8 @@
 extern "C" {
 #endif
 
+#define MAX_PROGRESS_CNT	8
+
 typedef struct RcPortalTransferInp {
     rcComm_t *conn;
     int destFd;

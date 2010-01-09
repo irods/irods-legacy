@@ -1680,7 +1680,10 @@ iCommandProgStat (operProgress_t *operProgress)
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
     int status;
 
-    if ((status = splitPathByKey (operProgress->curFileName, 
+    if (strchr (operProgress->curFileName, '/') == NULL) {
+	/* relative path */
+	rstrcpy (myFile, operProgress->curFileName, MAX_NAME_LEN);
+    } else if ((status = splitPathByKey (operProgress->curFileName, 
       myDir, myFile, '/')) < 0) {
         rodsLogError (LOG_NOTICE, status,
           "iCommandProgStat: splitPathByKey for %s error, status = %d",

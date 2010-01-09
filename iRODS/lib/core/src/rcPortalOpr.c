@@ -5,6 +5,7 @@
 #include "dataObjRead.h"
 #include "dataObjOpr.h"
 #include "rodsLog.h"
+#include "rcGlobalExtern.h"
 #ifdef PARA_OPR
 #include <pthread.h>
 #endif
@@ -350,6 +351,7 @@ rodsLong_t dataSize)
     int bytesWritten;
     rodsLong_t totalWritten = 0;
     int bytesRead;
+    int progressCnt = 0;
 
 #ifdef windows_platform
 	in_fd = iRODSNt_bopen(locFilePath, O_RDONLY,0);
@@ -367,6 +369,8 @@ rodsLong_t dataSize)
     dataObjWriteInpBBuf.buf = malloc (TRANS_BUF_SZ);
     dataObjWriteInpBBuf.len = 0;
     dataObjWriteInp.l1descInx = l1descInx;
+
+    if (gGuiProgressCB != NULL) conn->operProgress.flag = 1;
 
     while ((dataObjWriteInpBBuf.len =
       myRead (in_fd, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ, FILE_DESC_TYPE,
@@ -386,6 +390,16 @@ rodsLong_t dataSize)
         } else {
             totalWritten += bytesWritten;
 	    conn->transStat.bytesWritten = totalWritten;
+            if (gGuiProgressCB != NULL) {
+                if (progressCnt >= (MAX_PROGRESS_CNT - 1)) {
+                    conn->operProgress.curFileSizeDone +=
+                    ((MAX_PROGRESS_CNT - 1) * TRANS_BUF_SZ + bytesWritten);
+                    gGuiProgressCB (&conn->operProgress);
+                    progressCnt = 0;
+                } else {
+                    progressCnt ++;
+                }
+            }
 	}
     }
 
@@ -393,6 +407,10 @@ rodsLong_t dataSize)
     close (in_fd);
 
     if (dataSize <= 0 || totalWritten == dataSize) {
+        if (gGuiProgressCB != NULL) {
+            conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
+            gGuiProgressCB (&conn->operProgress);
+        }
         return (0);
     } else {
         rodsLog (LOG_ERROR,
@@ -458,6 +476,7 @@ rodsLong_t dataSize)
     openedDataObjInp_t dataObjReadInp;
     int bytesWritten, bytesRead;
     rodsLong_t totalWritten = 0;
+    int progressCnt = 0;
 
     if (strcmp (locFilePath, STDOUT_FILE_NAME) == 0) {
 	/* streaming to stdout */
@@ -481,6 +500,8 @@ rodsLong_t dataSize)
     dataObjReadInpBBuf.buf = malloc (TRANS_BUF_SZ);
     dataObjReadInpBBuf.len = dataObjReadInp.len = TRANS_BUF_SZ;
     dataObjReadInp.l1descInx = l1descInx;
+
+    if (gGuiProgressCB != NULL) conn->operProgress.flag = 1;
 
     while ((bytesRead = rcDataObjRead (conn, &dataObjReadInp, 
       &dataObjReadInpBBuf)) > 0) {
@@ -506,6 +527,16 @@ rodsLong_t dataSize)
         } else {
             totalWritten += bytesWritten;
 	    conn->transStat.bytesWritten = totalWritten;
+	    if (gGuiProgressCB != NULL) {
+		if (progressCnt >= (MAX_PROGRESS_CNT - 1)) {
+		    conn->operProgress.curFileSizeDone += 
+		    ((MAX_PROGRESS_CNT - 1) * TRANS_BUF_SZ + bytesWritten);
+		    gGuiProgressCB (&conn->operProgress);
+		    progressCnt = 0;
+		} else {
+		    progressCnt ++;
+		}
+	    }
         }
     }
 
@@ -514,6 +545,10 @@ rodsLong_t dataSize)
         close (out_fd);
 
     if (dataSize <= 0 || totalWritten == dataSize) {
+        if (gGuiProgressCB != NULL) {
+            conn->operProgress.curFileSizeDone = conn->operProgress.curFileSize;
+	    gGuiProgressCB (&conn->operProgress);
+	}
         return (0);
     } else {
         rodsLog (LOG_ERROR,
