@@ -215,6 +215,8 @@ char *locFilePath, rodsLong_t dataSize)
 	    return (retVal);
         } else {
 	    if (dataSize <= 0 || totalWritten == dataSize) { 
+                if (gGuiProgressCB != NULL) 
+		    gGuiProgressCB (&conn->operProgress);
                 return (0);
             } else {
                 rodsLog (LOG_ERROR,
@@ -253,6 +255,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     void *buf;
     transStat_t *myTransStat;
     rodsLong_t curOffset = 0;
+    rcComm_t *conn;
 
 #ifdef PARA_DEBUG
     printf ("rcPartialDataPut: thread %d at start\n", myInput->threadNum);
@@ -271,6 +274,12 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
     buf = malloc (TRANS_BUF_SZ);
 
     myInput->bytesWritten = 0;
+
+    if (gGuiProgressCB != NULL) {
+        conn = myInput->conn;
+        conn->operProgress.flag = 1;
+    }
+
     while (myInput->status >= 0) {
 	rodsLong_t toPut;
 
@@ -334,6 +343,11 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 	myInput->bytesWritten += myHeader.length;
 	/* should lock this. But window browser is the only one using it */ 
 	myTransStat->bytesWritten += myHeader.length;
+        /* should lock this. but it is info only */
+        if (gGuiProgressCB != NULL) {
+            conn->operProgress.curFileSizeDone += myHeader.length;
+            if (myInput->threadNum == 0) gGuiProgressCB (&conn->operProgress);
+        }
     }
 
     free (buf);
@@ -675,6 +689,8 @@ char *locFilePath, rodsLong_t dataSize)
             return (retVal);
         } else {
             if (dataSize <= 0 || totalWritten == dataSize) {
+                if (gGuiProgressCB != NULL)
+                    gGuiProgressCB (&conn->operProgress);
                 return (0);
             } else {
                 rodsLog (LOG_ERROR,
@@ -698,6 +714,7 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     void *buf;
     transStat_t *myTransStat;
     rodsLong_t curOffset = 0;
+    rcComm_t *conn;
 
 #ifdef PARA_DEBUG
     printf ("rcPartialDataGet: thread %d at start\n", myInput->threadNum);
@@ -716,6 +733,12 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
     buf = malloc (TRANS_BUF_SZ);
 
     myInput->bytesWritten = 0;
+
+    if (gGuiProgressCB != NULL) {
+	conn = myInput->conn;
+	conn->operProgress.flag = 1;
+    }
+
     while (myInput->status >= 0) {
         rodsLong_t toGet;
 
@@ -778,6 +801,11 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
         myInput->bytesWritten += myHeader.length;
         /* should lock this. But window browser is the only one using it */
         myTransStat->bytesWritten += myHeader.length;
+	/* should lock this. but it is info only */
+	if (gGuiProgressCB != NULL) {
+	    conn->operProgress.curFileSizeDone += myHeader.length;
+	    if (myInput->threadNum == 0) gGuiProgressCB (&conn->operProgress);
+	}
     }
 
     free (buf);

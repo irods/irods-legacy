@@ -1704,12 +1704,15 @@ iCommandProgStat (operProgress_t *operProgress)
 	  100.0);
         printf ("Processing %s - %-.3f MB\n", myFile,
          (float) operProgress->curFileSize / 1048600.0);
-    } else {
+    } else if (operProgress->flag == 1) {
         printf ("%s - %-.3f/%-.3f MB - %5.2f%% done\n", myFile,
          (float) operProgress->curFileSizeDone / 1048600.0,
          (float) operProgress->curFileSize / 1048600.0,
          (float) operProgress->curFileSizeDone/operProgress->curFileSize *
          100.0);
+	/* done. don't print again */
+	if (operProgress->curFileSizeDone == operProgress->curFileSize)
+	    operProgress->flag == 2;
     }
     return NULL;
 }
