@@ -1711,8 +1711,9 @@ iCommandProgStat (operProgress_t *operProgress)
          (float) operProgress->curFileSizeDone/operProgress->curFileSize *
          100.0);
 	/* done. don't print again */
-	if (operProgress->curFileSizeDone == operProgress->curFileSize)
-	    operProgress->flag == 2;
+	if (operProgress->curFileSizeDone == operProgress->curFileSize) {
+	    operProgress->flag = 2;
+	}
     }
     return NULL;
 }
