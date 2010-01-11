@@ -2391,6 +2391,7 @@ addAVUMetadataFromKVPairs (rsComm_t *rsComm, char *objName, char *inObjType,
   char  objType[10];
   modAVUMetadataInp_t modAVUMetadataInp;
 
+  bzero (&modAVUMetadataInp, sizeof (modAVUMetadataInp));
   if (strcmp(inObjType,"-1")) {
     strcpy(objType,inObjType);
   }
