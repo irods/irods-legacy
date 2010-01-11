@@ -1,10 +1,12 @@
-Jargon 2.2.1 Release Notes
+Jargon 2.X Release Notes
+
+** work in progress, current version is 2.2.1 ***
 
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 01/08/2010
-Release Version: 2.2.1
+Date: 01/11/2010
+Release Version: 2.X
 
 ================================================================================================
 Requirements
@@ -23,116 +25,7 @@ libraries
 ================================================================================================
 Features and Changes
 
-This release is a bug-fix release to bring Jargon up-to-date.  Jargon 2.2.1 will incorporate any outstanding
-patches that were not committed for the 2.2.0 release, as well as new issues identified in Jargon 2.2.0
 
-------------
-* Upgrade to ANT build
-  * Greater parameterization and incorporation of a build.properties control file
-  * Clarification of generated targets, moving towards a Maven-defined standard project repository
-  * No longer generate Jargon jar files into lib
-  * Allow additions of .jar files in lib to be dynamically incorporated into run and compile tasks
-  * Moved manifest files out of lib
-  * Moved test code out of Jargon.jar, into it's own Jargon-test.jar file
-  * Added a JUnit task
-
--------------
-Add of JUnit testing support.
-
-This is being used for internal development, with the intent to make these facilities generally available.
-Consider the JUnit testing to be experimental.
-
--------------
-Testing and patches for  Bug 24 -  Inconsistent return of resource on IRODSFile
-*return physical resource for IRODSFile.getResource() when it is a File
-
--------------
-Testing and patches for  Bug 31 -  Create IRODS file by URI and do put - null resource causes -78000 IRODS error
-*created test cases to capture bug
-
--------------
-Testing and patches for  Bug 32 -   copyTo when dest file is from URI results in -78000 resource not found
-*created test cases to capture bug
-
--------------
-Testing and patches for Bug 29 - problem with Jargon physically deleting a file
-
---------------
-Testing and fix for Bug 34  -  resource not found when doing irodsFileSystem.createTarFile
-
---------------
-Added IRODSFile.getAllResources() which will return all resources for an IRODS File
-for feature request:  Bug 35 -  add getResources() method
-
---------------
-Removed static IRODSFileSystem in IRODSAdmin and adjusted constructors, removed static methods in
-Domain, User, Resource.  This is an API change, but seemed unavoidable.
-
-for feature request:  Bug 30 -  query a resource list for a user shows all resources user has files in
-
---------------
-Testing and fix for Bug 36 -  resource added with icommand does not show up in Jargon query
-
-Added new metadata to query resource name by collection, IRODSMetaDataSet.COLL_RESOURCE_NAME,
-see testQueryMetaDataSelectArray() in GeneralFileSystem for usage example.
-
---------------
-Testing and fix for Bug 33 -  GSI Support in Jargon 
-Send correct USER_DN metadata query value, which changed in 2.2, with backward compatability for pre irods2.2
-
--------------
-Testing and fix for Bug 40 -  IRODSCommands.fileRead() with length of 0 causes null message from irods
-
--------------
-Testing and fix for Bug 26 -  Jargon uses int for file length
-
--------------
-Testing and fix for Bug 37 -  Add AVU allows more than 3 fields 
-
--------------
-Testing and fix (interem) for  Bug 41 -  Exec rule with = sign causes IllegalArgumentException
-Rule processing will be clarifed in upcoming versions, this fixes the specific = sign issue.  This patch also addresses
-Bug 27 -  In IRODSFileSystem, rule execution method always returns a String
-
--------------
-Testing and fixes for  Bug 27 -  In IRODSFileSystem, rule execution method always returns a String
-
-Corrected response to CL_PUT_ACTION and CL_GET_ACTION, which was being invoked even when a client request was not being returned.
-Adding new methods in IRODSFile and Rule to allow rules to be invoked with the rule as a String, as opposed to an InputStream.  Added a method
-to return the rule invocation as a Map<String, String> as well as a Map<String, Object> based on user requests.
-
-Also note that new methods were added to IRODSFileSytem to execute rules with the rule text in a string parameter, versus the former InputStream.
-
--------------
-Additional tests developed for 2.1 through 2.3 compatibility testing, and for other reported issues
-
--------------
-Testing and fix for Bug 46 - Querying multiple metadata values returns no result
-
--------------
-Feature request  Bug 49 -  -R option to specify resource on a get  (edit)  
-Added a new method to IRODSFile to provide the same functionality as an iget -R option, allowing you to specify the particular resource to 'get' the file from 	
-
-public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
-
--------------
-Tests for  Bug 45 -  SYS_UNMATCHED_API_NUM (-12000) when attempting to get a file
-
--------------
-Test and Patch for  Bug 48 -  NPE on Delete
-
--------------
-Test and patch for  Bug 50 -  forced delete on directory does not work, moves files to trash
-
--------------
-Added tests for irods User class, fixed several failing methods in User
-
--------------
-Added tests for IRODSAdmin class, fixed failing methods
-
-
-A large number of 'small' fixes and cleanups
-	
 ================================================================================================
 Outstanding Issues
 
