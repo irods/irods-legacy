@@ -82,7 +82,7 @@ class IRODSCommands {
 	 * A positive debug value turns on debugging. Higher values turn on more,
 	 * maybe.
 	 */
-	private static int DEBUG = 0;
+	public static int DEBUG = 0;
 	private boolean extraDebug = false;
 	static {
 		// Set the debug, default zero.
@@ -99,16 +99,16 @@ class IRODSCommands {
 	 * Approximate maximum number of bytes transfered by each thread during a
 	 * parallel transfer.
 	 */
-	static final int TRANSFER_THREAD_SIZE = 6000000;
+	public static final int TRANSFER_THREAD_SIZE = 6000000;
 
-	static final int SYS_CLI_TO_SVR_COLL_STAT_REPLY = 99999997;
-	static final int SYS_CLI_TO_SVR_COLL_STAT_SIZE = 10;
+	public static final int SYS_CLI_TO_SVR_COLL_STAT_REPLY = 99999997;
+	public static final int SYS_CLI_TO_SVR_COLL_STAT_SIZE = 10;
 
 	/**
 	 * Maximum threads to open for a parallel transfer. More than this usually
 	 * won't help, might even be slower.
 	 */
-	static final int MAX_THREAD_NUMBER = 16;
+	public static final int MAX_THREAD_NUMBER = 16;
 
 	/**
 	 * 16 bit char
@@ -133,337 +133,337 @@ class IRODSCommands {
 	/**
 	 * Size of the socket send buffer
 	 */
-	static int OUTPUT_BUFFER_LENGTH = GeneralFileSystem.getWriteBufferSize();
+	public static final int OUTPUT_BUFFER_LENGTH = GeneralFileSystem.getWriteBufferSize();
 
 	/**
 	 * 4 bytes at the front of the header, outside XML
 	 */
-	static final int HEADER_INT_LENGTH = 4;
+	public static final int HEADER_INT_LENGTH = 4;
 
 	/**
 	 * Maximum password length. Used in challenge response.
 	 */
-	static final int MAX_PASSWORD_LENGTH = 50;
+	public static final int MAX_PASSWORD_LENGTH = 50;
 	/**
 	 * Standard challenge length. Used in challenge response.
 	 */
-	static final int CHALLENGE_LENGTH = 64;
+	public static final int CHALLENGE_LENGTH = 64;
 
 	/**
 	 * Max number of SQL attributes a query can return?
 	 */
-	static final int MAX_SQL_ATTR = 50;
+	public static final int MAX_SQL_ATTR = 50;
 
 	// Various iRODS message types, in include/rodsDef.h
-	static final String RODS_CONNECT = "RODS_CONNECT";
-	static final String RODS_VERSION = "RODS_VERSION";
-	static final String RODS_API_REQ = "RODS_API_REQ";
-	static final String RODS_DISCONNECT = "RODS_DISCONNECT";
-	static final String RODS_REAUTH = "RODS_REAUTH";
-	static final String RODS_API_REPLY = "RODS_API_REPLY";
+	public static final String RODS_CONNECT = "RODS_CONNECT";
+	public static final String RODS_VERSION = "RODS_VERSION";
+	public static final String RODS_API_REQ = "RODS_API_REQ";
+	public static final String RODS_DISCONNECT = "RODS_DISCONNECT";
+	public static final String RODS_REAUTH = "RODS_REAUTH";
+	public static final String RODS_API_REPLY = "RODS_API_REPLY";
 
 	// Various iRODS message types, in include/api/dataObjInpOut.h
 	// definition for oprType in dataObjInp_t, portalOpr_t and l1desc_t
-	static final int DONE_OPR = 9999;
-	static final int PUT_OPR = 1;
-	static final int GET_OPR = 2;
-	static final int SAME_HOST_COPY_OPR = 3;
-	static final int COPY_TO_LOCAL_OPR = 4;
-	static final int COPY_TO_REM_OPR = 5;
-	static final int REPLICATE_OPR = 6;
-	static final int REPLICATE_DEST = 7;
-	static final int REPLICATE_SRC = 8;
-	static final int COPY_DEST = 9;
-	static final int COPY_SRC = 10;
-	static final int RENAME_DATA_OBJ = 11;
-	static final int RENAME_COLL = 12;
-	static final int MOVE_OPR = 13;
-	static final int RSYNC_OPR = 14;
-	static final int PHYMV_OPR = 15;
-	static final int PHYMV_SRC = 16;
-	static final int PHYMV_DEST = 17;
+	public static final int DONE_OPR = 9999;
+	public static final int PUT_OPR = 1;
+	public static final int GET_OPR = 2;
+	public static final int SAME_HOST_COPY_OPR = 3;
+	public static final int COPY_TO_LOCAL_OPR = 4;
+	public static final int COPY_TO_REM_OPR = 5;
+	public static final int REPLICATE_OPR = 6;
+	public static final int REPLICATE_DEST = 7;
+	public static final int REPLICATE_SRC = 8;
+	public static final int COPY_DEST = 9;
+	public static final int COPY_SRC = 10;
+	public static final int RENAME_DATA_OBJ = 11;
+	public static final int RENAME_COLL = 12;
+	public static final int MOVE_OPR = 13;
+	public static final int RSYNC_OPR = 14;
+	public static final int PHYMV_OPR = 15;
+	public static final int PHYMV_SRC = 16;
+	public static final int PHYMV_DEST = 17;
 
 	/* from apiNumber.h - header file for API number assignment */
 	/* 500 - 599 - Internal File I/O API calls */
-	static final int FILE_CREATE_AN = 500;
-	static final int FILE_OPEN_AN = 501;
-	static final int FILE_WRITE_AN = 502;
-	static final int FILE_CLOSE_AN = 503;
-	static final int FILE_LSEEK_AN = 504;
-	static final int FILE_READ_AN = 505;
-	static final int FILE_UNLINK_AN = 506;
-	static final int FILE_MKDIR_AN = 507;
-	static final int FILE_CHMOD_AN = 508;
-	static final int FILE_RMDIR_AN = 509;
-	static final int FILE_STAT_AN = 510;
-	static final int FILE_FSTAT_AN = 511;
-	static final int FILE_FSYNC_AN = 512;
-	static final int FILE_STAGE_AN = 513;
-	static final int FILE_GET_FS_FREE_SPACE_AN = 514;
-	static final int FILE_OPENDIR_AN = 515;
-	static final int FILE_CLOSEDIR_AN = 516;
-	static final int FILE_READDIR_AN = 517;
-	static final int FILE_PUT_AN = 518;
-	static final int FILE_CHKSUM_AN = 520;
-	static final int CHK_N_V_PATH_PERM_AN = 521;
-	static final int FILE_RENAME_AN = 522;
-	static final int FILE_TRUNCATE_AN = 523;
-	static final int FILE_STAGE_TO_CACHE_AN = 524;
-	static final int FILE_SYNC_TO_ARCH_AN = 525;
+	public static final int FILE_CREATE_AN = 500;
+	public static final int FILE_OPEN_AN = 501;
+	public static final int FILE_WRITE_AN = 502;
+	public static final int FILE_CLOSE_AN = 503;
+	public static final int FILE_LSEEK_AN = 504;
+	public static final int FILE_READ_AN = 505;
+	public static final int FILE_UNLINK_AN = 506;
+	public static final int FILE_MKDIR_AN = 507;
+	public static final int FILE_CHMOD_AN = 508;
+	public static final int FILE_RMDIR_AN = 509;
+	public static final int FILE_STAT_AN = 510;
+	public static final int FILE_FSTAT_AN = 511;
+	public static final int FILE_FSYNC_AN = 512;
+	public static final int FILE_STAGE_AN = 513;
+	public static final int FILE_GET_FS_FREE_SPACE_AN = 514;
+	public static final int FILE_OPENDIR_AN = 515;
+	public static final int FILE_CLOSEDIR_AN = 516;
+	public static final int FILE_READDIR_AN = 517;
+	public static final int FILE_PUT_AN = 518;
+	public static final int FILE_CHKSUM_AN = 520;
+	public static final int CHK_N_V_PATH_PERM_AN = 521;
+	public static final int FILE_RENAME_AN = 522;
+	public static final int FILE_TRUNCATE_AN = 523;
+	public static final int FILE_STAGE_TO_CACHE_AN = 524;
+	public static final int FILE_SYNC_TO_ARCH_AN = 525;
 
 	/* 600 - 699 - Object File I/O API calls */
-	static final int DATA_OBJ_CREATE_AN = 601;
-	static final int DATA_OBJ_OPEN_AN = 602;
-	static final int DATA_OBJ_READ_AN = 603;
-	static final int DATA_OBJ_WRITE_AN = 604;
-	static final int DATA_OBJ_CLOSE_AN = 605;
-	static final int DATA_OBJ_PUT_AN = 606;
-	static final int DATA_PUT_AN = 607;
-	static final int DATA_OBJ_GET_AN = 608;
-	static final int DATA_GET_AN = 609;
-	static final int DATA_OBJ_REPL_AN = 610;
-	static final int DATA_COPY_AN = 611;
-	static final int DATA_OBJ_LSEEK_AN = 612;
-	static final int DATA_OBJ_COPY_AN = 613;
-	static final int SIMPLE_QUERY_AN = 614;
-	static final int DATA_OBJ_UNLINK_AN = 615;
-	static final int COLL_CREATE_AN = 616;
-	static final int REG_DATA_OBJ_AN = 619;
-	static final int UNREG_DATA_OBJ_AN = 620;
-	static final int REG_REPLICA_AN = 621;
-	static final int MOD_DATA_OBJ_META_AN = 622;
-	static final int RULE_EXEC_SUBMIT_AN = 623;
-	static final int RULE_EXEC_DEL_AN = 624;
-	static final int EXEC_MY_RULE_AN = 625;
-	static final int OPR_COMPLETE_AN = 626;
-	static final int DATA_OBJ_RENAME_AN = 627;
-	static final int DATA_OBJ_RSYNC_AN = 628;
-	static final int DATA_OBJ_CHKSUM_AN = 629;
-	static final int PHY_PATH_REG_AN = 630;
-	static final int DATA_OBJ_PHYMV_AN = 631;
-	static final int DATA_OBJ_TRIM_AN = 632;
-	static final int OBJ_STAT_AN = 633;
-	static final int EXEC_CMD_AN = 634;
-	static final int SUB_STRUCT_FILE_CREATE_AN = 635;
-	static final int SUB_STRUCT_FILE_OPEN_AN = 636;
-	static final int SUB_STRUCT_FILE_READ_AN = 637;
-	static final int SUB_STRUCT_FILE_WRITE_AN = 638;
-	static final int SUB_STRUCT_FILE_CLOSE_AN = 639;
-	static final int SUB_STRUCT_FILE_UNLINK_AN = 640;
-	static final int SUB_STRUCT_FILE_STAT_AN = 641;
-	static final int SUB_STRUCT_FILE_FSTAT_AN = 642;
-	static final int SUB_STRUCT_FILE_LSEEK_AN = 643;
-	static final int SUB_STRUCT_FILE_RENAME_AN = 644;
-	static final int QUERY_SPEC_COLL_AN = 645;
-	static final int SUB_STRUCT_FILE_MKDIR_AN = 647;
-	static final int SUB_STRUCT_FILE_RMDIR_AN = 648;
-	static final int SUB_STRUCT_FILE_OPENDIR_AN = 649;
-	static final int SUB_STRUCT_FILE_READDIR_AN = 650;
-	static final int SUB_STRUCT_FILE_CLOSEDIR_AN = 651;
-	static final int DATA_OBJ_TRUNCATE_AN = 652;
-	static final int SUB_STRUCT_FILE_TRUNCATE_AN = 653;
-	static final int GET_XMSG_TICKET_AN = 654;
-	static final int SEND_XMSG_AN = 655;
-	static final int RCV_XMSG_AN = 656;
-	static final int SUB_STRUCT_FILE_GET_AN = 657;
-	static final int SUB_STRUCT_FILE_PUT_AN = 658;
-	static final int SYNC_MOUNTED_COLL_AN = 659;
-	static final int STRUCT_FILE_SYNC_AN = 660;
-	static final int CLOSE_COLLECTION_AN = 661;
-	static final int RM_COLL_AN = 663;
-	static final int STRUCT_FILE_EXTRACT_AN = 664;
-	static final int STRUCT_FILE_EXT_AND_REG_AN = 665;
-	static final int STRUCT_FILE_BUNDLE_AN = 666;
-	static final int CHK_OBJ_PERM_AND_STAT_AN = 667;
-	static final int GET_REMOTE_ZONE_RESC_AN = 668;
-	static final int DATA_OBJ_OPEN_AND_STAT_AN = 669;
-	static final int L3_FILE_GET_SINGLE_BUF_AN = 670;
-	static final int L3_FILE_PUT_SINGLE_BUF_AN = 671;
-	static final int DATA_OBJ_CREATE_AND_STAT_AN = 672;
+	public static final int DATA_OBJ_CREATE_AN = 601;
+	public static final int DATA_OBJ_OPEN_AN = 602;
+	public static final int DATA_OBJ_READ_AN = 603;
+	public static final int DATA_OBJ_WRITE_AN = 604;
+	public static final int DATA_OBJ_CLOSE_AN = 605;
+	public static final int DATA_OBJ_PUT_AN = 606;
+	public static final int DATA_PUT_AN = 607;
+	public static final int DATA_OBJ_GET_AN = 608;
+	public static final int DATA_GET_AN = 609;
+	public static final int DATA_OBJ_REPL_AN = 610;
+	public static final int DATA_COPY_AN = 611;
+	public static final int DATA_OBJ_LSEEK_AN = 612;
+	public static final int DATA_OBJ_COPY_AN = 613;
+	public static final int SIMPLE_QUERY_AN = 614;
+	public static final int DATA_OBJ_UNLINK_AN = 615;
+	public static final int COLL_CREATE_AN = 616;
+	public static final int REG_DATA_OBJ_AN = 619;
+	public static final int UNREG_DATA_OBJ_AN = 620;
+	public static final int REG_REPLICA_AN = 621;
+	public static final int MOD_DATA_OBJ_META_AN = 622;
+	public static final int RULE_EXEC_SUBMIT_AN = 623;
+	public static final int RULE_EXEC_DEL_AN = 624;
+	public static final int EXEC_MY_RULE_AN = 625;
+	public static final int OPR_COMPLETE_AN = 626;
+	public static final int DATA_OBJ_RENAME_AN = 627;
+	public static final int DATA_OBJ_RSYNC_AN = 628;
+	public static final int DATA_OBJ_CHKSUM_AN = 629;
+	public static final int PHY_PATH_REG_AN = 630;
+	public static final int DATA_OBJ_PHYMV_AN = 631;
+	public static final int DATA_OBJ_TRIM_AN = 632;
+	public static final int OBJ_STAT_AN = 633;
+	public static final int EXEC_CMD_AN = 634;
+	public static final int SUB_STRUCT_FILE_CREATE_AN = 635;
+	public static final int SUB_STRUCT_FILE_OPEN_AN = 636;
+	public static final int SUB_STRUCT_FILE_READ_AN = 637;
+	public static final int SUB_STRUCT_FILE_WRITE_AN = 638;
+	public static final int SUB_STRUCT_FILE_CLOSE_AN = 639;
+	public static final int SUB_STRUCT_FILE_UNLINK_AN = 640;
+	public static final int SUB_STRUCT_FILE_STAT_AN = 641;
+	public static final int SUB_STRUCT_FILE_FSTAT_AN = 642;
+	public static final int SUB_STRUCT_FILE_LSEEK_AN = 643;
+	public static final int SUB_STRUCT_FILE_RENAME_AN = 644;
+	public static final int QUERY_SPEC_COLL_AN = 645;
+	public static final int SUB_STRUCT_FILE_MKDIR_AN = 647;
+	public static final int SUB_STRUCT_FILE_RMDIR_AN = 648;
+	public static final int SUB_STRUCT_FILE_OPENDIR_AN = 649;
+	public static final int SUB_STRUCT_FILE_READDIR_AN = 650;
+	public static final int SUB_STRUCT_FILE_CLOSEDIR_AN = 651;
+	public static final int DATA_OBJ_TRUNCATE_AN = 652;
+	public static final int SUB_STRUCT_FILE_TRUNCATE_AN = 653;
+	public static final int GET_XMSG_TICKET_AN = 654;
+	public static final int SEND_XMSG_AN = 655;
+	public static final int RCV_XMSG_AN = 656;
+	public static final int SUB_STRUCT_FILE_GET_AN = 657;
+	public static final int SUB_STRUCT_FILE_PUT_AN = 658;
+	public static final int SYNC_MOUNTED_COLL_AN = 659;
+	public static final int STRUCT_FILE_SYNC_AN = 660;
+	public static final int CLOSE_COLLECTION_AN = 661;
+	public static final int RM_COLL_AN = 663;
+	public static final int STRUCT_FILE_EXTRACT_AN = 664;
+	public static final int STRUCT_FILE_EXT_AND_REG_AN = 665;
+	public static final int STRUCT_FILE_BUNDLE_AN = 666;
+	public static final int CHK_OBJ_PERM_AND_STAT_AN = 667;
+	public static final int GET_REMOTE_ZONE_RESC_AN = 668;
+	public static final int DATA_OBJ_OPEN_AND_STAT_AN = 669;
+	public static final int L3_FILE_GET_SINGLE_BUF_AN = 670;
+	public static final int L3_FILE_PUT_SINGLE_BUF_AN = 671;
+	public static final int DATA_OBJ_CREATE_AND_STAT_AN = 672;
 
-	static final int COLL_REPL_AN = 677;
-	static final int OPEN_COLLECTION_AN = 678;
-	static final int MOD_COLL_AN = 680;
-	static final int RM_COLL_OLD_AN = 682;
-	static final int REG_COLL_AN = 683;
+	public static final int COLL_REPL_AN = 677;
+	public static final int OPEN_COLLECTION_AN = 678;
+	public static final int MOD_COLL_AN = 680;
+	public static final int RM_COLL_OLD_AN = 682;
+	public static final int REG_COLL_AN = 683;
 
 	/* 700 - 799 - Metadata API calls */
-	static final int GET_MISC_SVR_INFO_AN = 700;
-	static final int GENERAL_ADMIN_AN = 701;
-	static final int GEN_QUERY_AN = 702;
-	static final int AUTH_REQUEST_AN = 703;
-	static final int AUTH_RESPONSE_AN = 704;
-	static final int AUTH_CHECK_AN = 705;
-	static final int MOD_AVU_METADATA_AN = 706;
-	static final int MOD_ACCESS_CONTROL_AN = 707;
-	static final int RULE_EXEC_MOD_AN = 708;
-	static final int GET_TEMP_PASSWORD_AN = 709;
-	static final int GENERAL_UPDATE_AN = 710;
-	static final int GSI_AUTH_REQUEST_AN = 711;
-	static final int READ_COLLECTION_AN = 713;
-	static final int USER_ADMIN_AN = 714;
-	static final int GENERAL_ROW_INSERT_AN = 715;
-	static final int GENERAL_ROW_PURGE_AN = 716;
-	static final int KRB_AUTH_REQUEST_AN = 717;
+	public static final int GET_MISC_SVR_INFO_AN = 700;
+	public static final int GENERAL_ADMIN_AN = 701;
+	public static final int GEN_QUERY_AN = 702;
+	public static final int AUTH_REQUEST_AN = 703;
+	public static final int AUTH_RESPONSE_AN = 704;
+	public static final int AUTH_CHECK_AN = 705;
+	public static final int MOD_AVU_METADATA_AN = 706;
+	public static final int MOD_ACCESS_CONTROL_AN = 707;
+	public static final int RULE_EXEC_MOD_AN = 708;
+	public static final int GET_TEMP_PASSWORD_AN = 709;
+	public static final int GENERAL_UPDATE_AN = 710;
+	public static final int GSI_AUTH_REQUEST_AN = 711;
+	public static final int READ_COLLECTION_AN = 713;
+	public static final int USER_ADMIN_AN = 714;
+	public static final int GENERAL_ROW_INSERT_AN = 715;
+	public static final int GENERAL_ROW_PURGE_AN = 716;
+	public static final int KRB_AUTH_REQUEST_AN = 717;
 
 	// iRODS communication types
-	static final char OPEN_START_TAG = Tag.OPEN_START_TAG;
-	static final char CLOSE_START_TAG = Tag.CLOSE_START_TAG;
-	static final String OPEN_END_TAG = Tag.OPEN_END_TAG;
-	static final char CLOSE_END_TAG = Tag.CLOSE_END_TAG;
+	public static final char OPEN_START_TAG = Tag.OPEN_START_TAG;
+	public static final char CLOSE_START_TAG = Tag.CLOSE_START_TAG;
+	public static final String OPEN_END_TAG = Tag.OPEN_END_TAG;
+	public static final char CLOSE_END_TAG = Tag.CLOSE_END_TAG;
 
 	// typical header tags
-	static final String type = "type";
-	static final String msgLen = "msgLen";
-	static final String errorLen = "errorLen";
-	static final String bsLen = "bsLen";
-	static final String intInfo = "intInfo";
+	public static final String type = "type";
+	public static final String msgLen = "msgLen";
+	public static final String errorLen = "errorLen";
+	public static final String bsLen = "bsLen";
+	public static final String intInfo = "intInfo";
 
 	// leaf tags
-	static final String irodsProt = "irodsProt";
-	static final String reconnFlag = "reconnFlag";
-	static final String connectCnt = "connectCnt";
-	static final String proxyUser = "proxyUser";
-	static final String proxyRcatZone = "proxyRcatZone";
-	static final String clientUser = "clientUser";
-	static final String clientRcatZone = "clientRcatZone";
-	static final String relVersion = "relVersion";
-	static final String apiVersion = "apiVersion";
-	static final String option = "option";
-	static final String status = "status";
-	static final String challenge = "challenge";
-	static final String response = "response";
-	static final String username = "username";
-	static final String objPath = "objPath";
-	static final String createMode = "createMode";
-	static final String openFlags = "openFlags";
-	static final String offset = "offset";
-	static final String dataSize = "dataSize";
-	static final String numThreads = "numThreads";
-	static final String oprType = "oprType";
-	static final String ssLen = "ssLen";
-	static final String objSize = "objSize";
-	static final String objType = "objType";
-	static final String numCopies = "numCopies";
-	static final String dataId = "dataId";
-	static final String chksum = "chksum";
-	static final String ownerName = "ownerName";
-	static final String ownerZone = "ownerZone";
-	static final String createTime = "createTime";
-	static final String modifyTime = "modifyTime";
-	static final String inx = "inx";
-	static final String maxRows = "maxRows";
-	static final String continueInx = "continueInx";
-	static final String partialStartIndex = "partialStartIndex";
-	static final String ivalue = "ivalue";
-	static final String svalue = "svalue";
-	static final String iiLen = "iiLen";
-	static final String isLen = "isLen";
-	static final String keyWord = "keyWord";
-	static final String rowCnt = "rowCnt";
-	static final String attriCnt = "attriCnt";
-	static final String attriInx = "attriInx";
-	static final String reslen = "reslen";
-	static final String queryValue = "value";
-	static final String collName = "collName";
-	static final String recursiveFlag = "recursiveFlag";
-	static final String accessLevel = "accessLevel";
-	static final String userName = "userName";
-	static final String zone = "zone";
-	static final String path = "path";
-	static final String l1descInx = "l1descInx";
-	static final String len = "len";
-	static final String fileInx = "fileInx";
-	static final String whence = "whence";
-	static final String dataObjInx = "dataObjInx";
-	static final String bytesWritten = "bytesWritten";
-	static final String msg = "msg";
-	static final String myRule = "myRule";
-	static final String outParamDesc = "outParamDesc";
-	static final String hostAddr = "hostAddr";
-	static final String rodsZone = "rodsZone";
-	static final String port = "port";
-	static final String ServerDN = "ServerDN";
-	static final String flags = "flags";
-	static final String collection = "collection";
-	static final String cmd = "cmd";
-	static final String cmdArgv = "cmdArgv";
-	static final String execAddr = "execAddr";
-	static final String hintPath = "hintPath";
-	static final String addPathToArgv = "addPathToArgv";
-	static final String options = "options";
-	static final String portNum = "portNum";
-	static final String cookie = "cookie";
-	static final String buflen = "buflen";
-	static final String buf = "buf";
+	public static final String irodsProt = "irodsProt";
+	public static final String reconnFlag = "reconnFlag";
+	public static final String connectCnt = "connectCnt";
+	public static final String proxyUser = "proxyUser";
+	public static final String proxyRcatZone = "proxyRcatZone";
+	public static final String clientUser = "clientUser";
+	public static final String clientRcatZone = "clientRcatZone";
+	public static final String relVersion = "relVersion";
+	public static final String apiVersion = "apiVersion";
+	public static final String option = "option";
+	public static final String status = "status";
+	public static final String challenge = "challenge";
+	public static final String response = "response";
+	public static final String username = "username";
+	public static final String objPath = "objPath";
+	public static final String createMode = "createMode";
+	public static final String openFlags = "openFlags";
+	public static final String offset = "offset";
+	public static final String dataSize = "dataSize";
+	public static final String numThreads = "numThreads";
+	public static final String oprType = "oprType";
+	public static final String ssLen = "ssLen";
+	public static final String objSize = "objSize";
+	public static final String objType = "objType";
+	public static final String numCopies = "numCopies";
+	public static final String dataId = "dataId";
+	public static final String chksum = "chksum";
+	public static final String ownerName = "ownerName";
+	public static final String ownerZone = "ownerZone";
+	public static final String createTime = "createTime";
+	public static final String modifyTime = "modifyTime";
+	public static final String inx = "inx";
+	public static final String maxRows = "maxRows";
+	public static final String continueInx = "continueInx";
+	public static final String partialStartIndex = "partialStartIndex";
+	public static final String ivalue = "ivalue";
+	public static final String svalue = "svalue";
+	public static final String iiLen = "iiLen";
+	public static final String isLen = "isLen";
+	public static final String keyWord = "keyWord";
+	public static final String rowCnt = "rowCnt";
+	public static final String attriCnt = "attriCnt";
+	public static final String attriInx = "attriInx";
+	public static final String reslen = "reslen";
+	public static final String queryValue = "value";
+	public static final String collName = "collName";
+	public static final String recursiveFlag = "recursiveFlag";
+	public static final String accessLevel = "accessLevel";
+	public static final String userName = "userName";
+	public static final String zone = "zone";
+	public static final String path = "path";
+	public static final String l1descInx = "l1descInx";
+	public static final String len = "len";
+	public static final String fileInx = "fileInx";
+	public static final String whence = "whence";
+	public static final String dataObjInx = "dataObjInx";
+	public static final String bytesWritten = "bytesWritten";
+	public static final String msg = "msg";
+	public static final String myRule = "myRule";
+	public static final String outParamDesc = "outParamDesc";
+	public static final String hostAddr = "hostAddr";
+	public static final String rodsZone = "rodsZone";
+	public static final String port = "port";
+	public static final String ServerDN = "ServerDN";
+	public static final String flags = "flags";
+	public static final String collection = "collection";
+	public static final String cmd = "cmd";
+	public static final String cmdArgv = "cmdArgv";
+	public static final String execAddr = "execAddr";
+	public static final String hintPath = "hintPath";
+	public static final String addPathToArgv = "addPathToArgv";
+	public static final String options = "options";
+	public static final String portNum = "portNum";
+	public static final String cookie = "cookie";
+	public static final String buflen = "buflen";
+	public static final String buf = "buf";
 
 	// Complex tags
-	static final String CollOprStat_PI = "CollOprStat_PI";
-	static final String MsgHeader_PI = "MsgHeader_PI";
-	static final String StartupPack_PI = "StartupPack_PI";
-	static final String Version_PI = "Version_PI";
+	public static final String CollOprStat_PI = "CollOprStat_PI";
+	public static final String MsgHeader_PI = "MsgHeader_PI";
+	public static final String StartupPack_PI = "StartupPack_PI";
+	public static final String Version_PI = "Version_PI";
 
-	static final String authRequestOut_PI = "authRequestOut_PI";
-	static final String authResponseInp_PI = "authResponseInp_PI";
+	public static final String authRequestOut_PI = "authRequestOut_PI";
+	public static final String authResponseInp_PI = "authResponseInp_PI";
 
-	static final String gsiAuthRequestOut_PI = "gsiAuthRequestOut_PI";
+	public static final String gsiAuthRequestOut_PI = "gsiAuthRequestOut_PI";
 
-	static final String DataObjInp_PI = "DataObjInp_PI";
-	static final String GenQueryInp_PI = "GenQueryInp_PI";
-	static final String ModAVUMetadataInp_PI = "ModAVUMetadataInp_PI";
-	static final String InxIvalPair_PI = "InxIvalPair_PI";
-	static final String InxValPair_PI = "InxValPair_PI";
-	static final String KeyValPair_PI = "KeyValPair_PI";
-	static final String RodsObjStat_PI = "RodsObjStat_PI";
-	static final String SqlResult_PI = "SqlResult_PI";
-	static final String DataObjCopyInp_PI = "DataObjCopyInp_PI";
-	static final String ExecCmd_PI = "ExecCmd_PI";
-	static final String PortList_PI = "PortList_PI";
-	static final String StructFileExtAndRegInp_PI = "StructFileExtAndRegInp_PI";
+	public static final String DataObjInp_PI = "DataObjInp_PI";
+	public static final String GenQueryInp_PI = "GenQueryInp_PI";
+	public static final String ModAVUMetadataInp_PI = "ModAVUMetadataInp_PI";
+	public static final String InxIvalPair_PI = "InxIvalPair_PI";
+	public static final String InxValPair_PI = "InxValPair_PI";
+	public static final String KeyValPair_PI = "KeyValPair_PI";
+	public static final String RodsObjStat_PI = "RodsObjStat_PI";
+	public static final String SqlResult_PI = "SqlResult_PI";
+	public static final String DataObjCopyInp_PI = "DataObjCopyInp_PI";
+	public static final String ExecCmd_PI = "ExecCmd_PI";
+	public static final String PortList_PI = "PortList_PI";
+	public static final String StructFileExtAndRegInp_PI = "StructFileExtAndRegInp_PI";
 
-	static final String CollInp_PI = "CollInp_PI";
+	public static final String CollInp_PI = "CollInp_PI";
 	// new function after iRODS201
-	static final String CollInpNew_PI = "CollInpNew_PI";
+	public static final String CollInpNew_PI = "CollInpNew_PI";
 
-	static final String modAccessControlInp_PI = "modAccessControlInp_PI";
-	static final String dataObjReadInp_PI = "dataObjReadInp_PI";
-	static final String dataObjWriteInp_PI = "dataObjWriteInp_PI";
-	static final String fileLseekInp_PI = "fileLseekInp_PI";
-	static final String dataObjCloseInp_PI = "dataObjCloseInp_PI";
-	static final String BinBytesBuf_PI = "BinBytesBuf_PI";
+	public static final String modAccessControlInp_PI = "modAccessControlInp_PI";
+	public static final String dataObjReadInp_PI = "dataObjReadInp_PI";
+	public static final String dataObjWriteInp_PI = "dataObjWriteInp_PI";
+	public static final String fileLseekInp_PI = "fileLseekInp_PI";
+	public static final String dataObjCloseInp_PI = "dataObjCloseInp_PI";
+	public static final String BinBytesBuf_PI = "BinBytesBuf_PI";
 
-	static final String RErrMsg_PI = "RErrMsg_PI";
+	public static final String RErrMsg_PI = "RErrMsg_PI";
 
 	// rules related tags
-	static final String ExecMyRuleInp_PI = "ExecMyRuleInp_PI";
-	static final String RHostAddr_PI = "RHostAddr_PI";
-	static final String MsParamArray_PI = "MsParamArray_PI";
-	static final String MsParam_PI = "MsParam_PI";
-	static final String paramLen = "paramLen";
-	static final String label = "label";
-	static final String dummyInt = "dummyInt";
+	public static final String ExecMyRuleInp_PI = "ExecMyRuleInp_PI";
+	public static final String RHostAddr_PI = "RHostAddr_PI";
+	public static final String MsParamArray_PI = "MsParamArray_PI";
+	public static final String MsParam_PI = "MsParam_PI";
+	public static final String paramLen = "paramLen";
+	public static final String label = "label";
+	public static final String dummyInt = "dummyInt";
 
 	// admin tags
-	static final String generalAdminInp_PI = "generalAdminInp_PI";
-	static final String simpleQueryInp_PI = "simpleQueryInp_PI";
-	static final String simpleQueryOut_PI = "simpleQueryOut_PI";
-	static final String sql = "sql";
-	static final String control = "control";
-	static final String form = "form";
-	static final String maxBufSize = "maxBufSize";
-	static final String outBuf = "outBuf";
-	static final String arg0 = "arg0";
-	static final String arg1 = "arg1";
-	static final String arg2 = "arg2";
-	static final String arg3 = "arg3";
-	static final String arg4 = "arg4";
-	static final String arg5 = "arg5";
-	static final String arg6 = "arg6";
-	static final String arg7 = "arg7";
-	static final String arg8 = "arg8";
-	static final String arg9 = "arg9";
+	public static final String generalAdminInp_PI = "generalAdminInp_PI";
+	public static final String simpleQueryInp_PI = "simpleQueryInp_PI";
+	public static final String simpleQueryOut_PI = "simpleQueryOut_PI";
+	public static final String sql = "sql";
+	public static final String control = "control";
+	public static final String form = "form";
+	public static final String maxBufSize = "maxBufSize";
+	public static final String outBuf = "outBuf";
+	public static final String arg0 = "arg0";
+	public static final String arg1 = "arg1";
+	public static final String arg2 = "arg2";
+	public static final String arg3 = "arg3";
+	public static final String arg4 = "arg4";
+	public static final String arg5 = "arg5";
+	public static final String arg6 = "arg6";
+	public static final String arg7 = "arg7";
+	public static final String arg8 = "arg8";
+	public static final String arg9 = "arg9";
 
-	static String encoding = "utf-8";
+	public static String encoding = "utf-8";
 	static {
 		try {
 			new String(new byte[0], encoding);
@@ -510,7 +510,7 @@ class IRODSCommands {
 
 	private String reportedIRODSVersion = "";
 
-	MetaDataCondition[] conditions;
+	//MetaDataCondition[] conditions;
 
 	IRODSCommands() {
 
@@ -561,7 +561,8 @@ class IRODSCommands {
 
 		// Send the user info
 		message = sendStartupPacket(account);
-		status(message);
+		// check for an error (throws IRODSException if an error occurred)
+		Tag.status(message);
 
 		// Request for authorization challenge
 
@@ -768,9 +769,6 @@ class IRODSCommands {
 		// new sun.misc.BASE64Encoder().encode( chal );
 	}
 
-	// ----------------------------------------------------------------------
-	// Socket Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Open a connection to the server.
 	 * 
@@ -1100,18 +1098,7 @@ class IRODSCommands {
 		return result;
 	}
 
-	/**
-	 * Just a simple message to check if there was an error.
-	 */
-	void status(Tag message) throws IOException {
-		Tag s = message.getTag("status");
-		if ((s != null) && (s.getIntValue() < 0))
-			throw new IRODSException("" + s.getIntValue());
-	}
-
-	// ----------------------------------------------------------------------
-	// Struct Methods
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Create the iRODS header packet
 	 */
@@ -1173,7 +1160,7 @@ class IRODSCommands {
 						byte[] errorMessage = new byte[errorLength];
 						read(errorMessage, 0, errorLength);
 						if (DEBUG > 1) {
-							Tag errorTag = readNextTag(errorMessage);
+							Tag errorTag = Tag.readNextTag(errorMessage, encoding);
 							System.err.println("IRODS error occured "
 									+ errorTag.getTag(RErrMsg_PI).getTag(msg)
 									+ " : " + info);
@@ -1190,7 +1177,7 @@ class IRODSCommands {
 					if (errorLength != 0) {
 						byte[] errorMessage = new byte[errorLength];
 						read(errorMessage, 0, errorLength);
-						Tag errorTag = readNextTag(errorMessage);
+						Tag errorTag = Tag.readNextTag(errorMessage, encoding);
 
 						throw new IRODSException("IRODS error occured "
 								+ errorTag.getTag(RErrMsg_PI).getTag(msg), info);
@@ -1203,7 +1190,7 @@ class IRODSCommands {
 			if (errorLength != 0) {
 				byte[] errorMessage = new byte[errorLength];
 				read(errorMessage, 0, errorLength);
-				Tag errorTag = readNextTag(errorMessage);
+				Tag errorTag = Tag.readNextTag(errorMessage, encoding);
 
 				throw new IRODSException("IRODS error occured "
 						+ errorTag.getTag(RErrMsg_PI).getTag(msg), info);
@@ -1261,14 +1248,14 @@ class IRODSCommands {
 			// to recover from some protocol errors, (slowly and if lucky)
 			// read until a new message header is found.
 			boolean cont = true; // thread to eventually end this when blocked
-			int sigh;
+			int searchForNewHeaderChar;
 			byte[] temp = new byte[13];
 			String newHeader = "MsgHeader_PI>";
 			// hopefully won't be too many bytes...
 			do {
-				sigh = in.read();
-				if (sigh == (int) '<') {
-					sigh = in.read(temp);
+				searchForNewHeaderChar = in.read();
+				if (searchForNewHeaderChar == (int) '<') {
+					searchForNewHeaderChar = in.read(temp);
 					if (true) {// (sigh == 13) {
 						if (new String(temp, encoding).equals(newHeader)) {
 							temp = new byte[1000];
@@ -1299,12 +1286,12 @@ class IRODSCommands {
 									System
 											.arraycopy(temp, 0, header, 14,
 													i + 1);
-									return readNextTag(header);
+									return Tag.readNextTag(header, encoding);
 								}
 							}
 						}
 					}
-				} else if (sigh == -1) {
+				} else if (searchForNewHeaderChar == -1) {
 					throw new ProtocolException(
 							"Server connection lost, due to error");
 				}
@@ -1315,7 +1302,7 @@ class IRODSCommands {
 		header = new byte[length];
 		read(header, 0, length);
 
-		return readNextTag(header);
+		return Tag.readNextTag(header, encoding);
 	}
 
 	private int readHeaderLength() throws IOException {
@@ -1327,138 +1314,13 @@ class IRODSCommands {
 	private Tag readMessageBody(int length, boolean decode) throws IOException {
 		byte[] body = new byte[length];
 		read(body, 0, length);
-		return readNextTag(body, decode);
+		return Tag.readNextTag(body, decode, encoding);
 	}
 
-	/**
-	 * Read the data buffer to discover the first tag. Fill the values of that
-	 * tag according to the above defined static final values.
-	 * 
-	 * @throws UnsupportedEncodingException
-	 *             shouldn't throw, already tested for
-	 */
-	static Tag readNextTag(byte[] data) throws UnsupportedEncodingException {
-		return readNextTag(data, true);
-	}
+	
 
-	static Tag readNextTag(byte[] data, boolean decode)
-			throws UnsupportedEncodingException {
-		if (data == null)
-			return null;
+	
 
-		String d = new String(data, encoding);
-
-		if (DEBUG > 4) {
-			System.err.println(d);
-		}
-		// remove the random '\n'
-		// had to find the end, sometimes '\n' is there, sometimes not.
-		d = d.replaceAll(CLOSE_END_TAG + "\n", "" + CLOSE_END_TAG);
-
-		int start = d.indexOf(OPEN_START_TAG), end = d.indexOf(CLOSE_START_TAG,
-				start);
-		int offset = 0;
-		if (start < 0)
-			return null;
-
-		String tagName = d.substring(start + 1, end);
-		end = d.lastIndexOf(OPEN_END_TAG + tagName + CLOSE_END_TAG);
-
-		Tag tag = new Tag(tagName);
-		offset = start + tagName.length() + 2;
-
-		while (d.indexOf(OPEN_START_TAG, offset) >= 0 && offset >= 0
-				&& offset < end) {
-			// send the rest of the bytes read
-			offset = readSubTag(tag, d, offset, decode);
-		}
-
-		return tag;
-	}
-
-	/**
-	 * Read the data buffer to discover a sub tag. Fill the values of that tag
-	 * according to the above defined static final values.
-	 * 
-	 * @throws UnsupportedEncodingException
-	 *             shouldn't throw, already tested for
-	 */
-	private static int readSubTag(Tag tag, String data, int offset,
-			boolean decode) throws UnsupportedEncodingException {
-		// easier to just write a second slightly modified method
-		// instead of try to mix the two together,
-		// even though they are very similar.
-		int start = data.indexOf(OPEN_START_TAG, offset);
-		if (start < 0) {
-			return 1;
-		}
-		int closeStart = data.indexOf(CLOSE_START_TAG, start);
-		String tagName = data.substring(start + 1, closeStart);
-		int end = data.indexOf(OPEN_END_TAG + tagName + CLOSE_END_TAG,
-				closeStart);
-		int subTagStart = data.indexOf(OPEN_START_TAG, closeStart);
-
-		Tag subTag = new Tag(tagName);
-		tag.addTag(subTag);
-		offset = start + tagName.length() + 2;
-		if (subTagStart == end) {
-			subTag.setValue(data.substring(offset, end), decode);
-			return end + tagName.length() + 3; // endTagLocation + </endTag>
-		} else {
-			while (data.indexOf(OPEN_START_TAG, offset) >= 0 && offset >= 0
-					&& offset < end) {
-				// read the subTag, get new offset
-				offset = readSubTag(subTag, data, offset, decode);
-			}
-			return offset + tagName.length() + 3; // endTagLocation + </endTag>
-		}
-	}
-
-	/**
-	 * Creates the KeyValPair_PI tag.
-	 */
-	Tag createKeyValueTag(String keyword, String value) {
-		return createKeyValueTag(new String[][] { { keyword, value } });
-	}
-
-	/**
-	 * Creates the KeyValPair_PI tag.
-	 */
-	Tag createKeyValueTag(String[][] keyValue) {
-		/*
-		 * Must be like the following: <KeyValPair_PI> <ssLen>3</ssLen>
-		 * <keyWord>dataType</keyWord> <keyWord>destRescName</keyWord>
-		 * <keyWord>dataIncluded</keyWord> <svalue>generic</svalue>
-		 * <svalue>resourceB</svalue> <svalue></svalue> </KeyValPair_PI>
-		 */
-
-		Tag pair = new Tag(KeyValPair_PI, new Tag(ssLen, 0));
-		int i = 0, ssLength = 0;
-
-		// return the empty Tag
-		if (keyValue == null)
-			return pair;
-
-		for (; i < keyValue.length; i++) {
-			if (keyValue[i] != null && keyValue[i][0] != null) {
-				pair.addTag(keyWord, keyValue[i][0]);
-				ssLength++;
-			}
-		}
-
-		// just use index zero because they have to be in order...
-		pair.tags[0].setValue(ssLength);
-		if (i == 0)
-			return pair;
-
-		for (i = 0; i < keyValue.length; i++) {
-			if (keyValue[i] != null && keyValue[i][0] != null) {
-				pair.addTag(svalue, keyValue[i][1]);
-			}
-		}
-
-		return pair;
-	}
 
 	// ----------------------------------------------------------------------
 	// Basic irodsFunction format
@@ -1572,14 +1434,14 @@ class IRODSCommands {
 						new Tag(createMode, 0), new Tag(openFlags, 0),
 						new Tag(offset, 0), new Tag(dataSize, source.length()),
 						new Tag(numThreads, 0), new Tag(oprType, COPY_SRC),
-						createKeyValueTag(null), }),
+						Tag.createKeyValueTag(null), }),
 				// define the destination
 				new Tag(DataObjInp_PI, new Tag[] {
 						new Tag(objPath, destination.getAbsolutePath()),
 						new Tag(createMode, 0), new Tag(openFlags, 0),
 						new Tag(offset, 0), new Tag(dataSize, 0),
 						new Tag(numThreads, 0), new Tag(oprType, COPY_DEST),
-						createKeyValueTag(keyword), }), });
+						Tag.createKeyValueTag(keyword), }), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_COPY_AN);
 	}
@@ -1606,7 +1468,7 @@ class IRODSCommands {
 		}
 		Tag message = new Tag(CollInp_PI, new Tag[] {
 				new Tag(collName, file.getAbsolutePath()),
-				createKeyValueTag(keyword), });
+				Tag.createKeyValueTag(keyword), });
 
 		Tag reply = irodsFunction(RODS_API_REQ, message, RM_COLL_AN);
 
@@ -1671,7 +1533,7 @@ class IRODSCommands {
 				new Tag(createMode, 0), new Tag(openFlags, 0),
 				new Tag(offset, 0), new Tag(dataSize, 0),
 				new Tag(numThreads, 0), new Tag(oprType, 0),
-				createKeyValueTag(keyword), });
+				Tag.createKeyValueTag(keyword), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_UNLINK_AN);
 	}
@@ -1698,7 +1560,7 @@ class IRODSCommands {
 				// has r+x
 				new Tag(openFlags, rw), new Tag(offset, 0),
 				new Tag(dataSize, -1), new Tag(numThreads, 0),
-				new Tag(oprType, 0), createKeyValueTag(keyword), });
+				new Tag(oprType, 0), Tag.createKeyValueTag(keyword), });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_CREATE_AN);
 		if (message != null)
@@ -1727,7 +1589,7 @@ class IRODSCommands {
 				new Tag(createMode, 0), // can ignore on open
 				new Tag(openFlags, rw), new Tag(offset, 0),
 				new Tag(dataSize, 0), new Tag(numThreads, 0),
-				new Tag(oprType, 0), createKeyValueTag(null), });
+				new Tag(oprType, 0), Tag.createKeyValueTag(null), });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_OPEN_AN);
 		if (message != null)
@@ -1871,10 +1733,10 @@ class IRODSCommands {
 		Tag rescKeyValueTag;
 
 		if (resource == null || resource.length() == 0) {
-			rescKeyValueTag = createKeyValueTag(null);
+			rescKeyValueTag = Tag.createKeyValueTag(null);
 		} else {
 			String[][] kvArray = { { IRODSMetaDataSet.RESC_NAME_KW, resource } };
-			rescKeyValueTag = createKeyValueTag(kvArray);
+			rescKeyValueTag = Tag.createKeyValueTag(kvArray);
 		}
 
 		Tag message = new Tag(DataObjInp_PI, new Tag[] {
@@ -1964,7 +1826,7 @@ class IRODSCommands {
 		}
 		Tag message = new Tag(CollInp_PI, new Tag[] {
 				new Tag(collName, directory.getAbsolutePath()),
-				createKeyValueTag(null), });
+				Tag.createKeyValueTag(null), });
 
 		/*
 		 * New version after 201 Tag message = new Tag(CollInpNew_PI, new Tag[]{
@@ -1996,7 +1858,7 @@ class IRODSCommands {
 					new Tag(createMode, 448), // octal for 700 owner has rw
 					new Tag(openFlags, 1), new Tag(offset, 0),
 					new Tag(dataSize, length), new Tag(numThreads, 0),
-					new Tag(oprType, PUT_OPR), createKeyValueTag(keyword), });
+					new Tag(oprType, PUT_OPR), Tag.createKeyValueTag(keyword), });
 
 			message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PUT_AN);
 
@@ -2083,7 +1945,7 @@ class IRODSCommands {
 					new Tag(createMode, 448), // octal for 700 owner has rw
 					new Tag(openFlags, 1), new Tag(offset, 0),
 					new Tag(dataSize, length), new Tag(numThreads, 0),
-					new Tag(oprType, PUT_OPR), createKeyValueTag(keyword), });
+					new Tag(oprType, PUT_OPR), Tag.createKeyValueTag(keyword), });
 			// send the message, no result expected.
 			// exception thrown on error.
 			irodsFunction(RODS_API_REQ, message, 0, null, length, FileFactory
@@ -2168,7 +2030,7 @@ class IRODSCommands {
 						new Tag(offset, 0), new Tag(dataSize, 0),
 						new Tag(numThreads, 0),
 						new Tag(oprType, RENAME_DATA_OBJ),
-						createKeyValueTag(null), }),
+						Tag.createKeyValueTag(null), }),
 				// define the destination
 				new Tag(DataObjInp_PI, new Tag[] {
 						new Tag(objPath, destination.getAbsolutePath()),
@@ -2176,7 +2038,7 @@ class IRODSCommands {
 						new Tag(offset, 0), new Tag(dataSize, 0),
 						new Tag(numThreads, 0),
 						new Tag(oprType, RENAME_DATA_OBJ),
-						createKeyValueTag(null), }), });
+						Tag.createKeyValueTag(null), }), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_RENAME_AN);
 	}
@@ -2190,14 +2052,14 @@ class IRODSCommands {
 						new Tag(createMode, 0), new Tag(openFlags, 0),
 						new Tag(offset, 0), new Tag(dataSize, 0),
 						new Tag(numThreads, 0), new Tag(oprType, RENAME_COLL),
-						createKeyValueTag(null), }),
+						Tag.createKeyValueTag(null), }),
 				// define the destination
 				new Tag(DataObjInp_PI, new Tag[] {
 						new Tag(objPath, destination.getAbsolutePath()),
 						new Tag(createMode, 0), new Tag(openFlags, 0),
 						new Tag(offset, 0), new Tag(dataSize, 0),
 						new Tag(numThreads, 0), new Tag(oprType, RENAME_COLL),
-						createKeyValueTag(null), }), });
+						Tag.createKeyValueTag(null), }), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_RENAME_AN);
 	}
@@ -2212,7 +2074,7 @@ class IRODSCommands {
 				new Tag(dataSize, 0),
 				new Tag(numThreads, 0),
 				new Tag(oprType, PHYMV_OPR),
-				createKeyValueTag(IRODSMetaDataSet.DEST_RESC_NAME_KW,
+				Tag.createKeyValueTag(IRODSMetaDataSet.DEST_RESC_NAME_KW,
 						destination.getResource()) });
 
 		Tag response = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PHYMV_AN);
@@ -2227,7 +2089,7 @@ class IRODSCommands {
 				new Tag(dataSize, 0),
 				new Tag(numThreads, 0),
 				new Tag(oprType, REPLICATE_OPR),
-				createKeyValueTag(IRODSMetaDataSet.DEST_RESC_NAME_KW,
+				Tag.createKeyValueTag(IRODSMetaDataSet.DEST_RESC_NAME_KW,
 						newResource), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_REPL_AN);
@@ -2239,7 +2101,7 @@ class IRODSCommands {
 				new Tag(createMode, 0), new Tag(openFlags, 0),
 				new Tag(offset, 0), new Tag(dataSize, 0),
 				new Tag(numThreads, 0), new Tag(oprType, 0),
-				createKeyValueTag(IRODSMetaDataSet.RESC_NAME_KW, resource), });
+				Tag.createKeyValueTag(IRODSMetaDataSet.RESC_NAME_KW, resource), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_TRIM_AN);
 	}
@@ -2251,7 +2113,7 @@ class IRODSCommands {
 				new Tag(createMode, 0), new Tag(openFlags, 0),
 				new Tag(offset, 0), new Tag(dataSize, 0),
 				new Tag(numThreads, 0), new Tag(oprType, 0),
-				createKeyValueTag(null), });
+				Tag.createKeyValueTag(null), });
 
 		irodsFunction(RODS_API_REQ, message, OBJ_STAT_AN);
 
@@ -2307,7 +2169,7 @@ class IRODSCommands {
 				new Tag(objPath, tarFile.getAbsolutePath()),
 				new Tag(collection, directory.getAbsolutePath()),
 				new Tag(oprType, 0), new Tag(flags, 0),
-				createKeyValueTag(keyword) });
+				Tag.createKeyValueTag(keyword) });
 
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
@@ -2318,7 +2180,7 @@ class IRODSCommands {
 				new Tag[] { new Tag(objPath, tarFile.getAbsolutePath()),
 						new Tag(collection, directory.getAbsolutePath()),
 						new Tag(oprType, 0), new Tag(flags, 0),
-						createKeyValueTag(null) });
+						Tag.createKeyValueTag(null) });
 
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
@@ -2332,7 +2194,7 @@ class IRODSCommands {
 				new Tag(execAddr, hostAddress), 
 				new Tag(hintPath, ""),
 				new Tag(addPathToArgv, 0), 
-				createKeyValueTag(null) });
+				Tag.createKeyValueTag(null) });
 		String buffer = "";
 
 		try {
@@ -2370,7 +2232,7 @@ class IRODSCommands {
 				new Tag(createMode, 0), new Tag(openFlags, 0),
 				new Tag(offset, 0), new Tag(dataSize, 0),
 				new Tag(numThreads, 0), new Tag(oprType, 0),
-				createKeyValueTag(null) });
+				Tag.createKeyValueTag(null) });
 
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_CHKSUM_AN);
 		if (message != null)
@@ -2421,7 +2283,7 @@ class IRODSCommands {
 				new Tag(myRule, rule),
 				new Tag(RHostAddr_PI, new Tag[] { new Tag(hostAddr, ""),
 						new Tag(rodsZone, ""), new Tag(port, 0),
-						new Tag(dummyInt, 0), }), createKeyValueTag(null), });
+						new Tag(dummyInt, 0), }), Tag.createKeyValueTag(null), });
 
 		// add output parameter tags
 		// They get cat together seperated by '%'
@@ -2552,17 +2414,16 @@ class IRODSCommands {
 	/**
 	 * Send a query to iRODS
 	 */
-	synchronized MetaDataRecordList[] query(MetaDataCondition[] tempConditions,
+	synchronized MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted,
 			Namespace namespace) throws IOException {
 		Tag message = new Tag(GenQueryInp_PI, new Tag[] {
 				new Tag(maxRows, numberOfRecordsWanted),
 				new Tag(continueInx, 0), // new query
-				new Tag(partialStartIndex, 0), createKeyValueTag(null), });
+				new Tag(partialStartIndex, 0), Tag.createKeyValueTag(null), });
 		Tag[] subTags = null;
 		int j = 1;
 		String[] selectedAVU = new String[selects.length];
-		conditions = tempConditions;
 
 		// package the selects
 		if (selects == null) {
@@ -2570,7 +2431,7 @@ class IRODSCommands {
 					"Query must have at least one select value");
 		} else {
 			// fix the selects if there are AVU parts
-			selects = checkForAVU(conditions, selects, namespace, selectedAVU);
+			selects = IRODSAvu.checkForAVU(conditions, selects, namespace, selectedAVU);
 		}
 		selects = (MetaDataSelect[]) IRODSFileSystem
 				.cleanNullsAndDuplicates(selects);
@@ -2593,7 +2454,7 @@ class IRODSCommands {
 		if (conditions != null) {
 			// fix the conditions if there are AVU parts, also remove nulls
 			conditions = (MetaDataCondition[]) IRODSFileSystem 
-					.cleanNullsAndDuplicates(checkForAVU(conditions, namespace));
+					.cleanNullsAndDuplicates(IRODSAvu.checkForAVU(conditions, namespace));
 
 			subTags = new Tag[conditions.length * 2 + 1];
 			subTags[0] = new Tag(isLen, conditions.length);
@@ -2662,7 +2523,7 @@ class IRODSCommands {
 				new Tag(continueInx, continuationIndex),
 				new Tag(partialStartIndex, 0), // not sure
 				new Tag(options, 32), // not sure 32?
-				createKeyValueTag(null), });
+				Tag.createKeyValueTag(null), });
 
 		/*
 		 * <GenQueryInp_PI> <maxRows>500</maxRows> <continueInx>1</continueInx>
@@ -2735,148 +2596,6 @@ class IRODSCommands {
 		return rl;
 	}
 
-	/**
-	 * Checks to see if any of these conditions are really a user definable
-	 * metadata AVU. And if so convert it to something irods will understand.
-	 * 
-	 * @param conditions
-	 * @return
-	 */
-	MetaDataCondition[] checkForAVU(MetaDataCondition[] conditions,
-			Namespace namespace) {
-		Vector<MetaDataCondition> newConditions = null;
-		for (int i = 0; i < conditions.length; i++) {
-
-			if (checkForAVU(conditions[i].getField())) {
-				if (newConditions == null) {
-					newConditions = new Vector();
-				}
-				newConditions
-						.add(MetaDataSet.newCondition(
-								getAttributeValue(namespace), conditions[i]
-										.getOperator(), conditions[i]
-										.getStringValue()));
-
-				conditions[i] = MetaDataSet.newCondition(
-						getAttributeName(namespace), MetaDataCondition.EQUAL,
-						conditions[i].getFieldName());
-			}
-		}
-
-		if (newConditions != null) {
-			for (MetaDataCondition c : conditions) {
-				newConditions.add(c);
-			}
-			conditions = newConditions.toArray(conditions);
-		}
-		return conditions;
-	}
-
-	/**
-	 * Checks the selects for user definable metadata AVU. And if so convert it
-	 * to something irods will understand.
-	 */
-	MetaDataSelect[] checkForAVU(
-			MetaDataCondition[] ughsighmaybedeletetempConditions,
-			MetaDataSelect[] selects, Namespace namespace, String[] selectedAVU) {
-		Vector<MetaDataCondition> newConditions = null;
-		Vector<MetaDataSelect> newSelects = null;
-		for (int i = selects.length - 1; i >= 0; i--) {
-			if (checkForAVU(selects[i].getField())) {
-				if (newConditions == null) {
-					newConditions = new Vector();
-				}
-				newConditions.add(MetaDataSet.newCondition(
-						getAttributeName(namespace), MetaDataCondition.EQUAL,
-						selects[i].getFieldName()));
-
-				// store for creating the query return
-				selectedAVU[i] = selects[i].getFieldName();
-
-				if (newSelects == null) {
-					newSelects = new Vector();
-				}
-				// get the AVU value
-				selects[i] = IRODSMetaDataSet
-						.newSelection(getAttributeValue(namespace));
-				// get the AVU attribute
-				newSelects.add(MetaDataSet
-						.newSelection(getAttributeName(namespace)));
-			}
-		}
-
-		if (newConditions != null) {
-			// join the conditions
-			if (conditions != null && conditions.length > 0) {
-				for (MetaDataCondition c : conditions) {
-					newConditions.add(c);
-				}
-				conditions = newConditions.toArray(conditions);
-			} else if (conditions != null) {
-				// conditions length = 0
-				conditions = newConditions.toArray(conditions);
-			} else {
-				conditions = newConditions.toArray(new MetaDataCondition[0]);
-
-			}
-
-			// join the selects
-			for (MetaDataSelect s : selects) {
-				newSelects.add(s);
-			}
-			selects = newSelects.toArray(selects);
-		}
-		return selects;
-	}
-
-	/**
-	 * Just checks the extensible value of this field to see if it was declared
-	 * DEFINABLE_METADATA during the conditions creation.
-	 * 
-	 * @param field
-	 * @return
-	 */
-	boolean checkForAVU(MetaDataField field) {
-		// note that the getExtensibleName(null) call below will always return
-		// DEFINABLE_METADATA
-		String ext = field.getExtensibleName(null);
-		if ((ext != null) && ext.equals(IRODSMetaDataSet.DEFINABLE_METADATA))
-			return true;
-
-		return false;
-	}
-
-	String getAttributeName(Namespace namespace) {
-		switch (namespace) {
-		default:
-		case FILE:
-			return IRODSMetaDataSet.META_DATA_ATTR_NAME;
-		case DIRECTORY:
-			return IRODSMetaDataSet.META_COLL_ATTR_NAME;
-		case RESOURCE:
-			return IRODSMetaDataSet.META_RESOURCE_ATTR_NAME;
-		case USER:
-			return IRODSMetaDataSet.META_USER_ATTR_NAME;
-		}
-	}
-
-	String getAttributeValue(Namespace namespace) {
-		switch (namespace) {
-		default:
-		case FILE:
-			return IRODSMetaDataSet.META_DATA_ATTR_VALUE;
-		case DIRECTORY:
-			return IRODSMetaDataSet.META_COLL_ATTR_VALUE;
-		case RESOURCE:
-			return IRODSMetaDataSet.META_RESOURCE_ATTR_VALUE;
-		case USER:
-			return IRODSMetaDataSet.META_USER_ATTR_VALUE;
-		}
-	}
-
-	// ---------------------------------------------------------
-	// Parallel transfer
-	// ---------------------------------------------------------
 	int incThread = 0;
 
 	class TransferThread implements Runnable {

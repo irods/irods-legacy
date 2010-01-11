@@ -25,326 +25,399 @@
 //
 package edu.sdsc.grid.io.irods;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 /**
- * Was a shortcut just to get started, now it is permanent. Eh, it happens.
- * Might prefer it this way anyhow.
+ * Represents the nested structure of the XML protocol for messages between
+ * Jargon and IRODS
  */
-class Tag implements Cloneable
-{
-  static final char OPEN_START_TAG = '<';
-  static final char CLOSE_START_TAG = '>';
-  static final String OPEN_END_TAG = "</";
-  static final char CLOSE_END_TAG = '>';
-  
-  /**
-   * iRODS name of the tag
-   */
-  String tagName;
+class Tag implements Cloneable {
+	static final char OPEN_START_TAG = '<';
+	static final char CLOSE_START_TAG = '>';
+	static final String OPEN_END_TAG = "</";
+	static final char CLOSE_END_TAG = '>';
 
-  /**
-   * all the sub tags
-   */
-  Tag[] tags;
+	/**
+	 * iRODS name of the tag
+	 */
+	String tagName;
 
-  /**
-   * probably a string...
-   */
-  String value;
+	/**
+	 * all the sub tags
+	 */
+	Tag[] tags;
 
+	/**
+	 * probably a string...
+	 */
+	String value;
 
-  Tag( String tagName )
-  {
-    this.tagName = tagName;
-  }
+	Tag(String tagName) {
+		this.tagName = tagName;
+	}
 
-  Tag( String tagName, int value )
-  {
-      this.tagName = tagName;
-      this.value = ""+value;
-  }
+	Tag(String tagName, int value) {
+		this.tagName = tagName;
+		this.value = "" + value;
+	}
 
-  Tag( String tagName, long value )
-  {
-      this.tagName = tagName;
-      this.value = ""+value;
-  }
+	Tag(String tagName, long value) {
+		this.tagName = tagName;
+		this.value = "" + value;
+	}
 
-  Tag( String tagName, String value )
-  {
-      this.tagName = tagName;
-      this.value = value;
-  }
+	Tag(String tagName, String value) {
+		this.tagName = tagName;
+		this.value = value;
+	}
 
-  Tag( String tagName, Tag tag )
-  {
-      this(tagName, new Tag[]{tag});
-  }
-  Tag( String tagName, Tag[] tags )
-  {
-    this.tagName = tagName;
-    this.tags = tags;
-  }
-  
-  void setTagName( String tagName )
-  {
-    this.tagName = tagName;
-  }
+	Tag(String tagName, Tag tag) {
+		this(tagName, new Tag[] { tag });
+	}
 
-  void setValue( int value )
-  {
-    this.value = ""+value;
-  }
+	Tag(String tagName, Tag[] tags) {
+		this.tagName = tagName;
+		this.tags = tags;
+	}
 
-  void setValue( long value )
-  {
-    this.value = ""+value;
-  }
+	void setTagName(String tagName) {
+		this.tagName = tagName;
+	}
 
-  void setValue( String value, boolean decode )
-  {
-    if (value == null) {
-      this.value = null;
-      return;
-    }
-    if (decode) {
-      //decode escaped characters
-      value = value.replaceAll("&amp;", "&");
-      value = value.replaceAll("&lt;", "<");
-      value = value.replaceAll("&gt;", ">");
-      value = value.replaceAll("&quot;", "\"");
-      value = value.replaceAll("&apos;", "`");
-    }
-    this.value = value;
-  }
+	void setValue(int value) {
+		this.value = "" + value;
+	}
 
+	void setValue(long value) {
+		this.value = "" + value;
+	}
 
-/*
-  void setTagValues( Object[] values )
-  {
-    if (values instanceof Tag[]) {
-      tags = (Tag[]) values;
-    }
-    else if (tags.length != values.length) {
-      throw new IllegalArgumentException("Schema mismatch "+this+
-        " does not have these "+values+"   "+values.length+" values.");
-    }
-    else {
-      for (int i=0;i<tags.length;i++) {
-        if (values[i] instanceof String) {
-          //just set this leaf value
-          tags[i].setValue((String)values[i]);
-        }
-        else if (values[i] instanceof Tag) {
-          tags[i] = (Tag) values[i];
-        }
-        else if (values[i] instanceof Object[]) {
-          tags[i].setTagValues((Object[])values[i]);
-        }
-        else {
-          throw new IllegalArgumentException("Protocol error: This "+
-            values[i]+" shouldn't be here");
-        }
-      }
-    }
-  }
-*/
+	void setValue(String value, boolean decode) {
+		if (value == null) {
+			this.value = null;
+			return;
+		}
+		if (decode) {
+			// decode escaped characters
+			value = value.replaceAll("&amp;", "&");
+			value = value.replaceAll("&lt;", "<");
+			value = value.replaceAll("&gt;", ">");
+			value = value.replaceAll("&quot;", "\"");
+			value = value.replaceAll("&apos;", "`");
+		}
+		this.value = value;
+	}
 
-  Object getValue( )
-  {
-//TODO clone so it can't over write when set value is called?
-    if (tags != null)
-      return tags.clone();
-    else
-      return value;
-  }
+	Object getValue() {
+		if (tags != null)
+			return tags.clone();
+		else
+			return value;
+	}
 
-  int getIntValue( )
-  {
-    return Integer.parseInt(value);
-  }
-  
-  long getLongValue( )
-  {
-    return Long.parseLong(value);
-  }
+	int getIntValue() {
+		return Integer.parseInt(value);
+	}
 
-  String getStringValue( )
-  {
-    return value;
-  }
+	long getLongValue() {
+		return Long.parseLong(value);
+	}
 
-  String getName( )
-  {
-    return tagName;
-  }
+	String getStringValue() {
+		return value;
+	}
 
-  int getLength( ) {
-    return tags.length;
-  }
+	String getName() {
+		return tagName;
+	}
 
-  Tag getTag( String tagName )
-  {
-    if (tags == null) return null;
+	int getLength() {
+		return tags.length;
+	}
 
-    //see if tagName exists in first level
-    //if it isn't the toplevel, just leave it.
-    for (int i=0;i<tags.length;i++) {
-      if (tags[i].getName().equals(tagName))
-        return tags[i];
-    }
-    return null;
-  }
-  
-  /**
-   * Get the <code>index</code>-th sub-tag, from the first level down, 
-   * with the name of <code>tagName</code>. Index count starts at zero.
-   *
-   * So if tagname = taggy, and index = 2, 
-   * get the 3rd subtag with the name of 'taggy'.
-   */
-  Tag getTag( String tagName, int index )
-  {
-    if (tags == null) return null;
+	Tag getTag(String tagName) {
+		if (tags == null)
+			return null;
 
-    //see if tagName exists in first level
-    //if it isn't the toplevel, just leave it.
-    for (int i=0,j=0;i<tags.length;i++) {
-      if (tags[i].getName().equals(tagName)) {
-        if (index == j) {
-          return tags[i];
-        }
-        else {
-          j++;
-        }
-      }
-    }
-    return null;
-  }
+		// see if tagName exists in first level
+		// if it isn't the toplevel, just leave it.
+		for (int i = 0; i < tags.length; i++) {
+			if (tags[i].getName().equals(tagName))
+				return tags[i];
+		}
+		return null;
+	}
 
-  Tag[] getTags( )
-  {
-    //clone so it can't over write when set value is called?
-    if (tags != null)
-      return tags;
-    else
-      return null;
-  }
+	/**
+	 * Get the <code>index</code>-th sub-tag, from the first level down, with
+	 * the name of <code>tagName</code>. Index count starts at zero.
+	 * 
+	 * So if tagname = taggy, and index = 2, get the 3rd subtag with the name of
+	 * 'taggy'.
+	 */
+	Tag getTag(String tagName, int index) {
+		if (tags == null)
+			return null;
 
-  /**
-   * Returns the values of this tags subtags. Which are probably more
-   * tags unless we've finally reached a leaf.
-   */
-  Object[] getTagValues()
-  {
-      if (tags == null) return null;
+		// see if tagName exists in first level
+		// if it isn't the toplevel, just leave it.
+		for (int i = 0, j = 0; i < tags.length; i++) {
+			if (tags[i].getName().equals(tagName)) {
+				if (index == j) {
+					return tags[i];
+				} else {
+					j++;
+				}
+			}
+		}
+		return null;
+	}
 
-      Object[] val = new Object[tags.length];
-      for (int i=0;i<tags.length;i++) {
-          val[i] = tags[i].getValue();
-      }
-      return val;
-  }
+	Tag[] getTags() {
+		// clone so it can't over write when set value is called?
+		if (tags != null)
+			return tags;
+		else
+			return null;
+	}
 
-  /**
-   * Convenience for addTag( new Tag(name, val) ) 
-   */
-  void addTag( String name, String val )
-  {
-    addTag( new Tag( name, val ) );
-  }
+	/**
+	 * Returns the values of this tags subtags. Which are probably more tags
+	 * unless we've finally reached a leaf.
+	 */
+	Object[] getTagValues() {
+		if (tags == null)
+			return null;
 
-  void addTag( Tag add )
-  {
-      if (tags != null) {
-          Tag[] temp = tags;
-          tags = new Tag[temp.length+1];
-          System.arraycopy(temp, 0, tags, 0, temp.length);
-          tags[temp.length] = add;
-      }
-      else {
-          tags = new Tag[]{add};
-      }
-  }
+		Object[] val = new Object[tags.length];
+		for (int i = 0; i < tags.length; i++) {
+			val[i] = tags[i].getValue();
+		}
+		return val;
+	}
 
-  void addTags( Tag[] add )
-  {
-      if (tags != null) {
-          Tag[] temp = tags;
-          tags = new Tag[temp.length+add.length];
-          System.arraycopy(temp, 0, tags, 0, temp.length);
-          System.arraycopy(add, 0, tags, temp.length, add.length);
-      }
-      else {
-          tags = add;
-      }
-  }
+	/**
+	 * Convenience for addTag( new Tag(name, val) )
+	 */
+	void addTag(String name, String val) {
+		addTag(new Tag(name, val));
+	}
 
-  public Object clone()
-    throws CloneNotSupportedException
-  {
-    return super.clone();
-  }
+	void addTag(Tag add) {
+		if (tags != null) {
+			Tag[] temp = tags;
+			tags = new Tag[temp.length + 1];
+			System.arraycopy(temp, 0, tags, 0, temp.length);
+			tags[temp.length] = add;
+		} else {
+			tags = new Tag[] { add };
+		}
+	}
 
-  public boolean equals( Object obj )
-  {
-    if (obj instanceof Tag) {
-      Tag newTag = (Tag) obj;
-      if (newTag.getName().equals(tagName)) {
-        if (newTag.getValue().equals(value)) {
-          if (newTag.getTags().equals(tags)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
+	void addTags(Tag[] add) {
+		if (tags != null) {
+			Tag[] temp = tags;
+			tags = new Tag[temp.length + add.length];
+			System.arraycopy(temp, 0, tags, 0, temp.length);
+			System.arraycopy(add, 0, tags, temp.length, add.length);
+		} else {
+			tags = add;
+		}
+	}
 
-  public String toString()
-  {
-    return tagName;
-  }
+	public Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
 
-  /**
-   * Outputs a string to send communications (function calls) to the
-   * iRODS server. All values are strings
-   */
-  String parseTag( )
-  {
-//TODO though if something isn't a string and you try to send a
-//non-printable character this way, it will get all messed up.
-//so...not sure if should be converted to Base64
-    StringBuffer parsed =
-      new StringBuffer(OPEN_START_TAG + tagName + CLOSE_START_TAG);
-    if (tags != null) {
-      for (int i=0;i<tags.length;i++) {
-        parsed.append(tags[i].parseTag());
-      }
-    }
-    else {
-      parsed.append(escapeChars(value));
-    }
-    parsed.append(OPEN_END_TAG + tagName + CLOSE_END_TAG + "\n");
+	public boolean equals(Object obj) {
+		if (obj instanceof Tag) {
+			Tag newTag = (Tag) obj;
+			if (newTag.getName().equals(tagName)) {
+				if (newTag.getValue().equals(value)) {
+					if (newTag.getTags().equals(tags)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
-    return parsed.toString();
-  }
+	public String toString() {
+		return tagName;
+	}
 
-  String escapeChars( String out )
-  {
-    if (out == null) return null;
-    out = out.replaceAll("&", "&amp;");
-    out = out.replaceAll( "<", "&lt;" );
-    out = out.replaceAll( ">", "&gt;" );
-    out = out.replaceAll( "\"", "&quot;" );
-    return out.replaceAll( "`", "&apos;" );
-  }
-/*
-  boolean isLeaf( )
-  {
-    if (tags != null)
-      return false;
-    else
-      return true;
-  }
-*/
+	/**
+	 * Outputs a string to send communications (function calls) to the iRODS
+	 * server. All values are strings
+	 */
+	String parseTag() {
+		// If something isn't a string and you try to send a
+		// non-printable character this way, it will get all messed up.
+		// so...not sure if should be converted to Base64
+		StringBuffer parsed = new StringBuffer(OPEN_START_TAG + tagName
+				+ CLOSE_START_TAG);
+		if (tags != null) {
+			for (int i = 0; i < tags.length; i++) {
+				parsed.append(tags[i].parseTag());
+			}
+		} else {
+			parsed.append(escapeChars(value));
+		}
+		parsed.append(OPEN_END_TAG + tagName + CLOSE_END_TAG + "\n");
+
+		return parsed.toString();
+	}
+
+	String escapeChars(String out) {
+		if (out == null)
+			return null;
+		out = out.replaceAll("&", "&amp;");
+		out = out.replaceAll("<", "&lt;");
+		out = out.replaceAll(">", "&gt;");
+		out = out.replaceAll("\"", "&quot;");
+		return out.replaceAll("`", "&apos;");
+	}
+	
+	/**
+	 * Just a simple message to check if there was an error.
+	 */
+	public static void status(Tag message) throws IOException {
+		Tag s = message.getTag("status");
+		if ((s != null) && (s.getIntValue() < 0))
+			throw new IRODSException("" + s.getIntValue());
+	}
+	
+	/**
+	 * Read the data buffer to discover the first tag. Fill the values of that
+	 * tag according to the above defined static final values.
+	 * 
+	 * @throws UnsupportedEncodingException
+	 *             shouldn't throw, already tested for
+	 */
+	static Tag readNextTag(byte[] data, String encoding) throws UnsupportedEncodingException {
+		return readNextTag(data, true, encoding);
+	}
+
+	static Tag readNextTag(byte[] data, boolean decode, String encoding)
+			throws UnsupportedEncodingException {
+		if (data == null)
+			return null;
+
+		String d = new String(data, encoding);
+
+		if (IRODSCommands.DEBUG > 4) {
+			System.err.println(d);
+		}
+		// remove the random '\n'
+		// had to find the end, sometimes '\n' is there, sometimes not.
+		d = d.replaceAll(CLOSE_END_TAG + "\n", "" + CLOSE_END_TAG);
+
+		int start = d.indexOf(OPEN_START_TAG), end = d.indexOf(CLOSE_START_TAG,
+				start);
+		int offset = 0;
+		if (start < 0)
+			return null;
+
+		String tagName = d.substring(start + 1, end);
+		end = d.lastIndexOf(OPEN_END_TAG + tagName + CLOSE_END_TAG);
+
+		Tag tag = new Tag(tagName);
+		offset = start + tagName.length() + 2;
+
+		while (d.indexOf(OPEN_START_TAG, offset) >= 0 && offset >= 0
+				&& offset < end) {
+			// send the rest of the bytes read
+			offset = readSubTag(tag, d, offset, decode);
+		}
+
+		return tag;
+	}
+	
+	/**
+	 * Read the data buffer to discover a sub tag. Fill the values of that tag
+	 * according to the above defined static final values.
+	 * 
+	 * @throws UnsupportedEncodingException
+	 *             shouldn't throw, already tested for
+	 */
+	private static int readSubTag(Tag tag, String data, int offset,
+			boolean decode) throws UnsupportedEncodingException {
+		// easier to just write a second slightly modified method
+		// instead of try to mix the two together,
+		// even though they are very similar.
+		int start = data.indexOf(OPEN_START_TAG, offset);
+		if (start < 0) {
+			return 1;
+		}
+		int closeStart = data.indexOf(CLOSE_START_TAG, start);
+		String tagName = data.substring(start + 1, closeStart);
+		int end = data.indexOf(OPEN_END_TAG + tagName + CLOSE_END_TAG,
+				closeStart);
+		int subTagStart = data.indexOf(OPEN_START_TAG, closeStart);
+
+		Tag subTag = new Tag(tagName);
+		tag.addTag(subTag);
+		offset = start + tagName.length() + 2;
+		if (subTagStart == end) {
+			subTag.setValue(data.substring(offset, end), decode);
+			return end + tagName.length() + 3; // endTagLocation + </endTag>
+		} else {
+			while (data.indexOf(OPEN_START_TAG, offset) >= 0 && offset >= 0
+					&& offset < end) {
+				// read the subTag, get new offset
+				offset = readSubTag(subTag, data, offset, decode);
+			}
+			return offset + tagName.length() + 3; // endTagLocation + </endTag>
+		}
+	}
+	
+
+	/**
+	 * Creates the KeyValPair_PI tag.
+	 */
+	static Tag createKeyValueTag(String keyword, String value) {
+		return createKeyValueTag(new String[][] { { keyword, value } });
+	}
+
+	/**
+	 * Creates the KeyValPair_PI tag.
+	 */
+	static Tag createKeyValueTag(String[][] keyValue) {
+		/*
+		 * Must be like the following: <KeyValPair_PI> <ssLen>3</ssLen>
+		 * <keyWord>dataType</keyWord> <keyWord>destRescName</keyWord>
+		 * <keyWord>dataIncluded</keyWord> <svalue>generic</svalue>
+		 * <svalue>resourceB</svalue> <svalue></svalue> </KeyValPair_PI>
+		 */
+
+		Tag pair = new Tag(IRODSCommands.KeyValPair_PI, new Tag(IRODSCommands.ssLen, 0));
+		int i = 0, ssLength = 0;
+
+		// return the empty Tag
+		if (keyValue == null)
+			return pair;
+
+		for (; i < keyValue.length; i++) {
+			if (keyValue[i] != null && keyValue[i][0] != null) {
+				pair.addTag(IRODSCommands.keyWord, keyValue[i][0]);
+				ssLength++;
+			}
+		}
+
+		// just use index zero because they have to be in order...
+		pair.tags[0].setValue(ssLength);
+		if (i == 0)
+			return pair;
+
+		for (i = 0; i < keyValue.length; i++) {
+			if (keyValue[i] != null && keyValue[i][0] != null) {
+				pair.addTag(IRODSCommands.svalue, keyValue[i][1]);
+			}
+		}
+
+		return pair;
+	}
+
 }

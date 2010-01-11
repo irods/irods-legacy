@@ -25,6 +25,13 @@ libraries
 ================================================================================================
 Features and Changes
 
+----------
+Compatibility testing with IRODS2.3
+
+----------
+Beginning a 'first order' refactoring of Jargon, with an emphasis on breaking large classes into smaller, reusable components.
+*extracted Tag processing in IRODSCommands to Tag
+*created IRODSAvu and extracted AVU processing from ICommands
 
 ================================================================================================
 Outstanding Issues
