@@ -1953,7 +1953,7 @@ modExeInfoForRepeat(rsComm_t *rsComm, char *ruleExecId, char* pastTime,
     else {
       if (status1 == 3 || (status1 != 2 && opStatus != 0))
         rodsLog (LOG_NOTICE,
-	      "Rule id %s set to run again at %s (frequency %s minutes)", 
+	      "Rule id %s set to run again at %s (frequency %s seconds)", 
 		 ruleExecId, myTimeNext, delay);
     }
 
