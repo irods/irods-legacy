@@ -145,9 +145,13 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
   }
   /**** This is Just a Test Stub  ****/
 
-  snprintf(collInfo.collName,MAX_NAME_LEN, "%s/%s",parColl,childName);
-  snprintf(collInfo.collOwnerName,MAX_NAME_LEN, "%s",rei->uoio->userName);
-  snprintf(collInfo.collOwnerZone,MAX_NAME_LEN, "%s",rei->uoio->rodsZone);
+  snprintf(collInfo.collName, sizeof(collInfo.collName), 
+	   "%s/%s",parColl,childName);
+  snprintf(collInfo.collOwnerName, sizeof(collInfo.collOwnerName),
+	   "%s",rei->uoio->userName);
+  snprintf(collInfo.collOwnerZone, sizeof(collInfo.collOwnerZone),
+	   "%s",rei->uoio->rodsZone);
+
 #ifdef RODS_CAT
   i =  chlRegCollByAdmin(rei->rsComm, &collInfo );
 #else
@@ -223,9 +227,13 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
    /**** End of Test Stub  ****/
 
 
-   snprintf(collInfo.collName,MAX_NAME_LEN, "%s/%s",parColl,childName);
-   snprintf(collInfo.collOwnerName,MAX_NAME_LEN, "%s",rei->uoio->userName);
-   snprintf(collInfo.collOwnerZone,MAX_NAME_LEN, "%s",rei->uoio->rodsZone);
+   snprintf(collInfo.collName, sizeof(collInfo.collName), 
+	    "%s/%s",parColl,childName);
+   snprintf(collInfo.collOwnerName, sizeof(collInfo.collOwnerName),
+	    "%s",rei->uoio->userName);
+   snprintf(collInfo.collOwnerZone, sizeof(collInfo.collOwnerZone),
+	    "%s",rei->uoio->rodsZone);
+
 #ifdef RODS_CAT
    i = chlDelCollByAdmin(rei->rsComm, &collInfo );
 #else
