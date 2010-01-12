@@ -102,10 +102,11 @@ int chlPurgeServerLoad(rsComm_t *rsComm, char *secondsAgo);
 int chlRegServerLoadDigest(rsComm_t *rsComm, char *rescName, char *loadFactor);
 int chlPurgeServerLoadDigest(rsComm_t *rsComm, char *secondsAgo);
 
-int chlCalcUsage(rsComm_t *rsComm);
+int chlCalcUsageAndQuota(rsComm_t *rsComm);
 int chlSetQuota(rsComm_t *rsComm, char *type, char *name, char *rescName,
    char *limit);
-int chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName);
+int chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName, 
+		  int *userQuota, int *quotaStatus);
 
 char *chlGetLocalZone();
 

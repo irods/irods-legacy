@@ -6963,37 +6963,46 @@ int setOverQuota(rsComm_t *rsComm) {
 }
 
 
-int chlCalcUsage(rsComm_t *rsComm) {
+int chlCalcUsageAndQuota(rsComm_t *rsComm) {
    int status;
    status = 0;
    char myTime[50];
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   rodsLog(LOG_NOTICE,
+	   "chlCalcUsageAndQuota called");
+
+
    getNowStr(myTime);
 
    /* Delete the old rows from r_quota_usage */
-   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsage SQL 1");
+   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsageAndQuota SQL 1");
    cllBindVars[cllBindVarCount++]=myTime;
    status =  cmlExecuteNoAnswerSql(
       "delete from r_quota_usage where modify_ts < ?", &icss);
    if (status !=0 && status !=CAT_SUCCESS_BUT_WITH_NO_INFO) {
-      _rollback("chlCalcUsage");
+      _rollback("chlCalcUsageAndQuota");
       return(status);
    }
 
    /* Add a row to r_quota_usage for each user's usage on each resource */
-   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsage SQL 2");
+   if (logSQL) rodsLog(LOG_SQL, "chlCalcUsageAndQuota SQL 2");
    cllBindVars[cllBindVarCount++]=myTime;
    status =  cmlExecuteNoAnswerSql(
       "insert into r_quota_usage (quota_usage, resc_id, user_id, modify_ts) (select sum(r_data_main.data_size), r_resc_main.resc_id, r_user_main.user_id, ? from r_data_main, r_user_main, r_resc_main where r_user_main.user_name = r_data_main.data_owner_name and r_user_main.zone_name = r_data_main.data_owner_zone and r_resc_main.resc_name = r_data_main.resc_name group by r_resc_main.resc_id, user_id)",
       &icss);
    if (status) {
-      _rollback("chlCalcUsage");
+      _rollback("chlCalcUsageAndQuota");
       return(status);
    }
 
    /* Set the over_quota flags where appropriate */
    status = setOverQuota(rsComm);
    if (status) {
-      _rollback("chlCalcUsage");
+      _rollback("chlCalcUsageAndQuota");
       return(status);
    }
 
@@ -7106,7 +7115,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
    /* Reset the over_quota flags based on previous usage info */
    status = setOverQuota(rsComm);
    if (status) {
-      _rollback("chlCalcUsage");
+      _rollback("chlCalcUsageAndQuota");
       return(status);
    }
 #endif
@@ -7117,7 +7126,8 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
 
 
 int 
-chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
+chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
+	      int *userQuota, int *quotaStatus) {
 /* 
  Check on a user's quota status, returning the most-over or
  nearest-over value.
@@ -7132,6 +7142,7 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
 
    char mySQL1[]="select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
 
+   *userQuota = 0;
    if (logSQL) rodsLog(LOG_SQL, "chlCheckQuota SQL 1");
    cllBindVars[cllBindVarCount++]=userName;
    cllBindVars[cllBindVarCount++]=userName;
@@ -7143,12 +7154,14 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
       rodsLog(LOG_NOTICE,
 	      "chlCheckQuota - CAT_SUCCESS_BUT_WITH_NO_INFO");
+      *quotaStatus = QUOTA_UNRESTRICTED;
       return(0);
    }
 
    if (status == CAT_NO_ROWS_FOUND) {
       rodsLog(LOG_NOTICE,
 	      "chlCheckQuota - CAT_NO_ROWS_FOUND");
+      *quotaStatus = QUOTA_UNRESTRICTED;
       return(0);
    }
 
@@ -7161,12 +7174,18 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
    }
 #endif
 
-/* for debug: */
-   rodsLog(LOG_NOTICE, "checkQuota: inUser:%s inResc:%s return:%s", 
+/* // for now, log it */
+   rodsLog(LOG_NOTICE, "checkQuota: inUser:%s inResc:%s RescId:%s Quota:%s", 
 	   userName, rescName, 
+	   icss.stmtPtr[statementNum]->resultValue[1],  /* resc_id column */
 	   icss.stmtPtr[statementNum]->resultValue[3]); /* quota_over column */
-
-
+   *userQuota = atoi(icss.stmtPtr[statementNum]->resultValue[3]);
+   if (atoi(icss.stmtPtr[statementNum]->resultValue[1])==0) {
+      *quotaStatus=QUOTA_GLOBAL;
+   }
+   else {
+      *quotaStatus=QUOTA_RESOURCE;
+   }
    cmlFreeStatement(statementNum, &icss); /* only need the one row */
 
    return(status);

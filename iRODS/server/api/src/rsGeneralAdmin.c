@@ -550,7 +550,7 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        }
     }
     if (strcmp(generalAdminInp->arg0,"calculate-usage")==0) {
-       status = chlCalcUsage(rsComm);
+       status = chlCalcUsageAndQuota(rsComm);
        return(status);
     }
     if (strcmp(generalAdminInp->arg0,"set-quota")==0) {

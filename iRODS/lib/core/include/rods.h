@@ -29,6 +29,7 @@
 #include "rodsXmsg.h"
 #include "igsi.h"
 #include "ikrb.h"
+#include "rodsQuota.h"
 
 #ifdef _WIN32
 #include "IRodsLib3.h"

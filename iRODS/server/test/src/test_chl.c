@@ -678,10 +678,14 @@ int testPurgeServerLoadDigest(rsComm_t *rsComm, char *option) {
 
 int testCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
    int status;
+   int userQuota, quotaStatus;
 
    rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
-   status = chlCheckQuota(rsComm, userName, rescName);
+   status = chlCheckQuota(rsComm, userName, rescName,
+			 &userQuota, &quotaStatus);
+   printf("chlCheckQuota status: userName:%s rescName:%s userQuota:%d quotaStatus:%d\n", userName, rescName, userQuota, quotaStatus);
+	  
 
    return(status);
 }

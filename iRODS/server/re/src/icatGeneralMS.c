@@ -100,6 +100,7 @@ This documentation is generated from the iRODS code.
  \subsection msiicat iCAT Microservices
  iCAT System Services
   - #msiVacuum - Postgres vacuum - done periodically
+  - #msiQuota - Calculates storage usage and sets quota values
   - #msiCommit  - Commits the database transaction
   - #msiRollback - Rollback the current database transaction
   - #msiCreateUser - Creates a new user
@@ -405,6 +406,56 @@ msiVacuum(ruleExecInfo_t *rei)
    rodsLog(LOG_NOTICE, "msiVacuum done\n");
 
    return(0);
+}
+
+
+/**
+ * \fn msiQuota (ruleExecInfo_t *rei)
+ *
+ * \brief  Calculates storage usage and sets quota values (over/under/how-much).
+ *
+ * \module core
+ *
+ * \since pre-2.3
+ *
+ * \author  Wayne Schroeder
+ * \date    January 2010
+ *
+ * \note
+ *
+ * \usage
+ * 
+ *  myTestRule(*arg1)||delayExec(*arg1,msiQuota,nop)|nop
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiQuota(ruleExecInfo_t *rei)
+{
+   int status;
+
+#ifdef RODS_CAT
+   rodsLog(LOG_NOTICE, "msiQuota/chlCalcUsageAndQuota called\n");
+   status = chlCalcUsageAndQuota(rei->rsComm);
+#else
+   status =  SYS_NO_RCAT_SERVER_ERR;
+#endif
+   return(status);
 }
 
 /**

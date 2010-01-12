@@ -53,6 +53,7 @@ int msiAddConditionToGenQuery(msParam_t *attribute, msParam_t *operator, msParam
 int msiPrintGenQueryOutToBuffer(msParam_t *queryOut, msParam_t *format, msParam_t *buffer, ruleExecInfo_t *rei);
 
 int msiVacuum(ruleExecInfo_t *rei);
+int msiQuota(ruleExecInfo_t *rei);
 int msiGoodFailure(ruleExecInfo_t *rei);
 int msiRegisterData(ruleExecInfo_t *rei);
 int msiCheckPermission(msParam_t *perm, ruleExecInfo_t *rei);
@@ -182,6 +183,7 @@ microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
   {"print_hello_arg", 1, (funcPtr) print_hello_arg},
   {"msiVacuum", 0, (funcPtr) msiVacuum},
+  {"msiQuota", 0, (funcPtr) msiQuota},
   {"msiGoodFailure", 0, (funcPtr) msiGoodFailure},
   {"msiSetResource", 1,(funcPtr)  msiSetResource},
   {"msiCheckPermission", 1,(funcPtr)  msiCheckPermission},
