@@ -1018,7 +1018,7 @@ public class SRBContainer extends SRBFile {
 			for (int i = 0; i < recordLists.length; i++) {
 				tempFile = (GeneralFile) files.get(i);
 				fileName = tempFile.getName();
-				registrationOffset += size;// TODO I hope the reg threads always
+				registrationOffset += size;//  I hope the reg threads always
 											// run in order...
 				size = tempFile.length();
 				dirName = (String) paths.get(i);

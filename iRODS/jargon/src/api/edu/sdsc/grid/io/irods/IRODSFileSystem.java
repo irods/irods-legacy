@@ -131,7 +131,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * held in the IRODSAccount object. The account information stored in this
 	 * object cannot be changed once constructed.
 	 * 
-	 * @param iRODSAccount
+	 * @param irodsAccount
 	 *            The iRODS account information object.
 	 * @throws NullPointerException
 	 *             if IRODSAccount is null.
@@ -139,12 +139,13 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 *             if an IOException occurs.
 	 */
 	
-	public IRODSFileSystem(IRODSAccount iRODSAccount) throws IOException,
+	public IRODSFileSystem(IRODSAccount irodsAccount) throws IOException,
 			NullPointerException {
 		commands = new IRODSCommands();
 		
 		try {
-			commands.connect(iRODSAccount);
+			log.debug("connecting the commands to the irods socket");
+			commands.connect(irodsAccount);
 		} catch (JargonException e1) {
 			log.error("jargon exception, will be rethrown as unchecked exception", e1);
 			e1.printStackTrace();
@@ -152,12 +153,13 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		}
 
 		// Get the username if they logged in with just a GSSCredential
-		if (iRODSAccount.getUserName() == null
-				|| iRODSAccount.getUserName().equals("")) {
+		if (irodsAccount.getUserName() == null
+				|| irodsAccount.getUserName().equals("")) {
+			log.debug("user logged in with GSI credential");
 			MetaDataRecordList[] rl = null;
 			try {
 				rl = query(
-						new MetaDataCondition[] { buildMetaDataConditionForGSIUser(iRODSAccount) },
+						new MetaDataCondition[] { buildMetaDataConditionForGSIUser(irodsAccount) },
 						new MetaDataSelect[] {
 								MetaDataSet
 										.newSelection(IRODSMetaDataSet.USER_NAME),
@@ -171,17 +173,18 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			}
 
 			if (rl != null && rl.length > 0) {
-				iRODSAccount.setUserName(rl[0].getStringValue(0));
-				iRODSAccount.setZone(rl[0].getStringValue(1));
-				iRODSAccount.setHomeDirectory("/" + iRODSAccount.getZone()
-						+ "/home/" + iRODSAccount.getUserName());
+				log.debug("setting irods account for GSI user:" + irodsAccount.getServerDN());
+				irodsAccount.setUserName(rl[0].getStringValue(0));
+				irodsAccount.setZone(rl[0].getStringValue(1));
+				irodsAccount.setHomeDirectory("/" + irodsAccount.getZone()
+						+ "/home/" + irodsAccount.getUserName());
 				commands.account.setUserName(rl[0].getStringValue(0));
 				commands.account.setZone(rl[0].getStringValue(1));
-				commands.account.setHomeDirectory("/" + iRODSAccount.getZone()
-						+ "/home/" + iRODSAccount.getUserName());
+				commands.account.setHomeDirectory("/" + irodsAccount.getZone()
+						+ "/home/" + irodsAccount.getUserName());
 			}
 		}
-		setAccount(iRODSAccount);
+		setAccount(irodsAccount);
 	}
 
 	/**
@@ -192,7 +195,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @throws GSSException
 	 */
 	protected MetaDataCondition buildMetaDataConditionForGSIUser(
-			IRODSAccount iRODSAccount) throws GSSException {
+			IRODSAccount irodsAccount) throws GSSException {
 
 		// check the version number and obtain the user dn using alternative
 		// metadata values, the rods2.2 version
@@ -203,13 +206,13 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			// reported version is less than the 'arguement', or prior to the
 			// protocol change
 			return MetaDataSet.newCondition(IRODSMetaDataSet.USER_DN_2_1,
-					MetaDataCondition.EQUAL, iRODSAccount.getGSSCredential()
+					MetaDataCondition.EQUAL, irodsAccount.getGSSCredential()
 							.getName().toString());
 
 		} else {
 			// version is after the rods2.2 cutoff
 			return MetaDataSet.newCondition(IRODSMetaDataSet.USER_DN,
-					MetaDataCondition.EQUAL, iRODSAccount.getGSSCredential()
+					MetaDataCondition.EQUAL, irodsAccount.getGSSCredential()
 							.getName().toString());
 		}
 

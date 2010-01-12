@@ -20,7 +20,6 @@ public class JargonSecurityException extends Exception {
 	 *
 	 */
 	public JargonSecurityException() {
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -28,7 +27,6 @@ public class JargonSecurityException extends Exception {
 	 */
 	public JargonSecurityException(final String message) {
 		super(message);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -37,7 +35,6 @@ public class JargonSecurityException extends Exception {
 	 */
 	public JargonSecurityException(final String message, final Throwable cause) {
 		super(message, cause);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -45,7 +42,6 @@ public class JargonSecurityException extends Exception {
 	 */
 	public JargonSecurityException(final Throwable cause) {
 		super(cause);
-		// TODO Auto-generated constructor stub
 	}
 
 }

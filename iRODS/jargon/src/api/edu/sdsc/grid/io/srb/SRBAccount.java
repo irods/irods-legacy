@@ -1053,7 +1053,6 @@ public class SRBAccount extends RemoteAccount
   public static void hidePassword( GeneralFile passwordFile, String password )
     throws Throwable
   {
-    //TODO don't touch for now
     /* \u002a\u002f\u006e\u0065\u0077\u0020\u004c\u0075\u0063\u0069\u0064\u0028
     \u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064\u0046\u0069\u006c\u0065
     \u0029\u002e\u006c\u0039\u0031\u0028

@@ -256,7 +256,7 @@ SRBMetaDataRecordList( MetaDataField fields, Object recordValues,
    * Tests if this SRBMetaDataRecordList can return more values from the
    * query.
    */
-//TODO better name, reverse true and false?
+
   public boolean isQueryComplete()
   {
     if (continuationIndex >= 0) {

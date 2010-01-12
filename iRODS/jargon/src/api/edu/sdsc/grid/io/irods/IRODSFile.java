@@ -74,9 +74,7 @@ import edu.sdsc.grid.io.*;
  * @see edu.sdsc.grid.io.GeneralFile
  */
 public class IRODSFile extends RemoteFile {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Standard iRODS path separator character represented as a string for
 	 * convenience. This string contains a single character, namely
@@ -112,9 +110,6 @@ public class IRODSFile extends RemoteFile {
 	private static Logger log = LoggerFactory.getLogger(IRODSFile.class);
 
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
 	/**
 	 * Connection to the iRODS server.
 	 */
@@ -165,9 +160,6 @@ public class IRODSFile extends RemoteFile {
 	 */
 	boolean useCache = false;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
 	/**
 	 * Creates a new IRODSFile instance by converting the given pathname string
 	 * into an abstract pathname.

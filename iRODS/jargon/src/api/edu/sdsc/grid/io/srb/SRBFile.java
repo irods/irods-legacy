@@ -3060,7 +3060,7 @@ I guess, if a LocalFile is a file:
       //create the registry for the files loaded so far.
       for (int i=0;i<numFiles;i++) {
         tempFile = (GeneralFile) files.get(i);
-        offset += size;//TODO ???
+        offset += size;
         size = tempFile.length();
         dirName = (String) paths.get(i);
         if ((dirName == null) || (dirName.equals(""))) {

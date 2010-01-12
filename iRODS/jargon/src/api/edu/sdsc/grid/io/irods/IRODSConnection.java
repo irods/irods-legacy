@@ -27,13 +27,12 @@ import edu.sdsc.grid.io.Host;
  * (the socket will actually be closed when done).
  * 
  * Jargon services do not directly access the <code>IRODSConnection</code>,
- * rather, they use the {@link IRODSProtocol IRODSProtocol} interface. The
+ * rather, they use the {@link IRODSCommand IRODSCommand} interface. The
  * methods in this class are not synchronized, instead, the
- * <code>IRODSProtocol</code> class will do all necessary synchronization as
+ * <code>IRODSCommand</code> class will do all necessary synchronization as
  * messages are sent and received from IRODS.
  * 
- * The connection is confined to one thread, and as such does not need to be
- * synchronized.
+ * This is a transitional refactoring, and will change in the future.
  * 
  * @author Mike Conway - DICE (www.irods.org)
  * 
@@ -194,10 +193,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	}
 
 	/*
-	 * Internal method to actually close the underlying connection by sending a
-	 * disconnect to IRODS, and then physically closing down the socket. This
-	 * method will be called at the appropriate time by the (@link
-	 * IRODSConnectionManager IRODSConnectionManager} at the appropriate time.
+	 * physically closing down the socket. This
+	 * method will be called at the appropriate time by {@link
+	 * IRODSCommands IRODSCommands} at the appropriate time.
 	 * 
 	 * @throws JargonException
 	 */
@@ -495,12 +493,27 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			log.debug("functionID: " + intInfo);
 		}
 
-		// FIXME: change to string builder
-		String header = "<MsgHeader_PI>" + "<type>" + type + "</type>"
-				+ "<msgLen>" + messageLength + "</msgLen>" + "<errorLen>"
-				+ errorLength + "</errorLen>" + "<bsLen>" + byteStringLength
-				+ "</bsLen>" + "<intInfo>" + intInfo + "</intInfo>"
-				+ "</MsgHeader_PI>";
+		StringBuilder headerBuilder = new StringBuilder();
+		headerBuilder.append("<MsgHeader_PI>");
+		headerBuilder.append("<type>");
+		headerBuilder.append(type);
+		headerBuilder.append("</type>");
+		headerBuilder.append("<msgLen>");
+		headerBuilder.append(messageLength);
+		headerBuilder.append("</msgLen>");
+		headerBuilder.append("<errorLen>");
+		headerBuilder.append(errorLength);
+		headerBuilder.append("</errorLen>");
+		headerBuilder.append("<bsLen>");
+		headerBuilder.append(byteStringLength);
+		headerBuilder.append("</bsLen>");
+		headerBuilder.append("<intInfo>");
+		headerBuilder.append(intInfo);
+		headerBuilder.append("</intInfo>");
+		headerBuilder.append("</MsgHeader_PI>");
+
+		String header = headerBuilder.toString();
+		
 		byte[] temp = header.getBytes(encoding);
 		byte[] full = new byte[4 + temp.length];
 		// load first 4 byte with header length

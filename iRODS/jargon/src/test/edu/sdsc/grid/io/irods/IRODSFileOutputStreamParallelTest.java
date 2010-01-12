@@ -87,10 +87,8 @@ public class IRODSFileOutputStreamParallelTest {
         GeneralFile sourceFile = FileFactory.newFile(new URI(
                     sourceFileName.toString()));
 
-        // point to an irods file and put it
-        URI irodsUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
-                testFileName);
-        IRODSFile destFile = (IRODSFile) FileFactory.newFile(irodsUri);
+        String irodsFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+        IRODSFile destFile = new IRODSFile(irodsFileSystem, irodsFileName);
         irodsFileSystem.commands.put(sourceFile, destFile, false);
         
         assertionHelper.assertIrodsFileOrCollectionExists(IRODS_TEST_SUBDIR_PATH + '/' + testFileName);

@@ -840,7 +840,7 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 	void put(GeneralFile source, IRODSFile destination, boolean overwriteFlag)
 			throws IOException {
 
-		String resource = destination.getResource();
+		String resource = destination.getResource();  
 		long length = source.length();
 
 		if (length > TRANSFER_THREAD_SIZE) {

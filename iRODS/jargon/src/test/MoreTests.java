@@ -142,7 +142,6 @@ System.out.println("\n Connect to the fileSystem.");
       // Test iRODS AVU metadata
       //*******************************
       
-      //TODO can't query two different AVU at once
       //where a1=1 select file_name,a2
       MetaDataCondition conditions[] = { MetaDataSet.newCondition( 
               "a1", MetaDataCondition.EQUAL, "myValue" ) };
