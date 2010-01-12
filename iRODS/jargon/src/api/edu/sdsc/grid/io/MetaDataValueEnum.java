@@ -41,79 +41,61 @@
 //
 package edu.sdsc.grid.io;
 
-
-
 /**
- * Some meta data fields have a specific list of values that they
- * allow. A "meta data value enum" describes one such value.
+ * Some meta data fields have a specific list of values that they allow. A
+ * "meta data value enum" describes one such value.
  *<P>
- * There are no 'set' methods. Once constructed, the object cannot
- * be changed.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * There are no 'set' methods. Once constructed, the object cannot be changed.
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public final class MetaDataValueEnum
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public final class MetaDataValueEnum {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
+	private String value;
 
+	private String description;
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-  private String value;
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
+	/**
+	 * Construct a a value enum. The constructor is package private and is only
+	 * called by MetaDataGroup classes when they set up their descriptions of
+	 * themselves.
+	 */
+	MetaDataValueEnum(String value, String description) {
+		this.value = value;
+		this.description = description;
+	}
 
-  private String description;
+	// ----------------------------------------------------------------------
+	// Getters
+	// ----------------------------------------------------------------------
+	/**
+	 * This is the string that is usable, verbatum, as a value for the field
+	 * when building conditionals. It is also one of the expected values that
+	 * may be returned by a query containing this field.
+	 * 
+	 * @return The value string for this enum item.
+	 */
+	public String getValue() {
+		return value;
+	}
 
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * Construct a a value enum.
-   * The constructor is package private and is only called by
-   * MetaDataGroup classes when they set up their descriptions of
-   * themselves.
-   */
-  MetaDataValueEnum( String value, String description )
-  {
-    this.value = value;
-    this.description = description;
-  }
-
-
-//----------------------------------------------------------------------
-// Getters
-//----------------------------------------------------------------------
-  /**
-   * This is the string that is usable, verbatum, as
-   * a value for the field when building conditionals.
-   * It is also one of the expected values that may be
-   * returned by a query containing this field.
-   *
-   * @return The value string for this enum item.
-   */
-  public String getValue( )
-  {
-    return value;
-  }
-
-
-
-  /**
-   * This string may be displayed by a GUI. It has no
-   * embedded carriage returns, so the application is
-   * expected to insert line breaks to wrap the text
-   * appropriately for its way of displaying it.
-   *
-   * @return A description string for this enum value.
-   */
-  public String getDescription( )
-  {
-    return description;
-  }
+	/**
+	 * This string may be displayed by a GUI. It has no embedded carriage
+	 * returns, so the application is expected to insert line breaks to wrap the
+	 * text appropriately for its way of displaying it.
+	 * 
+	 * @return A description string for this enum value.
+	 */
+	public String getDescription() {
+		return description;
+	}
 }
-

@@ -49,175 +49,160 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
- * An object to hold the user information used when connecting
- * to a remote file system.
+ * An object to hold the user information used when connecting to a remote file
+ * system.
  *<P>
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public abstract class RemoteAccount extends GeneralAccount
-{
+public abstract class RemoteAccount extends GeneralAccount {
 
-	  private static Logger log = LoggerFactory.getLogger(RemoteAccount.class);
+	private static Logger log = LoggerFactory.getLogger(RemoteAccount.class);
 
-	
-  /**
-   * The host to connect to on the server.
-   */
-  protected String host;
+	/**
+	 * The host to connect to on the server.
+	 */
+	protected String host;
 
-  /**
-   * The port to connect to on the server.
-   */
-  protected int port;
+	/**
+	 * The port to connect to on the server.
+	 */
+	protected int port;
 
-  /**
-   * The user name to send to the server.
-   */
-  protected String userName;
+	/**
+	 * The user name to send to the server.
+	 */
+	protected String userName;
 
-  /**
-   * Currently, just the text password.
-   */
-  protected String password;
+	/**
+	 * Currently, just the text password.
+	 */
+	protected String password;
 
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
+	/**
+	 * Constructs an object to hold the user information used when connecting to
+	 * a remote server.
+	 * <P>
+	 * 
+	 * @param host
+	 *            the remote system domain name
+	 * @param port
+	 *            the port on the remote system
+	 * @param userName
+	 *            the user name
+	 * @param password
+	 *            the password
+	 * @param homeDirectory
+	 *            home directory on the remote system
+	 */
+	public RemoteAccount(String host, int port, String userName,
+			String password, String homeDir) {
+		super(homeDir);
+		setHost(host);
+		setPort(port);
+		setUserName(userName);
+		setPassword(password);
+	}
 
+	/**
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
+	 * <P>
+	 */
+	protected void finalize() {
+		super.finalize();
+		host = null;
+		userName = null;
+		password = null;
+	}
 
+	// ----------------------------------------------------------------------
+	// Setters and Getters
+	// ----------------------------------------------------------------------
+	/**
+	 * Sets the host of this RemoteAccount.
+	 * 
+	 * @throws NullPointerException
+	 *             if host is null.
+	 */
+	public void setHost(String host) {
+		if (host == null)
+			throw new NullPointerException("The host string cannot be null");
 
+		this.host = host;
+	}
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * Constructs an object to hold the user information used when connecting
-   * to a remote server.
-   * <P>
-   * @param  host the remote system domain name
-   * @param  port the port on the remote system
-   * @param  userName the user name
-   * @param  password the password
-   * @param  homeDirectory home directory on the remote system
-   */
-  public RemoteAccount( String host, int port, String userName, String password,
-    String homeDir )
-  {
-    super( homeDir );
-    setHost( host );
-    setPort( port );
-    setUserName( userName );
-    setPassword( password );
-  }
+	/**
+	 * Sets the port of this RemoteAccount. Port numbers can not be negative.
+	 */
+	public void setPort(int port) {
+		if (port > 0)
+			this.port = port;
+		else {
+			throw new IllegalArgumentException("Invalid port number");
+		}
+	}
 
+	/**
+	 * Sets the userName of this RemoteAccount.
+	 */
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
 
-  /**
-   * Finalizes the object by explicitly letting go of each of
-   * its internally held values.
-   * <P>
-   */
-  protected void finalize( )
-  {
-    super.finalize();
-    host = null;
-    userName = null;
-    password = null;
-  }
+	/**
+	 * Sets the client password.
+	 */
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
+	/**
+	 * Returns the host used by this RemoteAccount.
+	 */
+	public String getHost() {
+		return host;
+	}
 
+	/**
+	 * Returns the port used by this RemoteAccount.
+	 */
+	public int getPort() throws IllegalArgumentException {
+		return port;
+	}
 
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
-  /**
-   * Sets the host of this RemoteAccount.
-   *
-   * @throws  NullPointerException  if host is null.
-   */
-  public void setHost( String host )
-  {
-    if ( host == null )
-      throw new NullPointerException( "The host string cannot be null");
+	/**
+	 * Returns the userName used by this RemoteAccount.
+	 */
+	public String getUserName() {
+		return userName;
+	}
 
-    this.host = host;
-  }
+	/**
+	 * Returns the password used by this RemoteAccount.
+	 */
+	public String getPassword() {
+		return password;
+	}
 
-  /**
-   * Sets the port of this RemoteAccount. Port numbers can not be negative.
-   */
-  public void setPort( int port )
-  {
-    if (port > 0)
-      this.port = port;
-    else {
-      throw new IllegalArgumentException("Invalid port number");
-    }
-  }
+	/**
+	 * Return the URI representation of this Account object.
+	 * 
+	 * @param includePassword
+	 *            If true, the account's password will be included in the URI,
+	 *            if possible.
+	 */
+	public URI toURI(boolean includePassword) {
 
-  /**
-   * Sets the userName of this RemoteAccount.
-   */
-  public void setUserName( String userName )
-  {
-    this.userName = userName;
-  }
-
-  /**
-   * Sets the client password.
-   */
-  public void setPassword( String password )
-  {
-    this.password = password;
-  }
-
-  /**
-   * Returns the host used by this RemoteAccount.
-   */
-  public String getHost( )
-  {
-    return host;
-  }
-
-  /**
-   * Returns the port used by this RemoteAccount.
-   */
-  public int getPort( )
-    throws IllegalArgumentException
-  {
-    return port;
-  }
-
-
-  /**
-   * Returns the userName used by this RemoteAccount.
-   */
-  public String getUserName( )
-  {
-    return userName;
-  }
-
-  /**
-   * Returns the password used by this RemoteAccount.
-   */
-  public String getPassword( )
-  {
-    return password;
-  }
-  
-  /**
-   * Return the URI representation of this Account object. 
-   *
-   * @param includePassword If true, the account's password will be included
-   *  in the URI, if possible.
-   */
-  public URI toURI( boolean includePassword )
-  {
-    
-    try {
-      return new URI(toString());  
-    } catch ( URISyntaxException e ) {
-      log.warn("URI Syntax Exception logged and ignored", e);
-    }
-    return null;
-  }
+		try {
+			return new URI(toString());
+		} catch (URISyntaxException e) {
+			log.warn("URI Syntax Exception logged and ignored", e);
+		}
+		return null;
+	}
 }
-

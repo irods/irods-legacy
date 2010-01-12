@@ -104,10 +104,12 @@ public class User extends Domain {
 	}
 
 	public void modifyDN(String userName, String newValue) throws IOException {
-		if (irodsFileSystem.commands.getReportedIRODSVersion().equals("rods2.1")) {
-			//String[] args = { "modify", "user", userName, "dn", newValue };
-			//irodsFileSystem.commands.admin(args);
-			throw new UnsupportedOperationException("operation not supported in 2.1");
+		if (irodsFileSystem.commands.getReportedIRODSVersion()
+				.equals("rods2.1")) {
+			// String[] args = { "modify", "user", userName, "dn", newValue };
+			// irodsFileSystem.commands.admin(args);
+			throw new UnsupportedOperationException(
+					"operation not supported in 2.1");
 		} else {
 			String[] args = { "modify", "user", userName, "addAuth", newValue };
 			irodsFileSystem.commands.admin(args);

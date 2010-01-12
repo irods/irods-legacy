@@ -40,9 +40,8 @@ public class Tag implements Cloneable {
 	static final char CLOSE_START_TAG = '>';
 	static final String OPEN_END_TAG = "</";
 	static final char CLOSE_END_TAG = '>';
-	
-	private static Logger log = LoggerFactory.getLogger(Tag.class);
 
+	private static Logger log = LoggerFactory.getLogger(Tag.class);
 
 	/**
 	 * iRODS name of the tag
@@ -285,7 +284,7 @@ public class Tag implements Cloneable {
 		out = out.replaceAll("\"", "&quot;");
 		return out.replaceAll("`", "&apos;");
 	}
-	
+
 	/**
 	 * Just a simple message to check if there was an error.
 	 */
@@ -294,7 +293,7 @@ public class Tag implements Cloneable {
 		if ((s != null) && (s.getIntValue() < 0))
 			throw new IRODSException("" + s.getIntValue());
 	}
-	
+
 	/**
 	 * Read the data buffer to discover the first tag. Fill the values of that
 	 * tag according to the above defined static final values.
@@ -302,7 +301,8 @@ public class Tag implements Cloneable {
 	 * @throws UnsupportedEncodingException
 	 *             shouldn't throw, already tested for
 	 */
-	public static Tag readNextTag(byte[] data, String encoding) throws UnsupportedEncodingException {
+	public static Tag readNextTag(byte[] data, String encoding)
+			throws UnsupportedEncodingException {
 		return readNextTag(data, true, encoding);
 	}
 
@@ -340,7 +340,7 @@ public class Tag implements Cloneable {
 
 		return tag;
 	}
-	
+
 	/**
 	 * Read the data buffer to discover a sub tag. Fill the values of that tag
 	 * according to the above defined static final values.
@@ -378,7 +378,6 @@ public class Tag implements Cloneable {
 			return offset + tagName.length() + 3; // endTagLocation + </endTag>
 		}
 	}
-	
 
 	/**
 	 * Creates the KeyValPair_PI tag.
@@ -398,7 +397,8 @@ public class Tag implements Cloneable {
 		 * <svalue>resourceB</svalue> <svalue></svalue> </KeyValPair_PI>
 		 */
 
-		Tag pair = new Tag(IRODSConstants.KeyValPair_PI, new Tag(IRODSConstants.ssLen, 0));
+		Tag pair = new Tag(IRODSConstants.KeyValPair_PI, new Tag(
+				IRODSConstants.ssLen, 0));
 		int i = 0, ssLength = 0;
 
 		// return the empty Tag

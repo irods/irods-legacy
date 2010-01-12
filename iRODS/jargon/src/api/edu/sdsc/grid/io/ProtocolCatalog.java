@@ -45,45 +45,39 @@ import edu.sdsc.grid.io.srb.*;
 
 import java.util.Vector;
 
-
 /**
- * The ProtocolCatalog stores all the metadata query protocols available
- * for querying.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * The ProtocolCatalog stores all the metadata query protocols available for
+ * querying.
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public class ProtocolCatalog
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public class ProtocolCatalog {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
+	private static Vector protocols = new Vector();
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-  private static Vector protocols = new Vector();
+	ProtocolCatalog() {
+		super();
+	}
 
+	public static void add(Protocol protocol) {
+		protocols.add(protocol);
+	}
 
-  ProtocolCatalog()
-  {
-    super();
-  }
-
-
-  public static void add( Protocol protocol ) {
-    protocols.add( protocol );
-  }
-
-  /**
-   * Check if the protocol was already loaded
-   */
-  public static boolean has( Protocol protocol ) {
-    for (int i=protocols.size()-1; i>=0; i--) {
-      if (protocols.get(i).equals( protocol )) {
-        return true;
-      }
-    }
-    return false;
-  }
+	/**
+	 * Check if the protocol was already loaded
+	 */
+	public static boolean has(Protocol protocol) {
+		for (int i = protocols.size() - 1; i >= 0; i--) {
+			if (protocols.get(i).equals(protocol)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

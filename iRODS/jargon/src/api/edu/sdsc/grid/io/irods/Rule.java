@@ -135,11 +135,11 @@ class Rule {
 		}
 	}
 
-	
-	static Parameter[] executeRule(final IRODSFileSystem irodsFileSystem, String rule) throws IOException {
+	static Parameter[] executeRule(final IRODSFileSystem irodsFileSystem,
+			String rule) throws IOException {
 		Vector<Parameter> inputs = new Vector<Parameter>();
 		Vector<Parameter> outputs = new Vector<Parameter>();
-		
+
 		StringTokenizer tokens = new StringTokenizer(rule, "\n");
 
 		String ruleBody = processRuleBody(tokens);
@@ -157,13 +157,12 @@ class Rule {
 
 		processRuleOutputLine(tokens, outputs);
 
-		return Rule.readResult(irodsFileSystem, irodsFileSystem.commands.executeRule(
-				ruleBody, inputs.toArray(new Parameter[0]), outputs
-						.toArray(new Parameter[0])));
+		return Rule.readResult(irodsFileSystem, irodsFileSystem.commands
+				.executeRule(ruleBody, inputs.toArray(new Parameter[0]),
+						outputs.toArray(new Parameter[0])));
 
-		
 	}
-	
+
 /**
 	 * ?to be deprecated {@see edu.sdsc.grid.io.irods.IRODSCommands#executeRule(String, Parameter[], Parameter[]) 
 	 * *need a cleaner way to do this
@@ -185,7 +184,7 @@ class Rule {
 		while ((read = ruleStream.read(b)) != -1) {
 			rule.append(new String(b, 0, read));
 		}
-		
+
 		return executeRule(fileSystem, rule.toString());
 	}
 
@@ -339,8 +338,8 @@ class Rule {
 					value = processRuleResponseTag(fileSystem, label, type,
 							value, msParam);
 
-				} 
-					parameters[i] = new Parameter(label, value, type);
+				}
+				parameters[i] = new Parameter(label, value, type);
 			}
 
 			fileSystem.commands.operationComplete(0);

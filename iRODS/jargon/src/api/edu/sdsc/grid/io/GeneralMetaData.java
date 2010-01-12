@@ -43,86 +43,79 @@
 //
 package edu.sdsc.grid.io;
 
-
 /**
- * The metadata naming interface for general metadata.
- * Some meta groups are standard regardless of implementation. To
- * handle standard metadata, we defined interfaces that are implemented
- * by protocol-specific metadata groups. The GeneralMetaData interface
- * contract is that the implementor supports meta data we might find
- * as common general metadata, such as:
+ * The metadata naming interface for general metadata. Some meta groups are
+ * standard regardless of implementation. To handle standard metadata, we
+ * defined interfaces that are implemented by protocol-specific metadata groups.
+ * The GeneralMetaData interface contract is that the implementor supports meta
+ * data we might find as common general metadata, such as:
  *<ul>
- * <li>  FILE_NAME
- * <li>  FILE_GROUP_NAME
- * <li>  SIZE
- * <li>  CREATION_DATE
- * <li>  MODIFICATION_DATE
- * <li>  OWNER
- * <li>  ACCESS_CONSTRAINT
- * <li>  FILE_COMMENTS
- * <li>  DIRECTORY_NAME
+ * <li>FILE_NAME
+ * <li>FILE_GROUP_NAME
+ * <li>SIZE
+ * <li>CREATION_DATE
+ * <li>MODIFICATION_DATE
+ * <li>OWNER
+ * <li>ACCESS_CONSTRAINT
+ * <li>FILE_COMMENTS
+ * <li>DIRECTORY_NAME
  *</ul>
  *<P>
- * An implementation specific class, such as SRB general metadata
- * support these fields, but also may support further other metadata
- * fields, such as:
+ * An implementation specific class, such as SRB general metadata support these
+ * fields, but also may support further other metadata fields, such as:
  *<ul>
- * <li>  Replication number
- * <li>  File type
- * <li>  Data classification name
- * <li>  Data classification type
- * <li>  Access constraint
- * <li>  Comments
- * <li>  Comments date
- * <li>  Deleted flag
- * <li>  Owner domain
- * <li>  Owner email address
+ * <li>Replication number
+ * <li>File type
+ * <li>Data classification name
+ * <li>Data classification type
+ * <li>Access constraint
+ * <li>Comments
+ * <li>Comments date
+ * <li>Deleted flag
+ * <li>Owner domain
+ * <li>Owner email address
  *</ul>
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public interface GeneralMetaData extends StandardMetaData
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-  public final static String FILE_GROUP_NAME  =  "file group name";
-  
-  /**
-   * File size
-   */
-  public final static String SIZE  =  "file size";
-  
-  /**
-   * File creation date
-   */
-  public final static String CREATION_DATE  =  "file creation date";
-  
-  /**
-   * File modification date
-   */
-  public final static String MODIFICATION_DATE  =  "file modification date";
-  
-  /**
-   * File owner
-   */
-  public final static String OWNER  =  "file owner";
-  
-  /**
-   * File access constraint/permissions.
-   */
-  public final static String ACCESS_CONSTRAINT  =  "file access constraint";
-//  public final static String FILE_ID  =  "file id";
+public interface GeneralMetaData extends StandardMetaData {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
+	public final static String FILE_GROUP_NAME = "file group name";
 
+	/**
+	 * File size
+	 */
+	public final static String SIZE = "file size";
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	/**
+	 * File creation date
+	 */
+	public final static String CREATION_DATE = "file creation date";
 
+	/**
+	 * File modification date
+	 */
+	public final static String MODIFICATION_DATE = "file modification date";
 
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
+	/**
+	 * File owner
+	 */
+	public final static String OWNER = "file owner";
 
+	/**
+	 * File access constraint/permissions.
+	 */
+	public final static String ACCESS_CONSTRAINT = "file access constraint";
+	// public final static String FILE_ID = "file id";
+
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
+
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 
 }

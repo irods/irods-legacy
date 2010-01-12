@@ -50,182 +50,171 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-
 import edu.sdsc.grid.io.*;
 import org.ietf.jgss.*;
 
 /**
- * An object to hold the user information used when connecting
- * to a FTP file system.
+ * An object to hold the user information used when connecting to a FTP file
+ * system.
  *<P>
- * @author	Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public class FTPAccount extends RemoteAccount
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public class FTPAccount extends RemoteAccount {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-
-
-  /**
-   * Set to true if this account should attempt to use the GridFTP protocol.
-   */
-  boolean useGridFTP = false;
-  
-  GSSCredential credential;
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-	/**
-	 * Constructs an object to hold the user information used when connecting
-	 * to a ftp server.
-	 * <P>
-	 * @param	host the ftp system domain name
-	 * @param	port the port on the ftp system
-	 * @param	userName the user name
-	 * @param	password the password
-	 * @param	homeDirectory home directory on the ftp system
-	 */
-	public FTPAccount( String host, int port, String userName, String password,
-		String homeDirectory )
-	{
-		super( host, port, userName, password, homeDirectory );
-	}
-
-  /**
-	 * Constructs an object to hold the user information used when connecting
-	 * to a ftp server.
-	 * <P>
-	 * @param	host the ftp system domain name
-	 * @param	port the port on the ftp system
-	 * @param	userName the user name
-	 * @param	password the password
-	 * @param	homeDirectory home directory on the ftp system
-	 */
-	public FTPAccount( String host, int port, String userName, GSSCredential credential,
-		String homeDirectory )
-	{
-		super( host, port, userName, "", homeDirectory );
-    this.credential = credential;
-    useGridFTP = true;
-	}
-
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
 	/**
-	 * Finalizes the object by explicitly letting go of each of
-	 * its internally held values.
+	 * Set to true if this account should attempt to use the GridFTP protocol.
+	 */
+	boolean useGridFTP = false;
+
+	GSSCredential credential;
+
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
+	/**
+	 * Constructs an object to hold the user information used when connecting to
+	 * a ftp server.
+	 * <P>
+	 * 
+	 * @param host
+	 *            the ftp system domain name
+	 * @param port
+	 *            the port on the ftp system
+	 * @param userName
+	 *            the user name
+	 * @param password
+	 *            the password
+	 * @param homeDirectory
+	 *            home directory on the ftp system
+	 */
+	public FTPAccount(String host, int port, String userName, String password,
+			String homeDirectory) {
+		super(host, port, userName, password, homeDirectory);
+	}
+
+	/**
+	 * Constructs an object to hold the user information used when connecting to
+	 * a ftp server.
+	 * <P>
+	 * 
+	 * @param host
+	 *            the ftp system domain name
+	 * @param port
+	 *            the port on the ftp system
+	 * @param userName
+	 *            the user name
+	 * @param password
+	 *            the password
+	 * @param homeDirectory
+	 *            home directory on the ftp system
+	 */
+	public FTPAccount(String host, int port, String userName,
+			GSSCredential credential, String homeDirectory) {
+		super(host, port, userName, "", homeDirectory);
+		this.credential = credential;
+		useGridFTP = true;
+	}
+
+	/**
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
 	 * <P>
 	 */
-	protected void finalize( )
-	{
+	protected void finalize() {
 		super.finalize();
 
 	}
 
-
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Setters and Getters
+	// ----------------------------------------------------------------------
 	/**
 	 * Sets the home directory of this FTPAccount.
-	 *
-	 * @throws	NullPointerException	if homeDirectory is null.
+	 * 
+	 * @throws NullPointerException
+	 *             if homeDirectory is null.
 	 */
-	public void setHomeDirectory( String homeDirectory )
-	{
-		if ( homeDirectory == null )
+	public void setHomeDirectory(String homeDirectory) {
+		if (homeDirectory == null)
 			throw new NullPointerException(
-				"The home directory string cannot be null");
+					"The home directory string cannot be null");
 
 		this.homeDirectory = homeDirectory;
 	}
 
-	public void setPort( int port )
-	{
+	public void setPort(int port) {
 		if (port > 0)
 			this.port = port;
 		else {
-      //default ftp port
+			// default ftp port
 			this.port = 21;
 		}
 	}
 
-  URI getURI()
-  {
-    try {
-      return new URI(toString());
-    } catch (URISyntaxException e) {
-      IllegalArgumentException x = new IllegalArgumentException("Invalid URI");
-      x.initCause(e);
-      throw x;
-    }
-  }
-
-  URL getURL()
-  {
-    try {
-      return getURI().toURL();
-    } catch (MalformedURLException e) {
-      IllegalArgumentException x = new IllegalArgumentException("Invalid URI");
-      x.initCause(e);
-      throw x;
-    }
-  }
-
-
-
-
-  public boolean isUseGridFTP( )
-  {
-    return useGridFTP;
-  }
-
-  public void setUseGridFTP( boolean useGridFTP )
-  {
-    this.useGridFTP = useGridFTP;
-  }
-
-
-  public void setGSSCredential( GSSCredential credential )
-  {
-    this.credential = credential;
-  }
-
-  public GSSCredential getGSSCredential( )
-  {
-    return credential;
-  }
-
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
-	/**
-	 * Tests this account object for equality with the
-	 * given object.
-	 * Returns <code>true</code> if and only if the argument is not
-	 * <code>null</code> and both are account objects with equivalent connection
-   * parameters.
-	 *
-	 * @param   obj   The object to be compared with this abstract pathname
-	 *
-	 * @return  <code>true</code> if and only if the objects are the same;
-	 *          <code>false</code> otherwise
-	 */
-	public boolean equals( Object obj )
-	{
+	URI getURI() {
 		try {
-  		if (obj == null || !(obj instanceof FTPAccount) )
-  			return false;
+			return new URI(toString());
+		} catch (URISyntaxException e) {
+			IllegalArgumentException x = new IllegalArgumentException(
+					"Invalid URI");
+			x.initCause(e);
+			throw x;
+		}
+	}
+
+	URL getURL() {
+		try {
+			return getURI().toURL();
+		} catch (MalformedURLException e) {
+			IllegalArgumentException x = new IllegalArgumentException(
+					"Invalid URI");
+			x.initCause(e);
+			throw x;
+		}
+	}
+
+	public boolean isUseGridFTP() {
+		return useGridFTP;
+	}
+
+	public void setUseGridFTP(boolean useGridFTP) {
+		this.useGridFTP = useGridFTP;
+	}
+
+	public void setGSSCredential(GSSCredential credential) {
+		this.credential = credential;
+	}
+
+	public GSSCredential getGSSCredential() {
+		return credential;
+	}
+
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
+	/**
+	 * Tests this account object for equality with the given object. Returns
+	 * <code>true</code> if and only if the argument is not <code>null</code>
+	 * and both are account objects with equivalent connection parameters.
+	 * 
+	 * @param obj
+	 *            The object to be compared with this abstract pathname
+	 * 
+	 * @return <code>true</code> if and only if the objects are the same;
+	 *         <code>false</code> otherwise
+	 */
+	public boolean equals(Object obj) {
+		try {
+			if (obj == null || !(obj instanceof FTPAccount))
+				return false;
 
 			FTPAccount temp = (FTPAccount) obj;
 
@@ -238,7 +227,7 @@ public class FTPAccount extends RemoteAccount
 			if (!getPassword().equals(temp.getPassword()))
 				return false;
 
-			//else //everything is equal
+			// else //everything is equal
 			return true;
 		} catch (ClassCastException e) {
 			return false;
@@ -248,10 +237,8 @@ public class FTPAccount extends RemoteAccount
 	/**
 	 * Returns a string representation of this file system object.
 	 */
-	public String toString( )
-	{
-		return new String(
-     "ftp://"+getUserName()+"@"+getHost()+":"+getPort()+getHomeDirectory() );
+	public String toString() {
+		return new String("ftp://" + getUserName() + "@" + getHost() + ":"
+				+ getPort() + getHomeDirectory());
 	}
 }
-

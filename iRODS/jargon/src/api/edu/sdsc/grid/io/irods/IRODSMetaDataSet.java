@@ -64,7 +64,6 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 
 	private static Logger log = LoggerFactory.getLogger(IRODSMetaDataSet.class);
 
-	
 	// Metadata attribute names
 	// irods file access, beyond FileMetaData
 	public static final String FILE_REPLICA_STATUS = "File Replica Status";
@@ -625,7 +624,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final String COPIES_KW = "copies"; // the number of copies
 	static final String EXEC_LOCALLY_KW = "execLocally"; // execute locally
 	static final String FORCE_FLAG_KW = "forceFlag"; // force update
-	static final String CLI_IN_SVR_FIREWALL_KW = "cliInSvrFirewall"; 
+	static final String CLI_IN_SVR_FIREWALL_KW = "cliInSvrFirewall";
 	static final String REG_CHKSUM_KW = "regChksum"; // register checksum
 	static final String VERIFY_CHKSUM_KW = "verifyChksum"; // verify checksum
 	static final String VERIFY_BY_SIZE_KW = "verifyBySize"; // verify by size -
@@ -679,10 +678,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	// RESC_NAME_KW is defined above
 
 	static final String RESC_ZONE_KW = "zoneName";
-	static final String RESC_LOC_KW = "rescLoc"; 
+	static final String RESC_LOC_KW = "rescLoc";
 	static final String RESC_TYPE_KW = "rescType";
 	static final String RESC_CLASS_KW = "rescClass";
-	static final String RESC_VAULT_PATH_KW = "rescVaultPath"; 
+	static final String RESC_VAULT_PATH_KW = "rescVaultPath";
 	static final String NUM_OPEN_PORTS_KW = "numOpenPorts";
 	static final String PARA_OPR_KW = "paraOpr";
 	static final String GATEWAY_ADDR_KW = "gateWayAddr";
@@ -703,7 +702,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final String RODS_ZONE_CLIENT_KW = "rodsZoneClient";
 	static final String HOST_CLIENT_KW = "hostClient";
 	static final String USER_TYPE_CLIENT_KW = "userTypeClient";
-	static final String AUTH_STR_CLIENT_KW = "authStrClient"; 
+	static final String AUTH_STR_CLIENT_KW = "authStrClient";
 	static final String USER_AUTH_SCHEME_CLIENT_KW = "userAuthSchemeClient";
 	static final String USER_INFO_CLIENT_KW = "userInfoClient";
 	static final String USER_COMMENT_CLIENT_KW = "userCommentClient";
@@ -713,7 +712,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final String RODS_ZONE_PROXY_KW = "rodsZoneProxy";
 	static final String HOST_PROXY_KW = "hostProxy";
 	static final String USER_TYPE_PROXY_KW = "userTypeProxy";
-	static final String AUTH_STR_PROXY_KW = "authStrProxy"; 
+	static final String AUTH_STR_PROXY_KW = "authStrProxy";
 	static final String USER_AUTH_SCHEME_PROXY_KW = "userAuthSchemeProxy";
 	static final String USER_INFO_PROXY_KW = "userInfoProxy";
 	static final String USER_COMMENT_PROXY_KW = "userCommentProxy";
@@ -724,7 +723,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	// The following are the keyWord definition for the collCond key/value pair
 
 	static final String COLL_NAME_KW = "collName";
-	static final String COLL_PARENT_NAME_KW = "collParentName"; 
+	static final String COLL_PARENT_NAME_KW = "collParentName";
 	static final String COLL_OWNER_NAME_KW = "collOwnername";
 	static final String COLL_OWNER_ZONE_KW = "collOwnerZone";
 	static final String COLL_MAP_ID_KW = "collMapId";
@@ -1334,7 +1333,8 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 				field = (MetaDataField) metaDataFields.get(iRODSToJargon
 						.get(Integer.decode(fieldName)));
 			} catch (NumberFormatException e) {
-				log.warn("number format exceptinofor field:" + fieldName + " logged and ignored");
+				log.warn("number format exceptinofor field:" + fieldName
+						+ " logged and ignored");
 			}
 		}
 

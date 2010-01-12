@@ -43,82 +43,64 @@
 //
 package edu.sdsc.grid.io;
 
-
 /**
  * The RemoteFileSystem class is the common superclass for connection
- * implementations to remote file systems. It provides the framework
- * to support a wide range of remote semantics.
- * Specifically, the functions needed to interact with a remote system
- * are provided abstractly by RemoteFileSystem and concretely by its
- * subclass(es).
+ * implementations to remote file systems. It provides the framework to support
+ * a wide range of remote semantics. Specifically, the functions needed to
+ * interact with a remote system are provided abstractly by RemoteFileSystem and
+ * concretely by its subclass(es).
  *<P>
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public abstract class RemoteFileSystem extends GeneralFileSystem
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public abstract class RemoteFileSystem extends GeneralFileSystem {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Setters and Getters
+	// ----------------------------------------------------------------------
+	// Remote
+	/**
+	 * Returns the host used by the remote account using this RemoteFileSystem.
+	 */
+	public String getHost() throws NullPointerException {
+		return ((RemoteAccount) account).getHost();
+	}
 
+	/**
+	 * Returns the port used by this remote account using this RemoteFileSystem.
+	 */
+	public int getPort() throws IllegalArgumentException {
+		return ((RemoteAccount) account).getPort();
+	}
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
+	/**
+	 * Returns the user name used by this remote account using this
+	 * RemoteFileSystem.
+	 */
+	public String getUserName() throws NullPointerException {
+		return ((RemoteAccount) account).getUserName();
+	}
 
+	/**
+	 * Returns the password used by this RemoteAccount.
+	 */
+	public String getPassword() {
+		return ((RemoteAccount) account).getPassword();
+	}
 
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
-//Remote
-  /**
-   * Returns the host used by the remote account using this RemoteFileSystem.
-   */
-  public String getHost( )
-    throws NullPointerException
-  {
-    return ((RemoteAccount) account).getHost( );
-  }
-
-  /**
-   * Returns the port used by this remote account using this
-   * RemoteFileSystem.
-   */
-  public int getPort( )
-    throws IllegalArgumentException
-  {
-    return ((RemoteAccount) account).getPort( );
-  }
-
-
-  /**
-   * Returns the user name used by this remote account using
-   * this RemoteFileSystem.
-   */
-  public String getUserName( )
-    throws NullPointerException
-  {
-    return ((RemoteAccount) account).getUserName( );
-  }
-
-  /**
-   * Returns the password used by this RemoteAccount.
-   */
-  public String getPassword( )
-  {
-    return ((RemoteAccount) account).getPassword( );
-  }
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 
 }
-

@@ -46,73 +46,59 @@ package edu.sdsc.grid.io.local;
 
 import edu.sdsc.grid.io.*;
 
-
 /**
  * LocalMetaDataRecordList does nothing. It exists for compatability.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
- * @since   Jargon1.0
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
+ * @since Jargon1.0
  */
-public class LocalMetaDataRecordList extends MetaDataRecordList
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public class LocalMetaDataRecordList extends MetaDataRecordList {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
+	/**
+	 * Does nothing
+	 */
+	public LocalMetaDataRecordList() {
+		super(new MetaDataField[1], new Object[1]);
+	}
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Iterator methods
+	// ----------------------------------------------------------------------
+	/**
+	 * @throws UnsupportedOperationException
+	 */
+	public boolean isQueryComplete() {
+		throw new UnsupportedOperationException();
+	}
 
+	/**
+	 * @throws UnsupportedOperationException
+	 */
+	public MetaDataRecordList[] getMoreResults() {
+		throw new UnsupportedOperationException();
+	}
 
+	/**
+	 * @throws UnsupportedOperationException
+	 */
+	public MetaDataRecordList[] getMoreResults(int numOfResults) {
+		throw new UnsupportedOperationException();
+	}
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * Does nothing
-   */
-  public LocalMetaDataRecordList(  )
-  {
-    super( new MetaDataField[1], new Object[1] );
-  }
-
-
-//----------------------------------------------------------------------
-//  Iterator methods
-//----------------------------------------------------------------------
-  /**
-   * @throws UnsupportedOperationException
-   */
-  public boolean isQueryComplete()
-  {
-    throw new UnsupportedOperationException();
-  }
-
-
-  /**
-   * @throws UnsupportedOperationException
-   */
-  public MetaDataRecordList[] getMoreResults()
-  {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
-   * @throws UnsupportedOperationException
-   */
-  public MetaDataRecordList[] getMoreResults( int numOfResults )
-  {
-    throw new UnsupportedOperationException();
-  }
-
-
-  /**
-   * @throws UnsupportedOperationException
-   */
-  public MetaDataRecordList[] getAllResults()
-  {
-    throw new UnsupportedOperationException();
-  }
+	/**
+	 * @throws UnsupportedOperationException
+	 */
+	public MetaDataRecordList[] getAllResults() {
+		throw new UnsupportedOperationException();
+	}
 }

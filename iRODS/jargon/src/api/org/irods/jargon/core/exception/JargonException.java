@@ -3,7 +3,6 @@
  */
 package org.irods.jargon.core.exception;
 
-
 /**
  * A general exception that has occurrred in IRODS.
  * 
@@ -38,7 +37,6 @@ public class JargonException extends Exception {
 	public JargonException(final String message, final Throwable cause) {
 		super(message, cause);
 	}
-
 
 	/**
 	 * @param cause

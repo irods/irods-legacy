@@ -72,17 +72,20 @@ import edu.sdsc.grid.io.Namespace;
 import static edu.sdsc.grid.io.irods.IRODSConstants.*;
 
 /**
- * Instances of this class support mid-level communication with the IRODS Server.  The encapsulated {@link IRODSConnection IRODSConnection} class will
- * handle the low-level communication.  This class is responsible for any necessary synchronization.  <code>IRODSConnection</code> does no synchronization 
- * itself.
+ * Instances of this class support mid-level communication with the IRODS
+ * Server. The encapsulated {@link IRODSConnection IRODSConnection} class will
+ * handle the low-level communication. This class is responsible for any
+ * necessary synchronization. <code>IRODSConnection</code> does no
+ * synchronization itself.
  * 
- * Note that the arrangement of this class is transitional, with further refactoring planned for later versions.
+ * Note that the arrangement of this class is transitional, with further
+ * refactoring planned for later versions.
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON2.0
  */
 class IRODSCommands {
-	
+
 	private static Logger log = LoggerFactory.getLogger(IRODSCommands.class);
 
 	public static String encoding = "utf-8";
@@ -91,15 +94,17 @@ class IRODSCommands {
 			new String(new byte[0], encoding);
 		} catch (UnsupportedEncodingException e) {
 			encoding = java.nio.charset.Charset.defaultCharset().name();
-			
-				log.error("utf-8 unavailable " + e.getLocalizedMessage());
+
+			log.error("utf-8 unavailable " + e.getLocalizedMessage());
 		}
-		
+
 	}
-		
-	/* this accounts visibility is not private because the GSI authentication alters some of the values,
-	this may require later refactoring */
-	
+
+	/*
+	 * this accounts visibility is not private because the GSI authentication
+	 * alters some of the values, this may require later refactoring
+	 */
+
 	IRODSAccount account;
 	private IRODSConnection irodsConnection;
 
@@ -110,19 +115,18 @@ class IRODSCommands {
 
 	private String reportedIRODSVersion = "";
 
-	//MetaDataCondition[] conditions;
+	// MetaDataCondition[] conditions;
 
 	IRODSCommands() {
 
 	}
 
-	
 	/**
 	 * Handles connection protocol.
 	 * 
 	 * @throws IOException
 	 *             if the host cannot be opened or created.
-	 * @throws JargonException 
+	 * @throws JargonException
 	 */
 	void connect(IRODSAccount irodsAccount) throws IOException, JargonException {
 		Tag message;
@@ -132,13 +136,12 @@ class IRODSCommands {
 
 		if (log.isDebugEnabled()) {
 			date = new Date().getTime();
-			log.debug("Connecting to server, " + account.getHost()
-					+ ":" + account.getPort() + " running version: "
+			log.debug("Connecting to server, " + account.getHost() + ":"
+					+ account.getPort() + " running version: "
 					+ IRODSAccount.version + " as username: "
 					+ account.getUserName() + "\ntime: " + date);
 		}
 
-		
 		// Send the user info
 		message = sendStartupPacket(account);
 		// check for an error (throws IRODSException if an error occurred)
@@ -154,7 +157,8 @@ class IRODSCommands {
 	}
 
 	void sendStandardPassword() throws IOException {
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0, 0, AUTH_REQUEST_AN));
+		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0,
+				0, AUTH_REQUEST_AN));
 		irodsConnection.flush();
 		Tag message = irodsConnection.readMessage(false);
 
@@ -182,15 +186,20 @@ class IRODSCommands {
 	}
 
 	void sendGSIPassword() throws IOException {
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0, 0, GSI_AUTH_REQUEST_AN));
+		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0,
+				0, GSI_AUTH_REQUEST_AN));
 		irodsConnection.flush();
 
-		/* Create and send the response
-		 * note that this is the one use of the get methods for the socket and streams of the connection in Jargon.  This is not optimal, and 
-		*  will be refactored at a later time */
+		/*
+		 * Create and send the response note that this is the one use of the get
+		 * methods for the socket and streams of the connection in Jargon. This
+		 * is not optimal, and will be refactored at a later time
+		 */
 
-		account.serverDN = irodsConnection.readMessage(false).getTag(ServerDN).getStringValue();
-		new GSIAuth(account, irodsConnection.getConnection(), irodsConnection.getIrodsOutputStream(), irodsConnection.getIrodsInputStream());
+		account.serverDN = irodsConnection.readMessage(false).getTag(ServerDN)
+				.getStringValue();
+		new GSIAuth(account, irodsConnection.getConnection(), irodsConnection
+				.getIrodsOutputStream(), irodsConnection.getIrodsInputStream());
 	}
 
 	/**
@@ -222,8 +231,6 @@ class IRODSCommands {
 	synchronized void close() throws JargonException {
 		irodsConnection.shutdown();
 	}
-
-	
 
 	/**
 	 * Handles sending the userinfo connection protocol. First, sends initial
@@ -257,7 +264,8 @@ class IRODSCommands {
 				new Tag(apiVersion, IRODSAccount.getAPIVersion()),
 				new Tag(option, IRODSAccount.getOption()), });
 		String out = startupPacket.parseTag();
-		irodsConnection.send(irodsConnection.createHeader(RODS_CONNECT, out.length(), 0, 0, 0));
+		irodsConnection.send(irodsConnection.createHeader(RODS_CONNECT, out
+				.length(), 0, 0, 0));
 		irodsConnection.send(out);
 		irodsConnection.flush();
 		Tag responseMessage = irodsConnection.readMessage();
@@ -314,7 +322,8 @@ class IRODSCommands {
 		} catch (GeneralSecurityException e) {
 			SecurityException se = new SecurityException();
 			se.initCause(e);
-			log.error("general security exception, initCause is:" + e.getMessage(), e);
+			log.error("general security exception, initCause is:"
+					+ e.getMessage(), e);
 			throw se;
 		}
 
@@ -329,11 +338,11 @@ class IRODSCommands {
 		// new sun.misc.BASE64Encoder().encode( chal );
 	}
 
-	
 	/**
 	 * Create a typical iRODS api call Tag
 	 */
-	synchronized Tag irodsFunction(String type, Tag message, int intInfo) throws IOException {
+	synchronized Tag irodsFunction(String type, Tag message, int intInfo)
+			throws IOException {
 		return irodsFunction(type, message, 0, null, 0, null, intInfo);
 	}
 
@@ -350,8 +359,9 @@ class IRODSCommands {
 		if (log.isDebugEnabled()) {
 			log.debug(out);
 		}
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out.getBytes(encoding).length,
-				errorLength, byteStringLength, intInfo));
+		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
+				.getBytes(encoding).length, errorLength, byteStringLength,
+				intInfo));
 		irodsConnection.send(out);
 		if (byteStringLength > 0)
 			irodsConnection.send(bytes, byteOffset, byteStringLength);
@@ -370,8 +380,9 @@ class IRODSCommands {
 		if (log.isDebugEnabled()) {
 			log.debug(out);
 		}
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out.getBytes(encoding).length,
-				errorLength, byteStringLength, intInfo));
+		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
+				.getBytes(encoding).length, errorLength, byteStringLength,
+				intInfo));
 		irodsConnection.send(out);
 		if (errorLength > 0)
 			irodsConnection.send(errorStream, errorLength);
@@ -393,7 +404,8 @@ class IRODSCommands {
 	 * @throws java.io.IOException
 	 */
 	String miscServerInfo() throws IOException {
-		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0, 0, GET_MISC_SVR_INFO_AN));
+		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0,
+				0, GET_MISC_SVR_INFO_AN));
 		irodsConnection.flush();
 		Tag message = irodsConnection.readMessage();
 		return message.parseTag();
@@ -492,7 +504,7 @@ class IRODSCommands {
 
 		boolean done = false;
 		Tag ackResult = reply;
-	
+
 		while (!done) {
 			if (ackResult.getLength() > 0) {
 				if (ackResult.tagName.equals(CollOprStat_PI)) {
@@ -514,7 +526,8 @@ class IRODSCommands {
 						done = true;
 					} else {
 
-						irodsConnection.sendInNetworkOrder(SYS_CLI_TO_SVR_COLL_STAT_REPLY);
+						irodsConnection
+								.sendInNetworkOrder(SYS_CLI_TO_SVR_COLL_STAT_REPLY);
 						irodsConnection.flush();
 						ackResult = irodsConnection.readMessage();
 					}
@@ -642,12 +655,12 @@ class IRODSCommands {
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_READ_AN);
 		// Need the total dataSize
 		if (message == null)
-			return -1; 
+			return -1;
 
 		length = message.getTag(MsgHeader_PI).getTag(bsLen).getIntValue();
 
 		// read the message byte stream into the local file
-		
+
 		int read = irodsConnection.read(buffer, offset, length);
 
 		if (read == message.getTag(MsgHeader_PI).getTag(intInfo).getIntValue()) {
@@ -667,7 +680,7 @@ class IRODSCommands {
 	 *            <code>long</code> that is the offset value
 	 * @param whence
 	 *            <code>int</code> that specifies the postion to compute the
-	 *            offset from 
+	 *            offset from
 	 * @return <code>long</code with the new offset.
 	 * @throws IOException
 	 */
@@ -678,7 +691,8 @@ class IRODSCommands {
 				|| whence == GeneralRandomAccessFile.SEEK_END) {
 			// ok
 		} else {
-			log.error("Illegal Argument exception, whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
+			log
+					.error("Illegal Argument exception, whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
 			throw new IllegalArgumentException(
 					"whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
 		}
@@ -795,7 +809,8 @@ class IRODSCommands {
 					}
 				} catch (InterruptedException e) {
 					if (log.isWarnEnabled()) {
-						log.warn("interrupted exception, this is logged and ignored");
+						log
+								.warn("interrupted exception, this is logged and ignored");
 						e.printStackTrace();
 					}
 				}
@@ -805,7 +820,8 @@ class IRODSCommands {
 			}
 		} else {
 			// read the message byte stream into the local file
-irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length);
+			irodsConnection.read(FileFactory.newRandomAccessFile(destination,
+					"rw"), length);
 		}
 
 	}
@@ -840,7 +856,7 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 	void put(GeneralFile source, IRODSFile destination, boolean overwriteFlag)
 			throws IOException {
 
-		String resource = destination.getResource();  
+		String resource = destination.getResource();
 		long length = source.length();
 
 		if (length > TRANSFER_THREAD_SIZE) {
@@ -854,12 +870,15 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 				keyword[2] = new String[] { IRODSMetaDataSet.DEST_RESC_NAME_KW,
 						resource };
 			}
-			Tag message = new Tag(DataObjInp_PI, new Tag[] {
-					new Tag(objPath, destination.getAbsolutePath()),
-					new Tag(createMode, 448), // octal for 700 owner has rw
-					new Tag(openFlags, 1), new Tag(offset, 0),
-					new Tag(dataSize, length), new Tag(numThreads, 0),
-					new Tag(oprType, PUT_OPR), Tag.createKeyValueTag(keyword), });
+			Tag message = new Tag(DataObjInp_PI,
+					new Tag[] {
+							new Tag(objPath, destination.getAbsolutePath()),
+							new Tag(createMode, 448), // octal for 700 owner has
+														// rw
+							new Tag(openFlags, 1), new Tag(offset, 0),
+							new Tag(dataSize, length), new Tag(numThreads, 0),
+							new Tag(oprType, PUT_OPR),
+							Tag.createKeyValueTag(keyword), });
 
 			message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PUT_AN);
 
@@ -915,7 +934,8 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 						}
 					} catch (InterruptedException e) {
 						if (log.isWarnEnabled()) {
-							log.warn("interrupted exception, this is logged and ignored");
+							log
+									.warn("interrupted exception, this is logged and ignored");
 							e.printStackTrace();
 						}
 					}
@@ -940,12 +960,15 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 				keyword[3] = new String[] { IRODSMetaDataSet.DEST_RESC_NAME_KW,
 						resource };
 			}
-			Tag message = new Tag(DataObjInp_PI, new Tag[] {
-					new Tag(objPath, destination.getAbsolutePath()),
-					new Tag(createMode, 448), // octal for 700 owner has rw
-					new Tag(openFlags, 1), new Tag(offset, 0),
-					new Tag(dataSize, length), new Tag(numThreads, 0),
-					new Tag(oprType, PUT_OPR), Tag.createKeyValueTag(keyword), });
+			Tag message = new Tag(DataObjInp_PI,
+					new Tag[] {
+							new Tag(objPath, destination.getAbsolutePath()),
+							new Tag(createMode, 448), // octal for 700 owner has
+														// rw
+							new Tag(openFlags, 1), new Tag(offset, 0),
+							new Tag(dataSize, length), new Tag(numThreads, 0),
+							new Tag(oprType, PUT_OPR),
+							Tag.createKeyValueTag(keyword), });
 			// send the message, no result expected.
 			// exception thrown on error.
 			irodsFunction(RODS_API_REQ, message, 0, null, length, FileFactory
@@ -972,7 +995,8 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 		}
 
 		if (values.length < 2 || values.length > 3) {
-			log.error("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+			log
+					.error("metadata length must be 2 (name and value) or 3 (name, value, units) ");
 			throw new IllegalArgumentException(
 					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
 		}
@@ -1097,12 +1121,17 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 	}
 
 	void deleteReplica(IRODSFile file, String resource) throws IOException {
-		Tag message = new Tag(DataObjInp_PI, new Tag[] {
-				new Tag(objPath, file.getAbsolutePath()),
-				new Tag(createMode, 0), new Tag(openFlags, 0),
-				new Tag(offset, 0), new Tag(dataSize, 0),
-				new Tag(numThreads, 0), new Tag(oprType, 0),
-				Tag.createKeyValueTag(IRODSMetaDataSet.RESC_NAME_KW, resource), });
+		Tag message = new Tag(DataObjInp_PI,
+				new Tag[] {
+						new Tag(objPath, file.getAbsolutePath()),
+						new Tag(createMode, 0),
+						new Tag(openFlags, 0),
+						new Tag(offset, 0),
+						new Tag(dataSize, 0),
+						new Tag(numThreads, 0),
+						new Tag(oprType, 0),
+						Tag.createKeyValueTag(IRODSMetaDataSet.RESC_NAME_KW,
+								resource), });
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_TRIM_AN);
 	}
@@ -1177,11 +1206,11 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 
 	void extractBundle(IRODSFile tarFile, IRODSFile directory)
 			throws IOException {
-		Tag message = new Tag(StructFileExtAndRegInp_PI,
-				new Tag[] { new Tag(objPath, tarFile.getAbsolutePath()),
-						new Tag(collection, directory.getAbsolutePath()),
-						new Tag(oprType, 0), new Tag(flags, 0),
-						Tag.createKeyValueTag(null) });
+		Tag message = new Tag(StructFileExtAndRegInp_PI, new Tag[] {
+				new Tag(objPath, tarFile.getAbsolutePath()),
+				new Tag(collection, directory.getAbsolutePath()),
+				new Tag(oprType, 0), new Tag(flags, 0),
+				Tag.createKeyValueTag(null) });
 
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
@@ -1189,12 +1218,9 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress, String somePathInfoMaybe_whoknows)
 			throws IOException {
-		Tag message = new Tag(ExecCmd_PI, new Tag[] {
-				new Tag(cmd, command),
-				new Tag(cmdArgv, args), 
-				new Tag(execAddr, hostAddress), 
-				new Tag(hintPath, ""),
-				new Tag(addPathToArgv, 0), 
+		Tag message = new Tag(ExecCmd_PI, new Tag[] { new Tag(cmd, command),
+				new Tag(cmdArgv, args), new Tag(execAddr, hostAddress),
+				new Tag(hintPath, ""), new Tag(addPathToArgv, 0),
 				Tag.createKeyValueTag(null) });
 		String buffer = "";
 
@@ -1280,18 +1306,20 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 	Tag executeRule(String rule, Parameter[] input, Parameter[] output)
 			throws IOException {
 		// create the rule tag
-		Tag message = new Tag(ExecMyRuleInp_PI, new Tag[] {
-				new Tag(myRule, rule),
-				new Tag(RHostAddr_PI, new Tag[] { new Tag(hostAddr, ""),
-						new Tag(rodsZone, ""), new Tag(port, 0),
-						new Tag(dummyInt, 0), }), Tag.createKeyValueTag(null), });
+		Tag message = new Tag(ExecMyRuleInp_PI,
+				new Tag[] {
+						new Tag(myRule, rule),
+						new Tag(RHostAddr_PI, new Tag[] {
+								new Tag(hostAddr, ""), new Tag(rodsZone, ""),
+								new Tag(port, 0), new Tag(dummyInt, 0), }),
+						Tag.createKeyValueTag(null), });
 
 		// add output parameter tags
 		// They get cat together seperated by '%'
 		if (output != null) {
 			String temp = "";
 			for (Parameter out : output)
-				temp += out.getUniqueName() + "%"; 
+				temp += out.getUniqueName() + "%";
 			// should this % be here?
 
 			message.addTag(new Tag(outParamDesc, temp.substring(0, temp
@@ -1384,23 +1412,15 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 
 		if (arg == null) {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {
-					new Tag(sql, statement), 
-					new Tag(arg1, ""),
-					new Tag(arg2, ""),
-					new Tag(arg3, ""),
-					new Tag(arg4, ""),
-					new Tag(control, 0),
-					new Tag(form, 1),
+					new Tag(sql, statement), new Tag(arg1, ""),
+					new Tag(arg2, ""), new Tag(arg3, ""), new Tag(arg4, ""),
+					new Tag(control, 0), new Tag(form, 1),
 					new Tag(maxBufSize, 1024), });
 		} else {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {
-					new Tag(sql, statement), 
-					new Tag(arg1, arg),
-					new Tag(arg2, ""),
-					new Tag(arg3, ""),
-					new Tag(arg4, ""),
-					new Tag(control, 0),
-					new Tag(form, 1),
+					new Tag(sql, statement), new Tag(arg1, arg),
+					new Tag(arg2, ""), new Tag(arg3, ""), new Tag(arg4, ""),
+					new Tag(control, 0), new Tag(form, 1),
 					new Tag(maxBufSize, 1024), });
 		}
 
@@ -1432,7 +1452,8 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 					"Query must have at least one select value");
 		} else {
 			// fix the selects if there are AVU parts
-			selects = IRODSAvu.checkForAVU(conditions, selects, namespace, selectedAVU);
+			selects = IRODSAvu.checkForAVU(conditions, selects, namespace,
+					selectedAVU);
 		}
 		selects = (MetaDataSelect[]) IRODSFileSystem
 				.cleanNullsAndDuplicates(selects);
@@ -1454,8 +1475,9 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 		// package the conditions
 		if (conditions != null) {
 			// fix the conditions if there are AVU parts, also remove nulls
-			conditions = (MetaDataCondition[]) IRODSFileSystem 
-					.cleanNullsAndDuplicates(IRODSAvu.checkForAVU(conditions, namespace));
+			conditions = (MetaDataCondition[]) IRODSFileSystem
+					.cleanNullsAndDuplicates(IRODSAvu.checkForAVU(conditions,
+							namespace));
 
 			subTags = new Tag[conditions.length * 2 + 1];
 			subTags[0] = new Tag(isLen, conditions.length);
@@ -1751,8 +1773,8 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 			while (transferLength > 0) {
 				// need Math.min or reads into what the other threads are
 				// transferring
-				read = in.read(buffer, 0, (int) Math.min(IRODSConnection.OUTPUT_BUFFER_LENGTH,
-						transferLength));
+				read = in.read(buffer, 0, (int) Math.min(
+						IRODSConnection.OUTPUT_BUFFER_LENGTH, transferLength));
 				if (read > 0) {
 					transferLength -= read;
 					out.write(buffer, 0, read);
@@ -1795,8 +1817,8 @@ irodsConnection.read(FileFactory.newRandomAccessFile(destination, "rw"), length)
 			}
 
 			while (length > 0) {
-				read = in.read(buffer, 0, Math.min(IRODSConnection.OUTPUT_BUFFER_LENGTH,
-						(int) length));
+				read = in.read(buffer, 0, Math.min(
+						IRODSConnection.OUTPUT_BUFFER_LENGTH, (int) length));
 				if (read > 0) {
 					length -= read;
 					if (length == 0) {

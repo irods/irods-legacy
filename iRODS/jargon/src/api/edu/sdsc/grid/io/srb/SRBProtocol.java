@@ -45,50 +45,44 @@ package edu.sdsc.grid.io.srb;
 
 import edu.sdsc.grid.io.Protocol;
 
-
 /**
- *
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public class SRBProtocol extends Protocol
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-  final static String SRB_PROTOCOL_NAME = "SRBProtocol";
-  final static String SRB_PROTOCOL_HELP = "";
+public class SRBProtocol extends Protocol {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
+	final static String SRB_PROTOCOL_NAME = "SRBProtocol";
+	final static String SRB_PROTOCOL_HELP = "";
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
-
-
-//----------------------------------------------------------------------
-//  Methods
-//----------------------------------------------------------------------
-  /**
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
+	/**
    *
    */
-  public SRBProtocol( )
-  {
-    super( SRB_PROTOCOL_NAME, SRB_PROTOCOL_HELP );
-    metaDataSet = new SRBMetaDataSet(this);
-  }
+	public SRBProtocol() {
+		super(SRB_PROTOCOL_NAME, SRB_PROTOCOL_HELP);
+		metaDataSet = new SRBMetaDataSet(this);
+	}
 
+	/**
+	 * If and only if the object is an instance of SRBProtocol.
+	 */
+	public boolean equals(Object obj) {
+		if (obj != null) {
+			if (obj instanceof SRBProtocol) {
+				return true;
+			}
+		}
 
-  /**
-   * If and only if the object is an instance of SRBProtocol.
-   */
-  public boolean equals( Object obj ) {
-    if (obj != null) {
-      if (obj instanceof SRBProtocol) {
-        return true;
-      }
-    }
-
-    return false;
-  }
+		return false;
+	}
 
 }

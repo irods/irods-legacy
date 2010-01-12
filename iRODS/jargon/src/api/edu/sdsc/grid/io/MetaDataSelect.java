@@ -41,162 +41,128 @@
 //
 package edu.sdsc.grid.io;
 
-
-
 /**
- * A "meta data select" indicates a single field that should be returned
- * on a query.
+ * A "meta data select" indicates a single field that should be returned on a
+ * query.
  *<P>
- * There are no 'set' methods - once constructed, the object cannot
- * be changed.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * There are no 'set' methods - once constructed, the object cannot be changed.
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public class MetaDataSelect
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-//TODO various operation constants
+public class MetaDataSelect {
 
+	/**
+	 * The field to be selected by this object
+	 */
+	private MetaDataField field;
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-  /**
-   * The field to be selected by this object
-   */
-  private MetaDataField field;
+	/**
+	 * Operations include:
+	 *<ul>
+	 *<li>count or count-distinct
+	 *<li>max or min
+	 *<li>avg or sum
+	 *<li>variance or stddev
+	 *</ul>
+	 */
+	private int operation = 1;
 
-  /**
-   * Operations include:
-   *<ul>
-   *<li>  count or count-distinct
-   *<li>  max or min
-   *<li>  avg or sum
-   *<li>  variance or stddev
-   *</ul>
-   */
-  private int operation = 1;
+	/**
+	 * The constructor is package private and is only called by the
+	 * MetaDataGroup classes on a call to their factory methods to create
+	 * selection objects. Those factory methods take a field name and check that
+	 * it is legal before they construct a selection object.
+	 */
+	protected MetaDataSelect(MetaDataField field) {
+		if (field == null)
+			throw new NullPointerException("field cannot be null.");
 
+		this.field = field;
+	}
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * The constructor is package private and is only called by the
-   * MetaDataGroup classes on a call to their factory methods to create
-   * selection objects. Those factory methods take a field name and
-   * check that it is legal before they construct a selection object.
-   */
-  protected MetaDataSelect( MetaDataField field )
-  {
-    if (field == null)
-      throw new NullPointerException("field cannot be null.");
+	/**
+	 * Constructs a metadata selection object containing the given field name,
+	 * and the chosen operation. Operations include:
+	 *<ul>
+	 *<li>count or count-distinct
+	 *<li>max or min
+	 *<li>avg or sum
+	 *<li>variance or stddev
+	 *</ul>
+	 */
+	protected MetaDataSelect(MetaDataField field, int operation) {
+		if (field == null)
+			throw new NullPointerException("field cannot be null.");
 
-    this.field = field;
-  }
+		this.field = field;
+		if (operation >= 0)
+			this.operation = operation;
+	}
 
-  /**
-   * Constructs a metadata selection object containing
-   * the given field name, and the chosen operation.
-   * Operations include:
-   *<ul>
-   *<li>  count or count-distinct
-   *<li>  max or min
-   *<li>  avg or sum
-   *<li>  variance or stddev
-   *</ul>
-   */
-  protected MetaDataSelect( MetaDataField field, int operation )
-  {
-    if (field == null)
-      throw new NullPointerException("field cannot be null.");
+	/**
+	 * Returns the name of the field selected by this object.
+	 */
+	public String getFieldName() {
+		return field.getName();
+	}
 
-    this.field = field;
-    if (operation >= 0)
-      this.operation = operation;
-  }
+	/**
+	 * Returns the MetaDataField object describing the field selected by this
+	 * object.
+	 */
+	public MetaDataField getField() {
+		return field;
+	}
 
+	/**
+	 * Returns the operation code on this selection. Typically this is '1' and
+	 * just flags this field as one to return in a query. Other operation codes
+	 * include those for:
+	 *<ul>
+	 *<li>count or count-distinct
+	 *<li>max or min
+	 *<li>avg or sum
+	 *<li>variance or stddev
+	 *</ul>
+	 */
+	public int getOperation() {
+		return operation;
+	}
 
+	/**
+	 * Returns a string representation of the object.
+	 */
+	public String toString() {
+		return new String(field.getName());
+	}
 
-//----------------------------------------------------------------------
-// Getters
-//----------------------------------------------------------------------
-  /**
-   * Returns the name of the field selected by this object.
-   */
-  public String getFieldName( )
-  {
-    return field.getName();
-  }
+	/**
+	 * Tests this MetaDataSelect object for equality with the given object.
+	 * Returns <code>true</code> if and only if the argument is not
+	 * <code>null</code> and both are MetaDataSelect objects with equal field
+	 * and operation values.
+	 * 
+	 * @param obj
+	 *            The object to be compared with this abstract pathname
+	 * 
+	 * @return <code>true</code> if and only if the objects are the same;
+	 *         <code>false</code> otherwise
+	 */
+	public boolean equals(Object obj) {
+		try {
+			if (obj == null)
+				return false;
 
+			MetaDataSelect temp = (MetaDataSelect) obj;
 
-  /**
-   * Returns the MetaDataField object describing
-   * the field selected by this object.
-   */
-  public MetaDataField getField( )
-  {
-    return field;
-  }
-
-
-
-  /**
-   * Returns the operation code on this selection.
-   * Typically this is '1' and just flags this field as
-   * one to return in a query. Other operation codes
-   * include those for:
-   *<ul>
-   *<li>  count or count-distinct
-   *<li>  max or min
-   *<li>  avg or sum
-   *<li>  variance or stddev
-   *</ul>
-   */
-  public int getOperation( )
-  {
-    return operation;
-  }
-
-  /**
-   * Returns a string representation of the object.
-   */
-  public String toString()
-  {
-     return new String( field.getName() );
-  }
-
-
-
-  /**
-   * Tests this MetaDataSelect object for equality with the given object.
-   * Returns <code>true</code> if and only if the argument is not
-   * <code>null</code> and both are MetaDataSelect objects with equal
-   * field and operation values.
-   *
-   * @param   obj   The object to be compared with this abstract pathname
-   *
-   * @return  <code>true</code> if and only if the objects are the same;
-   *          <code>false</code> otherwise
-   */
-  public boolean equals(Object obj)
-  {
-    try {
-      if (obj == null)
-        return false;
-
-      MetaDataSelect temp = (MetaDataSelect) obj;
-
-      if (getField().equals(temp.getField())) {
-        if (getOperation() == temp.getOperation()) {
-          return true;
-        }
-      }
-    } catch (ClassCastException e) {
-      return false;
-    }
-    return false;
-  }
+			if (getField().equals(temp.getField())) {
+				if (getOperation() == temp.getOperation()) {
+					return true;
+				}
+			}
+		} catch (ClassCastException e) {
+			return false;
+		}
+		return false;
+	}
 }

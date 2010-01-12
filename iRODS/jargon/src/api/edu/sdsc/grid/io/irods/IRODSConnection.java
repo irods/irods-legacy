@@ -27,16 +27,16 @@ import edu.sdsc.grid.io.Host;
  * (the socket will actually be closed when done).
  * 
  * Jargon services do not directly access the <code>IRODSConnection</code>,
- * rather, they use the {@link IRODSCommand IRODSCommand} interface. The
- * methods in this class are not synchronized, instead, the
- * <code>IRODSCommand</code> class will do all necessary synchronization as
- * messages are sent and received from IRODS.
+ * rather, they use the {@link IRODSCommand IRODSCommand} interface. The methods
+ * in this class are not synchronized, instead, the <code>IRODSCommand</code>
+ * class will do all necessary synchronization as messages are sent and received
+ * from IRODS.
  * 
  * This is a transitional refactoring, and will change in the future.
  * 
  * @author Mike Conway - DICE (www.irods.org)
  * 
- * note: eventually switch to default visibiity so no methods are public
+ *         note: eventually switch to default visibiity so no methods are public
  * 
  */
 public final class IRODSConnection implements IRODSManagedConnection {
@@ -193,9 +193,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	}
 
 	/*
-	 * physically closing down the socket. This
-	 * method will be called at the appropriate time by {@link
-	 * IRODSCommands IRODSCommands} at the appropriate time.
+	 * physically closing down the socket. This method will be called at the
+	 * appropriate time by {@link IRODSCommands IRODSCommands} at the
+	 * appropriate time.
 	 * 
 	 * @throws JargonException
 	 */
@@ -283,11 +283,10 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		if (log.isDebugEnabled()) {
 			log.debug("write summary: " + new String(value));
 		}
-		/*if (log.isTraceEnabled()) {
-			for (int i = 0; i < value.length; i++) {
-				log.trace("trace:" + value[i] + " ");
-			}
-		}*/
+		/*
+		 * if (log.isTraceEnabled()) { for (int i = 0; i < value.length; i++) {
+		 * log.trace("trace:" + value[i] + " "); } }
+		 */
 
 		if ((value.length + outputOffset) >= OUTPUT_BUFFER_LENGTH) {
 			// in cases where OUTPUT_BUFFER_LENGTH isn't big enough
@@ -468,15 +467,17 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		}
 		result = bytesRead;
 		if (log.isDebugEnabled()) {
-			log.debug("Read summary: " + new String(value, offset, offset + bytesRead));
+			log.debug("Read summary: "
+					+ new String(value, offset, offset + bytesRead));
 
-			/*if (log.isTraceEnabled()) {
-
-				for (int i = offset; i < offset + bytesRead; i++) {
-					log.trace("trace:" + value[i] + " ");
-				}
-
-			}*/
+			/*
+			 * if (log.isTraceEnabled()) {
+			 * 
+			 * for (int i = offset; i < offset + bytesRead; i++) {
+			 * log.trace("trace:" + value[i] + " "); }
+			 * 
+			 * }
+			 */
 		}
 		return result;
 	}
@@ -513,7 +514,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		headerBuilder.append("</MsgHeader_PI>");
 
 		String header = headerBuilder.toString();
-		
+
 		byte[] temp = header.getBytes(encoding);
 		byte[] full = new byte[4 + temp.length];
 		// load first 4 byte with header length
@@ -554,18 +555,21 @@ public final class IRODSConnection implements IRODSManagedConnection {
 					byte[] errorMessage = new byte[errorLength];
 					read(errorMessage, 0, errorLength);
 					Tag errorTag = Tag.readNextTag(errorMessage, encoding);
-					log.warn("IRODS error occured, no rows found or success with no info "
-							+ errorTag.getTag(IRODSConstants.RErrMsg_PI).getTag(
-									IRODSConstants.msg) + " : " + info);
+					log
+							.warn("IRODS error occured, no rows found or success with no info "
+									+ errorTag
+											.getTag(IRODSConstants.RErrMsg_PI)
+											.getTag(IRODSConstants.msg)
+									+ " : "
+									+ info);
 
 				}
 
 				// query with no results
 				return null;
 			} else if (info == IRODSException.OVERWITE_WITHOUT_FORCE_FLAG) {
-				log
-						.warn("Attempt to overwrite file without force flag. info: "
-								+ info);
+				log.warn("Attempt to overwrite file without force flag. info: "
+						+ info);
 				throw new IRODSException(
 						"Attempt to overwrite file without force flag. ", info);
 			} else {
@@ -574,12 +578,13 @@ public final class IRODSConnection implements IRODSManagedConnection {
 					read(errorMessage, 0, errorLength);
 					Tag errorTag = Tag.readNextTag(errorMessage, encoding);
 					log.error("IRODS error occured "
-							+ errorTag.getTag(IRODSConstants.RErrMsg_PI).getTag(
-									IRODSConstants.msg) + " info:" + info);
+							+ errorTag.getTag(IRODSConstants.RErrMsg_PI)
+									.getTag(IRODSConstants.msg) + " info:"
+							+ info);
 
 					throw new IRODSException("IRODS error occured "
-							+ errorTag.getTag(IRODSConstants.RErrMsg_PI).getTag(
-									IRODSConstants.msg), info);
+							+ errorTag.getTag(IRODSConstants.RErrMsg_PI)
+									.getTag(IRODSConstants.msg), info);
 				}
 				log.error("IRODS error occured, info:" + info);
 				throw new IRODSException("IRODS error occured " + info, info);

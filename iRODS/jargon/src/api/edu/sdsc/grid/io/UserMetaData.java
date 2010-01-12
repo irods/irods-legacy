@@ -43,72 +43,64 @@
 //
 package edu.sdsc.grid.io;
 
-
 /**
- * The metadata naming interface for user metadata.
- * Some meta groups are standard regardless of implementation. To
- * handle standard metadata, we defined interfaces that are implemented
- * by protocol-specific metadata groups. The UserMetaData interface
- * contract is that the implementor supports meta data we might find
- * as common user metadata, such as:
+ * The metadata naming interface for user metadata. Some meta groups are
+ * standard regardless of implementation. To handle standard metadata, we
+ * defined interfaces that are implemented by protocol-specific metadata groups.
+ * The UserMetaData interface contract is that the implementor supports meta
+ * data we might find as common user metadata, such as:
  *<ul>
- * <li>  USER_ID
- * <li>  USER_NAME
- * <li>  USER_GROUP_NAME
- * <li>  USER_ADDRESS
- * <li>  USER_PHONE
- * <li>  USER_EMAIL
+ * <li>USER_ID
+ * <li>USER_NAME
+ * <li>USER_GROUP_NAME
+ * <li>USER_ADDRESS
+ * <li>USER_PHONE
+ * <li>USER_EMAIL
  *</ul>
  *<P>
- * An implementation specific class, such as the SRB user metadata
- * support these fields, but also may support further user metadata
- * fields, such as:
+ * An implementation specific class, such as the SRB user metadata support these
+ * fields, but also may support further user metadata fields, such as:
  *<ul>
- * <li>  USER_TYPE_NAME
- * <li>  USER_DOMAIN
- * <li>  USER_AUDIT_TIME_STAMP
- * <li>  USER_AUDIT_COMMENTS
- * <li>  USER_DISTINGUISHED_NAME
- * <li>  USER_AUTHENTICATION_SCHEME
+ * <li>USER_TYPE_NAME
+ * <li>USER_DOMAIN
+ * <li>USER_AUDIT_TIME_STAMP
+ * <li>USER_AUDIT_COMMENTS
+ * <li>USER_DISTINGUISHED_NAME
+ * <li>USER_AUTHENTICATION_SCHEME
  *</ul>
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
-*/
-public interface UserMetaData extends StandardMetaData
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-  public final static String USER_ID = "user id";
-  public final static String USER_NAME = "user name";
-  public final static String USER_ADDRESS = "user address";
-  public final static String USER_PHONE = "user phone";
-  public final static String USER_EMAIL = "user email";
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
+ */
+public interface UserMetaData extends StandardMetaData {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
+	public final static String USER_ID = "user id";
+	public final static String USER_NAME = "user name";
+	public final static String USER_ADDRESS = "user address";
+	public final static String USER_PHONE = "user phone";
+	public final static String USER_EMAIL = "user email";
 
+	public static final String USER_TYPE = "User Type";
+	public static final String USER_ZONE = "User Zone";
+	public static final String USER_DN = "User DN";
+	public static final String USER_DN_2_1 = "User DN 2.1";
 
-  public static final String USER_TYPE = "User Type";
-  public static final String USER_ZONE = "User Zone";
-  public static final String USER_DN  = "User DN";
-  public static final String USER_DN_2_1  = "User DN 2.1";
+	public static final String USER_INFO = "User Information";
+	public static final String USER_COMMENT = "User Comment";
+	public static final String USER_CREATE_DATE = "User Time created (Unix Time)";
+	public static final String USER_MODIFY_DATE = "User Time last modified (Unix Time)";
 
-  public static final String USER_INFO = "User Information";
-  public static final String USER_COMMENT = "User Comment";
-  public static final String USER_CREATE_DATE = "User Time created (Unix Time)";
-  public static final String USER_MODIFY_DATE = "User Time last modified (Unix Time)";
+	// User Group
+	// public static final String USER_GROUP_ID = "User Group Identifier";
+	public static final String USER_GROUP = "User Group Name";
 
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
-  //User Group
-//  public static final String USER_GROUP_ID = "User Group Identifier";
-  public static final String USER_GROUP = "User Group Name";
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
-
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 
 }

@@ -91,7 +91,7 @@ public class IRODSFileOutputStreamParallelTest {
         IRODSFile destFile = new IRODSFile(irodsFileSystem, irodsFileName);
         irodsFileSystem.commands.put(sourceFile, destFile, false);
         
-        assertionHelper.assertIrodsFileOrCollectionExists(IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFileName);
         
         irodsFileSystem.close();
     }

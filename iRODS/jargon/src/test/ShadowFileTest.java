@@ -49,7 +49,6 @@ public class ShadowFileTest
       file = new SRBFile( fileSystem, fileSystem.getHomeDirectory() );
     }
     
-    //TODO need a file factory really
     shadow = new SRBShadowFile( (SRBFile)file, shadowPath );
     run();
 	}

@@ -15,10 +15,10 @@ import edu.sdsc.grid.io.Namespace;
  * Utility class with operations on AVU data.
  * 
  * @author Mike Conway - DICE (www.irods.org)
- *
+ * 
  */
 public class IRODSAvu {
-	
+
 	/**
 	 * Checks to see if any of these conditions are really a user definable
 	 * metadata AVU. And if so convert it to something irods will understand.
@@ -60,8 +60,7 @@ public class IRODSAvu {
 	 * Checks the selects for user definable metadata AVU. And if so convert it
 	 * to something irods will understand.
 	 */
-	static MetaDataSelect[] checkForAVU(
-			MetaDataCondition[] conditions,
+	static MetaDataSelect[] checkForAVU(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, Namespace namespace, String[] selectedAVU) {
 		Vector<MetaDataCondition> newConditions = null;
 		Vector<MetaDataSelect> newSelects = null;

@@ -6,19 +6,15 @@ package org.irods.jargon.core.exception;
 
 import java.io.IOException;
 
-
 /**
  * 
  * @author toaster
  */
 public class IRODSIOException extends IOException {
 
-
-	
 	public IRODSIOException(Exception e) {
 		super(e);
 	}
-
 
 	/**
 	 * Constructs an instance of <code>IRodsRequestException</code> with the

@@ -61,228 +61,220 @@ import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
-
-
 /**
  * Instances of this class support socket I/O to a Srb server.
  *<P>
  * Handles socket level protocol for interacting with the SRB.
  *<P>
  * See also: <a href="doc-files/SRBProtocol.htm">SRB protocol</a>
- *
+ * 
  * <P>
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-//This is the working GSIAuth class. If you have the GSI libraries,
-//(Which should be available at the JARGON website)
-//overwrite GSIAuth.java with this file.
-//This class and those libraries will allow you to compile Jargon to include
-//All functionality of Jargon, including GSI authentication.
-class GSIAuth
-{
-  /**
-   * Checks the authentication using GSI of a SRB connection which has already
-   * passed the uner info part of the handshake.
-   *<P>
-   * @param account the SRB connection information
-   * @param srbConnection The open socket to the SRB.
-   * @param out The output stream from that socket.
-   * @param in The input stream from that socket.
-   * @throws IOException If the authentication to the SRB fails.
-   */
-  GSIAuth( SRBAccount account,
-    Socket srbConnection, OutputStream out, InputStream in )
-    throws IOException
-  {
-    sendGSIAuth( account, srbConnection, out, in );
-  }
-  
-  /**
-   * GSI authorization method. Makes a connection to the SRB using
-   * the GSI authorization scheme.
-   *
-   * @param account the SRB connection information
-   * @param srbConnection The open socket to the SRB.
-   * @param out The output stream from that socket.
-   * @param in The input stream from that socket.
-   * @throws IOException If the authentication to the SRB fails.
-   */
-  void sendGSIAuth( SRBAccount account, 
-    Socket srbConnection, OutputStream out, InputStream in )
-    throws IOException
-  {
-    CoGProperties cog = null;
-    String defaultCA = null;
-    GSSCredential credential = null;
-    String caLocations = account.getCertificateAuthority();
-    
-    ExtendedGSSManager manager =
-      (ExtendedGSSManager)ExtendedGSSManager.getInstance();
+// This is the working GSIAuth class. If you have the GSI libraries,
+// (Which should be available at the JARGON website)
+// overwrite GSIAuth.java with this file.
+// This class and those libraries will allow you to compile Jargon to include
+// All functionality of Jargon, including GSI authentication.
+class GSIAuth {
+	/**
+	 * Checks the authentication using GSI of a SRB connection which has already
+	 * passed the uner info part of the handshake.
+	 *<P>
+	 * 
+	 * @param account
+	 *            the SRB connection information
+	 * @param srbConnection
+	 *            The open socket to the SRB.
+	 * @param out
+	 *            The output stream from that socket.
+	 * @param in
+	 *            The input stream from that socket.
+	 * @throws IOException
+	 *             If the authentication to the SRB fails.
+	 */
+	GSIAuth(SRBAccount account, Socket srbConnection, OutputStream out,
+			InputStream in) throws IOException {
+		sendGSIAuth(account, srbConnection, out, in);
+	}
 
-    try {
-      credential = getCredential( account );
+	/**
+	 * GSI authorization method. Makes a connection to the SRB using the GSI
+	 * authorization scheme.
+	 * 
+	 * @param account
+	 *            the SRB connection information
+	 * @param srbConnection
+	 *            The open socket to the SRB.
+	 * @param out
+	 *            The output stream from that socket.
+	 * @param in
+	 *            The input stream from that socket.
+	 * @throws IOException
+	 *             If the authentication to the SRB fails.
+	 */
+	void sendGSIAuth(SRBAccount account, Socket srbConnection,
+			OutputStream out, InputStream in) throws IOException {
+		CoGProperties cog = null;
+		String defaultCA = null;
+		GSSCredential credential = null;
+		String caLocations = account.getCertificateAuthority();
 
-      if (caLocations != null) {
-//there is no other way to do this.
-//so I'm overwriting the default then changing it back.
-        cog = CoGProperties.getDefault();
-        defaultCA = cog.getCaCertLocations();
-        cog.setCaCertLocations( caLocations );
-      }
+		ExtendedGSSManager manager = (ExtendedGSSManager) ExtendedGSSManager
+				.getInstance();
 
-      GSSContext context = null;
-      GSIGssOutputStream gssout = null;
-      GSIGssInputStream gssin = null;
+		try {
+			credential = getCredential(account);
 
-      context = manager.createContext(null,
-        null,
-        credential,
-        GSSContext.DEFAULT_LIFETIME);
+			if (caLocations != null) {
+				// there is no other way to do this.
+				// so I'm overwriting the default then changing it back.
+				cog = CoGProperties.getDefault();
+				defaultCA = cog.getCaCertLocations();
+				cog.setCaCertLocations(caLocations);
+			}
 
-      context.requestCredDeleg(false);
-      context.requestMutualAuth(true);
+			GSSContext context = null;
+			GSIGssOutputStream gssout = null;
+			GSIGssInputStream gssin = null;
 
-      GSIGssSocket ggSocket = new GSIGssSocket( srbConnection, context );
-      gssout = new GSIGssOutputStream(out, context);
-      gssin = new GSIGssInputStream(in, context);
+			context = manager.createContext(null, null, credential,
+					GSSContext.DEFAULT_LIFETIME);
 
-      byte [] inToken = new byte[0];
-      byte [] outToken = null;
+			context.requestCredDeleg(false);
+			context.requestMutualAuth(true);
 
-      while( !context.isEstablished() ) {
-        outToken = context.initSecContext(inToken, 0, inToken.length);
+			GSIGssSocket ggSocket = new GSIGssSocket(srbConnection, context);
+			gssout = new GSIGssOutputStream(out, context);
+			gssin = new GSIGssInputStream(in, context);
 
-        if (outToken != null) {
-          gssout.writeToken(outToken);
-        }
+			byte[] inToken = new byte[0];
+			byte[] outToken = null;
 
-        if (!context.isEstablished()) {
-          inToken = gssin.readHandshakeToken();
-        }
-      }
-    } catch ( GSSException e ) {
-      SecurityException gsiException = null;
-      String message = e.getMessage();
-      if (message.indexOf("Invalid buffer") >= 0) {
-        gsiException = new SecurityException(
-          "GSI Authentication Failed - Invalid Proxy File" );
-        gsiException.initCause(e);
-      }
-      else if (message.indexOf("Unknown CA") >= 0) {
-        gsiException = new SecurityException(
-          "GSI Authentication Failed - Cannot find "+
-          "Certificate Authority (CA)" );
-        gsiException.initCause(e);
-      }
-      else {
-        gsiException = new SecurityException(
-          "GSI Authentication Failed" );
-        gsiException.initCause(e);
-      }
-      throw gsiException;
-    }
-    catch ( Throwable e ) {
-      SecurityException exception = new SecurityException(
-        "GSI Authentication Failed" );
-      exception.initCause(e);
-      throw exception;
-    }
-    finally {
-      if (defaultCA != null) {
-        cog.setCaCertLocations( defaultCA );
-      }
-    }
-  }
+			while (!context.isEstablished()) {
+				outToken = context.initSecContext(inToken, 0, inToken.length);
 
-  static String getDN( SRBAccount account ) 
-    throws IOException
-  {
-    StringBuffer dn = null;
-    int index = -1, index2 = -1;
-    try {
-       GlobusGSSCredentialImpl credential = 
-        ((GlobusGSSCredentialImpl) getCredential( account ));
-      dn = new StringBuffer( credential.getName().toString() );
-    } catch ( GSSException e ) {
-      throw new IllegalArgumentException( "Invalid or missing credentials" );//, e);
-    }
+				if (outToken != null) {
+					gssout.writeToken(outToken);
+				}
 
-    //remove the extra /CN if exists
-    index = dn.indexOf("UID");
-    if ( index >= 0 ) {
-      index2 = dn.lastIndexOf("CN");
-      if ( index2 > index ) {
-        dn = dn.delete( index2-1, dn.length() );
-      }
-    }    
+				if (!context.isEstablished()) {
+					inToken = gssin.readHandshakeToken();
+				}
+			}
+		} catch (GSSException e) {
+			SecurityException gsiException = null;
+			String message = e.getMessage();
+			if (message.indexOf("Invalid buffer") >= 0) {
+				gsiException = new SecurityException(
+						"GSI Authentication Failed - Invalid Proxy File");
+				gsiException.initCause(e);
+			} else if (message.indexOf("Unknown CA") >= 0) {
+				gsiException = new SecurityException(
+						"GSI Authentication Failed - Cannot find "
+								+ "Certificate Authority (CA)");
+				gsiException.initCause(e);
+			} else {
+				gsiException = new SecurityException(
+						"GSI Authentication Failed");
+				gsiException.initCause(e);
+			}
+			throw gsiException;
+		} catch (Throwable e) {
+			SecurityException exception = new SecurityException(
+					"GSI Authentication Failed");
+			exception.initCause(e);
+			throw exception;
+		} finally {
+			if (defaultCA != null) {
+				cog.setCaCertLocations(defaultCA);
+			}
+		}
+	}
 
-    //The DN gets returned with commas.
-    index = dn.indexOf(",");
-    while (index >= 0) {
-      dn = dn.replace( index, index+1, "/" );
-      index = dn.indexOf(",");
-    }
+	static String getDN(SRBAccount account) throws IOException {
+		StringBuffer dn = null;
+		int index = -1, index2 = -1;
+		try {
+			GlobusGSSCredentialImpl credential = ((GlobusGSSCredentialImpl) getCredential(account));
+			dn = new StringBuffer(credential.getName().toString());
+		} catch (GSSException e) {
+			throw new IllegalArgumentException("Invalid or missing credentials");// ,
+																					// e);
+		}
 
-    //add / to front if necessary
-    if (dn.indexOf("/") != 0) {
-      return "/"+dn;
-    }
-    else {
-      return dn.toString();
-    }
-  }
+		// remove the extra /CN if exists
+		index = dn.indexOf("UID");
+		if (index >= 0) {
+			index2 = dn.lastIndexOf("CN");
+			if (index2 > index) {
+				dn = dn.delete(index2 - 1, dn.length());
+			}
+		}
 
-  static GSSCredential getCredential( SRBAccount account )
-    throws GSSException, IOException
-  {    
-    byte[] data = null;
-    GSSCredential credential = (GSSCredential) account.getGSSCredential();
-    if (credential != null) {
-      if(credential.getRemainingLifetime() <= 0) 
-        throw new GSSException(GSSException.CREDENTIALS_EXPIRED );
+		// The DN gets returned with commas.
+		index = dn.indexOf(",");
+		while (index >= 0) {
+			dn = dn.replace(index, index + 1, "/");
+			index = dn.indexOf(",");
+		}
 
-      return credential;
-    }
+		// add / to front if necessary
+		if (dn.indexOf("/") != 0) {
+			return "/" + dn;
+		} else {
+			return dn.toString();
+		}
+	}
 
-    String password = account.getPassword();
-    ExtendedGSSManager manager =
-      (ExtendedGSSManager)ExtendedGSSManager.getInstance();
+	static GSSCredential getCredential(SRBAccount account) throws GSSException,
+			IOException {
+		byte[] data = null;
+		GSSCredential credential = (GSSCredential) account.getGSSCredential();
+		if (credential != null) {
+			if (credential.getRemainingLifetime() <= 0)
+				throw new GSSException(GSSException.CREDENTIALS_EXPIRED);
 
-    if (password == null) {
-      throw new IllegalArgumentException(
-        "Password/Proxyfile and GSSCredential cannot be null." );
-    }
-    else if (password.startsWith( "-----BEGIN CERTIFICATE-----" )) {
-      data = password.getBytes();
+			return credential;
+		}
 
-      credential = manager.createCredential(
-        data, ExtendedGSSCredential.IMPEXP_OPAQUE,
-        GSSCredential.DEFAULT_LIFETIME,
-        null, GSSCredential.INITIATE_AND_ACCEPT);
-    }
-    else {
-      LocalFile f = new LocalFile(password);
-      if (f.exists()) {
-        GeneralRandomAccessFile inputFile =
-          FileFactory.newRandomAccessFile(f, "r");
-        data = new byte[(int)f.length()];
-        // read in the credential data
-        inputFile.read(data);
-        inputFile.close();
-      }
-      else {
-        throw new IOException( "Proxy file path invalid" );
-      }
+		String password = account.getPassword();
+		ExtendedGSSManager manager = (ExtendedGSSManager) ExtendedGSSManager
+				.getInstance();
 
-      credential = manager.createCredential(
-        data, ExtendedGSSCredential.IMPEXP_OPAQUE,
-        GSSCredential.DEFAULT_LIFETIME,
-        null, GSSCredential.INITIATE_AND_ACCEPT);
-    }    
+		if (password == null) {
+			throw new IllegalArgumentException(
+					"Password/Proxyfile and GSSCredential cannot be null.");
+		} else if (password.startsWith("-----BEGIN CERTIFICATE-----")) {
+			data = password.getBytes();
 
-    if(credential.getRemainingLifetime() <= 0) 
-      throw new GSSException(GSSException.CREDENTIALS_EXPIRED );
+			credential = manager.createCredential(data,
+					ExtendedGSSCredential.IMPEXP_OPAQUE,
+					GSSCredential.DEFAULT_LIFETIME, null,
+					GSSCredential.INITIATE_AND_ACCEPT);
+		} else {
+			LocalFile f = new LocalFile(password);
+			if (f.exists()) {
+				GeneralRandomAccessFile inputFile = FileFactory
+						.newRandomAccessFile(f, "r");
+				data = new byte[(int) f.length()];
+				// read in the credential data
+				inputFile.read(data);
+				inputFile.close();
+			} else {
+				throw new IOException("Proxy file path invalid");
+			}
 
-    return credential;
-  }
+			credential = manager.createCredential(data,
+					ExtendedGSSCredential.IMPEXP_OPAQUE,
+					GSSCredential.DEFAULT_LIFETIME, null,
+					GSSCredential.INITIATE_AND_ACCEPT);
+		}
+
+		if (credential.getRemainingLifetime() <= 0)
+			throw new GSSException(GSSException.CREDENTIALS_EXPIRED);
+
+		return credential;
+	}
 }

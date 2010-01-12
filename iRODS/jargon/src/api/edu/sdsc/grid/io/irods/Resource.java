@@ -27,97 +27,79 @@
 
 package edu.sdsc.grid.io.irods;
 
-
 import java.io.IOException;
 
-
 /**
- *
+ * 
  * @author iktome
  */
-public class Resource extends Domain
-{
-  static final String iName = "resource";
-  public Resource(IRODSFileSystem irodsFileSystem)
-  {
-    super(irodsFileSystem, "resource", "resc_type", "r_resc_main");
-  }
+public class Resource extends Domain {
+	static final String iName = "resource";
 
+	public Resource(IRODSFileSystem irodsFileSystem) {
+		super(irodsFileSystem, "resource", "resc_type", "r_resc_main");
+	}
 
-  /**
-   * Queries the fileSystem to aqcuire all the values for this domain.
-   * So the user domain returns all the users.
-   * @return
-   */
-  public String[] listSubjects( )
-    throws IOException
-  {
-    return irodsFileSystem.commands.simpleQuery(
-      "select resc_name from r_resc_main",
-      null );
-  }
+	/**
+	 * Queries the fileSystem to aqcuire all the values for this domain. So the
+	 * user domain returns all the users.
+	 * 
+	 * @return
+	 */
+	public String[] listSubjects() throws IOException {
+		return irodsFileSystem.commands.simpleQuery(
+				"select resc_name from r_resc_main", null);
+	}
 
+	// ------------------------------------------------------------------------
+	// mkresc Name Type Class Host Path (make Resource)
+	public void addResource(String resourceName, String resourceType,
+			String resourceClass, String host, String vaultFilePath)
+			throws IOException {
+		String[] args = { "add", name, resourceName, resourceType.toString(),
+				resourceClass, host, vaultFilePath };
+		irodsFileSystem.commands.admin(args);
+	}
 
-//------------------------------------------------------------------------
-  // mkresc Name Type Class Host Path (make Resource)
-  public void addResource( String resourceName, String resourceType,
-    String resourceClass, String host, String vaultFilePath )
-    throws IOException
-  {
-    String[] args = { "add", name, resourceName, resourceType.toString(),
-      resourceClass, host, vaultFilePath };
-    irodsFileSystem.commands.admin( args );
-  }
+	// rmresc Name (remove resource)
+	public void deleteResource(String resourceName) throws IOException {
+		String[] args = { "rm", name, resourceName };
+		irodsFileSystem.commands.admin(args);
+	}
 
-  // rmresc Name (remove resource)
-  public void deleteResource( String resourceName )
-    throws IOException
-  {
-    String[] args = { "rm", name, resourceName };
-    irodsFileSystem.commands.admin( args );
-  }
+	public void modifyClass(String resourceName, String newClass)
+			throws IOException {
+		String[] args = { "modify", iName, resourceName, "class", newClass };
+		irodsFileSystem.commands.admin(args);
+	}
 
+	public void modifyHost(String resourceName, String newHost)
+			throws IOException {
+		String[] args = { "modify", iName, resourceName, "host", newHost };
+		irodsFileSystem.commands.admin(args);
+	}
 
-  public void modifyClass( String resourceName, String newClass )
-    throws IOException
-  {
-    String[] args = { "modify", iName, resourceName, "class", newClass  };
-    irodsFileSystem.commands.admin( args );
-  }
+	public void modifyPath(String resourceName, String newPath)
+			throws IOException {
+		String[] args = { "modify", iName, resourceName, "path", newPath };
+		irodsFileSystem.commands.admin(args);
+	}
 
-  public void modifyHost( String resourceName, String newHost )
-    throws IOException
-  {
-    String[] args = { "modify", iName, resourceName, "host", newHost  };
-    irodsFileSystem.commands.admin( args );
-  }
+	public void modifyComment(String resourceName, String newComment)
+			throws IOException {
+		String[] args = { "modify", iName, resourceName, "comment", newComment };
+		irodsFileSystem.commands.admin(args);
+	}
 
-  public void modifyPath( String resourceName, String newPath )
-    throws IOException
-  {
-    String[] args = { "modify", iName, resourceName, "path", newPath  };
-    irodsFileSystem.commands.admin( args );
-  }
+	public void modifyInfo(String resourceName, String newInfo)
+			throws IOException {
+		String[] args = { "modify", iName, resourceName, "info", newInfo };
+		irodsFileSystem.commands.admin(args);
+	}
 
-  public void modifyComment( String resourceName, String newComment )
-    throws IOException
-  {
-    String[] args = {
-      "modify", iName, resourceName, "comment", newComment };
-    irodsFileSystem.commands.admin( args );
-  }
-
-  public void modifyInfo( String resourceName, String newInfo )
-    throws IOException
-  {
-    String[] args = { "modify", iName, resourceName, "info", newInfo  };
-    irodsFileSystem.commands.admin( args );
-  }
-
-  public  void modifyFreespace( String resourceName, String newValue )
-    throws IOException
-  {
-    String[] args = { "modify", iName, resourceName, "type", newValue  };
-    irodsFileSystem.commands.admin( args );
-  }
+	public void modifyFreespace(String resourceName, String newValue)
+			throws IOException {
+		String[] args = { "modify", iName, resourceName, "type", newValue };
+		irodsFileSystem.commands.admin(args);
+	}
 }

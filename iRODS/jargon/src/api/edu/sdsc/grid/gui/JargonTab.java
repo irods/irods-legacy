@@ -41,7 +41,6 @@
 //
 package edu.sdsc.grid.gui;
 
-
 import edu.sdsc.grid.io.*;
 
 import java.awt.*;
@@ -52,24 +51,21 @@ import javax.swing.*;
 //TODO awt.Component interface
 //which I can't do, but I don't want a subclass really...
 //I guess, of, um, JPanel? no, just awt.Component, sigh.
-/*TODO public? probably*/ interface JargonTab
-{
-	public Component getComponent( )
-		throws IOException;
+/*TODO public? probably*/interface JargonTab {
+	public Component getComponent() throws IOException;
 
-	public Component getComponent( GeneralFile[] file )
-		throws IOException;
+	public Component getComponent(GeneralFile[] file) throws IOException;
 
-	public JMenuBar getJMenuBar( );
+	public JMenuBar getJMenuBar();
 
-//	public JToolBar getJToolBar( );
+	// public JToolBar getJToolBar( );
 
-//public Action[] getActions( );
+	// public Action[] getActions( );
 
-//TODO not sure if I need this...
-	public GeneralFile getSelectedFile( );
+	// TODO not sure if I need this...
+	public GeneralFile getSelectedFile();
 
-	public String getTabName( );
+	public String getTabName();
 
-	public int getMnemonic( );
+	public int getMnemonic();
 }

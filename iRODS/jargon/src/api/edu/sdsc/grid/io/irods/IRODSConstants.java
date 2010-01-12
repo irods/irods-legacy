@@ -5,11 +5,12 @@ package edu.sdsc.grid.io.irods;
 
 /**
  * Constants used for IRODS/Jargon
+ * 
  * @author Mike Conway - DICE (www.irods.org)
- *
+ * 
  */
 public final class IRODSConstants {
-	
+
 	/**
 	 * Approximate maximum number of bytes transfered by each thread during a
 	 * parallel transfer.
@@ -367,9 +368,9 @@ public final class IRODSConstants {
 	public static final String arg7 = "arg7";
 	public static final String arg8 = "arg8";
 	public static final String arg9 = "arg9";
-	
+
 	private IRODSConstants() {
-		
+
 	}
 
 }

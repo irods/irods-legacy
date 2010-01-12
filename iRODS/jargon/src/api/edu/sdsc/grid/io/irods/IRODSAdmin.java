@@ -46,7 +46,6 @@ public class IRODSAdmin {
 	public final Resource domainResource;
 	public final User user;
 
-	
 	public IRODSAdmin(IRODSFileSystem fileSystem) throws IOException {
 		this.fileSystem = fileSystem;
 		access = new Domain(fileSystem, "access", "access_type", "");
@@ -83,7 +82,6 @@ public class IRODSAdmin {
 				"select zone_name from r_zone_main", null);
 	}
 
-	// ------------------------------------------------------------------------
 	// mkgroup Name (make group)
 	public void createGroup(String groupName) throws IOException {
 		/*

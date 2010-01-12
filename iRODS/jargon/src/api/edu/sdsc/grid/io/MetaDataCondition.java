@@ -56,7 +56,7 @@ package edu.sdsc.grid.io;
  * Operators are in the set: <br>
  * (Not all operators are supported by every database/filesystem)
  *<ul>
- * <li>= <>
+ * <li>=<>
  * <li>< >
  * <li><= >=
  * <li>in not in
@@ -175,7 +175,7 @@ public final class MetaDataCondition {
 	 * Conditionals without any wildcard characters will search as a string
 	 * fragment, ie. will be treated as though a % was at the beginning and end.
 	 *<P>
-	 ** is the same as %, and ? equals _<br>
+	 * is the same as %, and ? equals _<br>
 	 * note: The characters *,?,%,_ are reserved and may not be used in the
 	 * conditional value with the LIKE operator.
 	 */
@@ -192,7 +192,7 @@ public final class MetaDataCondition {
 	 * Conditionals without any wildcard characters will search as a string
 	 * fragment, ie. will be treated as though a * was at the beginning and end.
 	 *<P>
-	 ** is the same as %, and ? equals _<br>
+	 * is the same as %, and ? equals _<br>
 	 * note: The characters *,?,%,_ are reserved and may not be used in the
 	 * conditional value with the LIKE operator.
 	 */
@@ -245,7 +245,7 @@ public final class MetaDataCondition {
 	/**
 	 * Operators are in the set:
 	 *<ul>
-	 * <li>= <>
+	 * <li>=<>
 	 * <li>< >
 	 * <li><= >=
 	 * <li>numerical compare < >

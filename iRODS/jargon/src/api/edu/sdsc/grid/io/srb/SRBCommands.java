@@ -723,8 +723,8 @@ class SRBCommands {
 		long[] hashInitialMessage = new long[2];
 		byte[] encryptedMessage = new byte[ENCRYPT1_MESSAGE_SIZE];
 		int initialMessage[] = new int[ENCRYPT1_MESSAGE_SIZE - 1]; // don't
-																	// include
-																	// final 0
+		// include
+		// final 0
 
 		in.read(encryptedMessage, 0, ENCRYPT1_MESSAGE_SIZE - 1);
 		for (int i = 0; i < ENCRYPT1_MESSAGE_SIZE - 1; i++) {
@@ -5327,9 +5327,9 @@ class SRBCommands {
 											break;
 										}
 										innerRAF = correctedRAFPath(0); // index
-																		// 0
-																		// correct
-																		// ?
+										// 0
+										// correct
+										// ?
 
 										in.read();// ignore status byte
 

@@ -79,11 +79,9 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-
-
 /**
  * A gui for the <code>MetaDataRecordList</code> class.
- *
+ * 
  * @author Lucas Ammon Gilbert
  * @see JargonTreeCellEditor
  * @see MetaDataTableDisplay
@@ -91,27 +89,24 @@ import javax.swing.table.TableModel;
  * @deprecated
  */
 @Deprecated
-public class MetaDataDisplay extends JTable
-{
-//-----------------------------------------------------------------------
-// Constants
-//-----------------------------------------------------------------------
+public class MetaDataDisplay extends JTable {
+	// -----------------------------------------------------------------------
+	// Constants
+	// -----------------------------------------------------------------------
 	/**
 	 * The cells of tables were too small for the text.
 	 */
 	static final int TEXT_PADDING = 4;
 
-
-
-//-----------------------------------------------------------------------
-// Fields
-//-----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	// Fields
+	// -----------------------------------------------------------------------
 	/**
 	 * The filesystem being queried.
 	 */
 	GeneralFileSystem fileSystem;
-	//just going to save this file(filesystem?) in case we need it later
-	//to do more queries
+	// just going to save this file(filesystem?) in case we need it later
+	// to do more queries
 	private GeneralFile[] queryObj;
 
 	/**
@@ -119,36 +114,37 @@ public class MetaDataDisplay extends JTable
 	 */
 	private MetaDataRecordList[] rl;
 
-//TODO maybe have?
+	// TODO maybe have?
 	/**
 	 * Holds MetaDataTable to be displayed.
 	 */
 	private MetaDataTable table;
 
+	// TODO
+	// need better name?
+	boolean keyValue = true;
 
+	void setKeyValue(boolean keyValuePair) {
+		keyValue = keyValuePair;
+	}
 
+	boolean getKeyValue() {
+		return keyValue;
+	}
 
-//TODO
-//need better name?
-boolean keyValue = true;
-void setKeyValue( boolean keyValuePair ) { keyValue = keyValuePair; }
-boolean getKeyValue() { return keyValue; }
-//TODO
-static int fontPixelHeight = -1;
-static Font font;
-static FontMetrics fontMetrics;
+	// TODO
+	static int fontPixelHeight = -1;
+	static Font font;
+	static FontMetrics fontMetrics;
 
-
-
-//-----------------------------------------------------------------------
-// Constructors, Destructors & init
-//-----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	// Constructors, Destructors & init
+	// -----------------------------------------------------------------------
 	/**
-	 * Displays the <code>recordList</code> as the row data for JTable.
-	 * The MetaDataField names are used as the column names.
+	 * Displays the <code>recordList</code> as the row data for JTable. The
+	 * MetaDataField names are used as the column names.
 	 */
-	public MetaDataDisplay( MetaDataRecordList recordList )
-	{
+	public MetaDataDisplay(MetaDataRecordList recordList) {
 		rl = new MetaDataRecordList[1];
 		rl[0] = recordList;
 
@@ -156,29 +152,27 @@ static FontMetrics fontMetrics;
 	}
 
 	/**
-	 * Displays these <code>recordList</code>s as the row data for JTable.
-	 * The MetaDataField names are used as the column names.
+	 * Displays these <code>recordList</code>s as the row data for JTable. The
+	 * MetaDataField names are used as the column names.
 	 */
-	public MetaDataDisplay( MetaDataRecordList recordList[] )
-	{
+	public MetaDataDisplay(MetaDataRecordList recordList[]) {
 		rl = recordList;
 
 		initComponents();
 	}
 
-
 	/**
-	 * Displays the <code>recordList</code> as the row data for JTable.
-	 * The MetaDataField names are used as the column names.<br>
+	 * Displays the <code>recordList</code> as the row data for JTable. The
+	 * MetaDataField names are used as the column names.<br>
 	 * By including a <code>file</code> parameter the displayed
 	 * <code>recordList</code> can modify the metadata of that file.
-	 *
-	 * @param file Changing the displayed <code>recordList</code> will change
-	 * 		this file's metadata values.
+	 * 
+	 * @param file
+	 *            Changing the displayed <code>recordList</code> will change
+	 *            this file's metadata values.
 	 */
-  public MetaDataDisplay( GeneralFile file, MetaDataRecordList recordList )
-	{
-    queryObj = new GeneralFile[1];
+	public MetaDataDisplay(GeneralFile file, MetaDataRecordList recordList) {
+		queryObj = new GeneralFile[1];
 		queryObj[0] = file;
 		rl = new MetaDataRecordList[1];
 		rl[0] = recordList;
@@ -186,90 +180,79 @@ static FontMetrics fontMetrics;
 		initComponents();
 	}
 
-
 	/**
-	 * Displays these <code>recordList</code>s as the row data for JTable.
-	 * The the MetaDataField names are used as the column names.
+	 * Displays these <code>recordList</code>s as the row data for JTable. The
+	 * the MetaDataField names are used as the column names.
 	 */
-	public MetaDataDisplay( GeneralFileSystem fileSystem, MetaDataRecordList recordList[] )
-	{
+	public MetaDataDisplay(GeneralFileSystem fileSystem,
+			MetaDataRecordList recordList[]) {
 		this.fileSystem = fileSystem;
 		rl = recordList;
-    queryObj = new GeneralFile[rl.length];
+		queryObj = new GeneralFile[rl.length];
 
 		initComponents();
 	}
 
-
 	/**
 	 * Displays the <code>table</code> as the row data for JTable.
 	 */
-	MetaDataDisplay( MetaDataTable table )
-	{
+	MetaDataDisplay(MetaDataTable table) {
 		this.table = table;
 
 		initComponents();
 	}
 
-
 	/**
-	 * This method is called from within the constructor to
-	 * initialize the display.
+	 * This method is called from within the constructor to initialize the
+	 * display.
 	 */
-	private void initComponents( )
-	{
-		//if constructed with full query or query results.
-		//display results table
+	private void initComponents() {
+		// if constructed with full query or query results.
+		// display results table
 		if (rl != null) {
-      String fileName = null, directory = null;
-      Object temp = null;
+			String fileName = null, directory = null;
+			Object temp = null;
 			createResultsTable(rl);
 
-      //extract query objects
-      if (fileSystem != null) {
-        for (int i=0;i<rl.length;i++) {
-          temp = rl[i].getValue(SRBMetaDataSet.FILE_NAME);
-          if (temp != null) {
-            fileName = temp.toString();
+			// extract query objects
+			if (fileSystem != null) {
+				for (int i = 0; i < rl.length; i++) {
+					temp = rl[i].getValue(SRBMetaDataSet.FILE_NAME);
+					if (temp != null) {
+						fileName = temp.toString();
 
-            temp = rl[i].getValue(SRBMetaDataSet.DIRECTORY_NAME);
-            if (temp != null) {
-              directory = temp.toString();
+						temp = rl[i].getValue(SRBMetaDataSet.DIRECTORY_NAME);
+						if (temp != null) {
+							directory = temp.toString();
 
-              queryObj[i] = FileFactory.newFile(
-                fileSystem, directory, fileName );
-            }
-          }
-        }
-      }
-		}
-		else if (table != null) {
-			createMetaDataTable( table );
+							queryObj[i] = FileFactory.newFile(fileSystem,
+									directory, fileName);
+						}
+					}
+				}
+			}
+		} else if (table != null) {
+			createMetaDataTable(table);
 		}
 	}
 
-
-//-----------------------------------------------------------------------
-// Methods
-//-----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	// Methods
+	// -----------------------------------------------------------------------
 	/**
 	 * Returns the recordList array displayed by this object.
 	 */
-	public MetaDataRecordList[] getRecordLists( )
-	{
+	public MetaDataRecordList[] getRecordLists() {
 		return rl;
 	}
 
-
 	/**
-	 * This method sets good column sizes for the table.
-	 * But it doesn't really try that hard.
-	 * It only compares the header and TEST_ROWS rows.
-	 *
+	 * This method sets good column sizes for the table. But it doesn't really
+	 * try that hard. It only compares the header and TEST_ROWS rows.
+	 * 
 	 * @return total column widths
 	 */
-	static int adjustColumnSizes( JTable table )
-	{
+	static int adjustColumnSizes(JTable table) {
 		TableModel model = table.getModel();
 
 		TableColumn column = null;
@@ -282,80 +265,73 @@ static FontMetrics fontMetrics;
 		int cellWidth = 0;
 		int totalWidth = TEXT_PADDING;
 
-		TableCellRenderer headerRenderer =
-				table.getTableHeader().getDefaultRenderer();
+		TableCellRenderer headerRenderer = table.getTableHeader()
+				.getDefaultRenderer();
 
 		for (int i = 0; i < columnCount; i++) {
 			column = table.getColumnModel().getColumn(i);
 
-			comp = headerRenderer.getTableCellRendererComponent(
-				null, column.getHeaderValue(), false, false, 0, 0);
+			comp = headerRenderer.getTableCellRendererComponent(null, column
+					.getHeaderValue(), false, false, 0, 0);
 
-			if (fontMetrics==null) {
+			if (fontMetrics == null) {
 				font = comp.getFont();
 
-				if (font==null) {
+				if (font == null) {
 					font = new Font("SansSerif", Font.PLAIN, 12);
 					comp.setFont(font);
 				}
 				fontMetrics = comp.getFontMetrics(font);
 			}
 
-			//header size + some padding for readability.
-			headerWidth = comp.getPreferredSize().width+TEXT_PADDING;
+			// header size + some padding for readability.
+			headerWidth = comp.getPreferredSize().width + TEXT_PADDING;
 
 			int oldWidth = 0;
-			//was using a limited number, but doesn't seem to hurt to do them all
+			// was using a limited number, but doesn't seem to hurt to do them
+			// all
 			int testRows = table.getRowCount();
-			for (int j=0;j<testRows;j++) {
-				value = table.getValueAt( j, i );
+			for (int j = 0; j < testRows; j++) {
+				value = table.getValueAt(j, i);
 				oldWidth = cellWidth;
 
 				if (value == null) {
 					cellWidth = 1;
-				}
-				else if (value instanceof String) {
+				} else if (value instanceof String) {
 					cellWidth = getCellWidth((String) value.toString());
-				}
-				else if (value instanceof Integer) {
+				} else if (value instanceof Integer) {
 					cellWidth = getCellWidth(value.toString());
-				}
-				else if (value instanceof Long) {
+				} else if (value instanceof Long) {
 					cellWidth = getCellWidth(value.toString());
-				}
-				else if (value instanceof Float) {
+				} else if (value instanceof Float) {
 					cellWidth = getCellWidth(value.toString());
-				}
-				else if (value instanceof java.util.Date) {
+				} else if (value instanceof java.util.Date) {
 					cellWidth = getCellWidth(value.toString());
-				}
-				else if (value instanceof JTable) {
-					cellWidth = adjustColumnSizes((JTable)value);
+				} else if (value instanceof JTable) {
+					cellWidth = adjustColumnSizes((JTable) value);
 				}
 
 				cellWidth = Math.max(cellWidth, oldWidth);
 			}
 
-			//pick the bigger of the header or the widest cell
+			// pick the bigger of the header or the widest cell
 			cellWidth = Math.max(headerWidth, cellWidth);
 
 			column.setPreferredWidth(cellWidth);
 
 			totalWidth += cellWidth;
 
-			cellWidth=0;
+			cellWidth = 0;
 		}
 
 		return totalWidth;
 	}
 
-
 	/**
 	 *
 	 */
-	private static int getCellWidth( String value )
-	{
-		int w =  fontMetrics.stringWidth(value);
+	private static int getCellWidth(String value) {
+		int w = fontMetrics.stringWidth(value);
 
 		if (fontPixelHeight <= 0) {
 			fontPixelHeight = fontMetrics.getHeight();
@@ -363,155 +339,156 @@ static FontMetrics fontMetrics;
 		return w + TEXT_PADDING;
 	}
 
-
-
-
 	/**
 	 *
 	 */
-	private void createResultsTable( MetaDataRecordList[] rl )
-	{
-		if (rl == null) return;
+	private void createResultsTable(MetaDataRecordList[] rl) {
+		if (rl == null)
+			return;
 
-		int definableRows=0;
-		int column=0;
+		int definableRows = 0;
+		int column = 0;
 		int fieldsLength = rl[0].getFieldCount();
 		int recordListLength = rl.length;
 		String[] fields = new String[fieldsLength];
 		Object[][] data = new Object[recordListLength][fieldsLength];
 
-int tempFieldsLength = 0;
+		int tempFieldsLength = 0;
 
-		//Setup for the Object[][]
-		for (int i=0;i<fieldsLength;i++) {
-				switch (rl[0].getFieldType(i)) {
-					case MetaDataField.TABLE:
-						if (keyValue) {
-//NOTE:*********************
-//assumes all results have the same number of def_metadata
-//also, only displays first two values of a row
-							MetaDataTable subTable = rl[0].getTableValue(i);
-							//have to turn rows into columns of key-values
-							tempFieldsLength += fieldsLength + subTable.getRowCount();
-							String[] tempFields = new String[tempFieldsLength-1];
-							System.arraycopy( fields, 0, tempFields, 0, fieldsLength );
-							for (int j=fieldsLength;j<tempFieldsLength;j++) {
-								tempFields[j-1] = subTable.getStringValue( j-fieldsLength, 0 );
-							}
-							fields = tempFields;
-						}
-						else {
-							fields[i] = rl[0].getFieldName(i);
-						}
-						break;
-					default:
-						fields[i] = rl[0].getFieldName(i);
-						break;
-				};
+		// Setup for the Object[][]
+		for (int i = 0; i < fieldsLength; i++) {
+			switch (rl[0].getFieldType(i)) {
+			case MetaDataField.TABLE:
+				if (keyValue) {
+					// NOTE:*********************
+					// assumes all results have the same number of def_metadata
+					// also, only displays first two values of a row
+					MetaDataTable subTable = rl[0].getTableValue(i);
+					// have to turn rows into columns of key-values
+					tempFieldsLength += fieldsLength + subTable.getRowCount();
+					String[] tempFields = new String[tempFieldsLength - 1];
+					System.arraycopy(fields, 0, tempFields, 0, fieldsLength);
+					for (int j = fieldsLength; j < tempFieldsLength; j++) {
+						tempFields[j - 1] = subTable.getStringValue(j
+								- fieldsLength, 0);
+					}
+					fields = tempFields;
+				} else {
+					fields[i] = rl[0].getFieldName(i);
+				}
+				break;
+			default:
+				fields[i] = rl[0].getFieldName(i);
+				break;
+			}
+			;
 		}
-		for (int i=0;i<recordListLength;i++) {
-			for (int j=0;j<fieldsLength;j++) {
+		for (int i = 0; i < recordListLength; i++) {
+			for (int j = 0; j < fieldsLength; j++) {
 				if (rl[i].getFieldCount() > j) {
 					switch (rl[i].getFieldType(j)) {
-						case MetaDataField.TABLE:
-							if (keyValue) {
-//NOTE:*********************
-//assumes all results have the same number of def_metadata
-//also, only displays first two values of a row
-								MetaDataTable subTable = rl[i].getTableValue(j);
-								//have to turn rows into columns of key-values
-								//tempFieldsLength += fieldsLength + subTable.getRowCount();
-								Object[] tempData = new Object[tempFieldsLength];
-/*
-System.out.println(	"data.length "+data.length );
-System.out.println(	"i "+i );
-System.out.println(	"data[i], 0, tempData, 0, fieldsLength"+
-data[i]+ "   "+tempData+ "   "+fieldsLength);
-*/
-								System.arraycopy( data[i], 0, tempData, 0, fieldsLength );
-								for (int k=fieldsLength;k<tempFieldsLength;k++) {
-									tempData[k-1] = subTable.getStringValue( k-fieldsLength, 1 );
-								}
-								data[i] = tempData;
+					case MetaDataField.TABLE:
+						if (keyValue) {
+							// NOTE:*********************
+							// assumes all results have the same number of
+							// def_metadata
+							// also, only displays first two values of a row
+							MetaDataTable subTable = rl[i].getTableValue(j);
+							// have to turn rows into columns of key-values
+							// tempFieldsLength += fieldsLength +
+							// subTable.getRowCount();
+							Object[] tempData = new Object[tempFieldsLength];
+							/*
+							 * System.out.println( "data.length "+data.length );
+							 * System.out.println( "i "+i ); System.out.println(
+							 * "data[i], 0, tempData, 0, fieldsLength"+ data[i]+
+							 * "   "+tempData+ "   "+fieldsLength);
+							 */
+							System.arraycopy(data[i], 0, tempData, 0,
+									fieldsLength);
+							for (int k = fieldsLength; k < tempFieldsLength; k++) {
+								tempData[k - 1] = subTable.getStringValue(k
+										- fieldsLength, 1);
 							}
-							else {
-								data[i][j] = createMetaDataTable( rl[i].getTableValue(j) );
-								definableRows =
-									definableRows+rl[i].getTableValue(j).getRowCount();
-							}
-							break;
-						case MetaDataField.STRING:
-						default:
-							data[i][j] = rl[i].getStringValue(j);
-							break;
+							data[i] = tempData;
+						} else {
+							data[i][j] = createMetaDataTable(rl[i]
+									.getTableValue(j));
+							definableRows = definableRows
+									+ rl[i].getTableValue(j).getRowCount();
+						}
+						break;
+					case MetaDataField.STRING:
+					default:
+						data[i][j] = rl[i].getStringValue(j);
+						break;
 					}
 				}
 			}
 		}
 
-		//create the table of metadata
-    TableModel model = new MetaDataTableModel( data, fields );
+		// create the table of metadata
+		TableModel model = new MetaDataTableModel(data, fields);
 		setModel(model);
 
-		//set up the renderer
+		// set up the renderer
 		if (!keyValue)
-			setDefaultRenderer(JTable.class,
-				new MetaDataTableCellRenderer(getDefaultRenderer(JTable.class)));
+			setDefaultRenderer(JTable.class, new MetaDataTableCellRenderer(
+					getDefaultRenderer(JTable.class)));
 
-		setDefaultRenderer(String.class,
-			 new MetaDataTableCellRenderer(getDefaultRenderer(String.class)));
+		setDefaultRenderer(String.class, new MetaDataTableCellRenderer(
+				getDefaultRenderer(String.class)));
 
-
-		//has a queryObj so the metadata is modifiable.
+		// has a queryObj so the metadata is modifiable.
 		if (queryObj != null) {
 			if (!keyValue) {
-//TODO actually this sort of worked for a while, but now it does not.
-				setDefaultEditor(JTable.class,
-					new MetaDataTableCellEditor(model, getDefaultEditor(JTable.class)) );
+				// TODO actually this sort of worked for a while, but now it
+				// does not.
+				setDefaultEditor(JTable.class, new MetaDataTableCellEditor(
+						model, getDefaultEditor(JTable.class)));
 			}
 
-			setDefaultEditor(String.class,
-				new MetaDataTableCellEditor(model, getDefaultEditor(String.class)) );
+			setDefaultEditor(String.class, new MetaDataTableCellEditor(model,
+					getDefaultEditor(String.class)));
 		}
 
-
-		//don't double count the first row and header
+		// don't double count the first row and header
 		if (definableRows > 1) {
-			definableRows-=2;
+			definableRows -= 2;
 
-			//creates proper column sizes and returns total table width
+			// creates proper column sizes and returns total table width
 			int columnWidth = adjustColumnSizes(this);
 
-//TODO works in JargonGui but the height is too much in standalone.
-			//total height = (rows + header + MetaDataTable_Rows ) * font height
-			int columnHeight = (data.length+1+definableRows)*fontPixelHeight;
-			setPreferredScrollableViewportSize(
-				new Dimension( columnWidth,	columnHeight*2 ));
+			// TODO works in JargonGui but the height is too much in standalone.
+			// total height = (rows + header + MetaDataTable_Rows ) * font
+			// height
+			int columnHeight = (data.length + 1 + definableRows)
+					* fontPixelHeight;
+			setPreferredScrollableViewportSize(new Dimension(columnWidth,
+					columnHeight * 2));
 
 			setRowHeight(columnHeight);
-		}
-		else {
-			//creates proper column sizes and returns total table width
+		} else {
+			// creates proper column sizes and returns total table width
 			int columnWidth = adjustColumnSizes(this);
 
-			//total height = (rows + header + MetaDataTable_Rows ) * font height
-			int columnHeight = /*(data.length)**/fontPixelHeight;
-			setPreferredScrollableViewportSize(
-				new Dimension( columnWidth,	columnHeight ));
+			// total height = (rows + header + MetaDataTable_Rows ) * font
+			// height
+			int columnHeight = /* (data.length)* */fontPixelHeight;
+			setPreferredScrollableViewportSize(new Dimension(columnWidth,
+					columnHeight));
 
 			setRowHeight(columnHeight);
 		}
 	}
 
-
 	/**
 	 *
 	 */
-//TODO static?
-	static JTable createMetaDataTable( MetaDataTable table )
-	{
-//TODO this should probably be a seperate class, in case people
-//just want to display such a table
+	// TODO static?
+	static JTable createMetaDataTable(MetaDataTable table) {
+		// TODO this should probably be a seperate class, in case people
+		// just want to display such a table
 		int tableRows = table.getRowCount();
 		int tableColumns = table.getColumnCount();
 		Object[][] temp = new Object[tableRows][tableColumns];
@@ -519,174 +496,168 @@ data[i]+ "   "+tempData+ "   "+fieldsLength);
 		Object[][] subData = null;
 		int k = 0;
 		int maxK = 0;
-		for (int ii=0;ii<tableRows;ii++) {
-			for (int jj=0;jj<tableColumns;jj++) {
-				value = table.getStringValue( ii, jj );
-				if ((value != null) && !value.equals( "" )) {
+		for (int ii = 0; ii < tableRows; ii++) {
+			for (int jj = 0; jj < tableColumns; jj++) {
+				value = table.getStringValue(ii, jj);
+				if ((value != null) && !value.equals("")) {
 					temp[ii][k] = value;
 					k++;
-				}
-				else {
+				} else {
 					temp[ii][k] = "";
 				}
 			}
 			maxK = Math.max(k, maxK);
-			k=0;
+			k = 0;
 		}
-//System.out.println("maxK "+maxK);
+		// System.out.println("maxK "+maxK);
 		subData = new Object[tableRows][maxK];
-		for (int ii=0;ii<tableRows;ii++) {
-			System.arraycopy( temp[ii], 0, subData[ii], 0, maxK );
+		for (int ii = 0; ii < tableRows; ii++) {
+			System.arraycopy(temp[ii], 0, subData[ii], 0, maxK);
 		}
 
+		JTable jTable = new JTable(subData, subData[0]);
 
-JTable jTable = new JTable( subData, subData[0] );
+		Font font;
+		FontMetrics fontMetrics;
+		font = jTable.getFont();
 
+		if (font == null) {
+			font = new Font("SansSerif", Font.PLAIN, 12);
+			jTable.setFont(font);
+		}
+		fontMetrics = jTable.getFontMetrics(font);
 
-Font font;
-FontMetrics fontMetrics;
-font = jTable.getFont();
+		// creates proper column sizes and returns total table width
+		int columnWidth = 0;
 
-if (font==null) {
-	font = new Font("SansSerif", Font.PLAIN, 12);
-	jTable.setFont(font);
-}
-fontMetrics = jTable.getFontMetrics(font);
+		// TODO
+		// MetaDataDisplay.initColumnSizes(jTable);
 
-//creates proper column sizes and returns total table width
-int columnWidth = 0;
+		// total height = (rows + header + MetaDataTable_Rows ) * font height
+		int columnHeight = (tableRows + 1) * fontMetrics.getHeight();
+		jTable.setPreferredScrollableViewportSize(new Dimension(columnWidth,
+				columnHeight * 2));
 
-//TODO
-//MetaDataDisplay.initColumnSizes(jTable);
+		jTable.getModel().addTableModelListener(new TableModelListener() {
+			public void tableChanged(TableModelEvent e) {
+				int row = e.getFirstRow();
+				int column = e.getColumn();
+				TableModel model = (TableModel) e.getSource();
+				String columnName = model.getColumnName(column);
+				Object data = model.getValueAt(row, column);
 
+				// System.out.println("!!!!!!!!!!!  "+data);
+			}
+		});
 
-//total height = (rows + header + MetaDataTable_Rows ) * font height
-int columnHeight = (tableRows+1)* fontMetrics.getHeight();
-		jTable.setPreferredScrollableViewportSize(
-			new Dimension( columnWidth,	columnHeight*2 ));
-
-
-
-jTable.getModel().addTableModelListener(new TableModelListener() {
-	public void tableChanged(TableModelEvent e) {
-			int row = e.getFirstRow();
-			int column = e.getColumn();
-			TableModel model = (TableModel)e.getSource();
-			String columnName = model.getColumnName(column);
-			Object data = model.getValueAt(row, column);
-
-
-//System.out.println("!!!!!!!!!!!  "+data);
-	}
-});
-
-return jTable;
+		return jTable;
 	}
 
-
-
-//-----------------------------------------------------------------------
-// Inner Classes
-//-----------------------------------------------------------------------
-	class MetaDataTableCellEditor extends AbstractCellEditor
-		implements TableCellEditor, ActionListener
-	{
+	// -----------------------------------------------------------------------
+	// Inner Classes
+	// -----------------------------------------------------------------------
+	class MetaDataTableCellEditor extends AbstractCellEditor implements
+			TableCellEditor, ActionListener {
 		private TableCellEditor defaultEditor;
 		Object component;
 		String originalValue;
 		int currentRow = -1, currentColumn = -1;
 
-    /**
-     *
-     * @param table To modify the outer class.
-     */
-		public MetaDataTableCellEditor( final TableModel model, TableCellEditor editor )
-		{
-			super( );
+		/**
+		 * 
+		 * @param table
+		 *            To modify the outer class.
+		 */
+		public MetaDataTableCellEditor(final TableModel model,
+				TableCellEditor editor) {
+			super();
 
 			defaultEditor = editor;
 
-			addCellEditorListener( new CellEditorListener() {
-				public void editingCanceled( ChangeEvent e )
-				{
+			addCellEditorListener(new CellEditorListener() {
+				public void editingCanceled(ChangeEvent e) {
 				}
 
-				public void editingStopped( ChangeEvent e )
-				{
-MetaDataRecordList[] tempRL = new MetaDataRecordList[1];
+				public void editingStopped(ChangeEvent e) {
+					MetaDataRecordList[] tempRL = new MetaDataRecordList[1];
 
-try {
+					try {
 
-if (getCellEditorValue() instanceof JTable) {
-	JTable table = (JTable)getCellEditorValue();
-	int rows = table.getRowCount();
-	int columns = table.getColumnCount();
+						if (getCellEditorValue() instanceof JTable) {
+							JTable table = (JTable) getCellEditorValue();
+							int rows = table.getRowCount();
+							int columns = table.getColumnCount();
 
-	String[][] temp = new String[rows][columns];
-	int[] op = new int[rows];
-	Object t = null;
-	for (int i=0;i<rows;i++) {
-		for (int j=0;j<columns;j++) {
-			t = table.getValueAt(i,j);
-			if (t != null) {
-				temp[i][j] = t.toString();
-			}
-		}
-		op[i] = MetaDataCondition.EQUAL;
-	}
-	MetaDataTable mdt = new MetaDataTable( op, temp );
-	tempRL[0] = new SRBMetaDataRecordList(
-		rl[currentRow].getField(currentColumn), mdt );
+							String[][] temp = new String[rows][columns];
+							int[] op = new int[rows];
+							Object t = null;
+							for (int i = 0; i < rows; i++) {
+								for (int j = 0; j < columns; j++) {
+									t = table.getValueAt(i, j);
+									if (t != null) {
+										temp[i][j] = t.toString();
+									}
+								}
+								op[i] = MetaDataCondition.EQUAL;
+							}
+							MetaDataTable mdt = new MetaDataTable(op, temp);
+							tempRL[0] = new SRBMetaDataRecordList(
+									rl[currentRow].getField(currentColumn), mdt);
 
-  if (queryObj[currentRow] != null) {
-    queryObj[currentRow].modifyMetaData(tempRL[0]);
-  }
-}
-else if (getCellEditorValue() instanceof JTextField) {
-	JTextField textField = (JTextField)getCellEditorValue();
+							if (queryObj[currentRow] != null) {
+								queryObj[currentRow].modifyMetaData(tempRL[0]);
+							}
+						} else if (getCellEditorValue() instanceof JTextField) {
+							JTextField textField = (JTextField) getCellEditorValue();
 
-	String text = textField.getText();
-	if (!text.equals(originalValue)) {
-    Object value = rl[currentRow].getValue(currentColumn);
-		if (value instanceof MetaDataTable) {
-			rl[currentRow].setValue(currentColumn, (MetaDataTable)value);
-			tempRL[0] = new SRBMetaDataRecordList(
-				rl[currentRow].getField(currentColumn), (MetaDataTable)value );
-		}
-		else {
-			rl[currentRow].setValue(currentColumn, text);
-			tempRL[0] = new SRBMetaDataRecordList(
-				rl[currentRow].getField(currentColumn), text );
-		}
-    //change the local displayed value to the edited value
-    model.setValueAt( value, currentRow, currentColumn );
+							String text = textField.getText();
+							if (!text.equals(originalValue)) {
+								Object value = rl[currentRow]
+										.getValue(currentColumn);
+								if (value instanceof MetaDataTable) {
+									rl[currentRow].setValue(currentColumn,
+											(MetaDataTable) value);
+									tempRL[0] = new SRBMetaDataRecordList(
+											rl[currentRow]
+													.getField(currentColumn),
+											(MetaDataTable) value);
+								} else {
+									rl[currentRow]
+											.setValue(currentColumn, text);
+									tempRL[0] = new SRBMetaDataRecordList(
+											rl[currentRow]
+													.getField(currentColumn),
+											text);
+								}
+								// change the local displayed value to the
+								// edited value
+								model.setValueAt(value, currentRow,
+										currentColumn);
 
-    if (queryObj[currentRow] != null) {
-      queryObj[currentRow].modifyMetaData(tempRL[0]);
-    }
-	}
-}
-else if (getCellEditorValue() instanceof String) {
-	System.out.println("getCellEditorValue- String "+getCellEditorValue());
-}
+								if (queryObj[currentRow] != null) {
+									queryObj[currentRow]
+											.modifyMetaData(tempRL[0]);
+								}
+							}
+						} else if (getCellEditorValue() instanceof String) {
+							System.out.println("getCellEditorValue- String "
+									+ getCellEditorValue());
+						}
 
-} catch( SRBException t ) {
-	t.printStackTrace();
-}
-catch ( Throwable t ) {
-	t.printStackTrace();
-}
+					} catch (SRBException t) {
+						t.printStackTrace();
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
 				}
-			}); //end of add listener
+			}); // end of add listener
 		}
 
 		/**
-		 * Finalizes the object by explicitly letting go of each of
-		 * its internally held values.
+		 * Finalizes the object by explicitly letting go of each of its
+		 * internally held values.
 		 */
-		protected void finalize( )
-			throws Throwable
-		{
+		protected void finalize() throws Throwable {
 			super.finalize();
 
 			if (defaultEditor != null)
@@ -696,173 +667,188 @@ catch ( Throwable t ) {
 				component = null;
 		}
 
-
-
 		/**
-		 * @return the component used for drawing the cell. This method is used to configure the renderer appropriately before drawing.
-		 *
-		 * @param table the JTable that is asking the renderer to draw; can be null
-		 * @param value the value of the cell to be rendered. It is up to the specific renderer to interpret and draw the value. For example, if value is the string "true", it could be rendered as a string or it could be rendered as a check box that is checked. null is a valid value
-		 * @param isSelected true if the cell is to be rendered with the selection highlighted; otherwise false
-		 * @param hasFocus if true, render cell appropriately. For example, put a special border on the cell, if the cell can be edited, render in the color used to indicate editing
-		 * @param row the row index of the cell being drawn. When drawing the header, the value of row is -1
-		 * @param column the column index of the cell being drawn
+		 * @return the component used for drawing the cell. This method is used
+		 *         to configure the renderer appropriately before drawing.
+		 * 
+		 * @param table
+		 *            the JTable that is asking the renderer to draw; can be
+		 *            null
+		 * @param value
+		 *            the value of the cell to be rendered. It is up to the
+		 *            specific renderer to interpret and draw the value. For
+		 *            example, if value is the string "true", it could be
+		 *            rendered as a string or it could be rendered as a check
+		 *            box that is checked. null is a valid value
+		 * @param isSelected
+		 *            true if the cell is to be rendered with the selection
+		 *            highlighted; otherwise false
+		 * @param hasFocus
+		 *            if true, render cell appropriately. For example, put a
+		 *            special border on the cell, if the cell can be edited,
+		 *            render in the color used to indicate editing
+		 * @param row
+		 *            the row index of the cell being drawn. When drawing the
+		 *            header, the value of row is -1
+		 * @param column
+		 *            the column index of the cell being drawn
 		 */
-		public Component getTableCellEditorComponent( JTable table, Object value,
-			boolean isSelected, int row, int column )
-		{
+		public Component getTableCellEditorComponent(JTable table,
+				Object value, boolean isSelected, int row, int column) {
 			component = value;
 
 			currentRow = row;
 			currentColumn = column;
 
 			if (value instanceof String) {
-				component = new JTextField( (String)value );
-				originalValue = (String)value;
-			}
-			else {
-		    component = defaultEditor.getTableCellEditorComponent(
-			  	table, value, isSelected, row, column);
+				component = new JTextField((String) value);
+				originalValue = (String) value;
+			} else {
+				component = defaultEditor.getTableCellEditorComponent(table,
+						value, isSelected, row, column);
 			}
 
 			return (Component) component;
 		}
 
-    public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(ActionEvent e) {
 
-    }
+		}
 
-		public Object getCellEditorValue( )
-		{
+		public Object getCellEditorValue() {
 			return component;
 		}
 
-		//TODO what? why does it say I need to override these?
-		public void addCellEditorListener( CellEditorListener l )
-		{
+		// TODO what? why does it say I need to override these?
+		public void addCellEditorListener(CellEditorListener l) {
 			super.addCellEditorListener(l);
 		}
-		public void cancelCellEditing( ) {
+
+		public void cancelCellEditing() {
 			super.cancelCellEditing();
 		}
-		public boolean isCellEditable( EventObject anEvent )
-		{
+
+		public boolean isCellEditable(EventObject anEvent) {
 			return super.isCellEditable(anEvent);
 		}
-		public void removeCellEditorListener( CellEditorListener l )
-		{
+
+		public void removeCellEditorListener(CellEditorListener l) {
 			super.removeCellEditorListener(l);
 		}
-		public boolean shouldSelectCell( EventObject anEvent )
-		{
+
+		public boolean shouldSelectCell(EventObject anEvent) {
 			return super.shouldSelectCell(anEvent);
 		}
-		public boolean stopCellEditing( )
-		{
+
+		public boolean stopCellEditing() {
 			return super.stopCellEditing();
 		}
 	}
 
-
-
-//tabley
+	// tabley
 	class MetaDataTableCellRenderer implements TableCellRenderer {
-	  private TableCellRenderer __defaultRenderer;
-	  private TableCellEditor defaultEditor;
+		private TableCellRenderer __defaultRenderer;
+		private TableCellEditor defaultEditor;
 
-	  public MetaDataTableCellRenderer( TableCellRenderer renderer ) {
-	    __defaultRenderer = renderer;
-	  }
-
-		/**
-		 * @return the component used for drawing the cell. This method is used to configure the renderer appropriately before drawing.
-		 *
-		 * @param table the JTable that is asking the renderer to draw; can be null
-		 * @param value the value of the cell to be rendered. It is up to the specific renderer to interpret and draw the value. For example, if value is the string "true", it could be rendered as a string or it could be rendered as a check box that is checked. null is a valid value
-		 * @param isSelected true if the cell is to be rendered with the selection highlighted; otherwise false
-		 * @param hasFocus if true, render cell appropriately. For example, put a special border on the cell, if the cell can be edited, render in the color used to indicate editing
-		 * @param row the row index of the cell being drawn. When drawing the header, the value of row is -1
-		 * @param column the column index of the cell being drawn
-		 */
-	  public Component getTableCellRendererComponent( JTable table, Object value,
-			boolean isSelected,	boolean hasFocus,	int row, int column )
-	  {
-	    if(value instanceof JComponent) {
-	      return (JComponent)value;
-	    }
-	    return __defaultRenderer.getTableCellRendererComponent(
-		   table, value, isSelected, hasFocus, row, column);
-	  }
-	}
-
-
-//MetaDataTableModel
-	class MetaDataTableModel extends AbstractTableModel
-	{
-	  /*private */Object[][] data;
-
-	  private String[] names;
-
-		MetaDataTableModel( Object[][] data, String[] names )
-		{
-			this.data = data;
-			this.names = names;
-/*
-addTableModelListener( new TableModelListener() {
-	public void tableChanged( TableModelEvent e )
-	{
-			int row = e.getFirstRow();
-			int column = e.getColumn();
-			TableModel model = (TableModel)e.getSource();
-			String columnName = model.getColumnName(column);
-			Object data = model.getValueAt(row, column);
-
-
-System.out.println("~~~~~~~~~tableChanged "+data);
-	}
-});
-*/
+		public MetaDataTableCellRenderer(TableCellRenderer renderer) {
+			__defaultRenderer = renderer;
 		}
 
-
-	  public String getColumnName( int column ) {
-	    return names[column];
-	  }
-
-	  public int getRowCount( ) {
-	    return data.length;
-	  }
-
-	  public int getColumnCount( ) {
-	    return names.length;
-	  }
-
-	  public Object getValueAt( int row, int column ) {
-while (column >= data[row].length)
-column--;
-	      return data[row][column];
-	  }
-
-	  public boolean isCellEditable( int row, int column ) {
-	    return true;
-	  }
-
-	  public Class getColumnClass( int column ) {
-while (column >= data[0].length)
-column--;
-Object obj = getValueAt(0, column);
-if (obj != null)
-		return obj.getClass();
-return String.class;
-	  }
-
-    public void setValueAt( Object value, int row, int column )
-    {
-      if ((row < data.length) && (column < data[row].length)) {
-        data[row][column] = value;
-      }
-    }
+		/**
+		 * @return the component used for drawing the cell. This method is used
+		 *         to configure the renderer appropriately before drawing.
+		 * 
+		 * @param table
+		 *            the JTable that is asking the renderer to draw; can be
+		 *            null
+		 * @param value
+		 *            the value of the cell to be rendered. It is up to the
+		 *            specific renderer to interpret and draw the value. For
+		 *            example, if value is the string "true", it could be
+		 *            rendered as a string or it could be rendered as a check
+		 *            box that is checked. null is a valid value
+		 * @param isSelected
+		 *            true if the cell is to be rendered with the selection
+		 *            highlighted; otherwise false
+		 * @param hasFocus
+		 *            if true, render cell appropriately. For example, put a
+		 *            special border on the cell, if the cell can be edited,
+		 *            render in the color used to indicate editing
+		 * @param row
+		 *            the row index of the cell being drawn. When drawing the
+		 *            header, the value of row is -1
+		 * @param column
+		 *            the column index of the cell being drawn
+		 */
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			if (value instanceof JComponent) {
+				return (JComponent) value;
+			}
+			return __defaultRenderer.getTableCellRendererComponent(table,
+					value, isSelected, hasFocus, row, column);
+		}
 	}
-//end MetaDataTableModel
-}
 
+	// MetaDataTableModel
+	class MetaDataTableModel extends AbstractTableModel {
+		/* private */Object[][] data;
+
+		private String[] names;
+
+		MetaDataTableModel(Object[][] data, String[] names) {
+			this.data = data;
+			this.names = names;
+			/*
+			 * addTableModelListener( new TableModelListener() { public void
+			 * tableChanged( TableModelEvent e ) { int row = e.getFirstRow();
+			 * int column = e.getColumn(); TableModel model =
+			 * (TableModel)e.getSource(); String columnName =
+			 * model.getColumnName(column); Object data = model.getValueAt(row,
+			 * column);
+			 * 
+			 * 
+			 * System.out.println("~~~~~~~~~tableChanged "+data); } });
+			 */
+		}
+
+		public String getColumnName(int column) {
+			return names[column];
+		}
+
+		public int getRowCount() {
+			return data.length;
+		}
+
+		public int getColumnCount() {
+			return names.length;
+		}
+
+		public Object getValueAt(int row, int column) {
+			while (column >= data[row].length)
+				column--;
+			return data[row][column];
+		}
+
+		public boolean isCellEditable(int row, int column) {
+			return true;
+		}
+
+		public Class getColumnClass(int column) {
+			while (column >= data[0].length)
+				column--;
+			Object obj = getValueAt(0, column);
+			if (obj != null)
+				return obj.getClass();
+			return String.class;
+		}
+
+		public void setValueAt(Object value, int row, int column) {
+			if ((row < data.length) && (column < data[row].length)) {
+				data[row][column] = value;
+			}
+		}
+	}
+	// end MetaDataTableModel
+}

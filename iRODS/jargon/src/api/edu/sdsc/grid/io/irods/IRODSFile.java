@@ -74,7 +74,7 @@ import edu.sdsc.grid.io.*;
  * @see edu.sdsc.grid.io.GeneralFile
  */
 public class IRODSFile extends RemoteFile {
-	
+
 	/**
 	 * Standard iRODS path separator character represented as a string for
 	 * convenience. This string contains a single character, namely
@@ -106,9 +106,8 @@ public class IRODSFile extends RemoteFile {
 	static final int READ_PERMISSIONS = 1050;
 	/** integer from some queries signifying user can write to a file */
 	static final int WRITE_PERMISSIONS = 1120;
-	
-	private static Logger log = LoggerFactory.getLogger(IRODSFile.class);
 
+	private static Logger log = LoggerFactory.getLogger(IRODSFile.class);
 
 	/**
 	 * Connection to the iRODS server.
@@ -602,7 +601,7 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	
+
 	public void copyTo(GeneralFile file, boolean forceOverwrite)
 			throws IOException {
 		copyTo(file, forceOverwrite, "");
@@ -621,7 +620,9 @@ public class IRODSFile extends RemoteFile {
 	 *            {@link GeneralFile GeneralFile} is the local file that will be
 	 *            copied to
 	 * @param forceOverwrite
-	 * @param resource <code>String</code> containing the name of the resource from which the source file will be copied.
+	 * @param resource
+	 *            <code>String</code> containing the name of the resource from
+	 *            which the source file will be copied.
 	 * @throws IOException
 	 */
 	public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
@@ -1299,7 +1300,8 @@ public class IRODSFile extends RemoteFile {
 			// catch already exists (as a directory probably) and just return
 			// false
 			if (e.getType() != -511017) {
-				log.error("irods exception when creating new file, is not an already exists exception");
+				log
+						.error("irods exception when creating new file, is not an already exists exception");
 				throw e;
 			}
 		}
@@ -1565,7 +1567,6 @@ public class IRODSFile extends RemoteFile {
 			// if it is a file
 			MetaDataCondition conditions[] = null;
 
-			
 			conditions = new MetaDataCondition[2];
 			conditions[0] = MetaDataSet.newCondition(
 					GeneralMetaData.DIRECTORY_NAME, operator, getParent());
@@ -1799,7 +1800,7 @@ public class IRODSFile extends RemoteFile {
 	 *         abstract pathname is hidden.
 	 */
 	public boolean isHidden() {
-		return false; 
+		return false;
 	}
 
 	/**

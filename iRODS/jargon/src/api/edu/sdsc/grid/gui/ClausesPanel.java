@@ -59,7 +59,6 @@ import javax.swing.JScrollBar;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
-
 //needed for the testing methods
 import edu.sdsc.grid.io.*;
 import edu.sdsc.grid.io.srb.*;
@@ -69,47 +68,42 @@ import java.awt.event.*;
 import java.net.*;
 import javax.swing.*;
 
-
 /**
- *
- *
+ * 
+ * 
  * @author Lucas Ammon Gilbert
  * @see SelectionChooser
  * @see QueryPanel
  * @since JARGON1.5
  * @deprecated - GUI code will go away in future releases
  */
-/*public*/ 
+/* public */
 @Deprecated
-class ClausesPanel
-	extends JPanel implements ActionListener
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+class ClausesPanel extends JPanel implements ActionListener {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 	public static String ADD_BUTTON_TEXT = "+";
 	public static String REMOVE_BUTTON_TEXT = "-";
 
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 	private Vector clauses;
 
-	//label
+	// label
 	private JLabel queryLabel;
 	private JButton addButton;
 	private JButton removeButton;
 	private JPanel labelPanel;
 
-	//finishedComponents
+	// finishedComponents
 	private JPanel finishedComponents;
 	private JScrollPane pane;
 	private JScrollBar horizontalBar;
 	private JScrollBar verticalBar;
 
-	//chooser display
+	// chooser display
 	private SelectionChooser display;
 
 	private GridBagConstraints gridBagConstraints;
@@ -121,11 +115,10 @@ class ClausesPanel
 
 	private int widthOfRow = 3;
 
-//----------------------------------------------------------------------
-//  Constructors, Destructors and initialization Methods
-//----------------------------------------------------------------------
-	public ClausesPanel( SelectionChooser display, String label )
-	{
+	// ----------------------------------------------------------------------
+	// Constructors, Destructors and initialization Methods
+	// ----------------------------------------------------------------------
+	public ClausesPanel(SelectionChooser display, String label) {
 		this.display = display;
 
 		queryLabel = new JLabel(label);
@@ -136,12 +129,10 @@ class ClausesPanel
 	}
 
 	/**
-	 * Finalizes the object by explicitly letting go of each of
-	 * its internally held values.
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
 	 */
-	protected void finalize( )
-		throws Throwable
-	{
+	protected void finalize() throws Throwable {
 		if (clauses != null)
 			clauses = null;
 
@@ -152,10 +143,8 @@ class ClausesPanel
 		if (removeButton != null)
 			removeButton = null;
 
-
 		if (finishedComponents != null)
 			finishedComponents = null;
-
 
 		if (display != null)
 			display = null;
@@ -163,31 +152,28 @@ class ClausesPanel
 		super.finalize();
 	}
 
-
-	protected void init( )
-	{
+	protected void init() {
 		clauses = new Vector();
 		gridBagConstraints = new GridBagConstraints();
-		//Width = to the end of the line.
+		// Width = to the end of the line.
 		gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 
-
-		setBackground(new Color(0,0,0,0));
+		setBackground(new Color(0, 0, 0, 0));
 		setLayout(new GridBagLayout());
 
-
-		//the label: and finished clauses
+		// the label: and finished clauses
 		queryLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		queryLabel.setToolTipText("Search conditions of the query should be based on the following items");
+		queryLabel
+				.setToolTipText("Search conditions of the query should be based on the following items");
 		queryLabel.setVerticalAlignment(SwingConstants.TOP);
 
-		display.setBorder(new EmptyBorder(1,1,1,1));
+		display.setBorder(new EmptyBorder(1, 1, 1, 1));
 
-		//finishedComponents panel for the chosen query conditions/selects
+		// finishedComponents panel for the chosen query conditions/selects
 		finishedComponents = new JPanel();
 		finishedComponents.setBackground(Color.WHITE);
-		finishedComponents.setBorder(new EmptyBorder(1,1,1,1));
+		finishedComponents.setBorder(new EmptyBorder(1, 1, 1, 1));
 		finishedComponents.setLayout(new GridBagLayout());
 		finishedComponents.setMinimumSize(new Dimension(100, 25));
 
@@ -208,7 +194,7 @@ class ClausesPanel
 
 		add(display);
 
-		//add buttons
+		// add buttons
 		addButton.setVerticalAlignment(SwingConstants.TOP);
 		addButton.setMargin(new Insets(0, 0, 0, 0));
 		addButton.setMaximumSize(new Dimension(20, 20));
@@ -217,23 +203,19 @@ class ClausesPanel
 		addButton.addActionListener(this);
 		add(addButton, gridBagConstraints);
 
-
-		//need to push the display lower.
+		// need to push the display lower.
 		JPanel spacer = new JPanel();
 		spacer.setMinimumSize(new Dimension(1, 24));
-		spacer.setBorder(new EmptyBorder(0,0,0,0));
-		spacer.setBackground(new Color(0,0,0,0));
+		spacer.setBorder(new EmptyBorder(0, 0, 0, 0));
+		spacer.setBackground(new Color(0, 0, 0, 0));
 		add(spacer, gridBagConstraints);
 	}
 
+	// ----------------------------------------------------------------------
+	// Setters and Getters
+	// ----------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------
-//  Setters and Getters
-//----------------------------------------------------------------------
-
-	/*TODO public*/ Object[] getClauses( )
-	{
+	/* TODO public */Object[] getClauses() {
 		if (clauses != null) {
 			return clauses.toArray();
 		}
@@ -242,11 +224,10 @@ class ClausesPanel
 	}
 
 	/**
-	 * Return all the clauses in the clause vector. Cast them to
-	 * the same class as <code>type</code>.
+	 * Return all the clauses in the clause vector. Cast them to the same class
+	 * as <code>type</code>.
 	 */
-	/*TODO public*/ Object[] getClauses( Object[] type )
-	{
+	/* TODO public */Object[] getClauses(Object[] type) {
 		if (clauses != null) {
 			return clauses.toArray(type);
 		}
@@ -254,92 +235,80 @@ class ClausesPanel
 		return null;
 	}
 
-
-//----------------------------------------------------------------------
-//  Methods
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 	/**
 	 * Add the clause from display to the clause vector.
 	 */
-	private void addClause( )
-	{
-		clauses.add( display.getClause() );
+	private void addClause() {
+		clauses.add(display.getClause());
 
-		if (itemsInRow%widthOfRow == 2) {
-			finishedComponents.add( new JLabel( display.getClause().toString()+"," ),
-				gridBagConstraints );
-		}
-		else {
-			finishedComponents.add( new JLabel(	display.getClause().toString()+", "));
+		if (itemsInRow % widthOfRow == 2) {
+			finishedComponents.add(new JLabel(display.getClause().toString()
+					+ ","), gridBagConstraints);
+		} else {
+			finishedComponents.add(new JLabel(display.getClause().toString()
+					+ ", "));
 		}
 		itemsInRow++;
 
-/*
-display.validate();
-display.repaint();
-finishedComponents.validate();
-finishedComponents.repaint();
-		validate();
-		repaint();*/
-component.validate();
-component.repaint();
+		/*
+		 * display.validate(); display.repaint(); finishedComponents.validate();
+		 * finishedComponents.repaint(); validate(); repaint();
+		 */
+		component.validate();
+		component.repaint();
 	}
 
 	/**
 	 * Adds these clauses to the clause vector.
 	 */
-	/*TODO public*/ void addClauses( Object[] addClauses )
-	{
-		for (int i=0;i<addClauses.length;i++) {
+	/* TODO public */void addClauses(Object[] addClauses) {
+		for (int i = 0; i < addClauses.length; i++) {
 			if (addClauses[i] != null) {
-				clauses.add( addClauses[i] );
-				if (itemsInRow%widthOfRow == 2) {
-					finishedComponents.add( new JLabel( addClauses[i].toString()+"," ),
-						gridBagConstraints );
-				}
-				else {
-					finishedComponents.add( new JLabel( addClauses[i].toString()+", " ) );
+				clauses.add(addClauses[i]);
+				if (itemsInRow % widthOfRow == 2) {
+					finishedComponents.add(new JLabel(addClauses[i].toString()
+							+ ","), gridBagConstraints);
+				} else {
+					finishedComponents.add(new JLabel(addClauses[i].toString()
+							+ ", "));
 				}
 				itemsInRow++;
 			}
 		}
 
-display.validate();
-display.repaint();
-finishedComponents.validate();
-finishedComponents.repaint();
+		display.validate();
+		display.repaint();
+		finishedComponents.validate();
+		finishedComponents.repaint();
 		validate();
 		repaint();
 	}
 
-
 	/**
 	 * Remove the last clause from the clause vector and from the display.
 	 */
-	private void removeClause( )
-	{
-		int lastIndex = finishedComponents.getComponentCount()-1;
+	private void removeClause() {
+		int lastIndex = finishedComponents.getComponentCount() - 1;
 
-		//Don't try to delete when nothing exists
+		// Don't try to delete when nothing exists
 		if (lastIndex >= 0) {
-			finishedComponents.remove( lastIndex );
-			clauses.remove( clauses.size()-1 );
+			finishedComponents.remove(lastIndex);
+			clauses.remove(clauses.size() - 1);
 
-/*
-display.validate();
-display.repaint();
-finishedComponents.validate();
-finishedComponents.repaint();
-		validate();
-		repaint();*/
-component.validate();
-component.repaint();
+			/*
+			 * display.validate(); display.repaint();
+			 * finishedComponents.validate(); finishedComponents.repaint();
+			 * validate(); repaint();
+			 */
+			component.validate();
+			component.repaint();
 		}
 	}
 
-
-	public void actionPerformed( ActionEvent e )
-	{
+	public void actionPerformed(ActionEvent e) {
 		if (addButton.getText().equals(e.getActionCommand())) {
 			addClause();
 		}
@@ -348,42 +317,30 @@ component.repaint();
 		}
 	}
 
-//TODO HACK
-//TODO temp method until I figure out refresh better.
-void setContainer( JComponent component ) {
-this.component = component;
-}
+	// TODO HACK
+	// TODO temp method until I figure out refresh better.
+	void setContainer(JComponent component) {
+		this.component = component;
+	}
 
-
-			JComponent component = null;
+	JComponent component = null;
 
 	/**
 	 * Stand alone testing.
-	 *
-	public static void main( String[] args )
-	{
-		try {
-			frame = new JFrame("JargonTree");
-
-			ClausesPanel pane = new ClausesPanel( new SelectionChooser( MetaDataSet.getMetaDataGroups(true) ),
-			"Select:" );
-//			pane.setPreferredSize(new Dimension( 800, 600 ));
-
-			frame.addWindowListener(new WindowAdapter() {
-				public void windowClosing(WindowEvent we) {
-					System.exit(0);
-				}
-			});
-			frame.getContentPane().add(pane, BorderLayout.NORTH);
-			frame.pack();
-			frame.show();
-			frame.validate();
-
-		} catch (Throwable e) {
-			e.printStackTrace();
-			System.out.println(((SRBException)e).getStandardMessage());
-		}
-	}
-*/
+	 * 
+	 * public static void main( String[] args ) { try { frame = new
+	 * JFrame("JargonTree");
+	 * 
+	 * ClausesPanel pane = new ClausesPanel( new SelectionChooser(
+	 * MetaDataSet.getMetaDataGroups(true) ), "Select:" ); //
+	 * pane.setPreferredSize(new Dimension( 800, 600 ));
+	 * 
+	 * frame.addWindowListener(new WindowAdapter() { public void
+	 * windowClosing(WindowEvent we) { System.exit(0); } });
+	 * frame.getContentPane().add(pane, BorderLayout.NORTH); frame.pack();
+	 * frame.show(); frame.validate();
+	 * 
+	 * } catch (Throwable e) { e.printStackTrace();
+	 * System.out.println(((SRBException)e).getStandardMessage()); } }
+	 */
 }
-

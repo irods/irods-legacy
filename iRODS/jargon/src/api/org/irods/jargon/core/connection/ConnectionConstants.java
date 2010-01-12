@@ -7,32 +7,33 @@ import edu.sdsc.grid.io.GeneralFileSystem;
 
 /**
  * Handy place to put common constants for connection-related purposes
+ * 
  * @author Mike Conway - DICE (www.irods.org)
- *
+ * 
  */
 public final class ConnectionConstants {
-	
+
 	public static final String JARGON_CONNECTION_ENCODING = "utf-8";
 	/**
 	 * Approximate maximum number of bytes transfered by each thread during a
 	 * parallel transfer.
 	 */
 	public static final int TRANSFER_THREAD_SIZE = 6000000;
-	
-	/**
-	   * Default buffer size used for communicating with the remote filesystem 
-	   * and the various copyTo and copyFrom transfers. 
-	   */
-	  public static final int DEFAULT_BUFFER_SIZE = 65535;
-
 
 	/**
-	 * value used to detect and respond to delete status messages   
+	 * Default buffer size used for communicating with the remote filesystem and
+	 * the various copyTo and copyFrom transfers.
+	 */
+	public static final int DEFAULT_BUFFER_SIZE = 65535;
+
+	/**
+	 * value used to detect and respond to delete status messages
 	 */
 	public static final int SYS_CLI_TO_SVR_COLL_STAT_REPLY = 99999997;
-	
+
 	/**
-	 * number of deletes that will be done in IRODS before sending a status message
+	 * number of deletes that will be done in IRODS before sending a status
+	 * message
 	 */
 	public static final int SYS_CLI_TO_SVR_COLL_STAT_SIZE = 10;
 
@@ -65,7 +66,8 @@ public final class ConnectionConstants {
 	/**
 	 * Size of the socket send buffer
 	 */
-	public static int OUTPUT_BUFFER_LENGTH = GeneralFileSystem.getWriteBufferSize();
+	public static int OUTPUT_BUFFER_LENGTH = GeneralFileSystem
+			.getWriteBufferSize();
 
 	/**
 	 * 4 bytes at the front of the header, outside XML
@@ -80,7 +82,8 @@ public final class ConnectionConstants {
 	 * Standard challenge length. Used in challenge response.
 	 */
 	public static final int CHALLENGE_LENGTH = 64;
-	
-	private ConnectionConstants() {}
+
+	private ConnectionConstants() {
+	}
 
 }

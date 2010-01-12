@@ -43,46 +43,40 @@
 //
 package edu.sdsc.grid.io;
 
-
 /**
  * The metadata naming interface for directory metadata.
- *
+ * 
  * @see GeneralMetaData
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public interface DirectoryMetaData extends StandardMetaData
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
-  //public static final String DIRECTORY_ID = "Directory Identifier";
+public interface DirectoryMetaData extends StandardMetaData {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
+	// public static final String DIRECTORY_ID = "Directory Identifier";
 
-  public final static String PARENT_DIRECTORY_NAME = "parent directory name";
-  public final static String DIRECTORY_OWNER = "directory owner";
-  public final static String DIRECTORY_CREATE_TIMESTAMP = "directory creation timestamp";
-  public final static String DIRECTORY_COMMENTS = "directory comments";
+	public final static String PARENT_DIRECTORY_NAME = "parent directory name";
+	public final static String DIRECTORY_OWNER = "directory owner";
+	public final static String DIRECTORY_CREATE_TIMESTAMP = "directory creation timestamp";
+	public final static String DIRECTORY_COMMENTS = "directory comments";
 
+	public static final String DIRECTORY_OWNER_ZONE = "Directory Owner Zone";
+	// public static final String DIRECTORY_MAP_ID = "Directory Map ID";
+	public static final String DIRECTORY_INHERITANCE = "Directory Inheritance";
+	public static final String DIRECTORY_CREATE_DATE = "Directory Time created (Unix Time)";
+	public static final String DIRECTORY_MODIFY_DATE = "Directory Time last modified (Unix Time)";
 
-  public static final String DIRECTORY_OWNER_ZONE = "Directory Owner Zone";
-  //public static final String DIRECTORY_MAP_ID = "Directory Map ID";
-  public static final String DIRECTORY_INHERITANCE = "Directory Inheritance";
-  public static final String DIRECTORY_CREATE_DATE = "Directory Time created (Unix Time)";
-  public static final String DIRECTORY_MODIFY_DATE = "Directory Time last modified (Unix Time)";
+	/**
+	 * Directory access constraint/permissions.
+	 */
+	public final static String DIRECTORY_ACCESS_CONSTRAINT = "Directory access constraint";
 
-  /**
-   * Directory access constraint/permissions.
-   */
-  public final static String DIRECTORY_ACCESS_CONSTRAINT  =  "Directory access constraint";
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
-
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 
 }

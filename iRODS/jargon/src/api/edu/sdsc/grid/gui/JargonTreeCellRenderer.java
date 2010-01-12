@@ -41,7 +41,6 @@
 //
 package edu.sdsc.grid.gui;
 
-
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.BoxLayout;
@@ -54,12 +53,13 @@ import edu.sdsc.grid.io.GeneralFile;
 import edu.sdsc.grid.io.local.LocalFile;
 
 /**
- * Displays an entry in a tree. <p>
+ * Displays an entry in a tree.
+ * <p>
  * A custom tree cell renderer to compliment the <code>JargonTreeModel</cope>
  * The GeneralFile classes which form the nodes of the tree will be displayed,
  * as inline JLabel, and expanded to a table for filesystems that
  * support metadata.
- *
+ * 
  * @author Lucas Ammon Gilbert
  * @see JargonTreeModel
  * @see JargonTreeCellEditor
@@ -67,13 +67,11 @@ import edu.sdsc.grid.io.local.LocalFile;
  * @deprecated - GUI code will go away in future releases
  */
 @Deprecated
-public class JargonTreeCellRenderer implements TreeCellRenderer
-{
+public class JargonTreeCellRenderer implements TreeCellRenderer {
 	/**
 	 * Default empty constructor.
 	 */
-	public JargonTreeCellRenderer( )
-	{
+	public JargonTreeCellRenderer() {
 
 	}
 
@@ -85,44 +83,38 @@ public class JargonTreeCellRenderer implements TreeCellRenderer
 	 * receiver is being configured for. Returns the Component that the renderer
 	 * uses to draw the value.
 	 */
-	public Component getTreeCellRendererComponent(
-											JTree tree,
-											Object value,
-											boolean sel,
-											boolean expanded,
-											boolean leaf,
-											int row,
-											boolean hasFocus)
-	{
-		//For multiroot trees, first level just a string
+	public Component getTreeCellRendererComponent(JTree tree, Object value,
+			boolean sel, boolean expanded, boolean leaf, int row,
+			boolean hasFocus) {
+		// For multiroot trees, first level just a string
 		if (value instanceof String) {
 			if (value.equals(JargonTreeModel.TOP_LEVEL)) {
-				return new JLabel( value.toString(), JargonTreeModel.FOLDER_ICON, 0 );
+				return new JLabel(value.toString(),
+						JargonTreeModel.FOLDER_ICON, 0);
+			} else {
+				return new JLabel((String) value, JargonTreeModel.FOLDER_ICON,
+						0);
+				// throw new IllegalArgumentException( "Improper node on tree"
+				// );
 			}
-			else {
-				return new JLabel( (String)value, JargonTreeModel.FOLDER_ICON, 0 );
-//				throw new IllegalArgumentException( "Improper node on tree" );
-			}
-		}
-		else if (value instanceof LocalFile) {
-			//LocalFile doesn't have metadata
-//TODO a metadata check would be better, more general
+		} else if (value instanceof LocalFile) {
+			// LocalFile doesn't have metadata
+			// TODO a metadata check would be better, more general
 			if (leaf) {
-				return new JLabel( ((LocalFile)value).getName(),
-					JargonTreeModel.FILE_ICON, 0 );
-			}
-			else {
-				return new JLabel( ((LocalFile)value).getName(),
-					JargonTreeModel.FOLDER_ICON, 0 );
+				return new JLabel(((LocalFile) value).getName(),
+						JargonTreeModel.FILE_ICON, 0);
+			} else {
+				return new JLabel(((LocalFile) value).getName(),
+						JargonTreeModel.FOLDER_ICON, 0);
 			}
 		}
 
-		//So, "value" must be an Object that can have metadata--------------
+		// So, "value" must be an Object that can have metadata--------------
 		JargonTreeModel model = (JargonTreeModel) tree.getModel();
-		//Real tree part
-		GeneralFile file = (GeneralFile)value;
-//TODO temp? eventually add metadata to directories
-if (leaf && model.showMetaData()) {
+		// Real tree part
+		GeneralFile file = (GeneralFile) value;
+		// TODO temp? eventually add metadata to directories
+		if (leaf && model.showMetaData()) {
 
 			JPanel panel = new JPanel();
 			JLabel label = null;
@@ -131,28 +123,26 @@ if (leaf && model.showMetaData()) {
 			Object tableData[][] = null;
 			String tableNames[] = null;
 
-			//didn't like the grey box and thick border, BoxLayout seems to work...
-			panel.setBackground(new Color(0,0,0,0));
+			// didn't like the grey box and thick border, BoxLayout seems to
+			// work...
+			panel.setBackground(new Color(0, 0, 0, 0));
 			panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
-			label = new JLabel( "", JargonTreeModel.FILE_ICON, 0 );
+			label = new JLabel("", JargonTreeModel.FILE_ICON, 0);
 			label.setAlignmentX(Component.CENTER_ALIGNMENT);
 			panel.add(label);
 
-			table = model.getMetaData( file );
+			table = model.getMetaData(file);
 			if (table != null) {
 				table.setAlignmentX(Component.LEFT_ALIGNMENT);
 				panel.add(table);
 			}
 
 			return panel;
-		}
-		else if (leaf) {
-			return new JLabel( file.getName(), JargonTreeModel.FILE_ICON, 0 );
-		}
-		else {
-			return new JLabel( file.getName(), JargonTreeModel.FOLDER_ICON, 0 );
+		} else if (leaf) {
+			return new JLabel(file.getName(), JargonTreeModel.FILE_ICON, 0);
+		} else {
+			return new JLabel(file.getName(), JargonTreeModel.FOLDER_ICON, 0);
 		}
 	}
 }
-

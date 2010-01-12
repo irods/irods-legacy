@@ -48,184 +48,166 @@ package edu.sdsc.grid.io.http;
 
 import edu.sdsc.grid.io.*;
 
-
 import java.io.*;
 
-
 /**
- * A HTTPFileOutputStream writes bytes to a file in a file system.
- * What files are available depends on the host environment.
+ * A HTTPFileOutputStream writes bytes to a file in a file system. What files
+ * are available depends on the host environment.
  *<P>
- * HTTPFileOutputStream is meant for writing streams of raw bytes such
- * as image data.
+ * HTTPFileOutputStream is meant for writing streams of raw bytes such as image
+ * data.
  *<P>
  * Basically just wraps java.io.FileOuputStream.
  * <P>
- * @author  Lucas Gilbert
- * @since   Jargon2.0
+ * 
+ * @author Lucas Gilbert
+ * @since Jargon2.0
  */
-public class HTTPFileOutputStream extends RemoteFileOutputStream
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public class HTTPFileOutputStream extends RemoteFileOutputStream {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
-
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 	/**
 	 *
 	 */
 	private OutputStream out;
 
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
 	/**
-	 * Creates a <code>HTTPFileOutputStream</code> by
-	 * opening a connection to an actual file,
-	 * the file named by the path name <code>name</code>
-	 * in the file system.
+	 * Creates a <code>HTTPFileOutputStream</code> by opening a connection to an
+	 * actual file, the file named by the path name <code>name</code> in the
+	 * file system.
 	 * <p>
 	 * First, the security is checked to verify the file can be written.
 	 * <p>
 	 * If the named file does not exist, is a directory rather than a regular
 	 * file, or for some other reason cannot be opened for reading then a
 	 * <code>IOException</code> is thrown.
-	 *
-	 * @param      name   the system-dependent file name.
-	 * @exception  IOException  if the file does not exist,
-	 *                   is a directory rather than a regular file,
-	 *                   or for some other reason cannot be opened for
-	 *                   reading.
+	 * 
+	 * @param name
+	 *            the system-dependent file name.
+	 * @exception IOException
+	 *                if the file does not exist, is a directory rather than a
+	 *                regular file, or for some other reason cannot be opened
+	 *                for reading.
 	 */
-	public HTTPFileOutputStream( HTTPFileSystem fileSystem, String name )
-		throws IOException
-	{
-		super( fileSystem, name);
+	public HTTPFileOutputStream(HTTPFileSystem fileSystem, String name)
+			throws IOException {
+		super(fileSystem, name);
 	}
 
-
 	/**
-	 * Creates a <code>HTTPFileOutputStream</code> by
-	 * opening a connection to an actual file,
-	 * the file named by the <code>HTTPFile</code>
-	 * object <code>file</code> in the file system.
-	 * A new <code>FileDescriptor</code> object
-	 * is created to represent this file connection.
+	 * Creates a <code>HTTPFileOutputStream</code> by opening a connection to an
+	 * actual file, the file named by the <code>HTTPFile</code> object
+	 * <code>file</code> in the file system. A new <code>FileDescriptor</code>
+	 * object is created to represent this file connection.
 	 * <p>
 	 * First, the security is checked to verify the file can be written.
 	 * <p>
 	 * If the named file does not exist, is a directory rather than a regular
 	 * file, or for some other reason cannot be opened for reading then a
 	 * <code>IOException</code> is thrown.
-	 *
-	 * @param      file   the file to be opened for reading.
-	 * @exception  IOException  if the file does not exist,
-	 *                   is a directory rather than a regular file,
-	 *                   or for some other reason cannot be opened for
-	 *                   reading.
-	 * @see        java.io.File#getPath()
+	 * 
+	 * @param file
+	 *            the file to be opened for reading.
+	 * @exception IOException
+	 *                if the file does not exist, is a directory rather than a
+	 *                regular file, or for some other reason cannot be opened
+	 *                for reading.
+	 * @see java.io.File#getPath()
 	 */
-	public HTTPFileOutputStream( HTTPFile file )
-		throws IOException
-	{
-		super( file );
+	public HTTPFileOutputStream(HTTPFile file) throws IOException {
+		super(file);
 	}
-
-
 
 	/**
 	 * Ensures that the <code>close</code> method of this file input stream is
 	 * called when there are no more references to it.
-	 *
-	 * @exception  IOException  if an I/O error occurs.
-	 * @see        edu.sdsc.grid.io.HTTPFileOutputStream#close()
+	 * 
+	 * @exception IOException
+	 *                if an I/O error occurs.
+	 * @see edu.sdsc.grid.io.HTTPFileOutputStream#close()
 	 */
-	protected void finalize()
-		throws IOException
-	{
-		//flush doesn't do anything, because there is no buffer
-		
+	protected void finalize() throws IOException {
+		// flush doesn't do anything, because there is no buffer
+
 		close();
 	}
 
-
 	/**
 	 * Opens the given file for use by this stream.
-	 *
-	 * @param	file the file to be opened.
-	 * @exception  IOException  if an I/O error occurs.
+	 * 
+	 * @param file
+	 *            the file to be opened.
+	 * @exception IOException
+	 *                if an I/O error occurs.
 	 */
-	protected void open( GeneralFile file )
-		throws IOException
-	{
+	protected void open(GeneralFile file) throws IOException {
 		out = ((HTTPFile) file).httpFileSystem.conn.getOutputStream();
 	}
 
-
 	/**
-	 * Writes the specified byte to this file output stream. Implements
-	 * the <code>write</code> method of <code>OutputStream</code>.
-	 *
-	 * @param	b   the byte to be written.
-	 * @exception  IOException  if an I/O error occurs.
+	 * Writes the specified byte to this file output stream. Implements the
+	 * <code>write</code> method of <code>OutputStream</code>.
+	 * 
+	 * @param b
+	 *            the byte to be written.
+	 * @exception IOException
+	 *                if an I/O error occurs.
 	 */
-	public void write( int b )
-		throws IOException
-	{
+	public void write(int b) throws IOException {
 		out.write(b);
 	}
 
 	/**
-	 * Writes <code>b.length</code> bytes from the specified byte array
-	 * to this file output stream.
-	 *
-	 * @param	b   the data.
-	 * @exception  IOException  if an I/O error occurs.
+	 * Writes <code>b.length</code> bytes from the specified byte array to this
+	 * file output stream.
+	 * 
+	 * @param b
+	 *            the data.
+	 * @exception IOException
+	 *                if an I/O error occurs.
 	 */
-	public void write( byte b[] )
-		throws IOException
-	{
+	public void write(byte b[]) throws IOException {
 		out.write(b);
 	}
 
 	/**
-	 * Writes <code>len</code> bytes from the specified byte array
-	 * starting at offset <code>off</code> to this file output stream.
-	 *
-	 * @param	b     the data.
-	 * @param	off   the start offset in the data.
-	 * @param	len   the number of bytes to write.
-	 * @exception  IOException  if an I/O error occurs.
+	 * Writes <code>len</code> bytes from the specified byte array starting at
+	 * offset <code>off</code> to this file output stream.
+	 * 
+	 * @param b
+	 *            the data.
+	 * @param off
+	 *            the start offset in the data.
+	 * @param len
+	 *            the number of bytes to write.
+	 * @exception IOException
+	 *                if an I/O error occurs.
 	 */
-	public void write( byte b[], int off, int len )
-		throws IOException
-	{
+	public void write(byte b[], int off, int len) throws IOException {
 		out.write(b, off, len);
 	}
 
-
 	/**
 	 * Closes this file output stream and releases any system resources
-	 * associated with this stream. This file output stream may no longer
-	 * be used for writing bytes.
-	 *
-	 * <p> If this stream has an associated channel then the channel is closed
-	 * as well.
-	 *
-	 * @exception  IOException  if an I/O error occurs.
+	 * associated with this stream. This file output stream may no longer be
+	 * used for writing bytes.
+	 * 
+	 * <p>
+	 * If this stream has an associated channel then the channel is closed as
+	 * well.
+	 * 
+	 * @exception IOException
+	 *                if an I/O error occurs.
 	 */
-	public void close()
-		throws IOException
-	{
+	public void close() throws IOException {
 		out.close();
 	}
 }
-
-

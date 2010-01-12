@@ -43,60 +43,53 @@ package edu.sdsc.grid.gui;
 
 import edu.sdsc.grid.io.*;
 
-
 import java.awt.Color;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 
-
 /**
- * A gui component for choosing MetaDataConditions.
- * Extends the SelectionChooser by adding operator and value ComboBoxes.
- *
+ * A gui component for choosing MetaDataConditions. Extends the SelectionChooser
+ * by adding operator and value ComboBoxes.
+ * 
  * @author Lucas Ammon Gilbert
  * @see SelectionChooser
  * @see QueryComponentPanel
- * @since JARGON1.5 
+ * @since JARGON1.5
  * @deprecated - GUI code will go away in future releases
  */
 @Deprecated
-public class ConditionChooser extends SelectionChooser
-{
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+public class ConditionChooser extends SelectionChooser {
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 	/**
 	 * Display the MetaDataCondition operators
 	 */
 	JComboBox operatorList;
 
-	//consequent? no... what is the correct term for this?
+	// consequent? no... what is the correct term for this?
 	/**
 	 * Display for MetaDataCondition value
 	 */
 	JTextField dependent;
 
-
-
-//----------------------------------------------------------------------
-//  Constructors, Destructors and initialization Methods
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Constructors, Destructors and initialization Methods
+	// ----------------------------------------------------------------------
 	/**
-	 * Default chooser, displays the condition chooser with all the
-	 * metadata groups and fields available.
+	 * Default chooser, displays the condition chooser with all the metadata
+	 * groups and fields available.
 	 */
-	public ConditionChooser( )
-	{
-		super( );
+	public ConditionChooser() {
+		super();
 	}
 
 	/**
 	 * Displays the condition chooser with the MetaDataGroups available
 	 * determined by the <code>groups</code> array.
 	 */
-	public ConditionChooser( MetaDataGroup[] groups )
-	{
-		super( groups );
+	public ConditionChooser(MetaDataGroup[] groups) {
+		super(groups);
 
 		init();
 	}
@@ -105,20 +98,17 @@ public class ConditionChooser extends SelectionChooser
 	 * Constructs the ConditionChooser without seperating the fields by group.
 	 * The groups <code>JComboBox</code> will not be displayed.
 	 */
-	public ConditionChooser( MetaDataField[] fields )
-	{
-		super( fields );
+	public ConditionChooser(MetaDataField[] fields) {
+		super(fields);
 
 		init();
 	}
 
 	/**
-	 * Finalizes the object by explicitly letting go of each of
-	 * its internally held values.
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
 	 */
-	protected void finalize()
-		throws Throwable
-	{
+	protected void finalize() throws Throwable {
 		if (operatorList != null)
 			operatorList = null;
 		if (dependent != null)
@@ -127,83 +117,70 @@ public class ConditionChooser extends SelectionChooser
 		super.finalize();
 	}
 
-
-
 	/**
 	 * init! Now is the time!
 	 */
-	private void init()
-	{
-//		setMinimumSize(new java.awt.Dimension(600, 80));
-//		setPreferredSize(new java.awt.Dimension(600, 80));
+	private void init() {
+		// setMinimumSize(new java.awt.Dimension(600, 80));
+		// setPreferredSize(new java.awt.Dimension(600, 80));
 		setBackground(Color.WHITE);
 
 		mainList.setBackground(Color.WHITE);
 
-		operatorList = new JComboBox( MetaDataCondition.getOperatorStrings() );
+		operatorList = new JComboBox(MetaDataCondition.getOperatorStrings());
 		operatorList.setBackground(Color.WHITE);
-		add( operatorList );
+		add(operatorList);
 
 		dependent = new JTextField(20);
-		add( dependent );
+		add(dependent);
 	}
 
-
-
-//----------------------------------------------------------------------
-//  Methods
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 	/**
 	 * Returns the current values of this chooser's MetaDataCondition
 	 */
-	public Object getClause()
-	{
+	public Object getClause() {
 		String field = null;
 		int operator = 0;
 		Object temp;
 
-		//metadata attribute
+		// metadata attribute
 		if (subList != null) {
 			temp = subList.getSelectedItem();
 			if (temp == null)
 				return null;
 			field = temp.toString();
-		}
-		else {
+		} else {
 			temp = mainList.getSelectedItem();
 			if (temp == null)
 				return null;
 			field = temp.toString();
 		}
 
-		//operator
-//TODO ok technically this will only work if the numbers count up regularily.
+		// operator
+		// TODO ok technically this will only work if the numbers count up
+		// regularily.
 		operator = operatorList.getSelectedIndex();
 
-		clause = MetaDataSet.newCondition( field, operator, dependent.getText() );
+		clause = MetaDataSet.newCondition(field, operator, dependent.getText());
 		return clause;
 	}
-
 
 	/**
 	 * Changes the displayed fields when a new group is chosen.
 	 */
-/*	protected void changeSubList( int index )
-	{
-		if (subList != null) {
-			remove(subList);
-		}
-
-		subList = new JComboBox(groups[index].getFields(true));
-		subList.insertItemAt(makeObj( "---" ), 0);
-		subList.setSelectedIndex(0);
-		subList.setBackground(Color.WHITE);
-
-		//has two extra components
-		add(subList, 1);
-
-		validate();
-		repaint();
-	}
-*/
+	/*
+	 * protected void changeSubList( int index ) { if (subList != null) {
+	 * remove(subList); }
+	 * 
+	 * subList = new JComboBox(groups[index].getFields(true));
+	 * subList.insertItemAt(makeObj( "---" ), 0); subList.setSelectedIndex(0);
+	 * subList.setBackground(Color.WHITE);
+	 * 
+	 * //has two extra components add(subList, 1);
+	 * 
+	 * validate(); repaint(); }
+	 */
 }

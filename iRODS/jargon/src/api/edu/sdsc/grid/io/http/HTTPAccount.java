@@ -53,153 +53,143 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
- * An object to hold the user information used when connecting
- * to a HTTP file system.
+ * An object to hold the user information used when connecting to a HTTP file
+ * system.
  *<P>
- * @author	Lucas Gilbert, San Diego Supercomputer Center
- * @since   Jargon2.0
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
+ * @since Jargon2.0
  */
-public class HTTPAccount extends RemoteAccount
-{
+public class HTTPAccount extends RemoteAccount {
 
-  URI uri;
-
+	URI uri;
 
 	/**
-	 * Constructs an object to hold the user information used when connecting
-	 * to a http server.
+	 * Constructs an object to hold the user information used when connecting to
+	 * a http server.
 	 * <P>
-	 * @param	host the http system domain name
-	 * @param	port the port on the http system
-	 * @param	userName the user name
-	 * @param	password the password
-	 * @param	homeDirectory home directory on the http system
+	 * 
+	 * @param host
+	 *            the http system domain name
+	 * @param port
+	 *            the port on the http system
+	 * @param userName
+	 *            the user name
+	 * @param password
+	 *            the password
+	 * @param homeDirectory
+	 *            home directory on the http system
 	 */
-	HTTPAccount( String host, int port, String userName, String password,
-		String homeDirectory )
-	{
-		super( host, port, userName, password, homeDirectory );
-    
-    
-    try {
-      //just test it is valid
-      uri = new URI(toString());
-    } catch (URISyntaxException e) {
-      IllegalArgumentException x = new IllegalArgumentException("Invalid URI");
-      x.initCause(e);
-      throw x;
-    }
+	HTTPAccount(String host, int port, String userName, String password,
+			String homeDirectory) {
+		super(host, port, userName, password, homeDirectory);
+
+		try {
+			// just test it is valid
+			uri = new URI(toString());
+		} catch (URISyntaxException e) {
+			IllegalArgumentException x = new IllegalArgumentException(
+					"Invalid URI");
+			x.initCause(e);
+			throw x;
+		}
 	}
 
-
 	/**
-	 * Constructs an object to hold the user information used when connecting
-	 * to a http server.
+	 * Constructs an object to hold the user information used when connecting to
+	 * a http server.
 	 */
-  public HTTPAccount( URI uri )
-  {
-    super( uri.getHost(), uri.getPort(), uri.getUserInfo(), uri.getAuthority(),
-           uri.getPath());
-    this.uri = uri;
-  }
-
+	public HTTPAccount(URI uri) {
+		super(uri.getHost(), uri.getPort(), uri.getUserInfo(), uri
+				.getAuthority(), uri.getPath());
+		this.uri = uri;
+	}
 
 	/**
-	 * Finalizes the object by explicitly letting go of each of
-	 * its internally held values.
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
 	 * <P>
 	 */
-	protected void finalize( )
-	{
+	protected void finalize() {
 		super.finalize();
-    
+
 	}
 
-
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Setters and Getters
+	// ----------------------------------------------------------------------
 	/**
 	 * Sets the home directory of this HTTPAccount.
-	 *
-	 * @throws	NullPointerException	if homeDirectory is null.
+	 * 
+	 * @throws NullPointerException
+	 *             if homeDirectory is null.
 	 */
-	public void setHomeDirectory( String homeDirectory )
-	{
-		if ( homeDirectory == null || homeDirectory.equals("") )
-      this.homeDirectory = HTTPFileSystem.HTTP_ROOT;
-    else
-  		this.homeDirectory = homeDirectory;
+	public void setHomeDirectory(String homeDirectory) {
+		if (homeDirectory == null || homeDirectory.equals(""))
+			this.homeDirectory = HTTPFileSystem.HTTP_ROOT;
+		else
+			this.homeDirectory = homeDirectory;
 	}
 
-	public void setPort( int port )
-	{
+	public void setPort(int port) {
 		if (port > 0)
 			this.port = port;
 		else {
-      //default http port
+			// default http port
 			port = 80;
 		}
 	}
-  
-  URI getURI()
-  {
-    return uri;
-  }
-  
-  URL getURL()
-  {
-    try {
-      return uri.toURL();
-    } catch (MalformedURLException e) {
-      IllegalArgumentException x = new IllegalArgumentException("Invalid URI");
-      x.initCause(e);
-      throw x;
-    }
-  }
-  
 
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------  
-	/**
-	 * Tests this account object for equality with the
-	 * given object.
-	 * Returns <code>true</code> if and only if the argument is not
-	 * <code>null</code> and both are account objects with equivalent connection 
-   * parameters.
-	 *
-	 * @param   obj   The object to be compared with this abstract pathname
-	 *
-	 * @return  <code>true</code> if and only if the objects are the same;
-	 *          <code>false</code> otherwise
-	 */
-	public boolean equals( Object obj )
-	{
+	URI getURI() {
+		return uri;
+	}
+
+	URL getURL() {
 		try {
-  		if (obj == null)
-  			return false;
+			return uri.toURL();
+		} catch (MalformedURLException e) {
+			IllegalArgumentException x = new IllegalArgumentException(
+					"Invalid URI");
+			x.initCause(e);
+			throw x;
+		}
+	}
+
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
+	/**
+	 * Tests this account object for equality with the given object. Returns
+	 * <code>true</code> if and only if the argument is not <code>null</code>
+	 * and both are account objects with equivalent connection parameters.
+	 * 
+	 * @param obj
+	 *            The object to be compared with this abstract pathname
+	 * 
+	 * @return <code>true</code> if and only if the objects are the same;
+	 *         <code>false</code> otherwise
+	 */
+	public boolean equals(Object obj) {
+		try {
+			if (obj == null)
+				return false;
 
 			HTTPAccount temp = (HTTPAccount) obj;
 
 			if (!uri.equals(temp.uri))
 				return false;
 
-			//else //everything is equal
+			// else //everything is equal
 			return true;
 		} catch (ClassCastException e) {
 			return false;
 		}
-	}  
-  
+	}
+
 	/**
 	 * Returns a string representation of this file system object.
 	 */
-	public String toString( )
-	{ 
+	public String toString() {
 		return uri.toString();
 	}
 }
-
-

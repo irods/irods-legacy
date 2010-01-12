@@ -1018,8 +1018,8 @@ public class SRBContainer extends SRBFile {
 			for (int i = 0; i < recordLists.length; i++) {
 				tempFile = (GeneralFile) files.get(i);
 				fileName = tempFile.getName();
-				registrationOffset += size;//  I hope the reg threads always
-											// run in order...
+				registrationOffset += size;// I hope the reg threads always
+				// run in order...
 				size = tempFile.length();
 				dirName = (String) paths.get(i);
 				if (dirName != "")
@@ -1160,7 +1160,7 @@ public class SRBContainer extends SRBFile {
 	 *         is lexicographically less than the argument, or a value greater
 	 *         than zero if this container is lexicographically greater than the
 	 *         argument
-	 *        <P>
+	 *         <P>
 	 * @throws ClassCastException
 	 *             - if the argument is not an container
 	 */
@@ -1500,10 +1500,10 @@ public class SRBContainer extends SRBFile {
 	public long lastModified() {
 		try {
 			MetaDataRecordList[] rl = query(SRBMetaDataSet.MODIFICATION_DATE);// wrong
-																				// attribute,
-																				// need
-																				// epoch
-																				// long
+			// attribute,
+			// need
+			// epoch
+			// long
 			if (rl != null) {
 				return Long.parseLong(rl[0].getValue(
 						SRBMetaDataSet.MODIFICATION_DATE).toString());
@@ -1576,7 +1576,6 @@ public class SRBContainer extends SRBFile {
 
 		return list;
 	}
-
 
 	/**
 	 * Creates the container named by this abstract pathname. Same as calling

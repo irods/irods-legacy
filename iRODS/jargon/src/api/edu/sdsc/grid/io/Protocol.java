@@ -41,79 +41,61 @@
 //
 package edu.sdsc.grid.io;
 
-
-
-
 /**
- *
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public abstract class Protocol
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public abstract class Protocol {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
+	protected String name;
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-  protected String name;
+	protected String help;
 
-  protected String help;
+	protected MetaDataSet metaDataSet;
 
-  protected MetaDataSet metaDataSet;
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
+	protected Protocol(String name, String help) {
+		this.name = name;
+		this.help = help;
+	}
 
-
-//----------------------------------------------------------------------
-//  Methods
-//----------------------------------------------------------------------
-  protected Protocol( String name, String help )
-  {
-    this.name = name;
-    this.help = help;
-  }
-
-
-  /**
+	/**
    *
    */
-  public String getName()
-  {
-    return name;
-  }
+	public String getName() {
+		return name;
+	}
 
-
-  /**
+	/**
    *
    */
-  public String getHelp()
-  {
-    return help;
-  }
+	public String getHelp() {
+		return help;
+	}
 
-
-  /**
+	/**
    *
    */
-  public MetaDataSet getMetaDataSet()
-  {
-    return metaDataSet;
-  }
+	public MetaDataSet getMetaDataSet() {
+		return metaDataSet;
+	}
 
+	/**
+	 * The standard java equals(Object), but it is abstract to insure all
+	 * subclasses will implement it.
+	 */
+	public abstract boolean equals(Object obj);
 
-
-  /**
-   * The standard java equals(Object), but it is abstract to insure
-   * all subclasses will implement it.
-   */
-  public abstract boolean equals( Object obj );
-
-
-
-  public String toString( )
-  {
-    return name;
-  }
+	public String toString() {
+		return name;
+	}
 }

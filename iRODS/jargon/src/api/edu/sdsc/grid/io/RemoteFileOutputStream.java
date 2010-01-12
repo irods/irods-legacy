@@ -46,98 +46,80 @@
 //
 package edu.sdsc.grid.io;
 
-
-
 import java.io.*;
 
-
 /**
- * A RemoteFileOutputStream writes bytes to a file in a file system.
- * What files are available depends on the host environment.
+ * A RemoteFileOutputStream writes bytes to a file in a file system. What files
+ * are available depends on the host environment.
  *<P>
- * RemoteFileOutputStream is meant for writing streams of raw bytes such
- * as image data.
+ * RemoteFileOutputStream is meant for writing streams of raw bytes such as
+ * image data.
  *<P>
- * @author  Lucas Gilbert
- * @since   JARGON1.4
+ * 
+ * @author Lucas Gilbert
+ * @since JARGON1.4
  */
-public abstract class RemoteFileOutputStream extends GeneralFileOutputStream
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public abstract class RemoteFileOutputStream extends GeneralFileOutputStream {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
+	/**
+	 * Creates a <code>FileOuputStream</code> by opening a connection to an
+	 * actual file, the file named by the path name <code>name</code> in the
+	 * file system.
+	 * <p>
+	 * First, the security is checked to verify the file can be written.
+	 * <p>
+	 * If the named file does not exist, is a directory rather than a regular
+	 * file, or for some other reason cannot be opened for reading then a
+	 * <code>IOException</code> is thrown.
+	 * 
+	 * @param name
+	 *            the system-dependent file name.
+	 * @exception IOException
+	 *                if the file does not exist, is a directory rather than a
+	 *                regular file, or for some other reason cannot be opened
+	 *                for reading.
+	 */
+	public RemoteFileOutputStream(GeneralFileSystem fileSystem, String name)
+			throws IOException {
+		super(fileSystem, name);
+	}
 
+	/**
+	 * Creates a <code>FileInputStream</code> by opening a connection to an
+	 * actual file, the file named by the <code>File</code> object
+	 * <code>file</code> in the file system. A new <code>FileDescriptor</code>
+	 * object is created to represent this file connection.
+	 * <p>
+	 * First, the security is checked to verify the file can be written.
+	 * <p>
+	 * If the named file does not exist, is a directory rather than a regular
+	 * file, or for some other reason cannot be opened for reading then a
+	 * <code>IOException</code> is thrown.
+	 * 
+	 * @param file
+	 *            the file to be opened for reading.
+	 * @exception IOException
+	 *                if the file does not exist, is a directory rather than a
+	 *                regular file, or for some other reason cannot be opened
+	 *                for reading.
+	 * @see java.io.File#getPath()
+	 */
+	public RemoteFileOutputStream(GeneralFile file) throws IOException {
+		super(file);
+	}
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
-
-
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * Creates a <code>FileOuputStream</code> by
-   * opening a connection to an actual file,
-   * the file named by the path name <code>name</code>
-   * in the file system.
-   * <p>
-   * First, the security is checked to verify the file can be written.
-   * <p>
-   * If the named file does not exist, is a directory rather than a regular
-   * file, or for some other reason cannot be opened for reading then a
-   * <code>IOException</code> is thrown.
-   *
-   * @param  name   the system-dependent file name.
-   * @exception  IOException  if the file does not exist,
-   *                   is a directory rather than a regular file,
-   *                   or for some other reason cannot be opened for
-   *                   reading.
-   */
-  public RemoteFileOutputStream( GeneralFileSystem fileSystem, String name )
-    throws IOException
-  {
-    super(fileSystem, name);
-  }
-
-  /**
-   * Creates a <code>FileInputStream</code> by
-   * opening a connection to an actual file,
-   * the file named by the <code>File</code>
-   * object <code>file</code> in the file system.
-   * A new <code>FileDescriptor</code> object
-   * is created to represent this file connection.
-   * <p>
-   * First, the security is checked to verify the file can be written.
-   * <p>
-   * If the named file does not exist, is a directory rather than a regular
-   * file, or for some other reason cannot be opened for reading then a
-   * <code>IOException</code> is thrown.
-   *
-   * @param  file   the file to be opened for reading.
-   * @exception  IOException  if the file does not exist,
-   *                   is a directory rather than a regular file,
-   *                   or for some other reason cannot be opened for
-   *                   reading.
-   * @see        java.io.File#getPath()
-   */
-  public RemoteFileOutputStream( GeneralFile file )
-    throws IOException
-  {
-    super(file);
-  }
-
-
-
-
-
-
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 
 }
-

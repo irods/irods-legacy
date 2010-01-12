@@ -45,34 +45,28 @@
 //
 package edu.sdsc.grid.io;
 
-
 /**
  * The metadata naming interface for file metadata.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public interface FileMetaData extends GeneralMetaData
-{
+public interface FileMetaData extends GeneralMetaData {
 
-  public static final String FILE_COMMENTS = "File Comments";
-  public static final String FILE_TYPE = "File Type";
-  public static final String FILE_VERSION = "File Version";
-  public static final String FILE_CHECKSUM = "File Checksum";
-  public static final String FILE_REPLICA_NUM = "File Replica Number";
-  public final static String PATH_NAME = "PATH_NAME";
+	public static final String FILE_COMMENTS = "File Comments";
+	public static final String FILE_TYPE = "File Type";
+	public static final String FILE_VERSION = "File Version";
+	public static final String FILE_CHECKSUM = "File Checksum";
+	public static final String FILE_REPLICA_NUM = "File Replica Number";
+	public final static String PATH_NAME = "PATH_NAME";
 
-  
-  
-  /**
-   * File Access Data Identifier
-   */
-  public static final String FILE_ACCESS_DATA_ID = "File Access Data Identifier";
+	/**
+	 * File Access Data Identifier
+	 */
+	public static final String FILE_ACCESS_DATA_ID = "File Access Data Identifier";
 
-  /**
-   * File Access User Identifier
-   */
-  public static final String FILE_ACCESS_USER_ID = "File Access User Identifier";
-
+	/**
+	 * File Access User Identifier
+	 */
+	public static final String FILE_ACCESS_USER_ID = "File Access User Identifier";
 
 }
-

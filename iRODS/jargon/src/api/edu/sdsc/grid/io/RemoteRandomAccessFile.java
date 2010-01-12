@@ -46,41 +46,35 @@ package edu.sdsc.grid.io;
 import java.io.IOException;
 
 /**
- * An abstract class which extends GeneralRandomAccessFile to create
- * remote random access files.
- *
- * @author  Lucas Gilbert
- * @since   JARGON1.0
+ * An abstract class which extends GeneralRandomAccessFile to create remote
+ * random access files.
+ * 
+ * @author Lucas Gilbert
+ * @since JARGON1.0
  */
-public abstract class RemoteRandomAccessFile extends GeneralRandomAccessFile
-{
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+public abstract class RemoteRandomAccessFile extends GeneralRandomAccessFile {
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
+	/**
+	 * Doesn't really do much, perhaps in the future. Instead @see
+	 * GeneralRandomAccessFile or the subclass which called this constructor.
+	 * 
+	 * @throws IOException
+	 *             if the file is a directory rather than a regular file, or
+	 *             cannot be opened or created for any other reason
+	 */
+	protected RemoteRandomAccessFile(RemoteFile file, String mode)
+			throws IOException {
+		super(file, mode);
+	}
 
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * Doesn't really do much, perhaps in the future.
-   * Instead @see GeneralRandomAccessFile
-   * or the subclass which called this constructor.
-   *
-   * @throws  IOException  if the file is a directory
-   *                   rather than a regular file, or cannot be opened or
-   *                   created for any other reason
-   */
-  protected RemoteRandomAccessFile( RemoteFile file, String mode )
-    throws IOException
-  {
-    super( file, mode );
-  }
-
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Setters and Getters
+	// ----------------------------------------------------------------------
 
 }

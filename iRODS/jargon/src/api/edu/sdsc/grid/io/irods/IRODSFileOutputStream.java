@@ -48,156 +48,140 @@
 //
 package edu.sdsc.grid.io.irods;
 
-
 import edu.sdsc.grid.io.*;
 
 import java.io.*;
 
-
 /**
- * A IRODSFileOutputStream writes bytes to a file in a file system.
- * What files are available depends on the host environment.
+ * A IRODSFileOutputStream writes bytes to a file in a file system. What files
+ * are available depends on the host environment.
  *<P>
- * IRODSFileOutputStream is meant for writing streams of raw bytes such
- * as image data.
- *
- * @author  Lucas Gilbert
- * @since   JARGON2.0
+ * IRODSFileOutputStream is meant for writing streams of raw bytes such as image
+ * data.
+ * 
+ * @author Lucas Gilbert
+ * @since JARGON2.0
  */
-public class IRODSFileOutputStream extends RemoteFileOutputStream
-{
-  /**
-   * Holds the server connection used by this stream.
-   */
-  protected IRODSFileSystem fileSystem;
+public class IRODSFileOutputStream extends RemoteFileOutputStream {
+	/**
+	 * Holds the server connection used by this stream.
+	 */
+	protected IRODSFileSystem fileSystem;
 
+	// ----------------------------------------------------------------------
+	// Constructors and Destructors
+	// ----------------------------------------------------------------------
+	/**
+	 * Creates a <code>FileOuputStream</code> by opening a connection to an
+	 * actual file, the file named by the path name <code>name</code> in the
+	 * file system.
+	 * <p>
+	 * First, the security is checked to verify the file can be written.
+	 * <p>
+	 * If the named file does not exist, is a directory rather than a regular
+	 * file, or for some other reason cannot be opened for reading then a
+	 * <code>IOException</code> is thrown.
+	 * 
+	 * @param name
+	 *            the system-dependent file name.
+	 * @exception IOException
+	 *                if the file does not exist, is a directory rather than a
+	 *                regular file, or for some other reason cannot be opened
+	 *                for reading.
+	 */
+	public IRODSFileOutputStream(IRODSFileSystem fileSystem, String name)
+			throws IOException {
+		super(fileSystem, name);
 
+		this.fileSystem = fileSystem;
+	}
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * Creates a <code>FileOuputStream</code> by
-   * opening a connection to an actual file,
-   * the file named by the path name <code>name</code>
-   * in the file system.
-   * <p>
-   * First, the security is checked to verify the file can be written.
-   * <p>
-   * If the named file does not exist, is a directory rather than a regular
-   * file, or for some other reason cannot be opened for reading then a
-   * <code>IOException</code> is thrown.
-   *
-   * @param  name   the system-dependent file name.
-   * @exception  IOException  if the file does not exist,
-   *                   is a directory rather than a regular file,
-   *                   or for some other reason cannot be opened for
-   *                   reading.
-   */
-  public IRODSFileOutputStream( IRODSFileSystem fileSystem, String name )
-    throws IOException
-  {
-    super(fileSystem, name);
+	/**
+	 * Creates a <code>FileInputStream</code> by opening a connection to an
+	 * actual file, the file named by the <code>File</code> object
+	 * <code>file</code> in the file system. A new <code>FileDescriptor</code>
+	 * object is created to represent this file connection.
+	 * <p>
+	 * First, the security is checked to verify the file can be written.
+	 * <p>
+	 * If the named file does not exist, is a directory rather than a regular
+	 * file, or for some other reason cannot be opened for reading then a
+	 * <code>IOException</code> is thrown.
+	 * 
+	 * @param file
+	 *            the file to be opened for reading.
+	 * @exception IOException
+	 *                if the file does not exist, is a directory rather than a
+	 *                regular file, or for some other reason cannot be opened
+	 *                for reading.
+	 * @see java.io.File#getPath()
+	 */
+	public IRODSFileOutputStream(IRODSFile file) throws IOException {
+		super(file);
+		fileSystem = (IRODSFileSystem) file.getFileSystem();
+	}
 
-    this.fileSystem = fileSystem;
-  }
+	/**
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
+	 */
+	protected void finalize() throws IOException {
+		// calls close()
+		super.finalize();
 
-  /**
-   * Creates a <code>FileInputStream</code> by
-   * opening a connection to an actual file,
-   * the file named by the <code>File</code>
-   * object <code>file</code> in the file system.
-   * A new <code>FileDescriptor</code> object
-   * is created to represent this file connection.
-   * <p>
-   * First, the security is checked to verify the file can be written.
-   * <p>
-   * If the named file does not exist, is a directory rather than a regular
-   * file, or for some other reason cannot be opened for reading then a
-   * <code>IOException</code> is thrown.
-   *
-   * @param  file   the file to be opened for reading.
-   * @exception  IOException  if the file does not exist,
-   *                   is a directory rather than a regular file,
-   *                   or for some other reason cannot be opened for
-   *                   reading.
-   * @see        java.io.File#getPath()
-   */
-  public IRODSFileOutputStream( IRODSFile file )
-    throws IOException
-  {
-    super(file);
-    fileSystem = (IRODSFileSystem) file.getFileSystem();
-  }
+		if (fileSystem != null)
+			fileSystem = null;
+	}
 
+	/**
+	 * Opens the given file for use by this stream.
+	 * 
+	 * @exception IOException
+	 *                if an I/O error occurs.
+	 */
+	protected void open(GeneralFile file) throws IOException {
+		if (!file.exists())
+			fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileCreate(
+					(IRODSFile) file, false, true);
+		else
+			fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileOpen(
+					(IRODSFile) file, false, true);
+	}
 
-  /**
-   * Finalizes the object by explicitly letting go of each of
-   * its internally held values.
-   */
-  protected void finalize( )
-    throws IOException
-  {
-    //calls close()
-    super.finalize();
-    
-    if (fileSystem != null)
-      fileSystem = null;
-  }
+	/**
+	 * Writes <code>len</code> bytes from the specified byte array starting at
+	 * offset <code>off</code> to this file output stream.
+	 * 
+	 * @param b
+	 *            the data.
+	 * @param off
+	 *            the start offset in the data.
+	 * @param len
+	 *            the number of bytes to write.
+	 * @exception IOException
+	 *                if an I/O error occurs.
+	 */
+	public void write(byte buffer[], int offset, int length) throws IOException {
+		fileSystem.commands.fileWrite(fd, buffer, offset, length);
+	}
 
-
-  /**
-   * Opens the given file for use by this stream.
-   *
-   * @exception  IOException  if an I/O error occurs.
-   */
-  protected void open( GeneralFile file )
-    throws IOException
-  {
-    if (!file.exists())
-      fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileCreate(
-        (IRODSFile)file, false, true);
-    else 
-      fd = ((IRODSFileSystem) file.getFileSystem()).commands.fileOpen(
-        (IRODSFile) file, false, true );
-  }
-
-
-  /**
-   * Writes <code>len</code> bytes from the specified byte array
-   * starting at offset <code>off</code> to this file output stream.
-   *
-   * @param  b     the data.
-   * @param  off   the start offset in the data.
-   * @param  len   the number of bytes to write.
-   * @exception  IOException  if an I/O error occurs.
-   */
-  public void write( byte buffer[], int offset, int length )
-    throws IOException
-  {
-    fileSystem.commands.fileWrite(fd, buffer, offset, length );
-  }
-
-
-  /**
-   * Closes this file output stream and releases any system resources
-   * associated with this stream. This file output stream may no longer
-   * be used for writing bytes.
-   *
-   * <p> If this stream has an associated channel then the channel is closed
-   * as well.
-   *
-   * @exception  IOException  if an I/O error occurs.
-   */
-  public void close()
-    throws IOException
-  {
-    if (fileSystem != null) {
-      fileSystem.commands.fileClose( fd );
-      fileSystem = null;
-    }
-  }
+	/**
+	 * Closes this file output stream and releases any system resources
+	 * associated with this stream. This file output stream may no longer be
+	 * used for writing bytes.
+	 * 
+	 * <p>
+	 * If this stream has an associated channel then the channel is closed as
+	 * well.
+	 * 
+	 * @exception IOException
+	 *                if an I/O error occurs.
+	 */
+	public void close() throws IOException {
+		if (fileSystem != null) {
+			fileSystem.commands.fileClose(fd);
+			fileSystem = null;
+		}
+	}
 
 }
-
-

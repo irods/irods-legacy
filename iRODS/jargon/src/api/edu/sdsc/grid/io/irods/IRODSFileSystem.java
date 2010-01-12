@@ -80,7 +80,7 @@ import edu.sdsc.grid.io.RemoteFileSystem;
  * @see edu.sdsc.grid.io.irods.IRODSCommands
  */
 public class IRODSFileSystem extends RemoteFileSystem {
-	
+
 	/**
 	 * The iRODS like Unix only has one root, "/".
 	 */
@@ -89,7 +89,6 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	static int BUFFER_SIZE = 65535;
 
 	private Logger log = LoggerFactory.getLogger(IRODSFileSystem.class);
-
 
 	// Add the metadata query attributes
 	static {
@@ -138,16 +137,19 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             if an IOException occurs.
 	 */
-	
+
 	public IRODSFileSystem(IRODSAccount irodsAccount) throws IOException,
 			NullPointerException {
 		commands = new IRODSCommands();
-		
+
 		try {
 			log.debug("connecting the commands to the irods socket");
 			commands.connect(irodsAccount);
 		} catch (JargonException e1) {
-			log.error("jargon exception, will be rethrown as unchecked exception", e1);
+			log
+					.error(
+							"jargon exception, will be rethrown as unchecked exception",
+							e1);
 			e1.printStackTrace();
 			throw new RuntimeException(e1);
 		}
@@ -173,7 +175,8 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			}
 
 			if (rl != null && rl.length > 0) {
-				log.debug("setting irods account for GSI user:" + irodsAccount.getServerDN());
+				log.debug("setting irods account for GSI user:"
+						+ irodsAccount.getServerDN());
 				irodsAccount.setUserName(rl[0].getStringValue(0));
 				irodsAccount.setZone(rl[0].getStringValue(1));
 				irodsAccount.setHomeDirectory("/" + irodsAccount.getZone()
@@ -345,7 +348,8 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	public HashMap<String, String> executeRule(java.io.InputStream ruleStream)
 			throws IOException {
 		Parameter[] parameters = Rule.executeRule(this, ruleStream);
-		HashMap<String, String> map = new HashMap<String, String>(parameters.length);
+		HashMap<String, String> map = new HashMap<String, String>(
+				parameters.length);
 		for (Parameter p : parameters) {
 			map.put(p.getUniqueName(), p.getStringValue());
 		}
@@ -366,7 +370,8 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 */
 	public HashMap<String, String> executeRule(String rule) throws IOException {
 		Parameter[] parameters = Rule.executeRule(this, rule);
-		HashMap<String, String> map = new HashMap<String, String>(parameters.length);
+		HashMap<String, String> map = new HashMap<String, String>(
+				parameters.length);
 		for (Parameter p : parameters) {
 			map.put(p.getUniqueName(), p.getStringValue());
 		}

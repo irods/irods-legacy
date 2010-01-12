@@ -41,7 +41,6 @@
 //
 package edu.sdsc.grid.gui;
 
-
 import edu.sdsc.grid.io.MetaDataField;
 import edu.sdsc.grid.io.MetaDataGroup;
 import edu.sdsc.grid.io.MetaDataSet;
@@ -52,32 +51,27 @@ import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 
-
-
 /**
  * A gui component for choosing metadata query components. As there are a large
- * number of metadata attributes registered, metadata attributes
- * have been grouped to making finding and choosing one easier. Choosing a
- * group from the <code>ComboBox</code> will display that group's fields
- * in a second <code>ComboBox</code>.
- *
+ * number of metadata attributes registered, metadata attributes have been
+ * grouped to making finding and choosing one easier. Choosing a group from the
+ * <code>ComboBox</code> will display that group's fields in a second
+ * <code>ComboBox</code>.
+ * 
  * @author Lucas Ammon Gilbert
  * @see QueryComponentPanel
  * @since JARGON1.5
  * @deprecated
  */
 @Deprecated
-public class SelectionChooser extends JPanel
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public class SelectionChooser extends JPanel {
+	// ----------------------------------------------------------------------
+	// Constants
+	// ----------------------------------------------------------------------
 
-
-
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Fields
+	// ----------------------------------------------------------------------
 	/**
 	 * The list of MetaDataGroups, for selecting the sublist of MetaDataFields.
 	 */
@@ -89,54 +83,50 @@ public class SelectionChooser extends JPanel
 	protected MetaDataField[] fields;
 
 	/**
-	 * Holds the groups, or if groups is null, then holds the fields.
-	 * Clicking on a group will change the subList to the appropriate fields
-	 * in that group.
+	 * Holds the groups, or if groups is null, then holds the fields. Clicking
+	 * on a group will change the subList to the appropriate fields in that
+	 * group.
 	 */
 	protected JComboBox mainList;
 
 	/**
-	 * If the mainList holds groups, this will hold the fields of the
-	 * group selected.
+	 * If the mainList holds groups, this will hold the fields of the group
+	 * selected.
 	 */
 	protected JComboBox subList;
 
 	/**
-	 * The part of a query that this panel represents, such as
-	 * a MetaDataSelection or MetaDataCondition.
+	 * The part of a query that this panel represents, such as a
+	 * MetaDataSelection or MetaDataCondition.
 	 */
 	protected Object clause;
 
-
-
-//----------------------------------------------------------------------
-//  Constructors, Destructors and init
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Constructors, Destructors and init
+	// ----------------------------------------------------------------------
 	/**
-	 * Default chooser, displays the selection chooser with all the
-	 * metadata groups and fields available.
+	 * Default chooser, displays the selection chooser with all the metadata
+	 * groups and fields available.
 	 */
-	public SelectionChooser( )
-	{
-		this( MetaDataSet.getMetaDataGroups(true) );
+	public SelectionChooser() {
+		this(MetaDataSet.getMetaDataGroups(true));
 	}
 
 	/**
 	 * Displays the selection chooser with the MetaDataGroups available
 	 * determined by the <code>groups</code> array.
 	 */
-	public SelectionChooser( MetaDataGroup[] groups )
-	{
+	public SelectionChooser(MetaDataGroup[] groups) {
 		this.groups = groups;
 
 		mainList = new JComboBox(groups);
 		add(mainList);
 
-		changeSubList( 0 );
+		changeSubList(0);
 
 		ActionListener actionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changeSubList( mainList.getSelectedIndex() );
+				changeSubList(mainList.getSelectedIndex());
 			}
 		};
 		mainList.addActionListener(actionListener);
@@ -148,12 +138,11 @@ public class SelectionChooser extends JPanel
 	 * Constructs the SelectionChooser without seperating the fields by group.
 	 * The groups <code>JComboBox</code> will not be displayed.
 	 */
-	public SelectionChooser( MetaDataField[] fields )
-	{
+	public SelectionChooser(MetaDataField[] fields) {
 		this.fields = fields;
 
 		mainList = new JComboBox(fields);
-		mainList.insertItemAt(makeObj( "---" ), 0);
+		mainList.insertItemAt(makeObj("---"), 0);
 		mainList.setSelectedIndex(0);
 		add(mainList);
 
@@ -161,12 +150,10 @@ public class SelectionChooser extends JPanel
 	}
 
 	/**
-	 * Finalizes the object by explicitly letting go of each of
-	 * its internally held values.
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
 	 */
-	protected void finalize()
-		throws Throwable
-	{
+	protected void finalize() throws Throwable {
 		if (groups != null)
 			groups = null;
 		if (fields != null)
@@ -186,37 +173,32 @@ public class SelectionChooser extends JPanel
 	/**
 	 * init here!
 	 */
-	private void init()
-	{
-//		setMinimumSize(new java.awt.Dimension(600, 80));
-//		setPreferredSize(new java.awt.Dimension(600, 80));
+	private void init() {
+		// setMinimumSize(new java.awt.Dimension(600, 80));
+		// setPreferredSize(new java.awt.Dimension(600, 80));
 		setBackground(Color.WHITE);
 
 		mainList.setBackground(Color.WHITE);
 	}
 
-
-
-//----------------------------------------------------------------------
-//  Methods
-//----------------------------------------------------------------------
+	// ----------------------------------------------------------------------
+	// Methods
+	// ----------------------------------------------------------------------
 	/**
 	 * Sets the chooser clause, the internal MetaDataSelection.
 	 */
-	void setClause( Object clause )
-	{
+	void setClause(Object clause) {
 		if (clause != null) {
 			this.clause = clause;
 
-			//TODO set the lists to look right
+			// TODO set the lists to look right
 		}
 	}
 
 	/**
 	 * Returns the current clause of this chooser's MetaDataSelection
 	 */
-	public Object getClause()
-	{
+	public Object getClause() {
 		String field = null;
 		Object temp;
 
@@ -226,8 +208,7 @@ public class SelectionChooser extends JPanel
 				return null;
 
 			field = temp.toString();
-		}
-		else {
+		} else {
 			temp = mainList.getSelectedItem();
 			if (temp == null)
 				return null;
@@ -235,21 +216,20 @@ public class SelectionChooser extends JPanel
 			field = temp.toString();
 		}
 
-		clause = MetaDataSet.newSelection( field );
+		clause = MetaDataSet.newSelection(field);
 		return clause;
 	}
 
 	/**
-	 * Changes the displayed fields when a new group is chosen.
-	 * Only used if the groups are shown.
+	 * Changes the displayed fields when a new group is chosen. Only used if the
+	 * groups are shown.
 	 */
-	protected void changeSubList( int index )
-	{
+	protected void changeSubList(int index) {
 		if (subList != null) {
 			remove(subList);
 		}
 		subList = new JComboBox(groups[index].getFields(true));
-		subList.insertItemAt(makeObj( "---" ), 0);
+		subList.insertItemAt(makeObj("---"), 0);
 		subList.setSelectedIndex(0);
 		subList.setBackground(Color.WHITE);
 		add(subList, 1);
@@ -257,12 +237,14 @@ public class SelectionChooser extends JPanel
 		repaint();
 	}
 
-
 	/**
 	 * Part of the workaround to add a fake term at index 0 of the comboBoxes.
 	 */
-	Object makeObj( final String item )
-	{
-	 return new Object() { public String toString() { return item; } };
+	Object makeObj(final String item) {
+		return new Object() {
+			public String toString() {
+				return item;
+			}
+		};
 	}
 }

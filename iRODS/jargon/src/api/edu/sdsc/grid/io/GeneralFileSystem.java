@@ -41,284 +41,261 @@
 //
 package edu.sdsc.grid.io;
 
-
 import java.io.IOException;
 import java.io.FileNotFoundException;
 
 /**
  * The GeneralFileSystem class is the common superclass for connection
- * implementations to any file system. It provides the framework
- * to support specific file system semantics.
- * Specifically, the functions needed to interact with a file system
- * are provided abstractly by GeneralFileSystem and concretely by its
- * subclass(es).
+ * implementations to any file system. It provides the framework to support
+ * specific file system semantics. Specifically, the functions needed to
+ * interact with a file system are provided abstractly by GeneralFileSystem and
+ * concretely by its subclass(es).
  *<P>
- * @author  Lucas Gilbert, San Diego Supercomputer Center
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
  */
-public abstract class GeneralFileSystem extends Object implements Cloneable
-{
+public abstract class GeneralFileSystem extends Object implements Cloneable {
 
-  /**
-   * Standard  path separator character represented as a string for
-   * convenience. This string contains a single character, namely
-   * <code>{@link GeneralFile#PATH_SEPARATOR_CHAR}</code>.
-   *
-   * @deprecate used a variable and name not matching the java.io package.
-   *    Use GeneralFile seperator and pathSeperator
-   */
-  public static String PATH_SEPARATOR = GeneralFile.pathSeparator;
+	/**
+	 * Standard path separator character represented as a string for
+	 * convenience. This string contains a single character, namely
+	 * <code>{@link GeneralFile#PATH_SEPARATOR_CHAR}</code>.
+	 * 
+	 * @deprecate used a variable and name not matching the java.io package. Use
+	 *            GeneralFile seperator and pathSeperator
+	 */
+	public static String PATH_SEPARATOR = GeneralFile.pathSeparator;
 
-  /**
-   * Store the abstract pathnames for the root directories of this file system.
-   */
-  protected static String[] roots;
-  
-  // this DEBUG value is here solely for the obfucasted 'Lucid' class that depends on it.
-  public static int DEBUG = 0;
+	/**
+	 * Store the abstract pathnames for the root directories of this file
+	 * system.
+	 */
+	protected static String[] roots;
 
-  /**
-   * Default number of records returned by a query
-   */
-  public final static int DEFAULT_RECORDS_WANTED = 300;
+	// this DEBUG value is here solely for the obfucasted 'Lucid' class that
+	// depends on it.
+	public static int DEBUG = 0;
 
+	/**
+	 * Default number of records returned by a query
+	 */
+	public final static int DEFAULT_RECORDS_WANTED = 300;
 
-  /**
-   * Default buffer size used for communicating with the remote filesystem 
-   * and the various copyTo and copyFrom transfers. 
-   */
-  static final int DEFAULT_BUFFER_SIZE = 65535;
+	/**
+	 * Default buffer size used for communicating with the remote filesystem and
+	 * the various copyTo and copyFrom transfers.
+	 */
+	static final int DEFAULT_BUFFER_SIZE = 65535;
 
-  /**
-   * Buffer size used for communicating with the remote filesystem and the
-   * various copyTo and copyFrom transfers. Buffers defaults
-   * to size defined in DEFAULT_BUFFER_SIZE
-   */
-  protected static int writeBufferSize = DEFAULT_BUFFER_SIZE;
-  
-  
-  /**
-   * The account info for connecting to the server.
-   */
-  protected GeneralAccount account;
+	/**
+	 * Buffer size used for communicating with the remote filesystem and the
+	 * various copyTo and copyFrom transfers. Buffers defaults to size defined
+	 * in DEFAULT_BUFFER_SIZE
+	 */
+	protected static int writeBufferSize = DEFAULT_BUFFER_SIZE;
 
+	/**
+	 * The account info for connecting to the server.
+	 */
+	protected GeneralAccount account;
 
-  /**
-   * Finalizes the object by explicitly letting go of each of
-   * its internally held values.
-   * <P>
-   */
-  protected void finalize( )
-    throws Throwable
-  {
-    account = null;
-  }
+	/**
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
+	 * <P>
+	 */
+	protected void finalize() throws Throwable {
+		account = null;
+	}
 
+	/**
+	 * Sets the account object, the info used to connect to the file system.
+	 */
+	protected abstract void setAccount(GeneralAccount account)
+			throws FileNotFoundException, IOException;
 
-  /**
-   * Sets the account object, the info used to connect to the file system.
-   */
-  protected abstract void setAccount( GeneralAccount account )
-    throws FileNotFoundException, IOException;
+	/**
+	 * Returns a copy of the account object used by this GeneralFileSystem.
+	 */
+	public GeneralAccount getAccount() throws NullPointerException {
+		if (account != null)
+			return (GeneralAccount) account.clone();
 
-  /**
-   * Returns a copy of the account object used by this GeneralFileSystem.
-   */
-  public GeneralAccount getAccount( )
-    throws NullPointerException
-  {
-    if ( account != null )
-      return (GeneralAccount) account.clone();
+		throw new NullPointerException();
+	}
 
-    throw new NullPointerException();
-  }
+	/**
+	 * Returns the homeDirectory used by this account on GeneralFileSystem.
+	 */
+	public String getHomeDirectory() {
+		return account.getHomeDirectory();
+	}
 
-  /**
-   * Returns the homeDirectory used by this account on GeneralFileSystem.
-   */
-  public String getHomeDirectory( )
-  {
-    return account.getHomeDirectory( );
-  }
+	/**
+	 * Returns the rootDirectory used by this file system.
+	 */
+	public abstract String[] getRootDirectories();
 
-  /**
-   * Returns the rootDirectory used by this file system.
-   */
-  public abstract String[] getRootDirectories( );
+	/**
+	 * Set the buffer size used by the SRB socket write. Must be greater than 0.
+	 * 
+	 * @param bufferSize
+	 *            The buffer size used by the SRB socket write.
+	 */
+	public static void setWriteBufferSize(int bufferSize) {
+		if (bufferSize > 0) {
+			writeBufferSize = bufferSize;
+		}
+	}
 
+	/**
+	 * Get the buffer size used by the SRB socket write.
+	 */
+	public static int getWriteBufferSize() {
+		return writeBufferSize;
+	}
 
-  /**
-   * Set the buffer size used by the SRB socket write. Must be greater than 0.
-   * @param bufferSize The buffer size used by the SRB socket write.
-   */
-  public static void setWriteBufferSize( int bufferSize )
-  {
-    if (bufferSize > 0) {
-      writeBufferSize = bufferSize;
-    }
-  }
+	/**
+	 * Queries all files in the metadata catalog and uses metadata values,
+	 * <code>fieldName</code>, to be returned.
+	 *<P>
+	 * This is a convenience method, the same as the code:<br>
+	 * <code>query( MetaDataSet.newSelection( fieldName ) );</code>
+	 * 
+	 * @param fieldName
+	 *            The string name used to form the select object.
+	 * @return The metadata values for this file refered to by
+	 *         <code>fieldName</code>
+	 */
+	public MetaDataRecordList[] query(String fieldName) throws IOException {
+		return query(
+				new MetaDataSelect[] { MetaDataSet.newSelection(fieldName) },
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
+	}
 
-  /**
-   * Get the buffer size used by the SRB socket write.
-   */
-  public static int getWriteBufferSize( )
-  {
-    return writeBufferSize;
-  }
+	/**
+	 * Queries all files in the metadata catalog and uses metadata values,
+	 * <code>selects</code>, to be returned.
+	 *<P>
+	 * This is a convenience method, the same as the code:<br>
+	 * <code>query( MetaDataSet.newSelection( fieldNames ) );</code>
+	 * 
+	 * @param fieldNames
+	 *            The string names used to form the select objects.
+	 * @return The metadata values for this file refered to by
+	 *         <code>fieldNames</code>
+	 */
+	public MetaDataRecordList[] query(String[] fieldNames) throws IOException {
+		return query(MetaDataSet.newSelection(fieldNames),
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
+	}
 
-  /**
-   * Queries all files in the metadata catalog and uses
-   * metadata values, <code>fieldName</code>, to be returned.
-   *<P>
-   * This is a convenience method, the same as the code:<br>
-   * <code>query( MetaDataSet.newSelection( fieldName ) );</code>
-   *
-   * @param fieldName The string name used to form the select object.
-   * @return The metadata values for this file refered to by
-   * <code>fieldName</code>
-   */
-  public MetaDataRecordList[] query( String fieldName )
-     throws IOException
-  {
-    return query( new MetaDataSelect[]{ MetaDataSet.newSelection( fieldName ) },
-      GeneralFileSystem.DEFAULT_RECORDS_WANTED );
-  }
+	/**
+	 * Queries all files in the metadata catalog and uses one metadata value,
+	 * <code>select</code>, to be returned.
+	 */
+	public MetaDataRecordList[] query(MetaDataSelect select) throws IOException {
+		return query(new MetaDataSelect[] { select },
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
+	}
 
-  /**
-   * Queries all files in the metadata catalog and uses
-   * metadata values, <code>selects</code>, to be returned.
-   *<P>
-   * This is a convenience method, the same as the code:<br>
-   * <code>query( MetaDataSet.newSelection( fieldNames ) );</code>
-   *
-   * @param fieldNames The string names used to form the select objects.
-   * @return The metadata values for this file refered to by
-   * <code>fieldNames</code>
-   */
-  public MetaDataRecordList[] query( String[] fieldNames )
-     throws IOException
-  {
-    return query( MetaDataSet.newSelection( fieldNames ),
-      GeneralFileSystem.DEFAULT_RECORDS_WANTED );
-  }
+	/**
+	 * Queries all files in the metadata catalog and uses metadata values,
+	 * <code>selects</code>, to be returned.
+	 */
+	public MetaDataRecordList[] query(MetaDataSelect[] selects)
+			throws IOException {
+		return query(selects, GeneralFileSystem.DEFAULT_RECORDS_WANTED);
+	}
 
+	/**
+	 * Queries all files in the metadata catalog and uses metadata values,
+	 * <code>selects</code>, to be returned.
+	 */
+	public MetaDataRecordList[] query(MetaDataSelect[] selects,
+			int recordsWanted) throws IOException {
+		return query(null, selects, recordsWanted);
+	}
 
-  /**
-   * Queries all files in the metadata catalog and uses one
-   * metadata value, <code>select</code>, to be returned.
-   */
-  public MetaDataRecordList[] query( MetaDataSelect select )
-     throws IOException
-  {
-    return query( new MetaDataSelect[] { select },
-      GeneralFileSystem.DEFAULT_RECORDS_WANTED );
-  }
+	/**
+	 * Queries the file server to find all files that match the set of
+	 * conditions in <code>conditions</code>. For all those that match, the
+	 * fields indicated in the <code>selects</code> are returned as a
+	 * MetaDataRecordList[].
+	 * 
+	 * @param conditions
+	 *            The conditional statements that describe the values to query
+	 *            the server, like WHERE in SQL.
+	 * @param selects
+	 *            The attributes to be returned from those values that met the
+	 *            conditions, like SELECT in SQL.
+	 */
+	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
+			MetaDataSelect[] selects) throws IOException {
+		return query(conditions, selects,
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED);
+	}
 
-  /**
-   * Queries all files in the metadata catalog and uses
-   * metadata values, <code>selects</code>, to be returned.
-   */
-  public MetaDataRecordList[] query( MetaDataSelect[] selects )
-     throws IOException
-  {
-    return query( selects, GeneralFileSystem.DEFAULT_RECORDS_WANTED );
-  }
+	/**
+	 * Queries the file server to find all files that match the set of
+	 * conditions in <code>conditions</code>. For all those that match, the
+	 * fields indicated in the <code>selects</code> are returned as a
+	 * MetaDataRecordList[].
+	 * 
+	 * @param conditions
+	 *            The conditional statements that describe the values to query
+	 *            the server, like WHERE in SQL.
+	 * @param selects
+	 *            The attributes to be returned from those values that met the
+	 *            conditions, like SELECT in SQL.
+	 * @param numberOfRecordsWanted
+	 *            Maximum number of results of this query that should be
+	 *            included in the return value. Default is
+	 *            <code>DEFAULT_RECORDS_WANTED</code>. If more results are
+	 *            available, they can be obtained using
+	 *            <code>MetaDataRecordList.getMoreResults</code>
+	 * @return The metadata results from the filesystem, returns
+	 *         <code>null</code> if there are no results.
+	 */
+	public abstract MetaDataRecordList[] query(MetaDataCondition[] conditions,
+			MetaDataSelect[] selects, int numberOfRecordsWanted)
+			throws IOException;
 
+	/**
+	 * @return a copy of this account object.
+	 */
+	public Object clone() {
+		try {
+			return FileFactory.newFileSystem(account);
+		} catch (IOException e) {
+			e.initCause(e);
+			throw new RuntimeException("IOException in thread.", e);
+		}
+	}
 
+	/**
+	 * Tests this filesystem object for equality with the given object. Returns
+	 * <code>true</code> if and only if the argument is not <code>null</code>
+	 * and both are filesystem objects connected to the same filesystem using
+	 * the same account information.
+	 * 
+	 * @param obj
+	 *            The object to be compared with this abstract pathname
+	 * 
+	 * @return <code>true</code> if and only if the objects are the same;
+	 *         <code>false</code> otherwise
+	 */
+	public abstract boolean equals(Object obj);
 
-  /**
-   * Queries all files in the metadata catalog and uses
-   * metadata values, <code>selects</code>, to be returned.
-   */
-  public MetaDataRecordList[] query( MetaDataSelect[] selects,
-    int recordsWanted )
-    throws IOException
-  {
-    return query( null, selects, recordsWanted );
-  }
+	/**
+	 * Checks if the fileSystem is connected.
+	 */
+	public abstract boolean isConnected();
 
-
-  /**
-   * Queries the file server to find all files that
-   * match the set of conditions in <code>conditions</code>. For all those that
-   * match, the fields indicated in the <code>selects</code>
-   * are returned as a MetaDataRecordList[].
-   *
-   * @param conditions The conditional statements that describe
-   *    the values to query the server, like WHERE in SQL.
-   * @param selects The attributes to be returned from those values that
-   *     met the conditions, like SELECT in SQL.
-   */
-  public MetaDataRecordList[] query(
-    MetaDataCondition[] conditions, MetaDataSelect[] selects )
-    throws IOException
-  {
-    return query( conditions, selects,
-      GeneralFileSystem.DEFAULT_RECORDS_WANTED );
-  }
-
-  
-  /**
-   * Queries the file server to find all files that
-   * match the set of conditions in <code>conditions</code>. For all those that
-   * match, the fields indicated in the <code>selects</code>
-   * are returned as a MetaDataRecordList[].
-   *
-   * @param conditions The conditional statements that describe
-   *    the values to query the server, like WHERE in SQL.
-   * @param selects The attributes to be returned from those values that
-   *     met the conditions, like SELECT in SQL.
-   * @param numberOfRecordsWanted Maximum number of results of this query that
-   *  should be included in the return value. Default is 
-   *  <code>DEFAULT_RECORDS_WANTED</code>. If more results are available, they
-   *  can be obtained using <code>MetaDataRecordList.getMoreResults</code>
-   * @return The metadata results from the filesystem, 
-   *  returns <code>null</code> if there are no results.
-   */
-  public abstract MetaDataRecordList[] query(  MetaDataCondition[] conditions,
-    MetaDataSelect[] selects, int numberOfRecordsWanted )
-    throws IOException;
-
-
-
-  /**
-   * @return a copy of this account object.
-   */
-  public Object clone() 
-  {
-    try {
-        return FileFactory.newFileSystem(account);
-    } catch (IOException e) {
-      e.initCause(e);
-      throw new RuntimeException( "IOException in thread.", e );
-    }
-  }
-
-
-  /**
-   * Tests this filesystem object for equality with the given object.
-   * Returns <code>true</code> if and only if the argument is not
-   * <code>null</code> and both are filesystem objects connected to the
-   * same filesystem using the same account information.
-   *
-   * @param   obj   The object to be compared with this abstract pathname
-   *
-   * @return  <code>true</code> if and only if the objects are the same;
-   *          <code>false</code> otherwise
-   */
-  public abstract boolean equals( Object obj );
-
-
-  /**
-   * Checks if the fileSystem is connected.
-   */
-  public abstract boolean isConnected();
-
-
-  /**
-   * Returns a string representation of this file system object.
-   */
-  public String toString( )
-  {
-    return new String( "GeneralFileSystem, "+getHomeDirectory() );
-  }
+	/**
+	 * Returns a string representation of this file system object.
+	 */
+	public String toString() {
+		return new String("GeneralFileSystem, " + getHomeDirectory());
+	}
 }

@@ -45,12 +45,11 @@ package edu.sdsc.grid.io;
  * Allows users to define which namepsace is appropriate. For example, used in
  * <code>query( MetaDataCondition[], MetaDataSelect[], int, Namespace )</code>
  * when querying the AVU metadata of files, directories, resources or users.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
- * @since   JARGON2.0.5
- * @see    edu.sdsc.grid.io.irods.IRODSFileSystem.query
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
+ * @since JARGON2.0.5
+ * @see edu.sdsc.grid.io.irods.IRODSFileSystem.query
  */
-public enum Namespace
-{ 
-  FILE, DIRECTORY, USER, RESOURCE; 
-} 
+public enum Namespace {
+	FILE, DIRECTORY, USER, RESOURCE;
+}

@@ -48,221 +48,191 @@ import edu.sdsc.grid.io.*;
 import java.io.IOException;
 
 /**
- * Results of long queries will only return a partial list
- * to save on bandwidth which can be iterated through by further calls to
- * the server.
+ * Results of long queries will only return a partial list to save on bandwidth
+ * which can be iterated through by further calls to the server.
  *<P>
- * IRODSMetaDataRecordList works closely with the file server to do a
- * multi-step query that does not have to return everything immediately.
- * This class, for instance, works with partial query
- * results and, on need, issues a query for the next batch of results.
- * If some of the results are never asked for, they are never retreived.
- * To the caller, some requests for a record are immediate while others
- * pause while the partial query is sent.
- *
- * @author  Lucas Gilbert, San Diego Supercomputer Center
- * @since   JARGON2.0
+ * IRODSMetaDataRecordList works closely with the file server to do a multi-step
+ * query that does not have to return everything immediately. This class, for
+ * instance, works with partial query results and, on need, issues a query for
+ * the next batch of results. If some of the results are never asked for, they
+ * are never retreived. To the caller, some requests for a record are immediate
+ * while others pause while the partial query is sent.
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
+ * @since JARGON2.0
  */
-public class IRODSMetaDataRecordList extends MetaDataRecordList
-{
+public class IRODSMetaDataRecordList extends MetaDataRecordList {
 
 	/**
-   * If the query returned a partial list, this value is used to obtain
-   * more records from the server.
-   */
-  private int continuationIndex = -1;
+	 * If the query returned a partial list, this value is used to obtain more
+	 * records from the server.
+	 */
+	private int continuationIndex = -1;
 
-  /**
-   * Contains an the number of user definable metadata rows attached to
-   * each record in the query. Used to get the number of results expected
-   * and all their user definable metadata.
-   */
-  
-  
-  private IRODSCommands irodsConnection;
+	/**
+	 * Contains an the number of user definable metadata rows attached to each
+	 * record in the query. Used to get the number of results expected and all
+	 * their user definable metadata.
+	 */
 
-  /**
-   * Load the IRODSMetaDataRecordList internal field list
-   * with the selectFields passed to the constructor.
-   *<P>
-   * Then copy the queryReturn into records[][].
-   * The order has to be switched to match the order of fields[],
-   * which is the same order as the selectArray initially sent.
-   */
-  IRODSMetaDataRecordList( IRODSCommands irodsConnection,
-    MetaDataField[] fields, Object[] recordValues, int continuationIndex )
-  {
-    super(fields, recordValues);
+	private IRODSCommands irodsConnection;
 
-    this.irodsConnection = irodsConnection;
-    this.continuationIndex = continuationIndex;
-  }
+	/**
+	 * Load the IRODSMetaDataRecordList internal field list with the
+	 * selectFields passed to the constructor.
+	 *<P>
+	 * Then copy the queryReturn into records[][]. The order has to be switched
+	 * to match the order of fields[], which is the same order as the
+	 * selectArray initially sent.
+	 */
+	IRODSMetaDataRecordList(IRODSCommands irodsConnection,
+			MetaDataField[] fields, Object[] recordValues, int continuationIndex) {
+		super(fields, recordValues);
 
-  /**
-   * Create a new MetaDataRecordList with this <code>field</code> and
-   * <code>recordValue</code>.
-   */
-  public IRODSMetaDataRecordList( MetaDataField field, int recordValue )
-  {
-    super(field, recordValue);
-  }
+		this.irodsConnection = irodsConnection;
+		this.continuationIndex = continuationIndex;
+	}
 
-  /**
-   * Create a new MetaDataRecordList with this <code>field</code> and
-   * <code>recordValue</code>.
-   */
-  public IRODSMetaDataRecordList( MetaDataField field, float recordValue )
-  {
-    super(field, recordValue);
-  }
+	/**
+	 * Create a new MetaDataRecordList with this <code>field</code> and
+	 * <code>recordValue</code>.
+	 */
+	public IRODSMetaDataRecordList(MetaDataField field, int recordValue) {
+		super(field, recordValue);
+	}
 
+	/**
+	 * Create a new MetaDataRecordList with this <code>field</code> and
+	 * <code>recordValue</code>.
+	 */
+	public IRODSMetaDataRecordList(MetaDataField field, float recordValue) {
+		super(field, recordValue);
+	}
 
-  /**
-   * Create a new MetaDataRecordList with this <code>field</code> and
-   * <code>recordValue</code>.
-   */
-  public IRODSMetaDataRecordList( MetaDataField field, Integer recordValue )
-  {
-    super(field, recordValue);
-  }
+	/**
+	 * Create a new MetaDataRecordList with this <code>field</code> and
+	 * <code>recordValue</code>.
+	 */
+	public IRODSMetaDataRecordList(MetaDataField field, Integer recordValue) {
+		super(field, recordValue);
+	}
 
-  /**
-   * Create a new MetaDataRecordList with this <code>field</code> and
-   * <code>recordValue</code>.
-   */
-  public IRODSMetaDataRecordList( MetaDataField field, Float recordValue )
-  {
-    super(field, recordValue);
-  }
+	/**
+	 * Create a new MetaDataRecordList with this <code>field</code> and
+	 * <code>recordValue</code>.
+	 */
+	public IRODSMetaDataRecordList(MetaDataField field, Float recordValue) {
+		super(field, recordValue);
+	}
 
+	/**
+	 * Create a new MetaDataRecordList with this <code>field</code> and
+	 * <code>recordValue</code>.
+	 */
+	public IRODSMetaDataRecordList(MetaDataField field, String recordValue) {
+		super(field, recordValue);
+	}
 
-  /**
-   * Create a new MetaDataRecordList with this <code>field</code> and
-   * <code>recordValue</code>.
-   */
-  public IRODSMetaDataRecordList( MetaDataField field, String recordValue )
-  {
-    super(field, recordValue);
-  }
+	/**
+	 * Finalizes the object by explicitly letting go of each of its internally
+	 * held values.
+	 */
+	protected void finalize() {
+		if (irodsConnection != null)
+			irodsConnection = null;
+	}
 
+	/**
+	 * Used by IRODSCommands during a query return. if all the fields that this
+	 * and <code>recordList</code> have in common have matching values, then
+	 * this.addRecord( recordList ) The values in this IRODSMetaDataRecordList
+	 * will be overwritten by <code>recordList</code>. (Though in the case of
+	 * IRODSCommands the values will always be equal.)
+	 */
+	boolean combineRecordLists(MetaDataRecordList recordList) {
+		if (recordList != null) {
+			for (int i = 0; i < fields.length; i++) {
+				for (int j = 0; j < recordList.getFieldCount(); j++) {
+					if (fields[i].equals(recordList.getField(j))) {
+						if ((records[i] == null)
+								|| (recordList.getValue(j) == null)) {
+							if (records[i] != recordList.getValue(j)) {
+								return false;
+							}
+						} else if (!records[i].equals(recordList.getValue(j))) {
+							// both RecordLists have the same field but with
+							// different values
+							return false;
+						}
+					}
+				}
+			}
 
-  /**
-   * Finalizes the object by explicitly letting go of each of
-   * its internally held values.
-   */
-  protected void finalize( )
-  {
-    if (irodsConnection != null)
-      irodsConnection = null;
-  }
+			for (int j = 0; j < recordList.getFieldCount(); j++) {
+				addRecord(recordList.getField(j), recordList.getValue(j));
+			}
 
+			return true;
+		} else {
+			return false;
+		}
+	}
 
+	/**
+	 * Sets the int used by the IRODS server to refer to a query. (Kind of like
+	 * a file descriptor.)
+	 */
+	void setContinuationIndex(int continuationIndex) {
+		this.continuationIndex = continuationIndex;
+	}
 
-  /**
-   * Used by IRODSCommands during a query return.
-   * if all the fields that this and <code>recordList</code> have in common
-   * have matching values, then this.addRecord( recordList )
-   * The values in this IRODSMetaDataRecordList will be overwritten by
-   * <code>recordList</code>. (Though in the case of IRODSCommands the
-   * values will always be equal.)
-   */
-  boolean combineRecordLists( MetaDataRecordList recordList )
-  {
-    if (recordList != null) {
-      for (int i=0;i<fields.length;i++) {
-        for (int j=0;j<recordList.getFieldCount();j++) {
-          if (fields[i].equals(recordList.getField(j))) {
-            if ((records[i] == null) || (recordList.getValue(j) == null)) {
-              if (records[i] != recordList.getValue(j)) {
-                return false;
-              }
-            }
-            else if (!records[i].equals(recordList.getValue(j))) {
-              //both RecordLists have the same field but with different values
-              return false;
-            }
-          }
-        }
-      }
+	/**
+	 * Returns the int used by the IRODS server to refer to a query. (Kind of
+	 * like a file descriptor.)
+	 */
+	int getContinuationIndex() {
+		return continuationIndex;
+	}
 
+	/**
+	 * Tests if this IRODSMetaDataRecordList can return more values from the
+	 * query.
+	 */
+	public boolean isQueryComplete() {
+		if (continuationIndex >= 0) {
+			return false;
+		}
 
-        for (int j=0;j<recordList.getFieldCount();j++) {
-            addRecord( recordList.getField(j), recordList.getValue(j) );
-        }
+		return true;
+	}
 
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
+	/**
+	 * Gets further results from the query. If and only if the query returned a
+	 * partial list and there are more results which matched the query that
+	 * haven't been returned. Otherwise null. By default a query will only
+	 * return 300 values at a time which match the query, see also
+	 * <code>IRODSFileSystem.DEFAULT_RECORDS_WANTED</code>.
+	 */
+	public MetaDataRecordList[] getMoreResults() throws IOException {
+		return getMoreResults(IRODSFileSystem.DEFAULT_RECORDS_WANTED);
+	}
 
+	/**
+	 * Gets further results from the query. If and only if the query returned a
+	 * partial list and there are more results which matched the query that
+	 * haven't been returned. Otherwise null.
+	 */
+	public MetaDataRecordList[] getMoreResults(int numOfResults)
+			throws IOException {
+		if (continuationIndex < 0) {
+			return null;
+		}
+		if (irodsConnection == null) {
+			// Maybe more query is left and something went wrong
+			// but irodsConnection wasn't loaded.
+			return null;
+		}
 
-  /**
-   * Sets the int used by the IRODS server to refer to a query.
-   * (Kind of like a file descriptor.)
-   */
-  void setContinuationIndex( int continuationIndex )
-  {
-    this.continuationIndex = continuationIndex;
-  }
-
-  /**
-   * Returns the int used by the IRODS server to refer to a query.
-   * (Kind of like a file descriptor.)
-   */
-  int getContinuationIndex( )
-  {
-    return continuationIndex;
-  }
-
-
-
-  /**
-   * Tests if this IRODSMetaDataRecordList can return more values from the
-   * query.
-   */
-  public boolean isQueryComplete()
-  {
-    if (continuationIndex >= 0) {
-      return false;
-    }
-
-    return true;
-  }
-
-
-  /**
-   * Gets further results from the query. If and only if the
-   * query returned a partial list and there are more results
-   * which matched the query that haven't been returned. Otherwise null.
-   * By default a query will only return 300 values at a time which match the
-   * query, see also <code>IRODSFileSystem.DEFAULT_RECORDS_WANTED</code>.
-   */
-  public MetaDataRecordList[] getMoreResults()
-    throws IOException
-  {
-    return getMoreResults(IRODSFileSystem.DEFAULT_RECORDS_WANTED);
-  }
-
-
-  /**
-   * Gets further results from the query. If and only if the
-   * query returned a partial list and there are more results
-   * which matched the query that haven't been returned. Otherwise null.
-   */
-  public MetaDataRecordList[] getMoreResults( int numOfResults )
-    throws IOException
-  {
-    if (continuationIndex < 0 ) {
-      return null;
-    }
-    if (irodsConnection == null) {
-      //Maybe more query is left and something went wrong
-      //but irodsConnection wasn't loaded.
-      return null;
-    }
-    
-    return irodsConnection.getMoreResults(continuationIndex, numOfResults);
-  }
+		return irodsConnection.getMoreResults(continuationIndex, numOfResults);
+	}
 }
