@@ -53,6 +53,9 @@ import java.io.*;
 import java.net.URI;
 import java.net.URLConnection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 /**
@@ -64,18 +67,12 @@ import java.net.URLConnection;
  */
 public class HTTPFileSystem extends RemoteFileSystem
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+
 	/**
 	 * HTTP has only one root, "/".
 	 */
-//I think...  
 	public static final String HTTP_ROOT = "/";
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
 	/**
 	 * Use this account object instead of the parent class's
 	 * GeneralAccount object.
@@ -83,17 +80,10 @@ public class HTTPFileSystem extends RemoteFileSystem
 	 */
 	private HTTPAccount httpAccount;
 
-//HttpURLConnection?
   URLConnection conn;
   
-  /**
-   * Debug setting
-   */
-  static int DEBUG = GeneralFileSystem.DEBUG;
-  
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
+  private static Logger log = LoggerFactory.getLogger(HTTPFileSystem.class);
+
 	/**
 	 * Opens a socket connection to read from and write to. Opens the account
 	 * held in the HTTPAccount object. The account information stored in this

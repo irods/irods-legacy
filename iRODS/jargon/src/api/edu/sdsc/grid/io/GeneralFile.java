@@ -54,6 +54,9 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * An abstract representation of file and directory pathnames.
@@ -179,9 +182,9 @@ public class GeneralFile extends Object implements Comparable
    *    Use seperatorChar and pathSeperatorChar
    */
   public static char PATH_SEPARATOR_CHAR = '/';
+  
+  private static Logger log = LoggerFactory.getLogger(GeneralFile.class);
 
-
-  protected int DEBUG = GeneralFileSystem.DEBUG;
 
 
 //----------------------------------------------------------------------
@@ -872,7 +875,7 @@ public class GeneralFile extends Object implements Comparable
         }
       }
       else if (read < 0) {
-        if (GeneralFileSystem.DEBUG > 0) System.err.print(" "+read);
+        log.warn("read value less then zero, logged and ignored..value:"+read);
       }
     }    
     
@@ -1390,7 +1393,7 @@ public class GeneralFile extends Object implements Comparable
     try {
       result = firstQueryResult( GeneralMetaData.SIZE );
     } catch ( IOException e ) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+      log.warn("IO Exception, logged and ignored");
       return 0;
     }
 
@@ -1651,7 +1654,7 @@ public class GeneralFile extends Object implements Comparable
       delete();
       return true;
     } catch (IOException e) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+      log.warn("io exception, logged and ignored", e);
       return false;
     }
   }

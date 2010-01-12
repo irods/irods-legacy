@@ -56,6 +56,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.ietf.jgss.GSSCredential;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Operations include creating appropriately typed GeneralFile and
@@ -79,6 +81,9 @@ public final class FileFactory
   private static final int INPUT = 1;
   private static final int OUTPUT = 2;
   private static final int RECORD_LIST = 3;
+  
+  private static Logger log = LoggerFactory.getLogger(FileFactory.class);
+
 
   static {      
     
@@ -90,7 +95,7 @@ public final class FileFactory
         SRBFileOutputStream.class, SRBMetaDataRecordList.class
       );
     } catch (URISyntaxException e) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+      log.warn("URI Syntax exception logged and ignored", e);
     }
 
     try {
@@ -101,7 +106,7 @@ public final class FileFactory
         IRODSFileOutputStream.class, IRODSMetaDataRecordList.class
       );
     } catch (URISyntaxException e) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        log.warn("URI Syntax exception logged and ignored", e);
     }
 
     //Could also handle anything of URLConnection: mailto, gopher, others...
@@ -120,7 +125,7 @@ public final class FileFactory
         HTTPFileOutputStream.class, null
       );
     } catch (URISyntaxException e) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        log.warn("URI Syntax exception logged and ignored", e);
     }
 
     try {
@@ -130,7 +135,7 @@ public final class FileFactory
         null, null, null, null
       );
     } catch (URISyntaxException e) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        log.warn("URI Syntax exception logged and ignored", e);
     }
 
   }
@@ -252,16 +257,20 @@ public final class FileFactory
       try {
         return constructor.newInstance(arguments);
       } catch (InstantiationException e) {
-        if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+          log.warn("instanciation exception, logged and ignored", e);
       } catch (IllegalAccessException e) {
-        if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+          log.warn("illegal access exception, logged and ignored", e);
       } catch (IllegalArgumentException e) {
-        if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+          log.warn("illegal argument exception, logged and ignored", e);
+
       } catch (InvocationTargetException e) {
         Throwable x = e.getCause();
-        if (x instanceof IOException)
-          throw (IOException) x;
-        if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        if (x instanceof IOException) {
+        	log.error("IO exception creating object", e);
+        	throw (IOException) x;
+        }
+        log.warn("invocation target exception logged and ignored", e);
+
       }
       return null;
    }
@@ -712,7 +721,8 @@ public final class FileFactory
       }
     } catch (IOException e) {
       //such error an error really isn't possible.
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        log.warn("IOException, logged and ignored", e);
+
     }
     return file;
   }
@@ -741,7 +751,7 @@ public final class FileFactory
       }
     } catch (IOException e) {
       //such error an error really isn't possible.
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        log.warn("io exception, logged and ignored", e);
     }
     return file;
   }
@@ -770,7 +780,8 @@ public final class FileFactory
       }
     } catch (IOException e) {
       //such error an error really isn't possible.
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        log.warn("io exception, logged and ignored", e);
+
     }
     return file;
   }
@@ -1032,7 +1043,8 @@ public final class FileFactory
       }
     } catch (IOException e) {
       //such error an error really isn't possible.
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+        log.warn("io exception, logged and ignored", e);
+
     }
     return rl;
   }

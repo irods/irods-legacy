@@ -57,6 +57,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.ietf.jgss.GSSCredential;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class extends the RemoteAccount class, adding those values necessary
@@ -171,7 +173,7 @@ public class IRODSAccount extends RemoteAccount
   /**
    * working with strings got annoying
    */
-  static HashMap versionNumber = new HashMap( 10, 1 );
+  static HashMap<String, Float> versionNumber = new HashMap<String, Float>( 10, 1 );
   static {
     versionNumber.put( IRODS_VERSION_0_9, new Float( .9 ) );
     versionNumber.put( IRODS_VERSION_1_0, new Float( 1 ) );
@@ -183,6 +185,9 @@ public class IRODSAccount extends RemoteAccount
   }
   public static boolean defaultObfuscate = false;
   int obfuscate = 0;
+  
+	private static Logger log = LoggerFactory.getLogger(IRODSAccount.class);
+
 
 
   /**
@@ -487,7 +492,7 @@ public class IRODSAccount extends RemoteAccount
    */
   static float getVersionNumber( )
   {
-    return ((Float) versionNumber.get( version )).floatValue();
+    return versionNumber.get( version ).floatValue();
   }
 
 
@@ -614,7 +619,7 @@ public class IRODSAccount extends RemoteAccount
         uri = new URI( "irods://"+getUserName()+
           "@"+getHost()+":"+getPort()+getHomeDirectory() );   
     } catch ( URISyntaxException e ) {
-      if (IRODSFileSystem.DEBUG > 0) e.printStackTrace();
+      log.debug("uri syntax exception, logged and ignored", e);
     }
     return uri;
   }

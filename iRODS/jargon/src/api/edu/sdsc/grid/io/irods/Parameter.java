@@ -211,9 +211,9 @@ class Parameter
 </MsParam_PI>
 </MsParamArray_PI>
 */
-    Tag param = new Tag(IRODSCommands.MsParam_PI, new Tag[] {
-        new Tag(IRODSCommands.label, getUniqueName()),
-        new Tag(IRODSCommands.type, getType()),
+    Tag param = new Tag(IRODSConstants.MsParam_PI, new Tag[] {
+        new Tag(IRODSConstants.label, getUniqueName()),
+        new Tag(IRODSConstants.type, getType()),
     } );
 
     if (type.equals( INT_PI )) {

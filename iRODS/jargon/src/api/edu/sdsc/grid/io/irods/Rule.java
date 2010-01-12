@@ -313,7 +313,7 @@ class Rule {
 	private static Parameter[] processNonNullRuleResult(
 			final IRODSFileSystem fileSystem, final Tag rulesTag)
 			throws IOException {
-		int parametersLength = rulesTag.getTag(IRODSCommands.paramLen)
+		int parametersLength = rulesTag.getTag(IRODSConstants.paramLen)
 				.getIntValue();
 
 		// for client action has TagName "MsParam_PI, value "CL_PUT_ACTION"
@@ -327,9 +327,9 @@ class Rule {
 			Parameter[] parameters = new Parameter[parametersLength];
 
 			for (int i = 0; i < parametersLength; i++) {
-				Tag msParam = rulesTag.getTag(IRODSCommands.MsParam_PI, i);
-				label = msParam.getTag(IRODSCommands.label).getStringValue();
-				type = msParam.getTag(IRODSCommands.type).getStringValue();
+				Tag msParam = rulesTag.getTag(IRODSConstants.MsParam_PI, i);
+				label = msParam.getTag(IRODSConstants.label).getStringValue();
+				type = msParam.getTag(IRODSConstants.type).getStringValue();
 				value = getParameter(type, msParam);
 				// need to differentiate tag that is client request from
 				// tag that is an array

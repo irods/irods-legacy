@@ -54,6 +54,8 @@ import java.net.URI;
 import org.globus.ftp.*;
 import org.globus.ftp.exception.*;
 import org.ietf.jgss.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -64,18 +66,13 @@ import org.ietf.jgss.*;
  */
 public class FTPFileSystem extends RemoteFileSystem
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+
 	/**
 	 * FTP has only one root, "/".
 	 */
-//I think...  
 	public static final String FTP_ROOT = "/";
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+
 	/**
 	 * Use this account object instead of the parent class's
 	 * GeneralAccount object.
@@ -85,14 +82,10 @@ public class FTPFileSystem extends RemoteFileSystem
 
   private FTPClient ftpClient;
   
-  /**
-   * Debug setting
-   */
-  static int DEBUG = GeneralFileSystem.DEBUG;
-  
+    
   boolean closed = false;
 
-
+  private static Logger log = LoggerFactory.getLogger(FTPFileSystem.class);
 
 	/**
 	 * Opens a socket connection to read from and write to. Opens the account

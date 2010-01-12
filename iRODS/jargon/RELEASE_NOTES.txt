@@ -21,6 +21,7 @@ libraries
 -gsi-classes.jar (packaged in lib directory)
 -junit-4.7.jar (packaged in lib) - used by unit testing classes, not necessary for Jargon deployment
 -apache commons-exec-1.0.1.jar (packaged in lib directory) - used by unit testing classes, not necessary for Jargon deployment
+-sl4j and log4j - used for logging (packaged in lib directory)
 
 ================================================================================================
 Features and Changes
@@ -32,6 +33,16 @@ Compatibility testing with IRODS2.3
 Beginning a 'first order' refactoring of Jargon, with an emphasis on breaking large classes into smaller, reusable components.
 *extracted Tag processing in IRODSCommands to Tag
 *created IRODSAvu and extracted AVU processing from ICommands
+*broke up the IRODSCommands class into IRODSCommands and IRODSConnection, working towards further refactoring
+
+----------
+Fix admin_build.xml ANT script to automatically compile with debug when running code coverage
+
+----------
+Replaced 'hand made' logging with standard logging, best practice for integrating with other frameworks, such as fedorairods
+* to adjust logging, consult the log4j.properties file in src/api, defaults to ERROR, can be set to DEBUG, INFO, WARN, ERROR
+* this change supercedes the prior 'debug' conventions in Jargon
+
 
 ================================================================================================
 Outstanding Issues

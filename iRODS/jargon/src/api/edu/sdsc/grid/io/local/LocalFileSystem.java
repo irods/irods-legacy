@@ -47,6 +47,9 @@ import edu.sdsc.grid.io.*;
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
  
 
 /**
@@ -65,12 +68,8 @@ public class LocalFileSystem extends GeneralFileSystem
    */
   static final int DEFAULT_RECORDS_WANTED = 300;
   
-  
-  
-  /**
-   * Debug setting
-   */
-  static int DEBUG = GeneralFileSystem.DEBUG;
+  private static Logger log = LoggerFactory.getLogger(LocalFileSystem.class);
+
   
   /**
    * Opens a socket connection to read from and write to.

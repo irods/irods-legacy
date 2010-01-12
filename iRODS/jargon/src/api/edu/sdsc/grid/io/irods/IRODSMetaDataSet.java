@@ -43,6 +43,9 @@ package edu.sdsc.grid.io.irods;
 
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.sdsc.grid.io.DirectoryMetaData;
 import edu.sdsc.grid.io.FileMetaData;
 import edu.sdsc.grid.io.MetaDataField;
@@ -59,6 +62,9 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		DirectoryMetaData, FileMetaData, ResourceMetaData, UserMetaData,
 		ZoneMetaData {
 
+	private static Logger log = LoggerFactory.getLogger(IRODSMetaDataSet.class);
+
+	
 	// Metadata attribute names
 	// irods file access, beyond FileMetaData
 	public static final String FILE_REPLICA_STATUS = "File Replica Status";
@@ -1328,8 +1334,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 				field = (MetaDataField) metaDataFields.get(iRODSToJargon
 						.get(Integer.decode(fieldName)));
 			} catch (NumberFormatException e) {
-				if (IRODSFileSystem.DEBUG > 0)
-					e.printStackTrace();
+				log.warn("number format exceptinofor field:" + fieldName + " logged and ignored");
 			}
 		}
 

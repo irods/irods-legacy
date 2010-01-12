@@ -48,118 +48,104 @@ import edu.sdsc.grid.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * An object to hold the user information used when connecting
- * to a remote server.
+ * An object to hold the user information used when connecting to a remote
+ * server.
  *<P>
- * @author  Lucas Gilbert, San Diego Supercomputer Center
- * @since   Jargon1.0
+ * 
+ * @author Lucas Gilbert, San Diego Supercomputer Center
+ * @since Jargon1.0
  */
-public class LocalAccount extends GeneralAccount
-{
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+public class LocalAccount extends GeneralAccount {
 
+	private static Logger log = LoggerFactory.getLogger(LocalAccount.class);
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	/**
+	 * Constructs an object to hold the user information used when connecting to
+	 * a remote server.
+	 * <P>
+	 * 
+	 * @param homeDirectory
+	 *            home directory on the local filesystem
+	 */
+	public LocalAccount() {
+		this(null);
+	}
 
+	/**
+	 * Constructs an object to hold the user information used when connecting to
+	 * a remote server.
+	 * <P>
+	 * 
+	 * @param homeDirectory
+	 *            home directory on the local filesystem
+	 */
+	public LocalAccount(String homeDir) {
+		super(homeDir);
+	}
 
+	/**
+	 * Sets the home directory of this GeneralAccount.
+	 */
+	public void setHomeDirectory(String homeDir) {
+		if (homeDir == null) {
+			try {
+				homeDirectory = System.getProperty("user.home");
+			} catch (java.security.AccessControlException e) {
+				log
+						.error(
+								"java security access control exception, logged and ignored",
+								e);
+				// rare security problems, just give up
+				homeDirectory = "/";
+			}
+		} else {
+			homeDirectory = homeDir;
+		}
+	}
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
-  /**
-   * Constructs an object to hold the user information used when connecting
-   * to a remote server.
-   * <P>
-   * @param  homeDirectory home directory on the local filesystem
-   */
-  public LocalAccount( )
-  {
-    this( null );
-  }
+	/**
+	 * Tests this local file system account object for equality with the given
+	 * object. Returns <code>true</code> if and only if the argument is not
+	 * <code>null</code> and both are account objects for the same filesystem.
+	 * 
+	 * @param obj
+	 *            The object to be compared with this local user account
+	 * 
+	 * @return <code>true</code> if and only if the objects are the same;
+	 *         <code>false</code> otherwise
+	 */
+	public boolean equals(Object obj) {
+		try {
+			if (obj == null)
+				return false;
 
-  /**
-   * Constructs an object to hold the user information used when connecting
-   * to a remote server.
-   * <P>
-   * @param  homeDirectory home directory on the local filesystem
-   */
-  public LocalAccount( String homeDir )
-  {
-    super( homeDir );
-  }
+			if (obj instanceof LocalAccount) {
+				if (((LocalAccount) obj).getHomeDirectory().equals(
+						getHomeDirectory())) {
+					return true;
+				}
+			}
+		} catch (ClassCastException e) {
+			return false;
+		}
+		return false;
+	}
 
-
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
-  /**
-   * Sets the home directory of this GeneralAccount.
-   */
-  public void setHomeDirectory( String homeDir )
-  {
-    if (homeDir == null) {
-      try {
-        homeDirectory = System.getProperty( "user.home" );
-      } catch (java.security.AccessControlException e) {
-e.printStackTrace();
-        //rare security problems, just give up
-        homeDirectory = "/";      
-      }
-    }
-    else {
-      homeDirectory = homeDir;
-    }
-  }
-
-  /**
-   * Tests this local file system account object for equality with the
-   * given object.
-   * Returns <code>true</code> if and only if the argument is not
-   * <code>null</code> and both are account objects for the same
-   * filesystem.
-   *
-   * @param   obj   The object to be compared with this local user account
-   *
-   * @return  <code>true</code> if and only if the objects are the same;
-   *          <code>false</code> otherwise
-   */
-  public boolean equals( Object obj )
-  {
-    try {
-      if (obj == null)
-        return false;
-
-      if (obj instanceof LocalAccount) {
-        if (((LocalAccount)obj).getHomeDirectory().equals(getHomeDirectory())) {
-          return true;
-        }
-      }
-    } catch (ClassCastException e) {
-      return false;
-    }
-    return false;
-  }
-  
-  
-  /**
-   * Return the URI expression of this account information. 
-   * i.e., file:///homeDirectory
-   */
-  public URI toURI( )
-  {
-    URI uri = null;
-    try {
-      uri = new URI( "file:///"+getHomeDirectory() );    
-    } catch ( URISyntaxException e ) {
-      if (LocalFileSystem.DEBUG > 0) e.printStackTrace();
-    }
-    return uri;
-  }
+	/**
+	 * Return the URI expression of this account information. i.e.,
+	 * file:///homeDirectory
+	 */
+	public URI toURI() {
+		URI uri = null;
+		try {
+			uri = new URI("file:///" + getHomeDirectory());
+		} catch (URISyntaxException e) {
+			log.warn("URI syntax exception, logged and ignored", e);
+		}
+		return uri;
+	}
 }
-

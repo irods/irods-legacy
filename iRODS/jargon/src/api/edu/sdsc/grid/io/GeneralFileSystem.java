@@ -57,9 +57,7 @@ import java.io.FileNotFoundException;
  */
 public abstract class GeneralFileSystem extends Object implements Cloneable
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+
   /**
    * Standard  path separator character represented as a string for
    * convenience. This string contains a single character, namely
@@ -74,25 +72,15 @@ public abstract class GeneralFileSystem extends Object implements Cloneable
    * Store the abstract pathnames for the root directories of this file system.
    */
   protected static String[] roots;
+  
+  // this DEBUG value is here solely for the obfucasted 'Lucid' class that depends on it.
+  public static int DEBUG = 0;
 
   /**
    * Default number of records returned by a query
    */
   public final static int DEFAULT_RECORDS_WANTED = 300;
 
-  /**
-   * A positive debug value turns on debugging. Higher values turn on more, maybe.
-   */
-  protected static int DEBUG = 0;
-  static {
-    //Set the debug, default zero.
-    try {
-      DEBUG = new Integer( System.getProperty( "jargon.debug", "0")).intValue();
-    } catch (java.lang.NumberFormatException e) {
-      //in case they don't use an integer
-      DEBUG = 0;
-    }
-  }
 
   /**
    * Default buffer size used for communicating with the remote filesystem 
@@ -108,19 +96,12 @@ public abstract class GeneralFileSystem extends Object implements Cloneable
   protected static int writeBufferSize = DEFAULT_BUFFER_SIZE;
   
   
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
   /**
    * The account info for connecting to the server.
    */
   protected GeneralAccount account;
 
 
-
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
   /**
    * Finalizes the object by explicitly letting go of each of
    * its internally held values.
@@ -133,10 +114,6 @@ public abstract class GeneralFileSystem extends Object implements Cloneable
   }
 
 
-
-//----------------------------------------------------------------------
-// Setters and Getters
-//----------------------------------------------------------------------
   /**
    * Sets the account object, the info used to connect to the file system.
    */
@@ -187,10 +164,7 @@ public abstract class GeneralFileSystem extends Object implements Cloneable
   {
     return writeBufferSize;
   }
-  
-//----------------------------------------------------------------------
-// Methods
-//----------------------------------------------------------------------
+
   /**
    * Queries all files in the metadata catalog and uses
    * metadata values, <code>fieldName</code>, to be returned.

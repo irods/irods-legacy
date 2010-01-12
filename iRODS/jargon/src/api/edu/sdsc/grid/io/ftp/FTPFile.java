@@ -54,6 +54,8 @@ import edu.sdsc.grid.io.*;
 
 import org.globus.ftp.*;
 import org.globus.ftp.exception.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -75,9 +77,7 @@ import org.globus.ftp.exception.*;
  */
 public class FTPFile extends RemoteFile
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
+
 	/**
 	 * Standard FTP path separator character represented as a string for
 	 * convenience. This string contains a single character, namely
@@ -90,18 +90,15 @@ public class FTPFile extends RemoteFile
 	 */
 	public static final char PATH_SEPARATOR_CHAR = '/';
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+
   /**
    * The ftpClient which handles the ftp protocol level
    */
   protected FTPClient ftpClient;
+  
+  private static Logger log = LoggerFactory.getLogger(FTPFile.class);
 
 
-//----------------------------------------------------------------------
-//  Constructors and Destructors
-//----------------------------------------------------------------------
 	/**
 	 * Creates a new FTPFile instance by converting the given pathname string
 	 * into an abstract pathname.
@@ -671,8 +668,7 @@ else
     try {
   		return new URI( toString() );
     } catch (URISyntaxException e) {      
-      if (DEBUG > 0)
-        e.printStackTrace();
+      log.warn("URI syntax exception, logged and ignored", e);
     }
     return null;
 	}

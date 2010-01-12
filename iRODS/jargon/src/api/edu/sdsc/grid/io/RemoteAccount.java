@@ -46,6 +46,9 @@ package edu.sdsc.grid.io;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * An object to hold the user information used when connecting
@@ -55,14 +58,10 @@ import java.net.URISyntaxException;
  */
 public abstract class RemoteAccount extends GeneralAccount
 {
-//----------------------------------------------------------------------
-//  Constants
-//----------------------------------------------------------------------
 
+	  private static Logger log = LoggerFactory.getLogger(RemoteAccount.class);
 
-//----------------------------------------------------------------------
-//  Fields
-//----------------------------------------------------------------------
+	
   /**
    * The host to connect to on the server.
    */
@@ -216,7 +215,7 @@ public abstract class RemoteAccount extends GeneralAccount
     try {
       return new URI(toString());  
     } catch ( URISyntaxException e ) {
-      if (GeneralFileSystem.DEBUG > 0) e.printStackTrace();
+      log.warn("URI Syntax Exception logged and ignored", e);
     }
     return null;
   }

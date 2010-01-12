@@ -49,6 +49,9 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.sdsc.grid.io.local.*;
 import edu.sdsc.grid.io.*;
 
@@ -105,6 +108,9 @@ public class IRODSFile extends RemoteFile {
 	static final int READ_PERMISSIONS = 1050;
 	/** integer from some queries signifying user can write to a file */
 	static final int WRITE_PERMISSIONS = 1120;
+	
+	private static Logger log = LoggerFactory.getLogger(IRODSFile.class);
+
 
 	// ----------------------------------------------------------------------
 	// Fields
@@ -848,8 +854,7 @@ public class IRODSFile extends RemoteFile {
 				return rl[0].getStringValue(0);
 			}
 		} catch (IllegalArgumentException e) {
-			if (IRODSFileSystem.DEBUG > 2)
-				e.printStackTrace();
+			log.error("illegal arg exception", e);
 		}
 		return null;
 	}
@@ -884,8 +889,7 @@ public class IRODSFile extends RemoteFile {
 				// ignore, the metadata already exists.
 				// (The <1000 part is something else ignorable.)
 
-				if (IRODSFileSystem.DEBUG > 0)
-					e.printStackTrace();
+				log.warn("metadata already exists, logged and ignored");
 				return;
 			}
 			error = e.getType()
@@ -894,8 +898,7 @@ public class IRODSFile extends RemoteFile {
 				// ignore, the metadata already exists.
 				// (The <1000 part is something else ignorable.)
 
-				if (IRODSFileSystem.DEBUG > 0)
-					e.printStackTrace();
+				log.warn("metadata already exists, logged and ignored");
 				return;
 			}
 
@@ -1126,8 +1129,7 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				if (IRODSFileSystem.DEBUG > 0)
-					e.printStackTrace();
+				log.warn("io exception is logged and ignored", e);
 			}
 		}
 
@@ -1140,8 +1142,7 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				if (IRODSFileSystem.DEBUG > 0)
-					e.printStackTrace();
+				log.warn("io exception is logged and ignored", e);
 			}
 		}
 		return false;
@@ -1170,8 +1171,7 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				if (IRODSFileSystem.DEBUG > 0)
-					e.printStackTrace();
+				log.warn("io exception is logged and ignored", e);
 			}
 		}
 
@@ -1184,8 +1184,7 @@ public class IRODSFile extends RemoteFile {
 					return true;
 				}
 			} catch (IOException e) {
-				if (IRODSFileSystem.DEBUG > 0)
-					e.printStackTrace();
+				log.warn("io exception is logged and ignored", e);
 			}
 		}
 		return false;
@@ -1304,12 +1303,13 @@ public class IRODSFile extends RemoteFile {
 				return true;
 			}
 		} catch (IRODSException e) {
-			if (IRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 			// catch already exists (as a directory probably) and just return
 			// false
-			if (e.getType() != -511017)
+			if (e.getType() != -511017) {
+				log.error("irods exception when creating new file, is not an already exists exception");
 				throw e;
+			}
 		}
 
 		return false;
@@ -1341,9 +1341,7 @@ public class IRODSFile extends RemoteFile {
 				}
 			}
 		} catch (IRODSException e) {
-			if (IRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
-			// catch already exists and just return false
+			log.warn("io exception is logged and ignored", e);
 		}
 
 		return -1;
@@ -1444,6 +1442,7 @@ public class IRODSFile extends RemoteFile {
 		if (temp.createNewFile())
 			return temp;
 		else {
+			log.error("io exception, temp file already exists");
 			throw new IOException("The temp file already exists.");
 		}
 	}
@@ -1477,8 +1476,7 @@ public class IRODSFile extends RemoteFile {
 			}
 			return true;
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 			return false;
 		}
 	}
@@ -1502,8 +1500,7 @@ public class IRODSFile extends RemoteFile {
 				iRODSFileSystem.commands.deleteReplica(this, resource);
 			}
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 		}
 
 		return false;
@@ -1557,8 +1554,7 @@ public class IRODSFile extends RemoteFile {
 				return getAbsolutePath().equals(temp.getAbsolutePath());
 			}
 		} catch (ClassCastException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 		}
 		return false;
 	}
@@ -1606,8 +1602,7 @@ public class IRODSFile extends RemoteFile {
 				return true;
 
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 		}
 
 		return false;
@@ -1729,8 +1724,7 @@ public class IRODSFile extends RemoteFile {
 			}
 
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 		}
 
 		return false;
@@ -1800,8 +1794,7 @@ public class IRODSFile extends RemoteFile {
 			}
 
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 		}
 
 		return false;
@@ -1842,8 +1835,7 @@ public class IRODSFile extends RemoteFile {
 				}
 			}
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 			return 0;
 		}
 		// irods returns seconds
@@ -1936,8 +1928,7 @@ public class IRODSFile extends RemoteFile {
 				}
 			}
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 			return null;
 		}
 
@@ -2022,8 +2013,7 @@ public class IRODSFile extends RemoteFile {
 						}
 					}
 				} catch (IOException e) {
-					if (iRODSFileSystem.DEBUG > 0)
-						e.printStackTrace();
+					log.warn("io exception is logged and ignored", e);
 					return null;
 				}
 			} else {
@@ -2034,8 +2024,7 @@ public class IRODSFile extends RemoteFile {
 					if (rl2 != null && rl2[rl2.length - 1] != null)
 						rl2 = rl2[rl2.length - 1].getMoreResults();
 				} catch (IOException e) {
-					if (iRODSFileSystem.DEBUG > 0)
-						e.printStackTrace();
+					log.warn("io exception is logged and ignored", e);
 					return null;
 				}
 			}
@@ -2080,8 +2069,7 @@ public class IRODSFile extends RemoteFile {
 				return true;
 			}
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 		}
 		return false;
 	}
@@ -2132,8 +2120,7 @@ public class IRODSFile extends RemoteFile {
 				return super.renameTo(dest);
 			}
 		} catch (IOException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 			return false;
 		}
 
@@ -2186,8 +2173,7 @@ public class IRODSFile extends RemoteFile {
 						getAbsolutePath(), "", "");
 			}
 		} catch (URISyntaxException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("io exception is logged and ignored", e);
 		}
 
 		return uri;
@@ -2244,8 +2230,7 @@ public class IRODSFile extends RemoteFile {
 						getAbsolutePath(), "", "");
 			}
 		} catch (URISyntaxException e) {
-			if (iRODSFileSystem.DEBUG > 0)
-				e.printStackTrace();
+			log.warn("URISyntax exception is logged and ignored", e);
 		}
 
 		return uri;

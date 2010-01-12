@@ -28,15 +28,21 @@ package edu.sdsc.grid.io.irods;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Represents the nested structure of the XML protocol for messages between
  * Jargon and IRODS
  */
-class Tag implements Cloneable {
+public class Tag implements Cloneable {
 	static final char OPEN_START_TAG = '<';
 	static final char CLOSE_START_TAG = '>';
 	static final String OPEN_END_TAG = "</";
 	static final char CLOSE_END_TAG = '>';
+	
+	private static Logger log = LoggerFactory.getLogger(Tag.class);
+
 
 	/**
 	 * iRODS name of the tag
@@ -53,47 +59,47 @@ class Tag implements Cloneable {
 	 */
 	String value;
 
-	Tag(String tagName) {
+	public Tag(String tagName) {
 		this.tagName = tagName;
 	}
 
-	Tag(String tagName, int value) {
-		this.tagName = tagName;
-		this.value = "" + value;
-	}
-
-	Tag(String tagName, long value) {
+	public Tag(String tagName, int value) {
 		this.tagName = tagName;
 		this.value = "" + value;
 	}
 
-	Tag(String tagName, String value) {
+	public Tag(String tagName, long value) {
+		this.tagName = tagName;
+		this.value = "" + value;
+	}
+
+	public Tag(String tagName, String value) {
 		this.tagName = tagName;
 		this.value = value;
 	}
 
-	Tag(String tagName, Tag tag) {
+	public Tag(String tagName, Tag tag) {
 		this(tagName, new Tag[] { tag });
 	}
 
-	Tag(String tagName, Tag[] tags) {
+	public Tag(String tagName, Tag[] tags) {
 		this.tagName = tagName;
 		this.tags = tags;
 	}
 
-	void setTagName(String tagName) {
+	public void setTagName(String tagName) {
 		this.tagName = tagName;
 	}
 
-	void setValue(int value) {
+	public void setValue(int value) {
 		this.value = "" + value;
 	}
 
-	void setValue(long value) {
+	public void setValue(long value) {
 		this.value = "" + value;
 	}
 
-	void setValue(String value, boolean decode) {
+	public void setValue(String value, boolean decode) {
 		if (value == null) {
 			this.value = null;
 			return;
@@ -109,34 +115,34 @@ class Tag implements Cloneable {
 		this.value = value;
 	}
 
-	Object getValue() {
+	public Object getValue() {
 		if (tags != null)
 			return tags.clone();
 		else
 			return value;
 	}
 
-	int getIntValue() {
+	public int getIntValue() {
 		return Integer.parseInt(value);
 	}
 
-	long getLongValue() {
+	public long getLongValue() {
 		return Long.parseLong(value);
 	}
 
-	String getStringValue() {
+	public String getStringValue() {
 		return value;
 	}
 
-	String getName() {
+	public String getName() {
 		return tagName;
 	}
 
-	int getLength() {
+	public int getLength() {
 		return tags.length;
 	}
 
-	Tag getTag(String tagName) {
+	public Tag getTag(String tagName) {
 		if (tags == null)
 			return null;
 
@@ -156,7 +162,7 @@ class Tag implements Cloneable {
 	 * So if tagname = taggy, and index = 2, get the 3rd subtag with the name of
 	 * 'taggy'.
 	 */
-	Tag getTag(String tagName, int index) {
+	public Tag getTag(String tagName, int index) {
 		if (tags == null)
 			return null;
 
@@ -174,7 +180,7 @@ class Tag implements Cloneable {
 		return null;
 	}
 
-	Tag[] getTags() {
+	public Tag[] getTags() {
 		// clone so it can't over write when set value is called?
 		if (tags != null)
 			return tags;
@@ -186,7 +192,7 @@ class Tag implements Cloneable {
 	 * Returns the values of this tags subtags. Which are probably more tags
 	 * unless we've finally reached a leaf.
 	 */
-	Object[] getTagValues() {
+	public Object[] getTagValues() {
 		if (tags == null)
 			return null;
 
@@ -200,11 +206,11 @@ class Tag implements Cloneable {
 	/**
 	 * Convenience for addTag( new Tag(name, val) )
 	 */
-	void addTag(String name, String val) {
+	public void addTag(String name, String val) {
 		addTag(new Tag(name, val));
 	}
 
-	void addTag(Tag add) {
+	public void addTag(Tag add) {
 		if (tags != null) {
 			Tag[] temp = tags;
 			tags = new Tag[temp.length + 1];
@@ -215,7 +221,7 @@ class Tag implements Cloneable {
 		}
 	}
 
-	void addTags(Tag[] add) {
+	public void addTags(Tag[] add) {
 		if (tags != null) {
 			Tag[] temp = tags;
 			tags = new Tag[temp.length + add.length];
@@ -296,19 +302,19 @@ class Tag implements Cloneable {
 	 * @throws UnsupportedEncodingException
 	 *             shouldn't throw, already tested for
 	 */
-	static Tag readNextTag(byte[] data, String encoding) throws UnsupportedEncodingException {
+	public static Tag readNextTag(byte[] data, String encoding) throws UnsupportedEncodingException {
 		return readNextTag(data, true, encoding);
 	}
 
-	static Tag readNextTag(byte[] data, boolean decode, String encoding)
+	public static Tag readNextTag(byte[] data, boolean decode, String encoding)
 			throws UnsupportedEncodingException {
 		if (data == null)
 			return null;
 
 		String d = new String(data, encoding);
 
-		if (IRODSCommands.DEBUG > 4) {
-			System.err.println(d);
+		if (log.isTraceEnabled()) {
+			log.trace(d);
 		}
 		// remove the random '\n'
 		// had to find the end, sometimes '\n' is there, sometimes not.
@@ -377,14 +383,14 @@ class Tag implements Cloneable {
 	/**
 	 * Creates the KeyValPair_PI tag.
 	 */
-	static Tag createKeyValueTag(String keyword, String value) {
+	public static Tag createKeyValueTag(String keyword, String value) {
 		return createKeyValueTag(new String[][] { { keyword, value } });
 	}
 
 	/**
 	 * Creates the KeyValPair_PI tag.
 	 */
-	static Tag createKeyValueTag(String[][] keyValue) {
+	public static Tag createKeyValueTag(String[][] keyValue) {
 		/*
 		 * Must be like the following: <KeyValPair_PI> <ssLen>3</ssLen>
 		 * <keyWord>dataType</keyWord> <keyWord>destRescName</keyWord>
@@ -392,7 +398,7 @@ class Tag implements Cloneable {
 		 * <svalue>resourceB</svalue> <svalue></svalue> </KeyValPair_PI>
 		 */
 
-		Tag pair = new Tag(IRODSCommands.KeyValPair_PI, new Tag(IRODSCommands.ssLen, 0));
+		Tag pair = new Tag(IRODSConstants.KeyValPair_PI, new Tag(IRODSConstants.ssLen, 0));
 		int i = 0, ssLength = 0;
 
 		// return the empty Tag
@@ -401,7 +407,7 @@ class Tag implements Cloneable {
 
 		for (; i < keyValue.length; i++) {
 			if (keyValue[i] != null && keyValue[i][0] != null) {
-				pair.addTag(IRODSCommands.keyWord, keyValue[i][0]);
+				pair.addTag(IRODSConstants.keyWord, keyValue[i][0]);
 				ssLength++;
 			}
 		}
@@ -413,7 +419,7 @@ class Tag implements Cloneable {
 
 		for (i = 0; i < keyValue.length; i++) {
 			if (keyValue[i] != null && keyValue[i][0] != null) {
-				pair.addTag(IRODSCommands.svalue, keyValue[i][1]);
+				pair.addTag(IRODSConstants.svalue, keyValue[i][1]);
 			}
 		}
 
