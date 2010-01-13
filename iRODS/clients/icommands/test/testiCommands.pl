@@ -209,7 +209,7 @@ runCmd( "ichmod read testuser1 $irodshome/test/foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "testuser1#$irodszone:read" );
 runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
-runCmd( "itrim -S testresource $irodshome/test/foo1" );
+runCmd( "itrim -S testresource -N1 $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "negative", "LIST", "1 testresource" );
 runCmd( "iphymv -R testresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
@@ -239,11 +239,8 @@ runCmd( "tar -chlf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/t
 runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
 runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
 runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2" );
-runCmd( "ibun -cDtar $irodshome/testx $irodshome/testx1.tar", "", "", "", "irm -f $irodshome/testx1.tar" );
+runCmd( "ibun -cDtar $irodshome/testx1.tar $irodshome/testx", "", "", "", "irm -f $irodshome/testx1.tar" );
 runCmd( "ils -l $irodshome/testx1.tar", "", "LIST", "testx1.tar" );
-runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
-runCmd( "irsync i:$irodshome/test/foo1, $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
-runCmd( "irsync i:$irodshome/test/foo1, i:$irodshome/test/foo2" );
 
 #-- Test a simple rule from the rule test file
 
@@ -253,6 +250,10 @@ if ( $rc ) {
 } else {
 	runCmd( "irule -F $ruletestfile", "", "", "", "irm $irodshome/test/foo3" );
 }
+
+runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
+runCmd( "irsync i:$irodshome/test/foo1 $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/test/foo1 i:$irodshome/test/foo2" );
 
 #-- Execute rollback commands
 
