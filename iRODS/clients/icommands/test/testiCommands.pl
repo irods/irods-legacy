@@ -209,10 +209,19 @@ runCmd( "ichmod read testuser1 $irodshome/test/foo1" );
 runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "testuser1#$irodszone:read" );
 runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
+runCmd( "itrim -S testresource $irodshome/test/foo1" );
+runCmd( "ils -l $irodshome/test/foo1", "negative", "LIST", "1 testresource" );
+runCmd( "iphymv -R testresource $irodshome/test/foo1" );
+runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
 runCmd( "imeta add -d $irodshome/test/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta1 180 cm" );
 runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,180,cm" );
 runCmd( "icp -K $irodshome/test/foo1 $irodshome/test/foo2", "", "", "", "irm $irodshome/test/foo2" );
 runCmd( "ils $irodshome/test/foo2", "", "LIST", "foo2" );
+runCmd( "imv $irodshome/test/foo2 $irodshome/test/foo4" );
+runCmd( "ils -l $irodshome/test/foo4", "", "LIST", "foo4" );
+runCmd( "imv $irodshome/test/foo4 $irodshome/test/foo2" );
+runCmd( "ils -l $irodshome/test/foo2", "", "LIST", "foo2" );
+runCmd( "ichksum $irodshome/test/foo2", "", "LIST", "foo2" );
 runCmd( "imeta add -d $irodshome/test/foo2 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo2 testmeta1 180 cm" );
 runCmd( "imeta add -d $irodshome/test/foo1 testmeta2 hello", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta2 hello"  );
 runCmd( "imeta ls -d $irodshome/test/foo1", "", "LIST", "testmeta1,hello" );
@@ -225,6 +234,16 @@ if ( -e "$dir_w/targetTest.txt" ) {
 } else {
 	print( "No $dir_w/targetTest.txt file.\n" );
 }
+runCmd( "iget -r $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
+runCmd( "tar -chlf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
+runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
+runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
+runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2" );
+runCmd( "ibun -cDtar $irodshome/testx $irodshome/testx1.tar", "", "", "", "irm -f $irodshome/testx1.tar" );
+runCmd( "ils -l $irodshome/testx1.tar", "", "LIST", "testx1.tar" );
+runCmd( "irsync $ruletestfile i:$irodshome/test/foo1" );
+runCmd( "irsync i:$irodshome/test/foo1, $dir_w/foo1", "", "", "", "rm $dir_w/foo1" );
+runCmd( "irsync i:$irodshome/test/foo1, i:$irodshome/test/foo2" );
 
 #-- Test a simple rule from the rule test file
 
