@@ -210,7 +210,7 @@ runCmd( "ils -A $irodshome/test/foo1", "", "LIST", "testuser1#$irodszone:read" )
 runCmd( "irepl -B -R testresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "1 testresource" );
 runCmd( "itrim -S testresource -N1 $irodshome/test/foo1" );
-runCmd( "ils -l $irodshome/test/foo1", "negative", "LIST", "testresource" );
+runCmd( "ils -l $irodshome/test/foo1", "negtest", "LIST", "testresource" );
 runCmd( "iphymv -R testresource $irodshome/test/foo1" );
 runCmd( "ils -l $irodshome/test/foo1", "", "LIST", "testresource" );
 runCmd( "imeta add -d $irodshome/test/foo1 testmeta1 180 cm", "", "", "", "imeta rm -d $irodshome/test/foo1 testmeta1 180 cm" );
