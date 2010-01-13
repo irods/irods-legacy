@@ -238,12 +238,18 @@ public class IRODSFileTest {
     }
 
     /**
-     * This may be intermittent, based on the state of the local irods ENV.  When the URI is created for the
+     * This is based on the state of the local irods ENV.  When the URI is created for the
      * Dest file, it may be null, in which case the put may fail with a -78000 due to no resource being found.
+     * 
+     * The core.irb contains a rule that must be modified to support the setting of default resources, e.g.
+     * acSetRescSchemeForCreate||msiSetDefaultResc(test1-resc,preferred)|nop
+     * 
+     * Note here that test1-resc is a resource set up on the test irods instance, and configured in testing.properties
+     * 
      * @throws Exception
      * BUG: 31
      */
-    @Ignore
+    @Test
     public final void testFilePutCreateDestFileByUri()
         throws Exception {
         String testFileName = "testFilePut.csv";
@@ -267,6 +273,7 @@ public class IRODSFileTest {
         URI irodsUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
                 IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
         IRODSFile destFile = (IRODSFile) FileFactory.newFile(irodsUri);
+        
 
         irodsFileSystem.commands.put(sourceFile, destFile, true);
 

@@ -55,13 +55,15 @@ public class IRODSCommandsCopyToTest {
 
 
     /**
+     * This turned out to be a requirement that a default resource must be specified in core.irb like so:
+     * acSetRescSchemeForCreate||msiSetDefaultResc(test1-resc,preferred)|nop
+	 * if not defined, this method will fail with a -78000
      * BUG: 32
      * @throws Exception
      */
-    @Ignore
+    @Test
     public final void testCopySourceByURIDestByURI() throws Exception {
-    	//BUG: 32    	copyTo when dest file is from URI results in -78000 resource not found
-    	// generate a local scratch file
+    	
         String testFileName = "testCopySourceByURI.txt";
         String testCopyToFileName = "testCopySourceByURICopyTo.txt";
         String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
@@ -107,9 +109,11 @@ public class IRODSCommandsCopyToTest {
         IRODSFile irodsCopyToFile = new IRODSFile(irodsCopyToUri);
 
         irodsFile.copyTo(irodsCopyToFile, true);
+        
 
         // see that the file I just copied to exists in irods
-        assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
+        String irodsFullPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, uriPath.toString());
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFullPath);
 
     }
 
@@ -172,10 +176,12 @@ public class IRODSCommandsCopyToTest {
     
 
     /**
+     * Will fail if core.irb does not define a valid default resource in 
+     * acSetRescSchemeForCreate||msiSetDefaultResc(test1-resc,preferred)|nop
      * BUG: 32
      * @throws Exception
      */
-    @Ignore
+    @Test
     public final void testCopySourceFileFromAccountDestFromURI() throws Exception {
     	//fail -78000
     	// generate a local scratch file
@@ -226,7 +232,8 @@ public class IRODSCommandsCopyToTest {
         irodsFile.copyTo(irodsCopyToFile, true);
 
         // see that the file I just copied to exists in irods
-        assertionHelper.assertIrodsFileOrCollectionExists(uriPath.toString());
+        String irodsFullPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, uriPath.toString());
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFullPath);
         irodsFileSystem.close();
 
     }

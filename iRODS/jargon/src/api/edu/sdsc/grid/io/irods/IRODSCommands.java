@@ -857,6 +857,7 @@ class IRODSCommands {
 			throws IOException {
 
 		String resource = destination.getResource();
+		
 		long length = source.length();
 
 		if (length > TRANSFER_THREAD_SIZE) {

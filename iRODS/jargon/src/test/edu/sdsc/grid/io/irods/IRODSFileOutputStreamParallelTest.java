@@ -1,31 +1,23 @@
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.FileFactory;
-import edu.sdsc.grid.io.GeneralFile;
-import edu.sdsc.grid.io.local.LocalFile;
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
 
-import edu.sdsc.jargon.testutils.AssertionHelper;
-import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
-import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
-import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
-import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
+import java.net.URI;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.net.URI;
-
-import java.util.Properties;
+import edu.sdsc.grid.io.FileFactory;
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.jargon.testutils.AssertionHelper;
+import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
+import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
+import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
+import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 
 
 public class IRODSFileOutputStreamParallelTest {

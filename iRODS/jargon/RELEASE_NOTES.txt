@@ -49,6 +49,9 @@ Replaced 'hand made' logging with standard logging, best practice for integratin
 ----------
 Culled all TODO's and dead code, did mass format of source to bring it up to current standards.
 
+----------
+Tests and resolution of Bug 32 -  copyTo when dest file is from URI results in -78000 resource not found
+
 ================================================================================================
 Outstanding Issues
 
