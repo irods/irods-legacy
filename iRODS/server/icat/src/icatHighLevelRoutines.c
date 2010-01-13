@@ -7127,7 +7127,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
 
 int 
 chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
-	      int *userQuota, int *quotaStatus) {
+	      rodsLong_t *userQuota, int *quotaStatus) {
 /* 
  Check on a user's quota status, returning the most-over or
  nearest-over value.
@@ -7179,7 +7179,7 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
 	   userName, rescName, 
 	   icss.stmtPtr[statementNum]->resultValue[1],  /* resc_id column */
 	   icss.stmtPtr[statementNum]->resultValue[3]); /* quota_over column */
-   *userQuota = atoi(icss.stmtPtr[statementNum]->resultValue[3]);
+   *userQuota = atoll(icss.stmtPtr[statementNum]->resultValue[3]);
    if (atoi(icss.stmtPtr[statementNum]->resultValue[1])==0) {
       *quotaStatus=QUOTA_GLOBAL;
    }

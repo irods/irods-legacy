@@ -106,7 +106,7 @@ int chlCalcUsageAndQuota(rsComm_t *rsComm);
 int chlSetQuota(rsComm_t *rsComm, char *type, char *name, char *rescName,
    char *limit);
 int chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName, 
-		  int *userQuota, int *quotaStatus);
+		  rodsLong_t *userQuota, int *quotaStatus);
 
 char *chlGetLocalZone();
 

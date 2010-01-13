@@ -118,6 +118,65 @@ int doLs2()
    return(i);
 }
 
+
+/* similar to ls2 but doesn't print much, called by doLs3 */
+int doLs3a() 
+
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t genQueryOut;
+   int i1a[10];
+   int i1b[10];
+   int i2a[10];
+   char *condVal[2];
+   char v1[BIG_STR];
+   int i;
+   char cwd[]="/newZone/home/rods";
+
+   memset ((char*)&genQueryInp, 0, sizeof (genQueryInp));
+
+   i1a[0]=COL_DATA_NAME;
+   i1b[0]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 1;
+
+   i2a[0]=COL_COLL_NAME;
+   genQueryInp.sqlCondInp.inx = i2a;
+   sprintf(v1,"='%s'",cwd);
+   condVal[0]=v1;
+
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   i = chlGenQuery(genQueryInp, &genQueryOut);
+   printf("chlGenQuery status=%d, genQueryOut.rowCnt=%d\n", i, 
+	  genQueryOut.rowCnt);
+   if (genQueryOut.continueInx>0) {
+      int status2;
+      genQueryInp.maxRows=-1;
+      genQueryInp.continueInx = genQueryOut.continueInx;
+      status2  = chlGenQuery(genQueryInp, &genQueryOut);
+      printf("chlGenQuery second call to close out status=%d\n",status2);
+   }
+   return(i);
+}
+
+/* similar to ls2 but will do it repeatedly */
+int doLs3(char *repCount) {
+   int iRepCount, i, status;
+   rodsLogSqlReq(0);  /* less verbosity */
+   iRepCount = atoi(repCount);
+   for (i=0;i<iRepCount;i++) {
+      status = doLs3a();
+      if (status) break;
+   }
+   return(status);
+}
+
+
 int
 doTest2() {
     genQueryInp_t genQueryInp;
@@ -743,6 +802,7 @@ main(int argc, char **argv) {
       if (strcmp(argv[1],"gen11")==0) mode=12;
       if (strcmp(argv[1],"gen12")==0) mode=13;
       if (strcmp(argv[1],"gen13")==0) mode=14;
+      if (strcmp(argv[1],"lsr")==0) mode=15;
    }
 
    if (argc ==3 && mode==0) {
@@ -917,6 +977,11 @@ main(int argc, char **argv) {
       }
       if (mode==14) {
 	 status = doTest13(argv[2], argv[3], argv[4], argv[5], argv[6]);
+	 if (status <0) exit(2);
+	 exit(0);
+      }
+      if (mode==15) {
+	 status = doLs3(argv[2]);
 	 if (status <0) exit(2);
 	 exit(0);
       }

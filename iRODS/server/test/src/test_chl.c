@@ -676,17 +676,38 @@ int testPurgeServerLoadDigest(rsComm_t *rsComm, char *option) {
    return(status);
 }
 
-int testCheckQuota(rsComm_t *rsComm, char *userName, char *rescName) {
+int testCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
+		   char *expectedQuota, char *expectedStatus) {
    int status;
-   int userQuota, quotaStatus;
+   int quotaStatus;
+   rodsLong_t userQuota;
 
    rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
    status = chlCheckQuota(rsComm, userName, rescName,
 			 &userQuota, &quotaStatus);
-   printf("chlCheckQuota status: userName:%s rescName:%s userQuota:%d quotaStatus:%d\n", userName, rescName, userQuota, quotaStatus);
-	  
 
+   rodsLog (LOG_SQL,
+	    "chlCheckQuota status: userName:%s rescName:%s userQuota:%lld quotaStatus:%d\n", 
+	    userName, rescName, userQuota, quotaStatus);
+
+   if (status==0) {
+      int iExpectedStatus;
+      rodsLong_t iExpectedQuota;
+      if (expectedQuota != NULL && strlen(expectedQuota)>0 ) {
+	 rodsLong_t i;
+	 iExpectedQuota = atoll(expectedQuota);
+	 if (expectedQuota[0]=='m') {
+	    i = atoll((char *)&expectedQuota[1]);
+	    iExpectedQuota = -i;
+	 }
+	 if (iExpectedQuota != userQuota) status = -1;
+      }
+      if (expectedStatus != NULL && strlen(expectedStatus)>0 ) {
+	 iExpectedStatus = atoi(expectedStatus);
+	 if (iExpectedStatus != quotaStatus) status = -2;
+      }
+   }
    return(status);
 }
 
@@ -918,7 +939,14 @@ main(int argc, char **argv) {
    }
 
    if (strcmp(argv[1],"checkquota")==0) {
-      status = testCheckQuota(Comm, argv[2], argv[3]);
+      if (argc < 5) {
+	 status = testCheckQuota(Comm, argv[2], argv[3],
+				 NULL, NULL);
+      }
+      else {
+	 status = testCheckQuota(Comm, argv[2], argv[3],
+				 argv[4], argv[5]);
+      }
       didOne=1;
    }
 
