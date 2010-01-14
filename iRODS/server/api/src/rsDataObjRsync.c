@@ -99,7 +99,10 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,
       &dataObjInfoHead);
 
-    if (status < 0) {
+    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION) {
+	/* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but 
+	 * cannot be registered. But the chksum value is OK.
+	 */
         rodsLog (LOG_ERROR,
           "rsRsyncDataToFile: _rsDataObjChksum of %s error. status = %d",
 	  dataObjInp->objPath, status);
@@ -156,7 +159,10 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     status = _rsDataObjChksum (rsComm, dataObjInp, &dataObjChksumStr,
       &dataObjInfoHead);
 
-    if (status < 0) {
+    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION) {
+        /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
+         * cannot be registered. But the chksum value is OK.
+         */
         rodsLog (LOG_ERROR,
           "rsRsyncFileToData: _rsDataObjChksum of %s error. status = %d",
           dataObjInp->objPath, status);
@@ -225,7 +231,10 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     status = _rsDataObjChksum (rsComm, &dataObjCopyInp.srcDataObjInp, 
       &srcChksumStr, &srcDataObjInfoHead);
 
-    if (status < 0) {
+    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION) {
+        /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
+         * cannot be registered. But the chksum value is OK.
+         */
         rodsLog (LOG_ERROR,
           "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
 	  dataObjCopyInp.srcDataObjInp.objPath, status);
@@ -236,7 +245,8 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
       &destChksumStr, &destDataObjInfoHead);
 
 
-    if (status >= 0 && strcmp (srcChksumStr, destChksumStr) == 0) {
+    if ((status >= 0 || status == CAT_NO_ACCESS_PERMISSION)
+      && strcmp (srcChksumStr, destChksumStr) == 0) {
 	free (srcChksumStr);
 	free (destChksumStr);
 	return (0);
