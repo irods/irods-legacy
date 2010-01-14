@@ -336,6 +336,68 @@ doTest5(rcComm_t *Conn,
     return(0);
 }
 
+
+/* A test function from Jean-Yves that is triggering a bug */
+int
+chkObjExist (rcComm_t *conn, char *inpPath, char *hostname)
+{
+   int status;
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut = NULL;
+   char condStr[MAX_NAME_LEN];
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp));
+   addInxIval(&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+   genQueryInp.maxRows = MAX_SQL_ROWS;
+ 
+   snprintf (condStr, MAX_NAME_LEN, "='%s'", inpPath);
+   addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr);
+   snprintf (condStr, MAX_NAME_LEN, "like '%s%s' || ='%s'", hostname, 
+	     "%", hostname);
+   addInxVal (&genQueryInp.sqlCondInp, COL_R_LOC, condStr);
+ 
+   status = rcGenQuery (conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      printf ("fichier %s est orphelin\n", inpPath);
+   }
+   else {
+      /*char *dirMPath;
+ for (int i = 0; i < genQueryOut->rowCnt; i++) {
+ dirMPath = genQueryOut->sqlResult[0].value;
+ dirMPath += i*genQueryOut->sqlResult[0].len;
+ } */
+      printf ("fichier %s est bien %i dans irods\n", inpPath, status); 
+/* NEEIIIINNN !!! */
+   }
+//   sleep(1);
+ 
+   clearGenQueryInp(&genQueryInp);
+   freeGenQueryOut(&genQueryOut);
+ 
+   return (status);
+ 
+}
+
+int
+doTest6(rcComm_t *Conn,
+	char *inpPath, char *hostname, char *repeatCount) {
+   int status;
+   int rep, i;
+   rep = atoi(repeatCount);
+   for (i=0;i<rep;i++) {
+      printf("%d ",i);
+      if (i==94) {
+//	 printf("sleeping\n");
+//	 sleep(20);
+      }
+      status = chkObjExist(Conn, inpPath, hostname);
+      if (status==CAT_NO_ROWS_FOUND) status=0;
+      if (status) break;
+   }
+   return(status);
+}
+
+
 int
 main(int argc, char **argv)
 {
@@ -419,6 +481,9 @@ main(int argc, char **argv)
        }
        if (strcmp(argv[1],"AVU")==0) {
 	  doTest5(Conn, argv[2], argv[3]);
+       }
+       if (strcmp(argv[1],"jy")==0) {
+	  doTest6(Conn, argv[2], argv[3], argv[4]);
        }
     }
 

@@ -716,6 +716,10 @@ handleCompoundCondition(char *condition, int prevWhereLen)
    int first=1;
    int keepGoing=1;
 
+   if (prevWhereLen < 0) { /* reinitialize */
+      conditionsForBindIx=0;
+      return(0);
+   }
 
    rstrcpy(condPart1, condition, MAX_NAME_LEN*2);
 
@@ -1162,6 +1166,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
       }
    }
 
+   handleCompoundCondition("", -1);  /* reinitialize */
    for (i=0;i<genQueryInp.sqlCondInp.len;i++) {
       int prevWhereLen;
       int castOption;
