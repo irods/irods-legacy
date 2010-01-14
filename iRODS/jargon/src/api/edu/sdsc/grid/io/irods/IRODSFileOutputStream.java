@@ -68,9 +68,7 @@ public class IRODSFileOutputStream extends RemoteFileOutputStream {
 	 */
 	protected IRODSFileSystem fileSystem;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Creates a <code>FileOuputStream</code> by opening a connection to an
 	 * actual file, the file named by the path name <code>name</code> in the

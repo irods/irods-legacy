@@ -89,9 +89,6 @@ public class IRODSFileSystemMetadataQueryTest {
 						.buildIRODSCollectionAbsolutePathFromTestProperties(
 								testingProperties, IRODS_TEST_SUBDIR_PATH));
 
-		String filename = irodsFile.getName();
-		long size = irodsFile.length();
-
 		// query(String[]) defined in GeneralFile
 		// will call query(String[] conditions, String[] selects) in IRODSFile,
 		// with null in conditions and these

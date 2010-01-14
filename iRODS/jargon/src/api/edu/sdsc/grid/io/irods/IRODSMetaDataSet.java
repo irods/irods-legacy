@@ -43,6 +43,9 @@ package edu.sdsc.grid.io.irods;
 
 import java.util.HashMap;
 
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.query.ExtendedQueryAttributesFromProperties;
+import org.irods.jargon.core.query.IcatExendedQueryAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +65,24 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		DirectoryMetaData, FileMetaData, ResourceMetaData, UserMetaData,
 		ZoneMetaData {
 
+	private static IcatExendedQueryAttributes extendedQueryAttributes;
 	private static Logger log = LoggerFactory.getLogger(IRODSMetaDataSet.class);
+
+	static {
+		try {
+			if (log.isInfoEnabled()) {
+				log
+						.info("loading ExtendedQueryAttributes from:"
+								+ ExtendedQueryAttributesFromProperties.ICAT_PROPERTIES_FILE);
+			}
+			extendedQueryAttributes = ExtendedQueryAttributesFromProperties
+					.instance();
+			log.info("extended query attributes successfully loaded");
+		} catch (JargonException e) {
+			throw new RuntimeException(
+					"unable to load extended query properties", e);
+		}
+	}
 
 	// Metadata attribute names
 	// irods file access, beyond FileMetaData

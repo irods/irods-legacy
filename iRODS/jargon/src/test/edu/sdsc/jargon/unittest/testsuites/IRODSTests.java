@@ -3,6 +3,8 @@
  */
 package edu.sdsc.jargon.unittest.testsuites;
 
+import org.irods.jargon.core.query.ExtendedQueryAttributeTest;
+import org.irods.jargon.core.query.ExtendedQueryAttributesFromPropertiesTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -61,7 +63,9 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSAdminTest.class,
   IRODSCommandsPutTest.class,
   IRODSExecuteCommandsTest.class,
-  IRODSCommandsMiscTest.class
+  IRODSCommandsMiscTest.class,
+  ExtendedQueryAttributeTest.class,
+  ExtendedQueryAttributesFromPropertiesTest.class
 })
 public class IRODSTests {
 

@@ -49,10 +49,7 @@ package edu.sdsc.grid.io;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public interface ResourceMetaData extends StandardMetaData {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-	// public static final String RESOURCE_ID = "Resource Identifier";
+	
 	public static final String COLL_RESOURCE_NAME = "Coll Resource Name";
 	public static final String RESOURCE_NAME = "Resource Name";
 	public static final String RESOURCE_ZONE = "Resource Zone Name";
@@ -69,13 +66,5 @@ public interface ResourceMetaData extends StandardMetaData {
 	// Resource Group
 	public static final String RESOURCE_GROUP_ID = "Resource Group Identifier";
 	public static final String RESOURCE_GROUP = "Resource Group Name";
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Methods
-	// ----------------------------------------------------------------------
 
 }
