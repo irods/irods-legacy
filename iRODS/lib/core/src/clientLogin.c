@@ -240,13 +240,13 @@ clientLogin(rcComm_t *Conn)
 #endif
       
       if (stat ("/bin/stty", &statbuf) == 0) {
-	 system("/bin/stty -echo");
+	 system("/bin/stty -echo 2> /dev/null");
 	 doStty=1;
       }
       printf("Enter your current iRODS password:");
       fgets(md5Buf+CHALLENGE_LEN, MAX_PASSWORD_LEN, stdin);
       if (doStty) {
-	 system("/bin/stty echo");
+	 system("/bin/stty echo 2> /dev/null");
 	 printf("\n");
       }
       len = strlen(md5Buf);

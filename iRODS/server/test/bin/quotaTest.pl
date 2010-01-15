@@ -26,7 +26,7 @@ $QU1="qu1";
 $Resc="demoResc";
 $Resc2="Resc2";
 
-$G1="quotaGroup1";
+$QG1="quotaGroup1";
 
 # run a command
 # if option is 0 (normal), check the exit code and fail if non-0
@@ -69,18 +69,140 @@ chomp($cmdStdout);
 $ix = index($cmdStdout,"=");
 $myZone=substr($cmdStdout, $ix+1);
 
-# Move/rename tests
-`ls -l > $F1`;
-$F1a = "$F1" . "a";
-$F1b = "$F1" . "b";
+#`ls -l > $F1`;
+#$F1a = "$F1" . "a";
+#$F1b = "$F1" . "b";
 
-# Basic tests
 $tmpPwFile="/tmp/testPwFile.5678956";
 
 $DIR = "/$myZone/home/$QU1";
+
+sub calcUsage {
+    runCmd(0, "iadmin cu");
+    printf("sleeping briefly\n");
+    sleep(1);
+}
+
+sub runUserTests {
+    my($TResc, $TOpt, $TType) = @_;
+    printf("runUserTests with $TResc, $TOpt, $TType\n");
+    runCmd(1, "iadmin suq $QU1 $TOpt 0"); # unset quota for this user, if any
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QU1 $Resc 0 0");
+    runCmd(0, "iadmin suq $QU1 $TOpt 100");
+    runCmd(0, "test_chl checkquota $QU1 $Resc 0 $TType"); # before cu
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QU1 $Resc m100 $TType"); # m100 is -100
+
+    $ENV{'irodsAuthFileName'}=$tmpPwFile;
+    $ENV{'irodsUserName'}=$QU1;
+    runCmd(0, "echo 123 | iput $F1 $DIR");
+    delete $ENV{'irodsUserName'};
+    delete $ENV{'irodsAuthFileName'};
+
+    runCmd(0, "test_chl checkquota $QU1 $Resc m100 $TType");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QU1 $Resc m50 $TType");
+
+    runCmd(0, "iadmin suq $QU1 $TOpt 40");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QU1 $Resc 10 $TType");
+
+    runCmd(0, "iadmin suq $QU1 $TOpt 40000000000000");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QU1 $Resc m39999999999950 $TType");
+
+    $ENV{'irodsAuthFileName'}=$tmpPwFile;
+    $ENV{'irodsUserName'}=$QU1;
+    runCmd(0, "echo 123 | irm -f $DIR/$F1");
+    runCmd(0, "echo 123 | irmtrash");
+    delete $ENV{'irodsUserName'};
+    delete $ENV{'irodsAuthFileName'};
+
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QU1 $Resc m40000000000000 $TType");
+    runCmd(0, "iadmin suq $QU1 $TOpt 40");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QU1 $Resc m40 $TType");
+
+    runCmd(0, "iadmin suq $QU1 $TOpt 0"); # unset quota for this user
+}
+
+sub runGroupTests {
+    my($TResc, $TOpt, $TType, $StoreUser, $TestUser) = @_;
+    printf("runGroupTests with $TResc, $TOpt, $TType, $StoreUser, $TestUser\n");
+    runCmd(1, "iadmin sgq $QG1 $TOpt 0"); # unset quota for this group, if any
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QG1 $Resc 0 0");
+    runCmd(0, "iadmin sgq $QG1 $TOpt 100");
+    runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc m100 $TType"); # m100 is -100
+
+    $ENV{'irodsAuthFileName'}=$tmpPwFile;
+    $ENV{'irodsUserName'}=$StoreUser;
+    $ST_DIR = "/$myZone/home/$StoreUser";
+    runCmd(0, "echo 123 | iput $F1 $ST_DIR");
+    delete $ENV{'irodsUserName'};
+    delete $ENV{'irodsAuthFileName'};
+
+    runCmd(0, "test_chl checkquota $TestUser $Resc m100 $TType");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc m50 $TType");
+
+    runCmd(0, "iadmin sgq $QG1 $TOpt 40");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc 10 $TType");
+
+    runCmd(0, "iadmin sgq $QG1 $TOpt 40000000000000");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc m39999999999950 $TType");
+
+    $ENV{'irodsAuthFileName'}=$tmpPwFile;
+    $ENV{'irodsUserName'}=$StoreUser;
+    $ST_DIR = "/$myZone/home/$StoreUser";
+    runCmd(0, "echo 123 | irm -f $ST_DIR/$F1");
+    runCmd(0, "echo 123 | irmtrash");
+    delete $ENV{'irodsUserName'};
+    delete $ENV{'irodsAuthFileName'};
+
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc m40000000000000 $TType");
+    runCmd(0, "iadmin sgq $QG1 $TOpt 40");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc m40 $TType");
+
+    runCmd(0, "iadmin rfg $QG1 $TestUser");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc 0 0");
+
+    runCmd(0, "iadmin atg $QG1 $TestUser");
+
+    runCmd(0, "iadmin rfg $QG1 $StoreUser");
+    calcUsage();
+    if ($StoreUser eq $TestUser) {
+	runCmd(0, "test_chl checkquota $TestUser $Resc 0 0");
+    }
+    else {
+        runCmd(0, "test_chl checkquota $TestUser $Resc m40 $TType");
+    }
+    runCmd(0, "iadmin atg $QG1 $StoreUser");
+
+
+    runCmd(0, "iadmin sgq $QG1 $TOpt 0"); # unset quota for this user
+}
+
 $ENV{'irodsAuthFileName'}=$tmpPwFile;
 $ENV{'irodsUserName'}=$QU1;
 runCmd(1, "echo 123 | irm -f $DIR/$F1");
+runCmd(1, "echo 123 | irmtrash");
+delete $ENV{'irodsUserName'};
+delete $ENV{'irodsAuthFileName'};
+
+$ENV{'irodsAuthFileName'}=$tmpPwFile;
+$ENV{'irodsUserName'}=$QU2;
+$ST_DIR = "/$myZone/home/$QU2";
+runCmd(1, "echo 123 | irm -f $ST_DIR/$F1");
 runCmd(1, "echo 123 | irmtrash");
 delete $ENV{'irodsUserName'};
 delete $ENV{'irodsAuthFileName'};
@@ -89,55 +211,31 @@ runCmd(1, "iadmin rmuser $QU1");
 runCmd(0, "iadmin mkuser $QU1 rodsuser");
 runCmd(0, "iadmin moduser $QU1 password 123");
 
+runCmd(1, "iadmin rmuser $QU2");
+runCmd(0, "iadmin mkuser $QU2 rodsuser");
+runCmd(0, "iadmin moduser $QU2 password 123");
+
 runCmd(0, "iadmin cu");               # make sure it's initialized
 
-runCmd(1, "iadmin suq $QU1 $Resc 0"); # unset quota for this user, if any
-runCmd(0, "iadmin cu");               # make sure above is all set up
-runCmd(0, "test_chl checkquota $QU1 $Resc 0 0");
-runCmd(0, "iadmin suq $QU1 $Resc 100");
-runCmd(0, "test_chl checkquota $QU1 $Resc 0 1"); # before cu (not exactly right)
-runCmd(0, "iadmin cu");
-runCmd(0, "test_chl checkquota $QU1 $Resc m100 1"); # m100 is -100
-
-runCmd(0, "iadmin moduser $QU1 password 123");
 unlink($F1);
-runCmd(0, "head -c50 /etc/passwd > $F1");
-$ENV{'irodsAuthFileName'}=$tmpPwFile;
-$ENV{'irodsUserName'}=$QU1;
-runCmd(0, "echo 123 | iput $F1 $DIR");
-delete $ENV{'irodsUserName'};
-delete $ENV{'irodsAuthFileName'};
+runCmd(0, "head -c50 /etc/passwd > $F1");  # a 50 byte file
 
-runCmd(0, "test_chl checkquota $QU1 $Resc m100 1");
-runCmd(0, "iadmin cu");
-runCmd(0, "test_chl checkquota $QU1 $Resc m50 1");
+runUserTests("$Resc", "$Resc", "1");
+runUserTests("$Resc", "total", "2");
 
-runCmd(0, "iadmin suq $QU1 $Resc 40");
-runCmd(0, "iadmin cu");
-runCmd(0, "test_chl checkquota $QU1 $Resc 10 1");
+runCmd(1, "iadmin rmgroup $QG1");
+runCmd(0, "iadmin mkgroup $QG1");
+runCmd(0, "iadmin atg $QG1 $QU1");
+runCmd(0, "iadmin atg $QG1 $QU2");
 
-
-runCmd(0, "iadmin suq $QU1 $Resc 40000000000000");
-runCmd(0, "iadmin cu");
-sleep(1);
-runCmd(0, "test_chl checkquota $QU1 $Resc m39999999999950 1");
-
-$ENV{'irodsAuthFileName'}=$tmpPwFile;
-$ENV{'irodsUserName'}=$QU1;
-runCmd(0, "echo 123 | irm -f $DIR/$F1");
-runCmd(0, "echo 123 | irmtrash");
-delete $ENV{'irodsUserName'};
-delete $ENV{'irodsAuthFileName'};
-
-runCmd(0, "iadmin cu");
-sleep(1);
-runCmd(0, "test_chl checkquota $QU1 $Resc m40000000000000 1");
-runCmd(0, "iadmin suq $QU1 $Resc 40");
-runCmd(0, "iadmin cu");
-runCmd(0, "test_chl checkquota $QU1 $Resc m40 1");
+runGroupTests("$Resc", "$Resc", "1", "$QU1", "$QU1");
+runGroupTests("$Resc", "total", "2", "$QU1", "$QU1");
+runGroupTests("$Resc", "$Resc", "1", "$QU2", "$QU1");
+runGroupTests("$Resc", "total", "2", "$QU2", "$QU1");
 
 # clean up
-runCmd(0, "iadmin suq $QU1 $Resc 0"); # unset quota for this user
+runCmd(0, "iadmin rmgroup $QG1");
 runCmd(0, "iadmin rmuser $QU1");
+runCmd(0, "iadmin rmuser $QU2");
 
 printf("Success\n");
