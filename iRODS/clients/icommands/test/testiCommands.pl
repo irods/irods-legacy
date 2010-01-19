@@ -235,7 +235,7 @@ if ( -e "$dir_w/targetTest.txt" ) {
 	print( "No $dir_w/targetTest.txt file.\n" );
 }
 runCmd( "iget -r $irodshome/test $dir_w/testx", "", "", "", "rm -r $dir_w/testx" );
-runCmd( "tar -chlf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
+runCmd( "tar -chf $dir_w/testx.tar -C $dir_w/testx .", "", "", "", "rm $dir_w/testx.tar" );
 runCmd( "iput $dir_w/testx.tar $irodshome/testx.tar", "", "", "", "irm -f $irodshome/testx.tar" );
 runCmd( "ibun -x $irodshome/testx.tar $irodshome/testx", "", "", "", "irm -rf $irodshome/testx" );
 runCmd( "ils -lr $irodshome/testx", "", "LIST", "foo2" );
