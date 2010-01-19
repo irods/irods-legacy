@@ -65,10 +65,11 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		DirectoryMetaData, FileMetaData, ResourceMetaData, UserMetaData,
 		ZoneMetaData {
 
-	private static IcatExendedQueryAttributes extendedQueryAttributes;
+	//private static IcatExendedQueryAttributes extendedQueryAttributes;
 	private static Logger log = LoggerFactory.getLogger(IRODSMetaDataSet.class);
-
-	static {
+	
+	// FIXME: incorporate or not...
+	/*static {
 		try {
 			if (log.isInfoEnabled()) {
 				log
@@ -82,7 +83,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 			throw new RuntimeException(
 					"unable to load extended query properties", e);
 		}
-	}
+	}*/
 
 	// Metadata attribute names
 	// irods file access, beyond FileMetaData

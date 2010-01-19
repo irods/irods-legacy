@@ -160,7 +160,7 @@ class IRODSCommands {
 		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0,
 				0, AUTH_REQUEST_AN));
 		irodsConnection.flush();
-		Tag message = irodsConnection.readMessage(false);
+		Tag message = irodsConnection.readMessage(false); 
 
 		// Create and send the response
 
@@ -222,13 +222,26 @@ class IRODSCommands {
 	}
 
 	/**
-	 * Close the connection to the server. This method has been sycnhronized so
+	 * Close the connection to the server. This method has been synchronized so
 	 * the socket will not be blocked when the socket.close() call is made.
 	 * 
 	 * @throws IOException
 	 *             Socket error
 	 */
 	synchronized void close() throws JargonException {
+		log.info("closing connection");
+		if (isConnected()) {
+			try {
+				log.info("sending disconnect message");
+				irodsConnection.send(irodsConnection.createHeader(RODS_DISCONNECT, 0, 0, 0, 0));
+				irodsConnection.flush();
+			} catch (IOException e) {// TODO Auto-generated catch block
+				e.printStackTrace();
+				log.error("IOException closing connection", e);
+				irodsConnection.obliterateConnectionAndDiscardErrors();
+				throw new JargonException("error sending disconnect on a close operation");
+			}
+		}
 		irodsConnection.shutdown();
 	}
 
