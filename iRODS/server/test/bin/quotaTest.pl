@@ -20,8 +20,9 @@ $F2="TestFile2";
 $F3="TestFile3";
 
 # Quota Users:
-$QU2="qu2";
 $QU1="qu1";
+$QU2="qu2";
+$QU3="qu3";
 
 $Resc="demoResc";
 $Resc2="Resc2";
@@ -137,7 +138,7 @@ sub runGroupTests {
     runCmd(0, "iadmin sgq $QG1 $TOpt 100");
     runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
     calcUsage();
-    runCmd(0, "test_chl checkquota $TestUser $Resc m100 $TType"); # m100 is -100
+    runCmd(0, "test_chl checkquota $TestUser $Resc m100 $TType"); #m100 is -100
 
     $ENV{'irodsAuthFileName'}=$tmpPwFile;
     $ENV{'irodsUserName'}=$StoreUser;
@@ -192,6 +193,71 @@ sub runGroupTests {
     runCmd(0, "iadmin sgq $QG1 $TOpt 0"); # unset quota for this user
 }
 
+sub  runGroupTestsWithQU3 {
+    my($TResc, $TOpt, $TType, $StoreUser, $TestUser) = @_;
+    printf("runGroupTestsWithQU3 with $TResc, $TOpt, $TType, $StoreUser, $TestUser\n");
+    runCmd(1, "iadmin sgq $QG1 $TOpt 0"); # unset quota for this group, if any
+    calcUsage();
+    runCmd(0, "test_chl checkquota $QG1 $Resc 0 0");
+    runCmd(0, "iadmin sgq $QG1 $TOpt 100");
+    runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc 75 $TType"); 
+
+    $ENV{'irodsAuthFileName'}=$tmpPwFile;
+    $ENV{'irodsUserName'}=$StoreUser;
+    $ST_DIR = "/$myZone/home/$StoreUser";
+    runCmd(0, "echo 123 | iput $F1 $ST_DIR");
+    delete $ENV{'irodsUserName'};
+    delete $ENV{'irodsAuthFileName'};
+
+    runCmd(0, "test_chl checkquota $TestUser $Resc 75 $TType");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc 125 $TType");
+
+    runCmd(0, "iadmin sgq $QG1 $TOpt 40");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc 185 $TType");
+
+    runCmd(0, "iadmin sgq $QG1 $TOpt 40000000000000");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc m39999999999775 $TType");
+
+    $ENV{'irodsAuthFileName'}=$tmpPwFile;
+    $ENV{'irodsUserName'}=$StoreUser;
+    $ST_DIR = "/$myZone/home/$StoreUser";
+    runCmd(0, "echo 123 | irm -f $ST_DIR/$F1");
+    runCmd(0, "echo 123 | irmtrash");
+    delete $ENV{'irodsUserName'};
+    delete $ENV{'irodsAuthFileName'};
+
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc m39999999999825 $TType");
+
+    runCmd(0, "iadmin sgq $QG1 $TOpt 40");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc 135 $TType");
+
+    runCmd(0, "iadmin rfg $QG1 $TestUser");
+    calcUsage();
+    runCmd(0, "test_chl checkquota $TestUser $Resc 0 0");
+
+    runCmd(0, "iadmin atg $QG1 $TestUser");
+
+    runCmd(0, "iadmin rfg $QG1 $StoreUser");
+    calcUsage();
+    if ($StoreUser eq $TestUser) {
+	runCmd(0, "test_chl checkquota $TestUser $Resc 0 0");
+    }
+    else {
+        runCmd(0, "test_chl checkquota $TestUser $Resc 135 $TType");
+    }
+    runCmd(0, "iadmin atg $QG1 $StoreUser");
+
+
+    runCmd(0, "iadmin sgq $QG1 $TOpt 0"); # unset quota for this user
+}
+
 $ENV{'irodsAuthFileName'}=$tmpPwFile;
 $ENV{'irodsUserName'}=$QU1;
 runCmd(1, "echo 123 | irm -f $DIR/$F1");
@@ -219,6 +285,8 @@ runCmd(0, "iadmin cu");               # make sure it's initialized
 
 unlink($F1);
 runCmd(0, "head -c50 /etc/passwd > $F1");  # a 50 byte file
+unlink($F2);
+runCmd(0, "head -c175 /etc/passwd > $F2");  # a 175 byte file
 
 runUserTests("$Resc", "$Resc", "1");
 runUserTests("$Resc", "total", "2");
@@ -233,9 +301,51 @@ runGroupTests("$Resc", "total", "2", "$QU1", "$QU1");
 runGroupTests("$Resc", "$Resc", "1", "$QU2", "$QU1");
 runGroupTests("$Resc", "total", "2", "$QU2", "$QU1");
 
+# Remove $QU3's file, if any
+$ENV{'irodsAuthFileName'}=$tmpPwFile;
+$ENV{'irodsUserName'}=$QU3;
+$ST_DIR = "/$myZone/home/$QU3";
+runCmd(1, "echo 123 | irm -f $ST_DIR/$F2");
+runCmd(1, "echo 123 | irmtrash");
+delete $ENV{'irodsUserName'};
+delete $ENV{'irodsAuthFileName'};
+
+# Create user $QU3
+runCmd(1, "iadmin rmuser $QU3");
+runCmd(0, "iadmin mkuser $QU3 rodsuser");
+runCmd(0, "iadmin moduser $QU3 password 123");
+
+# Store a file as $QU3
+$ENV{'irodsAuthFileName'}=$tmpPwFile;
+$ENV{'irodsUserName'}=$QU3;
+$ST_DIR = "/$myZone/home/$QU3";
+runCmd(0, "echo 123 | iput $F2 $ST_DIR");
+delete $ENV{'irodsUserName'};
+delete $ENV{'irodsAuthFileName'};
+
+# Add QU3 to the group
+runCmd(0, "iadmin atg $QG1 $QU3");
+
+# Verify that the quota usage now includes QU3's storage
+runGroupTestsWithQU3("$Resc", "$Resc", "1", "$QU1", "$QU1");
+runGroupTestsWithQU3("$Resc", "total", "2", "$QU1", "$QU1");
+runGroupTestsWithQU3("$Resc", "$Resc", "1", "$QU2", "$QU1");
+runGroupTestsWithQU3("$Resc", "total", "2", "$QU2", "$QU1");
+
+# Remove $QU3's file
+$ENV{'irodsAuthFileName'}=$tmpPwFile;
+$ENV{'irodsUserName'}=$QU3;
+$ST_DIR = "/$myZone/home/$QU3";
+runCmd(1, "echo 123 | irm -f $ST_DIR/$F2");
+runCmd(1, "echo 123 | irmtrash");
+delete $ENV{'irodsUserName'};
+delete $ENV{'irodsAuthFileName'};
+
+
 # clean up
 runCmd(0, "iadmin rmgroup $QG1");
 runCmd(0, "iadmin rmuser $QU1");
 runCmd(0, "iadmin rmuser $QU2");
+runCmd(0, "iadmin rmuser $QU3");
 
 printf("Success\n");

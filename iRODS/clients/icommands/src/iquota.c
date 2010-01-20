@@ -9,13 +9,13 @@
 #include "rodsClient.h"
 
 #define BIG_STR 200
+#define QUOTA_APPROACH_WARNING_SIZE -10000000000LL
 
 int debug=0;
 char quotaTime[20]="";
 int printedFlag[3]={0,0,0};
 rcComm_t *Conn;
 rodsEnv myEnv;
-
 
 void usage();
 
@@ -219,6 +219,22 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
 	    }
 	    if (j==3 || j==2) {
 	       printNice(tResult, 0, "bytes");
+	       if (strncmp(colName[j],"Over:",5)==0) {
+		  rodsLong_t ival;
+		  ival = atoll(tResult);
+		  if (ival > 0) {
+		     printf(" OVER QUOTA");
+		  }
+		  else {
+		     if (ival > QUOTA_APPROACH_WARNING_SIZE) {
+			printf(" (Nearing quota)");
+		     }
+		     else {
+			printf(" (under quota)");
+		     }
+		  }
+
+	       }
 	       printf("\n");
 	    }
 	    else {
