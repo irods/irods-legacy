@@ -642,7 +642,7 @@ handleMultiDataAVUConditions(int nConditions) {
    for (i=2;i<=nConditions;i++) {
       nextItem = strstr(whereSQL, "r_data_meta_main.meta_attr_name");
       if (nextItem != NULL) {
-	 snprintf(nextStr, 20, "n%2.2d", i);
+	 snprintf(nextStr, sizeof nextStr, "n%2.2d", i);
 	 *(nextItem+13)=nextStr[0];  /* replace "ain" in main */
 	 *(nextItem+14)=nextStr[1];  /* with nNN */
 	 *(nextItem+15)=nextStr[2];
@@ -660,7 +660,7 @@ handleMultiDataAVUConditions(int nConditions) {
    for (i=2;i<=nConditions;i++) {
       nextItem = strstr(whereSQL, "r_data_meta_main.meta_attr_value");
       if (nextItem != NULL) {
-	 snprintf(nextStr, 20, "n%2.2d", i);
+	 snprintf(nextStr, sizeof nextStr, "n%2.2d", i);
 	 *(nextItem+13)=nextStr[0];  /* replace "ain" in main */
 	 *(nextItem+14)=nextStr[1];  /* with nNN */
 	 *(nextItem+15)=nextStr[2];
@@ -675,7 +675,7 @@ handleMultiDataAVUConditions(int nConditions) {
       r_data_meta_mnNN */
    for (i=2;i<=nConditions;i++) {
       char newStr[100];
-      snprintf(newStr, 100,
+      snprintf(newStr, sizeof newStr,
        ", r_objt_metamap r_data_metamap%d, r_meta_main r_data_meta_mn%2.2d ", 
 	       i, i);
       rstrcat(fromSQL, newStr, MAX_SQL_SIZE);
@@ -687,10 +687,10 @@ handleMultiDataAVUConditions(int nConditions) {
    */
    for (i=2;i<=nConditions;i++) {
       char newStr[100];
-      snprintf(newStr, 100,
+      snprintf(newStr, sizeof newStr,
        " AND r_data_metamap%d.meta_id = r_data_meta_mn%2.2d.meta_id", i, i);
       rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
-      snprintf(newStr, 100,
+      snprintf(newStr, sizeof newStr,
 	       " AND r_data_main.data_id = r_data_metamap%d.object_id ", i);
       rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
    }
@@ -1276,13 +1276,13 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
          and disgarding rows. */
 #elif MY_ICAT
    /* MySQL/ODBC handles it nicely via just adding limit/offset */
-      snprintf (offsetStr, 20, "%d", genQueryInp.rowOffset);
+      snprintf (offsetStr, sizeof offsetStr, "%d", genQueryInp.rowOffset);
       rstrcat(combinedSQL, " limit ", MAX_SQL_SIZE);
       rstrcat(combinedSQL, offsetStr, MAX_SQL_SIZE);
       rstrcat(combinedSQL, ",18446744073709551615", MAX_SQL_SIZE);
 #else
    /* Postgres/ODBC handles it nicely via just adding offset */
-      snprintf (offsetStr, 20, "%d", genQueryInp.rowOffset);
+      snprintf (offsetStr, sizeof offsetStr, "%d", genQueryInp.rowOffset);
       cllBindVars[cllBindVarCount++]=offsetStr;
       rstrcat(combinedSQL, " offset ?", MAX_SQL_SIZE);
 #endif

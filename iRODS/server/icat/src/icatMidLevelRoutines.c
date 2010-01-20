@@ -634,7 +634,8 @@ int cmlTest( icatSessionStruct *icss) {
   
   cVal[0]=cValStr;
   cValSize = MAX_INTEGER_SIZE;
-  snprintf(sql,100, "select coll_id from R_COLL_MAIN where coll_name='a'");
+  snprintf(sql,sizeof sql, 
+	   "select coll_id from R_COLL_MAIN where coll_name='a'");
 
   i = cmlGetOneRowFromSql (sql, cVal, &cValSize, 1, icss);
   if (i == 1) {
@@ -645,7 +646,8 @@ int cmlTest( icatSessionStruct *icss) {
      return(i);
   }
 
-  snprintf(sql,100, "select data_id from R_DATA_MAIN where coll_id='1' and data_name='a'");
+  snprintf(sql, sizeof sql, 
+	"select data_id from R_DATA_MAIN where coll_id='1' and data_name='a'");
   i = cmlGetOneRowFromSql (sql, cVal, &cValSize, 1, icss);
   if (i == 1) {
     printf("result = %s\n",cValStr);
@@ -953,7 +955,7 @@ cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser,
 
    getNowStr(myTime);
 
-   snprintf(actionIdStr, 40, "%d", actionId);
+   snprintf(actionIdStr, sizeof actionIdStr, "%d", actionId);
 
    cllBindVars[0]=targetUser;
    cllBindVars[1]=zone;
@@ -995,7 +997,7 @@ cmlAudit2(int actionId, char *dataId, char *userName, char *zoneName,
 
    getNowStr(myTime);
 
-   snprintf(actionIdStr, 40, "%d", actionId);
+   snprintf(actionIdStr, sizeof actionIdStr, "%d", actionId);
 
    cllBindVars[0]=dataId;
    cllBindVars[1]=userName;
@@ -1037,7 +1039,7 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
 
    getNowStr(myTime);
 
-   snprintf(actionIdStr, 40, "%d", actionId);
+   snprintf(actionIdStr, sizeof actionIdStr, "%d", actionId);
 
    /* Truncate the comment if necessary (or else SQL will fail)*/
    myComment[AUDIT_COMMENT_MAX_SIZE-1]='\0';
@@ -1104,7 +1106,7 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
 
    getNowStr(myTime);
 
-   snprintf(actionIdStr, 40, "%d", actionId);
+   snprintf(actionIdStr, sizeof actionIdStr, "%d", actionId);
 
    /* Truncate the comment if necessary (or else SQL will fail)*/
    myComment[AUDIT_COMMENT_MAX_SIZE-1]='\0';
@@ -1183,7 +1185,7 @@ cmlAudit5(int actionId, char *objId, char *userId, char *comment,
 
    getNowStr(myTime);
 
-   snprintf(actionIdStr, 40, "%d", actionId);
+   snprintf(actionIdStr, sizeof actionIdStr, "%d", actionId);
 
    cllBindVars[0]=objId;
    cllBindVars[1]=userId;

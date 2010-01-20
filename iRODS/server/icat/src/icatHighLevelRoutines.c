@@ -754,7 +754,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    }
 
    nextReplNum = iVal+1;
-   snprintf(nextRepl, 30, "%d", nextReplNum);
+   snprintf(nextRepl, sizeof nextRepl, "%d", nextReplNum);
    dstDataObjInfo->replNum = nextReplNum; /* return new replica number */
    snprintf(replNumString, MAX_NAME_LEN, "%d", srcDataObjInfo->replNum);
    snprintf(tSQL, MAX_SQL_SIZE,
@@ -929,7 +929,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	 _rollback("chlUnregDataObj");
 	 return(status);  /* convert long to int */
       }
-      snprintf(dataObjNumber, 30, "%lld", status);
+      snprintf(dataObjNumber, sizeof dataObjNumber, "%lld", status);
    }
    else {
       if (rsComm->clientUser.authInfo.authFlag != LOCAL_PRIV_USER_AUTH) {
@@ -947,19 +947,21 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	    return(CAT_INVALID_ARGUMENT);
 	 }
 	 if (dataObjInfo->dataId > 0) {
-	    snprintf(dataObjNumber, 30, "%lld", dataObjInfo->dataId);
+	    snprintf(dataObjNumber, sizeof dataObjNumber, "%lld",
+		     dataObjInfo->dataId);
 	 }
       }
       else {
 	 if (dataObjInfo->replNum >= 0 && dataObjInfo->dataId >= 0) {
 	    /* Check for a different replica */
-	    snprintf(dataObjNumber, 30, "%lld", dataObjInfo->dataId);
-	    snprintf(replNumber, 30, "%d", dataObjInfo->replNum);
+	    snprintf(dataObjNumber, sizeof dataObjNumber, "%lld", 
+		     dataObjInfo->dataId);
+	    snprintf(replNumber, sizeof replNumber, "%d", dataObjInfo->replNum);
 	    if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 2");
 	    status = cmlGetStringValueFromSql(
                   "select data_repl_num from r_data_main where data_id=? and data_repl_num!=?",
 		  cVal,
-                  30,
+                  sizeof cVal,
 		  dataObjNumber,
 		  replNumber,
 		  0,
@@ -982,7 +984,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
    cllBindVars[0]=logicalDirName;
    cllBindVars[1]=logicalFileName;
    if (dataObjInfo->replNum >= 0) {
-      snprintf(replNumber, 30, "%d", dataObjInfo->replNum);
+      snprintf(replNumber, sizeof replNumber, "%d", dataObjInfo->replNum);
       cllBindVars[2]=replNumber;
       cllBindVarCount=3;
       if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 4");
@@ -1689,7 +1691,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlDelUserRE delete password failure %d",
 	      status);
-      snprintf(errMsg, MAX_NAME_LEN+40, "Error removing password entry");
+      snprintf(errMsg, sizeof errMsg, "Error removing password entry");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       _rollback("chlDelUserRE");
       return(status);
@@ -1708,7 +1710,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlDelUserRE delete user_group entry failure %d",
 	      status);
-      snprintf(errMsg, MAX_NAME_LEN+40, "Error removing user_group entry");
+      snprintf(errMsg, sizeof errMsg, "Error removing user_group entry");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       _rollback("chlDelUserRE");
       return(status);
@@ -1726,7 +1728,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       rodsLog(LOG_NOTICE,
 	      "chlDelUserRE delete user_auth entries failure %d",
 	      status);
-      snprintf(errMsg, MAX_NAME_LEN+40, "Error removing user_auth entries");
+      snprintf(errMsg, sizeof errMsg, "Error removing user_auth entries");
       i = addRErrorMsg (&rsComm->rError, 0, errMsg);
       _rollback("chlDelUserRE");
       return(status);
@@ -1736,7 +1738,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    removeMetaMapAndAVU(iValStr);
 
    /* Audit */
-   snprintf(userStr, 190, "%s#%s",
+   snprintf(userStr, sizeof userStr, "%s#%s",
 	    userName2, zoneToUse);
    status = cmlAudit3(AU_DELETE_USER_RE,  
 		      iValStr,
@@ -1810,7 +1812,7 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
       int i;
       char errMsg[MAX_NAME_LEN+40];
       if (status == CAT_NO_ROWS_FOUND) {
-	 snprintf(errMsg, MAX_NAME_LEN+40, 
+	 snprintf(errMsg, sizeof errMsg,
 		  "collection '%s' is unknown, cannot create %s under it",
 		  logicalParentDirName, logicalEndName);
 	 i = addRErrorMsg (&rsComm->rError, 0, errMsg);
@@ -2237,7 +2239,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 				   &icss);
 
    /* Audit */
-   snprintf(iValStr, 50, "%lld", iVal);
+   snprintf(iValStr, sizeof iValStr, "%lld", iVal);
    status = cmlAudit3(AU_REGISTER_COLL,  
 		      iValStr,
 		      rsComm->clientUser.userName,
@@ -2438,7 +2440,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
    }
 
    /* Audit */
-   snprintf(commentStr, 190, "%s %s", option, optionValue);
+   snprintf(commentStr, sizeof commentStr, "%s %s", option, optionValue);
    status = cmlAudit3(AU_MOD_ZONE,  
 		      zoneId,
 		      rsComm->clientUser.userName,
@@ -2528,7 +2530,7 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
    /* Do this first, before the userName-zone is made invalid;
       it will be rolledback if an error occurs */
 
-   snprintf(commentStr, 190, "renamed local zone %s to %s",
+   snprintf(commentStr, sizeof commentStr, "renamed local zone %s to %s",
 	    oldZoneName, newZoneName);
    status = cmlAudit3(AU_MOD_ZONE,  
 		      "0",
@@ -3208,7 +3210,8 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 
    memset(md5Buf, 0, sizeof(md5Buf));
    strncpy(md5Buf, challenge, CHALLENGE_LEN);
-   snprintf(prevChalSig,200,"%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
+   snprintf(prevChalSig,sizeof prevChalSig,
+	    "%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x%2.2x",
 	    (unsigned char)md5Buf[0], (unsigned char)md5Buf[1], 
 	    (unsigned char)md5Buf[2], (unsigned char)md5Buf[3],
 	    (unsigned char)md5Buf[4], (unsigned char)md5Buf[5], 
@@ -3329,12 +3332,13 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       /* Also remove any expired temporary passwords */
 
       if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 3");
-      snprintf(expireStr, 50, "%d", TEMP_PASSWORD_TIME);
+      snprintf(expireStr, sizeof expireStr, "%d", TEMP_PASSWORD_TIME);
       cllBindVars[cllBindVarCount++]=expireStr; 
 
       pwExpireMaxCreateTime = nowTime-TEMP_PASSWORD_TIME;
       /* Not sure if casting to int is correct but seems OK & avoids warning:*/
-      snprintf(expireStrCreate, 50, "%011d", (int)pwExpireMaxCreateTime); 
+      snprintf(expireStrCreate, sizeof expireStrCreate, "%011d", 
+	       (int)pwExpireMaxCreateTime); 
       cllBindVars[cllBindVarCount++]=expireStrCreate;
 
       status =  cmlExecuteNoAnswerSql(
@@ -3963,7 +3967,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    }
 
    /* Audit */
-   snprintf(commentStr, 90, "%s %s", option, userId);
+   snprintf(commentStr, sizeof commentStr, "%s %s", option, userId);
    status = cmlAudit3(AU_MOD_GROUP,  
 		      groupId,
 		      rsComm->clientUser.userName,
@@ -4197,7 +4201,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    }
 
    /* Audit */
-   snprintf(commentStr, 190, "%s %s", option, optionValue);
+   snprintf(commentStr, sizeof commentStr, "%s %s", option, optionValue);
    status = cmlAudit3(AU_MOD_RESC,  
 		      rescId,
 		      rsComm->clientUser.userName,
@@ -4373,7 +4377,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
    }
 
    /* Audit */
-   snprintf(commentStr, 190, "%s %s", option, rescGroupName);
+   snprintf(commentStr, sizeof commentStr, "%s %s", option, rescGroupName);
    status = cmlAudit3(AU_MOD_RESC_GROUP,  
 		      rescId,
 		      rsComm->clientUser.userName,
@@ -4910,7 +4914,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
 	 return(seqNum);
       }
 
-      snprintf(nextStr, MAX_SQL_SIZE, "%lld", seqNum);
+      snprintf(nextStr, sizeof nextStr, "%lld", seqNum);
 
       getNowStr(myTime);
 
@@ -4936,8 +4940,8 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
 
    getNowStr(myTime);
 
-   snprintf(objIdStr, MAX_SQL_SIZE, "%lld", objId);
-   snprintf(seqNumStr, MAX_SQL_SIZE, "%lld", seqNum);
+   snprintf(objIdStr, sizeof objIdStr, "%lld", objId);
+   snprintf(seqNumStr, sizeof seqNumStr, "%lld", seqNum);
    cllBindVars[cllBindVarCount++]=objIdStr;
    cllBindVars[cllBindVarCount++]=seqNumStr;
    cllBindVars[cllBindVarCount++]=myTime;
@@ -6552,7 +6556,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    }
 
    getNowStr(myTime);
-   snprintf(seqNumStr, MAX_SQL_SIZE, "%lld", seqNum);
+   snprintf(seqNumStr, sizeof seqNumStr, "%lld", seqNum);
    cllBindVars[cllBindVarCount++]=nameSpace;
    cllBindVars[cllBindVarCount++]=seqNumStr;
    cllBindVars[cllBindVarCount++]=name;
@@ -6631,7 +6635,7 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
    }
 
    /* Audit */
-   snprintf(objIdStr, 50, "%lld", objId);
+   snprintf(objIdStr, sizeof objIdStr, "%lld", objId);
    status = cmlAudit3(AU_DEL_TOKEN,  
 			 objIdStr,
 			 rsComm->clientUser.userName,
@@ -6737,7 +6741,7 @@ int chlPurgeServerLoad(rsComm_t *rsComm, char *secondsAgo) {
    nowTime=atoll(nowStr);
    secondsAgoTime=atoll(secondsAgo);
    thenTime = nowTime - secondsAgoTime;
-   snprintf(thenStr, 15, "%011d", (uint) thenTime);
+   snprintf(thenStr, sizeof thenStr, "%011d", (uint) thenTime);
 
    if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoad SQL 1");
 
@@ -6830,7 +6834,7 @@ int chlPurgeServerLoadDigest(rsComm_t *rsComm, char *secondsAgo) {
    nowTime=atoll(nowStr);
    secondsAgoTime=atoll(secondsAgo);
    thenTime = nowTime - secondsAgoTime;
-   snprintf(thenStr, 15, "%011d", (uint) thenTime);
+   snprintf(thenStr, sizeof thenStr, "%011d", (uint) thenTime);
 
    if (logSQL) rodsLog(LOG_SQL, "chlPurgeServerLoadDigest SQL 1");
 
@@ -7074,8 +7078,8 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
       }
    }
 
-   snprintf(userIdStr, 50, "%lld", userId);
-   snprintf(rescIdStr, 50, "%lld", rescId);
+   snprintf(userIdStr, sizeof userIdStr, "%lld", userId);
+   snprintf(rescIdStr, sizeof rescIdStr, "%lld", rescId);
 
    /* first delete previous one, if any */
    cllBindVars[cllBindVarCount++]=userIdStr;

@@ -123,7 +123,7 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
 	if (status) return(status);  /* that failed too, report it */
 
         /* Add a message to the error stack for the client user */
-        snprintf(errMsg, 100, "Rule was removed but reiPath was invalid: %s", 
+        snprintf(errMsg, sizeof errMsg, "Rule was removed but reiPath was invalid: %s", 
 		 reiFilePath->value);	       
         i = addRErrorMsg (&rsComm->rError, 0, errMsg);
 
@@ -166,10 +166,10 @@ _rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
         int i;
         char errMsg[105];
         /* Add a message to the error stack for the client user */
-        snprintf(errMsg, 100, 
+        snprintf(errMsg, sizeof errMsg, 
                  "Rule was removed but unlink of rei file failed");
         i = addRErrorMsg (&rsComm->rError, 0, errMsg);
-        snprintf(errMsg, 100, 
+        snprintf(errMsg, sizeof errMsg, 
                  "rei file: %s", 
 		 reiFilePath->value);
         i = addRErrorMsg (&rsComm->rError, 1, errMsg);

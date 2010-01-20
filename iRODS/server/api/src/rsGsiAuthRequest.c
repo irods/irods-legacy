@@ -269,7 +269,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	       rsComm->clientUser.userName,
 	       clientName,
 	       status);
-      snprintf(gsiAuthReqErrorMsg, 1000, 
+      snprintf(gsiAuthReqErrorMsg, sizeof gsiAuthReqErrorMsg, 
 	       "igsiServersideAuth: DN mismatch, user=%s, Certificate DN=%s, status=%d",
 	       rsComm->clientUser.userName,
 	       clientName,
@@ -281,7 +281,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    if (status < 0) {
       rodsLog (LOG_NOTICE,
 	       "igsiServersideAuth: rsGenQuery failed, status = %d", status);
-      snprintf(gsiAuthReqErrorMsg, 1000, 
+      snprintf(gsiAuthReqErrorMsg, sizeof gsiAuthReqErrorMsg, 
 	       "igsiServersideAuth: rsGenQuery failed, status = %d", status);
       gsiAuthReqError = status;
       return (status);

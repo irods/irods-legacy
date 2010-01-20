@@ -72,9 +72,9 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        rei.rsComm = rsComm;
        rei.uoic = &rsComm->clientUser;
        rei.uoip = &rsComm->proxyUser;
-       rstrcpy(argStr,"",100);
+       rstrcpy(argStr,"",sizeof argStr);
        if (atoi(generalAdminInp->arg1) > 0) {
-	  snprintf(argStr,100,"<ET>%s</ET>",generalAdminInp->arg1);
+	  snprintf(argStr,sizeof argStr,"<ET>%s</ET>",generalAdminInp->arg1);
        }
        if (atoi(generalAdminInp->arg2) > 0) {
 	  strncat(argStr,"<EF>",100);
@@ -92,11 +92,14 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  char *args[2];
 	  memset((char*)&rei,0,sizeof(rei));
 	  rei.rsComm = rsComm;
-	  strncpy(userInfo.userName, generalAdminInp->arg2, NAME_LEN);
-	  strncpy(userInfo.userType, generalAdminInp->arg3, NAME_LEN);
-	  strncpy(userInfo.rodsZone, generalAdminInp->arg4, NAME_LEN);
-
-	  strncpy(userInfo.authInfo.authStr, generalAdminInp->arg5, NAME_LEN);
+	  strncpy(userInfo.userName, generalAdminInp->arg2, 
+		  sizeof userInfo.userName);
+	  strncpy(userInfo.userType, generalAdminInp->arg3, 
+		  sizeof userInfo.userType);
+	  strncpy(userInfo.rodsZone, generalAdminInp->arg4, 
+		  sizeof userInfo.rodsZone);
+	  strncpy(userInfo.authInfo.authStr, generalAdminInp->arg5, 
+		  sizeof userInfo.authInfo.authStr);
 	  rei.uoio = &userInfo;
 	  rei.uoic = &rsComm->clientUser;
 	  rei.uoip = &rsComm->proxyUser;
@@ -106,10 +109,11 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        }
        if (strcmp(generalAdminInp->arg1,"dir")==0) {
 	  memset((char*)&collInfo,0,sizeof(collInfo));
-	  strncpy(collInfo.collName, generalAdminInp->arg2, MAX_NAME_LEN);
+	  strncpy(collInfo.collName, generalAdminInp->arg2, 
+		  sizeof collInfo.collName);
 	  if (strlen(generalAdminInp->arg3) > 0) {
 	     strncpy(collInfo.collOwnerName, generalAdminInp->arg3,
-		     MAX_NAME_LEN);
+		     sizeof collInfo.collOwnerName);
 	     status = chlRegCollByAdmin(rsComm, &collInfo);
 	     if (status == 0) {
 		int status2;
@@ -130,11 +134,11 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  if (status == 0) {
 	     if (strcmp(generalAdminInp->arg3,"remote")==0) {
 		memset((char*)&collInfo,0,sizeof(collInfo));
-		strncpy(collInfo.collName, "/", MAX_NAME_LEN);
+		strncpy(collInfo.collName, "/", sizeof collInfo.collName);
 		strncat(collInfo.collName, generalAdminInp->arg2,
-			MAX_NAME_LEN);
+			sizeof collInfo.collName);
 		strncpy(collInfo.collOwnerName, rsComm->proxyUser.userName,
-			MAX_NAME_LEN);
+			sizeof collInfo.collOwnerName);
 		status = chlRegCollByAdmin(rsComm, &collInfo);
 		if (status == 0) {
 		   chlCommit(rsComm);
@@ -144,12 +148,18 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
-	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, NAME_LEN);
-	  strncpy(rescInfo.rescType,  generalAdminInp->arg3, NAME_LEN);
-	  strncpy(rescInfo.rescClass, generalAdminInp->arg4, NAME_LEN);
-	  strncpy(rescInfo.rescLoc,   generalAdminInp->arg5, NAME_LEN);
-	  strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, NAME_LEN);
-	  strncpy(rescInfo.zoneName,  generalAdminInp->arg7, NAME_LEN);
+	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, 
+		  sizeof rescInfo.rescName);
+	  strncpy(rescInfo.rescType,  generalAdminInp->arg3, 
+		  sizeof rescInfo.rescType);
+	  strncpy(rescInfo.rescClass, generalAdminInp->arg4, 
+		  sizeof rescInfo.rescClass);
+	  strncpy(rescInfo.rescLoc,   generalAdminInp->arg5, 
+		  sizeof rescInfo.rescLoc);
+	  strncpy(rescInfo.rescVaultPath, generalAdminInp->arg6, 
+		  sizeof rescInfo.rescVaultPath);
+	  strncpy(rescInfo.zoneName,  generalAdminInp->arg7, 
+		  sizeof rescInfo.zoneName);
 	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 	  args[0] = rescInfo.rescName;
 	  args[1] = rescInfo.rescType;
@@ -334,9 +344,9 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	      strcmp(generalAdminInp->arg3, "name")==0) {
 	     char oldName[MAX_NAME_LEN];
 	     char newName[MAX_NAME_LEN];
-	     strncpy(oldName, "/", MAX_NAME_LEN);
-	     strncat(oldName, generalAdminInp->arg2, MAX_NAME_LEN);
-	     strncpy(newName, generalAdminInp->arg4, MAX_NAME_LEN);
+	     strncpy(oldName, "/", sizeof oldName);
+	     strncat(oldName, generalAdminInp->arg2, sizeof oldName);
+	     strncpy(newName, generalAdminInp->arg4, sizeof newName);
 	     status = chlRenameColl(rsComm, oldName, newName);
 	     if (status==0) chlCommit(rsComm);
 	  }
@@ -442,8 +452,10 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  char *args[2];
 	  memset((char*)&rei,0,sizeof(rei));
 	  rei.rsComm = rsComm;
-	  strncpy(userInfo.userName, generalAdminInp->arg2, NAME_LEN);
-	  strncpy(userInfo.rodsZone, generalAdminInp->arg3, NAME_LEN);
+	  strncpy(userInfo.userName, generalAdminInp->arg2, 
+		  sizeof userInfo.userName);
+	  strncpy(userInfo.rodsZone, generalAdminInp->arg3, 
+		  sizeof userInfo.rodsZone);
 	  rei.uoio = &userInfo;
 	  rei.uoic = &rsComm->clientUser;
 	  rei.uoip = &rsComm->proxyUser;
@@ -453,13 +465,15 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
        }
        if (strcmp(generalAdminInp->arg1,"dir")==0) {
 	  memset((char*)&collInfo,0,sizeof(collInfo));
-	  strncpy(collInfo.collName, generalAdminInp->arg2, MAX_NAME_LEN);
+	  strncpy(collInfo.collName, generalAdminInp->arg2, 
+		  sizeof collInfo.collName);
 	  status = chlDelColl(rsComm, &collInfo);
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
        if (strcmp(generalAdminInp->arg1,"resource")==0) {
-	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, NAME_LEN);
+	  strncpy(rescInfo.rescName,  generalAdminInp->arg2, 
+		  sizeof rescInfo.rescName);
 
 	  /** RAJA ADDED June 1 2009 for pre-post processing rule hooks **/
 	  args[0] = rescInfo.rescName;
@@ -499,9 +513,9 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  status = chlDelZone(rsComm, generalAdminInp->arg2);
 	  if (status == 0) {
 	     memset((char*)&collInfo,0,sizeof(collInfo));
-	     strncpy(collInfo.collName, "/", MAX_NAME_LEN);
+	     strncpy(collInfo.collName, "/", sizeof collInfo.collName);
 	     strncat(collInfo.collName, generalAdminInp->arg2,
-		     MAX_NAME_LEN);
+		     sizeof collInfo.collName);
 	     status = chlDelCollByAdmin(rsComm, &collInfo);
 	  }
 	  if (status == 0) {
