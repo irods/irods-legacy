@@ -2,8 +2,9 @@
 # periodically, for use with the optional quota system.  msiQuota, via
 # an ICAT function, executes some SQL to determine how much space each
 # user in using on each resource and to set over-quota fields (see
-# 'iquota' and 'iadmin lq'.  This must be run by an irods admin (the
-# ICAT function that is called is restricted).  
+# 'iquota', 'iadmin lq', and 'iadmin cu').  This must be run by an 
+# irods admin (the ICAT function that is called is restricted).  
+# The msiQuota micro-service and the 'iadmin cu' command are equivalent.
 #
 # Set the *arg1 line to the delayExec time and frequency you'd like
 # and then run 'irule -F runQuota.ir'.  'iqstat' should then show your
