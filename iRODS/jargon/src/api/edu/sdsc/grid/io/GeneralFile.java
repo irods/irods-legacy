@@ -185,9 +185,7 @@ public class GeneralFile extends Object implements Comparable {
 
 	private static Logger log = LoggerFactory.getLogger(GeneralFile.class);
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Holds the server information used by this file.
 	 */
@@ -203,9 +201,7 @@ public class GeneralFile extends Object implements Comparable {
 	 */
 	protected String fileName;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Creates a new GeneralFile from a parent pathname string and a child
 	 * pathname string.
@@ -283,9 +279,6 @@ public class GeneralFile extends Object implements Comparable {
 			fileName = null;
 	}
 
-	// ----------------------------------------------------------------------
-	// Setters and Getters
-	// ----------------------------------------------------------------------
 	/**
 	 * Sets the file system used of this GeneralFile object. The file system
 	 * object must be a subclass of the GeneralFileSystem matching this file
@@ -441,9 +434,6 @@ public class GeneralFile extends Object implements Comparable {
 		throw new NullPointerException("fileSystem is null.");
 	}
 
-	// ----------------------------------------------------------------------
-	// GeneralFile Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Returns true if the filesystem can be queried, ie. if any of the query()
 	 * might return a non-null value.
@@ -1410,42 +1400,6 @@ public class GeneralFile extends Object implements Comparable {
 		return files;
 	}
 
-	/**
-	 * Returns an array of abstract pathnames denoting the files and directories
-	 * in the directory denoted by this abstract pathname that satisfy the
-	 * specified filter.
-	 */
-	/*
-	 * public GeneralFile[] listFiles(GeneralFileFilter filter) { if (filter ==
-	 * null) { return listFiles(); }
-	 * 
-	 * String names[] = list(); if (names == null) { return null; }
-	 * 
-	 * ArrayList v = new ArrayList(); GeneralFile currentFile = null; for (int i
-	 * = 0 ; i < names.length ; i++) { currentFile = FileFactory.newFile( this,
-	 * names[i] ); if (filter.accept(currentFile)) { v.add(currentFile); } }
-	 * 
-	 * return (GeneralFile[])(v.toArray(new GeneralFile[0])); }
-	 */
-
-	/**
-	 * Returns an array of abstract pathnames denoting the files and directories
-	 * in the directory denoted by this abstract pathname that satisfy the
-	 * specified filter.
-	 */
-	/*
-	 * public GeneralFile[] listFiles(GeneralFilenameFilter filter) { if (filter
-	 * == null) { return listFiles(); }
-	 * 
-	 * String names[] = list(); if (names == null) { return null; }
-	 * 
-	 * 
-	 * ArrayList v = new ArrayList(); for (int i = 0 ; i < names.length ; i++) {
-	 * if (filter.accept(this, names[i])) { v.add(FileFactory.newFile( this,
-	 * names[i] )); } }
-	 * 
-	 * return (GeneralFile[])(v.toArray(new GeneralFile[0])); }
-	 */
 
 	/**
 	 * List the available filesystem roots.

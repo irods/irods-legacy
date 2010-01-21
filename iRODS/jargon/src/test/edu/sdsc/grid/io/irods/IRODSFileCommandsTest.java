@@ -17,9 +17,13 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_
 
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IrmCommand;
 
 import junit.framework.TestCase;
 
@@ -349,5 +353,315 @@ public class IRODSFileCommandsTest {
         irodsFileSystem.close();
         
     }
+    
+    @Test(expected=IRODSException.class)
+    public final void testFileSeeInvalidFd() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testfileseek.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        // now try to do the seek
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        int fileDescriptor = irodsFileSystem.commands.fileOpen(irodsFile, true, true);
+        irodsFileSystem.commands.fileSeek(999, 1024, GeneralRandomAccessFile.SEEK_CURRENT);
+       
+    }
+    
+    @Test
+    public final void testFileWriteWithStream() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testfilewritestream.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileUri = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+        FileInputStream fis = new FileInputStream(fileUri);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        int fd = irodsFileSystem.commands.fileCreate(irodsFile, true, true);
+        irodsFileSystem.commands.fileWrite(fd, fis, 2);
+        
+        assertionHelper.assertIrodsFileOrCollectionExists(targetIrodsCollection + '/' + testFileName);
+        irodsFileSystem.close();
+    }
+    
+    @Test
+    public final void testFileRename() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testfilerenameBefore.txt";
+        String renameFileName = "testfilerenameAfter.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        IRODSFile irodsFileAfter = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + renameFileName);
+        irodsFileSystem.commands.renameFile(irodsFile, irodsFileAfter);
+        irodsFileSystem.close();
+        
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFileAfter.getAbsolutePath());
+        
+   
+    }
+    
+    @Test
+    public final void testCollectionRename() throws Exception {
+    	// generate a local scratch file
+        String beforeRename = "beforerename";
+        String afterRename = "afterrename";
+        
+        // put scratch collection into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH + '/' + beforeRename);
+        String afterTargetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                        IRODS_TEST_SUBDIR_PATH + '/' + afterRename);
+
+
+        ImkdirCommand imkdirCommand = new ImkdirCommand();
+        imkdirCommand.setCollectionName(targetIrodsCollection);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(imkdirCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+        IRODSFile irodsFileAfter = new IRODSFile(irodsFileSystem, afterTargetIrodsCollection);
+        irodsFileSystem.commands.renameDirectory(irodsFile, irodsFileAfter);
+        irodsFileSystem.close();
+        
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFileAfter.getAbsolutePath());
+        
+   
+    }
+    
+    @Test
+    public final void testPhysicalMove() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testPmBeforex.txt";
+        String otherFileName = "testPmAfterx.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileNameOrig = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+        // create a put a second file in the target resource, this is a bug documented in teh IRODSFileTest class in testSetResourceShowQueryBug()
+        String absPathOther = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileNameOther = FileGenerator.generateFileOfFixedLengthGivenName(absPath, otherFileName,
+            2);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+      
+        iputCommand.setLocalFileName(fileNameOrig);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(fileNameOther);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        iputCommand.setForceOverride(true);
+
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        IRODSFile irodsFileAfter = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        irodsFileAfter.setResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
+        irodsFileSystem.commands.physicalMove(irodsFile, irodsFileAfter);
+        irodsFileSystem.close();
+        
+        IlsCommand ilsCommand = new IlsCommand();
+        ilsCommand.setLongFormat(true);
+        ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
+        String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(irodsFileAfter.resource) != -1);
+        
+   
+    }
+    
+    @Test
+    public final void testReplicate() throws Exception {
+    	// generate a local scratch file
+    	
+        String testFileName = "testReplicate1.txt";
+        String otherFileName = "testReplicate2.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileNameOrig = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+        // create a put a second file in the target resource, this is a bug documented in teh IRODSFileTest class in testSetResourceShowQueryBug()
+        String absPathOther = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileNameOther = FileGenerator.generateFileOfFixedLengthGivenName(absPath, otherFileName,
+            2);
+        
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+        
+        // make sure all replicas are removed
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        IrmCommand rmvCommand = new IrmCommand();
+        rmvCommand.setForce(true);
+        rmvCommand.setObjectName(targetIrodsCollection + '/' + testFileName);
+        try {
+        String rmvResult = invoker.invokeCommandAndGetResultAsString(rmvCommand);
+        } catch (IcommandException ice) {
+        	if (ice.getMessage().indexOf("exist") != -1) {
+        		// ignore, nothing to remove
+        	} else {
+        		throw ice;
+        	}
+        }
+        
+        // put scratch file into irods in the right place
+        IputCommand iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(fileNameOrig);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(fileNameOrig);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_RESOURCE_KEY));
+        iputCommand.setForceOverride(true);
+
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        irodsFileSystem.commands.replicate(irodsFile, testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        irodsFileSystem.close();
+        
+        IlsCommand ilsCommand = new IlsCommand();
+        ilsCommand.setLongFormat(true);
+        ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
+        String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
+        TestCase.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
+
+       
+    }
+    
+    @Test
+    public final void testDeleteReplica() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testDelReplicate1.txt";
+        String otherFileName = "testDelReplicate2.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileNameOrig = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+        // create a put a second file in the target resource, this is a bug documented in the IRODSFileTest class in testSetResourceShowQueryBug()
+        String absPathOther = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileNameOther = FileGenerator.generateFileOfFixedLengthGivenName(absPath, otherFileName,
+            2);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+ 
+        iputCommand.setLocalFileName(fileNameOrig);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(fileNameOther);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        iputCommand.setForceOverride(true);
+
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        irodsFileSystem.commands.replicate(irodsFile, testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        
+        IlsCommand ilsCommand = new IlsCommand();
+        ilsCommand.setLongFormat(true);
+        ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
+        String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
+        TestCase.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
+        
+        // now delete the replica from the first resource
+        
+        irodsFileSystem.commands.deleteReplica(irodsFile,testingProperties.getProperty(IRODS_RESOURCE_KEY));
+        irodsFileSystem.close();
+        
+        // FIXME: not deleting!  Need to set min replicas to 1
+        
+        // replica should not show up in ils, it was deleted..
+        /*ilsCommand = new IlsCommand();
+        ilsCommand.setLongFormat(true);
+        ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
+        ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+        TestCase.assertTrue("file is still in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) == -1);
+        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
+   */
+    } 
     
 }

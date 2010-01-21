@@ -130,6 +130,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		log.debug("irods handshake");
 
 		connect();
+		connected = true;
 
 		// build an identifier for this connection, at least for now
 		StringBuilder connectionInternalIdentifierBuilder = new StringBuilder();
@@ -467,7 +468,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		}
 		result = bytesRead;
 		if (log.isDebugEnabled()) {
-			log.debug("Read summary: "
+			log.debug("value read:"
 					+ new String(value, offset, offset + bytesRead));
 
 			/*
@@ -529,7 +530,17 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	}
 
 	Tag readMessage(boolean decode) throws IOException {
+		log.debug("reading message");
 		Tag header = readHeader();
+		if (log.isDebugEnabled()) {
+			log.debug("header:" + header);
+		}
+		
+		if (header == null) {
+			log.error("encountered a null header alue when reading a message");
+			throw new RuntimeException("header was null when reading a message");
+		}
+		
 		Tag message = null;
 
 		if (log.isDebugEnabled()) {
@@ -545,12 +556,14 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 		// Reports iRODS errors, throw exception if appropriate
 		if (info < 0) {
+			log.debug("info less than zero:" + info);
 			// if nothing else, read the returned bytes and throw them away
 			if (messageLength > 0)
 				read(new byte[messageLength], 0, messageLength);
 
 			if (info == IRODSException.CAT_NO_ROWS_FOUND
 					|| info == IRODSException.CAT_SUCCESS_BUT_WITH_NO_INFO) {
+				log.debug("no rows found or success with no info");
 				if (errorLength != 0) {
 					byte[] errorMessage = new byte[errorLength];
 					read(errorMessage, 0, errorLength);
@@ -566,6 +579,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 				}
 
 				// query with no results
+				log.debug("returning null from read");
 				return null;
 			} else if (info == IRODSException.OVERWITE_WITHOUT_FORCE_FLAG) {
 				log.warn("Attempt to overwrite file without force flag. info: "
@@ -592,6 +606,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		}
 
 		if (errorLength != 0) {
+			log.debug("error length is not zero, extracting error message");
 			byte[] errorMessage = new byte[errorLength];
 			read(errorMessage, 0, errorLength);
 			Tag errorTag = Tag.readNextTag(errorMessage, encoding);
@@ -605,6 +620,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		}
 
 		if (messageLength > 0) {
+			log.debug("message length gt 0 will read message body");
 			message = readMessageBody(messageLength, decode);
 		}
 

@@ -56,6 +56,10 @@ Tests and resolution of Bug 32 -  copyTo when dest file is from URI results in -
 Enhancement for  Bug 38 -  New 2.2 metadata values for queries
 Work-in-progress on adding ICAT extensible metadata for queries
 
+---------
+Add a close() method to IRODSFile that will close the underlying IRODSFileSystem.  This is useful for occasions where the IRODSFile is created by a URI, 
+where the IRODSFileSystem was not created in the calling code.  This was causing -4000 errors when the socket closed without a disconnect being sent.
+
 ================================================================================================
 Outstanding Issues
 

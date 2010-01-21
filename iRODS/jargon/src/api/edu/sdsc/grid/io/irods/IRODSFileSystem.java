@@ -534,6 +534,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * a ClosedChannelException will be thrown.
 	 */
 	public void close() throws IOException {
+		log.info("closing IRODSFileSystem connection");
 		try {
 			commands.close();
 		} catch (JargonException e) {

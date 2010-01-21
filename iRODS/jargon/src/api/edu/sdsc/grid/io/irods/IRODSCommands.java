@@ -1135,6 +1135,7 @@ class IRODSCommands {
 	}
 
 	void deleteReplica(IRODSFile file, String resource) throws IOException {
+		// TODO: add num copies option and fix test in IRODSFileCommandsTest
 		Tag message = new Tag(DataObjInp_PI,
 				new Tag[] {
 						new Tag(objPath, file.getAbsolutePath()),
@@ -1229,6 +1230,7 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
 
+	//FIXME: I don't think this is thread safe since it returns an input stream...do a multi-threaded test cae
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress, String somePathInfoMaybe_whoknows)
 			throws IOException {

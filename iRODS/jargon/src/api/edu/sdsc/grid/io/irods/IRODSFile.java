@@ -296,6 +296,22 @@ public class IRODSFile extends RemoteFile {
 			throw new URISyntaxException(uri.toString(), "Wrong URI scheme");
 		}
 	}
+	
+	/**
+	 * FIXME: do I need to add this method?
+	 * This method is here for correctness, and will help avoid dropping connections when disconnect was never called.
+	 * Note that this method closes the underlying <code>IRODSFileSystem</code>, and care must be taken so as not to close
+	 * the <code>IRODSFileSystem</code> when it is intended for re-use.  Specifically, this method is added for occasions where
+	 * the <code>IRODSFile</code> is created with a URI parameter.  In that case, the IRODSFileSystem is not reused, and without
+	 * calling close, the termination of the <code>IRODSFile</code> causes a 
+	 * "readMsgHeader:header read- read 0 bytes, expect 4, status = -4000" error in IRODS.
+	 * @throws NullPointerException
+	 * @throws IOException
+	 */
+	public void close() throws NullPointerException, IOException {
+		log.info("close called on IRODSFile, will close file system");
+		((IRODSFileSystem) this.getFileSystem()).close();
+	}
 
 	/**
 	 * Finalizes the object by explicitly letting go of each of its internally
@@ -304,7 +320,7 @@ public class IRODSFile extends RemoteFile {
 	protected void finalize() throws Throwable {
 		if (deleteOnExit)
 			delete();
-
+		
 		super.finalize();
 
 		if (resource != null)
@@ -314,9 +330,7 @@ public class IRODSFile extends RemoteFile {
 			dataType = null;
 	}
 
-	// ----------------------------------------------------------------------
-	// Initialization for URIs
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Step three of IRODSFile( uri )
 	 * 
@@ -336,9 +350,7 @@ public class IRODSFile extends RemoteFile {
 		}
 	}
 
-	// ----------------------------------------------------------------------
-	// Setters and Getters
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Sets the file system used of this GeneralFile object. The file system
 	 * object must be a subclass of the GeneralFileSystem matching this file
@@ -469,9 +481,7 @@ public class IRODSFile extends RemoteFile {
 	 * @param dir
 	 *            Used to determine if the path is absolute.
 	 */
-	// Yes, this whole business is the most horrible thing you have ever seen.
-	//
-	// using "fileName&COPY=#" in the constructor should stay valid.
+	
 	void makePathCanonical(String dir) {
 		int i = 0; // where to insert into the Vector
 		boolean absolutePath = false;
@@ -585,9 +595,7 @@ public class IRODSFile extends RemoteFile {
 		return PATH_SEPARATOR_CHAR;
 	}
 
-	// ----------------------------------------------------------------------
-	// GeneralFile Methods
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Copies this file to another file. This object is the source file. The
 	 * destination file is given as the argument. If the destination file, does
@@ -927,15 +935,16 @@ public class IRODSFile extends RemoteFile {
 		throw new RuntimeException("not implemented");
 	}
 
-	// ----------------------------------------------------------------------
-	// RemoteFile Methods
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Sets the physical resource this IRODSFile object will be stored on. If
 	 * null, a default resource will be chosen by the irods server.
 	 * 
 	 * This setter refers to the object parameter only, to move a file to a new
 	 * physical resource see renameTo(GeneralFile)
+	 * 
+	 * Note that the fileSystem query for ResourceMetaData.RESOURCE_NAME will fail if
+	 * there are no files in a particular resource, due to the way that the query is put together.
 	 * 
 	 * @param resource
 	 *            The name of resource to be used.
@@ -1041,9 +1050,6 @@ public class IRODSFile extends RemoteFile {
 		iRODSFileSystem.commands.replicate(this, newResource);
 	}
 
-	// ----------------------------------------------------------------------
-	// IRODSFile Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Change the permissions for this IRODSFile. May throw IRODSException if
 	 * attempting to change permissions inapproriate to object type, e.g.
@@ -1086,20 +1092,12 @@ public class IRODSFile extends RemoteFile {
 		} else if (permission.equals("all") || permission.equals("ownership")
 				|| permission.equals("own") || permission.equals("o")) {
 			permission = "own";
-		} else {
-			// eh, let it try. allows inherit and noinherit
-			// permission = "";
-			// throw new IllegalArgumentException(
-			// "Permission type not valid: "+permission );
-		}
+		} 
 
 		iRODSFileSystem.commands.chmod(this, permission, userName, zone,
 				recursive);
 	}
 
-	// ----------------------------------------------------------------------
-	// java.io.File Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Tests whether the application can read the file denoted by this abstract
 	 * pathname.
@@ -2089,6 +2087,8 @@ public class IRODSFile extends RemoteFile {
 	 *            The new abstract pathname for the named file
 	 * @throws NullPointerException
 	 *             - If dest is null
+	 *             
+	 *  FIXME: test in light of errors encountered in phymv code, IRODSCommands
 	 */
 	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
 			NullPointerException {

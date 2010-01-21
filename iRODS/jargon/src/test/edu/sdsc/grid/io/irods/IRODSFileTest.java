@@ -102,7 +102,10 @@ public class IRODSFileTest {
         URI irodsUri = testingPropertiesHelper.buildUriFromTestPropertiesForFileInUserDir(testingProperties,
                 uriPath.toString());
         IRODSFile irodsFile = new IRODSFile(irodsUri);
+        
         TestCase.assertTrue("testing file does not exist!", irodsFile.exists());
+        irodsFile.close();
+        
     }
     
     /**
@@ -147,6 +150,7 @@ public class IRODSFileTest {
         IRODSFile irodsFile = new IRODSFile(irodsUri);
         TestCase.assertTrue("testing file does not exist!", irodsFile.exists());
         String actualResource = irodsFile.getResource();
+        irodsFile.close();
         TestCase.assertEquals("I should have gotten the default resource", testingProperties.getProperty(IRODS_RESOURCE_KEY), actualResource);
     }
     
@@ -169,7 +173,9 @@ public class IRODSFileTest {
         // should query for resource in IRODSFile
         String actualResource = irodsFile.getResource();
         TestCase.assertEquals("I should have gotten the default resource", "", actualResource);
-        // BUG: note on this test that it should, for consistency, have null in resource
+        // note on this test that it should, for consistency, have null in resource
+        irodsFile.close();
+
     }
     
     @Test(expected = IRODSException.class)
@@ -235,6 +241,7 @@ public class IRODSFileTest {
         TestCase.assertTrue("testing file does not exist!", irodsFile.exists());
         String actualResource = irodsFile.getResource();
         TestCase.assertEquals("I should have gotten the specific resource I used for the iput", testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY), actualResource);
+        irodsFile.close();
     }
 
     /**
@@ -327,6 +334,8 @@ public class IRODSFileTest {
                 IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
         IRODSFile testFile = (IRODSFile) FileFactory.newFile(irodsUri);
         TestCase.assertFalse("I shouldnt exist, I am new", testFile.exists());
+        testFile.close();
+
     }
     
     @Test
@@ -336,6 +345,7 @@ public class IRODSFileTest {
                 IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
         IRODSFile testFile = (IRODSFile) FileFactory.newFile(irodsUri);
         TestCase.assertFalse("I shouldnt exist, I am new", testFile.exists());
+        testFile.close();
     }
     
     @Test
@@ -442,6 +452,7 @@ public class IRODSFileTest {
 
         irodsFile.copyTo(localFile, true, testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
         irodsFileSystem.close();
+        irodsFile.close();
 
         assertionHelper.assertLocalFileExistsInScratch(IRODS_TEST_SUBDIR_PATH + "/" + "GetResult" + testFileName);
     	
@@ -496,8 +507,111 @@ public class IRODSFileTest {
 
         irodsFile.copyTo(localFile, true, testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
         irodsFileSystem.close();
+        irodsFile.close();
 
         assertionHelper.assertLocalFileNotExistsInScratch(IRODS_TEST_SUBDIR_PATH + "/" + "GetResult" + testFileName);
+    	
+    }
+    
+    /**
+     * BUG: this test documents a current bug, where a query on resource using metadata query will not return a valid resource if there are no files in that resource
+     * @throws Exception
+     */
+    @Ignore
+    public final void testSetResourceShowQueryBug() throws Exception {
+    	 // generate a local scratch file
+        String testFileName = "testSetResource.xsl";
+
+        String testFileFullPath = FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
+                    GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH +
+                '/', testFileName, 4);
+        
+            
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        iputCommand.setLocalFileName(testFileFullPath);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_RESOURCE_KEY));
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+        // can I use jargon to access the file on IRODS and verify that it indeed exists?
+        
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        TestCase.assertTrue("testing file does not exist!", irodsFile.exists());
+        String actualResource = irodsFile.getResource();
+        TestCase.assertEquals("did not set up file in correct resource", testingProperties.getProperty(IRODS_RESOURCE_KEY), actualResource);
+        
+        irodsFile.setResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        TestCase.assertEquals("did not set up file in correct resource", testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY), irodsFile.getResource());
+        
+        irodsFileSystem.close();
+    	
+    }
+    
+    @Test
+    public final void testSetResource() throws Exception {
+    	 // generate a local scratch file
+        String testFileName = "testSetResource.xsl";
+        String testOtherFileName = "fileInOtherResource.xsl";
+
+        String testFileFullPath = FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
+                    GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH +
+                '/', testFileName, 4);
+        
+        String testOtherFileFullPath = FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
+                GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH +
+            '/', testOtherFileName, 4);
+
+    
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        iputCommand.setLocalFileName(testFileFullPath);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_RESOURCE_KEY));
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(testOtherFileFullPath);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        iputCommand.setForceOverride(true);
+
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+        // can I use jargon to access the file on IRODS and verify that it indeed exists?
+        
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        TestCase.assertTrue("testing file does not exist!", irodsFile.exists());
+        String actualResource = irodsFile.getResource();
+        TestCase.assertEquals("did not set up file in correct resource", testingProperties.getProperty(IRODS_RESOURCE_KEY), actualResource);
+        
+        irodsFile.setResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        TestCase.assertEquals("did not set up file in correct resource", testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY), irodsFile.getResource());
+        
+        irodsFileSystem.close();
     	
     }
     
