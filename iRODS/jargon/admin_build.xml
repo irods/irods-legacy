@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Jargon-Admin" default="generate_code_coverage" basedir=".">
+	<description>
+		Supplementary build file with admin tasks
+  </description>
+	<property file="build.properties" />
+	<property name="cobertura.dir" value="/Users/mikeconway/JavaLib/cobertura-1.9.3/" />
+
+	<path id="cobertura.classpath">
+		<fileset dir="${cobertura.dir}">
+			<include name="cobertura.jar" />
+			<include name="lib/**/*.jar" />
+		</fileset>
+	</path>
+
+	<taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
+
+	<path id="class.path">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+			<include name="**/*.zip" />
+		</fileset>
+	</path>
+
+	<path id="class.path.test">
+		<pathelement location="${unittest.build.dir}" />
+		<path refid="class.path" />
+		<path refid="cobertura.classpath" />
+		<pathelement location="${src.build.dir}" />
+	</path>
+
+	<target name="call_rebuild">
+		<echo message="calling Jargon build to rebuild all..." />
+			<property name="set.java.debug" value="true"/>
+		<ant target="rebuild">
+		</ant>
+	</target>
+
+	<target name="unit_test">
+		<echo message="running all junit tests..." />
+		<junit fork="yes" haltonfailure="${fail.on.junit.error}">
+			<sysproperty key="net.sourceforge.cobertura.datafile"
+					file="${instrumented.code.dir}/cobertura.ser" />
+			<classpath location="${instrumented.code.dir}" />
+			<classpath refid="class.path.test" />
+			<formatter type="brief" usefile="false" />
+			<test name="edu.sdsc.jargon.unittest.testsuites.AllTests" />
+		</junit>
+		<echo message="running clean target will clean up unit test scratch directories..." />
+	</target>
+	
+	<target name="unit_test_long">
+			<echo message="running all junit tests..." />
+			<junit fork="yes" haltonfailure="${fail.on.junit.error}">
+				<sysproperty key="net.sourceforge.cobertura.datafile"
+						file="${instrumented.code.dir}/cobertura.ser" />
+				<classpath location="${instrumented.code.dir}" />
+				<classpath refid="class.path.test" />
+				<formatter type="brief" usefile="false" />
+				<test name="edu.sdsc.jargon.unittest.testsuites.LongRunningTests" />
+			</junit>
+			<echo message="running clean target will clean up unit test scratch directories..." />
+		</target>
+
+	<target name="instrument_code_coverage">
+		<echo message="instrumented code coverage..." />
+		<delete file="${instrumented.code.dir}/cobertura.ser" />
+		<cobertura-instrument todir="${instrumented.code.dir}" datafile="${instrumented.code.dir}/cobertura.ser">
+			<ignore regex="org.apache.log4j.*" />
+			<fileset dir="${src.build.dir}">
+				<include name="**/*.class" />
+				<exclude name="**/*Test.class" />
+			</fileset>
+		</cobertura-instrument>
+	</target>
+
+	<target name="generate_code_coverage"
+		depends="call_rebuild, instrument_code_coverage, unit_test">
+		<echo message="producing code coverage report..." />
+		<cobertura-report format="html"
+			destdir="${code.coverage.report.dir}" datafile="${instrumented.code.dir}/cobertura.ser"
+			srcdir="${src.dir}" />
+	</target>
+	
+	<target name="generate_code_coverage_long_tests"
+			depends="call_rebuild, instrument_code_coverage, unit_test_long">
+			<echo message="producing code coverage report..." />
+			<cobertura-report format="html"
+				destdir="${code.coverage.report.dir}" datafile="${instrumented.code.dir}/cobertura.ser"
+				srcdir="${src.dir}" />
+		</target>
+
+</project>
