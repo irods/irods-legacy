@@ -55,6 +55,42 @@ public class ScratchFileUtils {
 		createScratchDirIfNotExists("");
 	}
 
+	
+	/**
+	 * Utility to check if a given directory exists, if so, delete it, then reinitialize 
+	 * it as an empty directory.  Handy for tests where you want an empty scratch directory
+	 * at test initialization or tear-down.
+	 * 
+	 * @param pathUnderScratch <code>String</code> containing a relative path (no leading '/')
+	 * under the configured scratch directory 
+	 * pointing to the directory to initialize
+	 */
+	public void clearAndReinitializeScratchDirectory(String pathUnderScratch) {
+		File scratchDir = new File(testingProperties
+				.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+				+ pathUnderScratch);
+		// if exists, delete it
+		if (scratchDir.exists()) {
+			removeFiles(scratchDir);
+			
+		}
+		
+		scratchDir.mkdirs();
+	}
+	
+	
+	private void removeFiles(File file) {
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			for (int i = 0; i < files.length; i++) {
+				removeFiles(files[i]);
+			}
+		}
+		
+			file.delete();
+		
+	}
+	
 	/**
 	 * Check if the given file exists in the scratch area
 	 * 
