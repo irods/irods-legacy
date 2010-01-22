@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,8 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.sdsc.grid.io.FileFactory;
 import edu.sdsc.grid.io.GeneralFile;
-import edu.sdsc.grid.io.local.LocalFile;
-import edu.sdsc.grid.io.local.LocalFileSystem;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -32,6 +28,8 @@ public class IRODSMultiThreadGetAndPutTest {
 	public static final String IRODS_TEST_SUBDIR_PATH = "IrodsMultiThreadGetAndPutTest";
 	private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 	private static AssertionHelper assertionHelper = null;
+	public static final String testFileNamePrefix = "test";
+	public static final String testFileNameSuffix = ".abc";
 	
 	private static Logger log = LoggerFactory.getLogger(IRODSMultiThreadGetAndPutTest.class);
 
@@ -65,11 +63,11 @@ public class IRODSMultiThreadGetAndPutTest {
 	@Test
 	public void testMultiThreadGetAndPut() throws Exception {
 		// sleep is here to pause while profiler fires up
-		Thread.sleep(30000);
+		//Thread.sleep(30000);
 		
 		int nbrThreads = 6;
 		// generate a set of test files in a common directory
-		int nbrTestFiles = 80;
+		int nbrTestFiles = 30;
 		int testFileLengthMin = 100;
 		int testFileLengthMax = 1000;
 		String testFileNamePrefix = "test";
@@ -135,7 +133,7 @@ public class IRODSMultiThreadGetAndPutTest {
 				}
 			}
 			
-			Thread.sleep(5000);
+			Thread.sleep(1000);
 		}
 		
 		log.debug(">>>>>>>>>>>>>>>>>>>>>>>>im all finished");
@@ -149,6 +147,10 @@ public class IRODSMultiThreadGetAndPutTest {
 		}
 
 		// now check each thread dir
+		
+		for(TestPutLoop testPutLoop : threads) {
+			assertionHelper.assertLocalDirectoriesHaveSameData(absPath, testPutLoop.threadDir);
+		}
 
 	}
 
@@ -193,12 +195,12 @@ public class IRODSMultiThreadGetAndPutTest {
 					log.debug(">>>>>>>>>>>>>>>>>>>>>>>>" + Thread.currentThread().getName()
 							+ " working on:" + fileName);
 
-					irodsFile = new IRODSFile(irodsFileSystem, irodsTargetCollection + "/file" + ctr);
+					irodsFile = new IRODSFile(irodsFileSystem, irodsTargetCollection + "/" + testFileNamePrefix + ctr + testFileNameSuffix);
 					generalFile = FileFactory.newFile(new URI("file:///" + fileName));
 					irodsFile.copyFrom(generalFile, true);
 					
 					// now get the file and stick it back in local scratch for this particular thread
-					generalFile = FileFactory.newFile(new URI("file:///" + threadDir + '/' + "/file" + ctr++));
+					generalFile = FileFactory.newFile(new URI("file:///" + threadDir + '/' + "/" + testFileNamePrefix +  ctr++ + testFileNameSuffix));
 					//generalFile.copyFrom(irodsFile);
 					irodsFile.copyTo(generalFile, true);
 					log.debug(">>>>>>>>irods file copied back at:" + generalFile.getAbsolutePath());

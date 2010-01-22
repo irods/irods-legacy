@@ -31,7 +31,8 @@ Features and Changes
  
 ----------
 Compatibility testing with IRODS2.3
-* expanded unit testing coverage and interation testing
+* expanded unit testing coverage and integration testing
+* multi-thread testing for irodsfedora integration
 
 ----------
 Beginning a 'first order' refactoring of Jargon, with an emphasis on breaking large classes into smaller, reusable components.

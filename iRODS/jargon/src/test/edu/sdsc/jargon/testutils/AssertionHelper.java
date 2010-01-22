@@ -15,10 +15,10 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
 /**
  * Helpful assertions for unit testing IRODS
- *
+ * 
  * @author Mike Conway, DICE (www.irods.org)
  * @since
- *
+ * 
  */
 public class AssertionHelper {
 	private Properties testingProperties = new Properties();
@@ -34,13 +34,14 @@ public class AssertionHelper {
 
 	/**
 	 * Ensures that a scratch file does not exist given the path/file name
-	 *
+	 * 
 	 * @param filePathRelativeToScratch
 	 *            <code>String</code> that gives the relative file path under
 	 *            scratch, with no leading separator character
 	 * @throws IRODSTestAssertionException
 	 */
-	public void assertLocalFileNotExistsInScratch(String filePathRelativeToScratch)
+	public void assertLocalFileNotExistsInScratch(
+			String filePathRelativeToScratch)
 			throws IRODSTestAssertionException {
 		StringBuilder fullPathToLocalFile = computeFullPathToLocalFile(filePathRelativeToScratch);
 		StringBuilder errorMessage = new StringBuilder();
@@ -53,10 +54,10 @@ public class AssertionHelper {
 		}
 
 	}
-	
+
 	/**
 	 * Ensures that a file exists given the path/file name
-	 *
+	 * 
 	 * @param filePathRelativeToScratch
 	 *            <code>String</code> that gives the relative file path under
 	 *            scratch, with no leading separator character
@@ -78,7 +79,7 @@ public class AssertionHelper {
 
 	/**
 	 * Ensures that the given file has the expected length
-	 *
+	 * 
 	 * @param filePathRelativeToScratch
 	 *            <code>String</code> that gives the relative file path under
 	 *            scratch, with no leading separator character
@@ -110,7 +111,7 @@ public class AssertionHelper {
 	/**
 	 * Ensure that the given local file exists and has the expected checksum
 	 * value
-	 *
+	 * 
 	 * @param filePathRelativeToScratch
 	 *            <code>String</code> that gives the relative file path under
 	 *            scratch, with no leading separator character
@@ -164,7 +165,7 @@ public class AssertionHelper {
 
 	/**
 	 * Make sure that a file or collection is in IRODS
-	 *
+	 * 
 	 * @param absoluteIrodsPathUnderScratch
 	 *            <code>String</code> with absolute path (nleading '/', or a
 	 *            path and filename to look for
@@ -203,7 +204,7 @@ public class AssertionHelper {
 
 	/**
 	 * Make sure that a file or collection is not in IRODS
-	 *
+	 * 
 	 * @param relativeIrodsPathUnderScratch
 	 *            <code>String</code> with relative path (no leading '/', or a
 	 *            path and filename to look for
@@ -243,6 +244,94 @@ public class AssertionHelper {
 				message.append(relativeIrodsPathUnderScratch);
 				throw new IRODSTestAssertionException(message.toString(), ice);
 			}
+		}
+
+	}
+
+	/**
+	 * Are two directory trees equal?
+	 * Take two absolute paths to the local file system, recursively walk each tree and compare length,
+	 * file name, and number of subdirectories/files.
+	 * @param dir1 <code>String<code> with the absolute path to a directory
+	 * @param dir2 <code>String<code> with 
+	 * @throws IRODSTestAssertionException
+	 */
+	public void assertLocalDirectoriesHaveSameData(String dir1, String dir2)
+			throws IRODSTestAssertionException {
+		File file1 = new File(dir1);
+		File file2 = new File(dir2);
+
+		if (file1.exists() && file1.isDirectory()) {
+			// ok
+		} else {
+			throw new IRODSTestAssertionException(
+					"the first specified directory does not exist, or is not a directory");
+		}
+
+		if (file2.exists() && file2.isDirectory()) {
+			// ok
+		} else {
+			throw new IRODSTestAssertionException(
+					"the second specified directory does not exist, or is not a directory");
+		}
+
+		// side by side comparison
+
+		File[] file1Files = file1.listFiles();
+		File[] file2Files = file2.listFiles();
+
+		for (int i = 0; i < file1Files.length; i++) {
+			compareTwoFiles(file1Files[i], file2Files[i]);
+		}
+
+	}
+
+	/**
+	 * Recursively match two files/directories for length, number of members, and name
+	 * @param file1 <code>File</code> with a file or directory
+	 * @param file2 <code>File<code> with a file or directory
+	 * @throws IRODSTestAssertionException
+	 */
+	private void compareTwoFiles(File file1, File file2)
+			throws IRODSTestAssertionException {
+		
+		if (file1.isDirectory() && file2.isDirectory()) {
+			File[] file1Files = file1.listFiles();
+			File[] file2Files = file2.listFiles();
+
+			if (file1Files.length != file2Files.length) {
+				throw new IRODSTestAssertionException(
+						"directories differ in the number of files contained, dir1 has "
+								+ file1Files.length + " while dir2 has "
+								+ file2Files.length);
+			}
+
+			for (int i = 0; i < file1Files.length; i++) {
+				compareTwoFiles(file1Files[i], file2Files[i]);
+			}
+
+		} else if (file1.isFile() && file2.isFile()) {
+			if (file1.length() != file2.length()) {
+				throw new IRODSTestAssertionException(
+						"file lengths differ, file1 has "
+								+ file1.length() + " while file2 has "
+								+ file2.length());
+			}
+			
+			if (file1.getName().equals(file2.getName())) {
+				// names are equal
+			} else {
+				throw new IRODSTestAssertionException("file names are different, file1 abs path is:"
+						+ file1.getAbsolutePath() 
+						+ " while file2 abs path is:"
+						+ file2.getAbsolutePath());
+			}
+
+		} else {
+			throw new IRODSTestAssertionException(
+					"file mismatch, one is a file, the other is a directory - file1:"
+							+ file1.getAbsolutePath() + " file2:"
+							+ file2.getAbsolutePath());
 		}
 
 	}

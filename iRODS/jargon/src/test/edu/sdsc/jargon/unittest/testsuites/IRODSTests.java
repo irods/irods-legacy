@@ -28,6 +28,7 @@ import edu.sdsc.grid.io.irods.IRODSFileSystemMetadataQueryTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemModifyMetadataTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemTest;
 import edu.sdsc.grid.io.irods.IRODSFileTest;
+import edu.sdsc.grid.io.irods.IRODSMultiThreadGetAndPutTest;
 import edu.sdsc.grid.io.irods.IRODSRandomAccessFileTest;
 import edu.sdsc.grid.io.irods.IRODSResourceQueryTest;
 import edu.sdsc.grid.io.irods.ResourceTest;
@@ -67,7 +68,8 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSCommandsMiscTest.class,
   ExtendedQueryAttributeTest.class,
   ExtendedQueryAttributesFromPropertiesTest.class,
-  IRODSFileSystemModifyMetadataTest.class
+  IRODSFileSystemModifyMetadataTest.class,
+  IRODSMultiThreadGetAndPutTest.class
 })
 public class IRODSTests {
 
