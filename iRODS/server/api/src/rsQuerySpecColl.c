@@ -80,6 +80,13 @@ openSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int parentInx)
 	return (status);
     }
 
+    if (dataObjInfo->specColl->collClass == LINKED_COLL) {
+        rodsLog (LOG_ERROR,
+          "rsQuerySpecColl: %s is a linked collection",
+          dataObjInp->objPath);
+        return SYS_UNKNOWN_SPEC_COLL_CLASS;
+    }
+
     l3descInx = l3Opendir (rsComm, dataObjInfo);
 
     if (l3descInx < 0) {

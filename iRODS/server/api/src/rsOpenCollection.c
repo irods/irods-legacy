@@ -38,6 +38,12 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
     if (status < 0) return status;
 
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
+    if (rodsObjStatOut->specColl != NULL &&
+      rodsObjStatOut->specColl->collClass == LINKED_COLL) {
+	/* save the linked path */
+	rstrcpy (collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath,
+	  MAX_NAME_LEN);
+    };
 
     collHandle->rodsObjStat = rodsObjStatOut;
 

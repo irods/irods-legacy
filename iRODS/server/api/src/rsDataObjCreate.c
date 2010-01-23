@@ -64,6 +64,17 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (USER_INPUT_PATH_ERR);
     }
 
+    if (rodsObjStatOut != NULL && rodsObjStatOut->specColl != NULL &&
+      rodsObjStatOut->specColl->collClass == LINKED_COLL &&
+      rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+	/* linked obj that does not exist. just replace the path */
+	if (strlen (rodsObjStatOut->specColl->objPath) > 0) {
+	    rstrcpy (dataObjInp->objPath, rodsObjStatOut->specColl->objPath,
+	      MAX_NAME_LEN);
+	    rodsObjStatOut->specColl = NULL;
+	}
+    }
+
     if (rodsObjStatOut == NULL || 
       (rodsObjStatOut->objType == UNKNOWN_OBJ_T &&
       rodsObjStatOut->specColl == NULL)) {

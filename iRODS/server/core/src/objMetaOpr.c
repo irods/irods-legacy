@@ -2868,7 +2868,10 @@ dataObjInfo_t **dataObjInfo)
         specCollPerm = READ_COLL_PERM;
     }
 
-    if (dataObjInp->specColl != NULL) {
+    if (dataObjInp->specColl != NULL && 
+      dataObjInp->specColl->collClass != NO_SPEC_COLL &&
+      dataObjInp->specColl->collClass != LINKED_COLL) {
+	/* if it is linked, it already has been resolved */
         status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
           specCollPerm, 0, dataObjInfo);
         if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
@@ -2903,14 +2906,25 @@ dataObjInfo_t **dataObjInfo)
                 *dataObjInfo = NULL;
             }
         }
-        if (status2==CAT_NO_ROWS_FOUND) return(status);
+	if (status2 >= 0) status = 0;
+#if 0
+	if (status2 ==CAT_NO_ROWS_FOUND) return(status);
         return(status2);
+#endif
     }
-    if (*dataObjInfo != NULL && getStructFileType ((*dataObjInfo)->specColl)
-      >= 0) {
-        dataObjInp->numThreads = NO_THREADING;
+    if (status >= 0) {
+        if ((*dataObjInfo)->specColl != NULL) {
+            if ((*dataObjInfo)->specColl->collClass == LINKED_COLL) {
+		/* already been tranlated */
+		rstrcpy (dataObjInp->objPath, (*dataObjInfo)->objPath,
+		  MAX_NAME_LEN);
+	        (*dataObjInfo)->specColl = NULL;
+	    } else if (getStructFileType ((*dataObjInfo)->specColl) >= 0) {
+                dataObjInp->numThreads = NO_THREADING;
+	    }
+	}
     }
-    return(status);
+    return (status);
 }
 
 int

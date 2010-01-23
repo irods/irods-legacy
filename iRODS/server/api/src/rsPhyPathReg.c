@@ -62,6 +62,9 @@ irsPhyPathReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
       strcmp (tmpStr, TAR_STRUCT_FILE_STR) == 0)) {
 	status = structFileReg (rsComm, phyPathRegInp);
         return (status);
+    } else if (tmpStr != NULL && strcmp (tmpStr, LINK_POINT_STR) == 0) {
+        status = linkCollReg (rsComm, phyPathRegInp);
+        return (status);
     }
 
     status = getRescInfo (rsComm, NULL, &phyPathRegInp->condInput,
@@ -673,3 +676,102 @@ rescInfo_t *rescInfo)
     else
 	return (1);
 }
+
+int
+linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
+{
+    collInp_t collCreateInp;
+    int status;
+    char *linkPath = NULL;
+    char *collType;
+    int len;
+    rodsObjStat_t *rodsObjStatOut = NULL;
+    specCollCache_t *specCollCache = NULL;
+
+    if ((linkPath = getValByKey (&phyPathRegInp->condInput, FILE_PATH_KW))
+      == NULL) {
+        rodsLog (LOG_ERROR,
+          "linkCollReg: No linkPath input for %s",
+          phyPathRegInp->objPath);
+        return (SYS_INVALID_FILE_PATH);
+    }
+
+    collType = getValByKey (&phyPathRegInp->condInput, COLLECTION_TYPE_KW);
+    if (collType == NULL || strcmp (collType, LINK_POINT_STR) != 0) {
+        rodsLog (LOG_ERROR,
+          "linkCollReg: Bad COLLECTION_TYPE_KW for linkPath %s",
+              phyPathRegInp->objPath);
+            return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    if (phyPathRegInp->objPath[0] != '/' || linkPath[0] != '/') {
+        rodsLog (LOG_ERROR,
+          "linkCollReg: linkPath %s or collection %s not absolute path",
+          linkPath, phyPathRegInp->objPath);
+        return (SYS_COLL_LINK_PATH_ERR);
+    }
+
+    len = strlen (phyPathRegInp->objPath);
+    if (strncmp (linkPath, phyPathRegInp->objPath, len) == 0) { 
+        rodsLog (LOG_ERROR,
+          "linkCollReg: linkPath %s inside collection %s",
+          linkPath, phyPathRegInp->objPath);
+        return (SYS_COLL_LINK_PATH_ERR);
+    }
+
+    len = strlen (linkPath);
+    if (strncmp (phyPathRegInp->objPath, linkPath, len) == 0) {
+        rodsLog (LOG_ERROR,
+          "linkCollReg: collection %s inside linkPath %s",
+          linkPath, phyPathRegInp->objPath);
+        return (SYS_COLL_LINK_PATH_ERR);
+    }
+
+    if (getSpecCollCache (rsComm, linkPath, 0,  &specCollCache) >= 0 &&
+     specCollCache->specColl.collClass != LINKED_COLL) {
+        rodsLog (LOG_ERROR,
+          "linkCollReg: linkPath %s is in a spec coll path",
+          linkPath);
+        return (SYS_COLL_LINK_PATH_ERR);
+    }
+
+    status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
+    if (status < 0) return status;
+
+    if (rodsObjStatOut->specColl != NULL && 
+      rodsObjStatOut->specColl->collClass != LINKED_COLL) {
+        free (rodsObjStatOut);
+        rodsLog (LOG_ERROR,
+          "linkCollReg: link collection %s in a spec coll path", 
+	  phyPathRegInp->objPath);
+        return (SYS_COLL_LINK_PATH_ERR);
+    }
+
+    free (rodsObjStatOut);
+
+    if (isCollEmpty (rsComm, phyPathRegInp->objPath) == False) {
+        rodsLog (LOG_ERROR,
+          "linkCollReg: collection %s not empty", phyPathRegInp->objPath);
+        return (SYS_COLLECTION_NOT_EMPTY);
+    }
+
+    /* mk the collection */
+
+    memset (&collCreateInp, 0, sizeof (collCreateInp));
+    rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
+    addKeyVal (&collCreateInp.condInput, COLLECTION_TYPE_KW, collType);
+
+    /* have to use dataObjInp.objPath because structFile path was removed */
+    addKeyVal (&collCreateInp.condInput, COLLECTION_INFO1_KW,
+     linkPath);
+
+    /* try to mod the coll first */
+    status = rsModColl (rsComm, &collCreateInp);
+
+    if (status < 0) {   /* try to create it */
+       status = rsRegColl (rsComm, &collCreateInp);
+    }
+
+    return (status);
+}
+

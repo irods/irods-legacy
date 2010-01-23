@@ -37,6 +37,7 @@ rodsObjStat_t **rodsObjStatOut)
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
+    *rodsObjStatOut = NULL;
     status = getAndConnRcatHost (rsComm, SLAVE_RCAT, dataObjInp->objPath,
       &rodsServerHost);
     if (status < 0) {
@@ -121,7 +122,6 @@ rodsObjStat_t **rodsObjStatOut)
     status = statPathInSpecColl (rsComm, dataObjInp->objPath, 0,
       rodsObjStatOut);
     if (status < 0) status = USER_FILE_DOES_NOT_EXIST;
-
     return (status);
 }
 
@@ -442,14 +442,16 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
         return (status);
     }
  
-    *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
+    if (*rodsObjStatOut == NULL)
+        *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
     memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));
     specColl = (*rodsObjStatOut)->specColl = &specCollCache->specColl;
     rstrcpy ((*rodsObjStatOut)->dataId, specCollCache->collId, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerName, specCollCache->ownerName, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerZone, specCollCache->ownerZone, NAME_LEN);
 
-    status = specCollSubStat (rsComm, specColl, objPath, &dataObjInfo);
+    status = specCollSubStat (rsComm, specColl, objPath, UNKNOW_COLL_PERM,
+      &dataObjInfo);
 
     if (status < 0) {
 	(*rodsObjStatOut)->objType = UNKNOWN_OBJ_T;
@@ -457,10 +459,28 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
 	  NAME_LEN);
         rstrcpy ((*rodsObjStatOut)->modifyTime, specCollCache->modifyTime, 
 	  NAME_LEN);
+        if (specColl->collClass == LINKED_COLL && dataObjInfo != NULL) {
+            rstrcpy ((*rodsObjStatOut)->specColl->objPath,
+              dataObjInfo->objPath, MAX_NAME_LEN);
+	} else {
+	    (*rodsObjStatOut)->specColl->objPath[0] = '\0';
+	}
 	freeAllDataObjInfo (dataObjInfo);
 	/* XXXXX 0 return is creating a problem for fuse */
 	return (0);
     } else {
+	if (specColl->collClass == LINKED_COLL) {
+            rstrcpy ((*rodsObjStatOut)->ownerName, dataObjInfo->dataOwnerName, 
+	      NAME_LEN);
+            rstrcpy ((*rodsObjStatOut)->ownerZone, dataObjInfo->dataOwnerZone, 
+	      NAME_LEN);
+            snprintf ((*rodsObjStatOut)->dataId, NAME_LEN, "%lld", 
+	      dataObjInfo->dataId);
+	    (*rodsObjStatOut)->specColl = dataObjInfo->specColl;
+	    /* save the linked path here */
+            rstrcpy ((*rodsObjStatOut)->specColl->objPath, 
+	      dataObjInfo->objPath, MAX_NAME_LEN);
+	}
 	(*rodsObjStatOut)->objType = status;
 	(*rodsObjStatOut)->objSize = dataObjInfo->dataSize;
         rstrcpy ((*rodsObjStatOut)->createTime, dataObjInfo->dataCreate, 
@@ -525,16 +545,16 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
 
 int
 specCollSubStat (rsComm_t *rsComm, specColl_t *specColl, 
-char *subPath, dataObjInfo_t **dataObjInfo)
+char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
 {
     int status;
     int objType;
     rodsStat_t *rodsStat = NULL;
+    dataObjInfo_t *myDataObjInfo = NULL;;
 
     if (dataObjInfo == NULL) return USER__NULL_INPUT_ERR;
     *dataObjInfo = NULL;
     if (specColl->collClass == MOUNTED_COLL) {
-	dataObjInfo_t *myDataObjInfo;
 
 	/* a mount point */
         myDataObjInfo = *dataObjInfo = 
@@ -564,6 +584,89 @@ char *subPath, dataObjInfo_t **dataObjInfo)
             *dataObjInfo = NULL;
 	    return (status);
         }
+    } else if (specColl->collClass == LINKED_COLL) {
+        /* a link point */
+	int linkCnt = 0;
+	specCollCache_t *specCollCache = NULL;
+        char newPath[MAX_NAME_LEN], prevNewPath[MAX_NAME_LEN];
+	specColl_t *curSpecColl;
+	char *accessStr;
+        dataObjInp_t myDataObjInp;
+	rodsObjStat_t *rodsObjStatOut = NULL;
+
+        *dataObjInfo = NULL;
+        curSpecColl = specColl;
+
+        status = getMountedSubPhyPath (curSpecColl->collection,
+          curSpecColl->phyPath, subPath, newPath);
+        if (status < 0) {
+            return (status);
+        }
+
+	while (getSpecCollCache (rsComm, newPath, 0,  &specCollCache) >= 0) {
+	    if (linkCnt++ >= MAX_LINK_CNT) {
+                rodsLog (LOG_ERROR,
+                  "specCollSubStat: linkCnt for %s exceeds %d",
+                  subPath, MAX_LINK_CNT);
+                return SYS_LINK_CNT_EXCEEDED_ERR;
+            }
+
+	    curSpecColl = &specCollCache->specColl;
+	    rstrcpy (prevNewPath, newPath, MAX_NAME_LEN);
+            status = getMountedSubPhyPath (curSpecColl->collection,
+              curSpecColl->phyPath, prevNewPath, newPath);
+            if (status < 0) {
+                return (status);
+            }
+	}
+        bzero (&myDataObjInp, sizeof (myDataObjInp));
+        rstrcpy (myDataObjInp.objPath, newPath, MAX_NAME_LEN);
+
+        status = collStat (rsComm, &myDataObjInp, &rodsObjStatOut);
+	if (status >= 0) {	/* a collection */
+            myDataObjInfo = *dataObjInfo =
+              (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+            memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
+	    myDataObjInfo->specColl = curSpecColl;
+            rstrcpy (myDataObjInfo->objPath, newPath, MAX_NAME_LEN);
+	    myDataObjInfo->dataId = strtoll (rodsObjStatOut->dataId, 0, 0);
+	    rstrcpy (myDataObjInfo->dataOwnerName, rodsObjStatOut->ownerName, 
+	      NAME_LEN);
+	    rstrcpy (myDataObjInfo->dataOwnerZone, rodsObjStatOut->ownerZone, 
+	      NAME_LEN);
+	    rstrcpy (myDataObjInfo->dataCreate, rodsObjStatOut->createTime,
+	      TIME_LEN);
+	    rstrcpy (myDataObjInfo->dataModify, rodsObjStatOut->modifyTime,
+	      TIME_LEN);
+	    free (rodsObjStatOut);
+	    return COLL_OBJ_T;
+	}
+
+	/* data object */
+	if (specCollPerm == READ_COLL_PERM) {
+	    accessStr = ACCESS_READ_OBJECT;
+	} else if (specCollPerm == WRITE_COLL_PERM) {
+	    accessStr = ACCESS_DELETE_OBJECT;
+	} else {
+	    accessStr = NULL;
+	}
+
+	status = getDataObjInfo (rsComm, &myDataObjInp, dataObjInfo,
+          accessStr, 0);
+        if (status < 0) {
+            myDataObjInfo = *dataObjInfo =
+              (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+            memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
+	    myDataObjInfo->specColl = curSpecColl;
+            rstrcpy (myDataObjInfo->objPath, newPath, MAX_NAME_LEN);
+            rodsLog (LOG_DEBUG,
+              "specCollSubStat: getDataObjInfo error for %s, status = %d",
+              newPath, status);
+            return (status);
+	} else {
+	    (*dataObjInfo)->specColl = curSpecColl;
+	    return DATA_OBJ_T;
+	}
     } else if (getStructFileType (specColl) >= 0) {
 	/* bundle */
 	dataObjInp_t myDataObjInp;
@@ -870,7 +973,7 @@ specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
     }
 
     status = specCollSubStat (rsComm, cachedSpecColl, objPath,
-      dataObjInfo);
+      specCollPerm, dataObjInfo);
 
 #if 0
     if (*dataObjInfo != NULL && getStructFileType ((*dataObjInfo)->specColl)

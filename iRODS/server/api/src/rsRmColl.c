@@ -96,7 +96,13 @@ collOprStat_t **collOprStat)
         if (status < 0 && status != CAT_NO_ROWS_FOUND) {
 	    return status;
         } else if (status == COLL_OBJ_T && dataObjInfo->specColl != NULL) {
-            status = l3Rmdir (rsComm, dataObjInfo);
+	    if (dataObjInfo->specColl->collClass == LINKED_COLL) {
+                rstrcpy (rmCollInp->collName, dataObjInfo->objPath,
+                  MAX_NAME_LEN);
+                status = svrUnregColl (rsComm, rmCollInp);
+	    } else {
+                status = l3Rmdir (rsComm, dataObjInfo);
+	    }
 	    freeDataObjInfo (dataObjInfo);
         } else {
 	    status = svrUnregColl (rsComm, rmCollInp);
@@ -133,7 +139,14 @@ collOprStat_t **collOprStat)
 
     if (status < 0 && status != CAT_NO_ROWS_FOUND) {
         return status;
-    } else if (status != COLL_OBJ_T || dataObjInfo->specColl == NULL) {
+    }
+    if (status == COLL_OBJ_T && dataObjInfo->specColl != NULL &&
+      dataObjInfo->specColl->collClass == LINKED_COLL) {
+        rstrcpy (rmCollInp->collName, dataObjInfo->objPath,
+          MAX_NAME_LEN);
+	dataObjInfo->specColl = NULL;
+    }
+    if (status != COLL_OBJ_T || dataObjInfo->specColl == NULL) {
 	/* a normal coll */
 	if (rmCollInp->oprType != UNREG_OPR &&
 	  getValByKey (&rmCollInp->condInput, FORCE_FLAG_KW) == NULL &&
@@ -278,7 +291,13 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
         status = 0;
     } else {
         if (dataObjInfo != NULL && dataObjInfo->specColl != NULL) {
-            status = l3Rmdir (rsComm, dataObjInfo);
+            if (dataObjInfo->specColl->collClass == LINKED_COLL) {
+                rstrcpy (rmCollInp->collName, dataObjInfo->objPath,
+                  MAX_NAME_LEN);
+                status = svrUnregColl (rsComm, rmCollInp);
+            } else {
+                status = l3Rmdir (rsComm, dataObjInfo);
+	    }
         } else {
             status = svrUnregColl (rsComm, rmCollInp);
 	    if (status < 0) savedStatus = status;

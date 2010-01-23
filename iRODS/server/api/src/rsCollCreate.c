@@ -69,6 +69,14 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 	} else if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST) { 
             /* for STRUCT_FILE_COLL to make a directory in the structFile, the
              * COLLECTION_TYPE_KW must be set */
+	    if (dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
+	      dataObjInfo->specColl->collClass == LINKED_COLL) {
+                rstrcpy (collCreateInp->collName, dataObjInfo->objPath,
+                  MAX_NAME_LEN);
+                status = _rsRegColl (rsComm, collCreateInp);
+	    } else {
+	        status = l3Mkdir (rsComm, dataObjInfo);
+	    }
 #if 0
 	    if (getValByKey (&collCreateInp->condInput, COLLECTION_TYPE_KW) ==
               NULL && dataObjInfo->specColl->class == STRUCT_FILE_COLL) {
@@ -76,9 +84,7 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 	      dataObjInfo->specColl) == NORMAL_OPR_ON_STRUCT_FILE_COLL) {
         	status = _rsRegColl (rsComm, collCreateInp);
 	    } else {
-#endif
 	        status = l3Mkdir (rsComm, dataObjInfo);
-#if 0
 	    }
 #endif
 	    freeDataObjInfo (dataObjInfo);
