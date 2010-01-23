@@ -310,17 +310,23 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
         return (USER_INPUT_OPTION_ERR);
     }
 
-    collLen = strlen (srcColl);
-
+#if 0
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
       &collHandle);
-
+#else
+    status = rclOpenCollection (conn, srcColl, 0, &collHandle);
+#endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "getCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }
+#if 0
+    collLen = strlen (srcColl);
+#else
+    collLen = getOpenedCollLen (&collHandle);
+#endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
@@ -370,7 +376,9 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
                 fprintf (stdout, "C- %s:\n", targChildPath);
             }
 
+#if 0
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
+#endif
                 /* the child is a spec coll. need to drill down */
                 dataObjCopyInp_t childDataObjCopyInp;
 
@@ -385,7 +393,9 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
                  status != SYS_SPEC_COLL_OBJ_NOT_EXIST) {
                     return (status);
                 }
+#if 0
             }
+#endif
         }
     }
     rclCloseCollection (&collHandle);

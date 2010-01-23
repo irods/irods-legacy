@@ -2815,6 +2815,9 @@ getSpecCollTypeStr (specColl_t *specColl, char *outStr)
     if (specColl->collClass == MOUNTED_COLL) {
 	rstrcpy (outStr, MOUNT_POINT_STR, NAME_LEN);
 	return (0);
+    } else if (specColl->collClass == LINKED_COLL) {
+        rstrcpy (outStr, LINK_POINT_STR, NAME_LEN);
+        return (0);
     } else {
 	for (i = 0; i < NumStructFileType; i++) {
 	    if (specColl->type == StructFileTypeDef[i].type) {
@@ -2850,6 +2853,11 @@ char *collInfo2, specColl_t *specColl)
         rstrcpy (specColl->resource, collInfo2, NAME_LEN);
 
 	return (0);
+    } else if (strcmp (type, LINK_POINT_STR) == 0) {
+        specColl->collClass = LINKED_COLL;
+        rstrcpy (specColl->phyPath, collInfo1, MAX_NAME_LEN);
+
+        return (0);
     } else {
         for (i = 0; i < NumStructFileType; i++) {
             if (strcmp (type, StructFileTypeDef[i].typeName) == 0) {

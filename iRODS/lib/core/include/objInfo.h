@@ -33,6 +33,7 @@ extern "C" {
 #define GENERIC_DT_STR	"generic"
 #define TAR_DT_STR	"tar file"
 #define HAAW_DT_STR	"haaw file"
+#define MAX_LINK_CNT	20	/* max number soft link in a path */
 
 typedef struct RescInfo
 {
@@ -82,6 +83,7 @@ typedef enum {         /* class of SpecColl */
     NO_SPEC_COLL,
     STRUCT_FILE_COLL,
     MOUNTED_COLL,
+    LINKED_COLL,
 } specCollClass_t;
 
 typedef enum {          /* structFile type */
@@ -99,6 +101,7 @@ typedef enum {          /* specColl operation type */
 #define HAAW_STRUCT_FILE_STR		"haawStructFile"
 #define TAR_STRUCT_FILE_STR		"tarStructFile"
 #define MOUNT_POINT_STR		"mountPoint"
+#define LINK_POINT_STR		"linkPoint"
 #define INHERIT_PAR_SPEC_COLL_STR	"inheritParentSpecColl"
 
 #define UNMOUNT_STR		"unmount"

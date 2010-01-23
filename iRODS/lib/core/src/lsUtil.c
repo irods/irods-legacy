@@ -487,7 +487,8 @@ printCollCollEnt (collEnt_t *collEnt, int flags)
 	if (collEnt->specColl.collClass == NO_SPEC_COLL) {
 	    printf ("  C- %s\n", collEnt->collName);
         } else {
-	    if (collEnt->specColl.collClass == MOUNTED_COLL) {
+	    if (collEnt->specColl.collClass == MOUNTED_COLL ||
+	      collEnt->specColl.collClass == LINKED_COLL) {
                 printf ("  C- %s  %6.6s  %s  %s   %s\n",
                   collEnt->collName, typeStr,
                   collEnt->specColl.objPath, collEnt->specColl.phyPath,

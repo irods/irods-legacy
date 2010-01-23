@@ -121,6 +121,11 @@ dataObjInp_t *dataObjOprInp, rodsPathInp_t *rodsPathInp)
             /* the collection is a filesystem mount point */
             addKeyVal (&dataObjOprInp->condInput,
              COLLECTION_TYPE_KW, MOUNT_POINT_STR);
+        } else if (strcmp (mountType, "l") == 0 ||
+          strcmp (mountType, "link") == 0) {
+            /* the collection is a softlink point */
+            addKeyVal (&dataObjOprInp->condInput,
+             COLLECTION_TYPE_KW, LINK_POINT_STR);
         }
     } else if (rodsArgs->purgeCacheDir == True) {
         dataObjOprInp->oprType =

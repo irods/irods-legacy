@@ -60,7 +60,7 @@ statPathInSpecColl (rsComm_t *rsComm, char *objPath,
 int inCachOnly, rodsObjStat_t **rodsObjStatOut);
 int
 specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
-char *subPath, dataObjInfo_t **dataObjInfo);
+char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo);
 int
 getSpecCollCache (rsComm_t *rsComm, char *objPath, int inCachOnly,
 specCollCache_t **specCollCache);

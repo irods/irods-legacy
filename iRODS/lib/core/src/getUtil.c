@@ -284,11 +284,14 @@ rodsRestart_t *rodsRestart)
         return (USER_INPUT_OPTION_ERR);
     }
 
-    collLen = strlen (srcColl);
 
     printCollOrDir (targDir, LOCAL_DIR_T, rodsArgs, dataObjOprInp->specColl);
+#if 0
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG, 
       &collHandle);
+#else
+    status = rclOpenCollection (conn, srcColl, 0, &collHandle);
+#endif
 
     if (status < 0) {
 	rodsLog (LOG_ERROR,
@@ -296,6 +299,11 @@ rodsRestart_t *rodsRestart)
           srcColl, status);
         return status;
     }
+#if 0
+    collLen = strlen (srcColl);
+#else
+    collLen = getOpenedCollLen (&collHandle);
+#endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             rodsLong_t mySize;
@@ -357,7 +365,10 @@ rodsRestart_t *rodsRestart)
 
             mkdirR (targDir, targChildPath, 0750);
 
+#if 0
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
+	    if (collHandle.rodsObjStat->specColl != NULL) {
+#endif
                 /* the child is a spec coll. need to drill down */
                 dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;
@@ -368,7 +379,9 @@ rodsRestart_t *rodsRestart)
                     return (status);
                 }
             }
+#if 0
         }
+#endif
     }
     rclCloseCollection (&collHandle);
 

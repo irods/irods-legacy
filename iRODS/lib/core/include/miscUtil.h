@@ -104,6 +104,7 @@ typedef struct CollHandle {
     dataObjInp_t dataObjInp;
     dataObjSqlResult_t dataObjSqlResult;
     collSqlResult_t collSqlResult;
+    char linkedObjPath[MAX_NAME_LEN];
 } collHandle_t;
     
 /* the output of rclReadCollection */
@@ -223,6 +224,8 @@ int
 getDirSizeForProgStat (char *srcDir, operProgress_t *operProgress);
 irodsGuiProgressCallbak 
 iCommandProgStat (operProgress_t *operProgress);
+int
+getOpenedCollLen (collHandle_t *collHandle);
 #ifdef  __cplusplus
 }
 #endif

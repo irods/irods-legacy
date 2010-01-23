@@ -195,17 +195,29 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
 
     fprintf (stdout, "C- %s:\n", srcColl);
 
-    collLen = strlen (srcColl);
-
+#if 0
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
       &collHandle);
-
+#else
+    status = rclOpenCollection (conn, srcColl, 0, &collHandle);
+#endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "getCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }
+#if 0
+    collLen = strlen (srcColl);
+#else
+    if (collHandle.rodsObjStat->specColl != NULL &&
+      collHandle.rodsObjStat->specColl->collClass != LINKED_COLL) {
+        /* no trim for mounted coll */
+        rclCloseCollection (&collHandle);
+        return 0;
+    }
+    collLen = getOpenedCollLen (&collHandle);
+#endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
@@ -221,7 +233,16 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
                 savedStatus = status;
                 status = 0;
             }
-	}
+        } else if (collEnt.objType == COLL_OBJ_T) {
+            dataObjInp_t childDataObjInp;
+            childDataObjInp = *dataObjInp;
+            childDataObjInp.specColl = &collEnt.specColl;
+            status = chksumCollUtil (conn, collEnt.collName, myRodsEnv,
+              rodsArgs, &childDataObjInp, collInp);
+            if (status < 0 && status != CAT_NO_ROWS_FOUND) {
+                return (status);
+            }
+        }
     }
     rclCloseCollection (&collHandle);
     if (savedStatus < 0) {

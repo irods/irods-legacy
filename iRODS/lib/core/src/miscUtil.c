@@ -286,6 +286,9 @@ genAllInCollQCond (char *collection, char *collQCond)
     return (0);
 }
 
+/* queryCollInColl - query the subCollections in a collection.
+ */
+
 int
 queryCollInColl (queryHandle_t *queryHandle, char *collection,
 int flags, genQueryInp_t *genQueryInp,
@@ -323,6 +326,8 @@ genQueryOut_t **genQueryOut)
     return (status);
 }
 
+/* queryDataObjInColl - query the DataObj in a collection.
+ */
 int
 queryDataObjInColl (queryHandle_t *queryHandle, char *collection, 
 int flags, genQueryInp_t *genQueryInp,
@@ -937,6 +942,12 @@ collHandle_t *collHandle)
     }
 
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
+    if (rodsObjStatOut->specColl != NULL &&
+      rodsObjStatOut->specColl->collClass == LINKED_COLL) {
+        /* save the linked path */
+        rstrcpy (collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath,
+          MAX_NAME_LEN);
+    };
 
     collHandle->rodsObjStat = rodsObjStatOut;
 
@@ -1081,13 +1092,19 @@ genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
 
     /* query for sub-collections */
     if (collHandle->dataObjInp.specColl != NULL) {
-        /* query */
-        addKeyVal (&collHandle->dataObjInp.condInput,
-          SEL_OBJ_TYPE_KW, "collection");
-	collHandle->dataObjInp.openFlags = 0;    /* start over */
-        status = (*queryHandle->querySpecColl) ((rcComm_t *) queryHandle->conn, 
-          &collHandle->dataObjInp, &genQueryOut);
-
+        if (collHandle->dataObjInp.specColl->collClass == LINKED_COLL) {
+            memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
+            status = queryCollInColl (queryHandle,
+              collHandle->linkedObjPath, collHandle->flags & (~RECUR_QUERY_FG),
+              &collHandle->genQueryInp, &genQueryOut);
+        } else {
+            addKeyVal (&collHandle->dataObjInp.condInput,
+              SEL_OBJ_TYPE_KW, "collection");
+	    collHandle->dataObjInp.openFlags = 0;    /* start over */
+            status = (*queryHandle->querySpecColl) (
+	      (rcComm_t *) queryHandle->conn, &collHandle->dataObjInp, 
+	      &genQueryOut);
+	}
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
         status = queryCollInColl (queryHandle,
@@ -1115,12 +1132,19 @@ genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
     int status = 0;
 
     if (collHandle->dataObjInp.specColl != NULL) {
-        /* query */
-        addKeyVal (&collHandle->dataObjInp.condInput,
-          SEL_OBJ_TYPE_KW, "dataObj");
-        status = (*queryHandle->querySpecColl) ((rcComm_t *) queryHandle->conn,
-          &collHandle->dataObjInp, &genQueryOut);
-
+	if (collHandle->dataObjInp.specColl->collClass == LINKED_COLL) {
+            memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
+            status = queryDataObjInColl (queryHandle,
+              collHandle->linkedObjPath, collHandle->flags & (~RECUR_QUERY_FG),
+              &collHandle->genQueryInp, &genQueryOut,
+              &collHandle->dataObjInp.condInput);
+	} else {
+            addKeyVal (&collHandle->dataObjInp.condInput,
+              SEL_OBJ_TYPE_KW, "dataObj");
+            status = (*queryHandle->querySpecColl) 
+	      ((rcComm_t *) queryHandle->conn,
+	      &collHandle->dataObjInp, &genQueryOut);
+	}
     } else {
         memset (&collHandle->genQueryInp, 0, sizeof (genQueryInp_t));
         status = queryDataObjInColl (queryHandle,
@@ -1716,5 +1740,19 @@ iCommandProgStat (operProgress_t *operProgress)
 	}
     }
     return NULL;
+}
+
+int
+getOpenedCollLen (collHandle_t *collHandle)
+{
+    int len;
+
+    if (collHandle->rodsObjStat->specColl != NULL &&
+      collHandle->rodsObjStat->specColl->collClass == LINKED_COLL) {
+	len = strlen (collHandle->linkedObjPath);
+    } else {
+	len = strlen (collHandle->dataObjInp.objPath);
+    }
+    return (len);
 }
 
