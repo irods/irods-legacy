@@ -204,12 +204,11 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		if (!isConnected()) {
 			return;
 		}
-		// attempt to send shutdown packet
 
 		try {
 			connection.close();
 		} catch (IOException ex) {
-			log.error("IOException closing: ", ex);
+			log.warn("IOException closing: ", ex);
 		}
 		connected = false;
 	}

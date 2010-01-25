@@ -67,7 +67,7 @@ public class IRODSFileInputStreamParallelTest {
     	String testFileName = "testFileGet.csv";
     	String getFileName = testingProperties.getProperty(
                 GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH + '/' +"testFileGetReturn.csv";
-    	long testFileLength = 70000;
+    	long testFileLength = 70000 * 1024;
 
         String testFileFullPath =  FileGenerator.generateFileOfFixedLengthGivenName(testingProperties.getProperty(
                 GENERATED_FILE_DIRECTORY_KEY) + IRODS_TEST_SUBDIR_PATH + '/', testFileName, testFileLength);

@@ -229,14 +229,14 @@ class IRODSCommands {
 	 *             Socket error
 	 */
 	synchronized void close() throws JargonException {
-		//log.info("closing connection");
 		if (isConnected()) {
 			try {
 				//log.info("sending disconnect message");
 				irodsConnection.send(irodsConnection.createHeader(
 						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();
-			} catch (IOException e) {// TODO Auto-generated catch block
+				irodsConnection.shutdown();
+			} catch (IOException e) {
 				e.printStackTrace();
 				log.error("IOException closing connection", e);
 				irodsConnection.obliterateConnectionAndDiscardErrors();
@@ -244,7 +244,6 @@ class IRODSCommands {
 						"error sending disconnect on a close operation");
 			}
 		}
-		irodsConnection.shutdown();
 	}
 
 	/**
@@ -1714,6 +1713,12 @@ class IRODSCommands {
 			s.getOutputStream().write(outputBuffer);
 			which = incThread;
 			incThread++;
+			if (log.isInfoEnabled()) {
+			log.info("transfer thread details:");
+			log.info("    host:" + host);
+			log.info("    port:" + port);
+			log.info("    destination:" + destination.getFile().getAbsolutePath());
+			}
 		}
 
 		/**
@@ -1852,13 +1857,23 @@ class IRODSCommands {
 		}
 
 		void get() throws IOException {
+			log.info("parallel transfer get");
 			// read the header
 			int operation = readInt();
+			if (log.isInfoEnabled()) {
+				log.info("   operation:" + operation);
+			}
 			// Where to seek into the data
 			long offset = readLong();
+			if (log.isInfoEnabled()) {
+				log.info("   offset:" + offset);
+			}
 			// How much to read/write
 			long length = readLong();
-
+			if (log.isInfoEnabled()) {
+				log.info("   length:" + length);
+			}
+			
 			// Holds all the data for transfer
 			byte[] buffer = null;
 			int read = 0;
@@ -1870,8 +1885,10 @@ class IRODSCommands {
 				return;
 			}
 
-			if (offset < 0)
+			if (offset < 0) {
+				log.warn("offset < 0 in transfer get() operation, return from get method");
 				return;
+			}
 			else if (offset > 0) {
 				local.seek(offset);
 			}
@@ -1884,19 +1901,23 @@ class IRODSCommands {
 			}
 
 			while (length > 0) {
+				log.debug("in read loop");
 				read = in.read(buffer, 0, Math.min(
 						IRODSConnection.OUTPUT_BUFFER_LENGTH, (int) length));
 				if (read > 0) {
+					log.debug("    result of read > 0");
 					length -= read;
 					if (length == 0) {
+						log.debug("    length == 0, write local");
 						local.write(buffer, 0, read);
 
 						// read the next header
 						operation = readInt();
 						offset = readLong();
 						length = readLong();
-
+						log.debug("    reading next header");
 						if (operation == DONE_OPR) {
+							log.debug("    done");
 							return;
 						}
 
@@ -1906,8 +1927,10 @@ class IRODSCommands {
 						// subtract the status message, an int = 9999, and a
 						// bunch of 0's
 					} else if (length < 0) {
+						log.error("    length < 0, throwing ProtocolException");
 						throw new ProtocolException();
 					} else {
+						log.debug("    length > 0, writing to local");
 						local.write(buffer, 0, read);
 					}
 				}
