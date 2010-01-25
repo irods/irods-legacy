@@ -160,7 +160,7 @@ class IRODSCommands {
 		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0,
 				0, AUTH_REQUEST_AN));
 		irodsConnection.flush();
-		Tag message = irodsConnection.readMessage(false); 
+		Tag message = irodsConnection.readMessage(false);
 
 		// Create and send the response
 
@@ -233,13 +233,15 @@ class IRODSCommands {
 		if (isConnected()) {
 			try {
 				log.info("sending disconnect message");
-				irodsConnection.send(irodsConnection.createHeader(RODS_DISCONNECT, 0, 0, 0, 0));
+				irodsConnection.send(irodsConnection.createHeader(
+						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();
 			} catch (IOException e) {// TODO Auto-generated catch block
 				e.printStackTrace();
 				log.error("IOException closing connection", e);
 				irodsConnection.obliterateConnectionAndDiscardErrors();
-				throw new JargonException("error sending disconnect on a close operation");
+				throw new JargonException(
+						"error sending disconnect on a close operation");
 			}
 		}
 		irodsConnection.shutdown();
@@ -757,6 +759,10 @@ class IRODSCommands {
 		 * oprType; struct *SpecColl_PI; struct KeyValPair_PI;"
 		 */
 
+		if (log.isInfoEnabled()) {
+			log.info("get of source:" + source.getAbsolutePath() + " into dest:" + destination.getAbsolutePath() + " with resource:" + resource);
+		}
+		
 		Tag rescKeyValueTag;
 
 		if (resource == null || resource.length() == 0) {
@@ -776,27 +782,39 @@ class IRODSCommands {
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_GET_AN);
 
 		// irods file doesn't exist
-		if (message == null)
+		if (message == null) {
+			log.warn("irods file does not exist, null was returned from the get, return with no update done");
 			return;
+		}
 
 		// Need the total dataSize
 		Tag temp = message.getTag(MsgHeader_PI);
 		if (temp == null) {
 			// length is zero
+			log.info("create a new file, length is zero");
 			destination.createNewFile();
 			return;
 		}
 		temp = temp.getTag(bsLen);
 		if (temp == null) {
+			log.info("no size returned, return from put with no update done");
 			temp = message.getTag(MsgHeader_PI).getTag(bsLen);
 			return;
 		}
 		long length = temp.getIntValue();
+		
+		if (log.isInfoEnabled()) {
+			log.info("transfer length is:" + length);
+		}
 
 		// if length == zero, check for multiple thread copy
 		if (length == 0) {
 			int threads = message.getTag(numThreads).getIntValue();
+			if (log.isInfoEnabled()) {
+				log.info("number of threads for this transfer = " + threads);
+			}
 			if (threads > 0) {
+				log.info("parallel transfer for this get");
 				String host = message.getTag(PortList_PI).getTag(hostAddr)
 						.getStringValue();
 				int port = message.getTag(PortList_PI).getTag(portNum)
@@ -810,6 +828,9 @@ class IRODSCommands {
 					transfer[i] = new TransferThread(host, port, pass,
 							FileFactory.newRandomAccessFile(destination, "rw"));
 					transferThreads[i] = new Thread(transfer[i]);
+					if (log.isInfoEnabled()) {
+						log.info("starting a transfer thread number:" + i + " with thread name:" + transferThreads[i].getName());
+					}
 				}
 				for (int i = 0; i < threads; i++) {
 					transferThreads[i].start();
@@ -827,14 +848,18 @@ class IRODSCommands {
 						e.printStackTrace();
 					}
 				}
+				log.info("closing threads");
 				for (int i = 0; i < threads; i++) {
 					transfer[i].close();
 				}
+				log.info("parallel transfer complete");
 			}
 		} else {
+			log.info("normal file transfer started");
 			// read the message byte stream into the local file
 			irodsConnection.read(FileFactory.newRandomAccessFile(destination,
 					"rw"), length);
+			log.info("transfer is complete");
 		}
 
 	}
@@ -870,10 +895,15 @@ class IRODSCommands {
 			throws IOException {
 
 		String resource = destination.getResource();
-		
+
 		long length = source.length();
 
 		if (length > TRANSFER_THREAD_SIZE) {
+			if (log.isInfoEnabled()) {
+				log.info("put operation will use parallel transfer, size:"
+						+ length
+						+ " is greater that the TRANSFER_THREAD_SIZE setting");
+			}
 			String[][] keyword = {
 					{ IRODSMetaDataSet.DATA_TYPE_KW, destination.getDataType() },
 					{ null }, { null } };
@@ -888,7 +918,7 @@ class IRODSCommands {
 					new Tag[] {
 							new Tag(objPath, destination.getAbsolutePath()),
 							new Tag(createMode, 448), // octal for 700 owner has
-														// rw
+							// rw
 							new Tag(openFlags, 1), new Tag(offset, 0),
 							new Tag(dataSize, length), new Tag(numThreads, 0),
 							new Tag(oprType, PUT_OPR),
@@ -897,10 +927,15 @@ class IRODSCommands {
 			message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PUT_AN);
 
 			if (message == null) {
+				log
+						.warn("send of put returned null, currently is ignored and null is returned from put operation");
 				return;
 			}
 
 			int threads = message.getTag(numThreads).getIntValue();
+			if (log.isInfoEnabled()) {
+				log.info("tranfer will be done using " + threads + " threads");
+			}
 			if (threads > 0) {
 				InputStream[] inputs = new InputStream[threads];
 				for (int i = 0; i < threads; i++) {
@@ -926,6 +961,12 @@ class IRODSCommands {
 								transferLength // length
 						);
 						transferThreads[i] = new Thread(transfer[i]);
+						if (log.isInfoEnabled()) {
+							log.info("creating transfer thread number:" + i
+									+ "with thread name:"
+									+ transferThreads[i].getName());
+						}
+
 					}
 					// last thread is a little different
 					transfer[threads - 1] = new TransferThread(host, port,
@@ -936,6 +977,10 @@ class IRODSCommands {
 					);
 					transferThreads[threads - 1] = new Thread(
 							transfer[threads - 1]);
+					if (log.isInfoEnabled()) {
+						log.info("creating final tranfer thread as:"
+								+ transferThreads[threads - 1].getName());
+					}
 
 					for (int i = 0; i < threads; i++) {
 						transferThreads[i].start();
@@ -953,16 +998,20 @@ class IRODSCommands {
 							e.printStackTrace();
 						}
 					}
+					log.info("closing threads");
 					for (int i = 0; i < threads; i++) {
 						if (transferThreads[i].isAlive())
 							transfer[i].close();
 					}
+					
+					log.info("transfer is complete");
 
 					// return complete( file descriptor )
 					operationComplete(message.getTag(l1descInx).getIntValue());
 				}
 			}
 		} else {
+			log.info("transfer done without parallel mode");
 			String[][] keyword = {
 					{ IRODSMetaDataSet.DATA_TYPE_KW, destination.getDataType() },
 					{ IRODSMetaDataSet.DATA_INCLUDED_KW, "" }, { null },
@@ -978,7 +1027,7 @@ class IRODSCommands {
 					new Tag[] {
 							new Tag(objPath, destination.getAbsolutePath()),
 							new Tag(createMode, 448), // octal for 700 owner has
-														// rw
+							// rw
 							new Tag(openFlags, 1), new Tag(offset, 0),
 							new Tag(dataSize, length), new Tag(numThreads, 0),
 							new Tag(oprType, PUT_OPR),
@@ -987,6 +1036,7 @@ class IRODSCommands {
 			// exception thrown on error.
 			irodsFunction(RODS_API_REQ, message, 0, null, length, FileFactory
 					.newFileInputStream(source), DATA_OBJ_PUT_AN);
+			log.info("transfer complete");
 		}
 	}
 
@@ -1230,7 +1280,8 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
 
-	//FIXME: I don't think this is thread safe since it returns an input stream...do a multi-threaded test cae
+	// FIXME: I don't think this is thread safe since it returns an input
+	// stream...do a multi-threaded test cae
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress, String somePathInfoMaybe_whoknows)
 			throws IOException {
