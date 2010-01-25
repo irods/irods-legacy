@@ -136,7 +136,7 @@ class IRODSCommands {
 
 		if (log.isDebugEnabled()) {
 			date = new Date().getTime();
-			log.debug("Connecting to server, " + account.getHost() + ":"
+			log.info("Connecting to server, " + account.getHost() + ":"
 					+ account.getPort() + " running version: "
 					+ IRODSAccount.version + " as username: "
 					+ account.getUserName() + "\ntime: " + date);
@@ -229,10 +229,10 @@ class IRODSCommands {
 	 *             Socket error
 	 */
 	synchronized void close() throws JargonException {
-		log.info("closing connection");
+		//log.info("closing connection");
 		if (isConnected()) {
 			try {
-				log.info("sending disconnect message");
+				//log.info("sending disconnect message");
 				irodsConnection.send(irodsConnection.createHeader(
 						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();
@@ -372,7 +372,7 @@ class IRODSCommands {
 		String out = message.parseTag();
 
 		if (log.isDebugEnabled()) {
-			log.debug(out);
+			log.info(out);
 		}
 		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
 				.getBytes(encoding).length, errorLength, byteStringLength,
@@ -392,8 +392,8 @@ class IRODSCommands {
 			InputStream byteStream, int intInfo) throws IOException {
 		String out = message.parseTag();
 
-		if (log.isDebugEnabled()) {
-			log.debug(out);
+		if (log.isInfoEnabled()) {
+			log.info(out);
 		}
 		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
 				.getBytes(encoding).length, errorLength, byteStringLength,
@@ -1865,7 +1865,7 @@ class IRODSCommands {
 
 			if (operation != GET_OPR) {
 				if (log.isDebugEnabled())
-					log.debug("Parallel transfer expected GET, "
+					log.warn("Parallel transfer expected GET, "
 							+ "server requested " + operation);
 				return;
 			}

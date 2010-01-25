@@ -143,7 +143,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		commands = new IRODSCommands();
 
 		try {
-			log.debug("connecting the commands to the irods socket");
+			log.info("connecting the commands to the irods socket");
 			commands.connect(irodsAccount);
 		} catch (JargonException e1) {
 			log
@@ -159,7 +159,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		// Get the username if they logged in with just a GSSCredential
 		if (irodsAccount.getUserName() == null
 				|| irodsAccount.getUserName().equals("")) {
-			log.debug("user logged in with GSI credential");
+			log.info("user logged in with GSI credential");
 			MetaDataRecordList[] rl = null;
 			try {
 				rl = query(
@@ -177,7 +177,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			}
 
 			if (rl != null && rl.length > 0) {
-				log.debug("setting irods account for GSI user:"
+				log.info("setting irods account for GSI user:"
 						+ irodsAccount.getServerDN());
 				irodsAccount.setUserName(rl[0].getStringValue(0));
 				irodsAccount.setZone(rl[0].getStringValue(1));
@@ -534,7 +534,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * a ClosedChannelException will be thrown.
 	 */
 	public void close() throws IOException {
-		log.info("closing IRODSFileSystem connection");
+		//log.info("closing IRODSFileSystem connection");
 		try {
 			commands.close();
 		} catch (JargonException e) {

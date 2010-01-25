@@ -34,7 +34,7 @@ public class IRODSRandomAccessFileTest {
 	private static Properties testingProperties = new Properties();
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	private static ScratchFileUtils scratchFileUtils = null;
-	public static final String IRODS_TEST_SUBDIR_PATH = "IrodsRandomAccessFileTest";
+	public static final String IRODS_TEST_SUBDIR_PATH = "IRODSRandomAccessFileTest";
 	private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
 	private static AssertionHelper assertionHelper = null;
 

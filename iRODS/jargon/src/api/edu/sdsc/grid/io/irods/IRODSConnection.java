@@ -119,7 +119,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		// right now this only opens the socket, the startup packet will be sent
 		// by the IRODSCommands
 
-		log.debug("initializing connection with account" + irodsAccount);
+		log.info("initializing connection with account" + irodsAccount);
 
 		if (irodsAccount == null) {
 			log.error("no irods account");
@@ -127,7 +127,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 					"no irods account specified, cannot connect");
 		}
 
-		log.debug("irods handshake");
+		log.info("irods handshake");
 
 		connect();
 		connected = true;
@@ -142,7 +142,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		connectionInternalIdentifierBuilder.append(System.currentTimeMillis());
 		this.connectionInternalIdentifier = connectionInternalIdentifierBuilder
 				.toString();
-		log.debug("connection identified as:"
+		log.info("connection identified as:"
 				+ this.connectionInternalIdentifier);
 	}
 
@@ -164,7 +164,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @see org.irods.jargon.core.connection.IRODSConnection#connect()
 	 */
 	private void connect() throws JargonException {
-		log.debug("opening socket");
+		log.info("opening socket");
 
 		if (connected) {
 			log
@@ -189,7 +189,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			e.printStackTrace();
 			throw new JargonException(e);
 		}
-		log.debug("socket connected");
+		log.info("socket connected");
 
 	}
 
@@ -201,7 +201,6 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * @throws JargonException
 	 */
 	public void shutdown() throws JargonException {
-		log.debug("Underlying connection: " + connected);
 		if (!isConnected()) {
 			return;
 		}
@@ -468,17 +467,15 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		}
 		result = bytesRead;
 		if (log.isDebugEnabled()) {
-			log.debug("value read:"
-					+ new String(value, offset, offset + bytesRead));
 
-			/*
-			 * if (log.isTraceEnabled()) {
-			 * 
-			 * for (int i = offset; i < offset + bytesRead; i++) {
-			 * log.trace("trace:" + value[i] + " "); }
-			 * 
-			 * }
-			 */
+			if (log.isDebugEnabled()) {
+
+				for (int i = offset; i < offset + bytesRead; i++) {
+					log.debug("trace:" + value[i] + " ");
+				}
+
+			}
+
 		}
 		return result;
 	}
@@ -492,7 +489,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			// to print how long this function call took
 			date = new Date().getTime();
 
-			log.debug("functionID: " + intInfo);
+			log.info("functionID: " + intInfo);
 		}
 
 		StringBuilder headerBuilder = new StringBuilder();
@@ -530,22 +527,21 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	}
 
 	Tag readMessage(boolean decode) throws IOException {
-		log.debug("reading message");
+		log.info("reading message");
 		Tag header = readHeader();
-		if (log.isDebugEnabled()) {
-			log.debug("header:" + header);
-		}
-		
+		/*
+		 * if (log.isDebugEnabled()) { log.debug("header:" + header); }
+		 */
 		if (header == null) {
 			log.error("encountered a null header alue when reading a message");
 			throw new RuntimeException("header was null when reading a message");
 		}
-		
+
 		Tag message = null;
 
-		if (log.isDebugEnabled()) {
+		if (log.isInfoEnabled()) {
 			// print how long this function call took
-			log.debug((new Date().getTime() - date) + " millisecs");
+			log.info((new Date().getTime() - date) + " millisecs");
 		}
 
 		String type = header.tags[0].getStringValue();
@@ -556,14 +552,14 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 		// Reports iRODS errors, throw exception if appropriate
 		if (info < 0) {
-			log.debug("info less than zero:" + info);
+			log.info("info less than zero:" + info);
 			// if nothing else, read the returned bytes and throw them away
 			if (messageLength > 0)
 				read(new byte[messageLength], 0, messageLength);
 
 			if (info == IRODSException.CAT_NO_ROWS_FOUND
 					|| info == IRODSException.CAT_SUCCESS_BUT_WITH_NO_INFO) {
-				log.debug("no rows found or success with no info");
+				log.info("no rows found or success with no info");
 				if (errorLength != 0) {
 					byte[] errorMessage = new byte[errorLength];
 					read(errorMessage, 0, errorLength);
@@ -579,7 +575,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 				}
 
 				// query with no results
-				log.debug("returning null from read");
+				log.info("returning null from read");
 				return null;
 			} else if (info == IRODSException.OVERWITE_WITHOUT_FORCE_FLAG) {
 				log.warn("Attempt to overwrite file without force flag. info: "
@@ -606,7 +602,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		}
 
 		if (errorLength != 0) {
-			log.debug("error length is not zero, extracting error message");
+			log.warn("error length is not zero, extracting error message");
 			byte[] errorMessage = new byte[errorLength];
 			read(errorMessage, 0, errorLength);
 			Tag errorTag = Tag.readNextTag(errorMessage, encoding);
@@ -620,7 +616,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		}
 
 		if (messageLength > 0) {
-			log.debug("message length gt 0 will read message body");
+			log.info("message length gt 0 will read message body");
 			message = readMessageBody(messageLength, decode);
 		}
 

@@ -597,7 +597,7 @@ public class IRODSAccount extends RemoteAccount {
 				uri = new URI("irods://" + getUserName() + "@" + getHost()
 						+ ":" + getPort() + getHomeDirectory());
 		} catch (URISyntaxException e) {
-			log.debug("uri syntax exception, logged and ignored", e);
+			log.warn("uri syntax exception, logged and ignored", e);
 		}
 		return uri;
 	}

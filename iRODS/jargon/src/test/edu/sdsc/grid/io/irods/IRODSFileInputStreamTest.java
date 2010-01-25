@@ -163,7 +163,6 @@ public class IRODSFileInputStreamTest {
         
         int readBytes;
 		while((readBytes = fis.read()) > -1) {
-			
         	actualFileContents.write(readBytes);
         	bytesRead++;
         }
