@@ -828,10 +828,13 @@ class IRODSCommands {
 							FileFactory.newRandomAccessFile(destination, "rw"));
 					transferThreads[i] = new Thread(transfer[i]);
 					if (log.isInfoEnabled()) {
-						log.info("starting a transfer thread number:" + i + " with thread name:" + transferThreads[i].getName());
+						log.info("created a transfer thread number:" + i + " with thread name:" + transferThreads[i].getName());
 					}
 				}
 				for (int i = 0; i < threads; i++) {
+					if (log.isDebugEnabled()) {
+						log.debug("started thread #" + i);
+					}
 					transferThreads[i].start();
 				}
 
@@ -1789,12 +1792,14 @@ class IRODSCommands {
 		public void run() {
 			try {
 				if (local != null) {
+					log.info("transfer is a get operation");
 					get();
 				} else {
+					log.info("transfer is a put operation");
 					put();
 				}
 			} catch (Throwable e) {// IOException e) {
-				log.error("io exceptoin in thread", e);
+				log.error("io exception in thread", e);
 				e.printStackTrace();
 				throw new RuntimeException("IOException in thread.", e);
 			}

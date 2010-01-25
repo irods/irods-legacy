@@ -80,12 +80,13 @@ public class IRODSFileInputStreamParallelTest {
         String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
                 IRODS_TEST_SUBDIR_PATH);
 
-      
         iputCommand.setLocalFileName(testFileFullPath);
         iputCommand.setIrodsFileName(targetIrodsCollection);
         iputCommand.setForceOverride(true);
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
         invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        Thread.sleep(30000);
        
         IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);

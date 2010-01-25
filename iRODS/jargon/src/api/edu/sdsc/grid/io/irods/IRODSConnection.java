@@ -200,7 +200,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * 
 	 * @throws JargonException
 	 */
-	public void shutdown() throws JargonException {
+	public synchronized void shutdown() throws JargonException {
 		if (!isConnected()) {
 			return;
 		}
@@ -213,7 +213,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		connected = false;
 	}
 
-	public void obliterateConnectionAndDiscardErrors() {
+	public synchronized void obliterateConnectionAndDiscardErrors() {
 
 		try {
 			connection.shutdownInput();
@@ -256,7 +256,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * 
 	 * @see org.irods.jargon.core.connection.IRODSConnection#isConnected()
 	 */
-	public boolean isConnected() {
+	public synchronized boolean isConnected() {
 		return connected;
 	}
 
