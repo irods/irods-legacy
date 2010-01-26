@@ -38,7 +38,8 @@ Compatibility testing with IRODS2.3
 Beginning a 'first order' refactoring of Jargon, with an emphasis on breaking large classes into smaller, reusable components.
 *extracted Tag processing in IRODSCommands to Tag
 *created IRODSAvu and extracted AVU processing from ICommands
-*broke up the IRODSCommands class into IRODSCommands and IRODSConnection, working towards further refactoring
+*broke up the IRODSCommands class into IRODSCommands and IRODSConnection
+*more refactoring to come.....
 
 ----------
 Fix admin_build.xml ANT script to automatically compile with debug when running code coverage
@@ -61,6 +62,9 @@ Work-in-progress on adding ICAT extensible metadata for queries
 ---------
 Add a close() method to IRODSFile that will close the underlying IRODSFileSystem.  This is useful for occasions where the IRODSFile is created by a URI, 
 where the IRODSFileSystem was not created in the calling code.  This was causing -4000 errors when the socket closed without a disconnect being sent.
+
+---------
+Tests and fix for  Bug 57 -  parallel file get operation does not work in Jargon
 
 ================================================================================================
 Outstanding Issues

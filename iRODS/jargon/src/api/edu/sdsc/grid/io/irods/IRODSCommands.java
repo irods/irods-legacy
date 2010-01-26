@@ -41,10 +41,13 @@
 //
 package edu.sdsc.grid.io.irods;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URI;
@@ -231,7 +234,7 @@ class IRODSCommands {
 	synchronized void close() throws JargonException {
 		if (isConnected()) {
 			try {
-				//log.info("sending disconnect message");
+				// log.info("sending disconnect message");
 				irodsConnection.send(irodsConnection.createHeader(
 						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();
@@ -371,7 +374,7 @@ class IRODSCommands {
 		String out = message.parseTag();
 
 		if (log.isDebugEnabled()) {
-			log.info(out);
+			log.debug(out);
 		}
 		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
 				.getBytes(encoding).length, errorLength, byteStringLength,
@@ -391,8 +394,8 @@ class IRODSCommands {
 			InputStream byteStream, int intInfo) throws IOException {
 		String out = message.parseTag();
 
-		if (log.isInfoEnabled()) {
-			log.info(out);
+		if (log.isDebugEnabled()) {
+			log.debug(out);
 		}
 		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
 				.getBytes(encoding).length, errorLength, byteStringLength,
@@ -759,9 +762,11 @@ class IRODSCommands {
 		 */
 
 		if (log.isInfoEnabled()) {
-			log.info("get of source:" + source.getAbsolutePath() + " into dest:" + destination.getAbsolutePath() + " with resource:" + resource);
+			log.info("get of source:" + source.getAbsolutePath()
+					+ " into dest:" + destination.getAbsolutePath()
+					+ " with resource:" + resource);
 		}
-		
+
 		Tag rescKeyValueTag;
 
 		if (resource == null || resource.length() == 0) {
@@ -782,7 +787,8 @@ class IRODSCommands {
 
 		// irods file doesn't exist
 		if (message == null) {
-			log.warn("irods file does not exist, null was returned from the get, return with no update done");
+			log
+					.warn("irods file does not exist, null was returned from the get, return with no update done");
 			return;
 		}
 
@@ -797,11 +803,14 @@ class IRODSCommands {
 		temp = temp.getTag(bsLen);
 		if (temp == null) {
 			log.info("no size returned, return from put with no update done");
-			temp = message.getTag(MsgHeader_PI).getTag(bsLen);
+			temp = message.getTag(MsgHeader_PI).getTag(bsLen); // FIXME: is this
+			// meaningless
+			// code? it just
+			// returns...
 			return;
 		}
 		long length = temp.getIntValue();
-		
+
 		if (log.isInfoEnabled()) {
 			log.info("transfer length is:" + length);
 		}
@@ -814,6 +823,7 @@ class IRODSCommands {
 			}
 			if (threads > 0) {
 				log.info("parallel transfer for this get");
+
 				String host = message.getTag(PortList_PI).getTag(hostAddr)
 						.getStringValue();
 				int port = message.getTag(PortList_PI).getTag(portNum)
@@ -828,7 +838,9 @@ class IRODSCommands {
 							FileFactory.newRandomAccessFile(destination, "rw"));
 					transferThreads[i] = new Thread(transfer[i]);
 					if (log.isInfoEnabled()) {
-						log.info("created a transfer thread number:" + i + " with thread name:" + transferThreads[i].getName());
+						log.info("created a transfer thread number:" + i
+								+ " with thread name:"
+								+ transferThreads[i].getName());
 					}
 				}
 				for (int i = 0; i < threads; i++) {
@@ -1005,7 +1017,7 @@ class IRODSCommands {
 						if (transferThreads[i].isAlive())
 							transfer[i].close();
 					}
-					
+
 					log.info("transfer is complete");
 
 					// return complete( file descriptor )
@@ -1717,10 +1729,11 @@ class IRODSCommands {
 			which = incThread;
 			incThread++;
 			if (log.isInfoEnabled()) {
-			log.info("transfer thread details:");
-			log.info("    host:" + host);
-			log.info("    port:" + port);
-			log.info("    destination:" + destination.getFile().getAbsolutePath());
+				log.info("transfer thread details:");
+				log.info("    host:" + host);
+				log.info("    port:" + port);
+				log.info("    destination:"
+						+ destination.getFile().getAbsolutePath());
 			}
 		}
 
@@ -1781,11 +1794,26 @@ class IRODSCommands {
 		}
 
 		long readLong() throws IOException {
+			//length comes down the wire as an signed long long in network order
 			byte[] b = new byte[8];
+			
 			int read = in.read(b);
 			if (read != 8) {
-
+				log.error("did not read 8 bytes for long");
+				throw new RuntimeException(
+						"unable to read all the bytes for an expected long value");
 			}
+			/*
+			ByteArrayInputStream bis = new ByteArrayInputStream(b);
+			DataInputStream dis = new DataInputStream(bis);
+			long longValFromByteArray = dis.readLong();
+			
+			if (log.isDebugEnabled()) {
+				log.debug("converted bytes via data input stream to:" + longValFromByteArray);
+			}
+			*/
+			//return longValFromByteArray;
+			
 			return Host.castToLong(b);
 		}
 
@@ -1861,12 +1889,24 @@ class IRODSCommands {
 			}
 		}
 
+		/**
+		 * Read the data from the socket set up for this thread.  
+		 * See sendTranHeader() in rcPortalOpr.c for the IRODS side of sending length info to this method.
+		 * @throws IOException
+		 */
 		void get() throws IOException {
 			log.info("parallel transfer get");
+
 			// read the header
 			int operation = readInt();
 			if (log.isInfoEnabled()) {
 				log.info("   operation:" + operation);
+			}
+			
+			// read the flags
+			int flags = readInt();
+			if (log.isInfoEnabled()) {
+				log.info("   flags:" + flags);
 			}
 			// Where to seek into the data
 			long offset = readLong();
@@ -1874,11 +1914,13 @@ class IRODSCommands {
 				log.info("   offset:" + offset);
 			}
 			// How much to read/write
+			// FIXME: probably a format issue, getting a ridiculous length back
+			// from irods
 			long length = readLong();
 			if (log.isInfoEnabled()) {
 				log.info("   length:" + length);
 			}
-			
+
 			// Holds all the data for transfer
 			byte[] buffer = null;
 			int read = 0;
@@ -1891,10 +1933,10 @@ class IRODSCommands {
 			}
 
 			if (offset < 0) {
-				log.warn("offset < 0 in transfer get() operation, return from get method");
+				log
+						.warn("offset < 0 in transfer get() operation, return from get method");
 				return;
-			}
-			else if (offset > 0) {
+			} else if (offset > 0) {
 				local.seek(offset);
 			}
 
@@ -1906,10 +1948,14 @@ class IRODSCommands {
 			}
 
 			while (length > 0) {
-				log.debug("in read loop");
+				if (log.isDebugEnabled()) {
+					log.debug("in read loop, the length of the data is:"
+							+ length);
+				}
 				read = in.read(buffer, 0, Math.min(
 						IRODSConnection.OUTPUT_BUFFER_LENGTH, (int) length));
-				if (read > 0) {
+				if (read > 0) { // FIXME: getting whacky length, then stuck in
+					// this read in an inf loop
 					log.debug("    result of read > 0");
 					length -= read;
 					if (length == 0) {
@@ -1938,6 +1984,11 @@ class IRODSCommands {
 						log.debug("    length > 0, writing to local");
 						local.write(buffer, 0, read);
 					}
+				} else {
+					log
+							.error("intercepted a loop condition on parallel file get, length is > 0 but I just read and got nothing");
+					throw new RuntimeException(
+							"possible loop condition in parallel file get");
 				}
 			}
 		}

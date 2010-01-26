@@ -57,7 +57,7 @@
 				<classpath location="${instrumented.code.dir}" />
 				<classpath refid="class.path.test" />
 				<formatter type="brief" usefile="false" />
-				<test name="edu.sdsc.jargon.unittest.testsuites.LongRunningTests" />
+				<test name="edu.sdsc.jargon.unittest.testsuites.AllTestsIncludingLongAndFunctional" />
 			</junit>
 			<echo message="running clean target will clean up unit test scratch directories..." />
 		</target>

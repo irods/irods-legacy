@@ -200,7 +200,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * 
 	 * @throws JargonException
 	 */
-	public synchronized void shutdown() throws JargonException {
+	public void shutdown() throws JargonException {
 		if (!isConnected()) {
 			return;
 		}
@@ -213,7 +213,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 		connected = false;
 	}
 
-	public synchronized void obliterateConnectionAndDiscardErrors() {
+	public  void obliterateConnectionAndDiscardErrors() {
 
 		try {
 			connection.shutdownInput();
@@ -256,7 +256,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * 
 	 * @see org.irods.jargon.core.connection.IRODSConnection#isConnected()
 	 */
-	public synchronized boolean isConnected() {
+	public boolean isConnected() {
 		return connected;
 	}
 
@@ -279,9 +279,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 *             If an IOException occurs
 	 */
 	void send(byte[] value) throws IOException {
-		if (log.isDebugEnabled()) {
+		/*if (log.isDebugEnabled()) {
 			log.debug("write summary: " + new String(value));
-		}
+		}*/
 		/*
 		 * if (log.isTraceEnabled()) { for (int i = 0; i < value.length; i++) {
 		 * log.trace("trace:" + value[i] + " "); } }
