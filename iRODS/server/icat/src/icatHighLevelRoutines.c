@@ -7112,17 +7112,14 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
       }
    }
 
-#if 0
-   No longer do this automatically from this function.  Let the
-   admin run the 'iadmin cu' once, after setting all the quotas.
-
-   /* Reset the over_quota flags based on previous usage info */
+   /* Reset the over_quota flags based on previous usage info.  The
+      usage info may take a while to set, but setting the OverQuota
+      should be quick.  */
    status = setOverQuota(rsComm);
    if (status) {
-      _rollback("chlCalcUsageAndQuota");
+      _rollback("chlSetQuota");
       return(status);
    }
-#endif
 
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    return(status);
@@ -7144,7 +7141,7 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
    int status;
    int statementNum;
 
-   char mySQL1[]="select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
+   char mySQL[]="select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
 
    *userQuota = 0;
    if (logSQL) rodsLog(LOG_SQL, "chlCheckQuota SQL 1");
@@ -7152,7 +7149,7 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
    cllBindVars[cllBindVarCount++]=userName;
    cllBindVars[cllBindVarCount++]=rescName;
 
-   status = cmlGetFirstRowFromSql(mySQL1, &statementNum, 
+   status = cmlGetFirstRowFromSql(mySQL, &statementNum, 
 				  0, &icss);
    
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -7178,11 +7175,12 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
    }
 #endif
 
-/* // for now, log it */
+   /* For now, log it */
    rodsLog(LOG_NOTICE, "checkQuota: inUser:%s inResc:%s RescId:%s Quota:%s", 
 	   userName, rescName, 
 	   icss.stmtPtr[statementNum]->resultValue[1],  /* resc_id column */
 	   icss.stmtPtr[statementNum]->resultValue[3]); /* quota_over column */
+
    *userQuota = atoll(icss.stmtPtr[statementNum]->resultValue[3]);
    if (atoi(icss.stmtPtr[statementNum]->resultValue[1])==0) {
       *quotaStatus=QUOTA_GLOBAL;

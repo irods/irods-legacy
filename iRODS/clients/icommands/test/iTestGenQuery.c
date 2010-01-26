@@ -1,3 +1,4 @@
+
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
@@ -397,6 +398,55 @@ doTest6(rcComm_t *Conn,
    return(status);
 }
 
+int
+doTest7(rcComm_t *Conn,
+	char *userName, char *rescName) {
+   int status;
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut = NULL;
+   char condition1[MAX_NAME_LEN];
+   char condition2[MAX_NAME_LEN];
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp));
+
+   genQueryInp.options = QUOTA_QUERY;
+
+   snprintf (condition1, MAX_NAME_LEN, "%s", 
+	     userName);
+   addInxVal (&genQueryInp.sqlCondInp, COL_USER_NAME, condition1);
+
+   if (rescName != NULL && strlen(rescName)>0) {
+      snprintf (condition2, MAX_NAME_LEN, "%s", 
+		rescName);
+      addInxVal (&genQueryInp.sqlCondInp, COL_R_RESC_NAME, condition2);
+   }
+
+   genQueryInp.maxRows = 10;
+ 
+   status = rcGenQuery (Conn, &genQueryInp, &genQueryOut);
+   
+   printf("GenQuery status=%d\n",status);
+   if (status) printError(Conn, status, "rcGenQuery");
+
+   if (status == 0) {
+      printf("genQueryOut->totalRowCount=%d\n", genQueryOut->totalRowCount);
+
+      printGenQOut(genQueryOut);
+
+      if (genQueryOut->continueInx > 0) { /* there are more rows available */
+	 genQueryInp.continueInx=genQueryOut->continueInx; 
+	 genQueryInp.maxRows = 0; /* just close it out */
+	 status = rcGenQuery (Conn, &genQueryInp, &genQueryOut); 
+	 printf ("close out rcGenQuery status=%d\n",status);
+      }
+   }
+
+   clearGenQueryInp(&genQueryInp);
+   freeGenQueryOut(&genQueryOut);
+ 
+   return (status);
+}
+
 
 int
 main(int argc, char **argv)
@@ -484,6 +534,9 @@ main(int argc, char **argv)
        }
        if (strcmp(argv[1],"jy")==0) {
 	  doTest6(Conn, argv[2], argv[3], argv[4]);
+       }
+       if (strcmp(argv[1],"quota")==0) {
+	  doTest7(Conn, argv[2], argv[3]);
        }
     }
 

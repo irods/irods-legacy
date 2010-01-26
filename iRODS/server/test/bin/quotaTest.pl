@@ -91,7 +91,7 @@ sub runUserTests {
     calcUsage();
     runCmd(0, "test_chl checkquota $QU1 $Resc 0 0");
     runCmd(0, "iadmin suq $QU1 $TOpt 100");
-    runCmd(0, "test_chl checkquota $QU1 $Resc 0 $TType"); # before cu
+#   runCmd(0, "test_chl checkquota $QU1 $Resc 0 $TType"); # before cu
     calcUsage();
     runCmd(0, "test_chl checkquota $QU1 $Resc m100 $TType"); # m100 is -100
 
@@ -136,7 +136,7 @@ sub runGroupTests {
     calcUsage();
     runCmd(0, "test_chl checkquota $QG1 $Resc 0 0");
     runCmd(0, "iadmin sgq $QG1 $TOpt 100");
-    runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
+#   runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc m100 $TType"); #m100 is -100
 
@@ -200,7 +200,7 @@ sub  runGroupTestsWithQU3 {
     calcUsage();
     runCmd(0, "test_chl checkquota $QG1 $Resc 0 0");
     runCmd(0, "iadmin sgq $QG1 $TOpt 100");
-    runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
+#   runCmd(0, "test_chl checkquota $TestUser $Resc 0 $TType"); # before cu
     calcUsage();
     runCmd(0, "test_chl checkquota $TestUser $Resc 75 $TType"); 
 

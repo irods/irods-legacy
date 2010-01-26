@@ -40,6 +40,8 @@ typedef struct GenQueryInp {
                                 the skipped rows.
                                 If NO_DISTINCT is set, the normal 'distinct'
                                 keyword is not included in the SQL query.
+				If QUOTA_QUERY is set, do the special quota
+				query.
                              */
     keyValPair_t condInput;
     inxIvalPair_t selectInp; /* 1st int array is columns to return (select),
@@ -77,7 +79,7 @@ primary ordering column.
  */
 #define RETURN_TOTAL_ROW_COUNT 0x20
 #define NO_DISTINCT 0x40
-
+#define QUOTA_QUERY 0x80
 
 
 /* 

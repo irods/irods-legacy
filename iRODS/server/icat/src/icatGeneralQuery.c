@@ -1096,6 +1096,60 @@ genqAppendAccessCheck() {
    return(0);
 }
 
+/*
+ Return the columns returned via the generateSpecialQuery's query.
+ */
+int specialQueryIx(int ix) {
+   if (ix==0) return(COL_QUOTA_USER_ID);
+   if (ix==1) return(COL_R_RESC_NAME);
+   if (ix==2) return(COL_QUOTA_LIMIT);
+   if (ix==3) return(COL_QUOTA_OVER);
+   if (ix==4) return(COL_QUOTA_RESC_ID);
+   return(0);
+}
+
+/*
+ This is used for the QUOTA_QUERY option where a specific query is
+ needed for efficiency, handling all the quota types in a single query
+ (the group and individual quotas, per-resource and total-usage).
+ I decided to make this part of General-Query, since it is so similar but
+ it is really a specific-query (as an option to general-query).
+
+ The caller specifies a user (COL_USER_NAME) and optionally a resource
+ (COL_R_RESC_NAME).  Rows are returned with the quotas that apply,
+ most severe (most over or closest to going over) first, if any.  For
+ global-usage quotas, the returned RESC_ID is 0.  If the user is a
+ member of a group with a quota (per-resource or total-usage) a row is
+ returned for that quota too.  All in the appropriate order.
+ */
+int
+generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
+   static char bindVar1[LONG_NAME_LEN];
+   static char bindVar2[LONG_NAME_LEN];
+   char quotaQuery1[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') order by quota_over desc";
+
+   char quotaQuery2[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') and RM.resc_name = ? order by quota_over desc";
+   int i, valid=0;
+
+   for (i=0; i<genQueryInp.sqlCondInp.len;i++) {
+      if (genQueryInp.sqlCondInp.inx[i]==COL_USER_NAME) {
+	 strncpy(bindVar1, genQueryInp.sqlCondInp.value[i], sizeof bindVar1);
+	 cllBindVars[cllBindVarCount++]=bindVar1;
+	 cllBindVars[cllBindVarCount++]=bindVar1;
+	 strncpy(resultingSQL, quotaQuery1, MAX_SQL_SIZE);
+	 valid=1;
+      }
+   }
+   if (valid==0) return(CAT_INVALID_ARGUMENT);
+   for (i=0; i<genQueryInp.sqlCondInp.len;i++) {
+      if (genQueryInp.sqlCondInp.inx[i]==COL_R_RESC_NAME) {
+	 strncpy(bindVar2, genQueryInp.sqlCondInp.value[i], sizeof bindVar2);
+	 cllBindVars[cllBindVarCount++]=bindVar2;
+	 strncpy(resultingSQL, quotaQuery2, MAX_SQL_SIZE);
+      }
+   }
+   return (0);
+}
 
 /* 
 Called by chlGenQuery to generate the SQL.
@@ -1468,7 +1522,13 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
    if (debug) printf("icss=%d\n",(int)icss);
 
    if (genQueryInp.continueInx == 0) {
-      status = generateSQL(genQueryInp, combinedSQL, countSQL);
+      if (genQueryInp.options & QUOTA_QUERY) {
+	 countSQL[0]='\0';
+	 status = generateSpecialQuery(genQueryInp, combinedSQL);
+      }
+      else {
+	 status = generateSQL(genQueryInp, combinedSQL, countSQL);
+      }
       if (status != 0) return(status);
       if (logSQLGenQuery) {
 	 if (genQueryInp.rowOffset==0) {
@@ -1609,7 +1669,12 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 	    tResult = malloc(totalLen);
 	    if (tResult==NULL) return(SYS_MALLOC_ERR);
 	    memset(tResult, 0, totalLen);
-	    result->sqlResult[j].attriInx = genQueryInp.selectInp.inx[j];
+	    if (genQueryInp.options & QUOTA_QUERY) {
+	       result->sqlResult[j].attriInx = specialQueryIx(j);
+	    }
+	    else {
+	       result->sqlResult[j].attriInx = genQueryInp.selectInp.inx[j];
+	    }
 	    result->sqlResult[j].len = maxColSize;
 	    result->sqlResult[j].value = tResult;
 	 }
