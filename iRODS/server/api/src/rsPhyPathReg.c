@@ -712,7 +712,8 @@ linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     }
 
     len = strlen (phyPathRegInp->objPath);
-    if (strncmp (linkPath, phyPathRegInp->objPath, len) == 0) { 
+    if (strncmp (linkPath, phyPathRegInp->objPath, len) == 0 && 
+      linkPath[len] == '/') { 
         rodsLog (LOG_ERROR,
           "linkCollReg: linkPath %s inside collection %s",
           linkPath, phyPathRegInp->objPath);
@@ -720,7 +721,8 @@ linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     }
 
     len = strlen (linkPath);
-    if (strncmp (phyPathRegInp->objPath, linkPath, len) == 0) {
+    if (strncmp (phyPathRegInp->objPath, linkPath, len) == 0 &&
+      phyPathRegInp->objPath[len] == '/') {
         rodsLog (LOG_ERROR,
           "linkCollReg: collection %s inside linkPath %s",
           linkPath, phyPathRegInp->objPath);
@@ -736,7 +738,22 @@ linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     }
 
     status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
-    if (status < 0) return status;
+    if (status < 0) {
+	/* does not exist. make one */
+	collInp_t collCreateInp;
+        memset (&collCreateInp, 0, sizeof (collCreateInp));
+        rstrcpy (collCreateInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
+        status = rsRegColl (rsComm, &collCreateInp);
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+               "linkCollReg: rsRegColl error for  %s, status = %d",
+               collCreateInp.collName, status);
+             return status;
+        }
+        status = collStat (rsComm, phyPathRegInp, &rodsObjStatOut);
+	if (status < 0) return status;
+
+    }
 
     if (rodsObjStatOut->specColl != NULL && 
       rodsObjStatOut->specColl->collClass != LINKED_COLL) {
