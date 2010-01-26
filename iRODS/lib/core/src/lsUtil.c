@@ -78,8 +78,14 @@ genQueryInp_t *genQueryInp)
     if (rodsArgs->longOption == True) {
 	if (srcPath->rodsObjStat != NULL &&
 	  srcPath->rodsObjStat->specColl != NULL) {
-	    lsSpecDataObjUtilLong (conn, srcPath,
-	      myRodsEnv, rodsArgs);
+	    if (srcPath->rodsObjStat->specColl->collClass == LINKED_COLL) {
+                lsDataObjUtilLong (conn, 
+		  srcPath->rodsObjStat->specColl->objPath, myRodsEnv, rodsArgs,
+                  genQueryInp);
+	    } else {
+	        lsSpecDataObjUtilLong (conn, srcPath,
+	          myRodsEnv, rodsArgs);
+	    }
 	} else {
             lsDataObjUtilLong (conn, srcPath->outPath, myRodsEnv, rodsArgs, 
 	      genQueryInp);
@@ -453,7 +459,8 @@ printDataCollEntLong (collEnt_t *collEnt, int flags)
 
     getLocalTimeFromRodsTime (collEnt->modifyTime, localTimeModify);
 
-    if (collEnt->specColl.collClass == NO_SPEC_COLL) {
+    if (collEnt->specColl.collClass == NO_SPEC_COLL ||
+      collEnt->specColl.collClass == LINKED_COLL) {
         printf ("  %-12.12s %6d %-20.20s %12lld %16.16s %s %s\n",
          collEnt->ownerName, collEnt->replNum, collEnt->resource, 
          collEnt->dataSize, localTimeModify, tmpReplStatus, collEnt->dataName);

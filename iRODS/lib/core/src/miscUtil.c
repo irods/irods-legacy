@@ -1417,10 +1417,13 @@ getNextDataObjMetaInfo (collHandle_t *collHandle, collEnt_t *outCollEnt)
     outCollEnt->chksum = &value[len * (collHandle->rowInx)];
 
     if (rodsObjStat->specColl != NULL) {
+	outCollEnt->specColl = *rodsObjStat->specColl;
+    }
+    if (rodsObjStat->specColl != NULL && 
+      rodsObjStat->specColl->collClass != LINKED_COLL) {
 	outCollEnt->resource = rodsObjStat->specColl->resource;
 	outCollEnt->ownerName = rodsObjStat->ownerName;
 	outCollEnt->replStatus = NEWLY_CREATED_COPY;
-	outCollEnt->specColl = *rodsObjStat->specColl;
     } else {
         value = dataObjSqlResult->resource.value;
         len = dataObjSqlResult->resource.len;
