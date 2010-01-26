@@ -404,10 +404,13 @@ dataObjInp_t *dataObjOprInp)
         return (USER_INPUT_OPTION_ERR);
     }
 
-    collLen = strlen (srcColl);
-
+#if 0
     status = rclOpenCollection (conn, srcColl, 
       RECUR_QUERY_FG | VERY_LONG_METADATA_FG, &collHandle);
+#else
+    status = rclOpenCollection (conn, srcColl,
+      VERY_LONG_METADATA_FG, &collHandle);
+#endif
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -421,6 +424,11 @@ dataObjInp_t *dataObjOprInp)
     myTargPath.objType = LOCAL_FILE_T;
     mySrcPath.objType = DATA_OBJ_T;
 
+#if 0
+    collLen = strlen (srcColl);
+#else
+    collLen = getOpenedCollLen (&collHandle);
+#endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
@@ -454,7 +462,9 @@ dataObjInp_t *dataObjOprInp)
 
                 mkdirR (targDir, targChildPath, 0750);
 
+#if 0
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
+#endif
                 /* the child is a spec coll. need to drill down */
                 dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;
@@ -468,7 +478,9 @@ dataObjInp_t *dataObjOprInp)
                 if (status < 0 && status != CAT_NO_ROWS_FOUND) {
                     return (status);
                 }
+#if 0
             }
+#endif
         }
     }
     rclCloseCollection (&collHandle);
@@ -647,10 +659,13 @@ dataObjCopyInp_t *dataObjCopyInp)
         return (USER_INPUT_OPTION_ERR);
     }
 
-    collLen = strlen (srcColl);
-
+#if 0
     status = rclOpenCollection (conn, srcColl,
       RECUR_QUERY_FG | VERY_LONG_METADATA_FG, &collHandle);
+#else
+    status = rclOpenCollection (conn, srcColl,
+      VERY_LONG_METADATA_FG, &collHandle);
+#endif
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -675,6 +690,11 @@ dataObjCopyInp_t *dataObjCopyInp)
     myTargPath.objType = DATA_OBJ_T;
     mySrcPath.objType = DATA_OBJ_T;
 
+#if 0
+    collLen = strlen (srcColl);
+#else
+    collLen = getOpenedCollLen (&collHandle);
+#endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
@@ -710,7 +730,9 @@ dataObjCopyInp_t *dataObjCopyInp)
 
             mkColl (conn, targChildPath);
 
+#if 0
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
+#endif
                 /* the child is a spec coll. need to drill down */
                 dataObjCopyInp_t childDataObjCopyInp;
                 childDataObjCopyInp = *dataObjCopyInp;
@@ -725,7 +747,9 @@ dataObjCopyInp_t *dataObjCopyInp)
                 if (status < 0 && status != CAT_NO_ROWS_FOUND) {
                     return (status);
                 }
+#if 0
             }
+#endif
 	}
     }
     rclCloseCollection (&collHandle);

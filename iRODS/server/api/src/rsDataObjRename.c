@@ -43,6 +43,20 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     destType = resolvePathInSpecColl (rsComm, destDataObjInp->objPath,
       WRITE_COLL_PERM, 0, &destDataObjInfo);
 
+    if (srcDataObjInfo != NULL && srcDataObjInfo->specColl != NULL &&
+      srcDataObjInfo->specColl->collClass == LINKED_COLL) {
+        rstrcpy (srcDataObjInp->objPath, srcDataObjInfo->objPath,
+          MAX_NAME_LEN);
+        srcType = SYS_SPEC_COLL_NOT_IN_CACHE;
+    }
+
+    if (destDataObjInfo != NULL && destDataObjInfo->specColl != NULL &&
+      destDataObjInfo->specColl->collClass == LINKED_COLL) {
+        rstrcpy (destDataObjInp->objPath, destDataObjInfo->objPath,
+          MAX_NAME_LEN);
+        destType = SYS_SPEC_COLL_NOT_IN_CACHE;
+    }
+
     if (destType >= 0) {
         rodsLog (LOG_ERROR,
           "rsDataObjRename: dest objPath %s exists",
@@ -53,14 +67,15 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     }
 
     if (srcType >= 0) {	/*specColl of some sort */
-	if (destType != SYS_SPEC_COLL_OBJ_NOT_EXIST || destDataObjInfo == NULL 
-          || destDataObjInfo->specColl == NULL) {
+	if (destType != SYS_SPEC_COLL_OBJ_NOT_EXIST || 
+	  destDataObjInfo == NULL || destDataObjInfo->specColl == NULL) {
             rodsLog (LOG_ERROR,
               "rsDataObjRename: src %s is in spec coll but dest %s is not",
 	      srcDataObjInp->objPath, destDataObjInp->objPath);
 	    return (SYS_SRC_DEST_SPEC_COLL_CONFLICT);
 	}
-	status = specCollObjRename (rsComm, srcDataObjInfo, destDataObjInfo);
+	status = specCollObjRename (rsComm, srcDataObjInfo, 
+	  destDataObjInfo);
 	freeDataObjInfo (srcDataObjInfo);
 	freeDataObjInfo (destDataObjInfo);
 	return (status);
