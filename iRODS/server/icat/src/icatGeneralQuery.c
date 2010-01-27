@@ -610,10 +610,14 @@ int setTable(int column, int sel, int selectOption, int castOption) {
 	    rstrcat(whereSQL, ".", MAX_SQL_SIZE);
 	    rstrcat(whereSQL, Columns[colIx].columnName, MAX_SQL_SIZE);
 	    if (castOption==1) {
-               /* In PostgreSQL and Oracle 'decimal' is the same as
-                  'numeric', MySQL allows 'decimal' but not 'numeric',
-                  so we cast it to decimal for any of them. */
+               /* For PostgreSQL and MySQL, 'decimal' seems to work
+                  fine but for Oracle 'number' is needed to handle
+                  both integer and floating point. */
+#if ORA_ICAT
+	       rstrcat(whereSQL, " as number)", MAX_SQL_SIZE);
+#else
 	       rstrcat(whereSQL, " as decimal)", MAX_SQL_SIZE);
+#endif
 	    }
 	 }
 	 if (debug>1) printf("table index=%d, nToFind=%d\n",i, nToFind);
