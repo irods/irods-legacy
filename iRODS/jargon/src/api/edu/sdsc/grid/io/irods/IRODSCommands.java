@@ -446,6 +446,13 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, MOD_ACCESS_CONTROL_AN);
 	}
 
+	/**
+	 * Copy the source file to the destination file.  
+	 * @param source
+	 * @param destination
+	 * @param overwriteFlag
+	 * @throws IOException
+	 */
 	void copy(IRODSFile source, IRODSFile destination, boolean overwriteFlag)
 			throws IOException {
 		String[][] keyword = new String[2][2];
@@ -752,6 +759,15 @@ class IRODSCommands {
 		return message.getTag(MsgHeader_PI).getTag(intInfo).getIntValue();
 	}
 
+	/**
+	 * Get a file from IRODS and store it in the given destination.
+	 * NOTE: this does not seem to work for collections, and is not recursive, this should
+	 * be addressed in later releases
+	 * @param source
+	 * @param destination
+	 * @param resource
+	 * @throws IOException
+	 */
 	synchronized void get(IRODSFile source, GeneralFile destination,
 			String resource) throws IOException {
 
@@ -803,10 +819,6 @@ class IRODSCommands {
 		temp = temp.getTag(bsLen);
 		if (temp == null) {
 			log.info("no size returned, return from put with no update done");
-			temp = message.getTag(MsgHeader_PI).getTag(bsLen); // FIXME: is this
-			// meaningless
-			// code? it just
-			// returns...
 			return;
 		}
 		long length = temp.getIntValue();
@@ -1199,7 +1211,7 @@ class IRODSCommands {
 	}
 
 	void deleteReplica(IRODSFile file, String resource) throws IOException {
-		// TODO: add num copies option and fix test in IRODSFileCommandsTest
+		// NOTE: add num copies option and fix test in IRODSFileCommandsTest
 		Tag message = new Tag(DataObjInp_PI,
 				new Tag[] {
 						new Tag(objPath, file.getAbsolutePath()),
@@ -1294,8 +1306,7 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
 
-	// FIXME: I don't think this is thread safe since it returns an input
-	// stream...do a multi-threaded test cae
+	
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress, String somePathInfoMaybe_whoknows)
 			throws IOException {
@@ -1914,8 +1925,6 @@ class IRODSCommands {
 				log.info("   offset:" + offset);
 			}
 			// How much to read/write
-			// FIXME: probably a format issue, getting a ridiculous length back
-			// from irods
 			long length = readLong();
 			if (log.isInfoEnabled()) {
 				log.info("   length:" + length);
@@ -1954,8 +1963,7 @@ class IRODSCommands {
 				}
 				read = in.read(buffer, 0, Math.min(
 						IRODSConnection.OUTPUT_BUFFER_LENGTH, (int) length));
-				if (read > 0) { // FIXME: getting whacky length, then stuck in
-					// this read in an inf loop
+				if (read > 0) { 
 					log.debug("    result of read > 0");
 					length -= read;
 					if (length == 0) {

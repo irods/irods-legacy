@@ -2,6 +2,7 @@ package edu.sdsc.jargon.testutils;
 
 import edu.sdsc.grid.io.irods.IRODSAccount;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_HOST_KEY;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PASSWORD_KEY;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PORT_KEY;
@@ -9,6 +10,7 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_RESOURCE_K
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_USER_KEY;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_ZONE_KEY;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -155,6 +157,30 @@ public class TestingPropertiesHelper {
 		irodsUri.append(testingProperties.getProperty(IRODS_SCRATCH_DIR_KEY));
 		irodsUri.append("/");
 		irodsUri.append(fileName);
+
+		return new URI(irodsUri.toString());
+	}
+	
+	/**
+	 * Create a URI compatable with a local <code>IRODSFile</code> based on a set of peroperties, as well as
+	 * a relative path (no leading '/') underneath the users local scratch directory as defined in testing.properties.
+	 * @param testingProperties <code>Properties</code> defined in the testing.properties file
+	 * @param fileName <code>String</code> containing the relative path (no leading '/') underneath
+	 * the local scratch directory.  Note that the subdirectories will be created if they do not aleady exist.
+	 * @return <code>URI</code> to a local file in a format that can be used with an <code>IRODSFile</code>
+	 * @throws URISyntaxException
+	 */
+	public URI buildUriFromTestPropertiesForFileInLocalScratchDir(
+			Properties testingProperties, String fileName)
+			throws URISyntaxException {
+		StringBuilder irodsUri = new StringBuilder();
+
+		irodsUri.append("file://");
+		File scratchDir = new File(testingProperties
+				.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+				+ fileName);
+		scratchDir.mkdirs();
+		irodsUri.append(scratchDir.getAbsolutePath());
 
 		return new URI(irodsUri.toString());
 	}

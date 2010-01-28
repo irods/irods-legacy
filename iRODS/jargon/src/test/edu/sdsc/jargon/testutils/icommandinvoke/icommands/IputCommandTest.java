@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -34,6 +35,8 @@ public class IputCommandTest {
     public static final String IRODS_TEST_SUBDIR_PATH = "IputCommandTest";
     private static ScratchFileUtils scratchFileUtils = null;
     private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
+	private static AssertionHelper assertionHelper = null;
+
     
     
     /**
@@ -46,6 +49,7 @@ public class IputCommandTest {
         irodsTestSetupUtilities = new IRODSTestSetupUtilities();
         irodsTestSetupUtilities.initializeIrodsScratchDirectory();
         irodsTestSetupUtilities.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+		assertionHelper = new AssertionHelper();
     }
 
     /**
@@ -121,6 +125,41 @@ public class IputCommandTest {
 
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
         invoker.invokeCommandAndGetResultAsString(iputCommand);
+    }
+    
+    @Test
+    public void testRecursiveIput() throws Exception {
+    	String testFilePrefix = "testRecursiveIput";
+        String testFileSuffix = ".txt";
+        String putDir = "putdir";
+        
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH );
+        
+        scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH + '/' + putDir); 
+       
+        FileGenerator.generateManyFilesInGivenDirectory(absPath  + putDir, testFilePrefix, testFileSuffix, 30, 20, 250);
+        
+        // put scratch files into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+
+        // make the put subdir
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH + '/' + putDir);
+        ImkdirCommand iMkdirCommand = new ImkdirCommand();
+        iMkdirCommand.setCollectionName(targetIrodsCollection);
+        invoker.invokeCommandAndGetResultAsString(iMkdirCommand);
+        
+        // put the files by putting the collection
+        IputCommand iputCommand = new IputCommand();
+        iputCommand.setForceOverride(true);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setLocalFileName(absPath + putDir);
+        iputCommand.setRecursive(true);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        // find the first file from the collection in the IRODS dir as a test
+        assertionHelper.assertIrodsFileOrCollectionExists(targetIrodsCollection + '/');
     }
 
     @Test

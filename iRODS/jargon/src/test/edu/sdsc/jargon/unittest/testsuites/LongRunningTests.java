@@ -4,6 +4,7 @@ package edu.sdsc.jargon.unittest.testsuites;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import edu.sdsc.grid.io.irods.IRODSCommandsBigCopyTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteBigTest;
 import edu.sdsc.grid.io.irods.IRODSFileInputStreamParallelTest;
 import edu.sdsc.grid.io.irods.IRODSFileOutputStreamParallelTest;
@@ -20,7 +21,8 @@ import edu.sdsc.grid.io.irods.IRODSFileOutputStreamParallelTest;
   AllTests.class, 
   IRODSCommandsDeleteBigTest.class, 
   IRODSFileOutputStreamParallelTest.class,
-  IRODSFileInputStreamParallelTest.class
+  IRODSFileInputStreamParallelTest.class,
+  IRODSCommandsBigCopyTest.class
 })
 
 public class LongRunningTests {

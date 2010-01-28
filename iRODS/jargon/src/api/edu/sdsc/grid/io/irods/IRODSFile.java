@@ -298,7 +298,6 @@ public class IRODSFile extends RemoteFile {
 	}
 	
 	/**
-	 * FIXME: do I need to add this method?
 	 * This method is here for correctness, and will help avoid dropping connections when disconnect was never called.
 	 * Note that this method closes the underlying <code>IRODSFileSystem</code>, and care must be taken so as not to close
 	 * the <code>IRODSFileSystem</code> when it is intended for re-use.  Specifically, this method is added for occasions where
@@ -635,16 +634,22 @@ public class IRODSFile extends RemoteFile {
 	 */
 	public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
 			throws IOException {
+		if (log.isInfoEnabled()) {
+			log.info("copying file:" + this.getAbsolutePath() + " to file:" + file.getAbsolutePath());
+		}
 		if (file == null) {
+			log.error("dest file is null");
 			throw new IllegalArgumentException("file cannot be null");
 		}
 
 		if (resource == null) {
+			log.error("resource is null");
 			throw new IllegalArgumentException(
 					"resource cannot be null, set to blank if not used");
 		}
 
 		if (isDirectory()) {
+			log.info("    this is a directory, will recursively copy");
 			// recursive copy
 			GeneralFile[] fileList = listFilesNext(true);
 
@@ -659,6 +664,7 @@ public class IRODSFile extends RemoteFile {
 			}
 		} else {
 			if (!forceOverwrite && file.isDirectory()) {
+				log.info("no force overwrite an dest file is directory");
 				// change the destination from a directory to a file
 				file = FileFactory.newFile(file, getName());
 			}
@@ -666,8 +672,10 @@ public class IRODSFile extends RemoteFile {
 				if (file instanceof LocalFile) {
 					if (file.exists()) {
 						if (forceOverwrite) {
+							log.info("deleting a local file because forceOverwrite was specified");
 							file.delete();
 						} else {
+							log.error("file:" + file.getAbsolutePath() + " already exists, and overwriting was not allowed");
 							throw new IOException(
 									"File exists and overwriting not allowed");
 						}
@@ -676,12 +684,14 @@ public class IRODSFile extends RemoteFile {
 					iRODSFileSystem.commands.get(this, file, resource);
 
 				} else if (file instanceof IRODSFile) {
+					log.info("dest is an IRODS file");
 					iRODSFileSystem.commands.copy(this, (IRODSFile) file,
 							forceOverwrite);
 				} else {
 					super.copyTo(file, forceOverwrite);
 				}
 			} catch (IRODSException e) {
+				log.error("IRODSException in coptyTo operation for file:" + this.getAbsolutePath() + " type is:" + e.getType());
 				IOException io = new IOException();
 				io.initCause(e);
 				throw io;
@@ -2088,7 +2098,6 @@ public class IRODSFile extends RemoteFile {
 	 * @throws NullPointerException
 	 *             - If dest is null
 	 *             
-	 *  FIXME: test in light of errors encountered in phymv code, IRODSCommands
 	 */
 	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
 			NullPointerException {

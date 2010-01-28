@@ -19,6 +19,7 @@ public class IputCommand implements Icommand {
 	private String localFileName = "";
 	private String irodsFileName = "";
 	private String irodsResource = "";
+	private boolean recursive = false;
 	
 
 	private boolean forceOverride = false;
@@ -37,6 +38,10 @@ public class IputCommand implements Icommand {
 		
 		if (forceOverride) {
 			putCommand.add("-f");
+		}
+		
+		if (recursive) {
+			putCommand.add("-r");
 		}
 		
 		if (irodsResource != null && irodsResource.length() > 0) {
@@ -103,6 +108,14 @@ public class IputCommand implements Icommand {
 
 	public void setIrodsResource(String irodsResource) {
 		this.irodsResource = irodsResource;
+	}
+
+	public void setRecursive(boolean recursive) {
+		this.recursive = recursive;
+	}
+
+	public boolean isRecursive() {
+		return recursive;
 	}
 
 }

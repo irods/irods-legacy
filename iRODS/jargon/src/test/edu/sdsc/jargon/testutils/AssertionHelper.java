@@ -279,6 +279,10 @@ public class AssertionHelper {
 
 		File[] file1Files = file1.listFiles();
 		File[] file2Files = file2.listFiles();
+		
+		if (file1Files.length != file2Files.length) {
+			throw new IRODSTestAssertionException("mismatch of number of files in a directory, file1 has:" + file1Files.length + " files, while file2 has:" + file2Files.length);
+		}
 
 		for (int i = 0; i < file1Files.length; i++) {
 			compareTwoFiles(file1Files[i], file2Files[i]);

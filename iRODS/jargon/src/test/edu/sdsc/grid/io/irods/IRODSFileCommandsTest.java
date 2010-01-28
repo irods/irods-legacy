@@ -480,7 +480,7 @@ public class IRODSFileCommandsTest {
    
     }
     
-    // FIXME: currently ignoring, as this is due to a known irods bug
+    // currently ignoring, as this is due to a known irods bug
     @Ignore
     public final void testPhysicalMove() throws Exception {
     	// generate a local scratch file
@@ -649,7 +649,7 @@ public class IRODSFileCommandsTest {
         irodsFileSystem.commands.deleteReplica(irodsFile,testingProperties.getProperty(IRODS_RESOURCE_KEY));
         irodsFileSystem.close();
         
-        // FIXME: not deleting!  Need to set min replicas to 1
+        // NOTE: not deleting!  Need to set min replicas to 1
         
         // replica should not show up in ils, it was deleted..
         /*ilsCommand = new IlsCommand();

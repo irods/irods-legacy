@@ -155,7 +155,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		}
 
 		
-		// FIXME: factor out...
+		// NOTE: factor out...
 		// Get the username if they logged in with just a GSSCredential
 		if (irodsAccount.getUserName() == null
 				|| irodsAccount.getUserName().equals("")) {

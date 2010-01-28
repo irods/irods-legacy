@@ -11,8 +11,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
+import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.TestingUtilsException;
 
 /**
@@ -27,6 +29,8 @@ public class FileGenerator {
 
 	public static List<String> fileExtensions = new ArrayList<String>();
 	private static final Random RANDOM = new Random();
+	private static Properties testingProperties = new Properties();
+	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 
 	static {
 		fileExtensions.add(".doc");
@@ -35,6 +39,11 @@ public class FileGenerator {
 		fileExtensions.add(".gif");
 		fileExtensions.add(".jpg");
 		fileExtensions.add(".avi");
+		try {
+			testingProperties = testingPropertiesHelper.getTestProperties();
+		} catch (TestingUtilsException e) {
+			throw new IllegalStateException("cannot find testing properties", e);
+		}
 	}
 
 	/**
@@ -187,4 +196,26 @@ public class FileGenerator {
 		return min + generator.nextInt(range);
 	}
 
+	public static List<String>  generateManyFilesInGivenDirectory(String relativePathUnderScratch, String filePrefix, String fileSuffix,
+			int numberOfFiles, int fileLengthMin, int fileLengthMax) throws TestingUtilsException {
+		// n number of random files in the source directory, with a random
+		// length between the min and max
+		
+		ScratchFileUtils scratchFileUtils = new ScratchFileUtils(testingProperties);
+		String absPath = scratchFileUtils
+		.createAndReturnAbsoluteScratchPath(relativePathUnderScratch);
+		ArrayList<String> sourceFileNames = new ArrayList<String>();
+		String genFileName = "";
+		for (int i = 0; i < numberOfFiles; i++) {
+			genFileName = filePrefix + i + fileSuffix;
+			genFileName = FileGenerator.generateFileOfFixedLengthGivenName(
+					absPath, genFileName, FileGenerator.generateRandomNumber(
+							fileLengthMin, fileLengthMax));
+			sourceFileNames.add(genFileName);
+		}
+		
+		return sourceFileNames;		
+	}
+	
+	
 }
