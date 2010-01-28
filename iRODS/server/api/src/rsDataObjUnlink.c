@@ -30,7 +30,9 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
     dataObjInfo_t *dataObjInfoHead = NULL;
     rodsServerHost_t *rodsServerHost = NULL;
     int rmTrashFlag = 0;
+    specCollCache_t *specCollCache = NULL;
 
+    resolveLinkedPath (rsComm, dataObjUnlinkInp->objPath, &specCollCache);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT,
      dataObjUnlinkInp->objPath, &rodsServerHost);
 

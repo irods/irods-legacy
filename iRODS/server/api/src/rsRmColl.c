@@ -21,7 +21,9 @@ collOprStat_t **collOprStat)
     ruleExecInfo_t rei;
     collInfo_t collInfo;
     rodsServerHost_t *rodsServerHost = NULL;
+    specCollCache_t *specCollCache = NULL;
 
+    resolveLinkedPath (rsComm, rmCollInp->collName, &specCollCache);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT,
      rmCollInp->collName, &rodsServerHost);
 

@@ -37,12 +37,29 @@ transStat_t **transStat)
 
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    dataObjInfo_t *dataObjInfo = NULL;
 
     if (getValByKey (&dataObjInp->condInput, SU_CLIENT_USER_KW) != NULL) {
 	/* To SU, cannot be called by normal user directly */ 
         if (rsComm->proxyUser.authInfo.authFlag < REMOTE_PRIV_USER_AUTH) {
             return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
         }
+    }
+
+    status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+          READ_COLL_PERM, 0, &dataObjInfo);
+
+    if (status == DATA_OBJ_T) {
+        if (dataObjInfo != NULL && dataObjInfo->specColl != NULL) {
+            if (dataObjInfo->specColl->collClass == LINKED_COLL) {
+                rstrcpy (dataObjInp->objPath, dataObjInfo->objPath,
+                  MAX_NAME_LEN);
+	        freeAllDataObjInfo (dataObjInfo);
+	    } else {
+	        freeAllDataObjInfo (dataObjInfo);
+	        return (SYS_REG_OBJ_IN_SPEC_COLL);
+	    }
+	}	
     }
 
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,

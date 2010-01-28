@@ -872,10 +872,12 @@ dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 	rstrcpy (dataObjInfo->rescName, tmpRescName, NAME_LEN);
         status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
 	if (status < 0) {
-	    rodsLog (LOG_NOTICE,
+	    rodsLog (LOG_DEBUG,
               "getDataObjInfo: resolveResc error for %s, status = %d",
 	      tmpRescName, status);
+#if 0	/* this could happen for remote zone resource */
 	    return (status);
+#endif
 	}
 	rstrcpy (dataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
 	rstrcpy (dataObjInfo->dataType, tmpDataType, NAME_LEN);

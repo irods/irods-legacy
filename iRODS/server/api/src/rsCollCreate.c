@@ -20,7 +20,9 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
     rodsServerHost_t *rodsServerHost = NULL;
     ruleExecInfo_t rei;
     collInfo_t collInfo;
-
+    specCollCache_t *specCollCache = NULL;
+    
+    resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
                                 &rodsServerHost);
     if (status < 0) {
@@ -71,9 +73,24 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
              * COLLECTION_TYPE_KW must be set */
 	    if (dataObjInfo != NULL && dataObjInfo->specColl != NULL &&
 	      dataObjInfo->specColl->collClass == LINKED_COLL) {
+		/*  should not be here because if has been translated */
+		return SYS_COLL_LINK_PATH_ERR;
+#if 0
+		rodsServerHost_t *linkedServerHost = NULL;
                 rstrcpy (collCreateInp->collName, dataObjInfo->objPath,
                   MAX_NAME_LEN);
-                status = _rsRegColl (rsComm, collCreateInp);
+    		status = getAndConnRcatHost (rsComm, MASTER_RCAT, 
+		  collCreateInp->collName, &linkedServerHost);
+
+		if (linkedServerHost != rodsServerHost && 
+		  linkedServerHost->localFlag != LOCAL_HOST) {
+		    /* call rsCollCreate again */
+        	    status = rcCollCreate (linkedServerHost->conn, 
+		      collCreateInp);
+		} else {
+        	    status = _rsRegColl (rsComm, collCreateInp);
+		}
+#endif
 	    } else {
 	        status = l3Mkdir (rsComm, dataObjInfo);
 	    }

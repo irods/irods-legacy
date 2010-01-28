@@ -73,6 +73,9 @@ rodsObjStat_t **rodsObjStatOut);
 int
 resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
 specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo);
+int
+resolveLinkedPath (rsComm_t *rsComm, char *objPath,
+specCollCache_t **specCollCache);
 #else
 #define RS_OBJ_STAT NULL
 #endif

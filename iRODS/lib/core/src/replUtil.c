@@ -330,7 +330,7 @@ rodsRestart_t *rodsRestart)
 
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
-                  "replCollUtil: getDataObjUtil failed for %s. status = %d",
+                  "replCollUtil: replDataObjUtil failed for %s. status = %d",
                   srcChildPath, status);
                 if (rodsRestart->fd > 0) {
                     break;

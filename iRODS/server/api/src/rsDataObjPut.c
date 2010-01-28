@@ -27,6 +27,22 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
+
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
+#if 0
+    status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+          READ_COLL_PERM, 0, &dataObjInfo);
+
+    if (dataObjInfo != NULL) {
+        if (dataObjInfo->specColl != NULL && 
+	  dataObjInfo->specColl->collClass == LINKED_COLL) {
+            rstrcpy (dataObjInp->objPath, dataObjInfo->objPath,
+              MAX_NAME_LEN);
+	}
+        freeAllDataObjInfo (dataObjInfo);
+    }
+#endif
 
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_CREATE);

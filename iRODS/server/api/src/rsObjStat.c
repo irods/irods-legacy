@@ -586,9 +586,8 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
         }
     } else if (specColl->collClass == LINKED_COLL) {
         /* a link point */
-	int linkCnt = 0;
 	specCollCache_t *specCollCache = NULL;
-        char newPath[MAX_NAME_LEN], prevNewPath[MAX_NAME_LEN];
+        char newPath[MAX_NAME_LEN];
 	specColl_t *curSpecColl;
 	char *accessStr;
         dataObjInp_t myDataObjInp;
@@ -603,6 +602,9 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
             return (status);
         }
 
+	status = resolveLinkedPath (rsComm, newPath, &specCollCache);
+	if (status < 0) return status;
+#if 0
 	while (getSpecCollCache (rsComm, newPath, 0,  &specCollCache) >= 0) {
 	    if (linkCnt++ >= MAX_LINK_CNT) {
                 rodsLog (LOG_ERROR,
@@ -619,6 +621,7 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
                 return (status);
             }
 	}
+#endif
         bzero (&myDataObjInp, sizeof (myDataObjInp));
         rstrcpy (myDataObjInp.objPath, newPath, MAX_NAME_LEN);
 
@@ -1001,3 +1004,31 @@ specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
     return (status);
 }
 
+int
+resolveLinkedPath (rsComm_t *rsComm, char *objPath, 
+specCollCache_t **specCollCache)
+{
+    *specCollCache = NULL;
+    int linkCnt = 0;
+    specColl_t *curSpecColl;
+    char prevNewPath[MAX_NAME_LEN];
+    int status;
+
+    while (getSpecCollCache (rsComm, objPath, 0,  specCollCache) >= 0) {
+        if (linkCnt++ >= MAX_LINK_CNT) {
+            rodsLog (LOG_ERROR,
+              "resolveLinkedPath: linkCnt for %s exceeds %d",
+              objPath, MAX_LINK_CNT);
+            return SYS_LINK_CNT_EXCEEDED_ERR;
+        }
+
+        curSpecColl = &(*specCollCache)->specColl;
+        rstrcpy (prevNewPath, objPath, MAX_NAME_LEN);
+        status = getMountedSubPhyPath (curSpecColl->collection,
+          curSpecColl->phyPath, prevNewPath, objPath);
+        if (status < 0) {
+            return (status);
+        }
+    }
+    return 0;
+}

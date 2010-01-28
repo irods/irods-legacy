@@ -35,7 +35,9 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     rodsObjStat_t *rodsObjStatOut = NULL;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
 
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_CREATE);
 
@@ -59,20 +61,27 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     /* stat dataObj */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
     status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
-    resolveStatForStructFileOpr (&dataObjInp->condInput, rodsObjStatOut);
     if (rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
 	return (USER_INPUT_PATH_ERR);
     }
 
     if (rodsObjStatOut != NULL && rodsObjStatOut->specColl != NULL &&
-      rodsObjStatOut->specColl->collClass == LINKED_COLL &&
-      rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
-	/* linked obj that does not exist. just replace the path */
+      rodsObjStatOut->specColl->collClass == LINKED_COLL) {
+        /*  should not be here because if has been translated */
+        return SYS_COLL_LINK_PATH_ERR;
+
+#if 0
+	/* linked obj,  just replace the path */
 	if (strlen (rodsObjStatOut->specColl->objPath) > 0) {
 	    rstrcpy (dataObjInp->objPath, rodsObjStatOut->specColl->objPath,
 	      MAX_NAME_LEN);
-	    rodsObjStatOut->specColl = NULL;
+	    free (rodsObjStatOut);
+	    /* call rsDataObjCreate because the translated path could be
+	     * a cross zone opertion */
+	    l1descInx = rsDataObjCreate (rsComm, dataObjInp);
+	    return (l1descInx);
 	}
+#endif
     }
 
     if (rodsObjStatOut == NULL || 
