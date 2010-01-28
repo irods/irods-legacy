@@ -67,6 +67,13 @@ char *type, void *inOutStruct, bytesBuf_t *inpOutBuf, int replFlag)
 	if (msParamArray->msParam[i]->label == NULL) 
 	    continue;
 	if (strcmp (msParamArray->msParam[i]->label, label) == 0) {
+	  /*** RAJA ADDED Jan 28 2010 to make it not given an error ***/
+	  if (!strcmp(msParamArray->msParam[i]->type,STR_MS_T) &&
+	      !strcmp(type,STR_MS_T) &&
+	      !strcmp( (char *) inOutStruct, (char *) msParamArray->msParam[i]->inOutStruct)) {
+	    return(0);
+	  }
+	  /*** RAJA ADDED Jan 28 2010 to make it not given an error ***/
 	    rodsLog (LOG_ERROR,
 	      "addMsParam: Two params have the same label %s", label);
 	    if (!strcmp(msParamArray->msParam[i]->type,STR_MS_T))
