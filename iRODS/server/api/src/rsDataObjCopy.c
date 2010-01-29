@@ -25,8 +25,13 @@ transStat_t **transStat)
     uint createMode;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
 
+    srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
+    destDataObjInp = &dataObjCopyInp->destDataObjInp;
 
+    resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache);
+    resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache);
     remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, 
       &rodsServerHost);
 
@@ -37,8 +42,6 @@ transStat_t **transStat)
 	  transStat);
 	return status;
     }
-    srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
-    destDataObjInp = &dataObjCopyInp->destDataObjInp;
 
     *transStat = malloc (sizeof (transStat_t));
     memset (*transStat, 0, sizeof (transStat_t));

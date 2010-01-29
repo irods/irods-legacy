@@ -43,11 +43,11 @@ msParamArray_t **outParamArray)
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
-	int l1descInx;
-	rcComm_t *myconn = NULL;
 
         status = _rcDataObjRsync (rodsServerHost->conn, dataObjInp,
           outParamArray);
+#if 0
+	int l1descInx;
 	if (status < 0) {
             return (status);
         }
@@ -63,6 +63,7 @@ msParamArray_t **outParamArray)
 	    } 
 	    addIntParamToArray (*outParamArray, CL_ZONE_OPR_INX, l1descInx);
 	}
+#endif
         return status;
     }
 
