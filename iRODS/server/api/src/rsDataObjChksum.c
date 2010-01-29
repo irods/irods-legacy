@@ -14,7 +14,9 @@ char **outChksum)
     dataObjInfo_t *dataObjInfoHead;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
 
+    resolveLinkedPath (rsComm, dataObjChksumInp->objPath, &specCollCache);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjChksumInp, 
       &rodsServerHost, REMOTE_OPEN);
 

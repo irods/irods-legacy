@@ -29,7 +29,9 @@ rsDataObjTrim (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int retVal = 0;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
 
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_OPEN);
 

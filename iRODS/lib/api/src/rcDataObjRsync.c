@@ -10,12 +10,31 @@ rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
 {
     int status;
     msParamArray_t *outParamArray = NULL;
+    char *locFilePath;
 
     status = _rcDataObjRsync (conn, dataObjInp, &outParamArray);
 
+    if (status == SYS_SVR_TO_CLI_PUT_ACTION) {
+        if ((locFilePath = getValByKey (&dataObjInp->condInput,
+          RSYNC_DEST_PATH_KW)) == NULL) {
+	    return USER_INPUT_PATH_ERR;
+	} else {
+	    status = rcDataObjPut (conn, dataObjInp, locFilePath);
+	    return status;
+	}
+    } else if (status == SYS_SVR_TO_CLI_GET_ACTION) {
+        if ((locFilePath = getValByKey (&dataObjInp->condInput,
+          RSYNC_DEST_PATH_KW)) == NULL) {
+            return USER_INPUT_PATH_ERR;
+        } else {
+            status = rcDataObjGet (conn, dataObjInp, locFilePath);
+	    return status;
+	}
+    }
+
+    /* below is for backward compatibility */
     while (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
 	/* it is a server request */
-	char *locFilePath;
         msParam_t *myMsParam;
         dataObjInp_t *dataObjInp = NULL;
 	int l1descInx; 

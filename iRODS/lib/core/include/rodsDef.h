@@ -113,6 +113,8 @@
 #define SYS_SVR_TO_CLI_MSI_REQUEST 99999995
 #define SYS_SVR_TO_CLI_COLL_STAT 99999996
 #define SYS_CLI_TO_SVR_COLL_STAT_REPLY 99999997
+#define SYS_SVR_TO_CLI_PUT_ACTION 99999990
+#define SYS_SVR_TO_CLI_GET_ACTION 99999991
 
 /* definition for iRODS server to client action request from a microservice. 
  * these definitions are put in the "label" field of MsParam */  

@@ -15,6 +15,7 @@ msParamArray_t **outParamArray)
     char *remoteZoneOpr;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
 
     *outParamArray = NULL;
     if (dataObjInp == NULL) { 
@@ -35,6 +36,7 @@ msParamArray_t **outParamArray)
 	remoteZoneOpr = REMOTE_OPEN;
     }
 
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       remoteZoneOpr);
 
@@ -42,12 +44,14 @@ msParamArray_t **outParamArray)
         return (remoteFlag);
     } else if (remoteFlag == REMOTE_HOST) {
 	int l1descInx;
+	rcComm_t *myconn = NULL;
 
         status = _rcDataObjRsync (rodsServerHost->conn, dataObjInp,
           outParamArray);
 	if (status < 0) {
             return (status);
         }
+	
 	if (status == SYS_SVR_TO_CLI_MSI_REQUEST) {
 	    /* server request to client */
             l1descInx = allocAndSetL1descForZoneOpr (0, dataObjInp,
@@ -84,8 +88,6 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     char *fileChksumStr = NULL;
      char *dataObjChksumStr = NULL;
     dataObjInfo_t *dataObjInfoHead = NULL;
-    msParamArray_t *myMsParamArray;
-    dataObjInp_t *myDataObjInp;
 
     fileChksumStr = getValByKey (&dataObjInp->condInput, RSYNC_CHKSUM_KW);
 
@@ -116,6 +118,11 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (0);
     }
 
+    return SYS_SVR_TO_CLI_GET_ACTION;
+#if 0
+    msParamArray_t *myMsParamArray;
+    dataObjInp_t *myDataObjInp;
+
     myMsParamArray = malloc (sizeof (msParamArray_t));
     memset (myMsParamArray, 0, sizeof (msParamArray_t));
     /* have to get its own dataObjInp_t */
@@ -136,6 +143,7 @@ rsRsyncDataToFile (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
      SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
 
     return (status);
+#endif
 }
 
 int
@@ -145,8 +153,6 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     char *fileChksumStr = NULL;
      char *dataObjChksumStr = NULL;
     dataObjInfo_t *dataObjInfoHead = NULL;
-    msParamArray_t *myMsParamArray;
-    dataObjInp_t *myDataObjInp;
 
     fileChksumStr = getValByKey (&dataObjInp->condInput, RSYNC_CHKSUM_KW);
 
@@ -174,6 +180,10 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	free (dataObjChksumStr);
 	return (0);
     }
+    return SYS_SVR_TO_CLI_PUT_ACTION;
+#if 0
+    msParamArray_t *myMsParamArray;
+    dataObjInp_t *myDataObjInp;
 
     myMsParamArray = malloc (sizeof (msParamArray_t));
     memset (myMsParamArray, 0, sizeof (msParamArray_t));
@@ -196,6 +206,7 @@ rsRsyncFileToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
      SYS_SVR_TO_CLI_MSI_REQUEST, (void *) myMsParamArray, NULL);
 
     return (status);
+#endif
 }
 
 int

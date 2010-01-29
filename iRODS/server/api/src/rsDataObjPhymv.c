@@ -34,7 +34,9 @@ transStat_t **transStat)
     char *accessPerm;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
+    specCollCache_t *specCollCache = NULL;
 
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_OPEN);
 
