@@ -1008,11 +1008,12 @@ int
 resolveLinkedPath (rsComm_t *rsComm, char *objPath, 
 specCollCache_t **specCollCache)
 {
-    *specCollCache = NULL;
     int linkCnt = 0;
     specColl_t *curSpecColl;
     char prevNewPath[MAX_NAME_LEN];
     int status;
+
+	*specCollCache = NULL;
 
     while (getSpecCollCache (rsComm, objPath, 0,  specCollCache) >= 0) {
         if (linkCnt++ >= MAX_LINK_CNT) {
