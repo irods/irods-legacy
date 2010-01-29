@@ -69,7 +69,6 @@ class Rule {
 	Object parameter;
 
 	String ruleName;
-	Method[] methods;
 	Parameter[] outputs;
 
 	Parameter[] inputs;
@@ -85,18 +84,6 @@ class Rule {
 		this.label = label;
 		this.type = type;
 		this.parameter = parameter;
-	}
-
-	/**
-	 * @deprecated This constructor initializes unread fields
-	 * @param ruleName
-	 * @param microservices
-	 * @param outputs
-	 */
-	public Rule(String ruleName, Method[] microservices, Parameter[] outputs) {
-		this.ruleName = ruleName;
-		methods = microservices;
-		this.outputs = outputs;
 	}
 
 	Rule(String ruleName, Parameter[] inputs, Parameter[] outputs) {

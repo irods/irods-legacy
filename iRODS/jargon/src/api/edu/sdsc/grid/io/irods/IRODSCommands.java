@@ -1361,17 +1361,6 @@ class IRODSCommands {
 	}
 
 	/**
-	 * @deprecated this method apparently only returns null, and will be removed
-	 *             in a later release. This method will throw a RuntimeException
-	 *             if invoked. {@see executeRule(String, Parameter[],
-	 *             Parameter[]) executeRule(String, Parameter[], Parameter
-	 */
-	Parameter[] executeRule(Rule rule) throws IOException {
-		throw new RuntimeException("Unimplemented functionality");
-
-	}
-
-	/**
 	 * Execute an IRODS rule and return the result as a <code>Tag</code>. Note
 	 * that the result in <code>Tag</code> format can be processed by
 	 * {@link edu.sdsc.grid.io.irods.Rule#readResult(IRODSFileSystem, Tag)

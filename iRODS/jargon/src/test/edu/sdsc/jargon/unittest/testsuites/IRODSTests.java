@@ -3,15 +3,12 @@
  */
 package edu.sdsc.jargon.unittest.testsuites;
 
-import org.irods.jargon.core.query.ExtendedQueryAttributeTest;
-import org.irods.jargon.core.query.ExtendedQueryAttributesFromPropertiesTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 import edu.sdsc.grid.io.irods.IRODSAccountTest;
 import edu.sdsc.grid.io.irods.IRODSAdminTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsCopyToTest;
-import edu.sdsc.grid.io.irods.IRODSCommandsDeleteBigTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsGetTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsMiscTest;
@@ -66,8 +63,6 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSCommandsPutTest.class,
   IRODSExecuteCommandsTest.class,
   IRODSCommandsMiscTest.class,
-  ExtendedQueryAttributeTest.class,
-  ExtendedQueryAttributesFromPropertiesTest.class,
   IRODSFileSystemModifyMetadataTest.class,
   IRODSMultiThreadGetAndPutTest.class
 })

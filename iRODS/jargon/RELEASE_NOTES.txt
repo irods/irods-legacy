@@ -1,11 +1,11 @@
-Jargon 2.X Release Notes
+Jargon 2.3 Release Notes
 
 ** work in progress, current version is 2.2.1 ***
 
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 01/11/2010
+Date: 01/29/2010
 Release Version: 2.X
 
 ================================================================================================
@@ -13,7 +13,7 @@ Requirements
 
 -Jargon depends on Java 1.5+
 -Jargon is built using Apache ANT
--Jargon has been tested against IRODS 2.1 and IRODS2.2
+-Jargon has been tested against IRODS 2.1, IRODS2.2, and IRODS2.3
 
 libraries
 ---------
@@ -27,7 +27,7 @@ libraries
 Features and Changes
 
 ----------
->>>>>>>>>>>> NOTE: The old Jargon Gui, in org.sdsc.grid.gui, has been depracated, and will be removed in the release after this one <<<<<<<<<<
+The old Jargon Gui, in org.sdsc.grid.gui, has been deprecated since Jargon 2.2, and will be removed in the release after this one 
  
 ----------
 Compatibility testing with IRODS2.3
@@ -39,6 +39,8 @@ Beginning a 'first order' refactoring of Jargon, with an emphasis on breaking la
 *extracted Tag processing in IRODSCommands to Tag
 *created IRODSAvu and extracted AVU processing from ICommands
 *broke up the IRODSCommands class into IRODSCommands and IRODSConnection
+*removed unused edu.sdsc.grio.io.irods.Method class and removed previously deprecated references
+*culled all TODO's and dead code, did mass format of source to bring it up to current standards.
 *more refactoring to come.....
 
 ----------
@@ -50,18 +52,12 @@ Replaced 'hand made' logging with standard logging, best practice for integratin
 * this change supercedes the prior 'debug' conventions in Jargon
 
 ----------
-Culled all TODO's and dead code, did mass format of source to bring it up to current standards.
-
-----------
 Tests and resolution of Bug 32 -  copyTo when dest file is from URI results in -78000 resource not found
-
----------
-Enhancement for  Bug 38 -  New 2.2 metadata values for queries
-Work-in-progress on adding ICAT extensible metadata for queries
 
 ---------
 Add a close() method to IRODSFile that will close the underlying IRODSFileSystem.  This is useful for occasions where the IRODSFile is created by a URI, 
 where the IRODSFileSystem was not created in the calling code.  This was causing -4000 errors when the socket closed without a disconnect being sent.
+A better solution will probably appear in newer versions of Jargon
 
 ---------
 Tests and fix for  Bug 57 -  parallel file get operation does not work in Jargon
@@ -79,4 +75,3 @@ Documentation and Installation
 -See the README.txt in this distribution
 -Review Jargon documentation at: http://www.irods.org/index.php/Jargon
 -Review information at the IRODS web site: http://www.irods.org
-
