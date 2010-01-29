@@ -393,7 +393,7 @@ create index idx_user_main1 on R_USER_MAIN (user_id);
 create unique index idx_user_main2 on R_USER_MAIN (user_name,zone_name);
 create index idx_resc_main1 on R_RESC_MAIN (resc_id);
 create unique index idx_resc_main2 on R_RESC_MAIN (zone_name,resc_name);
-create unique index idx_coll_main3 on R_COLL_MAIN (coll_name);
+create unique index idx_coll_main3 on R_COLL_MAIN (coll_name VARCHAR_MAX_IDX_SIZE);
 create index idx_coll_main1 on R_COLL_MAIN (coll_id);
 create unique index idx_coll_main2 on R_COLL_MAIN (parent_coll_name VARCHAR_MAX_IDX_SIZE,coll_name VARCHAR_MAX_IDX_SIZE);
 create index idx_data_main1 on R_DATA_MAIN (data_id);
