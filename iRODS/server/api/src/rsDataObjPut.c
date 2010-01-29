@@ -29,7 +29,8 @@ bytesBuf_t *dataObjInpBBuf, portalOprOut_t **portalOprOut)
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
 
-    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
+      &dataObjInp->condInput);
 #if 0
     status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
           READ_COLL_PERM, 0, &dataObjInfo);

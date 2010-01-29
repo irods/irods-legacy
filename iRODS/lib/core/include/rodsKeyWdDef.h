@@ -87,6 +87,7 @@
 #define NUM_THREADS_KW   	"numThreads" /* a msKeyValStr keyword */ 
 #define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */ 
 #define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */ 
+#define TRANSLATED_PATH_KW	"translatedPath"  /* the path translated */
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 
 

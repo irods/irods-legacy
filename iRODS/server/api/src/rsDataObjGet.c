@@ -24,7 +24,8 @@ portalOprOut_t **portalOprOut, bytesBuf_t *dataObjOutBBuf)
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
 
-    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
+      &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_OPEN);
 

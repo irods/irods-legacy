@@ -75,7 +75,7 @@ resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
 specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo);
 int
 resolveLinkedPath (rsComm_t *rsComm, char *objPath,
-specCollCache_t **specCollCache);
+specCollCache_t **specCollCache, keyValPair_t *condInput);
 #else
 #define RS_OBJ_STAT NULL
 #endif

@@ -37,7 +37,8 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
 
-    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
+      &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       REMOTE_CREATE);
 

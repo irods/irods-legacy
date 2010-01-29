@@ -36,7 +36,8 @@ msParamArray_t **outParamArray)
 	remoteZoneOpr = REMOTE_OPEN;
     }
 
-    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache);
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
+      &dataObjInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
       remoteZoneOpr);
 

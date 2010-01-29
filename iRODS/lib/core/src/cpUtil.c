@@ -61,11 +61,15 @@ rodsPathInp_t *rodsPathInp)
         }
 
 	if (targPath->objType == DATA_OBJ_T) {
+	    rmKeyVal (&dataObjCopyInp.srcDataObjInp.condInput, 
+	      TRANSLATED_PATH_KW);
 	    status = cpFileUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	      targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv, 
 	       myRodsArgs, &dataObjCopyInp);
 	} else if (targPath->objType == COLL_OBJ_T) {
             setStateForRestart (conn, &rodsRestart, targPath, myRodsArgs);
+	    addKeyVal (&dataObjCopyInp.srcDataObjInp.condInput, 
+	      TRANSLATED_PATH_KW, "");
 	    status = cpCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjCopyInp,
 	      &rodsRestart);

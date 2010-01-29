@@ -602,7 +602,7 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
             return (status);
         }
 
-	status = resolveLinkedPath (rsComm, newPath, &specCollCache);
+	status = resolveLinkedPath (rsComm, newPath, &specCollCache, NULL);
 	if (status < 0) return status;
 #if 0
 	while (getSpecCollCache (rsComm, newPath, 0,  &specCollCache) >= 0) {
@@ -1006,16 +1006,20 @@ specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
 
 int
 resolveLinkedPath (rsComm_t *rsComm, char *objPath, 
-specCollCache_t **specCollCache)
+specCollCache_t **specCollCache, keyValPair_t *condInput)
 {
+    *specCollCache = NULL;
     int linkCnt = 0;
     specColl_t *curSpecColl;
     char prevNewPath[MAX_NAME_LEN];
     int status;
 
-	*specCollCache = NULL;
+    if (getValByKey (condInput, TRANSLATED_PATH_KW) != NULL)
+	return 0;
 
-    while (getSpecCollCache (rsComm, objPath, 0,  specCollCache) >= 0) {
+    addKeyVal (condInput, TRANSLATED_PATH_KW, "");
+    while (getSpecCollCache (rsComm, objPath, 0,  specCollCache) >= 0 &&
+      (*specCollCache)->specColl.collClass == LINKED_COLL) {
         if (linkCnt++ >= MAX_LINK_CNT) {
             rodsLog (LOG_ERROR,
               "resolveLinkedPath: linkCnt for %s exceeds %d",

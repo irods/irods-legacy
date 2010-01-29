@@ -38,9 +38,11 @@ rodsPathInp_t *rodsPathInp)
 	}
 
 	if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
+	    rmKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW);
 	    status = trimDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	     myRodsEnv, myRodsArgs, &dataObjInp);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
+	    addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = trimCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               myRodsEnv, myRodsArgs, &dataObjInp);
 	} else {

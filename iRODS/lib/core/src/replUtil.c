@@ -58,11 +58,13 @@ rodsPathInp_t *rodsPathInp)
 
     for (i = 0; i < rodsPathInp->numSrc; i++) {
 	if (rodsPathInp->srcPath[i].objType == DATA_OBJ_T) {
+            rmKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW);
 	    status = replDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	     rodsPathInp->srcPath[i].size, myRodsEnv, myRodsArgs, &dataObjInp);
 	} else if (rodsPathInp->srcPath[i].objType ==  COLL_OBJ_T) {
             setStateForRestart (conn, &rodsRestart, &rodsPathInp->srcPath[i], 
 	      myRodsArgs);
+            addKeyVal (&dataObjInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = replCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               myRodsEnv, myRodsArgs, &dataObjInp, &rodsRestart);
             if (rodsRestart.fd > 0 && status < 0) {

@@ -63,12 +63,14 @@ rodsPathInp_t *rodsPathInp)
 	    dataObjOprInp.specColl = NULL;
 	}
 	if (targPath->objType == LOCAL_FILE_T) {
+	    rmKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW);
 	    status = getDataObjUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	     targPath->outPath, rodsPathInp->srcPath[i].size,
 	      rodsPathInp->srcPath[i].objMode, myRodsEnv, 
 	      myRodsArgs, &dataObjOprInp);
 	} else if (targPath->objType ==  LOCAL_DIR_T) {
             setStateForRestart (conn, &rodsRestart, targPath, myRodsArgs);
+	    addKeyVal (&dataObjOprInp.condInput, TRANSLATED_PATH_KW, "");
 	    status = getCollUtil (conn, rodsPathInp->srcPath[i].outPath,
               targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
 	      &rodsRestart);

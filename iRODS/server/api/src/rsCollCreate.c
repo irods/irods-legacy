@@ -22,7 +22,8 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
     collInfo_t collInfo;
     specCollCache_t *specCollCache = NULL;
     
-    resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache);
+    resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache,
+      &collCreateInp->condInput);
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, collCreateInp->collName,
                                 &rodsServerHost);
     if (status < 0) {

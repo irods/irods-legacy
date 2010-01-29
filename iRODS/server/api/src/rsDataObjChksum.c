@@ -16,7 +16,8 @@ char **outChksum)
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
 
-    resolveLinkedPath (rsComm, dataObjChksumInp->objPath, &specCollCache);
+    resolveLinkedPath (rsComm, dataObjChksumInp->objPath, &specCollCache,
+      &dataObjChksumInp->condInput);
     remoteFlag = getAndConnRemoteZone (rsComm, dataObjChksumInp, 
       &rodsServerHost, REMOTE_OPEN);
 

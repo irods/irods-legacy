@@ -30,8 +30,10 @@ transStat_t **transStat)
     srcDataObjInp = &dataObjCopyInp->srcDataObjInp;
     destDataObjInp = &dataObjCopyInp->destDataObjInp;
 
-    resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache);
-    resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache);
+    resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache,
+      &srcDataObjInp->condInput);
+    resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache,
+      &destDataObjInp->condInput);
     remoteFlag = getAndConnRemoteZoneForCopy (rsComm, dataObjCopyInp, 
       &rodsServerHost);
 
