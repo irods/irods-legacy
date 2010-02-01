@@ -16,6 +16,7 @@ int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut)
 {
+#if 0
     int status;
 
     status = __rsObjStat (rsComm, dataObjInp, 0, rodsObjStatOut);
@@ -34,6 +35,7 @@ int
 __rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int intenFlag,
 rodsObjStat_t **rodsObjStatOut)
 {
+#endif
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
@@ -1016,7 +1018,7 @@ specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
               accessStr);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
-                  "resolveSpecColl: checkCollAccessPerm err for %s, stat = %d",
+                 "resolvePathInSpecColl:checkCollAccessPerm err for %s,stat=%d",
                   cachedSpecColl->collection, status);
                 return (status);
             } else {
@@ -1041,7 +1043,7 @@ specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
             return (SYS_SPEC_COLL_OBJ_NOT_EXIST);
         }
         rodsLog (LOG_ERROR,
-          "resolveSpecColl: specCollSubStat error for %s, status = %d",
+          "resolvePathInSpecColl: specCollSubStat error for %s, status = %d",
           objPath, status);
         return (status);
     } else {

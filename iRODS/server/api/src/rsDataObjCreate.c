@@ -61,7 +61,10 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     /* Gets here means local zone operation */
     /* stat dataObj */
     addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "dataObj");
+#if 0   /* separate specColl */
     status = __rsObjStat (rsComm, dataObjInp, 1, &rodsObjStatOut); 
+#endif
+    status = rsObjStat (rsComm, dataObjInp, &rodsObjStatOut); 
     if (rodsObjStatOut != NULL && rodsObjStatOut->objType == COLL_OBJ_T) {
 	return (USER_INPUT_PATH_ERR);
     }
