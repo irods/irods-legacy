@@ -387,8 +387,9 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
                 dataObjCopyInp_t childDataObjCopyInp;
 
                 childDataObjCopyInp = *dataObjCopyInp;
-                childDataObjCopyInp.srcDataObjInp.specColl = 
-		  &collEnt.specColl;
+		if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                    childDataObjCopyInp.srcDataObjInp.specColl = 
+		      &collEnt.specColl;
                 status = cpCollUtil (conn, collEnt.collName, 
 		  targChildPath, myRodsEnv, rodsArgs, &childDataObjCopyInp, 
 		  rodsRestart);

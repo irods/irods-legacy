@@ -220,7 +220,8 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
         } else if (collEnt.objType == COLL_OBJ_T) {
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjInp;
-            childDataObjInp.specColl = &collEnt.specColl;
+            if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                childDataObjInp.specColl = &collEnt.specColl;
             status = phymvCollUtil (conn, collEnt.collName, myRodsEnv,
               rodsArgs, &childDataObjInp);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {

@@ -345,7 +345,8 @@ rodsRestart_t *rodsRestart)
         } else if (collEnt.objType == COLL_OBJ_T) {
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjInp;
-            childDataObjInp.specColl = &collEnt.specColl;
+	    if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                childDataObjInp.specColl = &collEnt.specColl;
             status = replCollUtil (conn, collEnt.collName, myRodsEnv,
               rodsArgs, &childDataObjInp, rodsRestart);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {

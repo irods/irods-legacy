@@ -474,7 +474,8 @@ dataObjInp_t *dataObjOprInp)
                 /* the child is a spec coll. need to drill down */
                 dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;
-                childDataObjInp.specColl = &collEnt.specColl;
+		if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                    childDataObjInp.specColl = &collEnt.specColl;
                 rstrcpy (myTargPath.outPath, targChildPath, MAX_NAME_LEN);
                 rstrcpy (mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN);
 
@@ -742,8 +743,9 @@ dataObjCopyInp_t *dataObjCopyInp)
                 /* the child is a spec coll. need to drill down */
                 dataObjCopyInp_t childDataObjCopyInp;
                 childDataObjCopyInp = *dataObjCopyInp;
-                childDataObjCopyInp.srcDataObjInp.specColl = 
-		  &collEnt.specColl;
+		if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                    childDataObjCopyInp.srcDataObjInp.specColl = 
+		      &collEnt.specColl;
                 rstrcpy (myTargPath.outPath, targChildPath, MAX_NAME_LEN);
                 rstrcpy (mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN);
                 status = rsyncCollToCollUtil (conn, &mySrcPath,

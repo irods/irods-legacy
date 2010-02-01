@@ -374,7 +374,8 @@ rodsRestart_t *rodsRestart)
                 /* the child is a spec coll. need to drill down */
                 dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;
-                childDataObjInp.specColl = &collEnt.specColl;
+		if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                    childDataObjInp.specColl = &collEnt.specColl;
                 status = getCollUtil (conn, collEnt.collName, targChildPath,
                   myRodsEnv, rodsArgs, &childDataObjInp, rodsRestart);
                 if (status < 0 && status != CAT_NO_ROWS_FOUND) {

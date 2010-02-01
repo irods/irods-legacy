@@ -238,7 +238,8 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
         } else if (collEnt.objType == COLL_OBJ_T) {
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjInp;
-            childDataObjInp.specColl = &collEnt.specColl;
+	    if (collEnt.specColl.collClass != NO_SPEC_COLL)
+                childDataObjInp.specColl = &collEnt.specColl;
             status = chksumCollUtil (conn, collEnt.collName, myRodsEnv,
               rodsArgs, &childDataObjInp, collInp);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {
