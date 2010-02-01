@@ -1698,11 +1698,12 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    }
 
    /* Remove both the special user_id = group_user_id entry and any
-      other access entries for this user */
+      other access entries for this user (or group) */
+   cllBindVars[cllBindVarCount++]=iValStr;
    cllBindVars[cllBindVarCount++]=iValStr;
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 4");
    status = cmlExecuteNoAnswerSql(
-	    "delete from r_user_group where user_id=?",
+	    "delete from r_user_group where user_id=? or group_user_id=?",
 	    &icss);
    if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       int i;
