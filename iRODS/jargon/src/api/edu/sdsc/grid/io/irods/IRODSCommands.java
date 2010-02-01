@@ -1440,10 +1440,11 @@ class IRODSCommands {
 	/**
 	 * General iRODS Admin commands. See also iadmin
 	 */
-	void admin(String[] args) throws IOException {
-		if (args == null || args.length <= 0)
-			return;
-		else if (args.length != 10) {
+	Tag admin(String[] args) throws IOException {
+		
+		if (args == null || args.length <= 0) {
+			throw new IllegalArgumentException("no arguments passed to the admin command");
+		} else if (args.length != 10) {
 			String[] temp = new String[10];
 			System.arraycopy(args, 0, temp, 0, args.length);
 			args = temp;
@@ -1461,12 +1462,11 @@ class IRODSCommands {
 				new Tag(arg8, args[8] != null ? args[8] : ""),
 				new Tag(arg9, args[9] != null ? args[10] : ""), });
 
-		irodsFunction(RODS_API_REQ, message, GENERAL_ADMIN_AN);
+		Tag messageResult = irodsFunction(RODS_API_REQ, message, GENERAL_ADMIN_AN);
+		return messageResult;
 	}
 
 	/**
-	 * @deprecated Use
-	 *             {@link #query(MetaDataCondition[], MetaDataSelect[], int, Namespace)
 	 *             Made before the general query was available. Allowed queries:
 	 *             "select token_name from r_tokn_main where token_namespace = 'token_namespace'"
 	 *             ,

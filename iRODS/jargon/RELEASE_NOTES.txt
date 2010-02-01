@@ -60,7 +60,11 @@ where the IRODSFileSystem was not created in the calling code.  This was causing
 A better solution will probably appear in newer versions of Jargon
 
 ---------
-Tests and fix for  Bug 57 -  parallel file get operation does not work in Jargon
+Tests and fix for Bug 57 -  parallel file get operation does not work in Jargon
+
+---------
+Resource enhancements to list, add resources to a resource group, and remove resources from a resource group for
+enhanement request (Bug 62 -  resource group CRUD methods requested)
 
 ================================================================================================
 Outstanding Issues

@@ -465,17 +465,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			bytesRead += read;
 		}
 		result = bytesRead;
-		if (log.isDebugEnabled()) {
-
-			if (log.isDebugEnabled()) {
-
-				for (int i = offset; i < offset + bytesRead; i++) {
-					log.debug("trace:" + value[i] + " ");
-				}
-
-			}
-
-		}
+		
 		return result;
 	}
 

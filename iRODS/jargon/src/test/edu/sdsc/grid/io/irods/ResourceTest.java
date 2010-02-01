@@ -2,10 +2,12 @@ package edu.sdsc.grid.io.irods;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.irods.jargon.core.exception.DuplicateDataException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -46,6 +48,97 @@ public class ResourceTest {
 
 	@After
 	public void tearDown() throws Exception {
+	}
+	
+	@Test
+	public final void testListResourceGroups() throws Exception {
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		List<String> resourceGroups = resource.listResourceGroups();
+		TestCase.assertNotNull(resourceGroups);
+		// if no error, I'm successful
+		
+	}
+	
+	@Test
+	public final void testAddResourceGroup() throws Exception {
+		String testResourceGroup = "testrg";
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		
+		// make sure resource group does not exist
+		resource.removeResourceFromResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+		
+		// now do the add
+		resource.addResourceToResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+		
+		// list the resource groups
+		List<String> resourceGroups = resource.listResourceGroups();
+		TestCase.assertTrue(resourceGroups.size() > 0);
+		boolean testRgFound = false;
+		for (String resourceGroup : resourceGroups) {
+			if (resourceGroup.equals(testResourceGroup)) {
+				testRgFound = true;
+				break;
+			}
+		}
+		
+		irodsFileSystem.close();
+		
+		TestCase.assertTrue("did not find the resource group I just added", testRgFound);
+	}
+	
+	@Test(expected=DuplicateDataException.class)
+	public final void testAddDuplicateResourceGroup() throws Exception {
+		String testResourceGroup = "testrg";
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		
+		
+		// now do the add twice to make sure a duplicate condition occurs
+		resource.addResourceToResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+		resource.addResourceToResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+	}
+	
+	@Test
+	public final void testRemoveResourceGroup() throws Exception {
+		String testResourceGroup = "testrg";
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		resource.removeResourceFromResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+		
+		// list the resource groups
+		List<String> resourceGroups = resource.listResourceGroups();
+		boolean testRgFound = false;
+		for (String resourceGroup : resourceGroups) {
+			System.out.println(resourceGroup);
+			if (resourceGroup.equals(testResourceGroup)) {
+				testRgFound = true;
+				break;
+			}
+		}
+		irodsFileSystem.close();
+		
+		TestCase.assertFalse("found the resource group I just removed", testRgFound);
+	}
+	
+	@Test
+	public final void testRemoveNonExistantResourceGroup() throws Exception {
+		String testResourceGroup = "testrgidontexist";
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		resource.removeResourceFromResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+		irodsFileSystem.close();
 	}
 
 	/**
