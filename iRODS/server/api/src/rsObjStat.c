@@ -63,6 +63,7 @@ rodsObjStat_t **rodsObjStatOut)
 		if (status >= 0 && (*rodsObjStatOut)->specColl != NULL) {
 		    /* queue it in cache */
 		    queueSpecCollCacheWithObjStat (*rodsObjStatOut);
+#if 0	/* separate specColl */
 		    if (intenFlag > 0) {
 			specCollCache_t *specCollCache; 
 			/* Internal call, use the global cache copy instead */
@@ -72,12 +73,14 @@ rodsObjStat_t **rodsObjStatOut)
 			(*rodsObjStatOut)->specColl = 
 			  &specCollCache->specColl;
 		    }
+#endif
 		}
 	    }
 	    return (status);
 	}
     }
 
+#if 0	/* separate specColl */
     if (intenFlag == 0 && status >= 0 && 
       (*rodsObjStatOut)->specColl != NULL) {
         /* replace specColl since the one given in rodsObjStatOut
@@ -86,6 +89,7 @@ rodsObjStat_t **rodsObjStatOut)
         *specColl = *(*rodsObjStatOut)->specColl;
         (*rodsObjStatOut)->specColl = specColl;
     }
+#endif
 
     return (status);
 }
@@ -111,7 +115,11 @@ rodsObjStat_t **rodsObjStatOut)
         if (status >= 0 && (*rodsObjStatOut)->specColl == NULL) {
 	    if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
               &specCollCache) >= 0) {
+#if 0	/* separate specColl */
                 (*rodsObjStatOut)->specColl = &specCollCache->specColl;
+#endif
+		replSpecColl (&specCollCache->specColl, 
+		  &(*rodsObjStatOut)->specColl);
 	    }
 	    return (status);
 	}
@@ -224,12 +232,20 @@ rodsObjStat_t **rodsObjStatOut)
 
 		if ((specCollCache = 
 		  matchSpecCollCache (dataObjInp->objPath)) != NULL) {
+#if 0	/* separate specColl */
 		    (*rodsObjStatOut)->specColl = &specCollCache->specColl;
+#endif
+		    replSpecColl (&specCollCache->specColl, 
+		      &(*rodsObjStatOut)->specColl);
 		} else {
     		    status = queueSpecCollCache (genQueryOut, 
 		      dataObjInp->objPath);
     		    if (status < 0) return (status);
+#if 0	/* separate specColl */
     		    (*rodsObjStatOut)->specColl = &SpecCollCacheHead->specColl;
+#endif
+		    replSpecColl (&SpecCollCacheHead->specColl, 
+		      &(*rodsObjStatOut)->specColl);
 		}
 	    }
 	}
@@ -445,7 +461,11 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
     if (*rodsObjStatOut == NULL)
         *rodsObjStatOut = (rodsObjStat_t *) malloc (sizeof (rodsObjStat_t));
     memset (*rodsObjStatOut, 0, sizeof (rodsObjStat_t));
+#if 0	/* separate specColl */
     specColl = (*rodsObjStatOut)->specColl = &specCollCache->specColl;
+#else
+    specColl = &specCollCache->specColl;
+#endif
     rstrcpy ((*rodsObjStatOut)->dataId, specCollCache->collId, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerName, specCollCache->ownerName, NAME_LEN);
     rstrcpy ((*rodsObjStatOut)->ownerZone, specCollCache->ownerZone, NAME_LEN);
@@ -454,21 +474,33 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
       &dataObjInfo);
 
     if (status < 0) {
+	if (dataObjInfo != NULL) {
+	    if (dataObjInfo->specColl != NULL) {
+		(*rodsObjStatOut)->specColl = dataObjInfo->specColl;
+	    } else {
+                replSpecColl (&specCollCache->specColl, 
+		  &(*rodsObjStatOut)->specColl);
+	    }
+            if (specColl->collClass == LINKED_COLL) {
+                rstrcpy ((*rodsObjStatOut)->specColl->objPath,
+                  dataObjInfo->objPath, MAX_NAME_LEN);
+            } else {
+                (*rodsObjStatOut)->specColl->objPath[0] = '\0';
+            }
+	    dataObjInfo->specColl = NULL;
+	}
 	(*rodsObjStatOut)->objType = UNKNOWN_OBJ_T;
         rstrcpy ((*rodsObjStatOut)->createTime, specCollCache->createTime, 
 	  NAME_LEN);
         rstrcpy ((*rodsObjStatOut)->modifyTime, specCollCache->modifyTime, 
 	  NAME_LEN);
-        if (specColl->collClass == LINKED_COLL && dataObjInfo != NULL) {
-            rstrcpy ((*rodsObjStatOut)->specColl->objPath,
-              dataObjInfo->objPath, MAX_NAME_LEN);
-	} else {
-	    (*rodsObjStatOut)->specColl->objPath[0] = '\0';
-	}
 	freeAllDataObjInfo (dataObjInfo);
 	/* XXXXX 0 return is creating a problem for fuse */
 	return (0);
     } else {
+        (*rodsObjStatOut)->specColl = dataObjInfo->specColl;
+        dataObjInfo->specColl = NULL;
+
 	if (specColl->collClass == LINKED_COLL) {
             rstrcpy ((*rodsObjStatOut)->ownerName, dataObjInfo->dataOwnerName, 
 	      NAME_LEN);
@@ -476,7 +508,10 @@ int inCachOnly, rodsObjStat_t **rodsObjStatOut)
 	      NAME_LEN);
             snprintf ((*rodsObjStatOut)->dataId, NAME_LEN, "%lld", 
 	      dataObjInfo->dataId);
+#if 0	/* separate specColl */
 	    (*rodsObjStatOut)->specColl = dataObjInfo->specColl;
+	    dataObjInfo->specColl = NULL;
+#endif
 	    /* save the linked path here */
             rstrcpy ((*rodsObjStatOut)->specColl->objPath, 
 	      dataObjInfo->objPath, MAX_NAME_LEN);
@@ -560,7 +595,6 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
         myDataObjInfo = *dataObjInfo = 
 	  (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
         memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
-        myDataObjInfo->specColl = specColl;
 
         status = resolveResc (specColl->resource, &myDataObjInfo->rescInfo);
         if (status < 0) {
@@ -584,6 +618,10 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
             *dataObjInfo = NULL;
 	    return (status);
         }
+#if 0	/* separate specColl */
+        myDataObjInfo->specColl = specColl;
+#endif
+	replSpecColl (specColl, &myDataObjInfo->specColl);
     } else if (specColl->collClass == LINKED_COLL) {
         /* a link point */
 	specCollCache_t *specCollCache = NULL;
@@ -630,7 +668,10 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
             myDataObjInfo = *dataObjInfo =
               (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
             memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
+#if 0   /* separate specColl */
 	    myDataObjInfo->specColl = curSpecColl;
+#endif
+            replSpecColl (curSpecColl, &myDataObjInfo->specColl);
             rstrcpy (myDataObjInfo->objPath, newPath, MAX_NAME_LEN);
 	    myDataObjInfo->dataId = strtoll (rodsObjStatOut->dataId, 0, 0);
 	    rstrcpy (myDataObjInfo->dataOwnerName, rodsObjStatOut->ownerName, 
@@ -641,7 +682,7 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
 	      TIME_LEN);
 	    rstrcpy (myDataObjInfo->dataModify, rodsObjStatOut->modifyTime,
 	      TIME_LEN);
-	    free (rodsObjStatOut);
+	    freeRodsObjStat (rodsObjStatOut);
 	    return COLL_OBJ_T;
 	}
 
@@ -660,14 +701,20 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
             myDataObjInfo = *dataObjInfo =
               (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
             memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
-	    myDataObjInfo->specColl = curSpecColl;
+#if 0   /* separate specColl */
+            myDataObjInfo->specColl = curSpecColl;
+#endif
+            replSpecColl (curSpecColl, &myDataObjInfo->specColl);
             rstrcpy (myDataObjInfo->objPath, newPath, MAX_NAME_LEN);
             rodsLog (LOG_DEBUG,
               "specCollSubStat: getDataObjInfo error for %s, status = %d",
               newPath, status);
             return (status);
 	} else {
+#if 0   /* separate specColl */
 	    (*dataObjInfo)->specColl = curSpecColl;
+#endif
+            replSpecColl (curSpecColl, &(*dataObjInfo)->specColl);
 	    return DATA_OBJ_T;
 	}
     } else if (getStructFileType (specColl) >= 0) {
@@ -727,7 +774,10 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
 
         /* fill in DataObjInfo */
 	tmpDataObjInfo = *dataObjInfo;
+#if 0	/* separate specColl */
         tmpDataObjInfo->specColl = specColl;
+#endif
+	replSpecColl (specColl, &tmpDataObjInfo->specColl);
         rstrcpy (specColl->resource,
           tmpDataObjInfo->rescName, NAME_LEN);
         rstrcpy (specColl->phyPath,

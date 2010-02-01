@@ -504,6 +504,9 @@ freeDataObjInfo (dataObjInfo_t *dataObjInfo)
     if (dataObjInfo == NULL)
 	return (0);
 
+    /* seperate specColl */
+    if (dataObjInfo->specColl != NULL) free (dataObjInfo->specColl);
+
     free (dataObjInfo);
 
     return (0);
@@ -690,7 +693,18 @@ replDataObjInp (dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp)
     *destDataObjInp = *srcDataObjInp;
 
     replKeyVal (&srcDataObjInp->condInput, &destDataObjInp->condInput);
+    replSpecColl (srcDataObjInp->specColl, &destDataObjInp->specColl);
     return (0);
+}
+
+int
+replSpecColl (specColl_t *inSpecColl, specColl_t **outSpecColl)
+{
+    if (inSpecColl == NULL || outSpecColl == NULL) return USER__NULL_INPUT_ERR;
+    *outSpecColl = malloc (sizeof (specColl_t));
+    *(*outSpecColl) = *inSpecColl;
+
+    return 0;
 }
 
 int
@@ -1246,6 +1260,7 @@ clearDataObjInp (dataObjInp_t *dataObjInp)
     }
 
     clearKeyVal (&dataObjInp->condInput);
+    if (dataObjInp->specColl != NULL) free (dataObjInp->specColl);
 
     memset (dataObjInp, 0, sizeof (dataObjInp_t));
 

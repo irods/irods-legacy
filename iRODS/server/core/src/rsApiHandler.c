@@ -150,10 +150,10 @@ bytesBuf_t *bsBBuf)
             clearUnregDataObj ((unregDataObj_t *) myInStruct);
         } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
 	  "DataObjInp_PI")  == 0) {
+#if 0	/* XXXXXXX Done in clearDataObjInp. this could be trouble */
 	    if (apiNumber == QUERY_SPEC_COLL_AN && 
 	      ((dataObjInp_t *) myInStruct)->specColl != NULL) {
-		free (((dataObjInp_t *) myInStruct)->specColl);
-	    }
+#endif
 	    clearDataObjInp ((dataObjInp_t *) myInStruct);
         } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
 	  "DataObjCopyInp_PI")  == 0) {

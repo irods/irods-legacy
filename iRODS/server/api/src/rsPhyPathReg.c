@@ -287,12 +287,12 @@ rescInfo_t *rescInfo)
         status = rsCollCreate (rsComm, &collCreateInp);
 	if (status < 0) return status;
     } else if (rodsObjStatOut->specColl != NULL) {
-        free (rodsObjStatOut);
+        freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "mountFileDir: %s already mounted", phyPathRegInp->objPath);
         return (SYS_MOUNT_MOUNTED_COLL_ERR);
     }
-    free (rodsObjStatOut);
+    freeRodsObjStat (rodsObjStatOut);
 
     memset (&fileOpendirInp, 0, sizeof (fileOpendirInp));
 
@@ -378,12 +378,12 @@ rescInfo_t *rescInfo)
     if (status < 0) return status;
 
     if (rodsObjStatOut->specColl != NULL) {
-        free (rodsObjStatOut);
+        freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "mountFileDir: %s already mounted", phyPathRegInp->objPath);
         return (SYS_MOUNT_MOUNTED_COLL_ERR);
     }
-    free (rodsObjStatOut);
+    freeRodsObjStat (rodsObjStatOut);
 
     if (isCollEmpty (rsComm, phyPathRegInp->objPath) == False) {
         rodsLog (LOG_ERROR,
@@ -481,7 +481,7 @@ unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     if (status < 0) {
         return status;
     } else if (rodsObjStatOut->specColl == NULL) {
-        free (rodsObjStatOut);
+        freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "unmountFileDir: %s not mounted", phyPathRegInp->objPath);
         return (SYS_COLL_NOT_MOUNTED_ERR);
@@ -493,13 +493,13 @@ unmountFileDir (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
           PURGE_STRUCT_FILE_CACHE);
 #if 0
 	if (status < 0) {
-	    free (rodsObjStatOut);
+	    freeRodsObjStat (rodsObjStatOut);
 	    return (status);
 	}
 #endif
     }
 
-    free (rodsObjStatOut);
+    freeRodsObjStat (rodsObjStatOut);
 
     memset (&modCollInp, 0, sizeof (modCollInp));
     rstrcpy (modCollInp.collName, phyPathRegInp->objPath, MAX_NAME_LEN);
@@ -565,13 +565,13 @@ structFileReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
     if (status < 0) return status;
  
     if (rodsObjStatOut->specColl != NULL) {
-	free (rodsObjStatOut);
+	freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "structFileReg: %s already mounted", phyPathRegInp->objPath);
 	return (SYS_MOUNT_MOUNTED_COLL_ERR);
     }
 
-    free (rodsObjStatOut);
+    freeRodsObjStat (rodsObjStatOut);
 
     if (isCollEmpty (rsComm, phyPathRegInp->objPath) == False) {
         rodsLog (LOG_ERROR,
@@ -757,14 +757,14 @@ linkCollReg (rsComm_t *rsComm, dataObjInp_t *phyPathRegInp)
 
     if (rodsObjStatOut->specColl != NULL && 
       rodsObjStatOut->specColl->collClass != LINKED_COLL) {
-        free (rodsObjStatOut);
+        freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "linkCollReg: link collection %s in a spec coll path", 
 	  phyPathRegInp->objPath);
         return (SYS_COLL_LINK_PATH_ERR);
     }
 
-    free (rodsObjStatOut);
+    freeRodsObjStat (rodsObjStatOut);
 
     if (isCollEmpty (rsComm, phyPathRegInp->objPath) == False) {
         rodsLog (LOG_ERROR,

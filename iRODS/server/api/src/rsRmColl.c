@@ -147,6 +147,7 @@ collOprStat_t **collOprStat)
       dataObjInfo->specColl->collClass == LINKED_COLL) {
         rstrcpy (rmCollInp->collName, dataObjInfo->objPath,
           MAX_NAME_LEN);
+	free (dataObjInfo->specColl);
 	dataObjInfo->specColl = NULL;
     }
     if (status != COLL_OBJ_T || dataObjInfo->specColl == NULL) {

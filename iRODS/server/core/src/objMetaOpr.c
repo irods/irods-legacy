@@ -2920,6 +2920,7 @@ dataObjInfo_t **dataObjInfo)
 		/* already been tranlated */
 		rstrcpy (dataObjInp->objPath, (*dataObjInfo)->objPath,
 		  MAX_NAME_LEN);
+		free ((*dataObjInfo)->specColl);
 	        (*dataObjInfo)->specColl = NULL;
 	    } else if (getStructFileType ((*dataObjInfo)->specColl) >= 0) {
                 dataObjInp->numThreads = NO_THREADING;

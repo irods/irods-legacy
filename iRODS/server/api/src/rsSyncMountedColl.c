@@ -26,7 +26,7 @@ rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
     if (status < 0) return status;
 
     if (rodsObjStatOut->specColl == NULL) {
-        free (rodsObjStatOut);
+        freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "rsSyncMountedColl: %s not a mounted collection", 
 	syncMountedCollInp->objPath);
@@ -49,7 +49,7 @@ rsSyncMountedColl (rsComm_t *rsComm, dataObjInp_t *syncMountedCollInp)
           syncMountedCollInp->oprType);
     }
 
-    free (rodsObjStatOut);
+    freeRodsObjStat (rodsObjStatOut);
 
     return (status);
 }

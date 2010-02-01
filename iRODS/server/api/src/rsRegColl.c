@@ -24,10 +24,10 @@ rsRegColl (rsComm_t *rsComm, collInp_t *regCollInp)
             rodsLog (LOG_ERROR,
              "rsRegColl: Reg path %s is in spec coll",
               dataObjInp.objPath);
-	    if (rodsObjStatOut != NULL) free (rodsObjStatOut);
+	    if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
             return (SYS_REG_OBJ_IN_SPEC_COLL);
 	}
-	free (rodsObjStatOut);
+	freeRodsObjStat (rodsObjStatOut);
     }
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, regCollInp->collName,

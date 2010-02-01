@@ -262,13 +262,13 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
           dataObjInp.objPath, status);
         return (status);
     } else if (rodsObjStatOut->specColl != NULL) {
-        free (rodsObjStatOut);
+        freeRodsObjStat (rodsObjStatOut);
         rodsLog (LOG_ERROR,
           "chkCollForExtAndReg: %s is a mounted collection",
           dataObjInp.objPath);
         return (SYS_STRUCT_FILE_INMOUNTED_COLL);
     }
-    free (rodsObjStatOut);
+    freeRodsObjStat (rodsObjStatOut);
 
     status = checkCollAccessPerm (rsComm, collection, ACCESS_DELETE_OBJECT);
 

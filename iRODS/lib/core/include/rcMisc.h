@@ -69,6 +69,8 @@ replKeyVal (keyValPair_t *srcCondInput, keyValPair_t *destCondInput);
 int
 replDataObjInp (dataObjInp_t *srcDataObjInp, dataObjInp_t *destDataObjInp);
 int
+replSpecColl (specColl_t *inSpecColl, specColl_t **outSpecColl);
+int
 addKeyVal (keyValPair_t *condInput, char *keyWord, char *value);
 int
 addInxIval (inxIvalPair_t *inxIvalPair, int inx, int value);

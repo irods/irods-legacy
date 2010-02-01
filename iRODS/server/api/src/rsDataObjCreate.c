@@ -76,7 +76,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	if (strlen (rodsObjStatOut->specColl->objPath) > 0) {
 	    rstrcpy (dataObjInp->objPath, rodsObjStatOut->specColl->objPath,
 	      MAX_NAME_LEN);
-	    free (rodsObjStatOut);
+	    freeRodsObjStat (rodsObjStatOut);
 	    /* call rsDataObjCreate because the translated path could be
 	     * a cross zone opertion */
 	    l1descInx = rsDataObjCreate (rsComm, dataObjInp);
@@ -113,7 +113,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
             l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
         }
     }
-    if (rodsObjStatOut != NULL) free (rodsObjStatOut);
+    if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
 
     return (l1descInx);
 }
