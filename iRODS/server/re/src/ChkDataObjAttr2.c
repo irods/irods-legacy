@@ -181,7 +181,10 @@ printf("GJKaab myGlbPar1=(%s), myDataObjInp->objPath=(%s)\n", myGlbPar1, myDataO
 
 }
 
+#if 0	/* separate specColl */
     rei->status = __rsObjStat (rsComm, myDataObjInp, 1, &rodsObjStatOut);
+#endif
+    rei->status = rsObjStat (rsComm, myDataObjInp, &rodsObjStatOut);
 
     if (rei->status >= 0) {
       fillMsParam (outParam, NULL, RodsObjStat_MS_T, rodsObjStatOut, NULL);
