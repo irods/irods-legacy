@@ -2827,7 +2827,9 @@ getSpecCollTypeStr (specColl_t *specColl, char *outStr)
 {
     int i;
 
-    if (specColl->collClass == MOUNTED_COLL) {
+    if (specColl->collClass == NO_SPEC_COLL) {
+	return SYS_UNMATCHED_SPEC_COLL_TYPE;
+    } else if (specColl->collClass == MOUNTED_COLL) {
 	rstrcpy (outStr, MOUNT_POINT_STR, NAME_LEN);
 	return (0);
     } else if (specColl->collClass == LINKED_COLL) {

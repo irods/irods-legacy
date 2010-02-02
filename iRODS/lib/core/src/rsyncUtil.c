@@ -686,8 +686,10 @@ dataObjCopyInp_t *dataObjCopyInp)
             if (rodsArgs->verbose == True) {
                 char objType[NAME_LEN];
                 status = getSpecCollTypeStr (dataObjOprInp->specColl, objType);
-                if (status < 0) return (status);
-                fprintf (stdout, "C- %s    %-5.5s :\n", targColl, objType);
+                if (status < 0) 
+                    fprintf (stdout, "C- %s    :\n", targColl);
+		else
+                    fprintf (stdout, "C- %s    %-5.5s :\n", targColl, objType);
             }
         }
     }
