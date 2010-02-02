@@ -1535,8 +1535,10 @@ getZoneHintForGenQuery (genQueryInp_t *genQueryInp)
 
     for (i = 0; i < genQueryInp->sqlCondInp.len; i++) {
 	int inx = genQueryInp->sqlCondInp.inx[i];
+#if 0	/* COL_DATA_NAME does not contain zone info */
 	if (inx == COL_DATA_NAME ||
-	  inx == COL_COLL_NAME ||
+#endif
+	if (inx == COL_COLL_NAME ||
 	  inx == COL_COLL_PARENT_NAME ||
 	  inx == COL_ZONE_NAME) {
 	    char *tmpPtr;

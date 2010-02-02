@@ -491,8 +491,13 @@ getZoneNameFromHint (char *rcatZoneHint, char *zoneName, int len)
 	    *outPtr = '\0';
 	}
     } else {
-	/* just a zoneName */
+	/* just a zoneName. use strncpy instead of rstrcpy to avoid error
+	 * msg */
+#if 0
 	rstrcpy (zoneName, rcatZoneHint, len);
+#endif
+	strncpy (zoneName, rcatZoneHint, len);
+	zoneName[len - 1] = '\0';
     }
 
     return (0);
