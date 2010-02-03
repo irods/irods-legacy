@@ -2166,6 +2166,24 @@ isLocalZone (char *zoneHint)
     }
 }
 
+/* isSameZone - return 1 if from same zone, otherwise return 0
+ */
+int
+isSameZone (char *zoneHint1, char *zoneHint2)
+{
+    char zoneName1[NAME_LEN], zoneName2[NAME_LEN];
+
+    if (zoneHint1 == NULL || zoneHint2 == NULL) return 0;
+
+    getZoneNameFromHint (zoneHint1, zoneName1, NAME_LEN);
+    getZoneNameFromHint (zoneHint2, zoneName2, NAME_LEN);
+
+    if (strcmp (zoneName1, zoneName2) == 0)
+	return 1;
+    else
+	return 0;
+}
+
 int
 getRemoteZoneHost (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsServerHost_t **rodsServerHost, char *remotZoneOpr)

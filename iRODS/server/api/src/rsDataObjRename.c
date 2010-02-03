@@ -66,6 +66,9 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         return (SYS_DEST_SPEC_COLL_SUB_EXIST);
     }
 
+    if (!isSameZone (srcDataObjInp->objPath, destDataObjInp->objPath))
+	return SYS_CROSS_ZONE_MV_NOT_SUPPORTED;
+
     if (srcType >= 0) {	/*specColl of some sort */
 	if (destType != SYS_SPEC_COLL_OBJ_NOT_EXIST || 
 	  destDataObjInfo == NULL || destDataObjInfo->specColl == NULL) {
