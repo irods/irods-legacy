@@ -12,6 +12,15 @@ rsModAccessControl (rsComm_t *rsComm, modAccessControlInp_t *modAccessControlInp
 {
     rodsServerHost_t *rodsServerHost;
     int status;
+    specCollCache_t *specCollCache = NULL;
+    char newPath[MAX_NAME_LEN];
+
+    rstrcpy (newPath, modAccessControlInp->path, MAX_NAME_LEN);
+    resolveLinkedPath (rsComm, newPath, &specCollCache, NULL);
+    if (strcmp (newPath, modAccessControlInp->path) != 0) {
+	free (modAccessControlInp->path);
+	modAccessControlInp->path = strdup (newPath);
+    }
 
     status = getAndConnRcatHost(rsComm, MASTER_RCAT, 
       modAccessControlInp->path, &rodsServerHost);
