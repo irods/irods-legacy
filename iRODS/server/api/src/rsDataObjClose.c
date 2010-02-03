@@ -462,8 +462,10 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             status = rsRegReplica (rsComm, &regReplicaInp);
             clearKeyVal (&regReplicaInp.condInput);
 	}
-	if (chksumStr != NULL)
+	if (chksumStr != NULL) {
 	    free (chksumStr);
+	    chksumStr = NULL;
+	}
 
         clearKeyVal (&regParam);
 
@@ -521,14 +523,21 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
         status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
 
-        if (chksumStr != NULL)
+        if (chksumStr != NULL) {
             free (chksumStr);
+            chksumStr = NULL;
+        }
 
         clearKeyVal (&regParam);
 
         if (status < 0) {
             return (status);
         }
+    }
+
+    if (chksumStr != NULL) {
+        free (chksumStr);
+        chksumStr = NULL;
     }
 
     if (L1desc[l1descInx].replRescInfo != NULL && 

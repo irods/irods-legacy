@@ -1273,6 +1273,20 @@ clearDataObjInp (dataObjInp_t *dataObjInp)
 }
 
 int
+clearCollInp (collInp_t *collInp)
+{
+    if (collInp == NULL) {
+        return 0;
+    }
+
+    clearKeyVal (&collInp->condInput);
+
+    memset (collInp, 0, sizeof (collInp_t));
+
+    return (0);
+}
+
+int
 clearDataObjCopyInp (dataObjCopyInp_t *dataObjCopyInp)
 {
     if (dataObjCopyInp == NULL) {

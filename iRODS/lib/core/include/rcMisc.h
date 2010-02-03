@@ -158,6 +158,8 @@ char *keyWord);
 int
 clearDataObjInp (dataObjInp_t *dataObjInp);
 int
+clearCollInp (collInp_t *collInp);
+int
 isInteger (char *inStr);
 int
 addIntArray (intArray_t *intArray, int value);

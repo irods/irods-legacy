@@ -158,6 +158,9 @@ bytesBuf_t *bsBBuf)
         } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
 	  "DataObjCopyInp_PI")  == 0) {
             clearDataObjCopyInp ((dataObjCopyInp_t *) myInStruct);
+        } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
+          "CollInpNew_PI")  == 0) {
+            clearCollInp ((collInp_t *) myInStruct);
 	}
         free (myInStruct);
         myInStruct = NULL;
