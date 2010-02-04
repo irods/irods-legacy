@@ -30,6 +30,13 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     dataObjInp_t dirRegInp;
     structFileOprInp_t structFileOprInp;
 #endif
+    specCollCache_t *specCollCache = NULL;
+
+    resolveLinkedPath (rsComm, structFileExtAndRegInp->objPath, &specCollCache,
+      &structFileExtAndRegInp->condInput);
+
+    resolveLinkedPath (rsComm, structFileExtAndRegInp->collection, 
+      &specCollCache, NULL);
 
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, structFileExtAndRegInp->objPath,

@@ -28,6 +28,14 @@ rsPhyBundleColl (rsComm_t *rsComm, structFileExtAndRegInp_t *phyBundleCollInp)
     rodsHostAddr_t rescAddr;
     rescGrpInfo_t *rescGrpInfo = NULL;
 
+    specCollCache_t *specCollCache = NULL;
+
+    resolveLinkedPath (rsComm, phyBundleCollInp->objPath, &specCollCache,
+      &phyBundleCollInp->condInput);
+
+    resolveLinkedPath (rsComm, phyBundleCollInp->collection,
+      &specCollCache, NULL);
+
     if ((destRescName = getValByKey (&phyBundleCollInp->condInput, 
       DEST_RESC_NAME_KW)) == NULL) {
 	return USER_NO_RESC_INPUT_ERR;
@@ -92,7 +100,7 @@ rescGrpInfo_t *rescGrpInfo)
 
     if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
         rodsLog (LOG_ERROR,
-          "_rsPhyBundleColl: unable to bundle mounted collection %s",
+          "_rsPhyBundleColl: unable to bundle special collection %s",
           collInp.collName);
         rsCloseCollection (rsComm, &handleInx);
         return (0);
