@@ -38,6 +38,10 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     resolveLinkedPath (rsComm, structFileExtAndRegInp->collection, 
       &specCollCache, NULL);
 
+    if (!isSameZone (structFileExtAndRegInp->objPath, 
+      structFileExtAndRegInp->collection))
+        return SYS_CROSS_ZONE_MV_NOT_SUPPORTED;
+
     memset (&dataObjInp, 0, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, structFileExtAndRegInp->objPath,
       MAX_NAME_LEN);
