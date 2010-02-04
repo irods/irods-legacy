@@ -223,6 +223,9 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     char *destObjPath;
     transStat_t *transStat = NULL;
 
+    /* always have the FORCE flag on */
+    addKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW, "");
+
     destObjPath = getValByKey (&dataObjInp->condInput, RSYNC_DEST_PATH_KW);
     if (destObjPath == NULL) {
         rodsLog (LOG_ERROR,
