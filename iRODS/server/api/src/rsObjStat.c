@@ -12,6 +12,9 @@
 #include "rsGlobalExtern.h"
 #include "dataObjClose.h"
 
+static int HaveFailedSpecCollPath = 0;
+static char FailedSpecCollPath[MAX_NAME_LEN];
+
 int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut)
@@ -543,6 +546,9 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
     int status;
     char condStr[MAX_NAME_LEN];
 
+    if (HaveFailedSpecCollPath && strcmp (objPath, FailedSpecCollPath) == 0)
+	return CAT_NO_ROWS_FOUND;
+
     /* see if objPath is in the path of a spec collection */
     memset (&genQueryInp, 0, sizeof (genQueryInp));
 
@@ -568,6 +574,8 @@ querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut)
     clearGenQueryInp (&genQueryInp);
 
     if (status < 0) {
+	rstrcpy (FailedSpecCollPath, objPath, MAX_NAME_LEN);
+	HaveFailedSpecCollPath = 1;
         return (status);
     }
 
