@@ -157,39 +157,45 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
   if ( genQueryOut->rowCnt > 0 ) {
     l = 0;
     for (i=0; i<genQueryOut->attriCnt; i++) {
-      for (j=0; j<genQueryOut->rowCnt; j++) {
-	char *tResult;
-	tResult = genQueryOut->sqlResult[i].value;
-	tResult += j*genQueryOut->sqlResult[i].len;
-	switch (i) {
-	case 0:
-	  for (k=0; k<nservers; k++) {
-	    if ( strcmp(serverList[k], tResult) == 0 ) {
-	      index[j] = l;
-	      l++;
-	    }
-	  }
-	  if ( index[j] != -1 ) {
-	    rstrcpy(monList[index[j]].serverName, tResult, LONG_NAME_LEN);
-	  }
-	  break;
-	case 1:
-	  if ( index[j] != -1 ) {
-	    rstrcpy(monList[index[j]].rescName, tResult, LONG_NAME_LEN);
-	  }
-	  break;
-	case 2:
-	  if ( index[j] != -1 ) {
-	    rstrcpy(monList[index[j]].rescType, tResult, LONG_NAME_LEN);
-	  }
-	  break;
-	case 3:
-	  if ( index[j] != -1 ) {
-	    rstrcpy(monList[index[j]].vaultPath, tResult, LONG_NAME_LEN);
-	  }
-	  break;
-	}
-      }
+		for (j=0; j<genQueryOut->rowCnt; j++) {
+			char *tResult;
+			tResult = genQueryOut->sqlResult[i].value;
+			tResult += j*genQueryOut->sqlResult[i].len;
+			switch (i) {
+			case 0:
+				if ( nservers >= 0 ) {
+					for (k=0; k<nservers; k++) {
+						if ( strcmp(serverList[k], tResult) == 0 ) {
+							index[j] = l;
+							l++;
+						}
+					}
+				} 
+				else {
+					index[j] = l;
+					l++;
+				}
+				if ( index[j] != -1 ) {
+					rstrcpy(monList[index[j]].serverName, tResult, LONG_NAME_LEN);
+				}
+			break;
+			case 1:
+				if ( index[j] != -1 ) {
+					rstrcpy(monList[index[j]].rescName, tResult, LONG_NAME_LEN);
+				}
+			break;
+			case 2:
+				if ( index[j] != -1 ) {
+					rstrcpy(monList[index[j]].rescType, tResult, LONG_NAME_LEN);
+				}
+			break;
+			case 3:
+				if ( index[j] != -1 ) {
+					rstrcpy(monList[index[j]].vaultPath, tResult, LONG_NAME_LEN);
+				}
+			break;
+			}
+		}
     }
     (*nlist) = l;
     clearGenQueryInp(&genQueryInp);
@@ -511,20 +517,19 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   /* read the config file or the iCAT to know the servers list to monitor */
   nresc = 0;
   
-  nservers = 0;
+  nservers = -1;  /* nservers = -1, no config file available, consider all ressources for the monitoring */
+                  /* nservers >= 0, config file available, consider all resources hosted on the list of servers */
   if((filein = fopen(MON_CFG_FILE, "r")) != NULL) {
     i = 0;
     while(fgets(line, sizeof line, filein) != NULL) { /* for each line of the file */
       /* if begin of line = # => ignore */
-      if(line[0] != '#') {
-	rstrcpy(buffer, strdup(line), MAX_NAME_LEN);
-	strSplit(buffer, delim, splchain);
-	rstrcpy(serverList[i], splchain[0], MAX_NAME_LEN);
-	i++;
-      }
-      
+		if(line[0] != '#') {
+			rstrcpy(buffer, strdup(line), MAX_NAME_LEN);
+			strSplit(buffer, delim, splchain);
+			rstrcpy(serverList[i], splchain[0], MAX_NAME_LEN);
+			i++;
+		} 
     }
-    
     /* number of servers... useful for the threads */
     nservers = i;
     /* close the configuration file */
