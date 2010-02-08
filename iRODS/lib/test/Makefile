@@ -19,10 +19,10 @@ CFLAGS = $(CFLAGS_OPTIONS) -I$(buildDir)/server/core/include \
 
 LDFLAGS += $(LDADD) -L$(buildDir)/lib/core/obj -l$(LIBRARY_NAME)
 
-TESTOBJS = luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
+TESTOBJS = iTestGenQuery.o luketest.o lowlevtest.o packtest.o l1test.o l1rm.o testrule.o xmltest.o \
 l3structFile.o xmsgtest.o listcoll.o
 
-TARGETS = luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
+TARGETS = iTestGenQuery luketest lowlevtest packtest l1test l1rm testrule xmltest l3structFile  \
 xmsgtest listcoll
 
 ifdef TAR_STRUCT_FILE
@@ -31,7 +31,9 @@ ifdef TAR_STRUCT_FILE
 CFLAGS+= -I$(tarDir) -I$(tarDir)/listhash \
                   -I${tarDir}/lib \
                   -I${tarDir}/compat
+ifdef tarDir
 AG_LDADD+=-L$(tarDir)/lib -ltar
+endif
 endif
 
 ifdef PHP_LIB
@@ -77,6 +79,9 @@ packtest: packtest.o
 	$(LDR) -o $@ $^ $(LDFLAGS)
 
 luketest: luketest.o
+	$(LDR) -o $@ $^ $(LDFLAGS)
+
+iTestGenQuery: iTestGenQuery.o
 	$(LDR) -o $@ $^ $(LDFLAGS)
 
 l1test: l1test.o

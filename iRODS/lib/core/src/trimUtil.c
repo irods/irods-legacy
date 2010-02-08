@@ -211,6 +211,8 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
             childDataObjInp = *dataObjInp;
 	    if (collEnt.specColl.collClass != NO_SPEC_COLL)
                 childDataObjInp.specColl = &collEnt.specColl;
+            else 
+                childDataObjInp.specColl = NULL;
             status = trimCollUtil (conn, collEnt.collName, myRodsEnv, 
 	      rodsArgs, &childDataObjInp);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {

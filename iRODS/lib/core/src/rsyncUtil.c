@@ -476,6 +476,8 @@ dataObjInp_t *dataObjOprInp)
                 childDataObjInp = *dataObjOprInp;
 		if (collEnt.specColl.collClass != NO_SPEC_COLL)
                     childDataObjInp.specColl = &collEnt.specColl;
+                else 
+                    childDataObjInp.specColl = NULL;
                 rstrcpy (myTargPath.outPath, targChildPath, MAX_NAME_LEN);
                 rstrcpy (mySrcPath.outPath, collEnt.collName, MAX_NAME_LEN);
 
