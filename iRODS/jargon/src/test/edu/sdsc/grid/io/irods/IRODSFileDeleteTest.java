@@ -17,9 +17,12 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_
 
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IreplCommand;
 
 import junit.framework.TestCase;
 
@@ -153,5 +156,159 @@ public class IRODSFileDeleteTest {
     	irodsFileSystem.close();
 
     }
+    
+    /**
+     * Bug 63 - Jargon irm equivalent, IRODSFile.delete() not removing all replicas
+     * @throws Exception
+     */
+    @Test 
+    public void testDeleteFileOnTwoResources() throws Exception {
+    	
+    	// create a file and place on two resources
+    	String testFileName = "testDeleteFileOnTwoResc.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		String irodsObjectAbsolutePath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		
+		// replicate this file to the second resource
+		IreplCommand iReplCommand = new IreplCommand();
+		iReplCommand.setObjectToReplicate(irodsObjectAbsolutePath);
+		iReplCommand.setDestResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
+		invoker.invokeCommandAndGetResultAsString(iReplCommand);
+		
+		// now delete using IRODSFile and make sure no replicas are left
+
+    	IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+        
+    	IRODSFile delFile = new IRODSFile(irodsFileSystem, irodsObjectAbsolutePath);
+    	TestCase.assertTrue("the test file does not exist!", delFile.exists());
+    	
+    	delFile.delete(true);
+    	
+    	irodsFileSystem.close();
+    	
+    	// do an ils -L and make sure the the file is on neither resource    	
+    	IlsCommand ilsCommand = new IlsCommand();
+    	ilsCommand.setIlsBasePath(irodsObjectAbsolutePath);
+    	ilsCommand.setLongFormat(true);
+    	
+    	boolean notFound = false;
+    	String ilsResult = "";
+    	// i expect an exception using ils, as the file should not be found anywhere
+    	
+    	try {
+    		ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+    	} catch (IcommandException ice) {
+    		TestCase.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
+    		notFound = true;
+    	}
+
+    	TestCase.assertTrue("found the deleted file with ils", notFound);
+    	
+
+    }
+    
+    /**
+     * Bug 63 - Jargon irm equivalent, IRODSFile.delete() not removing all replicas
+     * @throws Exception
+     */
+    @Test 
+    public void testDeleteFileOnTwoResourcesNoForceOption() throws Exception {
+    	
+    	// create a file and place on two resources
+    	String testFileName = "testDeleteFileOnTwoRescNoForce.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		String irodsObjectAbsolutePath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		
+		// replicate this file to the second resource
+		IreplCommand iReplCommand = new IreplCommand();
+		iReplCommand.setObjectToReplicate(irodsObjectAbsolutePath);
+		iReplCommand.setDestResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
+		invoker.invokeCommandAndGetResultAsString(iReplCommand);
+		
+		// now delete using IRODSFile and make sure no replicas are left
+
+    	IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+        
+    	IRODSFile delFile = new IRODSFile(irodsFileSystem, irodsObjectAbsolutePath);
+    	TestCase.assertTrue("the test file does not exist!", delFile.exists());
+    	
+    	delFile.delete(false);
+    	
+    	irodsFileSystem.close();
+    	
+    	// do an ils -L and make sure the the file is on neither resource    	
+    	IlsCommand ilsCommand = new IlsCommand();
+    	ilsCommand.setIlsBasePath(irodsObjectAbsolutePath);
+    	ilsCommand.setLongFormat(true);
+    	
+    	boolean notFound = false;
+    	String ilsResult = "";
+    	// i expect an exception using ils, as the file should not be found anywhere
+    	
+    	try {
+    		ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+    	} catch (IcommandException ice) {
+    		TestCase.assertTrue("was not the expected 'not found' condition", ice.getMessage().indexOf("does not exist") > -1);
+    		notFound = true;
+    	}
+
+    	TestCase.assertTrue("found the deleted file with ils", notFound);
+    	
+
+    }
+    
+    
     
 }

@@ -5,8 +5,8 @@ Jargon 2.3 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 01/29/2010
-Release Version: 2.X
+Date: 02/09/2010
+Release Version: 2.3
 
 ================================================================================================
 Requirements
@@ -64,7 +64,13 @@ Tests and fix for Bug 57 -  parallel file get operation does not work in Jargon
 
 ---------
 Resource enhancements to list, add resources to a resource group, and remove resources from a resource group for
-enhanement request (Bug 62 -  resource group CRUD methods requested)
+enhancement request (Bug 62 -  resource group CRUD methods requested)
+
+---------
+Adding Maven support in parallel to main ANT build.  ANT is still the primary build mechanism, but Maven support is added to conveniently build a distro for working with Fedora and irodsfedora
+code.  
+
+(incomplete...work in progress)
 
 ================================================================================================
 Outstanding Issues

@@ -18,6 +18,7 @@ public class IrmCommand implements Icommand {
     private String objectName = "";
     private boolean force = false;
     private boolean verbose = false;
+    private boolean recursive = true;
 
     public boolean isVerbose() {
 		return verbose;
@@ -58,6 +59,10 @@ public class IrmCommand implements Icommand {
             commands.add("-f");
         }
         
+        if (isRecursive()) {
+        	commands.add("-r");
+        }
+        
         if (isVerbose()) {
         	commands.add("-vv");
         }
@@ -67,6 +72,14 @@ public class IrmCommand implements Icommand {
 
         return commands;
     }
+
+	public boolean isRecursive() {
+		return recursive;
+	}
+
+	public void setRecursive(boolean recursive) {
+		this.recursive = recursive;
+	}
 
   
 }

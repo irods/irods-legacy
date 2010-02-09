@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.irods</groupId>
+	<artifactId>Jargon</artifactId>
+	<name>Jargon - IRODS Java API</name>
+	<version>2.3.0-SNAPSHOT</version>
+	<description>pure Java client for the IRODS data grid	</description>
+	<url>https://www.irods.org/index.php/Jargon</url>
+	<issueManagement>
+		<system>IRODS Bugzilla</system>
+		<url>https://www.irods.org/bugzilla/index.cgi</url>
+	</issueManagement>
+	<scm>
+		<url>svn://irodssvn.ucsd.edu/trunk/iRODS/jargon</url>
+	</scm>
+	<organization>
+		<name>DICE </name>
+		<url>http://dice.unc.edu/</url>
+	</organization>
+	<build>
+		<sourceDirectory>src/api</sourceDirectory>
+		<outputDirectory>target/classes</outputDirectory>
+		<testSourceDirectory>src/test</testSourceDirectory>
+		<testOutputDirectory>target/unittesting/classes</testOutputDirectory>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.3</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<verbose>true</verbose>
+					<fork>true</fork>
+					<compilerVersion>1.5</compilerVersion>
+					<source>1.5</source>
+					<target>1.5</target>
+				</configuration>
+			</plugin>
+		</plugins>
+
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.5.10</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.5.10</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-exec</artifactId>
+			<version>1.0.1</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.15</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+	</dependencies>
+</project>

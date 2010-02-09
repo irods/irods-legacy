@@ -66,6 +66,7 @@ public class IRODSTestSetupUtilities {
 				irmCommand
 						.setObjectName(invocationContext.getIrodsScratchDir());
 				irmCommand.setForce(true);
+				
 				invoker.invokeCommandAndGetResultAsString(irmCommand);
 			}
 

@@ -179,7 +179,6 @@ public class IRODSFileAVUTest {
 				.indexOf(expectedUnits) > -1);
 
 		// clean up avu
-
 		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
 		imetaRemoveCommand.setAttribName(expectedAttribName);
 		imetaRemoveCommand.setAttribValue(expectedAttribValue);

@@ -100,7 +100,6 @@ class IRODSCommands {
 
 			log.error("utf-8 unavailable " + e.getLocalizedMessage());
 		}
-
 	}
 
 	/*
