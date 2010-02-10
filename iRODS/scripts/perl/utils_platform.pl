@@ -336,6 +336,16 @@ sub _getCurrentHostAttributes()
 		if ( !defined( $OS ) )
 		{
 			$OS = `$uname -s`;
+			if ($? ne 0) {
+			    print("The simple running of a sub-process has failed, indicating that\n");
+			    print("something is fundamentally wrong in the Perl environment.  Since this\n");
+			    print("will cause a variety of other problems later, the installation is\n");
+			    print("being aborted now.  This has been seen on a CentOS 5.2 host and\n");
+			    print("when the FTP module was enabled (the 'require Net::FTP;'\n");
+			    print("above), the sub-process calls would start to fail (via either\n");
+			    print("back ticks as above, or 'system' function calls.\n");
+			    exit ( 1 );
+			}
 			chomp( $OS );
 		}
 		if ( !defined( $PROCESSOR ) )

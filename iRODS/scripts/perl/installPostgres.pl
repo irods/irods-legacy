@@ -2132,8 +2132,8 @@ sub setupPostgres
 	# Adjust the Postgres configuration file.
 	if ( $thisOS =~ /Darwin/i )	# Mac OS X
 	{
-		printStatus( "Adusting postgresql.conf for Mac OS X...\n" );
-		printLog( "Adusting postgresql.conf for Mac OS X...\n" );
+		printStatus( "Adjusting postgresql.conf for Mac OS X...\n" );
+		printLog( "Adjusting postgresql.conf for Mac OS X...\n" );
 
 		# Edit the file in-place so that it retains its
 		# existing ownership, permissions, hard links, and
