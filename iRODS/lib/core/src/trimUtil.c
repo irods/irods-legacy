@@ -179,7 +179,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          "trimCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }

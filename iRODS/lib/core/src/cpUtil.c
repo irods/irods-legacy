@@ -326,7 +326,7 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          "cpCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }
@@ -384,9 +384,6 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
             snprintf (targChildPath, MAX_NAME_LEN, "%s%s",
               targColl, collEnt.collName + collLen);
 #else
-            if (strlen (collEnt.collName) <= getOpenedCollLen (&collHandle))
-                continue;
-
             if ((status = splitPathByKey (
               collEnt.collName, parPath, childPath, '/')) < 0) {
                 rodsLogError (LOG_ERROR, status,

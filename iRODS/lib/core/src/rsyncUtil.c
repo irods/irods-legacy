@@ -424,7 +424,7 @@ dataObjInp_t *dataObjOprInp)
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          "rsyncCollToDirUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }
@@ -478,7 +478,7 @@ dataObjInp_t *dataObjOprInp)
             if ((status = splitPathByKey (
               collEnt.collName, parPath, childPath, '/')) < 0) {
                 rodsLogError (LOG_ERROR, status,
-                  "getCollUtil:: splitPathByKey for %s error, status = %d",
+                  "rsyncCollToDirUtil:: splitPathByKey for %s error, stat=%d",
                   collEnt.collName, status);
                 return (status);
             }
@@ -768,8 +768,6 @@ dataObjCopyInp_t *dataObjCopyInp)
             snprintf (targChildPath, MAX_NAME_LEN, "%s%s",
               targColl, collEnt.collName + collLen);
 #else
-            if (strlen (collEnt.collName) <= getOpenedCollLen (&collHandle))
-                continue;
             if ((status = splitPathByKey (
               collEnt.collName, parPath, childPath, '/')) < 0) {
                 rodsLogError (LOG_ERROR, status,

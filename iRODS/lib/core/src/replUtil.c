@@ -284,7 +284,7 @@ rodsRestart_t *rodsRestart)
 #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          "replCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }

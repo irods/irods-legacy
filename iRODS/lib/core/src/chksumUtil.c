@@ -207,7 +207,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
 #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "getCollUtil: rclOpenCollection of %s error. status = %d",
+          "chksumCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }
