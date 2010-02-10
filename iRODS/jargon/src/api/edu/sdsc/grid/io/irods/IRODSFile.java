@@ -762,6 +762,35 @@ public class IRODSFile extends RemoteFile {
 	protected String checksumMD5() throws IOException {
 		return iRODSFileSystem.commands.checksum(this);
 	}
+	
+	/**
+	 * Queries the file server to find all files that match a set of conditions.
+	 * For all those that match, the fields indicated in the select array are
+	 * returned in the result object.
+	 * 
+	 * This will issue the query with 'distinct' being the default query type
+	 * 
+	 * @param conditions
+	 *            {@link edu.sdsc.grid.io.MetaDataCondition MetaDataCondition}
+	 *            containing the query conditions
+	 * @param selects
+	 *            {@link edu.sdsc.grid.io.MetaDataSelect MetaDataSelect}
+	 *            containing the fields to query
+	 * @param numberOfRecordsWanted
+	 *            <code>int</code> containing the number of records to return
+	 *            (per request). Note that <code>MetaDataRecordList</code> has
+	 *            the facility to re-query for more results
+	 * @param namespace
+	 *            (@link edu.sdsc.grid.io.Namespace Namespace} that describes
+	 *            the particular object type (e.g. Resource, Collection, User)
+	 * @return {@link edu.sdsc.grid.io.MetaDataRecordList MetaDataRecordList}
+	 *         containing the results, and the ability to requery.
+	 * @throws IOException
+	 */
+	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
+			MetaDataSelect[] selects) throws IOException {
+		 return query(conditions, selects, true);
+	}
 
 	/**
 	 * Queries the file server to find all files that match a set of conditions.
@@ -793,12 +822,31 @@ public class IRODSFile extends RemoteFile {
 	 * from "file path" to "data name" before issuing the query, and then from
 	 * "data name" back to "file path" within the results. The programmer using
 	 * this API should never see the internal field names.
+	 * @param conditions
+	 *            {@link edu.sdsc.grid.io.MetaDataCondition MetaDataCondition}
+	 *            containing the query conditions
+	 * @param selects
+	 *            {@link edu.sdsc.grid.io.MetaDataSelect MetaDataSelect}
+	 *            containing the fields to query
+	 * @param numberOfRecordsWanted
+	 *            <code>int</code> containing the number of records to return
+	 *            (per request). Note that <code>MetaDataRecordList</code> has
+	 *            the facility to re-query for more results
+	 * @param namespace
+	 *            (@link edu.sdsc.grid.io.Namespace Namespace} that describes
+	 *            the particular object type (e.g. Resource, Collection, User)
+	 *            being queried
+	 * @param distinctQuery
+	 *            <code>boolean</code> that will cause the query to eith0er
+	 *            select 'distinct' or select all. A <code>true</code> value
+	 *            will select distinct.
+	 * @return {@link edu.sdsc.grid.io.MetaDataRecordList MetaDataRecordList}
+	 *         containing the results, and the ability to requery.
+	 * @throws IOException
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
-			MetaDataSelect[] selects) throws IOException {
-		// doesn't need to use getZoneCondition() because will always have a
-		// DIRECTORY_NAME condition
-
+			MetaDataSelect[] selects, boolean distinctQuery) throws IOException {
+		
 		MetaDataCondition iConditions[] = null;
 		String fieldName = null;
 		int operator = MetaDataCondition.EQUAL;
@@ -824,7 +872,7 @@ public class IRODSFile extends RemoteFile {
 			return iRODSFileSystem
 					.query(iConditions, selects,
 							IRODSFileSystem.DEFAULT_RECORDS_WANTED,
-							Namespace.DIRECTORY);
+							Namespace.DIRECTORY, distinctQuery);
 		} else {
 			iConditions = new MetaDataCondition[conditionsLength + 3];
 

@@ -446,7 +446,8 @@ class IRODSCommands {
 	}
 
 	/**
-	 * Copy the source file to the destination file.  
+	 * Copy the source file to the destination file.
+	 * 
 	 * @param source
 	 * @param destination
 	 * @param overwriteFlag
@@ -759,9 +760,10 @@ class IRODSCommands {
 	}
 
 	/**
-	 * Get a file from IRODS and store it in the given destination.
-	 * NOTE: this does not seem to work for collections, and is not recursive, this should
+	 * Get a file from IRODS and store it in the given destination. NOTE: this
+	 * does not seem to work for collections, and is not recursive, this should
 	 * be addressed in later releases
+	 * 
 	 * @param source
 	 * @param destination
 	 * @param resource
@@ -1305,7 +1307,6 @@ class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, STRUCT_FILE_BUNDLE_AN);
 	}
 
-	
 	synchronized InputStream executeCommand(String command, String args,
 			String hostAddress, String somePathInfoMaybe_whoknows)
 			throws IOException {
@@ -1440,9 +1441,10 @@ class IRODSCommands {
 	 * General iRODS Admin commands. See also iadmin
 	 */
 	Tag admin(String[] args) throws IOException {
-		
+
 		if (args == null || args.length <= 0) {
-			throw new IllegalArgumentException("no arguments passed to the admin command");
+			throw new IllegalArgumentException(
+					"no arguments passed to the admin command");
 		} else if (args.length != 10) {
 			String[] temp = new String[10];
 			System.arraycopy(args, 0, temp, 0, args.length);
@@ -1461,31 +1463,27 @@ class IRODSCommands {
 				new Tag(arg8, args[8] != null ? args[8] : ""),
 				new Tag(arg9, args[9] != null ? args[10] : ""), });
 
-		Tag messageResult = irodsFunction(RODS_API_REQ, message, GENERAL_ADMIN_AN);
+		Tag messageResult = irodsFunction(RODS_API_REQ, message,
+				GENERAL_ADMIN_AN);
 		return messageResult;
 	}
 
 	/**
-	 *             Made before the general query was available. Allowed queries:
-	 *             "select token_name from r_tokn_main where token_namespace = 'token_namespace'"
-	 *             ,
-	 *             "select token_name from r_tokn_main where token_namespace = ?"
-	 *             ,
-	 *             "select * from r_tokn_main where token_namespace = ? and token_name like ?"
-	 *             , "select resc_name from r_resc_main",
-	 *             "select * from r_resc_main where resc_name=?",
-	 *             "select zone_name from r_zone_main",
-	 *             "select * from r_zone_main where zone_name=?",
-	 *             "select user_name from r_user_main where user_type_name='rodsgroup'"
-	 *             ,"select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)"
-	 *             , "select * from r_data_main where data_id=?","select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)"
-	 *             ,
-	 *             "select coll_name from r_coll_main where parent_coll_name=?",
-	 *             "select * from r_user_main where user_name=?",
-	 *             "select user_name from r_user_main where user_type_name != 'rodsgroup'"
-	 *             ,"select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?"
-	 *             , "select distinct resc_group_name from r_resc_group",
-	 *             "select coll_id from r_coll_main where coll_name = ?" *
+	 * Made before the general query was available. Allowed queries:
+	 * "select token_name from r_tokn_main where token_namespace = 'token_namespace'"
+	 * , "select token_name from r_tokn_main where token_namespace = ?" ,
+	 * "select * from r_tokn_main where token_namespace = ? and token_name like ?"
+	 * , "select resc_name from r_resc_main",
+	 * "select * from r_resc_main where resc_name=?",
+	 * "select zone_name from r_zone_main",
+	 * "select * from r_zone_main where zone_name=?",
+	 * "select user_name from r_user_main where user_type_name='rodsgroup'" ,"select user_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)"
+	 * , "select * from r_data_main where data_id=?","select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)"
+	 * , "select coll_name from r_coll_main where parent_coll_name=?",
+	 * "select * from r_user_main where user_name=?",
+	 * "select user_name from r_user_main where user_type_name != 'rodsgroup'" ,"select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?"
+	 * , "select distinct resc_group_name from r_resc_group",
+	 * "select coll_id from r_coll_main where coll_name = ?" *
 	 */
 	String[] simpleQuery(String statement, String arg) throws IOException {
 		Tag message = null;
@@ -1513,15 +1511,83 @@ class IRODSCommands {
 	}
 
 	/**
-	 * Send a query to iRODS
+	 * Send a query to iRODS, defaulting to the 'select distinct' option.
+	 * 
+	 * @param conditions
+	 *            {@link edu.sdsc.grid.io.MetaDataCondition MetaDataCondition}
+	 *            containing the query conditions
+	 * @param selects
+	 *            {@link edu.sdsc.grid.io.MetaDataSelect MetaDataSelect}
+	 *            containing the fields to query
+	 * @param numberOfRecordsWanted
+	 *            <code>int</code> containing the number of records to return
+	 *            (per request). Note that <code>MetaDataRecordList</code> has
+	 *            the facility to re-query for more results
+	 * @param namespace
+	 *            (@link edu.sdsc.grid.io.Namespace Namespace} that describes
+	 *            the particular object type (e.g. Resource, Collection, User)
+	 *            being queried
+	 * @param distinctQuery
+	 *            <code>boolean</code> that will cause the query to eith0er
+	 *            select 'distinct' or select all. A <code>true</code> value
+	 *            will select distinct.
+	 * @return {@link edu.sdsc.grid.io.MetaDataRecordList MetaDataRecordList}
+	 *         containing the results, and the ability to requery.
+	 * @throws IOException
 	 */
 	synchronized MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted,
 			Namespace namespace) throws IOException {
-		Tag message = new Tag(GenQueryInp_PI, new Tag[] {
-				new Tag(maxRows, numberOfRecordsWanted),
-				new Tag(continueInx, 0), // new query
-				new Tag(partialStartIndex, 0), Tag.createKeyValueTag(null), });
+		return query(conditions, selects, numberOfRecordsWanted, namespace,
+				true);
+	}
+
+	/**
+	 * Send a query to iRODS
+	 * 
+	 * @param conditions
+	 *            {@link edu.sdsc.grid.io.MetaDataCondition MetaDataCondition}
+	 *            containing the query conditions
+	 * @param selects
+	 *            {@link edu.sdsc.grid.io.MetaDataSelect MetaDataSelect}
+	 *            containing the fields to query
+	 * @param numberOfRecordsWanted
+	 *            <code>int</code> containing the number of records to return
+	 *            (per request). Note that <code>MetaDataRecordList</code> has
+	 *            the facility to re-query for more results
+	 * @param namespace
+	 *            (@link edu.sdsc.grid.io.Namespace Namespace} that describes
+	 *            the particular object type (e.g. Resource, Collection, User)
+	 *            being queried
+	 * @param distinctQuery
+	 *            <code>boolean</code> that will cause the query to either
+	 *            select 'distinct' or select all. A <code>true</code> value
+	 *            will select distinct.
+	 * @return {@link edu.sdsc.grid.io.MetaDataRecordList MetaDataRecordList}
+	 *         containing the results, and the ability to requery.
+	 * @throws IOException
+	 */
+	synchronized MetaDataRecordList[] query(MetaDataCondition[] conditions,
+			MetaDataSelect[] selects, int numberOfRecordsWanted,
+			Namespace namespace, boolean distinctQuery) throws IOException {
+		Tag message = new Tag(GenQueryInp_PI);
+
+		message.addTag(new Tag(maxRows, numberOfRecordsWanted));
+		message.addTag(new Tag(continueInx, 0));
+		message.addTag(new Tag(partialStartIndex, 0));
+
+		if (!distinctQuery) {
+			int versionValue = getReportedIRODSVersion().compareTo("rods2.3"); // FIXME: set to 2.3
+			if (versionValue >= 0) {
+				// reported version is at or after the version specified in 'compareTo'
+				message.addTag(new Tag(options, 1));
+			} else {
+				log
+						.warn("non-distinct queries are not supported prior to IRODS2.3, ignored...");
+			}
+		}
+
+		message.addTag(Tag.createKeyValueTag(null));
 		Tag[] subTags = null;
 		int j = 1;
 		String[] selectedAVU = new String[selects.length];
@@ -1793,9 +1859,10 @@ class IRODSCommands {
 		}
 
 		long readLong() throws IOException {
-			//length comes down the wire as an signed long long in network order
+			// length comes down the wire as an signed long long in network
+			// order
 			byte[] b = new byte[8];
-			
+
 			int read = in.read(b);
 			if (read != 8) {
 				log.error("did not read 8 bytes for long");
@@ -1803,16 +1870,16 @@ class IRODSCommands {
 						"unable to read all the bytes for an expected long value");
 			}
 			/*
-			ByteArrayInputStream bis = new ByteArrayInputStream(b);
-			DataInputStream dis = new DataInputStream(bis);
-			long longValFromByteArray = dis.readLong();
-			
-			if (log.isDebugEnabled()) {
-				log.debug("converted bytes via data input stream to:" + longValFromByteArray);
-			}
-			*/
-			//return longValFromByteArray;
-			
+			 * ByteArrayInputStream bis = new ByteArrayInputStream(b);
+			 * DataInputStream dis = new DataInputStream(bis); long
+			 * longValFromByteArray = dis.readLong();
+			 * 
+			 * if (log.isDebugEnabled()) {
+			 * log.debug("converted bytes via data input stream to:" +
+			 * longValFromByteArray); }
+			 */
+			// return longValFromByteArray;
+
 			return Host.castToLong(b);
 		}
 
@@ -1889,8 +1956,10 @@ class IRODSCommands {
 		}
 
 		/**
-		 * Read the data from the socket set up for this thread.  
-		 * See sendTranHeader() in rcPortalOpr.c for the IRODS side of sending length info to this method.
+		 * Read the data from the socket set up for this thread. See
+		 * sendTranHeader() in rcPortalOpr.c for the IRODS side of sending
+		 * length info to this method.
+		 * 
 		 * @throws IOException
 		 */
 		void get() throws IOException {
@@ -1901,7 +1970,7 @@ class IRODSCommands {
 			if (log.isInfoEnabled()) {
 				log.info("   operation:" + operation);
 			}
-			
+
 			// read the flags
 			int flags = readInt();
 			if (log.isInfoEnabled()) {
@@ -1951,7 +2020,7 @@ class IRODSCommands {
 				}
 				read = in.read(buffer, 0, Math.min(
 						IRODSConnection.OUTPUT_BUFFER_LENGTH, (int) length));
-				if (read > 0) { 
+				if (read > 0) {
 					log.debug("    result of read > 0");
 					length -= read;
 					if (length == 0) {

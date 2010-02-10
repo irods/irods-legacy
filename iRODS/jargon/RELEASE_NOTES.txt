@@ -72,6 +72,10 @@ code.
 
 (incomplete...work in progress)
 
+---------
+Support for 'no distinct' option, a new IRODS2.3 feature.  There are new methods in IRODSCommands, IRODSFile, and IRODSFile system that default to 'distinct' but have additional signatures
+to override.
+
 ================================================================================================
 Outstanding Issues
 

@@ -557,7 +557,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * Queries the file server to find all files that match the set of
 	 * conditions in <code>conditions</code>. For all those that match, the
 	 * fields indicated in the <code>selects</code> are returned as a
-	 * MetaDataRecordList[].
+	 * MetaDataRecordList[].  This will be a 'select distinct' style query.
 	 * 
 	 * @param conditions
 	 *            The conditional statements that describe the values to query
@@ -577,9 +577,42 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted)
 			throws IOException {
-		return query(conditions, selects, numberOfRecordsWanted, Namespace.FILE);
+		return query(conditions, selects, numberOfRecordsWanted, true);
 	}
 
+	/**
+	 * Queries the file server to find all files that match the set of
+	 * conditions in <code>conditions</code>. For all those that match, the
+	 * fields indicated in the <code>selects</code> are returned as a
+	 * MetaDataRecordList[].
+	 * 
+	 * @param conditions
+	 *            The conditional statements that describe the values to query
+	 *            the server, like WHERE in SQL.
+	 * @param selects
+	 *            The attributes to be returned from those values that met the
+	 *            conditions, like SELECT in SQL.
+	 * @param numberOfRecordsWanted
+	 *            Maximum number of results of this query that should be
+	 *            included in the return value. Default is
+	 *            <code>DEFAULT_RECORDS_WANTED</code>. If more results are
+	 *            available, they can be obtained using
+	 *            <code>MetaDataRecordList.getMoreResults</code>
+	 * @param distinctQuery
+	 *            <code>boolean</code> that will cause the query to eith0er
+	 *            select 'distinct' or select all. A <code>true</code> value
+	 *            will select distinct.
+	 * @return The metadata results from the filesystem, returns
+	 *         <code>null</code> if there are no results.
+	 */
+	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
+			MetaDataSelect[] selects, int numberOfRecordsWanted, boolean distinctQuery)
+			throws IOException {
+		return query(conditions, selects, numberOfRecordsWanted, Namespace.FILE, distinctQuery);
+	}
+
+	
+	
 	/**
 	 * Queries the file server to find all files that match the set of
 	 * conditions in <code>conditions</code>. For all those that match, the
@@ -595,20 +628,51 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @param namespace
 	 *            Defines which namepsace is appropriate when querying the AVU
 	 *            metadata of files, directories, resources or users.
+	 * @param distinctQuery
+	 *            <code>boolean</code> that will cause the query to eith0er
+	 *            select 'distinct' or select all. A <code>true</code> value
+	 *            will select distinct.
+	 * @return The metadata results from the filesystem, returns
+	 *         <code>null</code> if there are no results.
+	 */
+	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
+			MetaDataSelect[] selects, Namespace namespace, boolean distinctQuery) throws IOException {
+		return query(conditions, selects,
+				GeneralFileSystem.DEFAULT_RECORDS_WANTED, namespace, distinctQuery);
+	}
+	
+	/**
+	 * Queries the file server to find all files that match the set of
+	 * conditions in <code>conditions</code>. For all those that match, the
+	 * fields indicated in the <code>selects</code> are returned as a
+	 * MetaDataRecordList[].  This will be a 'select distinct' query.
+	 * 
+	 * @param conditions
+	 *            The conditional statements that describe the values to query
+	 *            the server, like WHERE in SQL.
+	 * @param selects
+	 *            The attributes to be returned from those values that met the
+	 *            conditions, like SELECT in SQL.
+	 * @param namespace
+	 *            Defines which namepsace is appropriate when querying the AVU
+	 *            metadata of files, directories, resources or users.
+	 * @param distinctQuery
+	 *            <code>boolean</code> that will cause the query to eith0er
+	 *            select 'distinct' or select all. A <code>true</code> value
+	 *            will select distinct.
 	 * @return The metadata results from the filesystem, returns
 	 *         <code>null</code> if there are no results.
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, Namespace namespace) throws IOException {
-		return query(conditions, selects,
-				GeneralFileSystem.DEFAULT_RECORDS_WANTED, namespace);
+		return query(conditions, selects, namespace, true);
 	}
-
+	
 	/**
 	 * Queries the file server to find all files that match the set of
 	 * conditions in <code>conditions</code>. For all those that match, the
 	 * fields indicated in the <code>selects</code> are returned as a
-	 * MetaDataRecordList[].
+	 * MetaDataRecordList[].  Defaults to a 'select distinct' style query
 	 * 
 	 * @param conditions
 	 *            The conditional statements that describe the values to query
@@ -633,8 +697,46 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			Namespace namespace) throws IOException {
 		conditions = (MetaDataCondition[]) cleanNulls(conditions);
 		selects = (MetaDataSelect[]) cleanNulls(selects);
+		return query(conditions, selects, numberOfRecordsWanted,
+				namespace, true);
+	}
+
+
+	/**
+	 * Queries the file server to find all files that match the set of
+	 * conditions in <code>conditions</code>. For all those that match, the
+	 * fields indicated in the <code>selects</code> are returned as a
+	 * MetaDataRecordList[].
+	 * 
+	 * @param conditions
+	 *            The conditional statements that describe the values to query
+	 *            the server, like WHERE in SQL.
+	 * @param selects
+	 *            The attributes to be returned from those values that met the
+	 *            conditions, like SELECT in SQL.
+	 * @param numberOfRecordsWanted
+	 *            Maximum number of results of this query that should be
+	 *            included in the return value. Default is
+	 *            <code>DEFAULT_RECORDS_WANTED</code>. If more results are
+	 *            available, they can be obtained using
+	 *            <code>MetaDataRecordList.getMoreResults</code>
+	 * @param namespace
+	 *            Defines which namepsace is appropriate when querying the AVU
+	 *            metadata of files, directories, resources or users.
+	 * @param distinctQuery
+	 *            <code>boolean</code> that will cause the query to eith0er
+	 *            select 'distinct' or select all. A <code>true</code> value
+	 *            will select distinct.
+	 * @return The metadata results from the filesystem, returns
+	 *         <code>null</code> if there are no results.
+	 */
+	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
+			MetaDataSelect[] selects, int numberOfRecordsWanted,
+			Namespace namespace, boolean distinctQuery) throws IOException {
+		conditions = (MetaDataCondition[]) cleanNulls(conditions);
+		selects = (MetaDataSelect[]) cleanNulls(selects);
 		return commands.query(conditions, selects, numberOfRecordsWanted,
-				namespace);
+				namespace, distinctQuery);
 	}
 
 	/**

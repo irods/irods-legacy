@@ -13,6 +13,7 @@ import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsGetTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsMiscTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsPutTest;
+import edu.sdsc.grid.io.irods.IRODSCommandsQueryTest;
 import edu.sdsc.grid.io.irods.IRODSExecuteCommandsTest;
 import edu.sdsc.grid.io.irods.IRODSFileAVUTest;
 import edu.sdsc.grid.io.irods.IRODSFileCommandsTest;
@@ -66,7 +67,8 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSCommandsMiscTest.class,
   IRODSFileSystemModifyMetadataTest.class,
   IRODSMultiThreadGetAndPutTest.class,
-  IRODSThousandFilesTest.class
+  IRODSThousandFilesTest.class,
+  IRODSCommandsQueryTest.class
   
 })
 public class IRODSTests {
