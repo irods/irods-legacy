@@ -269,7 +269,11 @@ rodsRestart_t *rodsRestart)
     int status = 0; 
     int savedStatus = 0;
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
+#if 0
     int collLen;
+#else
+    char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
+#endif
     collHandle_t collHandle;
     collEnt_t collEnt;
 
@@ -303,7 +307,6 @@ rodsRestart_t *rodsRestart)
     }
 #if 0
     collLen = strlen (srcColl);
-#else
     collLen = getOpenedCollLen (&collHandle);
 #endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
@@ -312,9 +315,14 @@ rodsRestart_t *rodsRestart)
 
             mySize = collEnt.dataSize;    /* have to save it. May be freed */  
 
+#if 0
             snprintf (targChildPath, MAX_NAME_LEN, "%s%s/%s",
               targDir, collEnt.collName + collLen,
               collEnt.dataName);
+#else
+            snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+              targDir, collEnt.dataName);
+#endif
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
               collEnt.collName, collEnt.dataName);
 
@@ -344,6 +352,7 @@ rodsRestart_t *rodsRestart)
                 status = procAndWrriteRestartFile (rodsRestart, targChildPath);
             }
 	} else if (collEnt.objType == COLL_OBJ_T) {
+#if 0
 	    if (collEnt.collName[collLen] == '/') {
                 snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
                   targDir, collEnt.collName + collLen + 1);
@@ -351,6 +360,19 @@ rodsRestart_t *rodsRestart)
                 snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
                   targDir, collEnt.collName + collLen);
 	    }
+#else
+            if ((status = splitPathByKey (
+              collEnt.collName, parPath, childPath, '/')) < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "getCollUtil:: splitPathByKey for %s error, status = %d",
+                  collEnt.collName, status);
+                return (status);
+            }
+            snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+              targDir, childPath);
+
+#endif
+
             mkdirR (targDir, targChildPath, 0750);
 
 #if 0

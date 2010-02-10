@@ -157,7 +157,9 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
 {
     int status;
     int savedStatus = 0;
+#if 0
     int collLen;
+#endif
     collHandle_t collHandle;
     collEnt_t collEnt;
     char srcChildPath[MAX_NAME_LEN];
@@ -193,6 +195,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
     }
 #if 0
     collLen = strlen (srcColl);
+    collLen = getOpenedCollLen (&collHandle);
 #else
     if (collHandle.rodsObjStat->specColl != NULL &&
       collHandle.rodsObjStat->specColl->collClass != LINKED_COLL) {
@@ -200,7 +203,6 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
         rclCloseCollection (&collHandle);
         return 0;
     }
-    collLen = getOpenedCollLen (&collHandle);
 #endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {

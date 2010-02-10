@@ -943,7 +943,12 @@ collHandle_t *collHandle)
 
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
     if (rodsObjStatOut->specColl != NULL &&
+#if 0
       rodsObjStatOut->specColl->collClass == LINKED_COLL) {
+#else
+      rodsObjStatOut->specColl->collClass != STRUCT_FILE_COLL &&
+      strlen (rodsObjStatOut->specColl->objPath) > 0) {
+#endif
         /* save the linked path */
         rstrcpy (collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath,
           MAX_NAME_LEN);
@@ -1098,6 +1103,10 @@ genCollResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
               collHandle->linkedObjPath, collHandle->flags & (~RECUR_QUERY_FG),
               &collHandle->genQueryInp, &genQueryOut);
         } else {
+            if (strlen (collHandle->linkedObjPath) > 0) {
+                rstrcpy (collHandle->dataObjInp.objPath, 
+                  collHandle->linkedObjPath, MAX_NAME_LEN);
+            }
             addKeyVal (&collHandle->dataObjInp.condInput,
               SEL_OBJ_TYPE_KW, "collection");
 	    collHandle->dataObjInp.openFlags = 0;    /* start over */
@@ -1139,6 +1148,10 @@ genDataResInColl (queryHandle_t *queryHandle, collHandle_t *collHandle)
               &collHandle->genQueryInp, &genQueryOut,
               &collHandle->dataObjInp.condInput);
 	} else {
+	    if (strlen (collHandle->linkedObjPath) > 0) {
+		rstrcpy (collHandle->dataObjInp.objPath, 
+		  collHandle->linkedObjPath, MAX_NAME_LEN);
+	    }
             addKeyVal (&collHandle->dataObjInp.condInput,
               SEL_OBJ_TYPE_KW, "dataObj");
             status = (*queryHandle->querySpecColl) 
@@ -1753,8 +1766,12 @@ getOpenedCollLen (collHandle_t *collHandle)
     int len;
 
     if (collHandle->rodsObjStat->specColl != NULL &&
+#if 0
       collHandle->rodsObjStat->specColl->collClass == LINKED_COLL) {
 	len = strlen (collHandle->linkedObjPath);
+#else
+	(len = strlen (collHandle->linkedObjPath)) > 0) {
+#endif
     } else {
 	len = strlen (collHandle->dataObjInp.objPath);
     }

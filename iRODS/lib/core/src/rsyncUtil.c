@@ -389,7 +389,11 @@ dataObjInp_t *dataObjOprInp)
     int savedStatus = 0;
     char *srcColl, *targDir;
     char targChildPath[MAX_NAME_LEN];
+#if 0
     int collLen;
+#else
+    char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
+#endif
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
@@ -432,14 +436,18 @@ dataObjInp_t *dataObjOprInp)
 
 #if 0
     collLen = strlen (srcColl);
-#else
     collLen = getOpenedCollLen (&collHandle);
 #endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
+#if 0
             snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
               targDir, collEnt.collName + collLen,
               collEnt.dataName);
+#else
+            snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
+              targDir, collEnt.dataName);
+#endif
             snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
               collEnt.collName, collEnt.dataName);
             /* fill in some info for mySrcPath */
@@ -463,8 +471,20 @@ dataObjInp_t *dataObjOprInp)
                 status = 0;
             }
         } else if (collEnt.objType == COLL_OBJ_T) {
+#if 0
             snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
               targDir, collEnt.collName + collLen);
+#else
+            if ((status = splitPathByKey (
+              collEnt.collName, parPath, childPath, '/')) < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "getCollUtil:: splitPathByKey for %s error, status = %d",
+                  collEnt.collName, status);
+                return (status);
+            }
+            snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+              targDir, childPath);
+#endif
 
                 mkdirR (targDir, targChildPath, 0750);
 
@@ -646,7 +666,11 @@ dataObjCopyInp_t *dataObjCopyInp)
     int savedStatus = 0;
     char *srcColl, *targColl;
     char targChildPath[MAX_NAME_LEN];
+#if 0
     int collLen;
+#else
+    char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
+#endif
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
@@ -703,14 +727,18 @@ dataObjCopyInp_t *dataObjCopyInp)
 
 #if 0
     collLen = strlen (srcColl);
-#else
     collLen = getOpenedCollLen (&collHandle);
 #endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
+#if 0
             snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s%s/%s",
               targColl, collEnt.collName + collLen,
               collEnt.dataName);
+#else
+            snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
+              targColl, collEnt.dataName);
+#endif
             snprintf (mySrcPath.outPath, MAX_NAME_LEN, "%s/%s",
               collEnt.collName, collEnt.dataName);
             /* fill in some info for mySrcPath */
@@ -733,11 +761,26 @@ dataObjCopyInp_t *dataObjCopyInp)
                 status = 0;
             }
         } else if (collEnt.objType == COLL_OBJ_T) {
+#if 0
             if (strlen (collEnt.collName) <= collLen)
                 continue;
 
             snprintf (targChildPath, MAX_NAME_LEN, "%s%s",
               targColl, collEnt.collName + collLen);
+#else
+            if (strlen (collEnt.collName) <= getOpenedCollLen (&collHandle))
+                continue;
+            if ((status = splitPathByKey (
+              collEnt.collName, parPath, childPath, '/')) < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "rsyncCollToCollUtil:: splitPathByKey for %s error, status = %d",
+                  collEnt.collName, status);
+                return (status);
+            }
+            snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+              targColl, childPath);
+#endif
+
 
             mkColl (conn, targChildPath);
 

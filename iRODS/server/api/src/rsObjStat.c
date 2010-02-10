@@ -41,6 +41,11 @@ rodsObjStat_t **rodsObjStatOut)
 #endif
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
+    specCollCache_t *specCollCache = NULL;
+    int linkCnt;
+
+    linkCnt = resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache, 
+      NULL);
 
     *rodsObjStatOut = NULL;
     status = getAndConnRcatHost (rsComm, SLAVE_RCAT, dataObjInp->objPath,
@@ -55,19 +60,29 @@ rodsObjStat_t **rodsObjStatOut)
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     } else {
-	/* see if it is a sub path of a specColl cached locally. If it is,
-	 * it will save time resolving it */
-        status = statPathInSpecColl (rsComm, dataObjInp->objPath, 1,
-          rodsObjStatOut);
-
-	if (status < 0) {
-	    if (status == SYS_SPEC_COLL_NOT_IN_CACHE) {
-	        /* not in cache, need to do a remote call */
-                status = rcObjStat (rodsServerHost->conn, dataObjInp, 
-	          rodsObjStatOut);
-		if (status >= 0 && (*rodsObjStatOut)->specColl != NULL) {
-		    /* queue it in cache */
-		    queueSpecCollCacheWithObjStat (*rodsObjStatOut);
+	if (isLocalZone (dataObjInp->objPath)) {
+	    /* see if it is a sub path of a specColl cached locally. If it is,
+	     * it will save time resolving it */
+            status = statPathInSpecColl (rsComm, dataObjInp->objPath, 1,
+              rodsObjStatOut);
+	    if (status < 0 && status != SYS_SPEC_COLL_NOT_IN_CACHE) {
+                if (linkCnt > 0 && *rodsObjStatOut != NULL) {
+                    if ((*rodsObjStatOut)->specColl == NULL) {
+                        replSpecColl (&specCollCache->specColl,
+                          &(*rodsObjStatOut)->specColl);
+                    }
+                    rstrcpy ((*rodsObjStatOut)->specColl->objPath, 
+		      dataObjInp->objPath, MAX_NAME_LEN);
+                }
+		return status;
+	    }
+	}
+	/* not in cache, need to do a remote call */
+        status = rcObjStat (rodsServerHost->conn, dataObjInp, 
+	  rodsObjStatOut);
+	if (status >= 0 && (*rodsObjStatOut)->specColl != NULL) {
+	    /* queue it in cache */
+	    queueSpecCollCacheWithObjStat (*rodsObjStatOut);
 #if 0	/* separate specColl */
 		    if (intenFlag > 0) {
 			specCollCache_t *specCollCache; 
@@ -79,9 +94,6 @@ rodsObjStat_t **rodsObjStatOut)
 			  &specCollCache->specColl;
 		    }
 #endif
-		}
-	    }
-	    return (status);
 	}
     }
 
@@ -95,7 +107,14 @@ rodsObjStat_t **rodsObjStatOut)
         (*rodsObjStatOut)->specColl = specColl;
     }
 #endif
-
+    if (linkCnt > 0 && *rodsObjStatOut != NULL) {
+        if ((*rodsObjStatOut)->specColl == NULL) {
+            replSpecColl (&specCollCache->specColl,
+              &(*rodsObjStatOut)->specColl);
+	}
+	rstrcpy ((*rodsObjStatOut)->specColl->objPath, dataObjInp->objPath, 
+	  MAX_NAME_LEN);
+    }
     return (status);
 }
 
@@ -652,6 +671,12 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
 
 	status = resolveLinkedPath (rsComm, newPath, &specCollCache, NULL);
 	if (status < 0) return status;
+	if (specCollCache != NULL && 
+          specCollCache->specColl.collClass != LINKED_COLL) {
+	    status = specCollSubStat (rsComm, &specCollCache->specColl,
+	      newPath, specCollPerm, dataObjInfo);
+	    return status;
+	}
 #if 0
 	while (getSpecCollCache (rsComm, newPath, 0,  &specCollCache) >= 0) {
 	    if (linkCnt++ >= MAX_LINK_CNT) {
@@ -1072,6 +1097,7 @@ specCollCache_t **specCollCache, keyValPair_t *condInput)
     int linkCnt = 0;
     specColl_t *curSpecColl;
     char prevNewPath[MAX_NAME_LEN];
+    specCollCache_t *oldSpecCollCache = NULL;
     int status;
 
     if (getValByKey (condInput, TRANSLATED_PATH_KW) != NULL)
@@ -1080,6 +1106,7 @@ specCollCache_t **specCollCache, keyValPair_t *condInput)
     addKeyVal (condInput, TRANSLATED_PATH_KW, "");
     while (getSpecCollCache (rsComm, objPath, 0,  specCollCache) >= 0 &&
       (*specCollCache)->specColl.collClass == LINKED_COLL) {
+	oldSpecCollCache = *specCollCache;
         if (linkCnt++ >= MAX_LINK_CNT) {
             rodsLog (LOG_ERROR,
               "resolveLinkedPath: linkCnt for %s exceeds %d",
@@ -1095,5 +1122,6 @@ specCollCache_t **specCollCache, keyValPair_t *condInput)
             return (status);
         }
     }
-    return 0;
+    if (*specCollCache == NULL) *specCollCache = oldSpecCollCache;
+    return linkCnt;
 }

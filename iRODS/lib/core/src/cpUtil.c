@@ -296,7 +296,11 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 {
     int status = 0;
     int savedStatus = 0;
+#if 0
     int collLen;
+#else
+    char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN];
+#endif
     collHandle_t collHandle;
     collEnt_t collEnt;
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
@@ -328,16 +332,20 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
     }
 #if 0
     collLen = strlen (srcColl);
-#else
     collLen = getOpenedCollLen (&collHandle);
 #endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
               collEnt.collName, collEnt.dataName);
+#if 0
             snprintf (targChildPath, MAX_NAME_LEN, "%s%s/%s",
               targColl, collEnt.collName + collLen,
               collEnt.dataName);
+#else
+            snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+              targColl, collEnt.dataName);
+#endif
 
             status = chkStateForResume (conn, rodsRestart, targChildPath,
               rodsArgs, DATA_OBJ_T, &dataObjCopyInp->destDataObjInp.condInput,
@@ -369,11 +377,27 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
                 status = procAndWrriteRestartFile (rodsRestart, targChildPath);
             }
         } else if (collEnt.objType == COLL_OBJ_T) {
+#if 0
             if (strlen (collEnt.collName) <= collLen)
                 continue;
 
             snprintf (targChildPath, MAX_NAME_LEN, "%s%s",
               targColl, collEnt.collName + collLen);
+#else
+            if (strlen (collEnt.collName) <= getOpenedCollLen (&collHandle))
+                continue;
+
+            if ((status = splitPathByKey (
+              collEnt.collName, parPath, childPath, '/')) < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "cpCollUtil:: splitPathByKey for %s error, status = %d",
+                  collEnt.collName, status);
+                return (status);
+            }
+
+            snprintf (targChildPath, MAX_NAME_LEN, "%s/%s",
+              targColl, childPath);
+#endif
             mkCollR (conn, targColl, targChildPath);
 
             if (rodsArgs->verbose == True) {
