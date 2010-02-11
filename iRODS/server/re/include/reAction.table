@@ -329,3 +329,4 @@ microsdef_t MicrosTable[] = {
   {"msiAutoReplicateService", 5, (funcPtr)msiAutoReplicateService},
   {"msiDataObjAutoMove", 5, (funcPtr)msiDataObjAutoMove},
   {"msiGetContInxFromGenQueryOut",2,(funcPtr) msiGetContInxFromGenQueryOut},
+  {"msiSetACL",4,(funcPtr) msiSetACL},

@@ -120,7 +120,8 @@ This documentation is generated from the iRODS code.
   - #msiAddSelectFieldToGenQuery - Sets a select field in a genQueryInp_t
   - #msiAddConditionToGenQuery - Adds a condition to a genQueryInp_t
   - #msiPrintGenQueryOutToBuffer - Writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T
-  - #msiAclPolicy - Set the ACL policy
+  - #
+ - Set the ACL policy
 
  \subsection msirda Rule-oriented Database Access Microservices
   - #msiRdaToStdout   - Calls new RDA functions to interface to an arbitrary database returning results in stdout
@@ -755,4 +756,89 @@ msiRollback(ruleExecInfo_t *rei)
    status =  SYS_NO_RCAT_SERVER_ERR;
 #endif
    return(status);
+}
+
+int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName, 
+			   msParam_t *pathName, ruleExecInfo_t *rei) {
+/* this micro-service allows to change the ACL for a given pathname,
+   either a collection or a data object).
+   Written by Jean-Yves Nief.
+   Input values: - recursiveFlag = default or recursive. recursive is only relevant with
+								   accessLevel = inherit.
+				 - accessLevel = read, write, own, inherit, null.
+				 - userName = user name or group name who will have ACL changed.
+				 - pathName = collection or data object that will have its ACLs changed.
+*/
+	char *acl, *path, *recursiveFlg, *user;
+	int recFlg, rc;
+	modAccessControlInp_t modAccessControlInp;
+	rsComm_t *rsComm;
+  
+	RE_TEST_MACRO ("    Calling msiSetACL")
+    /* the above line is needed for loop back testing using irule -i option */
+   
+	if ( recursiveFlag == NULL || accessLevel == NULL || userName == NULL ||
+		 pathName == NULL ) {
+		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+							"msiSetACL: one of the imput parameter is NULL");
+		return (rei->status);
+	}
+  
+	recFlg = 0; /* non recursive mode */
+	if ( strcmp (recursiveFlag->type, STR_MS_T) == 0 ) {
+		recursiveFlg = (char *) recursiveFlag->inOutStruct;
+		if ( strcmp(recursiveFlg,"recursive") == 0 ) {
+			/* recursive mode */
+			recFlg = 1;
+		}
+	} 
+	else {
+		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+							"msiSetACL: Unsupported input recursiveFlag type %i",
+							recursiveFlag->type);
+		return (rei->status);
+	}
+	
+	if ( strcmp (accessLevel->type, STR_MS_T) == 0 ) {
+		acl = (char *) accessLevel->inOutStruct;
+	} 
+	else {
+		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+							"msiSetACL: Unsupported input accessLevel type %s",
+							accessLevel->type);
+		return (rei->status);
+	}
+  
+	if ( strcmp (userName->type, STR_MS_T) == 0 ) {
+		user = (char *) userName->inOutStruct;
+	} 
+	else {
+		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+							"msiSetACL: Unsupported input userName type %s",
+							userName->type);
+		return (rei->status);
+	}
+	
+	if ( strcmp (pathName->type, STR_MS_T) == 0 ) {
+		path = (char *) pathName->inOutStruct;
+	} 
+	else {
+		rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+							"msiSetACL: Unsupported input pathName type %s",
+							pathName->type);
+		return (rei->status);
+	}
+	
+	rsComm = rei->rsComm;
+	modAccessControlInp.recursiveFlag = recFlg;
+	modAccessControlInp.accessLevel = acl;
+	modAccessControlInp.userName = user;
+	modAccessControlInp.zone = rei->uoic->rodsZone;
+	modAccessControlInp.path = path;
+	rc = rsModAccessControl(rsComm, &modAccessControlInp);
+	if ( rc < 0 ) {
+		rodsLog (LOG_NOTICE, "msiSetACL: ACL modifications has failed for user %s on object %s, error = %i\n", user, path, rc);
+	}
+  
+	return (rei->status);
 }

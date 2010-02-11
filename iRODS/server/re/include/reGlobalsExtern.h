@@ -29,7 +29,7 @@ extern void myfree(char* file, int line, void *x);
 #include "ruleExecDel.h"
 #include "dataObjInpOut.h"
 #include "msParam.h"
-
+#include "modAccessControl.h"
 
 /***** IMPORTANT    IMPORTANT    IMPORTANT    *****/
 /***** If you are changing the RuleExecInfo   *****/

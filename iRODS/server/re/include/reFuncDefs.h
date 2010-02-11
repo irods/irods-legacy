@@ -206,6 +206,8 @@ int _delayExec(char *inActionCall, char *recoveryActionCall,
 	       char *delayCondition,  ruleExecInfo_t *rei);
 
 int msiRollback(ruleExecInfo_t *rei);
+int msiSetACL(msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName, 
+	      msParam_t *pathName, ruleExecInfo_t *rei);
 
 int executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, 
     ruleExecInfo_t *rei, int reiSaveFlag);
