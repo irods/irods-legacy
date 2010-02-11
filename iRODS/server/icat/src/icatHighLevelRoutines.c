@@ -2770,10 +2770,10 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
 "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=? and r_user_main.zone_name=?",
 "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id",
 "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_auth.user_auth_name=?",
-"select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id",
-"select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=?",
-"select user_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0",
-"select user_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0 and user_name=?",
+"select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id",
+"select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=? and r_user_main.zone_name=?",
+"select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0",
+"select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0 and user_name=? and r_user_main.zone_name=?",
 ""
    };
 

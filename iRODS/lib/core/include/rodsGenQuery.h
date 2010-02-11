@@ -359,7 +359,8 @@ primary ordering column.
 /* For use with quotas */
 #define COL_QUOTA_RESC_NAME  2020
 #define COL_QUOTA_USER_NAME  2021
-#define COL_QUOTA_USER_TYPE  2022
+#define COL_QUOTA_USER_ZONE  2022
+#define COL_QUOTA_USER_TYPE  2023
 
 /* The range beginning with 10,000 is reserved for the extended icat (
    see modules/extendedICAT ). */

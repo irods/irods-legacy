@@ -100,6 +100,7 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
    int inputCond[20];
    char *condVal[10];
    char v1[BIG_STR];
+   char v1b[BIG_STR];
    char v2[BIG_STR];
    char v3[BIG_STR];
    int i, j, k, status;
@@ -126,6 +127,8 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
       colName[i]="Group:  ";
    }
    inputInx[i++]=COL_QUOTA_USER_NAME;
+   colName[i]="Zone:  ";
+   inputInx[i++]=COL_QUOTA_USER_ZONE;
    colName[i]="Quota: ";
    inputInx[i++]=COL_QUOTA_LIMIT;
    colName[i]="Over:  ";
@@ -137,12 +140,27 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
    genQueryInp.selectInp.value = inputVal;
    genQueryInp.selectInp.len = i;
 
+   char userName2[NAME_LEN];
+   char userZone[NAME_LEN];
    genQueryInp.sqlCondInp.len=0;
    if (userName[0]!='\0') {
-      inputCond[0]=COL_QUOTA_USER_NAME;
-      sprintf(v1,"='%s'",userName);
-      condVal[0]=v1;
-      genQueryInp.sqlCondInp.len++;
+      status = parseUserName(userName, userName2, userZone);
+      if (userZone[0]=='\0') {
+	 inputCond[0]=COL_QUOTA_USER_NAME;
+	 sprintf(v1,"='%s'",userName);
+	 condVal[0]=v1;
+	 genQueryInp.sqlCondInp.len++;
+      }
+      else {
+	 inputCond[0]=COL_QUOTA_USER_NAME;
+	 sprintf(v1,"='%s'",userName2);
+	 condVal[0]=v1;
+	 genQueryInp.sqlCondInp.len++;
+	 inputCond[1]=COL_QUOTA_USER_ZONE;
+	 sprintf(v1b,"='%s'",userZone);
+	 condVal[1]=v1b;
+	 genQueryInp.sqlCondInp.len++;
+      }
    }
    inputCond[genQueryInp.sqlCondInp.len] = COL_QUOTA_USER_TYPE;
    if (userOrGroup==0) {
@@ -188,7 +206,7 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
 
 	    tResult = genQueryOut->sqlResult[j].value;
 	    tResult += i*genQueryOut->sqlResult[j].len;
-	    if (j==4) {
+	    if (j==5) {
 	       itime = atoll(tResult);
 	       if (itime > localiTime) {
 		  localiTime = itime;
@@ -205,7 +223,7 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
 	 long itime;
 	 tResult = genQueryOut->sqlResult[j].value;
 	 tResult += i*genQueryOut->sqlResult[j].len;
-	 if (j==4) {
+	 if (j==5) {
 	    itime = atoll(tResult);
 	    if (itime > localiTime) {
 	       localiTime = itime;
@@ -217,7 +235,7 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
 	    if (rescOrGlobal==1 && j==0) {
 	       tResult="All";
 	    }
-	    if (j==3 || j==2) {
+	    if (j==4 || j==3) {
 	       printNice(tResult, 0, "bytes");
 	       if (strncmp(colName[j],"Over:",5)==0) {
 		  rodsLong_t ival;
@@ -455,7 +473,7 @@ void usage()
 " ",
 "Options:",
 "-a All users",
-"-u UserName  - for the specified user",
+"-u UserName[#ZoneName]  - for the specified user",
 "usage     - show usage information",
 " ",
 "Examples:",
@@ -463,6 +481,7 @@ void usage()
 "iquota -a",
 "iquota usage",
 "iqouta -a usage",
+"iquota -u josh",
 ""};
    int i;
    for (i=0;;i++) {

@@ -1128,18 +1128,32 @@ int specialQueryIx(int ix) {
  */
 int
 generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
-   static char bindVar1[LONG_NAME_LEN];
-   static char bindVar2[LONG_NAME_LEN];
-   char quotaQuery1[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') order by quota_over desc";
+   static char rescName[LONG_NAME_LEN];
+   static char userName[NAME_LEN]="";
+   static char userZone[NAME_LEN]="";
+   char quotaQuery1[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') order by quota_over desc";
 
-   char quotaQuery2[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') and RM.resc_name = ? order by quota_over desc";
+   char quotaQuery2[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name=?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') and RM.resc_name = ? order by quota_over desc";
    int i, valid=0;
 
    for (i=0; i<genQueryInp.sqlCondInp.len;i++) {
       if (genQueryInp.sqlCondInp.inx[i]==COL_USER_NAME) {
-	 strncpy(bindVar1, genQueryInp.sqlCondInp.value[i], sizeof bindVar1);
-	 cllBindVars[cllBindVarCount++]=bindVar1;
-	 cllBindVars[cllBindVarCount++]=bindVar1;
+	 int status;
+	 status = parseUserName(genQueryInp.sqlCondInp.value[i], userName, 
+				userZone);
+	 if (userZone[0]=='\0') {
+	    char *zoneName;
+	    zoneName = chlGetLocalZone();
+	    strncpy(userZone, zoneName, sizeof userZone);
+	    rodsLog(LOG_ERROR,"userZone1=:%s:\n",userZone);
+	 }
+	 rodsLog(LOG_ERROR,"userZone2=:%s:\n",userZone);
+	 rodsLog(LOG_ERROR,"userName=:%s:\n",userName);
+	 rodsLog(LOG_ERROR,"in=:%s:\n",genQueryInp.sqlCondInp.value[i]);
+	 cllBindVars[cllBindVarCount++]=userName;
+	 cllBindVars[cllBindVarCount++]=userZone;
+	 cllBindVars[cllBindVarCount++]=userName;
+	 cllBindVars[cllBindVarCount++]=userZone;
 	 strncpy(resultingSQL, quotaQuery1, MAX_SQL_SIZE);
 	 valid=1;
       }
@@ -1147,8 +1161,8 @@ generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
    if (valid==0) return(CAT_INVALID_ARGUMENT);
    for (i=0; i<genQueryInp.sqlCondInp.len;i++) {
       if (genQueryInp.sqlCondInp.inx[i]==COL_R_RESC_NAME) {
-	 strncpy(bindVar2, genQueryInp.sqlCondInp.value[i], sizeof bindVar2);
-	 cllBindVars[cllBindVarCount++]=bindVar2;
+	 strncpy(rescName, genQueryInp.sqlCondInp.value[i], sizeof rescName);
+	 cllBindVars[cllBindVarCount++]=rescName;
 	 strncpy(resultingSQL, quotaQuery2, MAX_SQL_SIZE);
       }
    }

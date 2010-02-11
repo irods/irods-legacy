@@ -387,6 +387,7 @@ icatGeneralQuerySetup() {
   sColumn( COL_QUOTA_USER_NAME, "r_quota_user_main", "user_name");
   sColumn( COL_QUOTA_USER_TYPE, "r_quota_user_group", "user_type_name");
   sColumn( COL_QUOTA_RESC_NAME, "r_quota_resc_main", "resc_name");
+  sColumn( COL_QUOTA_USER_ZONE, "r_quota_user_main", "zone_name");
 
   /* Define the Foreign Key links between tables */
 

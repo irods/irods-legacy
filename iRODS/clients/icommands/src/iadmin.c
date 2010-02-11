@@ -453,6 +453,9 @@ int
 showGlobalQuotas(char *inputUserOrGroup)
 {
    simpleQueryInp_t simpleQueryInp;
+   char userName[NAME_LEN];
+   char zoneName[NAME_LEN];
+   int status;
 
    if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
       printf("\nGlobal (total usage) quotas (if any) for users/groups:\n");
@@ -466,14 +469,21 @@ showGlobalQuotas(char *inputUserOrGroup)
    if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
-	 "select user_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0";
+	 "select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
+      status = getLocalZone();
+      if (status) return(status);
+      status = parseUserName(inputUserOrGroup, userName, zoneName);
+      if (zoneName[0]=='\0') {
+	 strncpy(zoneName, localZone, sizeof zoneName);
+      }
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
-	 "select user_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0 and user_name=?";
-      simpleQueryInp.arg1 = inputUserOrGroup;
+	 "select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0 and user_name=? and r_user_main.zone_name=?";
+      simpleQueryInp.arg1 = userName;
+      simpleQueryInp.arg2 = zoneName;
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -483,6 +493,9 @@ int
 showResourceQuotas(char *inputUserOrGroup) 
 {
    simpleQueryInp_t simpleQueryInp;
+   char userName[NAME_LEN];
+   char zoneName[NAME_LEN];
+   int status;
 
    if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
       printf("Per resource quotas (if any) for users/groups:\n");
@@ -496,13 +509,20 @@ showResourceQuotas(char *inputUserOrGroup)
    if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
-	 "select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id";
+	 "select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
+      status = getLocalZone();
+      if (status) return(status);
+      status = parseUserName(inputUserOrGroup, userName, zoneName);
+      if (zoneName[0]=='\0') {
+	 strncpy(zoneName, localZone, sizeof zoneName);
+      }
       simpleQueryInp.form = 2;
-      simpleQueryInp.sql = "select user_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=?";
-      simpleQueryInp.arg1 = inputUserOrGroup;
+      simpleQueryInp.sql = "select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=? and r_user_main.zone_name=?";
+      simpleQueryInp.arg1 = userName;
+      simpleQueryInp.arg2 = zoneName;
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -1556,7 +1576,8 @@ usage(char *subOpt)
 " suq User ResourceName-or-'total' Value (set user quota)",
 "Set a quota for a particular user for either a resource or all irods",
 "usage (total).  Use 0 for the value to remove quota limit.  Value is",
-"in bytes.",
+"in bytes.  As with other sub-commands, 'user' is of the form",
+"userName[#zone] where the local zone is default.",
 "Also see sgq, lq and cu.",
 ""};
 
