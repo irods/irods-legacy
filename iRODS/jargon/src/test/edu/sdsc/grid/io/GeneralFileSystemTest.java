@@ -15,8 +15,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.sdsc.grid.io.irods.IRODSAccount;
+import edu.sdsc.grid.io.irods.IRODSFile;
 import edu.sdsc.grid.io.irods.IRODSFileSystem;
 import edu.sdsc.grid.io.irods.IRODSMetaDataSet;
+import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -92,7 +94,9 @@ public class GeneralFileSystemTest {
 	}
 
 	/**
-	 * Test to check for  Bug 45 - SYS_UNMATCHED_API_NUM (-12000) when attempting to get a file
+	 * Test to check for Bug 45 - SYS_UNMATCHED_API_NUM (-12000) when attempting
+	 * to get a file
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -107,7 +111,8 @@ public class GeneralFileSystemTest {
 		String fullPathToTestFile = FileGenerator
 				.generateFileOfFixedLengthGivenName(testingProperties
 						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
-						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, expectedFileLength);
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName,
+						expectedFileLength);
 
 		IputCommand iputCommand = new IputCommand();
 		iputCommand.setLocalFileName(fullPathToTestFile);
@@ -141,8 +146,137 @@ public class GeneralFileSystemTest {
 		while ((nbytes = raFile.read(data, offset, 4096)) > 0) {
 			offset += nbytes;
 		}
-		
-		TestCase.assertEquals("did not read all of the bytes of the file from irods", expectedFileLength, offset);
+
+		TestCase.assertEquals(
+				"did not read all of the bytes of the file from irods",
+				expectedFileLength, offset);
+
+	}
+
+	/**
+	 * Test for Bug 68 - error in checksum -12000
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public final void testIRODSFileChecksum() throws Exception {
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "testIRODSFileChecksum.txt";
+		int expectedFileLength = 256;
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName,
+						expectedFileLength);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		GeneralFile file = FileFactory.newFile(irodsFileSystem, iputCommand
+				.getIrodsFileName()
+				+ '/' + testFileName);
+
+		TestCase.assertTrue(file.exists());
+		String fileChecksum = file.checksum();
+		TestCase.assertNotNull(fileChecksum);
+
+	}
+
+	/**
+	 * Test for Bug 68 - error in checksum -12000
+	 * Replication of test case provided
+	 * @throws Exception
+	 */
+	@Test
+	public final void testIRODSFileChecksumVersusLocalFile() throws Exception {
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "testIRODSFileChecksumVsLocal.txt";
+		int expectedFileLength = 256;
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName,
+						expectedFileLength);
+
+		// move the local file per the code provided in bug report
+		LocalFile lFile = new LocalFile(fullPathToTestFile);
+		String irodsFilePath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, irodsFilePath);
+
+		if (irodsFile.exists()) // same as overwriting
+			irodsFile.delete();
+
+		// System.err.println("Upload to:"+srbFile.getAbsolutePath());
+		// This is where the error occurs if SRB is down.
+		irodsFile.copyFrom(lFile);
+
+		boolean checkSumPassed = irodsFile.checksum().equals(lFile.checksum());
+		irodsFileSystem.close();
+
+		TestCase.assertTrue("checksums not equal", checkSumPassed);
+
+	}
+	
+	/**
+	 * Test for Bug 68 - error in checksum -12000
+	 * Replication of test case provided
+	 * @throws Exception
+	 */
+	@Test
+	public final void testIRODSFileChecksumVersusLocalFileNoClose() throws Exception {
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "testIRODSFileChecksumVsLocalNoClose.txt";
+		int expectedFileLength = 256;
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName,
+						expectedFileLength);
+
+		// move the local file per the code provided in bug report
+		LocalFile lFile = new LocalFile(fullPathToTestFile);
+		String irodsFilePath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, irodsFilePath);
+
+		if (irodsFile.exists()) // same as overwriting
+			irodsFile.delete();
+
+		// System.err.println("Upload to:"+srbFile.getAbsolutePath());
+		// This is where the error occurs if SRB is down.
+		irodsFile.copyFrom(lFile);
+
+		boolean checkSumPassed = irodsFile.checksum().equals(lFile.checksum());
+
+		TestCase.assertTrue("checksums not equal", checkSumPassed);
 
 	}
 

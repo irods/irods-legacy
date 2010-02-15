@@ -76,6 +76,9 @@ code.
 Support for 'no distinct' option, a new IRODS2.3 feature.  There are new methods in IRODSCommands, IRODSFile, and IRODSFile system that default to 'distinct' but have additional signatures
 to override.
 
+---------
+Tests for  Bug 68 -  error in checksum -12000
+
 ================================================================================================
 Outstanding Issues
 

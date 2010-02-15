@@ -3,6 +3,10 @@ package edu.sdsc.grid.io.irods;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.net.URI;
 import java.util.Properties;
 
@@ -22,6 +26,8 @@ import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 public class IRODSFileOutputStreamTest {
 
@@ -135,6 +141,53 @@ public class IRODSFileOutputStreamTest {
 		TestCase.assertNotNull("did not create fileOutputStream",
 				irodsFileOutputStream);
 
+		irodsFileSystem.close();	
+	}
+	
+	@Test
+	public final void testWriteToIRODSFileOutputStream() throws Exception {
+		String testFileName = "testFilePut.csv";
+		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
+    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
+
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(irodsFile);
+		
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String sourceFileName = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+		
+		File fileToWrite = new File(sourceFileName);
+		FileInputStream fin;
+		byte[] buff = new byte[1024];
+		// Get the size of the file
+        long length = fileToWrite.length();
+        
+		    // Open an input stream
+		    fin = new FileInputStream (fileToWrite);
+
+		    // Read in the bytes
+	        int offset = 0;
+	        int writeOffset = 0;
+	        int numRead = 0;
+	        while ( (offset < buff.length)
+	                &&
+	                ( (numRead=fin.read(buff, offset, buff.length-offset)) >= 0) ) {
+
+	            offset += numRead;
+	            irodsFileOutputStream.write(buff, writeOffset, numRead);
+	            writeOffset += numRead;
+	        }
+		    // Close our input stream
+		    fin.close();		
+
+		irodsFileOutputStream.close();
 		irodsFileSystem.close();	
 	}
 
