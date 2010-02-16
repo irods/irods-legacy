@@ -1,13 +1,8 @@
 package edu.sdsc.grid.io.irods;
 
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
-import static org.junit.Assert.*;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
-import java.net.URI;
+import java.io.IOException;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -18,15 +13,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.sdsc.grid.io.FileFactory;
-import edu.sdsc.grid.io.GeneralFile;
+import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 public class IRODSFileOutputStreamTest {
@@ -66,8 +62,10 @@ public class IRODSFileOutputStreamTest {
 	@Test
 	public final void testWriteByteArrayIntInt() throws Exception {
 		String testFileName = "testFileWriteByteArray.csv";
-		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
-    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		String testIRODSFileName = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
 
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
@@ -75,25 +73,30 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFileSystem, testIRODSFileName);
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
-		
+
 		irodsFileOutputStream.open(irodsFile);
-		TestCase.assertTrue("file I created does not exist", irodsFile.exists());
+		TestCase
+				.assertTrue("file I created does not exist", irodsFile.exists());
 		// get a simple byte array
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjjjjjjfeiiiiiiiiiiiiiii54454545";
 		byte[] myBytesArray = myBytes.getBytes();
 		irodsFileOutputStream.write(myBytesArray);
-		irodsFileOutputStream.close();		
+		irodsFileOutputStream.close();
 		long length = irodsFile.length();
-		
-		TestCase.assertEquals("file length does not match bytes written", myBytesArray.length, length);
-		
-		irodsFileSystem.close();	}
+
+		TestCase.assertEquals("file length does not match bytes written",
+				myBytesArray.length, length);
+
+		irodsFileSystem.close();
+	}
 
 	@Test
 	public final void testOpen() throws Exception {
 		String testFileName = "testFileOpen.csv";
-		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
-    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		String testIRODSFileName = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
 
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
@@ -101,10 +104,11 @@ public class IRODSFileOutputStreamTest {
 		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
 				irodsFileSystem, testIRODSFileName);
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
-		
+
 		irodsFileOutputStream.open(irodsFile);
-		TestCase.assertTrue("file I created does not exist", irodsFile.exists());
-		irodsFileOutputStream.close();		
+		TestCase
+				.assertTrue("file I created does not exist", irodsFile.exists());
+		irodsFileOutputStream.close();
 		irodsFileSystem.close();
 	}
 
@@ -112,14 +116,17 @@ public class IRODSFileOutputStreamTest {
 	public final void testIRODSFileOutputStreamIRODSFileSystemString()
 			throws Exception {
 		String testFileName = "testFilePut.csv";
-		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
-    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		String testIRODSFileName = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
 
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
-		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(irodsFile);
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
 
 		irodsFileSystem.close();
 
@@ -128,67 +135,309 @@ public class IRODSFileOutputStreamTest {
 	@Test
 	public final void testIRODSFileOutputStreamIRODSFile() throws Exception {
 		String testFileName = "testFilePut.csv";
-		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
-    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		String testIRODSFileName = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
 
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-		
+
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
 
-		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(irodsFile);
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
 		TestCase.assertNotNull("did not create fileOutputStream",
 				irodsFileOutputStream);
 
-		irodsFileSystem.close();	
+		irodsFileSystem.close();
 	}
-	
+
 	@Test
 	public final void testWriteToIRODSFileOutputStream() throws Exception {
 		String testFileName = "testFilePut.csv";
-		String testIRODSFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
-    			IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+		String testIRODSFileName = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
 
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-		
+
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testIRODSFileName);
 
-		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(irodsFile);
-		
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
-		String sourceFileName = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
-				8);
-		
+		String sourceFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName, 8);
+
 		File fileToWrite = new File(sourceFileName);
 		FileInputStream fin;
 		byte[] buff = new byte[1024];
 		// Get the size of the file
-        long length = fileToWrite.length();
-        
-		    // Open an input stream
-		    fin = new FileInputStream (fileToWrite);
+		long length = fileToWrite.length();
 
-		    // Read in the bytes
-	        int offset = 0;
-	        int writeOffset = 0;
-	        int numRead = 0;
-	        while ( (offset < buff.length)
-	                &&
-	                ( (numRead=fin.read(buff, offset, buff.length-offset)) >= 0) ) {
+		// Open an input stream
+		fin = new FileInputStream(fileToWrite);
 
-	            offset += numRead;
-	            irodsFileOutputStream.write(buff, writeOffset, numRead);
-	            writeOffset += numRead;
-	        }
-		    // Close our input stream
-		    fin.close();		
+		// Read in the bytes
+		int offset = 0;
+		int writeOffset = 0;
+		int numRead = 0;
+		while ((offset < buff.length)
+				&& ((numRead = fin.read(buff, offset, buff.length - offset)) >= 0)) {
+
+			offset += numRead;
+			irodsFileOutputStream.write(buff, writeOffset, numRead);
+			writeOffset += numRead;
+		}
+		// Close our input stream
+		fin.close();
 
 		irodsFileOutputStream.close();
-		irodsFileSystem.close();	
+		irodsFileSystem.close();
+	}
+
+	/**
+	 * Test for Bug 60 - overwrite for file output stream Test is successful if
+	 * no errors happen, bug resulted in an NPE
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public final void testWriteToIRODSFileOutputStreamWhenFileExists()
+			throws Exception {
+		// generate a local scratch file
+		String testFileName = "testWriteToIRODSFileOutputStreamWhenFileExists.txt";
+		int fileLengthInKb = 4;
+		long fileLengthInBytes = fileLengthInKb * 1024;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String sourceFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName,
+						fileLengthInBytes);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// now open an output stream and try to write to the same file
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+
+		TestCase.assertTrue("i cannot write an output stream", irodsFile
+				.canWrite());
+
+		File fileToWrite = new File(sourceFileName);
+		FileInputStream fin;
+		byte[] buff = new byte[1024];
+		// Get the size of the file
+		long length = fileToWrite.length();
+
+		// Open an input stream
+		fin = new FileInputStream(fileToWrite);
+
+		// Read in the bytes
+		int offset = 0;
+		int writeOffset = 0;
+		int numRead = 0;
+		while ((offset < buff.length)
+				&& ((numRead = fin.read(buff, offset, buff.length - offset)) >= 0)) {
+
+			offset += numRead;
+			irodsFileOutputStream.write(buff, writeOffset, numRead);
+			writeOffset += numRead;
+		}
+		// Close our input stream
+		fin.close();
+
+		irodsFileOutputStream.close();
+		irodsFileSystem.close();
+	}
+
+
+	/**
+	 * Test for Bug 60 - overwrite for file output stream Test is successful if
+	 * no errors happen, bug resulted in an NPE
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public final void testWriteToIRODSFileOutputStreamOverwriteDifferentData()
+			throws Exception {
+		// generate a local scratch file
+		String testFileName = "testWriteToIRODSFileOutputStreamOverwriteDifferentData.txt";
+
+		long fileLength = 2048;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String sourceFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName,
+						fileLength);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// now open an output stream and try to overwrite the same file
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+
+		TestCase.assertTrue("i cannot write an output stream", irodsFile
+				.canWrite());
+
+		String myBytes = "ajjjjjjjjjjjjjjjjjjjf94949fjg94fj9jfasdofalkdfjfkdfjksdfjsiejfesifslas;efias;efiadfkadfdffjjjjjfeiiiiiiiiiiiiiii54454545";
+		byte[] myBytesArray = myBytes.getBytes();
+		int byteArraySize = myBytesArray.length;
+
+		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
+		irodsFileOutputStream.close();
+		
+		// read back the file into scratch and inspect the first n bytes to see if it matches my byte array that I overwrote 
+		IRODSFile getBackJoJo = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+		IRODSFileInputStream irodsFileInputStream = new IRODSFileInputStream(getBackJoJo);
+		byte[] readBackBytes = new byte[byteArraySize];
+		irodsFileInputStream.read(readBackBytes);
+		boolean areEqual = Arrays.equals(myBytesArray, readBackBytes);
+		irodsFileSystem.close();
+		TestCase.assertTrue("did not overwrite and read back my bytes", areEqual);
+
+	}
+
+	@Test(expected = IOException.class)
+	public final void testWriteToIRODSFileOutputStreamWhenFileExistsAndICannotWrite()
+			throws Exception {
+		// generate a local scratch file
+		String testFileName = "testWriteToIRODSFileOutputStreamWhenFileExistsAndICannotWrite.txt";
+		int fileLengthInKb = 4;
+		long fileLengthInBytes = fileLengthInKb * 1024;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String sourceFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName,
+						fileLengthInBytes);
+
+		// use the jargon code to create and put the file, since my 'logged in'
+		// user cannot thru iCommands...
+
+		IRODSAccount user2Account = testingPropertiesHelper
+				.buildIRODSAccountFromSecondaryTestProperties(testingProperties);
+		IRODSFileSystem user2FileSystem = new IRODSFileSystem(user2Account);
+		String targetIrodsFile = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
+
+		IRODSFile user2PutFile = new IRODSFile(user2FileSystem, targetIrodsFile);
+		LocalFile localFile = new LocalFile(sourceFileName);
+		user2PutFile.copyFrom(localFile, true);
+		user2FileSystem.close();
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		// now open an output stream and try to write to the same file from a
+		// different user (I should not be able to write)
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsFile);
+
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+
+		TestCase
+				.assertFalse(
+						"i should not be able to write an output stream to a file I do not own",
+						irodsFile.canWrite());
+
+		File fileToWrite = new File(sourceFileName);
+		FileInputStream fin;
+		byte[] buff = new byte[1024];
+		// Get the size of the file
+		long length = fileToWrite.length();
+
+		// Open an input stream
+		fin = new FileInputStream(fileToWrite);
+
+		// Read in the bytes
+		int offset = 0;
+		int writeOffset = 0;
+		int numRead = 0;
+		while ((offset < buff.length)
+				&& ((numRead = fin.read(buff, offset, buff.length - offset)) >= 0)) {
+
+			offset += numRead;
+			irodsFileOutputStream.write(buff, writeOffset, numRead);
+			writeOffset += numRead;
+		}
+		// Close our input stream
+		fin.close();
+
+		irodsFileOutputStream.close();
+		irodsFileSystem.close();
 	}
 
 }

@@ -63,7 +63,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		ZoneMetaData {
 
 	private static Logger log = LoggerFactory.getLogger(IRODSMetaDataSet.class);
-	
+
 	// Metadata attribute names
 	// irods file access, beyond FileMetaData
 	public static final String FILE_REPLICA_STATUS = "File Replica Status";
@@ -1323,17 +1323,23 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 * MetaDataField for use in a metadata query.
 	 */
 	public static MetaDataField getField(String fieldName) {
-		if (fieldName == null)
+		if (log.isDebugEnabled()) {
+			log.debug("getting metadata field for field name:" + fieldName);
+		}
+		if (fieldName == null) {
+			log.error("npe, metadata field name passed in is null");
 			throw new NullPointerException("The fieldName cannot be null.");
+		}
 
 		MetaDataField field = (MetaDataField) metaDataFields.get(fieldName);
-
+	
 		if (field == null) {
 			try {
+				log.debug("field was null");
 				field = (MetaDataField) metaDataFields.get(iRODSToJargon
 						.get(Integer.decode(fieldName)));
 			} catch (NumberFormatException e) {
-				log.warn("number format exceptinofor field:" + fieldName
+				log.warn("number format exception for field:" + fieldName
 						+ " logged and ignored");
 			}
 		}
@@ -1342,10 +1348,22 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	}
 
 	static String getID(String fieldName) {
+		if (log.isDebugEnabled()) {
+			log.debug("doing a getID for field:" + fieldName);
+		}
 		Object temp = jargonToIRODS.get(fieldName);
+		log.debug("after jargonToIRODS lookup I have:" + temp.toString());
 		if (temp == null) {
+			if (log.isDebugEnabled()) {
+				log
+						.debug("looked up value is null, returning passed-in field name instead:"
+								+ fieldName);
+			}
 			return fieldName;
 		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("successfully looked up, and returning:" + fieldName);
+			}
 			return temp.toString();
 		}
 	}

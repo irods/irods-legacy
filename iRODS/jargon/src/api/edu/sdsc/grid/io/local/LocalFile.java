@@ -43,19 +43,18 @@
 //
 package edu.sdsc.grid.io.local;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.RemoteFile; //used in copyTo()
-
-import java.io.IOException;
-import java.io.FilenameFilter;
-import java.io.FileFilter;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.MalformedURLException;
-import java.util.Vector;
 import java.util.Iterator;
 import java.util.Properties;
+
+import edu.sdsc.grid.io.GeneralFile;
+import edu.sdsc.grid.io.RemoteFile;
 
 /**
  * The LocalFile class is a wrapper class for the java.io.File class. Use it as
@@ -72,9 +71,7 @@ import java.util.Properties;
  * @since Jargon1.0
  */
 public class LocalFile extends GeneralFile {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
+	
 
 	/**
 	 * The system-dependent default name-separator character. This field is
@@ -113,18 +110,14 @@ public class LocalFile extends GeneralFile {
 	 */
 	public static final String pathSeparator = File.pathSeparator;
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Internal file object to provide LocalFile with the functionality of
 	 * java.io.File
 	 */
 	private File wrapper;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Creates a new LocalFile instance by converting the given pathname string
 	 * into an abstract pathname. If the given string is the empty string, then
@@ -281,9 +274,6 @@ public class LocalFile extends GeneralFile {
 		return System.getProperty("user.home");
 	}
 
-	// ----------------------------------------------------------------------
-	// GeneralFile Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Copies this file to another file. If the destination file does not exist,
 	 * a new one will be created. Otherwise the source file will be appended to
@@ -378,9 +368,6 @@ public class LocalFile extends GeneralFile {
 		}
 	}
 
-	// ----------------------------------------------------------------------
-	// java.io.File Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Tests whether the application can read the file denoted by this abstract
 	 * pathname.

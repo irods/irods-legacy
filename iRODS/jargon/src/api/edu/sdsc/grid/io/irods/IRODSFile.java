@@ -712,8 +712,11 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile file, boolean forceOverwrite)
+	public void copyFrom(final GeneralFile file, final boolean forceOverwrite)
 			throws IOException {
+		if (log.isInfoEnabled()) {
+			log.info("copy of:" + file.getAbsolutePath() + " to:" + this.getAbsolutePath());
+		}
 		if (file == null) {
 			throw new NullPointerException();
 		}
@@ -746,6 +749,7 @@ public class IRODSFile extends RemoteFile {
 					super.copyTo(file, forceOverwrite);
 				}
 			} catch (IRODSException e) {
+				log.error("exception in copyFrom, rethrown as IOException for File contract", e);
 				IOException io = new IOException();
 				io.initCause(e);
 				throw io;

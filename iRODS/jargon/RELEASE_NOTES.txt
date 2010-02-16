@@ -77,7 +77,10 @@ Support for 'no distinct' option, a new IRODS2.3 feature.  There are new methods
 to override.
 
 ---------
-Tests for  Bug 68 -  error in checksum -12000
+Tests cases for Bug 68 -  error in checksum -12000 
+
+---------
+Testing cases for Bug 60 -  overwrite for file output stream - code in development
 
 ================================================================================================
 Outstanding Issues

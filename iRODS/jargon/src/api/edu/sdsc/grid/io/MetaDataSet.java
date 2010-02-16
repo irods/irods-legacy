@@ -44,6 +44,11 @@ package edu.sdsc.grid.io;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.sdsc.grid.io.irods.IRODSMetaDataSet;
+
 /**
  * A "Meta data group" is a group of meta data fields. Each MetaDataGroup class
  * includes documentation and introspection methods that describe the group as a
@@ -112,6 +117,9 @@ import java.util.HashMap;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class MetaDataSet implements GeneralMetaData {
+	
+	private static Logger log = LoggerFactory.getLogger(MetaDataSet.class);
+
 	/**
 	 * Group name for metadata relating to Directory/Collection attributes.
 	 */
@@ -491,9 +499,13 @@ public abstract class MetaDataSet implements GeneralMetaData {
 	 * this group be included in returned records from a query.
 	 */
 	public static MetaDataSelect[] newSelection(String[] fieldNames) {
+		log.debug("building array of selects");
 		MetaDataSelect[] selects = new MetaDataSelect[fieldNames.length];
 		for (int i = 0; i < selects.length; i++) {
 			if (fieldNames[i] != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("creating new MetaDataSelect for:" + fieldNames[i]);
+				}
 				selects[i] = new MetaDataSelect(getField(fieldNames[i]));
 			}
 		}

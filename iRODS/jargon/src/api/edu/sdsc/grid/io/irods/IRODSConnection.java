@@ -307,6 +307,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * output stream, by converting the value to a byte array and calling send(
 	 * byte[] value ).
 	 * 
+	 * FIXME: allows a length value that can be greater than the length of bytes
+	 * 
 	 * @param value
 	 *            value to be sent
 	 * @param offset
