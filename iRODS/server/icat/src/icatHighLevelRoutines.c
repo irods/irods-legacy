@@ -6872,7 +6872,14 @@ int setOverQuota(rsComm_t *rsComm) {
 
    /* For each defined group limit on total usage (if any), get a
     * total usage on any resource for all users in that group: */
+#if ORA_ICAT
+   /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
+   char mySQL2[]="select sum(quota_usage), UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != cast('0' as integer) and r_quota_main.resc_id = cast('0' as integer) group by UM1.user_id";
+#elif MY_ICAT
+   char mySQL2[]="select sum(quota_usage), UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != '0' and r_quota_main.resc_id = '0' group by UM1.user_id";
+#else
    char mySQL2[]="select sum(quota_usage), UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != cast('0' as bigint) and r_quota_main.resc_id = cast('0' as bigint) group by UM1.user_id";
+#endif
 /* //r_quota_usage.resc_id != 0  ? needed */
 
 
@@ -6887,7 +6894,11 @@ int setOverQuota(rsComm_t *rsComm) {
    /* Set the over_quota values for per-resource, if any */
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 2");
    status =  cmlExecuteNoAnswerSql(
+#if MY_ICAT
+      "update r_quota_main, r_quota_usage set r_quota_main.quota_over = r_quota_usage.quota_usage - r_quota_main.quota_limit where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
+#else
       "update r_quota_main set quota_over = quota_usage - quota_limit from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
+#endif
       &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* none */
    if (status) return(status);
@@ -6897,7 +6908,7 @@ int setOverQuota(rsComm_t *rsComm) {
 
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 3");
    status =  cmlExecuteNoAnswerSql(
-      "update r_quota_main set quota_over = (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit from r_quota_usage where  (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit > quota_over",
+      "update r_quota_main set quota_over = (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit where (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit > quota_limit",
       &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
    if (status) return(status);
