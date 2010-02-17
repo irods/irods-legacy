@@ -286,7 +286,6 @@ public class IRODSFileOutputStreamTest {
 		irodsFileSystem.close();
 	}
 
-
 	/**
 	 * Test for Bug 60 - overwrite for file output stream Test is successful if
 	 * no errors happen, bug resulted in an NPE
@@ -349,15 +348,19 @@ public class IRODSFileOutputStreamTest {
 
 		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
 		irodsFileOutputStream.close();
-		
-		// read back the file into scratch and inspect the first n bytes to see if it matches my byte array that I overwrote 
-		IRODSFile getBackJoJo = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
-		IRODSFileInputStream irodsFileInputStream = new IRODSFileInputStream(getBackJoJo);
+
+		// read back the file into scratch and inspect the first n bytes to see
+		// if it matches my byte array that I overwrote
+		IRODSFile getBackJoJo = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		IRODSFileInputStream irodsFileInputStream = new IRODSFileInputStream(
+				getBackJoJo);
 		byte[] readBackBytes = new byte[byteArraySize];
 		irodsFileInputStream.read(readBackBytes);
 		boolean areEqual = Arrays.equals(myBytesArray, readBackBytes);
 		irodsFileSystem.close();
-		TestCase.assertTrue("did not overwrite and read back my bytes", areEqual);
+		TestCase.assertTrue("did not overwrite and read back my bytes",
+				areEqual);
 
 	}
 
@@ -438,6 +441,68 @@ public class IRODSFileOutputStreamTest {
 
 		irodsFileOutputStream.close();
 		irodsFileSystem.close();
+	}
+
+	/**
+	 * Test for Bug 60 - overwrite for file output stream Test is successful if
+	 * no errors happen, bug resulted in an NPE
+	 * 
+	 * This is the exact updated test case
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public final void testWriteToIRODSFileOutputStreamOverwriteDifferentDataTestForNPE()
+			throws Exception {
+		String testFileName = "testWriteToIRODSFileOutputStreamOverwriteDifferentDataTestForNPE.txt";
+		String expectedAttribName = "testattrib1";
+		String expectedAttribValue = "testvalue1";
+		
+		// 1. Created an empty IRODSFile.
+		// now open an output stream and try to overwrite the same file
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+
+		irodsFileSystem.commands.fileCreate(irodsFile, false, true);
+
+		// 2. Added AVUs to the empty IRODSFile just created.
+
+		String[] metaData = { expectedAttribName, expectedAttribValue };
+		irodsFile.modifyMetaData(metaData);
+
+		/*
+		 * 3. Instantiated an IRODSOutputStream using the IRODSFile just
+		 * created. - since the IRODSFile had already been created,
+		 * IRODSFileOutputStream would open the file instead of creating the
+		 * file
+		 */
+
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+
+		TestCase.assertTrue("i cannot write an output stream", irodsFile
+				.canWrite());
+		
+	
+		String myBytes = "ajjjjjjjjjjjjjjjjjjjf94949fjg94fj9jfasdofalkdfjfkdfjksdfjsiejfesifslas;efias;efiadfkadfdffjjjjjfeiiiiiiiiiiiiiii54454545";
+		byte[] myBytesArray = myBytes.getBytes();
+		int byteArraySize = myBytesArray.length;
+
+		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
+		irodsFileOutputStream.close();
+
+		
+		irodsFileSystem.close();
+		
 	}
 
 }
