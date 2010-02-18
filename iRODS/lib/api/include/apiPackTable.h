@@ -90,6 +90,8 @@ packInstructArray_t ApiPackTable[] = {
         {"generalRowInsertInp_PI", generalRowInsertInp_PI},
         {"generalRowPurgeInp_PI", generalRowPurgeInp_PI},
         {"krbAuthRequestOut_PI", krbAuthRequestOut_PI},
+        {"getRescQuotaInp_PI", getRescQuotaInp_PI},
+        {"rescQuota_PI", rescQuota_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

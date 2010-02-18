@@ -125,4 +125,5 @@
 #include "phyBundleColl.h"
 #include "unbunAndRegPhyBunfile.h"
 #include "getHostForPut.h"
+#include "getRescQuota.h"
 #endif	/* API_HEADER_ALL_H */

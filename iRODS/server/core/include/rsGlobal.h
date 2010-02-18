@@ -64,5 +64,10 @@ tarSubFileDesc_t TarSubFileDesc[NUM_TAR_SUB_FILE_DESC];
 char localSID[MAX_PASSWORD_LEN]; /* Local Zone Servers ID string */
 char remoteSID[MAX_FED_RSIDS] [MAX_PASSWORD_LEN];  /* Remote Zone SIDs */
 
+/* quota for all resources for this user in bytes */
+rodsLong_t GlobalQuotaLimit;	/* quota for all resources for this user */
+rodsLong_t GlobalQuotaOverrun;  /* quota overrun for this user */
+
 #endif	/* RS_GLOBAL_H */
+
 

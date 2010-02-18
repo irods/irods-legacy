@@ -64,6 +64,10 @@ getRescStatus (rsComm_t *rsComm, char *inpRescName, keyValPair_t *condInput)
     }
 }
 
+/* _getRescInfo - get the rescInfo. rescGroupName can be a resource
+ * or a resource group.
+ */
+
 int
 _getRescInfo (rsComm_t *rsComm, char *rescGroupName, 
 rescGrpInfo_t **rescGrpInfo)
@@ -85,6 +89,10 @@ rescGrpInfo_t **rescGrpInfo)
     return (status);
 }
 
+/* resolveRescGrp - get the rescInfo for the rescGroupName.
+ * rescGroupName can only be a resource group.
+ */
+ 
 int 
 resolveRescGrp (rsComm_t *rsComm, char *rescGroupName, 
 rescGrpInfo_t **rescGrpInfo)
@@ -3738,6 +3746,7 @@ initRescGrp (rsComm_t *rsComm)
     char *curRescGrpNameStr = NULL;
     int i;
     int status = 0;
+    int savedRescGrpStatus = 0;
 
     if (RescGrpInit > 0) return 0;
 
@@ -3784,6 +3793,8 @@ initRescGrp (rsComm_t *rsComm)
 	    if (strcmp (rescGrpNameStr, curRescGrpNameStr) != 0) {
 		/* a new rescGrp. queue the current one */
         	tmpRescGrpInfo->cacheNext = CachedRescGrpInfo;
+		tmpRescGrpInfo->status = savedRescGrpStatus;
+		savedRescGrpStatus = 0;
         	CachedRescGrpInfo = tmpRescGrpInfo;
 		tmpRescGrpInfo = NULL;
 	    }
@@ -3791,17 +3802,22 @@ initRescGrp (rsComm_t *rsComm)
 	curRescGrpNameStr = rescGrpNameStr;
         status = resolveAndQueResc (rescNameStr, rescGrpNameStr,
           &tmpRescGrpInfo);
-        if (status < 0 && status != SYS_RESC_IS_DOWN) {
-            rodsLog (LOG_NOTICE,
-              "initRescGrp: resolveAndQueResc error for %s. status = %d",
-              rescNameStr, status);
-            freeGenQueryOut (&genQueryOut);
-            return (status);
+        if (status < 0) {
+	    if (status == SYS_RESC_IS_DOWN) {
+		savedRescGrpStatus = SYS_RESC_IS_DOWN;
+	    } else {
+                rodsLog (LOG_NOTICE,
+                  "initRescGrp: resolveAndQueResc error for %s. status = %d",
+                  rescNameStr, status);
+                freeGenQueryOut (&genQueryOut);
+                return (status);
+	    }
         }
     }
 
     /* query the remaining in cache */
     if (tmpRescGrpInfo != NULL) {
+	tmpRescGrpInfo->status = savedRescGrpStatus;
         tmpRescGrpInfo->cacheNext = CachedRescGrpInfo;
         CachedRescGrpInfo = tmpRescGrpInfo;
     }

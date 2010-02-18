@@ -43,21 +43,23 @@ typedef struct RescInfo
     char rescLoc[NAME_LEN];
     char rescType[NAME_LEN];
     int rescTypeInx;
-    char rescClass[NAME_LEN];
     int rescClassInx;
-    char rescVaultPath[MAX_NAME_LEN];
     int rescStatus;
     int paraOpr;
+    char rescClass[NAME_LEN];
+    char rescVaultPath[MAX_NAME_LEN];
     char rescInfo[LONG_NAME_LEN];
     char rescComments[LONG_NAME_LEN];
     char gateWayAddr[NAME_LEN];
     rodsLong_t rescMaxObjSize;
     rodsLong_t freeSpace;
-    time_t freeSpaceTime;       /* last time freeSpace was checked */
     char freeSpaceTimeStamp[TIME_LEN];
+    time_t freeSpaceTime;       /* last time freeSpace was checked */
     char rescCreate[TIME_LEN];
     char rescModify[TIME_LEN];
     void *rodsServerHost;
+    rodsLong_t quotaLimit;
+    rodsLong_t quotaOverrun;
 } rescInfo_t;
 
 /* link of resource in resource group */
@@ -66,6 +68,9 @@ typedef struct RescGrpInfo
 {
     char rescGroupName[NAME_LEN];
     rescInfo_t *rescInfo;
+    int status;		/* SYS_RESC_IS_DOWN - one of the resource is down 
+			 * SYS_RESC_QUOTA_EXCEEDED - quota exceeded */
+    int dummy;
     struct RescGrpInfo *cacheNext; 	/* this is for cached resource grp */
     struct RescGrpInfo *next; 
 } rescGrpInfo_t;

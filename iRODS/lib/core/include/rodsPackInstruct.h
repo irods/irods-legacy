@@ -71,7 +71,7 @@
 
 #define TransStat_PI "int numThreads; double bytesWritten;"
 
-#define RescGrpInfo_PI "str rescGroupName[NAME_LEN]; str *rescName; int *cacheNext; struct *RescGrpInfo_PI;"
+#define RescGrpInfo_PI "str rescGroupName[NAME_LEN]; str *rescName; int status; int dummy; int *cacheNext; struct *RescGrpInfo_PI;"
 #define AuthInfo_PI "str authScheme[NAME_LEN]; int authFlag; int flag; int ppid; str host[NAME_LEN]; str authStr[NAME_LEN];"
 #define UserOtherInfo_PI "str userInfo[NAME_LEN]; str userComments[NAME_LEN]; str userCreate[TIME_LEN]; str userModify[TIME_LEN];"
 

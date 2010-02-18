@@ -1450,6 +1450,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 	} else {
 	    myRescInfo->rescStatus = INT_RESC_STATUS_UP;
 	}
+	myRescInfo->quotaLimit = -1;	/* have not been initialized yet */
 	queResc (myRescInfo, NULL, &RescGrpInfo, BOTTOM_FLAG);
     }
     return (0);
@@ -1556,6 +1557,11 @@ initAgent (rsComm_t *rsComm)
             return (status);
 	}
     }
+
+    /* Initialize the global quota */
+
+    GlobalQuotaLimit = -1;
+    GlobalQuotaOverrun = 0;
 
     seedRandom ();
 
