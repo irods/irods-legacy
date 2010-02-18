@@ -7035,6 +7035,7 @@ int chlCalcUsageAndQuota(rsComm_t *rsComm) {
    status =  cmlExecuteNoAnswerSql(
       "insert into r_quota_usage (quota_usage, resc_id, user_id, modify_ts) (select sum(r_data_main.data_size), r_resc_main.resc_id, r_user_main.user_id, ? from r_data_main, r_user_main, r_resc_main where r_user_main.user_name = r_data_main.data_owner_name and r_user_main.zone_name = r_data_main.data_owner_zone and r_resc_main.resc_name = r_data_main.resc_name group by r_resc_main.resc_id, user_id)",
       &icss);
+   if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* no files, OK */
    if (status) {
       _rollback("chlCalcUsageAndQuota");
       return(status);
