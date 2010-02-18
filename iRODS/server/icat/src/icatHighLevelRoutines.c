@@ -6868,19 +6868,15 @@ int setOverQuota(rsComm_t *rsComm) {
 
    /* For each defined group limit (if any), get a total usage on that
     * resource for all users in that group: */
-   char mySQL1[]="select sum(quota_usage), UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_main.resc_id = r_quota_usage.resc_id group by UM1.user_id";
+   char mySQL1[]="select sum(quota_usage), UM1.user_id, r_quota_usage.resc_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_main.resc_id = r_quota_usage.resc_id group by UM1.user_id, r_quota_usage.resc_id;";
 
    /* For each defined group limit on total usage (if any), get a
     * total usage on any resource for all users in that group: */
-#if ORA_ICAT
-   /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
-   char mySQL2[]="select sum(quota_usage), UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != cast('0' as integer) and r_quota_main.resc_id = cast('0' as integer) group by UM1.user_id";
-#elif MY_ICAT
-   char mySQL2[]="select sum(quota_usage), UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != '0' and r_quota_main.resc_id = '0' group by UM1.user_id";
-#else
-   char mySQL2[]="select sum(quota_usage), UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != cast('0' as bigint) and r_quota_main.resc_id = cast('0' as bigint) group by UM1.user_id";
-#endif
-/* //r_quota_usage.resc_id != 0  ? needed */
+   char mySQL2a[]="select sum(quota_usage), r_quota_main.quota_limit, UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != %s and r_quota_main.resc_id = %s group by UM1.user_id,  r_quota_main.quota_limit";
+   char mySQL2b[MAX_SQL_SIZE];
+
+   char mySQL3a[]="update r_quota_main set quota_over= %s - ?, modify_ts=? where user_id=? and %s - ? > quota_over";
+   char mySQL3b[MAX_SQL_SIZE];
 
 
    /* Initialize over_quota values (if any) to the no-usage value
@@ -6904,18 +6900,34 @@ int setOverQuota(rsComm_t *rsComm) {
    if (status) return(status);
 
    /* Set the over_quota values for irods-total, if any, and only if
-      the this over_quota value is higher than the previous. */
-
+      the this over_quota value is higher than the previous.  Do it in
+      two steps to keep it simplier (there may be a better way tho).
+   */
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 3");
-   status =  cmlExecuteNoAnswerSql(
-      "update r_quota_main set quota_over = (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit where (select sum(quota_usage) from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0') - quota_limit > quota_limit",
-      &icss);
-   if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
-   if (status) return(status);
+   getNowStr(myTime);
+   for (rowsFound=0;;rowsFound++) {
+      int status2;
+      if (rowsFound==0) {
+	 status = cmlGetFirstRowFromSql("select sum(quota_usage), r_quota_main.user_id from r_quota_usage, r_quota_main where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0' group by r_quota_main.user_id",
+					&statementNum, 0, &icss);
+      }
+      else {
+	 status = cmlGetNextRowFromStatement(statementNum, &icss);
+      }
+      if (status) break;
+      cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
+      cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 4");
+      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over and resc_id='0'",
+				      &icss);
+      if (status2 == CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
+      if (status2) return(status2);
+   }
 
    /* Handle group quotas on resources */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 4");
-   getNowStr(myTime);
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 5");
    for (rowsFound=0;;rowsFound++) {
       int status2;
       if (rowsFound==0) {
@@ -6926,54 +6938,67 @@ int setOverQuota(rsComm_t *rsComm) {
 	 status = cmlGetNextRowFromStatement(statementNum, &icss);
       }
       if (status) break;
-/*      printf("value0:%s\n",icss.stmtPtr[statementNum]->resultValue[0]); */
-/*      printf("value1:%s\n",icss.stmtPtr[statementNum]->resultValue[1]); */
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 5");
-      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over",
+      cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[2];
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 6");
+      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over and r_quota_main.resc_id=?",
 				      &icss);
       if (status2 == CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
       if (status2) return(status2);
    }
-/*   printf("group rows=%d\n",rowsFound); */
    if (status==CAT_NO_ROWS_FOUND) status=0;
    if (status) return(status);
 
    /* Handle group quotas on total usage */
-   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 6");
+#if ORA_ICAT
+   /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
+   snprintf(mySQL2b, sizeof mySQL2b, mySQL2a, 
+	    "cast(? as integer)", "cast(? as integer)");
+   snprintf(mySQL3b, sizeof mySQL3b, mySQL3a, 
+	    "cast(? as integer)", "cast(? as integer)");
+#elif MY_ICAT
+   snprintf(mySQL2b, sizeof mySQL2b, mySQL2a, "?", "?");
+   snprintf(mySQL3b, sizeof mySQL3b, mySQL3a, "?", "?");
+#else
+   snprintf(mySQL2b, sizeof mySQL2b, mySQL2a,
+	    "cast(? as bigint)", "cast(? as bigint)");
+   snprintf(mySQL3b, sizeof mySQL3b, mySQL3a,
+	    "cast(? as bigint)", "cast(? as bigint)");
+#endif
+   if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 7");
    getNowStr(myTime);
    for (rowsFound=0;;rowsFound++) {
       int status2;
       if (rowsFound==0) {
-	 status = cmlGetFirstRowFromSql(mySQL2, &statementNum, 
+	 status = cmlGetFirstRowFromSql(mySQL2b, &statementNum, 
                                      0, &icss);
       }
       else {
 	 status = cmlGetNextRowFromStatement(statementNum, &icss);
       }
       if (status) break;
-/*      printf("value0:%s\n",icss.stmtPtr[statementNum]->resultValue[0]); */
-/*      printf("value1:%s\n",icss.stmtPtr[statementNum]->resultValue[1]); */
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-      cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[2];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
-      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 7");
-      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over",
+      cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
+      if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 8");
+      status2 = cmlExecuteNoAnswerSql(mySQL3b,
 				      &icss);
       if (status2 == CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
       if (status2) return(status2);
    }
-/* //  printf("group rows=%d\n",rowsFound); */
    if (status==CAT_NO_ROWS_FOUND) status=0;
    if (status) return(status);
 
 /* To simplify the query, if either of the above group operations
    found some over_quota, will probably want to update and insert rows
-   for each user into r_quota_main.  To-be-done. */
+   for each user into r_quota_main.  For now tho, this is not done and
+   perhaps shouldn't be, to keep it a little less complicated. */
 
    return(status);
 }
