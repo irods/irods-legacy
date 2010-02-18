@@ -6956,15 +6956,15 @@ int setOverQuota(rsComm_t *rsComm) {
 #if ORA_ICAT
    /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
    snprintf(mySQL2b, sizeof mySQL2b, mySQL2a, 
-	    "cast(? as integer)", "cast(? as integer)");
+	    "cast('0' as integer)", "cast('0' as integer)");
    snprintf(mySQL3b, sizeof mySQL3b, mySQL3a, 
 	    "cast(? as integer)", "cast(? as integer)");
 #elif MY_ICAT
-   snprintf(mySQL2b, sizeof mySQL2b, mySQL2a, "?", "?");
+   snprintf(mySQL2b, sizeof mySQL2b, mySQL2a, "'0'", "'0'");
    snprintf(mySQL3b, sizeof mySQL3b, mySQL3a, "?", "?");
 #else
    snprintf(mySQL2b, sizeof mySQL2b, mySQL2a,
-	    "cast(? as bigint)", "cast(? as bigint)");
+	    "cast('0' as bigint)", "cast('0' as bigint)");
    snprintf(mySQL3b, sizeof mySQL3b, mySQL3a,
 	    "cast(? as bigint)", "cast(? as bigint)");
 #endif
