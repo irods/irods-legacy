@@ -1653,7 +1653,7 @@ class IRODSCommands {
 		message.addTag(new Tag(partialStartIndex, 0));
 
 		if (!distinctQuery) {
-			int versionValue = getReportedIRODSVersion().compareTo("rods2.3"); // FIXME: set to 2.3
+			int versionValue = getReportedIRODSVersion().compareTo("rods2.3"); 
 			if (versionValue >= 0) {
 				// reported version is at or after the version specified in 'compareTo'
 				message.addTag(new Tag(options, 1));
