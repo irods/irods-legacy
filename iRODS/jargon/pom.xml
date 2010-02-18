@@ -18,6 +18,14 @@
 		<name>DICE </name>
 		<url>http://dice.unc.edu/</url>
 	</organization>
+	<repositories>
+        <repository>
+          <id>maven2-repository.dev.java.net</id>
+          <name>Java.net Repository for Maven</name>
+          <url>http://download.java.net/maven/2/</url>
+          <layout>default</layout>
+        </repository>
+      </repositories>
 	<build>
 		<sourceDirectory>src/api</sourceDirectory>
 		<outputDirectory>target/classes</outputDirectory>
@@ -35,11 +43,11 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.1</version>
 				<configuration>
-					<verbose>true</verbose>
 					<fork>true</fork>
 					<compilerVersion>1.5</compilerVersion>
 					<source>1.5</source>
 					<target>1.5</target>
+					<compilerArgument>-Xlint:-unchecked</compilerArgument>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -50,7 +58,7 @@
 					<includes>
 						<include>**/AllTests.java</include>
 					</includes>
-				</configuration>
+				</configuration> 
 			</plugin>
 		</plugins>
 
@@ -83,13 +91,6 @@
 			<version>1.0.1</version>
 			<type>jar</type>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.15</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 </project>

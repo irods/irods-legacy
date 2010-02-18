@@ -3,6 +3,7 @@ package edu.sdsc.grid.io.irods;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -13,7 +14,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.emory.mathcs.backport.java.util.Arrays;
 import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
