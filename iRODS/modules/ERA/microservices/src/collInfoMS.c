@@ -669,7 +669,7 @@ msiStructFileBundle(msParam_t *collection, msParam_t *bundleObj, msParam_t *reso
  *
  * \brief   Applies a microservice sequence to all data objects in a collection, recursively.
  *
- * \module core
+ * \module ERA
  *
  * \since 2.1
  *
