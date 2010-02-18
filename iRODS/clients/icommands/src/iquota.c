@@ -284,8 +284,9 @@ showUserUsage(char *userName)
    int printCount;
    char *tResult;
    char header[]=
-      "Resource     User         User-type       Data-stored (bytes)";
-   char *pad[13]={"            ",
+      "Resource      User            Data-stored (bytes)";
+   char *pad[14]={"             ",
+		  "            ",
 		  "           ",
 		  "          ",
 		  "         ",
@@ -306,7 +307,7 @@ showUserUsage(char *userName)
    inputInx[i++]=COL_QUOTA_USAGE_MODIFY_TIME;
    inputInx[i++]=COL_QUOTA_RESC_NAME;
    inputInx[i++]=COL_QUOTA_USER_NAME;
-   inputInx[i++]=COL_QUOTA_USER_TYPE;
+   inputInx[i++]=COL_QUOTA_USER_ZONE;
    inputInx[i++]=COL_QUOTA_USAGE;
 
    genQueryInp.selectInp.inx = inputInx;
@@ -344,16 +345,25 @@ showUserUsage(char *userName)
    for (i=0;i<genQueryOut->rowCnt;i++) {
       for (j=1;j<genQueryOut->attriCnt;j++) {
 	 char *tResult;
+	 char *tResult2;
 	 tResult = genQueryOut->sqlResult[j].value;
 	 tResult += i*genQueryOut->sqlResult[j].len;
+	 if (j==1) {
+	    printf("%s ",tResult);
+	    k = strlen(tResult);
+	 }
+	 if (j==2) {
+	    j++;
+	    tResult2 = genQueryOut->sqlResult[j].value;
+	    tResult2 += i*genQueryOut->sqlResult[j].len;
+	    printf("%s#%s",tResult,tResult2);
+	    k = strlen(tResult) + 1 + strlen(tResult2);
+	 }
 	 if (j==4) {
 	    printNice(tResult, 14, "");
+	    k = strlen(tResult);
 	 }
-	 else {
-	    printf("%s ",tResult);
-	 }
-	 k = strlen(tResult);
-	 if (k < 20) printf("%s",pad[k]);
+	 if (k < 14) printf("%s",pad[k]);
 	 printCount++;
       }
       printf("\n");
