@@ -1,6 +1,5 @@
 package edu.sdsc.grid.io.irods;
 
-//FIXME: add to suite
 
 import java.util.Properties;
 
@@ -29,12 +28,7 @@ public class IRODSAvuTest {
 	public static void setUpBeforeClass() throws Exception {
 		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
 		testingProperties = testingPropertiesLoader.getTestProperties();
-		scratchFileUtils = new ScratchFileUtils(testingProperties);
-		scratchFileUtils.createDirectoryUnderScratch(IRODS_TEST_SUBDIR_PATH);
-		irodsTestSetupUtilities = new IRODSTestSetupUtilities();
-		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
-		irodsTestSetupUtilities
-				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
+		
 	}
 
 	@AfterClass

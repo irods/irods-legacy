@@ -56,7 +56,8 @@ import edu.sdsc.grid.io.UserMetaData;
 import edu.sdsc.grid.io.ZoneMetaData;
 
 /**
- * Constructs the various metadata attributes defined by the iRODS server.
+ * Constructs the various metadata attributes defined by the iRODS server such that 'common names' can be translated to 
+ * numeric values used by IRODS or SRB protocols, and also can provide translation from integer value to common name.
  */
 public final class IRODSMetaDataSet extends MetaDataSet implements
 		DirectoryMetaData, FileMetaData, ResourceMetaData, UserMetaData,

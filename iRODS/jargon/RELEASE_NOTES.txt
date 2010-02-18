@@ -1,12 +1,12 @@
 Jargon 2.3 Release Notes
 
-** work in progress, current version is 2.2.1 ***
+** frozen candidate for 2.3.0, current version is 2.2.1 ***
 
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 02/09/2010
-Release Version: 2.3
+Date: 02/18/2010
+Release Version: 2.3.0
 
 ================================================================================================
 Requirements
@@ -70,17 +70,12 @@ enhancement request (Bug 62 -  resource group CRUD methods requested)
 Adding Maven support in parallel to main ANT build.  ANT is still the primary build mechanism, but Maven support is added to conveniently build a distro for working with Fedora and irodsfedora
 code.  
 
-(incomplete...work in progress)
-
 ---------
 Support for 'no distinct' option, a new IRODS2.3 feature.  There are new methods in IRODSCommands, IRODSFile, and IRODSFile system that default to 'distinct' but have additional signatures
 to override.
 
 ---------
-Tests cases for Bug 68 -  error in checksum -12000 
-
----------
-Testing cases for Bug 60 -  overwrite for file output stream - code in development
+Tests cases for multiple reported bugs, expanded test suite including 'functional tests', Misc cleanups and fixes
 
 ================================================================================================
 Outstanding Issues

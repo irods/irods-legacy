@@ -194,8 +194,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	}
 
 	/*
-	 * physically closing down the socket. This method will be called at the
-	 * appropriate time by {@link IRODSCommands IRODSCommands} at the
+	 * physically closing down the socket. This method will be called at the by {@link IRODSCommands IRODSCommands} at the
 	 * appropriate time.
 	 * 
 	 * @throws JargonException
@@ -279,13 +278,17 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 *             If an IOException occurs
 	 */
 	void send(byte[] value) throws IOException {
-		/*if (log.isDebugEnabled()) {
-			log.debug("write summary: " + new String(value));
-		}*/
-		/*
-		 * if (log.isTraceEnabled()) { for (int i = 0; i < value.length; i++) {
-		 * log.trace("trace:" + value[i] + " "); } }
-		 */
+		
+		if (value == null) {
+			log.error("value cannot be null");
+			throw new IllegalArgumentException("value cannot be null");
+		}
+		
+		if (value.length == 0) {
+			// nothing to send, warn and ignore
+			log.warn("nothing to send, ignoring...");
+			return;
+		}
 
 		if ((value.length + outputOffset) >= OUTPUT_BUFFER_LENGTH) {
 			// in cases where OUTPUT_BUFFER_LENGTH isn't big enough
@@ -307,8 +310,6 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * output stream, by converting the value to a byte array and calling send(
 	 * byte[] value ).
 	 * 
-	 * FIXME: allows a length value that can be greater than the length of bytes
-	 * 
 	 * @param value
 	 *            value to be sent
 	 * @param offset
@@ -319,6 +320,31 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 *             If an IOException occurs
 	 */
 	void send(byte[] value, int offset, int length) throws IOException {
+		
+		if (value == null) {
+			log.error("value cannot be null");
+			throw new IllegalArgumentException("value cannot be null");
+		}
+		
+		if (value.length == 0) {
+			// nothing to send, warn and ignore
+			log.warn("nothing to send, ignoring...");
+			return;
+		}
+		
+		if (offset > value.length) {
+			String err = "trying to send a byte buffer from an offset that is out of range";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		if (length <= 0) {
+			// nothing to send, warn and ignore
+			String err = "send length is zero";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		byte temp[] = new byte[length];
 
 		System.arraycopy(value, offset, temp, 0, length);
@@ -335,6 +361,11 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 *             If an IOException occurs
 	 */
 	void send(String value) throws IOException {
+		if (value == null) {
+			String err = "value is null";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
 		send(value.getBytes(encoding));
 	}
 
@@ -363,6 +394,12 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 *             If an IOException occurs
 	 */
 	void send(InputStream source, long length) throws IOException {
+		if (source == null) {
+			String err = "value is null";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		byte[] temp = new byte[Math.min(IRODSFileSystem.BUFFER_SIZE,
 				(int) length)];
 		while (length > 0) {
@@ -397,6 +434,19 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * destination
 	 */
 	void read(OutputStream destination, long length) throws IOException {
+		
+		if (destination == null) {
+			String err = "destination is null";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		if (length == 0) {
+			String err = "read length is set to zero";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		byte[] temp = new byte[Math.min(IRODSFileSystem.BUFFER_SIZE,
 				(int) length)];
 		int n = 0;
@@ -418,6 +468,19 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 */
 	void read(GeneralRandomAccessFile destination, long length)
 			throws IOException {
+		
+		if (destination == null) {
+			String err = "destination is null";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		if (length == 0) {
+			String err = "read length is set to zero";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		byte[] temp = new byte[Math.min(IRODSFileSystem.BUFFER_SIZE,
 				(int) length)];
 		int n = 0;
@@ -451,11 +514,24 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 */
 	int read(byte[] value, int offset, int length)
 			throws ClosedChannelException, InterruptedIOException, IOException {
+		
+		if (value == null) {
+			String err = "no data sent";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		if (length == 0) {
+			String err = "read length is set to zero";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		int result = 0;
 		if (length + offset > value.length) {
 			log
 					.error("index out of bounds exception, length + offset larger then byte array");
-			throw new IndexOutOfBoundsException(
+			throw new IllegalArgumentException(
 					"length + offset larger than byte array");
 		}
 		int bytesRead = 0;
@@ -482,7 +558,13 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 			log.info("functionID: " + intInfo);
 		}
-
+		
+		if (type == null || type.length() == 0) {
+			String err = "null or blank type";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		StringBuilder headerBuilder = new StringBuilder();
 		headerBuilder.append("<MsgHeader_PI>");
 		headerBuilder.append("<type>");

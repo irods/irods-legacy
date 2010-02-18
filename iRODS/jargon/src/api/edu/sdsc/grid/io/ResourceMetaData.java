@@ -49,7 +49,7 @@ package edu.sdsc.grid.io;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public interface ResourceMetaData extends StandardMetaData {
-	
+
 	public static final String COLL_RESOURCE_NAME = "Coll Resource Name";
 	public static final String RESOURCE_NAME = "Resource Name";
 	public static final String RESOURCE_ZONE = "Resource Zone Name";

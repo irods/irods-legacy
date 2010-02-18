@@ -84,9 +84,7 @@ import edu.sdsc.grid.io.local.LocalRandomAccessFile;
  * @since JARGON1.0
  */
 class SRBCommands {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * A positive debug value turns on debugging. Higher values turn on more,
 	 * maybe.
@@ -339,9 +337,6 @@ class SRBCommands {
 
 	private long date;
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
 	/**
 	 * The SRB socket connection through which all socket activity is directed.
 	 */

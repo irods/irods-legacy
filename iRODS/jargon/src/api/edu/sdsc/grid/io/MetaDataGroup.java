@@ -43,7 +43,6 @@ package edu.sdsc.grid.io;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Vector;
 
 /**
  * A "Meta data group" is a group of meta data fields. Each MetaDataGroup class
@@ -97,13 +96,7 @@ import java.util.Vector;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public class MetaDataGroup implements Comparable {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
+	
 	protected HashMap fields = new HashMap();
 
 	protected String groupName;
@@ -169,7 +162,7 @@ public class MetaDataGroup implements Comparable {
 	 */
 	public MetaDataField getField(String fieldName) {
 		return (MetaDataField) fields.get(fieldName);
-	}
+	}                                                                                                                                                                                                                                    
 
 	/**
 	 * Returns all the fields in the group.

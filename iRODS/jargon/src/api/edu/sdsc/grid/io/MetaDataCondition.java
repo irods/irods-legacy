@@ -79,9 +79,7 @@ package edu.sdsc.grid.io;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public final class MetaDataCondition {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * "=" where the metadata value exactly equals the conditional value.
 	 */
@@ -234,9 +232,6 @@ public final class MetaDataCondition {
 	 */
 	public static final int TABLE = 14;
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
 	/**
 	 * Legal fields depend upon the file server being talked to.
 	 */
@@ -278,12 +273,9 @@ public final class MetaDataCondition {
 	 * The value type for the field.<br>
 	 * Types include: INT, LONG, FLOAT, STRING, DATE, TABLE.
 	 */
-	// don't do type here, but for error check on field
 	int type;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
+	
 	// SCALAR
 	/**
 	 * The constructor is package private and is only called by the
@@ -497,7 +489,6 @@ public final class MetaDataCondition {
 		}
 	}
 
-	// TABLE
 	/**
 	 * Construct a table conditional with the given field names and
 	 * MetaDataTable.
@@ -544,9 +535,6 @@ public final class MetaDataCondition {
 		}
 	}
 
-	// ----------------------------------------------------------------------
-	// Setters & Getters
-	// ----------------------------------------------------------------------
 	/**
 	 * Returns the MetaDataGroup's field object describing the field in the
 	 * condition.

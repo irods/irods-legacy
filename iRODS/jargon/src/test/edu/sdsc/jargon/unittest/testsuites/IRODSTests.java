@@ -8,6 +8,7 @@ import org.junit.runners.Suite;
 
 import edu.sdsc.grid.io.irods.IRODSAccountTest;
 import edu.sdsc.grid.io.irods.IRODSAdminTest;
+import edu.sdsc.grid.io.irods.IRODSAvuTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsCopyToTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsDeleteTest;
 import edu.sdsc.grid.io.irods.IRODSCommandsGetTest;
@@ -68,7 +69,8 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSFileSystemModifyMetadataTest.class,
   IRODSMultiThreadGetAndPutTest.class,
   IRODSThousandFilesTest.class,
-  IRODSCommandsQueryTest.class
+  IRODSCommandsQueryTest.class, 
+  IRODSAvuTest.class
   
 })
 public class IRODSTests {

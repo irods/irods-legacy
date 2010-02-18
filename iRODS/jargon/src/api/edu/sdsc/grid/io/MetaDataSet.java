@@ -47,8 +47,6 @@ import java.util.HashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.sdsc.grid.io.irods.IRODSMetaDataSet;
-
 /**
  * A "Meta data group" is a group of meta data fields. Each MetaDataGroup class
  * includes documentation and introspection methods that describe the group as a

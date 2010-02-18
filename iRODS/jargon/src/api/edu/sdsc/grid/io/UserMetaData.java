@@ -72,9 +72,7 @@ package edu.sdsc.grid.io;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public interface UserMetaData extends StandardMetaData {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
+
 	public final static String USER_ID = "user id";
 	public final static String USER_NAME = "user name";
 	public final static String USER_ADDRESS = "user address";
@@ -91,16 +89,6 @@ public interface UserMetaData extends StandardMetaData {
 	public static final String USER_CREATE_DATE = "User Time created (Unix Time)";
 	public static final String USER_MODIFY_DATE = "User Time last modified (Unix Time)";
 
-	// User Group
-	// public static final String USER_GROUP_ID = "User Group Identifier";
 	public static final String USER_GROUP = "User Group Name";
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Methods
-	// ----------------------------------------------------------------------
 
 }

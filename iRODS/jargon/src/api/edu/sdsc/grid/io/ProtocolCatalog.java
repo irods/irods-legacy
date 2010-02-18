@@ -52,13 +52,7 @@ import java.util.Vector;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public class ProtocolCatalog {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
+	
 	private static Vector protocols = new Vector();
 
 	ProtocolCatalog() {

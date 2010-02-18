@@ -1173,7 +1173,6 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	boolean canRead(boolean update) {
-		MetaDataRecordList[] rl = null;
 		if (update || (pathNameType == PATH_IS_UNKNOWN)
 				|| pathNameType == PATH_IS_FILE) {
 			try {
@@ -1215,7 +1214,6 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	boolean canWrite(boolean update) {
-		MetaDataRecordList[] rl = null;
 		if (update || (pathNameType == PATH_IS_UNKNOWN)
 				|| pathNameType == PATH_IS_FILE) {
 			try {

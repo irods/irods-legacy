@@ -41,14 +41,16 @@
 //
 package edu.sdsc.grid.io.srb;
 
-import edu.sdsc.grid.io.*;
-import edu.sdsc.grid.io.local.*;
-
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.util.HashSet;
 import java.util.Vector;
-import java.util.*;
+
+import edu.sdsc.grid.io.Host;
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataField;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.MetaDataTable;
 
 /**
  * SRBMetaDataCommands handles the SRB server call srbGetDataDirInfo and all
@@ -62,21 +64,12 @@ import java.util.*;
  * @since JARGON1.2
  */
 class SRBMetaDataCommands {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
 	/**
 	 * Keep track of the connection.
 	 */
 	private SRBCommands commands;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
 	/**
 	 * Constructor
 	 *<P>
@@ -99,9 +92,7 @@ class SRBMetaDataCommands {
 			commands = null;
 	}
 
-	// ----------------------------------------------------------------------
 	// Various methods for handling metadata used by srbGetDataDirInfo(...).
-	// ----------------------------------------------------------------------
 	static String getOperator(MetaDataCondition condition) {
 		int operator = condition.getOperator();
 		if (operator == MetaDataCondition.IN) {
@@ -559,9 +550,6 @@ class SRBMetaDataCommands {
 
 		String queryStatement;
 		int fieldID = Integer.MIN_VALUE;
-
-		// if extensible metadata selects are used in this query
-		boolean extensible = false;
 
 		SRBMetaDataRecordList[] recordList = null;
 		SRBMetaDataRecordList[] metaDataNumList = null;
@@ -1030,7 +1018,7 @@ class SRBMetaDataCommands {
 
 					if (style == MetaDataCondition.TABLE) {
 						temp += queryString.getBytes().length; // length (has an
-																// extra null?)
+						// extra null?)
 					} else {
 						temp += queryString.getBytes().length + 1; // length+null
 					}
@@ -1054,10 +1042,10 @@ class SRBMetaDataCommands {
 							conditions[j] = null;
 							if (style == MetaDataCondition.TABLE) {
 								temp += queryString.getBytes().length; // length
-																		// (has
-																		// an
-																		// extra
-																		// null?)
+								// (has
+								// an
+								// extra
+								// null?)
 							} else {
 								temp += queryString.getBytes().length + 1; // length+null
 							}

@@ -131,6 +131,13 @@ class IRODSCommands {
 	 * @throws JargonException
 	 */
 	void connect(IRODSAccount irodsAccount) throws IOException, JargonException {
+		
+		if (irodsAccount == null) {
+			String err = "null irodsAccount";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		Tag message;
 		// irodsAccount was already cloned by the IRODSFileSystem
 		account = irodsAccount;
@@ -220,6 +227,13 @@ class IRODSCommands {
 	 */
 	protected synchronized void setReportedIRODSVersion(
 			String reportedIRODSVersion) {
+		
+		if (reportedIRODSVersion == null) {
+			String err = "null reportedIRODSVersion";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		this.reportedIRODSVersion = reportedIRODSVersion;
 	}
 
@@ -256,7 +270,14 @@ class IRODSCommands {
 	 * @throws IOException
 	 *             if the host cannot be opened or created.
 	 */
-	private Tag sendStartupPacket(IRODSAccount account) throws IOException {
+	private Tag sendStartupPacket(IRODSAccount irodsAccount) throws IOException {
+		
+		if (irodsAccount == null) {
+			String err = "null irodsAccount";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		/*
 		 * String out2 = "<StartupPack_PI>" + "<irodsProt>"+"1"+"</irodsProt>" +
 		 * "<reconnFlag>"+"0"+"</reconnFlag>" +
@@ -272,10 +293,10 @@ class IRODSCommands {
 		Tag startupPacket = new Tag(StartupPack_PI, new Tag[] {
 				new Tag(irodsProt, "1"), new Tag(reconnFlag, "0"),
 				new Tag(connectCnt, "0"),
-				new Tag(proxyUser, account.getUserName()),
-				new Tag(proxyRcatZone, account.getZone()),
-				new Tag(clientUser, account.getUserName()),
-				new Tag(clientRcatZone, account.getZone()),
+				new Tag(proxyUser, irodsAccount.getUserName()),
+				new Tag(proxyRcatZone, irodsAccount.getZone()),
+				new Tag(clientUser, irodsAccount.getUserName()),
+				new Tag(clientRcatZone, irodsAccount.getZone()),
 				new Tag(relVersion, IRODSAccount.getVersion()),
 				new Tag(apiVersion, IRODSAccount.getAPIVersion()),
 				new Tag(option, IRODSAccount.getOption()), });
@@ -299,6 +320,21 @@ class IRODSCommands {
 	 */
 	private String challengeResponse(String challenge, String password)
 			throws SecurityException, IOException {
+		
+		if (challenge == null) {
+			String err = "null challenge";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+
+		if (password == null) {
+			String err = "null password";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		
 		// Convert base64 string to a byte array
 		byte[] chal = null;
 		byte[] temp = Base64.fromString(challenge);
@@ -370,8 +406,29 @@ class IRODSCommands {
 			byte[] errorStream, int errorOffset, int errorLength, byte[] bytes,
 			int byteOffset, int byteStringLength, int intInfo)
 			throws IOException {
-		String out = message.parseTag();
+		
 
+		if (type == null || type.length() == 0) {
+			String err = "null or blank type";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		if (message == null) {
+			String err = "null message";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		
+		String out = message.parseTag();
+		
+		if (out == null || out.length() == 0) {
+			String err = "null or missing message returned from parse";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		if (log.isDebugEnabled()) {
 			log.debug(out);
 		}
@@ -391,7 +448,26 @@ class IRODSCommands {
 	synchronized Tag irodsFunction(String type, Tag message, int errorLength,
 			InputStream errorStream, long byteStringLength,
 			InputStream byteStream, int intInfo) throws IOException {
+		
+		if (type == null || type.length() == 0) {
+			String err = "null or blank type";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
+		if (message == null) {
+			String err = "null message";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+		
 		String out = message.parseTag();
+		
+		if (out == null || out.length() == 0) {
+			String err = "null or missing message returned from parse";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
 
 		if (log.isDebugEnabled()) {
 			log.debug(out);
