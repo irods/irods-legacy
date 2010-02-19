@@ -6868,7 +6868,7 @@ int setOverQuota(rsComm_t *rsComm) {
 
    /* For each defined group limit (if any), get a total usage on that
     * resource for all users in that group: */
-   char mySQL1[]="select sum(quota_usage), UM1.user_id, r_quota_usage.resc_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_main.resc_id = r_quota_usage.resc_id group by UM1.user_id, r_quota_usage.resc_id;";
+   char mySQL1[]="select sum(quota_usage), UM1.user_id, r_quota_usage.resc_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_main.resc_id = r_quota_usage.resc_id group by UM1.user_id, r_quota_usage.resc_id";
 
    /* For each defined group limit on total usage (if any), get a
     * total usage on any resource for all users in that group: */
@@ -6890,7 +6890,9 @@ int setOverQuota(rsComm_t *rsComm) {
    /* Set the over_quota values for per-resource, if any */
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 2");
    status =  cmlExecuteNoAnswerSql(
-#if MY_ICAT
+#if ORA_ICAT
+      "update r_quota_main set quota_over = (select r_quota_usage.quota_usage - r_quota_main.quota_limit from r_quota_usage, r_quota_main where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id) where exists (select 1 from r_quota_usage, r_quota_main where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id)",
+#elif MY_ICAT
       "update r_quota_main, r_quota_usage set r_quota_main.quota_over = r_quota_usage.quota_usage - r_quota_main.quota_limit where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
 #else
       "update r_quota_main set quota_over = quota_usage - quota_limit from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
