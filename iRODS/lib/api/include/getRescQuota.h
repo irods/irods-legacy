@@ -30,17 +30,21 @@ typedef struct getRescQuotaInp {
 
 typedef struct rescQuota {
     char rescName[NAME_LEN];            /* resc Name */
-    char rescGrpName[NAME_LEN];         /* rescGrp Name */
-    int flag;				/* not used */
+    char rescGroupName[NAME_LEN];         /* rescGrp Name */
+    char userId[NAME_LEN];
+    int flag;			
     int dummy;
     rodsLong_t quotaLimit;
     rodsLong_t quotaOverrun;
     struct rescQuota *next;
 } rescQuota_t;
 
+/* definition for flag in rescQuota_t */
+#define GLOBAL_QUOTA	0x1	/* the quota is global */
+
 #define getRescQuotaInp_PI "str rescName[NAME_LEN]; str userName[NAME_LEN]; str zoneHint[MAX_NAME_LEN]; int int flags; int dummy; struct KeyValPair_PI;"
 
-#define rescQuota_PI "str rescName[NAME_LEN]; str userName[NAME_LEN]; str rescGrpName[NAME_LEN]; int int flags; int dummy; struct *rescQuota_PI;"
+#define rescQuota_PI "str rescName[NAME_LEN]; str rescGroupName[NAME_LEN]; str userId[NAME_LEN], int int flags; int dummy; double quotaLimit; double quotaOverrun; struct *rescQuota_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_GET_RESC_QUOTA rsGetRescQuota
@@ -56,6 +60,13 @@ setRescQuota (rsComm_t *rsComm, char *zoneHint, rescGrpInfo_t **myRescGrpInfo);
 int
 getQuotaByResc (rsComm_t *rsComm, char *userName, char *rescName,
 genQueryOut_t **genQueryOut);
+int
+queRescQuota (rescQuota_t **rescQuota, genQueryOut_t *genQueryOut,
+char *rescGroupName);
+int
+fillRescQuotaStruct (rescQuota_t *rescQuota, char *tmpQuotaLimit,
+char *tmpQuotaOver, char *tmpRescName, char *tmpQuotaRescId,
+char *tmpQuotaUserId, char *rescGroupName);
 #else
 #define RS_GET_RESC_QUOTA NULL
 #endif
