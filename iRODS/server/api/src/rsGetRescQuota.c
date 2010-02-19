@@ -190,7 +190,7 @@ char *tmpQuotaUserId, char *rescGroupName)
 	/* quota by resource */
 	rstrcpy (rescQuota->rescName, tmpRescName, NAME_LEN);
     } else {
-	rescQuota->flag = GLOBAL_QUOTA;
+	rescQuota->flags = GLOBAL_QUOTA;
     } 
     rstrcpy (rescQuota->userId, tmpQuotaUserId, NAME_LEN);
     if (rescGroupName != NULL)
@@ -242,7 +242,7 @@ rescGrpInfo_t **rescGrpInfoHead)
     /* process the quota */
     tmpRescQuota = rescQuota;
     while (tmpRescQuota != NULL) {
-	if ((tmpRescQuota->flag & GLOBAL_QUOTA) > 0) {
+	if ((tmpRescQuota->flags & GLOBAL_QUOTA) > 0) {
 	    /* global limit */
 	    /* get the worst. the higher the overrun, the worse */
 	    if (GlobalQuotaLimit < 0 || 
