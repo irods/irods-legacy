@@ -271,7 +271,7 @@ showQuotas(char *userName, int userOrGroup, int rescOrGlobal)
   Show user quota information
 */
 int
-showUserUsage(char *userName) 
+showUserUsage(char *userName, char *usersZone) 
 {
    genQueryInp_t genQueryInp;
    genQueryOut_t *genQueryOut;
@@ -356,8 +356,14 @@ showUserUsage(char *userName)
 	    j++;
 	    tResult2 = genQueryOut->sqlResult[j].value;
 	    tResult2 += i*genQueryOut->sqlResult[j].len;
-	    printf("%s#%s",tResult,tResult2);
-	    k = strlen(tResult) + 1 + strlen(tResult2);
+	    if (strncmp(tResult2, usersZone, NAME_LEN)==0) {
+	       printf("%s",tResult);
+	       k = strlen(tResult);
+	    }
+	    else {
+	       printf("%s#%s",tResult,tResult2);
+	       k = strlen(tResult) + 1 + strlen(tResult2);
+	    }
 	 }
 	 if (j==4) {
 	    printNice(tResult, 14, "");
@@ -379,6 +385,91 @@ showUserUsage(char *userName)
    }
    return (0);
 }
+
+/*
+  Via a general query, show user group membership
+*/
+int
+showUserGroupMembership(char *userNameIn, char *usersZone) 
+{
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[20];
+   int i1b[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   int i2a[20];
+   char *condVal[10];
+   char v1[BIG_STR];
+   char v2[BIG_STR];
+   int i, j, status;
+   int printCount;
+   char userName[NAME_LEN];
+   char zoneName[NAME_LEN];
+   int showUserZone=1;
+
+   status = parseUserName(userNameIn, userName, zoneName);
+   if (zoneName[0]=='\0') {
+      strncpy(zoneName, usersZone, sizeof zoneName);
+      showUserZone=0;
+   }
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   i1a[0]=COL_USER_GROUP_NAME;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 1;
+
+   i2a[0]=COL_USER_NAME;
+   snprintf(v1,sizeof v1, "='%s'",userName);
+   condVal[0]=v1;
+
+   i2a[1]=COL_USER_ZONE;
+   snprintf(v2,sizeof v2, "='%s'",zoneName);
+   condVal[1]=v2;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   genQueryInp.condInput.len=0;
+
+   genQueryInp.maxRows=MAX_SQL_ROWS;
+   genQueryInp.continueInx=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      printf("Not a member of any group\n");
+      return(0);
+   }
+   if (status!=0) {
+      printError(Conn, status, "rcGenQuery");
+      return(status);
+   }
+
+   printCount=0;
+   if (showUserZone) {
+      printf("User %s#%s is a member of groups: ",userName, zoneName);
+   }
+   else {
+      printf("User %s is a member of groups: ",userName);
+   }
+   for (i=0;i<genQueryOut->rowCnt;i++) {
+      for (j=0;j<genQueryOut->attriCnt;j++) {
+	 char *tResult;
+	 tResult = genQueryOut->sqlResult[j].value;
+	 tResult += i*genQueryOut->sqlResult[j].len;
+	 if (printCount>0) {
+	    printf(", %s",tResult);
+	 }
+	 else {
+	    printf("%s",tResult);
+	 }
+	 printCount++;
+      }
+   }
+   printf("\n");
+   return (0);
+}
+
 
 int
 main(int argc, char **argv) {
@@ -427,7 +518,7 @@ main(int argc, char **argv) {
 
    if (nArgs > 0) {
       if (strncmp(argv[myRodsArgs.optind],"usage",5)==0) {
-	 status = showUserUsage(userName);
+	 status = showUserUsage(userName, myEnv.rodsZone);
       }
       else {
 	 usage();
@@ -455,6 +546,10 @@ main(int argc, char **argv) {
 
       printf("Group global (total) quotas:\n");
       status = showQuotas("", 1, 1);       /* all groups, global */
+
+      if (userName[0]!='\0') {
+	 status = showUserGroupMembership(userName, myEnv.rodsZone);
+      }
    }
    if (quotaTime[0]!='\0') {
       printf("Information was set at %s\n", quotaTime);
