@@ -44,7 +44,7 @@ typedef struct rescQuota {
 
 #define getRescQuotaInp_PI "str rescName[NAME_LEN]; str userName[NAME_LEN]; str zoneHint[MAX_NAME_LEN]; int flags; int dummy; struct KeyValPair_PI;"
 
-#define rescQuota_PI "str rescName[NAME_LEN]; str rescGroupName[NAME_LEN]; str userId[NAME_LEN], int flags; int dummy; double quotaLimit; double quotaOverrun; struct *rescQuota_PI;"
+#define rescQuota_PI "str rescName[NAME_LEN]; str rescGroupName[NAME_LEN]; str userId[NAME_LEN]; int flags; int dummy; double quotaLimit; double quotaOverrun; struct *rescQuota_PI;"
 
 #if defined(RODS_SERVER)
 #define RS_GET_RESC_QUOTA rsGetRescQuota
