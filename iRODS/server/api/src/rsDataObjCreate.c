@@ -17,6 +17,7 @@
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
+#include "getRescQuota.h"
 
 /* rsDataObjCreate - handle dataObj create request.
  *
@@ -466,6 +467,9 @@ rescGrpInfo_t **myRescGrpInfo)
     } else {
         *myRescGrpInfo = rei.rgi;
     }
+
+    status = setRescQuota (rsComm, dataObjInp->objPath, myRescGrpInfo);
+    if (status == SYS_RESC_QUOTA_EXCEEDED) return SYS_RESC_QUOTA_EXCEEDED;
 
     if (strstr (rei.statusStr, "random") == NULL) {
 	/* not a random scheme */

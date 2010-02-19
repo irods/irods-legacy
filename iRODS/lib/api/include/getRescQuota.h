@@ -67,6 +67,8 @@ int
 fillRescQuotaStruct (rescQuota_t *rescQuota, char *tmpQuotaLimit,
 char *tmpQuotaOver, char *tmpRescName, char *tmpQuotaRescId,
 char *tmpQuotaUserId, char *rescGroupName);
+int
+resetRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead);
 #else
 #define RS_GET_RESC_QUOTA NULL
 #endif
@@ -75,5 +77,7 @@ char *tmpQuotaUserId, char *rescGroupName);
 int
 rcGetRescQuota (rcComm_t *conn, getRescQuotaInp_t *getRescQuotaInp,
 rescQuota_t **rescQuota);
+int
+freeAllRescQuota (rescQuota_t *rescQuotaHead);
 
 #endif	/* GET_RESC_QUOTA_H */

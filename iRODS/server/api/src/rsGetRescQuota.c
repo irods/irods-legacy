@@ -203,7 +203,7 @@ int
 setRescQuota (rsComm_t *rsComm, char *zoneHint,
 rescGrpInfo_t **rescGrpInfoHead)
 {
-    rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
+    rescGrpInfo_t *tmpRescGrpInfo;
     getRescQuotaInp_t getRescQuotaInp;
     rescQuota_t *rescQuota = NULL;
     rescQuota_t *tmpRescQuota;
@@ -220,7 +220,10 @@ rescGrpInfo_t **rescGrpInfoHead)
         }
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
-    if (needInit == 0) return 0;
+    if (needInit == 0) {
+        status = resetRescGrpInfoForQuota (rescGrpInfoHead);
+	return status;
+    }
     bzero (&getRescQuotaInp, sizeof (getRescQuotaInp));
     tmpRescGrpInfo = *rescGrpInfoHead;
     rstrcpy (getRescQuotaInp.zoneHint, zoneHint, MAX_NAME_LEN);
@@ -241,10 +244,12 @@ rescGrpInfo_t **rescGrpInfoHead)
     while (tmpRescQuota != NULL) {
 	if ((tmpRescQuota->flag & GLOBAL_QUOTA) > 0) {
 	    /* global limit */
-	    GlobalQuotaLimit = tmpRescQuota->quotaLimit;
 	    /* get the worst. the higher the overrun, the worse */
-	    if (GlobalQuotaOverrun < tmpRescQuota->quotaOverrun)
+	    if (GlobalQuotaLimit < 0 || 
+	      GlobalQuotaOverrun < tmpRescQuota->quotaOverrun) {
+	        GlobalQuotaLimit = tmpRescQuota->quotaLimit;
 		GlobalQuotaOverrun = tmpRescQuota->quotaOverrun; 
+	    }
 	} else {
             tmpRescGrpInfo = *rescGrpInfoHead;
 	    /* update the quota */
@@ -256,39 +261,62 @@ rescGrpInfo_t **rescGrpInfoHead)
 			rescInfo->quotaLimit = tmpRescQuota->quotaLimit;
 			rescInfo->quotaOverrun = tmpRescQuota->quotaOverrun;
 		    }
+		    break;
 		}
 		tmpRescGrpInfo = tmpRescGrpInfo->next;
 	    }
 	}
 	tmpRescQuota = tmpRescQuota->next;
     }
-    /* take out resc that has been overrun and indicate that the quota has 
+    freeAllRescQuota (rescQuota);
+    status = resetRescGrpInfoForQuota (rescGrpInfoHead);
+
+    return status;
+}
+
+int 
+resetRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead)
+{
+    rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
+
+    if (GlobalQuotaLimit == -1) {
+	/* indicate we have already query quota */
+	GlobalQuotaLimit = 0;
+    } else if (GlobalQuotaLimit > 0) {
+	if (GlobalQuotaOverrun >= 0) return SYS_RESC_QUOTA_EXCEEDED;
+    }
+
+    /* take out resc that has been overrun and indicate that the quota has
      * been initialized */
     prevRescGrpInfo = NULL;
     tmpRescGrpInfo = *rescGrpInfoHead;
     while (tmpRescGrpInfo != NULL) {
-	rescGrpInfo_t *nextRescGrpInfo = tmpRescGrpInfo->next;
-	if (tmpRescGrpInfo->rescInfo->quotaOverrun > 0) {
-	    /* overrun the quota. take the resc out */
-	    if (prevRescGrpInfo == NULL) {
-		/* head */
-		*rescGrpInfoHead = nextRescGrpInfo;
-	    } else {
-		prevRescGrpInfo->next = nextRescGrpInfo;
-	    }
-	    if (*rescGrpInfoHead != NULL) {
-		status = (*rescGrpInfoHead)->status = SYS_RESC_QUOTA_EXCEEDED;
-	    }
-	    free (tmpRescGrpInfo);
-	} else {
+        rescGrpInfo_t *nextRescGrpInfo = tmpRescGrpInfo->next;
+        if (tmpRescGrpInfo->rescInfo->quotaLimit > 0 &&
+          tmpRescGrpInfo->rescInfo->quotaOverrun >= 0) {
+            /* overrun the quota. take the resc out */
+            if (prevRescGrpInfo == NULL) {
+                /* head */
+                *rescGrpInfoHead = nextRescGrpInfo;
+            } else {
+                prevRescGrpInfo->next = nextRescGrpInfo;
+            }
+            if (*rescGrpInfoHead != NULL) {
+                (*rescGrpInfoHead)->status = SYS_RESC_QUOTA_EXCEEDED;
+            }
+            free (tmpRescGrpInfo);
+        } else {
             if (tmpRescGrpInfo->rescInfo->quotaLimit == -1) {
+	        /* indicate we have already query quota */
                 tmpRescGrpInfo->rescInfo->quotaLimit = 0;
-	    }
-	    prevRescGrpInfo = tmpRescGrpInfo;
-	}
-	tmpRescGrpInfo = nextRescGrpInfo;
+            }
+            prevRescGrpInfo = tmpRescGrpInfo;
+        }
+        tmpRescGrpInfo = nextRescGrpInfo;
     }
-
-    return status;
+    if (rescGrpInfoHead == NULL) 
+	return SYS_RESC_QUOTA_EXCEEDED;
+    else 
+	return 0;
 }
 

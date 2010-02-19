@@ -1325,6 +1325,20 @@ freeAllRescGrpInfo (rescGrpInfo_t *rescGrpInfoHead)
 }
 
 int
+freeAllRescQuota (rescQuota_t *rescQuotaHead)
+{
+    rescQuota_t *tmpRescQuota, *nextRescQuota;
+
+    tmpRescQuota = rescQuotaHead;
+    while (tmpRescQuota != NULL) {
+        nextRescQuota = tmpRescQuota->next;
+        free (tmpRescQuota);
+        tmpRescQuota = nextRescQuota;
+    }
+    return (0);
+}
+
+int
 parseMultiStr (char *strInput, strArray_t *strArray)
 {
     char *startPtr, *endPtr;
