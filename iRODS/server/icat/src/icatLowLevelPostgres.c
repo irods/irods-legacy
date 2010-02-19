@@ -66,7 +66,8 @@ logPsgError(int level, HENV henv, HDBC hdbc, HSTMT hstmt)
    while (SQLError(henv, hdbc, hstmt, sqlstate, &sqlcode, msg,
 		   SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
 #ifdef MY_ICAT
-      if (strcmp(sqlstate,"23000") == 0 && strstr((char *)msg, "Duplicate entry")) {
+      if (strcmp((char *)sqlstate,"23000") == 0 && 
+          strstr((char *)msg, "Duplicate entry")) {
 #else
       if (strstr((char *)msg, "duplicate key")) {
 #endif
