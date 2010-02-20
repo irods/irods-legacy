@@ -468,7 +468,8 @@ rescGrpInfo_t **myRescGrpInfo)
         *myRescGrpInfo = rei.rgi;
     }
 
-    status = setRescQuota (rsComm, dataObjInp->objPath, myRescGrpInfo);
+    status = setRescQuota (rsComm, dataObjInp->objPath, myRescGrpInfo,
+      dataObjInp->dataSize);
     if (status == SYS_RESC_QUOTA_EXCEEDED) return SYS_RESC_QUOTA_EXCEEDED;
 
     if (strstr (rei.statusStr, "random") == NULL) {

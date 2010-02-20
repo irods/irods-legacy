@@ -56,7 +56,8 @@ int
 _rsGetRescQuota (rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,
 rescQuota_t **rescQuota);
 int
-setRescQuota (rsComm_t *rsComm, char *zoneHint, rescGrpInfo_t **myRescGrpInfo);
+setRescQuota (rsComm_t *rsComm, char *zoneHint, 
+rescGrpInfo_t **myRescGrpInfo, rodsLong_t dataSize);
 int
 getQuotaByResc (rsComm_t *rsComm, char *userName, char *rescName,
 genQueryOut_t **genQueryOut);
@@ -68,7 +69,7 @@ fillRescQuotaStruct (rescQuota_t *rescQuota, char *tmpQuotaLimit,
 char *tmpQuotaOver, char *tmpRescName, char *tmpQuotaRescId,
 char *tmpQuotaUserId, char *rescGroupName);
 int
-resetRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead);
+chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize);
 #else
 #define RS_GET_RESC_QUOTA NULL
 #endif

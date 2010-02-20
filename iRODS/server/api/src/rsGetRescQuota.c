@@ -201,7 +201,7 @@ char *tmpQuotaUserId, char *rescGroupName)
 
 int
 setRescQuota (rsComm_t *rsComm, char *zoneHint,
-rescGrpInfo_t **rescGrpInfoHead)
+rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
 {
     rescGrpInfo_t *tmpRescGrpInfo;
     getRescQuotaInp_t getRescQuotaInp;
@@ -221,7 +221,7 @@ rescGrpInfo_t **rescGrpInfoHead)
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
     if (needInit == 0) {
-        status = resetRescGrpInfoForQuota (rescGrpInfoHead);
+        status = chkRescGrpInfoForQuota (rescGrpInfoHead, dataSize);
 	return status;
     }
     bzero (&getRescQuotaInp, sizeof (getRescQuotaInp));
@@ -269,21 +269,22 @@ rescGrpInfo_t **rescGrpInfoHead)
 	tmpRescQuota = tmpRescQuota->next;
     }
     freeAllRescQuota (rescQuota);
-    status = resetRescGrpInfoForQuota (rescGrpInfoHead);
+    status = chkRescGrpInfoForQuota (rescGrpInfoHead, dataSize);
 
     return status;
 }
 
 int 
-resetRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead)
+chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
 {
     rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
 
+    if (dataSize < 0) dataSize = 0;
     if (GlobalQuotaLimit == -1) {
 	/* indicate we have already query quota */
 	GlobalQuotaLimit = 0;
     } else if (GlobalQuotaLimit > 0) {
-	if (GlobalQuotaOverrun >= 0) return SYS_RESC_QUOTA_EXCEEDED;
+	if (GlobalQuotaOverrun + dataSize >= 0) return SYS_RESC_QUOTA_EXCEEDED;
     }
 
     /* take out resc that has been overrun and indicate that the quota has
@@ -293,7 +294,7 @@ resetRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead)
     while (tmpRescGrpInfo != NULL) {
         rescGrpInfo_t *nextRescGrpInfo = tmpRescGrpInfo->next;
         if (tmpRescGrpInfo->rescInfo->quotaLimit > 0 &&
-          tmpRescGrpInfo->rescInfo->quotaOverrun >= 0) {
+          tmpRescGrpInfo->rescInfo->quotaOverrun + dataSize >= 0) {
             /* overrun the quota. take the resc out */
             if (prevRescGrpInfo == NULL) {
                 /* head */
