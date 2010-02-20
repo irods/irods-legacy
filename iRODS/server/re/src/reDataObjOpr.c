@@ -3494,7 +3494,7 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \since 2.3
  *
- * \author  Jean-Yves Neif
+ * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
  * \remark Terrell Russell - msi documentation, 2009-12-17
@@ -3637,7 +3637,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *
  * \since 2.3
  *
- * \author  Jean-Yves Neif
+ * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
  * \remark Terrell Russell - msi documentation, 2009-12-17
@@ -3755,7 +3755,7 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *
  * \since 2.3
  *
- * \author  Jean-Yves Neif
+ * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
  * \remark Terrell Russell - msi documentation, 2009-12-17
