@@ -2962,9 +2962,11 @@ ruleExecInfo_t *rei)
         clearKeyVal (&myExecCmdInp->condInput);
     }
 
-    if (rei->status >= 0) {
+    if (execCmdOut != NULL) {	/* something was written to it */
         fillMsParam (outParam, NULL, ExecCmdOut_MS_T, execCmdOut, NULL);
-    } else {
+    } 
+    
+    if (rei->status < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiExecCmd: rsExecCmd failed for %s, status = %d",
 			    myExecCmdInp->cmd,
