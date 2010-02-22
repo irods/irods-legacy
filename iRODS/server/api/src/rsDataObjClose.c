@@ -310,7 +310,13 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 
         /* check for consistency of the write operation */
 
-        if (L1desc[l1descInx].dataSize > 0) { 
+	if (newSize < 0) {
+	    status = (int) newSize;
+            rodsLog (LOG_ERROR,
+              "_rsDataObjClose: getSizeInVault error for %s, status = %d",
+              L1desc[l1descInx].dataObjInfo->objPath, status);
+            return (status);
+        } else if (L1desc[l1descInx].dataSize > 0) { 
             if (newSize != L1desc[l1descInx].dataSize) {
 	        rodsLog (LOG_NOTICE,
 	          "_rsDataObjClose: size in vault %lld != target size %lld",
