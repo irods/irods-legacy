@@ -322,14 +322,14 @@ chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
 }
 
 int
-updatequotaOverrun (rescInfo_t *rescInfo, rodsLong_t dataSize)
+updatequotaOverrun (rescInfo_t *rescInfo, rodsLong_t dataSize, int flags)
 {
-    if (GlobalQuotaLimit > 0) {
+    if ((flags & GLB_QUOTA) > 0 && GlobalQuotaLimit > 0) {
         GlobalQuotaOverrun += dataSize;
     }
 
     if (rescInfo == NULL) return USER__NULL_INPUT_ERR;
-    if (rescInfo->quotaLimit > 0) {
+    if ((flags & RESC_QUOTA) > 0 && rescInfo->quotaLimit > 0) {
         rescInfo->quotaOverrun += dataSize;
     }
     return 0;

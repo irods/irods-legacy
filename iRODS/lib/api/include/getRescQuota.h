@@ -71,7 +71,11 @@ char *tmpQuotaUserId, char *rescGroupName);
 int
 chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize);
 int
-updatequotaOverrun (rescInfo_t *rescInfo, rodsLong_t dataSize);
+updatequotaOverrun (rescInfo_t *rescInfo, rodsLong_t dataSize, int flags);
+/* definition for flags in updatequotaOverrun */
+#define GLB_QUOTA	0x1	/* update the global quota */
+#define RESC_QUOTA	0x2	/* update the resource quota */
+#define ALL_QUOTA	GLB_QUOTA|RESC_QUOTA
 #else
 #define RS_GET_RESC_QUOTA NULL
 #endif

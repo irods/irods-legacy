@@ -227,7 +227,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp)
             status = phymvCollUtil (conn, collEnt.collName, myRodsEnv,
               rodsArgs, &childDataObjInp);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-                return (status);
+                savedStatus = status;
             }
 	}
     }
