@@ -330,3 +330,4 @@ microsdef_t MicrosTable[] = {
   {"msiDataObjAutoMove", 5, (funcPtr)msiDataObjAutoMove},
   {"msiGetContInxFromGenQueryOut",2,(funcPtr) msiGetContInxFromGenQueryOut},
   {"msiSetACL",4,(funcPtr) msiSetACL},
+  {"msiSetRescQuotaPolicy",1,(funcPtr) msiSetRescQuotaPolicy},

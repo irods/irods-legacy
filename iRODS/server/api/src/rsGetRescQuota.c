@@ -210,11 +210,13 @@ rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
     int needInit = 0;
     int status = 0;
 
-    /* XXXXXX check the rule first */
+    status = chkRescQuotaPolicy (rsComm);
+    if (status != RESC_QUOTA_ON) return 0;
+
     if (rescGrpInfoHead == NULL) return USER__NULL_INPUT_ERR;
     tmpRescGrpInfo = *rescGrpInfoHead;
     while (tmpRescGrpInfo != NULL) {
-        if (tmpRescGrpInfo->rescInfo->quotaLimit == -1) {
+        if (tmpRescGrpInfo->rescInfo->quotaLimit == RESC_QUOTA_UNINIT) {
             needInit = 1;
             break;
         }
@@ -256,8 +258,8 @@ rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
 	    while (tmpRescGrpInfo != NULL) {
 		rescInfo_t *rescInfo = tmpRescGrpInfo->rescInfo;
 		if (strcmp (tmpRescQuota->rescName, rescInfo->rescName) == 0) {
-		    if (rescInfo->quotaLimit == -1 || rescInfo->quotaOverrun <
-                      tmpRescQuota->quotaOverrun) {
+		    if (rescInfo->quotaLimit == RESC_QUOTA_UNINIT || 
+		      rescInfo->quotaOverrun < tmpRescQuota->quotaOverrun) {
 			rescInfo->quotaLimit = tmpRescQuota->quotaLimit;
 			rescInfo->quotaOverrun = tmpRescQuota->quotaOverrun;
 		    }
@@ -280,7 +282,7 @@ chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
     rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
 
     if (dataSize < 0) dataSize = 0;
-    if (GlobalQuotaLimit == -1) {
+    if (GlobalQuotaLimit == RESC_QUOTA_UNINIT) {
 	/* indicate we have already query quota */
 	GlobalQuotaLimit = 0;
     } else if (GlobalQuotaLimit > 0) {
@@ -307,7 +309,7 @@ chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
             }
             free (tmpRescGrpInfo);
         } else {
-            if (tmpRescGrpInfo->rescInfo->quotaLimit == -1) {
+            if (tmpRescGrpInfo->rescInfo->quotaLimit == RESC_QUOTA_UNINIT) {
 	        /* indicate we have already query quota */
                 tmpRescGrpInfo->rescInfo->quotaLimit = 0;
             }
@@ -333,5 +335,20 @@ updatequotaOverrun (rescInfo_t *rescInfo, rodsLong_t dataSize, int flags)
         rescInfo->quotaOverrun += dataSize;
     }
     return 0;
+}
+
+int
+chkRescQuotaPolicy (rsComm_t *rsComm)
+{
+    int status;
+    ruleExecInfo_t rei;
+
+    if (RescQuotaPolicy == RESC_QUOTA_UNINIT) {
+        initReiWithDataObjInp (&rei, rsComm, NULL);
+        status = applyRule ("acRescQuotaPolicy", NULL, &rei, NO_SAVE_REI);
+	return status;
+    } else {
+	return RescQuotaPolicy;
+    }
 }
 

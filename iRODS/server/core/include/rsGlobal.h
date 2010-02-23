@@ -67,6 +67,8 @@ char remoteSID[MAX_FED_RSIDS] [MAX_PASSWORD_LEN];  /* Remote Zone SIDs */
 /* quota for all resources for this user in bytes */
 rodsLong_t GlobalQuotaLimit;	/* quota for all resources for this user */
 rodsLong_t GlobalQuotaOverrun;  /* quota overrun for this user */
+int RescQuotaPolicy;		/* can be RESC_QUOTA_UNINIT, RESC_QUOTA_OFF or
+				 * RESC_QUOTA_ON */
 
 #endif	/* RS_GLOBAL_H */
 

@@ -10,6 +10,7 @@
 
 #include "reSysDataObjOpr.h"
 #include "genQuery.h"
+#include "getRescQuota.h"
 
 
 /**
@@ -1604,5 +1605,60 @@ msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
     rei->status = numProc;
 
     return (numProc);
+}
+
+/**
+ * \fn msiSetRescQuotaPolic (msParam_t *xflag, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets the resource quota to on or off.
+ * 
+ * \module core
+ * 
+ * \since 2.3
+ * 
+ * \author  Mike Wan
+ * \date    2010-02
+ * 
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acRescQuotaPolicy||msiSetRescQuotaPolicy(off)|nop
+ *
+ * \param[in] xflag - Required - a msParam of type STR_MS_T. 
+ *     "on" - enable Resource Quota enforcement.      
+ *     "off" disable setResource Quota enforcement (default).
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence None, 
+ * \DolVarModified RescQuotaPolicy.
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval RESC_QUOTA_OFF or RESC_QUOTA_ON.
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
+{
+    char *flag;
+
+    flag = (char *) xflag->inOutStruct;
+
+    RE_TEST_MACRO ("    Calling msiSetRescQuotaPolic")
+
+    if (strcmp (flag, "on") == 0) {
+	rei->status = RescQuotaPolicy = RESC_QUOTA_ON;
+    } else {
+	rei->status = RescQuotaPolicy = RESC_QUOTA_OFF;
+    }
+    return (rei->status);
 }
 

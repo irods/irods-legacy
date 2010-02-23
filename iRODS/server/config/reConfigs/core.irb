@@ -522,6 +522,14 @@ acPreProcForGenQuery(*genQueryInpStr)||nop|nop
 #
 #acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||writeLine(serverLog,"TEST:acPostProcForGenQuery and Status = *genQueryStatusStr")|nop
 acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||nop|nop
+# 50) acRescQuotaPolicy - This rule set the policy for resource quota.
+# Only one function can be called:
+#    msiSetRescQuotaPolicy() - This microservice set whether the Resource
+#      Quota should be enforced. Valid value for flag are 
+#      "on" - enable Resource Quota enforcement. 
+#      "off" disable setResource Quota enforcement (default). 
+# acRescQuotaPolicy||msiSetRescQuotaPolicy(off)|nop
+acRescQuotaPolicy||msiSetRescQuotaPolicy(off)|nop
 #
 #
 # ----------------------------------------------------------------------------

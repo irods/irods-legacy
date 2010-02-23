@@ -16,6 +16,7 @@
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "getRemoteZoneResc.h"
+#include "getRescQuota.h"
 #ifdef HPSS
 #include "hpssFileDriver.h"
 #endif
@@ -1450,7 +1451,7 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
 	} else {
 	    myRescInfo->rescStatus = INT_RESC_STATUS_UP;
 	}
-	myRescInfo->quotaLimit = -1;	/* have not been initialized yet */
+	myRescInfo->quotaLimit = RESC_QUOTA_UNINIT;	/* not initialized */
 	queResc (myRescInfo, NULL, &RescGrpInfo, BOTTOM_FLAG);
     }
     return (0);
@@ -1560,8 +1561,9 @@ initAgent (rsComm_t *rsComm)
 
     /* Initialize the global quota */
 
-    GlobalQuotaLimit = -1;
+    GlobalQuotaLimit = RESC_QUOTA_UNINIT;
     GlobalQuotaOverrun = 0;
+    RescQuotaPolicy = RESC_QUOTA_UNINIT;	
 
     seedRandom ();
 
