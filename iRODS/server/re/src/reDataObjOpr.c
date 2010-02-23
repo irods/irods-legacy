@@ -2786,6 +2786,7 @@ ruleExecInfo_t *rei)
     rsComm_t *rsComm;
     dataObjInp_t dataObjInp, *myDataObjInp;
     msParamArray_t *outParamArray = NULL;
+    char *rsyncMode;
 
     RE_TEST_MACRO ("    Calling msiDataObjRsync")
 
@@ -2831,6 +2832,23 @@ ruleExecInfo_t *rei)
 
     /* just call rsDataObjRsync for now. client must supply the chksum of
      * the local file. Could ask the client to do a chksum first */
+
+    rsyncMode = getValByKey (&myDataObjInp->condInput, RSYNC_MODE_KW);
+    if (rsyncMode == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiDataObjRsync: RSYNC_MODE_KW input is missing");
+        rei->status = USER_RSYNC_NO_MODE_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0 ||
+      strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
+        rodsLog (LOG_ERROR,
+          "msiDataObjRsync: local/iRods rsync not supported for %s",
+          myDataObjInp->objPath);
+        rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
+        return (rei->status);
+    }
 
     rei->status = rsDataObjRsync (rsComm, myDataObjInp, &outParamArray);
 
