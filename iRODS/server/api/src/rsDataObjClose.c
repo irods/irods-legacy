@@ -23,6 +23,7 @@
 #include "subStructFileClose.h"
 #include "regDataObj.h"
 #include "dataObjRepl.h"
+#include "getRescQuota.h"
 
 #ifdef LOG_TRANSFERS
 #include <sys/time.h>
@@ -467,6 +468,9 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
             }
             status = rsRegReplica (rsComm, &regReplicaInp);
             clearKeyVal (&regReplicaInp.condInput);
+	    /* update quota overrun */
+	    updatequotaOverrun (destDataObjInfo->rescInfo, 
+	      destDataObjInfo->dataSize);
 	}
 	if (chksumStr != NULL) {
 	    free (chksumStr);
@@ -539,6 +543,11 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         if (status < 0) {
             return (status);
         }
+	if (L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
+            /* update quota overrun */
+            updatequotaOverrun (L1desc[l1descInx].dataObjInfo->rescInfo,
+              newSize);
+	}
     }
 
     if (chksumStr != NULL) {

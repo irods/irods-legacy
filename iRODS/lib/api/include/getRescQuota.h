@@ -70,6 +70,8 @@ char *tmpQuotaOver, char *tmpRescName, char *tmpQuotaRescId,
 char *tmpQuotaUserId, char *rescGroupName);
 int
 chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize);
+int
+updatequotaOverrun (rescInfo_t *rescInfo, rodsLong_t dataSize);
 #else
 #define RS_GET_RESC_QUOTA NULL
 #endif

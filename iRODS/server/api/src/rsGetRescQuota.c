@@ -315,9 +315,23 @@ chkRescGrpInfoForQuota (rescGrpInfo_t **rescGrpInfoHead, rodsLong_t dataSize)
         }
         tmpRescGrpInfo = nextRescGrpInfo;
     }
-    if (rescGrpInfoHead == NULL) 
+    if (rescGrpInfoHead == NULL || *rescGrpInfoHead == NULL) 
 	return SYS_RESC_QUOTA_EXCEEDED;
     else 
 	return 0;
+}
+
+int
+updatequotaOverrun (rescInfo_t *rescInfo, rodsLong_t dataSize)
+{
+    if (GlobalQuotaLimit > 0) {
+        GlobalQuotaOverrun += dataSize;
+    }
+
+    if (rescInfo == NULL) return USER__NULL_INPUT_ERR;
+    if (rescInfo->quotaLimit > 0) {
+        rescInfo->quotaOverrun += dataSize;
+    }
+    return 0;
 }
 
