@@ -417,7 +417,7 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
 
                 if (status < 0 && status != CAT_NO_ROWS_FOUND &&
                  status != SYS_SPEC_COLL_OBJ_NOT_EXIST) {
-                    return (status);
+		    savedStatus = status;
                 }
 #if 0
             }

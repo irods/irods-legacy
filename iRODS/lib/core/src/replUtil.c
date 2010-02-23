@@ -354,7 +354,7 @@ rodsRestart_t *rodsRestart)
             status = replCollUtil (conn, collEnt.collName, myRodsEnv,
               rodsArgs, &childDataObjInp, rodsRestart);
             if (status < 0 && status != CAT_NO_ROWS_FOUND) {
-                return (status);
+                savedStatus = status;
             }
 	}
     }
