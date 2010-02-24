@@ -2552,7 +2552,9 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies whether the
  *	path to be registered is a directory. A keyword string "collection" 
  *	indicates the path is a directory. A "null" string indicates the path 
- *	is a file.
+ *	is a file.  A "mountPoint" (MOUNT_POINT_STR) means mounting the file
+ *      directory given in inpParam3. A "linkPoint" (LINK_POINT_STR)
+ *      means soft link the collection given in inpParam3.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -2613,8 +2615,8 @@ ruleExecInfo_t *rei)
         return (rei->status);
     }
 
-   if ((rei->status = parseMspForCondKw (inpParam4, &myDataObjInp->condInput))
-      < 0) {
+   if ((rei->status = parseMspForPhyPathReg (inpParam4, 
+      &myDataObjInp->condInput)) < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiPhyPathReg: input inpParam4 error. status = %d", rei->status);
         return (rei->status);

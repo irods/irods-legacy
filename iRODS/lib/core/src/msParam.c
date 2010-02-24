@@ -794,6 +794,35 @@ parseMspForCondKw (msParam_t *inpParam, keyValPair_t *condInput)
 }
 
 int
+parseMspForPhyPathReg (msParam_t *inpParam, keyValPair_t *condInput)
+{
+    char *tmpStr;
+
+    if (inpParam != NULL) {
+        if (strcmp (inpParam->type, STR_MS_T) == 0) {
+	    tmpStr = (char *) inpParam->inOutStruct;
+            /* str input */
+            if (tmpStr != NULL && strlen (tmpStr) > 0 &&
+	      strcmp (tmpStr, "null") != 0) {
+		if (strcmp (tmpStr, COLLECTION_KW) == 0) {
+                    addKeyVal (condInput, COLLECTION_KW, "");
+		} else if (strcmp (tmpStr, MOUNT_POINT_STR) == 0) {
+            	    addKeyVal (condInput, COLLECTION_TYPE_KW, MOUNT_POINT_STR);
+		} else if (strcmp (tmpStr, LINK_POINT_STR) == 0) {
+            	    addKeyVal (condInput, COLLECTION_TYPE_KW, LINK_POINT_STR);
+		}
+            }
+        } else {
+            rodsLog (LOG_ERROR,
+              "parseMspForCondKw: Unsupported input Param type %s",
+              inpParam->type);
+            return (USER_PARAM_TYPE_ERR);
+        }
+    }
+    return (0);
+}
+
+int
 parseMspForPosInt (msParam_t *inpParam) 
 {
     int myInt;

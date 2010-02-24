@@ -166,6 +166,8 @@ char *condKw);
 int
 parseMspForCondKw (msParam_t *inpParam, keyValPair_t *condInput);
 int
+parseMspForPhyPathReg (msParam_t *inpParam, keyValPair_t *condInput);
+int
 parseMspForPosInt (msParam_t *inpParam);
 char *
 parseMspForStr (msParam_t *inpParam);
