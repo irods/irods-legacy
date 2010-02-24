@@ -173,6 +173,12 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     } else {
 	backupFlag = 0;
     }
+    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
+        allFlag = 1;
+    } else {    
+        allFlag = 0;
+    }
+
     if (multiCopyFlag == 0 || backupFlag == 1) {
 	/* if one copy per resource, see if a good copy already exist, 
 	 * If it does, the copy is returned in destDataObjInfo. 
@@ -188,7 +194,11 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
                 *outDataObjInfo = *destDataObjInfo;
             }
 	    if (backupFlag == 0) {
-                status = SYS_COPY_ALREADY_IN_RESC;
+		if (allFlag == 1 && myRescGrpInfo->status < 0) {
+		    status = myRescGrpInfo->status;
+		} else {
+                    status = SYS_COPY_ALREADY_IN_RESC;
+		}
 	    } else {
 	        status = 0;
 	    }
@@ -209,12 +219,6 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
 
     /* If destDataObjInfo is not NULL, we will overwrite it. Otherwise
      * replicate to myRescGrpInfo */ 
-
-    if (getValByKey (&dataObjInp->condInput, ALL_KW) != NULL) {
-        allFlag = 1;
-    } else {
-        allFlag = 0;
-    }
 
     if (destDataObjInfo != NULL) {
         status = _rsDataObjReplUpdate (rsComm, dataObjInp, dataObjInfoHead,
@@ -416,7 +420,12 @@ dataObjInfo_t *outDataObjInfo)
         tmpRescGrpInfo = tmpRescGrpInfo->next;
     }
 
-    return (savedStatus);
+    if (savedStatus == 0 && destRescGrpInfo->status < 0) {
+	/* resource down or quoto overrun */
+	return destRescGrpInfo->status;
+    } else { 
+        return (savedStatus);
+    }
 }
 
 #if 0	/* deplicated */
