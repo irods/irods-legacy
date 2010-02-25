@@ -331,7 +331,7 @@ showUserUsage(char *userName, char *usersZone)
    genQueryInp.continueInx=0;
    status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
    if (status == CAT_NO_ROWS_FOUND) {
-      printf("No records found, run 'iadmin cu' to set calcuate usage\n");
+      printf("No records found, run 'iadmin cu' to calculate usage\n");
       return(0);
    }
    if (status!=0) {
