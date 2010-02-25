@@ -346,9 +346,12 @@ chkRescQuotaPolicy (rsComm_t *rsComm)
     if (RescQuotaPolicy == RESC_QUOTA_UNINIT) {
         initReiWithDataObjInp (&rei, rsComm, NULL);
         status = applyRule ("acRescQuotaPolicy", NULL, &rei, NO_SAVE_REI);
-	return status;
-    } else {
-	return RescQuotaPolicy;
+	if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "queRescQuota: acRescQuotaPolicy error status = %d", status);
+	    RescQuotaPolicy = RESC_QUOTA_OFF;
+	}
     }
+    return RescQuotaPolicy;
 }
 
