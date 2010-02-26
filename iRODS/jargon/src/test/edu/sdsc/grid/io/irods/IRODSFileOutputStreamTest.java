@@ -457,7 +457,7 @@ public class IRODSFileOutputStreamTest {
 		String testFileName = "testWriteToIRODSFileOutputStreamOverwriteDifferentDataTestForNPE.txt";
 		String expectedAttribName = "testattrib1";
 		String expectedAttribValue = "testvalue1";
-		
+
 		// 1. Created an empty IRODSFile.
 		// now open an output stream and try to overwrite the same file
 
@@ -491,8 +491,7 @@ public class IRODSFileOutputStreamTest {
 
 		TestCase.assertTrue("i cannot write an output stream", irodsFile
 				.canWrite());
-		
-	
+
 		String myBytes = "ajjjjjjjjjjjjjjjjjjjf94949fjg94fj9jfasdofalkdfjfkdfjksdfjsiejfesifslas;efias;efiadfkadfdffjjjjjfeiiiiiiiiiiiiiii54454545";
 		byte[] myBytesArray = myBytes.getBytes();
 		int byteArraySize = myBytesArray.length;
@@ -500,9 +499,73 @@ public class IRODSFileOutputStreamTest {
 		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
 		irodsFileOutputStream.close();
 
-		
 		irodsFileSystem.close();
-		
+
 	}
 
+	/**
+	 * Bug 72 - IRODSFile.canRead() returns false unexpectedly
+	 */
+	@Test
+	public void testCanRead() throws Exception {
+
+		String testFileName = "testCanRead.png";
+
+		String sourceAbsPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String sourceFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(sourceAbsPath,
+						testFileName, 8);
+
+		String targetIrodsFile = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSFile destination = new IRODSFile(irodsFileSystem, targetIrodsFile);
+
+		IRODSFileOutputStream out = new IRODSFileOutputStream(destination);
+
+		File fileToWrite = new File(sourceFileName);
+		FileInputStream fin;
+		byte[] buff = new byte[1024];
+		// Get the size of the file
+		long length = fileToWrite.length();
+
+		// Open an input stream
+		fin = new FileInputStream(fileToWrite);
+
+		// Read in the bytes
+		int offset = 0;
+		int writeOffset = 0;
+		int numRead = 0;
+		while ((offset < buff.length)
+				&& ((numRead = fin.read(buff, offset, buff.length - offset)) >= 0)) {
+
+			offset += numRead;
+			out.write(buff, writeOffset, numRead);
+			writeOffset += numRead;
+		}
+		// Close our input stream
+		fin.close();
+
+		boolean canRead = destination.canRead();
+		TestCase
+				.assertTrue(
+						"The newly copied file should be readable by the person who just put it.",
+						canRead);
+
+		IRODSFile destination2 = new IRODSFile(irodsFileSystem, targetIrodsFile);
+		boolean canRead2 = destination2.canRead();
+		TestCase
+				.assertTrue(
+						"A new file object should be readable by the person who just put the underlying file.",
+						canRead2);
+		irodsFileSystem.close();
+
+	}
 }
