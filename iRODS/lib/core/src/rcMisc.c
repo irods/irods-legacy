@@ -928,6 +928,8 @@ addStrArray (strArray_t *strArray, char *value)
 	size = size * 2;
     }
 
+    
+    /* XXXXXXX should be replaced by resizeStrArray after 2.3 release */
     if (size != strArray->size || 
       (strArray->len % PTR_ARRAY_MALLOC_LEN) == 0) {
 	int oldSize = strArray->size;
@@ -949,6 +951,36 @@ addStrArray (strArray_t *strArray, char *value)
 
     return (0);
 }
+
+int
+resizeStrArray (strArray_t *strArray, int newSize)
+{
+    int i, newLen;
+    char *newValue;
+
+    if (newSize > strArray->size ||
+      (strArray->len % PTR_ARRAY_MALLOC_LEN) == 0) {
+        int oldSize = strArray->size;
+        /* have to redo it */
+	if (strArray->size > newSize) 
+	    newSize = strArray->size;
+	else
+            strArray->size = newSize;
+        newLen = strArray->len + PTR_ARRAY_MALLOC_LEN;
+        newValue = (char *) malloc (newLen * newSize);
+        memset (newValue, 0, newLen * newSize);
+        for (i = 0; i < strArray->len; i++) {
+            rstrcpy (&newValue[i * newSize], &strArray->value[i * oldSize], 
+	      newSize);
+        }
+        if (strArray->value != NULL)
+            free (strArray->value);
+        strArray->value = newValue;
+    }
+    return 0;
+}
+
+
 
 int
 addIntArray (intArray_t *intArray, int value)

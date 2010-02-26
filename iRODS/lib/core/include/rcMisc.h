@@ -79,6 +79,8 @@ addInxVal (inxValPair_t *inxValPair, int inx, char *value);
 int
 addStrArray (strArray_t *strArray, char *value);
 int
+resizeStrArray (strArray_t *strArray, int newSize);
+int
 queDataObjInfo (dataObjInfo_t **dataObjInfoHead, dataObjInfo_t *dataObjInfo,
 int singleInfoFlag, int topFlag);
 int

@@ -25,7 +25,7 @@ main(int argc, char **argv) {
     msParamArray_t msParamArray;
 
     int connFlag = 0;
-    char saveFile[100];
+    char saveFile[MAX_NAME_LEN];
 
     optStr = "ZhlvF:";
    
@@ -84,9 +84,10 @@ main(int argc, char **argv) {
 	    myargv[1] = saveFile;
 	    myargc = 2;
 	    myoptind = 0;
-	    snprintf(saveFile,99,"/tmp/tmpiruleFile.%i.%i.ir",(unsigned int) time(0),getpid());
+	    snprintf(saveFile,MAX_NAME_LEN,"/tmp/tmpiruleFile.%i.%i.ir",
+	      (unsigned int) time(0),getpid());
 	    status = parseCmdLinePath (myargc,myargv,myoptind,&myEnv,
-				       UNKNOWN_OBJ_T, UNKNOWN_FILE_T, 0, &rodsPathInp);
+		       UNKNOWN_OBJ_T, UNKNOWN_FILE_T, 0, &rodsPathInp);
 	    status = getUtil (conn, &myEnv, &myRodsArgs, &rodsPathInp);
 	    if (status < 0) {
 	      rcDisconnect(conn);
@@ -247,7 +248,7 @@ parseMsInputParam (int argc, char **argv, int optInd,
     int status, i,j;
     char *value;
     int nInput;
-    char line[NAME_LEN];
+    char line[MAX_NAME_LEN];
     int promptF = 0;
     int labelF = 0;
     if (inBuf == NULL || strcmp (inBuf, "null") == 0) {
@@ -265,6 +266,7 @@ parseMsInputParam (int argc, char **argv, int optInd,
 	execMyRuleInp->inpParamArray = NULL;
         return (status);
     }
+    resizeStrArray (&strArray, MAX_NAME_LEN);
     value = strArray.value;
     /* each string is supposed to have to format label=value */
     for (i = 0; i < nInput; i++ ) {
@@ -286,7 +288,11 @@ parseMsInputParam (int argc, char **argv, int optInd,
 	for (j = 0; j < strArray.len; j++) {
 	  if (strstr(&value[j * strArray.size],argv[optInd + i]) == &value[j * strArray.size]){
 	    *tmpPtr = '=';
+#if 0	/* fix a not enugh space bug. MW */
 	    rstrcpy (&value[j * strArray.size],argv[optInd + i],NAME_LEN);
+#else
+	    rstrcpy (&value[j * strArray.size],argv[optInd + i],strArray.size);
+#endif
 	    break;
 	  }
 	}
@@ -300,7 +306,13 @@ parseMsInputParam (int argc, char **argv, int optInd,
 	  return(CAT_INVALID_ARGUMENT);
 	if ((tmpPtr = strstr (valPtr, "=")) != NULL) {
 	  tmpPtr++;
-	  rstrcpy (tmpPtr,argv[optInd + i], (int) NAME_LEN - (tmpPtr - valPtr + 1));
+#if 0	/* fix a not enugh space bug. MW */
+	  rstrcpy (tmpPtr,argv[optInd + i], 
+	   (int) NAME_LEN - (tmpPtr - valPtr + 1));
+#else
+	  rstrcpy (tmpPtr,argv[optInd + i], 
+	   strArray.size - (tmpPtr - valPtr + 1));
+#endif
 	}
       }
     }
@@ -323,7 +335,7 @@ parseMsInputParam (int argc, char **argv, int optInd,
 		 for the input value 
 	      */
 	      printf("Default %s=%s\n    New %s=",valPtr,tmpPtr+1,valPtr);
-	      if (fgets(line,NAME_LEN,stdin) == NULL)
+	      if (fgets(line,MAX_NAME_LEN,stdin) == NULL)
 		return(CAT_INVALID_ARGUMENT);
 	      if ((line[strlen(line)-1] = '\n')) 
 		line[strlen(line)-1] = '\0';
@@ -337,7 +349,7 @@ parseMsInputParam (int argc, char **argv, int optInd,
 	    else if ( promptF == 1) {
 	      /* the user has asked for prompting */
 	      printf("Current %s=%s\n    New %s=",valPtr,tmpPtr,valPtr);
-	      if (fgets(line,NAME_LEN,stdin) == NULL)
+	      if (fgets(line,MAX_NAME_LEN,stdin) == NULL)
 		return(CAT_INVALID_ARGUMENT);
 	      if ((line[strlen(line)-1] = '\n')) 
 		line[strlen(line)-1] = '\0';
