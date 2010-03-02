@@ -187,6 +187,12 @@ portalOprOut_t **portalOprOut)
     l3descInx = L1desc[l1descInx].l3descInx;
 
     initDataOprInp (&dataOprInp, l1descInx, PUT_OPR);
+    /* add RESC_NAME_KW for getNumThreads */
+    if (L1desc[l1descInx].dataObjInfo != NULL && 
+      L1desc[l1descInx].dataObjInfo->rescInfo != NULL) {
+        addKeyVal (&dataOprInp.condInput, RESC_NAME_KW, 
+          L1desc[l1descInx].dataObjInfo->rescInfo->rescName);
+    }
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         status =  remoteDataPut (rsComm, &dataOprInp, portalOprOut,
 	L1desc[l1descInx].remoteZoneHost);
@@ -198,6 +204,7 @@ portalOprOut_t **portalOprOut)
         (*portalOprOut)->l1descInx = l1descInx;
 	L1desc[l1descInx].bytesWritten = dataOprInp.dataSize;
     }
+    clearKeyVal (&dataOprInp.condInput);
     return (status);
 }
 

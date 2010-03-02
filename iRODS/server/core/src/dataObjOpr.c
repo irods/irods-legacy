@@ -852,11 +852,14 @@ _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
 
 int
 getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr, 
-keyValPair_t *condInput)
+keyValPair_t *condInput, char *destRescName, char *srcRescName)
 {
     ruleExecInfo_t rei;
     dataObjInp_t doinp;
-    int numThr, status;
+    int status;
+    int numDestThr = -1;
+    int numSrcThr = -1;;
+    rescGrpInfo_t *rescGrpInfo;
 
     if (inpNumThr == NO_THREADING)
         return 0;
@@ -888,17 +891,61 @@ keyValPair_t *condInput)
 
     initReiWithDataObjInp (&rei, rsComm, &doinp);
 
-    status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-	  "getNumThreads: acGetNumThreads error, status = %d",
-	  status);
-    } else {
-	numThr = rei.status;
+    if (destRescName != NULL) {
+	rescGrpInfo = NULL;
+        status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
+        if (status >= 0) {
+	    rei.rgi = rescGrpInfo;
+            status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
+	    freeRescGrpInfo (rescGrpInfo);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+	          "getNumThreads: acGetNumThreads error, status = %d",
+	          status);
+            } else {
+	        numDestThr = rei.status;
+	        if (numDestThr == 0) return 0;
+	    }
+        }
     }
 
-    return (numThr);
+    if (srcRescName != NULL) {
+	if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
+	    return numDestThr;
+	rescGrpInfo = NULL;
+        status = resolveAndQueResc (srcRescName, NULL, &rescGrpInfo);
+        if (status >= 0) {
+            rei.rgi = rescGrpInfo;
+            status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
+	    freeRescGrpInfo (rescGrpInfo);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "getNumThreads: acGetNumThreads error, status = %d",
+                  status);
+            } else {
+                numSrcThr = rei.status;
+	        if (numSrcThr == 0) return 0;
+            }
+	}
+    }
+
+    if (numDestThr > 0) return numDestThr;
+    if (numSrcThr > 0) return numSrcThr;
+
+    /* should not be here. do one with no resource */
+    rei.rgi = NULL;
+    status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "getNumThreads: acGetNumThreads error, status = %d",
+          status);
+	return 0;
+    } else {
+        if (rei.status > 0)
+	    return rei.status;
+	else
+            return 0;
+    }
 }
 
 int

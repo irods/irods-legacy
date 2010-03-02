@@ -96,10 +96,10 @@
 #define LARGE_SPACE     1000000000
 
 #ifdef PARA_OPR
-#define MAX_NUM_TRAN_THR        4
-#define MAX_NUM_CONFIG_TRAN_THR        16
+#define DEF_NUM_TRAN_THR        4
+#define MAX_NUM_CONFIG_TRAN_THR        32
 #else
-#define MAX_NUM_TRAN_THR        1
+#define DEF_NUM_TRAN_THR        1
 #define MAX_NUM_CONFIG_TRAN_THR        1
 #endif
 #define SZ_PER_TRAN_THR         (32*1024*1024)

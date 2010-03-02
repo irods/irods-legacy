@@ -96,7 +96,7 @@ rcDataObjPut (rcComm_t *conn, dataObjInp_t *dataObjInp, char *locFilePath)
               portalOprOut->portList.portNum, portalOprOut->portList.cookie);
 	}
 	/* some sanity check */
-	if (portalOprOut->numThreads >= 20 * MAX_NUM_TRAN_THR) {
+	if (portalOprOut->numThreads >= 20 * DEF_NUM_TRAN_THR) {
     	    rcOprComplete (conn, SYS_INVALID_PORTAL_OPR);
     	    free (portalOprOut);
 	    return (SYS_INVALID_PORTAL_OPR);

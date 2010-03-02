@@ -655,6 +655,7 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     int status;
     int replStatus;
     int destRescClass;
+    char *destRescName, *srcRescName;
     int srcRescClass = getRescClass (inpSrcDataObjInfo->rescInfo);
     dataObjInfo_t *cacheDataObjInfo = NULL;
     dataObjInp_t myDataObjInp, *l1DataObjInp;
@@ -765,9 +766,25 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
         L1desc[destL1descInx].stageFlag = STAGE_SRC;
     }
 
+    if (destRescInfo != NULL)
+	destRescName = destRescInfo->rescName;
+    else
+	destRescName = NULL;
+
+    if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL)
+        srcRescName = srcDataObjInfo->rescInfo->rescName;
+    else
+	srcRescName = NULL;
+
     l1DataObjInp->numThreads = dataObjInp->numThreads =
       getNumThreads (rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
-      NULL);
+      NULL, destRescName, srcRescName);
+
+    /* XXXXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
+    if (l1DataObjInp->numThreads == 0 && 
+      l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF) {
+	l1DataObjInp->numThreads = dataObjInp->numThreads = 1;
+    }
 
     if (l1DataObjInp->numThreads > 0 && 
       L1desc[destL1descInx].stageFlag == NO_STAGING) {

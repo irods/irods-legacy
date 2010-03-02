@@ -45,8 +45,10 @@ transStat_t **transStat)
 	return status;
     }
 
+#if 0
     *transStat = malloc (sizeof (transStat_t));
     memset (*transStat, 0, sizeof (transStat_t));
+#endif
 
     if (strcmp (srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
         rodsLog (LOG_ERROR,
@@ -99,25 +101,31 @@ transStat_t **transStat)
     L1desc[destL1descInx].dataSize = 
       L1desc[srcL1descInx].dataObjInfo->dataSize;
 
+#if 0
     (*transStat)->bytesWritten = L1desc[srcL1descInx].dataObjInfo->dataSize;
+#endif
 
-    status = _rsDataObjCopy (rsComm, destL1descInx, existFlag);
+    status = _rsDataObjCopy (rsComm, destL1descInx, existFlag, transStat);
 
+#if 0
     if (status >= 0) {
         (*transStat)->numThreads = destDataObjInp->numThreads;
     }
+#endif
 
     return (status);
 }
 
 int
-_rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag)
+_rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag,
+transStat_t **transStat)
 {
     dataObjInp_t *srcDataObjInp, *destDataObjInp;
     openedDataObjInp_t dataObjCloseInp;
     dataObjInfo_t *srcDataObjInfo, *destDataObjInfo;
     int srcL1descInx;
     int status;
+    char *destRescName, *srcRescName;
 
     destDataObjInp = L1desc[destL1descInx].dataObjInp;
     destDataObjInfo = L1desc[destL1descInx].dataObjInfo;
@@ -144,8 +152,24 @@ _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag)
 	    }
 	}
     } else {
+        if (destDataObjInfo != NULL && destDataObjInfo->rescInfo != NULL)
+            destRescName = destDataObjInfo->rescInfo->rescName;
+        else
+            destRescName = NULL;
+
+        if (srcDataObjInfo != NULL && srcDataObjInfo->rescInfo != NULL)
+            srcRescName = srcDataObjInfo->rescInfo->rescName;
+        else
+            srcRescName = NULL;
+
         destDataObjInp->numThreads = getNumThreads (rsComm,
-	 srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL);
+	 srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
+	 destRescName, srcRescName);
+        /* XXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
+        if (destDataObjInp->numThreads == 0 && 
+          srcDataObjInfo->dataSize > MAX_SZ_FOR_SINGLE_BUF) {
+	    destDataObjInp->numThreads = 1;
+        }
         status = dataObjCopy (rsComm, destL1descInx);
     }
 
@@ -153,6 +177,10 @@ _rsDataObjCopy (rsComm_t *rsComm, int destL1descInx, int existFlag)
 
     dataObjCloseInp.l1descInx = destL1descInx;
     if (status >= 0) {
+        *transStat = malloc (sizeof (transStat_t));
+        memset (*transStat, 0, sizeof (transStat_t));
+        (*transStat)->bytesWritten = srcDataObjInfo->dataSize;
+        (*transStat)->numThreads = destDataObjInp->numThreads;
         dataObjCloseInp.bytesWritten = srcDataObjInfo->dataSize;
     }
 

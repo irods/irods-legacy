@@ -1001,13 +1001,16 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
     }
 
     if (strcmp (maxNumThrStr, "default") == 0) {
-        maxNumThr = MAX_NUM_TRAN_THR;
+        maxNumThr = DEF_NUM_TRAN_THR;
     } else {
         maxNumThr = atoi (maxNumThrStr);
-        if (maxNumThr <= 0) {
+        if (maxNumThr < 0) {
             rodsLog (LOG_ERROR,
              "msiSysReplDataObj: Bad input maxNumThr %s", maxNumThrStr);
-            maxNumThr = MAX_NUM_TRAN_THR;
+            maxNumThr = DEF_NUM_TRAN_THR;
+	} else if (maxNumThr == 0) {
+            rei->status = 0;
+            return 0;
         } else if (maxNumThr > MAX_NUM_CONFIG_TRAN_THR) {
 	    rodsLog (LOG_ERROR,
              "msiSysReplDataObj: input maxNumThr %s too large", maxNumThrStr);

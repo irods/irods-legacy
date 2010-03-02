@@ -122,7 +122,7 @@ int
 _dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr);
 int
 getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr, 
-keyValPair_t *condInput);
+keyValPair_t *condInput, char *destRescName, char *srcRescName);
 
 #include "rcMisc.h"
 rodsLong_t 
