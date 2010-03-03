@@ -963,13 +963,13 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
+    portalOprOut = &dataCopyInp->portalOprOut;
     numThreads = portalOprOut->numThreads;
     if (numThreads == 0) {
 	retVal = singleRemLocCopy (rsComm, dataCopyInp);
 	return retVal;
     }
 
-    portalOprOut = &dataCopyInp->portalOprOut;
     dataOprInp = &dataCopyInp->dataOprInp;
     oprType = dataOprInp->oprType;
     dataSize = dataOprInp->dataSize;
