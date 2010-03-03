@@ -1017,7 +1017,7 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
 	    } else {
                 rei->status = 0;
 	    }
-            return 0;
+            return rei->status;
         } else if (maxNumThr > MAX_NUM_CONFIG_TRAN_THR) {
 	    rodsLog (LOG_ERROR,
              "msiSysReplDataObj: input maxNumThr %s too large", maxNumThrStr);
