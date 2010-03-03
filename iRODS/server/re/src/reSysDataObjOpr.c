@@ -1000,6 +1000,7 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
 	}
     }
 
+    doinp = rei->doinp;
     if (strcmp (maxNumThrStr, "default") == 0) {
         maxNumThr = DEF_NUM_TRAN_THR;
     } else {
@@ -1009,7 +1010,13 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
              "msiSysReplDataObj: Bad input maxNumThr %s", maxNumThrStr);
             maxNumThr = DEF_NUM_TRAN_THR;
 	} else if (maxNumThr == 0) {
-            rei->status = 0;
+	    /* XXXXX set this for now since copy cannot support numThreads=0 */
+	    if (doinp->numThreads > 0 && doinp->numThreads <= 
+	      MAX_NUM_CONFIG_TRAN_THR) {
+		rei->status = doinp->numThreads;
+	    } else {
+                rei->status = 0;
+	    }
             return 0;
         } else if (maxNumThr > MAX_NUM_CONFIG_TRAN_THR) {
 	    rodsLog (LOG_ERROR,
@@ -1018,7 +1025,6 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
 	}
     }
 
-    doinp = rei->doinp;
 
     if (doinp->numThreads > 0) {
         numThr = doinp->dataSize / TRANS_BUF_SZ + 1;
