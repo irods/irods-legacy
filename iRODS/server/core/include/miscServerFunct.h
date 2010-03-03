@@ -77,6 +77,12 @@ remToLocPartialCopy (portalTransferInp_t *myInput);
 void
 locToRemPartialCopy (portalTransferInp_t *myInput);
 int
+singleRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
+int
+singleRemToLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
+int
+singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp);
+int
 isUserPrivileged(rsComm_t *rsComm);
 #if !defined(solaris_platform)
 char *regcmp (char *pat, char *end);

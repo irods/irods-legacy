@@ -962,11 +962,16 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
           "remLocCopy: NULL dataCopyInp input");
         return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
+
+    numThreads = portalOprOut->numThreads;
+    if (numThreads == 0) {
+	retVal = singleRemLocCopy (rsComm, dataCopyInp);
+	return retVal;
+    }
+
     portalOprOut = &dataCopyInp->portalOprOut;
     dataOprInp = &dataCopyInp->dataOprInp;
-
     oprType = dataOprInp->oprType;
-    numThreads = portalOprOut->numThreads;
     dataSize = dataOprInp->dataSize;
 
     if (getUdpPortFromPortList (&portalOprOut->portList) != 0) {
@@ -978,10 +983,6 @@ remLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 	return (SYS_UDP_NO_SUPPORT_ERR);
 #endif
     }
-
-    oprType = dataOprInp->oprType;
-    numThreads = portalOprOut->numThreads;
-    dataSize = dataOprInp->dataSize;
 
     if (numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0) {
        rodsLog (LOG_NOTICE,
@@ -1147,7 +1148,9 @@ sameHostCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     dataSize = dataOprInp->dataSize;
 
-    if (numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads <= 0) {
+    if (numThreads == 0) {
+	numThreads = 1;
+    } else if (numThreads > MAX_NUM_CONFIG_TRAN_THR || numThreads < 0) {
        rodsLog (LOG_NOTICE,
          "sameHostCopy: numThreads %d out of range",
          numThreads);
@@ -1967,5 +1970,139 @@ forkAndExec (char *av[])
     status = SYS_NOT_SUPPORTED;
 #endif
     return status;
+}
+
+int
+singleRemLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
+{
+    dataOprInp_t *dataOprInp;
+    int status = 0;
+    int oprType;
+
+    if (dataCopyInp == NULL) {
+        rodsLog (LOG_NOTICE,
+          "remLocCopy: NULL dataCopyInp input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    dataOprInp = &dataCopyInp->dataOprInp;
+    oprType = dataOprInp->oprType;
+
+    if (oprType == COPY_TO_LOCAL_OPR) {
+        status = singleRemToLocCopy (rsComm, dataCopyInp);
+    } else {
+        status = singleLocToRemCopy (rsComm, dataCopyInp);
+    }
+    return status;
+}
+
+int
+singleRemToLocCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
+{
+    dataOprInp_t *dataOprInp;
+    rodsLong_t dataSize;
+    int l1descInx;
+    int destL3descInx;
+    int destRescTypeInx;
+    bytesBuf_t dataObjReadInpBBuf;
+    openedDataObjInp_t dataObjReadInp;
+    int bytesWritten, bytesRead;
+    rodsLong_t totalWritten = 0;
+
+    /* a GET type operation */
+    if (dataCopyInp == NULL) {
+        rodsLog (LOG_NOTICE,
+          "singleRemToLocCopy: NULL dataCopyInp input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    dataOprInp = &dataCopyInp->dataOprInp;
+    l1descInx = dataCopyInp->portalOprOut.l1descInx;
+    destL3descInx = dataOprInp->destL3descInx;
+    destRescTypeInx = dataOprInp->destRescTypeInx;
+    dataSize = dataOprInp->dataSize;
+
+    bzero (&dataObjReadInp, sizeof (dataObjReadInp));
+    dataObjReadInpBBuf.buf = malloc (TRANS_BUF_SZ);
+    dataObjReadInpBBuf.len = dataObjReadInp.len = TRANS_BUF_SZ;
+    dataObjReadInp.l1descInx = l1descInx;
+    while ((bytesRead = rsDataObjRead (rsComm, &dataObjReadInp,
+      &dataObjReadInpBBuf)) > 0) {
+        bytesWritten = _l3Write (rsComm, destRescTypeInx,
+          destL3descInx, dataObjReadInpBBuf.buf, bytesRead);
+
+        if (bytesWritten != bytesRead) {
+           rodsLog (LOG_ERROR,
+            "singleRemToLocCopy: Read %d bytes, Wrote %d bytes.\n ",
+            bytesRead, bytesWritten);
+            free (dataObjReadInpBBuf.buf);
+	    return (SYS_COPY_LEN_ERR);
+	} else {
+	    totalWritten += bytesWritten;
+	}
+    }
+    free (dataObjReadInpBBuf.buf);
+    if (dataSize <= 0 || totalWritten == dataSize) {
+        return (0);
+    } else {
+        rodsLog (LOG_ERROR,
+          "singleRemToLocCopy: totalWritten %lld dataSize %lld mismatch",
+          totalWritten, dataSize);
+        return (SYS_COPY_LEN_ERR);
+    }
+}
+
+int
+singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
+{
+    dataOprInp_t *dataOprInp;
+    rodsLong_t dataSize;
+    int l1descInx;
+    int srcL3descInx;
+    int srcRescTypeInx;
+    bytesBuf_t dataObjWriteInpBBuf;
+    openedDataObjInp_t dataObjWriteInp;
+    int bytesWritten, bytesRead;
+    rodsLong_t totalWritten = 0;
+
+    /* a PUT type operation */
+    if (dataCopyInp == NULL) {
+        rodsLog (LOG_NOTICE,
+          "singleRemToLocCopy: NULL dataCopyInp input");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+    dataOprInp = &dataCopyInp->dataOprInp;
+    l1descInx = dataCopyInp->portalOprOut.l1descInx;
+    srcL3descInx = dataOprInp->srcL3descInx;
+    srcRescTypeInx = dataOprInp->srcRescTypeInx;
+    dataSize = dataOprInp->dataSize;
+
+    bzero (&dataObjWriteInp, sizeof (dataObjWriteInp));
+    dataObjWriteInpBBuf.buf = malloc (TRANS_BUF_SZ);
+    dataObjWriteInpBBuf.len = 0;
+    dataObjWriteInp.l1descInx = l1descInx;
+
+    while ((bytesRead = _l3Read (rsComm, srcRescTypeInx,
+      srcL3descInx, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ)) > 0) {
+        dataObjWriteInp.len = dataObjWriteInpBBuf.len;
+        bytesWritten = rsDataObjWrite (rsComm, &dataObjWriteInp,
+          &dataObjWriteInpBBuf);
+        if (bytesWritten != bytesRead) {
+           rodsLog (LOG_ERROR,
+            "singleLocToRemCopy: Read %d bytes, Wrote %d bytes.\n ",
+            bytesRead, bytesWritten);
+            free (dataObjWriteInpBBuf.buf);
+	    return (SYS_COPY_LEN_ERR);
+	} else {
+	    totalWritten += bytesWritten;
+	}
+    }
+    free (dataObjWriteInpBBuf.buf);
+    if (dataSize <= 0 || totalWritten == dataSize) {
+        return (0);
+    } else {
+        rodsLog (LOG_ERROR,
+          "singleLocToRemCopy: totalWritten %lld dataSize %lld mismatch",
+          totalWritten, dataSize);
+        return (SYS_COPY_LEN_ERR);
+    }
 }
 

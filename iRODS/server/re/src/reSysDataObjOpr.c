@@ -1010,6 +1010,7 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
              "msiSysReplDataObj: Bad input maxNumThr %s", maxNumThrStr);
             maxNumThr = DEF_NUM_TRAN_THR;
 	} else if (maxNumThr == 0) {
+#if 0
 	    /* XXXXX set this for now since copy cannot support numThreads=0 */
 	    if (doinp->numThreads > 0 && doinp->numThreads <= 
 	      MAX_NUM_CONFIG_TRAN_THR) {
@@ -1017,7 +1018,10 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
 	    } else {
                 rei->status = 0;
 	    }
+#else
+            rei->status = 0;
             return rei->status;
+#endif
         } else if (maxNumThr > MAX_NUM_CONFIG_TRAN_THR) {
 	    rodsLog (LOG_ERROR,
              "msiSysReplDataObj: input maxNumThr %s too large", maxNumThrStr);

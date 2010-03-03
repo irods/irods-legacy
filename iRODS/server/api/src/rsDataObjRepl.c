@@ -779,12 +779,13 @@ char *rescGroupName, dataObjInfo_t *inpDestDataObjInfo, int updateFlag)
     l1DataObjInp->numThreads = dataObjInp->numThreads =
       getNumThreads (rsComm, l1DataObjInp->dataSize, l1DataObjInp->numThreads, 
       NULL, destRescName, srcRescName);
-
+#if 0
     /* XXXXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
     if (l1DataObjInp->numThreads == 0 && 
       l1DataObjInp->dataSize > MAX_SZ_FOR_SINGLE_BUF) {
 	l1DataObjInp->numThreads = dataObjInp->numThreads = 1;
     }
+#endif
 
     if (l1DataObjInp->numThreads > 0 && 
       L1desc[destL1descInx].stageFlag == NO_STAGING) {

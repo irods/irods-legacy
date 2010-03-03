@@ -165,11 +165,13 @@ transStat_t **transStat)
         destDataObjInp->numThreads = getNumThreads (rsComm,
 	 srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
 	 destRescName, srcRescName);
+#if 0
         /* XXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
         if (destDataObjInp->numThreads == 0 && 
           srcDataObjInfo->dataSize > MAX_SZ_FOR_SINGLE_BUF) {
 	    destDataObjInp->numThreads = 1;
         }
+#endif
         status = dataObjCopy (rsComm, destL1descInx);
     }
 
