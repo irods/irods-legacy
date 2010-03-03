@@ -938,5 +938,106 @@ public class IRODSFileTest {
 		TestCase.assertEquals("paths do not match", targetIrodsCollection + '/' + testFileName, actualAbsolutePath);
 
 	}
+	
+
+	/**
+	 * Test method for
+	 * {@link org.irods.jargon.core.pub.io.IRODSFile#lastModified()}.
+	 */
+	@Test
+	public final void testLastModified() throws Exception {
+		String testFileName = "testLastModified.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// now get an irods file and see if it is readable, it should be
+		IRODSAccount irodsAccount = testingPropertiesHelper
+		.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		// can I use jargon to access the file on IRODS and verify that it
+		// indeed exists?
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		
+		long modDate = irodsFile.lastModified();
+		irodsFileSystem.close();
+		TestCase.assertTrue("mod date should be gt 0", modDate > 0);	
+		
+	}
+	
+	@Test
+	public final void testGetLengthFile() throws Exception {
+
+    	// create a file and place on two resources
+    	String testFileName = "testGetLengthFile.txt";
+    	long expectedLength = 8;
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);		
+		
+		// now get an irods file and see if it is readable, it should be
+		IRODSAccount irodsAccount = testingPropertiesHelper
+		.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		// can I use jargon to access the file on IRODS and verify that it
+		// indeed exists?
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		
+		long length = irodsFile.length();
+
+		irodsFileSystem.close();
+		TestCase.assertEquals("size does not match", expectedLength, length);	
+	}
+	
 
 }
