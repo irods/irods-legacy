@@ -179,6 +179,8 @@ acPostProcForCreate||nop|nop
 acPostProcForOpen||nop|nop
 
 # 9) acSetNumThreads - Rule to set the number of threads for a data transfer
+# This rule supports condition based on $rescName so that different
+# policies can be set for different resources.
 # Only one function can be used for this rule
 #    msiSetNumThreads(sizePerThrInMb, maxNumThr, windowSize) - set the number 
 #      of threads and the tcp window size. The number of threads is based 
@@ -189,12 +191,15 @@ acPostProcForOpen||nop|nop
 #        the word "default" which sets sizePerThrInMb to a default value of 32
 #      maxNumThr - The maximum number of threads to use. It accepts integer
 #        value up to 16. It also accepts the word "default" which sets 
-#        maxNumThr to a default value of 4.
+#        maxNumThr to a default value of 4. A value of 0 means no parallel
+#        I/O. This can be helpful to get around firewall issues.
 #    windowSize - the tcp window size in Bytes for the parallel transfer. 
 #      A value of 0 or "dafault" means a default size of 1,048,576 Bytes.
 # The msiSetNumThreads function must be present or no thread will be used
 # for all transfer 
 # acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
+# acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
+# acSetNumThreads|$rescName == demoResc7|msiSetNumThreads(default,0,default)|nop  
 acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
 # 10) acDataDeletePolicy - This rule set the policy for deleting data objects.
 #     This is the PreProcessing rule for delete.
