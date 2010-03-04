@@ -2082,7 +2082,7 @@ singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 
     while ((bytesRead = _l3Read (rsComm, srcRescTypeInx,
       srcL3descInx, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ)) > 0) {
-        dataObjWriteInp.len = dataObjWriteInpBBuf.len;
+        dataObjWriteInp.len =  dataObjWriteInpBBuf.len = bytesRead;
         bytesWritten = rsDataObjWrite (rsComm, &dataObjWriteInp,
           &dataObjWriteInpBBuf);
         if (bytesWritten != bytesRead) {
