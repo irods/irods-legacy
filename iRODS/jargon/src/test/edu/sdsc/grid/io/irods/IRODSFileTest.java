@@ -9,6 +9,7 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_ZONE_KEY;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -30,6 +31,7 @@ import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 public class IRODSFileTest {
@@ -1037,6 +1039,93 @@ public class IRODSFileTest {
 
 		irodsFileSystem.close();
 		TestCase.assertEquals("size does not match", expectedLength, length);	
+	}
+	
+	@Test
+	public final void testGetListInDir() throws Exception {
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, "");
+		
+
+		// now get an irods file and see if it is readable, it should be
+		IRODSAccount irodsAccount = testingPropertiesHelper
+		.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+
+		String[] dirs = irodsFile.list();
+		irodsFile.close();
+		TestCase.assertNotNull(dirs);
+		TestCase.assertTrue("no results",dirs.length > 0);
+	}
+	
+	@Test
+	public final void testGetListFromPreparedSubdir() throws Exception {
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+		
+		String topLevelTestDir = "getListFromPreparedSubdirTopLevel";
+		String subdir1 = "subdir1";
+		String subdir2 = "subdir2";
+		
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+		.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		// make a 'top level' dir for this
+		
+		ImkdirCommand imkdirCommand = new ImkdirCommand();
+		imkdirCommand.setCollectionName(targetIrodsCollection + '/' + topLevelTestDir);
+		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
+		
+		// + 2 subdirs
+		
+		imkdirCommand = new ImkdirCommand();
+		imkdirCommand.setCollectionName(targetIrodsCollection + '/' + topLevelTestDir + '/' + subdir1);
+		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
+		
+		imkdirCommand = new ImkdirCommand();
+		imkdirCommand.setCollectionName(targetIrodsCollection + '/' + topLevelTestDir + '/' + subdir2);
+		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
+		
+		// +1 file
+		String testFileName = "testList.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+
+		IputCommand iputCommand = new IputCommand();
+
+		targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + topLevelTestDir);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		
+		// now get an irods file and see if it is readable, it should be
+		IRODSAccount irodsAccount = testingPropertiesHelper
+		.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+
+		String[] dirs = irodsFile.list();
+		irodsFile.close();
+		TestCase.assertNotNull(dirs);
+		TestCase.assertTrue("no results", dirs.length == 3);
 	}
 	
 

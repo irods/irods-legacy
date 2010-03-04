@@ -41,13 +41,12 @@
 //
 package edu.sdsc.grid.io.irods;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import static edu.sdsc.grid.io.irods.IRODSConstants.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URI;
@@ -71,8 +70,6 @@ import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
-
-import static edu.sdsc.grid.io.irods.IRODSConstants.*;
 
 /**
  * Instances of this class support mid-level communication with the IRODS

@@ -72,35 +72,15 @@ import org.slf4j.LoggerFactory;
  * @see edu.sdsc.grid.io.irods.IRODSFileSystem
  */
 public class IRODSAccount extends RemoteAccount {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-	/**
-	 * iRODS version 0.9
-	 */
+	
 	public static final String IRODS_VERSION_0_9 = "rods0.9jargon2.0";
-
-	/**
-	 * iRODS version 1.0
-	 */
 	public static final String IRODS_VERSION_1_0 = "rods1.0jargon2.0";
-
-	/**
-	 * iRODS version 1.1
-	 */
 	public static final String IRODS_VERSION_1_1 = "rods1.1jargon2.0";
-
-	/**
-	 * iRODS version 1.1
-	 */
 	public static final String IRODS_VERSION_2 = "rods2.0jargon2.0.5";
-
-	/**
-	 * iRODS version 1.1
-	 */
 	public static final String IRODS_VERSION_2_2 = "rods2.2jargon2.2.1";
+	public static final String IRODS_VERSION_2_3 = "rods2.3jargon2.3";
 
-	public static final String IRODS_JARGON_RELEASE_NUMBER = "rods2.2";
+	public static final String IRODS_JARGON_RELEASE_NUMBER = "rods2.3";
 
 	/**
 	 * iRODS API version "d"
@@ -157,7 +137,7 @@ public class IRODSAccount extends RemoteAccount {
 	/**
 	 * The iRODS version.
 	 */
-	protected static String version = IRODS_VERSION_2_2;
+	protected static String version = IRODS_VERSION_2_3;
 
 	/**
 	 * The iRODS API version.
