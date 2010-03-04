@@ -31,10 +31,10 @@ int testRegUser(rsComm_t *rsComm, char *name,
 		   char *zone, char *userType, char *dn) {
    userInfo_t userInfo;
 
-   strncpy(userInfo.userName, name, NAME_LEN);
-   strncpy(userInfo.rodsZone, zone, NAME_LEN);
-   strncpy(userInfo.userType, userType, NAME_LEN);
-   strncpy(userInfo.authInfo.authStr, dn, NAME_LEN);
+   strncpy(userInfo.userName, name, sizeof userInfo.userName);
+   strncpy(userInfo.rodsZone, zone, sizeof userInfo.rodsZone);
+   strncpy(userInfo.userType, userType, sizeof userInfo.userType);
+   strncpy(userInfo.authInfo.authStr, dn, sizeof userInfo.authInfo.authStr);
 
    /* no longer used   return(chlRegUser(rsComm, &userInfo)); */
    return(0);
@@ -45,18 +45,18 @@ int testRegRule(rsComm_t *rsComm, char *name) {
 
    memset(&ruleInfo,0,sizeof(ruleInfo));
 
-   strncpy(ruleInfo.ruleName, name, MAX_NAME_LEN);
+   strncpy(ruleInfo.ruleName, name, sizeof ruleInfo.ruleName);
 
-   strncpy(ruleInfo.reiFilePath,"../config/packedRei/rei.file1", NAME_LEN);
-
-   strncpy(ruleInfo.userName,"Wayne", NAME_LEN);
-   strncpy(ruleInfo.exeAddress, "Bermuda", NAME_LEN);
-   strncpy(ruleInfo.exeTime,"whenEver", NAME_LEN);
-   strncpy(ruleInfo.exeFrequency,"every 2 days", NAME_LEN);
-   strncpy(ruleInfo.priority,"high", NAME_LEN);
-   strncpy(ruleInfo.estimateExeTime,"2 hours", NAME_LEN);
-   strncpy(ruleInfo.notificationAddr,"noone@nowhere.com", NAME_LEN);
-
+   strncpy(ruleInfo.reiFilePath,"../config/packedRei/rei.file1", 
+	   sizeof ruleInfo.reiFilePath);
+   strncpy(ruleInfo.userName,"Wayne", sizeof ruleInfo.userName);
+   strncpy(ruleInfo.exeAddress, "Bermuda", sizeof ruleInfo.exeAddress);
+   strncpy(ruleInfo.exeTime,"whenEver", sizeof ruleInfo.exeTime);
+   strncpy(ruleInfo.exeFrequency,"every 2 days", sizeof ruleInfo.exeFrequency); 
+   strncpy(ruleInfo.priority,"high", sizeof ruleInfo.priority); 
+   strncpy(ruleInfo.estimateExeTime,"2 hours", sizeof ruleInfo.estimateExeTime);
+   strncpy(ruleInfo.notificationAddr,"noone@nowhere.com", 
+	   sizeof ruleInfo.notificationAddr);
    return(chlRegRuleExec(rsComm, &ruleInfo));
 }
 
@@ -91,9 +91,10 @@ int testLogin(rsComm_t *rsComm, char *User, char *pw, char *pw1) {
 
    status = clientLoginWithPassword(Conn, pw1);  /* first login as self */
    if (status ==0) {
-      rstrcpy (Conn->clientUser.userName, User, NAME_LEN);
-      rstrcpy (Conn->clientUser.rodsZone, myEnv.rodsZone, NAME_LEN); /* default
-								to our zone */
+      rstrcpy (Conn->clientUser.userName, User, 
+	       sizeof Conn->clientUser.userName);
+      rstrcpy (Conn->clientUser.rodsZone, myEnv.rodsZone, 
+	       sizeof Conn->clientUser.rodsZone); /* default to our zone */
       status = clientLoginWithPassword(Conn, pw);  /* then try other user */
    }
 
@@ -135,11 +136,11 @@ int testTempPwConvert(char *s1, char *s2) {
    */
 
    memset(md5Buf, 0, sizeof(md5Buf));
-   strncpy(md5Buf, s2, 100);
-   strncat(md5Buf, s1, 100);
+   strncpy(md5Buf, s2, sizeof md5Buf);
+   strncat(md5Buf, s1, sizeof md5Buf);
 
    MD5Init (&context);
-   MD5Update (&context, md5Buf, 100);
+   MD5Update (&context, md5Buf, sizeof md5Buf);
    MD5Final (digest, &context);
 
    md5ToStr(digest, digestStr);
@@ -168,11 +169,11 @@ int testTempPwCombined(rsComm_t *rsComm, char *s1) {
    */
 
    memset(md5Buf, 0, sizeof(md5Buf));
-   strncpy(md5Buf, pwValueToHash, 100);
-   strncat(md5Buf, s1, 100);
+   strncpy(md5Buf, pwValueToHash, sizeof md5Buf);
+   strncat(md5Buf, s1, sizeof md5Buf);
 
    MD5Init (&context);
-   MD5Update (&context, md5Buf, 100);
+   MD5Update (&context, md5Buf, sizeof md5Buf);
    MD5Final (digest, &context);
 
    md5ToStr(digest, digestStr);
@@ -191,8 +192,10 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
    int status, i;
    char userNameAndZone[NAME_LEN*2];
 
-   strncpy(rsComm->clientUser.userName, testUser, NAME_LEN);
-   strncpy(rsComm->clientUser.rodsZone, testUserZone, NAME_LEN);
+   strncpy(rsComm->clientUser.userName, testUser, 
+	   sizeof rsComm->clientUser.userName);
+   strncpy(rsComm->clientUser.rodsZone, testUserZone,
+	   sizeof rsComm->clientUser.rodsZone);
 
    for (i=0;i<CHALLENGE_LEN+2;i++) challenge[i]=' ';
 
@@ -215,9 +218,9 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
    response[i++]=0xeb;
    response[i++]=0x00;
 
-   strncpy(userNameAndZone, testAdminUser, NAME_LEN);
-   strncat(userNameAndZone, "#", NAME_LEN);
-   strncat(userNameAndZone, testUserZone, NAME_LEN);
+   strncpy(userNameAndZone, testAdminUser, sizeof userNameAndZone);
+   strncat(userNameAndZone, "#", sizeof userNameAndZone);
+   strncat(userNameAndZone, testUserZone, sizeof userNameAndZone);
 
    status = chlCheckAuth(rsComm, challenge, response,
 			 userNameAndZone,
@@ -233,8 +236,8 @@ int testCheckAuth(rsComm_t *rsComm, char *testAdminUser,  char *testUser,
 int testDelUser(rsComm_t *rsComm, char *name, char *zone) {
    userInfo_t userInfo;
 
-   strncpy(userInfo.userName, name, NAME_LEN);
-   strncpy(userInfo.rodsZone, zone, NAME_LEN);
+   strncpy(userInfo.userName, name, sizeof userInfo.userName);
+   strncpy(userInfo.rodsZone, zone, sizeof userInfo.rodsZone);
 
    /* no more  return(chlDelUser(rsComm, &userInfo)); */
    return(0);
@@ -255,7 +258,7 @@ int testDelFile(rsComm_t *rsComm, char *name, char *replica) {
 	 dataObjInfo.replNum = -1;
       }
    }
-   strncpy(dataObjInfo.objPath, name, NAME_LEN);
+   strncpy(dataObjInfo.objPath, name, sizeof dataObjInfo.objPath);
 
    memset (&condInput, 0, sizeof (condInput));
 
@@ -288,7 +291,7 @@ int testDelFilePriv(rsComm_t *rsComm, char *name, char *dataId,
 	 dataObjInfo.replNum = ireplica;
       }
    }
-   strncpy(dataObjInfo.objPath, name, NAME_LEN);
+   strncpy(dataObjInfo.objPath, name, sizeof dataObjInfo.objPath);
 
    return(chlUnregDataObj(rsComm, &dataObjInfo, &condInput));
 }
@@ -320,7 +323,7 @@ int testDelFileTrash(rsComm_t *rsComm, char *name, char *dataId) {
 	 dataObjInfo.replNum = ireplica;
       }
    }
-   strncpy(dataObjInfo.objPath, name, NAME_LEN);
+   strncpy(dataObjInfo.objPath, name, sizeof dataObjInfo.objPath);
 
    return(chlUnregDataObj(rsComm, &dataObjInfo, &condInput));
 }
@@ -329,7 +332,7 @@ int testRegColl(rsComm_t *rsComm, char *name) {
 
    collInfo_t collInp;
 
-   strncpy(collInp.collName, name, MAX_NAME_LEN);
+   strncpy(collInp.collName, name, sizeof collInp.collName);
 
    return(chlRegColl(rsComm, &collInp));
 }
@@ -338,7 +341,7 @@ int testDelColl(rsComm_t *rsComm, char *name) {
 
    collInfo_t collInp;
 
-   strncpy(collInp.collName, name, MAX_NAME_LEN);
+   strncpy(collInp.collName, name, sizeof collInp.collName);
 
    return(chlDelColl(rsComm, &collInp));
 }
@@ -347,7 +350,8 @@ int testDelRule(rsComm_t *rsComm, char *ruleName, char *userName) {
    if (userName!=NULL && strlen(userName)>0) {
       rsComm->clientUser.authInfo.authFlag = LOCAL_USER_AUTH;
       rsComm->proxyUser.authInfo.authFlag = LOCAL_USER_AUTH;
-      strncpy(rsComm->clientUser.userName, userName, MAX_NAME_LEN);
+      strncpy(rsComm->clientUser.userName, userName, 
+	      sizeof rsComm->clientUser.userName);
    }
    else {
       rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
@@ -406,7 +410,7 @@ int testRegDataMulti(rsComm_t *rsComm, char *count,
    }
 
    for (i=0;i<myCount;i++) {
-      snprintf (myName, MAX_NAME_LEN, "%s.%d", nameBase, i);
+      snprintf (myName, sizeof myName, "%s.%d", nameBase, i);
       status = testRegDataObj(rsComm, myName, dataType, filePath);
       if (status) return(status);
    }
@@ -432,10 +436,10 @@ int testModDataObjMeta(rsComm_t *rsComm, char *name,
    snprintf (tmpStr, LONG_NAME_LEN, "%d", replStatus);
    addKeyVal (&regParam, "replStatus", tmpStr);
    */
-   snprintf (tmpStr, LONG_NAME_LEN, "'now'");
+   snprintf (tmpStr, sizeof tmpStr, "'now'");
    addKeyVal (&regParam, "dataCreate", tmpStr);
 
-   snprintf (tmpStr2, LONG_NAME_LEN, "'test comment'");
+   snprintf (tmpStr2, sizeof tmpStr2, "'test comment'");
    addKeyVal (&regParam, "dataComments", tmpStr2);
 
    strcpy(dataObjInfo.objPath, name);
@@ -469,10 +473,10 @@ int testModDataObjMeta2(rsComm_t *rsComm, char *name,
 
    memset (&regParam, 0, sizeof (regParam));
 
-   snprintf (tmpStr, LONG_NAME_LEN, "whatever");
+   snprintf (tmpStr, sizeof tmpStr, "whatever");
    addKeyVal (&regParam, "all", tmpStr);
 
-   snprintf (tmpStr2, LONG_NAME_LEN, "42");
+   snprintf (tmpStr2, sizeof tmpStr2, "42");
    addKeyVal (&regParam, "dataSize", tmpStr2);
 
    strcpy(dataObjInfo.objPath, name);
@@ -504,16 +508,16 @@ int testModColl(rsComm_t *rsComm, char *name, char *type,
    memset(&collInp,0,sizeof(collInp));
 
    if (name!=NULL && strlen(name)>0) {
-      strncpy(collInp.collName, name, MAX_NAME_LEN);
+      strncpy(collInp.collName, name, sizeof collInp.collName);
    }
    if (type!=NULL && strlen(type)>0) {
-      strncpy(collInp.collType, type, MAX_NAME_LEN);
+      strncpy(collInp.collType, type, sizeof collInp.collType);
    }
    if (info1!=NULL && strlen(info1)>0) {
-      strncpy(collInp.collInfo1, info1, MAX_NAME_LEN);
+      strncpy(collInp.collInfo1, info1, sizeof collInp.collInfo1);
    }
    if (info2!=NULL && strlen(info2)>0) {
-      strncpy(collInp.collInfo2, info2, MAX_NAME_LEN);
+      strncpy(collInp.collInfo2, info2, sizeof collInp.collInfo2);
    }
 
    status = chlModColl(rsComm, &collInp);
@@ -536,7 +540,7 @@ int testModRuleMeta(rsComm_t *rsComm, char *id,
 
    memset (&regParam, 0, sizeof (regParam));
 
-   rstrcpy (tmpStr, attrValue, LONG_NAME_LEN);
+   rstrcpy (tmpStr, attrValue, sizeof tmpStr);
 
    addKeyVal (&regParam, attrName, tmpStr);
 
@@ -761,8 +765,11 @@ main(int argc, char **argv) {
    memset(&serverConfig, 0, sizeof(serverConfig));
    status = readServerConfig(&serverConfig);
 
-   strncpy(Comm->clientUser.userName, myEnv.rodsUserName, NAME_LEN);
-   strncpy(Comm->clientUser.rodsZone, myEnv.rodsZone, NAME_LEN);
+   strncpy(Comm->clientUser.userName, myEnv.rodsUserName, 
+	   sizeof Comm->clientUser.userName);
+
+   strncpy(Comm->clientUser.rodsZone, myEnv.rodsZone, 
+	   sizeof Comm->clientUser.rodsZone);
 
    /*
    char rodsUserName[NAME_LEN];
