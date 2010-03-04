@@ -2143,11 +2143,13 @@ rodsServerHost_t **rodsServerHost)
         return (LOCAL_HOST);
     }
 
+#if 0
     if (srcIcatServerHost != destIcatServerHost) {
         return (LOCAL_HOST);
     }
 
     /* from the same remote zone */
+#endif
 
     status = getAndConnRemoteZone (rsComm, destDataObjInp, rodsServerHost, 
       REMOTE_CREATE);

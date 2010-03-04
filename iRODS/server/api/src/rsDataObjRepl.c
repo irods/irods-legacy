@@ -887,56 +887,52 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
       FileDesc[destL3descInx].rodsServerHost) {
 	/* local zone same host copy */
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, SAME_HOST_COPY_OPR);
-#if 0	/* done in initDataOprInp */
-	dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-	/* have to correct the source's dataSize */
-	dataOprInp->dataSize = dataObjInfo->dataSize;
-	dataOprInp->srcL3descInx = srcL3descInx;
-	dataOprInp->srcRescTypeInx = 
-	  dataObjInfo->rescInfo->rescTypeInx;
-#endif
 	if (srcRemoteFlag == LOCAL_HOST) {
 	    addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
 	}
-    } else if (srcRemoteFlag == LOCAL_HOST && destRemoteFlag != LOCAL_HOST) {
+    } else if ((srcRemoteFlag == LOCAL_HOST && destRemoteFlag != LOCAL_HOST) ||
+      destRemoteFlag == REMOTE_ZONE_HOST) {
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_REM_OPR);
-	/* copy from local to remote */
-	/* preProcParaPut only establish &portalOprOut without data transfer */
-	status = preProcParaPut (rsComm, destL1descInx, &portalOprOut);
-       if (status < 0) {
-            rodsLog (LOG_NOTICE,
-              "dataObjCopy: preProcParaPut error for %s",
-              L1desc[srcL1descInx].dataObjInfo->objPath);
-            return (status);
+        /* do it locally if numThreads == 0 */
+        if (L1desc[l1descInx].dataObjInp->numThreads > 0) {
+	    /* copy from local to remote */
+	    /* preProcParaPut to establish portalOprOut without data transfer */
+	    status = preProcParaPut (rsComm, destL1descInx, &portalOprOut);
+           if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjCopy: preProcParaPut error for %s",
+                  L1desc[srcL1descInx].dataObjInfo->objPath);
+                return (status);
+            }
+            dataCopyInp.portalOprOut = *portalOprOut;
+	} else {
+            dataCopyInp.portalOprOut.l1descInx = destL1descInx;
         }
-        dataCopyInp.portalOprOut = *portalOprOut;
-        addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
-    } else if (srcRemoteFlag != LOCAL_HOST && destRemoteFlag == LOCAL_HOST) {
+	if (srcRemoteFlag == LOCAL_HOST)
+            addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
+    } else if ((srcRemoteFlag != LOCAL_HOST && destRemoteFlag == LOCAL_HOST) ||
+      srcRemoteFlag == REMOTE_ZONE_HOST) {
 	/* copy from remote to local */
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_LOCAL_OPR);
-#if 0   /* done in initDataOprInp */
-        dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-        /* have to correct the source's dataSize */
-        dataOprInp->dataSize = dataObjInfo->dataSize;
-#endif
-	/* preProcParaGet only establish &portalOprOut without data transfer */
-        status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
-       if (status < 0) {
-            rodsLog (LOG_NOTICE,
-              "dataObjCopy: preProcParaGet error for %s",
-              L1desc[srcL1descInx].dataObjInfo->objPath);
-            return (status);
+        /* do it locally if numThreads == 0 */
+        if (L1desc[l1descInx].dataObjInp->numThreads > 0) {
+	    /* preProcParaGet to establish portalOprOut without data transfer */
+            status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjCopy: preProcParaGet error for %s",
+                  L1desc[srcL1descInx].dataObjInfo->objPath);
+                return (status);
+            }
+            dataCopyInp.portalOprOut = *portalOprOut;
+        } else {
+            dataCopyInp.portalOprOut.l1descInx = srcL1descInx;
         }
-        addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
-        dataCopyInp.portalOprOut = *portalOprOut;
+	if (destRemoteFlag == LOCAL_HOST)
+            addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
     } else {
-	/* remote to remote or remote zone copy */
+	/* remote to remote */
         initDataOprInp (&dataCopyInp.dataOprInp, l1descInx, COPY_TO_LOCAL_OPR);
-#if 0   /* done in initDataOprInp */
-        dataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-        /* have to correct the source's dataSize */
-        dataOprInp->dataSize = dataObjInfo->dataSize;
-#endif
 	/* preProcParaGet only establish &portalOprOut without data transfer */
 	/* do it locally if numThreads == 0 */
 	if (L1desc[l1descInx].dataObjInp->numThreads > 0) {

@@ -43,13 +43,20 @@ rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
 	/* XXXXX do it locally if numThreads == 0 */
         status = _rsDataCopy (rsComm, dataCopyInp);
     } else {
-        l3descInx = dataOprInp->destL3descInx;
+        if (dataOprInp->destL3descInx > 0) {
+            l3descInx = dataOprInp->destL3descInx;
+	} else {
+            l3descInx = dataOprInp->srcL3descInx;
+        }
 	rodsServerHost = FileDesc[l3descInx].rodsServerHost;
-	addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
-        status = remoteDataCopy (rsComm, dataCopyInp, rodsServerHost);
-        clearKeyVal (&dataOprInp->condInput);
+	if (rodsServerHost != NULL && rodsServerHost->localFlag != LOCAL_HOST) {
+	    addKeyVal (&dataOprInp->condInput, EXEC_LOCALLY_KW, "");
+            status = remoteDataCopy (rsComm, dataCopyInp, rodsServerHost);
+            clearKeyVal (&dataOprInp->condInput);
+	} else {
+            status = _rsDataCopy (rsComm, dataCopyInp);
+	}
     }
-
     return (status);
 }
 
