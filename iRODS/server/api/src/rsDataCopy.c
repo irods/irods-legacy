@@ -38,7 +38,9 @@ rsDataCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     dataOprInp = &dataCopyInp->dataOprInp;
 
 
-    if (getValByKey (&dataOprInp->condInput, EXEC_LOCALLY_KW) != NULL) {
+    if (getValByKey (&dataOprInp->condInput, EXEC_LOCALLY_KW) != NULL ||
+      dataCopyInp->portalOprOut.numThreads == 0) {
+	/* XXXXX do it locally if numThreads == 0 */
         status = _rsDataCopy (rsComm, dataCopyInp);
     } else {
         l3descInx = dataOprInp->destL3descInx;

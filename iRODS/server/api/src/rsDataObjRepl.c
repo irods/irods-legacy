@@ -938,16 +938,20 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         dataOprInp->dataSize = dataObjInfo->dataSize;
 #endif
 	/* preProcParaGet only establish &portalOprOut without data transfer */
-        status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
+	/* do it locally if numThreads == 0 */
+	if (L1desc[l1descInx].dataObjInp->numThreads > 0) {
+            status = preProcParaGet (rsComm, srcL1descInx, &portalOprOut);
 
-       if (status < 0) {
-            rodsLog (LOG_NOTICE,
-              "dataObjCopy: preProcParaGet error for %s", 
-	      L1desc[srcL1descInx].dataObjInfo->objPath);
-            return (status);
-        }
-
-        dataCopyInp.portalOprOut = *portalOprOut;
+           if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                  "dataObjCopy: preProcParaGet error for %s", 
+	          L1desc[srcL1descInx].dataObjInfo->objPath);
+                return (status);
+            }
+            dataCopyInp.portalOprOut = *portalOprOut;
+        } else {
+	    dataCopyInp.portalOprOut.l1descInx = srcL1descInx;
+	}
     }
     /* rsDataCopy - does the physical data transfer */
     status =  rsDataCopy (rsComm, &dataCopyInp);
@@ -957,6 +961,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
 	/* update numThreads since it could be chnages by remote server */ 
         L1desc[l1descInx].dataObjInp->numThreads = portalOprOut->numThreads;
     }
+    if (portalOprOut != NULL) free (portalOprOut);
 	
     return (status);
 }

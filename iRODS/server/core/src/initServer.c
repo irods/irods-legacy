@@ -1804,6 +1804,7 @@ disconnectAllSvrToSvrConn ()
     while (tmpRodsServerHost != NULL) {
 	if (tmpRodsServerHost->conn != NULL) {
 	    rcDisconnect (tmpRodsServerHost->conn);
+	    tmpRodsServerHost->conn = NULL;
 	}
 	tmpRodsServerHost = tmpRodsServerHost->next;
     }
