@@ -2755,7 +2755,7 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
- *      (RSYNC_MODE_KW). Valid modes are IRODS_TO_LOCAL, LOCAL_TO_IRODS 
+ *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS.
  *      and IRODS_TO_IRODS
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the chksum value
  *      (RSYNC_CHKSUM_KW).
