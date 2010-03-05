@@ -58,7 +58,7 @@ acAclPolicy||nop|nop
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
 # Note that the msiOprDisallowed microservice can be used by all the rules
-# to disallow the action.
+# to disallow the execution of certain actions.
 # 1) acSetRescSchemeForCreate - This is the preprossing rule for creating a
 # data object. It can be used for setting the resource selection scheme 
 # when creating a data object which is used by the put, copy and 
