@@ -9,7 +9,6 @@ import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_ZONE_KEY;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -812,12 +811,12 @@ public class IRODSFileTest {
 		irodsFileSystem.close();
 
 	}
-	
+
 	@Test
 	public final void testIsFileExists() throws Exception {
 
-    	// create a file and place on two resources
-    	String testFileName = "testIsFileExists.txt";
+		// create a file and place on two resources
+		String testFileName = "testIsFileExists.txt";
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
@@ -842,84 +841,82 @@ public class IRODSFileTest {
 		iputCommand.setForceOverride(true);
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);		
-		
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
 		// now get an irods file and see if it is readable, it should be
-		
-		
+
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
-		
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
-		
+
 		boolean exists = irodsFile.exists();
 		irodsFileSystem.close();
-		TestCase.assertTrue(exists);	
+		TestCase.assertTrue(exists);
 
 	}
-	
 
 	@Test
 	public final void testIsDirectoryExists() throws Exception {
 
-    	
 		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH);
 
 		StringBuilder fileNameAndPath = new StringBuilder();
-		
+
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
-		
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection);
-		
+
 		boolean exists = irodsFile.exists();
 		irodsFileSystem.close();
-		TestCase.assertTrue(exists);	
+		TestCase.assertTrue(exists);
 
 	}
-	
-	@Test
-	public final void testIsFileNotExistsButDirectoryDoesShouldNotExist() throws Exception {
 
-    	// create a file and place on two resources
-    	String testFileName = "testIsFileNotExists.txt";
-		
-		
+	@Test
+	public final void testIsFileNotExistsButDirectoryDoesShouldNotExist()
+			throws Exception {
+
+		// create a file and place on two resources
+		String testFileName = "testIsFileNotExists.txt";
+
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
-		
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
-		
+
 		String targetIrodsCollection = testingPropertiesHelper
-		.buildIRODSCollectionAbsolutePathFromTestProperties(
-				testingProperties, IRODS_TEST_SUBDIR_PATH);
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
-		
+
 		boolean exists = irodsFile.exists();
 		irodsFileSystem.close();
-		TestCase.assertFalse(exists);	
+		TestCase.assertFalse(exists);
 
 	}
-	
+
 	@Test
 	public final void testGetAbsolutePathFile() throws Exception {
 
 		// create a file and place on two resources
 		String testFileName = "testGetAbsolutePathFile.txt";
-		
+
 		String targetIrodsCollection = testingPropertiesHelper
-		.buildIRODSCollectionAbsolutePathFromTestProperties(
-				testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
 
 		// now get an irods file and see if it is readable, it should be
 
@@ -933,14 +930,14 @@ public class IRODSFileTest {
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
-		
+
 		String actualAbsolutePath = irodsFile.getAbsolutePath();
 		irodsFileSystem.close();
 
-		TestCase.assertEquals("paths do not match", targetIrodsCollection + '/' + testFileName, actualAbsolutePath);
+		TestCase.assertEquals("paths do not match", targetIrodsCollection + '/'
+				+ testFileName, actualAbsolutePath);
 
 	}
-	
 
 	/**
 	 * Test method for
@@ -977,7 +974,7 @@ public class IRODSFileTest {
 
 		// now get an irods file and see if it is readable, it should be
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
+				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 
 		// can I use jargon to access the file on IRODS and verify that it
@@ -985,19 +982,19 @@ public class IRODSFileTest {
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
-		
+
 		long modDate = irodsFile.lastModified();
 		irodsFileSystem.close();
-		TestCase.assertTrue("mod date should be gt 0", modDate > 0);	
-		
+		TestCase.assertTrue("mod date should be gt 0", modDate > 0);
+
 	}
-	
+
 	@Test
 	public final void testGetLengthFile() throws Exception {
 
-    	// create a file and place on two resources
-    	String testFileName = "testGetLengthFile.txt";
-    	long expectedLength = 8;
+		// create a file and place on two resources
+		String testFileName = "testGetLengthFile.txt";
+		long expectedLength = 8;
 		String absPath = scratchFileUtils
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
@@ -1022,11 +1019,11 @@ public class IRODSFileTest {
 		iputCommand.setForceOverride(true);
 
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
-		invoker.invokeCommandAndGetResultAsString(iputCommand);		
-		
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
 		// now get an irods file and see if it is readable, it should be
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
+				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 
 		// can I use jargon to access the file on IRODS and verify that it
@@ -1034,23 +1031,22 @@ public class IRODSFileTest {
 
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection + '/' + testFileName);
-		
+
 		long length = irodsFile.length();
 
 		irodsFileSystem.close();
-		TestCase.assertEquals("size does not match", expectedLength, length);	
+		TestCase.assertEquals("size does not match", expectedLength, length);
 	}
-	
+
 	@Test
 	public final void testGetListInDir() throws Exception {
 		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, "");
-		
 
 		// now get an irods file and see if it is readable, it should be
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
+				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection);
@@ -1058,38 +1054,41 @@ public class IRODSFileTest {
 		String[] dirs = irodsFile.list();
 		irodsFile.close();
 		TestCase.assertNotNull(dirs);
-		TestCase.assertTrue("no results",dirs.length > 0);
+		TestCase.assertTrue("no results", dirs.length > 0);
 	}
-	
+
 	@Test
 	public final void testGetListFromPreparedSubdir() throws Exception {
 		String targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
 						testingProperties, IRODS_TEST_SUBDIR_PATH);
-		
+
 		String topLevelTestDir = "getListFromPreparedSubdirTopLevel";
 		String subdir1 = "subdir1";
 		String subdir2 = "subdir2";
-		
+
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
-		.buildIRODSInvocationContextFromTestProperties(testingProperties);
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		// make a 'top level' dir for this
-		
+
 		ImkdirCommand imkdirCommand = new ImkdirCommand();
-		imkdirCommand.setCollectionName(targetIrodsCollection + '/' + topLevelTestDir);
+		imkdirCommand.setCollectionName(targetIrodsCollection + '/'
+				+ topLevelTestDir);
 		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
-		
+
 		// + 2 subdirs
-		
+
 		imkdirCommand = new ImkdirCommand();
-		imkdirCommand.setCollectionName(targetIrodsCollection + '/' + topLevelTestDir + '/' + subdir1);
+		imkdirCommand.setCollectionName(targetIrodsCollection + '/'
+				+ topLevelTestDir + '/' + subdir1);
 		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
-		
+
 		imkdirCommand = new ImkdirCommand();
-		imkdirCommand.setCollectionName(targetIrodsCollection + '/' + topLevelTestDir + '/' + subdir2);
+		imkdirCommand.setCollectionName(targetIrodsCollection + '/'
+				+ topLevelTestDir + '/' + subdir2);
 		invoker.invokeCommandAndGetResultAsString(imkdirCommand);
-		
+
 		// +1 file
 		String testFileName = "testList.txt";
 		String absPath = scratchFileUtils
@@ -1101,7 +1100,8 @@ public class IRODSFileTest {
 
 		targetIrodsCollection = testingPropertiesHelper
 				.buildIRODSCollectionAbsolutePathFromTestProperties(
-						testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + topLevelTestDir);
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ topLevelTestDir);
 
 		StringBuilder fileNameAndPath = new StringBuilder();
 		fileNameAndPath.append(absPath);
@@ -1113,11 +1113,10 @@ public class IRODSFileTest {
 		iputCommand.setForceOverride(true);
 
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-		
-		
+
 		// now get an irods file and see if it is readable, it should be
 		IRODSAccount irodsAccount = testingPropertiesHelper
-		.buildIRODSAccountFromTestProperties(testingProperties);
+				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection);
@@ -1127,6 +1126,149 @@ public class IRODSFileTest {
 		TestCase.assertNotNull(dirs);
 		TestCase.assertTrue("no results", dirs.length == 3);
 	}
-	
 
+	/**
+	 * Test method for
+	 * {@link org.irods.jargon.core.pub.io.IRODSFile#equals(java.lang.Object)}.
+	 */
+	@Test
+	public final void testEqualsObject() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		String testFileName = "testEquals.txt";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		IRODSFile irodsFile2 = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+
+		irodsFileSystem.close();
+
+		TestCase.assertEquals(irodsFile, irodsFile2);
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.irods.jargon.core.pub.io.IRODSFile#equals(java.lang.Object)}.
+	 */
+	@Test
+	public final void testNotEqualsObject() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		String testFileName = "testEquals.txt";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		IRODSFile irodsFile2 = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + "xxx");
+
+		irodsFileSystem.close();
+
+		TestCase.assertFalse("files should not be equal", irodsFile
+				.equals(irodsFile2));
+
+	}
+
+	/**
+	 * Test method for
+	 * {@link org.irods.jargon.core.pub.io.IRODSFile#getCanonicalPath()}.
+	 */
+	@Test
+	public final void testGetCanonicalPath() throws Exception {
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		String testFileName = "testEquals.txt";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		String actualPath = irodsFile.getCanonicalPath();
+		irodsFileSystem.close();
+
+		TestCase.assertEquals("paths do not match", targetIrodsCollection,
+				actualPath);
+
+		irodsFileSystem.close();
+	}
+
+	@Test
+	public final void testGetCanonicalFile() throws Exception {
+
+		String testFileName = "testGetCanonicalPath.txt";
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		IRODSFile irodsCanonicalFile = (IRODSFile) irodsFile
+				.getCanonicalFile();
+		irodsFileSystem.close();
+		TestCase.assertEquals("files", irodsCanonicalFile, irodsFile);
+	}
+
+	/**
+	 * Test method for {@link org.irods.jargon.core.pub.io.IRODSFile#getName()}.
+	 */
+	@Test
+	public final void testGetName() throws Exception {
+		String testFileName = "testGetName.txt";
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		String actualName = irodsFile.getName();
+		irodsFileSystem.close();
+		TestCase.assertEquals("names do not match", testFileName, actualName);
+	}
+	
+	@Test
+	public final void testGetParentFile() throws Exception {
+
+		String testFileName = "testGetCanonicalPath.txt";
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testFileName;
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		IRODSFile irodsParentFile = (IRODSFile) irodsFile
+				.getParentFile();
+		irodsFileSystem.close();
+		TestCase.assertEquals("files", irodsFile.getParent(), irodsParentFile
+				.getAbsolutePath());
+	}
 }
