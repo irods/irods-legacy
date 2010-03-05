@@ -430,7 +430,8 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
 	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray, outMsParamArray, rei,status);
 	  return(0);
 	}
-	else if ( status == CUT_ACTION_PROCESSED_ERR ) {
+	else if ( status == CUT_ACTION_PROCESSED_ERR || 
+	  status == MSI_OPERATION_NOT_ALLOWED) {
 	  if (reiSaveFlag == SAVE_REI)
 	    freeRuleExecInfoStruct(saveRei, 0);
 	  finalizeMsParamNew(inAction,ruleHead,inMsParamArray,  outMsParamArray, rei,status);

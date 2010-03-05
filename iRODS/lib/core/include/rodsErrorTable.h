@@ -478,6 +478,8 @@
 #define NO_COLUMN_NAME_FOUND                  -1107000
 #define BREAK_ACTION_ENCOUNTERED_ERR          -1108000
 #define CUT_ACTION_ON_SUCCESS_PROCESSED_ERR   -1109000
+#define MSI_OPERATION_NOT_ALLOWED 	      -1110000
+
 /* 1,600,000 to 1,700,000  - PHP scripting error */
 #define PHP_EXEC_SCRIPT_ERR                   -1600000
 #define PHP_REQUEST_STARTUP_ERR               -1601000

@@ -57,6 +57,8 @@ acAclPolicy||nop|nop
 #
 # --------------------------------------------------------------------------
 # The following are rules for data object operation
+# Note that the msiOprDisallowed microservice can be used by all the rules
+# to disallow the action.
 # 1) acSetRescSchemeForCreate - This is the preprossing rule for creating a
 # data object. It can be used for setting the resource selection scheme 
 # when creating a data object which is used by the put, copy and 
@@ -92,6 +94,7 @@ acAclPolicy||nop|nop
 # acSetRescSchemeForCreate||msiSetNoDirectRescInp(xyz%demoResc8%abc)##msiSetDefaultResc(demoResc8,noForce)##msiSetRescSortScheme(default)|nop##nop##nop
 # acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
 # acSetRescSchemeForCreate||msiSetDefaultResc(demoResc7%demoResc8,preferred)|nop
+# acSetRescSchemeForCreate|$objPath like /oneZone/home/rods/protected/*|msiOprDisallowed|nop##nop
 acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,null)|nop
 # acSetRescSchemeForCreate||msiGetSessionVarValue(all,all)##msiSetDefaultResc(demoResc,null)|nop
 #acSetRescSchemeForCreate||msiSetDefaultResc(demoResc,noForce)##msiSetRescSortScheme(random)##msiSetRescSortScheme(byRescClass)|nop##nop##nop
@@ -199,7 +202,7 @@ acPostProcForOpen||nop|nop
 # for all transfer 
 # acSetNumThreads||msiSetNumThreads(16,4,default)|nop  
 # acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
-# acSetNumThreads|$rescName == demoResc7|msiSetNumThreads(default,0,default)|nop  
+# acSetNumThreads|$rescName == macResc|msiSetNumThreads(default,0,default)|nop  
 acSetNumThreads||msiSetNumThreads(default,16,default)|nop  
 # 10) acDataDeletePolicy - This rule set the policy for deleting data objects.
 #     This is the PreProcessing rule for delete.

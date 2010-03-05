@@ -1102,6 +1102,58 @@ msiDeleteDisallowed (ruleExecInfo_t *rei)
 }
 
 /**
+ * \fn msiOprDisallowed (ruleExecInfo_t *rei)
+ *
+ * \brief  This generic microservice sets the policy for determining that certain operation is not allowed.   
+ * 
+ * \module core
+ * 
+ * \since 2.3
+ * 
+ * \author
+ * \date 
+ * 
+ * \note 
+ *  
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acSetRescSchemeForCreate|$objPath like /foo/bar\*|msiOprDisallowed|nop 
+ * (the \ should be / but was changed to avoid a compiler warning about
+ * a slash* in a comment.)
+ *
+ * This rule prevents the creation of any data objects beneath the collection /foo/bar/
+ *
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiOprDisallowed (ruleExecInfo_t *rei)
+{
+    RE_TEST_MACRO ("    Calling msiOprDisallowed")
+
+    rei->status = MSI_OPERATION_NOT_ALLOWED;
+
+    return (rei->status);
+}
+
+
+/**
  * \fn msiSetMultiReplPerResc (ruleExecInfo_t *rei)
  *
  * \brief  By default, the system allows one copy per resource. This microservice sets the number of copies per resource to unlimited.

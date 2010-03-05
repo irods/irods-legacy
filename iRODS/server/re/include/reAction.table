@@ -209,6 +209,7 @@ microsdef_t MicrosTable[] = {
   {"msiSetNoDirectRescInp",1,(funcPtr) msiSetNoDirectRescInp},
   {"msiSetNumThreads", 3,(funcPtr) msiSetNumThreads},
   {"msiDeleteDisallowed",0,(funcPtr) msiDeleteDisallowed},
+  {"msiOprDisallowed",0,(funcPtr) msiOprDisallowed},
   {"msiDataObjCreate",3,(funcPtr) msiDataObjCreate},
   {"msiDataObjOpen",2,(funcPtr) msiDataObjOpen},
   {"msiDataObjClose",2,(funcPtr) msiDataObjClose},

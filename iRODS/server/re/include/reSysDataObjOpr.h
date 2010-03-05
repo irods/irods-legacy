@@ -48,6 +48,8 @@ msParam_t *windowSizeStr, ruleExecInfo_t *rei);
 int
 msiDeleteDisallowed (ruleExecInfo_t *rei);
 int
+msiOprDisallowed (ruleExecInfo_t *rei);
+int
 msiSetMultiReplPerResc (ruleExecInfo_t *rei);
 int
 msiNoChkFilePathPerm (ruleExecInfo_t *rei);
