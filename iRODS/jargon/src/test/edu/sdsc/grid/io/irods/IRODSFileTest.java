@@ -1271,4 +1271,26 @@ public class IRODSFileTest {
 		TestCase.assertEquals("files", irodsFile.getParent(), irodsParentFile
 				.getAbsolutePath());
 	}
+	
+	@Test
+	public final void testMkdir() throws Exception {
+		String testDir = "testMkdir";
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		
+		String targetIrodsCollection = testingPropertiesHelper
+		.buildIRODSCollectionAbsolutePathFromTestProperties(
+				testingProperties, IRODS_TEST_SUBDIR_PATH)
+		+ '/' + testDir;
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		irodsFile.mkdir();
+		AssertionHelper assertionHelper = new AssertionHelper();
+		assertionHelper.assertIrodsFileOrCollectionExists(irodsFile
+				.getAbsolutePath());
+		irodsFileSystem.close();
+	}
+	
+	
 }

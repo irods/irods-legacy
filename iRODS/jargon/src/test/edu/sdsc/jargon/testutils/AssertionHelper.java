@@ -3,15 +3,17 @@
  */
 package edu.sdsc.jargon.testutils;
 
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Properties;
-import edu.sdsc.jargon.testutils.filemanip.*;
+
+import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
 
 /**
  * Helpful assertions for unit testing IRODS
@@ -204,7 +206,7 @@ public class AssertionHelper {
 
 	/**
 	 * Make sure that a file or collection is not in IRODS
-	 * 
+	 *
 	 * @param relativeIrodsPathUnderScratch
 	 *            <code>String</code> with relative path (no leading '/', or a
 	 *            path and filename to look for
