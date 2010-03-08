@@ -13,7 +13,7 @@ char *icmds[]={
    "imcoll", "imeta", "imiscsvrinfo", "imkdir", "imv", "ipasswd",
    "iphybun", "iphymv", "iput", "ipwd", "iqdel", "iqmod", "iqstat",
    "iquest", "ireg", "irepl", "irm", "irmtrash", "irsync", "irule",
-   "isysmeta", "itrim", "iuserinfo",
+   "iscan", "isysmeta", "itrim", "iuserinfo",
    ""};
 
 void usage ();
@@ -60,6 +60,7 @@ printMainHelp()
 "irmtrash - remove data-objects from the trash bin.",
 "irsync   - synchronize collections between a local/irods or irods/irods.",
 "irule    - submit a rule to be executed by the iRODS server.",
+"iscan    - check if local file or directory is registered in irods.",
 "isysmeta - show or modify system metadata.",
 "itrim    - trim down the number of replicas of data-objects.",
 "iuserinfo- show information about your iRODS user account.",

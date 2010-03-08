@@ -2,7 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 /* 
-  This is an interface to the Attribute-Value-Units type of metadata.
+  This is an interface to the user information (metadata).
 */
 
 #include "rods.h"
