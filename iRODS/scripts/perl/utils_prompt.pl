@@ -14,7 +14,7 @@
 # print functions in utils_print.pl.
 #
 
-$version{"utils_prompt.pl"} = "July 2009";
+$version{"utils_prompt.pl"} = "March 2010";
 my $TRY_TOO_MANY = 20;
 
 

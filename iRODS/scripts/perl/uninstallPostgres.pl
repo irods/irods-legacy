@@ -21,7 +21,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"uninstallPostgres.pl"} = "July 2009";
+$version{"uninstallPostgres.pl"} = "March 2010";
 
 
 
