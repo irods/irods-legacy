@@ -175,10 +175,10 @@ if ( $thisUserID == 0 )
 
 
 if ( $isUpgrade ne "") {
-    printNotice("\nNote: When upgrading from 2.1 to 2.2, you need to run\n");
-    printNotice("psg-patch-v2.1tov2.2.sql via psql (for Postgres)\n");
-    printNotice("or ora-patch-v2.1tov2.2.sql via sqlplus (for Oracle)\n");
-    printNotice("or mys-patch-v2.1tov2.2.sql via mysql (for MySQL)\n");
+    printNotice("\nNote: When upgrading from 2.2 to 2.3, you need to run\n");
+    printNotice("psg-patch-v2.2tov2.3.sql via psql (for Postgres)\n");
+    printNotice("or ora-patch-v2.2tov2.3.sql via sqlplus (for Oracle)\n");
+    printNotice("or mys-patch-v2.2tov2.3.sql via mysql (for MySQL)\n");
     printNotice("before running this script.\n");
     printNotice("If you have an older iRODS, you need to run the\n");
     printNotice("other patch scripts in sequence.\n\n");
