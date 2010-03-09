@@ -415,10 +415,10 @@ dataObjInfo_t **dataObjInfoHead)
 
     status = rsDataObjRename (rsComm, &dataObjRenameInp);
 
-    if (status < 0) {
-	int status1;
+    while (status == CAT_NAME_EXISTS_AS_DATAOBJ) {
         appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
-	status1 = rsDataObjRename (rsComm, &dataObjRenameInp);
+	status = rsDataObjRename (rsComm, &dataObjRenameInp);
+#if 0
         if (status1 < 0) {
             rodsLog (LOG_ERROR,
               "rsMvDataObjToTrash: rsDataObjRename error for %s",
@@ -426,8 +426,14 @@ dataObjInfo_t **dataObjInfoHead)
 	} else {
 	    status = 0;
 	}
+#endif
     }
-
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "rsMvDataObjToTrash: rcDataObjRename error for %s, status = %d",
+          dataObjRenameInp.destDataObjInp.objPath, status);
+        return (status);
+    }
     return (status);
 }
 

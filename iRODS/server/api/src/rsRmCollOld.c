@@ -423,15 +423,24 @@ rsMvCollToTrash (rsComm_t *rsComm, collInp_t *rmCollInp)
 
     status = rsDataObjRename (rsComm, &dataObjRenameInp);
 
-    if (status < 0) {
+    while (status == CAT_NAME_EXISTS_AS_COLLECTION) {
         appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
         status = rsDataObjRename (rsComm, &dataObjRenameInp);
+#if 0
         if (status < 0) {
             rodsLog (LOG_ERROR,
               "mvCollToTrash: rcDataObjRename error for %s",
               dataObjRenameInp.destDataObjInp.objPath);
             return (status);
 	}
+#endif
+    }
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "mvCollToTrash: rcDataObjRename error for %s, status = %d",
+          dataObjRenameInp.destDataObjInp.objPath, status);
+        return (status);
     }
 
     return (status);
