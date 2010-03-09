@@ -60,6 +60,9 @@ A better solution will probably appear in newer versions of Jargon
 Tests and fix for Bug 57 -  parallel file get operation does not work in Jargon
 
 ---------
+Tests and fix for  Bug 76 -  GSI login issues with Jargon not finding user info on AUTH
+
+---------
 Resource enhancements to list, add resources to a resource group, and remove resources from a resource group for
 enhancement request (Bug 62 -  resource group CRUD methods requested)
 

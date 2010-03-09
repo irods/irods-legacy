@@ -49,5 +49,9 @@ public class MockGssName implements GSSName {
 		return false;
 	}
 	
+	public String toString() {
+		return testingProperties.getProperty(TestingPropertiesHelper.IRODS_USER_DN_KEY);
+	}
+	
 
 }

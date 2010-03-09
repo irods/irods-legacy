@@ -907,6 +907,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		iRODSToJargon.put(COL_USER_TYPE, USER_TYPE);
 		iRODSToJargon.put(COL_USER_ZONE, USER_ZONE);
 		iRODSToJargon.put(COL_USER_DN, USER_DN);
+		iRODSToJargon.put(COL_USER_DN_INVALID, USER_DN_2_1);
 		iRODSToJargon.put(COL_USER_INFO, USER_INFO);
 		iRODSToJargon.put(COL_USER_COMMENT, USER_COMMENT);
 		iRODSToJargon.put(COL_USER_CREATE_TIME, USER_CREATE_DATE);
@@ -1200,7 +1201,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(USER_ZONE, "User Zone",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(USER_DN,
-				"User GSI Distinguished Name (currently unused)",
+				"User GSI Distinguished Name (irods2.2+)",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(IRODSMetaDataSet.USER_DN_2_1,
+				"User GSI Distinguished Name (prior to irods2.2)",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(USER_INFO,
 				"User Information (set by the admin, like comment)",
@@ -1325,7 +1329,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 */
 	public static MetaDataField getField(String fieldName) {
 		if (log.isDebugEnabled()) {
-			log.debug("getting metadata field for field name:" + fieldName);
+			log.debug("getting irods metadata field for field name:" + fieldName);
 		}
 		if (fieldName == null) {
 			log.error("npe, metadata field name passed in is null");

@@ -30,6 +30,7 @@ public class TestingPropertiesHelper {
 	public static String IRODS_USER_KEY = "test.irods.user";
 	public static String IRODS_PASSWORD_KEY = "test.irods.password";
 	public static String IRODS_RESOURCE_KEY = "test.irods.resource";
+	public static String IRODS_USER_DN_KEY = "test.irods.userDN";
 	public static String IRODS_SECONDARY_USER_KEY = "test2.irods.user";
 	public static String IRODS_SECONDARY_PASSWORD_KEY = "test2.irods.password";
 	public static String IRODS_SECONDARY_RESOURCE_KEY = "test2.irods.resource";
@@ -47,9 +48,11 @@ public class TestingPropertiesHelper {
 	
 	public int getPortAsInt(Properties testingProperties) throws TestingUtilsException {
 		String portString = (String) testingProperties.get(IRODS_PORT_KEY);
+		
 		if (portString == null || portString.length() == 0) {
 			throw new TestingUtilsException("missing or invalid test.irods.port in testing.properties");
 		}
+		
 		int retVal = 0; 
 		
 		try {

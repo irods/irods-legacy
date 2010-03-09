@@ -1522,8 +1522,14 @@ public class IRODSFile extends RemoteFile {
 	public boolean delete(boolean force) {
 		try {
 			if (isDirectory()) {
+				if (log.isDebugEnabled()) {
+					log.debug("deleting a directory:" + this.getAbsolutePath() + " with force option of " + force);
+				}
 				iRODSFileSystem.commands.deleteDirectory(this, force);
 			} else if (isFile(false)) {
+				if (log.isDebugEnabled()) {
+					log.debug("deleting a file:" + this.getAbsolutePath() + " with force option of " + force);
+				}
 				iRODSFileSystem.commands.deleteFile(this, force);
 			}
 			return true;

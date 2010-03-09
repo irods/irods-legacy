@@ -157,6 +157,15 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		
 		// NOTE: factor out...
 		// Get the username if they logged in with just a GSSCredential
+		irodsAccount = lookupUserIfGSI(irodsAccount);
+		setAccount(irodsAccount);
+	}
+
+	/**
+	 * @param irodsAccount
+	 * @return 
+	 */
+	protected IRODSAccount lookupUserIfGSI(IRODSAccount irodsAccount) {
 		if (irodsAccount.getUserName() == null
 				|| irodsAccount.getUserName().equals("")) {
 			log.info("user logged in with GSI credential");
@@ -177,8 +186,14 @@ public class IRODSFileSystem extends RemoteFileSystem {
 			}
 
 			if (rl != null && rl.length > 0) {
-				log.info("setting irods account for GSI user:"
-						+ irodsAccount.getServerDN());
+				if (log.isDebugEnabled()) {
+					try {
+					log.debug("setting irods account for GSI user:"
+						+ irodsAccount.getGSSCredential().getName().toString());
+					} catch (Exception e) {
+						// ignore
+					}
+				}
 				irodsAccount.setUserName(rl[0].getStringValue(0));
 				irodsAccount.setZone(rl[0].getStringValue(1));
 				irodsAccount.setHomeDirectory("/" + irodsAccount.getZone()
@@ -189,7 +204,12 @@ public class IRODSFileSystem extends RemoteFileSystem {
 						+ "/home/" + irodsAccount.getUserName());
 			}
 		}
-		setAccount(irodsAccount);
+		
+		if (log.isDebugEnabled()) {
+			log.debug("account after GSI checks:" + irodsAccount.toString());
+		}
+		
+		return irodsAccount;
 	}
 
 	/**
@@ -201,22 +221,31 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 */
 	protected MetaDataCondition buildMetaDataConditionForGSIUser(
 			IRODSAccount irodsAccount) throws GSSException {
+		
+		log.info("building a meta data condition for GSI");
 
 		// check the version number and obtain the user dn using alternative
 		// metadata values, the rods2.2 version
 		// saw a change in the metadata value for user DN from 205 to 1601
 		int versionValue = commands.getReportedIRODSVersion().compareTo(
 				"rods2.2");
+		
+		if (log.isDebugEnabled()) {
+			log.debug("reported irods version was:" + commands.getReportedIRODSVersion());
+		}
+		
 		if (versionValue < 0) {
 			// reported version is less than the 'arguement', or prior to the
 			// protocol change
-			return MetaDataSet.newCondition(IRODSMetaDataSet.USER_DN_2_1,
+			log.info("reported version is prior to irods 2.2, using USER_DN_2_1");
+			return IRODSMetaDataSet.newCondition(IRODSMetaDataSet.USER_DN_2_1,
 					MetaDataCondition.EQUAL, irodsAccount.getGSSCredential()
 							.getName().toString());
 
 		} else {
 			// version is after the rods2.2 cutoff
-			return MetaDataSet.newCondition(IRODSMetaDataSet.USER_DN,
+			log.info("reported version is after the irods 2.2 cutoff, using  USER_DN");
+			return IRODSMetaDataSet.newCondition(IRODSMetaDataSet.USER_DN,
 					MetaDataCondition.EQUAL, irodsAccount.getGSSCredential()
 							.getName().toString());
 		}

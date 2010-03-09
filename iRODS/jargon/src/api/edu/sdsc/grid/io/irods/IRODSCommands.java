@@ -580,6 +580,10 @@ class IRODSCommands {
 		Tag message = new Tag(CollInp_PI, new Tag[] {
 				new Tag(collName, file.getAbsolutePath()),
 				Tag.createKeyValueTag(keyword), });
+		
+		if (log.isDebugEnabled()) {
+			log.debug("delete directory with pi of:" + message.parseTag());
+		}
 
 		Tag reply = irodsFunction(RODS_API_REQ, message, RM_COLL_AN);
 
@@ -646,6 +650,10 @@ class IRODSCommands {
 				new Tag(offset, 0), new Tag(dataSize, 0),
 				new Tag(numThreads, 0), new Tag(oprType, 0),
 				Tag.createKeyValueTag(keyword), });
+		
+		if (log.isDebugEnabled()) {
+			log.debug("delete file with pi of:" + message.parseTag());
+		}
 
 		irodsFunction(RODS_API_REQ, message, DATA_OBJ_UNLINK_AN);
 	}

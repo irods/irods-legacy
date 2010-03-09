@@ -13,6 +13,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import edu.sdsc.grid.io.irods.mocks.MockGssCredential;
 import edu.sdsc.grid.io.local.LocalFile;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -95,10 +96,17 @@ public class IRODSAccountTest {
 		TestCase.assertEquals(expectedIRODSAccount.getUserName(), actualIRODSAccount.getUserName());		
 	}
 
-
-	@Ignore
-	public final void testIRODSAccountStringIntGSSCredential() {
-		fail("Not yet implemented");
+	@Test
+	public final void testIRODSAccountStringIntGSSCredential() throws Exception {
+		String host = testingProperties.getProperty(TestingPropertiesHelper.IRODS_HOST_KEY);
+		int port = testingPropertiesHelper.getPortAsInt(testingProperties);
+		MockGssCredential gssCredential = new MockGssCredential();
+		IRODSAccount irodsAccount = new IRODSAccount(host, port, gssCredential);
+		irodsAccount.setGSSCredential(gssCredential);
+		TestCase.assertNotNull("irods account is null", irodsAccount);
+		TestCase.assertEquals("host not found", host, irodsAccount.getHost());
+		TestCase.assertEquals("port not found", port, irodsAccount.getPort());	
+		TestCase.assertNotNull("gsi credential not set", irodsAccount.getGSSCredential());
 	}
 
 	@Ignore
@@ -128,5 +136,4 @@ public class IRODSAccountTest {
 		
 	}
 	
-
 }

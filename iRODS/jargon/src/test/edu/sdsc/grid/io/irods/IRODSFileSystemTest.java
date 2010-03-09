@@ -1,6 +1,7 @@
 package edu.sdsc.grid.io.irods;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
+import edu.sdsc.grid.io.irods.mocks.MockGssCredential;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -84,6 +85,34 @@ public class IRODSFileSystemTest {
     @Test(expected=SecurityException.class)
     public void testCreateWithDefaultConstructorNoGsi() throws Exception {
     	IRODSFileSystem IRODSFileSystem = new IRODSFileSystem();
+    }
+    
+    /**
+     * currently ignored, will not work with IRODS server that does not have GSI compiled in
+     * @throws Exception
+     */
+    @Ignore 
+    public void testCreateWithGSIAuth() throws Exception {
+    	String host = testingProperties.getProperty(TestingPropertiesHelper.IRODS_HOST_KEY);
+		int port = testingPropertiesHelper.getPortAsInt(testingProperties);
+		MockGssCredential gssCredential = new MockGssCredential();
+		IRODSAccount irodsAccount = new IRODSAccount(host, port, gssCredential);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+    }
+    
+    @Test 
+    public void testLookupUserIfGsi() throws Exception {
+    	
+   	 	IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		// fake out irods now by creating a GSI account so the user can be looked up
+		String host = testingProperties.getProperty(TestingPropertiesHelper.IRODS_HOST_KEY);
+		int port = testingPropertiesHelper.getPortAsInt(testingProperties);
+		MockGssCredential gssCredential = new MockGssCredential();
+		IRODSAccount gsiAccount = new IRODSAccount(host, port, gssCredential);
+		irodsFileSystem.setAccount(gsiAccount);
+		IRODSAccount returnedAccount = irodsFileSystem.lookupUserIfGSI(gsiAccount);
+		TestCase.assertTrue("did not set a user name", returnedAccount.getUserName().length() > 0);
     }
     
     @Test

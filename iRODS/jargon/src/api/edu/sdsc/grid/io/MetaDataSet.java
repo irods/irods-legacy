@@ -115,7 +115,7 @@ import org.slf4j.LoggerFactory;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class MetaDataSet implements GeneralMetaData {
-	
+
 	private static Logger log = LoggerFactory.getLogger(MetaDataSet.class);
 
 	/**
@@ -296,7 +296,18 @@ public abstract class MetaDataSet implements GeneralMetaData {
 		if (fieldName == null)
 			throw new NullPointerException("The fieldName cannot be null.");
 
+		if (log.isDebugEnabled()) {
+			log.debug("looking up metadata field for:" + fieldName);
+		}
+
 		MetaDataField field = (MetaDataField) metaDataFields.get(fieldName);
+
+		if (log.isDebugEnabled()) {
+			if (field == null)
+				log.debug("lookup was null, will treat as definable metadata");
+		} else {
+			log.debug("resulting field from lookup:" + field);
+		}
 
 		if (field == null) {
 			field = new MetaDataField(fieldName, "", MetaDataField.STRING,
@@ -502,7 +513,8 @@ public abstract class MetaDataSet implements GeneralMetaData {
 		for (int i = 0; i < selects.length; i++) {
 			if (fieldNames[i] != null) {
 				if (log.isDebugEnabled()) {
-					log.debug("creating new MetaDataSelect for:" + fieldNames[i]);
+					log.debug("creating new MetaDataSelect for:"
+							+ fieldNames[i]);
 				}
 				selects[i] = new MetaDataSelect(getField(fieldNames[i]));
 			}

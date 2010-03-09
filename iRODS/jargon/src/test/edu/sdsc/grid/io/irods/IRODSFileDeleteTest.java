@@ -1,20 +1,18 @@
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.FileFactory;
-import edu.sdsc.grid.io.GeneralFile;
-import edu.sdsc.grid.io.local.LocalFile;
+import java.util.Properties;
+
+import junit.framework.TestCase;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_HOST_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PASSWORD_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PORT_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_ZONE_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_RESOURCE_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY;
-
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
@@ -23,19 +21,6 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IreplCommand;
-
-import junit.framework.TestCase;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.net.URI;
-
-import java.util.Properties;
 
 public class IRODSFileDeleteTest {
     private static Properties testingProperties = new Properties();
@@ -77,7 +62,7 @@ public class IRODSFileDeleteTest {
     	
     	String testNewDir = "testExistsOnDeletedNoForcedDir";
     	String testNewDirIrodsPath = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, 
-    			testNewDir);
+    			IRODS_TEST_SUBDIR_PATH + '/' + testNewDir);
     	String testNewFileName = "testExistsOnDeletedFile.csv";
     	
     	
