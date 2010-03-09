@@ -6,9 +6,7 @@
 
 	<property file="build.properties" />
 	<path id="maven-ant-tasks.classpath" path="lib/maven-ant-tasks-2.1.0.jar" />
-	  <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
-	           uri="antlib:org.apache.maven.artifact.ant"
-	           classpathref="maven-ant-tasks.classpath" />
+	<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant" classpathref="maven-ant-tasks.classpath" />
 
 	<!--
 		include all jar files in the ./lib directory in the compile classpath
@@ -41,7 +39,7 @@
 
 	</target>
 
-	
+
 
 	<!--  properly set the flag for generating debug info in compile, will override default
 			if generating a code coverage report -->
@@ -95,11 +93,11 @@
 			</fileset>
 		</copy>
 	</target>
-	
+
 	<path id="class.path.test">
-			<pathelement location="${src.build.dir}" />
-			<pathelement location="${unittest.build.dir}" />
-			<path refid="class.path" />
+		<pathelement location="${src.build.dir}" />
+		<pathelement location="${unittest.build.dir}" />
+		<path refid="class.path" />
 	</path>
 
 	<target name="compile" depends="init, set_compile_debug, compile_src, compile_test">
@@ -128,6 +126,14 @@
 	<target name="run_irods" depends="build">
 		<echo message="running only irods portion of original Jargon tests..." />
 		<java classname="Test" fork="true" args="irods">
+			<classpath location="${instrumented.code.dir}" />
+			<classpath refid="class.path.test" />
+		</java>
+	</target>
+
+	<target name="run_irods_fulltest" depends="build">
+		<echo message="running only irods portion of original Jargon tests..." />
+		<java classname="Test" fork="true" args="-fulltest irods ">
 			<classpath>
 				<pathelement location="${dist.dir}/${project_name}-test.jar" />
 				<pathelement path="class.path" />
@@ -135,17 +141,6 @@
 			</classpath>
 		</java>
 	</target>
-	
-	<target name="run_irods_fulltest" depends="build">
-			<echo message="running only irods portion of original Jargon tests..." />
-			<java classname="Test" fork="true" args="-fulltest irods ">
-				<classpath>
-					<pathelement location="${dist.dir}/${project_name}-test.jar" />
-					<pathelement path="class.path" />
-					<pathelement location="${dist.dir}/${project_name}.jar" />
-				</classpath>
-			</java>
-		</target>
 
 	<target name="srb" depends="build" description="Build and test SRB.">
 		<java classname="Test" args="srb" fork="true">
@@ -180,31 +175,31 @@
 		</junit>
 		<echo message="running clean target will clean up unit test scratch directories..." />
 	</target>
-	
+
 	<target name="unit_test_long" depends="init, compile">
-			<echo message="running all junit tests, including long-running tests..." />
-			<junit fork="${junit.fork}" haltonfailure="${fail.on.junit.error}">
-				<classpath location="${instrumented.code.dir}" />
-				<classpath refid="class.path.test" />
-				<formatter type="brief" usefile="false" />
-				<test name="edu.sdsc.jargon.unittest.testsuites.AllTestsIncludingLongAndFunctional" />
-			</junit>
-			<echo message="running clean target will clean up unit test scratch directories..." />
-		</target>
-	
+		<echo message="running all junit tests, including long-running tests..." />
+		<junit fork="${junit.fork}" haltonfailure="${fail.on.junit.error}">
+			<classpath location="${instrumented.code.dir}" />
+			<classpath refid="class.path.test" />
+			<formatter type="brief" usefile="false" />
+			<test name="edu.sdsc.jargon.unittest.testsuites.AllTestsIncludingLongAndFunctional" />
+		</junit>
+		<echo message="running clean target will clean up unit test scratch directories..." />
+	</target>
+
 	<target name="deploy_maven_artifacts" depends="build">
 		<echo message="deploying jargon artifacts to maven..." />
-		
+
 		<artifact:pom id="mypom" file="pom.xml" />
 
-		  <artifact:install file="target/my-project-1.0.jar">
-		    <pom refid="mypom"/>
-		  </artifact:install>
+		<artifact:install file="target/my-project-1.0.jar">
+			<pom refid="mypom" />
+		</artifact:install>
 
-		  <artifact:deploy file="target/my-project-1.0.jar">
-		    <remoteRepository url="file://localhost/www/repository"/>
-		    <pom refid="mypom"/>
-		  </artifact:deploy>
+		<artifact:deploy file="target/my-project-1.0.jar">
+			<remoteRepository url="file://localhost/www/repository" />
+			<pom refid="mypom" />
+		</artifact:deploy>
 
 	</target>
 
