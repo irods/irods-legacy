@@ -1,5 +1,3 @@
-/*** Copyright (c), CCIN2P3            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 /* Written by Jean-Yves Nief of CCIN2P3 */
 
 #include "rodsPath.h"

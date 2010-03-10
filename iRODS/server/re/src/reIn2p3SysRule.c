@@ -3,8 +3,6 @@
  *
  */
 
-/*** Copyright (c), CCIN2P3            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
 /* The module is written by Jean-Yves Nief of CCIN2P3 */
 
 #include "reIn2p3SysRule.h"
