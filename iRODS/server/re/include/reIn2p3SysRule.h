@@ -1,7 +1,6 @@
-/*** Copyright (c), CCIN2P3            ***
- *** For more information please refer to files in the COPYRIGHT directory ***/
-
 /* reIn2p3SysRule.h - header file for reIn2p3SysRule */
+
+/* The module is written by Jean-Yves Nief of CCIN2P3 */
 
 #ifndef RE_IN2P3_SYS_RULE_H
 #define RE_IN2P3_SYS_RULE_H
