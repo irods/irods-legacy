@@ -147,10 +147,12 @@ typedef struct SpecCollCache {
     struct SpecCollCache *next;
 } specCollCache_t;
 
+#if 0
 typedef struct PathCache {
     char path[MAX_NAME_LEN];
     struct PathCache *next;
 } pathCache_t;
+#endif
 
 /* definition for replStatus (isDirty) */
 #define OLD_COPY        0x0
@@ -175,6 +177,7 @@ typedef struct DataObjInfo {
     rodsLong_t  dataId;
     rodsLong_t  collId;
     int  dataMapId;
+    int flags;			/* place holder to make 64 bits boundary */
     char dataComments[LONG_NAME_LEN];
     char dataMode[SHORT_STR_LEN];
     char dataExpiry[TIME_LEN];
@@ -197,13 +200,13 @@ typedef struct CollInfo {
   char collOwnerName[NAME_LEN];
   char collOwnerZone[NAME_LEN];
   int  collMapId;
+  int  collAccessInx;
   char collComments[LONG_NAME_LEN];
   char collInheritance[LONG_NAME_LEN];
   char collExpiry[TIME_LEN];
   char collCreate[TIME_LEN];
   char collModify[TIME_LEN];
   char collAccess[NAME_LEN];
-  int  collAccessInx;
   char collType[NAME_LEN];
   char collInfo1[MAX_NAME_LEN];
   char collInfo2[MAX_NAME_LEN];
