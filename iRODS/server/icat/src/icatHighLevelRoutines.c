@@ -3394,24 +3394,42 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 *clientPrivLevel = LOCAL_PRIV_USER_AUTH; /* same user, no query req */
       }
       else {
-	 if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
-	 status = cmlGetStringValueFromSql(
+	 if (rsComm->clientUser.userName[0]=='\0') {
+	    /* 
+	       When using GSI, the client might not provide a user
+	       name, in which case we avoid the query below (which
+	       would fail) and instead give the user LOCAL_USER_AUTH
+	       privilege level.  The server that the user is
+	       connecting to (a non-IES) will check the user's
+	       authentication after this interaction and disconnect if
+	       it fails.  But, after that successful authentication,
+	       the user will remain at this level here on the IES.
+	       This means that admin functions will be disallowed if
+	       the user is using GSI, has no irodsUserName defined,
+	       and connects to a non-IES.
+	     */
+	    *clientPrivLevel = LOCAL_USER_AUTH;
+	 }
+	 else {
+	    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
+	    status = cmlGetStringValueFromSql(
 	       "select user_type_name from r_user_main where user_name=? and zone_name=?",
 	       userType, MAX_NAME_LEN, rsComm->clientUser.userName,
 	       myUserZone, 0, &icss);
 
-	 if (status !=0) {
-	    if (status == CAT_NO_ROWS_FOUND) {
-	       status = CAT_INVALID_CLIENT_USER; /* more specific */
+	    if (status !=0) {
+	       if (status == CAT_NO_ROWS_FOUND) {
+		  status = CAT_INVALID_CLIENT_USER; /* more specific */
+	       }
+	       else {
+		  _rollback("chlCheckAuth");
+	       }
+	       return(status);
 	    }
-	    else {
-	       _rollback("chlCheckAuth");
+	    *clientPrivLevel = LOCAL_USER_AUTH;
+	    if (strcmp(userType, "rodsadmin") == 0) {
+	       *clientPrivLevel = LOCAL_PRIV_USER_AUTH;
 	    }
-	    return(status);
-	 }
-	 *clientPrivLevel = LOCAL_USER_AUTH;
-	 if (strcmp(userType, "rodsadmin") == 0) {
-	    *clientPrivLevel = LOCAL_PRIV_USER_AUTH;
 	 }
       }
    }
