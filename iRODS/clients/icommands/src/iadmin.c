@@ -1413,7 +1413,7 @@ usage(char *subOpt)
 "names can be associated with each user.",
 "This is used with Kerberos and/or GSI authentication, if enabled.",
 "For example:",
-"  aua rods /C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder",
+"  aua rods '/C=US/O=INC/OU=DICE/CN=Wayne Schroeder/UID=schroeder'",
 "Also see 'rua', 'lua', and 'luan'.",
 ""};
 
