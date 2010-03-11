@@ -87,6 +87,7 @@ int irodsWinMain(int argc, char **argv)
     signal(SIGTTIN, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
     signal(SIGCHLD, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);
 #ifdef osx_platform
     signal(SIGINT, (void *) serverExit);
     signal(SIGHUP, (void *)serverExit);
