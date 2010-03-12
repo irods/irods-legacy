@@ -97,8 +97,9 @@ _irodsGetattr (const char *path, struct stat *stbuf, pathCache_t **outPathCache)
 	  atoi (rodsObjStatOut->modifyTime));
     } else if (rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
 #ifdef CACHE_FUSE_PATH
-            addPathToCache ((char *) path, NonExistPathArray, stbuf, NULL);
+        addPathToCache ((char *) path, NonExistPathArray, stbuf, NULL);
 #endif
+        if (rodsObjStatOut != NULL) freeRodsObjStat (rodsObjStatOut);
             return -ENOENT;
     } else {
 	fillFileStat (stbuf, rodsObjStatOut->dataMode, rodsObjStatOut->objSize,
@@ -488,7 +489,8 @@ irodsRename (const char *from, const char *to)
     getIFuseConn (&DefConn, &MyRodsEnv);
     status = rcDataObjRename (DefConn.conn, &dataObjRenameInp);
 
-    if (status == CAT_NAME_EXISTS_AS_DATAOBJ) {
+    if (status == CAT_NAME_EXISTS_AS_DATAOBJ || 
+      status == SYS_DEST_SPEC_COLL_SUB_EXIST) {
         rcDataObjUnlink (DefConn.conn, &dataObjRenameInp.destDataObjInp);
         status = rcDataObjRename (DefConn.conn, &dataObjRenameInp);
     }
