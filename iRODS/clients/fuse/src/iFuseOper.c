@@ -496,6 +496,7 @@ irodsRename (const char *from, const char *to)
     if (status >= 0) {
 #ifdef CACHE_FUSE_PATH
 	pathCache_t *tmpPathCache;
+        rmPathFromCache ((char *) to, PathArray);
         if (matchPathInPathCache ((char *) from, PathArray,
           &tmpPathCache) == 1) {
 	    addPathToCache ((char *) to, PathArray, &tmpPathCache->stbuf,
