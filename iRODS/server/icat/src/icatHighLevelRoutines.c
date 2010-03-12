@@ -3398,17 +3398,14 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	    /* 
 	       When using GSI, the client might not provide a user
 	       name, in which case we avoid the query below (which
-	       would fail) and instead give the user LOCAL_USER_AUTH
-	       privilege level.  The server that the user is
-	       connecting to (a non-IES) will check the user's
-	       authentication after this interaction and disconnect if
-	       it fails.  But, after that successful authentication,
-	       the user will remain at this level here on the IES.
-	       This means that admin functions will be disallowed if
-	       the user is using GSI, has no irodsUserName defined,
-	       and connects to a non-IES.
+	       would fail) and instead return the error
+	       CAT_INVALID_CLIENT_USER.  To handle this situation (the
+	       client is using GSI, connecting to a non-IES, and not
+	       specifying their irodsUserName) properly, we'll need to
+	       modify the protocol a bit; which we will do after the
+	       upcoming release (2.3).
 	     */
-	    *clientPrivLevel = LOCAL_USER_AUTH;
+	    return(CAT_INVALID_CLIENT_USER);
 	 }
 	 else {
 	    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
