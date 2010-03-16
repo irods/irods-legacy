@@ -60,6 +60,7 @@ extern tarSubFileDesc_t TarSubFileDesc[];
 
 int
 initRuleEngine(char *ruleSet, char *dvmSet, char* fnmSet);
+int clearCoreRule ();
 
 extern char localSID[];
 extern char remoteSID[MAX_FED_RSIDS][MAX_PASSWORD_LEN];

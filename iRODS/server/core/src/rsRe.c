@@ -22,3 +22,24 @@ initRuleEngine(char *ruleSet, char *dvmSet, char* fnmSet) {
    }
    return(status);
 }
+
+/* clearCoreRule - clear the core rules. Code copied from msiAdmAddAppRuleStruct
+ *
+ */
+int
+clearCoreRule ()
+{
+  int i;
+
+  i = clearRuleStruct(&coreRuleStrct);
+  if (i < 0)
+    return(i);
+  i = clearDVarStruct(&coreRuleVarDef);
+  if (i < 0)
+    return(i);
+  i = clearFuncMapStruct(&coreRuleFuncMapDef);
+  bzero (ruleSetInitialized, sizeof (ruleSetInitialized));
+  return(i);
+
+}
+

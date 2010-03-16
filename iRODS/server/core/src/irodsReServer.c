@@ -246,6 +246,7 @@ chkAndResetRule (rsComm_t *rsComm)
 	CoreIrbTimeStamp = (uint) statbuf.st_mtime;
 	rei.rsComm = rsComm;
 	msiAdmClearAppRuleStruct (&rei);
+	clearCoreRule ();
 	status = initRuleEngine(reRuleStr, reFuncMapStr, reVariableMapStr);
         if (status < 0) {
             rodsLog (LOG_ERROR,
