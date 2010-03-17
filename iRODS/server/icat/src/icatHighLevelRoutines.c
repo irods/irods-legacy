@@ -3412,8 +3412,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	    status = cmlGetStringValueFromSql(
 	       "select user_type_name from r_user_main where user_name=? and zone_name=?",
 	       userType, MAX_NAME_LEN, rsComm->clientUser.userName,
-	       myUserZone, 0, &icss);
-
+	       rsComm->clientUser.rodsZone, 0, &icss);
 	    if (status !=0) {
 	       if (status == CAT_NO_ROWS_FOUND) {
 		  status = CAT_INVALID_CLIENT_USER; /* more specific */
