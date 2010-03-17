@@ -1152,6 +1152,11 @@ initZone (rsComm_t *rsComm)
                   "initZone: zoneName in env %s does not match %s in icat ",
 		  myEnv->rodsZone, tmpZoneName);
 	    }
+	    /* fillin rodsZone if it is not defined */
+            if (strlen (rsComm->proxyUser.rodsZone) == 0) 
+                rstrcpy (rsComm->proxyUser.rodsZone, tmpZoneName, NAME_LEN);
+            if (strlen (rsComm->clientUser.rodsZone) == 0) 
+                rstrcpy (rsComm->clientUser.rodsZone, tmpZoneName, NAME_LEN);
 	    continue;
 	} else if (strlen (tmpZoneConn) <= 0) {
             rodsLog (LOG_ERROR,
