@@ -4,6 +4,9 @@
 package edu.sdsc.jargon.testutils;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
+import edu.sdsc.grid.io.irods.IRODSAccount;
+import edu.sdsc.grid.io.irods.IRODSFile;
+import edu.sdsc.grid.io.irods.IRODSFileSystem;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
@@ -126,6 +129,38 @@ public class IRODSTestSetupUtilities {
 		} catch (IcommandException ice) {
 			throw new TestingUtilsException(
 					"error creating per test directory", ice);
+		}
+	}
+	
+	public final void addAVUsToEachFile(String collectionAbsPath, IRODSFileSystem irodsFileSystem, String avuAttrib, String avuValue) throws Exception {
+
+	
+		
+		String[] metaData = new String[2];
+		metaData[0] = avuAttrib;
+		metaData[1] = avuValue;
+
+		String[] metaData2 = new String[2];
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				collectionAbsPath);
+
+		// get a list of files underneath the top-level directory, and add some
+		// avu's to each one
+
+		String[] fileList = irodsFile.list();
+		IRODSFile subFile = null;
+
+		for (int i = 0; i < fileList.length; i++) {
+			System.out.println("subfile:" + fileList[i]);
+			subFile = new IRODSFile(irodsFileSystem, irodsFile
+					.getAbsolutePath()
+					+ '/' + fileList[i]);
+			subFile.modifyMetaData(metaData);
+
 		}
 	}
 

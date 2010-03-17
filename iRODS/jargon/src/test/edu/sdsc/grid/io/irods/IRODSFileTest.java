@@ -595,7 +595,7 @@ public class IRODSFileTest {
 	 * 
 	 * @throws Exception
 	 */
-	@Ignore
+	@Test
 	public final void testSetResourceShowQueryBug() throws Exception {
 		// generate a local scratch file
 		String testFileName = "testSetResource.xsl";
