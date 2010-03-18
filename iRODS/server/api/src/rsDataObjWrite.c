@@ -25,7 +25,6 @@ bytesBuf_t *dataObjWriteInpBBuf)
 	  l1descInx);
 	return (SYS_FILE_DESC_OUT_OF_RANGE);
     }
-
     if (L1desc[l1descInx].inuseFlag != FD_INUSE) return BAD_INPUT_DESC_INDEX;
     if (L1desc[l1descInx].remoteZoneHost != NULL) {
         /* cross zone operation */
