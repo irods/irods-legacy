@@ -1,9 +1,10 @@
-Jargon 2.3 Release Notes
+Jargon 2.3.X Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
 Date: 02/18/2010
-Release Version: 2.3.0
+Release Version: 2.3.X - this is the post-release version of Jargon 2.3.0 and will hold bug fixes for the 2.3.0 release.   New Jargon 2.3.1 features are
+being developed on the 2.3.1 branch.  Fixes in the trunk are being pushed into the 2.3.1 branch.
 
 ================================================================================================
 Requirements
@@ -23,59 +24,10 @@ libraries
 ================================================================================================
 Features and Changes
 
-----------
-The old Jargon Gui, in org.sdsc.grid.gui, has been deprecated since Jargon 2.2, and will be removed in the release after this one 
- 
-----------
-Compatibility testing with IRODS2.3
-* expanded unit testing coverage and integration testing
-* multi-thread testing for irodsfedora integration
+-----------
+*fix for  Bug 77 -  Jargon NullPointerException when invoking setResource
 
-----------
-Beginning a 'first order' refactoring of Jargon, with an emphasis on breaking large classes into smaller, reusable components.
-*extracted Tag processing in IRODSCommands to Tag
-*created IRODSAvu and extracted AVU processing from ICommands
-*broke up the IRODSCommands class into IRODSCommands and IRODSConnection
-*removed unused edu.sdsc.grio.io.irods.Method class and removed previously deprecated references
-*culled all TODO's and dead code, did mass format of source to bring it up to current standards.
-*more refactoring to come.....
-
-----------
-Fix admin_build.xml ANT script to automatically compile with debug when running code coverage
-
-----------
-Replaced 'hand made' logging with standard logging, best practice for integrating with other frameworks, such as fedorairods
-* to adjust logging, consult the log4j.properties file in src/api, defaults to ERROR, can be set to DEBUG, INFO, WARN, ERROR
-* this change supercedes the prior 'debug' conventions in Jargon
-
-----------
-Tests and resolution of Bug 32 -  copyTo when dest file is from URI results in -78000 resource not found
-
----------
-Add a close() method to IRODSFile that will close the underlying IRODSFileSystem.  This is useful for occasions where the IRODSFile is created by a URI, 
-where the IRODSFileSystem was not created in the calling code.  This was causing -4000 errors when the socket closed without a disconnect being sent.
-A better solution will probably appear in newer versions of Jargon
-
----------
-Tests and fix for Bug 57 -  parallel file get operation does not work in Jargon
-
----------
-Tests and fix for  Bug 76 -  GSI login issues with Jargon not finding user info on AUTH
-
----------
-Resource enhancements to list, add resources to a resource group, and remove resources from a resource group for
-enhancement request (Bug 62 -  resource group CRUD methods requested)
-
----------
-Adding Maven support in parallel to main ANT build.  ANT is still the primary build mechanism, but Maven support is added to conveniently build a distro for working with Fedora and irodsfedora
-code.  the pom.xml should not be used at this point for normal build activities.  Jargon will be moving to Maven in one of the upcoming releases.
-
----------
-Support for 'no distinct' option, a new IRODS2.3 feature.  There are new methods in IRODSCommands, IRODSFile, and IRODSFile system that default to 'distinct' but have additional signatures
-to override.
-
----------
-Tests cases for multiple reported bugs, expanded test suite including 'functional tests', Misc cleanups and fixes
+-----------
 
 ================================================================================================
 Outstanding Issues

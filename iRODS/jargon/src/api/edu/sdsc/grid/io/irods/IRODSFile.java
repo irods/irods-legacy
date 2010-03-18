@@ -1015,17 +1015,18 @@ public class IRODSFile extends RemoteFile {
 	 * @throws IOException
 	 *             If an IOException occurs during the system change.
 	 */
-	
-	
-	
-	public void setResource(String resourceName) throws IOException,
-			IllegalArgumentException {
+	public void setResource(String resourceName) throws IOException {
+		
+		if (resourceName == null) {
+			throw new IllegalArgumentException("resourceName is null");
+		}
+		
 		if (resourceName != null) {
 			// Make sure valid resource
 			MetaDataRecordList[] rl = fileSystem.query(MetaDataSet
 					.newSelection(ResourceMetaData.RESOURCE_NAME));
 			
-			if (rl == null) {  // FIXME: this is a patch for a 2.2.1 bug?  Make sure this makes sense, try to develop a test for this case
+			if (rl == null) {  
 				log.warn("no resources returned from query, accept the given resource:" + resourceName);
 				resource = resourceName;
 				return;

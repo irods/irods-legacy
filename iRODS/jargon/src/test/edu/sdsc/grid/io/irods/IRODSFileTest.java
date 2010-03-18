@@ -1222,8 +1222,7 @@ public class IRODSFileTest {
 				+ '/' + testFileName;
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection);
-		IRODSFile irodsCanonicalFile = (IRODSFile) irodsFile
-				.getCanonicalFile();
+		IRODSFile irodsCanonicalFile = (IRODSFile) irodsFile.getCanonicalFile();
 		irodsFileSystem.close();
 		TestCase.assertEquals("files", irodsCanonicalFile, irodsFile);
 	}
@@ -1249,7 +1248,7 @@ public class IRODSFileTest {
 		irodsFileSystem.close();
 		TestCase.assertEquals("names do not match", testFileName, actualName);
 	}
-	
+
 	@Test
 	public final void testGetParentFile() throws Exception {
 
@@ -1265,32 +1264,72 @@ public class IRODSFileTest {
 				+ '/' + testFileName;
 		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
 				targetIrodsCollection);
-		IRODSFile irodsParentFile = (IRODSFile) irodsFile
-				.getParentFile();
+		IRODSFile irodsParentFile = (IRODSFile) irodsFile.getParentFile();
 		irodsFileSystem.close();
 		TestCase.assertEquals("files", irodsFile.getParent(), irodsParentFile
 				.getAbsolutePath());
 	}
-	
+
 	@Test
 	public final void testMkdir() throws Exception {
 		String testDir = "testMkdir";
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-		
-		String targetIrodsCollection = testingPropertiesHelper
-		.buildIRODSCollectionAbsolutePathFromTestProperties(
-				testingProperties, IRODS_TEST_SUBDIR_PATH)
-		+ '/' + testDir;
 
-		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testDir;
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
 		irodsFile.mkdir();
 		AssertionHelper assertionHelper = new AssertionHelper();
 		assertionHelper.assertIrodsFileOrCollectionExists(irodsFile
 				.getAbsolutePath());
 		irodsFileSystem.close();
 	}
-	
-	
+
+	/**
+	 * Bug 78 - issues with getHomeDirectory after IRODS2.3 upgrade
+	 */
+	@Test
+	public final void testGetHomeDir() throws Exception {
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		IRODSFile irodsFile = (IRODSFile) FileFactory.newFile(irodsFileSystem,
+				irodsFileSystem.getHomeDirectory());
+		boolean canWrite = irodsFile.canWrite();
+		irodsFileSystem.close();
+		TestCase.assertTrue("file should be writable", canWrite);
+
+	}
+
+	/**
+	 * Bug 78 - issues with getHomeDirectory after IRODS2.3 upgrade
+	 */
+	@Test
+	public final void testGetHomeDirMultipleTimes() throws Exception {
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		int numberOfTimes = 30;
+
+		for (int i = 0; i < numberOfTimes; i++) {
+
+			IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+			IRODSFile irodsFile = (IRODSFile) FileFactory.newFile(
+					irodsFileSystem, irodsFileSystem.getHomeDirectory());
+			boolean canWrite = irodsFile.canWrite();
+			irodsFileSystem.close();
+			TestCase.assertTrue("file should be writable", canWrite);
+		}
+
+	}
+
 }
