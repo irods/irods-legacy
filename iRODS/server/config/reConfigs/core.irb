@@ -268,10 +268,8 @@ acChkHostAccessControl||nop|nop
 #      to the physical path. e.g. $vaultPath/$userName/$logicalPath. 
 #      "addUserName" can have two values - yes or no. The second argument
 #      (trimDirCnt) specifies the number of leading directory elements of
-#      of the logical path to trim. Sometimes it may not be desirable to graft 
-#      the entire logical path. e.g.,for a logicalPath /myZone/home/me/foo/bar, 
-#      it may be desirable to graft just the part "foo/bar" to the vaultPath.
-#      "trimDirCnt" should be set to 3 in this case.
+#      of the logical path to trim. A vault of 0 or 1 is allowable. The
+#      default value is 1. 
 #    msiSetRandomScheme() - Set the VaultPath scheme to RANDOM meaning a
 #      randomly generated path is appended to the vaultPath when generating
 #      the physical path. e.g., $vaultPath/$userName/$randomPath.
