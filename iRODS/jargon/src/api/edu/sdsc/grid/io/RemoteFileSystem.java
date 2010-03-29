@@ -54,22 +54,7 @@ package edu.sdsc.grid.io;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class RemoteFileSystem extends GeneralFileSystem {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Setters and Getters
-	// ----------------------------------------------------------------------
-	// Remote
+	
 	/**
 	 * Returns the host used by the remote account using this RemoteFileSystem.
 	 */
@@ -98,9 +83,5 @@ public abstract class RemoteFileSystem extends GeneralFileSystem {
 	public String getPassword() {
 		return ((RemoteAccount) account).getPassword();
 	}
-
-	// ----------------------------------------------------------------------
-	// Methods
-	// ----------------------------------------------------------------------
 
 }

@@ -80,9 +80,6 @@ public abstract class RemoteAccount extends GeneralAccount {
 	 */
 	protected String password;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
 	/**
 	 * Constructs an object to hold the user information used when connecting to
 	 * a remote server.
@@ -120,9 +117,6 @@ public abstract class RemoteAccount extends GeneralAccount {
 		password = null;
 	}
 
-	// ----------------------------------------------------------------------
-	// Setters and Getters
-	// ----------------------------------------------------------------------
 	/**
 	 * Sets the host of this RemoteAccount.
 	 * 

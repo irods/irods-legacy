@@ -41,7 +41,6 @@
 //
 package edu.sdsc.grid.io;
 
-import java.net.URI;
 
 /**
  * An object to hold the user information used when connecting to a file system.
@@ -53,21 +52,13 @@ import java.net.URI;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class GeneralAccount extends Object implements Cloneable {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * The home directory on the server
 	 */
 	protected String homeDirectory;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Constructs an object to hold the user information used when connecting to
 	 * a file system.
@@ -90,9 +81,7 @@ public abstract class GeneralAccount extends Object implements Cloneable {
 			homeDirectory = null;
 	}
 
-	// ----------------------------------------------------------------------
-	// Setters and Getters
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Sets the home directory of this GeneralAccount.
 	 */

@@ -296,14 +296,19 @@ public class IRODSFile extends RemoteFile {
 			throw new URISyntaxException(uri.toString(), "Wrong URI scheme");
 		}
 	}
-	
+
 	/**
-	 * This method is here for correctness, and will help avoid dropping connections when disconnect was never called.
-	 * Note that this method closes the underlying <code>IRODSFileSystem</code>, and care must be taken so as not to close
-	 * the <code>IRODSFileSystem</code> when it is intended for re-use.  Specifically, this method is added for occasions where
-	 * the <code>IRODSFile</code> is created with a URI parameter.  In that case, the IRODSFileSystem is not reused, and without
-	 * calling close, the termination of the <code>IRODSFile</code> causes a 
-	 * "readMsgHeader:header read- read 0 bytes, expect 4, status = -4000" error in IRODS.
+	 * This method is here for correctness, and will help avoid dropping
+	 * connections when disconnect was never called. Note that this method
+	 * closes the underlying <code>IRODSFileSystem</code>, and care must be
+	 * taken so as not to close the <code>IRODSFileSystem</code> when it is
+	 * intended for re-use. Specifically, this method is added for occasions
+	 * where the <code>IRODSFile</code> is created with a URI parameter. In that
+	 * case, the IRODSFileSystem is not reused, and without calling close, the
+	 * termination of the <code>IRODSFile</code> causes a
+	 * "readMsgHeader:header read- read 0 bytes, expect 4, status = -4000" error
+	 * in IRODS.
+	 * 
 	 * @throws NullPointerException
 	 * @throws IOException
 	 */
@@ -319,7 +324,7 @@ public class IRODSFile extends RemoteFile {
 	protected void finalize() throws Throwable {
 		if (deleteOnExit)
 			delete();
-		
+
 		super.finalize();
 
 		if (resource != null)
@@ -329,7 +334,6 @@ public class IRODSFile extends RemoteFile {
 			dataType = null;
 	}
 
-	
 	/**
 	 * Step three of IRODSFile( uri )
 	 * 
@@ -349,7 +353,6 @@ public class IRODSFile extends RemoteFile {
 		}
 	}
 
-	
 	/**
 	 * Sets the file system used of this GeneralFile object. The file system
 	 * object must be a subclass of the GeneralFileSystem matching this file
@@ -480,7 +483,7 @@ public class IRODSFile extends RemoteFile {
 	 * @param dir
 	 *            Used to determine if the path is absolute.
 	 */
-	
+
 	void makePathCanonical(String dir) {
 		int i = 0; // where to insert into the Vector
 		boolean absolutePath = false;
@@ -594,7 +597,6 @@ public class IRODSFile extends RemoteFile {
 		return PATH_SEPARATOR_CHAR;
 	}
 
-	
 	/**
 	 * Copies this file to another file. This object is the source file. The
 	 * destination file is given as the argument. If the destination file, does
@@ -635,7 +637,8 @@ public class IRODSFile extends RemoteFile {
 	public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
 			throws IOException {
 		if (log.isInfoEnabled()) {
-			log.info("copying file:" + this.getAbsolutePath() + " to file:" + file.getAbsolutePath());
+			log.info("copying file:" + this.getAbsolutePath() + " to file:"
+					+ file.getAbsolutePath());
 		}
 		if (file == null) {
 			log.error("dest file is null");
@@ -672,10 +675,14 @@ public class IRODSFile extends RemoteFile {
 				if (file instanceof LocalFile) {
 					if (file.exists()) {
 						if (forceOverwrite) {
-							log.info("deleting a local file because forceOverwrite was specified");
+							log
+									.info("deleting a local file because forceOverwrite was specified");
 							file.delete();
 						} else {
-							log.error("file:" + file.getAbsolutePath() + " already exists, and overwriting was not allowed");
+							log
+									.error("file:"
+											+ file.getAbsolutePath()
+											+ " already exists, and overwriting was not allowed");
 							throw new IOException(
 									"File exists and overwriting not allowed");
 						}
@@ -691,7 +698,8 @@ public class IRODSFile extends RemoteFile {
 					super.copyTo(file, forceOverwrite);
 				}
 			} catch (IRODSException e) {
-				log.error("IRODSException in coptyTo operation for file:" + this.getAbsolutePath() + " type is:" + e.getType());
+				log.error("IRODSException in coptyTo operation for file:"
+						+ this.getAbsolutePath() + " type is:" + e.getType());
 				IOException io = new IOException();
 				io.initCause(e);
 				throw io;
@@ -715,7 +723,8 @@ public class IRODSFile extends RemoteFile {
 	public void copyFrom(final GeneralFile file, final boolean forceOverwrite)
 			throws IOException {
 		if (log.isInfoEnabled()) {
-			log.info("copy of:" + file.getAbsolutePath() + " to:" + this.getAbsolutePath());
+			log.info("copy of:" + file.getAbsolutePath() + " to:"
+					+ this.getAbsolutePath());
 		}
 		if (file == null) {
 			throw new NullPointerException();
@@ -749,7 +758,10 @@ public class IRODSFile extends RemoteFile {
 					super.copyTo(file, forceOverwrite);
 				}
 			} catch (IRODSException e) {
-				log.error("exception in copyFrom, rethrown as IOException for File contract", e);
+				log
+						.error(
+								"exception in copyFrom, rethrown as IOException for File contract",
+								e);
 				IOException io = new IOException();
 				io.initCause(e);
 				throw io;
@@ -766,7 +778,7 @@ public class IRODSFile extends RemoteFile {
 	protected String checksumMD5() throws IOException {
 		return iRODSFileSystem.commands.checksum(this);
 	}
-	
+
 	/**
 	 * Queries the file server to find all files that match a set of conditions.
 	 * For all those that match, the fields indicated in the select array are
@@ -793,7 +805,7 @@ public class IRODSFile extends RemoteFile {
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects) throws IOException {
-		 return query(conditions, selects, true);
+		return query(conditions, selects, true);
 	}
 
 	/**
@@ -826,6 +838,7 @@ public class IRODSFile extends RemoteFile {
 	 * from "file path" to "data name" before issuing the query, and then from
 	 * "data name" back to "file path" within the results. The programmer using
 	 * this API should never see the internal field names.
+	 * 
 	 * @param conditions
 	 *            {@link edu.sdsc.grid.io.MetaDataCondition MetaDataCondition}
 	 *            containing the query conditions
@@ -850,7 +863,7 @@ public class IRODSFile extends RemoteFile {
 	 */
 	public MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, boolean distinctQuery) throws IOException {
-		
+
 		MetaDataCondition iConditions[] = null;
 		String fieldName = null;
 		int operator = MetaDataCondition.EQUAL;
@@ -873,10 +886,9 @@ public class IRODSFile extends RemoteFile {
 			iConditions[conditionsLength] = MetaDataSet.newCondition(fieldName,
 					operator, value);
 
-			return iRODSFileSystem
-					.query(iConditions, selects,
-							IRODSFileSystem.DEFAULT_RECORDS_WANTED,
-							Namespace.DIRECTORY, distinctQuery);
+			return iRODSFileSystem.query(iConditions, selects,
+					IRODSFileSystem.DEFAULT_RECORDS_WANTED,
+					Namespace.DIRECTORY, distinctQuery);
 		} else {
 			iConditions = new MetaDataCondition[conditionsLength + 3];
 
@@ -997,7 +1009,6 @@ public class IRODSFile extends RemoteFile {
 		throw new RuntimeException("not implemented");
 	}
 
-	
 	/**
 	 * Sets the physical resource this IRODSFile object will be stored on. If
 	 * null, a default resource will be chosen by the irods server.
@@ -1005,8 +1016,9 @@ public class IRODSFile extends RemoteFile {
 	 * This setter refers to the object parameter only, to move a file to a new
 	 * physical resource see renameTo(GeneralFile)
 	 * 
-	 * Note that the fileSystem query for ResourceMetaData.RESOURCE_NAME will fail if
-	 * there are no files in a particular resource, due to the way that the query is put together.
+	 * Note that the fileSystem query for ResourceMetaData.RESOURCE_NAME will
+	 * fail if there are no files in a particular resource, due to the way that
+	 * the query is put together.
 	 * 
 	 * @param resource
 	 *            The name of resource to be used.
@@ -1016,22 +1028,24 @@ public class IRODSFile extends RemoteFile {
 	 *             If an IOException occurs during the system change.
 	 */
 	public void setResource(String resourceName) throws IOException {
-		
+
 		if (resourceName == null) {
 			throw new IllegalArgumentException("resourceName is null");
 		}
-		
+
 		if (resourceName != null) {
 			// Make sure valid resource
 			MetaDataRecordList[] rl = fileSystem.query(MetaDataSet
 					.newSelection(ResourceMetaData.RESOURCE_NAME));
-			
-			if (rl == null) {  
-				log.warn("no resources returned from query, accept the given resource:" + resourceName);
+
+			if (rl == null) {
+				log
+						.warn("no resources returned from query, accept the given resource:"
+								+ resourceName);
 				resource = resourceName;
 				return;
 			}
-			
+
 			for (int i = rl.length - 1; i >= 0; i--) {
 				if (resourceName.equals(rl[i].getStringValue(0))) {
 					resource = resourceName;
@@ -1165,7 +1179,7 @@ public class IRODSFile extends RemoteFile {
 		} else if (permission.equals("all") || permission.equals("ownership")
 				|| permission.equals("own") || permission.equals("o")) {
 			permission = "own";
-		} 
+		}
 
 		iRODSFileSystem.commands.chmod(this, permission, userName, zone,
 				recursive);
@@ -1225,8 +1239,13 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	boolean canWrite(boolean update) {
+		if (log.isInfoEnabled()) {
+			log.info("checking if i can write:" + this.getAbsolutePath());
+		}
+		
 		if (update || (pathNameType == PATH_IS_UNKNOWN)
 				|| pathNameType == PATH_IS_FILE) {
+			log.debug("checking permissions as file");
 			try {
 				if (filePermissions() >= WRITE_PERMISSIONS) {
 					pathNameType = PATH_IS_FILE;
@@ -1240,6 +1259,7 @@ public class IRODSFile extends RemoteFile {
 		// if this far, then not a file
 		if (pathNameType == PATH_IS_UNKNOWN
 				|| pathNameType == PATH_IS_DIRECTORY) {
+			log.debug("checking permissions as directory");
 			try {
 				if (directoryPermissions() >= WRITE_PERMISSIONS) {
 					pathNameType = PATH_IS_DIRECTORY;
@@ -1534,12 +1554,14 @@ public class IRODSFile extends RemoteFile {
 		try {
 			if (isDirectory()) {
 				if (log.isDebugEnabled()) {
-					log.debug("deleting a directory:" + this.getAbsolutePath() + " with force option of " + force);
+					log.debug("deleting a directory:" + this.getAbsolutePath()
+							+ " with force option of " + force);
 				}
 				iRODSFileSystem.commands.deleteDirectory(this, force);
 			} else if (isFile(false)) {
 				if (log.isDebugEnabled()) {
-					log.debug("deleting a file:" + this.getAbsolutePath() + " with force option of " + force);
+					log.debug("deleting a file:" + this.getAbsolutePath()
+							+ " with force option of " + force);
 				}
 				iRODSFileSystem.commands.deleteFile(this, force);
 			}
@@ -2164,7 +2186,7 @@ public class IRODSFile extends RemoteFile {
 	 *            The new abstract pathname for the named file
 	 * @throws NullPointerException
 	 *             - If dest is null
-	 *             
+	 * 
 	 */
 	public boolean renameTo(GeneralFile dest) throws IllegalArgumentException,
 			NullPointerException {
