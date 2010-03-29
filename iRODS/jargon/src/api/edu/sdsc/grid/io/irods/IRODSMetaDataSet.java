@@ -1187,6 +1187,12 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(RESOURCE_MODIFY_DATE,
 				"Time that this record was last modified (Unix Time)",
 				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(RESOURCE_GROUP,
+				"Resource Group Name",
+				MetaDataField.STRING, protocol));
+		group.add(new MetaDataField(RESOURCE_GROUP_ID,
+				"Resource Group ID",
+				MetaDataField.STRING, protocol));
 		add(group);
 
 		// User

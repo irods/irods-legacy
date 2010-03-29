@@ -48,7 +48,8 @@ public class IRODSAvuTest {
 		IRODSAvu.checkForAVU(conditions, selects, Namespace.FILE, selectedAVU);
 		TestCase.assertEquals("did not get the selects back", selects.length, selectedAVU.length);
 		
-
 	}
+	
+	
 
 }

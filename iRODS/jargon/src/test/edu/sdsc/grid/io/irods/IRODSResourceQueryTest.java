@@ -1,6 +1,11 @@
 package edu.sdsc.grid.io.irods;
 
+import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.Namespace;
+import edu.sdsc.grid.io.ResourceMetaData;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -10,6 +15,7 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IreplCommand;
 
+import org.irods.jargon.core.exception.JargonException;
 import org.junit.After;
 import org.junit.AfterClass;
 
@@ -20,6 +26,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -27,12 +34,12 @@ import junit.framework.TestCase;
 
 /**
  * Tests for icommands that query metadata
- *
+ * 
  * @author Mike Conway, DICE (www.irods.org)
  * @since
- *
+ * 
  */
-public class IRODSResourceQueryTest  {
+public class IRODSResourceQueryTest {
 
 	protected static Properties testingProperties = new Properties();
 	protected static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
@@ -67,7 +74,7 @@ public class IRODSResourceQueryTest  {
 	/**
 	 * test relevant to BUG: 36 resource added with icommand does not show up in
 	 * Jargon query
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -102,7 +109,7 @@ public class IRODSResourceQueryTest  {
 
 	/**
 	 * test relevant to BUG: 24 Inconsistant return of resource
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -155,7 +162,7 @@ public class IRODSResourceQueryTest  {
 
 	/**
 	 * test relevant to BUG: 24 Inconsistant return of resource
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -224,7 +231,7 @@ public class IRODSResourceQueryTest  {
 
 	/**
 	 * test relevant to BUG: 24 Inconsistant return of resource
-	 *
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -267,5 +274,6 @@ public class IRODSResourceQueryTest  {
 				resources.size());
 
 	}
+
 
 }

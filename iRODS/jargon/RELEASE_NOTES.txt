@@ -28,7 +28,7 @@ Features and Changes
 *fix for  Bug 77 -  Jargon NullPointerException when invoking setResource
 
 -----------
-
+*fix for  Bug 82 -  error querying resources in resource group
 ================================================================================================
 Outstanding Issues
 
