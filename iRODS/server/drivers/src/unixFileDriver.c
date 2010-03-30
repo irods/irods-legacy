@@ -311,6 +311,9 @@ unixFileReaddir (rsComm_t *rsComm, void *dirPtr, struct dirent *direntPtr)
     } else {
 	status = 0;
 	*direntPtr = *tmpDirentPtr;
+#if defined(solaris_platform)
+	rstrcpy (direntPtr->d_name, tmpDirentPtr->d_name, MAX_NAME_LEN);
+#endif
     }
     return (status);
 }

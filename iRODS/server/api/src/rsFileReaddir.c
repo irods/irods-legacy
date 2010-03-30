@@ -76,10 +76,17 @@ _rsFileReaddir (rsComm_t *rsComm, fileReaddirInp_t *fileReaddirInp,
 rodsDirent_t **fileReaddirOut)
 {
     int status;
-    struct dirent myFileDirent;
+    /* have to do this for solaris for the odd d_name definition */
+#if defined(solaris_platform)
+    char fileDirent[sizeof (struct dirent) + MAX_NAME_LEN];  
+    struct dirent *myFileDirent = (struct dirent *) fileDirent;
+#else
+    struct dirent fileDirent;
+    struct dirent *myFileDirent = &fileDirent;
+#endif
 
     status = fileReaddir (FileDesc[fileReaddirInp->fileInx].fileType, rsComm, 
-      FileDesc[fileReaddirInp->fileInx].driverDep, &myFileDirent);
+      FileDesc[fileReaddirInp->fileInx].driverDep, myFileDirent);
 
     if (status < 0) {
 	if (status != -1) {	/* eof */
@@ -92,7 +99,7 @@ rodsDirent_t **fileReaddirOut)
 
     *fileReaddirOut = malloc (sizeof (rodsDirent_t));
 
-    status = direntToRodsDirent (*fileReaddirOut, &myFileDirent);
+    status = direntToRodsDirent (*fileReaddirOut, myFileDirent);
 
     if (status < 0) {
 	free (*fileReaddirOut);
