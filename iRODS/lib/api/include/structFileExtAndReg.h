@@ -25,6 +25,14 @@ typedef struct StructFileExtAndRegInp {
     keyValPair_t condInput;   /* include chksum flag and value */
 } structFileExtAndRegInp_t;
 
+#define MAX_NUM_BULK_OPR_FILES	50
+
+typedef struct RenamedPhyFiles {
+    int count;
+    char origFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
+    char newFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
+} renamedPhyFiles_t;
+
 #define StructFileExtAndRegInp_PI "str objPath[MAX_NAME_LEN]; str collection[MAX_NAME_LEN]; int oprType; int flags; struct KeyValPair_PI;"
 
 #if defined(RODS_SERVER)
@@ -41,6 +49,10 @@ char *phyBunDir, int flags);
 int
 regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int flags);
+int
+bulkRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
+char *subfilePath, rodsLong_t dataSize, int flags,
+genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles);
 #else
 #define RS_STRUCT_FILE_EXT_AND_REG NULL
 #endif

@@ -478,3 +478,109 @@ char *subfilePath, rodsLong_t dataSize, int flags)
     return status;
 }
 
+int
+bulkRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
+char *subfilePath, rodsLong_t dataSize, int flags, 
+genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
+{
+    dataObjInfo_t dataObjInfo;
+    dataObjInp_t dataObjInp;
+    struct stat statbuf;
+    int status;
+    int overWriteFlag = 0;
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    bzero (&dataObjInfo, sizeof (dataObjInfo));
+    rstrcpy (dataObjInp.objPath, subObjPath, MAX_NAME_LEN);
+    rstrcpy (dataObjInfo.objPath, subObjPath, MAX_NAME_LEN);
+    rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+    rstrcpy (dataObjInfo.dataType, "generic", NAME_LEN);
+    dataObjInfo.rescInfo = rescInfo;
+    dataObjInfo.dataSize = dataSize;
+
+    status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "regSubFile: getFilePathName err for %s. status = %d",
+          dataObjInp.objPath, status);
+        return (status);
+    }
+
+    status = stat (dataObjInfo.filePath, &statbuf);
+    if (status == 0 || errno != ENOENT) {
+        if ((statbuf.st_mode & S_IFDIR) != 0) {
+	    return SYS_PATH_IS_NOT_A_FILE;
+	}
+        if (chkOrphanFile (rsComm, dataObjInfo.filePath, rescInfo->rescName, 
+	  &dataObjInfo) <= 0) {
+            /* not an orphan file */
+            if (dataObjInfo.dataId > 0 &&
+              strcmp (dataObjInfo.objPath, subObjPath) == 0) {
+                /* overwrite the current file */
+                overWriteFlag = 1;
+            } else {
+	        status = SYS_COPY_ALREADY_IN_RESC;
+                rodsLog (LOG_ERROR,
+                  "regSubFile: phypath %s is already in use. status = %d",
+                  dataObjInfo.filePath, status);
+                return (status);
+	    }
+        }
+        /* rename it to the orphan dir */
+        fileRenameInp_t fileRenameInp;
+        bzero (&fileRenameInp, sizeof (fileRenameInp));
+        rstrcpy (fileRenameInp.oldFileName, dataObjInfo.filePath,
+          MAX_NAME_LEN);
+        status = renameFilePathToNewDir (rsComm, ORPHAN_DIR,
+          &fileRenameInp, rescInfo, 1);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "regSubFile: renameFilePathToNewDir err for %s. status = %d",
+              fileRenameInp.oldFileName, status);
+            return (status);
+        }
+    }
+    /* make the necessary dir */
+    mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", dataObjInfo.filePath,
+      getDefDirMode ());
+    /* add a link */
+    status = link (subfilePath, dataObjInfo.filePath);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "regSubFile: link error %s to %s. errno = %d",
+          subfilePath, dataObjInfo.filePath, errno);
+        return (UNIX_FILE_LINK_ERR - errno);
+    }
+
+    if (overWriteFlag == 0) {
+        status = svrRegDataObj (rsComm, &dataObjInfo);
+    } else {
+        char tmpStr[MAX_NAME_LEN];
+        modDataObjMeta_t modDataObjMetaInp;
+	keyValPair_t regParam;
+
+	bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
+	bzero (&regParam, sizeof (regParam));
+        snprintf (tmpStr, MAX_NAME_LEN, "%lld", dataSize);
+        addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
+        addKeyVal (&regParam, ALL_REPL_STATUS_KW, tmpStr);
+        snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
+        addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
+
+        modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+        modDataObjMetaInp.regParam = &regParam;
+
+        status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+
+        clearKeyVal (&regParam);
+    }
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "regSubFile: svrRegDataObj of %s. errno = %d",
+          dataObjInfo.objPath, errno);
+	unlink (dataObjInfo.filePath);
+    }
+    return status;
+}
+
