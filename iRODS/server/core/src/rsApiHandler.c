@@ -36,9 +36,10 @@ bytesBuf_t *bsBBuf)
 
     apiInx = apiTableLookup (apiNumber);
     if (apiInx < 0) {
-	sendApiReply (rsComm, apiInx, apiInx, myOutStruct, &myOutBsBBuf);
-	rodsLog (LOG_NOTICE,
+	rodsLog (LOG_ERROR,
 	  "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber);
+	/* XXXXXX this call will segfault. need to handle this */
+	sendApiReply (rsComm, apiInx, apiInx, myOutStruct, &myOutBsBBuf);
 	return (apiInx);
     }
  
