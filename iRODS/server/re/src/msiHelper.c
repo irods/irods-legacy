@@ -47,7 +47,7 @@ ruleExecInfo_t *rei)
  *
  * \since 2.3
  *
- * \author  Jean-Yves Neif
+ * \author  Jean-Yves Nief
  * \date    2009-06-15
  *
  * \remark Terrell Russell - msi documentation, 2009-12-17
