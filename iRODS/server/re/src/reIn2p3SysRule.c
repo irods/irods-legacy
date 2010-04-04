@@ -33,10 +33,10 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   
   /* a quick test in order to see if the resource is up or down (needed to update the "status" metadata) */
   if ( strcmp(output, MON_OUTPUT_NO_ANSWER) == 0 ) {
-	strncpy(monStatus, RESC_AUTO_DOWN, MAX_NAME_LEN);
+    strncpy(monStatus, RESC_AUTO_DOWN, MAX_NAME_LEN);
   }
   else {
-	strncpy(monStatus, RESC_AUTO_UP, MAX_NAME_LEN);
+    strncpy(monStatus, RESC_AUTO_UP, MAX_NAME_LEN);
   }
   
   strSplit(output, delim, splc);
@@ -88,17 +88,17 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp1);
   rc3 = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
   if ( rc3 >= 0 ) {
-		result = genQueryOut->sqlResult[0].value;
+    result = genQueryOut->sqlResult[0].value;
         if ( strcmp(result, "\0") == 0 || ( strncmp(result,"auto-",5) == 0 && strcmp(result, monStatus) != 0 ) ) {
-			rc4 = rsGeneralAdmin(rei->rsComm, &generalAdminInp2);
-		}
+          rc4 = rsGeneralAdmin(rei->rsComm, &generalAdminInp2);
+        }
   } else {
-	rodsLog(LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", resc);
+    rodsLog(LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", resc);
   }
   pthread_mutex_unlock(&my_mutex);
   if ( rc1 != 0 ) {
     fprintf(foutput, "time=%i : unable to insert the entries for server %s into the iCAT\n", 
-	    timestamp, serverName);
+      timestamp, serverName);
   }
   if ( rc2 != 0 ) {
     rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register the free space metadata for the resource %s", resc);
@@ -155,45 +155,45 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
   if ( genQueryOut->rowCnt > 0 ) {
     l = 0;
     for (i=0; i<genQueryOut->attriCnt; i++) {
-		for (j=0; j<genQueryOut->rowCnt; j++) {
-			char *tResult;
-			tResult = genQueryOut->sqlResult[i].value;
-			tResult += j*genQueryOut->sqlResult[i].len;
-			switch (i) {
-			case 0:
-				if ( nservers >= 0 ) {
-					for (k=0; k<nservers; k++) {
-						if ( strcmp(serverList[k], tResult) == 0 ) {
-							index[j] = l;
-							l++;
-						}
-					}
-				} 
-				else {
-					index[j] = l;
-					l++;
-				}
-				if ( index[j] != -1 ) {
-					rstrcpy(monList[index[j]].serverName, tResult, LONG_NAME_LEN);
-				}
-			break;
-			case 1:
-				if ( index[j] != -1 ) {
-					rstrcpy(monList[index[j]].rescName, tResult, LONG_NAME_LEN);
-				}
-			break;
-			case 2:
-				if ( index[j] != -1 ) {
-					rstrcpy(monList[index[j]].rescType, tResult, LONG_NAME_LEN);
-				}
-			break;
-			case 3:
-				if ( index[j] != -1 ) {
-					rstrcpy(monList[index[j]].vaultPath, tResult, LONG_NAME_LEN);
-				}
-			break;
-			}
-		}
+      for (j=0; j<genQueryOut->rowCnt; j++) {
+        char *tResult;
+        tResult = genQueryOut->sqlResult[i].value;
+        tResult += j*genQueryOut->sqlResult[i].len;
+        switch (i) {
+          case 0:
+          if ( nservers >= 0 ) {
+            for (k=0; k<nservers; k++) {
+              if ( strcmp(serverList[k], tResult) == 0 ) {
+                index[j] = l;
+                l++;
+              }
+            }
+          }
+          else {
+            index[j] = l;
+            l++;
+          }
+          if ( index[j] != -1 ) {
+            rstrcpy(monList[index[j]].serverName, tResult, LONG_NAME_LEN);
+          }
+          break;
+          case 1:
+          if ( index[j] != -1 ) {
+            rstrcpy(monList[index[j]].rescName, tResult, LONG_NAME_LEN);
+          }
+          break;
+          case 2:
+          if ( index[j] != -1 ) {
+            rstrcpy(monList[index[j]].rescType, tResult, LONG_NAME_LEN);
+          }
+          break;
+          case 3:
+          if ( index[j] != -1 ) {
+            rstrcpy(monList[index[j]].vaultPath, tResult, LONG_NAME_LEN);
+          }
+          break;
+        }
+      }
     }
     (*nlist) = l;
     clearGenQueryInp(&genQueryInp);
@@ -230,8 +230,7 @@ void *startMonScript(void *arg) {
   if (status < 0) {
     rodsLogError (LOG_ERROR, status, "Call to msiExecCmd failed in msiServerMonPerf. ");
     char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
-    rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, 
-		   &(tinput->rei));
+    rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, &(tinput->rei));
     threadIsAlive[thrid] = 1;
     retval = -1;
     pthread_exit((void *)&retval);
@@ -246,8 +245,7 @@ void *startMonScript(void *arg) {
     else { 
       rodsLog(LOG_ERROR, "Server monitoring: no output for the server %s, status = %i \n", tinput->execAddr, status);
       char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
-      rodsMonPerfLog(tinput->execAddr, tinput->rescName, 
-		     noanswer, &(tinput->rei));
+      rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, &(tinput->rei));
       threadIsAlive[thrid] = 1;
       retval = -1;
       pthread_exit((void *)&retval);
@@ -257,7 +255,7 @@ void *startMonScript(void *arg) {
     rodsLog(LOG_ERROR, "Server monitoring: problem with the server %s, status = %i \n", tinput->execAddr, status);
     char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
     rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, 
-		   &(tinput->rei));
+      &(tinput->rei));
     threadIsAlive[thrid] = 1;
     retval = -1;
     pthread_exit((void *)&retval);
@@ -290,8 +288,7 @@ int checkIPaddress(char *IP, unsigned char IPcomp[IPV4]) {
 
 }
 
-int checkHostAccessControl (char *username, char *hostclient,
-			    char *groupsname)
+int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
 {
 
   char *configDir, hostControlAccessFile[LONG_NAME_LEN];
@@ -305,11 +302,11 @@ int checkHostAccessControl (char *username, char *hostclient,
   /* try to open the HostControlAccess if it exists. */
   configDir = getConfigDir ();
   snprintf (hostControlAccessFile, LONG_NAME_LEN, "%s/%s", configDir,
-	    HOST_ACCESS_CONTROL_FILE);
+    HOST_ACCESS_CONTROL_FILE);
   fp = fopen(hostControlAccessFile, "r");
   if (fp == NULL) {
     rodsLog (LOG_NOTICE,
-	     "hostAuthCheck: can't open HostControlAccess file %s", hostControlAccessFile);
+      "hostAuthCheck: can't open HostControlAccess file %s", hostControlAccessFile);
     return (UNIX_FILE_OPEN_ERR - errno);
   }
   /* parse the list of groups for the user from the groupsname char */
@@ -324,38 +321,38 @@ int checkHostAccessControl (char *username, char *hostclient,
     indxc = 0;
     if( fgets(line, MAXLEN, fp) ) {
       if ( line[0] != '#' && line[0] != '\n' ) {  /* Comment or empty line, ignore */
-	eltstr = strtok(line, delim);
-	strncpy(tempArr[indxc], eltstr, MAXSTR);
-	while ( (eltstr = strtok(NULL, delim)) ) {
-	  indxc++;
-	  strncpy(tempArr[indxc], eltstr, MAXSTR);
-	}
-	if ( (indxc+1) == NFIELDS && checkIPaddress(tempArr[2], IPEntry) == 0 &&
-	     checkIPaddress(tempArr[3], subnetEntry) == 0 &&
-	     checkIPaddress(hostclient, visitorIP) == 0 ) {
-	  /* check through if one of the group does correspond to the one allowed */
-	  			groupok = 1;
-	  			for ( i = 0; i <= nelt; i++ ) {
-				  if ( strcmp(tempArr[1], grouplist[i]) == 0 ) {
-				    groupok = 0;
-				    break;
-				  }
-	  			}
-	  			if ( strcmp(tempArr[1], "all") == 0 || groupok == 0 ) {
-				  if ( strcmp(tempArr[0], "all") == 0 || strcmp(tempArr[0], username) == 0 ) {
-				    iok = 1;
-				    /* check if <client, group, clientIP> match this entry of the control access file
-				       (iok=1). Get out immediatly from this function: client is allowed to proceed. */
-				    for ( i = 0; i < IPV4; i++ ) {
-				      result = ~( visitorIP[i]  ^ IPEntry[i] ) | subnetEntry[i];
-				      if ( result != 255 ) {
-					iok = 0;
-				      }
-				    }
-				    if ( iok == 1 ) { return (0); }
-				  }
-	  			}
-	}
+        eltstr = strtok(line, delim);
+        strncpy(tempArr[indxc], eltstr, MAXSTR);
+        while ( (eltstr = strtok(NULL, delim)) ) {
+          indxc++;
+          strncpy(tempArr[indxc], eltstr, MAXSTR);
+        }
+        if ( (indxc+1) == NFIELDS && checkIPaddress(tempArr[2], IPEntry) == 0 &&
+          checkIPaddress(tempArr[3], subnetEntry) == 0 &&
+        checkIPaddress(hostclient, visitorIP) == 0 ) {
+        /* check through if one of the group does correspond to the one allowed */
+          groupok = 1;
+          for ( i = 0; i <= nelt; i++ ) {
+            if ( strcmp(tempArr[1], grouplist[i]) == 0 ) {
+              groupok = 0;
+              break;
+            }
+          }
+          if ( strcmp(tempArr[1], "all") == 0 || groupok == 0 ) {
+            if ( strcmp(tempArr[0], "all") == 0 || strcmp(tempArr[0], username) == 0 ) {
+              iok = 1;
+              /* check if <client, group, clientIP> match this entry of the control access file
+              (iok=1). Get out immediatly from this function: client is allowed to proceed. */
+              for ( i = 0; i < IPV4; i++ ) {
+                result = ~( visitorIP[i]  ^ IPEntry[i] ) | subnetEntry[i];
+                if ( result != 255 ) {
+                  iok = 0;
+                }
+              }
+              if ( iok == 1 ) { return (0); }
+            }
+          }
+        }
       }
     }
   }
@@ -373,7 +370,7 @@ int checkHostAccessControl (char *username, char *hostclient,
  * 
  * \since pre-2.1
  * 
- * \author 
+ * \author Jean-Yves Nief
  * \date 
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-25
@@ -481,7 +478,7 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   char val[MAX_NAME_LEN] = ""; /* val => arguments for the script */
   int i, looptime, maxtime, nresc, nservers, rc, threadsNotfinished;
   const char *probtimeDef = "10"; /* default value used by the monitoring script for the amount
-				     of time for this measurement (in s) */
+            of time for this measurement (in s) */
   rsComm_t *rsComm;
   monInfo_t rescList[MAX_NSERVERS];
   
@@ -521,12 +518,12 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
     i = 0;
     while(fgets(line, sizeof line, filein) != NULL) { /* for each line of the file */
       /* if begin of line = # => ignore */
-		if(line[0] != '#') {
-			rstrcpy(buffer, strdup(line), MAX_NAME_LEN);
-			strSplit(buffer, delim, splchain);
-			rstrcpy(serverList[i], splchain[0], MAX_NAME_LEN);
-			i++;
-		} 
+      if(line[0] != '#') {
+        rstrcpy(buffer, strdup(line), MAX_NAME_LEN);
+        strSplit(buffer, delim, splchain);
+        rstrcpy(serverList[i], splchain[0], MAX_NAME_LEN);
+        i++;
+      } 
     }
     /* number of servers... useful for the threads */
     nservers = i;
@@ -542,7 +539,7 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   thrInp_t *thrInput = malloc(sizeof(thrInp_t) * nresc);
   int addPathToArgv = 0;
   char *hintPath = "";
-  	
+  
   for (i = 0; i < nresc; i++) {
     /* for each server, build the proxy command to be executed.
        it will be put in a thrInp structure to be given to the thread.
@@ -579,23 +576,23 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
     looptime += 1;
     if ( looptime >= maxtime ) {
       for (i = 0; i < nresc; i++) {
-	if ( !threadIsAlive[i] ) {
-	  rc = pthread_cancel(threads[i]);
-	  if ( rc == 0 ) {
-	    threadIsAlive[i] = 1;
-	    char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
-	    rodsMonPerfLog(thrInput[i].execAddr,
-			   thrInput[i].rescName, 
-			   noanswer, 
-			   &(thrInput[i].rei));
-	  }
-	}
+        if ( !threadIsAlive[i] ) {
+          rc = pthread_cancel(threads[i]);
+          if ( rc == 0 ) {
+            threadIsAlive[i] = 1;
+            char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
+            rodsMonPerfLog(thrInput[i].execAddr,
+              thrInput[i].rescName, 
+              noanswer, 
+              &(thrInput[i].rei));
+          }
+        }
       }
     }
     threadsNotfinished = 1;
     for (i = 0; i < nresc; i++) {
       if ( threadIsAlive[i] == 0 ) {
-	threadsNotfinished = 0;
+        threadsNotfinished = 0;
       }
     }
     if ( threadsNotfinished ) {
@@ -625,8 +622,7 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
   defaultTimespan = 24;  /* in hours */
   
   if (rei == NULL || rei->rsComm == NULL) {
-    rodsLog (LOG_ERROR,
-	     "msiFlushMonStat: input rei or rsComm is NULL");
+    rodsLog (LOG_ERROR, "msiFlushMonStat: input rei or rsComm is NULL");
     return (SYS_INTERNAL_NULL_INPUT_ERR);
   }
   
@@ -634,7 +630,7 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
 	
   if ( inpParam1 == NULL ) {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiFlushMonStat: input Param1 is NULL");
+      "msiFlushMonStat: input Param1 is NULL");
     return (rei->status);
   }
   
@@ -642,14 +638,14 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
     timespan = (char *) inpParam1->inOutStruct;
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiFlushMonStat: Unsupported input Param1 type %s",
-			inpParam1->type);
+      "msiFlushMonStat: Unsupported input Param1 type %s",
+      inpParam1->type);
     return (rei->status);
   }
   
   if ( inpParam2 == NULL ) {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiFlushMonStat: input Param2 is NULL");
+      "msiFlushMonStat: input Param2 is NULL");
     return (rei->status);
   }
   
@@ -657,11 +653,11 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
     tablename = (char *) inpParam2->inOutStruct;
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiFlushMonStat: Unsupported input Param2 type %s",
-			inpParam2->type);
+      "msiFlushMonStat: Unsupported input Param2 type %s",
+      inpParam2->type);
     return (rei->status);
-        }
-	
+  }
+
   if ( atoi(timespan) > 0 ) {
     elapseTime = atoi(timespan) * 3600;
   }
@@ -672,7 +668,7 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
   if ( strcmp(tablename, "serverload") != 0 && 
        strcmp(tablename, "serverloaddigest") != 0 ) {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiFlushMonStat: table %s does not exist", tablename);
+      "msiFlushMonStat: table %s does not exist", tablename);
     return (rei->status);
   }
   
@@ -690,8 +686,8 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
 
 
 int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_wght, msParam_t *runq_wght,
-	 	     msParam_t *disk_wght, msParam_t *netin_wght, msParam_t *netout_wght, 
-		     ruleExecInfo_t *rei) {
+      msParam_t *disk_wght, msParam_t *netin_wght, msParam_t *netout_wght, 
+      ruleExecInfo_t *rei) {
   /* it feeds the R_LOAD_DIGEST table used to store a load factor for each resource based on
      input criteria to this msi:
      load_factor = cpu_wght*cpu_used + mem_wght*mem_used + swap_wght*swap_used + runq_wght*runq_load +
@@ -711,7 +707,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   
   if (rei == NULL || rei->rsComm == NULL) {
     rodsLog (LOG_ERROR,
-	     "msiDigestMonStat: input rei or rsComm is NULL");
+      "msiDigestMonStat: input rei or rsComm is NULL");
     return (SYS_INTERNAL_NULL_INPUT_ERR);
   }
   
@@ -720,7 +716,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
   if ( cpu_wght == NULL || mem_wght == NULL || swap_wght == NULL || runq_wght == NULL
        || disk_wght == NULL || netin_wght == NULL || netout_wght == NULL ) {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: at least one of the input param is NULL");
+      "msiDigestMonStat: at least one of the input param is NULL");
     return (rei->status);
   }
   
@@ -728,8 +724,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     weight[0] = atoi(cpu_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: Unsupported input cpu_wght type %s",
-			cpu_wght->type);
+      "msiDigestMonStat: Unsupported input cpu_wght type %s",
+      cpu_wght->type);
     return (rei->status);
   }
   
@@ -737,8 +733,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     weight[1] = atoi(mem_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: Unsupported input mem_wght type %s",
-			mem_wght->type);
+      "msiDigestMonStat: Unsupported input mem_wght type %s",
+      mem_wght->type);
     return (rei->status);
   }
   
@@ -746,8 +742,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     weight[2] = atoi(swap_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: Unsupported input swap_wght type %s",
-			swap_wght->type);
+      "msiDigestMonStat: Unsupported input swap_wght type %s",
+      swap_wght->type);
     return (rei->status);
   }
   
@@ -755,8 +751,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     weight[3] = atoi(runq_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: Unsupported input runq_wght type %s",
-			runq_wght->type);
+      "msiDigestMonStat: Unsupported input runq_wght type %s",
+      runq_wght->type);
     return (rei->status);
   }
   
@@ -764,8 +760,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     weight[4] = atoi(disk_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: Unsupported input disk_wght type %s",
-			disk_wght->type);
+      "msiDigestMonStat: Unsupported input disk_wght type %s",
+      disk_wght->type);
     return (rei->status);
   }
   
@@ -773,8 +769,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     weight[5] = atoi(netin_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: Unsupported input netin_wght type %s",
-			netin_wght->type);
+      "msiDigestMonStat: Unsupported input netin_wght type %s",
+      netin_wght->type);
     return (rei->status);
   }
   
@@ -782,8 +778,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     weight[6] = atoi(netout_wght->inOutStruct);
   } else {
     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-			"msiDigestMonStat: Unsupported input netout_wght type %s",
-			netout_wght->type);
+      "msiDigestMonStat: Unsupported input netout_wght type %s",
+      netout_wght->type);
     return (rei->status);
   }
   
@@ -801,20 +797,20 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     nresc = genQueryOut->rowCnt;
     for (i=0; i<genQueryOut->attriCnt; i++) {
       for (j=0; j<nresc; j++) {
-	tResult = genQueryOut->sqlResult[i].value;
-	tResult += j*genQueryOut->sqlResult[i].len;
-	if ( i == 0 ) {
-	  rstrcpy(rescList[j], tResult, genQueryOut->sqlResult[i].len);
-	}
-	if ( i == 1 ) {
-	  rstrcpy(timeList[j], tResult, genQueryOut->sqlResult[i].len);
-	}
+        tResult = genQueryOut->sqlResult[i].value;
+        tResult += j*genQueryOut->sqlResult[i].len;
+        if ( i == 0 ) {
+          rstrcpy(rescList[j], tResult, genQueryOut->sqlResult[i].len);
+        }
+        if ( i == 1 ) {
+          rstrcpy(timeList[j], tResult, genQueryOut->sqlResult[i].len);
+        }
       }
     }
   }
   else {
     rodsLog(LOG_ERROR, "msiDigestMonStat: Unable to retrieve information \
-		                    from R_SERVER_LOAD");
+                        from R_SERVER_LOAD");
     return(rei->status);
   }
   
@@ -838,8 +834,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     if ( status == 0 ) {
       loadFactor = 0;
       for (j=0; j<genQueryOut->attriCnt; j++) {
-	tResult = genQueryOut->sqlResult[j].value;
-	loadFactor += atoi(tResult) * weight[j];
+        tResult = genQueryOut->sqlResult[j].value;
+        loadFactor += atoi(tResult) * weight[j];
       }
       loadFactor = loadFactor / totalWeight;
       generalRowInsertInp.arg1 = rescList[i];
@@ -847,8 +843,8 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
       generalRowInsertInp.arg2 = loadStr;
       rc = rsGeneralRowInsert(rsComm, &generalRowInsertInp);
       if ( rc != 0 ) {
-	rodsLog(LOG_ERROR, "msiDigestMonStat: Unable to ingest\
-				        information into from R_SERVER_LOAD_DIGEST table");
+        rodsLog(LOG_ERROR, "msiDigestMonStat: Unable to ingest\
+        information into from R_SERVER_LOAD_DIGEST table");
       }
     }
   }
