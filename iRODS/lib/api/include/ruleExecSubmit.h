@@ -29,7 +29,7 @@
 #define DEF_REI_USER_NAME	"systemUser"
 #define PACKED_REI_DIR		"packedRei"
 typedef struct {
-    char ruleName[MAX_NAME_LEN];
+    char ruleName[META_STR_LEN];
     char reiFilePath[MAX_NAME_LEN];
     char userName[NAME_LEN];
     char exeAddress[NAME_LEN];
@@ -45,7 +45,7 @@ typedef struct {
     char ruleExecId[NAME_LEN];	/* this is the output of the ruleExecSubmit */
 } ruleExecSubmitInp_t;
 
-#define RULE_EXEC_SUBMIT_INP_PI "str ruleName[MAX_NAME_LEN]; str reiFilePath[MAX_NAME_LEN]; str userName[NAME_LEN]; str exeAddress[NAME_LEN]; str exeTime[TIME_LEN]; str exeFrequency[NAME_LEN]; str priority[NAME_LEN]; str lastExecTime[NAME_LEN]; str exeStatus[NAME_LEN]; str estimateExeTime[NAME_LEN]; str notificationAddr[NAME_LEN]; struct KeyValPair_PI; struct *BytesBuf_PI; str ruleExecId[NAME_LEN];"
+#define RULE_EXEC_SUBMIT_INP_PI "str ruleName[META_STR_LEN]; str reiFilePath[MAX_NAME_LEN]; str userName[NAME_LEN]; str exeAddress[NAME_LEN]; str exeTime[TIME_LEN]; str exeFrequency[NAME_LEN]; str priority[NAME_LEN]; str lastExecTime[NAME_LEN]; str exeStatus[NAME_LEN]; str estimateExeTime[NAME_LEN]; str notificationAddr[NAME_LEN]; struct KeyValPair_PI; struct *BytesBuf_PI; str ruleExecId[NAME_LEN];"
 
 #if defined(RODS_SERVER)
 #define RS_RULE_EXEC_SUBMIT rsRuleExecSubmit

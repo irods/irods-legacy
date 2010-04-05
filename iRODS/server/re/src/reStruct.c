@@ -534,7 +534,7 @@ fillSubmitConditions (char *action, char *inDelayCondition,
   char *delayCondition;
 
   delayCondition = strdup(inDelayCondition);
-   strncpy(ruleSubmitInfo->ruleName, action, MAX_NAME_LEN);
+   strncpy(ruleSubmitInfo->ruleName, action, META_STR_LEN);
    /*
    i= copyTaggedValue(delayCondition,"UN", ruleSubmitInfo->userName,NAME_LEN);
    if (i != 0 && i != UNMATCHED_KEY_OR_INDEX)  return(i);

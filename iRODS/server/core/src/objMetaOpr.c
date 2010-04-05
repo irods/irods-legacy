@@ -1862,7 +1862,7 @@ reExec_t *reExec, int jobType)
         rstrcpy (queuedRuleExec->ruleExecId, ruleExecIdStr, NAME_LEN);
 
 	rstrcpy (queuedRuleExec->ruleName, 
-	  &ruleName->value[ruleName->len * i], MAX_NAME_LEN);
+	  &ruleName->value[ruleName->len * i], META_STR_LEN);
 	rstrcpy (queuedRuleExec->userName, 
 	  &userName->value[userName->len * i], NAME_LEN);
 	rstrcpy (queuedRuleExec->exeAddress, 
