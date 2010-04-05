@@ -8,6 +8,46 @@
 /* reHelper.c */
 
 #include "msiHelper.h"
+/**
+ * \fn msiGetStdoutInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr, ruleExecInfo_t *rei)
+ *
+ * \brief Gets stdout buffer from ExecCmdOut into buffer.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2010-04-05
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
+ * \param[out] outStr - a STR_MS_T to hold the retrieved stdout buffer.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGetStdoutInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr,
 ruleExecInfo_t *rei)
@@ -23,6 +63,46 @@ ruleExecInfo_t *rei)
     return rei->status;
 }
 
+/**
+ * \fn msiGetStderrInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr, ruleExecInfo_t *rei)
+ *
+ * \brief Gets stderr buffer from ExecCmdOut into buffer.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2010-04-05
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
+ * \param[out] outStr - a STR_MS_T to hold the retrieved stderr buffer.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiGetStderrInExecCmdOut (msParam_t *inpExecCmdOut, msParam_t *outStr,
 ruleExecInfo_t *rei)
@@ -43,7 +123,7 @@ ruleExecInfo_t *rei)
  *
  * \brief Writes a message into the server rodsLog
  *
- * \module ERA
+ * \module core
  *
  * \since 2.3
  *
@@ -118,6 +198,47 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
     return (rei->status);
 }
 
+/**
+ * \fn msiAddKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, msParam_t *msKeyValStr, ruleExecInfo_t *rei)
+ *
+ * \brief Adds a key and value to existing msKeyValStr.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2010-04-05
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] keyStr - a STR_MS_T key to be added to msKeyValStr.
+ * \param[in] valStr - a STR_MS_T value to be added to msKeyValStr.
+ * \param[in] msKeyValStr - a msKeyValStr to hold the new keyVal pair.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiAddKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, 
 msParam_t *msKeyValStr, ruleExecInfo_t *rei)
@@ -137,6 +258,47 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
     return rei->status;
 }
 
+/**
+ * \fn msiSplitPath (msParam_t *inpPath,  msParam_t *outParentColl, msParam_t *outChildName, ruleExecInfo_t *rei)
+ *
+ * \brief Splits a pathname into parent and child values.
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2010-04-05
+ *
+ * \note  This call should only be used through the rcExecMyRule (irule) call
+ *        i.e., rule execution initiated by clients and should not be called
+ *        internally by the server since it interacts with the client through
+ *        the normal client/server socket connection.
+ *
+ * \usage None
+ *
+ * \param[in] inpPath - a STR_MS_T which specifies the pathname to split.
+ * \param[out] outParentColl - a STR_MS_T to hold the returned parent path.
+ * \param[out] outChildName - a STR_MS_T to hold the returned child value.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiSplitPath (msParam_t *inpPath,  msParam_t *outParentColl, 
 msParam_t *outChildName, ruleExecInfo_t *rei)
@@ -166,9 +328,9 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
               "msiSplitPath: splitPathByKey for %s error, status = %d",
               (char *) inpPath->inOutStruct, rei->status);
         } else {
-	    fillStrInMsParam (outParentColl, parent);
-	    fillStrInMsParam (outChildName, child);
-	}
+          fillStrInMsParam (outParentColl, parent);
+          fillStrInMsParam (outChildName, child);
+        }
     } else {
         rodsLog (LOG_ERROR,
         "msiSplitPath: Unsupported input inpPath types %s",

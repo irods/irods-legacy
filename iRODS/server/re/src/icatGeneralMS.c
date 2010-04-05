@@ -50,8 +50,12 @@ This documentation is generated from the iRODS code.
 
  \subsection msihelper Helper Microservices
   Can be called by client through irule.
-  - #msiGetSessionVarValue - Gets the value of a session variable in the rei
+  - #msiGetStdoutInExecCmdOut - Gets stdout buffer from ExecCmdOut into buffer
+  - #msiGetStderrInExecCmdOut - Gets stderr buffer from ExecCmdOut into buffer
   - #msiWriteRodsLog - Writes a message into the server rodsLog
+  - #msiAddKeyValToMspStr - Adds a key and value to existing msKeyValStr
+  - #msiSplitPath - Splits a pathname into parent and child values
+  - #msiGetSessionVarValue - Gets the value of a session variable in the rei
 
  \subsection msilowlevel Data Object Low-level Microservices
   Can be called by client through irule.
