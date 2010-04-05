@@ -658,12 +658,45 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
 	free(rawQuery);
 	free(query);
 
-	return(rei->status);
+  return(rei->status);
 }
 
 
-
-
+/**
+ * \fn msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
+ *
+ * \brief This microservice prints the given GenQueryInp_MS_T to the given target buffer
+ *
+ * \module core
+ *
+ * \since pre-2.1
+ *
+ * \author  Arcot Rajasekar
+ * \date    
+ *
+ * \remark Terrell Russell - msi documentation, 2010-04-05
+ *
+ * \usage None
+ *
+ * \param[in] where - Required - a STR_MS_T containing the parameters.
+ * \param[in] genQueryInpParam - Required - a GenQueryInp_MS_T containing the parameters and conditions.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
 int
 msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo_t *rei)
 {
@@ -695,10 +728,10 @@ msiPrintGenQueryInp( msParam_t *where, msParam_t* genQueryInpParam, ruleExecInfo
   }
 
   genQueryInp = (genQueryInp_t *)  strtol((char *)genQueryInpParam->inOutStruct,
-					  (char **) NULL,0);
+    (char **) NULL,0);
 
 
-  /* print each selection  pair to writeStr */
+  /* print each selection pair to writeStr */
   len = genQueryInp->selectInp.len;
   ip1 = genQueryInp->selectInp.inx;
   ip2 = genQueryInp->selectInp.value;
