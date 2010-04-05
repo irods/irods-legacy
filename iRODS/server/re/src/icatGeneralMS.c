@@ -27,7 +27,7 @@ This documentation is generated from the iRODS code.
   - #msiAdmClearAppRuleStruct - Clears application level IRB rules and DVM and FNM mappings that were loaded into the rule engine
   - #msiAdmShowIRB      - Displays the currently loaded rules
   - #msiAdmShowDVM      - Displays the currently loaded variable name mappings
-  - #msiAdmShowFNM      - Displays the currently loaded microservices and actions name mappings
+  - #msiAdmShowFNM      - Displays the currently loaded microservices and action (function) name mappings
 
  \subsection msiworkflow Workflow Microservices
   - #nop, #null       - No action
@@ -187,7 +187,10 @@ This documentation is generated from the iRODS code.
   - #msiNoChkFilePathPerm - Does not check file path permission when registering
   - #msiNoTrashCan - Sets the policy to no trash can
   - #msiSetPublicUserOpr - Sets a list of operations that can be performed by the user "public"
-  - #msiCheckHostAccessControl - Sets the access control policy.
+  - #msiCheckHostAccessControl - Sets the access control policy
+  - #msiServerMonPerf - Monitors the servers' activity and performance
+  - #msiFlushMonStat - Flushes the servers' monitoring statistics
+  - #msiDigestMonStat - Calculates and stores a digest performance value for each connected resource
   - #msiDeleteDisallowed - Sets the policy for determining certain data cannot be deleted
   - #msiSetDataTypeFromExt        - Gets the data type based on file name extension
   - #msiSetReServerNumProc        - Sets the number of processes for the rule engine server

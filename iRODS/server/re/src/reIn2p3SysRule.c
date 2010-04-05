@@ -115,7 +115,7 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
 
 int strSplit(char *s, const char *ct, char splchain[MAX_VALUE][MAX_NAME_LEN]) {
 /**********************************************
-* cut out character strings
+* cut out character strings                   *
 ***********************************************/
   int i;
   char cs[MAX_NAME_LEN];
@@ -133,7 +133,7 @@ int strSplit(char *s, const char *ct, char splchain[MAX_VALUE][MAX_NAME_LEN]) {
 int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], int nservers, 
                   monInfo_t monList[MAX_NSERVERS], int *nlist) {
 /**********************************************************
-* search in the database, the list of ressources with     *
+* search in the database, the list of resources with      *
 * their associated server. If config file exist, restrict *
 * the list to serverList                                  *
 ***********************************************************/
@@ -376,7 +376,9 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
  * \remark Ketan Palshikar - msi documentation, 2009-06-25
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note  This microservice controls access to the iRODS service
+ *  based on the information in the host based access configuration file:
+ *  HOST_ACCESS_CONTROL_FILE
  *
  * \usage
  *
@@ -397,18 +399,13 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
  * \sideeffect 
  *
  * \return integer
- * \retval 
+ * \retval 0 upon success
  * \pre
  * \post
  * \sa 
  * \bug  no known bugs
 **/
 int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
-/* this micro-service is aimed to control the access to the iRODS service
-   based on the information in the host based access configuration file:
-   HOST_ACCESS_CONTROL_FILE.
-   Written by Jean-Yves Nief.
-*/
   char group[MAX_NAME_LEN], *hostclient, *result, *username;
   char condstr[MAX_NAME_LEN];
   int i, rc, status;
@@ -456,18 +453,54 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
 }
 
 
+/**
+ * \fn msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice monitors the servers' activity and performance.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author Jean-Yves Nief and Jean Aoustet
+ * \date 
+ * 
+ * \remark Terrell Russell - msi documentation, 2010-04-04
+ * 
+ * \note  This microservice monitors the servers' activity and performance
+ *    for CPU, network, memory and more.  It retrieves the list of servers
+ *    to monitor from the MON_CFG_FILE if it exists, or the iCAT if the
+ *    configuration file does not exist.
+ *
+ * \note The MON_PERF_SCRIPT is executed on each host. The result is put
+ *    in the OUTPUT_MON_PERF file and will also be put in the iCAT in the
+ *    near future.
+ *
+ * \usage
+ *
+ * \param[in] verb - a msParam of type STR_MS_T defining verbose mode:
+ *    \li "default" - not verbose
+ *    \li "verbose" - verbose mode
+ * \param[in] ptime - a msParam of type STR_MS_T defining probe time
+ *    in seconds. "default" is equal to 10 seconds.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
-/* micro-service which monitor the servers activity: CPU, network, memory ... 
-   Retrieve the list of servers to monitor either from MON_CFG_FILE or the iCAT
-   database if MON_CFG_FILE is not available.
-   the MON_PERF_SCRIPT is executed on each host.
-   The result is put in the OUTPUT_MON_PERF file and will also be put in the iCAT in the
-   near future.
-   verb = "default" ==> no verbose
-   "verbose" ==> verbose mode
-   ptime = default 
-   Written by Jean-Yves Nief - Jean Aoustet */
-  
   char buffer[MAX_NAME_LEN], line[MAX_VALUE], splchain[MAX_VALUE][MAX_NAME_LEN], *verbosity;
   char serverList[MAX_VALUE][MAX_NAME_LEN];
   char cmd[MAX_NAME_LEN]; /* cmd => name of the Perl script */
@@ -608,10 +641,47 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
 }
 
 
+/**
+ * \fn msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice flushes the servers' monitoring statistics.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author Jean-Yves Nief
+ * \date 
+ * 
+ * \remark Terrell Russell - msi documentation, 2010-04-05
+ * 
+ * \note  This microservice removes the servers' metrics older than the
+ *    number of hours in "timespan".  
+ *
+ * \usage
+ *
+ * \param[in] inpParam1 - a msParam of type STR_MS_T defining the timespan in hours.
+ *    "default" is equal to 24 hours.
+ * \param[in] inpParam2 - a msParam of type STR_MS_T defining the tablename to be
+ *    flushed.  Currently must be either "serverload" or "serverloaddigest".
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei) {
-/* msi to remove the servers' metrics older than "timespan" hours from the database.
-   the default value for "timespan" is 24 hours. */
-  
   int elapseTime, defaultTimespan, rc;
   char secAgo[MAXLEN], *tablename, *timespan;
   generalRowPurgeInp_t generalRowPurgeInp;
@@ -685,15 +755,66 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
 }
 
 
+/**
+ * \fn msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_wght,
+ *       msParam_t *runq_wght, msParam_t *disk_wght, msParam_t *netin_wght,
+ *       msParam_t *netout_wght, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice calculates and stores a load factor for each connected
+ *    resource based on the weighting values passed in as parameters.
+ * 
+ * \module core
+ * 
+ * \since pre-2.1
+ * 
+ * \author Jean-Yves Nief
+ * \date 
+ * 
+ * \remark Terrell Russell - msi documentation, 2010-04-05
+ * 
+ * \note  The following values are loaded from R_LOAD_SERVER:
+ *    \li cpu_used
+ *    \li mem_used
+ *    \li swap_used
+ *    \li runq_load
+ *    \li disk_space
+ *    \li net_input
+ *    \li net_output
+ *
+ * \note  The stored load factor is calculated as such:
+ *    \li load_factor = cpu_wght*cpu_used + mem_wght*mem_used + swap_wght*swap_used +
+ *        runq_wght*runq_load + disk_wght*disk_space + netin_wght*net_input +
+ *        netout_wght*net_output
+ *
+ * \usage
+ *
+ * \param[in] cpu_wght - a msParam of type STR_MS_T defining relative CPU weighting.
+ * \param[in] mem_wght - a msParam of type STR_MS_T defining relative memory weighting
+ * \param[in] swap_wght - a msParam of type STR_MS_T defining relative swap weighting
+ * \param[in] runq_wght - a msParam of type STR_MS_T defining relative run queue weighting
+ * \param[in] disk_wght - a msParam of type STR_MS_T defining relative disk space weighting
+ * \param[in] netin_wght - a msParam of type STR_MS_T defining relative inbound network weighting
+ * \param[in] netout_wght - a msParam of type STR_MS_T defining relative outbound network weighting
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval 0 upon success
+ * \pre
+ * \post
+ * \sa 
+ * \bug  no known bugs
+**/
 int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_wght, msParam_t *runq_wght,
       msParam_t *disk_wght, msParam_t *netin_wght, msParam_t *netout_wght, 
       ruleExecInfo_t *rei) {
-  /* it feeds the R_LOAD_DIGEST table used to store a load factor for each resource based on
-     input criteria to this msi:
-     load_factor = cpu_wght*cpu_used + mem_wght*mem_used + swap_wght*swap_used + runq_wght*runq_load +
-     disk_wght*disk_space + netin_wght*net_input + netout_wght*net_output
-     cpu_used, mem_used, swap_used, runq_load, disk_space, net_input, net_output are taken from R_LOAD_SERVER
-  */
   char rescList[MAX_NSERVERS][MAX_NAME_LEN], *tResult,
     timeList[MAX_NSERVERS][MAX_NAME_LEN];
   char condStr1[MAX_NAME_LEN], condStr2[MAX_NAME_LEN], loadStr[MAX_NAME_LEN];
@@ -814,7 +935,7 @@ int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_w
     return(rei->status);
   }
   
-  memset(&genQueryInp, 0, sizeof (genQueryInp));	
+  memset(&genQueryInp, 0, sizeof (genQueryInp));
   addInxIval(&genQueryInp.selectInp, COL_SL_CPU_USED, 1);
   addInxIval(&genQueryInp.selectInp, COL_SL_MEM_USED, 1);
   addInxIval(&genQueryInp.selectInp, COL_SL_SWAP_USED, 1);
