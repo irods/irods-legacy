@@ -241,7 +241,7 @@ sub validateIrodsVariables()
 		else
 		{
 			# Use the default.
-			$IRODS_PORT = $IRODS_DEFALT_PORT;
+			$IRODS_PORT = $IRODS_DEFAULT_PORT;
 		}
 	}
 	if ( !defined( $IRODS_HOST ) || $IRODS_HOST eq "" )
