@@ -70,9 +70,27 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
 
    return (status);
 #else
-   /* this call should never be made to an intermediate server (at
-      least I think that's true) */
-   return ( SYS_NO_ICAT_SERVER_ERR);
+    /* this may be a gateway to the rcat host */
+    rodsServerHost_t *rodsServerHost;
+    int status;
+
+   status = getAndConnRcatHostNoLogin (rsComm, SLAVE_RCAT,
+    rsComm->proxyUser.rodsZone, &rodsServerHost);
+
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+         "rsAuthCheck:getAndConnRcatHostNoLogin() failed. erro=%d", status);
+        return (status);
+    }
+
+    if (rodsServerHost->localFlag == LOCAL_HOST) {
+      /* this call should never be made to an intermediate server (at
+       least I think that's true) */
+       return ( SYS_NO_ICAT_SERVER_ERR);
+    } else {
+        status = rcAuthCheck (rodsServerHost->conn, authCheckInp, authCheckOut);
+    }
+    return status;
 #endif
 } 
 
