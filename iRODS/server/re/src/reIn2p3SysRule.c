@@ -660,9 +660,9 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
  *
  * \usage
  *
- * \param[in] inpParam1 - a msParam of type STR_MS_T defining the timespan in hours.
+ * \param[in] inpParam1 - Required - a msParam of type STR_MS_T defining the timespan in hours.
  *    "default" is equal to 24 hours.
- * \param[in] inpParam2 - a msParam of type STR_MS_T defining the tablename to be
+ * \param[in] inpParam2 - Required - a msParam of type STR_MS_T defining the tablename to be
  *    flushed.  Currently must be either "serverload" or "serverloaddigest".
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -788,13 +788,13 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  *
  * \usage
  *
- * \param[in] cpu_wght - a msParam of type STR_MS_T defining relative CPU weighting.
- * \param[in] mem_wght - a msParam of type STR_MS_T defining relative memory weighting
- * \param[in] swap_wght - a msParam of type STR_MS_T defining relative swap weighting
- * \param[in] runq_wght - a msParam of type STR_MS_T defining relative run queue weighting
- * \param[in] disk_wght - a msParam of type STR_MS_T defining relative disk space weighting
- * \param[in] netin_wght - a msParam of type STR_MS_T defining relative inbound network weighting
- * \param[in] netout_wght - a msParam of type STR_MS_T defining relative outbound network weighting
+ * \param[in] cpu_wght - Required - a msParam of type STR_MS_T defining relative CPU weighting.
+ * \param[in] mem_wght - Required - a msParam of type STR_MS_T defining relative memory weighting
+ * \param[in] swap_wght - Required - a msParam of type STR_MS_T defining relative swap weighting
+ * \param[in] runq_wght - Required - a msParam of type STR_MS_T defining relative run queue weighting
+ * \param[in] disk_wght - Required - a msParam of type STR_MS_T defining relative disk space weighting
+ * \param[in] netin_wght - Required - a msParam of type STR_MS_T defining relative inbound network weighting
+ * \param[in] netout_wght - Required - a msParam of type STR_MS_T defining relative outbound network weighting
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.

@@ -120,7 +120,6 @@ This documentation is generated from the iRODS code.
   - #msiAddSelectFieldToGenQuery - Sets a select field in a genQueryInp_t
   - #msiAddConditionToGenQuery - Adds a condition to a genQueryInp_t
   - #msiPrintGenQueryOutToBuffer - Writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T
-  - #
  - Set the ACL policy
 
  \subsection msirda Rule-oriented Database Access Microservices
@@ -194,6 +193,7 @@ This documentation is generated from the iRODS code.
   - #msiDeleteDisallowed - Sets the policy for determining certain data cannot be deleted
   - #msiSetDataTypeFromExt        - Gets the data type based on file name extension
   - #msiSetReServerNumProc        - Sets the number of processes for the rule engine server
+  - #msiSetRescQuotaPolicy  - Sets the resource quota to on or off
   - #msiListEnabledMS      - Returns the list of compiled microservices on the local iRODS server
 
  \section msimodules Module Microservices
