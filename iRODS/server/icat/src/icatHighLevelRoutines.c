@@ -485,12 +485,14 @@ int chlModDataObjMeta(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       return(status);
    }
 
-   status =  cmlExecuteNoAnswerSql("commit", &icss);
-   if (status != 0) {
-      rodsLog(LOG_NOTICE,
-	      "chlModDataObjMeta cmlExecuteNoAnswerSql commit failure %d",
-	      status);
-      return(status);
+   if ( !(dataObjInfo->flags & NO_COMMIT_FLAG) ) {
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModDataObjMeta cmlExecuteNoAnswerSql commit failure %d",
+		 status);
+	 return(status);
+      }
    }
 
    return status;
@@ -661,12 +663,14 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    }
 
 
-   status =  cmlExecuteNoAnswerSql("commit", &icss);
-   if (status != 0) {
-      rodsLog(LOG_NOTICE,
-	      "chlRegDataObj cmlExecuteNoAnswerSql commit failure %d",
-	      status);
-      return(status);
+   if ( !(dataObjInfo->flags & NO_COMMIT_FLAG) ) {
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlRegDataObj cmlExecuteNoAnswerSql commit failure %d",
+		 status);
+	 return(status);
+      }
    }
 
    return(0);
