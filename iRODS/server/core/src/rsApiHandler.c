@@ -159,6 +159,9 @@ bytesBuf_t *bsBBuf)
         } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
 	  "DataObjCopyInp_PI")  == 0) {
             clearDataObjCopyInp ((dataObjCopyInp_t *) myInStruct);
+	} else if (strcmp (RsApiTable[apiInx].inPackInstruct,
+          "GenQueryOut_PI")  == 0) {
+	    clearGenQueryOut ((genQueryOut_t *) myInStruct);
         } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
           "CollInpNew_PI")  == 0) {
             clearCollInp ((collInp_t *) myInStruct);

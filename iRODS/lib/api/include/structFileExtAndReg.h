@@ -29,6 +29,7 @@ typedef struct StructFileExtAndRegInp {
 
 typedef struct RenamedPhyFiles {
     int count;
+    char objPath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
     char origFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
     char newFilePath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
 } renamedPhyFiles_t;
@@ -50,9 +51,16 @@ int
 regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int flags);
 int
-bulkRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int flags,
+bulkAddSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
+char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
 genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles);
+int
+bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
+char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
+genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles);
+int
+addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
+renamedPhyFiles_t *renamedPhyFiles);
 #else
 #define RS_STRUCT_FILE_EXT_AND_REG NULL
 #endif

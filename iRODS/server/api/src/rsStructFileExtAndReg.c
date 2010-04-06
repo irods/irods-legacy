@@ -479,8 +479,8 @@ char *subfilePath, rodsLong_t dataSize, int flags)
 }
 
 int
-bulkRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int flags, 
+bulkAddSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
+char *subfilePath, rodsLong_t dataSize, int dataMode, int flags, 
 genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
 {
     dataObjInfo_t dataObjInfo;
@@ -521,7 +521,7 @@ genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
             } else {
 	        status = SYS_COPY_ALREADY_IN_RESC;
                 rodsLog (LOG_ERROR,
-                  "regSubFile: phypath %s is already in use. status = %d",
+                  "bulkAddSubfile: phypath %s is already in use. status = %d",
                   dataObjInfo.filePath, status);
                 return (status);
 	    }
@@ -535,52 +535,63 @@ genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
           &fileRenameInp, rescInfo, 1);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-              "regSubFile: renameFilePathToNewDir err for %s. status = %d",
+              "bulkAddSubfile: renameFilePathToNewDir err for %s. status = %d",
               fileRenameInp.oldFileName, status);
             return (status);
         }
+	if (overWriteFlag > 0) {
+	    status = addRenamedPhyFile (subObjPath, fileRenameInp.oldFileName,
+	      fileRenameInp.newFileName, renamedPhyFiles);
+	    if (status < 0) return status;
+	}
+    } else {
+        /* make the necessary dir */
+        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", dataObjInfo.filePath,
+          getDefDirMode ());
     }
-    /* make the necessary dir */
-    mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", dataObjInfo.filePath,
-      getDefDirMode ());
     /* add a link */
     status = link (subfilePath, dataObjInfo.filePath);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "regSubFile: link error %s to %s. errno = %d",
+          "bulkAddSubfile: link error %s to %s. errno = %d",
           subfilePath, dataObjInfo.filePath, errno);
         return (UNIX_FILE_LINK_ERR - errno);
     }
 
-    if (overWriteFlag == 0) {
-        status = svrRegDataObj (rsComm, &dataObjInfo);
-    } else {
-        char tmpStr[MAX_NAME_LEN];
-        modDataObjMeta_t modDataObjMetaInp;
-	keyValPair_t regParam;
-
-	bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
-	bzero (&regParam, sizeof (regParam));
-        snprintf (tmpStr, MAX_NAME_LEN, "%lld", dataSize);
-        addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
-        addKeyVal (&regParam, ALL_REPL_STATUS_KW, tmpStr);
-        snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
-        addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
-
-        modDataObjMetaInp.dataObjInfo = &dataObjInfo;
-        modDataObjMetaInp.regParam = &regParam;
-
-        status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
-
-        clearKeyVal (&regParam);
-    }
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "regSubFile: svrRegDataObj of %s. errno = %d",
-          dataObjInfo.objPath, errno);
-	unlink (dataObjInfo.filePath);
-    }
+    status = bulkRegSubfile (rsComm, rescInfo->rescName, subObjPath,
+      subfilePath, dataSize, dataMode, overWriteFlag, genQueryOut, 
+      renamedPhyFiles);
     return status;
 }
+
+int
+bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
+char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
+genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
+{
+}
+
+int
+addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
+renamedPhyFiles_t *renamedPhyFiles)
+{
+    if (subObjPath == NULL || oldFileName == NULL || newFileName == NULL ||
+      renamedPhyFiles == NULL) return USER__NULL_INPUT_ERR;
+
+    if (renamedPhyFiles->count >= MAX_NUM_BULK_OPR_FILES - 1) {
+        rodsLog (LOG_ERROR,
+          "addRenamedPhyFile: count >= %d for %s", MAX_NUM_BULK_OPR_FILES,
+          subObjPath);
+        return (SYS_RENAME_STRUCT_COUNT_EXCEEDED);
+    }
+    rstrcpy (&renamedPhyFiles->objPath[renamedPhyFiles->count][0], 
+      subObjPath, MAX_NAME_LEN);
+    rstrcpy (&renamedPhyFiles->origFilePath[renamedPhyFiles->count][0], 
+      subObjPath, MAX_NAME_LEN);
+    rstrcpy (&renamedPhyFiles->newFilePath[renamedPhyFiles->count][0], 
+      subObjPath, MAX_NAME_LEN);
+    renamedPhyFiles->count++;
+    return 0;
+}
+
 

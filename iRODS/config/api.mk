@@ -361,3 +361,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcGetHostForPut.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsGetRescQuota.o
 LIB_API_OBJS += $(libApiObjDir)/rcGetRescQuota.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsBulkDataObjReg.o
+LIB_API_OBJS += $(libApiObjDir)/rcBulkDataObjReg.o

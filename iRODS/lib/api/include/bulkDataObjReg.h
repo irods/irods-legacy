@@ -1,0 +1,55 @@
+/*** Copyright (c), The Regents of the University of California            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
+/* bulkDataObjReg.h
+ */
+
+#ifndef BULK_DATA_OBJ_REG_H
+#define BULK_DATA_OBJ_REG_H
+
+/* This is a Object File I/O API call */
+
+#include "rods.h"
+#include "rcMisc.h"
+#include "procApiRequest.h"
+#include "apiNumber.h"
+#include "initServer.h"
+#include "dataObjInpOut.h"
+
+/* definition for opreration type */
+#define OPR_TYPE_INX	999999
+#define REGISTER_OPR	"register"
+#define MODIFY_OPR	"modify"
+
+#if defined(RODS_SERVER)
+#define RS_BULK_DATA_OBJ_REG rsBulkDataObjReg
+/* prototype for the server handler */
+int
+rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
+#else
+#define RS_BULK_DATA_OBJ_REG NULL
+#endif
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+/* prototype for the client call */
+int
+rcBulkDataObjReg (rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp);
+
+/* rcBulkDataObjReg - Bulk Reg of iRODS data objects.
+ * Input - 
+ *   rcComm_t *conn - The client connection handle.
+ *   genQueryOut_t *bulkDataObjRegInp - generic arrays of metadata including
+ *      COL_DATA_NAME, COL_DATA_SIZE, COL_DATA_TYPE_NAME, COL_D_RESC_NAME, 
+ *      COL_D_DATA_PATH and OPR_TYPE_INX.
+ *
+ * OutPut - 
+ *   int status - The status of the operation.   
+ */
+
+#ifdef  __cplusplus
+}
+#endif
+
+#endif	/* BULK_DATA_OBJ_REG_H */
