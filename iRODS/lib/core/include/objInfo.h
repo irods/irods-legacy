@@ -159,6 +159,9 @@ typedef struct PathCache {
 #define NEWLY_CREATED_COPY      0x1
 #define OPEN_EXISTING_COPY	0x10
 
+/* definition for flags in dataObjInfo_t */
+#define NO_COMMIT_FLAG	0x1  /* used in chlModDataObjMeta and chlRegDataObj */
+
 typedef struct DataObjInfo {
     char objPath[MAX_NAME_LEN];
     char rescName[NAME_LEN];       /* This could be resource group */
@@ -177,7 +180,7 @@ typedef struct DataObjInfo {
     rodsLong_t  dataId;
     rodsLong_t  collId;
     int  dataMapId;
-    int flags;			/* place holder to make 64 bits boundary */
+    int flags;		/* used in chlModDataObjMeta and chlRegDataObj */
     char dataComments[LONG_NAME_LEN];
     char dataMode[SHORT_STR_LEN];
     char dataExpiry[TIME_LEN];
