@@ -30,6 +30,7 @@ import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
@@ -1331,5 +1332,132 @@ public class IRODSFileTest {
 		}
 
 	}
+	
+	/**
+	 *  Bug 86 -  renameTo does not rename file
+	 * @throws Exception
+	 */
+	@Test
+    public final void testFileRename() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testFilerenameBefore.txt";
+        String renameFileName = "testFilerenameAfter.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        IRODSFile irodsFileAfter = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + renameFileName);
+        irodsFile.renameTo(irodsFileAfter);
+        irodsFileSystem.close();
+        
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFileAfter.getAbsolutePath());
+        assertionHelper.assertIrodsFileOrCollectionDoesNotExist(irodsFile.getAbsolutePath());
+
+    }
+	
+	/**
+	 *  Bug 86 -  renameTo does not rename file
+	 * @throws Exception
+	 */
+	@Test
+    public final void testCollectionRename() throws Exception {
+    	// generate a local scratch file
+        String beforeRename = "testCollectionRenameBefore";
+        String afterRename = "testCollectionRenameAfter";
+        
+        // put scratch collection into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH + '/' + beforeRename);
+        String afterTargetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                        IRODS_TEST_SUBDIR_PATH + '/' + afterRename);
+
+
+        ImkdirCommand imkdirCommand = new ImkdirCommand();
+        imkdirCommand.setCollectionName(targetIrodsCollection);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(imkdirCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection);
+        IRODSFile irodsFileAfter = new IRODSFile(irodsFileSystem, afterTargetIrodsCollection);
+        irodsFile.renameTo(irodsFileAfter);
+        irodsFileSystem.close();
+        
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFileAfter.getAbsolutePath());
+        assertionHelper.assertIrodsFileOrCollectionDoesNotExist(irodsFile.getAbsolutePath());
+
+    }
+	
+	/**
+	 *  Bug 86 -  renameTo does not rename file
+	 * @throws Exception
+	 */
+	@Test
+    public final void testFileRenameIsPhysicalMove() throws Exception {
+    	// generate a local scratch file
+        String testFileName = "testFileRenameIsPhysicalMove.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+
+        // put scratch file into irods in the right place
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IputCommand iputCommand = new IputCommand();
+
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+
+        StringBuilder fileNameAndPath = new StringBuilder();
+        fileNameAndPath.append(absPath);
+
+        fileNameAndPath.append(testFileName);
+        iputCommand.setLocalFileName(fileNameAndPath.toString());
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        IRODSFile irodsFileAfter = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        irodsFileAfter.setResource(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        irodsFile.renameTo(irodsFileAfter);
+        irodsFileSystem.close();
+        
+        assertionHelper.assertIrodsFileOrCollectionExists(irodsFileAfter.getAbsolutePath());
+        IlsCommand ilsCommand = new IlsCommand();
+        ilsCommand.setLongFormat(true);
+        ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
+        String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(irodsFileAfter.resource) != -1);
+
+    }
+	
+	
 
 }

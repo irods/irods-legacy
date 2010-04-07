@@ -481,7 +481,7 @@ public class IRODSFileCommandsTest {
     }
     
     // currently ignoring, as this is due to a known irods bug
-    @Ignore
+    @Test
     public final void testPhysicalMove() throws Exception {
     	// generate a local scratch file
         String testFileName = "testPmBeforex.txt";
