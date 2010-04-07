@@ -275,5 +275,38 @@ public class IRODSResourceQueryTest {
 
 	}
 
+	/**
+	 * Bug 87 - resource status in resource metadata
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public final void testQueryResourceFields() throws Exception {
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		String[] fileds = { ResourceMetaData.RESOURCE_CLASS,
+				ResourceMetaData.RESOURCE_COMMENTS,
+				ResourceMetaData.RESOURCE_COMMENTS,
+				ResourceMetaData.RESOURCE_CREATE_DATE,
+				ResourceMetaData.RESOURCE_FREE_SPACE,
+				ResourceMetaData.RESOURCE_FREE_SPACE_TIME,
+				ResourceMetaData.RESOURCE_INFO,
+				ResourceMetaData.RESOURCE_LOCATION,
+				ResourceMetaData.RESOURCE_MODIFY_DATE,
+				ResourceMetaData.RESOURCE_NAME,
+				ResourceMetaData.RESOURCE_STATUS,
+				ResourceMetaData.RESOURCE_TYPE,
+				ResourceMetaData.RESOURCE_VAULT_PATH,
+				ResourceMetaData.RESOURCE_ZONE };
+		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(null,
+				select, 100, Namespace.RESOURCE, false);
+		irodsFileSystem.close();
+		TestCase.assertNotNull("query result were null", fileList);
+
+	}
 
 }

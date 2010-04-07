@@ -58,11 +58,13 @@ public interface ResourceMetaData extends StandardMetaData {
 	public static final String RESOURCE_LOCATION = "Resource Location";
 	public static final String RESOURCE_VAULT_PATH = "Resource Vault Path";
 	public static final String RESOURCE_FREE_SPACE = "Resource Free Space";
+	public static final String RESOURCE_FREE_SPACE_TIME = "Resource Free Space Time";
 	public static final String RESOURCE_INFO = "Resource Information";
 	public static final String RESOURCE_COMMENTS = "Resource Comment";
 	public static final String RESOURCE_CREATE_DATE = "Resource Time created (Unix Time)";
 	public static final String RESOURCE_MODIFY_DATE = "Resource Time last modified (Unix Time)";
-
+	public static final String RESOURCE_STATUS = "Resource Status";
+	
 	// Resource Group
 	public static final String RESOURCE_GROUP_ID = "Resource Group Identifier";
 	public static final String RESOURCE_GROUP = "Resource Group Name";

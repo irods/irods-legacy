@@ -8,6 +8,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.AssertionHelper;
@@ -239,8 +240,9 @@ public class IRODSFileAVUTest {
 		} finally {
 			irodsFileSystem.close();
 		}
-		
-		TestCase.assertTrue("did not catch IllegalArgumentException", threwException);
+
+		TestCase.assertTrue("did not catch IllegalArgumentException",
+				threwException);
 
 	}
 
@@ -313,6 +315,81 @@ public class IRODSFileAVUTest {
 		imetaRemoveCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
 				+ testFileName);
 		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+
+	}
+
+	/**
+	 *  Bug 85 -  issue with modifyMetadata in Jargon 2.2
+	 * @throws Exception
+	 *FIXME: currently ignored, need an 'overwrite'? mode
+	 */
+	@Ignore 
+	public void testModifyMetadataThenRepeatModify() throws Exception {
+		String testFileName = "testModifyMetadataThenRepeatModify.txt";
+		String expectedAttribName = "Upload*****Fix";
+		String expectedAttribValue = "Jack*****Luis";
+
+		String expectedAttribValue2 = "Tom*****John";
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+
+		// generate testing file
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String absPathToFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName, 2);
+
+		IputCommand iputCommand = new IputCommand();
+
+		iputCommand.setLocalFileName(absPathToFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		boolean threwException = false;
+		IRODSFileSystem irodsFileSystem = null;
+
+		// open the file and add two AVU's
+		irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties));
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, iputCommand
+				.getIrodsFileName()
+				+ '/' + testFileName);
+		
+		// first modify
+		
+		String[] metaData = { expectedAttribName, expectedAttribValue, null };
+		irodsFile.modifyMetaData(metaData);
+		
+		// second modify
+		
+		String[] metaData2 = { expectedAttribName, expectedAttribValue2, null };
+		irodsFile.modifyMetaData(metaData2);
+		
+		
+		irodsFileSystem.close();
+		
+		// verify the metadata was added
+		// now get back the avu data and make sure it's there
+		ImetaListCommand imetaList = new ImetaListCommand();
+		imetaList.setAttribName(expectedAttribName);
+		imetaList.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
+		imetaList.setObjectPath(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		String metaValues = invoker
+				.invokeCommandAndGetResultAsString(imetaList);
+		TestCase.assertTrue("did not find expected attrib name", metaValues
+				.indexOf(expectedAttribName) > -1);
+		TestCase.assertTrue("did not find expected attrib value as the second, updated value", metaValues
+				.indexOf(expectedAttribValue2) > -1);
+		
+		TestCase.assertTrue("found a duplicate AVU with the value from the first 'set'", metaValues
+				.indexOf(expectedAttribValue) == -1);
 
 	}
 

@@ -29,6 +29,9 @@ Features and Changes
 
 -----------
 *fix for  Bug 82 -  error querying resources in resource group
+
+-----------
+*fix for  Bug 87 -  resource status and other new resource fields in resource metadata for query lookup
 ================================================================================================
 Outstanding Issues
 

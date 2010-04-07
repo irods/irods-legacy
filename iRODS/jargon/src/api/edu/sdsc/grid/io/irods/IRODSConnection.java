@@ -194,12 +194,13 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	}
 
 	/*
-	 * physically closing down the socket. This method will be called at the by {@link IRODSCommands IRODSCommands} at the
-	 * appropriate time.
+	 * physically closing down the socket. This method will be called at the by
+	 * {@link IRODSCommands IRODSCommands} at the appropriate time.
 	 * 
 	 * @throws JargonException
 	 */
 	public void shutdown() throws JargonException {
+		log.info("connection shutdown");
 		if (!isConnected()) {
 			return;
 		}
@@ -208,11 +209,12 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			connection.close();
 		} catch (IOException ex) {
 			log.warn("IOException closing: ", ex);
+		} finally {
+			connected = false;
 		}
-		connected = false;
 	}
 
-	public  void obliterateConnectionAndDiscardErrors() {
+	public void obliterateConnectionAndDiscardErrors() {
 
 		try {
 			connection.shutdownInput();
@@ -278,12 +280,12 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 *             If an IOException occurs
 	 */
 	void send(byte[] value) throws IOException {
-		
+
 		if (value == null) {
 			log.error("value cannot be null");
 			throw new IllegalArgumentException("value cannot be null");
 		}
-		
+
 		if (value.length == 0) {
 			// nothing to send, warn and ignore
 			log.warn("nothing to send, ignoring...");
@@ -320,31 +322,31 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 *             If an IOException occurs
 	 */
 	void send(byte[] value, int offset, int length) throws IOException {
-		
+
 		if (value == null) {
 			log.error("value cannot be null");
 			throw new IllegalArgumentException("value cannot be null");
 		}
-		
+
 		if (value.length == 0) {
 			// nothing to send, warn and ignore
 			log.warn("nothing to send, ignoring...");
 			return;
 		}
-		
+
 		if (offset > value.length) {
 			String err = "trying to send a byte buffer from an offset that is out of range";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		if (length <= 0) {
 			// nothing to send, warn and ignore
 			String err = "send length is zero";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		byte temp[] = new byte[length];
 
 		System.arraycopy(value, offset, temp, 0, length);
@@ -399,7 +401,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		byte[] temp = new byte[Math.min(IRODSFileSystem.BUFFER_SIZE,
 				(int) length)];
 		while (length > 0) {
@@ -434,19 +436,19 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 * destination
 	 */
 	void read(OutputStream destination, long length) throws IOException {
-		
+
 		if (destination == null) {
 			String err = "destination is null";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		if (length == 0) {
 			String err = "read length is set to zero";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		byte[] temp = new byte[Math.min(IRODSFileSystem.BUFFER_SIZE,
 				(int) length)];
 		int n = 0;
@@ -468,19 +470,19 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 */
 	void read(GeneralRandomAccessFile destination, long length)
 			throws IOException {
-		
+
 		if (destination == null) {
 			String err = "destination is null";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		if (length == 0) {
 			String err = "read length is set to zero";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		byte[] temp = new byte[Math.min(IRODSFileSystem.BUFFER_SIZE,
 				(int) length)];
 		int n = 0;
@@ -514,19 +516,19 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 */
 	int read(byte[] value, int offset, int length)
 			throws ClosedChannelException, InterruptedIOException, IOException {
-		
+
 		if (value == null) {
 			String err = "no data sent";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		if (length == 0) {
 			String err = "read length is set to zero";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		int result = 0;
 		if (length + offset > value.length) {
 			log
@@ -543,7 +545,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			bytesRead += read;
 		}
 		result = bytesRead;
-		
+
 		return result;
 	}
 
@@ -558,13 +560,13 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 			log.info("functionID: " + intInfo);
 		}
-		
+
 		if (type == null || type.length() == 0) {
 			String err = "null or blank type";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		StringBuilder headerBuilder = new StringBuilder();
 		headerBuilder.append("<MsgHeader_PI>");
 		headerBuilder.append("<type>");

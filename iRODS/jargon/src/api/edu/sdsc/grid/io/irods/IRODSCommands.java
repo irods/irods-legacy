@@ -244,7 +244,7 @@ class IRODSCommands {
 	synchronized void close() throws JargonException {
 		if (isConnected()) {
 			try {
-				// log.info("sending disconnect message");
+				log.debug("sending disconnect message, still sees connection as open");
 				irodsConnection.send(irodsConnection.createHeader(
 						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();

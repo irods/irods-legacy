@@ -326,8 +326,11 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	/** Resource Vault Path (where physical files are stored) */
 	static final Integer COL_R_VAULT_PATH = new Integer(307);
 
-	/** Resource Free Space (currently unused) */
+	/** Resource Free Space */
 	static final Integer COL_R_FREE_SPACE = new Integer(308);
+	
+	/** Resource Free Space Time*/
+	static final Integer COL_R_FREE_SPACE_TIME = new Integer(314);
 
 	/** Resource Information (set by admin) */
 	static final Integer COL_R_RESC_INFO = new Integer(309);
@@ -340,6 +343,9 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 
 	/** Time that this record was last modified (Unix Time) */
 	static final Integer COL_R_MODIFY_TIME = new Integer(312);
+	
+	/** Status of the resource */
+	static final Integer COL_R_RESC_STATUS = new Integer(313);
 
 	/* R_DATA_MAIN: */
 	/** DataObject(file) Identifier (a number) */
@@ -780,7 +786,9 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		jargonToIRODS.put(RESOURCE_LOCATION, COL_R_LOC);
 		jargonToIRODS.put(RESOURCE_VAULT_PATH, COL_R_VAULT_PATH);
 		jargonToIRODS.put(RESOURCE_FREE_SPACE, COL_R_FREE_SPACE);
+		jargonToIRODS.put(RESOURCE_FREE_SPACE_TIME, COL_R_FREE_SPACE_TIME);
 		jargonToIRODS.put(RESOURCE_INFO, COL_R_RESC_INFO);
+		jargonToIRODS.put(RESOURCE_STATUS, COL_R_RESC_STATUS);
 		jargonToIRODS.put(RESOURCE_COMMENTS, COL_R_RESC_COMMENT);
 		jargonToIRODS.put(RESOURCE_CREATE_DATE, COL_R_CREATE_TIME);
 		jargonToIRODS.put(RESOURCE_MODIFY_DATE, COL_R_MODIFY_TIME);
@@ -922,7 +930,9 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		iRODSToJargon.put(COL_R_LOC, RESOURCE_LOCATION);
 		iRODSToJargon.put(COL_R_VAULT_PATH, RESOURCE_VAULT_PATH);
 		iRODSToJargon.put(COL_R_FREE_SPACE, RESOURCE_FREE_SPACE);
+		iRODSToJargon.put(COL_R_FREE_SPACE_TIME, RESOURCE_FREE_SPACE_TIME);
 		iRODSToJargon.put(COL_R_RESC_INFO, RESOURCE_INFO);
+		iRODSToJargon.put(COL_R_RESC_STATUS, RESOURCE_STATUS);
 		iRODSToJargon.put(COL_R_RESC_COMMENT, RESOURCE_COMMENTS);
 		iRODSToJargon.put(COL_R_CREATE_TIME, RESOURCE_CREATE_DATE);
 		iRODSToJargon.put(COL_R_MODIFY_TIME, RESOURCE_MODIFY_DATE);
@@ -1173,10 +1183,16 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 				"Resource Vault Path (where physical files are stored)",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(RESOURCE_FREE_SPACE,
-				"Resource Free Space (currently unused)", MetaDataField.STRING,
+				"Resource Free Space ", MetaDataField.STRING,
+				protocol));
+		group.add(new MetaDataField(RESOURCE_FREE_SPACE_TIME,
+				"Resource Free Space Time", MetaDataField.STRING,
 				protocol));
 		group.add(new MetaDataField(RESOURCE_INFO,
 				"Resource Information (set by admin)", MetaDataField.STRING,
+				protocol));
+		group.add(new MetaDataField(RESOURCE_STATUS,
+				"Resource Status", MetaDataField.STRING,
 				protocol));
 		group.add(new MetaDataField(RESOURCE_COMMENTS,
 				"Resource Comment (set by admin)", MetaDataField.STRING,
