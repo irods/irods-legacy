@@ -106,5 +106,10 @@ rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
             return status;
 	}
     }
+    status = chlCommit(rsComm);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+         "rsBulkDataObjReg: chlCommit failed, status = %d", status);
+    }
     return status;
 }
