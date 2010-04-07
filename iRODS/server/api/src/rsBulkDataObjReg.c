@@ -17,6 +17,9 @@ rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
       *tmpDataMode, *tmpOprType;
     int status, i;
+    rodsServerHost_t *rodsServerHost = NULL;
+
+    if (bulkDataObjRegInp->rowCnt <= 0) return 0;
 
     if ((objPath =
       getSqlResultByInx (bulkDataObjRegInp, COL_DATA_NAME)) == NULL) {
@@ -24,6 +27,13 @@ rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
           "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_NAME failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
+
+    status = getAndConnRcatHost (rsComm, MASTER_RCAT, objPath->value,
+      &rodsServerHost);
+    if (status < 0) {
+       return(status);
+    }
+
     if ((dataType =
       getSqlResultByInx (bulkDataObjRegInp, COL_DATA_TYPE_NAME)) == NULL) {
         rodsLog (LOG_NOTICE,

@@ -25,7 +25,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     rodsServerHost_t *rodsServerHost;
     char *bunFilePath;
     char phyBunDir[MAX_NAME_LEN];
-    int flags;
+    int flags = 0;
 #if 0
     dataObjInp_t dirRegInp;
     structFileOprInp_t structFileOprInp;
@@ -119,13 +119,16 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
         return status;
     }
 
-   /* XXXXX use 1 for now */
     if (getValByKey (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW) 
+
       != NULL) {
-	flags = 1;
-    } else {
-	flags = 0;
+	flags = flags | FORCE_FLAG_FLAG;
     }
+    if (getValByKey (&structFileExtAndRegInp->condInput, BULK_OPR_KW)
+      != NULL) {
+        flags = flags | BULK_OPR_FLAG;
+    }
+
     status = regUnbunSubfiles (rsComm, rescInfo, 
       structFileExtAndRegInp->collection, phyBunDir, flags);
 
@@ -140,114 +143,11 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     rsDataObjClose (rsComm, &dataObjCloseInp);
 
     return status;
-
-#if 0
-    status = initStructFileOprInp (rsComm, &structFileOprInp,
-      structFileExtAndRegInp, dataObjInfo);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileExtAndReg: initStructFileOprInp of %s error. stat = %d",
-          dataObjInp.objPath, status);
-        rsDataObjClose (rsComm, &dataObjCloseInp);
-        return (status);
-    }
-
-    status = rsStructFileExtract (rsComm, &structFileOprInp);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileExtAndReg: rsStructFileExtract of %s error. stat = %d",
-          dataObjInp.objPath, status);
-        rsDataObjClose (rsComm, &dataObjCloseInp);
-        return (status);
-    }
-
-    /* register the files in cacheDir */
-    memset (&dirRegInp, 0, sizeof (dirRegInp));
-    addKeyVal (&dirRegInp.condInput, FILE_PATH_KW, 
-      structFileOprInp.specColl->cacheDir);
-    rstrcpy (dirRegInp.objPath, structFileExtAndRegInp->collection, 
-      MAX_NAME_LEN);
-    addKeyVal (&dirRegInp.condInput, COLLECTION_KW, "");
-    /* collection permission was checked in chkCollForExtAndReg */
-    addKeyVal (&dirRegInp.condInput, DEST_RESC_NAME_KW, 
-      dataObjInfo->rescName);
-
-    status = phyPathRegNoChkPerm (rsComm, &dirRegInp);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "rsStructFileExtAndReg: rsPhyPathReg of %s to %s error. stat = %d",
-          structFileOprInp.specColl->cacheDir, dirRegInp.objPath, status);
-        rodsLog (LOG_ERROR,
-          "rsStructFileExtAndReg: Orphan files may be left in %s",
-          structFileOprInp.specColl->cacheDir);
-    }
-
-    dataObjCloseInp.l1descInx = l1descInx;
-    rsDataObjClose (rsComm, &dataObjCloseInp);
-
-    return (status);
-#endif
 }
 
 int 
 chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
 {
-#if 0
-    int status;
-    collInp_t openCollInp;
-    collEnt_t *collEnt;
-    int handleInx;
-    collInp_t modCollInp;
-
-    memset (&openCollInp, 0, sizeof (openCollInp));
-    rstrcpy (openCollInp.collName, collection, MAX_NAME_LEN);
-
-    handleInx = rsOpenCollection (rsComm, &openCollInp);
-    if (handleInx < 0) {
-	if (handleInx == USER_FILE_DOES_NOT_EXIST) return 0;
-        rodsLog (LOG_ERROR,
-          "chkCollForExtAndReg: rsOpenCollection of %s error. status = %d",
-          openCollInp.collName, handleInx);
-        return (handleInx);
-    }
-
-    if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
-        rodsLog (LOG_ERROR,
-          "chkCollForExtAndReg: %s is a mounted collection",
-          openCollInp.collName);
-        return (SYS_STRUCT_FILE_INMOUNTED_COLL);
-    }
-
-    status = rsReadCollection (rsComm, &handleInx, &collEnt);
-    rsCloseCollection (rsComm, &handleInx);
-    if (status >= 0) {
-        rodsLog (LOG_ERROR,
-          "chkCollForExtAndReg: %s is a not empty",
-          openCollInp.collName);
-	return (SYS_COLLECTION_NOT_EMPTY);
-    }
-    /* now check if we can register into the collection. should call
-     * checkAndGetObjectId() but don't have an external API for it.
-     * Hack it with rsModColl */
-
-    memset (&modCollInp, 0, sizeof (modCollInp));
-    rstrcpy (modCollInp.collName, collection, MAX_NAME_LEN);
-    /* this is not a mounted collion. so it won't hurt */
-    addKeyVal (&modCollInp.condInput, COLLECTION_TYPE_KW,
-      "NULL_SPECIAL_VALUE");
-
-    status = rsModColl (rsComm, &modCollInp);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "chkCollForExtAndReg: problem with permission of %s, status = %d",
-          openCollInp.collName, status);
-        return (status);
-    }
-#endif
     dataObjInp_t dataObjInp;
     int status;
     rodsObjStat_t *rodsObjStatOut = NULL;
@@ -290,6 +190,10 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
     }
     return (status);
 }
+
+/* regUnbunSubfiles - register all files in phyBunDir to the collection 
+ * Valid values for flags are: BULK_OPR_FLAG and FORCE_FLAG_FLAG.
+ */
 
 int
 regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
@@ -378,7 +282,7 @@ char *subfilePath, rodsLong_t dataSize, int flags)
     dataObjInp_t dataObjInp;
     struct stat statbuf;
     int status;
-    int overWriteFlag = 0;
+    int modFlag = 0;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     bzero (&dataObjInfo, sizeof (dataObjInfo));
@@ -420,10 +324,10 @@ char *subfilePath, rodsLong_t dataSize, int flags)
 	    }
 	} else {
 	    /* not an orphan file */
-	    if (flags > 0 && dataObjInfo.dataId > 0 && 
+	    if ((flags & FORCE_FLAG_FLAG) != 0 && dataObjInfo.dataId > 0 && 
 	      strcmp (dataObjInfo.objPath, subObjPath) == 0) {
 		/* overwrite the current file */
-		overWriteFlag = 1;
+		modFlag = 1;
 		unlink (dataObjInfo.filePath);
 	    } else {
 		status = SYS_COPY_ALREADY_IN_RESC;
@@ -446,7 +350,7 @@ char *subfilePath, rodsLong_t dataSize, int flags)
         return (UNIX_FILE_LINK_ERR - errno);
     }
 
-    if (overWriteFlag == 0) {
+    if (modFlag == 0) {
         status = svrRegDataObj (rsComm, &dataObjInfo);
     } else {
         char tmpStr[MAX_NAME_LEN];
@@ -480,14 +384,14 @@ char *subfilePath, rodsLong_t dataSize, int flags)
 
 int
 bulkAddSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int flags, 
-genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
+char *subfilePath, rodsLong_t dataSize, int dataMode, 
+genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
 {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
     struct stat statbuf;
     int status;
-    int overWriteFlag = 0;
+    int modFlag = 0;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     bzero (&dataObjInfo, sizeof (dataObjInfo));
@@ -517,7 +421,7 @@ genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
             if (dataObjInfo.dataId > 0 &&
               strcmp (dataObjInfo.objPath, subObjPath) == 0) {
                 /* overwrite the current file */
-                overWriteFlag = 1;
+                modFlag = 1;
             } else {
 	        status = SYS_COPY_ALREADY_IN_RESC;
                 rodsLog (LOG_ERROR,
@@ -539,7 +443,7 @@ genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
               fileRenameInp.oldFileName, status);
             return (status);
         }
-	if (overWriteFlag > 0) {
+	if (modFlag > 0) {
 	    status = addRenamedPhyFile (subObjPath, fileRenameInp.oldFileName,
 	      fileRenameInp.newFileName, renamedPhyFiles);
 	    if (status < 0) return status;
@@ -559,16 +463,17 @@ genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
     }
 
     status = bulkRegSubfile (rsComm, rescInfo->rescName, subObjPath,
-      subfilePath, dataSize, dataMode, overWriteFlag, genQueryOut, 
+      subfilePath, dataSize, dataMode, modFlag, bulkDataObjRegInp, 
       renamedPhyFiles);
     return status;
 }
 
 int
 bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
-genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles)
+char *subfilePath, rodsLong_t dataSize, int dataMode, int modFlag,
+genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
 {
+    return 0;
 }
 
 int
@@ -578,7 +483,7 @@ renamedPhyFiles_t *renamedPhyFiles)
     if (subObjPath == NULL || oldFileName == NULL || newFileName == NULL ||
       renamedPhyFiles == NULL) return USER__NULL_INPUT_ERR;
 
-    if (renamedPhyFiles->count >= MAX_NUM_BULK_OPR_FILES - 1) {
+    if (renamedPhyFiles->count >= MAX_NUM_BULK_OPR_FILES) {
         rodsLog (LOG_ERROR,
           "addRenamedPhyFile: count >= %d for %s", MAX_NUM_BULK_OPR_FILES,
           subObjPath);

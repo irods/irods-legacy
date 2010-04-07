@@ -52,12 +52,12 @@ regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int flags);
 int
 bulkAddSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
-genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles);
+char *subfilePath, rodsLong_t dataSize, int dataMode,
+genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles);
 int
 bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
-genQueryOut_t **genQueryOut, renamedPhyFiles_t *renamedPhyFiles);
+char *subfilePath, rodsLong_t dataSize, int dataMode, int modFlag,
+genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles);
 int
 addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
 renamedPhyFiles_t *renamedPhyFiles);

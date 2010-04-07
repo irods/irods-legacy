@@ -3325,3 +3325,98 @@ seedRandom ()
     return seed;
 }
 
+int
+initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
+{
+    if (bulkDataObjRegInp == NULL) return USER__NULL_INPUT_ERR;
+
+    memset (bulkDataObjRegInp, 0, sizeof (genQueryOut_t));
+
+    bulkDataObjRegInp->attriCnt = 7;
+
+    bulkDataObjRegInp->sqlResult[0].attriInx = COL_DATA_NAME;
+    bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
+    bulkDataObjRegInp->sqlResult[0].value =
+      malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[0].value, 
+      MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bulkDataObjRegInp->sqlResult[1].attriInx = COL_DATA_TYPE_NAME;
+    bulkDataObjRegInp->sqlResult[1].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[1].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[1].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bulkDataObjRegInp->sqlResult[2].attriInx = COL_DATA_SIZE;
+    bulkDataObjRegInp->sqlResult[2].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[2].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[2].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bulkDataObjRegInp->sqlResult[3].attriInx = COL_D_RESC_NAME;
+    bulkDataObjRegInp->sqlResult[3].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[3].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[3].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bulkDataObjRegInp->sqlResult[4].attriInx = COL_D_DATA_PATH;
+    bulkDataObjRegInp->sqlResult[4].len = MAX_NAME_LEN;
+    bulkDataObjRegInp->sqlResult[4].value =
+      malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[4].value,
+      MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bulkDataObjRegInp->sqlResult[5].attriInx = COL_DATA_MODE;
+    bulkDataObjRegInp->sqlResult[5].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[5].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[5].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bulkDataObjRegInp->sqlResult[6].attriInx = OPR_TYPE_INX;
+    bulkDataObjRegInp->sqlResult[6].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[6].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[6].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+
+    bulkDataObjRegInp->continueInx = -1;
+
+    return (0);
+}
+
+int
+fillBulkDataObjRegInp (char *rescName, char *objPath,
+char *filePath, char *dataType, rodsLong_t dataSize, int dataMode, 
+int modFlag, genQueryOut_t *bulkDataObjRegInp)
+{
+    int rowCnt;
+
+    if (bulkDataObjRegInp == NULL || rescName == NULL || objPath == NULL || 
+      filePath == NULL) return USER__NULL_INPUT_ERR;
+
+    rowCnt = bulkDataObjRegInp->rowCnt;
+
+    if (rowCnt >= MAX_NUM_BULK_OPR_FILES) return SYS_BULK_REG_COUNT_EXCEEDED;
+
+    rstrcpy (&bulkDataObjRegInp->sqlResult[0].value[MAX_NAME_LEN * rowCnt],
+     objPath, MAX_NAME_LEN);
+    rstrcpy (&bulkDataObjRegInp->sqlResult[1].value[NAME_LEN * rowCnt],
+     dataType, NAME_LEN);
+    snprintf (&bulkDataObjRegInp->sqlResult[2].value[NAME_LEN * rowCnt], 
+      NAME_LEN, "%lld", dataSize);
+    rstrcpy (&bulkDataObjRegInp->sqlResult[3].value[NAME_LEN * rowCnt],
+     rescName, NAME_LEN);
+    rstrcpy (&bulkDataObjRegInp->sqlResult[4].value[MAX_NAME_LEN * rowCnt],
+     filePath, MAX_NAME_LEN);
+    snprintf (&bulkDataObjRegInp->sqlResult[5].value[NAME_LEN * rowCnt], 
+      NAME_LEN, "%d", dataMode);
+    if (modFlag == 1) {
+        rstrcpy (&bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
+         MODIFY_OPR, NAME_LEN);
+    } else {
+        rstrcpy (&bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
+         REGISTER_OPR, NAME_LEN);
+    }
+    bulkDataObjRegInp->rowCnt++;
+
+    return 0;
+}
+
