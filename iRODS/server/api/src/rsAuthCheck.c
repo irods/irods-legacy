@@ -84,9 +84,7 @@ rsAuthCheck (rsComm_t *rsComm, authCheckInp_t *authCheckInp,
     }
 
     if (rodsServerHost->localFlag == LOCAL_HOST) {
-      /* this call should never be made to an intermediate server (at
-       least I think that's true) */
-       return ( SYS_NO_ICAT_SERVER_ERR);
+        return ( SYS_NO_ICAT_SERVER_ERR);
     } else {
         status = rcAuthCheck (rodsServerHost->conn, authCheckInp, authCheckOut);
     }
