@@ -48,10 +48,14 @@ int
 regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
 char *phyBunDir, int flags);
 int
+_regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
+char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp, 
+renamedPhyFiles_t *renamedPhyFiles);
+int
 regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int flags);
 int
-bulkAddSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
+bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int dataMode,
 genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles);
 int
@@ -61,6 +65,8 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles);
 int
 addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
 renamedPhyFiles_t *renamedPhyFiles);
+int
+postProcRenamedPhyFiles (renamedPhyFiles_t *renamedPhyFiles, int regStatus);
 #else
 #define RS_STRUCT_FILE_EXT_AND_REG NULL
 #endif

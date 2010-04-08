@@ -191,13 +191,52 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
     return (status);
 }
 
-/* regUnbunSubfiles - register all files in phyBunDir to the collection 
- * Valid values for flags are: BULK_OPR_FLAG and FORCE_FLAG_FLAG.
+
+/* regUnbunSubfiles - The top level for registering all files in phyBunDir 
+ * to the collection Valid values for flags are: 
+ *     BULK_OPR_FLAG and FORCE_FLAG_FLAG.
  */
 
 int
 regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
 char *phyBunDir, int flags)
+{
+    genQueryOut_t bulkDataObjRegInp; 
+    renamedPhyFiles_t renamedPhyFiles;
+    int status = 0;
+
+    if ((flags & BULK_OPR_FLAG) != 0) {
+	bzero (&renamedPhyFiles, sizeof (renamedPhyFiles));
+	initBulkDataObjRegInp (&bulkDataObjRegInp);
+    }
+    status = _regUnbunSubfiles (rsComm, rescInfo, collection, phyBunDir, 
+      flags, &bulkDataObjRegInp, &renamedPhyFiles);
+ 
+    if ((flags & BULK_OPR_FLAG) != 0) {
+        if (status >= 0 && bulkDataObjRegInp.rowCnt > 0) {
+            status = rsBulkDataObjReg (rsComm, &bulkDataObjRegInp);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "regUnbunSubfiles: rsBulkDataObjReg error for %s. stat = %d",
+                  collection, status);
+                cleanupBulkRegFiles (&bulkDataObjRegInp);
+            }
+            postProcRenamedPhyFiles (&renamedPhyFiles, status);
+	}
+	clearGenQueryOut (&bulkDataObjRegInp);
+    }
+    return status;
+}
+
+/* _regUnbunSubfiles - non bulk version of registering all files in phyBunDir 
+ * to the collection. Valid values for flags are: 
+ *	BULK_OPR_FLAG and FORCE_FLAG_FLAG.
+ */
+
+int
+_regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
+char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp, 
+renamedPhyFiles_t *renamedPhyFiles)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
@@ -247,8 +286,8 @@ char *phyBunDir, int flags)
                 savedStatus = status;
 		continue;
 	    }
-	    status = regUnbunSubfiles (rsComm, rescInfo, subObjPath,
-	      subfilePath, flags);
+	    status = _regUnbunSubfiles (rsComm, rescInfo, subObjPath,
+	      subfilePath, flags, bulkDataObjRegInp, renamedPhyFiles);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "regUnbunSubfiles: regUnbunSubfiles of %s error. status=%d",
@@ -257,16 +296,30 @@ char *phyBunDir, int flags)
                 continue;
             }
         } else if ((statbuf.st_mode & S_IFREG) != 0) {
-	    status = regSubfile (rsComm, rescInfo, subObjPath, subfilePath,
-	      statbuf.st_size, flags);
-	    unlink (subfilePath);
-            if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "regUnbunSubfiles: regSubfile of %s error. status=%d",
-                  subObjPath, status);
-                savedStatus = status;
-                continue;
-            }
+	    if ((flags & BULK_OPR_FLAG) == 0) {
+	        status = regSubfile (rsComm, rescInfo, subObjPath, subfilePath,
+	          statbuf.st_size, flags);
+	        unlink (subfilePath);
+                if (status < 0) {
+                    rodsLog (LOG_ERROR,
+                      "regUnbunSubfiles: regSubfile of %s error. status=%d",
+                      subObjPath, status);
+                    savedStatus = status;
+                    continue;
+		}
+	    } else {
+                status = bulkProcAndRegSubfile (rsComm, rescInfo, subObjPath, 
+		  subfilePath, statbuf.st_size, statbuf.st_mode & 0777, 
+		  bulkDataObjRegInp, renamedPhyFiles);
+	        unlink (subfilePath);
+                if (status < 0) {
+                    rodsLog (LOG_ERROR,
+                     "regUnbunSubfiles:bulkProcAndRegSubfile of %s err.stat=%d",
+                        subObjPath, status);
+                    savedStatus = status;
+		    break;
+                }
+	    }
 	}
     }
     closedir (dirPtr);
@@ -383,7 +436,7 @@ char *subfilePath, rodsLong_t dataSize, int flags)
 }
 
 int
-bulkAddSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
+bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int dataMode, 
 genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
 {
@@ -425,7 +478,7 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
             } else {
 	        status = SYS_COPY_ALREADY_IN_RESC;
                 rodsLog (LOG_ERROR,
-                  "bulkAddSubfile: phypath %s is already in use. status = %d",
+                  "bulkProcAndRegSubfile: phypath %s is already in use. status = %d",
                   dataObjInfo.filePath, status);
                 return (status);
 	    }
@@ -439,7 +492,7 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
           &fileRenameInp, rescInfo, 1);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-              "bulkAddSubfile: renameFilePathToNewDir err for %s. status = %d",
+              "bulkProcAndRegSubfile: renameFilePathToNewDir err for %s. status = %d",
               fileRenameInp.oldFileName, status);
             return (status);
         }
@@ -457,7 +510,7 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
     status = link (subfilePath, dataObjInfo.filePath);
     if (status < 0) {
         rodsLog (LOG_ERROR,
-          "bulkAddSubfile: link error %s to %s. errno = %d",
+          "bulkProcAndRegSubfile: link error %s to %s. errno = %d",
           subfilePath, dataObjInfo.filePath, errno);
         return (UNIX_FILE_LINK_ERR - errno);
     }
@@ -473,7 +526,29 @@ bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int dataMode, int modFlag,
 genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
 {
-    return 0;
+    int status;
+
+    status = fillBulkDataObjRegInp (rescName, subObjPath, subfilePath,
+      "generic", dataSize, dataMode, modFlag, bulkDataObjRegInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",
+          subfilePath, status);
+        return status;
+    }
+
+    if (bulkDataObjRegInp->rowCnt >= MAX_NUM_BULK_OPR_FILES) {
+        status = rsBulkDataObjReg (rsComm, bulkDataObjRegInp);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",
+              subfilePath, status);
+	    cleanupBulkRegFiles (bulkDataObjRegInp);
+	}
+	postProcRenamedPhyFiles (renamedPhyFiles, status);
+	bulkDataObjRegInp->rowCnt = 0;
+    }
+    return status;
 }
 
 int
@@ -492,11 +567,40 @@ renamedPhyFiles_t *renamedPhyFiles)
     rstrcpy (&renamedPhyFiles->objPath[renamedPhyFiles->count][0], 
       subObjPath, MAX_NAME_LEN);
     rstrcpy (&renamedPhyFiles->origFilePath[renamedPhyFiles->count][0], 
-      subObjPath, MAX_NAME_LEN);
+      oldFileName, MAX_NAME_LEN);
     rstrcpy (&renamedPhyFiles->newFilePath[renamedPhyFiles->count][0], 
-      subObjPath, MAX_NAME_LEN);
+      newFileName, MAX_NAME_LEN);
     renamedPhyFiles->count++;
     return 0;
 }
 
+int
+postProcRenamedPhyFiles (renamedPhyFiles_t *renamedPhyFiles, int regStatus)
+{
+    int i;
+    int status = 0;
+    int savedStatus = 0;
+
+    if (renamedPhyFiles == NULL) return USER__NULL_INPUT_ERR;
+
+    if (regStatus >= 0) {
+	for (i = 0; i < renamedPhyFiles->count; i++) {
+	    unlink (&renamedPhyFiles->newFilePath[i][0]);
+	}
+    } else {
+	/* restore the phy files */
+	for (i = 0; i < renamedPhyFiles->count; i++) {
+	    status = rename (&renamedPhyFiles->newFilePath[i][0], 
+	      &renamedPhyFiles->origFilePath[i][0]);
+	    savedStatus = UNIX_FILE_RENAME_ERR - errno;
+            rodsLog (LOG_ERROR,
+              "postProcRenamedPhyFiles: rename error from %s to %s, status=%d",
+	      &renamedPhyFiles->newFilePath[i][0],
+              &renamedPhyFiles->origFilePath[i][0], savedStatus);
+	}
+    }
+    bzero (renamedPhyFiles, sizeof (renamedPhyFiles_t));
+
+    return savedStatus;
+}
 
