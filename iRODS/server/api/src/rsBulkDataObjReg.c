@@ -119,7 +119,7 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
         rstrcpy (dataObjInfo.dataMode, tmpDataMode, NAME_LEN);
 	if (strcmp (tmpOprType, REGISTER_OPR) == 0) {
-	    status = _svrRegDataObj (rsComm, &dataObjInfo);
+	    status = svrRegDataObj (rsComm, &dataObjInfo);
 	} else {
             bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
             bzero (&regParam, sizeof (regParam));
