@@ -25,6 +25,8 @@
 /* prototype for the server handler */
 int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
+int
+_rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
 #else
 #define RS_BULK_DATA_OBJ_REG NULL
 #endif

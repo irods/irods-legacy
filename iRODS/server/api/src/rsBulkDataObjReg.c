@@ -9,14 +9,8 @@
 int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 {
-    dataObjInfo_t dataObjInfo;
-    modDataObjMeta_t modDataObjMetaInp;
-    keyValPair_t regParam;
-    sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath, 
-      *dataMode, *oprType;
-    char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
-      *tmpDataMode, *tmpOprType;
-    int status, i;
+    sqlResult_t *objPath;
+    int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
     if (bulkDataObjRegInp->rowCnt <= 0) return 0;
@@ -32,6 +26,39 @@ rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
       &rodsServerHost);
     if (status < 0) {
        return(status);
+    }
+
+    if (rodsServerHost->localFlag == LOCAL_HOST) {
+#ifdef RODS_CAT
+        status = _rsBulkDataObjReg (rsComm, bulkDataObjRegInp);
+#else
+        status = SYS_NO_RCAT_SERVER_ERR;
+#endif
+    } else {
+        status = rcBulkDataObjReg (rodsServerHost->conn, bulkDataObjRegInp);
+    }
+
+    return (status);
+}
+
+int
+_rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
+{
+#ifdef RODS_CAT
+    dataObjInfo_t dataObjInfo;
+    modDataObjMeta_t modDataObjMetaInp;
+    keyValPair_t regParam;
+    sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
+      *dataMode, *oprType;
+    char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
+      *tmpDataMode, *tmpOprType;
+    int status, i;
+
+    if ((objPath =
+      getSqlResultByInx (bulkDataObjRegInp, COL_DATA_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
     }
 
     if ((dataType =
@@ -122,4 +149,8 @@ rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
          "rsBulkDataObjReg: chlCommit failed, status = %d", status);
     }
     return status;
+#else
+    return (SYS_NO_RCAT_SERVER_ERR);
+#endif
+
 }
