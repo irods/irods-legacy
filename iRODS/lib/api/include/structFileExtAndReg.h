@@ -56,7 +56,7 @@ regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
 char *subfilePath, rodsLong_t dataSize, int flags);
 int
 bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode,
+char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
 genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles);
 int
 bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
@@ -67,6 +67,8 @@ addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName,
 renamedPhyFiles_t *renamedPhyFiles);
 int
 postProcRenamedPhyFiles (renamedPhyFiles_t *renamedPhyFiles, int regStatus);
+int
+cleanupBulkRegFiles (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
 #else
 #define RS_STRUCT_FILE_EXT_AND_REG NULL
 #endif

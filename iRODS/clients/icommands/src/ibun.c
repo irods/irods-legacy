@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int nArgv;
     
 
-    optStr = "hR:cxD:f";
+    optStr = "bhR:cxD:f";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -87,7 +87,7 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : ibun -x [-h] [-R resource] structFilePath",
+"Usage : ibun -x [-hb] [-R resource] structFilePath",
 "               irodsCollection",
 "Usage : ibun -c [-hf] [-R resource] [-D dataType] structFilePath",
 "               irodsCollection",
@@ -131,9 +131,11 @@ usage ()
 "a replica will automatically be made on the target resource.",
 "Again, if the -D flag is not use, the bundling will be done using tar.",
 " ",
-
+"The -b option when used with the -x option, specifies bulk registration",
+"which does up to 50 rgistrations at a time to reduce overhead.",
 " ",
 "Options are:",
+" -b  bulk registration when used with -x to reduce overhead",
 " -R  resource - specifies the resource to store to. This is optional",
 "     in your environment",
 " -D  dataType - the struct file data type. Valid only if the struct file",

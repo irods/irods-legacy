@@ -3420,26 +3420,4 @@ int modFlag, genQueryOut_t *bulkDataObjRegInp)
     return 0;
 }
 
-int
-cleanupBulkRegFiles (genQueryOut_t *bulkDataObjRegInp)
-{
-    sqlResult_t *filePath;
-    char *tmpFilePath;
-    int i;
-
-    if (bulkDataObjRegInp == NULL) return USER__NULL_INPUT_ERR;
-
-    if ((filePath =
-      getSqlResultByInx (bulkDataObjRegInp, COL_D_DATA_PATH)) == NULL) {
-        rodsLog (LOG_NOTICE,
-          "cleanupBulkRegFiles: getSqlResultByInx for COL_D_DATA_PATH failed");
-        return (UNMATCHED_KEY_OR_INDEX);
-    }
-    for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
-	tmpFilePath = &filePath->value[filePath->len * i];
-        unlink (tmpFilePath);
-    }
-
-    return 0;
-}
 

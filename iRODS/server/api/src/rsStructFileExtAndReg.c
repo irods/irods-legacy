@@ -213,13 +213,15 @@ char *phyBunDir, int flags)
       flags, &bulkDataObjRegInp, &renamedPhyFiles);
  
     if ((flags & BULK_OPR_FLAG) != 0) {
-        if (status >= 0 && bulkDataObjRegInp.rowCnt > 0) {
-            status = rsBulkDataObjReg (rsComm, &bulkDataObjRegInp);
-            if (status < 0) {
+        if (bulkDataObjRegInp.rowCnt > 0) {
+	    int status1;
+            status1 = rsBulkDataObjReg (rsComm, &bulkDataObjRegInp);
+            if (status1 < 0) {
+		status = status1;
                 rodsLog (LOG_ERROR,
                   "regUnbunSubfiles: rsBulkDataObjReg error for %s. stat = %d",
-                  collection, status);
-                cleanupBulkRegFiles (&bulkDataObjRegInp);
+                  collection, status1);
+                cleanupBulkRegFiles (rsComm, &bulkDataObjRegInp);
             }
             postProcRenamedPhyFiles (&renamedPhyFiles, status);
 	}
@@ -310,14 +312,14 @@ renamedPhyFiles_t *renamedPhyFiles)
 	    } else {
                 status = bulkProcAndRegSubfile (rsComm, rescInfo, subObjPath, 
 		  subfilePath, statbuf.st_size, statbuf.st_mode & 0777, 
-		  bulkDataObjRegInp, renamedPhyFiles);
+		  flags, bulkDataObjRegInp, renamedPhyFiles);
 	        unlink (subfilePath);
                 if (status < 0) {
                     rodsLog (LOG_ERROR,
                      "regUnbunSubfiles:bulkProcAndRegSubfile of %s err.stat=%d",
                         subObjPath, status);
                     savedStatus = status;
-		    break;
+                    continue;
                 }
 	    }
 	}
@@ -437,7 +439,7 @@ char *subfilePath, rodsLong_t dataSize, int flags)
 
 int
 bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, 
+char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
 genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
 {
     dataObjInfo_t dataObjInfo;
@@ -471,7 +473,7 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
         if (chkOrphanFile (rsComm, dataObjInfo.filePath, rescInfo->rescName, 
 	  &dataObjInfo) <= 0) {
             /* not an orphan file */
-            if (dataObjInfo.dataId > 0 &&
+            if ((flags & FORCE_FLAG_FLAG) != 0 && dataObjInfo.dataId > 0 &&
               strcmp (dataObjInfo.objPath, subObjPath) == 0) {
                 /* overwrite the current file */
                 modFlag = 1;
@@ -516,7 +518,7 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
     }
 
     status = bulkRegSubfile (rsComm, rescInfo->rescName, subObjPath,
-      subfilePath, dataSize, dataMode, modFlag, bulkDataObjRegInp, 
+      dataObjInfo.filePath, dataSize, dataMode, modFlag, bulkDataObjRegInp, 
       renamedPhyFiles);
     return status;
 }
@@ -543,7 +545,7 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
             rodsLog (LOG_ERROR,
               "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",
               subfilePath, status);
-	    cleanupBulkRegFiles (bulkDataObjRegInp);
+	    cleanupBulkRegFiles (rsComm, bulkDataObjRegInp);
 	}
 	postProcRenamedPhyFiles (renamedPhyFiles, status);
 	bulkDataObjRegInp->rowCnt = 0;
@@ -602,5 +604,39 @@ postProcRenamedPhyFiles (renamedPhyFiles_t *renamedPhyFiles, int regStatus)
     bzero (renamedPhyFiles, sizeof (renamedPhyFiles_t));
 
     return savedStatus;
+}
+
+int
+cleanupBulkRegFiles (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
+{
+    sqlResult_t *filePath, *rescName;
+    char *tmpFilePath, *tmpRescName;
+    int i;
+
+    if (bulkDataObjRegInp == NULL) return USER__NULL_INPUT_ERR;
+
+    if ((filePath =
+      getSqlResultByInx (bulkDataObjRegInp, COL_D_DATA_PATH)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "cleanupBulkRegFiles: getSqlResultByInx for COL_D_DATA_PATH failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if ((rescName =
+      getSqlResultByInx (bulkDataObjRegInp, COL_D_RESC_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "rsBulkDataObjReg: getSqlResultByInx for COL_D_RESC_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
+        tmpFilePath = &filePath->value[filePath->len * i];
+        tmpRescName = &rescName->value[rescName->len * i];
+	/* make sure it is an orphan file */
+        if (chkOrphanFile (rsComm, tmpFilePath, tmpRescName, NULL) > 0) {
+            unlink (tmpFilePath);
+	}
+    }
+
+    return 0;
 }
 

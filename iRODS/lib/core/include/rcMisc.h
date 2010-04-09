@@ -233,8 +233,6 @@ int
 fillBulkDataObjRegInp (char *rescName, char *objPath,
 char *filePath, char *dataType, rodsLong_t dataSize, int dataMode,
 int modFlag, genQueryOut_t *bulkDataObjRegInp);
-int
-cleanupBulkRegFiles (genQueryOut_t *bulkDataObjRegInp);
 #ifdef  __cplusplus
 }
 #endif

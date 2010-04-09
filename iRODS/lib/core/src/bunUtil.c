@@ -134,6 +134,10 @@ rodsPathInp_t *rodsPathInp)
         addKeyVal (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
     }
 
+    if (rodsArgs->bulk == True) {
+        addKeyVal (&structFileExtAndRegInp->condInput, BULK_OPR_KW, "");
+    }
+
     return (0);
 }
 
