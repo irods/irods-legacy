@@ -638,6 +638,9 @@ runCmd(0, "ils -rA $LD1 $LD2 | grep read | wc -l", "0");
 runCmd(0, "irm -fr $LD1");
 runCmd(0, "irm -rf $LD2");
 
+# simple test to exercise the clean-up AVUs sql;
+# will return CAT_SUCCESS_BUT_WITH_NO_INFO if there were none
+runCmd(1, "iadmin rum");
 
 # before removing, test changing the host
 runCmd(0, "iadmin modresc $Resc2 host foo.sdsc.edu");

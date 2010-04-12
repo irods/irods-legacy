@@ -562,6 +562,10 @@ _rsGeneralAdmin(rsComm_t *rsComm, generalAdminInp_t *generalAdminInp )
 	  if (status != 0) chlRollback(rsComm);
 	  return(status);
        }
+       if (strcmp(generalAdminInp->arg1,"unusedAVUs")==0) {
+	  status = chlDelUnusedAVUs(rsComm);
+	  return(status);
+       }
     }
     if (strcmp(generalAdminInp->arg0,"calculate-usage")==0) {
        status = chlCalcUsageAndQuota(rsComm);

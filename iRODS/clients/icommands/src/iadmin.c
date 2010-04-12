@@ -1044,6 +1044,22 @@ doCommand(char *cmdToken[]) {
       printf("Converted to local time: %s\n", myString);
       return(0);
    }
+   if (strcmp(cmdToken[0],"rum") == 0) {
+      int status;
+      status = generalAdmin(0, "rm", "unusedAVUs", "", "", 
+		   "", "", "", "");
+      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
+	 printf(
+	    "The return of CAT_SUCCESS_BUT_WITH_NO_INFO in this case means that the\n");
+	 printf(
+	    "SQL succeeded but there were no rows removed; there were no unused\n");
+	 printf(
+	    "AVUs to remove.\n");
+
+      }
+      return(0);
+   }
+
    /* test is only used for testing so is not included in the help */
    if (strcmp(cmdToken[0],"test") == 0) {
       char* result;
@@ -1262,6 +1278,7 @@ void usageMain()
 " sgq Group ResourceName-or-'total' Value (set group quota)",
 " lq [Name] List Quotas",
 " cu (calulate usage (for quotas))",
+" rum (remove unused metadata (user-defined AVUs)",
 " help (or h) [command] (this help, or more details on a command)",
 "Also see 'irmtrash -M -u user' for the admin mode of removing trash.",
 ""};
@@ -1603,6 +1620,21 @@ usage(char *subOpt)
 "Also see suq, sgq, and lq.",
 ""};
 
+   char *rumMsgs[]={
+" rum (remove unused metadata (user-defined AVUs)",
+"When users remove user-defined metadata (Attribute-Value-Unit triplets",
+"(AVUs)) on objects (collections, data-objects, etc), or remove the",
+"objects themselves, the associations between those objects and the",
+"AVUs are removed but the actual AVUs (rows in another table) are left",
+"in place.  This is because the SQL processing can be slow for this",
+"because each AVU can be associated with multiple objects.  But this",
+"only needs to be run once in a while, after any number of such",
+"deletions have been done and only if the number of unused AVUs has",
+"gotten large and so is slowing down the DBMS.  This command runs SQL",
+"to remove those unused AVU rows.  For PostgreSQL and Oracle this will",
+"ususally only take a few seconds.  For MySQL it is much slower.",
+""};
+
    char *helpMsgs[]={
 " help (or h) [command] (general help, or more details on a command)",
 " If you specify a command, a brief description of that command",
@@ -1626,6 +1658,7 @@ usage(char *subOpt)
 		    "rfg", "atrg", "rfrg", "at", "rt", "spass", "dspass", 
 		    "pv", "ctime", 
 		    "suq", "sgq", "lq", "cu",
+		    "rum", 
 		    "help", "h",
 		    ""};
 
@@ -1640,6 +1673,7 @@ usage(char *subOpt)
 		    rfgMsgs, atrgMsgs, rfrgMsgs, atMsgs, rtMsgs, spassMsgs,
 		    dspassMsgs, pvMsgs, ctimeMsgs, 
 		    suqMsgs, sgqMsgs, lqMsgs, cuMsgs,
+		    rumMsgs,
 		    helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {

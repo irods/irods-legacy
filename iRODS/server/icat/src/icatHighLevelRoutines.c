@@ -28,14 +28,25 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
    challenge.  This is used as a sessionSigniture on the ICAT server
    side.  Also see getSessionSignitureClientside function. */
 
-/* If you are doing many deletions of user-defined-metadata (AVUs) and
- * notice it getting slow, you can uncomment the define below so the
- * code won't automatically remove all unused AVUs each time one is
- * deleted.  You can then do the SQL to delete unused AVUs by hand
- * instead.  Once in a while, perhaps daily, should be sufficient.
- * The SQL is: " delete from r_meta_main where meta_id not in (select
- * meta_id from r_objt_metamap) ". : */
-/* #define DISABLE_METADATA_CLEANUP "MANUAL" */
+/* In 2.3, the METADATA_CLEANUP logic (SQL) (via a
+ * 'DISABLE_METADATA_CLEANUP' define) was on by default but it was
+ * found to be too slow when moderate amounts of user-defined metadata
+ * (AVUs) were defined.  Now, we've improved the SQL to be much faster
+ * but also decided to have this off by default.  When AVUs are
+ * deleted, the association between the object and the AVU is removed,
+ * but the actual AVU triplet remains (and may be associated with
+ * other objects).
+ *
+ * Admins can run the new 'iadmin rum' (remove unused metadata)
+ * command if large numbers of rows accumulate (which can slow down
+ * meta-data functions), which will remove any AVU triplets not
+ * associated with any object. 
+ *
+ * If you want, you can also define METADATA_CLEANUP so this will
+ * run each time a user-defined metadata association is deleted.  It may,
+ * however, be quite slow.
+  #define METADATA_CLEANUP "EACH TIME"
+*/
 
 /* 
    Legal values for accessLevel in  chlModAccessControl (Access Parameter).
@@ -60,6 +71,7 @@ static char prevChalSig[200]; /* a 'signiture' of the previous
 int logSQL=0;
 
 int _delColl(rsComm_t *rsComm, collInfo_t *collInfo);
+int removeAVUs();
 
 icatSessionStruct icss={0};
 char localZone[MAX_NAME_LEN]="";
@@ -847,33 +859,40 @@ void removeMetaMapAndAVU(char *dataObjNumber) {
    is no need to do the SQL below.
  */
    if (status == 0) {
-#ifndef DISABLE_METADATA_CLEANUP
-      if (logSQL) rodsLog(LOG_SQL, "removeMetaMapAndAVU SQL 2");
-      cllBindVarCount=0;
-      snprintf(tSQL, MAX_SQL_SIZE, 
-	       "delete from r_meta_main where meta_id not in (select meta_id from r_objt_metamap)"); 
-      status =  cmlExecuteNoAnswerSql(tSQL, &icss);
+#ifdef METADATA_CLEANUP
+      removeAVUs();
 #endif
    }
    return;
 }
 
 /*
- * removeAVU - remove unused AVU (user defined metadata), if any.
+ * removeAVUs - remove unused AVUs (user defined metadata), if any.
  */
-void removeAVU() {
+int removeAVUs() {
    char tSQL[MAX_SQL_SIZE];
    int status;
 
-#ifndef DISABLE_METADATA_CLEANUP
-   if (logSQL) rodsLog(LOG_SQL, "removeAVU SQL 1 ");
+   if (logSQL) rodsLog(LOG_SQL, "removeAVUs SQL 1 ");
    cllBindVarCount=0;
+
+#if ORA_ICAT
+    snprintf(tSQL, MAX_SQL_SIZE, 
+	    "delete from r_meta_main where meta_id in (select meta_id from r_meta_main minus select meta_id from r_objt_metamap)");
+#elif MY_ICAT
+   /* MYSQL does not have 'minus' or 'except' (to my knowledge) so
+    * use previous version of the SQL, which is very slow */
+    snprintf(tSQL, MAX_SQL_SIZE, 
+ 	    "delete from r_meta_main where meta_id not in (select meta_id from r_objt_metamap)"); 
+#else
+   /* Postgres */
    snprintf(tSQL, MAX_SQL_SIZE, 
-	    "delete from r_meta_main where meta_id not in (select meta_id from r_objt_metamap)"); 
+	    "delete from r_meta_main where meta_id in (select meta_id from r_meta_main except select meta_id from r_objt_metamap)");
+#endif 
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
-   rodsLog (LOG_NOTICE, "removeAVU status=%d\n",status);
-#endif
-   return;
+   rodsLog (LOG_NOTICE, "removeAVUs status=%d\n",status);
+
+   return status;
 }
 
 /*
@@ -5245,7 +5264,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       }
 
       /* Remove unused AVU rows, if any */
-      removeAVU();
+#ifdef METADATA_CLEANUP
+      removeAVUs();
+#endif
 
       /* Audit */
       status = cmlAudit3(AU_DELETE_AVU_METADATA,  
@@ -5324,7 +5345,9 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
    }
 
    /* Remove unused AVU rows, if any */
-   removeAVU();
+#ifdef METADATA_CLEANUP
+   removeAVUs();
+#endif
 
    /* Audit */
    status = cmlAudit3(AU_DELETE_AVU_METADATA,  
@@ -7250,3 +7273,21 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
 
    return(status);
 }
+
+int 
+chlDelUnusedAVUs(rsComm_t *rsComm) {
+/* 
+  Remove any AVUs that are currently not associated with any object.
+  This is done as a separate operation for efficiency.  See 
+  'iadmin h rum'.
+*/
+   int status;
+   status = removeAVUs();
+
+   if (status == 0) {
+      status =  cmlExecuteNoAnswerSql("commit", &icss);
+   }
+   return(status);
+
+}
+
