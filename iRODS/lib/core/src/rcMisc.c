@@ -3332,7 +3332,7 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
 
     memset (bulkDataObjRegInp, 0, sizeof (genQueryOut_t));
 
-    bulkDataObjRegInp->attriCnt = 7;
+    bulkDataObjRegInp->attriCnt = 8;
 
     bulkDataObjRegInp->sqlResult[0].attriInx = COL_DATA_NAME;
     bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
@@ -3376,6 +3376,12 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
       malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[6].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bulkDataObjRegInp->sqlResult[7].attriInx = COL_RESC_GROUP_NAME;
+    bulkDataObjRegInp->sqlResult[7].len = NAME_LEN;
+    bulkDataObjRegInp->sqlResult[7].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (bulkDataObjRegInp->sqlResult[7].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
 
     bulkDataObjRegInp->continueInx = -1;
 
@@ -3383,7 +3389,7 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
 }
 
 int
-fillBulkDataObjRegInp (char *rescName, char *objPath,
+fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
 char *filePath, char *dataType, rodsLong_t dataSize, int dataMode, 
 int modFlag, genQueryOut_t *bulkDataObjRegInp)
 {
@@ -3415,6 +3421,8 @@ int modFlag, genQueryOut_t *bulkDataObjRegInp)
         rstrcpy (&bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
          REGISTER_OPR, NAME_LEN);
     }
+    rstrcpy (&bulkDataObjRegInp->sqlResult[7].value[NAME_LEN * rowCnt],
+     rescGroupName, NAME_LEN);
     bulkDataObjRegInp->rowCnt++;
 
     return 0;

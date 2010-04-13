@@ -230,7 +230,7 @@ seedRandom ();
 int
 initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp);
 int
-fillBulkDataObjRegInp (char *rescName, char *objPath,
+fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
 char *filePath, char *dataType, rodsLong_t dataSize, int dataMode,
 int modFlag, genQueryOut_t *bulkDataObjRegInp);
 #ifdef  __cplusplus

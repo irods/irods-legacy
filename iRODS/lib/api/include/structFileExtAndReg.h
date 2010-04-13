@@ -45,23 +45,25 @@ structFileExtAndRegInp_t *structFileExtAndRegInp);
 int 
 chkCollForExtAndReg (rsComm_t *rsComm, char *collection);
 int
-regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
-char *phyBunDir, int flags);
+regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName, 
+char *collection, char *phyBunDir, int flags);
 int
-_regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
-char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp, 
+_regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+char *collection, char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp, 
 renamedPhyFiles_t *renamedPhyFiles);
 int
-regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int flags);
+regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags);
 int
-bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
-genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles);
+bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, 
+char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize, 
+int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp, 
+renamedPhyFiles_t *renamedPhyFiles);
 int
-bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int modFlag,
-genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles);
+bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
+char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode, 
+int modFlag, genQueryOut_t *bulkDataObjRegInp, 
+renamedPhyFiles_t *renamedPhyFiles);
 int
 addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
 renamedPhyFiles_t *renamedPhyFiles);

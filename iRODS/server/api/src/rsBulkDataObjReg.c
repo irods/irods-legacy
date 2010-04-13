@@ -49,9 +49,9 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
     modDataObjMeta_t modDataObjMetaInp;
     keyValPair_t regParam;
     sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
-      *dataMode, *oprType;
+      *dataMode, *oprType, *rescGroupName;
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
-      *tmpDataMode, *tmpOprType;
+      *tmpDataMode, *tmpOprType, *tmpRescGroupName;
     int status, i;
 
     if ((objPath =
@@ -102,6 +102,13 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    if ((rescGroupName =
+      getSqlResultByInx (bulkDataObjRegInp, COL_RESC_GROUP_NAME)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "rsBulkDataObjReg: getSqlResultByInx for COL_RESC_GROUP_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
    for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
         tmpObjPath = &objPath->value[objPath->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
@@ -110,6 +117,8 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         tmpFilePath = &filePath->value[filePath->len * i];
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpOprType = &oprType->value[oprType->len * i];
+	tmpRescGroupName =  &rescGroupName->value[rescGroupName->len * i];
+
         bzero (&dataObjInfo, sizeof (dataObjInfo_t));
 	dataObjInfo.flags = NO_COMMIT_FLAG;
         rstrcpy (dataObjInfo.objPath, tmpObjPath, MAX_NAME_LEN);
@@ -118,6 +127,7 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         rstrcpy (dataObjInfo.rescName, tmpRescName, NAME_LEN);
         rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
         rstrcpy (dataObjInfo.dataMode, tmpDataMode, NAME_LEN);
+        rstrcpy (dataObjInfo.rescGroupName, tmpRescGroupName, NAME_LEN);
 	if (strcmp (tmpOprType, REGISTER_OPR) == 0) {
 	    status = svrRegDataObj (rsComm, &dataObjInfo);
 	} else {

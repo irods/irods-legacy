@@ -21,6 +21,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     dataObjInfo_t *dataObjInfo;
     int l1descInx;
     rescInfo_t *rescInfo;
+    char *rescGroupName;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     char *bunFilePath;
@@ -73,6 +74,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     }
 
     rescInfo = L1desc[l1descInx].dataObjInfo->rescInfo;
+    rescGroupName = L1desc[l1descInx].dataObjInfo->rescGroupName;
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
     bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
@@ -129,7 +131,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
         flags = flags | BULK_OPR_FLAG;
     }
 
-    status = regUnbunSubfiles (rsComm, rescInfo, 
+    status = regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
       structFileExtAndRegInp->collection, phyBunDir, flags);
 
     if (status == CAT_NO_ROWS_FOUND) {
@@ -198,8 +200,8 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
  */
 
 int
-regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
-char *phyBunDir, int flags)
+regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+char *collection, char *phyBunDir, int flags)
 {
     genQueryOut_t bulkDataObjRegInp; 
     renamedPhyFiles_t renamedPhyFiles;
@@ -209,8 +211,8 @@ char *phyBunDir, int flags)
 	bzero (&renamedPhyFiles, sizeof (renamedPhyFiles));
 	initBulkDataObjRegInp (&bulkDataObjRegInp);
     }
-    status = _regUnbunSubfiles (rsComm, rescInfo, collection, phyBunDir, 
-      flags, &bulkDataObjRegInp, &renamedPhyFiles);
+    status = _regUnbunSubfiles (rsComm, rescInfo, rescGroupName, collection, 
+      phyBunDir, flags, &bulkDataObjRegInp, &renamedPhyFiles);
  
     if ((flags & BULK_OPR_FLAG) != 0) {
         if (bulkDataObjRegInp.rowCnt > 0) {
@@ -236,8 +238,8 @@ char *phyBunDir, int flags)
  */
 
 int
-_regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *collection,
-char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp, 
+_regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+char *collection, char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp,
 renamedPhyFiles_t *renamedPhyFiles)
 {
     DIR *dirPtr;
@@ -288,8 +290,9 @@ renamedPhyFiles_t *renamedPhyFiles)
                 savedStatus = status;
 		continue;
 	    }
-	    status = _regUnbunSubfiles (rsComm, rescInfo, subObjPath,
-	      subfilePath, flags, bulkDataObjRegInp, renamedPhyFiles);
+	    status = _regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
+	      subObjPath, subfilePath, flags, bulkDataObjRegInp, 
+	      renamedPhyFiles);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "regUnbunSubfiles: regUnbunSubfiles of %s error. status=%d",
@@ -299,8 +302,8 @@ renamedPhyFiles_t *renamedPhyFiles)
             }
         } else if ((statbuf.st_mode & S_IFREG) != 0) {
 	    if ((flags & BULK_OPR_FLAG) == 0) {
-	        status = regSubfile (rsComm, rescInfo, subObjPath, subfilePath,
-	          statbuf.st_size, flags);
+	        status = regSubfile (rsComm, rescInfo, rescGroupName,
+		    subObjPath, subfilePath, statbuf.st_size, flags);
 	        unlink (subfilePath);
                 if (status < 0) {
                     rodsLog (LOG_ERROR,
@@ -310,9 +313,10 @@ renamedPhyFiles_t *renamedPhyFiles)
                     continue;
 		}
 	    } else {
-                status = bulkProcAndRegSubfile (rsComm, rescInfo, subObjPath, 
-		  subfilePath, statbuf.st_size, statbuf.st_mode & 0777, 
-		  flags, bulkDataObjRegInp, renamedPhyFiles);
+                status = bulkProcAndRegSubfile (rsComm, rescInfo, rescGroupName,
+		  subObjPath, subfilePath, statbuf.st_size, 
+		  statbuf.st_mode & 0777, flags, bulkDataObjRegInp, 
+		  renamedPhyFiles);
 	        unlink (subfilePath);
                 if (status < 0) {
                     rodsLog (LOG_ERROR,
@@ -330,8 +334,8 @@ renamedPhyFiles_t *renamedPhyFiles)
 }
 
 int
-regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int flags)
+regSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
+char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
 {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
@@ -346,6 +350,7 @@ char *subfilePath, rodsLong_t dataSize, int flags)
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
     rstrcpy (dataObjInfo.dataType, "generic", NAME_LEN);
     dataObjInfo.rescInfo = rescInfo;
+    rstrcpy (dataObjInfo.rescGroupName, rescGroupName, NAME_LEN);
     dataObjInfo.dataSize = dataSize;
 
     status = getFilePathName (rsComm, &dataObjInfo, &dataObjInp);
@@ -438,9 +443,10 @@ char *subfilePath, rodsLong_t dataSize, int flags)
 }
 
 int
-bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int flags,
-genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
+bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, 
+char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize, 
+int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp, 
+renamedPhyFiles_t *renamedPhyFiles)
 {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
@@ -517,21 +523,23 @@ genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
         return (UNIX_FILE_LINK_ERR - errno);
     }
 
-    status = bulkRegSubfile (rsComm, rescInfo->rescName, subObjPath,
-      dataObjInfo.filePath, dataSize, dataMode, modFlag, bulkDataObjRegInp, 
-      renamedPhyFiles);
+    status = bulkRegSubfile (rsComm, rescInfo->rescName, rescGroupName,
+      subObjPath, dataObjInfo.filePath, dataSize, dataMode, modFlag, 
+      bulkDataObjRegInp, renamedPhyFiles);
+
     return status;
 }
 
 int
-bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *subObjPath,
-char *subfilePath, rodsLong_t dataSize, int dataMode, int modFlag,
-genQueryOut_t *bulkDataObjRegInp, renamedPhyFiles_t *renamedPhyFiles)
+bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
+char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode, 
+int modFlag, genQueryOut_t *bulkDataObjRegInp, 
+renamedPhyFiles_t *renamedPhyFiles)
 {
     int status;
 
-    status = fillBulkDataObjRegInp (rescName, subObjPath, subfilePath,
-      "generic", dataSize, dataMode, modFlag, bulkDataObjRegInp);
+    status = fillBulkDataObjRegInp (rescName, rescGroupName, subObjPath, 
+      subfilePath, "generic", dataSize, dataMode, modFlag, bulkDataObjRegInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",
