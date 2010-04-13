@@ -1633,6 +1633,11 @@ usage(char *subOpt)
 "gotten large and so is slowing down the DBMS.  This command runs SQL",
 "to remove those unused AVU rows.  For PostgreSQL and Oracle this will",
 "ususally only take a few seconds.  For MySQL it is much slower.",
+" ",
+"You can start a periodic rule/microservice to do this automatically,",
+"by running 'iRule clients/icommands/bin/delUnusedAVUs.ir'.",
+"A good practice would be to schedule this to run once a night.",
+"See the contents of delUnusedAVUs.ir for more information.",
 ""};
 
    char *helpMsgs[]={

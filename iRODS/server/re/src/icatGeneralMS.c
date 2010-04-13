@@ -888,3 +888,64 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
   
 	return (rei->status);
 }
+/**
+ * \fn msiDeleteUnusedAVUs (ruleExecInfo_t *rei)
+ *
+ * \brief   This function deletes unused AVUs from the iCAT.  See 'iadmin rum'.
+ *
+ * \module core
+ *
+ * \since post-2.3
+ *
+ * \author  Wayne Schroeder
+ * \date    April 13, 2010
+ *
+ * \remark 
+ * \remark 
+ *
+ * \note
+ *
+ * \usage
+ * 
+ *  As seen in server/config/reConfigs/core.irb
+ *  
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence 
+ * \DolVarModified 
+ * \iCatAttrDependence 
+ * \iCatAttrModified 
+ * \sideeffect 
+ *
+ * \return integer
+ * \retval (status)
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiDeleteUnusedAVUs(ruleExecInfo_t *rei)
+{
+   int status;
+
+  /**** This is Just a Test Stub  ****/
+  if (reTestFlag > 0 ) {
+    if (reTestFlag == LOG_TEST_1) {
+      rodsLog (LOG_NOTICE,"   Calling msiDeleteUnusedAVUs\n");
+    }
+    if (reLoopBackFlag > 0)
+      return(0);
+  }
+  /**** This is Just a Test Stub  ****/
+
+#ifdef RODS_CAT
+   rodsLog(LOG_NOTICE, "msiDeleteUnusedAVUs/chlDelUnusedAVUs called\n");
+   status = chlDelUnusedAVUs(rei->rsComm);
+#else
+   status =  SYS_NO_RCAT_SERVER_ERR;
+#endif
+   return(status);
+}
