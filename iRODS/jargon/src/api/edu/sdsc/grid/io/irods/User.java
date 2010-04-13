@@ -127,9 +127,17 @@ public class User extends Domain {
 		irodsFileSystem.commands.admin(args);
 	}
 
+	/**
+	 * This method is currently dead code, and will need enhancements to obfucate the password information in an upcoming version, per 
+	 *  Bug 83 -  user.modifyPassword fails in Jargon
+	 * @param userName
+	 * @param newValue
+	 * @throws IOException
+	 */
 	public void modifyPassword(String userName, String newValue)
 			throws IOException {
-		String[] args = { "modify", "user", userName, "password", newValue };
-		irodsFileSystem.commands.admin(args);
+		throw new UnsupportedOperationException("method currently lacks obfuscation code and will requre an upgrade");
+		//String[] args = { "modify", "user", userName, "password", newValue };
+		//irodsFileSystem.commands.admin(args);
 	}
 }

@@ -257,14 +257,17 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * held values.
 	 */
 	protected void finalize() throws Throwable {
+		
+		if (log.isDebugEnabled()) {
+			log.debug("IRODSFileSystem finalizer");
+		}
+		
 		close();
 
 		if (account != null)
 			account = null;
 		if (commands != null)
 			commands = null;
-
-		super.finalize();
 	}
 
 	/**
@@ -563,7 +566,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * a ClosedChannelException will be thrown.
 	 */
 	public void close() throws IOException {
-		log.info("closing IRODSFileSystem connection");
+		log.info("calling close() on irodsCommands");
 		try {
 			commands.close();
 		} catch (JargonException e) {

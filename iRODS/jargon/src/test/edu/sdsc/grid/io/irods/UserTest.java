@@ -329,4 +329,60 @@ public class UserTest {
 		removeCommand.setUserName(testUser);
 		result = invoker.invokeCommandAndGetResultAsString(removeCommand);
 	}
+	
+	/**
+	 *  Bug 83 -  user.modifyPassword fails in Jargon
+	 *  
+	 *  Currently ignored as this 
+	 *  
+	 * @throws Exception
+	 */
+	@Ignore
+	public final void testModifyPassword() throws Exception {
+		String testUser = "testModPasswordUser";
+		String testUserType = "rodsuser";
+		String testPassword = "password";
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+
+		// add the user, may already be there so ignore any error
+		try {
+			AddUserCommand command = new AddUserCommand();
+			command.setUserName(testUser);
+			command.setUserType(testUserType);
+
+			String result = invoker.invokeCommandAndGetResultAsString(command);
+		} catch (IcommandException ice) {
+			// ignore, might already be present
+		}
+
+		// modify the password for the user
+		User user = new User(irodsFileSystem);
+		user.modifyPassword(testUser, testPassword);
+		irodsFileSystem.close();
+
+		// verify by trying to log in as this user
+
+		String host = testingProperties.getProperty(TestingPropertiesHelper.IRODS_HOST_KEY);
+		int port = testingPropertiesHelper.getPortAsInt(testingProperties);
+		String zone = testingProperties.getProperty(TestingPropertiesHelper.IRODS_ZONE_KEY);
+		String resource = testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
+		String homeDir = '/' + zone + "/home/" + testUser + '/';
+		
+		// do a login with the modified password
+		IRODSAccount loginAccount = new IRODSAccount(host, port, testUser, testPassword, homeDir,zone, resource);
+		IRODSFileSystem testLoginFileSystem = new IRODSFileSystem(loginAccount);
+		testLoginFileSystem.close();
+		
+		// cleanup, delete user
+		RemoveUserCommand removeCommand = new RemoveUserCommand();
+		removeCommand.setUserName(testUser);
+		invoker.invokeCommandAndGetResultAsString(removeCommand);
+	}
+	
 }

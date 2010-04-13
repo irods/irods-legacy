@@ -32,6 +32,9 @@ Features and Changes
 
 -----------
 *fix for  Bug 87 -  resource status and other new resource fields in resource metadata for query lookup
+
+-----------
+*fix for  Bug 84 -  connection/finalizer issues with Jargon
 ================================================================================================
 Outstanding Issues
 

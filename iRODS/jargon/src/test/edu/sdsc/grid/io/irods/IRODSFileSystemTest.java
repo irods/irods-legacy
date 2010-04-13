@@ -203,4 +203,63 @@ public class IRODSFileSystemTest {
     	 irodsFileSystem.close();    
     }
     
+    /*
+     * series of close/finalizer tests below looking for  Bug 84 -  connection/finalizer issues with Jargon
+     */
+    
+    @Test
+	public void testIRODSCommandsFinalizer() throws Exception, Throwable {
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+		irodsFileSystem.finalize();
+	}
+	
+	@Test
+	public void testIRODSCommandsFinalizerCloseIRODSFileSystemFirst() throws Exception, Throwable {
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+		irodsFileSystem.close();
+		irodsFileSystem.finalize();
+	}
+	
+	@Test
+	public void testCallIRODSFileSystemCloseTwiceThenCallFinalizer() throws Exception, Throwable {
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+		irodsFileSystem.close();
+		irodsFileSystem.close();
+		irodsFileSystem.finalize();
+	}
+	
+	@Test
+	public void testCallICloseOnIRODSCommandsThenRunFileSystemFinalizer() throws Exception, Throwable {
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+		irodsFileSystem.commands.close();
+		irodsFileSystem.finalize();
+	}
+	
+	@Test
+	public void testCallICloseOnIRODSCommandsTheFileSystemCloseThenFinalizer() throws Exception, Throwable {
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+		irodsFileSystem.commands.close();
+		irodsFileSystem.close();
+		irodsFileSystem.finalize();
+	}
+	
+	@Test
+	public void testCallICloseOnIRODSConnectionThenFinalize() throws Exception, Throwable {
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+		irodsFileSystem.close();
+		irodsFileSystem.finalize();
+	}
+    
 }

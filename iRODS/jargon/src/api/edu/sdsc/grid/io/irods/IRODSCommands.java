@@ -242,20 +242,26 @@ class IRODSCommands {
 	 *             Socket error
 	 */
 	synchronized void close() throws JargonException {
+		
+		log.debug("check if connected...");
+		
 		if (isConnected()) {
+			log.debug("IRODSCommands is connected, do a disconnect and shut down the socket");
 			try {
 				log.debug("sending disconnect message, still sees connection as open");
 				irodsConnection.send(irodsConnection.createHeader(
 						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();
 				irodsConnection.shutdown();
+				log.debug("shutdown complete, connection status is: {}" , irodsConnection.isConnected());
 			} catch (IOException e) {
-				e.printStackTrace();
-				log.error("IOException closing connection", e);
+				log.warn("IOException closing connection, will try and obliterate if still open");
 				irodsConnection.obliterateConnectionAndDiscardErrors();
 				throw new JargonException(
 						"error sending disconnect on a close operation");
 			}
+		} else {
+			log.debug("was not connected...leaving connection alone");
 		}
 	}
 

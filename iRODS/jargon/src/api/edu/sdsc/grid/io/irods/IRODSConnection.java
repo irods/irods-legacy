@@ -202,10 +202,12 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	public void shutdown() throws JargonException {
 		log.info("connection shutdown");
 		if (!isConnected()) {
+			log.debug("not connected, just return");
 			return;
 		}
 
 		try {
+			log.debug("I'm connected, call connection.close()");
 			connection.close();
 		} catch (IOException ex) {
 			log.warn("IOException closing: ", ex);
@@ -216,26 +218,32 @@ public final class IRODSConnection implements IRODSManagedConnection {
 
 	public void obliterateConnectionAndDiscardErrors() {
 
-		try {
-			connection.shutdownInput();
-		} catch (Exception e) {
-			// ignore
+		log.error("thinking about obliterating connection");
+
+		if (!connection.isClosed()) {
+			log.info("connection is indeed open....blat");
+
+			try {
+				connection.shutdownInput();
+			} catch (Exception e) {
+				// ignore
+			}
+
+			try {
+				connection.shutdownOutput();
+			} catch (Exception e) {
+				// ignore
+			}
+
+			try {
+				connection.close();
+
+			} catch (Exception e) {
+				// ignore
+			}
+
+			connected = false;
 		}
-
-		try {
-			connection.shutdownOutput();
-		} catch (Exception e) {
-			// ignore
-		}
-
-		try {
-			connection.close();
-
-		} catch (Exception e) {
-			// ignore
-		}
-
-		connected = false;
 	}
 
 	public String getConnectionUri() throws JargonException {
@@ -424,6 +432,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	void flush() throws IOException {
 		if (connection.isClosed()) {
 			// hopefully this isn't too slow to check.
+			log.error("attempting flush when connection was closed");
 			throw new ClosedChannelException();
 		}
 		irodsOutputStream.write(outputBuffer, 0, outputOffset);
