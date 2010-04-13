@@ -50,8 +50,6 @@ int
 execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd);
 int
 initCmdArg (char *av[], char *cmdArgv, char *cmdPath);
-int
-readToByteBuf (int fd, bytesBuf_t *bytesBuf);
 #else
 #define RS_EXEC_CMD NULL
 #endif

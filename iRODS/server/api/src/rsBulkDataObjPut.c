@@ -45,6 +45,7 @@ bytesBuf_t *dataObjInpBBuf)
     rodsServerHost_t *rodsServerHost;
     rescInfo_t *rescInfo;
     char *inpRescGrpName;
+    char phyBunDir[MAX_NAME_LEN];
     rescGrpInfo_t *myRescGrpInfo = NULL;
 
     inpRescGrpName = getValByKey (&dataObjInp->condInput, RESC_GROUP_NAME_KW);
@@ -72,8 +73,48 @@ bytesBuf_t *dataObjInpBBuf)
         }
         status = rcBulkDataObjPut (rodsServerHost->conn, dataObjInp, 
           dataObjInpBBuf);
+	return status;
     }
+    status = chkCollForExtAndReg (rsComm, dataObjInp->objPath);
+    if (status < 0) return status;
+
+    status = createBunDirForBulkPut (rsComm, dataObjInp, rescInfo, phyBunDir);
+    if (status < 0) return status;
+
     return status;
 }
 
+int
+createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rescInfo_t *rescInfo, char *phyBunDir)
+{
+    dataObjInfo_t dataObjInfo;
+    struct stat statbuf;
+    int status;
+
+    if (dataObjInp == NULL || rescInfo == NULL || phyBunDir == NULL) 
+	return USER__NULL_INPUT_ERR;
+
+    bzero (&dataObjInfo, sizeof (dataObjInfo));
+    rstrcpy (dataObjInfo.objPath, dataObjInp->objPath, MAX_NAME_LEN);
+    rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);
+    dataObjInfo.rescInfo = rescInfo;
+
+    status = getFilePathName (rsComm, &dataObjInfo, dataObjInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "createBunDirForBulkPut: getFilePathName err for %s. status = %d",
+          dataObjInp->objPath, status);
+        return (status);
+    }
+    do {
+	snprintf (phyBunDir, MAX_NAME_LEN, "%s/%s.%d", dataObjInfo.filePath,
+	  TMP_PHY_BUN_DIR, (int) random ());
+	status =  stat (phyBunDir, &statbuf);
+    } while (status == 0);
+
+    mkdirR ("/", phyBunDir, getDefDirMode ());
+
+    return 0;
+}
 

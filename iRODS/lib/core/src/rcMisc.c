@@ -5,6 +5,9 @@
  */
 #ifndef windows_platform
 #include <sys/time.h>
+#include <sys/wait.h>
+#else
+#include "Unix2Nt.h"
 #endif
 #include "rcMisc.h"
 #include "apiHeaderAll.h"
@@ -3428,4 +3431,157 @@ int modFlag, genQueryOut_t *bulkDataObjRegInp)
     return 0;
 }
 
+int
+untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
+{
+    int childPid;
+    int stdinFd[2];
+#ifdef windows_platform
+    int pipe_buf_size;
+#endif
+    int status = 0;
+    int childStatus = 0;
+    char *av[NAME_LEN];
+
+    if (tarBBuf == NULL || phyBunDir == NULL) return USER__NULL_INPUT_ERR;
+
+    if (tarBBuf->len <= 0) return 0;
+
+#ifdef windows_platform
+    if (tarBBuf->len > MAX_NAME_LEN * 5) {
+	pipe_buf_size = tarBBuf->len;
+    } else {
+        pipe_buf_size = MAX_NAME_LEN * 5;
+    }
+#endif
+   
+#ifndef windows_platform    /* UNIX */
+    if (pipe (stdinFd) < 0)
+#else
+    if(_pipe(stdinFd, pipe_buf_size, O_BINARY) < 0)
+#endif
+    {
+        rodsLog (LOG_ERROR,
+         "untarBuf: pipe create failed. errno = %d", errno);
+        return (SYS_PIPE_ERROR - errno);
+    }
+
+    bzero (av, sizeof (av));
+    av[0] = TAR_EXEC_PATH;
+    av[1] = "-x";
+    av[2] = "-C";
+    av[3] = phyBunDir;
+
+#ifndef windows_platform   /* UNIX */
+    childPid = RODS_FORK ();
+
+    if (childPid == 0) {
+
+	close (stdinFd[1]);	/* close out */
+        close (0);
+
+        dup2 (stdinFd[0], 0);
+        close (stdinFd[0]);
+
+        status = execv (av[0], av);
+
+        /* gets here. must be bad */
+        exit(1);
+    } else if (childPid < 0) {
+        rodsLog (LOG_ERROR,
+         "untarBuf: RODS_FORK failed. errno = %d", errno);
+        return (SYS_FORK_ERROR);
+    } else {	/* parent */
+	close (stdinFd[0]);	/* close in */
+
+	status = writeFromByteBuf (stdinFd[1], tarBBuf);
+	if (status < 0) {
+            close (stdinFd[1]);     /* close in */
+	    return status;
+	}
+	close (stdinFd[1]);
+
+        status = waitpid (childPid, &childStatus, 0);
+        if (status >= 0 && childStatus != 0) {
+            rodsLog (LOG_ERROR,
+             "untarBuf: waitpid status = %d, childStatus = %d",
+              status, childStatus);
+            status = EXEC_CMD_ERROR;
+	}
+    }
+#else  /* Windows */
+    /* can it redorect pipe ? */
+    status = _spawnv(_P_NOWAIT, av[0], av);
+#endif
+    return status;
+}
+
+int
+readToByteBuf (int fd, bytesBuf_t *bytesBuf)
+{
+    int toRead, buflen, nbytes;
+    char *bufptr;
+
+    bytesBuf->buf = bufptr = malloc (MAX_NAME_LEN * 5);
+    bytesBuf->len = 0;
+    buflen = toRead = MAX_NAME_LEN * 5;
+    while (1) {
+        nbytes = myRead (fd, bufptr, toRead, SOCK_TYPE, NULL);
+        if (nbytes == toRead) { /* more */
+            toRead = buflen;
+            buflen = 2 * buflen;
+            if (buflen > MAX_SZ_FOR_SINGLE_BUF) {
+                close (fd);
+                return (EXEC_CMD_OUTPUT_TOO_LARGE);
+            }
+            bytesBuf->buf = malloc (buflen);
+            memcpy (bytesBuf->buf, bufptr, toRead);
+            free (bufptr);
+            bufptr = (char *) bytesBuf->buf + toRead;
+            bytesBuf->len += nbytes;
+        } else {
+            if (nbytes > 0) {
+                bytesBuf->len += nbytes;
+                bufptr += nbytes;
+            }
+            if (bytesBuf->len > 0) {
+                /* add NULL termination */
+                *bufptr = '\0';
+                bytesBuf->len++;
+            } else {
+                free (bytesBuf->buf);
+                bytesBuf->buf = NULL;
+            }
+            break;
+        }
+    }
+    close (fd);
+
+    if (nbytes < 0) {
+        return (nbytes);
+    } else {
+        return (0);
+    }
+}
+
+int
+writeFromByteBuf (int fd, bytesBuf_t *bytesBuf)
+{
+    int toWrite, buflen, nbytes;
+    char *bufptr;
+
+    bufptr = bytesBuf->buf;
+    buflen = toWrite = bytesBuf->len;
+    while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
+	toWrite -= nbytes;
+	bufptr += nbytes;
+    }
+    close (fd);
+
+    if (toWrite != 0) {
+        return (SYS_COPY_LEN_ERR - errno);
+    } else {
+        return (0);
+    }
+}
 

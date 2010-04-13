@@ -229,54 +229,6 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 }
 
 int
-readToByteBuf (int fd, bytesBuf_t *bytesBuf)
-{
-    int toRead, buflen, nbytes;
-    char *bufptr;
-
-    bytesBuf->buf = bufptr = malloc (MAX_NAME_LEN * 5);
-    bytesBuf->len = 0;
-    buflen = toRead = MAX_NAME_LEN * 5;
-    while (1) {
-        nbytes = myRead (fd, bufptr, toRead, SOCK_TYPE, NULL);
-	if (nbytes == toRead) {	/* more */
-	    toRead = buflen;
-	    buflen = 2 * buflen;
-	    if (buflen > MAX_SZ_FOR_SINGLE_BUF) {
-		close (fd);
-		return (EXEC_CMD_OUTPUT_TOO_LARGE);
-	    } 
-	    bytesBuf->buf = malloc (buflen);
-	    memcpy (bytesBuf->buf, bufptr, toRead);
-	    free (bufptr);
-	    bufptr = (char *) bytesBuf->buf + toRead;
-	    bytesBuf->len += nbytes;
-	} else {
-	    if (nbytes > 0) {
-		bytesBuf->len += nbytes;
-		bufptr += nbytes;
-	    }
-	    if (bytesBuf->len > 0) {
-		/* add NULL termination */
-                *bufptr = '\0';
-	        bytesBuf->len++;
-	    } else {
-		free (bytesBuf->buf);
-		bytesBuf->buf = NULL;
-	    }
-	    break;
-        }
-    }
-    close (fd);
-
-    if (nbytes < 0) {
-	return (nbytes);
-    } else {
-	return (0);
-    }
-}
-
-int
 execCmd (execCmd_t *execCmdInp, int stdOutFd, int stdErrFd)
 {
     char cmdPath[LONG_NAME_LEN];

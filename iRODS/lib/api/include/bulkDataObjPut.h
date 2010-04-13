@@ -16,6 +16,8 @@
 #include "dataObjWrite.h"
 #include "dataObjClose.h"
 
+#define TMP_PHY_BUN_DIR		"tmpPhyBunDir"
+
 #if defined(RODS_SERVER)
 #define RS_BULK_DATA_OBJ_PUT rsBulkDataObjPut
 /* prototype for the server handler */
@@ -25,6 +27,9 @@ bytesBuf_t *dataObjInpBBuf);
 int
 _rsBulkDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 bytesBuf_t *dataObjInpBBuf);
+int
+createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rescInfo_t *rescInfo, char *phyBunDir);
 #else
 #define RS_BULK_DATA_OBJ_PUT NULL
 #endif
