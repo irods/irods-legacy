@@ -334,6 +334,8 @@ apidef_t RcApiTable[] = {
        "getRescQuotaInp_PI", 0, "rescQuota_PI", 0, (funcPtr) RS_GET_RESC_QUOTA},
     {BULK_DATA_OBJ_REG_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
       "GenQueryOut_PI", 0, NULL, 0, (funcPtr) RS_BULK_DATA_OBJ_REG},
+    {BULK_DATA_OBJ_PUT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH,
+      "DataObjInp_PI", 1, NULL, 0, (funcPtr) RS_BULK_DATA_OBJ_PUT},
     {REG_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_REG_COLL},
 #ifdef COMPAT_201

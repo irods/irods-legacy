@@ -127,4 +127,5 @@
 #include "getHostForPut.h"
 #include "getRescQuota.h"
 #include "bulkDataObjReg.h"
+#include "bulkDataObjPut.h"
 #endif	/* API_HEADER_ALL_H */

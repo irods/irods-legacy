@@ -3,5 +3,5 @@
 irodsHost 'localhost'
 irodsPort 1233
 irodsUserName 'rodsBoot'
-irodsZone tempZone
-irodsAuthFileName /data/mwan/rods/iRODS/config/auth.tmp
+irodsZone oneZone
+irodsAuthFileName /data/mwan/iRODS/config/auth.tmp
