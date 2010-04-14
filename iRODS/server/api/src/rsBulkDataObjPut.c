@@ -47,6 +47,7 @@ bytesBuf_t *dataObjInpBBuf)
     char *inpRescGrpName;
     char phyBunDir[MAX_NAME_LEN];
     rescGrpInfo_t *myRescGrpInfo = NULL;
+    int flags = BULK_OPR_FLAG;
 
     inpRescGrpName = getValByKey (&dataObjInp->condInput, RESC_GROUP_NAME_KW);
 
@@ -80,6 +81,33 @@ bytesBuf_t *dataObjInpBBuf)
 
     status = createBunDirForBulkPut (rsComm, dataObjInp, rescInfo, phyBunDir);
     if (status < 0) return status;
+
+    status = untarBuf (phyBunDir, dataObjInpBBuf);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "_rsBulkDataObjPut: untarBuf for dir %s. stat = %d",
+          phyBunDir, status);
+        return status;
+    }
+
+    if (strlen (myRescGrpInfo->rescGroupName) > 0) 
+        inpRescGrpName = myRescGrpInfo->rescGroupName;
+
+    if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+        flags = flags | FORCE_FLAG_FLAG;
+    }
+
+    status = regUnbunSubfiles (rsComm, rescInfo, inpRescGrpName,
+      dataObjInp->objPath, phyBunDir, flags);
+
+    if (status == CAT_NO_ROWS_FOUND) {
+        /* some subfiles have been deleted. harmless */
+        status = 0;
+    } else if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "_rsBulkDataObjPut: regUnbunPhySubfiles for dir %s. stat = %d",
+          phyBunDir, status);
+    }
 
     return status;
 }

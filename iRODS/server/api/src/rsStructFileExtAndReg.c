@@ -122,7 +122,6 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     }
 
     if (getValByKey (&structFileExtAndRegInp->condInput, FORCE_FLAG_KW) 
-
       != NULL) {
 	flags = flags | FORCE_FLAG_FLAG;
     }
