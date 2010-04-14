@@ -1161,6 +1161,32 @@ getUnixUid (char *userName)
 #endif
 }
 
+/*
+ Return 64 semi-random bytes terminated by a null.  
+
+ This is designed to be very quick and sufficiently pseudo-random for
+ the context in which it is used (a challenge in the challenge -
+ response protocol).  Using /dev/urandom would provide more entropy
+ but can sometimes be slow (and always requires an I/O operation).
+
+ This algorithm has about 20 bits of entropy from the microsecond
+ clock, plus a few more via the pid, and more from the seconds value.
+
+ By using the PID and a static counter as part of this, we're
+ guaranteed that one or the other of those will vary each time, even
+ if called repeatedly (the microsecond time value will vary too).
+
+ The use of the epoch seconds value (a large number that increments
+ each second), also helps prevent returning the same set of
+ pseudo-random bytes over time.
+
+ MD5 is a quick and handy way to fill out the 64 bytes using the input
+ values, in a manner that is very unlikely to repeat.
+
+ The entropy of the seeds, in combination with these other features,
+ makes the probability of repeating a particular pattern on the order
+ of one out of many billions.
+ */
 int get64RandomBytes(char *buf) {
     MD5_CTX context;
     char buffer[65]; /* each digest is 16 bytes, 4 of them */
@@ -1186,8 +1212,10 @@ int get64RandomBytes(char *buf) {
     ints[1]=count;
 #ifdef windows_platform
 	ints[2]= (int)tv.wSecond;
+	ints[5]= (int)tv.Second;
 #else
     ints[2]=tv.tv_usec;
+    ints[5]=tv.tv_sec;
 #endif
     MD5Init (&context);
     MD5Update (&context, (unsigned char*)&ints[0], 100);
