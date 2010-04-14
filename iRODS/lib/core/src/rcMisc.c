@@ -1166,11 +1166,16 @@ getUnixUid (char *userName)
 
  This is designed to be very quick and sufficiently pseudo-random for
  the context in which it is used (a challenge in the challenge -
- response protocol).  Using /dev/urandom would provide more entropy
- but can sometimes be slow (and always requires an I/O operation).
+ response protocol).  
 
- This algorithm has about 20 bits of entropy from the microsecond
- clock, plus a few more via the pid, and more from the seconds value.
+ If /dev/urandom is available (as is usually the case on Linux/Unix
+ hosts) we now use that, as it will be normally be sufficiently fast
+ and has much entropy (very pseudo-random).
+
+ Otherwise, this algorithm creates sufficient pseudo-randomness as
+ described below.  There are about 20 bits of entropy from the
+ microsecond clock, plus a few more via the pid, and more from the
+ seconds value.
 
  By using the PID and a static counter as part of this, we're
  guaranteed that one or the other of those will vary each time, even
@@ -1185,7 +1190,9 @@ getUnixUid (char *userName)
 
  The entropy of the seeds, in combination with these other features,
  makes the probability of repeating a particular pattern on the order
- of one out of many billions.
+ of one out of many billions.  If /dev/urandom is available, the odds
+ are even smaller.
+
  */
 int get64RandomBytes(char *buf) {
     MD5_CTX context;
@@ -1199,6 +1206,28 @@ int get64RandomBytes(char *buf) {
 #endif
     static int count=12348;
     int i;
+
+#ifndef windows_platform
+/*
+ Use /dev/urandom instead, if available
+*/
+    int uran_fd, rval;
+    uran_fd = open("/dev/urandom", O_RDONLY);
+    if (uran_fd > 0) {
+        rval = read(uran_fd, buffer, 64);
+	close(uran_fd);
+	if (rval==64) {
+	   for (i=0;i<64;i++) {
+	      if (buffer[i]=='\0') {
+		 buffer[i]++;  /* make sure no nulls before end of 'string'*/
+	      }
+	   }
+	   buffer[64]='\0';
+	   strncpy(buf,buffer,65);
+	   return(0);
+	}
+    }
+#endif
 
 #ifdef windows_platform
     GetSystemTime(&tv);
