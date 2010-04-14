@@ -723,7 +723,7 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	Tag readHeader() throws IOException {
 		byte[] header;
 		int length = readHeaderLength();
-		if (length < 0)
+		if (length <= 0)
 			throw new ProtocolException();
 		else if (length > 10000000) {
 			/*

@@ -35,6 +35,11 @@ Features and Changes
 
 -----------
 *fix for  Bug 84 -  connection/finalizer issues with Jargon
+
+-----------
+*fix for   Bug 91 -  problems with Jargon not detecting dead IRODS Agent
+Throw appropriate ProtocolException when reading a header from iRODS and getting zero length.  
+
 ================================================================================================
 Outstanding Issues
 

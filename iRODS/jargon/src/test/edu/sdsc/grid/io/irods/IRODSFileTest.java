@@ -859,6 +859,39 @@ public class IRODSFileTest {
 		TestCase.assertTrue(exists);
 
 	}
+	
+	/**
+	 *  Bug 91 -  problems with Jargon not detecting dead IRODS Agent  
+	 *  
+	 *  This test actually requires some manual intervention to kill the agent at a breakpoint before
+	 *  calling exists().
+	 *  
+	 *  //TODO: can I kill the agent somehow?
+	 *  
+	 * @throws Exception
+	 */
+	@Test
+	public final void testIsDirectoryExistsFalseWhenIRODSAgentDiesAndDoesNotDetectAgentIsDead() throws Exception {
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+
+		boolean exists = irodsFile.exists();
+		irodsFileSystem.close();
+		TestCase.assertTrue(exists);
+
+	}
 
 	@Test
 	public final void testIsDirectoryExists() throws Exception {
