@@ -27,6 +27,9 @@ int
 rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
 int
 _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
+int
+modDataObjSizeMeta (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+char *strDataSize);
 #else
 #define RS_BULK_DATA_OBJ_REG NULL
 #endif

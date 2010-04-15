@@ -232,7 +232,7 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp);
 int
 fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
 char *filePath, char *dataType, rodsLong_t dataSize, int dataMode,
-int modFlag, genQueryOut_t *bulkDataObjRegInp);
+int modFlag, int replNum, genQueryOut_t *bulkDataObjRegInp);
 int
 untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf);
 int

@@ -524,7 +524,7 @@ renamedPhyFiles_t *renamedPhyFiles)
 
     status = bulkRegSubfile (rsComm, rescInfo->rescName, rescGroupName,
       subObjPath, dataObjInfo.filePath, dataSize, dataMode, modFlag, 
-      bulkDataObjRegInp, renamedPhyFiles);
+      dataObjInfo.replNum, bulkDataObjRegInp, renamedPhyFiles);
 
     return status;
 }
@@ -532,13 +532,14 @@ renamedPhyFiles_t *renamedPhyFiles)
 int
 bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode, 
-int modFlag, genQueryOut_t *bulkDataObjRegInp, 
+int modFlag, int replNum, genQueryOut_t *bulkDataObjRegInp, 
 renamedPhyFiles_t *renamedPhyFiles)
 {
     int status;
 
     status = fillBulkDataObjRegInp (rescName, rescGroupName, subObjPath, 
-      subfilePath, "generic", dataSize, dataMode, modFlag, bulkDataObjRegInp);
+      subfilePath, "generic", dataSize, dataMode, modFlag, 
+      replNum, bulkDataObjRegInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",

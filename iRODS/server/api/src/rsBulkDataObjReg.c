@@ -4,6 +4,8 @@
  * this API call.*/
 
 #include "apiHeaderAll.h"
+#include "dataObjOpr.h"
+#include "objMetaOpr.h"
 #include "icatHighLevelRoutines.h"
 
 int
@@ -46,12 +48,10 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 {
 #ifdef RODS_CAT
     dataObjInfo_t dataObjInfo;
-    modDataObjMeta_t modDataObjMetaInp;
-    keyValPair_t regParam;
     sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
-      *dataMode, *oprType, *rescGroupName;
+      *dataMode, *oprType, *rescGroupName, *replNum;
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
-      *tmpDataMode, *tmpOprType, *tmpRescGroupName;
+      *tmpDataMode, *tmpOprType, *tmpRescGroupName, *tmpReplNum;
     int status, i;
 
     if ((objPath =
@@ -109,6 +109,13 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    if ((replNum =
+      getSqlResultByInx (bulkDataObjRegInp, COL_DATA_REPL_NUM)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_REPL_NUM failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
    for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
         tmpObjPath = &objPath->value[objPath->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
@@ -118,6 +125,7 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpOprType = &oprType->value[oprType->len * i];
 	tmpRescGroupName =  &rescGroupName->value[rescGroupName->len * i];
+	tmpReplNum =  &replNum->value[rescGroupName->len * i];
 
         bzero (&dataObjInfo, sizeof (dataObjInfo_t));
 	dataObjInfo.flags = NO_COMMIT_FLAG;
@@ -128,22 +136,44 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
         rstrcpy (dataObjInfo.dataMode, tmpDataMode, NAME_LEN);
         rstrcpy (dataObjInfo.rescGroupName, tmpRescGroupName, NAME_LEN);
+	dataObjInfo.replNum = atoi (tmpReplNum);
+	dataObjInfo.replStatus = NEWLY_CREATED_COPY;
 	if (strcmp (tmpOprType, REGISTER_OPR) == 0) {
 	    status = svrRegDataObj (rsComm, &dataObjInfo);
+#if 0	/* this did not work with NO_COMMIT_FLAG. If svrRegDataObj failed,
+         * the chl routine would have called rollback. */
+	    if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
+		/* try to register it as a replica */
+		dataObjInp_t dataObjInp;
+		regReplica_t regReplicaInp;
+	        dataObjInfo_t *srcDataObjInfo = NULL;
+		int status1;
+
+		bzero (&dataObjInp, sizeof (dataObjInp));
+		rstrcpy (dataObjInp.objPath, dataObjInfo.objPath, MAX_NAME_LEN);
+		status1 = getDataObjInfo (rsComm, &dataObjInp, &srcDataObjInfo,
+                  ACCESS_DELETE_OBJECT, 0);
+        	if (status1 >= 0) {
+		    bzero (&regReplicaInp, sizeof (regReplicaInp));
+                    dataObjInfo.dataId = srcDataObjInfo->dataId;
+            	    regReplicaInp.srcDataObjInfo = srcDataObjInfo;
+            	    regReplicaInp.destDataObjInfo = &dataObjInfo;
+		    status1 = rsRegReplica (rsComm, &regReplicaInp);
+		    freeAllDataObjInfo (srcDataObjInfo);
+		    if (status1 >= 0) {
+			status = status1;
+			/* update replStatus of other copies */
+			modDataObjSizeMeta (rsComm, &dataObjInfo, tmpDataSize);
+		    } else {
+        	        rodsLog (LOG_ERROR,
+	                  "rsBulkDataObjReg: srsRegReplica of %s err, stat=%d",
+              		  dataObjInfo.objPath, status1);
+		    }
+		}
+	    }
+#endif
 	} else {
-            bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
-            bzero (&regParam, sizeof (regParam));
-            addKeyVal (&regParam, DATA_SIZE_KW, tmpDataSize);
-            addKeyVal (&regParam, ALL_REPL_STATUS_KW, "");
-            snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
-            addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
-
-            modDataObjMetaInp.dataObjInfo = &dataObjInfo;
-            modDataObjMetaInp.regParam = &regParam;
-
-            status = _rsModDataObjMeta (rsComm, &modDataObjMetaInp);
-
-            clearKeyVal (&regParam);
+	    status = modDataObjSizeMeta (rsComm, &dataObjInfo, tmpDataSize);
         }
 	if (status < 0) {
 	    rodsLog (LOG_ERROR,
@@ -154,6 +184,7 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 	}
     }
     status = chlCommit(rsComm);
+
     if (status < 0) {
         rodsLog (LOG_ERROR,
          "rsBulkDataObjReg: chlCommit failed, status = %d", status);
@@ -164,3 +195,30 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 #endif
 
 }
+
+int
+modDataObjSizeMeta (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
+char *strDataSize)
+{
+    modDataObjMeta_t modDataObjMetaInp;
+    keyValPair_t regParam;
+    char tmpStr[MAX_NAME_LEN];
+    int status;
+
+    bzero (&modDataObjMetaInp, sizeof (modDataObjMetaInp));
+    bzero (&regParam, sizeof (regParam));
+    addKeyVal (&regParam, DATA_SIZE_KW, strDataSize);
+    addKeyVal (&regParam, ALL_REPL_STATUS_KW, "");
+    snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
+    addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
+
+    modDataObjMetaInp.dataObjInfo = dataObjInfo;
+    modDataObjMetaInp.regParam = &regParam;
+
+    status = _rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+
+    clearKeyVal (&regParam);
+
+    return status;
+}
+

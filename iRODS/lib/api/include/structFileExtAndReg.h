@@ -61,8 +61,8 @@ int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp,
 renamedPhyFiles_t *renamedPhyFiles);
 int
 bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
-char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode, 
-int modFlag, genQueryOut_t *bulkDataObjRegInp, 
+char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
+int modFlag, int replNum, genQueryOut_t *bulkDataObjRegInp,
 renamedPhyFiles_t *renamedPhyFiles);
 int
 addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
