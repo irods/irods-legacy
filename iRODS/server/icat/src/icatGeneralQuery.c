@@ -1575,7 +1575,7 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
          if (status < 0) {
 	    if (status != CAT_NO_ROWS_FOUND) {
 	       rodsLog(LOG_NOTICE,
-		 "chlGenQuery cmlGetFirstRowFromSql failure %d",
+		 "chlGenQuery cmlGetIntegerValueFromSqlV3 failure %d",
 		 status);
   	    }
 	    return(status);

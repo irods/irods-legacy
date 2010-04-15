@@ -874,8 +874,30 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
    if (strcmp(cmdToken[0],"modresc") ==0) {
-      generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2], 
-		  cmdToken[3], "", "", "");
+      if (strcmp(cmdToken[2], "name")==0)       {
+	 char ttybuf[100];
+	 printf(
+	    "If you modify a resource name, you and other users will need to\n");
+	 printf("change your .irodsEnv files to use it, you may need to update\n");
+	 printf("irods.config and, if rules use the resource name, you'll need to\n");
+	 printf("update the core rules (core.irb).  This command will update various\n");
+	 printf("tables with the new name.\n");
+	 printf("Do you really want to modify the resource name? (enter y or yes to do so):");
+	 fgets(ttybuf, 50, stdin);
+	 if (strcmp(ttybuf, "y\n") == 0 ||
+	     strcmp(ttybuf, "yes\n") == 0) {
+	    printf("OK, performing the resource rename\n");
+	    generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2], 
+			 cmdToken[3], "", "", "");
+	 }
+	 else {
+	    printf("Resource rename aborted\n");
+	 }
+      }
+      else {
+	 generalAdmin(0, "modify", "resource", cmdToken[1], cmdToken[2], 
+		      cmdToken[3], "", "", "");
+      }
       return(0);
    }
    if (strcmp(cmdToken[0],"mkzone") == 0) {
@@ -1257,7 +1279,7 @@ void usageMain()
 " mkdir Name [username] (make directory(collection))",
 " rmdir Name (remove directory) ",
 " mkresc Name Type Class Host Path (make Resource)",
-" modresc Name [type, class, host, path, status, comment, info, freespace] Value (mod Resc)",
+" modresc Name [name, type, class, host, path, status, comment, info, freespace] Value (mod Resc)",
 " rmresc Name (remove resource)",
 " mkzone Name Type(remote) [Connection-info] [Comment] (make zone)",
 " modzone Name [ name | conn | comment ] newValue  (modify zone)",
@@ -1473,7 +1495,7 @@ usage(char *subOpt)
 ""};
 
    char *modrescMsgs[]={
-" modresc Name [type, class, host, path, status, comment, info, or freespace] Value",
+" modresc Name [name, type, class, host, path, status, comment, info, or freespace] Value",
 "         (modify Resource)",
 "Change some attribute of a resource.  For example:",
 "    modresc demoResc comment 'test resource'",

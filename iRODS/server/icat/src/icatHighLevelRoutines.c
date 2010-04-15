@@ -4234,6 +4234,71 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       OK=1;
    }
 
+   if (strcmp(option, "name")==0) {
+      if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 12");
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=myTime;
+      cllBindVars[cllBindVarCount++]=rescId;
+/*    If the new name is not unique, this will return an error */
+      status =  cmlExecuteNoAnswerSql(
+		 "update r_resc_main set resc_name=?, modify_ts=? where resc_id=?",
+		 &icss);
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 _rollback("chlModResc");
+	 return(status);
+      }
+
+      if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 13");
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=rescName;
+      status =  cmlExecuteNoAnswerSql(
+		 "update r_data_main set resc_name=? where resc_name=?",
+		 &icss);
+      if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 _rollback("chlModResc");
+	 return(status);
+      }
+
+      if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 14");
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=rescName;
+      status =  cmlExecuteNoAnswerSql(
+		 "update r_server_load set resc_name=? where resc_name=?",
+		 &icss);
+      if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 _rollback("chlModResc");
+	 return(status);
+      }
+
+      if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 15");
+      cllBindVars[cllBindVarCount++]=optionValue;
+      cllBindVars[cllBindVarCount++]=rescName;
+      status =  cmlExecuteNoAnswerSql(
+		 "update r_server_load_digest set resc_name=? where resc_name=?",
+		 &icss);
+      if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+      if (status != 0) {
+	 rodsLog(LOG_NOTICE,
+		 "chlModResc cmlExecuteNoAnswerSql update failure %d",
+		 status);
+	 _rollback("chlModResc");
+	 return(status);
+      }
+      
+      OK=1;
+   }
+
    if (OK==0) {
       return (CAT_INVALID_ARGUMENT);
    }
@@ -4263,6 +4328,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    }
    return(0);
 }
+
 
 /* Add or substract to the resource free_space */
 int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {

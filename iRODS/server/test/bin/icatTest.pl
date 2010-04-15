@@ -506,6 +506,8 @@ chomp($hostName);
 printf("hostName:%s\n",$hostName);
 
 runCmd(1, "iadmin rmresc $Resc2");
+runCmd(0, "echo yes | iadmin modresc $Resc name $Resc2");
+runCmd(0, "echo yes | iadmin modresc $Resc2 name $Resc");
 runCmd(2, "iadmin mkresc $Resc2");
 runCmd(2, "iadmin mkresc $Resc2 badType");
 runCmd(2, "iadmin mkresc $Resc2 'unix file system'");
