@@ -127,9 +127,9 @@ mkdirR (char *startDir, char *destDir, int mode)
 #endif
         if (status < 0) {
             rodsLog (LOG_NOTICE,
-             "mkdirR: mkdir failed for %s, status =%d",
-              tmpPath, status);
-            return status;
+             "mkdirR: mkdir failed for %s, errno =%d",
+              tmpPath, errno);
+            return UNIX_FILE_MKDIR_ERR - errno;
         }
         while (tmpLen && tmpPath[tmpLen] != '\0')
             tmpLen ++;

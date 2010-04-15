@@ -3678,7 +3678,7 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
     } else {
 	/* sanity check */
 	buflen = bytesBuf->len;
-	if (buflen > MAX_SZ_FOR_SINGLE_BUF) return USER_FILE_TOO_LARGE;
+	if (buflen > MAX_SZ_FOR_SINGLE_BUF) return SYS_REQUESTED_BUF_TOO_LARGE;
     }
     bytesBuf->len = 0;
     bytesBuf->buf = bufptr = malloc (META_STR_LEN);

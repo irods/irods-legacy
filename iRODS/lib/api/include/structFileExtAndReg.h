@@ -25,8 +25,6 @@ typedef struct StructFileExtAndRegInp {
     keyValPair_t condInput;   /* include chksum flag and value */
 } structFileExtAndRegInp_t;
 
-#define MAX_NUM_BULK_OPR_FILES	50
-
 typedef struct RenamedPhyFiles {
     int count;
     char objPath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
