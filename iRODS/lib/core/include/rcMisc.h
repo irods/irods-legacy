@@ -236,6 +236,8 @@ int modFlag, int replNum, genQueryOut_t *bulkDataObjRegInp);
 int
 untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf);
 int
+tarToBuf (char *phyBunDir, bytesBuf_t *tarBBuf);
+int
 readToByteBuf (int fd, bytesBuf_t *bytesBuf);
 int
 writeFromByteBuf (int fd, bytesBuf_t *bytesBuf);

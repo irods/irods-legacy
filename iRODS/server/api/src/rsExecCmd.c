@@ -128,7 +128,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     bytesBuf_t statusBuf;
     int status, childStatus;
 #ifdef windows_platform
-	int pipe_buf_size = MAX_NAME_LEN * 5;
+	int pipe_buf_size = META_STR_LEN;
 #endif
     
 #ifndef windows_platform    /* UNIX */

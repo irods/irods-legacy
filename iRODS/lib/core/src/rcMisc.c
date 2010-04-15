@@ -3501,7 +3501,7 @@ int
 untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
 {
     int childPid;
-    int stdinFd[2];
+    int pipeFd[2];
 #ifdef windows_platform
     int pipe_buf_size;
 #endif
@@ -3514,17 +3514,17 @@ untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
     if (tarBBuf->len <= 0) return 0;
 
 #ifdef windows_platform
-    if (tarBBuf->len > MAX_NAME_LEN * 5) {
+    if (tarBBuf->len > META_STR_LEN) {
 	pipe_buf_size = tarBBuf->len;
     } else {
-        pipe_buf_size = MAX_NAME_LEN * 5;
+        pipe_buf_size = META_STR_LEN;
     }
 #endif
    
 #ifndef windows_platform    /* UNIX */
-    if (pipe (stdinFd) < 0)
+    if (pipe (pipeFd) < 0)
 #else
-    if(_pipe(stdinFd, pipe_buf_size, O_BINARY) < 0)
+    if(_pipe(pipeFd, pipe_buf_size, O_BINARY) < 0)
 #endif
     {
         rodsLog (LOG_ERROR,
@@ -3542,12 +3542,12 @@ untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
     childPid = RODS_FORK ();
 
     if (childPid == 0) {
-
-	close (stdinFd[1]);	/* close out */
+	/* make pipeFd[0] stdin */
+	close (pipeFd[1]);
         close (0);
 
-        dup2 (stdinFd[0], 0);
-        close (stdinFd[0]);
+        dup2 (pipeFd[0], 0);
+        close (pipeFd[0]);
 
         status = execv (av[0], av);
 
@@ -3558,14 +3558,98 @@ untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
          "untarBuf: RODS_FORK failed. errno = %d", errno);
         return (SYS_FORK_ERROR);
     } else {	/* parent */
-	close (stdinFd[0]);	/* close in */
+	close (pipeFd[0]);	/* close in */
 
-	status = writeFromByteBuf (stdinFd[1], tarBBuf);
+	status = writeFromByteBuf (pipeFd[1], tarBBuf);
+	close (pipeFd[1]);
 	if (status < 0) {
-            close (stdinFd[1]);     /* close in */
 	    return status;
 	}
-	close (stdinFd[1]);
+
+        status = waitpid (childPid, &childStatus, 0);
+        if (status >= 0 && childStatus != 0) {
+            rodsLog (LOG_ERROR,
+             "untarBuf: waitpid status = %d, childStatus = %d",
+              status, childStatus);
+            status = EXEC_CMD_ERROR;
+	}
+    }
+#else  /* Windows */
+    /* can it redorect pipe ? */
+    status = _spawnv(_P_NOWAIT, av[0], av);
+#endif
+    return status;
+}
+
+int
+tarToBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
+{
+    int childPid;
+    int pipeFd[2];
+#ifdef windows_platform
+    int pipe_buf_size;
+#endif
+    int status = 0;
+    int childStatus = 0;
+    char *av[NAME_LEN];
+
+    if (tarBBuf == NULL || phyBunDir == NULL) return USER__NULL_INPUT_ERR;
+
+    if (tarBBuf->len <= 0) return 0;
+
+#ifdef windows_platform
+    if (tarBBuf->len > META_STR_LEN) {
+	pipe_buf_size = tarBBuf->len;
+    } else {
+        pipe_buf_size = META_STR_LEN;
+    }
+#endif
+   
+#ifndef windows_platform    /* UNIX */
+    if (pipe (pipeFd) < 0)
+#else
+    if(_pipe(pipeFd, pipe_buf_size, O_BINARY) < 0)
+#endif
+    {
+        rodsLog (LOG_ERROR,
+         "untarBuf: pipe create failed. errno = %d", errno);
+        return (SYS_PIPE_ERROR - errno);
+    }
+
+    bzero (av, sizeof (av));
+    av[0] = TAR_EXEC_PATH;
+    av[1] = "-c";
+    av[2] = "-h";
+    av[3] = "-C";
+    av[4] = phyBunDir;
+    av[5] = ".";
+
+#ifndef windows_platform   /* UNIX */
+    childPid = RODS_FORK ();
+
+    if (childPid == 0) {
+	/* make pipeFd[1] the stdout */
+	close (pipeFd[0]);
+	close (1);
+        dup2 (pipeFd[1], 1);
+        close (pipeFd[1]);
+
+        status = execv (av[0], av);
+
+        /* gets here. must be bad */
+        exit(1);
+    } else if (childPid < 0) {
+        rodsLog (LOG_ERROR,
+         "untarBuf: RODS_FORK failed. errno = %d", errno);
+        return (SYS_FORK_ERROR);
+    } else {	/* parent */
+        close (pipeFd[1]); 
+
+	status = readToByteBuf (pipeFd[0], tarBBuf);
+	close (pipeFd[0]);
+	if (status < 0) {
+	    return status;
+	}
 
         status = waitpid (childPid, &childStatus, 0);
         if (status >= 0 && childStatus != 0) {
@@ -3588,9 +3672,18 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
     int toRead, buflen, nbytes;
     char *bufptr;
 
-    bytesBuf->buf = bufptr = malloc (MAX_NAME_LEN * 5);
+    if (bytesBuf->len <= 0) {
+	/* use default */
+	buflen = META_STR_LEN;
+    } else {
+	/* sanity check */
+	buflen = bytesBuf->len;
+	if (buflen > MAX_SZ_FOR_SINGLE_BUF) return USER_FILE_TOO_LARGE;
+    }
     bytesBuf->len = 0;
-    buflen = toRead = MAX_NAME_LEN * 5;
+    bytesBuf->buf = bufptr = malloc (META_STR_LEN);
+    toRead = buflen;
+
     while (1) {
         nbytes = myRead (fd, bufptr, toRead, SOCK_TYPE, NULL);
         if (nbytes == toRead) { /* more */
