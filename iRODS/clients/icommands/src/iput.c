@@ -22,7 +22,7 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "aD:fhIkKn:N:p:PrR:QTvVX:";
+    optStr = "abD:fhIkKn:N:p:PrR:QTvVX:";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -90,10 +90,10 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : iput [-afIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
+"Usage : iput [-abfIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
 "             [-p physicalPath] [-R resource] [-X restartFile]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
-"Usage : iput [-afIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
+"Usage : iput [-abfIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
 "             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
@@ -133,8 +133,12 @@ usage ()
 "server after 10 minutes of connection. This gets around the problem of",
 "sockets getting timed out by the firewall as reported by some users.",
 " ",
+"The -b option specifies bulk upload operation which can do up to 50 uploads",
+"at a time to reduce overhead.",
+" ",
 "Options are:",
 " -a  all - update all existing copy",
+" -b  bulk upload to reduce overhead",
 " -D  dataType - the data type string",
 " -f  force - write data-object even it exists already; overwrite it",
 " -I  redirect connection - redirect the connection to connect directly",
