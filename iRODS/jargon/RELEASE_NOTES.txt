@@ -14,7 +14,7 @@ Requirements
 -Jargon has been tested against IRODS 2.1, IRODS2.2, and IRODS2.3
 
 libraries
----------
+---------  
 
 -gsi-classes.jar (packaged in lib directory)
 -junit-4.7.jar (packaged in lib) - used by unit testing classes, not necessary for Jargon deployment
@@ -38,7 +38,8 @@ Features and Changes
 
 -----------
 *fix for   Bug 91 -  problems with Jargon not detecting dead IRODS Agent
-Throw appropriate ProtocolException when reading a header from iRODS and getting zero length.  
+Throw appropriate ProtocolException when reading a header from iRODS and getting zero length. There may be additional work
+required to detect the health of a partially failing irodsAgent.
 
 ================================================================================================
 Outstanding Issues

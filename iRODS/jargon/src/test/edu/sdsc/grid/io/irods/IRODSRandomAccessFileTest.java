@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.io.RandomAccessFile;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -202,7 +203,8 @@ public class IRODSRandomAccessFileTest {
 	}
 
 	/**
-	 *  Bug 45 -  SYS_UNMATCHED_API_NUM (-12000) when attempting to get a file
+	 * Bug 45 - SYS_UNMATCHED_API_NUM (-12000) when attempting to get a file
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -262,8 +264,168 @@ public class IRODSRandomAccessFileTest {
 			offset += nbytes;
 			dataRead = true;
 		}
-		
+
 		TestCase.assertTrue("did not read back any data", dataRead);
+	}
+
+	/**
+	 * Bug 90 - error in checksum for paused transfer
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public final void testTransferPauseAndThenChecksum() throws Exception {
+		String testFileName = "testTransferPauseAndThenChecksum.txt";
+		int fileLength = 40000;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String inputFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName,
+						fileLength);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+
+		// open the local file, transfer to iRODS, pause, then take a checksum
+		// of the partial transfer
+		RandomAccessFile localFile = new RandomAccessFile(inputFileName, "rw");
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		IRODSRandomAccessFile randomAccessFile = new IRODSRandomAccessFile(
+				irodsFile, "rw");
+
+		int transferSize = 1000;
+		byte[] transferBuf = new byte[transferSize];
+
+		int read = localFile.read(transferBuf);
+		int totalRead = read;
+		randomAccessFile.write(transferBuf, 0, read);
+
+		String interimChecksum = irodsFile.checksumMD5();
+		randomAccessFile.close();
+		localFile.close();
+		
+		irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+
+		irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/'
+				+ testFileName);
+		randomAccessFile = new IRODSRandomAccessFile(irodsFile, "rw");
+		randomAccessFile.seek(read);
+
+		localFile = new RandomAccessFile(inputFileName, "rw");
+		localFile.seek(read);
+		
+		while (true) {
+			read = localFile.read(transferBuf);
+			if (read == -1) {
+				break;
+			}
+			totalRead += read;
+			randomAccessFile.write(transferBuf, 0, read);
+		}
+		
+		randomAccessFile.close();
+		localFile.close();
+		
+		irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+
+		irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/'
+				+ testFileName);
+		
+		String finalChecksum = irodsFile.checksumMD5();		
+		TestCase.assertFalse("got the same checksum for different files", finalChecksum.equals(interimChecksum));
+
+	}
+	
+	/**
+	 * Bug 90 - error in checksum for paused transfer - documents failing case for usage example, ignored in normal suite tests
+	 * 
+	 * @throws Exception
+	 */
+	@Ignore
+	public final void testTransferPauseAndThenChecksumFailingCase() throws Exception {
+		String testFileName = "testTransferPauseAndThenChecksum.txt";
+		int fileLength = 40000;
+
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String inputFileName = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName,
+						fileLength);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+
+		// open the local file, transfer to iRODS, pause, then take a checksum
+		// of the partial transfer
+		RandomAccessFile localFile = new RandomAccessFile(inputFileName, "rw");
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		IRODSRandomAccessFile randomAccessFile = new IRODSRandomAccessFile(
+				irodsFile, "rw");
+
+		int transferSize = 1000;
+		byte[] transferBuf = new byte[transferSize];
+
+		int read = localFile.read(transferBuf);
+		int totalRead = read;
+		randomAccessFile.write(transferBuf, 0, read);
+
+		String interimChecksum = irodsFile.checksumMD5();
+		irodsFile.close();
+		localFile.close();
+		
+		irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+
+		irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/'
+				+ testFileName);
+		randomAccessFile = new IRODSRandomAccessFile(irodsFile, "rw");
+		randomAccessFile.seek(read);
+
+		localFile = new RandomAccessFile(inputFileName, "rw");
+		localFile.seek(read);
+		
+		while (true) {
+			read = localFile.read(transferBuf);
+			if (read == -1) {
+				break;
+			}
+			totalRead += read;
+			randomAccessFile.write(transferBuf, 0, read);
+		}
+		
+		irodsFile.close();
+		localFile.close();
+		
+		irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+
+		irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/'
+				+ testFileName);
+		
+		String finalChecksum = irodsFile.checksumMD5();		
+		TestCase.assertFalse("got the same checksum for different files", finalChecksum.equals(interimChecksum));
+
 	}
 
 }

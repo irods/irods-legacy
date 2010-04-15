@@ -281,17 +281,14 @@ public class IRODSFile extends RemoteFile {
 					homeDirectory = uri.getPath();
 				}
 
-				// connection pool? insecure?
 				setFileSystem(new IRODSFileSystem(new IRODSAccount(uri
 						.getHost(), uri.getPort(), userName, password,
 						homeDirectory, zone, "")) // default resource see
 				);
 
-				// iRODSFileSystem.setDefaultStorageResource( resource );
 			}
 
 			setFileName(uri.getPath());
-			// resource = getAvailableResource();
 		} else {
 			throw new URISyntaxException(uri.toString(), "Wrong URI scheme");
 		}

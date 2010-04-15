@@ -313,9 +313,7 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 		throw new NullPointerException();
 	}
 
-	// ----------------------------------------------------------------------
-	// Read/write
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Reads a byte of data from this file. The byte is returned as an integer
 	 * in the range 0 to 255 (<code>0x00-0x0ff</code>). This method blocks if no
@@ -381,9 +379,6 @@ public class IRODSRandomAccessFile extends RemoteRandomAccessFile {
 		filePointer += fileSystem.commands.fileWrite(fd, buffer, offset, len);
 	}
 
-	// ----------------------------------------------------------------------
-	// Random access
-	// ----------------------------------------------------------------------
 	/**
 	 * Returns the current offset in this file.
 	 * 

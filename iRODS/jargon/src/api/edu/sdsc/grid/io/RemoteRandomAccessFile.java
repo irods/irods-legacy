@@ -53,13 +53,7 @@ import java.io.IOException;
  * @since JARGON1.0
  */
 public abstract class RemoteRandomAccessFile extends GeneralRandomAccessFile {
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Doesn't really do much, perhaps in the future. Instead @see
 	 * GeneralRandomAccessFile or the subclass which called this constructor.
@@ -73,8 +67,6 @@ public abstract class RemoteRandomAccessFile extends GeneralRandomAccessFile {
 		super(file, mode);
 	}
 
-	// ----------------------------------------------------------------------
-	// Setters and Getters
-	// ----------------------------------------------------------------------
+
 
 }
