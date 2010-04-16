@@ -458,8 +458,10 @@ rodsRestart_t *rodsRestart, bulkOprInfo_t *bulkOprInfo)
 	    }
 
 	    rodsArgs->redirectConn = 0;    /* only do it once */
+
             status = putDirUtil (myConn, srcChildPath, targChildPath, 
               myRodsEnv, rodsArgs, dataObjOprInp, rodsRestart, bulkOprInfo);
+
 	    if (rodsRestart->fd > 0 && status < 0) {
 		closedir (dirPtr);
 		return (status);
@@ -493,10 +495,35 @@ rodsRestart_t *rodsRestart)
     int status;
     bulkOprInfo_t bulkOprInfo;
 
+    /* do large files first */
+    bzero (&bulkOprInfo, sizeof (bulkOprInfo));
+    bulkOprInfo.flags = BULK_OPR_LARGE_FILES;
+
+    status = putDirUtil (myConn, srcDir, targColl, myRodsEnv, rodsArgs,
+      dataObjOprInp, rodsRestart, &bulkOprInfo);
+
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "bulkPutDirUtil: Large files bulkPut error for %s", srcDir);
+        return status;
+    }
+
+    /* now bulk put the small files */
     bzero (&bulkOprInfo, sizeof (bulkOprInfo));
     bulkOprInfo.flags = BULK_OPR_SMALL_FILES;
-    bulkOprInfo.bytesBuf.len = BULK_OPR_BUF_SIZE;
     rstrcpy (dataObjOprInp->objPath, targColl, MAX_NAME_LEN);
+    /* set the pwd */
+    if (*srcDir == '/') {
+	/* absolute path */
+	bulkOprInfo.cwd[0] = '\0';
+    } else {
+	if (getcwd (bulkOprInfo.cwd, MAX_NAME_LEN) == NULL) {
+	    status = SYS_INVALID_FILE_PATH - errno;
+            rodsLogError (LOG_ERROR, status,
+              "bulkPutDirUtil: getcwd error for %s", srcDir);
+            return status;
+	}
+    }
     
     /* need to make phyBunDir */
     getPhyBunDir (DEF_PHY_BUN_ROOT_DIR, (*myConn)->clientUser.userName,
@@ -517,17 +544,19 @@ rodsRestart_t *rodsRestart)
 	return status;
     }
 
-    bzero (&bulkOprInfo, sizeof (bulkOprInfo));
-    bulkOprInfo.flags = BULK_OPR_LARGE_FILES;
-
-    status = putDirUtil (myConn, srcDir, targColl, myRodsEnv, rodsArgs,
-      dataObjOprInp, rodsRestart, &bulkOprInfo);
-
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status,
-          "bulkPutDirUtil: Large files bulkPut error for %s", srcDir);
-        return status;
+    if (bulkOprInfo.count > 0) {
+        status = tarAndBulkPut (*myConn, dataObjOprInp, &bulkOprInfo);
+        if (status >= 0) {
+            /* return the count */
+            status = bulkOprInfo.count;
+        } else {
+            rodsLogError (LOG_ERROR, status,
+              "bulkPutDirUtil: tarAndBulkPut error for %s", 
+	      bulkOprInfo.cachedSrcPath);
+        }
+        clearBulkOprInfo (&bulkOprInfo);
     }
+    rmdir (bulkOprInfo.phyBunDir);
     return status;
 }
 
@@ -540,7 +569,7 @@ getPhyBunDir (char *phyBunRootDir, char *userName, char *outPhyBunDir)
     {
         snprintf (outPhyBunDir, MAX_NAME_LEN, "%s/%s.phybun.%d", phyBunRootDir,
           userName, (int) random ());
-        if (stat (phyBunRootDir, &statbuf) < 0) break;
+        if (stat (outPhyBunDir, &statbuf) < 0) break;
     }
     return 0;
 }
@@ -550,17 +579,115 @@ bulkPutFileUtil (rcComm_t *conn, char *srcPath, char *targPath,
 rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 dataObjInp_t *dataObjOprInp, bulkOprInfo_t *bulkOprInfo)
 {
-    char phyBunPath[MAX_NAME_LEN];
+    char tmpSrcPath[MAX_NAME_LEN];
+    char subPhyBunDir[MAX_NAME_LEN];
+    char *mySrcPath;
     int status;
+    char *phyBunPath;
 
+    phyBunPath =  &bulkOprInfo->phyBunPath[bulkOprInfo->count][0];
     status = getPhyBunPath (dataObjOprInp->objPath, targPath, 
       bulkOprInfo->phyBunDir, phyBunPath);
     if (status < 0) return status;
 
-    if (symlink (srcPath, phyBunPath) < 0) {
+    /* need to create the subPhyBunDir */
+    if ((status = splitPathByKey (phyBunPath, subPhyBunDir, tmpSrcPath, 
+      '/')) < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "bulkPutFileUtil: splitPathByKey for %s error",
+          phyBunPath);
+        return (status);
+    }
+
+    if (strcmp (subPhyBunDir, bulkOprInfo->cachedSubPhyBunDir) != 0 &&
+      strcmp (subPhyBunDir, bulkOprInfo->phyBunDir) != 0) {
+	mkdirR (bulkOprInfo->phyBunDir, subPhyBunDir, 0750);
+	rstrcpy (bulkOprInfo->cachedSubPhyBunDir, subPhyBunDir, MAX_NAME_LEN);
+    }
+
+    rstrcpy (bulkOprInfo->cachedSrcPath, srcPath, MAX_NAME_LEN);
+    /* need to get absolute path for symlink */
+    if (strlen (bulkOprInfo->cwd) == 0) {
+	mySrcPath = srcPath;
+    } else {
+	snprintf (tmpSrcPath, MAX_NAME_LEN, "%s/%s",
+	  bulkOprInfo->cwd, srcPath);
+	mySrcPath = tmpSrcPath;
+    }
+
+    if (symlink (tmpSrcPath, phyBunPath) < 0) { 
+        status = USER_INPUT_PATH_ERR - errno;
+        rodsLogError (LOG_ERROR, status,
+        "bulkPutFileUtil: symlink error for %s to %s", tmpSrcPath, phyBunPath);
+        return status;
+    }
+    bulkOprInfo->count++;
+    bulkOprInfo->size += srcSize;
+
+    if (bulkOprInfo->count >= MAX_NUM_BULK_OPR_FILES ||
+      bulkOprInfo->size >= BULK_OPR_BUF_SIZE - MAX_BULK_OPR_FILE_SIZE) {
+	/* tar send it */
+	status = tarAndBulkPut (conn, dataObjOprInp, bulkOprInfo);
+	if (status >= 0) {
+	    /* return the count */
+	    status = bulkOprInfo->count;
+	} else {
+            rodsLogError (LOG_ERROR, status,
+              "bulkPutFileUtil: tarAndBulkPut error for %s", srcPath);
+	}
+	clearBulkOprInfo (bulkOprInfo);
     }
     return status;
 }
+
+int
+tarAndBulkPut (rcComm_t *conn, dataObjInp_t *dataObjOprInp, 
+bulkOprInfo_t *bulkOprInfo)
+{
+    int status;
+
+    if (bulkOprInfo == NULL || bulkOprInfo->count <= 0) return 0;
+
+    bulkOprInfo->bytesBuf.len = BULK_OPR_BUF_SIZE;
+    bulkOprInfo->bytesBuf.buf = NULL;
+
+    status = tarToBuf (bulkOprInfo->phyBunDir, &bulkOprInfo->bytesBuf);
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "tarAndBulkPut: tarToBuf error for %s", bulkOprInfo->phyBunDir);
+        return status;
+    }
+
+    /* send it */
+    if (bulkOprInfo->bytesBuf.buf != NULL) {
+        status = rcBulkDataObjPut (conn, dataObjOprInp, &bulkOprInfo->bytesBuf);
+    }
+    return (status);
+}
+
+int
+clearBulkOprInfo (bulkOprInfo_t *bulkOprInfo)
+{
+    int i;
+
+    if (bulkOprInfo == NULL || bulkOprInfo->count <= 0) return 0;
+    if (bulkOprInfo->bytesBuf.buf != NULL) {
+        free (bulkOprInfo->bytesBuf.buf);
+	bulkOprInfo->bytesBuf.buf = NULL;
+    }
+    bulkOprInfo->bytesBuf.len = 0;
+
+    for (i = 0; i < bulkOprInfo->count; i++) {
+	unlink (&bulkOprInfo->phyBunPath[i][0]);
+    }
+    rmSubDir (bulkOprInfo->phyBunDir);
+    bulkOprInfo->count = bulkOprInfo->size = 0;
+    *bulkOprInfo->cachedSrcPath = *bulkOprInfo->cachedSubPhyBunDir = '\0';
+    /* rmdir all subPhyBunDir */
+
+    return 0;
+}
+
 
 int
 getPhyBunPath (char *collection, char *objPath, char *phyBunDir,

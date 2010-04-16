@@ -142,7 +142,7 @@
 /* definition for bulk operation */
 #define MAX_NUM_BULK_OPR_FILES	50
 #define MAX_BULK_OPR_FILE_SIZE  (2*1024*1024)
-#define BULK_OPR_BUF_SIZE	(3*MAX_BULK_OPR_FILE_SIZE)
+#define BULK_OPR_BUF_SIZE	(4*MAX_BULK_OPR_FILE_SIZE)
 
 /* protocol */
 typedef enum {

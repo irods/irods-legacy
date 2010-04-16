@@ -23,7 +23,11 @@ typedef struct {
     int flags;
     int count;
     int size;
+    char cwd[MAX_NAME_LEN];
     char phyBunDir[MAX_NAME_LEN];
+    char cachedSrcPath[MAX_NAME_LEN];
+    char cachedSubPhyBunDir[MAX_NAME_LEN];
+    char phyBunPath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
     bytesBuf_t bytesBuf;
 } bulkOprInfo_t;
 
@@ -54,6 +58,11 @@ dataObjInp_t *dataObjOprInp, bulkOprInfo_t *bulkOprInfo);
 int
 getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
 char *outPhyBunPath);
+int
+tarAndBulkPut (rcComm_t *conn, dataObjInp_t *dataObjOprInp,
+bulkOprInfo_t *bulkOprInfo);
+int
+clearBulkOprInfo (bulkOprInfo_t *bulkOprInfo);
 #ifdef  __cplusplus
 }
 #endif

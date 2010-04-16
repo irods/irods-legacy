@@ -3681,7 +3681,7 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
 	if (buflen > MAX_SZ_FOR_SINGLE_BUF) return SYS_REQUESTED_BUF_TOO_LARGE;
     }
     bytesBuf->len = 0;
-    bytesBuf->buf = bufptr = malloc (META_STR_LEN);
+    bytesBuf->buf = bufptr = malloc (buflen);
     toRead = buflen;
 
     while (1) {
@@ -3734,6 +3734,7 @@ writeFromByteBuf (int fd, bytesBuf_t *bytesBuf)
     while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
 	toWrite -= nbytes;
 	bufptr += nbytes;
+	if (toWrite <= 0) break;
     }
     close (fd);
 

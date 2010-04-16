@@ -226,6 +226,8 @@ irodsGuiProgressCallbak
 iCommandProgStat (operProgress_t *operProgress);
 int
 getOpenedCollLen (collHandle_t *collHandle);
+int
+rmSubDir (char *mydir);
 #ifdef  __cplusplus
 }
 #endif

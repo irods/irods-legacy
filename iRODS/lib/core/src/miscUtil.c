@@ -1778,3 +1778,65 @@ getOpenedCollLen (collHandle_t *collHandle)
     return (len);
 }
 
+int
+rmSubDir (char *mydir) 
+{
+    int status = 0;
+    int savedStatus = 0;
+    DIR *dirPtr;
+    struct dirent *myDirent;
+#ifndef windows_platform
+    struct stat statbuf;
+#else
+    struct irodsntstat statbuf;
+#endif
+    char childPath[MAX_NAME_LEN];
+
+    dirPtr = opendir (mydir);
+    if (dirPtr == NULL) {
+	status = USER_INPUT_PATH_ERR - errno;
+        rodsLogError (LOG_ERROR, status,
+        "rmSubDir: opendir local dir error for %s", mydir);
+        return status;
+    }
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+	}
+        snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#ifndef windows_platform
+        status = stat (childPath, &statbuf);
+#else
+        status = iRODSNt_stat(childPath, &statbuf);
+#endif
+        if (status != 0) {
+	    savedStatus = USER_INPUT_PATH_ERR - errno;
+            rodsLogError (LOG_ERROR, status,
+              "rmSubDir: stat error for %s", childPath);
+	    continue;
+        }
+        if (statbuf.st_mode & S_IFDIR) {
+	    status = rmSubDir (childPath);
+	    if (status < 0) {
+                savedStatus = USER_INPUT_PATH_ERR - errno;
+                rodsLogError (LOG_ERROR, status,
+                  "rmSubDir: rmSubDir error for %s ", childPath);
+            }
+	    if (rmdir (childPath) != 0) {
+                savedStatus = USER_INPUT_PATH_ERR - errno;
+                rodsLogError (LOG_ERROR, status,
+                  "rmSubDir: rmdir error for %s ", childPath);
+	    }
+            continue;
+        } else {
+	    savedStatus = USER_INPUT_PATH_ERR - errno;
+            rodsLogError (LOG_ERROR, status,
+              "rmSubDir: %s is not a dir", childPath);
+            continue;
+	}
+    }
+    return savedStatus;
+}
+
+
