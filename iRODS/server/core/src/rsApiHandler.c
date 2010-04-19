@@ -39,7 +39,8 @@ bytesBuf_t *bsBBuf)
 	rodsLog (LOG_ERROR,
 	  "rsApiHandler: apiTableLookup of apiNumber %d failed", apiNumber);
 	/* cannot use sendApiReply because it does not know apiInx */
-	sendVersion (rsComm->sock, apiInx, 0, NULL, 0);
+	sendRodsMsg (rsComm->sock, RODS_API_REPLY_T, NULL, NULL, NULL,
+	  apiInx, rsComm->irodsProt);
 	return (apiInx);
     }
  
