@@ -40,26 +40,27 @@ rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 dataObjInp_t *dataObjOprInp);
 int
 initCondForPut (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs,
-dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart);
+dataObjInp_t *dataObjOprInp, bulkOprInp_t *bulkOprInp,
+rodsRestart_t *rodsRestart);
 int
 putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
-rodsRestart_t *rodsRestart, bulkOprInfo_t *bulkOprInfo);
+bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart, bulkOprInfo_t *bulkOprInfo);
 int
 bulkPutDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
-rodsRestart_t *rodsRestart);
+bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart);
 int
 getPhyBunDir (char *phyBunRootDir, char *userName, char *outPhyBunDir);
 int
 bulkPutFileUtil (rcComm_t *conn, char *srcPath, char *targPath,
 rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-dataObjInp_t *dataObjOprInp, bulkOprInfo_t *bulkOprInfo);
+bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo);
 int
 getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
 char *outPhyBunPath);
 int
-tarAndBulkPut (rcComm_t *conn, dataObjInp_t *dataObjOprInp,
+tarAndBulkPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,
 bulkOprInfo_t *bulkOprInfo);
 int
 clearBulkOprInfo (bulkOprInfo_t *bulkOprInfo);

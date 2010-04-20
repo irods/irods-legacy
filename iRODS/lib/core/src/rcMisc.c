@@ -1133,6 +1133,16 @@ clearGenQueryOut (genQueryOut_t *genQueryOut)
 }
 
 int
+clearBulkOprInp (bulkOprInp_t *bulkOprInp)
+{
+    if (bulkOprInp == NULL)
+        return 0;
+    clearGenQueryOut (&bulkOprInp->attriArray);
+    clearKeyVal (&bulkOprInp->condInput);
+    return 0;
+}
+
+int
 moveKeyVal (keyValPair_t *destKeyVal, keyValPair_t *srcKeyVal)
 {
     if (destKeyVal == NULL || srcKeyVal == NULL)

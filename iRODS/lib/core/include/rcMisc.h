@@ -15,6 +15,7 @@
 #include "dataObjCopy.h"
 #include "execCmd.h"
 #include "rodsPath.h"
+#include "bulkDataObjPut.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -104,6 +105,8 @@ sqlResult_t *
 getSqlResultByInx (genQueryOut_t *genQueryOut, int attriInx);
 int 
 clearGenQueryOut (genQueryOut_t *genQueryOut);
+int
+clearBulkOprInp (bulkOprInp_t *bulkOprInp);
 int
 getUnixUid (char *userName);
 int 

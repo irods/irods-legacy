@@ -92,6 +92,7 @@ packInstructArray_t ApiPackTable[] = {
         {"krbAuthRequestOut_PI", krbAuthRequestOut_PI},
         {"getRescQuotaInp_PI", getRescQuotaInp_PI},
         {"rescQuota_PI", rescQuota_PI},
+        {"BulkOprInp_PI", BulkOprInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

@@ -18,6 +18,7 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
     int savedStatus = 0;
     rodsPath_t *targPath;
     dataObjInp_t dataObjOprInp;
+    bulkOprInp_t bulkOprInp;
     rodsRestart_t rodsRestart;
     rcComm_t *conn = *myConn;
 
@@ -25,7 +26,8 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 	return (USER__NULL_INPUT_ERR);
     }
 
-    initCondForPut (myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
+    initCondForPut (myRodsEnv, myRodsArgs, &dataObjOprInp, &bulkOprInp,
+      &rodsRestart);
 
     status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, 1);
     if (status < 0) {
@@ -65,11 +67,12 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 	    if (myRodsArgs->bulk == True) {
 		status = bulkPutDirUtil (myConn, 
 		  rodsPathInp->srcPath[i].outPath, targPath->outPath, 
-		  myRodsEnv, myRodsArgs, &dataObjOprInp, &rodsRestart);
+		  myRodsEnv, myRodsArgs, &dataObjOprInp, &bulkOprInp,
+		  &rodsRestart);
 	    } else {
 	        status = putDirUtil (myConn, rodsPathInp->srcPath[i].outPath,
                   targPath->outPath, myRodsEnv, myRodsArgs, &dataObjOprInp,
-	          &rodsRestart, NULL);
+	          &bulkOprInp, &rodsRestart, NULL);
 	    }
             if (rodsRestart.fd > 0 && status < 0) {
                 close (rodsRestart.fd);
@@ -172,7 +175,8 @@ rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp)
 
 int
 initCondForPut (rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, 
-dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
+dataObjInp_t *dataObjOprInp, bulkOprInp_t *bulkOprInp, 
+rodsRestart_t *rodsRestart)
 {
 #ifdef RBUDP_TRANSFER
     char *tmpStr;
@@ -185,6 +189,15 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
     }
 
     memset (dataObjOprInp, 0, sizeof (dataObjInp_t));
+
+    if (rodsArgs->bulk == True) {
+        if (bulkOprInp == NULL) {
+           rodsLog (LOG_ERROR,
+              "initCondForPut: NULL bulkOprInp input");
+            return (USER__NULL_INPUT_ERR);
+	}
+	bzero (bulkOprInp, sizeof (bulkOprInp_t));
+    }
 
     dataObjOprInp->oprType = PUT_OPR;
 
@@ -215,6 +228,9 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 
     if (rodsArgs->force == True) { 
         addKeyVal (&dataObjOprInp->condInput, FORCE_FLAG_KW, "");
+	if (rodsArgs->bulk == True) {
+	    addKeyVal (&bulkOprInp->condInput, FORCE_FLAG_KW, "");
+	}
     }
 
 #ifdef windows_platform
@@ -248,6 +264,11 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
         } else {
             addKeyVal (&dataObjOprInp->condInput, DEST_RESC_NAME_KW,
               rodsArgs->resourceString);
+            if (rodsArgs->bulk == True) {
+                addKeyVal (&bulkOprInp->condInput, DEST_RESC_NAME_KW,
+                  rodsArgs->resourceString);
+            }
+
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
 	/* use rodsDefResource but set the DEF_RESC_NAME_KW instead. 
@@ -255,6 +276,10 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 	 * DEST_RESC_NAME_KW is set */ 
         addKeyVal (&dataObjOprInp->condInput, DEF_RESC_NAME_KW,
           myRodsEnv->rodsDefResource);
+        if (rodsArgs->bulk == True) {
+            addKeyVal (&bulkOprInp->condInput, DEF_RESC_NAME_KW,
+              myRodsEnv->rodsDefResource);
+        }
     } 
 
     if (rodsArgs->replNum == True) {
@@ -299,10 +324,6 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 	}
     }
 
-    if (rodsArgs->bulk == True) {
-        addKeyVal (&dataObjOprInp->condInput, BULK_OPR_KW, "");
-    }
-
     /* Not needed - dataObjOprInp->createMode = 0700; */
     /* mmap in rbudp needs O_RDWR */
     dataObjOprInp->openFlags = O_RDWR;
@@ -313,7 +334,8 @@ dataObjInp_t *dataObjOprInp, rodsRestart_t *rodsRestart)
 int
 putDirUtil (rcComm_t **myConn, char *srcDir, char *targColl, 
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
-rodsRestart_t *rodsRestart, bulkOprInfo_t *bulkOprInfo)
+bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart, 
+bulkOprInfo_t *bulkOprInfo)
 {
     int status = 0;
     int savedStatus = 0;
@@ -422,7 +444,7 @@ rodsRestart_t *rodsRestart, bulkOprInfo_t *bulkOprInfo)
 	    } else if (bulkOprInfo->flags == BULK_OPR_SMALL_FILES) {
 		if (statbuf.st_size <= MAX_BULK_OPR_FILE_SIZE) {
                     status = bulkPutFileUtil (conn, srcChildPath, targChildPath,
-                      statbuf.st_size, myRodsEnv, rodsArgs, dataObjOprInp,
+                      statbuf.st_size, myRodsEnv, rodsArgs, bulkOprInp,
 		      bulkOprInfo);
 		} else {
 		    continue;
@@ -460,7 +482,8 @@ rodsRestart_t *rodsRestart, bulkOprInfo_t *bulkOprInfo)
 	    rodsArgs->redirectConn = 0;    /* only do it once */
 
             status = putDirUtil (myConn, srcChildPath, targChildPath, 
-              myRodsEnv, rodsArgs, dataObjOprInp, rodsRestart, bulkOprInfo);
+              myRodsEnv, rodsArgs, dataObjOprInp, bulkOprInp,
+	      rodsRestart, bulkOprInfo);
 
 	    if (rodsRestart->fd > 0 && status < 0) {
 		closedir (dirPtr);
@@ -490,7 +513,7 @@ rodsRestart_t *rodsRestart, bulkOprInfo_t *bulkOprInfo)
 int
 bulkPutDirUtil (rcComm_t **myConn, char *srcDir, char *targColl,
 rodsEnv *myRodsEnv, rodsArguments_t *rodsArgs, dataObjInp_t *dataObjOprInp,
-rodsRestart_t *rodsRestart)
+bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart)
 {
     int status;
     bulkOprInfo_t bulkOprInfo;
@@ -500,7 +523,7 @@ rodsRestart_t *rodsRestart)
     bulkOprInfo.flags = BULK_OPR_LARGE_FILES;
 
     status = putDirUtil (myConn, srcDir, targColl, myRodsEnv, rodsArgs,
-      dataObjOprInp, rodsRestart, &bulkOprInfo);
+      dataObjOprInp, bulkOprInp, rodsRestart, &bulkOprInfo);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -512,6 +535,7 @@ rodsRestart_t *rodsRestart)
     bzero (&bulkOprInfo, sizeof (bulkOprInfo));
     bulkOprInfo.flags = BULK_OPR_SMALL_FILES;
     rstrcpy (dataObjOprInp->objPath, targColl, MAX_NAME_LEN);
+    rstrcpy (bulkOprInp->objPath, targColl, MAX_NAME_LEN);
     /* set the pwd */
     if (*srcDir == '/') {
 	/* absolute path */
@@ -536,7 +560,7 @@ rodsRestart_t *rodsRestart)
     }
 
     status = putDirUtil (myConn, srcDir, targColl, myRodsEnv, rodsArgs, 
-      dataObjOprInp, rodsRestart, &bulkOprInfo);
+      dataObjOprInp, bulkOprInp, rodsRestart, &bulkOprInfo);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -545,7 +569,7 @@ rodsRestart_t *rodsRestart)
     }
 
     if (bulkOprInfo.count > 0) {
-        status = tarAndBulkPut (*myConn, dataObjOprInp, &bulkOprInfo);
+        status = tarAndBulkPut (*myConn, bulkOprInp, &bulkOprInfo);
         if (status >= 0) {
             /* return the count */
             status = bulkOprInfo.count;
@@ -577,7 +601,7 @@ getPhyBunDir (char *phyBunRootDir, char *userName, char *outPhyBunDir)
 int
 bulkPutFileUtil (rcComm_t *conn, char *srcPath, char *targPath,
 rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-dataObjInp_t *dataObjOprInp, bulkOprInfo_t *bulkOprInfo)
+bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo)
 {
     char tmpSrcPath[MAX_NAME_LEN];
     char subPhyBunDir[MAX_NAME_LEN];
@@ -586,7 +610,7 @@ dataObjInp_t *dataObjOprInp, bulkOprInfo_t *bulkOprInfo)
     char *phyBunPath;
 
     phyBunPath =  &bulkOprInfo->phyBunPath[bulkOprInfo->count][0];
-    status = getPhyBunPath (dataObjOprInp->objPath, targPath, 
+    status = getPhyBunPath (bulkOprInp->objPath, targPath, 
       bulkOprInfo->phyBunDir, phyBunPath);
     if (status < 0) return status;
 
@@ -627,7 +651,7 @@ dataObjInp_t *dataObjOprInp, bulkOprInfo_t *bulkOprInfo)
     if (bulkOprInfo->count >= MAX_NUM_BULK_OPR_FILES ||
       bulkOprInfo->size >= BULK_OPR_BUF_SIZE - MAX_BULK_OPR_FILE_SIZE) {
 	/* tar send it */
-	status = tarAndBulkPut (conn, dataObjOprInp, bulkOprInfo);
+	status = tarAndBulkPut (conn, bulkOprInp, bulkOprInfo);
 	if (status >= 0) {
 	    /* return the count */
 	    status = bulkOprInfo->count;
@@ -641,7 +665,7 @@ dataObjInp_t *dataObjOprInp, bulkOprInfo_t *bulkOprInfo)
 }
 
 int
-tarAndBulkPut (rcComm_t *conn, dataObjInp_t *dataObjOprInp, 
+tarAndBulkPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp, 
 bulkOprInfo_t *bulkOprInfo)
 {
     int status;
@@ -660,7 +684,7 @@ bulkOprInfo_t *bulkOprInfo)
 
     /* send it */
     if (bulkOprInfo->bytesBuf.buf != NULL) {
-        status = rcBulkDataObjPut (conn, dataObjOprInp, &bulkOprInfo->bytesBuf);
+        status = rcBulkDataObjPut (conn, bulkOprInp, &bulkOprInfo->bytesBuf);
     }
     return (status);
 }

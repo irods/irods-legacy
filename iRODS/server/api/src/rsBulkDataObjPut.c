@@ -11,34 +11,38 @@
 #include "reGlobalsExtern.h"
 
 int
-rsBulkDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-bytesBuf_t *dataObjInpBBuf)
+rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
+bytesBuf_t *bulkOprInpBBuf)
 {
     int status;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
     specCollCache_t *specCollCache = NULL;
+    dataObjInp_t dataObjInp;
 
-    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
-      &dataObjInp->condInput);
+    resolveLinkedPath (rsComm, bulkOprInp->objPath, &specCollCache,
+      &bulkOprInp->condInput);
 
-    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+    /* need to setup dataObjInp */
+    initDataObjInpFromBulkOpr (&dataObjInp, bulkOprInp);
+
+    remoteFlag = getAndConnRemoteZone (rsComm, &dataObjInp, &rodsServerHost,
       REMOTE_CREATE);
 
     if (remoteFlag < 0) {
         return (remoteFlag);
     } else if (remoteFlag == LOCAL_HOST) {
-        status = _rsBulkDataObjPut (rsComm, dataObjInp, dataObjInpBBuf);
+        status = _rsBulkDataObjPut (rsComm, bulkOprInp, bulkOprInpBBuf);
     } else {
-        status = rcBulkDataObjPut (rodsServerHost->conn, dataObjInp,
-          dataObjInpBBuf);
+        status = rcBulkDataObjPut (rodsServerHost->conn, bulkOprInp,
+          bulkOprInpBBuf);
     }
     return status;
 }
 
 int
-_rsBulkDataObjPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-bytesBuf_t *dataObjInpBBuf)
+_rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
+bytesBuf_t *bulkOprInpBBuf)
 {
     int status;
     int remoteFlag;
@@ -48,12 +52,16 @@ bytesBuf_t *dataObjInpBBuf)
     char phyBunDir[MAX_NAME_LEN];
     rescGrpInfo_t *myRescGrpInfo = NULL;
     int flags = BULK_OPR_FLAG;
+    dataObjInp_t dataObjInp;
 
-    inpRescGrpName = getValByKey (&dataObjInp->condInput, RESC_GROUP_NAME_KW);
+    inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
 
     /* query rcat for resource info and sort it */
 
-    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    /* need to setup dataObjInp */
+    initDataObjInpFromBulkOpr (&dataObjInp, bulkOprInp);
+
+    status = getRescGrpForCreate (rsComm, &dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
     /* just take the top one */
@@ -62,27 +70,27 @@ bytesBuf_t *dataObjInpBBuf)
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
     if (remoteFlag == REMOTE_HOST) {
-        addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
+        addKeyVal (&bulkOprInp->condInput, DEST_RESC_NAME_KW,
           rescInfo->rescName);
 	if (inpRescGrpName == NULL && 
 	  strlen (myRescGrpInfo->rescGroupName) > 0) {
-            addKeyVal (&dataObjInp->condInput, RESC_GROUP_NAME_KW,
+            addKeyVal (&bulkOprInp->condInput, RESC_GROUP_NAME_KW,
               myRescGrpInfo->rescGroupName);
 	}
         if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
             return status;
         }
-        status = rcBulkDataObjPut (rodsServerHost->conn, dataObjInp, 
-          dataObjInpBBuf);
+        status = rcBulkDataObjPut (rodsServerHost->conn, bulkOprInp, 
+          bulkOprInpBBuf);
 	return status;
     }
-    status = chkCollForExtAndReg (rsComm, dataObjInp->objPath);
+    status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath);
     if (status < 0) return status;
 
-    status = createBunDirForBulkPut (rsComm, dataObjInp, rescInfo, phyBunDir);
+    status = createBunDirForBulkPut (rsComm, &dataObjInp, rescInfo, phyBunDir);
     if (status < 0) return status;
 
-    status = untarBuf (phyBunDir, dataObjInpBBuf);
+    status = untarBuf (phyBunDir, bulkOprInpBBuf);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "_rsBulkDataObjPut: untarBuf for dir %s. stat = %d",
@@ -93,12 +101,12 @@ bytesBuf_t *dataObjInpBBuf)
     if (strlen (myRescGrpInfo->rescGroupName) > 0) 
         inpRescGrpName = myRescGrpInfo->rescGroupName;
 
-    if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+    if (getValByKey (&bulkOprInp->condInput, FORCE_FLAG_KW) != NULL) {
         flags = flags | FORCE_FLAG_FLAG;
     }
 
     status = regUnbunSubfiles (rsComm, rescInfo, inpRescGrpName,
-      dataObjInp->objPath, phyBunDir, flags);
+      bulkOprInp->objPath, phyBunDir, flags);
 
     if (status == CAT_NO_ROWS_FOUND) {
         /* some subfiles have been deleted. harmless */
@@ -146,3 +154,14 @@ rescInfo_t *rescInfo, char *phyBunDir)
     return 0;
 }
 
+int
+initDataObjInpFromBulkOpr (dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp)
+{
+    if (dataObjInp == NULL || bulkOprInp == NULL)
+	return USER__NULL_INPUT_ERR;
+
+    rstrcpy (dataObjInp->objPath, bulkOprInp->objPath, MAX_NAME_LEN);
+    dataObjInp->condInput = bulkOprInp->condInput;
+
+    return (0);
+}
