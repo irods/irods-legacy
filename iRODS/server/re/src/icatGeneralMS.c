@@ -126,7 +126,7 @@ This documentation is generated from the iRODS code.
   - #msiPrintGenQueryInp - Prints the given GenQueryInp_MS_T to the given target buffer
   - #msiAddConditionToGenQuery - Adds a condition to a genQueryInp_t
   - #msiPrintGenQueryOutToBuffer - Writes the contents of a GenQueryOut_MS_T into a BUF_LEN_MS_T
- - Set the ACL policy
+  - #msiDeleteUnusedAVUs - Deletes unused AVUs from the iCAT
 
  \subsection msirda Rule-oriented Database Access Microservices
   - #msiRdaToStdout   - Calls new RDA functions to interface to an arbitrary database returning results in stdout
@@ -888,20 +888,20 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
   
 	return (rei->status);
 }
+
 /**
  * \fn msiDeleteUnusedAVUs (ruleExecInfo_t *rei)
  *
  * \brief   This function deletes unused AVUs from the iCAT.  See 'iadmin rum'.
  *
- * \module core
+ * \module  core
  *
- * \since post-2.3
+ * \since   post-2.3
  *
  * \author  Wayne Schroeder
  * \date    April 13, 2010
  *
- * \remark 
- * \remark 
+ * \remark  Terrell Russell - reviewed msi documentation, 2010-04-20
  *
  * \note
  *
