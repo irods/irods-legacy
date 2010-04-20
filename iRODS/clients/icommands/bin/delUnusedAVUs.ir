@@ -1,10 +1,10 @@
 # This is an example for starting the msiDeleteUnusedAVUs
-# micro-service to run periodically.  By default, when object or
+# microservice to run periodically.  By default, when object or
 # object user-defined metadata is removed, the associations are
 # removed but not the actual AVU rows since this can be slow (since
 # AVUs can be associated with multiple objects).  If many unused AVUs
-# build up tho, that can slow down some of the ICAT operations.  So
-# it's best to run this periocially, perhaps once a day.
+# build up though, that can slow down some of the iCAT operations.  So
+# it's best to run this periodically, perhaps once a day.
 #
 # Set the *arg1 line to the delayExec time and frequency you'd like
 # and then run 'irule -F runQuota.ir'.  'iqstat' should then show your
