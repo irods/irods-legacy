@@ -54,8 +54,9 @@ int
 getPhyBunDir (char *phyBunRootDir, char *userName, char *outPhyBunDir);
 int
 bulkPutFileUtil (rcComm_t *conn, char *srcPath, char *targPath,
-rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo);
+rodsLong_t srcSize, int createMode, rodsEnv *myRodsEnv, 
+rodsArguments_t *myRodsArgs, bulkOprInp_t *bulkOprInp, 
+bulkOprInfo_t *bulkOprInfo);
 int
 getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
 char *outPhyBunPath);

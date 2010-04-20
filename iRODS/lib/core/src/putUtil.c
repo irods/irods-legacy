@@ -197,6 +197,12 @@ rodsRestart_t *rodsRestart)
             return (USER__NULL_INPUT_ERR);
 	}
 	bzero (bulkOprInp, sizeof (bulkOprInp_t));
+        if (rodsArgs->checksum == True) {
+	    addKeyVal (&dataObjOprInp->condInput, REG_CHKSUM_KW, "");
+	} else if (rodsArgs->verifyChecksum == True) {
+	    addKeyVal (&dataObjOprInp->condInput, VERIFY_CHKSUM_KW, "");
+        }
+	initAttriArrayOfBulkOprInp (bulkOprInp);
     }
 
     dataObjOprInp->oprType = PUT_OPR;
@@ -444,8 +450,8 @@ bulkOprInfo_t *bulkOprInfo)
 	    } else if (bulkOprInfo->flags == BULK_OPR_SMALL_FILES) {
 		if (statbuf.st_size <= MAX_BULK_OPR_FILE_SIZE) {
                     status = bulkPutFileUtil (conn, srcChildPath, targChildPath,
-                      statbuf.st_size, myRodsEnv, rodsArgs, bulkOprInp,
-		      bulkOprInfo);
+                      statbuf.st_size, statbuf.st_mode, myRodsEnv, rodsArgs, 
+		      bulkOprInp, bulkOprInfo);
 		} else {
 		    continue;
 		}
@@ -600,8 +606,9 @@ getPhyBunDir (char *phyBunRootDir, char *userName, char *outPhyBunDir)
 
 int
 bulkPutFileUtil (rcComm_t *conn, char *srcPath, char *targPath,
-rodsLong_t srcSize, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
-bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo)
+rodsLong_t srcSize, int createMode, rodsEnv *myRodsEnv, 
+rodsArguments_t *myRodsArgs, bulkOprInp_t *bulkOprInp, 
+bulkOprInfo_t *bulkOprInfo)
 {
     char tmpSrcPath[MAX_NAME_LEN];
     char subPhyBunDir[MAX_NAME_LEN];

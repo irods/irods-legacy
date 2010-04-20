@@ -3464,6 +3464,38 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
     return (0);
 }
 
+int 
+initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp)
+{
+    genQueryOut_t *attriArray;
+    int i;
+
+    if (bulkOprInp == NULL) return USER__NULL_INPUT_ERR;
+
+    attriArray = &bulkOprInp->attriArray;
+
+    attriArray->attriCnt = 1;
+    attriArray->sqlResult[0].attriInx = COL_DATA_MODE;
+    attriArray->sqlResult[0].len = NAME_LEN;
+    attriArray->sqlResult[0].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (attriArray->sqlResult[0].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+
+    if (getValByKey (&bulkOprInp->condInput, REG_CHKSUM_KW) != NULL || 
+      getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
+	i = attriArray->attriCnt;
+        attriArray->sqlResult[i].attriInx = COL_D_DATA_CHECKSUM;
+        attriArray->sqlResult[i].len = NAME_LEN;
+        attriArray->sqlResult[i].value =
+          malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+        bzero (attriArray->sqlResult[i].value,
+          NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+	attriArray->attriCnt++;
+    }
+    return 0;
+}
+
 int
 fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
 char *filePath, char *dataType, rodsLong_t dataSize, int dataMode, 
