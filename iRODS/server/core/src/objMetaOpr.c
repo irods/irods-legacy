@@ -2283,6 +2283,7 @@ isData(rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
 	if (dataId != NULL) {
             *dataId = strtoll (dataIdRes->value, 0, 0);
 	}
+	freeGenQueryOut (&genQueryOut);
     }
 
     clearGenQueryInp (&genQueryInp);
@@ -2316,6 +2317,7 @@ isColl(rsComm_t *rsComm, char *objName, rodsLong_t *collId)
 	if (collId != NULL) {
             *collId = strtoll (collIdRes->value, 0, 0);
 	}
+	freeGenQueryOut (&genQueryOut);
     }
 
     clearGenQueryInp (&genQueryInp);
@@ -2336,6 +2338,7 @@ isUser(rsComm_t *rsComm, char *objName)
     addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
     genQueryInp.maxRows = 2;
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    freeGenQueryOut (&genQueryOut);
     clearGenQueryInp (&genQueryInp);
     return(status);
 }
@@ -2355,6 +2358,7 @@ isResc(rsComm_t *rsComm, char *objName)
     addInxIval (&genQueryInp.selectInp, COL_R_RESC_ID, 1);
     genQueryInp.maxRows = 2;
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+    freeGenQueryOut (&genQueryOut);
     clearGenQueryInp (&genQueryInp);
     return(status);
 }
