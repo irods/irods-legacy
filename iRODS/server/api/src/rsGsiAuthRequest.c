@@ -343,6 +343,34 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    rsComm->proxyUser.authInfo.authFlag = privLevel;
    rsComm->clientUser.authInfo.authFlag = clientPrivLevel;
 
+   if (noNameMode) {  /* We didn't before, but now have an irodsUserName */
+      int status2, status3;
+      rodsServerHost_t *rodsServerHost = NULL;
+      status2 = getAndConnRcatHost (rsComm, MASTER_RCAT,
+                                    rsComm->myEnv.rodsZone, &rodsServerHost);
+      if (status2 >= 0 && 
+	  rodsServerHost->localFlag == REMOTE_HOST && 
+	  rodsServerHost->conn != NULL) {   /* If the IES is remote */
+
+	 status3 = rcDisconnect(rodsServerHost->conn); /* disconnect*/
+
+	 /* And clear out the connection information so
+	    getAndConnRcatHost will reconnect.  This may leak some
+	    memory but only happens at most once in an agent:  */
+	 rodsServerHost->conn = NULL;
+
+	 /* And reconnect (with irodsUserName here and in the IES): */
+	 status3 = getAndConnRcatHost (rsComm, MASTER_RCAT,
+				       rsComm->myEnv.rodsZone, 
+				       &rodsServerHost);
+	 if (status3) {
+	    rodsLog (LOG_ERROR,
+		     "igsiServersideAuth failed in getAndConnRcatHost, status = %d",
+		     status3);
+	    return (status3);
+	 }
+      }
+   }
    return status;
 #else
     status = GSI_NOT_BUILT_INTO_SERVER;

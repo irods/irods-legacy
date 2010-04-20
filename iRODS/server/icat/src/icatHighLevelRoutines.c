@@ -3421,14 +3421,18 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	    /* 
 	       When using GSI, the client might not provide a user
 	       name, in which case we avoid the query below (which
-	       would fail) and instead return the error
-	       CAT_INVALID_CLIENT_USER.  To handle this situation (the
-	       client is using GSI, connecting to a non-IES, and not
-	       specifying their irodsUserName) properly, we'll need to
-	       modify the protocol a bit; which we will do after the
-	       upcoming release (2.3).
+	       would fail) and instead set up minimal privileges.
+	       This is safe since we have just authenticated the
+	       remote server as an admin account.  This will allow
+	       some queries (including the one needed for retrieving
+	       the client's DNs).  Since the clientUser is not set,
+	       some other queries are still exclued.  The non-IES will
+	       reconnect once the rodsUserName is determined.  In
+	       iRODS 2.3 this would return an error.
 	     */
-	    return(CAT_INVALID_CLIENT_USER);
+	    *clientPrivLevel = REMOTE_USER_AUTH;
+	    prevFailure=0;
+	    return(0);
 	 }
 	 else {
 	    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
