@@ -235,7 +235,7 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp);
 int
 fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
 char *filePath, char *dataType, rodsLong_t dataSize, int dataMode,
-int modFlag, int replNum, genQueryOut_t *bulkDataObjRegInp);
+int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp);
 int
 untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf);
 int
@@ -244,6 +244,11 @@ int
 readToByteBuf (int fd, bytesBuf_t *bytesBuf);
 int
 writeFromByteBuf (int fd, bytesBuf_t *bytesBuf);
+int
+initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp);
+int
+fillAttriArrayOfBulkOprInp (char *objPath, int dataMode, char *inpChksum,
+bulkOprInp_t *bulkOprInp);
 #ifdef  __cplusplus
 }
 #endif

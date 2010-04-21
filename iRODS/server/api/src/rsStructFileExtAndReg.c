@@ -131,7 +131,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     }
 
     status = regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
-      structFileExtAndRegInp->collection, phyBunDir, flags);
+      structFileExtAndRegInp->collection, phyBunDir, flags, NULL);
 
     if (status == CAT_NO_ROWS_FOUND) {
         /* some subfiles have been deleted. harmless */
@@ -200,7 +200,7 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
 
 int
 regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
-char *collection, char *phyBunDir, int flags)
+char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
 {
     genQueryOut_t bulkDataObjRegInp; 
     renamedPhyFiles_t renamedPhyFiles;
@@ -209,9 +209,11 @@ char *collection, char *phyBunDir, int flags)
     if ((flags & BULK_OPR_FLAG) != 0) {
 	bzero (&renamedPhyFiles, sizeof (renamedPhyFiles));
 	initBulkDataObjRegInp (&bulkDataObjRegInp);
+	/* the continueInx is used for the matching of objPath */
+	if (attriArray != NULL) attriArray->continueInx = 0;
     }
     status = _regUnbunSubfiles (rsComm, rescInfo, rescGroupName, collection, 
-      phyBunDir, flags, &bulkDataObjRegInp, &renamedPhyFiles);
+      phyBunDir, flags, &bulkDataObjRegInp, &renamedPhyFiles, attriArray);
  
     if ((flags & BULK_OPR_FLAG) != 0) {
         if (bulkDataObjRegInp.rowCnt > 0) {
@@ -239,7 +241,7 @@ char *collection, char *phyBunDir, int flags)
 int
 _regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName,
 char *collection, char *phyBunDir, int flags, genQueryOut_t *bulkDataObjRegInp,
-renamedPhyFiles_t *renamedPhyFiles)
+renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
 {
     DIR *dirPtr;
     struct dirent *myDirent;
@@ -291,7 +293,7 @@ renamedPhyFiles_t *renamedPhyFiles)
 	    }
 	    status = _regUnbunSubfiles (rsComm, rescInfo, rescGroupName,
 	      subObjPath, subfilePath, flags, bulkDataObjRegInp, 
-	      renamedPhyFiles);
+	      renamedPhyFiles, attriArray);
             if (status < 0) {
                 rodsLog (LOG_ERROR,
                   "regUnbunSubfiles: regUnbunSubfiles of %s error. status=%d",
@@ -315,7 +317,7 @@ renamedPhyFiles_t *renamedPhyFiles)
                 status = bulkProcAndRegSubfile (rsComm, rescInfo, rescGroupName,
 		  subObjPath, subfilePath, statbuf.st_size, 
 		  statbuf.st_mode & 0777, flags, bulkDataObjRegInp, 
-		  renamedPhyFiles);
+		  renamedPhyFiles, attriArray);
 	        unlink (subfilePath);
                 if (status < 0) {
                     rodsLog (LOG_ERROR,
@@ -445,13 +447,15 @@ int
 bulkProcAndRegSubfile (rsComm_t *rsComm, rescInfo_t *rescInfo, 
 char *rescGroupName, char *subObjPath, char *subfilePath, rodsLong_t dataSize, 
 int dataMode, int flags, genQueryOut_t *bulkDataObjRegInp, 
-renamedPhyFiles_t *renamedPhyFiles)
+renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
 {
     dataObjInfo_t dataObjInfo;
     dataObjInp_t dataObjInp;
     struct stat statbuf;
     int status;
     int modFlag = 0;
+    char *myChksum = NULL;
+    int myDataMode = dataMode;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     bzero (&dataObjInfo, sizeof (dataObjInfo));
@@ -522,6 +526,34 @@ renamedPhyFiles_t *renamedPhyFiles)
         return (UNIX_FILE_LINK_ERR - errno);
     }
 
+    if (attriArray != NULL) {
+	status =getAttriInAttriArray (subObjPath, attriArray, &myDataMode,
+	  &myChksum);
+        if (status < 0) {
+            rodsLog (LOG_NOTICE,
+              "bulkProcAndRegSubfile: matchObjPath error for %s, stat = %d",
+              subObjPath, status);
+	} else {
+	    if ((flags & VERIFY_CHKSUM_FLAG) != 0 && myChksum != NULL) {
+		char chksumStr[NAME_LEN];
+		/* verify the chksum */
+		status = chksumLocFile (dataObjInfo.filePath, chksumStr);
+        	if (status < 0) {
+		    rodsLog (LOG_ERROR,
+                     "bulkProcAndRegSubfile: chksumLocFile error for %s ", 
+		      dataObjInfo.filePath);
+                    return (status);
+		}
+		if (strcmp (myChksum, chksumStr) != 0) {
+        	    rodsLog (LOG_ERROR,
+                      "bulkProcAndRegSubfile: chksum of %s %s != input %s",
+		        dataObjInfo.filePath, chksumStr, myChksum);
+                    return (USER_CHKSUM_MISMATCH);
+		}
+	    }
+        }
+    }
+
     status = bulkRegSubfile (rsComm, rescInfo->rescName, rescGroupName,
       subObjPath, dataObjInfo.filePath, dataSize, dataMode, modFlag, 
       dataObjInfo.replNum, bulkDataObjRegInp, renamedPhyFiles);
@@ -537,9 +569,10 @@ renamedPhyFiles_t *renamedPhyFiles)
 {
     int status;
 
+    /* XXXXXXXX use NULL for chksum for now */
     status = fillBulkDataObjRegInp (rescName, rescGroupName, subObjPath, 
       subfilePath, "generic", dataSize, dataMode, modFlag, 
-      replNum, bulkDataObjRegInp);
+      replNum, NULL, bulkDataObjRegInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",
@@ -551,7 +584,7 @@ renamedPhyFiles_t *renamedPhyFiles)
         status = rsBulkDataObjReg (rsComm, bulkDataObjRegInp);
         if (status < 0) {
             rodsLog (LOG_ERROR,
-              "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",
+              "bulkRegSubfile: rsBulkDataObjReg error for %s. status = %d",
               subfilePath, status);
 	    cleanupBulkRegFiles (rsComm, bulkDataObjRegInp);
 	}

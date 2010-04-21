@@ -54,6 +54,7 @@ bytesBuf_t *bulkOprInpBBuf)
     int flags = BULK_OPR_FLAG;
     dataObjInp_t dataObjInp;
 
+    /* XXXXXXX need to make sure rscType is UNIX */
     inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
 
     /* query rcat for resource info and sort it */
@@ -105,8 +106,12 @@ bytesBuf_t *bulkOprInpBBuf)
         flags = flags | FORCE_FLAG_FLAG;
     }
 
+    if (getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
+        flags = flags | VERIFY_CHKSUM_FLAG;
+    }
+
     status = regUnbunSubfiles (rsComm, rescInfo, inpRescGrpName,
-      bulkOprInp->objPath, phyBunDir, flags);
+      bulkOprInp->objPath, phyBunDir, flags, &bulkOprInp->attriArray);
 
     if (status == CAT_NO_ROWS_FOUND) {
         /* some subfiles have been deleted. harmless */

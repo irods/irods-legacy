@@ -198,9 +198,9 @@ rodsRestart_t *rodsRestart)
 	}
 	bzero (bulkOprInp, sizeof (bulkOprInp_t));
         if (rodsArgs->checksum == True) {
-	    addKeyVal (&dataObjOprInp->condInput, REG_CHKSUM_KW, "");
+	    addKeyVal (&bulkOprInp->condInput, REG_CHKSUM_KW, "");
 	} else if (rodsArgs->verifyChecksum == True) {
-	    addKeyVal (&dataObjOprInp->condInput, VERIFY_CHKSUM_KW, "");
+	    addKeyVal (&bulkOprInp->condInput, VERIFY_CHKSUM_KW, "");
         }
 	initAttriArrayOfBulkOprInp (bulkOprInp);
     }
@@ -655,6 +655,27 @@ bulkOprInfo_t *bulkOprInfo)
     bulkOprInfo->count++;
     bulkOprInfo->size += srcSize;
 
+    if (getValByKey (&bulkOprInp->condInput, REG_CHKSUM_KW) != NULL ||
+      getValByKey (&bulkOprInp->condInput, VERIFY_CHKSUM_KW) != NULL) {
+	char chksumStr[NAME_LEN];
+        status = chksumLocFile (tmpSrcPath, chksumStr);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "bulkPutFileUtil: chksumLocFile error for %s ", tmpSrcPath);
+            return (status);
+        }
+	status = fillAttriArrayOfBulkOprInp (targPath, createMode, chksumStr,
+	  bulkOprInp);
+    } else {
+        status = fillAttriArrayOfBulkOprInp (targPath, createMode, NULL,
+	  bulkOprInp);
+    }
+    if (status < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "bulkPutFileUtil: fillAttriArrayOfBulkOprInp error for %s", 
+	  tmpSrcPath);
+        return status;
+    }
     if (bulkOprInfo->count >= MAX_NUM_BULK_OPR_FILES ||
       bulkOprInfo->size >= BULK_OPR_BUF_SIZE - MAX_BULK_OPR_FILE_SIZE) {
 	/* tar send it */
@@ -693,6 +714,9 @@ bulkOprInfo_t *bulkOprInfo)
     if (bulkOprInfo->bytesBuf.buf != NULL) {
         status = rcBulkDataObjPut (conn, bulkOprInp, &bulkOprInfo->bytesBuf);
     }
+    /* reset the row count */
+    bulkOprInp->attriArray.rowCnt = 0;
+
     return (status);
 }
 
