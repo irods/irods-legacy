@@ -6,9 +6,17 @@ package edu.sdsc.jargon.testutils;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Properties;
 
+import edu.sdsc.grid.io.irods.IRODSAccount;
+import edu.sdsc.grid.io.irods.IRODSFile;
+import edu.sdsc.grid.io.irods.IRODSFileSystem;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
@@ -159,9 +167,67 @@ public class AssertionHelper {
 	}
 
 	public void assertIrodsFileMatchesLocalFileChecksum(
-			String relativeIRODSPathUnderScratch,
-			String relativeLocalFileUnderScratch)
+			String absoluteIRODSPathUnderScratch,
+			String absoluteLocalFileUnderScratch)
 			throws IRODSTestAssertionException {
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem;
+		String irodsChecksum = "";
+		try {
+			irodsFileSystem = new IRODSFileSystem(testAccount);
+			IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+					absoluteIRODSPathUnderScratch);
+			irodsChecksum = irodsFile.checksumUsingMD5();
+			irodsFileSystem.close();
+		} catch (Exception e) {
+			throw new IRODSTestAssertionException(
+					"error occured computing checksums", e);
+		}
+
+		String localChecksum = "";
+		InputStream is = null;
+		//DigestInputStream dis = null;
+	     byte[] buffer = new byte[1024];
+		try {
+
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			is = new FileInputStream(absoluteLocalFileUnderScratch);
+			//dis = new DigestInputStream(is, md);
+			int numRead;
+		     do {
+		      numRead = is.read(buffer);
+		      if (numRead > 0) {
+		        md.update(buffer, 0, numRead);
+		        }
+		      } while (numRead != -1);
+
+			byte[] digest = md.digest();
+		     for (int i=0; i < digest.length; i++) {
+		       localChecksum +=
+		          Integer.toString( ( digest[i] & 0xff ) + 0x100, 16).substring( 1 );
+		      }
+
+		} catch (Exception e) {
+			throw new IRODSTestAssertionException("error computing checksums",
+					e);
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				// ignore
+			}
+		}
+		
+		if (!localChecksum.equals(irodsChecksum)) {
+			StringBuilder msg = new StringBuilder();
+			msg.append("local checksum does not match irods checksum, local=");
+			msg.append(localChecksum);
+			msg.append(" irodsChecksum=");
+			msg.append(irodsChecksum);
+			throw new IRODSTestAssertionException(msg.toString());
+		}
 
 	}
 
@@ -206,7 +272,7 @@ public class AssertionHelper {
 
 	/**
 	 * Make sure that a file or collection is not in IRODS
-	 *
+	 * 
 	 * @param relativeIrodsPathUnderScratch
 	 *            <code>String</code> with relative path (no leading '/', or a
 	 *            path and filename to look for
@@ -251,11 +317,14 @@ public class AssertionHelper {
 	}
 
 	/**
-	 * Are two directory trees equal?
-	 * Take two absolute paths to the local file system, recursively walk each tree and compare length,
-	 * file name, and number of subdirectories/files.
-	 * @param dir1 <code>String<code> with the absolute path to a directory
-	 * @param dir2 <code>String<code> with 
+	 * Are two directory trees equal? Take two absolute paths to the local file
+	 * system, recursively walk each tree and compare length, file name, and
+	 * number of subdirectories/files.
+	 * 
+	 * @param dir1
+	 *            <code>String<code> with the absolute path to a directory
+	 * @param dir2
+	 *            <code>String<code> with
 	 * @throws IRODSTestAssertionException
 	 */
 	public void assertLocalDirectoriesHaveSameData(String dir1, String dir2)
@@ -281,9 +350,12 @@ public class AssertionHelper {
 
 		File[] file1Files = file1.listFiles();
 		File[] file2Files = file2.listFiles();
-		
+
 		if (file1Files.length != file2Files.length) {
-			throw new IRODSTestAssertionException("mismatch of number of files in a directory, file1 has:" + file1Files.length + " files, while file2 has:" + file2Files.length);
+			throw new IRODSTestAssertionException(
+					"mismatch of number of files in a directory, file1 has:"
+							+ file1Files.length + " files, while file2 has:"
+							+ file2Files.length);
 		}
 
 		for (int i = 0; i < file1Files.length; i++) {
@@ -293,14 +365,18 @@ public class AssertionHelper {
 	}
 
 	/**
-	 * Recursively match two files/directories for length, number of members, and name
-	 * @param file1 <code>File</code> with a file or directory
-	 * @param file2 <code>File<code> with a file or directory
+	 * Recursively match two files/directories for length, number of members,
+	 * and name
+	 * 
+	 * @param file1
+	 *            <code>File</code> with a file or directory
+	 * @param file2
+	 *            <code>File<code> with a file or directory
 	 * @throws IRODSTestAssertionException
 	 */
 	private void compareTwoFiles(File file1, File file2)
 			throws IRODSTestAssertionException {
-		
+
 		if (file1.isDirectory() && file2.isDirectory()) {
 			File[] file1Files = file1.listFiles();
 			File[] file2Files = file2.listFiles();
@@ -319,18 +395,18 @@ public class AssertionHelper {
 		} else if (file1.isFile() && file2.isFile()) {
 			if (file1.length() != file2.length()) {
 				throw new IRODSTestAssertionException(
-						"file lengths differ, file1 has "
-								+ file1.length() + " while file2 has "
-								+ file2.length());
+						"file lengths differ, file1 has " + file1.length()
+								+ " while file2 has " + file2.length());
 			}
-			
+
 			if (file1.getName().equals(file2.getName())) {
 				// names are equal
 			} else {
-				throw new IRODSTestAssertionException("file names are different, file1 abs path is:"
-						+ file1.getAbsolutePath() 
-						+ " while file2 abs path is:"
-						+ file2.getAbsolutePath());
+				throw new IRODSTestAssertionException(
+						"file names are different, file1 abs path is:"
+								+ file1.getAbsolutePath()
+								+ " while file2 abs path is:"
+								+ file2.getAbsolutePath());
 			}
 
 		} else {

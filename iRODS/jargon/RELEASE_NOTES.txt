@@ -41,6 +41,8 @@ Features and Changes
 Throw appropriate ProtocolException when reading a header from iRODS and getting zero length. There may be additional work
 required to detect the health of a partially failing irodsAgent.
 
+----------
+*incremental addition of tests and support for checkum verification
 ================================================================================================
 Outstanding Issues
 

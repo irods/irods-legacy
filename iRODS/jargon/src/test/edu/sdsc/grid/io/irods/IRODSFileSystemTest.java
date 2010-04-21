@@ -261,5 +261,17 @@ public class IRODSFileSystemTest {
 		irodsFileSystem.close();
 		irodsFileSystem.finalize();
 	}
+	
+	/**
+	 * Ignore until fix done for
+	 *  Bug 93 -  java.lang.SecurityException: Invalid authentication for IRODSAccount() 
+	 * @throws Exception
+	 */
+	@Ignore
+	public void testCreateFileSystemWithIRODSAccountDefaultConstructor() throws Exception {
+		IRODSAccount irodsAccount = new IRODSAccount();
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+		TestCase.assertTrue("did not create a connected irodsFileSystem", irodsFileSystem.commands.isConnected());
+	}
     
 }

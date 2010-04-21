@@ -2,6 +2,7 @@ package edu.sdsc.grid.io.irods;
 
 import static org.junit.Assert.*;
 
+import java.net.URI;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -55,7 +56,7 @@ public class IRODSAccountTest {
 		IRODSAccount account = new IRODSAccount();
 		
 	}
-
+	
 	@Test
 	public final void testIRODSAccountGeneralFile() throws Exception {
 		LocalFile info = new LocalFile(System.getProperty("user.home")+"/.irods/");
@@ -133,6 +134,65 @@ public class IRODSAccountTest {
 		actualIRODSAccount.setDefaultStorageResource(expectedDefaultResource);
 		String actualDefaultResource = actualIRODSAccount.getDefaultStorageResource();
 		TestCase.assertEquals(expectedDefaultResource, actualDefaultResource);
+		
+	}
+	
+	@Test
+	public final void testSetCertificateAuthority() throws Exception {
+		String expectedCA = "hows,that,for,a,test";
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		irodsAccount.setCertificateAuthority(expectedCA);
+		TestCase.assertEquals("did not set the CA", expectedCA, irodsAccount.getCertificateAuthority());
+
+	}
+	
+	@Test
+	public final void testSetNullCertificateAuthority() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		irodsAccount.setCertificateAuthority(null);
+		TestCase.assertTrue(irodsAccount.getAuthenticationScheme().equals("PASSWORD"));
+	}
+	
+	@Test
+	public final void testEquals() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSAccount otherAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		TestCase.assertTrue("equals() does not detect identical accounts", irodsAccount.equals(otherAccount));
+	}
+	
+	@Test
+	public final void testToURIWithPassword() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		StringBuilder b = new StringBuilder();
+		b.append("irods://");
+		b.append(irodsAccount.getUserName());
+		b.append(":");
+		b.append(irodsAccount.getPassword());
+		b.append("@");
+		b.append(irodsAccount.getHost());
+		b.append(":");
+		b.append(irodsAccount.getPort());
+		b.append(irodsAccount.getHomeDirectory());
+		URI actualUri = irodsAccount.toURI(true);
+		URI expectedUri = new URI(b.toString());
+		TestCase.assertEquals("did not generate correct uri including password", expectedUri, actualUri);
+		
+	}
+	
+	@Test
+	public final void testToURINoPassword() throws Exception {
+		IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		StringBuilder b = new StringBuilder();
+		b.append("irods://");
+		b.append(irodsAccount.getUserName());
+		b.append("@");
+		b.append(irodsAccount.getHost());
+		b.append(":");
+		b.append(irodsAccount.getPort());
+		b.append(irodsAccount.getHomeDirectory());
+		URI actualUri = irodsAccount.toURI(false);
+		URI expectedUri = new URI(b.toString());
+		TestCase.assertEquals("did not generate correct uri including password", expectedUri, actualUri);
 		
 	}
 	

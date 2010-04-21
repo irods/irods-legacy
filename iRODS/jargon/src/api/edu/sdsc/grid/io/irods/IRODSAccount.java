@@ -109,7 +109,7 @@ public class IRODSAccount extends RemoteAccount {
 	/**
 	 * The iRODS authorization scheme.
 	 */
-	protected String authenticationScheme = STANDARD_PASSWORD;
+	public  String authenticationScheme = STANDARD_PASSWORD;
 
 	/**
 	 * The iRODS Server DN string.

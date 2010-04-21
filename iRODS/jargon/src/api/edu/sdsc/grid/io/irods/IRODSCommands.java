@@ -114,8 +114,6 @@ class IRODSCommands {
 
 	private String reportedIRODSVersion = "";
 
-	// MetaDataCondition[] conditions;
-
 	IRODSCommands() {
 
 	}
@@ -1574,6 +1572,9 @@ class IRODSCommands {
 	 */
 	String[] simpleQuery(String statement, String arg) throws IOException {
 		Tag message = null;
+		
+		log.info("simple query for statement {}", statement);
+		log.info("with parms {}", arg);
 
 		if (arg == null) {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {

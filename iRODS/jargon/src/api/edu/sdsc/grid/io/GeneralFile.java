@@ -849,6 +849,17 @@ public class GeneralFile extends Object implements Comparable {
 		return checksum.toString();
 	}
 
+	
+	/**
+	 * Convenience method that will calculate an MD5 checksum on this file.
+	 * @return <code>String</code> containing the MD5 checksum for the file
+	 * @throws IOException
+	 */
+	public String checksumUsingMD5() throws IOException {
+		return checksumMD5();
+
+	}
+	
 	public String checksum(Checksum type) throws IOException {
 		switch (type) {
 		case MD5:

@@ -6,6 +6,7 @@ package edu.sdsc.jargon.unittest.testsuites;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import edu.sdsc.grid.io.irods.DomainTest;
 import edu.sdsc.grid.io.irods.IRODSAccountTest;
 import edu.sdsc.grid.io.irods.IRODSAdminTest;
 import edu.sdsc.grid.io.irods.IRODSAvuTest;
@@ -70,7 +71,8 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSMultiThreadGetAndPutTest.class,
   IRODSThousandFilesTest.class,
   IRODSCommandsQueryTest.class, 
-  IRODSAvuTest.class
+  IRODSAvuTest.class,
+  DomainTest.class
   
 })
 public class IRODSTests {

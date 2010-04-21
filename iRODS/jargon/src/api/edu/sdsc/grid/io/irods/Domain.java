@@ -2,8 +2,14 @@ package edu.sdsc.grid.io.irods;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
+ * Query and manipulate ICAT tokens, kept in the tabel <code>r_tokn_main</code>.
+ * This class should be considered obsolete and subject to removal and revamping.
  * 
+ * @deprecated this class appears to be obsolete, and will be re-vamped in coming versions
  * @author iktome
  */
 public class Domain {
@@ -11,6 +17,9 @@ public class Domain {
 	protected final String typeName;
 	protected final String tableName;
 	protected final IRODSFileSystem irodsFileSystem;
+	
+	private  Logger log = LoggerFactory.getLogger(this.getClass());
+
 
 	Domain(IRODSFileSystem irodsFileSystem, String name, String typeName,
 			String tableName) {
@@ -36,9 +45,8 @@ public class Domain {
 		return name;
 	}
 
-	// ------------------------------------------------------------------------
 	/**
-	 * Queries the fileSystem to aqcuire all the types for this domain.
+	 * Queries the fileSystem to acquire all the types for this domain.
 	 * 
 	 * @return
 	 */
@@ -46,17 +54,6 @@ public class Domain {
 		return irodsFileSystem.commands.simpleQuery(
 				"select token_name from r_tokn_main where token_namespace = ?",
 				typeName);
-	}
-
-	/**
-	 * Queries the fileSystem to aqcuire all the values for this domain. So the
-	 * user domain returns all the users.
-	 * 
-	 * @return
-	 */
-	public String[] listSubjects() throws IOException {
-		return irodsFileSystem.commands.simpleQuery("select " + name + " from "
-				+ tableName, null);
 	}
 
 	public void addType(String newType) throws IOException {
