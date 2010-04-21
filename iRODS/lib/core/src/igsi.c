@@ -101,7 +101,7 @@ static int inCacheBufReadIndex[MAX_FDS];
 
 #endif  /* end of #if defined(GSI_AUTH) */
 
-int context_flags;
+unsigned int context_flags;
 
 /* Function for time test 
  * Returns the difference between start time and end time in tdiff 
@@ -357,7 +357,7 @@ static void _igsiLogError_1(char *callerMsg, OM_uint32 code, int type)
 {
     OM_uint32 majorStatus, minorStatus;
     gss_buffer_desc msg;
-    int msg_ctx;
+    unsigned int msg_ctx;
     int status;
     char *whichSide;
 
