@@ -3712,8 +3712,9 @@ untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
     bzero (av, sizeof (av));
     av[0] = TAR_EXEC_PATH;
     av[1] = "-x";
-    av[2] = "-C";
-    av[3] = phyBunDir;
+    av[2] = "-m";	/* no timestamp error msg */
+    av[3] = "-C";
+    av[4] = phyBunDir;
 
 #ifndef windows_platform   /* UNIX */
     childPid = RODS_FORK ();
