@@ -527,6 +527,7 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
     }
 
     if (attriArray != NULL) {
+	/* dataMode in attriArray overwrites passed in value */
 	status =getAttriInAttriArray (subObjPath, attriArray, &myDataMode,
 	  &myChksum);
         if (status < 0) {
@@ -555,8 +556,8 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
     }
 
     status = bulkRegSubfile (rsComm, rescInfo->rescName, rescGroupName,
-      subObjPath, dataObjInfo.filePath, dataSize, dataMode, modFlag, 
-      dataObjInfo.replNum, bulkDataObjRegInp, renamedPhyFiles);
+      subObjPath, dataObjInfo.filePath, dataSize, myDataMode, modFlag, 
+      dataObjInfo.replNum, myChksum, bulkDataObjRegInp, renamedPhyFiles);
 
     return status;
 }
@@ -564,7 +565,7 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
 int
 bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode, 
-int modFlag, int replNum, genQueryOut_t *bulkDataObjRegInp, 
+int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp, 
 renamedPhyFiles_t *renamedPhyFiles)
 {
     int status;
@@ -572,7 +573,7 @@ renamedPhyFiles_t *renamedPhyFiles)
     /* XXXXXXXX use NULL for chksum for now */
     status = fillBulkDataObjRegInp (rescName, rescGroupName, subObjPath, 
       subfilePath, "generic", dataSize, dataMode, modFlag, 
-      replNum, NULL, bulkDataObjRegInp);
+      replNum, chksum, bulkDataObjRegInp);
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "bulkRegSubfile: fillBulkDataObjRegInp error for %s. status = %d",

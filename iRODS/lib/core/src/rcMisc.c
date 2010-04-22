@@ -3508,7 +3508,7 @@ int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp)
     snprintf (&bulkDataObjRegInp->sqlResult[8].value[NAME_LEN * rowCnt],
       NAME_LEN, "%d", replNum);
     if (chksum != NULL && strlen (chksum) > 0) {
-        rstrcpy (&bulkDataObjRegInp->sqlResult[6].value[NAME_LEN * rowCnt],
+        rstrcpy (&bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt],
          chksum, NAME_LEN);
     } else {
 	bulkDataObjRegInp->sqlResult[9].value[NAME_LEN * rowCnt] = '\0';
@@ -3608,7 +3608,7 @@ int *outDataMode, char **outChksum)
     sqlResult_t *objPath, *dataMode, *chksum;
     char *tmpObjPath, *tmpDataMode, *tmpChksum;
 
-    if (objPath == NULL || attriArray == NULL || outDataMode || NULL ||
+    if (objPath == NULL || attriArray == NULL || outDataMode == NULL ||
       outChksum == NULL) return USER__NULL_INPUT_ERR;
 
     if ((objPath =
@@ -3629,11 +3629,11 @@ int *outDataMode, char **outChksum)
 
     startInx = attriArray->continueInx;
     if (startInx >= attriArray->rowCnt || startInx < 0) startInx = 0;
-    attriArray->continueInx = startInx + 1;
 
     for (i = startInx; i < attriArray->rowCnt; i++) {
         tmpObjPath = &objPath->value[objPath->len * i];
 	if (strcmp (inpObjPath, tmpObjPath) == 0) {
+	    attriArray->continueInx = i + 1;
             tmpDataMode = &dataMode->value[dataMode->len * i];
 	    *outDataMode = atoi (tmpDataMode);
 	    if (chksum != NULL) {
@@ -3653,6 +3653,7 @@ int *outDataMode, char **outChksum)
     for (i = 0; i < startInx; i++) {
         tmpObjPath = &objPath->value[objPath->len * i];
         if (strcmp (inpObjPath, tmpObjPath) == 0) {
+	    attriArray->continueInx = i + 1;
             tmpDataMode = &dataMode->value[dataMode->len * i];
             *outDataMode = atoi (tmpDataMode);
             if (chksum != NULL) {

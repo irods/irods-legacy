@@ -49,9 +49,9 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 #ifdef RODS_CAT
     dataObjInfo_t dataObjInfo;
     sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
-      *dataMode, *oprType, *rescGroupName, *replNum;
+      *dataMode, *oprType, *rescGroupName, *replNum, *chksum;
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
-      *tmpDataMode, *tmpOprType, *tmpRescGroupName, *tmpReplNum;
+      *tmpDataMode, *tmpOprType, *tmpRescGroupName, *tmpReplNum, *tmpChksum;
     int status, i;
 
     if ((objPath =
@@ -116,6 +116,8 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    chksum = getSqlResultByInx (bulkDataObjRegInp, COL_D_DATA_CHECKSUM);
+
    for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
         tmpObjPath = &objPath->value[objPath->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
@@ -137,6 +139,13 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         rstrcpy (dataObjInfo.dataMode, tmpDataMode, NAME_LEN);
         rstrcpy (dataObjInfo.rescGroupName, tmpRescGroupName, NAME_LEN);
 	dataObjInfo.replNum = atoi (tmpReplNum);
+        if (chksum != NULL) {
+	    tmpChksum = &chksum->value[chksum->len * i];
+	    if (strlen (tmpChksum) > 0) {
+	        rstrcpy (dataObjInfo.chksum, tmpChksum, NAME_LEN);
+	    }
+	}
+ 
 	dataObjInfo.replStatus = NEWLY_CREATED_COPY;
 	if (strcmp (tmpOprType, REGISTER_OPR) == 0) {
 	    status = svrRegDataObj (rsComm, &dataObjInfo);
@@ -211,7 +220,9 @@ char *strDataSize)
     addKeyVal (&regParam, ALL_REPL_STATUS_KW, "");
     snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
     addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
-
+    if (strlen (dataObjInfo->chksum) > 0) {
+	addKeyVal (&regParam, CHKSUM_KW, dataObjInfo->chksum);
+    }
     modDataObjMetaInp.dataObjInfo = dataObjInfo;
     modDataObjMetaInp.regParam = &regParam;
 

@@ -60,7 +60,7 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray);
 int
 bulkRegSubfile (rsComm_t *rsComm, char *rescName, char *rescGroupName,
 char *subObjPath, char *subfilePath, rodsLong_t dataSize, int dataMode,
-int modFlag, int replNum, genQueryOut_t *bulkDataObjRegInp,
+int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp,
 renamedPhyFiles_t *renamedPhyFiles);
 int
 addRenamedPhyFile (char *subObjPath, char *oldFileName, char *newFileName, 
