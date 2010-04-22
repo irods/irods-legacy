@@ -56,11 +56,6 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
         /* for STRUCT_FILE_COLL to make a directory in the structFile, the
          * COLLECTION_TYPE_KW must be set */
 
-#if 0
-        dataObjInp_t dataObjInp;
-	memset (&dataObjInp, 0, sizeof (dataObjInp));
-	rstrcpy (dataObjInp.objPath, collCreateInp->collName, MAX_NAME_LEN);
-#endif
         status = resolvePathInSpecColl (rsComm, collCreateInp->collName, 
 	  WRITE_COLL_PERM, 0, &dataObjInfo);
 	if (status >= 0) {
@@ -76,38 +71,14 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 	      dataObjInfo->specColl->collClass == LINKED_COLL) {
 		/*  should not be here because if has been translated */
 		return SYS_COLL_LINK_PATH_ERR;
-#if 0
-		rodsServerHost_t *linkedServerHost = NULL;
-                rstrcpy (collCreateInp->collName, dataObjInfo->objPath,
-                  MAX_NAME_LEN);
-    		status = getAndConnRcatHost (rsComm, MASTER_RCAT, 
-		  collCreateInp->collName, &linkedServerHost);
-
-		if (linkedServerHost != rodsServerHost && 
-		  linkedServerHost->localFlag != LOCAL_HOST) {
-		    /* call rsCollCreate again */
-        	    status = rcCollCreate (linkedServerHost->conn, 
-		      collCreateInp);
-		} else {
-        	    status = _rsRegColl (rsComm, collCreateInp);
-		}
-#endif
 	    } else {
 	        status = l3Mkdir (rsComm, dataObjInfo);
 	    }
-#if 0
-	    if (getValByKey (&collCreateInp->condInput, COLLECTION_TYPE_KW) ==
-              NULL && dataObjInfo->specColl->class == STRUCT_FILE_COLL) {
-	    if (getSpecCollOpr (&collCreateInp->condInput, 
-	      dataObjInfo->specColl) == NORMAL_OPR_ON_STRUCT_FILE_COLL) {
-        	status = _rsRegColl (rsComm, collCreateInp);
-	    } else {
-	        status = l3Mkdir (rsComm, dataObjInfo);
-	    }
-#endif
 	    freeDataObjInfo (dataObjInfo);
 	    return (status);
 	} else {
+            if (isColl (rsComm, collCreateInp->collName, NULL) >= 0)
+                return CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
             status = _rsRegColl (rsComm, collCreateInp);
 	}
         rei.status = status;
