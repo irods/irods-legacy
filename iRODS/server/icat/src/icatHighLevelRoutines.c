@@ -607,13 +607,14 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
    cllBindVars[10]=rsComm->clientUser.userName;
    cllBindVars[11]=rsComm->clientUser.rodsZone;
    cllBindVars[12]=dataStatusNum;
-   cllBindVars[13]=dataObjInfo->dataMode;
-   cllBindVars[14]=myTime;
+   cllBindVars[13]=dataObjInfo->chksum;
+   cllBindVars[14]=dataObjInfo->dataMode;
    cllBindVars[15]=myTime;
-   cllBindVarCount=16;
+   cllBindVars[16]=myTime;
+   cllBindVarCount=17;
    if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 6");
    status =  cmlExecuteNoAnswerSql(
-       "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_mode, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+       "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_group_name, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, data_checksum, data_mode, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
        &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
