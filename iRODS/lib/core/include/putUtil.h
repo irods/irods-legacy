@@ -23,6 +23,7 @@ extern "C" {
 typedef struct {
     int flags;
     int count;
+    int forceFlagAdded;
     int size;
     char cwd[MAX_NAME_LEN];
     char phyBunDir[MAX_NAME_LEN];
@@ -66,6 +67,8 @@ tarAndBulkPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,
 bulkOprInfo_t *bulkOprInfo);
 int
 clearBulkOprInfo (bulkOprInfo_t *bulkOprInfo);
+int
+setForceFlagForRestart (bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo);
 #ifdef  __cplusplus
 }
 #endif

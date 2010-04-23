@@ -480,6 +480,11 @@ bulkOprInfo_t *bulkOprInfo)
 	    closedir (dirPtr);
 	    return (status);
 	} else if (status == 0) {
+            if (bulkFlag == BULK_OPR_SMALL_FILES &&
+              (rodsRestart->restartState & LAST_PATH_MATCHED) != 0) {
+                /* enable foreFlag one time */
+                setForceFlagForRestart (bulkOprInp, bulkOprInfo);
+            }
 	    continue;
 	}
 
@@ -775,6 +780,10 @@ bulkOprInfo_t *bulkOprInfo)
     }
     /* reset the row count */
     bulkOprInp->attriArray.rowCnt = 0;
+    if (bulkOprInfo->forceFlagAdded == 1) {
+	rmKeyVal (&bulkOprInp->condInput, FORCE_FLAG_KW);
+	bulkOprInfo->forceFlagAdded = 0;
+    }
 
     return (status);
 }

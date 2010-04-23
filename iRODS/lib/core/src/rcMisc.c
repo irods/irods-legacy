@@ -20,6 +20,7 @@
 				    set up the set 1 tables */
 #include "extendedICAT.h"
 #endif
+#include "putUtil.h"
 
 /* check with the input path is a valid path -
  * 1 - valid
@@ -3936,5 +3937,22 @@ writeFromByteBuf (int fd, bytesBuf_t *bytesBuf)
     } else {
         return (0);
     }
+}
+
+int
+setForceFlagForRestart (bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo)
+{
+    if (bulkOprInp == NULL || bulkOprInfo == NULL) return USER__NULL_INPUT_ERR;
+
+    if (getValByKey (&bulkOprInp->condInput, FORCE_FLAG_KW) != NULL) {
+	/* already has FORCE_FLAG_KW */
+	return 0;
+    }
+
+    addKeyVal (&bulkOprInp->condInput, FORCE_FLAG_KW, "");
+    /* remember to remove it */
+    bulkOprInfo->forceFlagAdded = 1;
+
+    return 0;
 }
 
