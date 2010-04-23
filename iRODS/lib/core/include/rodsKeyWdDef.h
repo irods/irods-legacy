@@ -89,6 +89,7 @@
 #define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */ 
 #define TRANSLATED_PATH_KW	"translatedPath"  /* the path translated */
 #define BULK_OPR_KW		"bulkOpr"  /* the bulk operation */
+#define NON_BULK_OPR_KW		"nonBulkOpr"  /* non bulk operation */
 
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 

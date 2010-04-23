@@ -2378,12 +2378,12 @@ rodsArguments_t *rodsArgs)
 	inptr = buf;
 	if (getLineInBuf (&inptr, rodsRestart->collection, MAX_NAME_LEN) < 0) {
             rodsLog (LOG_ERROR,
-              "openRestartFile: restartFile %s has 0 line", restartFile);
+              "openRestartFile: restartFile %s is empty", restartFile);
             return USER_RESTART_FILE_INPUT_ERR;
 	} 
         if (getLineInBuf (&inptr, tmpStr, MAX_NAME_LEN) < 0) {
             rodsLog (LOG_ERROR,
-              "openRestartFile: restartFile %s has 1 line", restartFile);
+              "openRestartFile: restartFile %s has 1 only line", restartFile);
             return USER_RESTART_FILE_INPUT_ERR;
         }
 	rodsRestart->doneCnt = atoi (tmpStr);
@@ -2391,7 +2391,14 @@ rodsArguments_t *rodsArgs)
         if (getLineInBuf (&inptr, rodsRestart->lastDonePath, 
 	  MAX_NAME_LEN) < 0) {
             rodsLog (LOG_ERROR,
-              "openRestartFile: restartFile %s has 2 line", restartFile);
+              "openRestartFile: restartFile %s has only 2 lines", restartFile);
+            return USER_RESTART_FILE_INPUT_ERR;
+        }
+
+        if (getLineInBuf (&inptr, rodsRestart->oprType,
+          NAME_LEN) < 0) {
+            rodsLog (LOG_ERROR,
+              "openRestartFile: restartFile %s has only 3 lines", restartFile);
             return USER_RESTART_FILE_INPUT_ERR;
         }
 
@@ -2441,6 +2448,7 @@ int deleteFlag)
 	      getValByKey (condInput, FORCE_FLAG_KW) == NULL) {
                 dataObjInp_t dataObjInp;
 	        /* need to remove any partially completed file */ 
+		/* XXXXX may not be enough for bulk put */
 	        memset (&dataObjInp, 0, sizeof (dataObjInp));
                 addKeyVal (&dataObjInp.condInput, FORCE_FLAG_KW, "");
 	        rstrcpy (dataObjInp.objPath, restartPath, MAX_NAME_LEN);
@@ -2460,6 +2468,13 @@ int deleteFlag)
     return (0);
 }
 
+/* writeRestartFile - the restart file contain 4 lines:
+ *   line 1 - collection.
+ *   line 2 - doneCnt.
+ *   line 3 - lastDonePath
+ *   line 4 - oprType (BULK_OPR_KW or NON_BULK_OPR_KW);
+ */
+
 int
 writeRestartFile (rodsRestart_t *rodsRestart, char *lastDonePath)
 {
@@ -2469,9 +2484,9 @@ writeRestartFile (rodsRestart_t *rodsRestart, char *lastDonePath)
     rodsRestart->doneCnt = rodsRestart->curCnt;
     rstrcpy (rodsRestart->lastDonePath, lastDonePath, MAX_NAME_LEN);
     memset (buf, 0, MAX_NAME_LEN * 3);
-    snprintf (buf, MAX_NAME_LEN * 3, "%s\n%d\n%s\n",
+    snprintf (buf, MAX_NAME_LEN * 3, "%s\n%d\n%s\n%s\n",
       rodsRestart->collection, rodsRestart->doneCnt,
-      rodsRestart->lastDonePath);
+      rodsRestart->lastDonePath, rodsRestart->oprType);
 
     lseek (rodsRestart->fd, 0, SEEK_SET);
     status = write (rodsRestart->fd, buf, MAX_NAME_LEN * 3);

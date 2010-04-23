@@ -268,6 +268,7 @@ typedef struct {
     int doneCnt;	/* a count of number of files done in the coll/dir */
     char collection[MAX_NAME_LEN];      /* the coll/dir being restarted */
     char lastDonePath[MAX_NAME_LEN];	/* the last path that is done */
+    char oprType[NAME_LEN];	/* BULK_OPR_KW or NON_BULK_OPR_KW */
     int curCnt;
     int restartState;
 } rodsRestart_t;  

@@ -26,8 +26,10 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 	return (USER__NULL_INPUT_ERR);
     }
 
-    initCondForPut (myRodsEnv, myRodsArgs, &dataObjOprInp, &bulkOprInp,
-      &rodsRestart);
+    status = initCondForPut (myRodsEnv, myRodsArgs, &dataObjOprInp, 
+      &bulkOprInp, &rodsRestart);
+
+    if (status < 0) return status;
 
     status = resolveRodsTarget (conn, myRodsEnv, rodsPathInp, 1);
     if (status < 0) {
@@ -328,6 +330,28 @@ rodsRestart_t *rodsRestart)
 	    rodsArgs->restartFileString);
 	    return (status);
 	}
+	if (rodsRestart->doneCnt == 0) {
+	    /* brand new */
+	    if (rodsArgs->bulk == True) {
+	        rstrcpy (rodsRestart->oprType, BULK_OPR_KW, NAME_LEN);
+	    } else {
+		rstrcpy (rodsRestart->oprType, NON_BULK_OPR_KW, NAME_LEN);
+	    }
+	} else {
+	    if (rodsArgs->bulk == True) {
+		if (strcmp (rodsRestart->oprType, BULK_OPR_KW) != 0) {
+		    rodsLog (LOG_ERROR, 
+                      "initCondForPut: -b cannot be used to restart this iput");
+		    return BULK_OPR_MISMATCH_FOR_RESTART;
+		}
+	    } else {
+                if (strcmp (rodsRestart->oprType, NON_BULK_OPR_KW) != 0) {
+                    rodsLog (LOG_ERROR, 
+                      "initCondForPut: -b must be used to restart this iput");
+                    return BULK_OPR_MISMATCH_FOR_RESTART;
+		}
+	    }
+	}
     }
 
     /* Not needed - dataObjOprInp->createMode = 0700; */
@@ -355,6 +379,7 @@ bulkOprInfo_t *bulkOprInfo)
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
     objType_t childObjType;
     rcComm_t *conn;
+    int bulkFlag;
 
     if (srcDir == NULL || targColl == NULL) {
        rodsLog (LOG_ERROR,
@@ -391,6 +416,12 @@ bulkOprInfo_t *bulkOprInfo)
 
     if (rodsArgs->verbose == True) {
 	fprintf (stdout, "C- %s:\n", targColl);
+    }
+
+    if (bulkOprInfo == NULL) {
+	bulkFlag = NON_BULK_OPR;
+    } else {
+        bulkFlag = bulkOprInfo->flags;
     }
 
     while ((myDirent = readdir (dirPtr)) != NULL) {
@@ -431,6 +462,16 @@ bulkOprInfo_t *bulkOprInfo)
 	    continue;
         }
 
+        if (childObjType == DATA_OBJ_T) {
+	    if (bulkFlag == BULK_OPR_SMALL_FILES &&
+              statbuf.st_size > MAX_BULK_OPR_FILE_SIZE) {
+		continue;
+	    } else if (bulkFlag == BULK_OPR_LARGE_FILES &&
+              statbuf.st_size <= MAX_BULK_OPR_FILE_SIZE) {
+	        continue;
+	    }
+	}
+
 	status = chkStateForResume (conn, rodsRestart, targChildPath,
 	  rodsArgs, childObjType, &dataObjOprInp->condInput, 1);
 
@@ -443,10 +484,16 @@ bulkOprInfo_t *bulkOprInfo)
 	}
 
         if (childObjType == DATA_OBJ_T) {     /* a file */
-	    if (bulkOprInfo == NULL) {
+	    if (bulkFlag == BULK_OPR_SMALL_FILES) {
+                status = bulkPutFileUtil (conn, srcChildPath, targChildPath,
+                  statbuf.st_size, statbuf.st_mode, myRodsEnv, rodsArgs,
+                  bulkOprInp, bulkOprInfo);
+	    } else {
 		/* normal put */
                 status = putFileUtil (conn, srcChildPath, targChildPath,
                   statbuf.st_size, myRodsEnv, rodsArgs, dataObjOprInp);
+	    }
+#if 0
 	    } else if (bulkOprInfo->flags == BULK_OPR_SMALL_FILES) {
 		if (statbuf.st_size <= MAX_BULK_OPR_FILE_SIZE) {
                     status = bulkPutFileUtil (conn, srcChildPath, targChildPath,
@@ -463,12 +510,21 @@ bulkOprInfo_t *bulkOprInfo)
 		    continue;
 		}
 	    }
-
+#endif
 	    if (rodsRestart->fd > 0) {
 		if (status >= 0) {
-		    /* write the restart file */
-		    rodsRestart->curCnt ++;
-		    status = writeRestartFile (rodsRestart, targChildPath);
+		    if (bulkFlag == BULK_OPR_SMALL_FILES) {
+			if (status > 0) {
+			    /* status is the number of files bulk loaded */
+			    rodsRestart->curCnt += status;  
+			    status = writeRestartFile (rodsRestart, 
+			      targChildPath);
+			}
+		    } else {
+		        /* write the restart file */
+		        rodsRestart->curCnt ++;
+		        status = writeRestartFile (rodsRestart, targChildPath);
+		    }
 	        } else {
 		    /* don't continue with restart */
 		    closedir (dirPtr);
@@ -577,12 +633,15 @@ bulkOprInp_t *bulkOprInp, rodsRestart_t *rodsRestart)
     if (bulkOprInfo.count > 0) {
         status = tarAndBulkPut (*myConn, bulkOprInp, &bulkOprInfo);
         if (status >= 0) {
-            /* return the count */
-            status = bulkOprInfo.count;
+            if (rodsRestart->fd > 0) {
+                rodsRestart->curCnt += bulkOprInfo.count;
+		/* last entry. */
+                writeRestartFile (rodsRestart, bulkOprInfo.cachedTargPath);
+            }
         } else {
             rodsLogError (LOG_ERROR, status,
               "bulkPutDirUtil: tarAndBulkPut error for %s", 
-	      bulkOprInfo.cachedSrcPath);
+	      bulkOprInfo.phyBunDir);
         }
         clearBulkOprInfo (&bulkOprInfo);
     }
@@ -629,6 +688,7 @@ bulkOprInfo_t *bulkOprInfo)
           phyBunPath);
         return (status);
     }
+    rstrcpy (bulkOprInfo->cachedTargPath, targPath, MAX_NAME_LEN);
 
     if (strcmp (subPhyBunDir, bulkOprInfo->cachedSubPhyBunDir) != 0 &&
       strcmp (subPhyBunDir, bulkOprInfo->phyBunDir) != 0) {
@@ -636,7 +696,6 @@ bulkOprInfo_t *bulkOprInfo)
 	rstrcpy (bulkOprInfo->cachedSubPhyBunDir, subPhyBunDir, MAX_NAME_LEN);
     }
 
-    rstrcpy (bulkOprInfo->cachedSrcPath, srcPath, MAX_NAME_LEN);
     /* need to get absolute path for symlink */
     if (strlen (bulkOprInfo->cwd) == 0) {
 	mySrcPath = srcPath;
@@ -737,7 +796,7 @@ clearBulkOprInfo (bulkOprInfo_t *bulkOprInfo)
     }
     rmSubDir (bulkOprInfo->phyBunDir);
     bulkOprInfo->count = bulkOprInfo->size = 0;
-    *bulkOprInfo->cachedSrcPath = *bulkOprInfo->cachedSubPhyBunDir = '\0';
+    *bulkOprInfo->cachedTargPath = *bulkOprInfo->cachedSubPhyBunDir = '\0';
     /* rmdir all subPhyBunDir */
 
     return 0;

@@ -14,8 +14,9 @@ extern "C" {
 #endif
 
 /* definition for flags in bulkOprInfo_t */
-#define BULK_OPR_LARGE_FILES	0x0	/* bulk opr for large files */
+#define NON_BULK_OPR		0x0
 #define BULK_OPR_SMALL_FILES	0x1	/* bulk opr for small files */
+#define BULK_OPR_LARGE_FILES	0x2	/* bulk opr for large files */
 
 #define DEF_PHY_BUN_ROOT_DIR	"/tmp"
 
@@ -25,7 +26,7 @@ typedef struct {
     int size;
     char cwd[MAX_NAME_LEN];
     char phyBunDir[MAX_NAME_LEN];
-    char cachedSrcPath[MAX_NAME_LEN];
+    char cachedTargPath[MAX_NAME_LEN];
     char cachedSubPhyBunDir[MAX_NAME_LEN];
     char phyBunPath[MAX_NUM_BULK_OPR_FILES][MAX_NAME_LEN];
     bytesBuf_t bytesBuf;
