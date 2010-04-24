@@ -9,7 +9,7 @@
 #
 # This shell script runs the 'irodsctl' Perl script.
 #
-IRODS_HOME="/data/mwan/iRODS"
+IRODS_HOME=""
 
 if [ "$IRODS_HOME" = "" ]; then
 	# Try using the current directory
