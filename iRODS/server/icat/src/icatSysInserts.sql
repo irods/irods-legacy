@@ -189,18 +189,18 @@ insert into R_TOKN_MAIN values ('action_type',1800,'generic','','','','','117000
 
 
 
-insert into R_ZONE_MAIN values (9000,'tempZone','local','','','1170000000','1170000000');
+insert into R_ZONE_MAIN values (9000,'oneZone','local','','','1170000000','1170000000');
 
-insert into R_USER_MAIN values (9001,'rodsadmin','rodsgroup','tempZone','','','1170000000','1170000000');
+insert into R_USER_MAIN values (9001,'rodsadmin','rodsgroup','oneZone','','','1170000000','1170000000');
 
-insert into R_USER_MAIN values (9002,'rodsBoot','rodsadmin','tempZone','','','1170000000','1170000000');
+insert into R_USER_MAIN values (9002,'rodsBoot','rodsadmin','oneZone','','','1170000000','1170000000');
 insert into R_USER_GROUP values (9001,9002,'1170000000','1170000000');
 insert into R_USER_GROUP values (9002,9002,'1170000000','1170000000');
 insert into R_USER_PASSWORD values (9002,'RODS','9999-12-31-23.59.00','1170000000','1170000000');
 
-insert into R_COLL_MAIN values (9003,'/','/','rods','tempZone',0,'','','','','','','1170000000','1170000000');
+insert into R_COLL_MAIN values (9003,'/','/','rods','oneZone',0,'','','','','','','1170000000','1170000000');
 
 insert into R_OBJT_ACCESS values (9003,9001,1130,'1170000000','1170000000');
 insert into R_OBJT_ACCESS values (9003,9002,1200,'1170000000','1170000000');
 
-insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'tempZone', 'unix file system', 'bundle', 'localhost', '/tmp', '', '', '', '', '', '1250100000','1250100000');
+insert into R_RESC_MAIN (resc_id, resc_name, zone_name, resc_type_name, resc_class_name,  resc_net, resc_def_path, free_space, free_space_ts, resc_info, r_comment, resc_status, create_ts, modify_ts) values (9100, 'bundleResc', 'oneZone', 'unix file system', 'bundle', 'localhost', '/tmp', '', '', '', '', '', '1250100000','1250100000');

@@ -143,6 +143,7 @@
 #define MAX_NUM_BULK_OPR_FILES	50
 #define MAX_BULK_OPR_FILE_SIZE  (2*1024*1024)
 #define BULK_OPR_BUF_SIZE	(4*MAX_BULK_OPR_FILE_SIZE)
+#define TAR_OVERHEAD		(MAX_NUM_BULK_OPR_FILES * MAX_NAME_LEN * 2)
 
 /* protocol */
 typedef enum {

@@ -741,7 +741,8 @@ bulkOprInfo_t *bulkOprInfo)
         return status;
     }
     if (bulkOprInfo->count >= MAX_NUM_BULK_OPR_FILES ||
-      bulkOprInfo->size >= BULK_OPR_BUF_SIZE - MAX_BULK_OPR_FILE_SIZE) {
+      bulkOprInfo->size >= BULK_OPR_BUF_SIZE - 
+        MAX_BULK_OPR_FILE_SIZE - TAR_OVERHEAD) {
 	/* tar send it */
 	status = tarAndBulkPut (conn, bulkOprInp, bulkOprInfo);
 	if (status >= 0) {
