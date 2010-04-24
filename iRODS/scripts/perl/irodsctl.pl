@@ -160,7 +160,7 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 #
 # By default, the user's file in '~/.irods/.irodsEnv' is used.  Override
 # it by setting a file name here.
-$irodsEnvFile = "/home/mwan/.irods/.irodsEnv.local";
+# $irodsEnvFile = "/tmp/.irodsEnv";
 
 # irodsPort defines the port number the irodsServer is listening on.
 # The default port number is set in the .irodEnv file of the irods
