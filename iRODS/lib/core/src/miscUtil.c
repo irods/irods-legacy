@@ -751,6 +751,8 @@ clearDataObjSqlResult (dataObjSqlResult_t *dataObjSqlResult)
       free (dataObjSqlResult->collName.value);
     if (dataObjSqlResult->dataName.value != NULL)
       free (dataObjSqlResult->dataName.value);
+    if (dataObjSqlResult->dataMode.value != NULL)
+      free (dataObjSqlResult->dataMode.value);
     if (dataObjSqlResult->dataSize.value != NULL)
       free (dataObjSqlResult->dataSize.value);
     if (dataObjSqlResult->createTime.value != NULL)
@@ -771,6 +773,8 @@ clearDataObjSqlResult (dataObjSqlResult_t *dataObjSqlResult)
       free (dataObjSqlResult->ownerName.value);
     if (dataObjSqlResult->replNum.value != NULL)
       free (dataObjSqlResult->replNum.value);
+    if (dataObjSqlResult->rescGrp.value != NULL)
+      free (dataObjSqlResult->rescGrp.value);
 
     memset (dataObjSqlResult, 0, sizeof (dataObjSqlResult_t));
 
