@@ -268,6 +268,10 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (0);
     }
 
+    free (srcChksumStr);
+    if (destChksumStr != NULL)
+	free (destChksumStr);
+
     freeAllDataObjInfo (srcDataObjInfoHead);
     freeAllDataObjInfo (destDataObjInfoHead);
 
