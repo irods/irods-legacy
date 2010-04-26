@@ -247,6 +247,7 @@ microsdef_t MicrosTable[] = {
   {"msiPhyPathReg",5,(funcPtr) msiPhyPathReg},
   {"msiObjStat",2,(funcPtr) msiObjStat},
   {"msiDataObjRsync",5,(funcPtr) msiDataObjRsync},
+  {"msiCollRsync",5,(funcPtr) msiCollRsync},
   {"msiFreeBuffer",1,(funcPtr) msiFreeBuffer},
   {"msiNoChkFilePathPerm",0,(funcPtr) msiNoChkFilePathPerm},
   {"msiNoTrashCan",0,(funcPtr) msiNoTrashCan},

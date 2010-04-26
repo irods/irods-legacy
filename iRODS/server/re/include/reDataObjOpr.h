@@ -110,4 +110,11 @@ msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei);
 int
 msiPhyBundleColl (msParam_t *inpParam1, msParam_t *inpParam2,
 msParam_t *outParam, ruleExecInfo_t *rei);
+int
+msiCollRsync (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam,
+ruleExecInfo_t *rei);
+int
+_rsCollRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+char *srcColl, char *destColl);
 #endif	/* RE_DATA_OBJ_OPR_H */

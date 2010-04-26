@@ -2745,11 +2745,6 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  * \note For now, this micro-service should only be used for IRODS_TO_IRODS
  * mode because of the logistic difficulty with the microservice getting the 
  * checksum values of the local file. 
- *  Also, this call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection. Also, it should never
- *  be called through delayExec since it requires client interaction.
  *
  * \usage None
  *
@@ -2872,6 +2867,205 @@ ruleExecInfo_t *rei)
     }
 
     return (rei->status);
+}
+
+/**
+ * \fn msiCollRsync (msParam_t *inpParam1, msParam_t *inpParam2,
+ *    msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam, 
+ *    ruleExecInfo_t *rei)
+ *
+ * \brief This microservice requests the recursively sync the source 
+ *    collection to the target collection  
+ *
+ * \module core
+ *
+ * \since 2.4
+ *
+ * \author  Michael Wan
+ * \date    2010-04-27
+ *
+ *
+ * \usage None
+ *
+ * \param[in] inpParam1 - STR_MS_T which specifies the source collection path.
+ * \param[in] inpParam2 - STR_MS_T which specifies the target collection path.
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the target
+ *      resource.
+ * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the rsync mode
+ *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS.
+ * \param[out] outParam - a INT_MS_T containing the status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence
+ * \DolVarModified
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiCollRsync (msParam_t *inpParam1, msParam_t *inpParam2,
+msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam, 
+ruleExecInfo_t *rei)
+{
+    rsComm_t *rsComm;
+    dataObjInp_t dataObjInp;
+    char *rsyncMode;
+    char *srcColl = NULL; 
+    char *destColl = NULL; 
+
+    RE_TEST_MACRO ("    Calling msiCollRsync")
+
+    if (rei == NULL || rei->rsComm == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiCollRsync: input rei or rsComm is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    rsComm = rei->rsComm;
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+
+    /* parse inpParam1 */
+    srcColl = parseMspForStr (inpParam1);
+
+    if (srcColl == NULL) {
+	rei->status = SYS_INVALID_FILE_PATH;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiCollRsync: input inpParam1 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    /* parse inpParam2 */
+    destColl = parseMspForStr (inpParam2);
+
+    if (destColl == NULL) {
+        rei->status = SYS_INVALID_FILE_PATH;
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiCollRsync: input inpParam2 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    if ((rei->status = parseMspForCondInp (inpParam3, &dataObjInp.condInput,
+      DEST_RESC_NAME_KW)) < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiCollRsync: input inpParam3 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    if ((rei->status = parseMspForCondInp (inpParam4, &dataObjInp.condInput,
+      RSYNC_MODE_KW)) < 0) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiCollRsync: input inpParam3 error. status = %d", rei->status);
+        return (rei->status);
+    }
+
+    /* just call rsDataObjRsync for now. client must supply the chksum of
+     * the local file. Could ask the client to do a chksum first */
+
+    rsyncMode = getValByKey (&dataObjInp.condInput, RSYNC_MODE_KW);
+    if (rsyncMode == NULL) {
+        rodsLog (LOG_ERROR,
+          "msiCollRsync: RSYNC_MODE_KW input is missing");
+        rei->status = USER_RSYNC_NO_MODE_INPUT_ERR;
+        return (rei->status);
+    }
+
+    if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0 ||
+      strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
+        rodsLog (LOG_ERROR,
+          "msiCollRsync: local/iRods rsync not supported for %s",
+          srcColl);
+        rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
+        return (rei->status);
+    }
+
+    rei->status = _rsCollRsync (rsComm, &dataObjInp, srcColl, destColl);
+
+    clearKeyVal (&dataObjInp.condInput);
+
+    if (rei->status >= 0) {
+        fillIntInMsParam (outParam, rei->status);
+    } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiCollRsync: rsDataObjRsync failed for %s, status = %d",
+			    srcColl,
+          rei->status);
+    }
+
+    return (rei->status);
+}
+
+int
+_rsCollRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+char *srcColl, char *destColl)
+{
+    int status;
+    collInp_t openCollInp;
+    collEnt_t *collEnt;
+    int handleInx;
+    char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN]; 
+    char destChildPath[MAX_NAME_LEN]; 
+    msParamArray_t *outParamArray = NULL;
+
+    memset (&openCollInp, 0, sizeof (openCollInp));
+    rstrcpy (openCollInp.collName, srcColl, MAX_NAME_LEN);
+    openCollInp.flags = 0;
+    handleInx = rsOpenCollection (rsComm, &openCollInp);
+    if (handleInx < 0) {
+        rodsLog (LOG_ERROR,
+          "_rsCollRsync: rsOpenCollection of %s error. status = %d",
+          openCollInp.collName, handleInx);
+        return (handleInx);
+    }
+
+    if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
+        rodsLog (LOG_ERROR,
+          "_rsCollRsync: unable to rsync mounted collection %s", srcColl);
+        rsCloseCollection (rsComm, &handleInx);
+        return (0);
+    }
+
+    while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
+        if (collEnt->objType == DATA_OBJ_T) {
+            snprintf (dataObjInp->objPath, MAX_NAME_LEN, "%s/%s",
+              srcColl, collEnt->dataName);
+            snprintf (destChildPath, MAX_NAME_LEN, "%s/%s",
+              destColl, collEnt->dataName);
+	    addKeyVal (&dataObjInp->condInput, RSYNC_DEST_PATH_KW, 
+	      destChildPath);
+	    status = rsDataObjRsync (rsComm, dataObjInp, &outParamArray);
+            if (outParamArray != NULL) {
+                clearMsParamArray (outParamArray, 1);
+                free (outParamArray);
+            }
+        } else if (collEnt->objType == COLL_OBJ_T) {
+            if ((status = splitPathByKey (
+              collEnt->collName, parPath, childPath, '/')) < 0) {
+                rodsLogError (LOG_ERROR, status,
+                  "_rsCollRsync:: splitPathByKey for %s error, status = %d",
+                  collEnt->collName, status);
+                return (status);
+            }
+            snprintf (destChildPath, MAX_NAME_LEN, "%s/%s",
+              destColl, childPath);
+
+            status = _rsCollRsync (rsComm, dataObjInp, collEnt->collName,
+	      destChildPath);
+        }
+	free (collEnt);     /* just free collEnt but not content */
+	if (status < 0) break;
+    }
+    rsCloseCollection (rsComm, &handleInx);
+    return status;
 }
 
 /**
