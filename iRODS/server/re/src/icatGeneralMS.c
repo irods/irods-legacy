@@ -83,7 +83,8 @@ This documentation is generated from the iRODS code.
   - #msiDataObjTrim - Trim the replicas of a data object
   - #msiPhyPathReg - Register a physical file into iRODS
   - #msiObjStat - Stat an iRODS object
-  - #msiDataObjRsync - Rsync a data between iRODS and a local file 
+  - #msiDataObjRsync - Syncs a data object from a source to a destination
+  - #msiCollRsync - Recursively syncs a source collection to a target collection 
   - #msiGetObjType - Finds if a given value is a data, coll, resc, ...
   - #msiCheckPermission - Check if a data object permission is the same as the one given
   - #msiCheckOwner - Check if the user is the owner of the data object

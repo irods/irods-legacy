@@ -2742,7 +2742,7 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-12
  *
- * \note For now, this micro-service should only be used for IRODS_TO_IRODS
+ * \note For now, this microservice should only be used for IRODS_TO_IRODS
  * mode because of the logistic difficulty with the microservice getting the 
  * checksum values of the local file. 
  *
@@ -2751,12 +2751,11 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
  *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS.
- *      and IRODS_TO_IRODS
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the chksum value
  *      (RSYNC_CHKSUM_KW).
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the 
  *      (RSYNC_DEST_PATH_KW). For IRODS_TO_LOCAL and LOCAL_TO_IRODS, this is
- *	the local path. If it is IRODS_TO_IRODS, it is the target path.
+ *      the local path. If it is IRODS_TO_IRODS, it is the target path.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -2841,7 +2840,7 @@ ruleExecInfo_t *rei)
     if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0 ||
       strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
         rodsLog (LOG_ERROR,
-          "msiDataObjRsync: local/iRods rsync not supported for %s",
+          "msiDataObjRsync: local/iRODS rsync not supported for %s",
           myDataObjInp->objPath);
         rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
         return (rei->status);
@@ -2851,7 +2850,7 @@ ruleExecInfo_t *rei)
 
     if (outParamArray != NULL) {
         clearMsParamArray (outParamArray, 1);
-	free (outParamArray);
+        free (outParamArray);
     }
     if (myDataObjInp == &dataObjInp) {
         clearKeyVal (&myDataObjInp->condInput);
@@ -2862,7 +2861,7 @@ ruleExecInfo_t *rei)
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjRsync: rsDataObjRsync failed for %s, status = %d",
-			    myDataObjInp->objPath,
+          myDataObjInp->objPath,
           rei->status);
     }
 
@@ -2874,8 +2873,8 @@ ruleExecInfo_t *rei)
  *    msParam_t *inpParam3, msParam_t *inpParam4, msParam_t *outParam, 
  *    ruleExecInfo_t *rei)
  *
- * \brief This microservice requests the recursively sync the source 
- *    collection to the target collection  
+ * \brief This microservice recursively syncs a source 
+ *    collection to a target collection.
  *
  * \module core
  *
@@ -2884,11 +2883,12 @@ ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2010-04-27
  *
+ * \remark Terrell Russell - reviewed msi documentation, 2010-04-27
  *
  * \usage None
  *
- * \param[in] inpParam1 - STR_MS_T which specifies the source collection path.
- * \param[in] inpParam2 - STR_MS_T which specifies the target collection path.
+ * \param[in] inpParam1 - a STR_MS_T which specifies the source collection path.
+ * \param[in] inpParam2 - a STR_MS_T which specifies the target collection path.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the target
  *      resource.
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the rsync mode
@@ -2938,10 +2938,10 @@ ruleExecInfo_t *rei)
     srcColl = parseMspForStr (inpParam1);
 
     if (srcColl == NULL) {
-	rei->status = SYS_INVALID_FILE_PATH;
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiCollRsync: input inpParam1 error. status = %d", rei->status);
-        return (rei->status);
+      rei->status = SYS_INVALID_FILE_PATH;
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiCollRsync: input inpParam1 error. status = %d", rei->status);
+      return (rei->status);
     }
 
     /* parse inpParam2 */
@@ -2964,7 +2964,7 @@ ruleExecInfo_t *rei)
     if ((rei->status = parseMspForCondInp (inpParam4, &dataObjInp.condInput,
       RSYNC_MODE_KW)) < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiCollRsync: input inpParam3 error. status = %d", rei->status);
+          "msiCollRsync: input inpParam4 error. status = %d", rei->status);
         return (rei->status);
     }
 
@@ -2982,7 +2982,7 @@ ruleExecInfo_t *rei)
     if (strcmp (rsyncMode, IRODS_TO_LOCAL) == 0 ||
       strcmp (rsyncMode, LOCAL_TO_IRODS) == 0) {
         rodsLog (LOG_ERROR,
-          "msiCollRsync: local/iRods rsync not supported for %s",
+          "msiCollRsync: local/iRODS rsync not supported for %s",
           srcColl);
         rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
         return (rei->status);
@@ -2997,7 +2997,7 @@ ruleExecInfo_t *rei)
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiCollRsync: rsDataObjRsync failed for %s, status = %d",
-			    srcColl,
+          srcColl,
           rei->status);
     }
 
@@ -3040,9 +3040,9 @@ char *srcColl, char *destColl)
               srcColl, collEnt->dataName);
             snprintf (destChildPath, MAX_NAME_LEN, "%s/%s",
               destColl, collEnt->dataName);
-	    addKeyVal (&dataObjInp->condInput, RSYNC_DEST_PATH_KW, 
-	      destChildPath);
-	    status = rsDataObjRsync (rsComm, dataObjInp, &outParamArray);
+            addKeyVal (&dataObjInp->condInput, RSYNC_DEST_PATH_KW, 
+              destChildPath);
+            status = rsDataObjRsync (rsComm, dataObjInp, &outParamArray);
             if (outParamArray != NULL) {
                 clearMsParamArray (outParamArray, 1);
                 free (outParamArray);
@@ -3059,10 +3059,10 @@ char *srcColl, char *destColl)
               destColl, childPath);
 
             status = _rsCollRsync (rsComm, dataObjInp, collEnt->collName,
-	      destChildPath);
+              destChildPath);
         }
-	free (collEnt);     /* just free collEnt but not content */
-	if (status < 0) break;
+        free (collEnt);     /* just free collEnt but not content */
+        if (status < 0) break;
     }
     rsCloseCollection (rsComm, &handleInx);
     return status;
