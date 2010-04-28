@@ -1009,6 +1009,17 @@ doCommand(char *cmdToken[]) {
 		     cmdToken[6], cmdToken[7], "");
       return(0);
    }
+   if (strcmp(cmdToken[0],"addw") == 0) {
+      int myStat;
+      myStat = modAVUMetadata("addw", cmdToken[1], cmdToken[2], 
+		     cmdToken[3], cmdToken[4], cmdToken[5],
+		     cmdToken[6], cmdToken[7], "");
+      if (myStat > 0) {
+	 printf("AVU added to %d data-objects\n", myStat);
+	 lastCommandStatus = 0;
+      }
+      return(0);
+   }
    if (strcmp(cmdToken[0],"rmw") == 0) {
       modAVUMetadata("rmw", cmdToken[1], cmdToken[2], 
 		     cmdToken[3], cmdToken[4], cmdToken[5],
@@ -1291,6 +1302,8 @@ void usageMain()
 " -h This help",
 "Commands are:", 
 " add -d|C|R|u Name AttName AttValue [AttUnits] (Add new AVU triplet)", 
+" addw -d Name AttName AttValue [AttUnits] (Add new AVU triplet", 
+"                                           using Wildcards in Name)", 
 " rm  -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU)", 
 " rmw -d|C|R|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)", 
 " mod -d|C|R|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]", 
@@ -1316,6 +1329,10 @@ void usageMain()
 " ",
 "For rmw and lsw, the % and _ wildcard characters (as defined for SQL) can",
 "be used for matching attribute values.",
+" ",
+"For addw, the % and _ wildcard characters (as defined for SQL) can",
+"be used for matching object names.  This is currently implemented only",
+"for data-objects (-d).",
 " ", 
 "A blank execute line invokes the interactive mode, where imeta", 
 "prompts and executes commands until 'quit' or 'q' is entered.", 
@@ -1362,6 +1379,28 @@ usage(char *subOpt)
 "Admins can also use the command 'adda' (add as admin) to add metadata",
 "to any collection or dataobj; syntax is the same as 'add'.  Admins are",
 "also allowed to add user and resource metadata.",
+""};
+	 for (i=0;;i++) {
+	    if (strlen(msgs[i])==0) return(0);
+	    printf("%s\n",msgs[i]);
+	 }
+      }
+      if (strcmp(subOpt,"addw")==0) {
+	 char *msgs[]={
+" addw -d Name AttName AttValue [AttUnits]  (Add new AVU triplet)", 
+"Add an AVU to a set of data-objects using wildcards to match",
+"the data-object names.",
+" ",
+"The character _ matches any single character and % matches any",
+"number of any characters.",
+" ",
+"Example: addw -d file% distance 12 miles",
+"would add the AVU to dataobjects in the current directory with names",
+"that start with 'file'.",
+" ",
+"Example2: addw -d /tempZone/home/rods/test/%/% distance 12 miles",
+"would add the AVU to all dataobjects in the 'test' collection or any",
+"subcollections under 'test'.",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);

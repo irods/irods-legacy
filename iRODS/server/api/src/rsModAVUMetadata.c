@@ -18,6 +18,8 @@ rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
 	myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"adda")==0) {
         myHint = modAVUMetadataInp->arg2;
+    } else if (strcmp(modAVUMetadataInp->arg0,"addw")==0) {
+        myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"rmw")==0) {
         myHint = modAVUMetadataInp->arg2;
     } else if (strcmp(modAVUMetadataInp->arg0,"rmi")==0) {
@@ -112,6 +114,14 @@ _rsModAVUMetadata (rsComm_t *rsComm, modAVUMetadataInp_t *modAVUMetadataInp )
     }
     else if (strcmp(modAVUMetadataInp->arg0,"adda")==0) {
        status = chlAddAVUMetadata(rsComm, 1,
+				  modAVUMetadataInp->arg1,
+				  modAVUMetadataInp->arg2,
+				  modAVUMetadataInp->arg3,
+				  modAVUMetadataInp->arg4,
+				  modAVUMetadataInp->arg5);
+    }
+    else if (strcmp(modAVUMetadataInp->arg0,"addw")==0) {
+       status = chlAddAVUMetadataWild(rsComm, 0,
 				  modAVUMetadataInp->arg1,
 				  modAVUMetadataInp->arg2,
 				  modAVUMetadataInp->arg3,

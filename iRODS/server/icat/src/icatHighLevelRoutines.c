@@ -4842,6 +4842,274 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
    return(objId);
 }
 
+/*
+ Find existing or insert a new AVU triplet.
+ Return code is error, or the AVU ID.
+ */
+int
+findOrInsertAVU(char *attribute, char *value, char *units) {
+   char nextStr[MAX_NAME_LEN];
+   char myTime[50];
+   rodsLong_t status, seqNum;
+   rodsLong_t iVal;
+   iVal=0;
+   if (*units!='\0') {
+      if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 1");
+      status = cmlGetIntegerValueFromSql(
+            "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
+	    &iVal, attribute, value, units, 0, 0, &icss);
+   }
+   else {
+      if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 2");
+      status = cmlGetIntegerValueFromSql(
+         "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit IS NULL",
+         &iVal, attribute, value, 0, 0, 0, &icss);
+   }
+   if (status == 0) {
+      status = iVal; /* use existing r_meta_main row */
+      return(status);
+   }
+   if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 3");
+   status = cmlGetNextSeqVal(&icss);
+   if (status < 0) {
+      rodsLog(LOG_NOTICE, "findOrInsertAVU cmlGetNextSeqVal failure %d",
+	      status);
+      return(status);
+   }
+   seqNum = status; /* the returned status is the next sequence value */
+
+   snprintf(nextStr, sizeof nextStr, "%lld", seqNum);
+
+   getNowStr(myTime);
+
+   cllBindVars[cllBindVarCount++]=nextStr;
+   cllBindVars[cllBindVarCount++]=attribute;
+   cllBindVars[cllBindVarCount++]=value;
+   cllBindVars[cllBindVarCount++]=units;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+
+   if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 10");
+   status =  cmlExecuteNoAnswerSql(
+             "insert into r_meta_main (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+	     &icss);
+   if (status < 0) {
+      rodsLog(LOG_NOTICE, "findOrInsertAVU insert failure %d", status);
+      return(status);
+   }
+   return(seqNum);
+}
+
+/* Add an Attribute-Value [Units] pair/triple metadata item to one or
+   more data objects.  This is the Wildcard version, where the
+   collection/data-object name can match multiple objects).
+
+   The return value is error code (negative) or the number of objects
+   to which the AVU was associated.
+*/
+#define ACCESS_MAX 999999  /* A large access value (larger than the
+			    maximum used (i.e. for fail safe)) and
+			    also indicates not initialized*/
+int 
+chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type, 
+		  char *name, char *attribute, char *value,  char *units) {
+   rodsLong_t status, status2;
+   rodsLong_t seqNum;
+   int numObjects;
+   int nAccess=0;
+   static int accessNeeded=ACCESS_MAX;
+   rodsLong_t iVal;
+   char collection[MAX_NAME_LEN];
+   char objectName[MAX_NAME_LEN];
+   char myTime[50];
+   char seqNumStr[MAX_NAME_LEN];
+   int itype;
+
+   itype = convertTypeOption(type);
+   if (itype!=1) return(CAT_INVALID_ARGUMENT);  /* only -d for now */
+
+   status = splitPathByKey(name, collection, objectName, '/');
+   if (strlen(collection)==0) {
+      strcpy(collection, "/");
+      strcpy(objectName, name);
+   }
+
+/*
+  The following SQL is somewhat complicated, but evaluates the access
+  permissions in steps to reduce the complexity and so it can scale
+  well.  Altho there are multiple SQL calls, including creating two
+  views, the scaling burden is placed on the DBMS, so it should
+  perform well even for many thousands of objects at a time.
+ */
+
+/* Get the count of the objects to compare with later */
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 1");
+   status = cmlGetIntegerValueFromSql(
+      "select count(DM.data_id) from r_data_main DM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+      &iVal, objectName, collection, 0, 0, 0, &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddAVUMetadataWild get count failure %d",
+	      status);
+      _rollback("chlAddAVUMetadataWild");
+      return(status);
+   }
+   numObjects = iVal;
+   if (numObjects == 0) return(CAT_NO_ROWS_FOUND);
+
+/* 
+   Create a view with all the access permissions for this user, or
+   groups this user is a member of, for all the matching data-objects.
+*/
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 2");
+   cllBindVars[cllBindVarCount++]=objectName;
+   cllBindVars[cllBindVarCount++]=collection;
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone;
+   status =  cmlExecuteNoAnswerSql(
+      "create view ACCESS_VIEW_ONE as select access_type_id, DM.data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id",
+      &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddAVUMetadata cmlExecuteNoAnswerSql (create view) failure %d",
+	      status);
+      _rollback("chlAddAVUMetadataWild");
+      return(status);
+   }
+
+/* Create another view for min below (sub select didn't work).  This
+   is the set of access permisions per matching data-object, the best
+   permision values (for example, if user has write and has
+   group-based read, this will be 'write').
+*/
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 3");
+   status =  cmlExecuteNoAnswerSql(
+      "create view ACCESS_VIEW_TWO as select max(access_type_id) from ACCESS_VIEW_ONE group by data_id",
+      &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddAVUMetadata cmlExecuteNoAnswerSql (create view) failure %d",
+	      status);
+      _rollback("chlAddAVUMetadataWild");
+      return(status);
+   }      
+
+   if (accessNeeded>=ACCESS_MAX) { /* not initialized yet */
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 4");
+      status = cmlGetIntegerValueFromSql(
+	 "select token_id  from r_tokn_main where token_name = 'modify metadata' and token_namespace = 'access_type'",
+	 &iVal, 0, 0, 0, 0, 0, &icss);
+      if (status==0) accessNeeded = iVal;
+   }
+
+   /* Get the minimum access permissions for the whole set of
+    * data-objects that match */
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 5");
+   iVal=-1;
+   status = cmlGetIntegerValueFromSql(
+      "select min(max) from ACCESS_VIEW_TWO",
+      &iVal, 0, 0, 0, 0, 0, &icss);
+
+   if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
+
+   if (status==0) {
+      if (iVal < accessNeeded) { 
+	 status = CAT_NO_ACCESS_PERMISSION;
+      }
+   }
+
+/* Get the count of the access permissions for the set of
+ * data-objects, since if there are completely missing access
+ * permissions (NULL) they won't show up in the above query */
+   if (status==0) {
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 6");
+      status = cmlGetIntegerValueFromSql(
+	 "select count(*) from ACCESS_VIEW_TWO",
+	 &iVal, 0, 0, 0, 0, 0, &icss);
+      if (status==0) {
+	 nAccess = iVal;
+	 if (numObjects > nAccess) status=CAT_NO_ACCESS_PERMISSION;
+      }
+   }
+
+
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 7");
+   status2 =  cmlExecuteNoAnswerSql(
+                      "drop view ACCESS_VIEW_TWO, ACCESS_VIEW_ONE",
+		      &icss);
+   if (status2==CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
+   if (status2) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddAVUMetadataWild cmlExecuteNoAnswerSql (drop view) failure %d",
+	      status2);
+   }
+
+   if (status) return(status);
+
+/* 
+ Now the easy part, set up the AVU and associate it with the data-objects
+ */
+   status = findOrInsertAVU(attribute, value, units);
+   if (status<0) {
+      rodsLog(LOG_NOTICE,
+	      "chlAddAVUMetadataWild findOrInsertAVU failure %d",
+	      status);
+      _rollback("chlAddAVUMetadata");
+      return(status);
+   }
+   seqNum = status;
+
+   getNowStr(myTime);
+   snprintf(seqNumStr, sizeof seqNumStr, "%lld", seqNum);
+   cllBindVars[cllBindVarCount++]=seqNumStr;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=myTime;
+   cllBindVars[cllBindVarCount++]=objectName;
+   cllBindVars[cllBindVarCount++]=collection;
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 8");
+   status =  cmlExecuteNoAnswerSql(
+      "insert into r_objt_metamap (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from r_data_main DM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlAddAVUMetadataWild cmlExecuteNoAnswerSql insert failure %d",
+	      status);
+      _rollback("chlAddAVUMetadataWild");
+      return(status);
+   }
+
+   /* Audit */
+   status = cmlAudit3(AU_ADD_AVU_WILD_METADATA,  
+		      seqNumStr,  /* for WILD, record the AVU id */
+		      rsComm->clientUser.userName,
+		      rsComm->clientUser.rodsZone,
+		      name,       /* and the input wildcard path */
+		      &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlAddAVUMetadata cmlAudit3 failure %d",
+	      status);
+      _rollback("chlAddAVUMetadata");
+      return(status);
+   }
+
+
+   /* Commit */
+   status =  cmlExecuteNoAnswerSql("commit", &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlAddAVUMetadata cmlExecuteNoAnswerSql commit failure %d",
+	      status);
+      return(status);
+   }
+
+   if (status != 0) return(status);
+   return(numObjects);
+}
 
 
 /* Add an Attribute-Value [Units] pair/triple metadata item to an object */
@@ -4852,7 +5120,6 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
    char logicalEndName[MAX_NAME_LEN];
    char logicalParentDirName[MAX_NAME_LEN];
    rodsLong_t seqNum, iVal;
-   char nextStr[MAX_NAME_LEN];
    rodsLong_t objId, status;
    char objIdStr[MAX_NAME_LEN];
    char seqNumStr[MAX_NAME_LEN];
@@ -4997,66 +5264,24 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
       }
    }
 
-   iVal=0;
-   if (*units!='\0') {
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 7");
-      status = cmlGetIntegerValueFromSql(
-            "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
-	    &iVal, attribute, value, units, 0, 0, &icss);
+   status = findOrInsertAVU(attribute, value, units);
+   if (status<0) {
+      rodsLog(LOG_NOTICE,
+	      "chlAddAVUMetadata findOrInsertAVU failure %d",
+	      status);
+      _rollback("chlAddAVUMetadata");
+      return(status);
    }
-   else {
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 8");
-      status = cmlGetIntegerValueFromSql(
-         "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit IS NULL",
-         &iVal, attribute, value, 0, 0, 0, &icss);
-   }
-   if (status == 0) {
-      seqNum = iVal; /* use existing r_meta_main row */
-   }
-
-   else {
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 9");
-      seqNum = cmlGetNextSeqVal(&icss);
-      if (seqNum < 0) {
-	 rodsLog(LOG_NOTICE, "chlAddAVUMetadata cmlGetNextSeqVal failure %d",
-		 seqNum);
-	 return(seqNum);
-      }
-
-      snprintf(nextStr, sizeof nextStr, "%lld", seqNum);
-
-      getNowStr(myTime);
-
-      cllBindVars[cllBindVarCount++]=nextStr;
-      cllBindVars[cllBindVarCount++]=attribute;
-      cllBindVars[cllBindVarCount++]=value;
-      cllBindVars[cllBindVarCount++]=units;
-      cllBindVars[cllBindVarCount++]=myTime;
-      cllBindVars[cllBindVarCount++]=myTime;
-
-      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 10");
-      status =  cmlExecuteNoAnswerSql(
-             "insert into r_meta_main (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
-	     &icss);
-      if (status != 0) {
-	 rodsLog(LOG_NOTICE,
-		 "chlAddAVUMetadata cmlExecuteNoAnswerSql (insert) failure %d",
-		 status);
-	 _rollback("chlAddAVUMetadata");
-	 return(status);
-      }
-   }
+   seqNum = status;
 
    getNowStr(myTime);
-
    snprintf(objIdStr, sizeof objIdStr, "%lld", objId);
    snprintf(seqNumStr, sizeof seqNumStr, "%lld", seqNum);
    cllBindVars[cllBindVarCount++]=objIdStr;
    cllBindVars[cllBindVarCount++]=seqNumStr;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=myTime;
-
-   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 11");
+   if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 7");
    status =  cmlExecuteNoAnswerSql(
                  "insert into r_objt_metamap (object_id, meta_id, create_ts, modify_ts) values (?, ?, ?, ?)",
 		 &icss);

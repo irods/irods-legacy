@@ -417,6 +417,10 @@ runCmd(0, "imeta mod -r $Resc aaaaa bbbbb n:a1");
 runCmd(2, "imeta rm -r $Resc aaaaa bbbbb");
 runCmd(0, "imeta rm -r $Resc a1 bbbbb");
 
+# basic test of imeta addw
+runCmd(0, "imeta addw -d $F1 a4 b4 c4");
+runCmd(0, "imeta rm -d $F1 a4 b4 c4");
+
 runCmd(0, "irm -f $F1");
 runCmd(0, "irm -f -r $D1");
 

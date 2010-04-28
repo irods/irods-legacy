@@ -102,6 +102,7 @@
 #define AU_ADD_AVU_METADATA                    2110
 #define AU_DELETE_AVU_METADATA                 2111
 #define AU_COPY_AVU_METADATA                   2112
+#define AU_ADD_AVU_WILD_METADATA               2113
 
 #define AU_MOD_ACCESS_CONTROL_OBJ              2120
 #define AU_MOD_ACCESS_CONTROL_COLL             2121
