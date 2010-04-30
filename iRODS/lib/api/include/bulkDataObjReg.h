@@ -17,6 +17,7 @@
 
 /* definition for opreration type */
 #define OPR_TYPE_INX	999999
+#define OFFSET_INX	999998
 #define REGISTER_OPR	"register"
 #define MODIFY_OPR	"modify"
 

@@ -138,6 +138,23 @@ mkdirR (char *startDir, char *destDir, int mode)
 }
 
 int
+mkdirForFilePath (char* filePath)
+{
+    char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
+    int status;
+
+    if ((status = splitPathByKey (filePath, parent, child, '/')) < 0) {
+        rodsLogError (LOG_ERROR, status,
+          "mkdirForFilePath:: splitPathByKey for %s error, status = %d",
+          filePath, status);
+        return (status);
+    }
+    status =  mkdirR ("/", parent, DEFAULT_DIR_MODE);
+
+    return status;
+}
+
+int
 rmdirR (char *startDir, char *destDir)
 {
     int startLen;

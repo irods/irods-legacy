@@ -248,7 +248,12 @@ int
 initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp);
 int
 fillAttriArrayOfBulkOprInp (char *objPath, int dataMode, char *inpChksum,
-bulkOprInp_t *bulkOprInp);
+int offset, bulkOprInp_t *bulkOprInp);
+int
+getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
+char *outPhyBunPath);
+int
+unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf);
 #ifdef  __cplusplus
 }
 #endif

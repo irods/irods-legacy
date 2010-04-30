@@ -143,6 +143,8 @@ int topFlag);
 int
 getRescTypeInx (char *rescType);
 int
+getRescType (rescInfo_t *rescInfo);
+int
 getRescClassInx (char *rescClass);
 int
 dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,

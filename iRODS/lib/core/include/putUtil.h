@@ -60,11 +60,11 @@ rodsLong_t srcSize, int createMode, rodsEnv *myRodsEnv,
 rodsArguments_t *myRodsArgs, bulkOprInp_t *bulkOprInp, 
 bulkOprInfo_t *bulkOprInfo);
 int
-getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
-char *outPhyBunPath);
-int
 tarAndBulkPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,
-bulkOprInfo_t *bulkOprInfo);
+bulkOprInfo_t *bulkOprInfo, rodsArguments_t *rodsArgs);
+int
+sendBulkPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp,
+bulkOprInfo_t *bulkOprInfo, rodsArguments_t *rodsArgs);
 int
 clearBulkOprInfo (bulkOprInfo_t *bulkOprInfo);
 int

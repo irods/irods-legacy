@@ -20,6 +20,7 @@
 				    set up the set 1 tables */
 #include "extendedICAT.h"
 #endif
+#include "bulkDataObjPut.h"
 #include "putUtil.h"
 
 /* check with the input path is a valid path -
@@ -3545,7 +3546,7 @@ initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp)
 
     attriArray = &bulkOprInp->attriArray;
 
-    attriArray->attriCnt = 2;
+    attriArray->attriCnt = 3;
 
     attriArray->sqlResult[0].attriInx = COL_DATA_NAME;
     attriArray->sqlResult[0].len = MAX_NAME_LEN;
@@ -3558,6 +3559,12 @@ initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp)
     attriArray->sqlResult[1].value =
       malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (attriArray->sqlResult[1].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    attriArray->sqlResult[2].attriInx = OFFSET_INX;
+    attriArray->sqlResult[2].len = NAME_LEN;
+    attriArray->sqlResult[2].value =
+      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (attriArray->sqlResult[2].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
 
     if (getValByKey (&bulkOprInp->condInput, REG_CHKSUM_KW) != NULL ||
@@ -3577,7 +3584,7 @@ initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp)
 
 int
 fillAttriArrayOfBulkOprInp (char *objPath, int dataMode, char *inpChksum,
-bulkOprInp_t *bulkOprInp)
+int offset, bulkOprInp_t *bulkOprInp)
 {
     genQueryOut_t *attriArray;
     int rowCnt;
@@ -3609,6 +3616,8 @@ bulkOprInp_t *bulkOprInp)
      objPath, MAX_NAME_LEN);
     snprintf (&attriArray->sqlResult[1].value[NAME_LEN * rowCnt],
       NAME_LEN, "%d", dataMode);
+    snprintf (&attriArray->sqlResult[2].value[NAME_LEN * rowCnt],
+      NAME_LEN, "%d", offset);
 
     attriArray->rowCnt++;
 
@@ -3637,7 +3646,7 @@ int *outDataMode, char **outChksum)
     if ((dataMode =
       getSqlResultByInx (attriArray, COL_DATA_MODE)) == NULL) {
         rodsLog (LOG_NOTICE,
-          "rsBulkDataObjReg: getSqlResultByInx for COL_DATA_MODE failed");
+          "getAttriInAttriArray: getSqlResultByInx for COL_DATA_MODE failed");
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
@@ -3773,6 +3782,86 @@ untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
     status = _spawnv(_P_NOWAIT, av[0], av);
 #endif
     return status;
+}
+
+int
+unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf)
+{
+    sqlResult_t *objPath, *offset;
+    char *tmpObjPath;
+    char *bufPtr;
+    int status, i;
+    genQueryOut_t *attriArray = &bulkOprInp->attriArray;
+    int intOffset[MAX_NUM_BULK_OPR_FILES];
+    char phyBunPath[MAX_NAME_LEN];
+
+    if (phyBunDir == NULL || bulkOprInp == NULL) return USER__NULL_INPUT_ERR;
+
+    if ((objPath =
+      getSqlResultByInx (attriArray, COL_DATA_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "unbunBulkBuf: getSqlResultByInx for COL_DATA_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((offset =
+      getSqlResultByInx (attriArray, OFFSET_INX)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "unbunBulkBuf: getSqlResultByInx for OFFSET_INX failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+    if (attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES) {
+        rodsLog (LOG_NOTICE,
+          "unbunBulkBuf: rowCnt %d for %s too large", 
+	  attriArray->rowCnt, tmpObjPath);
+        return (SYS_REQUESTED_BUF_TOO_LARGE);
+    }
+
+    for (i = 0; i < attriArray->rowCnt; i++) {
+        intOffset[i] = atoi (&offset->value[offset->len * i]);
+    }
+
+    for (i = 0; i < attriArray->rowCnt; i++) {
+	int size;
+	int out_fd;
+
+        tmpObjPath = &objPath->value[objPath->len * i];
+        if (i == 0) {
+	    bufPtr = bulkBBuf->buf;
+	    size = intOffset[0];
+	} else {
+	    bufPtr = bulkBBuf->buf + intOffset[i - 1];
+	    size = intOffset[i] - intOffset[i - 1];
+	}
+	status = getPhyBunPath (bulkOprInp->objPath, tmpObjPath, phyBunDir,
+	  phyBunPath);
+	if (status < 0) return status;
+
+        mkdirForFilePath (phyBunPath);
+
+#ifdef windows_platform
+        out_fd = iRODSNt_bopen(phyBunPath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#else
+        out_fd = open (phyBunPath, O_WRONLY | O_CREAT | O_TRUNC, 0640);
+#endif
+        if (out_fd < 0) {
+            status = UNIX_FILE_OPEN_ERR - errno;
+            rodsLogError (LOG_ERROR, status,
+              "unbunBulkBuf: open error for %s", phyBunPath);
+            return status;
+        }
+
+	status = myWrite (out_fd, bufPtr, size, FILE_DESC_TYPE, NULL);
+        if (status != size) {
+	    if (status >= 0) status = SYS_COPY_LEN_ERR - errno;
+            rodsLog (LOG_ERROR,
+            "unbunBulkBuf: Bytes written %d does not match size %d for %s",
+              status, size, phyBunPath);
+            return status;
+        }
+	close (out_fd);
+    }
+    return 0;
 }
 
 int
@@ -3953,6 +4042,24 @@ setForceFlagForRestart (bulkOprInp_t *bulkOprInp, bulkOprInfo_t *bulkOprInfo)
     /* remember to remove it */
     bulkOprInfo->forceFlagAdded = 1;
 
+    return 0;
+}
+
+int
+getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
+char *outPhyBunPath)
+{
+    char *subPath;
+    int collLen = strlen (collection);
+
+    subPath = objPath + collLen;
+    if (*subPath != '/') {
+        rodsLogError (LOG_ERROR, USER_INPUT_PATH_ERR,
+          "getPhyBunPath: inconsistent collection %s and objPath %s",
+          collection, objPath);
+        return USER_INPUT_PATH_ERR;
+    }
+    snprintf (outPhyBunPath, MAX_NAME_LEN, "%s%s", phyBunDir, subPath);
     return 0;
 }
 

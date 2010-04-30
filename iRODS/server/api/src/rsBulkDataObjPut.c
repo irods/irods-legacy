@@ -53,8 +53,8 @@ bytesBuf_t *bulkOprInpBBuf)
     rescGrpInfo_t *myRescGrpInfo = NULL;
     int flags = BULK_OPR_FLAG;
     dataObjInp_t dataObjInp;
+    fileDriverType_t fileType;
 
-    /* XXXXXXX need to make sure rscType is UNIX */
     inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
 
     /* query rcat for resource info and sort it */
@@ -67,6 +67,9 @@ bytesBuf_t *bulkOprInpBBuf)
 
     /* just take the top one */
     rescInfo = myRescGrpInfo->rescInfo;
+    fileType = getRescType (rescInfo);
+    if (fileType != UNIX_FILE_TYPE && fileType != NT_FILE_TYPE)
+	return SYS_INVALID_RESC_FOR_BULK_OPR;
 
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
@@ -91,6 +94,7 @@ bytesBuf_t *bulkOprInpBBuf)
     status = createBunDirForBulkPut (rsComm, &dataObjInp, rescInfo, phyBunDir);
     if (status < 0) return status;
 
+#ifdef BULK_OPR_WITH_TAR
     status = untarBuf (phyBunDir, bulkOprInpBBuf);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -98,6 +102,15 @@ bytesBuf_t *bulkOprInpBBuf)
           phyBunDir, status);
         return status;
     }
+#else
+    status = unbunBulkBuf (phyBunDir, bulkOprInp, bulkOprInpBBuf);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "_rsBulkDataObjPut: unbunBulkBuf for dir %s. stat = %d",
+          phyBunDir, status);
+        return status;
+    }
+#endif
 
     if (strlen (myRescGrpInfo->rescGroupName) > 0) 
         inpRescGrpName = myRescGrpInfo->rescGroupName;

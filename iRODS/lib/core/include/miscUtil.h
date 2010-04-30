@@ -228,6 +228,8 @@ int
 getOpenedCollLen (collHandle_t *collHandle);
 int
 rmSubDir (char *mydir);
+int
+mkdirForFilePath (char* filePath);
 #ifdef  __cplusplus
 }
 #endif

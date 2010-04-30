@@ -1905,3 +1905,14 @@ getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath)
     return 0;
 }
 
+int
+getRescType (rescInfo_t *rescInfo)
+{
+    int rescTypeInx;
+
+    if (rescInfo == NULL) return USER__NULL_INPUT_ERR;
+    rescTypeInx = rescInfo->rescTypeInx;
+    if (rescTypeInx >= NumRescTypeDef) return RESCTYPEINX_EMPTY_IN_STRUCT_ERR;
+    return (RescTypeDef[rescTypeInx].driverType);
+}
+
