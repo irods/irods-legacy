@@ -262,6 +262,39 @@ doModDatatype(rcComm_t *Conn, char *objPath, char *dataType) {
    return(status);
 }
 
+/* perform the modify command to change the comment*/
+int 
+doModComment(rcComm_t *Conn, char *objPath, int numRepl, char *theComment) {
+   int status;
+
+   modDataObjMeta_t modDataObjMetaInp;
+   keyValPair_t regParam;
+   dataObjInfo_t dataObjInfo;
+
+   memset (&regParam, 0, sizeof (regParam));
+   addKeyVal (&regParam, DATA_COMMENTS_KW, theComment);
+
+   memset(&dataObjInfo, 0, sizeof(dataObjInfo));
+   rstrcpy(dataObjInfo.objPath, objPath, MAX_NAME_LEN);
+
+   if (numRepl > 0) {
+     dataObjInfo.replNum = numRepl;
+   }
+   else {
+      /* TODO ? : put the comment on all replicas ? */
+      /* addKeyVal(&regParam, ALL_REPL_STATUS_KW, theComment); */
+   }
+
+   modDataObjMetaInp.regParam = &regParam;
+   modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+
+   status = rcModDataObjMeta(Conn, &modDataObjMetaInp);
+   if (status) {
+      rodsLogError(LOG_ERROR, status, "rcModDataObjMeta failure");
+   }
+   return(status);
+}
+
 int
 main(int argc, char **argv)
 {
@@ -373,6 +406,20 @@ main(int argc, char **argv)
 	 status = doModDatatype(Conn, objPath, cmdToken[3]);
 	 didOne=1;
       }
+      else if (strcmp(cmdToken[2],"comment")==0) {
+	 if (*cmdToken[3]=='\0') {
+	    usage("");
+	    exit(1);
+	 }
+	 if (*cmdToken[4]=='\0') {
+             status = doModComment(Conn, objPath, -1, cmdToken[3]);
+         }
+         else {
+             status = doModComment(Conn, objPath, atoi(cmdToken[3]), cmdToken[4]);
+         }
+	 
+	 didOne=1;
+      }
       else {
 	 rstrcpy(theTime, cmdToken[2], TIME_LEN);
 	 status=0;
@@ -421,6 +468,7 @@ usage(char *option)
 "Commands are:",
 " mod DataObjectName Time (modify expire time)",
 " mod DataObjectName datatype Type (modify data-type)",
+" mod DataObjectName comment [replNum] Comment (modify the comment of the replica replNum or 0 by default)",
 " ls [-lvV] Name (list dataObject, -l -v for long form)",
 " ldt (list data types (those available))",
 " ",
@@ -431,6 +479,7 @@ usage(char *option)
 " isysmeta mod foo +1h (set the expire time for file 'foo' to an hour from now)",
 " isysmeta mod /tempZone/home/rods/foo 2009-12-01",
 " isysmeta mod /tempZone/home/rods/foo datatype 'tar file'",
+" isysmeta mod /tempZone/home/rods/foo comment 1 'my comment'",
 " isysmeta ls foo",
 " isysmeta -l ls foo",
 " isysmeta ls -l foo",

@@ -1729,3 +1729,91 @@ msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
+/*
+ * msiSetReplComment - Sets the data_comments attribute of a data object
+ *
+ * @param[in]		dataObjId	 the id of the object
+ * @param[in]		data object path the path of the object
+ * @param[in]		numRepl 	the number of the replica to comment
+ * @param[in]		comment		the comment
+ * @param[in,out]	rei		the rule execution information
+ * @return				the status code, 0 on success
+ * \author Thomas Ledoux (integrated by Wayne Schroeder)
+ * \date   2010-4-30
+ */
+int
+msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2, 
+		  msParam_t *inpParam3, msParam_t *inpParam4, 
+		  ruleExecInfo_t *rei)
+{
+   rsComm_t *rsComm;
+   char *dataCommentStr, *dataIdStr;	/* for parsing of input params */
+	
+   modDataObjMeta_t modDataObjMetaInp;	/* for rsModDataObjMeta() */
+   dataObjInfo_t dataObjInfo;		/* for rsModDataObjMeta() */
+   keyValPair_t regParam;			/* for rsModDataObjMeta() */
+	
+   RE_TEST_MACRO ("    Calling msiSetReplComment")
+
+   if (rei == NULL || rei->rsComm == NULL) {
+      rodsLog (LOG_ERROR, "msiSetReplComment: input rei or rsComm is NULL.");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
+   }
+   rsComm = rei->rsComm ;
+
+   /* parse inpParam1: data object ID */
+   if ((dataIdStr = parseMspForStr(inpParam1)) != NULL)  {
+      dataObjInfo.dataId = (rodsLong_t) atoll(dataIdStr);
+   } 
+   else {
+      dataObjInfo.dataId = 0;
+   }
+
+   /* parse inpParam2: data object path */
+   if (parseMspForStr(inpParam2)) {
+      strncpy(dataObjInfo.objPath, parseMspForStr(inpParam2), MAX_NAME_LEN);
+   }
+   /* make sure to have at least data ID or path */
+   if (!(dataIdStr || dataObjInfo.objPath)) {
+      rodsLog (LOG_ERROR, "msiSetReplComment: No data object ID or path provided.");
+      return (USER__NULL_INPUT_ERR);
+   }
+
+   if (inpParam3 != NULL) {
+      dataObjInfo.replNum = parseMspForPosInt(inpParam3);
+   }
+
+   /* parse inpParam3: data type string */
+   if ((dataCommentStr = parseMspForStr (inpParam4)) == NULL) {
+      rodsLog (LOG_ERROR, "msiSetReplComment: parseMspForStr error for param 4.");
+      return (USER__NULL_INPUT_ERR);
+   }
+   memset (&regParam, 0, sizeof (regParam));
+   addKeyVal (&regParam, DATA_COMMENTS_KW, dataCommentStr);
+
+   rodsLog (LOG_NOTICE, "msiSetReplComment: mod %s (%d) with %s", 
+	    dataObjInfo.objPath, dataObjInfo.replNum, dataCommentStr);
+   /* call rsModDataObjMeta() */
+   modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+   modDataObjMetaInp.regParam = &regParam;
+   rei->status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+
+   /* failure? */
+   if (rei->status < 0) {
+      if (dataObjInfo.objPath) {
+	 rodsLog (LOG_ERROR, 
+		  "msiSetReplComment: rsModDataObjMeta failed for object %s, status = %d", 
+		  dataObjInfo.objPath, rei->status);
+      }
+      else {
+	 rodsLog (LOG_ERROR, 
+		  "msiSetReplComment: rsModDataObjMeta failed for object ID %d, status = %d", 
+		  dataObjInfo.dataId, rei->status);
+      }
+   } 
+   else {
+      rodsLog (LOG_NOTICE, "msiSetReplComment: OK mod %s (%d) with %s", 
+	       dataObjInfo.objPath, dataObjInfo.replNum, dataCommentStr);
+   }
+   return (rei->status);
+}
