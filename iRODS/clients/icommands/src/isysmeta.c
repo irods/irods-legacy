@@ -281,8 +281,7 @@ doModComment(rcComm_t *Conn, char *objPath, int numRepl, char *theComment) {
      dataObjInfo.replNum = numRepl;
    }
    else {
-      /* TODO ? : put the comment on all replicas ? */
-      /* addKeyVal(&regParam, ALL_REPL_STATUS_KW, theComment); */
+     addKeyVal(&regParam, ALL_KW, theComment);
    }
 
    modDataObjMetaInp.regParam = &regParam;
