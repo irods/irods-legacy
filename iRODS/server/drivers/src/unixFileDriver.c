@@ -246,7 +246,7 @@ unixFileRmdir (rsComm_t *rsComm, char *filename)
 
     if (status < 0) {
         status = UNIX_FILE_RMDIR_ERR - errno;
-        rodsLog (LOG_NOTICE,
+        rodsLog (LOG_DEBUG,
           "unixFileRmdir: rmdir of %s error, status = %d",
           filename, status);
     }

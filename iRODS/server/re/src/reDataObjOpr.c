@@ -3008,13 +3008,14 @@ int
 _rsCollRsync (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 char *srcColl, char *destColl)
 {
-    int status;
     collInp_t openCollInp;
     collEnt_t *collEnt;
     int handleInx;
     char parPath[MAX_NAME_LEN], childPath[MAX_NAME_LEN]; 
     char destChildPath[MAX_NAME_LEN]; 
     msParamArray_t *outParamArray = NULL;
+    int status = 0; 
+    int status1 = 0;
 
     memset (&openCollInp, 0, sizeof (openCollInp));
     rstrcpy (openCollInp.collName, srcColl, MAX_NAME_LEN);
@@ -3027,14 +3028,17 @@ char *srcColl, char *destColl)
         return (handleInx);
     }
 
+#if 0
     if (CollHandle[handleInx].rodsObjStat->specColl != NULL) {
         rodsLog (LOG_ERROR,
           "_rsCollRsync: unable to rsync mounted collection %s", srcColl);
         rsCloseCollection (rsComm, &handleInx);
         return (0);
     }
+#endif
 
-    while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
+    rsMkCollR (rsComm, "/", destColl);
+    while ((status1 = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
         if (collEnt->objType == DATA_OBJ_T) {
             snprintf (dataObjInp->objPath, MAX_NAME_LEN, "%s/%s",
               srcColl, collEnt->dataName);
@@ -3065,7 +3069,10 @@ char *srcColl, char *destColl)
         if (status < 0) break;
     }
     rsCloseCollection (rsComm, &handleInx);
-    return status;
+    if (status1 < 0 && status1 != CAT_NO_ROWS_FOUND) 
+	return status1;
+    else
+        return status;
 }
 
 /**

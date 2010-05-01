@@ -238,9 +238,13 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     rstrcpy (dataObjCopyInp.srcDataObjInp.objPath, dataObjInp->objPath,
       MAX_NAME_LEN);
     dataObjCopyInp.srcDataObjInp.dataSize = dataObjInp->dataSize;
+#if 0
     dataObjCopyInp.destDataObjInp = *dataObjInp;
     /* move the cond */
     memset (&dataObjInp->condInput, 0, sizeof (keyValPair_t));
+#else
+    replDataObjInp (dataObjInp, &dataObjCopyInp.destDataObjInp);
+#endif
     rstrcpy (dataObjCopyInp.destDataObjInp.objPath, destObjPath,
       MAX_NAME_LEN);
 
@@ -254,6 +258,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         rodsLog (LOG_ERROR,
           "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
 	  dataObjCopyInp.srcDataObjInp.objPath, status);
+        clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
         return (status);
     }
 
@@ -265,6 +270,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
       && strcmp (srcChksumStr, destChksumStr) == 0) {
 	free (srcChksumStr);
 	free (destChksumStr);
+        clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
 	return (0);
     }
 
@@ -279,6 +285,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (transStat != NULL) {
 	free (transStat);
     }
+    clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
 
     return (status);
 }
