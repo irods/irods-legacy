@@ -221,6 +221,8 @@ validKeyWd_t StructFileExtAndRegInpKeyWd[] = {
 int NumStructFileExtAndRegInpKeyWd = sizeof 
   (StructFileExtAndRegInpKeyWd) / sizeof (validKeyWd_t);
 
+struct timeval SysTimingVal;
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

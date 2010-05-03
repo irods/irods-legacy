@@ -1,5 +1,9 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+
+#ifndef windows_platform
+#include <sys/time.h>
+#endif
 #include "rodsClient.h"
 #include "rodsLog.h"
 #include "miscUtil.h"
@@ -480,6 +484,74 @@ char *localFile, struct timeval *startTime, struct timeval *endTime)
 
     return (0);
 }
+
+#ifdef SYS_TIMING
+int
+initSysTiming (char *outStr, int envVarFlag)
+{
+    char tmpStr[NAME_LEN];
+
+    (void) gettimeofday(&SysTimingVal, (struct timezone *)0);
+
+    if (envVarFlag > 0) {
+	snprintf(tmpStr, NAME_LEN, "%s=%u", 
+	  SYS_TIMEING_SEC, (unsigned int) SysTimingVal.tv_sec);
+	putenv(tmpStr);
+	snprintf(tmpStr, NAME_LEN, "%s=%u", 
+	  SYS_TIMEING_USEC, (unsigned int) SysTimingVal.tv_usec);
+	putenv(tmpStr);
+    }
+    fprintf (stdout, "initSysTiming %s\n", outStr);
+
+    return 0;
+}
+
+int 
+printSysTiming (char *outStr, int envVarFlag)
+{
+    struct timeval curTime, diffTime;
+    float timeInSec;
+    char *tmpStr;
+
+    if (envVarFlag > 0) {
+	if ((tmpStr = getenv (SYS_TIMEING_SEC)) == NULL) {
+            rodsLog (LOG_NOTICE,
+              "printSysTiming: env var SYS_TIMEING_SEC  not set");
+            return -1;
+        }
+	SysTimingVal.tv_sec = atoi (tmpStr);
+        if ((tmpStr = getenv (SYS_TIMEING_USEC)) == NULL) {
+            rodsLog (LOG_NOTICE,
+              "printSysTiming: env var SYS_TIMEING_USEC  not set");
+            return -1;
+        }
+        SysTimingVal.tv_usec = atoi (tmpStr);
+    } else if (SysTimingVal.tv_sec == 0) {
+        rodsLog (LOG_NOTICE,
+          "printSysTiming: SysTimingVal has not been initialized");
+	return -1;
+    }
+    (void) gettimeofday(&curTime, (struct timezone *)0);
+
+    diffTime.tv_sec = curTime.tv_sec - SysTimingVal.tv_sec;
+    diffTime.tv_usec = curTime.tv_usec - SysTimingVal.tv_usec;
+
+    if (diffTime.tv_usec < 0) {
+        diffTime.tv_sec --;
+        diffTime.tv_usec += 1000000;
+    }
+
+    timeInSec = (float) diffTime.tv_sec + ((float) diffTime.tv_usec /
+     1000000.0);
+
+    fprintf (stdout,
+      "Time to %s = %8.4f sec\n", outStr, timeInSec);
+
+    SysTimingVal = curTime;
+
+    return 0;
+}
+#endif
 
 int
 printNoSync (char *objPath, rodsLong_t fileSize)

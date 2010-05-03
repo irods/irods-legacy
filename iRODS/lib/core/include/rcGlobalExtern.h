@@ -37,6 +37,7 @@ extern validKeyWd_t CollInpKeyWd[];
 extern int NumCollInpKeyWd;
 extern validKeyWd_t StructFileExtAndRegInpKeyWd[];
 extern int NumStructFileExtAndRegInpKeyWd;
+extern struct timeval SysTimingVal;
 
 #ifdef  __cplusplus
 extern "C" {
