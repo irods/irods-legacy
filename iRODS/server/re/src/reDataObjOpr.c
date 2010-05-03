@@ -2883,7 +2883,6 @@ ruleExecInfo_t *rei)
  * \author  Michael Wan
  * \date    2010-04-27
  *
- * \remark Terrell Russell - reviewed msi documentation, 2010-04-27
  *
  * \usage None
  *
