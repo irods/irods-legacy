@@ -46,6 +46,9 @@ required to detect the health of a partially failing irodsAgent.
 
 -----------
 *updates to tests and codebase to maintain backwards compatibility with IRODS 2.1 and 2.2
+
+-----------
+*default build.properties now forks JUnit tests to avoid class not found bug
 ================================================================================================
 Outstanding Issues
 
