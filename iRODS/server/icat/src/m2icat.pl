@@ -426,7 +426,7 @@ sub processLogFile($) {
 # First line in the log file is the run parameters, 
 # 2nd is the column-names, the rest are data items.
     my($logFile) = @_;
-    my @udsmd;
+    my @udsmd, @mkdirList, @mkdirSortList;
     if ( open(  LOG_FILE, "<$logFile" ) == 0 ) {
 	die("open failed on input file " . $logFile);
     }
@@ -555,7 +555,7 @@ sub processLogFile($) {
 		   # make sure it's in the converting zone:
 		   if ($v_coll_zone ne $cv_srbZone) { $skipIt=1;}
 		   if ($skipIt==0) {
-		       print(IADMIN_FILE "mkdir '$v_coll_name' $v_coll_owner\n");
+                       push(@mkdirList, "mkdir '$v_coll_name' $v_coll_owner\n");
 		   }
 		}
 	    }
@@ -581,7 +581,8 @@ sub processLogFile($) {
 		}
 #		$v_resc_location=$values[5];
 		if ($v_resc_name eq $v_resc_physical_name &&
-		    $v_resc_type eq "unix file system") {
+		    ($v_resc_type eq "unix file system" || $v_resc_type eq "UNIX_NOCHK file system") ) {
+		    $v_resc_type eq "unix file system" ) {
 		    $k = index($v_resc_path, "/?");
 		    $newPath = substr($v_resc_path, 0, $k);
 		    if ($v_resc_name ne "sdsc-fs") { # skip special built-in
@@ -644,6 +645,8 @@ sub processLogFile($) {
 	    }
 	}
     }
+    @mkdirSortList = sort @mkdirList;
+    print(IADMIN_FILE @mkdirList);
     close( LOG_FILE );
 }
 
