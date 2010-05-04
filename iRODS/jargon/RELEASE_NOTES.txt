@@ -1,10 +1,10 @@
-Jargon 2.3.X Release Notes
+Jargon 2.3.0.1 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 02/18/2010
-Release Version: 2.3.X - this is the post-release version of Jargon 2.3.0 and will hold bug fixes for the 2.3.0 release.   New Jargon 2.3.1 features are
-being developed on the 2.3.1 branch.  Fixes in the trunk are being pushed into the 2.3.1 branch.
+Date: 05/03/2010
+Release Version: 2.3.0.1 - this is a patch release and contains bug fixes for the Jargon 2.3.0 release.   New Jargon 2.3.1 features are
+being developed on the 2.3.1 branch.  The 2.3.1 branch has these fixes, and will be merged back into the trunk after the Jargon 2.3.1 release.
 
 ================================================================================================
 Requirements
@@ -43,6 +43,9 @@ required to detect the health of a partially failing irodsAgent.
 
 ----------
 *incremental addition of tests and support for checkum verification
+
+-----------
+*updates to tests and codebase to maintain backwards compatibility with IRODS 2.1 and 2.2
 ================================================================================================
 Outstanding Issues
 

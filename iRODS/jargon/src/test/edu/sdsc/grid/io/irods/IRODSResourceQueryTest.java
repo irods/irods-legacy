@@ -276,7 +276,9 @@ public class IRODSResourceQueryTest {
 	}
 
 	/**
-	 * Bug 87 - resource status in resource metadata
+	 * Bug 87 - resource status in resource metadata, this test is ignored for
+	 * versions prior to irods2.3, as the data was not available in the icat at
+	 * the time
 	 * 
 	 * @throws Exception
 	 */
@@ -286,6 +288,10 @@ public class IRODSResourceQueryTest {
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		if (irodsFileSystem.commands.getReportedIRODSVersion().compareTo(
+				"rods2.3") <= 0) {
+			return;
+		}
 
 		String[] fileds = { ResourceMetaData.RESOURCE_CLASS,
 				ResourceMetaData.RESOURCE_COMMENTS,

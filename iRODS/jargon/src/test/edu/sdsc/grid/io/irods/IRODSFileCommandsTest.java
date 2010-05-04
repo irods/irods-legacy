@@ -480,7 +480,7 @@ public class IRODSFileCommandsTest {
    
     }
     
-    // currently ignoring, as this is due to a known irods bug
+    // currently ignoring prior to 2.3.0 due to known iRODS bug
     @Test
     public final void testPhysicalMove() throws Exception {
     	// generate a local scratch file
@@ -516,6 +516,10 @@ public class IRODSFileCommandsTest {
         invoker.invokeCommandAndGetResultAsString(iputCommand);
                 
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        if (irodsFileSystem.commands.getReportedIRODSVersion().compareTo("rods2.3") <= 0) {
+        		return;
+        }
+        	
         IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
         IRODSFile irodsFileAfter = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
         irodsFileAfter.setResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY));
@@ -529,7 +533,6 @@ public class IRODSFileCommandsTest {
         TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(irodsFileAfter.resource) != -1);
         
     }
-    
     @Test
     public final void testReplicate() throws Exception {
     	// generate a local scratch file
