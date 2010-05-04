@@ -13,7 +13,7 @@
 static void NtAgentSetEnvsFromArgs(int ac, char **av);
 #endif
 
-#define SERVER_DEBUG 1
+/* #define SERVER_DEBUG 1   */
 int
 main(int argc, char *argv[])
 {
@@ -21,7 +21,6 @@ main(int argc, char *argv[])
     rsComm_t rsComm;
     struct allowedUser *allowedUserHead = NULL;
     char *tmpStr;
-
 
     ProcessType = AGENT_PT;
 
@@ -45,6 +44,11 @@ main(int argc, char *argv[])
     if (isPath ("/tmp/rodsdebug"))
         sleep (20);
 #endif
+#endif
+
+#ifdef SYS_TIMING
+    rodsLogLevel(LOG_NOTICE);
+    printSysTiming ("irodsAgent", "exec", 1);
 #endif
 
     memset (&rsComm, 0, sizeof (rsComm));
@@ -106,6 +110,10 @@ main(int argc, char *argv[])
     }
 
     status = initAgent (&rsComm);
+#ifdef SYS_TIMING
+    printSysTiming ("irodsAgent", "initAgent", 0);
+#endif
+
     if (status < 0) {
 	sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         cleanupAndExit (status);
@@ -121,6 +129,9 @@ main(int argc, char *argv[])
 	sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         cleanupAndExit (status);
     }
+#ifdef SYS_TIMING
+    printSysTiming ("irodsAgent", "sendVersion", 0);
+#endif
 
     status = agentMain (&rsComm);
 

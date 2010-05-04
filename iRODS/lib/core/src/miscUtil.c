@@ -487,42 +487,45 @@ char *localFile, struct timeval *startTime, struct timeval *endTime)
 
 #ifdef SYS_TIMING
 int
-initSysTiming (char *outStr, int envVarFlag)
+initSysTiming (char *procName, char *action, int envVarFlag)
 {
-    char tmpStr[NAME_LEN];
+    char *tmpStr;
 
     (void) gettimeofday(&SysTimingVal, (struct timezone *)0);
 
     if (envVarFlag > 0) {
+	tmpStr = malloc (NAME_LEN);
 	snprintf(tmpStr, NAME_LEN, "%s=%u", 
-	  SYS_TIMEING_SEC, (unsigned int) SysTimingVal.tv_sec);
+	  SYS_TIMING_SEC, (unsigned int) SysTimingVal.tv_sec);
 	putenv(tmpStr);
+	tmpStr = malloc (NAME_LEN);
 	snprintf(tmpStr, NAME_LEN, "%s=%u", 
-	  SYS_TIMEING_USEC, (unsigned int) SysTimingVal.tv_usec);
+	  SYS_TIMING_USEC, (unsigned int) SysTimingVal.tv_usec);
 	putenv(tmpStr);
     }
-    fprintf (stdout, "initSysTiming %s\n", outStr);
+    rodsLog (LOG_NOTICE,
+      "initSysTiming: %s at %s", procName, action);
 
     return 0;
 }
 
 int 
-printSysTiming (char *outStr, int envVarFlag)
+printSysTiming (char *procName, char *action, int envVarFlag)
 {
     struct timeval curTime, diffTime;
     float timeInSec;
     char *tmpStr;
 
     if (envVarFlag > 0) {
-	if ((tmpStr = getenv (SYS_TIMEING_SEC)) == NULL) {
-            rodsLog (LOG_NOTICE,
-              "printSysTiming: env var SYS_TIMEING_SEC  not set");
+	if ((tmpStr = getenv (SYS_TIMING_SEC)) == NULL) {
+            rodsLog (LOG_ERROR,
+              "printSysTiming: env var SYS_TIMING_SEC  not set");
             return -1;
         }
 	SysTimingVal.tv_sec = atoi (tmpStr);
-        if ((tmpStr = getenv (SYS_TIMEING_USEC)) == NULL) {
-            rodsLog (LOG_NOTICE,
-              "printSysTiming: env var SYS_TIMEING_USEC  not set");
+        if ((tmpStr = getenv (SYS_TIMING_USEC)) == NULL) {
+            rodsLog (LOG_ERROR,
+              "printSysTiming: env var SYS_TIMING_USEC  not set");
             return -1;
         }
         SysTimingVal.tv_usec = atoi (tmpStr);
@@ -544,8 +547,8 @@ printSysTiming (char *outStr, int envVarFlag)
     timeInSec = (float) diffTime.tv_sec + ((float) diffTime.tv_usec /
      1000000.0);
 
-    fprintf (stdout,
-      "Time to %s = %8.4f sec\n", outStr, timeInSec);
+    rodsLog (LOG_NOTICE,
+      "Time for %s to %s = %8.5f sec", procName, action, timeInSec);
 
     SysTimingVal = curTime;
 

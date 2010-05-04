@@ -157,9 +157,9 @@ int
 printTiming (rcComm_t *conn, char *objPath, rodsLong_t fileSize,
 char *localFile, struct timeval *startTime, struct timeval *endTime);
 int
-initSysTiming (char *outStr, int envVarFlag);
+initSysTiming (char *procName, char *action, int envVarFlag);
 int 
-printSysTiming (char *outStr, int envVarFlag);
+printSysTiming (char *procName, char *action, int envVarFlag);
 int
 printNoSync (char *objPath, rodsLong_t fileSize);
 int

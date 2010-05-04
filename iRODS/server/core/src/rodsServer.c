@@ -276,6 +276,9 @@ serverMain (char *logDir)
 	}
 
 	procChildren (&agentProcHead);
+#ifdef SYS_TIMING
+	initSysTiming ("irodsServer", "recv connection", 0);
+#endif
 
 	newSock = rsAcceptConn (&svrComm);
 
@@ -303,7 +306,9 @@ serverMain (char *logDir)
 	    close (newSock);
 	    continue;
 	}
-
+#ifdef SYS_TIMING
+	printSysTiming ("irodsServer", "read StartupPack", 0);
+#endif
 	if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
 	    sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
 	    close (newSock);
@@ -429,8 +434,15 @@ agentProc_t **agentProcHead)
     childPid = RODS_FORK ();
 
     if (childPid == 0) {	/* child */
+#ifdef SYS_TIMING
+        printSysTiming ("irodsAent", "after fork", 0);
+        initSysTiming ("irodsAent", "after fork", 1);
+#endif
 	execAgent (newSock, startupPack);
     } else {			/* parent */
+#ifdef SYS_TIMING
+	printSysTiming ("irodsServer", "fork agent", 0);
+#endif
 	queAgentProc (childPid, startupPack, agentProcHead);
     }
 #else

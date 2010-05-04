@@ -145,8 +145,10 @@
 #define BULK_OPR_BUF_SIZE	(4*MAX_BULK_OPR_FILE_SIZE)
 #define TAR_OVERHEAD		(MAX_NUM_BULK_OPR_FILES * MAX_NAME_LEN * 2)
 
-#define SYS_TIMEING_SEC     "sysTimeingSec"    /* timing env var in sec */
-#define SYS_TIMEING_USEC    "sysTimeingUSec"   /* timing env var in micro sec */
+/* definition for SYS_TIMING */
+/* #define SYS_TIMING	1 */	/* switch on or offf SYS_TIMING */
+#define SYS_TIMING_SEC     "sysTimingSec"    /* timing env var in sec */
+#define SYS_TIMING_USEC    "sysTimingUSec"   /* timing env var in micro sec */
 
 /* protocol */
 typedef enum {
