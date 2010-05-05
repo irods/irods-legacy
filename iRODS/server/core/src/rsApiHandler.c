@@ -477,6 +477,13 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 #endif
     }
 
+#ifdef SYS_TIMING
+    if (strcmp (myHeader.type, RODS_API_REQ_T) == 0) {
+	/* Get the total time of AUTH_REQUEST_AN and AUTH_RESPONSE_AN */
+	if (myHeader.intInfo != AUTH_RESPONSE_AN)
+            initSysTiming ("irodsAgent", "recv request", 0);
+    }
+#endif
     status = readMsgBody (rsComm->sock, &myHeader, &inputStructBBuf,
       &bsBBuf, &errorBBuf, rsComm->irodsProt);
     if (status < 0) {
@@ -495,8 +502,13 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     /* handler switch by msg type */
 
     if (strcmp (myHeader.type, RODS_API_REQ_T) == 0) {
+	char tmpStr[NAME_LEN];
         status = rsApiHandler (rsComm, myHeader.intInfo, &inputStructBBuf,
           &bsBBuf);
+#ifdef SYS_TIMING
+	snprintf (tmpStr, NAME_LEN, "handle API %d", myHeader.intInfo);
+        printSysTiming ("irodsAgent", tmpStr, 0);
+#endif
         clearBBuf (&inputStructBBuf);
         clearBBuf (&bsBBuf);
         clearBBuf (&errorBBuf);
