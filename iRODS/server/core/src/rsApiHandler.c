@@ -502,10 +502,10 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     /* handler switch by msg type */
 
     if (strcmp (myHeader.type, RODS_API_REQ_T) == 0) {
-	char tmpStr[NAME_LEN];
         status = rsApiHandler (rsComm, myHeader.intInfo, &inputStructBBuf,
           &bsBBuf);
 #ifdef SYS_TIMING
+	char tmpStr[NAME_LEN];
 	snprintf (tmpStr, NAME_LEN, "handle API %d", myHeader.intInfo);
         printSysTiming ("irodsAgent", tmpStr, 0);
 #endif
