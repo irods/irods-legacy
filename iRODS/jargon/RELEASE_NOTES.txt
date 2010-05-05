@@ -1,10 +1,10 @@
-Jargon 2.3.0.1 Release Notes
+Jargon 2.3.0.XX Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
 Date: 05/03/2010
-Release Version: 2.3.0.1 - this is a patch release and contains bug fixes for the Jargon 2.3.0 release.   New Jargon 2.3.1 features are
-being developed on the 2.3.1 branch.  The 2.3.1 branch has these fixes, and will be merged back into the trunk after the Jargon 2.3.1 release.
+Release Version: 2.3.0.X - The trunk now reflects the state of the main code tree subsequent to the release of the Jargon 2.3.0.1 patch set. The main code line
+will continue with patches and upgrades to testing.  Feature development is underway in the Jargon 2.3.1 branch, and any patches here will be merged into the 2.3.1 feature branch.
 
 ================================================================================================
 Requirements
@@ -24,31 +24,11 @@ libraries
 ================================================================================================
 Features and Changes
 
------------
-*fix for  Bug 77 -  Jargon NullPointerException when invoking setResource
+TBD
 
------------
-*fix for  Bug 82 -  error querying resources in resource group
 
------------
-*fix for  Bug 87 -  resource status and other new resource fields in resource metadata for query lookup
 
------------
-*fix for  Bug 84 -  connection/finalizer issues with Jargon
 
------------
-*fix for   Bug 91 -  problems with Jargon not detecting dead IRODS Agent
-Throw appropriate ProtocolException when reading a header from iRODS and getting zero length. There may be additional work
-required to detect the health of a partially failing irodsAgent.
-
-----------
-*incremental addition of tests and support for checkum verification
-
------------
-*updates to tests and codebase to maintain backwards compatibility with IRODS 2.1 and 2.2
-
------------
-*default build.properties now forks JUnit tests to avoid class not found bug
 ================================================================================================
 Outstanding Issues
 
