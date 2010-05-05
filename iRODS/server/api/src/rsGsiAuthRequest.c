@@ -60,8 +60,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    int privLevel;
    int clientPrivLevel;
    int noNameMode;
-   int userFoundViaRule=0;
-
+   int statusRule;
 #ifdef GSI_DEBUG
    char *getVar;
    getVar = getenv("X509_CERT_DIR");
@@ -120,19 +119,7 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 
       status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
-      if (status == 0) {
-      	 strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
-      		 NAME_LEN);
-       	 strncpy(rsComm->proxyUser.userName, genQueryOut->sqlResult[2].value,
-		 NAME_LEN);
-      	 strncpy(rsComm->clientUser.rodsZone, genQueryOut->sqlResult[3].value,
-      		 NAME_LEN);
-       	 strncpy(rsComm->proxyUser.rodsZone, genQueryOut->sqlResult[3].value,
-		 NAME_LEN);
-      }
-
       if (status == CAT_NO_ROWS_FOUND) { /* not found */
-
 	 /* execute the rule acGetUserByDN.  By default this
             is a no-op but at some sites can be configured to
             run a process to determine a user by DN (for VO support)
@@ -142,13 +129,10 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	    The corresponding rule would be something like this:
 	    acGetUserByDN(*arg,*OUT)||msiExecCmd(t,"*arg",null,null,null,*OUT)|nop
 	 */
-
 	 ruleExecInfo_t rei;
 	 char *args[1];
 	 msParamArray_t *myMsParamArray;
 	 msParamArray_t myInOutParamArray;
-	 msParam_t *mP;
-	 execCmdOut_t *execCmdOut;
 
 	 memset((char*)&rei,0,sizeof(rei));
 	 rei.rsComm = rsComm;
@@ -163,11 +147,11 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	 myMsParamArray = malloc (sizeof (msParamArray_t));
 	 memset (myMsParamArray, 0, sizeof (msParamArray_t));
 
-	 status = applyRuleArgPA("acGetUserByDN", args, 2, 
+	 statusRule = applyRuleArgPA("acGetUserByDN", args, 2, 
 				 myMsParamArray, &rei, NO_SAVE_REI);	
 
 #ifdef GSI_DEBUG
-	 printf("acGetUserByDN status=%d\n",status);
+	 printf("acGetUserByDN status=%d\n",statusRule);
 
 	 int i;
 	 for (i=0;i<myMsParamArray->len;i++)
@@ -179,90 +163,39 @@ int igsiServersideAuth(rsComm_t *rsComm) {
 	    printf("l1=%s\n", r);
 	 }
 #endif
-	 /* if it ran OK, set the username to the returned value (stdout) */
-	 if (status==0) {
-	    int len;
-	    if ((mP = getMsParamByLabel(myMsParamArray,"*cmdOutput"))!= NULL) {
-	       execCmdOut = (execCmdOut_t *) mP->inOutStruct;
-	       if (execCmdOut != NULL && execCmdOut->stdoutBuf.buf != NULL) {
-		  len = strlen(execCmdOut->stdoutBuf.buf);
-		  if (len > 1) {
-		     char userName[NAME_LEN];
-		     char userZone[NAME_LEN];
-		     char userNameAndZoneInput[NAME_LEN];
-		     len--; /* skip trailing \n */
-		     if (len > NAME_LEN) len=NAME_LEN;
-		     strncpy(userNameAndZoneInput, 
-			     execCmdOut->stdoutBuf.buf, len);
-		     if (parseUserName(userNameAndZoneInput, 
-				       userName, userZone) == 0) {
-			/* input was in user#zone form */
-			strcpy(rsComm->clientUser.userName, userName);
-			strcpy(rsComm->proxyUser.userName, userName);
-			strcpy(rsComm->clientUser.rodsZone, userZone);
-			strcpy(rsComm->proxyUser.rodsZone, userZone);
-		     }
-		     else {
-			/* This was the previous code, without the
-			 above if parseUserName clause but it didn't
-			 set the zone so the session would not work
-			 properly.  Maybe should return an error in
-			 this case, once the external applications are
-			 modified. Or maybe set the zone to the local
-			 zone.*/
-			strncpy(rsComm->clientUser.userName, 
-				execCmdOut->stdoutBuf.buf, len);
-			strncpy(rsComm->proxyUser.userName, 
-				execCmdOut->stdoutBuf.buf, len);
-		     }
-#ifdef GSI_DEBUG
-		     fprintf(stdout,"set to '%s'\n",
-			     rsComm->clientUser.userName);
-#endif
-
-		     userFoundViaRule=1;
-		  }
-	       }
-#ifdef GSI_DEBUG
-	       if (execCmdOut->stderrBuf.buf != NULL) {
-		  fprintf(stderr,"%s", (char *) execCmdOut->stderrBuf.buf);
-	       }
-#endif
-	    }
-	 }
-
-	 /* If the rule didn't work, try the query again as the rule
-            may have added the user. */
-	 if (!userFoundViaRule) {
-	    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+	 /* Try the query again, whether or not the rule succeeded, to see
+            if the user has been added. */
+	 memset (&genQueryInp, 0, sizeof (genQueryInp_t));
       
-	    snprintf (condition1, MAX_NAME_LEN, "='%s'", clientName);
-	    addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
+	 snprintf (condition1, MAX_NAME_LEN, "='%s'", clientName);
+	 addInxVal (&genQueryInp.sqlCondInp, COL_USER_DN, condition1);
 
-	    addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
-	    addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
-	    addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
-	    addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
+	 addInxIval (&genQueryInp.selectInp, COL_USER_ID, 1);
+	 addInxIval (&genQueryInp.selectInp, COL_USER_TYPE, 1);
+	 addInxIval (&genQueryInp.selectInp, COL_USER_NAME, 1);
+	 addInxIval (&genQueryInp.selectInp, COL_USER_ZONE, 1);
 
-	    genQueryInp.maxRows = 2;
+	 genQueryInp.maxRows = 2;
 
-	    status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-
-	    if (status == 0) {
-	       strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
-		       NAME_LEN);
-	       strncpy(rsComm->proxyUser.userName, genQueryOut->sqlResult[2].value,
-		       NAME_LEN);
-	       strncpy(rsComm->clientUser.rodsZone, genQueryOut->sqlResult[3].value,
-		       NAME_LEN);
-	       strncpy(rsComm->proxyUser.rodsZone, genQueryOut->sqlResult[3].value,
-		       NAME_LEN);
-	    }
-	 }
+	 status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+      }
+      if (status == 0) {
+	 char *myBuf;
+      	 strncpy(rsComm->clientUser.userName, genQueryOut->sqlResult[2].value,
+      		 NAME_LEN);
+       	 strncpy(rsComm->proxyUser.userName, genQueryOut->sqlResult[2].value,
+		 NAME_LEN);
+      	 strncpy(rsComm->clientUser.rodsZone, genQueryOut->sqlResult[3].value,
+      		 NAME_LEN);
+       	 strncpy(rsComm->proxyUser.rodsZone, genQueryOut->sqlResult[3].value,
+		 NAME_LEN);
+	 myBuf = malloc (NAME_LEN * 2);
+	 snprintf (myBuf, NAME_LEN * 2, "%s=%s", SP_CLIENT_USER,
+		   rsComm->clientUser.userName);
+	 putenv (myBuf);
       }
    }
-   if (!userFoundViaRule && 
-        (status == CAT_NO_ROWS_FOUND || genQueryOut==NULL)) {
+   if (status == CAT_NO_ROWS_FOUND || genQueryOut==NULL) {
       status = GSI_DN_DOES_NOT_MATCH_USER;
       rodsLog (LOG_NOTICE,
 	       "igsiServersideAuth: DN mismatch, user=%s, Certificate DN=%s, status=%d",
@@ -288,13 +221,13 @@ int igsiServersideAuth(rsComm_t *rsComm) {
    }
 
    if (noNameMode==0) {
+      if (genQueryOut==NULL || genQueryOut->rowCnt < 1) {
+	 gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
+	 return(GSI_NO_MATCHING_DN_FOUND);
+      }
       if (genQueryOut->rowCnt > 1) {
 	 gsiAuthReqError = GSI_MULTIPLE_MATCHING_DN_FOUND;
 	 return(GSI_MULTIPLE_MATCHING_DN_FOUND);
-      }
-      if (genQueryOut->rowCnt < 1) {
-	 gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
-	 return(GSI_NO_MATCHING_DN_FOUND);
       }
       if (genQueryOut->attriCnt != 3) {
 	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
@@ -302,13 +235,13 @@ int igsiServersideAuth(rsComm_t *rsComm) {
       }
    }
    else {
+      if (genQueryOut==NULL || genQueryOut->rowCnt < 1) {
+	 gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
+	 return(GSI_NO_MATCHING_DN_FOUND);
+      }
       if (genQueryOut->rowCnt > 1) {
 	 gsiAuthReqError = GSI_MULTIPLE_MATCHING_DN_FOUND;
 	 return(GSI_MULTIPLE_MATCHING_DN_FOUND);
-      }
-      if (genQueryOut->rowCnt < 1) {
-	 gsiAuthReqError = GSI_NO_MATCHING_DN_FOUND;
-	 return(GSI_NO_MATCHING_DN_FOUND);
       }
       if (genQueryOut->attriCnt != 4) {
 	 gsiAuthReqError = GSI_QUERY_INTERNAL_ERROR;
@@ -380,4 +313,3 @@ int igsiServersideAuth(rsComm_t *rsComm) {
     return (status);
 #endif
 }
-
