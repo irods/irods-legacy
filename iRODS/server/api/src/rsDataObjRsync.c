@@ -1,4 +1,5 @@
 #include "reGlobalsExtern.h"
+#include "dataObjChksum.h"
 #include "dataObjRsync.h"
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"
@@ -217,8 +218,10 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     int status;
     char *srcChksumStr = NULL;
      char *destChksumStr = NULL;
+#if 0
     dataObjInfo_t *srcDataObjInfoHead = NULL;
     dataObjInfo_t *destDataObjInfoHead = NULL;
+#endif
     dataObjCopyInp_t dataObjCopyInp;
     char *destObjPath;
     transStat_t *transStat = NULL;
@@ -248,8 +251,14 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     rstrcpy (dataObjCopyInp.destDataObjInp.objPath, destObjPath,
       MAX_NAME_LEN);
 
+#if 0
     status = _rsDataObjChksum (rsComm, &dataObjCopyInp.srcDataObjInp, 
       &srcChksumStr, &srcDataObjInfoHead);
+#else
+    /* use rsDataObjChksum because the path could in in remote zone */
+    status = rsDataObjChksum (rsComm, &dataObjCopyInp.srcDataObjInp, 
+      &srcChksumStr);
+#endif
 
     if (status < 0 && status != CAT_NO_ACCESS_PERMISSION) {
         /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
@@ -262,8 +271,14 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return (status);
     }
 
+#if 0
     status = _rsDataObjChksum (rsComm, &dataObjCopyInp.destDataObjInp, 
       &destChksumStr, &destDataObjInfoHead);
+#else
+    /* use rsDataObjChksum because the path could in in remote zone */
+    status = rsDataObjChksum (rsComm, &dataObjCopyInp.destDataObjInp, 
+      &destChksumStr);
+#endif
 
 
     if ((status >= 0 || status == CAT_NO_ACCESS_PERMISSION)
@@ -278,8 +293,10 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     if (destChksumStr != NULL)
 	free (destChksumStr);
 
+#if 0
     freeAllDataObjInfo (srcDataObjInfoHead);
     freeAllDataObjInfo (destDataObjInfoHead);
+#endif
 
     status = rsDataObjCopy (rsComm, &dataObjCopyInp, &transStat);
     if (transStat != NULL) {
