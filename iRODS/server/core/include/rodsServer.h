@@ -85,5 +85,7 @@ int
 queAgentProc (int childPid, startupPack_t *startupPack,
 agentProc_t **agentProcHead);
 int
+getAgentProcCnt (agentProc_t *agentProcHead);
+int
 recordServerProcess(rsComm_t *svrComm);
 #endif	/* RODS_SERVER_H */

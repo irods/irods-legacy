@@ -86,7 +86,11 @@ int irodsWinMain(int argc, char **argv)
 #ifndef _WIN32
     signal(SIGTTIN, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
+#if 0	/* SIGCHLD to SIG_IGN will cause auto-reap and wait will get nothing */
     signal(SIGCHLD, SIG_IGN);
+#else
+    signal(SIGCHLD, SIG_DFL);
+#endif
     signal(SIGPIPE, SIG_IGN);
 #ifdef osx_platform
     signal(SIGINT, (void *) serverExit);
@@ -308,6 +312,8 @@ serverMain (char *logDir)
 	}
 #ifdef SYS_TIMING
 	printSysTiming ("irodsServer", "read StartupPack", 0);
+	rodsLog (LOG_NOTICE, "irodsServer: agent proc count = %d", 
+	  getAgentProcCnt (agentProcHead));
 #endif
 	if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
 	    sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
@@ -387,10 +393,10 @@ procChildren (agentProc_t **agentProcHead)
     while ((childPid = waitpid (-1, &status, WNOHANG | WUNTRACED)) > 0) {
 	tmpAgentProc = getAgentProcByPid (childPid, agentProcHead);
 	if (tmpAgentProc != NULL) {
-	    rodsLog (LOG_NOTICE, "Agent process %s exited", childPid);
+	    rodsLog (LOG_NOTICE, "Agent process %d exited", childPid);
 	    free (tmpAgentProc);
 	} else {
-	    rodsLog (LOG_NOTICE, "Agent process %s exited but not in queue",
+	    rodsLog (LOG_NOTICE, "Agent process %d exited but not in queue",
 	      childPid); 
 	}
     }
@@ -568,6 +574,20 @@ agentProc_t **agentProcHead)
     *agentProcHead = tmpAagentProc;
 
     return (0);
+}
+
+int
+getAgentProcCnt (agentProc_t *agentProcHead)
+{
+    agentProc_t *tmpAagentProc;
+    int count = 0;
+
+    tmpAagentProc = agentProcHead;
+    while (tmpAagentProc != NULL) {
+	count++;
+	tmpAagentProc = tmpAagentProc->next;
+    }
+    return count;
 }
 
 int
