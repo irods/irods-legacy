@@ -748,7 +748,11 @@ dataObjCopyInp_t *dataObjCopyInp)
             rstrcpy (mySrcPath.chksum, collEnt.chksum, NAME_LEN);
             mySrcPath.objState = EXIST_ST;
 
+#if 0
             getFileType (&myTargPath);
+#else
+	    getRodsObjType (conn, &myTargPath);
+#endif
 
             status = rsyncDataToDataUtil (conn, &mySrcPath,
              &myTargPath, myRodsEnv, rodsArgs, dataObjCopyInp);
