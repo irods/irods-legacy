@@ -367,3 +367,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcBulkDataObjReg.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsBulkDataObjPut.o
 LIB_API_OBJS += $(libApiObjDir)/rcBulkDataObjPut.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsEndTransaction.o
+LIB_API_OBJS += $(libApiObjDir)/rcEndTransaction.o

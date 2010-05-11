@@ -118,6 +118,7 @@
 #define BULK_DATA_OBJ_REG_AN 			688
 #define BULK_DATA_OBJ_PUT_AN 			689
 
+/* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700
 #define GENERAL_ADMIN_AN 		701
 #define GEN_QUERY_AN 			702
@@ -135,6 +136,7 @@
 #define GENERAL_ROW_INSERT_AN 			715
 #define GENERAL_ROW_PURGE_AN 			716
 #define KRB_AUTH_REQUEST_AN 			717
+#define END_TRANSACTION_AN 			718
 
 #ifdef COMPAT_201
 #define DATA_OBJ_READ201_AN             603
