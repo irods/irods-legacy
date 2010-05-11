@@ -45,4 +45,26 @@ relatively old SRB bricks with Intel Celeron processors.
 the parent (iRodsServer) issues the fork call and the child executes its 
 first instruction.
 
+Under heavy load conditions
+---------------------
+Scripts to run multiple ils concurrently. Can have up to 50 agent processes 
+running at a time. All runs for IES(one.ucsd.edu).
+
+Process: iRodsServer
+
+Tasks             Light load          Heavy load
+-----------------------------------------------------------------------------
+read StartupPack  0.14(0.13-0.15)     0.12 (0.10-0.15)
+fork agent        2.0(1.9-2.2)        51.0(43.2-57.6)
+
+
+Process: iRodsAgent
+
+Tasks             Light load          Heavy load
+-----------------------------------------------------------------------------
+fork (2)          0.05(0.04-0.09)     3.2(0.4-5.2)
+exec              1.0 (1.0 - 1.0)     5.8 (1.2-29.8)
+initAgent         76.7(71.0-98.7)     192.0(164.17-202.5)
+sendVersion       0.22(0.17-0.38)     14.0(9.1-17.9)
+challenge/response 2.5(2.3-4.0)       11.7(9.8-16.7)
 
