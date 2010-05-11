@@ -47,8 +47,7 @@ unixFileOpen (rsComm_t *rsComm, char *fileName, int flags, int mode)
     int fd;
 
 #if defined(osx_platform)
-    /* handle a situation where for osx, O_TRUNC = 0x0400,
-     * but O_TRUNC = 0x200 for other system */
+    /* For osx, O_TRUNC = 0x0400, O_TRUNC = 0x200 for other system */
     if (flags & 0x200) {
         flags = flags ^ 0x200;
         flags = flags | O_TRUNC;
