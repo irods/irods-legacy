@@ -730,7 +730,7 @@ msParam_t *outParam, ruleExecInfo_t *rei)
                 if (myInt != SYS_NULL_INPUT) {
                     rei->status = myInt;
                     rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-                      "msiDataObjRead: parseMspForPosInt error for param2.");
+                      "msiDataObjWrite: parseMspForPosInt error for param2.");
                     return (rei->status);
 		}
             } else {
