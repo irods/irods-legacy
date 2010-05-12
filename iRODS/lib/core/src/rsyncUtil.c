@@ -756,6 +756,10 @@ dataObjCopyInp_t *dataObjCopyInp)
 
             status = rsyncDataToDataUtil (conn, &mySrcPath,
              &myTargPath, myRodsEnv, rodsArgs, dataObjCopyInp);
+	    if (myTargPath.rodsObjStat != NULL) {
+	        freeRodsObjStat (myTargPath.rodsObjStat);
+		myTargPath.rodsObjStat = NULL;
+	    }
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "rsyncCollToCollUtil: rsyncDataToDataUtil failed for %s.stat=%d",
