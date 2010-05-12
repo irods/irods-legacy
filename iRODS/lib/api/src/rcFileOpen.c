@@ -11,7 +11,7 @@ rcFileOpen (rcComm_t *conn, fileOpenInp_t *fileOpenInp)
     int status;
 
 #if defined(osx_platform)
-    if (oflag & O_TRUNC) {
+    if (fileOpenInp->flags & O_TRUNC) {
         fileOpenInp->flags = fileOpenInp->flags ^ O_TRUNC;
         fileOpenInp->flags = fileOpenInp->flags | 0x200;
     }
