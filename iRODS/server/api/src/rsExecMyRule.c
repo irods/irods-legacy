@@ -45,6 +45,7 @@ msParamArray_t **outParamArray)
         reLoopBackFlag = LOOP_BACK_1;
     }
 
+    rstrcpy (rei.ruleName, EXEC_MY_RULE_KW, NAME_LEN);
 
     status = execMyRule (execMyRuleInp->myRule, execMyRuleInp->inpParamArray,
       &rei);

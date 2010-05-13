@@ -168,6 +168,14 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     childPid = RODS_FORK ();
 
     if (childPid == 0) {
+	char *tmpStr;
+	/* Indicate that the call came from internal rule */
+	if ((tmpStr = getValByKey (&execCmdInp->condInput, EXEC_CMD_RULE_KW))
+	  != NULL) {
+	    char *myStr = malloc (NAME_LEN + 20);
+	    snprintf (myStr, NAME_LEN + 20, "%s=%s", EXEC_CMD_RULE_KW, tmpStr);
+	    putenv(myStr);
+	}
 	close (stdoutFd[0]);
 	close (stderrFd[0]);
 	close (statusFd[0]);

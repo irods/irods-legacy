@@ -347,6 +347,10 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   char action[MAX_ACTION_SIZE];  
   msParamArray_t *outMsParamArray;
 
+  if (strlen (rei->ruleName) == 0) {
+    strncpy (rei->ruleName, inAction, NAME_LEN);
+    rei->ruleName[NAME_LEN - 1] = '\0';
+  }
 
   if (GlobalAllRuleExecFlag != 0) {
     ii = GlobalAllRuleExecFlag;

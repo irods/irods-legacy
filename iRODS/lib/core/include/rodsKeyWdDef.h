@@ -90,6 +90,8 @@
 #define TRANSLATED_PATH_KW	"translatedPath"  /* the path translated */
 #define BULK_OPR_KW		"bulkOpr"  /* the bulk operation */
 #define NON_BULK_OPR_KW		"nonBulkOpr"  /* non bulk operation */
+#define EXEC_CMD_RULE_KW	"execCmdRule" /* the rule that invoke execCmd */
+#define EXEC_MY_RULE_KW	"execMyRule" /* the rule is invoked by rsExecMyRule */
 
 /* OBJ_PATH_KW already defined */ 
 /* COLL_NAME_KW already defined */ 

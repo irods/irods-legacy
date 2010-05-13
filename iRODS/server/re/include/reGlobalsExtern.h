@@ -47,6 +47,7 @@ extern void myfree(char* file, int line, void *x);
 typedef struct RuleExecInfo {
   int status;
   char statusStr[MAX_NAME_LEN];
+  char ruleName[NAME_LEN];	/* name of rule */
   rsComm_t *rsComm;
   msParamArray_t *msParamArray;
   msParamArray_t inOutMsParamArray;

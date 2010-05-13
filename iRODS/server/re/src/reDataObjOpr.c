@@ -3176,6 +3176,11 @@ ruleExecInfo_t *rei)
 	myExecCmdInp->addPathToArgv = 1;
     }  
 
+    if (strlen (rei->ruleName) > 0 && 
+      strcmp (rei->ruleName, EXEC_MY_RULE_KW) != 0) {
+	/* does not come from rsExecMyRule */
+	 addKeyVal(&myExecCmdInp->condInput, EXEC_CMD_RULE_KW, rei->ruleName);
+    }
     rei->status = rsExecCmd (rsComm, myExecCmdInp, &execCmdOut);
 
     if (myExecCmdInp == &execCmdInp) {
