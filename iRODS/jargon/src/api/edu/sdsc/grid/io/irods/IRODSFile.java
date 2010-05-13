@@ -49,6 +49,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1030,27 +1031,32 @@ public class IRODSFile extends RemoteFile {
 			throw new IllegalArgumentException("resourceName is null");
 		}
 
-		if (resourceName != null) {
-			// Make sure valid resource
-			MetaDataRecordList[] rl = fileSystem.query(MetaDataSet
-					.newSelection(ResourceMetaData.RESOURCE_NAME));
+		// Make sure valid resource
+		MetaDataRecordList[] rl = fileSystem.query(MetaDataSet
+				.newSelection(ResourceMetaData.RESOURCE_NAME));
 
-			if (rl == null) {
-				log
-						.warn("no resources returned from query, accept the given resource:"
-								+ resourceName);
+		if (rl == null) {
+			log
+					.warn("no resources returned from query, accept the given resource:"
+							+ resourceName);
+			resource = resourceName;
+			return;
+		}
+
+		boolean resourceFound = false;
+
+		for (MetaDataRecordList rescName : rl) {
+			if (resourceName.equals(rescName.getStringValue(0))) {
+				resourceFound = true;
 				resource = resourceName;
-				return;
+				break;
 			}
+		}
 
-			for (int i = rl.length - 1; i >= 0; i--) {
-				if (resourceName.equals(rl[i].getStringValue(0))) {
-					resource = resourceName;
-					return;
-				}
-			}
-			throw new IllegalArgumentException("The resource, " + resourceName
-					+ ", does not exist");
+		if (!resourceFound) {
+			String msg = "The resource, " + resourceName + ", does not exist";
+			log.error(msg);
+			throw new IllegalArgumentException(msg);
 		}
 	}
 
@@ -1239,7 +1245,7 @@ public class IRODSFile extends RemoteFile {
 		if (log.isInfoEnabled()) {
 			log.info("checking if i can write:" + this.getAbsolutePath());
 		}
-		
+
 		if (update || (pathNameType == PATH_IS_UNKNOWN)
 				|| pathNameType == PATH_IS_FILE) {
 			log.debug("checking permissions as file");
@@ -2334,4 +2340,70 @@ public class IRODSFile extends RemoteFile {
 				+ iRODSFileSystem.getHost() + ":" + iRODSFileSystem.getPort()
 				+ getAbsolutePath());
 	}
+
+	/**
+	 * Returns the length of the file denoted by this abstract pathname. The
+	 * return value is 0 if this pathname denotes a directory.
+	 * 
+	 * @return The length, in bytes, of the file denoted by this abstract
+	 *         pathname, or <code>0L</code> if the file does not exist or is a
+	 *         collection
+	 */
+	public long length() {
+		long length = 0;
+
+		MetaDataCondition[] condition = {};
+
+		if (resource == null || resource.isEmpty()) {
+			log.debug("no resource, get length without resource condition");
+		} else {
+			log.debug("add resource to query: {}", resource);
+			MetaDataCondition[] rescCondition = { IRODSMetaDataSet
+					.newCondition(IRODSMetaDataSet.RESOURCE_NAME,
+							MetaDataCondition.EQUAL, resource) };
+			condition = rescCondition;
+		}
+
+		String[] fileds = { IRODSMetaDataSet.RESOURCE_NAME,
+				IRODSMetaDataSet.SIZE };
+		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		try {
+			MetaDataRecordList[] fileList = this.query(condition, select);
+
+		length = extractFileLengthFromLengthQueryResult(length, fileList);
+
+		} catch (NullPointerException e1) {
+			log.error("null pointer exception getting irodsFileLength", e1);
+			throw new JargonRuntimeException(e1);
+		} catch (IOException e1) {
+			log.error("IOException getting irodsFileLength for: {}", this
+					.getAbsolutePath(), e1);
+			throw new JargonRuntimeException(e1);
+		}
+
+		return length;
+	}
+
+	/**
+	 * @param length
+	 * @param fileList
+	 * @return
+	 * @throws NumberFormatException
+	 */
+	private long extractFileLengthFromLengthQueryResult(long length,
+			MetaDataRecordList[] fileList) throws NumberFormatException {
+		if (fileList != null) {
+
+			log
+					.debug(
+							"got metadata back from file length query, result length={}",
+							fileList.length);
+
+			if (fileList.length > 0) {
+				length = Long.parseLong(fileList[0].getStringValue(1));
+			}
+		}
+		return length;
+	}
+
 }

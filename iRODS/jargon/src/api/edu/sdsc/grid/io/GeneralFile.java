@@ -114,9 +114,7 @@ import org.slf4j.LoggerFactory;
  * @see java.io.File
  */
 public class GeneralFile extends Object implements Comparable {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Default buffer size used for copyTo and copyFrom methods.
 	 * 

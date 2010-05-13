@@ -107,17 +107,7 @@ import java.net.URI;
  * @see edu.sdsc.grid.io.GeneralFile
  */
 public abstract class RemoteFile extends GeneralFile {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
 	/**
 	 * Creates a new RemoteFile instance by converting the given pathname string
 	 * into an abstract pathname.
