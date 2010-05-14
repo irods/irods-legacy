@@ -94,6 +94,7 @@ packInstructArray_t ApiPackTable[] = {
         {"rescQuota_PI", rescQuota_PI},
         {"BulkOprInp_PI", BulkOprInp_PI},
         {"endTransactionInp_PI", endTransactionInp_PI},
+        {"databaseObjOpenInp_PI", databaseObjOpenInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

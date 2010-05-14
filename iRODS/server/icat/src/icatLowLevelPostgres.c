@@ -240,6 +240,71 @@ cllConnectRda(icatSessionStruct *icss) {
 }
 
 /*
+ Connect to the DBMS for database-objects access.
+ */
+int 
+cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
+   RETCODE stat;
+   RETCODE stat2;
+
+   SQLCHAR         buffer[SQL_MAX_MESSAGE_LENGTH + 1];
+   SQLCHAR         sqlstate[SQL_SQLSTATE_SIZE + 1];
+   SQLINTEGER      sqlcode;
+   SQLSMALLINT     length;
+
+   HDBC myHdbc;
+
+   stat = SQLAllocConnect(icss->environPtr,
+			  &myHdbc);
+   if (stat != SQL_SUCCESS) {
+      rodsLog(LOG_ERROR, "cllConnect: SQLAllocConnect failed: %d, stat");
+      return (-1);
+   }
+
+   stat = SQLSetConnectOption(myHdbc,
+			      SQL_AUTOCOMMIT, SQL_AUTOCOMMIT_OFF);
+   if (stat != SQL_SUCCESS) {
+      rodsLog(LOG_ERROR, "cllConnect: SQLSetConnectOption failed: %d", stat);
+      return (-1);
+   }
+
+   stat = SQLConnect(myHdbc, odbcEntryName, SQL_NTS, 
+		     (unsigned char *)icss->databaseUsername, SQL_NTS, 
+		     (unsigned char *)icss->databasePassword, SQL_NTS);
+   if (stat != SQL_SUCCESS) {
+      rodsLog(LOG_ERROR, "cllConnect: SQLConnect failed: %d", stat);
+      rodsLog(LOG_ERROR, 
+         "cllConnect: SQLConnect failed:odbcEntry=%s,user=%s,pass=%s\n",
+         odbcEntryName,icss->databaseUsername,  icss->databasePassword);
+      while (SQLError(icss->environPtr,myHdbc , 0, sqlstate, &sqlcode, buffer,
+                    SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
+        rodsLog(LOG_ERROR, "cllConnect:          SQLSTATE: %s\n", sqlstate);
+        rodsLog(LOG_ERROR, "cllConnect:  Native Error Code: %ld\n", sqlcode);
+        rodsLog(LOG_ERROR, "cllConnect: %s \n", buffer);
+    }
+
+      stat2 = SQLDisconnect(myHdbc);
+      stat2 = SQLFreeConnect(myHdbc);
+      return (-1);
+   }
+
+   icss->connectPtr=myHdbc;
+
+#ifdef MY_ICAT
+   /*
+    MySQL must be running in ANSI mode (or at least in PIPES_AS_CONCAT
+    mode) to be able to understand Postgres SQL. STRICT_TRANS_TABLES
+    must be st too, otherwise inserting NULL into NOT NULL column does
+    not produce error.
+   */
+   cllExecSqlNoResult ( icss, "SET SESSION autocommit=0" ) ;
+   cllExecSqlNoResult ( icss, "SET SESSION sql_mode='ANSI,STRICT_TRANS_TABLES'" ) ;
+#endif
+
+   return(0);
+}
+
+/*
  This function is used to check that there are no DB-modifying SQLs pending 
  before a disconnect.  If there are, it logs a warning.
 

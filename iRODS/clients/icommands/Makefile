@@ -78,6 +78,7 @@ OBJS =		\
 		$(objDir)/ihelp.o \
 		$(objDir)/iquota.o \
 		$(objDir)/iscan.o \
+		$(objDir)/idbo.o 
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -119,7 +120,8 @@ BINS =		\
 		$(binDir)/iphybun \
 		$(binDir)/ihelp \
 		$(binDir)/iquota \
-		$(binDir)/iscan 
+		$(binDir)/iscan \
+		$(binDir)/idbo
 
 
 

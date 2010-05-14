@@ -182,6 +182,15 @@ DBMS_LIB+= -L$(ODBC_LIB_DIR) -lodbc $(NSL) -lm
 DBMS_INCLUDE+= -I$(ODBC_HDR_DIR)
 endif
 
+#
+# DBO (database-object) options
+#
+#DBO=1
+ifdef DBO
+DBO_TYPE=postgres;
+#DBO_TYPE=oracle;
+endif
+
 
 #
 # Misc options

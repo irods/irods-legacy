@@ -114,6 +114,9 @@ endif
 # Add new RDA functions (either empty stubs or full functions)
 SVR_ICAT_OBJS += $(svrIcatObjDir)/rdaHighLevelRoutines.o
 
+# Add new DBO functions (either empty stubs or full functions)
+SVR_ICAT_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
+
 ifdef PSQICAT
 # Support Postgres
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
@@ -129,10 +132,17 @@ endif
 endif
 
 ifdef MYICAT
-# Support Postgres
+# Support MYSQL
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
 INCLUDES +=	-I$(UNIXODBC_HOME)/include
 CFLAGS += -DUNIXODBC_DATASOURCE=\"$(UNIXODBC_DATASOURCE)\" -DMY_ICAT=1
+endif
+
+ifdef DBO
+# Support DBO
+# Just postgres for now
+#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+CFLAGS += -DDBO
 endif
 
 ifdef DBMS_LIB

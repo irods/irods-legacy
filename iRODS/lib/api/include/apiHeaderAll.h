@@ -129,4 +129,5 @@
 #include "bulkDataObjReg.h"
 #include "bulkDataObjPut.h"
 #include "endTransaction.h"
+#include "databaseObjOpen.h"
 #endif	/* API_HEADER_ALL_H */

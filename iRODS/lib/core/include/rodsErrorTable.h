@@ -300,7 +300,7 @@
 #define CAT_PASSWORD_ENCODING_ERROR      -850000
 #define CAT_TABLE_ACCESS_DENIED          -851000
 
-/* 880,000 to 900,000  RDA errors  */
+/* 880,000 to 899,000  RDA errors  */
 #define RDA_NOT_COMPILED_IN             -880000
 #define RDA_NOT_CONNECTED               -881000
 #define RDA_ENV_ERR                     -882000
@@ -311,6 +311,7 @@
 #define RDA_CONFIG_FILE_ERR             -887000
 #define RDA_ACCESS_PROHIBITED           -888000
 #define RDA_NAME_NOT_FOUND              -889000
+
 
 /* 900,000 to 920,000 - Misc errors (used by obf library, etc)  */
 #define FILE_OPEN_ERR                    -900000
@@ -489,6 +490,21 @@
 #define PHP_EXEC_SCRIPT_ERR                   -1600000
 #define PHP_REQUEST_STARTUP_ERR               -1601000
 #define PHP_OPEN_SCRIPT_FILE_ERR	      -1602000
+
+/* 1,701,000 to 1,899,000  DBO errors  */
+#define DBO_NOT_COMPILED_IN             -1701000
+#define DBO_NO_DBO_SERVER               -1702000
+#define DBO_NOT_CONNECTED               -1703000
+#define DBO_ENV_ERR                     -1704000
+#define DBO_CONNECT_ERR                 -1705000
+#define DBO_DISCONNECT_ERR              -1706000
+#define DBO_CLOSE_ENV_ERR               -1707000
+#define DBO_SQL_ERR                     -1708000
+#define DBO_CONFIG_FILE_ERR             -1700000
+#define DBO_ACCESS_PROHIBITED           -1710000
+#define DBO_NAME_NOT_FOUND              -1711000
+#define DBO_MAX_SESSIONS_REACHED        -1712000
+
 
 /* The following are handler protocol type msg. These are not real error */
 #define SYS_NULL_INPUT				-99999996
