@@ -4,8 +4,7 @@
 /* See databaseObjOpen.h for a description of this API call.*/
 
 #include "databaseObjOpen.h"
-//#include "icatHighLevelRoutines.h"
-#include "dboHighLevel.h"
+#include "dboHighLevelRoutines.h"
 
 int
 rsDatabaseObjOpen (rsComm_t *rsComm, databaseObjOpenInp_t *databaseObjOpenInp)

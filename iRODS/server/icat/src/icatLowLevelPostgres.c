@@ -268,7 +268,7 @@ cllConnectDbo(icatSessionStruct *icss, char *odbcEntryName) {
       return (-1);
    }
 
-   stat = SQLConnect(myHdbc, odbcEntryName, SQL_NTS, 
+   stat = SQLConnect(myHdbc, (unsigned char *)odbcEntryName, SQL_NTS, 
 		     (unsigned char *)icss->databaseUsername, SQL_NTS, 
 		     (unsigned char *)icss->databasePassword, SQL_NTS);
    if (stat != SQL_SUCCESS) {
