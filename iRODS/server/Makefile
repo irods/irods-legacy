@@ -114,9 +114,6 @@ endif
 # Add new RDA functions (either empty stubs or full functions)
 SVR_ICAT_OBJS += $(svrIcatObjDir)/rdaHighLevelRoutines.o
 
-# Add new DBO functions (either empty stubs or full functions)
-SVR_ICAT_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
-
 ifdef PSQICAT
 # Support Postgres
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
@@ -141,8 +138,14 @@ endif
 ifdef DBO
 # Support DBO
 # Just postgres for now
-#SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+#CFLAGS +=	-DRODS_CAT
+CFLAGS +=	-DNEW_ODBC
 CFLAGS += -DDBO
+INCLUDES +=	-I$(svrIcatIncDir)
+#INCLUDES +=	-I$(UNIXODBC_HOME)/include
+INCLUDES +=	-I$(POSTGRES_HOME)/include
+SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+SVR_ICAT_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
 endif
 
 ifdef DBMS_LIB

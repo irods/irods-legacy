@@ -113,7 +113,7 @@ openDatabaseObj(char *dbRescName, char *dbObjName) {
    status = rcDatabaseObjOpen(Conn, &databaseObjOpnInp);
    if (status) {
       myName = rodsErrorName(status, &mySubName);
-      rodsLog (LOG_ERROR, "rcdatabseObjOpen failed with error %d %s %s",
+      rodsLog (LOG_ERROR, "rcDatabaseObjOpen failed with error %d %s %s",
 	       status, myName, mySubName);
    }
    return(status);

@@ -188,6 +188,17 @@ endif
 #DBO=1
 ifdef DBO
 DBO_TYPE=postgres;
+POSTGRES_HOME=/tbox/IRODS_BUILD/iRODS/../pgsql
+ifeq ($(OS_platform), osx_platform)
+NSL=
+else
+NSL=-lnsl
+endif
+PSQ_LIB_DIR = $(POSTGRES_HOME)/lib
+PSQ_HDR_DIR = $(POSTGRES_HOME)/include
+DBMS_LIB+= -L$(PSQ_LIB_DIR) -lodbc $(NSL) -lm
+DBMS_INCLUDE+= -I$(PSQ_HDR_DIR)
+
 #DBO_TYPE=oracle;
 endif
 
