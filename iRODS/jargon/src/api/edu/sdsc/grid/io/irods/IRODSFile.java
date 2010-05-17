@@ -2354,7 +2354,7 @@ public class IRODSFile extends RemoteFile {
 
 		MetaDataCondition[] condition = {};
 
-		if (resource == null || resource.isEmpty()) {
+		if (resource == null || resource.length() == 0) {
 			log.debug("no resource, get length without resource condition");
 		} else {
 			log.debug("add resource to query: {}", resource);
@@ -2369,8 +2369,7 @@ public class IRODSFile extends RemoteFile {
 		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
 		try {
 			MetaDataRecordList[] fileList = this.query(condition, select);
-
-		length = extractFileLengthFromLengthQueryResult(length, fileList);
+			length = extractFileLengthFromLengthQueryResult(length, fileList);
 
 		} catch (NullPointerException e1) {
 			log.error("null pointer exception getting irodsFileLength", e1);
