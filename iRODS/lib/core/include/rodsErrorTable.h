@@ -504,6 +504,7 @@
 #define DBO_ACCESS_PROHIBITED           -1710000
 #define DBO_NAME_NOT_FOUND              -1711000
 #define DBO_MAX_SESSIONS_REACHED        -1712000
+#define DBO_INVALID_OBJECT_DESCRIPTOR   -1713000
 
 
 /* The following are handler protocol type msg. These are not real error */

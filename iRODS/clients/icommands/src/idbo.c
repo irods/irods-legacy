@@ -12,6 +12,7 @@
 #define BIG_STR 200
 
 char cwd[BIG_STR];
+char lastResc[50]="";
 
 int debug=0;
 int testMode=0; /* some some particular internal tests */
@@ -102,6 +103,52 @@ getInput(char *cmdToken[], int maxTokens) {
       }
    }
 }
+
+int
+getDboInfo(char *dbRescName, char *dbObjIx) {
+   databaseObjInfoInp_t databaseObjInfoInp;
+   databaseObjInfoOut_t *databaseObjInfoOut;
+   int status;
+   char *myName;
+   char *mySubName;
+   int saveLastResc=1;
+   if (dbRescName==NULL || strlen(dbRescName)==0) {
+      if (strlen(lastResc)==0) {
+	 printf("You need to include the resource name; see 'help ls'.\n");
+	 return(0);
+      }
+      else {
+	 databaseObjInfoInp.dbrName = lastResc;
+	 databaseObjInfoInp.objDesc = -1;
+	 saveLastResc=0;
+      }
+   }
+   else {
+      databaseObjInfoInp.dbrName = dbRescName;
+      if (dbRescName[0]<='9' && dbRescName[0]>='0') {
+	 databaseObjInfoInp.dbrName = lastResc;
+	 databaseObjInfoInp.objDesc = atoi(dbRescName);
+	 saveLastResc=0;
+      }
+      else {
+	 databaseObjInfoInp.objDesc = -1;
+	 if (dbObjIx != NULL && strlen(dbObjIx)>0) {
+	    databaseObjInfoInp.objDesc = atoi(dbObjIx);
+	 }
+      }
+   }
+   status = rcDatabaseObjInfo(Conn, &databaseObjInfoInp, &databaseObjInfoOut);
+   if (status) {
+      myName = rodsErrorName(status, &mySubName);
+      rodsLog (LOG_ERROR, "rcDatabaseObjInfo failed with error %d %s %s",
+	       status, myName, mySubName);
+      return(status);
+   }
+   printf("%s\n",databaseObjInfoOut->outBuf);
+   if (saveLastResc) strncpy(lastResc,dbRescName, sizeof(lastResc));
+   return(status);
+}
+
 int
 openDatabaseObj(char *dbRescName, char *dbObjName) {
    databaseObjOpenInp_t databaseObjOpnInp;
@@ -111,11 +158,15 @@ openDatabaseObj(char *dbRescName, char *dbObjName) {
    databaseObjOpnInp.dbrName = dbRescName;
    databaseObjOpnInp.dboName = dbObjName;
    status = rcDatabaseObjOpen(Conn, &databaseObjOpnInp);
-   if (status) {
+   if (status<0) {
       myName = rodsErrorName(status, &mySubName);
       rodsLog (LOG_ERROR, "rcDatabaseObjOpen failed with error %d %s %s",
 	       status, myName, mySubName);
+      return(status);
    }
+   printf("open object-descriptor (index to open database-object)=%d\n",
+	  status);
+   strncpy(lastResc,dbRescName, sizeof(lastResc));
    return(status);
 }
 
@@ -139,6 +190,11 @@ doCommand(char *cmdToken[]) {
 
    if (strcmp(cmdToken[0],"open") == 0) {
       openDatabaseObj(cmdToken[1], cmdToken[2]);
+      return(0);
+   }
+
+   if (strcmp(cmdToken[0],"ls") == 0) {
+      getDboInfo(cmdToken[1], cmdToken[2]);
       return(0);
    }
    return(-3);
@@ -292,6 +348,7 @@ void usageMain()
 " -h This help",
 "Commands are:", 
 " open ResourceName DatabaseObjectName", 
+" ls [ResourceName] [Object-descriptor]",
 " quit",
 " ",
 "Try 'help command' for more help on a specific command.",
@@ -311,17 +368,38 @@ usage(char *subOpt)
 "open  ResourceName DatabaseObjectName", 
 "Open the specified database object on the specified database resource. ",
 ""};
+   char *lsMsgs[]={
+"ls [ResourceName] [database-object-descriptor]",
+"list information about the database-resource or a particular (open)",
+"database-object on that resource.",
+"In the first case, it will list the configured database-objects on that",
+"database-resource.  In the later, it will list the tables in the DBO.",
+"If ResourceName is not included, it will use the last one used.",
+"Examples:",
+"$ idbo",
+"idbo>ls demoResc",
+"DBName1 DBName2",
+"idbo>open demoResc DBName1",
+"open object-descriptor (index to open database-object)=0",
+"idbo>ls 0",
+"Schema|Name|Type|Owner|",
+"public|r_table1|table|schroeder|",
+"public|r_table2|table|schroeder|",
+"public|cadc_config_archive_case|table|schroeder|",
+"public|cadc_config_compression|table|schroeder|",
+""};
    char *helpMsgs[]={
 " help (or h) [command] (general help, or more details on a command)",
 " If you specify a command, a brief description of that command",
 " will be displayed.",
 ""};
 
-   char *subCmds[]={"open",
+
+   char *subCmds[]={"open", "ls",
 		    "help", "h",
 		    ""};
 
-   char **pMsgs[]={ openMsgs,
+   char **pMsgs[]={ openMsgs, lsMsgs,
 		    helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {

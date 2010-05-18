@@ -138,6 +138,7 @@
 #define KRB_AUTH_REQUEST_AN 			717
 #define END_TRANSACTION_AN 			718
 #define DATABASE_OBJ_OPEN_AN 			719
+#define DATABASE_OBJ_INFO_AN 			720
 
 #ifdef COMPAT_201
 #define DATA_OBJ_READ201_AN             603

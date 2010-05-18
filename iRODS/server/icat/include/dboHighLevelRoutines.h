@@ -6,6 +6,8 @@
 #define DBO_HIGHLEVEL_ROUTINES_H
 
 int dboOpen(char *dboName);
+int dboReadConfigItems(char *dboList, int maxChars);
+int dboGetInfo(int fd, char *outBuf, int maxOutBuf);
 //int dboClose();
 //int dboCommit();
 //int dboRollback();

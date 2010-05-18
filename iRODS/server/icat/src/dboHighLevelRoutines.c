@@ -24,8 +24,6 @@
 #include "dboHighLevelRoutines.h"
 #include "icatLowLevel.h"
 
-//#include "icatHighLevelRoutines.h"
-
 #define DBO_CONFIG_FILE "dbo.config"
 //#define DBO_ACCESS_ATTRIBUTE "DBO_ACCESS"
 #define DBO_ODBC_ENTRY_PREFIX "IRODS_DBO_"
@@ -36,14 +34,11 @@
 #define MAX_DBO_NAME_LEN 200
 #define BIG_STR 200
 
-#define RESULT_BUF1_SIZE 2000
-
 #define MAX_SESSIONS 10
 static char openDboName[MAX_DBO_NAME_LEN+2]="";
 
 int dboLogSQL=0;
 int readDboConfig(char *dboName, char **DBUser, char**DBPasswd);
-
 
 icatSessionStruct dbo_icss[MAX_SESSIONS]={{0},{0},{0},{0},{0},{0},{0},{0},{0},{0}};
 
@@ -119,7 +114,7 @@ int dboOpen(char *dboName) {
    dbo_icss[icss_index].status=1;
    strncpy(openDboName, dboName, MAX_DBO_NAME_LEN);
 
-   return(0);
+   return(icss_index);
 #else
    openDboName[0]='\0'; /* avoid warning */
    return(DBO_NOT_COMPILED_IN);
@@ -253,75 +248,61 @@ int dboSqlNoResults(char *sql, char *parm[], int nParms) {
 #endif
 }
 
-int dboSqlWithResults(char *sql, char *parm[], int nParms, char **outBuf) {
-#if defined(DBO_NOTYET) 
+int dboSqlWithResults(int fd, char *sql, char *parm[], int nParms, 
+		      char *outBuf, int maxOutBuf) {
+#if defined(DBO) 
    int i, ii;
    int statement;
    int rowCount, nCols, rowSize=0;
-   int maxOutBuf;
-   char *myBuf, *pbuf;
-   static char resultBuf1[RESULT_BUF1_SIZE+10];
-   int totalRows, toMalloc;
+   int totalRows;
 
    for (i=0;i<nParms;i++) {
       cllBindVars[i]=parm[i];
    }
    cllBindVarCount=nParms;
-   i = cllExecSqlWithResult(&dbo_icss, &statement, sql);
-   printf("i=%d\n",i);
-   /* ?   if (i==CAT_SUCCESS_BUT_WITH_NO_INFO) return(0); */
-   if (i) return(DBO_SQL_ERR);
-
-   myBuf=resultBuf1; /* Initially, use this buffer */
-   maxOutBuf=RESULT_BUF1_SIZE;
-   memset(myBuf, 0, maxOutBuf);
+   i = cllExecSqlWithResult(&dbo_icss[fd], &statement, sql);
+//   printf("i=%d\n",i);
+   if (i==CAT_SUCCESS_BUT_WITH_NO_INFO) return(CAT_SUCCESS_BUT_WITH_NO_INFO);
+   if (i) return(i);
 
    for (rowCount=0;;rowCount++) {
-      i = cllGetRow(&dbo_icss, statement);
+      i = cllGetRow(&dbo_icss[fd], statement);
       if (i != 0)  {
-	 ii = cllFreeStatement(&dbo_icss, statement);
+	 ii = cllFreeStatement(&dbo_icss[fd], statement);
 	 if (rowCount==0) return(CAT_GET_ROW_ERR);
-	 *outBuf=myBuf;
 	 return(0);
       }
 
-      if (dbo_icss.stmtPtr[statement]->numOfCols == 0) {
-	 i = cllFreeStatement(&dbo_icss,statement);
+      if (dbo_icss[fd].stmtPtr[statement]->numOfCols == 0) {
+	 i = cllFreeStatement(&dbo_icss[fd],statement);
 	 if (rowCount==0) return(CAT_NO_ROWS_FOUND);
-	 *outBuf=myBuf;
 	 return(0);
       }
 
-      nCols = dbo_icss.stmtPtr[statement]->numOfCols;
+      nCols = dbo_icss[fd].stmtPtr[statement]->numOfCols;
       if (rowCount==0) {
 	 for (i=0; i<nCols ; i++ ) {
-	    rstrcat(myBuf, dbo_icss.stmtPtr[statement]->resultColName[i],
+	    rstrcat(outBuf, dbo_icss[fd].stmtPtr[statement]->resultColName[i],
 		    maxOutBuf);
-	    rstrcat(myBuf, "|", maxOutBuf);
+	    rstrcat(outBuf, "|", maxOutBuf);
 	 }
-	 rstrcat(myBuf, "\n", maxOutBuf);
+	 rstrcat(outBuf, "\n", maxOutBuf);
       }
       for (i=0; i<nCols ; i++ ) {
-	 rstrcat(myBuf, dbo_icss.stmtPtr[statement]->resultValue[i], 
+	 rstrcat(outBuf, dbo_icss[fd].stmtPtr[statement]->resultValue[i], 
 		 maxOutBuf);
-	 rstrcat(myBuf, "|", maxOutBuf);
+	 rstrcat(outBuf, "|", maxOutBuf);
       }
-      rstrcat(myBuf, "\n", maxOutBuf);
+      rstrcat(outBuf, "\n", maxOutBuf);
       if (rowSize==0) {
-	 rowSize=strlen(myBuf);
-	 totalRows=cllGetRowCount(&dbo_icss, statement);
+	 rowSize=strlen(outBuf);
+	 totalRows=cllGetRowCount(&dbo_icss[fd], statement);
 	 printf("rowSize=%d, totalRows=%d\n",rowSize, totalRows);
 	 if (totalRows < 0) return(totalRows);
 	 if (totalRows == 0) {
 	    /* Unknown number of rows available (Oracle) */
 	    totalRows=10; /* to start with */
 	 }
-	 toMalloc=((totalRows+1)*rowSize)*3;
-	 myBuf=malloc(toMalloc);
-	 if (myBuf <=0) return(SYS_MALLOC_ERR);
-	 maxOutBuf=toMalloc;
-	 memset(myBuf, 0, maxOutBuf);
-	 rstrcpy(myBuf, resultBuf1, RESULT_BUF1_SIZE);
       }
       if (rowCount > totalRows) {
 	 int oldTotalRows;
@@ -332,14 +313,6 @@ int dboSqlWithResults(char *sql, char *parm[], int nParms, char **outBuf) {
 	 else {
 	    totalRows = totalRows+500;
 	 }
-	 pbuf = myBuf;
-	 toMalloc=((totalRows+1)*rowSize)*3;
-	 myBuf=malloc(toMalloc);
-	 if (myBuf <=0) return(SYS_MALLOC_ERR);
-	 maxOutBuf=toMalloc;
-	 memset(myBuf, 0, maxOutBuf);
-	 strcpy(myBuf, pbuf);
-	 free(pbuf);
       }
    }
 
@@ -437,3 +410,75 @@ readDboConfig(char *dboName, char **DBUser, char**DBPasswd) {
 
    return(DBO_NAME_NOT_FOUND);
 }
+
+/*
+Read the config file and return a list of the defined DBOs.
+ */
+int 
+dboReadConfigItems(char *dboList, int maxSize) {
+   FILE *fptr;
+   char buf[BUF_LEN];
+   char *fchar;
+   char *dboConfigFile;
+   static char foundLine[BUF_LEN];
+
+   dboConfigFile =  (char *) malloc((strlen (getDboConfigDir()) +
+				    strlen(DBO_CONFIG_FILE) + 24));
+
+   sprintf (dboConfigFile, "%s/%s", getDboConfigDir(), 
+	    DBO_CONFIG_FILE);
+
+   fptr = fopen (dboConfigFile, "r");
+
+   if (fptr == NULL) {
+      rodsLog (LOG_NOTICE, 
+	       "Cannot open DBO_CONFIG_FILE file %s. errno = %d\n",
+          dboConfigFile, errno);
+      free (dboConfigFile);
+      return (DBO_CONFIG_FILE_ERR);
+   }
+   free (dboConfigFile);
+
+   dboList[0]='\0';
+   foundLine[0]='\0';
+   buf[BUF_LEN-1]='\0';
+   fchar = fgets(buf, BUF_LEN-1, fptr);
+   for(;fchar!='\0';) {
+      int state, i;
+      if (buf[0]=='#' || buf[0]=='/') {
+	 buf[0]='\0'; /* Comment line, ignore */
+      }
+      rstrcpy(foundLine, buf, BUF_LEN);
+      state=0;
+      for (i=0;i<BUF_LEN;i++) {
+	 if (foundLine[i]==' ') {
+	    foundLine[i]='\0';
+	    if(dboList[0]!='\0') rstrcat(dboList," ", maxSize);
+	    rstrcat(dboList,foundLine, maxSize);
+	    break;
+	 }
+      }
+      fchar = fgets(buf, BUF_LEN-1, fptr);
+   }
+   fclose (fptr);
+
+   return(0);
+}
+int
+dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
+   int status;
+//   char **myOutBuf;
+   /* Postgres sql that returns table list, like '\d' in pgsql.  
+      Found on the web.
+   */
+   char tableSql[]="SELECT n.nspname as \"Schema\", c.relname as \"Name\", CASE c.relkind WHEN 'r' THEN 'table' WHEN 'v' THEN 'view' WHEN 'i' THEN 'index' WHEN 'S' THEN 'sequence' WHEN 's' THEN 'special' END as \"Type\", u.usename as \"Owner\" FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_user u ON u.usesysid = c.relowner LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','') AND n.nspname NOT IN ('pg_catalog', 'pg_toast') AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY 1,2";
+
+   if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
+      return(DBO_INVALID_OBJECT_DESCRIPTOR);
+   }
+
+   status =  dboSqlWithResults(fd, tableSql, NULL, 0, 
+			       outBuf, maxOutBuf);
+   return(status);
+}
+
