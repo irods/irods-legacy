@@ -144,7 +144,9 @@ CFLAGS += -DDBO
 INCLUDES +=	-I$(svrIcatIncDir)
 #INCLUDES +=	-I$(UNIXODBC_HOME)/include
 INCLUDES +=	-I$(POSTGRES_HOME)/include
+ifndef PSQICAT
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+endif
 SVR_ICAT_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
 endif
 
