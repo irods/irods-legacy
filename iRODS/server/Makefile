@@ -137,18 +137,26 @@ endif
 
 ifdef DBO
 # Support DBO
-# Just postgres for now
-#CFLAGS +=	-DRODS_CAT
-CFLAGS +=	-DNEW_ODBC
+# Just Postgres and Oracle for now
 CFLAGS += -DDBO
+ifeq ($(DBO_TYPE), oracle) 
+ifndef ORAICAT
+SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
+endif
+INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
+CFLAGS +=	-DORA_ICAT
+CFLAGS +=	-DORA_DBO
+endif
+ifeq ($(DBO_TYPE), postgres) 
+CFLAGS +=	-DNEW_ODBC
 INCLUDES +=	-I$(svrIcatIncDir)
-#INCLUDES +=	-I$(UNIXODBC_HOME)/include
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 ifndef PSQICAT
 SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
 endif
-SVR_ICAT_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
 endif
+SVR_ICAT_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
+endif  # end DBO
 
 ifdef DBMS_LIB
 LDFLAGS +=	$(DBMS_LIB)

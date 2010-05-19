@@ -253,15 +253,13 @@ int dboSqlWithResults(int fd, char *sql, char *parm[], int nParms,
 #if defined(DBO) 
    int i, ii;
    int statement;
-   int rowCount, nCols, rowSize=0;
-   int totalRows;
+   int rowCount, nCols;
 
    for (i=0;i<nParms;i++) {
       cllBindVars[i]=parm[i];
    }
    cllBindVarCount=nParms;
    i = cllExecSqlWithResult(&dbo_icss[fd], &statement, sql);
-//   printf("i=%d\n",i);
    if (i==CAT_SUCCESS_BUT_WITH_NO_INFO) return(CAT_SUCCESS_BUT_WITH_NO_INFO);
    if (i) return(i);
 
@@ -294,26 +292,6 @@ int dboSqlWithResults(int fd, char *sql, char *parm[], int nParms,
 	 rstrcat(outBuf, "|", maxOutBuf);
       }
       rstrcat(outBuf, "\n", maxOutBuf);
-      if (rowSize==0) {
-	 rowSize=strlen(outBuf);
-	 totalRows=cllGetRowCount(&dbo_icss[fd], statement);
-	 printf("rowSize=%d, totalRows=%d\n",rowSize, totalRows);
-	 if (totalRows < 0) return(totalRows);
-	 if (totalRows == 0) {
-	    /* Unknown number of rows available (Oracle) */
-	    totalRows=10; /* to start with */
-	 }
-      }
-      if (rowCount > totalRows) {
-	 int oldTotalRows;
-	 oldTotalRows = totalRows;
-	 if (totalRows < 1000) {
-	    totalRows = totalRows*2;
-	 }
-	 else {
-	    totalRows = totalRows+500;
-	 }
-      }
    }
 
    return(0);  /* never reached */
@@ -467,11 +445,15 @@ dboReadConfigItems(char *dboList, int maxSize) {
 int
 dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
    int status;
-//   char **myOutBuf;
+#ifdef ORA_DBO
+   /* Oracle vesion */
+   char tableSql[]="select TABLE_NAME from tabs";
+#else
    /* Postgres sql that returns table list, like '\d' in pgsql.  
       Found on the web.
    */
    char tableSql[]="SELECT n.nspname as \"Schema\", c.relname as \"Name\", CASE c.relkind WHEN 'r' THEN 'table' WHEN 'v' THEN 'view' WHEN 'i' THEN 'index' WHEN 'S' THEN 'sequence' WHEN 's' THEN 'special' END as \"Type\", u.usename as \"Owner\" FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_user u ON u.usesysid = c.relowner LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','') AND n.nspname NOT IN ('pg_catalog', 'pg_toast') AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY 1,2";
+#endif
 
    if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
       return(DBO_INVALID_OBJECT_DESCRIPTOR);
