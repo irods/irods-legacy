@@ -96,6 +96,20 @@ typedef struct zoneInfo {
 #define REMOTE_ZONE_SID_KW      "RemoteZoneSID"
 #define SID_KEY_KW              "SIDKey"
 
+/* from rodsAgent.h */
+#define MAINTENENCE_CONFIG_FILE "rods.allow"
+
+struct allowedUser {
+    char *userName;
+    char *rodsZone;
+    struct allowedUser *next;
+};
+int agentMain (rsComm_t *rsComm);
+int
+setAllowedUser (struct allowedUser **allowedUserHead);
+int
+chkAllowedUser (struct allowedUser *allowedUserHead, char *userName,
+char *domainName);
 
 int
 resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost);
