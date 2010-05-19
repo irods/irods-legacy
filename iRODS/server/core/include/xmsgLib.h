@@ -25,6 +25,8 @@
 
 #define NUM_HASH_SLOT		47	/* number of slots for the ticket
 					 * hash key */
+#define NUM_XMSG_THR		10
+
 int 
 initThreadEnv ();
 int

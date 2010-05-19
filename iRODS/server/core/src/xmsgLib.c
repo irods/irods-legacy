@@ -14,7 +14,7 @@
 pthread_mutex_t ReqQueCondMutex;
 pthread_cond_t ReqQueCond;
 pthread_cond_t ReqQueCond;
-pthread_t ProcReqThread;
+pthread_t ProcReqThread[NUM_XMSG_THR];
 #endif
 
 xmsgReq_t *XmsgReqHead = NULL;
@@ -369,8 +369,11 @@ startXmsgThreads ()
 {
     int status = 0;
 #ifndef windows_platform
-    status = pthread_create(&ProcReqThread, NULL, 
-      (void *(*)(void *)) procReqRoutine, (void *) NULL);
+    int i;
+    for (i = 0; i < NUM_XMSG_THR; i++) {
+        status = pthread_create(&ProcReqThread[i], NULL, 
+          (void *(*)(void *)) procReqRoutine, (void *) NULL);
+    }
 #endif
 
     return (status);
