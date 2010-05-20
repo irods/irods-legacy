@@ -582,14 +582,13 @@ sub processLogFile($) {
 #		$v_resc_location=$values[5];
 		if ($v_resc_name eq $v_resc_physical_name &&
 		    ($v_resc_type eq "unix file system" || $v_resc_type eq "UNIX_NOCHK file system") ) {
-		    $v_resc_type eq "unix file system" ) {
 		    $k = index($v_resc_path, "/?");
 		    $newPath = substr($v_resc_path, 0, $k);
 		    if ($v_resc_name ne "sdsc-fs") { # skip special built-in
 			push(@cv_srb_resources, $v_resc_name);
 			$newName = "SRB-" . $v_resc_name;
 			push(@cv_irods_resources, $newName);
-			print( IADMIN_FILE "mkresc '$newName' '$v_resc_type' 'archive' '$resc_hostaddress' $newPath\n");
+			print( IADMIN_FILE "mkresc '$newName' 'unix file system' 'archive' '$resc_hostaddress' $newPath\n");
 		    }
 		}
 	    }
