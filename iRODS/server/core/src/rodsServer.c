@@ -2,7 +2,6 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "rodsServer.h"
-#include "icatHighLevelRoutines.h"
 
 #include <syslog.h>
 
@@ -194,20 +193,9 @@ serverMain (char *logDir)
     agentProc_t *agentProcHead = NULL;
     int loopCnt = 0;
     int acceptErrCnt = 0;
-#ifdef SYS_TIMING
-    int connCnt = 0;
-#endif
-
-
-    status = initServerMain (&svrComm);
-    if (status < 0) {
-        rodsLog (LOG_ERROR, "serverMain: initServerMain error. status = %d",
-          status);
-        exit (1);
-    }
-
-#if 0
     rodsServerHost_t *reServerHost = NULL;
+
+
     memset (&svrComm, 0, sizeof (svrComm));
 
     status = getRodsEnv (&svrComm.myEnv);
@@ -251,6 +239,13 @@ serverMain (char *logDir)
 
     /* start the irodsReServer */
 #ifndef windows_platform   /* tempoarily set Windows don't need to to have reServer */
+#if 0	/* use reHost in server.config instead */
+#ifdef RODS_CAT
+    if (getenv ("reServerOnIes") != NULL) 
+#else
+    if (getenv ("reServerOnThisServer") != NULL) 
+#endif
+#endif
     getReHost (&reServerHost);
     if (reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST) {
         if (RODS_FORK () == 0) {  /* child */
@@ -267,9 +262,6 @@ serverMain (char *logDir)
         }
     }
 #endif
-#endif	/* 0 */
-
-    FD_ZERO(&sockMask);
 
     while (1) {		/* infinite loop */
         FD_SET(svrComm.sock, &sockMask);
@@ -320,9 +312,8 @@ serverMain (char *logDir)
 	}
 #ifdef SYS_TIMING
 	printSysTiming ("irodsServer", "read StartupPack", 0);
-	connCnt ++;
-	rodsLog (LOG_NOTICE, "irodsServer: agent proc count = %d, connCnt = %d",
-	  getAgentProcCnt (agentProcHead), connCnt);
+	rodsLog (LOG_NOTICE, "irodsServer: agent proc count = %d", 
+	  getAgentProcCnt (agentProcHead));
 #endif
 	if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
 	    sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
@@ -446,12 +437,7 @@ agentProc_t **agentProcHead)
     int childPid;
 
 #ifndef windows_platform
-#if 0
     childPid = RODS_FORK ();
-#else
-    /* use real fork if not doing exec */
-    childPid = fork ();
-#endif
 
     if (childPid == 0) {	/* child */
 #ifdef SYS_TIMING
@@ -480,14 +466,10 @@ execAgent (int newSock, startupPack_t *startupPack)
 	char *myArgv[3];
 	char console_buf[20];
 #else
-#if 0   /* don't do exec */
-    char buf[NAME_LEN];
     char *myArgv[2];
 #endif
-#endif
+    char buf[NAME_LEN];
     char *myBuf;
-    rsComm_t rsComm;
-    int status;
 
     myBuf = malloc (NAME_LEN * 2);
     snprintf (myBuf, NAME_LEN * 2, "%s=%d", SP_NEW_SOCK, newSock);
@@ -543,12 +525,11 @@ execAgent (int newSock, startupPack_t *startupPack)
       startupPack->option);
     putenv (myBuf);
 
-    myBuf = malloc (NAME_LEN * 2);
+	myBuf = malloc (NAME_LEN * 2);
     snprintf (myBuf, NAME_LEN * 2, "%s=%d", SERVER_BOOT_TIME,
       ServerBootTime);
     putenv (myBuf);
 
-#if 0	/* don't do exec */ 
 #ifdef windows_platform  /* windows */
 	iRODSNtGetAgentExecutableWithPath(buf, AGENT_EXE);
 	myArgv[0] = buf;
@@ -574,16 +555,6 @@ execAgent (int newSock, startupPack_t *startupPack)
 #else
     execv(myArgv[0], myArgv);
     return (0);
-#endif
-#else	/* #if 0 */
-    status = initAgentMain (&rsComm);
-    if (status < 0) cleanupAndExit (status);
-
-    status = agentMain (&rsComm);
-
-    cleanupAndExit (status);
-
-    return (status);
 #endif
 }
 
@@ -620,70 +591,6 @@ getAgentProcCnt (agentProc_t *agentProcHead)
 }
 
 int
-initServerMain (rsComm_t *svrComm)
-{
-    int status;
-    rodsServerHost_t *reServerHost = NULL;
-
-    bzero (svrComm, sizeof (rsComm_t));
-
-    status = getRodsEnv (&svrComm->myEnv);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR, "initServerMain: getRodsEnv error. status = %d",
-          status);
-	return status;
-    }
-
-    setRsCommFromRodsEnv (svrComm);
-
-    status = initServer (svrComm);
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR, "initServerMain: initServer error. status = %d",
-          status);
-        exit (1);
-    }
-    svrComm->sock = sockOpenForInConn (svrComm, &svrComm->myEnv.rodsPort, 
-      NULL, SOCK_STREAM);
-
-    if (svrComm->sock < 0) {
-        rodsLog (LOG_ERROR, 
-	  "initServerMain: sockOpenForInConn error. status = %d",
-          svrComm->sock);
-	return svrComm->sock;
-    }
-
-    listen (svrComm->sock, MAX_LISTEN_QUE);
-
-    rodsLog (LOG_NOTICE,
-     "rodsServer Release version %s - API Version %s is up",
-     RODS_REL_VERSION, RODS_API_VERSION);
-
-    /* Record port, pid, and cwd into a well-known file */
-    recordServerProcess(svrComm);
-    /* start the irodsReServer */
-#ifndef windows_platform   /* no reServer for Windows yet */
-    getReHost (&reServerHost);
-    if (reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST) {
-        if (RODS_FORK () == 0) {  /* child */
-            char *reServerOption = NULL;
-            char *av[NAME_LEN];
-
-            memset (av, 0, sizeof (av));
-            reServerOption = getenv ("reServerOption");
-            setExecArg (reServerOption, av);
-            rodsLog(LOG_NOTICE, "Starting irodsReServer");
-            av[0] = "irodsReServer";
-            execv(av[0], av);
-            exit(1);
-        }
-    }
-#endif
-    return status;
-}
-
-int
 initServer ( rsComm_t *svrComm)
 {
     int status;
@@ -698,10 +605,10 @@ initServer ( rsComm_t *svrComm)
 	}
 #endif
 
-    status = initAgent (svrComm);
-
+    status = initServerInfo (svrComm);
     if (status < 0) {
-        rodsLog (LOG_ERROR, "initServer: initAgent error. status = %d",
+        rodsLog (LOG_NOTICE,
+          "initServer: initServerInfo error, status = %d",
           status);
         return (status);
     }
@@ -794,125 +701,3 @@ recordServerProcess(rsComm_t *svrComm) {
 #endif
     return 0;
 }
-
-int
-initAgentMain (rsComm_t *rsComm)
-{
-    int status;
-    struct allowedUser *allowedUserHead = NULL;
-    char *tmpStr;
-
-    ProcessType = AGENT_PT;
-
-#ifdef windows_platform
-        iRODSNtAgentInit(argc, argv);
-#endif
-
-#ifndef windows_platform
-    signal(SIGINT, signalExit);
-    signal(SIGHUP, signalExit);
-    signal(SIGTERM, signalExit);
-    /* set to SIG_DFL as recommended by andy.salnikov so that system()
-     * call returns real values instead of 1 */
-    signal(SIGCHLD, SIG_DFL);
-    signal(SIGUSR1, signalExit);
-    signal(SIGPIPE, rsPipSigalHandler);
-#endif
-
-#ifndef windows_platform
-#ifdef SERVER_DEBUG
-    if (isPath ("/tmp/rodsdebug"))
-        sleep (20);
-#endif
-#endif
-
-#ifdef SYS_TIMING
-    rodsLogLevel(LOG_NOTICE);
-    printSysTiming ("irodsAgent", "exec", 1);
-#endif
-
-    memset (rsComm, 0, sizeof (rsComm_t));
-
-    status = initRsCommWithStartupPack (rsComm, NULL);
-
-    if (status < 0) {
-        sendVersion (rsComm->sock, status, 0, NULL, 0);
-        cleanupAndExit (status);
-    }
-
-    /* Handle option to log sql commands */
-    tmpStr = getenv (SP_LOG_SQL);
-    if (tmpStr != NULL) {
-#ifdef IRODS_SYSLOG
-       int j = atoi(tmpStr);
-       rodsLogSqlReq(j);
-#else
-       rodsLogSqlReq(1);
-#endif
-    }
-
-    /* Set the logging level */
-    tmpStr = getenv (SP_LOG_LEVEL);
-    if (tmpStr != NULL) {
-       int i;
-       i = atoi(tmpStr);
-       rodsLogLevel(i);
-    } else {
-       rodsLogLevel(LOG_NOTICE); /* default */
-    }
-
-#ifdef IRODS_SYSLOG
-/* Open a connection to syslog */
-    openlog("rodsAgent",LOG_ODELAY|LOG_PID,LOG_DAEMON);
-#endif
-
-    status = getRodsEnv (&rsComm->myEnv);
-
-    if (status < 0) {
-        sendVersion (rsComm->sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
-        cleanupAndExit (status);
-    }
-
-#if RODS_CAT
-    if (strstr(rsComm->myEnv.rodsDebug, "CAT") != NULL) {
-       chlDebug(rsComm->myEnv.rodsDebug);
-    }
-#endif
-
-    setAllowedUser (&allowedUserHead);
-
-    status = chkAllowedUser (allowedUserHead, rsComm->clientUser.userName,
-     rsComm->clientUser.rodsZone);
-
-    if (status <= 0) {
-        sendVersion (rsComm->sock, SYS_USER_NOT_ALLOWED_TO_CONN, 0, NULL, 0);
-        cleanupAndExit (SYS_USER_NOT_ALLOWED_TO_CONN);
-    }
-
-    /* send the server version and atatus as part of the protocol. Put
-     * rsComm->reconnPort as the status */
-
-    status = sendVersion (rsComm->sock, status, rsComm->reconnPort,
-      rsComm->reconnAddr, rsComm->cookie);
-
-    if (status < 0) {
-        sendVersion (rsComm->sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
-        cleanupAndExit (status);
-    }
-#ifdef SYS_TIMING
-    printSysTiming ("irodsAgent", "sendVersion", 0);
-#endif
-
-#ifdef RODS_CAT
-    status = connectRcat (rsComm);
-    if (status < 0) {
-        return (status);
-    }
-#endif
-#ifdef SYS_TIMING
-    rodsLogLevel(LOG_NOTICE);
-    printSysTiming ("irodsAgent", "initAgentMain", 0);
-#endif
-    return (status);
-}
-

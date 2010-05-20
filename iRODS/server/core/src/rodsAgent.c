@@ -140,7 +140,6 @@ main(int argc, char *argv[])
     return (status);
 }
 
-#if 0	/* moved to initServer.c */
 int 
 agentMain (rsComm_t *rsComm)
 {
@@ -294,4 +293,3 @@ char *rodsZone)
         return (1);
     }
 }
-#endif

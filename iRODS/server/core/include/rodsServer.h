@@ -73,8 +73,6 @@ void
 usage (char *prog);
 
 int
-initServerMain (rsComm_t *svrComm);
-int
 initServer (rsComm_t *svrComm);
 int
 setRsCommFromRodsEnv (rsComm_t *rsComm);
@@ -90,6 +88,4 @@ int
 getAgentProcCnt (agentProc_t *agentProcHead);
 int
 recordServerProcess(rsComm_t *svrComm);
-int
-initAgentMain (rsComm_t *rsComm);
 #endif	/* RODS_SERVER_H */
