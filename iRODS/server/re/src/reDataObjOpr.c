@@ -1042,12 +1042,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  * \remark Ketan Palshikar - msi documentation, 2009-06-11
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called 
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection. Also, it should never
- *  be called through delayExec since it requires client interaction.   
- *
  * \usage
  * testrule||msiDataObjPut(*A,null,../test/directory/testing.txt,*junk)|nop 
  * *A=/tempZone/home/rods/foo4
@@ -1624,11 +1618,6 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-09-10
  *
- * \note This call should only be used through the rcExecMyRule (irule) call  
- *  i.e., rule execution initiated by clients and should not be called  
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- *
  * \usage None
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
@@ -1750,10 +1739,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
  *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection. 
  *
  * \usage None
  *
@@ -1874,11 +1859,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-12
  *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- *
  * \usage None
  *
  * \param[in] inpParam1 - A taObjCopyInp_MS_T or STR_MS_T which would be taken as the src dataObj path.
@@ -1982,11 +1962,6 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  * \date    2007-04-02
  *
  * \remark Terrell Russell - msi documentation, 2009-06-11
- *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
  *
  * \usage None
  *
@@ -2100,11 +2075,6 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-13
  *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- *
  * \usage
  * testrule||msiCollCreate(*A,0,*junk)##writeLine(stdout,"")|nop
  * *A/tempZone/home/rods/dir1
@@ -2196,11 +2166,6 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  * \date    2007-04-02
  *
  * \remark Terrell Russell - msi documentation, 2009-06-11
- *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
  *
  * \usage
  * testrule||msiCollCreate(*A,0,*junk1)##msiRmColl(*A,forceFlag,*junk2)##writeLine(stdout,"")|nop
@@ -2330,11 +2295,6 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
  * \date    2007-10-01
  *
  * \remark Terrell Russell - msi documentation, 2009-06-20
- *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
  *
  * \usage None
  *
@@ -2535,11 +2495,6 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  *
  * \remark Terrell Russell - msi documentation, 2009-06-12
  *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
- *
  * \usage
  * testrule||msiPhyPathReg(*D,demoResc8,*E,null,*junk)|nop
  * *D=/tempZone/home/rods/foo6%*E=/scratch/localfile/test.txt
@@ -2654,11 +2609,6 @@ ruleExecInfo_t *rei)
  * \date    2007-04-02
  *
  * \remark Terrell Russell - msi documentation, 2009-06-12
- *
- * \note This call should only be used through the rcExecMyRule (irule) call
- *  i.e., rule execution initiated by clients and should not be called
- *  internally by the server since it interacts with the client through
- *  the normal client/server socket connection.
  *
  * \usage None
  *
@@ -3494,11 +3444,6 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
  *
- * \note This call should only be used through the rcExecMyRule (irule) call
- * i.e., rule execution initiated by clients and should not be called
- * internally by the server since it interacts with the client through
- * the normal client/server socket connection.
- *
  * \usage None
  *
  * \param[in] inpParam1 - a DataObjInp_MS_T or STR_MS_T which would be the obj Path.
@@ -3606,11 +3551,6 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \date    2009-03-24
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
- *
- * \note This call should only be used through the rcExecMyRule (irule) call
- * i.e., rule execution initiated by clients and should not be called
- * internally by the server since it interacts with the client through
- * the normal client/server socket connection.
  *
  * \usage None
  *
@@ -3729,11 +3669,6 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \note  This microservice calls rsStructFileExtAndReg to extract a tar 
  *        file (inpParam1) into a target collection (inpParam2).  The content of 
  *        the target collection is stored on the physical resource (inpParam3).
- *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
  *
  * \usage None
  *
@@ -3873,11 +3808,6 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *        (inpParam1) from a target collection (inpParam2). The content of the 
  *        target collection is stored on the physical resource (inpParam3).
  *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
- *
  * \usage None
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as dataObj path.
@@ -3991,11 +3921,6 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *        collection into a number of tar files to make it more efficient to 
  *        store these files on tape. This microservice has the same functionality
  *        as the iphybun command.
- *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
  *
  * \usage None
  *
