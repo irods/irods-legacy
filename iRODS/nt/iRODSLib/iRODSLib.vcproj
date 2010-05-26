@@ -55,7 +55,7 @@
 				WarningLevel="0"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
-				CompileAs="1"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -512,6 +512,10 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\api\src\rcGenQuery.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\api\src\rcGetHostForPut.c"
 				>
 			</File>
 			<File
