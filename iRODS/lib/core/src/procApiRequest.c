@@ -217,7 +217,7 @@ bytesBuf_t *outBsBBuf)
         return (USER_API_INPUT_ERR);
     }
 
-    status = readMsgHeader (conn->sock, &myHeader);
+    status = readMsgHeader (conn->sock, &myHeader, NULL);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
@@ -234,7 +234,7 @@ bytesBuf_t *outBsBBuf)
               conn->clientState, conn->agentState);
             cliSwitchConnect (conn);
             pthread_mutex_unlock (&conn->lock);
-            status = readMsgHeader (conn->sock, &myHeader);
+            status = readMsgHeader (conn->sock, &myHeader, NULL);
             if (status < 0) {
                 cliChkReconnAtReadEnd (conn);
                 return (savedStatus);
@@ -249,7 +249,7 @@ bytesBuf_t *outBsBBuf)
     }
 
     status = readMsgBody (conn->sock, &myHeader, &outStructBBuf, outBsBBuf,
-      &errorBBuf, conn->irodsProt);
+      &errorBBuf, conn->irodsProt, NULL);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "readAndProcApiReply: readMsgBody error. status = %d", status);

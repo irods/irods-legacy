@@ -392,12 +392,11 @@ procReqRoutine ()
     while (1) {
 	myXmsgReq = getReqFromQue ();
 	if (myXmsgReq == NULL) {
-            rodsLog (LOG_ERROR,
-              "procReqRoutine: getReqFromQue error");
+	    /* someone else took care of it */
 	    continue;
 	}
 
-        status = readStartupPack (myXmsgReq->sock, &startupPack);
+        status = readStartupPack (myXmsgReq->sock, &startupPack, NULL);
 	if (status < 0) {
             rodsLog (LOG_ERROR,
               "procReqRoutine: readStartupPack error, status = %d", status);

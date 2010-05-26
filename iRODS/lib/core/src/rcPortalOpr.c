@@ -45,7 +45,7 @@ rcvTranHeader (int sock, transferHeader_t *myHeader)
     transferHeader_t tmpHeader;
 
     retVal = myRead (sock, (void *) &tmpHeader, sizeof (tmpHeader),
-      SOCK_TYPE, NULL);
+      SOCK_TYPE, NULL, NULL);
 
     if (retVal != sizeof (tmpHeader)) {
         rodsLog (LOG_ERROR,
@@ -98,7 +98,7 @@ rodsLong_t dataSize)
     conn->transStat.bytesWritten = dataSize;
 
     status = myRead (in_fd, myBBuf->buf, (int) dataSize, FILE_DESC_TYPE,
-      NULL);
+      NULL, NULL);
 
     close (in_fd);
 
@@ -319,7 +319,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 	    } 
 
 	    bytesRead = myRead (srcFd, buf, toRead, FILE_DESC_TYPE, 
-	      &bytesRead);
+	      &bytesRead, NULL);
 	    if (bytesRead != toRead) {
 		myInput->status = SYS_COPY_LEN_ERR - errno;
 		rodsLogError (LOG_ERROR, myInput->status,
@@ -388,7 +388,7 @@ rodsLong_t dataSize)
 
     while ((dataObjWriteInpBBuf.len =
       myRead (in_fd, dataObjWriteInpBBuf.buf, TRANS_BUF_SZ, FILE_DESC_TYPE,
-      &bytesRead)) > 0) {
+      &bytesRead, NULL)) > 0) {
         /* Write to the data object */
 
         dataObjWriteInp.len = dataObjWriteInpBBuf.len;
@@ -777,7 +777,8 @@ rcPartialDataGet (rcPortalTransferInp_t *myInput)
                 toRead = toGet;
             }
 
-            bytesRead = myRead (srcFd, buf, toRead, SOCK_TYPE, &bytesRead);
+            bytesRead = myRead (srcFd, buf, toRead, SOCK_TYPE, &bytesRead, 
+	      NULL);
             if (bytesRead != toRead) {
                 myInput->status = SYS_COPY_LEN_ERR - errno;
                 rodsLogError (LOG_ERROR, myInput->status,

@@ -44,14 +44,17 @@ extern int optind, opterr, optopt;
 
 #define MIN_AGENT_TIMEOUT_TIME 7200
 
-#define MAX_ACCEPT_ERR_CNT 50
+#define MAX_ACCEPT_ERR_CNT 50000
+
+#define NUM_READ_WORKER_THR	5
 
 /* Managing the spawned agents */
 
 typedef struct agentProc {
     int pid;
-    char proxyUser[NAME_LEN];
-    char clientUser[NAME_LEN];
+    int sock;
+    startupPack_t startupPack;
+    struct sockaddr_in  remoteAddr;  /* remote address */
     struct agentProc *next;
 } agentProc_t;
 
@@ -77,15 +80,33 @@ initServer (rsComm_t *svrComm);
 int
 setRsCommFromRodsEnv (rsComm_t *rsComm);
 int
-spawnAgent (int newSock, startupPack_t *startupPack,
-agentProc_t **agentProcHead);
+spawnAgent (agentProc_t *connReq, agentProc_t **agentProcHead);
 int
 execAgent (int newSock, startupPack_t *startupPack);
 int
-queAgentProc (int childPid, startupPack_t *startupPack,
+queConnectedAgentProc (int childPid, agentProc_t *connReq, 
 agentProc_t **agentProcHead);
 int
 getAgentProcCnt (agentProc_t *agentProcHead);
 int
 recordServerProcess(rsComm_t *svrComm);
+int
+initServerMain (rsComm_t *svrComm);
+int
+addConnReqToQue (rsComm_t *rsComm, int sock);
+int
+initConnThreadEnv ();
+agentProc_t *
+getConnReqFromQue ();
+void
+readWorkerTask ();
+int
+procSingleConnReq (agentProc_t *connReq);
+int
+startProcConnReqThreads ();
+int
+queAgentProc (agentProc_t *agentPorc, agentProc_t **agentPorcHead,
+irodsPosition_t position);
+void
+spawnManagerTask ();
 #endif	/* RODS_SERVER_H */

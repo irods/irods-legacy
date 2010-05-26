@@ -554,7 +554,7 @@ partialDataPut (portalTransferInp_t *myInput)
 	    } else {
 		toread1 = toread0;
 	    }
-            bytesRead = myRead (srcFd, buf, toread1, SOCK_TYPE, NULL);
+            bytesRead = myRead (srcFd, buf, toread1, SOCK_TYPE, NULL, NULL);
 
 #ifdef PARA_TIMING
             tafterRead=time(0);
@@ -836,7 +836,7 @@ remToLocPartialCopy (portalTransferInp_t *myInput)
             }
 
             bytesRead = myRead (srcFd, buf, toRead,
-		  SOCK_TYPE, NULL);
+		  SOCK_TYPE, NULL, NULL);
             if (bytesRead != toRead) {
                 rodsLog (LOG_NOTICE,
                   "remToLocPartialCopy: toGet %lld, bytesRead %d",

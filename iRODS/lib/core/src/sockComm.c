@@ -169,7 +169,7 @@ rsAcceptConn (rsComm_t *svrComm)
 }
 
 int
-readMsgHeader (int sock, msgHeader_t *myHeader)
+readMsgHeader (int sock, msgHeader_t *myHeader, struct timeval *tv)
 {
     int nbytes;
     int myLen;
@@ -179,13 +179,19 @@ readMsgHeader (int sock, msgHeader_t *myHeader)
     
     /* read the header length packet */
 
-    nbytes = myRead (sock, (void *) &myLen, sizeof (myLen), SOCK_TYPE, NULL);
+    nbytes = myRead (sock, (void *) &myLen, sizeof (myLen), 
+      SOCK_TYPE, NULL, tv);
 
     if (nbytes != sizeof (myLen)) {
+	if (nbytes < 0) {
+	    status = nbytes - errno;
+	} else {
+	    status = SYS_HEADER_READ_LEN_ERR - errno;
+	}
 	rodsLog (LOG_ERROR,
          "readMsgHeader:header read- read %d bytes, expect %d, status = %d",
-         nbytes, sizeof (myLen), SYS_HEADER_READ_LEN_ERR - errno);
-         return (SYS_HEADER_READ_LEN_ERR - errno);
+         nbytes, sizeof (myLen), status);
+         return (status);
     }
 
     myLen =  ntohl (myLen);
@@ -197,13 +203,18 @@ readMsgHeader (int sock, msgHeader_t *myHeader)
          return (SYS_HEADER_READ_LEN_ERR);
     }
 
-    nbytes = myRead (sock, (void *) tmpBuf, myLen, SOCK_TYPE, NULL);
+    nbytes = myRead (sock, (void *) tmpBuf, myLen, SOCK_TYPE, NULL, tv);
 
     if (nbytes != myLen) {
+        if (nbytes < 0) {
+            status = nbytes - errno;
+        } else {
+            status = SYS_HEADER_READ_LEN_ERR - errno;
+        }
         rodsLog (LOG_ERROR,
          "readMsgHeader:header read- read %d bytes, expect %d, status = %d",
-         nbytes, myLen, SYS_HEADER_READ_LEN_ERR - errno);
-         return (SYS_HEADER_READ_LEN_ERR - errno);
+         nbytes, myLen, status);
+         return (status);
     }
 
     if (getRodsLogLevel () >= LOG_DEBUG3) {
@@ -280,11 +291,19 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
 
 int 
 myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
- int *bytesRead)
+int *bytesRead, struct timeval *tv)
 {
     int nbytes;
     int toRead;
     char *tmpPtr;
+    fd_set set;
+    struct timeval timeout;
+    int status;
+
+    /* Initialize the file descriptor set. */
+    FD_ZERO (&set);
+    FD_SET (sock, &set);
+    if (tv != NULL) timeout = *tv;
 
     toRead = len;
     tmpPtr = (char *) buf;
@@ -300,6 +319,23 @@ myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
             nbytes = read (sock, (void *) tmpPtr, toRead);
 	}
 #else
+        if (tv != NULL) {
+            status = select (sock + 1, &set, NULL, NULL, &timeout);
+            if (status == 0) {
+                /* timedout */
+                if (len - toRead > 0) {
+                    return (len - toRead);
+                } else {
+                    return SYS_SOCK_READ_TIMEDOUT;
+                }
+            } else if (status < 0) {
+                if ( errno == EINTR) {
+                    continue;
+                } else {
+                    return SYS_SOCK_READ_ERR - errno;
+                }
+            }
+        }
         nbytes = read (sock, (void *) tmpPtr, toRead);
 #endif
         if (nbytes <= 0) {
@@ -362,13 +398,13 @@ int *bytesWritten)
 }
 
 int
-readStartupPack (int sock, startupPack_t **startupPack)
+readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
 {
     int status;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
-    status = readMsgHeader (sock, &myHeader);
+    status = readMsgHeader (sock, &myHeader, tv);
 
    if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
@@ -376,9 +412,16 @@ readStartupPack (int sock, startupPack_t **startupPack)
 	return (status);
     }
 
+    if (myHeader.msgLen > sizeof (startupPack_t) * 2 || myHeader.msgLen <= 0) {
+        rodsLog (LOG_NOTICE,
+          "readStartupPack: problem with myHeader.msgLen = %d",
+          myHeader.msgLen);
+          return (SYS_HEADER_READ_LEN_ERR);
+    }
+
     memset (&bsBBuf, 0, sizeof (bytesBuf_t));  
-    status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf, 
-      &errorBBuf, XML_PROT);
+    status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf,
+      &errorBBuf, XML_PROT, tv);
     if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
           "readStartupPack: readMsgBody error. status = %d", status);
@@ -415,15 +458,6 @@ readStartupPack (int sock, startupPack_t **startupPack)
           myHeader.errorLen);
     }
 
-    if (myHeader.msgLen > sizeof (startupPack_t) * 2 || myHeader.msgLen <= 0) {
-        if (inputStructBBuf.buf != NULL)
-            free (inputStructBBuf.buf);
-        rodsLog (LOG_NOTICE, 
-	  "readStartupPack: problem with myHeader.msgLen = %d",
-          myHeader.msgLen);
-          return (SYS_HEADER_READ_LEN_ERR);
-    }
-
     /* always use XML_PROT for the startup pack */
     status = unpackStruct (inputStructBBuf.buf, (void **) startupPack, 
       "StartupPack_PI", RodsPackTable, XML_PROT);
@@ -445,7 +479,7 @@ readVersion (int sock, version_t **myVersion)
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
-    status = readMsgHeader (sock, &myHeader);
+    status = readMsgHeader (sock, &myHeader, NULL);
 
    if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
@@ -455,7 +489,7 @@ readVersion (int sock, version_t **myVersion)
 
     memset (&bsBBuf, 0, sizeof (bytesBuf_t));
     status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf,
-      &errorBBuf, XML_PROT);
+      &errorBBuf, XML_PROT, NULL);
     if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
           "readVersion: readMsgBody error. status = %d", status);
@@ -1112,7 +1146,8 @@ rodsSleep (int sec, int microSec)
 
 int
 readMsgBody (int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf, 
-bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
+bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt,
+struct timeval *tv)
 {
     int nbytes;
     int bytesRead;
@@ -1136,7 +1171,7 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
         inputStructBBuf->buf = malloc (myHeader->msgLen);
 
         nbytes = myRead (sock, inputStructBBuf->buf, myHeader->msgLen, 
-	  SOCK_TYPE, NULL);
+	  SOCK_TYPE, NULL, tv);
 
         if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
             printf ("received msg: \n%s\n", (char *) inputStructBBuf->buf);
@@ -1160,7 +1195,7 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
         errorBBuf->buf = malloc (myHeader->errorLen);
 
         nbytes = myRead (sock, errorBBuf->buf, myHeader->errorLen,
-	  SOCK_TYPE, NULL);
+	  SOCK_TYPE, NULL, tv);
 
         if (irodsProt == XML_PROT && getRodsLogLevel () >= LOG_DEBUG3) {
             printf ("received error msg: \n%s\n", (char *) errorBBuf->buf);
@@ -1189,7 +1224,7 @@ bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt)
         }
 
         nbytes = myRead (sock, bsBBuf->buf, myHeader->bsLen, SOCK_TYPE,
-	  &bytesRead);
+	  &bytesRead, tv);
 
         if (nbytes != myHeader->bsLen) {
             rodsLog (LOG_NOTICE, 
@@ -1243,7 +1278,7 @@ readReconMsg (int sock, reconnMsg_t **reconnMsg)
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
 
-    status = readMsgHeader (sock, &myHeader);
+    status = readMsgHeader (sock, &myHeader, NULL);
 
    if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
@@ -1253,7 +1288,7 @@ readReconMsg (int sock, reconnMsg_t **reconnMsg)
 
     memset (&bsBBuf, 0, sizeof (bytesBuf_t));  
     status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf, 
-      &errorBBuf, XML_PROT);
+      &errorBBuf, XML_PROT, NULL);
     if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
           "readReconMsg: readMsgBody error. status = %d", status);
@@ -1460,3 +1495,4 @@ rodsEnv *myEnv, int reconnFlag)
     }
     return 0;
 }
+

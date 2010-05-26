@@ -5,6 +5,9 @@
 
 #include <syslog.h>
 
+#ifndef SINGLE_SVR_THR
+#include <pthread.h>
+#endif
 #ifndef windows_platform
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -16,6 +19,22 @@
 #endif
 
 uint ServerBootTime;
+int SvrSock;
+
+agentProc_t *ConnectedAgentHead = NULL;
+agentProc_t *ConnReqHead = NULL;
+agentProc_t *SpawnReqHead = NULL;
+agentProc_t *BadReqHead = NULL;
+
+#ifndef SINGLE_SVR_THR
+pthread_mutex_t ReadReqCondMutex;
+pthread_cond_t ReadReqCond;
+pthread_mutex_t ConnectedAgentMutex;
+pthread_mutex_t SpawnReqCondMutex;
+pthread_cond_t SpawnReqCond;
+pthread_t ReadWorkerThread[NUM_READ_WORKER_THR];
+pthread_t SpawnManagerThread;
+#endif
 
 #ifndef windows_platform   /* all UNIX */
 int
@@ -86,11 +105,7 @@ int irodsWinMain(int argc, char **argv)
 #ifndef _WIN32
     signal(SIGTTIN, SIG_IGN);
     signal(SIGTTOU, SIG_IGN);
-#if 0	/* SIGCHLD to SIG_IGN will cause auto-reap and wait will get nothing */
-    signal(SIGCHLD, SIG_IGN);
-#else
-    signal(SIGCHLD, SIG_DFL);
-#endif
+    signal(SIGCHLD, SIG_DFL);	/* SIG_IGN causes autoreap. wait get nothing */
     signal(SIGPIPE, SIG_IGN);
 #ifdef osx_platform
     signal(SIGINT, (void *) serverExit);
@@ -189,80 +204,25 @@ serverMain (char *logDir)
     fd_set sockMask;
     int numSock;
     int newSock;
-    startupPack_t *startupPack;
-    agentProc_t *agentProcHead = NULL;
     int loopCnt = 0;
     int acceptErrCnt = 0;
-    rodsServerHost_t *reServerHost = NULL;
+#ifdef SYS_TIMING
+    int connCnt = 0;
+#endif
 
 
-    memset (&svrComm, 0, sizeof (svrComm));
-
-    status = getRodsEnv (&svrComm.myEnv);
-
+    status = initServerMain (&svrComm);
     if (status < 0) {
-        rodsLog (LOG_NOTICE, "serverMain: getRodsEnv error. status = %d",
+        rodsLog (LOG_ERROR, "serverMain: initServerMain error. status = %d",
           status);
         exit (1);
     }
-	
-    setRsCommFromRodsEnv (&svrComm);
-
-    status = initServer (&svrComm);
-
-    if (status < 0) {
-        rodsLog (LOG_NOTICE, "serverMain: initServer error. status = %d",
-          status);
-        exit (1);
-    }
-
-    /* open  a socket an listen for connection */ 
-    svrComm.sock = sockOpenForInConn (&svrComm, &svrComm.myEnv.rodsPort, NULL,
-      SOCK_STREAM);
-
-    if (svrComm.sock < 0) {
-        rodsLog (LOG_NOTICE, "serverMain: sockOpenForInConn error. status = %d",
-          svrComm.sock);
-        exit (1);
-    }
-
-    listen (svrComm.sock, MAX_LISTEN_QUE);
-
+#ifndef SINGLE_SVR_THR
+    startProcConnReqThreads ();
+#endif
     FD_ZERO(&sockMask);
 
-    rodsLog (LOG_NOTICE, 
-     "rodsServer Release version %s - API Version %s is up", 
-     RODS_REL_VERSION, RODS_API_VERSION);
-
-    /* Record port, pid, and cwd into a well-known file */
-    recordServerProcess(&svrComm);
-
-    /* start the irodsReServer */
-#ifndef windows_platform   /* tempoarily set Windows don't need to to have reServer */
-#if 0	/* use reHost in server.config instead */
-#ifdef RODS_CAT
-    if (getenv ("reServerOnIes") != NULL) 
-#else
-    if (getenv ("reServerOnThisServer") != NULL) 
-#endif
-#endif
-    getReHost (&reServerHost);
-    if (reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST) {
-        if (RODS_FORK () == 0) {  /* child */
-            char *reServerOption = NULL;
-            char *av[NAME_LEN];
-
-            memset (av, 0, sizeof (av));
-            reServerOption = getenv ("reServerOption");
-            setExecArg (reServerOption, av);
-            rodsLog(LOG_NOTICE, "Starting irodsReServer");
-            av[0] = "irodsReServer";
-            execv(av[0], av);
-            exit(1);
-        }
-    }
-#endif
-
+    SvrSock = svrComm.sock;
     while (1) {		/* infinite loop */
         FD_SET(svrComm.sock, &sockMask);
         while ((numSock = select (svrComm.sock + 1, &sockMask, 
@@ -279,7 +239,7 @@ serverMain (char *logDir)
 	    }
 	}
 
-	procChildren (&agentProcHead);
+	procChildren (&ConnectedAgentHead);
 #ifdef SYS_TIMING
 	initSysTiming ("irodsServer", "recv connection", 0);
 #endif
@@ -301,52 +261,26 @@ serverMain (char *logDir)
 
         acceptErrCnt = 0;
 
-	status = readStartupPack (newSock, &startupPack);
+	addConnReqToQue (&svrComm, newSock);
 
-	if (status < 0) {
-	    rodsLog (LOG_NOTICE, "readStartupPack error from %s, status = %d", 
-	      inet_ntoa (svrComm.remoteAddr.sin_addr), status);
-	    sendVersion (newSock, status, 0, NULL, 0);
-	    close (newSock);
-	    continue;
-	}
 #ifdef SYS_TIMING
-	printSysTiming ("irodsServer", "read StartupPack", 0);
-	rodsLog (LOG_NOTICE, "irodsServer: agent proc count = %d", 
-	  getAgentProcCnt (agentProcHead));
+        connCnt ++;
+        rodsLog (LOG_NOTICE, "irodsServer: agent proc count = %d, connCnt = %d",
+          getAgentProcCnt (ConnectedAgentHead), connCnt);
 #endif
-	if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
-	    sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
-	    close (newSock);
-            continue;
-        }
 
-	status = spawnAgent (newSock, startupPack, &agentProcHead);
+#ifdef SINGLE_SVR_THR
+	procSingleConnReq (ConnReqHead);
+	ConnReqHead = NULL;
+#endif
 
 #ifndef windows_platform
-	close (newSock);
+        loopCnt++;
+        if (loopCnt >= LOGFILE_CHK_CNT) {
+            chkLogfileName (logDir, RODS_LOGFILE);
+	    loopCnt = 0;
+        }
 #endif
-        if (status < 0) {
-            rodsLog (LOG_NOTICE, 
-	     "spawnAgent error for puser=%s and cuser=%s from %s, status = %d",
-              startupPack->proxyUser, startupPack->clientUser,
-	      inet_ntoa (svrComm.remoteAddr.sin_addr), status);
-	        free  (startupPack);
-            continue;
-        } else {
-            rodsLog (LOG_NOTICE,
-	     "Agent process %d started for puser=%s and cuser=%s from %s",
-              agentProcHead->pid, startupPack->proxyUser, 
-	      startupPack->clientUser, 
-	      inet_ntoa (svrComm.remoteAddr.sin_addr));
-	    free  (startupPack);
-	    loopCnt++;
-#ifndef _WIN32
-	    if (loopCnt >= LOGFILE_CHK_CNT) {
-		chkLogfileName (logDir, RODS_LOGFILE);
-	    }
-#endif
-	    }
     }		/* infinite loop */
 
     /* not reached - return (status); */
@@ -410,9 +344,12 @@ agentProc_t *
 getAgentProcByPid (int childPid, agentProc_t **agentProcHead) 
 {
     agentProc_t *tmpAgentProc, *prevAgentProc;
- 
-    tmpAgentProc = *agentProcHead;
     prevAgentProc = NULL;
+ 
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_lock (&ConnectedAgentMutex);
+#endif
+    tmpAgentProc = *agentProcHead;
 
     while (tmpAgentProc != NULL) {
 	if (childPid == tmpAgentProc->pid) {
@@ -426,34 +363,59 @@ getAgentProcByPid (int childPid, agentProc_t **agentProcHead)
 	prevAgentProc = tmpAgentProc;
 	tmpAgentProc = tmpAgentProc->next;
     }
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_unlock (&ConnectedAgentMutex);
+#endif
     return (tmpAgentProc);
 }
 
 
 int
-spawnAgent (int newSock, startupPack_t *startupPack, 
-agentProc_t **agentProcHead)
+spawnAgent (agentProc_t *connReq, agentProc_t **agentProcHead)
 {
     int childPid;
+    int newSock;
+    startupPack_t *startupPack;
+
+    if (connReq == NULL) return USER__NULL_INPUT_ERR;
+
+    newSock = connReq->sock;
+    startupPack = &connReq->startupPack;
 
 #ifndef windows_platform
-    childPid = RODS_FORK ();
+    childPid = fork ();	/* use fork instead of vfork because of multi-thread
+			 * env */
 
     if (childPid == 0) {	/* child */
+	agentProc_t *tmpAgentProc;
+	close (SvrSock);
 #ifdef SYS_TIMING
         printSysTiming ("irodsAent", "after fork", 0);
         initSysTiming ("irodsAent", "after fork", 1);
+#endif
+	/* close any socket still in the queue */
+#ifndef SINGLE_SVR_THR
+	tmpAgentProc = ConnReqHead;
+	while (tmpAgentProc != NULL) {
+	    close (tmpAgentProc->sock);
+	    tmpAgentProc = tmpAgentProc->next;
+	}
+        tmpAgentProc = SpawnReqHead;
+        while (tmpAgentProc != NULL) {
+            close (tmpAgentProc->sock);
+            tmpAgentProc = tmpAgentProc->next;
+        }
 #endif
 	execAgent (newSock, startupPack);
     } else {			/* parent */
 #ifdef SYS_TIMING
 	printSysTiming ("irodsServer", "fork agent", 0);
 #endif
-	queAgentProc (childPid, startupPack, agentProcHead);
+	queConnectedAgentProc (childPid, connReq, agentProcHead);
     }
 #else
 	childPid = execAgent (newSock, startupPack);
-	queAgentProc (childPid, startupPack, agentProcHead);
+	queConnectedAgentProc (childPid, connReq, agentProcHead);
 #endif
 
     return (childPid);
@@ -470,6 +432,7 @@ execAgent (int newSock, startupPack_t *startupPack)
 #endif
     char buf[NAME_LEN];
     char *myBuf;
+    int status;
 
     myBuf = malloc (NAME_LEN * 2);
     snprintf (myBuf, NAME_LEN * 2, "%s=%d", SP_NEW_SOCK, newSock);
@@ -553,25 +516,32 @@ execAgent (int newSock, startupPack_t *startupPack)
 #if windows_platform  /* windows */
 	return (int)_spawnv(_P_NOWAIT,myArgv[0], myArgv);
 #else
-    execv(myArgv[0], myArgv);
+    status = execv(myArgv[0], myArgv);
+    if (status < 0) {
+        rodsLog (LOG_ERROR, "execAgent: execv error errno=%d", errno);
+	exit (1);
+    }
     return (0);
 #endif
 }
 
 int
-queAgentProc (int childPid, startupPack_t *startupPack, 
+queConnectedAgentProc (int childPid, agentProc_t *connReq, 
 agentProc_t **agentProcHead)
 {
-    agentProc_t *tmpAagentProc;
+    if (connReq == NULL) 
+        return USER__NULL_INPUT_ERR;
 
-    tmpAagentProc = (agentProc_t *) malloc (sizeof (agentProc_t));
-    memset (tmpAagentProc, 0, sizeof (agentProc_t));
+    connReq->pid = childPid;
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_lock (&ConnectedAgentMutex);
+#endif
 
-    tmpAagentProc->next = *agentProcHead;
-    tmpAagentProc->pid = childPid;
-    rstrcpy (tmpAagentProc->proxyUser, startupPack->proxyUser, NAME_LEN);
-    rstrcpy (tmpAagentProc->clientUser, startupPack->clientUser, NAME_LEN);
-    *agentProcHead = tmpAagentProc;
+    queAgentProc (connReq, agentProcHead, TOP_POS);
+
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_unlock (&ConnectedAgentMutex);
+#endif
 
     return (0);
 }
@@ -582,11 +552,19 @@ getAgentProcCnt (agentProc_t *agentProcHead)
     agentProc_t *tmpAagentProc;
     int count = 0;
 
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_lock (&ConnectedAgentMutex);
+#endif
+
     tmpAagentProc = agentProcHead;
     while (tmpAagentProc != NULL) {
 	count++;
 	tmpAagentProc = tmpAagentProc->next;
     }
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_unlock (&ConnectedAgentMutex);
+#endif
+
     return count;
 }
 
@@ -701,3 +679,344 @@ recordServerProcess(rsComm_t *svrComm) {
 #endif
     return 0;
 }
+
+int
+initServerMain (rsComm_t *svrComm)
+{
+    int status;
+    rodsServerHost_t *reServerHost = NULL;
+
+    bzero (svrComm, sizeof (rsComm_t));
+
+    status = getRodsEnv (&svrComm->myEnv);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR, "initServerMain: getRodsEnv error. status = %d",
+          status);
+        return status;
+    }
+
+    setRsCommFromRodsEnv (svrComm);
+
+    status = initServer (svrComm);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR, "initServerMain: initServer error. status = %d",
+          status);
+        exit (1);
+    }
+    svrComm->sock = sockOpenForInConn (svrComm, &svrComm->myEnv.rodsPort,
+      NULL, SOCK_STREAM);
+
+    if (svrComm->sock < 0) {
+        rodsLog (LOG_ERROR,
+          "initServerMain: sockOpenForInConn error. status = %d",
+          svrComm->sock);
+        return svrComm->sock;
+    }
+
+    listen (svrComm->sock, MAX_LISTEN_QUE);
+
+    rodsLog (LOG_NOTICE,
+     "rodsServer Release version %s - API Version %s is up",
+     RODS_REL_VERSION, RODS_API_VERSION);
+
+    /* Record port, pid, and cwd into a well-known file */
+    recordServerProcess(svrComm);
+    /* start the irodsReServer */
+#ifndef windows_platform   /* no reServer for Windows yet */
+    getReHost (&reServerHost);
+    if (reServerHost != NULL && reServerHost->localFlag == LOCAL_HOST) {
+        if (RODS_FORK () == 0) {  /* child */
+            char *reServerOption = NULL;
+            char *av[NAME_LEN];
+
+            memset (av, 0, sizeof (av));
+            reServerOption = getenv ("reServerOption");
+            setExecArg (reServerOption, av);
+            rodsLog(LOG_NOTICE, "Starting irodsReServer");
+            av[0] = "irodsReServer";
+            execv(av[0], av);
+            exit(1);
+        }
+    }
+#endif
+    return status;
+}
+
+/* add incoming connection request to the bottom of the link list */
+
+int
+addConnReqToQue (rsComm_t *rsComm, int sock)
+{
+    agentProc_t *myConnReq;
+
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_lock (&ReadReqCondMutex);
+#endif
+    myConnReq = calloc (1, sizeof (agentProc_t));
+
+    myConnReq->sock = sock;
+    myConnReq->remoteAddr = rsComm->remoteAddr;
+    queAgentProc (myConnReq, &ConnReqHead, BOTTOM_POS);
+
+#ifndef SINGLE_SVR_THR
+    pthread_cond_signal (&ReadReqCond);
+    pthread_mutex_unlock (&ReadReqCondMutex);
+#endif
+
+    return (0);
+}
+
+int
+initConnThreadEnv ()
+{
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_init (&ReadReqCondMutex, NULL);
+    pthread_mutex_init (&ConnectedAgentMutex, NULL);
+    pthread_mutex_init (&SpawnReqCondMutex, NULL);
+    pthread_cond_init (&ReadReqCond, NULL);
+    pthread_cond_init (&SpawnReqCond, NULL);
+#endif
+    return (0);
+}
+
+agentProc_t *
+getConnReqFromQue ()
+{
+    agentProc_t *myConnReq = NULL;
+
+    while (myConnReq == NULL) {
+#ifndef SINGLE_SVR_THR
+        pthread_mutex_lock (&ReadReqCondMutex);
+#endif
+        if (ConnReqHead != NULL) {
+            myConnReq = ConnReqHead;
+            ConnReqHead = ConnReqHead->next;
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_unlock (&ReadReqCondMutex);
+#endif
+            break;
+        }
+
+#ifndef SINGLE_SVR_THR
+        pthread_cond_wait (&ReadReqCond, &ReadReqCondMutex);
+#endif
+        if (ConnReqHead == NULL) {
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_unlock (&ReadReqCondMutex);
+#endif
+            continue;
+        } else {
+            myConnReq = ConnReqHead;
+            ConnReqHead = ConnReqHead->next;
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_unlock (&ReadReqCondMutex);
+#endif
+            break;
+        }
+    }
+
+    return (myConnReq);
+}
+
+int
+startProcConnReqThreads ()
+{
+    int status = 0;
+#ifndef SINGLE_SVR_THR
+    int i;
+
+    initConnThreadEnv ();
+    for (i = 0; i < NUM_READ_WORKER_THR; i++) {
+        status = pthread_create(&ReadWorkerThread[i], NULL,
+          (void *(*)(void *)) readWorkerTask, (void *) NULL);
+	if (status < 0) {
+	    rodsLog (LOG_ERROR,
+	      "pthread_create of readWorker %d failed, errno = %d",
+	      i, errno);
+	}
+    }
+    status = pthread_create(&SpawnManagerThread, NULL,
+      (void *(*)(void *)) spawnManagerTask, (void *) NULL);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "pthread_create of spawnManage failed, errno = %d", errno);
+    }
+
+#endif
+
+    return (status);
+}
+
+void
+readWorkerTask ()
+{
+    agentProc_t *myConnReq = NULL;
+    startupPack_t *startupPack;
+    int newSock;
+    int status;
+    struct timeval tv;
+
+    tv.tv_sec = READ_STARTUP_PACK_TOUT_SEC;
+    tv.tv_usec = 0;
+    while (1) {
+        myConnReq = getConnReqFromQue ();
+        if (myConnReq == NULL) {
+	    /* someone else took care of it */
+            continue;
+        }
+	newSock = myConnReq->sock;
+        status = readStartupPack (newSock, &startupPack, &tv);
+
+        if (status < 0) {
+            rodsLog (LOG_NOTICE, "readStartupPack error from %s, status = %d",
+              inet_ntoa (myConnReq->remoteAddr.sin_addr), status);
+            sendVersion (newSock, status, 0, NULL, 0);
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_lock (&ConnectedAgentMutex);
+#endif
+	    queAgentProc (myConnReq, &BadReqHead, TOP_POS);
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_unlock (&ConnectedAgentMutex);
+#endif
+            close (newSock);
+	} else if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
+            sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
+            close (newSock);
+            sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
+            free (myConnReq);
+	} else {
+	    myConnReq->startupPack = *startupPack;
+	    free (startupPack);
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_lock (&SpawnReqCondMutex);
+#endif
+	    queAgentProc (myConnReq, &SpawnReqHead, BOTTOM_POS);
+#ifndef SINGLE_SVR_THR
+            pthread_cond_signal (&SpawnReqCond);
+            pthread_mutex_unlock (&SpawnReqCondMutex);
+#endif
+	}
+    }
+}
+
+void
+spawnManagerTask ()
+{
+    agentProc_t *mySpawnReq = NULL;
+    int status;
+    while (1) {
+#ifndef SINGLE_SVR_THR
+        pthread_cond_wait (&SpawnReqCond, &SpawnReqCondMutex);
+#endif
+	while (SpawnReqHead != NULL) {
+            mySpawnReq = SpawnReqHead;
+	    SpawnReqHead = mySpawnReq->next;
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_unlock (&SpawnReqCondMutex);
+#endif
+            status = spawnAgent (mySpawnReq, &ConnectedAgentHead);
+            close (mySpawnReq->sock);
+
+            if (status < 0) {
+                rodsLog (LOG_NOTICE,
+                 "spawnAgent error for puser=%s and cuser=%s from %s, stat=%d",
+                  mySpawnReq->startupPack.proxyUser, 
+		  mySpawnReq->startupPack.clientUser,
+                  inet_ntoa (mySpawnReq->remoteAddr.sin_addr), status);
+                free  (mySpawnReq);
+            } else {
+                rodsLog (LOG_NOTICE,
+                 "Agent process %d started for puser=%s and cuser=%s from %s",
+                  mySpawnReq->pid, mySpawnReq->startupPack.proxyUser,
+                  mySpawnReq->startupPack.clientUser,
+                  inet_ntoa (mySpawnReq->remoteAddr.sin_addr));
+	    }
+#ifndef SINGLE_SVR_THR
+            pthread_mutex_lock (&SpawnReqCondMutex);
+#endif
+        }
+#ifndef SINGLE_SVR_THR
+        pthread_mutex_unlock (&SpawnReqCondMutex);
+#endif
+    }
+}
+
+int
+procSingleConnReq (agentProc_t *connReq)
+{
+    startupPack_t *startupPack;
+    int newSock;
+    int status;
+
+    if (connReq == NULL) return USER__NULL_INPUT_ERR;
+
+    newSock = connReq->sock;
+
+    status = readStartupPack (newSock, &startupPack, NULL);
+
+    if (status < 0) {
+        rodsLog (LOG_NOTICE, "readStartupPack error from %s, status = %d",
+          inet_ntoa (connReq->remoteAddr.sin_addr), status);
+        sendVersion (newSock, status, 0, NULL, 0);
+        close (newSock);
+	return status;
+    }
+#ifdef SYS_TIMING
+    printSysTiming ("irodsServer", "read StartupPack", 0);
+#endif
+    if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
+        sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
+        close (newSock);
+        return SYS_EXCEED_CONNECT_CNT;
+    }
+
+    connReq->startupPack = *startupPack;
+    free (startupPack);
+    status = spawnAgent (connReq, &ConnectedAgentHead);
+
+#ifndef windows_platform
+    close (newSock);
+#endif
+    if (status < 0) {
+        rodsLog (LOG_NOTICE,
+         "spawnAgent error for puser=%s and cuser=%s from %s, status = %d",
+          connReq->startupPack.proxyUser, connReq->startupPack.clientUser,
+          inet_ntoa (connReq->remoteAddr.sin_addr), status);
+    } else {
+        rodsLog (LOG_NOTICE,
+         "Agent process %d started for puser=%s and cuser=%s from %s",
+          connReq->pid, connReq->startupPack.proxyUser,
+          connReq->startupPack.clientUser,
+          inet_ntoa (connReq->remoteAddr.sin_addr));
+    }
+    return status;
+}
+
+int
+queAgentProc (agentProc_t *agentProc, agentProc_t **agentProcHead, 
+irodsPosition_t position)
+{
+    if (agentProc == NULL || agentProcHead == NULL) return USER__NULL_INPUT_ERR;
+
+    if (*agentProcHead == NULL) {
+        *agentProcHead = agentProc;
+	agentProc->next = NULL;
+	return 0;
+    }
+
+    if (position == TOP_POS) {
+	agentProc->next = *agentProcHead;
+	*agentProcHead = agentProc;
+    } else {
+	agentProc_t *tmpAgentProc = *agentProcHead;
+        while (tmpAgentProc->next != NULL) {
+            tmpAgentProc = tmpAgentProc->next;
+        }
+        tmpAgentProc->next = agentProc;
+        agentProc->next = NULL;
+    }
+    return 0;
+}
+

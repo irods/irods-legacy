@@ -3968,7 +3968,7 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
     toRead = buflen;
 
     while (1) {
-        nbytes = myRead (fd, bufptr, toRead, SOCK_TYPE, NULL);
+        nbytes = myRead (fd, bufptr, toRead, SOCK_TYPE, NULL, NULL);
         if (nbytes == toRead) { /* more */
             toRead = buflen;
             buflen = 2 * buflen;

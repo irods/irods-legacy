@@ -22,6 +22,7 @@
 #define MAX_CONN_RETRY_CNT 3	/* max connect retry count */
 #define  CONNECT_SLEEP_TIME 200000	/* connect sleep time in uSec */
 
+#define READ_STARTUP_PACK_TOUT_SEC	1	/* 1 sec timeout */
 /* definition for the reconnFlag */
 #define NO_RECONN	0	/* no reconnection */
 #define RECONN_NOTUSED	1	/* this has been depricated */
@@ -49,12 +50,12 @@ extern "C" {
 
 int sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
 int rodsSetSockOpt (int sock, int windowSize);
-int readMsgHeader (int sock, msgHeader_t *myHeader);
+int readMsgHeader (int sock, msgHeader_t *myHeader, struct timeval *tv);
 int writeMsgHeader (int sock, msgHeader_t *myHeader);
-int readStartupPack (int sock, startupPack_t **startupPack);
+int readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv);
 int readVersion (int sock, version_t **myVersion);
 int myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
-int *bytesRead);
+int *bytesRead, struct timeval *tv);
 int myWrite (int sock, void *buf, int len, irodsDescType_t irodsDescType,
 int *bytesWritten);
 int connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag);
@@ -74,7 +75,8 @@ sendVersion (int sock, int versionStatus, int reconnPort,
 char *reconnAddr, int cookie);
 int
 readMsgBody (int sock, msgHeader_t *myHeader, bytesBuf_t *inputStructBBuf,
-bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt);
+bytesBuf_t *bsBBuf, bytesBuf_t *errorBBuf, irodsProt_t irodsProt,
+struct timeval *tv);
 int
 connectToRhostPortal (char *rodsHost, int rodsPort, int cookie,
 int windowSize);
@@ -107,6 +109,9 @@ int cliSwitchConnect (rcComm_t *conn);
 int 
 redirectConnToRescSvr (rcComm_t **conn, dataObjInp_t *dataObjInp, 
 rodsEnv *myEnv, int reconnFlag);
+int
+myReadTout (int sock, void *buf, int len, irodsDescType_t irodsDescType,
+ int *bytesRead,  struct timeval *tv);
 #ifdef  __cplusplus
 }
 #endif

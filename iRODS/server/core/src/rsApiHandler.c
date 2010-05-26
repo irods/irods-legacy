@@ -428,7 +428,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 	    signal (SIGALRM, readTimeoutHandler);
             if ((retVal = setjmp (Jenv)) == 0) {
                 alarm(READ_HEADER_TIMEOUT_IN_SEC);
-                status = readMsgHeader (rsComm->sock, &myHeader);
+                status = readMsgHeader (rsComm->sock, &myHeader, NULL);
                 alarm(0);
 		break;
 	    } else {
@@ -444,7 +444,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
 	    }
 	}
     } else {
-        status = readMsgHeader (rsComm->sock, &myHeader);
+        status = readMsgHeader (rsComm->sock, &myHeader, NULL);
     }
 #endif
 
@@ -463,7 +463,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
               rsComm->clientState, rsComm->agentState);
 	    svrSwitchConnect (rsComm);
 	    pthread_mutex_unlock (&rsComm->lock);
-	    status = readMsgHeader (rsComm->sock, &myHeader);
+	    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
 	    if (status < 0) {
                 svrChkReconnAtReadEnd (rsComm);
 	        return (savedStatus);
@@ -485,7 +485,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     }
 #endif
     status = readMsgBody (rsComm->sock, &myHeader, &inputStructBBuf,
-      &bsBBuf, &errorBBuf, rsComm->irodsProt);
+      &bsBBuf, &errorBBuf, rsComm->irodsProt, NULL);
     if (status < 0) {
         rodsLog (LOG_NOTICE,
           "agentMain: readMsgBody error. status = %d", status);
@@ -615,7 +615,8 @@ _svrSendCollOprStat (rsComm_t *rsComm, collOprStat_t *collOprStat)
     }
 
     /* read 4 bytes */
-    status = myRead (rsComm->sock, &myBuf, sizeof (myBuf), SOCK_TYPE, NULL);
+    status = myRead (rsComm->sock, &myBuf, sizeof (myBuf), SOCK_TYPE, NULL, 
+      NULL);
     if (status < 0) {
         rodsLogError (LOG_ERROR, status,
           "svrSendCollOprStat: read handshake failed. status = %d", status);

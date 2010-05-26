@@ -163,6 +163,12 @@ typedef enum {
     FILE_DESC_TYPE
 } irodsDescType_t;
 
+/* position for queuing */
+typedef enum {
+    BOTTOM_POS,
+    TOP_POS,
+} irodsPosition_t;
+
 #define DEF_IRODS_PROT	NATIVE_PROT
 
 /* general struct for a buffer of bytes */

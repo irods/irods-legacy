@@ -750,7 +750,7 @@ bulkOprInfo_t *bulkOprInfo)
         return status;
     }
 
-    status = myRead (in_fd, bufPtr, srcSize, FILE_DESC_TYPE, &bytesRead);
+    status = myRead (in_fd, bufPtr, srcSize, FILE_DESC_TYPE, &bytesRead, NULL);
     if (status != srcSize) {
 	if (status >= 0) status = SYS_COPY_LEN_ERR - errno;
         status = USER_INPUT_PATH_ERR - errno;
