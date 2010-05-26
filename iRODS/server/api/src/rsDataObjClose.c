@@ -331,9 +331,10 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
 	newSize = L1desc[l1descInx].dataSize;
     }
 
-    status = procChksumForClose (rsComm, l1descInx, &chksumStr);
-
-    if (status < 0) return status;
+    if (getRescClass (L1desc[l1descInx].dataObjInfo->rescInfo) != COMPOUND_CL) {
+        status = procChksumForClose (rsComm, l1descInx, &chksumStr);
+        if (status < 0) return status;
+    }
 
     memset (&regParam, 0, sizeof (regParam));
 #if 0
