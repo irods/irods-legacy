@@ -61,8 +61,7 @@ rodsPathInp_t *rodsPathInp)
 	/* XXXX may need to return a global status */
 	if (status < 0) {
 	    rodsLogError (LOG_ERROR, status,
-             "mcollUtil: reg error for %s, status = %d", 
-	      destPath->outPath, status);
+             "imcoll error");
             savedStatus = status;
 	} 
     }
