@@ -386,7 +386,9 @@ spawnAgent (agentProc_t *connReq, agentProc_t **agentProcHead)
     childPid = fork ();	/* use fork instead of vfork because of multi-thread
 			 * env */
 
-    if (childPid == 0) {	/* child */
+    if (childPid < 0) {
+	return SYS_FORK_ERROR -errno;
+    } else if (childPid == 0) {	/* child */
 	agentProc_t *tmpAgentProc;
 	close (SvrSock);
 #ifdef SYS_TIMING
