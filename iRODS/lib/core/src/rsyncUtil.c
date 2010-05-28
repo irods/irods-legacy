@@ -610,8 +610,14 @@ dataObjInp_t *dataObjOprInp)
             status = rsyncFileToDataUtil (conn, &mySrcPath, &myTargPath,
               myRodsEnv, rodsArgs, dataObjOprInp);
 	    /* fix a big mem leak */
+            if (myTargPath.rodsObjStat != NULL) {
+                freeRodsObjStat (myTargPath.rodsObjStat);
+                myTargPath.rodsObjStat = NULL;
+            }
+#if 0
 	    if (myTargPath.objState != NOT_EXIST_ST)
 	        freeRodsObjStat (myTargPath.rodsObjStat);
+#endif
         } else if ((statbuf.st_mode & S_IFDIR) != 0) {      /* a directory */
             status = mkCollR (conn, targColl, myTargPath.outPath);
             if (status < 0) {
@@ -626,8 +632,14 @@ dataObjInp_t *dataObjOprInp)
                 status = rsyncDirToCollUtil (conn, &mySrcPath, &myTargPath,
                   myRodsEnv, rodsArgs, dataObjOprInp);
 	        /* fix a big mem leak */
+                if (myTargPath.rodsObjStat != NULL) {
+                    freeRodsObjStat (myTargPath.rodsObjStat);
+                    myTargPath.rodsObjStat = NULL;
+                }
+#if 0
 	        if (myTargPath.objState != NOT_EXIST_ST)
 		    freeRodsObjStat (myTargPath.rodsObjStat);
+#endif
             }
         } else {
             rodsLog (LOG_ERROR,
