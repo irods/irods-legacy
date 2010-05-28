@@ -699,7 +699,7 @@ collSqlResult_t *collSqlResult)
 {
     genQueryOut_t *myGenQueryOut;
     sqlResult_t *collName, *collType, *collInfo1, *collInfo2, *collOwner,
-      *collCreateTime, *collModifyTime;
+      *collCreateTime, *collModifyTime, *tmpSqlResult;
 
     if (genQueryOut == NULL || (myGenQueryOut = *genQueryOut) == NULL ||
       collSqlResult == NULL) 
@@ -732,6 +732,23 @@ collSqlResult_t *collSqlResult)
 	  "", myGenQueryOut->rowCnt);
         setSqlResultValue (&collSqlResult->collModifyTime, COL_COLL_MODIFY_TIME,
 	  "", myGenQueryOut->rowCnt);
+	/* myGenQueryOut could came from rcQuerySpecColl call */
+	if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut, COL_DATA_NAME)) 
+	  != NULL) {
+	    if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
+	}
+        if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut,COL_D_CREATE_TIME))
+          != NULL) {
+            if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
+        }
+        if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut,COL_D_MODIFY_TIME))
+          != NULL) {
+            if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
+        }
+        if ((tmpSqlResult = getSqlResultByInx (myGenQueryOut, COL_DATA_SIZE))
+          != NULL) {
+            if (tmpSqlResult->value != NULL) free (tmpSqlResult->value);
+        }
     } else {
 	collSqlResult->collType = *collType;
         if ((collInfo1 = getSqlResultByInx (myGenQueryOut, COL_COLL_INFO1)) == 
