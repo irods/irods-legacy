@@ -142,7 +142,7 @@ freeL1desc (int l1descInx)
             freeDataObjInfo (L1desc[l1descInx].dataObjInfo);
 #endif
 	if (L1desc[l1descInx].dataObjInfo != NULL)
-	    free (L1desc[l1descInx].dataObjInfo);
+	    freeDataObjInfo (L1desc[l1descInx].dataObjInfo);
     }
 
     if (L1desc[l1descInx].otherDataObjInfo != NULL) {

@@ -65,7 +65,10 @@ rodsObjStat_t **rodsObjStatOut)
 	     * it will save time resolving it */
             status = statPathInSpecColl (rsComm, dataObjInp->objPath, 1,
               rodsObjStatOut);
-	    if (status < 0 && status != SYS_SPEC_COLL_NOT_IN_CACHE) {
+	    if (status >= 0) {
+		/* the path is in a specColl */
+		return status;
+	    } else if (status < 0 && status != SYS_SPEC_COLL_NOT_IN_CACHE) {
                 if (linkCnt > 0 && *rodsObjStatOut != NULL) {
                     if ((*rodsObjStatOut)->specColl == NULL) {
                         replSpecColl (&specCollCache->specColl,
