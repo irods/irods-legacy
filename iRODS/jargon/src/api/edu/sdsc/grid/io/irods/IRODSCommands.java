@@ -1957,17 +1957,7 @@ class IRODSCommands {
 				throw new RuntimeException(
 						"unable to read all the bytes for an expected long value");
 			}
-			/*
-			 * ByteArrayInputStream bis = new ByteArrayInputStream(b);
-			 * DataInputStream dis = new DataInputStream(bis); long
-			 * longValFromByteArray = dis.readLong();
-			 * 
-			 * if (log.isDebugEnabled()) {
-			 * log.debug("converted bytes via data input stream to:" +
-			 * longValFromByteArray); }
-			 */
-			// return longValFromByteArray;
-
+			
 			return Host.castToLong(b);
 		}
 

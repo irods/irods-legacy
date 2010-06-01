@@ -333,25 +333,6 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	/**
-	 * Step three of IRODSFile( uri )
-	 * 
-	 * Query the file system to determine this IRODSFile's storage resource,
-	 * Currently iRODS does not have access control on resources. Just pick one
-	 * at random then use that for the default resource of the fileSystem object
-	 * as well.
-	 */
-	protected String getAvailableResource() throws IOException {
-		MetaDataRecordList[] recordList = this
-				.query(new String[] { IRODSMetaDataSet.RESOURCE_NAME });
-
-		if (recordList != null && recordList.length > 0) {
-			return recordList[0].getStringValue(0);
-		} else {
-			throw new IOException("No resources available");
-		}
-	}
-
-	/**
 	 * Sets the file system used of this GeneralFile object. The file system
 	 * object must be a subclass of the GeneralFileSystem matching this file
 	 * object. eg. XYZFile requires XYZFileSystem.
@@ -1033,7 +1014,7 @@ public class IRODSFile extends RemoteFile {
 
 		// Make sure valid resource
 		MetaDataRecordList[] rl = fileSystem.query(MetaDataSet
-				.newSelection(ResourceMetaData.RESOURCE_NAME));
+				.newSelection(ResourceMetaData.COLL_RESOURCE_NAME));
 
 		if (rl == null) {
 			log
@@ -1077,7 +1058,7 @@ public class IRODSFile extends RemoteFile {
 			// otherwise,
 			// get any default set by the IRODS account
 			if (this.isFile()) {
-				resource = firstQueryResult(ResourceMetaData.RESOURCE_NAME);
+				resource = firstQueryResult(ResourceMetaData.COLL_RESOURCE_NAME);
 			} else {
 				resource = ((IRODSFileSystem) fileSystem)
 						.getDefaultStorageResource();
@@ -1103,7 +1084,7 @@ public class IRODSFile extends RemoteFile {
 		List<String> resources = new ArrayList<String>();
 
 		if (isFile()) {
-			MetaDataRecordList[] lists = query(new String[] { IRODSMetaDataSet.RESOURCE_NAME });
+			MetaDataRecordList[] lists = query(new String[] { ResourceMetaData.COLL_RESOURCE_NAME });
 
 			for (MetaDataRecordList l : lists) {
 				resources.add(l.getStringValue(0));
@@ -2359,12 +2340,12 @@ public class IRODSFile extends RemoteFile {
 		} else {
 			log.debug("add resource to query: {}", resource);
 			MetaDataCondition[] rescCondition = { IRODSMetaDataSet
-					.newCondition(IRODSMetaDataSet.RESOURCE_NAME,
+					.newCondition(ResourceMetaData.COLL_RESOURCE_NAME,
 							MetaDataCondition.EQUAL, resource) };
 			condition = rescCondition;
 		}
 
-		String[] fileds = { IRODSMetaDataSet.RESOURCE_NAME,
+		String[] fileds = { ResourceMetaData.COLL_RESOURCE_NAME,
 				IRODSMetaDataSet.SIZE };
 		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
 		try {

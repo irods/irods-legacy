@@ -26,6 +26,8 @@ Features and Changes
 
 Bug 96  - IRODSFile.length() not reflecting length of file on resource
 
+Bug 100  - use different resource query for performance
+
 
 ================================================================================================
 Outstanding Issues

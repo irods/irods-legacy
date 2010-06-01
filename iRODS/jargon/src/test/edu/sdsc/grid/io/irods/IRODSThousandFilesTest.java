@@ -168,10 +168,6 @@ public class IRODSThousandFilesTest {
 		// last entry should have a continuation
 		last = lists[999];
 		TestCase.assertFalse("last row did not have expected continuation", last.isQueryComplete()); 
-		// requery again
-		lists = last.getMoreResults(1000);
-		// should be it...but be sure (result is null, which should be corrected later)
-		TestCase.assertNull(lists);
 		irodsFileSystem.close();
 		
 	}
