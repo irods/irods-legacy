@@ -17,17 +17,15 @@
  *
  * \since pre-2.1
  *
- * \author  
- * \date    
+ * \author Mike Wan 
+ * \date  2009  
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
  *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
+ * \note  
  *
- * \usage None
+ * \usage 
+ * myTestRule||msiExecCmd(hello,*ARG,null,null,null,*HELLO_OUT)##msiGetStdoutInExecCmdOut(*HELLO_OUT,*myout)|nop
  *
  * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
  * \param[out] outStr - a STR_MS_T to hold the retrieved stdout buffer.
@@ -35,11 +33,11 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -72,17 +70,16 @@ ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date    
+ * \author : Mike Wan 
+ * \date 2009   
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
  *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
+ * \note  
  *
- * \usage None
+ * \usage 
+ * myTestRule||msiExecCmd(hello,*ARG,null,null,null,*HELLO_OUT)##msiGetStderrInExecCmdOut(*HELLO_OUT,*myErrorOut)|nop
+ *
  *
  * \param[in] inpExecCmdOut - a STR_MS_T which specifies the ExecCmdOut.
  * \param[out] outStr - a STR_MS_T to hold the retrieved stderr buffer.
@@ -90,11 +87,11 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -207,17 +204,16 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  *
  * \since pre-2.1
  *
- * \author  
- * \date    
+ * \author Mike Wan  
+ * \date   2010 
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
  *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
+ * \note  
  *
- * \usage None
+ * \usage 
+ * myTestRule||msiAddKeyValToMspStr(destRescName,demoResc,*myMsKeyValStr)|nop
+ * 
  *
  * \param[in] keyStr - a STR_MS_T key to be added to msKeyValStr.
  * \param[in] valStr - a STR_MS_T value to be added to msKeyValStr.
@@ -226,11 +222,11 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -267,15 +263,13 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date    
+ * \author Mike Wan 
+ * \date   2010 
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
  *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
+ * \note  
+ * myTestRule||msiSplitPath(*myPath,*collection,*dataName)|nop
  *
  * \usage None
  *
@@ -286,10 +280,10 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect
  *
  * \return integer
@@ -354,12 +348,11 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-12-17
  *
- * \note  This call should only be used through the rcExecMyRule (irule) call
- *        i.e., rule execution initiated by clients and should not be called
- *        internally by the server since it interacts with the client through
- *        the normal client/server socket connection.
+ * \note 
  *
- * \usage None
+ * \usage 
+ *  acPreprocForDataObjOpen||msiGetSessionVarValue(all,all)|nop
+ *  mytestRule||msiGetSessionVarValue(objPath,client)|nop
  *
  * \param[in] inpVar - A STR_MS_T which specifies the name of the session
  *             variable to output. The input session variable should NOT start
@@ -373,11 +366,11 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success

@@ -20,14 +20,19 @@
  *
  * \since 2.1
  *
- * \author  
- * \date    
+ * \author  Mike Wan
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
  *
  * \note
  *
- * \usage None
+ * \usage 
+ * As seen in test.irb
+ *
+ * myTestRule||msiDataObjOpen(*A,*S_FD)##msiDataObjCreate(*B,demoResc,*D_FD)##msiDataObjLseek(*S_FD,10,SEEK_SET,*junk1)##msiDataObjRead(*S_FD,10000,*R_BUF *  ##msiDataObjWrite(*D_FD,*R_BUF,*W_LEN)##msiDataObjClose(*S_FD,*junk2)##msiDataObjClose(*D_FD,*junk3)##msiDataObjCopy (*B,*C,demoResc,*junk4)            *  ##msiDataObjUnlink(*B,*junk6)|null
+ *  *A=/tempZone/home/rods/test/foo1%*B=/tempZone/home/rods/test/foo4%*C=/tempZone/home/rods/test/foo3
+ *  *R_BUF\%*W_LEN
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] msKeyValStr - Optional - a STR_MS_T. This is the special msKeyValStr
@@ -47,11 +52,11 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -1073,11 +1078,11 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -1233,11 +1238,11 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -1384,11 +1389,11 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -1513,11 +1518,11 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -1638,11 +1643,11 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -1752,11 +1757,11 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -1871,11 +1876,11 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -1975,11 +1980,11 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -2089,11 +2094,11 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -2189,11 +2194,11 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -2315,11 +2320,11 @@ msiRmColl (msParam_t *inpParam1, msParam_t *msKeyValStr, msParam_t *outParam, ru
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -2515,11 +2520,11 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -2618,11 +2623,11 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -2711,11 +2716,11 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -2847,11 +2852,11 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -3067,11 +3072,11 @@ char *srcColl, char *destColl)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -3204,11 +3209,11 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -3329,11 +3334,11 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -3455,11 +3460,11 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -3564,11 +3569,11 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -3681,11 +3686,11 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -3818,11 +3823,11 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
@@ -3931,11 +3936,11 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
