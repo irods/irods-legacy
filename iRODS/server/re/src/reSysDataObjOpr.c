@@ -57,9 +57,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -87,103 +87,6 @@ ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-#if 0
-int
-setDefaultResc (rsComm_t *rsComm, char *defaultRescList, char *optionStr, 
-keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
-{
-    rescGrpInfo_t *myRescGrpInfo = NULL;
-    rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
-    char *value = NULL;
-    strArray_t strArray;
-    int i, status;
-    char *defaultResc;
-    int startInx; 
-
-    if (defaultRescList != NULL && strcmp (defaultRescList, "null") != 0 && 
-      optionStr != NULL &&  strcmp (optionStr, "force") == 0 &&
-      rsComm->proxyUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
-	condInput = NULL;
-    }
-
-    memset (&strArray, 0, sizeof (strArray));
-
-    status = parseMultiStr (defaultRescList, &strArray);
-
-    if (status <= 0)
-        return (0);
-
-    value = strArray.value;
-    if (strArray.len <= 1) {
-	startInx = 0;
-        defaultResc = value;
-    } else {
-        /* select one on the list randomly */
-        startInx = random() % strArray.len;
-        defaultResc = &value[startInx * strArray.size];
-    }
-
-
-    if (strcmp (optionStr, "preferred") == 0) {
-        status = getRescInfo (rsComm, NULL, condInput,
-          &myRescGrpInfo);
-	if (status >= 0) {
-	    if (strlen (myRescGrpInfo->rescGroupName) > 0) {
-	        for (i = 0; i < strArray.len; i++) {
-		    int j;
-		    j = startInx + i;
-		    if (j >= strArray.len) {
-		        /* wrap around */
-		        j = strArray.len - j;
-		    }
-	            tmpRescGrpInfo = myRescGrpInfo;
-		    prevRescGrpInfo = NULL;
-	            while (tmpRescGrpInfo != NULL) {
-		        if (strcmp (&value[j * strArray.size], 
-		          tmpRescGrpInfo->rescInfo->rescName) == 0) {
-			    /* put it on top */  
-			    if (prevRescGrpInfo != NULL) {
-			        prevRescGrpInfo->next = tmpRescGrpInfo->next;
-			        tmpRescGrpInfo->next = myRescGrpInfo;
-			        myRescGrpInfo = tmpRescGrpInfo;
-			    }
-                            break;
-		        }
-		        prevRescGrpInfo = tmpRescGrpInfo;
-	                tmpRescGrpInfo = tmpRescGrpInfo->next;
-		    }
-		}
-	    }
-	} else {
-	    /* error may mean there is no input resource. try to use the 
-	     * default resource by dropping down */
-            status = getRescInfo (rsComm, defaultResc, condInput,
-              &myRescGrpInfo);
-	}
-    } else if (strcmp (optionStr, "forced") == 0) {
-        status = getRescInfo (rsComm, defaultResc, NULL,
-          &myRescGrpInfo);
-    } else {
-        status = getRescInfo (rsComm, defaultResc, condInput, 
-          &myRescGrpInfo);
-    }
-
-    if (status == CAT_NO_ROWS_FOUND) 
-      status = SYS_RESC_DOES_NOT_EXIST;
-
-    if (value != NULL)
-        free (value);
-
-    if (status >= 0) {
-        *outRescGrpInfo = myRescGrpInfo;
-    } else {
-	*outRescGrpInfo = NULL;
-    }
-
-    return (status);
-}
-#endif
-
 /**
  * \fn msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  *
@@ -193,8 +96,8 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author Mike Wan 
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation 2009-06-15
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -214,17 +117,17 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->rgi (can be NULL), rei->doinp->condInput
+ * \DolVarModified - rei->rgi
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -293,17 +196,17 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  *
  * \DolVarDependence rei->doinp->condInput - user set  resource list
  *                   rei->rsComm->proxyUser.authInfo.authFlag
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 if user set resource is allowed or user is privileged.
  * \retval USER_DIRECT_RESC_INPUT_ERR  if resource is taboo.
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -372,8 +275,8 @@ msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author Mike Wan 
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -394,17 +297,17 @@ msiSetNoDirectRescInp (msParam_t *xrescList, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->doinp->openFlags, rei->doi
+ * \DolVarModified - rei->doi
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int 
@@ -458,31 +361,32 @@ msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author Mike Wan 
+ * \date 2007
  * 
  * \remark Terrell Russell, msi documentation 2009-06-30
  * 
  * \note 
  *  
- * \usage None
+ * \usage 
+ * acPreprocForDataObjOpen||msiSetDataObjAvoidResc(demoResc)|nop
  *
  * \param[in] xavoidResc - a msParam of type STR_MS_T - the name of the resource to avoid
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->doinp->openFlags, rei->doi
+ * \DolVarModified - rei->doi
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -517,8 +421,8 @@ msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author Mike Wan 
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -536,17 +440,17 @@ msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->doi
+ * \DolVarModified - rei->doi
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -578,8 +482,8 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author Mike Wan 
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -596,17 +500,17 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->doi, rei->rsComm
+ * \DolVarModified - rei->doi->chksum (the entire link list of doi)
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -762,8 +666,8 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author Mike Wan 
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -781,17 +685,17 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->doi, rei->doinp->oprType, rei->doinp->openFlags.
+ * \DolVarModified - rei->doi (new replica queued on top)
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -839,8 +743,8 @@ msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author Mike Wan 
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -850,7 +754,9 @@ msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
  *  resources in the resource group. A "null" input means a single copy will be made in
  *  one of the resources in the resource group.
  *  
- * \usage None
+ * \usage 
+ * acPostProcForPut||msiSysReplDataObj(tgReplResc,null)|nop
+
  * 
  * \param[in] xcacheResc - 
  * \param[in] xflag - 
@@ -858,17 +764,17 @@ msiStageDataObj (msParam_t *xcacheResc, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->doi, rei->doinp->openFlags
+ * \DolVarModified - rei->doi (new replica queued on top)
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -926,8 +832,8 @@ ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author - Mike Wan 
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -951,17 +857,17 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->doinp->numThreads, rei->doinp->dataSize
+ * \DolVarModified - rei->rsComm->windowSize (rei->rsComm == NULL, OK),
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1010,18 +916,8 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
              "msiSysReplDataObj: Bad input maxNumThr %s", maxNumThrStr);
             maxNumThr = DEF_NUM_TRAN_THR;
 	} else if (maxNumThr == 0) {
-#if 0
-	    /* XXXXX set this for now since copy cannot support numThreads=0 */
-	    if (doinp->numThreads > 0 && doinp->numThreads <= 
-	      MAX_NUM_CONFIG_TRAN_THR) {
-		rei->status = doinp->numThreads;
-	    } else {
-                rei->status = 0;
-	    }
-#else
             rei->status = 0;
             return rei->status;
-#endif
         } else if (maxNumThr > MAX_NUM_CONFIG_TRAN_THR) {
 	    rodsLog (LOG_ERROR,
              "msiSysReplDataObj: input maxNumThr %s too large", maxNumThrStr);
@@ -1056,8 +952,8 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author
- * \date 
+ * \author Mike Wan
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -1078,17 +974,17 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1162,31 +1058,32 @@ msiOprDisallowed (ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author
- * \date 
+ * \author Mike Wan
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
  * \note
  *  
- * \usage None
+ * \usage 
+ * acSetMultiReplPerResc||msiSetMultiReplPerResc()|nop
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified - rei->statusStr
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1205,8 +1102,8 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author
- * \date 
+ * \author Mike Wan
+ * \date 2007
  * 
  * \remark Ketan Palshikar - created msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -1215,23 +1112,24 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
  *  
  * \note 
  *  
- * \usage None
+ * \usage 
+ * acNoChkFilePathPerm||msiNoChkFilePathPerm()|nop
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval NO_CHK_PATH_PERM
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1250,8 +1148,8 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author
- * \date 
+ * \author Mike Wan
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -1268,17 +1166,17 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval NO_TRASH_CAN
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1291,14 +1189,15 @@ msiNoTrashCan (ruleExecInfo_t *rei)
 /**
  * \fn msiSetPublicUserOpr (msParam_t *xoprList, ruleExecInfo_t *rei)
  *
- * \brief  This microservice sets a list of operations that can be performed by the user "public".
+ * \brief  This microservice sets a list of operations that can be performed 
+ * by the user "public".
  *  
  * \module core
  *  
  * \since pre-2.1
  *  
- * \author
- * \date 
+ * \author Mike Wan
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -1311,23 +1210,24 @@ msiNoTrashCan (ruleExecInfo_t *rei)
  *
  * acSetPublicUserPolicy||msiSetPublicUserOpr(read%query)|nop
  *
- * \param[in] xoprList - Only 2 operations are allowed - "read" - read files; "query" - browse some system level metadata. More than one operation can be
- *                       input using the character "%" as seperator. e.g., read%query.
+ * \param[in] xoprList - Only 2 operations are allowed - "read" - read files; 
+ * "query" - browse some system level metadata. More than one operation can be
+ * input using the character "%" as seperator. e.g., read%query.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->rsComm->clientUser.authInfo.authFlag
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1437,8 +1337,8 @@ setApiPerm (int apiNumber, int proxyPerm, int clientPerm)
  * 
  * \since pre-2.1
  * 
- * \author
- * \date 
+ * \author Mike Wan
+ * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -1463,17 +1363,17 @@ setApiPerm (int apiNumber, int proxyPerm, int clientPerm)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->inOutMsParamArray (label == VAULT_PATH_POLICY)
+ * \DolVarModified - rei->inOutMsParamArray (label == VAULT_PATH_POLICY)
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1548,8 +1448,8 @@ ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author
- * \date 
+ * \author - Mike Wan
+ * \date - 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -1566,17 +1466,17 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence - rei->inOutMsParamArray (label==VAULT_PATH_POLICY)
+ * \DolVarModified - rei->inOutMsParamArray (label==VAULT_PATH_POLICY)
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1620,14 +1520,15 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
  * 
  * \since 2.1
  * 
- * \author
- * \date 
+ * \author Mike Wan
+ * \date 2007
  * 
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
  * \note
  *  
- * \usage None
+ * \usage 
+ * acSetReServerNumProc||msiSetReServerNumProc(4)|nop
  *
  *
  * \param[in] xnumProc - a STR_MS_T representing number of processes
@@ -1636,17 +1537,17 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
