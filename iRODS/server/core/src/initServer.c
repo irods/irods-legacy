@@ -1393,8 +1393,12 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
+    if (RescGrpInfo != NULL) {
+	/* we are updating RescGrpInfo */
+	freeAllRescGrp (RescGrpInfo);
+	RescGrpInfo = NULL;
+    }
     for (i = 0;i < genQueryOut->rowCnt; i++) {
-
 	tmpRescId = &rescId->value[rescId->len * i];
 	tmpRescName = &rescName->value[rescName->len * i];
 	tmpZoneName = &zoneName->value[zoneName->len * i];

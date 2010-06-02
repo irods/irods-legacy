@@ -138,6 +138,8 @@ int
 queResc (rescInfo_t *myRescInfo, char *rescGrpName,  
 rescGrpInfo_t **rescGrpInfoHead, int topFlag);
 int
+freeAllRescGrp (rescGrpInfo_t *rescGrpHead);
+int
 queRescGrp (rescGrpInfo_t **rescGrpInfoHead, rescGrpInfo_t *myRescGrpInfo,
 int topFlag);
 int

@@ -279,6 +279,21 @@ int flag)
 }
 
 int
+freeAllRescGrp (rescGrpInfo_t *rescGrpHead)
+{
+    rescGrpInfo_t *tmpRrescGrp, *nextRrescGrp;
+
+    tmpRrescGrp = rescGrpHead;
+    while (tmpRrescGrp != NULL) {
+	nextRrescGrp = tmpRrescGrp->next;
+	if (tmpRrescGrp->rescInfo != NULL) free (tmpRrescGrp->rescInfo);
+	free (tmpRrescGrp);
+	tmpRrescGrp = tmpRrescGrp->next;
+    }
+    return 0;
+}
+
+int
 initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
 {
     char *rescName, *dataType, *filePath;
