@@ -32,7 +32,7 @@
 #define MAX_ELAPSE_TIME 1800 /* max time in seconds above which the load info is considered to be out of date */
 
 #define MAX_RE_PROCS	4
-#define DEF_NUM_RE_PROCS	1
+#define DEF_NUM_RE_PROCS	0
 
 typedef enum {
     RE_PROC_IDLE,
@@ -51,6 +51,7 @@ typedef struct {
 typedef struct {
     int runCnt;
     int maxRunCnt;
+    int doFork;
     reExecProc_t reExecProc[MAX_RE_PROCS];
 } reExec_t;
 

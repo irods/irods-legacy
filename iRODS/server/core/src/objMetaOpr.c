@@ -1801,7 +1801,7 @@ reExec_t *reExec, int jobType)
 	    continue;
         } else if (strcmp (exeStatusStr, RE_RUNNING) == 0) {
             /* is already running */
-	    if (reExec->maxRunCnt > 1 &&	/* multiProc */
+	    if (reExec->doFork == 1 &&	/* multiProc */
 	     matchRuleExecId (reExec, ruleExecIdStr, RE_PROC_RUNNING)) {
 	        /* the job is running in multiProc env */
 		continue;
@@ -2034,7 +2034,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
         }
 
 	runCnt ++;
-	if (reExec->maxRunCnt == 1) {
+	if (reExec->doFork == 0) {
 	    /* single thread. Just call runRuleExec */  
 	    status = runRuleExec (&reExec->reExecProc[thrInx]);
             postProcRunRuleExec (rsComm, &reExec->reExecProc[thrInx]);
@@ -2085,7 +2085,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
 	    }
 	}
     }
-    if (reExec->maxRunCnt > 1) {
+    if (reExec->doFork == 1) {
 	/* wait for all jobs to finish */
 	while (reExec->runCnt + 1 >= reExec->maxRunCnt && 
 	  waitAndFreeReThr (reExec) >= 0);
@@ -3097,10 +3097,13 @@ initReExec (rsComm_t *rsComm, reExec_t *reExec)
 	reExec->maxRunCnt = DEF_NUM_RE_PROCS;
     } else {
 	reExec->maxRunCnt = rei.status;
-	if (reExec->maxRunCnt > MAX_RE_PROCS) {
-	    reExec->maxRunCnt = MAX_RE_PROCS;
-        } else if (reExec->maxRunCnt <= 0) {
-            reExec->maxRunCnt = DEF_NUM_RE_PROCS;
+        if (reExec->maxRunCnt <= 0) {
+	    reExec->maxRunCnt = 1;
+            reExec->doFork = 0;
+	} else {
+            if (reExec->maxRunCnt > MAX_RE_PROCS) 
+	        reExec->maxRunCnt = MAX_RE_PROCS;
+	    reExec->doFork = 1;
         }
     }
     for (i = 0; i < reExec->maxRunCnt; i++) {
@@ -3128,7 +3131,7 @@ allocReThr (reExec_t *reExec)
 
     if (reExec == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
 
-    if (reExec->maxRunCnt == 1) {
+    if (reExec->doFork == 0) {
 	/* single thread */
 	reExec->runCnt = 1;
 	return 0;	
