@@ -10,6 +10,7 @@
 $SERVER_STR="irodsServer";
 $AGENT_STR="irodsAgent";
 $RE_SERVER_STR="irodsReServer";
+$XMS_SERVER_STR="irodsXmsgServer";
 
 ($arg1)=@ARGV;
 
@@ -28,6 +29,7 @@ if ("$hostOS" eq "SunOS" ) {
     $SERVER_STR="irodsSer";
     $AGENT_STR="irodsAge";
     $RE_SERVER_STR="irodsReS";
+    $XMS_SERVER_STR="irodsXms";
 }
 
 if ($arg1) {
@@ -67,3 +69,15 @@ if ($REs) {
 else {
     print "No RuleExecution Server running\n";
 }
+
+# Find any XmsgServers
+$XMSs=`ps $psOptions | egrep $XMS_SERVER_STR | egrep -v grep`;
+chomp($XMSs);
+
+if ($XMSs) {
+    print "XMessage Server: \n" . $XMSs . "\n";
+}
+else {
+    print "No XMessage Server running\n";
+}
+
