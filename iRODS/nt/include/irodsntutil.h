@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-#define irodsntstat  _stat
+#define irodsntstat __stat64 /* _stat */
 
 void iRODSNtAgentInit(int ac, char **av);
 int iRODSNtGetServiceName(char *service_name);
