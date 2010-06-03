@@ -213,7 +213,8 @@ copyStrFromBuf (char **buf, char *outStr, int maxOutLen)
 
     /* skip over any space */
 
-    while (*bufPtr != '\0') {
+    while (1) {
+        if (*bufPtr == '\0' || *bufPtr == '\n') return 0;
 	/* '#' must be preceded by a space to be a valid comment. 
 	 * the calling routine must check if the line starts with a # */
  
@@ -233,7 +234,10 @@ copyStrFromBuf (char **buf, char *outStr, int maxOutLen)
 
     len = 0;
     outPtr = outStr;
+#if 0	/* allow # in string as long as it is not preceded by a space */
     while (!isspace (*bufPtr) && *bufPtr != '\0' && *bufPtr != '#') {
+#endif
+    while (!isspace (*bufPtr) && *bufPtr != '\0') {
 	len++;
 	if (len >= maxOutLen) {
             *outStr = '\0';
@@ -317,8 +321,9 @@ splitPathByKey (char *srcPath, char *dir, char *file, char key)
        return (0);
     }
 
-    /* no Match */
-    *dir = *file = '\0';
+    /* no Match. just copy srcPath to file */
+    *dir = '\0';
+    rstrcpy (file, srcPath, MAX_NAME_LEN);
     return (SYS_INVALID_FILE_PATH);
 }
 

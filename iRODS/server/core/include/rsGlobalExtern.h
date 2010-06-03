@@ -69,6 +69,10 @@ extern char remoteSID[MAX_FED_RSIDS][MAX_PASSWORD_LEN];
 extern rodsLong_t GlobalQuotaLimit; /* quota for all resources for this user */
 extern rodsLong_t GlobalQuotaOverrun;  /* quota overrun for this user */
 extern int RescQuotaPolicy;
+/* connection control config */
+extern struct allowedUser *AllowedUserHead;
+extern struct allowedUser *DisallowedUserHead;
+extern int MaxConnections;          /* no control */
 
 #endif  /* RS_GLOBAL_EXTERN_H */
 

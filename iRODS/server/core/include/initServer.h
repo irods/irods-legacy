@@ -23,7 +23,12 @@
 #define HOST_CONFIG_FILE  "irodsHost.txt"
 #define RE_RULES_FILE   "reRules.txt"
 #endif
-
+#define CONNECT_CONTROL_FILE	"connectControl.config"
+/* Keywords used in CONNECT_CONTROL_FILE */
+#define MAX_CONNECTIONS_KW		"maxConnections"
+#define ALLOWED_USER_LIST_KW		"allowUserList"
+#define DISALLOWED_USER_LIST_KW	"disallowUserList"
+#define DEF_MAX_CONNECTION	100
 
 /* keywords for the RCAT_HOST_FILE */
 #define ICAT_HOST_KW		"icatHost"
@@ -96,6 +101,11 @@ typedef struct zoneInfo {
 #define REMOTE_ZONE_SID_KW      "RemoteZoneSID"
 #define SID_KEY_KW              "SIDKey"
 
+struct allowedUser {
+    char *userName;
+    char *rodsZone;
+    struct allowedUser *next;
+};
 
 int
 resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost);
@@ -206,4 +216,14 @@ int
 getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost);
 int
 isLocalHost (char *hostAddr);
+int
+configConnectControl ();
+int
+chkAllowedUser (char *userName, char *rodsZone);
+int
+queAllowedUser (struct allowedUser *allowedUser,
+struct allowedUser **allowedUserHead);
+int
+matchAllowedUser (char *userName, char *rodsZone,
+struct allowedUser *allowedUserHead);
 #endif	/* INIT_SERVER_H */

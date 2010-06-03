@@ -20,21 +20,9 @@
 #include "rcConnect.h"
 #include "initServer.h"
 
-#define MAINTENENCE_CONFIG_FILE "rods.allow"
 #define MAX_MSG_READ_RETRY	1	
 #define READ_RETRY_SLEEP_TIME	1	
 
-struct allowedUser {
-    char *userName;
-    char *rodsZone;
-    struct allowedUser *next;
-};
-
 int agentMain (rsComm_t *rsComm);
-int
-setAllowedUser (struct allowedUser **allowedUserHead);
-int
-chkAllowedUser (struct allowedUser *allowedUserHead, char *userName,
-char *domainName);
 
 #endif	/* RODS_AGENT_H */

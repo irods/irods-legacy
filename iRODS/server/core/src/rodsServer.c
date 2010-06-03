@@ -327,11 +327,13 @@ procChildren (agentProc_t **agentProcHead)
     while ((childPid = waitpid (-1, &status, WNOHANG | WUNTRACED)) > 0) {
 	tmpAgentProc = getAgentProcByPid (childPid, agentProcHead);
 	if (tmpAgentProc != NULL) {
-	    rodsLog (LOG_NOTICE, "Agent process %d exited", childPid);
+	    rodsLog (LOG_NOTICE, "Agent process %d exited with status %d", 
+	      childPid, status);
 	    free (tmpAgentProc);
 	} else {
-	    rodsLog (LOG_NOTICE, "Agent process %d exited but not in queue",
-	      childPid); 
+	    rodsLog (LOG_NOTICE, 
+	      "Agent process %d exited with status %d but not in queue",
+	      childPid, status); 
 	}
     }
 #endif

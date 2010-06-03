@@ -2350,3 +2350,189 @@ getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost)
     }
 }
 
+int
+configConnectControl ()
+{
+    char *conFile;
+    char *configDir;
+    FILE *file;
+    char buf[LONG_NAME_LEN * 5];
+    int len;
+    char *bufPtr;
+    int status;
+    struct allowedUser *tmpAllowedUser;
+    int allowUserFlag = 0;
+    int disallowUserFlag = 0;
+
+    AllowedUserHead = DisallowedUserHead = NULL;
+
+    configDir = getConfigDir ();
+    len = strlen (configDir) + strlen(CONNECT_CONTROL_FILE) + 2;
+;
+
+    conFile = (char *) malloc(len);
+
+    snprintf (conFile, len, "%s/%s", configDir, CONNECT_CONTROL_FILE);
+    file = fopen(conFile, "r");
+
+    if (file == NULL) {
+#ifdef DEBUG_CONNECT_CONTROL
+            fprintf (stderr, "Unable to open CONNECT_CONTROL_FILE file %s\n",
+             conFile);
+#endif
+        free (conFile);
+        return (0);
+    }
+
+    free (conFile);
+
+    while (fgets (buf, LONG_NAME_LEN * 5, file) != NULL) {
+        char myuser[NAME_LEN];
+        char myZone[NAME_LEN];
+        char myInput[NAME_LEN * 2];
+
+        if (*buf == '#')        /* a comment */
+            continue;
+
+        bufPtr = buf;
+
+        while (copyStrFromBuf (&bufPtr, myInput, NAME_LEN * 2) > 0) {
+            if (strcmp (myInput, MAX_CONNECTIONS_KW) == 0) {
+                if (copyStrFromBuf (&bufPtr, myInput, NAME_LEN) > 0) {
+                    /* sanity check */
+                    if (isdigit (*myInput)) {
+                        MaxConnections = atoi (myInput);
+                    } else {
+                        rodsLog (LOG_ERROR,
+                          "configConnectControl: inp maxConnections %d is not an int",
+                       myInput);
+                    }
+                    break;
+                }
+            } else if (strcmp (myInput, ALLOWED_USER_LIST_KW) == 0) {
+                if (disallowUserFlag == 0) {
+                    allowUserFlag = 1;
+                    break;
+                } else {
+                    rodsLog (LOG_ERROR,
+                      "configConnectControl: both allowUserList and disallowUserList are set");
+                    return SYS_CONNECT_CONTROL_CONFIG_ERR;
+                }
+            } else if (strcmp (myInput, DISALLOWED_USER_LIST_KW) == 0) {
+                if (allowUserFlag == 0) {
+                    disallowUserFlag = 1;
+                    break;
+                } else {
+                    rodsLog (LOG_ERROR,
+                      "configConnectControl: both allowUserList and disallowUserList are set");
+                    return SYS_CONNECT_CONTROL_CONFIG_ERR;
+                }
+            }
+            status = parseUserName (myInput, myuser, myZone);
+            if (status >= 0) {
+                if (strlen (myZone) == 0) {
+                    zoneInfo_t *tmpZoneInfo;
+                    if (getLocalZoneInfo (&tmpZoneInfo) >= 0) {
+                        rstrcpy (myZone, tmpZoneInfo->zoneName, NAME_LEN);
+                    }
+                }
+                tmpAllowedUser = malloc (sizeof (struct allowedUser));
+                memset (tmpAllowedUser, 0, sizeof (struct allowedUser));
+                tmpAllowedUser->userName = strdup (myuser);
+                tmpAllowedUser->rodsZone = strdup (myZone);
+                /* queue it */
+
+		if (allowUserFlag != 0) {
+		    queAllowedUser (tmpAllowedUser, &AllowedUserHead);
+		} else if (allowUserFlag != 0) {
+                    queAllowedUser (tmpAllowedUser, &DisallowedUserHead);
+		} else {
+                    rodsLog (LOG_ERROR,
+                      "configConnectControl: neither allowUserList nor disallowUserList has been set");
+                    return SYS_CONNECT_CONTROL_CONFIG_ERR;
+		}
+            } else {
+                rodsLog (LOG_NOTICE,
+                  "configConnectControl: cannot parse input %s. status = %d",
+                  myInput, status);
+            }
+        }
+    }
+
+    fclose (file);
+    return (0);
+}
+
+int
+chkAllowedUser (char *userName, char *rodsZone)
+{
+    int status;
+
+    if (userName == NULL || rodsZone == 0) {
+        return (0);
+    }
+
+    if (strlen (userName) == 0) {
+        /* XXXXXXXXXX userName not yet defined. allow it for now */
+        return 1;
+    }
+
+    if (AllowedUserHead != NULL) {
+	status = matchAllowedUser (userName, rodsZone, AllowedUserHead);
+	return status;
+    } else if (DisallowedUserHead != NULL) {
+        status = matchAllowedUser (userName, rodsZone, DisallowedUserHead);
+	if (status == 1) {	/* a match, disallow */
+	    return 0;
+	} else {
+	    return 1;
+	}
+    } else {
+	/* no control, return 1 */
+	return 1;
+    }
+}
+
+int
+matchAllowedUser (char *userName, char *rodsZone, 
+struct allowedUser *allowedUserHead)
+{
+    struct allowedUser *tmpAllowedUser;
+
+    if (allowedUserHead == NULL)
+        return 0;
+
+    tmpAllowedUser = allowedUserHead;
+    while (tmpAllowedUser != NULL) {
+        if (tmpAllowedUser->userName != NULL &&
+         strcmp (tmpAllowedUser->userName, userName) == 0 &&
+         tmpAllowedUser->rodsZone != NULL &&
+         strcmp (tmpAllowedUser->rodsZone, rodsZone) == 0) {
+            /* we have a match */
+            break;
+        }
+        tmpAllowedUser = tmpAllowedUser->next;
+    }
+    if (tmpAllowedUser == NULL) {
+        /* no match */
+        return (0);
+    } else {
+        return (1);
+    }
+}
+
+int
+queAllowedUser (struct allowedUser *allowedUser, 
+struct allowedUser **allowedUserHead)
+{
+    if (allowedUserHead == NULL || allowedUser == NULL) 
+	return USER__NULL_INPUT_ERR;
+
+    if (*allowedUserHead == NULL) {
+        *allowedUserHead = allowedUser;
+    } else {
+        allowedUser->next = *allowedUserHead;
+        *allowedUserHead = allowedUser;
+    }
+    return 0;
+}

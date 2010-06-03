@@ -19,7 +19,6 @@ main(int argc, char *argv[])
 {
     int status;
     rsComm_t rsComm;
-    struct allowedUser *allowedUserHead = NULL;
     char *tmpStr;
 
     ProcessType = AGENT_PT;
@@ -99,16 +98,6 @@ main(int argc, char *argv[])
     }
 #endif
 
-    setAllowedUser (&allowedUserHead);
-
-    status = chkAllowedUser (allowedUserHead, rsComm.clientUser.userName,
-     rsComm.clientUser.rodsZone);
-
-    if (status <= 0) {
-	sendVersion (rsComm.sock, SYS_USER_NOT_ALLOWED_TO_CONN, 0, NULL, 0);
-	cleanupAndExit (SYS_USER_NOT_ALLOWED_TO_CONN);
-    }
-
     status = initAgent (&rsComm);
 #ifdef SYS_TIMING
     printSysTiming ("irodsAgent", "initAgent", 0);
@@ -117,6 +106,18 @@ main(int argc, char *argv[])
     if (status < 0) {
 	sendVersion (rsComm.sock, SYS_AGENT_INIT_ERR, 0, NULL, 0);
         cleanupAndExit (status);
+    }
+
+    /* move configConnectControl behind initAgent for now. need zoneName if
+     * the user does not specify one in the input */
+    configConnectControl ();
+
+    status = chkAllowedUser (rsComm.clientUser.userName,
+     rsComm.clientUser.rodsZone);
+
+    if (status <= 0) {
+        sendVersion (rsComm.sock, SYS_USER_NOT_ALLOWED_TO_CONN, 0, NULL, 0);
+        cleanupAndExit (SYS_USER_NOT_ALLOWED_TO_CONN);
     }
 
     /* send the server version and atatus as part of the protocol. Put
@@ -177,119 +178,3 @@ agentMain (rsComm_t *rsComm)
     return (status);
 }
 
-int
-setAllowedUser (struct allowedUser **allowedUserHead)
-{
-    struct allowedUser *tmpAllowedUser;
-
-    char *conFile;
-    char *configDir;
-    FILE *file;
-    char buf[LONG_NAME_LEN * 5];
-    int len; 
-    char *bufPtr;
-    int status;
-
-    *allowedUserHead = NULL;
-
-    configDir = getConfigDir ();
-    len = strlen (configDir) + strlen(MAINTENENCE_CONFIG_FILE) + 2;
-;
-
-    conFile = (char *) malloc(len);
-
-    snprintf (conFile, len, "%s/%s", configDir, MAINTENENCE_CONFIG_FILE);
-    file = fopen(conFile, "r");
-
-    if (file == NULL) {
-#ifdef DEBUG_MAINTENENCE
-            fprintf (stderr, "Unable to open MAINTENENCE_CONFIG_FILE file %s\n",
-             conFile);
-#endif
-        free (conFile);
-        return (0);
-    }
-
-    free (conFile);
-
-    while (fgets (buf, LONG_NAME_LEN * 5, file) != NULL) {
-        char myuser[NAME_LEN];
-        char myZone[NAME_LEN];
-	char myInput[NAME_LEN * 2];
-
-	if (*buf == '#')	/* a comment */
-	    continue;
-
-	bufPtr = buf;
-
-	while (copyStrFromBuf (&bufPtr, myInput, NAME_LEN * 2) > 0) {
-	    status = parseUserName (myInput, myuser, myZone);
-	    if (status >= 0) {
-                tmpAllowedUser = malloc (sizeof (struct allowedUser));
-                memset (tmpAllowedUser, 0, sizeof (struct allowedUser));
-                tmpAllowedUser->userName = strdup (myuser);
-                tmpAllowedUser->rodsZone = strdup (myZone);
-                /* queue it */
-
-                if (*allowedUserHead == NULL) {
-                    *allowedUserHead = tmpAllowedUser;
-                } else {
-                    tmpAllowedUser->next = *allowedUserHead;
-                    *allowedUserHead = tmpAllowedUser;
-		}
-            } else {
-		rodsLog (LOG_NOTICE, 
-		  "setAllowedUser: cannot parse input %s. status = %d",
-		  myInput, status);
-	    }
-        }
-    }
-
-    fclose (file);
-    if (*allowedUserHead == NULL) {
-        /* make an empty struct --> noone is allowed to use */
-        *allowedUserHead = malloc (sizeof (struct allowedUser));
-        memset (*allowedUserHead, 0, sizeof (struct allowedUser));
-    }
-    return (0);
-}
-
-int
-chkAllowedUser (struct allowedUser *allowedUserHead, char *userName,
-char *rodsZone)
-{
-    struct allowedUser *tmpAllowedUser;
-
-    if (allowedUserHead == NULL) {
-        /* no limit */
-        return (1);
-    }
-
-    if (userName == NULL || rodsZone == 0) {
-        return (0);
-    }
-
-    /* noone is allowed */
-    if (allowedUserHead->next == NULL &&
-      allowedUserHead->userName == NULL) {
-        return (0);
-    }
-
-    tmpAllowedUser = allowedUserHead;
-    while (tmpAllowedUser != NULL) {
-        if (tmpAllowedUser->userName != NULL &&
-         strcmp (tmpAllowedUser->userName, userName) == 0 &&
-         tmpAllowedUser->rodsZone != NULL &&
-         strcmp (tmpAllowedUser->rodsZone, rodsZone) == 0) {
-            /* we have a match */
-            break;
-        }
-        tmpAllowedUser = tmpAllowedUser->next;
-    }
-    if (tmpAllowedUser == NULL) {
-        /* no match */
-        return (0);
-    } else {
-        return (1);
-    }
-}
