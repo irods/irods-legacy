@@ -3063,9 +3063,9 @@ char *srcColl, char *destColl)
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies an iRODS file path
  *    (hintPath). The command will be executed on the host where this 
  *    file is stored. 
- * \param[in] inpParam5 - Optional - A INT_MS_T or a STR_MS_T which specifies 
- *    which the resolved physical path from the hintPath (inpParam4)
- *    will be part of the argv. 
+ * \param[in] inpParam5 - Optional - A INT_MS_T or a STR_MS_T. If it is greater
+ *    than zero, the resolved physical path from the logical hintPath 
+ *    (inpParam4) will be used as the first argument the command.
  * \param[out] outParam - a ExecCmdOut_MS_T containing the status of the command
  *    execution and the stdout/strerr output.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
