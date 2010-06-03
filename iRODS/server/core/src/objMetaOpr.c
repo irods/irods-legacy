@@ -3094,7 +3094,8 @@ initReExec (rsComm_t *rsComm, reExec_t *reExec)
         rodsLog (LOG_ERROR,
           "initReExec: rule acSetReServerNumProc error, status = %d",
           status);
-	reExec->maxRunCnt = DEF_NUM_RE_PROCS;
+        reExec->maxRunCnt = 1;
+        reExec->doFork = 0;
     } else {
 	reExec->maxRunCnt = rei.status;
         if (reExec->maxRunCnt <= 0) {
