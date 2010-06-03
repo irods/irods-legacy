@@ -444,9 +444,16 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
              addKeyVal (&regParam, REPL_STATUS_KW, tmpStr);
             snprintf (tmpStr, MAX_NAME_LEN, "%lld", srcDataObjInfo->dataSize);
             addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
+            snprintf (tmpStr, MAX_NAME_LEN, "%d", (int) time (NULL));
+            addKeyVal (&regParam, DATA_MODIFY_KW, tmpStr);
 	    if (chksumStr != NULL) {
 		addKeyVal (&regParam, CHKSUM_KW, chksumStr);
+	    } else if (getRescClass (destDataObjInfo->rescInfo) == 
+	      COMPOUND_CL) {
+		/* can't chksum for compound resc */
+                addKeyVal (&regParam, CHKSUM_KW, "");
 	    }
+
             if (getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
               IRODS_ADMIN_KW) != NULL) {
                 addKeyVal (&regParam, IRODS_ADMIN_KW, "");
@@ -780,6 +787,7 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
                   dataObjInfo->objPath, status);
 		return status;
             } else {
+		rstrcpy (dataObjInfo->chksum, *chksumStr, NAME_LEN);
                 if (strcmp (srcDataObjInfo->chksum, *chksumStr) != 0) {
                     free (*chksumStr);
 		    *chksumStr = NULL;
