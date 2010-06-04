@@ -73,7 +73,7 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note None
  *
  * \usage
  * 
@@ -89,17 +89,17 @@ myErrorCallback(bytesBuf_t *errBuf, const char* errMsg, ...)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 
@@ -325,7 +325,7 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note None
  *
  * \usage
  *
@@ -343,17 +343,17 @@ msiLoadMetadataFromXml(msParam_t *targetObj, msParam_t *xmlObj, ruleExecInfo_t *
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
- * \retval 
- * \pre
- * \post
- * \sa
+ * \retval 0 on success
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int 

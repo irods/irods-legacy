@@ -30,7 +30,7 @@ extern int xmlLoadExtDtdDefaultValue;
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
  *
- * \note
+ * \note None
  *
  * \usage
  * 
@@ -47,17 +47,17 @@ extern int xmlLoadExtDtdDefaultValue;
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int
