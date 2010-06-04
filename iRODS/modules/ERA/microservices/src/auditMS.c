@@ -19,13 +19,13 @@
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  Antoine de Torcy
+ * \date   10/2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note None
  *
  * \usage
  *  
@@ -42,17 +42,17 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int
@@ -121,13 +121,13 @@ msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam
  *  
  * \since pre-2.1
  *  
- * \author 
- * \date   
+ * \author  Antoine de Torcy
+ * \date   10/2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note None
  *
  * \usage
  * 
@@ -144,17 +144,17 @@ msiGetAuditTrailInfoByUserID(msParam_t *inpParam1, msParam_t *inpParam2, msParam
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int
@@ -223,13 +223,13 @@ msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  Antoine de Torcy
+ * \date   10/2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note None
  *
  * \usage
  * 
@@ -246,17 +246,17 @@ msiGetAuditTrailInfoByObjectID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int
@@ -325,13 +325,13 @@ msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  Antoine de Torcy
+ * \date   10/2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  * 
- * \note
+ * \note None
  *
  * \usage
  *
@@ -348,17 +348,17 @@ msiGetAuditTrailInfoByActionID(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int
@@ -427,13 +427,13 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  Antoine de Torcy
+ * \date   10/2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note None
  *
  * \usage
  * 
@@ -451,17 +451,17 @@ msiGetAuditTrailInfoByKeywords(msParam_t *inpParam1, msParam_t *inpParam2, msPar
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int
