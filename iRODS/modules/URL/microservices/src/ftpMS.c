@@ -103,17 +103,17 @@ static size_t createAndWriteToDataObj(void *buffer, size_t size, size_t nmemb, v
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
-
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
+ *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExecInfo_t *rei)
@@ -270,17 +270,17 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
-
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
+ *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre None
+ * \post None
+ * \sa None
  * \bug  no known bugs
 **/
 int msiTwitterPost(msParam_t *twittername, msParam_t *twitterpass, msParam_t *message, msParam_t *status, ruleExecInfo_t *rei)
