@@ -41,9 +41,9 @@
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -95,9 +95,9 @@ ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -198,11 +198,14 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
 /**
  * \fn msiAddKeyValToMspStr (msParam_t *keyStr, msParam_t *valStr, msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  *
- * \brief Adds a key and value to existing msKeyValStr.
+ * \brief Adds a key and value to existing msKeyValStr which is a  special 
+ * kind of STR_MS_T which has the format -
+ * keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
+.
  *
  * \module core
  *
- * \since pre-2.1
+ * \since since 2.3
  *
  * \author Mike Wan  
  * \date   2010 
@@ -230,9 +233,9 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -261,7 +264,7 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  *
  * \module core
  *
- * \since pre-2.1
+ * \since 2.3
  *
  * \author Mike Wan 
  * \date   2010 
@@ -288,9 +291,9 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -374,9 +377,9 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
