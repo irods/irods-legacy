@@ -60,9 +60,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -189,9 +189,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval positive on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -297,9 +297,9 @@ ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -396,9 +396,9 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval positive on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -556,9 +556,9 @@ ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval positive on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -674,9 +674,9 @@ msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
  *
  * \return integer
  * \retval positive on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -811,9 +811,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -947,9 +947,9 @@ ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1086,9 +1086,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1246,9 +1246,9 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1397,9 +1397,9 @@ msParam_t *msKeyValStr, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1651,9 +1651,9 @@ msParam_t *srcrescParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1765,9 +1765,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1884,9 +1884,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1988,9 +1988,9 @@ msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -2102,9 +2102,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -2202,9 +2202,9 @@ msiCollCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -2528,9 +2528,9 @@ msiReplColl (msParam_t *coll, msParam_t *destRescName, msParam_t *options,
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -2631,9 +2631,9 @@ ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -2724,9 +2724,9 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -2839,7 +2839,8 @@ ruleExecInfo_t *rei)
  * \date    2010-04-27
  *
  *
- * \usage None
+ * \usage 
+ * myTestRule||msiCollRsync(*srcColl,*destColl,null,IRODS_TO_IRODS,*junk8)|nop
  *
  * \param[in] inpParam1 - a STR_MS_T which specifies the source collection path.
  * \param[in] inpParam2 - a STR_MS_T which specifies the target collection path.
@@ -2860,9 +2861,9 @@ ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -3080,9 +3081,9 @@ char *srcColl, char *destColl)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
