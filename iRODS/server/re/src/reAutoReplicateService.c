@@ -331,6 +331,10 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
    int newN;
    int rn;
 
+   int validKwFlags;
+   char *outBadKeyWd;
+   msParam_t msGrpRescStr;   /* it can be a single resc name or a paired values. */
+
    /* fprintf(stderr,"msiAutoReplicateService():process_single_obj()\n");  */
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -564,6 +568,8 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       }
    }
 
+   fillStrInMsParam(&msGrpRescStr, grpRescForReplication);
+
    /* make necessary copies based on the required number of copies */
    if(newN < required_num_replicas)
    {
@@ -572,7 +578,27 @@ static int process_single_obj(rsComm_t *conn, char *parColl, char *fileName,
       {
          memset(&myDataObjInp, 0, sizeof(dataObjInp_t));
          snprintf (myDataObjInp.objPath, MAX_NAME_LEN, "%s/%s", parColl, fileName);
-         addKeyVal(&myDataObjInp.condInput, DEST_RESC_NAME_KW, grpRescForReplication);
+         /* addKeyVal(&myDataObjInp.condInput, DEST_RESC_NAME_KW, grpRescForReplication); */
+         validKwFlags = OBJ_PATH_FLAG | DEST_RESC_NAME_FLAG | NUM_THREADS_FLAG |
+                        BACKUP_RESC_NAME_FLAG | RESC_NAME_FLAG | UPDATE_REPL_FLAG |
+                        REPL_NUM_FLAG | ALL_FLAG | IRODS_ADMIN_FLAG | VERIFY_CHKSUM_FLAG |
+                        RBUDP_TRANSFER_FLAG | RBUDP_SEND_RATE_FLAG | RBUDP_PACK_SIZE_FLAG;
+         t = parseMsKeyValStrForDataObjInp(&msGrpRescStr, &myDataObjInp, DEST_RESC_NAME_KW, validKwFlags, &outBadKeyWd);
+         if(t < 0)
+         {
+            if(outBadKeyWd != NULL)
+            {
+               rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjRepl(): input keyWd - %s error. status = %d", outBadKeyWd, t);
+               free(outBadKeyWd);
+            }
+            else
+            {
+               rodsLog(LOG_ERROR, "msiAutoReplicateService():rsDataObjRepl(): input msKeyValStr error. status = %d", t);
+            }
+
+            return t;
+         }        
+
          t = rsDataObjRepl(conn, &myDataObjInp, &transStat);
          if(t < 0)
          {
