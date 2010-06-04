@@ -183,9 +183,9 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
  *           msParam_t *xEmailAccountToNotify,
  *         ruleExecInfo_t *rei)
  *
- * \brief This microservice is used to handle digital preservation rules, intially requested by CineGrid project.
+ * \brief This microservice is used to handle digital preservation rule through checking data integrity and making necessary repair(s).
  *
- * \module 
+ * \module core 
  *
  * \since 2.2
  *
@@ -195,13 +195,13 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
  * \remark Terrell Russell - msi documentation, 2009-09-21
  *
  * \note   This microservice is supposed to be run as a periodic service to check if a designated number of 
- * required good copies of data is in the system. 
- *   \li For a registered copy, it checks if the copy still exits, and removes
- *     it from the iCAT if the local file is already removed by the data owner.
- *   \li For each copy, including the registered one or the one in vault, runs
- *     the checksum and verifies that the copy is still good.
- *   \li If a bad copy is detected, deletes it.
- *   \li Makes necessary replicas to meet the required number of copies.
+ * required good copies of dataset(s) from a selected collection is in the system. 
+ *   \li For a registered copy, it checks if the copy still exits. If the local file is removed by the data
+ *     owner, the registered copy will be deleted from iRODS.
+ *   \li For each replica, wether it is a registered dataset or a vaulted dataset, the service computes
+ *     the checksum and verifies the replica is still good.
+ *   \li If a bad copy is detected, the copy is deleted.
+ *   \li Finally, the service creates necessary replicas to meet the required number of copies.
  *
  * \usage None
  *
@@ -209,25 +209,25 @@ static int  _myAutoReplicateService(rsComm_t *conn, char *topColl, int recursive
  * \param[in] xRecursive - a STR_MS_T determining whether should be run recursively
  *                      \li true - will run recursively
  *                      \li false - default - will not run recursively
- * \param[in] xRequireNumReplicas - a STR_MS_T containing the number of replicas
+ * \param[in] xRequireNumReplicas - a STR_MS_T specifying the number of required replicas iRODS
  *                      \li must be at least 1
- * \param[in] xRescGroup - Optional - a STR_MS_T containing the target resource group name
+ * \param[in] xRescGroup - a STR_MS_T containing the target resource group name
  * \param[in] xEmailAccountToNotify - Optional - a STR_MS_T containing the notification email address
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence COL_D_DATA_CHECKSUM
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiAutoReplicateService(msParam_t *xColl, msParam_t *xRecursive, 
@@ -671,7 +671,7 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
  *
  * \brief This microservice is used to automatically move the newly created file into a destination collection.
  *
- * \module 
+ * \module core
  *
  * \since 2.2
  *
@@ -680,7 +680,8 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
  *
  * \remark Terrell Russell - msi documentation, 2009-09-21
  *
- * \note
+ * \note: The micro-service moves all dataset(s) in a collection to another user's collection and change the ownership
+ * for the dataset(s) being moved.
  *
  * \usage None
  *
@@ -696,17 +697,17 @@ static int get_resource_path(rsComm_t *conn, char *rescName, char *rescPath)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiDataObjAutoMove(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
