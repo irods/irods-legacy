@@ -110,14 +110,16 @@ main(int argc, char *argv[])
 
     /* move configConnectControl behind initAgent for now. need zoneName if
      * the user does not specify one in the input */
-    configConnectControl ();
+    initConnectControl ();
 
-    status = chkAllowedUser (rsComm.clientUser.userName,
-     rsComm.clientUser.rodsZone);
+    if (rsComm.clientUser.userName[0] != '\0') {
+        status = chkAllowedUser (rsComm.clientUser.userName,
+         rsComm.clientUser.rodsZone);
 
-    if (status <= 0) {
-        sendVersion (rsComm.sock, SYS_USER_NOT_ALLOWED_TO_CONN, 0, NULL, 0);
-        cleanupAndExit (SYS_USER_NOT_ALLOWED_TO_CONN);
+        if (status < 0) {
+            sendVersion (rsComm.sock, status, 0, NULL, 0);
+            cleanupAndExit (status);
+	}
     }
 
     /* send the server version and atatus as part of the protocol. Put

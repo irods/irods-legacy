@@ -72,7 +72,7 @@ int RescQuotaPolicy;		/* can be RESC_QUOTA_UNINIT, RESC_QUOTA_OFF or
 /* connection control config */
 struct allowedUser *AllowedUserHead = NULL;
 struct allowedUser *DisallowedUserHead = NULL;
-int MaxConnections = 0;		/* no control */
+int MaxConnections = DEF_MAX_CONNECTION;		/* no control */
 
 #endif	/* RS_GLOBAL_H */
 

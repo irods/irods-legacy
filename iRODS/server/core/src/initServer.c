@@ -2351,7 +2351,7 @@ getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost)
 }
 
 int
-configConnectControl ()
+initConnectControl ()
 {
     char *conFile;
     char *configDir;
@@ -2386,6 +2386,10 @@ configConnectControl ()
 
     free (conFile);
 
+    MaxConnections = DEF_MAX_CONNECTION;	/* no limit */
+    freeAllAllowedUser (AllowedUserHead);
+    freeAllAllowedUser (DisallowedUserHead);
+    AllowedUserHead = DisallowedUserHead = NULL;
     while (fgets (buf, LONG_NAME_LEN * 5, file) != NULL) {
         char myuser[NAME_LEN];
         char myZone[NAME_LEN];
@@ -2404,7 +2408,7 @@ configConnectControl ()
                         MaxConnections = atoi (myInput);
                     } else {
                         rodsLog (LOG_ERROR,
-                          "configConnectControl: inp maxConnections %d is not an int",
+                          "initConnectControl: inp maxConnections %d is not an int",
                        myInput);
                     }
                     break;
@@ -2415,7 +2419,7 @@ configConnectControl ()
                     break;
                 } else {
                     rodsLog (LOG_ERROR,
-                      "configConnectControl: both allowUserList and disallowUserList are set");
+                      "initConnectControl: both allowUserList and disallowUserList are set");
                     return SYS_CONNECT_CONTROL_CONFIG_ERR;
                 }
             } else if (strcmp (myInput, DISALLOWED_USER_LIST_KW) == 0) {
@@ -2424,7 +2428,7 @@ configConnectControl ()
                     break;
                 } else {
                     rodsLog (LOG_ERROR,
-                      "configConnectControl: both allowUserList and disallowUserList are set");
+                      "initConnectControl: both allowUserList and disallowUserList are set");
                     return SYS_CONNECT_CONTROL_CONFIG_ERR;
                 }
             }
@@ -2438,8 +2442,8 @@ configConnectControl ()
                 }
                 tmpAllowedUser = malloc (sizeof (struct allowedUser));
                 memset (tmpAllowedUser, 0, sizeof (struct allowedUser));
-                tmpAllowedUser->userName = strdup (myuser);
-                tmpAllowedUser->rodsZone = strdup (myZone);
+		rstrcpy (tmpAllowedUser->userName, myuser, NAME_LEN);
+		rstrcpy (tmpAllowedUser->rodsZone, myZone, NAME_LEN);
                 /* queue it */
 
 		if (allowUserFlag != 0) {
@@ -2448,12 +2452,12 @@ configConnectControl ()
                     queAllowedUser (tmpAllowedUser, &DisallowedUserHead);
 		} else {
                     rodsLog (LOG_ERROR,
-                      "configConnectControl: neither allowUserList nor disallowUserList has been set");
+                      "initConnectControl: neither allowUserList nor disallowUserList has been set");
                     return SYS_CONNECT_CONTROL_CONFIG_ERR;
 		}
             } else {
                 rodsLog (LOG_NOTICE,
-                  "configConnectControl: cannot parse input %s. status = %d",
+                  "initConnectControl: cannot parse input %s. status = %d",
                   myInput, status);
             }
         }
@@ -2469,27 +2473,31 @@ chkAllowedUser (char *userName, char *rodsZone)
     int status;
 
     if (userName == NULL || rodsZone == 0) {
-        return (0);
+        return (SYS_USER_NOT_ALLOWED_TO_CONN);
     }
 
     if (strlen (userName) == 0) {
         /* XXXXXXXXXX userName not yet defined. allow it for now */
-        return 1;
+        return 0;
     }
 
     if (AllowedUserHead != NULL) {
 	status = matchAllowedUser (userName, rodsZone, AllowedUserHead);
-	return status;
+	if (status == 1) {	/* a match */
+	    return 0;
+	} else {
+            return SYS_USER_NOT_ALLOWED_TO_CONN;
+	}
     } else if (DisallowedUserHead != NULL) {
         status = matchAllowedUser (userName, rodsZone, DisallowedUserHead);
 	if (status == 1) {	/* a match, disallow */
-	    return 0;
+	    return SYS_USER_NOT_ALLOWED_TO_CONN;
 	} else {
-	    return 1;
+	    return 0;
 	}
     } else {
-	/* no control, return 1 */
-	return 1;
+	/* no control, return 0 */
+	return 0;
     }
 }
 
@@ -2536,3 +2544,18 @@ struct allowedUser **allowedUserHead)
     }
     return 0;
 }
+
+int
+freeAllAllowedUser (struct allowedUser *allowedUserHead)
+{
+    struct allowedUser *tmpAllowedUser, *nextAllowedUser;
+    tmpAllowedUser = allowedUserHead;
+    while (tmpAllowedUser != NULL) {
+        nextAllowedUser = tmpAllowedUser->next;
+        free (tmpAllowedUser);
+        tmpAllowedUser = nextAllowedUser;
+    }
+    return (0);
+}
+
+

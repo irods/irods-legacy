@@ -2106,3 +2106,102 @@ singleLocToRemCopy (rsComm_t *rsComm, dataCopyInp_t *dataCopyInp)
     }
 }
 
+/* readStartupPack - Read the startup packet from client.
+ * Note: initServerInfo must be called first because it calls getLocalZoneInfo.
+ */
+
+int
+readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
+{
+    int status;
+    msgHeader_t myHeader;
+    bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
+
+    status = readMsgHeader (sock, &myHeader, tv);
+
+   if (status < 0) {
+        rodsLogError (LOG_NOTICE, status,
+          "readStartupPack: readMsgHeader error. status = %d", status);
+        return (status);
+    }
+
+    if (myHeader.msgLen > sizeof (startupPack_t) * 2 || myHeader.msgLen <= 0) {
+        rodsLog (LOG_NOTICE,
+          "readStartupPack: problem with myHeader.msgLen = %d",
+          myHeader.msgLen);
+          return (SYS_HEADER_READ_LEN_ERR);
+    }
+
+    memset (&bsBBuf, 0, sizeof (bytesBuf_t));
+    status = readMsgBody (sock, &myHeader, &inputStructBBuf, &bsBBuf,
+      &errorBBuf, XML_PROT, tv);
+    if (status < 0) {
+        rodsLogError (LOG_NOTICE, status,
+          "readStartupPack: readMsgBody error. status = %d", status);
+        return (status);
+    }
+
+    /* some sanity check */
+
+    if (strcmp (myHeader.type, RODS_CONNECT_T) != 0) {
+        if (inputStructBBuf.buf != NULL)
+            free (inputStructBBuf.buf);
+        if (bsBBuf.buf != NULL)
+            free (inputStructBBuf.buf);
+        if (errorBBuf.buf != NULL)
+            free (inputStructBBuf.buf);
+        rodsLog (LOG_NOTICE,
+          "readStartupPack: wrong mag type - %s, expect %s",
+          myHeader.type, RODS_CONNECT_T);
+          return (SYS_HEADER_TPYE_LEN_ERR);
+    }
+
+    if (myHeader.bsLen != 0) {
+        if (bsBBuf.buf != NULL)
+            free (inputStructBBuf.buf);
+        rodsLog (LOG_NOTICE, "readStartupPack: myHeader.bsLen = %d is not 0",
+          myHeader.bsLen);
+    }
+
+    if (myHeader.errorLen != 0) {
+        if (errorBBuf.buf != NULL)
+            free (inputStructBBuf.buf);
+        rodsLog (LOG_NOTICE,
+         "readStartupPack: myHeader.errorLen = %d is not 0",
+          myHeader.errorLen);
+    }
+
+    /* always use XML_PROT for the startup pack */
+    status = unpackStruct (inputStructBBuf.buf, (void **) startupPack,
+      "StartupPack_PI", RodsPackTable, XML_PROT);
+
+    clearBBuf (&inputStructBBuf);
+
+    if (status >= 0) {
+	if ((*startupPack)->clientUser[0] != '\0'  && 
+	  (*startupPack)->clientRodsZone[0] == '\0') {
+            zoneInfo_t *tmpZoneInfo;
+	    /* clientRodsZone is not defined */
+            if (getLocalZoneInfo (&tmpZoneInfo) >= 0) {
+                rstrcpy ((*startupPack)->clientRodsZone, 
+		  tmpZoneInfo->zoneName, NAME_LEN);
+            }
+	}
+        if ((*startupPack)->proxyUser[0] != '\0'  && 
+          (*startupPack)->proxyRodsZone[0] == '\0') {
+            zoneInfo_t *tmpZoneInfo;
+            /* clientRodsZone is not defined */
+            if (getLocalZoneInfo (&tmpZoneInfo) >= 0) {
+                rstrcpy ((*startupPack)->proxyRodsZone, 
+                  tmpZoneInfo->zoneName, NAME_LEN);
+            }
+        }
+    } else {
+        rodsLogError (LOG_NOTICE,  status,
+         "readStartupPack:unpackStruct error. status = %d",
+         status);
+    } 
+	
+    return (status);
+}
+

@@ -52,7 +52,6 @@ int sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
 int rodsSetSockOpt (int sock, int windowSize);
 int readMsgHeader (int sock, msgHeader_t *myHeader, struct timeval *tv);
 int writeMsgHeader (int sock, msgHeader_t *myHeader);
-int readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv);
 int readVersion (int sock, version_t **myVersion);
 int myRead (int sock, void *buf, int len, irodsDescType_t irodsDescType,
 int *bytesRead, struct timeval *tv);

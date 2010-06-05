@@ -87,7 +87,9 @@ int
 queConnectedAgentProc (int childPid, agentProc_t *connReq, 
 agentProc_t **agentProcHead);
 int
-getAgentProcCnt (agentProc_t *agentProcHead);
+getAgentProcCnt ();
+int
+chkAgentProcCnt ();
 int
 recordServerProcess(rsComm_t *svrComm);
 int

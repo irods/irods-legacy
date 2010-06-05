@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "rodsServer.h"
+#include "miscServerFunct.h"
 
 #include <syslog.h>
 
@@ -32,6 +33,7 @@ pthread_cond_t ReadReqCond;
 pthread_mutex_t ConnectedAgentMutex;
 pthread_mutex_t SpawnReqCondMutex;
 pthread_cond_t SpawnReqCond;
+pthread_mutex_t BadReqMutex;
 pthread_t ReadWorkerThread[NUM_READ_WORKER_THR];
 pthread_t SpawnManagerThread;
 #endif
@@ -258,6 +260,15 @@ serverMain (char *logDir)
 	        continue;
 	    }
 	}
+
+	status = chkAgentProcCnt ();
+	if (status < 0) {
+            rodsLog (LOG_NOTICE, 
+	      "serverMain: chkAgentProcCnt failed status = %d", status);
+            sendVersion (newSock, status, 0, NULL, 0);
+	    close (newSock);
+	    continue;
+        }
 
         acceptErrCnt = 0;
 
@@ -551,7 +562,7 @@ agentProc_t **agentProcHead)
 }
 
 int
-getAgentProcCnt (agentProc_t *agentProcHead)
+getAgentProcCnt ()
 {
     agentProc_t *tmpAagentProc;
     int count = 0;
@@ -560,7 +571,7 @@ getAgentProcCnt (agentProc_t *agentProcHead)
     pthread_mutex_lock (&ConnectedAgentMutex);
 #endif
 
-    tmpAagentProc = agentProcHead;
+    tmpAagentProc = ConnectedAgentHead;
     while (tmpAagentProc != NULL) {
 	count++;
 	tmpAagentProc = tmpAagentProc->next;
@@ -572,6 +583,20 @@ getAgentProcCnt (agentProc_t *agentProcHead)
     return count;
 }
 
+int
+chkAgentProcCnt ()
+{
+    int count; 
+
+    if (MaxConnections == NO_MAX_CONNECTION_LIMIT) return 0;
+    count = getAgentProcCnt ();
+    if (count >= MaxConnections) {
+	return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+    } else {
+	return 0;
+    }
+}
+	
 int
 initServer ( rsComm_t *svrComm)
 {
@@ -615,6 +640,7 @@ initServer ( rsComm_t *svrComm)
 	    rodsServerHost->conn = NULL;
 	}
     } 
+    initConnectControl ();
 
     return (status);
 }
@@ -779,6 +805,7 @@ initConnThreadEnv ()
     pthread_mutex_init (&ReadReqCondMutex, NULL);
     pthread_mutex_init (&ConnectedAgentMutex, NULL);
     pthread_mutex_init (&SpawnReqCondMutex, NULL);
+    pthread_mutex_init (&BadReqMutex, NULL);
     pthread_cond_init (&ReadReqCond, NULL);
     pthread_cond_init (&SpawnReqCond, NULL);
 #endif
@@ -878,19 +905,27 @@ readWorkerTask ()
               inet_ntoa (myConnReq->remoteAddr.sin_addr), status);
             sendVersion (newSock, status, 0, NULL, 0);
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_lock (&ConnectedAgentMutex);
+            pthread_mutex_lock (&BadReqMutex);
 #endif
 	    queAgentProc (myConnReq, &BadReqHead, TOP_POS);
 #ifndef SINGLE_SVR_THR
-            pthread_mutex_unlock (&ConnectedAgentMutex);
+            pthread_mutex_unlock (&BadReqMutex);
 #endif
             close (newSock);
 	} else if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
             sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
             close (newSock);
-            sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
             free (myConnReq);
 	} else {
+            if (startupPack->clientUser[0] == '\0') {
+                status = chkAllowedUser (startupPack->clientUser,
+                  startupPack->clientRodsZone);
+                if (status < 0) {
+                    sendVersion (newSock, status, 0, NULL, 0);
+                    close (newSock);
+		    free (myConnReq);
+		}
+            }
 	    myConnReq->startupPack = *startupPack;
 	    free (startupPack);
 #ifndef SINGLE_SVR_THR

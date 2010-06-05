@@ -28,7 +28,8 @@
 #define MAX_CONNECTIONS_KW		"maxConnections"
 #define ALLOWED_USER_LIST_KW		"allowUserList"
 #define DISALLOWED_USER_LIST_KW	"disallowUserList"
-#define DEF_MAX_CONNECTION	100
+#define NO_MAX_CONNECTION_LIMIT	-1
+#define DEF_MAX_CONNECTION	NO_MAX_CONNECTION_LIMIT		 
 
 /* keywords for the RCAT_HOST_FILE */
 #define ICAT_HOST_KW		"icatHost"
@@ -102,8 +103,8 @@ typedef struct zoneInfo {
 #define SID_KEY_KW              "SIDKey"
 
 struct allowedUser {
-    char *userName;
-    char *rodsZone;
+    char userName[NAME_LEN];
+    char rodsZone[NAME_LEN];
     struct allowedUser *next;
 };
 
@@ -217,7 +218,7 @@ getAndConnReHost (rsComm_t *rsComm, rodsServerHost_t **rodsServerHost);
 int
 isLocalHost (char *hostAddr);
 int
-configConnectControl ();
+initConnectControl ();
 int
 chkAllowedUser (char *userName, char *rodsZone);
 int
@@ -226,4 +227,6 @@ struct allowedUser **allowedUserHead);
 int
 matchAllowedUser (char *userName, char *rodsZone,
 struct allowedUser *allowedUserHead);
+int
+freeAllAllowedUser (struct allowedUser *allowedUserHead);
 #endif	/* INIT_SERVER_H */
