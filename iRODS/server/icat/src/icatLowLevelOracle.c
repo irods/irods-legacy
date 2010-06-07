@@ -18,12 +18,8 @@ int _cllFreeStatementColumns(icatSessionStruct *icss, int statementNumber);
 int cllBindVarCount=0;
 char *cllBindVars[MAX_BIND_VARS];
 int cllBindVarCountPrev=0; /* cclBindVarCount earlier in processing */
-char *bindName[MAX_BIND_VARS]={
-    ":1",":2", ":3", ":4", ":5", ":6", ":7", ":8", ":9", 
-    ":10", ":11",":12", ":13", ":14", ":15", ":16", ":17", ":18", ":19",
-    ":20", ":21",":22", ":23", ":24", ":25", ":26", ":27", ":28", ":29",
-    ":30", ":31",":32", ":33", ":34", ":35", ":36", ":37", ":38", ":39",
-};
+
+char bindName[MAX_BIND_VARS*5]="";
 
 char testName[]=":1";
 char testBindVar[]="a";
@@ -38,7 +34,7 @@ char testBindVar[]="a";
 
 static OCIError         *p_err;
 
-OCIBind  *p_bind[20];
+OCIBind  *p_bind[MAX_BIND_VARS];
 
 char            errbuf[100];
 int             errcode;
@@ -429,21 +425,31 @@ bindTheVariables(OCIStmt *p_statement, char *sql) {
    int myBindVarCount;
    int stat;
    int i;
-
-   for (i=0;i<20;i++) {
+   
+   for (i=0;i<MAX_BIND_VARS;i++) {
       p_bind[i]=NULL;
    }
+   if (bindName[0]=='\0') { 
+      /* I believe we need a static array of these bind names so
+	 initialize them if they haven't been already.
+       */
+      for (i=0;i<MAX_BIND_VARS;i++) {
+	 snprintf(&bindName[i*5], 5, ":%d", i+1);
+      }
+   }
+
    myBindVarCount = cllBindVarCount;
    cllBindVarCountPrev=cllBindVarCount; /* save in case we need to log error */
    cllBindVarCount = 0; /* reset for next call */
 
    if (myBindVarCount > 0) {
+      if (myBindVarCount > MAX_BIND_VARS) return(CAT_INVALID_ARGUMENT);
       for (i=0;i<myBindVarCount;i++) {
 	 int len, len2;
-	 len = strlen(bindName[i]);
+	 len = strlen((char*)&bindName[i*5]);
 	 len2 = strlen(cllBindVars[i])+1;
 	 stat =  OCIBindByName(p_statement, &p_bind[i], p_err, 
-			       (dvoid *)bindName[i],
+			       (dvoid *)&bindName[i*5],
 			       len,
 			       (dvoid *)cllBindVars[i],
 			       len2,
