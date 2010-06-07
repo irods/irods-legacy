@@ -2364,8 +2364,6 @@ initConnectControl ()
     int allowUserFlag = 0;
     int disallowUserFlag = 0;
 
-    AllowedUserHead = DisallowedUserHead = NULL;
-
     configDir = getConfigDir ();
     len = strlen (configDir) + strlen(CONNECT_CONTROL_FILE) + 2;
 ;

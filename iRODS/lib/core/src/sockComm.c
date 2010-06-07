@@ -164,7 +164,8 @@ rsAcceptConn (rsComm_t *svrComm)
 	  "rsAcceptConn: accept error for socket %d, status = %d", 
 	 svrComm->sock, status);
     }
-    
+    rodsSetSockOpt (newSock, svrComm->windowSize);
+
     return (newSock);
 }
 
@@ -479,6 +480,9 @@ rodsSetSockOpt (int sock, int windowSize)
     int status;
     int savedStatus = 0;
     int temp;
+#ifndef _WIN32
+    struct linger linger;
+#endif
 
     if (windowSize <= 0) {
 	windowSize = SOCK_WINDOW_SIZE;
@@ -533,6 +537,11 @@ rodsSetSockOpt (int sock, int windowSize)
     if (status < 0)
         savedStatus = status;
 
+    linger.l_onoff = 1;
+    linger.l_linger = 5;
+    status = setsockopt(sock, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
+    if (status < 0)
+        savedStatus = status;
 #endif
 
     return (savedStatus);
