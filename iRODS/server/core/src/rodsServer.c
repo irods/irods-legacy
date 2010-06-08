@@ -980,6 +980,7 @@ spawnManagerTask ()
 #ifndef SINGLE_SVR_THR
         pthread_mutex_unlock (&SpawnReqCondMutex);
 #endif
+	procBadReq ();
     }
 }
 
@@ -1060,3 +1061,25 @@ irodsPosition_t position)
     return 0;
 }
 
+/* procBadReq - process bad request */
+int
+procBadReq ()
+{
+    agentProc_t *tmpConnReq, *nextConnReq;
+    /* just free them for now */
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_lock (&BadReqMutex);
+#endif
+    tmpConnReq = BadReqHead;
+    while (tmpConnReq != NULL) {
+	nextConnReq = tmpConnReq->next;
+	free (tmpConnReq);
+	tmpConnReq = nextConnReq;
+    }
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_unlock (&BadReqMutex);
+#endif
+
+    return 0;
+}
+    

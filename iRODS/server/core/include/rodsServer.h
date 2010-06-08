@@ -111,4 +111,6 @@ queAgentProc (agentProc_t *agentPorc, agentProc_t **agentPorcHead,
 irodsPosition_t position);
 void
 spawnManagerTask ();
+int
+procBadReq ();
 #endif	/* RODS_SERVER_H */
