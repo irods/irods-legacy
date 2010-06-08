@@ -377,29 +377,30 @@ msiGetIcatTime(msParam_t* timeOutParam,  msParam_t* typeInParam, ruleExecInfo_t 
  * \remark Jewel Ward - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed documentation, 2009-06-23
  *
- * \note works only for PostgreSQL
+ * \note The effect of this is that iCAT database gets vacuumed.
+ *       This micro-service works with PostgreSQL only.
  *
- * \usage
- * 
- *  As seen in server/config/reConfigs/core.irb
- * 
- *  acVacuum(*arg1)||delayExec(*arg1,msiVacuum,nop)|nop
+ * \usage This is run via an 'iadmin' command (iadmin pv) via a rule
+ *    in the core.irb. It is not designed for general use in other
+ *    situations (i.e. don't call this from other rules).
+ *    The core.irb rule is:
+ *    acVacuum(*arg1)||delayExec(*arg1,msiVacuum,nop)|nop
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect the iCAT database gets vacuumed
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -432,27 +433,25 @@ msiVacuum(ruleExecInfo_t *rei)
  * \author  Wayne Schroeder
  * \date    January 2010
  *
- * \note
+ * \note Causes the ICAT quota tables to be updated.
  *
- * \usage
- * 
- *  myTestRule(*arg1)||delayExec(*arg1,msiQuota,nop)|nop
+ * \usage This is run via an admin rule (see the Quotas page on the
+ * irods web site).
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect
- *
+ * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence
+ * \iCatAttrModified
+ * \sideeffect none
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -646,23 +645,28 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
 /**
  * \fn msiCommit (ruleExecInfo_t *rei)
  *
- * \brief   This microservice commits the pending database transaction by registering the new state information in the iCAT
+ * \brief This microservice commits pending database transactions,
+ * registering the new state information into the iCAT.
  *
  * \module core
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author Wayne Schroeder
+ * \date June 2009 or so
  *
  * \remark Jewel Ward - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note This is used to commit changes (in any) into the ICAT
+ * database as part of a rule and microservice chain.  See core.irb
+ * for examples.  In other cases, ICAT updates and inserts are
+ * automatically committed into the ICAT Database as part of the
+ * normal operations (in the 'C' code).
  *
- * \usage
- * 
- *  As seen in server/config/reConfigs/core.irb
+ * \usage 
+ *
+ * As seen in server/config/reConfigs/core.irb
  * 
  * acCreateUserF1|$otherUserName == anonymous|msiCreateUser##msiCommit|msiRollback##nop
  * 
@@ -679,9 +683,9 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval (status)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -714,13 +718,16 @@ msiCommit(ruleExecInfo_t *rei) {
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author Wayne Schroeder
+ * \date June 2009 or so
  *
  * \remark Jewel Ward - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
  *
- * \note
+ * \note This is used to not-commit changes into the ICAT database as
+ * part of a rule and microservice chain.  See core.irb for examples.
+ * In other cases, ICAT updates and inserts are automatically
+ * rolled-back as part of the normal operations (in the 'C' code).
  *
  * \usage
  * 
@@ -740,9 +747,9 @@ msiCommit(ruleExecInfo_t *rei) {
  *
  * \return integer
  * \retval (status)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -904,9 +911,9 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  *
  * \remark  Terrell Russell - reviewed msi documentation, 2010-04-20
  *
- * \note
+ * \note  This causes the unused AVUs to be removed from the ICAT.  
  *
- * \usage
+ * \usage See 'iadmin help rum'.  Do not call this directly.
  * 
  *  As seen in server/config/reConfigs/core.irb
  *  
@@ -918,13 +925,13 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval (status)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

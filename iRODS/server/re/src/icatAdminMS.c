@@ -18,13 +18,14 @@
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  2008 or before
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note Should not be used outside of the rules defined in core.irb.
+ * This is called via an 'iadmin' command.
  *
  * \usage
  * 
@@ -46,13 +47,13 @@
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval (i)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiCreateUser(ruleExecInfo_t *rei)
@@ -88,13 +89,14 @@ int msiCreateUser(ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  2008 or before
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note Should not be used outside of the rules defined in core.irb.
+ * This is called via an 'iadmin' command.
  *
  * \usage
  * 
@@ -112,13 +114,13 @@ int msiCreateUser(ruleExecInfo_t *rei)
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval (i)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
@@ -169,13 +171,14 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  2008 or before
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note Should not be used outside of the rules defined in core.irb.
+ * This is called via an 'iadmin' command.
  *
  * \usage
  * 
@@ -194,13 +197,13 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval (i)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInfo_t *rei)
@@ -258,13 +261,14 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  2008 or before
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note Should not be used outside of the rules defined in core.irb.
+ * This is called via an 'iadmin' command.
  *
  * \usage
  * 
@@ -281,13 +285,13 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval (i)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int 
@@ -323,13 +327,14 @@ msiDeleteUser(ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  2008 or before
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note Should not be used outside of the rules defined in core.irb.
+ * This is called via an 'iadmin' command.
  *
  * \usage
  * 
@@ -347,13 +352,13 @@ msiDeleteUser(ruleExecInfo_t *rei)
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval (i)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int 
@@ -395,13 +400,14 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  October 2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note Should not be used outside of the rules defined in core.irb.
+ * This is called via an 'iadmin' command.
  *
  * \usage
  * 
@@ -421,13 +427,13 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -456,13 +462,14 @@ msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  October 2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note Should not be used outside of the rules defined in core.irb.
+ * This is called via an 'iadmin' command.
  *
  * \usage
  * 
@@ -482,13 +489,13 @@ msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -519,12 +526,15 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Wayne Schroeder
+ * \date  March 2009
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
  *
- * \note See core.irb
+ * \note Should not be used outside of the rules defined in core.irb.
+ * Once set STRICT, strict mode remains in force (users can't call it in
+ * another rule to change the mode back to non-strict).
+ * See core.irb.
  *
  * \usage None
  *
@@ -541,9 +551,9 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

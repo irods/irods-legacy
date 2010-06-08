@@ -35,9 +35,10 @@
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note This is being replaced with the new 'Database Resources'
+ * feature, see that page on the iRODS web site.
  *
- * \usage None
+ * \usage See the RDA page on the iRODS web site.
  *
  * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
  * \param[in] inpSQL -  a STR_MS_T which is the SQL
@@ -57,9 +58,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -172,9 +173,10 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note This is being replaced with the new 'Database Resources'
+ * feature, see that page on the iRODS web site.
  *
- * \usage None
+ * \usage See the RDA page on the iRODS web site.
  *
  * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
  * \param[in] inpSQL - a STR_MS_T which is the SQL
@@ -191,13 +193,13 @@ msiRdaToStdout (msParam_t *inpRdaName, msParam_t *inpSQL,
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -331,9 +333,10 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note This is being replaced with the new 'Database Resources'
+ * feature, see that page on the iRODS web site.
  *
- * \usage None
+ * \usage See the RDA page on the iRODS web site.
  *
  * \param[in] inpRdaName - a STR_MS_T, name of the RDA being used
  * \param[in] inpSQL - a STR_MS_T which is the SQL
@@ -349,13 +352,13 @@ msiRdaToDataObj (msParam_t *inpRdaName, msParam_t *inpSQL,
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -458,9 +461,10 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note This is being replaced with the new 'Database Resources'
+ * feature, see that page on the iRODS web site.
  *
- * \usage None
+ * \usage See the RDA page on the iRODS web site.
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -474,9 +478,9 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -518,9 +522,10 @@ msiRdaCommit(ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note This is being replaced with the new 'Database Resources'
+ * feature, see that page on the iRODS web site.
  *
- * \usage None
+ * \usage See the RDA page on the iRODS web site.
  *
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -534,9 +539,9 @@ msiRdaCommit(ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
