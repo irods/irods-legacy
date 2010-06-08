@@ -279,7 +279,7 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
     nbytes = myWrite (sock, headerBBuf->buf, headerBBuf->len, SOCK_TYPE, NULL);
 
     if (headerBBuf->len != nbytes) {
-        rodsLog (LOG_NOTICE,
+        rodsLog (LOG_ERROR,
          "writeMsgHeader: wrote %d bytes, expect %d, status = %d",
          nbytes, headerBBuf->len, SYS_HEADER_WRITE_LEN_ERR - errno);
          return (SYS_HEADER_WRITE_LEN_ERR - errno);
@@ -603,7 +603,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     status = sendStartupPack (conn, connectCnt, reconnFlag);
 
     if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
+        rodsLogError (LOG_ERROR, status,
           "connectToRhost: sendStartupPack to %s failed, status = %d",
           conn->host, status);
         return status;
@@ -612,14 +612,14 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
     status = readVersion (conn->sock, &conn->svrVersion);
 
     if (status < 0) {
-        rodsLogError (LOG_NOTICE, status,
+        rodsLogError (LOG_ERROR, status,
           "connectToRhost: readVersion to %s failed, status = %d",
           conn->host, status);
         return status;
     }
 
     if (conn->svrVersion->status < 0) {
-        rodsLogError (LOG_NOTICE, conn->svrVersion->status,
+        rodsLogError (LOG_ERROR, conn->svrVersion->status,
           "connectToRhost: error returned from host %s status = %d",
           conn->host, conn->svrVersion->status);
         return conn->svrVersion->status;
