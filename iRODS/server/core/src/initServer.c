@@ -2446,7 +2446,7 @@ initConnectControl ()
 
 		if (allowUserFlag != 0) {
 		    queAllowedUser (tmpAllowedUser, &AllowedUserHead);
-		} else if (allowUserFlag != 0) {
+		} else if (disallowUserFlag != 0) {
                     queAllowedUser (tmpAllowedUser, &DisallowedUserHead);
 		} else {
                     rodsLog (LOG_ERROR,
