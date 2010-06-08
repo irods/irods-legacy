@@ -1430,3 +1430,24 @@ rodsEnv *myEnv, int reconnFlag)
     return 0;
 }
 
+int
+mySockClose (int sock)
+{
+    int status;
+#ifdef _WIN32
+    status = closesocket (sock);
+#else	/* _WIN32 */
+#if defined(solaris_platform) || defined(linux_platform) || defined(osx_platform)
+    /* For reason I do not completely understand, if I do a socket write and
+     * then a socket close immediately, the receiver at the other end can
+     * get a errno 104 (reset by peer) and does no always get the sent msg
+     * even though setting SO_LINGER. Making a shutdown call to shutdown
+     * the send channel seems to do the job.
+     */
+    shutdown (sock, SHUT_WR);
+#endif
+    status = close (sock);
+#endif
+    return status;
+}
+ 

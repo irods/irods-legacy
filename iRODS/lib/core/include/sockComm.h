@@ -111,6 +111,8 @@ rodsEnv *myEnv, int reconnFlag);
 int
 myReadTout (int sock, void *buf, int len, irodsDescType_t irodsDescType,
  int *bytesRead,  struct timeval *tv);
+int
+mySockClose (int sock);
 #ifdef  __cplusplus
 }
 #endif

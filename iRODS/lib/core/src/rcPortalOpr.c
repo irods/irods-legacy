@@ -352,7 +352,7 @@ rcPartialDataPut (rcPortalTransferInp_t *myInput)
 
     free (buf);
     close (srcFd);
-    CLOSE_SOCK (destFd);
+    mySockClose (destFd);
 }
 
 int

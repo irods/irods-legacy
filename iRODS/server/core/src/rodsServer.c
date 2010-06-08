@@ -266,7 +266,8 @@ serverMain (char *logDir)
             rodsLog (LOG_NOTICE, 
 	      "serverMain: chkAgentProcCnt failed status = %d", status);
             sendVersion (newSock, status, 0, NULL, 0);
-	    close (newSock);
+	    status = mySockClose (newSock);
+printf ("close status = %d\n", status);
 	    continue;
         }
 
@@ -911,10 +912,10 @@ readWorkerTask ()
 #ifndef SINGLE_SVR_THR
             pthread_mutex_unlock (&BadReqMutex);
 #endif
-            close (newSock);
+            mySockClose (newSock);
 	} else if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
             sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
-            close (newSock);
+            mySockClose (newSock);
             free (myConnReq);
 	} else {
             if (startupPack->clientUser[0] == '\0') {
@@ -922,7 +923,7 @@ readWorkerTask ()
                   startupPack->clientRodsZone);
                 if (status < 0) {
                     sendVersion (newSock, status, 0, NULL, 0);
-                    close (newSock);
+                    mySockClose (newSock);
 		    free (myConnReq);
 		}
             }
@@ -999,7 +1000,7 @@ procSingleConnReq (agentProc_t *connReq)
         rodsLog (LOG_NOTICE, "readStartupPack error from %s, status = %d",
           inet_ntoa (connReq->remoteAddr.sin_addr), status);
         sendVersion (newSock, status, 0, NULL, 0);
-        close (newSock);
+        mySockClose (newSock);
 	return status;
     }
 #ifdef SYS_TIMING
@@ -1007,7 +1008,7 @@ procSingleConnReq (agentProc_t *connReq)
 #endif
     if (startupPack->connectCnt > MAX_SVR_SVR_CONNECT_CNT) {
         sendVersion (newSock, SYS_EXCEED_CONNECT_CNT, 0, NULL, 0);
-        close (newSock);
+        mySockClose (newSock);
         return SYS_EXCEED_CONNECT_CNT;
     }
 

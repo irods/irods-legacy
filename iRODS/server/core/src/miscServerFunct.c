@@ -604,7 +604,7 @@ partialDataPut (portalTransferInp_t *myInput)
     sendTranHeader (srcFd, DONE_OPR, 0, 0, 0);
     if (myInput->threadNum > 0)
         _l3Close (myInput->rsComm, destRescTypeInx, destL3descInx);
-    CLOSE_SOCK (srcFd);
+    mySockClose (srcFd);
 #ifdef PARA_TIMING
     endTime=time(0);
     rodsLog (LOG_NOTICE,
