@@ -328,17 +328,17 @@ int msiExecGenQuery(msParam_t* genQueryInParam, msParam_t* genQueryOutParam, rul
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa msiExecGenQuery, msiGetMoreRows
  * \bug  no known bugs
 **/
 int
@@ -676,11 +676,11 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
  * \since pre-2.1
  *
  * \author  Arcot Rajasekar
- * \date    
+ * \date    2008
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
  *
- * \usage None
+ * \usage target buffer same as for writeString
  *
  * \param[in] where - Required - a STR_MS_T containing the parameters.
  * \param[in] genQueryInpParam - Required - a GenQueryInp_MS_T containing the parameters and conditions.
@@ -688,17 +688,17 @@ msiMakeGenQuery(msParam_t* selectListStr, msParam_t* condStr, msParam_t* genQuer
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa writeString
  * \bug  no known bugs
 **/
 int

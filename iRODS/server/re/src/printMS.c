@@ -23,7 +23,10 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note   This micro-service takes a given buffer string and appends it to the back of he buffer
+ * (either stdout or stderr in ruleExecOut parameter followed by a new line character. 
+ * This may be extended later for writing into local log file 
+ * or into an iRODS file also. The ruleExecOut is a system MS-parameter (*variable) that is automatically available.
  *
  * \usage
  *
@@ -51,9 +54,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa writeString
  * \bug  no known bugs
 **/
 int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
@@ -96,7 +99,9 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note   This micro-service takes a given buffer string and appends it to the back of he buffer
+ * (either stdout or stderr in ruleExecOut parameter. This may be extended later for writing into local log file 
+ * or into an iRODS file also. The ruleExecOut is a system MS-parameter (*variable) that is automatically available.
  *
  * \usage
  *
@@ -117,10 +122,10 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  * \sideeffect ruleExecOut structure in msParamArray gets modified.
  *
  * \return integer
- * \retval
- * \pre
- * \post
- * \sa
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int writeString(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
@@ -474,5 +479,66 @@ int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator
 	return (rei->status);
 }
 
+int 
+writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei)
+{
+  int i;
+  int streamId;
+  xmsgTicketInfo_t *xmsgTicketInfo;
+
+  RE_TEST_MACRO ("    Calling writeXMsg")
+
+    if (!strcmp(inStreamId->type,XmsgTicketInfo_MS_T)) {
+      xmsgTicketInfo = (xmsgTicketInfo_t *) inStreamId->inOutStruct;
+      streamId = (int) xmsgTicketInfo->rcvTicket;
+    }
+    else if (!strcmp(inStreamId->type,STR_MS_T)) {
+      streamId = (int) atoi(inStreamId->inOutStruct);
+    }
+    else
+      streamId = (int) inStreamId->inOutStruct;
+
+  i = _writeXMsg(streamId, inHdr->inOutStruct, inMsg->inOutStruct);
+  return(i);
+}
+
+int
+readXMsg(msParam_t* inStreamId, msParam_t *outMsgNum, msParam_t *outSeqNum, 
+	 msParam_t *outHdr, msParam_t *outMsg, ruleExecInfo_t *rei)
+{
+  int i;
+  int sNum = 0;
+  int mNum = 0;
+  char *hdr = NULL;
+  char *msg = NULL;
+  int streamId;
+  xmsgTicketInfo_t *xmsgTicketInfo;
+
+  RE_TEST_MACRO ("    Calling readXMsg");
+
+  if (!strcmp(inStreamId->type,XmsgTicketInfo_MS_T)) {
+    xmsgTicketInfo = (xmsgTicketInfo_t *) inStreamId->inOutStruct;
+    streamId = xmsgTicketInfo->rcvTicket;
+  }
+  else if (!strcmp(inStreamId->type,STR_MS_T)) {
+    streamId = (int) atoi(inStreamId->inOutStruct);
+  }
+  else
+    streamId = (int) inStreamId->inOutStruct;
+
+  i = _readXMsg(streamId, &mNum, &sNum, &hdr, &msg);
+  if (i >= 0) {
+    outHdr->inOutStruct = (void *) hdr;
+    outHdr->type = strdup(STR_MS_T);
+    outMsg->inOutStruct = (void *) msg;
+    outMsg->type = strdup(STR_MS_T);
+    fillIntInMsParam(outMsgNum, mNum);
+    fillIntInMsParam(outSeqNum, sNum);
+  }
+  return(i);
+}
+
+
+ 
 
 

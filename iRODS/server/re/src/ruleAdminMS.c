@@ -16,6 +16,7 @@
 
 
 
+
 /**
  * \fn msiAdmChangeCoreIRB (msParam_t *newFileNameParam, ruleExecInfo_t *rei)
  *
@@ -53,17 +54,17 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
+ * \DolVarDependence none
+ * \DolVarModified   none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect The core.irb file is replaced by the alternate core file.
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -129,16 +130,16 @@ msiAdmChangeCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect core.irb file is prepended by the alternate new core file.
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa msiAdmShowIRB, msiAdmChangeCoreIRB
  * \bug  no known bugs
 **/
@@ -204,16 +205,16 @@ int msiAdmAppendToTopOfCoreIRB(msParam_t *newFileNameParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
+ * \DolVarDependence none
  * \DolVarModified - rei->MsParamArray->MsParam->ruleExecOut->stdout is modified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa msiAdmShowIRB, msiAdmShowFNM
  * \bug  no known bugs
 **/
@@ -279,16 +280,16 @@ int _admShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleVa
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
+ * \DolVarDependence none
  * \DolVarModified - rei->MsParamArray->MsParam->ruleExecOut->stdout is modified
- * \iCatAttrDependence
- * \iCatAttrModified
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa msiAdmShowIRB, msiAdmShowDVM
  * \bug  no known bugs
 **/
@@ -351,16 +352,16 @@ int _admShowFNM(msParam_t *bufParam, ruleExecInfo_t *rei, rulefmapdef_t *inRuleF
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
+ * \DolVarDependence none
  * \DolVarModified - rei->MsParamArray->MsParam->ruleExecOut->stdout is modified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa msiAdmShowDVM, msiAdmShowFNM
  * \bug  no known bugs
 **/
@@ -481,16 +482,16 @@ int _admShowIRB(msParam_t *bufParam, ruleExecInfo_t *rei, ruleStruct_t *inRuleSt
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect The rule engine's application-level ruleset and mappings get cleared.
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa msiAdmAddAppRuleStruct, msiAdmShowIRB, msiAdmShowDVM, msiAdmShowFNM
  * \bug  no known bugs
 **/
@@ -553,16 +554,16 @@ int msiAdmClearAppRuleStruct(ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect The rule engine's application ruleset and mappings get modified.
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa msiAdmClearAppRuleStruct, msiAdmShowIRB, msiAdmShowDVM, msiAdmShowFNM
  * \bug  no known bugs
 **/
@@ -595,3 +596,129 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
   return(0);
   
 }
+
+/**************** Micro-Services for  ruleDB ********************************/
+
+
+int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
+{
+
+  int i;
+  ruleStruct_t *coreRuleStrct;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmReadRulesFromFileIntoStruct");
+
+  
+  if (inIrbFileNameParam == NULL ||
+      strcmp (inIrbFileNameParam->type,STR_MS_T) != 0 ||
+      inIrbFileNameParam->inOutStruct == NULL ||
+      strlen((char *) inIrbFileNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
+      outCoreRuleStruct->inOutStruct != NULL) {
+    coreRuleStrct = (ruleStruct_t *) outCoreRuleStruct->inOutStruct;
+  }
+  else {
+    coreRuleStrct = (ruleStruct_t *) malloc (sizeof(ruleStruct_t));
+    coreRuleStrct->MaxNumOfRules = 0;    
+  }
+  i = readRuleStructFromFile((char*) inIrbFileNameParam->inOutStruct, coreRuleStrct);
+  if (i != 0) {
+    if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0 )    
+      free(coreRuleStrct);
+    return(i);
+  }
+
+  outCoreRuleStruct->inOutStruct = (void *) coreRuleStrct;
+  outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
+  return(0);
+}
+
+
+int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
+{
+
+  ruleStruct_t *coreRuleStruct;
+  int i;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmInsertRulesFromStructIntoDB");
+
+  if (inIrbBaseNameParam == NULL || inCoreRuleStruct == NULL ||
+      strcmp (inIrbBaseNameParam->type,STR_MS_T) != 0 ||
+      strcmp (inCoreRuleStruct->type,RuleStruct_MS_T) != 0 ||
+      inIrbBaseNameParam->inOutStruct == NULL ||
+      inCoreRuleStruct->inOutStruct == NULL ||
+      strlen((char *) inIrbBaseNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+
+  coreRuleStruct = (ruleStruct_t *) inCoreRuleStruct->inOutStruct;
+  i = insertRulesIntoDB((char *) inIrbBaseNameParam->inOutStruct, coreRuleStruct, rei);
+  return(i);
+    
+}
+
+
+int
+msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
+{
+    
+  int i;
+  ruleStruct_t *coreRuleStrct;
+
+  RE_TEST_MACRO ("Loopback on msiGetRulesFromDBIntoStruct");
+
+  if (inIrbBaseNameParam == NULL ||
+      strcmp (inIrbBaseNameParam->type,STR_MS_T) != 0 ||
+      inIrbBaseNameParam->inOutStruct == NULL ||
+      strlen((char *) inIrbBaseNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
+      outCoreRuleStruct->inOutStruct != NULL) {
+    coreRuleStrct = (ruleStruct_t *) outCoreRuleStruct->inOutStruct;
+  }
+  else {
+    coreRuleStrct = (ruleStruct_t *) malloc (sizeof(ruleStruct_t));
+    coreRuleStrct->MaxNumOfRules = 0;
+  }
+  i = readRuleStructFromDB((char*) inIrbBaseNameParam->inOutStruct, coreRuleStrct, rei);
+  if (i != 0) {
+    if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0 )
+      free(coreRuleStrct);
+    return(i);
+  }
+
+  outCoreRuleStruct->inOutStruct = (void *) coreRuleStrct;
+  outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
+  return(0);
+}
+
+int
+msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
+{
+  int i;
+  ruleStruct_t *myRuleStruct;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmWriteRulesFromStructIntoFile");
+
+  if (inIrbFileNameParam == NULL || inCoreRuleStruct == NULL ||
+      strcmp (inIrbFileNameParam->type,STR_MS_T) != 0 ||
+      strcmp (inCoreRuleStruct->type,RuleStruct_MS_T) != 0 ||
+      inIrbFileNameParam->inOutStruct == NULL ||
+      strlen((char *) inIrbFileNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+
+  myRuleStruct = (ruleStruct_t *) inCoreRuleStruct->inOutStruct;
+  i = writeRulesIntoFile((char *) inIrbFileNameParam->inOutStruct, myRuleStruct, rei);
+  return(i);
+
+}
+

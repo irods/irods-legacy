@@ -17,6 +17,7 @@ rulefmapdef_t appRuleFuncMapDef;
 int reTestFlag = 0;
 int reLoopBackFlag = 0;
 int GlobalAllRuleExecFlag = 0;
+int GlobalREDebugFlag = 0;
 char tmpStr[MAX_ERROR_STRING];
 strArray_t delayStack;
 strArray_t msParamStack;

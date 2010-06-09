@@ -636,3 +636,18 @@ reREMatch(char *pat, char *str)
 
 }
 
+int
+reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei)
+{
+  int i;
+  char hdr[HEADER_TYPE_LEN + 1];
+  char myHostName[MAX_NAME_LEN];
+
+  myHostName[0] = '\0';
+  gethostname (myHostName, MAX_NAME_LEN);
+ 
+  snprintf(hdr, HEADER_TYPE_LEN,   "%s:%i:%s",
+	   myHostName, getpid (), callLabel);
+  i = _writeXMsg(GlobalREDebugFlag, hdr, actionStr);
+  return(0);
+}

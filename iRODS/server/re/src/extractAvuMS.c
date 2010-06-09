@@ -39,7 +39,20 @@ extern char *__loc1;
  *  any value between re1 and re2 in a metadata buffer can be 
  *  associated with keyword kw.
  *
- * \usage None
+ * \usage As seen in clients/icommands/test/ruleTest24.ir
+ * # see onMicroServices.ppt for more info 
+ * #*A is the tag file. 
+ * # a sample copy for email (email.tag) this can be found in the icommands/test directory
+ * #*B metadata file -  we are using sample.email  to mine the metadata 
+ * #*C is the target object which gets the metadata  -  same as *B in this case
+ *  mDExtract(*A,*B,*C) || openObj(*A,*T_FD)##readObj( *T_FD, 10000, *R1_BUF)##getTagsForKV( *R1_BUF, *TSP)##
+ * closeObj(*T_FD,*J1)##openObj( *B, *M_FD)##readObj( *M_FD, 10000, *R2_BUF)##getKVPairsUsingTags( *R2_BUF, *TSP, *KVP)##
+ * closeObj(*T_FD,*J1)##closeObj(*M_FD,*J2)##findObjType( *C, *OTYP)##ingestBulkMD( *KVP, *C, *OTYP)|nop
+ * #
+ * *A=/tempZone/home/rods/MDtest/email.tag%*B=/tempZone/home/rods/MDtest/sample.email%*C=/tempZone/home/rods/MDtest/
+ * sample.email
+ * *A%*B%*C%*D%*R1_BUF%*R2_BUF%*T_FD%*M_FD%*J1%*J2%*KVP%*OTYP
+ *
  *
  * \param[in] bufParam - a msParam of type BUF_LEN_MS_T
  * \param[out] tagParam - a return msParam of type TagStruct_MS_T
@@ -47,11 +60,11 @@ extern char *__loc1;
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -59,8 +72,8 @@ extern char *__loc1;
  * \retval INVALID_REGEXP if the tags are not correct
  * \retval NO_VALUES_FOUND if there are no tags identified
  * \retval from addTagStruct
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa addTagStruct
  * \bug  no known bugs
 **/
@@ -239,17 +252,17 @@ msiReadMDTemplateIntoTagStruct(msParam_t* bufParam, msParam_t* tagParam, ruleExe
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
@@ -335,19 +348,19 @@ int msiGetTaggedValueFromString(msParam_t *inTagParam, msParam_t *inStrParam,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
  * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
  * \retval INVALID_REGEXP if the tags are not correct
  * \retval from addKeyVal
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa addKeyVal
  * \bug  no known bugs
 **/
@@ -490,17 +503,17 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified AVU pairs are associated  with an iRODS object 
+ * \sideeffect none
  * 
  * \return integer
  * \retval 0 on success
  * \retval USER_PARAM_TYP_ERROR when input parameters don't match the type from addAVUMetadataFromKVPairs
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa addAVUMetadataFromKVPairs
  * \bug  no known bugs
 **/
@@ -547,7 +560,7 @@ msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
  * 
  * \remark Terrell Russell - msi documentation, 2009-06-17
  *
- * \note 
+ * \note This microservice gets an object's type from the iCAT.
  *
  * \usage
  * testrule||msiGetObjType(*A,*Status)|nop
@@ -560,19 +573,19 @@ msiAssociateKeyValuePairsToObj(msParam_t *metadataParam, msParam_t* objParam,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  * 
  * \return integer
  * \retval 0 on success
  * \retval USER_PARAM_TYP_ERROR when input parameter doesn't match the type
  * \retval  getObjType
- * \pre
- * \post
- * \sa getObjType
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -632,11 +645,11 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified AVU pairs removed
+ * \sideeffec none
  *
  * \return integer
  * \retval 0 on success

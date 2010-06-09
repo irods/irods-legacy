@@ -121,5 +121,9 @@ int sColumn(int defineVal, char *tableName, char *columnName);
 int chlDebug(char *debugMode);
 int chlDebugGenQuery(int mode);
 int chlDebugGenUpdate(int mode);
-
+int chlInsRuleTable(rsComm_t *rsComm,
+		    char *baseName, char *ruleName,
+		    char *ruleHead, char *ruleCondition, 
+		    char *ruleAction,
+		    char *ruleRecovery, char *ruleIdStr);
 #endif /* ICAT_HIGHLEVEL_ROUTINES_H */

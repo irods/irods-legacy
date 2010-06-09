@@ -307,6 +307,43 @@ printMsParam (msParamArray_t *outParamArray)
     for (i = 0; i < outParamArray->len; i++) {
 	msParam_t *msParam;
 
+	/**** RAJA MOdified to simplify June 1 2010 ****/
+	msParam = outParamArray->msParam[i];
+        if (msParam->label != NULL && 
+	    msParam->type != NULL && 
+	    msParam->inOutStruct != NULL) {
+	  if (strcmp (msParam->type, STR_MS_T) == 0)
+	    printf("%s: %s\n",msParam->label, (char *) msParam->inOutStruct);
+	  else  if (strcmp (msParam->type, INT_MS_T) == 0)
+	    printf("%s: %i\n",msParam->label,*(int *) msParam->inOutStruct);
+	  else if (strcmp (msParam->type, KeyValPair_MS_T) == 0 ) {
+	    kVPairs = (keyValPair_t *)msParam->inOutStruct;
+	    printf ("KVpairs %s: %i\n", msParam->label, kVPairs->len);
+	    for (j = 0; j < kVPairs->len; j++) {
+	      printf ("       %s = %s\n",kVPairs->keyWord[j],
+		      kVPairs->value[j]);
+	    }
+	  }
+	  else if (strcmp (msParam->type, TagStruct_MS_T) == 0 ) {
+	    tagValues = (tagStruct_t *) msParam->inOutStruct;
+	    printf ("Tags %s: %i\n", msParam->label, tagValues->len);
+	    for (j = 0; j < tagValues->len; j++) {
+	      printf ("       AttName = %s\n", tagValues->keyWord[j]);
+	      printf ("       PreTag  = %s\n", tagValues->preTag[j]);
+	      printf ("       PostTag = %s\n", tagValues->postTag[j]);
+	    }
+	  }
+	  else if (strcmp (msParam->type, ExecCmdOut_MS_T) == 0) {
+	    execCmdOut_t *execCmdOut;
+	    execCmdOut = (execCmdOut_t *) msParam->inOutStruct;
+	    if (execCmdOut->stdoutBuf.buf != NULL) 
+	      printf ("STDOUT = %s",(char *) execCmdOut->stdoutBuf.buf);
+	    if (execCmdOut->stderrBuf.buf != NULL) 
+	      printf ("STRERR = %s", (char *) execCmdOut->stderrBuf.buf);
+	  }
+	}
+	/**** RAJA MOdified to simplify June 1 2010 ****/
+#if 0
 	msParam = outParamArray->msParam[i];
 
         printf ("  output index: %d\n", i);
@@ -352,9 +389,11 @@ printMsParam (msParamArray_t *outParamArray)
                 }
 	    }
 	}
+#endif
 	if (msParam->inpOutBuf != NULL) {
 	    printf ("    outBuf: buf length = %d\n", msParam->inpOutBuf->len);
 	}
+
     }
     return (0);
 }

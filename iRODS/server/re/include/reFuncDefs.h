@@ -273,4 +273,14 @@ keyValPair_t *varValues);
 int
 getSessionVarValue (char *action, char *varName, ruleExecInfo_t *rei,
 char **varValue);
+int insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,
+		      ruleExecInfo_t *rei);
+int writeRulesIntoFile(char * fileName, ruleStruct_t *myRuleStruct,
+		   ruleExecInfo_t *rei);
+int readRuleStructFromDB(char *ruleBaseName, ruleStruct_t *inRuleStrct, 
+			 ruleExecInfo_t *rei);
+
+int _writeXMsg(int streamId, char *hdr, char *msg);
+int _readXMsg(int streamId, int *msgNum, int *seqNum, char **hdr, char **msg);
+int reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei);
 #endif  /* RE_FUNCDEFS_H */

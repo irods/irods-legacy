@@ -29,7 +29,7 @@ fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedRe
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note This microservice can be used to assign values to * and $ variables. 
  *
  * \usage
  *
@@ -59,9 +59,9 @@ fillSubmitConditions (char *action, char *inDelayCondition, bytesBuf_t *packedRe
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
@@ -161,9 +161,9 @@ int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int whileExec(msParam_t* condition, msParam_t* whileBody,
@@ -182,7 +182,7 @@ int whileExec(msParam_t* condition, msParam_t* whileBody,
   sprintf(ruleBody,"%s|%s",(char *) whileBody->inOutStruct,
 	    (char *) recoverWhileBody->inOutStruct + MAX_COND_LEN * 8);
     
-  while (done == 0) {
+   while (done == 0) {
     /* strcpy(cond , condition->label); */
     strcpy(cond , condition->inOutStruct);
     i = evaluateExpression(cond, eaVal, rei);
@@ -218,7 +218,7 @@ int whileExec(msParam_t* condition, msParam_t* whileBody,
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note  This micro-service provides a looping over an integer *-variable until a condition is met. Similar to for construct in C 
  *
  * \usage
  *
@@ -245,9 +245,9 @@ int whileExec(msParam_t* condition, msParam_t* whileBody,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pree none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step, 
@@ -343,9 +343,9 @@ int forExec(msParam_t* initial, msParam_t* condition, msParam_t* step,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen, 
@@ -403,7 +403,7 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note
+ * \note This micro-service is used to break the  looping when performing while for or for each operations. Similar to break statement in C.
  *
  * \usage
  *
@@ -425,9 +425,9 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
  *
  * \return integer
  * \retval BREAK_ACTION_ENCOUNTERED_ERR (used internally to break the loops)
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int breakExec(ruleExecInfo_t *rei)
@@ -438,13 +438,7 @@ int breakExec(ruleExecInfo_t *rei)
 /**
  * \fn forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody, ruleExecInfo_t *rei)
  *
- * \brief  It is a for loop in each language looping over a list. It takes a table
- *    (or list of strings, or %-separated string list), and for each item in the list,
- *    executes the corresponding body of the for-loop. The first parameter specifies the
- *    variable that has the list (the same variable name is used in the body of the loop
- *    to denote an item of the list!). The second parameter is the body given as a
- *    sequence of Micro-Services, and the third parameter is the recoveryBody for
- *    recovery from failures.
+ * \brief Performs a loop over a list of items given in different forms.
  * 
  * \module core
  * 
@@ -456,7 +450,14 @@ int breakExec(ruleExecInfo_t *rei)
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note It is a for loop in C-type language looping over a list. It takes a table
+ *    (or list of strings, or %-separated string list), and for each item in the list,
+ *    executes the corresponding body of the for-loop. The first parameter specifies the
+ *    variable that has the list (the same variable name is used in the body of the loop
+ *    to denote an item of the list!). The second parameter is the body given as a
+ *    sequence of Micro-Services, and the third parameter is the recoveryBody for
+ *    recovery from failures.
+
  *
  * \usage
  *
@@ -485,9 +486,9 @@ int breakExec(ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
@@ -582,13 +583,8 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
 /**
  * \fn delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
  *
- * \brief  This microservice is a set of statements to be delayed until delayCondition
- *    is true. The condition also supports repeating of the body until success or until
- *    some other condition is satisfied. This microservice takes the delayCondition as
- *    the first parameter, the Micro-service/rule chain that needs to be executed as
- *    the second parameter, and the recovery-Micro-service chain as the third parameter.
- *    The delayCondition is given as a tagged condition. In this case, there are two
- *    conditions that are specified. 
+ * \brief  Execute a set of operations later when certain conditions are met. Can be used to perform 
+ * periodic operations also.
  * 
  * \module core
  * 
@@ -600,7 +596,14 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note  This microservice is a set of statements that will be  delayed in execution until delayCondition
+ *    is true. The condition also supports repeating of the body until success or until
+ *    some other condition is satisfied. This microservice takes the delayCondition as
+ *    the first parameter, the Micro-service/rule chain that needs to be executed as
+ *    the second parameter, and the recovery-Micro-service chain as the third parameter.
+ *    The delayCondition is given as a tagged condition. In this case, there are two
+ *    conditions that are specified.
+
  *
  * \usage
  *
@@ -649,9 +652,9 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int delayExec(msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
@@ -769,7 +772,7 @@ int recover_delayExec(msParam_t *actionCall, msParam_t *delayCondition,  ruleExe
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note This mico-service takes a  set of micro-services that need to be executed  at a remote iRODS server. The execution is done immediately and synchronously with  the  result returning back from the call.
  *
  * \usage
  *
@@ -797,9 +800,9 @@ int recover_delayExec(msParam_t *actionCall, msParam_t *delayCondition,  ruleExe
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int remoteExec(msParam_t *mPD, msParam_t *mPA, msParam_t *mPB, msParam_t *mPC, ruleExecInfo_t *rei)
@@ -999,9 +1002,9 @@ doForkExec(char *prog, char *arg1)
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note useful when you want to fail a rule without retries.
+ * \note useful when you want to fail a rule without retries.  
  *
- * \usage None
+ * \usage None. 
  *
  * \param[in,out] rei Required - the RuleExecInfo structure.
  *
@@ -1013,8 +1016,8 @@ doForkExec(char *prog, char *arg1)
  *
  * \return integer
  * \retval negative number
- * \pre
- * \post
+ * \pre none
+ * \pos nonet
  * \sa fail
  * \bug  no known bugs
 **/
@@ -1061,13 +1064,13 @@ checkFilePerms(char *fileName) {
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date 
+ * \author  Arcot Rajaseka
+ * \date  2006
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note can be used to free a buffer which was alloated previously.
  *
  * \usage
  *
@@ -1086,9 +1089,9 @@ checkFilePerms(char *fileName) {
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int 
@@ -1121,7 +1124,7 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note similar t sleep in C
  *
  * \usage
  *
@@ -1147,9 +1150,9 @@ msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre  none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int
@@ -1180,7 +1183,7 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note
+ * \note Normal operations of the rule engine is to stop after a rule (one of the alternates) completes successfully. But in some cases, one may want the rule engine to try all alternatives and succeed in as many as possible. Then by firing that rule under this micro-service all alternatives are tried. 
  *
  * \usage
  *
@@ -1211,9 +1214,9 @@ msiSleep(msParam_t* secPtr, msParam_t* microsecPtr,  ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

@@ -56,6 +56,7 @@ typedef struct IrodsXmsg {
     struct IrodsXmsg *tnext;		/* the link list within the same
 					 * ticket (diff msgNumber) */
     struct IrodsXmsg *tprev;
+    uint seqNumber;
     void *ticketMsgStruct;		/* points to the ticketMsgStruct_t this
 					 * xmsg belongs */
 } irodsXmsg_t;
@@ -73,6 +74,7 @@ typedef struct TicketMsgStruct {
     struct TicketMsgStruct *hnext;
     void *ticketHashQue;	/* points to the ticketHashQue_t this ticket
 				 * belongs */
+    uint nxtSeqNumber;
 } ticketMsgStruct_t;
 
 /* queue of msg hashed to the same slot */
@@ -89,11 +91,14 @@ typedef struct XmsgReq {
 typedef struct RcvXmsgInp {
     uint rcvTicket;
     uint msgNumber;
+    uint seqNumber;
 } rcvXmsgInp_t;
 
 typedef struct RcvXmsgOut {
     char msgType[HEADER_TYPE_LEN];      /* msg type, 16 char */
     char sendUserName[NAME_LEN];        /* userName@zone of clientUser */
+    uint msgNumber;                     /* msgNumber as set by sender */
+    uint seqNumber;                     /* internal sequence number */
     char *msg;                          /* the msg */
 } rcvXmsgOut_t;
 

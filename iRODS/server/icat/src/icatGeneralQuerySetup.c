@@ -149,6 +149,7 @@ icatGeneralQuerySetup() {
 
   sTable( "r_user_auth", "r_user_auth", 0);
 
+  sTable( "r_rule_base_map", "r_rule_base_map", 0);
   sTable( "r_rule_dvm",  "r_rule_dvm", 0);
   sTable( "r_rule_fnm",  "r_rule_fnm", 0);
 
@@ -344,9 +345,24 @@ icatGeneralQuerySetup() {
   sColumn(COL_RULE_STATUS,     "r_rule_main", "rule_status");
   sColumn(COL_RULE_OWNER_NAME, "r_rule_main", "rule_owner_name");
   sColumn(COL_RULE_OWNER_ZONE, "r_rule_main", "rule_owner_zone");
+  sColumn(COL_RULE_DESCR_1,    "r_rule_main", "rule_descr_1");
+  sColumn(COL_RULE_DESCR_2,    "r_rule_main", "rule_descr_2");
+  sColumn(COL_RULE_INPUT_PARAMS,    "r_rule_main", "input_params");
+  sColumn(COL_RULE_OUTPUT_PARAMS,   "r_rule_main", "output_params");
+  sColumn(COL_RULE_DOLLAR_VARS,     "r_rule_main", "dollar_vars");
+  sColumn(COL_RULE_ICAT_ELEMENTS,   "r_rule_main", "icat_elements");
+  sColumn(COL_RULE_SIDEEFFECTS,     "r_rule_main", "sideeffects");
   sColumn(COL_RULE_COMMENT,    "r_rule_main", "r_comment");
   sColumn(COL_RULE_CREATE_TIME,"r_rule_main", "create_ts");
   sColumn(COL_RULE_MODIFY_TIME,"r_rule_main", "modify_ts");
+
+  sColumn(COL_RULE_BASE_MAP_VERSION,    "r_rule_base_map", "map_version"); 
+  sColumn(COL_RULE_BASE_MAP_BASE_NAME,  "r_rule_base_map", "map_base_name");
+  sColumn(COL_RULE_BASE_MAP_OWNER_NAME, "r_rule_base_map", "map_owner_name");
+  sColumn(COL_RULE_BASE_MAP_OWNER_ZONE, "r_rule_base_map", "map_owner_zone");
+  sColumn(COL_RULE_BASE_MAP_COMMENT,    "r_rule_base_map", "r_comment");
+  sColumn(COL_RULE_BASE_MAP_CREATE_TIME,"r_rule_base_map", "create_ts");
+  sColumn(COL_RULE_BASE_MAP_MODIFY_TIME,"r_rule_base_map", "modify_ts");
 
   sColumn(COL_DVM_ID,           "r_rule_dvm", "dvm_id");
   sColumn(COL_DVM_VERSION,      "r_rule_dvm", "dvm_version");
@@ -480,7 +496,7 @@ icatGeneralQuerySetup() {
   sFklink("r_quota_usage", "r_quota_user_main", "r_quota_usage.user_id = r_quota_user_main.user_id");
   sFklink("r_quota_usage", "r_quota_resc_main", "r_quota_usage.resc_id = r_quota_resc_main.resc_id");
   sFklink("r_quota_usage", "r_quota_user_group", "r_quota_usage.user_id = r_quota_user_group.user_id");
-
+  sFklink("r_rule_base_map", "r_rule_main", "r_rule_base_map.rule_id = r_rule_main.rule_id");
 /*
   If using the extended ICAT, establish those tables and columns too.
   Currently, links are not done (may be needed later).

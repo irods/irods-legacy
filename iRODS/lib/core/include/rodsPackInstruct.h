@@ -103,8 +103,8 @@
 #define SendXmsgInfo_PI "int msgNumber; str msgType[HEADER_TYPE_LEN]; int numRcv; int flag; str *msg; int numDel; str *delAddress[numDel]; int *delPort(numDel); str *miscInfo;"
 #define GetXmsgTicketInp_PI "int expireTime;"
 #define SendXmsgInp_PI "struct XmsgTicketInfo_PI; struct SendXmsgInfo_PI;"
-#define RcvXmsgInp_PI "int rcvTicket; int msgNumber;"
-#define RcvXmsgOut_PI "str msgType[HEADER_TYPE_LEN]; str sendUserName[NAME_LEN]; str *msg;"
+#define RcvXmsgInp_PI "int rcvTicket; int msgNumber; int seqNumber;"
+#define RcvXmsgOut_PI "str msgType[HEADER_TYPE_LEN]; str sendUserName[NAME_LEN]; int msgNumber; int seqNumber; str *msg;"
 /* XXXXX start of HDF5 PI */
 #define h5File_PI "int fopID; str *filename; int ffid; struct *h5Group_PI; struct h5error_PI;int ftime;"
 #define h5error_PI "str major[MAX_ERROR_SIZE]; str minor[MAX_ERROR_SIZE];"
@@ -120,5 +120,7 @@
 #define CollEnt_PI "int objType; int replNum; int replStatus; int dataMode; double dataSize; str $collName; str $dataName; str $dataId; str $createTime; str $modifyTime; str $chksum; str $resource; str $rescGrp; str $phyPath; str $ownerName; struct SpecColl_PI;" 
 #define CollOprStat_PI "int filesCnt; int totalFileCnt; double bytesWritten; str lastObjPath[MAX_NAME_LEN];"
 /* XXXXX end of HDF5 PI */
+#define RuleStruct_PI "int maxNumOfRules; str *ruleBase[maxNumOfRules]; str *action[maxNumOfRules]; str *ruleHead[maxNumOfRules]; str *ruleCondition[maxNumOfRules]; str *ruleAction[maxNumOfRules]; str *ruleRecovery[maxNumOfRules];"
+
 
 #endif	/* PACK_INSTRUCT_H */

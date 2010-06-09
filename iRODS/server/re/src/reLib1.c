@@ -3,6 +3,7 @@
 #include "reGlobals.h"
 #include "initServer.h"
 #include "reHelpers1.h"
+#include "apiHeaderAll.h"
 
 #ifdef MYMALLOC
 # Within reLib1.c here, change back the redefines of malloc back to normal
@@ -351,7 +352,6 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     strncpy (rei->ruleName, inAction, NAME_LEN);
     rei->ruleName[NAME_LEN - 1] = '\0';
   }
-
   if (GlobalAllRuleExecFlag != 0) {
     ii = GlobalAllRuleExecFlag;
     i = applyAllRules(inAction, inMsParamArray, rei, reiSaveFlag, GlobalAllRuleExecFlag);
@@ -360,6 +360,9 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
   }
 
   ruleInx = -1; /* new rule */
+
+  if (GlobalREDebugFlag) 
+    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei); 
 
 
   if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
@@ -382,10 +385,14 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     i = executeMicroServiceNew(inAction,inMsParamArray,rei);
     return(i);
   }
-
+  /**** not needed ** 
+  if (GlobalREDebugFlag) 
+    reDebug("ApplyRule", -1, inAction,inMsParamArray,rei); 
+  *****/
   while (i == 0) {
     getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
-
+    if (GlobalREDebugFlag) 
+      reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei); 
 
     i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
     if (i != 0)
@@ -506,6 +513,9 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   GlobalAllRuleExecFlag = allRuleExecFlag;
 
+  if (GlobalREDebugFlag) 
+    reDebug("ApplyAllRules", -1, inAction,inMsParamArray,rei); 
+
   if (strstr(inAction,"##") != NULL) { /* seems to be multiple actions */
     i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
     if( GlobalAllRuleExecFlag != 9) GlobalAllRuleExecFlag = 0;
@@ -533,6 +543,8 @@ applyAllRules(char *inAction, msParamArray_t *inMsParamArray,
 
   while (i == 0) {
     getRule(ruleInx, ruleBase,ruleHead, ruleCondition,ruleAction, ruleRecovery, MAX_RULE_LENGTH * 3);
+    if (GlobalREDebugFlag) 
+      reDebug("  GotRule", ruleInx, inAction,inMsParamArray,rei); 
 
     if (outMsParamArray == NULL) {
       i  = initializeMsParamNew(ruleHead,args,argc, inMsParamArray, rei);
@@ -712,6 +724,9 @@ execMyRuleWithSaveFlag(char * ruleDef, msParamArray_t *inMsParamArray,
   /*
   rodsLog(LOG_NOTICE,"PPP:%s::%s::%s::%s\n",inAction,ruleCondition,ruleAction,ruleRecovery);
   */
+  if (GlobalREDebugFlag)
+    reDebug("ExecMyRule", -1, inAction,inMsParamArray,rei);
+
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
     return(i);
@@ -793,6 +808,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
       return(i);
     strcpy(r2,r3);
   }
+
   if (getenv(RETESTFLAG) != NULL) {
     reTestFlag = atoi(getenv(RETESTFLAG));
     if (getenv(RELOOPBACKFLAG) != NULL)
@@ -807,7 +823,9 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   if (getenv("GLOBALALLRULEEXECFLAG") != NULL)
     GlobalAllRuleExecFlag = 9;
 
-
+  if (getenv(GLOBALREDEBUGFLAG) != NULL) {
+    GlobalREDebugFlag = atoi(getenv(GLOBALREDEBUGFLAG));
+  }
   delayStack.size = NAME_LEN;
   delayStack.len = 0;
   delayStack.value = NULL;
@@ -817,6 +835,60 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
   msParamStack.value = NULL;
 
 
+  return(0);
+}
+
+
+int
+readRuleStructFromDB(char *ruleBaseName, ruleStruct_t *inRuleStrct, ruleExecInfo_t *rei)
+{
+  int i,l,status;
+  genQueryInp_t genQueryInp;
+  genQueryOut_t *genQueryOut = NULL;
+  char condstr[MAX_NAME_LEN], condstr2[MAX_NAME_LEN];
+  sqlResult_t *r[6];
+  memset(&genQueryInp, 0, sizeof(genQueryInp));
+  genQueryInp.maxRows = MAX_SQL_ROWS;
+
+  snprintf(condstr, MAX_NAME_LEN, "= '%s'", ruleBaseName);
+  addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_BASE_NAME, condstr);
+  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", "0");
+  addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_VERSION, condstr2);
+
+  addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_BASE_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_NAME, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_EVENT, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_CONDITION, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_BODY, 1);
+  addInxIval(&genQueryInp.selectInp, COL_RULE_RECOVERY, 1);
+  l = inRuleStrct->MaxNumOfRules;
+  status = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+  while ( status >= 0 && genQueryOut->rowCnt > 0 ) {
+    r[0] = getSqlResultByInx (genQueryOut, COL_RULE_BASE_MAP_BASE_NAME);
+    r[1] = getSqlResultByInx (genQueryOut, COL_RULE_NAME);
+    r[2] = getSqlResultByInx (genQueryOut, COL_RULE_EVENT);
+    r[3] = getSqlResultByInx (genQueryOut, COL_RULE_CONDITION);
+    r[4] = getSqlResultByInx (genQueryOut, COL_RULE_BODY);
+    r[5] = getSqlResultByInx (genQueryOut, COL_RULE_RECOVERY);
+    for (i = 0; i<genQueryOut->rowCnt; i++) {
+      inRuleStrct->ruleBase[l] = strdup(&r[0]->value[r[0]->len * i]);
+      inRuleStrct->action[l]   = strdup(&r[1]->value[r[1]->len * i]);
+      inRuleStrct->ruleHead[l] = strdup(&r[2]->value[r[2]->len * i]);
+      inRuleStrct->ruleCondition[l] = strdup(&r[3]->value[r[2]->len * i]);
+      inRuleStrct->ruleAction[l]    = strdup(&r[4]->value[r[4]->len * i]);
+      inRuleStrct->ruleRecovery[l]  = strdup(&r[5]->value[r[5]->len * i]);
+      l++;
+    }
+    genQueryInp.continueInx =  genQueryOut->continueInx;
+    freeGenQueryOut (&genQueryOut);
+    if (genQueryInp.continueInx  > 0) {
+      /* More to come */
+      status =  rsGenQuery (rei->rsComm, &genQueryInp, &genQueryOut);
+    }
+    else
+      break;
+  }
+  inRuleStrct->MaxNumOfRules = l;
   return(0);
 }
 
@@ -835,9 +907,14 @@ readRuleStructFromFile(char *ruleBaseName, ruleStruct_t *inRuleStrct)
    char *t;
    i = inRuleStrct->MaxNumOfRules;
 
-   configDir = getConfigDir ();
-   snprintf (rulesFileName,MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir,ruleBaseName);
-
+   if (ruleBaseName[0] == '/' || ruleBaseName[0] == '\\' ||
+       ruleBaseName[1] == ':') {
+     snprintf (rulesFileName,MAX_NAME_LEN, "%s",ruleBaseName);
+   }
+   else {
+     configDir = getConfigDir ();
+     snprintf (rulesFileName,MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir,ruleBaseName);
+   }     
    file = fopen(rulesFileName, "r");
    if (file == NULL) {
      rodsLog(LOG_NOTICE,
@@ -938,9 +1015,14 @@ readDVarStructFromFile(char *dvarBaseName,rulevardef_t *inRuleVarDef)
 
    i = inRuleVarDef->MaxNumOfDVars;
 
-   configDir = getConfigDir ();
-   snprintf (dvarsFileName,MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir,dvarBaseName);
-
+   if (dvarBaseName[0] == '/' || dvarBaseName[0] == '\\' ||
+       dvarBaseName[1] == ':') {
+     snprintf (dvarsFileName,MAX_NAME_LEN, "%s",dvarBaseName);
+   }
+   else {
+     configDir = getConfigDir ();
+     snprintf (dvarsFileName,MAX_NAME_LEN, "%s/reConfigs/%s.dvm", configDir,dvarBaseName);
+   }
    file = fopen(dvarsFileName, "r");
    if (file == NULL) {
      rodsLog(LOG_NOTICE,
@@ -980,9 +1062,14 @@ readFuncMapStructFromFile(char *fmapBaseName, rulefmapdef_t* inRuleFuncMapDef)
 
    i = inRuleFuncMapDef->MaxNumOfFMaps;
 
-   configDir = getConfigDir ();
-   snprintf (fmapsFileName,MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir,fmapBaseName);
-
+   if (fmapBaseName[0] == '/' || fmapBaseName[0] == '\\' ||
+       fmapBaseName[1] == ':') {
+     snprintf (fmapsFileName,MAX_NAME_LEN, "%s",fmapBaseName);
+   }
+   else {
+     configDir = getConfigDir ();
+     snprintf (fmapsFileName,MAX_NAME_LEN, "%s/reConfigs/%s.fnm", configDir,fmapBaseName);
+   }
    file = fopen(fmapsFileName, "r");
    if (file == NULL) {
      rodsLog(LOG_NOTICE,
@@ -1150,6 +1237,68 @@ finalizeMsParam(char *ruleHead, char *args[MAX_NUM_OF_ARGS_IN_ACTION], int argc,
   rei->msParamArray = oldMsParamArray;
   return(0);
 }
+
+
+
+
+int
+insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,
+		  ruleExecInfo_t *rei)
+{
+  generalRowInsertInp_t generalRowInsertInp;
+  char ruleIdStr[MAX_NAME_LEN];
+  int rc1, i;
+  endTransactionInp_t endTransactionInp;
+  memset (&endTransactionInp, 0, sizeof (endTransactionInp_t));
+
+  for (i = 0; i < coreRuleStruct->MaxNumOfRules; i++) {
+    generalRowInsertInp.tableName = "ruleTable";
+    generalRowInsertInp.arg1 = baseName;
+    generalRowInsertInp.arg2 = coreRuleStruct->action[i];
+    generalRowInsertInp.arg3 = coreRuleStruct->ruleHead[i];
+    generalRowInsertInp.arg4 = coreRuleStruct->ruleCondition[i];
+    generalRowInsertInp.arg5 = coreRuleStruct->ruleAction[i];
+    generalRowInsertInp.arg6 = coreRuleStruct->ruleRecovery[i];
+    generalRowInsertInp.arg7 = ruleIdStr;
+    rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+    if (rc1 < 0) {
+      endTransactionInp.arg0 = "rollback";
+      rsEndTransaction(rei->rsComm, &endTransactionInp);
+      return(rc1);
+    }
+  }
+
+  endTransactionInp.arg0 = "commit";
+  rc1 = rsEndTransaction(rei->rsComm, &endTransactionInp);
+  return(rc1);
+}
+
+
+int
+writeRulesIntoFile(char * fileName, ruleStruct_t *myRuleStruct,
+                  ruleExecInfo_t *rei)
+{
+
+  int i;
+  FILE *file;
+  
+  file = fopen(fileName, "w");
+  if (file == NULL) {
+    rodsLog(LOG_NOTICE,
+	    "writeRulesIntoFile() could not open rules file %s for writing\n",
+	    fileName);
+    return(FILE_OPEN_ERR);
+  }
+  for( i = 0; i < myRuleStruct->MaxNumOfRules; i++) {
+    fprintf(file, "%s|%s|%s|%s\n", myRuleStruct->ruleHead[i],
+	    myRuleStruct->ruleCondition[i],
+	    myRuleStruct->ruleAction[i],
+	    myRuleStruct->ruleRecovery[i]);
+  }
+  fclose (file);
+  return(0);
+}
+
 
 
 

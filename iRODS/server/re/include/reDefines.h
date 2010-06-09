@@ -26,6 +26,7 @@
 #define RULE_SET_DEF_LENGTH  MAX_NAME_LEN
 #define RETESTFLAG        "RETESTFLAG"
 #define RELOOPBACKFLAG        "RELOOPBACKFLAG"
+#define GLOBALREDEBUGFLAG  "GLOBALREDEBUGFLAG"
 /** Flags for testing the Rule Execution **/
 #define LOG_TEST_1             1
 #define HTML_TEST_1            2

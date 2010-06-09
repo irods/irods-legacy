@@ -291,38 +291,38 @@ static void yy_fatal_error YY_PROTO(( yyconst char msg[] ));
 	*yy_cp = '\0'; \
 	yy_c_buf_p = yy_cp;
 
-#define YY_NUM_RULES 89
-#define YY_END_OF_BUFFER 90
+#define YY_NUM_RULES 90
+#define YY_END_OF_BUFFER 91
 static yyconst short int yy_accept[257] =
     {   0,
-        0,    0,   90,   88,   86,   86,   72,   88,   88,   78,
-       71,   66,   67,   76,   75,   63,   74,   70,   77,   54,
-       54,   64,   62,   79,   65,   80,   83,   49,   49,   49,
-       49,   49,   49,   49,   49,   49,   49,   49,   49,   49,
-       68,   69,   81,   49,   49,   49,   49,   49,   49,   49,
-       49,   49,   49,   49,   49,   84,   82,   85,   73,   87,
-       60,    0,   48,    0,   50,   55,   51,    0,    0,   53,
-       54,    0,   54,    0,   57,   59,   58,   49,   49,   49,
-       49,   38,   49,   49,   49,   43,   44,   49,   49,   49,
-       49,   49,   49,   49,   49,   49,   16,   49,   49,   21,
+        0,    0,   91,   89,   87,   87,   73,   89,   89,   79,
+       72,   67,   68,   77,   76,   64,   75,   71,   78,   55,
+       55,   65,   63,   80,   66,   81,   84,   50,   50,   50,
+       50,   50,   50,   50,   50,   50,   50,   50,   50,   50,
+       69,   70,   82,   50,   50,   50,   50,   50,   50,   50,
+       50,   50,   50,   50,   50,   85,   83,   86,   74,   88,
+       61,    0,   49,    0,   51,   56,   52,    0,    0,   54,
+       55,    0,   55,    0,   58,   60,   59,   50,   50,   50,
+       50,   39,   50,   50,   50,   44,   45,   50,   50,   50,
+       50,   50,   50,   50,   50,   50,   17,   50,   50,   22,
 
-       22,   49,   49,   49,   49,   49,   56,   87,   50,   48,
-       50,   50,   51,    0,   53,   52,   61,   49,   49,   36,
-       49,   49,   49,   34,   49,   49,   49,   49,   49,   49,
-       49,   49,   49,   49,   14,   49,   49,   12,   49,   49,
-       49,   49,   49,   49,   49,   50,   50,    0,    0,   52,
-       49,   40,   49,   49,   49,   33,   49,   45,   49,   49,
-       49,   49,   39,   49,   49,   18,   49,   49,   49,   11,
-       49,   23,   49,   49,   49,   17,   49,    0,   25,   49,
-       49,   49,   46,   29,   49,   49,   49,   49,   42,    3,
-       49,   49,   49,   49,    7,   49,   49,   49,   20,    1,
+       23,   50,   50,   50,   50,   50,   57,   88,   51,   49,
+       51,   51,   52,    0,   54,   53,   62,   50,   50,   37,
+       50,   50,   50,   35,   50,   50,   50,   50,   50,   50,
+       50,   50,   50,   50,   15,   50,   50,   13,   50,   50,
+       50,   50,   50,   50,   50,   51,   51,    0,    0,   53,
+       50,   41,   50,   50,   50,   34,   50,   46,   50,   50,
+       50,   50,   40,   50,   50,   19,   50,   50,   50,   12,
+       50,   24,   50,   50,   50,   18,   50,    0,   26,   50,
+       50,   50,   47,   30,   50,   50,   50,   50,   43,    3,
+       50,   50,   50,   50,    7,   50,   50,   50,   21,    1,
 
-       49,   49,   49,   37,   47,   49,   27,   30,   49,   49,
-       49,   49,   49,   15,   49,    5,    8,   49,   49,   32,
-       35,   49,   49,   49,   49,   49,   13,   10,   49,   49,
-       49,   49,   49,   28,   49,   49,   49,   49,    6,   49,
-       49,   24,   49,   49,   41,    2,   49,   49,   19,   49,
-       26,   49,    4,   31,    9,    0
+       50,   50,   50,   38,   48,   50,   28,   31,   50,   50,
+       50,   50,   50,   16,   50,    5,    8,   50,   50,   33,
+       36,   50,   50,   50,   50,   10,   14,   11,   50,   50,
+       50,   50,   50,   29,   50,   50,   50,   50,    6,   50,
+       50,   25,   50,   50,   42,    2,   50,   50,   20,   50,
+       27,   50,    4,   32,    9,    0
     } ;
 
 static yyconst int yy_ec[256] =
@@ -875,17 +875,17 @@ YY_RULE_SETUP
 case 11:
 YY_RULE_SETUP
 #line 24 "rulegen.l"
-{ count(); return(LIKE); }
+{ count(); return(FOREACH); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
 #line 25 "rulegen.l"
-{ count(); return(NOT); }
+{ count(); return(LIKE); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
 #line 26 "rulegen.l"
-{ count(); return(FOR); }
+{ count(); return(NOT); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
@@ -895,7 +895,7 @@ YY_RULE_SETUP
 case 15:
 YY_RULE_SETUP
 #line 28 "rulegen.l"
-{ count(); return(IF); }
+{ count(); return(FOR); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
@@ -905,17 +905,17 @@ YY_RULE_SETUP
 case 17:
 YY_RULE_SETUP
 #line 30 "rulegen.l"
-{ count(); return(THEN); }
+{ count(); return(IF); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 31 "rulegen.l"
-{ count(); return(ELSE); }
+{ count(); return(THEN); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 32 "rulegen.l"
-{ count(); return(WHILE); }
+{ count(); return(ELSE); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
@@ -925,22 +925,22 @@ YY_RULE_SETUP
 case 21:
 YY_RULE_SETUP
 #line 34 "rulegen.l"
-{ count(); return(ON); }
+{ count(); return(WHILE); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
 #line 35 "rulegen.l"
-{ count(); return(OR); }
+{ count(); return(ON); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
 #line 36 "rulegen.l"
-{ count(); return(ORON); }
+{ count(); return(OR); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
 #line 37 "rulegen.l"
-{ count(); return(DELAY); }
+{ count(); return(ORON); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
@@ -950,7 +950,7 @@ YY_RULE_SETUP
 case 26:
 YY_RULE_SETUP
 #line 39 "rulegen.l"
-{ count(); return(REMOTE); }
+{ count(); return(DELAY); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
@@ -960,22 +960,22 @@ YY_RULE_SETUP
 case 28:
 YY_RULE_SETUP
 #line 41 "rulegen.l"
-{ count(); return(PARALLEL); }
+{ count(); return(REMOTE); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 42 "rulegen.l"
-{ count(); return(ONEOF); }
+{ count(); return(PARALLEL); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
 #line 43 "rulegen.l"
-{ count(); return(SOMEOF); }
+{ count(); return(ONEOF); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
 #line 44 "rulegen.l"
-{ count(); return(FOREACH); }
+{ count(); return(SOMEOF); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
@@ -985,17 +985,17 @@ YY_RULE_SETUP
 case 33:
 YY_RULE_SETUP
 #line 46 "rulegen.l"
-{ count(); return(LIKE); }
+{ count(); return(FOREACH); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
 #line 47 "rulegen.l"
-{ count(); return(NOT); }
+{ count(); return(LIKE); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
 #line 48 "rulegen.l"
-{ count(); return(FOR); }
+{ count(); return(NOT); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
@@ -1005,7 +1005,7 @@ YY_RULE_SETUP
 case 37:
 YY_RULE_SETUP
 #line 50 "rulegen.l"
-{ count(); return(IF); }
+{ count(); return(FOR); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
@@ -1015,17 +1015,17 @@ YY_RULE_SETUP
 case 39:
 YY_RULE_SETUP
 #line 52 "rulegen.l"
-{ count(); return(THEN); }
+{ count(); return(IF); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
 #line 53 "rulegen.l"
-{ count(); return(ELSE); }
+{ count(); return(THEN); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
 #line 54 "rulegen.l"
-{ count(); return(WHILE); }
+{ count(); return(ELSE); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
@@ -1035,37 +1035,37 @@ YY_RULE_SETUP
 case 43:
 YY_RULE_SETUP
 #line 56 "rulegen.l"
-{ count(); return(ON); }
+{ count(); return(WHILE); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
 #line 57 "rulegen.l"
-{ count(); return(OR); }
+{ count(); return(ON); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
 #line 58 "rulegen.l"
-{ count(); return(ORON); }
+{ count(); return(OR); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
 #line 59 "rulegen.l"
-{ count(); return(INPUT); }
+{ count(); return(ORON); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
 #line 60 "rulegen.l"
-{ count(); return(OUTPUT); }
+{ count(); return(INPUT); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 63 "rulegen.l"
-{ count(); return(Q_STR_LIT); }
+#line 61 "rulegen.l"
+{ count(); return(OUTPUT); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
 #line 64 "rulegen.l"
-{ count(); return(STR_LIT); }
+{ count(); return(Q_STR_LIT); }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
@@ -1073,54 +1073,57 @@ YY_RULE_SETUP
 { count(); return(STR_LIT); }
 	YY_BREAK
 case 51:
-#line 67 "rulegen.l"
+YY_RULE_SETUP
+#line 66 "rulegen.l"
+{ count(); return(STR_LIT); }
+	YY_BREAK
 case 52:
 #line 68 "rulegen.l"
 case 53:
 #line 69 "rulegen.l"
 case 54:
-YY_RULE_SETUP
-#line 69 "rulegen.l"
-{ count();
-			  return(NUM_LIT);}
-	YY_BREAK
+#line 70 "rulegen.l"
 case 55:
 YY_RULE_SETUP
-#line 71 "rulegen.l"
-{ count(); return(yylval.i = AND_OP); }
+#line 70 "rulegen.l"
+{ count();
+			  return(NUM_LIT);}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
 #line 72 "rulegen.l"
-{ count(); return(yylval.i = OR_OP); }
+{ count(); return(yylval.i = AND_OP); }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
 #line 73 "rulegen.l"
-{ count(); return(yylval.i = LE_OP); }
+{ count(); return(yylval.i = OR_OP); }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
 #line 74 "rulegen.l"
-{ count(); return(yylval.i = GE_OP); }
+{ count(); return(yylval.i = LE_OP); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
 #line 75 "rulegen.l"
-{ count(); return(yylval.i = EQ_OP); }
+{ count(); return(yylval.i = GE_OP); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
 #line 76 "rulegen.l"
-{ count(); return(yylval.i = NE_OP); }
+{ count(); return(yylval.i = EQ_OP); }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
 #line 77 "rulegen.l"
-{ count(); return(yylval.i = ACRAC_SEP); }
+{ count(); return(yylval.i = NE_OP); }
 	YY_BREAK
 case 62:
-#line 79 "rulegen.l"
+YY_RULE_SETUP
+#line 78 "rulegen.l"
+{ count(); return(yylval.i = ACRAC_SEP); }
+	YY_BREAK
 case 63:
 #line 80 "rulegen.l"
 case 64:
@@ -1162,39 +1165,41 @@ case 81:
 case 82:
 #line 99 "rulegen.l"
 case 83:
-YY_RULE_SETUP
-#line 99 "rulegen.l"
-{ count(); return yylval.i = *yytext; }
-	YY_BREAK
+#line 100 "rulegen.l"
 case 84:
 YY_RULE_SETUP
-#line 101 "rulegen.l"
-{ count();  return yylval.i = *yytext; }
+#line 100 "rulegen.l"
+{ count(); return yylval.i = *yytext; }
 	YY_BREAK
 case 85:
 YY_RULE_SETUP
 #line 102 "rulegen.l"
-{ count();  return yylval.i= *yytext; }
+{ count();  return yylval.i = *yytext; }
 	YY_BREAK
 case 86:
-#line 105 "rulegen.l"
-case 87:
 YY_RULE_SETUP
-#line 105 "rulegen.l"
-{ count(); /* Ignore lines that start with '#' */ }
+#line 103 "rulegen.l"
+{ count();  return yylval.i= *yytext; }
 	YY_BREAK
+case 87:
+#line 106 "rulegen.l"
 case 88:
 YY_RULE_SETUP
 #line 106 "rulegen.l"
-{ count();
-			  yyerror("Unknown character (%c)", *yytext); }
+{ count(); /* Ignore lines that start with '#' */ }
 	YY_BREAK
 case 89:
 YY_RULE_SETUP
-#line 109 "rulegen.l"
+#line 107 "rulegen.l"
+{ count();
+			  yyerror("Unknown character (%c)", *yytext); }
+	YY_BREAK
+case 90:
+YY_RULE_SETUP
+#line 110 "rulegen.l"
 ECHO;
 	YY_BREAK
-#line 1198 "lex.yy.c"
+#line 1203 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2078,7 +2083,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 109 "rulegen.l"
+#line 110 "rulegen.l"
 
 int column = 0;
 int line_num = 1;

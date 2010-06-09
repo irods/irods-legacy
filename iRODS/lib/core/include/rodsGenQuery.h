@@ -312,9 +312,26 @@ primary ordering column.
 #define COL_RULE_STATUS       1708
 #define COL_RULE_OWNER_NAME   1709
 #define COL_RULE_OWNER_ZONE   1710
-#define COL_RULE_COMMENT      1711
-#define COL_RULE_CREATE_TIME  1712
-#define COL_RULE_MODIFY_TIME  1713
+#define COL_RULE_DESCR_1      1711
+#define COL_RULE_DESCR_2      1712
+#define COL_RULE_INPUT_PARAMS      1713
+#define COL_RULE_OUTPUT_PARAMS     1714
+#define COL_RULE_DOLLAR_VARS       1715
+#define COL_RULE_ICAT_ELEMENTS     1716
+#define COL_RULE_SIDEEFFECTS       1717
+#define COL_RULE_COMMENT      1718
+#define COL_RULE_CREATE_TIME  1719
+#define COL_RULE_MODIFY_TIME  1720
+
+/* R_RULE_BASE_MAP (for storing versions of the rules */
+#define COL_RULE_BASE_MAP_VERSION      1721
+#define COL_RULE_BASE_MAP_BASE_NAME    1722
+#define COL_RULE_BASE_MAP_OWNER_NAME   1723
+#define COL_RULE_BASE_MAP_OWNER_ZONE   1724
+#define COL_RULE_BASE_MAP_COMMENT      1725
+#define COL_RULE_BASE_MAP_CREATE_TIME  1726
+#define COL_RULE_BASE_MAP_MODIFY_TIME  1727
+ 
 
 /* R_RULE_DVM (Data Variable Mapping) */
 #define COL_DVM_ID            1800

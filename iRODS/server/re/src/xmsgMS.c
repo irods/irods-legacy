@@ -15,7 +15,7 @@
 /**
  * \fn msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
  *
- * \brief  This microservice connects to the XMessage Server as designate by iRODS Environment file/variable.
+ * \brief Connect to the XMessage server.
  *
  * \module core
  *
@@ -27,7 +27,7 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note   This microservice connects to the XMessage Server as designate by iRODS Environment file/variable.
  *
  * \usage
  *
@@ -67,9 +67,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre needs the XMessage Server host name in .irodsEnv file
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
@@ -121,7 +121,7 @@ int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note  A new message stream is created such that the proces (or any other process) can send messages.
  *
  * \usage
  *
@@ -163,9 +163,9 @@ int msiXmsgServerConnect(msParam_t* outConnParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre msiXmsgServerConnect should have been done earlier to get the inConnParam.
+ * \post none
+ * \sa msiXmsgServerConnect
  * \bug  no known bugs
 **/
 int msiXmsgCreateStream(msParam_t* inConnParam, 
@@ -228,7 +228,7 @@ int msiXmsgCreateStream(msParam_t* inConnParam,
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note Creates an Xmsg packet that can be sent using the msiSendXmsg micro-service.
  *
  * \usage
  *
@@ -277,9 +277,9 @@ int msiXmsgCreateStream(msParam_t* inConnParam,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre  none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiCreateXmsgInp(msParam_t* inMsgNumber,
@@ -359,7 +359,7 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note Sends an Xmsg packet created by  msiCreateXmsgInp using the connection made by msiXmsgServerConnect 
  *
  * \usage
  *
@@ -400,9 +400,9 @@ int msiCreateXmsgInp(msParam_t* inMsgNumber,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre msiXmsgServerConnect should've been done earlier to get the inConnParam.
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiSendXmsg(msParam_t* inConnParam, 
@@ -439,6 +439,7 @@ int msiSendXmsg(msParam_t* inConnParam,
   return(status);
 }
 
+
   
 /**
  * \fn msiRcvXmsg(msParam_t* inConnParam, msParam_t* inTicketNumber, msParam_t* inMsgNumber, msParam_t* outMsgType, msParam_t* outMsg, 
@@ -456,7 +457,7 @@ int msiSendXmsg(msParam_t* inConnParam,
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note  Receives an X message packet using the connection made by msiXmsgServerConnect.
  *
  * \usage
  *
@@ -501,9 +502,9 @@ int msiSendXmsg(msParam_t* inConnParam,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre msiXmsgServerConnect should've been done earlier to get the inConnParam.
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiRcvXmsg(msParam_t* inConnParam, 
@@ -575,7 +576,7 @@ int msiRcvXmsg(msParam_t* inConnParam,
  * \remark Ketan Palshikar - msi documentation, 2009-06-29
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note  Disconnects a connection made by msiXmsgServerConnect
  *
  * \usage
  *
@@ -615,9 +616,9 @@ int msiRcvXmsg(msParam_t* inConnParam,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre msiXmsgServerConnect should've been done earlier to get the inConnParam.
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiXmsgServerDisConnect(msParam_t* inConnParam, ruleExecInfo_t *rei)
@@ -638,4 +639,88 @@ int msiXmsgServerDisConnect(msParam_t* inConnParam, ruleExecInfo_t *rei)
     inConnParam->inOutStruct = NULL;
   return(status);
 
+}
+
+
+int _writeXMsg(int streamId, char *hdr, char *msg)
+{
+  int i;
+  xmsgTicketInfo_t xmsgTicketInfo;
+  sendXmsgInp_t sendXmsgInp;
+  rcComm_t *conn;
+  rodsEnv myRodsEnv;
+  rErrMsg_t errMsg;
+
+  i = getRodsEnv (&myRodsEnv);
+  if (i < 0) {
+    rodsLog (LOG_ERROR, "_writeXMsg: getRodsEnv failed:%i",i);
+    return(i);
+  }
+  conn = rcConnectXmsg (&myRodsEnv, &errMsg);
+  if (conn == NULL) {
+    rodsLog (LOG_ERROR, "_writeXMsg: rcConnectXmsg failed:%i:%s",errMsg.status,errMsg.msg);
+    return(errMsg.status);
+  }
+  i = clientLogin(conn);
+  if (i != 0) {
+    rodsLog (LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i);
+    rcDisconnect(conn);
+    return(i);
+  }
+
+  memset (&xmsgTicketInfo, 0, sizeof (xmsgTicketInfo));
+  memset (&sendXmsgInp, 0, sizeof (sendXmsgInp));
+  xmsgTicketInfo.sendTicket = streamId;
+  xmsgTicketInfo.rcvTicket = streamId;
+  xmsgTicketInfo.flag = 1;
+  sendXmsgInp.ticket = xmsgTicketInfo;
+  sendXmsgInp.sendXmsgInfo.numRcv = 1;
+  sendXmsgInp.sendXmsgInfo.msgNumber = 0;
+  snprintf(sendXmsgInp.sendXmsgInfo.msgType, HEADER_TYPE_LEN, "%s",hdr);
+  sendXmsgInp.sendXmsgInfo.msg = msg;
+  i = rcSendXmsg (conn, &sendXmsgInp);
+  rcDisconnect(conn);
+  return(i);
+}
+
+int _readXMsg(int streamId, int *msgNum, int *seqNum, char **hdr, char **msg)
+{
+  int i;
+  rcvXmsgInp_t rcvXmsgInp;
+  rcvXmsgOut_t *rcvXmsgOut = NULL;
+  rcComm_t *conn;
+  rodsEnv myRodsEnv;
+  rErrMsg_t errMsg;
+
+  i = getRodsEnv (&myRodsEnv);
+  if (i < 0) {
+    rodsLog (LOG_ERROR, "_writeXMsg: getRodsEnv failed:%i",i);
+    return(i);
+  }
+  conn = rcConnectXmsg (&myRodsEnv, &errMsg);
+  if (conn == NULL) {
+    rodsLog (LOG_ERROR, "_writeXMsg: rcConnectXmsg failed:%i:%s",errMsg.status,errMsg.msg);
+    return(errMsg.status);
+  }
+  i = clientLogin(conn);
+  if (i != 0) {
+    rodsLog (LOG_ERROR, "msiXmsgServerConnect: clientLogin failed:%i", i);
+    rcDisconnect(conn);
+    return(i);
+  }
+
+  memset (&rcvXmsgInp, 0, sizeof (rcvXmsgInp));
+  rcvXmsgInp.rcvTicket = streamId;
+  rcvXmsgInp.msgNumber = 0;
+  i = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
+  if (i < 0) {
+    rcDisconnect(conn);
+    return(i);
+  }
+  *msgNum = rcvXmsgOut->msgNumber;
+  *seqNum = rcvXmsgOut->seqNumber;
+  *hdr = strdup(rcvXmsgOut->msgType);
+  *msg = strdup(rcvXmsgOut->msg);
+  rcDisconnect(conn);
+  return(i);
 }

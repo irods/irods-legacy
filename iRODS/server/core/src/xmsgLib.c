@@ -138,6 +138,10 @@ ticketMsgStruct_t *ticketMsgStruct)
 	xmsg->tnext = NULL;
     }
     xmsg->ticketMsgStruct = ticketMsgStruct;
+    xmsg->seqNumber = ticketMsgStruct->nxtSeqNumber;
+    ticketMsgStruct->nxtSeqNumber =  ticketMsgStruct->nxtSeqNumber + 1;
+    rodsLog (LOG_ERROR,
+	     "SEQNum: %i", ticketMsgStruct->nxtSeqNumber );
 
     return (0);
 }
@@ -222,6 +226,7 @@ ticketHashQue_t *ticketHQue)
     }
 
     ticketMsgStruct->hnext = ticketMsgStruct->hprev = NULL;
+    ticketMsgStruct->nxtSeqNumber = 0;
     ticketMsgStruct->ticketHashQue = ticketHQue;
 
     if (ticketHQue->head == NULL) {
@@ -455,8 +460,44 @@ ticketHashFunc (uint rcvTicket)
 int
 initXmsgHashQue ()
 {
+
+  xmsgTicketInfo_t *outXmsgTicketInfo;
+  time_t thisTime;
+  int hashSlotNum;
+ 
     memset (XmsgHashQue, 0, NUM_HASH_SLOT * sizeof (ticketHashQue_t));
     memset (&XmsgQue, 0, sizeof (XmsgQue));
+
+    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id =1,2,3***/
+
+    thisTime = time (NULL);
+
+    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
+    outXmsgTicketInfo->rcvTicket = 1;
+    outXmsgTicketInfo->sendTicket = 1;
+    outXmsgTicketInfo->flag = 1;
+    hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
+    addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+    
+    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
+    outXmsgTicketInfo->rcvTicket = 2;
+    outXmsgTicketInfo->sendTicket = 2;
+    outXmsgTicketInfo->flag = 1;
+    hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
+    addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+
+    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
+    outXmsgTicketInfo->rcvTicket = 3;
+    outXmsgTicketInfo->sendTicket = 3;
+    outXmsgTicketInfo->flag = 1;
+    hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
+    addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+
+
+    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id = 1,2,3***/
 
     return (0);
 }
@@ -510,6 +551,8 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
 	rmXmsgFromXmsgQue (irodsXmsg, &XmsgQue);
 	rmXmsgFromXmsgTcketQue (irodsXmsg, &ticketMsgStruct->xmsgQue);
 	rcvXmsgOut->msg = sendXmsgInfo->msg;
+	rcvXmsgOut->seqNumber  = irodsXmsg->seqNumber;
+	rcvXmsgOut->msgNumber  = sendXmsgInfo->msgNumber;
 	sendXmsgInfo->msg = NULL;
 	rstrcpy (rcvXmsgOut->msgType, sendXmsgInfo->msgType, HEADER_TYPE_LEN);
 	rstrcpy (rcvXmsgOut->sendUserName, irodsXmsg->sendUserName,
@@ -525,6 +568,8 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
 	}
     } else {
 	rcvXmsgOut->msg = strdup (sendXmsgInfo->msg);
+	rcvXmsgOut->seqNumber  = irodsXmsg->seqNumber;
+	rcvXmsgOut->msgNumber  = sendXmsgInfo->msgNumber;
         rstrcpy (rcvXmsgOut->msgType, sendXmsgInfo->msgType, HEADER_TYPE_LEN);
         rstrcpy (rcvXmsgOut->sendUserName, irodsXmsg->sendUserName,
           NAME_LEN);

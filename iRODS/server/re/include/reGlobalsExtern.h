@@ -130,6 +130,7 @@ extern rulevardef_t appRuleVarDef;
 extern rulefmapdef_t appRuleFuncMapDef;
 extern int reTestFlag;
 extern int reLoopBackFlag;
+extern int GlobalREDebugFlag;
 extern char tmpStr[];
 extern strArray_t delayStack;
 extern strArray_t msParamStack;

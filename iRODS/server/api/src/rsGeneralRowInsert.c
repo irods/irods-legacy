@@ -68,6 +68,17 @@ _rsGeneralRowInsert(rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
 				 generalRowInsertInp->arg2);
        return(status);
     }
+    if (strcmp(generalRowInsertInp->tableName,"ruleTable") == 0) {
+      status = chlInsRuleTable(rsComm,
+			       generalRowInsertInp->arg1,
+			       generalRowInsertInp->arg2,
+			       generalRowInsertInp->arg3,
+			       generalRowInsertInp->arg4,
+			       generalRowInsertInp->arg5,
+			       generalRowInsertInp->arg6,
+			       generalRowInsertInp->arg7);
+      return(status);
+    }
     return(CAT_INVALID_ARGUMENT);
 } 
 #endif

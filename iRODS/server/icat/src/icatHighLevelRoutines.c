@@ -7587,3 +7587,83 @@ chlDelUnusedAVUs(rsComm_t *rsComm) {
 
 }
 
+
+/* 
+ * chlInsRuleTable - Insert  a new iRODS Rule Base table row.
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+
+
+int
+chlInsRuleTable(rsComm_t *rsComm, 
+		     char *baseName, char *ruleName,
+		    char *ruleHead, char *ruleCondition, char *ruleAction, 
+		char *ruleRecovery, char *ruleIdStr) {
+   char myTime[50];
+   int status;
+   int i;
+   rodsLong_t seqNum;
+   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable");
+
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
+   if (!icss.status) {
+      return(CATALOG_NOT_CONNECTED);
+   }
+   seqNum = cmlGetNextSeqVal(&icss);
+   if (seqNum < 0) {
+     rodsLog(LOG_NOTICE, "chlInsRuleTable cmlGetNextSeqVal failure %d",
+	     seqNum);
+     _rollback("chlInsRuleTable");
+     return(seqNum);
+   }
+   snprintf(ruleIdStr, MAX_NAME_LEN, "%lld", seqNum);
+
+   getNowStr(myTime);
+
+   i=0;
+   cllBindVars[i++]=ruleIdStr;
+   cllBindVars[i++]=baseName;
+   cllBindVars[i++]=ruleName;
+   cllBindVars[i++]=ruleHead;
+   cllBindVars[i++]=ruleCondition;
+   cllBindVars[i++]=ruleAction;
+   cllBindVars[i++]=ruleRecovery;
+   cllBindVars[i++]=rsComm->clientUser.userName;
+   cllBindVars[i++]=rsComm->clientUser.rodsZone;
+   cllBindVars[i++]=myTime;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 1");
+   status =  cmlExecuteNoAnswerSql(
+       "insert into R_RULE_MAIN(rule_id, rule_base_name, rule_name, rule_event, rule_condition, rule_body, rule_recovery, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+       &icss);
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlInsRuleTable cmlExecuteNoAnswerSql Rule Main Insert failure %d",status);
+      return(status);
+   }
+   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 2");
+   i = 0;
+   cllBindVars[i++]=baseName;
+   cllBindVars[i++]=ruleIdStr;
+   cllBindVars[i++]=rsComm->clientUser.userName;
+   cllBindVars[i++]=rsComm->clientUser.rodsZone;
+   cllBindVars[i++]=myTime;
+   cllBindVars[i++]=myTime;
+   cllBindVarCount=i;
+   status =  cmlExecuteNoAnswerSql(
+                                   "insert into R_RULE_BASE_MAP  (map_base_name, rule_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+                                   &icss);
+   if (status != 0) {
+     rodsLog(LOG_NOTICE,
+	     "chlInsRuleTable cmlExecuteNoAnswerSql Rule Map insert failure %d" , status);
+
+     return(status);
+   }
+
+   return(0);
+}

@@ -79,8 +79,6 @@ all:	reaction libs modules server clients tests
 
 
 
-
-
 # Build the libraries
 lib:	libs
 	@true
