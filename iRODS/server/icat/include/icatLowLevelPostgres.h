@@ -24,7 +24,7 @@
 #include "rods.h"
 #include "icatMidLevelRoutines.h"
 
-#define MAX_BIND_VARS 40
+#define MAX_BIND_VARS  40
 
 extern int cllBindVarCount;
 extern char *cllBindVars[MAX_BIND_VARS];
