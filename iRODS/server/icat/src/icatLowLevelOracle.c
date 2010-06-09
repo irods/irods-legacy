@@ -366,7 +366,7 @@ cllDisconnect(icatSessionStruct *icss) {
 int
 convertSqlToOra(char *sql, char *sqlOut) {
    char *cp1, *cp2, *cpEnd;
-   int i;
+   int i, hundreds, tens, ones;
    cp1=sql;
    cp2=sqlOut;
    cpEnd=cp2+MAX_SQL_SIZE-2;
@@ -374,23 +374,21 @@ convertSqlToOra(char *sql, char *sqlOut) {
    while (*cp1!='\0') {
       if (*cp1 != '?') *cp2++=*cp1++;
       else {
-	 *cp2++=':';
-	 /* handle cases with up to 29 bind variables */
-	 if (i>9) {
-	    if (i>19) {
-	       *cp2++='2';
-	       *cp2++=i-20+'0';
-	    }
-	    else {
-	       *cp2++='1';
-	       *cp2++=i-10+'0';
-	    }
-	 }
-	 else {
-	    *cp2++=i+'0';
-	 }
-	 cp1++;
-	 i++;
+         *cp2++=':';
+         /* handle cases with up to 999 bind variables */
+         tens = i / 10 ;
+         ones = i % 10;
+         hundreds = i / 100;
+         if (hundreds > 0) {
+            tens = (i - (hundreds*100)) / 10;
+            *cp2++=hundreds+'0';
+         }
+         if (hundreds>0 || tens>0) {
+            *cp2++=tens+'0';
+         }
+         *cp2++=ones+'0';
+         cp1++;
+         i++;
       }
       if (cp2 > cpEnd) return(-1);
    }
