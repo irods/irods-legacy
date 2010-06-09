@@ -24,10 +24,10 @@
 #include "rods.h"
 #include "icatMidLevelRoutines.h"
 
-#define MAX_BIND_VARS 20
+#define MAX_BIND_VARS 40
 
 extern int cllBindVarCount;
-extern char *cllBindVars[20];
+extern char *cllBindVars[MAX_BIND_VARS];
 
 
 /* The name in the various 'odbc.ini' files for the catalog: */
