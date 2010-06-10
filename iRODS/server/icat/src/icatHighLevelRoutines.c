@@ -7637,7 +7637,7 @@ chlInsRuleTable(rsComm_t *rsComm,
    cllBindVars[i++]=myTime;
    cllBindVars[i++]=myTime;
    cllBindVarCount=i;
-   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 1");
+   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable S__QL 1"); /* temp non-test */
    status =  cmlExecuteNoAnswerSql(
        "insert into R_RULE_MAIN(rule_id, rule_base_name, rule_name, rule_event, rule_condition, rule_body, rule_recovery, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
        &icss);
@@ -7646,7 +7646,7 @@ chlInsRuleTable(rsComm_t *rsComm,
 	      "chlInsRuleTable cmlExecuteNoAnswerSql Rule Main Insert failure %d",status);
       return(status);
    }
-   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 2");
+   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable S__QL 2");/* temp non-test */
    i = 0;
    cllBindVars[i++]=baseName;
    cllBindVars[i++]=ruleIdStr;
