@@ -4063,3 +4063,44 @@ char *outPhyBunPath)
     return 0;
 }
 
+int
+mySetenvStr (char *envname, char *envval)
+{
+    int status;
+ 
+    if (envname == NULL || envval == NULL) return USER__NULL_INPUT_ERR;
+#if defined(solaris_platform)||defined(linux_platform)||defined(osx_platform) 
+    status = setenv (envname, envval, 1);
+#else
+    char *myBuf;
+    int len;
+    len = strlen (envname) + strlen (envval) + 16;
+    myBuf = malloc (len);
+    snprintf (myBuf, len, "%s=%s", envname, envval);
+    status = putenv (myBuf);
+#endif
+    return status;
+}
+
+int
+mySetenvInt (char *envname, int envval)
+{
+    int status;
+    
+#if defined(solaris_platform)||defined(linux_platform)||defined(osx_platform)
+    char myIntStr[NAME_LEN];
+    if (envname == NULL) return USER__NULL_INPUT_ERR;
+    snprintf (myIntStr, NAME_LEN, "%d", envval);
+    status = setenv (envname, myIntStr, 1);
+#else
+    char *myBuf;
+    int len;
+    if (envname == NULL) return USER__NULL_INPUT_ERR;
+    len = strlen (envname) + 20;
+    myBuf = malloc (len);
+    snprintf (myBuf, len, "%s=%d", envname, envval);
+    status = putenv (myBuf);
+#endif
+    return status;
+}
+

@@ -195,6 +195,8 @@ int
 initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack);
 int
 getLocalZoneInfo (zoneInfo_t **outZoneInfo);
+char *
+getLocalZoneName ();
 int
 getZoneInfo (char *rcatZoneHint, zoneInfo_t **myZoneInfo);
 int
@@ -229,4 +231,15 @@ matchAllowedUser (char *userName, char *rodsZone,
 struct allowedUser *allowedUserHead);
 int
 freeAllAllowedUser (struct allowedUser *allowedUserHead);
+int
+initAndClearProcLog ();
+int
+initProcLog ();
+int
+logAgentProc ();
+int
+readProcLog (int pid, procLog_t *procLog);
+int
+rmProcLog (int pid);
+
 #endif	/* INIT_SERVER_H */

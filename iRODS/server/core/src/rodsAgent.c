@@ -136,6 +136,8 @@ main(int argc, char *argv[])
     printSysTiming ("irodsAgent", "sendVersion", 0);
 #endif
 
+    logAgentProc (&rsComm);
+
     status = agentMain (&rsComm);
 
     cleanupAndExit (status);

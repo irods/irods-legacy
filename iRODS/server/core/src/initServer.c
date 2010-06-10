@@ -992,6 +992,18 @@ getLocalZoneInfo (zoneInfo_t **outZoneInfo)
     return (SYS_INVALID_ZONE_NAME);
 }
 
+char*
+getLocalZoneName ()
+{
+    zoneInfo_t *tmpZoneInfo;
+
+    if (getLocalZoneInfo (&tmpZoneInfo) >= 0) {
+	return (tmpZoneInfo->zoneName);
+    } else {
+	return NULL;
+    }
+}
+
 /* Check if there is a connected ICAT host, and if there is, disconnect */
 int 
 getAndDisconnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
@@ -1522,6 +1534,8 @@ initAgent (rsComm_t *rsComm)
     int status;
     rsComm_t myComm;
     ruleExecInfo_t rei;
+
+    initProcLog ();
 
     status = initServerInfo (rsComm);
     if (status < 0) {
@@ -2058,14 +2072,13 @@ initRsCommWithStartupPack (rsComm_t *rsComm, startupPack_t *startupPack)
             rodsLog (LOG_NOTICE,
               "initRsCommWithStartupPack: env %s does not exist",
               SP_OPTION);
-            return (SYS_GETSTARTUP_PACK_ERR);
-        }
-		rstrcpy (rsComm->option, tmpStr, NAME_LEN);
+        } else {
+	    rstrcpy (rsComm->option, tmpStr, NAME_LEN);
+	}
 #else
-		if(tmpStr != NULL)
-		{
-			rstrcpy (rsComm->option, tmpStr, NAME_LEN);
-		}
+	if(tmpStr != NULL) {
+	    rstrcpy (rsComm->option, tmpStr, NAME_LEN);
+	}
 #endif
         
     }
@@ -2556,4 +2569,128 @@ freeAllAllowedUser (struct allowedUser *allowedUserHead)
     return (0);
 }
 
+int
+initAndClearProcLog ()
+{
+    initProcLog ();
+    mkdir (ProcLogDir, DEFAULT_DIR_MODE);
+    rmFilesInDir (ProcLogDir);
 
+    return 0;
+}
+
+int
+initProcLog ()
+{
+    snprintf (ProcLogDir, MAX_NAME_LEN, "%s/%s", 
+      getLogDir(), PROC_LOG_DIR_NAME);
+    return 0;
+}
+
+int
+logAgentProc (rsComm_t *rsComm)
+{
+    FILE *fptr;
+    char procPath[MAX_NAME_LEN];
+    char *remoteAddr;
+    char *progName;
+    char *clientZone, *proxyZone;
+
+    if (rsComm->procLogFlag == PROC_LOG_DONE) return 0;
+
+    if (*rsComm->clientUser.userName == '\0' || 
+      *rsComm->proxyUser.userName == '\0') 
+        return 0;
+
+    if (*rsComm->clientUser.rodsZone == '\0') {
+        if ((clientZone = getLocalZoneName ()) == NULL) {
+	    clientZone = "UNKNOWN";
+	}
+    } else {
+	clientZone = rsComm->clientUser.rodsZone;
+    }
+
+    if (*rsComm->proxyUser.rodsZone == '\0') {
+        if ((proxyZone = getLocalZoneName ()) == NULL) {
+            proxyZone = "UNKNOWN";
+        }
+    } else {
+        proxyZone = rsComm->proxyUser.rodsZone;
+    }
+
+    remoteAddr = inet_ntoa (rsComm->remoteAddr.sin_addr);
+    if (remoteAddr == NULL || *remoteAddr == '\0') remoteAddr = "UNKNOWN";
+    if (*rsComm->option == '\0')
+        progName = "UNKNOWN";
+    else
+        progName = rsComm->option;
+
+    snprintf (procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, getpid ());
+
+    fptr = fopen (procPath, "w");
+
+    if (fptr == NULL) {
+        rodsLog (LOG_ERROR,
+          "logAgentProc: Cannot open input file %s. ernro = %d",
+          procPath, errno);
+        return (UNIX_FILE_OPEN_ERR - errno);
+    }
+
+    fprintf (fptr, "%s %s %s %s %s %s %u\n",
+      rsComm->proxyUser.userName, clientZone,
+      rsComm->clientUser.userName, proxyZone,
+      progName, remoteAddr, (unsigned int) time (0));
+
+    rsComm->procLogFlag = PROC_LOG_DONE;
+    fclose (fptr);
+    return 0;
+}
+
+int
+rmProcLog (int pid)
+{
+    char procPath[MAX_NAME_LEN];
+
+    snprintf (procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, pid);
+    unlink (procPath);
+    return 0;
+}
+
+int
+readProcLog (int pid, procLog_t *procLog)
+{
+    FILE *fptr;
+    char procPath[MAX_NAME_LEN];
+    int status;
+
+    if (procLog == NULL) return USER__NULL_INPUT_ERR;
+
+    snprintf (procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, pid);
+
+    fptr = fopen (procPath, "r");
+
+    if (fptr == NULL) {
+        rodsLog (LOG_ERROR,
+          "readProcLog: Cannot open input file %s. ernro = %d",
+          procPath, errno);
+        return (UNIX_FILE_OPEN_ERR - errno);
+    }
+
+    procLog->pid = pid;
+
+    status = fscanf (fptr, "%s %s %s %s %s %s %u",
+      procLog->clientName, procLog->clientZone,
+      procLog->proxyName, procLog->proxyZone,
+      procLog->progName, procLog->remoteAddr, &procLog->startTime);
+
+    if (status == 7) {	/* 7 parameters */
+	status = 0;
+    } else {
+        rodsLog (LOG_ERROR,
+          "readProcLog: error fscanf file %s. Number of param read = %d",
+          procPath, status);
+	status = UNIX_FILE_READ_ERR;
+    }
+    fclose (fptr);
+    return status;
+}

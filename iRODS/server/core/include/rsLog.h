@@ -14,6 +14,7 @@
 
 #define DEF_CONFIG_DIR	"../config"
 #define DEF_LOG_DIR	"../log"
+#define PROC_LOG_DIR_NAME	"proc"
 
 #define DEF_LOGFILE_INT 5               /* default interval in days */
 #define LOGFILE_INT     "logfileInt"   /* interval in days for new log file */

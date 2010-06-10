@@ -254,6 +254,10 @@ getPhyBunPath (char *collection, char *objPath, char *phyBunDir,
 char *outPhyBunPath);
 int
 unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf);
+int
+mySetenvStr (char *envname, char *envval);
+int
+mySetenvInt (char *envname, int envval);
 #ifdef  __cplusplus
 }
 #endif

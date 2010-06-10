@@ -22,6 +22,7 @@
 
 extern int LogFd;         		/* the log file descriptor */
 extern char *CurLogfileName;         	/* the path of the current logfile */
+extern char ProcLogDir[];
 extern apidef_t RsApiTable[];
 extern rodsServerHost_t *LocalServerHost;
 extern rodsServerHost_t *ServerHostHead;

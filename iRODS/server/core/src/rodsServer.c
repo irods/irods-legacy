@@ -446,10 +446,24 @@ execAgent (int newSock, startupPack_t *startupPack)
 #else
     char *myArgv[2];
 #endif
-    char buf[NAME_LEN];
-    char *myBuf;
     int status;
+    char buf[NAME_LEN];
 
+    mySetenvInt (SP_NEW_SOCK, newSock);
+    mySetenvInt (SP_PROTOCOL, startupPack->irodsProt);
+    mySetenvInt (SP_RECONN_FLAG, startupPack->reconnFlag);
+    mySetenvInt (SP_CONNECT_CNT, startupPack->connectCnt);
+    mySetenvStr (SP_PROXY_USER, startupPack->proxyUser);
+    mySetenvStr (SP_PROXY_RODS_ZONE, startupPack->proxyRodsZone);
+    mySetenvStr (SP_CLIENT_USER, startupPack->clientUser);
+    mySetenvStr (SP_CLIENT_RODS_ZONE, startupPack->clientRodsZone);
+    mySetenvStr (SP_REL_VERSION, startupPack->relVersion);
+    mySetenvStr (SP_API_VERSION, startupPack->apiVersion);
+    mySetenvStr (SP_OPTION, startupPack->option);
+    mySetenvInt (SERVER_BOOT_TIME, ServerBootTime);
+
+#if 0
+    char *myBuf;
     myBuf = malloc (NAME_LEN * 2);
     snprintf (myBuf, NAME_LEN * 2, "%s=%d", SP_NEW_SOCK, newSock);
     putenv (myBuf);
@@ -504,10 +518,11 @@ execAgent (int newSock, startupPack_t *startupPack)
       startupPack->option);
     putenv (myBuf);
 
-	myBuf = malloc (NAME_LEN * 2);
+    myBuf = malloc (NAME_LEN * 2);
     snprintf (myBuf, NAME_LEN * 2, "%s=%d", SERVER_BOOT_TIME,
       ServerBootTime);
     putenv (myBuf);
+#endif
 
 #ifdef windows_platform  /* windows */
 	iRODSNtGetAgentExecutableWithPath(buf, AGENT_EXE);
@@ -726,6 +741,7 @@ initServerMain (rsComm_t *svrComm)
           status);
         return status;
     }
+    initAndClearProcLog ();
 
     setRsCommFromRodsEnv (svrComm);
 

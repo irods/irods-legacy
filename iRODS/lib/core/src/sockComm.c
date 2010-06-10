@@ -468,7 +468,7 @@ readVersion (int sock, version_t **myVersion)
 
     if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
-         "readStartupPack:unpackStruct error. status = %d",
+         "readVersion:unpackStruct error. status = %d",
 	 status);
     } 
     return (status);

@@ -221,6 +221,7 @@ typedef struct startupPack {
 /* env variable for the startup pack */
 
 #define SP_NEW_SOCK	"spNewSock"
+#define SP_CLIENT_ADDR	"spClientAddr"
 #define SP_CONNECT_CNT	"spConnectCnt"
 #define SP_PROTOCOL	"spProtocol"
 #define SP_RECONN_FLAG	"spReconnFlag"
@@ -320,5 +321,17 @@ typedef struct {
     int trimDirCnt;	/* for GRAFT_PATH_S only. Number of directories to 
 			 * trim */
 } vaultPathPolicy_t;
+
+/* struct for proc (agent) logging */
+typedef struct {
+    int pid;
+    unsigned int startTime; 
+    char clientName[NAME_LEN];
+    char clientZone[NAME_LEN];
+    char proxyName[NAME_LEN];
+    char proxyZone[NAME_LEN];
+    char remoteAddr[NAME_LEN];
+    char progName[NAME_LEN];
+} procLog_t;
 
 #endif	/* RODS_DEF_H */

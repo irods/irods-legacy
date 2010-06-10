@@ -39,6 +39,11 @@ typedef struct reconnMsg {
     int flag;
 } reconnMsg_t;
 
+typedef enum {
+    PROC_LOG_NOT_DONE,	/* the proc logging in log/proc not done yet */
+    PROC_LOG_DONE,     /* the proc logging in log/proc is done */
+} procLogFlag_t;
+
 /* The client connection handle */
 
 typedef struct {
@@ -88,6 +93,7 @@ typedef struct {
     rodsEnv myEnv;	/* the local user */
     version_t cliVersion;      /* the client's version */
     char option[NAME_LEN];
+    procLogFlag_t procLogFlag;
     rError_t rError;
     portalOpr_t *portalOpr;
     int apiInx;

@@ -17,6 +17,7 @@
 #include "dataObjWrite.h"
 #include "dataObjRead.h"
 #include "rcPortalOpr.h"
+#include "initServer.h"
 #ifdef PARA_OPR
 #include <pthread.h>
 #endif
@@ -2180,20 +2181,18 @@ readStartupPack (int sock, startupPack_t **startupPack, struct timeval *tv)
     if (status >= 0) {
 	if ((*startupPack)->clientUser[0] != '\0'  && 
 	  (*startupPack)->clientRodsZone[0] == '\0') {
-            zoneInfo_t *tmpZoneInfo;
+	    char *zoneName;
 	    /* clientRodsZone is not defined */
-            if (getLocalZoneInfo (&tmpZoneInfo) >= 0) {
-                rstrcpy ((*startupPack)->clientRodsZone, 
-		  tmpZoneInfo->zoneName, NAME_LEN);
+	    if ((zoneName = getLocalZoneName ()) != NULL) {
+                rstrcpy ((*startupPack)->clientRodsZone, zoneName, NAME_LEN);
             }
 	}
         if ((*startupPack)->proxyUser[0] != '\0'  && 
           (*startupPack)->proxyRodsZone[0] == '\0') {
-            zoneInfo_t *tmpZoneInfo;
-            /* clientRodsZone is not defined */
-            if (getLocalZoneInfo (&tmpZoneInfo) >= 0) {
-                rstrcpy ((*startupPack)->proxyRodsZone, 
-                  tmpZoneInfo->zoneName, NAME_LEN);
+	    char *zoneName;
+            /* proxyRodsZone is not defined */
+            if ((zoneName = getLocalZoneName ()) != NULL) {
+                rstrcpy ((*startupPack)->proxyRodsZone, zoneName, NAME_LEN);
             }
         }
     } else {

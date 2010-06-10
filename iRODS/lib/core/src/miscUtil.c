@@ -1949,7 +1949,102 @@ rmSubDir (char *mydir)
             continue;
 	}
     }
+    closedir (dirPtr);
     return savedStatus;
 }
 
+int
+rmFilesInDir (char *mydir)
+{
+    int status = 0;
+    int savedStatus = 0;
+    DIR *dirPtr;
+    struct dirent *myDirent;
+#ifndef windows_platform
+    struct stat statbuf;
+#else
+    struct irodsntstat statbuf;
+#endif
+    char childPath[MAX_NAME_LEN];
+
+    dirPtr = opendir (mydir);
+    if (dirPtr == NULL) {
+        status = USER_INPUT_PATH_ERR - errno;
+        rodsLogError (LOG_ERROR, status,
+        "rmFilesInDir: opendir local dir error for %s", mydir);
+        return status;
+    }
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#ifndef windows_platform
+        status = stat (childPath, &statbuf);
+#else
+        status = iRODSNt_stat(childPath, &statbuf);
+#endif
+        if (status != 0) {
+            savedStatus = USER_INPUT_PATH_ERR - errno;
+            rodsLogError (LOG_ERROR, status,
+              "rmFilesInDir: stat error for %s", childPath);
+            continue;
+        }
+        if (statbuf.st_mode & S_IFREG) {
+	    unlink (childPath);
+	} else {
+	    continue;
+	}
+    }
+    closedir (dirPtr);
+    return savedStatus;
+}
+int
+getNumFilesInDir (char *mydir)
+{
+    int status = 0;
+    int savedStatus = 0;
+    DIR *dirPtr;
+    struct dirent *myDirent;
+#ifndef windows_platform
+    struct stat statbuf;
+#else
+    struct irodsntstat statbuf;
+#endif
+    char childPath[MAX_NAME_LEN];
+    int count = 0;
+
+    dirPtr = opendir (mydir);
+    if (dirPtr == NULL) {
+        status = USER_INPUT_PATH_ERR - errno;
+        rodsLogError (LOG_ERROR, status,
+        "getNumFilesInDir: opendir local dir error for %s", mydir);
+        return status;
+    }
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (childPath, MAX_NAME_LEN, "%s/%s", mydir, myDirent->d_name);
+#ifndef windows_platform
+        status = stat (childPath, &statbuf);
+#else
+        status = iRODSNt_stat(childPath, &statbuf);
+#endif
+        if (status != 0) {
+            savedStatus = USER_INPUT_PATH_ERR - errno;
+            rodsLogError (LOG_ERROR, status,
+              "getNumFilesInDir: stat error for %s", childPath);
+            continue;
+        }
+        if (statbuf.st_mode & S_IFREG) {
+	    count++;
+        } else {
+            continue;
+        }
+    }
+    return count;
+}
 
