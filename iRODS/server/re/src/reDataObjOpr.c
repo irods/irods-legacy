@@ -24,8 +24,8 @@
  * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
- *
- * \note
+ *         Jewel Ward - msi documentation, 2010-06-09
+ * \note none
  *
  * \usage 
  * As seen in test.irb

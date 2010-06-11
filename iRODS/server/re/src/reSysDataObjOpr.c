@@ -101,8 +101,9 @@ ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation 2009-06-15
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note 
+ * \note none
  *  
  * \usage
  *
@@ -365,8 +366,9 @@ msiSetDataObjPreferredResc (msParam_t *xpreferredRescList, ruleExecInfo_t *rei)
  * \date 2007
  * 
  * \remark Terrell Russell, msi documentation 2009-06-30
+ * \remark Jewel Ward, msi documentation 2010-06-10
  * 
- * \note 
+ * \note none 
  *  
  * \usage 
  * acPreprocForDataObjOpen||msiSetDataObjAvoidResc(demoResc)|nop
@@ -426,8 +428,9 @@ msiSetDataObjAvoidResc (msParam_t *xavoidResc, ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note 
+ * \note none 
  *  
  * \usage
  *
@@ -487,8 +490,9 @@ msiSortDataObj (msParam_t *xsortScheme, ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note
+ * \note none
  *  
  * \usage
  *
@@ -671,8 +675,9 @@ msiSetDataTypeFromExt (ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note 
+ * \note none 
  *  
  * \usage
  *
@@ -957,8 +962,9 @@ msParam_t *xwindowSizeStr, ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation 2010-06-10
  * 
- * \note 
+ * \note none
  *  
  * \usage
  *
@@ -1063,8 +1069,9 @@ msiOprDisallowed (ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note
+ * \note none
  *  
  * \usage 
  * acSetMultiReplPerResc||msiSetMultiReplPerResc()|nop
@@ -1107,10 +1114,11 @@ msiSetMultiReplPerResc (ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - created msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
  * \warning WARNING - This function can create a security problem if used incorrectly.
  *  
- * \note 
+ * \note none 
  *  
  * \usage 
  * acNoChkFilePathPerm||msiNoChkFilePathPerm()|nop
@@ -1153,8 +1161,9 @@ msiNoChkFilePathPerm (ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note
+ * \note none
  *  
  * \usage
  *
@@ -1201,8 +1210,9 @@ msiNoTrashCan (ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note
+ * \note none
  *  
  * \usage
  *
@@ -1342,8 +1352,9 @@ setApiPerm (int apiNumber, int proxyPerm, int clientPerm)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note
+ * \note none
  *  
  * \usage
  *
@@ -1453,8 +1464,9 @@ ruleExecInfo_t *rei)
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-17
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10
  * 
- * \note
+ * \note none
  *  
  * \usage
  *
@@ -1524,8 +1536,9 @@ msiSetRandomScheme (ruleExecInfo_t *rei)
  * \date 2007
  * 
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-06-10 
  * 
- * \note
+ * \note none
  *  
  * \usage 
  * acSetReServerNumProc||msiSetReServerNumProc(4)|nop

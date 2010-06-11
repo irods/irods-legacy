@@ -21,8 +21,8 @@
  * \date  2009  
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
- *
- * \note  
+ *         Jewel Ward - msi documentation, 2010-06-09
+ * \note none  
  *
  * \usage 
  * myTestRule||msiExecCmd(hello,*ARG,null,null,null,*HELLO_OUT)##msiGetStdoutInExecCmdOut(*HELLO_OUT,*myout)|nop
@@ -74,8 +74,8 @@ ruleExecInfo_t *rei)
  * \date 2009   
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
- *
- * \note  
+ *         Jewel Ward - msi documentation, 2010-06-09
+ * \note none
  *
  * \usage 
  * myTestRule||msiExecCmd(hello,*ARG,null,null,null,*HELLO_OUT)##msiGetStderrInExecCmdOut(*HELLO_OUT,*myErrorOut)|nop
@@ -211,8 +211,8 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  * \date   2010 
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
- *
- * \note  
+ *         Jewel Ward - msi documentation, 2010-06-09
+ * \note none 
  *
  * \usage 
  * myTestRule||msiAddKeyValToMspStr(destRescName,demoResc,*myMsKeyValStr)|nop
@@ -342,7 +342,7 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  *
  * \brief Gets the value of a session variable in the rei
  *
- * \module 
+ * \module core 
  *
  * \since 2.3
  *
@@ -350,8 +350,8 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  * \date    2009-06-15
  *
  * \remark Terrell Russell - msi documentation, 2009-12-17
- *
- * \note 
+ *         Jewel Ward - msi documentation, 2010-06-09
+ * \note none 
  *
  * \usage 
  *  acPreprocForDataObjOpen||msiGetSessionVarValue(all,all)|nop
