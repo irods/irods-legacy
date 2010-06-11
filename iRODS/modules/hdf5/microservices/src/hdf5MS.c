@@ -612,7 +612,10 @@ msParam_t *outH5GroupParam, ruleExecInfo_t *rei)
         return (rei->status);
     }
 
+#if 0
     if (strcmp (inpH5GroupParam->type, h5Dataset_MS_T) == 0) {
+#endif
+    if (strcmp (inpH5GroupParam->type, h5Group_MS_T) == 0) {
         ing = inpH5GroupParam->inOutStruct;
     } else {
         rei->status = USER_PARAM_TYPE_ERR;

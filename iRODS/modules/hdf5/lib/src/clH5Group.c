@@ -52,8 +52,10 @@ int _clH5Group_read_attribute(rcComm_t *conn, H5Group* ing, H5Group** outg)
      "H5File_open||msiH5Group_read_attribute(*ING,*OUTG)|nop", META_STR_LEN);
     /* specify *OUTF as returned value */
     rstrcpy (execMyRuleInp.outParamDesc, "*OUTG", LONG_NAME_LEN);
-
+#if 0
     addMsParamToArray (execMyRuleInp.inpParamArray, "*ING", h5Dataset_MS_T, ing,
+#endif
+    addMsParamToArray (execMyRuleInp.inpParamArray, "*ING", h5Group_MS_T, ing,
       NULL, 0);
 
     status = rcExecMyRule (conn, &execMyRuleInp, &outParamArray);
