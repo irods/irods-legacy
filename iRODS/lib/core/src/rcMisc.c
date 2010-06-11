@@ -1134,6 +1134,82 @@ clearGenQueryOut (genQueryOut_t *genQueryOut)
     return (0);
 }
 
+/* catGenQueryOut - Concatenate genQueryOut to targGenQueryOut up to maxRowCnt.
+ * It is assumed that the two genQueryOut have the same attriInx and
+ * len for each attri.
+ * 
+ */
+int
+catGenQueryOut (genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
+int maxRowCnt)
+{
+    int i;
+    int totalRowCnt;
+
+    /* do some sanity checks */
+
+
+    if (targGenQueryOut || genQueryOut == NULL)
+        return USER__NULL_INPUT_ERR;
+
+    if (genQueryOut->rowCnt == 0) return 0;
+
+    if ((totalRowCnt = targGenQueryOut->rowCnt + genQueryOut->rowCnt) > 
+      maxRowCnt) {
+        rodsLog (LOG_ERROR,
+          "catGenQueryOut: total rowCnt %d > %d",
+          targGenQueryOut->rowCnt + genQueryOut->rowCnt, maxRowCnt);
+        return SYS_STRUCT_ELEMENT_MISMATCH;
+    }
+
+
+    if (targGenQueryOut->attriCnt != genQueryOut->attriCnt) {
+        rodsLog (LOG_ERROR,
+          "catGenQueryOut: attriCnt mismatch %d != %d",
+	  targGenQueryOut->attriCnt, genQueryOut->attriCnt);
+	return SYS_STRUCT_ELEMENT_MISMATCH;
+    }
+
+    for (i = 0; i < genQueryOut->attriCnt; i++) {
+	if (targGenQueryOut->sqlResult[i].attriInx != 
+	  genQueryOut->sqlResult[i].attriInx) {
+            rodsLog (LOG_ERROR,
+              "catGenQueryOut: attriInx mismatch %d != %d",
+              targGenQueryOut->sqlResult[i].attriInx, 
+	      genQueryOut->sqlResult[i].attriInx);
+            return SYS_STRUCT_ELEMENT_MISMATCH;
+	}
+        if (targGenQueryOut->sqlResult[i].len != 
+          genQueryOut->sqlResult[i].len) {
+            rodsLog (LOG_ERROR,
+              "catGenQueryOut: len mismatch %d != %d",
+              targGenQueryOut->sqlResult[i].len, genQueryOut->sqlResult[i].len);
+            return SYS_STRUCT_ELEMENT_MISMATCH;
+        }
+    }
+    
+    for (i = 0; i < genQueryOut->attriCnt; i++) {
+	char *tmpValue;
+        int len;
+
+	if ((len = genQueryOut->sqlResult[i].len) <= 0) continue;
+	if ((tmpValue = malloc (totalRowCnt * len)) < 0) 
+	  return (SYS_MALLOC_ERR - errno);
+        if (targGenQueryOut->sqlResult[i].value != NULL) {
+	    memcpy (tmpValue, targGenQueryOut->sqlResult[i].value, 
+	      len * targGenQueryOut->rowCnt);
+            free (targGenQueryOut->sqlResult[i].value);
+	}
+	targGenQueryOut->sqlResult[i].value = tmpValue;
+	tmpValue += len * targGenQueryOut->rowCnt;
+        memcpy (tmpValue, genQueryOut->sqlResult[i].value, 
+          len * genQueryOut->rowCnt);
+    }
+    targGenQueryOut->rowCnt = totalRowCnt;
+
+    return (0);
+}
+
 int
 clearBulkOprInp (bulkOprInp_t *bulkOprInp)
 {

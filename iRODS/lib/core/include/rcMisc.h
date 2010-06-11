@@ -106,6 +106,9 @@ getSqlResultByInx (genQueryOut_t *genQueryOut, int attriInx);
 int 
 clearGenQueryOut (genQueryOut_t *genQueryOut);
 int
+catGenQueryOut (genQueryOut_t *targGenQueryOut, genQueryOut_t *genQueryOut,
+int maxRowCnt);
+int
 clearBulkOprInp (bulkOprInp_t *bulkOprInp);
 int
 getUnixUid (char *userName);
