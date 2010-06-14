@@ -4962,13 +4962,44 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    groups this user is a member of, for all the matching data-objects.
 */
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 2");
+#if ORA_ICAT
+   /* For Oracle, we cannot use views with bind-variables, so use a
+      table instead. */
+   status =  cmlExecuteNoAnswerSql("purge recyclebin",
+				   &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddAVUMetadata cmlExecuteNoAnswerSql (drop table ACCESS_VIEW_ONE) failure %d",
+	      status);
+   }
+   status =  cmlExecuteNoAnswerSql("drop table ACCESS_VIEW_ONE",
+				   &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddAVUMetadata cmlExecuteNoAnswerSql (drop table ACCESS_VIEW_ONE) failure %d",
+	      status);
+   }
+
+   status =  cmlExecuteNoAnswerSql("create table ACCESS_VIEW_ONE (access_type_id integer, data_id integer)",
+				   &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	     "chlAddAVUMetadata cmlExecuteNoAnswerSql (create table ACCESS_VIEW_ONE) failure %d",
+	      status);
+      _rollback("chlAddAVUMetadataWild");
+      return(status);
+   }
+
    cllBindVars[cllBindVarCount++]=objectName;
    cllBindVars[cllBindVarCount++]=collection;
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone;
    status =  cmlExecuteNoAnswerSql(
-      "create view ACCESS_VIEW_ONE as select access_type_id, DM.data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id",
-      &icss);
+				   "insert into ACCESS_VIEW_ONE (access_type_id, data_id) (select access_type_id, DM.data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id)",
+				   &icss);
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
    if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
    if (status != 0) {
@@ -4978,6 +5009,24 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
       _rollback("chlAddAVUMetadataWild");
       return(status);
    }
+#else
+   cllBindVars[cllBindVarCount++]=objectName;
+   cllBindVars[cllBindVarCount++]=collection;
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
+   cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone;
+   status =  cmlExecuteNoAnswerSql(
+				   "create view ACCESS_VIEW_ONE as select access_type_id, DM.data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id",
+				   &icss);
+   if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+   if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
+   if (status != 0) {
+      rodsLog(LOG_NOTICE,
+	      "chlAddAVUMetadata cmlExecuteNoAnswerSql (create view) failure %d",
+	      status);
+      _rollback("chlAddAVUMetadataWild");
+      return(status);
+   }
+#endif
 
 /* Create another view for min below (sub select didn't work).  This
    is the set of access permisions per matching data-object, the best
@@ -4985,9 +5034,15 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    group-based read, this will be 'write').
 */
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 3");
+#if ORA_ICAT
    status =  cmlExecuteNoAnswerSql(
-      "create view ACCESS_VIEW_TWO as select max(access_type_id) from ACCESS_VIEW_ONE group by data_id",
+      "create or replace view ACCESS_VIEW_TWO as select max(access_type_id) max from ACCESS_VIEW_ONE group by data_id",
       &icss);
+#else
+   status =  cmlExecuteNoAnswerSql(
+      "create or replace view ACCESS_VIEW_TWO as select max(access_type_id) from ACCESS_VIEW_ONE group by data_id",
+      &icss);
+#endif
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
    if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
    if (status != 0) {
@@ -5036,15 +5091,28 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
       }
    }
 
-
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 7");
+#if ORA_ICAT
    status2 =  cmlExecuteNoAnswerSql(
-                      "drop view ACCESS_VIEW_TWO, ACCESS_VIEW_ONE",
+                      "drop table ACCESS_VIEW_ONE",
 		      &icss);
    if (status2==CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
+   if (status2==0) {
+      status2 =  cmlExecuteNoAnswerSql(
+				       "drop view ACCESS_VIEW_TWO",
+				       &icss);
+      if (status2==CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
+   }
+#else
+   status2 =  cmlExecuteNoAnswerSql(
+				    "drop view ACCESS_VIEW_TWO, ACCESS_VIEW_ONE",
+				    &icss);
+   if (status2==CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
+#endif
+
    if (status2) {
       rodsLog(LOG_NOTICE,
-	     "chlAddAVUMetadataWild cmlExecuteNoAnswerSql (drop view) failure %d",
+	     "chlAddAVUMetadataWild cmlExecuteNoAnswerSql (drop view (or table)) failure %d",
 	      status2);
    }
 
@@ -5091,9 +5159,9 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
 		      &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
-	      "chlAddAVUMetadata cmlAudit3 failure %d",
+	      "chlAddAVUMetadataWild cmlAudit3 failure %d",
 	      status);
-      _rollback("chlAddAVUMetadata");
+      _rollback("chlAddAVUMetadataWild");
       return(status);
    }
 
@@ -5102,7 +5170,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    status =  cmlExecuteNoAnswerSql("commit", &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
-	      "chlAddAVUMetadata cmlExecuteNoAnswerSql commit failure %d",
+	      "chlAddAVUMetadataWild cmlExecuteNoAnswerSql commit failure %d",
 	      status);
       return(status);
    }
