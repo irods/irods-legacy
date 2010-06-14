@@ -187,6 +187,8 @@ int msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t 
 int writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInfo_t *rei);
 int readXMsg(msParam_t* inStreamId, msParam_t *outMsgNum, msParam_t *outSeqNum,
          msParam_t *outHdr, msParam_t *outMsg, ruleExecInfo_t *rei);
+int msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
+         msParam_t *inpParam4, ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
@@ -349,3 +351,4 @@ microsdef_t MicrosTable[] = {
   {"msiAdmWriteRulesFromStructIntoFile",2, (funcPtr) msiAdmWriteRulesFromStructIntoFile},
   {"writeXMsg",3, (funcPtr) writeXMsg},
   {"readXMsg",5, (funcPtr) readXMsg},
+  {"msiSetReplComment", 4, (funcPtr) msiSetReplComment},
