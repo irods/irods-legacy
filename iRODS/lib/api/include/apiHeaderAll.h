@@ -131,4 +131,5 @@
 #include "endTransaction.h"
 #include "databaseObjOpen.h"
 #include "databaseObjInfo.h"
+#include "procStat.h"
 #endif	/* API_HEADER_ALL_H */

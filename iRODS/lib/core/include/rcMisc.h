@@ -261,6 +261,8 @@ int
 mySetenvStr (char *envname, char *envval);
 int
 mySetenvInt (char *envname, int envval);
+int
+getNumFilesInDir (char *mydir);
 #ifdef  __cplusplus
 }
 #endif
