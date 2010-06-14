@@ -338,7 +338,7 @@ msiDataObjClose (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 	} else {
 	    rei->status = myInt;
             rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-              "msiDataObjClose: parseMspForPosInt error for param2.");
+              "msiDataObjClose: parseMspForPosInt error for param1.");
             return (rei->status);
 	}
      }
