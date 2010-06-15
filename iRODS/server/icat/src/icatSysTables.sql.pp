@@ -194,9 +194,28 @@ create table R_RULE_MAIN
    rulexec_type_name   varchar(250) not null,
    rule_owner_name     varchar(250) not null,
    rule_owner_zone     varchar(250) not null,
+   rule_descr_1        varchar(2700),
+   rule_descr_2        varchar(2700),
+   input_params        varchar(2700),
+   output_params       varchar(2700),
+   dollar_vars         varchar(2700),
+   icat_elements       varchar(2700),
+   sideeffects         varchar(2700),
    r_comment           varchar(1000),
    create_ts           varchar(32),
    modify_ts           varchar(32)
+ );
+
+create table R_RULE_BASE_MAP
+ (
+   map_version varchar(250) DEFAULT '0',
+   map_base_name varchar(250) not null,
+   rule_id bigint not null,
+   map_owner_name varchar(250) not null,
+   map_owner_zone varchar(250) not null,
+   r_comment varchar(1000),
+   create_ts varchar(32) ,
+   modify_ts varchar(32)
  );
 
 create table R_RULE_EXEC
