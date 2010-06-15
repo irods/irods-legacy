@@ -727,6 +727,25 @@ testCurrent(rsComm_t *rsComm) {
 }
 
 int
+testAddRule(rsComm_t *rsComm, char *baseName, char *ruleName,
+	    char *ruleHead, char *ruleCondition, char *ruleAction, 
+	    char *ruleRecovery) {
+   int status;
+   char ruleIdStr[200];
+
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlInsRuleTable(rsComm, baseName, ruleName,
+			    ruleHead, ruleCondition, ruleAction,
+			    ruleRecovery, (char *)&ruleIdStr);
+
+   if (status == 0) {
+     printf("ruleIdStr: %s\n",ruleIdStr);
+   }
+   return(status);
+}
+
+int
 main(int argc, char **argv) {
    int status;
    rsComm_t *Comm;
@@ -976,6 +995,12 @@ main(int argc, char **argv) {
       didOne=1;
    }
 
+   if (strcmp(argv[1],"addrule")==0) {
+     status = testAddRule(Comm, argv[2], argv[3],
+			     argv[4], argv[5],
+			     argv[6], argv[7]);
+     didOne=1;
+   }
 
    if (status != 0) {
       /*

@@ -257,6 +257,10 @@ runCmd(0, "test_chl purgedigest -1");
 # quota check
 runCmd(0, "test_chl checkquota $User2 $Resc");
 
+# check rule table updates
+# (without a commit, does not get saved)
+runCmd(0, "test_chl addrule a b c d e f g");
+
 # clean up
 runCmd(0, "iadmin rmuser $UserAdmin2");
 runCmd(0, "iadmin rmuser $User2");
