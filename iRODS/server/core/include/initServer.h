@@ -148,6 +148,8 @@ rodsServerHost_t *slaveServerHost);
 int
 initResc (rsComm_t *rsComm);
 int
+getHostStatusByRescInfo (rodsServerHost_t *rodsServerHost);
+int
 procAndQueRescResult (genQueryOut_t *genQueryOut);
 int
 printServerHost (rodsServerHost_t *myServerHost);

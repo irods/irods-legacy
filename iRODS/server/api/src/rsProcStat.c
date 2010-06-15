@@ -75,21 +75,26 @@ genQueryOut_t **procStatOut)
               tmpStr, status);
             return status;
         }
-        rstrcpy (addr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
-        remoteFlag = resolveHost (&addr, &rodsServerHost);
+        rstrcpy (procStatInp->addr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
+	rodsServerHost = rescGrpInfo->rescInfo->rodsServerHost;
+	if (rodsServerHost == NULL) {
+	    remoteFlag = SYS_INVALID_SERVER_HOST;
+	} else {
+	    remoteFlag = rodsServerHost->localFlag;
+	}
     } else {
 	/* do the IES server */
         remoteFlag = getRcatHost (MASTER_RCAT, NULL, &rodsServerHost);
-        if (remoteFlag < 0) {
-            rodsLog (LOG_ERROR,
-             "_rsProcStat: getRcatHost() failed. erro=%d", remoteFlag);
-            return (remoteFlag);
-        }
     }
-    if (remoteFlag == REMOTE_HOST) {
+    if (remoteFlag < 0) {
+        rodsLog (LOG_ERROR,
+         "_rsProcStat: getRcatHost() failed. erro=%d", remoteFlag);
+        return (remoteFlag);
+    } else if (remoteFlag == REMOTE_HOST) {
 	addKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW, "");
 	status = remoteProcStat (rsComm, &myProcStatInp, procStatOut,
           rodsServerHost);
+	rmKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW);
     } else {
 	status = localProcStat (rsComm, procStatInp, procStatOut);
     }
@@ -100,17 +105,50 @@ int
 _rsProcStatAll (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut)
 {
+    rodsServerHost_t *tmpRodsServerHost;
+    procStatInp_t myProcStatInp;
+    int status;
+    int savedStatus = 0;
 
-    return 0;
+    bzero (&myProcStatInp, sizeof (myProcStatInp));
+    tmpRodsServerHost = ServerHostHead;
+    while (tmpRodsServerHost != NULL) {
+	if (getHostStatusByRescInfo (tmpRodsServerHost) == 
+	  INT_RESC_STATUS_UP) {		/* don't do down resc */
+	    rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name, 
+	      NAME_LEN);
+	    if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
+	        status = localProcStat (rsComm, &myProcStatInp, procStatOut);
+	    } else {
+                addKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW, "");
+                status = remoteProcStat (rsComm, &myProcStatInp, procStatOut,
+                  tmpRodsServerHost);
+                rmKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW);
+	    }
+	    if (status < 0) savedStatus = status;
+	}
+	tmpRodsServerHost = tmpRodsServerHost->next;
+    }
+    return savedStatus;
 }
 
 int
 localProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut)
 {
-    int numProc;
+    int numProc, status;
+    procLog_t procLog;
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    char childPath[MAX_NAME_LEN];
+    #ifndef windows_platform
+    struct stat statbuf;
+#else
+    struct irodsntstat statbuf;
+#endif
+    int count = 0;
 
-    numProc = getNumFilesInDir (ProcLogDir);
+    numProc = getNumFilesInDir (ProcLogDir) + 2; /* add 2 to give some room */
 
     if (numProc <= 0) {
 	/* empty */
@@ -118,7 +156,59 @@ genQueryOut_t **procStatOut)
 	return numProc;
     }
     initProcStatOut (procStatOut, numProc);
-
+    bzero (&procLog, sizeof (procLog));
+    /* init serverAddr */
+    if (*procStatInp->addr != '\0') {   /* given input addr */
+        rstrcpy (procLog.serverAddr, procStatInp->addr, NAME_LEN);
+    } else {
+	char *myHost = getLocalAddr ();
+	if (myHost == NULL) {
+	    rstrcpy (procLog.serverAddr, "localhost", NAME_LEN);
+	} else {
+	    rstrcpy (procLog.serverAddr, myHost, NAME_LEN);
+	}
+    }
+    /* loop through the directory */
+    dirPtr = opendir (ProcLogDir);
+    if (dirPtr == NULL) {
+        status = USER_INPUT_PATH_ERR - errno;
+        rodsLogError (LOG_ERROR, status,
+        "localProcStat: opendir local dir error for %s", ProcLogDir);
+        return status;
+    }
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+	if (!isdigit (myDirent->d_name)) continue;   /* not a pid */
+        snprintf (childPath, MAX_NAME_LEN, "%s/%s", ProcLogDir, 
+	  myDirent->d_name);
+#ifndef windows_platform
+        status = stat (childPath, &statbuf);
+#else
+        status = iRODSNt_stat(childPath, &statbuf);
+#endif
+        if (status != 0) {
+            rodsLogError (LOG_ERROR, status,
+              "localProcStat: stat error for %s", childPath);
+            continue;
+        }
+        if (statbuf.st_mode & S_IFREG) {
+	    if (count >= numProc) {
+                rodsLog (LOG_ERROR, 
+                  "localProcStat: proc count %d exceeded", numProc);
+		break;
+	    }
+	    procLog.pid = atoi (myDirent->d_name);
+	    if (readProcLog (procLog.pid, &procLog) < 0) continue;
+	    status = addProcToProcStatOut (&procLog, *procStatOut);
+	    if (status < 0) continue;
+            count++;
+        } else {
+            continue;
+        }
+    }
     return 0;
 }
 
@@ -215,3 +305,34 @@ initProcStatOut (genQueryOut_t **procStatOut, int numProc)
     return 0;    
 }
 
+int
+addProcToProcStatOut (procLog_t *procLog, genQueryOut_t *procStatOut)
+{
+    int rowCnt;
+
+    if (procLog == NULL || procStatOut == NULL) return USER__NULL_INPUT_ERR;
+    rowCnt = procStatOut->rowCnt;
+
+    snprintf (&procStatOut->sqlResult[0].value[NAME_LEN * rowCnt],
+      NAME_LEN, "%d", procLog->pid);
+    snprintf (&procStatOut->sqlResult[1].value[NAME_LEN * rowCnt],
+      NAME_LEN, "%u", procLog->startTime);
+    rstrcpy (&procStatOut->sqlResult[2].value[NAME_LEN * rowCnt],
+      procLog->clientName, NAME_LEN);
+    rstrcpy (&procStatOut->sqlResult[3].value[NAME_LEN * rowCnt],
+      procLog->clientZone, NAME_LEN);
+    rstrcpy (&procStatOut->sqlResult[4].value[NAME_LEN * rowCnt],
+      procLog->proxyName, NAME_LEN);
+    rstrcpy (&procStatOut->sqlResult[5].value[NAME_LEN * rowCnt],
+      procLog->proxyZone, NAME_LEN);
+    rstrcpy (&procStatOut->sqlResult[6].value[NAME_LEN * rowCnt],
+      procLog->remoteAddr, NAME_LEN);
+    rstrcpy (&procStatOut->sqlResult[7].value[NAME_LEN * rowCnt],
+      procLog->serverAddr, NAME_LEN);
+    rstrcpy (&procStatOut->sqlResult[8].value[NAME_LEN * rowCnt],
+      procLog->progName, NAME_LEN);
+
+    procStatOut->rowCnt++;
+
+    return 0;
+}

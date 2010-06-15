@@ -1478,6 +1478,34 @@ procAndQueRescResult (genQueryOut_t *genQueryOut)
     return (0);
 }
 
+/* getHostStatusByRescInfo - get the status host based on rescStatus */
+int 
+getHostStatusByRescInfo (rodsServerHost_t *rodsServerHost)
+{
+    rescGrpInfo_t *tmpRescGrpInfo;
+    rescInfo_t *myRescInfo;
+    int match = 0;
+
+    tmpRescGrpInfo = RescGrpInfo;
+    while (tmpRescGrpInfo != NULL) {
+        myRescInfo = tmpRescGrpInfo->rescInfo;
+	if (myRescInfo->rodsServerHost == rodsServerHost) {
+	    if (myRescInfo->rescStatus == INT_RESC_STATUS_UP) {
+		return INT_RESC_STATUS_UP;
+	    }
+	    match = 1;
+	}
+	tmpRescGrpInfo = tmpRescGrpInfo->next;
+    }
+
+    if (match == 0) {
+	/* no match in resc. assume up */
+	return INT_RESC_STATUS_UP;
+    } else {
+        return INT_RESC_STATUS_DOWN;
+    }
+}
+
 int 
 setExecArg (char *commandArgv, char *av[])
 {

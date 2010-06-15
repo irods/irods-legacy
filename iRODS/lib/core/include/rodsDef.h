@@ -342,6 +342,7 @@ typedef struct {
     char proxyName[NAME_LEN];
     char proxyZone[NAME_LEN];
     char remoteAddr[NAME_LEN];
+    char serverAddr[NAME_LEN];
     char progName[NAME_LEN];
 } procLog_t;
 

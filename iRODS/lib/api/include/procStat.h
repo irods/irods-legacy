@@ -41,6 +41,8 @@ remoteProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut, rodsServerHost_t *rodsServerHost);
 int
 initProcStatOut (genQueryOut_t **procStatOut, int numProc);
+int
+addProcToProcStatOut (procLog_t *procLog, genQueryOut_t *procStatOut);
 #else
 #define RS_PROC_STAT NULL
 #endif
