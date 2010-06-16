@@ -333,7 +333,7 @@ This documentation is generated from the iRODS code.
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval time as string
@@ -444,8 +444,8 @@ msiVacuum(ruleExecInfo_t *rei)
  *
  * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
  * \DolVarModified none
- * \iCatAttrDependence
- * \iCatAttrModified
+ * \iCatAttrDependence Utilizes ICAT data-object information
+ * \iCatAttrModified Updates the quota tables
  * \sideeffect none
  * \return integer
  * \retval 0 on success
@@ -675,11 +675,11 @@ int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified  none
+ * \iCatAttrDependence commits pending updates (if any)
+ * \iCatAttrModified pending updates (if any) are committed into the ICAT db
+ * \sideeffect none
  *
  * \return integer
  * \retval (status)
@@ -739,14 +739,14 @@ msiCommit(ruleExecInfo_t *rei) {
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence pending updates (if any) are canceled
+ * \iCatAttrModified  pending updates (if any) are canceled
+ * \sideeffect none
  *
  * \return integer
- * \retval (status)
+ * \retval 0 on success
  * \pre none
  * \post none
  * \sa none
@@ -921,10 +921,10 @@ int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *user
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence check AVU table
+ * \iCatAttrModified update AVU table
  * \sideeffect none
  *
  * \return integer

@@ -43,10 +43,10 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence checks various tables
+ * \iCatAttrModified updates various tables
  * \sideeffect none
  *
  * \return integer
@@ -110,10 +110,10 @@ int msiCreateUser(ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence checks various tables
+ * \iCatAttrModified updates various tables
  * \sideeffect none
  *
  * \return integer
@@ -193,10 +193,10 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence checks various tables
+ * \iCatAttrModified updates various tables
  * \sideeffect none
  *
  * \return integer
@@ -281,10 +281,10 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser.authFlag (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence checks various tables
+ * \iCatAttrModified updates various tables
  * \sideeffect none
  *
  * \return integer
@@ -348,10 +348,10 @@ msiDeleteUser(ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser (must be group admin)
+ * \DolVarModified none
+ * \iCatAttrDependence checks various tables
+ * \iCatAttrModified updates various tables
  * \sideeffect none
  *
  * \return integer
@@ -423,10 +423,10 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser (must be admin)
+ * \DolVarModified none
+ * \iCatAttrDependence checks various tables
+ * \iCatAttrModified updates various tables
  * \sideeffect none
  *
  * \return integer
@@ -485,10 +485,10 @@ msiRenameLocalZone(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence rei->rsComm->clientUser (must have access (admin))
+ * \DolVarModified none
+ * \iCatAttrDependence checks various tables
+ * \iCatAttrModified updates various tables
  * \sideeffect none
  *
  * \return integer
@@ -547,7 +547,7 @@ msiRenameCollection(msParam_t* oldName, msParam_t* newName, ruleExecInfo_t *rei)
  * \DolVarModified 
  * \iCatAttrDependence 
  * \iCatAttrModified 
- * \sideeffect 
+ * \sideeffect none
  *
  * \return integer
  * \retval status

@@ -580,13 +580,13 @@ msiSysChksumDataObj (ruleExecInfo_t *rei)
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

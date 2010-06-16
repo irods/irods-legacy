@@ -54,7 +54,7 @@
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -474,7 +474,7 @@ msiRdaNoResults(msParam_t *inpRdaName, msParam_t *inpSQL,
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -535,7 +535,7 @@ msiRdaCommit(ruleExecInfo_t *rei)
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
