@@ -1149,7 +1149,7 @@ int maxRowCnt)
     /* do some sanity checks */
 
 
-    if (targGenQueryOut || genQueryOut == NULL)
+    if (targGenQueryOut == NULL || genQueryOut == NULL)
         return USER__NULL_INPUT_ERR;
 
     if (genQueryOut->rowCnt == 0) return 0;

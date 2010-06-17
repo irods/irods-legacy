@@ -238,11 +238,11 @@ genQueryOut_t **procStatOut, rodsServerHost_t *rodsServerHost)
         return SYS_INVALID_SERVER_HOST;
     }
 
-    if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
-        return status;
-    }
+    status = svrToSvrConnect (rsComm, rodsServerHost);
 
-    status = rcProcStat (rodsServerHost->conn, procStatInp, procStatOut);
+    if (status >= 0) {
+        status = rcProcStat (rodsServerHost->conn, procStatInp, procStatOut);
+    }
     if (status < 0) {
 	/* add an empty entry */
         initProcStatOut (procStatOut, 1);
