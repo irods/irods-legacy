@@ -322,17 +322,6 @@ typedef struct {
 			 * trim */
 } vaultPathPolicy_t;
 
-/* fake attri index for elements of procLog_t */
-#define PID_INX			1000001
-#define STARTTIME_INX		1000002
-#define CLIENT_NAME_INX		1000003
-#define CLIENT_ZONE_INX		1000004
-#define PROXY_NAME_INX		1000005
-#define PROXY_ZONE_INX		1000006
-#define REMOTE_ADDR_INX		1000007
-#define PROG_NAME_INX		1000008
-#define SERVER_ADDR_INX		1000009
-
 /* struct for proc (agent) logging */
 typedef struct {
     int pid;

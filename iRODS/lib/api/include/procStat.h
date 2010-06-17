@@ -13,6 +13,17 @@
 #include "apiNumber.h"
 #include "initServer.h"
 
+/* fake attri index for procStatOut */
+#define PID_INX                 1000001
+#define STARTTIME_INX           1000002
+#define CLIENT_NAME_INX         1000003
+#define CLIENT_ZONE_INX         1000004
+#define PROXY_NAME_INX          1000005
+#define PROXY_ZONE_INX          1000006
+#define REMOTE_ADDR_INX         1000007
+#define PROG_NAME_INX           1000008
+#define SERVER_ADDR_INX         1000009
+
 typedef struct {
     char addr[LONG_NAME_LEN];       /* if non empty, stat at this addr */
     char rodsZone[NAME_LEN];	    /* the zone */ 
@@ -54,8 +65,10 @@ extern "C" {
 #endif
 
 /* prototype for the client call */
-/* rcProcStat - Get the stat of irods agents running in the federation.
- * By default, the stat of the irods agents on the icat server is listed.
+/* rcProcStat - Get the connection stat of irods agents running in the 
+ * iRods federation. By default, the stat of the irods agents on the icat 
+ * enabled server (IES) is listed. Other servers can be specified using
+ * the "addr" field of procStatInp or using the RESC_NAME_KW keyword.
  * 
  * Input -
  *   rcComm_t *conn - The client connection handle.
@@ -69,6 +82,24 @@ extern "C" {
  *	    Resource is located. 
  *	    ALL_KW (and zero len value) - stat for all servers in the
  *	     fedration.  
+ * Output - 
+ *   genQueryOut_t **procStatOut
+ *	The procStatOut contains 9 attributes and value arrays with the
+ *      attriInx defined above. i.e.:
+ * 		PID_INX - pid of the agent process
+ *		STARTTIME_INX - The connection start time in secs since Epoch.
+ *		CLIENT_NAME_INX - client user name
+ *		CLIENT_ZONE_INX - client user zone
+ *		PROXY_NAME_INX - proxy user name
+ *		PROXY_ZONE_INX - proxy user zone
+ *		REMOTE_ADDR_INX - the from address of the connection
+ *		SERVER_ADDR_INX - the server address of the connection
+ * 		PROG_NAME_INX - the client program name
+ *
+ *	A row will be given for each running irods agent. If a server is 
+ *	completely idle, one row will still be given with all the attribute
+ *	vaules empty (zero length string) except for the value associated 
+ *	with the SERVER_ADDR_INX. 
  *   return value - The status of the operation.
  */
 
