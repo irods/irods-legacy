@@ -73,7 +73,8 @@ main(int argc, char **argv) {
     }
 
     if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "rcProcStat failed");
+        rodsLogError (LOG_ERROR, status, 
+	  "rcProcStat for at least one of the server failed.");
         exit (3);
     }
 
@@ -169,10 +170,19 @@ printProcStat (rodsArguments_t *myRodsArgs, genQueryOut_t *procStatOut)
 	    /* print serverAddrVal for now */
 	    printf ("Server: %s\n", serverAddrVal);
 	}
+	if (*clientNameVal == '\0') {
+	    continue;	/* no connection for this server */
+	}
 	getUptimeStr (startTimeVal, curTime, uptimeStr);
-	printf ("   %6s %s#%s  %s#%s  %s  %s  %s\n",
-	  pidVal, clientNameVal, clientZoneVal, proxyNameVal, proxyZoneVal,
-	  uptimeStr, progNameVal, serverAddrVal);
+	if (myRodsArgs->verbose == True) {
+	    printf ("   %6s %s#%s  %s#%s  %s  %s  %s\n",
+	      pidVal, clientNameVal, clientZoneVal, proxyNameVal, proxyZoneVal,
+	      uptimeStr, progNameVal, serverAddrVal);
+	} else {
+	    printf ("   %6s %s#%s  %s  %s  %s\n",
+	      pidVal, clientNameVal, clientZoneVal, 
+	      uptimeStr, progNameVal, serverAddrVal);
+	} 
 	  
     }
     return 0;
@@ -243,12 +253,36 @@ procStatInp_t *procStatInp)
 void
 usage () {
    char *msgs[]={
-"Usage: imiscsrvinfo [-hvV]",
-" -v  verbose",
-" -V  Very verbose",
+"Usage: ips [ahv] [-R resource] [-z zone] [-H hostAddr]",
+" ",
+"Display connection informations of iRods agents currently running in",
+"the iRods federation. By default, agent info for the iCat enabled server",
+"(IES) is displayed.",
+" ",
+"The -H and -R option can be used to specify other servers for the",
+"info display. The -z option can be used to specify a remote zone for",
+"the info display. If the -a option is used, agent info for all servers",
+"in the iRods federation will be displayed.", 
+" ",
+"By default, a line is output for each connection. Each line contains",
+"items given in the following order:",
+"   - pid of the agent process",
+"   - client user",
+"   - wall clock time of the connection",
+"   - the client process",
+"   - the 'from' address of the connection",
+" ",
+"If the -v option is specified, the proxy user of the connection is added",
+"following the client user.",
+" ",
+"Options are:",
+" ",
+" -a  all servers",
 " -h  this help",
-"Connect to the server and retrieve some basic server information.",
-"Can be used as a simple test for connecting to the server.",
+" -H  hostAddr - the host address of the server",
+" -R  resource - the server where the resource is located",
+" -v  verbose",
+" -z  zone - the remote zone",
 ""};
    int i;
    for (i=0;;i++) {
