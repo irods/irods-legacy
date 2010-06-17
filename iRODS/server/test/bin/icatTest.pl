@@ -555,6 +555,10 @@ runCmd(0, "iadmin lrg $RG1");
 runCmd(0, "iadmin atrg $RG1 $Resc2");
 runCmd(2, "iadmin atrg $RG1 $Resc2A");
 runCmd(1, "iadmin rfrg $RG1 $Resc");
+runCmd(0, "imeta add -g $RG1 1111 2222");
+runCmd(0, "imeta cp -g $RG1 -r $Resc");
+runCmd(0, "imeta rm -g $RG1 1111 2222");
+runCmd(0, "imeta rm -r $Resc 1111 2222");
 runCmd(1, "iadmin rfrg $RG1 $Resc2");
 runCmd(0, "iadmin lrg $RG1");
 

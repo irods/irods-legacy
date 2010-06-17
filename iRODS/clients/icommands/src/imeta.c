@@ -1487,7 +1487,8 @@ void usageMain()
 " ", 
 "For each command, -d, -C, -R, -G or -u is used to specify which type of", 
 "object to work with: dataobjs (irods files), collections, resources,",
-" resource groups or users. (Within imeta -c, -r and -g can be used, but -C, -R and -G are the", 
+" resource groups or users. (Within imeta -c, -r and -g can be used, but -C,",
+" -R and -G are the", 
 "iRODS standard options for collections, resources and  resource groups.)",
 " ", 
 "Fields represented with upper case, such as Name, are entered values.  For", 
@@ -1540,7 +1541,8 @@ usage(char *subOpt)
       if (strcmp(subOpt,"add")==0) {
 	 char *msgs[]={
 " add -d|C|R|G|u Name AttName AttValue [AttUnits]  (Add new AVU triplet)", 
-"Add an AVU to a dataobj (-d), collection(-C), resource(-R), resource group(-G) or user(-u)",
+"Add an AVU to a dataobj (-d), collection(-C), resource(-R), ",
+"resource group(-G) or user(-u)",
 "Example: add -d file1 distance 12 miles",
 " ",
 "Admins can also use the command 'adda' (add as admin) to add metadata",
@@ -1577,7 +1579,8 @@ usage(char *subOpt)
       if (strcmp(subOpt,"rm")==0) {
 	 char *msgs[]={
 " rm  -d|C|R|G|u Name AttName AttValue [AttUnits] (Remove AVU)", 
-"Remove an AVU from a dataobj (-d), collection(-C), resource(-R), resource group(-G) or user(-u)",
+"Remove an AVU from a dataobj (-d), collection(-C), resource(-R),",
+"resource group(-G) or user(-u)",
 "Example: rm -d file1 distance 12 miles",
 "An AttUnits value must be included if it was when the AVU was added.",
 "Also see rmw for use of wildcard characters.",
@@ -1590,7 +1593,8 @@ usage(char *subOpt)
       if (strcmp(subOpt,"rmw")==0) {
 	 char *msgs[]={
 " rmw  -d|C|R|G|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcard)", 
-"Remove an AVU from a dataobj (-d), collection(-C), resource(-R), resource group(-G) or user(-u)",
+"Remove an AVU from a dataobj (-d), collection(-C), resource(-R), ",
+"resource group(-G) or user(-u)",
 "An AttUnits value must be included if it was when the AVU was added.",
 "rmw is very similar to rm but using SQL wildcard characters, _ and %.",
 "The _ matches any single character and % matches any number of any",

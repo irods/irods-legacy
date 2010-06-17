@@ -4907,7 +4907,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 5");
       status = cmlGetIntegerValueFromSql(
-                   "select distinct resc_group_id from r_resc_group where resc_group=?",
+                   "select distinct resc_group_id from r_resc_group where resc_group_name=?",
 		   &objId, name, 0, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
