@@ -4410,6 +4410,9 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
    int status, OK;
    char myTime[50];
    char rescId[MAX_NAME_LEN];
+   rodsLong_t seqNum;
+   char rescGroupId[MAX_NAME_LEN];
+   char dataObjNumber[MAX_NAME_LEN];
    char commentStr[200];
 
    if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup");
@@ -4446,37 +4449,88 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
    getNowStr(myTime);
    OK=0;
    if (strcmp(option, "add")==0) {
+      /* First try to look for a resc_group id with the same rescGrpName */
+      rescGroupId[0]='\0';
+      if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 2a ");
+      status = cmlGetStringValueFromSql(
+             "select distinct resc_group_id from r_resc_group where resc_group_name=?",
+             rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss);
+      if (status != 0) {
+         if (status==CAT_NO_ROWS_FOUND) {
+            /* Generate a new id */
+            if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 2b ");
+            seqNum = cmlGetNextSeqVal(&icss);
+            if (seqNum < 0) {
+               rodsLog(LOG_NOTICE, "chlModRescGroup cmlGetNextSeqVal failure %d",
+	                   seqNum);
+               _rollback("chlModRescGroup");
+               return(seqNum);
+            }
+            snprintf(rescGroupId, MAX_NAME_LEN, "%lld", seqNum);
+         } else {
+           _rollback("chlModRescGroup");
+           return(status);
+         }
+      }
+      
       cllBindVars[cllBindVarCount++]=rescGroupName;
+      cllBindVars[cllBindVarCount++]=rescGroupId;
       cllBindVars[cllBindVarCount++]=rescId;
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=myTime;
       if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 2");
       status =  cmlExecuteNoAnswerSql(
-	       "insert into r_resc_group (resc_group_name, resc_id , create_ts, modify_ts) values (?, ?, ?, ?)",
+	       "insert into r_resc_group (resc_group_name, resc_group_id, resc_id , create_ts, modify_ts) values (?, ?, ?, ?, ?)",
 	       &icss);
       if (status != 0) {
-	 rodsLog(LOG_NOTICE,
-		 "chlModRescGroup cmlExecuteNoAnswerSql insert failure %d",
-		 status);
-	 _rollback("chlModRescGroup");
-	 return(status);
+	     rodsLog(LOG_NOTICE,
+		  "chlModRescGroup cmlExecuteNoAnswerSql insert failure %d",
+		  status);
+	     _rollback("chlModRescGroup");
+	     return(status);
       }
       OK=1;
    }
 
    if (strcmp(option, "remove")==0) {
+      /* Step 1 : get the resc_group_id as a dataObjNumber*/
+      dataObjNumber[0]='\0';
+      if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3a ");
+      status = cmlGetStringValueFromSql(
+             "select distinct resc_group_id from r_resc_group where resc_id=? and resc_group_name=?",
+             dataObjNumber, MAX_NAME_LEN, rescId, rescGroupName, 0, &icss);
+      if (status != 0) {
+          _rollback("chlModRescGroup");
+          if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+          return(status);
+      }
+      
+      /* Step 2 : remove the (resc_group,resc) couple */
       cllBindVars[cllBindVarCount++]=rescGroupName;
       cllBindVars[cllBindVarCount++]=rescId;
-      if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3");
+      if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3b");
       status =  cmlExecuteNoAnswerSql(
          "delete from r_resc_group where resc_group_name=? and resc_id=?",
-	 &icss);
+	     &icss);
       if (status != 0) {
-	 rodsLog(LOG_NOTICE,
+        rodsLog(LOG_NOTICE,
 		 "chlModRescGroup cmlExecuteNoAnswerSql delete failure %d",
 		 status);
-	 _rollback("chlModRescGroup");
-	 return(status);
+        _rollback("chlModRescGroup");
+        return(status);
+      }
+      
+      /* Step 3 : look if the resc_group_name is still refered to */
+      rescGroupId[0]='\0';
+      if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3c ");
+      status = cmlGetStringValueFromSql(
+             "select distinct resc_group_id from r_resc_group where resc_group_name=?",
+             rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss);
+      if (status != 0) {
+          if (status==CAT_NO_ROWS_FOUND) {
+            /* The resource group exists no more */
+            removeMetaMapAndAVU(dataObjNumber); /* remove AVU metadata, if any */
+          }
       }
       OK=1;
    }
@@ -4721,6 +4775,8 @@ convertTypeOption(char *typeStr) {
    if (strcmp(typeStr, "-R") == 0) return(3); /* resource */
    if (strcmp(typeStr, "-u") == 0) return(4); /* user */
    if (strcmp(typeStr, "-U") == 0) return(4); /* user */
+   if (strcmp(typeStr, "-g") == 0) return(5); /* resource group */
+   if (strcmp(typeStr, "-G") == 0) return(5); /* resource group */
    return (0);
 }
 
@@ -4839,6 +4895,27 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
 	 return(status);
       }
    }
+   
+   if (itype==5) {
+      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+
+      status = getLocalZone();
+      if (status) return(status);
+
+      objId=0;
+      if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 5");
+      status = cmlGetIntegerValueFromSql(
+                   "select distinct resc_group_id from r_resc_group where resc_group=?",
+		   &objId, name, 0, 0, 0, 0, &icss);
+      if (status != 0) {
+	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+	 _rollback("checkAndGetObjectId");
+	 return(status);
+      }
+   }
+   
    return(objId);
 }
 
@@ -5332,6 +5409,26 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
       }
    }
 
+   if (itype==5) {
+      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+
+      status = getLocalZone();
+      if (status) return(status);
+
+      objId=0;
+      if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 7");
+      status = cmlGetIntegerValueFromSql(
+		 "select distinct resc_group_id from r_resc_group where resc_group_name=?",
+		 &objId, name, 0, 0, 0, 0, &icss);
+      if (status != 0) {
+	 _rollback("chlAddAVUMetadata");
+	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+	 return(status);
+      }
+   }
+   
    status = findOrInsertAVU(attribute, value, units);
    if (status<0) {
       rodsLog(LOG_NOTICE,
@@ -5608,6 +5705,27 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 	 return(status);
       }
    }
+   
+   if (itype==5) {
+      if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+	 return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+      }
+
+      status = getLocalZone();
+      if (status) return(status);
+
+      objId=0;
+      if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 5");
+      status = cmlGetIntegerValueFromSql(
+                "select resc_group_id from r_resc_group where resc_group_name=?",
+		&objId, name, 0, 0, 0, 0, &icss);
+      if (status != 0) {
+	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+	 _rollback("chlDeleteAVUMetadata");
+	 return(status);
+      }
+   }
+
 
    snprintf(objIdStr, MAX_NAME_LEN, "%lld", objId);
 

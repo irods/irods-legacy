@@ -488,6 +488,7 @@ msiExtractTemplateMDFromBuf(msParam_t* bufParam, msParam_t* tagParam,
  * \note The object type is also needed:
  *  \li -d for data object
  *  \li -R for resource
+ *  \li -G for resource group
  *  \li -C for collection
  *  \li -u for user
  * 
@@ -633,6 +634,7 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
  * \note The object type is also needed:
  *  \li -d for data object
  *  \li -R for resource
+ *  \li -G for resource group
  *  \li -C for collection
  *  \li -u for user
  *

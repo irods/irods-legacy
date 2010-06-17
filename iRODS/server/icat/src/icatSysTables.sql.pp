@@ -269,6 +269,7 @@ create table R_USER_PASSWORD
 
 create table R_RESC_GROUP
  (
+   resc_group_id       INT64TYPE not null,
    resc_group_name     varchar(250) not null,
    resc_id             INT64TYPE not null,
    create_ts           varchar(32),
