@@ -195,11 +195,15 @@ getUptimeStr (uint startTime, uint curTime, char *outStr)
 
     if (outStr == NULL) return USER__NULL_INPUT_ERR;
 
-    upTimeSec = curTime - startTime;
-    sec = upTimeSec % 60;
-    min = upTimeSec / 60;
-    hr = min / 60;
-    min = min % 60;
+    if (startTime >= curTime) {
+	sec = min = hr = 0;
+    } else {
+        upTimeSec = curTime - startTime;
+        sec = upTimeSec % 60;
+        min = upTimeSec / 60;
+        hr = min / 60;
+        min = min % 60;
+    }
 
     snprintf (outStr, NAME_LEN, "%d:%2d:%2d", hr, min, sec);
 
