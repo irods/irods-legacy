@@ -177,11 +177,11 @@ printProcStat (rodsArguments_t *myRodsArgs, genQueryOut_t *procStatOut)
 	if (myRodsArgs->verbose == True) {
 	    printf ("   %6s %s#%s  %s#%s  %s  %s  %s\n",
 	      pidVal, clientNameVal, clientZoneVal, proxyNameVal, proxyZoneVal,
-	      uptimeStr, progNameVal, serverAddrVal);
+	      uptimeStr, progNameVal, remoteAddrVal);
 	} else {
 	    printf ("   %6s %s#%s  %s  %s  %s\n",
 	      pidVal, clientNameVal, clientZoneVal, 
-	      uptimeStr, progNameVal, serverAddrVal);
+	      uptimeStr, progNameVal, remoteAddrVal);
 	} 
 	  
     }

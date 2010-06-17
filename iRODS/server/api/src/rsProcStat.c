@@ -238,12 +238,14 @@ genQueryOut_t **procStatOut, rodsServerHost_t *rodsServerHost)
         return SYS_INVALID_SERVER_HOST;
     }
 
+    if (procStatInp == NULL || procStatOut == NULL) return USER__NULL_INPUT_ERR;
+
     status = svrToSvrConnect (rsComm, rodsServerHost);
 
     if (status >= 0) {
         status = rcProcStat (rodsServerHost->conn, procStatInp, procStatOut);
     }
-    if (status < 0) {
+    if (status < 0 && *procStatOut == NULL) {
 	/* add an empty entry */
         initProcStatOut (procStatOut, 1);
 	bzero (&procLog, sizeof (procLog));
