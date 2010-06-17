@@ -1901,7 +1901,7 @@ svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
 	/* localhost */
 	char *myaddr;
 
-	myaddr = getLocalAddr ();
+	myaddr = getLocalSvrAddr ();
 	if (myaddr != NULL) {
 	    free (*addr);
 	    *addr = strdup (myaddr);
@@ -1916,7 +1916,7 @@ svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
 
 
 char *
-getLocalAddr ()
+getLocalSvrAddr ()
 {
     hostName_t *tmpHostName;
 
@@ -1931,6 +1931,24 @@ getLocalAddr ()
 	tmpHostName = tmpHostName->next;
     }
     return (NULL);
+}
+
+int
+setLocalSrvAddr (char *outLocalAddr)
+{
+    char *myHost;
+
+    if (outLocalAddr == NULL) return USER__NULL_INPUT_ERR;
+
+    myHost = getLocalSvrAddr ();
+
+    if (myHost == NULL) {
+        /* use the first one */
+        rstrcpy (outLocalAddr, LocalServerHost->hostName->name, NAME_LEN);
+    } else {
+        rstrcpy (outLocalAddr, myHost, NAME_LEN);
+    }
+    return 0;
 }
 
 int

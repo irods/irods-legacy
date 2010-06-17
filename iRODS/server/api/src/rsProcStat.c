@@ -117,7 +117,7 @@ genQueryOut_t **procStatOut)
 	if (getHostStatusByRescInfo (tmpRodsServerHost) == 
 	  INT_RESC_STATUS_UP) {		/* don't do down resc */
 	    if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
-		copyLocalAddr (myProcStatInp.addr);
+		setLocalSrvAddr (myProcStatInp.addr);
 	        status = localProcStat (rsComm, &myProcStatInp, 
 		  &singleProcStatOut);
 	    } else {
@@ -170,7 +170,7 @@ genQueryOut_t **procStatOut)
     if (*procStatInp->addr != '\0') {   /* given input addr */
         rstrcpy (procLog.serverAddr, procStatInp->addr, NAME_LEN);
     } else {
-	copyLocalAddr (procLog.serverAddr);
+	setLocalSrvAddr (procLog.serverAddr);
     }
     if (numProc <= 0) {
         /* add an empty entry with only serverAddr */
@@ -355,23 +355,6 @@ addProcToProcStatOut (procLog_t *procLog, genQueryOut_t *procStatOut)
 
     procStatOut->rowCnt++;
 
-    return 0;
-}
-
-int
-copyLocalAddr (char *outLocalAddr)
-{
-    char *myHost;
-
-    if (outLocalAddr == NULL) return USER__NULL_INPUT_ERR;
-    
-    myHost = getLocalAddr ();
-
-    if (myHost == NULL) {
-        rstrcpy (outLocalAddr, "localhost", NAME_LEN);
-    } else {
-        rstrcpy (outLocalAddr, myHost, NAME_LEN);
-    }
     return 0;
 }
 

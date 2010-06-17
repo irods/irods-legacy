@@ -110,7 +110,9 @@ svrChkReconnAtSendEnd (rsComm_t *rsComm);
 int
 svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
 char *
-getLocalAddr ();
+getLocalSvrAddr ();
+int
+setLocalSrvAddr (char *outLocalAddr);
 int
 forkAndExec (char *av[]);
 int
