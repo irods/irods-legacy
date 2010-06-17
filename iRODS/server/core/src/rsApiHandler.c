@@ -174,6 +174,12 @@ bytesBuf_t *bsBBuf)
         myInStruct = NULL;
     }
 
+    if (apiNumber == GSI_AUTH_REQUEST_AN && retVal >= 0) {
+	/* the clientUser.userName and zoneZone could be fillin in
+	 * rsGsiAuthRequest 
+	 */
+	logAgentProc (rsComm);
+    }
     if (retVal != SYS_NO_HANDLER_REPLY_MSG) {
         status = sendAndProcApiReply 
 	  (rsComm, apiInx, retVal, myOutStruct, &myOutBsBBuf);

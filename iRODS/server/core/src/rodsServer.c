@@ -347,6 +347,7 @@ procChildren (agentProc_t **agentProcHead)
 	      "Agent process %d exited with status %d but not in queue",
 	      childPid, status); 
 	}
+	rmProcLog (childPid);
     }
 #endif
 
