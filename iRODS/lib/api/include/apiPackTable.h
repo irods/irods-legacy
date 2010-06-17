@@ -97,6 +97,7 @@ packInstructArray_t ApiPackTable[] = {
         {"databaseObjOpenInp_PI", databaseObjOpenInp_PI},
         {"databaseObjInfoInp_PI", databaseObjInfoInp_PI},
         {"databaseObjInfoOut_PI", databaseObjInfoOut_PI},
+        {"ProcStatInp_PI", ProcStatInp_PI},
         {PACK_TABLE_END_PI, (char *) NULL},
 };
 

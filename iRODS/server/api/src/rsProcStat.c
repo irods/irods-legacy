@@ -108,6 +108,7 @@ genQueryOut_t **procStatOut)
     rodsServerHost_t *tmpRodsServerHost;
     procStatInp_t myProcStatInp;
     int status;
+    genQueryOut_t *singleProcStatOut = NULL;
     int savedStatus = 0;
 
     bzero (&myProcStatInp, sizeof (myProcStatInp));
@@ -115,17 +116,31 @@ genQueryOut_t **procStatOut)
     while (tmpRodsServerHost != NULL) {
 	if (getHostStatusByRescInfo (tmpRodsServerHost) == 
 	  INT_RESC_STATUS_UP) {		/* don't do down resc */
-	    rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name, 
-	      NAME_LEN);
 	    if (tmpRodsServerHost->localFlag == LOCAL_HOST) {
-	        status = localProcStat (rsComm, &myProcStatInp, procStatOut);
+		copyLocalAddr (myProcStatInp.addr);
+	        status = localProcStat (rsComm, &myProcStatInp, 
+		  &singleProcStatOut);
 	    } else {
+		rstrcpy (myProcStatInp.addr, tmpRodsServerHost->hostName->name,
+                  NAME_LEN);
                 addKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW, "");
-                status = remoteProcStat (rsComm, &myProcStatInp, procStatOut,
-                  tmpRodsServerHost);
+                status = remoteProcStat (rsComm, &myProcStatInp, 
+		  &singleProcStatOut, tmpRodsServerHost);
                 rmKeyVal (&myProcStatInp.condInput, EXEC_LOCALLY_KW);
 	    }
-	    if (status < 0) savedStatus = status;
+	    if (status < 0) {
+	        savedStatus = status;
+	    }
+	    if (singleProcStatOut != NULL) {
+		if (*procStatOut == NULL) {
+		    *procStatOut = singleProcStatOut;
+		} else {
+		    catGenQueryOut (*procStatOut, singleProcStatOut,
+		      MAX_PROC_STAT_CNT);
+		    freeGenQueryOut (&singleProcStatOut);
+		}
+		singleProcStatOut = NULL;
+	    }
 	}
 	tmpRodsServerHost = tmpRodsServerHost->next;
     }
@@ -150,24 +165,22 @@ genQueryOut_t **procStatOut)
 
     numProc = getNumFilesInDir (ProcLogDir) + 2; /* add 2 to give some room */
 
-    if (numProc <= 0) {
-	/* empty */
-	initProcStatOut (procStatOut, 1);
-	return numProc;
-    }
-    initProcStatOut (procStatOut, numProc);
     bzero (&procLog, sizeof (procLog));
     /* init serverAddr */
     if (*procStatInp->addr != '\0') {   /* given input addr */
         rstrcpy (procLog.serverAddr, procStatInp->addr, NAME_LEN);
     } else {
-	char *myHost = getLocalAddr ();
-	if (myHost == NULL) {
-	    rstrcpy (procLog.serverAddr, "localhost", NAME_LEN);
-	} else {
-	    rstrcpy (procLog.serverAddr, myHost, NAME_LEN);
-	}
+	copyLocalAddr (procLog.serverAddr);
     }
+    if (numProc <= 0) {
+        /* add an empty entry with only serverAddr */
+        initProcStatOut (procStatOut, 1);
+	addProcToProcStatOut (&procLog, *procStatOut);
+        return numProc;
+    } else {
+        initProcStatOut (procStatOut, numProc);
+    }
+
     /* loop through the directory */
     dirPtr = opendir (ProcLogDir);
     if (dirPtr == NULL) {
@@ -181,7 +194,7 @@ genQueryOut_t **procStatOut)
           strcmp (myDirent->d_name, "..") == 0) {
             continue;
         }
-	if (!isdigit (myDirent->d_name)) continue;   /* not a pid */
+	if (!isdigit (*myDirent->d_name)) continue;   /* not a pid */
         snprintf (childPath, MAX_NAME_LEN, "%s/%s", ProcLogDir, 
 	  myDirent->d_name);
 #ifndef windows_platform
@@ -217,6 +230,7 @@ remoteProcStat (rsComm_t *rsComm, procStatInp_t *procStatInp,
 genQueryOut_t **procStatOut, rodsServerHost_t *rodsServerHost)
 {
     int status;
+    procLog_t procLog;
 
     if (rodsServerHost == NULL) {
         rodsLog (LOG_ERROR,
@@ -229,7 +243,14 @@ genQueryOut_t **procStatOut, rodsServerHost_t *rodsServerHost)
     }
 
     status = rcProcStat (rodsServerHost->conn, procStatInp, procStatOut);
-
+    if (status < 0) {
+	/* add an empty entry */
+        initProcStatOut (procStatOut, 1);
+	bzero (&procLog, sizeof (procLog));
+	rstrcpy (procLog.serverAddr, rodsServerHost->hostName->name,
+          NAME_LEN);
+        addProcToProcStatOut (&procLog, *procStatOut);
+    }
     return status;
 }
 
@@ -289,13 +310,13 @@ initProcStatOut (genQueryOut_t **procStatOut, int numProc)
       malloc (NAME_LEN * numProc);
     bzero (myProcStatOut->sqlResult[6].value, NAME_LEN * numProc);
 
-    myProcStatOut->sqlResult[7].attriInx = PROG_NAME_INX;
+    myProcStatOut->sqlResult[7].attriInx = SERVER_ADDR_INX;
     myProcStatOut->sqlResult[7].len = NAME_LEN;
     myProcStatOut->sqlResult[7].value =
       malloc (NAME_LEN * numProc);
     bzero (myProcStatOut->sqlResult[7].value, NAME_LEN * numProc);
 
-    myProcStatOut->sqlResult[8].attriInx = SERVER_ADDR_INX;
+    myProcStatOut->sqlResult[8].attriInx = PROG_NAME_INX;
     myProcStatOut->sqlResult[8].len = NAME_LEN;
     myProcStatOut->sqlResult[8].value =
       malloc (NAME_LEN * numProc);
@@ -336,3 +357,21 @@ addProcToProcStatOut (procLog_t *procLog, genQueryOut_t *procStatOut)
 
     return 0;
 }
+
+int
+copyLocalAddr (char *outLocalAddr)
+{
+    char *myHost;
+
+    if (outLocalAddr == NULL) return USER__NULL_INPUT_ERR;
+    
+    myHost = getLocalAddr ();
+
+    if (myHost == NULL) {
+        rstrcpy (outLocalAddr, "localhost", NAME_LEN);
+    } else {
+        rstrcpy (outLocalAddr, myHost, NAME_LEN);
+    }
+    return 0;
+}
+

@@ -21,6 +21,8 @@ typedef struct {
 
 #define ProcStatInp_PI "str addr[LONG_NAME_LEN];str rodsZone[NAME_LEN];struct KeyValPair_PI;"
 
+#define MAX_PROC_STAT_CNT	2000
+
 #if defined(RODS_SERVER)
 #define RS_PROC_STAT rsProcStat
 /* prototype for the server handler */
