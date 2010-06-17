@@ -1643,18 +1643,48 @@ msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
     return (rei->status);
 }
 
-/*
- * msiSetReplComment - Sets the data_comments attribute of a data object
+/**
+ * \fn msiSetReplComment (msParam_t *inpParam1, msParam_t *inpParam2, 
+ *	  msParam_t *inpParam3, msParam_t *inpParam4, ruleExecInfo_t *rei)
  *
- * @param[in]		dataObjId	 the id of the object
- * @param[in]		data object path the path of the object
- * @param[in]		numRepl 	the number of the replica to comment
- * @param[in]		comment		the comment
- * @param[in,out]	rei		the rule execution information
- * @return				the status code, 0 on success
- * \author Thomas Ledoux (integrated by Wayne Schroeder)
- * \date   2010-4-30
- */
+ * \brief This microservice sets the data_comments attribute of a data object.
+ *
+ * \module core
+ *
+ * \since 2.4
+ *
+ * \author  Thomas Ledoux (integrated by Wayne Schroeder)
+ * \date    2010-04-30
+ *
+ * \note  Can be called by client through iRule
+ *
+ * \usage 
+ *
+ * putComment||msiLog(*path,rien)##msiSetReplComment(null,*path,*num,*c)##msiMakeQuery("DATA_NAME,DATA_REPL_NUM, DATA_COMMENTS",*Condition,*Query)##msiExecStrCondQuery(*Query,*B)##forEachExec(*B,msiGetValByKey(*B,DATA_REPL_NUM,*N)##msiGetValByKey(*B,DATA_COMMENTS,*com)##writeLine(stdout,*N with *com),nop)||nop##nop##nop
+ *  *num=$1%*c=$2%*name=$3%*path=/tempZone/home/rods/*name%*Action=comment%*Condition=DATA_NAME = '*name'
+ *  ruleExecOut
+ *
+ * \param[in]		inpParam1 - a INT with the id of the object (can be null if unknown, the next param will then be used)
+ * \param[in]		inpParam2 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path
+ * \param[in]		inpParam3 - a INT which gives the replica number
+ * \param[in]		inpParam4 - a STR_MS_T containing the comment
+ * \param[in,out]	rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
+ * \bug  no known bugs
+**/
 int
 msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2, 
 		  msParam_t *inpParam3, msParam_t *inpParam4, 

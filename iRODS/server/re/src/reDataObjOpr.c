@@ -3441,6 +3441,8 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \brief This microservice is the same as msiDataObjRepl, but with more input options.
  *
+ * \deprecated since 2.2, msiDataObjRepl can take a parameter with key-values format which make this micro-service obsolete.
+ *
  * \module core
  *
  * \since 2.1
@@ -3450,9 +3452,11 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
  *
- * \usage None
+ * \note  Can be called by client through iRule
  *
- * \param[in] inpParam1 - a DataObjInp_MS_T or STR_MS_T which would be the obj Path.
+ * \usage example at https://www.irods.org/index.php/Resource_Groups_UC1
+ *
+ * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or STR_MS_T which would be the obj Path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the resource.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies an additional
  *     param like all (ALL_KW), irodsAdmin (IRODS_ADMIN_KW)
@@ -3469,9 +3473,9 @@ msParam_t *inpAllCopiesParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -3549,6 +3553,8 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  * \brief This microservice calls rsDataObjChksum to checksum the iput data
  *    object as part of a workflow execution, with options.
  *
+ * \deprecated since 2.2, msiDataObjChksum can take a parameter with key-values format which make this micro-service obsolete.
+ *
  * \module core
  *
  * \since 2.1
@@ -3558,9 +3564,11 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
  *
- * \usage None
+ * \note  Can be called by client through iRule
  *
- * \param[in] inpParam1 - a DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
+ * \usage example at https://www.irods.org/index.php/Resource_Groups_UC1
+ *
+ * \param[in] inpParam1 - a msParam of type DataObjInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies "verifyChksum"
  *    (VERIFY_CHKSUM_KW) or "forceChksum"(FORCE_CHKSUM_KW).
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the "ChksumAll"
@@ -3578,9 +3586,9 @@ msiDataObjReplWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
