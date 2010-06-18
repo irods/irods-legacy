@@ -949,7 +949,7 @@ getStdoutInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr)
     if (strcmp (inpExecCmdOut->type, ExecCmdOut_MS_T) == 0) {
 	execCmdOut = (execCmdOut_t *) inpExecCmdOut->inOutStruct;
 	if (execCmdOut == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
-	*outStr = execCmdOut->stdoutBuf.buf;
+	*outStr = (char *)execCmdOut->stdoutBuf.buf;
 	return 0;
     } else {
         rodsLog (LOG_ERROR,
@@ -973,7 +973,7 @@ getStderrInExecCmdOut (msParam_t *inpExecCmdOut, char **outStr)
     if (strcmp (inpExecCmdOut->type, ExecCmdOut_MS_T) == 0) {
         execCmdOut = (execCmdOut_t *) inpExecCmdOut->inOutStruct;
         if (execCmdOut == NULL) return SYS_INTERNAL_NULL_INPUT_ERR;
-        *outStr = execCmdOut->stderrBuf.buf;
+        *outStr = (char *)execCmdOut->stderrBuf.buf;
         return 0;
     } else {
         rodsLog (LOG_ERROR,
@@ -1310,13 +1310,13 @@ msParam_t *msKeyValStr)
     if (oldKeyValPtr == NULL) {
 	oldLen = 0;
 	newLen = valLen + keyLen + 10;
-	newKeyValPtr = malloc (newLen);
+	newKeyValPtr = (char *)malloc (newLen);
 	*newKeyValPtr = '\0';
 	tmpPtr = newKeyValPtr;
     } else {
 	oldLen = strlen (oldKeyValPtr);
 	newLen = oldLen + valLen + keyLen + 10;
-	newKeyValPtr = malloc (newLen);
+	newKeyValPtr = (char *)malloc (newLen);
 	snprintf (newKeyValPtr, newLen, "%s%s", oldKeyValPtr, MS_INP_SEP_STR);
 	tmpPtr = newKeyValPtr + oldLen + 4;
 	free (oldKeyValPtr);
