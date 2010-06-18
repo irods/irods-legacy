@@ -72,13 +72,14 @@ main(int argc, char **argv) {
 	freeGenQueryOut (&procStatOut);
     }
 
+    rcDisconnect(conn);
+
     if (status < 0) {
         rodsLogError (LOG_ERROR, status, 
 	  "rcProcStat for at least one of the server failed.");
         exit (3);
     }
 
-    rcDisconnect(conn);
 
     exit(0);
 }
