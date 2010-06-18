@@ -909,6 +909,7 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
 {
     startupPack_t startupPack;
     int status;
+    char *tmpStr;
     bytesBuf_t *startupPackBBuf = NULL;
     
 
@@ -925,7 +926,12 @@ sendStartupPack (rcComm_t *conn, int connectCnt, int reconnFlag)
      NAME_LEN);
     rstrcpy (startupPack.relVersion, RODS_REL_VERSION,  NAME_LEN);
     rstrcpy (startupPack.apiVersion, RODS_API_VERSION,  NAME_LEN);
-    startupPack.option[0] = '\0';
+
+    if ((tmpStr = getenv (SP_OPTION)) != NULL) {
+	rstrcpy (startupPack.option, tmpStr, NAME_LEN);
+    } else {
+        startupPack.option[0] = '\0';
+    }
 
     /* always use XML_PROT for the startupPack */
     status = packStruct ((void *) &startupPack, &startupPackBBuf,

@@ -45,6 +45,15 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
    /* Set all flags and pointers to false/null */
    memset(rodsArgs, 0, sizeof(rodsArguments_t));
 
+   if (argv != NULL && argv[0] != NULL) {
+	/* set SP_OPTION to argv[0] so it can be passed to server */
+	char child[MAX_NAME_LEN], parent[MAX_NAME_LEN];
+	*child = '\0';
+	splitPathByKey (argv[0], parent, child, '/');
+	if (*child != '\0') {
+	    mySetenvStr (SP_OPTION, child);
+	}
+    }
 
    /* handle the long options first */
    if (includeLong) {
