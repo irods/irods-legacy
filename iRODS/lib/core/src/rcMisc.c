@@ -711,7 +711,7 @@ int
 replSpecColl (specColl_t *inSpecColl, specColl_t **outSpecColl)
 {
     if (inSpecColl == NULL || outSpecColl == NULL) return USER__NULL_INPUT_ERR;
-    *outSpecColl = malloc (sizeof (specColl_t));
+    *outSpecColl = (specColl_t *)malloc (sizeof (specColl_t));
     *(*outSpecColl) = *inSpecColl;
 
     return 0;
@@ -1193,7 +1193,7 @@ int maxRowCnt)
         int len;
 
 	if ((len = genQueryOut->sqlResult[i].len) <= 0) continue;
-	if ((tmpValue = malloc (totalRowCnt * len)) < 0) 
+	if ((tmpValue = (char *)malloc (totalRowCnt * len)) < 0) 
 	  return (SYS_MALLOC_ERR - errno);
         if (targGenQueryOut->sqlResult[i].value != NULL) {
 	    memcpy (tmpValue, targGenQueryOut->sqlResult[i].value, 
@@ -1329,7 +1329,7 @@ int get64RandomBytes(char *buf) {
     ints[1]=count;
 #ifdef windows_platform
 	ints[2]= (int)tv.wSecond;
-	ints[5]= (int)tv.Second;
+	ints[5]= (int)tv.wSecond;
 #else
     ints[2]=tv.tv_usec;
     ints[5]=tv.tv_sec;
@@ -3500,61 +3500,61 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
     bulkDataObjRegInp->sqlResult[0].attriInx = COL_DATA_NAME;
     bulkDataObjRegInp->sqlResult[0].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[0].value =
-      malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[0].value, 
       MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[1].attriInx = COL_DATA_TYPE_NAME;
     bulkDataObjRegInp->sqlResult[1].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[1].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[1].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[2].attriInx = COL_DATA_SIZE;
     bulkDataObjRegInp->sqlResult[2].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[2].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[2].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[3].attriInx = COL_D_RESC_NAME;
     bulkDataObjRegInp->sqlResult[3].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[3].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[3].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[4].attriInx = COL_D_DATA_PATH;
     bulkDataObjRegInp->sqlResult[4].len = MAX_NAME_LEN;
     bulkDataObjRegInp->sqlResult[4].value =
-      malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[4].value,
       MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[5].attriInx = COL_DATA_MODE;
     bulkDataObjRegInp->sqlResult[5].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[5].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[5].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[6].attriInx = OPR_TYPE_INX;
     bulkDataObjRegInp->sqlResult[6].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[6].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[6].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[7].attriInx = COL_RESC_GROUP_NAME;
     bulkDataObjRegInp->sqlResult[7].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[7].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[7].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[8].attriInx = COL_DATA_REPL_NUM;
     bulkDataObjRegInp->sqlResult[8].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[8].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[8].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bulkDataObjRegInp->sqlResult[9].attriInx = COL_D_DATA_CHECKSUM;
     bulkDataObjRegInp->sqlResult[9].len = NAME_LEN;
     bulkDataObjRegInp->sqlResult[9].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (bulkDataObjRegInp->sqlResult[9].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
 
@@ -3627,19 +3627,19 @@ initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp)
     attriArray->sqlResult[0].attriInx = COL_DATA_NAME;
     attriArray->sqlResult[0].len = MAX_NAME_LEN;
     attriArray->sqlResult[0].value =
-      malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (attriArray->sqlResult[0].value,
       MAX_NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     attriArray->sqlResult[1].attriInx = COL_DATA_MODE;
     attriArray->sqlResult[1].len = NAME_LEN;
     attriArray->sqlResult[1].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (attriArray->sqlResult[1].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     attriArray->sqlResult[2].attriInx = OFFSET_INX;
     attriArray->sqlResult[2].len = NAME_LEN;
     attriArray->sqlResult[2].value =
-      malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
     bzero (attriArray->sqlResult[2].value,
       NAME_LEN * MAX_NUM_BULK_OPR_FILES);
 
@@ -3649,7 +3649,7 @@ initAttriArrayOfBulkOprInp (bulkOprInp_t *bulkOprInp)
         attriArray->sqlResult[i].attriInx = COL_D_DATA_CHECKSUM;
         attriArray->sqlResult[i].len = NAME_LEN;
         attriArray->sqlResult[i].value =
-          malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+          (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
         bzero (attriArray->sqlResult[i].value,
           NAME_LEN * MAX_NUM_BULK_OPR_FILES);
         attriArray->attriCnt++;
@@ -3903,10 +3903,10 @@ unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf)
 
         tmpObjPath = &objPath->value[objPath->len * i];
         if (i == 0) {
-	    bufPtr = bulkBBuf->buf;
+	    bufPtr = (char *)bulkBBuf->buf;
 	    size = intOffset[0];
 	} else {
-	    bufPtr = bulkBBuf->buf + intOffset[i - 1];
+	    bufPtr = (char *)bulkBBuf->buf + intOffset[i - 1];
 	    size = intOffset[i] - intOffset[i - 1];
 	}
 	status = getPhyBunPath (bulkOprInp->objPath, tmpObjPath, phyBunDir,
@@ -4040,7 +4040,7 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
 	if (buflen > MAX_SZ_FOR_SINGLE_BUF) return SYS_REQUESTED_BUF_TOO_LARGE;
     }
     bytesBuf->len = 0;
-    bytesBuf->buf = bufptr = malloc (buflen);
+    bytesBuf->buf = bufptr = (char *)malloc (buflen);
     toRead = buflen;
 
     while (1) {
@@ -4088,7 +4088,7 @@ writeFromByteBuf (int fd, bytesBuf_t *bytesBuf)
     int toWrite, buflen, nbytes;
     char *bufptr;
 
-    bufptr = bytesBuf->buf;
+    bufptr = (char *)bytesBuf->buf;
     buflen = toWrite = bytesBuf->len;
     while ((nbytes = myWrite (fd, bufptr, toWrite, SOCK_TYPE, NULL)) >= 0) {
 	toWrite -= nbytes;
@@ -4151,7 +4151,7 @@ mySetenvStr (char *envname, char *envval)
     char *myBuf;
     int len;
     len = strlen (envname) + strlen (envval) + 16;
-    myBuf = malloc (len);
+    myBuf = (char *)malloc (len);
     snprintf (myBuf, len, "%s=%s", envname, envval);
     status = putenv (myBuf);
 #endif
@@ -4173,7 +4173,7 @@ mySetenvInt (char *envname, int envval)
     int len;
     if (envname == NULL) return USER__NULL_INPUT_ERR;
     len = strlen (envname) + 20;
-    myBuf = malloc (len);
+    myBuf = (char *)malloc (len);
     snprintf (myBuf, len, "%s=%d", envname, envval);
     status = putenv (myBuf);
 #endif
