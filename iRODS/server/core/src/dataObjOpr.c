@@ -873,7 +873,7 @@ keyValPair_t *condInput, char *destRescName, char *srcRescName)
     dataObjInp_t doinp;
     int status;
     int numDestThr = -1;
-    int numSrcThr = -1;;
+    int numSrcThr = -1;
     rescGrpInfo_t *rescGrpInfo;
 
     if (inpNumThr == NO_THREADING)
