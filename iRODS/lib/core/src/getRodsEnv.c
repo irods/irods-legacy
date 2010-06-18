@@ -295,7 +295,7 @@ int getRodsEnvFromFile(char *fileName, rodsEnv *rodsEnvArg, int errorLevel) {
 	       char *tmpStr2;
 	       int tmpLen;
 	       tmpLen = strlen(myStr)+40;
-	       tmpStr2 = malloc(tmpLen);
+	       tmpStr2 = (char *)malloc(tmpLen);
 	       snprintf(tmpStr2,tmpLen,"irodsServerDn=%s", 
 			rodsEnvArg->rodsServerDn);
 	       putenv(tmpStr2);
