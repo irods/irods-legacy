@@ -736,7 +736,11 @@ bulkOprInfo_t *bulkOprInfo)
 #else 
     int in_fd;
     int bytesRead = 0;
+#ifndef windows_platform
     char *bufPtr = bulkOprInfo->bytesBuf.buf + bulkOprInfo->size;
+#else  /* make change for Windows only */
+	char *bufPtr = (char *)(bulkOprInfo->bytesBuf.buf) + bulkOprInfo->size;
+#endif
 
 #ifdef windows_platform
     in_fd = iRODSNt_bopen(srcPath, O_RDONLY,0);
