@@ -45,11 +45,13 @@ fileDriver_t FileDriverTable[] = {
 #endif
 #else
 	{NT_FILE_TYPE, ntFileCreate, ntFileOpen, ntFileRead, ntFileWrite,
-    ntFileClose, ntFileUnlink, ntFileStat, NULL, ntFileLseek,
-    NULL, ntFileMkdir, ntFileChmod, ntFileRmdir, ntFileOpendir,
-    ntFileClosedir, ntFileReaddir, NULL, ntFileRename,
-    NULL, NULL},
+    ntFileClose, ntFileUnlink, ntFileStat, ntFileFstat, ntFileLseek,
+    intNoSupport, ntFileMkdir, ntFileChmod, ntFileRmdir, ntFileOpendir,
+    ntFileClosedir, ntFileReaddir, intNoSupport, ntFileRename,
+    longNoSupport, intNoSupport, intNoSupport, intNoSupport},
 #endif
+
+#ifndef windows_platform
 #ifdef AMAZON_S3
     {S3_FILE_TYPE, intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     intNoSupport, s3FileUnlink, s3FileStat, intNoSupport, longNoSupport,
@@ -69,6 +71,7 @@ fileDriver_t FileDriverTable[] = {
     intNoSupport, univMSSFileMkdir, univMSSFileChmod, intNoSupport, intNoSupport,
     intNoSupport, intNoSupport, intNoSupport, intNoSupport,
     longNoSupport, intNoSupport, univMSSStageToCache, univMSSSyncToArch},
+#endif
 };
 
 int NumFileDriver = sizeof (FileDriverTable) / sizeof (fileDriver_t);
