@@ -3143,7 +3143,6 @@ initReExec (rsComm_t *rsComm, reExec_t *reExec)
     }
     return 0;
 }
-#endif
 
 int 
 allocReThr (reExec_t *reExec)
@@ -3206,6 +3205,7 @@ waitAndFreeReThr (reExec_t *reExec)
     }
     return thrInx;
 }
+#endif
 
 int
 matchPidInReExec (reExec_t *reExec, pid_t pid)
