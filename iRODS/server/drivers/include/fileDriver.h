@@ -9,7 +9,9 @@
 #ifndef FILE_DRIVER_H
 #define FILE_DRIVER_H
 
+#ifndef windows_platform
 #include <dirent.h>
+#endif
 
 #include "rods.h"
 #include "rcConnect.h"
