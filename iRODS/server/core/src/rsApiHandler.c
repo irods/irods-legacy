@@ -425,7 +425,7 @@ readAndProcClientMsg (rsComm_t *rsComm, int flags)
     /* read the header */
 
 #ifdef windows_platform
-    status = readMsgHeader (rsComm->sock, &myHeader);
+    status = readMsgHeader (rsComm->sock, &myHeader, NULL);
 #else
     if ((flags & READ_HEADER_TIMEOUT) != 0) {
 	int retryCnt = 0;
