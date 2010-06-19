@@ -1096,12 +1096,13 @@ int
 resolveLinkedPath (rsComm_t *rsComm, char *objPath, 
 specCollCache_t **specCollCache, keyValPair_t *condInput)
 {
-    *specCollCache = NULL;
     int linkCnt = 0;
     specColl_t *curSpecColl;
     char prevNewPath[MAX_NAME_LEN];
     specCollCache_t *oldSpecCollCache = NULL;
     int status;
+
+	*specCollCache = NULL;
 
     if (getValByKey (condInput, TRANSLATED_PATH_KW) != NULL)
 	return 0;
