@@ -7,12 +7,15 @@
 
 #include "reIn2p3SysRule.h"
 #include "genQuery.h"
+#ifndef windows_platform
 #include <sys/socket.h>
 #include <pthread.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 static pthread_mutex_t my_mutex;
+#endif
+
 short threadIsAlive[MAX_NSERVERS];
 
 int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *rei) {
@@ -26,10 +29,11 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   generalRowInsertInp_t generalRowInsertInp;
   generalAdminInp_t generalAdminInp1, generalAdminInp2;
   genQueryInp_t genQueryInp;
+  struct tm *now;
   
   genQueryOut_t *genQueryOut = NULL;
   tps = time(NULL);
-  struct tm *now = localtime(&tps);
+  now = localtime(&tps);
   
   /* a quick test in order to see if the resource is up or down (needed to update the "status" metadata) */
   if ( strcmp(output, MON_OUTPUT_NO_ANSWER) == 0 ) {
@@ -83,7 +87,9 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   snprintf(condstr, MAX_NAME_LEN, "= '%s'", resc);
   addInxVal(&genQueryInp.sqlCondInp, COL_R_RESC_NAME, condstr);
   genQueryInp.maxRows = MAX_SQL_ROWS;
+#ifndef windows_platform
   pthread_mutex_lock(&my_mutex);
+#endif
   rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
   rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp1);
   rc3 = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
@@ -95,7 +101,9 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
   } else {
     rodsLog(LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", resc);
   }
+#ifndef windows_platform
   pthread_mutex_unlock(&my_mutex);
+#endif
   if ( rc1 != 0 ) {
     fprintf(foutput, "time=%i : unable to insert the entries for server %s into the iCAT\n", 
       timestamp, serverName);
@@ -215,8 +223,10 @@ void *startMonScript(void *arg) {
   int retval;
   
   thrInp_t *tinput = (thrInp_t*)arg;
+#ifndef windows_platform
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
   pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+#endif
   fillStrInMsParam(&msp1, tinput->cmd);
   fillStrInMsParam(&msp2, tinput->cmdArgv);
   fillStrInMsParam(&msp3, tinput->execAddr);
@@ -228,12 +238,14 @@ void *startMonScript(void *arg) {
   status = msiExecCmd(&msp1, &msp2, &msp3, &msp4, &msp5, &msout, &(tinput->rei));
 
   if (status < 0) {
+	char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
     rodsLogError (LOG_ERROR, status, "Call to msiExecCmd failed in msiServerMonPerf. ");
-    char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
     rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, &(tinput->rei));
     threadIsAlive[thrid] = 1;
     retval = -1;
+#ifndef windows_platform
     pthread_exit((void *)&retval);
+#endif
   }
   
   if (&msout != NULL) {
@@ -243,28 +255,34 @@ void *startMonScript(void *arg) {
       rodsMonPerfLog(tinput->execAddr, tinput->rescName, output, &(tinput->rei)); 
     }
     else { 
+	  char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
       rodsLog(LOG_ERROR, "Server monitoring: no output for the server %s, status = %i \n", tinput->execAddr, status);
-      char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
       rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, &(tinput->rei));
       threadIsAlive[thrid] = 1;
       retval = -1;
+#ifndef windows_platform
       pthread_exit((void *)&retval);
+#endif
     }
   }
   else {
+	char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
     rodsLog(LOG_ERROR, "Server monitoring: problem with the server %s, status = %i \n", tinput->execAddr, status);
-    char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
     rodsMonPerfLog(tinput->execAddr, tinput->rescName, noanswer, 
       &(tinput->rei));
     threadIsAlive[thrid] = 1;
     retval = -1;
+#ifndef windows_platform
     pthread_exit((void *)&retval);
+#endif
   }
   
   threadIsAlive[thrid] = 1;
   
   retval = 0;
+#ifndef windows_platform
   pthread_exit((void *)&retval);
+#endif
 }
 
 int checkIPaddress(char *IP, unsigned char IPcomp[IPV4]) {
@@ -514,6 +532,9 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
             of time for this measurement (in s) */
   rsComm_t *rsComm;
   monInfo_t rescList[MAX_NSERVERS];
+  thrInp_t *thrInput;
+  int addPathToArgv = 0;
+  char *hintPath = "";
   
   RE_TEST_MACRO ("    Calling msiServerMonPerf")
     
@@ -566,12 +587,13 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   getListOfResc(rsComm, serverList, nservers, rescList, &nresc);
   
   strcpy(cmd, MON_PERF_SCRIPT);
+#ifndef windows_platform
   pthread_t *threads = malloc(sizeof(pthread_t) * nresc);
-  
   pthread_mutex_init(&my_mutex, NULL);
-  thrInp_t *thrInput = malloc(sizeof(thrInp_t) * nresc);
-  int addPathToArgv = 0;
-  char *hintPath = "";
+#endif
+  thrInput = malloc(sizeof(thrInp_t) * nresc);
+  /* int addPathToArgv = 0;
+  char *hintPath = ""; */
   
   for (i = 0; i < nresc; i++) {
     /* for each server, build the proxy command to be executed.
@@ -593,11 +615,12 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
     thrInput[i].rescName = rescList[i].rescName;
     memcpy(&(thrInput[i].rei), rei, sizeof(ruleExecInfo_t));
     
+#ifndef windows_platform
     if ( pthread_create(&threads[i], NULL, *startMonScript, (void *) &thrInput[i]) < 0) {
       rodsLog(LOG_ERROR, "msiServerMonPerf: pthread_create error\n");
       exit(1);
     }
-    
+#endif
     rstrcpy(val, "", MAX_NAME_LEN);
     
   }
@@ -610,10 +633,12 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
     if ( looptime >= maxtime ) {
       for (i = 0; i < nresc; i++) {
         if ( !threadIsAlive[i] ) {
+#ifndef windows_platform
           rc = pthread_cancel(threads[i]);
+#endif
           if ( rc == 0 ) {
+			char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
             threadIsAlive[i] = 1;
-            char noanswer[MAXSTR] = MON_OUTPUT_NO_ANSWER;
             rodsMonPerfLog(thrInput[i].execAddr,
               thrInput[i].rescName, 
               noanswer, 
@@ -633,7 +658,9 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
     }
   }
   
+#ifndef windows_platform
   free(threads);
+#endif
   free(thrInput);
   
   return (rei->status);
