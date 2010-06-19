@@ -403,6 +403,8 @@ char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
     mkDirForFilePath (UNIX_FILE_TYPE, rsComm, "/", dataObjInfo.filePath,
       getDefDirMode ());
     /* add a link */
+
+#ifndef windows_platform   /* Windows does not support link */
     status = link (subfilePath, dataObjInfo.filePath);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -410,6 +412,7 @@ char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
           subfilePath, dataObjInfo.filePath, errno);
         return (UNIX_FILE_LINK_ERR - errno);
     }
+#endif
 
     if (modFlag == 0) {
         status = svrRegDataObj (rsComm, &dataObjInfo);
@@ -518,6 +521,7 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
           getDefDirMode ());
     }
     /* add a link */
+#ifndef windows_platform
     status = link (subfilePath, dataObjInfo.filePath);
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -525,6 +529,7 @@ renamedPhyFiles_t *renamedPhyFiles, genQueryOut_t *attriArray)
           subfilePath, dataObjInfo.filePath, errno);
         return (UNIX_FILE_LINK_ERR - errno);
     }
+#endif
 
     if (attriArray != NULL) {
 	/* dataMode in attriArray overwrites passed in value */
