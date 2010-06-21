@@ -8,7 +8,7 @@
 #include "rods.h"
 #include "rodsClient.h"
 
-#define MAX_SQL 300
+#define MAX_SQL 4000
 #define BIG_STR 200
 
 char cwd[BIG_STR];
@@ -142,6 +142,17 @@ getDboInfo(char *dbRescName, char *dbObjIx) {
       myName = rodsErrorName(status, &mySubName);
       rodsLog (LOG_ERROR, "rcDatabaseObjInfo failed with error %d %s %s",
 	       status, myName, mySubName);
+      if (databaseObjInfoOut != NULL &&
+	  databaseObjInfoOut->outBuf != NULL &&
+	  strlen(databaseObjInfoOut->outBuf)>0 ) {
+	 if(status == DBO_NOT_COMPILED_IN) {
+	    printf("Error message return by the iRODS server:\n");
+	 }
+	 else {
+	    printf("Error message return by the DBMS:\n");
+	 }
+	 printf("%s\n",databaseObjInfoOut->outBuf);
+      }
       return(status);
    }
    printf("%s\n",databaseObjInfoOut->outBuf);
@@ -170,6 +181,202 @@ openDatabaseObj(char *dbRescName, char *dbObjName) {
    return(status);
 }
 
+void
+getInputLine(char *prompt, char *result, int max_result_len) {
+   char *stat;
+   int i;
+   fputs(prompt,stdout);
+   stat = fgets(result, max_result_len, stdin);
+   for (i=0;i<max_result_len;i++) {
+      if (result[i]=='\n') {
+	 result[i]='\0';
+	 break;
+      }
+   }
+}
+
+/* add a DBO-SQL-Object */
+int
+addSql() {
+   int status;
+   databaseObjectAdminInp_t databaseObjectAdminInp;
+   databaseObjectAdminOut_t *databaseObjectAdminOut;
+   char *myName;
+   char *mySubName;
+   char rescName[BIG_STR];
+   char objName[BIG_STR];
+   char desc[BIG_STR];
+   char sql[MAX_SQL];
+   getInputLine("Resource name:", rescName, BIG_STR);
+   getInputLine("Object name:", objName, BIG_STR);
+   getInputLine("Description:", desc, BIG_STR);
+   getInputLine("SQL:", sql, MAX_SQL);
+
+   memset((void *)&databaseObjectAdminInp, 0, sizeof(databaseObjectAdminInp));
+   databaseObjectAdminInp.dbrName = rescName;
+   databaseObjectAdminInp.dboName = objName;
+   databaseObjectAdminInp.description = desc;
+   databaseObjectAdminInp.sql = sql;
+
+   databaseObjectAdminInp.option = DBObjAdmin_Add;
+
+   status = rcDatabaseObjectAdmin(Conn, &databaseObjectAdminInp, 
+				  &databaseObjectAdminOut);
+   if (status) {
+      myName = rodsErrorName(status, &mySubName);
+      rodsLog (LOG_ERROR, "rcDatabaseObjectAdmin failed with error %d %s %s",
+	       status, myName, mySubName);
+      return(status);
+   }
+   return(status);
+}
+
+/* remove a DBO-SQL-Object */
+int
+rmSql() {
+   int status;
+   databaseObjectAdminInp_t databaseObjectAdminInp;
+   databaseObjectAdminOut_t *databaseObjectAdminOut;
+   char *myName;
+   char *mySubName;
+   char rescName[BIG_STR];
+   char objName[BIG_STR];
+
+   memset((void *)&databaseObjectAdminInp, 0, sizeof(databaseObjectAdminInp));
+
+/*   getInputLine("Resource name:", rescName, BIG_STR); */
+   getInputLine("Object name:", objName, BIG_STR);
+
+/*   databaseObjectAdminInp.dbrName = rescName; */
+   databaseObjectAdminInp.dboName = objName;
+
+   databaseObjectAdminInp.option = DBObjAdmin_Remove;
+
+   status = rcDatabaseObjectAdmin(Conn, &databaseObjectAdminInp, 
+				  &databaseObjectAdminOut);
+   if (status) {
+      myName = rodsErrorName(status, &mySubName);
+      rodsLog (LOG_ERROR, "rcDatabaseObjectAdmin failed with error %d %s %s",
+	       status, myName, mySubName);
+      return(status);
+   }
+   return(status);
+}
+
+/* 
+ print the results of a general query.
+ */
+int
+printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut, 
+		     char *descriptions[], int doDashes)
+{
+   int printCount;
+   int i, j;
+   char localTime[20];
+   printCount=0;
+   if (status!=0) {
+      printError(Conn, status, "rcGenQuery");
+   }
+   else {
+      if (status !=CAT_NO_ROWS_FOUND) {
+	 for (i=0;i<genQueryOut->rowCnt;i++) {
+	    if (i>0 && doDashes) printf("----\n");
+	    for (j=0;j<genQueryOut->attriCnt;j++) {
+	       char *tResult;
+	       tResult = genQueryOut->sqlResult[j].value;
+	       tResult += i*genQueryOut->sqlResult[j].len;
+	       if (descriptions !=0 && *descriptions[j]!='\0') {
+		  if (strstr(descriptions[j],"_ts")!=0) {
+		     getLocalTimeFromRodsTime(tResult, localTime);
+		     if (atoll(tResult)==0) rstrcpy(localTime, "None", 20);
+		     printf("%s: %s: %s\n", descriptions[j], tResult, 
+			    localTime);
+		  } 
+		  else {
+		     printf("%s: %s\n", descriptions[j], tResult);
+		  }
+	       }
+	       else {
+		  printf("%s\n", tResult);
+	       }
+	       printCount++;
+	    }
+	 }
+      }
+   }
+   return(printCount);
+}
+
+int
+doQuery(char *objName) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[30];
+   int i1b[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   int i2a[30];
+   char *condVal[10];
+   char v1[MAX_NAME_LEN+10];
+   int i, status;
+   int printCount;
+
+   char *columnNames[]={
+   "data_name",
+   "data_id", "coll_id", "data_repl_num", "data_version",
+   "data_type_name", "data_size", "resc_group_name", "resc_name",
+   "data_path ", "data_owner_name", "data_owner_zone", 
+   "data_repl_status", "data_status",
+   "data_checksum ", "data_expiry_ts (expire time)",
+   "data_map_id", "r_comment", "create_ts","modify_ts"};
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+   printCount=0;
+
+   i=0;
+   i1a[i++]=COL_DATA_NAME;
+   i1a[i++]=COL_D_DATA_ID;
+   i1a[i++]=COL_D_COLL_ID;
+   i1a[i++]=COL_DATA_REPL_NUM;
+   i1a[i++]=COL_DATA_VERSION;
+   i1a[i++]=COL_DATA_TYPE_NAME;
+   i1a[i++]=COL_DATA_SIZE;
+   i1a[i++]=COL_D_RESC_GROUP_NAME;
+   i1a[i++]=COL_D_RESC_NAME;
+   i1a[i++]=COL_D_DATA_PATH;
+   i1a[i++]=COL_D_OWNER_NAME;
+   i1a[i++]=COL_D_OWNER_ZONE;
+   i1a[i++]=COL_D_REPL_STATUS;
+   i1a[i++]=COL_D_DATA_STATUS;
+   i1a[i++]=COL_D_DATA_CHECKSUM;
+   i1a[i++]=COL_D_EXPIRY;
+   i1a[i++]=COL_D_MAP_ID;
+   i1a[i++]=COL_D_COMMENTS;
+   i1a[i++]=COL_D_CREATE_TIME;
+   i1a[i++]=COL_D_MODIFY_TIME;
+   
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = i;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   i2a[0]=COL_DATA_NAME;
+   sprintf(v1,"='%s'",objName);
+   condVal[0]=v1;
+   genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.maxRows=50;
+   genQueryInp.continueInx=0;
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      printf("DataObject %s does not exist.\n", objName);
+      return(0);
+   }
+   printCount+= printGenQueryResults(Conn, status, genQueryOut, columnNames, 
+				     1);
+   return(printCount);
+}
+
+
 /* handle a command,
    return code is 0 if the command was (at least partially) valid,
    -1 for quitting,
@@ -195,6 +402,19 @@ doCommand(char *cmdToken[]) {
 
    if (strcmp(cmdToken[0],"ls") == 0) {
       getDboInfo(cmdToken[1], cmdToken[2]);
+      return(0);
+   }
+
+   if (strcmp(cmdToken[0],"addsql") == 0) {
+      addSql();
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"rmsql") == 0) {
+      rmSql();
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"qq") == 0) {
+      doQuery(cmdToken[1]);
       return(0);
    }
    return(-3);

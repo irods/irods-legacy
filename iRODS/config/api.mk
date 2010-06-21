@@ -379,3 +379,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjInfo.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsProcStat.o
 LIB_API_OBJS += $(libApiObjDir)/rcProcStat.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjectAdmin.o
+LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjectAdmin.o

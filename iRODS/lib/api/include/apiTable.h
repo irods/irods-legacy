@@ -158,6 +158,8 @@ apidef_t RcApiTable[] = {
        "databaseObjOpenInp_PI", 0, NULL, 0, (funcPtr) RS_DATABASE_OBJ_OPEN},
     {DATABASE_OBJ_INFO_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
        "databaseObjInfoInp_PI", 0,  "databaseObjInfoOut_PI", 0, (funcPtr) RS_DATABASE_OBJ_INFO},
+    {DATABASE_OBJECT_ADMIN_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+       "databaseObjectAdminInp_PI", 0,  "databaseObjectAdminOut_PI", 0, (funcPtr) RS_DATABASE_OBJECT_ADMIN},
     {OPEN_COLLECTION_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_OPEN_COLLECTION},
 #ifdef COMPAT_201

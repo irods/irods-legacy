@@ -7851,3 +7851,88 @@ chlInsRuleTable(rsComm_t *rsComm,
 
    return(0);
 }
+
+int
+icatCheckResc(char *rescName) {
+   int status;
+   rodsLong_t rescId;
+   status = getLocalZone();
+   if (status) return(status);
+
+   rescId=0;
+   if (logSQL) rodsLog(LOG_SQL, "icatCheckResc SQxL 1");
+   status = cmlGetIntegerValueFromSql(
+      "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+      &rescId, rescName, localZone, 0, 0, 0, &icss);
+   if (status != 0) {
+      if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
+      _rollback("icatCheckResc");
+   }
+   return(status);
+}
+
+
+/* Manage database-objects */
+
+int
+chlDatabaseObjectAdmin(rsComm_t *rsComm, 
+		       databaseObjectAdminInp_t *databaseObjectAdminInp,
+		       databaseObjectAdminOut_t *databaseObjectAdminOut) {
+   int status;
+   dataObjInfo_t dataObjInfo;
+
+   if (databaseObjectAdminInp->option == NULL) return(CAT_INVALID_ARGUMENT);
+
+   /* Add */
+   if (strcmp(databaseObjectAdminInp->option, DBObjAdmin_Add)==0) {
+      if (databaseObjectAdminInp->sql == NULL) return(CAT_INVALID_ARGUMENT);
+      if (databaseObjectAdminInp->dbrName == NULL) return(CAT_INVALID_ARGUMENT);
+      if (databaseObjectAdminInp->dboName == NULL) return(CAT_INVALID_ARGUMENT);
+      if (databaseObjectAdminInp->description == NULL) 
+	 return(CAT_INVALID_ARGUMENT);
+
+      status = icatCheckResc(databaseObjectAdminInp->dbrName);
+      if (status) return(status);
+
+      memset(&dataObjInfo, 0, sizeof(dataObjInfo));
+      strcpy(dataObjInfo.objPath, "/newZone/home/rods/");
+      strcat(dataObjInfo.objPath, databaseObjectAdminInp->dboName);
+
+      strcpy(dataObjInfo.rescName, databaseObjectAdminInp->dbrName);
+      strcpy(dataObjInfo.filePath, databaseObjectAdminInp->sql);
+      strcpy(dataObjInfo.dataType, "shadow object");
+      status = chlRegDataObj(rsComm, &dataObjInfo);
+
+      if (status == 0) {
+	 keyValPair_t regParam;
+	 
+	 memset (&regParam, 0, sizeof (regParam));
+	 addKeyVal (&regParam, DATA_COMMENTS_KW, 
+		    databaseObjectAdminInp->description);
+	 status =  chlModDataObjMeta(rsComm, &dataObjInfo, &regParam);
+      }
+
+      return(status);
+   }
+
+   /* Remove */
+   if (strcmp(databaseObjectAdminInp->option, DBObjAdmin_Remove)==0) {
+/*    if (databaseObjectAdminInp->dbrName == NULL) return(CAT_INVALID_ARGUMENT); */
+      if (databaseObjectAdminInp->dboName == NULL) return(CAT_INVALID_ARGUMENT);
+
+      keyValPair_t conditionInput;
+      memset (&conditionInput, 0, sizeof (conditionInput));
+      memset(&dataObjInfo, 0, sizeof(dataObjInfo));
+      strcpy(dataObjInfo.objPath, "/newZone/home/rods/");
+      strcat(dataObjInfo.objPath, databaseObjectAdminInp->dboName);
+
+/*      strncpy(dataObjInfo.dataComments, databaseObjSqlInp->description, 
+	sizeof(dataObjInfo.dataComments)); */
+      strcpy(dataObjInfo.dataType, "shadow object");
+      status = chlUnregDataObj(rsComm, &dataObjInfo, &conditionInput);
+
+      return(status);
+   }
+
+   return (CAT_INVALID_ARGUMENT);
+}

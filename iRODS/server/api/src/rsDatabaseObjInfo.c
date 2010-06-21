@@ -76,13 +76,11 @@ rsDatabaseObjInfo (rsComm_t *rsComm, databaseObjInfoInp_t *databaseObjInfoInp,
 int
 _rsDatabaseObjInfo (rsComm_t *rsComm, databaseObjInfoInp_t *databaseObjInfoInp,
 		    databaseObjInfoOut_t **databaseObjInfoOut) {
+    char *outBuf;
+    databaseObjInfoOut_t *myObjInfoOut;
 #ifdef DBO
     int status;
-
     int maxBufSize;
-    char *outBuf;
-
-    databaseObjInfoOut_t *myObjInfoOut;
 
     maxBufSize = 1024*50;
 
@@ -96,6 +94,11 @@ _rsDatabaseObjInfo (rsComm_t *rsComm, databaseObjInfoInp_t *databaseObjInfoInp,
        status = dboGetInfo(databaseObjInfoInp->objDesc, outBuf, maxBufSize);
     }
 
+    myObjInfoOut = malloc(sizeof(databaseObjInfoOut_t));
+    myObjInfoOut->outBuf = outBuf;
+
+    *databaseObjInfoOut = myObjInfoOut;
+
     if (status < 0 ) { 
        rodsLog (LOG_NOTICE, 
 		"_rsDatabaseObjInfo: databaseObjInfo status = %d",
@@ -103,14 +106,14 @@ _rsDatabaseObjInfo (rsComm_t *rsComm, databaseObjInfoInp_t *databaseObjInfoInp,
        return (status);
     }
 
-    myObjInfoOut = malloc(sizeof(databaseObjInfoOut_t));
-    myObjInfoOut = malloc(100);
-    myObjInfoOut->outBuf = outBuf;
-
-    *databaseObjInfoOut = myObjInfoOut;
-
     return (status);
 #else
+    myObjInfoOut = malloc(sizeof(databaseObjInfoOut_t));
+    outBuf = malloc(100);
+    strcpy(outBuf, 
+	   "The iRODS system needs to be re-compiled with DBO support enabled");
+    myObjInfoOut->outBuf = outBuf;
+    *databaseObjInfoOut = myObjInfoOut;
     return(DBO_NOT_COMPILED_IN);
 #endif
 }

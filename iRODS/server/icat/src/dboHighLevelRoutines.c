@@ -456,6 +456,7 @@ dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
 #endif
 
    if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
+      strcpy(outBuf, "DBO is not open");
       return(DBO_INVALID_OBJECT_DESCRIPTOR);
    }
 
