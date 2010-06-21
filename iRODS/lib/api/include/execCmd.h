@@ -41,6 +41,8 @@ int
 rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, 
 execCmdOut_t **execCmdOut);
 int
+initExecCmdMutex ();
+int
 _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, 
 execCmdOut_t **execCmdOut);
 int

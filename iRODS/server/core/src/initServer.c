@@ -1639,6 +1639,7 @@ initAgent (rsComm_t *rsComm)
 	      status);
 	}
     }
+    initExecCmdMutex ();
 #endif
 
     InitialState = INITIAL_DONE;

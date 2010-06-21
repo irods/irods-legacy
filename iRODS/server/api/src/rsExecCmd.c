@@ -16,6 +16,17 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 
+#ifndef windows_platform
+#include <pthread.h>
+pthread_mutex_t ExecCmdMutex;
+
+int
+initExecCmdMutex ()
+{
+    pthread_mutex_init (&ExecCmdMutex, NULL);
+    return (0);
+}
+#endif	/* windows_platform */
 
 int
 rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
@@ -132,6 +143,7 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 #endif
     
 #ifndef windows_platform    /* UNIX */
+    pthread_mutex_lock (&ExecCmdMutex);
     if (pipe (stdoutFd) < 0) 
 #else
 	if(_pipe(stdoutFd, pipe_buf_size, O_BINARY) < 0)
@@ -165,8 +177,10 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     }
 
 #ifndef windows_platform   /* UNIX */
-    childPid = RODS_FORK ();
+    /* use fork instead of vfork to handle mylti-thread */
+    childPid = fork ();
 
+    pthread_mutex_unlock (&ExecCmdMutex);
     if (childPid == 0) {
 	char *tmpStr;
 	/* Indicate that the call came from internal rule */
