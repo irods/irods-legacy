@@ -132,4 +132,5 @@
 #include "databaseObjOpen.h"
 #include "databaseObjInfo.h"
 #include "procStat.h"
+#include "databaseObjectAdmin.h"
 #endif	/* API_HEADER_ALL_H */
