@@ -88,6 +88,7 @@ This documentation is generated from the iRODS code.
   - #msiGetObjType - Finds if a given value is a data, coll, resc, ...
   - #msiCheckPermission - Check if a data object permission is the same as the one given
   - #msiCheckOwner - Check if the user is the owner of the data object
+  - #msiSetReplComment - Sets the data_comments attribute of a data object
 
  \subsection msicollection Collection Microservices
   - #msiCollCreate - Create a collection
