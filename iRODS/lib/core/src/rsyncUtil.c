@@ -74,6 +74,8 @@ rodsPathInp_t *rodsPathInp)
         } else if (srcType == DATA_OBJ_T && targType == DATA_OBJ_T) {
             rmKeyVal (&dataObjCopyInp.srcDataObjInp.condInput, 
 	      TRANSLATED_PATH_KW);
+	    addKeyVal (&dataObjCopyInp.destDataObjInp.condInput, 
+	      REG_CHKSUM_KW, "");
             status = rsyncDataToDataUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjCopyInp);
         } else if (srcType == COLL_OBJ_T && targType == LOCAL_DIR_T) {
@@ -92,6 +94,8 @@ rodsPathInp_t *rodsPathInp)
         } else if (srcType == COLL_OBJ_T && targType == COLL_OBJ_T) {
             addKeyVal (&dataObjCopyInp.srcDataObjInp.condInput, 
 	      TRANSLATED_PATH_KW, "");
+            addKeyVal (&dataObjCopyInp.destDataObjInp.condInput, 
+              REG_CHKSUM_KW, "");
             status = rsyncCollToCollUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjCopyInp);
             if (status >= 0 && dataObjOprInp.specColl != NULL &&
