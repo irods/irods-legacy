@@ -194,9 +194,16 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (getFlag == 1) {
-        status = rcDataObjGet (conn, dataObjOprInp, targPath->outPath);
+	/* only do the sync if no -l option specified */
+		status = 0;
+		if ( myRodsArgs->longOption != True ) { 
+			status = rcDataObjGet (conn, dataObjOprInp, targPath->outPath);	
+		}
+		else {
+			printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+		}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
-	if (status >= 0) myChmod (targPath->outPath, srcPath->objMode);
+		if (status >= 0 && myRodsArgs->longOption != True) myChmod (targPath->outPath, srcPath->objMode);
     } else if (syncFlag == 1) {
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW, 
 	  targPath->outPath);
@@ -286,13 +293,22 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (putFlag == 1) {
-        status = rcDataObjPut (conn, dataObjOprInp, srcPath->outPath);
+		/* only do the sync if no -l option specified */
+		if ( myRodsArgs->longOption != True ) { 
+            status = rcDataObjPut (conn, dataObjOprInp, srcPath->outPath);
+		} else {
+            printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+		}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
     } else if (syncFlag == 1) {
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW, 
 	  srcPath->outPath);
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_LOCAL);
-        status = rcDataObjRsync (conn, dataObjOprInp);
+        status = 0;
+		/* only do the sync if no -l option specified */
+		if ( myRodsArgs->longOption != True ) {
+			status = rcDataObjRsync (conn, dataObjOprInp);
+		}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW);
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW);
     } else {
@@ -355,7 +371,14 @@ dataObjCopyInp_t *dataObjCopyInp)
         dataObjCopyInp->srcDataObjInp.dataSize = srcPath->size;
         rstrcpy (dataObjCopyInp->destDataObjInp.objPath, targPath->outPath, 
           MAX_NAME_LEN);
-	status = rcDataObjCopy (conn, dataObjCopyInp);
+		status = 0;
+		/* only do the sync if no -l option specified */
+		if ( myRodsArgs->longOption != True ) {
+			status = rcDataObjCopy (conn, dataObjCopyInp);
+		}
+		else {
+			printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+		}
     } else if (syncFlag == 1) {
 	dataObjInp_t *dataObjOprInp = &dataObjCopyInp->destDataObjInp;
         rstrcpy (dataObjOprInp->objPath, srcPath->outPath, 
@@ -364,7 +387,14 @@ dataObjCopyInp_t *dataObjCopyInp)
         addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW,
           targPath->outPath);
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
-	status = rcDataObjRsync (conn, dataObjOprInp);
+		status = 0;
+		/* only do the sync if no -l option specified */
+		if ( myRodsArgs->longOption != True ) {
+			status = rcDataObjRsync (conn, dataObjOprInp);
+		}
+		else {
+			printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+		}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW);
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW);
     } else {
@@ -490,7 +520,10 @@ dataObjInp_t *dataObjOprInp)
               targDir, childPath);
 #endif
 
+			/* only do the sync if no -l option specified */
+			if ( rodsArgs->longOption != True ) {
                 mkdirR (targDir, targChildPath, 0750);
+			}
 
 #if 0
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
@@ -623,7 +656,11 @@ dataObjInp_t *dataObjOprInp)
 	        freeRodsObjStat (myTargPath.rodsObjStat);
 #endif
         } else if ((statbuf.st_mode & S_IFDIR) != 0) {      /* a directory */
-            status = mkCollR (conn, targColl, myTargPath.outPath);
+			status = 0;
+			/* only do the sync if no -l option specified */
+			if ( rodsArgs->longOption != True ) {
+            	status = mkCollR (conn, targColl, myTargPath.outPath);
+			}
             if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "rsyncDirToCollUtil: mkColl error for %s", 
@@ -804,7 +841,9 @@ dataObjCopyInp_t *dataObjCopyInp)
 #endif
 
 
-            mkColl (conn, targChildPath);
+	    if ( rodsArgs->longOption != True ) {   /* only do the sync if no -l option specified */
+            	mkColl (conn, targChildPath);
+	    }
 
 #if 0
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {

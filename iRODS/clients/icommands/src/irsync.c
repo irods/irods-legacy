@@ -24,7 +24,7 @@ main(int argc, char **argv) {
     int i;
     
 
-    optStr = "ahN:rR:svV";
+    optStr = "ahlN:rR:svV";
    
     status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
 
@@ -185,6 +185,8 @@ usage ()
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",
+" -l  lists all the source files that needs to be synchronized (including their filesize in bytes) wrt to the target",
+"without actually doing the synchronization.",
 " -a   synchronize to all replica if the target is a  iRODS file/collection.",
 " -s   use the size instead of the checksum value for determining", 
 "      synchronization.",
