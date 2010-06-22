@@ -15,7 +15,6 @@ char cwd[BIG_STR];
 char lastResc[50]="";
 
 int debug=0;
-int testMode=0; /* some some particular internal tests */
 
 char zoneArgument[MAX_NAME_LEN+2]="";
 
@@ -326,6 +325,128 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
    return(printCount);
 }
 
+/*
+ do a Query on a specific DBO
+ */
+int
+doQueryDbo(char *objName) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[30];
+   int i1b[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   int i2a[30];
+   char *condVal[10];
+   char v1[MAX_NAME_LEN+10];
+   char v2[MAX_NAME_LEN+10];
+   char fullName[BIG_STR];
+   char myDirName[BIG_STR];
+   char myFileName[BIG_STR];
+   int i, status;
+   int printCount;
+
+   char *columnNames[]={"attribute", "value", "", "" , "", ""};
+   if(*objName=='/') {
+      strncpy(fullName, objName, BIG_STR);
+   }
+   else {
+      strncpy(fullName, cwd, BIG_STR);
+      strncat(fullName, "/", BIG_STR);
+      strncat(fullName, objName, BIG_STR);
+   }
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   printf("Data-object %s:\n",objName);
+   printCount=0;
+   i1a[0]=COL_META_DATA_ATTR_NAME;
+   i1b[0]=0;
+   i1a[1]=COL_META_DATA_ATTR_VALUE;
+   i1b[1]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 2;
+
+
+
+   status = splitPathByKey(fullName, 
+			   myDirName, myFileName, '/');
+   sprintf(v1,"='%s'",myDirName);
+   i2a[0]=COL_COLL_NAME;
+   condVal[0]=v1;
+   sprintf(v2,"='%s'",myFileName);
+   i2a[1]=COL_DATA_NAME;
+   condVal[1]=v2;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_D_DATA_PATH;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("Is not a database-object\n");
+	 return(0);
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("Dataobject %s does not exist.\n", fullName);
+	 return(0);
+      }
+   }
+   else {
+      int i, j, printNext;
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+	 printNext=0;
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    if (strcmp(tResult,DBO_SQL)==0) {
+		printf("%s:", DBO_SQL);
+		printNext=1;
+	    }
+	    if (strcmp(tResult,DBO_DESC)==0) {
+		printf("%s:", DBO_DESC);
+		printNext=1;
+	    }
+	    if (strcmp(tResult,DBO_RESC)==0) {
+		printf("%s:", DBO_RESC);
+		printNext=1;
+	    }
+	    if (j==1) {
+	       if (printNext==1) {
+		  printf("%s\n", tResult);
+		  printCount++;
+	       }
+	       printNext=0;
+	    }
+	 }
+	 if (printCount==0) {
+	    printf("Is not a database-object\n");
+	 }
+      }
+   }
+
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+			   columnNames, 0);
+   }
+
+   return (0);
+}
+
 int
 doQuery(char *objName) {
    genQueryInp_t genQueryInp;
@@ -335,53 +456,38 @@ doQuery(char *objName) {
    int i2a[30];
    char *condVal[10];
    char v1[MAX_NAME_LEN+10];
+   char v2[MAX_NAME_LEN+10];
    int i, status;
    int printCount;
 
    char *columnNames[]={
    "data_name",
-   "data_id", "coll_id", "data_repl_num", "data_version",
-   "data_type_name", "data_size", "resc_group_name", "resc_name",
-   "data_path ", "data_owner_name", "data_owner_zone", 
-   "data_repl_status", "data_status",
-   "data_checksum ", "data_expiry_ts (expire time)",
-   "data_map_id", "r_comment", "create_ts","modify_ts"};
+   "coll_name",
+   "desc",
+   "other"};
 
+   if (strlen(objName)>0) {
+      return(doQueryDbo(objName));
+   }
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
    printCount=0;
 
    i=0;
    i1a[i++]=COL_DATA_NAME;
-   i1a[i++]=COL_D_DATA_ID;
-   i1a[i++]=COL_D_COLL_ID;
-   i1a[i++]=COL_DATA_REPL_NUM;
-   i1a[i++]=COL_DATA_VERSION;
-   i1a[i++]=COL_DATA_TYPE_NAME;
-   i1a[i++]=COL_DATA_SIZE;
-   i1a[i++]=COL_D_RESC_GROUP_NAME;
-   i1a[i++]=COL_D_RESC_NAME;
-   i1a[i++]=COL_D_DATA_PATH;
-   i1a[i++]=COL_D_OWNER_NAME;
-   i1a[i++]=COL_D_OWNER_ZONE;
-   i1a[i++]=COL_D_REPL_STATUS;
-   i1a[i++]=COL_D_DATA_STATUS;
-   i1a[i++]=COL_D_DATA_CHECKSUM;
-   i1a[i++]=COL_D_EXPIRY;
-   i1a[i++]=COL_D_MAP_ID;
-   i1a[i++]=COL_D_COMMENTS;
-   i1a[i++]=COL_D_CREATE_TIME;
-   i1a[i++]=COL_D_MODIFY_TIME;
+   i1a[i++]=COL_COLL_NAME;
+   i1a[i++]=COL_META_DATA_ATTR_VALUE;
    
-   genQueryInp.selectInp.inx = i1a;
-   genQueryInp.selectInp.value = i1b;
-   genQueryInp.selectInp.len = i;
+   i2a[0]=COL_META_DATA_ATTR_NAME;
+   sprintf(v1,"='%s'", DBO_DESC);
+   condVal[0]=v1;
 
    genQueryInp.sqlCondInp.inx = i2a;
    genQueryInp.sqlCondInp.value = condVal;
-   i2a[0]=COL_DATA_NAME;
-   sprintf(v1,"='%s'",objName);
-   condVal[0]=v1;
    genQueryInp.sqlCondInp.len=1;
+
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = i;
 
    genQueryInp.maxRows=50;
    genQueryInp.continueInx=0;
@@ -419,7 +525,7 @@ doCommand(char *cmdToken[]) {
       return(0);
    }
 
-   if (strcmp(cmdToken[0],"ls") == 0) {
+   if (strcmp(cmdToken[0],"info") == 0) {
       getDboInfo(cmdToken[1], cmdToken[2]);
       return(0);
    }
@@ -432,7 +538,7 @@ doCommand(char *cmdToken[]) {
       rmSql();
       return(0);
    }
-   if (strcmp(cmdToken[0],"qq") == 0) {
+   if (strcmp(cmdToken[0],"ls") == 0) {
       doQuery(cmdToken[1]);
       return(0);
    }
@@ -587,7 +693,8 @@ void usageMain()
 " -h This help",
 "Commands are:", 
 " open ResourceName DatabaseObjectName", 
-" ls [ResourceName] [Object-descriptor]",
+" info [ResourceName] [Object-descriptor]",
+" ls [objName] (list information about defined DBOs)"
 " quit",
 " ",
 "Try 'help command' for more help on a specific command.",
@@ -607,8 +714,8 @@ usage(char *subOpt)
 "open  ResourceName DatabaseObjectName", 
 "Open the specified database object on the specified database resource. ",
 ""};
-   char *lsMsgs[]={
-"ls [ResourceName] [database-object-descriptor]",
+   char *infoMsgs[]={
+"info [ResourceName] [database-object-descriptor]",
 "list information about the database-resource or a particular (open)",
 "database-object on that resource.",
 "In the first case, it will list the configured database-objects on that",
@@ -616,16 +723,21 @@ usage(char *subOpt)
 "If ResourceName is not included, it will use the last one used.",
 "Examples:",
 "$ idbo",
-"idbo>ls demoResc",
+"idbo>info demoResc",
 "DBName1 DBName2",
 "idbo>open demoResc DBName1",
 "open object-descriptor (index to open database-object)=0",
-"idbo>ls 0",
+"idbo>info 0",
 "Schema|Name|Type|Owner|",
 "public|r_table1|table|schroeder|",
 "public|r_table2|table|schroeder|",
 "public|cadc_config_archive_case|table|schroeder|",
 "public|cadc_config_compression|table|schroeder|",
+""};
+   char *lsMsgs[]={
+"ls [dataObj]", 
+"List information about all defined database objects or, if provided,",
+"on the one database object.  You can also use 'ils' for other information.",
 ""};
    char *helpMsgs[]={
 " help (or h) [command] (general help, or more details on a command)",
@@ -634,11 +746,11 @@ usage(char *subOpt)
 ""};
 
 
-   char *subCmds[]={"open", "ls",
+   char *subCmds[]={"open", "info", "ls",
 		    "help", "h",
 		    ""};
 
-   char **pMsgs[]={ openMsgs, lsMsgs,
+   char **pMsgs[]={ openMsgs, infoMsgs, lsMsgs,
 		    helpMsgs, helpMsgs };
 
    if (*subOpt=='\0') {

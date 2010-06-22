@@ -1678,6 +1678,12 @@ usage(char *subOpt)
 "In numeric mode, if any of the named AVU values are non-numeric, a SQL",
 "error will occur but this avoids problems when comparing numeric strings",
 "of different lengths.",
+" ",
+"Other examples:",
+" qu -d a like b%",
+"returns data-objects with attribute 'a' with a value that starts with 'b'.",
+" qu -d a like %",
+"returns data-objects with attribute 'a' defined (with any value).",
 ""};
 	 for (i=0;;i++) {
 	    if (strlen(msgs[i])==0) return(0);
