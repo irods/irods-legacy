@@ -205,10 +205,19 @@ addSql() {
    char *mySubName;
    char rescName[BIG_STR];
    char objName[BIG_STR];
+   char objNameFromUser[BIG_STR];
    char desc[BIG_STR];
    char sql[MAX_SQL];
    getInputLine("Resource name:", rescName, BIG_STR);
-   getInputLine("Object name:", objName, BIG_STR);
+   getInputLine("Object name or full path:", objNameFromUser, BIG_STR);
+   if(objNameFromUser[0]=='/') {
+      strncpy(objName, objNameFromUser, BIG_STR);
+   }
+   else {
+      strncpy(objName, cwd, BIG_STR);
+      strncat(objName, "/", BIG_STR);
+      strncat(objName, objNameFromUser, BIG_STR);
+   }
    getInputLine("Description:", desc, BIG_STR);
    getInputLine("SQL:", sql, MAX_SQL);
 
@@ -241,11 +250,21 @@ rmSql() {
    char *mySubName;
    char rescName[BIG_STR];
    char objName[BIG_STR];
+   char objNameFromUser[BIG_STR];
 
    memset((void *)&databaseObjectAdminInp, 0, sizeof(databaseObjectAdminInp));
 
 /*   getInputLine("Resource name:", rescName, BIG_STR); */
-   getInputLine("Object name:", objName, BIG_STR);
+   getInputLine("Object name or full path:", objNameFromUser, BIG_STR);
+   if(objNameFromUser[0]=='/') {
+      strncpy(objName, objNameFromUser, BIG_STR);
+   }
+   else {
+      strncpy(objName, cwd, BIG_STR);
+      strncat(objName, "/", BIG_STR);
+      strncat(objName, objNameFromUser, BIG_STR);
+   }
+
 
 /*   databaseObjectAdminInp.dbrName = rescName; */
    databaseObjectAdminInp.dboName = objName;

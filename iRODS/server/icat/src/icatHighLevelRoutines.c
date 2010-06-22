@@ -21,6 +21,7 @@
 #include "icatMidLevelHelpers.h"
 #include "icatHighLevelRoutines.h"
 #include "icatLowLevel.h"
+#include "databaseObjectAdmin.h"
 
 extern int get64RandomBytes(char *buf);
 
@@ -7879,7 +7880,6 @@ chlDatabaseObjectAdmin(rsComm_t *rsComm,
 		       databaseObjectAdminInp_t *databaseObjectAdminInp,
 		       databaseObjectAdminOut_t *databaseObjectAdminOut) {
    int status;
-   dataObjInfo_t dataObjInfo;
 
    if (databaseObjectAdminInp->option == NULL) return(CAT_INVALID_ARGUMENT);
 
@@ -7894,44 +7894,57 @@ chlDatabaseObjectAdmin(rsComm_t *rsComm,
       status = icatCheckResc(databaseObjectAdminInp->dbrName);
       if (status) return(status);
 
-      memset(&dataObjInfo, 0, sizeof(dataObjInfo));
-      strcpy(dataObjInfo.objPath, "/newZone/home/rods/");
-      strcat(dataObjInfo.objPath, databaseObjectAdminInp->dboName);
+      status = chlAddAVUMetadata(rsComm, 0, "-d", 
+				 databaseObjectAdminInp->dboName,
+				 DBO_SQL, 
+				 databaseObjectAdminInp->sql,
+			         "");
+      if (status) return(status);
 
-      strcpy(dataObjInfo.rescName, databaseObjectAdminInp->dbrName);
-      strcpy(dataObjInfo.filePath, databaseObjectAdminInp->sql);
-      strcpy(dataObjInfo.dataType, "shadow object");
-      status = chlRegDataObj(rsComm, &dataObjInfo);
+      status = chlAddAVUMetadata(rsComm, 0, "-d", 
+				 databaseObjectAdminInp->dboName,
+				 DBO_DESC, 
+				 databaseObjectAdminInp->description,
+			         "");
+      if (status) return(status);
 
-      if (status == 0) {
-	 keyValPair_t regParam;
-	 
-	 memset (&regParam, 0, sizeof (regParam));
-	 addKeyVal (&regParam, DATA_COMMENTS_KW, 
-		    databaseObjectAdminInp->description);
-	 status =  chlModDataObjMeta(rsComm, &dataObjInfo, &regParam);
-      }
+      status = chlAddAVUMetadata(rsComm, 0, "-d", 
+				 databaseObjectAdminInp->dboName,
+				 DBO_RESC, 
+				 databaseObjectAdminInp->dbrName,
+			         "");
 
       return(status);
    }
 
    /* Remove */
    if (strcmp(databaseObjectAdminInp->option, DBObjAdmin_Remove)==0) {
-/*    if (databaseObjectAdminInp->dbrName == NULL) return(CAT_INVALID_ARGUMENT); */
       if (databaseObjectAdminInp->dboName == NULL) return(CAT_INVALID_ARGUMENT);
 
-      keyValPair_t conditionInput;
-      memset (&conditionInput, 0, sizeof (conditionInput));
-      memset(&dataObjInfo, 0, sizeof(dataObjInfo));
-      strcpy(dataObjInfo.objPath, "/newZone/home/rods/");
-      strcat(dataObjInfo.objPath, databaseObjectAdminInp->dboName);
+      status = chlDeleteAVUMetadata(rsComm, 1, "-d", 
+				    databaseObjectAdminInp->dboName,
+				    DBO_SQL, 
+				    "%",
+				    "%", 0);
+      if (status) return(status);
 
-/*      strncpy(dataObjInfo.dataComments, databaseObjSqlInp->description, 
-	sizeof(dataObjInfo.dataComments)); */
-      strcpy(dataObjInfo.dataType, "shadow object");
-      status = chlUnregDataObj(rsComm, &dataObjInfo, &conditionInput);
+      status = chlDeleteAVUMetadata(rsComm, 1, "-d", 
+				    databaseObjectAdminInp->dboName,
+				    DBO_DESC, 
+				    "%",
+				    "%", 0);
+      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
+      if (status) return(status);
+
+      status = chlDeleteAVUMetadata(rsComm, 1, "-d", 
+				    databaseObjectAdminInp->dboName,
+				    DBO_RESC, 
+				    "%",
+				    "%", 0);
+      if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
 
       return(status);
+
    }
 
    return (CAT_INVALID_ARGUMENT);

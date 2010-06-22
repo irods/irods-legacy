@@ -47,7 +47,6 @@ _rsDatabaseObjectAdmin (rsComm_t *rsComm,
 			databaseObjectAdminInp_t *databaseObjectAdminInp,
 			databaseObjectAdminOut_t **databaseObjectAdminOut) {
     int status;
-    int t1, t2;
     char *blank2;
     char *blank3;
     char *blank4;
@@ -68,12 +67,6 @@ _rsDatabaseObjectAdmin (rsComm_t *rsComm,
     databaseObjectAdminOut_t *myObjectAdminOut;
 
     myObjectAdminOut = (databaseObjectAdminOut_t *)malloc(sizeof(databaseObjectAdminOut_t));
-
-    t1 = sizeof(databaseObjectAdminOut_t);
-    printf("t1=%d\n",t1);
-
-    t2 = sizeof(myObjectAdminOut);
-    printf("t1=%d\n",t2);
 
     *databaseObjectAdminOut = myObjectAdminOut;
     myObjectAdminOut->dbrName=blank2;

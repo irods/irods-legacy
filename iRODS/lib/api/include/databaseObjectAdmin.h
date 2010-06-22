@@ -25,6 +25,11 @@
 #define DBObjAdmin_Update "update"
 #define DBObjAdmin_Get    "get"
 
+/* AVUs */
+#define DBO_SQL "DBO_SQL"
+#define DBO_DESC "DBO_DESC"
+#define DBO_RESC "DBO_RESC"
+
 typedef struct {
    char *option;
    char *dbrName;
