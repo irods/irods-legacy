@@ -271,4 +271,7 @@ sortRescRandom (rescGrpInfo_t **rescGrpInfo);
 int
 setDefaultResc (rsComm_t *rsComm, char *defaultRescList, char *optionStr,
 keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo);
+int
+getRescInfoAndStatus (rsComm_t *rsComm, char *rescName, keyValPair_t *condInput,
+rescGrpInfo_t **rescGrpInfo);
 #endif	/* OBJ_META_OPR_H */

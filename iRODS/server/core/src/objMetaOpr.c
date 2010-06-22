@@ -3859,6 +3859,7 @@ setDefaultResc (rsComm_t *rsComm, char *defaultRescList, char *optionStr,
 keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
 {
     rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *defRescGrpInfo = NULL;
     rescGrpInfo_t *tmpRescGrpInfo, *prevRescGrpInfo;
     char *value = NULL;
     strArray_t strArray;
@@ -3890,15 +3891,28 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
         startInx = random() % strArray.len;
         defaultResc = &value[startInx * strArray.size];
     }
+    status = getRescInfoAndStatus (rsComm, defaultResc, NULL, &defRescGrpInfo);
+    if (status < 0) {
+	/* the random defaultResc is not good. pick other */
+	if (strArray.len <= 1) {
+	    defaultResc = NULL;
+	} else {
+	    for (i = 0; i < strArray.len; i++) {
+		defaultResc =  &value[i * strArray.size];
+		status = getRescInfoAndStatus (rsComm, defaultResc, NULL,
+		&defRescGrpInfo);
+		if (status >= 0) break;
+	    }
+	    if (status < 0) defaultResc = NULL;
+	}
+    }
 
-
-    if (optionStr == NULL) {
-        status = getRescInfo (rsComm, defaultResc, condInput,
-          &myRescGrpInfo);
-    } else if (strcmp (optionStr, "preferred") == 0) {
-        status = getRescInfo (rsComm, NULL, condInput,
+    if (strcmp (optionStr, "preferred") == 0) {
+	/* checkinput first, then default */
+        status = getRescInfoAndStatus (rsComm, NULL, condInput,
           &myRescGrpInfo);
         if (status >= 0) {
+	    freeAllRescGrpInfo (defRescGrpInfo);
             if (strlen (myRescGrpInfo->rescGroupName) > 0) {
                 for (i = 0; i < strArray.len; i++) {
                     int j;
@@ -3910,8 +3924,10 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
                     tmpRescGrpInfo = myRescGrpInfo;
                     prevRescGrpInfo = NULL;
                     while (tmpRescGrpInfo != NULL) {
+			rescInfo_t *myResc = tmpRescGrpInfo->rescInfo;
                         if (strcmp (&value[j * strArray.size],
-                          tmpRescGrpInfo->rescInfo->rescName) == 0) {
+                          myResc->rescName) == 0 &&
+			    myResc->rescStatus != INT_RESC_STATUS_DOWN) {
                             /* put it on top */
                             if (prevRescGrpInfo != NULL) {
                                 prevRescGrpInfo->next = tmpRescGrpInfo->next;
@@ -3928,19 +3944,32 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
         } else {
             /* error may mean there is no input resource. try to use the
              * default resource by dropping down */
-            status = getRescInfo (rsComm, defaultResc, condInput,
-              &myRescGrpInfo);
+            if (defRescGrpInfo != NULL) {
+                myRescGrpInfo = defRescGrpInfo;
+                status = 0;
+            }
         }
     } else if (strcmp (optionStr, "forced") == 0) {
-        status = getRescInfo (rsComm, defaultResc, NULL,
-          &myRescGrpInfo);
+        if (defRescGrpInfo != NULL) {
+            myRescGrpInfo = defRescGrpInfo;
+	}
     } else {
-        status = getRescInfo (rsComm, defaultResc, condInput,
+        /* input first. If not good, use def */
+        status = getRescInfo (rsComm, NULL, condInput,
           &myRescGrpInfo);
+        if (status < 0) {
+            if (defRescGrpInfo != NULL) {
+                myRescGrpInfo = defRescGrpInfo;
+                status = 0;
+            }
+        } else {
+            freeAllRescGrpInfo (defRescGrpInfo);
+        }
     }
 
-    if (status == CAT_NO_ROWS_FOUND)
+    if (status == CAT_NO_ROWS_FOUND) 
       status = SYS_RESC_DOES_NOT_EXIST;
+    
 
     if (value != NULL)
         free (value);
@@ -3952,5 +3981,38 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
     }
 
     return (status);
+}
+
+/* getRescInfoAndStatus - given a resource or rescGroup name, see if the
+ * resource is up or down.
+ */
+int
+getRescInfoAndStatus (rsComm_t *rsComm, char *rescName, keyValPair_t *condInput,
+rescGrpInfo_t **rescGrpInfo)
+{
+    int status;
+    rescGrpInfo_t *myRescGrpInfo = NULL;
+    rescGrpInfo_t *tmpRescGrpInfo;
+
+    status = getRescInfo (rsComm, rescName, condInput, &myRescGrpInfo);
+    if (status >= 0 && *myRescGrpInfo->rescGroupName != '\0') {
+        /* make sure at least one resc is not down */
+        tmpRescGrpInfo = myRescGrpInfo;
+        while (tmpRescGrpInfo != NULL) {
+            if (tmpRescGrpInfo->rescInfo->rescStatus != INT_RESC_STATUS_DOWN)
+                break;
+            tmpRescGrpInfo = tmpRescGrpInfo->next;
+        }
+        if (tmpRescGrpInfo == NULL) {
+	    status = SYS_RESC_IS_DOWN;
+	    if (myRescGrpInfo != NULL) freeAllRescGrpInfo (myRescGrpInfo);
+	} 
+    }
+    if (status >= 0) {
+	*rescGrpInfo = myRescGrpInfo;
+    } else {
+	*rescGrpInfo = NULL;
+    }
+    return status;
 }
 
