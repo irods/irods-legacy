@@ -5112,7 +5112,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    group-based read, this will be 'write').
 */
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 3");
-#if ORA_ICAT
+#if (defined ORA_ICAT || defined MY_ICAT)
    status =  cmlExecuteNoAnswerSql(
       "create or replace view ACCESS_VIEW_TWO as select max(access_type_id) max from ACCESS_VIEW_ONE group by data_id",
       &icss);
