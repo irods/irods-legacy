@@ -260,6 +260,8 @@ runCmd(0, "test_chl checkquota $User2 $Resc");
 # check rule table updates
 # (without a commit, does not get saved)
 runCmd(0, "test_chl addrule a b c d e f g");
+#
+runCmd(0, "test_chl versionrulebase a");
 
 # clean up
 runCmd(0, "iadmin rmuser $UserAdmin2");

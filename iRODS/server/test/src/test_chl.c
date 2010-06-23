@@ -747,6 +747,17 @@ testAddRule(rsComm_t *rsComm, char *baseName, char *ruleName,
 }
 
 int
+testVersionRuleBase(rsComm_t *rsComm, char *baseName) {
+   int status;
+   char myTime[]="01277237323";
+   rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
+
+   status = chlVersionRuleBase(rsComm, baseName, (char *)&myTime);
+
+   return(status);
+}
+
+int
 main(int argc, char **argv) {
    int status;
    rsComm_t *Comm;
@@ -1000,6 +1011,11 @@ main(int argc, char **argv) {
      status = testAddRule(Comm, argv[2], argv[3],
 			     argv[4], argv[5],
 			  argv[6], argv[7]);
+     didOne=1;
+   }
+
+   if (strcmp(argv[1],"versionrulebase")==0) {
+     status = testVersionRuleBase(Comm, argv[2]);
      didOne=1;
    }
 
