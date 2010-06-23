@@ -211,6 +211,7 @@ create table R_RULE_BASE_MAP
  (
    map_version varchar(250) DEFAULT '0',
    map_base_name varchar(250) not null,
+   map_base_priority INTEGER not null,
    rule_id bigint not null,
    map_owner_name varchar(250) not null,
    map_owner_zone varchar(250) not null,
