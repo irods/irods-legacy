@@ -19,7 +19,7 @@ xmsgTicketInfo_t **outXmsgTicketInfo)
 
     *outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
 
-    (*outXmsgTicketInfo)->sendTicket = random();
+    /**    (*outXmsgTicketInfo)->sendTicket = random(); **/
     thisTime = time (NULL);
     inpExpireTime = getXmsgTicketInp->expireTime;
     if (inpExpireTime > 0) {
@@ -33,9 +33,10 @@ xmsgTicketInfo_t **outXmsgTicketInfo)
     } else {
         (*outXmsgTicketInfo)->expireTime = thisTime + DEF_EXPIRE_INT;
     }
-
+    (*outXmsgTicketInfo)->flag = getXmsgTicketInp->flag;
     while (1) {
         (*outXmsgTicketInfo)->rcvTicket = random();
+	(*outXmsgTicketInfo)->sendTicket = (*outXmsgTicketInfo)->rcvTicket;
         hashSlotNum = ticketHashFunc ((*outXmsgTicketInfo)->rcvTicket);
         status = addTicketToHQue (
 	  *outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);

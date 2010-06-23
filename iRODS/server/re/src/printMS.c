@@ -503,17 +503,21 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
 }
 
 int
-readXMsg(msParam_t* inStreamId, msParam_t *outMsgNum, msParam_t *outSeqNum, 
-	 msParam_t *outHdr, msParam_t *outMsg, ruleExecInfo_t *rei)
+readXMsg(msParam_t* inStreamId, msParam_t *inCondRead,  
+	 msParam_t *outMsgNum, msParam_t *outSeqNum, 
+	 msParam_t *outHdr, msParam_t *outMsg, 
+	 msParam_t *outUser, msParam_t *outAddr, ruleExecInfo_t *rei)
 {
   int i;
   int sNum = 0;
   int mNum = 0;
   char *hdr = NULL;
   char *msg = NULL;
+  char *user = NULL;
+  char *addr = NULL;
   int streamId;
   xmsgTicketInfo_t *xmsgTicketInfo;
-
+  char *condRead = NULL;
   RE_TEST_MACRO ("    Calling readXMsg");
 
   if (!strcmp(inStreamId->type,XmsgTicketInfo_MS_T)) {
@@ -525,8 +529,8 @@ readXMsg(msParam_t* inStreamId, msParam_t *outMsgNum, msParam_t *outSeqNum,
   }
   else
     streamId = (int) inStreamId->inOutStruct;
-
-  i = _readXMsg(streamId, &mNum, &sNum, &hdr, &msg);
+  condRead = (char *) inCondRead->inOutStruct;
+  i = _readXMsg(streamId, condRead, &mNum, &sNum, &hdr, &msg, &user, &addr);
   if (i >= 0) {
     outHdr->inOutStruct = (void *) hdr;
     outHdr->type = strdup(STR_MS_T);
@@ -534,6 +538,11 @@ readXMsg(msParam_t* inStreamId, msParam_t *outMsgNum, msParam_t *outSeqNum,
     outMsg->type = strdup(STR_MS_T);
     fillIntInMsParam(outMsgNum, mNum);
     fillIntInMsParam(outSeqNum, sNum);
+    outUser->inOutStruct = (void *) user;
+    outUser->type = strdup(STR_MS_T);
+    outAddr->inOutStruct = (void *) addr;
+    outAddr->type = strdup(STR_MS_T);
+
   }
   return(i);
 }

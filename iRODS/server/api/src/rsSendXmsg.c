@@ -41,7 +41,7 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
     *irodsXmsg->sendXmsgInfo = sendXmsgInp->sendXmsgInfo;
     irodsXmsg->sendTime = time (0);
     rstrcpy (irodsXmsg->sendUserName, rsComm->clientUser.userName, NAME_LEN);
-
+    rstrcpy (irodsXmsg->sendAddr,sendXmsgInp->sendAddr, NAME_LEN);
     addXmsgToXmsgQue (irodsXmsg, &XmsgQue);
 
     status = addXmsgToTicketMsgStruct (irodsXmsg, ticketMsgStruct);

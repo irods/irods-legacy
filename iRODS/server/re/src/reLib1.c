@@ -840,7 +840,7 @@ initRuleStruct(char *irbSet, char *dvmSet, char *fnmSet)
 
 
 int
-readRuleStructFromDB(char *ruleBaseName, ruleStruct_t *inRuleStrct, ruleExecInfo_t *rei)
+readRuleStructFromDB(char *ruleBaseName, char *versionStr, ruleStruct_t *inRuleStrct, ruleExecInfo_t *rei)
 {
   int i,l,status;
   genQueryInp_t genQueryInp;
@@ -852,9 +852,10 @@ readRuleStructFromDB(char *ruleBaseName, ruleStruct_t *inRuleStrct, ruleExecInfo
 
   snprintf(condstr, MAX_NAME_LEN, "= '%s'", ruleBaseName);
   addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_BASE_NAME, condstr);
-  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", "0");
+  snprintf(condstr2, MAX_NAME_LEN, "= '%s'", versionStr);
   addInxVal(&genQueryInp.sqlCondInp, COL_RULE_BASE_MAP_VERSION, condstr2);
-
+  
+  addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_PRIORITY, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_BASE_MAP_BASE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_NAME, 1);
   addInxIval(&genQueryInp.selectInp, COL_RULE_EVENT, 1);
@@ -1248,18 +1249,40 @@ insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,
   generalRowInsertInp_t generalRowInsertInp;
   char ruleIdStr[MAX_NAME_LEN];
   int rc1, i;
+  int  mapPriorityInt = 1;
+  char mapPriorityStr[50];
   endTransactionInp_t endTransactionInp;
+  char myTime[50];
+
   memset (&endTransactionInp, 0, sizeof (endTransactionInp_t));
+  getNowStr(myTime);
+
+  /* Before inserting rules and its base map, we need to first version out the base map */
+  generalRowInsertInp.tableName = "versionRuleBase";
+  generalRowInsertInp.arg1 = baseName;
+  generalRowInsertInp.arg2 = myTime;
+
+  rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+  if (rc1 < 0) {
+    endTransactionInp.arg0 = "rollback";
+    rsEndTransaction(rei->rsComm, &endTransactionInp);
+    return(rc1);
+  }
 
   for (i = 0; i < coreRuleStruct->MaxNumOfRules; i++) {
     generalRowInsertInp.tableName = "ruleTable";
     generalRowInsertInp.arg1 = baseName;
-    generalRowInsertInp.arg2 = coreRuleStruct->action[i];
-    generalRowInsertInp.arg3 = coreRuleStruct->ruleHead[i];
-    generalRowInsertInp.arg4 = coreRuleStruct->ruleCondition[i];
-    generalRowInsertInp.arg5 = coreRuleStruct->ruleAction[i];
-    generalRowInsertInp.arg6 = coreRuleStruct->ruleRecovery[i];
-    generalRowInsertInp.arg7 = ruleIdStr;
+    sprintf(mapPriorityStr, "%i", mapPriorityInt);
+    mapPriorityInt++;
+    generalRowInsertInp.arg2 = mapPriorityStr;
+    generalRowInsertInp.arg3 = coreRuleStruct->action[i];
+    generalRowInsertInp.arg4 = coreRuleStruct->ruleHead[i];
+    generalRowInsertInp.arg5 = coreRuleStruct->ruleCondition[i];
+    generalRowInsertInp.arg6 = coreRuleStruct->ruleAction[i];
+    generalRowInsertInp.arg7= coreRuleStruct->ruleRecovery[i];
+    generalRowInsertInp.arg8 = ruleIdStr;
+    generalRowInsertInp.arg9 = myTime;
+
     rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
     if (rc1 < 0) {
       endTransactionInp.arg0 = "rollback";
@@ -1275,13 +1298,25 @@ insertRulesIntoDB(char * baseName, ruleStruct_t *coreRuleStruct,
 
 
 int
-writeRulesIntoFile(char * fileName, ruleStruct_t *myRuleStruct,
+writeRulesIntoFile(char * inFileName, ruleStruct_t *myRuleStruct,
                   ruleExecInfo_t *rei)
 {
 
   int i;
   FILE *file;
-  
+  char fileName[MAX_NAME_LEN];
+  char *configDir;
+
+  if (inFileName[0] == '/' || inFileName[0] == '\\' ||
+      inFileName[1] == ':') {
+    snprintf (fileName,MAX_NAME_LEN, "%s",inFileName);
+  }
+  else {
+    configDir = getConfigDir ();
+    snprintf (fileName,MAX_NAME_LEN, "%s/reConfigs/%s.irb", configDir,inFileName);
+  }
+
+
   file = fopen(fileName, "w");
   if (file == NULL) {
     rodsLog(LOG_NOTICE,

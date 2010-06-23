@@ -338,7 +338,7 @@ primary ordering column.
 #define COL_RULE_BASE_MAP_COMMENT      1725
 #define COL_RULE_BASE_MAP_CREATE_TIME  1726
 #define COL_RULE_BASE_MAP_MODIFY_TIME  1727
- 
+#define COL_RULE_BASE_MAP_PRIORITY     1728 
 
 /* R_RULE_DVM (Data Variable Mapping) */
 #define COL_DVM_ID            1800

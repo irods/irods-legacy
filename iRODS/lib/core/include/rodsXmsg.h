@@ -14,6 +14,7 @@
 					 * msgNumber */
 typedef struct {
     uint expireTime;                    /* unix time of ticket expiration */
+    uint flag;                          /* flag set to  XmsgTicketInfo.flag */
 } getXmsgTicketInp_t;
 
 /* definition for XmsgTicketInfo.flag */
@@ -41,6 +42,7 @@ typedef struct SendXmsgInfo {
 
 typedef struct {
     xmsgTicketInfo_t ticket;            /* xmsgTicketInfo from getXmsgTicket */
+    char sendAddr[NAME_LEN];                  /* send Addr can contain pid after: */
     sendXmsgInfo_t sendXmsgInfo;
 } sendXmsgInp_t;
 
@@ -92,11 +94,13 @@ typedef struct RcvXmsgInp {
     uint rcvTicket;
     uint msgNumber;
     uint seqNumber;
+    char msgCondition[NAME_LEN];
 } rcvXmsgInp_t;
 
 typedef struct RcvXmsgOut {
     char msgType[HEADER_TYPE_LEN];      /* msg type, 16 char */
     char sendUserName[NAME_LEN];        /* userName@zone of clientUser */
+    char sendAddr[NAME_LEN];            /* sender's network address*/
     uint msgNumber;                     /* msgNumber as set by sender */
     uint seqNumber;                     /* internal sequence number */
     char *msg;                          /* the msg */

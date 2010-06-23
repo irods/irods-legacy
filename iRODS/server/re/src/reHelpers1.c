@@ -636,18 +636,81 @@ reREMatch(char *pat, char *str)
 
 }
 
+int processXMsg(int streamId, int *msgNum, int *seqNum, 
+		char * readhdr, char *readmsg, 
+		char *callLabel, int flag, char *hdr, char *actionStr, 
+		msParamArray_t *inMsParamArray, ruleExecInfo_t *rei)
+{
+
+  char cmd;
+
+  cmd = readmsg[0];
+
+  switch(cmd) {
+  case 'n': /* next */
+  case 's': /* step */
+    break;
+  case 'c': /* continue */
+    break;
+  case 'e': /* examine */
+    break;
+  case 'l': /* list rule */
+    break;
+  case 'b': /* break point */
+    break;
+  case 'w': /* where are you now */
+    _writeXMsg(streamId, hdr, actionStr);
+    break;
+  default:
+    break;
+
+  }
+  return(0);
+}
+
+
+
 int
 reDebug(char *callLabel, int flag, char *actionStr, msParamArray_t *inMsParamArray, ruleExecInfo_t *rei)
 {
-  int i;
-  char hdr[HEADER_TYPE_LEN + 1];
+  int i, m, s, status, sleepT;
+  char hdr[HEADER_TYPE_LEN];
   char myHostName[MAX_NAME_LEN];
+  char *readhdr = NULL;
+  char *readmsg = NULL;
+  char *user = NULL;
+  char *addr = NULL;
+  static int mNum = 0;
+  static int sNum = 0;
+  char condRead[NAME_LEN];
+
 
   myHostName[0] = '\0';
   gethostname (myHostName, MAX_NAME_LEN);
- 
-  snprintf(hdr, HEADER_TYPE_LEN,   "%s:%i:%s",
-	   myHostName, getpid (), callLabel);
+  sleepT = 1;
+  condRead[0] = '\0'; 
+  snprintf(hdr, HEADER_TYPE_LEN - 1,   "idbug:%s",callLabel);
+
   i = _writeXMsg(GlobalREDebugFlag, hdr, actionStr);
+  while ( GlobalREDebugFlag > 3 ) {
+    s = sNum;
+    m = mNum;
+    status = _readXMsg(GlobalREDebugFlag, condRead, &m, &s, &readhdr, &readmsg, &user, &addr);
+    if (status  >= 0) {
+      
+      processXMsg(GlobalREDebugFlag, &m, &s, readhdr, readmsg,
+		  callLabel, flag, hdr,  actionStr, inMsParamArray, rei);
+      mNum = m;
+      sNum = s + 1;
+      break;
+    }
+    else {
+      sleep(sleepT);
+      sleepT = 2 * sleepT;
+      if (sleepT > 10) sleepT = 10;
+    }
+  }
+
+
   return(0);
 }

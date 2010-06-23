@@ -1,14 +1,7 @@
-# iRODS Rule Base
-# Each rule consists of four parts separated by  |
-# The four parts are: name, conditions, function calls, and recovery.
-# The calls and recoveries can be multiple ones, separated by ##.
-# For each rule, the number recovery calls should match the calls;
-# for example, if the 2nd call fails, the 2nd recover call is made.
-#
 acDataObjCreate||acSetCreateConditions##acDOC|nop##null
 acSetCreateConditions||msiGetNewObjDescriptor##acSetResourceList|recover_msiGetNewObjDescriptornop##nop
 acDOC||msiPhyDataObjCreate##acRegisterData##msiCommit|recover_msiPhyDataObjCreate##nop##msiRollback
-acSetResourceList||msiSetResourceList|nop
+acSetResourceList||TTTTmsiSetResourceList|nop
 acRegisterData||msiRegisterData|msiRollback
 
 

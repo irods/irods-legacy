@@ -732,12 +732,13 @@ testAddRule(rsComm_t *rsComm, char *baseName, char *ruleName,
 	    char *ruleRecovery) {
    int status;
    char ruleIdStr[200];
-
+   char myTime[]="01277237323";
+   char priority[] ="1";
    rsComm->clientUser.authInfo.authFlag = LOCAL_PRIV_USER_AUTH;
 
-   status = chlInsRuleTable(rsComm, baseName, ruleName,
+   status = chlInsRuleTable(rsComm, baseName, priority, ruleName,
 			    ruleHead, ruleCondition, ruleAction,
-			    ruleRecovery, (char *)&ruleIdStr);
+			    ruleRecovery, (char *)&ruleIdStr, (char *)&myTime);
 
    if (status == 0) {
      printf("ruleIdStr: %s\n",ruleIdStr);
@@ -998,7 +999,7 @@ main(int argc, char **argv) {
    if (strcmp(argv[1],"addrule")==0) {
      status = testAddRule(Comm, argv[2], argv[3],
 			     argv[4], argv[5],
-			     argv[6], argv[7]);
+			  argv[6], argv[7]);
      didOne=1;
    }
 

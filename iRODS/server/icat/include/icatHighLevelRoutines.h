@@ -123,10 +123,12 @@ int chlDebug(char *debugMode);
 int chlDebugGenQuery(int mode);
 int chlDebugGenUpdate(int mode);
 int chlInsRuleTable(rsComm_t *rsComm,
-		    char *baseName, char *ruleName,
+		    char *baseName, char *priorityStr, char *ruleName,
 		    char *ruleHead, char *ruleCondition, 
 		    char *ruleAction,
-		    char *ruleRecovery, char *ruleIdStr);
+		    char *ruleRecovery, char *ruleIdStr, char *myTime);
+int chlVersionRuleBase(rsComm_t *rsComm,
+		       char *baseName, char *myTime);
 int chlDatabaseObjectAdmin(rsComm_t *rsComm, 
 			   databaseObjectAdminInp_t *databaseObjectAdminInp,
 			   databaseObjectAdminOut_t *databaseObjectAdminOut);

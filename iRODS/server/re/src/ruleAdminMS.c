@@ -617,7 +617,8 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
       inIrbFileNameParam->inOutStruct == NULL ||
       strlen((char *) inIrbFileNameParam->inOutStruct) == 0 )
     return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-  if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
+  if (outCoreRuleStruct->type != NULL &&
+      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
       outCoreRuleStruct->inOutStruct != NULL) {
     coreRuleStrct = (ruleStruct_t *) outCoreRuleStruct->inOutStruct;
   }
@@ -633,7 +634,9 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
   }
 
   outCoreRuleStruct->inOutStruct = (void *) coreRuleStrct;
-  outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
+  if (outCoreRuleStruct->type == NULL || 
+      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0)
+    outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
   return(0);
 }
 
@@ -665,7 +668,8 @@ int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *
 
 
 int
-msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
+msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionParam, 
+			    msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
 {
     
   int i;
@@ -678,7 +682,13 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *outCoreRul
       inIrbBaseNameParam->inOutStruct == NULL ||
       strlen((char *) inIrbBaseNameParam->inOutStruct) == 0 )
     return(PARAOPR_EMPTY_IN_STRUCT_ERR);
-  if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
+  if (inVersionParam == NULL ||
+      strcmp (inVersionParam->type,STR_MS_T) != 0 ||
+      inVersionParam->inOutStruct == NULL ||
+      strlen((char *) inVersionParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (outCoreRuleStruct->type != NULL &&
+      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) == 0 &&
       outCoreRuleStruct->inOutStruct != NULL) {
     coreRuleStrct = (ruleStruct_t *) outCoreRuleStruct->inOutStruct;
   }
@@ -686,7 +696,7 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *outCoreRul
     coreRuleStrct = (ruleStruct_t *) malloc (sizeof(ruleStruct_t));
     coreRuleStrct->MaxNumOfRules = 0;
   }
-  i = readRuleStructFromDB((char*) inIrbBaseNameParam->inOutStruct, coreRuleStrct, rei);
+  i = readRuleStructFromDB((char*) inIrbBaseNameParam->inOutStruct, (char*) inVersionParam->inOutStruct,  coreRuleStrct, rei);
   if (i != 0) {
     if (strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0 )
       free(coreRuleStrct);
@@ -694,7 +704,9 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *outCoreRul
   }
 
   outCoreRuleStruct->inOutStruct = (void *) coreRuleStrct;
-  outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
+  if (outCoreRuleStruct->type == NULL ||
+      strcmp (outCoreRuleStruct->type,RuleStruct_MS_T) != 0)
+    outCoreRuleStruct->type = (char *) strdup(RuleStruct_MS_T);
   return(0);
 }
 

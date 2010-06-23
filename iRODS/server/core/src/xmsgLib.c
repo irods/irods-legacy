@@ -468,7 +468,7 @@ initXmsgHashQue ()
     memset (XmsgHashQue, 0, NUM_HASH_SLOT * sizeof (ticketHashQue_t));
     memset (&XmsgQue, 0, sizeof (XmsgQue));
 
-    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id =1,2,3***/
+    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id =1,2,3,4,5***/
 
     thisTime = time (NULL);
 
@@ -496,8 +496,24 @@ initXmsgHashQue ()
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
 
+    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
+    outXmsgTicketInfo->rcvTicket = 4;
+    outXmsgTicketInfo->sendTicket = 4;
+    outXmsgTicketInfo->flag = 1;
+    hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
+    addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
 
-    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id = 1,2,3***/
+    outXmsgTicketInfo = calloc (1, sizeof (xmsgTicketInfo_t));
+    outXmsgTicketInfo->expireTime = thisTime + (MAX_EXPIRE_INT * 500);
+    outXmsgTicketInfo->rcvTicket = 5;
+    outXmsgTicketInfo->sendTicket = 5;
+    outXmsgTicketInfo->flag = 1;
+    hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
+    addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
+
+
+    /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id = 1,2,3,4,5***/
 
     return (0);
 }
@@ -557,6 +573,8 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
 	rstrcpy (rcvXmsgOut->msgType, sendXmsgInfo->msgType, HEADER_TYPE_LEN);
 	rstrcpy (rcvXmsgOut->sendUserName, irodsXmsg->sendUserName,
 	  NAME_LEN);
+	rstrcpy (rcvXmsgOut->sendAddr, irodsXmsg->sendAddr,
+		 NAME_LEN);
 	clearSendXmsgInfo (sendXmsgInfo);
 	free (irodsXmsg);
 	/* take out the ticket too ? */
@@ -573,6 +591,8 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
         rstrcpy (rcvXmsgOut->msgType, sendXmsgInfo->msgType, HEADER_TYPE_LEN);
         rstrcpy (rcvXmsgOut->sendUserName, irodsXmsg->sendUserName,
           NAME_LEN);
+	rstrcpy (rcvXmsgOut->sendAddr, irodsXmsg->sendAddr,
+		 NAME_LEN);
     }
     return (0);
 }

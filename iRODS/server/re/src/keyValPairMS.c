@@ -24,7 +24,7 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note Given a list of KVPairs and a Key, this microservice gets the corresponding value.
  *
  * \usage
  *
@@ -53,9 +53,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, ruleExecInfo_t *rei)
@@ -81,11 +81,7 @@ int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, rul
 /**
  * \fn msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *rei)
  *
- * \brief  Given a List of KVPairs, this microservice prints it to rei->ruleExecOut. It takes a row-structure from GenQueryOut_MS_T and prints it as a
- *         ColumnName=Value pair. The Rule uses the result (tabular) from execution of a iCAT query. The Micro-service msiExecStrCondQuery is used to 
- *         run the query:  SELECT DATA_NAME, DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE ‘foo%’.
- *         The result is printed using the msiPrintKeyValPair microservice, which prints each row as an attribute-value pair. A separator line is 
- *         printed after each row.
+ * \brief  prints out the ke-value structre to internal stdout buffer in rei.
  * 
  * \module core
  * 
@@ -97,7 +93,11 @@ int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, rul
  * \remark Ketan Palshikar - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note Given a List of KVPairs, this microservice prints it to rei->ruleExecOut. It takes a row-structure from GenQueryOut_MS_T and prints it as a
+ *         ColumnName=Value pair. The Rule uses the result (tabular) from execution of a iCAT query. The Micro-service msiExecStrCondQuery is used to 
+ *         run the query:  SELECT DATA_NAME, DATA_REPL_NUM, DATA_CHECKSUM WHERE DATA_NAME LIKE ‘foo%’.
+ *         The result is printed using the msiPrintKeyValPair microservice, which prints each row as an attribute-value pair. A separator line is 
+ *         printed after each row.
  *
  * \usage
  *
@@ -119,9 +119,9 @@ int msiGetValByKey(msParam_t* inKVPair, msParam_t* inKey, msParam_t* outVal, rul
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *rei)
@@ -173,7 +173,7 @@ int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *re
  * \remark Ketan Palshikar - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note  same as brief
  *
  * \usage
  *
@@ -197,9 +197,9 @@ int msiPrintKeyValPair(msParam_t* where, msParam_t* inkvpair, ruleExecInfo_t *re
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa msiStrArray2String
  * \bug  no known bugs
 **/
 int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleExecInfo_t *rei)
@@ -256,7 +256,7 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
  * \remark Ketan Palshikar - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  *
- * \note 
+ * \note none
  *
  * \usage None
  *
@@ -274,9 +274,9 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \postnone
+ * \sa msiString2KeyValPair
  * \bug  no known bugs
 **/
 int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *rei)

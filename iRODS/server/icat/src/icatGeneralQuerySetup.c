@@ -366,6 +366,7 @@ icatGeneralQuerySetup() {
   sColumn(COL_RULE_MODIFY_TIME,"r_rule_main", "modify_ts");
 
   sColumn(COL_RULE_BASE_MAP_VERSION,    "r_rule_base_map", "map_version"); 
+  sColumn(COL_RULE_BASE_MAP_PRIORITY,    "r_rule_base_map", "map_priority"); 
   sColumn(COL_RULE_BASE_MAP_BASE_NAME,  "r_rule_base_map", "map_base_name");
   sColumn(COL_RULE_BASE_MAP_OWNER_NAME, "r_rule_base_map", "map_owner_name");
   sColumn(COL_RULE_BASE_MAP_OWNER_ZONE, "r_rule_base_map", "map_owner_zone");

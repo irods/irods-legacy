@@ -11,9 +11,7 @@
 /**
  * \fn msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei)
  *
- * \brief  This microservice sends e-mail using the mail command in the unix system. The first argument is the e-mail address of the receiver. The 
- *         second argument is the subject string and the third argument is the body of the e-mail. No attachments are supported. The sender of the e-mail 
- *         is the unix uxr-id running the irodsServer.
+ * \brief Send email
  * 
  * \module core
  * 
@@ -25,7 +23,9 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note   This microservice sends e-mail using the mail command in the unix system. The first argument is the e-mail address of the receiver. The 
+ *         second argument is the subject string and the third argument is the body of the e-mail. No attachments are supported. The sender of the e-mail 
+ *         is the unix uxr-id running the irodsServer.
  *
  * \usage
  *
@@ -48,9 +48,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \postnone
+ * \sanone
  * \bug  no known bugs
 **/
 int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, ruleExecInfo_t *rei)
@@ -128,8 +128,7 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
 /**
  * \fn msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei)
  *
- * \brief  This microservice sends contents of the buffer rei->ruleExecOut->stdoutBuf.buf as email. It is a microservice which, given a toAddr parameter 
- *         (an e-mail address) and a subjectLine parameter, sends out the stdout buffer as the body of the e-mail.
+ * \brief sends the current buffer content in rei->ruleExecOut->stdoutBuf.buf as email. 
  * 
  * \module core
  * 
@@ -141,7 +140,8 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
  * \remark Ketan Palshikar - created msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note   This microservice sends contents of the buffer rei->ruleExecOut->stdoutBuf.buf as email. It is a microservice which, given a toAddr parameter 
+ *         (an e-mail address) and a subjectLine parameter, sends out the stdout buffer as the body of the e-mail.
  *
  * \usage
  *
@@ -165,9 +165,9 @@ int msiSendMail(msParam_t* xtoAddr, msParam_t* xsubjectLine, msParam_t* xbody, r
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa writeLine, writeString
  * \bug  no known bugs
 **/
 int msiSendStdoutAsEmail(msParam_t* xtoAddr, msParam_t* xsubjectLine, ruleExecInfo_t *rei)

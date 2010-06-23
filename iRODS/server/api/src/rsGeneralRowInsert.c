@@ -76,7 +76,15 @@ _rsGeneralRowInsert(rsComm_t *rsComm, generalRowInsertInp_t *generalRowInsertInp
 			       generalRowInsertInp->arg4,
 			       generalRowInsertInp->arg5,
 			       generalRowInsertInp->arg6,
-			       generalRowInsertInp->arg7);
+			       generalRowInsertInp->arg7,
+			       generalRowInsertInp->arg8,
+			       generalRowInsertInp->arg9);
+      return(status);
+    }
+    if (strcmp(generalRowInsertInp->tableName,"versionRuleBase") == 0) {
+      status = chlVersionRuleBase(rsComm,
+				  generalRowInsertInp->arg1,
+				  generalRowInsertInp->arg2);
       return(status);
     }
     return(CAT_INVALID_ARGUMENT);

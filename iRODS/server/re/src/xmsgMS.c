@@ -650,7 +650,12 @@ int _writeXMsg(int streamId, char *hdr, char *msg)
   rcComm_t *conn;
   rodsEnv myRodsEnv;
   rErrMsg_t errMsg;
+  char myHostName[MAX_NAME_LEN];
 
+
+
+  myHostName[0] = '\0';
+  gethostname (myHostName, MAX_NAME_LEN);
   i = getRodsEnv (&myRodsEnv);
   if (i < 0) {
     rodsLog (LOG_ERROR, "_writeXMsg: getRodsEnv failed:%i",i);
@@ -677,13 +682,15 @@ int _writeXMsg(int streamId, char *hdr, char *msg)
   sendXmsgInp.sendXmsgInfo.numRcv = 1;
   sendXmsgInp.sendXmsgInfo.msgNumber = 0;
   snprintf(sendXmsgInp.sendXmsgInfo.msgType, HEADER_TYPE_LEN, "%s",hdr);
+  snprintf(sendXmsgInp.sendAddr, NAME_LEN, "%s:%i", myHostName, getpid ());
   sendXmsgInp.sendXmsgInfo.msg = msg;
   i = rcSendXmsg (conn, &sendXmsgInp);
   rcDisconnect(conn);
   return(i);
 }
 
-int _readXMsg(int streamId, int *msgNum, int *seqNum, char **hdr, char **msg)
+int _readXMsg(int streamId, char *condRead, int *msgNum, int *seqNum, 
+	      char **hdr, char **msg, char **user, char **addr)
 {
   int i;
   rcvXmsgInp_t rcvXmsgInp;
@@ -712,6 +719,7 @@ int _readXMsg(int streamId, int *msgNum, int *seqNum, char **hdr, char **msg)
   memset (&rcvXmsgInp, 0, sizeof (rcvXmsgInp));
   rcvXmsgInp.rcvTicket = streamId;
   rcvXmsgInp.msgNumber = 0;
+  strncpy(rcvXmsgInp.msgCondition, condRead, NAME_LEN);
   i = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
   if (i < 0) {
     rcDisconnect(conn);
@@ -721,6 +729,8 @@ int _readXMsg(int streamId, int *msgNum, int *seqNum, char **hdr, char **msg)
   *seqNum = rcvXmsgOut->seqNumber;
   *hdr = strdup(rcvXmsgOut->msgType);
   *msg = strdup(rcvXmsgOut->msg);
+  *user = strdup(rcvXmsgOut->sendUserName);
+  *addr = strdup(rcvXmsgOut->sendAddr);
   rcDisconnect(conn);
   return(i);
 }

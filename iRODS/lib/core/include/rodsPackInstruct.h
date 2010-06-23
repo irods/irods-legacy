@@ -101,10 +101,10 @@
 #define SubFile_PI "struct RHostAddr_PI; str subFilePath[MAX_NAME_LEN]; int mode; int flags; double offset; struct *SpecColl_PI;" 
 #define XmsgTicketInfo_PI "int sendTicket; int rcvTicket; int expireTime; int flag;"
 #define SendXmsgInfo_PI "int msgNumber; str msgType[HEADER_TYPE_LEN]; int numRcv; int flag; str *msg; int numDel; str *delAddress[numDel]; int *delPort(numDel); str *miscInfo;"
-#define GetXmsgTicketInp_PI "int expireTime;"
-#define SendXmsgInp_PI "struct XmsgTicketInfo_PI; struct SendXmsgInfo_PI;"
-#define RcvXmsgInp_PI "int rcvTicket; int msgNumber; int seqNumber;"
-#define RcvXmsgOut_PI "str msgType[HEADER_TYPE_LEN]; str sendUserName[NAME_LEN]; int msgNumber; int seqNumber; str *msg;"
+#define GetXmsgTicketInp_PI "int expireTime; int flag;"
+#define SendXmsgInp_PI "struct XmsgTicketInfo_PI; str sendAddr[NAME_LEN]; struct SendXmsgInfo_PI;"
+#define RcvXmsgInp_PI "int rcvTicket; int msgNumber; int seqNumber; str msgCondition[NAME_LEN];"
+#define RcvXmsgOut_PI "str msgType[HEADER_TYPE_LEN]; str sendUserName[NAME_LEN]; str sendAddr[NAME_LEN]; int msgNumber; int seqNumber; str *msg;"
 /* XXXXX start of HDF5 PI */
 #define h5error_PI "str major[MAX_ERROR_SIZE]; str minor[MAX_ERROR_SIZE];"
 #ifdef ADDR_64BITS

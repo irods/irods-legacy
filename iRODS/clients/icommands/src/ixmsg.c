@@ -1,6 +1,6 @@
-/*** Copyright (c), The Regents of the University of California            ***
+/*** Copyright (c), The University of North Carolina            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* xmsgTest.c - test the high level api */
+/* ixmsg.c - Xmessage communicator */
 
 #include "rodsClient.h" 
 
@@ -55,9 +55,10 @@ main(int argc, char **argv)
       xmsgTicketInfo.rcvTicket = tNum;
       xmsgTicketInfo.flag = 1;
       sendXmsgInp.ticket = xmsgTicketInfo;
+      snprintf(sendXmsgInp.sendAddr, NAME_LEN, "%s:%i", myHostName, getpid ());
       sendXmsgInp.sendXmsgInfo.numRcv = 1;
-      snprintf(sendXmsgInp.sendXmsgInfo.msgType, HEADER_TYPE_LEN, "%s:%i",
-	       myHostName, getpid ());
+      snprintf(sendXmsgInp.sendXmsgInfo.msgType, HEADER_TYPE_LEN, "ixmsg");
+
       while (fgets (buf, 3999, stdin) != NULL) {
         if (strstr(buf,"/EOM") == buf)
 	  exit(0);
@@ -105,8 +106,9 @@ main(int argc, char **argv)
 	status = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
         rcDisconnect(conn);
  	if (status  >= 0) {
-	  printf ("%s#%i:: %s", 
-		  rcvXmsgOut->msgType, rcvXmsgOut->seqNumber, rcvXmsgOut->msg);
+	  printf ("%s:%s@%s#%i:: %s", 
+		  rcvXmsgOut->msgType, rcvXmsgOut->sendUserName,rcvXmsgOut->sendAddr,
+		  rcvXmsgOut->seqNumber, rcvXmsgOut->msg);
 	  if (rcvXmsgOut->msg[strlen(rcvXmsgOut->msg)-1] != '\n')
 	    printf("\n");
 	  rcvXmsgInp.msgNumber = mNum;
@@ -122,6 +124,7 @@ main(int argc, char **argv)
     }
     else if (!strcmp(argv[1], "t")) {
       memset (&getXmsgTicketInp, 0, sizeof (getXmsgTicketInp));
+      getXmsgTicketInp.flag = 1;
       conn = rcConnectXmsg (&myRodsEnv, &errMsg);
       if (conn == NULL) {
 	fprintf (stderr, "rcConnect error\n");

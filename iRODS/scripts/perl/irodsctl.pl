@@ -219,6 +219,13 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # note that this can lead to slower performance
 # $PREPOSTPROCFORGENQUERYFLAG=1;
 
+# GLOBALREDEBUGFLAG - turn this on if you want debugging to be
+# enabled across the board.Make sure that the XmsgServer is also running. 
+# REMEMBER This may generate lots and lots of messages!!!! 
+# Please set the value to 3 only. It prints out rules and micro-services. 
+# $GLOBALREDEBUGFLAG=3;
+
+
 # $DefFileMode - the mode of the file created in the resource vault. 
 # The default value is 0600 (DEFAULT_FILE_MODE).
 # $DefFileMode=0640;
@@ -241,8 +248,9 @@ if ($irodsReconnect)		{ $ENV{'irodsReconnect'}    = $irodsReconnect; }
 if ($RETESTFLAG)		{ $ENV{'RETESTFLAG'}          = $RETESTFLAG; }
 if ($GLOBALALLRULEEXECFLAG)    { $ENV{'GLOBALALLRULEEXECFLAG'} = $GLOBALALLRULEEXECFLAG; }
 if ($PREPOSTPROCFORGENQUERYFLAG)    { $ENV{'PREPOSTPROCFORGENQUERYFLAG'} = $PREPOSTPROCFORGENQUERYFLAG; }
-if ($DefFileMode)		{ $ENV{'DefFileMode'}    = $DefFileMode; }
-if ($DefDirMode)		{ $ENV{'DefDirMode'}    = $DefDirMode; }
+if ($GLOBALREDEBUGFLAG)         { $ENV{'GLOBALREDEBUGFLAG'}   = $GLOBALREDEBUGFLAG; }
+if ($DefFileMode)		{ $ENV{'DefFileMode'}         = $DefFileMode; }
+if ($DefDirMode)		{ $ENV{'DefDirMode'}          = $DefDirMode; }
 
 
 

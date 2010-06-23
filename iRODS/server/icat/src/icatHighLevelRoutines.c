@@ -7782,13 +7782,13 @@ chlDelUnusedAVUs(rsComm_t *rsComm) {
  */
 int
 chlInsRuleTable(rsComm_t *rsComm, 
-		char *baseName, char *ruleName,
+		char *baseName, char *mapPriorityStr,  char *ruleName,
 		char *ruleHead, char *ruleCondition, char *ruleAction, 
-		char *ruleRecovery, char *ruleIdStr) {
-   char myTime[50];
+		char *ruleRecovery, char *ruleIdStr, char *myTime) {
    int status;
    int i;
-   rodsLong_t seqNum;
+   rodsLong_t seqNum = -1;
+
    if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable");
 
    if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
@@ -7798,42 +7798,66 @@ chlInsRuleTable(rsComm_t *rsComm,
    if (!icss.status) {
       return(CATALOG_NOT_CONNECTED);
    }
-   seqNum = cmlGetNextSeqVal(&icss);
-   if (seqNum < 0) {
-     rodsLog(LOG_NOTICE, "chlInsRuleTable cmlGetNextSeqVal failure %d",
-	     seqNum);
-     _rollback("chlInsRuleTable");
-     return(seqNum);
-   }
-   snprintf(ruleIdStr, MAX_NAME_LEN, "%lld", seqNum);
 
-   getNowStr(myTime);
-
+   /* first check if the  rule already exists */
+   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 1");
    i=0;
-   cllBindVars[i++]=ruleIdStr;
    cllBindVars[i++]=baseName;
    cllBindVars[i++]=ruleName;
    cllBindVars[i++]=ruleHead;
    cllBindVars[i++]=ruleCondition;
    cllBindVars[i++]=ruleAction;
    cllBindVars[i++]=ruleRecovery;
-   cllBindVars[i++]=rsComm->clientUser.userName;
-   cllBindVars[i++]=rsComm->clientUser.rodsZone;
-   cllBindVars[i++]=myTime;
-   cllBindVars[i++]=myTime;
    cllBindVarCount=i;
-   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 1");
-   status =  cmlExecuteNoAnswerSql(
-       "insert into R_RULE_MAIN (rule_id, rule_base_name, rule_name, rule_event, rule_condition, rule_body, rule_recovery, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+   status =  cmlGetIntegerValueFromSqlV3(
+       "select rule_id from R_RULE_MAIN where  rule_base_name = ? and  rule_name = ? and rule_event = ? and rule_condition = ? and rule_body = ? and  rule_recovery = ?", 
+       &seqNum,
        &icss);
-   if (status != 0) {
-      rodsLog(LOG_NOTICE,
-	      "chlInsRuleTable cmlExecuteNoAnswerSql Rule Main Insert failure %d",status);
+   if (status != 0 &&  status != CAT_NO_ROWS_FOUND) {
+       rodsLog(LOG_NOTICE,
+	      "chlInsRuleTable cmlGetIntegerValueFromSqlV3 find rule if any failure %d",status);
       return(status);
    }
-   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 2");
+   if (seqNum < 0) {
+     seqNum = cmlGetNextSeqVal(&icss);
+     if (seqNum < 0) {
+       rodsLog(LOG_NOTICE, "chlInsRuleTable cmlGetNextSeqVal failure %d",
+	       seqNum);
+       _rollback("chlInsRuleTable");
+       return(seqNum);
+     }
+     snprintf(ruleIdStr, MAX_NAME_LEN, "%lld", seqNum);
+
+     i=0;
+     cllBindVars[i++]=ruleIdStr;
+     cllBindVars[i++]=baseName;
+     cllBindVars[i++]=ruleName;
+     cllBindVars[i++]=ruleHead;
+     cllBindVars[i++]=ruleCondition;
+     cllBindVars[i++]=ruleAction;
+     cllBindVars[i++]=ruleRecovery;
+     cllBindVars[i++]=rsComm->clientUser.userName;
+     cllBindVars[i++]=rsComm->clientUser.rodsZone;
+     cllBindVars[i++]=myTime;
+     cllBindVars[i++]=myTime;
+     cllBindVarCount=i;
+     if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 2");
+     status =  cmlExecuteNoAnswerSql(
+       "insert into R_RULE_MAIN(rule_id, rule_base_name, rule_name, rule_event, rule_condition, rule_body, rule_recovery, rule_owner_name, rule_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 
+       &icss);
+     if (status != 0) {
+       rodsLog(LOG_NOTICE,
+	       "chlInsRuleTable cmlExecuteNoAnswerSql Rule Main Insert failure %d",status);
+       return(status);
+     }
+   }
+   else {
+     snprintf(ruleIdStr, MAX_NAME_LEN, "%lld", seqNum);
+   }
+   if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable SQL 3");
    i = 0;
    cllBindVars[i++]=baseName;
+   cllBindVars[i++]=mapPriorityStr;
    cllBindVars[i++]=ruleIdStr;
    cllBindVars[i++]=rsComm->clientUser.userName;
    cllBindVars[i++]=rsComm->clientUser.rodsZone;
@@ -7841,7 +7865,7 @@ chlInsRuleTable(rsComm_t *rsComm,
    cllBindVars[i++]=myTime;
    cllBindVarCount=i;
    status =  cmlExecuteNoAnswerSql(
-                                   "insert into R_RULE_BASE_MAP (map_base_name, rule_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+      "insert into R_RULE_BASE_MAP  (map_base_name, map_priority, rule_id, map_owner_name,map_owner_zone, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?, ?)",
                                    &icss);
    if (status != 0) {
      rodsLog(LOG_NOTICE,
@@ -7852,6 +7876,51 @@ chlInsRuleTable(rsComm_t *rsComm,
 
    return(0);
 }
+
+/*
+ * chlVersionRuleBase - Version out the old base maps with timestamp 
+ * Input - rsComm_t *rsComm  - the server handle,
+ *    input values.
+ */
+
+
+int
+chlVersionRuleBase(rsComm_t *rsComm,
+		   char *baseName, char *myTime) {
+
+  int i, status;
+
+  if (logSQL) rodsLog(LOG_SQL, "chlInsRuleTable");
+
+  if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+    return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+  }
+
+  if (!icss.status) {
+    return(CATALOG_NOT_CONNECTED);
+  }
+
+  i=0;
+  cllBindVars[i++]=myTime;
+  cllBindVars[i++]=myTime;
+  cllBindVars[i++]=baseName;
+  cllBindVarCount=i;
+  if (logSQL) rodsLog(LOG_SQL, "chlVersionRuleBase SQL 1");
+  
+  status =  cmlExecuteNoAnswerSql(
+	  "update R_RULE_BASE_MAP set map_version = ?, modify_ts = ? where map_base_name = ? and map_version = '0'",&icss);
+  if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
+    rodsLog(LOG_NOTICE,
+	    "chlVersionRuleBase cmlExecuteNoAnswerSql Rule Map version update  failure %d" , status);
+    return(status);
+
+  }
+
+  return(0);
+}
+
+
+
 
 int
 icatCheckResc(char *rescName) {
@@ -7949,3 +8018,4 @@ chlDatabaseObjectAdmin(rsComm_t *rsComm,
 
    return (CAT_INVALID_ARGUMENT);
 }
+
