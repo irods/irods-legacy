@@ -118,7 +118,7 @@ ruleExecInfo_t *rei)
 /**
  * \fn msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief Writes a message into the server rodsLog
+ * \brief Writes a message into the server rodsLog.
  *
  * \module core
  *
@@ -134,7 +134,7 @@ ruleExecInfo_t *rei)
  *        internally by the server since it interacts with the client through
  *        the normal client/server socket connection.
  *
- * \usage None
+ * \usage msiWriteRodsLog(message,null)
  *
  * \param[in] inpParam1 - A STR_MS_T which specifies the message to log.
  * \param[out] outParam - An INT_MS_T containing the status.
@@ -142,17 +142,17 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  * \bug  no known bugs
 **/
 int

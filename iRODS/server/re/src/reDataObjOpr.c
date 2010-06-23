@@ -3671,7 +3671,7 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \brief Extracts a tar object file into a target collection
  *
- * \module 
+ * \module core
  *
  * \since 2.3
  *
@@ -3684,7 +3684,7 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *        file (inpParam1) into a target collection (inpParam2).  The content of 
  *        the target collection is stored on the physical resource (inpParam3).
  *
- * \usage None
+ * \usage msiTarFileExtract(tarFilePathName, outputCollection, targetResource, returnCode)
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or
  *              a STR_MS_T which would be taken as dataObj path.
@@ -3703,9 +3703,9 @@ msiDataObjChksumWithOptions (msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  * \bug  no known bugs
 **/
 int 
@@ -3809,7 +3809,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *
  * \brief Creates a tar object file from a target collection
  *
- * \module 
+ * \module core
  *
  * \since 2.3
  *
@@ -3822,7 +3822,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *        (inpParam1) from a target collection (inpParam2). The content of the 
  *        target collection is stored on the physical resource (inpParam3).
  *
- * \usage None
+ * \usage msiTarFileCreate(tarFilePathName,collNameTobeTarred,targetResource,status)
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - A STR_MS_T which specifies the target collection.
@@ -3840,9 +3840,9 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  * \bug  no known bugs
 **/
 int 
@@ -3922,7 +3922,7 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *
  * \brief Bundles a collection into a number of tar files, similar to the iphybun command
  *
- * \module 
+ * \module core
  *
  * \since 2.3
  *
@@ -3936,7 +3936,7 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *        store these files on tape. This microservice has the same functionality
  *        as the iphybun command.
  *
- * \usage None
+ * \usage msiPhyBundleColl(inputCollName,targetResource,status)
  *
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as the collection for the phybun.
  * \param[in] inpParam2 - optional - a STR_MS_T which specifies the target resource.
@@ -3953,9 +3953,9 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  * \bug  no known bugs
 **/
 int 

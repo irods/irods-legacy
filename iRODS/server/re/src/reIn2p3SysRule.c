@@ -389,7 +389,7 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
  * \since pre-2.1
  * 
  * \author Jean-Yves Nief
- * \date 
+ * \date 2007-09 
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-25
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
@@ -410,17 +410,17 @@ int checkHostAccessControl (char *username, char *hostclient, char *groupsname)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa 
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  * \bug  no known bugs
 **/
 int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
@@ -480,8 +480,8 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
  * 
  * \since pre-2.1
  * 
- * \author Jean-Yves Nief and Jean Aoustet
- * \date 
+ * \author Jean-Yves Nief 
+ * \date 2009-06
  * 
  * \remark Terrell Russell - msi documentation, 2010-04-04
  * 
@@ -494,7 +494,7 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
  *    in the OUTPUT_MON_PERF file and will also be put in the iCAT in the
  *    near future.
  *
- * \usage
+ * \usage https://www.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] verb - a msParam of type STR_MS_T defining verbose mode:
  *    \li "default" - not verbose
@@ -505,17 +505,18 @@ int msiCheckHostAccessControl (ruleExecInfo_t *rei) {
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified resource status flag, resource free space available, 
+       table R_SERVER_LOAD
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa 
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  * \bug  no known bugs
 **/
 int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
@@ -678,14 +679,14 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
  * \since pre-2.1
  * 
  * \author Jean-Yves Nief
- * \date 
+ * \date 2009-06
  * 
  * \remark Terrell Russell - msi documentation, 2010-04-05
  * 
  * \note  This microservice removes the servers' metrics older than the
  *    number of hours in "timespan".  
  *
- * \usage
+ * \usage https://www.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] inpParam1 - Required - a msParam of type STR_MS_T defining the timespan in hours.
  *    "default" is equal to 24 hours.
@@ -695,17 +696,17 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence table R_SERVER_LOAD content
+ * \iCatAttrModified table R_SERVER_LOAD content
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa 
+ * \pre N/A
+ * \post N/A
+ * \sa  N/A
  * \bug  no known bugs
 **/
 int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t *rei) {
@@ -795,7 +796,7 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  * \since pre-2.1
  * 
  * \author Jean-Yves Nief
- * \date 
+ * \date 2009-06 
  * 
  * \remark Terrell Russell - msi documentation, 2010-04-05
  * 
@@ -813,7 +814,7 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  *        runq_wght*runq_load + disk_wght*disk_space + netin_wght*net_input +
  *        netout_wght*net_output
  *
- * \usage
+ * \usage https://www.irods.org/index.php/Resource_Monitoring_System
  *
  * \param[in] cpu_wght - Required - a msParam of type STR_MS_T defining relative CPU weighting.
  * \param[in] mem_wght - Required - a msParam of type STR_MS_T defining relative memory weighting
@@ -826,17 +827,17 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence R_SERVER_LOAD table content
+ * \iCatAttrModified R_SERVER_LOAD_DIGEST table content
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa 
+ * \pre N/A
+ * \post N/A
+ * \sa  N/A
  * \bug  no known bugs
 **/
 int msiDigestMonStat(msParam_t *cpu_wght, msParam_t *mem_wght, msParam_t *swap_wght, msParam_t *runq_wght,
