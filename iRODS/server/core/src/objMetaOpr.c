@@ -3976,10 +3976,13 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
         status = getRescInfo (rsComm, NULL, condInput,
           &myRescGrpInfo);
         if (status < 0) {
-            if (defRescGrpInfo != NULL) {
+            if (status == USER_NO_RESC_INPUT_ERR && defRescGrpInfo != NULL) {
+		/* user have not input a resource. Use default */
                 myRescGrpInfo = defRescGrpInfo;
                 status = 0;
-            }
+            } else {
+		freeAllRescGrpInfo (defRescGrpInfo);
+	    }
         } else {
             freeAllRescGrpInfo (defRescGrpInfo);
         }
