@@ -78,6 +78,13 @@ transStat_t **transStat)
     }
 
     destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
+    if (destL1descInx == CAT_UNKNOWN_COLLECTION) {
+        /* collection does not exist. make one */
+        char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
+        splitPathByKey (destDataObjInp->objPath, parColl, child, '/');
+        rsMkCollR (rsComm, "/", parColl);
+	destL1descInx = rsDataObjCreate (rsComm, destDataObjInp);
+    }
 
     if (destL1descInx < 0) {
 	return (destL1descInx);
@@ -144,7 +151,14 @@ transStat_t **transStat)
 	    /* If the dest is in remote zone, register in _rsDataObjClose
 	     * there */
             status = svrRegDataObj (rsComm, destDataObjInfo);
-            if (status < 0) {
+	    if (status == CAT_UNKNOWN_COLLECTION) {
+		/* collection does not exist. make one */
+		char parColl[MAX_NAME_LEN], child[MAX_NAME_LEN];
+		splitPathByKey (destDataObjInfo->objPath, parColl, child, '/');
+		rsMkCollR (rsComm, "/", parColl);
+		status = svrRegDataObj (rsComm, destDataObjInfo);
+	    }
+	    if (status < 0) {    
                 rodsLog (LOG_NOTICE,
                   "_rsDataObjCopy: svrRegDataObj for %s failed, status = %d",
                   destDataObjInfo->objPath, status);
