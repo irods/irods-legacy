@@ -94,14 +94,14 @@ bytesBuf_t *bulkOprInpBBuf)
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
     if (remoteFlag == REMOTE_HOST) {
-	freeRodsObjStat (myRodsObjStat);
         addKeyVal (&bulkOprInp->condInput, DEST_RESC_NAME_KW,
           rescInfo->rescName);
-	if (inpRescGrpName == NULL && 
+	if (myRodsObjStat->specColl == NULL && inpRescGrpName == NULL && 
 	  strlen (myRescGrpInfo->rescGroupName) > 0) {
             addKeyVal (&bulkOprInp->condInput, RESC_GROUP_NAME_KW,
               myRescGrpInfo->rescGroupName);
 	}
+	freeRodsObjStat (myRodsObjStat);
         if ((status = svrToSvrConnect (rsComm, rodsServerHost)) < 0) {
             return status;
         }
