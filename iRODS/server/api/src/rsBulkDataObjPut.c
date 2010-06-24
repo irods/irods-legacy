@@ -77,18 +77,24 @@ bytesBuf_t *bulkOprInpBBuf)
 	}
     } else {
         status = getRescGrpForCreate (rsComm, &dataObjInp, &myRescGrpInfo);
-        if (status < 0) return status;
+        if (status < 0) {
+	    freeRodsObjStat (myRodsObjStat);
+	    return status;
+	}
 
         /* just take the top one */
         rescInfo = myRescGrpInfo->rescInfo;
     }
     fileType = getRescType (rescInfo);
-    if (fileType != UNIX_FILE_TYPE && fileType != NT_FILE_TYPE)
+    if (fileType != UNIX_FILE_TYPE && fileType != NT_FILE_TYPE) {
+	freeRodsObjStat (myRodsObjStat);
 	return SYS_INVALID_RESC_FOR_BULK_OPR;
+    }
 
     remoteFlag = resolveHostByRescInfo (rescInfo, &rodsServerHost);
 
     if (remoteFlag == REMOTE_HOST) {
+	freeRodsObjStat (myRodsObjStat);
         addKeyVal (&bulkOprInp->condInput, DEST_RESC_NAME_KW,
           rescInfo->rescName);
 	if (inpRescGrpName == NULL && 
@@ -103,14 +109,14 @@ bytesBuf_t *bulkOprInpBBuf)
           bulkOprInpBBuf);
 	return status;
     }
-#if 0	/* moved up */
-    status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath);
-    if (status < 0) return status;
-#endif
 
     status = createBunDirForBulkPut (rsComm, &dataObjInp, rescInfo, 
       myRodsObjStat->specColl, phyBunDir);
-    if (status < 0) return status;
+
+    if (status < 0) {
+	freeRodsObjStat (myRodsObjStat);
+	return status;
+    }
 
 #ifdef BULK_OPR_WITH_TAR
     status = untarBuf (phyBunDir, bulkOprInpBBuf);
@@ -158,7 +164,6 @@ bytesBuf_t *bulkOprInpBBuf)
           "_rsBulkDataObjPut: regUnbunSubfiles for dir %s. stat = %d",
           phyBunDir, status);
     }
-
     return status;
 }
 
