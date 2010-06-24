@@ -91,7 +91,16 @@ _rsDatabaseObjInfo (rsComm_t *rsComm, databaseObjInfoInp_t *databaseObjInfoInp,
        status = dboReadConfigItems(outBuf, maxBufSize);
     }
     else {
-       status = dboGetInfo(databaseObjInfoInp->objDesc, outBuf, maxBufSize);
+       if (databaseObjInfoInp->option != NULL &&
+	   strcmp(databaseObjInfoInp->option, "execute")==0) {
+	  status = dboExecute(rsComm, 
+			      databaseObjInfoInp->objDesc, 
+			      databaseObjInfoInp->optionArg, 
+			      outBuf, maxBufSize);
+       }
+       else {
+	  status = dboGetInfo(databaseObjInfoInp->objDesc, outBuf, maxBufSize);
+       }
     }
 
     myObjInfoOut = malloc(sizeof(databaseObjInfoOut_t));

@@ -18,9 +18,11 @@
 typedef struct {
    char *dbrName;
    int objDesc;  /* if positive, object descriptor (index) of open DBO */
+   char *option; /* option to perform */
+   char *optionArg; /* A value associated with the particular optin */
 } databaseObjInfoInp_t;
     
-#define databaseObjInfoInp_PI "str *dbrName; int objDesc;"
+#define databaseObjInfoInp_PI "str *dbrName; int objDesc; str *option; str *optionArg;"
 
 typedef struct {
    char *outBuf;

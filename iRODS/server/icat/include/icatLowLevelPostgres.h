@@ -58,5 +58,6 @@ int cllTest();
 int cllCurrentValueString(char *itemName, char *outString, int maxSize);
 int cllGetRowCount(icatSessionStruct *icss, int statementNumber);
 int cllCheckPending(char *sql, int option);
+int cllGetLastErrorMessage(char *msg, int maxChars);
 
 #endif	/* CLL_PSQ_H */

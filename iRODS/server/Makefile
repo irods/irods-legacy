@@ -141,7 +141,7 @@ ifdef DBO
 CFLAGS += -DDBO
 ifeq ($(DBO_TYPE), oracle) 
 ifndef ORAICAT
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
+SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelOracle.o
 endif
 INCLUDES +=	-I$(ORACLE_HOME)/rdbms/public
 CFLAGS +=	-DORA_ICAT
@@ -152,10 +152,10 @@ CFLAGS +=	-DNEW_ODBC
 INCLUDES +=	-I$(svrIcatIncDir)
 INCLUDES +=	-I$(POSTGRES_HOME)/include
 ifndef PSQICAT
-SVR_ICAT_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
+SVR_DBO_OBJS += $(svrIcatObjDir)/icatLowLevelPostgres.o
 endif
 endif
-SVR_ICAT_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
+SVR_DBO_OBJS += $(svrIcatObjDir)/dboHighLevelRoutines.o
 endif  # end DBO
 
 ifdef DBMS_LIB
@@ -239,7 +239,7 @@ endif
 
 # All objects (except tests)
 OBJS =		$(SVR_CORE_OBJS) $(SVR_DRIVERS_OBJS) $(SVR_API_OBJS) \
-		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS)
+		$(SVR_ICAT_OBJS) $(SVR_RE_OBJS) $(SVR_DBO_OBJS)
 
 
 # Server configuration
@@ -421,6 +421,10 @@ $(SVR_ICAT_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c $(extendedICAT.h) $
 $(extendedICAT.h): 
 	@touch $(extendedICAT.h)
 
+# Build server ICAT
+$(SVR_DBO_OBJS):	$(svrIcatObjDir)/%.o: $(svrIcatSrcDir)/%.c
+	@echo "Compile icat `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
 
 # Builder server rule engine
 $(SVR_RE_OBJS):		$(svrReObjDir)/%.o: $(svrReSrcDir)/%.c $(DEPEND)

@@ -23,13 +23,15 @@
 
 #include "dboHighLevelRoutines.h"
 #include "icatLowLevel.h"
+#include "databaseObjectAdmin.h"
 
 #define DBO_CONFIG_FILE "dbo.config"
-//#define DBO_ACCESS_ATTRIBUTE "DBO_ACCESS"
+/*#define DBO_ACCESS_ATTRIBUTE "DBO_ACCESS" */
 #define DBO_ODBC_ENTRY_PREFIX "IRODS_DBO_"
 #define MAX_ODBC_ENTRY_NAME 100
 
 #define BUF_LEN 500
+#define MAX_SQL 4000
 
 #define MAX_DBO_NAME_LEN 200
 #define BIG_STR 200
@@ -261,7 +263,11 @@ int dboSqlWithResults(int fd, char *sql, char *parm[], int nParms,
    cllBindVarCount=nParms;
    i = cllExecSqlWithResult(&dbo_icss[fd], &statement, sql);
    if (i==CAT_SUCCESS_BUT_WITH_NO_INFO) return(CAT_SUCCESS_BUT_WITH_NO_INFO);
-   if (i) return(i);
+   if (i) {
+      cllGetLastErrorMessage(outBuf, maxOutBuf);
+      if (i <= CAT_ENV_ERR) return(i); /* already an iRODS error code */
+      return (CAT_SQL_ERR);
+   }
 
    for (rowCount=0;;rowCount++) {
       i = cllGetRow(&dbo_icss[fd], statement);
@@ -449,7 +455,7 @@ dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
    /* Oracle vesion */
    char tableSql[]="select TABLE_NAME from tabs";
 #else
-   /* Postgres sql that returns table list, like '\d' in pgsql.  
+   /* Postgres sql that returns table list, like '\d' in psql.  
       Found on the web.
    */
    char tableSql[]="SELECT n.nspname as \"Schema\", c.relname as \"Name\", CASE c.relkind WHEN 'r' THEN 'table' WHEN 'v' THEN 'view' WHEN 'i' THEN 'index' WHEN 'S' THEN 'sequence' WHEN 's' THEN 'special' END as \"Type\", u.usename as \"Owner\" FROM pg_catalog.pg_class c LEFT JOIN pg_catalog.pg_user u ON u.usesysid = c.relowner LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','') AND n.nspname NOT IN ('pg_catalog', 'pg_toast') AND pg_catalog.pg_table_is_visible(c.oid) ORDER BY 1,2";
@@ -461,6 +467,99 @@ dboGetInfo(int fd, char *outBuf, int maxOutBuf) {
    }
 
    status =  dboSqlWithResults(fd, tableSql, NULL, 0, 
+			       outBuf, maxOutBuf);
+   return(status);
+}
+
+int
+getDboSql( rsComm_t *rsComm, char *fullName, char *dboSQL) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[30];
+   int i1b[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   int i2a[30];
+   char *condVal[10];
+   char v1[MAX_NAME_LEN+10];
+   char v2[MAX_NAME_LEN+10];
+   char v3[MAX_NAME_LEN+10];
+   char myDirName[MAX_NAME_LEN];
+   char myFileName[MAX_NAME_LEN];
+   int status;
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   i1a[0]=COL_META_DATA_ATTR_NAME;
+   i1b[0]=0;
+   i1a[1]=COL_META_DATA_ATTR_VALUE;
+   i1b[1]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 2;
+
+   status = splitPathByKey(fullName, 
+			   myDirName, myFileName, '/');
+   sprintf(v1,"='%s'",myDirName);
+   i2a[0]=COL_COLL_NAME;
+   condVal[0]=v1;
+   sprintf(v2,"='%s'",myFileName);
+   i2a[1]=COL_DATA_NAME;
+   condVal[1]=v2;
+
+   i2a[2]=COL_META_DATA_ATTR_NAME;
+   sprintf(v3,"='%s'", DBO_SQL);
+   condVal[2]=v3;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=3;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   status = rsGenQuery(rsComm, &genQueryInp, &genQueryOut);
+   if (status != 0) {
+      return(status);
+   }
+   else {
+      int i, j, doNext;
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+	 doNext=0;
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    if (strcmp(tResult,DBO_SQL)==0) {
+		doNext=1;
+	    }
+	    if (j==1) {
+	       if (doNext==1) {
+		  strncpy(dboSQL, tResult, MAX_SQL);
+		  return(0);
+	       }
+	       doNext=0;
+	    }
+	 }
+      }
+   }
+   return(DBO_NAME_NOT_FOUND);
+}
+
+
+int
+dboExecute(rsComm_t *rsComm, int fd, char *dboName, char *outBuf, int maxOutBuf) {
+   int status;
+   char dboSQL[MAX_SQL];
+
+   if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
+      strcpy(outBuf, "DBO is not open");
+      return(DBO_INVALID_OBJECT_DESCRIPTOR);
+   }
+
+   status = getDboSql(rsComm, dboName, dboSQL);
+   if (status) return(status);
+
+   status =  dboSqlWithResults(fd, dboSQL, NULL, 0, 
 			       outBuf, maxOutBuf);
    return(status);
 }

@@ -38,7 +38,7 @@ OCIBind  *p_bind[MAX_BIND_VARS];
 
 char            errbuf[100];
 int             errcode;
-
+text  oraErrorMsg[250];
 
 /*
   call SQLError to get error information and log it
@@ -46,7 +46,6 @@ int             errcode;
 int
 logOraError(int level, OCIError *errhp, sword status)
 {
-   text errbuf[512];
    sb4 errcode;
    int errorVal=-1;
    if (status == OCI_SUCCESS) return(0);
@@ -54,8 +53,9 @@ logOraError(int level, OCIError *errhp, sword status)
    case OCI_SUCCESS_WITH_INFO:
       rodsLog(level,"OCI_SUCCESS_WITH_INFO");
       OCIErrorGet ((dvoid *) errhp, (ub4) 1, (text *) NULL, &errcode,
-		   errbuf, (ub4) sizeof(errbuf), (ub4) OCI_HTYPE_ERROR);
-      rodsLog(level, "Error - %s\n", errbuf);
+		   oraErrorMsg, (ub4) sizeof(oraErrorMsg), 
+		   (ub4) OCI_HTYPE_ERROR);
+      rodsLog(level, "Error - %s\n", oraErrorMsg);
       errorVal=0;
       break;
    case OCI_NEED_DATA:
@@ -67,9 +67,10 @@ logOraError(int level, OCIError *errhp, sword status)
       break;
    case OCI_ERROR:
       OCIErrorGet ((dvoid *) errhp, (ub4) 1, (text *) NULL, &errcode,
-		   errbuf, (ub4) sizeof(errbuf), (ub4) OCI_HTYPE_ERROR);
-      rodsLog(level, "OCI_Error: %s", errbuf);
-      if (strstr((char *)errbuf, "unique constraint") != 0) {
+		   oraErrorMsg, (ub4) sizeof(oraErrorMsg), 
+		   (ub4) OCI_HTYPE_ERROR);
+      rodsLog(level, "OCI_Error: %s", oraErrorMsg);
+      if (strstr((char *)oraErrorMsg, "unique constraint") != 0) {
 	 errorVal =  CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
       }
       break;
@@ -87,6 +88,12 @@ logOraError(int level, OCIError *errhp, sword status)
       break;
    }
    return(errorVal);
+}
+
+int
+cllGetLastErrorMessage(char *msg, int maxChars) {
+   strncpy(msg, (char *)&oraErrorMsg, maxChars);
+   return(0);
 }
 
 /* 

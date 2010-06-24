@@ -104,7 +104,7 @@ getInput(char *cmdToken[], int maxTokens) {
 }
 
 int
-getDboInfo(char *dbRescName, char *dbObjIx) {
+getDbInfo(char *dbRescName, char *dbObjIx) {
    databaseObjInfoInp_t databaseObjInfoInp;
    databaseObjInfoOut_t *databaseObjInfoOut;
    int status;
@@ -113,7 +113,7 @@ getDboInfo(char *dbRescName, char *dbObjIx) {
    int saveLastResc=1;
    if (dbRescName==NULL || strlen(dbRescName)==0) {
       if (strlen(lastResc)==0) {
-	 printf("You need to include the resource name; see 'help ls'.\n");
+	 printf("You need to include the resource name; see 'help info'.\n");
 	 return(0);
       }
       else {
@@ -160,6 +160,77 @@ getDboInfo(char *dbRescName, char *dbObjIx) {
 }
 
 int
+execDbo(char *dbRescName, char *dbObjIx, char *dboName) {
+   databaseObjInfoInp_t databaseObjInfoInp;
+   databaseObjInfoOut_t *databaseObjInfoOut;
+   int status;
+   char *myName;
+   char *mySubName;
+   int saveLastResc=1;
+   char fullName[BIG_STR];
+
+   if (dbRescName==NULL || strlen(dbRescName)==0) {
+      if (strlen(lastResc)==0) {
+	 printf("You need to include the resource name; see 'help info'.\n");
+	 return(0);
+      }
+      else {
+	 databaseObjInfoInp.dbrName = lastResc;
+	 databaseObjInfoInp.objDesc = -1;
+	 saveLastResc=0;
+      }
+   }
+   else {
+      databaseObjInfoInp.dbrName = dbRescName;
+      if (dbRescName[0]<='9' && dbRescName[0]>='0') {
+	 databaseObjInfoInp.dbrName = lastResc;
+	 databaseObjInfoInp.objDesc = atoi(dbRescName);
+	 saveLastResc=0;
+      }
+      else {
+	 databaseObjInfoInp.objDesc = -1;
+	 if (dbObjIx != NULL && strlen(dbObjIx)>0) {
+	    databaseObjInfoInp.objDesc = atoi(dbObjIx);
+	 }
+      }
+   }
+   databaseObjInfoInp.option = "execute";
+
+   if(dboName[0]=='/') {
+      strncpy(fullName, dboName, BIG_STR);
+   }
+   else {
+      strncpy(fullName, cwd, BIG_STR);
+      strncat(fullName, "/", BIG_STR);
+      strncat(fullName, dboName, BIG_STR);
+   }
+   databaseObjInfoInp.optionArg = fullName;
+
+
+   status = rcDatabaseObjInfo(Conn, &databaseObjInfoInp, &databaseObjInfoOut);
+   if (status) {
+      myName = rodsErrorName(status, &mySubName);
+      rodsLog (LOG_ERROR, "rcDatabaseObjInfo failed with error %d %s %s",
+	       status, myName, mySubName);
+      if (databaseObjInfoOut != NULL &&
+	  databaseObjInfoOut->outBuf != NULL &&
+	  strlen(databaseObjInfoOut->outBuf)>0 ) {
+	 if(status == DBO_NOT_COMPILED_IN) {
+	    printf("Error message return by the iRODS server:\n");
+	 }
+	 else {
+	    printf("Error message return by the DBMS:\n");
+	 }
+	 printf("%s\n",databaseObjInfoOut->outBuf);
+      }
+      return(status);
+   }
+   printf("%s\n",databaseObjInfoOut->outBuf);
+   if (saveLastResc) strncpy(lastResc,dbRescName, sizeof(lastResc));
+   return(status);
+}
+
+int
 openDatabaseObj(char *dbRescName, char *dbObjName) {
    databaseObjOpenInp_t databaseObjOpnInp;
    int status;
@@ -174,7 +245,7 @@ openDatabaseObj(char *dbRescName, char *dbObjName) {
 	       status, myName, mySubName);
       return(status);
    }
-   printf("open object-descriptor (index to open database-object)=%d\n",
+   printf("open object-descriptor (index to open database)=%d\n",
 	  status);
    strncpy(lastResc,dbRescName, sizeof(lastResc));
    return(status);
@@ -247,7 +318,7 @@ rmSql() {
    databaseObjectAdminOut_t *databaseObjectAdminOut;
    char *myName;
    char *mySubName;
-   char rescName[BIG_STR];
+/*   char rescName[BIG_STR]; */
    char objName[BIG_STR];
    char objNameFromUser[BIG_STR];
 
@@ -341,7 +412,7 @@ doQueryDbo(char *objName) {
    char fullName[BIG_STR];
    char myDirName[BIG_STR];
    char myFileName[BIG_STR];
-   int i, status;
+   int status;
    int printCount;
 
    char *columnNames[]={"attribute", "value", "", "" , "", ""};
@@ -456,7 +527,6 @@ doQuery(char *objName) {
    int i2a[30];
    char *condVal[10];
    char v1[MAX_NAME_LEN+10];
-   char v2[MAX_NAME_LEN+10];
    int i, status;
    int printCount;
 
@@ -501,6 +571,105 @@ doQuery(char *objName) {
    return(printCount);
 }
 
+/*
+ do a Query on a specific DBO
+ */
+int
+doTest(char *inStr) {
+   genQueryInp_t genQueryInp;
+   genQueryOut_t *genQueryOut;
+   int i1a[30];
+   int i1b[30]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   int i2a[30];
+   char *condVal[10];
+   char v1[MAX_NAME_LEN+10];
+   char v2[MAX_NAME_LEN+10];
+   int status;
+   int printCount;
+
+   memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+   i1a[0]=COL_META_DATA_ATTR_NAME;
+   i1b[0]=0;
+   i1a[1]=COL_META_DATA_ATTR_VALUE;
+   i1b[1]=0;
+   genQueryInp.selectInp.inx = i1a;
+   genQueryInp.selectInp.value = i1b;
+   genQueryInp.selectInp.len = 2;
+
+   sprintf(v1,"='%s'",inStr);
+   i2a[0]=COL_D_DATA_ID;
+   condVal[0]=v1;
+
+   i2a[1]=COL_META_DATA_ATTR_NAME;
+   sprintf(v2,"='%s'", DBO_SQL);
+   condVal[1]=v2;
+
+   genQueryInp.sqlCondInp.inx = i2a;
+   genQueryInp.sqlCondInp.value = condVal;
+   genQueryInp.sqlCondInp.len=2;
+
+   genQueryInp.maxRows=10;
+   genQueryInp.continueInx=0;
+   genQueryInp.condInput.len=0;
+
+   if (zoneArgument[0]!='\0') {
+      addKeyVal (&genQueryInp.condInput, ZONE_KW, zoneArgument);
+   }
+
+   status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+   if (status == CAT_NO_ROWS_FOUND) {
+      i1a[0]=COL_D_DATA_PATH;
+      genQueryInp.selectInp.len = 1;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (status==0) {
+	 printf("Is not a database-object\n");
+	 return(0);
+      }
+      if (status == CAT_NO_ROWS_FOUND) {
+	 printf("Dataobject does not exist.\n");
+	 return(0);
+      }
+   }
+   else {
+      int i, j, printNext;
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+	 printNext=0;
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    if (strcmp(tResult,DBO_SQL)==0) {
+		printf("%s:", DBO_SQL);
+		printNext=1;
+	    }
+	    if (j==1) {
+	       if (printNext==1) {
+		  printf("%s\n", tResult);
+		  printCount++;
+	       }
+	       printNext=0;
+	    }
+	 }
+	 if (printCount==0) {
+	    printf("Is not a database-object\n");
+	 }
+      }
+   }
+
+#if 0
+   while (status==0 && genQueryOut->continueInx > 0) {
+      genQueryInp.continueInx=genQueryOut->continueInx;
+      status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
+      if (genQueryOut->rowCnt>0) printf("----\n");
+      printGenQueryResults(Conn, status, genQueryOut, 
+			   columnNames, 0);
+   }
+#endif
+
+   return (0);
+}
+
 
 /* handle a command,
    return code is 0 if the command was (at least partially) valid,
@@ -526,7 +695,7 @@ doCommand(char *cmdToken[]) {
    }
 
    if (strcmp(cmdToken[0],"info") == 0) {
-      getDboInfo(cmdToken[1], cmdToken[2]);
+      getDbInfo(cmdToken[1], cmdToken[2]);
       return(0);
    }
 
@@ -541,6 +710,17 @@ doCommand(char *cmdToken[]) {
    if (strcmp(cmdToken[0],"ls") == 0) {
       doQuery(cmdToken[1]);
       return(0);
+   }
+   if (strcmp(cmdToken[0],"test") == 0) {
+      doTest(cmdToken[1]);
+      return(0);
+   }
+   if (strcmp(cmdToken[0],"exec") == 0) {
+      execDbo(cmdToken[1], cmdToken[2], cmdToken[3]);
+      return(0);
+   }
+   if (strlen(cmdToken[0])>0) {
+      printf("Unrecognized command\n");
    }
    return(-3);
 }
@@ -692,7 +872,7 @@ void usageMain()
 " -z Zonename  work with the specified Zone",
 " -h This help",
 "Commands are:", 
-" open ResourceName DatabaseObjectName", 
+" open ResourceName DatabaseName", 
 " info [ResourceName] [Object-descriptor]",
 " ls [objName] (list information about defined DBOs)"
 " quit",
@@ -711,22 +891,22 @@ void
 usage(char *subOpt)
 {
    char *openMsgs[]={
-"open  ResourceName DatabaseObjectName", 
+"open  ResourceName DatabaseName", 
 "Open the specified database object on the specified database resource. ",
 ""};
    char *infoMsgs[]={
-"info [ResourceName] [database-object-descriptor]",
+"info [ResourceName] [database-descriptor]",
 "list information about the database-resource or a particular (open)",
-"database-object on that resource.",
-"In the first case, it will list the configured database-objects on that",
-"database-resource.  In the later, it will list the tables in the DBO.",
+"database on that resource.",
+"In the first case, it will list the configured databases on that",
+"database-resource.  In the later, it will list the tables in the database.",
 "If ResourceName is not included, it will use the last one used.",
 "Examples:",
 "$ idbo",
 "idbo>info demoResc",
 "DBName1 DBName2",
 "idbo>open demoResc DBName1",
-"open object-descriptor (index to open database-object)=0",
+"open object-descriptor (index to open database)=0",
 "idbo>info 0",
 "Schema|Name|Type|Owner|",
 "public|r_table1|table|schroeder|",

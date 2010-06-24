@@ -39,6 +39,8 @@ int cllBindVarCount=0;
 char *cllBindVars[MAX_BIND_VARS];
 int cllBindVarCountPrev=0; /* cclBindVarCount earlier in processing */
 
+SQLCHAR  psgErrorMsg[SQL_MAX_MESSAGE_LENGTH + 10];
+
 /* for now: */
 #define MAX_TOKEN 256
 
@@ -58,26 +60,31 @@ static int didBegin=0;
 int
 logPsgError(int level, HENV henv, HDBC hdbc, HSTMT hstmt)
 {
-   SQLCHAR         msg[SQL_MAX_MESSAGE_LENGTH + 10];
    SQLCHAR         sqlstate[ SQL_SQLSTATE_SIZE + 10];
    SQLINTEGER sqlcode;
    SQLSMALLINT length;
    int errorVal=-2;
-   while (SQLError(henv, hdbc, hstmt, sqlstate, &sqlcode, msg,
+   while (SQLError(henv, hdbc, hstmt, sqlstate, &sqlcode, psgErrorMsg,
 		   SQL_MAX_MESSAGE_LENGTH + 1, &length) == SQL_SUCCESS) {
 #ifdef MY_ICAT
       if (strcmp((char *)sqlstate,"23000") == 0 && 
-          strstr((char *)msg, "Duplicate entry")) {
+          strstr((char *)psgErrorMsg, "Duplicate entry")) {
 #else
-      if (strstr((char *)msg, "duplicate key")) {
+      if (strstr((char *)psgErrorMsg, "duplicate key")) {
 #endif
          errorVal = CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME;
       }
       rodsLog(level,"SQLSTATE: %s", sqlstate);
       rodsLog(level,"SQLCODE: %ld", sqlcode);
-      rodsLog(level,"SQL Error message: %s", msg);
+      rodsLog(level,"SQL Error message: %s", psgErrorMsg);
    }
    return(errorVal);
+}
+
+int
+cllGetLastErrorMessage(char *msg, int maxChars) {
+   strncpy(msg, (char *)&psgErrorMsg, maxChars);
+   return(0);
 }
 
 /* 
