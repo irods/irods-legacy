@@ -26,7 +26,7 @@ typedef struct OpenCollInp {
 #define OpenCollInp_PI "str collName[MAX_NAME_LEN]; int flags; int dummy; struct KeyValPair_PI;"
 #endif
 
-#define NUM_COLL_HANDLE	30
+#define NUM_COLL_HANDLE	40
 
 #if defined(RODS_SERVER)
 #define RS_OPEN_COLLECTION rsOpenCollection
