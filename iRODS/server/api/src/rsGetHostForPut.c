@@ -82,12 +82,18 @@ char **outHost)
     rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
     status = resolveHost (&addr, &rodsServerHost);
     if (status < 0) return status;
+    if (rodsServerHost->localFlag == LOCAL_HOST) {
+        *outHost = strdup (THIS_ADDRESS);
+        return 0;
+    }
+
     myHost = getSvrAddr (rodsServerHost);
     if (myHost != NULL) {
 	*outHost = strdup (myHost);
+        return 0;
     } else {
-        *outHost = strdup (rodsServerHost->hostName->name);
+        *outHost = NULL;
+	return SYS_INVALID_SERVER_HOST;
     }
-    return 0;
 }
 

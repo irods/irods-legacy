@@ -404,6 +404,7 @@ bulkOprInfo_t *bulkOprInfo)
 	/* reconnect to the resource server */
 	rstrcpy (dataObjOprInp->objPath, targColl, MAX_NAME_LEN);
 	redirectConnToRescSvr (myConn, dataObjOprInp, myRodsEnv, reconnFlag);
+	rodsArgs->redirectConn = 0;    /* only do it once */
     }
 
     conn = *myConn;
@@ -546,9 +547,6 @@ bulkOprInfo_t *bulkOprInfo)
                 rodsLogError (LOG_ERROR, status,
                   "putDirUtil: mkColl error for %s", targChildPath);
 	    }
-
-	    rodsArgs->redirectConn = 0;    /* only do it once */
-
             status = putDirUtil (myConn, srcChildPath, targChildPath, 
               myRodsEnv, rodsArgs, dataObjOprInp, bulkOprInp,
 	      rodsRestart, bulkOprInfo);

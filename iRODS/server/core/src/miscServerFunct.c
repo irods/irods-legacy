@@ -1914,32 +1914,16 @@ svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
     return status;
 }
 
-
 char *
 getLocalSvrAddr ()
 {
     char *myHost;
-#if 0
-    hostName_t *tmpHostName;
-
-    tmpHostName = LocalServerHost->hostName;
-    while (tmpHostName != NULL) {
-	if (strcmp (tmpHostName->name, "localhost") != 0 &&
-	  strcmp (tmpHostName->name, "127.0.0.1") != 0 &&
-	  strcmp (tmpHostName->name, "0.0.0.0") != 0 &&
-	  strchr (tmpHostName->name, '.') != NULL) {
-	    return (tmpHostName->name);
-	}
-	tmpHostName = tmpHostName->next;
-    }
-    return (NULL);
-#endif
-    myHost = getSvrAddr (LocalServerHost);
+    myHost = _getSvrAddr (LocalServerHost);
     return myHost;
 }
 
 char *
-getSvrAddr (rodsServerHost_t *rodsServerHost)
+_getSvrAddr (rodsServerHost_t *rodsServerHost)
 {
     hostName_t *tmpHostName;
 
@@ -1958,6 +1942,20 @@ getSvrAddr (rodsServerHost_t *rodsServerHost)
     return (NULL);
 }
 
+char *
+getSvrAddr (rodsServerHost_t *rodsServerHost)
+{
+    hostName_t *tmpHostName;
+    char *myHost;
+
+    myHost = _getSvrAddr (rodsServerHost);
+    if (myHost == NULL) {
+        /* use the first one */
+	myHost = rodsServerHost->hostName->name;
+    }
+    return myHost;
+}
+
 int
 setLocalSrvAddr (char *outLocalAddr)
 {
@@ -1967,13 +1965,12 @@ setLocalSrvAddr (char *outLocalAddr)
 
     myHost = getSvrAddr (LocalServerHost);
 
-    if (myHost == NULL) {
-        /* use the first one */
-        rstrcpy (outLocalAddr, LocalServerHost->hostName->name, NAME_LEN);
-    } else {
+    if (myHost != NULL) {
         rstrcpy (outLocalAddr, myHost, NAME_LEN);
+	return 0;
+    } else {
+        return SYS_INVALID_SERVER_HOST;
     }
-    return 0;
 }
 
 int
