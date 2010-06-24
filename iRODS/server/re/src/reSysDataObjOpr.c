@@ -1661,7 +1661,7 @@ msiSetRescQuotaPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  * \usage 
  *
  * putComment||msiLog(*path,rien)##msiSetReplComment(null,*path,*num,*c)##msiMakeQuery("DATA_NAME,DATA_REPL_NUM, DATA_COMMENTS",*Condition,*Query)##msiExecStrCondQuery(*Query,*B)##forEachExec(*B,msiGetValByKey(*B,DATA_REPL_NUM,*N)##msiGetValByKey(*B,DATA_COMMENTS,*com)##writeLine(stdout,*N with *com),nop)||nop##nop##nop
- *  *num=$1%*c=$2%*name=$3%*path=/tempZone/home/rods/*name%*Action=comment%*Condition=DATA_NAME = '*name'
+ *  *num=$1%*c=$2%*name=$3%*path=/tempZone/home/rods/ *name%*Action=comment%*Condition=DATA_NAME = '*name'
  *  ruleExecOut
  *
  * \param[in]		inpParam1 - a INT with the id of the object (can be null if unknown, the next param will then be used)
