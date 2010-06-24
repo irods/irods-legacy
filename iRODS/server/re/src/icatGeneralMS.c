@@ -791,9 +791,11 @@ msiRollback(ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
  *
- * \note
+ * \note This microservice modifies the access rights on a given iRODS object or
+	 collection. For the collections, the modification can be recursive and the
+	 inheritence bit can be changed as well.
  *
- * \usage
+ * \usage msiSetACL(recursiveFlag, accessLevel, userName, pathName)
  * 
  * \param[in] recursiveFlag - a STR_MS_T, either "default" or "recursive".  "recursive"
  *    is only relevant if set with accessLevel set to "inherit".
@@ -809,17 +811,17 @@ msiRollback(ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence $userName and/or $objPath and/or $collName
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre N/A
+ * \post N/A
+ * \sa N/A
  * \bug  no known bugs
 **/
 int msiSetACL (msParam_t *recursiveFlag, msParam_t *accessLevel, msParam_t *userName, 
