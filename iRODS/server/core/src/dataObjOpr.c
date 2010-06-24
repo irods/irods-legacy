@@ -1635,7 +1635,10 @@ rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl)
     tmpLen = pathLen;
 
     while (tmpLen > startLen) {
+#if 0	/* include mounted coll too */
 	if (isColl (rsComm, tmpPath, NULL) >= 0) {
+#endif
+	if (isCollAllKinds (rsComm, tmpPath, NULL) >= 0) {
 	    break;
 	}
 

@@ -201,7 +201,7 @@ getRodsObjType (rcComm_t *conn, rodsPath_t *rodsPath)
 
     if (status < 0) {
         rodsPath->objState = NOT_EXIST_ST;
-	if (status == USER_FILE_DOES_NOT_EXIST) {
+	if (status == OBJ_PATH_DOES_NOT_EXIST) {
             return (NOT_EXIST_ST);
 	} else {
 	    rodsLogError (LOG_ERROR, status, 

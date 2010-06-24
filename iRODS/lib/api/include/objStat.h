@@ -68,6 +68,12 @@ int
 collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut);
 int
+collStatAllKinds (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rodsObjStat_t **rodsObjStatOut);
+int
+_rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rodsObjStat_t **rodsObjStatOut);
+int
 dataObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut);
 int

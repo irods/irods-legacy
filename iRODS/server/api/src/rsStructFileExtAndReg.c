@@ -7,6 +7,7 @@
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"
+#include "objStat.h"
 #include "miscServerFunct.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
@@ -95,7 +96,8 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
         return status;
     }
 
-    status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection);
+    status = chkCollForExtAndReg (rsComm, structFileExtAndRegInp->collection, 
+      NULL);
     if (status < 0) return status;
 
 
@@ -138,7 +140,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
         status = 0;
     } else if (status < 0) {
         rodsLog (LOG_ERROR,
-          "_rsUnbunAndRegPhyBunfile: regUnbunPhySubfiles for dir %s. stat = %d",
+          "_rsUnbunAndRegPhyBunfile: rsStructFileExtAndReg for dir %s.stat=%d",
           phyBunDir, status);
     }
     rsDataObjClose (rsComm, &dataObjCloseInp);
@@ -147,16 +149,20 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
 }
 
 int 
-chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
+chkCollForExtAndReg (rsComm_t *rsComm, char *collection, 
+rodsObjStat_t **rodsObjStatOut)
 {
     dataObjInp_t dataObjInp;
     int status;
-    rodsObjStat_t *rodsObjStatOut = NULL;
+    rodsObjStat_t *myRodsObjStat = NULL;
 
     bzero (&dataObjInp, sizeof (dataObjInp));
     rstrcpy (dataObjInp.objPath, collection, MAX_NAME_LEN);
-    status = collStat (rsComm, &dataObjInp, &rodsObjStatOut);
-    if (status == CAT_NO_ROWS_FOUND) {
+#if 0	/* allow mounted coll */
+    status = collStat (rsComm, &dataObjInp, &myRodsObjStat);
+#endif
+    status = collStatAllKinds (rsComm, &dataObjInp, &myRodsObjStat);
+    if (status == CAT_NO_ROWS_FOUND || status == OBJ_PATH_DOES_NOT_EXIST) {
 	status = rsMkCollR (rsComm, "/", collection);
 	if (status < 0) {
             rodsLog (LOG_ERROR,
@@ -164,7 +170,10 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
               collection, status);
             return (status);
 	} else {
-	    status = collStat (rsComm, &dataObjInp, &rodsObjStatOut);
+#if 0	/* allow mounted coll */
+	    status = collStat (rsComm, &dataObjInp, &myRodsObjStat);
+#endif
+	    status = collStatAllKinds (rsComm, &dataObjInp, &myRodsObjStat);
 	}
     }
 
@@ -173,21 +182,34 @@ chkCollForExtAndReg (rsComm_t *rsComm, char *collection)
           "chkCollForExtAndReg: collStat of %s error. status = %d",
           dataObjInp.objPath, status);
         return (status);
-    } else if (rodsObjStatOut->specColl != NULL) {
-        freeRodsObjStat (rodsObjStatOut);
+    } else if (myRodsObjStat->specColl != NULL && 
+      myRodsObjStat->specColl->collClass != MOUNTED_COLL) {
+	/* only do mounted coll */
+        freeRodsObjStat (myRodsObjStat);
         rodsLog (LOG_ERROR,
-          "chkCollForExtAndReg: %s is a mounted collection",
+          "chkCollForExtAndReg: %s is a struct file collection",
           dataObjInp.objPath);
         return (SYS_STRUCT_FILE_INMOUNTED_COLL);
     }
-    freeRodsObjStat (rodsObjStatOut);
 
-    status = checkCollAccessPerm (rsComm, collection, ACCESS_DELETE_OBJECT);
+    if (myRodsObjStat->specColl == NULL) {
+        status = checkCollAccessPerm (rsComm, collection, ACCESS_DELETE_OBJECT);
+    } else {
+	status = checkCollAccessPerm (rsComm, 
+	  myRodsObjStat->specColl->collection, ACCESS_DELETE_OBJECT);
+    }
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "chkCollForExtAndReg: no permission to write %s, status = %d",
           collection, status);
+        freeRodsObjStat (myRodsObjStat);
+    } else {
+	if (rodsObjStatOut != NULL) {
+	    *rodsObjStatOut = myRodsObjStat;
+	} else {
+            freeRodsObjStat (myRodsObjStat);
+	}
     }
     return (status);
 }

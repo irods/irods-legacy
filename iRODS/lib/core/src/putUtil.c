@@ -402,6 +402,7 @@ bulkOprInfo_t *bulkOprInfo)
             reconnFlag = NO_RECONN;
         }
 	/* reconnect to the resource server */
+	rstrcpy (dataObjOprInp->objPath, targColl, MAX_NAME_LEN);
 	redirectConnToRescSvr (myConn, dataObjOprInp, myRodsEnv, reconnFlag);
     }
 

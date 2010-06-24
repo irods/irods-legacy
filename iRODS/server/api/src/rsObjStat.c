@@ -19,26 +19,6 @@ int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut)
 {
-#if 0
-    int status;
-
-    status = __rsObjStat (rsComm, dataObjInp, 0, rodsObjStatOut);
-
-    return (status);
-}
-
-/* __rsObjStat - internal version of __rsObjStat. Given the object path given
- * in dataObjInp->objPath, stat the path and put the output in rodsObjStatOut.
- * intenFlag specifies whether it is called internally instead of from the
- * client API. If it is called internally, (*rodsObjStatOut)->specColl
- * is from the Globsl cache and should not be freed.
- */
-
-int
-__rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int intenFlag,
-rodsObjStat_t **rodsObjStatOut)
-{
-#endif
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
     specCollCache_t *specCollCache = NULL;
@@ -86,30 +66,9 @@ rodsObjStat_t **rodsObjStatOut)
 	if (status >= 0 && (*rodsObjStatOut)->specColl != NULL) {
 	    /* queue it in cache */
 	    queueSpecCollCacheWithObjStat (*rodsObjStatOut);
-#if 0	/* separate specColl */
-		    if (intenFlag > 0) {
-			specCollCache_t *specCollCache; 
-			/* Internal call, use the global cache copy instead */
-			specCollCache = matchSpecCollCache (
-			  (*rodsObjStatOut)->specColl->collection);
-			free ((*rodsObjStatOut)->specColl);
-			(*rodsObjStatOut)->specColl = 
-			  &specCollCache->specColl;
-		    }
-#endif
 	}
     }
 
-#if 0	/* separate specColl */
-    if (intenFlag == 0 && status >= 0 && 
-      (*rodsObjStatOut)->specColl != NULL) {
-        /* replace specColl since the one given in rodsObjStatOut
-         * is a cached one */
-        specColl_t *specColl = malloc (sizeof (specColl_t));
-        *specColl = *(*rodsObjStatOut)->specColl;
-        (*rodsObjStatOut)->specColl = specColl;
-    }
-#endif
     if (linkCnt > 0 && *rodsObjStatOut != NULL) {
         if ((*rodsObjStatOut)->specColl == NULL) {
             replSpecColl (&specCollCache->specColl,
@@ -139,25 +98,46 @@ rodsObjStat_t **rodsObjStatOut)
     if (tmpStr == NULL || strcmp (tmpStr, "collection") == 0) {
         status = collStat (rsComm, dataObjInp, rodsObjStatOut);
 	/* specColl may already been obtained from collStat */
-        if (status >= 0 && (*rodsObjStatOut)->specColl == NULL) {
-	    if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
-              &specCollCache) >= 0) {
-#if 0	/* separate specColl */
-                (*rodsObjStatOut)->specColl = &specCollCache->specColl;
-#endif
-		replSpecColl (&specCollCache->specColl, 
-		  &(*rodsObjStatOut)->specColl);
+        if (status >= 0) {
+	    if ((*rodsObjStatOut)->specColl == NULL) {
+	        if (getSpecCollCache (rsComm, dataObjInp->objPath, 0,
+                  &specCollCache) >= 0) {
+		    replSpecColl (&specCollCache->specColl, 
+		      &(*rodsObjStatOut)->specColl);
+	        }
 	    }
 	    return (status);
 	}
     }
 
-    /* now check specColl */
+    /*  not normal dataObj or coll. now check specColl */
     /* XXXX need to check a rule if it supports spec collection */
     status = statPathInSpecColl (rsComm, dataObjInp->objPath, 0,
       rodsObjStatOut);
-    if (status < 0) status = USER_FILE_DOES_NOT_EXIST;
+    if (status < 0) status = OBJ_PATH_DOES_NOT_EXIST;
     return (status);
+}
+
+int
+collStatAllKinds (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+rodsObjStat_t **rodsObjStatOut)
+{
+    int status;
+
+    *rodsObjStatOut = NULL;
+    addKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW, "collection");
+    status = _rsObjStat (rsComm, dataObjInp, rodsObjStatOut);
+    rmKeyVal (&dataObjInp->condInput, SEL_OBJ_TYPE_KW);
+    if (status >= 0) {
+	if ((*rodsObjStatOut)->objType != COLL_OBJ_T) {
+	    status = OBJ_PATH_DOES_NOT_EXIST;
+	}
+    }
+    if (status < 0 && *rodsObjStatOut != NULL) {
+	freeRodsObjStat (*rodsObjStatOut);
+	*rodsObjStatOut = NULL;
+    }
+    return status;
 }
 
 int
@@ -259,18 +239,12 @@ rodsObjStat_t **rodsObjStatOut)
 
 		if ((specCollCache = 
 		  matchSpecCollCache (dataObjInp->objPath)) != NULL) {
-#if 0	/* separate specColl */
-		    (*rodsObjStatOut)->specColl = &specCollCache->specColl;
-#endif
 		    replSpecColl (&specCollCache->specColl, 
 		      &(*rodsObjStatOut)->specColl);
 		} else {
     		    status = queueSpecCollCache (genQueryOut, 
 		      dataObjInp->objPath);
     		    if (status < 0) return (status);
-#if 0	/* separate specColl */
-    		    (*rodsObjStatOut)->specColl = &SpecCollCacheHead->specColl;
-#endif
 		    replSpecColl (&SpecCollCacheHead->specColl, 
 		      &(*rodsObjStatOut)->specColl);
 		}
@@ -309,7 +283,7 @@ rodsObjStat_t **rodsObjStatOut)
 
     if ((status = splitPathByKey (
       dataObjInp->objPath, myColl, myData, '/')) < 0) {
-        return (USER_FILE_DOES_NOT_EXIST);
+        return (OBJ_PATH_DOES_NOT_EXIST);
     }
 
     memset (&genQueryInp, 0, sizeof (genQueryInp));
@@ -739,9 +713,6 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
             myDataObjInfo = *dataObjInfo =
               (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
             memset (myDataObjInfo, 0, sizeof (dataObjInfo_t));
-#if 0   /* separate specColl */
-            myDataObjInfo->specColl = curSpecColl;
-#endif
             replSpecColl (curSpecColl, &myDataObjInfo->specColl);
             rstrcpy (myDataObjInfo->objPath, newPath, MAX_NAME_LEN);
             rodsLog (LOG_DEBUG,
@@ -749,9 +720,6 @@ char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo)
               newPath, status);
             return (status);
 	} else {
-#if 0   /* separate specColl */
-	    (*dataObjInfo)->specColl = curSpecColl;
-#endif
             replSpecColl (curSpecColl, &(*dataObjInfo)->specColl);
 	    return DATA_OBJ_T;
 	}
@@ -1065,13 +1033,6 @@ specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo)
 
     status = specCollSubStat (rsComm, cachedSpecColl, objPath,
       specCollPerm, dataObjInfo);
-
-#if 0
-    if (*dataObjInfo != NULL && getStructFileType ((*dataObjInfo)->specColl)
-      >= 0) {
-        dataObjInp->numThreads = NO_THREADING;
-    }
-#endif
 
     if (status < 0) {
         if (*dataObjInfo != NULL) {

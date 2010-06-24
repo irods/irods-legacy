@@ -145,6 +145,8 @@ dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput);
 int
 isColl(rsComm_t *rsComm, char *objName, rodsLong_t *collId);
 int
+isCollAllKinds (rsComm_t *rsComm, char *objName, rodsLong_t *collId);
+int
 isData(rsComm_t *rsComm, char *objName, rodsLong_t *dataId);
 int
 isUser(rsComm_t *rsComm, char *objName);

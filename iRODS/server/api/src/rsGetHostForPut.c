@@ -10,6 +10,7 @@
 #include "getRemoteZoneResc.h"
 #include "dataObjCreate.h"
 #include "objMetaOpr.h"
+#include "miscServerFunct.h"
 
 int
 rsGetHostForPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -18,6 +19,10 @@ char **outHost)
     int status;
     rescGrpInfo_t *myRescGrpInfo;
     rescInfo_t *myRescInfo;
+    rodsServerHost_t *rodsServerHost;
+    rodsHostAddr_t addr;
+    specCollCache_t *specCollCache = NULL;
+    char *myHost;
 
     *outHost = NULL;
 
@@ -34,27 +39,54 @@ char **outHost)
         *outHost = strdup (THIS_ADDRESS);
         return 0;
     }
-    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
-    if (status < 0) return status;
 
-    myRescInfo = myRescGrpInfo->rescInfo;
-    /* status == 1 means random sorting scheme */
-    if ((status == 1 && getRescCnt (myRescGrpInfo) > 1) || 
-      getRescClass (myRescInfo) == COMPOUND_CL) {
-	freeAllRescGrpInfo (myRescGrpInfo);
+    resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache, NULL);
+    if (isLocalZone (dataObjInp->objPath) == 0) {
+        /* it is a remote zone. better connect to this host */
         *outHost = strdup (THIS_ADDRESS);
-    } else {
-	rodsServerHost_t *rodsServerHost;
-        rodsHostAddr_t addr;
-        bzero (&addr, sizeof (addr));
-        rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
-	status = resolveHost (&addr, &rodsServerHost);
-	if (status < 0) {
-	    freeAllRescGrpInfo (myRescGrpInfo);
-	    return status;
+        return 0;
+    }
+
+    status = getSpecCollCache (rsComm, dataObjInp->objPath, 0, &specCollCache);
+    if (status >= 0) {
+	if (specCollCache->specColl.collClass == MOUNTED_COLL) {
+            status = resolveResc (specCollCache->specColl.resource, 
+	      &myRescInfo);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "rsGetHostForPut: resolveResc error for %s, status = %d",
+                 specCollCache->specColl.resource, status);
+		return status;
+            }
+	    /* mounted coll will fall through */
+        } else {
+            *outHost = strdup (THIS_ADDRESS);
+            return 0;
 	}
-	*outHost = strdup (rodsServerHost->hostName->name);
+    } else {
+	/* normal type */
+        status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+        if (status < 0) return status;
+
+        myRescInfo = myRescGrpInfo->rescInfo;
 	freeAllRescGrpInfo (myRescGrpInfo);
+        /* status == 1 means random sorting scheme */
+        if ((status == 1 && getRescCnt (myRescGrpInfo) > 1) || 
+          getRescClass (myRescInfo) == COMPOUND_CL) {
+            *outHost = strdup (THIS_ADDRESS);
+	    return 0;
+	}
+    }
+    /* get down here when we got a valid myRescInfo */
+    bzero (&addr, sizeof (addr));
+    rstrcpy (addr.hostAddr, myRescInfo->rescLoc, NAME_LEN);
+    status = resolveHost (&addr, &rodsServerHost);
+    if (status < 0) return status;
+    myHost = getSvrAddr (rodsServerHost);
+    if (myHost != NULL) {
+	*outHost = strdup (myHost);
+    } else {
+        *outHost = strdup (rodsServerHost->hostName->name);
     }
     return 0;
 }

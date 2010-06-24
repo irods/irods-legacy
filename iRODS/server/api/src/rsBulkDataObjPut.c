@@ -54,19 +54,34 @@ bytesBuf_t *bulkOprInpBBuf)
     int flags = BULK_OPR_FLAG;
     dataObjInp_t dataObjInp;
     fileDriverType_t fileType;
+    rodsObjStat_t *myRodsObjStat = NULL;
 
     inpRescGrpName = getValByKey (&bulkOprInp->condInput, RESC_GROUP_NAME_KW);
+
+    status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath, &myRodsObjStat);
+    if (status < 0) return status;
 
     /* query rcat for resource info and sort it */
 
     /* need to setup dataObjInp */
     initDataObjInpFromBulkOpr (&dataObjInp, bulkOprInp);
 
-    status = getRescGrpForCreate (rsComm, &dataObjInp, &myRescGrpInfo);
-    if (status < 0) return status;
+    if (myRodsObjStat->specColl != NULL) {
+        status = resolveResc (myRodsObjStat->specColl->resource, &rescInfo);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+              "_rsBulkDataObjPut: resolveResc error for %s, status = %d",
+             myRodsObjStat->specColl->resource, status);
+	    freeRodsObjStat (myRodsObjStat);
+            return (status);
+	}
+    } else {
+        status = getRescGrpForCreate (rsComm, &dataObjInp, &myRescGrpInfo);
+        if (status < 0) return status;
 
-    /* just take the top one */
-    rescInfo = myRescGrpInfo->rescInfo;
+        /* just take the top one */
+        rescInfo = myRescGrpInfo->rescInfo;
+    }
     fileType = getRescType (rescInfo);
     if (fileType != UNIX_FILE_TYPE && fileType != NT_FILE_TYPE)
 	return SYS_INVALID_RESC_FOR_BULK_OPR;
@@ -88,10 +103,13 @@ bytesBuf_t *bulkOprInpBBuf)
           bulkOprInpBBuf);
 	return status;
     }
+#if 0	/* moved up */
     status = chkCollForExtAndReg (rsComm, bulkOprInp->objPath);
     if (status < 0) return status;
+#endif
 
-    status = createBunDirForBulkPut (rsComm, &dataObjInp, rescInfo, phyBunDir);
+    status = createBunDirForBulkPut (rsComm, &dataObjInp, rescInfo, 
+      myRodsObjStat->specColl, phyBunDir);
     if (status < 0) return status;
 
 #ifdef BULK_OPR_WITH_TAR
@@ -111,6 +129,12 @@ bytesBuf_t *bulkOprInpBBuf)
         return status;
     }
 #endif
+    if (myRodsObjStat->specColl != NULL) {
+	freeRodsObjStat (myRodsObjStat);
+	return status;
+    } else {
+        freeRodsObjStat (myRodsObjStat);
+    }
 
     if (strlen (myRescGrpInfo->rescGroupName) > 0) 
         inpRescGrpName = myRescGrpInfo->rescGroupName;
@@ -131,7 +155,7 @@ bytesBuf_t *bulkOprInpBBuf)
         status = 0;
     } else if (status < 0) {
         rodsLog (LOG_ERROR,
-          "_rsBulkDataObjPut: regUnbunPhySubfiles for dir %s. stat = %d",
+          "_rsBulkDataObjPut: regUnbunSubfiles for dir %s. stat = %d",
           phyBunDir, status);
     }
 
@@ -140,7 +164,7 @@ bytesBuf_t *bulkOprInpBBuf)
 
 int
 createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo, char *phyBunDir)
+rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir)
 {
     dataObjInfo_t dataObjInfo;
     struct stat statbuf;
@@ -149,6 +173,14 @@ rescInfo_t *rescInfo, char *phyBunDir)
     if (dataObjInp == NULL || rescInfo == NULL || phyBunDir == NULL) 
 	return USER__NULL_INPUT_ERR;
 
+    if (specColl != NULL) {
+        status = getMountedSubPhyPath (specColl->collection,
+          specColl->phyPath, dataObjInp->objPath, phyBunDir);
+        if (status >= 0) {
+            mkdirR ("/", phyBunDir, getDefDirMode ());
+        }
+	return status;
+    }
     bzero (&dataObjInfo, sizeof (dataObjInfo));
     rstrcpy (dataObjInfo.objPath, dataObjInp->objPath, MAX_NAME_LEN);
     rstrcpy (dataObjInfo.rescName, rescInfo->rescName, NAME_LEN);

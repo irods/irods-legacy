@@ -2291,6 +2291,24 @@ isData(rsComm_t *rsComm, char *objName, rodsLong_t *dataId)
 }
 
 int
+isCollAllKinds (rsComm_t *rsComm, char *objName, rodsLong_t *collId)
+{
+    dataObjInp_t dataObjInp;    
+    int status;
+    rodsObjStat_t *rodsObjStatOut = NULL;
+
+    bzero (&dataObjInp, sizeof (dataObjInp));
+    rstrcpy (dataObjInp.objPath, objName, MAX_NAME_LEN);
+    status = collStatAllKinds (rsComm, &dataObjInp, &rodsObjStatOut);
+    if (status >= 0 && collId != NULL) {
+	*collId = strtoll (rodsObjStatOut->dataId, 0, 0);
+    }
+    if (rodsObjStatOut != NULL) 
+	freeRodsObjStat (rodsObjStatOut);
+    return status;
+}
+	
+int
 isColl(rsComm_t *rsComm, char *objName, rodsLong_t *collId)
 {
     genQueryInp_t genQueryInp;

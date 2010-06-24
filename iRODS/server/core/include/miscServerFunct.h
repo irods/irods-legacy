@@ -111,6 +111,8 @@ int
 svrSockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto);
 char *
 getLocalSvrAddr ();
+char *
+getSvrAddr (rodsServerHost_t *rodsServerHost);
 int
 setLocalSrvAddr (char *outLocalAddr);
 int

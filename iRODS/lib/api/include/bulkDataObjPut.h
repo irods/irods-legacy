@@ -39,7 +39,7 @@ _rsBulkDataObjPut (rsComm_t *rsComm, bulkOprInp_t *bulkOprInp,
 bytesBuf_t *bulkOprInpBBuf);
 int
 createBunDirForBulkPut (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rescInfo_t *rescInfo, char *phyBunDir);
+rescInfo_t *rescInfo, specColl_t *specColl, char *phyBunDir);
 int
 initDataObjInpFromBulkOpr (dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp);
 #else

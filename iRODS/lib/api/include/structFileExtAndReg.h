@@ -40,8 +40,9 @@ typedef struct RenamedPhyFiles {
 int
 rsStructFileExtAndReg (rsComm_t *rsComm, 
 structFileExtAndRegInp_t *structFileExtAndRegInp);
-int 
-chkCollForExtAndReg (rsComm_t *rsComm, char *collection);
+int
+chkCollForExtAndReg (rsComm_t *rsComm, char *collection,
+rodsObjStat_t **rodsObjStatOut);
 int
 regUnbunSubfiles (rsComm_t *rsComm, rescInfo_t *rescInfo, char *rescGroupName, 
 char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray);
