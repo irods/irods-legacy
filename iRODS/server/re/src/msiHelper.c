@@ -21,7 +21,8 @@
  * \date  2009  
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
- *         Jewel Ward - msi documentation, 2010-06-09
+ * \remark Jewel Ward - msi documentation, 2010-06-09
+ *
  * \note none  
  *
  * \usage 
@@ -74,7 +75,8 @@ ruleExecInfo_t *rei)
  * \date 2009   
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
- *         Jewel Ward - msi documentation, 2010-06-09
+ * \remark Jewel Ward - msi documentation, 2010-06-09
+ *
  * \note none
  *
  * \usage 
@@ -211,7 +213,8 @@ msiWriteRodsLog (msParam_t *inpParam1,  msParam_t *outParam, ruleExecInfo_t *rei
  * \date   2010 
  *
  * \remark Terrell Russell - msi documentation, 2010-04-05
- *         Jewel Ward - msi documentation, 2010-06-09
+ * \remark Jewel Ward - msi documentation, 2010-06-09
+ *
  * \note none 
  *
  * \usage 
@@ -350,7 +353,8 @@ msParam_t *outChildName, ruleExecInfo_t *rei)
  * \date    2009-06-15
  *
  * \remark Terrell Russell - msi documentation, 2009-12-17
- *         Jewel Ward - msi documentation, 2010-06-09
+ * \remark Jewel Ward - msi documentation, 2010-06-09
+ *
  * \note none 
  *
  * \usage 

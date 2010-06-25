@@ -24,7 +24,8 @@
  * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
- *         Jewel Ward - msi documentation, 2010-06-09
+ * \remark Jewel Ward - msi documentation, 2010-06-09
+ *
  * \note none
  *
  * \usage 
