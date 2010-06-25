@@ -1945,7 +1945,6 @@ _getSvrAddr (rodsServerHost_t *rodsServerHost)
 char *
 getSvrAddr (rodsServerHost_t *rodsServerHost)
 {
-    hostName_t *tmpHostName;
     char *myHost;
 
     myHost = _getSvrAddr (rodsServerHost);
