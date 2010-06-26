@@ -67,5 +67,7 @@ matchCliVaultPath (rsComm_t *rsComm, char *filePath,
 rodsServerHost_t *rodsServerHost);
 int
 chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir);
+int
+filePathTypeInResc (rsComm_t *rsComm, char *fileName, rescInfo_t *rescInfo);
 
 #endif	/* FILE_OPR_H */

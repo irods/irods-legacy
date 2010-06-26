@@ -88,6 +88,7 @@
 #define OPR_TYPE_KW   		"oprType" /* a msKeyValStr keyword */ 
 #define COLL_FLAGS_KW  		"collFlags" /* a msKeyValStr keyword */ 
 #define TRANSLATED_PATH_KW	"translatedPath"  /* the path translated */
+#define NO_TRANSLATE_LINKPT_KW	"noTranslateMntpt"  /* don't translate mntpt */
 #define BULK_OPR_KW		"bulkOpr"  /* the bulk operation */
 #define NON_BULK_OPR_KW		"nonBulkOpr"  /* non bulk operation */
 #define EXEC_CMD_RULE_KW	"execCmdRule" /* the rule that invoke execCmd */

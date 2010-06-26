@@ -165,7 +165,6 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
     rodsDirent_t *rodsDirent = NULL;
     dataObjInfo_t *dataObjInfo;
     rodsStat_t *fileStatOut = NULL;
-    fileStatInp_t fileStatInp;
     int rowCnt;
     objType_t selObjType;
     char *tmpStr;
@@ -226,7 +225,7 @@ dataObjInp_t *dataObjInp, genQueryOut_t *genQueryOut, int continueFlag)
         if (status < 0) {
             rodsLog (LOG_ERROR,
              "_rsQuerySpecColl: l3Stat for %s error, status = %d",
-             fileStatInp.fileName, status);
+             myDataObjInfo.filePath, status);
            /* XXXXX need clean up */
             return (status);
         }

@@ -1080,6 +1080,10 @@ specCollCache_t **specCollCache, keyValPair_t *condInput)
         }
 
         curSpecColl = &(*specCollCache)->specColl;
+	if (strcmp (curSpecColl->collection, objPath) == 0 &&
+	  getValByKey (condInput, NO_TRANSLATE_LINKPT_KW) != NULL) {
+	    return 0;
+	}
         rstrcpy (prevNewPath, objPath, MAX_NAME_LEN);
         status = getMountedSubPhyPath (curSpecColl->collection,
           curSpecColl->phyPath, prevNewPath, objPath);

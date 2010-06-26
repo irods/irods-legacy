@@ -5,7 +5,9 @@
  */
 
 #include "fileOpr.h"
+#include "fileStat.h"
 #include "rsGlobalExtern.h"
+#include "rcGlobalExtern.h"
 
 int
 initFileDesc ()
@@ -360,3 +362,35 @@ rodsServerHost_t *rodsServerHost)
 #endif
 }
 
+/* filePathTypeInResc - the status of a filePath in a resource.
+ * return LOCAL_FILE_T, LOCAL_DIR_T, UNKNOWN_OBJ_T or error (-ive)
+ */ 
+int
+filePathTypeInResc (rsComm_t *rsComm, char *fileName, rescInfo_t *rescInfo)
+{
+    int rescTypeInx;
+    fileStatInp_t fileStatInp;
+    rodsStat_t *myStat = NULL;
+    int status;
+
+    memset (&fileStatInp, 0, sizeof (fileStatInp));
+
+    rstrcpy (fileStatInp.fileName, fileName, MAX_NAME_LEN);
+
+    rescTypeInx = rescInfo->rescTypeInx;
+    fileStatInp.fileType = RescTypeDef[rescTypeInx].driverType;
+    rstrcpy (fileStatInp.addr.hostAddr,  rescInfo->rescLoc, NAME_LEN);
+    status = rsFileStat (rsComm, &fileStatInp, &myStat);
+
+    if (status < 0) return status;
+    if (myStat->st_mode & S_IFREG) {
+	free (myStat);
+	return LOCAL_FILE_T;
+    } else if (myStat->st_mode & S_IFDIR) {
+	free (myStat);
+	return LOCAL_DIR_T;
+    } else {
+	free (myStat);
+	return UNKNOWN_OBJ_T;
+    }
+}

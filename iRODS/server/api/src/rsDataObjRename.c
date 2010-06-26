@@ -8,6 +8,11 @@
 #include "icatHighLevelRoutines.h"
 #include "dataObjUnlink.h"
 #include "phyBundleColl.h"
+#include "regDataObj.h"
+#include "fileOpendir.h"
+#include "fileReaddir.h"
+#include "fileClosedir.h"
+#include "rmCollOld.h"
 
 int
 rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
@@ -17,10 +22,23 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
     rodsServerHost_t *rodsServerHost = NULL;
     dataObjInfo_t *srcDataObjInfo = NULL;
     dataObjInfo_t *destDataObjInfo = NULL;
+    specCollCache_t *specCollCache = NULL;
     int srcType, destType;
 
     srcDataObjInp = &dataObjRenameInp->srcDataObjInp;
     destDataObjInp = &dataObjRenameInp->destDataObjInp;
+
+    /* don't translate the link pt. treat it as a normal collection */
+    addKeyVal (&srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW, "");
+    resolveLinkedPath (rsComm, srcDataObjInp->objPath, &specCollCache,
+      &srcDataObjInp->condInput);
+    rmKeyVal (&srcDataObjInp->condInput, NO_TRANSLATE_LINKPT_KW);
+    resolveLinkedPath (rsComm, destDataObjInp->objPath, &specCollCache,
+      &destDataObjInp->condInput);
+
+    if (strcmp (srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
+        return (SAME_SRC_DEST_PATHS_ERR);
+    }
 
     /* connect to rcat for cross zone */
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, 
@@ -33,10 +51,6 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
         return status;
     }
 
-    if (strcmp (srcDataObjInp->objPath, destDataObjInp->objPath) == 0) {
-        return (SAME_SRC_DEST_PATHS_ERR);
-    }
-
     srcType = resolvePathInSpecColl (rsComm, srcDataObjInp->objPath, 
       WRITE_COLL_PERM, 0, &srcDataObjInfo);
 
@@ -44,52 +58,60 @@ rsDataObjRename (rsComm_t *rsComm, dataObjCopyInp_t *dataObjRenameInp)
       WRITE_COLL_PERM, 0, &destDataObjInfo);
 
     if (srcDataObjInfo != NULL && srcDataObjInfo->specColl != NULL &&
-      srcDataObjInfo->specColl->collClass == LINKED_COLL) {
-        rstrcpy (srcDataObjInp->objPath, srcDataObjInfo->objPath,
-          MAX_NAME_LEN);
+      strcmp (srcDataObjInfo->specColl->collection, srcDataObjInp->objPath) 
+      == 0) {
+	/* this must be the link pt or mount pt. treat it as normal coll */
+        freeDataObjInfo (srcDataObjInfo);
+	srcDataObjInfo = NULL;
         srcType = SYS_SPEC_COLL_NOT_IN_CACHE;
     }
 
-    if (destDataObjInfo != NULL && destDataObjInfo->specColl != NULL &&
-      destDataObjInfo->specColl->collClass == LINKED_COLL) {
-        rstrcpy (destDataObjInp->objPath, destDataObjInfo->objPath,
-          MAX_NAME_LEN);
-        destType = SYS_SPEC_COLL_NOT_IN_CACHE;
-    }
+    if (!isSameZone (srcDataObjInp->objPath, destDataObjInp->objPath))
+        return SYS_CROSS_ZONE_MV_NOT_SUPPORTED;
 
     if (destType >= 0) {
         rodsLog (LOG_ERROR,
-          "rsDataObjRename: dest objPath %s exists",
+          "rsDataObjRename: dest specColl objPath %s exists",
           destDataObjInp->objPath);
 	freeDataObjInfo (srcDataObjInfo);
 	freeDataObjInfo (destDataObjInfo);
         return (SYS_DEST_SPEC_COLL_SUB_EXIST);
     }
 
-    if (!isSameZone (srcDataObjInp->objPath, destDataObjInp->objPath))
-	return SYS_CROSS_ZONE_MV_NOT_SUPPORTED;
-
-    if (srcType >= 0) {	/*specColl of some sort */
-	if (destType != SYS_SPEC_COLL_OBJ_NOT_EXIST || 
-	  destDataObjInfo == NULL || destDataObjInfo->specColl == NULL) {
-            rodsLog (LOG_ERROR,
-              "rsDataObjRename: src %s is in spec coll but dest %s is not",
-	      srcDataObjInp->objPath, destDataObjInp->objPath);
-	    return (SYS_SRC_DEST_SPEC_COLL_CONFLICT);
+    if (srcType >= 0) {	/* specColl of some sort */
+	if (destType == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
+	    status = specCollObjRename (rsComm, srcDataObjInfo,
+              destDataObjInfo);
+	} else {
+	    /* dest is regular obj. Allow apecial case where the src
+	     * is in a MOUNTED_COLL */ 
+	    if (srcDataObjInfo->specColl->collClass == MOUNTED_COLL) {
+		/* a special case for moving obj from mounted collection to
+		 * regular collection */
+	        status = moveMountedCollObj (rsComm, srcDataObjInfo, srcType,
+	          destDataObjInp);
+	    } else {
+                rodsLog (LOG_ERROR,
+                  "rsDataObjRename: src %s is in spec coll but dest %s is not",
+	          srcDataObjInp->objPath, destDataObjInp->objPath);
+	        status = SYS_SRC_DEST_SPEC_COLL_CONFLICT;
+	    }
 	}
-	status = specCollObjRename (rsComm, srcDataObjInfo, 
-	  destDataObjInfo);
 	freeDataObjInfo (srcDataObjInfo);
 	freeDataObjInfo (destDataObjInfo);
 	return (status);
     } else if (srcType == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
+#if 0	/* don't understand this */
         /* for STRUCT_FILE_COLL to make a directory in the structFile, the
          * STRUCT_FILE_OPR_KW must be set */
         if (getSpecCollOpr (&srcDataObjInp->condInput, 
 	  srcDataObjInfo->specColl) != NORMAL_OPR_ON_STRUCT_FILE_COLL) {
 	    return (SYS_SPEC_COLL_OBJ_NOT_EXIST);
 	}
+#endif
+	return (SYS_SPEC_COLL_OBJ_NOT_EXIST);
     } else if (destType == SYS_SPEC_COLL_OBJ_NOT_EXIST) {
+	/* source is normal object but dest is not */
         rodsLog (LOG_ERROR,
           "rsDataObjRename: src %s is not in spec coll but dest %s is",
           srcDataObjInp->objPath, destDataObjInp->objPath);
@@ -417,5 +439,164 @@ l3Rename (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char *newFileName)
         }
     }
     return (status);
+}
+
+/* moveMountedCollObj - move a mounted collecion obj to a normal obj */
+int
+moveMountedCollObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo, 
+int srcType, dataObjInp_t *destDataObjInp)
+{
+    int status;
+
+    if (srcType == DATA_OBJ_T) {
+	status = moveMountedCollDataObj (rsComm, srcDataObjInfo, 
+	  destDataObjInp);
+    } else if (srcType == COLL_OBJ_T) {
+	status = moveMountedCollCollObj (rsComm, srcDataObjInfo, 
+	  destDataObjInp);
+    } else {
+	status = SYS_UNMATCHED_SPEC_COLL_TYPE;
+    }
+    return status;
+}
+
+int
+moveMountedCollDataObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo, 
+dataObjInp_t *destDataObjInp)
+{
+    dataObjInfo_t destDataObjInfo;
+    fileRenameInp_t fileRenameInp;
+    int status;
+
+    if (rsComm == NULL || srcDataObjInfo == NULL || destDataObjInp == NULL)
+	return USER__NULL_INPUT_ERR;
+
+    bzero (&destDataObjInfo, sizeof (destDataObjInfo));
+    bzero (&fileRenameInp, sizeof (fileRenameInp));
+    rstrcpy (destDataObjInfo.objPath, destDataObjInp->objPath, MAX_NAME_LEN);
+    rstrcpy (destDataObjInfo.dataType, srcDataObjInfo->dataType, NAME_LEN);
+    destDataObjInfo.dataSize = srcDataObjInfo->dataSize;
+    destDataObjInfo.rescInfo = srcDataObjInfo->rescInfo;
+    rstrcpy (destDataObjInfo.rescName, srcDataObjInfo->rescInfo->rescName, 
+      NAME_LEN);
+    status = getFilePathName (rsComm, &destDataObjInfo, destDataObjInp);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "moveMountedCollDataObj: getFilePathName err for %s. status = %d",
+          destDataObjInfo.objPath, status);
+        return (status);
+    }
+
+    status = filePathTypeInResc (rsComm, destDataObjInfo.filePath, 
+      destDataObjInfo.rescInfo);
+    if (status == LOCAL_DIR_T) {
+	status = SYS_PATH_IS_NOT_A_FILE;
+        rodsLog (LOG_ERROR,
+          "moveMountedCollDataObj: targ path %s is a dir. status = %d",
+          destDataObjInfo.filePath, status);
+	return status;
+    } else if (status == LOCAL_FILE_T) {
+	dataObjInfo_t myDataObjInfo;
+	status = chkOrphanFile (rsComm, destDataObjInfo.filePath, 
+	  destDataObjInfo.rescInfo->rescName, &myDataObjInfo);
+	if (status == 1) {
+	    /* orphan */
+	    rstrcpy (fileRenameInp.oldFileName, destDataObjInfo.filePath, 
+	      MAX_NAME_LEN);
+            renameFilePathToNewDir (rsComm, ORPHAN_DIR, &fileRenameInp,
+	    destDataObjInfo.rescInfo, 1);
+	} else if (status == 0) {
+	    /* obj exist */
+	    return SYS_COPY_ALREADY_IN_RESC;
+	} else {
+	    return status;
+	}
+    }
+    status = l3Rename (rsComm, srcDataObjInfo, destDataObjInfo.filePath);
+
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "moveMountedCollDataObj: l3Rename error from %s to %s, status = %d",
+          srcDataObjInfo->filePath, destDataObjInfo.filePath, status);
+        return (status);
+    }
+    status = svrRegDataObj (rsComm, &destDataObjInfo);
+    if (status < 0) {
+	l3Rename (rsComm, &destDataObjInfo, srcDataObjInfo->filePath);
+        rodsLog (LOG_ERROR,
+         "moveMountedCollDataObj: rsRegDataObj for %s failed, status = %d",
+          destDataObjInfo.objPath, status);
+    } 
+    return (status);
+}
+
+int
+moveMountedCollCollObj (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo, 
+dataObjInp_t *destDataObjInp)
+{
+    int l3descInx;
+    fileReaddirInp_t fileReaddirInp;
+    rodsDirent_t *rodsDirent = NULL;
+    rodsStat_t *fileStatOut = NULL;
+    dataObjInfo_t subSrcDataObjInfo;
+    dataObjInp_t subDestDataObjInp;
+    int status;
+    int savedStatus = 0;
+
+    subSrcDataObjInfo = *srcDataObjInfo;
+    bzero (&subDestDataObjInp, sizeof (subDestDataObjInp));
+    l3descInx = l3Opendir (rsComm, srcDataObjInfo);
+    fileReaddirInp.fileInx = l3descInx;
+    rsMkCollR (rsComm, "/", destDataObjInp->objPath);
+    while (rsFileReaddir (rsComm, &fileReaddirInp, &rodsDirent) >= 0) {
+        rodsDirent_t myRodsDirent;
+
+        myRodsDirent = *rodsDirent;
+        free (rodsDirent);
+
+        if (strcmp (myRodsDirent.d_name, ".") == 0 ||
+          strcmp (myRodsDirent.d_name, "..") == 0) {
+            continue;
+        }
+
+        snprintf (subSrcDataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
+          srcDataObjInfo->objPath, myRodsDirent.d_name);
+        snprintf (subSrcDataObjInfo.subPath, MAX_NAME_LEN, "%s/%s",
+          srcDataObjInfo->subPath, myRodsDirent.d_name);
+        snprintf (subSrcDataObjInfo.filePath, MAX_NAME_LEN, "%s/%s",
+          srcDataObjInfo->filePath, myRodsDirent.d_name);
+
+        status = l3Stat (rsComm, &subSrcDataObjInfo, &fileStatOut);
+        if (status < 0) {
+            rodsLog (LOG_ERROR,
+             "moveMountedCollCollObj: l3Stat for %s error, status = %d",
+             subSrcDataObjInfo.filePath, status);
+            return (status);
+        }
+        snprintf (subSrcDataObjInfo.dataCreate, NAME_LEN, "%d", 
+          fileStatOut->st_ctim);
+        snprintf (subSrcDataObjInfo.dataModify, NAME_LEN, "%d",
+          fileStatOut->st_mtim);
+        snprintf (subDestDataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
+          destDataObjInp->objPath, myRodsDirent.d_name);
+        if ((fileStatOut->st_mode & S_IFREG) != 0) {     /* a file */
+	    subSrcDataObjInfo.dataSize = fileStatOut->st_size;
+	    status = moveMountedCollDataObj (rsComm, &subSrcDataObjInfo,
+	      &subDestDataObjInp);
+	} else {
+            status = moveMountedCollCollObj (rsComm, &subSrcDataObjInfo,
+              &subDestDataObjInp);
+	}
+	if (status < 0) {
+	    savedStatus = status;
+	}
+	if (fileStatOut != NULL) free (fileStatOut); 
+            rodsLog (LOG_ERROR,
+	     "moveMountedCollCollObj: moveMountedColl for %s error, stat = %d",
+             subSrcDataObjInfo.objPath, status);
+
+    }
+    l3Rmdir (rsComm, srcDataObjInfo);
+    return savedStatus;
 }
 
