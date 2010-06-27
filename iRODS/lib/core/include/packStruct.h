@@ -10,7 +10,7 @@
 
 #define MAX_PI_LEN	1024	/* max pack instruct length */
 #define SEMI_COL_FLAG	0x2	/* got semi colon at end */
-#define PACKED_OUT_ALLOC_SZ 10240 /* initial alloc size for packedOutput */
+#define PACKED_OUT_ALLOC_SZ (64*1024) /* initial alloc size for packedOutput */
 #define SUB_STRUCT_ALLOC_SZ 1024 /* initial alloc size for unpacking sub
 struct */
 #define MAX_PACKED_OUT_ALLOC_SZ (1024*1024)

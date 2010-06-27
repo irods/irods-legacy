@@ -28,7 +28,7 @@ packInstructArray_t *myPackTable, int packFlag, irodsProt_t irodsProt)
 
     /* Initialize the packedOutput */
 
-    initPackedOutput (&packedOutput, PACKED_OUT_ALLOC_SZ);
+    initPackedOutput (&packedOutput, MAX_PACKED_OUT_ALLOC_SZ);
 
     inPtr = inStruct;
     memset (&rootPackedItem, 0, sizeof (rootPackedItem));
@@ -70,7 +70,7 @@ packInstructArray_t *myPackTable, irodsProt_t irodsProt)
 
     /* Initialize the unpackedOutput */
 
-    initPackedOutput (&unpackedOutput, MAX_PACKED_OUT_ALLOC_SZ);
+    initPackedOutput (&unpackedOutput, PACKED_OUT_ALLOC_SZ);
 
     inPtr = inPackedStr;
     memset (&rootPackedItem, 0, sizeof (rootPackedItem));
