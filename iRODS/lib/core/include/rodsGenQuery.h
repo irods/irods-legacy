@@ -13,7 +13,7 @@
 #include "objInfo.h"
 
 #define MAX_SQL_ATTR    50
-#define MAX_SQL_ROWS   500
+#define MAX_SQL_ROWS   256
 
 /* In genQueryInp_t, selectInp is a int index, int value pair. The index
  * represents the attribute index. 
