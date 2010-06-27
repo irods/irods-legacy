@@ -114,7 +114,9 @@ rodsObjStat_t **rodsObjStatOut)
     /* XXXX need to check a rule if it supports spec collection */
     status = statPathInSpecColl (rsComm, dataObjInp->objPath, 0,
       rodsObjStatOut);
-    if (status < 0) status = OBJ_PATH_DOES_NOT_EXIST;
+    /* use USER_FILE_DOES_NOT_EXIST instead of OBJ_PATH_DOES_NOT_EXIST
+     * because icommand depends on it */
+    if (status < 0) status = USER_FILE_DOES_NOT_EXIST;
     return (status);
 }
 
