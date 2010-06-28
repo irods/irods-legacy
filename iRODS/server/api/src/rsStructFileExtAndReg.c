@@ -162,7 +162,11 @@ rodsObjStat_t **rodsObjStatOut)
     status = collStat (rsComm, &dataObjInp, &myRodsObjStat);
 #endif
     status = collStatAllKinds (rsComm, &dataObjInp, &myRodsObjStat);
-    if (status == CAT_NO_ROWS_FOUND || status == OBJ_PATH_DOES_NOT_EXIST) {
+#if 0
+    if (status == CAT_NO_ROWS_FOUND || status == OBJ_PATH_DOES_NOT_EXIST ||
+      status == USER_FILE_DOES_NOT_EXIST) {
+#endif
+    if (status < 0) { 
 	status = rsMkCollR (rsComm, "/", collection);
 	if (status < 0) {
             rodsLog (LOG_ERROR,
