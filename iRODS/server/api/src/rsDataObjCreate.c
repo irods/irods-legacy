@@ -111,7 +111,7 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
                 dataObjInp->specColl = rodsObjStatOut->specColl;
                 rodsObjStatOut->specColl = NULL;
 	    }
-            dataObjInp->openFlags |= O_TRUNC;
+            dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
             l1descInx = OVERWITE_WITHOUT_FORCE_FLAG;
