@@ -50,7 +50,10 @@ typedef struct H5Dataset
 {
     int opID;                  /* the id of operation to take on the server */
     int fid;                   /* the file ID from H5Fopen() */
+#if 0   /* unsigned long is 64 bit in 64 bit arch */
     unsigned long objID[2];    /* uniquely identify an object in a file [from server] */
+#endif
+    int objID[2];    /* uniquely identify an object in a file [from server] */
     H5Datatype_class_t tclass;  /* same as class in H5Datatype. Put here for packing */
     char* fullpath;            /* the path + name, e.g. /hdfeos/swaths/data fields/channel */
     int nattributes;           /* number of attributes */
@@ -60,7 +63,10 @@ typedef struct H5Dataset
     unsigned int nvalue;       /* the number of bytes in the buffer *value */
     void*    value;            /* the data read from file or write to file */
     H5Error error;             /* strings used to carry error report from server operation */
+#if 0   /* unsigned long is 64 bit in 64 bit arch */
     long  time;                /* number of seconds used to finish the hdf5 request on server */
+#endif
+    int  time;                /* number of seconds used to finish the hdf5 request on server */
 } H5Dataset;
 
 #ifdef __cplusplus

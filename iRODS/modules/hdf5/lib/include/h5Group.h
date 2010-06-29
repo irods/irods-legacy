@@ -35,7 +35,10 @@ typedef struct H5Group
 {
     int opID;                   /* the id of operation to take on the server */
     int fid;                    /* the file ID from H5Fopen() */
+#if 0	/* unsigned long is 64 bits in 64 bit arch */
     unsigned long objID[2];     /* uniquely object identifer [from server] */ 
+#endif
+    int objID[2];     /* uniquely object identifer [from server] */ 
     char* fullpath;             /* the path + name, e.g. /hdfeos/swaths */
     struct H5Group *parent;     /* the parent group*/
     int ngroups;               /* number of group members in this group */
@@ -45,7 +48,10 @@ typedef struct H5Group
     int nattributes;            /* number of attributes of this group */
     H5Attribute *attributes;   /* attributes of this group */
     H5Error error;              /* strings used to carry error report from server operation */
+#if 0	/* unsigned long is 64 bits in 64 bit arch */
     long  time;                /* number of seconds used to finish the hdf5 request on server */
+#endif
+    int  time;                /* number of seconds used to finish the hdf5 request on server */
 } H5Group;
 
 #ifdef __cplusplus
