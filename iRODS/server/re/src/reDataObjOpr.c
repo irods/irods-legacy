@@ -688,6 +688,8 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     openedDataObjInp_t dataObjWriteInp, *myDataObjWriteInp;
     int myInt;
     bytesBuf_t tmpBBuf, *myBBuf;
+    execCmdOut_t *myExecCmdOut;
+    msParam_t *mP;
 
 
     RE_TEST_MACRO ("    Calling msiDataObjWrite")
@@ -700,11 +702,27 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     rsComm = rei->rsComm;
 
+    if ((strcmp((char *)inpParam2->inOutStruct,"stdout") == 0) || 
+	(strcmp((char *) inpParam2->inOutStruct,"stderr") == 0)) {
+      if ((mP = getMsParamByLabel (rei->msParamArray, "ruleExecOut")) == NULL)
+        return(NO_VALUES_FOUND);
+      myExecCmdOut = mP->inOutStruct;
+      if (strcmp((char *) inpParam2->inOutStruct,"stdout") == 0){
+	free(inpParam2->inOutStruct);
+        inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stdoutBuf.buf);
+      }
+      else {
+	free(inpParam2->inOutStruct);
+        inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stderrBuf.buf);
+      }
+      inpParam2->type = strdup(STR_MS_T);
+    }
+
     if (inpParam1 == NULL || (inpParam2->inpOutBuf == NULL &&
      inpParam2->inOutStruct == NULL)) {
 	rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
 	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjWrite: input inpParam1 or inpOutBuf is NULL");
+          "msiDataObjWrite: input inpParam1 or inpOutBuf or inOutStruct is NULL");
         return (rei->status);
     }
 
