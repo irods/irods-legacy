@@ -2033,11 +2033,11 @@ char **outStr)
     } else {
         myStrlen = strlen ((char*)*inPtr);
     }
-    if (myStrlen >= maxStrLen) {
+    if (myStrlen + 1 >= maxStrLen) {
         if (maxStrLen >= 0) {
             return (USER_PACKSTRUCT_INPUT_ERR);
 	} else {
-	    extendPackedOutput (unpackedOutput, myStrlen, &outPtr);
+	    extendPackedOutput (unpackedOutput, myStrlen + 1, &outPtr);
 	}
     } else {
         extendPackedOutput (unpackedOutput, maxStrLen, &outPtr);
