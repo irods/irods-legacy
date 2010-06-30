@@ -1055,7 +1055,11 @@ collHandle_t *collHandle)
 	return CAT_UNKNOWN_COLLECTION;
     }
 
+#if 0
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
+#else
+    replSpecColl (rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl);
+#endif
     if (rodsObjStatOut->specColl != NULL &&
 #if 0
       rodsObjStatOut->specColl->collClass == LINKED_COLL) {
@@ -1310,7 +1314,10 @@ clearCollHandle (collHandle_t *collHandle, int freeSpecColl)
         free (collHandle->dataObjInp.specColl);
     }
     if (collHandle->rodsObjStat != NULL) {
+#if 0
 	free (collHandle->rodsObjStat);
+#endif
+	freeRodsObjStat (collHandle->rodsObjStat);
 	collHandle->rodsObjStat = NULL;
     }
     clearKeyVal (&collHandle->dataObjInp.condInput);

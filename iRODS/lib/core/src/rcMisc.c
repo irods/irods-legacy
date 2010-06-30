@@ -669,18 +669,29 @@ getIvalByInx (inxIvalPair_t *inxIvalPair, int inx, int *outValue)
 int
 rmKeyVal (keyValPair_t *condInput, char *keyWord)
 {
-    int i;
+    int i, j;
 
     if (condInput == NULL) {
         return (0);
     }
 
     for (i = 0; i < condInput->len; i++) {
-        if (strcmp (condInput->keyWord[i], keyWord) == 0) {
-	    *condInput->keyWord[i] = '\0';
+        if (condInput->keyWord[i] != NULL &&
+          strcmp (condInput->keyWord[i], keyWord) == 0) {
+            free (condInput->keyWord[i]);
+            free (condInput->value[i]);
+	    condInput->len--;
+            for (j = i; j < condInput->len; j++) {
+                condInput->keyWord[j] = condInput->keyWord[j + 1];
+            }
+	    if (condInput->len <= 0) {
+		free (condInput->keyWord);
+		free (condInput->value);
+		condInput->value = condInput->keyWord = NULL;
+	    }
+            break;
         }
     }
-
     return (0);
 }
 
@@ -3709,7 +3720,7 @@ int *outDataMode, char **outChksum)
     sqlResult_t *objPath, *dataMode, *chksum;
     char *tmpObjPath, *tmpDataMode, *tmpChksum;
 
-    if (objPath == NULL || attriArray == NULL || outDataMode == NULL ||
+    if (inpObjPath == NULL || attriArray == NULL || outDataMode == NULL ||
       outChksum == NULL) return USER__NULL_INPUT_ERR;
 
     if ((objPath =

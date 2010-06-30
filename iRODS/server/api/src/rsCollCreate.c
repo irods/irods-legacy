@@ -21,6 +21,7 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
     ruleExecInfo_t rei;
     collInfo_t collInfo;
     specCollCache_t *specCollCache = NULL;
+    dataObjInfo_t *dataObjInfo = NULL;
     
     resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache,
       &collCreateInp->condInput);
@@ -51,7 +52,6 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
 	    return (status);
         }
 #ifdef RODS_CAT
-        dataObjInfo_t *dataObjInfo = NULL;
 
         /* for STRUCT_FILE_COLL to make a directory in the structFile, the
          * COLLECTION_TYPE_KW must be set */
@@ -59,6 +59,7 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
         status = resolvePathInSpecColl (rsComm, collCreateInp->collName, 
 	  WRITE_COLL_PERM, 0, &dataObjInfo);
 	if (status >= 0) {
+	    freeDataObjInfo (dataObjInfo);
 	    if (status == COLL_OBJ_T) {
 		return (0);
 	    } else if (status == DATA_OBJ_T) {

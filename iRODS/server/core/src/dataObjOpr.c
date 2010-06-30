@@ -1743,7 +1743,11 @@ freeCollHandle (int handleInx)
     }
 
     /* don't free specColl. It is in cache */
+#if 0
     clearCollHandle (&CollHandle[handleInx], 0);
+#else
+    clearCollHandle (&CollHandle[handleInx], 1);
+#endif
     memset (&CollHandle[handleInx], 0, sizeof (collHandle_t));
 
     return (0);

@@ -37,7 +37,11 @@ rsOpenCollection (rsComm_t *rsComm, collInp_t *openCollInp)
 
     if (status < 0) return status;
 
+#if 0
     collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
+#else
+    replSpecColl (rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl);
+#endif
     if (rodsObjStatOut->specColl != NULL &&
       rodsObjStatOut->specColl->collClass == LINKED_COLL) {
 	/* save the linked path */
