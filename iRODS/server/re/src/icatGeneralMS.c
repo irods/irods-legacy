@@ -39,7 +39,7 @@ This documentation is generated from the iRODS code.
   - #whileExec        - While loop
   - #forExec          - For loop with initial, step and end condition
   - #forEachExec      - For loop iterating over a row of tables or a list
-  - #breakExec        - Breaks out of while, for and forEach loops
+  - #breakExec        - Breaks out of whileExec, forExec and forEachExec loops
   - #writeString      - Writes a string to stdout buffer
   - #writeLine        - Writes a line (with end-of-line) to stdout buffer
   - #assign           - Assigns a value to a parameter

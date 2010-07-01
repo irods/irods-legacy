@@ -391,7 +391,7 @@ int ifExec(msParam_t* condition, msParam_t* thenC, msParam_t* recoverThen,
 /**
  * \fn breakExec(ruleExecInfo_t *rei)
  *
- * \brief  This microservice is used to break whileEval, forEval and forEachEval loops.
+ * \brief  This microservice is used to break whileExec, forExec and forEachExec loops.
  * 
  * \module core
  * 
