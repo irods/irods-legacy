@@ -1644,11 +1644,33 @@ getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)
 
     clearGenQueryInp (&genQueryInp);
     /* take care of mem leak */
-    if (status < 0 && *genQueryOut != NULL) {
-	free (*genQueryOut);
-	*genQueryOut = NULL;
+    if (*genQueryOut != NULL) {
+        if (status < 0) {
+	    free (*genQueryOut);
+	    *genQueryOut = NULL;
+        } else {
+            rsCloseGenQuery (rsComm, (*genQueryOut)->continueInx);
+	}
     }
     return (status);
+}
+
+int
+rsCloseGenQuery (rsComm_t *rsComm, int continueInx)
+{
+    int status;
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+
+    if (continueInx < 0) return 0;
+
+    bzero (&genQueryInp, sizeof (genQueryInp));
+    genQueryInp.maxRows = -1;
+    genQueryInp.continueInx = continueInx;
+
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+    return status;
 }
 
 int 

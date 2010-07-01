@@ -779,6 +779,7 @@ initServerMain (rsComm_t *svrComm)
             char *reServerOption = NULL;
             char *av[NAME_LEN];
 
+	    close (svrComm->sock);
             memset (av, 0, sizeof (av));
             reServerOption = getenv ("reServerOption");
             setExecArg (reServerOption, av);

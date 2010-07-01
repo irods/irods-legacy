@@ -123,6 +123,8 @@ rescGrpInfo_t **destRescGrpInfo);
 int
 getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut);
 int
+getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut);
+int
 getReInfoById (rsComm_t *rsComm, char *ruleExecId, genQueryOut_t **genQueryOut);
 int
 getNextQueuedRuleExec (rsComm_t *rsComm, genQueryOut_t **inGenQueryOut,
