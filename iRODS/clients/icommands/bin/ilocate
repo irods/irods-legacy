@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]
+then
+	echo "Usage : ilocate [options] Filename [Filename] [Filename] .."
+	echo "iLocate"
+	echo "Search through your current iRODS zone for given filename(s)" 
+	echo "Use % as a wildcard (emulates sql 'like' operand).  If you need to use \% to express %"
+	echo " as a literal, you must encapsulate the filename with quotes" 
+	echo "Options are : "
+	echo "-t  Also show files in trash"
+	echo 
+	exit 0
+fi
+
+
+#incredibly lazy alert... do this properly with a do-until loop + case stmt if you ever add > 1 option
+echo "$1" | egrep -q "^-"
+if [ $? -eq 0 ] 
+then
+	trashfilter=""
+	shift
+else
+	trashfilter="trash"
+fi
+	
+for file in $*
+do
+	echo "$file" | egrep -q "[^\]%"  #
+	if [ $? -eq 0 ]
+	then
+		operand="like"
+	else
+		operand="="
+	fi
+	#output=`iquest "select COLL_NAME WHERE DATA_NAME $operand '$file'" | egrep "^COLL_NAME =" | awk '{print $3}' | sed -e "s/$/\/$file/"` 
+	output=`iquest "select COLL_NAME,DATA_NAME WHERE DATA_NAME $operand '$file'" | egrep "^[A-Z]+_NAME = " | sed -e '/COLL_NAME/ s/$/\//' | awk '{print $3}' | sed -e :a -e '/$/N; s/\n/\ /; ta' | sed -e 's/\/ /\//g' | sed -e 's/ /\n/g'`
+	if [ $? -eq 0 ]
+	then
+		echo "$output" | egrep -v "/[[:alnum:]]+/$trashfilter/"
+	else
+		echo "error: couldn't locate $file"
+	fi
+done
+
