@@ -141,8 +141,6 @@ acSetMultiReplPerResc||nop|nop
 # acSetMultiReplPerResc||msiGetSessionVarValue(all,all)|nop
 #
 # 4) acPostProcForPut - Rule for post processing the put operation.
-acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
-acPostProcForPut|$objPath like /tempZone/home/rods/tg/*|msiSysReplDataObj(tgReplResc,null)|nop
 # 5) acPostProcForCopy - Rule for post processing the copy operation.
 # 6) acPostProcForFilePathReg - Rule for post processing the registration
 # 7) acPostProcForCreate - Rule for post processing of data object create.
@@ -172,6 +170,7 @@ acPostProcForPut|$objPath like /tempZone/home/rods/tg/*|msiSysReplDataObj(tgRepl
 # acPostProcForPut||delayExec(<A></A>,msiSysReplDataObj(demoResc8,all),nop)|nop
 # acWriteLine(*A,*B)||writeLine(*A,*B)|nop
 # acPostProcForPut||delayExec(<PLUSET>1m</PLUSET>,acWriteLine(serverLog,"delayed by a minute message1")##acWriteLine(serverLog,"delayed by a minute message2"),nop)|nop
+# acPostProcForPut|$objPath like /tempZone/home/rods/nvo/*|delayExec(<PLUSET>1m</PLUSET>,msiSysReplDataObj(nvoReplResc,null),nop)|nop
 # acPostProcForPut||msiSysReplDataObj(demoResc8,all)|nop
 #acPostProcForPut||msiSetDataTypeFromExt|nop
 acPostProcForPut||nop|nop
