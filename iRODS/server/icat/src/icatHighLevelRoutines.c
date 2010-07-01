@@ -2815,7 +2815,7 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    OK=0;
    for (i=0;;i++) {
       if (strlen(allowedSQL[i]) < 1) break;
-      if (strcmp(allowedSQL[i], sql)==0) {
+      if (strcasecmp(allowedSQL[i], sql)==0) {
 	 OK=1;
 	 break;
       }
