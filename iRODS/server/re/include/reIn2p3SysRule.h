@@ -52,7 +52,7 @@ typedef struct {
   char hintPath[MAX_NAME_LEN];
   int threadId;
   int addPathToArgv;
-  char *rescName;
+  char rescName[LONG_NAME_LEN];
   ruleExecInfo_t rei;
 } thrInp_t;
 

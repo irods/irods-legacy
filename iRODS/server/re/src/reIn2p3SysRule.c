@@ -21,9 +21,11 @@ short threadIsAlive[MAX_NSERVERS];
 int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *rei) {
 
   char condstr[MAX_NAME_LEN], fname[MAX_NAME_LEN], msg[MAX_MESSAGE_SIZE], splc[MAX_VALUE][MAX_NAME_LEN], 
-    monStatus[MAX_NAME_LEN], suffix[MAX_VALUE], *result;
-  const char *delim = "#";
-  int timestamp, day, rc1, rc2, rc3, rc4;
+    splresc[MAX_VALUE][MAX_NAME_LEN], spldsk[MAX_VALUE][MAX_NAME_LEN], splmb[MAX_VALUE][MAX_NAME_LEN],
+	monStatus[MAX_NAME_LEN], suffix[MAX_VALUE], *result;
+  const char *delim1 = "#";
+  const char *delim2 = ",";
+  int indx, timestamp, day, rc1, rc2, rc3, rc4;
   FILE *foutput;
   time_t tps;
   generalRowInsertInp_t generalRowInsertInp;
@@ -43,80 +45,91 @@ int rodsMonPerfLog(char *serverName, char *resc, char *output, ruleExecInfo_t *r
     strncpy(monStatus, RESC_AUTO_UP, MAX_NAME_LEN);
   }
   
-  strSplit(output, delim, splc);
-
-  sprintf(msg, "server=%s resource=%s cpu=%s, mem=%s, swp=%s, rql=%s, dsk=%s, nin=%s, nout=%s, dskAv(MB)=%s\n",
-                serverName, resc, splc[0], splc[1], splc[2],
-                splc[3], splc[4], splc[5], splc[6], splc[7]);
-  sprintf(suffix, "%d.%d.%d", now->tm_year+1900, now->tm_mon+1, now->tm_mday);
-  sprintf(fname, "%s.%s", OUTPUT_MON_PERF, suffix);
-  day = now->tm_mday;
-  /* retrieve the system time */
-  timestamp = time(&tps);
-  /* log into this file */
-  foutput = fopen(fname, "a"); /* append to the output log file */
+  strSplit(output, delim1, splc);
+  strSplit(resc, delim2, splresc);
+  strSplit(splc[4], delim2, spldsk);
+  strSplit(splc[7], delim2, splmb);
+  indx = 0;
+  while ( strcmp(splresc[indx],"") != 0 ) {
+	if ( strcmp(monStatus, RESC_AUTO_DOWN) == 0 ) {
+		rstrcpy(spldsk[indx], "-1", MAX_NAME_LEN);
+		rstrcpy(splmb[indx], "-1", MAX_NAME_LEN);
+	}
+	sprintf(msg, "server=%s resource=%s cpu=%s, mem=%s, swp=%s, rql=%s, dsk=%s, nin=%s, nout=%s, dskAv(MB)=%s\n",
+				 serverName, splresc[indx], splc[0], splc[1], splc[2],
+                 splc[3], spldsk[indx], splc[5], splc[6], splmb[indx]);
+	sprintf(suffix, "%d.%d.%d", now->tm_year+1900, now->tm_mon+1, now->tm_mday);
+	sprintf(fname, "%s.%s", OUTPUT_MON_PERF, suffix);
+	day = now->tm_mday;
+	/* retrieve the system time */
+	timestamp = time(&tps);
   
-  if (foutput != NULL) {
-    fprintf(foutput, "time=%i %s", timestamp, msg);
-  }
-  
-  /* log the result into the database as well */
-  generalRowInsertInp.tableName = "serverload";
-  generalRowInsertInp.arg1 = serverName;
-  generalRowInsertInp.arg2 = resc;
-  generalRowInsertInp.arg3 = splc[0];
-  generalRowInsertInp.arg4 = splc[1];
-  generalRowInsertInp.arg5 = splc[2];
-  generalRowInsertInp.arg6 = splc[3];
-  generalRowInsertInp.arg7 = splc[4];
-  generalRowInsertInp.arg8 = splc[5];
-  generalRowInsertInp.arg9 = splc[6];
-  /* prepare DB request to modify resource metadata: freespace and status */
-  generalAdminInp1.arg0 = "modify";
-  generalAdminInp1.arg1 = "resource";
-  generalAdminInp1.arg2 = resc;
-  generalAdminInp1.arg3 = "freespace";
-  generalAdminInp1.arg4 = splc[7];
-  generalAdminInp2.arg0 = "modify";
-  generalAdminInp2.arg1 = "resource";
-  generalAdminInp2.arg2 = resc;
-  generalAdminInp2.arg3 = "status";
-  generalAdminInp2.arg4 = monStatus;
-  memset(&genQueryInp, 0, sizeof (genQueryInp));
-  addInxIval(&genQueryInp.selectInp, COL_R_RESC_STATUS, 1);
-  snprintf(condstr, MAX_NAME_LEN, "= '%s'", resc);
-  addInxVal(&genQueryInp.sqlCondInp, COL_R_RESC_NAME, condstr);
-  genQueryInp.maxRows = MAX_SQL_ROWS;
+	/* log the result into the database as well */
+	generalRowInsertInp.tableName = "serverload";
+	generalRowInsertInp.arg1 = serverName;
+	generalRowInsertInp.arg2 = splresc[indx];
+	generalRowInsertInp.arg3 = splc[0];
+	generalRowInsertInp.arg4 = splc[1];
+	generalRowInsertInp.arg5 = splc[2];
+	generalRowInsertInp.arg6 = splc[3];
+	generalRowInsertInp.arg7 = spldsk[indx];
+	generalRowInsertInp.arg8 = splc[5];
+	generalRowInsertInp.arg9 = splc[6];
+	/* prepare DB request to modify resource metadata: freespace and status */
+	generalAdminInp1.arg0 = "modify";
+	generalAdminInp1.arg1 = "resource";
+	generalAdminInp1.arg2 = splresc[indx];
+	generalAdminInp1.arg3 = "freespace";
+	generalAdminInp1.arg4 = splmb[indx];
+	generalAdminInp2.arg0 = "modify";
+	generalAdminInp2.arg1 = "resource";
+	generalAdminInp2.arg2 = splresc[indx];
+	generalAdminInp2.arg3 = "status";
+	generalAdminInp2.arg4 = monStatus;
+	memset(&genQueryInp, 0, sizeof (genQueryInp));
+	addInxIval(&genQueryInp.selectInp, COL_R_RESC_STATUS, 1);
+	snprintf(condstr, MAX_NAME_LEN, "= '%s'", splresc[indx]);
+	addInxVal(&genQueryInp.sqlCondInp, COL_R_RESC_NAME, condstr);
+	genQueryInp.maxRows = MAX_SQL_ROWS;
 #ifndef windows_platform
-  pthread_mutex_lock(&my_mutex);
+	pthread_mutex_lock(&my_mutex);
 #endif
-  rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
-  rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp1);
-  rc3 = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
-  if ( rc3 >= 0 ) {
-    result = genQueryOut->sqlResult[0].value;
-        if ( strcmp(result, "\0") == 0 || ( strncmp(result,"auto-",5) == 0 && strcmp(result, monStatus) != 0 ) ) {
+	/* append to the output log file */
+	foutput = fopen(fname, "a");
+	if (foutput != NULL) {
+		fprintf(foutput, "time=%i %s", timestamp, msg);
+	}
+	fclose(foutput);
+	
+	rc1 = rsGeneralRowInsert(rei->rsComm, &generalRowInsertInp);
+	rc2 = rsGeneralAdmin(rei->rsComm, &generalAdminInp1);
+	rc3 = rsGenQuery(rei->rsComm, &genQueryInp, &genQueryOut);
+	if ( rc3 >= 0 ) {
+		result = genQueryOut->sqlResult[0].value;
+		if ( strcmp(result, "\0") == 0 || ( strncmp(result,"auto-",5) == 0 && strcmp(result, monStatus) != 0 ) ) {
           rc4 = rsGeneralAdmin(rei->rsComm, &generalAdminInp2);
         }
-  } else {
-    rodsLog(LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", resc);
-  }
+	} else {
+		rodsLog(LOG_ERROR, "msiServerMonPerf: unable to retrieve the status metadata for the resource %s", splresc[indx]);
+	}
 #ifndef windows_platform
-  pthread_mutex_unlock(&my_mutex);
+	pthread_mutex_unlock(&my_mutex);
 #endif
-  if ( rc1 != 0 ) {
-    fprintf(foutput, "time=%i : unable to insert the entries for server %s into the iCAT\n", 
-      timestamp, serverName);
+	if ( rc1 != 0 ) {
+		fprintf(foutput, "time=%i : unable to insert the entries for server %s into the iCAT\n", 
+                timestamp, serverName);
+	}
+	if ( rc2 != 0 ) {
+		rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register the free space metadata for the resource %s", splresc[indx]);
+	}
+	if ( rc4 != 0 ) {
+		rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register the status metadata for the resource %s", splresc[indx]);
+	}
+	indx += 1;
   }
-  if ( rc2 != 0 ) {
-    rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register the free space metadata for the resource %s", resc);
-  }
-  if ( rc4 != 0 ) {
-    rodsLog(LOG_ERROR, "msiServerMonPerf: unable to register the status metadata for the resource %s", resc);
-  }
+  
   clearGenQueryInp(&genQueryInp);
   freeGenQueryOut(&genQueryOut);
-  fclose(foutput);
   
   return (0);
 }
@@ -528,7 +541,7 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   const char *delim = " \n";
   char valinit[MAX_NAME_LEN] = "";
   char val[MAX_NAME_LEN] = ""; /* val => arguments for the script */
-  int i, looptime, maxtime, nresc, nservers, rc, threadsNotfinished;
+  int check, i, indx, j, looptime, maxtime, nresc, nservers, rc, thrCount, threadsNotfinished;
   const char *probtimeDef = "10"; /* default value used by the monitoring script for the amount
             of time for this measurement (in s) */
   rsComm_t *rsComm;
@@ -593,46 +606,65 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
   pthread_mutex_init(&my_mutex, NULL);
 #endif
   thrInput = malloc(sizeof(thrInp_t) * nresc);
-  /* int addPathToArgv = 0;
-  char *hintPath = ""; */
+  thrCount = 0;
   
   for (i = 0; i < nresc; i++) {
     /* for each server, build the proxy command to be executed.
        it will be put in a thrInp structure to be given to the thread.
        then start one thread for each server to be monitored */
-    
-    strcpy(thrInput[i].cmdArgv, valinit);
-    strcat(thrInput[i].cmdArgv, " -fs ");
-    if ( strcmp(rescList[i].rescType, "unix file system") == 0 ) {
-      strcat(thrInput[i].cmdArgv, rescList[i].vaultPath);
-    } else {
-      strcat(thrInput[i].cmdArgv, "none");
-    }
-    rstrcpy(thrInput[i].cmd, cmd, LONG_NAME_LEN);
-    rstrcpy(thrInput[i].execAddr, rescList[i].serverName, LONG_NAME_LEN);
-    rstrcpy(thrInput[i].hintPath, hintPath, MAX_NAME_LEN);
-    thrInput[i].addPathToArgv = addPathToArgv;
-    thrInput[i].threadId = i;
-    thrInput[i].rescName = rescList[i].rescName;
-    memcpy(&(thrInput[i].rei), rei, sizeof(ruleExecInfo_t));
-    
-#ifndef windows_platform
-    if ( pthread_create(&threads[i], NULL, *startMonScript, (void *) &thrInput[i]) < 0) {
+    check = 0;
+	for (j = 0; j < thrCount; j++) {
+		if ( strcmp(thrInput[j].execAddr, rescList[i].serverName) == 0 ) {
+			indx = j;
+			check = 1;
+		}
+	}
+	if ( check == 0 ) {
+		strcpy(thrInput[thrCount].cmdArgv, valinit);
+		strcat(thrInput[thrCount].cmdArgv, " -fs ");
+		if ( strcmp(rescList[thrCount].rescType, "unix file system") == 0 ) {
+			strcat(thrInput[thrCount].cmdArgv, rescList[i].vaultPath);
+		} else {
+			strcat(thrInput[thrCount].cmdArgv, "none");
+		}
+		rstrcpy(thrInput[thrCount].cmd, cmd, LONG_NAME_LEN);
+		rstrcpy(thrInput[thrCount].execAddr, rescList[i].serverName, LONG_NAME_LEN);
+		rstrcpy(thrInput[thrCount].hintPath, hintPath, MAX_NAME_LEN);
+		thrInput[thrCount].addPathToArgv = addPathToArgv;
+		thrInput[thrCount].threadId = thrCount;
+		rstrcpy(thrInput[thrCount].rescName, rescList[i].rescName, LONG_NAME_LEN);
+		memcpy(&(thrInput[thrCount].rei), rei, sizeof(ruleExecInfo_t));
+		thrCount += 1;
+	}
+	else {
+		rstrcat(thrInput[indx].rescName, ",", LONG_NAME_LEN);
+		rstrcat(thrInput[indx].rescName, rescList[i].rescName, LONG_NAME_LEN);
+		if ( strcmp(rescList[i].rescType, "unix file system") == 0 ) {
+			strcat(thrInput[indx].cmdArgv, ",");
+			strcat(thrInput[indx].cmdArgv, rescList[i].vaultPath);
+		} else {
+			strcat(thrInput[indx].cmdArgv, ",none");
+		}
+	}
+    rstrcpy(val, "", MAX_NAME_LEN);
+  }
+  
+  for ( i = 0; i < thrCount; i++ ) {
+  #ifndef windows_platform
+	if ( pthread_create(&threads[i], NULL, *startMonScript, (void *) &thrInput[i]) < 0) {
       rodsLog(LOG_ERROR, "msiServerMonPerf: pthread_create error\n");
       exit(1);
     }
-#endif
-    rstrcpy(val, "", MAX_NAME_LEN);
-    
+  #endif
   }
-  
+
   maxtime = atoi(measTime) + TIMEOUT;
   looptime = 0;
   while (1) {
     sleep(1);
     looptime += 1;
     if ( looptime >= maxtime ) {
-      for (i = 0; i < nresc; i++) {
+      for (i = 0; i < thrCount; i++) {
         if ( !threadIsAlive[i] ) {
 #ifndef windows_platform
           rc = pthread_cancel(threads[i]);
@@ -649,7 +681,7 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
       }
     }
     threadsNotfinished = 1;
-    for (i = 0; i < nresc; i++) {
+    for (i = 0; i < thrCount; i++) {
       if ( threadIsAlive[i] == 0 ) {
         threadsNotfinished = 0;
       }
@@ -775,7 +807,7 @@ int msiFlushMonStat (msParam_t *inpParam1, msParam_t *inpParam2, ruleExecInfo_t 
   generalRowPurgeInp.secondsAgo = secAgo;
   rc = rsGeneralRowPurge(rsComm, &generalRowPurgeInp);
   
-  if ( rc != 0 ) {
+  if ( rc != 0 && rc != CAT_SUCCESS_BUT_WITH_NO_INFO ) {
     rodsLog (LOG_ERROR, "msiFlushMonStat failed, error %i", rc);
   }
   

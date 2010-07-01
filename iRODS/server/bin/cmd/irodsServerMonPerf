@@ -111,11 +111,14 @@ else
 	 
 # test the existence of the file system...
 $fsExists = 1;
-if ($sysFilePath ne 'none') {
-	my $rc = system("df -k $sysFilePath > /dev/null 2>&1");
-	if( $rc != 0 ) {
-		Log("The file system doesn't exit. $!");
-		$fsExists = 0;
+my @sysPathList = split(',', $sysFilePath);
+foreach my $pth(@sysPathList) {
+	if ($pth ne 'none') {
+		my $rc = system("df -k $pth > /dev/null 2>&1");
+		if( $rc != 0 ) {
+			Log("The file $pth system doesn't exit. $!");
+			$fsExists = 0;
+		}
 	}
 }
 
@@ -228,31 +231,24 @@ else
 	# the format of df command is different on
 	# the different platforms...
 	# it is necessary to determine the column useful for each plateform:
-	if ( $optFS ne 'none' && $fsExists ) {
-		@result = `df -k $optFS`;
-		chomp($result[0]);
-		foreach my $entry(@result) {
-             		if ( $entry !~ /Filesystem/ && $entry =~ /%/) {
-                     		chomp($entry);
-                     		@temp2 = split('\s+', $entry);
-		     		foreach my $column(@temp2) {
-		     			last if (  $column =~ /%/ );
-					$col_diskUsed++;
-		     		}
-             		}
-                        $col_diskAbsAvail = $col_diskUsed - 1;
-			#elsif ( $entry =~ /Available/ ) {
-			#	chomp($entry);
-			#	@temp2 = split('\s+', $entry);
-			#	foreach my $column(@temp2) {
-			#		last if (  $column =~ /Available/ );
-			#		$col_diskAbsAvail++;
-			#	}
-			#	my $temp2 = @temp2;
-			#	if ( $temp2 == 3 ) {
-			#		$col_diskAbsAvail = $col_diskAbsAvail - 1;
-			#	}
-			#}
+	if ( $fsExists ) {
+		foreach my $pth(@sysPathList) {
+			if ( $pth ne 'none' ) {
+				@result = `df -k $pth`;
+				chomp($result[0]);
+				foreach my $entry(@result) {
+					if ( $entry !~ /Filesystem/ && $entry =~ /%/) {
+						chomp($entry);
+						@temp2 = split('\s+', $entry);
+						foreach my $column(@temp2) {
+							last if (  $column =~ /%/ );
+							$col_diskUsed++;
+						}
+					}
+				}
+				$col_diskAbsAvail = $col_diskUsed - 1;
+				last;
+			}
 		}
 	}
 
@@ -448,23 +444,38 @@ if( $systype eq 'SunOS') # if the platform is Sun
 #############################
 # Check the disk occupation #
 #############################
-if ( $sysFilePath ne "none" && $fsExists ) {
-	@result = `df -k $sysFilePath`;
-	while ( my $entry = shift(@result) ) {
-		if ( $entry !~ /Filesystem/ && $entry =~ /%/) {
-			chomp($entry);
-			@temp2 = split('\s+', $entry);
-                        # suppression of the character '%' at the end of the chain for diskUsed
-                        $diskUsed = $temp2[$col_diskUsed];
-                        $diskUsed = substr($diskUsed, 0, length($diskUsed)-1);
-                        if ($diskUsed !~ /^[+-]?\d+$/ ) {
-                             $diskUsed = -1;
-                        }
-                        if ($temp2[$col_diskAbsAvail] =~ /^[+-]?\d+$/ ) {
-			     $diskAbsAvail = int($temp2[$col_diskAbsAvail]/1024);
-                        } else {
-                             $diskAbsAvail = -1;
-                        }
+if ( $fsExists ) {
+	my $first = 0;
+	$diskUsed = "";
+	$diskAbsAvail = "";
+	foreach my $pth(@sysPathList) {
+		if ( $first ) { 
+			$diskUsed .= ",";
+			$diskAbsAvail .= ",";
+		}
+		$first = 1;
+		if ( $pth eq 'none' ) {
+			$diskUsed .= -1;
+			$diskAbsAvail .= -1;
+			next;
+		}
+		@result = `df -k $pth`;
+		while ( my $entry = shift(@result) ) {
+			if ( $entry !~ /Filesystem/ && $entry =~ /%/) {
+				chomp($entry);
+				@temp2 = split('\s+', $entry);
+                # suppression of the character '%' at the end of the chain for diskUsed
+                my $diskUsedTemp = $temp2[$col_diskUsed];
+                $diskUsed .= substr($diskUsedTemp, 0, length($diskUsedTemp)-1);
+                #if ($diskUsed !~ /^[+-]?\d+$/ ) {
+				#	$diskUsed .= -1;
+                #}
+                if ($temp2[$col_diskAbsAvail] =~ /^[+-]?\d+$/ ) {
+					$diskAbsAvail .= int($temp2[$col_diskAbsAvail]/1024);
+                } else {
+					$diskAbsAvail .= -1;
+                }
+			}
 		}
 	}
 }
