@@ -40,7 +40,7 @@
  *   format of keyWd1=value1++++keyWd2=value2++++keyWd3=value3...
  *   If the keyWd is not specified (without the '=' char), the value is
  *   assumed to be the target resource ("destRescName") for backward
- *   compatibility..
+ *   compatibility.
  *   Valid keyWds are:
  *    \li "destRescName" - the target resource.
  *    \li "forceFlag" - overwrite existing copy. This keyWd has
@@ -662,6 +662,7 @@ msiDataObjRead (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam,
  *
  * \param[in] inpParam1 - a msParam of type DataObjWriteInp_MS_T or INT_MS_T or a STR_MS_T which would be the descriptor.
  * \param[in] inpParam2 - Optional - a msParam of type BUF_LEN_MS_T or a STR_MS_T, the input is inpOutBuf and the length of the buffer in the BBuf.
+ *    \li "stderr", "stdout" can be passed as well
  * \param[out] outParam - a msParam of type INT_MS_T for the length written.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -695,24 +696,23 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     RE_TEST_MACRO ("    Calling msiDataObjWrite")
 
     if (rei == NULL || rei->rsComm == NULL) {
-	rodsLog (LOG_ERROR,
-	  "msiDataObjWrite: input rei or rsComm is NULL");
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
+      rodsLog (LOG_ERROR, "msiDataObjWrite: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     rsComm = rei->rsComm;
 
     if ((strcmp((char *)inpParam2->inOutStruct,"stdout") == 0) || 
-	(strcmp((char *) inpParam2->inOutStruct,"stderr") == 0)) {
+      (strcmp((char *) inpParam2->inOutStruct,"stderr") == 0)) {
       if ((mP = getMsParamByLabel (rei->msParamArray, "ruleExecOut")) == NULL)
         return(NO_VALUES_FOUND);
       myExecCmdOut = mP->inOutStruct;
       if (strcmp((char *) inpParam2->inOutStruct,"stdout") == 0){
-	free(inpParam2->inOutStruct);
+        free(inpParam2->inOutStruct);
         inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stdoutBuf.buf);
       }
       else {
-	free(inpParam2->inOutStruct);
+        free(inpParam2->inOutStruct);
         inpParam2->inOutStruct =  strdup((char *) myExecCmdOut->stderrBuf.buf);
       }
       inpParam2->type = strdup(STR_MS_T);
@@ -720,10 +720,10 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 
     if (inpParam1 == NULL || (inpParam2->inpOutBuf == NULL &&
      inpParam2->inOutStruct == NULL)) {
-	rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
-	rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjWrite: input inpParam1 or inpOutBuf or inOutStruct is NULL");
-        return (rei->status);
+       rei->status = SYS_INTERNAL_NULL_INPUT_ERR;
+       rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+         "msiDataObjWrite: input inpParam1 or inpOutBuf or inOutStruct is NULL");
+       return (rei->status);
     }
 
     if (strcmp (inpParam1->type, DataObjWriteInp_MS_T) == 0) {
