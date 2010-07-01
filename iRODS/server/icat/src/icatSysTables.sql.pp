@@ -421,9 +421,9 @@ create unique index idx_coll_main2 on R_COLL_MAIN (parent_coll_name VARCHAR_MAX_
 create index idx_data_main1 on R_DATA_MAIN (data_id);
 create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name VARCHAR_MAX_IDX_SIZE,data_repl_num,data_version);
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
-create index idx_meta_main2 on r_meta_main (meta_attr_name);
-create index idx_meta_main3 on r_meta_main (meta_attr_value);
-create index idx_meta_main4 on r_meta_main (meta_attr_unit);
+create index idx_meta_main2 on R_META_MAIN (meta_attr_name);
+create index idx_meta_main3 on R_META_MAIN (meta_attr_value);
+create index idx_meta_main4 on R_META_MAIN (meta_attr_unit);
 create unique index idx_rule_main1 on R_RULE_MAIN (rule_id);
 create unique index idx_rule_exec on R_RULE_EXEC (rule_exec_id);
 create unique index idx_user_group1 on R_USER_GROUP (group_user_id,user_id);

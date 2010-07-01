@@ -634,7 +634,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
       cllBindVarCount=4;
       if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 7");
       status =  cmlExecuteNoAnswerSql(
-				   "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts) (select ?, user_id, access_type_id, ?, ? from r_objt_access where object_id = ?)",
+				   "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts) (select ?, user_id, access_type_id, ?, ? from R_OBJT_ACCESS where object_id = ?)",
 				   &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -654,7 +654,7 @@ int chlRegDataObj(rsComm_t *rsComm, dataObjInfo_t *dataObjInfo) {
       cllBindVarCount=6;
       if (logSQL) rodsLog(LOG_SQL, "chlRegDataObj SQL 8");
       status =  cmlExecuteNoAnswerSql(
-				   "insert into r_objt_access values (?, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+				   "insert into R_OBJT_ACCESS values (?, (select user_id from R_USER_MAIN where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 				   &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -763,7 +763,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", srcDataObjInfo->dataId);
    if (logSQL) rodsLog(LOG_SQL, "chlRegReplica SQL 2");
    status = cmlGetIntegerValueFromSql(
-        "select max(data_repl_num) from r_data_main where data_id = ?",
+        "select max(data_repl_num) from R_DATA_MAIN where data_id = ?",
 	&iVal, objIdString, 0, 0, 0, 0, &icss);
 
    if (status) {
@@ -776,7 +776,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
    dstDataObjInfo->replNum = nextReplNum; /* return new replica number */
    snprintf(replNumString, MAX_NAME_LEN, "%d", srcDataObjInfo->replNum);
    snprintf(tSQL, MAX_SQL_SIZE,
-	    "select %s from r_data_main where data_id = ? and data_repl_num = ?",
+	    "select %s from R_DATA_MAIN where data_id = ? and data_repl_num = ?",
 	    theColls);
    if (logSQL) rodsLog(LOG_SQL, "chlRegReplica SQL 3");
    status = cmlGetOneRowFromSqlV2(tSQL, cVal, nColumns, 
@@ -800,7 +800,7 @@ int chlRegReplica(rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfo,
       cllBindVars[i]=cVal[i];
    }
    cllBindVarCount = nColumns;
-   snprintf(tSQL, MAX_SQL_SIZE, "insert into r_data_main ( %s ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+   snprintf(tSQL, MAX_SQL_SIZE, "insert into R_DATA_MAIN ( %s ) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
 	    theColls);
    if (logSQL) rodsLog(LOG_SQL, "chlRegReplica SQL 4");
    status = cmlExecuteNoAnswerSql(tSQL,  &icss);
@@ -853,11 +853,11 @@ void removeMetaMapAndAVU(char *dataObjNumber) {
    cllBindVarCount=1;
    if (logSQL) rodsLog(LOG_SQL, "removeMetaMapAndAVU SQL 1 ");
    snprintf(tSQL, MAX_SQL_SIZE, 
-	       "delete from r_objt_metamap where object_id=?");
+	       "delete from R_OBJT_METAMAP where object_id=?");
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
 
 /* Note, the status will be CAT_SUCCESS_BUT_WITH_NO_INFO (not 0) if
-   there were no rows deleted from r_objt_metamap, in which case there
+   there were no rows deleted from R_OBJT_METAMAP, in which case there
    is no need to do the SQL below.
  */
    if (status == 0) {
@@ -880,16 +880,16 @@ int removeAVUs() {
 
 #if ORA_ICAT
     snprintf(tSQL, MAX_SQL_SIZE, 
-	    "delete from r_meta_main where meta_id in (select meta_id from r_meta_main minus select meta_id from r_objt_metamap)");
+	    "delete from R_META_MAIN where meta_id in (select meta_id from R_META_MAIN minus select meta_id from R_OBJT_METAMAP)");
 #elif MY_ICAT
    /* MYSQL does not have 'minus' or 'except' (to my knowledge) so
     * use previous version of the SQL, which is very slow */
     snprintf(tSQL, MAX_SQL_SIZE, 
- 	    "delete from r_meta_main where meta_id not in (select meta_id from r_objt_metamap)"); 
+ 	    "delete from R_META_MAIN where meta_id not in (select meta_id from R_OBJT_METAMAP)"); 
 #else
    /* Postgres */
    snprintf(tSQL, MAX_SQL_SIZE, 
-	    "delete from r_meta_main where meta_id in (select meta_id from r_meta_main except select meta_id from r_objt_metamap)");
+	    "delete from R_META_MAIN where meta_id in (select meta_id from R_META_MAIN except select meta_id from R_OBJT_METAMAP)");
 #endif 
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
    rodsLog (LOG_NOTICE, "removeAVUs status=%d\n",status);
@@ -984,7 +984,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 	    snprintf(replNumber, sizeof replNumber, "%d", dataObjInfo->replNum);
 	    if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 2");
 	    status = cmlGetStringValueFromSql(
-                  "select data_repl_num from r_data_main where data_id=? and data_repl_num!=?",
+                  "select data_repl_num from R_DATA_MAIN where data_id=? and data_repl_num!=?",
 		  cVal,
                   sizeof cVal,
 		  dataObjNumber,
@@ -1014,13 +1014,13 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       cllBindVarCount=3;
       if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 4");
       snprintf(tSQL, MAX_SQL_SIZE, 
-	       "delete from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?) and data_name=? and data_repl_num=?");
+	       "delete from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?) and data_name=? and data_repl_num=?");
    }
    else {
       cllBindVarCount=2;
       if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 5");
       snprintf(tSQL, MAX_SQL_SIZE, 
-	    "delete from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?) and data_name=?");
+	    "delete from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?) and data_name=?");
    }
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
    if (status) {
@@ -1044,7 +1044,7 @@ int chlUnregDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
       cllBindVarCount=2;
       if (logSQL) rodsLog(LOG_SQL, "chlUnregDataObj SQL 3");
       status = cmlExecuteNoAnswerSql(
-	       "delete from r_objt_access where object_id=? and not exists (select * from r_data_main where data_id=?)", &icss);
+	       "delete from R_OBJT_ACCESS where object_id=? and not exists (select * from R_DATA_MAIN where data_id=?)", &icss);
       if (status == 0) {
 	  removeMetaMapAndAVU(dataObjNumber); /* remove AVU metadata, if any */
       }
@@ -1296,7 +1296,7 @@ int chlDelRuleExec(rsComm_t *rsComm,
    cllBindVars[cllBindVarCount++]=ruleExecId;
    if (logSQL) rodsLog(LOG_SQL, "chlDelRuleExec SQL 2 ");
    status =  cmlExecuteNoAnswerSql(
-			   "delete from r_rule_exec where rule_exec_id=?",
+			   "delete from R_RULE_EXEC where rule_exec_id=?",
 			   &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -1500,7 +1500,7 @@ int chlDelResc(rsComm_t *rsComm,
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 1 ");
    status = cmlGetIntegerValueFromSql(
-	    "select data_id from r_data_main where resc_name=?",
+	    "select data_id from R_DATA_MAIN where resc_name=?",
 	     &iVal, rescInfo->rescName, 0, 0, 0, 0, &icss);
    if (status != CAT_NO_ROWS_FOUND) {
       if (status == 0) {
@@ -1523,7 +1523,7 @@ int chlDelResc(rsComm_t *rsComm,
    rescId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 2 ");
    status = cmlGetStringValueFromSql(
-       "select resc_id from r_resc_main where resc_name=?",
+       "select resc_id from R_RESC_MAIN where resc_name=?",
        rescId, MAX_NAME_LEN, rescInfo->rescName, 0, 0, &icss);
    if (status) {
       if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -1542,7 +1542,7 @@ int chlDelResc(rsComm_t *rsComm,
    cllBindVars[cllBindVarCount++]=rescInfo->rescName;
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 3");
    status = cmlExecuteNoAnswerSql(
-               "delete from r_resc_main where resc_name=?",
+               "delete from R_RESC_MAIN where resc_name=?",
 	       &icss);
    if (status) {
       if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) {
@@ -1562,12 +1562,12 @@ int chlDelResc(rsComm_t *rsComm,
    cllBindVars[cllBindVarCount++]=rescId;
    if (logSQL) rodsLog(LOG_SQL, "chlDelResc SQL 4");
    status =  cmlExecuteNoAnswerSql(
-      "delete from r_resc_group where resc_id=?",
+      "delete from R_RESC_GROUP where resc_id=?",
       &icss);
    if (status != 0 && 
        status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       rodsLog(LOG_NOTICE,
-	      "chlDelResc delete from r_resc_group failure %d",
+	      "chlDelResc delete from R_RESC_GROUP failure %d",
 	      status);
       _rollback("chlDelResc");
       return(status);
@@ -1680,7 +1680,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 1 ");
    status = cmlGetStringValueFromSql(
-            "select user_id from r_user_main where user_name=? and zone_name=?",
+            "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	    iValStr, 200, userName2, zoneToUse, 0, &icss);
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO ||
        status==CAT_NO_ROWS_FOUND) {
@@ -1697,7 +1697,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    cllBindVars[cllBindVarCount++]=zoneToUse;
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 2");
    status = cmlExecuteNoAnswerSql(
-	    "delete from r_user_main where user_name=? and zone_name=?",
+	    "delete from R_USER_MAIN where user_name=? and zone_name=?",
 	    &icss);
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) return(CAT_INVALID_USER); 
    if (status) {
@@ -1708,7 +1708,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    cllBindVars[cllBindVarCount++]=iValStr;
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 3");
    status = cmlExecuteNoAnswerSql(
-	    "delete from r_user_password where user_id=?",
+	    "delete from R_USER_PASSWORD where user_id=?",
 	    &icss);
    if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       int i;
@@ -1728,7 +1728,7 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
    cllBindVars[cllBindVarCount++]=iValStr;
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 4");
    status = cmlExecuteNoAnswerSql(
-	    "delete from r_user_group where user_id=? or group_user_id=?",
+	    "delete from R_USER_GROUP where user_id=? or group_user_id=?",
 	    &icss);
    if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       int i;
@@ -1742,11 +1742,11 @@ int chlDelUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       return(status);
    }
 
-   /* Remove any r_user_auth rows for this user */
+   /* Remove any R_USER_AUTH rows for this user */
    cllBindVars[cllBindVarCount++]=iValStr;
    if (logSQL) rodsLog(LOG_SQL, "chlDelUserRE SQL 4");
    status = cmlExecuteNoAnswerSql(
-	    "delete from r_user_auth where user_id=?",
+	    "delete from R_USER_AUTH where user_id=?",
 	    &icss);
    if (status!=0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       int i;
@@ -1930,7 +1930,7 @@ int chlRegCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo)
    cllBindVars[cllBindVarCount++]=myTime;
 
    snprintf(tSQL, MAX_SQL_SIZE, 
-	    "insert into r_objt_access values (%s, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+	    "insert into R_OBJT_ACCESS values (%s, (select user_id from R_USER_MAIN where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 	    currStr2);
    if (logSQL) rodsLog(LOG_SQL, "chlRegCollByAdmin SQL 4");
    status =  cmlExecuteNoAnswerSql(tSQL, &icss);
@@ -2084,7 +2084,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       cllBindVarCount=3;
       if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 4");
       snprintf(tSQL, MAX_SQL_SIZE, 
-	       "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts) (select %s, user_id, access_type_id, ?, ? from r_objt_access where object_id = ?)",
+	       "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts) (select %s, user_id, access_type_id, ?, ? from R_OBJT_ACCESS where object_id = ?)",
 	       currStr2);
       status =  cmlExecuteNoAnswerSql(tSQL, &icss);
 
@@ -2105,7 +2105,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 	    cllBindVars[cllBindVarCount++]=myTime;
 	    cllBindVars[cllBindVarCount++]=newCollectionID;
 	    status =  cmlExecuteNoAnswerSql(
-		      "update r_coll_main set coll_inheritance=?, modify_ts=? where coll_id=?",
+		      "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_id=?",
 		      &icss);
 	 }
 #else
@@ -2116,7 +2116,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
 	 cllBindVars[cllBindVarCount++]="1";
 	 cllBindVars[cllBindVarCount++]=myTime;
 	 snprintf(tSQL, MAX_SQL_SIZE, 
-		 "update r_coll_main set coll_inheritance=?, modify_ts=? where coll_id=%s",
+		 "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_id=%s",
 		  currStr2);
 	 status =  cmlExecuteNoAnswerSql(tSQL, &icss);
 #endif
@@ -2129,7 +2129,7 @@ int chlRegColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=myTime;
       snprintf(tSQL, MAX_SQL_SIZE, 
-	    "insert into r_objt_access values (%s, (select user_id from r_user_main where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+	    "insert into R_OBJT_ACCESS values (%s, (select user_id from R_USER_MAIN where user_name=? and zone_name=?), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 	    currStr2);
       if (logSQL) rodsLog(LOG_SQL, "chlRegColl SQL 6");
       status =  cmlExecuteNoAnswerSql(tSQL, &icss);
@@ -2219,7 +2219,7 @@ int chlModColl(rsComm_t *rsComm, collInfo_t *collInfo) {
       return(CAT_INVALID_ARGUMENT);
    }
 
-   strncpy(tSQL, "update r_coll_main set ", MAX_SQL_SIZE);
+   strncpy(tSQL, "update R_COLL_MAIN set ", MAX_SQL_SIZE);
    count=0;
    if (collInfo->collType != NULL && strlen(collInfo->collType)>0) {
       if (strcmp(collInfo->collType,"NULL_SPECIAL_VALUE")==0) {
@@ -2398,7 +2398,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
    zoneId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 1 ");
    status = cmlGetStringValueFromSql(
-       "select zone_id from r_zone_main where zone_name=?",
+       "select zone_id from R_ZONE_MAIN where zone_name=?",
        zoneId, MAX_NAME_LEN, zoneName, "", 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
@@ -2413,7 +2413,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
       cllBindVars[cllBindVarCount++]=zoneId;
       if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 3");
       status =  cmlExecuteNoAnswerSql(
-	       "update r_zone_main set r_comment = ?, modify_ts=? where zone_id=?",
+	       "update R_ZONE_MAIN set r_comment = ?, modify_ts=? where zone_id=?",
 	       &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -2429,7 +2429,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
       cllBindVars[cllBindVarCount++]=zoneId;
       if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 5");
       status =  cmlExecuteNoAnswerSql(
-		 "update r_zone_main set zone_conn_string = ?, modify_ts=? where zone_id=?",
+		 "update R_ZONE_MAIN set zone_conn_string = ?, modify_ts=? where zone_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -2451,7 +2451,7 @@ int chlModZone(rsComm_t *rsComm, char *zoneName, char *option,
       cllBindVars[cllBindVarCount++]=zoneId;
       if (logSQL) rodsLog(LOG_SQL, "chlModZone SQL 5");
       status =  cmlExecuteNoAnswerSql(
-		 "update r_zone_main set zone_name = ?, modify_ts=? where zone_id=?",
+		 "update R_ZONE_MAIN set zone_name = ?, modify_ts=? where zone_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -2546,7 +2546,7 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
    zoneId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 2 ");
    status = cmlGetStringValueFromSql(
-	     "select zone_id from r_zone_main where zone_name=?",
+	     "select zone_id from R_ZONE_MAIN where zone_name=?",
 	     zoneId, MAX_NAME_LEN, newZoneName, "", 0, &icss);
    if (status != CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
 
@@ -2571,13 +2571,13 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
       return(status);
    }
 
-   /* update coll_owner_zone in r_coll_main */
+   /* update coll_owner_zone in R_COLL_MAIN */
    cllBindVars[cllBindVarCount++]=newZoneName;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=oldZoneName;
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 3 ");
    status =  cmlExecuteNoAnswerSql(
-      "update r_coll_main set coll_owner_zone = ?, modify_ts=? where coll_owner_zone=?",
+      "update R_COLL_MAIN set coll_owner_zone = ?, modify_ts=? where coll_owner_zone=?",
       &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2586,13 +2586,13 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
       return(status);
    }
 
-   /* update data_owner_zone in r_data_main */
+   /* update data_owner_zone in R_DATA_MAIN */
    cllBindVars[cllBindVarCount++]=newZoneName;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=oldZoneName;
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 4 ");
    status =  cmlExecuteNoAnswerSql(
-      "update r_data_main set data_owner_zone = ?, modify_ts=? where data_owner_zone=?",
+      "update R_DATA_MAIN set data_owner_zone = ?, modify_ts=? where data_owner_zone=?",
       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       rodsLog(LOG_NOTICE,
@@ -2601,13 +2601,13 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
       return(status);
    }
 
-   /* update zone_name in r_resc_main */
+   /* update zone_name in R_RESC_MAIN */
    cllBindVars[cllBindVarCount++]=newZoneName;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=oldZoneName;
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 5 ");
    status =  cmlExecuteNoAnswerSql(
-      "update r_resc_main set zone_name = ?, modify_ts=? where zone_name=?",
+      "update R_RESC_MAIN set zone_name = ?, modify_ts=? where zone_name=?",
       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       rodsLog(LOG_NOTICE,
@@ -2616,13 +2616,13 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
       return(status);
    }
 
-   /* update rule_owner_zone in r_rule_main */
+   /* update rule_owner_zone in R_RULE_MAIN */
    cllBindVars[cllBindVarCount++]=newZoneName;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=oldZoneName;
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 6 ");
    status =  cmlExecuteNoAnswerSql(
-      "update r_rule_main set rule_owner_zone=?, modify_ts=? where rule_owner_zone=?",
+      "update R_RULE_MAIN set rule_owner_zone=?, modify_ts=? where rule_owner_zone=?",
       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       rodsLog(LOG_NOTICE,
@@ -2631,13 +2631,13 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
       return(status);
    }
 
-   /* update zone_name in r_user_main */
+   /* update zone_name in R_USER_MAIN */
    cllBindVars[cllBindVarCount++]=newZoneName;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=oldZoneName;
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 7 ");
    status =  cmlExecuteNoAnswerSql(
-      "update r_user_main set zone_name=?, modify_ts=? where zone_name=?",
+      "update R_USER_MAIN set zone_name=?, modify_ts=? where zone_name=?",
       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       rodsLog(LOG_NOTICE,
@@ -2646,13 +2646,13 @@ int chlRenameLocalZone(rsComm_t *rsComm, char *oldZoneName, char *newZoneName) {
       return(status);
    }
 
-   /* update zone_name in r_zone_main */
+   /* update zone_name in R_ZONE_MAIN */
    cllBindVars[cllBindVarCount++]=newZoneName;
    cllBindVars[cllBindVarCount++]=myTime;
    cllBindVars[cllBindVarCount++]=oldZoneName;
    if (logSQL) rodsLog(LOG_SQL, "chlRenameLocalZone SQL 8 ");
    status =  cmlExecuteNoAnswerSql(
-      "update r_zone_main set zone_name=?, modify_ts=? where zone_name=?",
+      "update R_ZONE_MAIN set zone_name=?, modify_ts=? where zone_name=?",
       &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2685,7 +2685,7 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
    if (logSQL) rodsLog(LOG_SQL, "chlDelZone SQL 1 ");
 
    status = cmlGetStringValueFromSql(
-       "select zone_type_name from r_zone_main where zone_name=?",
+       "select zone_type_name from R_ZONE_MAIN where zone_name=?",
        zoneType, MAX_NAME_LEN, zoneName, 0, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_ZONE);
@@ -2702,7 +2702,7 @@ int chlDelZone(rsComm_t *rsComm, char *zoneName) {
    cllBindVars[cllBindVarCount++]=zoneName;
    if (logSQL) rodsLog(LOG_SQL, "chlDelZone 2");
    status =  cmlExecuteNoAnswerSql(
-		"delete from r_zone_main where zone_name = ?",
+		"delete from R_ZONE_MAIN where zone_name = ?",
 		&icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -2771,34 +2771,34 @@ int chlSimpleQuery(rsComm_t *rsComm, char *sql,
    int OK;
 
    char *allowedSQL[]={
-"select token_name from r_tokn_main where token_namespace = 'token_namespace'",
-"select token_name from r_tokn_main where token_namespace = ?",
-"select * from r_tokn_main where token_namespace = ? and token_name like ?",
-"select resc_name from r_resc_main",
-"select * from r_resc_main where resc_name=?",
-"select zone_name from r_zone_main",
-"select * from r_zone_main where zone_name=?",
-"select user_name from r_user_main where user_type_name='rodsgroup'",
-"select user_name||'#'||zone_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)",
-"select * from r_data_main where data_id=?",
-"select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)",
-"select coll_name from r_coll_main where parent_coll_name=?",
-"select * from r_user_main where user_name=?",
-"select user_name||'#'||zone_name from r_user_main where user_type_name != 'rodsgroup'",
-"select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_resc_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?",
-"select distinct resc_group_name from r_resc_group",
-"select coll_id from r_coll_main where coll_name = ?",
-"select * from r_user_main where user_name=? and zone_name=?",
-"select user_name from r_user_main where zone_name=? and user_type_name != 'rodsgroup'",
+"select token_name from R_TOKN_MAIN where token_namespace = 'token_namespace'",
+"select token_name from R_TOKN_MAIN where token_namespace = ?",
+"select * from R_TOKN_MAIN where token_namespace = ? and token_name like ?",
+"select resc_name from R_RESC_MAIN",
+"select * from R_RESC_MAIN where resc_name=?",
+"select zone_name from R_ZONE_MAIN",
+"select * from R_ZONE_MAIN where zone_name=?",
+"select user_name from R_USER_MAIN where user_type_name='rodsgroup'",
+"select user_name||'#'||zone_name from R_USER_MAIN, R_USER_GROUP where R_USER_GROUP.user_id=R_USER_MAIN.user_id and R_USER_GROUP.group_user_id=(select user_id from R_USER_MAIN where user_name=?)",
+"select * from R_DATA_MAIN where data_id=?",
+"select data_name, data_id, data_repl_num from R_DATA_MAIN where coll_id =(select coll_id from R_COLL_MAIN where coll_name=?)",
+"select coll_name from R_COLL_MAIN where parent_coll_name=?",
+"select * from R_USER_MAIN where user_name=?",
+"select user_name||'#'||zone_name from R_USER_MAIN where user_type_name != 'rodsgroup'",
+"select R_RESC_GROUP.resc_group_name, R_RESC_GROUP.resc_id, resc_name, R_RESC_GROUP.create_ts, R_RESC_GROUP.modify_ts from R_RESC_MAIN, R_RESC_GROUP where R_RESC_MAIN.resc_id = R_RESC_GROUP.resc_id and resc_group_name=?",
+"select distinct resc_group_name from R_RESC_GROUP",
+"select coll_id from R_COLL_MAIN where coll_name = ?",
+"select * from R_USER_MAIN where user_name=? and zone_name=?",
+"select user_name from R_USER_MAIN where zone_name=? and user_type_name != 'rodsgroup'",
 "select zone_name from R_ZONE_MAIN where zone_type_name=?",
-"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=?",
-"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=? and r_user_main.zone_name=?",
-"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id",
-"select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_auth.user_auth_name=?",
-"select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id",
-"select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=? and r_user_main.zone_name=?",
-"select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0",
-"select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0 and user_name=? and r_user_main.zone_name=?",
+"select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_MAIN.user_name=?",
+"select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_MAIN.user_name=? and R_USER_MAIN.zone_name=?",
+"select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id",
+"select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_AUTH.user_auth_name=?",
+"select user_name, R_USER_MAIN.zone_name, resc_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_RESC_MAIN.resc_id = R_QUOTA_MAIN.resc_id",
+"select user_name, R_USER_MAIN.zone_name, resc_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_RESC_MAIN.resc_id = R_QUOTA_MAIN.resc_id and user_name=? and R_USER_MAIN.zone_name=?",
+"select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0",
+"select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0 and user_name=? and R_USER_MAIN.zone_name=?",
 ""
    };
 
@@ -2973,7 +2973,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    /* check that the collection is empty (both subdirs and files) */
    if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 1 ");
    status = cmlGetIntegerValueFromSql(
-             "select coll_id from r_coll_main where parent_coll_name=? union select coll_id from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
+             "select coll_id from R_COLL_MAIN where parent_coll_name=? union select coll_id from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
 	     &iVal, collInfo->collName, collInfo->collName, 0, 0, 0, &icss);
  
    if (status != CAT_NO_ROWS_FOUND) {
@@ -2993,7 +2993,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    cllBindVars[cllBindVarCount++]=collInfo->collName;
    if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 2");
    status =  cmlExecuteNoAnswerSql(
-		   "delete from r_objt_access where object_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
+		   "delete from R_OBJT_ACCESS where object_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
 		   &icss);
    if (status) {  /* error, but let it fall thru to below, 
 		     probably doesn't exist */
@@ -3009,7 +3009,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
 
    /* Audit (before it's deleted) */
    status = cmlAudit4(AU_DELETE_COLL_BY_ADMIN,  
-		      "select coll_id from r_coll_main where coll_name=?",
+		      "select coll_id from R_COLL_MAIN where coll_name=?",
 		      collInfo->collName,
 		      rsComm->clientUser.userName,
 		      rsComm->clientUser.rodsZone,
@@ -3027,7 +3027,7 @@ int chlDelCollByAdmin(rsComm_t *rsComm, collInfo_t *collInfo) {
    /* delete the row if it exists */
    cllBindVars[cllBindVarCount++]=collInfo->collName;
    if (logSQL) rodsLog(LOG_SQL, "chlDelCollByAdmin SQL 3");
-   status =  cmlExecuteNoAnswerSql("delete from r_coll_main where coll_name=?",
+   status =  cmlExecuteNoAnswerSql("delete from R_COLL_MAIN where coll_name=?",
 				   &icss);
 
    if (status) {
@@ -3126,7 +3126,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    /* check that the collection is empty (both subdirs and files) */
    if (logSQL) rodsLog(LOG_SQL, "_delColl SQL 3");
    status = cmlGetIntegerValueFromSql(
-       "select coll_id from r_coll_main where parent_coll_name=? union select coll_id from r_data_main where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
+       "select coll_id from R_COLL_MAIN where parent_coll_name=? union select coll_id from R_DATA_MAIN where coll_id=(select coll_id from R_COLL_MAIN where coll_name=?)",
        &iVal, collInfo->collName, collInfo->collName, 0, 0, 0, &icss);
    if (status != CAT_NO_ROWS_FOUND) {
       return(CAT_COLLECTION_NOT_EMPTY);
@@ -3140,7 +3140,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    cllBindVars[cllBindVarCount++]=collIdNum;
    if (logSQL) rodsLog(LOG_SQL, "_delColl SQL 4");
    status =  cmlExecuteNoAnswerSql(
-		   "delete from r_coll_main where coll_name=? and coll_id=?",
+		   "delete from R_COLL_MAIN where coll_name=? and coll_id=?",
 		   &icss);
    if (status) {  /* error, odd one as everything checked above */
       rodsLog(LOG_NOTICE,
@@ -3154,7 +3154,7 @@ int _delColl(rsComm_t *rsComm, collInfo_t *collInfo) {
    cllBindVars[cllBindVarCount++]=collIdNum;
    if (logSQL) rodsLog(LOG_SQL, "_delColl SQL 5");
    status =  cmlExecuteNoAnswerSql(
-		   "delete from r_objt_access where object_id=?",
+		   "delete from R_OBJT_ACCESS where object_id=?",
 		   &icss);
    if (status) {  /* error, odd one as everything checked above */
       rodsLog(LOG_NOTICE,
@@ -3261,7 +3261,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 1 ");
 
    status = cmlGetMultiRowStringValuesFromSql(
-	    "select rcat_password, pass_expiry_ts, r_user_password.create_ts from r_user_password, r_user_main where user_name=? and zone_name=? and r_user_main.user_id = r_user_password.user_id",
+	    "select rcat_password, pass_expiry_ts, R_USER_PASSWORD.create_ts from R_USER_PASSWORD, R_USER_MAIN where user_name=? and zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
 	    pwInfoArray, MAX_PASSWORD_LEN,
 	    MAX_PASSWORDS*3,  /* three strings per password returned */
 	    userName2, myUserZone, &icss);
@@ -3345,7 +3345,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       cllBindVars[cllBindVarCount++]=goodPw;
       if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 2");
       status =  cmlExecuteNoAnswerSql(
-	    "delete from r_user_password where rcat_password=?",
+	    "delete from R_USER_PASSWORD where rcat_password=?",
 	    &icss);
       if (status !=0) {
 	 rodsLog(LOG_NOTICE,
@@ -3368,7 +3368,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
       cllBindVars[cllBindVarCount++]=expireStrCreate;
 
       status =  cmlExecuteNoAnswerSql(
-            "delete from r_user_password where pass_expiry_ts = ? and create_ts < ?",
+            "delete from R_USER_PASSWORD where pass_expiry_ts = ? and create_ts < ?",
 	    &icss);
       if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 rodsLog(LOG_NOTICE,
@@ -3398,7 +3398,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 
    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 5");
    status = cmlGetStringValueFromSql(
-	    "select user_type_name from r_user_main where user_name=? and zone_name=?",
+	    "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
 	    userType, MAX_NAME_LEN, userName2, myUserZone, 0, &icss);
    if (status !=0) {
       if (status == CAT_NO_ROWS_FOUND) {
@@ -3439,7 +3439,7 @@ int chlCheckAuth(rsComm_t *rsComm, char *challenge, char *response,
 	 else {
 	    if (logSQL) rodsLog(LOG_SQL, "chlCheckAuth SQL 6");
 	    status = cmlGetStringValueFromSql(
-	       "select user_type_name from r_user_main where user_name=? and zone_name=?",
+	       "select user_type_name from R_USER_MAIN where user_name=? and zone_name=?",
 	       userType, MAX_NAME_LEN, rsComm->clientUser.userName,
 	       rsComm->clientUser.rodsZone, 0, &icss);
 	    if (status !=0) {
@@ -3491,7 +3491,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    if (logSQL) rodsLog(LOG_SQL, "chlMakeTempPw SQL 1 ");
 
    snprintf(tSQL, MAX_SQL_SIZE, 
-            "select rcat_password from r_user_password, r_user_main where user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id and pass_expiry_ts != '%d'",
+            "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id and pass_expiry_ts != '%d'",
 	    TEMP_PASSWORD_TIME);
 
    status = cmlGetStringValueFromSql(tSQL,
@@ -3553,7 +3553,7 @@ int chlMakeTempPw(rsComm_t *rsComm, char *pwValueToHash) {
    cllBindVars[cllBindVarCount++]=myTime;
    if (logSQL) rodsLog(LOG_SQL, "chlMakeTempPw SQL 2");
   status =  cmlExecuteNoAnswerSql(
-              "insert into r_user_password (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)",
+              "insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)",
 	      &icss);
    if (status !=0) {
       rodsLog(LOG_NOTICE,
@@ -3591,7 +3591,7 @@ int decodePw(rsComm_t *rsComm, char *in, char *out) {
 
    if (logSQL) rodsLog(LOG_SQL, "decodePw - SQL 1 ");
    status = cmlGetStringValueFromSql(
-	    "select rcat_password from r_user_password, r_user_main where user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id",
+	    "select rcat_password from R_USER_PASSWORD, R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
 	    password, MAX_PASSWORD_LEN, 
 	    rsComm->clientUser.userName, 
             rsComm->clientUser.rodsZone,
@@ -3644,12 +3644,12 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    int opType;
    char decoded[MAX_PASSWORD_LEN+20];
    char tSQL[MAX_SQL_SIZE];
-   char form1[]="update r_user_main set %s=?, modify_ts=? where user_name=? and zone_name=?";
-   char form2[]="update r_user_main set %s=%s, modify_ts=? where user_name=? and zone_name=?";
-   char form3[]="update r_user_password set rcat_password=?, modify_ts=? where user_id=?";
-   char form4[]="insert into r_user_password (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)";
-   char form5[]="insert into r_user_auth (user_id, user_auth_name, create_ts) values ((select user_id from r_user_main where user_name=? and zone_name=?), ?, ?)";
-   char form6[]="delete from r_user_auth where user_id = (select user_id from r_user_main where user_name=? and zone_name=?) and user_auth_name = ?";
+   char form1[]="update R_USER_MAIN set %s=?, modify_ts=? where user_name=? and zone_name=?";
+   char form2[]="update R_USER_MAIN set %s=%s, modify_ts=? where user_name=? and zone_name=?";
+   char form3[]="update R_USER_PASSWORD set rcat_password=?, modify_ts=? where user_id=?";
+   char form4[]="insert into R_USER_PASSWORD (user_id, rcat_password, pass_expiry_ts,  create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)";
+   char form5[]="insert into R_USER_AUTH (user_id, user_auth_name, create_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?)";
+   char form6[]="delete from R_USER_AUTH where user_id = (select user_id from R_USER_MAIN where user_name=? and zone_name=?) and user_auth_name = ?";
    char myTime[50];
    rodsLong_t iVal;
 
@@ -3725,7 +3725,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
    if (strcmp(option,"type")==0 ||
        strcmp(option,"user_type_name")==0) {
       char tsubSQL[MAX_SQL_SIZE];
-      snprintf(tsubSQL, MAX_SQL_SIZE, "(select token_name from r_tokn_main where token_namespace='user_type' and token_name=?)");
+      snprintf(tsubSQL, MAX_SQL_SIZE, "(select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?)");
       cllBindVars[cllBindVarCount++]=newValue;
       snprintf(tSQL, MAX_SQL_SIZE, form2,
 	       "user_type_name", tsubSQL);
@@ -3805,7 +3805,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
       if (i) return(i);
       if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 8");
       i = cmlGetStringValueFromSql(
-	       "select r_user_password.user_id from r_user_password, r_user_main where r_user_main.user_name=? and r_user_main.zone_name=? and r_user_main.user_id = r_user_password.user_id",
+	       "select R_USER_PASSWORD.user_id from R_USER_PASSWORD, R_USER_MAIN where R_USER_MAIN.user_name=? and R_USER_MAIN.zone_name=? and R_USER_MAIN.user_id = R_USER_PASSWORD.user_id",
 	       userIdStr, MAX_NAME_LEN, userName2, zoneName, 0, &icss);
       if (i != 0 && i !=CAT_NO_ROWS_FOUND) return(i);
       if (i == 0) {
@@ -3841,7 +3841,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 int status2;
 	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 11");
 	 status2 = cmlGetIntegerValueFromSql(
-             "select token_name from r_tokn_main where token_namespace='user_type' and token_name=?", 
+             "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?", 
 	     &iVal, newValue, 0, 0, 0, 0, &icss);
 	 if (status2) {
 	    char errMsg[105];
@@ -3861,7 +3861,7 @@ int chlModUser(rsComm_t *rsComm, char *userName, char *option,
 	 _rollback("chlModUser");
 	 if (logSQL) rodsLog(LOG_SQL, "chlModUser SQL 12");
 	 status2 = cmlGetIntegerValueFromSql(
-           "select user_id from r_user_main where user_name=? and zone_name=?",
+           "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	   &iVal, userName2, zoneName, 0, 0, 0, &icss);
 	 if (status2) {
 	    rodsLog(LOG_NOTICE,
@@ -3946,7 +3946,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    userId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 1 ");
    status = cmlGetStringValueFromSql(
-            "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name !='rodsgroup'",
+            "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name !='rodsgroup'",
 	    userId, MAX_NAME_LEN, userName2, zoneToUse, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
@@ -3959,7 +3959,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
    groupId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 2");
    status = cmlGetStringValueFromSql(
-              "select user_id from r_user_main where user_name=? and r_user_main.zone_name=? and user_type_name='rodsgroup'",
+              "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=? and user_type_name='rodsgroup'",
 	      groupId, MAX_NAME_LEN, groupName, localZone, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) {
@@ -3974,7 +3974,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
       cllBindVars[cllBindVarCount++]=groupId;
       cllBindVars[cllBindVarCount++]=userId;
       status =  cmlExecuteNoAnswerSql(
-         "delete from r_user_group where group_user_id = ? and user_id = ?",
+         "delete from R_USER_GROUP where group_user_id = ? and user_id = ?",
          &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -3994,7 +3994,7 @@ int chlModGroup(rsComm_t *rsComm, char *groupName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       if (logSQL) rodsLog(LOG_SQL, "chlModGroup SQL 4");
       status =  cmlExecuteNoAnswerSql(
-             "insert into r_user_group (group_user_id, user_id , create_ts, modify_ts) values (?, ?, ?, ?)",
+             "insert into R_USER_GROUP (group_user_id, user_id , create_ts, modify_ts) values (?, ?, ?, ?)",
 	     &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4067,7 +4067,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
    rescId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 1 ");
    status = cmlGetStringValueFromSql(
-       "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+       "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
        rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -4083,7 +4083,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 2");
       status =  cmlExecuteNoAnswerSql(
-	           "update r_resc_main set resc_info=?, modify_ts=? where resc_id=?",
+	           "update R_RESC_MAIN set resc_info=?, modify_ts=? where resc_id=?",
 		   &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4100,7 +4100,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 3");
       status =  cmlExecuteNoAnswerSql(
-	       "update r_resc_main set r_comment = ?, modify_ts=? where resc_id=?",
+	       "update R_RESC_MAIN set r_comment = ?, modify_ts=? where resc_id=?",
 	       &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4118,7 +4118,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 4");
       status =  cmlExecuteNoAnswerSql(
-		 "update r_resc_main set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
+		 "update R_RESC_MAIN set free_space = ?, free_space_ts = ?, modify_ts=? where resc_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4135,7 +4135,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 5");
       status =  cmlExecuteNoAnswerSql(
-		 "update r_resc_main set resc_net = ?, modify_ts=? where resc_id=?",
+		 "update R_RESC_MAIN set resc_net = ?, modify_ts=? where resc_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4163,7 +4163,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 7");
       status =  cmlExecuteNoAnswerSql(
-		 "update r_resc_main set resc_type_name = ?, modify_ts=? where resc_id=?",
+		 "update R_RESC_MAIN set resc_type_name = ?, modify_ts=? where resc_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4192,7 +4192,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModResc SQL 9");
       status =  cmlExecuteNoAnswerSql(
-		 "update r_resc_main set resc_class_name = ?, modify_ts=? where resc_id=?",
+		 "update R_RESC_MAIN set resc_class_name = ?, modify_ts=? where resc_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4210,7 +4210,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=rescId;
       status =  cmlExecuteNoAnswerSql(
-		 "update r_resc_main set resc_def_path=?, modify_ts=? where resc_id=?",
+		 "update R_RESC_MAIN set resc_def_path=?, modify_ts=? where resc_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4228,7 +4228,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=rescId;
       status =  cmlExecuteNoAnswerSql(
-		 "update r_resc_main set resc_status=?, modify_ts=? where resc_id=?",
+		 "update R_RESC_MAIN set resc_status=?, modify_ts=? where resc_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4247,7 +4247,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
 /*    If the new name is not unique, this will return an error */
       status =  cmlExecuteNoAnswerSql(
-		 "update r_resc_main set resc_name=?, modify_ts=? where resc_id=?",
+		 "update R_RESC_MAIN set resc_name=?, modify_ts=? where resc_id=?",
 		 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -4261,7 +4261,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=optionValue;
       cllBindVars[cllBindVarCount++]=rescName;
       status =  cmlExecuteNoAnswerSql(
-		 "update r_data_main set resc_name=? where resc_name=?",
+		 "update R_DATA_MAIN set resc_name=? where resc_name=?",
 		 &icss);
       if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
       if (status != 0) {
@@ -4276,7 +4276,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=optionValue;
       cllBindVars[cllBindVarCount++]=rescName;
       status =  cmlExecuteNoAnswerSql(
-		 "update r_server_load set resc_name=? where resc_name=?",
+		 "update R_SERVER_LOAD set resc_name=? where resc_name=?",
 		 &icss);
       if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
       if (status != 0) {
@@ -4291,7 +4291,7 @@ int chlModResc(rsComm_t *rsComm, char *rescName, char *option,
       cllBindVars[cllBindVarCount++]=optionValue;
       cllBindVars[cllBindVarCount++]=rescName;
       status =  cmlExecuteNoAnswerSql(
-		 "update r_server_load_digest set resc_name=? where resc_name=?",
+		 "update R_SERVER_LOAD_DIGEST set resc_name=? where resc_name=?",
 		 &icss);
       if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
       if (status != 0) {
@@ -4376,7 +4376,7 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
 	       
    if (logSQL) rodsLog(LOG_SQL, "chlModRescFreeSpace SQL 1 ");
    status =  cmlExecuteNoAnswerSql(
-               "update r_resc_main set free_space = ?, free_space_ts=? where resc_name=?",
+               "update R_RESC_MAIN set free_space = ?, free_space_ts=? where resc_name=?",
 	       &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -4388,7 +4388,7 @@ int chlModRescFreeSpace(rsComm_t *rsComm, char *rescName, int updateValue) {
 
    /* Audit */
    status = cmlAudit4(AU_MOD_RESC_FREE_SPACE,  
-		      "select resc_id from r_resc_main where resc_name=?",
+		      "select resc_id from R_RESC_MAIN where resc_name=?",
 		      rescName,
 		      rsComm->clientUser.userName,
 		      rsComm->clientUser.rodsZone,
@@ -4439,7 +4439,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
    rescId[0]='\0';
    if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 1 ");
    status = cmlGetStringValueFromSql(
-	      "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+	      "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
 	      rescId, MAX_NAME_LEN, rescName, localZone, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -4454,7 +4454,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       rescGroupId[0]='\0';
       if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 2a ");
       status = cmlGetStringValueFromSql(
-             "select distinct resc_group_id from r_resc_group where resc_group_name=?",
+             "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
              rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss);
       if (status != 0) {
          if (status==CAT_NO_ROWS_FOUND) {
@@ -4481,7 +4481,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       cllBindVars[cllBindVarCount++]=myTime;
       if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 2");
       status =  cmlExecuteNoAnswerSql(
-	       "insert into r_resc_group (resc_group_name, resc_group_id, resc_id , create_ts, modify_ts) values (?, ?, ?, ?, ?)",
+	       "insert into R_RESC_GROUP (resc_group_name, resc_group_id, resc_id , create_ts, modify_ts) values (?, ?, ?, ?, ?)",
 	       &icss);
       if (status != 0) {
 	     rodsLog(LOG_NOTICE,
@@ -4498,7 +4498,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       dataObjNumber[0]='\0';
       if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3a ");
       status = cmlGetStringValueFromSql(
-             "select distinct resc_group_id from r_resc_group where resc_id=? and resc_group_name=?",
+             "select distinct resc_group_id from R_RESC_GROUP where resc_id=? and resc_group_name=?",
              dataObjNumber, MAX_NAME_LEN, rescId, rescGroupName, 0, &icss);
       if (status != 0) {
           _rollback("chlModRescGroup");
@@ -4511,7 +4511,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       cllBindVars[cllBindVarCount++]=rescId;
       if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3b");
       status =  cmlExecuteNoAnswerSql(
-         "delete from r_resc_group where resc_group_name=? and resc_id=?",
+         "delete from R_RESC_GROUP where resc_group_name=? and resc_id=?",
 	     &icss);
       if (status != 0) {
         rodsLog(LOG_NOTICE,
@@ -4525,7 +4525,7 @@ int chlModRescGroup(rsComm_t *rsComm, char *rescGroupName, char *option,
       rescGroupId[0]='\0';
       if (logSQL) rodsLog(LOG_SQL, "chlModRescGroup SQL 3c ");
       status = cmlGetStringValueFromSql(
-             "select distinct resc_group_id from r_resc_group where resc_group_name=?",
+             "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
              rescGroupId, MAX_NAME_LEN, rescGroupName, 0, 0, &icss);
       if (status != 0) {
           if (status==CAT_NO_ROWS_FOUND) {
@@ -4616,7 +4616,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       int i;
       if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 1 ");
       status = cmlGetStringValueFromSql(
-                "select token_name from r_tokn_main where token_namespace='user_type' and token_name=?", 
+                "select token_name from R_TOKN_MAIN where token_namespace='user_type' and token_name=?", 
 		userTypeTokenName, MAX_NAME_LEN, userInfo->userType, 0, 0, &icss);
       if (status==0) {
 	 strncpy(lastValidUserType, userInfo->userType, MAX_NAME_LEN);
@@ -4655,7 +4655,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
       zoneId[0]='\0';
       if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 5 ");
       status = cmlGetStringValueFromSql(
-		"select zone_id from r_zone_main where zone_name=?",
+		"select zone_id from R_ZONE_MAIN where zone_name=?",
 		zoneId, MAX_NAME_LEN, userZone, "", 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) {
@@ -4690,7 +4690,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 3");
    status =  cmlExecuteNoAnswerSql(
-             "insert into r_user_main (user_id, user_name, user_type_name, zone_name, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+             "insert into R_USER_MAIN (user_id, user_name, user_type_name, zone_name, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
 	     &icss);
 
    if (status) {
@@ -4717,11 +4717,11 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegUserRE SQL 4");
    status =  cmlExecuteNoAnswerSql(
-             "insert into r_user_group (group_user_id, user_id, create_ts, modify_ts) values (?, ?, ?, ?)",
+             "insert into R_USER_GROUP (group_user_id, user_id, create_ts, modify_ts) values (?, ?, ?, ?)",
 	     &icss);
    if (status) {
       rodsLog(LOG_NOTICE,
-	      "chlRegUserRE insert into r_user_group failure %d",status);
+	      "chlRegUserRE insert into R_USER_GROUP failure %d",status);
       _rollback("chlRegUserRE");
       return(status);
    }
@@ -4745,7 +4745,7 @@ int chlRegUserRE(rsComm_t *rsComm, userInfo_t *userInfo) {
 
    /* Audit */
    snprintf(auditSQL, MAX_SQL_SIZE-1,
-	    "select user_id from r_user_main where user_name=? and zone_name='%s'",
+	    "select user_id from R_USER_MAIN where user_name=? and zone_name='%s'",
 	    userZone);
    status = cmlAudit4(AU_REGISTER_USER_RE,  
 		      auditSQL,
@@ -4864,7 +4864,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 3");
       status = cmlGetIntegerValueFromSql(
-                   "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+                   "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
 		   &objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -4888,7 +4888,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 4");
       status = cmlGetIntegerValueFromSql(
-         "select user_id from r_user_main where user_name=? and zone_name=?",
+         "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	 &objId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
@@ -4908,7 +4908,7 @@ rodsLong_t checkAndGetObjectId(rsComm_t *rsComm, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "checkAndGetObjectId SQL 5");
       status = cmlGetIntegerValueFromSql(
-                   "select distinct resc_group_id from r_resc_group where resc_group_name=?",
+                   "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
 		   &objId, name, 0, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -4934,17 +4934,17 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
    if (*units!='\0') {
       if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 1");
       status = cmlGetIntegerValueFromSql(
-            "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
+            "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit=?",
 	    &iVal, attribute, value, units, 0, 0, &icss);
    }
    else {
       if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 2");
       status = cmlGetIntegerValueFromSql(
-         "select meta_id from r_meta_main where meta_attr_name=? and meta_attr_value=? and meta_attr_unit IS NULL",
+         "select meta_id from R_META_MAIN where meta_attr_name=? and meta_attr_value=? and meta_attr_unit IS NULL",
          &iVal, attribute, value, 0, 0, 0, &icss);
    }
    if (status == 0) {
-      status = iVal; /* use existing r_meta_main row */
+      status = iVal; /* use existing R_META_MAIN row */
       return(status);
    }
    if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 3");
@@ -4969,7 +4969,7 @@ findOrInsertAVU(char *attribute, char *value, char *units) {
 
    if (logSQL) rodsLog(LOG_SQL, "findOrInsertAVU SQL 10");
    status =  cmlExecuteNoAnswerSql(
-             "insert into r_meta_main (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
+             "insert into R_META_MAIN (meta_id, meta_attr_name, meta_attr_value, meta_attr_unit, create_ts, modify_ts) values (?, ?, ?, ?, ?, ?)",
 	     &icss);
    if (status < 0) {
       rodsLog(LOG_NOTICE, "findOrInsertAVU insert failure %d", status);
@@ -5023,7 +5023,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
 /* Get the count of the objects to compare with later */
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 1");
    status = cmlGetIntegerValueFromSql(
-      "select count(DM.data_id) from r_data_main DM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+      "select count(DM.data_id) from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
       &iVal, objectName, collection, 0, 0, 0, &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -5076,7 +5076,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone;
    status =  cmlExecuteNoAnswerSql(
-				   "insert into ACCESS_VIEW_ONE (access_type_id, data_id) (select access_type_id, DM.data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id)",
+				   "insert into ACCESS_VIEW_ONE (access_type_id, data_id) (select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id)",
 				   &icss);
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
    if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
@@ -5093,7 +5093,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.userName;
    cllBindVars[cllBindVarCount++]=rsComm->clientUser.rodsZone;
    status =  cmlExecuteNoAnswerSql(
-				   "create view ACCESS_VIEW_ONE as select access_type_id, DM.data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id",
+				   "create view ACCESS_VIEW_ONE as select access_type_id, DM.data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id",
 				   &icss);
    if (status==CAT_SUCCESS_BUT_WITH_NO_INFO) status=0;
    if (status==CAT_NO_ROWS_FOUND) status=CAT_NO_ACCESS_PERMISSION;
@@ -5134,7 +5134,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    if (accessNeeded>=ACCESS_MAX) { /* not initialized yet */
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 4");
       status = cmlGetIntegerValueFromSql(
-	 "select token_id  from r_tokn_main where token_name = 'modify metadata' and token_namespace = 'access_type'",
+	 "select token_id  from R_TOKN_MAIN where token_name = 'modify metadata' and token_namespace = 'access_type'",
 	 &iVal, 0, 0, 0, 0, 0, &icss);
       if (status==0) accessNeeded = iVal;
    }
@@ -5218,7 +5218,7 @@ chlAddAVUMetadataWild(rsComm_t *rsComm, int adminMode, char *type,
    cllBindVars[cllBindVarCount++]=collection;
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadataWild SQL 8");
    status =  cmlExecuteNoAnswerSql(
-      "insert into r_objt_metamap (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from r_data_main DM, r_coll_main CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
+      "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select DM.data_id, ?, ?, ? from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name like ? and DM.coll_id=CM.coll_id and CM.coll_name like ?",
       &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -5315,7 +5315,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
       if (adminMode==1) {
 	 if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 1 ");
 	 status = cmlGetIntegerValueFromSql(
-	       "select data_id from r_data_main DM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+	       "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
 	       &iVal, logicalEndName, logicalParentDirName, 0, 0, 0, &icss);
 	 if (status==0) status=iVal; /*like cmlCheckDataObjOnly, status is objid */
       }
@@ -5377,7 +5377,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 5");
       status = cmlGetIntegerValueFromSql(
-		 "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+		 "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
 		 &objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 _rollback("chlAddAVUMetadata");
@@ -5401,7 +5401,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 6");
       status = cmlGetIntegerValueFromSql(
-              "select user_id from r_user_main where user_name=? and zone_name=?",
+              "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	      &objId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 _rollback("chlAddAVUMetadata");
@@ -5421,7 +5421,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 7");
       status = cmlGetIntegerValueFromSql(
-		 "select distinct resc_group_id from r_resc_group where resc_group_name=?",
+		 "select distinct resc_group_id from R_RESC_GROUP where resc_group_name=?",
 		 &objId, name, 0, 0, 0, 0, &icss);
       if (status != 0) {
 	 _rollback("chlAddAVUMetadata");
@@ -5449,7 +5449,7 @@ int chlAddAVUMetadata(rsComm_t *rsComm, int adminMode, char *type,
    cllBindVars[cllBindVarCount++]=myTime;
    if (logSQL) rodsLog(LOG_SQL, "chlAddAVUMetadata SQL 7");
    status =  cmlExecuteNoAnswerSql(
-                 "insert into r_objt_metamap (object_id, meta_id, create_ts, modify_ts) values (?, ?, ?, ?)",
+                 "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) values (?, ?, ?, ?)",
 		 &icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -5674,7 +5674,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 3");
       status = cmlGetIntegerValueFromSql(
-                "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+                "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
 		&objId, name, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -5698,7 +5698,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 4");
       status = cmlGetIntegerValueFromSql(
-                 "select user_id from r_user_main where user_name=? and zone_name=?",
+                 "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 		 &objId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
@@ -5718,7 +5718,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       objId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 5");
       status = cmlGetIntegerValueFromSql(
-                "select resc_group_id from r_resc_group where resc_group_name=?",
+                "select resc_group_id from R_RESC_GROUP where resc_group_name=?",
 		&objId, name, 0, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -5736,7 +5736,7 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
 
       if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 9");
       status =  cmlExecuteNoAnswerSql(
-	      "delete from r_objt_metamap where object_id=? and meta_id =?",
+	      "delete from R_OBJT_METAMAP where object_id=? and meta_id =?",
 		&icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -5795,13 +5795,13 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       if (option==1) {  /* use wildcards ('like') */
 	 if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 5");
 	 status =  cmlExecuteNoAnswerSql(
-		"delete from r_objt_metamap where object_id=? and meta_id IN (select meta_id from r_meta_main where meta_attr_name like ? and meta_attr_value like ? and (meta_attr_unit like ? or meta_attr_unit IS NULL) )",
+		"delete from R_OBJT_METAMAP where object_id=? and meta_id IN (select meta_id from R_META_MAIN where meta_attr_name like ? and meta_attr_value like ? and (meta_attr_unit like ? or meta_attr_unit IS NULL) )",
 		&icss);
       }
       else {
 	 if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 6");
 	 status =  cmlExecuteNoAnswerSql(
-		"delete from r_objt_metamap where object_id=? and meta_id IN (select meta_id from r_meta_main where meta_attr_name = ? and meta_attr_value = ? and (meta_attr_unit = ? or meta_attr_unit IS NULL) )",
+		"delete from R_OBJT_METAMAP where object_id=? and meta_id IN (select meta_id from R_META_MAIN where meta_attr_name = ? and meta_attr_value = ? and (meta_attr_unit = ? or meta_attr_unit IS NULL) )",
 		&icss);
       }
    }
@@ -5809,13 +5809,13 @@ int chlDeleteAVUMetadata(rsComm_t *rsComm, int option, char *type,
       if (option==1) {  /* use wildcards ('like') */
 	 if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 7");
 	 status =  cmlExecuteNoAnswerSql(
-		"delete from r_objt_metamap where object_id=? and meta_id IN (select meta_id from r_meta_main where meta_attr_name like ? and meta_attr_value like ? and meta_attr_unit like ?)",
+		"delete from R_OBJT_METAMAP where object_id=? and meta_id IN (select meta_id from R_META_MAIN where meta_attr_name like ? and meta_attr_value like ? and meta_attr_unit like ?)",
 		&icss);
       }
       else {
 	 if (logSQL) rodsLog(LOG_SQL, "chlDeleteAVUMetadata SQL 8");
 	 status =  cmlExecuteNoAnswerSql(
-		"delete from r_objt_metamap where object_id=? and meta_id IN (select meta_id from r_meta_main where meta_attr_name = ? and meta_attr_value = ? and meta_attr_unit = ?)",
+		"delete from R_OBJT_METAMAP where object_id=? and meta_id IN (select meta_id from R_META_MAIN where meta_attr_name = ? and meta_attr_value = ? and meta_attr_unit = ?)",
 		&icss);
       }
    }
@@ -5895,7 +5895,7 @@ int chlCopyAVUMetadata(rsComm_t *rsComm, char *type1,  char *type2,
    cllBindVars[cllBindVarCount++]=objIdStr1;
    if (logSQL) rodsLog(LOG_SQL, "chlCopyAVUMetadata SQL 3");
    status =  cmlExecuteNoAnswerSql(
-                "insert into r_objt_metamap (object_id, meta_id, create_ts, modify_ts) select ?, meta_id, ?, ? from r_objt_metamap where object_id=?",
+                "insert into R_OBJT_METAMAP (object_id, meta_id, create_ts, modify_ts) select ?, meta_id, ?, ? from R_OBJT_METAMAP where object_id=?",
 		&icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE,
@@ -5970,7 +5970,7 @@ int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *p
       cllBindVars[cllBindVarCount++]=myTime;
       cllBindVars[cllBindVarCount++]=collIdStr;
       status =  cmlExecuteNoAnswerSql(
-	      "update r_coll_main set coll_inheritance=?, modify_ts=? where coll_id=?",
+	      "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_id=?",
 	      &icss);
    }
    else {
@@ -5987,7 +5987,7 @@ int _modInheritance(int inheritFlag, int recursiveFlag, char *collIdStr, char *p
       cllBindVars[cllBindVarCount++]=pathStart;
       if (logSQL) rodsLog(LOG_SQL, "_modInheritance SQL 2");
       status =  cmlExecuteNoAnswerSql(
-	      "update r_coll_main set coll_inheritance=?, modify_ts=? where coll_name = ? or substr(coll_name,1,?) = ?",
+	      "update R_COLL_MAIN set coll_inheritance=?, modify_ts=? where coll_name = ? or substr(coll_name,1,?) = ?",
 		 &icss);
    }
    if (status) {
@@ -6160,7 +6160,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
    userId=0;
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 3");
    status = cmlGetIntegerValueFromSql(
-              "select user_id from r_user_main where user_name=? and r_user_main.zone_name=?",
+              "select user_id from R_USER_MAIN where user_name=? and R_USER_MAIN.zone_name=?",
 	      &userId, userName, myZone, 0, 0, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
@@ -6181,7 +6181,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	 cllBindVars[cllBindVarCount++]=objIdStr;
 	 if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 4");
 	 status =  cmlExecuteNoAnswerSql(
-                   "delete from r_objt_access where user_id=? and object_id=?",
+                   "delete from R_OBJT_ACCESS where user_id=? and object_id=?",
 		   &icss);
 	 if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	    return(status);
@@ -6195,7 +6195,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 	    cllBindVars[cllBindVarCount++]=myTime;
 	    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 5");
 	    status =  cmlExecuteNoAnswerSql(
-			"insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  values (?, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+			"insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  values (?, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 			&icss);
 	    if (status) {
 	       _rollback("chlModAccessControl");
@@ -6226,7 +6226,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       cllBindVars[cllBindVarCount++]=collIdStr;
       if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 6");
       status =  cmlExecuteNoAnswerSql(
-	      "delete from r_objt_access where user_id=? and object_id=?",
+	      "delete from R_OBJT_ACCESS where user_id=? and object_id=?",
   	      &icss);
       if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 _rollback("chlModAccessControl");
@@ -6258,7 +6258,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
       cllBindVars[cllBindVarCount++]=myTime;
       if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 7");
       status =  cmlExecuteNoAnswerSql(
-          "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  values (?, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
+          "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  values (?, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ?)",
 	  &icss);
 
       if (status) {
@@ -6307,7 +6307,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 8");
    status =  cmlExecuteNoAnswerSql(
-               "delete from r_objt_access where user_id=? and object_id in (select data_id from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
+               "delete from R_OBJT_ACCESS where user_id=? and object_id in (select data_id from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
 	       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       _rollback("chlModAccessControl");
@@ -6321,7 +6321,7 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 
    if (logSQL) rodsLog(LOG_SQL, "chlModAccessControl SQL 9");
    status =  cmlExecuteNoAnswerSql(
-               "delete from r_objt_access where user_id=? and object_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?)",
+               "delete from R_OBJT_ACCESS where user_id=? and object_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
 	       &icss);
    if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
       _rollback("chlModAccessControl");
@@ -6362,15 +6362,15 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 #if ORA_ICAT
    /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
    status =  cmlExecuteNoAnswerSql(
-	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);
 #elif MY_ICAT
    status =  cmlExecuteNoAnswerSql(
-	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);
 #else
    status =  cmlExecuteNoAnswerSql(
-	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_data_main where coll_id in (select coll_id from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?))",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct data_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_DATA_MAIN where coll_id in (select coll_id from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?))",
 		 &icss);
 #endif
    if (status) {
@@ -6391,15 +6391,15 @@ int chlModAccessControl(rsComm_t *rsComm, int recursiveFlag,
 #if ORA_ICAT
    /* For Oracle cast is to integer, for Postgres to bigint,for MySQL no cast*/
    status =  cmlExecuteNoAnswerSql(
-	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?)",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as integer), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
 		 &icss);
 #elif MY_ICAT
    status =  cmlExecuteNoAnswerSql(
-	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?)",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, ?, (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
 		 &icss);
 #else
    status =  cmlExecuteNoAnswerSql(
-	         "insert into r_objt_access (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from r_coll_main where coll_name = ? or substr(coll_name,1,?) = ?)",
+	         "insert into R_OBJT_ACCESS (object_id, user_id, access_type_id, create_ts, modify_ts)  (select distinct coll_id, cast(? as bigint), (select token_id from R_TOKN_MAIN where token_namespace = 'access_type' and token_name = ?), ?, ? from R_COLL_MAIN where coll_name = ? or substr(coll_name,1,?) = ?)",
 		 &icss);
 #endif
    if (status) {
@@ -6466,7 +6466,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-	      "select coll_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	      "select coll_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	      &collId, objIdString, rsComm->clientUser.userName, rsComm->clientUser.rodsZone,
 	      0, 0,  &icss);
 
@@ -6476,7 +6476,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       snprintf(collIdString, MAX_NAME_LEN, "%lld", collId);
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 2");
       status = cmlGetIntegerValueFromSql(
-         "select data_id from r_data_main where data_name=? and coll_id=?",
+         "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
 	 &otherDataId, 
 	 newName, collIdString, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
@@ -6488,7 +6488,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       snprintf(collNameTmp, MAX_NAME_LEN, "/%s", newName);
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 3");
       status = cmlGetIntegerValueFromSql(
-                 "select coll_id from r_coll_main where coll_name = ( select coll_name from r_coll_main where coll_id=? ) || ?",
+                 "select coll_id from R_COLL_MAIN where coll_name = ( select coll_name from R_COLL_MAIN where coll_id=? ) || ?",
 		 &otherCollId, collIdString, collNameTmp, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
@@ -6500,7 +6500,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=objIdString;
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 4");
       status =  cmlExecuteNoAnswerSql(
-                   "update r_data_main set data_name = ? where data_id=?",
+                   "update R_DATA_MAIN set data_name = ? where data_id=?",
 		   &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -6514,7 +6514,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=collIdString;
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 5");
       status =  cmlExecuteNoAnswerSql(
-                   "update r_coll_main set modify_ts=? where coll_id=?",
+                   "update R_COLL_MAIN set modify_ts=? where coll_id=?",
 		   &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -6554,7 +6554,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 6");
 
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	    "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	    cVal, iVal, 2, objIdString, 
 	    rsComm->clientUser.userName, rsComm->clientUser.rodsZone, &icss);
    if (status == 0) { 
@@ -6563,7 +6563,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       /* check that no other dataObj exists with this name in this collection*/
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 7");
       status = cmlGetIntegerValueFromSql(
-           "select data_id from r_data_main where data_name=? and coll_id= (select coll_id from r_coll_main  where coll_name = ?)",
+           "select data_id from R_DATA_MAIN where data_name=? and coll_id= (select coll_id from R_COLL_MAIN  where coll_name = ?)",
 	   &otherDataId, newName, parentCollName, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_DATAOBJ);
@@ -6574,7 +6574,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       snprintf(collNameTmp, MAX_NAME_LEN, "%s/%s", parentCollName, newName);
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 8");
       status = cmlGetIntegerValueFromSql(
-               "select coll_id from r_coll_main where coll_name = ?",
+               "select coll_id from R_COLL_MAIN where coll_name = ?",
 	       &otherCollId, collNameTmp, 0, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
@@ -6617,7 +6617,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=collName;
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 9");
       status =  cmlExecuteNoAnswerSql(
-	           "update r_coll_main set coll_name = substr(coll_name,1,?) || ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name  = ?",
+	           "update R_COLL_MAIN set coll_name = substr(coll_name,1,?) || ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name  = ?",
 		   &icss);
       if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 rodsLog(LOG_NOTICE,
@@ -6636,7 +6636,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=collName;
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 10");
       status =  cmlExecuteNoAnswerSql(
-	          "update r_coll_main set parent_coll_name = substr(parent_coll_name,1,?) || ? || substr(parent_coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name  = ?",
+	          "update R_COLL_MAIN set parent_coll_name = substr(parent_coll_name,1,?) || ? || substr(parent_coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name  = ?",
 		  &icss);
       if (status != 0 && status != CAT_SUCCESS_BUT_WITH_NO_INFO) {
 	 rodsLog(LOG_NOTICE,
@@ -6657,7 +6657,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=objIdString;
       if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 11");
       status =  cmlExecuteNoAnswerSql(
-                    "update r_coll_main set coll_name=?, modify_ts=? where coll_id=?",
+                    "update R_COLL_MAIN set coll_name=?, modify_ts=? where coll_id=?",
 		    &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -6693,7 +6693,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 12");
    status = cmlGetIntegerValueFromSql(
-                   "select coll_id from r_data_main where data_id=?",
+                   "select coll_id from R_DATA_MAIN where data_id=?",
 		   &otherDataId, objIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a data obj, must be permission error */
@@ -6703,7 +6703,7 @@ int chlRenameObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(collIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlRenameObject SQL 12");
    status = cmlGetIntegerValueFromSql(
-              "select coll_id from r_coll_main where coll_id=?",
+              "select coll_id from R_COLL_MAIN where coll_id=?",
 	      &otherDataId, collIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a collection, must be permission error */
@@ -6758,7 +6758,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", targetCollId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 1 ");
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	    "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	    cVal, iVal, 2, objIdString, 
 	    rsComm->clientUser.userName, 
 	    rsComm->clientUser.rodsZone, &icss);
@@ -6767,7 +6767,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    if (status != 0) {
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 2");
       status = cmlGetIntegerValueFromSql(
-                    "select coll_id from r_coll_main where coll_id=?",
+                    "select coll_id from R_COLL_MAIN where coll_id=?",
 		    &collId, collIdString, 0, 0, 0, 0, &icss);
       if (status==0) {
 	 return (CAT_NO_ACCESS_PERMISSION);  /* does exist, must be
@@ -6782,7 +6782,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 3");
    status = cmlGetStringValueFromSql(
-	      "select data_name from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	      "select data_name from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where DM.data_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	     dataObjName, MAX_NAME_LEN, objIdString, 
 	     rsComm->clientUser.userName,
  	     rsComm->clientUser.rodsZone, &icss);
@@ -6793,7 +6793,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 	 target collection */
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 4");
       status = cmlGetIntegerValueFromSql(
-           "select data_id from r_data_main where data_name=? and coll_id=?",
+           "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
 	   &otherDataId, dataObjName, collIdString, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_DATAOBJ);
@@ -6805,7 +6805,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       snprintf(nameTmp, MAX_NAME_LEN, "/%s", dataObjName);
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 5");
       status = cmlGetIntegerValueFromSql(
-                "select coll_id from r_coll_main where coll_name = ( select coll_name from r_coll_main where coll_id=? ) || ?",
+                "select coll_id from R_COLL_MAIN where coll_name = ( select coll_name from R_COLL_MAIN where coll_id=? ) || ?",
 		&otherCollId, collIdString, nameTmp, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
@@ -6817,7 +6817,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=objIdString;
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 6");
       status =  cmlExecuteNoAnswerSql(
-	             "update r_data_main set coll_id=? where data_id=?",
+	             "update R_DATA_MAIN set coll_id=? where data_id=?",
 		     &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -6832,7 +6832,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=collIdString;
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 7");
       status =  cmlExecuteNoAnswerSql(
-	             "update r_coll_main set modify_ts=? where coll_id=?",
+	             "update R_COLL_MAIN set modify_ts=? where coll_id=?",
 		     &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -6869,7 +6869,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 8");
    status = cmlGetStringValuesFromSql(
-	    "select parent_coll_name, coll_name from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
+	    "select parent_coll_name, coll_name from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and TM.token_namespace ='access_type' and TM.token_name = 'own'",
 	    cVal, iVal, 2, objIdString, rsComm->clientUser.userName, 
 	    rsComm->clientUser.rodsZone, &icss);
    if (status == 0) { 
@@ -6896,7 +6896,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       snprintf(collIdString, MAX_NAME_LEN, "%lld", targetCollId);
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 9");
       status = cmlGetIntegerValueFromSql(
-         "select data_id from r_data_main where data_name=? and coll_id=?",
+         "select data_id from R_DATA_MAIN where data_name=? and coll_id=?",
 	 &otherDataId, endCollName, collIdString, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_DATAOBJ);
@@ -6911,7 +6911,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 10");
       status = cmlGetIntegerValueFromSql(
-		 "select coll_id from r_coll_main where coll_name = ?",
+		 "select coll_id from R_COLL_MAIN where coll_name = ?",
 		 &otherCollId, newCollName, 0, 0, 0, 0, &icss);
       if (status!=CAT_NO_ROWS_FOUND) {
 	 return( CAT_NAME_EXISTS_AS_COLLECTION);
@@ -6937,7 +6937,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=objIdString;
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 11");
       status =  cmlExecuteNoAnswerSql(
-  	           "update r_coll_main set coll_name = ?, parent_coll_name=? where coll_id = ?",
+  	           "update R_COLL_MAIN set coll_name = ?, parent_coll_name=? where coll_id = ?",
 		   &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -6965,7 +6965,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
       cllBindVars[cllBindVarCount++]=oldCollName;
       if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 12");
       status =  cmlExecuteNoAnswerSql(
-	             "update r_coll_main set parent_coll_name = ? || substr(parent_coll_name, ?), coll_name = ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name = ?",
+	             "update R_COLL_MAIN set parent_coll_name = ? || substr(parent_coll_name, ?), coll_name = ? || substr(coll_name, ?) where substr(parent_coll_name,1,?) = ? or parent_coll_name = ?",
 		     &icss);
       if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status = 0;
       if (status != 0) {
@@ -7000,7 +7000,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
    snprintf(objIdString, MAX_NAME_LEN, "%lld", objId);
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 13");
    status = cmlGetIntegerValueFromSql(
-	      "select coll_id from r_data_main where data_id=?",
+	      "select coll_id from R_DATA_MAIN where data_id=?",
 	      &otherDataId, objIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a data obj, must be permission error */
@@ -7009,7 +7009,7 @@ int chlMoveObject(rsComm_t *rsComm, rodsLong_t objId,
 
    if (logSQL) rodsLog(LOG_SQL, "chlMoveObject SQL 14");
    status = cmlGetIntegerValueFromSql(
-       "select coll_id from r_coll_main where coll_id=?",
+       "select coll_id from R_COLL_MAIN where coll_id=?",
        &otherDataId, objIdString, 0, 0, 0, 0, &icss);
    if (status == 0) {
       /* it IS a collection, must be permission error */
@@ -7041,7 +7041,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegToken SQL 1 ");
    status = cmlGetIntegerValueFromSql(
-              "select token_id from r_tokn_main where token_namespace=? and token_name=?",
+              "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
 	      &objId, "token_namespace", nameSpace, 0, 0, 0, &icss);
    if (status != 0) {
       snprintf(errMsg, 200, 
@@ -7053,7 +7053,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
 
    if (logSQL) rodsLog(LOG_SQL, "chlRegToken SQL 2");
    status = cmlGetIntegerValueFromSql(
-              "select token_id from r_tokn_main where token_namespace=? and token_name=?",
+              "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
 	      &objId, nameSpace, name, 0, 0, 0, &icss);
    if (status == 0) {
       snprintf(errMsg, 200, 
@@ -7093,7 +7093,7 @@ int chlRegToken(rsComm_t *rsComm, char *nameSpace, char *name, char *value,
    cllBindVars[cllBindVarCount++]=myTime;
    if (logSQL) rodsLog(LOG_SQL, "chlRegToken SQL 4");
    status =  cmlExecuteNoAnswerSql(
-	    "insert into r_tokn_main values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+	    "insert into R_TOKN_MAIN values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 	    &icss);
    if (status) {
       _rollback("chlRegToken");
@@ -7138,7 +7138,7 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
 
    if (logSQL) rodsLog(LOG_SQL, "chlDelToken SQL 1 ");
    status = cmlGetIntegerValueFromSql(
-                 "select token_id from r_tokn_main where token_namespace=? and token_name=?",
+                 "select token_id from R_TOKN_MAIN where token_namespace=? and token_name=?",
 		 &objId, nameSpace, name, 0, 0, 0, &icss);
    if (status != 0) {
       snprintf(errMsg, 200, 
@@ -7152,7 +7152,7 @@ int chlDelToken(rsComm_t *rsComm, char *nameSpace, char *name)
    cllBindVars[cllBindVarCount++]=nameSpace;
    cllBindVars[cllBindVarCount++]=name;
    status =  cmlExecuteNoAnswerSql(
-	         "delete from r_tokn_main where token_namespace=? and token_name=?",
+	         "delete from R_TOKN_MAIN where token_namespace=? and token_name=?",
 		 &icss);
    if (status) {
       _rollback("chlDelToken");
@@ -7392,14 +7392,14 @@ int setOverQuota(rsComm_t *rsComm) {
 
    /* For each defined group limit (if any), get a total usage on that
     * resource for all users in that group: */
-   char mySQL1[]="select sum(quota_usage), UM1.user_id, r_quota_usage.resc_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_main.resc_id = r_quota_usage.resc_id group by UM1.user_id, r_quota_usage.resc_id";
+   char mySQL1[]="select sum(quota_usage), UM1.user_id, R_QUOTA_USAGE.resc_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id group by UM1.user_id, R_QUOTA_USAGE.resc_id";
 
    /* For each defined group limit on total usage (if any), get a
     * total usage on any resource for all users in that group: */
-   char mySQL2a[]="select sum(quota_usage), r_quota_main.quota_limit, UM1.user_id from r_quota_usage, r_quota_main, r_user_main UM1, r_user_group, r_user_main UM2 where r_quota_main.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and r_user_group.group_user_id = UM1.user_id and UM2.user_id = r_user_group.user_id and r_quota_usage.user_id = UM2.user_id and r_quota_usage.resc_id != %s and r_quota_main.resc_id = %s group by UM1.user_id,  r_quota_main.quota_limit";
+   char mySQL2a[]="select sum(quota_usage), R_QUOTA_MAIN.quota_limit, UM1.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN, R_USER_MAIN UM1, R_USER_GROUP, R_USER_MAIN UM2 where R_QUOTA_MAIN.user_id = UM1.user_id and UM1.user_type_name = 'rodsgroup' and R_USER_GROUP.group_user_id = UM1.user_id and UM2.user_id = R_USER_GROUP.user_id and R_QUOTA_USAGE.user_id = UM2.user_id and R_QUOTA_USAGE.resc_id != %s and R_QUOTA_MAIN.resc_id = %s group by UM1.user_id,  R_QUOTA_MAIN.quota_limit";
    char mySQL2b[MAX_SQL_SIZE];
 
-   char mySQL3a[]="update r_quota_main set quota_over= %s - ?, modify_ts=? where user_id=? and %s - ? > quota_over";
+   char mySQL3a[]="update R_QUOTA_MAIN set quota_over= %s - ?, modify_ts=? where user_id=? and %s - ? > quota_over";
    char mySQL3b[MAX_SQL_SIZE];
 
 
@@ -7407,7 +7407,7 @@ int setOverQuota(rsComm_t *rsComm) {
       which is the negative of the limit.  */
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 1");
    status =  cmlExecuteNoAnswerSql(
-      "update r_quota_main set quota_over = -quota_limit", &icss);
+      "update R_QUOTA_MAIN set quota_over = -quota_limit", &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) return(0); /* no quotas, done */
    if (status) return(status);
 
@@ -7415,11 +7415,11 @@ int setOverQuota(rsComm_t *rsComm) {
    if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 2");
    status =  cmlExecuteNoAnswerSql(
 #if ORA_ICAT
-      "update r_quota_main set quota_over = (select r_quota_usage.quota_usage - r_quota_main.quota_limit from r_quota_usage, r_quota_main where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id) where exists (select 1 from r_quota_usage, r_quota_main where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id)",
+      "update R_QUOTA_MAIN set quota_over = (select R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id) where exists (select 1 from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id)",
 #elif MY_ICAT
-      "update r_quota_main, r_quota_usage set r_quota_main.quota_over = r_quota_usage.quota_usage - r_quota_main.quota_limit where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
+      "update R_QUOTA_MAIN, R_QUOTA_USAGE set R_QUOTA_MAIN.quota_over = R_QUOTA_USAGE.quota_usage - R_QUOTA_MAIN.quota_limit where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id",
 #else
-      "update r_quota_main set quota_over = quota_usage - quota_limit from r_quota_usage where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = r_quota_usage.resc_id",
+      "update R_QUOTA_MAIN set quota_over = quota_usage - quota_limit from R_QUOTA_USAGE where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = R_QUOTA_USAGE.resc_id",
 #endif
       &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* none */
@@ -7434,7 +7434,7 @@ int setOverQuota(rsComm_t *rsComm) {
    for (rowsFound=0;;rowsFound++) {
       int status2;
       if (rowsFound==0) {
-	 status = cmlGetFirstRowFromSql("select sum(quota_usage), r_quota_main.user_id from r_quota_usage, r_quota_main where r_quota_main.user_id = r_quota_usage.user_id and r_quota_main.resc_id = '0' group by r_quota_main.user_id",
+	 status = cmlGetFirstRowFromSql("select sum(quota_usage), R_QUOTA_MAIN.user_id from R_QUOTA_USAGE, R_QUOTA_MAIN where R_QUOTA_MAIN.user_id = R_QUOTA_USAGE.user_id and R_QUOTA_MAIN.resc_id = '0' group by R_QUOTA_MAIN.user_id",
 					&statementNum, 0, &icss);
       }
       else {
@@ -7446,7 +7446,7 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[1];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
       if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 4");
-      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over and resc_id='0'",
+      status2 = cmlExecuteNoAnswerSql("update R_QUOTA_MAIN set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over and resc_id='0'",
 				      &icss);
       if (status2 == CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
       if (status2) return(status2);
@@ -7470,7 +7470,7 @@ int setOverQuota(rsComm_t *rsComm) {
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[0];
       cllBindVars[cllBindVarCount++]=icss.stmtPtr[statementNum]->resultValue[2];
       if (logSQL) rodsLog(LOG_SQL, "setOverQuota SQL 6");
-      status2 = cmlExecuteNoAnswerSql("update r_quota_main set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over and r_quota_main.resc_id=?",
+      status2 = cmlExecuteNoAnswerSql("update R_QUOTA_MAIN set quota_over=?-quota_limit, modify_ts=? where user_id=? and ?-quota_limit > quota_over and R_QUOTA_MAIN.resc_id=?",
 				      &icss);
       if (status2 == CAT_SUCCESS_BUT_WITH_NO_INFO) status2=0;
       if (status2) return(status2);
@@ -7523,7 +7523,7 @@ int setOverQuota(rsComm_t *rsComm) {
 
 /* To simplify the query, if either of the above group operations
    found some over_quota, will probably want to update and insert rows
-   for each user into r_quota_main.  For now tho, this is not done and
+   for each user into R_QUOTA_MAIN.  For now tho, this is not done and
    perhaps shouldn't be, to keep it a little less complicated. */
 
    return(status);
@@ -7545,21 +7545,21 @@ int chlCalcUsageAndQuota(rsComm_t *rsComm) {
 
    getNowStr(myTime);
 
-   /* Delete the old rows from r_quota_usage */
+   /* Delete the old rows from R_QUOTA_USAGE */
    if (logSQL) rodsLog(LOG_SQL, "chlCalcUsageAndQuota SQL 1");
    cllBindVars[cllBindVarCount++]=myTime;
    status =  cmlExecuteNoAnswerSql(
-      "delete from r_quota_usage where modify_ts < ?", &icss);
+      "delete from R_QUOTA_USAGE where modify_ts < ?", &icss);
    if (status !=0 && status !=CAT_SUCCESS_BUT_WITH_NO_INFO) {
       _rollback("chlCalcUsageAndQuota");
       return(status);
    }
 
-   /* Add a row to r_quota_usage for each user's usage on each resource */
+   /* Add a row to R_QUOTA_USAGE for each user's usage on each resource */
    if (logSQL) rodsLog(LOG_SQL, "chlCalcUsageAndQuota SQL 2");
    cllBindVars[cllBindVarCount++]=myTime;
    status =  cmlExecuteNoAnswerSql(
-      "insert into r_quota_usage (quota_usage, resc_id, user_id, modify_ts) (select sum(r_data_main.data_size), r_resc_main.resc_id, r_user_main.user_id, ? from r_data_main, r_user_main, r_resc_main where r_user_main.user_name = r_data_main.data_owner_name and r_user_main.zone_name = r_data_main.data_owner_zone and r_resc_main.resc_name = r_data_main.resc_name group by r_resc_main.resc_id, user_id)",
+      "insert into R_QUOTA_USAGE (quota_usage, resc_id, user_id, modify_ts) (select sum(R_DATA_MAIN.data_size), R_RESC_MAIN.resc_id, R_USER_MAIN.user_id, ? from R_DATA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_name = R_DATA_MAIN.data_owner_name and R_USER_MAIN.zone_name = R_DATA_MAIN.data_owner_zone and R_RESC_MAIN.resc_name = R_DATA_MAIN.resc_name group by R_RESC_MAIN.resc_id, user_id)",
       &icss);
    if (status == CAT_SUCCESS_BUT_WITH_NO_INFO) status=0; /* no files, OK */
    if (status) {
@@ -7602,7 +7602,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
    if (strncmp(rescName,"total",5)!=0) { 
       if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 1");
       status = cmlGetIntegerValueFromSql(
-	 "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+	 "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
 	 &rescId, rescName, localZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);
@@ -7621,7 +7621,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
       userId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 2");
       status = cmlGetIntegerValueFromSql(
-	 "select user_id from r_user_main where user_name=? and zone_name=?",
+	 "select user_id from R_USER_MAIN where user_name=? and zone_name=?",
 	 &userId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_USER);
@@ -7633,7 +7633,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
       userId=0;
       if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 3");
       status = cmlGetIntegerValueFromSql(
-	 "select user_id from r_user_main where user_name=? and zone_name=? and user_type_name='rodsgroup'",
+	 "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='rodsgroup'",
 	 &userId, userName, userZone, 0, 0, 0, &icss);
       if (status != 0) {
 	 if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_GROUP);
@@ -7650,7 +7650,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
    cllBindVars[cllBindVarCount++]=rescIdStr;
    if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 4");
    status =  cmlExecuteNoAnswerSql(
-      "delete from r_quota_main where user_id=? and resc_id=?",
+      "delete from R_QUOTA_MAIN where user_id=? and resc_id=?",
       &icss);
    if (status != 0) {
       rodsLog(LOG_DEBUG,
@@ -7665,7 +7665,7 @@ int chlSetQuota(rsComm_t *rsComm, char *type, char *name,
       cllBindVars[cllBindVarCount++]=myTime;
       if (logSQL) rodsLog(LOG_SQL, "chlSetQuota SQL 5");
       status =  cmlExecuteNoAnswerSql(
-	 "insert into r_quota_main (user_id, resc_id, quota_limit, modify_ts) values (?, ?, ?, ?)",
+	 "insert into R_QUOTA_MAIN (user_id, resc_id, quota_limit, modify_ts) values (?, ?, ?, ?)",
 	 &icss);
       if (status != 0) {
 	 rodsLog(LOG_NOTICE,
@@ -7705,7 +7705,7 @@ chlCheckQuota(rsComm_t *rsComm, char *userName, char *rescName,
    int status;
    int statementNum;
 
-   char mySQL[]="select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
+   char mySQL[]="select distinct QM.user_id, QM.resc_id, QM.quota_limit, QM.quota_over from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id and RM.resc_name = ?) or QM.resc_id = '0') order by quota_over desc";
 
    *userQuota = 0;
    if (logSQL) rodsLog(LOG_SQL, "chlCheckQuota SQL 1");
@@ -7932,7 +7932,7 @@ icatCheckResc(char *rescName) {
    rescId=0;
    if (logSQL) rodsLog(LOG_SQL, "icatCheckResc SQxL 1");
    status = cmlGetIntegerValueFromSql(
-      "select resc_id from r_resc_main where resc_name=? and zone_name=?",
+      "select resc_id from R_RESC_MAIN where resc_name=? and zone_name=?",
       &rescId, rescName, localZone, 0, 0, 0, &icss);
    if (status != 0) {
       if (status==CAT_NO_ROWS_FOUND) return(CAT_INVALID_RESOURCE);

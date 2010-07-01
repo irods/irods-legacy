@@ -407,7 +407,7 @@ char **argv;
 		v_owner = convertUser(ixFTL[g_data_owner_ix],
 				      v_owner_domain);
 
-		wval = fprintf(FO, "insert into r_data_main (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((%s), (select coll_id from r_coll_main where coll_name ='%s'), '%s', '%s', ' ', '%s', '%s', '%s', '%s', '%s', '%s', '1', '%s', '%s');\n",
+		wval = fprintf(FO, "insert into R_DATA_MAIN (data_id, coll_id, data_name, data_repl_num, data_version, data_type_name, data_size, resc_name, data_path, data_owner_name, data_owner_zone, data_is_dirty, create_ts, modify_ts) values ((%s), (select coll_id from R_COLL_MAIN where coll_name ='%s'), '%s', '%s', ' ', '%s', '%s', '%s', '%s', '%s', '%s', '1', '%s', '%s');\n",
 			       nextValStr,
 			       v_collection,
 			       ixFTL[g_data_name_ix],
@@ -423,7 +423,7 @@ char **argv;
 		   );
 
 		wval = fprintf(FO, 
-			       "insert into r_objt_access ( object_id, user_id, access_type_id , create_ts,  modify_ts) values ( (%s), (select user_id from r_user_main where user_name = '%s'), '1200', '%s', '%s');\n",
+			       "insert into R_OBJT_ACCESS ( object_id, user_id, access_type_id , create_ts,  modify_ts) values ( (%s), (select user_id from R_USER_MAIN where user_name = '%s'), '1200', '%s', '%s');\n",
 			       currValStr,
 			       v_owner,
 			       nowTime,

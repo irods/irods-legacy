@@ -680,14 +680,14 @@ handleMultiDataAVUConditions(int nConditions) {
    for (i=2;i<=nConditions;i++) {
       char newStr[100];
       snprintf(newStr, sizeof newStr,
-       ", r_objt_metamap r_data_metamap%d, r_meta_main r_data_meta_mn%2.2d ", 
+       ", R_OBJT_METAMAP r_data_metamap%d, R_META_MAIN r_data_meta_mn%2.2d ", 
 	       i, i);
       rstrcat(fromSQL, newStr, MAX_SQL_SIZE);
    }
 
    /* In the whereSQL, add items for 
       r_data_metamapNN.meta_id = r_data_meta_maNN.meta_id  and
-      r_data_main.data_id = r_data_metamap2.object_id
+      R_DATA_MAIN.data_id = r_data_metamap2.object_id
    */
    for (i=2;i<=nConditions;i++) {
       char newStr[100];
@@ -695,7 +695,7 @@ handleMultiDataAVUConditions(int nConditions) {
        " AND r_data_metamap%d.meta_id = r_data_meta_mn%2.2d.meta_id", i, i);
       rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
       snprintf(newStr, sizeof newStr,
-	       " AND r_data_main.data_id = r_data_metamap%d.object_id ", i);
+	       " AND R_DATA_MAIN.data_id = r_data_metamap%d.object_id ", i);
       rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
    }
 
@@ -1049,7 +1049,7 @@ insertWhere(char *condition, int option) {
 /* 
  Only used if requested by msiAclPolicy (acAclPolicy rule) (which
  normally isn't) or if the user is anonymous.  This restricts
- r_data_main anc r_coll_main info to only users with access.
+ R_DATA_MAIN anc R_COLL_MAIN info to only users with access.
  If client user is the local admin, do not restrict.
  */
 int
@@ -1080,22 +1080,22 @@ genqAppendAccessCheck() {
 
    if (ACDebug)  printf("genqAC 4\n");
 
-   /* if an item in r_data_main is being accessed, add a
+   /* if an item in R_DATA_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
-   if (strstr(selectSQL, "r_data_main") != NULL) {
+   if (strstr(selectSQL, "R_DATA_MAIN") != NULL) {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
       cllBindVars[cllBindVarCount++]=accessControlUserName;
       cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "r_data_main.data_id in (select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = r_data_main.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "R_DATA_MAIN.data_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and UG.group_user_id = OA.user_id and OA.object_id = R_DATA_MAIN.data_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
    }
 
-   /* if an item in r_coll_main is being accessed, add a
+   /* if an item in R_COLL_MAIN is being accessed, add a
       (complicated) addition to the where clause to check access */
-   if (strstr(selectSQL, "r_coll_main") != NULL) {
+   if (strstr(selectSQL, "R_COLL_MAIN") != NULL) {
       if (strlen(whereSQL)>6) rstrcat(whereSQL, " AND ", MAX_SQL_SIZE);
       cllBindVars[cllBindVarCount++]=accessControlUserName;
       cllBindVars[cllBindVarCount++]=accessControlZone;
-      rstrcat(whereSQL, "r_coll_main.coll_id in (select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = r_coll_main.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
+      rstrcat(whereSQL, "R_COLL_MAIN.coll_id in (select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = R_COLL_MAIN.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = 'read object')", MAX_SQL_SIZE);
    }
    return(0);
 }
@@ -1131,9 +1131,9 @@ generateSpecialQuery(genQueryInp_t genQueryInp, char *resultingSQL) {
    static char rescName[LONG_NAME_LEN];
    static char userName[NAME_LEN]="";
    static char userZone[NAME_LEN]="";
-   char quotaQuery1[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') order by quota_over desc";
+   char quotaQuery1[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name = ?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') order by quota_over desc";
 
-   char quotaQuery2[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from r_quota_main QM, r_user_main UM, r_resc_main RM, r_user_group UG, r_user_main UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name=?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') and RM.resc_name = ? order by quota_over desc";
+   char quotaQuery2[]="select distinct QM.user_id, RM.resc_name, QM.quota_limit, QM.quota_over, QM.resc_id from R_QUOTA_MAIN QM, R_USER_MAIN UM, R_RESC_MAIN RM, R_USER_GROUP UG, R_USER_MAIN UM2 where ( (QM.user_id = UM.user_id and UM.user_name = ? and UM.zone_name=?) or (QM.user_id = UG.group_user_id and UM2.user_name = ? and UM2.zone_name = ? and UG.user_id = UM2.user_id) ) and ((QM.resc_id = RM.resc_id) or QM.resc_id = '0') and RM.resc_name = ? order by quota_over desc";
    int i, valid=0;
 
    for (i=0; i<genQueryInp.sqlCondInp.len;i++) {

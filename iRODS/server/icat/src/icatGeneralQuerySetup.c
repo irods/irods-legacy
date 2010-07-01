@@ -42,143 +42,143 @@ icatGeneralQuerySetup() {
 #endif
   sTableInit();   /* initialize */
 
-  sTable( "r_user_password",  "r_user_password", 0);
-  sTable( "r_user_session_key",  "r_user_session_key", 0);
-  sTable( "r_tokn_main",  "r_tokn_main", 0);
-  sTable( "r_resc_group",  "r_resc_group", 0);
-  sTable( "r_zone_main",  "r_zone_main", 0);
-  sTable( "r_resc_main",  "r_resc_main", 0);
-  sTable( "r_coll_main",  "r_coll_main", 0);
-  sTable( "r_data_main",  "r_data_main", 0);
+  sTable( "R_USER_PASSWORD",  "R_USER_PASSWORD", 0);
+  sTable( "R_USER_SESSION_KEY",  "R_USER_SESSION_KEY", 0);
+  sTable( "R_TOKN_MAIN",  "R_TOKN_MAIN", 0);
+  sTable( "R_RESC_GROUP",  "R_RESC_GROUP", 0);
+  sTable( "R_ZONE_MAIN",  "R_ZONE_MAIN", 0);
+  sTable( "R_RESC_MAIN",  "R_RESC_MAIN", 0);
+  sTable( "R_COLL_MAIN",  "R_COLL_MAIN", 0);
+  sTable( "R_DATA_MAIN",  "R_DATA_MAIN", 0);
 
-  sTable( "r_met2_main", "r_meta_main r_met2_main" ,0);
-  sTable( "r_meta_main", "r_meta_main" , 0);
+  sTable( "r_met2_main", "R_META_MAIN r_met2_main" ,0);
+  sTable( "R_META_MAIN", "R_META_MAIN" , 0);
 
-  sTable( "r_rule_main",  "r_rule_main", 0);
-  sTable( "r_user_main",  "r_user_main", 0);
-  sTable( "r_resc_access", "r_objt_access r_resc_access", 0);
-  sTable( "r_coll_access", "r_objt_access r_coll_access", 0);
-  sTable( "r_data_access", "r_objt_access r_data_access", 0);
-  sTable( "r_met2_access", "r_objt_access r_met2_access", 0);
-  sTable( "r_rule_access", "r_objt_access r_rule_access", 0);
-  sTable( "r_resc_audit", "r_objt_audit r_resc_audit", 0);
-  sTable( "r_coll_audit", "r_objt_audit r_coll_audit", 0);
-  sTable( "r_data_audit", "r_objt_audit r_data_audit", 0);
-  sTable( "r_met2_audit", "r_objt_audit r_met2_audit", 0);
-  sTable( "r_rule_audit", "r_objt_audit r_rule_audit", 0);
-  sTable( "r_resc_deny_access", "r_objt_deny_access r_resc_deny_access", 0);
-  sTable( "r_coll_deny_access", "r_objt_deny_access r_coll_deny_access", 0);
-  sTable( "r_data_deny_access", "r_objt_deny_access r_data_deny_access", 0);
-  sTable( "r_met2_deny_access", "r_objt_deny_access r_met2_deny_access", 0);
-  sTable( "r_rule_deny_access", "r_objt_deny_access r_rule_deny_access", 0);
-  sTable( "r_resc_metamap", "r_objt_metamap r_resc_metamap", 0);
-  sTable( "r_resc_grp_metamap", "r_objt_metamap r_resc_grp_metamap", 0);
-  sTable( "r_coll_metamap", "r_objt_metamap r_coll_metamap", 0);
-  sTable( "r_data_metamap", "r_objt_metamap r_data_metamap", 0);
-  sTable( "r_met2_metamap", "r_objt_metamap r_met2_metamap", 0);
-  sTable( "r_rule_metamap", "r_objt_metamap r_rule_metamap", 0);
-  sTable( "r_user_metamap", "r_objt_metamap r_user_metamap", 0);
-  sTable( "r_resc_user_group", "r_user_group r_resc_user_group", 0);
-  sTable( "r_coll_user_group", "r_user_group r_coll_user_group", 0);
-  sTable( "r_data_user_group", "r_user_group r_data_user_group", 0);
-  sTable( "r_met2_user_group", "r_user_group r_met2_user_group", 0);
-  sTable( "r_rule_user_group", "r_user_group r_rule_user_group", 0);
-  sTable( "r_resc_da_user_group", "r_user_group r_resc_da_user_group", 0);
-  sTable( "r_coll_da_user_group", "r_user_group r_coll_da_user_group", 0);
-  sTable( "r_data_da_user_group", "r_user_group r_data_da_user_group", 0);
-  sTable( "r_met2_da_user_group", "r_user_group r_met2_da_user_group", 0);
-  sTable( "r_rule_da_user_group", "r_user_group r_rule_da_user_group", 0);
+  sTable( "R_RULE_MAIN",  "R_RULE_MAIN", 0);
+  sTable( "R_USER_MAIN",  "R_USER_MAIN", 0);
+  sTable( "r_resc_access", "R_OBJT_ACCESS r_resc_access", 0);
+  sTable( "r_coll_access", "R_OBJT_ACCESS r_coll_access", 0);
+  sTable( "r_data_access", "R_OBJT_ACCESS r_data_access", 0);
+  sTable( "r_met2_access", "R_OBJT_ACCESS r_met2_access", 0);
+  sTable( "r_rule_access", "R_OBJT_ACCESS r_rule_access", 0);
+  sTable( "r_resc_audit", "R_OBJT_AUDIT r_resc_audit", 0);
+  sTable( "r_coll_audit", "R_OBJT_AUDIT r_coll_audit", 0);
+  sTable( "r_data_audit", "R_OBJT_AUDIT r_data_audit", 0);
+  sTable( "r_met2_audit", "R_OBJT_AUDIT r_met2_audit", 0);
+  sTable( "r_rule_audit", "R_OBJT_AUDIT r_rule_audit", 0);
+  sTable( "r_resc_deny_access", "R_OBJT_DENY_ACCESS r_resc_deny_access", 0);
+  sTable( "r_coll_deny_access", "R_OBJT_DENY_ACCESS r_coll_deny_access", 0);
+  sTable( "r_data_deny_access", "R_OBJT_DENY_ACCESS r_data_deny_access", 0);
+  sTable( "r_met2_deny_access", "R_OBJT_DENY_ACCESS r_met2_deny_access", 0);
+  sTable( "r_rule_deny_access", "R_OBJT_DENY_ACCESS r_rule_deny_access", 0);
+  sTable( "r_resc_metamap", "R_OBJT_METAMAP r_resc_metamap", 0);
+  sTable( "r_resc_grp_metamap", "R_OBJT_METAMAP r_resc_grp_metamap", 0);
+  sTable( "r_coll_metamap", "R_OBJT_METAMAP r_coll_metamap", 0);
+  sTable( "r_data_metamap", "R_OBJT_METAMAP r_data_metamap", 0);
+  sTable( "r_met2_metamap", "R_OBJT_METAMAP r_met2_metamap", 0);
+  sTable( "r_rule_metamap", "R_OBJT_METAMAP r_rule_metamap", 0);
+  sTable( "r_user_metamap", "R_OBJT_METAMAP r_user_metamap", 0);
+  sTable( "r_resc_user_group", "R_USER_GROUP r_resc_user_group", 0);
+  sTable( "r_coll_user_group", "R_USER_GROUP r_coll_user_group", 0);
+  sTable( "r_data_user_group", "R_USER_GROUP r_data_user_group", 0);
+  sTable( "r_met2_user_group", "R_USER_GROUP r_met2_user_group", 0);
+  sTable( "r_rule_user_group", "R_USER_GROUP r_rule_user_group", 0);
+  sTable( "r_resc_da_user_group", "R_USER_GROUP r_resc_da_user_group", 0);
+  sTable( "r_coll_da_user_group", "R_USER_GROUP r_coll_da_user_group", 0);
+  sTable( "r_data_da_user_group", "R_USER_GROUP r_data_da_user_group", 0);
+  sTable( "r_met2_da_user_group", "R_USER_GROUP r_met2_da_user_group", 0);
+  sTable( "r_rule_da_user_group", "R_USER_GROUP r_rule_da_user_group", 0);
 
-  sTable( "r_resc_au_user_group", "r_user_group r_resc_au_user_group", 0);
-  sTable( "r_coll_au_user_group", "r_user_group r_coll_au_user_group", 0);
-  sTable( "r_data_au_user_group", "r_user_group r_data_au_user_group", 0);
-  sTable( "r_met2_au_user_group", "r_user_group r_met2_au_user_group", 0);
-  sTable( "r_rule_au_user_group", "r_user_group r_rule_au_user_group", 0);
-  sTable( "r_resc_user_main", "r_user_main r_resc_user_main", 0);
-  sTable( "r_coll_user_main", "r_user_main r_coll_user_main", 0);
-  sTable( "r_data_user_main", "r_user_main r_data_user_main", 0);
-  sTable( "r_met2_user_main", "r_user_main r_met2_user_main", 0);
-  sTable( "r_rule_user_main", "r_user_main r_rule_user_main", 0);
-  sTable( "r_resc_da_user_main", "r_user_main r_resc_da_user_main", 0);
-  sTable( "r_coll_da_user_main", "r_user_main r_coll_da_user_main", 0);
-  sTable( "r_data_da_user_main", "r_user_main r_data_da_user_main", 0);
-  sTable( "r_met2_da_user_main", "r_user_main r_met2_da_user_main", 0);
-  sTable( "r_rule_da_user_main", "r_user_main r_rule_da_user_main", 0);
-  sTable( "r_resc_au_user_main", "r_user_main r_resc_au_user_main", 0);
-  sTable( "r_coll_au_user_main", "r_user_main r_coll_au_user_main", 0);
-  sTable( "r_data_au_user_main", "r_user_main r_data_au_user_main", 0);
-  sTable( "r_met2_au_user_main", "r_user_main r_met2_au_user_main", 0);
-  sTable( "r_rule_au_user_main", "r_user_main r_rule_au_user_main", 0);
+  sTable( "r_resc_au_user_group", "R_USER_GROUP r_resc_au_user_group", 0);
+  sTable( "r_coll_au_user_group", "R_USER_GROUP r_coll_au_user_group", 0);
+  sTable( "r_data_au_user_group", "R_USER_GROUP r_data_au_user_group", 0);
+  sTable( "r_met2_au_user_group", "R_USER_GROUP r_met2_au_user_group", 0);
+  sTable( "r_rule_au_user_group", "R_USER_GROUP r_rule_au_user_group", 0);
+  sTable( "r_resc_user_main", "R_USER_MAIN r_resc_user_main", 0);
+  sTable( "r_coll_user_main", "R_USER_MAIN r_coll_user_main", 0);
+  sTable( "r_data_user_main", "R_USER_MAIN r_data_user_main", 0);
+  sTable( "r_met2_user_main", "R_USER_MAIN r_met2_user_main", 0);
+  sTable( "r_rule_user_main", "R_USER_MAIN r_rule_user_main", 0);
+  sTable( "r_resc_da_user_main", "R_USER_MAIN r_resc_da_user_main", 0);
+  sTable( "r_coll_da_user_main", "R_USER_MAIN r_coll_da_user_main", 0);
+  sTable( "r_data_da_user_main", "R_USER_MAIN r_data_da_user_main", 0);
+  sTable( "r_met2_da_user_main", "R_USER_MAIN r_met2_da_user_main", 0);
+  sTable( "r_rule_da_user_main", "R_USER_MAIN r_rule_da_user_main", 0);
+  sTable( "r_resc_au_user_main", "R_USER_MAIN r_resc_au_user_main", 0);
+  sTable( "r_coll_au_user_main", "R_USER_MAIN r_coll_au_user_main", 0);
+  sTable( "r_data_au_user_main", "R_USER_MAIN r_data_au_user_main", 0);
+  sTable( "r_met2_au_user_main", "R_USER_MAIN r_met2_au_user_main", 0);
+  sTable( "r_rule_au_user_main", "R_USER_MAIN r_rule_au_user_main", 0);
 
-  sTable( "r_quota_user_main", "r_user_main r_quota_user_main", 1); 
-  sTable( "r_quota_user_group", "r_user_main r_quota_user_group", 1);
-  sTable( "r_quota_resc_main", "r_resc_main r_quota_resc_main", 1);
+  sTable( "r_quota_user_main", "R_USER_MAIN r_quota_user_main", 1); 
+  sTable( "r_quota_user_group", "R_USER_MAIN r_quota_user_group", 1);
+  sTable( "r_quota_resc_main", "R_RESC_MAIN r_quota_resc_main", 1);
 
-  sTable( "r_resc_tokn_accs", "r_tokn_main r_resc_tokn_accs", 0);
-  sTable( "r_coll_tokn_accs", "r_tokn_main r_coll_tokn_accs", 0);
-  sTable( "r_data_tokn_accs", "r_tokn_main r_data_tokn_accs", 0);
+  sTable( "r_resc_tokn_accs", "R_TOKN_MAIN r_resc_tokn_accs", 0);
+  sTable( "r_coll_tokn_accs", "R_TOKN_MAIN r_coll_tokn_accs", 0);
+  sTable( "r_data_tokn_accs", "R_TOKN_MAIN r_data_tokn_accs", 0);
 
-  sTable( "r_rule_tokn_accs", "r_tokn_main r_rule_tokn_accs", 0);
-  sTable( "r_met2_tokn_accs", "r_tokn_main r_met2_tokn_accs", 0);
-  sTable( "r_resc_tokn_deny_accs", "r_tokn_main r_resc_tokn_deny_accs", 0);
-  sTable( "r_coll_tokn_deny_accs", "r_tokn_main r_coll_tokn_deny_accs", 0);
-  sTable( "r_data_tokn_deny_accs", "r_tokn_main r_data_tokn_deny_accs", 0);
-  sTable( "r_rule_tokn_deny_accs", "r_tokn_main r_rule_tokn_deny_accs", 0);
-  sTable( "r_met2_tokn_deny_accs", "r_tokn_main r_met2_tokn_deny_accs", 0);
-  sTable( "r_resc_tokn_audit", "r_tokn_main r_resc_tokn_audit", 0);
-  sTable( "r_coll_tokn_audit", "r_tokn_main r_coll_tokn_audit", 0);
-  sTable( "r_data_tokn_audit", "r_tokn_main r_data_tokn_audit", 0);
-  sTable( "r_rule_tokn_audit", "r_tokn_main r_rule_tokn_audit", 0);
-  sTable( "r_met2_tokn_audit", "r_tokn_main r_met2_tokn_audit", 0);
-  sTable( "r_resc_meta_main", "r_meta_main r_resc_meta_main", 0);
-  sTable( "r_resc_grp_meta_main", "r_meta_main r_resc_grp_meta_main", 0);
-  sTable( "r_coll_meta_main", "r_meta_main r_coll_meta_main", 0);
-  sTable( "r_data_meta_main", "r_meta_main r_data_meta_main", 0);
-  sTable( "r_rule_meta_main", "r_meta_main r_rule_meta_main", 0);
-  sTable( "r_user_meta_main", "r_meta_main r_user_meta_main", 0);
-  sTable( "r_met2_meta_main", "r_meta_main r_met2_meta_main", 0);
+  sTable( "r_rule_tokn_accs", "R_TOKN_MAIN r_rule_tokn_accs", 0);
+  sTable( "r_met2_tokn_accs", "R_TOKN_MAIN r_met2_tokn_accs", 0);
+  sTable( "r_resc_tokn_deny_accs", "R_TOKN_MAIN r_resc_tokn_deny_accs", 0);
+  sTable( "r_coll_tokn_deny_accs", "R_TOKN_MAIN r_coll_tokn_deny_accs", 0);
+  sTable( "r_data_tokn_deny_accs", "R_TOKN_MAIN r_data_tokn_deny_accs", 0);
+  sTable( "r_rule_tokn_deny_accs", "R_TOKN_MAIN r_rule_tokn_deny_accs", 0);
+  sTable( "r_met2_tokn_deny_accs", "R_TOKN_MAIN r_met2_tokn_deny_accs", 0);
+  sTable( "r_resc_tokn_audit", "R_TOKN_MAIN r_resc_tokn_audit", 0);
+  sTable( "r_coll_tokn_audit", "R_TOKN_MAIN r_coll_tokn_audit", 0);
+  sTable( "r_data_tokn_audit", "R_TOKN_MAIN r_data_tokn_audit", 0);
+  sTable( "r_rule_tokn_audit", "R_TOKN_MAIN r_rule_tokn_audit", 0);
+  sTable( "r_met2_tokn_audit", "R_TOKN_MAIN r_met2_tokn_audit", 0);
+  sTable( "r_resc_meta_main", "R_META_MAIN r_resc_meta_main", 0);
+  sTable( "r_resc_grp_meta_main", "R_META_MAIN r_resc_grp_meta_main", 0);
+  sTable( "r_coll_meta_main", "R_META_MAIN r_coll_meta_main", 0);
+  sTable( "r_data_meta_main", "R_META_MAIN r_data_meta_main", 0);
+  sTable( "r_rule_meta_main", "R_META_MAIN r_rule_meta_main", 0);
+  sTable( "r_useR_META_MAIN", "R_META_MAIN r_useR_META_MAIN", 0);
+  sTable( "r_met2_meta_main", "R_META_MAIN r_met2_meta_main", 0);
 
-  sTable( "r_user_group",  "r_user_group", 0);
-  sTable( "r_group_main", "r_user_main r_group_main", 0);
+  sTable( "R_USER_GROUP",  "R_USER_GROUP", 0);
+  sTable( "r_group_main", "R_USER_MAIN r_group_main", 0);
 
-  sTable( "r_rule_exec", "r_rule_exec", 0);
+  sTable( "R_RULE_EXEC", "R_RULE_EXEC", 0);
 
-  sTable( "r_objt_audit", "r_objt_audit", 0);
+  sTable( "R_OBJT_AUDIT", "R_OBJT_AUDIT", 0);
 
-  sTable( "r_server_load", "r_server_load", 0);
+  sTable( "R_SERVER_LOAD", "R_SERVER_LOAD", 0);
 
-  sTable( "r_server_load_digest", "r_server_load_digest", 0);
+  sTable( "R_SERVER_LOAD_DIGEST", "R_SERVER_LOAD_DIGEST", 0);
 
-  sTable( "r_user_auth", "r_user_auth", 0);
+  sTable( "R_USER_AUTH", "R_USER_AUTH", 0);
 
-  sTable( "r_rule_base_map", "r_rule_base_map", 0);
+  sTable( "R_RULE_BASE_MAP", "R_RULE_BASE_MAP", 0);
   sTable( "r_rule_dvm",  "r_rule_dvm", 0);
   sTable( "r_rule_fnm",  "r_rule_fnm", 0);
 
-  sTable( "r_quota_main", "r_quota_main", 0);
-  sTable( "r_quota_usage", "r_quota_usage", 0);
+  sTable( "R_QUOTA_MAIN", "R_QUOTA_MAIN", 0);
+  sTable( "R_QUOTA_USAGE", "R_QUOTA_USAGE", 0);
 
   /* Map the #define values to tables and columns */
 
-  sColumn( COL_ZONE_ID, "r_zone_main", "zone_id");
-  sColumn( COL_ZONE_NAME, "r_zone_main", "zone_name");
-  sColumn( COL_ZONE_TYPE, "r_zone_main", "zone_type_name");
-  sColumn( COL_ZONE_CONNECTION, "r_zone_main", "zone_conn_string");
-  sColumn( COL_ZONE_COMMENT, "r_zone_main", "r_comment");
-  sColumn( COL_ZONE_CREATE_TIME, "r_zone_main", "create_ts");
-  sColumn( COL_ZONE_MODIFY_TIME, "r_zone_main", "modify_ts");
+  sColumn( COL_ZONE_ID, "R_ZONE_MAIN", "zone_id");
+  sColumn( COL_ZONE_NAME, "R_ZONE_MAIN", "zone_name");
+  sColumn( COL_ZONE_TYPE, "R_ZONE_MAIN", "zone_type_name");
+  sColumn( COL_ZONE_CONNECTION, "R_ZONE_MAIN", "zone_conn_string");
+  sColumn( COL_ZONE_COMMENT, "R_ZONE_MAIN", "r_comment");
+  sColumn( COL_ZONE_CREATE_TIME, "R_ZONE_MAIN", "create_ts");
+  sColumn( COL_ZONE_MODIFY_TIME, "R_ZONE_MAIN", "modify_ts");
 
-  sColumn( COL_USER_ID,   "r_user_main", "user_id");
-  sColumn( COL_USER_NAME, "r_user_main", "user_name");
-  sColumn( COL_USER_TYPE, "r_user_main", "user_type_name");
-  sColumn( COL_USER_ZONE, "r_user_main", "zone_name");
-  sColumn( COL_USER_INFO, "r_user_main", "user_info");
-  sColumn( COL_USER_COMMENT,     "r_user_main", "r_comment");
-  sColumn( COL_USER_CREATE_TIME, "r_user_main", "create_ts");
-  sColumn( COL_USER_MODIFY_TIME, "r_user_main", "modify_ts");
+  sColumn( COL_USER_ID,   "R_USER_MAIN", "user_id");
+  sColumn( COL_USER_NAME, "R_USER_MAIN", "user_name");
+  sColumn( COL_USER_TYPE, "R_USER_MAIN", "user_type_name");
+  sColumn( COL_USER_ZONE, "R_USER_MAIN", "zone_name");
+  sColumn( COL_USER_INFO, "R_USER_MAIN", "user_info");
+  sColumn( COL_USER_COMMENT,     "R_USER_MAIN", "r_comment");
+  sColumn( COL_USER_CREATE_TIME, "R_USER_MAIN", "create_ts");
+  sColumn( COL_USER_MODIFY_TIME, "R_USER_MAIN", "modify_ts");
 
-  sColumn( COL_USER_AUTH_ID, "r_user_auth", "user_id");
-  sColumn( COL_USER_DN,   "r_user_auth", "user_auth_name");
+  sColumn( COL_USER_AUTH_ID, "R_USER_AUTH", "user_id");
+  sColumn( COL_USER_DN,   "R_USER_AUTH", "user_auth_name");
 
 /* The following is for backward compatibility for clients, such as
    the PHP client, that might be asking for the previous COL_USER_DN
@@ -187,45 +187,45 @@ icatGeneralQuerySetup() {
    (altho returning invalid info), we just map the old 205 request to
    the comment field.
 */
-  sColumn( COL_USER_DN_INVALID,"r_user_main", "r_comment"); /* compatibility */
+  sColumn( COL_USER_DN_INVALID,"R_USER_MAIN", "r_comment"); /* compatibility */
 
 
-  sColumn( COL_R_RESC_ID, "r_resc_main", "resc_id");
-  sColumn( COL_R_RESC_NAME, "r_resc_main", "resc_name");
-  sColumn( COL_R_ZONE_NAME, "r_resc_main", "zone_name");
-  sColumn( COL_R_TYPE_NAME, "r_resc_main", "resc_type_name");
-  sColumn( COL_R_CLASS_NAME, "r_resc_main", "resc_class_name");
-  sColumn( COL_R_LOC, "r_resc_main", "resc_net");
-  sColumn( COL_R_VAULT_PATH, "r_resc_main", "resc_def_path ");
-  sColumn( COL_R_FREE_SPACE, "r_resc_main", "free_space");
-  sColumn( COL_R_FREE_SPACE_TIME, "r_resc_main", "free_space_ts");
-  sColumn( COL_R_RESC_INFO, "r_resc_main", "resc_info");
-  sColumn( COL_R_RESC_COMMENT, "r_resc_main", "r_comment");
-  sColumn( COL_R_RESC_STATUS, "r_resc_main", "resc_status");
-  sColumn( COL_R_CREATE_TIME, "r_resc_main", "create_ts");
-  sColumn( COL_R_MODIFY_TIME, "r_resc_main", "modify_ts ");
+  sColumn( COL_R_RESC_ID, "R_RESC_MAIN", "resc_id");
+  sColumn( COL_R_RESC_NAME, "R_RESC_MAIN", "resc_name");
+  sColumn( COL_R_ZONE_NAME, "R_RESC_MAIN", "zone_name");
+  sColumn( COL_R_TYPE_NAME, "R_RESC_MAIN", "resc_type_name");
+  sColumn( COL_R_CLASS_NAME, "R_RESC_MAIN", "resc_class_name");
+  sColumn( COL_R_LOC, "R_RESC_MAIN", "resc_net");
+  sColumn( COL_R_VAULT_PATH, "R_RESC_MAIN", "resc_def_path ");
+  sColumn( COL_R_FREE_SPACE, "R_RESC_MAIN", "free_space");
+  sColumn( COL_R_FREE_SPACE_TIME, "R_RESC_MAIN", "free_space_ts");
+  sColumn( COL_R_RESC_INFO, "R_RESC_MAIN", "resc_info");
+  sColumn( COL_R_RESC_COMMENT, "R_RESC_MAIN", "r_comment");
+  sColumn( COL_R_RESC_STATUS, "R_RESC_MAIN", "resc_status");
+  sColumn( COL_R_CREATE_TIME, "R_RESC_MAIN", "create_ts");
+  sColumn( COL_R_MODIFY_TIME, "R_RESC_MAIN", "modify_ts ");
 
-  sColumn( COL_D_DATA_ID, "r_data_main", "data_id");
-  sColumn( COL_D_COLL_ID, "r_data_main", "coll_id");
-  sColumn( COL_DATA_NAME, "r_data_main", "data_name");
-  sColumn( COL_DATA_REPL_NUM, "r_data_main", "data_repl_num");
-  sColumn( COL_DATA_VERSION, "r_data_main", "data_version");
-  sColumn( COL_DATA_TYPE_NAME, "r_data_main", "data_type_name");
-  sColumn( COL_DATA_SIZE, "r_data_main", "data_size");
-  sColumn( COL_D_RESC_GROUP_NAME, "r_data_main", "resc_group_name");
-  sColumn( COL_D_RESC_NAME, "r_data_main", "resc_name");
-  sColumn( COL_D_DATA_PATH, "r_data_main", "data_path");
-  sColumn( COL_D_OWNER_NAME, "r_data_main", "data_owner_name");
-  sColumn( COL_D_OWNER_ZONE, "r_data_main", "data_owner_zone");
-  sColumn( COL_D_REPL_STATUS, "r_data_main", "data_is_dirty");
-  sColumn( COL_D_DATA_STATUS, "r_data_main", "data_status");
-  sColumn( COL_D_DATA_CHECKSUM, "r_data_main", "data_checksum");
-  sColumn( COL_D_EXPIRY, "r_data_main", "data_expiry_ts");
-  sColumn( COL_D_MAP_ID, "r_data_main", "data_map_id");
-  sColumn( COL_D_COMMENTS, "r_data_main", "r_comment");
-  sColumn( COL_D_CREATE_TIME, "r_data_main", "create_ts");
-  sColumn( COL_D_MODIFY_TIME, "r_data_main", "modify_ts");
-  sColumn( COL_DATA_MODE, "r_data_main", "data_mode");
+  sColumn( COL_D_DATA_ID, "R_DATA_MAIN", "data_id");
+  sColumn( COL_D_COLL_ID, "R_DATA_MAIN", "coll_id");
+  sColumn( COL_DATA_NAME, "R_DATA_MAIN", "data_name");
+  sColumn( COL_DATA_REPL_NUM, "R_DATA_MAIN", "data_repl_num");
+  sColumn( COL_DATA_VERSION, "R_DATA_MAIN", "data_version");
+  sColumn( COL_DATA_TYPE_NAME, "R_DATA_MAIN", "data_type_name");
+  sColumn( COL_DATA_SIZE, "R_DATA_MAIN", "data_size");
+  sColumn( COL_D_RESC_GROUP_NAME, "R_DATA_MAIN", "resc_group_name");
+  sColumn( COL_D_RESC_NAME, "R_DATA_MAIN", "resc_name");
+  sColumn( COL_D_DATA_PATH, "R_DATA_MAIN", "data_path");
+  sColumn( COL_D_OWNER_NAME, "R_DATA_MAIN", "data_owner_name");
+  sColumn( COL_D_OWNER_ZONE, "R_DATA_MAIN", "data_owner_zone");
+  sColumn( COL_D_REPL_STATUS, "R_DATA_MAIN", "data_is_dirty");
+  sColumn( COL_D_DATA_STATUS, "R_DATA_MAIN", "data_status");
+  sColumn( COL_D_DATA_CHECKSUM, "R_DATA_MAIN", "data_checksum");
+  sColumn( COL_D_EXPIRY, "R_DATA_MAIN", "data_expiry_ts");
+  sColumn( COL_D_MAP_ID, "R_DATA_MAIN", "data_map_id");
+  sColumn( COL_D_COMMENTS, "R_DATA_MAIN", "r_comment");
+  sColumn( COL_D_CREATE_TIME, "R_DATA_MAIN", "create_ts");
+  sColumn( COL_D_MODIFY_TIME, "R_DATA_MAIN", "modify_ts");
+  sColumn( COL_DATA_MODE, "R_DATA_MAIN", "data_mode");
 
 
   sColumn( COL_DATA_ACCESS_TYPE, "r_data_access", "access_type_id");
@@ -240,25 +240,25 @@ icatGeneralQuerySetup() {
   sColumn( COL_COLL_ACCESS_USER_ID, "r_coll_access", "user_id");
   sColumn( COL_COLL_ACCESS_COLL_ID, "r_coll_access", "object_id");
 
-  sColumn( COL_COLL_ID, "r_coll_main", "coll_id");
-  sColumn( COL_COLL_NAME, "r_coll_main", "coll_name");
-  sColumn( COL_COLL_PARENT_NAME, "r_coll_main", "parent_coll_name");
-  sColumn( COL_COLL_OWNER_NAME, "r_coll_main", "coll_owner_name");
-  sColumn( COL_COLL_OWNER_ZONE, "r_coll_main", "coll_owner_zone");
-  sColumn( COL_COLL_MAP_ID, "r_coll_main", "coll_map_id");
-  sColumn( COL_COLL_INHERITANCE, "r_coll_main", "coll_inheritance");
-  sColumn( COL_COLL_COMMENTS, "r_coll_main", "r_comment");
-  sColumn( COL_COLL_CREATE_TIME, "r_coll_main", "create_ts");
-  sColumn( COL_COLL_MODIFY_TIME, "r_coll_main", "modify_ts");
-  sColumn( COL_COLL_TYPE, "r_coll_main", "coll_type");
-  sColumn( COL_COLL_INFO1, "r_coll_main", "coll_info1");
-  sColumn( COL_COLL_INFO2, "r_coll_main", "coll_info2");
+  sColumn( COL_COLL_ID, "R_COLL_MAIN", "coll_id");
+  sColumn( COL_COLL_NAME, "R_COLL_MAIN", "coll_name");
+  sColumn( COL_COLL_PARENT_NAME, "R_COLL_MAIN", "parent_coll_name");
+  sColumn( COL_COLL_OWNER_NAME, "R_COLL_MAIN", "coll_owner_name");
+  sColumn( COL_COLL_OWNER_ZONE, "R_COLL_MAIN", "coll_owner_zone");
+  sColumn( COL_COLL_MAP_ID, "R_COLL_MAIN", "coll_map_id");
+  sColumn( COL_COLL_INHERITANCE, "R_COLL_MAIN", "coll_inheritance");
+  sColumn( COL_COLL_COMMENTS, "R_COLL_MAIN", "r_comment");
+  sColumn( COL_COLL_CREATE_TIME, "R_COLL_MAIN", "create_ts");
+  sColumn( COL_COLL_MODIFY_TIME, "R_COLL_MAIN", "modify_ts");
+  sColumn( COL_COLL_TYPE, "R_COLL_MAIN", "coll_type");
+  sColumn( COL_COLL_INFO1, "R_COLL_MAIN", "coll_info1");
+  sColumn( COL_COLL_INFO2, "R_COLL_MAIN", "coll_info2");
 
   sColumn( COL_META_DATA_ATTR_NAME, "r_data_meta_main", "meta_attr_name");
   sColumn( COL_META_DATA_ATTR_VALUE, "r_data_meta_main", "meta_attr_value");
   sColumn( COL_META_DATA_ATTR_UNITS, "r_data_meta_main", "meta_attr_unit");
   sColumn( COL_META_DATA_ATTR_ID,   "r_data_meta_main", "meta_id");
-  sColumn( COL_META_DATA_CREATE_TIME, "r_data_main", "create_ts");
+  sColumn( COL_META_DATA_CREATE_TIME, "R_DATA_MAIN", "create_ts");
   sColumn( COL_META_DATA_MODIFY_TIME, "r_data_meta_main", "modify_ts");
  
   sColumn( COL_META_COLL_ATTR_NAME, "r_coll_meta_main", "meta_attr_name");
@@ -270,7 +270,7 @@ icatGeneralQuerySetup() {
   sColumn( COL_META_NAMESPACE_DATA, "r_data_meta_main", "meta_namespace");
   sColumn( COL_META_NAMESPACE_RESC, "r_resc_meta_main", "meta_namespace");
   sColumn( COL_META_NAMESPACE_RESC_GROUP, "r_resc_grp_meta_main", "meta_namespace");
-  sColumn( COL_META_NAMESPACE_USER, "r_user_meta_main", "meta_namespace");
+  sColumn( COL_META_NAMESPACE_USER, "r_useR_META_MAIN", "meta_namespace");
 
   sColumn( COL_META_RESC_ATTR_NAME, "r_resc_meta_main", "meta_attr_name");
   sColumn( COL_META_RESC_ATTR_VALUE, "r_resc_meta_main", "meta_attr_value");
@@ -282,45 +282,45 @@ icatGeneralQuerySetup() {
   sColumn( COL_META_RESC_GROUP_ATTR_UNITS, "r_resc_grp_meta_main", "meta_attr_unit");
   sColumn( COL_META_RESC_GROUP_ATTR_ID,   "r_resc_grp_meta_main", "meta_id");
  
-  sColumn( COL_META_USER_ATTR_NAME, "r_user_meta_main", "meta_attr_name");
-  sColumn( COL_META_USER_ATTR_VALUE, "r_user_meta_main", "meta_attr_value");
-  sColumn( COL_META_USER_ATTR_UNITS, "r_user_meta_main", "meta_attr_unit");
-  sColumn( COL_META_USER_ATTR_ID,   "r_user_meta_main", "meta_id");
+  sColumn( COL_META_USER_ATTR_NAME, "r_useR_META_MAIN", "meta_attr_name");
+  sColumn( COL_META_USER_ATTR_VALUE, "r_useR_META_MAIN", "meta_attr_value");
+  sColumn( COL_META_USER_ATTR_UNITS, "r_useR_META_MAIN", "meta_attr_unit");
+  sColumn( COL_META_USER_ATTR_ID,   "r_useR_META_MAIN", "meta_id");
 
-  sColumn( COL_RESC_GROUP_RESC_ID, "r_resc_group", "resc_id");
-  sColumn( COL_RESC_GROUP_NAME, "r_resc_group", "resc_group_name");
-  sColumn( COL_RESC_GROUP_ID, "r_resc_group", "resc_group_id");
+  sColumn( COL_RESC_GROUP_RESC_ID, "R_RESC_GROUP", "resc_id");
+  sColumn( COL_RESC_GROUP_NAME, "R_RESC_GROUP", "resc_group_name");
+  sColumn( COL_RESC_GROUP_ID, "R_RESC_GROUP", "resc_group_id");
 
-  sColumn( COL_USER_GROUP_ID, "r_user_group",  "group_user_id");
+  sColumn( COL_USER_GROUP_ID, "R_USER_GROUP",  "group_user_id");
   sColumn( COL_USER_GROUP_NAME, "r_group_main", "user_name");
 
-  sColumn( COL_RULE_EXEC_ID, "r_rule_exec", "rule_exec_id");
-  sColumn( COL_RULE_EXEC_NAME, "r_rule_exec", "rule_name");
-  sColumn( COL_RULE_EXEC_REI_FILE_PATH, "r_rule_exec", "rei_file_path");
-  sColumn( COL_RULE_EXEC_USER_NAME, "r_rule_exec", "user_name");
-  sColumn( COL_RULE_EXEC_ADDRESS, "r_rule_exec", "exe_address");
-  sColumn( COL_RULE_EXEC_TIME, "r_rule_exec", "exe_time");
-  sColumn( COL_RULE_EXEC_FREQUENCY, "r_rule_exec", "exe_frequency");
-  sColumn( COL_RULE_EXEC_PRIORITY, "r_rule_exec", "priority");
-  sColumn( COL_RULE_EXEC_ESTIMATED_EXE_TIME,"r_rule_exec","estimated_exe_time");
-  sColumn( COL_RULE_EXEC_NOTIFICATION_ADDR,"r_rule_exec", "notification_addr");
-  sColumn( COL_RULE_EXEC_LAST_EXE_TIME,"r_rule_exec", "last_exe_time");
-  sColumn( COL_RULE_EXEC_STATUS,"r_rule_exec", "exe_status");
+  sColumn( COL_RULE_EXEC_ID, "R_RULE_EXEC", "rule_exec_id");
+  sColumn( COL_RULE_EXEC_NAME, "R_RULE_EXEC", "rule_name");
+  sColumn( COL_RULE_EXEC_REI_FILE_PATH, "R_RULE_EXEC", "rei_file_path");
+  sColumn( COL_RULE_EXEC_USER_NAME, "R_RULE_EXEC", "user_name");
+  sColumn( COL_RULE_EXEC_ADDRESS, "R_RULE_EXEC", "exe_address");
+  sColumn( COL_RULE_EXEC_TIME, "R_RULE_EXEC", "exe_time");
+  sColumn( COL_RULE_EXEC_FREQUENCY, "R_RULE_EXEC", "exe_frequency");
+  sColumn( COL_RULE_EXEC_PRIORITY, "R_RULE_EXEC", "priority");
+  sColumn( COL_RULE_EXEC_ESTIMATED_EXE_TIME,"R_RULE_EXEC","estimated_exe_time");
+  sColumn( COL_RULE_EXEC_NOTIFICATION_ADDR,"R_RULE_EXEC", "notification_addr");
+  sColumn( COL_RULE_EXEC_LAST_EXE_TIME,"R_RULE_EXEC", "last_exe_time");
+  sColumn( COL_RULE_EXEC_STATUS,"R_RULE_EXEC", "exe_status");
 
-  sColumn(COL_TOKEN_NAMESPACE, "r_tokn_main", "token_namespace");
-  sColumn(COL_TOKEN_ID, "r_tokn_main", "token_id");
-  sColumn(COL_TOKEN_NAME, "r_tokn_main", "token_name");
-  sColumn(COL_TOKEN_VALUE, "r_tokn_main", "token_value");
-  sColumn(COL_TOKEN_VALUE2, "r_tokn_main", "token_value2");
-  sColumn(COL_TOKEN_VALUE3, "r_tokn_main", "token_value3");
-  sColumn(COL_TOKEN_COMMENT, "r_tokn_main", "r_comment");
+  sColumn(COL_TOKEN_NAMESPACE, "R_TOKN_MAIN", "token_namespace");
+  sColumn(COL_TOKEN_ID, "R_TOKN_MAIN", "token_id");
+  sColumn(COL_TOKEN_NAME, "R_TOKN_MAIN", "token_name");
+  sColumn(COL_TOKEN_VALUE, "R_TOKN_MAIN", "token_value");
+  sColumn(COL_TOKEN_VALUE2, "R_TOKN_MAIN", "token_value2");
+  sColumn(COL_TOKEN_VALUE3, "R_TOKN_MAIN", "token_value3");
+  sColumn(COL_TOKEN_COMMENT, "R_TOKN_MAIN", "r_comment");
 
-  sColumn(COL_AUDIT_OBJ_ID,      "r_objt_audit", "object_id");
-  sColumn(COL_AUDIT_USER_ID,     "r_objt_audit", "user_id");
-  sColumn(COL_AUDIT_ACTION_ID,   "r_objt_audit", "action_id");
-  sColumn(COL_AUDIT_COMMENT,     "r_objt_audit", "r_comment");
-  sColumn(COL_AUDIT_CREATE_TIME, "r_objt_audit", "create_ts");
-  sColumn(COL_AUDIT_MODIFY_TIME, "r_objt_audit", "modify_ts");
+  sColumn(COL_AUDIT_OBJ_ID,      "R_OBJT_AUDIT", "object_id");
+  sColumn(COL_AUDIT_USER_ID,     "R_OBJT_AUDIT", "user_id");
+  sColumn(COL_AUDIT_ACTION_ID,   "R_OBJT_AUDIT", "action_id");
+  sColumn(COL_AUDIT_COMMENT,     "R_OBJT_AUDIT", "r_comment");
+  sColumn(COL_AUDIT_CREATE_TIME, "R_OBJT_AUDIT", "create_ts");
+  sColumn(COL_AUDIT_MODIFY_TIME, "R_OBJT_AUDIT", "modify_ts");
 
   sColumn(COL_COLL_USER_NAME, "r_coll_user_main", "user_name");
   sColumn(COL_COLL_USER_ZONE, "r_coll_user_main", "zone_name");
@@ -328,51 +328,51 @@ icatGeneralQuerySetup() {
   sColumn(COL_DATA_USER_NAME, "r_data_user_main", "user_name");
   sColumn(COL_DATA_USER_ZONE, "r_data_user_main", "zone_name");
 
-  sColumn(COL_SL_HOST_NAME, "r_server_load", "host_name");
-  sColumn(COL_SL_RESC_NAME, "r_server_load", "resc_name");
-  sColumn(COL_SL_CPU_USED, "r_server_load", "cpu_used");
-  sColumn(COL_SL_MEM_USED, "r_server_load", "mem_used");
-  sColumn(COL_SL_SWAP_USED, "r_server_load", "swap_used");
-  sColumn(COL_SL_RUNQ_LOAD, "r_server_load", "runq_load");
-  sColumn(COL_SL_DISK_SPACE, "r_server_load", "disk_space");
-  sColumn(COL_SL_NET_INPUT, "r_server_load", "net_input");
-  sColumn(COL_SL_NET_OUTPUT, "r_server_load", "net_output");
-  sColumn(COL_SL_CREATE_TIME, "r_server_load", "create_ts");
+  sColumn(COL_SL_HOST_NAME, "R_SERVER_LOAD", "host_name");
+  sColumn(COL_SL_RESC_NAME, "R_SERVER_LOAD", "resc_name");
+  sColumn(COL_SL_CPU_USED, "R_SERVER_LOAD", "cpu_used");
+  sColumn(COL_SL_MEM_USED, "R_SERVER_LOAD", "mem_used");
+  sColumn(COL_SL_SWAP_USED, "R_SERVER_LOAD", "swap_used");
+  sColumn(COL_SL_RUNQ_LOAD, "R_SERVER_LOAD", "runq_load");
+  sColumn(COL_SL_DISK_SPACE, "R_SERVER_LOAD", "disk_space");
+  sColumn(COL_SL_NET_INPUT, "R_SERVER_LOAD", "net_input");
+  sColumn(COL_SL_NET_OUTPUT, "R_SERVER_LOAD", "net_output");
+  sColumn(COL_SL_CREATE_TIME, "R_SERVER_LOAD", "create_ts");
 
-  sColumn(COL_SLD_RESC_NAME, "r_server_load_digest", "resc_name");
-  sColumn(COL_SLD_LOAD_FACTOR, "r_server_load_digest", "load_factor");
-  sColumn(COL_SLD_CREATE_TIME, "r_server_load_digest", "create_ts");
+  sColumn(COL_SLD_RESC_NAME, "R_SERVER_LOAD_DIGEST", "resc_name");
+  sColumn(COL_SLD_LOAD_FACTOR, "R_SERVER_LOAD_DIGEST", "load_factor");
+  sColumn(COL_SLD_CREATE_TIME, "R_SERVER_LOAD_DIGEST", "create_ts");
 
-  sColumn(COL_RULE_ID,         "r_rule_main", "rule_id");
-  sColumn(COL_RULE_VERSION,    "r_rule_main", "rule_version");
-  sColumn(COL_RULE_BASE_NAME,  "r_rule_main", "rule_base_name");
-  sColumn(COL_RULE_NAME,       "r_rule_main", "rule_name");
-  sColumn(COL_RULE_EVENT,      "r_rule_main", "rule_event");
-  sColumn(COL_RULE_CONDITION,  "r_rule_main", "rule_condition");
-  sColumn(COL_RULE_BODY,       "r_rule_main", "rule_body");
-  sColumn(COL_RULE_RECOVERY,   "r_rule_main", "rule_recovery");
-  sColumn(COL_RULE_STATUS,     "r_rule_main", "rule_status");
-  sColumn(COL_RULE_OWNER_NAME, "r_rule_main", "rule_owner_name");
-  sColumn(COL_RULE_OWNER_ZONE, "r_rule_main", "rule_owner_zone");
-  sColumn(COL_RULE_DESCR_1,    "r_rule_main", "rule_descr_1");
-  sColumn(COL_RULE_DESCR_2,    "r_rule_main", "rule_descr_2");
-  sColumn(COL_RULE_INPUT_PARAMS,    "r_rule_main", "input_params");
-  sColumn(COL_RULE_OUTPUT_PARAMS,   "r_rule_main", "output_params");
-  sColumn(COL_RULE_DOLLAR_VARS,     "r_rule_main", "dollar_vars");
-  sColumn(COL_RULE_ICAT_ELEMENTS,   "r_rule_main", "icat_elements");
-  sColumn(COL_RULE_SIDEEFFECTS,     "r_rule_main", "sideeffects");
-  sColumn(COL_RULE_COMMENT,    "r_rule_main", "r_comment");
-  sColumn(COL_RULE_CREATE_TIME,"r_rule_main", "create_ts");
-  sColumn(COL_RULE_MODIFY_TIME,"r_rule_main", "modify_ts");
+  sColumn(COL_RULE_ID,         "R_RULE_MAIN", "rule_id");
+  sColumn(COL_RULE_VERSION,    "R_RULE_MAIN", "rule_version");
+  sColumn(COL_RULE_BASE_NAME,  "R_RULE_MAIN", "rule_base_name");
+  sColumn(COL_RULE_NAME,       "R_RULE_MAIN", "rule_name");
+  sColumn(COL_RULE_EVENT,      "R_RULE_MAIN", "rule_event");
+  sColumn(COL_RULE_CONDITION,  "R_RULE_MAIN", "rule_condition");
+  sColumn(COL_RULE_BODY,       "R_RULE_MAIN", "rule_body");
+  sColumn(COL_RULE_RECOVERY,   "R_RULE_MAIN", "rule_recovery");
+  sColumn(COL_RULE_STATUS,     "R_RULE_MAIN", "rule_status");
+  sColumn(COL_RULE_OWNER_NAME, "R_RULE_MAIN", "rule_owner_name");
+  sColumn(COL_RULE_OWNER_ZONE, "R_RULE_MAIN", "rule_owner_zone");
+  sColumn(COL_RULE_DESCR_1,    "R_RULE_MAIN", "rule_descr_1");
+  sColumn(COL_RULE_DESCR_2,    "R_RULE_MAIN", "rule_descr_2");
+  sColumn(COL_RULE_INPUT_PARAMS,    "R_RULE_MAIN", "input_params");
+  sColumn(COL_RULE_OUTPUT_PARAMS,   "R_RULE_MAIN", "output_params");
+  sColumn(COL_RULE_DOLLAR_VARS,     "R_RULE_MAIN", "dollar_vars");
+  sColumn(COL_RULE_ICAT_ELEMENTS,   "R_RULE_MAIN", "icat_elements");
+  sColumn(COL_RULE_SIDEEFFECTS,     "R_RULE_MAIN", "sideeffects");
+  sColumn(COL_RULE_COMMENT,    "R_RULE_MAIN", "r_comment");
+  sColumn(COL_RULE_CREATE_TIME,"R_RULE_MAIN", "create_ts");
+  sColumn(COL_RULE_MODIFY_TIME,"R_RULE_MAIN", "modify_ts");
 
-  sColumn(COL_RULE_BASE_MAP_VERSION,    "r_rule_base_map", "map_version"); 
-  sColumn(COL_RULE_BASE_MAP_PRIORITY,    "r_rule_base_map", "map_priority"); 
-  sColumn(COL_RULE_BASE_MAP_BASE_NAME,  "r_rule_base_map", "map_base_name");
-  sColumn(COL_RULE_BASE_MAP_OWNER_NAME, "r_rule_base_map", "map_owner_name");
-  sColumn(COL_RULE_BASE_MAP_OWNER_ZONE, "r_rule_base_map", "map_owner_zone");
-  sColumn(COL_RULE_BASE_MAP_COMMENT,    "r_rule_base_map", "r_comment");
-  sColumn(COL_RULE_BASE_MAP_CREATE_TIME,"r_rule_base_map", "create_ts");
-  sColumn(COL_RULE_BASE_MAP_MODIFY_TIME,"r_rule_base_map", "modify_ts");
+  sColumn(COL_RULE_BASE_MAP_VERSION,    "R_RULE_BASE_MAP", "map_version"); 
+  sColumn(COL_RULE_BASE_MAP_PRIORITY,    "R_RULE_BASE_MAP", "map_priority"); 
+  sColumn(COL_RULE_BASE_MAP_BASE_NAME,  "R_RULE_BASE_MAP", "map_base_name");
+  sColumn(COL_RULE_BASE_MAP_OWNER_NAME, "R_RULE_BASE_MAP", "map_owner_name");
+  sColumn(COL_RULE_BASE_MAP_OWNER_ZONE, "R_RULE_BASE_MAP", "map_owner_zone");
+  sColumn(COL_RULE_BASE_MAP_COMMENT,    "R_RULE_BASE_MAP", "r_comment");
+  sColumn(COL_RULE_BASE_MAP_CREATE_TIME,"R_RULE_BASE_MAP", "create_ts");
+  sColumn(COL_RULE_BASE_MAP_MODIFY_TIME,"R_RULE_BASE_MAP", "modify_ts");
 
   sColumn(COL_DVM_ID,           "r_rule_dvm", "dvm_id");
   sColumn(COL_DVM_VERSION,      "r_rule_dvm", "dvm_version");
@@ -399,16 +399,16 @@ icatGeneralQuerySetup() {
   sColumn(COL_FNM_CREATE_TIME,  "r_rule_fnm", "create_ts");
   sColumn(COL_FNM_MODIFY_TIME,  "r_rule_fnm", "modify_ts");
 
-  sColumn(COL_QUOTA_USER_ID, "r_quota_main", "user_id");
-  sColumn(COL_QUOTA_RESC_ID, "r_quota_main", "resc_id");
-  sColumn(COL_QUOTA_LIMIT,   "r_quota_main", "quota_limit");
-  sColumn(COL_QUOTA_OVER,    "r_quota_main", "quota_over");
-  sColumn(COL_QUOTA_MODIFY_TIME,"r_quota_main", "modify_ts");
+  sColumn(COL_QUOTA_USER_ID, "R_QUOTA_MAIN", "user_id");
+  sColumn(COL_QUOTA_RESC_ID, "R_QUOTA_MAIN", "resc_id");
+  sColumn(COL_QUOTA_LIMIT,   "R_QUOTA_MAIN", "quota_limit");
+  sColumn(COL_QUOTA_OVER,    "R_QUOTA_MAIN", "quota_over");
+  sColumn(COL_QUOTA_MODIFY_TIME,"R_QUOTA_MAIN", "modify_ts");
 
-  sColumn(COL_QUOTA_USAGE_USER_ID, "r_quota_usage", "user_id");
-  sColumn(COL_QUOTA_USAGE_RESC_ID, "r_quota_usage", "resc_id");
-  sColumn(COL_QUOTA_USAGE,   "r_quota_usage", "quota_usage");
-  sColumn(COL_QUOTA_USAGE_MODIFY_TIME,"r_quota_usage", "modify_ts");
+  sColumn(COL_QUOTA_USAGE_USER_ID, "R_QUOTA_USAGE", "user_id");
+  sColumn(COL_QUOTA_USAGE_RESC_ID, "R_QUOTA_USAGE", "resc_id");
+  sColumn(COL_QUOTA_USAGE,   "R_QUOTA_USAGE", "quota_usage");
+  sColumn(COL_QUOTA_USAGE_MODIFY_TIME,"R_QUOTA_USAGE", "modify_ts");
 
   sColumn( COL_QUOTA_USER_NAME, "r_quota_user_main", "user_name");
   sColumn( COL_QUOTA_USER_TYPE, "r_quota_user_group", "user_type_name");
@@ -417,37 +417,37 @@ icatGeneralQuerySetup() {
 
   /* Define the Foreign Key links between tables */
 
-  sFklink("r_coll_main", "r_data_main", "r_coll_main.coll_id = r_data_main.coll_id");
-  sFklink("r_resc_group", "r_resc_main", "r_resc_group.resc_id = r_resc_main.resc_id");
-  sFklink("r_resc_main", "r_resc_metamap", "r_resc_main.resc_id = r_resc_metamap.object_id");
-  sFklink("r_resc_main", "r_data_main", "r_resc_main.resc_name = r_data_main.resc_name");
-  sFklink("r_resc_group", "r_resc_grp_metamap", "r_resc_group.resc_group_id = r_resc_grp_metamap.object_id");
-  sFklink("r_coll_main", "r_coll_metamap", "r_coll_main.coll_id = r_coll_metamap.object_id");
-  sFklink("r_data_main", "r_data_metamap", "r_data_main.data_id = r_data_metamap.object_id");
-  sFklink("r_rule_main", "r_rule_metamap", "r_rule_main.rule_id = r_rule_metamap.object_id");
-  sFklink("r_user_main", "r_user_metamap", "r_user_main.user_id = r_user_metamap.object_id");
+  sFklink("R_COLL_MAIN", "R_DATA_MAIN", "R_COLL_MAIN.coll_id = R_DATA_MAIN.coll_id");
+  sFklink("R_RESC_GROUP", "R_RESC_MAIN", "R_RESC_GROUP.resc_id = R_RESC_MAIN.resc_id");
+  sFklink("R_RESC_MAIN", "r_resc_metamap", "R_RESC_MAIN.resc_id = r_resc_metamap.object_id");
+  sFklink("R_RESC_MAIN", "R_DATA_MAIN", "R_RESC_MAIN.resc_name = R_DATA_MAIN.resc_name");
+  sFklink("R_RESC_GROUP", "r_resc_grp_metamap", "R_RESC_GROUP.resc_group_id = r_resc_grp_metamap.object_id");
+  sFklink("R_COLL_MAIN", "r_coll_metamap", "R_COLL_MAIN.coll_id = r_coll_metamap.object_id");
+  sFklink("R_DATA_MAIN", "r_data_metamap", "R_DATA_MAIN.data_id = r_data_metamap.object_id");
+  sFklink("R_RULE_MAIN", "r_rule_metamap", "R_RULE_MAIN.rule_id = r_rule_metamap.object_id");
+  sFklink("R_USER_MAIN", "r_user_metamap", "R_USER_MAIN.user_id = r_user_metamap.object_id");
   sFklink("r_met2_main", "r_met2_metamap", "r_met2_main.meta_id = r_met2_metamap.object_id");
-  sFklink("r_resc_main", "r_resc_access", "r_resc_main.resc_id = r_resc_access..object_id");
-  sFklink("r_coll_main", "r_coll_access", "r_coll_main.coll_id = r_coll_access.object_id");
-  sFklink("r_data_main", "r_data_access", "r_data_main.data_id = r_data_access.object_id");
-  sFklink("r_rule_main", "r_rule_access", "r_rule_main.rule_id = r_rule_access.object_id");
+  sFklink("R_RESC_MAIN", "r_resc_access", "R_RESC_MAIN.resc_id = r_resc_access..object_id");
+  sFklink("R_COLL_MAIN", "r_coll_access", "R_COLL_MAIN.coll_id = r_coll_access.object_id");
+  sFklink("R_DATA_MAIN", "r_data_access", "R_DATA_MAIN.data_id = r_data_access.object_id");
+  sFklink("R_RULE_MAIN", "r_rule_access", "R_RULE_MAIN.rule_id = r_rule_access.object_id");
   sFklink("r_met2_main", "r_met2_access", "r_met2_main.meta_id = r_met2_access.object_id");
-  sFklink("r_resc_main", "r_resc_deny_access", "r_resc_main.resc_id = r_resc_deny_access.object_id");
-  sFklink("r_coll_main", "r_coll_deny_access", "r_coll_main.coll_id = r_coll_deny_access.object_id");
-  sFklink("r_data_main", "r_data_deny_access", "r_data_main.data_id = r_data_deny_access.object_id");
-  sFklink("r_rule_main", "r_rule_deny_access", "r_rule_main.rule_id = r_rule_deny_access.object_id");
+  sFklink("R_RESC_MAIN", "r_resc_deny_access", "R_RESC_MAIN.resc_id = r_resc_deny_access.object_id");
+  sFklink("R_COLL_MAIN", "r_coll_deny_access", "R_COLL_MAIN.coll_id = r_coll_deny_access.object_id");
+  sFklink("R_DATA_MAIN", "r_data_deny_access", "R_DATA_MAIN.data_id = r_data_deny_access.object_id");
+  sFklink("R_RULE_MAIN", "r_rule_deny_access", "R_RULE_MAIN.rule_id = r_rule_deny_access.object_id");
   sFklink("r_met2_main", "r_met2_deny_access", "r_met2_main.meta_id = r_met2_deny_access.object_id");
-  sFklink("r_resc_main", "r_resc_audit", "r_resc_main.resc_id = r_resc_audit.object_id");
-  sFklink("r_coll_main", "r_coll_audit", "r_coll_main.coll_id = r_coll_audit.object_id");
-  sFklink("r_data_main", "r_data_audit", "r_data_main.data_id = r_data_audit.object_id");
-  sFklink("r_rule_main", "r_rule_audit", "r_rule_main.rule_id = r_rule_audit.object_id");
+  sFklink("R_RESC_MAIN", "r_resc_audit", "R_RESC_MAIN.resc_id = r_resc_audit.object_id");
+  sFklink("R_COLL_MAIN", "r_coll_audit", "R_COLL_MAIN.coll_id = r_coll_audit.object_id");
+  sFklink("R_DATA_MAIN", "r_data_audit", "R_DATA_MAIN.data_id = r_data_audit.object_id");
+  sFklink("R_RULE_MAIN", "r_rule_audit", "R_RULE_MAIN.rule_id = r_rule_audit.object_id");
   sFklink("r_met2_main", "r_met2_audit", "r_met2_main.meta_id = r_met2_audit.object_id.meta_id");
   sFklink("r_resc_metamap", "r_resc_meta_main",  "r_resc_metamap.meta_id = r_resc_meta_main.meta_id");
   sFklink("r_resc_grp_metamap", "r_resc_grp_meta_main",  "r_resc_grp_metamap.meta_id = r_resc_grp_meta_main.meta_id");
   sFklink("r_coll_metamap", "r_coll_meta_main",  "r_coll_metamap.meta_id = r_coll_meta_main.meta_id");
   sFklink("r_data_metamap", "r_data_meta_main",  "r_data_metamap.meta_id = r_data_meta_main.meta_id");
   sFklink("r_rule_metamap", "r_rule_meta_main",  "r_rule_metamap.meta_id = r_rule_meta_main.meta_id");
-  sFklink("r_user_metamap", "r_user_meta_main",  "r_user_metamap.meta_id = r_user_meta_main.meta_id");
+  sFklink("r_user_metamap", "r_useR_META_MAIN",  "r_user_metamap.meta_id = r_useR_META_MAIN.meta_id");
   sFklink("r_met2_metamap", "r_met2_meta_main",  "r_met2_metamap.object_id = r_met2_meta_main.meta_id");
   sFklink("r_resc_access", "r_resc_tokn_accs",  "r_resc_access.access_typ_id = r_resc_tokn_accs.token_id");
   sFklink("r_resc_access", "r_resc_user_group", "r_resc_access.user_id = r_resc_user_group.group_user_id");
@@ -494,21 +494,21 @@ icatGeneralQuerySetup() {
   sFklink("r_data_au_user_group", "r_data_au_user_main", "r_data_au_user_group.user_id = r_data_au_user_main.user_id");
   sFklink("r_rule_au_user_group", "r_rule_au_user_main", "r_rule_au_user_group.user_id = r_rule_au_user_main.user_id");
   sFklink("r_met2_au_user_group", "r_met2_au_user_main", "r_met2_au_user_group.user_id = r_met2_au_user_main.user_id");
-  sFklink("r_user_main", "r_user_password", "r_user_main.user_id = r_user_password.user_id");
-  sFklink("r_user_main", "r_user_auth", "r_user_main.user_id = r_user_auth.user_id");
-  sFklink("r_user_main", "r_user_session_key", "r_user_main.user_id = r_user_session_key.user_id");
-  sFklink("r_user_main", "r_data_access", "r_user_main.user_id = r_data_access.user_id");
-  sFklink("r_user_main", "r_user_group", "r_user_main.user_id = r_user_group.user_id");
-  sFklink("r_user_group", "r_group_main", "r_user_group.group_user_id = r_group_main.user_id");
-  sFklink("r_user_main", "r_objt_audit", "r_user_main.user_id = r_objt_audit.user_id");
+  sFklink("R_USER_MAIN", "R_USER_PASSWORD", "R_USER_MAIN.user_id = R_USER_PASSWORD.user_id");
+  sFklink("R_USER_MAIN", "R_USER_AUTH", "R_USER_MAIN.user_id = R_USER_AUTH.user_id");
+  sFklink("R_USER_MAIN", "R_USER_SESSION_KEY", "R_USER_MAIN.user_id = R_USER_SESSION_KEY.user_id");
+  sFklink("R_USER_MAIN", "r_data_access", "R_USER_MAIN.user_id = r_data_access.user_id");
+  sFklink("R_USER_MAIN", "R_USER_GROUP", "R_USER_MAIN.user_id = R_USER_GROUP.user_id");
+  sFklink("R_USER_GROUP", "r_group_main", "R_USER_GROUP.group_user_id = r_group_main.user_id");
+  sFklink("R_USER_MAIN", "R_OBJT_AUDIT", "R_USER_MAIN.user_id = R_OBJT_AUDIT.user_id");
 
-  sFklink("r_quota_main", "r_quota_user_main", "r_quota_main.user_id = r_quota_user_main.user_id");
-  sFklink("r_quota_main", "r_quota_resc_main", "r_quota_main.resc_id = r_quota_resc_main.resc_id");
-  sFklink("r_quota_main", "r_quota_user_group", "r_quota_main.user_id = r_quota_user_group.user_id");
-  sFklink("r_quota_usage", "r_quota_user_main", "r_quota_usage.user_id = r_quota_user_main.user_id");
-  sFklink("r_quota_usage", "r_quota_resc_main", "r_quota_usage.resc_id = r_quota_resc_main.resc_id");
-  sFklink("r_quota_usage", "r_quota_user_group", "r_quota_usage.user_id = r_quota_user_group.user_id");
-  sFklink("r_rule_base_map", "r_rule_main", "r_rule_base_map.rule_id = r_rule_main.rule_id");
+  sFklink("R_QUOTA_MAIN", "r_quota_user_main", "R_QUOTA_MAIN.user_id = r_quota_user_main.user_id");
+  sFklink("R_QUOTA_MAIN", "r_quota_resc_main", "R_QUOTA_MAIN.resc_id = r_quota_resc_main.resc_id");
+  sFklink("R_QUOTA_MAIN", "r_quota_user_group", "R_QUOTA_MAIN.user_id = r_quota_user_group.user_id");
+  sFklink("R_QUOTA_USAGE", "r_quota_user_main", "R_QUOTA_USAGE.user_id = r_quota_user_main.user_id");
+  sFklink("R_QUOTA_USAGE", "r_quota_resc_main", "R_QUOTA_USAGE.resc_id = r_quota_resc_main.resc_id");
+  sFklink("R_QUOTA_USAGE", "r_quota_user_group", "R_QUOTA_USAGE.user_id = r_quota_user_group.user_id");
+  sFklink("R_RULE_BASE_MAP", "R_RULE_MAIN", "R_RULE_BASE_MAP.rule_id = R_RULE_MAIN.rule_id");
 /*
   If using the extended ICAT, establish those tables and columns too.
   Currently, links are not done (may be needed later).

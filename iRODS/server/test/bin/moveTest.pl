@@ -56,7 +56,7 @@ runCmd(1, "irm -f foo_abcdefg");
 # this is now one more level down.
 $ENV{'irodsConfigDir'}="../../config";
 
-$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /$myZone/home/rods/d1/d234 1 | grep -v NOTICE | grep -v Completed";
+$testCmd="test_chl sql \"select coll_id from R_COLL_MAIN where coll_name = " . "?" . "\" /$myZone/home/rods/d1/d234 1 | grep -v NOTICE | grep -v Completed";
 runCmd(0, $testCmd);
 print "res:" . $cmdStdout;
 $d234Obj=$cmdStdout;
@@ -71,7 +71,7 @@ runCmd(0, "ils d1");
 print $cmdStdout;
 
 
-$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /$myZone/home/rods/t2 1 | grep -v NOTICE | grep -v Completed";
+$testCmd="test_chl sql \"select coll_id from R_COLL_MAIN where coll_name = " . "?" . "\" /$myZone/home/rods/t2 1 | grep -v NOTICE | grep -v Completed";
 runCmd(0, $testCmd);
 print "res:" . $cmdStdout;
 $t2Obj=$cmdStdout;
@@ -90,7 +90,7 @@ runCmd(0, "iget t2/d234/testdir3/foo1234 foo1234b");
 runCmd(0, "diff foo1234 foo1234b");
 unlink (foo1234b);
 
-$testCmd="test_chl sql \"select coll_id from r_coll_main where coll_name = " . "?" . "\" /$myZone/home/rods 1 | grep -v NOTICE | grep -v Completed";
+$testCmd="test_chl sql \"select coll_id from R_COLL_MAIN where coll_name = " . "?" . "\" /$myZone/home/rods 1 | grep -v NOTICE | grep -v Completed";
 runCmd(0, $testCmd);
 print "res:" . $cmdStdout;
 $homeObj=$cmdStdout;

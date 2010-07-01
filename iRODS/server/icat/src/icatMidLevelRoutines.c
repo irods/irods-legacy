@@ -20,7 +20,7 @@
 
 #include "rcMisc.h"
 
-/* Size of the r_objt_audit comment field;must match table column definition */
+/* Size of the R_OBJT_AUDIT comment field;must match table column definition */
 #define AUDIT_COMMENT_MAX_SIZE       1000
 
 int logSQL_CML=0;
@@ -675,7 +675,7 @@ cmlCheckDir( char *dirName, char *userName, char *userZone, char *accessLevel,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDir SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-  	        "select coll_id from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+  	        "select coll_id from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
 	      &iVal, dirName, userName, userZone, accessLevel, 0, icss);
    if (status) { 
       /* There was an error, so do another sql to see which 
@@ -723,7 +723,7 @@ cmlCheckDirAndGetInheritFlag( char *dirName, char *userName, char *userZone,
    *inheritFlag = 0;
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirAndGetInheritFlag SQL 1 ");
 
-   status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from r_coll_main CM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss);
+   status = cmlGetOneRowFromSqlBV ("select coll_id, coll_inheritance from R_COLL_MAIN CM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = CM.coll_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?", cVal, cValSize, 2, dirName, userName, userZone, accessLevel, 0, icss);
    if (status == 2) {
       if (*cVal[0]=='\0') {
 	 return(CAT_NO_ROWS_FOUND);
@@ -767,7 +767,7 @@ cmlCheckDirId( char *dirId, char *userName, char *userZone,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDirId SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-  	        "select object_id from r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+  	        "select object_id from R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = ? and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
 	      &iVal, userName, userZone, dirId, accessLevel, 0, icss);
    if (status) { 
       /* There was an error, so do another sql to see which 
@@ -823,7 +823,7 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 1 ");
 
    status = cmlGetIntegerValueFromSql(
-  	        "select data_id from r_data_main DM, r_objt_access OA, r_user_group UG, r_user_main UM, r_tokn_main TM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+  	        "select data_id from R_DATA_MAIN DM, R_OBJT_ACCESS OA, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
 		 &iVal, dataName, dirName, userName, userZone, 
 		accessLevel, icss);
 
@@ -833,7 +833,7 @@ cmlCheckDataObjOnly( char *dirName, char *dataName,
       if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckDataObjOnly SQL 2 ");
 
       status = cmlGetIntegerValueFromSql(
-         "select data_id from r_data_main DM, r_coll_main CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
+         "select data_id from R_DATA_MAIN DM, R_COLL_MAIN CM where DM.data_name=? and DM.coll_id=CM.coll_id and CM.coll_name=?",
 	  &iVal, dataName, dirName, 0, 0, 0, icss);
       if (status) {
 	 return(CAT_UNKNOWN_FILE);
@@ -889,7 +889,7 @@ int cmlCheckDataObjId( char *dataId, char *userName,  char *zoneName,
 
    iVal=0;
    status = cmlGetIntegerValueFromSql(
-  	        "select object_id from r_objt_access OA, r_data_main DM, r_user_group UG, r_user_main UM, r_tokn_main TM where OA.object_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
+  	        "select object_id from R_OBJT_ACCESS OA, R_DATA_MAIN DM, R_USER_GROUP UG, R_USER_MAIN UM, R_TOKN_MAIN TM where OA.object_id=? and UM.user_name=? and UM.zone_name=? and UM.user_type_name!='rodsgroup' and UM.user_id = UG.user_id and OA.object_id = DM.data_id and UG.group_user_id = OA.user_id and OA.access_type_id >= TM.token_id and  TM.token_namespace ='access_type' and TM.token_name = ?",
 	    &iVal,
 	    dataId,
 	    userName,
@@ -917,7 +917,7 @@ int cmlCheckGroupAdminAccess(char *userName, char *userZone,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 1 ");
 
    status = cmlGetStringValueFromSql(
-      "select user_id from r_user_main where user_name=? and zone_name=? and user_type_name='groupadmin'",
+      "select user_id from R_USER_MAIN where user_name=? and zone_name=? and user_type_name='groupadmin'",
       sVal, MAX_NAME_LEN, userName, userZone, 0, icss);
    if (status==CAT_NO_ROWS_FOUND) return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    if (status) return(status);
@@ -925,7 +925,7 @@ int cmlCheckGroupAdminAccess(char *userName, char *userZone,
    if (logSQL_CML) rodsLog(LOG_SQL, "cmlCheckGroupAdminAccess SQL 2 ");
 
    status = cmlGetIntegerValueFromSql(
-      "select group_user_id from r_user_group where user_id=? and group_user_id = (select user_id from r_user_main where user_type_name='rodsgroup' and user_name=?)",
+      "select group_user_id from R_USER_GROUP where user_id=? and group_user_id = (select user_id from R_USER_MAIN where user_type_name='rodsgroup' and user_name=?)",
       &iVal, sVal,  groupName, 0, 0, 0, icss);
    if (status==CAT_NO_ROWS_FOUND) return (CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
    if (status) return(status);
@@ -968,7 +968,7 @@ cmlAudit1(int actionId, char *clientUser, char *zone, char *targetUser,
    cllBindVarCount=8;
 
    status = cmlExecuteNoAnswerSql(
-				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((select user_id from r_user_main where user_name=? and zone_name=?), (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((select user_id from R_USER_MAIN where user_name=? and zone_name=?), (select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE, "cmlAudit1 insert failure %d", status);
    }
@@ -1009,7 +1009,7 @@ cmlAudit2(int actionId, char *dataId, char *userName, char *zoneName,
    cllBindVarCount=7;
 
    status = cmlExecuteNoAnswerSql(
-				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
    if (status != 0) {
       rodsLog(LOG_NOTICE, "cmlAudit2 insert failure %d", status);
    }
@@ -1059,7 +1059,7 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
       cllBindVars[5]=myTime;
       cllBindVarCount=6;
       status = cmlExecuteNoAnswerSql(
-				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from r_user_main where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)", icss);
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from R_USER_MAIN where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)", icss);
    }
    else {
       if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit3 SQL 2 ");
@@ -1072,7 +1072,7 @@ cmlAudit3(int actionId, char *dataId, char *userName, char *zoneName,
       cllBindVars[6]=myTime;
       cllBindVarCount=7;
       status = cmlExecuteNoAnswerSql(
-				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
+				  "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values (?, (select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)", icss);
    }
 
    if (status != 0) {
@@ -1121,7 +1121,7 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
       if (logSQL_CML) rodsLog(LOG_SQL, "cmlA---udit4 S--QL 1 ");
       */
       snprintf(mySQL, MAX_SQL_SIZE, 
-	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from r_user_main where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)",
+	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from R_USER_MAIN where user_name=? and zone_name=(select zone_name from R_ZONE_MAIN where zone_type_name='local')), ?, ?, ?, ?)",
 	       sql);
       i=0;
       if (sqlParm[0]!='\0') {
@@ -1138,7 +1138,7 @@ cmlAudit4(int actionId, char *sql, char *sqlParm, char *userName,
    else {
       if (logSQL_CML) rodsLog(LOG_SQL, "cmlAudit4 SQL 2 ");
       snprintf(mySQL, MAX_SQL_SIZE, 
-	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from r_user_main where user_name=? and zone_name=?), ?, ?, ?, ?)",
+	       "insert into R_OBJT_AUDIT (object_id, user_id, action_id, r_comment, create_ts, modify_ts) values ((%s), (select user_id from R_USER_MAIN where user_name=? and zone_name=?), ?, ?, ?, ?)",
 	       sql);
       i=0;
       if (sqlParm[0]!='\0') {

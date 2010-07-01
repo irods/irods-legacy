@@ -141,19 +141,19 @@ showToken(char *token, char *tokenName2)
    if (token==0 || *token=='\0') {
       simpleQueryInp.form = 1;
       simpleQueryInp.sql = 
-		 "select token_name from r_tokn_main where token_namespace = 'token_namespace'";
+		 "select token_name from R_TOKN_MAIN where token_namespace = 'token_namespace'";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
       if (tokenName2==0 || *tokenName2=='\0') {
 	 simpleQueryInp.form = 1;
-	 simpleQueryInp.sql = "select token_name from r_tokn_main where token_namespace = ?";
+	 simpleQueryInp.sql = "select token_name from R_TOKN_MAIN where token_namespace = ?";
 	 simpleQueryInp.arg1 = token;
 	 simpleQueryInp.maxBufSize = 1024;
       }
       else {
 	 simpleQueryInp.form = 2;
-	 simpleQueryInp.sql = "select * from r_tokn_main where token_namespace = ? and token_name like ?";
+	 simpleQueryInp.sql = "select * from R_TOKN_MAIN where token_namespace = ? and token_name like ?";
 	 simpleQueryInp.arg1 = token;
 	 simpleQueryInp.arg2 = tokenName2;
 	 simpleQueryInp.maxBufSize = 1024;
@@ -172,12 +172,12 @@ showResc(char *resc)
    if (resc==0 || *resc=='\0') {
       simpleQueryInp.form = 1;
       simpleQueryInp.sql =
-	 "select resc_name from r_resc_main";
+	 "select resc_name from R_RESC_MAIN";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
       simpleQueryInp.form = 2;
-      simpleQueryInp.sql = "select * from r_resc_main where resc_name=?";
+      simpleQueryInp.sql = "select * from R_RESC_MAIN where resc_name=?";
       simpleQueryInp.arg1 = resc;
       simpleQueryInp.maxBufSize = 1024;
    }
@@ -194,12 +194,12 @@ showZone(char *zone)
    if (zone==0 || *zone=='\0') {
       simpleQueryInp.form = 1;
       simpleQueryInp.sql =
-	 "select zone_name from r_zone_main";
+	 "select zone_name from R_ZONE_MAIN";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
       simpleQueryInp.form = 2;
-      simpleQueryInp.sql = "select * from r_zone_main where zone_name=?";
+      simpleQueryInp.sql = "select * from R_ZONE_MAIN where zone_name=?";
       simpleQueryInp.arg1 = zone;
       simpleQueryInp.maxBufSize = 1024;
    }
@@ -255,14 +255,14 @@ showGroup(char *group)
    if (group==0 || *group=='\0') {
       simpleQueryInp.form = 1;
       simpleQueryInp.sql =
-	 "select user_name from r_user_main where user_type_name='rodsgroup'";
+	 "select user_name from R_USER_MAIN where user_type_name='rodsgroup'";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
       printf("Members of group %s:\n",group);
       simpleQueryInp.form = 1;
       simpleQueryInp.sql = 
-	 "select user_name||'#'||zone_name from r_user_main, r_user_group where r_user_group.user_id=r_user_main.user_id and r_user_group.group_user_id=(select user_id from r_user_main where user_name=?)";
+	 "select user_name||'#'||zone_name from R_USER_MAIN, R_USER_GROUP where R_USER_GROUP.user_id=R_USER_MAIN.user_id and R_USER_GROUP.group_user_id=(select user_id from R_USER_MAIN where user_name=?)";
       simpleQueryInp.arg1 = group;
       simpleQueryInp.maxBufSize = 1024;
    }
@@ -281,7 +281,7 @@ showFile(char *file)
       return(USER__NULL_INPUT_ERR);
    }
    simpleQueryInp.form = 2;
-   simpleQueryInp.sql = "select * from r_data_main where data_id=?";
+   simpleQueryInp.sql = "select * from R_DATA_MAIN where data_id=?";
    simpleQueryInp.arg1 = file;
    simpleQueryInp.maxBufSize = 1024;
    return (doSimpleQuery(simpleQueryInp));
@@ -302,7 +302,7 @@ showDir(char *dir)
    printf("Contents of collection %s\n", dir);
 
    simpleQueryInp.form = 1;
-   simpleQueryInp.sql = "select data_name, data_id, data_repl_num from r_data_main where coll_id =(select coll_id from r_coll_main where coll_name=?)";
+   simpleQueryInp.sql = "select data_name, data_id, data_repl_num from R_DATA_MAIN where coll_id =(select coll_id from R_COLL_MAIN where coll_name=?)";
    simpleQueryInp.arg1 = dir;
    simpleQueryInp.maxBufSize = 1024;
    if (debug) simpleQueryInp.maxBufSize = 20;
@@ -312,7 +312,7 @@ showDir(char *dir)
 
    simpleQueryInp.form = 1;
    simpleQueryInp.sql = 
-         "select coll_name from r_coll_main where parent_coll_name=?";
+         "select coll_name from R_COLL_MAIN where parent_coll_name=?";
    simpleQueryInp.arg1 = dir;
    simpleQueryInp.maxBufSize = 1024;
    printf("Subcollections:\n");
@@ -328,13 +328,13 @@ showUser(char *user)
    simpleQueryInp.control = 0;
    if (*user!='\0') {
       simpleQueryInp.form = 2;
-      simpleQueryInp.sql = "select * from r_user_main where user_name=?";
+      simpleQueryInp.sql = "select * from R_USER_MAIN where user_name=?";
       simpleQueryInp.arg1 = user;
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
       simpleQueryInp.form = 1;
-      simpleQueryInp.sql = "select user_name||'#'||zone_name from r_user_main where user_type_name != 'rodsgroup'";
+      simpleQueryInp.sql = "select user_name||'#'||zone_name from R_USER_MAIN where user_type_name != 'rodsgroup'";
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -350,18 +350,18 @@ showUserAuth(char *user, char *zone)
    simpleQueryInp.form = 1;
    if (*user!='\0') {
       if (*zone=='\0') {
-	 simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=?";
+	 simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_MAIN.user_name=?";
 	 simpleQueryInp.arg1 = user;
       }
       else {
-	 simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_main.user_name=? and r_user_main.zone_name=?";
+	 simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_MAIN.user_name=? and R_USER_MAIN.zone_name=?";
 	 simpleQueryInp.arg1 = user;
 	 simpleQueryInp.arg2 = zone;
       }
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
-      simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id";
+      simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id";
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -376,7 +376,7 @@ showUserAuthName(char *authName)
    memset (&simpleQueryInp, 0, sizeof (simpleQueryInp_t));
    simpleQueryInp.control = 0;
    simpleQueryInp.form = 1;
-   simpleQueryInp.sql = "select user_name, user_auth_name from r_user_auth, r_user_main where r_user_auth.user_id = r_user_main.user_id and r_user_auth.user_auth_name=?";
+   simpleQueryInp.sql = "select user_name, user_auth_name from R_USER_AUTH, R_USER_MAIN where R_USER_AUTH.user_id = R_USER_MAIN.user_id and R_USER_AUTH.user_auth_name=?";
    simpleQueryInp.arg1 = authName;
    simpleQueryInp.maxBufSize = 1024;
    return (doSimpleQuery(simpleQueryInp));
@@ -391,14 +391,14 @@ showUserOfZone(char *zone, char *user)
    simpleQueryInp.control = 0;
    if (*user!='\0') {
       simpleQueryInp.form = 2;
-      simpleQueryInp.sql = "select * from r_user_main where user_name=? and zone_name=?";
+      simpleQueryInp.sql = "select * from R_USER_MAIN where user_name=? and zone_name=?";
       simpleQueryInp.arg1 = user;
       simpleQueryInp.arg2 = zone;
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
       simpleQueryInp.form = 1;
-      simpleQueryInp.sql = "select user_name from r_user_main where zone_name=? and user_type_name != 'rodsgroup'";
+      simpleQueryInp.sql = "select user_name from R_USER_MAIN where zone_name=? and user_type_name != 'rodsgroup'";
       simpleQueryInp.arg1 = zone;
       simpleQueryInp.maxBufSize = 1024;
    }
@@ -415,13 +415,13 @@ showRescGroup(char *group)
    if (*group!='\0') {
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
-           "select r_resc_group.resc_group_name, r_resc_group.resc_id, resc_name, r_resc_group.create_ts, r_resc_group.modify_ts from r_resc_main, r_resc_group where r_resc_main.resc_id = r_resc_group.resc_id and resc_group_name=?";
+           "select R_RESC_GROUP.resc_group_name, R_RESC_GROUP.resc_id, resc_name, R_RESC_GROUP.create_ts, R_RESC_GROUP.modify_ts from R_RESC_MAIN, R_RESC_GROUP where R_RESC_MAIN.resc_id = R_RESC_GROUP.resc_id and resc_group_name=?";
       simpleQueryInp.arg1 = group;
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
       simpleQueryInp.form = 1;
-      simpleQueryInp.sql = "select distinct resc_group_name from r_resc_group";
+      simpleQueryInp.sql = "select distinct resc_group_name from R_RESC_GROUP";
       simpleQueryInp.maxBufSize = 1024;
    }
    return (doSimpleQuery(simpleQueryInp));
@@ -438,7 +438,7 @@ simpleQueryCheck()
 
    simpleQueryInp.control = 0;
    simpleQueryInp.form = 2;
-   simpleQueryInp.sql = "select * from r_resc_main where resc_name=?";
+   simpleQueryInp.sql = "select * from R_RESC_MAIN where resc_name=?";
    simpleQueryInp.arg1 = "foo";
    simpleQueryInp.maxBufSize = 1024;
 
@@ -469,7 +469,7 @@ showGlobalQuotas(char *inputUserOrGroup)
    if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
-	 "select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0";
+	 "select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
@@ -481,7 +481,7 @@ showGlobalQuotas(char *inputUserOrGroup)
       }
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
-	 "select user_name, r_user_main.zone_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main where r_user_main.user_id = r_quota_main.user_id and r_quota_main.resc_id = 0 and user_name=? and r_user_main.zone_name=?";
+	 "select user_name, R_USER_MAIN.zone_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_QUOTA_MAIN.resc_id = 0 and user_name=? and R_USER_MAIN.zone_name=?";
       simpleQueryInp.arg1 = userName;
       simpleQueryInp.arg2 = zoneName;
       simpleQueryInp.maxBufSize = 1024;
@@ -509,7 +509,7 @@ showResourceQuotas(char *inputUserOrGroup)
    if (inputUserOrGroup==0 || *inputUserOrGroup=='\0') {
       simpleQueryInp.form = 2;
       simpleQueryInp.sql = 
-	 "select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id";
+	 "select user_name, R_USER_MAIN.zone_name, resc_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_RESC_MAIN.resc_id = R_QUOTA_MAIN.resc_id";
       simpleQueryInp.maxBufSize = 1024;
    }
    else {
@@ -520,7 +520,7 @@ showResourceQuotas(char *inputUserOrGroup)
 	 strncpy(zoneName, localZone, sizeof zoneName);
       }
       simpleQueryInp.form = 2;
-      simpleQueryInp.sql = "select user_name, r_user_main.zone_name, resc_name, quota_limit, quota_over, r_quota_main.modify_ts from r_quota_main, r_user_main, r_resc_main where r_user_main.user_id = r_quota_main.user_id and r_resc_main.resc_id = r_quota_main.resc_id and user_name=? and r_user_main.zone_name=?";
+      simpleQueryInp.sql = "select user_name, R_USER_MAIN.zone_name, resc_name, quota_limit, quota_over, R_QUOTA_MAIN.modify_ts from R_QUOTA_MAIN, R_USER_MAIN, R_RESC_MAIN where R_USER_MAIN.user_id = R_QUOTA_MAIN.user_id and R_RESC_MAIN.resc_id = R_QUOTA_MAIN.resc_id and user_name=? and R_USER_MAIN.zone_name=?";
       simpleQueryInp.arg1 = userName;
       simpleQueryInp.arg2 = zoneName;
       simpleQueryInp.maxBufSize = 1024;
