@@ -743,35 +743,35 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     }
 
     if (inpParam2 != NULL) {
-	if (strcmp (inpParam2->type, STR_MS_T) == 0) {
-	    tmpBBuf.len = myDataObjWriteInp->len = 
-	      strlen (inpParam2->inOutStruct) + 1;
-	    tmpBBuf.buf = inpParam2->inOutStruct;
-	    myBBuf = &tmpBBuf;
-	} else {
-	    myInt = parseMspForPosInt (inpParam2);
-            if (myInt < 0) {
-                if (myInt != SYS_NULL_INPUT) {
-                    rei->status = myInt;
-                    rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-                      "msiDataObjWrite: parseMspForPosInt error for param2.");
-                    return (rei->status);
-		}
-            } else {
-                myDataObjWriteInp->len = myInt;
+      if (strcmp (inpParam2->type, STR_MS_T) == 0) {
+        tmpBBuf.len = myDataObjWriteInp->len = 
+          strlen (inpParam2->inOutStruct) + 1;
+        tmpBBuf.buf = inpParam2->inOutStruct;
+        myBBuf = &tmpBBuf;
+      } else {
+        myInt = parseMspForPosInt (inpParam2);
+        if (myInt < 0) {
+            if (myInt != SYS_NULL_INPUT) {
+              rei->status = myInt;
+              rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+                "msiDataObjWrite: parseMspForPosInt error for param2.");
+              return (rei->status);
             }
-	    myBBuf = inpParam2->inpOutBuf;
-	}
+        } else {
+          myDataObjWriteInp->len = myInt;
+        }
+        myBBuf = inpParam2->inpOutBuf;
+      }
     }
 
     rei->status = rsDataObjWrite (rsComm, myDataObjWriteInp, myBBuf);
 
     if (rei->status >= 0) {
-        fillIntInMsParam (outParam, rei->status);
+      fillIntInMsParam (outParam, rei->status);
     } else {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjWrite: rsDataObjWrite failed, status = %d",
-          rei->status);
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiDataObjWrite: rsDataObjWrite failed, status = %d",
+        rei->status);
     }
 
     return (rei->status);
@@ -847,9 +847,9 @@ ruleExecInfo_t *rei)
     RE_TEST_MACRO ("    Calling msiDataObjUnlink")
 
     if (rei == NULL || rei->rsComm == NULL) {
-	rodsLog (LOG_ERROR,
-	  "msiDataObjUnlink: input rei or rsComm is NULL");
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
+      rodsLog (LOG_ERROR,
+        "msiDataObjUnlink: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     rsComm = rei->rsComm;
@@ -887,7 +887,7 @@ ruleExecInfo_t *rei)
     } else {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjUnlink: rsDataObjUnlink failed for %s, status = %d",
-			    myDataObjInp->objPath,
+          myDataObjInp->objPath,
           rei->status);
     }
 
@@ -984,9 +984,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
     RE_TEST_MACRO ("    Calling msiDataObjRepl")
 
     if (rei == NULL || rei->rsComm == NULL) {
-	rodsLog (LOG_ERROR,
-	  "msiDataObjRepl: input rei or rsComm is NULL");
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
+      rodsLog (LOG_ERROR,
+        "msiDataObjRepl: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     rsComm = rei->rsComm;
@@ -1014,36 +1014,36 @@ msParam_t *outParam, ruleExecInfo_t *rei)
 #endif
 
     if (rei->status < 0) {
-	if (outBadKeyWd != NULL) {
-            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-              "msiDataObjRepl: input keyWd - %s error. status = %d", 
-	      outBadKeyWd, rei->status);
-	    free (outBadKeyWd);
-	} else {
-            rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-              "msiDataObjRepl: input msKeyValStr error. status = %d", 
-	      rei->status);
-	}
-        return (rei->status);
+      if (outBadKeyWd != NULL) {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjRepl: input keyWd - %s error. status = %d", 
+          outBadKeyWd, rei->status);
+        free (outBadKeyWd);
+      } else {
+        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+          "msiDataObjRepl: input msKeyValStr error. status = %d", 
+          rei->status);
+      }
+      return (rei->status);
     }
 
     rei->status = rsDataObjRepl (rsComm, myDataObjInp, &transStat);
 
     if (myDataObjInp == &dataObjInp) {
-        clearKeyVal (&myDataObjInp->condInput);
+      clearKeyVal (&myDataObjInp->condInput);
     }
 
     if (transStat != NULL) {
-	free (transStat);
+      free (transStat);
     }
 
     if (rei->status >= 0) {
-        fillIntInMsParam (outParam, rei->status);
+      fillIntInMsParam (outParam, rei->status);
     } else {
-        rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjRepl: rsDataObjRepl failed %s, status = %d",
-			    myDataObjInp->objPath,
-          rei->status);
+      rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
+        "msiDataObjRepl: rsDataObjRepl failed %s, status = %d",
+        myDataObjInp->objPath,
+        rei->status);
     }
 
     return (rei->status);
@@ -1124,9 +1124,9 @@ msiDataObjCopy (msParam_t *inpParam1, msParam_t *inpParam2,
     RE_TEST_MACRO ("    Calling msiDataObjCopy")
 
     if (rei == NULL || rei->rsComm == NULL) {
-	rodsLog (LOG_ERROR,
-	  "msiDataObjCopy: input rei or rsComm is NULL");
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
+      rodsLog (LOG_ERROR,
+        "msiDataObjCopy: input rei or rsComm is NULL");
+      return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
     rsComm = rei->rsComm;
