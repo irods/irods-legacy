@@ -683,6 +683,7 @@ rmKeyVal (keyValPair_t *condInput, char *keyWord)
 	    condInput->len--;
             for (j = i; j < condInput->len; j++) {
                 condInput->keyWord[j] = condInput->keyWord[j + 1];
+                condInput->value[j] = condInput->value[j + 1];
             }
 	    if (condInput->len <= 0) {
 		free (condInput->keyWord);
