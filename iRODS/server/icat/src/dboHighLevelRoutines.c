@@ -551,6 +551,10 @@ dboExecute(rsComm_t *rsComm, int fd, char *dboName, char *outBuf, int maxOutBuf)
    int status;
    char dboSQL[MAX_SQL];
 
+   if (rsComm->clientUser.authInfo.authFlag < LOCAL_PRIV_USER_AUTH) {
+      return(CAT_INSUFFICIENT_PRIVILEGE_LEVEL);
+   }
+
    if (fd>MAX_SESSIONS || fd< 0 || dbo_icss[fd].status!=1) {
       strcpy(outBuf, "DBO is not open");
       return(DBO_INVALID_OBJECT_DESCRIPTOR);

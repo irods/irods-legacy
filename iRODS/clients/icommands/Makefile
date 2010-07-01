@@ -126,7 +126,6 @@ BINS =		\
 		$(binDir)/iscan \
 		$(binDir)/ixmsg  \
 		$(binDir)/idbug  \
-		$(binDir)/idbo	\
 		$(binDir)/ips
 
 
