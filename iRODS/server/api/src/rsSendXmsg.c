@@ -15,7 +15,7 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
     int status;
     ticketMsgStruct_t *ticketMsgStruct = NULL;
     irodsXmsg_t *irodsXmsg;
-    
+    char *miscInfo;
 
     status = getTicketMsgStructByTicket (sendXmsgInp->ticket.rcvTicket, 
       &ticketMsgStruct);
@@ -34,8 +34,21 @@ rsSendXmsg (rsComm_t *rsComm, sendXmsgInp_t *sendXmsgInp)
 	return (SYS_UNMATCHED_XMSG_TICKET);
     }
 
+    /* added by Raja Jun 30, 2010 for dropping and clearing a messageStream */
+    miscInfo = sendXmsgInp->sendXmsgInfo.miscInfo;
+    if (miscInfo != NULL && strlen(miscInfo) > 0) {
+      if(!strcmp(miscInfo,"CLEAR_STREAM")) {
+	clearAllXMessages(ticketMsgStruct);
+      }
+      else if (!strcmp(miscInfo,"DROP_STREAM")) {
+	clearAllXMessages(ticketMsgStruct);
+	rmTicketMsgStructFromHQue (ticketMsgStruct,
+				   (ticketHashQue_t *) ticketMsgStruct->ticketHashQue);
+      }
+    }
+
     /* create a irodsXmsg_t */
- 
+
     irodsXmsg = calloc (1, sizeof (irodsXmsg_t));
     irodsXmsg->sendXmsgInfo = calloc (1, sizeof (sendXmsgInfo_t));
     *irodsXmsg->sendXmsgInfo = sendXmsgInp->sendXmsgInfo;

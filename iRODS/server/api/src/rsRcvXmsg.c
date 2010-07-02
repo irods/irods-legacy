@@ -15,10 +15,12 @@ rcvXmsgOut_t **rcvXmsgOut)
 {
     int status;
     irodsXmsg_t *irodsXmsg = NULL;
-
+    /*
     status = getIrodsXmsgByMsgNum (rcvXmsgInp->rcvTicket,
       rcvXmsgInp->msgNumber, &irodsXmsg);
-
+    */
+    status = getIrodsXmsg (rcvXmsgInp, &irodsXmsg);
+    
     if (status < 0) {
 	return status;
     }

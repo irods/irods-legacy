@@ -58,11 +58,17 @@ ticketMsgStruct_t **outTicketMsgStruct);
 int
 addXmsgToTicketMsgStruct (irodsXmsg_t *xmsg,
 ticketMsgStruct_t *ticketMsgStruct);
+
+int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond);
+
+int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg);
+
 int 
 getIrodsXmsgByMsgNum (int rcvTicket, int msgNumber,
 irodsXmsg_t **outIrodsXmsg);
 int
 _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut);
 
+int clearAllXMessages(ticketMsgStruct_t *ticketMsgStruct);
 #endif	/* XMSG_LIB_H */
 

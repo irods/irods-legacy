@@ -70,8 +70,9 @@ rsDatabaseObjOpen (rsComm_t *rsComm, databaseObjOpenInp_t *databaseObjOpenInp)
 int
 _rsDatabaseObjOpen (rsComm_t *rsComm, databaseObjOpenInp_t *databaseObjOpenInp)
 {
-    int status;
+
 #ifdef DBO
+    int status;
     status = dboOpen(databaseObjOpenInp->dboName);
     if (status < 0 ) { 
        rodsLog (LOG_NOTICE, 

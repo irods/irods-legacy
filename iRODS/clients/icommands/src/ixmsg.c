@@ -4,68 +4,159 @@
 
 #include "rodsClient.h" 
 
+rodsEnv myRodsEnv;
+rErrMsg_t errMsg;
+
+int 
+printIxmsgHelp(char *cmd) {
+
+  printf("usage: %s s [-t ticketNum] [-n startingMessageNumber] [-r numOfReceivers] [-H header] [-M message] \n" , cmd);
+  printf("usage: %s r [-n NumberOfMessages] [-t tickefStreamtNum] [-s startingSequenceNumber] [-c conditionString]\n" , cmd);
+  printf("usage: %s t \n" , cmd);
+  printf("usage: %s d -t ticketNum \n" , cmd);
+  printf("usage: %s c -t ticketNum \n" , cmd);
+  printf("    s: send messages. If no ticketNum is given, 1 is used \n");
+  printf("    r: receive messages. If no ticketNum is given, 1 is used \n");
+  printf("    t: create new message stream and get a new ticketNum \n");
+  printf("    d: drop message Stream \n");
+  printf("    c: clear message Stream \n");
+  exit(1);
+}
+
+
+int 
+sendIxmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp){
+  int status;
+
+  conn = rcConnectXmsg (&myRodsEnv, &errMsg);
+  if (conn == NULL) {
+    fprintf (stderr, "rcConnect error\n");
+    exit (1);
+  }
+  status = clientLogin(conn);
+  if (status != 0) {
+    fprintf (stderr, "clientLogin error\n");
+    rcDisconnect(conn);
+    exit (7);
+  }
+  status = rcSendXmsg (conn, sendXmsgInp);
+  rcDisconnect(conn);
+  if (status < 0) {
+    fprintf (stderr, "rsSendXmsg error. status = %d\n", status);
+    exit (9);
+  }
+  return(status);
+}
+
 int
 main(int argc, char **argv)
 {
     rcComm_t *conn;
-    rodsEnv myRodsEnv;
     int status;
-    int mNum = 1;
+    int mNum = 0;
     int tNum = 1;
-    int sNum = 1;
+    int opt;
+    int sNum = 0;
+    int sleepSec = 1;
+    int rNum = 1;
+    char  msgBuf[4000];
+    char  msgHdr[HEADER_TYPE_LEN];
+    char  condStr[NAME_LEN];
     char myHostName[MAX_NAME_LEN];
-    rErrMsg_t errMsg;
+    char cmd[10];
+
     getXmsgTicketInp_t getXmsgTicketInp;
     xmsgTicketInfo_t xmsgTicketInfo;
     xmsgTicketInfo_t *outXmsgTicketInfo;
     sendXmsgInp_t sendXmsgInp;
     rcvXmsgInp_t rcvXmsgInp;
     rcvXmsgOut_t *rcvXmsgOut = NULL;
-    char  buf[4000];
-    if (argc < 2 || !strcmp(argv[1], "-h")) {
-      printf("usage: %s s [n] [m]\n" , argv[0]);
-      printf("usage: %s r [n] [m]\n" , argv[0]);
-      printf("usage: %s t \n" , argv[0]);
-      printf("    s: send \n");
-      printf("    r: receive \n");
-      printf("    t: get ticket id \n");
-      printf("  [n]: optional ticket number. default is 1\n");
-      printf("  [m]: optional first message number. default is 1\n");
-      exit(1);
-    }
 
+    msgBuf[0] ='\0';
+    strcpy(msgHdr,"ixmsg");;
+    myHostName[0] = '\0';
+    condStr[0] ='\0';
+
+    if (argc < 2) {
+      printIxmsgHelp(argv[0]);
+      exit(1);
+    }      
+
+    strncpy(cmd,argv[1],9);
     status = getRodsEnv (&myRodsEnv);
-    
     if (status < 0) {
 	fprintf (stderr, "getRodsEnv error, status = %d\n", status);
 	exit (1);
     }
 
-    myHostName[0] = '\0';
+    while ((opt = getopt(argc, argv, "ht:n:r:H:M:c:s:")) != (char)EOF) {
+      switch(opt) {
+      case 't':
+	tNum = atoi(optarg);
+	break;
+      case 'n':
+	mNum = atoi(optarg);
+	break;
+      case 'r':
+	rNum = atoi(optarg);
+	break;
+      case 's':
+	sNum = atoi(optarg);
+	break;
+      case 'H':
+	strncpy(msgHdr, optarg, HEADER_TYPE_LEN - 1);
+	break;
+      case 'M':
+	strncpy(msgBuf, optarg, 3999);
+	break;
+      case 'c':
+	strncpy(condStr, optarg, NAME_LEN - 1);
+	break;
+      case 'h':
+	printIxmsgHelp(argv[0]);
+	exit(0);
+	break;
+      default:
+	fprintf(stderr,"Error: Unknown Option\n");
+	exit (1);
+	break;
+      }
+    }
+
     gethostname (myHostName, MAX_NAME_LEN);
-    if (argc >= 4) 
-      mNum = atoi(argv[3]);
-    if (argc >= 3)
-      tNum = atoi(argv[2]);
     memset (&xmsgTicketInfo, 0, sizeof (xmsgTicketInfo));
     
-    if (!strcmp(argv[1], "s")) {
+    if (!strcmp(cmd, "s")) {
       memset (&sendXmsgInp, 0, sizeof (sendXmsgInp));
       xmsgTicketInfo.sendTicket = tNum;
       xmsgTicketInfo.rcvTicket = tNum;
       xmsgTicketInfo.flag = 1;
       sendXmsgInp.ticket = xmsgTicketInfo;
       snprintf(sendXmsgInp.sendAddr, NAME_LEN, "%s:%i", myHostName, getpid ());
-      sendXmsgInp.sendXmsgInfo.numRcv = 1;
-      snprintf(sendXmsgInp.sendXmsgInfo.msgType, HEADER_TYPE_LEN, "ixmsg");
+      sendXmsgInp.sendXmsgInfo.numRcv = rNum;
+      sendXmsgInp.sendXmsgInfo.msgNumber = mNum;
+      strcpy(sendXmsgInp.sendXmsgInfo.msgType, msgHdr);
+      sendXmsgInp.sendXmsgInfo.msg = msgBuf;
 
-      while (fgets (buf, 3999, stdin) != NULL) {
-        if (strstr(buf,"/EOM") == buf)
+      if (strlen(msgBuf) > 0) {
+	status = sendIxmsg(conn, &sendXmsgInp);
+	if (status < 0) 
+	  exit(8);
+	exit(0);
+      }
+      printf("Message Header : %s\n", msgHdr);
+      printf("Message Address: %s\n",sendXmsgInp.sendAddr);
+      while (fgets (msgBuf, 3999, stdin) != NULL) {
+        if (strstr(msgBuf,"/EOM") == msgBuf)
 	  exit(0);
 	sendXmsgInp.sendXmsgInfo.msgNumber = mNum;
 	if (mNum != 0) mNum++;
-	sendXmsgInp.sendXmsgInfo.msg = buf;
-	conn = rcConnectXmsg (&myRodsEnv, &errMsg);
+	sendXmsgInp.sendXmsgInfo.msg = msgBuf;
+	status = sendIxmsg(conn, &sendXmsgInp);
+	if (status < 0)
+	  exit(8);
+	/****
+        conn = rcConnectXmsg (&myRodsEnv, &errMsg);
 	if (conn == NULL) {
 	  fprintf (stderr, "rcConnect error\n");
 	  exit (1);
@@ -82,16 +173,21 @@ main(int argc, char **argv)
 	  fprintf (stderr, "rsSendXmsg error. status = %d\n", status);
 	  exit (9);
 	}
+	****/
       }
     }
-    else if (!strcmp(argv[1], "r")) {
+    else if (!strcmp(cmd, "r")) {
       memset (&rcvXmsgInp, 0, sizeof (rcvXmsgInp));
       rcvXmsgInp.rcvTicket = tNum;
-      if (argc < 4)
-	mNum = 0;
-      rcvXmsgInp.msgNumber = mNum;
-      if (mNum != 0) mNum++;
-      while ( 1 ) {
+      /*      rcvXmsgInp.msgNumber = mNum; */
+
+      if (mNum == 0) mNum--;
+
+      while ( mNum != 0 ) {
+	if (strlen(condStr) > 0)
+	  sprintf(rcvXmsgInp.msgCondition, "(*XSEQNUM  >= %d) && (%s)", sNum, condStr);
+	else
+	  sprintf(rcvXmsgInp.msgCondition, "*XSEQNUM >= %d ", sNum);
 	conn = rcConnectXmsg (&myRodsEnv, &errMsg);
 	if (conn == NULL) {
 	  fprintf (stderr, "rcConnect error\n");
@@ -111,18 +207,19 @@ main(int argc, char **argv)
 		  rcvXmsgOut->seqNumber, rcvXmsgOut->msg);
 	  if (rcvXmsgOut->msg[strlen(rcvXmsgOut->msg)-1] != '\n')
 	    printf("\n");
-	  rcvXmsgInp.msgNumber = mNum;
-	  if (mNum != 0) mNum++;
-	  sNum = 1;
+	  sleepSec = 1;
+	  mNum--;
+	  sNum = rcvXmsgOut->seqNumber + 1;
 	}
 	else {
-	  sleep(sNum);
-	  sNum = 2 * sNum;
-	  if (sNum > 10) sNum = 10;
+	  sleep(sleepSec);
+	  sleepSec = 2 * sleepSec;
+	  if (sleepSec > 10) sleepSec = 10;
 	}
+
       }
     }
-    else if (!strcmp(argv[1], "t")) {
+    else if (!strcmp(cmd, "t")) {
       memset (&getXmsgTicketInp, 0, sizeof (getXmsgTicketInp));
       getXmsgTicketInp.flag = 1;
       conn = rcConnectXmsg (&myRodsEnv, &errMsg);
@@ -148,9 +245,18 @@ main(int argc, char **argv)
       printf("Ticket Flag       = %i\n",outXmsgTicketInfo->flag);
       free (outXmsgTicketInfo);
     }
+    else if (!strcmp(cmd, "c")) {
+      fprintf(stderr,"option not supported now. \n");
+      fprintf(stderr,"For now, kill and restart XmsgServer. \n");
+      exit(9);
+    }
+    else if (!strcmp(cmd, "d")) {
+      fprintf(stderr,"option not supported now. \n");
+      fprintf(stderr,"For now, kill and restart XmsgServer. \n");
+      exit(9);
+    }
     else {
       fprintf(stderr,"wrong option. Check with -h\n");
-      rcDisconnect(conn);
       exit(9);
     }
 

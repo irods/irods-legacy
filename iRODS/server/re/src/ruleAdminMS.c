@@ -598,6 +598,7 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
 }
 
 /**************** Micro-Services for  ruleDB ********************************/
+/** Rules **/
 
 
 int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
@@ -734,3 +735,278 @@ msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inC
 
 }
 
+
+/** Data Variable Mappings **/
+#if 0
+
+
+int msiAdmReadDVMapsFromFileIntoStruct(msParam_t *inDvmFileNameParam, msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
+{
+
+  int i;
+  dvmStruct_t *coreDVMapStrct;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmReadDVMapsFromFileIntoStruct");
+
+  
+  if (inDvmFileNameParam == NULL ||
+      strcmp (inDvmFileNameParam->type,STR_MS_T) != 0 ||
+      inDvmFileNameParam->inOutStruct == NULL ||
+      strlen((char *) inDvmFileNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (outCoreDVMapStruct->type != NULL &&
+      strcmp (outCoreDVMapStruct->type,DVMapStruct_MS_T) == 0 &&
+      outCoreDVMapStruct->inOutStruct != NULL) {
+    coreDVMapStrct = (dvmStruct_t *) outCoreDVMapStruct->inOutStruct;
+  }
+  else {
+    coreDVMapStrct = (dvmStruct_t *) malloc (sizeof(dvmStruct_t));
+    coreDVMapStrct->MaxNumOfDVMaps = 0;    
+  }
+  i = readDVMapStructFromFile((char*) inDvmFileNameParam->inOutStruct, coreDVMapStrct);
+  if (i != 0) {
+    if (strcmp (outCoreDVMapStruct->type,DVMapStruct_MS_T) != 0 )    
+      free(coreDVMapStrct);
+    return(i);
+  }
+
+  outCoreDVMapStruct->inOutStruct = (void *) coreDVMapStrct;
+  if (outCoreDVMapStruct->type == NULL || 
+      strcmp (outCoreDVMapStruct->type,DVMapStruct_MS_T) != 0)
+    outCoreDVMapStruct->type = (char *) strdup(DVMapStruct_MS_T);
+  return(0);
+}
+
+
+int msiAdmInsertDVMapsFromStructIntoDB(msParam_t *inDvmBaseNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei)
+{
+
+  dvmStruct_t *coreDVMapStruct;
+  int i;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmInsertDVMapsFromStructIntoDB");
+
+  if (inDvmBaseNameParam == NULL || inCoreDVMapStruct == NULL ||
+      strcmp (inDvmBaseNameParam->type,STR_MS_T) != 0 ||
+      strcmp (inCoreDVMapStruct->type,DVMapStruct_MS_T) != 0 ||
+      inDvmBaseNameParam->inOutStruct == NULL ||
+      inCoreDVMapStruct->inOutStruct == NULL ||
+      strlen((char *) inDvmBaseNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+
+  coreDVMapStruct = (dvmStruct_t *) inCoreDVMapStruct->inOutStruct;
+  i = insertDVMapsIntoDB((char *) inDvmBaseNameParam->inOutStruct, coreDVMapStruct, rei);
+  return(i);
+    
+}
+
+
+int
+msiGetDVMapsFromDBIntoStruct(msParam_t *inDvmBaseNameParam, msParam_t *inVersionParam, 
+			    msParam_t *outCoreDVMapStruct, ruleExecInfo_t *rei)
+{
+    
+  int i;
+  dvmStruct_t *coreDVMapStrct;
+
+  RE_TEST_MACRO ("Loopback on msiGetDVMapsFromDBIntoStruct");
+
+  if (inDvmBaseNameParam == NULL ||
+      strcmp (inDvmBaseNameParam->type,STR_MS_T) != 0 ||
+      inDvmBaseNameParam->inOutStruct == NULL ||
+      strlen((char *) inDvmBaseNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (inVersionParam == NULL ||
+      strcmp (inVersionParam->type,STR_MS_T) != 0 ||
+      inVersionParam->inOutStruct == NULL ||
+      strlen((char *) inVersionParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (outCoreDVMapStruct->type != NULL &&
+      strcmp (outCoreDVMapStruct->type,DVMapStruct_MS_T) == 0 &&
+      outCoreDVMapStruct->inOutStruct != NULL) {
+    coreDVMapStrct = (dvmStruct_t *) outCoreDVMapStruct->inOutStruct;
+  }
+  else {
+    coreDVMapStrct = (dvmStruct_t *) malloc (sizeof(dvmStruct_t));
+    coreDVMapStrct->MaxNumOfDVMaps = 0;
+  }
+  i = readDVMapStructFromDB((char*) inDvmBaseNameParam->inOutStruct, (char*) inVersionParam->inOutStruct,  coreDVMapStrct, rei);
+  if (i != 0) {
+    if (strcmp (outCoreDVMapStruct->type,DVMapStruct_MS_T) != 0 )
+      free(coreDVMapStrct);
+    return(i);
+  }
+
+  outCoreDVMapStruct->inOutStruct = (void *) coreDVMapStrct;
+  if (outCoreDVMapStruct->type == NULL ||
+      strcmp (outCoreDVMapStruct->type,DVMapStruct_MS_T) != 0)
+    outCoreDVMapStruct->type = (char *) strdup(DVMapStruct_MS_T);
+  return(0);
+}
+
+int
+msiAdmWriteDVMapsFromStructIntoFile(msParam_t *inDvmFileNameParam, msParam_t *inCoreDVMapStruct, ruleExecInfo_t *rei)
+{
+  int i;
+  dvmStruct_t *myDVMapStruct;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmWriteDVMapsFromStructIntoFile");
+
+  if (inDvmFileNameParam == NULL || inCoreDVMapStruct == NULL ||
+      strcmp (inDvmFileNameParam->type,STR_MS_T) != 0 ||
+      strcmp (inCoreDVMapStruct->type,DVMapStruct_MS_T) != 0 ||
+      inDvmFileNameParam->inOutStruct == NULL ||
+      strlen((char *) inDvmFileNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+
+  myDVMapStruct = (dvmStruct_t *) inCoreDVMapStruct->inOutStruct;
+  i = writeDVMapsIntoFile((char *) inDvmFileNameParam->inOutStruct, myDVMapStruct, rei);
+  return(i);
+
+}
+
+/** Function Mappings **/
+
+int msiAdmReadFNMapsFromFileIntoStruct(msParam_t *inFnmFileNameParam, msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei)
+{
+
+  int i;
+  fnmapStruct_t *coreFNMapStrct;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmReadFNMapsFromFileIntoStruct");
+
+  
+  if (inFnmFileNameParam == NULL ||
+      strcmp (inFnmFileNameParam->type,STR_MS_T) != 0 ||
+      inFnmFileNameParam->inOutStruct == NULL ||
+      strlen((char *) inFnmFileNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (outCoreFNMapStruct->type != NULL &&
+      strcmp (outCoreFNMapStruct->type,FNMapStruct_MS_T) == 0 &&
+      outCoreFNMapStruct->inOutStruct != NULL) {
+    coreFNMapStrct = (fnmapStruct_t *) outCoreFNMapStruct->inOutStruct;
+  }
+  else {
+    coreFNMapStrct = (fnmapStruct_t *) malloc (sizeof(fnmapStruct_t));
+    coreFNMapStrct->MaxNumOfFNMaps = 0;    
+  }
+  i = readFNMapStructFromFile((char*) inFnmFileNameParam->inOutStruct, coreFNMapStrct);
+  if (i != 0) {
+    if (strcmp (outCoreFNMapStruct->type,FNMapStruct_MS_T) != 0 )    
+      free(coreFNMapStrct);
+    return(i);
+  }
+
+  outCoreFNMapStruct->inOutStruct = (void *) coreFNMapStrct;
+  if (outCoreFNMapStruct->type == NULL || 
+      strcmp (outCoreFNMapStruct->type,FNMapStruct_MS_T) != 0)
+    outCoreFNMapStruct->type = (char *) strdup(FNMapStruct_MS_T);
+  return(0);
+}
+
+
+int msiAdmInsertFNMapsFromStructIntoDB(msParam_t *inFnmBaseNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei)
+{
+
+  fnmapStruct_t *coreFNMapStruct;
+  int i;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmInsertFNMapsFromStructIntoDB");
+
+  if (inFnmBaseNameParam == NULL || inCoreFNMapStruct == NULL ||
+      strcmp (inFnmBaseNameParam->type,STR_MS_T) != 0 ||
+      strcmp (inCoreFNMapStruct->type,FNMapStruct_MS_T) != 0 ||
+      inFnmBaseNameParam->inOutStruct == NULL ||
+      inCoreFNMapStruct->inOutStruct == NULL ||
+      strlen((char *) inFnmBaseNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+
+  coreFNMapStruct = (fnmapStruct_t *) inCoreFNMapStruct->inOutStruct;
+  i = insertFNMapsIntoDB((char *) inFnmBaseNameParam->inOutStruct, coreFNMapStruct, rei);
+  return(i);
+    
+}
+
+
+int
+msiGetFNMapsFromDBIntoStruct(msParam_t *inFnmBaseNameParam, msParam_t *inVersionParam, 
+			    msParam_t *outCoreFNMapStruct, ruleExecInfo_t *rei)
+{
+    
+  int i;
+  fnmapStruct_t *coreFNMapStrct;
+
+  RE_TEST_MACRO ("Loopback on msiGetFNMapsFromDBIntoStruct");
+
+  if (inFnmBaseNameParam == NULL ||
+      strcmp (inFnmBaseNameParam->type,STR_MS_T) != 0 ||
+      inFnmBaseNameParam->inOutStruct == NULL ||
+      strlen((char *) inFnmBaseNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (inVersionParam == NULL ||
+      strcmp (inVersionParam->type,STR_MS_T) != 0 ||
+      inVersionParam->inOutStruct == NULL ||
+      strlen((char *) inVersionParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+  if (outCoreFNMapStruct->type != NULL &&
+      strcmp (outCoreFNMapStruct->type,FNMapStruct_MS_T) == 0 &&
+      outCoreFNMapStruct->inOutStruct != NULL) {
+    coreFNMapStrct = (fnmapStruct_t *) outCoreFNMapStruct->inOutStruct;
+  }
+  else {
+    coreFNMapStrct = (fnmapStruct_t *) malloc (sizeof(fnmapStruct_t));
+    coreFNMapStrct->MaxNumOfFNMaps = 0;
+  }
+  i = readFNMapStructFromDB((char*) inFnmBaseNameParam->inOutStruct, (char*) inVersionParam->inOutStruct,  coreFNMapStrct, rei);
+  if (i != 0) {
+    if (strcmp (outCoreFNMapStruct->type,FNMapStruct_MS_T) != 0 )
+      free(coreFNMapStrct);
+    return(i);
+  }
+
+  outCoreFNMapStruct->inOutStruct = (void *) coreFNMapStrct;
+  if (outCoreFNMapStruct->type == NULL ||
+      strcmp (outCoreFNMapStruct->type,FNMapStruct_MS_T) != 0)
+    outCoreFNMapStruct->type = (char *) strdup(FNMapStruct_MS_T);
+  return(0);
+}
+
+int
+msiAdmWriteFNMapsFromStructIntoFile(msParam_t *inFnmFileNameParam, msParam_t *inCoreFNMapStruct, ruleExecInfo_t *rei)
+{
+  int i;
+  fnmapStruct_t *myFNMapStruct;
+
+  if ((i = isUserPrivileged(rei->rsComm)) != 0)
+    return (i);
+
+  RE_TEST_MACRO ("Loopback on msiAdmWriteFNMapsFromStructIntoFile");
+
+  if (inFnmFileNameParam == NULL || inCoreFNMapStruct == NULL ||
+      strcmp (inFnmFileNameParam->type,STR_MS_T) != 0 ||
+      strcmp (inCoreFNMapStruct->type,FNMapStruct_MS_T) != 0 ||
+      inFnmFileNameParam->inOutStruct == NULL ||
+      strlen((char *) inFnmFileNameParam->inOutStruct) == 0 )
+    return(PARAOPR_EMPTY_IN_STRUCT_ERR);
+
+  myFNMapStruct = (fnmapStruct_t *) inCoreFNMapStruct->inOutStruct;
+  i = writeFNMapsIntoFile((char *) inFnmFileNameParam->inOutStruct, myFNMapStruct, rei);
+  return(i);
+
+}
+#endif

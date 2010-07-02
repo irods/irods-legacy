@@ -9,7 +9,8 @@
 #endif
 #include "xmsgLib.h"
 #include "rsApiHandler.h"
-
+#include "reGlobalsExtern.h"
+#include "miscServerFunct.h"
 #ifndef windows_platform
 pthread_mutex_t ReqQueCondMutex;
 pthread_cond_t ReqQueCond;
@@ -21,6 +22,7 @@ xmsgReq_t *XmsgReqHead = NULL;
 ticketHashQue_t XmsgHashQue[NUM_HASH_SLOT];
 xmsgQue_t XmsgQue;
 
+static  msParamArray_t XMsgMsParamArray;
 int 
 initThreadEnv ()
 {
@@ -144,6 +146,73 @@ ticketMsgStruct_t *ticketMsgStruct)
 	     "SEQNum: %i", ticketMsgStruct->nxtSeqNumber );
 
     return (0);
+}
+
+int checkMsgCondition(irodsXmsg_t *irodsXmsg, char *msgCond) 
+{
+  int i;
+  char condStr[NAME_LEN * 2], res[NAME_LEN * 2];
+
+  strcpy(condStr,msgCond);
+
+  XMsgMsParamArray.msParam[0]->inOutStruct =(char *) irodsXmsg->sendXmsgInfo->msgType;  /* *XHDR*/
+  XMsgMsParamArray.msParam[1]->inOutStruct =(char *) irodsXmsg->sendUserName;           /* *XUSER*/
+  XMsgMsParamArray.msParam[2]->inOutStruct =(char *) irodsXmsg->sendAddr;               /* *XADDR*/
+  XMsgMsParamArray.msParam[3]->inOutStruct =(char *) irodsXmsg->sendXmsgInfo->miscInfo; /* *XMISC*/
+  * (int *) XMsgMsParamArray.msParam[4]->inOutStruct =  (int) irodsXmsg->sendXmsgInfo->msgNumber; /* *XMSGNUM*/
+  * (int *) XMsgMsParamArray.msParam[5]->inOutStruct = (int) irodsXmsg->seqNumber;        /* *XSEQNUM*/
+  * (int *) XMsgMsParamArray.msParam[6]->inOutStruct = (int) irodsXmsg->sendTime;         /* *XTIME*/
+
+  i  = replaceMsParams(condStr, &XMsgMsParamArray);
+  i =  computeExpression(condStr, NULL, 0, res);
+  if (i == 1) 
+    return(0);
+  else 
+    return(1);
+
+
+}
+
+int getIrodsXmsg (rcvXmsgInp_t *rcvXmsgInp, irodsXmsg_t **outIrodsXmsg) 
+{
+  int status,i ;
+    irodsXmsg_t *tmpIrodsXmsg;
+    ticketMsgStruct_t *ticketMsgStruct;
+    int rcvTicket;
+    char *msgCond;
+
+    rcvTicket = rcvXmsgInp->rcvTicket;
+    msgCond = rcvXmsgInp->msgCondition;
+
+    if (outIrodsXmsg == NULL) {
+        rodsLog (LOG_ERROR,
+          "getIrodsXmsgByMsgNum: input outIrodsXmsg is NULL");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
+    }
+
+    /* locate the ticketMsgStruct_t */
+
+    status = getTicketMsgStructByTicket (rcvTicket, &ticketMsgStruct);
+
+    if (status < 0) {
+        return status;
+    }
+
+    /* now locate the irodsXmsg_t */
+
+    tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
+
+    while (tmpIrodsXmsg != NULL) {
+      if ((i = checkMsgCondition(tmpIrodsXmsg, msgCond)) == 0 ) break;
+      tmpIrodsXmsg = tmpIrodsXmsg->tnext;
+    }
+    
+    *outIrodsXmsg = tmpIrodsXmsg;
+    if (tmpIrodsXmsg == NULL) {
+        return SYS_NO_XMSG_FOR_MSG_NUMBER;
+    } else {
+	return 0;
+    }
 }
 
 int 
@@ -512,6 +581,15 @@ initXmsgHashQue ()
     hashSlotNum = ticketHashFunc (outXmsgTicketInfo->rcvTicket);
     addTicketToHQue (outXmsgTicketInfo, &XmsgHashQue[hashSlotNum]);
 
+    addMsParam(&XMsgMsParamArray, "*XHDR",STR_MS_T, NULL,NULL);
+    addMsParam(&XMsgMsParamArray, "*XUSER",STR_MS_T, NULL,NULL);
+    addMsParam(&XMsgMsParamArray, "*XADDR",STR_MS_T, NULL,NULL);
+    addMsParam(&XMsgMsParamArray, "*XMISC",STR_MS_T, NULL,NULL);
+    addIntParamToArray(&XMsgMsParamArray, "*XMSGNUM",0);
+    addIntParamToArray(&XMsgMsParamArray, "*XSEQNUM",0);
+    addIntParamToArray(&XMsgMsParamArray, "*XTIME",0);
+
+
 
     /*** added by Raja on 5/12/2010 to have a permanent message queue with ticket-id = 1,2,3,4,5***/
 
@@ -597,3 +675,22 @@ _rsRcvXmsg (irodsXmsg_t *irodsXmsg, rcvXmsgOut_t *rcvXmsgOut)
     return (0);
 }
 
+int
+clearAllXMessages(ticketMsgStruct_t *ticketMsgStruct)
+{
+
+  irodsXmsg_t *tmpIrodsXmsg, *tmpIrodsXmsg2;
+
+  tmpIrodsXmsg = ticketMsgStruct->xmsgQue.head;
+  while (tmpIrodsXmsg != NULL) {
+    tmpIrodsXmsg2 = tmpIrodsXmsg->tnext;
+    rmXmsgFromXmsgQue (tmpIrodsXmsg, &XmsgQue);
+    clearSendXmsgInfo (tmpIrodsXmsg->sendXmsgInfo);
+    free (tmpIrodsXmsg);
+    tmpIrodsXmsg = tmpIrodsXmsg2;
+  }
+
+  ticketMsgStruct->xmsgQue.head = NULL;
+  ticketMsgStruct->xmsgQue.tail = NULL;
+  return(0);
+}
