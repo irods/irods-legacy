@@ -1600,6 +1600,8 @@ msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
  * 
  * \remark Terrell Russell - reviewed msi documentation, 2010-04-05
  * 
+ * \note none
+ *
  * \usage
  *
  * As seen in server/config/reConfigs/core.irb
@@ -1761,3 +1763,65 @@ msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2,
    }
    return (rei->status);
 }
+
+/**
+ * \fn msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
+ *
+ * \brief  This microservice sets whether the  post processing "put" 
+ *  rule (acPostProcForPut) should be run (on or off) for bulk put
+ *  operation.
+ * 
+ * \module core
+ * 
+ * \since 2.4
+ * 
+ * \author  Mike Wan
+ * \date    2010-07
+ * 
+ * \remark none
+ * 
+ * \note none
+ *
+ * \usage
+ *
+ * As seen in server/config/reConfigs/core.irb
+ *
+ * acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(on)|nop
+ *
+ * \param[in] xflag - Required - a msParam of type STR_MS_T. 
+ *     \li "on" - enable execution of acPostProcForPut.
+ *     \li "off" - disable execution of acPostProcForPut.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence None, 
+ * \DolVarModified none.
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
+ * \return integer
+ * \retval POLICY_OFF or POLICY_ON.
+ * \pre
+ * \post
+ * \sa
+ * \bug  no known bugs
+**/
+int
+msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
+{
+    char *flag;
+
+    flag = (char *) xflag->inOutStruct;
+
+    RE_TEST_MACRO ("    Calling msiSetBulkPutPostProcPolicy")
+
+    if (strcmp (flag, "on") == 0) {
+      rei->status = POLICY_ON;
+    } else {
+      rei->status = POLICY_OFF;
+    }
+    return (rei->status);
+}
+

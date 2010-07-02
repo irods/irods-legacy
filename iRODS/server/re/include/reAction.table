@@ -191,6 +191,8 @@ int readXMsg(msParam_t* inStreamId, msParam_t* inCondRead,
 	msParam_t *outUser, msParam_t *outAddr, ruleExecInfo_t *rei);
 int msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, 
          msParam_t *inpParam4, ruleExecInfo_t *rei);
+int
+msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei);
 
 microsdef_t MicrosTable[] = {
   {"print_hello", 0, (funcPtr) print_hello},
@@ -354,4 +356,5 @@ microsdef_t MicrosTable[] = {
   {"writeXMsg",3, (funcPtr) writeXMsg},
   {"readXMsg",8, (funcPtr) readXMsg},
   {"msiSetReplComment", 4, (funcPtr) msiSetReplComment},
+  {"msiSetBulkPutPostProcPolicy",1,(funcPtr) msiSetBulkPutPostProcPolicy},
 

@@ -150,6 +150,10 @@
 #define SYS_TIMING_SEC     "sysTimingSec"    /* timing env var in sec */
 #define SYS_TIMING_USEC    "sysTimingUSec"   /* timing env var in micro sec */
 
+/* generic return value for policy rules */
+#define POLICY_OFF	0
+#define POLICY_ON	1
+
 /* protocol */
 typedef enum {
     NATIVE_PROT,

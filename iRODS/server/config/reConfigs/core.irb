@@ -539,6 +539,22 @@ acPostProcForGenQuery(*genQueryInpStr,*genQueryOutStr,*genQueryStatusStr)||nop|n
 acRescQuotaPolicy||msiSetRescQuotaPolicy(off)|nop
 #
 #
+# 51) acBulkPutPostProcPolicy - This rule set the policy for executing
+# the post processing put rule (acPostProcForPut) for bulk put. Since the 
+# bulk put option is intended to improve the upload speed, executing
+# the acPostProcForPut for every file rule will slow down the the 
+# upload. This rule provide an option to turn the postprocessing off.
+# Only one function can be called:
+#    msiSetBulkPutPostProcPolicy () - This microservice sets whether the 
+#    acPostProcForPut rule will be run bulk put. Valid values for the 
+#    flag are:
+#      "on"  - enable execution of acPostProcForPut.
+#      "off" - disable execution of acPostProcForPut (default).
+# Examples:
+# acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(on)|nop
+acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(off)|nop
+
+
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate||acSetCreateConditions##acDOC|nop##null

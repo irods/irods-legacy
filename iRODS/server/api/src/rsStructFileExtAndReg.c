@@ -739,6 +739,17 @@ genQueryOut_t *bulkDataObjRegOut)
 
     if (bulkDataObjRegInp == NULL || bulkDataObjRegOut == NULL)
         return USER__NULL_INPUT_ERR;
+
+    initReiWithDataObjInp (&rei, rsComm, NULL);
+    status = applyRule ("acBulkPutPostProcPolicy", NULL, &rei, NO_SAVE_REI);
+    if (status < 0) {
+        rodsLog (LOG_ERROR,
+          "postProcBulkPut: acBulkPutPostProcPolicy error status = %d", status);
+	return status;
+    }
+
+    if (rei.status == POLICY_OFF) return 0;
+
     if ((objPath =
       getSqlResultByInx (bulkDataObjRegInp, COL_DATA_NAME)) == NULL) {
         rodsLog (LOG_ERROR,
