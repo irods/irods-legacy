@@ -36,7 +36,7 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-25
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note  web-service based micro-service to get image cut out given position frm SDSS database
  *
  * \usage
  *
@@ -65,9 +65,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int

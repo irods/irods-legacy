@@ -22,7 +22,7 @@
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note
+ * \note a list of user-names is needed
  *
  * \usage None
  *
@@ -38,13 +38,13 @@
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval rei->status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -213,13 +213,13 @@ msiVerifyOwner (msParam_t* collinp, msParam_t* ownerinp, msParam_t* bufout, msPa
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval rei->status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -396,7 +396,7 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note
+ * \note none
  *
  * \usage None
  *
@@ -413,13 +413,13 @@ msiVerifyACL (msParam_t* collinp, msParam_t* userinp, msParam_t* authinp, msPara
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval rei->status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -571,13 +571,13 @@ msiVerifyExpiry (msParam_t* collinp, msParam_t* timeinp, msParam_t* typeinp, msP
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval rei->status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -763,7 +763,7 @@ msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp,
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note a list of types is needed
  *
  * \usage None
  *
@@ -779,13 +779,13 @@ msiVerifyAVU (msParam_t* collinp, msParam_t* avunameinp, msParam_t* avuvalueinp,
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval rei->status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -886,7 +886,7 @@ msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note a file size range is needed
  *
  * \usage None
  *
@@ -903,13 +903,13 @@ msiVerifyDataType (msParam_t* collinp, msParam_t* datatypeinp, msParam_t* bufout
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval rei->status
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

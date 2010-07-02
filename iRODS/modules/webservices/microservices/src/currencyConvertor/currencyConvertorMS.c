@@ -212,7 +212,7 @@ int getIdFromCountryCodes(char *incc) {
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note web-service based micro-service to convert from one currency to another
  *
  * \usage
  * 
@@ -227,17 +227,17 @@ int getIdFromCountryCodes(char *incc) {
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect  none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

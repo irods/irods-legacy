@@ -26,18 +26,18 @@
  * \fn msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
  * msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  *
- * \brief This microservice opens a H5File.
+ * \brief This microservice opens a HDF File.
  *
  * \module hdf5
  *
  * \since pre-2.1
  *
- * \author uiuc.edu
- * \date  
+ * \author uiuc.edu Mike Wan
+ * \date  Feb 2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note
+ * \note open an HDF5 filr
  *
  * \usage None
  *
@@ -48,17 +48,17 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -202,18 +202,18 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 /**
  * \fn msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  *
- * \brief This microservice closes a H5File.
+ * \brief This microservice closes a HDF5 File.
  *
  * \module hdf5
  *
  * \since pre-2.1
  *
- * \author uiuc.edu
- * \date  
+ * \author uiuc.edu Mike Wan
+ * \date  2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note
+ * \note closes an HDF5 file
  *
  * \usage None
  *
@@ -223,17 +223,17 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa msiH5File_open
  * \bug  no known bugs
 **/
 int
@@ -323,18 +323,18 @@ ruleExecInfo_t *rei)
  * \fn msiH5Dataset_read (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam,
  * ruleExecInfo_t *rei)
  *
- * \brief This microservice is for reading a dataset from an opened H5File.
+ * \brief This microservice is for reading a dataset from an opened HDF5 File.
  *
  * \module hdf5
  *
  * \since pre-2.1
  *
- * \author uiuc.edu
- * \date  
+ * \author uiuc.edu Mike Wan
+ * \date  2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note
+ * \note read a data object/objects from an opened HDF5 file 
  *
  * \usage None
  *
@@ -344,17 +344,17 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -442,12 +442,12 @@ ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author uiuc.edu
- * \date  
+ * \author uiuc.edu Mike Wan
+ * \date  2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note
+ * \note read attributes of an element in an HDF5 file
  *
  * \usage None
  *
@@ -457,17 +457,17 @@ ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -555,12 +555,12 @@ msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5Datas
  *
  * \since pre-2.1
  *
- * \author uiuc.edu
- * \date  
+ * \author uiuc.edu Mike wan
+ * \date   2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note
+ * \note read attributes for a group in an HDF5 file
  *
  * \usage None
  *
@@ -570,17 +570,17 @@ msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5Datas
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

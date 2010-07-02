@@ -36,7 +36,7 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note 
+ * \note web-service based micro-service for converting IP address to host name
  *
  * \usage
  *
@@ -61,9 +61,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

@@ -34,11 +34,11 @@
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note Create a new empty property list
  *
  * \usage None
  *
@@ -55,9 +55,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -81,11 +81,11 @@ msiPropertiesNew( msParam_t *listParam, ruleExecInfo_t *rei )
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date     2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note Clear a property list
  *
  * \usage None
  *
@@ -98,13 +98,13 @@ msiPropertiesNew( msParam_t *listParam, ruleExecInfo_t *rei )
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect property list is cleared
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -131,11 +131,11 @@ msiPropertiesClear( msParam_t *listParam, ruleExecInfo_t *rei )
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note Clone a property list, returning a new property list
  *
  * \usage None
  *
@@ -149,13 +149,13 @@ msiPropertiesClear( msParam_t *listParam, ruleExecInfo_t *rei )
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect a new peoperty list is created
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -186,11 +186,11 @@ msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t 
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note  Add a property and value to a property list.
  *
  * \usage None
  *
@@ -205,13 +205,13 @@ msiPropertiesClone( msParam_t *listParam, msParam_t *cloneParam, ruleExecInfo_t 
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect property list changed
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa #msiPropertiesSet
+ * \pre none
+ * \post none
+ * \sa msiPropertiesSet
  * \bug  no known bugs
 **/
 int
@@ -244,11 +244,11 @@ msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note Remove a property from the list.
  *
  * \usage None
  *
@@ -262,13 +262,13 @@ msiPropertiesAdd( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect property list changed
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -298,11 +298,11 @@ msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note Get the value of a property in a property list
  *
  * \usage None
  *
@@ -317,13 +317,12 @@ msiPropertiesRemove( msParam_t *listParam, msParam_t* keywordParam, ruleExecInfo
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
- *
+ * \sideeffect none
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre  none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -357,11 +356,11 @@ msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date     2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note  Set the value of a property in a property list
  *
  * \usage None
  *
@@ -376,13 +375,13 @@ msiPropertiesGet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect  propert value changed
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa #msiPropertiesAdd
+ * \pre none
+ * \post none
+ * \sa msiPropertiesAdd
  * \bug  no known bugs
 **/
 int
@@ -402,11 +401,11 @@ msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note check for a property in a list
  *
  * \usage None
  *
@@ -421,13 +420,13 @@ msiPropertiesSet( msParam_t *listParam, msParam_t* keywordParam, msParam_t* valu
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect  none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int
@@ -465,11 +464,11 @@ msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* t
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date     2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note Convert a property list into a string buffer.
  *
  * \usage None
  *
@@ -483,13 +482,13 @@ msiPropertiesExists( msParam_t *listParam, msParam_t* keywordParam, msParam_t* t
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int
@@ -519,11 +518,11 @@ msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam, ruleExecInf
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date     2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-22
  *
- * \note
+ * \note Parse a string into a new property list.
  *
  * \usage None
  *
@@ -537,13 +536,13 @@ msiPropertiesToString( msParam_t *listParam, msParam_t* stringParam, ruleExecInf
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  none
  * \bug  no known bugs
 **/
 int

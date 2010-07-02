@@ -34,7 +34,7 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note  web-service based micro-service to get type and position of an astronomical object in   NED database given a name.
  *
  * \usage
  *
@@ -60,9 +60,9 @@
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
