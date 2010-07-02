@@ -1602,17 +1602,17 @@ msiStrToBytesBuf(msParam_t* str_msp, msParam_t* buf_msp, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
- * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
