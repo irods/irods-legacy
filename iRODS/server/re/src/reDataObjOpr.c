@@ -1545,9 +1545,9 @@ msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

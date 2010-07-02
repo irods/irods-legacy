@@ -28,7 +28,7 @@ int _makeQuery( char *sel, char *cond, char **sql);
  * \since pre-2.1
  *
  * \author  Romain Guinot
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-09-10
  *
@@ -44,17 +44,17 @@ int _makeQuery( char *sel, char *cond, char **sql);
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified  none
+ * \iCatAttrDependence  none
+ * \iCatAttrModified  none
+ * \sideeffect  none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa  msiExecStrCondQuery
  * \bug  no known bugs
 **/
 int msiExecStrCondQueryWithOptions(msParam_t* queryParam,

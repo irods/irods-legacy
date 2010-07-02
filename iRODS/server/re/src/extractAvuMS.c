@@ -657,8 +657,8 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
  * \retval 0 on success
  * \retval USER_PARAM_TYP_ERROR wheninput  param dont match the type
  * \retval from removeAVUMetadataFromKVPairs
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa removeAVUMetadataFromKVPairs
  * \bug  no known bugs
 **/

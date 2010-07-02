@@ -275,7 +275,7 @@ int msiString2KeyValPair(msParam_t *inBufferP, msParam_t* outKeyValPairP, ruleEx
  * \return integer
  * \retval 0 on success
  * \pre none
- * \postnone
+ * \post none
  * \sa msiString2KeyValPair
  * \bug  no known bugs
 **/
