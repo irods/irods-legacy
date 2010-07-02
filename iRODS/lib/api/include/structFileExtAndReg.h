@@ -73,6 +73,9 @@ cleanupBulkRegFiles (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
 int
 getAttriInAttriArray (char *objPath, genQueryOut_t *attriArray,
 int *outDataMode, char **outChksum);
+int
+postProcBulkPut (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
+genQueryOut_t *bulkDataObjRegOut);
 #else
 #define RS_STRUCT_FILE_EXT_AND_REG NULL
 #endif

@@ -255,6 +255,8 @@ char *collection, char *phyBunDir, int flags, genQueryOut_t *attriArray)
                 cleanupBulkRegFiles (rsComm, &bulkDataObjRegInp);
             }
             postProcRenamedPhyFiles (&renamedPhyFiles, status);
+	    postProcBulkPut (rsComm, &bulkDataObjRegInp, bulkDataObjRegOut);
+	    freeGenQueryOut (&bulkDataObjRegOut);
 	}
 	clearGenQueryOut (&bulkDataObjRegInp);
     }
@@ -625,6 +627,8 @@ renamedPhyFiles_t *renamedPhyFiles)
 	    cleanupBulkRegFiles (rsComm, bulkDataObjRegInp);
 	}
 	postProcRenamedPhyFiles (renamedPhyFiles, status);
+	postProcBulkPut (rsComm, bulkDataObjRegInp, bulkDataObjRegOut);
+	freeGenQueryOut (&bulkDataObjRegOut);
 	bulkDataObjRegInp->rowCnt = 0;
     }
     return status;
