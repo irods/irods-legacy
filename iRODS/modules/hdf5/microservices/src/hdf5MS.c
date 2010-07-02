@@ -26,7 +26,7 @@
  * \fn msiH5File_open (msParam_t *inpH5FileParam, msParam_t *inpFlagParam,
  * msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  *
- * \brief This microservice opens a HDF File.
+ * \brief This microservice opens an HDF5 file.
  *
  * \module hdf5
  *
@@ -37,7 +37,7 @@
  *
  * \remark Terrell Russell - msi documentation, 2009-06-18
  *
- * \note open an HDF5 filr
+ * \note open an HDF5 file
  *
  * \usage None
  *
@@ -202,7 +202,7 @@ msParam_t *outH5FileParam, ruleExecInfo_t *rei)
 /**
  * \fn msiH5File_close (msParam_t *inpH5FileParam, msParam_t *outH5FileParam, ruleExecInfo_t *rei)
  *
- * \brief This microservice closes a HDF5 File.
+ * \brief This microservice closes an HDF5 file.
  *
  * \module hdf5
  *
@@ -323,7 +323,7 @@ ruleExecInfo_t *rei)
  * \fn msiH5Dataset_read (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam,
  * ruleExecInfo_t *rei)
  *
- * \brief This microservice is for reading a dataset from an opened HDF5 File.
+ * \brief This microservice is for reading a dataset from an opened HDF5 file.
  *
  * \module hdf5
  *
@@ -436,7 +436,7 @@ ruleExecInfo_t *rei)
 /**
  * \fn msiH5Dataset_read_attribute (msParam_t *inpH5DatasetParam, msParam_t *outH5DatasetParam, ruleExecInfo_t *rei)
  *
- * \brief This microservice is for reading attribute of a dataset from an opened H5File.
+ * \brief This microservice is for reading attribute of a dataset from an opened HDF5 file.
  *
  * \module hdf5
  *
