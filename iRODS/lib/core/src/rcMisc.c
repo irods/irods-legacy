@@ -3576,6 +3576,31 @@ initBulkDataObjRegInp (genQueryOut_t *bulkDataObjRegInp)
 }
 
 int
+initBulkDataObjRegOut (genQueryOut_t **bulkDataObjRegOut)
+{
+    genQueryOut_t *myBulkDataObjRegOut;
+
+    if (bulkDataObjRegOut == NULL) return USER__NULL_INPUT_ERR;
+
+    myBulkDataObjRegOut = *bulkDataObjRegOut = malloc (sizeof (genQueryOut_t));
+    if (myBulkDataObjRegOut == NULL) return SYS_MALLOC_ERR;
+
+    memset (myBulkDataObjRegOut, 0, sizeof (genQueryOut_t));
+
+    myBulkDataObjRegOut->attriCnt = 1;
+
+    myBulkDataObjRegOut->sqlResult[0].attriInx = COL_D_DATA_ID;
+    myBulkDataObjRegOut->sqlResult[0].len = NAME_LEN;
+    myBulkDataObjRegOut->sqlResult[0].value =
+      (char *)malloc (NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+    bzero (myBulkDataObjRegOut->sqlResult[0].value,
+      NAME_LEN * MAX_NUM_BULK_OPR_FILES);
+
+    myBulkDataObjRegOut->continueInx = -1;
+    return (0);
+}
+
+int
 fillBulkDataObjRegInp (char *rescName, char *rescGroupName, char *objPath,
 char *filePath, char *dataType, rodsLong_t dataSize, int dataMode, 
 int modFlag, int replNum, char *chksum, genQueryOut_t *bulkDataObjRegInp)

@@ -25,9 +25,11 @@
 #define RS_BULK_DATA_OBJ_REG rsBulkDataObjReg
 /* prototype for the server handler */
 int
-rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
+rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
+genQueryOut_t **bulkDataObjRegOut);
 int
-_rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp);
+_rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
+genQueryOut_t **bulkDataObjRegOut);
 int
 modDataObjSizeMeta (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 char *strDataSize);
@@ -41,7 +43,8 @@ extern "C" {
 
 /* prototype for the client call */
 int
-rcBulkDataObjReg (rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp);
+rcBulkDataObjReg (rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp,
+genQueryOut_t **bulkDataObjRegOut);
 
 /* rcBulkDataObjReg - Bulk Reg of iRODS data objects.
  * Input - 
@@ -51,6 +54,8 @@ rcBulkDataObjReg (rcComm_t *conn, genQueryOut_t *bulkDataObjRegInp);
  *      COL_D_DATA_PATH and OPR_TYPE_INX.
  *
  * OutPut - 
+ *    genQueryOut_t *bulkDataObjRegOut - arrays of metadata for COL_D_DATA_ID.
+ * Return - 
  *   int status - The status of the operation.   
  */
 

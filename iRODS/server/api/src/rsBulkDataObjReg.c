@@ -9,7 +9,8 @@
 #include "icatHighLevelRoutines.h"
 
 int
-rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
+rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
+genQueryOut_t **bulkDataObjRegOut)
 {
     sqlResult_t *objPath;
     int status;
@@ -32,19 +33,22 @@ rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 
     if (rodsServerHost->localFlag == LOCAL_HOST) {
 #ifdef RODS_CAT
-        status = _rsBulkDataObjReg (rsComm, bulkDataObjRegInp);
+        status = _rsBulkDataObjReg (rsComm, bulkDataObjRegInp, 
+	  bulkDataObjRegOut);
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     } else {
-        status = rcBulkDataObjReg (rodsServerHost->conn, bulkDataObjRegInp);
+        status = rcBulkDataObjReg (rodsServerHost->conn, bulkDataObjRegInp,
+	  bulkDataObjRegOut);
     }
 
     return (status);
 }
 
 int
-_rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
+_rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp,
+genQueryOut_t **bulkDataObjRegOut)
 {
 #ifdef RODS_CAT
     dataObjInfo_t dataObjInfo;
@@ -52,6 +56,8 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
       *dataMode, *oprType, *rescGroupName, *replNum, *chksum;
     char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
       *tmpDataMode, *tmpOprType, *tmpRescGroupName, *tmpReplNum, *tmpChksum;
+    sqlResult_t *objId;
+    char *tmpObjId;
     int status, i;
 
     if ((objPath =
@@ -118,6 +124,15 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 
     chksum = getSqlResultByInx (bulkDataObjRegInp, COL_D_DATA_CHECKSUM);
 
+   /* the output */
+    initBulkDataObjRegOut (bulkDataObjRegOut);
+    if ((objId =
+      getSqlResultByInx (*bulkDataObjRegOut, COL_D_DATA_ID)) == NULL) {
+        rodsLog (LOG_ERROR,
+          "rsBulkDataObjReg: getSqlResultByInx for COL_D_DATA_ID failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
    for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
         tmpObjPath = &objPath->value[objPath->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
@@ -127,7 +142,8 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
         tmpDataMode = &dataMode->value[dataMode->len * i];
         tmpOprType = &oprType->value[oprType->len * i];
 	tmpRescGroupName =  &rescGroupName->value[rescGroupName->len * i];
-	tmpReplNum =  &replNum->value[rescGroupName->len * i];
+	tmpReplNum =  &replNum->value[replNum->len * i];
+        tmpObjId = &objId->value[objId->len * i];
 
         bzero (&dataObjInfo, sizeof (dataObjInfo_t));
 	dataObjInfo.flags = NO_COMMIT_FLAG;
@@ -149,42 +165,12 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
 	dataObjInfo.replStatus = NEWLY_CREATED_COPY;
 	if (strcmp (tmpOprType, REGISTER_OPR) == 0) {
 	    status = svrRegDataObj (rsComm, &dataObjInfo);
-#if 0	/* this did not work with NO_COMMIT_FLAG. If svrRegDataObj failed,
-         * the chl routine would have called rollback. */
-	    if (status == CATALOG_ALREADY_HAS_ITEM_BY_THAT_NAME) {
-		/* try to register it as a replica */
-		dataObjInp_t dataObjInp;
-		regReplica_t regReplicaInp;
-	        dataObjInfo_t *srcDataObjInfo = NULL;
-		int status1;
-
-		bzero (&dataObjInp, sizeof (dataObjInp));
-		rstrcpy (dataObjInp.objPath, dataObjInfo.objPath, MAX_NAME_LEN);
-		status1 = getDataObjInfo (rsComm, &dataObjInp, &srcDataObjInfo,
-                  ACCESS_DELETE_OBJECT, 0);
-        	if (status1 >= 0) {
-		    bzero (&regReplicaInp, sizeof (regReplicaInp));
-                    dataObjInfo.dataId = srcDataObjInfo->dataId;
-            	    regReplicaInp.srcDataObjInfo = srcDataObjInfo;
-            	    regReplicaInp.destDataObjInfo = &dataObjInfo;
-		    status1 = rsRegReplica (rsComm, &regReplicaInp);
-		    freeAllDataObjInfo (srcDataObjInfo);
-		    if (status1 >= 0) {
-			status = status1;
-			/* update replStatus of other copies */
-			modDataObjSizeMeta (rsComm, &dataObjInfo, tmpDataSize);
-		    } else {
-        	        rodsLog (LOG_ERROR,
-	                  "rsBulkDataObjReg: srsRegReplica of %s err, stat=%d",
-              		  dataObjInfo.objPath, status1);
-		    }
-		}
-	    }
-#endif
 	} else {
 	    status = modDataObjSizeMeta (rsComm, &dataObjInfo, tmpDataSize);
         }
-	if (status < 0) {
+	if (status >= 0) {
+	    snprintf (tmpObjId, NAME_LEN, "%lld", dataObjInfo.dataId);
+	} else {
 	    rodsLog (LOG_ERROR,
 	     "rsBulkDataObjReg: RegDataObj or ModDataObj failed for %s,stat=%d",
               tmpObjPath, status);
@@ -197,6 +183,8 @@ _rsBulkDataObjReg (rsComm_t *rsComm, genQueryOut_t *bulkDataObjRegInp)
     if (status < 0) {
         rodsLog (LOG_ERROR,
          "rsBulkDataObjReg: chlCommit failed, status = %d", status);
+	freeGenQueryOut (bulkDataObjRegOut);
+	*bulkDataObjRegOut = NULL;
     }
     return status;
 #else
