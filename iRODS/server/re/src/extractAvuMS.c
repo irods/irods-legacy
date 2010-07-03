@@ -651,7 +651,7 @@ msiGetObjType(msParam_t *objParam, msParam_t *typeParam,
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified AVU pairs removed
- * \sideeffec none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
