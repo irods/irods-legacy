@@ -245,7 +245,7 @@ int whileExec(msParam_t* condition, msParam_t* whileBody,
  *
  * \return integer
  * \retval 0 on success
- * \pree none
+ * \pre none
  * \post none
  * \sa  none
  * \bug  no known bugs
@@ -1017,7 +1017,7 @@ doForkExec(char *prog, char *arg1)
  * \return integer
  * \retval negative number
  * \pre none
- * \pos nonet
+ * \post none
  * \sa fail
  * \bug  no known bugs
 **/
