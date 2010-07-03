@@ -1795,14 +1795,14 @@ msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence None, 
- * \DolVarModified none.
+ * \DolVarDependence none
+ * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
  * \sideeffect none
  *
  * \return integer
- * \retval POLICY_OFF or POLICY_ON.
+ * \retval POLICY_OFF or POLICY_ON
  * \pre
  * \post
  * \sa
