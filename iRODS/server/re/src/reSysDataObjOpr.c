@@ -1767,8 +1767,8 @@ msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2,
 /**
  * \fn msiSetBulkPutPostProcPolicy (msParam_t *xflag, ruleExecInfo_t *rei)
  *
- * \brief  This microservice sets whether the  post processing "put" 
- *  rule (acPostProcForPut) should be run (on or off) for bulk put
+ * \brief  This microservice sets whether the post processing "put" 
+ *  rule (acPostProcForPut) should be run (on or off) for the bulk put
  *  operation.
  * 
  * \module core
