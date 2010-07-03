@@ -23,8 +23,8 @@
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note   This micro-service takes a given buffer string and appends it to the back of he buffer
- * (either stdout or stderr in ruleExecOut parameter followed by a new line character. 
+ * \note   This micro-service takes a given buffer string and appends it to the back of the buffer
+ * (either stdout or stderr in ruleExecOut parameter) followed by a new line character. 
  * This may be extended later for writing into local log file 
  * or into an iRODS file also. The ruleExecOut is a system MS-parameter (*variable) that is automatically available.
  *
@@ -99,8 +99,8 @@ int writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note   This micro-service takes a given buffer string and appends it to the back of he buffer
- * (either stdout or stderr in ruleExecOut parameter. This may be extended later for writing into local log file 
+ * \note   This micro-service takes a given buffer string and appends it to the back of the buffer
+ * (either stdout or stderr in ruleExecOut parameter). This may be extended later for writing into local log file 
  * or into an iRODS file also. The ruleExecOut is a system MS-parameter (*variable) that is automatically available.
  *
  * \usage
