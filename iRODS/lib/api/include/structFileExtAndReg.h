@@ -15,6 +15,10 @@
 #include "apiNumber.h"
 #include "initServer.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 typedef struct StructFileExtAndRegInp {
     char objPath[MAX_NAME_LEN];		/* the obj path of the struct file */
     char collection[MAX_NAME_LEN];	/* the collection under which the
@@ -84,5 +88,9 @@ genQueryOut_t *bulkDataObjRegOut);
 int
 rcStructFileExtAndReg (rcComm_t *conn, 
 structFileExtAndRegInp_t *structFileExtAndRegInp);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif	/* STRUCT_FILE_EXT_AND_REG_H */
