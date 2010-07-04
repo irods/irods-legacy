@@ -276,6 +276,7 @@ rodsRestart_t *rodsRestart)
 #endif
     collHandle_t collHandle;
     collEnt_t collEnt;
+	dataObjInp_t childDataObjInp;
 
     if (srcColl == NULL || targDir == NULL) {
        rodsLog (LOG_ERROR,
@@ -380,7 +381,6 @@ rodsRestart_t *rodsRestart)
 	    if (collHandle.rodsObjStat->specColl != NULL) {
 #endif
                 /* the child is a spec coll. need to drill down */
-                dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;
 		if (collEnt.specColl.collClass != NO_SPEC_COLL)
                     childDataObjInp.specColl = &collEnt.specColl;
