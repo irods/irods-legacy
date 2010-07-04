@@ -304,6 +304,7 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
     collHandle_t collHandle;
     collEnt_t collEnt;
     char srcChildPath[MAX_NAME_LEN], targChildPath[MAX_NAME_LEN];
+	dataObjCopyInp_t childDataObjCopyInp;
 
     if (srcColl == NULL || targColl == NULL) {
        rodsLog (LOG_ERROR,
@@ -405,8 +406,6 @@ dataObjCopyInp_t *dataObjCopyInp, rodsRestart_t *rodsRestart)
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
 #endif
                 /* the child is a spec coll. need to drill down */
-                dataObjCopyInp_t childDataObjCopyInp;
-
                 childDataObjCopyInp = *dataObjCopyInp;
 		if (collEnt.specColl.collClass != NO_SPEC_COLL)
                     childDataObjCopyInp.srcDataObjInp.specColl = 
