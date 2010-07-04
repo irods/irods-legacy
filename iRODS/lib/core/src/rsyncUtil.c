@@ -431,6 +431,7 @@ dataObjInp_t *dataObjOprInp)
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
+	dataObjInp_t childDataObjInp;
 
     if (srcPath == NULL || targPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -529,7 +530,6 @@ dataObjInp_t *dataObjOprInp)
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
 #endif
                 /* the child is a spec coll. need to drill down */
-                dataObjInp_t childDataObjInp;
                 childDataObjInp = *dataObjOprInp;
 		if (collEnt.specColl.collClass != NO_SPEC_COLL)
                     childDataObjInp.specColl = &collEnt.specColl;
@@ -727,6 +727,8 @@ dataObjCopyInp_t *dataObjCopyInp)
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
+	dataObjCopyInp_t childDataObjCopyInp;
+
     dataObjInp_t *dataObjOprInp = &collHandle.dataObjInp;
 
     if (srcPath == NULL || targPath == NULL) {
@@ -849,7 +851,6 @@ dataObjCopyInp_t *dataObjCopyInp)
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
 #endif
                 /* the child is a spec coll. need to drill down */
-                dataObjCopyInp_t childDataObjCopyInp;
                 childDataObjCopyInp = *dataObjCopyInp;
 		if (collEnt.specColl.collClass != NO_SPEC_COLL)
                     childDataObjCopyInp.srcDataObjInp.specColl = 
