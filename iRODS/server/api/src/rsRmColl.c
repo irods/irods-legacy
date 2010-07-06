@@ -307,6 +307,8 @@ dataObjInfo_t *dataObjInfo, collOprStat_t **collOprStat)
 	    if (status < 0) savedStatus = status;
 	}
     }
+    clearKeyVal (&tmpCollInp.condInput);
+    clearKeyVal (&dataObjInp.condInput);
 
     return (savedStatus);
 }
