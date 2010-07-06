@@ -217,5 +217,80 @@ public class IRODSCommandsQueryTest {
 		TestCase.assertNotNull("no records returned from avu query, I expected results", fileList);
 		TestCase.assertEquals("did not find the 10 files in the 2 directories based on the common AVU", 20, fileList.length);
 	}
+	
+	@Test
+	public void queryMetadataForFileWithTwoAVUs() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "queryMetadataForFileWithTwoAVUs.txt";
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// add metadata for this file
+
+		String meta1Attrib = "twoavutest1";
+		String meta1Value = "c";
+
+		ImetaAddCommand metaAddCommand = new ImetaAddCommand();
+		metaAddCommand.setAttribName(meta1Attrib);
+		metaAddCommand.setAttribValue(meta1Value);
+		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
+		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+		
+		// add metadata for this file
+
+		String meta2Attrib = "twoavutest2";
+		String meta2Value = "d";
+
+		metaAddCommand = new ImetaAddCommand();
+		metaAddCommand.setAttribName(meta2Attrib);
+		metaAddCommand.setAttribValue(meta2Value);
+		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
+		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+
+		// now query
+		MetaDataCondition[] condition = new MetaDataCondition[2];
+		condition[0] = IRODSMetaDataSet.newCondition(meta1Attrib,
+				MetaDataCondition.EQUAL, meta1Value);
+		condition[1] = IRODSMetaDataSet.newCondition(meta2Attrib,
+				MetaDataCondition.EQUAL, meta2Value);
+
+		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
+				IRODSMetaDataSet.DIRECTORY_NAME };
+		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
+				condition, select, 100, Namespace.FILE, false);
+
+		irodsFileSystem.close();
+
+		TestCase.assertNotNull("no query results returned", fileList);
+		TestCase.assertEquals("did not find my file and metadata", 1,
+				fileList.length);
+		TestCase.assertTrue("did not find my file name in results", fileList[0]
+				.toString().indexOf(testFileName) > -1);
+
+	}
 
 }

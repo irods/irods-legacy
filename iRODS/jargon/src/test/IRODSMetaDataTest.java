@@ -181,14 +181,7 @@ System.out.println("\n Query specific AVU metadata of an iRODS file.");
     MetaDataTest.printQueryResults( rl );
     System.out.println("\n");
 
-        
-    
-    
-    //Note: cannot query two different AVU at once, e.g. this will not work:
-    //WHERE Ford=Model T SELECT file_name, myTestAttributeValue
-    
-    
-    
+ 
 System.out.println("\n Query all AVU metadata of an iRODS file.");
     selects[0] = 
             MetaDataSet.newSelection( IRODSMetaDataSet.META_DATA_ATTR_NAME );
