@@ -573,9 +573,9 @@ dataObjInp_t *destDataObjInp)
              subSrcDataObjInfo.filePath, status);
             return (status);
         }
-        snprintf (subSrcDataObjInfo.dataCreate, NAME_LEN, "%d", 
+        snprintf (subSrcDataObjInfo.dataCreate, TIME_LEN, "%d", 
           fileStatOut->st_ctim);
-        snprintf (subSrcDataObjInfo.dataModify, NAME_LEN, "%d",
+        snprintf (subSrcDataObjInfo.dataModify, TIME_LEN, "%d",
           fileStatOut->st_mtim);
         snprintf (subDestDataObjInp.objPath, MAX_NAME_LEN, "%s/%s",
           destDataObjInp->objPath, myRodsDirent.d_name);
