@@ -36,6 +36,7 @@
 #define SLAVE_ICAT_HOST_KW	"slaveIcatHost"
 
 #define RE_HOST_KW		"reHost"
+#define XMSG_HOST_KW		"xmsgHost"
 
 /* Keywords for the RULE ENGINE initialization */
 #define RE_RULESET_KW           "reRuleSet"
@@ -51,6 +52,9 @@
 #define INITIAL_NOT_DONE	0
 #define INITIAL_DONE		1
 
+/* rsPipSigalHandler parameters */
+#define MAX_BROKEN_PIPE_CNT	10
+#define BROKEN_PIPE_INT		300	/* 5 minutes interval */
 
 typedef struct hostName {
     char *name;
@@ -82,6 +86,7 @@ typedef struct rodsServerHost {
     rcComm_t *conn;
     int rcatEnabled;
     int reHostFlag;
+    int xmsgHostFlag;
     int localFlag;
     int status;
     void *zoneInfo;
@@ -243,5 +248,7 @@ int
 readProcLog (int pid, procLog_t *procLog);
 int
 rmProcLog (int pid);
+int
+getXmsgHost (rodsServerHost_t **rodsServerHost);
 
 #endif	/* INIT_SERVER_H */

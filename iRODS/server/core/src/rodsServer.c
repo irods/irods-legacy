@@ -732,6 +732,7 @@ initServerMain (rsComm_t *svrComm)
 {
     int status;
     rodsServerHost_t *reServerHost = NULL;
+    rodsServerHost_t *xmsgServerHost = NULL;
 
     bzero (svrComm, sizeof (rsComm_t));
 
@@ -789,7 +790,21 @@ initServerMain (rsComm_t *svrComm)
             exit(1);
         }
     }
+    getXmsgHost (&xmsgServerHost);
+    if (xmsgServerHost != NULL && xmsgServerHost->localFlag == LOCAL_HOST) {
+        if (RODS_FORK () == 0) {  /* child */
+            char *av[NAME_LEN];
+
+            close (svrComm->sock);
+            memset (av, 0, sizeof (av));
+            rodsLog(LOG_NOTICE, "Starting irodsXmsgServer");
+            av[0] = "irodsXmsgServer";
+            execv(av[0], av);
+            exit(1);
+        }
+    }
 #endif
+
     return status;
 }
 

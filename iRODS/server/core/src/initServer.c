@@ -21,6 +21,9 @@
 #include "hpssFileDriver.h"
 #endif
 
+static time_t LastBrokenPipeTime = 0;
+static int BrokenPipeCnt = 0;
+
 int
 resolveHost (rodsHostAddr_t *addr, rodsServerHost_t **rodsServerHost)
 {
@@ -444,6 +447,18 @@ printZoneInfo ()
 #endif
     }
 
+    if (getXmsgHost (&tmpRodsServerHost) >= 0) {
+#ifndef windows_platform
+#ifdef IRODS_SYSLOG
+        rodsLog (LOG_NOTICE,"xmsgHost:  %s", tmpRodsServerHost->hostName->name);
+#else /* IRODS_SYSLOG */
+        fprintf (stderr, "xmsgHost:  %s\n\n",tmpRodsServerHost->hostName->name);
+#endif /* IRODS_SYSLOG */
+#else
+        rodsLog (LOG_NOTICE,"xmsgHost:  %s", tmpRodsServerHost->hostName->name);
+#endif
+    }
+
     return (0);
 }
 
@@ -623,6 +638,23 @@ initRcatServerHostByFile (rsComm_t *rsComm)
                         return (remoteFlag);
                     }
                     tmpRodsServerHost->reHostFlag = 1;
+                } else {
+                    rodsLog (LOG_SYS_FATAL,
+                      "initRcatServerHostByFile: parsing error for keywd %s",
+                       keyWdName);
+                    return (SYS_CONFIG_FILE_ERR);
+                }
+            } else if (strcmp (keyWdName, XMSG_HOST_KW) == 0) {
+                if ((bytesCopied = getStrInBuf (&inPtr, addr.hostAddr,
+                 &lineLen, LONG_NAME_LEN)) > 0) {
+                    remoteFlag = resolveHost (&addr, &tmpRodsServerHost);
+                    if (remoteFlag < 0) {
+                        rodsLog (LOG_SYS_FATAL,
+                          "initRcatServerHostByFile: resolveHost error for %s, status = %d",
+                          addr.hostAddr, remoteFlag);
+                        return (remoteFlag);
+                    }
+                    tmpRodsServerHost->xmsgHostFlag = 1;
                 } else {
                     rodsLog (LOG_SYS_FATAL,
                       "initRcatServerHostByFile: parsing error for keywd %s",
@@ -1698,12 +1730,25 @@ signalExit ()
 void
 rsPipSigalHandler ()
 {
+    time_t curTime;
+
     if (ThisComm == NULL || ThisComm->reconnSock <= 0) {
 	rodsLog (LOG_NOTICE,
          "caught a broken pipe signal and exiting");
         cleanupAndExit (SYS_CAUGHT_SIGNAL);
     } else {
-
+	curTime = time (0);
+	if (curTime - LastBrokenPipeTime < BROKEN_PIPE_INT) {
+	    BrokenPipeCnt ++;
+	    if (BrokenPipeCnt > MAX_BROKEN_PIPE_CNT) {
+		rodsLog (LOG_NOTICE,
+         	  "caught a broken pipe signal and exiting");
+		cleanupAndExit (SYS_CAUGHT_SIGNAL);
+	    }
+	} else {
+	    BrokenPipeCnt = 1;
+	}
+	LastBrokenPipeTime = curTime;
 	rodsLog (LOG_NOTICE,
          "caught a broken pipe signal. Attempt to reconnect");
 #ifndef _WIN32
@@ -2354,6 +2399,25 @@ getReHost (rodsServerHost_t **rodsServerHost)
 
     return status;    
 }
+
+int
+getXmsgHost (rodsServerHost_t **rodsServerHost)
+{
+    rodsServerHost_t *tmpRodsServerHost;
+
+    tmpRodsServerHost = ServerHostHead;
+    while (tmpRodsServerHost != NULL) {
+        if (tmpRodsServerHost->xmsgHostFlag == 1) {
+            *rodsServerHost = tmpRodsServerHost;
+            return 0;
+        }
+        tmpRodsServerHost = tmpRodsServerHost->next;
+    }
+    *rodsServerHost = NULL;
+
+    return SYS_INVALID_SERVER_HOST;
+}
+
 
 /* getAndConnReHost - Get the irodsReServer host (result given in
  * rodsServerHost).

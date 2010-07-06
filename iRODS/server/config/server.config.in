@@ -4,9 +4,11 @@
 # icatHost - the address of the master icat host
 # slaveIcatHost - the address of the slave Icat host (optional)
 # reHost - This is only needed if the irods system is using more than one
-# master icat enabled servers. This points to the master icat host that will
-# run the irodsReServer.  Note that if "reHost" is used,
-# the same configuration needs to be applied to all servers.
+#   master icat enabled servers. This points to the master icat host that will
+#   run the irodsReServer.  Note that if "reHost" is used,
+# xmsgHost - the address of the irodsXmsgServer host. If this line is not
+#   specified, no irodsXmsgServer will be started.
+# The same configuration needs to be applied to all servers.
 #
 # For RCAT-Enabled hosts:
 # DBPassword - the database password
@@ -16,6 +18,7 @@
 icatHost zuri.sdsc.edu
 # slaveIcatHost srbbrick9.sdsc.edu
 # reHost srbbrick10.sdsc.edu
+# xmsgHost one.ucsd.edu
 DBUsername schroede
 #
 # The following keywords are needed for Rule Engine Initialization.
