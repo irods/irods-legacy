@@ -4180,14 +4180,15 @@ int
 mySetenvStr (char *envname, char *envval)
 {
     int status;
-    char *myBuf;
-    int len;
 
-    if (envname == NULL || envval == NULL) return USER__NULL_INPUT_ERR;
 #if defined(solaris_platform)||defined(linux_platform)||defined(osx_platform) 
+    if (envname == NULL || envval == NULL) return USER__NULL_INPUT_ERR;
     status = setenv (envname, envval, 1);
 #else
+    char *myBuf;
+    int len;
     
+    if (envname == NULL || envval == NULL) return USER__NULL_INPUT_ERR;
     len = strlen (envname) + strlen (envval) + 16;
     myBuf = (char *)malloc (len);
     snprintf (myBuf, len, "%s=%s", envname, envval);
