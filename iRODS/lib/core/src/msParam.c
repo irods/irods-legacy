@@ -503,11 +503,18 @@ clearMsParam (msParam_t *msParam, int freeStruct)
 
     if (msParam->label != NULL)
 	free (msParam->label);
-    if (msParam->type != NULL)
-	free (msParam->type);
-    /* XXXXXX - need to free ther internal struct too */
-    if (msParam->inOutStruct != NULL && freeStruct > 0)
+    /* XXXXXX - need to free their internal struct too */
+    /* free STR_MS_T too 7/8/10 mw */
+#if 0
+    if (msParam->inOutStruct != NULL && freeStruct > 0) { 
+#endif
+    if (msParam->inOutStruct != NULL && (freeStruct > 0 || 
+      (msParam->type != NULL && strcmp (msParam->type, STR_MS_T) == 0))) {
 	free (msParam->inOutStruct);
+    }
+    if (msParam->type != NULL)
+        free (msParam->type);
+
     memset (msParam, 0, sizeof (msParam_t));
     return (0);
 }
