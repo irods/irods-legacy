@@ -213,13 +213,13 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date
+ * \author  Antoine de Torcy
+ * \date	2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note  none
  *
  * \usage
  *
@@ -235,17 +235,17 @@ int _writeString(char *writeId, char *writeStr, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
- * \retval
- * \pre
- * \post
- * \sa
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
@@ -283,13 +283,13 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author  
- * \date 
+ * \author  Antoine de Torcy
+ * \date 2008
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note  none
  *
  * \usage
  *
@@ -305,17 +305,17 @@ int writePosInt(msParam_t* where, msParam_t* inInt, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
@@ -356,15 +356,15 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
  * 
  * \module core
  * 
- * \since pre-2.1
+ * \since 2.1
  * 
  * \author  Antoine de Torcy
- * \date 
+ * \date 2009
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-24
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note  none
  *
  * \usage
  *
@@ -381,17 +381,17 @@ int writeBytesBuf(msParam_t* where, msParam_t* inBuf, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int writeKeyValPairs(msParam_t *where, msParam_t *inKVPair, msParam_t *separator, ruleExecInfo_t *rei)
