@@ -400,6 +400,7 @@ rmLinkedFilesInUnixDir (char *phyBunDir)
             rmdir (subfilePath);
 	}
     }
+    closedir (dirPtr);
     return 0;
 }
 
