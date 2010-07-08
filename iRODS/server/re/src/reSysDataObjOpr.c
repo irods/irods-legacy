@@ -1623,9 +1623,9 @@ msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval RESC_QUOTA_OFF or RESC_QUOTA_ON.
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -1803,9 +1803,9 @@ msiSetReplComment(msParam_t *inpParam1, msParam_t *inpParam2,
  *
  * \return integer
  * \retval POLICY_OFF or POLICY_ON
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
