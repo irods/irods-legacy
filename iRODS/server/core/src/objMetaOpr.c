@@ -3883,6 +3883,7 @@ initRescGrp (rsComm_t *rsComm)
 	    }
         }
     }
+    freeGenQueryOut (&genQueryOut);
 
     /* query the remaining in cache */
     if (tmpRescGrpInfo != NULL) {
