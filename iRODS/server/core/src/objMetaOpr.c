@@ -1502,6 +1502,7 @@ dataObjInfo_t *dataObjInfo)
 
     status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
+    clearGenQueryInp (&genQueryInp);
     if (status < 0) {
 	if (status == CAT_NO_ROWS_FOUND) {
             rsComm->perfStat.orphanCnt ++;
@@ -1552,7 +1553,6 @@ dataObjInfo_t *dataObjInfo)
 	      collName->value, dataName->value);
         }
 
-        clearGenQueryInp (&genQueryInp);
         freeGenQueryOut (&genQueryOut);
 
 	return (0);
