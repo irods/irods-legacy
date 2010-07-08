@@ -337,49 +337,6 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     }
 
     memset (&regParam, 0, sizeof (regParam));
-#if 0
-    memset (&regParam, 0, sizeof (regParam));
-    myDataObjInfo = L1desc[l1descInx].dataObjInfo;
-
-    if (strlen (myDataObjInfo->chksum) > 0 && 
-      L1desc[l1descInx].oprType != REPLICATE_DEST &&
-      L1desc[l1descInx].oprType != PHYMV_DEST) {
-	/* overwriting an old copy. need to verify the chksum again */ 
-	L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
-    } 
-
-    if (L1desc[l1descInx].chksumFlag > 0) {
-        /* dataObjChksum will verify if VERIFY_CHKSUM is set.
-         * then call addKeyVal */
-        status = dataObjChksum (rsComm, l1descInx, &regParam);
-
-        if (status < 0) {
-            return (status);
-        }
-    }
-#endif
-
-#if 0
-	if (strlen (srcDataObjInfo->chksum) > 0 &&
-	  srcDataObjInfo->replStatus > 0) {
-	    /* the source has chksum. Must verify chksum */ 
-
-            status = _dataObjChksum (rsComm, destDataObjInfo, &chksumStr);
-            if (status < 0) {
-                rodsLog (LOG_NOTICE,
-                 "_rsDataObjClose: _dataObjChksum error for %s, status = %d",
-                  destDataObjInfo->objPath, status);
-            } else {
-		if (strcmp (srcDataObjInfo->chksum, chksumStr) != 0) {
-		    free (chksumStr); 
-                    rodsLog (LOG_NOTICE,
-                     "_rsDataObjClose: chksum mismatch for for %s",
-                     destDataObjInfo->objPath);
-		    return USER_CHKSUM_MISMATCH;
-		}
-	    }
-	}
-#endif
     if (L1desc[l1descInx].oprType == PHYMV_DEST) {
 	/* a phymv */
         destDataObjInfo = L1desc[l1descInx].dataObjInfo;
@@ -406,6 +363,7 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
         modDataObjMetaInp.dataObjInfo = destDataObjInfo;
         modDataObjMetaInp.regParam = &regParam;
         status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
+	clearKeyVal (&regParam);
 	/* have to handle the l3Close here because the need to 
 	 * unlink the srcDataObjInfo */
         if (status >= 0) {
@@ -499,14 +457,8 @@ _rsDataObjClose (rsComm_t *rsComm, openedDataObjInp_t *dataObjCloseInp)
     } else if (L1desc[l1descInx].dataObjInfo->specColl == NULL) {
 	/* put or copy */
 	if (l3descInx < 2 &&
-#if 0
-	  L1desc[l1descInx].dataObjInpReplFlag == 1 &&
-	  getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
-	  REPL_DATA_OBJ_INP_KW) != NULL &&
-#else
           getValByKey (&L1desc[l1descInx].dataObjInp->condInput,
           CROSS_ZONE_CREATE_KW) != NULL &&
-#endif
 	  L1desc[l1descInx].replStatus == NEWLY_CREATED_COPY) {
 	    /* the comes from a cross zone copy. have not been
 	     * registered yet */
