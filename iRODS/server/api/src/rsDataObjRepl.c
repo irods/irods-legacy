@@ -958,6 +958,7 @@ dataObjCopy (rsComm_t *rsComm, int l1descInx)
         L1desc[l1descInx].dataObjInp->numThreads = portalOprOut->numThreads;
     }
     if (portalOprOut != NULL) free (portalOprOut);
+    clearKeyVal (&dataOprInp->condInput);
 	
     return (status);
 }

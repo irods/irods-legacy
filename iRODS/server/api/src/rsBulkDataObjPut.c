@@ -164,6 +164,7 @@ bytesBuf_t *bulkOprInpBBuf)
           "_rsBulkDataObjPut: regUnbunSubfiles for dir %s. stat = %d",
           phyBunDir, status);
     }
+    freeAllRescGrpInfo (myRescGrpInfo);
     return status;
 }
 

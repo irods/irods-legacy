@@ -260,7 +260,8 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
       &srcChksumStr);
 #endif
 
-    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION) {
+    if (status < 0 && 
+      (status != CAT_NO_ACCESS_PERMISSION || srcChksumStr == NULL)) {
         /* XXXXX CAT_NO_ACCESS_PERMISSION mean the chksum was calculated but
          * cannot be registered. But the chksum value is OK.
          */
@@ -280,9 +281,16 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
       &destChksumStr);
 #endif
 
+    if (status < 0 &&
+      (status != CAT_NO_ACCESS_PERMISSION || destChksumStr == NULL)) {
+        rodsLog (LOG_ERROR,
+          "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
+          dataObjCopyInp.destDataObjInp.objPath, status);
+        clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
+        return (status);
+    }
 
-    if ((status >= 0 || status == CAT_NO_ACCESS_PERMISSION)
-      && strcmp (srcChksumStr, destChksumStr) == 0) {
+   if (strcmp (srcChksumStr, destChksumStr) == 0) {
 	free (srcChksumStr);
 	free (destChksumStr);
         clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
