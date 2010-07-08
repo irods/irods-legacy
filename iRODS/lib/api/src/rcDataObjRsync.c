@@ -20,7 +20,11 @@ rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
 	    return USER_INPUT_PATH_ERR;
 	} else {
 	    status = rcDataObjPut (conn, dataObjInp, locFilePath);
-	    return status;
+	    if (status >= 0) {
+		return SYS_RSYNC_TARGET_MODIFIED;
+	    } else {
+	        return status;
+	    }
 	}
     } else if (status == SYS_SVR_TO_CLI_GET_ACTION) {
         if ((locFilePath = getValByKey (&dataObjInp->condInput,
@@ -28,7 +32,11 @@ rcDataObjRsync (rcComm_t *conn, dataObjInp_t *dataObjInp)
             return USER_INPUT_PATH_ERR;
         } else {
             status = rcDataObjGet (conn, dataObjInp, locFilePath);
-	    return status;
+            if (status >= 0) {
+                return SYS_RSYNC_TARGET_MODIFIED;
+            } else {
+                return status;
+            }
 	}
     }
 

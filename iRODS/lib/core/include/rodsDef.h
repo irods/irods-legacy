@@ -120,6 +120,7 @@
 #define SYS_CLI_TO_SVR_COLL_STAT_REPLY 99999997
 #define SYS_SVR_TO_CLI_PUT_ACTION 99999990
 #define SYS_SVR_TO_CLI_GET_ACTION 99999991
+#define SYS_RSYNC_TARGET_MODIFIED 99999992	/* target modified */
 
 /* definition for iRODS server to client action request from a microservice. 
  * these definitions are put in the "label" field of MsParam */  

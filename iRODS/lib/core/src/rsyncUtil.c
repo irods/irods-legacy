@@ -195,15 +195,15 @@ dataObjInp_t *dataObjOprInp)
 
     if (getFlag == 1) {
 	/* only do the sync if no -l option specified */
-		status = 0;
-		if ( myRodsArgs->longOption != True ) { 
-			status = rcDataObjGet (conn, dataObjOprInp, targPath->outPath);	
-		}
-		else {
-			printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
-		}
+	if ( myRodsArgs->longOption != True ) { 
+	    status = rcDataObjGet (conn, dataObjOprInp, targPath->outPath);	
+	} else {
+	    status = 0;
+	    printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+	}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
-		if (status >= 0 && myRodsArgs->longOption != True) myChmod (targPath->outPath, srcPath->objMode);
+	if (status >= 0 && myRodsArgs->longOption != True) 
+	    myChmod (targPath->outPath, srcPath->objMode);
     } else if (syncFlag == 1) {
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW, 
 	  targPath->outPath);
@@ -216,7 +216,8 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (status >= 0 && myRodsArgs->verbose == True) {
-	if (getFlag + syncFlag > 0) {
+	if (getFlag > 0 || 
+	  (syncFlag > 0 && status == SYS_RSYNC_TARGET_MODIFIED)) {
             (void) gettimeofday(&endTime, (struct timezone *)0);
             printTiming (conn, srcPath->outPath, srcPath->size, 
 	      targPath->outPath, &startTime, &endTime);
@@ -293,22 +294,24 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (putFlag == 1) {
-		/* only do the sync if no -l option specified */
-		if ( myRodsArgs->longOption != True ) { 
+	/* only do the sync if no -l option specified */
+	if ( myRodsArgs->longOption != True ) { 
             status = rcDataObjPut (conn, dataObjOprInp, srcPath->outPath);
-		} else {
+	} else {
+	    status = 0;
             printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
-		}
+	}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_CHKSUM_KW);
     } else if (syncFlag == 1) {
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW, 
 	  srcPath->outPath);
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_LOCAL);
-        status = 0;
-		/* only do the sync if no -l option specified */
-		if ( myRodsArgs->longOption != True ) {
-			status = rcDataObjRsync (conn, dataObjOprInp);
-		}
+	/* only do the sync if no -l option specified */
+	if ( myRodsArgs->longOption != True ) {
+	    status = rcDataObjRsync (conn, dataObjOprInp);
+	} else {
+            status = 0;
+	}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW);
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW);
     } else {
@@ -316,7 +319,8 @@ dataObjInp_t *dataObjOprInp)
     }
 
     if (status >= 0 && myRodsArgs->verbose == True) {
-	if (putFlag + syncFlag > 0) {
+	if (putFlag > 0 ||
+	  (syncFlag > 0 && status == SYS_RSYNC_TARGET_MODIFIED)) {
             (void) gettimeofday(&endTime, (struct timezone *)0);
             printTiming (conn, srcPath->outPath, srcPath->size,
               targPath->outPath, &startTime, &endTime);
@@ -371,14 +375,13 @@ dataObjCopyInp_t *dataObjCopyInp)
         dataObjCopyInp->srcDataObjInp.dataSize = srcPath->size;
         rstrcpy (dataObjCopyInp->destDataObjInp.objPath, targPath->outPath, 
           MAX_NAME_LEN);
-		status = 0;
-		/* only do the sync if no -l option specified */
-		if ( myRodsArgs->longOption != True ) {
-			status = rcDataObjCopy (conn, dataObjCopyInp);
-		}
-		else {
-			printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
-		}
+	/* only do the sync if no -l option specified */
+	if ( myRodsArgs->longOption != True ) {
+	    status = rcDataObjCopy (conn, dataObjCopyInp);
+	} else {
+	    status = 0;
+	    printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+	}
     } else if (syncFlag == 1) {
 	dataObjInp_t *dataObjOprInp = &dataObjCopyInp->destDataObjInp;
         rstrcpy (dataObjOprInp->objPath, srcPath->outPath, 
@@ -387,14 +390,13 @@ dataObjCopyInp_t *dataObjCopyInp)
         addKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW,
           targPath->outPath);
 	addKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
-		status = 0;
-		/* only do the sync if no -l option specified */
-		if ( myRodsArgs->longOption != True ) {
-			status = rcDataObjRsync (conn, dataObjOprInp);
-		}
-		else {
-			printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
-		}
+	/* only do the sync if no -l option specified */
+	if ( myRodsArgs->longOption != True ) {
+	    status = rcDataObjRsync (conn, dataObjOprInp);
+	} else {
+	    status = 0;
+	    printf ("%s   %lld   N\n", srcPath->outPath, srcPath->size);
+	}
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_MODE_KW);
         rmKeyVal (&dataObjOprInp->condInput, RSYNC_DEST_PATH_KW);
     } else {
@@ -402,7 +404,8 @@ dataObjCopyInp_t *dataObjCopyInp)
     }
 
     if (status >= 0 && myRodsArgs->verbose == True) {
-	if (cpFlag + syncFlag > 0) {
+	if (cpFlag > 0 ||
+	  (syncFlag > 0 && status == SYS_RSYNC_TARGET_MODIFIED)) {
             (void) gettimeofday(&endTime, (struct timezone *)0);
             printTiming (conn, srcPath->outPath, srcPath->size, 
 	      targPath->outPath, &startTime, &endTime);
@@ -431,7 +434,7 @@ dataObjInp_t *dataObjOprInp)
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
-	dataObjInp_t childDataObjInp;
+    dataObjInp_t childDataObjInp;
 
     if (srcPath == NULL || targPath == NULL) {
        rodsLog (LOG_ERROR,
@@ -524,7 +527,7 @@ dataObjInp_t *dataObjOprInp)
 			/* only do the sync if no -l option specified */
 			if ( rodsArgs->longOption != True ) {
                 mkdirR (targDir, targChildPath, 0750);
-			}
+	    }
 
 #if 0
             if (collEnt.specColl.collClass != NO_SPEC_COLL) {
@@ -727,7 +730,7 @@ dataObjCopyInp_t *dataObjCopyInp)
     rodsPath_t mySrcPath, myTargPath;
     collHandle_t collHandle;
     collEnt_t collEnt;
-	dataObjCopyInp_t childDataObjCopyInp;
+    dataObjCopyInp_t childDataObjCopyInp;
 
     dataObjInp_t *dataObjOprInp = &collHandle.dataObjInp;
 

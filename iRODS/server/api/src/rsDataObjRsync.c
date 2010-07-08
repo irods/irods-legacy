@@ -312,6 +312,11 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     }
     clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
 
-    return (status);
+    if (status >= 0) {
+        return SYS_RSYNC_TARGET_MODIFIED;
+    } else {
+        return status;
+    }
+
 }
 
