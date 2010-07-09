@@ -284,7 +284,7 @@ int _admShowDVM(msParam_t *bufParam, ruleExecInfo_t *rei, rulevardef_t *inRuleVa
  * \DolVarModified - rei->MsParamArray->MsParam->ruleExecOut->stdout is modified
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
@@ -720,7 +720,7 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified icat rule-tables get modified
- * \sideeffect 
+ * \sideeffect none 
  *
  * \return integer
  * \retval 0 on success
@@ -791,7 +791,7 @@ int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect 
+ * \sideeffect none 
  *
  * \return integer
  * \retval 0 on success
