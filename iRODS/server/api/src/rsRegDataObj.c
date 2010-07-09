@@ -6,6 +6,9 @@
 #include "regDataObj.h"
 #include "icatHighLevelRoutines.h"
 
+/* rsRegDataObj - This call is strictly an API handler and should not be 
+ * called directly in the server. For server calls, use svrRegDataObj
+ */ 
 int
 rsRegDataObj (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
 dataObjInfo_t **outDataObjInfo)
@@ -13,6 +16,7 @@ dataObjInfo_t **outDataObjInfo)
     int status;
     rodsServerHost_t *rodsServerHost = NULL;
 
+    *outDataObjInfo = NULL;
 
     status = getAndConnRcatHost (rsComm, MASTER_RCAT, dataObjInfo->objPath,
       &rodsServerHost);
@@ -20,22 +24,34 @@ dataObjInfo_t **outDataObjInfo)
        return(status);
     }
     
-    *outDataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
-
-    memset (*outDataObjInfo, 0, sizeof (dataObjInfo_t));
-
     if (rodsServerHost->localFlag == LOCAL_HOST) {
 #ifdef RODS_CAT
         status = _rsRegDataObj (rsComm, dataObjInfo);
-	**outDataObjInfo = *dataObjInfo;
+	if (status >= 0) {
+            *outDataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+            memset (*outDataObjInfo, 0, sizeof (dataObjInfo_t));
+	    **outDataObjInfo = *dataObjInfo;
+	}
 #else
         status = SYS_NO_RCAT_SERVER_ERR;
 #endif
     } else {
         status = rcRegDataObj (rodsServerHost->conn, dataObjInfo, 
 	  outDataObjInfo);
+        /* free some fake pointers from packing instruction */
+        if (dataObjInfo->rescInfo != NULL) {
+	    free (dataObjInfo->rescInfo);
+	    dataObjInfo->rescInfo = NULL;
+        }
+        if (dataObjInfo->specColl != NULL) {
+            free (dataObjInfo->specColl);
+            dataObjInfo->specColl = NULL;
+        }
+        if (dataObjInfo->next != NULL) {
+            free (dataObjInfo->next);
+            dataObjInfo->next = NULL;
+	}
     }
-
     return (status);
 }
 
