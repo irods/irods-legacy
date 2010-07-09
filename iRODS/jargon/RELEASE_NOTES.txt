@@ -1,17 +1,16 @@
-Jargon 2.3.0.XX Release Notes
+Jargon 2.4.0 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 05/03/2010
-Release Version: 2.3.0.X - The trunk now reflects the state of the main code tree subsequent to the release of the Jargon 2.3.0.1 patch set. The main code line
-will continue with patches and upgrades to testing.  Feature development is underway in the Jargon 2.3.1 branch, and any patches here will be merged into the 2.3.1 feature branch.
+Date: 07/09/2010
+Release Version: 2.4.0 - This version of iRODS has been tested and updated for iRODS 2.4 compatability
 
 ================================================================================================
 Requirements
 
 -Jargon depends on Java 1.5+
 -Jargon is built using Apache ANT
--Jargon has been tested against IRODS 2.1, IRODS2.2, and IRODS2.3
+-Jargon has been tested against IRODS 2.1, IRODS2.2, IRODS2.3, IRODS2.4
 
 libraries
 ---------  
@@ -24,10 +23,13 @@ libraries
 ================================================================================================
 Features and Changes
 
-Bug 96  - IRODSFile.length() not reflecting length of file on resource
+* Bug 96  - IRODSFile.length() not reflecting length of file on resource
 
-Bug 100  - use different resource query for performance
+* Bug 100  - use different resource query for performance
 
+* Several small fixes for iRODS 2.4 compatibility
+
+* Maven POM updates to allow build with Globus toolkit
 
 ================================================================================================
 Outstanding Issues

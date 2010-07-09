@@ -79,8 +79,10 @@ public class IRODSAccount extends RemoteAccount {
 	public static final String IRODS_VERSION_2 = "rods2.0jargon2.0.5";
 	public static final String IRODS_VERSION_2_2 = "rods2.2jargon2.2.1";
 	public static final String IRODS_VERSION_2_3 = "rods2.3jargon2.3";
+	public static final String IRODS_VERSION_2_4 = "rods2.4jargon2.4";
 
-	public static final String IRODS_JARGON_RELEASE_NUMBER = "rods2.3";
+
+	public static final String IRODS_JARGON_RELEASE_NUMBER = "rods2.4";
 
 	/**
 	 * iRODS API version "d"
@@ -137,7 +139,7 @@ public class IRODSAccount extends RemoteAccount {
 	/**
 	 * The iRODS version.
 	 */
-	protected static String version = IRODS_VERSION_2_3;
+	protected static String version = IRODS_VERSION_2_4;
 
 	/**
 	 * The iRODS API version.
@@ -155,6 +157,8 @@ public class IRODSAccount extends RemoteAccount {
 		versionNumber.put(IRODS_VERSION_1_0, new Float(1.1));
 		versionNumber.put(IRODS_VERSION_1_0, new Float(1.2));
 		versionNumber.put(IRODS_VERSION_2_2, new Float(2.2));
+		versionNumber.put(IRODS_VERSION_2_3, new Float(2.3));
+		versionNumber.put(IRODS_VERSION_2_4, new Float(2.4));
 
 	}
 	public static boolean defaultObfuscate = false;

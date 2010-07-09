@@ -117,6 +117,7 @@ public class Resource extends Domain {
 
 	/**
 	 * List the resource groups in IRODS
+	 * 
 	 * @return <code>List<String></code> containing the resource groups
 	 * @throws JargonException
 	 */
@@ -136,7 +137,7 @@ public class Resource extends Domain {
 			if (queryResponse == null) {
 				return resourceGroups;
 			}
-			
+
 			for (int i = 0; i < queryResponse.length; i++) {
 				if (log.isInfoEnabled()) {
 					log.info("    resource group:" + queryResponse[i]);
@@ -160,21 +161,30 @@ public class Resource extends Domain {
 
 	/**
 	 * Add a resource to a resource group.
-	 * @param resourceName <code>String</code> containing the name of the resource to add to the specified group.
-	 * @param resourceGroupName <code>String<code> containing the name of the resource group to which the resource will be added.
-	 * @throws JargonException exception that indicates some sort of error condition
-	 * @throws DuplicateDataException exception that indicates an attempt to add duplicate data.  Generally, this should be treated as
-	 * a warning, versus returned as an error.
+	 * 
+	 * @param resourceName
+	 *            <code>String</code> containing the name of the resource to add
+	 *            to the specified group.
+	 * @param resourceGroupName
+	 *            <code>String<code> containing the name of the resource group to which the resource will be added.
+	 * @throws JargonException
+	 *             exception that indicates some sort of error condition
+	 * @throws DuplicateDataException
+	 *             exception that indicates an attempt to add duplicate data.
+	 *             Generally, this should be treated as a warning, versus
+	 *             returned as an error.
 	 */
 	public void addResourceToResourceGroup(String resourceName,
-			String resourceGroupName) throws JargonException, DuplicateDataException {
-		
+			String resourceGroupName) throws JargonException,
+			DuplicateDataException {
+
 		if (resourceName == null || resourceName.length() == 0) {
 			throw new JargonException("resource name cannot be null or blank");
 		}
-		
+
 		if (resourceGroupName == null || resourceGroupName.length() == 0) {
-			throw new JargonException("resource group name cannot be null or blank");
+			throw new JargonException(
+					"resource group name cannot be null or blank");
 		}
 
 		/*
@@ -191,13 +201,19 @@ public class Resource extends Domain {
 		try {
 			irodsFileSystem.commands.admin(args);
 		} catch (IRODSException ie) {
-			// note that an -809000 exception means the resource group was already there, treat as a 
+			// note that an -809000 exception means the resource group was
+			// already there, treat as a
 			// non-fatal condition
 			if (ie.getType() == -809000) {
-				log.warn("adding a duplicate resource to resource group, resource=" + resourceName + " resource group=" + resourceGroupName);
-				throw new DuplicateDataException("duplicate resource added to resource group");
+				log
+						.warn("adding a duplicate resource to resource group, resource="
+								+ resourceName
+								+ " resource group="
+								+ resourceGroupName);
+				throw new DuplicateDataException(
+						"duplicate resource added to resource group");
 			}
-		
+
 			log.error("IRODS exception sending iadmin command, irods code="
 					+ ie.getType(), ie);
 			throw new JargonException(
@@ -212,21 +228,29 @@ public class Resource extends Domain {
 	}
 
 	/**
-	 * Remove the resource from the given resource group.  Note that, if a resource does not exist in the group, the condition will be
-	 * silently ignored.
-	 * @param resourceName <code>String</code> giving the name of the resource to remove from the resource group.
-	 * @param resourceGroupName <code>String</code> giving the name of the resource group from which the resource will be removed.
-	 * @throws JargonException an error condition caused by this call to IRODS
+	 * Remove the resource from the given resource group. Note that, if a
+	 * resource does not exist in the group, the condition will be silently
+	 * ignored.
+	 * 
+	 * @param resourceName
+	 *            <code>String</code> giving the name of the resource to remove
+	 *            from the resource group.
+	 * @param resourceGroupName
+	 *            <code>String</code> giving the name of the resource group from
+	 *            which the resource will be removed.
+	 * @throws JargonException
+	 *             an error condition caused by this call to IRODS
 	 */
 	public void removeResourceFromResourceGroup(String resourceName,
 			String resourceGroupName) throws JargonException {
-		
+
 		if (resourceName == null || resourceName.length() == 0) {
 			throw new JargonException("resource name cannot be null or blank");
 		}
-		
+
 		if (resourceGroupName == null || resourceGroupName.length() == 0) {
-			throw new JargonException("resource group name cannot be null or blank");
+			throw new JargonException(
+					"resource group name cannot be null or blank");
 		}
 
 		if (log.isInfoEnabled()) {
@@ -243,11 +267,15 @@ public class Resource extends Domain {
 		try {
 			irodsFileSystem.commands.admin(args);
 		} catch (IRODSException ie) {
-			log.error("IRODS exception sending iadmin command, irods code="
-					+ ie.getType(), ie);
-			throw new JargonException(
-					"IRODS exception sending iadmin rmrg command, irods code ="
-							+ ie.getType(), ie);
+			if (ie.getMessage().indexOf("-831000") > -1) {
+				log.warn("resource does not exist, remove will silenly ignore");
+			} else {
+				log.error("IRODS exception sending iadmin command, irods code="
+						+ ie.getType(), ie);
+				throw new JargonException(
+						"IRODS exception sending iadmin rmrg command, irods code ="
+								+ ie.getType(), ie);
+			}
 		} catch (IOException e) {
 			log.error("IO exception sending iadmin command", e);
 			throw new JargonException(

@@ -126,13 +126,13 @@ class IRODSCommands {
 	 * @throws JargonException
 	 */
 	void connect(IRODSAccount irodsAccount) throws IOException, JargonException {
-		
+
 		if (irodsAccount == null) {
 			String err = "null irodsAccount";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		Tag message;
 		// irodsAccount was already cloned by the IRODSFileSystem
 		account = irodsAccount;
@@ -222,13 +222,13 @@ class IRODSCommands {
 	 */
 	protected synchronized void setReportedIRODSVersion(
 			String reportedIRODSVersion) {
-		
+
 		if (reportedIRODSVersion == null) {
 			String err = "null reportedIRODSVersion";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		this.reportedIRODSVersion = reportedIRODSVersion;
 	}
 
@@ -240,20 +240,24 @@ class IRODSCommands {
 	 *             Socket error
 	 */
 	synchronized void close() throws JargonException {
-		
+
 		log.debug("check if connected...");
-		
+
 		if (isConnected()) {
-			log.debug("IRODSCommands is connected, do a disconnect and shut down the socket");
+			log
+					.debug("IRODSCommands is connected, do a disconnect and shut down the socket");
 			try {
-				log.debug("sending disconnect message, still sees connection as open");
+				log
+						.debug("sending disconnect message, still sees connection as open");
 				irodsConnection.send(irodsConnection.createHeader(
 						RODS_DISCONNECT, 0, 0, 0, 0));
 				irodsConnection.flush();
 				irodsConnection.shutdown();
-				log.debug("shutdown complete, connection status is: {}" , irodsConnection.isConnected());
+				log.debug("shutdown complete, connection status is: {}",
+						irodsConnection.isConnected());
 			} catch (IOException e) {
-				log.warn("IOException closing connection, will try and obliterate if still open");
+				log
+						.warn("IOException closing connection, will try and obliterate if still open");
 				irodsConnection.obliterateConnectionAndDiscardErrors();
 				throw new JargonException(
 						"error sending disconnect on a close operation");
@@ -272,13 +276,13 @@ class IRODSCommands {
 	 *             if the host cannot be opened or created.
 	 */
 	private Tag sendStartupPacket(IRODSAccount irodsAccount) throws IOException {
-		
+
 		if (irodsAccount == null) {
 			String err = "null irodsAccount";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		/*
 		 * String out2 = "<StartupPack_PI>" + "<irodsProt>"+"1"+"</irodsProt>" +
 		 * "<reconnFlag>"+"0"+"</reconnFlag>" +
@@ -321,21 +325,19 @@ class IRODSCommands {
 	 */
 	private String challengeResponse(String challenge, String password)
 			throws SecurityException, IOException {
-		
+
 		if (challenge == null) {
 			String err = "null challenge";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
 
 		if (password == null) {
 			String err = "null password";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
-		
+
 		// Convert base64 string to a byte array
 		byte[] chal = null;
 		byte[] temp = Base64.fromString(challenge);
@@ -407,29 +409,27 @@ class IRODSCommands {
 			byte[] errorStream, int errorOffset, int errorLength, byte[] bytes,
 			int byteOffset, int byteStringLength, int intInfo)
 			throws IOException {
-		
 
 		if (type == null || type.length() == 0) {
 			String err = "null or blank type";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		if (message == null) {
 			String err = "null message";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
-		
+
 		String out = message.parseTag();
-		
+
 		if (out == null || out.length() == 0) {
 			String err = "null or missing message returned from parse";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		if (log.isDebugEnabled()) {
 			log.debug(out);
 		}
@@ -449,21 +449,21 @@ class IRODSCommands {
 	synchronized Tag irodsFunction(String type, Tag message, int errorLength,
 			InputStream errorStream, long byteStringLength,
 			InputStream byteStream, int intInfo) throws IOException {
-		
+
 		if (type == null || type.length() == 0) {
 			String err = "null or blank type";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		if (message == null) {
 			String err = "null message";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
-		
+
 		String out = message.parseTag();
-		
+
 		if (out == null || out.length() == 0) {
 			String err = "null or missing message returned from parse";
 			log.error(err);
@@ -584,7 +584,7 @@ class IRODSCommands {
 		Tag message = new Tag(CollInp_PI, new Tag[] {
 				new Tag(collName, file.getAbsolutePath()),
 				Tag.createKeyValueTag(keyword), });
-		
+
 		if (log.isDebugEnabled()) {
 			log.debug("delete directory with pi of:" + message.parseTag());
 		}
@@ -654,7 +654,7 @@ class IRODSCommands {
 				new Tag(offset, 0), new Tag(dataSize, 0),
 				new Tag(numThreads, 0), new Tag(oprType, 0),
 				Tag.createKeyValueTag(keyword), });
-		
+
 		if (log.isDebugEnabled()) {
 			log.debug("delete file with pi of:" + message.parseTag());
 		}
@@ -1572,7 +1572,7 @@ class IRODSCommands {
 	 */
 	String[] simpleQuery(String statement, String arg) throws IOException {
 		Tag message = null;
-		
+
 		log.info("simple query for statement {}", statement);
 		log.info("with parms {}", arg);
 
@@ -1664,14 +1664,14 @@ class IRODSCommands {
 		message.addTag(new Tag(continueInx, 0));
 		message.addTag(new Tag(partialStartIndex, 0));
 
-		if (!distinctQuery) {
-			int versionValue = getReportedIRODSVersion().compareTo("rods2.3"); 
-			if (versionValue >= 0) {
-				// reported version is at or after the version specified in 'compareTo'
-				message.addTag(new Tag(options, 1));
+		int versionValue = getReportedIRODSVersion().compareTo("rods2.3");
+		if (versionValue >= 0) {
+			if (distinctQuery) {
+				// reported version is at or after the version specified in
+				// 'compareTo'
+				message.addTag(new Tag(options, 0));
 			} else {
-				log
-						.warn("non-distinct queries are not supported prior to IRODS2.3, ignored...");
+				message.addTag(new Tag(options, 1));
 			}
 		}
 
@@ -1957,7 +1957,7 @@ class IRODSCommands {
 				throw new RuntimeException(
 						"unable to read all the bytes for an expected long value");
 			}
-			
+
 			return Host.castToLong(b);
 		}
 

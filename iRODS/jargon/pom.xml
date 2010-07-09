@@ -4,7 +4,7 @@
 	<groupId>org.irods</groupId>
 	<artifactId>Jargon</artifactId>
 	<name>Jargon - IRODS Java API</name>
-	<version>2.3.0-SNAPSHOT</version>
+	<version>2.4.0</version>
 	<description>pure Java client for the IRODS data grid	</description>
 	<url>https://www.irods.org/index.php/Jargon</url>
 	<issueManagement>
@@ -19,13 +19,13 @@
 		<url>http://dice.unc.edu/</url>
 	</organization>
 	<repositories>
-        <repository>
-          <id>maven2-repository.dev.java.net</id>
-          <name>Java.net Repository for Maven</name>
-          <url>http://download.java.net/maven/2/</url>
-          <layout>default</layout>
-        </repository>
-      </repositories>
+		<repository>
+			<id>maven2-repository.dev.java.net</id>
+			<name>Java.net Repository for Maven</name>
+			<url>http://download.java.net/maven/2/</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
 	<build>
 		<sourceDirectory>src/api</sourceDirectory>
 		<outputDirectory>target/classes</outputDirectory>
@@ -58,7 +58,7 @@
 					<includes>
 						<include>**/AllTests.java</include>
 					</includes>
-				</configuration> 
+				</configuration>
 			</plugin>
 		</plugins>
 
@@ -70,6 +70,11 @@
 			<version>1.5.10</version>
 			<type>jar</type>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>external.jglobus</groupId>
+			<artifactId>cog-jglobus</artifactId>
+			<version>1.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

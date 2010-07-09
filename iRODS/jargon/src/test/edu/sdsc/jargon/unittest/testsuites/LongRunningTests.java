@@ -18,7 +18,6 @@ import edu.sdsc.grid.io.irods.IRODSFileOutputStreamParallelTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-  AllTests.class, 
   IRODSCommandsDeleteBigTest.class, 
   IRODSFileOutputStreamParallelTest.class,
   IRODSFileInputStreamParallelTest.class,
