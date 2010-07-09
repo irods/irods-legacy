@@ -36,7 +36,7 @@
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date     2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
  *
@@ -70,13 +70,13 @@
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \postnone
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -173,6 +173,7 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
 	free( (char*)source.properties );
 	free( (char*)destination.properties );
 	return rei->status;
+
 }
 
 
@@ -187,7 +188,7 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    date
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
  *
@@ -210,13 +211,13 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
@@ -316,7 +317,7 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
  *
@@ -355,13 +356,13 @@ msiImageGetProperties( msParam_t *sourceParam, msParam_t* sourceProp,
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
