@@ -38,19 +38,6 @@ dataObjInfo_t **outDataObjInfo)
     } else {
         status = rcRegDataObj (rodsServerHost->conn, dataObjInfo, 
 	  outDataObjInfo);
-        /* free some fake pointers from packing instruction */
-        if (dataObjInfo->rescInfo != NULL) {
-	    free (dataObjInfo->rescInfo);
-	    dataObjInfo->rescInfo = NULL;
-        }
-        if (dataObjInfo->specColl != NULL) {
-            free (dataObjInfo->specColl);
-            dataObjInfo->specColl = NULL;
-        }
-        if (dataObjInfo->next != NULL) {
-            free (dataObjInfo->next);
-            dataObjInfo->next = NULL;
-	}
     }
     return (status);
 }
