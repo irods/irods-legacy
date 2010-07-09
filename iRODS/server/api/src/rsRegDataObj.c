@@ -29,6 +29,7 @@ dataObjInfo_t **outDataObjInfo)
         status = _rsRegDataObj (rsComm, dataObjInfo);
 	if (status >= 0) {
             *outDataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+	    /* fake pointers will be deleted by the packing */
 	    **outDataObjInfo = *dataObjInfo;
 	}
 #else

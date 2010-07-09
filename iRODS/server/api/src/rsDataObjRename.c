@@ -593,6 +593,10 @@ dataObjInp_t *destDataObjInp)
              "moveMountedCollCollObj: moveMountedColl for %s error, stat = %d",
              subSrcDataObjInfo.objPath, status);
 	}
+	if (fileStatOut != NULL) {
+	    free (fileStatOut);
+	    fileStatOut = NULL;
+	}
     }
     l3Rmdir (rsComm, srcDataObjInfo);
     return savedStatus;
