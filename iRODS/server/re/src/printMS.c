@@ -593,7 +593,7 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
  * \retval 0 on success
  * \pre none
  * \post none
- * \sa msiXmsgCreateStream, readXMsg
+ * \sa msiXmsgCreateStream, writeXMsg
  * \bug  no known bugs
 **/
 
