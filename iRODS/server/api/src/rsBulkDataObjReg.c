@@ -133,7 +133,8 @@ genQueryOut_t **bulkDataObjRegOut)
         return (UNMATCHED_KEY_OR_INDEX);
     }
 
-   for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
+    (*bulkDataObjRegOut)->rowCnt = bulkDataObjRegInp->rowCnt;
+    for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
         tmpObjPath = &objPath->value[objPath->len * i];
         tmpDataType = &dataType->value[dataType->len * i];
         tmpDataSize = &dataSize->value[dataSize->len * i];
@@ -175,6 +176,8 @@ genQueryOut_t **bulkDataObjRegOut)
 	     "rsBulkDataObjReg: RegDataObj or ModDataObj failed for %s,stat=%d",
               tmpObjPath, status);
 	    chlRollback (rsComm);
+            freeGenQueryOut (bulkDataObjRegOut);
+            *bulkDataObjRegOut = NULL;
             return status;
 	}
     }
