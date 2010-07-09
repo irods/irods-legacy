@@ -185,6 +185,8 @@ chkObjPermAndStat_t *chkObjPermAndStatInp)
 		    }
 		}
 	    }
+	} else {
+	    free (collEnt);
 	}	
     }
 

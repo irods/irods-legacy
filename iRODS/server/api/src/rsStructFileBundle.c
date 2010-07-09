@@ -65,7 +65,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
     } else if (remoteFlag < 0) {
             status = remoteFlag;
     }
-
+    freeAllRescGrpInfo (rescGrpInfo);
     return status;
 }
 
@@ -77,7 +77,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
     dataObjInp_t dataObjInp;
     openedDataObjInp_t dataObjCloseInp;
     collInp_t collInp;
-    collEnt_t *collEnt;
+    collEnt_t *collEnt = NULL;
     int handleInx;
     int collLen;
     char phyBunDir[MAX_NAME_LEN];
@@ -113,7 +113,9 @@ structFileExtAndRegInp_t *structFileBundleInp)
     addKeyVal (&chkObjPermAndStatInp.condInput, RESC_NAME_KW,
       L1desc[l1descInx].dataObjInfo->rescName);
 
-   status = rsChkObjPermAndStat (rsComm, &chkObjPermAndStatInp);
+    status = rsChkObjPermAndStat (rsComm, &chkObjPermAndStatInp);
+
+    clearKeyVal (&chkObjPermAndStatInp.condInput);
 
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -141,10 +143,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
         rmdir (phyBunDir);
         return (handleInx);
     }
-
-#if 0
-    collLen = strlen (collInp.collName) + 1;
-#endif
     collLen = strlen (collInp.collName);
 
     while ((status = rsReadCollection (rsComm, &handleInx, &collEnt)) >= 0) {
@@ -154,9 +152,6 @@ structFileExtAndRegInp_t *structFileBundleInp)
                   phyBunDir, collEnt->dataName);
             } else {
                 snprintf (tmpPath, MAX_NAME_LEN, "%s/%s/%s",
-#if 0
-                  phyBunDir, collEnt->collName + collLen, collEnt->dataName);
-#endif            
                  phyBunDir, collEnt->collName + collLen + 1, collEnt->dataName);               
 	        mkDirForFilePath (UNIX_FILE_TYPE, rsComm, phyBunDir, 
 	          tmpPath, getDefDirMode ());
@@ -172,12 +167,22 @@ structFileExtAndRegInp_t *structFileBundleInp)
                 return (UNIX_FILE_LINK_ERR - errno);
             }
         } else {        /* a collection */
-	    if (strlen (collEnt->collName) + 1 <= collLen) continue;
+	    if (strlen (collEnt->collName) + 1 <= collLen) {
+		free (collEnt);
+		continue;
+	    }
             snprintf (tmpPath, MAX_NAME_LEN, "%s/%s",
               phyBunDir, collEnt->collName + collLen);
             mkdirR (phyBunDir, tmpPath, getDefDirMode ());
 	}
+	if (collEnt != NULL) {
+	    free (collEnt);
+	    collEnt = NULL;
+	}
     }
+    clearKeyVal (&collInp.condInput);
+    rsCloseCollection (rsComm, &handleInx);
+
     status = phyBundle (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
       collInp.collName);
     if (status < 0) {
