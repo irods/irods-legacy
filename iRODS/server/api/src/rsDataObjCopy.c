@@ -179,6 +179,7 @@ transStat_t **transStat)
         destDataObjInp->numThreads = getNumThreads (rsComm,
 	 srcDataObjInfo->dataSize, destDataObjInp->numThreads, NULL,
 	 destRescName, srcRescName);
+	srcDataObjInp->numThreads = destDataObjInp->numThreads;
 #if 0
         /* XXXX can't handle numThreads == 0 && size > MAX_SZ_FOR_SINGLE_BUF */
         if (destDataObjInp->numThreads == 0 && 
