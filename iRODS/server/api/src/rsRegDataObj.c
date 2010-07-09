@@ -29,7 +29,6 @@ dataObjInfo_t **outDataObjInfo)
         status = _rsRegDataObj (rsComm, dataObjInfo);
 	if (status >= 0) {
             *outDataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
-            memset (*outDataObjInfo, 0, sizeof (dataObjInfo_t));
 	    **outDataObjInfo = *dataObjInfo;
 	}
 #else
