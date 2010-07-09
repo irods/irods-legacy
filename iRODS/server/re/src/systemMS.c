@@ -1081,11 +1081,11 @@ checkFilePerms(char *fileName) {
  * \param[in] memoryParam - the buffer to free
  * \param[in,out] rei Required - the RuleExecInfo structure.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence  none
+ * \DolVarModified  none
+ * \iCatAttrDependence  none
+ * \iCatAttrModified  none
+ * \sideeffect  none
  *
  * \return integer
  * \retval 0 on success

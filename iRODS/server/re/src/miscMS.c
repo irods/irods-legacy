@@ -27,11 +27,11 @@
  * \since pre-2.1
  *
  * \author  
- * \date    
+ * \date    2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
  *
- * \note
+ * \note use it only internally as data object information has to be  in rei
  *
  * \usage
  * As seen in modules/ERA/test/applyDCmetadata.ir
@@ -44,17 +44,17 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence $doi
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified file metadata
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
