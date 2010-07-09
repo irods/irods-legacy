@@ -460,5 +460,7 @@ create unique index idx_rule_exec on R_RULE_EXEC (rule_exec_id);
 create unique index idx_user_group1 on R_USER_GROUP (group_user_id,user_id);
 create unique index idx_resc_logical1 on R_RESC_GROUP (resc_group_name,resc_id);
 create unique index idx_objt_metamap1 on R_OBJT_METAMAP (object_id,meta_id);
+create unique index idx_objt_metamap2 on R_OBJT_METAMAP (object_id);
+create unique index idx_objt_metamap3 on R_OBJT_METAMAP (meta_id);
 create unique index idx_objt_access1 on R_OBJT_ACCESS (object_id,user_id);
 create unique index idx_objt_daccs1 on R_OBJT_DENY_ACCESS (object_id,user_id);
