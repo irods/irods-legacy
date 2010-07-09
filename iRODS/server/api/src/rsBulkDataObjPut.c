@@ -107,6 +107,7 @@ bytesBuf_t *bulkOprInpBBuf)
         }
         status = rcBulkDataObjPut (rodsServerHost->conn, bulkOprInp, 
           bulkOprInpBBuf);
+        freeAllRescGrpInfo (myRescGrpInfo);
 	return status;
     }
 
