@@ -589,12 +589,10 @@ dataObjInp_t *destDataObjInp)
 	}
 	if (status < 0) {
 	    savedStatus = status;
-	}
-	if (fileStatOut != NULL) free (fileStatOut); 
             rodsLog (LOG_ERROR,
-	     "moveMountedCollCollObj: moveMountedColl for %s error, stat = %d",
+             "moveMountedCollCollObj: moveMountedColl for %s error, stat = %d",
              subSrcDataObjInfo.objPath, status);
-
+	}
     }
     l3Rmdir (rsComm, srcDataObjInfo);
     return savedStatus;
