@@ -14,5 +14,4 @@
 # not begin with the "localhost" keyword and the first entry is the
 # preferred address.  
 # e.g. :
-localhost one.ucsd.edu one
-# srbbrick8.sdsc.edu srbbrick8
+# localhost one.ucsd.edu one
