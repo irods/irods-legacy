@@ -220,6 +220,37 @@ create table R_RULE_BASE_MAP
    modify_ts varchar(32)
  );
 
+create table R_RULE_DVM
+(
+   dvm_id INT64TYPE not null,
+   dvm_version varchar(250) DEFAULT '0',
+   dvm_base_name varchar(250) not null,
+   dvm_ext_var_name varchar(250) not null,
+   dvm_condition varchar(2700),
+   dvm_int_map_path varchar(2700) not null,
+   dvm_status INTEGER DEFAULT 1,
+   dvm_owner_name varchar(250) not null,
+   dvm_owner_zone varchar(250) not null,
+   r_comment varchar(1000),
+   create_ts varchar(32) ,
+   modify_ts varchar(32)
+);
+
+create table R_RULE_FNM
+(
+   fnm_id INT64TYPE not null,
+   fnm_version varchar(250) DEFAULT '0',
+   fnm_base_name varchar(250) not null,
+   fnm_ext_func_name varchar(250) not null,
+   fnm_int_func_name varchar(2700) not null,
+   fnm_status INTEGER DEFAULT 1,
+   fnm_owner_name varchar(250) not null,
+   fnm_owner_zone varchar(250) not null,
+   r_comment varchar(1000),
+   create_ts varchar(32) ,
+   modify_ts varchar(32)
+);
+
 create table R_RULE_EXEC
  (
    rule_exec_id        INT64TYPE not null,
