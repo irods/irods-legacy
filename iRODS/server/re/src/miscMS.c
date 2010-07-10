@@ -31,7 +31,7 @@
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
  *
- * \note use it only internally as data object information has to be  in rei
+ * \note  Use this only internally as data object information has to be in rei.
  *
  * \usage
  * As seen in modules/ERA/test/applyDCmetadata.ir
