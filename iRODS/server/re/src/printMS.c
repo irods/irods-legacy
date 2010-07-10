@@ -552,7 +552,7 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
  *        msParam_t *outHdr, msParam_t *outMsg,
  *        msParam_t *outUser, msParam_t *outAddr, ruleExecInfo_t *rei)
  *
- * \brief  This microservice reads  a message packet  from  an XMsgStream
+ * \brief  This microservice reads a message packet from an XMsgStream
  *
  * \module core
  *

@@ -615,9 +615,11 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
  * \author  Arcot Rajasekar
  * \date    2010
  * 
+ * \remark Terrell Russell - reviewed msi documentation, 2010-07-10
+ *
  * \note This microservice requires iRODS administration privileges.
  *  
- * \note Adds the given rules from an  irb-file to a given rule structure
+ * \note Adds the given rules from an irb-file to a given rule structure.
  *
  * \usage
  *
@@ -625,9 +627,9 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
  *
  * myTestRule||msiAdmReadRulesFromFileIntoStruct(*FileName,*CS)##msiAdmInsertRulesFromStructIntoDB(*BaseName,*CS)|nop
  *
- * \param[in] inIrbFileNameParam - of type STR_MS_T, which is Rules file  in  irb format
- *      either in 'server/config/reConfigs' directory and  without the .irb extension, 
- *      or a full file  path in other directories in the server.
+ * \param[in] inIrbFileNameParam - a msParam of type STR_MS_T, a Rules file in irb format,
+ *      either in 'server/config/reConfigs/' and without the .irb extension, 
+ *      or a full file path in another directory on the server.
  * \param[out] outCoreRuleStruct - of type RuleStruct_MS_T (can be NULL in  which case it is allocated)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -690,9 +692,10 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
 /**
  * \fn msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
  *
- * \brief  This is a microservice that reads the content of a rule srtruture and writes them as a 
- * a new rule-base set by  populating the core rule  tables of the  iCAT.
- * It also maintains  versioning of the rule base in the iCAT by giving an older version number to an existing base set of rules. 
+ * \brief  This is a microservice that reads the contents of a rule structure and writes them as
+ * a new rule base set by populating the core rule tables of the iCAT.
+ * It also maintains versioning of the rule base in the iCAT by giving an older version number to the existing base set of rules. 
+ * 
  * \module core 
  *
  * \since 2.5
@@ -700,9 +703,11 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
  * \author  Arcot Rajasekar
  * \date    2010
  * 
+ * \remark Terrell Russell - reviewed msi documentation, 2010-07-10
+ * 
  * \note This microservice requires iRODS administration privileges.
  *  
- * \note Adds rules to the iCAT rule-base
+ * \note Adds rules to the iCAT rule base.
  *
  * \usage
  *
@@ -710,8 +715,8 @@ int msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *
  *
  * myTestRule||msiAdmReadRulesFromFileIntoStruct(*FileName,*CS)##msiAdmInsertRulesFromStructIntoDB(*BaseName,*CS)|nop
  *
- * \param[in] inIrbBaseNameParam - of type STR_MS_T, which is name of the base that is being added.
- * \param[in] inCoreRuleStruct - of type RuleStruct_MS_T containing the rules.
+ * \param[in] inIrbBaseNameParam - a msParam of type STR_MS_T, which is name of the base that is being added.
+ * \param[in] inCoreRuleStruct - a msParam of type RuleStruct_MS_T containing the rules.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -761,7 +766,7 @@ int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *
  *                  msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)
  *
  * \brief  This is a microservice that queries the iCAT for rules with a given base name and 
- *     version number and populates the in a rule structure
+ *     version number and populates a rule structure with those rules.
  *
  * \module core 
  *
@@ -770,9 +775,11 @@ int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *
  * \author  Arcot Rajasekar
  * \date    2010
  * 
+ * \remark Terrell Russell - reviewed msi documentation, 2010-07-10
+ * 
  * \note This microservice requires iRODS administration privileges.
  *  
- * \note Queries rules from the iCAT rule-base
+ * \note Queries rules from the iCAT rule base.
  *
  * \usage
  *
@@ -780,9 +787,9 @@ int msiAdmInsertRulesFromStructIntoDB(msParam_t *inIrbBaseNameParam, msParam_t *
  *
  * myTestRule||msiGetRulesFromDBIntoStruct(*BaseName,*VersionStr, *CS)##msiAdmWriteRulesFromStructIntoFile(*FileName,*CS)|nop
  *
- * \param[in] inIrbBaseNameParam - of type STR_MS_T, which is name of the base that is being queried.
- * \param[in] inVersiobParam - of type STR_MS_T, which is the version string of the base being queired (use 0 for the current)
- * \param[out] outCoreRuleStruct - of type RuleStruct_MS_T (can be NULL in  which case it is allocated)
+ * \param[in] inIrbBaseNameParam - a msParam of type STR_MS_T, which is the name of the base that is being queried.
+ * \param[in] inVersionParam - a msParam of type STR_MS_T, which is the version string of the base being queried (use 0 for current version)
+ * \param[out] outCoreRuleStruct - a msParam of type RuleStruct_MS_T (can be NULL in which case it is allocated)
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -847,8 +854,8 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionP
 /**
  * \fn msiAdmWriteRulesFromStructIntoFile(msParam_t *inIrbFileNameParam, msParam_t *inCoreRuleStruct, ruleExecInfo_t *rei)
  *
- * \brief  This is a microservice that writes into a  given file the contents of  a rule structure
- * The file can be in n'server/config/reConfigs' or any file-path in the server local file system and 
+ * \brief  This is a microservice that writes into a given file the contents of a given rule structure.
+ * The file can be in 'server/config/reConfigs/' or any path on the server local file system.
  *
  * \module core 
  *
@@ -857,9 +864,11 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionP
  * \author  Arcot Rajasekar
  * \date    2010
  * 
+ * \remark Terrell Russell - reviewed msi documentation, 2010-07-10
+ * 
  * \note This microservice requires iRODS administration privileges.
  *  
- * \note writes a file with rules from the rue structure (in irb format)
+ * \note Writes a file (in irb format) with rules from a rule structure.
  *
  * \usage
  *
@@ -867,10 +876,10 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionP
  *
  * myTestRule||msiGetRulesFromDBIntoStruct(*BaseName,*VersionStr, *CS)##msiAdmWriteRulesFromStructIntoFile(*FileName,*CS)|nop
  *
- * \param[in] inIrbFileNameParam - of type STR_MS_T, which is either a base-name in which case the file will 
- *      be written in 'server/config/reConfigs' directory with a  .irb extension, 
- *      or a full file  path in other directories in the server.
- * \param[in] inCoreRuleStruct - of type RuleStruct_MS_T 
+ * \param[in] inIrbFileNameParam - a msParam of type STR_MS_T, which is either a base-name in which case the file will 
+ *      be written into the 'server/config/reConfigs/' directory with an .irb extension, 
+ *      or a full file path in another directory on the server.
+ * \param[in] inCoreRuleStruct - a msParam of type RuleStruct_MS_T 
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -879,7 +888,7 @@ msiGetRulesFromDBIntoStruct(msParam_t *inIrbBaseNameParam, msParam_t *inVersionP
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect  a new rule file is created
+ * \sideeffect  A new rule file is created
  *
  * \return integer
  * \retval 0 on success

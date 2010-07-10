@@ -28,7 +28,11 @@ This documentation is generated from the iRODS code.
   - #msiAdmShowIRB      - Displays the currently loaded rules
   - #msiAdmShowDVM      - Displays the currently loaded variable name mappings
   - #msiAdmShowFNM      - Displays the currently loaded microservices and action (function) name mappings
-
+  - #msiAdmReadRulesFromFileIntoStruct - Reads configuration file into a rule structure
+  - #msiAdmInsertRulesFromStructIntoDB - Writes a rule structure into the current rule base
+  - #msiGetRulesFromDBIntoStruct - Populates a rule structure with rules from the given base name
+  - #msiAdmWriteRulesFromStructIntoFile - Writes to file the rules within a given rule structure
+  
  \subsection msiworkflow Workflow Microservices
   - #nop, #null       - No action
   - #cut              - Not to retry any other applicable rules for this action
@@ -144,6 +148,8 @@ This documentation is generated from the iRODS code.
   - #msiSendXmsg - Sends an Xmsg packet
   - #msiRcvXmsg -  Receives an Xmsg packet
   - #msiXmsgServerDisConnect  - Disconnects from the XMessage Server
+  - #readXMsg - Reads a message packet from an XMsgStream
+  - #writeXMsg - Writes a given string into an XMsgStream
 
  \subsection msiemail Email Microservices
   - #msiSendMail   - Sends email
