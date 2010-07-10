@@ -188,7 +188,7 @@ msiImageConvert( msParam_t *sourceParam, msParam_t* sourceProp,
  * \since pre-2.1
  *
  * \author  David R. Nadeau / University of California, San Diego
- * \date    date
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
  *
