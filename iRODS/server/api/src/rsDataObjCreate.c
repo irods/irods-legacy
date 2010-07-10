@@ -99,18 +99,22 @@ rsDataObjCreate (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         l1descInx = _rsDataObjCreate (rsComm, dataObjInp);
     } else if (rodsObjStatOut->specColl != NULL &&
       rodsObjStatOut->objType == UNKNOWN_OBJ_T) {
+#if 0 /* XXXXXXXXXX is this needed ? */
         dataObjInp->specColl = rodsObjStatOut->specColl;
 	rodsObjStatOut->specColl = NULL;
+#endif
 	/* newly created. take out FORCE_FLAG since it could be used by put */
         /* rmKeyVal (&dataObjInp->condInput, FORCE_FLAG_KW); */
         l1descInx = specCollSubCreate (rsComm, dataObjInp);
     } else {
 	/* dataObj exist */
         if (getValByKey (&dataObjInp->condInput, FORCE_FLAG_KW) != NULL) {
+#if 0 /* XXXXXXXXXX is this needed ? */
 	    if (rodsObjStatOut->specColl != NULL) {
                 dataObjInp->specColl = rodsObjStatOut->specColl;
                 rodsObjStatOut->specColl = NULL;
 	    }
+#endif
             dataObjInp->openFlags |= O_TRUNC | O_RDWR;
             l1descInx = _rsDataObjOpen (rsComm, dataObjInp);
         } else {
