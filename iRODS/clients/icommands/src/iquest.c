@@ -13,10 +13,12 @@ void usage ();
 void
 usage () {
    char *msgs[]={
-"Usage : iquest [-hz] [ [hint] format]  selectConditionString ",
+"Usage : iquest [-hz] [--no-page] [ [hint] format]  selectConditionString ",
 "Options are:",
 " -h  this help",
-" -z Zonename   the zone to query (default or invalid uses the local zone)",
+" -z Zonename  the zone to query (default or invalid uses the local zone)",
+" --no-page    do not prompt asking whether to continue or not",
+"              (by default, prompt after a large number of results (500)",
 "format is C format restricted to character strings.",
 "selectConditionString is of the form: SELECT <attribute> [, <attribute>]* [WHERE <condition> [ AND <condition>]*]",
 "attribute can be found using 'iquest attrs' command",
@@ -53,7 +55,7 @@ usage () {
 int
 queryAndShowStrCond(rcComm_t *conn, char *hint, char *format, 
 		    char *selectConditionString, int noDistinctFlag,
-                    char *zoneArgument)
+                    char *zoneArgument, int noPageFlag)
 {
 /*
   NoDistinctFlag is 1 if the user is requesting 'distinct' to be skipped.
@@ -89,11 +91,12 @@ queryAndShowStrCond(rcComm_t *conn, char *hint, char *format,
 
 
   while (i==0 && genQueryOut->continueInx > 0) {
-     char inbuf[100];
-     printf("Continue? [Y/n]");
-     fgets(inbuf, 90, stdin);
-     if (strncmp(inbuf, "n", 1)==0) break;
-
+     if (noPageFlag==0) {
+	char inbuf[100];
+	printf("Continue? [Y/n]");
+	fgets(inbuf, 90, stdin);
+	if (strncmp(inbuf, "n", 1)==0) break;
+     }
      genQueryInp.continueInx=genQueryOut->continueInx;
      i = rcGenQuery (conn, &genQueryInp, &genQueryOut);
      if (i < 0)
@@ -117,9 +120,9 @@ main(int argc, char **argv) {
     char *optStr;
     int noDistinctFlag=0;
 
-    optStr = "hz:";
+    optStr = "hz:Z";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (myRodsArgs.optind < argc) {
        if (!strcmp(argv[myRodsArgs.optind], "no-distinct")) {
@@ -173,15 +176,18 @@ main(int argc, char **argv) {
     if (myRodsArgs.optind == (argc - 3)) {
        status = queryAndShowStrCond(conn, argv[argc-3], 
 				    argv[argc-2], argv[argc-1], 
-				    noDistinctFlag, myRodsArgs.zoneName);
+				    noDistinctFlag, myRodsArgs.zoneName,
+				    myRodsArgs.noPage);
     }
     else if (myRodsArgs.optind == (argc - 2)) {
        status = queryAndShowStrCond(conn, NULL, argv[argc-2], argv[argc-1], 
-				    noDistinctFlag, myRodsArgs.zoneName);
+				    noDistinctFlag, myRodsArgs.zoneName,
+				    myRodsArgs.noPage);
     }
     else {
        status = queryAndShowStrCond(conn, NULL, NULL, argv[argc-1],
-				    noDistinctFlag, myRodsArgs.zoneName);
+				    noDistinctFlag, myRodsArgs.zoneName,
+				    myRodsArgs.noPage);
     }
     rcDisconnect(conn);
 

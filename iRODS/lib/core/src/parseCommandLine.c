@@ -91,6 +91,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 	       argv[i+1]="";
 	    }
 	 }
+	 if (strcmp("--no-page", argv[i])==0) {
+	    rodsArgs->noPage=True;
+	    argv[i]="-Z";
+	 }
       }
    }
 

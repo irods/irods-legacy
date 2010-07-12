@@ -52,6 +52,7 @@ typedef struct {
    char *mountType; 
    int replNum;
    char *replNumValue;
+   int noPage;
    int number;
    int numberValue;
    int physicalPath;
