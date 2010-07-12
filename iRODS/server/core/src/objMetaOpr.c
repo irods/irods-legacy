@@ -2515,11 +2515,15 @@ int singleFlag)
         addKeyVal (&genQueryInp->condInput, ACCESS_PERMISSION_KW, accStr);
 	/* have to set it to 1 because it only check the first one */  
         genQueryInp->maxRows = 1;
+        status =  rsGenQuery (rsComm, genQueryInp, genQueryOut);
+	rmKeyVal (&genQueryInp->condInput, USER_NAME_CLIENT_KW);
+	rmKeyVal (&genQueryInp->condInput, RODS_ZONE_CLIENT_KW);
+	rmKeyVal (&genQueryInp->condInput, ACCESS_PERMISSION_KW);
     } else {
         genQueryInp->maxRows = MAX_SQL_ROWS;
+        status =  rsGenQuery (rsComm, genQueryInp, genQueryOut);
     } 
 
-    status =  rsGenQuery (rsComm, genQueryInp, genQueryOut);
 
     return (status);
 
