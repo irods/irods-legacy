@@ -74,6 +74,7 @@ rsDataObjUnlink (rsComm_t *rsComm, dataObjInp_t *dataObjUnlinkInp)
         if (trashPolicy != NO_TRASH_CAN) {
             status = rsMvDataObjToTrash (rsComm, dataObjUnlinkInp, 
 	      &dataObjInfoHead);
+    	    freeAllDataObjInfo (dataObjInfoHead);
             return status;
         } else {
             status = _rsDataObjUnlink (rsComm, dataObjUnlinkInp, 
