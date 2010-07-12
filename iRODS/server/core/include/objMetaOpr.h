@@ -278,6 +278,4 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo);
 int
 getRescInfoAndStatus (rsComm_t *rsComm, char *rescName, keyValPair_t *condInput,
 rescGrpInfo_t **rescGrpInfo);
-int
-rsCloseGenQuery (rsComm_t *rsComm, int continueInx);
 #endif	/* OBJ_META_OPR_H */
