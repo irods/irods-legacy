@@ -37,7 +37,7 @@
 
 #define RHostAddr_PI "str hostAddr[LONG_NAME_LEN]; str rodsZone[NAME_LEN]; int port; int dummyInt;"
 
-#define RODS_STAT_T_PI "double st_size; int st_dev; int st_ino; int st_mode; int st_nlink; int st_uid; int st_gid; int st_rdev; int st_atim; int st_mtim; int st_ctim; int st_blksize; int st_blocks; int st_vfstype; int st_vfs; int st_type; int st_gen; int st_flag;"
+#define RODS_STAT_T_PI "double st_size; int st_dev; int st_ino; int st_mode; int st_nlink; int st_uid; int st_gid; int st_rdev; int st_atim; int st_mtim; int st_ctim; int st_blksize; int st_blocks;"
 
 #define RODS_DIRENT_T_PI "int d_offset; int d_ino; int d_reclen; int d_namlen; str d_name[DIR_LEN];" 
 
