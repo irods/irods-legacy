@@ -294,6 +294,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	free (srcChksumStr);
 	free (destChksumStr);
         clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
+        clearKeyVal (&dataObjCopyInp.srcDataObjInp.condInput);
 	return (0);
     }
 
@@ -311,6 +312,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	free (transStat);
     }
     clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
+    clearKeyVal (&dataObjCopyInp.srcDataObjInp.condInput);
 
     if (status >= 0) {
         return SYS_RSYNC_TARGET_MODIFIED;
