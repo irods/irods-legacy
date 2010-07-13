@@ -87,7 +87,7 @@ usage ()
    "Usage : ichksum [-harvV] [-K|f] [-n replNum] [-R resource] dataObj|collection ... ",
 "Checksum one or more data-object or collection from iRODS space.",
 "Options are:",
-" -f  force - checksum data-objects even if a checksum alreay exists in iCAT",
+" -f  force - checksum data-objects even if a checksum already exists in iCAT",
 " -a  checksum all replicas. ils -L should be used to list the values of all replicas",
 " -K  verify the checksum value in iCAT. If the checksum value does not exist,",
 "     compute and register one.",
