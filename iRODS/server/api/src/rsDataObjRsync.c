@@ -241,24 +241,13 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     rstrcpy (dataObjCopyInp.srcDataObjInp.objPath, dataObjInp->objPath,
       MAX_NAME_LEN);
     dataObjCopyInp.srcDataObjInp.dataSize = dataObjInp->dataSize;
-#if 0
-    dataObjCopyInp.destDataObjInp = *dataObjInp;
-    /* move the cond */
-    memset (&dataObjInp->condInput, 0, sizeof (keyValPair_t));
-#else
     replDataObjInp (dataObjInp, &dataObjCopyInp.destDataObjInp);
-#endif
     rstrcpy (dataObjCopyInp.destDataObjInp.objPath, destObjPath,
       MAX_NAME_LEN);
 
-#if 0
-    status = _rsDataObjChksum (rsComm, &dataObjCopyInp.srcDataObjInp, 
-      &srcChksumStr, &srcDataObjInfoHead);
-#else
     /* use rsDataObjChksum because the path could in in remote zone */
     status = rsDataObjChksum (rsComm, &dataObjCopyInp.srcDataObjInp, 
       &srcChksumStr);
-#endif
 
     if (status < 0 && 
       (status != CAT_NO_ACCESS_PERMISSION || srcChksumStr == NULL)) {
@@ -272,17 +261,12 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return (status);
     }
 
-#if 0
-    status = _rsDataObjChksum (rsComm, &dataObjCopyInp.destDataObjInp, 
-      &destChksumStr, &destDataObjInfoHead);
-#else
     /* use rsDataObjChksum because the path could in in remote zone */
     status = rsDataObjChksum (rsComm, &dataObjCopyInp.destDataObjInp, 
       &destChksumStr);
-#endif
 
-    if (status < 0 &&
-      (status != CAT_NO_ACCESS_PERMISSION || destChksumStr == NULL)) {
+    if (status < 0 && status != CAT_NO_ACCESS_PERMISSION &&
+     status != CAT_NO_ROWS_FOUND) {
         rodsLog (LOG_ERROR,
           "rsRsyncDataToData: _rsDataObjChksum error for %s, status = %d",
           dataObjCopyInp.destDataObjInp.objPath, status);
@@ -290,7 +274,7 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
         return (status);
     }
 
-   if (strcmp (srcChksumStr, destChksumStr) == 0) {
+   if (destChksumStr != NULL && strcmp (srcChksumStr, destChksumStr) == 0) {
 	free (srcChksumStr);
 	free (destChksumStr);
         clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
@@ -301,11 +285,6 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     free (srcChksumStr);
     if (destChksumStr != NULL)
 	free (destChksumStr);
-
-#if 0
-    freeAllDataObjInfo (srcDataObjInfoHead);
-    freeAllDataObjInfo (destDataObjInfoHead);
-#endif
 
     status = rsDataObjCopy (rsComm, &dataObjCopyInp, &transStat);
     if (transStat != NULL) {
@@ -319,6 +298,5 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
     } else {
         return status;
     }
-
 }
 
