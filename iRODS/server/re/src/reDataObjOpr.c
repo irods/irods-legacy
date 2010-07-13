@@ -2796,7 +2796,7 @@ ruleExecInfo_t *rei)
     if ((rei->status = parseMspForCondInp (inpParam4, &myDataObjInp->condInput,
       RSYNC_DEST_PATH_KW)) < 0) {
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
-          "msiDataObjRsync: input inpParam3 error. status = %d", rei->status);
+          "msiDataObjRsync: input inpParam4 error. status = %d", rei->status);
         return (rei->status);
     }
 
