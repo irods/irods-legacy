@@ -282,14 +282,15 @@ rsRsyncDataToData (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
 	return (0);
     }
 
-    free (srcChksumStr);
-    if (destChksumStr != NULL)
-	free (destChksumStr);
-
+    addKeyVal (&dataObjCopyInp.destDataObjInp.condInput, REG_CHKSUM_KW, 
+      srcChksumStr);
     status = rsDataObjCopy (rsComm, &dataObjCopyInp, &transStat);
     if (transStat != NULL) {
 	free (transStat);
     }
+    free (srcChksumStr);
+    if (destChksumStr != NULL)
+        free (destChksumStr);
     clearKeyVal (&dataObjCopyInp.destDataObjInp.condInput);
     clearKeyVal (&dataObjCopyInp.srcDataObjInp.condInput);
 
