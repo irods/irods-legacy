@@ -802,7 +802,7 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             srcL1descInx = L1desc[l1descInx].srcL1descInx;
             if (srcL1descInx <= 2) {
                 /* not a valid srcL1descInx */
-                rodsLog (LOG_NOTICE,
+                rodsLog (LOG_DEBUG,
                   "procChksumForClose: invalid srcL1descInx %d for copy",
                   srcL1descInx);
                 /* just register it for now */
@@ -844,12 +844,14 @@ procChksumForClose (rsComm_t *rsComm, int l1descInx, char **chksumStr)
             srcL1descInx = L1desc[l1descInx].srcL1descInx;
             if (srcL1descInx <= 2) {
                 /* not a valid srcL1descInx */
-                rodsLog (LOG_NOTICE,
-                  "procChksumForClose: invalid srcL1descInx %d fopy copy",
+                rodsLog (LOG_DEBUG,
+                  "procChksumForClose: invalid srcL1descInx %d for copy",
                   srcL1descInx);
+#if 0	/* register it */
                 /* do nothing */
                 free (*chksumStr);
                 *chksumStr = NULL;
+#endif
                 return (0);
             }
             srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
