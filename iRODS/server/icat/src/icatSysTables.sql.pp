@@ -452,7 +452,7 @@ create unique index idx_coll_main2 on R_COLL_MAIN (parent_coll_name VARCHAR_MAX_
 create index idx_data_main1 on R_DATA_MAIN (data_id);
 create unique index idx_data_main2 on R_DATA_MAIN (coll_id,data_name VARCHAR_MAX_IDX_SIZE,data_repl_num,data_version);
 create index idx_data_main3 on R_DATA_MAIN (coll_id);
-create index idx_data_main4 on R_DATA_MAIN (data_name VARCHAR_MAX_ID_SIZE);
+create index idx_data_main4 on R_DATA_MAIN (data_name VARCHAR_MAX_IDX_SIZE);
 create unique index idx_meta_main1 on R_META_MAIN (meta_id);
 create index idx_meta_main2 on R_META_MAIN (meta_attr_name VARCHAR_MAX_IDX_SIZE);
 create index idx_meta_main3 on R_META_MAIN (meta_attr_value VARCHAR_MAX_IDX_SIZE);
