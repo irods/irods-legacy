@@ -35,6 +35,7 @@ int extractACLQueryResults(genQueryOut_t *genQueryOut, bytesBuf_t *mybuf, int co
 int getUserACL(char *userName, bytesBuf_t *mybuf, rsComm_t *rsComm);
 int parseACLModLine(char *inpLine, rsComm_t *rsComm);
 int getSqlRowsByInx(genQueryOut_t *genQueryOut, intArray_t *indexes, bytesBuf_t *mybuf);
+int getObjectByFilePath(char *filePath, char *rescName, char *objPath, rsComm_t *rsComm);
 
 #endif	/* ERAUTIL_H */
 

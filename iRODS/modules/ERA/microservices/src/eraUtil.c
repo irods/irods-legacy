@@ -1916,5 +1916,49 @@ getSqlRowsByInx(genQueryOut_t *genQueryOut, intArray_t *indexes, bytesBuf_t *myb
 }
 
 
+/*
+ * getObjectByFilePath()
+ *
+ * objPath should be a string of size MAX_NAME_LEN
+ *
+ */
+int
+getObjectByFilePath(char *filePath, char *rescName, char *objPath, rsComm_t *rsComm)
+{
+	genQueryInp_t genQueryInp;
+	genQueryOut_t *genQueryOut;
+	char condStr[MAX_NAME_LEN];
+    sqlResult_t *dataName, *collName;
+    int status;
+
+
+	/* Query init */
+	memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+	genQueryInp.maxRows = 1;
+
+	/* Wanted fields */
+	addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+	addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+
+	/* Conditions */
+	snprintf (condStr, MAX_NAME_LEN, " = '%s'", filePath);
+	addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr);
+
+	snprintf (condStr, MAX_NAME_LEN, " = '%s'", rescName);
+	addInxVal (&genQueryInp.sqlCondInp, COL_D_RESC_NAME, condStr);
+
+	/* Query */
+	status = rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+	/* Extract results */
+	dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME);
+	collName = getSqlResultByInx (genQueryOut, COL_COLL_NAME);
+
+	/* Print out what we want */
+	snprintf(objPath, MAX_NAME_LEN, "%s/%s", collName->value, dataName->value);
+
+	return (status);
+}
+
 
 

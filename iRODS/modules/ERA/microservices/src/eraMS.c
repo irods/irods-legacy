@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include "eraMS.h"
 #include "eraUtil.h"
-
+#include "icatHighLevelRoutines.h"
 
 
 
@@ -2546,6 +2546,204 @@ msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ru
 	fillIntInMsParam (status, rei->status);
 	return (rei->status);
 }
+
+
+
+/**
+ * \fn msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief Parses output from clamscan and flags infected objects
+ *
+ * \module ERA
+ *
+ * \since 2.4
+ *
+ * \author  Antoine de Torcy
+ * \date    2010-7-9
+ *
+ * \remark none
+ *
+ * \note  Part of TPAP Accession Policy Demo
+ *
+ *
+ * \usage None
+ *
+ * \param[in] scanResObj - A DataObjInp_MS_T or a STR_MS_T,
+ * 		which should be clamscan's output stored in an iRODS object
+ * \param[in] scanResc - A STR_MS_T with the name of the resource where the scan took place.
+ * \param[out] status - An INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre None
+ * \post None
+ * \sa None
+ * \bug  no known bugs
+**/
+int
+msiFlagInfectedObjs(msParam_t *scanResObj, msParam_t *scanResc, msParam_t *status, ruleExecInfo_t *rei)
+{
+	/* for parsing input and opening iRODS object */
+	dataObjInp_t dataObjInpCache, *dataObjInp;
+	openStat_t *openStat;
+	char *resource;
+
+	/* for reading from object */
+    openedDataObjInp_t dataObjReadInp;
+    bytesBuf_t *readBuf = NULL;
+    int objID;
+
+	/* for new AVU creation */
+	modAVUMetadataInp_t modAVUMetadataInp;
+	char infectedObjPath[MAX_NAME_LEN];
+	char infectedFlag[NAME_LEN];
+
+	/* for line parsing */
+	char *lineStart, *lineEnd, *colon;
+
+	/* for timestamp */
+	char tStr0[TIME_LEN], tStr[TIME_LEN];
+
+
+	/*********************************  USUAL INIT PROCEDURE **********************************/
+
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiFlagInfectedObjs")
+
+
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiFlagInfectedObjs: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+
+	/********************************** PARSE INPUT **************************************/
+
+	/* Get path of scan object */
+	rei->status = parseMspForDataObjInp (scanResObj, &dataObjInpCache, &dataObjInp, 0);
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiFlagInfectedObjs: input dataObj error. status = %d", rei->status);
+		return (rei->status);
+	}
+
+	/* Get resource name */
+	resource = parseMspForStr(scanResc);
+	if (!resource || !strlen(resource))
+	{
+		rodsLog (LOG_ERROR, "msiFlagInfectedObjs: resource string is empty or NULL.");
+		return (USER__NULL_INPUT_ERR);
+	}
+
+
+	/********************************** READ SCAN RESULT OBJ ******************************************/
+
+	/* Open and stat object */
+	objID = rsDataObjOpenAndStat(rei->rsComm, dataObjInp, &openStat);
+	if (objID < 0)
+	{
+		rodsLog (LOG_ERROR, "msiFlagInfectedObjs: Could not open scan result object. status = %d", objID);
+		return (objID);
+	}
+
+	/* One more check before trying to read the entire object at once */
+	if (openStat->dataSize > 5*1024*1024)
+	{
+		rodsLog (LOG_ERROR, "msiFlagInfectedObjs: Scan result object should be much smaller than 5MB. status = %d", USER_FILE_TOO_LARGE);
+		return (USER_FILE_TOO_LARGE);
+	}
+
+	/* Set file descriptor and read length */
+	memset (&dataObjReadInp, 0, sizeof (dataObjReadInp));
+	dataObjReadInp.l1descInx = objID;
+	dataObjReadInp.len = openStat->dataSize;
+
+	/* Init read buffer */
+    readBuf = (bytesBuf_t *) malloc (sizeof (bytesBuf_t));
+    memset (readBuf, 0, sizeof (bytesBuf_t));
+
+	/* Read object */
+    rei->status = rsDataObjRead (rei->rsComm, &dataObjReadInp, readBuf);
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiFlagInfectedObjs: Could not read scan result object. status = %d", rei->status);
+		return (rei->status);
+	}
+
+    /* Close object */
+    rei->status = rsDataObjClose (rei->rsComm, &dataObjReadInp);
+
+
+    /********************************** PARSE SCAN RESULTS AND ADD METADATA ************************************/
+
+    /* get timestamp */
+	getNowStr(tStr0);
+	getLocalTimeFromRodsTime(tStr0,tStr);
+	snprintf(infectedFlag, NAME_LEN, "%s.%s", "INFECTED", tStr);
+
+	/* in case buffer is not null terminated */
+	appendStrToBBuf(readBuf, "");
+
+	/* init loop */
+	lineStart = readBuf->buf;
+
+	while ( (lineEnd=strstr(lineStart, "\n")) )
+	{
+		/* Parse output line by line */
+		lineEnd[0]='\0';
+
+		/* Find delimiter */
+		colon = strstr(lineStart, ":");
+		if (!colon)
+		{
+			break;
+		}
+
+		/* Separate file path from virus report */
+		colon[0]='\0';
+
+		/* get iRods path of infected object */
+		getObjectByFilePath(lineStart, resource, infectedObjPath, rei->rsComm);
+
+		/* init modAVU input */
+		memset (&modAVUMetadataInp, 0, sizeof(modAVUMetadataInp_t));
+		modAVUMetadataInp.arg0 = "add";
+		modAVUMetadataInp.arg1 = "-d";
+		modAVUMetadataInp.arg2 = infectedObjPath;
+		modAVUMetadataInp.arg3 = infectedFlag;
+		modAVUMetadataInp.arg4 = colon+2;  /* Clamscan virus report */
+		modAVUMetadataInp.arg5 = NULL;
+
+		/* invoke rsModAVUMetadata() */
+		rei->status = rsModAVUMetadata (rei->rsComm, &modAVUMetadataInp);
+
+		/* jump to next line */
+		lineStart=lineEnd+1;
+	}
+
+
+	/********************************** DONE ******************************************/
+
+	/* Return operation status */
+	fillIntInMsParam (status, rei->status);
+	return (rei->status);
+
+}
+
+
+
+
 
 
 
