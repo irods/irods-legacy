@@ -348,6 +348,8 @@ getActionRecoveryList(char *ruleAction, char *ruleRecovery,
     strcpy(recoveryArray[i],recovery);
 
     i++;
+    if (i == MAX_ACTION_IN_RULE)
+      return (MAX_NUM_OF_ACTION_IN_RULE_EXCEEDED);
     t1 = t2;
     t3 = t4;
     action[0] = '\0';
