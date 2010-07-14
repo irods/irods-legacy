@@ -2559,7 +2559,7 @@ msiFlagDataObjwithAVU(msParam_t *dataObj, msParam_t *flag, msParam_t *status, ru
  * \since 2.4
  *
  * \author  Antoine de Torcy
- * \date    2010-7-9
+ * \date    2010-07-09
  *
  * \remark none
  *

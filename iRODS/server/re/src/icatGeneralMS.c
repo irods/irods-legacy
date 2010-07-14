@@ -245,6 +245,7 @@ This documentation is generated from the iRODS code.
   - #msiIsColl - Checks if an iRODS path is a collection. For use in workflows
   - #msiIsData - Checks if an iRODS path is a data object (an iRODS file). For use in workflows
   - #msiStructFileBundle - Bundles a collection for export
+  - #msiFlagInfectedObjs - Parses output from clamscan and flags infected objects
 
  \subsection msiurl URL
   - #msiFtpGet - Gets a remote file using FTP and writes it to an iRODS object
