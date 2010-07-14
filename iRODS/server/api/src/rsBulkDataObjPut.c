@@ -217,6 +217,7 @@ initDataObjInpFromBulkOpr (dataObjInp_t *dataObjInp, bulkOprInp_t *bulkOprInp)
     if (dataObjInp == NULL || bulkOprInp == NULL)
 	return USER__NULL_INPUT_ERR;
 
+    bzero (dataObjInp, sizeof (dataObjInp_t));
     rstrcpy (dataObjInp->objPath, bulkOprInp->objPath, MAX_NAME_LEN);
     dataObjInp->condInput = bulkOprInp->condInput;
 
