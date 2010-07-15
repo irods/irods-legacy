@@ -1,0 +1,3 @@
+SAA Test 1||msiFlagInfectedObjs(*scanResObj, demoResc, *status)##writePosInt(stdout,*status)##writeLine(stdout,"")|nop
+*scanResObj=/tempZone/home/rods/SCAN_RESULT.2010-07-09.03_49_36.txt
+ruleExecOut
