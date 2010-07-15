@@ -158,14 +158,9 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
         /* freeAllRescGrpInfo (myRescGrpInfo); */
 	return status;
     }
-
     /* if multiCopy allowed, remove old so they won't be overwritten */
     status = sortObjInfoForRepl (&dataObjInfoHead, &oldDataObjInfoHead,
       multiCopyFlag);
-    if (status < 0) return status;
-
-    /* query rcat for resource info and sort it */
-    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
     if (status < 0) return status;
 
     if (getValByKey (&dataObjInp->condInput, BACKUP_RESC_NAME_KW) != NULL) {
@@ -178,6 +173,19 @@ transStat_t *transStat, dataObjInfo_t *outDataObjInfo)
     } else {    
         allFlag = 0;
     }
+
+    if (backupFlag == 0 && allFlag == 1 &&
+      getValByKey (&dataObjInp->condInput, DEST_RESC_NAME_KW) == NULL &&
+      dataObjInfoHead != NULL && dataObjInfoHead->rescGroupName[0] != '\0') {
+	/* replicate to all resc in the rescGroup */
+	addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW, 
+	  dataObjInfoHead->rescGroupName);
+    }
+
+    /* query rcat for resource info and sort it */
+    status = getRescGrpForCreate (rsComm, dataObjInp, &myRescGrpInfo);
+    if (status < 0) return status;
+
 
     if (multiCopyFlag == 0 || backupFlag == 1) {
 	/* if one copy per resource, see if a good copy already exist, 

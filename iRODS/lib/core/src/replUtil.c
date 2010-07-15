@@ -191,7 +191,7 @@ dataObjInp_t *dataObjInp, rodsRestart_t *rodsRestart)
         }
     } else if (myRodsEnv != NULL && strlen (myRodsEnv->rodsDefResource) > 0) {
 	myResc = myRodsEnv->rodsDefResource;
-        addKeyVal (&dataObjInp->condInput, DEST_RESC_NAME_KW,
+        addKeyVal (&dataObjInp->condInput, DEF_RESC_NAME_KW,
           myRodsEnv->rodsDefResource);
     }
 
