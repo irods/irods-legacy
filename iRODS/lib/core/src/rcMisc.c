@@ -3812,6 +3812,7 @@ int *outDataMode, char **outChksum)
     return UNMATCHED_KEY_OR_INDEX;
 }
 
+#ifdef BULK_OPR_WITH_TAR
 int
 untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
 {
@@ -3896,6 +3897,7 @@ untarBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
 #endif
     return status;
 }
+#endif	/* BULK_OPR_WITH_TAR */
 
 int
 unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf)
@@ -3977,6 +3979,7 @@ unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf)
     return 0;
 }
 
+#ifdef BULK_OPR_WITH_TAR
 int
 tarToBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
 {
@@ -4061,6 +4064,8 @@ tarToBuf (char *phyBunDir, bytesBuf_t *tarBBuf)
 #endif
     return status;
 }
+#endif	/* BULK_OPR_WITH_TAR */
+
 
 int
 readToByteBuf (int fd, bytesBuf_t *bytesBuf)
