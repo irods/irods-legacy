@@ -29,6 +29,7 @@
 #define SEND_PORT	38000
 #define SEND_BUF_SIZE	 64*1024*1024
 #define MAX_SEND_ERR_CNT	10000
+#define MAX_NO_PROGRESS_CNT	10
 
 /**
 RBUDP Sender class.   This class implements the sender part of RBUDP protocol. First, instantiate the QUANTAnet_rbudpSender_c class. Then

@@ -21,6 +21,7 @@
  *****************************************************************************/
 
 #include "QUANTAnet_rbudpSender_c.h"
+#include "rodsErrorTable.h"
 
 #include <stdarg.h>
 
@@ -79,6 +80,8 @@ int sendRate, int packetSize)
 	double srate;
 	gettimeofday(&curTime, NULL);
 	startTime = curTime;
+	int lastRemainNumberOfPackets = 0;
+	int noProgressCnt = 0;
 	initSendRudp(rbudpSender, buffer, bufSize, sendRate, packetSize);	
 	while (!done)
 	{
@@ -95,6 +98,10 @@ int sendRate, int packetSize)
 		if(rbudpSender->rbudpBase.verbose>1) 
 		    TRACE_DEBUG("real sending rate in this send is %f", srate);
 		
+		if (lastRemainNumberOfPackets == 0) {
+		    lastRemainNumberOfPackets = 
+		      rbudpSender->rbudpBase.remainNumberOfPackets;
+		}
 		// send end of UDP signal
 		if(rbudpSender->rbudpBase.verbose>1) 
 		    TRACE_DEBUG("send to socket %d an end signal.", 
@@ -133,6 +140,17 @@ int sendRate, int packetSize)
 		{
 			rbudpSender->rbudpBase.remainNumberOfPackets = 
 			  updateHashTable(&rbudpSender->rbudpBase);
+			if (rbudpSender->rbudpBase.remainNumberOfPackets >=
+			  lastRemainNumberOfPackets) {
+			    noProgressCnt++;
+			    if (noProgressCnt >= MAX_NO_PROGRESS_CNT) {
+				return (SYS_UDP_TRANSFER_ERR - errno);
+			    }
+			} else {
+			    lastRemainNumberOfPackets = 
+			      rbudpSender->rbudpBase.remainNumberOfPackets;
+			    noProgressCnt = 0;
+			}
 		}
 		
   	if (rbudpSender->rbudpBase.isFirstBlast)
@@ -261,9 +279,10 @@ udpSend(rbudpSender_t *rbudpSender)
 			      rbudpSender->rbudpBase.headerSize, 0) < 0) {
 				perror("send");
 				sendErrCnt++;
-				if (sendErrCnt > MAX_SEND_ERR_CNT)
-		                    return (errno ? (-1 * errno) : -1);
-      			    }
+				if (sendErrCnt > MAX_SEND_ERR_CNT) {
+		                    return (SYS_UDP_TRANSFER_ERR - errno);
+				}
+			    }
 			} else {	
       			    if (sendto(rbudpSender->rbudpBase.udpSockfd, msg, 
 			      actualPayloadSize + 
@@ -274,8 +293,9 @@ udpSend(rbudpSender_t *rbudpSender)
 			      < 0 ) {
               			perror("sendto");
                                 sendErrCnt++;
-                                if (sendErrCnt > MAX_SEND_ERR_CNT)
-	      			    return (errno ? (-1 * errno) : -1);
+                                if (sendErrCnt > MAX_SEND_ERR_CNT) {
+				    return (SYS_UDP_TRANSFER_ERR - errno);
+                                }
       			    }
 			}
 			i++;

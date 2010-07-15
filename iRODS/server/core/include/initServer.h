@@ -53,7 +53,7 @@
 #define INITIAL_DONE		1
 
 /* rsPipSigalHandler parameters */
-#define MAX_BROKEN_PIPE_CNT	10
+#define MAX_BROKEN_PIPE_CNT	50
 #define BROKEN_PIPE_INT		300	/* 5 minutes interval */
 
 typedef struct hostName {
