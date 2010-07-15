@@ -811,7 +811,7 @@ bulkOprInfo_t *bulkOprInfo)
     return status;
 }
 
-#ifdef BULK_OPR_WITH_TA
+#ifdef BULK_OPR_WITH_TAR
 int
 tarAndBulkPut (rcComm_t *conn, bulkOprInp_t *bulkOprInp, 
 bulkOprInfo_t *bulkOprInfo, rodsArguments_t *rodsArgs)
