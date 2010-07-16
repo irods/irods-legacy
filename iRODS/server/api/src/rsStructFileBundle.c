@@ -15,7 +15,9 @@ int
 rsStructFileBundle (rsComm_t *rsComm,
 structFileExtAndRegInp_t *structFileBundleInp)
 {
-    char *destRescName;
+#if 0
+    char *destRescName = NULL;
+#endif
     int status;
     rodsServerHost_t *rodsServerHost;
     int remoteFlag;
@@ -38,6 +40,7 @@ structFileExtAndRegInp_t *structFileBundleInp)
         return status;
     }
 
+#if 0
     if ((destRescName = 
      getValByKey (&structFileBundleInp->condInput, DEST_RESC_NAME_KW)) == NULL 
      && (destRescName = 
@@ -52,6 +55,12 @@ structFileExtAndRegInp_t *structFileBundleInp)
           destRescName, structFileBundleInp->collection, status);
         return status;
     }
+#else
+    /* borrow conInput */
+    dataObjInp.condInput = structFileBundleInp->condInput;
+    status = getRescGrpForCreate (rsComm, &dataObjInp, &rescGrpInfo);
+    if (status < 0) return status;
+#endif
 
     bzero (&rescAddr, sizeof (rescAddr));
     rstrcpy (rescAddr.hostAddr, rescGrpInfo->rescInfo->rescLoc, NAME_LEN);
