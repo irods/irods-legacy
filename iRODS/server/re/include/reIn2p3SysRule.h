@@ -38,7 +38,7 @@
 #define OUTPUT_MON_PERF "../log/rodsMonPerfLog"
 #define MAX_VALUE 100 /* for array definition */
 #define MAX_MESSAGE_SIZE 2000
-#define MAX_NSERVERS 40 /* max number of servers that can be monitored (load balancing) */
+#define MAX_NSERVERS 256 /* max number of servers that can be monitored (load balancing) */
 #define TIMEOUT 20 /* number of seconds after which the request (the thread taking care of it) 
 		      for server load is canceled */
 #define MON_OUTPUT_NO_ANSWER "#-1#-1#-1#-1#-1#-1#-1#-1#" /* used if no monitoring output from
