@@ -8,7 +8,7 @@ flagInfectedColl
 	msiAddConditionToGenQuery(META_DATA_ATTR_NAME, "like", "INFECTED%", *GenQInp);
 # Run query
 	msiExecGenQuery(*GenQInp, *GenQOut);
-# Extract and print out results, must be inside loop to work
+# Extract results, must be inside loop to work
   	foreach (*GenQOut)
 	{
 		msiGetValByKey(*GenQOut, "DATA_ID", *objCount);
@@ -23,7 +23,7 @@ flagInfectedColl
 	msiAddConditionToGenQuery(META_DATA_ATTR_NAME, "like", "INFECTED%", *GenQInp1);
 # Run query
 	msiExecGenQuery(*GenQInp1, *GenQOut1);
-# Extract and print out results
+# Extract results
   	foreach (*GenQOut1)
 	{
 		msiGetValByKey(*GenQOut1, "DATA_ID", *objCount1);
