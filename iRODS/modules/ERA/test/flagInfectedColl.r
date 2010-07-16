@@ -39,7 +39,7 @@ flagInfectedColl
 #		# Get timestamp
 		msiGetSystemTime(*Time, human);
 #		# Create new KeyValPair_MS_T
-		msiAddKeyVal(*KVP, "INFECTED.*Time", 1);
+		msiAddKeyVal(*KVP, "INFECTED.*Time", *count);
 #		# Add new metadata triplet to collection
 		msiAssociateKeyValuePairsToObj(*KVP, *collection, "-C");
 	}
