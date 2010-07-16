@@ -1,5 +1,9 @@
 package edu.sdsc.grid.io.irods;
 
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -389,6 +393,75 @@ public class IRODSCommandsDeleteTest {
 
 	}
 	
+	/*
+	 * Bug 108  - query fails with -816000 after delete
+	 */
+	@Test
+	public void testDelete1200ByDeletingCollectionNoForceThenIssueGenQuery()
+			throws Exception {
+
+		// test tuning variables
+		String testFileNamePrefix = "del1200filethenquery";
+		String testFileExtension = ".txt";
+		String deleteCollectionSubdir = IRODS_TEST_SUBDIR_PATH + "/del1200noforcethenquerydir";
+		int numberOfTestFiles = 1200;
+
+		// create collection to zap
+		String deleteCollectionAbsPath = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, deleteCollectionSubdir);
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		ImkdirCommand imkdrCommand = new ImkdirCommand();
+		imkdrCommand.setCollectionName(deleteCollectionAbsPath);
+		invoker.invokeCommandAndGetResultAsString(imkdrCommand);
+
+		IputCommand iputCommand = new IputCommand();
+		String genFileName = "";
+		String fullPathToTestFile = "";
+
+		// generate a number of files in the subdir
+		for (int i = 0; i < numberOfTestFiles; i++) {
+			genFileName = testFileNamePrefix + String.valueOf(i)
+					+ testFileExtension;
+			fullPathToTestFile = FileGenerator
+					.generateFileOfFixedLengthGivenName(testingProperties
+							.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+							+ "/", genFileName, 1);
+
+			iputCommand.setLocalFileName(fullPathToTestFile);
+			iputCommand.setIrodsFileName(deleteCollectionAbsPath);
+			iputCommand.setForceOverride(true);
+			invoker.invokeCommandAndGetResultAsString(iputCommand);
+		}
+
+		IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem, testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, deleteCollectionSubdir));
+
+		System.err.println("** Parent file before="+irodsFile.getParentFile());					
+		boolean deleteResult = irodsFile.delete(false);
+		System.err.println("** Parent file after="+irodsFile.getParentFile());					
+		System.err.println("** Parent file exists="+irodsFile.getParentFile().exists());					
+
+		// now do a query
+
+		String[] fields = { IRODSMetaDataSet.FILE_NAME,	IRODSMetaDataSet.DIRECTORY_NAME };
+
+
+		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fields);
+		MetaDataCondition[] condition = new MetaDataCondition[1];
+		condition[0] = IRODSMetaDataSet.newCondition(IRODSMetaDataSet.DIRECTORY_NAME,
+				MetaDataCondition.EQUAL, irodsFile.getAbsolutePath());
+		MetaDataRecordList[] fileList = irodsFileSystem.query(condition, select, 100, Namespace.FILE, false);
+
+		irodsFileSystem.close();
+		TestCase.assertTrue("delete was unsuccessful", deleteResult);
+		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
+
+	}
+	
 	@Test
 	public void testDelete5FilesByDeletingCollectionNoForce()
 			throws Exception {
@@ -445,6 +518,7 @@ public class IRODSCommandsDeleteTest {
 		assertionHelper.assertIrodsFileOrCollectionDoesNotExist(deleteCollectionAbsPath);
 
 	}
+	
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {

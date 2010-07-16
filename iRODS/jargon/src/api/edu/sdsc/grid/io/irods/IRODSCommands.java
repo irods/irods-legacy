@@ -609,10 +609,14 @@ class IRODSCommands {
 
 		boolean done = false;
 		Tag ackResult = reply;
+		
+		log.debug("processClientStatusMessages with tag:{}", reply);
 
 		while (!done) {
 			if (ackResult.getLength() > 0) {
+				log.debug("ackResult length > 0, is {}", ackResult.getLength());
 				if (ackResult.tagName.equals(CollOprStat_PI)) {
+					log.debug("has CollOperStat_PI");
 					// formulate an answer status reply
 
 					// if the total file count is 0, then I will continue and
@@ -623,18 +627,24 @@ class IRODSCommands {
 					Tag totalFilesTag = ackResult.getTag("totalFileCnt");
 					int totalFiles = Integer.parseInt((String) totalFilesTag
 							.getValue());
+					log.debug("totalFileCnt: {}", totalFiles);
 					Tag fileCountTag = ackResult.getTag("filesCnt");
 					int fileCount = Integer.parseInt((String) fileCountTag
 							.getValue());
+					log.debug("filesCnt: {}", fileCount);
+					
+					log.debug("SYS_CLI_TO_SVR_COLL_STAT_SIZE =  {}", SYS_CLI_TO_SVR_COLL_STAT_SIZE);
 
 					if (fileCount < SYS_CLI_TO_SVR_COLL_STAT_SIZE) {
+						log.debug("I am done");
 						done = true;
 					} else {
-
+						log.debug("sending status reply to irods");
 						irodsConnection
 								.sendInNetworkOrder(SYS_CLI_TO_SVR_COLL_STAT_REPLY);
 						irodsConnection.flush();
 						ackResult = irodsConnection.readMessage();
+						log.debug("ack result:{}", ackResult);
 					}
 				}
 			}
