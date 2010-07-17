@@ -9,8 +9,10 @@
 #include "dataObjOpr.h"
 #include "objStat.h"
 #include "miscServerFunct.h"
+#include "fileOpr.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
+//#include "fileOpr.h"
 
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,
@@ -838,7 +840,7 @@ genQueryOut_t *bulkDataObjRegOut)
     for (i = 0;i < bulkDataObjRegInp->rowCnt; i++) {
 	dataObjInfo_t *tmpDataObjInfo;
 
-        tmpDataObjInfo = malloc (sizeof (dataObjInfo_t));
+        tmpDataObjInfo = (dataObjInfo_t *)malloc (sizeof (dataObjInfo_t));
 	if (tmpDataObjInfo == NULL) return SYS_MALLOC_ERR;
 
 	*tmpDataObjInfo = dataObjInfo;
