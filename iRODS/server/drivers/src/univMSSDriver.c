@@ -19,6 +19,7 @@ int univMSSSyncToArch (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 	char dirname[MAX_NAME_LEN] = "";
 	execCmdOut_t *execCmdOut = NULL;
 	
+        bzero (&execCmdInp, sizeof (execCmdInp));
 	/* first create the directory on the target MSS */
 	lastpart = strrchr(filename, '/');
 	lenDir = strlen(filename) - strlen(lastpart);
@@ -59,6 +60,7 @@ int univMSSStageToCache (rsComm_t *rsComm, fileDriverType_t cacheFileType,
 	char cmdArgv[MAX_NAME_LEN] = "";
 	execCmdOut_t *execCmdOut = NULL;
 	
+        bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "stageToCache");
 	strcat(cmdArgv, " ");
@@ -88,6 +90,7 @@ int univMSSFileUnlink (rsComm_t *rsComm, char *filename) {
 	char cmdArgv[MAX_NAME_LEN] = "";
 	execCmdOut_t *execCmdOut = NULL;
 	
+        bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "rm");
 	strcat(cmdArgv, " ");
@@ -114,6 +117,7 @@ int univMSSFileMkdir (rsComm_t *rsComm, char *dirname, int mode) {
 	char cmdArgv[MAX_NAME_LEN] = "";
 	execCmdOut_t *execCmdOut = NULL;  
 
+	bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "mkdir");
 	strcat(cmdArgv, " ");
@@ -143,6 +147,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	char strmode[4];
 	execCmdOut_t *execCmdOut = NULL;  
 	
+        bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "chmod");
 	strcat(cmdArgv, " ");
@@ -179,6 +184,7 @@ int univMSSFileChmod (rsComm_t *rsComm, char *name, int mode) {
 	struct tm mytm;
 	time_t myTime;
 	
+        bzero (&execCmdInp, sizeof (execCmdInp));
 	rstrcpy(execCmdInp.cmd, UNIV_MSS_INTERF_SCRIPT, LONG_NAME_LEN);
 	strcat(cmdArgv, "stat");
 	strcat(cmdArgv, " ");
