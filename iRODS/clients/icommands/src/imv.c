@@ -85,8 +85,16 @@ usage (char *program)
 {
    int i;
    char *msgs[]={
-"imv moves/renames an irods data-object (file) or collection (directory) to "
-"another, data-object or collection.  Options are:",
+"imv moves/renames an irods data-object (file) or collection (directory) to",
+"another, data-object or collection. The move works if both the source and",
+"target are normal (registered in the iCAT) iRODS objects. It also works when",
+"the source object is in a mounted collection (object not registered in the",
+"iCAT) and the target is a normal object. In fact, this may provide a way",
+"to design a drop box where data can be uploaded quickly into a mounted",
+"collection and then in the background, moved to the eventual target",
+"collection (where data are registered in the iCAT). But currently, the", 
+"move from a normal collection to a mounted collection is not supported.",
+"Options are:",
 "-v verbose - display various messages while processing",
 "-V very verbose",
 "-h help - this help",
