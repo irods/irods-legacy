@@ -31,6 +31,8 @@ Features and Changes
 
 * Maven POM updates to allow build with Globus toolkit
 
+* fix to IcommandInvoker for too many open files error
+
 ================================================================================================
 Outstanding Issues
 

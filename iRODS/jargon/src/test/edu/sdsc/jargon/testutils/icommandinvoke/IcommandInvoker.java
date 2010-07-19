@@ -85,12 +85,10 @@ public class IcommandInvoker {
 		 * irodsUserName 'rods' irodsZone 'tempZone'
 		 */
 
-
-
 		ProcessBuilder pb = new ProcessBuilder(icommand.buildCommand());
 		Map<String, String> env = pb.environment();
 
-		Process p;
+		Process p = null;
 		BufferedInputStream bis;
 		BufferedInputStream errStream = null;
 
@@ -123,6 +121,11 @@ public class IcommandInvoker {
 		} catch (IOException ioe) {
 			throw new IcommandException("error invoking icommand", ioe);
 		} finally {
+			try {
+				p.waitFor();
+				p.getOutputStream().close();
+			} catch (Exception e) {
+			}
 			if (errStream != null) {
 				try {
 					errStream.close();
@@ -130,6 +133,7 @@ public class IcommandInvoker {
 					// ignore
 				}
 			}
+
 		}
 
 		return bis;
