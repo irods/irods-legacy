@@ -78,6 +78,7 @@ case "$1" in
 	mkdir ) $1 $2 ;;
 	chmod ) $1 $2 $3 ;;
 	rm ) $1 $2 ;;
+	stat ) $1 $2 ;;
 esac
 
 exit $?
