@@ -12,7 +12,9 @@ ALTER TABLE R_RESC_GROUP ALTER COLUMN resc_group_id SET NOT NULL;
 --- Changes to the Rule tables
 
 DROP TABLE R_RULE_MAIN;
-DROP TABLE R_RULE_EXEC;
+DROP TABLE R_RULE_BASE_MAP;
+DROP TABLE R_RULE_DVM;
+DROP TABLE R_RULE_FNM;
 
 create table R_RULE_MAIN
  (
@@ -83,23 +85,6 @@ create table R_RULE_FNM
    modify_ts varchar(32)
 );
 
-create table R_RULE_EXEC
- (
-   rule_exec_id        bigint not null,
-   rule_name           varchar(2700) not null,
-   rei_file_path       varchar(2700),
-   user_name           varchar(250),
-   exe_address         varchar(250),
-   exe_time            varchar(32),
-   exe_frequency       varchar(250),
-   priority            varchar(32),
-   estimated_exe_time  varchar(32),
-   notification_addr   varchar(250),
-   last_exe_time       varchar(32),
-   exe_status          varchar(32),
-   create_ts           varchar(32),
-   modify_ts           varchar(32)
- );
 
 --- New indexes
 
