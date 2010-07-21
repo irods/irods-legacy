@@ -133,6 +133,7 @@
 #define LOCAL_TO_IRODS	"LOCAL_TO_IRODS"
 #define IRODS_TO_LOCAL	"IRODS_TO_LOCAL"
 #define IRODS_TO_IRODS	"IRODS_TO_IRODS"
+#define IRODS_TO_COLLECTION	"IRODS_TO_COLLECTION"
 
 /* definition for public user */
 #define PUBLIC_USER_NAME	"public"

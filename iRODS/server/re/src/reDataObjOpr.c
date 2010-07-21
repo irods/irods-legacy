@@ -2724,12 +2724,15 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  *
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
- *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS.
+ *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS and IRODS_TO_COLLECTION.
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the chksum value
  *      (RSYNC_CHKSUM_KW).
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the 
- *      (RSYNC_DEST_PATH_KW). For IRODS_TO_LOCAL and LOCAL_TO_IRODS, this is
- *      the local path. If it is IRODS_TO_IRODS, it is the target path.
+ *      (RSYNC_DEST_PATH_KW).  For IRODS_TO_IRODS, it is the target path.
+ *	 For IRODS_TO_COLLECTION, this is the top level target collection.
+ *       e.g., if dataObj (inpParam1) is /tempZone/home/rods/foo and 
+ *       the target collection (inpParam4) is /tempZone/archive, then
+ *	 the parget path is /tempZone/archive/home/rods/foo.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
@@ -2757,6 +2760,8 @@ ruleExecInfo_t *rei)
     dataObjInp_t dataObjInp, *myDataObjInp;
     msParamArray_t *outParamArray = NULL;
     char *rsyncMode;
+    char *targCollection, *tmpPtr;
+    char targPath[MAX_NAME_LEN];
 
     RE_TEST_MACRO ("    Calling msiDataObjRsync")
 
@@ -2818,6 +2823,26 @@ ruleExecInfo_t *rei)
           myDataObjInp->objPath);
         rei->status = NO_LOCAL_FILE_RSYNC_IN_MSI;
         return (rei->status);
+    } else if (strcmp (rsyncMode, IRODS_TO_COLLECTION) == 0) {
+	targCollection = getValByKey (&myDataObjInp->condInput, 
+	  RSYNC_DEST_PATH_KW);
+        if (targCollection == NULL) {
+            rodsLog (LOG_ERROR,
+              "msiDataObjRsync:  RSYNC_DEST_PATH_KW input for %s is missing",
+	      myDataObjInp->objPath);
+            rei->status = USER_INPUT_PATH_ERR;
+            return (rei->status);
+        }
+	tmpPtr = strchr (myDataObjInp->objPath + 1, '/');
+        if (tmpPtr == NULL) {
+            rodsLog (LOG_ERROR,
+              "msiDataObjRsync:  problem parsing %s", myDataObjInp->objPath);
+            rei->status = USER_INPUT_PATH_ERR;
+            return (rei->status);
+        }
+	snprintf (targPath, MAX_NAME_LEN, "%s%s", targCollection, tmpPtr);
+	addKeyVal (&myDataObjInp->condInput, RSYNC_MODE_KW, IRODS_TO_IRODS);
+	addKeyVal (&myDataObjInp->condInput, RSYNC_DEST_PATH_KW, targPath);
     }
 
     rei->status = rsDataObjRsync (rsComm, myDataObjInp, &outParamArray);
