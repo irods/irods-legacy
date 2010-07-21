@@ -1577,7 +1577,7 @@ msiSetReServerNumProc (msParam_t *xnumProc, ruleExecInfo_t *rei)
 	numProc = atoi (numProcStr);
 	if (numProc > MAX_RE_PROCS) {
 	    numProc = MAX_RE_PROCS;
-	} else if (numProc <= 0) {
+	} else if (numProc < 0) {
 	    numProc = DEF_NUM_RE_PROCS;
 	}
     }
