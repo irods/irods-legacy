@@ -33,6 +33,8 @@ genQueryOut_t **bulkDataObjRegOut);
 int
 modDataObjSizeMeta (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
 char *strDataSize);
+int
+svrRegReplByDataObjInfo (rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo);
 #else
 #define RS_BULK_DATA_OBJ_REG NULL
 #endif
