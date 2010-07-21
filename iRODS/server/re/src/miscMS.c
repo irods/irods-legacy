@@ -26,10 +26,11 @@
  *
  * \since pre-2.1
  *
- * \author  
+ * \author Arcot Rajasekar 
  * \date    2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-30
+ * \remark Jewel Ward - msi documentation, 2010-07-21
  *
  * \note  Use this only internally as data object information has to be in rei.
  *
