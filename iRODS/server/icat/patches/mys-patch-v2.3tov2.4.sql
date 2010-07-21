@@ -1,13 +1,14 @@
 -- run these SQL statements, using the MySQL client mysql
 --
 
-ALTER TABLE R_RESC_GROUP ADD COLUMN resc_group_id bigint;
+ALTER TABLE R_RESC_GROUP ADD COLUMN resc_group_id bigint not null;
 
 -- Should generate the id for the existing resc_group ...
-UPDATE R_RESC_GROUP SET resc_group_id=r_object_id_nextval() WHERE resc_group_id IS NULL;
-ALTER TABLE R_RESC_GROUP ALTER COLUMN resc_group_id SET NOT NULL;
+UPDATE R_RESC_GROUP SET resc_group_id=r_objectid_nextval() WHERE resc_group_id IS NULL;
 
---- Changes to the Rule tables
+-- Changes to the Rule tables
+-- Some of these tables may not exist in your ICAT,
+-- in which case you may need to remove the drop statements.
 
 DROP TABLE R_RULE_MAIN;
 DROP TABLE R_RULE_BASE_MAP;
@@ -84,7 +85,7 @@ create table R_RULE_FNM
 );
 
 
---- New indexes
+-- New indexes
 
 create index idx_data_main3 on R_DATA_MAIN (coll_id);
 create index idx_data_main4 on R_DATA_MAIN (data_name (767));
