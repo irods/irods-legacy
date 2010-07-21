@@ -2728,11 +2728,11 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the chksum value
  *      (RSYNC_CHKSUM_KW).
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the 
- *      (RSYNC_DEST_PATH_KW).  For IRODS_TO_IRODS, it is the target path.
- *	 For IRODS_TO_COLLECTION, this is the top level target collection.
+ *      (RSYNC_DEST_PATH_KW).  For IRODS_TO_IRODS, this is the target path.
+ *       For IRODS_TO_COLLECTION, this is the top level target collection.
  *       e.g., if dataObj (inpParam1) is /tempZone/home/rods/foo and 
  *       the target collection (inpParam4) is /tempZone/archive, then
- *	 the parget path is /tempZone/archive/home/rods/foo.
+ *       the target path is /tempZone/archive/home/rods/foo.
  * \param[out] outParam - a INT_MS_T containing the status.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
