@@ -598,8 +598,6 @@ int msiAdmAddAppRuleStruct(msParam_t *irbFilesParam, msParam_t *dvmFilesParam,
 }
 
 /**************** Micro-Services for  ruleDB ********************************/
-/** Rules **/
-
 
 /**
  * \fn msiAdmReadRulesFromFileIntoStruct(msParam_t *inIrbFileNameParam, msParam_t *outCoreRuleStruct, ruleExecInfo_t *rei)

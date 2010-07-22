@@ -837,7 +837,7 @@ ruleExecInfo_t *rei)
  * 
  * \since pre-2.1
  * 
- * \author - Mike Wan 
+ * \author Mike Wan 
  * \date 2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-16
