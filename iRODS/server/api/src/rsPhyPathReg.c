@@ -199,7 +199,7 @@ rescGrpInfo_t *rescGrpInfo, rodsServerHost_t *rodsServerHost)
             rodsLog (LOG_ERROR,
               "_rsPhyPathReg: chkFilePathPerm error for %s",
               phyPathRegInp->objPath);
-            return (SYS_INVALID_FILE_PATH);
+            return (SYS_NO_PATH_PERMISSION);
         }
     } else {
 	status = 0;
