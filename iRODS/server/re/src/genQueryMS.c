@@ -32,7 +32,7 @@ int _makeQuery( char *sel, char *cond, char **sql);
  *
  * \remark Terrell Russell - msi documentation, 2009-09-10
  *
- * \note 
+ * \note This function takes a given condition string and options, creates an iCAT query, executes it and returns the values.
  *
  * \usage None
  *
@@ -131,12 +131,12 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
  *
  * \since pre-2.1
  *
- * \author  
+ * \author  Arcot Rajasekar
  * \date    2008
  *
  * \remark Terrell Russell - msi documentation, 2009-09-10
  *
- * \note 
+ * \note	This function takes a given condition string, creates an iCAT query, executes it and returns the values.
  *
  * \usage
  * As seen in clients/icommands/test/ruleTest15.ir
@@ -151,17 +151,17 @@ int msiExecStrCondQueryWithOptions(msParam_t* queryParam,
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa 
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, ruleExecInfo_t *rei)
@@ -215,8 +215,8 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
  *
  * \since pre-2.1
  *
- * \author  
- * \date   2008
+ * \author	Arcot Rajasekar
+ * \date	2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
@@ -235,16 +235,16 @@ int msiExecStrCondQuery(msParam_t* queryParam, msParam_t* genQueryOutParam, rule
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
+ * \pre none
+ * \post none
  * \sa msiGetMoreRows and msiExecStrCondQuery
  * \bug  no known bugs
 **/
@@ -386,14 +386,14 @@ _makeQuery( char *sel, char *cond, char **sql)
  *
  * \module core
  *
- * \since 
+ * \since pre-2.1
  *
- * \author  
- * \date    
+ * \author  Arcot Rajasekar
+ * \date    2008
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
  *
- * \note
+ * \note	This microservice creates sql query from parameter list and conditions.
  *
  * \usage None
  *
@@ -404,17 +404,17 @@ _makeQuery( char *sel, char *cond, char **sql)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa msiGetMoreRows and msiExecStrCondQuery
  * \bug  no known bugs
 **/
 int
