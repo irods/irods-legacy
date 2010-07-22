@@ -241,7 +241,7 @@ msitest3 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-12
  *
- * \note
+ * \note	This microservice adds 15 empty Dublin Core Metadata fields to an object or collection.
  *
  * \usage
  * As seen in modules/ERA/test/applyDCmetadata.ir
@@ -256,17 +256,17 @@ msitest3 (msParam_t *A, msParam_t *B, msParam_t* C, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
- * \retval 0 upon success
- * \pre
- * \post
- * \sa
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

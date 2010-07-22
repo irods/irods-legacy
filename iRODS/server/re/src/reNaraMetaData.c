@@ -9,19 +9,19 @@
 /**
  * \fn msiExtractNaraMetadata (ruleExecInfo_t *rei)
  *
- * \brief  This microservice extracts NARA style metadata from AVU triplets. 
+ * \brief  This microservice extracts NARA style metadata from  local configuration file.
  *
  * \module core
  *
  * \since pre-2.1
  *
  * \author  Antoine de Torcy
- * \date 
+ * \date 	2007
  * 
  * \remark Ketan Palshikar - msi documentation, 2009-06-25
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note  
+ * \note  This microservice extracts NARA style metadata from  local configuration file.
  *
  * \usage None
  * 
@@ -29,17 +29,17 @@
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
- * \retval 
- * \pre
- * \post
- * \sa 
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int

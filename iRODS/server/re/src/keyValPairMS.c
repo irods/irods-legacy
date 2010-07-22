@@ -325,6 +325,10 @@ int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *
  *
  * \usage
  *
+ * As seen in:
+ *
+ * flagCollWithTimestamp||msiGetSystemTime(*Time, human)##msiAddKeyVal(*KVP,"TIMESTAMP",*Time)
+ * ##msiAssociateKeyValuePairsToObj(*KVP,*Collection,"-C")##writeLine(stdout, *Time)|nop
  *
  * \param[in,out] inKeyValPair - Optional - a KeyValPair_MS_T
  * \param[in] key - Required - A STR_MS_T containing the key
@@ -333,17 +337,17 @@ int msiStrArray2String(msParam_t* inSAParam, msParam_t* outStr, ruleExecInfo_t *
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence
- * \DolVarModified
- * \iCatAttrDependence
- * \iCatAttrModified
- * \sideeffect
-
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
+ *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiAddKeyVal(msParam_t *inKeyValPair, msParam_t *key, msParam_t *value, ruleExecInfo_t *rei)
