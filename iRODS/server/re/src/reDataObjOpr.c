@@ -2725,8 +2725,8 @@ msiObjStat (msParam_t *inpParam1, msParam_t *outParam, ruleExecInfo_t *rei)
  * \param[in] inpParam1 - A DataObjInp_MS_T or STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - Optional - a STR_MS_T which specifies the rsync mode 
  *      (RSYNC_MODE_KW). Valid mode is IRODS_TO_IRODS and IRODS_TO_COLLECTION.
- * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the chksum value
- *      (RSYNC_CHKSUM_KW).
+ * \param[in] inpParam3 - Optional - a STR_MS_T which specifies the resource 
+  *      value (DEST_RESC_NAME_KW).
  * \param[in] inpParam4 - Optional - a STR_MS_T which specifies the 
  *      (RSYNC_DEST_PATH_KW).  For IRODS_TO_IRODS, this is the target path.
  *       For IRODS_TO_COLLECTION, this is the top level target collection.
@@ -2792,10 +2792,12 @@ ruleExecInfo_t *rei)
 
 
     if ((rei->status = parseMspForCondInp (inpParam3, &myDataObjInp->condInput,
-      RSYNC_CHKSUM_KW)) < 0) {
+      DEST_RESC_NAME_KW)) < 0) {
+#if 0	/* OK to have no resource */
         rodsLogAndErrorMsg (LOG_ERROR, &rsComm->rError, rei->status,
           "msiDataObjRsync: input inpParam3 error. status = %d", rei->status);
         return (rei->status);
+#endif
     }
 
     if ((rei->status = parseMspForCondInp (inpParam4, &myDataObjInp->condInput,
