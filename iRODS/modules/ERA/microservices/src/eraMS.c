@@ -1343,21 +1343,21 @@ msiGetCollectionACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outPa
 /**
  * \fn msiGetUserInfo (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief   This function gets information about a user
+ * \brief   This microservice returns a given user account's information.
  *
  * \module ERA
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Antoine de Torcy
+ * \date  2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note None
  *
- * \usage
+ * \usage	This microservice returns a given user account's information.
  * 
  * As seen in modules/ERA/test/getUserInfo.ir
  * 
@@ -1438,19 +1438,19 @@ msiGetUserInfo(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, 
 /**
 * \fn msiCreateUserAccountsFromDataObj (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
 *
-* \brief   This creates a new user from information in an existing iRODS data object
+* \brief   This microservice creates new user accounts according to information in an iRODS object.
 *
 * \module ERA  
 *
 * \since pre-2.1
 *
-* \author  
-* \date  
+* \author  Antoine de Torcy
+* \date  2007
 *
 * \remark Jewel Ward - msi documentation, 2009-06-18
 * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
 *
-* \note
+* \note This microservice creates new user accounts according to information in an iRODS object.
 *
 * \usage
 * 
@@ -1524,19 +1524,19 @@ msiCreateUserAccountsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleE
 /**
  * \fn msiLoadUserModsFromDataObj (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief   This microservice modifies user information from information in an iRODS data object
+ * \brief   This microservice modifies existing user accounts according to information in an iRODS object.
  *
  * \module ERA
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Antoine de Torcy
+ * \date 	2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note This microservice modifies existing user accounts according to information in an iRODS object.
  *
  * \usage
  * 
@@ -1614,19 +1614,19 @@ msiLoadUserModsFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInf
 /**
  * \fn msiDeleteUsersFromDataObj (msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief   This microservice will parse an iRODS object for user accounts to delete.
+ * \brief   This microservice parses an iRODS object for user accounts to delete.
  *
  * \module ERA  
  *
  * \since pre-2.1
  *
- * \author  
- * \date  
+ * \author  Antoine de Torcy
+ * \date  	2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-18
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note	This microservice parses an iRODS object for user accounts to delete.
  *
  * \usage
  * 
@@ -1708,13 +1708,13 @@ msiDeleteUsersFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  Antoine de Torcy
+ * \date	2007
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note	This microservice parses an iRODS object for access permissions to update/create.
  *
  * \usage
  * 
@@ -1785,18 +1785,18 @@ msiLoadACLFromDataObj(msParam_t *inpParam, msParam_t *outParam, ruleExecInfo_t *
 /**
  * \fn msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief Gets ACL for a single user
+ * \brief This microservice returns the ACL of a given iRODS user.
  *
  * \module ERA
  *
- * \since 
+ * \since pre-2.1
  *
- * \author  
- * \date    
+ * \author  Antoine de Torcy
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-17
  *
- * \note
+ * \note	This microservice returns the ACL of a given iRODS user.
  *
  * \usage
  * As seen in modules/ERA/test/getUserACL.ir
@@ -1880,18 +1880,18 @@ msiGetUserACL(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, r
 /**
  * \fn msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief Sets the data_type_name attribute of a data object
+ * \brief Sets the data_type_name attribute of a data object.
  *
  * \module ERA
  *
- * \since 
+ * \since pre-2.1
  *
- * \author  
- * \date    
+ * \author  Antoine de Torcy
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-17
  *
- * \note
+ * \note  This microservice sets the data_type_name attribute of a data object.
  *
  * \usage
  * As seen in modules/ERA/test/setDataTypeForObjPath.ir
@@ -1997,18 +1997,18 @@ msiSetDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,
 /**
  * \fn msiGuessDataType(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
  *
- * \brief Guesses the data type of an object based on its file extension
+ * \brief Guesses the data type of an object based on its file extension.
  *
  * \module ERA
  *
- * \since 
+ * \since  pre-2.1
  *
- * \author  
- * \date    
+ * \author  Antoine de Torcy
+ * \date    2007
  *
  * \remark Terrell Russell - msi documentation, 2009-06-17
  *
- * \note
+ * \note	This microservice guesses the data type of an object based on its file extension.
  *
  * \usage
  * As seen in modules/ERA/test/guessDataType.ir
