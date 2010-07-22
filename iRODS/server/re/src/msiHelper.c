@@ -290,7 +290,7 @@ msParam_t *msKeyValStr, ruleExecInfo_t *rei)
  * \DolVarModified none
  * \iCatAttrDependence none
  * \iCatAttrModified none
- * \sideeffect
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 upon success
