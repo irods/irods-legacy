@@ -314,13 +314,13 @@ This documentation is generated from the iRODS code.
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  DICE
+ * \date  	2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-10
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note	This function returns the system time for the iCAT server
  *
  * \usage
  * 
@@ -338,17 +338,17 @@ This documentation is generated from the iRODS code.
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
  * \sideeffect none
  *
  * \return integer
- * \retval time as string
- * \pre
- * \post
- * \sa
+ * \retval 0 on success
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
