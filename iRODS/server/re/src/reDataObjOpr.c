@@ -3364,7 +3364,8 @@ ruleExecInfo_t *rei)
  *
  * \remark Terrell Russell - msi documentation, 2009-06-23
  *
- * \note 
+ * \note	This microservice requests the client to call a rcDataObjPut API
+ *   as part of a workflow execution, with options.
  *
  * \usage None
  *
@@ -3389,9 +3390,9 @@ ruleExecInfo_t *rei)
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int
