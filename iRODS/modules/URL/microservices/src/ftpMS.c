@@ -261,6 +261,12 @@ int msiFtpGet(msParam_t *target, msParam_t *destObj, msParam_t *status, ruleExec
  *
  * \usage
  *
+ * As seen in:
+ *
+ *	Test Tweet||msiTwitterPost(*Username, *Passwd, *Msg, *Status)##writePosInt(stdout, *Status)##writeLine(stdout, "")|nop
+ *	*Username=$1%*Passwd=$2%*Msg=Electronic Records Summer Camp is now open
+ *	ruleExecOut
+ *
  *
  * \param[in] twittername - Required - a STR_MS_T containing the twitter username.
  * \param[in] twitterpass - Required - a STR_MS_T containing the twitter password.
