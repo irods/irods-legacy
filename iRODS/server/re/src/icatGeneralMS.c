@@ -486,13 +486,13 @@ msiQuota(ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  DICE
+ * \date	2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-23
  *
- * \note
+ * \note	This microservice sets the resource as part of a workflow execution.
  *
  * \usage
  * 
@@ -508,17 +508,17 @@ msiQuota(ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
@@ -545,13 +545,13 @@ int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  DICE
+ * \date	2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note	This microservice checks whether the user is the owner
  *
  * \usage
  * 
@@ -564,17 +564,17 @@ int  msiSetResource(msParam_t* xrescName, ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiCheckOwner(ruleExecInfo_t *rei)
@@ -601,13 +601,13 @@ int msiCheckOwner(ruleExecInfo_t *rei)
  *
  * \since pre-2.1
  *
- * \author  
- * \date   
+ * \author  DICE
+ * \date  	2008
  *
  * \remark Jewel Ward - msi documentation, 2009-06-19
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-25
  *
- * \note
+ * \note	This microservice checks the authorization permission (whether or not permission is granted).
  *
  * \usage
  * 
@@ -621,17 +621,17 @@ int msiCheckOwner(ruleExecInfo_t *rei)
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
  *
- * \DolVarDependence 
- * \DolVarModified 
- * \iCatAttrDependence 
- * \iCatAttrModified 
- * \sideeffect 
+ * \DolVarDependence none
+ * \DolVarModified none
+ * \iCatAttrDependence none
+ * \iCatAttrModified none
+ * \sideeffect none
  *
  * \return integer
  * \retval 0 on success
- * \pre
- * \post
- * \sa
+ * \pre none
+ * \post none
+ * \sa none
  * \bug  no known bugs
 **/
 int msiCheckPermission(msParam_t* xperm, ruleExecInfo_t *rei)
