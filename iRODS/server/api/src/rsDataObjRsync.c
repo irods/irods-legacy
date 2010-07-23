@@ -39,8 +39,31 @@ msParamArray_t **outParamArray)
 
     resolveLinkedPath (rsComm, dataObjInp->objPath, &specCollCache,
       &dataObjInp->condInput);
-    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
-      remoteZoneOpr);
+    if (strcmp (rsyncMode, IRODS_TO_IRODS) == 0) {
+	if (isLocalZone (dataObjInp->objPath) == 0) {
+	    dataObjInp_t myDataObjInp;
+	    char *destObjPath;
+	    /* source in a remote zone. try dest */
+            destObjPath = getValByKey (&dataObjInp->condInput, 
+	      RSYNC_DEST_PATH_KW);
+            if (destObjPath == NULL) {
+                rodsLog (LOG_ERROR,
+                  "rsDataObjRsync: RSYNC_DEST_PATH_KW input is missing for %s",
+                  dataObjInp->objPath);
+                return (USER_RSYNC_NO_MODE_INPUT_ERR);
+	    }
+	    myDataObjInp = *dataObjInp;
+	    rstrcpy (myDataObjInp.objPath, destObjPath, MAX_NAME_LEN);
+	    remoteFlag = getAndConnRemoteZone (rsComm, &myDataObjInp, 
+	      &rodsServerHost, remoteZoneOpr);
+	} else {
+	    remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, 
+	      &rodsServerHost, remoteZoneOpr);
+	}
+    } else {
+        remoteFlag = getAndConnRemoteZone (rsComm, dataObjInp, &rodsServerHost,
+          remoteZoneOpr);
+    }
 
     if (remoteFlag < 0) {
         return (remoteFlag);
