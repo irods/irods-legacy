@@ -85,6 +85,7 @@ dataObjInp_t *dataObjInp)
     char myDir[MAX_NAME_LEN], myFile[MAX_NAME_LEN];
  
     if (srcPath == NULL) {
+
        rodsLog (LOG_ERROR,
           "chksumDataObjUtil: NULL srcPath input");
         return (USER__NULL_INPUT_ERR);
@@ -99,10 +100,18 @@ dataObjInp_t *dataObjInp)
     status = rcDataObjChksum (conn, dataObjInp, &chksumStr);
 
     if (status < 0) {
-	rodsLogError (LOG_ERROR, status,
-	 "chksumDataObjUtil: rcDataObjChksum error for %s",
-	 dataObjInp->objPath);
-	return status;
+	if (status == CAT_NO_ROWS_FOUND && rodsArgs->resource == True) {
+	    if (rodsArgs->verbose == True) {
+		printf ("%s does not exist in resource %s\n",
+		  dataObjInp->objPath, rodsArgs->resourceString);
+	    }
+	    return 0;
+	} else {
+	    rodsLogError (LOG_ERROR, status,
+	     "chksumDataObjUtil: rcDataObjChksum error for %s",
+	     dataObjInp->objPath);
+	    return status;
+	}
     }
 
     splitPathByKey (dataObjInp->objPath, myDir, myFile, '/');
