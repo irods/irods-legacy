@@ -53,6 +53,7 @@ msParamArray_t **outParamArray)
                 return (USER_RSYNC_NO_MODE_INPUT_ERR);
 	    }
 	    myDataObjInp = *dataObjInp;
+	    remoteZoneOpr = REMOTE_CREATE;
 	    rstrcpy (myDataObjInp.objPath, destObjPath, MAX_NAME_LEN);
 	    remoteFlag = getAndConnRemoteZone (rsComm, &myDataObjInp, 
 	      &rodsServerHost, remoteZoneOpr);
