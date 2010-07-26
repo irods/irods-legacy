@@ -151,6 +151,11 @@ This documentation is generated from the iRODS code.
   - #readXMsg - Reads a message packet from an XMsgStream
   - #writeXMsg - Writes a given string into an XMsgStream
 
+ \subsection msistring String Manipulation Microservices
+  - #msiStrlen   - Returns the length of a given string
+  - #msiStrchop  - Removes the last character of a given string
+  - #msiSubstr   - Returns a substring of the given string
+ 
  \subsection msiemail Email Microservices
   - #msiSendMail   - Sends email
   - #msiSendStdoutAsEmail - Sends rei's stdout as email

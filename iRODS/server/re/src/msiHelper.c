@@ -474,7 +474,7 @@ msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
 /**
  * \fn msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
  *
- * \brief get the length of the string given in stringIn.
+ * \brief Returns the length of a given string.
  *
  * \module core
  *
@@ -503,7 +503,7 @@ msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode, ruleExecInfo_t
  * \sideeffect none
  *
  * \return integer
- * \retval the length of the string
+ * \retval the length of the given string
  * \pre none
  * \post none
  * \sa none
@@ -531,11 +531,11 @@ msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
     }
 
     if (strcmp (stringIn->type, STR_MS_T) == 0) {
-	if ( stringIn->inOutStruct != NULL) {
-	    rei->status = strlen ((char *)  stringIn->inOutStruct);
-	} else {
-	   rei->status = 0;
-	}
+      if ( stringIn->inOutStruct != NULL) {
+        rei->status = strlen ((char *)  stringIn->inOutStruct);
+      } else {
+        rei->status = 0;
+      }
     } else {
         rodsLog (LOG_ERROR,
         "msiStrlen: Unsupported input stringIn types %s",
@@ -550,7 +550,7 @@ msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
 /**
  * \fn msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
  *
- * \brief removes last character from stringIn.
+ * \brief Removes the last character of a given string.
  *
  * \module core
  *
@@ -579,7 +579,7 @@ msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei)
  * \sideeffect none
  *
  * \return integer
- * \retval the length of the string
+ * \retval the length of the returned string
  * \pre none
  * \post none
  * \sa none
@@ -606,20 +606,20 @@ msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
 
     if (strcmp (stringIn->type, STR_MS_T) == 0) {
         if ( stringIn->inOutStruct != NULL) {
-	     fillStrInMsParam (stringOut, (char *) stringIn->inOutStruct);
-            rei->status = strlen ((char *)  stringIn->inOutStruct);
-	    if (rei->status > 0) {
-		rei->status --;
-		*((char *) stringOut->inOutStruct + rei->status) = '\0'; 
-	    }
+          fillStrInMsParam (stringOut, (char *) stringIn->inOutStruct);
+          rei->status = strlen ((char *)  stringIn->inOutStruct);
+          if (rei->status > 0) {
+            rei->status --;
+            *((char *) stringOut->inOutStruct + rei->status) = '\0'; 
+          }
         } else {
-	    fillStrInMsParam (stringOut, "");
-            rei->status = 0;
+          fillStrInMsParam (stringOut, "");
+          rei->status = 0;
         }
     } else {
         rodsLog (LOG_ERROR,
-        "msiStrchop: Unsupported input stringIn types %s",
-        stringIn->type);
+          "msiStrchop: Unsupported input stringIn types %s",
+          stringIn->type);
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
     }
     return (rei->status);
@@ -628,7 +628,7 @@ msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
 /**
  * \fn msiSubstr (msParam_t *stringIn,  msParam_t *offset, msParam_t *length, msParam_t *stringOut, ruleExecInfo_t *rei)
  *
- * \brief returns a substring of stringIn
+ * \brief Returns a substring of the given string.
  *
  * \module core
  *
@@ -646,12 +646,13 @@ msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
  *
  * \param[in] stringIn - a STR_MS_T which specifies the input string.
  * \param[in] offset - a STR_MS_T which specifies the position of the 
- *    beginning of the substring (0 is first character). if negative, then 
- *    position is from the end of the string.
- * \param[in] length - a STR_MS_T which specifies length of substring to 
- *    return. if not specified, negative or "null", then return from offset 
- *    to the end of stringIn.
- * \param[out] stringOut - a STR_MS_T to hold the string without the last char.
+ *    beginning of the substring (0 is first character). If negative, then 
+ *    offset specifies the position from the end of the string
+ *    (-1 is the last character).
+ * \param[in] length - a STR_MS_T which specifies the length of substring to 
+ *    return. If length is not specified, too large, negative, or "null",
+ *    then return the substring from the offset to the end of stringIn.
+ * \param[out] stringOut - a STR_MS_T to hold the resulting substring.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -663,7 +664,7 @@ msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei)
  * \sideeffect none
  *
  * \return integer
- * \retval the length of the string
+ * \retval the length of the substring
  * \pre none
  * \post none
  * \sa none
@@ -697,58 +698,58 @@ msParam_t *stringOut, ruleExecInfo_t *rei)
 
     if (strcmp (stringIn->type, STR_MS_T) != 0) {
         rodsLog (LOG_ERROR,
-        "msiSubstr: Unsupported input stringIn types %s",
-        stringIn->type);
+          "msiSubstr: Unsupported input stringIn types %s",
+          stringIn->type);
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-	return rei->status;
+        return rei->status;
     } else {
-	origStr = (char *) stringIn->inOutStruct;
+      origStr = (char *) stringIn->inOutStruct;
     }
-	
+
     if (strcmp (offset->type, STR_MS_T) != 0) {
         rodsLog (LOG_ERROR,
-        "msiSubstr: Unsupported input offset types %s",
-        offset->type);
+          "msiSubstr: Unsupported input offset types %s",
+          offset->type);
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-	return rei->status;
+        return rei->status;
     } else {
-	intOffset = atoi ((char *) offset->inOutStruct);
+      intOffset = atoi ((char *) offset->inOutStruct);
     }
 
     if (length == NULL) {
-	/* not defined */
-	intLength = -1;
+    /* not defined */
+      intLength = -1;
     } else if (strcmp (length->type, STR_MS_T) != 0) {
         rodsLog (LOG_ERROR,
-        "msiSubstr: Unsupported input length types %s",
-        length->type);
+          "msiSubstr: Unsupported input length types %s",
+          length->type);
         rei->status = UNKNOWN_PARAM_IN_RULE_ERR;
-	return rei->status;
+        return rei->status;
     } else if (strcmp ((char *) length->inOutStruct, "null") == 0) {
-	intLength = -1;
+      intLength = -1;
     } else {
-	intLength = atoi ((char *) length->inOutStruct);
+      intLength = atoi ((char *) length->inOutStruct);
     }
 
     if (intOffset >= 0) {
-	strPtr = origStr + intOffset;
+      strPtr = origStr + intOffset;
     } else {
-	/* from the end. -1 is the last char */
-	origLen = strlen (origStr);
-	strPtr = origStr + origLen + intOffset;
+    /* from the end. -1 is the last char */
+      origLen = strlen (origStr);
+      strPtr = origStr + origLen + intOffset;
     }
-	
+
     if (intLength >= 0 && strlen (strPtr) > intLength) {
-	/* put a null at the end of the sub str */
-	savedPtr = strPtr + intLength;
-	savedChar = *savedPtr;
-	*savedPtr = '\0';
+    /* put a null at the end of the sub str */
+      savedPtr = strPtr + intLength;
+      savedChar = *savedPtr;
+      *savedPtr = '\0';
     }
 
     fillStrInMsParam (stringOut, strPtr);
     if (savedPtr != NULL) {
-	/* restore */
-	*savedPtr = savedChar;
+    /* restore */
+      *savedPtr = savedChar;
     }
 
     rei->status = strlen ((char *) stringOut->inOutStruct);
