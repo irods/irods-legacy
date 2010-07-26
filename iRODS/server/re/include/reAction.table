@@ -357,4 +357,7 @@ microsdef_t MicrosTable[] = {
   {"readXMsg",8, (funcPtr) readXMsg},
   {"msiSetReplComment", 4, (funcPtr) msiSetReplComment},
   {"msiSetBulkPutPostProcPolicy",1,(funcPtr) msiSetBulkPutPostProcPolicy},
+  {"msiStrlen",2,(funcPtr) msiStrlen},
+  {"msiStrchop",2,(funcPtr) msiStrchop},
+  {"msiSubstr",4,(funcPtr) msiSubstr},
 

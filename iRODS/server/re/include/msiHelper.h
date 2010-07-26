@@ -35,6 +35,13 @@ msParam_t *outChildName, ruleExecInfo_t *rei);
 int
 msiGetSessionVarValue (msParam_t *inpVar,  msParam_t *outputMode,
 ruleExecInfo_t *rei);
+int
+msiStrlen (msParam_t *stringIn,  msParam_t *lengthOut, ruleExecInfo_t *rei);
+int
+msiStrchop (msParam_t *stringIn,  msParam_t *stringOut, ruleExecInfo_t *rei);
+int
+msiSubstr (msParam_t *stringIn,  msParam_t *offset, msParam_t *length,
+msParam_t *stringOut, ruleExecInfo_t *rei);
 #endif  /* MSI_HELPER_H */
 
 
