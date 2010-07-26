@@ -9,6 +9,8 @@
 #include "rodsLog.h"
 #include "chksumUtil.h"
 
+static int ChksumCnt = 0;
+static int FailedChksumCnt = 0;
 int
 chksumUtil (rcComm_t *conn, rodsEnv *myRodsEnv, rodsArguments_t *myRodsArgs,
 rodsPathInp_t *rodsPathInp)
@@ -65,6 +67,9 @@ rodsPathInp_t *rodsPathInp)
 	    savedStatus = status;
 	} 
     }
+    printf ("Total checksum performed = %d, Failed checksum = %d\n",
+      ChksumCnt, FailedChksumCnt);
+
     if (savedStatus < 0) {
         return (savedStatus);
     } else if (status == CAT_NO_ROWS_FOUND) {
@@ -107,13 +112,16 @@ dataObjInp_t *dataObjInp)
 	    }
 	    return 0;
 	} else {
+	    ChksumCnt++;
+	    FailedChksumCnt++;
 	    rodsLogError (LOG_ERROR, status,
 	     "chksumDataObjUtil: rcDataObjChksum error for %s",
 	     dataObjInp->objPath);
 	    return status;
 	}
+    } else {
+	ChksumCnt++;
     }
-
     splitPathByKey (dataObjInp->objPath, myDir, myFile, '/');
     printf ("    %-30.30s    %s\n", myFile, chksumStr);
     free (chksumStr);     
