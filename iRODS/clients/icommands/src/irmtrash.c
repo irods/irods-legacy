@@ -85,7 +85,7 @@ usage ()
    "Usage : irmtrash [-hMrvV] [-u user] [-z zoneName] [dataObj|collection ...] ",
 "Remove one or more data-object or collection from a RODS trash bin.",
 "If the input dataObj|collection is not specified, the entire trash bin",
-"of the user (/$myZone/trash/$myUserBame) will be removed.",
+"of the user (/$myZone/trash/$myUserName) will be removed.",
 " ",
 "The dataObj|collection can be used to specify the paths of dataObj|collection",
 "in the trash bin to be deleted. If the path is relative (does not start",
