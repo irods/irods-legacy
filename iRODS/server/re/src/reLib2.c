@@ -1066,7 +1066,8 @@ executeMicroServiceNew(char *inAction,  msParamArray_t *inMsParamArray,
 	!strcmp(action,"assign") || 
 	!strcmp(action,"forExec") || 
 	!strcmp(action,"ifExec") || 
-	!strcmp(action,"forEachExec") ) {
+	!strcmp(action,"forEachExec") ||
+	!strcmp(action,"msiCollectionSpider")) {
       if ((mP = getMsParamByLabel (inMsParamArray, args[i])) != NULL) {
 	myArgv[i] = mP;
       }
