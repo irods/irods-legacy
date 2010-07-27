@@ -414,12 +414,6 @@ ifuseClose (char *path, int descInx)
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
 	status = closeIrodsFd (IFuseDesc[descInx].iFd);
     } else {	/* cached */
-#if 0
-	if (strcmp (path, IFuseDesc[descInx].localPath) != 0) {
-	    /* the path has been renamed */
-	    path = IFuseDesc[descInx].localPath;
-	}
-#endif
         if (IFuseDesc[descInx].newFlag > 0 || 
 	  IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
             pathCache_t *tmpPathCache;
@@ -449,14 +443,6 @@ ifuseClose (char *path, int descInx)
                    path);
 		savedStatus = -EBADF;
 	    }
-#if 0	/* Not sure this is really a problem */
-        } else {
-	    /* should not be here */
-            rodsLog (LOG_ERROR,
-              "ifuseClose: bytesWritten to not newly created cache for %s",
-               path);
-	    savedStatus = -EBADF;
-#endif
 	}
 	status = close (IFuseDesc[descInx].iFd);
 	if (status < 0) {
@@ -712,26 +698,6 @@ getIFuseConn (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
     if (DefConn.conn == NULL) {
 	status = ifuseConnect (iFuseConn, myRodsEnv);
 	if (status < 0) return status;
-#if 0
-        DefConn.conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->rodsPort,
-          myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 1, &errMsg);
-
-        if (DefConn.conn == NULL) {
-            rodsLogError (LOG_ERROR, errMsg.status, 
-	      "getIFuseConn: rcConnect failure %s", errMsg.msg);
-	    if (errMsg.status < 0) {
-		return (errMsg.status);
-	    } else {
-                return (-1);
-	    }
-        }
-
-        status = clientLogin (DefConn.conn);
-        if (status != 0) {
-            rcDisconnect (DefConn.conn);
-            return (status);
-        }
-#endif
     }
 
 
