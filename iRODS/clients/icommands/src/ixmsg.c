@@ -20,6 +20,7 @@ printIxmsgHelp(char *cmd) {
   printf("    t: create new message stream and get a new ticketNum \n");
   printf("    d: drop message Stream \n");
   printf("    c: clear message Stream \n");
+  printReleaseInfo("ixmsg"); 
   exit(1);
 }
 

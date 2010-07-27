@@ -260,7 +260,7 @@ usage () {
    char *msgs[]={
 "Usage: ips [ahv] [-R resource] [-z zone] [-H hostAddr]",
 " ",
-"Display connection informations of iRods agents currently running in",
+"Display connection information of iRods agents currently running in",
 "the iRods federation. By default, agent info for the iCat enabled server",
 "(IES) is displayed.",
 " ",
@@ -294,5 +294,5 @@ usage () {
       if (strlen(msgs[i])==0) break;
       printf("%s\n",msgs[i]);
    }
-   printReleaseInfo("imiscsvrinfo"); 
+   printReleaseInfo("ips"); 
 }
