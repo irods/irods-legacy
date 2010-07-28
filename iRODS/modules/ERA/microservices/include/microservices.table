@@ -26,6 +26,7 @@
 {"msiMergeDataCopies",			4,		(funcPtr) msiMergeDataCopies},
 {"msiIsColl",					3,		(funcPtr) msiIsColl},
 {"msiIsData",					3,		(funcPtr) msiIsData},
+{"msiGetObjectPath",			3,		(funcPtr) msiGetObjectPath},
 {"msiGetCollectionContentsReport",	3,		(funcPtr) msiGetCollectionContentsReport},
 {"msiGetCollectionSize",		3,		(funcPtr) msiGetCollectionSize},
 {"msiStructFileBundle",			4,		(funcPtr) msiStructFileBundle},

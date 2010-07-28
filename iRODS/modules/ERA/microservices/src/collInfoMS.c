@@ -228,6 +228,83 @@ msiIsData(msParam_t *targetPath, msParam_t *dataId, msParam_t *status, ruleExecI
 }
 
 
+/**
+ * \fn msiGetObjectPath(msParam_t *object, msParam_t *path, msParam_t *status, ruleExecInfo_t *rei)
+ *
+ * \brief Returns the path of an iRODS data object. For use in workflows.
+ *
+ * \module ERA
+ *
+ * \since 2.4.x
+ *
+ * \author  Antoine de Torcy
+ * \date    2010-07-28
+ *
+ *
+ * \note Returns a STR_MS_T with the object path from a DataObjInp_MS_T.
+ *
+ * \usage
+ *
+ * myRule||msiCollectionSpider(*Collection, *Objects, msiGetObjectPath(*Objects,*Path,*foo)##writeString(stdout,*Path)##writeLine(stdout,""), *Status)|nop
+ * Collection=$1
+ * ruleExecOut
+ *
+ *
+ * \param[in] object - A DataObjInp_MS_T, our object.
+ * \param[out] path - a STR_MS_T with the object's path.
+ * \param[out] status - an INT_MS_T containing the operation status.
+ * \param[in,out] rei - The RuleExecInfo structure that is automatically
+ *    handled by the rule engine. The user does not include rei as a
+ *    parameter in the rule invocation.
+ *
+ * \DolVarDependence None
+ * \DolVarModified None
+ * \iCatAttrDependence None
+ * \iCatAttrModified None
+ * \sideeffect None
+ *
+ * \return integer
+ * \retval 0 on success
+ * \pre None
+ * \post None
+ * \sa None
+ * \bug  no known bugs
+**/
+int
+msiGetObjectPath(msParam_t *object, msParam_t *path, msParam_t *status, ruleExecInfo_t *rei)
+{
+	dataObjInp_t dataObjInpCache, *dataObjInp;
+
+
+	/* For testing mode when used with irule --test */
+	RE_TEST_MACRO ("    Calling msiGetObjectPath")
+
+
+	/* Sanity checks */
+	if (rei == NULL || rei->rsComm == NULL)
+	{
+		rodsLog (LOG_ERROR, "msiGetObjectPath: input rei or rsComm is NULL.");
+		return (SYS_INTERNAL_NULL_INPUT_ERR);
+	}
+
+	/* Parse object */
+	rei->status = parseMspForDataObjInp (object, &dataObjInpCache, &dataObjInp, 0);
+	if (rei->status < 0)
+	{
+		rodsLog (LOG_ERROR, "msiGetObjectPath: input error, status = %d", rei->status);
+		return (rei->status);
+	}
+
+	/* Return object path as string */
+	fillStrInMsParam (path, dataObjInp->objPath);
+
+	/* Done */
+	fillIntInMsParam (status, rei->status);
+	return (rei->status);
+}
+
+
+
 
 /**
  * \fn msiGetCollectionContentsReport(msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *outParam, ruleExecInfo_t *rei)
@@ -724,7 +801,7 @@ msiCollectionSpider(msParam_t *collection, msParam_t *objects, msParam_t *action
 	/* For testing mode when used with irule --test */
 	RE_TEST_MACRO ("    Calling msiCollectionSpider")
 	
-	
+
 	/* Sanity test */
 	if (rei == NULL || rei->rsComm == NULL) {
 			rodsLog (LOG_ERROR, "msiCollectionSpider: input rei or rsComm is NULL.");
