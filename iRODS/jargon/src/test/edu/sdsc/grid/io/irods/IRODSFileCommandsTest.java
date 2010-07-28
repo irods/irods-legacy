@@ -1,29 +1,14 @@
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.FileFactory;
-import edu.sdsc.grid.io.GeneralFile;
-import edu.sdsc.grid.io.GeneralRandomAccessFile;
-
-import edu.sdsc.jargon.testutils.AssertionHelper;
-import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
-import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_HOST_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PASSWORD_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_PORT_KEY;
-import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_ZONE_KEY;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_RESOURCE_KEY;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY;
 
-import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
-import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
-import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
-import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IrmCommand;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Arrays;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -34,14 +19,19 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.net.URI;
-
-import java.util.Arrays;
-import java.util.Properties;
+import edu.sdsc.grid.io.GeneralRandomAccessFile;
+import edu.sdsc.jargon.testutils.AssertionHelper;
+import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
+import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
+import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
+import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandException;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
+import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IlsCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IrmCommand;
 
 public class IRODSFileCommandsTest {
     private static Properties testingProperties = new Properties();
@@ -516,7 +506,7 @@ public class IRODSFileCommandsTest {
         invoker.invokeCommandAndGetResultAsString(iputCommand);
                 
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
-        if (irodsFileSystem.commands.getReportedIRODSVersion().compareTo("rods2.3") <= 0) {
+        if (irodsFileSystem.getCommands().getIrodsServerProperties().getRelVersion().compareTo("rods2.3") <= 0) {
         		return;
         }
         	
@@ -533,6 +523,7 @@ public class IRODSFileCommandsTest {
         TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(irodsFileAfter.resource) != -1);
         
     }
+    
     @Test
     public final void testReplicate() throws Exception {
     	// generate a local scratch file

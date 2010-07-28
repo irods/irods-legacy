@@ -139,7 +139,7 @@ public class UserTest {
 
 		// skip this for irods2.1, icommand does not work
 
-		if (!irodsFileSystem.commands.getReportedIRODSVersion().equals(
+		if (!irodsFileSystem.commands.getIrodsServerProperties().getRelVersion().equals(
 				"rods2.1")) {
 
 			// verify the DN
@@ -221,7 +221,7 @@ public class UserTest {
 		
 		//  currently not working with 2.1
 		
-		if (irodsFileSystem.commands.getReportedIRODSVersion().equals("rods2.1")) {
+		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion().equals("rods2.1")) {
 			return;
 		}
 

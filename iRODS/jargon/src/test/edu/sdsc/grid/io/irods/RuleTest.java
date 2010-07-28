@@ -41,6 +41,7 @@ public class RuleTest {
 		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
 		testingProperties = testingPropertiesLoader.getTestProperties();
 		scratchFileUtils = new ScratchFileUtils(testingProperties);
+		scratchFileUtils.clearAndReinitializeScratchDirectory(IRODS_TEST_SUBDIR_PATH);
 		irodsTestSetupUtilities = new IRODSTestSetupUtilities();
 		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
 		irodsTestSetupUtilities
@@ -428,6 +429,54 @@ public class RuleTest {
 
 		TestCase.assertNotNull("null response, no data back from rule", result);
 
+	}
+
+	@Test
+	public void testExecuteRequestClientActionGetFile() throws Exception {
+		String testFileName = "testClientActionGetFile.txt";
+		String testFileGetName = "testClientActionGetFileAtClient.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		String scratchFileAbsolutePath = FileGenerator
+				.generateFileOfFixedLengthGivenName(absPath, testFileName, 100);
+																				
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		iputCommand.setLocalFileName(scratchFileAbsolutePath);
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(
+				testingPropertiesHelper
+						.buildIRODSAccountFromTestProperties(testingProperties));
+		StringBuilder builder = new StringBuilder();
+		builder.append("testClientAction||msiDataObjGet(");
+		builder.append(testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		builder.append('/');
+		builder.append(testFileName);
+		builder.append(",");
+		builder.append(absPath);
+		builder.append(testFileGetName);
+		builder.append(",*status)|nop\n");
+		builder.append("*A=null\n");
+		builder.append("*ruleExecOut");
+		
+		Parameter[] result = Rule.executeRule(irodsFileSystem, builder.toString());
+		irodsFileSystem.close();
+		
+		assertionHelper.assertLocalFileExistsInScratch(IRODS_TEST_SUBDIR_PATH + '/' + testFileGetName);
+		
 	}
 
 }

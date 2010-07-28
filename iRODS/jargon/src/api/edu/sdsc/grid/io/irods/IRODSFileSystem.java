@@ -198,9 +198,9 @@ public class IRODSFileSystem extends RemoteFileSystem {
 				irodsAccount.setZone(rl[0].getStringValue(1));
 				irodsAccount.setHomeDirectory("/" + irodsAccount.getZone()
 						+ "/home/" + irodsAccount.getUserName());
-				commands.account.setUserName(rl[0].getStringValue(0));
-				commands.account.setZone(rl[0].getStringValue(1));
-				commands.account.setHomeDirectory("/" + irodsAccount.getZone()
+				commands.getIrodsAccount().setUserName(rl[0].getStringValue(0));
+				commands.getIrodsAccount().setZone(rl[0].getStringValue(1));
+				commands.getIrodsAccount().setHomeDirectory("/" + irodsAccount.getZone()
 						+ "/home/" + irodsAccount.getUserName());
 			}
 		}
@@ -227,11 +227,11 @@ public class IRODSFileSystem extends RemoteFileSystem {
 		// check the version number and obtain the user dn using alternative
 		// metadata values, the rods2.2 version
 		// saw a change in the metadata value for user DN from 205 to 1601
-		int versionValue = commands.getReportedIRODSVersion().compareTo(
+		int versionValue = commands.getIrodsServerProperties().getRelVersion().compareTo(
 				"rods2.2");
 		
 		if (log.isDebugEnabled()) {
-			log.debug("reported irods version was:" + commands.getReportedIRODSVersion());
+			log.debug("reported irods version was:" + commands.getIrodsServerProperties().getRelVersion());
 		}
 		
 		if (versionValue < 0) {
@@ -801,48 +801,13 @@ public class IRODSFileSystem extends RemoteFileSystem {
 				temp.get(0).getClass(), 0));
 	}
 
-	/**
-	 * Removes null and duplicate values from an array.
-	 */
-	static final Object[] cleanNullsAndDuplicates(Object[] obj) {
-		if (obj == null)
-			return null;
-
-		Vector<Object> temp = new Vector<Object>(obj.length);
-		boolean anyAdd = false;
-		int i = 0, j = 0;
-
-		for (i = 0; i < obj.length; i++) {
-			if (obj[i] != null) {
-				// need to keep them in original order
-				// keep the first, remove the rest.
-				for (j = i + 1; j < obj.length; j++) {
-					if (obj[i].equals(obj[j])) {
-						obj[j] = null;
-						j = obj.length;
-					}
-				}
-
-				if (obj[i] != null) {
-					temp.add(obj[i]);
-					if (!anyAdd)
-						anyAdd = true;
-				}
-			}
-		}
-		if (!anyAdd)
-			return null;
-
-		// needs its own check
-		if ((obj.length == 1) && (obj[0] == null)) {
-			return null;
-		}
-
-		return temp.toArray((Object[]) Array.newInstance(
-				temp.get(0).getClass(), 0));
-	}
+	
 
 	String miscServerInfo() throws IOException {
 		return commands.miscServerInfo();
+	}
+
+	public IRODSCommands getCommands() {
+		return commands;
 	}
 }

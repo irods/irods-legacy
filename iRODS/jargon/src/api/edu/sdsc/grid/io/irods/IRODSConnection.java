@@ -190,7 +190,6 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			throw new JargonException(e);
 		}
 		log.info("socket connected");
-
 	}
 
 	/*
@@ -289,6 +288,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 	 */
 	void send(byte[] value) throws IOException {
 
+		log.debug("value length:" + value.length);
+
 		if (value == null) {
 			log.error("value cannot be null");
 			throw new IllegalArgumentException("value cannot be null");
@@ -312,6 +313,9 @@ public final class IRODSConnection implements IRODSManagedConnection {
 					.arraycopy(value, 0, outputBuffer, outputOffset,
 							value.length);
 			outputOffset += value.length;
+			if (log.isDebugEnabled()) {
+				log.debug("output offset now:" + outputOffset);
+			}
 		}
 	}
 
@@ -435,8 +439,8 @@ public final class IRODSConnection implements IRODSManagedConnection {
 			log.error("attempting flush when connection was closed");
 			throw new ClosedChannelException();
 		}
+		
 		irodsOutputStream.write(outputBuffer, 0, outputOffset);
-
 		outputOffset = 0;
 	}
 

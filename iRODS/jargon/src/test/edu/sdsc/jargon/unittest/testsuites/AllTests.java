@@ -15,9 +15,13 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
   TestingUtilitiesTest.class, 
   IRODSTests.class, 
+  IRODSPackingInstructionTests.class,
   ICommandInvokerTests.class,
   LocalFileTests.class,
-  GeneralFileSystemTests.class
+  GeneralFileSystemTests.class,
+  IRODSMidLevelServicesTest.class,
+  IRODSQueryTests.class,
+  IRODSAccessObjectTests.class
 })
 
 public class AllTests {

@@ -736,15 +736,6 @@ class SRBMetaDataCommands {
 		int[] selectsIDs = new int[selectsLength];
 		int[] selectsValues = new int[selectsLength];
 
-		// **************************************
-		// create the SRB selval int[] array, used for SELECT
-		//
-		int continuationIndex = -1;
-
-		// for definable metadata
-		String comparator = null;
-		String comparator2 = null;
-
 		// Create the predefined SRB selVal integer array
 		temp = selectsLength;
 		for (i = 0; i < temp; i++) {

@@ -85,7 +85,7 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * to match the order of fields[], which is the same order as the
 	 * selectArray initially sent.
 	 */
-	IRODSMetaDataRecordList(IRODSCommands irodsConnection,
+	public IRODSMetaDataRecordList(IRODSCommands irodsConnection,
 			MetaDataField[] fields, Object[] recordValues, int continuationIndex) {
 		super(fields, recordValues);
 
@@ -106,6 +106,14 @@ public class IRODSMetaDataRecordList extends MetaDataRecordList {
 	 * <code>recordValue</code>.
 	 */
 	public IRODSMetaDataRecordList(MetaDataField field, float recordValue) {
+		super(field, recordValue);
+	}
+	
+	/**
+	 * Create a new MetaDataRecordList with this <code>field</code> and
+	 * <code>recordValue</code>.
+	 */
+	public IRODSMetaDataRecordList(MetaDataField field, long recordValue) {
 		super(field, recordValue);
 	}
 

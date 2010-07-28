@@ -1,17 +1,16 @@
 package edu.sdsc.grid.io.irods;
 
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataSelect;
-import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
@@ -28,28 +27,36 @@ public class IRODSAvuTest {
 	public static void setUpBeforeClass() throws Exception {
 		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
 		testingProperties = testingPropertiesLoader.getTestProperties();
-		
+
 	}
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 	}
-	
+
 	@Test
-	public void testCheckAvuNoMetadataInAvu() throws Exception {
+	public void testAddConditionsBasedOnAVUSelects() throws Exception {
+		List<IRODSMetaDataSelectWrapper> translatedSelects = new ArrayList<IRODSMetaDataSelectWrapper>();
+		IRODSMetaDataSelectWrapper irodsMetaDataSelectWrapper = null;
+
 		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
 				IRODSMetaDataSet.DIRECTORY_NAME };
 		MetaDataSelect[] selects = IRODSMetaDataSet.newSelection(fileds);
-		MetaDataCondition[] conditions = new MetaDataCondition[1];
-		conditions[0] = IRODSMetaDataSet.newCondition("attr1", MetaDataCondition.EQUAL, "val1");
-		String[] selectedAVU = new String[selects.length];
 
+		for (int i = 0; i < selects.length; i++) {
+			try {
+				irodsMetaDataSelectWrapper = new IRODSMetaDataSelectWrapper(
+						selects[i]);
+				irodsMetaDataSelectWrapper.setSelectType(IRODSMetaDataSelectWrapper.SelectType.IRODS_GEN_QUERY_METADATA);
+				irodsMetaDataSelectWrapper.setTranslatedMetaDataNumber("600");
+				translatedSelects.add(irodsMetaDataSelectWrapper);
+			} catch (JargonException e) {
+				String msg = "error translating an IRODS select into an IRODSMetaDataSelectWrapper";
+				throw new JargonRuntimeException(msg, e);
+			}
 
-		IRODSAvu.checkForAVU(conditions, selects, Namespace.FILE, selectedAVU);
-		TestCase.assertEquals("did not get the selects back", selects.length, selectedAVU.length);
+		}
 		
 	}
 	
-	
-
 }

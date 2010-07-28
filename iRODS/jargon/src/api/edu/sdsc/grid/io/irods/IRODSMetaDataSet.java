@@ -43,6 +43,8 @@ package edu.sdsc.grid.io.irods;
 
 import java.util.HashMap;
 
+import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.query.ExtensibleMetaDataMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +58,10 @@ import edu.sdsc.grid.io.UserMetaData;
 import edu.sdsc.grid.io.ZoneMetaData;
 
 /**
- * Constructs the various metadata attributes defined by the iRODS server such that 'common names' can be translated to 
- * numeric values used by IRODS or SRB protocols, and also can provide translation from integer value to common name.
+ * Constructs the various metadata attributes defined by the iRODS server such
+ * that 'common names' can be translated to numeric values used by IRODS or SRB
+ * protocols, and also can provide translation from integer value to common
+ * name.
  */
 public final class IRODSMetaDataSet extends MetaDataSet implements
 		DirectoryMetaData, FileMetaData, ResourceMetaData, UserMetaData,
@@ -158,7 +162,6 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 */
 	public static final String RULE_STATUS = "Rule Execution Status";
 
-	// iRODS AVU, user definable metadata
 	/**
 	 * iRODS AVU, user definable metadata. When used as a select, will return
 	 * all the attribute names of all file AVU which match the query conditions.
@@ -251,13 +254,24 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final String META_NAMESPACE_RESC = "Token Comment";
 	static final String META_NAMESPACE_USER = "Token Comment";
 
-	private static int TOTAL_METADATA_FIELDS = 250;
-	private static HashMap jargonToIRODS = new HashMap(TOTAL_METADATA_FIELDS);
-	private static HashMap iRODSToJargon = new HashMap(TOTAL_METADATA_FIELDS);
+	/*
+	 * These are the values used in general-query and general-update to specify
+	 * the columns. The site-extension tables should start at 10,000; and the
+	 * core tables use valued less than 10,000:
+	 */
+
+	private static int TOTAL_METADATA_FIELDS = 500;
+	private static HashMap<String, Integer> jargonToIRODS = new HashMap<String, Integer>(
+			TOTAL_METADATA_FIELDS);
+	private static HashMap<Integer, String> iRODSToJargon = new HashMap<Integer, String>(
+			TOTAL_METADATA_FIELDS);
 
 	static IRODSProtocol protocol;
 
 	final static String DEFINABLE_METADATA = "jargonUserDefinableAttribute";
+	final static String EXTENSIBLE_METADATA = "jargonExtensibleAttribute";
+
+	private static final int EXTENSIBLE_START_NUM = 10001;
 
 	/*
 	 * These are the Table Column names used with the GenQuery. Also see the
@@ -448,10 +462,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 
 	/* R_META_MAIN */
 	/** Metadata for a DataObject: Attribute Name */
-	static final Integer COL_META_DATA_ATTR_NAME = new Integer(600);
+	public static final Integer COL_META_DATA_ATTR_NAME = new Integer(600);
 
 	/** Metadata for a DataObject: Attribute Value */
-	static final Integer COL_META_DATA_ATTR_VALUE = new Integer(601);
+	public static final Integer COL_META_DATA_ATTR_VALUE = new Integer(601);
 
 	/** Metadata for a DataObject: Attribute Units */
 	static final Integer COL_META_DATA_ATTR_UNITS = new Integer(602);
@@ -459,10 +473,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final Integer COL_META_DATA_ATTR_ID = new Integer(603);
 
 	/** Metadata for a Collection: Attribute Name */
-	static final Integer COL_META_COLL_ATTR_NAME = new Integer(610);
+	public static final Integer COL_META_COLL_ATTR_NAME = new Integer(610);
 
 	/** Metadata for a Collection: Attribute Value */
-	static final Integer COL_META_COLL_ATTR_VALUE = new Integer(611);
+	public static final Integer COL_META_COLL_ATTR_VALUE = new Integer(611);
 
 	/** Metadata for a Collection: Attribute Units */
 	static final Integer COL_META_COLL_ATTR_UNITS = new Integer(612);
@@ -482,10 +496,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final Integer COL_META_NAMESPACE_USER = new Integer(623);
 
 	/** Metadata for a Resource: Attribute Name */
-	static final Integer COL_META_RESC_ATTR_NAME = new Integer(630);
+	public static final Integer COL_META_RESC_ATTR_NAME = new Integer(630);
 
 	/** Metadata for a Resource: Attribute Value */
-	static final Integer COL_META_RESC_ATTR_VALUE = new Integer(631);
+	public static final Integer COL_META_RESC_ATTR_VALUE = new Integer(631);
 
 	/** Metadata for a Resource: Attribute Units */
 	static final Integer COL_META_RESC_ATTR_UNITS = new Integer(632);
@@ -493,10 +507,10 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final Integer COL_META_RESC_ATTR_ID = new Integer(633);
 
 	/** Metadata for a User: Attribute Name */
-	static final Integer COL_META_USER_ATTR_NAME = new Integer(640);
+	public static final Integer COL_META_USER_ATTR_NAME = new Integer(640);
 
 	/** Metadata for a User: Attribute Value */
-	static final Integer COL_META_USER_ATTR_VALUE = new Integer(641);
+	public static final Integer COL_META_USER_ATTR_VALUE = new Integer(641);
 
 	/** Metadata for a User: Attribute Units */
 	static final Integer COL_META_USER_ATTR_UNITS = new Integer(642);
@@ -757,9 +771,35 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	static final String RULE_LAST_EXE_TIME_KW = "lastExeTime";
 	static final String RULE_EXE_STATUS_KW = "exeStatus";
 
+	private static ExtensibleMetaDataMapping extensibleMetaDataMapping = null;
+
 	static {
+
 		if (protocol == null) {
 			protocol = new IRODSProtocol();
+		}
+
+		/*
+		 * the extensible metadata mapping is a static field, due to how
+		 * IRODSMetaDataSet and IRODSProtocol are constructed using static
+		 * initializers. if the extensible metadata mapping is not already
+		 * stored, a singleton ExtensibleMetaDataMapping will be consulted for
+		 * either a pre-initialized value, or a value derived with default
+		 * behavior, which is a properties file on the classpath.
+		 */
+
+		if (extensibleMetaDataMapping == null) {
+			log.debug("looking up extensibleMetaDataMapping from singleton");
+			try {
+				extensibleMetaDataMapping = ExtensibleMetaDataMapping
+						.instance();
+			} catch (JargonException e) {
+
+				log.error("exception deriving extensibleMetaDataMapping", e);
+				throw new RuntimeException(e);
+			}
+			log
+					.debug("IRODSMetaDataSet now has a cached ExtensibleMetaDataMapping");
 		}
 
 		// R_ZONE_MAIN:
@@ -1342,7 +1382,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 */
 	IRODSMetaDataSet(IRODSProtocol protocol) {
 		super();
-		this.protocol = protocol;
+		IRODSMetaDataSet.protocol = protocol;
 	}
 
 	/**
@@ -1351,7 +1391,8 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 */
 	public static MetaDataField getField(String fieldName) {
 		if (log.isDebugEnabled()) {
-			log.debug("getting irods metadata field for field name:" + fieldName);
+			log.debug("getting irods metadata field for field name:"
+					+ fieldName);
 		}
 		if (fieldName == null) {
 			log.error("npe, metadata field name passed in is null");
@@ -1359,7 +1400,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		}
 
 		MetaDataField field = (MetaDataField) metaDataFields.get(fieldName);
-	
+
 		if (field == null) {
 			try {
 				log.debug("field was null");
@@ -1371,19 +1412,67 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 			}
 		}
 
+		// if the field is still null, try to resolve it as extensible metadata
+		if (field == null) {
+			log
+					.debug("field was still null, attempting to look up as extensbile metadata");
+
+			String extensibleFieldName = extensibleMetaDataMapping
+					.getColumnNameFromIndex(fieldName);
+			if (extensibleFieldName != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("resolved field as extensible field name:"
+							+ extensibleFieldName);
+				}
+				field = new MetaDataField(extensibleFieldName,
+						"extensible metadata", MetaDataField.STRING, protocol);
+			}
+		}
+
 		return field;
 	}
 
-	static String getID(String fieldName) {
+	/**
+	 * Given a field name look up the field name in the extensible meta data
+	 * that has been defined from soome source and stored in
+	 * {@link org.irods.jargon.core.query.ExtensibleMetaDataMapping
+	 * ExtensibleMetaDataMapping}.
+	 * 
+	 * @param fieldName
+	 *            <code>String</code> that represents
+	 * @return
+	 */
+	public static String getIDFromExtensibleMetaData(final String fieldName) {
+		if (extensibleMetaDataMapping == null) {
+			log.debug("no extensible meta data, return passed in field");
+			return fieldName;
+		} else {
+			String temp = extensibleMetaDataMapping
+					.getIndexFromColumnName(fieldName);
+			log.debug("attempted extensible lookup and got:" + temp);
+			return temp;
+		}
+	}
+
+	/**
+	 * Given a field name, as defined in IRODSMetaDataSet, give the numeric
+	 * equivalent suitable for a gen query request to IRODS.
+	 * 
+	 * @param fieldName
+	 *            <code>String</code> that represents
+	 * @return
+	 */
+	public static String getID(String fieldName) {
 		if (log.isDebugEnabled()) {
 			log.debug("doing a getID for field:" + fieldName);
 		}
 		Object temp = jargonToIRODS.get(fieldName);
-		log.debug("after jargonToIRODS lookup I have:" + temp.toString());
+
 		if (temp == null) {
 			if (log.isDebugEnabled()) {
+
 				log
-						.debug("looked up value is null, returning passed-in field name instead:"
+						.debug("not IRODSMetaDataSet field, returning passed-in field name instead:"
 								+ fieldName);
 			}
 			return fieldName;

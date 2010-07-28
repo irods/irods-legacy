@@ -29,7 +29,7 @@ import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
-
+// FIXME: enhance tests and add to suite
 public class IRODSRandomAccessFileTest {
 
 	private static Properties testingProperties = new Properties();

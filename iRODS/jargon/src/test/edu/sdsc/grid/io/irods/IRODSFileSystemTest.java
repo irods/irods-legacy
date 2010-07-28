@@ -102,7 +102,9 @@ public class IRODSFileSystemTest {
     
     @Test 
     public void testLookupUserIfGsi() throws Exception {
-    	
+    		// note that this test requires a DN to be set up using the testsetup.sh script as follows:
+    		// exec `iadmin aua test1 test1DN`
+    		// This test will fail if that DN is not set up
    	 	IRODSAccount irodsAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
 		// fake out irods now by creating a GSI account so the user can be looked up

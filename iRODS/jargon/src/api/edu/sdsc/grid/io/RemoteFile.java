@@ -104,10 +104,10 @@ import java.net.URI;
  * 
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @see java.io.File
- * @see edu.sdsc.grid.io.GeneralFile
+ * @see edu.sdsc.grid.io.GeneralFile 
  */
 public abstract class RemoteFile extends GeneralFile {
-
+	
 	/**
 	 * Creates a new RemoteFile instance by converting the given pathname string
 	 * into an abstract pathname.

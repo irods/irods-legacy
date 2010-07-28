@@ -1,9 +1,20 @@
 package edu.sdsc.grid.io.irods;
 
-import edu.sdsc.grid.io.FileFactory;
-import edu.sdsc.grid.io.GeneralFile;
+import java.util.Properties;
+
+import junit.framework.TestCase;
+
+import org.irods.jargon.core.query.GenQueryClassicMidLevelService;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -14,27 +25,12 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.net.URI;
-import java.util.Properties;
-
-import junit.framework.TestCase;
-
 public class IRODSThousandFilesTest {
 	private static Properties testingProperties = new Properties();
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	private static ScratchFileUtils scratchFileUtils = null;
 	public static final String IRODS_TEST_SUBDIR_PATH = "IrodsThousandFilesTestParent";
 	private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
-	private static AssertionHelper assertionHelper = null;
 	public static final String collDir = "coll";
 
 	@BeforeClass
@@ -47,7 +43,6 @@ public class IRODSThousandFilesTest {
 		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
 		irodsTestSetupUtilities
 				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
-		assertionHelper = new AssertionHelper();
 
 		// put in the thousand files
 		String testFilePrefix = "thousandFileTest";
@@ -56,7 +51,7 @@ public class IRODSThousandFilesTest {
 				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
 
 		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH
-				+ '/' + collDir, testFilePrefix, testFileSuffix, 1000, 20, 500);
+				+ '/' + collDir, testFilePrefix, testFileSuffix, 1000, 20, 500);  
 
 		// put scratch files into irods in the right place
 		// 1000 files from 20-500K size
@@ -127,7 +122,6 @@ public class IRODSThousandFilesTest {
 		IRODSFile subFile = null;
 
 		for (int i = 0; i < fileList.length; i++) {
-			System.out.println("subfile:" + fileList[i]);
 			subFile = new IRODSFile(irodsFileSystem, irodsFile
 					.getAbsolutePath()
 					+ '/' + fileList[i]);
@@ -168,6 +162,28 @@ public class IRODSThousandFilesTest {
 		// last entry should have a continuation
 		last = lists[999];
 		TestCase.assertFalse("last row did not have expected continuation", last.isQueryComplete()); 
+		// requery again
+		lists = last.getMoreResults(1000);
+		irodsFileSystem.close();
+		
+	}
+	
+	@Test
+	public void testSearchForAvuFilesWithPartialStart() throws Exception {
+		String avu1Attrib = "avu1";
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		GenQueryClassicMidLevelService genQuery = GenQueryClassicMidLevelService.instance(irodsFileSystem.commands);
+		MetaDataSelect avu = IRODSMetaDataSet.newSelection(avu1Attrib);
+		MetaDataSelect objNameSel = IRODSMetaDataSet.newSelection(IRODSMetaDataSet.FILE_NAME);
+		MetaDataSelect[] sels = new MetaDataSelect[2];
+		sels[0] = avu;
+		sels[1] = objNameSel;
+		MetaDataCondition[] condition = new MetaDataCondition[0];
+		MetaDataRecordList[] lists =genQuery.queryWithPartialStart(condition, sels, 1000, 0, Namespace.FILE, true);
+		// should have 1000 in this batch
+		TestCase.assertEquals("did not get back the 1000 rows I requested", 1000, lists.length);
 		irodsFileSystem.close();
 		
 	}

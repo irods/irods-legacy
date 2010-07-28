@@ -22,7 +22,6 @@ import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImkdirCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
 public class IRODSFileOutputStreamTest {
@@ -501,6 +500,41 @@ public class IRODSFileOutputStreamTest {
 
 		irodsFileSystem.close();
 
+	}
+
+	@Test
+	public void testBasicWriteFromCommands() throws Exception {
+		String testFileName = "testBasicWriteFromCommands.doc";
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH + '/'
+								+ testFileName);
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+
+		irodsFile.createNewFile();
+		TestCase.assertTrue("i cannot write an output stream", irodsFile
+				.canWrite());
+
+		TestCase
+				.assertTrue("file I created does not exist", irodsFile.exists());
+
+		IRODSFileOutputStream irodsFileOutputStream = new IRODSFileOutputStream(
+				irodsFile);
+		// get a simple byte array
+		String myBytes = "ajjjjjjjjjjjjjjjjjjjjjjjjfeiiiiiiiiiiiiiii54454545";
+		byte[] myBytesArray = myBytes.getBytes();
+		irodsFileOutputStream.write(myBytesArray, 0, myBytesArray.length);
+
+		irodsFile.close();		
+		irodsFileSystem.close();
+		assertionHelper.assertIrodsFileOrCollectionExists(irodsFile.getAbsolutePath());
 	}
 
 	/**

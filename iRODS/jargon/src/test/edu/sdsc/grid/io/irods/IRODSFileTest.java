@@ -718,6 +718,71 @@ public class IRODSFileTest {
 
 	}
 
+	@Test(expected=IllegalArgumentException.class)
+	public final void testSetInvalidResource() throws Exception {
+		// generate a local scratch file
+		String testFileName = "testSetResource.xsl";
+		String testOtherFileName = "fileInOtherResource.xsl";
+
+		String testFileFullPath = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + '/', testFileName, 4);
+
+		String testOtherFileFullPath = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + '/', testOtherFileName, 4);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		iputCommand.setLocalFileName(testFileFullPath);
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setIrodsResource(testingProperties
+				.getProperty(IRODS_RESOURCE_KEY));
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		iputCommand = new IputCommand();
+
+		iputCommand.setLocalFileName(testOtherFileFullPath);
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setIrodsResource(testingProperties
+				.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+		iputCommand.setForceOverride(true);
+
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		// can I use jargon to access the file on IRODS and verify that it
+		// indeed exists?
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+		TestCase.assertTrue("testing file does not exist!", irodsFile.exists());
+		String actualResource = irodsFile.getResource();
+		TestCase.assertEquals("did not set up file in correct resource",
+				testingProperties.getProperty(IRODS_RESOURCE_KEY),
+				actualResource);
+
+		irodsFile.setResource("idontexist");
+		
+	}
+
+	
+	
 	@Test
 	public final void testIsFileReadable() throws Exception {
 
@@ -1407,6 +1472,66 @@ public class IRODSFileTest {
 		irodsFileSystem.close();
 	}
 
+	@Test
+	public final void testMkdirWhenNonExistentIntermediateDirectory() throws Exception {
+		String testDir = "testMkdirWhenNonExistentItermediateDirectory/andTryToMakeThisDir";
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testDir;
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		boolean result =irodsFile.mkdir();
+		irodsFileSystem.close();
+		TestCase.assertFalse("should not have created file, and returned false from the mkdir", result);
+	}
+	
+	@Test
+	public final void testMkdirsWithIntermediateDirectories() throws Exception {
+		String testDir = "testMkdirsWithIntermediateDirectoies/andTryToMakeThisDir";
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testDir;
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		boolean result =irodsFile.mkdirs();
+		irodsFileSystem.close();
+		TestCase.assertTrue("should have created intermediate directories", result);
+		assertionHelper.assertIrodsFileOrCollectionExists(targetIrodsCollection);
+	}
+	
+	@Test
+	public final void testMkdirsWithNoIntermediateDirectories() throws Exception {
+		String testDir = "testMkdirsWithNoIntermediateDirectories";
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH)
+				+ '/' + testDir;
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection);
+		boolean result =irodsFile.mkdirs();
+		irodsFileSystem.close();
+		TestCase.assertTrue("should have created directory", result);
+		assertionHelper.assertIrodsFileOrCollectionExists(targetIrodsCollection);
+	}
+	
+	
 	/**
 	 * Bug 78 - issues with getHomeDirectory after IRODS2.3 upgrade
 	 */
@@ -1572,7 +1697,5 @@ public class IRODSFileTest {
         TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(irodsFileAfter.resource) != -1);
 
     }
-	
-	
 
 }

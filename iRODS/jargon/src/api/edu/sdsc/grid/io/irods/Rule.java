@@ -105,6 +105,7 @@ class Rule {
 		} else if (type.equals(ExecCmdOut_PI)) {
 			Tag exec = parameterTag.getTag(ExecCmdOut_PI);
 
+			// FIXME: look at processing of this buf, it may need encoding... see jargon-core rule library
 			// last tag is status
 			int length = exec.getLength() - 1;
 			String[] results = new String[length];

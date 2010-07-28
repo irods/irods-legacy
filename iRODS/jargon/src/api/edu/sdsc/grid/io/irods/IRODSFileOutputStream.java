@@ -62,7 +62,7 @@ import java.io.*;
  * @author Lucas Gilbert
  * @since JARGON2.0
  */
-public class IRODSFileOutputStream extends RemoteFileOutputStream {
+public final class IRODSFileOutputStream extends RemoteFileOutputStream {
 	/**
 	 * Holds the server connection used by this stream.
 	 */

@@ -52,9 +52,18 @@ import java.net.Socket;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import org.irods.jargon.core.connection.ConnectionConstants;
+import org.irods.jargon.core.connection.EnvironmentalInfoAccessor;
+import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.exception.JargonRuntimeException;
+import org.irods.jargon.core.packinstr.CollInp;
+import org.irods.jargon.core.packinstr.IRodsPI;
+import org.irods.jargon.core.query.GenQueryClassicMidLevelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +93,7 @@ import edu.sdsc.grid.io.Namespace;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  * @since JARGON2.0
  */
-class IRODSCommands {
+public class IRODSCommands {
 
 	private static Logger log = LoggerFactory.getLogger(IRODSCommands.class);
 
@@ -104,15 +113,14 @@ class IRODSCommands {
 	 * alters some of the values, this may require later refactoring
 	 */
 
-	IRODSAccount account;
+	private IRODSAccount irodsAccount;
 	private IRODSConnection irodsConnection;
+	private IRODSServerProperties irodsServerProperties;
 
 	/**
 	 * Used in Debug mode
 	 */
 	private long date;
-
-	private String reportedIRODSVersion = "";
 
 	IRODSCommands() {
 
@@ -125,35 +133,37 @@ class IRODSCommands {
 	 *             if the host cannot be opened or created.
 	 * @throws JargonException
 	 */
-	void connect(IRODSAccount irodsAccount) throws IOException, JargonException {
+	void connect(IRODSAccount connectIrodsAccount) throws IOException,
+			JargonException {
 
-		if (irodsAccount == null) {
-			String err = "null irodsAccount";
+		if (connectIrodsAccount == null) {
+			String err = "null connectIrodsAccount";
 			log.error(err);
 			throw new IllegalArgumentException(err);
 		}
 
 		Tag message;
 		// irodsAccount was already cloned by the IRODSFileSystem
-		account = irodsAccount;
+		setIrodsAccount(connectIrodsAccount);
 		irodsConnection = IRODSConnection.instance(irodsAccount, encoding);
 
 		if (log.isDebugEnabled()) {
 			date = new Date().getTime();
-			log.info("Connecting to server, " + account.getHost() + ":"
-					+ account.getPort() + " running version: "
+			log.info("Connecting to server, " + getIrodsAccount().getHost()
+					+ ":" + getIrodsAccount().getPort() + " running version: "
 					+ IRODSAccount.version + " as username: "
-					+ account.getUserName() + "\ntime: " + date);
+					+ getIrodsAccount().getUserName() + "\ntime: " + date);
 		}
 
 		// Send the user info
-		message = sendStartupPacket(account);
+		message = sendStartupPacket(getIrodsAccount());
 		// check for an error (throws IRODSException if an error occurred)
 		Tag.status(message);
 
 		// Request for authorization challenge
 
-		if (account.getAuthenticationScheme().equals(IRODSAccount.GSI_PASSWORD)) {
+		if (getIrodsAccount().getAuthenticationScheme().equals(
+				IRODSAccount.GSI_PASSWORD)) {
 			sendGSIPassword();
 		} else {
 			sendStandardPassword();
@@ -169,10 +179,11 @@ class IRODSCommands {
 		// Create and send the response
 
 		String response = challengeResponse(message.getTag(challenge)
-				.getStringValue(), account.getPassword());
+				.getStringValue(), getIrodsAccount().getPassword());
 		message = new Tag(authResponseInp_PI, new Tag[] {
 				new Tag(IRODSConstants.response, response),
-				new Tag(IRODSConstants.username, account.getUserName()), });
+				new Tag(IRODSConstants.username, getIrodsAccount()
+						.getUserName()), });
 
 		try {
 			// should be a header with no body if successful
@@ -200,36 +211,11 @@ class IRODSCommands {
 		 * is not optimal, and will be refactored at a later time
 		 */
 
-		account.serverDN = irodsConnection.readMessage(false).getTag(ServerDN)
-				.getStringValue();
-		new GSIAuth(account, irodsConnection.getConnection(), irodsConnection
-				.getIrodsOutputStream(), irodsConnection.getIrodsInputStream());
-	}
-
-	/**
-	 * <code>String</code> containing the IRODS version as reported by the
-	 * connected IRODS version
-	 * 
-	 * @return <code>String</code> with value returned in response to IRODS
-	 *         startup packet
-	 */
-	public synchronized String getReportedIRODSVersion() {
-		return reportedIRODSVersion;
-	}
-
-	/**
-	 * @param reportedIRODSVersion
-	 */
-	protected synchronized void setReportedIRODSVersion(
-			String reportedIRODSVersion) {
-
-		if (reportedIRODSVersion == null) {
-			String err = "null reportedIRODSVersion";
-			log.error(err);
-			throw new IllegalArgumentException(err);
-		}
-
-		this.reportedIRODSVersion = reportedIRODSVersion;
+		getIrodsAccount().serverDN = irodsConnection.readMessage(false).getTag(
+				ServerDN).getStringValue();
+		new GSIAuth(getIrodsAccount(), irodsConnection.getConnection(),
+				irodsConnection.getIrodsOutputStream(), irodsConnection
+						.getIrodsInputStream());
 	}
 
 	/**
@@ -313,8 +299,21 @@ class IRODSCommands {
 		Tag responseMessage = irodsConnection.readMessage();
 
 		// look for and retain the version of IRODS I am talking to
-		String reportedRelVersion = responseMessage.getTag(relVersion).value;
-		this.setReportedIRODSVersion(reportedRelVersion);
+		EnvironmentalInfoAccessor environmentalInfoAccessor;
+		try {
+			environmentalInfoAccessor = new EnvironmentalInfoAccessor(this);
+			irodsServerProperties = environmentalInfoAccessor
+					.getIRODSServerProperties();
+			log.info(irodsServerProperties.toString());
+		} catch (JargonException e) {
+
+			e.printStackTrace();
+			log
+					.error(
+							"JargonException is turned into IOException to fit current method signature",
+							e);
+			throw new IOException(e);
+		}
 
 		return responseMessage;
 	}
@@ -343,7 +342,7 @@ class IRODSCommands {
 		byte[] temp = Base64.fromString(challenge);
 		// new sun.misc.BASE64Decoder().decodeBuffer(challenge);
 
-		if (account.getObf()) {
+		if (getIrodsAccount().getObf()) {
 			try {
 				/*
         \u002a\u002f\u0070\u0061\u0073\u0073\u0077\u006f\u0072\u0064 \u003d \u006e\u0065\u0077 \u004c\u0075\u0063\u0069\u0064\u0028
@@ -394,9 +393,173 @@ class IRODSCommands {
 	}
 
 	/**
-	 * Create a typical iRODS api call Tag
+	 * Process an irods protocol request. This is a newer format of the request
+	 * that takes a <code>String</code> as the actual XML message. This is a
+	 * more neutral format that will eventually replace the representation of
+	 * the XML in the <code>Tag</code> format.
+	 * 
+	 * @param type
+	 *            <code>String</code> representing the type of request, e.g.
+	 *            RODS_API_REQ
+	 * @param message
+	 *            <code>String</code> containing the XML packing instruction
+	 * @param intInfo
+	 *            <code>int</code> containing the IRODS API number for this
+	 *            request
+	 * @return <code>Tag</code> representing the response from IRODS
+	 * @throws JargonException
 	 */
-	synchronized Tag irodsFunction(String type, Tag message, int intInfo)
+	public synchronized Tag irodsFunction(String type, String message,
+			int intInfo) throws JargonException {
+		return irodsFunction(type, message, 0, null, 0, null, intInfo);
+	}
+
+	/**
+	 * Process an irods protocol request. This is a newer format of the request
+	 * that takes a <code>String</code> as the actual XML message. This is a
+	 * more neutral format that will eventually replace the representation of
+	 * the XML in the <code>Tag</code> format.
+	 * 
+	 * @param type
+	 *            <code>String</code> representing the type of request, e.g.
+	 *            RODS_API_REQ
+	 * @param message
+	 *            <code>String</code> containing the XML packing instruction
+	 * @param errorStream
+	 * @param errorOffset
+	 * @param errorLength
+	 * @param bytes
+	 * @param byteOffset
+	 * @param byteStringLength
+	 * @param intInfo
+	 *            <code>int</code> containing the IRODS API number for this
+	 *            request
+	 * @return <code>Tag</code> representing the response from IRODS
+	 */
+	public synchronized Tag irodsFunction(String type, String message,
+			byte[] errorStream, int errorOffset, int errorLength, byte[] bytes,
+			int byteOffset, int byteStringLength, int intInfo)
+			throws JargonException {
+
+		log.info("calling irods function with byte array");
+		if (log.isDebugEnabled()) {
+			log.debug("calling irods function with:" + message);
+			log.debug("api number is:" + intInfo);
+		}
+
+		if (type == null || type.length() == 0) {
+			String err = "null or blank type";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+
+		if (message == null || message.length() == 0) {
+			String err = "null or missing message returned from parse";
+			log.error(err);
+			throw new JargonException(err);
+		}
+
+		try {
+			irodsConnection
+					.send(irodsConnection
+							.createHeader(
+									RODS_API_REQ,
+									message
+											.getBytes(ConnectionConstants.JARGON_CONNECTION_ENCODING).length,
+									errorLength, byteStringLength, intInfo));
+
+			irodsConnection.send(message);
+
+			if (byteStringLength > 0) {
+				irodsConnection.send(bytes, byteOffset, byteStringLength);
+			}
+
+			irodsConnection.flush();
+
+		} catch (UnsupportedEncodingException e) {
+			log.error("unsupported encoding", e);
+			throw new JargonException(e);
+		} catch (IOException e) {
+			log.error("ioexception", e);
+			throw new JargonException(e);
+		}
+
+		try {
+			return irodsConnection.readMessage();
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.error("ioexception", e);
+			throw new JargonException(e);
+		}
+	}
+
+	/**
+	 * Create an iRODS message Tag, including header.
+	 */
+	public synchronized Tag irodsFunction(String type, String message,
+			int errorLength, InputStream errorStream, long byteStringLength,
+			InputStream byteStream, int intInfo) throws JargonException {
+
+		log.info("calling irods function with streams");
+		if (log.isDebugEnabled()) {
+			log.debug("calling irods function with:" + message);
+			log.debug("api number is:" + intInfo);
+		}
+
+		if (type == null || type.length() == 0) {
+			String err = "null or blank type";
+			log.error(err);
+			throw new IllegalArgumentException(err); // FIXME: jargon excep
+		}
+
+		if (message == null) {
+			String err = "null message";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug(message);
+		}
+		try {
+			irodsConnection
+					.send(irodsConnection
+							.createHeader(
+									RODS_API_REQ,
+									message
+											.getBytes(ConnectionConstants.JARGON_CONNECTION_ENCODING).length,
+									errorLength, byteStringLength, intInfo));
+			irodsConnection.send(message);
+			if (errorLength > 0) {
+				irodsConnection.send(errorStream, errorLength);
+			}
+			if (byteStringLength > 0) {
+				irodsConnection.send(byteStream, byteStringLength);
+			}
+			irodsConnection.flush();
+		} catch (UnsupportedEncodingException e) {
+			log.error("unsupported encoding", e);
+			throw new JargonException(e);
+		} catch (IOException e) {
+			log.error("ioexception", e);
+			throw new JargonException(e);
+		}
+
+		try {
+			return irodsConnection.readMessage();
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.error("ioexception", e);
+			throw new JargonException(e);
+		}
+	}
+
+	/**
+	 * Create a typical iRODS api call Tag. This method contains the protocol
+	 * data in the <code>Tag</code> format, which will eventually be deprectated
+	 * for the more neutral call with <code>String</code> XML.
+	 */
+	public synchronized Tag irodsFunction(String type, Tag message, int intInfo)
 			throws IOException {
 		return irodsFunction(type, message, 0, null, 0, null, intInfo);
 	}
@@ -404,8 +567,12 @@ class IRODSCommands {
 	/**
 	 * Create an iRODS message Tag, including header. Send the bytes of the byte
 	 * array, no error stream.
+	 * 
+	 * This method contains the protocol data in the <code>Tag</code> format,
+	 * which will eventually be deprectated for the more neutral call with
+	 * <code>String</code> XML.
 	 */
-	synchronized Tag irodsFunction(String type, Tag message,
+	public synchronized Tag irodsFunction(String type, Tag message,
 			byte[] errorStream, int errorOffset, int errorLength, byte[] bytes,
 			int byteOffset, int byteStringLength, int intInfo)
 			throws IOException {
@@ -444,10 +611,79 @@ class IRODSCommands {
 	}
 
 	/**
+	 * Create an iRODS message Tag, including header. Send the bytes of the byte
+	 * array, no error stream.
+	 */
+	// TODO: test
+	public synchronized Tag irodsFunction(IRodsPI irodsPI, byte[] errorStream,
+			int errorOffset, int errorLength, byte[] bytes, int byteOffset,
+			int byteStringLength) throws JargonException {
+
+		if (irodsPI == null) {
+			String err = "null irodsPI";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+
+		String out = irodsPI.getParsedTags();
+
+		if (out == null || out.length() == 0) {
+			String err = "null or missing message returned from parse";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+
+		if (log.isDebugEnabled()) {
+			log.debug(out);
+		}
+
+		try {
+			irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, out
+					.getBytes(encoding).length, errorLength, byteStringLength,
+					irodsPI.getApiNumber()));
+			irodsConnection.send(out);
+
+			if (byteStringLength > 0) {
+				irodsConnection.send(bytes, byteOffset, byteStringLength);
+			}
+
+			irodsConnection.flush();
+			return irodsConnection.readMessage();
+
+		} catch (UnsupportedEncodingException e) {
+			log.error("unsupported encoding", e);
+			throw new JargonException(e);
+		} catch (IOException e) {
+			log.error("io exception sending irods command", e);
+			throw new JargonException(e);
+		}
+
+	}
+
+	/**
+	 * Create an iRODS message Tag, including header. This convenience method is
+	 * suitable for operations that do not require error or binary streams, and
+	 * will set up empty streams for the method call.
+	 */
+	// TODO: test
+	public synchronized Tag irodsFunction(IRodsPI irodsPI)
+			throws JargonException {
+
+		if (irodsPI == null) {
+			String err = "null irodsPI";
+			log.error(err);
+			throw new IllegalArgumentException(err);
+		}
+
+		return irodsFunction(RODS_API_REQ, irodsPI.getParsedTags(), irodsPI
+				.getApiNumber());
+	}
+
+	/**
 	 * Create an iRODS message Tag, including header.
 	 */
-	synchronized Tag irodsFunction(String type, Tag message, int errorLength,
-			InputStream errorStream, long byteStringLength,
+	public synchronized Tag irodsFunction(String type, Tag message,
+			int errorLength, InputStream errorStream, long byteStringLength,
 			InputStream byteStream, int intInfo) throws IOException {
 
 		if (type == null || type.length() == 0) {
@@ -609,14 +845,10 @@ class IRODSCommands {
 
 		boolean done = false;
 		Tag ackResult = reply;
-		
-		log.debug("processClientStatusMessages with tag:{}", reply);
 
 		while (!done) {
 			if (ackResult.getLength() > 0) {
-				log.debug("ackResult length > 0, is {}", ackResult.getLength());
 				if (ackResult.tagName.equals(CollOprStat_PI)) {
-					log.debug("has CollOperStat_PI");
 					// formulate an answer status reply
 
 					// if the total file count is 0, then I will continue and
@@ -627,24 +859,18 @@ class IRODSCommands {
 					Tag totalFilesTag = ackResult.getTag("totalFileCnt");
 					int totalFiles = Integer.parseInt((String) totalFilesTag
 							.getValue());
-					log.debug("totalFileCnt: {}", totalFiles);
 					Tag fileCountTag = ackResult.getTag("filesCnt");
 					int fileCount = Integer.parseInt((String) fileCountTag
 							.getValue());
-					log.debug("filesCnt: {}", fileCount);
-					
-					log.debug("SYS_CLI_TO_SVR_COLL_STAT_SIZE =  {}", SYS_CLI_TO_SVR_COLL_STAT_SIZE);
 
 					if (fileCount < SYS_CLI_TO_SVR_COLL_STAT_SIZE) {
-						log.debug("I am done");
 						done = true;
 					} else {
-						log.debug("sending status reply to irods");
+
 						irodsConnection
 								.sendInNetworkOrder(SYS_CLI_TO_SVR_COLL_STAT_REPLY);
 						irodsConnection.flush();
 						ackResult = irodsConnection.readMessage();
-						log.debug("ack result:{}", ackResult);
 					}
 				}
 			}
@@ -771,6 +997,7 @@ class IRODSCommands {
 		Tag message = new Tag(dataObjReadInp_PI, new Tag[] {
 				new Tag(l1descInx, fd), new Tag(len, length), });
 
+		// FIXME: bug here? length is always max
 		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_READ_AN);
 		// Need the total dataSize
 		if (message == null)
@@ -919,16 +1146,12 @@ class IRODSCommands {
 		}
 		long length = temp.getIntValue();
 
-		if (log.isInfoEnabled()) {
-			log.info("transfer length is:" + length);
-		}
+		log.info("transfer length is:: {}", length);
 
 		// if length == zero, check for multiple thread copy
 		if (length == 0) {
 			int threads = message.getTag(numThreads).getIntValue();
-			if (log.isInfoEnabled()) {
-				log.info("number of threads for this transfer = " + threads);
-			}
+			log.info("number of threads for this transfer = {} ", threads);
 			if (threads > 0) {
 				log.info("parallel transfer for this get");
 
@@ -996,21 +1219,32 @@ class IRODSCommands {
 	/**
    *
    */
-	void mkdir(IRODSFile directory) throws IOException {
-		if (directory == null) {
+	void mkdir(IRODSFile irodsFile, boolean recursiveOperation)
+			throws IOException {
+		if (irodsFile == null) {
 			log.error("directory path cannot be null");
 			throw new NullPointerException("Directory path cannot be null");
 		}
-		Tag message = new Tag(CollInp_PI, new Tag[] {
-				new Tag(collName, directory.getAbsolutePath()),
-				Tag.createKeyValueTag(null), });
+		if (log.isInfoEnabled()) {
+			log.info("making dir for:" + irodsFile.getAbsolutePath());
+		}
 
-		/*
-		 * New version after 201 Tag message = new Tag(CollInpNew_PI, new Tag[]{
-		 * new Tag(collName, directory.getAbsolutePath()), new Tag(flags, 0),
-		 * createKeyValueTag( null ), } );
-		 */
-		irodsFunction(RODS_API_REQ, message, COLL_CREATE_AN);
+		try {
+			CollInp collInp = CollInp.instance(irodsFile.getAbsolutePath(),
+					recursiveOperation);
+
+			Tag response = irodsFunction(CollInp.PI_TAG, collInp
+					.getParsedTags(), CollInp.MKDIR_API_NBR);
+
+			if (response != null) {
+				log
+						.warn("expected null response to mkdir, logged but not an error, received:"
+								+ response.parseTag());
+			}
+		} catch (JargonException e) {
+			log.error("Jargon exception in mkdir operation", e);
+			throw new IOException(e);
+		}
 	}
 
 	void put(GeneralFile source, IRODSFile destination, boolean overwriteFlag)
@@ -1556,7 +1790,7 @@ class IRODSCommands {
 				new Tag(arg6, args[6] != null ? args[6] : ""),
 				new Tag(arg7, args[7] != null ? args[7] : ""),
 				new Tag(arg8, args[8] != null ? args[8] : ""),
-				new Tag(arg9, args[9] != null ? args[10] : ""), });
+				new Tag(arg9, args[9] != null ? args[9] : ""), });
 
 		Tag messageResult = irodsFunction(RODS_API_REQ, message,
 				GENERAL_ADMIN_AN);
@@ -1582,9 +1816,6 @@ class IRODSCommands {
 	 */
 	String[] simpleQuery(String statement, String arg) throws IOException {
 		Tag message = null;
-
-		log.info("simple query for statement {}", statement);
-		log.info("with parms {}", arg);
 
 		if (arg == null) {
 			message = new Tag(simpleQueryInp_PI, new Tag[] {
@@ -1668,119 +1899,20 @@ class IRODSCommands {
 	synchronized MetaDataRecordList[] query(MetaDataCondition[] conditions,
 			MetaDataSelect[] selects, int numberOfRecordsWanted,
 			Namespace namespace, boolean distinctQuery) throws IOException {
-		Tag message = new Tag(GenQueryInp_PI);
 
-		message.addTag(new Tag(maxRows, numberOfRecordsWanted));
-		message.addTag(new Tag(continueInx, 0));
-		message.addTag(new Tag(partialStartIndex, 0));
-
-		int versionValue = getReportedIRODSVersion().compareTo("rods2.3");
-		if (versionValue >= 0) {
-			if (distinctQuery) {
-				// reported version is at or after the version specified in
-				// 'compareTo'
-				message.addTag(new Tag(options, 0));
-			} else {
-				message.addTag(new Tag(options, 1));
-			}
+		log.debug("getting GenQueryClassicMidLevelService to process query");
+		try {
+			GenQueryClassicMidLevelService genQueryMidLevelService = GenQueryClassicMidLevelService
+					.instance(this);
+			log.debug("processing query in mid level service");
+			return genQueryMidLevelService.query(conditions, selects,
+					numberOfRecordsWanted, namespace, distinctQuery);
+		} catch (JargonException e) {
+			log.error(
+					"jargon exception in query rethrown as runtime exception",
+					e);
+			throw new JargonRuntimeException(e);
 		}
-
-		message.addTag(Tag.createKeyValueTag(null));
-		Tag[] subTags = null;
-		int j = 1;
-		String[] selectedAVU = new String[selects.length];
-
-		// package the selects
-		if (selects == null) {
-			throw new NullPointerException(
-					"Query must have at least one select value");
-		} else {
-			// fix the selects if there are AVU parts
-			selects = IRODSAvu.checkForAVU(conditions, selects, namespace,
-					selectedAVU);
-		}
-		selects = (MetaDataSelect[]) IRODSFileSystem
-				.cleanNullsAndDuplicates(selects);
-
-		subTags = new Tag[selects.length * 2 + 1];
-		subTags[0] = new Tag(iiLen, selects.length);
-		for (int i = 0; i < selects.length; i++) {
-			subTags[j] = new Tag(inx, IRODSMetaDataSet.getID(selects[i]
-					.getFieldName()));
-			j++;
-		}
-		for (int i = 0; i < selects.length; i++) {
-			// New for loop because they have to be in a certain order...
-			subTags[j] = new Tag(ivalue, selects[i].getOperation());
-			j++;
-		}
-		message.addTag(new Tag(InxIvalPair_PI, subTags));
-
-		// package the conditions
-		if (conditions != null) {
-			// fix the conditions if there are AVU parts, also remove nulls
-			conditions = (MetaDataCondition[]) IRODSFileSystem
-					.cleanNullsAndDuplicates(IRODSAvu.checkForAVU(conditions,
-							namespace));
-
-			subTags = new Tag[conditions.length * 2 + 1];
-			subTags[0] = new Tag(isLen, conditions.length);
-			j = 1;
-			for (int i = 0; i < conditions.length; i++) {
-				subTags[j] = new Tag(inx, IRODSMetaDataSet.getID(conditions[i]
-						.getFieldName()));
-				j++;
-			}
-			for (int i = 0; i < conditions.length; i++) {
-				// New for loop because they have to be in a certain order...
-				subTags[j] = new Tag(svalue, " "
-						+ conditions[i].getOperatorString() + " '"
-						+ conditions[i].getStringValue() + "'");
-				j++;
-			}
-			message.addTag(new Tag(InxValPair_PI, subTags));
-		} else {
-			// need this tag, just create a blank one
-			message.addTag(new Tag(InxValPair_PI, new Tag(isLen, 0)));
-		}
-
-		// send command to server
-		message = irodsFunction(RODS_API_REQ, message, GEN_QUERY_AN);
-
-		if (message == null) {
-			// query had no results
-			return null;
-		}
-
-		int rows = message.getTag(rowCnt).getIntValue();
-		int attributes = message.getTag(attriCnt).getIntValue();
-		int continuation = message.getTag(continueInx).getIntValue();
-
-		String[] results = new String[attributes];
-		MetaDataField[] fields = new MetaDataField[attributes];
-		MetaDataRecordList[] rl = new MetaDataRecordList[rows];
-		for (int i = 0; i < attributes; i++) {
-
-			fields[i] = IRODSMetaDataSet.getField(message.tags[4 + i].getTag(
-					attriInx).getStringValue());
-		}
-		for (int i = 0; i < rows; i++) {
-			for (j = 0; j < attributes; j++) {
-
-				results[j] = message.tags[4 + j].tags[2 + i].getStringValue();
-			}
-			if (continuation > 0) {
-				rl[i] = new IRODSMetaDataRecordList(this, fields, results,
-						continuation);
-			} else {
-				// No more results, don't bother with sending the IRODSCommand
-				// object
-				rl[i] = new IRODSMetaDataRecordList(null, fields, results,
-						continuation);
-			}
-		}
-
-		return rl;
 	}
 
 	MetaDataRecordList[] getMoreResults(int continuationIndex,
@@ -1967,7 +2099,7 @@ class IRODSCommands {
 				throw new RuntimeException(
 						"unable to read all the bytes for an expected long value");
 			}
-
+			
 			return Host.castToLong(b);
 		}
 
@@ -2150,4 +2282,22 @@ class IRODSCommands {
 	public boolean isConnected() {
 		return irodsConnection.isConnected();
 	}
+
+	public IRODSServerProperties getIrodsServerProperties() {
+		return irodsServerProperties;
+	}
+
+	protected IRODSAccount getIrodsAccount() {
+		return irodsAccount;
+	}
+
+	protected void setIrodsAccount(IRODSAccount irodsAccount) {
+		this.irodsAccount = irodsAccount;
+	}
+
+	protected void setIrodsServerProperties(
+			IRODSServerProperties irodsServerProperties) {
+		this.irodsServerProperties = irodsServerProperties;
+	}
+
 }

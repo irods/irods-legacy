@@ -11,6 +11,7 @@ import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
 
+import org.irods.jargon.core.exception.DataNotFoundException;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;

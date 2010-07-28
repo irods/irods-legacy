@@ -104,7 +104,7 @@ public class User extends Domain {
 	}
 
 	public void modifyDN(String userName, String newValue) throws IOException {
-		if (irodsFileSystem.commands.getReportedIRODSVersion()
+		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion()
 				.equals("rods2.1")) {
 			// String[] args = { "modify", "user", userName, "dn", newValue };
 			// irodsFileSystem.commands.admin(args);

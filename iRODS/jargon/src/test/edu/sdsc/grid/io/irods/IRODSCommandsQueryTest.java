@@ -121,6 +121,49 @@ public class IRODSCommandsQueryTest {
 				.toString().indexOf(testFileName) > -1);
 
 	}
+	
+	
+	@Test
+	public void queryWithNoAvuCondition() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "testQueryNoAvuCondition.txt";
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+		
+		// now query
+		MetaDataCondition[] condition = new MetaDataCondition[1];
+		condition[0] = IRODSMetaDataSet.newCondition(IRODSMetaDataSet.FILE_NAME, MetaDataCondition.EQUAL, testFileName);
+
+		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
+				IRODSMetaDataSet.DIRECTORY_NAME };
+		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(condition, select, 100, Namespace.FILE, false);
+		
+		irodsFileSystem.close();
+
+		TestCase.assertNotNull("no query results returned", fileList);
+		TestCase.assertEquals("did not find my file and metadata", 1, fileList.length);
+		TestCase.assertTrue("did not find my file name in results", fileList[0].toString().indexOf(testFileName) > -1);
+	}
 
 	@Test
 	public void queryMetadataForFilesInTwoDirectories() throws Exception {

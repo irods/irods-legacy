@@ -46,7 +46,6 @@ import java.io.FileNotFoundException;
 import java.io.EOFException;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.DataInputStream;
 import java.io.UTFDataFormatException;
 
 /**
@@ -93,23 +92,14 @@ import java.io.UTFDataFormatException;
 public abstract class GeneralRandomAccessFile implements DataOutput, DataInput// ,
 																				// Cloneable
 {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-	/**
-	 * Used to set the offset for seek calls to the beginning of the file.
-	 */
-	// public static final int SEEK_SET = 0;
+	
 	/**
 	 * Used to set the offset for seek calls to the beginning of the file. Same
 	 * as SEEK_SET (as in C/C++, but that name is less intuitive)
 	 */
 	public static final int SEEK_START = 0;
 
-	/**
-	 * Used to set the offset for seek calls to the current offset of the file.
-	 */
-	// public static final int SEEK_CUR = 1;
+	
 	/**
 	 * Used to set the offset for seek calls to the current offset of the file.
 	 * Same as SEEK_CUR (as in C/C++, but that name is less intuitive)
@@ -121,9 +111,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public static final int SEEK_END = 2;
 
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
+
 	/**
 	 * Holds the server information used by this file.
 	 */
@@ -159,9 +147,6 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 
 	protected String mode;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
 	/**
 	 * Creates a random access file stream to read from, and optionally to write
 	 * to, the file specified by the {@link GeneralFile} argument. A new file
@@ -256,6 +241,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 * 
 	 * @throws throws Throwable If the file cannot be closed.
 	 */
+	@Override
 	protected void finalize() throws Throwable {
 		close();
 	}
@@ -349,6 +335,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	protected abstract void open(GeneralFile file) throws IOException;
 
+	@Override
 	public String toString() {
 		switch (rw) {
 		case 0:
@@ -1205,7 +1192,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeShort(int v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeShort(v, bytes);
+		int nBytes = fileFormat.encodeShort(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1230,7 +1217,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeChar(int v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeShort(v, bytes);
+		int nBytes = fileFormat.encodeShort(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1254,7 +1241,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeInt(int v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeInt(v, bytes);
+		int nBytes = fileFormat.encodeInt(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1279,7 +1266,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeLong(long v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeLong(v, bytes);
+		int nBytes = fileFormat.encodeLong(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1304,7 +1291,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeLongLong(long v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeLongLong(v, bytes);
+		int nBytes = fileFormat.encodeLongLong(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1329,7 +1316,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeLongDouble(double v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeLongDouble(v, bytes);
+		int nBytes = fileFormat.encodeLongDouble(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1354,7 +1341,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeFloat(float v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeFloat(v, bytes);
+		int nBytes = fileFormat.encodeFloat(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1379,7 +1366,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeDouble(double v) throws IOException {
 		byte bytes[] = new byte[Host.MAX_TYPE_SIZE];
-		int nBytes = (int) fileFormat.encodeDouble(v, bytes);
+		int nBytes = fileFormat.encodeDouble(v, bytes);
 		write(bytes, 0, nBytes);
 	}
 
@@ -1477,9 +1464,6 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 		write(buffer, 0, utflength + 2);
 	}
 
-	// ----------------------------------------------------------------------
-	// Data Format Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Sets the binary data format for data read from and written to the random
 	 * access file. If the given format object is a null, no change is made to
@@ -1956,7 +1940,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if an I/O error occurs
 	 */
 	public void writeDoubles(double[] values, int nValues) throws IOException {
-		int nBytes = nValues * (int) fileFormat.getDoubleSize();
+		int nBytes = nValues * fileFormat.getDoubleSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeDoubles(values, nValues, bytes);
 		write(bytes, 0, nBytes);
@@ -1983,7 +1967,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if an I/O error occurs
 	 */
 	public void writeFloats(float[] values, int nValues) throws IOException {
-		int nBytes = nValues * (int) fileFormat.getFloatSize();
+		int nBytes = nValues * fileFormat.getFloatSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeFloats(values, nValues, bytes);
 		write(bytes, 0, nBytes);
@@ -2010,7 +1994,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if an I/O error occurs
 	 */
 	public void writeInts(int[] values, int nValues) throws IOException {
-		int nBytes = nValues * (int) fileFormat.getIntSize();
+		int nBytes = nValues * fileFormat.getIntSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeInts(values, nValues, bytes);
 		write(bytes, 0, nBytes);
@@ -2037,7 +2021,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if an I/O error occurs
 	 */
 	public void writeLongs(long[] values, int nValues) throws IOException {
-		int nBytes = nValues * (int) fileFormat.getLongSize();
+		int nBytes = nValues * fileFormat.getLongSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeLongs(values, nValues, bytes);
 		write(bytes, 0, nBytes);
@@ -2064,7 +2048,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if an I/O error occurs
 	 */
 	public void writeShorts(short[] values, int nValues) throws IOException {
-		int nBytes = nValues * (int) fileFormat.getShortSize();
+		int nBytes = nValues * fileFormat.getShortSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeShorts(values, nValues, bytes);
 		write(bytes, 0, nBytes);
@@ -2091,7 +2075,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 *             if an I/O error occurs
 	 */
 	public void writeLongLongs(long[] values, int nValues) throws IOException {
-		int nBytes = nValues * (int) fileFormat.getLongLongSize();
+		int nBytes = nValues * fileFormat.getLongLongSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeLongLongs(values, nValues, bytes);
 		write(bytes, 0, nBytes);
@@ -2119,7 +2103,7 @@ public abstract class GeneralRandomAccessFile implements DataOutput, DataInput//
 	 */
 	public void writeLongDoubles(double[] values, int nValues)
 			throws IOException {
-		int nBytes = nValues * (int) fileFormat.getLongDoubleSize();
+		int nBytes = nValues * fileFormat.getLongDoubleSize();
 		byte[] bytes = new byte[nBytes];
 		fileFormat.encodeLongDoubles(values, nValues, bytes);
 		write(bytes, 0, nBytes);

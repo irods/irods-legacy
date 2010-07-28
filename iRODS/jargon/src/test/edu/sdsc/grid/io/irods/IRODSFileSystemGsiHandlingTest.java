@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -58,8 +59,9 @@ public class IRODSFileSystemGsiHandlingTest {
 		IRODSAccount dummyAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 		// fake out file system just to get hands on target method
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(dummyAccount);
-		irodsFileSystem.commands.setReportedIRODSVersion("rods2.1");
-		
+	
+		IRODSServerProperties irodsServerProperties = IRODSServerProperties.instance(IRODSServerProperties.IcatEnabled.ICAT_ENABLED, 0, "rods2.1", "d", "test");
+		irodsFileSystem.commands.setIrodsServerProperties(irodsServerProperties);
 		MetaDataCondition condition = irodsFileSystem.buildMetaDataConditionForGSIUser(account);
 		
 		irodsFileSystem.close();
@@ -68,7 +70,6 @@ public class IRODSFileSystemGsiHandlingTest {
 
 	}
 	
-
 	/**
 	 *  BUG 33 -  GSI Support in Jargon 
 	 * @throws Exception
@@ -81,7 +82,8 @@ public class IRODSFileSystemGsiHandlingTest {
 		IRODSAccount dummyAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
 		// fake out file system just to get hands on target method
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(dummyAccount);
-		irodsFileSystem.commands.setReportedIRODSVersion("rods2.2");
+		IRODSServerProperties irodsServerProperties = IRODSServerProperties.instance(IRODSServerProperties.IcatEnabled.ICAT_ENABLED, 0, "rods2.2", "d", "test");
+		irodsFileSystem.commands.setIrodsServerProperties(irodsServerProperties);
 		
 		MetaDataCondition condition = irodsFileSystem.buildMetaDataConditionForGSIUser(account);
 		

@@ -257,7 +257,7 @@ public class Tag implements Cloneable {
 	 * Outputs a string to send communications (function calls) to the iRODS
 	 * server. All values are strings
 	 */
-	String parseTag() {
+	public String parseTag() {
 		// If something isn't a string and you try to send a
 		// non-printable character this way, it will get all messed up.
 		// so...not sure if should be converted to Base64

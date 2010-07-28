@@ -891,9 +891,6 @@ public class GeneralFile extends Object implements Comparable {
 		return permission;
 	}
 
-	// ----------------------------------------------------------------------
-	// java.io.File Methods
-	// ----------------------------------------------------------------------
 	/**
 	 * Tests whether the application can read the file denoted by this abstract
 	 * pathname.
@@ -1359,20 +1356,6 @@ public class GeneralFile extends Object implements Comparable {
 		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * Returns an array of strings naming the files and directories in the
-	 * directory denoted by this abstract pathname that satisfy the specified
-	 * filter.
-	 */
-	/*
-	 * public String[] list(GeneralFilenameFilter filter) { String names[] =
-	 * list(); if ((names == null) || (filter == null)) { return names; }
-	 * 
-	 * ArrayList v = new ArrayList(); for (int i = 0 ; i < names.length ; i++) {
-	 * if (filter.accept(this, names[i])) { v.add(names[i]); } }
-	 * 
-	 * return (String[])(v.toArray(new String[0])); }
-	 */
 
 	/**
 	 * Returns an array of abstract pathnames denoting the files in the

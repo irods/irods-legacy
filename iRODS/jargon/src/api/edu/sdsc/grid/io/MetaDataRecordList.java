@@ -62,13 +62,7 @@ import java.util.Vector;
  * @author Lucas Gilbert, San Diego Supercomputer Center
  */
 public abstract class MetaDataRecordList extends Object {
-	// ----------------------------------------------------------------------
-	// Constants
-	// ----------------------------------------------------------------------
-
-	// ----------------------------------------------------------------------
-	// Fields
-	// ----------------------------------------------------------------------
+	
 	/**
 	 * Stores the descriptions and names of the related fields for all the
 	 * values returned.
@@ -85,12 +79,9 @@ public abstract class MetaDataRecordList extends Object {
 	 */
 	protected Object[] records;
 
-	// ----------------------------------------------------------------------
-	// Constructors and Destructors
-	// ----------------------------------------------------------------------
 	/**
    *
-   */
+   */ 
 	protected MetaDataRecordList(MetaDataField[] fields, Object[] recordValues) {
 		if (fields == null)
 			throw new NullPointerException("fields cannot be null");
@@ -135,6 +126,21 @@ public abstract class MetaDataRecordList extends Object {
 		records[0] = new Float(recordValue);
 	}
 
+	/**
+	 * Create a new MetaDataRecordList with this <code>field</code> and
+	 * <code>recordValue</code>.
+	 */
+	public MetaDataRecordList(MetaDataField field, long recordValue) {
+		if (field == null)
+			throw new NullPointerException("field cannot be null");
+
+		fields = new MetaDataField[1];
+		fields[0] = field;
+
+		records = new Object[1];
+		records[0] = new Long(recordValue);
+	}
+	
 	/**
 	 * Create a new MetaDataRecordList with this <code>field</code> and
 	 * <code>recordValue</code>.
@@ -206,9 +212,6 @@ public abstract class MetaDataRecordList extends Object {
 			fields = null;
 	}
 
-	// ----------------------------------------------------------------------
-	// Getters
-	// ----------------------------------------------------------------------
 	/**
 	 * Returns the number of fields for each record in the list. This field
 	 * count will generally equal the number of fields intially selected by the
@@ -323,6 +326,29 @@ public abstract class MetaDataRecordList extends Object {
 			return Integer.parseInt(records[index].toString());
 		}
 	}
+	
+	/**
+	 * Get the value for the field. The call's data type (int, float, or string)
+	 * need not match the value's data type (as returned by getFieldType),
+	 * except in the case of tables.
+	 * 
+	 * @throws IllegalArgumentException
+	 *             If the value at this index is a table.
+	 */
+	public long getLongValue(int index) {
+		if (records == null)
+			throw new NullPointerException();
+		if (records[index] == null)
+			throw new NullPointerException("Value at index is null.");
+
+		if (records[index] instanceof MetaDataTable) {
+			throw new IllegalArgumentException(
+					"Value at this index is a table.");
+		} else {
+			return Long.parseLong(records[index].toString());
+		}
+	}
+
 
 	/**
 	 * Get the value for the field. The call's data type (int, float, or string)

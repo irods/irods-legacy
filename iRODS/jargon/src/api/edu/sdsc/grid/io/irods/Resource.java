@@ -36,6 +36,13 @@ import org.irods.jargon.core.exception.JargonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.Namespace;
+import edu.sdsc.grid.io.ResourceMetaData;
+
 /**
  * This is a transitional service to access/modify resource information. Later
  * versions of the Jargon API will see this class refactored, though all efforts
@@ -113,6 +120,43 @@ public class Resource extends Domain {
 			throws IOException {
 		String[] args = { "modify", iName, resourceName, "type", newValue };
 		irodsFileSystem.commands.admin(args);
+	}
+
+	public List<String> listResourcesInResourceGroup(String resourceGroupName)
+			throws JargonException {
+		if (log.isInfoEnabled()) {
+			log
+					.info("listing resources in resource group:"
+							+ resourceGroupName);
+		}
+
+		List<String> resources = new ArrayList<String>();
+
+		final MetaDataCondition[] condition = { MetaDataSet.newCondition(
+				ResourceMetaData.RESOURCE_GROUP, MetaDataCondition.EQUAL,
+				resourceGroupName) };
+		final MetaDataSelect[] select = { MetaDataSet
+				.newSelection(ResourceMetaData.RESOURCE_NAME)
+
+		};
+		MetaDataRecordList[] results;
+		try {
+			results = irodsFileSystem.commands.query(condition, select, 500, Namespace.RESOURCE);
+		} catch (IOException e) {
+			String msg = "IOException in query";
+			log.error("IOException in query", e);
+			throw new JargonException(msg, e);
+		}
+		int i = 0;
+
+		for (final MetaDataRecordList result : results) {
+			final String resource = result.getStringValue(i++);
+			if ((resource != null) && (resource.length() > 0)) {
+				resources.add(resource);
+			}
+		}
+
+		return resources;
 	}
 
 	/**
@@ -281,6 +325,7 @@ public class Resource extends Domain {
 			throw new JargonException(
 					"IO exception sending iadmin rmrg command", e);
 		}
+
 		log.info("successfully removed resource from group");
 
 	}

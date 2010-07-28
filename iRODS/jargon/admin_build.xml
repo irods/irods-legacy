@@ -11,6 +11,7 @@
 			<include name="cobertura.jar" />
 			<include name="lib/**/*.jar" />
 		</fileset>
+
 	</path>
 
 	<taskdef classpathref="cobertura.classpath" resource="tasks.properties" />
@@ -20,6 +21,10 @@
 			<include name="**/*.jar" />
 			<include name="**/*.zip" />
 		</fileset>
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+
 	</path>
 
 	<path id="class.path.test">
@@ -31,7 +36,7 @@
 
 	<target name="call_rebuild">
 		<echo message="calling Jargon build to rebuild all..." />
-			<property name="set.java.debug" value="true"/>
+		<property name="set.java.debug" value="true" />
 		<ant target="rebuild">
 		</ant>
 	</target>
@@ -39,8 +44,7 @@
 	<target name="unit_test">
 		<echo message="running all junit tests..." />
 		<junit fork="yes" haltonfailure="${fail.on.junit.error}">
-			<sysproperty key="net.sourceforge.cobertura.datafile"
-					file="${instrumented.code.dir}/cobertura.ser" />
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${instrumented.code.dir}/cobertura.ser" />
 			<classpath location="${instrumented.code.dir}" />
 			<classpath refid="class.path.test" />
 			<formatter type="brief" usefile="false" />
@@ -48,19 +52,18 @@
 		</junit>
 		<echo message="running clean target will clean up unit test scratch directories..." />
 	</target>
-	
+
 	<target name="unit_test_long">
-			<echo message="running all junit tests..." />
-			<junit fork="yes" haltonfailure="${fail.on.junit.error}">
-				<sysproperty key="net.sourceforge.cobertura.datafile"
-						file="${instrumented.code.dir}/cobertura.ser" />
-				<classpath location="${instrumented.code.dir}" />
-				<classpath refid="class.path.test" />
-				<formatter type="brief" usefile="false" />
-				<test name="edu.sdsc.jargon.unittest.testsuites.AllTestsIncludingLongAndFunctional" />
-			</junit>
-			<echo message="running clean target will clean up unit test scratch directories..." />
-		</target>
+		<echo message="running all junit tests..." />
+		<junit fork="yes" haltonfailure="${fail.on.junit.error}">
+			<sysproperty key="net.sourceforge.cobertura.datafile" file="${instrumented.code.dir}/cobertura.ser" />
+			<classpath location="${instrumented.code.dir}" />
+			<classpath refid="class.path.test" />
+			<formatter type="brief" usefile="false" />
+			<test name="edu.sdsc.jargon.unittest.testsuites.AllTestsIncludingLongAndFunctional" />
+		</junit>
+		<echo message="running clean target will clean up unit test scratch directories..." />
+	</target>
 
 	<target name="instrument_code_coverage">
 		<echo message="instrumented code coverage..." />
@@ -74,20 +77,14 @@
 		</cobertura-instrument>
 	</target>
 
-	<target name="generate_code_coverage"
-		depends="call_rebuild, instrument_code_coverage, unit_test">
+	<target name="generate_code_coverage" depends="call_rebuild, instrument_code_coverage, unit_test">
 		<echo message="producing code coverage report..." />
-		<cobertura-report format="html"
-			destdir="${code.coverage.report.dir}" datafile="${instrumented.code.dir}/cobertura.ser"
-			srcdir="${src.dir}" />
+		<cobertura-report format="html" destdir="${code.coverage.report.dir}" datafile="${instrumented.code.dir}/cobertura.ser" srcdir="${src.dir}" />
 	</target>
-	
-	<target name="generate_code_coverage_long_tests"
-			depends="call_rebuild, instrument_code_coverage, unit_test_long">
-			<echo message="producing code coverage report..." />
-			<cobertura-report format="html"
-				destdir="${code.coverage.report.dir}" datafile="${instrumented.code.dir}/cobertura.ser"
-				srcdir="${src.dir}" />
-		</target>
+
+	<target name="generate_code_coverage_long_tests" depends="call_rebuild, instrument_code_coverage, unit_test_long">
+		<echo message="producing code coverage report..." />
+		<cobertura-report format="html" destdir="${code.coverage.report.dir}" datafile="${instrumented.code.dir}/cobertura.ser" srcdir="${src.dir}" />
+	</target>
 
 </project>

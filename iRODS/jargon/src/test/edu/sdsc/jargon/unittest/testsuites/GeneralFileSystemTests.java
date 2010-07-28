@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 import edu.sdsc.grid.io.GeneralFileSystemTest;
+import edu.sdsc.grid.io.MetaDataRecordListTest;
 
 /**
  * Test suite for GeneralFileSystem operations
@@ -19,7 +20,7 @@ import edu.sdsc.grid.io.GeneralFileSystemTest;
 })*/
 
 @Suite.SuiteClasses({
-  GeneralFileSystemTest.class
+  GeneralFileSystemTest.class, MetaDataRecordListTest.class
 })
 public class GeneralFileSystemTests {
 	

@@ -272,6 +272,39 @@ public class IRODSResourceQueryTest {
 		TestCase.assertEquals(
 				"should not have returned resources for the collection", 0,
 				resources.size());
+	}
+
+	/**
+	 *  Bug 82 -  error querying resources in resource group
+	 * @throws Exception
+	 */
+	@Test
+	public final void testAddAndQueryResourcesInResourceGroup() throws Exception {
+		String testResourceGroup = "testResourceGroup";
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String rescName = testingProperties.getProperty(TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY);
+		Resource resource = new Resource(irodsFileSystem);
+		resource.removeResourceFromResourceGroup(rescName, testResourceGroup);
+				
+		// add a resource to the resource group
+		resource.addResourceToResourceGroup(rescName, testResourceGroup);
+	
+		List<String> resources = resource.listResourcesInResourceGroup(testResourceGroup);
+		irodsFileSystem.close();
+		
+		TestCase.assertTrue("did not get any resources from query", resources.size() > 0);
+		
+		boolean found = false;
+		for (String resc : resources) {
+			if (resc.equals(rescName)) {
+				found = true;
+				break;
+			}
+		}
+
+		TestCase.assertTrue("did not find resc I added to the resource group", found);
 
 	}
 
@@ -288,7 +321,7 @@ public class IRODSResourceQueryTest {
 		IRODSAccount account = testingPropertiesHelper
 				.buildIRODSAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
-		if (irodsFileSystem.commands.getReportedIRODSVersion().compareTo(
+		if (irodsFileSystem.commands.getIrodsServerProperties().getRelVersion().compareTo(
 				"rods2.3") <= 0) {
 			return;
 		}

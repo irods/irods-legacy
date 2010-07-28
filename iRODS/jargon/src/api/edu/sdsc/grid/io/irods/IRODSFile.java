@@ -49,7 +49,11 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import org.irods.jargon.core.exception.DataNotFoundException;
+import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.exception.JargonRuntimeException;
+import org.irods.jargon.core.packinstr.ModAvuMetadataInp;
+import org.irods.jargon.core.pub.domain.AvuData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -312,6 +316,8 @@ public class IRODSFile extends RemoteFile {
 	 */
 	public void close() throws NullPointerException, IOException {
 		log.info("close called on IRODSFile, will close file system");
+		// FIXME: inspect this close logic, should the file instead be closed?
+		// in addition?
 		((IRODSFileSystem) this.getFileSystem()).close();
 	}
 
@@ -918,6 +924,11 @@ public class IRODSFile extends RemoteFile {
 	 * overwrite. If an already existing value conflicts, inserts new metadata
 	 * value. If duplicate metadata is reentered, no action is taken.
 	 * 
+	 * NOTE: this method, though named 'modifyMetaData', is actually an add of
+	 * metadata. In order to preserve the public API, this naming will remain in
+	 * place. To actually overwrite existing metadata with new values use the
+	 * <code>overwriteMetaData()</code> method in this class.
+	 * 
 	 * @param values
 	 *            <code>String[]</code> containing an AVU in the form (attrib
 	 *            name, attrib value) or (attrib name, attrib value, attrib
@@ -958,6 +969,67 @@ public class IRODSFile extends RemoteFile {
 
 			throw e;
 		}
+	}
+
+	/**
+	 * Overwrite AVU metadata for this file. This method will cause any existing AVU's with the attribute to be replaced.
+	 * 
+	 * @param metaData
+	 *            <code>String[]</code> containing an AVU in the form (attrib
+	 *            name, attrib value) or (attrib name, attrib value, attrib
+	 *            units)
+	 * @throws JargonException
+	 */
+	public void overwriteMetaData(String[] metaData) throws JargonException {
+		if (metaData.length < 2 || metaData.length > 3) {
+			throw new IllegalArgumentException(
+					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
+		}
+
+		if (metaData[0].equals("") || metaData[1].equals("")) {
+			throw new IllegalArgumentException(
+					"The metadata attribute and value " + "cannot be empty.");
+		}
+
+		final AvuData avuData;
+		if (metaData.length == 2) {
+			avuData = AvuData.instance(metaData[0], metaData[1], "");
+		} else {
+			avuData = AvuData.instance(metaData[0], metaData[1], metaData[2]);
+		}
+
+		log.info("modify metadata: {}", avuData);
+		log.info("absolute path: {}", this.getAbsolutePath());
+
+		final ModAvuMetadataInp modifyAvuMetadataInp;
+
+		if (this.isFile()) {
+			modifyAvuMetadataInp = ModAvuMetadataInp
+					.instanceForModifyDataObjectMetadata(
+							this.getAbsolutePath(), avuData);
+		} else {
+			modifyAvuMetadataInp = ModAvuMetadataInp
+					.instanceForModifyCollectionMetadata(
+							this.getAbsolutePath(), avuData);
+		}
+
+		log.debug("sending avu request");
+
+		try {
+			iRODSFileSystem.getCommands().irodsFunction(modifyAvuMetadataInp);
+		} catch (JargonException je) {
+
+			if (je.getMessage().indexOf("-814000") > -1) {
+				throw new JargonException(
+						"Target collection was not found, could not add AVU");
+			}
+
+			log.error("jargon exception modifying AVU metadata", je);
+			throw je;
+		}
+
+		log.debug("metadata modified");
+
 	}
 
 	/**
@@ -1790,7 +1862,7 @@ public class IRODSFile extends RemoteFile {
 				.newSelection(GeneralMetaData.DIRECTORY_NAME) };
 
 		try {
-			rl = fileSystem.query(conditions, selects, 3);
+			rl = fileSystem.query(conditions, selects, 500);
 
 			if (rl != null && rl.length > 0) {
 				pathNameType = PATH_IS_DIRECTORY;
@@ -1860,7 +1932,7 @@ public class IRODSFile extends RemoteFile {
 				.newSelection(GeneralMetaData.FILE_NAME) };
 
 		try {
-			rl = fileSystem.query(conditions, selects, 3);
+			rl = fileSystem.query(conditions, selects, 500);
 
 			if (rl != null) {
 				pathNameType = PATH_IS_FILE;
@@ -2134,12 +2206,36 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	/**
-	 * Creates the directory named by this abstract pathname.
+	 * Creates the directory named by this abstract pathname. This method will
+	 * not create intermediate directories.
+	 * 
+	 * @return <code>boolean</code> that will be true if successfully created
+	 *         the directory
 	 */
+
 	public boolean mkdir() {
 		try {
 			if (!isDirectory()) {
-				iRODSFileSystem.commands.mkdir(this);
+				iRODSFileSystem.commands.mkdir(this, false);
+				return true;
+			}
+		} catch (IOException e) {
+			log.warn("io exception is logged and ignored", e);
+		}
+		return false;
+	}
+
+	/**
+	 * Creates the directory named by this abstract pathname. This method will
+	 * recursively create any intermediate directories.
+	 * 
+	 * @return <code>boolean</code> that will be true if successfully created
+	 *         the directory and any intermediate directories.
+	 */
+	public boolean mkdirs() {
+		try {
+			if (!isDirectory()) {
+				iRODSFileSystem.commands.mkdir(this, true);
 				return true;
 			}
 		} catch (IOException e) {

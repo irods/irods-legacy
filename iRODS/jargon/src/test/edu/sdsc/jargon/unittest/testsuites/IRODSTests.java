@@ -3,6 +3,9 @@
  */
 package edu.sdsc.jargon.unittest.testsuites;
 
+import org.irods.jargon.core.genupdate.GenUpdateProcessorTest;
+import org.irods.jargon.core.query.ExtensibleMetaDataMappingTest;
+import org.irods.jargon.core.query.ExtensibleMetadataPropertiesSourceTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -28,6 +31,7 @@ import edu.sdsc.grid.io.irods.IRODSFileSystemMetadataQueryTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemModifyMetadataTest;
 import edu.sdsc.grid.io.irods.IRODSFileSystemTest;
 import edu.sdsc.grid.io.irods.IRODSFileTest;
+import edu.sdsc.grid.io.irods.IRODSExtensibleMetaDataTest;
 import edu.sdsc.grid.io.irods.IRODSMultiThreadGetAndPutTest;
 import edu.sdsc.grid.io.irods.IRODSRandomAccessFileTest;
 import edu.sdsc.grid.io.irods.IRODSResourceQueryTest;
@@ -72,7 +76,11 @@ import edu.sdsc.grid.io.irods.UserTest;
   IRODSThousandFilesTest.class,
   IRODSCommandsQueryTest.class, 
   IRODSAvuTest.class,
-  DomainTest.class
+  DomainTest.class,
+  ExtensibleMetaDataMappingTest.class,
+  ExtensibleMetadataPropertiesSourceTest.class,
+  IRODSExtensibleMetaDataTest.class,
+  GenUpdateProcessorTest.class
   
 })
 public class IRODSTests {

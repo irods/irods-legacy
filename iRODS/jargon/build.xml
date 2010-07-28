@@ -39,8 +39,6 @@
 
 	</target>
 
-
-
 	<!--  properly set the flag for generating debug info in compile, will override default
 			if generating a code coverage report -->
 	<target name="set_compile_debug">
@@ -161,7 +159,7 @@
 	</target>
 
 	<target name="javadocs" description="Build the JavaDocs.">
-		<javadoc sourcepath="${src.dir}" packagenames="edu.*" destdir="${javadoc.dir}" author="true" version="true" use="true" windowtitle="Jargon API">
+		<javadoc sourcepath="${src.dir}" packagenames="*" destdir="${javadoc.dir}" author="true" version="true" use="true" windowtitle="Jargon API">
 		</javadoc>
 	</target>
 
