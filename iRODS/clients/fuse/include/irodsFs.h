@@ -25,6 +25,8 @@ typedef struct IFuseConn {
     rcComm_t *conn;    
     pthread_mutex_t lock;
     time_t actTime;	/* the last time the connection is active */
+    int inuseFlag;
+    struct IFuseConn *next;
 } iFuseConn_t;
 
 #ifdef  __cplusplus

@@ -18,7 +18,7 @@
 /* some global variables */
 iFuseDesc_t IFuseDesc[MAX_IFUSE_DESC];
 
-iFuseConn_t DefConn;
+iFuseConn_t *ConnHead = NULL;
 rodsEnv MyRodsEnv;
 
 static struct fuse_operations irodsOper =
@@ -116,6 +116,7 @@ main (int argc, char **argv)
     if (setAndMkFileCacheDir () < 0) exit (1);
 #endif
 
+#if 0
     memset (&DefConn, 0, sizeof (DefConn));
 
     pthread_mutex_init (&DefConn.lock, NULL);
@@ -127,13 +128,16 @@ main (int argc, char **argv)
         rodsLogError (LOG_ERROR, status, "rcConnect failure");
         exit (2);
     }
+#endif
 
     initPathCache ();
     initIFuseDesc ();
 
     status = fuse_main (argc, argv, &irodsOper, NULL);
 
+#if 0
     rcDisconnect (DefConn.conn);
+#endif
 
     if (status < 0) {
         exit (3);

@@ -15,14 +15,15 @@
 #endif
 
 #define MAX_BUF_CACHE   2
-#define MAX_IFUSE_DESC   1024
+#define MAX_IFUSE_DESC   256
 #define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
 #define MAX_NEWLY_CREATED_CACHE_SIZE   (4*1024*1024)	/* 4 mb */
+#define MAX_NUM_CONN	1
 
 #define FUSE_CACHE_DIR	"/tmp/fuseCache"
 
-#define FD_FREE		0
-#define FD_INUSE	1 
+#define IRODS_FREE		0
+#define IRODS_INUSE	1 
 
 typedef struct BufCache {
     rodsLong_t beginOffset;
@@ -37,7 +38,7 @@ typedef enum {
 } readCacheState_t;
 
 typedef struct IFuseDesc {
-    rcComm_t *conn;     /* The iRODS client connection */
+    iFuseConn_t *iFuseConn;    
     bufCache_t  bufCache[MAX_BUF_CACHE];
     int actCacheInx;    /* (cacheInx + 1) currently active. 0 means no cache */
     int inuseFlag;      /* 0 means not in use */
@@ -92,8 +93,10 @@ int
 allocIFuseDesc ();
 int
 freeIFuseDesc (int descInx);
+iFuseConn_t *
+getIFuseConnByRcConn (rcComm_t *conn);
 int
-fillIFuseDesc (int descInx, rcComm_t *conn, int iFd, char *objPath,
+fillIFuseDesc (int descInx, iFuseConn_t *iFuseConn, int iFd, char *objPath,
 char *localPath);
 int
 ifuseWrite (char *path, int descInx, char *buf, size_t size,
@@ -104,7 +107,13 @@ off_t offset);
 int
 ifuseLseek (char *path, int descInx, off_t offset);
 int
-getIFuseConn (iFuseConn_t *iFuseConn, rodsEnv *MyRodsEnv);
+getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *MyRodsEnv);
+int
+useIFuseConn (iFuseConn_t *iFuseConn);
+int
+unuseIFuseConn (iFuseConn_t *iFuseConn);
+int 
+useConn (rcComm_t *conn);
 int
 relIFuseConn (iFuseConn_t *iFuseConn);
 void
@@ -143,7 +152,7 @@ pathCache_t **tmpPathCache);
 int
 closeNewlyCreatedCache ();
 int
-closeIrodsFd (int fd);
+closeIrodsFd (rcComm_t *conn, int fd);
 int
 getDescInxInNewlyCreatedCache (char *path, int flags);
 int
@@ -154,7 +163,7 @@ uint mtime, uint atime);
 int
 irodsMknodWithCache (char *path, mode_t mode, char *cachePath);
 int
-irodsOpenWithReadCache (char *path, int flags);
+irodsOpenWithReadCache (iFuseConn_t *iFuseConn, char *path, int flags);
 int
 freePathCache (pathCache_t *tmpPathCache);
 int
@@ -166,9 +175,11 @@ updatePathCacheStat (pathCache_t *tmpPathCache);
 int
 ifuseClose (char *path, int descInx);
 int
-dataObjCreateByFusePath (char *path, int mode, char *outIrodsPath);
+dataObjCreateByFusePath (rcComm_t *conn, char *path, int mode, 
+char *outIrodsPath);
 int
-ifusePut (char *path, char *locCachePath, int mode, rodsLong_t srcSize);
+ifusePut (rcComm_t *conn, char *path, char *locCachePath, int mode,
+rodsLong_t srcSize);
 int
 freeFileCache (pathCache_t *tmpPathCache);
 int
