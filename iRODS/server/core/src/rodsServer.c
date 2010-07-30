@@ -1109,6 +1109,7 @@ procBadReq ()
 	free (tmpConnReq);
 	tmpConnReq = nextConnReq;
     }
+    BadReqHead = NULL;
 #ifndef SINGLE_SVR_THR
     pthread_mutex_unlock (&BadReqMutex);
 #endif
