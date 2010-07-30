@@ -82,6 +82,7 @@ int reconnFlag)
 	    snprintf (errMsg->msg, ERR_MSG_LEN - 1,
 	      "_rcConnect: setUserInfo failed\n");
 	}
+	free (conn);
 	return NULL;
     }
   
@@ -95,6 +96,7 @@ int reconnFlag)
             snprintf (errMsg->msg, ERR_MSG_LEN - 1,
               "_rcConnect: setRhostInfo failed\n");
         }
+	free (conn);
         return NULL;
     }
 
@@ -109,6 +111,7 @@ int reconnFlag)
             snprintf (errMsg->msg, ERR_MSG_LEN - 1,
               "_rcConnect: connectToRhost failed\n");
         }
+	free (conn);
         return NULL;
     }
 

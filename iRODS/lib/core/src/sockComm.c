@@ -404,8 +404,12 @@ readVersion (int sock, version_t **myVersion)
     int status;
     msgHeader_t myHeader;
     bytesBuf_t inputStructBBuf, bsBBuf, errorBBuf;
+    struct timeval tv;
 
-    status = readMsgHeader (sock, &myHeader, NULL);
+    tv.tv_sec = READ_VERSION_TOUT_SEC;
+    tv.tv_usec = 0;
+
+    status = readMsgHeader (sock, &myHeader, &tv);
 
    if (status < 0) {
         rodsLogError (LOG_NOTICE, status,
@@ -606,6 +610,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         rodsLogError (LOG_ERROR, status,
           "connectToRhost: sendStartupPack to %s failed, status = %d",
           conn->host, status);
+	close (conn->sock);
         return status;
     }
 
@@ -615,6 +620,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         rodsLogError (LOG_ERROR, status,
           "connectToRhost: readVersion to %s failed, status = %d",
           conn->host, status);
+	close (conn->sock);
         return status;
     }
 
@@ -622,6 +628,7 @@ connectToRhost (rcComm_t *conn, int connectCnt, int reconnFlag)
         rodsLogError (LOG_ERROR, conn->svrVersion->status,
           "connectToRhost: error returned from host %s status = %d",
           conn->host, conn->svrVersion->status);
+	close (conn->sock);
         return conn->svrVersion->status;
     }
 
