@@ -944,9 +944,20 @@ keyValPair_t *condInput, char *destRescName, char *srcRescName)
 	}
     }
 
-    if (numDestThr > 0) return numDestThr;
-    if (numSrcThr > 0) return numSrcThr;
-
+    if (numDestThr > 0) {
+	if (getValByKey (condInput, RBUDP_TRANSFER_KW) != NULL) {
+	    return 1;
+	} else {
+            return numDestThr;
+	}
+    }
+    if (numSrcThr > 0) {
+        if (getValByKey (condInput, RBUDP_TRANSFER_KW) != NULL) {
+            return 1;
+        } else {
+            return numSrcThr;
+	}
+    }
     /* should not be here. do one with no resource */
     rei.rgi = NULL;
     status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
