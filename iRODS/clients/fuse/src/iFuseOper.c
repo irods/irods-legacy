@@ -26,13 +26,13 @@ irodsGetattr (const char *path, struct stat *stbuf)
     iFuseConn_t *iFuseConn = NULL;
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
-    status = _irodsGetattr (iFuseConn->conn, path, stbuf, NULL);
+    status = _irodsGetattr (iFuseConn, path, stbuf, NULL);
     relIFuseConn (iFuseConn);
     return (status);
 }
 
 int 
-_irodsGetattr (rcComm_t *conn, const char *path, struct stat *stbuf, 
+_irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf, 
 pathCache_t **outPathCache)
 {
     int status;
@@ -78,14 +78,12 @@ pathCache_t **outPathCache)
 	/* use ENOTDIR for this type of error */
 	return -ENOTDIR;
     }
-    status = rcObjStat (conn, &dataObjInp, &rodsObjStatOut);
+    status = rcObjStat (iFuseConn->conn, &dataObjInp, &rodsObjStatOut);
     if (status < 0) {
-#if 0   /* not used */
         if (isReadMsgError (status)) {
-	    ifuseReconnect ();
-            status = rcObjStat (conn, &dataObjInp, &rodsObjStatOut);
+	    ifuseReconnect (iFuseConn);
+            status = rcObjStat (iFuseConn->conn, &dataObjInp, &rodsObjStatOut);
 	}
-#endif
 	if (status < 0) {
 	    if (status != USER_FILE_DOES_NOT_EXIST) {
                 rodsLogError (LOG_ERROR, status, 
@@ -164,13 +162,11 @@ off_t offset, struct fuse_file_info *fi)
     status = rclOpenCollection (iFuseConn->conn, collPath, 0, &collHandle);
 
     if (status < 0) {
-#if 0   /* not used */
         if (isReadMsgError (status)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             status = rclOpenCollection (iFuseConn->conn, collPath, 0, 
 	      &collHandle);
 	}
-#endif
 	if (status < 0) {
             rodsLog (LOG_ERROR,
               "getCollUtil: rclOpenCollection of %s error. status = %d",
@@ -248,7 +244,7 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 
     getIFuseConn (&iFuseConn, &MyRodsEnv);
 
-    if (_irodsGetattr (iFuseConn->conn, path, &stbuf, NULL) >= 0)
+    if (_irodsGetattr (iFuseConn, path, &stbuf, NULL) >= 0)
         return -EEXIST;
 
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
@@ -260,13 +256,11 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 	  mode, irodsPath);
 
         if (status < 0) {
-#if 0   /* not used */
             if (isReadMsgError (status)) {
-		ifuseReconnect ();
+		ifuseReconnect (iFuseConn);
 	        status = dataObjCreateByFusePath (iFuseConn->conn, 
 		  (char *) path, mode, irodsPath);
 	    }
-#endif
 	    if (status < 0) {
                 rodsLogError (LOG_ERROR, status,
                   "irodsMknod: rcDataObjCreate of %s error", path);
@@ -328,12 +322,10 @@ irodsMkdir (const char *path, mode_t mode)
     status = rcCollCreate (iFuseConn->conn, &collCreateInp);
 
     if (status < 0) {
-#if 0   /* not used */
 	if (isReadMsgError (status)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             status = rcCollCreate (iFuseConn->conn, &collCreateInp);
 	}
-#endif
         relIFuseConn (iFuseConn);
 	if (status < 0) {
             rodsLogError (LOG_ERROR, status,
@@ -385,12 +377,10 @@ irodsUnlink (const char *path)
 #endif
 	status = 0;
     } else {
-#if 0   /* not used */
 	if (isReadMsgError (status)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             status = rcDataObjUnlink (iFuseConn->conn, &dataObjInp);
 	}
-#endif
 	if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "irodsUnlink: rcDataObjUnlink of %s error", path);
@@ -434,12 +424,10 @@ irodsRmdir (const char *path)
 #endif
         status = 0;
     } else {
-#if 0   /* not used */
 	if (isReadMsgError (status)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             status = rcRmColl (iFuseConn->conn, &collInp, 0);
 	}
-#endif
 	if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "irodsRmdir: rcRmColl of %s error", path);
@@ -533,12 +521,10 @@ irodsRename (const char *from, const char *to)
 #endif
         status = 0;
     } else {
-#if 0   /* not used */
 	if (isReadMsgError (status)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             status = rcDataObjRename (iFuseConn->conn, &dataObjRenameInp);
 	}
-#endif
 	if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "irodsRename: rcDataObjRename of %s to %s error", from, to);
@@ -610,12 +596,10 @@ irodsChmod (const char *path, mode_t mode)
 #endif
         status = 0;
     } else {
-#if 0   /* not used */
 	if (isReadMsgError (status)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             status = rcModDataObjMeta(iFuseConn->conn, &modDataObjMetaInp);
 	}
-#endif
 	if (status < 0) {
             rodsLogError(LOG_ERROR, status, 
 	      "irodsChmod: rcModDataObjMeta failure");
@@ -683,12 +667,10 @@ irodsTruncate (const char *path, off_t size)
 #endif
         status = 0;
     } else {
-#if 0   /* not used */
 	if (isReadMsgError (status)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             status = rcDataObjTruncate (iFuseConn->conn, &dataObjInp);
 	}
-#endif
 	if (status < 0) {
             rodsLogError (LOG_ERROR, status,
               "irodsTruncate: rcDataObjTruncate of %s error", path);
@@ -760,12 +742,10 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
     fd = rcDataObjOpen (iFuseConn->conn, &dataObjInp);
 
     if (fd < 0) {
-#if 0   /* not used */
 	if (isReadMsgError (fd)) {
-	    ifuseReconnect ();
+	    ifuseReconnect (iFuseConn);
             fd = rcDataObjOpen (iFuseConn->conn, &dataObjInp);
 	}
-#endif
         relIFuseConn (iFuseConn);
 	if (fd < 0) {
             rodsLogError (LOG_ERROR, status,

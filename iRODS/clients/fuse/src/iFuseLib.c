@@ -17,6 +17,8 @@
 static pthread_mutex_t DescLock;
 static pthread_mutex_t ConnLock;
 pthread_t ConnManagerThr;
+pthread_mutex_t ConnManagerLock;
+pthread_cond_t ConnManagerCond;
 
 char FuseCacheDir[MAX_NAME_LEN];
 
@@ -278,6 +280,8 @@ initIFuseDesc ()
 {
     pthread_mutex_init (&DescLock, NULL);
     pthread_mutex_init (&ConnLock, NULL);
+    pthread_mutex_init (&ConnManagerLock, NULL);
+    pthread_cond_init (&ConnManagerCond, NULL);
     memset (IFuseDesc, 0, sizeof (iFuseDesc_t) * MAX_IFUSE_DESC);
     return (0);
 }
@@ -824,6 +828,7 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 	}
 	tmpIFuseConn = tmpIFuseConn->next;
     }
+    pthread_mutex_unlock (&ConnLock);
     /* nothing free. make one */
     tmpIFuseConn = malloc (sizeof (iFuseConn_t));
     if (tmpIFuseConn < 0) {
@@ -840,6 +845,7 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 
     *iFuseConn = tmpIFuseConn;
 
+    pthread_mutex_lock (&ConnLock);
     /* queue it on top */
     tmpIFuseConn->next = ConnHead;
     ConnHead = tmpIFuseConn;
@@ -908,12 +914,17 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
       myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 1, &errMsg);
 
     if (iFuseConn->conn == NULL) {
-        rodsLogError (LOG_ERROR, errMsg.status,
-          "ifuseConnect: rcConnect failure %s", errMsg.msg);
-        if (errMsg.status < 0) {
-            return (errMsg.status);
-        } else {
-            return (-1);
+	/* try one more */
+        iFuseConn->conn = rcConnect (myRodsEnv->rodsHost, myRodsEnv->rodsPort,
+          myRodsEnv->rodsUserName, myRodsEnv->rodsZone, 1, &errMsg);
+	if (iFuseConn->conn == NULL) {
+            rodsLogError (LOG_ERROR, errMsg.status,
+              "ifuseConnect: rcConnect failure %s", errMsg.msg);
+            if (errMsg.status < 0) {
+                return (errMsg.status);
+            } else {
+                return (-1);
+	    }
         }
     }
 
@@ -934,7 +945,36 @@ relIFuseConn (iFuseConn_t *iFuseConn)
         iFuseConn->inuseFlag = IRODS_FREE;
     iFuseConn->actTime = time (NULL);
     pthread_mutex_unlock (&ConnLock);
+    signalConnManager ();
     return 0;
+}
+
+int
+signalConnManager ()
+{
+    int connCnt;
+    pthread_mutex_lock (&ConnLock);
+    connCnt = getNumConn ();
+    pthread_mutex_unlock (&ConnLock);
+    if (connCnt > MAX_NUM_CONN) {
+        pthread_mutex_lock (&ConnManagerLock);
+	pthread_cond_signal (&ConnManagerCond);
+        pthread_mutex_unlock (&ConnManagerLock);
+    }
+    return 0;
+}
+
+int
+getNumConn ()
+{
+    iFuseConn_t *tmpIFuseConn;
+    int connCnt = 0;
+    tmpIFuseConn = ConnHead;
+    while (tmpIFuseConn != NULL) {
+	connCnt++;
+	tmpIFuseConn = tmpIFuseConn->next;
+    }
+    return connCnt;
 }
 
 void
@@ -943,6 +983,7 @@ connManager ()
     time_t curTime;
     iFuseConn_t *tmpIFuseConn, *savedIFuseConn;
     iFuseConn_t *prevIFuseConn;
+    struct timespec timeout;
 
     while (1) {
 	int connCnt;
@@ -1005,24 +1046,33 @@ connManager ()
             }
 	}
         pthread_mutex_unlock (&ConnLock);
+#if 0
         rodsSleep (CONN_MANAGER_SLEEP_TIME, 0);
+#else
+	bzero (&timeout, sizeof (timeout));
+	timeout.tv_sec = time (0) + CONN_MANAGER_SLEEP_TIME;
+	pthread_mutex_lock (&ConnManagerLock);
+	pthread_cond_timedwait (&ConnManagerCond, &ConnManagerLock, &timeout);
+	pthread_mutex_unlock (&ConnManagerLock);
+#endif
+	
+
     }
 }
 
-#if 0	/* not used */
 /* have to do this after getIFuseConn - lock */
 int
-ifuseReconnect ()
+ifuseReconnect (iFuseConn_t *iFuseConn)
 {
     int status = 0;
-    if (&DefConn.conn != NULL) {
-	rodsLog (LOG_DEBUG, "ifuseReconnect: reconnecting");
-        rcDisconnect (DefConn.conn);
-	status = ifuseConnect (&DefConn, &MyRodsEnv);
-    }
+
+    if (iFuseConn == NULL || iFuseConn->conn == NULL) 
+	return USER__NULL_INPUT_ERR;
+    rodsLog (LOG_DEBUG, "ifuseReconnect: reconnecting");
+    rcDisconnect (iFuseConn->conn);
+    status = ifuseConnect (iFuseConn, &MyRodsEnv);
     return status;
 }
-#endif
 
 int
 addNewlyCreatedToCache (char *path, int descInx, int mode, 
@@ -1194,7 +1244,7 @@ irodsOpenWithReadCache (iFuseConn_t *iFuseConn, char *path, int flags)
     /* do only O_RDONLY (0) */
     if ((flags & (O_WRONLY | O_RDWR)) != 0) return -1;
 
-    if (_irodsGetattr (iFuseConn->conn, path, &stbuf, &tmpPathCache) < 0 ||
+    if (_irodsGetattr (iFuseConn, path, &stbuf, &tmpPathCache) < 0 ||
       tmpPathCache == NULL) return -1;
 
     /* too big to cache */

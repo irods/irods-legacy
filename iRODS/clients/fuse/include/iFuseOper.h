@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 int
-_irodsGetattr (rcComm_t *conn, const char *path, struct stat *stbuf, 
+_irodsGetattr (iFuseConn_t *iFuseConn, const char *path, struct stat *stbuf,
 pathCache_t **outPathCache);
 int irodsGetattr(const char *path, struct stat *stbuf);
 int irodsReadlink(const char *path, char *buf, size_t size);
