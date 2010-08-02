@@ -979,6 +979,18 @@ insertWhere(char *condition, int option) {
 	 }
       }
    }
+   if (strcmp(condition, "IS NULL")==0) {
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+      rstrcat(whereSQL, condition, MAX_SQL_SIZE);
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+      return(0);
+   }
+   if (strcmp(condition, "IS NOT NULL")==0) {
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+      rstrcat(whereSQL, condition, MAX_SQL_SIZE);
+      rstrcat(whereSQL, " ", MAX_SQL_SIZE);
+      return(0);
+   }
    bindIx++;
    thisBindVar=(char*)&bindVars[bindIx];
    if (cpFirstQuote==0 || cpSecondQuote==0) {
