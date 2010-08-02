@@ -207,6 +207,7 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
     char srcChildPath[MAX_NAME_LEN];
     collHandle_t collHandle;
     collEnt_t collEnt;
+    int queryFlags;
 
     if (srcColl == NULL) {
        rodsLog (LOG_ERROR,
@@ -220,7 +221,12 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
     status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
       &collHandle);
 #else
-    status = rclOpenCollection (conn, srcColl, 0, &collHandle);
+    if (rodsArgs->resource == True) {
+	queryFlags = LONG_METADATA_FG | NO_TRIM_REPL_FG;
+    } else {
+	queryFlags = 0;
+    }
+    status = rclOpenCollection (conn, srcColl, queryFlags, &collHandle);
 #endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
@@ -243,16 +249,23 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
               collEnt.collName, collEnt.dataName);
-
-            status = chksumDataObjUtil (conn, srcChildPath, myRodsEnv, 
-	      rodsArgs, dataObjInp);
-            if (status < 0) {
-                rodsLogError (LOG_ERROR, status,
-                  "chksumCollUtil: chksumDataObjUtil failed for %s. status = %d",
-                  srcChildPath, status);
-                /* need to set global error here */
-                savedStatus = status;
-                status = 0;
+	    /* screen unnecessary call to chksumDataObjUtil if user input a 
+	     * resource. */
+            if (rodsArgs->resource != True || 
+	      rodsArgs->resourceString == NULL ||
+	      strcmp (rodsArgs->resourceString, collEnt.resource) == 0) {
+                status = chksumDataObjUtil (conn, srcChildPath, myRodsEnv, 
+	          rodsArgs, dataObjInp);
+                if (status < 0) {
+                    rodsLogError (LOG_ERROR, status,
+                      "chksumCollUtil:chksumDataObjU failed for %s.stat = %d",
+                      srcChildPath, status);
+                    /* need to set global error here */
+                    savedStatus = status;
+                    status = 0;
+		}
+	    } else {
+		status = 0;
             }
         } else if (collEnt.objType == COLL_OBJ_T) {
             dataObjInp_t childDataObjInp;
