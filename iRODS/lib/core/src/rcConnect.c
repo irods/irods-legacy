@@ -103,6 +103,15 @@ int reconnFlag)
     status = connectToRhost (conn, connectCnt, reconnFlag);
 
     if (status < 0) {
+	if (getIrodsErrno (status) == SYS_SOCK_READ_TIMEDOUT) {
+	    /* timed out. try again */
+	    rodsLog (LOG_ERROR, 
+	      "_rcConnect: connectToRhost timeedout retrying");
+	    status = connectToRhost (conn, connectCnt, reconnFlag);
+	}
+    }
+
+    if (status < 0) {
         rodsLogError (LOG_ERROR, status,
 	 "_rcConnect: connectToRhost error, server on %s is probably down",
 	 conn->host);

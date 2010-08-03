@@ -23,7 +23,7 @@
 #define  CONNECT_SLEEP_TIME 200000	/* connect sleep time in uSec */
 
 #define READ_STARTUP_PACK_TOUT_SEC	1	/* 1 sec timeout */
-#define READ_VERSION_TOUT_SEC		2	/* 1 sec timeout */
+#define READ_VERSION_TOUT_SEC		5	/* 5 sec timeout */
 /* definition for the reconnFlag */
 #define NO_RECONN	0	/* no reconnection */
 #define RECONN_NOTUSED	1	/* this has been depricated */

@@ -181,6 +181,8 @@ int
 getSpecCollTypeStr (specColl_t *specColl, char *outStr);
 int
 getUnixErrno (int irodError);
+int 
+getIrodsErrno (int irodError);
 structFileOprType_t
 getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl);
 void

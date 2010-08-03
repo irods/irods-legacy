@@ -3213,6 +3213,13 @@ getUnixErrno (int irodError)
     return (unixErrno);
 }
 
+int
+getIrodsErrno (int irodError)
+{
+    int irodsErrno = irodError / 1000 * 1000;
+    return irodsErrno;
+}
+
 structFileOprType_t
 getSpecCollOpr (keyValPair_t *condInput, specColl_t *specColl)
 {
