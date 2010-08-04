@@ -16,10 +16,8 @@
 #include "iFuseLib.h"
 
 /* some global variables */
-iFuseDesc_t IFuseDesc[MAX_IFUSE_DESC];
 
-iFuseConn_t *ConnHead = NULL;
-rodsEnv MyRodsEnv;
+extern rodsEnv MyRodsEnv;
 
 static struct fuse_operations irodsOper =
 {

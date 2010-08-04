@@ -24,13 +24,14 @@ pthread_cond_t ConnManagerCond;
 char FuseCacheDir[MAX_NAME_LEN];
 
 /* some global variables */
-extern iFuseDesc_t IFuseDesc[];
+iFuseDesc_t IFuseDesc[MAX_IFUSE_DESC];
+int IFuseDescInuseCnt = 0;
+iFuseConn_t *ConnHead = NULL;
+rodsEnv MyRodsEnv;
 
-extern iFuseConn_t *ConnHead;
 #if 0
 extern iFuseConn_t DefConn;     /* XXXXXX take me out */
 #endif
-extern rodsEnv MyRodsEnv;
 
 static int ConnManagerStarted = 0;
 
@@ -335,6 +336,7 @@ allocIFuseDesc ()
         if (IFuseDesc[i].inuseFlag <= IRODS_FREE) {
 	    pthread_mutex_init (&IFuseDesc[i].lock, NULL);
             IFuseDesc[i].inuseFlag = IRODS_INUSE;
+	    IFuseDescInuseCnt++;
             pthread_mutex_unlock (&DescLock);
             return (i);
         };
@@ -376,31 +378,23 @@ unlockDesc (int descInx)
 }
 
 int
-iFuseDescInuse ()
-{
-    int i;
-
-    for (i = 3; i < MAX_IFUSE_DESC; i++) {
-	if (IFuseDesc[i].inuseFlag == IRODS_INUSE)
-	    return 1;
-    }
-    return (0);
-} 
-
-int
 iFuseConnInuse (rcComm_t *conn)
 {
     int i;
+    int inuseCnt = 0;
 
     if (conn == NULL) return 0;
 
     pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
-        if (IFuseDesc[i].inuseFlag == IRODS_INUSE && 
-	  IFuseDesc[i].iFuseConn != NULL && 
-	  IFuseDesc[i].iFuseConn->conn == conn) {
-            pthread_mutex_unlock (&DescLock);
-            return 1;
+	if (inuseCnt >= IFuseDescInuseCnt) break;
+        if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
+	    inuseCnt++;
+	    if (IFuseDesc[i].iFuseConn != NULL && 
+	      IFuseDesc[i].iFuseConn->conn == conn) {
+                pthread_mutex_unlock (&DescLock);
+                return 1;
+	    }
 	}
     }
     pthread_mutex_unlock (&DescLock);
@@ -463,6 +457,7 @@ freeIFuseDesc (int descInx)
 #endif
     }
     memset (&IFuseDesc[descInx], 0, sizeof (iFuseDesc_t));
+    IFuseDescInuseCnt--;
     pthread_mutex_unlock (&DescLock);
     /* have to do it outside the lock bacause _relIFuseConn lock it */
     if (tmpIFuseConn != NULL)
@@ -893,10 +888,13 @@ getIFuseConnByPath (iFuseConn_t **iFuseConn, char *localPath,
 rodsEnv *myRodsEnv)
 {
     int i, status;
+    int inuseCnt = 0;
 
     pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
+        if (inuseCnt >= IFuseDescInuseCnt) break;
         if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
+	    inuseCnt++;
 	    if (IFuseDesc[i].iFuseConn != NULL &&
               IFuseDesc[i].iFuseConn->conn != NULL &&
 	      strcmp (localPath, IFuseDesc[i].localPath) == 0) {
@@ -1541,17 +1539,22 @@ int
 getNewlyCreatedDescByPath (char *path)
 {
     int i;
+    int inuseCnt = 0;
 
     pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
-        if (IFuseDesc[i].inuseFlag != IRODS_INUSE || 
-	  IFuseDesc[i].locCacheState != HAVE_NEWLY_CREATED_CACHE||
-	  IFuseDesc[i].localPath == NULL) 
-	    continue;
-	if (strcmp (IFuseDesc[i].localPath, path) == 0) { 
-            pthread_mutex_unlock (&DescLock);
-            return (i);
-        };
+	if (inuseCnt >= IFuseDescInuseCnt) break;
+        if (IFuseDesc[i].inuseFlag == IRODS_INUSE) { 
+            inuseCnt++;
+	    if (IFuseDesc[i].locCacheState != HAVE_NEWLY_CREATED_CACHE ||
+	      IFuseDesc[i].localPath == NULL) {
+	        continue;
+	    }
+	    if (strcmp (IFuseDesc[i].localPath, path) == 0) { 
+                pthread_mutex_unlock (&DescLock);
+                return (i);
+            }
+	}
     }
     pthread_mutex_unlock (&DescLock);
     return (-1);
