@@ -16,6 +16,7 @@
 
 static pthread_mutex_t DescLock;
 static pthread_mutex_t ConnLock;
+static pthread_mutex_t PathCacheLock;
 pthread_t ConnManagerThr;
 pthread_mutex_t ConnManagerLock;
 pthread_cond_t ConnManagerCond;
@@ -89,6 +90,18 @@ int
 matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
 pathCache_t **outPathCache)
 {
+    int status;
+
+    pthread_mutex_lock (&PathCacheLock);
+    status = _matchPathInPathCache (inPath, pathQueArray, outPathCache);
+    pthread_mutex_unlock (&PathCacheLock);
+    return status;
+}
+
+int
+_matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
+pathCache_t **outPathCache)
+{
     int mysum, myslot;
     int status;
     pathCacheQue_t *myque;
@@ -113,6 +126,19 @@ int
 addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
 struct stat *stbuf, pathCache_t **outPathCache)
 {
+    int status;
+
+    pthread_mutex_lock (&PathCacheLock);
+    status = _addPathToCache (inPath, pathQueArray, stbuf, outPathCache);
+    pthread_mutex_unlock (&PathCacheLock);
+
+    return status;
+}
+
+int
+_addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+struct stat *stbuf, pathCache_t **outPathCache)
+{
     pathCacheQue_t *pathCacheQue;
     int mysum, myslot;
     int status;
@@ -128,6 +154,18 @@ struct stat *stbuf, pathCache_t **outPathCache)
 
 int
 rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray)
+{
+    int status;
+
+    pthread_mutex_lock (&PathCacheLock);
+    status = _rmPathFromCache (inPath, pathQueArray);
+    pthread_mutex_unlock (&PathCacheLock);
+
+    return status;
+}
+
+int
+_rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray)
 {
     pathCacheQue_t *pathCacheQue;
     int mysum, myslot;
@@ -280,6 +318,7 @@ initIFuseDesc ()
 {
     pthread_mutex_init (&DescLock, NULL);
     pthread_mutex_init (&ConnLock, NULL);
+    pthread_mutex_init (&PathCacheLock, NULL);
     pthread_mutex_init (&ConnManagerLock, NULL);
     pthread_cond_init (&ConnManagerCond, NULL);
     memset (IFuseDesc, 0, sizeof (iFuseDesc_t) * MAX_IFUSE_DESC);
@@ -294,6 +333,7 @@ allocIFuseDesc ()
     pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
         if (IFuseDesc[i].inuseFlag <= IRODS_FREE) {
+	    pthread_mutex_init (&IFuseDesc[i].lock, NULL);
             IFuseDesc[i].inuseFlag = IRODS_INUSE;
             pthread_mutex_unlock (&DescLock);
             return (i);
@@ -305,6 +345,34 @@ allocIFuseDesc ()
       "allocIFuseDesc: Out of iFuseDesc");
 
     return (SYS_OUT_OF_FILE_DESC);
+}
+
+int 
+lockDesc (int descInx)
+{
+    int status;
+
+    if (descInx < 3 || descInx >= MAX_IFUSE_DESC) {
+        rodsLog (LOG_ERROR,
+         "lockDesc: descInx %d out of range", descInx);
+        return (SYS_FILE_DESC_OUT_OF_RANGE);
+    }
+    status = pthread_mutex_lock (&IFuseDesc[descInx].lock);
+    return status;
+}
+
+int
+unlockDesc (int descInx)
+{
+    int status;
+
+    if (descInx < 3 || descInx >= MAX_IFUSE_DESC) {
+        rodsLog (LOG_ERROR,
+         "unlockDesc: descInx %d out of range", descInx);
+        return (SYS_FILE_DESC_OUT_OF_RANGE);
+    }
+    status = pthread_mutex_unlock (&IFuseDesc[descInx].lock);
+    return status;
 }
 
 int
@@ -326,12 +394,16 @@ iFuseConnInuse (rcComm_t *conn)
 
     if (conn == NULL) return 0;
 
+    pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
         if (IFuseDesc[i].inuseFlag == IRODS_INUSE && 
 	  IFuseDesc[i].iFuseConn != NULL && 
-	  IFuseDesc[i].iFuseConn->conn == conn)
+	  IFuseDesc[i].iFuseConn->conn == conn) {
+            pthread_mutex_unlock (&DescLock);
             return 1;
+	}
     }
+    pthread_mutex_unlock (&DescLock);
     return (0);
 }
 
@@ -362,7 +434,7 @@ int
 freeIFuseDesc (int descInx)
 {
     int i;
-    iFuseConn_t *tmpIFuseConn;
+    iFuseConn_t *tmpIFuseConn = NULL;
 
     if (descInx < 3 || descInx >= MAX_IFUSE_DESC) {
         rodsLog (LOG_ERROR,
@@ -382,13 +454,19 @@ freeIFuseDesc (int descInx)
     if (IFuseDesc[descInx].localPath != NULL)
 	free (IFuseDesc[descInx].localPath);
 
+    pthread_mutex_destroy (&IFuseDesc[descInx].lock);
     tmpIFuseConn = IFuseDesc[descInx].iFuseConn;
     if (tmpIFuseConn != NULL) {
+	IFuseDesc[descInx].iFuseConn = NULL;
+#if 0
 	IFuseDesc[descInx].inuseFlag = IRODS_FREE;
-	relIFuseConn (tmpIFuseConn);
+#endif
     }
     memset (&IFuseDesc[descInx], 0, sizeof (iFuseDesc_t));
     pthread_mutex_unlock (&DescLock);
+    /* have to do it outside the lock bacause _relIFuseConn lock it */
+    if (tmpIFuseConn != NULL)
+	_relIFuseConn (tmpIFuseConn);
 
     return (0);
 }
@@ -455,25 +533,37 @@ char *localPath)
     return (0);
 }
 
-/* need to call getIFuseConn before calling ifuseClose */
 int
 ifuseClose (char *path, int descInx)
+{
+    int lockFlag;
+    int status;
+
+    if (IFuseDesc[descInx].iFuseConn != NULL &&
+      IFuseDesc[descInx].iFuseConn->conn != NULL) {
+        useIFuseConn (IFuseDesc[descInx].iFuseConn);
+	lockFlag = 1;
+    } else {
+	lockFlag = 0;
+    }
+    status = _ifuseClose (path, descInx);
+    if (lockFlag == 1) {
+	unuseIFuseConn (IFuseDesc[descInx].iFuseConn);
+    }
+    return status;
+}
+
+/* need to call getIFuseConn before calling ifuseClose */
+int
+_ifuseClose (char *path, int descInx)
 {
     int status = 0;
     int savedStatus = 0;
     int goodStat = 0;
 
     if (IFuseDesc[descInx].locCacheState == NO_FILE_CACHE) {
-	if (IFuseDesc[descInx].iFuseConn != NULL &&
-	  IFuseDesc[descInx].iFuseConn->conn != NULL) {
-	    useIFuseConn (IFuseDesc[descInx].iFuseConn);
-	    status = closeIrodsFd (IFuseDesc[descInx].iFuseConn->conn, 
-	      IFuseDesc[descInx].iFd);
-	    unuseIFuseConn (IFuseDesc[descInx].iFuseConn);
-	} else {
-            rodsLog (LOG_ERROR,
-              "ifuseClose: IFuseDesc[descInx].conn for %s is NULL", path);
-	}
+	status = closeIrodsFd (IFuseDesc[descInx].iFuseConn->conn, 
+	  IFuseDesc[descInx].iFd);
     } else {	/* cached */
         if (IFuseDesc[descInx].newFlag > 0 || 
 	  IFuseDesc[descInx].locCacheState == HAVE_NEWLY_CREATED_CACHE) {
@@ -483,26 +573,16 @@ ifuseClose (char *path, int descInx)
              &tmpPathCache) == 1 && tmpPathCache->locCachePath != NULL) {
                 status = updatePathCacheStat (tmpPathCache);
                 if (status >= 0) goodStat = 1;
-		if (IFuseDesc[descInx].iFuseConn != NULL && 
-		  IFuseDesc[descInx].iFuseConn->conn != NULL) {
-	            useIFuseConn (IFuseDesc[descInx].iFuseConn);
-		    status = ifusePut (IFuseDesc[descInx].iFuseConn->conn, 
-		      path, tmpPathCache->locCachePath,
-		      IFuseDesc[descInx].createMode, 
-		      tmpPathCache->stbuf.st_size);
-	            unuseIFuseConn (IFuseDesc[descInx].iFuseConn);
-                    if (status < 0) {
-                        rodsLog (LOG_ERROR,
-                          "ifuseClose: ifusePut of %s error, status = %d",
-                           path, status);
-                        savedStatus = -EBADF;
-                    }
-		} else {
+		status = ifusePut (IFuseDesc[descInx].iFuseConn->conn, 
+		  path, tmpPathCache->locCachePath,
+		  IFuseDesc[descInx].createMode, 
+		  tmpPathCache->stbuf.st_size);
+                if (status < 0) {
                     rodsLog (LOG_ERROR,
-                      "ifuseClose: IFuseDesc[descInx].conn for %s is NULL",
-                       path);
-                    savedStatus = status = -EBADF;
-		}
+                      "ifuseClose: ifusePut of %s error, status = %d",
+                       path, status);
+                    savedStatus = -EBADF;
+                }
 		if (tmpPathCache->stbuf.st_size > MAX_READ_CACHE_SIZE) {
 		    /* too big to keep */
 		    freeFileCache (tmpPathCache);
@@ -806,6 +886,35 @@ ifuseLseek (char *path, int descInx, off_t offset)
     return (0);
 }
 
+/* getIFuseConnByPath - try to use the same conn as opened desc of the
+ * same path */
+int
+getIFuseConnByPath (iFuseConn_t **iFuseConn, char *localPath, 
+rodsEnv *myRodsEnv)
+{
+    int i, status;
+
+    pthread_mutex_lock (&DescLock);
+    for (i = 3; i < MAX_IFUSE_DESC; i++) {
+        if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
+	    if (IFuseDesc[i].iFuseConn != NULL &&
+              IFuseDesc[i].iFuseConn->conn != NULL &&
+	      strcmp (localPath, IFuseDesc[i].localPath) == 0) {
+		pthread_mutex_lock (&ConnLock);
+		_useIFuseConn (IFuseDesc[i].iFuseConn);
+		*iFuseConn = IFuseDesc[i].iFuseConn;
+    		pthread_mutex_unlock (&DescLock);
+		return 0;
+	    }
+	}
+    }
+    /* no match. just assign one */
+    pthread_mutex_unlock (&DescLock);
+    status = getIFuseConn (iFuseConn, myRodsEnv);
+
+    return status;
+}
+
 int
 getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 {
@@ -819,11 +928,10 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 
     tmpIFuseConn = ConnHead;
     while (tmpIFuseConn != NULL) {
-	if (tmpIFuseConn->inuseFlag == IRODS_FREE && 
+	if (tmpIFuseConn->status == IRODS_FREE && 
 	  tmpIFuseConn->conn != NULL) {
-	    useIFuseConn (tmpIFuseConn);
+	    _useIFuseConn (tmpIFuseConn);
 	    *iFuseConn = tmpIFuseConn;
-            pthread_mutex_unlock (&ConnLock);
 	    return 0;
 	}
 	tmpIFuseConn = tmpIFuseConn->next;
@@ -832,7 +940,6 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
     /* nothing free. make one */
     tmpIFuseConn = malloc (sizeof (iFuseConn_t));
     if (tmpIFuseConn < 0) {
-	 pthread_mutex_unlock (&ConnLock);
         return SYS_MALLOC_ERR;
     }
     bzero (tmpIFuseConn, sizeof (iFuseConn_t));
@@ -876,8 +983,28 @@ useIFuseConn (iFuseConn_t *iFuseConn)
 {
     if (iFuseConn == NULL || iFuseConn->conn == NULL) 
 	return USER__NULL_INPUT_ERR;
+    pthread_mutex_lock (&ConnLock);
     iFuseConn->actTime = time (NULL);
-    iFuseConn->inuseFlag = IRODS_INUSE;
+    iFuseConn->status = IRODS_INUSE;
+    iFuseConn->pendingCnt++;
+    pthread_mutex_unlock (&ConnLock);
+    pthread_mutex_lock (&iFuseConn->lock);
+    pthread_mutex_lock (&ConnLock);
+    iFuseConn->inuseCnt++;
+    iFuseConn->pendingCnt--;
+    pthread_mutex_unlock (&ConnLock);
+
+    return 0;
+}
+
+int
+_useIFuseConn (iFuseConn_t *iFuseConn)
+{
+    if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
+    iFuseConn->actTime = time (NULL);
+    iFuseConn->status = IRODS_INUSE;
+    iFuseConn->inuseCnt++;
+    pthread_mutex_unlock (&ConnLock);
     pthread_mutex_lock (&iFuseConn->lock);
     return 0;
 }
@@ -887,7 +1014,10 @@ unuseIFuseConn (iFuseConn_t *iFuseConn)
 {
     if (iFuseConn == NULL || iFuseConn->conn == NULL)
         return USER__NULL_INPUT_ERR;
+    pthread_mutex_lock (&ConnLock);
     iFuseConn->actTime = time (NULL);
+    iFuseConn->inuseCnt--;
+    pthread_mutex_unlock (&ConnLock);
     pthread_mutex_unlock (&iFuseConn->lock);
     return 0;
 }
@@ -938,11 +1068,26 @@ ifuseConnect (iFuseConn_t *iFuseConn, rodsEnv *myRodsEnv)
 int
 relIFuseConn (iFuseConn_t *iFuseConn)
 {
+    int status;
+
     if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
-    pthread_mutex_unlock (&iFuseConn->lock);
+    unuseIFuseConn (iFuseConn);
+    status = _relIFuseConn (iFuseConn);
+    return status;
+}
+ 
+/* _relIFuseConn - call when calling from freeIFuseDesc where unuseIFuseConn
+ * is not called */
+int
+_relIFuseConn (iFuseConn_t *iFuseConn)
+{
+    if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
     pthread_mutex_lock (&ConnLock);
-    if (iFuseConn->conn == NULL || iFuseConnInuse (iFuseConn->conn) == 0)
-        iFuseConn->inuseFlag = IRODS_FREE;
+    if (iFuseConn->conn == NULL || 
+      (iFuseConn->pendingCnt + iFuseConn->inuseCnt <= 0 && 
+      iFuseConnInuse (iFuseConn->conn) == 0)) {
+        iFuseConn->status = IRODS_FREE;
+    }
     iFuseConn->actTime = time (NULL);
     pthread_mutex_unlock (&ConnLock);
     signalConnManager ();
@@ -994,7 +1139,7 @@ connManager ()
 	prevIFuseConn = NULL;
         while (tmpIFuseConn != NULL) {
 	    if (curTime - tmpIFuseConn->actTime > IFUSE_CONN_TIMEOUT) {
-		if (tmpIFuseConn->inuseFlag == IRODS_FREE) {
+		if (tmpIFuseConn->status == IRODS_FREE) {
 		    /* can be disconnected */
 		    if (tmpIFuseConn->conn != NULL) {
 		        rcDisconnect (tmpIFuseConn->conn);
@@ -1022,7 +1167,7 @@ connManager ()
             tmpIFuseConn = ConnHead;
             prevIFuseConn = NULL;
             while (tmpIFuseConn != NULL && connCnt > MAX_NUM_CONN) {
-		if (tmpIFuseConn->inuseFlag == IRODS_FREE) {
+		if (tmpIFuseConn->status == IRODS_FREE) {
                     /* can be disconnected */
                     if (tmpIFuseConn->conn != NULL) {
                         rcDisconnect (tmpIFuseConn->conn);

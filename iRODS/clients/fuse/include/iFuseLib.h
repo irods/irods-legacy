@@ -50,6 +50,7 @@ typedef struct IFuseDesc {
     char *objPath;
     char *localPath;
     readCacheState_t locCacheState;
+    pthread_mutex_t lock;
 } iFuseDesc_t;
 
 #define NUM_PATH_HASH_SLOT	201
@@ -92,9 +93,16 @@ initIFuseDesc ();
 int
 allocIFuseDesc ();
 int
+lockDesc (int descInx);
+int
+unlockDesc (int descInx);
+int
 freeIFuseDesc (int descInx);
 iFuseConn_t *
 getIFuseConnByRcConn (rcComm_t *conn);
+int
+getIFuseConnByPath (iFuseConn_t **iFuseConn, char *localPath,
+rodsEnv *myRodsEnv);
 int
 fillIFuseDesc (int descInx, iFuseConn_t *iFuseConn, int iFd, char *objPath,
 char *localPath);
@@ -111,11 +119,15 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *MyRodsEnv);
 int
 useIFuseConn (iFuseConn_t *iFuseConn);
 int
+_useIFuseConn (iFuseConn_t *iFuseConn);
+int
 unuseIFuseConn (iFuseConn_t *iFuseConn);
 int 
 useConn (rcComm_t *conn);
 int
 relIFuseConn (iFuseConn_t *iFuseConn);
+int
+_relIFuseConn (iFuseConn_t *iFuseConn);
 void
 connManager ();
 int
@@ -139,6 +151,9 @@ int
 addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
 struct stat *stbuf, pathCache_t **outPathCache);
 int
+_addPathToCache (char *inPath, pathCacheQue_t *pathQueArray,
+struct stat *stbuf, pathCache_t **outPathCache);
+int
 addToCacheSlot (char *inPath, pathCacheQue_t *pathCacheQue,
 struct stat *stbuf, pathCache_t **outPathCache);
 int
@@ -147,9 +162,14 @@ int
 matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
 pathCache_t **outPathCache);
 int
+_matchPathInPathCache (char *inPath, pathCacheQue_t *pathQueArray,
+pathCache_t **outPathCache);
+int
 isSpecialPath (char *inPath);
 int
 rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray);
+int
+_rmPathFromCache (char *inPath, pathCacheQue_t *pathQueArray);
 int
 addNewlyCreatedToCache (char *path, int descInx, int mode,
 pathCache_t **tmpPathCache);
@@ -178,6 +198,8 @@ int
 updatePathCacheStat (pathCache_t *tmpPathCache);
 int
 ifuseClose (char *path, int descInx);
+int
+_ifuseClose (char *path, int descInx);
 int
 dataObjCreateByFusePath (rcComm_t *conn, char *path, int mode, 
 char *outIrodsPath);
