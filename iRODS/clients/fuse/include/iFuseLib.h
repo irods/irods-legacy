@@ -134,6 +134,8 @@ _relIFuseConn (iFuseConn_t *iFuseConn);
 void
 connManager ();
 int
+disconnectAll ();
+int
 signalConnManager ();
 int
 getNumConn ();

@@ -114,28 +114,12 @@ main (int argc, char **argv)
     if (setAndMkFileCacheDir () < 0) exit (1);
 #endif
 
-#if 0
-    memset (&DefConn, 0, sizeof (DefConn));
-
-    pthread_mutex_init (&DefConn.lock, NULL);
-
-    status = getIFuseConn (&DefConn, &MyRodsEnv);
-    relIFuseConn (&DefConn);
-
-    if (status < 0) {
-        rodsLogError (LOG_ERROR, status, "rcConnect failure");
-        exit (2);
-    }
-#endif
-
     initPathCache ();
     initIFuseDesc ();
 
     status = fuse_main (argc, argv, &irodsOper, NULL);
 
-#if 0
-    rcDisconnect (DefConn.conn);
-#endif
+    disconnectAll ();
 
     if (status < 0) {
         exit (3);

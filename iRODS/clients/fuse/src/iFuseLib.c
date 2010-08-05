@@ -1115,6 +1115,22 @@ getNumConn ()
     return connCnt;
 }
 
+int
+disconnectAll ()
+{
+    iFuseConn_t *tmpIFuseConn;
+
+    pthread_mutex_lock (&ConnLock);
+    tmpIFuseConn = ConnHead;
+    while (tmpIFuseConn != NULL) {
+	if (tmpIFuseConn->conn != NULL) {
+	    rcDisconnect (tmpIFuseConn->conn);
+	}
+	tmpIFuseConn = tmpIFuseConn->next;
+    }
+    return 0;
+}
+
 void
 connManager ()
 {
