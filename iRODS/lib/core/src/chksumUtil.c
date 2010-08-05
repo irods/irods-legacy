@@ -105,6 +105,7 @@ dataObjInp_t *dataObjInp)
     status = rcDataObjChksum (conn, dataObjInp, &chksumStr);
 
     if (status < 0) {
+#if 0
 	if (status == CAT_NO_ROWS_FOUND && rodsArgs->resource == True) {
 	    if (rodsArgs->verbose == True) {
 		printf ("%s does not exist in resource %s\n",
@@ -112,13 +113,16 @@ dataObjInp_t *dataObjInp)
 	    }
 	    return 0;
 	} else {
+#endif
 	    ChksumCnt++;
 	    FailedChksumCnt++;
 	    rodsLogError (LOG_ERROR, status,
 	     "chksumDataObjUtil: rcDataObjChksum error for %s",
 	     dataObjInp->objPath);
 	    return status;
+#if 0
 	}
+#endif
     } else {
 	ChksumCnt++;
     }
