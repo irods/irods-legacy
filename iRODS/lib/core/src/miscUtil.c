@@ -1038,10 +1038,6 @@ collHandle_t *collHandle)
 	return USER__NULL_INPUT_ERR;
     }
 
-    status = rclInitQueryHandle (&collHandle->queryHandle, conn);
-    
-    if (status < 0) return status;
-
     memset (collHandle, 0, sizeof (collHandle_t));
 
     rstrcpy (collHandle->dataObjInp.objPath, collection, MAX_NAME_LEN);
