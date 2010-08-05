@@ -29,10 +29,6 @@ int IFuseDescInuseCnt = 0;
 iFuseConn_t *ConnHead = NULL;
 rodsEnv MyRodsEnv;
 
-#if 0
-extern iFuseConn_t DefConn;     /* XXXXXX take me out */
-#endif
-
 static int ConnManagerStarted = 0;
 
 pathCacheQue_t NonExistPathArray[NUM_PATH_HASH_SLOT];
@@ -452,9 +448,6 @@ freeIFuseDesc (int descInx)
     tmpIFuseConn = IFuseDesc[descInx].iFuseConn;
     if (tmpIFuseConn != NULL) {
 	IFuseDesc[descInx].iFuseConn = NULL;
-#if 0
-	IFuseDesc[descInx].inuseFlag = IRODS_FREE;
-#endif
     }
     memset (&IFuseDesc[descInx], 0, sizeof (iFuseDesc_t));
     IFuseDescInuseCnt--;
@@ -960,11 +953,7 @@ getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *myRodsEnv)
 
         if (status < 0) {
             rodsLog (LOG_ERROR, "pthread_create failure, status = %d", status);
-#if 0
-            rcDisconnect (DefConn.conn);
-#else
 	    ConnManagerStarted --;	/* try again */
-#endif
 	}
     }
 

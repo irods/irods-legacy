@@ -11,9 +11,6 @@
 #include "miscUtil.h"
 
 extern iFuseConn_t *ConnHead;
-#if 0
-extern iFuseConn_t DefConn;	/* XXXXXX take me out */
-#endif
 extern rodsEnv MyRodsEnv;
 extern iFuseDesc_t IFuseDesc[];
 extern pathCacheQue_t NonExistPathArray[];
@@ -708,9 +705,6 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
     rodsLog (LOG_DEBUG, "irodsOpen: %s, flags = %d", path, fi->flags);
 
     getIFuseConnByPath (&iFuseConn, (char *) path, &MyRodsEnv);
-#if 0
-    getIFuseConn (&iFuseConn, &MyRodsEnv);
-#endif
 #ifdef CACHE_FUSE_PATH
     if ((descInx = getDescInxInNewlyCreatedCache ((char *) path, fi->flags)) 
      > 0) {
@@ -783,23 +777,13 @@ struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsRead: %s", path);
 
-#if 0
-    iFuseConn_t *iFuseConn = NULL;
-    getIFuseConn (&iFuseConn, &MyRodsEnv);
-#endif
     descInx = fi->fh;
 
     if (checkFuseDesc (descInx) < 0) {
-#if 0
-        relIFuseConn (iFuseConn);
-#endif
 	return -EBADF;
     }
     lockDesc (descInx);
     if ((status = ifuseLseek ((char *) path, descInx, offset)) < 0) {
-#if 0
-        relIFuseConn (iFuseConn);
-#endif
         unlockDesc (descInx);
         if ((myError = getUnixErrno (status)) > 0) {
             return (-myError);
@@ -817,9 +801,6 @@ struct fuse_file_info *fi)
 
     unlockDesc (descInx);
 
-#if 0
-    relIFuseConn (iFuseConn);
-#endif
     return status;
 }
 
@@ -829,30 +810,18 @@ struct fuse_file_info *fi)
 {
     int descInx;
     int status, myError;
-#if 0
-    iFuseConn_t *iFuseConn = NULL;
-#endif
 
     rodsLog (LOG_DEBUG, "irodsWrite: %s", path);
 
-#if 0
-    getIFuseConn (&iFuseConn, &MyRodsEnv);
-#endif
     descInx = fi->fh;
 
     if (checkFuseDesc (descInx) < 0) {
-#if 0
-        relIFuseConn (iFuseConn);
-#endif
         return -EBADF;
     }
 
     lockDesc (descInx);
     if ((status = ifuseLseek ((char *) path, descInx, offset)) < 0) {
         unlockDesc (descInx);
-#if 0
-        relIFuseConn (iFuseConn);
-#endif
         if ((myError = getUnixErrno (status)) > 0) {
             return (-myError);
         } else {
@@ -868,9 +837,6 @@ struct fuse_file_info *fi)
     status = ifuseWrite ((char *) path, descInx, (char *)buf, size, offset);
     unlockDesc (descInx);
 
-#if 0
-    relIFuseConn (iFuseConn);
-#endif
     return status;
 }
 
@@ -904,29 +870,16 @@ irodsRelease (const char *path, struct fuse_file_info *fi)
 {
     int descInx;
     int status, myError;
-#if 0
-    iFuseConn_t *iFuseConn = NULL;
-#endif
 
     rodsLog (LOG_DEBUG, "irodsRelease: %s", path);
 
-#if 0
-    getIFuseConn (&iFuseConn, &MyRodsEnv);
-#endif
     descInx = fi->fh;
 
     if (checkFuseDesc (descInx) < 0) {
-#if 0
-        relIFuseConn (iFuseConn);
-#endif
         return -EBADF;
     }
 
     status = ifuseClose ((char *) path, descInx);
-
-#if 0
-    relIFuseConn (iFuseConn);
-#endif
 
     freeIFuseDesc (descInx);
 
