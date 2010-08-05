@@ -1051,18 +1051,10 @@ collHandle_t *collHandle)
 	return CAT_UNKNOWN_COLLECTION;
     }
 
-#if 0
-    collHandle->dataObjInp.specColl = rodsObjStatOut->specColl;
-#else
     replSpecColl (rodsObjStatOut->specColl, &collHandle->dataObjInp.specColl);
-#endif
     if (rodsObjStatOut->specColl != NULL &&
-#if 0
-      rodsObjStatOut->specColl->collClass == LINKED_COLL) {
-#else
       rodsObjStatOut->specColl->collClass != STRUCT_FILE_COLL &&
       strlen (rodsObjStatOut->specColl->objPath) > 0) {
-#endif
         /* save the linked path */
         rstrcpy (collHandle->linkedObjPath, rodsObjStatOut->specColl->objPath,
           MAX_NAME_LEN);
@@ -1074,7 +1066,6 @@ collHandle_t *collHandle)
     collHandle->flags = flags;
     /* the collection exist. now query the data in it */
     status = rclInitQueryHandle (&collHandle->queryHandle, conn);
-
     if (status < 0) return status;
 
     return (0);
