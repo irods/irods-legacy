@@ -90,6 +90,9 @@ It should print out a lot of debugging info.
 
 WARNING
 -------
+iRODS versions 2.4.1 or later support multi-threading in iRODS FUSE 
+and limitation 1) on "read ahead" is no longer needed.
+
 1) Our current FUSE implmentation does not support parallel operations but
 fuse-2.7.1 and later releases deploy "Read Ahead" which is a parallel
 operation and can cause iRODS Fuse to hang. The work around is:
