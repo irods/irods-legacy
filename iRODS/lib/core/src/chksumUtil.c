@@ -215,7 +215,13 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
     fprintf (stdout, "C- %s:\n", srcColl);
 
     if (rodsArgs->resource == True) {
+#if 0
 	queryFlags = LONG_METADATA_FG | NO_TRIM_REPL_FG;
+#else
+	queryFlags = INCLUDE_CONDINPUT_IN_QUERY;
+	bzero (&collHandle, sizeof (collHandle));
+	replKeyVal (&dataObjInp->condInput, &collHandle.dataObjInp.condInput);
+#endif
     } else {
 	queryFlags = 0;
     }
@@ -238,9 +244,11 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
               collEnt.collName, collEnt.dataName);
 	    /* screen unnecessary call to chksumDataObjUtil if user input a 
 	     * resource. */
+#if 0
             if (rodsArgs->resource != True || 
 	      rodsArgs->resourceString == NULL ||
 	      strcmp (rodsArgs->resourceString, collEnt.resource) == 0) {
+#endif
                 status = chksumDataObjUtil (conn, srcChildPath, myRodsEnv, 
 	          rodsArgs, dataObjInp);
                 if (status < 0) {
@@ -251,9 +259,11 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
                     savedStatus = status;
                     status = 0;
 		}
+#if 0
 	    } else {
 		status = 0;
             }
+#endif
         } else if (collEnt.objType == COLL_OBJ_T) {
             dataObjInp_t childDataObjInp;
             childDataObjInp = *dataObjInp;

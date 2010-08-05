@@ -1038,7 +1038,10 @@ collHandle_t *collHandle)
 	return USER__NULL_INPUT_ERR;
     }
 
-    memset (collHandle, 0, sizeof (collHandle_t));
+    if ((flags & INCLUDE_CONDINPUT_IN_QUERY) == 0) {
+	/* preserve collHandle->>dataObjInp.condInput if != 0 */
+        memset (collHandle, 0, sizeof (collHandle_t));
+    }
 
     rstrcpy (collHandle->dataObjInp.objPath, collection, MAX_NAME_LEN);
     status = rcObjStat (conn, &collHandle->dataObjInp, &rodsObjStatOut);
