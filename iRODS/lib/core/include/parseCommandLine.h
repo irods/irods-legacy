@@ -94,6 +94,7 @@ typedef struct {
    int parallel;
    int serial;
    int masterIcat;
+   int silent;
    int optind;  /* index into argv where non-recognized options begin */
 } rodsArguments_t;
 

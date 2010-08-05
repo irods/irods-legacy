@@ -21,9 +21,9 @@ main(int argc, char **argv) {
     rodsPathInp_t rodsPathInp;
     
 
-    optStr = "hKfarR:vVn:";
+    optStr = "hKfarR:vVn:Z";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
     if (status < 0) {
         printf("Use -h for help.\n");
         exit (1);
@@ -84,7 +84,8 @@ void
 usage ()
 {
    char *msgs[]={
-   "Usage : ichksum [-harvV] [-K|f] [-n replNum] [-R resource] dataObj|collection ... ",
+   "Usage : ichksum [-harvV] [-K|f] [-n replNum] [-R resource] [--silent]",
+"           dataObj|collection ... ",
 "Checksum one or more data-object or collection from iRODS space.",
 "Options are:",
 " -f  force - checksum data-objects even if a checksum already exists in iCAT",
@@ -96,6 +97,7 @@ usage ()
 " -r  recursive - checksum the whole subtree; the collection, all data-objects",
 "     in the collection, and any subcollections and sub-data-objects in the",
 "     collection.",
+" --silent  - No checksum output except error",
 " -v  verbose",
 " -V  Very verbose",
 " -h  this help",

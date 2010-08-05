@@ -71,6 +71,10 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
 	    rodsArgs->masterIcat=True;
 	    argv[i]="-Z";
 	 }
+         if (strcmp("--silent", argv[i])==0) {  /* also -W */
+            rodsArgs->silent=True;
+            argv[i]="-Z";
+         }
          if (strcmp("--test", argv[i])==0) {
 	    rodsArgs->test=True;
 	    argv[i]="-Z";

@@ -123,12 +123,14 @@ dataObjInp_t *dataObjInp)
 	ChksumCnt++;
     }
     splitPathByKey (dataObjInp->objPath, myDir, myFile, '/');
-    printf ("    %-30.30s    %s\n", myFile, chksumStr);
-    free (chksumStr);     
-    if (rodsArgs->verbose == True) {
-        (void) gettimeofday(&endTime, (struct timezone *)0);
-        printTiming (conn, dataObjInp->objPath, -1, NULL,
-         &startTime, &endTime);
+    if (rodsArgs->silent == False) {
+        printf ("    %-30.30s    %s\n", myFile, chksumStr);
+        free (chksumStr);     
+        if (rodsArgs->verbose == True) {
+            (void) gettimeofday(&endTime, (struct timezone *)0);
+            printTiming (conn, dataObjInp->objPath, -1, NULL,
+             &startTime, &endTime);
+	}
     }
 
     return (status);
