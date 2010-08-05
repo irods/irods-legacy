@@ -201,9 +201,6 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
 {
     int status;
     int savedStatus = 0;
-#if 0
-    int collLen;
-#endif
     char srcChildPath[MAX_NAME_LEN];
     collHandle_t collHandle;
     collEnt_t collEnt;
@@ -217,34 +214,24 @@ rodsArguments_t *rodsArgs, dataObjInp_t *dataObjInp, collInp_t *collInp)
 
     fprintf (stdout, "C- %s:\n", srcColl);
 
-#if 0
-    status = rclOpenCollection (conn, srcColl, RECUR_QUERY_FG,
-      &collHandle);
-#else
     if (rodsArgs->resource == True) {
 	queryFlags = LONG_METADATA_FG | NO_TRIM_REPL_FG;
     } else {
 	queryFlags = 0;
     }
     status = rclOpenCollection (conn, srcColl, queryFlags, &collHandle);
-#endif
     if (status < 0) {
         rodsLog (LOG_ERROR,
           "chksumCollUtil: rclOpenCollection of %s error. status = %d",
           srcColl, status);
         return status;
     }
-#if 0
-    collLen = strlen (srcColl);
-    collLen = getOpenedCollLen (&collHandle);
-#else
     if (collHandle.rodsObjStat->specColl != NULL &&
       collHandle.rodsObjStat->specColl->collClass != LINKED_COLL) {
         /* no trim for mounted coll */
         rclCloseCollection (&collHandle);
         return 0;
     }
-#endif
     while ((status = rclReadCollection (conn, &collHandle, &collEnt)) >= 0) {
         if (collEnt.objType == DATA_OBJ_T) {
             snprintf (srcChildPath, MAX_NAME_LEN, "%s/%s",
