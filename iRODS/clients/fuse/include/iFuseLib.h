@@ -15,10 +15,11 @@
 #endif
 
 #define MAX_BUF_CACHE   2
-#define MAX_IFUSE_DESC   256
+#define MAX_IFUSE_DESC   512
 #define MAX_READ_CACHE_SIZE   (1024*1024)	/* 1 mb */
 #define MAX_NEWLY_CREATED_CACHE_SIZE   (4*1024*1024)	/* 4 mb */
-#define MAX_NUM_CONN	3
+#define HIGH_NUM_CONN	3	/* high water mark */
+#define MAX_NUM_CONN	5
 
 #define FUSE_CACHE_DIR	"/tmp/fuseCache"
 
@@ -118,6 +119,8 @@ int
 getIFuseConn (iFuseConn_t **iFuseConn, rodsEnv *MyRodsEnv);
 int
 useIFuseConn (iFuseConn_t *iFuseConn);
+int
+useFreeIFuseConn (iFuseConn_t *iFuseConn);
 int
 _useIFuseConn (iFuseConn_t *iFuseConn);
 int
