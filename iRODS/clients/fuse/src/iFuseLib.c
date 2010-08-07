@@ -17,6 +17,7 @@
 static pthread_mutex_t DescLock;
 static pthread_mutex_t ConnLock;
 static pthread_mutex_t PathCacheLock;
+static pthread_mutex_t NewlyCreatedOprLock;
 pthread_t ConnManagerThr;
 pthread_mutex_t ConnManagerLock;
 pthread_cond_t ConnManagerCond;
@@ -315,6 +316,7 @@ initIFuseDesc ()
 {
     pthread_mutex_init (&DescLock, NULL);
     pthread_mutex_init (&ConnLock, NULL);
+    pthread_mutex_init (&NewlyCreatedOprLock, NULL);
     pthread_mutex_init (&PathCacheLock, NULL);
     pthread_mutex_init (&ConnManagerLock, NULL);
     pthread_cond_init (&ConnManagerCond, NULL);
@@ -374,12 +376,12 @@ unlockDesc (int descInx)
 }
 
 int
-iFuseConnInuse (rcComm_t *conn)
+iFuseConnInuse (iFuseConn_t *iFuseConn)
 {
     int i;
     int inuseCnt = 0;
 
-    if (conn == NULL) return 0;
+    if (iFuseConn == NULL) return 0;
 
     pthread_mutex_lock (&DescLock);
     for (i = 3; i < MAX_IFUSE_DESC; i++) {
@@ -387,7 +389,7 @@ iFuseConnInuse (rcComm_t *conn)
         if (IFuseDesc[i].inuseFlag == IRODS_INUSE) {
 	    inuseCnt++;
 	    if (IFuseDesc[i].iFuseConn != NULL && 
-	      IFuseDesc[i].iFuseConn->conn == conn) {
+	      IFuseDesc[i].iFuseConn == iFuseConn) {
                 pthread_mutex_unlock (&DescLock);
                 return 1;
 	    }
@@ -866,10 +868,10 @@ rodsEnv *myRodsEnv)
 	    if (IFuseDesc[i].iFuseConn != NULL &&
               IFuseDesc[i].iFuseConn->conn != NULL &&
 	      strcmp (localPath, IFuseDesc[i].localPath) == 0) {
-		pthread_mutex_lock (&ConnLock);
-		_useIFuseConn (IFuseDesc[i].iFuseConn);
 		*iFuseConn = IFuseDesc[i].iFuseConn;
+		pthread_mutex_lock (&ConnLock);
     		pthread_mutex_unlock (&DescLock);
+		_useIFuseConn (*iFuseConn);
 		return 0;
 	    }
 	}
@@ -1065,13 +1067,26 @@ _relIFuseConn (iFuseConn_t *iFuseConn)
 {
     if (iFuseConn == NULL) return USER__NULL_INPUT_ERR;
     pthread_mutex_lock (&ConnLock);
-    if (iFuseConn->conn == NULL || 
-      (iFuseConn->pendingCnt + iFuseConn->inuseCnt <= 0 && 
-      iFuseConnInuse (iFuseConn->conn) == 0)) {
-        iFuseConn->status = IRODS_FREE;
-    }
     iFuseConn->actTime = time (NULL);
-    pthread_mutex_unlock (&ConnLock);
+    if (iFuseConn->conn == NULL) {
+        /* unlock it before calling iFuseConnInuse which locks DescLock */
+        pthread_mutex_unlock (&ConnLock);
+        if (iFuseConnInuse (iFuseConn) == 0) {
+            pthread_mutex_lock (&ConnLock);
+            iFuseConn->status = IRODS_FREE;
+            pthread_mutex_unlock (&ConnLock);
+        }
+    } else if (iFuseConn->pendingCnt + iFuseConn->inuseCnt <= 0) {
+        /* unlock it before calling iFuseConnInuse which locks DescLock */
+        pthread_mutex_unlock (&ConnLock);
+        if (iFuseConnInuse (iFuseConn) == 0) {
+            pthread_mutex_lock (&ConnLock);
+            iFuseConn->status = IRODS_FREE;
+            pthread_mutex_unlock (&ConnLock);
+	}
+    } else {
+        pthread_mutex_unlock (&ConnLock);
+    }
     signalConnManager ();
     return 0;
 }
@@ -1223,6 +1238,7 @@ pathCache_t **tmpPathCache)
 {
     uint cachedTime = time (0);
 
+    pthread_mutex_lock (&NewlyCreatedOprLock);
     closeNewlyCreatedCache ();
     rstrcpy (NewlyCreatedFile.filePath, path, MAX_NAME_LEN);
     NewlyCreatedFile.descInx = descInx;
@@ -1232,6 +1248,7 @@ pathCache_t **tmpPathCache)
       cachedTime);
 
     addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf, tmpPathCache);
+    pthread_mutex_unlock (&NewlyCreatedOprLock);
     return (0);
 }
     
@@ -1271,22 +1288,25 @@ closeNewlyCreatedCache ()
 int
 getDescInxInNewlyCreatedCache (char *path, int flags)
 {
+    int descInx;
+    pthread_mutex_lock (&NewlyCreatedOprLock);
     if (strcmp (path, NewlyCreatedFile.filePath) == 0) {
 	if ((flags & O_RDWR) == 0 && (flags & O_WRONLY) == 0) {
 	    closeNewlyCreatedCache ();
-	    return -1;
+	    descInx = -1;
 	} else if (checkFuseDesc (NewlyCreatedFile.descInx) >= 0) {
-	    int descInx = NewlyCreatedFile.descInx;
+	    descInx = NewlyCreatedFile.descInx;
 	    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
-	    return descInx;
 	} else {
 	    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
-	    return -1;
+	    descInx = -1;
 	}
     } else {
 	closeNewlyCreatedCache ();
-	return -1;
+	descInx = -1;
     }
+    pthread_mutex_unlock (&NewlyCreatedOprLock);
+    return descInx;
 }
 
 int

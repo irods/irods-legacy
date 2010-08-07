@@ -98,6 +98,8 @@ lockDesc (int descInx);
 int
 unlockDesc (int descInx);
 int
+iFuseConnInuse (iFuseConn_t *iFuseConn);
+int
 freeIFuseDesc (int descInx);
 iFuseConn_t *
 getIFuseConnByRcConn (rcComm_t *conn);

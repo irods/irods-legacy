@@ -239,15 +239,15 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 
     rodsLog (LOG_DEBUG, "irodsMknod: %s", path);
 
-    getIFuseConn (&iFuseConn, &MyRodsEnv);
 
-    if (_irodsGetattr (iFuseConn, path, &stbuf, NULL) >= 0)
+    if (irodsGetattr (path, &stbuf) >= 0)
         return -EEXIST;
 
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
     status = irodsMknodWithCache ((char *)path, mode, cachePath);
     irodsPath[0] = '\0';
 #endif 	/* CACHE_FILE_FOR_NEWLY_CREATED */
+    getIFuseConn (&iFuseConn, &MyRodsEnv);
     if (status < 0) {
 	status = dataObjCreateByFusePath (iFuseConn->conn, (char *) path, 
 	  mode, irodsPath);
@@ -279,6 +279,7 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
     }
     fillIFuseDesc (descInx, iFuseConn, status, irodsPath,
       (char *) path);
+    relIFuseConn (iFuseConn);
     addNewlyCreatedToCache ((char *) path, descInx, mode, &tmpPathCache);
 #ifdef CACHE_FILE_FOR_NEWLY_CREATED
     tmpPathCache->locCachePath = strdup (cachePath);
@@ -289,8 +290,8 @@ irodsMknod (const char *path, mode_t mode, dev_t rdev)
 
 #else   /* CACHE_FUSE_PATH */ 
     closeIrodsFd (iFuseConn->conn, status);
-#endif  /* CACHE_FUSE_PATH */ 
     relIFuseConn (iFuseConn);
+#endif  /* CACHE_FUSE_PATH */ 
 
     return (0);
 }
@@ -704,16 +705,21 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsOpen: %s, flags = %d", path, fi->flags);
 
+#if 0
     getIFuseConnByPath (&iFuseConn, (char *) path, &MyRodsEnv);
+#endif
 #ifdef CACHE_FUSE_PATH
     if ((descInx = getDescInxInNewlyCreatedCache ((char *) path, fi->flags)) 
      > 0) {
 	rodsLog (LOG_DEBUG, "irodsOpen: a match for %s", path);
 	fi->fh = descInx;
+#if 0
         relIFuseConn (iFuseConn);
+#endif
 	return (0);
     }
 #endif
+    getIFuseConnByPath (&iFuseConn, (char *) path, &MyRodsEnv);
 #ifdef CACHE_FILE_FOR_READ
     if ((descInx = irodsOpenWithReadCache (iFuseConn, 
       (char *) path, fi->flags)) > 0) {
