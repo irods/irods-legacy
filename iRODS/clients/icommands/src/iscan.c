@@ -78,7 +78,7 @@ void
 usage () {
    char *msgs[]={
 "Usage : iscan [-rh] srcPhysicalFile|srcPhysicalDirectory ... ",
-"Check if a local data object or a local collection content is registered in irods.",
+"Check if a local data file or a local directory content is registered in irods.",
 "It allows to detect orphan files, srcPhysicalFile or srcPhysicalDirectory must be a full path name.",
 "Options are:",
 " -r  recursive - scan local subdirectories",
