@@ -34,7 +34,7 @@ static int ConnManagerStarted = 0;
 
 pathCacheQue_t NonExistPathArray[NUM_PATH_HASH_SLOT];
 pathCacheQue_t PathArray[NUM_PATH_HASH_SLOT];
-newlyCreatedFile_t NewlyCreatedFile;
+newlyCreatedFile_t NewlyCreatedFile[NUM_NEWLY_CREATED_SLOT];
 char *ReadCacheDir = NULL;
 
 static specialPath_t SpecialPath[] = {
@@ -56,8 +56,8 @@ int
 initPathCache ()
 {
     bzero (NonExistPathArray, sizeof (NonExistPathArray));
-    bzero (PathArray, sizeof (NonExistPathArray));
-    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
+    bzero (PathArray, sizeof (PathArray));
+    bzero (NewlyCreatedFile, sizeof (NewlyCreatedFile));
     return (0);
 }
 
@@ -1236,22 +1236,44 @@ int
 addNewlyCreatedToCache (char *path, int descInx, int mode, 
 pathCache_t **tmpPathCache)
 {
+    int i;
+    int newlyInx = -1;
     uint cachedTime = time (0);
 
     pthread_mutex_lock (&NewlyCreatedOprLock);
-    closeNewlyCreatedCache ();
-    rstrcpy (NewlyCreatedFile.filePath, path, MAX_NAME_LEN);
-    NewlyCreatedFile.descInx = descInx;
-    NewlyCreatedFile.cachedTime = cachedTime;
-    IFuseDesc[descInx].newFlag = 1;
-    fillFileStat (&NewlyCreatedFile.stbuf, mode, 0, cachedTime, cachedTime,
-      cachedTime);
-
-    addPathToCache (path, PathArray, &NewlyCreatedFile.stbuf, tmpPathCache);
+    for (i = 0; i < NUM_NEWLY_CREATED_SLOT; i++) {
+	if (newlyInx < 0 && NewlyCreatedFile[i].inuseFlag == IRODS_FREE) { 
+	    newlyInx = i;
+	    NewlyCreatedFile[i].inuseFlag = IRODS_INUSE;
+	} else if (NewlyCreatedFile[i].inuseFlag == IRODS_INUSE) {
+	    if (cachedTime - NewlyCreatedFile[i].cachedTime  >= 
+	      MAX_NEWLY_CREATED_TIME) {
+		closeNewlyCreatedCache (&NewlyCreatedFile[i]);
+	        if (newlyInx < 0) {
+		    newlyInx = i;
+		} else {
+		    NewlyCreatedFile[i].inuseFlag = IRODS_FREE;
+		}
+	    }
+	}
+    }
+    if (newlyInx < 0) {
+	/* have to close one */
+	newlyInx = NUM_NEWLY_CREATED_SLOT - 2;
+        closeNewlyCreatedCache (&NewlyCreatedFile[newlyInx]);
+	NewlyCreatedFile[newlyInx].inuseFlag = IRODS_INUSE;
+    }
+    rstrcpy (NewlyCreatedFile[newlyInx].filePath, path, MAX_NAME_LEN);
+    NewlyCreatedFile[newlyInx].descInx = descInx;
+    NewlyCreatedFile[newlyInx].cachedTime = cachedTime;
+    IFuseDesc[descInx].newFlag = 1;    /* XXXXXXX use newlyInx ? */
+    fillFileStat (&NewlyCreatedFile[newlyInx].stbuf, mode, 0, cachedTime, 
+      cachedTime, cachedTime);
+    addPathToCache (path, PathArray, &NewlyCreatedFile[newlyInx].stbuf, 
+      tmpPathCache);
     pthread_mutex_unlock (&NewlyCreatedOprLock);
     return (0);
 }
-    
 
 int
 closeIrodsFd (rcComm_t *conn, int fd)
@@ -1267,20 +1289,21 @@ closeIrodsFd (rcComm_t *conn, int fd)
 }
 
 int
-closeNewlyCreatedCache ()
+closeNewlyCreatedCache (newlyCreatedFile_t *newlyCreatedFile)
 {
     int status = 0;
 
-    if (strlen (NewlyCreatedFile.filePath) > 0) {
-	int descInx = NewlyCreatedFile.descInx;
+    if (newlyCreatedFile == NULL) return USER__NULL_INPUT_ERR;
+    if (strlen (newlyCreatedFile->filePath) > 0) {
+	int descInx = newlyCreatedFile->descInx;
 	
 	/* should not call irodsRelease because it will call
 	 * getIFuseConn which will result in deadlock 
-	 * irodsRelease (NewlyCreatedFile.filePath, &fi); */
+	 * irodsRelease (newlyCreatedFile->filePath, &fi); */
         if (checkFuseDesc (descInx) < 0) return -EBADF;
-        status = ifuseClose ((char *) NewlyCreatedFile.filePath, descInx);
+        status = ifuseClose ((char *) newlyCreatedFile->filePath, descInx);
         freeIFuseDesc (descInx);
-	bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
+	bzero (newlyCreatedFile, sizeof (newlyCreatedFile_t));
     }
     return (status);
 }
@@ -1288,22 +1311,23 @@ closeNewlyCreatedCache ()
 int
 getDescInxInNewlyCreatedCache (char *path, int flags)
 {
-    int descInx;
+    int descInx = -1;
+    int i;
     pthread_mutex_lock (&NewlyCreatedOprLock);
-    if (strcmp (path, NewlyCreatedFile.filePath) == 0) {
-	if ((flags & O_RDWR) == 0 && (flags & O_WRONLY) == 0) {
-	    closeNewlyCreatedCache ();
-	    descInx = -1;
-	} else if (checkFuseDesc (NewlyCreatedFile.descInx) >= 0) {
-	    descInx = NewlyCreatedFile.descInx;
-	    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
-	} else {
-	    bzero (&NewlyCreatedFile, sizeof (NewlyCreatedFile));
-	    descInx = -1;
+    for (i = 0; i < NUM_NEWLY_CREATED_SLOT; i++) {
+        if (strcmp (path, NewlyCreatedFile[i].filePath) == 0) {
+	    if ((flags & O_RDWR) == 0 && (flags & O_WRONLY) == 0) {
+	        closeNewlyCreatedCache (&NewlyCreatedFile[i]);
+	        descInx = -1;
+	    } else if (checkFuseDesc (NewlyCreatedFile[i].descInx) >= 0) {
+	        descInx = NewlyCreatedFile[i].descInx;
+	        bzero (&NewlyCreatedFile[i], sizeof (newlyCreatedFile_t));
+	    } else {
+	        bzero (&NewlyCreatedFile[i], sizeof (newlyCreatedFile_t));
+	        descInx = -1;
+	    }
+	    break;
 	}
-    } else {
-	closeNewlyCreatedCache ();
-	descInx = -1;
     }
     pthread_mutex_unlock (&NewlyCreatedOprLock);
     return descInx;

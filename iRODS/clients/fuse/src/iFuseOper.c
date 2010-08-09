@@ -705,17 +705,11 @@ irodsOpen (const char *path, struct fuse_file_info *fi)
 
     rodsLog (LOG_DEBUG, "irodsOpen: %s, flags = %d", path, fi->flags);
 
-#if 0
-    getIFuseConnByPath (&iFuseConn, (char *) path, &MyRodsEnv);
-#endif
 #ifdef CACHE_FUSE_PATH
     if ((descInx = getDescInxInNewlyCreatedCache ((char *) path, fi->flags)) 
      > 0) {
 	rodsLog (LOG_DEBUG, "irodsOpen: a match for %s", path);
 	fi->fh = descInx;
-#if 0
-        relIFuseConn (iFuseConn);
-#endif
 	return (0);
     }
 #endif

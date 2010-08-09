@@ -20,6 +20,8 @@
 #define MAX_NEWLY_CREATED_CACHE_SIZE   (4*1024*1024)	/* 4 mb */
 #define HIGH_NUM_CONN	3	/* high water mark */
 #define MAX_NUM_CONN	5
+#define NUM_NEWLY_CREATED_SLOT	5
+#define MAX_NEWLY_CREATED_TIME	5	/* in sec */
 
 #define FUSE_CACHE_DIR	"/tmp/fuseCache"
 
@@ -80,6 +82,7 @@ typedef struct specialPath {
 
 typedef struct newlyCreatedFile {
     int descInx;
+    int inuseFlag;      /* 0 means not in use */
     char filePath[MAX_NAME_LEN];
     struct stat stbuf;
     uint cachedTime;
@@ -181,7 +184,7 @@ int
 addNewlyCreatedToCache (char *path, int descInx, int mode,
 pathCache_t **tmpPathCache);
 int
-closeNewlyCreatedCache ();
+closeNewlyCreatedCache (newlyCreatedFile_t *newlyCreatedFile);
 int
 closeIrodsFd (rcComm_t *conn, int fd);
 int
