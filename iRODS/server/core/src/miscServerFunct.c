@@ -1731,6 +1731,7 @@ reconnManager (rsComm_t *rsComm)
     socklen_t len;
     int newSock, status;
     reconnMsg_t *reconnMsg;
+    int acceptFailCnt = 0;
 
     if (rsComm == NULL || rsComm->reconnSock <= 0) { 
         return;
@@ -1762,9 +1763,20 @@ reconnManager (rsComm_t *rsComm)
         newSock = accept (rsComm->reconnSock, (struct sockaddr *) &remoteAddr, 
 	  &len);
 	if (newSock < 0) {
-	    rodsLog (LOG_ERROR, "reconnManager: accept failed, errno = %d",
-              errno);
-	    continue;
+	    acceptFailCnt++;
+	    rodsLog (LOG_ERROR, 
+	      "reconnManager: accept for sock %d failed, errno = %d",
+              rsComm->reconnSock, errno);
+	    if (acceptFailCnt > 0) {
+	        rodsLog (LOG_ERROR, 
+		  "reconnManager: accept failed cnt > 10, reconnManager exit");
+		close (rsComm->reconnSock);
+		rsComm->reconnSock = -1;
+		rsComm->reconnPort = 0;
+		return;
+	    } else {
+	        continue;
+	    }
 	}
         if ((status = readReconMsg (newSock, &reconnMsg)) < 0) {
             rodsLog (LOG_ERROR,
