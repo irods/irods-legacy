@@ -29,6 +29,8 @@
 #include "QUANTAnet_rbudpReceiver_c.h"
 #endif	/* RBUDP_TRANSFER */
 
+#define MAX_RECON_ERROR_CNT	10
+
 typedef struct PortalTransferInp {
     rsComm_t *rsComm;
     int destFd;

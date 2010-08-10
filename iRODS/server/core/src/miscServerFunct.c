@@ -1767,7 +1767,7 @@ reconnManager (rsComm_t *rsComm)
 	    rodsLog (LOG_ERROR, 
 	      "reconnManager: accept for sock %d failed, errno = %d",
               rsComm->reconnSock, errno);
-	    if (acceptFailCnt > 0) {
+	    if (acceptFailCnt > MAX_RECON_ERROR_CNT) {
 	        rodsLog (LOG_ERROR, 
 		  "reconnManager: accept failed cnt > 10, reconnManager exit");
 		close (rsComm->reconnSock);
