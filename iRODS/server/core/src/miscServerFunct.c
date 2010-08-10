@@ -1760,6 +1760,8 @@ reconnManager (rsComm_t *rsComm)
 	    }
 	}
 	/* don't lock it yet until we are done with establishing a connection */
+	len = sizeof (remoteAddr);
+	bzero (&remoteAddr, sizeof (remoteAddr));
         newSock = accept (rsComm->reconnSock, (struct sockaddr *) &remoteAddr, 
 	  &len);
 	if (newSock < 0) {
