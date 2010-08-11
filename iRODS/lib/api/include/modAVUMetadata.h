@@ -58,6 +58,9 @@ extern "C" {
 int
 rcModAVUMetadata (rcComm_t *conn, modAVUMetadataInp_t *modAVUMetadataInp);
 
+int
+clearModAVUMetadataInp (modAVUMetadataInp_t *modAVUMetadataInp);
+
 #ifdef  __cplusplus
 }
 #endif

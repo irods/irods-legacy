@@ -3433,6 +3433,28 @@ clearSendXmsgInfo (sendXmsgInfo_t *sendXmsgInfo)
     return (0);
 }
 
+void
+freeStringIfNotNull(char * str) {
+   if (str != NULL) free(str);
+}
+
+int
+clearModAVUMetadataInp (modAVUMetadataInp_t *modAVUMetadataInp)
+{
+   freeStringIfNotNull(modAVUMetadataInp->arg0);
+   freeStringIfNotNull(modAVUMetadataInp->arg1);
+   freeStringIfNotNull(modAVUMetadataInp->arg2);
+   freeStringIfNotNull(modAVUMetadataInp->arg3);
+   freeStringIfNotNull(modAVUMetadataInp->arg4);
+   freeStringIfNotNull(modAVUMetadataInp->arg5);
+   freeStringIfNotNull(modAVUMetadataInp->arg6);
+   freeStringIfNotNull(modAVUMetadataInp->arg7);
+   freeStringIfNotNull(modAVUMetadataInp->arg8);
+   freeStringIfNotNull(modAVUMetadataInp->arg9);
+   memset (modAVUMetadataInp, 0, sizeof (modAVUMetadataInp_t));
+   return(0);
+}
+
 /* freeRodsObjStat - free a rodsObjStat_t. Note that this should only
  * be used by the client because specColl also is freed which is cached
  * on the server

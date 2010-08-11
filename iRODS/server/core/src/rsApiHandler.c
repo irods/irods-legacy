@@ -11,6 +11,7 @@
 #include "miscServerFunct.h"
 #include "regReplica.h"
 #include "unregDataObj.h"
+#include "modAVUMetadata.h"
 #ifndef windows_platform
 #include <pthread.h>
 #include <setjmp.h>
@@ -169,6 +170,9 @@ bytesBuf_t *bsBBuf)
         } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
           "BulkOprInp_PI")  == 0) {
             clearBulkOprInp ((bulkOprInp_t *) myInStruct);
+        } else if (strcmp (RsApiTable[apiInx].inPackInstruct,
+	  "ModAVUMetadataInp_PI")  == 0) {
+	    clearModAVUMetadataInp ((modAVUMetadataInp_t *) myInStruct);
 	}
         free (myInStruct);
         myInStruct = NULL;
