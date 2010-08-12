@@ -258,7 +258,7 @@ procStatInp_t *procStatInp)
 void
 usage () {
    char *msgs[]={
-"Usage: ips [ahv] [-R resource] [-z zone] [-H hostAddr]",
+"Usage: ips [-ahv] [-R resource] [-z zone] [-H hostAddr]",
 " ",
 "Display connection information of iRods agents currently running in",
 "the iRods federation. By default, agent info for the iCat enabled server",
