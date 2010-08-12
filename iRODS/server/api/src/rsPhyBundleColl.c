@@ -301,6 +301,7 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
 	  L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN);
 	dataObjUnlinkS (rsComm, &dataObjUnlinkInp, 
 	  L1desc[l1descInx].dataObjInfo);
+        L1desc[l1descInx].bytesWritten = 0;
         rsDataObjClose (rsComm, &dataObjCloseInp);
         bzero (bunReplCacheHeader, sizeof (bunReplCacheHeader_t));
 	return 0;
