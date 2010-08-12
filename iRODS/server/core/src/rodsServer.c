@@ -1026,6 +1026,8 @@ spawnManagerTask ()
 {
     agentProc_t *mySpawnReq = NULL;
     int status;
+    uint curTime;
+    uint agentQueChkTime = 0;
     while (1) {
 #ifndef SINGLE_SVR_THR
         pthread_cond_wait (&SpawnReqCond, &SpawnReqCondMutex);
@@ -1060,7 +1062,12 @@ spawnManagerTask ()
 #ifndef SINGLE_SVR_THR
         pthread_mutex_unlock (&SpawnReqCondMutex);
 #endif
-	procBadReq ();
+	curTime = time (0);
+	if (curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
+	    agentQueChkTime = curTime;
+	    procBadReq ();
+	    chkConnectedAgentProcQue ();
+	}
     }
 }
 

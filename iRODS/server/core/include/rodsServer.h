@@ -48,6 +48,8 @@ extern int optind, opterr, optopt;
 
 #define NUM_READ_WORKER_THR	5
 
+#define AGENT_QUE_CHK_INT	600	/* check the agent queue every 600 sec
+					 * for consistence */
 /* Managing the spawned agents */
 
 typedef struct agentProc {
