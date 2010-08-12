@@ -91,6 +91,8 @@ getAgentProcCnt ();
 int
 chkAgentProcCnt ();
 int
+chkConnectedAgentProcQue ();
+int
 recordServerProcess(rsComm_t *svrComm);
 int
 initServerMain (rsComm_t *svrComm);

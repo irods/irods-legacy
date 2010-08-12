@@ -608,12 +608,59 @@ chkAgentProcCnt ()
     if (MaxConnections == NO_MAX_CONNECTION_LIMIT) return 0;
     count = getAgentProcCnt ();
     if (count >= MaxConnections) {
-	return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+	chkConnectedAgentProcQue ();
+	count = getAgentProcCnt ();
+	if (count >= MaxConnections) {
+	    return SYS_MAX_CONNECT_COUNT_EXCEEDED;
+	} else {
+            return 0;
+        }
     } else {
 	return 0;
     }
 }
 	
+int
+chkConnectedAgentProcQue ()
+{
+    agentProc_t *tmpAgentProc, *prevAgentProc, *unmatchedAgentProc;
+    prevAgentProc = NULL;
+
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_lock (&ConnectedAgentMutex);
+#endif
+    tmpAgentProc = ConnectedAgentHead;
+
+    while (tmpAgentProc != NULL) {
+        char procPath[MAX_NAME_LEN];
+	struct stat statbuf;
+
+        snprintf (procPath, MAX_NAME_LEN, "%s/%-d", ProcLogDir, 
+	  tmpAgentProc->pid);
+	if (stat (procPath, &statbuf) < 0) {
+	    /* the agent proc is gone */
+	    unmatchedAgentProc = tmpAgentProc;
+	    rodsLog (LOG_DEBUG, 
+	      "Agent process %d in Connected queue but not in ProcLogDir",
+              tmpAgentProc->pid);
+            if (prevAgentProc == NULL) {
+                ConnectedAgentHead = tmpAgentProc->next;
+            } else {
+                prevAgentProc->next = tmpAgentProc->next;
+            }
+	    tmpAgentProc = tmpAgentProc->next;
+	    free (unmatchedAgentProc);
+        } else {
+            prevAgentProc = tmpAgentProc;
+            tmpAgentProc = tmpAgentProc->next;
+	}
+    }
+#ifndef SINGLE_SVR_THR
+    pthread_mutex_unlock (&ConnectedAgentMutex);
+#endif
+    return 0;
+}
+
 int
 initServer ( rsComm_t *svrComm)
 {
