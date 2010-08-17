@@ -1,5 +1,5 @@
 
-Jargon 2.4.1b1 Release Notes
+Jargon 2.4.1 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
@@ -64,6 +64,9 @@ Refactoring
 
 ------------
 *Bug 104  - long value in MetaDataRecordList 
+
+------------
+*Bug 109 - NullPointerException possible from logging statement in IRODSMetaDataSet.java
 
 ================================================================================================
 Outstanding Issues

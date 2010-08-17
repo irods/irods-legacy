@@ -342,8 +342,8 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 
 	/** Resource Free Space */
 	static final Integer COL_R_FREE_SPACE = new Integer(308);
-	
-	/** Resource Free Space Time*/
+
+	/** Resource Free Space Time */
 	static final Integer COL_R_FREE_SPACE_TIME = new Integer(314);
 
 	/** Resource Information (set by admin) */
@@ -357,7 +357,7 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 
 	/** Time that this record was last modified (Unix Time) */
 	static final Integer COL_R_MODIFY_TIME = new Integer(312);
-	
+
 	/** Status of the resource */
 	static final Integer COL_R_RESC_STATUS = new Integer(313);
 
@@ -1223,17 +1223,14 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 				"Resource Vault Path (where physical files are stored)",
 				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(RESOURCE_FREE_SPACE,
-				"Resource Free Space ", MetaDataField.STRING,
-				protocol));
+				"Resource Free Space ", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(RESOURCE_FREE_SPACE_TIME,
-				"Resource Free Space Time", MetaDataField.STRING,
-				protocol));
+				"Resource Free Space Time", MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(RESOURCE_INFO,
 				"Resource Information (set by admin)", MetaDataField.STRING,
 				protocol));
-		group.add(new MetaDataField(RESOURCE_STATUS,
-				"Resource Status", MetaDataField.STRING,
-				protocol));
+		group.add(new MetaDataField(RESOURCE_STATUS, "Resource Status",
+				MetaDataField.STRING, protocol));
 		group.add(new MetaDataField(RESOURCE_COMMENTS,
 				"Resource Comment (set by admin)", MetaDataField.STRING,
 				protocol));
@@ -1243,11 +1240,9 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 		group.add(new MetaDataField(RESOURCE_MODIFY_DATE,
 				"Time that this record was last modified (Unix Time)",
 				MetaDataField.STRING, protocol));
-		group.add(new MetaDataField(RESOURCE_GROUP,
-				"Resource Group Name",
+		group.add(new MetaDataField(RESOURCE_GROUP, "Resource Group Name",
 				MetaDataField.STRING, protocol));
-		group.add(new MetaDataField(RESOURCE_GROUP_ID,
-				"Resource Group ID",
+		group.add(new MetaDataField(RESOURCE_GROUP_ID, "Resource Group ID",
 				MetaDataField.STRING, protocol));
 		add(group);
 
@@ -1463,24 +1458,17 @@ public final class IRODSMetaDataSet extends MetaDataSet implements
 	 * @return
 	 */
 	public static String getID(String fieldName) {
-		if (log.isDebugEnabled()) {
-			log.debug("doing a getID for field:" + fieldName);
-		}
+		log.debug("doing a getID for field:{}", fieldName);
+
 		Object temp = jargonToIRODS.get(fieldName);
 
 		if (temp == null) {
-			if (log.isDebugEnabled()) {
-
-				log
-						.debug("not IRODSMetaDataSet field, returning passed-in field name instead:"
-								+ fieldName);
-			}
+			log.debug("not IRODSMetaDataSet field, returning passed-in field name instead:{}",fieldName);
 			return fieldName;
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("successfully looked up, and returning:" + fieldName);
-			}
-			return temp.toString();
+			String tempString = temp.toString();
+			log.debug("successfully looked up, and returning:{}", tempString);
+			return tempString;
 		}
 	}
 }

@@ -1924,21 +1924,6 @@ public class IRODSCommands {
 				new Tag(options, 32), // not sure 32?
 				Tag.createKeyValueTag(null), });
 
-		/*
-		 * <GenQueryInp_PI> <maxRows>500</maxRows> <continueInx>1</continueInx>
-		 * <partialStartIndex>0</partialStartIndex> <options>32</options>
-		 * <KeyValPair_PI> <ssLen>0</ssLen> </KeyValPair_PI> <InxIvalPair_PI>
-		 * <iiLen>11</iiLen> <inx>501</inx> <inx>403</inx> <inx>401</inx>
-		 * <inx>421</inx> <inx>407</inx> <inx>420</inx> <inx>419</inx>
-		 * <inx>409</inx> <inx>411</inx> <inx>404</inx> <inx>413</inx>
-		 * <ivalue>1</ivalue> <ivalue>1</ivalue> <ivalue>1</ivalue>
-		 * <ivalue>1</ivalue> <ivalue>1</ivalue> <ivalue>1</ivalue>
-		 * <ivalue>1</ivalue> <ivalue>1</ivalue> <ivalue>1</ivalue>
-		 * <ivalue>1</ivalue> <ivalue>1</ivalue></InxIvalPair_PI>
-		 * <InxValPair_PI> <isLen>1</isLen> <inx>501</inx> <svalue> =
-		 * '/tempZone/home/rods/myJargonLargeFilesCopyTest0'</svalue>
-		 * </InxValPair_PI> </GenQueryInp_PI>
-		 */
 		int j = 1;
 		MetaDataSelect[] selects = new MetaDataSelect[] { MetaDataSet
 				.newSelection("file name") };

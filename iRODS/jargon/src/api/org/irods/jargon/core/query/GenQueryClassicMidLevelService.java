@@ -343,18 +343,18 @@ public class GenQueryClassicMidLevelService {
 		message.addTag(new Tag(maxRows, numberOfRecordsWanted));
 		message.addTag(new Tag(continueInx, 0));
 		message.addTag(new Tag(partialStartIndex, partialStart));
-
-		if (!distinctQuery) {
-			int versionValue = irodsCommands.getIrodsServerProperties().getRelVersion().compareTo("rods2.3");
-			if (versionValue >= 0) {
+		
+		int versionValue = irodsCommands.getIrodsServerProperties().getRelVersion().compareTo("rods2.3");
+		if (versionValue >= 0) {
+			if (distinctQuery) {
 				// reported version is at or after the version specified in
 				// 'compareTo'
-				message.addTag(new Tag(options, 1));
+				message.addTag(new Tag(options, 0));
 			} else {
-				log
-						.warn("non-distinct queries are not supported prior to IRODS2.3, ignored...");
+				message.addTag(new Tag(options, 1));
 			}
 		}
+
 
 		// package the selects
 		if (selects == null) {
