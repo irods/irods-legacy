@@ -810,7 +810,7 @@ rodsLong_t fileSize, int createMode)
     hpssSession->requestId = getpid();
 
     if ((hostname = getenv("IRODS_HPSS_HOSTNAME")) == NULL &&
-      (hostname = getLocalAddr ()) == NULL) { 
+      (hostname = getLocalSvrAddr ()) == NULL) { 
          if (gethostname (myhostname, NAME_LEN) < 0) {
              rodsLog (LOG_ERROR,
                "initHpssSession: gethostname error, errno=%d", errno);
