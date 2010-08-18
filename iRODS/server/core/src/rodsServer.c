@@ -259,6 +259,8 @@ serverMain (char *logDir)
 	          "serverMain: acceptConn () error, errno = %d", errno);
 	        continue;
 	    }
+	} else {
+	    acceptErrCnt = 0;
 	}
 
 	status = chkAgentProcCnt ();
@@ -267,11 +269,9 @@ serverMain (char *logDir)
 	      "serverMain: chkAgentProcCnt failed status = %d", status);
             sendVersion (newSock, status, 0, NULL, 0);
 	    status = mySockClose (newSock);
-printf ("close status = %d\n", status);
+            printf ("close status = %d\n", status);
 	    continue;
         }
-
-        acceptErrCnt = 0;
 
 	addConnReqToQue (&svrComm, newSock);
 
