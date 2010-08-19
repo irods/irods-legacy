@@ -185,21 +185,41 @@ main(int argc, char **argv)
       if (mNum == 0) mNum--;
 
       while ( mNum != 0 ) {
-	if (strlen(condStr) > 0)
-	  sprintf(rcvXmsgInp.msgCondition, "(*XSEQNUM  >= %d) && (%s)", sNum, condStr);
-	else
-	  sprintf(rcvXmsgInp.msgCondition, "*XSEQNUM >= %d ", sNum);
+	/****
 	conn = rcConnectXmsg (&myRodsEnv, &errMsg);
 	if (conn == NULL) {
 	  fprintf (stderr, "rcConnect error\n");
 	  exit (1);
 	}
 	status = clientLogin(conn);
+
 	if (status != 0) {
 	  fprintf (stderr, "clientLogin error\n");
 	  rcDisconnect(conn);
 	  exit (7);
 	}
+	***/
+	conn = rcConnectXmsg (&myRodsEnv, &errMsg);
+	if (conn == NULL) {
+	  sleep(sleepSec);
+	  sleepSec = 2 * sleepSec;
+	  if (sleepSec > 10) sleepSec = 10;
+	  continue;
+	}
+	status = clientLogin(conn);
+	if (status != 0) {
+	  rcDisconnect(conn);
+	  sleep(sleepSec);
+	  sleepSec = 2 * sleepSec;
+	  if (sleepSec > 10) sleepSec = 10;
+	  continue;
+	}
+	
+	if (strlen(condStr) > 0)
+	  sprintf(rcvXmsgInp.msgCondition, "(*XSEQNUM  >= %d) && (%s)", sNum, condStr);
+	else
+	  sprintf(rcvXmsgInp.msgCondition, "*XSEQNUM >= %d ", sNum);
+
 	status = rcRcvXmsg (conn, &rcvXmsgInp, &rcvXmsgOut);
         rcDisconnect(conn);
  	if (status  >= 0) {
