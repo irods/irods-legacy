@@ -873,6 +873,8 @@ getNextValueAndBufFromListOrStruct(char *typ, void *inPtr,
       *value = strdup(inPtr);
       *restPtr = NULL;
     }
+    /** Raja Added July 22 2010 */
+    trimWS(*value);
     return(0);
   }
   else if (!strcmp(typ,StrArray_MS_T)) {
