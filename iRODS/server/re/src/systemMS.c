@@ -74,7 +74,7 @@ int assign(msParam_t* var, msParam_t* value, ruleExecInfo_t *rei)
   char eaVal[MAX_COND_LEN * 2];
   varName = (char *)var->label;
   varValue = (char *) var->inOutStruct;
-  if ( varValue[0] == '$') {
+  if ( varValue != NULL && varValue[0] == '$') {
     i = getVarMap("", var->inOutStruct, &varMap, 0);
     if (i < 0) return(i);
     rstrcpy(aVal,value->inOutStruct,MAX_COND_LEN * 2);
@@ -506,6 +506,7 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
   int first = 1;
   int inx;
   char *outtyp;
+  execCmdOut_t *myExecCmdOut;
 
   list = (msParam_t *) malloc (sizeof (msParam_t));
   memset (list, 0, sizeof (msParam_t));
@@ -513,6 +514,12 @@ int forEachExec(msParam_t* inlist, msParam_t* body, msParam_t* recoverBody,
   typ = strdup(list->type);
   label = list->label;
   inPtr = list->inOutStruct;
+  if (!strcmp(typ,ExecCmdOut_MS_T)) {
+    free(typ);
+    typ = strdup(STR_MS_T);
+    myExecCmdOut = (execCmdOut_t *) inPtr;
+    inPtr =  myExecCmdOut->stdoutBuf.buf;
+  }
   inStructPtr = inPtr;
   inBufPtr = list->inpOutBuf;
   outtyp = typ;
@@ -1098,15 +1105,46 @@ int
 msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
 {
 
+  msParamArray_t *inMsParamArray;
+  msParam_t *mP;
+  execCmdOut_t *myExecCmdOut;
 
   RE_TEST_MACRO ("Loopback on msiFreeBuffer");
 
+  if (!strcmp(memoryParam->type,"STR_PI") && 
+      ( !strcmp((char*)memoryParam->inOutStruct,"stdout") || 
+	!strcmp((char*)memoryParam->inOutStruct,"stderr")
+      )
+     ) 
+    {
+      mP = NULL;
+      inMsParamArray = rei->msParamArray;
+      if (((mP = getMsParamByLabel (inMsParamArray, "ruleExecOut")) != NULL) &&
+	  (mP->inOutStruct != NULL)) {
+	myExecCmdOut = (execCmdOut_t *) mP->inOutStruct;
+	if (!strcmp((char*)memoryParam->inOutStruct,"stdout")) {
+	  if ( myExecCmdOut->stdoutBuf.buf != NULL) {
+	    free ( myExecCmdOut->stdoutBuf.buf);
+	    myExecCmdOut->stdoutBuf.buf=NULL;
+	    myExecCmdOut->stdoutBuf.len = 0;
+	  }
+	}
+	if (!strcmp((char*)memoryParam->inOutStruct,"stderr")) {
+	  if ( myExecCmdOut->stderrBuf.buf != NULL) {
+	    free ( myExecCmdOut->stderrBuf.buf);
+	    myExecCmdOut->stderrBuf.buf = NULL;
+	    myExecCmdOut->stderrBuf.len = 0;
+	  }
+	}
+      }
+      return(0);
+    }
 
   if (memoryParam->inpOutBuf != NULL)
     free(memoryParam->inpOutBuf);
   memoryParam->inpOutBuf = NULL;
   return(0);
-
+  
 }
 
 /**
