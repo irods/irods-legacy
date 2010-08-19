@@ -1065,7 +1065,7 @@ checkFilePerms(char *fileName) {
 /**
  * \fn msiFreeBuffer(msParam_t* memoryParam, ruleExecInfo_t *rei)
  *
- * \brief  This microservice frees a named buffer
+ * \brief  This microservice frees a named buffer, including stdout and stderr
  * 
  * \module core
  * 
@@ -1077,7 +1077,7 @@ checkFilePerms(char *fileName) {
  * \remark Ketan Palshikar - msi documentation, 2009-06-26
  * \remark Terrell Russell - reviewed msi documentation, 2009-06-30
  * 
- * \note can be used to free a buffer which was alloated previously.
+ * \note Can be used to free a buffer which was allocated previously.
  *
  * \usage
  *
