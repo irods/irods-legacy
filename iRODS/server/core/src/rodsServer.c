@@ -1066,7 +1066,9 @@ spawnManagerTask ()
 	if (curTime > agentQueChkTime + AGENT_QUE_CHK_INT) {
 	    agentQueChkTime = curTime;
 	    procBadReq ();
+#if 0	/* take this out for now. Wayne saw problem with accept */
 	    chkConnectedAgentProcQue ();
+#endif
 	}
     }
 }
