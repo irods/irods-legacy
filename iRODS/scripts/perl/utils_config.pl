@@ -21,7 +21,7 @@
 use File::Spec;
 use Cwd "abs_path";
 
-$version{"utils_config.pl"} = "July 2010";
+$version{"utils_config.pl"} = "Aug 2010";
 
 
 
@@ -681,7 +681,7 @@ sub setEnvironmentVariables
 	}
 	else
 	{
-		$libPath = "$locallib:$libPath";
+		$libPath = "$libPath:$locallib";
 	}
 	$ENV{'LD_LIBRARY_PATH'} = $libPath;
 
