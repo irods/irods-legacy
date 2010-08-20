@@ -40,7 +40,7 @@ scanObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 		}
 		else {
 			status = USER_INPUT_PATH_ERR;
-			rodsLog (LOG_ERROR, "scanObj: %s does not exist", inpPath);
+			rodsLog (LOG_ERROR, "scanObj: %s does not exist", inpPathO);
 		}
 	}
 	
