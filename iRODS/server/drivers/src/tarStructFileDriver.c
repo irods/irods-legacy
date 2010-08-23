@@ -22,6 +22,10 @@
 #include "modColl.h"
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
+#include "collection.h"
+#include "specColl.h"
+#include "resource.h"
 #include "miscServerFunct.h"
 
 int
