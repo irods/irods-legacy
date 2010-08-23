@@ -9,6 +9,7 @@
 
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
 #include "miscUtil.h"
 
 
