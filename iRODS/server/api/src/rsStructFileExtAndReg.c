@@ -477,6 +477,17 @@ char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
           "regSubFile: svrRegDataObj of %s. errno = %d",
           dataObjInfo.objPath, errno);
 	unlink (dataObjInfo.filePath);
+    } else {
+	ruleExecInfo_t rei;
+	initReiWithDataObjInp (&rei, rsComm, NULL);
+	rei.doi = &dataObjInfo;
+	rei.status = applyRule ("acPostProcForTarFileReg", NULL, &rei,
+                    NO_SAVE_REI);
+	if (rei.status < 0) {
+            rodsLogError (LOG_ERROR, rei.status,
+              "regSubFile: acPostProcForTarFileReg error for %s. status = %d",
+              dataObjInfo.objPath);
+	}
     }
     return status;
 }

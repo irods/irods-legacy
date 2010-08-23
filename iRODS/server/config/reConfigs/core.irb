@@ -553,8 +553,10 @@ acRescQuotaPolicy||msiSetRescQuotaPolicy(off)|nop
 # Examples:
 # acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(on)|nop
 acBulkPutPostProcPolicy||msiSetBulkPutPostProcPolicy(off)|nop
-
-
+# 52) acPostProcForTarFileReg - Rule for post processing the registration
+# of the extracted tar file (from ibun -x). There is not micro-service
+# associated with this rule.
+acPostProcForTarFileReg||nop|nop
 # ----------------------------------------------------------------------------
 # These rules are for testing only
 #acDataObjCreate||acSetCreateConditions##acDOC|nop##null
