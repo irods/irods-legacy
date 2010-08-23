@@ -5,6 +5,9 @@
 
 #include "phyBundleColl.h"
 #include "objMetaOpr.h"
+#include "resource.h"
+#include "collection.h"
+#include "specColl.h"
 #include "miscServerFunct.h"
 #include "openCollection.h"
 #include "readCollection.h"

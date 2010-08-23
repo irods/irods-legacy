@@ -267,6 +267,8 @@ int
 mySetenvInt (char *envname, int envval);
 int
 getNumFilesInDir (char *mydir);
+int
+getRandomArray (int **randomArray, int size);
 #ifdef  __cplusplus
 }
 #endif

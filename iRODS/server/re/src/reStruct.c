@@ -4,6 +4,7 @@
 #include "reGlobalsExtern.h"
 #include "rcMisc.h"
 #include "objMetaOpr.h"
+#include "resource.h"
 
 void *mallocAndZero(int s)
 {

@@ -4253,3 +4253,35 @@ mySetenvInt (char *envname, int envval)
     return status;
 }
 
+int
+getRandomArray (int **randomArray, int size)
+{
+    int *myArray;
+    int i, j, k;
+
+    if (size < 0) {
+        *randomArray = NULL;
+        return -1;
+    }
+
+    myArray = (int *) malloc (size * sizeof (int));
+    bzero (myArray, size * sizeof (int));
+    for (i = size ; i > 0; i --) {
+        int ranNum;
+        /* get a number between 0 and i-1 */
+        ranNum = (random() >> 2) % i;
+        k = 0;
+        /* find the ranNum th empty slot  */
+        for (j = 0; j < size ; j ++) {
+            if (myArray[j] == 0) {
+                k++;
+            }
+            if (k > ranNum) break;
+        }
+        myArray[j] = i;
+    }
+    *randomArray = myArray;
+
+    return (0);
+}
+

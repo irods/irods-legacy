@@ -5,6 +5,8 @@
 
 #include "apiHeaderAll.h"
 #include "objMetaOpr.h"
+#include "resource.h"
+#include "specColl.h"
 #include "dataObjOpr.h"
 #include "miscServerFunct.h"
 #include "rcGlobalExtern.h"

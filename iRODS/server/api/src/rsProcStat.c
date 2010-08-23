@@ -7,6 +7,7 @@
 /* script generated code */
 #include "procStat.h"
 #include "objMetaOpr.h"
+#include "resource.h"
 #include "miscServerFunct.h"
 #include "rodsLog.h"
 #include "rsGlobalExtern.h"

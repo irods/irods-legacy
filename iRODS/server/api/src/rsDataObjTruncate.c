@@ -9,6 +9,7 @@
 #include "fileTruncate.h"
 #include "unregDataObj.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

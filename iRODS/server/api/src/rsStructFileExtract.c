@@ -6,6 +6,7 @@
 #include "dataObjOpr.h"
 #include "rsGlobalExtern.h"
 #include "objMetaOpr.h"
+#include "resource.h"
 
 
 int

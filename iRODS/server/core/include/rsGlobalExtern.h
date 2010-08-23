@@ -11,7 +11,7 @@
 #include "apiHandler.h"
 #include "initServer.h"
 #include "fileOpr.h"
-#include "dataObjOpr.h"
+#include "objDesc.h"
 #include "querySpecColl.h"
 #include "structFileDriver.h"
 #ifdef TAR_STRUCT_FILE

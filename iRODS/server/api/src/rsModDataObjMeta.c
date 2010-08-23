@@ -6,6 +6,7 @@
 #include "modDataObjMeta.h"
 #include "icatHighLevelRoutines.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
 
 int
 rsModDataObjMeta (rsComm_t *rsComm, modDataObjMeta_t *modDataObjMetaInp)

@@ -1,5 +1,6 @@
 #include "ruleExecSubmit.h"
 #include "ruleExecDel.h"
+#include "reServerLib.h"
 #include "objMetaOpr.h"
 #include "icatHighLevelRoutines.h"
 

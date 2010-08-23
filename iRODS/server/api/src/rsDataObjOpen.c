@@ -7,6 +7,8 @@
 #include "dataObjOpenAndStat.h"
 #include "rodsLog.h"
 #include "objMetaOpr.h"
+#include "resource.h"
+#include "resource.h"
 #include "dataObjOpr.h"
 #include "dataObjCreate.h"
 #include "fileOpen.h"

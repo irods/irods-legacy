@@ -6,209 +6,109 @@
 
 
 
-#ifndef DATA_OBJ_OPR
-#define DATA_OBJ_OPR
+#ifndef DATA_OBJ_OPR_H
+#define DATA_OBJ_OPR_H
 
 #include "rods.h"
 #include "initServer.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
-#include "fileRename.h"
-#include "miscUtil.h"
-#include "structFileSync.h"
-#include "structFileExtAndReg.h"
-#include "dataObjOpenAndStat.h"
+#include "ruleExecSubmit.h"
+#include "rcGlobalExtern.h"
+#include "rsGlobalExtern.h"
+#include "reIn2p3SysRule.h"
 
-#define NUM_L1_DESC	1026 	/* number of L1Desc */
+/* definition for return value of resolveSingleReplCopy */
+#define NO_GOOD_COPY	0
+#define HAVE_GOOD_COPY	1
 
-#define ORPHAN_DIR	"orphan"
-#define REPL_DIR	"replica"
-#define CHK_ORPHAN_CNT_LIMIT  20  /* number of failed check before stopping */
-/* definition for getNumThreads */
-
-#define REG_CHKSUM	1
-#define VERIFY_CHKSUM	2
-
-/* definition for the flag in queRescGrp and queResc */
-#define BOTTOM_FLAG	0
-#define TOP_FLAG	1
-#define BY_TYPE_FLAG	2
-
-/* values in l1desc_t is the desired value. values in dataObjInfo are
- * the values in rcat */
-typedef struct l1desc {
-    int l3descInx;
-    int inuseFlag;
-    int oprType;
-    int openType;
-    int oprStatus;
-    int dataObjInpReplFlag;
-    dataObjInp_t *dataObjInp;
-    dataObjInfo_t *dataObjInfo;
-    dataObjInfo_t *otherDataObjInfo;
-    int copiesNeeded;
-    rescGrpInfo_t *moreRescGrpInfo;
-    rodsLong_t bytesWritten;    /* mark whether it has been written */
-    rodsLong_t dataSize;	/* this is the target size. The size in 
-				 * dataObjInfo is the registered size */
-    int replStatus;     /* the replica status */
-    int chksumFlag;     /* parsed from condition */
-    int srcL1descInx;
-    char chksum[NAME_LEN]; /* the input chksum */
-#ifdef LOG_TRANSFERS
-    struct timeval openStartTime;
-#endif
-    int remoteL1descInx;
-    int stageFlag;
-    rescInfo_t *replRescInfo;	/* if non NULL, repl to this resc on close */
-    dataObjInfo_t *replDataObjInfo; /* if non NULL, repl to this dataObjInfo
-				     * on close */
-    rodsServerHost_t *remoteZoneHost;
-} l1desc_t;
+/* definition for trimjFlag in matchAndTrimRescGrp */
+#define TRIM_MATCHED_RESC_INFO		0x1
+#define REQUE_MATCHED_RESC_INFO		0x2
+#define TRIM_MATCHED_OBJ_INFO		0x4
+#define TRIM_UNMATCHED_OBJ_INFO		0x8
 
 int
-initL1Desc ();
-
+getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfoHead, char *accessPerm, int ignoreCondInput);
 int
-allocL1Desc ();
-
+updateDataObjReplStatus (rsComm_t *rsComm, int l1descInx, int replStatus);
 int
-freeL1Desc (int fileInx);
-
+dataObjExist (rsComm_t *rsComm, dataObjInp_t *dataObjInp);
 int
-fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize);
-
+sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead, 
+dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag);
 int
-getFileMode (dataObjInp_t *dataObjInp);
-
+sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
+keyValPair_t *condInput, int writeFlag);
 int
-getFileFlags (int l1descInx);
-
+sortDataObjInfoRandom (dataObjInfo_t **dataObjInfoHead);
 int
-getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-dataObjInp_t *dataObjInp);
+requeDataObjInfoByResc (dataObjInfo_t **dataObjInfoHead, char *preferedResc,
+int writeFlag, int topFlag);
 int
-getVaultPathPolicy (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-vaultPathPolicy_t *outVaultPathPolicy);
+requeDataObjInfoByReplNum (dataObjInfo_t **dataObjInfoHead, int replNum);
+dataObjInfo_t *
+chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo);
 int
-setPathForGraftPathScheme (char *objPath, char *vaultPath, int addUserName,
-char *userName, int trimDirCnt, char *outPath);
-int 
-setPathForRandomScheme (char *objPath, char *vaultPath, char *userName,
-char *outPath);
+chkAndTrimCopyInRescGrp (dataObjInfo_t **dataObjInfoHead, 
+rescGrpInfo_t **rescGrpInfoHead, int trimDataObjFlag);
 int
-resolveDupFilePath (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-dataObjInp_t *dataObjInp);
+initDataObjInfoQuery (dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
+int ignoreCondInput);
 int
-getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp, dataObjInfo_t *dataObjInfo);
+sortObjInfo (dataObjInfo_t **dataObjInfoHead,
+dataObjInfo_t **dirtyArchInfo, dataObjInfo_t **dirtyCacheInfo,
+dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo,
+dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo);
 int
-getErrno (int errCode);
-int 
-getCopiesFromCond (keyValPair_t *condInput);
-
-int
-getWriteFlag (int openFlag);
-int
-getCondQuery (keyValPair_t *condInput);
-int
-setCondQuery (int headL1descInx, int condQueryFlag,
-dataObjInfo_t *nextDataObjInfo, dataObjInfo_t **otherDataObjInfo);
-int
-getRescCnt (rescGrpInfo_t *myRescGrpInfo);
-int
-dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam);
-int
-_dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr);
-int
-getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr, 
-keyValPair_t *condInput, char *destRescName, char *srcRescName);
-
-#include "rcMisc.h"
-rodsLong_t 
-getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo);
-int
-initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType);
-int
-initDataObjInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo,
-dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, char *rescGroupName);
-int
-convL3descInx (int l3descInx);
-int
-queResc (rescInfo_t *myRescInfo, char *rescGrpName,  
-rescGrpInfo_t **rescGrpInfoHead, int topFlag);
-int
-freeAllRescGrp (rescGrpInfo_t *rescGrpHead);
-int
-queRescGrp (rescGrpInfo_t **rescGrpInfoHead, rescGrpInfo_t *myRescGrpInfo,
-int topFlag);
-int
-getRescTypeInx (char *rescType);
-int
-getRescType (rescInfo_t *rescInfo);
-int
-getRescClassInx (char *rescClass);
-int
-dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-char **chksumStr);
-int
-chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, 
-rescInfo_t *rescInfo, int replStatus);
-int
-initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp);
-int
-allocL1desc ();
-int
-freeL1desc (int l1descInx);
-int
-closeAllL1desc (rsComm_t *rsComm);
-int
-initSpecCollDesc ();
-int
-allocSpecCollDesc ();
-int
-freeSpecCollDesc (int specCollInx);
-int
-renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
-fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag);
-int
-getMultiCopyPerResc ();
-int
-syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfoHead);
-int
-syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
 dataObjInfo_t *dataObjInfo);
 int
-syncCollPhyPath (rsComm_t *rsComm, char *collection);
+chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName);
 int
-rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl);
+getNumDataObjInfo (dataObjInfo_t *dataObjInfoHead);
 int
-isInVault (dataObjInfo_t *dataObjInfo);
+resolveSingleReplCopy (dataObjInfo_t **dataObjInfoHead,
+dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
+dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput);
 int
-initL1desc ();
+matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
+dataObjInfo_t **oldDataObjInfoHead, keyValPair_t *condInput,
+dataObjInfo_t **matchedDataObjInfo, dataObjInfo_t **matchedOldDataObjInfo);
 int
-initCollHandle ();
+resolveInfoForPhymv (dataObjInfo_t **dataObjInfoHead,
+dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
+keyValPair_t *condInput, int multiCopyFlag);
 int
-allocCollHandle ();
+matchAndTrimRescGrp (dataObjInfo_t **dataObjInfoHead,
+rescGrpInfo_t **rescGrpInfoHead, int trimjFlag,
+dataObjInfo_t **trimmedDataObjInfo);
 int
-freeCollHandle (int handleInx);
+resolveInfoForTrim (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput);
 int
-rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm);
+requeDataObjInfoByDestResc (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput, int writeFlag, int topFlag);
 int
-initStructFileOprInp (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp,
-structFileExtAndRegInp_t *structFileExtAndRegInp,
-dataObjInfo_t *dataObjInfo);
+requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput, int writeFlag, int topFlag);
 int
-allocAndSetL1descForZoneOpr (int l3descInx, dataObjInp_t *dataObjInp,
-rodsServerHost_t *remoteZoneHost, openStat_t *openStat);
+getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
+dataObjInfo_t **dataObjInfo);
 int
-getDefFileMode ();
+regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
+rodsLong_t newSize);
 int
-getDefDirMode ();
+getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo,
+dataObjInfo_t **outDataObjInfo);
 int
-isL1descInuse ();
+getNonGrpCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, rescGrpInfo_t *rescGrpInfo,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
 int
-getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
-#endif	/* DATA_OBJ_OPR */
-
+getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo);
+#endif	/* DATA_OBJ_OPR_H */

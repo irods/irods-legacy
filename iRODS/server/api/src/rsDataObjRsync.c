@@ -2,6 +2,7 @@
 #include "dataObjChksum.h"
 #include "dataObjRsync.h"
 #include "objMetaOpr.h"
+#include "specColl.h"
 #include "dataObjOpr.h"
 #include "rsApiHandler.h"
 #include "modDataObjMeta.h"

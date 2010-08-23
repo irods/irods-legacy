@@ -9,6 +9,7 @@
 #include "reDataObjOpr.h"
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
+#include "collection.h"
 
 /**
  * \fn msiDataObjCreate (msParam_t *inpParam1, msParam_t *msKeyValStr, 

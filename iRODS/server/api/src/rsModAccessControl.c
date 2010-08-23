@@ -4,6 +4,7 @@
 /* See modAccessControl.h for a description of this API call.*/
 
 #include "modAccessControl.h"
+#include "specColl.h"
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 

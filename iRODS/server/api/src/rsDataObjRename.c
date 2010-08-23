@@ -4,6 +4,10 @@
  */
 #include "dataObjRename.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
+#include "collection.h"
+#include "resource.h"
+#include "specColl.h"
 #include "subStructFileRename.h"
 #include "icatHighLevelRoutines.h"
 #include "dataObjUnlink.h"

@@ -6,6 +6,7 @@
 #include "rmCollOld.h"
 #include "rmColl.h"
 #include "objMetaOpr.h"
+#include "specColl.h"
 #include "icatHighLevelRoutines.h"
 #include "openCollection.h"
 #include "readCollection.h"

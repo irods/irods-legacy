@@ -10,6 +10,8 @@
 #include "subStructFileCreate.h"
 #include "rodsLog.h"
 #include "objMetaOpr.h"
+#include "resource.h"
+#include "specColl.h"
 #include "dataObjOpr.h"
 #include "dataObjUnlink.h"
 #include "regDataObj.h"

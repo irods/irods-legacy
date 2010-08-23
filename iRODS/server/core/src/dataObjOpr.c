@@ -1,1950 +1,1721 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
+/* dataObjOpr.c - data object operations */
 
-/* dataObjOpr.c - L1 type operation. Will call low level l1desc drivers
- */
-
-#include "rodsDef.h"
+#ifndef windows_platform
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif
 #include "dataObjOpr.h"
-#include "rodsDef.h"
-#include "rsGlobalExtern.h"
-#include "fileChksum.h"
-#include "modDataObjMeta.h"
 #include "objMetaOpr.h"
-#include "dataObjClose.h"
-#include "rcGlobalExtern.h"
-#include "reGlobalsExtern.h"
-#include "reDefines.h"
-#include "reSysDataObjOpr.h"
+#include "resource.h"
+#include "collection.h"
+#include "specColl.h"
+#include "modDataObjMeta.h"
+#include "ruleExecSubmit.h"
+#include "ruleExecDel.h"
 #include "genQuery.h"
+#include "icatHighLevelRoutines.h"
+#include "reSysDataObjOpr.h"
+#include "miscUtil.h"
 #include "rodsClient.h"
-#ifdef LOG_TRANSFERS
-#include <sys/time.h>
-#endif
+#include "rsIcatOpr.h"
 
 int
-initL1desc ()
+getDataObjInfo (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+dataObjInfo_t **dataObjInfoHead,char *accessPerm, int ignoreCondInput)
 {
-    memset (L1desc, 0, sizeof (l1desc_t) * NUM_L1_DESC);
-    return (0);
-}
-
-int
-allocL1desc ()
-{
-    int i;
-
-    for (i = 3; i < NUM_L1_DESC; i++) {
-        if (L1desc[i].inuseFlag <= FD_FREE) {
-            L1desc[i].inuseFlag = FD_INUSE;
-            return (i);
-        };
-    }
-
-    rodsLog (LOG_NOTICE,
-     "allocL1desc: out of L1desc");
-
-    return (SYS_OUT_OF_FILE_DESC);
-}
-
-int
-isL1descInuse ()
-{
-    int i;
-
-    for (i = 3; i < NUM_L1_DESC; i++) {
-        if (L1desc[i].inuseFlag == FD_INUSE) {
-	    return 1;
-        };
-    }
-    return 0;
-}
-
-int
-initSpecCollDesc ()
-{
-    memset (SpecCollDesc, 0, sizeof (specCollDesc_t) * NUM_SPEC_COLL_DESC);
-    return (0);
-}
-
-int
-allocSpecCollDesc ()
-{
-    int i;
-
-    for (i = 1; i < NUM_SPEC_COLL_DESC; i++) {
-        if (SpecCollDesc[i].inuseFlag <= FD_FREE) {
-            SpecCollDesc[i].inuseFlag = FD_INUSE;
-            return (i);
-        };
-    }
-
-    rodsLog (LOG_NOTICE,
-     "allocSpecCollDesc: out of SpecCollDesc");
-
-    return (SYS_OUT_OF_FILE_DESC);
-}
-
-int
-freeSpecCollDesc (int specCollInx)
-{
-    if (specCollInx < 1 || specCollInx >= NUM_SPEC_COLL_DESC) {
-        rodsLog (LOG_NOTICE,
-         "freeSpecCollDesc: specCollInx %d out of range", specCollInx);
-        return (SYS_FILE_DESC_OUT_OF_RANGE);
-    }
-
-    if (SpecCollDesc[specCollInx].dataObjInfo != NULL) {
-        freeDataObjInfo (SpecCollDesc[specCollInx].dataObjInfo);
-    }
-
-    memset (&SpecCollDesc[specCollInx], 0, sizeof (specCollDesc_t));
-
-    return (0);
-}
-
-int
-closeAllL1desc (rsComm_t *rsComm)
-{
-    int i;
-
-    if (rsComm == NULL) {
-	return 0;
-    }
-    for (i = 3; i < NUM_L1_DESC; i++) {
-        if (L1desc[i].inuseFlag == FD_INUSE && 
-	  L1desc[i].l3descInx > 2) {
-	    l3Close (rsComm, i);
-	}
-    }
-    return (0);
-}
-
-int
-freeL1desc (int l1descInx)
-{
-    if (l1descInx < 3 || l1descInx >= NUM_L1_DESC) {
-        rodsLog (LOG_NOTICE,
-         "freeL1desc: l1descInx %d out of range", l1descInx);
-        return (SYS_FILE_DESC_OUT_OF_RANGE);
-    }
-
-    if (L1desc[l1descInx].dataObjInfo != NULL) {
-	/* for remote zone type L1desc, rescInfo is not from local cache
-	 * but malloc'ed */ 
-	if (L1desc[l1descInx].remoteZoneHost != NULL &&
-	  L1desc[l1descInx].dataObjInfo->rescInfo != NULL)
-	    free (L1desc[l1descInx].dataObjInfo->rescInfo);
-#if 0	/* no longer need this with irsDataObjClose */
-	/* will be freed in _rsDataObjReplS since it needs the new 
-	 * replNum and dataID */ 
-	if (L1desc[l1descInx].oprType != REPLICATE_DEST)
-            freeDataObjInfo (L1desc[l1descInx].dataObjInfo);
-#endif
-	if (L1desc[l1descInx].dataObjInfo != NULL)
-	    freeDataObjInfo (L1desc[l1descInx].dataObjInfo);
-    }
-
-    if (L1desc[l1descInx].otherDataObjInfo != NULL) {
-        freeAllDataObjInfo (L1desc[l1descInx].otherDataObjInfo);
-    }
-
-    if (L1desc[l1descInx].replDataObjInfo != NULL) {
-        freeDataObjInfo (L1desc[l1descInx].replDataObjInfo);
-    }
-
-    if (L1desc[l1descInx].dataObjInpReplFlag == 1 &&
-      L1desc[l1descInx].dataObjInp != NULL) {
-	clearDataObjInp (L1desc[l1descInx].dataObjInp);
-	free (L1desc[l1descInx].dataObjInp);
-    }
-    memset (&L1desc[l1descInx], 0, sizeof (l1desc_t));
-
-    return (0);
-}
-
-int
-fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize)
-{
-    keyValPair_t *condInput;
-    char *tmpPtr;
-
-    condInput = &dataObjInp->condInput;
-
-    if (dataObjInp != NULL) { 
-#if 0
-        if (getValByKey (&dataObjInp->condInput, REPL_DATA_OBJ_INP_KW) != 
-          NULL) {
-	    L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
-	    replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
-	    L1desc[l1descInx].dataObjInpReplFlag = 1;
-	} else {
-	    L1desc[l1descInx].dataObjInp = dataObjInp;
-	}
-#else
-        /* always repl the .dataObjInp */
-        L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
-        replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
-        L1desc[l1descInx].dataObjInpReplFlag = 1;
-#endif
-    } else {
-	/* XXXX this can be a problem in rsDataObjClose */
-	L1desc[l1descInx].dataObjInp = NULL; 
-    }
- 
-    L1desc[l1descInx].dataObjInfo = dataObjInfo;
-    if (dataObjInp != NULL) {
-	L1desc[l1descInx].oprType = dataObjInp->oprType;
-    }
-    L1desc[l1descInx].replStatus = replStatus;
-    L1desc[l1descInx].dataSize = dataSize;
-    if (condInput != NULL && condInput->len > 0) {
-	if ((tmpPtr = getValByKey (condInput, REG_CHKSUM_KW)) != NULL) {
-	    L1desc[l1descInx].chksumFlag = REG_CHKSUM;
-	    rstrcpy (L1desc[l1descInx].chksum, tmpPtr, NAME_LEN);
-	} else if ((tmpPtr = getValByKey (condInput, VERIFY_CHKSUM_KW)) != 
-	  NULL) {
-	    L1desc[l1descInx].chksumFlag = VERIFY_CHKSUM;
-	    rstrcpy (L1desc[l1descInx].chksum, tmpPtr, NAME_LEN);
-	}
-    }
-#ifdef LOG_TRANSFERS
-    (void)gettimeofday(&L1desc[l1descInx].openStartTime,
-		       (struct timezone *)0);
-#endif
-    return (0);
-}
-
-int 
-queResc (rescInfo_t *myRescInfo, char *rescGroupName,
-rescGrpInfo_t **rescGrpInfoHead, int topFlag)
-{
-    rescGrpInfo_t *myRescGrpInfo;
-    int status;
-
-    if (myRescInfo == NULL)
-	return (0);
- 
-    myRescGrpInfo = (rescGrpInfo_t *) malloc (sizeof (rescGrpInfo_t));
-    memset (myRescGrpInfo, 0, sizeof (rescGrpInfo_t));
-
-    myRescGrpInfo->rescInfo = myRescInfo;
-
-    if (rescGroupName != NULL) {
-	rstrcpy (myRescGrpInfo->rescGroupName, rescGroupName, NAME_LEN);
-    }
-
-    status = queRescGrp (rescGrpInfoHead, myRescGrpInfo, topFlag);
-
-    return (status);
-
-}
-
-int 
-queRescGrp (rescGrpInfo_t **rescGrpInfoHead, rescGrpInfo_t *myRescGrpInfo, 
-int flag)
-{
-    rescInfo_t *tmpRescInfo, *myRescInfo;
-    rescGrpInfo_t *tmpRescGrpInfo, *lastRescGrpInfo = NULL;
-
-    myRescInfo = myRescGrpInfo->rescInfo;
-    tmpRescGrpInfo = *rescGrpInfoHead;
-    if (flag == TOP_FLAG) {
-        *rescGrpInfoHead = myRescGrpInfo;
-        myRescGrpInfo->next = tmpRescGrpInfo;
-    } else {
-        while (tmpRescGrpInfo != NULL) {
-	    tmpRescInfo = tmpRescGrpInfo->rescInfo;
-	    if (flag == BY_TYPE_FLAG && myRescInfo != NULL && 
-	      tmpRescInfo != NULL) { 
-		if (RescClass[myRescInfo->rescClassInx].classType < 
-		  RescClass[tmpRescInfo->rescClassInx].classType) {
-		    break;
-		}
-	    }
-            lastRescGrpInfo = tmpRescGrpInfo;
-            tmpRescGrpInfo = tmpRescGrpInfo->next;
-        }
-
-        if (lastRescGrpInfo == NULL) {
-            *rescGrpInfoHead = myRescGrpInfo;
-        } else {
-            lastRescGrpInfo->next = myRescGrpInfo;
-        }
-	myRescGrpInfo->next = tmpRescGrpInfo;
-    }
-
-    return (0);
-}
-
-int
-freeAllRescGrp (rescGrpInfo_t *rescGrpHead)
-{
-    rescGrpInfo_t *tmpRrescGrp, *nextRrescGrp;
-
-    tmpRrescGrp = rescGrpHead;
-    while (tmpRrescGrp != NULL) {
-	nextRrescGrp = tmpRrescGrp->next;
-	if (tmpRrescGrp->rescInfo != NULL) free (tmpRrescGrp->rescInfo);
-	free (tmpRrescGrp);
-	tmpRrescGrp = tmpRrescGrp->next;
-    }
-    return 0;
-}
-
-int
-initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
-{
-    char *rescName, *dataType, *filePath;
-    keyValPair_t *condInput;
-
-    condInput = &dataObjInp->condInput;
-
-    memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
-    rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
-    rescName = getValByKey (condInput, RESC_NAME_KW);
-    if (rescName != NULL) {
-        rstrcpy (dataObjInfo->rescName, rescName, LONG_NAME_LEN);
-    }
-    snprintf (dataObjInfo->dataMode, SHORT_STR_LEN, "%d", dataObjInp->createMode);
-
-    dataType = getValByKey (condInput, DATA_TYPE_KW);
-    if (dataType != NULL) {
-        rstrcpy (dataObjInfo->dataType, dataType, NAME_LEN);
-    } else {
-	rstrcpy (dataObjInfo->dataType, "generic", NAME_LEN);
-    }
-
-    filePath = getValByKey (condInput, FILE_PATH_KW);
-    if (filePath != NULL) {
-        rstrcpy (dataObjInfo->filePath, filePath, MAX_NAME_LEN);
-    }
-
-    return (0);
-}
-
-int
-getFileMode (dataObjInp_t *dataObjInp)
-{
-    int createMode;
-    int defFileMode;
-
-    defFileMode = getDefFileMode ();
-    if (dataObjInp != NULL && 
-      (dataObjInp->createMode & 0110) != 0) {
-	if ((defFileMode & 0070) != 0) {
-	    createMode = defFileMode | 0110;
-	} else {
-	    createMode = defFileMode | 0100;
-	}
-    } else {
-	createMode = defFileMode;
-    }
-
-    return (createMode);
-}
-
-int
-getFileFlags (int l1descInx)
-{
-    int flags;
-
-    dataObjInp_t *dataObjInp = L1desc[l1descInx].dataObjInp;
-
-    if (dataObjInp != NULL) { 
-	flags = dataObjInp->openFlags;
-    } else {
-        flags = O_RDONLY;
-    }
-
-    return (flags);
-}
-
-int
-getFilePathName (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-dataObjInp_t *dataObjInp)
-{
-    char *filePath;
-    vaultPathPolicy_t vaultPathPolicy;
-    int status;
-
-    if (dataObjInp != NULL && 
-      (filePath = getValByKey (&dataObjInp->condInput, FILE_PATH_KW)) != NULL 
-      && strlen (filePath) > 0) {
-        rstrcpy (dataObjInfo->filePath, filePath, MAX_NAME_LEN);
-	return (0);
-    }
-
-    /* Make up a physical path */ 
-    if (dataObjInfo->rescInfo == NULL) {
-        rodsLog (LOG_ERROR,
-          "getFilePathName: rescInfo for %s not resolved", 
-	  dataObjInp->objPath);
-        return (SYS_INVALID_RESC_INPUT);
-    }
-
-    status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
-    if (status < 0) {
-	return (status);
-    }
-
-    if (vaultPathPolicy.scheme == GRAFT_PATH_S) {
-	status = setPathForGraftPathScheme (dataObjInp->objPath, 
-	 dataObjInfo->rescInfo->rescVaultPath, vaultPathPolicy.addUserName,
-	 rsComm->clientUser.userName, vaultPathPolicy.trimDirCnt, 
-	  dataObjInfo->filePath);
-    } else {
-        status = setPathForRandomScheme (dataObjInp->objPath,
-          dataObjInfo->rescInfo->rescVaultPath, rsComm->clientUser.userName,
-	  dataObjInfo->filePath);
-    }
-    if (status < 0) {
-	return (status);
-    }
-
-    return (status);
-}
-
-int
-getVaultPathPolicy (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-vaultPathPolicy_t *outVaultPathPolicy)
-{
-    ruleExecInfo_t rei;
-    msParam_t *msParam;
-    int status;
-
-    if (outVaultPathPolicy == NULL || dataObjInfo == NULL || rsComm == NULL) {
-	rodsLog (LOG_ERROR,
-	  "getVaultPathPolicy: NULL input");
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
-    } 
-    initReiWithDataObjInp (&rei, rsComm, NULL);
-   
-    rei.doi = dataObjInfo;
-    status = applyRule ("acSetVaultPathPolicy", NULL, &rei, NO_SAVE_REI);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "getVaultPathPolicy: rule acSetVaultPathPolicy error, status = %d",
-          status);
-        return (status);
-    }
-
-    if ((msParam = getMsParamByLabel (&rei.inOutMsParamArray,
-      VAULT_PATH_POLICY)) == NULL) {
-        /* use the default */
-        outVaultPathPolicy->scheme = DEF_VAULT_PATH_SCHEME;
-        outVaultPathPolicy->addUserName = DEF_ADD_USER_FLAG;
-        outVaultPathPolicy->trimDirCnt = DEF_TRIM_DIR_CNT;
-    } else {
-        *outVaultPathPolicy = *((vaultPathPolicy_t *) msParam->inOutStruct);
-        clearMsParamArray (&rei.inOutMsParamArray, 1);
-    }
-    /* make sure trimDirCnt is <= 1 */
-    if (outVaultPathPolicy->trimDirCnt > DEF_TRIM_DIR_CNT)
-	outVaultPathPolicy->trimDirCnt = DEF_TRIM_DIR_CNT;
-
-    return (0);
-}
-
-int 
-setPathForRandomScheme (char *objPath, char *vaultPath, char *userName,
-char *outPath)
-{
-    int myRandom;
-    int dir1, dir2;
-    char logicalCollName[MAX_NAME_LEN];
-    char logicalFileName[MAX_NAME_LEN];
-    int status;
-
-    myRandom = random (); 
-    dir1 = myRandom & 0xf;
-    dir2 = (myRandom >> 4) & 0xf;
-
-    status = splitPathByKey(objPath,
-                           logicalCollName, logicalFileName, '/');
-
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-	  "setPathForRandomScheme: splitPathByKey error for %s, status = %d",
-	  outPath, status);
-        return (status);
-    }
-
-    snprintf (outPath, MAX_NAME_LEN,
-      "%s/%s/%d/%d/%s.%d", vaultPath, userName, dir1, dir2, 
-      logicalFileName, (uint) time (NULL));
-    return (0);
-}
-
-int 
-setPathForGraftPathScheme (char *objPath, char *vaultPath, int addUserName,
-char *userName, int trimDirCnt, char *outPath)
-{
-    int i;
-    char *objPathPtr, *tmpPtr;
-    int len;
-
-    objPathPtr = objPath + 1;
-
-    for (i = 0; i < trimDirCnt; i++) {
-	tmpPtr = strchr (objPathPtr, '/');
-	if (tmpPtr == NULL) {
-            rodsLog (LOG_ERROR,
-              "setPathForGraftPathScheme: objPath %s too short", objPath);
-	    break;	/* just use the shorten one */
-	} else {
-	    /* skip over '/' */
-	    objPathPtr = tmpPtr + 1;
-	    /* don't skip over the trash path */
-	    if (i == 0 && strncmp (objPathPtr, "trash/", 6) == 0) break; 
-	}
-    }
-
-    if (addUserName > 0 && userName != NULL) {
-        len = snprintf (outPath, MAX_NAME_LEN,
-          "%s/%s/%s", vaultPath, userName, objPathPtr);
-    } else {
-        len = snprintf (outPath, MAX_NAME_LEN,
-          "%s/%s", vaultPath, objPathPtr);
-    }
-
-    if (len >= MAX_NAME_LEN) {
-	rodsLog (LOG_ERROR,
-	  "setPathForGraftPathScheme: filePath %s too long", objPath);
-	return (USER_STRLEN_TOOLONG);
-    } else {
-        return (0);
-    }
-}
-
-/* resolveDupFilePath - try to resolve deplicate file path in the same
- * resource.
- */
-
-int
-resolveDupFilePath (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo,
-dataObjInp_t *dataObjInp)
-{
-    char tmpStr[NAME_LEN];
-    char *filePath;
-
-    if (getSizeInVault (rsComm, dataObjInfo) == SYS_PATH_IS_NOT_A_FILE) {
-	/* a dir */
-	return (SYS_PATH_IS_NOT_A_FILE);
-    }
-    if (chkAndHandleOrphanFile (rsComm, dataObjInfo->filePath, 
-     dataObjInfo->rescInfo, dataObjInfo->replStatus) >= 0) {
-        /* this is an orphan file or has been renamed */
-        return 0;
-    }
-
-    if (dataObjInp != NULL) {
-        filePath = getValByKey (&dataObjInp->condInput, FILE_PATH_KW);
-        if (filePath != NULL && strlen (filePath) > 0) {
-            return -1;
-	}
-    }
-
-    if (strlen (dataObjInfo->filePath) >= MAX_NAME_LEN - 3) {
-        return -1;
-    }
-
-    snprintf (tmpStr, NAME_LEN, ".%d", dataObjInfo->replNum);
-    strcat (dataObjInfo->filePath, tmpStr);
-
-    return (0);
-}
-
-int
-getchkPathPerm (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-dataObjInfo_t *dataObjInfo)
-{
-    int chkPathPerm;
-    char *filePath;
-    rescInfo_t *rescInfo;
-    ruleExecInfo_t rei;
-
-    if (rsComm->clientUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH) {
-        return (NO_CHK_PATH_PERM);
-    }
-
-    if (dataObjInp == NULL || dataObjInfo == NULL) {
-        return (NO_CHK_PATH_PERM);
-    }
-
-    rescInfo = dataObjInfo->rescInfo;
-
-    if ((filePath = getValByKey (&dataObjInp->condInput, FILE_PATH_KW)) != NULL 
-      && strlen (filePath) > 0) {
-        /* the user input a path */
-        if (rescInfo == NULL) {
-            chkPathPerm = NO_CHK_PATH_PERM;
-        } else {
-    	    initReiWithDataObjInp (&rei, rsComm, dataObjInp);
-	    rei.doi = dataObjInfo;
-	    rei.status = CHK_PERM_FLAG;		/* default */
-	    applyRule ("acNoChkFilePathPerm", NULL, &rei, NO_SAVE_REI);
-	    if (rei.status == CHK_PERM_FLAG) {
-                chkPathPerm = RescTypeDef[rescInfo->rescTypeInx].chkPathPerm;
-	    } else {
-		chkPathPerm = NO_CHK_PATH_PERM;
-	    }
-        }
-    } else {
-            chkPathPerm = NO_CHK_PATH_PERM;
-    }
-    return (chkPathPerm);
-}
-
-int
-getErrno (int errCode)
-{
-    int myErrno;
-
-    myErrno = errCode % 1000;
-
-    return (myErrno * (-1));
-}
-
-int 
-getCopiesFromCond (keyValPair_t *condInput)
-{
-    char *myValue;
-
-    myValue = getValByKey (condInput, COPIES_KW);
-
-    if (myValue == NULL) {
-	return (1);
-    } else if (strcmp (myValue, "all") == 0) {
-	return (ALL_COPIES);
-    } else {
-	return (atoi (myValue));
-    }
-}
-
-int
-getWriteFlag (int openFlag)
-{
-    if (openFlag & O_WRONLY || openFlag & O_RDWR) {
-	return (1);
-    } else {
-	return (0);
-    }
-}
-
-/* getCondQuery - check whether the datObj query will be based on condition 
- * XXXXX - this routine is deplicated because the replStatus is adjusted in
- * ModDataObjMeta 
- */
-
-int
-getCondQuery (keyValPair_t *condInput)
-{
-    int i;
-
-    if (condInput == NULL) {
-	return (0);
-    }
-
-    for (i = 0; i < condInput->len; i++) {
-        if (strcmp (condInput->keyWord[i], "regChksum") != 0 &&
-	  strcmp (condInput->keyWord[i], "verifyChksum") != 0 &&
-	  strcmp (condInput->keyWord[i], "copies") != 0) {
-	    return (1);
-	}
-    }
-
-    return (0);
-}
-
-int
-getRescCnt (rescGrpInfo_t *myRescGrpInfo)
-{
-    rescGrpInfo_t *tmpRescGrpInfo;
-    int rescCnt = 0;
-
-    tmpRescGrpInfo = myRescGrpInfo;
-
-    while (tmpRescGrpInfo != NULL) {
-	rescCnt ++;
-	tmpRescGrpInfo = tmpRescGrpInfo->next;
-    }
-
-    return (rescCnt);
-}
-
-rodsLong_t 
-getSizeInVault (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
-{
-    rodsStat_t *myStat = NULL;
-    int status;
-    rodsLong_t mysize;
-
-    status = l3Stat (rsComm, dataObjInfo, &myStat);
-
-    if (status < 0) {
-	rodsLog (LOG_DEBUG,
-	  "getSizeInVault: l3Stat error for %s. status = %d",
-	  dataObjInfo->filePath, status);
-	return (status);
-    } else {
-        if (myStat->st_mode & S_IFDIR) {
-            return ((rodsLong_t) SYS_PATH_IS_NOT_A_FILE);
-        }
-	mysize = myStat->st_size;
-	free (myStat);
-	return (mysize);
-    }
-}
-
-/* dataObjChksum - this function has been replaced by procChksumForClose
- */
-#if 0
-int
-dataObjChksum (rsComm_t *rsComm, int l1descInx, keyValPair_t *regParam)
-{
-    int status;
-
-    char *chksumStr = NULL;	/* computed chksum string */
-    dataObjInfo_t *dataObjInfo = L1desc[l1descInx].dataObjInfo;
-    int oprType = L1desc[l1descInx].oprType;
-    int srcL1descInx;
-    dataObjInfo_t *srcDataObjInfo;
-
-    if (L1desc[l1descInx].chksumFlag == VERIFY_CHKSUM) {
-	status = _dataObjChksum (rsComm, dataObjInfo, &chksumStr);
-
-	if (status < 0) {
-	    return (status);
-	}
-
-	if (strlen (L1desc[l1descInx].chksum) > 0) {
-	    /* from a put type operation */
-	    /* verify against the input value. */
-	    if (strcmp (L1desc[l1descInx].chksum, chksumStr) != 0) {
-		rodsLog (LOG_NOTICE,
-		 "dataObjChksum: mismach chksum for %s. input = %s, compute %s",
-		  dataObjInfo->objPath,
-		  L1desc[l1descInx].chksum, chksumStr);
-		free (chksumStr);
-		return (USER_CHKSUM_MISMATCH);
-	    }
-            if (strcmp (dataObjInfo->chksum, chksumStr) != 0) {
-                /* not the same as in rcat */
-                addKeyVal (regParam, CHKSUM_KW, chksumStr);
-            }
-            free (chksumStr);
-            return (0);
-	} else if (oprType == REPLICATE_DEST) { 
-	    if (strlen (dataObjInfo->chksum) > 0) {
-	        /* for replication, the chksum in dataObjInfo was duplicated */
-                if (strcmp (dataObjInfo->chksum, chksumStr) != 0) {
-                    rodsLog (LOG_NOTICE,
-                     "dataObjChksum: mismach chksum for %s.Rcat=%s,computed %s",
-                     dataObjInfo->objPath, dataObjInfo->chksum, chksumStr);
-		    status = USER_CHKSUM_MISMATCH;
-		} else {
-		    /* not need to register because reg repl will do it */
-		    status = 0;
-		}
-	    } else {
-		/* just register it */
-		addKeyVal (regParam, CHKSUM_KW, chksumStr);
-		status = 0;
-	    }
-	    free (chksumStr);
-	    return (status);
-        } else if (oprType == COPY_DEST) { 
-	    /* created through copy */
-	    srcL1descInx = L1desc[l1descInx].srcL1descInx;
-	    if (srcL1descInx <= 2) {
-		/* not a valid srcL1descInx */
-	        rodsLog (LOG_NOTICE,
-	          "dataObjChksum: invalid srcL1descInx %d fopy copy",
-		  srcL1descInx);
-		/* just register it for now */
-                addKeyVal (regParam, CHKSUM_KW, chksumStr);
-	        free (chksumStr);
-		return (0);
-	    } 
-	    srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-	    
-            if (strlen (srcDataObjInfo->chksum) > 0) {
-                if (strcmp (srcDataObjInfo->chksum, chksumStr) != 0) {
-                    rodsLog (LOG_NOTICE,
-                     "dataObjChksum: mismach chksum for %s.Rcat=%s,computed %s",
-                     dataObjInfo->objPath, srcDataObjInfo->chksum, chksumStr);
-                     status = USER_CHKSUM_MISMATCH;
-                } else {
-		    addKeyVal (regParam, CHKSUM_KW, chksumStr);
-                    status = 0;
-                }
-            } else {
-                /* just register it */
-                addKeyVal (regParam, CHKSUM_KW, chksumStr);
-                status = 0;
-            }
-            free (chksumStr);
-            return (status);
-	} else {
-	    addKeyVal (regParam, CHKSUM_KW, chksumStr);
-	    free (chksumStr);
-	    return (0); 
-	}
-    }
-
-    /* assume REG_CHKSUM */
-
-    if (strlen (L1desc[l1descInx].chksum) > 0) { 
-        /* from a put type operation */
-
-        if (strcmp (dataObjInfo->chksum, L1desc[l1descInx].chksum) != 0) {
-            /* not the same as in rcat */
-            addKeyVal (regParam, CHKSUM_KW, L1desc[l1descInx].chksum);
-	}
-	return (0);
-    } else if (oprType == COPY_DEST) {
-        /* created through copy */
-        srcL1descInx = L1desc[l1descInx].srcL1descInx;
-        if (srcL1descInx <= 2) {
-            /* not a valid srcL1descInx */
-            rodsLog (LOG_NOTICE,
-              "dataObjChksum: invalid srcL1descInx %d fopy copy",
-              srcL1descInx);
-	    /* do nothing */
-            return (0);
-        }
-        srcDataObjInfo = L1desc[srcL1descInx].dataObjInfo;
-        if (strlen (srcDataObjInfo->chksum) > 0) {
-            addKeyVal (regParam, CHKSUM_KW, srcDataObjInfo->chksum);
-        }
-	return (0);
-    }
-    return (0);
-}
-#endif
-
-int 
-_dataObjChksum (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, char **chksumStr)
-{
-    fileChksumInp_t fileChksumInp;
-    int rescTypeInx;
-    int rescClass;
-    int status;
-    rescInfo_t *rescInfo = dataObjInfo->rescInfo;
-
-    rescClass = getRescClass (rescInfo);
-    if (rescClass == COMPOUND_CL) return SYS_CANT_CHKSUM_COMP_RESC_DATA;
-    else if (rescClass == BUNDLE_CL) return SYS_CANT_CHKSUM_BUNDLED_DATA;
-
-    rescTypeInx = rescInfo->rescTypeInx;
-
-    switch (RescTypeDef[rescTypeInx].rescCat) {
-      case FILE_CAT:
-        memset (&fileChksumInp, 0, sizeof (fileChksumInp));
-        fileChksumInp.fileType = RescTypeDef[rescTypeInx].driverType;
-        rstrcpy (fileChksumInp.addr.hostAddr, rescInfo->rescLoc,
-          NAME_LEN);
-        rstrcpy (fileChksumInp.fileName, dataObjInfo->filePath, MAX_NAME_LEN);
-	status = rsFileChksum (rsComm, &fileChksumInp, chksumStr);
-        break;
-      default:
-        rodsLog (LOG_NOTICE,
-          "_dataObjChksum: rescCat type %d is not recognized",
-          RescTypeDef[rescTypeInx].rescCat);
-        status = SYS_INVALID_RESC_TYPE;
-        break;
-    }
-    return (status);
-}
-
-/* getNumThreads - get the number of threads.
- * inpNumThr - 0 - server decide
- *	       < 0 - NO_THREADING 	
- *	       > 0 - num of threads wanted
- */
-
-int
-getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr, 
-keyValPair_t *condInput, char *destRescName, char *srcRescName)
-{
-    ruleExecInfo_t rei;
-    dataObjInp_t doinp;
-    int status;
-    int numDestThr = -1;
-    int numSrcThr = -1;
-    rescGrpInfo_t *rescGrpInfo;
-
-    if (inpNumThr == NO_THREADING)
-        return 0;
-
-    if (dataSize < 0)
-        return 1;
-
-    if (dataSize <= MIN_SZ_FOR_PARA_TRAN) {
-        if (inpNumThr > 0) {
-            inpNumThr = 1;
-        } else {
-            return 0;
-        }
-    }
-
-    if (getValByKey (condInput, NO_PARA_OP_KW) != NULL) {
-        /* client specify no para opr */
-        return (1);
-    }
-
-#ifndef PARA_OPR
-    return (1);
-#endif
-
-    memset (&doinp, 0, sizeof (doinp));
-    doinp.numThreads = inpNumThr;
-
-    doinp.dataSize = dataSize;
-
-    initReiWithDataObjInp (&rei, rsComm, &doinp);
-
-    if (destRescName != NULL) {
-	rescGrpInfo = NULL;
-        status = resolveAndQueResc (destRescName, NULL, &rescGrpInfo);
-        if (status >= 0) {
-	    rei.rgi = rescGrpInfo;
-            status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-	    freeRescGrpInfo (rescGrpInfo);
-            if (status < 0) {
-                rodsLog (LOG_ERROR,
-	          "getNumThreads: acGetNumThreads error, status = %d",
-	          status);
-            } else {
-	        numDestThr = rei.status;
-	        if (numDestThr == 0) return 0;
-	    }
-        }
-    }
-
-    if (srcRescName != NULL) {
-	if (numDestThr > 0 && strcmp (destRescName, srcRescName) == 0) 
-	    return numDestThr;
-	rescGrpInfo = NULL;
-        status = resolveAndQueResc (srcRescName, NULL, &rescGrpInfo);
-        if (status >= 0) {
-            rei.rgi = rescGrpInfo;
-            status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-	    freeRescGrpInfo (rescGrpInfo);
-            if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "getNumThreads: acGetNumThreads error, status = %d",
-                  status);
-            } else {
-                numSrcThr = rei.status;
-	        if (numSrcThr == 0) return 0;
-            }
-	}
-    }
-
-    if (numDestThr > 0) {
-	if (getValByKey (condInput, RBUDP_TRANSFER_KW) != NULL) {
-	    return 1;
-	} else {
-            return numDestThr;
-	}
-    }
-    if (numSrcThr > 0) {
-        if (getValByKey (condInput, RBUDP_TRANSFER_KW) != NULL) {
-            return 1;
-        } else {
-            return numSrcThr;
-	}
-    }
-    /* should not be here. do one with no resource */
-    rei.rgi = NULL;
-    status = applyRule ("acSetNumThreads", NULL, &rei, NO_SAVE_REI);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-          "getNumThreads: acGetNumThreads error, status = %d",
-          status);
-	return 0;
-    } else {
-        if (rei.status > 0)
-	    return rei.status;
-	else
-            return 0;
-    }
-}
-
-int
-initDataOprInp (dataOprInp_t *dataOprInp, int l1descInx, int oprType)
-{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int i, status;
     dataObjInfo_t *dataObjInfo;
-    dataObjInp_t  *dataObjInp;
-#ifdef RBUDP_TRANSFER
+    char condStr[MAX_NAME_LEN]; 
     char *tmpStr;
-#endif
+    sqlResult_t *dataId, *collId, *replNum, *version, *dataType, *dataSize,
+      *rescGroupName, *rescName, *filePath, *dataOwnerName, *dataOwnerZone,
+      *replStatus, *statusString, *chksum, *dataExpiry, *dataMapId, 
+      *dataComments, *dataCreate, *dataModify, *dataMode, *dataName, *collName;
+    char *tmpDataId, *tmpCollId, *tmpReplNum, *tmpVersion, *tmpDataType, 
+      *tmpDataSize, *tmpRescGroupName, *tmpRescName, *tmpFilePath, 
+      *tmpDataOwnerName, *tmpDataOwnerZone, *tmpReplStatus, *tmpStatusString, 
+      *tmpChksum, *tmpDataExpiry, *tmpDataMapId, *tmpDataComments, 
+      *tmpDataCreate, *tmpDataModify, *tmpDataMode, *tmpDataName, *tmpCollName;
+    char accStr[LONG_NAME_LEN];
+    int qcondCnt;
+    int writeFlag;
 
+    *dataObjInfoHead = NULL;
 
-    dataObjInfo = L1desc[l1descInx].dataObjInfo;
-    dataObjInp = L1desc[l1descInx].dataObjInp;
+    qcondCnt = initDataObjInfoQuery (dataObjInp, &genQueryInp, 
+      ignoreCondInput);
 
-    memset (dataOprInp, 0, sizeof (dataOprInp_t));
-
-    dataOprInp->oprType = oprType;
-    dataOprInp->numThreads = dataObjInp->numThreads;
-    dataOprInp->offset = dataObjInp->offset;
-    if (oprType == PUT_OPR) {
-	if (dataObjInp->dataSize > 0) 
-	    dataOprInp->dataSize = dataObjInp->dataSize;
-        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        if (L1desc[l1descInx].remoteZoneHost == NULL)
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    } else if (oprType == GET_OPR) {
-	if (dataObjInfo->dataSize > 0) {
-            dataOprInp->dataSize = dataObjInfo->dataSize;
-        } else {
-            dataOprInp->dataSize = dataObjInp->dataSize;
-        }
-        dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
-        if (L1desc[l1descInx].remoteZoneHost == NULL)
-            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    } else if (oprType == SAME_HOST_COPY_OPR) {
-	int srcL1descInx = L1desc[l1descInx].srcL1descInx;
-	int srcL3descInx = L1desc[srcL1descInx].l3descInx;
-        dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
-        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        if (L1desc[l1descInx].remoteZoneHost == NULL)
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-        dataOprInp->srcL3descInx = srcL3descInx;
-        dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    } else if (oprType == COPY_TO_REM_OPR) {
-        int srcL1descInx = L1desc[l1descInx].srcL1descInx;
-        int srcL3descInx = L1desc[srcL1descInx].l3descInx;
-        dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
-        dataOprInp->srcL3descInx = srcL3descInx;
-        if (L1desc[srcL1descInx].remoteZoneHost == NULL) {
-            dataOprInp->srcRescTypeInx = 
-	      L1desc[srcL1descInx].dataObjInfo->rescInfo->rescTypeInx;
-	}
-#if 0
-        if (dataObjInfo->dataSize > 0) {
-            dataOprInp->dataSize = dataObjInfo->dataSize;
-        } else {
-            dataOprInp->dataSize = dataObjInp->dataSize;
-        }
-        dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
-        if (L1desc[l1descInx].remoteZoneHost == NULL)
-            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-#endif
-    }  else if (oprType == COPY_TO_LOCAL_OPR) {
-        int srcL1descInx = L1desc[l1descInx].srcL1descInx;
-        dataOprInp->dataSize = L1desc[srcL1descInx].dataObjInfo->dataSize;
-        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-        if (L1desc[l1descInx].remoteZoneHost == NULL)
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    }
-#if 0
-    if (oprType == PUT_OPR && dataObjInp->dataSize > 0) {
-	dataOprInp->dataSize = dataObjInp->dataSize;
-    } else if (dataObjInfo->dataSize > 0) { 
-	dataOprInp->dataSize = dataObjInfo->dataSize;
-    } else {
-        dataOprInp->dataSize = dataObjInp->dataSize;
-    }
-    if (oprType == PUT_OPR || oprType == COPY_TO_LOCAL_OPR ||
-      oprType == SAME_HOST_COPY_OPR) {
-        dataOprInp->destL3descInx = L1desc[l1descInx].l3descInx;
-	if (L1desc[l1descInx].remoteZoneHost == NULL)
-            dataOprInp->destRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    } else if (oprType == GET_OPR || COPY_TO_REM_OPR) {
-        dataOprInp->srcL3descInx = L1desc[l1descInx].l3descInx;
-	if (L1desc[l1descInx].remoteZoneHost == NULL)
-            dataOprInp->srcRescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-    }
-#endif
-    if (getValByKey (&dataObjInp->condInput, STREAMING_KW) != NULL) {
-        addKeyVal (&dataOprInp->condInput, STREAMING_KW, "");
+    if (qcondCnt < 0) {
+	return (qcondCnt);
     }
 
-    if (getValByKey (&dataObjInp->condInput, NO_PARA_OP_KW) != NULL) {
-        addKeyVal (&dataOprInp->condInput, NO_PARA_OP_KW, "");
+    /* need to do RESC_NAME_KW here because not all query need this */
+
+    if (ignoreCondInput == 0 && (tmpStr =
+      getValByKey (&dataObjInp->condInput, RESC_NAME_KW)) != NULL) {
+        snprintf (condStr, NAME_LEN, "='%s'", tmpStr);
+        addInxVal (&genQueryInp.sqlCondInp, COL_D_RESC_NAME, condStr);
+	qcondCnt++;
     }
 
-#ifdef RBUDP_TRANSFER
-    if (getValByKey (&dataObjInp->condInput, RBUDP_TRANSFER_KW) != NULL) {
-	if (dataObjInfo->rescInfo != NULL) {
-	    /* only do unix fs */
-	    int rescTypeInx = dataObjInfo->rescInfo->rescTypeInx;
-	    if (RescTypeDef[rescTypeInx].driverType == UNIX_FILE_TYPE)
-                addKeyVal (&dataOprInp->condInput, RBUDP_TRANSFER_KW, "");
-	}
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_COLL_ID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_VERSION, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_TYPE_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_SIZE, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_RESC_GROUP_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_RESC_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_PATH, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_OWNER_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_OWNER_ZONE, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_REPL_STATUS, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_STATUS, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_CHECKSUM, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_EXPIRY, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_MAP_ID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_COMMENTS, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_CREATE_TIME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_D_MODIFY_TIME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_MODE, 1);
+
+    if (accessPerm != NULL) {
+        snprintf (accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.userName);
+        addKeyVal (&genQueryInp.condInput, USER_NAME_CLIENT_KW, accStr);
+
+        snprintf (accStr, LONG_NAME_LEN, "%s", rsComm->clientUser.rodsZone);
+        addKeyVal (&genQueryInp.condInput, RODS_ZONE_CLIENT_KW, accStr);
+
+        snprintf (accStr, LONG_NAME_LEN, "%s", accessPerm);
+        addKeyVal (&genQueryInp.condInput, ACCESS_PERMISSION_KW, accStr);
     }
 
-    if (getValByKey (&dataObjInp->condInput, VERY_VERBOSE_KW) != NULL) {
-        addKeyVal (&dataOprInp->condInput, VERY_VERBOSE_KW, "");
-    }
+    genQueryInp.maxRows = MAX_SQL_ROWS;
 
-    if ((tmpStr = getValByKey (&dataObjInp->condInput, RBUDP_SEND_RATE_KW)) !=
-      NULL) {
-        addKeyVal (&dataOprInp->condInput, RBUDP_SEND_RATE_KW, tmpStr);
-    }
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
 
-    if ((tmpStr = getValByKey (&dataObjInp->condInput, RBUDP_PACK_SIZE_KW)) !=
-      NULL) {
-        addKeyVal (&dataOprInp->condInput, RBUDP_PACK_SIZE_KW, tmpStr);
-    }
-#endif
+    clearGenQueryInp (&genQueryInp);
 
-
-    return (0);
-}
-
-int
-initDataObjInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *destDataObjInfo, 
-dataObjInfo_t *srcDataObjInfo, rescInfo_t *destRescInfo, 
-char *destRescGroupName)
-{
-    memset (destDataObjInfo, 0, sizeof (dataObjInfo_t));
-    *destDataObjInfo = *srcDataObjInfo;
-    destDataObjInfo->filePath[0] = '\0';
-    rstrcpy (destDataObjInfo->rescName, destRescInfo->rescName, NAME_LEN);
-    destDataObjInfo->replNum = destDataObjInfo->dataId = 0;
-    destDataObjInfo->rescInfo = destRescInfo;
-
-    if (destRescGroupName != NULL && strlen (destRescGroupName) > 0) {
-        rstrcpy (destDataObjInfo->rescGroupName, destRescGroupName,
-        NAME_LEN);
-    } else if (strlen (destDataObjInfo->rescGroupName) > 0) {
-	/* need to verify whether destRescInfo belongs to 
-	 * destDataObjInfo->rescGroupName */
-	if (getRescInGrp (rsComm, destRescInfo->rescName, 
-	  destDataObjInfo->rescGroupName, NULL) < 0) {
-	    /* destResc is not in destRescGrp */
-	    destDataObjInfo->rescGroupName[0] = '\0';
-	}
-    }
-
-    return (0);
-}
-
-int 
-convL3descInx (int l3descInx)
-{
-    if (l3descInx <= 2 || FileDesc[l3descInx].inuseFlag == 0 ||
-     FileDesc[l3descInx].rodsServerHost == NULL) {
-        return l3descInx;
-    }
-
-    if (FileDesc[l3descInx].rodsServerHost->localFlag == LOCAL_HOST) {
-        return (l3descInx);
-    } else {
-        return (FileDesc[l3descInx].fd);
-    }
-}   
-
-int
-getRescTypeInx (char *rescType)
-{
-    int i;
-
-    if (rescType == NULL) {
-	return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    for (i = 0; i < NumRescTypeDef; i++) {
-	if (strstr (rescType, RescTypeDef[i].typeName) != NULL) {
-	    return (i);
-	}
-    }
-    rodsLog (LOG_NOTICE,
-      "getRescTypeInx: No match for input rescType %s", rescType);
-    
-    return (UNMATCHED_KEY_OR_INDEX);
-}
-
-int
-getRescClassInx (char *rescClass) 
-{
-    int i;
-
-    if (rescClass == NULL) {
-        return SYS_INTERNAL_NULL_INPUT_ERR;
-    }
-
-    for (i = 0; i < NumRescClass; i++) {
-        if (strstr (rescClass, RescClass[i].className) != NULL) {
-	    if (strstr (rescClass, "primary") != NULL) {
-		return (i | PRIMARY_FLAG);
-	    } else {
-                return (i);
-	    }
-        }
-    }
-    rodsLog (LOG_NOTICE,
-      "getRescClassInx: No match for input rescClass %s", rescClass);
-
-    return (UNMATCHED_KEY_OR_INDEX);
-}
-
-int
-dataObjChksumAndReg (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo, 
-char **chksumStr) 
-{
-    keyValPair_t regParam;
-    modDataObjMeta_t modDataObjMetaInp;
-    int status;
-
-    status = _dataObjChksum (rsComm, dataObjInfo, chksumStr);
     if (status < 0) {
-        rodsLog (LOG_NOTICE,
-         "dataObjChksumAndReg: _dataObjChksum error for %s, status = %d",
-          dataObjInfo->objPath, status);
+        if (status !=CAT_NO_ROWS_FOUND) {
+            rodsLog (LOG_NOTICE,
+              "getDataObjInfo: rsGenQuery error, status = %d",
+              status);
+        }
         return (status);
     }
 
-    /* register it */
-    memset (&regParam, 0, sizeof (regParam));
-    addKeyVal (&regParam, CHKSUM_KW, *chksumStr);
-
-    modDataObjMetaInp.dataObjInfo = dataObjInfo;
-    modDataObjMetaInp.regParam = &regParam;
-
-    status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
-
-    clearKeyVal (&regParam);
-
-    if (status < 0) {
+    if (genQueryOut == NULL) {
         rodsLog (LOG_NOTICE,
-         "dataObjChksumAndReg: rsModDataObjMeta error for %s, status = %d",
-         dataObjInfo->objPath, status);
-	/* don't return error because it is not fatal */
+          "getDataObjInfo: NULL genQueryOut");
+        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
+
+    if ((dataOwnerName =
+      getSqlResultByInx (genQueryOut, COL_D_OWNER_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataName =
+      getSqlResultByInx (genQueryOut, COL_DATA_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((collName =
+      getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_COLL_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataId = getSqlResultByInx (genQueryOut, COL_D_DATA_ID)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_DATA_ID failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((collId = getSqlResultByInx (genQueryOut, COL_D_COLL_ID)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_COLL_ID failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((replNum = getSqlResultByInx (genQueryOut, COL_DATA_REPL_NUM)) == 
+     NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_REPL_NUM failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((version = getSqlResultByInx (genQueryOut, COL_DATA_VERSION)) == 
+      NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_VERSION failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataType = getSqlResultByInx (genQueryOut, COL_DATA_TYPE_NAME)) == 
+      NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_TYPE_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataSize = getSqlResultByInx (genQueryOut, COL_DATA_SIZE)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_SIZE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((rescGroupName = 
+      getSqlResultByInx ( genQueryOut, COL_D_RESC_GROUP_NAME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo:getSqlResultByInx for COL_D_RESC_GROUP_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((rescName = getSqlResultByInx (genQueryOut, COL_D_RESC_NAME)) == 
+      NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_RESC_NAME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((filePath = getSqlResultByInx (genQueryOut, COL_D_DATA_PATH)) == 
+      NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_DATA_PATH failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataOwnerZone = 
+      getSqlResultByInx (genQueryOut, COL_D_OWNER_ZONE)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_OWNER_ZONE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((replStatus = 
+      getSqlResultByInx (genQueryOut, COL_D_REPL_STATUS)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_REPL_STATUS failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((statusString = 
+      getSqlResultByInx (genQueryOut, COL_D_DATA_STATUS)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_DATA_STATUS failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((chksum = 
+      getSqlResultByInx (genQueryOut, COL_D_DATA_CHECKSUM)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_DATA_CHECKSUM failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataExpiry = 
+      getSqlResultByInx (genQueryOut, COL_D_EXPIRY)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_EXPIRY failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataMapId =
+      getSqlResultByInx (genQueryOut, COL_D_MAP_ID)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_MAP_ID failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataComments = 
+      getSqlResultByInx (genQueryOut, COL_D_COMMENTS)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_COMMENTS failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataCreate = 
+      getSqlResultByInx (genQueryOut, COL_D_CREATE_TIME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_CREATE_TIME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataModify =
+      getSqlResultByInx (genQueryOut, COL_D_MODIFY_TIME)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_D_MODIFY_TIME failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    if ((dataMode =
+      getSqlResultByInx (genQueryOut, COL_DATA_MODE)) == NULL) {
+        rodsLog (LOG_NOTICE,
+          "getDataObjInfo: getSqlResultByInx for COL_DATA_MODE failed");
+        return (UNMATCHED_KEY_OR_INDEX);
+    }
+
+    writeFlag = getWriteFlag (dataObjInp->openFlags);
+
+   for (i = 0;i < genQueryOut->rowCnt; i++) {
+        dataObjInfo = (dataObjInfo_t *) malloc (sizeof (dataObjInfo_t));
+        memset (dataObjInfo, 0, sizeof (dataObjInfo_t));
+
+        tmpDataId = &dataId->value[dataId->len * i];
+        tmpCollId = &collId->value[collId->len * i];
+        tmpReplNum = &replNum->value[replNum->len * i];
+        tmpVersion = &version->value[version->len * i];
+        tmpDataType = &dataType->value[dataType->len * i];
+        tmpDataSize = &dataSize->value[dataSize->len * i];
+        tmpRescGroupName = &rescGroupName->value[rescGroupName->len * i];
+        tmpRescName = &rescName->value[rescName->len * i];
+        tmpFilePath = &filePath->value[filePath->len * i];
+        tmpDataOwnerName = &dataOwnerName->value[dataOwnerName->len * i];
+        tmpDataOwnerZone = &dataOwnerZone->value[dataOwnerZone->len * i];
+        tmpReplStatus = &replStatus->value[replStatus->len * i];
+        tmpStatusString = &statusString->value[statusString->len * i];
+        tmpChksum = &chksum->value[chksum->len * i];
+        tmpDataExpiry = &dataExpiry->value[dataExpiry->len * i];
+        tmpDataMapId = &dataMapId->value[dataMapId->len * i];
+        tmpDataComments = &dataComments->value[dataComments->len * i];
+        tmpDataCreate = &dataCreate->value[dataCreate->len * i];
+        tmpDataModify = &dataModify->value[dataModify->len * i];
+        tmpDataMode = &dataMode->value[dataMode->len * i];
+        tmpDataName = &dataName->value[dataName->len * i];
+        tmpCollName = &collName->value[collName->len * i];
+
+        snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
+	  tmpCollName, tmpDataName);
+	rstrcpy (dataObjInfo->rescName, tmpRescName, NAME_LEN);
+        status = resolveResc (tmpRescName, &dataObjInfo->rescInfo);
+	if (status < 0) {
+	    rodsLog (LOG_DEBUG,
+              "getDataObjInfo: resolveResc error for %s, status = %d",
+	      tmpRescName, status);
+#if 0	/* this could happen for remote zone resource */
+	    return (status);
+#endif
+	}
+	rstrcpy (dataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
+	rstrcpy (dataObjInfo->dataType, tmpDataType, NAME_LEN);
+	dataObjInfo->dataSize = strtoll (tmpDataSize, 0, 0);
+	rstrcpy (dataObjInfo->chksum, tmpChksum, NAME_LEN);
+	rstrcpy (dataObjInfo->version, tmpVersion, NAME_LEN);
+	rstrcpy (dataObjInfo->filePath, tmpFilePath, MAX_NAME_LEN);
+	rstrcpy (dataObjInfo->dataOwnerName, tmpDataOwnerName, NAME_LEN);
+	rstrcpy (dataObjInfo->dataOwnerZone, tmpDataOwnerZone, NAME_LEN);
+	dataObjInfo->replNum = atoi (tmpReplNum);
+	dataObjInfo->replStatus = atoi (tmpReplStatus);
+	rstrcpy (dataObjInfo->statusString, tmpStatusString, LONG_NAME_LEN);
+	dataObjInfo->dataId = strtoll (tmpDataId, 0, 0);
+	dataObjInfo->collId = strtoll (tmpCollId, 0, 0);
+	dataObjInfo->dataMapId = atoi (tmpDataMapId);
+	rstrcpy (dataObjInfo->dataComments, tmpDataComments, LONG_NAME_LEN);
+	rstrcpy (dataObjInfo->dataExpiry, tmpDataExpiry, NAME_LEN);
+	rstrcpy (dataObjInfo->dataCreate, tmpDataCreate, NAME_LEN);
+	rstrcpy (dataObjInfo->dataModify, tmpDataModify, NAME_LEN);
+	rstrcpy (dataObjInfo->dataMode, tmpDataMode, NAME_LEN);
+	dataObjInfo->writeFlag = writeFlag;
+
+	queDataObjInfo (dataObjInfoHead, dataObjInfo, 1, 0);
+    }
+    
+    freeGenQueryOut (&genQueryOut);
+
+    return (qcondCnt);
+}
+
+int
+sortObjInfo (dataObjInfo_t **dataObjInfoHead, 
+dataObjInfo_t **currentArchInfo, dataObjInfo_t **currentCacheInfo, 
+dataObjInfo_t **oldArchInfo, dataObjInfo_t **oldCacheInfo, 
+dataObjInfo_t **downCurrentInfo, dataObjInfo_t **downOldInfo)
+{
+    dataObjInfo_t *tmpDataObjInfo, *nextDataObjInfo;
+    int rescClassInx;
+    int topFlag;
+    dataObjInfo_t *currentBundleInfo = NULL;
+    dataObjInfo_t *oldBundleInfo = NULL;
+    dataObjInfo_t *currentCompInfo = NULL;
+    dataObjInfo_t *oldCompInfo = NULL;
+
+    *currentArchInfo = *currentCacheInfo = *oldArchInfo = *oldCacheInfo = NULL;
+    *downCurrentInfo = *downOldInfo = NULL;
+
+    tmpDataObjInfo = *dataObjInfoHead;
+
+    while (tmpDataObjInfo != NULL) {
+
+        nextDataObjInfo = tmpDataObjInfo->next;
+        tmpDataObjInfo->next = NULL;
+
+	    
+	if (tmpDataObjInfo->rescInfo == NULL || 
+	 tmpDataObjInfo->rescInfo->rodsServerHost == NULL) {
+	    topFlag = 0;
+	} else if (tmpDataObjInfo->rescInfo->rescStatus == 
+	  INT_RESC_STATUS_DOWN) {
+	    /* the resource is down */
+	    if (tmpDataObjInfo->replStatus > 0) {
+		queDataObjInfo (downCurrentInfo, tmpDataObjInfo, 1, 1);
+	    } else {
+		queDataObjInfo (downOldInfo, tmpDataObjInfo, 1, 1);
+	    }
+	    tmpDataObjInfo = nextDataObjInfo;
+	    continue;
+	} else {
+	    rodsServerHost_t *rodsServerHost =
+	      (rodsServerHost_t *) tmpDataObjInfo->rescInfo->rodsServerHost;
+	    
+	    if (rodsServerHost->localFlag != LOCAL_HOST) {
+	        topFlag = 0;
+	    } else {
+	        /* queue local host at the head */
+	        topFlag = 1;
+	    }
+	}
+	rescClassInx = tmpDataObjInfo->rescInfo->rescClassInx;
+        if (tmpDataObjInfo->replStatus > 0) {
+            if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
+		queDataObjInfo (currentArchInfo, tmpDataObjInfo, 1, topFlag);
+	    } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
+                queDataObjInfo (&currentCompInfo, tmpDataObjInfo, 1, topFlag);
+	    } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
+                queDataObjInfo (&currentBundleInfo, tmpDataObjInfo, 1, topFlag);
+	    } else {
+                queDataObjInfo (currentCacheInfo, tmpDataObjInfo, 1, topFlag);
+	    }
+	} else {
+            if (RescClass[rescClassInx].classType == ARCHIVAL_CL) {
+                queDataObjInfo (oldArchInfo, tmpDataObjInfo, 1, topFlag);
+            } else if (RescClass[rescClassInx].classType == COMPOUND_CL) {
+                queDataObjInfo (&oldCompInfo, tmpDataObjInfo, 1, topFlag);
+            } else if (RescClass[rescClassInx].classType == BUNDLE_CL) {
+                queDataObjInfo (&oldBundleInfo, tmpDataObjInfo, 1, topFlag);
+            } else {
+                queDataObjInfo (oldCacheInfo, tmpDataObjInfo, 1, topFlag);
+            }
+	}
+	tmpDataObjInfo = nextDataObjInfo;
+    }
+    /* combine ArchInfo and CompInfo. COMPOUND_CL before BUNDLE_CL */
+    queDataObjInfo (oldArchInfo, oldCompInfo, 0, 0);
+    queDataObjInfo (oldArchInfo, oldBundleInfo, 0, 0);
+    queDataObjInfo (currentArchInfo, currentCompInfo, 0, 0);
+    queDataObjInfo (currentArchInfo, currentBundleInfo, 0, 0);
 
     return (0);
 }
 
-/* chkAndHandleOrphanFile - Check whether the file is an orphan file.
- * If it is, rename it.  
- * If it belongs to an old copy, move the old path and register it.
- *
- * return 0 - the filePath is NOT an orphan file.
- *        1 - the filePath is an orphan file and has been renamed.
- *        < 0 - error
- */
-
+/* sortObjInfoForOpen - Sort the dataObjInfo in dataObjInfoHead for open.
+ * If it is for read (writeFlag == 0), discard old copies, then cache first,
+ * archval second.
+ * If it is for write, (writeFlag > 0), resource in DEST_RESC_NAME_KW first,
+ * then current cache, current archival, old cache and old archival.
+ */ 
 int
-chkAndHandleOrphanFile (rsComm_t *rsComm, char *filePath, rescInfo_t *rescInfo,
-int replStatus)
+sortObjInfoForOpen (rsComm_t *rsComm, dataObjInfo_t **dataObjInfoHead, 
+keyValPair_t *condInput, int writeFlag)
 {
-    fileRenameInp_t fileRenameInp;
-    int status;
-    dataObjInfo_t myDataObjInfo;
-    int rescTypeInx = rescInfo->rescTypeInx;
+    dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo, 
+     *oldCacheInfo, *downCurrentInfo, *downOldInfo;
+    int status = 0;
 
-    if (RescTypeDef[rescTypeInx].rescCat != FILE_CAT) {
-	/* can't do anything with non file type */
-	return (-1);
-    }
+    sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
+      &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
 
-    if (strlen (filePath) + 17 >= MAX_NAME_LEN) {
-	/* the new path name will be too long to add "/orphan + random" */
-	return (-1);
-    }
- 
-    /* check if the input filePath is assocated with a dataObj */
-
-    memset (&myDataObjInfo, 0, sizeof (myDataObjInfo));
-    memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-    if ((status = chkOrphanFile (
-      rsComm, filePath, rescInfo->rescName, &myDataObjInfo)) == 0) {
-        rstrcpy (fileRenameInp.oldFileName, filePath, MAX_NAME_LEN);
-	/* not an orphan file */
-	if (replStatus > OLD_COPY || isTrashPath (myDataObjInfo.objPath)) {
-            modDataObjMeta_t modDataObjMetaInp;
-            keyValPair_t regParam;
-
-	    /* a new copy or the current path is in trash. 
-	     * rename and reg the path of the old one */
-            status = renameFilePathToNewDir (rsComm, REPL_DIR, &fileRenameInp, 
-	      rescInfo, 1);
-            if (status < 0) {
-                return (status);
-	    }
-	    /* register the change */
-	    memset (&regParam, 0, sizeof (regParam));
-            addKeyVal (&regParam, FILE_PATH_KW, fileRenameInp.newFileName);
-	    modDataObjMetaInp.dataObjInfo = &myDataObjInfo;
-	    modDataObjMetaInp.regParam = &regParam;
-	    status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
-            clearKeyVal (&regParam);
-	    if (status < 0) {
-                rodsLog (LOG_ERROR,
-                 "chkAndHandleOrphan: rsModDataObjMeta of %s error. stat = %d",
-                 fileRenameInp.newFileName, status);
-		/* need to rollback the change in path */
-                rstrcpy (fileRenameInp.oldFileName, fileRenameInp.newFileName, 
-		  MAX_NAME_LEN);
-                rstrcpy (fileRenameInp.newFileName, filePath, MAX_NAME_LEN);
-    	        status = rsFileRename (rsComm, &fileRenameInp);
-
-    	        if (status < 0) {
-        	    rodsLog (LOG_ERROR,
-                     "chkAndHandleOrphan: rsFileRename %s failed, status = %d",
-          	     fileRenameInp.oldFileName, status);
-		    return (status);
-		}
-		/* this thing still failed */
-		return (-1);
+    *dataObjInfoHead = currentCacheInfo;
+    queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
+    if (writeFlag == 0) {
+	/* For read only */
+	if (*dataObjInfoHead != NULL) {
+	    /* we already have a good copy */
+	    freeAllDataObjInfo (oldCacheInfo);
+	    freeAllDataObjInfo (oldArchInfo);
+	} else if (downCurrentInfo != NULL) {
+	    /* don't have a good copy */
+	    /* the old current copy is not available */
+            freeAllDataObjInfo (oldCacheInfo);
+            freeAllDataObjInfo (oldArchInfo);
+	    status = SYS_RESC_IS_DOWN;
+	} else {
+	    /* don't have a good copy. use the old one */
+            queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
+            queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
+	}
+        freeAllDataObjInfo (downCurrentInfo);
+    	freeAllDataObjInfo (downOldInfo);
+    } else {	/* write */
+	char *rescName; 
+        queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
+        queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
+	if (*dataObjInfoHead == NULL) {
+	    /* no working copy. */
+	    if (getRescStatus (rsComm, NULL, condInput) == 
+	      INT_RESC_STATUS_DOWN) {
+                freeAllDataObjInfo (downCurrentInfo);
+                freeAllDataObjInfo (downOldInfo);
+		status = SYS_RESC_IS_DOWN;
 	    } else {
-		return (0);
+                queDataObjInfo (dataObjInfoHead, downCurrentInfo, 0, 0);
+                queDataObjInfo (dataObjInfoHead, downOldInfo, 0, 0);
 	    }
 	} else {
-            /* this is an old copy. change the path but don't
-	     * actually rename it */
-            rstrcpy (fileRenameInp.oldFileName, filePath, MAX_NAME_LEN);
-            status = renameFilePathToNewDir (rsComm, REPL_DIR, &fileRenameInp,
-              rescInfo, 0);
-            if (status >= 0) {
-                rstrcpy (filePath, fileRenameInp.newFileName, MAX_NAME_LEN);
-                return (0);
-            } else {
-                return (status);
-            }
+            freeAllDataObjInfo (downCurrentInfo);
+    	    freeAllDataObjInfo (downOldInfo);
+            if ((rescName = 
+	      getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL ||
+	      (rescName = 
+	      getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL ||
+	      (rescName = 
+	      getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL) {
+	        requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag,1);
+	    }
 	}
-
-    } else if (status > 0) {
-        /* this is an orphan file. need to rename it */
-        rstrcpy (fileRenameInp.oldFileName, filePath, MAX_NAME_LEN);
-	status = renameFilePathToNewDir (rsComm, ORPHAN_DIR, &fileRenameInp, 
-	  rescInfo, 1);
-	if (status >= 0) {
-	    return (1);
-	} else {
-            return (status);
-	}
-    } else {
-	/* error */
-	return (status);
     }
+    return (status);
 }
 
 int
-renameFilePathToNewDir (rsComm_t *rsComm, char *newDir,
-fileRenameInp_t *fileRenameInp, rescInfo_t *rescInfo, int renameFlag)
-{
-    int len, status;
-    char *oldPtr, *newPtr;
-    int rescTypeInx = rescInfo->rescTypeInx;
-    char *filePath = fileRenameInp->oldFileName;
-
-    fileRenameInp->fileType = RescTypeDef[rescTypeInx].driverType;
-
-    rstrcpy (fileRenameInp->addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
-
-    len = strlen (rescInfo->rescVaultPath);
-
-    if (len <= 0) {
-	return (-1);
-    }
-    
-    if (strncmp (filePath, rescInfo->rescVaultPath, len) != 0) {
-	/* not in rescVaultPath */
-	return -1;
-    }
-
-    rstrcpy (fileRenameInp->newFileName, rescInfo->rescVaultPath, MAX_NAME_LEN);
-    oldPtr = filePath + len;
-    newPtr = fileRenameInp->newFileName + len;
-
-    snprintf (newPtr, MAX_NAME_LEN - len, "/%s%s.%-d", newDir, oldPtr, 
-     (uint) random());
-    
-    if (renameFlag > 0) {
-        status = rsFileRename (rsComm, fileRenameInp);
-        if (status < 0) {
-            rodsLog (LOG_NOTICE,
-             "renameFilePathToNewDir:rsFileRename from %s to %s failed,stat=%d",
-              filePath, fileRenameInp->newFileName, status);
-	    return -1;
-        } else {
-            return (0); 
-        }
-    } else {
-	return (0);
-    }
-}
-
-int
-syncDataObjPhyPath (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfoHead)
+getNumDataObjInfo (dataObjInfo_t *dataObjInfoHead) 
 {
     dataObjInfo_t *tmpDataObjInfo;
-    int status;
-    int savedStatus = 0;
+    int numInfo = 0;
 
     tmpDataObjInfo = dataObjInfoHead;
     while (tmpDataObjInfo != NULL) {
-	status = syncDataObjPhyPathS (rsComm, dataObjInp, tmpDataObjInfo);
-	if (status < 0) {
-	    savedStatus = status;
-	}
+	numInfo++;
 	tmpDataObjInfo = tmpDataObjInfo->next;
     }
-
-    return (savedStatus);
-} 
+    return (numInfo);
+}
 
 int
-syncDataObjPhyPathS (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-dataObjInfo_t *dataObjInfo)
+sortDataObjInfoRandom (dataObjInfo_t **dataObjInfoHead)
 {
-    int status, status1;
-    fileRenameInp_t fileRenameInp;
-    rescInfo_t *rescInfo;
-    int rescTypeInx;
-    modDataObjMeta_t modDataObjMetaInp;
-    keyValPair_t regParam;
-    vaultPathPolicy_t vaultPathPolicy;
+    dataObjInfo_t *myDataObjInfo[50];
+    dataObjInfo_t *tmpDataObjInfo;
+    int i, j, tmpCnt, order;
+    int numInfo = getNumDataObjInfo (*dataObjInfoHead);
 
-    if (strcmp (dataObjInfo->rescInfo->rescName, BUNDLE_RESC) == 0)
-	return 0;
-
-    status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
-    if (status < 0) {
-	rodsLog (LOG_NOTICE,
-          "syncDataObjPhyPathS: getVaultPathPolicy error for %s, status = %d",
-	  dataObjInfo->objPath, status);
-    } else {
-	if (vaultPathPolicy.scheme != GRAFT_PATH_S) {
-	    /* no need to sync */
-	    return (0);
-	}
+    if (numInfo <= 1) {
+        return (0);
     }
 
-    if (isInVault (dataObjInfo) == 0) {
-	/* not in vault. */
+    if (numInfo > 50) {
+        rodsLog (LOG_NOTICE,
+          "sortDataObjInfoRandom: numInfo %d > 50, setting it to 50", numInfo);
+        numInfo = 50;
+    }
+
+    memset (myDataObjInfo, 0, numInfo * sizeof (rescGrpInfo_t *));
+    /* fill the array randomly */
+
+    tmpCnt = numInfo;
+    tmpDataObjInfo = *dataObjInfoHead;
+    while (tmpDataObjInfo != NULL) {
+        if (tmpCnt > 1) {
+            order = random() % tmpCnt;
+        } else {
+            order = 0;
+        }
+        for (i = 0, j = 0; i < numInfo; i ++) {
+            if (myDataObjInfo[i] == NULL) {
+                if (order <= j) {
+                    myDataObjInfo[i] = tmpDataObjInfo;
+                    break;
+                }
+                j ++;
+            }
+        }
+        tmpCnt --;
+        tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+
+    /* now que the array in order */
+
+    *dataObjInfoHead = NULL;
+    for (i = 0; i < numInfo; i ++) {
+        queDataObjInfo (dataObjInfoHead, myDataObjInfo[i], 1, 1);
+    }
+
+    return (0);
+}
+
+/* requeDataObjInfoByResc - requeue the dataObjInfo in the 
+ * dataObjInfoHead by putting dataObjInfo stored in preferredResc
+ * at the top of the queue.
+ * return 0 if dataObjInfo with preferredResc exiists.
+ * Otherwise, return -1.
+ */
+
+int
+requeDataObjInfoByResc (dataObjInfo_t **dataObjInfoHead, 
+char *preferredResc, int writeFlag, int topFlag)
+{
+    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
+    int status = -1;
+
+    if (preferredResc == NULL || *dataObjInfoHead == NULL) {
 	return (0);
     }
 
-     if (dataObjInfo->rescInfo->rescStatus == INT_RESC_STATUS_DOWN)
-        return SYS_RESC_IS_DOWN;
-
-    /* Save the current objPath */
-    memset (&fileRenameInp, 0, sizeof (fileRenameInp));
-    rstrcpy (fileRenameInp.oldFileName, dataObjInfo->filePath, 
-      MAX_NAME_LEN);
-    if (dataObjInp == NULL) {
-	dataObjInp_t myDdataObjInp;
-	memset (&myDdataObjInp, 0, sizeof (myDdataObjInp));
-	rstrcpy (myDdataObjInp.objPath, dataObjInfo->objPath, MAX_NAME_LEN);
-        status = getFilePathName (rsComm, dataObjInfo, &myDdataObjInp);
-    } else {
-        status = getFilePathName (rsComm, dataObjInfo, dataObjInp);
+    tmpDataObjInfo = *dataObjInfoHead;
+    if (tmpDataObjInfo->next == NULL) {
+	/* just one */
+	if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) 
+	  == 0) {
+	    return (0);
+	} else {
+	    return (-1);
+	}
     }
+    prevDataObjInfo = NULL;
+    while (tmpDataObjInfo != NULL) {
+	if (tmpDataObjInfo->rescInfo != NULL) {
+	    if (strcmp (preferredResc, tmpDataObjInfo->rescInfo->rescName) 
+	      == 0 || strcmp (preferredResc, tmpDataObjInfo->rescGroupName) 
+	      == 0) {
+		if (writeFlag > 0 || tmpDataObjInfo->replStatus > 0) {
+		    if (prevDataObjInfo != NULL) {
+		        prevDataObjInfo->next = tmpDataObjInfo->next;
+			queDataObjInfo (dataObjInfoHead, tmpDataObjInfo, 1,
+			 topFlag);
+		    }
+		    if (topFlag > 0) {		    
+		        return (0);
+		    } else {
+			status = 0;
+		    }
+		}
+	    }
+	}
+	prevDataObjInfo = tmpDataObjInfo;
+	tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+
+    return (status);
+}
+
+int
+requeDataObjInfoByReplNum (dataObjInfo_t **dataObjInfoHead, int replNum)
+{
+    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
+    int status = -1;
+
+    if (dataObjInfoHead == NULL || *dataObjInfoHead == NULL) {
+	return (-1);
+    }
+
+    tmpDataObjInfo = *dataObjInfoHead;
+    if (tmpDataObjInfo->next == NULL) {
+	/* just one */
+	if (replNum == tmpDataObjInfo->replNum) {
+	    return (0);
+	} else {
+	    return (-1);
+	}
+    }
+    prevDataObjInfo = NULL;
+    while (tmpDataObjInfo != NULL) {
+        if (replNum == tmpDataObjInfo->replNum) {
+            if (prevDataObjInfo != NULL) {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+                queDataObjInfo (dataObjInfoHead, tmpDataObjInfo, 1, 1);
+	    }
+	    status = 0;
+	    break;
+	}
+	prevDataObjInfo = tmpDataObjInfo;
+	tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+
+    return (status);
+}
+
+dataObjInfo_t *
+chkCopyInResc (dataObjInfo_t *dataObjInfoHead, rescGrpInfo_t *myRescGrpInfo)
+{
+    rescGrpInfo_t *tmpRescGrpInfo;
+    rescInfo_t *tmpRescInfo;
+    dataObjInfo_t *tmpDataObjInfo;
+
+    tmpDataObjInfo = dataObjInfoHead;
+    while (tmpDataObjInfo != NULL) {
+        tmpRescGrpInfo = myRescGrpInfo;
+        while (tmpRescGrpInfo != NULL) {
+            tmpRescInfo = tmpRescGrpInfo->rescInfo;
+	    if (strcmp (tmpDataObjInfo->rescInfo->rescName,
+	      tmpRescInfo->rescName) == 0) { 
+		return (tmpDataObjInfo);
+	    }
+	    tmpRescGrpInfo = tmpRescGrpInfo->next;
+	}
+	tmpDataObjInfo = tmpDataObjInfo->next;
+    }
+    return (NULL);
+}
+
+/* matchAndTrimRescGrp - check for matching rescName in dataObjInfoHead
+ * and rescGrpInfoHead. If there is a match, unlink and free the 
+ * rescGrpInfo in rescGrpInfoHead so that they wont be replicated 
+ * If trimjFlag - set what to trim. Valid input are : TRIM_MATCHED_RESC_INFO, 
+ * TRIM_MATCHED_OBJ_INFO and TRIM_UNMATCHED_OBJ_INFO
+ */
+
+int
+matchAndTrimRescGrp (dataObjInfo_t **dataObjInfoHead, 
+rescGrpInfo_t **rescGrpInfoHead, int trimjFlag, 
+dataObjInfo_t **trimmedDataObjInfo)
+{
+    rescGrpInfo_t *tmpRescGrpInfo;
+    rescGrpInfo_t *prevRescGrpInfo;
+    rescInfo_t *tmpRescInfo;
+    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo, *nextDataObjInfo;
+    int matchFlag; 
+    char rescGroupName[NAME_LEN];
+
+    if (trimmedDataObjInfo != NULL) *trimmedDataObjInfo = NULL;
+
+    if (*rescGrpInfoHead != NULL) {
+	rstrcpy (rescGroupName, (*rescGrpInfoHead)->rescGroupName, NAME_LEN);
+    } else {
+	rescGroupName[0] = '\0';
+    } 
+
+    tmpDataObjInfo = *dataObjInfoHead;
+    prevDataObjInfo = NULL;
+    while (tmpDataObjInfo != NULL) {
+	matchFlag = 0;
+	nextDataObjInfo = tmpDataObjInfo->next;
+        tmpRescGrpInfo = *rescGrpInfoHead;
+	prevRescGrpInfo = NULL;
+        while (tmpRescGrpInfo != NULL) {
+            tmpRescInfo = tmpRescGrpInfo->rescInfo;
+            if (strcmp (tmpDataObjInfo->rescInfo->rescName,
+              tmpRescInfo->rescName) == 0) {
+		matchFlag = 1;
+		break;
+            } 
+	    prevRescGrpInfo = tmpRescGrpInfo;
+            tmpRescGrpInfo = tmpRescGrpInfo->next;
+        }
+	if (matchFlag == 1) {
+            if (trimjFlag & TRIM_MATCHED_RESC_INFO) {
+                if (tmpRescGrpInfo == *rescGrpInfoHead) {
+                    *rescGrpInfoHead = tmpRescGrpInfo->next;
+                } else {
+                    prevRescGrpInfo->next = tmpRescGrpInfo->next;
+                }
+                free (tmpRescGrpInfo);
+            } else if (trimjFlag & REQUE_MATCHED_RESC_INFO) {
+		if (tmpRescGrpInfo->next != NULL) {
+		    /* queue to bottom */
+                    if (tmpRescGrpInfo == *rescGrpInfoHead) {
+                        *rescGrpInfoHead = tmpRescGrpInfo->next;
+                    } else {
+                        prevRescGrpInfo->next = tmpRescGrpInfo->next;
+                    }
+		    queRescGrp (rescGrpInfoHead, tmpRescGrpInfo, BOTTOM_FLAG);
+		}
+	    }
+
+            if (trimjFlag & TRIM_MATCHED_OBJ_INFO) {
+                if (tmpDataObjInfo == *dataObjInfoHead) {
+                    *dataObjInfoHead = tmpDataObjInfo->next;
+                } else {
+                    prevDataObjInfo->next = tmpDataObjInfo->next;
+                }
+                if (trimmedDataObjInfo != NULL) {
+                    queDataObjInfo (trimmedDataObjInfo, tmpDataObjInfo, 1, 0);
+                } else {
+                    free (tmpDataObjInfo); 
+		}
+            } else {
+		prevDataObjInfo = tmpDataObjInfo;
+	    }
+	} else {
+	    /* no match */
+	    if (trimjFlag & TRIM_UNMATCHED_OBJ_INFO ||
+	      ((trimjFlag & TRIM_MATCHED_OBJ_INFO) && 
+	      strlen (rescGroupName) > 0 &&
+	      strcmp (tmpDataObjInfo->rescGroupName, rescGroupName) == 0)) {
+		/* take it out */
+                if (tmpDataObjInfo == *dataObjInfoHead) {
+                    *dataObjInfoHead = tmpDataObjInfo->next;
+                } else {
+                    prevDataObjInfo->next = tmpDataObjInfo->next;
+                }
+                if (trimmedDataObjInfo != NULL) {
+                    queDataObjInfo (trimmedDataObjInfo, tmpDataObjInfo, 1, 0);
+                } else {
+		    free (tmpDataObjInfo);
+		}
+	    } else {
+	        prevDataObjInfo = tmpDataObjInfo;
+	    }
+	}
+        tmpDataObjInfo = nextDataObjInfo;
+    }
+
+    return (0);
+}
+
+/* sortObjInfoForRepl - sort the data object given in dataObjInfoHead.
+ * Put the current copies in dataObjInfoHead. Delete old copies if
+ * deleteOldFlag allowed or put them in oldDataObjInfoHead for further
+ * process if not allowed.
+ */
+
+int
+sortObjInfoForRepl (dataObjInfo_t **dataObjInfoHead, 
+dataObjInfo_t **oldDataObjInfoHead, int deleteOldFlag)
+{
+    dataObjInfo_t *currentArchInfo, *currentCacheInfo, *oldArchInfo,
+     *oldCacheInfo, *downCurrentInfo, *downOldInfo;
+    sortObjInfo (dataObjInfoHead, &currentArchInfo, &currentCacheInfo,
+      &oldArchInfo, &oldCacheInfo, &downCurrentInfo, &downOldInfo);
+
+    freeAllDataObjInfo (downOldInfo);
+    *dataObjInfoHead = currentCacheInfo;
+    queDataObjInfo (dataObjInfoHead, currentArchInfo, 0, 0);
+    queDataObjInfo (dataObjInfoHead, downCurrentInfo, 0, 0);
+    if (*dataObjInfoHead != NULL) {
+        if (deleteOldFlag == 0) {  
+	    /* multi copy not allowed. have to keep old copy in  
+	     * oldDataObjInfoHead for further processing */
+            *oldDataObjInfoHead = oldCacheInfo;
+            queDataObjInfo (oldDataObjInfoHead, oldArchInfo, 0, 0);
+	} else {
+            freeAllDataObjInfo (oldCacheInfo);
+            freeAllDataObjInfo (oldArchInfo);
+	}
+    } else {
+        queDataObjInfo (dataObjInfoHead, oldCacheInfo, 0, 0);
+        queDataObjInfo (dataObjInfoHead, oldArchInfo, 0, 0);
+    }
+    if (*dataObjInfoHead == NULL) 
+	return SYS_RESC_IS_DOWN;
+    else
+        return (0);
+}
+
+/* dataObjExist - check whether the data object given in dataObjInp exist.
+   Returns 1 if exists, 0 ==> does not exist
+ */
+
+int
+dataObjExist (rsComm_t *rsComm, dataObjInp_t *dataObjInp)
+{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int status;
+
+    status = initDataObjInfoQuery (dataObjInp, &genQueryInp, 0);
+
+    if (status < 0) {
+        return (status);
+    }
+
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+    clearGenQueryInp (&genQueryInp);
+    freeGenQueryOut (&genQueryOut);
+
+    if (status < 0) {
+	return (0);
+    } else {
+	return (1);
+    }
+}
+
+/* initDataObjInfoQuery - initialize the genQueryInp based on dataObjInp.
+ * returns the qcondCnt - count of sqlCondInp based on condition input.
+ */
+ 	 
+int
+initDataObjInfoQuery (dataObjInp_t *dataObjInp, genQueryInp_t *genQueryInp,
+int ignoreCondInput)
+{
+    char myColl[MAX_NAME_LEN], myData[MAX_NAME_LEN];
+    char condStr[MAX_NAME_LEN];
+    char *tmpStr;
+    int status;
+    int qcondCnt = 0;
+
+    memset (genQueryInp, 0, sizeof (genQueryInp_t));
+
+    if ((tmpStr = getValByKey (&dataObjInp->condInput, QUERY_BY_DATA_ID_KW)) 
+      == NULL) {
+        memset (myColl, 0, MAX_NAME_LEN);
+        memset (myData, 0, MAX_NAME_LEN);
+
+        if ((status = splitPathByKey (
+          dataObjInp->objPath, myColl, myData, '/')) < 0) {
+            rodsLog (LOG_NOTICE,
+              "initDataObjInfoQuery: splitPathByKey for %s error, status = %d",
+              dataObjInp->objPath, status);
+            return (status);
+        }
+        snprintf (condStr, MAX_NAME_LEN, "='%s'", myColl);
+        addInxVal (&genQueryInp->sqlCondInp, COL_COLL_NAME, condStr);
+        snprintf (condStr, MAX_NAME_LEN, "='%s'", myData);
+        addInxVal (&genQueryInp->sqlCondInp, COL_DATA_NAME, condStr);
+    } else {
+        snprintf (condStr, MAX_NAME_LEN, "='%s'", tmpStr);
+        addInxVal (&genQueryInp->sqlCondInp, COL_D_DATA_ID, condStr);
+    }
+
+    if (ignoreCondInput == 0 && (tmpStr =
+      getValByKey (&dataObjInp->condInput, REPL_NUM_KW)) != NULL) {
+        snprintf (condStr, NAME_LEN, "='%s'", tmpStr);
+        addInxVal (&genQueryInp->sqlCondInp, COL_DATA_REPL_NUM, condStr);
+	qcondCnt++;
+    }
+
+    return (qcondCnt);
+}
+
+/* chkOrphanFile - check whether a filePath is a orphan file. 
+ *    return - 1 - the file is orphan.
+ *	       0 - 0 the file is not an orphan.
+ *	       -ive - query error.
+ *	       If it is not orphan and dataObjInfo != NULL, output ObjID, 
+ *	       replNum and objPath to dataObjInfo.
+ */
+
+int
+chkOrphanFile (rsComm_t *rsComm, char *filePath, char *rescName,
+dataObjInfo_t *dataObjInfo)
+{
+    genQueryInp_t genQueryInp;
+    genQueryOut_t *genQueryOut = NULL;
+    int status;
+    char condStr[MAX_NAME_LEN];
+
+    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
+
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", filePath);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_DATA_PATH, condStr);
+    snprintf (condStr, MAX_NAME_LEN, "='%s'", rescName);
+    addInxVal (&genQueryInp.sqlCondInp, COL_D_RESC_NAME, condStr);
+
+    addInxIval (&genQueryInp.selectInp, COL_D_DATA_ID, 1);
+    addInxIval (&genQueryInp.selectInp, COL_COLL_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_NAME, 1);
+    addInxIval (&genQueryInp.selectInp, COL_DATA_REPL_NUM, 1);
+    genQueryInp.maxRows = MAX_SQL_ROWS;
+
+    status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
+
+    clearGenQueryInp (&genQueryInp);
+    if (status < 0) {
+	if (status == CAT_NO_ROWS_FOUND) {
+            rsComm->perfStat.orphanCnt ++;
+	    return (1);
+	} else {
+            rodsLog (LOG_ERROR,
+             "chkOrphanFile: rsGenQuery error for %s, status = %d",
+             filePath, status);
+	    /* we have unexpected query error. Assume the file is not
+	     * orphan */ 
+	    return (status);
+	}
+    } else {
+        sqlResult_t *dataId, *replNum, *dataName, *collName;
+	rsComm->perfStat.nonOrphanCnt ++;
+
+        if ((collName =
+          getSqlResultByInx (genQueryOut, COL_COLL_NAME)) == NULL) {
+            rodsLog (LOG_NOTICE,
+              "chkOrphanFile: getSqlResultByInx for COL_COLL_NAME failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
+        if ((dataName = getSqlResultByInx (genQueryOut, COL_DATA_NAME)) 
+	  == NULL) {
+            rodsLog (LOG_NOTICE,
+              "chkOrphanFile: getSqlResultByInx for COL_DATA_NAME failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
+        if ((dataId = getSqlResultByInx (genQueryOut, COL_D_DATA_ID)) == NULL) {
+            rodsLog (LOG_NOTICE,
+              "chkOrphanFile: getSqlResultByInx for COL_D_DATA_ID failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
+        if ((replNum = getSqlResultByInx (genQueryOut, COL_DATA_REPL_NUM)) ==
+         NULL) {
+            rodsLog (LOG_NOTICE,
+              "chkOrphanFile: getSqlResultByInx for COL_DATA_REPL_NUM failed");
+            return (UNMATCHED_KEY_OR_INDEX);
+        }
+
+	if (dataObjInfo != NULL) {
+	    dataObjInfo->dataId = strtoll (dataId->value, 0, 0);
+	    dataObjInfo->replNum = atoi (replNum->value);
+	    snprintf (dataObjInfo->objPath, MAX_NAME_LEN, "%s/%s",
+	      collName->value, dataName->value);
+        }
+
+        freeGenQueryOut (&genQueryOut);
+
+	return (0);
+    }
+}
+
+/* chkOrphanDir - check whether a filePath is a orphan directory.
+ *    return - 1 - the dir is orphan.
+ *             0 - 0 the dir is not an orphan.
+ *             -ive - query error.
+ */
+
+int
+chkOrphanDir (rsComm_t *rsComm, char *dirPath, char *rescName)
+{
+    DIR *dirPtr;
+    struct dirent *myDirent;
+    struct stat statbuf;
+    char subfilePath[MAX_NAME_LEN];
+    int savedStatus = 1;
+    int status = 0;
+
+    dirPtr = opendir (dirPath);
+    if (dirPtr == NULL) {
+        rodsLog (LOG_ERROR,
+        "chkOrphanDir: opendir error for %s, errno = %d",
+         dirPath, errno);
+        return (UNIX_FILE_OPENDIR_ERR - errno);
+    }
+    while ((myDirent = readdir (dirPtr)) != NULL) {
+        if (strcmp (myDirent->d_name, ".") == 0 ||
+          strcmp (myDirent->d_name, "..") == 0) {
+            continue;
+        }
+        snprintf (subfilePath, MAX_NAME_LEN, "%s/%s",
+          dirPath, myDirent->d_name);
+
+        status = stat (subfilePath, &statbuf);
+
+        if (status != 0) {
+            rodsLog (LOG_ERROR,
+              "chkOrphanDir: stat error for %s, errno = %d",
+              subfilePath, errno);
+	    savedStatus = UNIX_FILE_STAT_ERR - errno;
+            continue;
+        }
+        if ((statbuf.st_mode & S_IFDIR) != 0) {
+	    status = chkOrphanDir (rsComm, subfilePath, rescName);
+	} else if ((statbuf.st_mode & S_IFREG) != 0) {
+	    status = chkOrphanFile (rsComm, subfilePath, rescName, NULL);
+	}
+	if (status == 0) {
+	     /* not orphan */
+	    closedir (dirPtr);
+	    return status;    
+	} else if (status < 0) {
+	    savedStatus = status;
+	}
+    }
+    closedir (dirPtr);
+    return savedStatus;
+}
+
+/* resolveSingleReplCopy - given the dataObjInfoHead (up-to-date copies) 
+ * and oldDataObjInfoHead (stale copies) and the destRescGrpInfo,
+ * sort through the single copy reuirement for repl.
+ * If there is a good copy in every resc in the rescGroup, return 
+ * HAVE_GOOD_COPY. Otherwise, trim the resc in the rescGroup so only the one 
+ * with no copies are left. The copies required to be overwritten are
+ * placed in destDataObjInfo. The old dataObjInfo that do not need to
+ * be overwritten are placed in oldDataObjInfoHead which may be needed
+ * for compound resource staging.
+ * A returned value of CAT_NO_ROWS_FOUND mean there is condition in
+ * condInput but none in dataObjInfoHead or oldDataObjInfoHead match
+ * the condition. i.e., no source for the replication
+ */ 
+int 
+resolveSingleReplCopy ( dataObjInfo_t **dataObjInfoHead, 
+dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
+dataObjInfo_t **destDataObjInfo, keyValPair_t *condInput)
+{
+    int status;
+    dataObjInfo_t *matchedDataObjInfo = NULL;
+    dataObjInfo_t *matchedOldDataObjInfo = NULL;
+
+    /* see if dataObjInfoHead and oldDataObjInfoHead matches the condInput */
+    status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
+      condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
     if (status < 0) {
 	return status;
     }
-    if (strcmp (fileRenameInp.oldFileName, dataObjInfo->filePath) == 0) {
-	return (0);
+
+    if (matchedDataObjInfo != NULL) {
+	/* que the matched one on top */
+	queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
+	queDataObjInfo (oldDataObjInfoHead, matchedOldDataObjInfo, 0, 1);
+    } else if (matchedOldDataObjInfo != NULL) {
+	/* The source of replication is an old copy. Queue dataObjInfoHead 
+	 * to oldDataObjInfoHead */ 
+	queDataObjInfo (oldDataObjInfoHead, *dataObjInfoHead, 0, 1);
+	*dataObjInfoHead = matchedOldDataObjInfo;
     }
 
-    rescInfo = dataObjInfo->rescInfo;
-    /* see if the new file exist */
-    if (getSizeInVault (rsComm, dataObjInfo) >= 0) {
-        if (chkAndHandleOrphanFile (rsComm, dataObjInfo->filePath,
-          rescInfo, OLD_COPY) <= 0) {
-            rodsLog (LOG_ERROR,
-             "syncDataObjPhyPath:newFileName %s to %s already exists",
-              dataObjInfo->filePath);
-	    return (SYS_INVALID_FILE_PATH);
+    if ((*destRescGrpInfo)->next == NULL ||
+      strlen ((*destRescGrpInfo)->rescGroupName) == 0) {
+        /* single target resource */
+        if ((*destDataObjInfo = chkCopyInResc (*dataObjInfoHead, 
+	  *destRescGrpInfo)) != NULL) {
+            /* have a good copy already */
+            return (HAVE_GOOD_COPY);
 	}
-    }
-
-    /* rename it */
-    rescTypeInx = rescInfo->rescTypeInx;
-    fileRenameInp.fileType = RescTypeDef[rescTypeInx].driverType;
-    rstrcpy (fileRenameInp.addr.hostAddr, rescInfo->rescLoc, NAME_LEN);
-    rstrcpy (fileRenameInp.newFileName, dataObjInfo->filePath,
-      MAX_NAME_LEN);
- 
-    status = rsFileRename (rsComm, &fileRenameInp);
-    if (status < 0) {
-        rodsLog (LOG_ERROR,
-         "syncDataObjPhyPath:rsFileRename from %s to %s failed,stat=%d",
-          fileRenameInp.oldFileName, fileRenameInp.newFileName);
-	return (status);
-    }
-
-    /* register the change */
-    memset (&regParam, 0, sizeof (regParam));
-    addKeyVal (&regParam, FILE_PATH_KW, fileRenameInp.newFileName);
-    modDataObjMetaInp.dataObjInfo = dataObjInfo;
-    modDataObjMetaInp.regParam = &regParam;
-    status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
-    clearKeyVal (&regParam);
-    if (status < 0) {
-        char tmpPath[MAX_NAME_LEN]; 
-        rodsLog (LOG_ERROR,
-         "syncDataObjPhyPath: rsModDataObjMeta of %s error. stat = %d",
-         fileRenameInp.newFileName, status);
-        /* need to rollback the change in path */
-	rstrcpy (tmpPath, fileRenameInp.oldFileName, MAX_NAME_LEN);
-        rstrcpy (fileRenameInp.oldFileName, fileRenameInp.newFileName,
-          MAX_NAME_LEN);
-        rstrcpy (fileRenameInp.newFileName, tmpPath, MAX_NAME_LEN);
-        status1 = rsFileRename (rsComm, &fileRenameInp);
-
-        if (status1 < 0) {
-            rodsLog (LOG_ERROR,
-             "syncDataObjPhyPath: rollback rename %s failed, status = %d",
-             fileRenameInp.oldFileName, status1);
-        }
-	return (status);
-    }
-    return (0);
-}
-
-int
-syncCollPhyPath (rsComm_t *rsComm, char *collection)
-{
-    int status, i;
-    int savedStatus = 0;
-    genQueryOut_t *genQueryOut = NULL;
-    genQueryInp_t genQueryInp;
-    int continueInx;
-
-    status = rsQueryDataObjInCollReCur (rsComm, collection, 
-      &genQueryInp, &genQueryOut, NULL, 0);
-
-    if (status<0 && status != CAT_NO_ROWS_FOUND) {
-	savedStatus=status; /* return the error code */
-    }
-
-    while (status >= 0) {
-        sqlResult_t *dataIdRes, *subCollRes, *dataNameRes, *replNumRes, 
-	  *rescNameRes, *filePathRes;
-	char *tmpDataId, *tmpDataName, *tmpSubColl, *tmpReplNum, 
-	  *tmpRescName, *tmpFilePath;
-        dataObjInfo_t dataObjInfo;
-
-	memset (&dataObjInfo, 0, sizeof (dataObjInfo));
-
-        if ((dataIdRes = getSqlResultByInx (genQueryOut, COL_D_DATA_ID))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "syncCollPhyPath: getSqlResultByInx for COL_COLL_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        if ((subCollRes = getSqlResultByInx (genQueryOut, COL_COLL_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "syncCollPhyPath: getSqlResultByInx for COL_COLL_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        if ((dataNameRes = getSqlResultByInx (genQueryOut, COL_DATA_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-              "syncCollPhyPath: getSqlResultByInx for COL_DATA_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        if ((replNumRes = getSqlResultByInx (genQueryOut, COL_DATA_REPL_NUM))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-             "syncCollPhyPath:getSqlResultByIn for COL_DATA_REPL_NUM failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        if ((rescNameRes = getSqlResultByInx (genQueryOut, COL_D_RESC_NAME))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-             "syncCollPhyPath: getSqlResultByInx for COL_D_RESC_NAME failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        if ((filePathRes = getSqlResultByInx (genQueryOut, COL_D_DATA_PATH))
-          == NULL) {
-            rodsLog (LOG_ERROR,
-             "syncCollPhyPath: getSqlResultByInx for COL_D_DATA_PATH failed");
-            return (UNMATCHED_KEY_OR_INDEX);
-        }
-        for (i = 0;i < genQueryOut->rowCnt; i++) {
-            tmpDataId = &dataIdRes->value[dataIdRes->len * i];
-            tmpDataName = &dataNameRes->value[dataNameRes->len * i];
-            tmpSubColl = &subCollRes->value[subCollRes->len * i];
-            tmpReplNum = &replNumRes->value[replNumRes->len * i];
-            tmpRescName = &rescNameRes->value[rescNameRes->len * i];
-            tmpFilePath = &filePathRes->value[filePathRes->len * i];
-
-	    dataObjInfo.dataId = strtoll (tmpDataId, 0, 0);
-	    snprintf (dataObjInfo.objPath, MAX_NAME_LEN, "%s/%s",
-	      tmpSubColl, tmpDataName);
-	    dataObjInfo.replNum = atoi (tmpReplNum);
-            rstrcpy (dataObjInfo.rescName, tmpRescName, NAME_LEN);
-            status = resolveResc (tmpRescName, &dataObjInfo.rescInfo);
-            if (status < 0) {
-                rodsLog (LOG_ERROR,
-                  "syncCollPhyPath: resolveResc error for %s, status = %d",
-                  tmpRescName, status);
-                return (status);
-            }
-            rstrcpy (dataObjInfo.filePath, tmpFilePath, MAX_NAME_LEN);
-
-            status = syncDataObjPhyPathS (rsComm, NULL, &dataObjInfo);
-	    if (status < 0) {
-		rodsLog (LOG_ERROR,
-                  "syncCollPhyPath: syncDataObjPhyPathS error for %s,stat=%d",
-                  dataObjInfo.filePath, status);
-		savedStatus = status;
-            }
-
-	}
-
-        continueInx = genQueryOut->continueInx;
-
-        freeGenQueryOut (&genQueryOut);
-
-        if (continueInx > 0) {
-            /* More to come */
-            genQueryInp.continueInx = continueInx;
-            status =  rsGenQuery (rsComm, &genQueryInp, &genQueryOut);
-        } else {
-            break;
-        }
-    }
-    clearGenQueryInp (&genQueryInp);
-
-    return (savedStatus);
-}
-
-int
-getMultiCopyPerResc ()
-{
-    ruleExecInfo_t rei;
-
-    memset (&rei, 0, sizeof (rei));
-    applyRule ("acSetMultiReplPerResc", NULL, &rei, NO_SAVE_REI);
-    if (strcmp (rei.statusStr, MULTI_COPIES_PER_RESC) == 0) {
-        return 1;
     } else {
-        return 0;
+        /* target resource is a resource group with multi resources */
+        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
+	  TRIM_MATCHED_RESC_INFO, NULL);
+        if (*destRescGrpInfo == NULL) {
+            /* have a good copy in all resc in resc group */
+            return (HAVE_GOOD_COPY);
+        }
     }
+    /* handle the old dataObj */
+    if (getValByKey (condInput, ALL_KW) != NULL) {
+	dataObjInfo_t *trimmedDataObjInfo = NULL;
+	/* replicate to all resc. trim the resc that has a match and
+	 * the DataObjInfo that does not have a match */ 
+	matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
+	  TRIM_MATCHED_RESC_INFO|TRIM_UNMATCHED_OBJ_INFO, &trimmedDataObjInfo);
+	*destDataObjInfo = *oldDataObjInfoHead;
+	*oldDataObjInfoHead = trimmedDataObjInfo;
+    } else {
+        *destDataObjInfo = chkCopyInResc (*oldDataObjInfoHead, 
+	  *destRescGrpInfo);
+        if (*destDataObjInfo != NULL) {
+            /* see if there is any resc that is not used */
+            matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
+	      TRIM_MATCHED_RESC_INFO, NULL);
+            if (*destRescGrpInfo != NULL) {
+                /* just creat a new one in myRescGrpInfo */
+                *destDataObjInfo = NULL;
+            }
+	}
+    }
+    return (NO_GOOD_COPY);
 }
 
-/* mk the collection resursively */
-
 int
-rsMkCollR (rsComm_t *rsComm, char *startColl, char *destColl)
+resolveInfoForPhymv (dataObjInfo_t **dataObjInfoHead,
+dataObjInfo_t **oldDataObjInfoHead, rescGrpInfo_t **destRescGrpInfo,
+keyValPair_t *condInput, int multiCopyFlag)
 {
     int status;
-    int startLen;
-    int pathLen, tmpLen;
-    char tmpPath[MAX_NAME_LEN];
+    dataObjInfo_t *matchedDataObjInfo = NULL;
+    dataObjInfo_t *matchedOldDataObjInfo = NULL;
 
-    startLen = strlen (startColl);
-    pathLen = strlen (destColl);
 
-    rstrcpy (tmpPath, destColl, MAX_NAME_LEN);
+    status = matchDataObjInfoByCondInput (dataObjInfoHead, oldDataObjInfoHead,
+      condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
 
-    tmpLen = pathLen;
+    if (status < 0) {
+        return status;
+    }
 
-    while (tmpLen > startLen) {
-	if (isCollAllKinds (rsComm, tmpPath, NULL) >= 0) {
-	    break;
+    if (matchedDataObjInfo != NULL) {
+	/* put the matched in oldDataObjInfoHead. should not be anything in
+	 * oldDataObjInfoHead */
+	*oldDataObjInfoHead = *dataObjInfoHead;
+	*dataObjInfoHead = matchedDataObjInfo;
+    }
+
+    if (multiCopyFlag) {
+        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo,
+          REQUE_MATCHED_RESC_INFO, NULL);
+        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo,
+          REQUE_MATCHED_RESC_INFO, NULL);
+    } else {
+        matchAndTrimRescGrp (dataObjInfoHead, destRescGrpInfo, 
+          TRIM_MATCHED_RESC_INFO|TRIM_MATCHED_OBJ_INFO, NULL);
+        matchAndTrimRescGrp (oldDataObjInfoHead, destRescGrpInfo, 
+          TRIM_MATCHED_RESC_INFO, NULL);
+    }
+
+    if (*destRescGrpInfo == NULL) {
+	if (*dataObjInfoHead == NULL) {
+	    return (CAT_NO_ROWS_FOUND);
+	} else {
+            /* have a good copy in all resc in resc group */
+	    rodsLog (LOG_ERROR,
+	      "resolveInfoForPhymv: %s already have copy in the resc",
+	      (*dataObjInfoHead)->objPath);
+            return (SYS_COPY_ALREADY_IN_RESC);
 	}
-
-        /* Go backward */
-
-        while (tmpLen && tmpPath[tmpLen] != '/')
-            tmpLen --;
-        tmpPath[tmpLen] = '\0';
-    }
-
-    /* Now we go forward and make the required coll */
-    while (tmpLen < pathLen) {
-	collInp_t collCreateInp;
-
-        /* Put back the '/' */
-        tmpPath[tmpLen] = '/';
-	memset (&collCreateInp, 0, sizeof (collCreateInp));
-	rstrcpy (collCreateInp.collName, tmpPath, MAX_NAME_LEN);
-        status = rsCollCreate (rsComm, &collCreateInp);
-
-	if (status == CAT_NAME_EXISTS_AS_DATAOBJ && isTrashPath (tmpPath)) {
-	    /* name conflict with a data object in the trash collection */
-	    dataObjCopyInp_t dataObjRenameInp;
-    	    memset (&dataObjRenameInp, 0, sizeof (dataObjRenameInp));
-
-    	    dataObjRenameInp.srcDataObjInp.oprType =
-      	    dataObjRenameInp.destDataObjInp.oprType = RENAME_DATA_OBJ;
-	    rstrcpy (dataObjRenameInp.srcDataObjInp.objPath, tmpPath,
-  	      MAX_NAME_LEN);
-	    rstrcpy (dataObjRenameInp.destDataObjInp.objPath, tmpPath, 
-	      MAX_NAME_LEN);
-	    appendRandomToPath (dataObjRenameInp.destDataObjInp.objPath);
-
- 	    status = rsDataObjRename (rsComm, &dataObjRenameInp);
-	    if (status >= 0) {
-		status = rsCollCreate (rsComm, &collCreateInp);
-	    }
-	}
-	/* something may be added by rsCollCreate */ 
-	clearKeyVal (&collCreateInp.condInput);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-             "rsMkCollR: rsCollCreate failed for %s, status =%d",
-              tmpPath, status);
-            return status;
-        }
-        while (tmpLen && tmpPath[tmpLen] != '\0')
-            tmpLen ++;
-    }
-    return 0;
-}
-
-int
-isInVault (dataObjInfo_t *dataObjInfo)
-{
-    int len;
-
-    if (dataObjInfo == NULL || dataObjInfo->rescInfo == NULL) {
-	return (SYS_INTERNAL_NULL_INPUT_ERR);
-    }
-
-    len = strlen (dataObjInfo->rescInfo->rescVaultPath);
-
-    if (strncmp (dataObjInfo->rescInfo->rescVaultPath, 
-      dataObjInfo->filePath, len) == 0) {
-        return (1);
     } else {
 	return (0);
     }
 }
 
-int
-initCollHandle ()
-{
-    memset (CollHandle, 0, sizeof (collHandle_t) * NUM_COLL_HANDLE);
-    return (0);
-}
+/* matchDataObjInfoByCondInput - given dataObjInfoHead and oldDataObjInfoHead
+ * put all DataObjInfo that match condInput into matchedDataObjInfo and
+ * matchedOldDataObjInfo. The unmatch one stay in dataObjInfoHead and
+ * oldDataObjInfoHead.
+ * A CAT_NO_ROWS_FOUND means there is condition in CondInput, but none 
+ * in dataObjInfoHead or oldDataObjInfoHead matches the condition 
+ */ 
 
 int
-allocCollHandle ()
+matchDataObjInfoByCondInput (dataObjInfo_t **dataObjInfoHead,
+dataObjInfo_t **oldDataObjInfoHead, keyValPair_t *condInput,
+dataObjInfo_t **matchedDataObjInfo, dataObjInfo_t **matchedOldDataObjInfo)
+
 {
-    int i;
+    int replNumCond;
+    int replNum;
+    int rescCond;
+    char *tmpStr, *rescName;
+    dataObjInfo_t *prevDataObjInfo, *nextDataObjInfo, *tmpDataObjInfo;
 
-    for (i = 0; i < NUM_COLL_HANDLE; i++) {
-        if (CollHandle[i].inuseFlag <= FD_FREE) {
-            CollHandle[i].inuseFlag = FD_INUSE;
-            return (i);
-        };
-    }
-
-    rodsLog (LOG_NOTICE,
-     "allocCollHandle: out of CollHandle");
-
-    return (SYS_OUT_OF_FILE_DESC);
-}
-
-int
-freeCollHandle (int handleInx)
-{
-    if (handleInx < 0 || handleInx >= NUM_COLL_HANDLE) {
-        rodsLog (LOG_NOTICE,
-         "freeCollHandle: handleInx %d out of range", handleInx);
-        return (SYS_FILE_DESC_OUT_OF_RANGE);
-    }
-
-    /* don't free specColl. It is in cache */
-#if 0
-    clearCollHandle (&CollHandle[handleInx], 0);
-#else
-    clearCollHandle (&CollHandle[handleInx], 1);
-#endif
-    memset (&CollHandle[handleInx], 0, sizeof (collHandle_t));
-
-    return (0);
-}
-
-int
-rsInitQueryHandle (queryHandle_t *queryHandle, rsComm_t *rsComm)
-{
-    if (queryHandle == NULL || rsComm == NULL) {
+    if (dataObjInfoHead == NULL || *dataObjInfoHead == NULL ||
+      oldDataObjInfoHead == NULL || matchedDataObjInfo == NULL ||
+      matchedOldDataObjInfo == NULL) {
+        rodsLog (LOG_ERROR,
+          "requeDataObjInfoByCondInput: NULL dataObjInfo input");
         return (USER__NULL_INPUT_ERR);
     }
 
-    queryHandle->conn = rsComm;
-    queryHandle->connType = RS_COMM;
-    queryHandle->querySpecColl = (funcPtr) rsQuerySpecColl;
-    queryHandle->genQuery = (funcPtr) rsGenQuery;
+    if ((tmpStr = getValByKey (condInput, REPL_NUM_KW)) != NULL) {
+	replNum = atoi (tmpStr);
+	replNumCond = 1;
+    } else {
+	replNumCond = 0;
+    }
 
+    if ((rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
+        rescCond = 1;
+    } else {
+        rescCond = 0;
+    }
+
+    if (replNumCond + rescCond == 0) {
+	return (0);
+    }
+
+    *matchedDataObjInfo = NULL;
+    *matchedOldDataObjInfo = NULL;
+
+    tmpDataObjInfo = *dataObjInfoHead;
+    prevDataObjInfo = NULL;
+    while (tmpDataObjInfo != NULL) {
+	nextDataObjInfo = tmpDataObjInfo->next;
+	if (replNumCond == 1 && replNum == tmpDataObjInfo->replNum) {
+            if (prevDataObjInfo != NULL) {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+	    } else {
+		*dataObjInfoHead = (*dataObjInfoHead)->next;
+            }
+            queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
+	} else if (rescCond == 1 && 
+	  (strcmp (rescName, tmpDataObjInfo->rescGroupName) == 0 ||
+	  strcmp (rescName, tmpDataObjInfo->rescName) == 0)) {
+            if (prevDataObjInfo != NULL) {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+            } else {
+                *dataObjInfoHead = (*dataObjInfoHead)->next;
+            }
+	    /* que single to the bottom */
+            queDataObjInfo (matchedDataObjInfo, tmpDataObjInfo, 1, 0);
+	} else {
+	    prevDataObjInfo = tmpDataObjInfo;
+	}
+	tmpDataObjInfo = nextDataObjInfo;
+    }
+
+    tmpDataObjInfo = *oldDataObjInfoHead;
+    prevDataObjInfo = NULL;
+    while (tmpDataObjInfo != NULL) {
+        nextDataObjInfo = tmpDataObjInfo->next;
+        if (replNumCond == 1 && replNum == tmpDataObjInfo->replNum) {
+            if (prevDataObjInfo != NULL) {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+            } else {
+                *oldDataObjInfoHead = (*oldDataObjInfoHead)->next;
+            }
+            queDataObjInfo (matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
+        } else if (rescCond == 1 &&
+          (strcmp (rescName, tmpDataObjInfo->rescGroupName) == 0 ||
+          strcmp (rescName, tmpDataObjInfo->rescName)) == 0) {
+            if (prevDataObjInfo != NULL) {
+                prevDataObjInfo->next = tmpDataObjInfo->next;
+            } else {
+                *oldDataObjInfoHead = (*oldDataObjInfoHead)->next;
+            }
+            queDataObjInfo (matchedOldDataObjInfo, tmpDataObjInfo, 1, 0);
+        } else {
+            prevDataObjInfo = tmpDataObjInfo;
+        }
+        tmpDataObjInfo = nextDataObjInfo;
+    }
+    
+    if (*matchedDataObjInfo == NULL && *matchedOldDataObjInfo == NULL) {
+	return (CAT_NO_ROWS_FOUND);
+    } else {
+	return (replNumCond + rescCond);
+    }
+}
+
+int
+resolveInfoForTrim (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput)
+{
+    int i, status;
+    dataObjInfo_t *matchedDataObjInfo = NULL;
+    dataObjInfo_t *matchedOldDataObjInfo = NULL;
+    dataObjInfo_t *oldDataObjInfoHead = NULL;
+    dataObjInfo_t *tmpDataObjInfo, *prevDataObjInfo;
+    int matchedInfoCnt, unmatchedInfoCnt, matchedOldInfoCnt, 
+     unmatchedOldInfoCnt;
+    int minCnt;
+    char *tmpStr;
+    int condFlag;
+    int toTrim;
+
+    sortObjInfoForRepl (dataObjInfoHead, &oldDataObjInfoHead, 0);
+
+    status = matchDataObjInfoByCondInput (dataObjInfoHead, &oldDataObjInfoHead,
+      condInput, &matchedDataObjInfo, &matchedOldDataObjInfo);
+
+    if (status < 0) {
+	freeAllDataObjInfo (*dataObjInfoHead);
+	freeAllDataObjInfo (oldDataObjInfoHead);
+	*dataObjInfoHead = NULL;
+	if (status == CAT_NO_ROWS_FOUND) {
+	    return 0;
+	} else {
+            return status;
+	}
+    }
+    condFlag = status;	/* cond exist if condFlag > 0 */
+
+    if (matchedDataObjInfo == NULL && matchedOldDataObjInfo == NULL) {
+	if (dataObjInfoHead != NULL && condFlag == 0) {
+	    /* at least have some good copies */
+	    /* see if we can trim some old copies */
+	    matchedOldDataObjInfo = oldDataObjInfoHead;
+	    oldDataObjInfoHead = NULL;
+	    /* also trim good copy too since there is no condiftion 12/1/09 */
+            matchedDataObjInfo = *dataObjInfoHead;
+            *dataObjInfoHead = NULL;
+	} else {
+	    /* don't trim anything */
+            freeAllDataObjInfo (*dataObjInfoHead);
+            freeAllDataObjInfo (oldDataObjInfoHead);
+            *dataObjInfoHead = NULL;
+            return (0);
+	}
+    }
+
+    matchedInfoCnt = getDataObjInfoCnt (matchedDataObjInfo);
+    unmatchedInfoCnt = getDataObjInfoCnt (*dataObjInfoHead);
+    unmatchedOldInfoCnt = getDataObjInfoCnt (oldDataObjInfoHead);
+
+    /* free the unmatched one first */
+
+    freeAllDataObjInfo (*dataObjInfoHead);
+    freeAllDataObjInfo (oldDataObjInfoHead);
+    *dataObjInfoHead = oldDataObjInfoHead = NULL;
+
+    if ((tmpStr = getValByKey (condInput, COPIES_KW)) != NULL) {
+	minCnt = atoi (tmpStr);
+	if (minCnt <= 0) {
+	    minCnt = DEF_MIN_COPY_CNT;
+	}
+    } else {
+	minCnt = DEF_MIN_COPY_CNT;
+    }
+
+    toTrim = unmatchedInfoCnt + matchedInfoCnt - minCnt;
+    if (toTrim > matchedInfoCnt) {	/* cannot trim more than match */
+        toTrim = matchedInfoCnt;
+    }
+
+    if (toTrim >= 0) {
+        /* trim all old */
+        *dataObjInfoHead = matchedOldDataObjInfo;
+
+        /* take some off the bottom - since cache are queued at top. Want
+         * to trim them first */
+        for (i = 0; i < matchedInfoCnt - toTrim; i++) {
+            prevDataObjInfo = NULL;
+            tmpDataObjInfo = matchedDataObjInfo;
+            while (tmpDataObjInfo != NULL) {
+                if (tmpDataObjInfo->next == NULL) {
+                    if (prevDataObjInfo == NULL) {
+                        matchedDataObjInfo = NULL;
+                    } else {
+                        prevDataObjInfo->next = NULL;
+                    }
+                    freeDataObjInfo (tmpDataObjInfo);
+                    break;
+                }
+                prevDataObjInfo = tmpDataObjInfo;
+                tmpDataObjInfo = tmpDataObjInfo->next;
+            }
+        }
+        queDataObjInfo (dataObjInfoHead, matchedDataObjInfo, 0, 1);
+    } else {
+	/* negative toTrim. see if we can trim some matchedOldDataObjInfo */
+        freeAllDataObjInfo (matchedDataObjInfo);
+	matchedOldInfoCnt = getDataObjInfoCnt (matchedOldDataObjInfo);
+	toTrim = matchedOldInfoCnt + unmatchedOldInfoCnt + toTrim;
+	if (toTrim > matchedOldInfoCnt)
+	    toTrim = matchedOldInfoCnt;
+
+	if (toTrim <= 0) {
+	    freeAllDataObjInfo (matchedOldDataObjInfo);
+	} else {
+            /* take some off the bottom - since cache are queued at top. Want
+             * to trim them first */
+            for (i = 0; i < matchedOldInfoCnt - toTrim; i++) {
+                prevDataObjInfo = NULL;
+                tmpDataObjInfo = matchedOldDataObjInfo;
+                while (tmpDataObjInfo != NULL) {
+                    if (tmpDataObjInfo->next == NULL) {
+                        if (prevDataObjInfo == NULL) {
+                            matchedOldDataObjInfo = NULL;
+                        } else {
+                            prevDataObjInfo->next = NULL;
+                        }
+                        freeDataObjInfo (tmpDataObjInfo);
+                        break;
+                    }
+                    prevDataObjInfo = tmpDataObjInfo;
+                    tmpDataObjInfo = tmpDataObjInfo->next;
+                }
+            }
+            queDataObjInfo (dataObjInfoHead, matchedOldDataObjInfo, 0, 1);
+	}
+    }
     return (0);
 }
 
-/* initStructFileOprInp - initialize the structFileOprInp struct for
- * rsStructFileBundle and rsStructFileExtAndReg
- */
+int
+requeDataObjInfoByDestResc (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput, int writeFlag, int topFlag)
+{
+    char *rescName;
+    int status = -1; 
+
+   if ((rescName = getValByKey (condInput, DEST_RESC_NAME_KW)) != NULL || 
+      (rescName = getValByKey (condInput, BACKUP_RESC_NAME_KW)) != NULL ||
+      (rescName = getValByKey (condInput, DEF_RESC_NAME_KW)) != NULL) { 
+	status = requeDataObjInfoByResc (dataObjInfoHead, rescName, 
+	  writeFlag, topFlag);
+    }
+    return (status);
+}
 
 int
-initStructFileOprInp (rsComm_t *rsComm, 
-structFileOprInp_t *structFileOprInp,
-structFileExtAndRegInp_t *structFileExtAndRegInp, 
-dataObjInfo_t *dataObjInfo)
+requeDataObjInfoBySrcResc (dataObjInfo_t **dataObjInfoHead,
+keyValPair_t *condInput, int writeFlag, int topFlag)
 {
+    char *rescName;
+
+      if ((rescName = getValByKey (condInput, RESC_NAME_KW)) != NULL) {
+        requeDataObjInfoByResc (dataObjInfoHead, rescName, writeFlag, topFlag);
+    }
+    return (0);
+}
+
+int
+getDataObjInfoIncSpecColl (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
+dataObjInfo_t **dataObjInfo)
+{
+    int status, writeFlag;
+    specCollPerm_t specCollPerm;
+
+    writeFlag = getWriteFlag (dataObjInp->openFlags);
+    if (writeFlag > 0) {
+        specCollPerm = WRITE_COLL_PERM;
+        if (rsComm->clientUser.authInfo.authFlag <= PUBLIC_USER_AUTH) {
+            rodsLog (LOG_NOTICE,
+             "getDataObjInfoIncSpecColl:open for write not allowed for user %s",
+              rsComm->clientUser.userName);
+            return (SYS_NO_API_PRIV);
+        }
+    } else {
+        specCollPerm = READ_COLL_PERM;
+    }
+
+    if (dataObjInp->specColl != NULL && 
+      dataObjInp->specColl->collClass != NO_SPEC_COLL &&
+      dataObjInp->specColl->collClass != LINKED_COLL) {
+	/* if it is linked, it already has been resolved */
+        status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+          specCollPerm, 0, dataObjInfo);
+        if (status == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
+          dataObjInfo != NULL) {
+            freeDataObjInfo (*dataObjInfo);
+            dataObjInfo = NULL;
+        }
+    } else if ((status = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+      specCollPerm, 1, dataObjInfo)) >= 0) {
+        /* check if specColl in cache. May be able to save one query */
+    } else if (getValByKey (&dataObjInp->condInput,
+      IRODS_ADMIN_RMTRASH_KW) != NULL &&
+      rsComm->proxyUser.authInfo.authFlag == LOCAL_PRIV_USER_AUTH) {
+        status = getDataObjInfo (rsComm, dataObjInp, dataObjInfo,
+          NULL, 0);
+    } else if (writeFlag > 0 && dataObjInp->oprType != REPLICATE_OPR) {
+        status = getDataObjInfo (rsComm, dataObjInp, dataObjInfo,
+          ACCESS_DELETE_OBJECT, 0);
+    } else {
+        status = getDataObjInfo (rsComm, dataObjInp, dataObjInfo,
+          ACCESS_READ_OBJECT, 0);
+    }
+
+    if (status < 0 && dataObjInp->specColl == NULL) {
+        int status2;
+        status2 = resolvePathInSpecColl (rsComm, dataObjInp->objPath,
+          specCollPerm, 0, dataObjInfo);
+        if (status2 < 0) {
+            if (status2 == SYS_SPEC_COLL_OBJ_NOT_EXIST &&
+              dataObjInfo != NULL) {
+                freeDataObjInfo (*dataObjInfo);
+                *dataObjInfo = NULL;
+            }
+        }
+	if (status2 >= 0) status = 0;
+    }
+    if (status >= 0) {
+        if ((*dataObjInfo)->specColl != NULL) {
+            if ((*dataObjInfo)->specColl->collClass == LINKED_COLL) {
+		/* already been tranlated */
+		rstrcpy (dataObjInp->objPath, (*dataObjInfo)->objPath,
+		  MAX_NAME_LEN);
+		free ((*dataObjInfo)->specColl);
+	        (*dataObjInfo)->specColl = NULL;
+	    } else if (getStructFileType ((*dataObjInfo)->specColl) >= 0) {
+                dataObjInp->numThreads = NO_THREADING;
+	    }
+	}
+    }
+    return (status);
+}
+
+int
+regNewObjSize (rsComm_t *rsComm, char *objPath, int replNum,
+rodsLong_t newSize)
+{
+    dataObjInfo_t dataObjInfo;
+    keyValPair_t regParam;
+    modDataObjMeta_t modDataObjMetaInp;
+    char tmpStr[MAX_NAME_LEN]; 
     int status;
-    vaultPathPolicy_t vaultPathPolicy;
-    int addUserNameFlag;
 
-    memset (structFileOprInp, 0, sizeof (structFileOprInp_t));
-    structFileOprInp->specColl = malloc (sizeof (specColl_t));
-    memset (structFileOprInp->specColl, 0, sizeof (specColl_t));
-    if (strcmp (dataObjInfo->dataType, TAR_DT_STR) == 0 ||
-      strcmp (dataObjInfo->dataType, TAR_BUNDLE_TYPE) == 0) {
-        structFileOprInp->specColl->type = TAR_STRUCT_FILE_T;
-    } else if (strcmp (dataObjInfo->dataType, HAAW_DT_STR) == 0) {
-        structFileOprInp->specColl->type = HAAW_STRUCT_FILE_T;
-    } else {
-        rodsLog (LOG_ERROR,
-          "initStructFileOprInp: objType %s of %s is not a struct file",
-          dataObjInfo->dataType, dataObjInfo->objPath);
-        return SYS_OBJ_TYPE_NOT_STRUCT_FILE;
-    }
+    if (objPath == NULL) return USER__NULL_INPUT_ERR;
 
-    rstrcpy (structFileOprInp->specColl->collection,
-      structFileExtAndRegInp->collection, MAX_NAME_LEN);
-    rstrcpy (structFileOprInp->specColl->objPath,
-      structFileExtAndRegInp->objPath, MAX_NAME_LEN);
-    structFileOprInp->specColl->collClass = STRUCT_FILE_COLL;
-    rstrcpy (structFileOprInp->specColl->resource, dataObjInfo->rescName,
-      NAME_LEN);
-    rstrcpy (structFileOprInp->specColl->phyPath,
-      dataObjInfo->filePath, MAX_NAME_LEN);
-    rstrcpy (structFileOprInp->addr.hostAddr, dataObjInfo->rescInfo->rescLoc,
-      NAME_LEN);
-    /* set the cacheDir */
-    status = getVaultPathPolicy (rsComm, dataObjInfo, &vaultPathPolicy);
+    memset (&dataObjInfo, 0, sizeof (dataObjInfo));
+    memset (&regParam, 0, sizeof (regParam));
+    memset (&modDataObjMetaInp, 0, sizeof (modDataObjMetaInp));
+
+    rstrcpy (dataObjInfo.objPath, objPath, MAX_NAME_LEN);
+    dataObjInfo.replNum = replNum;
+    snprintf (tmpStr, MAX_NAME_LEN, "%lld", newSize);
+    addKeyVal (&regParam, DATA_SIZE_KW, tmpStr);
+
+    modDataObjMetaInp.dataObjInfo = &dataObjInfo;
+    modDataObjMetaInp.regParam = &regParam;
+    status = rsModDataObjMeta (rsComm, &modDataObjMetaInp);
     if (status < 0) {
-        return (status);
+       rodsLog (LOG_ERROR,
+          "regNewObjSize: rsModDataObjMeta error for %s, status = %d",
+          objPath, status);
     }
-    /* don't do other type of Policy except GRAFT_PATH_S */
-    if (vaultPathPolicy.scheme == GRAFT_PATH_S) {
-	addUserNameFlag = vaultPathPolicy.addUserName;
-    } else {
-        rodsLog (LOG_ERROR,
-          "initStructFileOprInp: vaultPathPolicy.scheme %d for resource %s is not GRAFT_PATH_S",
-          vaultPathPolicy.scheme, structFileOprInp->specColl->resource);
-        return SYS_WRONG_RESC_POLICY_FOR_BUN_OPR;
-    }
-    status = setPathForGraftPathScheme (structFileExtAndRegInp->collection,
-      dataObjInfo->rescInfo->rescVaultPath, addUserNameFlag,
-      rsComm->clientUser.userName, vaultPathPolicy.trimDirCnt,
-      structFileOprInp->specColl->cacheDir);
 
     return (status);
 }
 
 int
-allocAndSetL1descForZoneOpr (int remoteL1descInx, dataObjInp_t *dataObjInp,
-rodsServerHost_t *remoteZoneHost, openStat_t *openStat)
+getCacheDataInfoForRepl (rsComm_t *rsComm, dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, dataObjInfo_t *compDataObjInfo, 
+dataObjInfo_t **outDataObjInfo)
 {
-    int l1descInx;            
-    dataObjInfo_t *dataObjInfo;
-
-    l1descInx = allocL1desc ();
-    if (l1descInx < 0) return l1descInx;
-    L1desc[l1descInx].remoteL1descInx = remoteL1descInx;
-    L1desc[l1descInx].oprType = REMOTE_ZONE_OPR;
-    L1desc[l1descInx].remoteZoneHost = remoteZoneHost;
-#if 0
-    L1desc[l1descInx].dataObjInp = dataObjInp;
-#else
-    /* always repl the .dataObjInp */
-    L1desc[l1descInx].dataObjInp = malloc (sizeof (dataObjInp_t));
-    replDataObjInp (dataObjInp, L1desc[l1descInx].dataObjInp);
-    L1desc[l1descInx].dataObjInpReplFlag = 1;
-#endif
-    dataObjInfo = L1desc[l1descInx].dataObjInfo =
-      malloc (sizeof (dataObjInfo_t));
-    bzero (dataObjInfo, sizeof (dataObjInfo_t));
-    rstrcpy (dataObjInfo->objPath, dataObjInp->objPath, MAX_NAME_LEN);
-
-    if (openStat != NULL) {
-	dataObjInfo->dataSize = openStat->dataSize;
-	rstrcpy (dataObjInfo->dataMode, openStat->dataMode, SHORT_STR_LEN);
-	rstrcpy (dataObjInfo->dataType, openStat->dataType, NAME_LEN);
-	L1desc[l1descInx].l3descInx = openStat->l3descInx;
-	L1desc[l1descInx].replStatus = openStat->replStatus;
-	dataObjInfo->rescInfo = malloc (sizeof (rescInfo_t));
-	bzero (dataObjInfo->rescInfo, sizeof (rescInfo_t));
-	dataObjInfo->rescInfo->rescTypeInx = openStat->rescTypeInx;
-    }
-
-    return l1descInx;
-}
-
-int
-getDefFileMode ()
-{
-    int defFileMode;
-    if (getenv ("DefFileMode") != NULL) {
-        defFileMode = strtol (getenv ("DefFileMode"), 0, 0);
-    } else {
-        defFileMode = DEFAULT_FILE_MODE;
-    }
-    return defFileMode;
-}
-
-int
-getDefDirMode ()
-{
-    int defDirMode;
-    if (getenv ("DefDirMode") != NULL) { 
-        defDirMode = strtol (getenv ("DefDirMode"), 0, 0);
-    } else {
-        defDirMode = DEFAULT_DIR_MODE;
-    }
-    return defDirMode;
-}
-
-int
-getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath)
-{
-    int len;
-    char *tmpPtr;
-    zoneInfo_t *tmpZoneInfo = NULL;
+    char *rescGroupName;
     int status;
 
-    if (phyPath == NULL || rescInfo == NULL || outLogPath == NULL)
-	return USER__NULL_INPUT_ERR;
+    rescGroupName = compDataObjInfo->rescGroupName;
 
-    len = strlen (rescInfo->rescVaultPath);
-    if (strncmp (rescInfo->rescVaultPath, phyPath, len) != 0) return -1;
-    tmpPtr = phyPath + len;
+    if (strlen (rescGroupName) == 0) {
+	rescGrpInfo_t *rescGrpInfo = NULL;
+	rescGrpInfo_t *tmpRescGrpInfo;
+ 
+        /* no input rescGrp. Try to find one that matches rescInfo. */
+	status = getRescGrpOfResc (rsComm, compDataObjInfo->rescInfo,
+	  &rescGrpInfo);
+	if (status < 0) {
+	    rodsLog (LOG_NOTICE,
+              "getCacheDataInfoForRepl:getRescGrpOfResc err for %s. stat=%d",
+              compDataObjInfo->rescInfo->rescName, status);
+	    return status;
+	}
+        tmpRescGrpInfo = rescGrpInfo;
 
-    if (*tmpPtr != '/') return -1;
+        while (tmpRescGrpInfo != NULL) {
+	    status = getCacheDataInfoInRescGrp (srcDataObjInfoHead,
+	      destDataObjInfoHead, tmpRescGrpInfo->rescGroupName,
+	      compDataObjInfo, outDataObjInfo);
+	    if (status >= 0) {
+		/* update the rescGroupName */
+		rstrcpy (compDataObjInfo->rescGroupName, 
+		  tmpRescGrpInfo->rescGroupName, NAME_LEN);
+		rstrcpy ((*outDataObjInfo)->rescGroupName, 
+		  tmpRescGrpInfo->rescGroupName, NAME_LEN);
+		freeAllRescGrpInfo (rescGrpInfo);
+		return 0;
+	    } else {
+	        status = getNonGrpCacheDataInfoInRescGrp (srcDataObjInfoHead,
+                  destDataObjInfoHead, tmpRescGrpInfo,
+                  compDataObjInfo, outDataObjInfo);
+                if (status >= 0) {
+                    /* update the rescGroupName */
+                    rstrcpy (compDataObjInfo->rescGroupName,
+                      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+		    rstrcpy ((*outDataObjInfo)->rescGroupName, 
+		      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+                    freeAllRescGrpInfo (rescGrpInfo);
+                    return 0;
+		}
+	    }
+            tmpRescGrpInfo = tmpRescGrpInfo->cacheNext;
+	}
+	freeAllRescGrpInfo (rescGrpInfo);
+	status = SYS_NO_CACHE_RESC_IN_GRP;
+    } else {
+        status = getCacheDataInfoInRescGrp (srcDataObjInfoHead,
+          destDataObjInfoHead, rescGroupName, compDataObjInfo, outDataObjInfo);
+	if (status < 0) {
+	    rescGrpInfo_t *tmpRescGrpInfo;
+	    /* maybe the cache copy does not have a group associated with it */
+	    status = resolveRescGrp (rsComm, rescGroupName, &tmpRescGrpInfo);
+	    if (status >= 0) {
+                status = getNonGrpCacheDataInfoInRescGrp (srcDataObjInfoHead,
+                  destDataObjInfoHead, tmpRescGrpInfo,
+                  compDataObjInfo, outDataObjInfo);
+                if (status >= 0) {
+                    /* update the rescGroupName */
+                    rstrcpy (compDataObjInfo->rescGroupName,
+                      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+                    rstrcpy ((*outDataObjInfo)->rescGroupName,
+                      tmpRescGrpInfo->rescGroupName, NAME_LEN);
+                }
+                freeAllRescGrpInfo (tmpRescGrpInfo);
+	    }
+	}
+    }
+    return status;
+}
 
-    tmpPtr ++;
-    status = getLocalZoneInfo (&tmpZoneInfo);
-    if (status < 0) return status;
+/* getNonGrpCacheDataInfoInRescGrp - get the cache dataObjInfo even
+ * if it does not belong to the same group */
 
-    len = strlen (tmpZoneInfo->zoneName);   
-    if (strncmp (tmpZoneInfo->zoneName, tmpPtr, len) == 0 &&
-      *(tmpPtr + len) == '/') {
-	/* start with zoneName */
-	tmpPtr += (len + 1);
+int
+getNonGrpCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, rescGrpInfo_t *rescGrpInfo,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo)
+{
+    dataObjInfo_t *srcDataObjInfo;
+    rescGrpInfo_t *tmpRescGrpInfo;
+
+    srcDataObjInfo = srcDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+	    tmpRescGrpInfo = rescGrpInfo;
+	    while (tmpRescGrpInfo != NULL) {
+		if (strcmp (srcDataObjInfo->rescInfo->rescName,
+		  tmpRescGrpInfo->rescInfo->rescName) == 0) {
+		    *outDataObjInfo = srcDataObjInfo;
+		    return 0;
+		}
+		tmpRescGrpInfo = tmpRescGrpInfo->next;
+	    }
+	}
+	srcDataObjInfo = srcDataObjInfo->next;
     }
 
-    snprintf (outLogPath, MAX_NAME_LEN, "/%s/%s", tmpZoneInfo->zoneName,
-      tmpPtr);
+    /* try destDataObjInfoHead but up to compDataObjInfo because
+     * they have been updated and are good copies */
 
-    return 0;
+    srcDataObjInfo = destDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (srcDataObjInfo == compDataObjInfo) break;
+        if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+            tmpRescGrpInfo = rescGrpInfo;
+            while (tmpRescGrpInfo != NULL) {
+                if (strcmp (srcDataObjInfo->rescInfo->rescName,
+                  tmpRescGrpInfo->rescInfo->rescName) == 0) {
+                    *outDataObjInfo = srcDataObjInfo;
+                    return 0;
+                }
+                tmpRescGrpInfo = tmpRescGrpInfo->next;
+            }
+        }
+        srcDataObjInfo = srcDataObjInfo->next;
+    }
+    return SYS_NO_CACHE_RESC_IN_GRP;
 }
 
 int
-getRescType (rescInfo_t *rescInfo)
+getCacheDataInfoInRescGrp (dataObjInfo_t *srcDataObjInfoHead,
+dataObjInfo_t *destDataObjInfoHead, char *rescGroupName,
+dataObjInfo_t *compDataObjInfo, dataObjInfo_t **outDataObjInfo)
 {
-    int rescTypeInx;
+    dataObjInfo_t *srcDataObjInfo;
 
-    if (rescInfo == NULL) return USER__NULL_INPUT_ERR;
-    rescTypeInx = rescInfo->rescTypeInx;
-    if (rescTypeInx >= NumRescTypeDef) return RESCTYPEINX_EMPTY_IN_STRUCT_ERR;
-    return (RescTypeDef[rescTypeInx].driverType);
+    srcDataObjInfo = srcDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (strcmp (srcDataObjInfo->rescGroupName, rescGroupName) == 0) {
+	    /* same group */
+	    if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+		*outDataObjInfo = srcDataObjInfo;
+		return 0;
+	    }
+	}
+	srcDataObjInfo = srcDataObjInfo->next;
+    }
+
+    /* try destDataObjInfoHead but up to compDataObjInfo because
+     * they have been updated and are good copies */
+
+    srcDataObjInfo = destDataObjInfoHead;
+    while (srcDataObjInfo != NULL) {
+	if (srcDataObjInfo == compDataObjInfo) break;
+        if (strcmp (srcDataObjInfo->rescGroupName, rescGroupName) == 0) {
+            /* same group */
+            if (getRescClass (srcDataObjInfo->rescInfo) == CACHE_CL) {
+                *outDataObjInfo = srcDataObjInfo;
+                return 0;
+            }
+        }
+        srcDataObjInfo = srcDataObjInfo->next;
+    }
+    return SYS_NO_CACHE_RESC_IN_GRP;
 }
 

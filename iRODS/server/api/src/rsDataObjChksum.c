@@ -1,6 +1,8 @@
 #include "reGlobalsExtern.h"
 #include "dataObjChksum.h"
 #include "objMetaOpr.h"
+#include "resource.h"
+#include "specColl.h"
 #include "dataObjOpr.h"
 #include "rsApiHandler.h"
 #include "modDataObjMeta.h"

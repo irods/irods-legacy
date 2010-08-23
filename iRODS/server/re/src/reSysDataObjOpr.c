@@ -11,6 +11,9 @@
 #include "reSysDataObjOpr.h"
 #include "genQuery.h"
 #include "getRescQuota.h"
+#include "reServerLib.h"
+#include "dataObjOpr.h"
+#include "resource.h"
 
 
 /**

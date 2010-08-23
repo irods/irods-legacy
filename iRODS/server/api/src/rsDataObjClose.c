@@ -12,6 +12,7 @@
 #include "modDataObjMeta.h"
 #include "dataObjOpr.h"
 #include "objMetaOpr.h"
+#include "resource.h"
 #include "dataObjUnlink.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"

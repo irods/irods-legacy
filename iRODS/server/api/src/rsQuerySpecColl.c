@@ -9,6 +9,7 @@
 #include "fileReaddir.h"
 #include "fileClosedir.h"
 #include "objMetaOpr.h"
+#include "specColl.h"
 #include "dataObjClose.h"
 #include "subStructFileOpendir.h"
 #include "subStructFileReaddir.h"

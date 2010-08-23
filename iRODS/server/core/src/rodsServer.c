@@ -2,6 +2,7 @@
  *** For more information please refer to files in the COPYRIGHT directory ***/
 
 #include "rodsServer.h"
+#include "resource.h"
 #include "miscServerFunct.h"
 
 #include <syslog.h>

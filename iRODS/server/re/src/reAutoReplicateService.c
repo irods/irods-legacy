@@ -6,6 +6,7 @@
 #include "apiHeaderAll.h"
 #include "rsApiHandler.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
 
 
 typedef struct __replicas_check_status_

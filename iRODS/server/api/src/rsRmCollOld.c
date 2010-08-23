@@ -12,6 +12,8 @@
 #include "dataObjRename.h"
 #include "dataObjOpr.h"
 #include "objMetaOpr.h"
+#include "collection.h"
+#include "specColl.h"
 #include "fileRmdir.h"
 #include "subStructFileRmdir.h"
 #include "genQuery.h"

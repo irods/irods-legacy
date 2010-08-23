@@ -151,17 +151,11 @@ int
 queZone (char *zoneName, int portNum, rodsServerHost_t *masterServerHost,
 rodsServerHost_t *slaveServerHost);
 int
-initResc (rsComm_t *rsComm);
-int
-getHostStatusByRescInfo (rodsServerHost_t *rodsServerHost);
-int
-procAndQueRescResult (genQueryOut_t *genQueryOut);
+printZoneInfo ();
 int
 printServerHost (rodsServerHost_t *myServerHost);
 int
 printZoneInfo ();
-int
-printLocalResc ();
 int
 getAndConnRcatHost (rsComm_t *rsComm, int rcatType, char *rcatZoneHint,
 rodsServerHost_t **rodsServerHost);

@@ -7,6 +7,7 @@
 #include "dataObjOpr.h"
 #include "rodsLog.h"
 #include "objMetaOpr.h"
+#include "specColl.h"
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"

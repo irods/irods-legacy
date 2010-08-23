@@ -42,33 +42,7 @@ int
 rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
 rodsObjStat_t **rodsObjStatOut);
 int
-__rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, int interFlag,
-rodsObjStat_t **rodsObjStatOut);
-int
 _rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp, 
-rodsObjStat_t **rodsObjStatOut);
-int
-querySpecColl (rsComm_t *rsComm, char *objPath, genQueryOut_t **genQueryOut);
-int
-queueSpecCollCache (genQueryOut_t *genQueryOut, char *objPath);
-int
-queueSpecCollCacheWithObjStat (rodsObjStat_t *rodsObjStatOut);
-specCollCache_t *
-matchSpecCollCache (char *objPath);
-int
-statPathInSpecColl (rsComm_t *rsComm, char *objPath,
-int inCachOnly, rodsObjStat_t **rodsObjStatOut);
-int
-specCollSubStat (rsComm_t *rsComm, specColl_t *specColl,
-char *subPath, specCollPerm_t specCollPerm, dataObjInfo_t **dataObjInfo);
-int
-getSpecCollCache (rsComm_t *rsComm, char *objPath, int inCachOnly,
-specCollCache_t **specCollCache);
-int
-collStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
-rodsObjStat_t **rodsObjStatOut);
-int
-collStatAllKinds (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut);
 int
 _rsObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
@@ -76,12 +50,6 @@ rodsObjStat_t **rodsObjStatOut);
 int
 dataObjStat (rsComm_t *rsComm, dataObjInp_t *dataObjInp,
 rodsObjStat_t **rodsObjStatOut);
-int
-resolvePathInSpecColl (rsComm_t *rsComm, char *objPath,
-specCollPerm_t specCollPerm, int inCachOnly, dataObjInfo_t **dataObjInfo);
-int
-resolveLinkedPath (rsComm_t *rsComm, char *objPath,
-specCollCache_t **specCollCache, keyValPair_t *condInput);
 #else
 #define RS_OBJ_STAT NULL
 #endif

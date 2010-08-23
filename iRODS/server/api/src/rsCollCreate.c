@@ -12,6 +12,8 @@
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "objMetaOpr.h"
+#include "collection.h"
+#include "specColl.h"
 
 int
 rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)

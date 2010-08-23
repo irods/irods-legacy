@@ -8,7 +8,7 @@
  */
 
 #include "irodsReServer.h"
-#include "objMetaOpr.h"
+#include "reServerLib.h"
 #include "rsApiHandler.h"
 #include "rsIcatOpr.h"
 #include <syslog.h>

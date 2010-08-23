@@ -7,6 +7,8 @@
 #include "rodsLog.h"
 #include "icatDefines.h"
 #include "objMetaOpr.h"
+#include "collection.h"
+#include "resource.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

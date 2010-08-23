@@ -7,6 +7,7 @@
 #include "miscUtil.h"
 #include "genQuery.h"
 #include "objMetaOpr.h"
+#include "resource.h"
 
 int
 rsGetRescQuota (rsComm_t *rsComm, getRescQuotaInp_t *getRescQuotaInp,

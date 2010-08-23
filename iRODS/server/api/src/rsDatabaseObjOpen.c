@@ -5,6 +5,7 @@
 
 #include "databaseObjOpen.h"
 #include "objMetaOpr.h"
+#include "resource.h"
 #include "miscServerFunct.h"
 #include "dboHighLevelRoutines.h"
 int

@@ -11,6 +11,7 @@
 #endif
 #include "execCmd.h"
 #include "objMetaOpr.h"
+#include "dataObjOpr.h"
 #include "miscServerFunct.h"
 #include "rodsLog.h"
 #include "rsGlobalExtern.h"

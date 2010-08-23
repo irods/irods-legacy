@@ -11,6 +11,8 @@
 #include "dataObjGet.h"
 #include "rodsLog.h"
 #include "objMetaOpr.h"
+#include "specColl.h"
+#include "resource.h"
 #include "reGlobalsExtern.h"
 #include "reDefines.h"
 #include "reSysDataObjOpr.h"

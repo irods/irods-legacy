@@ -7,6 +7,7 @@
 #include "apiHeaderAll.h"
 #include "miscServerFunct.h"
 #include "objMetaOpr.h"
+#include "resource.h"
 #include "dataObjOpr.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

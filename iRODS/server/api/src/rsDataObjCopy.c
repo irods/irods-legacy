@@ -6,6 +6,8 @@
 #include "dataObjCopy.h"
 #include "rodsLog.h"
 #include "objMetaOpr.h"
+#include "collection.h"
+#include "specColl.h"
 #include "dataObjOpen.h"
 #include "dataObjCreate.h"
 #include "dataObjRepl.h"
