@@ -10,7 +10,6 @@
 #define RE_SERVER_LIB_H
 
 #include "rods.h"
-#include "initServer.h"
 #include "objInfo.h"
 #include "dataObjInpOut.h"
 #include "ruleExecSubmit.h"
