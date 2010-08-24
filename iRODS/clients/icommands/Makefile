@@ -81,7 +81,8 @@ OBJS =		\
 		$(objDir)/ixmsg.o \
 		$(objDir)/idbug.o \
 		$(objDir)/idbo.o \
-		$(objDir)/ips.o 
+		$(objDir)/ips.o  \
+		$(objDir)/ifsck.o
 
 BINS =		\
 		$(binDir)/iadmin \
@@ -126,7 +127,8 @@ BINS =		\
 		$(binDir)/iscan \
 		$(binDir)/ixmsg  \
 		$(binDir)/idbug  \
-		$(binDir)/ips
+		$(binDir)/ips   \
+		$(binDir)/ifsck
 
 
 
