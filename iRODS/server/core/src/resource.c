@@ -6,6 +6,14 @@
 #include "genQuery.h"
 #include "rodsClient.h"
 
+/* getRescInfo - given the rescName of rescgrpName in condInput keyvalue
+ * pair or defaultResc, return the rescGrpInfo containing the info on
+ * this resource or resource group.
+ * If it is a resource, the returned integer can be 0, SYS_RESC_IS_DOWN
+ * SYS_RESC_QUOTA_EXCEEDED.
+ * 
+ */
+
 int
 getRescInfo (rsComm_t *rsComm, char *defaultResc, keyValPair_t *condInput,
 rescGrpInfo_t **rescGrpInfo)
@@ -25,8 +33,11 @@ rescGrpInfo_t **rescGrpInfo)
     return (status);
 }
 
-/* _getRescInfo - get the rescInfo. rescGroupName can be a resource
- * or a resource group.
+/* _getRescInfo -  given the input string rescGroupName (which can be
+ * the name of a resource or resource group), return the rescGrpInfo 
+ * containing the info on this resource or resource group.
+ * If it is a resource, the returned integer can be 0, SYS_RESC_IS_DOWN
+ * SYS_RESC_QUOTA_EXCEEDED.
  */
 
 int
@@ -50,6 +61,10 @@ rescGrpInfo_t **rescGrpInfo)
     return (status);
 }
 
+/* getRescStatus - Given a resource name in inpRescName or condInput
+ * key value pair, return the status of the resource. The returned
+ * value can be INT_RESC_STATUS_DOWN or INT_RESC_STATUS_UP.
+ */
 int
 getRescStatus (rsComm_t *rsComm, char *inpRescName, keyValPair_t *condInput)
 {
@@ -77,7 +92,8 @@ getRescStatus (rsComm_t *rsComm, char *inpRescName, keyValPair_t *condInput)
     }
 }
 
-/* resolveRescGrp - get the rescInfo for the rescGroupName.
+/* resolveRescGrp - Given the rescGroupName string, returns info for
+ * all resources in this resource group.
  * rescGroupName can only be a resource group.
  */
 
@@ -107,6 +123,10 @@ rescGrpInfo_t **rescGrpInfo)
     return CAT_NO_ROWS_FOUND;
 }
 
+/* replRescGrpInfo - Replicate a rescGrpInfo_t struct. The source struct
+ * is srcRescGrpInfo and the result is destRescGrpInfo.
+ */
+
 int
 replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
 {
@@ -134,6 +154,11 @@ replRescGrpInfo (rescGrpInfo_t *srcRescGrpInfo, rescGrpInfo_t **destRescGrpInfo)
     return (0);
 }
 
+/* queryRescInRescGrp - Given the rescGroupName string which must be the
+ * name of a resource group, query all resources in this resource group.
+ * The output of the query is given in genQueryOut.
+ */
+
 int
 queryRescInRescGrp (rsComm_t *rsComm, char *rescGroupName,
 genQueryOut_t **genQueryOut)
@@ -158,6 +183,11 @@ genQueryOut_t **genQueryOut)
 
 }
 
+/* resolveAndQueResc - Given the rescName string, get the resource info
+ * in a rescGrpInfo_t struct and queue this struct in the rescGrpInfo
+ * link list by resource type. Also copy the rescGroupName string to this 
+ * rescGrpInfo_t struct.
+ */
 int
 resolveAndQueResc (char *rescName, char *rescGroupName,
 rescGrpInfo_t **rescGrpInfo)
@@ -176,6 +206,10 @@ rescGrpInfo_t **rescGrpInfo)
         return (0);
     }
 }
+
+/* resolveResc - Given the rescName string, get the info of this resource
+ * in rescInfo.
+ */
 
 int
 resolveResc (char *rescName, rescInfo_t **rescInfo)
@@ -204,6 +238,9 @@ resolveResc (char *rescName, rescInfo_t **rescInfo)
     return (SYS_INVALID_RESC_INPUT);
 }
 
+/* getNumResc - count the number of resources in the rescGrpInfo link list.
+ */
+
 int
 getNumResc (rescGrpInfo_t *rescGrpInfo)
 {
@@ -217,6 +254,12 @@ getNumResc (rescGrpInfo_t *rescGrpInfo)
     }
     return (numResc);
 }
+
+/* sortResc - Sort the resources given in the rescGrpInfo link list
+ * according to the sorting scheme given in sortScheme. sortScheme
+ * can be "random", "byRescClass" or "byLoad". The sorted rsources
+ * is also given in rescGrpInfo.
+ */
 
 int
 sortResc (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo,
@@ -244,23 +287,6 @@ keyValPair_t *condInput, char *sortScheme)
 
     if (strcmp (sortScheme, "random") == 0) {
         sortRescRandom (rescGrpInfo);
-#if 0
-        order = random() % numResc;
-        if (order == 0) {
-            return (0);
-        }
-
-        tmpRescGrpInfo = *rescGrpInfo;
-        for (i = 0; i < order; i++) {
-            tmpRescGrpInfo = tmpRescGrpInfo->next;
-        }
-
-        /* exchange rescInfo with the head */
-
-        tmpRescInfo = tmpRescGrpInfo->rescInfo;
-        tmpRescGrpInfo->rescInfo = (*rescGrpInfo)->rescInfo;
-        (*rescGrpInfo)->rescInfo = tmpRescInfo;
-#endif
     } else if (strcmp (sortScheme, "byRescClass") == 0) {
         sortRescByType (rescGrpInfo);
         } else if (strcmp (sortScheme, "byLoad") == 0) {
