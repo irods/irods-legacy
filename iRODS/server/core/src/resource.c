@@ -263,7 +263,7 @@ getNumResc (rescGrpInfo_t *rescGrpInfo)
 
 int
 sortResc (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo,
-keyValPair_t *condInput, char *sortScheme)
+char *sortScheme)
 {
     int numResc;
 

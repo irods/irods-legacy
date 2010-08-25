@@ -162,7 +162,7 @@ msiSetRescSortScheme (msParam_t *xsortScheme, ruleExecInfo_t *rei)
     } else {
         myRescGrpInfo = rei->rgi;
     }
-    sortResc (rei->rsComm, &myRescGrpInfo, &rei->doinp->condInput, sortScheme);
+    sortResc (rei->rsComm, &myRescGrpInfo, sortScheme);
     rei->rgi = myRescGrpInfo;
     return(0);
 }
