@@ -479,7 +479,10 @@ char *subObjPath, char *subfilePath, rodsLong_t dataSize, int flags)
 	unlink (dataObjInfo.filePath);
     } else {
 	ruleExecInfo_t rei;
-	initReiWithDataObjInp (&rei, rsComm, NULL);
+	dataObjInp_t dataObjInp;
+	bzero (&dataObjInp, sizeof (dataObjInp));
+	rstrcpy (dataObjInp.objPath, dataObjInfo.objPath, MAX_NAME_LEN);
+	initReiWithDataObjInp (&rei, rsComm, &dataObjInp);
 	rei.doi = &dataObjInfo;
 	rei.status = applyRule ("acPostProcForTarFileReg", NULL, &rei,
                     NO_SAVE_REI);
