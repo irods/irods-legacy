@@ -23,13 +23,17 @@
 #define  CONNECT_SLEEP_TIME 200000	/* connect sleep time in uSec */
 
 #define READ_STARTUP_PACK_TOUT_SEC	1	/* 1 sec timeout */
-#define READ_VERSION_TOUT_SEC		5	/* 5 sec timeout */
+#define READ_VERSION_TOUT_SEC		10	/* 10 sec timeout */
 /* definition for the reconnFlag */
 #define NO_RECONN	0	/* no reconnection */
 #define RECONN_NOTUSED	1	/* this has been depricated */
 #define RECONN_TIMEOUT	2
 
+#if 0	/* XXXXXXXXXX testing only */
 #define RECONN_TIMEOUT_TIME  600   /* re-connection timeout time in sec */
+#else
+#define RECONN_TIMEOUT_TIME  60   /* re-connection timeout time in sec */
+#endif
 
 #define RECONNECT_ENV "irodsReconnect"		/* reconnFlag will be set to
 						 * RECONN_TIMEOUT if this
