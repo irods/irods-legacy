@@ -1085,7 +1085,7 @@ mkTarCacheDir (int structFileInx)
         if (status >= 0) {
 	    break;
 	} else {
-	    if (getUnixErrno (status) == EEXIST) {
+	    if (getErrno (status) == EEXIST) {
 		i++;
 		continue;
 	    } else {

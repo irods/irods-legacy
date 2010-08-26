@@ -148,7 +148,7 @@ dataObjInfo_t **dataObjInfoHead)
 	if (status < 0) {
 	    /* go ahead and unlink the obj if the phy file does not exist or
 	     * have problem untaring it */
-	    if (getUnixErrno (status) != EEXIST && 
+	    if (getErrno (status) != EEXIST && 
 	      getIrodsErrno (status) != SYS_TAR_STRUCT_FILE_EXTRACT_ERR) {
                 rodsLog (LOG_NOTICE,
                 "_rsDataObjUnlink:_unbunAndStageBunfileObj err for %s,stat=%d",

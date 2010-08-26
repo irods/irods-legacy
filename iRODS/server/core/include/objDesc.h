@@ -72,10 +72,6 @@ int
 fillL1desc (int l1descInx, dataObjInp_t *dataObjInp,
 dataObjInfo_t *dataObjInfo, int replStatus, rodsLong_t dataSize);
 int
-getErrno (int errCode);
-int
-getWriteFlag (int openFlag);
-int
 getNumThreads (rsComm_t *rsComm, rodsLong_t dataSize, int inpNumThr, 
 keyValPair_t *condInput, char *destRescName, char *srcRescName);
 int

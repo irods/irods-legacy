@@ -855,7 +855,7 @@ rodsServerHost_t **rodsServerHost)
 int
 convZoneSockError (int inStatus)
 {
-    int unixErr = getUnixErrno (inStatus);
+    int unixErr = getErrno (inStatus);
     if (inStatus + unixErr == USER_SOCK_CONNECT_ERR)  
 	return (CROSS_ZONE_SOCK_CONNECT_ERR - unixErr);
     else 

@@ -180,7 +180,7 @@ char *collInfo2, specColl_t *specColl);
 int
 getSpecCollTypeStr (specColl_t *specColl, char *outStr);
 int
-getUnixErrno (int irodError);
+getErrno (int errCode);
 int 
 getIrodsErrno (int irodError);
 structFileOprType_t

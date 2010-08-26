@@ -52,7 +52,7 @@ rodsStat_t **subStructFileStatOut, rodsServerHost_t *rodsServerHost)
 
     status = rcSubStructFileStat (rodsServerHost->conn, subFile, subStructFileStatOut);
 
-    if (status < 0 && getUnixErrno (status) != ENOENT) {
+    if (status < 0 && getErrno (status) != ENOENT) {
         rodsLog (LOG_NOTICE,
          "remoteSubStructFileStat: rcSubStructFileStat failed for %s, status = %d",
           subFile->subFilePath, status);

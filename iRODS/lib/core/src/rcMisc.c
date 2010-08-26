@@ -3202,7 +3202,7 @@ makeCachedStructFileStr (char *collInfo2, specColl_t *specColl)
 }
 
 int
-getUnixErrno (int irodError)
+getErrno (int irodError)
 {
     int unixErrno = irodError % 1000;
 

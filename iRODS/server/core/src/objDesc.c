@@ -250,16 +250,6 @@ initDataObjInfoWithInp (dataObjInfo_t *dataObjInfo, dataObjInp_t *dataObjInp)
     return (0);
 }
 
-int
-getErrno (int errCode)
-{
-    int myErrno;
-
-    myErrno = errCode % 1000;
-
-    return (myErrno * (-1));
-}
-
 /* getNumThreads - get the number of threads.
  * inpNumThr - 0 - server decide
  *	       < 0 - NO_THREADING 	
