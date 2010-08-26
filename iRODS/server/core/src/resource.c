@@ -238,6 +238,7 @@ resolveResc (char *rescName, rescInfo_t **rescInfo)
     return (SYS_INVALID_RESC_INPUT);
 }
 
+#if 0	/* replaced by getRescCnt */
 /* getNumResc - count the number of resources in the rescGrpInfo link list.
  */
 
@@ -254,6 +255,7 @@ getNumResc (rescGrpInfo_t *rescGrpInfo)
     }
     return (numResc);
 }
+#endif
 
 /* sortResc - Sort the resources given in the rescGrpInfo link list
  * according to the sorting scheme given in sortScheme. sortScheme
@@ -275,7 +277,7 @@ char *sortScheme)
         return (0);
     }
 
-    numResc = getNumResc (*rescGrpInfo);
+    numResc = getRescCnt (*rescGrpInfo);
 
     if (numResc <= 1) {
         return (0);
@@ -299,6 +301,10 @@ char *sortScheme)
     return (0);
 }
 
+/* sortRescRandom - source the resources in the rescGrpInfo link list
+ * randomly.
+ */
+
 int
 sortRescRandom (rescGrpInfo_t **rescGrpInfo)
 {
@@ -310,7 +316,7 @@ sortRescRandom (rescGrpInfo_t **rescGrpInfo)
 
 
     tmpRescGrpInfo = *rescGrpInfo;
-    numResc = getNumResc (tmpRescGrpInfo);
+    numResc = getRescCnt (tmpRescGrpInfo);
 
     if (numResc <= 1) {
         return (0);
@@ -331,6 +337,10 @@ sortRescRandom (rescGrpInfo_t **rescGrpInfo)
     free (randomArray);
     return 0;
 }
+
+/* sortRescByType - sort the resource in the rescGrpInfo link list by
+ * resource type in the order of CACHE_CL, ARCHIVAL_CL and the rest.
+ */
 
 int
 sortRescByType (rescGrpInfo_t **rescGrpInfo)
@@ -385,6 +395,10 @@ sortRescByType (rescGrpInfo_t **rescGrpInfo)
 
     return 0;
 }
+
+/* sortRescByLoad - sort the resource in the rescGrpInfo link list by
+ * load with the lightest load first.
+ */
 
 int
 sortRescByLoad (rsComm_t *rsComm, rescGrpInfo_t **rescGrpInfo)
@@ -499,6 +513,9 @@ sortRescByLocation (rescGrpInfo_t **rescGrpInfo)
     return 0;
 }
 
+/* getRescClass - Given the rescInfo, returns the classType of the resource.
+ */
+
 int
 getRescClass (rescInfo_t *rescInfo)
 {
@@ -510,6 +527,11 @@ getRescClass (rescInfo_t *rescInfo)
 
     return classType;
 }
+
+/* getRescGrpClass - Get the classType of the resources in a resource group
+ * (given in rescGrpInfo). Return COMPOUND_CL if one of the resource is
+ * this class. Otherwise return the class of the top one in the list.
+ */
 
 int
 getRescGrpClass (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
@@ -530,6 +552,9 @@ getRescGrpClass (rescGrpInfo_t *rescGrpInfo, rescInfo_t **outRescInfo)
     return (getRescClass(rescGrpInfo->rescInfo));
 }
 
+/* compareRescAddr - Given 2 rescInfo, if they have the same host address,
+ * return 1. Otherwise, return 0.
+ */
 
 int
 compareRescAddr (rescInfo_t *srcRescInfo, rescInfo_t *destRescInfo)
@@ -606,6 +631,11 @@ rescInfo_t *memberRescInfo, rescInfo_t **outCacheResc)
     return SYS_NO_CACHE_RESC_IN_GRP;
 }
 
+/* getRescInGrp - Given the rescName string and the rescGroupName string
+ * get the rescInfo of the resource in the resource group. If rescName
+ * is not in rescGroupName, return SYS_UNMATCHED_RESC_IN_RESC_GRP.
+ */
+
 int
 getRescInGrp (rsComm_t *rsComm, char *rescName, char *rescGroupName,
 rescInfo_t **outRescInfo)
@@ -638,6 +668,11 @@ rescInfo_t **outRescInfo)
     return SYS_UNMATCHED_RESC_IN_RESC_GRP;
 }
 
+/* getRescGrpOfResc - Given a resource represented by rescInfo, get
+ * the resource group where this resource is a member. The output is
+ * the resource group link list.
+ */
+  
 int
 getRescGrpOfResc (rsComm_t *rsComm, rescInfo_t * rescInfo,
 rescGrpInfo_t **rescGrpInfo)
@@ -1436,6 +1471,9 @@ getMultiCopyPerResc ()
         return 0;
     }
 }
+
+/* getRescCnt - count the number of resources in the rescGrpInfo link list.
+ */
 
 int
 getRescCnt (rescGrpInfo_t *myRescGrpInfo)
