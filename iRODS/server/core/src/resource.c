@@ -6,9 +6,10 @@
 #include "genQuery.h"
 #include "rodsClient.h"
 
-/* getRescInfo - given the rescName of rescgrpName in condInput keyvalue
+/* getRescInfo - Given the rescName or rescgrpName in condInput keyvalue
  * pair or defaultResc, return the rescGrpInfo containing the info on
  * this resource or resource group.
+ * The resource given in condInput is taken first, then defaultResc.
  * If it is a resource, the returned integer can be 0, SYS_RESC_IS_DOWN
  * SYS_RESC_QUOTA_EXCEEDED.
  * 
@@ -754,7 +755,9 @@ rescGrpInfo_t **outRescGrpInfo)
     return 0;
 }
 
-/* initRescGrp - Initialize the CachedRescGrpInfo queue
+/* initRescGrp - Initialize the CachedRescGrpInfo queue. Query all resource
+ * groups and queue them it the CachedRescGrpInfo link list. Resources in
+ * each resource group are queued by class.
  */
 
 int
@@ -847,6 +850,19 @@ initRescGrp (rsComm_t *rsComm)
 
     return 0;
 }
+
+/* setDefaultResc - set the default resource and put the result in the
+ * outRescGrpInfo link list. This is normally called by the msiSetDefaultResc
+ * micro-service. The defaultRescList and optionStr are input 
+ * parameters of msiSetDefaultResc. 
+ * If optionStr is "force" and this user is not LOCAL_PRIV_USER_AUTH, 
+ * only a resource in the defaultRescList will be used. 
+ * If optionStr is "preferred", the resource group is taken from condInput
+ * if it exists and the preferred resource in this resource group is given 
+ * in the defaultRescList.
+ * Otherwise, use the resource given in condInput, then in defaultRescList.
+ * 
+ */
 
 int
 setDefaultResc (rsComm_t *rsComm, char *defaultRescList, char *optionStr,
@@ -980,8 +996,13 @@ keyValPair_t *condInput, rescGrpInfo_t **outRescGrpInfo)
     return (status);
 }
 
-/* getRescInfoAndStatus - given a resource or rescGroup name, see if the
- * resource is up or down.
+/* getRescInfoAndStatus - Given a resource or rescGroup name, see if the
+ * resource is up or down.  
+ * The resource given in condInput is taken first, then rescName.
+ * If the resource is a resource group, a INT_RESC_STATUS_UP will be
+ * returned if any one of the resource in the group is up.
+ * If the resource is up, the resource info will be put in the rescGrpInfo
+ * link list. 
  */
 int
 getRescInfoAndStatus (rsComm_t *rsComm, char *rescName, keyValPair_t *condInput,
@@ -1012,6 +1033,10 @@ rescGrpInfo_t **rescGrpInfo)
     }
     return status;
 }
+
+/* initResc - Initialize the global resource link list RescGrpInfo which
+ * contains all resources known to the system.
+ */
 
 int
 initResc (rsComm_t *rsComm)
@@ -1061,6 +1086,10 @@ initResc (rsComm_t *rsComm)
     }
     return (status);
 }
+
+/* procAndQueRescResult - Process the query results from initResc ().
+ * Queue the results in the global resource link list RescGrpInfo.
+ */
 
 int
 procAndQueRescResult (genQueryOut_t *genQueryOut)
@@ -1258,6 +1287,11 @@ getHostStatusByRescInfo (rodsServerHost_t *rodsServerHost)
     }
 }
 
+/* printLocalResc - Print the global resource link list RescGrpInfo which
+ * contains all resources known to the system. This routine is normally 
+ * used by the irodsServer for logging.
+ */
+
 int
 printLocalResc ()
 {
@@ -1326,6 +1360,12 @@ printLocalResc ()
     return (0);
 }
 
+/* queResc - Queue a resource given in myRescInfo to the rescGrpInfoHead
+ * link list. If rescGroupName is not NULL, copy the string to 
+ * myRescGrpInfo->rescGroupName. If topFlag == TOP_FLAG, queue it
+ * to the top of the link list. Otherwise queue it to the bottom.
+ */
+
 int
 queResc (rescInfo_t *myRescInfo, char *rescGroupName,
 rescGrpInfo_t **rescGrpInfoHead, int topFlag)
@@ -1350,6 +1390,11 @@ rescGrpInfo_t **rescGrpInfoHead, int topFlag)
     return (status);
 
 }
+
+/* queRescGrp - Queue a resource given in myRescGrpInfo to the 
+ * rescGrpInfoHead link list.  If flag == TOP_FLAG, queue it
+ * to the top of the link list. Otherwise queue it to the bottom.
+ */
 
 int
 queRescGrp (rescGrpInfo_t **rescGrpInfoHead, rescGrpInfo_t *myRescGrpInfo,
@@ -1388,6 +1433,9 @@ int flag)
     return (0);
 }
 
+/* freeAllRescGrp - Free the rescGrpInfo_t link list given in rescGrpHead
+ */
+
 int
 freeAllRescGrp (rescGrpInfo_t *rescGrpHead)
 {
@@ -1403,6 +1451,10 @@ freeAllRescGrp (rescGrpInfo_t *rescGrpHead)
     return 0;
 }
 
+/* getRescType - Return a fileDriverType_t in the rescInfo. The return value
+ * can be UNIX_FILE_TYPE, HPSS_FILE_TYPE, NT_FILE_TYPE ----
+ */
+
 int
 getRescType (rescInfo_t *rescInfo)
 {
@@ -1413,6 +1465,11 @@ getRescType (rescInfo_t *rescInfo)
     if (rescTypeInx >= NumRescTypeDef) return RESCTYPEINX_EMPTY_IN_STRUCT_ERR;
     return (RescTypeDef[rescTypeInx].driverType);
 }
+
+/* getRescTypeInx - Given a resource type string token (e.g., 
+ * output of "iadmin lt resc_type" - "unix file system", hpss ...),
+ * get the index number into the RescTypeDef array.
+ */
 
 int
 getRescTypeInx (char *rescType)
@@ -1434,6 +1491,11 @@ getRescTypeInx (char *rescType)
     return (UNMATCHED_KEY_OR_INDEX);
 }
 
+/* getRescClassInx - Given a resource class string token (e.g.,
+ * output of "iadmin lt resc_class" - cache, archive, compound ...),
+ * get the index number into the RescClass array.
+ */
+
 int
 getRescClassInx (char *rescClass)
 {
@@ -1445,6 +1507,7 @@ getRescClassInx (char *rescClass)
 
     for (i = 0; i < NumRescClass; i++) {
         if (strstr (rescClass, RescClass[i].className) != NULL) {
+	    /* "primary" is currently not used */
             if (strstr (rescClass, "primary") != NULL) {
                 return (i | PRIMARY_FLAG);
             } else {
@@ -1457,6 +1520,11 @@ getRescClassInx (char *rescClass)
 
     return (UNMATCHED_KEY_OR_INDEX);
 }
+
+/* getMultiCopyPerResc - call the acSetMultiReplPerResc rule to see if 
+ * multiple copies can exist in a resource. If the rule allows multi copy,
+ * return 1, otherwise retun 0.
+ */
 
 int
 getMultiCopyPerResc ()
