@@ -8,6 +8,7 @@
 #include "dataPut.h"
 #include "filePut.h"
 #include "objMetaOpr.h"
+#include "physPath.h"
 #include "specColl.h"
 #include "dataObjOpen.h"
 #include "dataObjCreate.h"

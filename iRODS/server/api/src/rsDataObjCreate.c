@@ -13,6 +13,7 @@
 #include "resource.h"
 #include "specColl.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 #include "dataObjUnlink.h"
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"

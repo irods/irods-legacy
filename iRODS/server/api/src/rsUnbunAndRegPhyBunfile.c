@@ -9,6 +9,7 @@
 #include "objMetaOpr.h"
 #include "resource.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
 

@@ -10,12 +10,12 @@
 #include "dataObjOpr.h"
 #include "resource.h"
 #include "specColl.h"
+#include "physPath.h"
 #include "objStat.h"
 #include "miscServerFunct.h"
 #include "fileOpr.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"
-//#include "fileOpr.h"
 
 int
 rsStructFileExtAndReg (rsComm_t *rsComm,

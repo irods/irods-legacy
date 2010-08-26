@@ -9,6 +9,7 @@
 #include "miscServerFunct.h"
 #include "fileOpr.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 
 int
 rsFileRename (rsComm_t *rsComm, fileRenameInp_t *fileRenameInp)

@@ -12,6 +12,7 @@
 #include "rcGlobalExtern.h"
 #include "rsApiHandler.h"
 #include "objMetaOpr.h"
+#include "physPath.h"
 #include "specColl.h"
 #include "subStructFileGet.h"
 #include "getRemoteZoneResc.h"

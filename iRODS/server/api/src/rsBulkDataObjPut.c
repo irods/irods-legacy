@@ -8,6 +8,7 @@
 #include "resource.h"
 #include "specColl.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 #include "miscServerFunct.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

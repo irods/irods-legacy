@@ -8,6 +8,7 @@
 #include "resource.h"
 #include "collection.h"
 #include "specColl.h"
+#include "physPath.h"
 #include "miscServerFunct.h"
 #include "openCollection.h"
 #include "readCollection.h"

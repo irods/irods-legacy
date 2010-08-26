@@ -49,7 +49,8 @@ SVR_CORE_OBJS =	\
 		$(svrCoreObjDir)/collection.o	\
 		$(svrCoreObjDir)/objDesc.o	\
 		$(svrCoreObjDir)/specColl.o	\
-		$(svrCoreObjDir)/reServerLib.o
+		$(svrCoreObjDir)/reServerLib.o	\
+		$(svrCoreObjDir)/physPath.o
 INCLUDES +=	-I$(svrCoreIncDir)
 
 

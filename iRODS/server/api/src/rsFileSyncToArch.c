@@ -9,6 +9,7 @@
 #include "fileOpr.h"
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 
 int
 rsFileSyncToArch (rsComm_t *rsComm, fileStageSyncInp_t *fileSyncToArchInp)

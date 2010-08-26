@@ -4,6 +4,7 @@
 #include "resource.h"
 #include "specColl.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 #include "rsApiHandler.h"
 #include "modDataObjMeta.h"
 #include "getRemoteZoneResc.h"

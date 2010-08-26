@@ -8,6 +8,7 @@
 #include "collection.h"
 #include "resource.h"
 #include "specColl.h"
+#include "physPath.h"
 #include "subStructFileRename.h"
 #include "icatHighLevelRoutines.h"
 #include "dataObjUnlink.h"

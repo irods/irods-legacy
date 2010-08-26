@@ -10,6 +10,7 @@
 #include "resource.h"
 #include "resource.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 #include "dataObjCreate.h"
 #include "fileOpen.h"
 #include "subStructFileOpen.h"

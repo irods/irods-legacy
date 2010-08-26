@@ -14,6 +14,7 @@
 #include "reServerLib.h"
 #include "dataObjOpr.h"
 #include "resource.h"
+#include "physPath.h"
 
 
 /**

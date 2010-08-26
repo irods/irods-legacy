@@ -11,6 +11,7 @@
 #include "collection.h"
 #include "specColl.h"
 #include "resource.h"
+#include "physPath.h"
 #include "rsGlobalExtern.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

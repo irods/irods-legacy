@@ -7,6 +7,7 @@
 #include "rsGlobalExtern.h"
 #include "objMetaOpr.h"
 #include "resource.h"
+#include "physPath.h"
 
 
 int

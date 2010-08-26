@@ -14,6 +14,7 @@
 #include "objMetaOpr.h"
 #include "collection.h"
 #include "specColl.h"
+#include "physPath.h"
 
 int
 rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)

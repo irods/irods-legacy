@@ -9,6 +9,7 @@
 #include "fileOpr.h"
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 
 int
 rsFileStageToCache (rsComm_t *rsComm, fileStageSyncInp_t *fileStageToCacheInp)

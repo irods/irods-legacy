@@ -1,12 +1,19 @@
 /*** Copyright (c), The Regents of the University of California            ***
  *** For more information please refer to files in the COPYRIGHT directory ***/
-/* collection.c - collection metadata operation */
+/* collection.c - collection operation */
 
 #include "collection.h"
 #include "specColl.h"
 #include "genQuery.h"
 #include "rodsClient.h"
 
+/* checkCollAccessPerm - Check whether the user is allowed to perform
+ * operation specified by the accessPerm string on the collection.
+ * Various accessPerm are defined in  icatDefines.h. (e.g., 
+ * ACCESS_DELETE_OBJECT for create and delete, ACCESS_READ_OBJECT for read).
+ * A return of >= 0 means allow and a negative value means disallow.
+ */
+ 
 int
 checkCollAccessPerm (rsComm_t *rsComm, char *collection, char *accessPerm)
 {

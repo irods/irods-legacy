@@ -9,6 +9,7 @@
 #include "fileOpr.h"
 #include "miscServerFunct.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 
 int
 rsFileCreate (rsComm_t *rsComm, fileCreateInp_t *fileCreateInp)
