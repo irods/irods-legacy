@@ -7,6 +7,7 @@
 #include "rodsLog.h"
 #include "objMetaOpr.h"
 #include "dataObjOpr.h"
+#include "physPath.h"
 #include "regDataObj.h"
 #include "rcGlobalExtern.h"
 #include "reGlobalsExtern.h"

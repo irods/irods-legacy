@@ -12,6 +12,7 @@
 #include "resource.h"
 #include "collection.h"
 #include "specColl.h"
+#include "physPath.h"
 #include "modDataObjMeta.h"
 #include "ruleExecSubmit.h"
 #include "ruleExecDel.h"
