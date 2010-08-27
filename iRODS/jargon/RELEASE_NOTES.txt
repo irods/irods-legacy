@@ -74,6 +74,10 @@ Refactoring
 ------------
 *made methods to retrieve misc server info public.
 
+------------
+*Bug 111 - Protocol exception returning binary (base64 encoded) data from execution of script 
+Test cases, updated exec command method signatures to clean up unnecessary parms
+
 ================================================================================================
 Outstanding Issues
 

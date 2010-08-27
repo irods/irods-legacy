@@ -11,82 +11,130 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 
-
 public class IRODSExecuteCommandsTest {
-    private static Properties testingProperties = new Properties();
-    private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
-    
-    @BeforeClass
-    public static void setUpBeforeClass() throws Exception {
-        TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
-        testingProperties = testingPropertiesLoader.getTestProperties();
-    }
+	private static Properties testingProperties = new Properties();
+	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 
-    @AfterClass
-    public static void tearDownAfterClass() throws Exception {
-    }
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		TestingPropertiesHelper testingPropertiesLoader = new TestingPropertiesHelper();
+		testingProperties = testingPropertiesLoader.getTestProperties();
+	}
 
-    @Before
-    public void setUp() throws Exception {
-    }
+	@AfterClass
+	public static void tearDownAfterClass() throws Exception {
+	}
 
-    @After
-    public void tearDown() throws Exception {
-    }
+	@Before
+	public void setUp() throws Exception {
+	}
 
+	@After
+	public void tearDown() throws Exception {
+	}
 
-    @Test
-    public void testExecuteHello() throws Exception {
-    	
-        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
-        
-        InputStream inputStream = irodsFileSystem.commands.executeCommand("hello", "", "localhost", "");
-        
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
+	/*
+	 * Bug 111 - Protocol exception returning binary (base64 encoded) data from
+	 * execution of script
+	 * 
+	 * currently set to Ignore, as it requires insertion of a test script in the
+	 * server/bin/cmd directory per this example:
+	 * 
+	 * 
+	 * #!/usr/bin/python import base64 import os import sys
+	 * 
+	 * base64.encode(open("/opt/irods/trunk/iRODS/server/bin/cmd/getErrorStr"),
+	 * open("./testexecbinary.out", "w")) file = open("./testexecbinary.out",
+	 * "r") tempFile = file.read() sys.stdout.write(tempFile) sys.stdout.flush()
+	 * #os.remove("test.out")
+	 */
+	@Ignore
+	public void testExecuteBinaryResponse() throws Exception {
 
-        while ((line = br.readLine()) != null) {
-        sb.append(line + "\n");
-        }
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
-        br.close();
-        String result = sb.toString();
-        irodsFileSystem.close();
+		InputStream inputStream = irodsFileSystem.commands.executeCommand(
+				"testexecbinary.sh", "", "localhost");
 
-	    TestCase.assertEquals("did not successfully execute hello command", "Hello world  from irods".trim(), result.trim());
-        
-    }
-    
-    @Test
-    public void testExecuteHelloViaFileSystem() throws Exception {
-    	
-        IRODSAccount testAccount = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
-        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
-        
-        InputStream inputStream = irodsFileSystem.executeProxyCommand("hello", "");
-                
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder sb = new StringBuilder();
-        String line = null;
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				inputStream));
+		StringBuilder sb = new StringBuilder();
+		String line = null;
 
-        while ((line = br.readLine()) != null) {
-        sb.append(line + "\n");
-        }
+		while ((line = br.readLine()) != null) {
+			sb.append(line + "\n");
+		}
 
-        br.close();
-        String result = sb.toString();
-        irodsFileSystem.close();
+		br.close();
+		String result = sb.toString();
+		irodsFileSystem.close();
 
-	    TestCase.assertEquals("did not successfully execute hello command", "Hello world  from irods".trim(), result.trim());
-        
-    }
-    
-   
+		TestCase.assertTrue("did not successfully execute hello command",
+				result.length() > 0);
+
+	}
+
+	@Test
+	public void testExecuteHello() throws Exception {
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		InputStream inputStream = irodsFileSystem.commands.executeCommand(
+				"hello", "", "localhost");
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				inputStream));
+		StringBuilder sb = new StringBuilder();
+		String line = null;
+
+		while ((line = br.readLine()) != null) {
+			sb.append(line + "\n");
+		}
+
+		br.close();
+		String result = sb.toString();
+		irodsFileSystem.close();
+
+		TestCase.assertEquals("did not successfully execute hello command",
+				"Hello world  from irods".trim(), result.trim());
+
+	}
+
+	@Test
+	public void testExecuteHelloViaFileSystem() throws Exception {
+
+		IRODSAccount testAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
+
+		InputStream inputStream = irodsFileSystem.executeProxyCommand("hello",
+				"");
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(
+				inputStream));
+		StringBuilder sb = new StringBuilder();
+		String line = null;
+
+		while ((line = br.readLine()) != null) {
+			sb.append(line + "\n");
+		}
+
+		br.close();
+		String result = sb.toString();
+		irodsFileSystem.close();
+
+		TestCase.assertEquals("did not successfully execute hello command",
+				"Hello world  from irods".trim(), result.trim());
+
+	}
 
 }

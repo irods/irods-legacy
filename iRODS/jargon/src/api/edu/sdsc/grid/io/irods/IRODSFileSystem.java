@@ -363,7 +363,7 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 */
 	public InputStream executeProxyCommand(String command, String commandArgs)
 			throws IOException {
-		return commands.executeCommand(command, commandArgs, "", null);
+		return commands.executeCommand(command, commandArgs, "");
 	}
 
 	/**

@@ -1,9 +1,11 @@
 package edu.sdsc.grid.io.irods;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
+import edu.sdsc.grid.io.GeneralMetaData;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -121,8 +123,7 @@ public class IRODSCommandsQueryTest {
 				.toString().indexOf(testFileName) > -1);
 
 	}
-	
-	
+
 	@Test
 	public void queryWithNoAvuCondition() throws Exception {
 		// add a file and set two metadata values
@@ -148,21 +149,26 @@ public class IRODSCommandsQueryTest {
 				.buildIRODSInvocationContextFromTestProperties(testingProperties);
 		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
-		
+
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition(IRODSMetaDataSet.FILE_NAME, MetaDataCondition.EQUAL, testFileName);
+		condition[0] = IRODSMetaDataSet.newCondition(
+				IRODSMetaDataSet.FILE_NAME, MetaDataCondition.EQUAL,
+				testFileName);
 
 		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
 				IRODSMetaDataSet.DIRECTORY_NAME };
 		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
-		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(condition, select, 100, Namespace.FILE, false);
-		
+		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
+				condition, select, 100, Namespace.FILE, false);
+
 		irodsFileSystem.close();
 
 		TestCase.assertNotNull("no query results returned", fileList);
-		TestCase.assertEquals("did not find my file and metadata", 1, fileList.length);
-		TestCase.assertTrue("did not find my file name in results", fileList[0].toString().indexOf(testFileName) > -1);
+		TestCase.assertEquals("did not find my file and metadata", 1,
+				fileList.length);
+		TestCase.assertTrue("did not find my file name in results", fileList[0]
+				.toString().indexOf(testFileName) > -1);
 	}
 
 	@Test
@@ -201,8 +207,10 @@ public class IRODSCommandsQueryTest {
 		ImkdirCommand iMkdirCommand = new ImkdirCommand();
 		iMkdirCommand.setCollectionName(targetIrodsCollection);
 		invoker.invokeCommandAndGetResultAsString(iMkdirCommand);
-		
-		String localPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH) + dir1;
+
+		String localPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH)
+				+ dir1;
 
 		// put the files by putting the collection
 		IputCommand iputCommand = new IputCommand();
@@ -213,8 +221,8 @@ public class IRODSCommandsQueryTest {
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
 
 		// now add avu's to each
-		irodsTestSetupUtilities.addAVUsToEachFile(targetIrodsCollection + '/' + dir1,
-				irodsFileSystem, avuAttrib, avuValue);
+		irodsTestSetupUtilities.addAVUsToEachFile(targetIrodsCollection + '/'
+				+ dir1, irodsFileSystem, avuAttrib, avuValue);
 
 		// make a second collection
 
@@ -224,8 +232,10 @@ public class IRODSCommandsQueryTest {
 
 		FileGenerator.generateManyFilesInGivenDirectory(IRODS_TEST_SUBDIR_PATH
 				+ '/' + dir2, testFilePrefix2, testFileSuffix, 10, 20, 40);
-		
-		localPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH) + dir2;
+
+		localPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH)
+				+ dir2;
 
 		// make the put subdir
 		targetIrodsCollection = testingPropertiesHelper
@@ -243,24 +253,30 @@ public class IRODSCommandsQueryTest {
 		invoker.invokeCommandAndGetResultAsString(iputCommand);
 
 		// now add avu's to each
-		irodsTestSetupUtilities.addAVUsToEachFile(targetIrodsCollection + '/' + dir2,
-				irodsFileSystem, avuAttrib, avuValue);
-		
+		irodsTestSetupUtilities.addAVUsToEachFile(targetIrodsCollection + '/'
+				+ dir2, irodsFileSystem, avuAttrib, avuValue);
+
 		// make a query to find the files based on an avu query for files
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[1];
 		condition[0] = IRODSMetaDataSet.newCondition(avuAttrib,
 				MetaDataCondition.EQUAL, avuValue);
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME, IRODSMetaDataSet.DIRECTORY_NAME };
+		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
+				IRODSMetaDataSet.DIRECTORY_NAME };
 		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
 				condition, select, 100, Namespace.FILE, false);
-		
-		TestCase.assertNotNull("no records returned from avu query, I expected results", fileList);
-		TestCase.assertEquals("did not find the 10 files in the 2 directories based on the common AVU", 20, fileList.length);
+
+		TestCase.assertNotNull(
+				"no records returned from avu query, I expected results",
+				fileList);
+		TestCase
+				.assertEquals(
+						"did not find the 10 files in the 2 directories based on the common AVU",
+						20, fileList.length);
 	}
-	
+
 	@Test
 	public void queryMetadataForFileWithTwoAVUs() throws Exception {
 		// add a file and set two metadata values
@@ -299,7 +315,7 @@ public class IRODSCommandsQueryTest {
 		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
 				+ testFileName);
 		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
-		
+
 		// add metadata for this file
 
 		String meta2Attrib = "twoavutest2";
@@ -336,4 +352,129 @@ public class IRODSCommandsQueryTest {
 
 	}
 
+	/*
+	 * Bug 110 - error when asking IRODSFile.exists with & in file name #2 case
+	 */
+	@Test
+	public void queryMetadataForFileWithLeadingAmpInName() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "&queryMetadataForFileWithLeadingAmpInName";
+		  String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+	                IRODS_TEST_SUBDIR_PATH);
+
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		MetaDataCondition conditions[] = {
+				MetaDataSet
+						.newCondition(GeneralMetaData.DIRECTORY_NAME,
+								MetaDataCondition.EQUAL, targetIrodsCollection),
+				MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+						MetaDataCondition.EQUAL, testFileName),
+				};
+		MetaDataSelect selects[] = MetaDataSet.newSelection(new String[] {
+				GeneralMetaData.DIRECTORY_NAME,
+				GeneralMetaData.FILE_NAME });
+		MetaDataRecordList[] fileDetails = irodsFileSystem
+				.query(conditions, selects);
+
+		irodsFileSystem.close();
+		TestCase.assertNotNull("no query results returned", fileDetails);
+
+	}
+	
+	/*
+	 * Bug 110 - error when asking IRODSFile.exists with & in file name #2 case, currently triggered a bug in iRODS, so ignored
+	 * for now
+	 */
+	@Ignore
+	public void queryMetadataForFileWithTwoLeadingAmpInName() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "&&queryMetadataForFileWithTwoLeadingAmpInName";
+		  String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+	                IRODS_TEST_SUBDIR_PATH);
+
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		MetaDataCondition conditions[] = {
+				MetaDataSet
+						.newCondition(GeneralMetaData.DIRECTORY_NAME,
+								MetaDataCondition.EQUAL, targetIrodsCollection),
+				MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+						MetaDataCondition.EQUAL, testFileName),
+				};
+		MetaDataSelect selects[] = MetaDataSet.newSelection(new String[] {
+				GeneralMetaData.DIRECTORY_NAME,
+				GeneralMetaData.FILE_NAME });
+		MetaDataRecordList[] fileDetails = irodsFileSystem
+				.query(conditions, selects);
+
+		irodsFileSystem.close();
+		TestCase.assertNotNull("no query results returned", fileDetails);
+
+	}
+
+	/*
+	 * Bug 110 - error when asking IRODSFile.exists with & in file name #2 case
+	 */
+	@Test
+	public void queryResourceNameAndStatus() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "&queryMetadataForFileWithLeadingAmpInName";
+		  String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+	                IRODS_TEST_SUBDIR_PATH);
+
+
+		MetaDataCondition conditions[] = {
+				
+				};
+		MetaDataSelect selects[] = MetaDataSet.newSelection(new String[] {
+				IRODSMetaDataSet.RESOURCE_STATUS,
+                IRODSMetaDataSet.RESOURCE_NAME });
+		MetaDataRecordList[] fileDetails = irodsFileSystem
+				.query(conditions, selects);
+
+		irodsFileSystem.close();
+		TestCase.assertNotNull("no query results returned", fileDetails);
+
+	}
+	
 }

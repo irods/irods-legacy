@@ -1637,7 +1637,7 @@ public class IRODSCommands {
 	}
 
 	synchronized InputStream executeCommand(String command, String args,
-			String hostAddress, String somePathInfoMaybe_whoknows)
+			String hostAddress)
 			throws IOException {
 		Tag message = new Tag(ExecCmd_PI, new Tag[] { new Tag(cmd, command),
 				new Tag(cmdArgv, args), new Tag(execAddr, hostAddress),
