@@ -728,11 +728,11 @@ public class IRODSCommands {
 	 */
 
 	/**
-	 * 
-	 * @return various server information
+	 * Get misc server info about the connected iRODS server.
+	 * @return <code>String</code> with various server information
 	 * @throws java.io.IOException
 	 */
-	String miscServerInfo() throws IOException {
+	public String miscServerInfo() throws IOException {
 		irodsConnection.send(irodsConnection.createHeader(RODS_API_REQ, 0, 0,
 				0, GET_MISC_SVR_INFO_AN));
 		irodsConnection.flush();

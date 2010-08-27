@@ -68,6 +68,12 @@ Refactoring
 ------------
 *Bug 109 - NullPointerException possible from logging statement in IRODSMetaDataSet.java
 
+------------
+*Bug 110 - error when asking IRODSFile.exists with & in file name unit testing.  This is noted as an outstanding iRODS issue.  
+
+------------
+*made methods to retrieve misc server info public.
+
 ================================================================================================
 Outstanding Issues
 

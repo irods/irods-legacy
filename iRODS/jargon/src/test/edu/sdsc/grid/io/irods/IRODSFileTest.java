@@ -925,6 +925,108 @@ public class IRODSFileTest {
 
 	}
 	
+	/*
+	 * Bug 110 - error when asking IRODSFile.exists with & in file name
+	 * Currently an outstanding issue in iRODS thus ignore so tests pass
+	 */
+	@Ignore
+	public final void testIsFileExistsTwoAmpInName() throws Exception {
+
+		// create a file and place on two resources
+		String testFileName = "&&testIsFileExists.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// now get an irods file and see if it is readable, it should be
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+
+		boolean exists = irodsFile.exists();
+		irodsFileSystem.close();
+		TestCase.assertTrue(exists);
+
+	}
+	
+	/*
+	 * Bug 110 - error when asking IRODSFile.exists with & in file name
+	 */
+	@Test
+	public final void testIsFileExistsOneAmpInName() throws Exception {
+
+		// create a file and place on two resources
+		String testFileName = "&testIsFileExists.txt";
+		String absPath = scratchFileUtils
+				.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+		FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+				8);
+
+		// put scratch file into irods in the right place
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IputCommand iputCommand = new IputCommand();
+
+		String targetIrodsCollection = testingPropertiesHelper
+				.buildIRODSCollectionAbsolutePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH);
+
+		StringBuilder fileNameAndPath = new StringBuilder();
+		fileNameAndPath.append(absPath);
+
+		fileNameAndPath.append(testFileName);
+
+		iputCommand.setLocalFileName(fileNameAndPath.toString());
+		iputCommand.setIrodsFileName(targetIrodsCollection);
+		iputCommand.setForceOverride(true);
+
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// now get an irods file and see if it is readable, it should be
+
+		IRODSAccount irodsAccount = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(irodsAccount);
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,
+				targetIrodsCollection + '/' + testFileName);
+
+		boolean exists = irodsFile.exists();
+		irodsFileSystem.close();
+		TestCase.assertTrue(exists);
+
+	}
+	
+	
 	/**
 	 *  Bug 91 -  problems with Jargon not detecting dead IRODS Agent  
 	 *  

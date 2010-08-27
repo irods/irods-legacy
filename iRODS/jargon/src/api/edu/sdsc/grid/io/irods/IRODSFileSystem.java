@@ -802,8 +802,12 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	}
 
 	
-
-	String miscServerInfo() throws IOException {
+	/**
+	 * Get the basic server info for the connected server.
+	 * @return <code>String</code> with basic server info from iRODS.
+	 * @throws IOException
+	 */
+	public String miscServerInfo() throws IOException {
 		return commands.miscServerInfo();
 	}
 
