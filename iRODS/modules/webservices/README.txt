@@ -1,6 +1,6 @@
 
 
-There are two steps in using the web-servivces in micro-services.
+There are two steps in using the web-services in micro-services.
  1. The first step is to build a common library that can be used by all 
    micro-services that connect to web services. This is done ONLY ONCE. 
  2. The second step is done for each micro-service that is built. 
@@ -8,31 +8,28 @@ There are two steps in using the web-servivces in micro-services.
 -------------   FIRST STEP (DONE ONLY ONCE)  ------------
 1. Acquire the gsoap distribution. This can be found at:
      http://sourceforge.net/projects/gsoap2 
-     or other mirrored sites.
-2. Put the files in the webservices/gsoap directory.
+2. Save the downloaded files into iRODS/modules/webservices/gsoap/.
 3. Build the gsoap libraries and move them for use in Step 2.
-   (See  README.txt in the gsoap distribution for more information.)
-   cd gsoap
-   ./configure
-   ./make
-   cd soapcpp2
-   cp libgsoap++.a   libgsoap.a  libgsoapck++.a libgsoapck.a  libgsoapssl++.a  libgsoapssl.a ../../microservices/lib
-   cp stdsoap2.h ../../microservices/include
-   cp stdsoap2.c stdsoap2.h ../../microservices/src/common
-   cd ../../microservices/src/common
-   rm *
-   touch env.h
-   ../../../gsoap/soapcpp2/src/soapcpp2 -c -penv env.h
-   gcc -c -DWITH_NONAMESPACES envC.c
-   gcc -c -DWITH_NONAMESPACES stdsoap2.c
-   cp  envC.o  stdsoap2.o ../../obj
-4. Add a file called info.txt at the webservices directoryi if it is already not there.
-   The content of this file is similar to that of info.txt in modules/properties directory.
-5. Make sure that the value for Enabled in info.tct is yes (instead of no)
-6. Add the word 'webservices' (without quotes but separate by blank) to the line
-     MODULES=  
-   option in config/mk.config file at the iRODS directory.
-   Make sure that the line is also not commented out
+     cd iRODS/modules/webservices/gsoap/
+     ./configure
+     make
+     cd gsoap
+     mkdir ../../microservices/lib
+     cp libgsoap++.a libgsoap.a libgsoapck++.a libgsoapck.a libgsoapssl++.a libgsoapssl.a ../../microservices/lib
+     cp stdsoap2.h ../../microservices/include
+     cp stdsoap2.c stdsoap2.h ../../microservices/src/common
+     cd ../../microservices/src/common
+     touch env.h
+     ../../../gsoap/gsoap/src/soapcpp2 -c -penv env.h
+     gcc -c -DWITH_NONAMESPACES envC.c
+     gcc -c -DWITH_NONAMESPACES stdsoap2.c
+     cp envC.o stdsoap2.o ../../obj
+4. Enable this module by changing the "Enabled" option
+   in iRODS/modules/webservices/info.txt to "yes" (instead of "no").
+5. Rerun the iRODS configure script and recompile iRODS.
+     cd ../../
+     ./scripts/configure
+     make
 
 -------------   SECOND STEP (DONE FOR EACH WEB SERVICE)  ------------
 Here we show an example micro-service being built for getting stockQuotation.
