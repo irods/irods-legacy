@@ -698,8 +698,49 @@ handleMultiDataAVUConditions(int nConditions) {
 	       " AND R_DATA_MAIN.data_id = r_data_metamap%d.object_id ", i);
       rstrcat(whereSQL, newStr, MAX_SQL_SIZE);
    }
-
 }
+
+/*
+ Check if this is a compound condition, that is if there is a && or ||
+ outside of single quotes.  Previously the corresponding test was just
+ to see if && or || existed in the string, but if the name
+ (data-object or other) included && it would be mistaken.  At this
+ level, names are always in quotes so we can just verify that && or ||
+ is there and not quoted.
+ */
+int
+compoundConditionSpecified(char *condition) { 
+   char myCondition[MAX_NAME_LEN*2];
+   int quote;
+   char *cptr;
+
+   /* Simple case, not in the condition at all */
+   if (strstr(condition, "||") == NULL &&
+       strstr(condition, "&&") == NULL) {
+      return(0); 
+   }
+
+   /* Make a copy of the condition and erase the quoted strings */
+   strncpy(myCondition, condition, MAX_NAME_LEN*2);
+   for (cptr=myCondition,quote=0;*cptr!='\0';cptr++) {
+      if (*cptr=='\'') {
+	 if (quote==0) quote=1;
+	 else quote=0;
+	 *cptr=' ';
+      }
+      if (quote==1) {
+	 *cptr=' ';
+      }
+   }
+
+   /* And now test again */
+   if (strstr(myCondition, "||") == NULL &&
+       strstr(myCondition, "&&") == NULL) {
+      return(0); 
+   }
+   return(1);
+}
+
 
 /* When there's a compound condition, need to put () around it, use the 
    tablename.column for each part, and put OR or AND between.
@@ -1284,9 +1325,8 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
       if (Tables[table].cycler<1) {
 	 startingTable = table;  /* start with a non-cycler */
       }
-      condition = genQueryInp.sqlCondInp.value[i];
-      if (strstr(condition, "||") != NULL ||
-	  strstr(condition, "&&") != NULL) {
+      condition = genQueryInp.sqlCondInp.value[i]; 
+      if (compoundConditionSpecified(condition)) {
 	 status = handleCompoundCondition(condition, prevWhereLen);
 	 if (status) return(status);
       }
