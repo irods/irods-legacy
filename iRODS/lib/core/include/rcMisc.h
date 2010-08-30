@@ -269,6 +269,8 @@ int
 getNumFilesInDir (char *mydir);
 int
 getRandomArray (int **randomArray, int size);
+int
+isPathSymlink (rodsArguments_t *rodsArgs, char *path);
 #ifdef  __cplusplus
 }
 #endif

@@ -24,9 +24,9 @@ main(int argc, char **argv) {
     int i;
     
 
-    optStr = "ahlN:rR:svV";
+    optStr = "ahlN:rR:svVZ";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
 	printf("use -h for help.\n");
@@ -117,8 +117,8 @@ void
 usage ()
 {
    char *msgs[]={
-"Usage : irsync [-rahsvV] [-N numThreads] [-R resource] sourceFile|sourceDirectory [....]",
-" targetFile|targetDirectory",
+"Usage : irsync [-rahsvV] [-N numThreads] [-R resource] [--link]",
+"          sourceFile|sourceDirectory [....] targetFile|targetDirectory",
 " ",
 "Synchronize the data between a  local  copy  (local file  system)  and",
 "the copy stored in iRODS or between two iRODS copies. The command can be ",
@@ -187,6 +187,7 @@ usage ()
 " -h  this help",
 " -l  lists all the source files that needs to be synchronized (including their filesize in bytes) wrt to the target",
 "without actually doing the synchronization.",
+" --link - ignore symlink. Valid only for rsync from local host to iRODS.",
 " -a   synchronize to all replica if the target is a  iRODS file/collection.",
 " -s   use the size instead of the checksum value for determining", 
 "      synchronization.",

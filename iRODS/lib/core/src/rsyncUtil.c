@@ -68,6 +68,8 @@ rodsPathInp_t *rodsPathInp)
 	    status = rsyncDataToFileUtil (conn, srcPath, targPath,
 	     myRodsEnv, myRodsArgs, &dataObjOprInp);
 	} else if (srcType == LOCAL_FILE_T && targType == DATA_OBJ_T) {
+            if (isPathSymlink (myRodsArgs, srcPath->outPath) > 0)
+                continue;
 	    dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
             status = rsyncFileToDataUtil (conn, srcPath, targPath,
              myRodsEnv, myRodsArgs, &dataObjOprInp);
@@ -590,6 +592,8 @@ dataObjInp_t *dataObjOprInp)
     srcDir = srcPath->outPath;
     targColl = targPath->outPath;
 
+    if (isPathSymlink (rodsArgs, srcDir) > 0) return 0;
+
     if (rodsArgs->recursive != True) {
         rodsLog (LOG_ERROR,
         "rsyncDirToCollUtil: -r option must be used for putting %s directory",
@@ -640,6 +644,12 @@ dataObjInp_t *dataObjOprInp)
 	bzero (&myTargPath, sizeof (myTargPath));
         snprintf (myTargPath.outPath, MAX_NAME_LEN, "%s/%s",
           targColl, myDirent->d_name);
+
+        if (isPathSymlink (rodsArgs, mySrcPath.outPath) > 0) {
+	    if ((statbuf.st_mode & S_IFDIR) != 0)
+                mkColl (conn, myTargPath.outPath);
+            continue;
+        }
 
         if ((statbuf.st_mode & S_IFREG) != 0) {     /* a file */
             myTargPath.objType = DATA_OBJ_T;

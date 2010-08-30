@@ -4285,3 +4285,19 @@ getRandomArray (int **randomArray, int size)
     return (0);
 }
 
+int
+isPathSymlink (rodsArguments_t *rodsArgs, char *path)
+{
+    struct stat statbuf;
+    int status;
+    if (rodsArgs != NULL && rodsArgs->link != True) return 0;
+
+    status = lstat (path, &statbuf);
+    if (status >= 0) {
+	/* have to compare to S_IFLNK because S_IFLNK = 0120000 */
+        if ((statbuf.st_mode & S_IFLNK) == S_IFLNK) return 1;
+    }
+    return 0;
+}
+
+

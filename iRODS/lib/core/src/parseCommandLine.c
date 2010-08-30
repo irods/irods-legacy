@@ -59,6 +59,11 @@ parseCmdLineOpt (int argc, char **argv, char *optString, int includeLong,
    /* handle the long options first */
    if (includeLong) {
       for (i=0;i<argc;i++) {
+         if (strcmp("--link", argv[i])==0) {
+            rodsArgs->link=True;
+            argv[i]="-Z";  /* ignore symlink */
+         }
+
 	 if (strcmp("--parallel", argv[i])==0) {
 	    rodsArgs->parallel=True;
 	    argv[i]="-Z";  /* place holder so the getopt will parse */

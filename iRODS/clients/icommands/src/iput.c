@@ -22,9 +22,9 @@ main(int argc, char **argv) {
     int reconnFlag;
     
 
-    optStr = "abD:fhIkKn:N:p:PrR:QTvVX:";
+    optStr = "abD:fhIkKn:N:p:PrR:QTvVX:Z";
    
-    status = parseCmdLineOpt (argc, argv, optStr, 0, &myRodsArgs);
+    status = parseCmdLineOpt (argc, argv, optStr, 1, &myRodsArgs);
 
     if (status < 0) {
 	printf("use -h for help.\n");
@@ -91,10 +91,11 @@ usage ()
 {
    char *msgs[]={
 "Usage : iput [-abfIkKPQrTUvV] [-D dataType] [-N numThreads] [-n replNum]",
-"             [-p physicalPath] [-R resource] [-X restartFile]", 
+"             [-p physicalPath] [-R resource] [-X restartFile] [--link]", 
 "		localSrcFile|localSrcDir ...  destDataObj|destColl",
 "Usage : iput [-abfIkKPQTUvV] [-D dataType] [-N numThreads] [-n replNum] ",
-"             [-p physicalPath] [-R resource] [-X restartFile] localSrcFile",
+"             [-p physicalPath] [-R resource] [-X restartFile] [--link]",
+"               localSrcFile",
 " ",
 "Store a file into iRODS.  If the destination data-object or collection are",
 "not provided, the current irods directory and the input file name are used.",
@@ -152,6 +153,7 @@ usage ()
 "       to the resource server.",
 " -k  checksum - calculate a checksum on the data",
 " -K  verify checksum - calculate and verify the checksum on the data",
+" --link - ignore symlink.",
 " -N  numThreads - the number of thread to use for the transfer. A value of",
 "       0 means no threading. By default (-N option not used) the server ",
 "       decides the number of threads to use.",

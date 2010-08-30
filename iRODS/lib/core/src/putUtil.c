@@ -60,6 +60,8 @@ rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp)
 	targPath = &rodsPathInp->targPath[i];
 
 	if (targPath->objType == DATA_OBJ_T) {
+	    if (isPathSymlink (myRodsArgs, rodsPathInp->srcPath[i].outPath) > 0)
+		continue;
 	    dataObjOprInp.createMode = rodsPathInp->srcPath[i].objMode;
 	    status = putFileUtil (conn, rodsPathInp->srcPath[i].outPath, 
 	      targPath->outPath, rodsPathInp->srcPath[i].size, myRodsEnv, 
@@ -387,6 +389,8 @@ bulkOprInfo_t *bulkOprInfo)
         return (USER__NULL_INPUT_ERR);
     }
 
+    if (isPathSymlink (rodsArgs, srcDir) > 0) return 0;
+
     if (rodsArgs->recursive != True) {
         rodsLog (LOG_ERROR,
         "putDirUtil: -r option must be used for putting %s directory",
@@ -437,7 +441,7 @@ bulkOprInfo_t *bulkOprInfo)
 #ifndef windows_platform
         status = stat (srcChildPath, &statbuf);
 #else
-		status = iRODSNt_stat(srcChildPath, &statbuf);
+	status = iRODSNt_stat(srcChildPath, &statbuf);
 #endif
 
         if (status != 0) {
@@ -463,6 +467,12 @@ bulkOprInfo_t *bulkOprInfo)
             savedStatus = USER_INPUT_PATH_ERR;
 	    continue;
         }
+
+        if (isPathSymlink (rodsArgs, srcChildPath) > 0) {
+	    if (childObjType == COLL_OBJ_T)
+	        mkColl (conn, targChildPath);
+	    continue;
+	}
 
         if (childObjType == DATA_OBJ_T) {
 	    if (bulkFlag == BULK_OPR_SMALL_FILES &&
