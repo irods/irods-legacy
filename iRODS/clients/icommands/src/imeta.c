@@ -15,6 +15,7 @@ char cwd[BIG_STR];
 
 int debug=0;
 int testMode=0; /* some some particular internal tests */
+int longMode=0; /* more detailed listing */
 
 char zoneArgument[MAX_NAME_LEN+2]="";
 
@@ -34,6 +35,7 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 		     char *descriptions[])
 {
    int i, j;
+   char localTime[20];
    lastCommandStatus = status;
    if (status == CAT_NO_ROWS_FOUND) lastCommandStatus = 0;
    if (status!=0 && status != CAT_NO_ROWS_FOUND) {
@@ -50,8 +52,17 @@ printGenQueryResults(rcComm_t *Conn, int status, genQueryOut_t *genQueryOut,
 	       char *tResult;
 	       tResult = genQueryOut->sqlResult[j].value;
 	       tResult += i*genQueryOut->sqlResult[j].len;
-	       printf("%s: %s\n", descriptions[j], tResult);
-	       printCount++;
+	       if (*descriptions[j]!='\0') {
+		  if (strstr(descriptions[j],"time")!=0) {
+		     getLocalTimeFromRodsTime(tResult, localTime);
+		     printf("%s: %s\n", descriptions[j], 
+			    localTime);
+		  } 
+		  else {
+		     printf("%s: %s\n", descriptions[j], tResult);
+		     printCount++;
+		  }
+	       }
 	    }
 	 }
       }
@@ -77,7 +88,7 @@ showDataObj(char *name, char *attrName, int wild)
    char myDirName[LONG_NAME_LEN];
    char myFileName[LONG_NAME_LEN];
    int status;
-   /* "id" only used in testMode :*/
+   /* "id" only used in testMode, in longMode id is reset to be 'time set' :*/
    char *columnNames[]={"attribute", "value", "units", "id"};
 
    memset (&genQueryInp, 0, sizeof (genQueryInp_t));
@@ -94,10 +105,18 @@ showDataObj(char *name, char *attrName, int wild)
       i1a[3]=COL_META_DATA_ATTR_ID;
       i1b[3]=0;
    }
+   if (longMode) {
+      i1a[3]=COL_META_DATA_MODIFY_TIME;
+      i1b[3]=0;
+      columnNames[3]="time set";
+   }
    genQueryInp.selectInp.inx = i1a;
    genQueryInp.selectInp.value = i1b;
    genQueryInp.selectInp.len = 3;
    if (testMode) {
+      genQueryInp.selectInp.len = 4;
+   }
+   if (longMode) {
       genQueryInp.selectInp.len = 4;
    }
 
@@ -1128,6 +1147,26 @@ getInput(char *cmdToken[], int maxTokens) {
    }
 }
 
+/*
+ Detect a 'l' in a '-' option and if present, set a mode flag and
+ remove it from the string (to simplify other processing).
+ */
+void
+handleMinusL(char *token) {
+   char *cptr, *cptr2;
+   if (*token!='-') return;
+   for (cptr=token++;*cptr!='\0';cptr++) {
+      if (*cptr=='l') {
+	 longMode=1;
+	 for (cptr2=cptr;*cptr2!='\0';cptr2++) {
+	    *cptr2=*(cptr2+1);
+	 }
+	 return;
+      }
+   }
+   longMode=0;
+}
+
 /* handle a command,
    return code is 0 if the command was (at least partially) valid,
    -1 for quitting,
@@ -1146,6 +1185,9 @@ doCommand(char *cmdToken[]) {
 	      strcmp(cmdToken[0],"q") == 0) {
       return(-1);
    }
+
+   handleMinusL(cmdToken[1]);
+   handleMinusL(cmdToken[2]);
 
    if (strcmp(cmdToken[1],"-C")==0) cmdToken[1][1]='c';
    if (strcmp(cmdToken[1],"-D")==0) cmdToken[1][1]='d';
@@ -1305,7 +1347,7 @@ main(int argc, char **argv) {
 
    rodsLogLevel(LOG_ERROR);
 
-   status = parseCmdLineOpt (argc, argv, "vVhgrcGRCduz:", 0, &myRodsArgs);
+   status = parseCmdLineOpt (argc, argv, "vVhgrcGRCdulz:", 0, &myRodsArgs);
    if (status) {
       printf("Use -h for help.\n");
       exit(1);
@@ -1317,6 +1359,10 @@ main(int argc, char **argv) {
 
    if (myRodsArgs.zone==True) {
       strncpy(zoneArgument, myRodsArgs.zoneName, MAX_NAME_LEN);
+   }
+
+   if (myRodsArgs.longOption) {
+      longMode=1;
    }
 
    argOffset = myRodsArgs.optind;
@@ -1475,8 +1521,8 @@ void usageMain()
 " rmw -d|C|R|G|u Name AttName AttValue [AttUnits] (Remove AVU, use Wildcards)", 
 " mod -d|C|R|G|u Name AttName AttValue [AttUnits] [n:Name] [v:Value] [u:Units]", 
 "      (modify AVU; new name (n:), value(v:), and/or units(u:)",
-" ls  -d|C|R|G|u Name [AttName] (List existing AVUs for item Name)", 
-" lsw -d|C|R|G|u Name [AttName] (List existing AVUs, use Wildcards)", 
+" ls  -[l]d|C|R|G|u Name [AttName] (List existing AVUs for item Name)", 
+" lsw -[l]d|C|R|G|u Name [AttName] (List existing AVUs, use Wildcards)", 
 " qu -d|C|R|G|u AttName Op AttVal [...] (Query objects with matching AVUs)", 
 " cp -d|C|R|G|u -d|C|R|G|u Name1 Name2 (Copy AVUs from item Name1 to Name2)", 
 " ", 
@@ -1632,10 +1678,13 @@ usage(char *subOpt)
       if (strcmp(subOpt,"ls")==0) {
 	 char *msgs[]={
 " ls -d|C|R|G|u Name [AttName] (List existing AVUs for item Name)", 
+" ls -ld Name [AttName]        (List in long format)", 
 "List defined AVUs for the specified item",
 "Example: ls -d file1",
 "If the optional AttName is included, it is the attribute name",
 "you wish to list and only those will be listed.",
+"If the optional -l is used on dataObjects (-ld), the long format will",
+"be displayed which includes the time the AVU was set.",
 "Also see lsw.",
 ""};
 	 for (i=0;;i++) {
@@ -1652,6 +1701,8 @@ usage(char *subOpt)
 "If the optional AttName is included, it is the attribute name",
 "you wish to list, doing so using wildcard matching.",
 "For example: ls -d file1 attr%",
+"If the optional -l is used on dataObjects (-ld), the long format will",
+"be displayed which includes the time the AVU was set.",
 "Also see rmw and ls.",
 ""};
 	 for (i=0;;i++) {
