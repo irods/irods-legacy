@@ -67,6 +67,7 @@ stat () {
 	#                                           hh = 0 to 24, mm = 0 to 59, ss = 0 to 59
 	echo "$device:$inode:$mode:$nlink:$uid:$gid:$devid:$size:$blksize:$blkcnt:$atime:$mtime:$ctime"
 	return
+}
 
 #############################################
 # below this line, nothing should be changed.

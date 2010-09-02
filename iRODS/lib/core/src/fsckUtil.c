@@ -72,7 +72,7 @@ fsckObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
 		return (status);
 	}
 	
-	while ( myDirent = readdir (dirPtr) ) {
+	while ( ( myDirent = readdir(dirPtr) ) != NULL ) {
         if ( strcmp(myDirent->d_name, ".") == 0 || strcmp(myDirent->d_name, "..") == 0 ) {
 			continue;
         }

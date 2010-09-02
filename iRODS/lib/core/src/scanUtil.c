@@ -1,3 +1,5 @@
+/*** Copyright (c), CCIN2P3            ***
+ *** For more information please refer to files in the COPYRIGHT directory ***/
 /* Written by Jean-Yves Nief of CCIN2P3 */
 
 #include "rodsPath.h"
@@ -14,34 +16,42 @@ scanObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 	struct stat sbuf;
 	int lenInpPath, status;
 	
-	if ( rodsPathInp->numSrc != 1 ) {
-		rodsLog (LOG_ERROR, "scanObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc);
-		status = USER_INPUT_PATH_ERR;
+	if ( rodsPathInp->numSrc == 1 ) {
+		inpPathO = rodsPathInp->srcPath[0].outPath;
+		if ( rodsPathInp->srcPath[0].objType == LOCAL_FILE_T || \
+			rodsPathInp->srcPath[0].objType == LOCAL_DIR_T ) {
+			status = lstat(inpPathO, &sbuf);
+			if ( status == 0 ) {
+				/* remove any trailing "/" from inpPathO */
+				lenInpPath = strlen(inpPathO);
+				lastChar = strrchr(inpPathO, '/');
+				if ( strlen(lastChar) == 1 ) {
+					lenInpPath = lenInpPath - 1;
+				}
+				strncpy(inpPath, inpPathO, lenInpPath);
+				if ( S_ISDIR(sbuf.st_mode) == 1 ) {   /* check if it is not included into a mounted collection */
+					status = checkIsMount(conn, inpPath);
+					if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
+						printf("The directory %s or one of its subdirectories to be scanned is declared as being \
+used for a mounted collection: abort!\n", inpPath);
+						return (status);
+					}
+				}
+				status = scanObjDir(conn, myRodsArgs, inpPath, hostname);
+			}
+			else {
+				status = USER_INPUT_PATH_ERR;
+				rodsLog (LOG_ERROR, "scanObj: %s does not exist", inpPathO);
+			}
+		}
+		else if ( rodsPathInp->srcPath[0].objType == UNKNOWN_OBJ_T || 
+			rodsPathInp->srcPath[0].objType == COLL_OBJ_T ) {
+			status = scanObjCol(conn, myRodsArgs, inpPathO);
+		}
 	}
 	else {
-		inpPathO = rodsPathInp->srcPath[0].outPath;
-		status = lstat(inpPathO, &sbuf);
-		if ( status == 0 ) {
-			/* remove any trailing "/" from inpPathO */
-			lenInpPath = strlen(inpPathO);
-			lastChar = strrchr(inpPathO, '/');
-			if ( strlen(lastChar) == 1 ) {
-				lenInpPath = lenInpPath - 1;
-			}
-			strncpy(inpPath, inpPathO, lenInpPath);
-			if ( S_ISDIR(sbuf.st_mode) == 1 ) {   /* check if it is not included into a mounted collection */
-				status = checkIsMount(conn, inpPath);
-				if ( status != 0 ) {  /* if it is part of a mounted collection, abort */
-					printf("The directory %s or one of its subdirectories to be scanned is declared as being used for a mounted collection: abort!\n", inpPath);
-					return (status);
-				}
-			}
-			status = scanObjDir(conn, myRodsArgs, inpPath, hostname);
-		}
-		else {
-			status = USER_INPUT_PATH_ERR;
-			rodsLog (LOG_ERROR, "scanObj: %s does not exist", inpPathO);
-		}
+		rodsLog (LOG_ERROR, "scanObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc);
+		status = USER_INPUT_PATH_ERR;
 	}
 	
 	return (status);
@@ -69,7 +79,7 @@ scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
 		return (status);
 	}
 	
-        while ( (myDirent = readdir(dirPtr)) != NULL ) {
+	while ( ( myDirent = readdir(dirPtr) ) != NULL ) {
         if ( strcmp(myDirent->d_name, ".") == 0 || strcmp(myDirent->d_name, "..") == 0 ) {
 			continue;
         }
@@ -89,6 +99,120 @@ scanObjDir (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath, char *ho
    
    return (status);
 	
+}
+
+int 
+scanObjCol (rcComm_t *conn, rodsArguments_t *myRodsArgs, char *inpPath)
+{
+	int isColl, status;
+	genQueryInp_t genQueryInp1, genQueryInp2;
+    genQueryOut_t *genQueryOut1 = NULL, *genQueryOut2 = NULL;
+	char condStr1[MAX_NAME_LEN], condStr2[MAX_NAME_LEN], *lastPart;
+	char firstPart[MAX_NAME_LEN] = "";
+
+	/* check if inpPath is a file or a collection */
+	lastPart = strrchr(inpPath, '/') + 1;
+	strncpy(firstPart, inpPath, strlen(inpPath) - strlen(lastPart) - 1);
+	memset (&genQueryInp1, 0, sizeof (genQueryInp1));
+	addInxIval(&genQueryInp1.selectInp, COL_COLL_ID, 1);
+	genQueryInp1.maxRows = MAX_SQL_ROWS;
+	
+	snprintf (condStr1, MAX_NAME_LEN, "='%s'", firstPart);
+    addInxVal (&genQueryInp1.sqlCondInp, COL_COLL_NAME, condStr1);
+	snprintf (condStr1, MAX_NAME_LEN, "='%s'", lastPart);
+    addInxVal (&genQueryInp1.sqlCondInp, COL_DATA_NAME, condStr1);
+	
+	status =  rcGenQuery (conn, &genQueryInp1, &genQueryOut1);
+	if (status == CAT_NO_ROWS_FOUND) {
+		isColl = 1;
+	}
+	else {
+		isColl = 0;
+	}
+	
+	/* for each files check if the physical file associated to it exists on the 
+       physical resource */
+	memset (&genQueryInp2, 0, sizeof (genQueryInp2));
+	addInxIval(&genQueryInp2.selectInp, COL_D_DATA_PATH, 1);
+	addInxIval(&genQueryInp2.selectInp, COL_R_LOC, 1);
+	addInxIval(&genQueryInp2.selectInp, COL_R_ZONE_NAME, 1);
+	addInxIval(&genQueryInp2.selectInp, COL_DATA_NAME, 1);
+	addInxIval(&genQueryInp2.selectInp, COL_COLL_NAME, 1);
+	genQueryInp2.maxRows = MAX_SQL_ROWS;
+	
+	if ( isColl ) {
+		if ( myRodsArgs->recursive == True ) {
+			snprintf (condStr2, MAX_NAME_LEN, "like '%s%s'", inpPath, "%");
+		}
+		else {
+			snprintf (condStr2, MAX_NAME_LEN, "='%s'", inpPath);
+		}
+		addInxVal (&genQueryInp2.sqlCondInp, COL_COLL_NAME, condStr2);
+	}
+	else {
+		snprintf (condStr2, MAX_NAME_LEN, "='%s'", firstPart);
+		addInxVal (&genQueryInp2.sqlCondInp, COL_COLL_NAME, condStr2);
+		snprintf (condStr2, MAX_NAME_LEN, "='%s'", lastPart);
+		addInxVal (&genQueryInp2.sqlCondInp, COL_DATA_NAME, condStr2);
+	}
+	
+	/* check if the physical file corresponding to the iRODS object does exist */
+	status =  rcGenQuery (conn, &genQueryInp2, &genQueryOut2);
+	if (status == 0) {
+		statPhysFile(conn, genQueryOut2);
+	}
+	while ( status == 0 && genQueryOut2->continueInx > 0) {
+		genQueryInp2.continueInx=genQueryOut2->continueInx;
+		status = rcGenQuery(conn, &genQueryInp2, &genQueryOut2);
+		if (status == 0) {
+			statPhysFile(conn, genQueryOut2);
+		}
+	}
+	
+	freeGenQueryOut(&genQueryOut1);
+	freeGenQueryOut(&genQueryOut2);
+	
+	return(status);
+	
+}
+
+int
+statPhysFile (rcComm_t *conn, genQueryOut_t *genQueryOut2)
+{
+	int i, rc;
+	char *dataPath, *loc, *zone, *dataName, *collName;
+	sqlResult_t *dataPathStruct, *locStruct, *zoneStruct,
+	 *dataNameStruct, *collNameStruct;
+	fileStatInp_t fileStatInp;
+	rodsStat_t *fileStatOut;
+	
+	fileStatInp.fileType = UNIX_FILE_TYPE;
+	for (i=0;i<genQueryOut2->rowCnt;i++) {
+		dataPathStruct = getSqlResultByInx (genQueryOut2, COL_D_DATA_PATH);
+		locStruct = getSqlResultByInx (genQueryOut2, COL_R_LOC);
+		zoneStruct = getSqlResultByInx (genQueryOut2, COL_R_ZONE_NAME);
+		dataNameStruct = getSqlResultByInx (genQueryOut2, COL_DATA_NAME);
+		collNameStruct = getSqlResultByInx (genQueryOut2, COL_COLL_NAME);
+		dataPath = &dataPathStruct->value[dataPathStruct->len*i];
+		loc = &locStruct->value[locStruct->len*i];
+		zone = &zoneStruct->value[zoneStruct->len*i];
+		dataName = &dataNameStruct->value[dataNameStruct->len*i];
+		collName = &collNameStruct->value[collNameStruct->len*i];
+		
+		/* check if the physical file does exist on the filesystem */
+		rstrcpy (fileStatInp.addr.hostAddr, loc, NAME_LEN);
+		rstrcpy (fileStatInp.addr.zoneName, zone, NAME_LEN);
+		rstrcpy (fileStatInp.fileName, dataPath, MAX_NAME_LEN);
+		rc = rcFileStat (conn, &fileStatInp, &fileStatOut);
+		if ( rc != 0 ) {
+			printf("Physical file %s on server %s is missing, corresponding to \
+iRODS object %s/%s \n", dataPath, loc, collName, dataName);
+		}
+			
+	}
+	
+	return (rc);
+
 }
 
 int

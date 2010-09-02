@@ -13,8 +13,8 @@ main(int argc, char **argv) {
     rcComm_t *conn;
     rodsArguments_t myRodsArgs;
     char *optStr, hostname[LONG_NAME_LEN];
+	objType_t srcType;
     rodsPathInp_t rodsPathInp;
-    
 
     optStr = "hr";
    
@@ -36,8 +36,18 @@ main(int argc, char **argv) {
         exit (1);
     }
 
+	if (strcmp (argv[argc-1], "i:") == 0) {
+		srcType = UNKNOWN_OBJ_T;
+		strcpy (argv[argc-1], ".");
+	} else if (strncmp (argv[argc-1], "i:", 2) == 0) {
+		srcType = UNKNOWN_OBJ_T;
+		strcpy (argv[argc-1], argv[argc-1] + 2);
+    } else {
+		srcType = UNKNOWN_FILE_T;
+    }
+	
     status = parseCmdLinePath (argc, argv, optind, &myEnv,
-      UNKNOWN_FILE_T, NO_INPUT_T, 0, &rodsPathInp);
+      srcType, NO_INPUT_T, 0, &rodsPathInp);
 
     if (status < 0) {
         rodsLogError (LOG_ERROR, status, "main: parseCmdLinePath error. ");
@@ -57,7 +67,7 @@ main(int argc, char **argv) {
         if (status != 0) {
            rcDisconnect(conn);
            exit (7);
-	}
+		}
     }
    
 	status = gethostname(hostname, LONG_NAME_LEN);
@@ -77,11 +87,14 @@ main(int argc, char **argv) {
 void
 usage () {
    char *msgs[]={
-"Usage : iscan [-rh] srcPhysicalFile|srcPhysicalDirectory ... ",
-"Check if a local data file or a local directory content is registered in irods.",
+"Usage : iscan [-rh] srcPhysicalFile|srcPhysicalDirectory|srcDataObj|srcCollection ... ",
+"If the input is a local data file or a local directory, it checks if the content is registered in irods.",
 "It allows to detect orphan files, srcPhysicalFile or srcPhysicalDirectory must be a full path name.",
+"If the input is an iRODS file or an iRODS collection, it checks if the physical files corresponding ",
+" to the iRODS object does exist on the data servers.",
+"For srcDataObj and srcCollection (iRODS objects), it must be prepended with 'i:'.",
 "Options are:",
-" -r  recursive - scan local subdirectories",
+" -r  recursive - scan local subdirectories or subcollections",
 " -h  this help",
 ""};
    int i;
