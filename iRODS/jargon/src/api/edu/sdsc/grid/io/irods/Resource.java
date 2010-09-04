@@ -141,7 +141,8 @@ public class Resource extends Domain {
 		};
 		MetaDataRecordList[] results;
 		try {
-			results = irodsFileSystem.commands.query(condition, select, 500, Namespace.RESOURCE);
+			results = irodsFileSystem.commands.query(condition, select, 500,
+					Namespace.RESOURCE);
 		} catch (IOException e) {
 			String msg = "IOException in query";
 			log.error("IOException in query", e);
@@ -327,6 +328,89 @@ public class Resource extends Domain {
 		}
 
 		log.info("successfully removed resource from group");
+
+	}
+
+	/**
+	 * Add  an AVU value for a resource
+	 * 
+	 * @param resourceName <code>String</code> with the name of the resource 
+	 * @param values
+	 *            <code>String[]</code> containing an AVU in the form (attrib
+	 *            name, attrib value) or (attrib name, attrib value, attrib
+	 *            units)
+	 * @throws JargonException
+	 */
+	public void addMetadataToResource(final String resourceName,
+			final String[] values) throws JargonException {
+
+		if (resourceName == null || resourceName.length() == 0) {
+			throw new JargonException("null or empty resourceName");
+		}
+
+		if (values == null) {
+			throw new JargonException("null metadata values");
+		}
+
+		// other validity checks done in IRODSCommands
+
+		log.info("adding AVU metadata to resource:{}", resourceName);
+		log.info("metadata values:{}", values);
+
+		try {
+			irodsFileSystem.commands.modifyResourceMetaData(resourceName,
+					values);
+		} catch (IRODSException ie) {
+
+			log.error("IRODS exception , irods code=" + ie.getType(), ie);
+			throw new JargonException("IRODS exception , irods code ="
+					+ ie.getType(), ie);
+
+		} catch (IOException e) {
+			log.error("IO exception sending command", e);
+			throw new JargonException("IO exception sending command", e);
+		}
+
+		log.info("avu metadata added");
+
+	}
+	
+	/**
+	 * Delete the given AVU triple from the metadata associated with a Resource.
+	 * @param resourceName <code>String</code> with the name of the resource.
+	 * @param values <code>String[]</code> with an attribute/value, or attribute/value/units triple to be deleted from the resource.
+	 * @throws JargonException
+	 */
+	public void deleteMetadataFromResource(final String resourceName,
+			final String[] values) throws JargonException {
+		if (resourceName == null || resourceName.length() == 0) {
+			throw new JargonException("null or empty resourceName");
+		}
+
+		if (values == null) {
+			throw new JargonException("null metadata values");
+		}
+
+		// other validity checks done in IRODSCommands
+
+		log.info("deleting AVU metadata from resource:{}", resourceName);
+		log.info("metadata values:{}", values);
+
+		try {
+			irodsFileSystem.commands.deleteResourceMetaData(resourceName,
+					values);
+		} catch (IRODSException ie) {
+
+			log.error("IRODS exception , irods code=" + ie.getType(), ie);
+			throw new JargonException("IRODS exception , irods code ="
+					+ ie.getType(), ie);
+
+		} catch (IOException e) {
+			log.error("IO exception sending command", e);
+			throw new JargonException("IO exception sending command", e);
+		}
+
+		log.info("avu metadata deleted");
 
 	}
 

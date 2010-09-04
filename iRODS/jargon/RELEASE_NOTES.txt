@@ -78,6 +78,9 @@ Refactoring
 *Bug 111 - Protocol exception returning binary (base64 encoded) data from execution of script 
 Test cases, updated exec command method signatures to clean up unnecessary parms
 
+-----------
+*Resource allows add and delete of resource AVU metadata
+
 ================================================================================================
 Outstanding Issues
 

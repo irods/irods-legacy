@@ -17,6 +17,11 @@ import org.junit.Test;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
+import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
+import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaListCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaRemoveCommand;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaCommand.MetaObjectType;
 
 public class ResourceTest {
 	protected static Properties testingProperties = new Properties();
@@ -177,5 +182,92 @@ public class ResourceTest {
 		TestCase.assertTrue("did not return second resource", resc2Found);
 
 	}
+	
+	@Test
+	public final void testAddResourceMetadata() throws Exception {
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		String expectedAVUAttrib = "testAddResourceMetadata";
+		String expectedAVUValue = "value1";
+		
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+		.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);		
+		
+		// clean up avu
 
+		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
+		imetaRemoveCommand.setAttribName(expectedAVUAttrib);
+		imetaRemoveCommand.setAttribValue(expectedAVUValue);
+		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaRemoveCommand.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+			
+		String[] newAvu = {expectedAVUAttrib, expectedAVUValue};
+		resource.addMetadataToResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), newAvu);
+		
+		irodsFileSystem.close();
+		
+		// verify the metadata was added
+		// now get back the avu data and make sure it's there
+		ImetaListCommand imetaList = new ImetaListCommand();
+		imetaList.setAttribName(expectedAVUAttrib);
+		imetaList.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaList.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		String metaValues = invoker
+				.invokeCommandAndGetResultAsString(imetaList);
+		TestCase.assertTrue("did not find expected attrib name", metaValues
+				.indexOf(expectedAVUAttrib) > -1);
+		TestCase.assertTrue("did not find expected attrib value", metaValues
+				.indexOf(expectedAVUValue) > -1);
+		
+	}
+	
+	@Test
+	public final void testDeleteResourceMetadata() throws Exception {
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+		String expectedAVUAttrib = "testDeleteResourceMetadata";
+		String expectedAVUValue = "testDeleteResourceMetadata-value1";
+		
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+		.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);		
+		
+		// clean up avu
+
+		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
+		imetaRemoveCommand.setAttribName(expectedAVUAttrib);
+		imetaRemoveCommand.setAttribValue(expectedAVUValue);
+		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaRemoveCommand.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+			
+		String[] newAvu = {expectedAVUAttrib, expectedAVUValue};
+		resource.addMetadataToResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), newAvu);
+		
+		// added, now delete
+		
+		resource.deleteMetadataFromResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), newAvu);
+		irodsFileSystem.close();
+		
+		// verify the metadata was added
+		// now get back the avu data and make sure it's there
+		ImetaListCommand imetaList = new ImetaListCommand();
+		imetaList.setAttribName(expectedAVUAttrib);
+		imetaList.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaList.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		String metaValues = invoker
+				.invokeCommandAndGetResultAsString(imetaList);
+		TestCase.assertTrue("should have deleted attrib name", metaValues
+				.indexOf(expectedAVUAttrib) == -1);
+		TestCase.assertTrue("should have deleted attrib value", metaValues
+				.indexOf(expectedAVUValue) == -1);
+		
+	}
+	
 }

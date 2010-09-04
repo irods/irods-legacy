@@ -52,9 +52,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.irods.jargon.core.connection.ConnectionConstants;
 import org.irods.jargon.core.connection.EnvironmentalInfoAccessor;
@@ -729,6 +727,7 @@ public class IRODSCommands {
 
 	/**
 	 * Get misc server info about the connected iRODS server.
+	 * 
 	 * @return <code>String</code> with various server information
 	 * @throws java.io.IOException
 	 */
@@ -1466,6 +1465,79 @@ public class IRODSCommands {
 		irodsFunction(RODS_API_REQ, message, MOD_AVU_METADATA_AN);
 	}
 
+	/**
+	 * Add or update an AVU value for a resource
+	 * 
+	 * @param resourceName
+	 *            <code>String</code> with the name of the resource
+	 * @param values
+	 *            <code>String[]</code> containing an AVU in the form (attrib
+	 *            name, attrib value) or (attrib name, attrib value, attrib
+	 *            units)
+	 * @throws IOException
+	 */
+	void modifyResourceMetaData(String resourceName, String[] values)
+			throws IOException {
+
+		if (resourceName == null || resourceName.length() == 0) {
+			throw new IllegalArgumentException("resourceName is null or blank");
+		}
+
+		if (values.length < 2 || values.length > 3) {
+			log
+					.error("metadata length must be 2 (name and value) or 3 (name, value, units) ");
+			throw new IllegalArgumentException(
+					"metadata length must be 2 (name and value) or 3 (name, value, units) ");
+		}
+
+		Tag message = new Tag(ModAVUMetadataInp_PI, new Tag[] { new Tag("arg0",
+				"add"), });
+		message.addTag("arg1", "-R");
+
+		message.addTag("arg2", resourceName);
+
+		for (int i = 0, j = 0; i < 7; i++) {
+			j = i + 3;
+			if (i < values.length) {
+				message.addTag("arg" + j, values[i]);
+			} else {
+				message.addTag("arg" + j, "");
+			}
+		}
+
+		irodsFunction(RODS_API_REQ, message, MOD_AVU_METADATA_AN);
+	}
+
+	/**
+	 * Delete AVU metadata for the given resource
+	 * 
+	 * @param resourceName
+	 *            <code>String</code> with the name of the target resource
+	 * @param values
+	 *            <code>String[]</code> with the AVU triple to delete
+	 * @throws IOException
+	 */
+	void deleteResourceMetaData(String resourceName, String[] values)
+			throws IOException {
+		Tag message = new Tag(ModAVUMetadataInp_PI, new Tag[] { new Tag("arg0",
+				"rmw"), });
+
+		message.addTag("arg1", "-R");
+
+		message.addTag("arg2", resourceName);
+
+		for (int i = 0, j = 0; i < 7; i++) {
+			j = i + 3;
+			if (i < values.length) {
+				message.addTag("arg" + j, values[i]);
+			} else {
+				message.addTag("arg" + j, "");
+			}
+		}
+
+		irodsFunction(RODS_API_REQ, message, MOD_AVU_METADATA_AN);
+	}
+
 	void renameFile(IRODSFile source, IRODSFile destination) throws IOException {
 		Tag message = new Tag(DataObjCopyInp_PI, new Tag[] {
 		// define the source
@@ -1637,8 +1709,7 @@ public class IRODSCommands {
 	}
 
 	synchronized InputStream executeCommand(String command, String args,
-			String hostAddress)
-			throws IOException {
+			String hostAddress) throws IOException {
 		Tag message = new Tag(ExecCmd_PI, new Tag[] { new Tag(cmd, command),
 				new Tag(cmdArgv, args), new Tag(execAddr, hostAddress),
 				new Tag(hintPath, ""), new Tag(addPathToArgv, 0),
@@ -2084,7 +2155,7 @@ public class IRODSCommands {
 				throw new RuntimeException(
 						"unable to read all the bytes for an expected long value");
 			}
-			
+
 			return Host.castToLong(b);
 		}
 
