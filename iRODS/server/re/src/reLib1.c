@@ -370,6 +370,12 @@ applyRule(char *inAction, msParamArray_t *inMsParamArray,
     return(i);
   }
 
+  if (strstr(inAction,"|") != NULL) { /* seems to be multiple actions */
+    i = execMyRuleWithSaveFlag(inAction,inMsParamArray,rei,reiSaveFlag);
+    return(i);
+  }
+
+
   i = parseAction(inAction,action,args, &argc);
   if (i != 0)
     return(i);
