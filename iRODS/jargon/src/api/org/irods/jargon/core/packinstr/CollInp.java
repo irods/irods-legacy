@@ -52,7 +52,27 @@ public class CollInp extends AbstractIRODSPackingInstruction {
 			boolean recursiveOperation, boolean forceOperation) throws JargonException {
 		return new CollInp(collectionName, recursiveOperation, forceOperation);
 	}
-
+	
+	/**
+	 * Create the packing instruction to delete this collection from irods, moving the deleted files to the trash.
+	 * @param collectionName <code>String</code> with the absolute path to the iRODS collection to be deleted.
+	 * @return <code>CollInp</code> packing instruction.
+	 * @throws JargonException
+	 */
+	public static final CollInp instanceForRecursiveDeleteCollectionNoForce(final String collectionName) throws JargonException {
+		return new CollInp(collectionName, true, false);
+	}
+	
+	/**
+	 * Create the packing instruction to delete this collection from irods, without moving the deleted files and collections to the trash
+	 * @param collectionName <code>String</code> with the absolute path to the iRODS collection to be deleted.
+	 * @return <code>CollInp</code> packing instruction.
+	 * @throws JargonException
+	 */
+	public static final CollInp instanceForRecursiveDeleteCollectionWithForce(final String collectionName) throws JargonException {
+		return new CollInp(collectionName, true, true);
+	}
+ 
 	private CollInp(String collectionName, boolean recursiveOperation)
 			throws JargonException {
 		super();

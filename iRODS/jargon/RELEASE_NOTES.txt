@@ -79,7 +79,8 @@ Refactoring
 Test cases, updated exec command method signatures to clean up unnecessary parms
 
 -----------
-*Resource allows add and delete of resource AVU metadata
+*Resource allows add and delete of resource AVU metadata as well as list of resource metadata.  Beginning to add 'jargon-core' style code into the 
+Jargon trunk.  Eventually, the two API will blend.
 
 ================================================================================================
 Outstanding Issues

@@ -8,6 +8,7 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.irods.jargon.core.exception.DuplicateDataException;
+import org.irods.jargon.core.pub.domain.AvuData;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -19,6 +20,7 @@ import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaAddCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaListCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaRemoveCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaCommand.MetaObjectType;
@@ -269,5 +271,58 @@ public class ResourceTest {
 				.indexOf(expectedAVUValue) == -1);
 		
 	}
+	
+	@Test
+	public final void testListResourceMetadata() throws Exception {
+		String testResource = testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
+
+		// initialize the AVU data
+		String expectedAttribName = "testattrib1";
+		String expectedAttribValue = "testvalue1";
+		String expectedAttribUnits = "test1units";
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
+		imetaRemoveCommand.setAttribName(expectedAttribName);
+		imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		imetaRemoveCommand.setAttribUnits(expectedAttribUnits);
+		//imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaRemoveCommand.setObjectPath(testResource);
+		String removeResult = invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+
+		ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
+		imetaAddCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaAddCommand.setAttribName(expectedAttribName);
+		imetaAddCommand.setAttribValue(expectedAttribValue);
+		imetaAddCommand.setAttribUnits(expectedAttribUnits);
+		imetaAddCommand.setObjectPath(testResource);
+		String addResult = invoker.invokeCommandAndGetResultAsString(imetaAddCommand);
+
+		IRODSAccount account = testingPropertiesHelper
+		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		Resource resource = new Resource(irodsFileSystem);
+
+		List<AvuData> avuData = resource.listResourceMetadata(testResource);
+		irodsFileSystem.close();		
+		TestCase.assertFalse("no query result returned", avuData.isEmpty());
+		AvuData avuDataItem = null;
+		
+		for (AvuData foundItem : avuData) {
+			if (foundItem.getAttribute().equals(expectedAttribName)) {
+				avuDataItem = foundItem;
+				break;
+			}
+		}
+		
+		TestCase.assertNotNull("did not find the testing attrib in the resource", avuDataItem);		
+		TestCase.assertEquals("did not get expected attrib", expectedAttribName, avuDataItem.getAttribute());
+		TestCase.assertEquals("did not get expected value", expectedAttribValue, avuDataItem.getValue());
+
+	}
+
 	
 }

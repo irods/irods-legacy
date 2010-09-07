@@ -31,8 +31,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactory;
+import org.irods.jargon.core.accessobject.IRODSAccessObjectFactoryImpl;
+import org.irods.jargon.core.accessobject.IRODSGenQueryExecutor;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.JargonException;
+import org.irods.jargon.core.pub.domain.AvuData;
+import org.irods.jargon.core.query.AVUQueryElement;
+import org.irods.jargon.core.query.IRODSQuery;
+import org.irods.jargon.core.query.IRODSQueryResultSet;
+import org.irods.jargon.core.query.JargonQueryException;
+import org.irods.jargon.core.query.MetaDataAndDomainData;
+import org.irods.jargon.core.query.RodsGenQueryEnum;
+import org.irods.jargon.core.query.MetaDataAndDomainData.MetadataDomain;
+import org.irods.jargon.core.utils.AccessObjectQueryProcessingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +67,12 @@ public class Resource extends Domain {
 	private Logger log = LoggerFactory.getLogger(Resource.class);
 
 	static final String iName = "resource";
+
+	private static final Object COMMA = ", ";
+
+	private static final Object WHERE = " WHERE ";
+
+	private static final Object EQUALS_AND_QUOTE = " = '";
 
 	public Resource(IRODSFileSystem irodsFileSystem) {
 		super(irodsFileSystem, "resource", "resc_type", "r_resc_main");
@@ -332,9 +350,10 @@ public class Resource extends Domain {
 	}
 
 	/**
-	 * Add  an AVU value for a resource
+	 * Add an AVU value for a resource
 	 * 
-	 * @param resourceName <code>String</code> with the name of the resource 
+	 * @param resourceName
+	 *            <code>String</code> with the name of the resource
 	 * @param values
 	 *            <code>String[]</code> containing an AVU in the form (attrib
 	 *            name, attrib value) or (attrib name, attrib value, attrib
@@ -374,11 +393,15 @@ public class Resource extends Domain {
 		log.info("avu metadata added");
 
 	}
-	
+
 	/**
 	 * Delete the given AVU triple from the metadata associated with a Resource.
-	 * @param resourceName <code>String</code> with the name of the resource.
-	 * @param values <code>String[]</code> with an attribute/value, or attribute/value/units triple to be deleted from the resource.
+	 * 
+	 * @param resourceName
+	 *            <code>String</code> with the name of the resource.
+	 * @param values
+	 *            <code>String[]</code> with an attribute/value, or
+	 *            attribute/value/units triple to be deleted from the resource.
 	 * @throws JargonException
 	 */
 	public void deleteMetadataFromResource(final String resourceName,
@@ -411,6 +434,57 @@ public class Resource extends Domain {
 		}
 
 		log.info("avu metadata deleted");
+
+	}
+
+	/**
+	 * List the AVU metadata associated with a given iRODS Resource.
+	 * @param resourceName <code>String</code> with the name of an iRODS resource.
+	 * @return <code>List</code> of {@link org.irods.jargon.core.query.AvuData} with the 
+	 * metadata for the given iRODS Resource.
+	 * @throws JargonException
+	 */
+	public List<AvuData> listResourceMetadata(final String resourceName)
+			throws JargonException {
+		if (resourceName == null || resourceName.isEmpty()) {
+			throw new JargonException("null or empty resourceName");
+		}
+		log.info("list resource metadata for {}", resourceName);
+
+		final StringBuilder sb = new StringBuilder();
+		sb.append("SELECT ");
+		sb.append(RodsGenQueryEnum.COL_META_RESC_ATTR_NAME.getName());
+		sb.append(COMMA);
+		sb.append(RodsGenQueryEnum.COL_META_RESC_ATTR_VALUE.getName());
+		sb.append(COMMA);
+		sb.append(RodsGenQueryEnum.COL_META_RESC_ATTR_UNITS.getName());
+		sb.append(WHERE);
+		sb.append(RodsGenQueryEnum.COL_R_RESC_NAME.getName());
+		sb.append(EQUALS_AND_QUOTE);
+		sb.append(resourceName);
+		sb.append("'");
+		log.debug("resource avu list query: {}", sb.toString());
+		final IRODSQuery irodsQuery = IRODSQuery.instance(sb.toString(), 5000);
+
+		IRODSAccessObjectFactory irodsAccessObjectFactory = IRODSAccessObjectFactoryImpl
+				.instance(irodsFileSystem.getCommands());
+
+		final IRODSGenQueryExecutor irodsGenQueryExecutor = irodsAccessObjectFactory
+				.getIRODSGenQueryExcecutor();
+
+		IRODSQueryResultSet resultSet;
+
+		try {
+			resultSet = irodsGenQueryExecutor.executeIRODSQuery(irodsQuery, 0);
+		} catch (JargonQueryException e) {
+			log
+					.error("query exception for resource query: "
+							+ sb.toString(), e);
+			throw new JargonException("error in resource query");
+		}
+
+		return AccessObjectQueryProcessingUtils
+				.buildAvuDataListFromResultSet(resultSet);
 
 	}
 
