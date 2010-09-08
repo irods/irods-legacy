@@ -148,6 +148,17 @@ dataObjInfo_t **outDataObjInfo)
 	        /* doi might have changed */
 	        L1desc[l1descInx].dataObjInfo = rei.doi;
 #endif
+	    } else if (L1desc[l1descInx].dataObjInp != NULL &&
+	      L1desc[l1descInx].dataObjInp->oprType == PHYMV_OPR) {
+                initReiWithDataObjInp (&rei, rsComm,
+                  L1desc[l1descInx].dataObjInp);
+                rei.doi = L1desc[l1descInx].dataObjInfo;
+                rei.status = status;
+                rei.status = applyRule ("acPostProcForPhymv", NULL, &rei,
+                    NO_SAVE_REI);
+                /* doi might have changed */
+                L1desc[l1descInx].dataObjInfo = rei.doi;
+
 	    }
 	}
     }
