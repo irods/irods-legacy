@@ -32,7 +32,8 @@ getReInfo (rsComm_t *rsComm, genQueryOut_t **genQueryOut)
     *genQueryOut = NULL;
     memset (&genQueryInp, 0, sizeof (genQueryInp_t));
 
-    addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_ID, 1);
+    /*    addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_ID, 1); Raja Sep 8 2010 */
+    addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_ID, ORDER_BY);
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_NAME, 1);
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_REI_FILE_PATH, 1);
     addInxIval (&genQueryInp.selectInp, COL_RULE_EXEC_USER_NAME, 1);
