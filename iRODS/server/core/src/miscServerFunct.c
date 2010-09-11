@@ -1582,7 +1582,7 @@ svrPortalPutGetRbudp (rsComm_t *rsComm)
     int udpPortBuf;
     int status;
 #if defined(aix_platform)
-    size_t      laddrlen = sizeof(struct sockaddr);
+    socklen_t      laddrlen = sizeof(struct sockaddr);
 #elif defined(windows_platform)
         int laddrlen = sizeof(struct sockaddr);
 #else

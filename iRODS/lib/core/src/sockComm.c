@@ -127,7 +127,7 @@ sockOpenForInConn (rsComm_t *rsComm, int *portNum, char **addr, int proto)
     if (addr != NULL) {
         struct sockaddr_in sin;
 #if defined(aix_platform)
-	size_t length = sizeof (sin);
+	socklen_t  length = sizeof (sin);
 #elif defined(windows_platform)
 	int length;
 #else
@@ -867,7 +867,7 @@ int
 setRemoteAddr (int sock, struct sockaddr_in *remoteAddr)
 {
 #if defined(aix_platform)
-    size_t      laddrlen = sizeof(struct sockaddr);
+    socklen_t       laddrlen = sizeof(struct sockaddr);
 #elif defined(windows_platform)
 	int laddrlen = sizeof(struct sockaddr);
 #else
@@ -892,7 +892,7 @@ int
 setLocalAddr (int sock, struct sockaddr_in *localAddr)
 {
 #if defined(aix_platform)
-    size_t      laddrlen = sizeof(struct sockaddr);
+    socklen_t       laddrlen = sizeof(struct sockaddr);
 #elif defined(windows_platform)
     int         laddrlen = sizeof(struct sockaddr);
 #else
