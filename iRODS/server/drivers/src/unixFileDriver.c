@@ -205,8 +205,15 @@ int
 unixFileMkdir (rsComm_t *rsComm, char *filename, int mode)
 {
     int status;
+    mode_t myMask;
+
+    myMask = umask((mode_t) 0000);
+
 
     status = mkdir (filename, mode);
+    /* reset the old mask */
+    (void) umask((mode_t) myMask);
+
 
     if (status < 0) {
         status = UNIX_FILE_MKDIR_ERR - errno;
