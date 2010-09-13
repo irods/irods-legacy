@@ -1589,7 +1589,11 @@ chlGenQuery(genQueryInp_t genQueryInp, genQueryOut_t *result) {
 
    icss = chlGetRcs();
    if (icss==NULL) return(CAT_NOT_OPEN);
+#ifdef ADDR_64BITS
+   if (debug) printf("icss=%ld\n",(long int)icss);
+#else
    if (debug) printf("icss=%d\n",(int)icss);
+#endif
 
    if (genQueryInp.continueInx == 0) {
       if (genQueryInp.options & QUOTA_QUERY) {
