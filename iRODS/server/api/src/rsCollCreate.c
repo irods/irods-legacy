@@ -133,7 +133,7 @@ l3Mkdir (rsComm_t *rsComm, dataObjInfo_t *dataObjInfo)
               MAX_NAME_LEN);
             rstrcpy (fileMkdirInp.addr.hostAddr,
               dataObjInfo->rescInfo->rescLoc, NAME_LEN);
-            fileMkdirInp.mode = DEFAULT_DIR_MODE;
+            fileMkdirInp.mode = getDefDirMode ();
             status = rsFileMkdir (rsComm, &fileMkdirInp);
             break;
 
