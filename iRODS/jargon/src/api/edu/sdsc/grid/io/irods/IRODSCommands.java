@@ -60,6 +60,7 @@ import org.irods.jargon.core.connection.IRODSServerProperties;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.irods.jargon.core.packinstr.CollInp;
+import org.irods.jargon.core.packinstr.DataObjInp;
 import org.irods.jargon.core.packinstr.IRodsPI;
 import org.irods.jargon.core.query.GenQueryClassicMidLevelService;
 import org.slf4j.Logger;
@@ -1597,19 +1598,26 @@ public class IRODSCommands {
 		Tag response = irodsFunction(RODS_API_REQ, message, DATA_OBJ_PHYMV_AN);
 	}
 
+	/**
+	 * Replicate the file to the given resource
+	 * 
+	 * @param file
+	 *            <code>IRODSFile<code> to be replicated.
+	 * @param newResource
+	 *            <code>String</code> with the name of the new resource
+	 * @throws IOException
+	 */
 	void replicate(IRODSFile file, String newResource) throws IOException {
-		Tag message = new Tag(DataObjInp_PI, new Tag[] {
-				new Tag(objPath, file.getAbsolutePath()),
-				new Tag(createMode, 0),
-				new Tag(openFlags, 0),
-				new Tag(offset, 0),
-				new Tag(dataSize, 0),
-				new Tag(numThreads, 0),
-				new Tag(oprType, REPLICATE_OPR),
-				Tag.createKeyValueTag(IRODSMetaDataSet.DEST_RESC_NAME_KW,
-						newResource), });
-
-		irodsFunction(RODS_API_REQ, message, DATA_OBJ_REPL_AN);
+		try {
+			DataObjInp dataObjInp = DataObjInp.instanceForReplicate(file
+					.getAbsolutePath(), newResource);
+			irodsFunction(dataObjInp);
+		} catch (JargonException e) {
+			log.error(
+					"JargonException in replication, rethrown as IOException",
+					e);
+			throw new IOException(e);
+		}
 	}
 
 	void deleteReplica(IRODSFile file, String resource) throws IOException {
@@ -2354,6 +2362,20 @@ public class IRODSCommands {
 	protected void setIrodsServerProperties(
 			IRODSServerProperties irodsServerProperties) {
 		this.irodsServerProperties = irodsServerProperties;
+	}
+
+	/**
+	 * Replicate the given file to all files in the given resource group. This is analagous to an irepl -a command.
+	 * @param irodsFile <code>IRODSFile</code> that should be replicated.
+	 * @param resourceGroup <code>String<code> that contains the resource group that the file will be replicated to.  The file will replicate to all
+	 * members of that resource group.
+	 * @throws JargonException
+	 */
+	protected void replicateToResourceGroup(IRODSFile irodsFile,
+			String resourceGroup) throws JargonException {
+		DataObjInp dataObjInp = DataObjInp.instanceForReplicateToResourceGroup(
+				irodsFile.getAbsolutePath(), resourceGroup);
+		irodsFunction(dataObjInp);
 	}
 
 }

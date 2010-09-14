@@ -37,13 +37,10 @@ import org.irods.jargon.core.accessobject.IRODSGenQueryExecutor;
 import org.irods.jargon.core.exception.DuplicateDataException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.pub.domain.AvuData;
-import org.irods.jargon.core.query.AVUQueryElement;
 import org.irods.jargon.core.query.IRODSQuery;
 import org.irods.jargon.core.query.IRODSQueryResultSet;
 import org.irods.jargon.core.query.JargonQueryException;
-import org.irods.jargon.core.query.MetaDataAndDomainData;
 import org.irods.jargon.core.query.RodsGenQueryEnum;
-import org.irods.jargon.core.query.MetaDataAndDomainData.MetadataDomain;
 import org.irods.jargon.core.utils.AccessObjectQueryProcessingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -317,7 +314,7 @@ public class Resource extends Domain {
 		}
 
 		if (log.isInfoEnabled()) {
-			log.info("removing resource group:" + resourceGroupName);
+			log.info("removing resource from resource group group:" + resourceGroupName);
 		}
 
 		/*

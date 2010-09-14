@@ -972,7 +972,8 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	/**
-	 * Overwrite AVU metadata for this file. This method will cause any existing AVU's with the attribute to be replaced.
+	 * Overwrite AVU metadata for this file. This method will cause any existing
+	 * AVU's with the attribute to be replaced.
 	 * 
 	 * @param metaData
 	 *            <code>String[]</code> containing an AVU in the form (attrib
@@ -1189,8 +1190,27 @@ public class IRODSFile extends RemoteFile {
 		return "generic";
 	}
 
+	/**
+	 * replicate this file to the given resource
+	 */
 	public void replicate(String newResource) throws IOException {
 		iRODSFileSystem.commands.replicate(this, newResource);
+	}
+
+	/**
+	 * Replicate this file to the given resourceGroup. This will cause a
+	 * replication to all resources in the resource group.  This is analagous to an <code>irepl -a</code> command.
+	 * @param resourceGroup <code>String</code> with the target resource group.  The file will be replicated to all
+	 * members of that resource group.
+	 * @throws JargonException
+	 */
+	public void replicateToResourceGroup(String resourceGroup)
+			throws JargonException {
+
+		log.info("replicating file:{}", this.getAbsolutePath());
+		log.info("to resource group:{}", resourceGroup);
+		iRODSFileSystem.commands.replicateToResourceGroup(this, resourceGroup);
+
 	}
 
 	/**

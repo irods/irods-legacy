@@ -1,6 +1,7 @@
 package edu.sdsc.grid.io.irods;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_RESOURCE_KEY;
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_RESOURCE_GROUP_KEY;
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.IRODS_SECONDARY_RESOURCE_KEY;
 
 import java.io.BufferedInputStream;
@@ -578,6 +579,65 @@ public class IRODSFileCommandsTest {
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
         IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
         irodsFileSystem.commands.replicate(irodsFile, testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY));
+        irodsFileSystem.close();
+        
+        IlsCommand ilsCommand = new IlsCommand();
+        ilsCommand.setLongFormat(true);
+        ilsCommand.setIlsBasePath(targetIrodsCollection + '/' + testFileName);
+        String ilsResult = invoker.invokeCommandAndGetResultAsString(ilsCommand);
+        TestCase.assertTrue("file is not in new resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_SECONDARY_RESOURCE_KEY)) != -1);
+        TestCase.assertTrue("file is not in original resource", ilsResult.indexOf(testingProperties.getProperty(IRODS_RESOURCE_KEY)) != -1);
+    }
+    
+    @Test
+    public final void testReplicateToResourceGroup() throws Exception {
+    	// generate a local scratch file
+    	
+        String testFileName = "testReplicateToResourceGroup.txt";
+        String absPath = scratchFileUtils.createAndReturnAbsoluteScratchPath(IRODS_TEST_SUBDIR_PATH);
+        String fileNameOrig = FileGenerator.generateFileOfFixedLengthGivenName(absPath, testFileName,
+            2);
+       
+        String targetIrodsCollection = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties,
+                IRODS_TEST_SUBDIR_PATH);
+        
+        // make sure all replicas are removed
+        IrodsInvocationContext invocationContext = testingPropertiesHelper.buildIRODSInvocationContextFromTestProperties(testingProperties);
+        IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+        IrmCommand rmvCommand = new IrmCommand();
+        rmvCommand.setForce(true);
+        rmvCommand.setObjectName(targetIrodsCollection + '/' + testFileName);
+        try {
+        String rmvResult = invoker.invokeCommandAndGetResultAsString(rmvCommand);
+        } catch (IcommandException ice) {
+        	if (ice.getMessage().indexOf("exist") != -1) {
+        		// ignore, nothing to remove
+        	} else {
+        		throw ice;
+        	}
+        }
+        
+        // put scratch file into irods in the right place
+        IputCommand iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(fileNameOrig);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setForceOverride(true);
+
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        iputCommand = new IputCommand();
+
+        iputCommand.setLocalFileName(fileNameOrig);
+        iputCommand.setIrodsFileName(targetIrodsCollection);
+        iputCommand.setIrodsResource(testingProperties.getProperty(IRODS_RESOURCE_KEY));
+        iputCommand.setForceOverride(true);
+
+        invoker.invokeCommandAndGetResultAsString(iputCommand);
+        
+        IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties));
+        IRODSFile irodsFile = new IRODSFile(irodsFileSystem, targetIrodsCollection + '/' + testFileName);
+        irodsFileSystem.commands.replicateToResourceGroup(irodsFile, testingProperties.getProperty(IRODS_RESOURCE_GROUP_KEY));
         irodsFileSystem.close();
         
         IlsCommand ilsCommand = new IlsCommand();

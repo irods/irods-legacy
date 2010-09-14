@@ -361,9 +361,31 @@ public class IRODSFileSystem extends RemoteFileSystem {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public InputStream executeProxyCommand(String command, String commandArgs)
+	public InputStream executeProxyCommand(final String command, final String commandArgs)
 			throws IOException {
 		return commands.executeCommand(command, commandArgs, "");
+	}
+	
+	/**
+	 * Proxy Operation that executes a command. The results of the command will
+	 * be returned by the InputStream. The protocol of the return value on the
+	 * InputStream depends on the command that was run. IRODS will return the
+	 * standard out and standard error stream produced on the serverside.
+	 * 
+	 * @param command
+	 *            The command to run.
+	 * @param commandArgs
+	 *            The command argument string.
+	 *  * @param hostName
+	 *            The host upon which the command should be run;
+	 * 
+	 * @return any byte stream output.
+	 * @throws IOException
+	 *             If an IOException occurs.
+	 */
+	public InputStream executeProxyCommandWithHostnameSpecified(final String command, final String commandArgs, final String hostName)
+			throws IOException {
+		return commands.executeCommand(command, commandArgs, hostName);
 	}
 
 	/**

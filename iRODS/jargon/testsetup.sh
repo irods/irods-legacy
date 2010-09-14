@@ -13,3 +13,5 @@ exec `iadmin mkresc test1-resc "unix file system" cache localhost "/opt/iRODS/iR
 
 exec `iadmin mkresc test1-resc2 "unix file system" cache localhost "/opt/iRODS/iRODS/Vault2"`
 
+exec `iadmin atrg testResourceGroup test1-resc2`
+
