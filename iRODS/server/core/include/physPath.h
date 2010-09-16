@@ -23,6 +23,10 @@
 #define REPL_DIR	"replica"
 #define CHK_ORPHAN_CNT_LIMIT  20  /* number of failed check before stopping */
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 int
 getFileMode (dataObjInp_t *dataObjInp);
 
@@ -85,5 +89,10 @@ int
 getDefDirMode ();
 int
 getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
+
+#ifdef  __cplusplus
+}
+#endif
+
 #endif	/* PHYS_PATH_H */
 
