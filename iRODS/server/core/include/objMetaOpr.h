@@ -20,6 +20,10 @@
 #include "rcGlobalExtern.h"
 #include "rsGlobalExtern.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 int
 svrCloseQueryOut (rsComm_t *rsComm, genQueryOut_t *genQueryOut);
 int
@@ -48,4 +52,9 @@ removeAVUMetadataFromKVPairs(rsComm_t *rsComm, char *objName, char *inObjType,
                            keyValPair_t *kVP);
 int
 getStructFileType (specColl_t *specColl);
+
+#ifdef  __cplusplus
+}
+#endif
+
 #endif	/* OBJ_META_OPR_H */
