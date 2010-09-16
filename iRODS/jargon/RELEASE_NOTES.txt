@@ -90,6 +90,10 @@ Jargon trunk.  Eventually, the two API will blend.
 Added new method in IRODSFile - replicateToResourceGroup(String resourceGroup)
 Added a test.resource.group to the testing.properties file, and init code in the testsetup.sh file for unit testing of resource group command.
 
+----------
+*Bug 112 - query to get a resource AVU on a resource on an iRODS 2.3 using jargon 2.3
+Added test case for proper usage in resource queries
+
 
 ================================================================================================
 Outstanding Issues

@@ -6,8 +6,6 @@ package edu.sdsc.jargon.testutils.icommandinvoke;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.TestingUtilsException;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.Icommand;
-import edu.sdsc.jargon.testutils.icommandinvoke.icommands.InitializeCdCommand;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -22,7 +20,6 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.exec.environment.EnvironmentUtils;
 
 /**
  * Invoke an icommand on a provided irods server

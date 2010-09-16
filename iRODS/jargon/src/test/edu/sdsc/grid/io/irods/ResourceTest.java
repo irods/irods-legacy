@@ -19,6 +19,7 @@ import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.Namespace;
 import edu.sdsc.grid.io.ResourceMetaData;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -398,12 +399,14 @@ public class ResourceTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
 		final MetaDataSelect[] selects = {
-				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_VALUE),
-				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
+				MetaDataSet
+						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_NAME),
+				MetaDataSet
+						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
 
-		// Crude attempt at saying "all records with this attribute name"
 		final MetaDataCondition[] conditions = {
-				MetaDataSet.newCondition(IRODSMetaDataSet.META_RESOURCE_ATTR_NAME,
+				MetaDataSet.newCondition(
+						IRODSMetaDataSet.META_RESOURCE_ATTR_NAME,
 						MetaDataCondition.EQUAL, expectedAttribName),
 				MetaDataSet
 						.newCondition(
@@ -412,8 +415,73 @@ public class ResourceTest {
 								testingProperties
 										.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY)) };
 		final MetaDataRecordList[] results = irodsFileSystem.query(conditions,
-				selects);
-		
+				selects, Namespace.RESOURCE);
+
+		irodsFileSystem.close();
+
+		TestCase.assertNotNull("null query results were not expected", results);
+		TestCase.assertTrue("did not get query results", results.length > 0);
+
+	}
+
+	/*
+	 * Bug 112 - query to get a resource AVU on a resource on an iRODS 2.3 using
+	 * jargon 2.3
+	 */
+	@Test
+	public final void testListResourceMetadataValAndUnitsNoConditionsForResourceName()
+			throws Exception {
+		String testResource = testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		// initialize the AVU data
+		String expectedAttribName = "testListResourceMetadataValAndUnitsNoConditionsForResourceNameattrib1";
+		String expectedAttribValue = "testListResourceMetadataValAndUnitsNoConditionsForResourceNamevalue1";
+		String expectedAttribUnits = "testListResourceMetadataValAndUnitsNoConditionsForResourceNameunits";
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
+		imetaRemoveCommand.setAttribName(expectedAttribName);
+		imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		imetaRemoveCommand.setAttribUnits(expectedAttribUnits);
+		// imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaRemoveCommand.setObjectPath(testResource);
+		String removeResult = invoker
+				.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+
+		// ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
+		// imetaAddCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		// imetaAddCommand.setAttribName(expectedAttribName);
+		// imetaAddCommand.setAttribValue(expectedAttribValue);
+		// imetaAddCommand.setAttribUnits(expectedAttribUnits);
+		// imetaAddCommand.setObjectPath(testResource);
+		// String addResult = invoker
+		// .invokeCommandAndGetResultAsString(imetaAddCommand);
+
+		Resource resource = new Resource(irodsFileSystem);
+		resource.addMetadataToResource(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				new String[] { expectedAttribName, expectedAttribValue,
+						expectedAttribUnits });
+
+		final MetaDataSelect[] selects = {
+				MetaDataSet
+						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_VALUE),
+				MetaDataSet
+						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
+
+		final MetaDataCondition[] conditions = {
+				 };
+		final MetaDataRecordList[] results = irodsFileSystem.query(conditions,
+				selects, Namespace.RESOURCE);
+
+		irodsFileSystem.close();
 		irodsFileSystem.close();
 
 		TestCase.assertNotNull("null query results were not expected", results);

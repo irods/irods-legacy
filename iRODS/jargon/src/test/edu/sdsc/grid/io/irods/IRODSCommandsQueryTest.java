@@ -1,12 +1,13 @@
 package edu.sdsc.grid.io.irods;
 
 import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.*;
-import edu.sdsc.grid.io.GeneralMetaData;
 import edu.sdsc.grid.io.MetaDataCondition;
 import edu.sdsc.grid.io.MetaDataRecordList;
 import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.grid.io.MetaDataSet;
 import edu.sdsc.grid.io.Namespace;
+import edu.sdsc.grid.io.ResourceMetaData;
+import edu.sdsc.grid.io.StandardMetaData;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
@@ -25,13 +26,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.text.DateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Properties;
-import java.util.TimeZone;
-
-import junit.framework.TestCase;
+import junit.framework.Assert;
 
 public class IRODSCommandsQueryTest {
 	private static Properties testingProperties = new Properties();
@@ -105,21 +101,21 @@ public class IRODSCommandsQueryTest {
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition(meta1Attrib,
+		condition[0] = MetaDataSet.newCondition(meta1Attrib,
 				MetaDataCondition.EQUAL, meta1Value);
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
 				condition, select, 100, Namespace.FILE, false);
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("no query results returned", fileList);
-		TestCase.assertEquals("did not find my file and metadata", 1,
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find my file and metadata", 1,
 				fileList.length);
-		TestCase.assertTrue("did not find my file name in results", fileList[0]
+		Assert.assertTrue("did not find my file name in results", fileList[0]
 				.toString().indexOf(testFileName) > -1);
 
 	}
@@ -152,22 +148,22 @@ public class IRODSCommandsQueryTest {
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition(
-				IRODSMetaDataSet.FILE_NAME, MetaDataCondition.EQUAL,
+		condition[0] = MetaDataSet.newCondition(
+				StandardMetaData.FILE_NAME, MetaDataCondition.EQUAL,
 				testFileName);
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
 				condition, select, 100, Namespace.FILE, false);
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("no query results returned", fileList);
-		TestCase.assertEquals("did not find my file and metadata", 1,
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find my file and metadata", 1,
 				fileList.length);
-		TestCase.assertTrue("did not find my file name in results", fileList[0]
+		Assert.assertTrue("did not find my file name in results", fileList[0]
 				.toString().indexOf(testFileName) > -1);
 	}
 
@@ -259,19 +255,19 @@ public class IRODSCommandsQueryTest {
 		// make a query to find the files based on an avu query for files
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[1];
-		condition[0] = IRODSMetaDataSet.newCondition(avuAttrib,
+		condition[0] = MetaDataSet.newCondition(avuAttrib,
 				MetaDataCondition.EQUAL, avuValue);
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
 				condition, select, 100, Namespace.FILE, false);
 
-		TestCase.assertNotNull(
+		Assert.assertNotNull(
 				"no records returned from avu query, I expected results",
 				fileList);
-		TestCase
+		Assert
 				.assertEquals(
 						"did not find the 10 files in the 2 directories based on the common AVU",
 						20, fileList.length);
@@ -331,23 +327,23 @@ public class IRODSCommandsQueryTest {
 
 		// now query
 		MetaDataCondition[] condition = new MetaDataCondition[2];
-		condition[0] = IRODSMetaDataSet.newCondition(meta1Attrib,
+		condition[0] = MetaDataSet.newCondition(meta1Attrib,
 				MetaDataCondition.EQUAL, meta1Value);
-		condition[1] = IRODSMetaDataSet.newCondition(meta2Attrib,
+		condition[1] = MetaDataSet.newCondition(meta2Attrib,
 				MetaDataCondition.EQUAL, meta2Value);
 
-		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
-				IRODSMetaDataSet.DIRECTORY_NAME };
-		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
 		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
 				condition, select, 100, Namespace.FILE, false);
 
 		irodsFileSystem.close();
 
-		TestCase.assertNotNull("no query results returned", fileList);
-		TestCase.assertEquals("did not find my file and metadata", 1,
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find my file and metadata", 1,
 				fileList.length);
-		TestCase.assertTrue("did not find my file name in results", fileList[0]
+		Assert.assertTrue("did not find my file name in results", fileList[0]
 				.toString().indexOf(testFileName) > -1);
 
 	}
@@ -384,19 +380,19 @@ public class IRODSCommandsQueryTest {
 
 		MetaDataCondition conditions[] = {
 				MetaDataSet
-						.newCondition(GeneralMetaData.DIRECTORY_NAME,
+						.newCondition(StandardMetaData.DIRECTORY_NAME,
 								MetaDataCondition.EQUAL, targetIrodsCollection),
-				MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+				MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 						MetaDataCondition.EQUAL, testFileName),
 				};
 		MetaDataSelect selects[] = MetaDataSet.newSelection(new String[] {
-				GeneralMetaData.DIRECTORY_NAME,
-				GeneralMetaData.FILE_NAME });
+				StandardMetaData.DIRECTORY_NAME,
+				StandardMetaData.FILE_NAME });
 		MetaDataRecordList[] fileDetails = irodsFileSystem
 				.query(conditions, selects);
 
 		irodsFileSystem.close();
-		TestCase.assertNotNull("no query results returned", fileDetails);
+		Assert.assertNotNull("no query results returned", fileDetails);
 
 	}
 	
@@ -433,19 +429,19 @@ public class IRODSCommandsQueryTest {
 
 		MetaDataCondition conditions[] = {
 				MetaDataSet
-						.newCondition(GeneralMetaData.DIRECTORY_NAME,
+						.newCondition(StandardMetaData.DIRECTORY_NAME,
 								MetaDataCondition.EQUAL, targetIrodsCollection),
-				MetaDataSet.newCondition(GeneralMetaData.FILE_NAME,
+				MetaDataSet.newCondition(StandardMetaData.FILE_NAME,
 						MetaDataCondition.EQUAL, testFileName),
 				};
 		MetaDataSelect selects[] = MetaDataSet.newSelection(new String[] {
-				GeneralMetaData.DIRECTORY_NAME,
-				GeneralMetaData.FILE_NAME });
+				StandardMetaData.DIRECTORY_NAME,
+				StandardMetaData.FILE_NAME });
 		MetaDataRecordList[] fileDetails = irodsFileSystem
 				.query(conditions, selects);
 
 		irodsFileSystem.close();
-		TestCase.assertNotNull("no query results returned", fileDetails);
+		Assert.assertNotNull("no query results returned", fileDetails);
 
 	}
 
@@ -467,14 +463,83 @@ public class IRODSCommandsQueryTest {
 				
 				};
 		MetaDataSelect selects[] = MetaDataSet.newSelection(new String[] {
-				IRODSMetaDataSet.RESOURCE_STATUS,
-                IRODSMetaDataSet.RESOURCE_NAME });
+				ResourceMetaData.RESOURCE_STATUS,
+                ResourceMetaData.RESOURCE_NAME });
 		MetaDataRecordList[] fileDetails = irodsFileSystem
 				.query(conditions, selects);
 
 		irodsFileSystem.close();
-		TestCase.assertNotNull("no query results returned", fileDetails);
+		Assert.assertNotNull("no query results returned", fileDetails);
 
 	}
+	
+	
+	/*
+	 * Bug 114 - performance of specific queries in Jargon 2.4
+	 */
+	@Test
+	public void queryFileAndDirectoryAndAVU() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "queryFileAndDirectoryAndAVU.txt";
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// add metadata for this file
+
+		String meta1Attrib = "queryFileAndDirectoryAndAVU";
+		String meta1Value = "5";
+
+		ImetaAddCommand metaAddCommand = new ImetaAddCommand();
+		metaAddCommand.setAttribName(meta1Attrib);
+		metaAddCommand.setAttribValue(meta1Value);
+		metaAddCommand.setMetaObjectType(MetaObjectType.DATA_OBJECT_META);
+		metaAddCommand.setObjectPath(iputCommand.getIrodsFileName() + '/'
+				+ testFileName);
+		invoker.invokeCommandAndGetResultAsString(metaAddCommand);
+
+	
+		// now query
+		MetaDataCondition[] condition = new MetaDataCondition[2];
+		condition[0] = MetaDataSet.newCondition(meta1Attrib,
+				MetaDataCondition.GREATER_OR_EQUAL, meta1Value);
+		condition[1] = MetaDataSet.newCondition(meta1Attrib,
+				MetaDataCondition.LESS_OR_EQUAL, meta1Value);
+		
+
+		String[] fileds = { StandardMetaData.FILE_NAME,
+				StandardMetaData.DIRECTORY_NAME };
+		MetaDataSelect[] select = MetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.commands.query(
+				condition, select, 100, Namespace.FILE, false);
+
+		irodsFileSystem.close();
+
+		Assert.assertNotNull("no query results returned", fileList);
+		Assert.assertEquals("did not find my file and metadata", 1,
+				fileList.length);
+		Assert.assertTrue("did not find my file name in results", fileList[0]
+				.toString().indexOf(testFileName) > -1);
+
+	}
+
 	
 }
