@@ -59,6 +59,10 @@ typedef struct l1desc {
     rodsServerHost_t *remoteZoneHost;
 } l1desc_t;
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 int
 initL1Desc ();
 
@@ -110,7 +114,10 @@ allocAndSetL1descForZoneOpr (int l3descInx, dataObjInp_t *dataObjInp,
 rodsServerHost_t *remoteZoneHost, openStat_t *openStat);
 int
 isL1descInuse ();
-int
-getLogPathFromPhyPath (char *phyPath, rescInfo_t *rescInfo, char *outLogPath);
+
+#ifdef  __cplusplus
+}
+#endif
+
 #endif	/* OBJ_DESC_H */
 
