@@ -61,7 +61,7 @@ public class IRODSExecuteCommandsTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(testAccount);
 
 		InputStream inputStream = irodsFileSystem.commands.executeCommand(
-				"testexecbinary.sh", "", "localhost");
+				"testexecbinaryloop.sh", "", "localhost");
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				inputStream));

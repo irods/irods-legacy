@@ -545,7 +545,7 @@ public class GenQueryClassicMidLevelService {
 
 		if (message == null) {
 			// query had no results
-			return null;
+			return null; // TODO: return empty list instead of null?
 		}
 
 		int rows = message.getTag(rowCnt).getIntValue();

@@ -15,6 +15,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
+import edu.sdsc.grid.io.MetaDataSet;
+import edu.sdsc.grid.io.ResourceMetaData;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
@@ -56,33 +61,37 @@ public class ResourceTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-	
+
 	@Test
 	public final void testListResourceGroups() throws Exception {
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
 		List<String> resourceGroups = resource.listResourceGroups();
 		TestCase.assertNotNull(resourceGroups);
 		// if no error, I'm successful
-		
+
 	}
-	
+
 	@Test
 	public final void testAddResourceGroup() throws Exception {
 		String testResourceGroup = "testrg";
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
-		
+
 		// make sure resource group does not exist
-		resource.removeResourceFromResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
-		
+		resource.removeResourceFromResourceGroup(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				testResourceGroup);
+
 		// now do the add
-		resource.addResourceToResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
-		
+		resource.addResourceToResourceGroup(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				testResourceGroup);
+
 		// list the resource groups
 		List<String> resourceGroups = resource.listResourceGroups();
 		TestCase.assertTrue(resourceGroups.size() > 0);
@@ -93,35 +102,41 @@ public class ResourceTest {
 				break;
 			}
 		}
-		
+
 		irodsFileSystem.close();
-		
-		TestCase.assertTrue("did not find the resource group I just added", testRgFound);
+
+		TestCase.assertTrue("did not find the resource group I just added",
+				testRgFound);
 	}
-	
-	@Test(expected=DuplicateDataException.class)
+
+	@Test(expected = DuplicateDataException.class)
 	public final void testAddDuplicateResourceGroup() throws Exception {
 		String testResourceGroup = "testrg";
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
-		
-		
+
 		// now do the add twice to make sure a duplicate condition occurs
-		resource.addResourceToResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
-		resource.addResourceToResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+		resource.addResourceToResourceGroup(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				testResourceGroup);
+		resource.addResourceToResourceGroup(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				testResourceGroup);
 	}
-	
+
 	@Test
 	public final void testRemoveResourceGroup() throws Exception {
 		String testResourceGroup = "testrg";
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
-		resource.removeResourceFromResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
-		
+		resource.removeResourceFromResourceGroup(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				testResourceGroup);
+
 		// list the resource groups
 		List<String> resourceGroups = resource.listResourceGroups();
 		boolean testRgFound = false;
@@ -133,18 +148,21 @@ public class ResourceTest {
 			}
 		}
 		irodsFileSystem.close();
-		
-		TestCase.assertFalse("found the resource group I just removed", testRgFound);
+
+		TestCase.assertFalse("found the resource group I just removed",
+				testRgFound);
 	}
-	
+
 	@Test
 	public final void testRemoveNonExistantResourceGroup() throws Exception {
 		String testResourceGroup = "testrgidontexist";
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
-		resource.removeResourceFromResourceGroup(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), testResourceGroup);
+		resource.removeResourceFromResourceGroup(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				testResourceGroup);
 		irodsFileSystem.close();
 	}
 
@@ -184,94 +202,104 @@ public class ResourceTest {
 		TestCase.assertTrue("did not return second resource", resc2Found);
 
 	}
-	
+
 	@Test
 	public final void testAddResourceMetadata() throws Exception {
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
 		String expectedAVUAttrib = "testAddResourceMetadata";
 		String expectedAVUValue = "value1";
-		
+
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
-		.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);		
-		
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+
 		// clean up avu
 
 		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
 		imetaRemoveCommand.setAttribName(expectedAVUAttrib);
 		imetaRemoveCommand.setAttribValue(expectedAVUValue);
 		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
-		imetaRemoveCommand.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		imetaRemoveCommand.setObjectPath(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
-			
-		String[] newAvu = {expectedAVUAttrib, expectedAVUValue};
-		resource.addMetadataToResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), newAvu);
-		
+
+		String[] newAvu = { expectedAVUAttrib, expectedAVUValue };
+		resource.addMetadataToResource(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				newAvu);
+
 		irodsFileSystem.close();
-		
+
 		// verify the metadata was added
 		// now get back the avu data and make sure it's there
 		ImetaListCommand imetaList = new ImetaListCommand();
 		imetaList.setAttribName(expectedAVUAttrib);
 		imetaList.setMetaObjectType(MetaObjectType.RESOURCE_META);
-		imetaList.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		imetaList.setObjectPath(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
 		TestCase.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAVUAttrib) > -1);
 		TestCase.assertTrue("did not find expected attrib value", metaValues
 				.indexOf(expectedAVUValue) > -1);
-		
+
 	}
-	
+
 	@Test
 	public final void testDeleteResourceMetadata() throws Exception {
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
 		String expectedAVUAttrib = "testDeleteResourceMetadata";
 		String expectedAVUValue = "testDeleteResourceMetadata-value1";
-		
+
 		IrodsInvocationContext invocationContext = testingPropertiesHelper
-		.buildIRODSInvocationContextFromTestProperties(testingProperties);
-		IcommandInvoker invoker = new IcommandInvoker(invocationContext);		
-		
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+
 		// clean up avu
 
 		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
 		imetaRemoveCommand.setAttribName(expectedAVUAttrib);
 		imetaRemoveCommand.setAttribValue(expectedAVUValue);
 		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
-		imetaRemoveCommand.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		imetaRemoveCommand.setObjectPath(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
-			
-		String[] newAvu = {expectedAVUAttrib, expectedAVUValue};
-		resource.addMetadataToResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), newAvu);
-		
+
+		String[] newAvu = { expectedAVUAttrib, expectedAVUValue };
+		resource.addMetadataToResource(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				newAvu);
+
 		// added, now delete
-		
-		resource.deleteMetadataFromResource(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY), newAvu);
+
+		resource.deleteMetadataFromResource(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY),
+				newAvu);
 		irodsFileSystem.close();
-		
+
 		// verify the metadata was added
 		// now get back the avu data and make sure it's there
 		ImetaListCommand imetaList = new ImetaListCommand();
 		imetaList.setAttribName(expectedAVUAttrib);
 		imetaList.setMetaObjectType(MetaObjectType.RESOURCE_META);
-		imetaList.setObjectPath(testingProperties.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
+		imetaList.setObjectPath(testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY));
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
 		TestCase.assertTrue("should have deleted attrib name", metaValues
 				.indexOf(expectedAVUAttrib) == -1);
 		TestCase.assertTrue("should have deleted attrib value", metaValues
 				.indexOf(expectedAVUValue) == -1);
-		
+
 	}
-	
+
 	@Test
 	public final void testListResourceMetadata() throws Exception {
 		String testResource = testingProperties
@@ -288,10 +316,11 @@ public class ResourceTest {
 		imetaRemoveCommand.setAttribName(expectedAttribName);
 		imetaRemoveCommand.setAttribValue(expectedAttribValue);
 		imetaRemoveCommand.setAttribUnits(expectedAttribUnits);
-		//imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		// imetaRemoveCommand.setAttribValue(expectedAttribValue);
 		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
 		imetaRemoveCommand.setObjectPath(testResource);
-		String removeResult = invoker.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+		String removeResult = invoker
+				.invokeCommandAndGetResultAsString(imetaRemoveCommand);
 
 		ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
 		imetaAddCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
@@ -299,30 +328,97 @@ public class ResourceTest {
 		imetaAddCommand.setAttribValue(expectedAttribValue);
 		imetaAddCommand.setAttribUnits(expectedAttribUnits);
 		imetaAddCommand.setObjectPath(testResource);
-		String addResult = invoker.invokeCommandAndGetResultAsString(imetaAddCommand);
+		String addResult = invoker
+				.invokeCommandAndGetResultAsString(imetaAddCommand);
 
 		IRODSAccount account = testingPropertiesHelper
-		.buildIRODSAdminAccountFromTestProperties(testingProperties);
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 		Resource resource = new Resource(irodsFileSystem);
 
 		List<AvuData> avuData = resource.listResourceMetadata(testResource);
-		irodsFileSystem.close();		
+		irodsFileSystem.close();
 		TestCase.assertFalse("no query result returned", avuData.isEmpty());
 		AvuData avuDataItem = null;
-		
+
 		for (AvuData foundItem : avuData) {
 			if (foundItem.getAttribute().equals(expectedAttribName)) {
 				avuDataItem = foundItem;
 				break;
 			}
 		}
-		
-		TestCase.assertNotNull("did not find the testing attrib in the resource", avuDataItem);		
-		TestCase.assertEquals("did not get expected attrib", expectedAttribName, avuDataItem.getAttribute());
-		TestCase.assertEquals("did not get expected value", expectedAttribValue, avuDataItem.getValue());
+
+		TestCase.assertNotNull(
+				"did not find the testing attrib in the resource", avuDataItem);
+		TestCase.assertEquals("did not get expected attrib",
+				expectedAttribName, avuDataItem.getAttribute());
+		TestCase.assertEquals("did not get expected value",
+				expectedAttribValue, avuDataItem.getValue());
 
 	}
 
-	
+	/*
+	 * Bug 112 - query to get a resource AVU on a resource on an iRODS 2.3 using
+	 * jargon 2.3
+	 */
+	@Test
+	public final void testListResourceMetadataForResourceName()
+			throws Exception {
+		String testResource = testingProperties
+				.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY);
+
+		// initialize the AVU data
+		String expectedAttribName = "testtestListResourceMetadataForResourceNameattrib1";
+		String expectedAttribValue = "testtestListResourceMetadataForResourceNamevalue1";
+		String expectedAttribUnits = "test1testListResourceMetadataForResourceNameunits";
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		ImetaRemoveCommand imetaRemoveCommand = new ImetaRemoveCommand();
+		imetaRemoveCommand.setAttribName(expectedAttribName);
+		imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		imetaRemoveCommand.setAttribUnits(expectedAttribUnits);
+		// imetaRemoveCommand.setAttribValue(expectedAttribValue);
+		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaRemoveCommand.setObjectPath(testResource);
+		String removeResult = invoker
+				.invokeCommandAndGetResultAsString(imetaRemoveCommand);
+
+		ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
+		imetaAddCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
+		imetaAddCommand.setAttribName(expectedAttribName);
+		imetaAddCommand.setAttribValue(expectedAttribValue);
+		imetaAddCommand.setAttribUnits(expectedAttribUnits);
+		imetaAddCommand.setObjectPath(testResource);
+		String addResult = invoker
+				.invokeCommandAndGetResultAsString(imetaAddCommand);
+
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAdminAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+
+		final MetaDataSelect[] selects = {
+				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_VALUE),
+				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
+
+		// Crude attempt at saying "all records with this attribute name"
+		final MetaDataCondition[] conditions = {
+				MetaDataSet.newCondition(IRODSMetaDataSet.META_RESOURCE_ATTR_NAME,
+						MetaDataCondition.EQUAL, expectedAttribName),
+				MetaDataSet
+						.newCondition(
+								ResourceMetaData.COLL_RESOURCE_NAME,
+								MetaDataCondition.EQUAL,
+								testingProperties
+										.getProperty(TestingPropertiesHelper.IRODS_RESOURCE_KEY)) };
+		final MetaDataRecordList[] results = irodsFileSystem.query(conditions,
+				selects);
+		
+		irodsFileSystem.close();
+
+		TestCase.assertNotNull("null query results were not expected", results);
+		TestCase.assertTrue("did not get query results", results.length > 0);
+
+	}
+
 }
