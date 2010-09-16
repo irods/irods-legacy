@@ -27,6 +27,11 @@
 #define MAX_ELAPSE_TIME 1800 /* max time in seconds above which the load 
 			      * info is considered to be out of date */
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
+
 int
 getRescInfo (rsComm_t *rsComm, char *defaultResc, keyValPair_t *condInput,
 rescGrpInfo_t **rescGrpInfo);
@@ -113,4 +118,9 @@ int
 getMultiCopyPerResc ();
 int
 getRescCnt (rescGrpInfo_t *myRescGrpInfo);
+
+#ifdef  __cplusplus
+}
+#endif
+
 #endif	/* RESOURCE_H */
