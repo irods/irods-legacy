@@ -474,6 +474,7 @@ genQueryOut_t **genQueryOut, time_t endTime, int jobType)
         	    }
 #endif
     		}
+		seedRandom ();
 		status = runRuleExec (&reExec->reExecProc[thrInx]);
                 postProcRunRuleExec (rsComm, &reExec->reExecProc[thrInx]);
 #ifdef RE_SERVER_DEBUG

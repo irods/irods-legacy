@@ -268,10 +268,23 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
     openedDataObjInp_t dataObjCloseInp;
     bunReplCache_t *tmpBunReplCache, *nextBunReplCache;
     regReplica_t regReplicaInp;
+    dataObjInp_t dataObjUnlinkInp;
     int savedStatus = 0;
 
     bzero (&dataObjCloseInp, sizeof (dataObjCloseInp));
     dataObjCloseInp.l1descInx = l1descInx;
+    if (bunReplCacheHeader->numSubFiles == 0) {
+        bzero (&dataObjUnlinkInp, sizeof (dataObjUnlinkInp));
+        rstrcpy (dataObjUnlinkInp.objPath,
+          L1desc[l1descInx].dataObjInfo->objPath, MAX_NAME_LEN);
+        dataObjUnlinkS (rsComm, &dataObjUnlinkInp,
+          L1desc[l1descInx].dataObjInfo);
+        L1desc[l1descInx].bytesWritten = 0;
+        rsDataObjClose (rsComm, &dataObjCloseInp);
+        bzero (bunReplCacheHeader, sizeof (bunReplCacheHeader_t));
+        return 0;
+    }
+
     status = phyBundle (rsComm, L1desc[l1descInx].dataObjInfo, phyBunDir,
       collection);
     if (status < 0) {
@@ -298,7 +311,6 @@ char *collection, bunReplCacheHeader_t *bunReplCacheHeader)
     tmpBunReplCache = bunReplCacheHeader->bunReplCacheHead;
 
     if (tmpBunReplCache == NULL) {
-	dataObjInp_t dataObjUnlinkInp;
         rmdir (phyBunDir);
 	bzero (&dataObjUnlinkInp, sizeof (dataObjUnlinkInp));
         rstrcpy (dataObjUnlinkInp.objPath, 
