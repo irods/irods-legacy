@@ -469,5 +469,72 @@ public class IRODSFileAVUTest {
 				.toString().indexOf(testFileName) > -1);
 
 	}
+	
+	
+	/*
+	 * Bug 114 - performance of specific queries in Jargon 2.4
+	 */
+	@Test
+	public void testQueryFileForMetadataOneAttribTwoValuesInCondition() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "testQueryFileForMetadataOneAttribTwoValues.txt";
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// add metadata for this file
+
+		String metaAttrib = "testQueryFileForMetadataOneAttribTwoValuesInConditionAttrsingle1";
+		String metaValue = "5";
+		
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,iputCommand.getIrodsFileName() + "/" + testFileName);
+		
+		// first modify
+		
+		String[] metaData = { metaAttrib, metaValue, null };
+		irodsFile.modifyMetaData(metaData);
+		
+	
+		// now query
+		MetaDataCondition[] condition = new MetaDataCondition[2];
+		condition[0] = IRODSMetaDataSet.newCondition(metaAttrib,
+				MetaDataCondition.GREATER_OR_EQUAL,"4");
+		condition[1] = IRODSMetaDataSet.newCondition(metaAttrib,
+				MetaDataCondition.LESS_OR_EQUAL, "6");
+
+		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
+				IRODSMetaDataSet.DIRECTORY_NAME };
+		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
+				select, 100);
+
+		irodsFileSystem.close();
+
+		TestCase.assertNotNull("no query results returned", fileList);
+		TestCase.assertEquals("did not find my file and metadata", 1,
+				fileList.length);
+		TestCase.assertTrue("did not find my file name in results", fileList[0]
+				.toString().indexOf(testFileName) > -1);
+
+	}
 
 }

@@ -39,6 +39,8 @@ public class IRODSMetaDataConditionWrapper {
 		return sb.toString();
 	}
 	
+	
+	
 	public IRODSMetaDataConditionWrapper(final MetaDataCondition metaDataCondition) throws JargonException {
 		if (metaDataCondition == null) {
 			throw new JargonException("null metaDataCondition");

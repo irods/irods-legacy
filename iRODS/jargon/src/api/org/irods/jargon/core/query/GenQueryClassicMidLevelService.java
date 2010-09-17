@@ -377,8 +377,23 @@ public class GenQueryClassicMidLevelService {
 			throw new JargonRuntimeException("original conditions and reordered conditions counts are out of balance");
 		}
 		
+		// now clean out duplicates
 		
-		return amendedAndReorderedConditions;
+		List<IRODSMetaDataConditionWrapper> uniqueConditions = new ArrayList<IRODSMetaDataConditionWrapper>();
+		IRODSMetaDataConditionWrapper previousMetaDataConditionWrapper = null;
+		
+		for (IRODSMetaDataConditionWrapper wrapper : amendedAndReorderedConditions) {
+			if (previousMetaDataConditionWrapper != null) {
+				if (wrapper.getMetaDataCondition().equals(previousMetaDataConditionWrapper.getMetaDataCondition())) {
+					log.debug("duplicate metaDataCondition ignored:{}", wrapper);
+					continue;
+				}  
+			}
+			uniqueConditions.add(wrapper);
+			previousMetaDataConditionWrapper = wrapper;
+		}
+		
+		return uniqueConditions;
 	}
 
 	public Tag buildQueryTag(MetaDataCondition[] conditions,
