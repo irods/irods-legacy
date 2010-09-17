@@ -94,6 +94,10 @@ Added a test.resource.group to the testing.properties file, and init code in the
 *Bug 112 - query to get a resource AVU on a resource on an iRODS 2.3 using jargon 2.3
 Added test case for proper usage in resource queries
 
+----------
+*Bug 114 - Bug 114 - performance of specific queries in Jargon 2.4 
+Fixed ordering of AVU query components in GenQueryInp packing instruction sent to iRODS to avoid pathological SQL
+
 
 ================================================================================================
 Outstanding Issues

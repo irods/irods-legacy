@@ -332,7 +332,53 @@ public class GenQueryClassicMidLevelService {
 
 			}
 		}
-		return amendedConditions;
+		
+		// now that I have the amended conditions, I need to make sure the AVU data is in the proper order to avoid pathological SQL
+		List<IRODSMetaDataConditionWrapper> amendedAndReorderedConditions = new ArrayList<IRODSMetaDataConditionWrapper>();
+
+		log.debug("reordering amended conditions to put AVU data in the right order");
+		// first, put in any non-avu query items
+		for (IRODSMetaDataConditionWrapper amendedCondition : amendedConditions) {
+			if (amendedCondition.getSelectType().equals(IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
+				log.debug("skip for now as avu metadata:{}", amendedCondition);
+			} else {
+				log.debug("not avu, go ahead and move to reordered condition:{}", amendedCondition);
+				amendedAndReorderedConditions.add(amendedCondition);
+			}
+		}
+		
+		// now I've done the non-AVU conditions, do AVU values
+		for (IRODSMetaDataConditionWrapper amendedCondition : amendedConditions) {
+			if (amendedCondition.getSelectType().equals(IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
+				if (amendedCondition.getAvuComponent().equals(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_VALUE_COMPONENT)) {
+					log.debug("added attrib value component:{}", amendedCondition);
+				amendedAndReorderedConditions.add(amendedCondition);
+				}
+			} else {
+				log.debug("already processed:{}", amendedCondition);
+
+			}
+		}
+		
+		// now I've done the non-AVU conditions, do AVU attrib names
+		for (IRODSMetaDataConditionWrapper amendedCondition : amendedConditions) {
+			if (amendedCondition.getSelectType().equals(IRODSMetaDataConditionWrapper.SelectType.AVU_METADATA)) {
+				if (amendedCondition.getAvuComponent().equals(IRODSMetaDataConditionWrapper.AVUComponent.ATTRIB_NAME_COMPONENT)) {
+					log.debug("added attrib name component:{}", amendedCondition);
+				amendedAndReorderedConditions.add(amendedCondition);
+				}
+			} else {
+				log.debug("already processed:{}", amendedCondition);
+			}
+		}
+		
+		// control balance on counts
+		if (amendedConditions.size() != amendedAndReorderedConditions.size()) {
+			throw new JargonRuntimeException("original conditions and reordered conditions counts are out of balance");
+		}
+		
+		
+		return amendedAndReorderedConditions;
 	}
 
 	public Tag buildQueryTag(MetaDataCondition[] conditions,

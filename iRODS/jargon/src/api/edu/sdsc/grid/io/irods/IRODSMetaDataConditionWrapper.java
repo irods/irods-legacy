@@ -25,6 +25,20 @@ public class IRODSMetaDataConditionWrapper {
 	
 	public enum AVUComponent { ATTRIB_NAME_COMPONENT, ATTRIB_VALUE_COMPONENT, UNSET }
 	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("IRODSMetaDataConditionWrapper:");
+		sb.append("\n   metaDataCondition:");
+		sb.append(metaDataCondition);
+		sb.append("\n   selectType:");
+		sb.append(selectType);
+		sb.append("\n   translatedMetaDataNumber:");
+		sb.append(translatedMetaDataNumber);
+		sb.append("\n  avuComponent:");
+		sb.append(avuComponent);
+		return sb.toString();
+	}
+	
 	public IRODSMetaDataConditionWrapper(final MetaDataCondition metaDataCondition) throws JargonException {
 		if (metaDataCondition == null) {
 			throw new JargonException("null metaDataCondition");

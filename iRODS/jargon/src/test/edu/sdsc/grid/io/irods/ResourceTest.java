@@ -317,10 +317,9 @@ public class ResourceTest {
 		imetaRemoveCommand.setAttribName(expectedAttribName);
 		imetaRemoveCommand.setAttribValue(expectedAttribValue);
 		imetaRemoveCommand.setAttribUnits(expectedAttribUnits);
-		// imetaRemoveCommand.setAttribValue(expectedAttribValue);
 		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
 		imetaRemoveCommand.setObjectPath(testResource);
-		String removeResult = invoker
+		invoker
 				.invokeCommandAndGetResultAsString(imetaRemoveCommand);
 
 		ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
@@ -329,7 +328,7 @@ public class ResourceTest {
 		imetaAddCommand.setAttribValue(expectedAttribValue);
 		imetaAddCommand.setAttribUnits(expectedAttribUnits);
 		imetaAddCommand.setObjectPath(testResource);
-		String addResult = invoker
+		invoker
 				.invokeCommandAndGetResultAsString(imetaAddCommand);
 
 		IRODSAccount account = testingPropertiesHelper
@@ -379,10 +378,10 @@ public class ResourceTest {
 		imetaRemoveCommand.setAttribName(expectedAttribName);
 		imetaRemoveCommand.setAttribValue(expectedAttribValue);
 		imetaRemoveCommand.setAttribUnits(expectedAttribUnits);
-		// imetaRemoveCommand.setAttribValue(expectedAttribValue);
+
 		imetaRemoveCommand.setMetaObjectType(MetaObjectType.RESOURCE_META);
 		imetaRemoveCommand.setObjectPath(testResource);
-		String removeResult = invoker
+		invoker
 				.invokeCommandAndGetResultAsString(imetaRemoveCommand);
 
 		ImetaAddCommand imetaAddCommand = new ImetaAddCommand();
@@ -391,7 +390,7 @@ public class ResourceTest {
 		imetaAddCommand.setAttribValue(expectedAttribValue);
 		imetaAddCommand.setAttribUnits(expectedAttribUnits);
 		imetaAddCommand.setObjectPath(testResource);
-		String addResult = invoker
+		invoker
 				.invokeCommandAndGetResultAsString(imetaAddCommand);
 
 		IRODSAccount account = testingPropertiesHelper
@@ -399,10 +398,8 @@ public class ResourceTest {
 		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
 		final MetaDataSelect[] selects = {
-				MetaDataSet
-						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_NAME),
-				MetaDataSet
-						.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
+				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_VALUE),
+				MetaDataSet.newSelection(IRODSMetaDataSet.META_RESOURCE_ATTR_UNITS) };
 
 		final MetaDataCondition[] conditions = {
 				MetaDataSet.newCondition(

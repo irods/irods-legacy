@@ -1,7 +1,10 @@
 package edu.sdsc.grid.io.irods;
 
+import static edu.sdsc.jargon.testutils.TestingPropertiesHelper.GENERATED_FILE_DIRECTORY_KEY;
+
 import java.util.Properties;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.junit.After;
@@ -11,6 +14,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import edu.sdsc.grid.io.MetaDataCondition;
+import edu.sdsc.grid.io.MetaDataRecordList;
+import edu.sdsc.grid.io.MetaDataSelect;
 import edu.sdsc.jargon.testutils.AssertionHelper;
 import edu.sdsc.jargon.testutils.IRODSTestSetupUtilities;
 import edu.sdsc.jargon.testutils.TestingPropertiesHelper;
@@ -18,6 +24,7 @@ import edu.sdsc.jargon.testutils.filemanip.FileGenerator;
 import edu.sdsc.jargon.testutils.filemanip.ScratchFileUtils;
 import edu.sdsc.jargon.testutils.icommandinvoke.IcommandInvoker;
 import edu.sdsc.jargon.testutils.icommandinvoke.IrodsInvocationContext;
+import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaAddCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaListCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.ImetaRemoveCommand;
 import edu.sdsc.jargon.testutils.icommandinvoke.icommands.IputCommand;
@@ -34,7 +41,6 @@ public class IRODSFileAVUTest {
 	private static TestingPropertiesHelper testingPropertiesHelper = new TestingPropertiesHelper();
 	private static ScratchFileUtils scratchFileUtils = null;
 	private static IRODSTestSetupUtilities irodsTestSetupUtilities = null;
-	private static AssertionHelper assertionHelper = null;
 	public static final String IRODS_TEST_SUBDIR_PATH = "IrodsFileAVUTest";
 
 	@BeforeClass
@@ -46,7 +52,7 @@ public class IRODSFileAVUTest {
 		irodsTestSetupUtilities.initializeIrodsScratchDirectory();
 		irodsTestSetupUtilities
 				.initializeDirectoryForTest(IRODS_TEST_SUBDIR_PATH);
-		assertionHelper = new AssertionHelper();
+		new AssertionHelper();
 	}
 
 	@AfterClass
@@ -107,9 +113,9 @@ public class IRODSFileAVUTest {
 				+ testFileName);
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		TestCase.assertTrue("did not find expected attrib name", metaValues
+		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
-		TestCase.assertTrue("did not find expected attrib value", metaValues
+		Assert.assertTrue("did not find expected attrib value", metaValues
 				.indexOf(expectedAttribValue) > -1);
 
 		// clean up avu
@@ -172,11 +178,11 @@ public class IRODSFileAVUTest {
 				+ testFileName);
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		TestCase.assertTrue("did not find expected attrib name", metaValues
+		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
-		TestCase.assertTrue("did not find expected attrib value", metaValues
+		Assert.assertTrue("did not find expected attrib value", metaValues
 				.indexOf(expectedAttribValue) > -1);
-		TestCase.assertTrue("did not find expected units", metaValues
+		Assert.assertTrue("did not find expected units", metaValues
 				.indexOf(expectedUnits) > -1);
 
 		// clean up avu
@@ -241,7 +247,7 @@ public class IRODSFileAVUTest {
 			irodsFileSystem.close();
 		}
 
-		TestCase.assertTrue("did not catch IllegalArgumentException",
+		Assert.assertTrue("did not catch IllegalArgumentException",
 				threwException);
 
 	}
@@ -299,11 +305,11 @@ public class IRODSFileAVUTest {
 				+ testFileName);
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		TestCase.assertTrue("did not find expected attrib name", metaValues
+		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
-		TestCase.assertTrue("did not find expected attrib value", metaValues
+		Assert.assertTrue("did not find expected attrib value", metaValues
 				.indexOf(expectedAttribValue) > -1);
-		TestCase.assertTrue("did not find expected units", metaValues
+		Assert.assertTrue("did not find expected units", metaValues
 				.indexOf(expectedUnits) > -1);
 
 		// clean up avu
@@ -383,13 +389,84 @@ public class IRODSFileAVUTest {
 				+ testFileName);
 		String metaValues = invoker
 				.invokeCommandAndGetResultAsString(imetaList);
-		TestCase.assertTrue("did not find expected attrib name", metaValues
+		Assert.assertTrue("did not find expected attrib name", metaValues
 				.indexOf(expectedAttribName) > -1);
-		TestCase.assertTrue("did not find expected attrib value as the second, updated value", metaValues
+		Assert.assertTrue("did not find expected attrib value as the second, updated value", metaValues
 				.indexOf(expectedAttribValue2) > -1);
 		
-		TestCase.assertTrue("found a duplicate AVU with the value from the first 'set'", metaValues
+		Assert.assertTrue("found a duplicate AVU with the value from the first 'set'", metaValues
 				.indexOf(expectedAttribValue) == -1);
+
+	}
+	
+	
+	/*
+	 * Bug 114 - performance of specific queries in Jargon 2.4
+	 */
+	@Test
+	public void testQueryFileForMetadataTwoAttrib() throws Exception {
+		// add a file and set two metadata values
+		IRODSAccount account = testingPropertiesHelper
+				.buildIRODSAccountFromTestProperties(testingProperties);
+		IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
+		String testFileName = "testQueryFileForMetadataTwoAttrib.txt";
+
+		// generate a file and put into irods
+		String fullPathToTestFile = FileGenerator
+				.generateFileOfFixedLengthGivenName(testingProperties
+						.getProperty(GENERATED_FILE_DIRECTORY_KEY)
+						+ IRODS_TEST_SUBDIR_PATH + "/", testFileName, 1);
+
+		IputCommand iputCommand = new IputCommand();
+		iputCommand.setLocalFileName(fullPathToTestFile);
+		iputCommand.setIrodsFileName(testingPropertiesHelper
+				.buildIRODSCollectionRelativePathFromTestProperties(
+						testingProperties, IRODS_TEST_SUBDIR_PATH));
+		iputCommand.setForceOverride(true);
+
+		IrodsInvocationContext invocationContext = testingPropertiesHelper
+				.buildIRODSInvocationContextFromTestProperties(testingProperties);
+		IcommandInvoker invoker = new IcommandInvoker(invocationContext);
+		invoker.invokeCommandAndGetResultAsString(iputCommand);
+
+		// add metadata for this file
+
+		String meta1Attrib = "attrsingle1";
+		String meta1Value = "5";
+		String meta2Attrib = "attrsingle2";
+		String meta2Value = "6";
+
+		IRODSFile irodsFile = new IRODSFile(irodsFileSystem,iputCommand.getIrodsFileName() + "/" + testFileName);
+		
+		// first modify
+		
+		String[] metaData = { meta1Attrib, meta1Value, null };
+		irodsFile.modifyMetaData(metaData);
+		
+		// second modify
+		
+		String[] metaData2 = { meta2Attrib, meta2Value, null };
+		irodsFile.modifyMetaData(metaData2);
+		// now query
+		MetaDataCondition[] condition = new MetaDataCondition[2];
+		condition[0] = IRODSMetaDataSet.newCondition(meta1Attrib,
+				MetaDataCondition.GREATER_OR_EQUAL, meta1Value);
+		condition[1] = IRODSMetaDataSet.newCondition(meta2Attrib,
+				MetaDataCondition.LESS_OR_EQUAL, meta2Value);
+
+		String[] fileds = { IRODSMetaDataSet.FILE_NAME,
+				IRODSMetaDataSet.DIRECTORY_NAME };
+		MetaDataSelect[] select = IRODSMetaDataSet.newSelection(fileds);
+		MetaDataRecordList[] fileList = irodsFileSystem.query(condition,
+				select, 100);
+
+		irodsFileSystem.close();
+
+		TestCase.assertNotNull("no query results returned", fileList);
+		TestCase.assertEquals("did not find my file and metadata", 1,
+				fileList.length);
+		TestCase.assertTrue("did not find my file name in results", fileList[0]
+				.toString().indexOf(testFileName) > -1);
 
 	}
 
