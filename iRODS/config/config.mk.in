@@ -291,12 +291,14 @@ endif
 #IRODS_SYSLOG = 1
 
 # HPSS - Define whether HPSS is supported on this server. HPSS_UNIX_PASSWD_AUTH
-# specifies whether the UNix password authentication should be used. The
-# default is using the keytab file.
+# specifies whether the UNix password authentication should be used. 
+# HPSS_KRB5_AUTH specifies whether the Kerberos keytab file should be used.
+# The default is using the UNIX keytab file.
 # HPSS=1
 
 ifdef HPSS
 # HPSS_UNIX_PASSWD_AUTH=1
+# HPSS_KRB5_AUTH=1
 
 # HPSS7 - Defines whether the HPSS v7 library or later is used. The default
 # is HPSS v6

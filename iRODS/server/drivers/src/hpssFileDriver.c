@@ -6,6 +6,7 @@
 
 
 #include "hpssFileDriver.h"
+#include "hpss_rpc.h"
 #include "pdata.h"
 #include "rsGlobalExtern.h"
 #include "miscServerFunct.h"
@@ -446,6 +447,12 @@ hpssOpenForWrite (char *destHpssFile, int mode, int flags, rodsLong_t dataSize)
 
     if (destFd < 0) {
 	if (destFd != HPSS_ENOENT) {
+            char *errorText;
+            errorText = hpss_RPCGetLastErrorText();
+            if (errorText != NULL) {
+                rodsLog (LOG_ERROR,
+                  "hpssOpenForWrite: error text = %s", errorText);
+            }
             rodsLog (LOG_ERROR,
              "hpssOpenForWrite: hpss_Open error, status = %d\n",
              destFd);
@@ -514,6 +521,7 @@ initHpssAuth ()
     char hpssUser[MAX_NAME_LEN], hpssAuthInfo[MAX_NAME_LEN];
     int status;
     hpss_authn_mech_t mech_type;
+    const char * mech_name;
 
     if (HpssAuthFlag) return 0;
 
@@ -525,7 +533,6 @@ initHpssAuth ()
 	return status;
     }
 
-
    /* Set the authentication type to use
      */
 
@@ -536,7 +543,11 @@ initHpssAuth ()
         return (status + HPSS_AUTH_ERR);
     }
 
+#ifdef HPSS_KRB5_AUTH
+    Api_config.AuthnMech = hpss_authn_mech_krb5;
+#else
     Api_config.AuthnMech = hpss_authn_mech_unix;
+#endif
     Api_config.Flags |= API_USE_CONFIG;
 
     status = hpss_SetConfiguration(&Api_config);
@@ -546,10 +557,15 @@ initHpssAuth ()
 	return (status + HPSS_AUTH_ERR);
     }
 
-    status = hpss_AuthnMechTypeFromString("unix", &mech_type);
+#ifdef HPSS_KRB5_AUTH
+    mech_name = "krb5";
+#else
+    mech_name = "unix";
+#endif
+    status = hpss_AuthnMechTypeFromString(mech_name, &mech_type);
     if(status != 0) {
 	rodsLog (LOG_ERROR,
-          "initHpssAuth: invalid authentication type unix");
+          "initHpssAuth: invalid authentication type %s", mech_name);
         status = HPSS_AUTH_NOT_SUPPORTED + status;
 	return status;
     }
@@ -564,13 +580,16 @@ initHpssAuth ()
         status = HPSS_AUTH_ERR - errno;
 	return status;
     }
-#else	/* use unix keytab. default */
-#if 0
-    mech_type = hpss_authn_mech_unix;
-#endif
+#else	/* use keytab. default */
     status = hpss_SetLoginCred(hpssUser, mech_type, hpss_rpc_cred_client,
       hpss_rpc_auth_type_keytab, hpssAuthInfo);
     if(status != 0) {
+	char *errorText;
+	errorText = hpss_RPCGetLastErrorText();
+	if (errorText != NULL) {
+	    rodsLog (LOG_ERROR,
+              "hpss_SetLoginCred: error text = %s", errorText);
+	} 
         rodsLog (LOG_ERROR,
           "initHpssAuth: hpss_SetLoginCred err,stat=%d.User=%s,Info=%s,err=%d",
           status, hpssUser, hpssAuthInfo, errno);
