@@ -56,6 +56,16 @@
 #define MAX_BROKEN_PIPE_CNT	50
 #define BROKEN_PIPE_INT		300	/* 5 minutes interval */
 
+/* Managing the spawned agents */
+
+typedef struct agentProc {
+    int pid;
+    int sock;
+    startupPack_t startupPack;
+    struct sockaddr_in  remoteAddr;  /* remote address */
+    struct agentProc *next;
+} agentProc_t;
+
 typedef struct hostName {
     char *name;
     struct hostName *next;
@@ -246,4 +256,7 @@ int
 getXmsgHost (rodsServerHost_t **rodsServerHost);
 int
 setRsCommFromRodsEnv (rsComm_t *rsComm);
+int
+queAgentProc (agentProc_t *agentPorc, agentProc_t **agentPorcHead,
+irodsPosition_t position);
 #endif	/* INIT_SERVER_H */

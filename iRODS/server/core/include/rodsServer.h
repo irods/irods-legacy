@@ -50,16 +50,6 @@ extern int optind, opterr, optopt;
 
 #define AGENT_QUE_CHK_INT	600	/* check the agent queue every 600 sec
 					 * for consistence */
-/* Managing the spawned agents */
-
-typedef struct agentProc {
-    int pid;
-    int sock;
-    startupPack_t startupPack;
-    struct sockaddr_in  remoteAddr;  /* remote address */
-    struct agentProc *next;
-} agentProc_t;
-
 int serverize (char *logDir);
 int serverMain (char *logDir);
 int
@@ -108,9 +98,6 @@ int
 procSingleConnReq (agentProc_t *connReq);
 int
 startProcConnReqThreads ();
-int
-queAgentProc (agentProc_t *agentPorc, agentProc_t **agentPorcHead,
-irodsPosition_t position);
 void
 spawnManagerTask ();
 int

@@ -2490,3 +2490,29 @@ setRsCommFromRodsEnv (rsComm_t *rsComm)
     return (0);
 }
 
+int
+queAgentProc (agentProc_t *agentProc, agentProc_t **agentProcHead,
+irodsPosition_t position)
+{
+    if (agentProc == NULL || agentProcHead == NULL) return USER__NULL_INPUT_ERR;
+
+    if (*agentProcHead == NULL) {
+        *agentProcHead = agentProc;
+        agentProc->next = NULL;
+        return 0;
+    }
+
+    if (position == TOP_POS) {
+        agentProc->next = *agentProcHead;
+        *agentProcHead = agentProc;
+    } else {
+        agentProc_t *tmpAgentProc = *agentProcHead;
+        while (tmpAgentProc->next != NULL) {
+            tmpAgentProc = tmpAgentProc->next;
+        }
+        tmpAgentProc->next = agentProc;
+        agentProc->next = NULL;
+    }
+    return 0;
+}
+
