@@ -244,5 +244,6 @@ int
 rmProcLog (int pid);
 int
 getXmsgHost (rodsServerHost_t **rodsServerHost);
-
+int
+setRsCommFromRodsEnv (rsComm_t *rsComm);
 #endif	/* INIT_SERVER_H */

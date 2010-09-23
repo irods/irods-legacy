@@ -80,8 +80,6 @@ usage (char *prog);
 int
 initServer (rsComm_t *svrComm);
 int
-setRsCommFromRodsEnv (rsComm_t *rsComm);
-int
 spawnAgent (agentProc_t *connReq, agentProc_t **agentProcHead);
 int
 execAgent (int newSock, startupPack_t *startupPack);

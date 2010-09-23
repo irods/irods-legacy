@@ -2475,3 +2475,18 @@ readProcLog (int pid, procLog_t *procLog)
     fclose (fptr);
     return status;
 }
+
+int
+setRsCommFromRodsEnv (rsComm_t *rsComm)
+{
+    rodsEnv *myEnv = &rsComm->myEnv;
+
+    rstrcpy (rsComm->proxyUser.userName, myEnv->rodsUserName, NAME_LEN);
+    rstrcpy (rsComm->clientUser.userName, myEnv->rodsUserName, NAME_LEN);
+
+    rstrcpy (rsComm->proxyUser.rodsZone, myEnv->rodsZone, NAME_LEN);
+    rstrcpy (rsComm->clientUser.rodsZone, myEnv->rodsZone, NAME_LEN);
+
+    return (0);
+}
+

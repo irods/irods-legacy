@@ -710,20 +710,6 @@ initServer ( rsComm_t *svrComm)
     return (status);
 }
 
-int
-setRsCommFromRodsEnv (rsComm_t *rsComm)
-{
-    rodsEnv *myEnv = &rsComm->myEnv;
-
-    rstrcpy (rsComm->proxyUser.userName, myEnv->rodsUserName, NAME_LEN);
-    rstrcpy (rsComm->clientUser.userName, myEnv->rodsUserName, NAME_LEN);
-
-    rstrcpy (rsComm->proxyUser.rodsZone, myEnv->rodsZone, NAME_LEN);
-    rstrcpy (rsComm->clientUser.rodsZone, myEnv->rodsZone, NAME_LEN);
-
-    return (0);
-}
-
 /* record the server process number and other information into
    a well-known file.  If svrComm is Null and this has created a file
    before, just unlink the file. */
