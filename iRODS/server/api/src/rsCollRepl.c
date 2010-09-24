@@ -51,7 +51,7 @@ collOprStat_t **collOprStat)
     } else if (remoteFlag == REMOTE_HOST) {
 	int retval;
         retval = _rcCollRepl (rodsServerHost->conn, collReplInp, collOprStat);
-        if (status < 0) return status;
+        if (retval < 0) return retval;
         status = svrSendZoneCollOprStat (rsComm, rodsServerHost->conn,
           *collOprStat, retval);
         return status;

@@ -3956,8 +3956,8 @@ unbunBulkBuf (char *phyBunDir, bulkOprInp_t *bulkOprInp, bytesBuf_t *bulkBBuf)
     }
     if (attriArray->rowCnt > MAX_NUM_BULK_OPR_FILES) {
         rodsLog (LOG_NOTICE,
-          "unbunBulkBuf: rowCnt %d for %s too large", 
-	  attriArray->rowCnt, tmpObjPath);
+          "unbunBulkBuf: rowCnt %d too large", 
+	  attriArray->rowCnt);
         return (SYS_REQUESTED_BUF_TOO_LARGE);
     }
 

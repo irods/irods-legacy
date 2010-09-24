@@ -30,7 +30,6 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     char *rescGroupName;
     int remoteFlag;
     rodsServerHost_t *rodsServerHost;
-    char *bunFilePath;
     char phyBunDir[MAX_NAME_LEN];
     int flags = 0;
 #if 0
@@ -123,7 +122,7 @@ structFileExtAndRegInp_t *structFileExtAndRegInp)
     if (status < 0) {
         rodsLog (LOG_ERROR,
         "rsStructFileExtAndReg:unbunPhyBunFile err for %s to dir %s.stat=%d",
-          bunFilePath, phyBunDir, status);
+          dataObjInfo->filePath, phyBunDir, status);
         rsDataObjClose (rsComm, &dataObjCloseInp);
         return status;
     }
@@ -747,8 +746,8 @@ genQueryOut_t *bulkDataObjRegOut)
     dataObjInfo_t dataObjInfo;
     sqlResult_t *objPath, *dataType, *dataSize, *rescName, *filePath,
       *dataMode, *oprType, *rescGroupName, *replNum, *chksum;
-    char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpRescName, *tmpFilePath,
-      *tmpDataMode, *tmpOprType, *tmpRescGroupName, *tmpReplNum, *tmpChksum;
+    char *tmpObjPath, *tmpDataType, *tmpDataSize, *tmpFilePath,
+      *tmpDataMode, *tmpOprType, *tmpReplNum, *tmpChksum;
     sqlResult_t *objId;
     char *tmpObjId;
     int status, i;
@@ -875,10 +874,12 @@ genQueryOut_t *bulkDataObjRegOut)
         rstrcpy (dataObjInp.objPath, tmpObjPath, MAX_NAME_LEN);
         rstrcpy (tmpDataObjInfo->dataType, tmpDataType, NAME_LEN);
         tmpDataObjInfo->dataSize = strtoll (tmpDataSize, 0, 0);
+#if 0	/* not needed. from dataObjInfo ? */
         rstrcpy (tmpDataObjInfo->rescName, tmpRescName, NAME_LEN);
+        rstrcpy (tmpDataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
+#endif
         rstrcpy (tmpDataObjInfo->filePath, tmpFilePath, MAX_NAME_LEN);
         rstrcpy (tmpDataObjInfo->dataMode, tmpDataMode, NAME_LEN);
-        rstrcpy (tmpDataObjInfo->rescGroupName, tmpRescGroupName, NAME_LEN);
         tmpDataObjInfo->replNum = atoi (tmpReplNum);
         if (chksum != NULL) {
             tmpChksum = &chksum->value[chksum->len * i];

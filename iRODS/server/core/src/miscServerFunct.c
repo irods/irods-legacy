@@ -484,9 +484,6 @@ partialDataPut (portalTransferInp_t *myInput)
 
     if (myInput == NULL) {
 	rodsLog (LOG_SYS_FATAL, "partialDataPut: NULL myInput");
-	if (myInput->threadNum > 0)
-            _l3Close (myInput->rsComm, destRescTypeInx, destL3descInx);
-        CLOSE_SOCK (srcFd);
 	return;
     }
  
@@ -633,9 +630,6 @@ partialDataGet (portalTransferInp_t *myInput)
 
     if (myInput == NULL) {
         rodsLog (LOG_SYS_FATAL, "partialDataGet: NULL myInput");
-        if (myInput->threadNum > 0)
-            _l3Close (myInput->rsComm, srcRescTypeInx, srcL3descInx);
-        CLOSE_SOCK (destFd);
         return;
     }
 
