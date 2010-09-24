@@ -84,6 +84,7 @@
 #define AGENT_PT	2	/* agent process type */
 #define RE_SERVER_PT	3	/* reServer type */
 #define XMSG_SERVER_PT	4	/* xmsgServer type */
+#define ICAT_SERVER_PT	5	/* icat Server type */
 
 /* definition for rcat type */
 
