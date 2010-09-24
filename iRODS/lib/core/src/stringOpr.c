@@ -27,7 +27,6 @@ char *rmemmove (void *dest, void *src, int strLen, int maxLen)
 
 char *rmemcpy (void *dest, void *src, int strLen, int maxLen)
 {
-    int len;
 
     if (dest == NULL || src == NULL)
 	return NULL;
@@ -36,7 +35,7 @@ char *rmemcpy (void *dest, void *src, int strLen, int maxLen)
 	return NULL;
     }
 
-    if (memcpy (dest, src, len) != NULL) {
+    if (memcpy (dest, src, strLen) != NULL) {
 	return (char*)dest;
     } else {
 	return NULL;

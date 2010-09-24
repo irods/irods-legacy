@@ -14,7 +14,7 @@ fsckObj (rcComm_t *conn, rodsArguments_t *myRodsArgs, rodsPathInp_t *rodsPathInp
 	char inpPath[LONG_NAME_LEN] = "";
 	char *inpPathO, *lastChar;
 	struct stat sbuf;
-	int lenInpPath, srcSize, status;
+	int lenInpPath, status;
 	
 	if ( rodsPathInp->numSrc != 1 ) {
 		rodsLog (LOG_ERROR, "fsckObj: gave %i input source path, should give one and only one", rodsPathInp->numSrc);

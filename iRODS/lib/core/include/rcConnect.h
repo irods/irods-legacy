@@ -20,7 +20,6 @@
 #include "objInfo.h"
 #include "dataObjInpOut.h"
 #include "irodsGuiProgressCallback.h"
-#include "icatStructs.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -117,8 +116,6 @@ typedef struct {
     procState_t clientState;
     procState_t reconnThrState;
     int gsiRequest;
-    icatSessionStruct *icss;
-    icatSessionStruct *rda_icss;
 } rsComm_t;
 
 void rcPipSigHandler ();
