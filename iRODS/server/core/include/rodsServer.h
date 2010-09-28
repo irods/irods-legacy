@@ -44,7 +44,7 @@ extern int optind, opterr, optopt;
 
 #define MIN_AGENT_TIMEOUT_TIME 7200
 
-#define MAX_ACCEPT_ERR_CNT 100
+#define MAX_ACCEPT_ERR_CNT 1000
 
 #define NUM_READ_WORKER_THR	5
 

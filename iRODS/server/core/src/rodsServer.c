@@ -1017,6 +1017,7 @@ spawnManagerTask ()
     uint agentQueChkTime = 0;
     while (1) {
 #ifndef SINGLE_SVR_THR
+        pthread_mutex_lock (&SpawnReqCondMutex);
         pthread_cond_wait (&SpawnReqCond, &SpawnReqCondMutex);
 #endif
 	while (SpawnReqHead != NULL) {
