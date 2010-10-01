@@ -282,6 +282,7 @@ writeMsgHeader (int sock, msgHeader_t *myHeader)
         rodsLog (LOG_ERROR,
          "writeMsgHeader: wrote %d bytes, expect %d, status = %d",
          nbytes, headerBBuf->len, SYS_HEADER_WRITE_LEN_ERR - errno);
+         freeBBuf (headerBBuf);
          return (SYS_HEADER_WRITE_LEN_ERR - errno);
      }
 
