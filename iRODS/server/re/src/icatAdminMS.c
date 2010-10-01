@@ -68,10 +68,14 @@ int msiCreateUser(ruleExecInfo_t *rei)
       rodsLog (LOG_NOTICE,"   Calling msiCreateUser For \n");
       print_uoi(rei->uoio);
     }
-    if (reLoopBackFlag > 0)
+    if (reLoopBackFlag > 0) {
+      rodsLog (LOG_NOTICE,
+	       "   Test mode, returning without performing normal operations (chlRegUserRE)");
       return(0);
+    }
   }
-  /**** This is Just a Test Stub  ****/
+  /**** End of Test Stub  ****/
+
 #ifdef RODS_CAT
   i =  chlRegUserRE(rei->rsComm, rei->uoio);
 #else
@@ -142,10 +146,13 @@ int msiCreateCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
       rodsLog (LOG_NOTICE,"   Calling msiCreateCollByAdmin Coll: %s/%s\n",
 	       parColl,childName);
     }
-    if (reLoopBackFlag > 0)
+    if (reLoopBackFlag > 0) {
+      rodsLog (LOG_NOTICE,
+	       "   Test mode, returning without performing normal operations (chlRegCollByAdmin)");
       return(0);
+    }
   }
-  /**** This is Just a Test Stub  ****/
+  /**** End of Test Stub  ****/
 
   snprintf(collInfo.collName, sizeof(collInfo.collName), 
 	   "%s/%s",parColl,childName);
@@ -225,6 +232,8 @@ int msiDeleteCollByAdmin(msParam_t* xparColl, msParam_t* xchildName, ruleExecInf
 	 rodsLog (LOG_NOTICE,"   Calling msiDeleteCallByAdmin Coll: %s/%s\n",
 		  parColl,childName);
       }
+      rodsLog (LOG_NOTICE,
+	       "   Test mode, returning without performing normal operations (chlDelCollByAdmin)");
       return(0);
    }
    /**** End of Test Stub  ****/
@@ -307,9 +316,12 @@ msiDeleteUser(ruleExecInfo_t *rei)
       rodsLog (LOG_NOTICE,"   Calling chlDeleteUser For \n");
       print_uoi(rei->uoio);
     }
+    rodsLog (LOG_NOTICE,
+	     "   Test mode, returning without performing normal operations (chlDelUserRE)");
     return(0);
   }
   /**** End of Test Stub  ****/
+
 #ifdef RODS_CAT
   i =  chlDelUserRE(rei->rsComm, rei->uoio);
 #else
@@ -376,6 +388,8 @@ msiAddUserToGroup(msParam_t *msParam, ruleExecInfo_t *rei)
       rodsLog (LOG_NOTICE,"   Calling chlModGroup For \n");
       print_uoi(rei->uoio);
     }
+    rodsLog (LOG_NOTICE,
+	     "   Test mode, returning without performing normal operations (chlModGroup)");
     return(0);
   }
 #ifdef RODS_CAT

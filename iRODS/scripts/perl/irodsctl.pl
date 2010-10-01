@@ -206,7 +206,10 @@ $postgresBinDir  = File::Spec->catdir( $POSTGRES_HOME, "bin" );
 # $irodsReconnect=1;
 
 # RETESTFLAG - option for logging micro-service calls
-# use 1 to make it log
+# use 1 to make it log.  Note that, at least for some micro-services,
+# this will cause the micro-service to log the call but not actually
+# perform the micro-service functions.  This should be used only for
+# debugging new micro-services.
 # $RETESTFLAG=1;
 
 # GLOBALALLRULEEXECFLAG - turn this on if you want to
