@@ -90,6 +90,7 @@
 #define MASTER_RCAT	0
 #define SLAVE_RCAT	1
 #define MAX_SZ_FOR_SINGLE_BUF     (32*1024*1024)
+#define MAX_SZ_FOR_EXECMD_BUF     (64*1024*1024)
 #define MIN_SZ_FOR_PARA_TRAN     (1*1024*1024)
 #define TRANS_BUF_SZ    (4*1024*1024)
 #define TRANS_SZ        (40*1024*1024)

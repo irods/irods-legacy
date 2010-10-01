@@ -4108,7 +4108,7 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
     } else {
 	/* sanity check */
 	buflen = bytesBuf->len;
-	if (buflen > MAX_SZ_FOR_SINGLE_BUF) return SYS_REQUESTED_BUF_TOO_LARGE;
+	if (buflen > MAX_SZ_FOR_EXECMD_BUF) return SYS_REQUESTED_BUF_TOO_LARGE;
     }
     bytesBuf->len = 0;
     bytesBuf->buf = bufptr = (char *)malloc (buflen);
@@ -4117,26 +4117,35 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
     while (1) {
         nbytes = myRead (fd, bufptr, toRead, SOCK_TYPE, NULL, NULL);
         if (nbytes == toRead) { /* more */
-            toRead = buflen;
-            buflen = 2 * buflen;
-            if (buflen > MAX_SZ_FOR_SINGLE_BUF) {
+	    char *tmpPtr;
+
+            bytesBuf->len += nbytes;
+	    if (buflen >= MAX_SZ_FOR_EXECMD_BUF) {
                 close (fd);
                 return (EXEC_CMD_OUTPUT_TOO_LARGE);
-            }
-            bytesBuf->buf = malloc (buflen);
-            memcpy (bytesBuf->buf, bufptr, toRead);
-            free (bufptr);
-            bufptr = (char *) bytesBuf->buf + toRead;
-            bytesBuf->len += nbytes;
+	    } else {
+                buflen = 2 * buflen;
+                if (buflen > MAX_SZ_FOR_EXECMD_BUF) {
+		    buflen = MAX_SZ_FOR_EXECMD_BUF;
+		}
+		toRead = buflen - bytesBuf->len; 
+	        tmpPtr = bytesBuf->buf;
+                bytesBuf->buf = malloc (buflen);
+                memcpy (bytesBuf->buf, tmpPtr, bytesBuf->len);
+                free (tmpPtr);
+                bufptr = (char *) bytesBuf->buf + bytesBuf->len;
+	    }
         } else {
             if (nbytes > 0) {
                 bytesBuf->len += nbytes;
                 bufptr += nbytes;
             }
             if (bytesBuf->len > 0) {
+#if 0	/* not needed */
                 /* add NULL termination */
                 *bufptr = '\0';
                 bytesBuf->len++;
+#endif
             } else {
                 free (bytesBuf->buf);
                 bytesBuf->buf = NULL;

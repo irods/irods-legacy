@@ -114,11 +114,21 @@ main(int argc, char **argv) {
     }
 
     if (execCmdOut != NULL) {
+	int i;
+	char *tmpPtr;
         if (execCmdOut->stdoutBuf.buf != NULL) {
-            printf ("%s", (char *) execCmdOut->stdoutBuf.buf);
+	    tmpPtr = execCmdOut->stdoutBuf.buf;
+	    for (i = 0; i < execCmdOut->stdoutBuf.len; i++) {
+		fputc ((int)(*tmpPtr), stdout);
+		tmpPtr++;
+	    }
 	}
         if (execCmdOut->stderrBuf.buf != NULL) {
-            fprintf (stderr, "%s", (char *) execCmdOut->stderrBuf.buf);
+            tmpPtr = execCmdOut->stderrBuf.buf;
+            for (i = 0; i < execCmdOut->stderrBuf.len; i++) {
+                fputc ((int)(*tmpPtr), stderr);
+                tmpPtr++;
+            }
         }
     }
 
