@@ -528,6 +528,7 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
 
 	
     do {
+	int loopCnt = 0;
         bzero (dataObjInp, sizeof (dataObjInp_t));
 	while (1) {
             myRanNum = random ();
@@ -541,7 +542,12 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
             }
 	    /* check if BundlePath already existed */
 	    if (isData (rsComm, dataObjInp->objPath, NULL) >= 0) {
-	        continue;
+	        if (loopCnt >= 100) {
+		    break;
+		} else {
+		    loopCnt++;
+	            continue;
+		}
 	    } else {
 		break;
 	    }
