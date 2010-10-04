@@ -529,16 +529,23 @@ rescGrpInfo_t *rescGrpInfo, dataObjInp_t *dataObjInp)
 	
     do {
         bzero (dataObjInp, sizeof (dataObjInp_t));
-        myRanNum = random ();
-        status = rsMkBundlePath (rsComm, collection, dataObjInp->objPath, 
-	  myRanNum);
-        if (status < 0) {
-            rodsLog (LOG_ERROR,
-              "createPhyBundleFile: getPhyBundlePath error for %s. status = %d",
-              collection, status);
-            return status;
-        }
-
+	while (1) {
+            myRanNum = random ();
+            status = rsMkBundlePath (rsComm, collection, dataObjInp->objPath, 
+	      myRanNum);
+            if (status < 0) {
+                rodsLog (LOG_ERROR,
+                  "createPhyBundleFile: getPhyBundlePath err for %s.stat = %d",
+                  collection, status);
+                return status;
+            }
+	    /* check if BundlePath already existed */
+	    if (isData (rsComm, dataObjInp->objPath, NULL) >= 0) {
+	        continue;
+	    } else {
+		break;
+	    }
+	}
         addKeyVal (&dataObjInp->condInput, DATA_TYPE_KW, TAR_BUNDLE_TYPE);
 
         l1descInx = _rsDataObjCreateWithRescInfo (rsComm, dataObjInp,
