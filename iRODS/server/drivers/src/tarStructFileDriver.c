@@ -843,6 +843,7 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
     specColl = StructFileDesc[structFileInx].specColl;
     if ((structFileOprInp->oprType & DELETE_STRUCT_FILE) != 0) {
 	/* remove cache and the struct file */
+	freeStructFileDesc (structFileInx);
 	return (status);
     }
 
@@ -855,19 +856,26 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
                 rodsLog (LOG_ERROR,
                   "tarPhyStructFileSync:syncCacheDirToTarfile %s error,stat=%d",
                   specColl->cacheDir, status);
+		freeStructFileDesc (structFileInx);
                 return (status);
             }
 	    specColl->cacheDirty = 0;
 	    if ((structFileOprInp->oprType & NO_REG_COLL_INFO) == 0) {
 	        status = modCollInfo2 (rsComm, specColl, 0);
-                if (status < 0) return status;
+                if (status < 0) {
+		    freeStructFileDesc (structFileInx);
+		    return status;
+		}
 	    }
 	}
 
         if ((structFileOprInp->oprType & PURGE_STRUCT_FILE_CACHE) != 0) {
             /* unregister cache before remove */
 	    status = modCollInfo2 (rsComm, specColl, 1);
-	    if (status < 0) return status;
+	    if (status < 0) {
+		freeStructFileDesc (structFileInx);
+		return status;
+	    }
             /* remove cache */
             memset (&fileRmdirInp, 0, sizeof (fileRmdirInp));
             fileRmdirInp.fileType = UNIX_FILE_TYPE;  /* the type for cache */
@@ -880,10 +888,12 @@ tarStructFileSync (rsComm_t *rsComm, structFileOprInp_t *structFileOprInp)
                 rodsLog (LOG_ERROR,
                   "tarPhyStructFileSync: XXXXX Rmdir error for %s, status = %d",
 	          specColl->cacheDir, status);
+		freeStructFileDesc (structFileInx);
                 return (status);
 	    }
         }
     }
+    freeStructFileDesc (structFileInx);
     return (status);
 }
 
