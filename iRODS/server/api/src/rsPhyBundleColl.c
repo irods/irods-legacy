@@ -160,6 +160,11 @@ rescGrpInfo_t *rescGrpInfo)
 
                         createPhyBundleDir (rsComm,
                           L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
+		        /* need to reset subPhyPath since phyBunDir has 
+		         * changed */
+	                setSubPhyPath (phyBunDir, curSubFileCond.dataId,
+                          curSubFileCond.subPhyPath);
+
                     }
 		}
 		status = replAndAddSubFileToDir (rsComm, &curSubFileCond,
