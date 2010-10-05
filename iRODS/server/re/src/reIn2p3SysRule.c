@@ -1,9 +1,6 @@
-/**
- * @file reIn2p3SysRule.c
- *
- */
-
-/* The module is written by Jean-Yves Nief of CCIN2P3 */
+/*** Copyright (c) 2007 Data Intensive Cyberinfrastructure Foundation. All rights reserved.    ***
+ *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
+/* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
 #include "reIn2p3SysRule.h"
 #include "genQuery.h"

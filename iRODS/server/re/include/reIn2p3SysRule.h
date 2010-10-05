@@ -1,6 +1,6 @@
-/* reIn2p3SysRule.h - header file for reIn2p3SysRule */
-
-/* The module is written by Jean-Yves Nief of CCIN2P3 */
+/*** Copyright (c) 2007 Data Intensive Cyberinfrastructure Foundation. All rights reserved.    ***
+ *** For full copyright notice please refer to files in the COPYRIGHT directory                ***/
+/* Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation */
 
 #ifndef RE_IN2P3_SYS_RULE_H
 #define RE_IN2P3_SYS_RULE_H

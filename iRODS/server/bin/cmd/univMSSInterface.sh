@@ -1,3 +1,7 @@
+## Copyright (c) 2009 Data Intensive Cyberinfrastructure Foundation. All rights reserved.
+## For full copyright notice please refer to files in the COPYRIGHT directory
+## Written by Jean-Yves Nief of CCIN2P3 and copyright assigned to Data Intensive Cyberinfrastructure Foundation
+
 #!/bin/sh
 
 # This script is a template which must be updated if one wants to use the universal MSS driver.
@@ -5,8 +9,7 @@
 # Functions to modify: syncToArch, stageToCache, mkdir, chmod, rm, stat
 # These functions need one or two input parameters which should be named $1 and $2.
 # If some of these functions are not implemented for your MSS, just let this function as it is.
-#	
-# Jean-Yves Nief - CCIN2P3 - 09/2009
+#
  
 # function for the synchronization of file $1 on local disk resource to file $2 in the MSS
 syncToArch () {
