@@ -762,6 +762,11 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
     while (timeoutCnt < MAX_CONN_RETRY_CNT) {
         status = connect (sock, sin, sizeof (struct sockaddr));
 	if (status >= 0) break;
+	if (errno == EISCONN) {
+	    /* already connected. seen this error on AIX */
+	    status = 0;
+	    break;
+	}
 	if (errno == EINPROGRESS || errno == EINTR) {
             tv.tv_sec = CONNECT_TIMEOUT_TIME;
             tv.tv_usec = 0;
