@@ -95,6 +95,8 @@ Added test case for proper usage in resource queries
 *Bug 114 - Bug 114 - performance of specific queries in Jargon 2.4 
 Fixed ordering of AVU query components in GenQueryInp packing instruction sent to iRODS to avoid pathological SQL
 
+---------
+*Bug fixed in parallel get file transfer for very large files, added read of flags from header to avoid reading garbage length on re-read of header.
 
 ================================================================================================
 Outstanding Issues

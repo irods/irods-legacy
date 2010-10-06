@@ -2313,6 +2313,7 @@ public class IRODSCommands {
 
 						// read the next header
 						operation = readInt();
+						 flags = readInt();
 						offset = readLong();
 						length = readLong();
 						log.debug("    reading next header");
