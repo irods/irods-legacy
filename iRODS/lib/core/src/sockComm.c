@@ -779,7 +779,7 @@ connectToRhostWithTout (int sock, struct sockaddr *sin)
 	    } else if (status > 0) {
 		int myval;
 #if defined(aix_platform)
-        	size_t mylen = sizeof (int);
+        	socklen_t mylen = sizeof (int);
 #else
 		uint mylen = sizeof (int);
 #endif
