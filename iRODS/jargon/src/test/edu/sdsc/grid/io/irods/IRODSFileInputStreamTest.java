@@ -123,10 +123,13 @@ public class IRODSFileInputStreamTest {
 		}
 
 		irodsFileSystem.close();
+		long skippedPlusRead = skipped + numberBytesReadAfterSkip;
+		
+		
 		TestCase
 				.assertEquals(
 						"I did not skip and then read the remainder of the specified file",
-						fileLengthInBytes, skipped + numberBytesReadAfterSkip);
+						fileLengthInBytes, skippedPlusRead);
 	}
 
 	@Test

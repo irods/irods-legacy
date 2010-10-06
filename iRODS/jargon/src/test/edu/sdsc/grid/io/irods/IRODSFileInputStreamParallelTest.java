@@ -86,13 +86,12 @@ public class IRODSFileInputStreamParallelTest {
         IcommandInvoker invoker = new IcommandInvoker(invocationContext);
         invoker.invokeCommandAndGetResultAsString(iputCommand);
         
-        Thread.sleep(30000);
+       // Thread.sleep(3000);
        
         IRODSAccount account = testingPropertiesHelper.buildIRODSAccountFromTestProperties(testingProperties);
         IRODSFileSystem irodsFileSystem = new IRODSFileSystem(account);
 
-        String irodsFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);
-        IRODSFile getFile = new IRODSFile(irodsFileSystem, irodsFileName);
+        String irodsFileName = testingPropertiesHelper.buildIRODSCollectionAbsolutePathFromTestProperties(testingProperties, IRODS_TEST_SUBDIR_PATH + '/' + testFileName);        IRODSFile getFile = new IRODSFile(irodsFileSystem, irodsFileName);
         GeneralFile localFile = FileFactory.newFile(new URI("file:///" + getFileName));
         
         irodsFileSystem.commands.get(getFile, localFile);        

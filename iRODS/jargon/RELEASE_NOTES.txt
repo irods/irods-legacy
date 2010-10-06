@@ -3,14 +3,14 @@ Jargon 2.4.1 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 07/26/2010
-Release Version: 2.4.1b1 - Beta release of Jargon 2.4.1 library
+Date: 10/06/2010
+Release Version: 2.4.1 -Jargon 2.4.1 library
 ================================================================================================
 Requirements
 
 -Jargon depends on Java 1.5+
 -Jargon is built using Apache ANT
--Jargon has been tested against IRODS 2.1, IRODS2.2, IRODS2.3, and IRODS2.4
+-Jargon has been tested against iRODS2.2, iRODS2.3, iRODS2.4, and iRODS2.4.1
 
 libraries
 ---------
@@ -24,9 +24,6 @@ libraries
 ================================================================================================
 Features and Changes
 
-*Jargon trunk changes and fixes are merged into this release
-
-----------
 *The old Jargon Gui, has been removed
 
 -----------
