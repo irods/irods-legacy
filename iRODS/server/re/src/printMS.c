@@ -8,6 +8,12 @@
 #include "reGlobalsExtern.h"
 #include "icatHighLevelRoutines.h"
 
+#ifdef ADDR_64BITS
+#define CAST_PTR_INT (long int)
+#else
+#define CAST_PTR_INT
+#endif
+
 /**
  * \fn writeLine(msParam_t* where, msParam_t* inString, ruleExecInfo_t *rei)
  *
@@ -540,7 +546,7 @@ writeXMsg(msParam_t* inStreamId, msParam_t *inHdr, msParam_t *inMsg, ruleExecInf
       streamId = (int) atoi(inStreamId->inOutStruct);
     }
     else
-      streamId = (int) inStreamId->inOutStruct;
+      streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;
 
   i = _writeXMsg(streamId, inHdr->inOutStruct, inMsg->inOutStruct);
   return(i);
@@ -623,7 +629,7 @@ readXMsg(msParam_t* inStreamId, msParam_t *inCondRead,
     streamId = (int) atoi(inStreamId->inOutStruct);
   }
   else
-    streamId = (int) inStreamId->inOutStruct;
+    streamId = (int) CAST_PTR_INT  inStreamId->inOutStruct;
   condRead = (char *) inCondRead->inOutStruct;
   i = _readXMsg(streamId, condRead, &mNum, &sNum, &hdr, &msg, &user, &addr);
   if (i >= 0) {

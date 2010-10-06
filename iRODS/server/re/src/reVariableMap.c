@@ -11,6 +11,11 @@
 #define RE_LONG 4
 #define RE_PTR 5
 
+#ifdef ADDR_64BITS
+#define CAST_INT_VOIDPTR (long int)
+#else
+#define CAST_INT_VOIDPTR  
+#endif
 
 int
 getSetLeafValue(char **varValue, void *leafPtr, void **leafPtrVal, char *newVarValue, int setType)
@@ -60,7 +65,7 @@ getSetLeafValue(char **varValue, void *leafPtr, void **leafPtrVal, char *newVarV
   else if (setType == RE_PTR) {
     *varValue = malloc(34);
 #ifdef ADDR_64BITS      
-    sprintf(*varValue, "%lld",(void *) *leafPtrVal);
+    sprintf(*varValue, "%lld", (long long int) (void *) *leafPtrVal);
 #else
     /*    sprintf(*varValue, "%p",(void *) *leafPtrVal); */
     sprintf(*varValue, "%ld",(long) *leafPtrVal);
@@ -228,13 +233,13 @@ getSetValFromRuleExecInfo(char *varMap, ruleExecInfo_t **inrei,
     return(i);
 
   if (!strcmp(varName, "status") ) 
-    i = getSetLeafValue(varValue,&(rei->status), (void *) rei->status, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(rei->status), (void *)  CAST_INT_VOIDPTR rei->status, newVarValue, RE_INT);
   else  if (!strcmp(varName, "statusStr") ) 
     i = getSetLeafValue(varValue,&(rei->statusStr), (void *) rei->statusStr, newVarValue,RE_STR);
   else  if (!strcmp(varName, "rsComm") )
     i = getSetValFromRsComm(varMapCPtr, &(rei->rsComm), varValue, newVarValue);
   else  if (!strcmp(varName, "l1descInx") )
-    i = getSetLeafValue(varValue,&(rei->l1descInx), (void *) rei->l1descInx, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(rei->l1descInx), (void *) CAST_INT_VOIDPTR  rei->l1descInx, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",rei->l1descInx);*/
   else  if (!strcmp(varName, "doinp") )
     i = getSetValFromDataObjInp(varMapCPtr, &(rei->doinp), varValue, newVarValue);
@@ -301,10 +306,10 @@ getSetValFromRsComm(char *varMap, rsComm_t **inptr, char **varValue, void *newVa
   if (i != 0)
     return(i);
   if (!strcmp(varName, "sock") )
-    i = getSetLeafValue(varValue,&(ptr->sock), (void *) ptr->sock, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->sock), (void *)  CAST_INT_VOIDPTR ptr->sock, newVarValue, RE_INT);
     /*sprintf(*varValue, "%d",ptr->sock);*/
   else  if (!strcmp(varName, "connectCnt") )
-    i = getSetLeafValue(varValue,&(ptr->connectCnt),(void *) ptr->connectCnt, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->connectCnt),(void *)  CAST_INT_VOIDPTR ptr->connectCnt, newVarValue, RE_INT);
     /*sprintf(*varValue, "%d",ptr->connectCnt);*/
   else  if (!strcmp(varName, "proxyUser") )
   {
@@ -323,22 +328,22 @@ getSetValFromRsComm(char *varMap, rsComm_t **inptr, char **varValue, void *newVa
     i = getSetLeafValue(varValue,&(ptr->option), (void *) ptr->option, newVarValue,RE_STR);
     /* *varValue = ptr->option;*/
   else  if (!strcmp(varName, "status") )
-    i = getSetLeafValue(varValue,&(ptr->status), (void *) ptr->status, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->status), (void *)  CAST_INT_VOIDPTR ptr->status, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->status); */
   else  if (!strcmp(varName, "apiInx") )
-    i = getSetLeafValue(varValue,&(ptr->apiInx), (void *) ptr->apiInx, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->apiInx), (void *)  CAST_INT_VOIDPTR ptr->apiInx, newVarValue, RE_INT);
   else  if (!strcmp(varName, "windowSize") ) 
-    i = getSetLeafValue(varValue,&(ptr->windowSize), (void *)ptr->windowSize , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->windowSize), (void *) CAST_INT_VOIDPTR ptr->windowSize , newVarValue, RE_INT);
   else  if (!strcmp(varName, "reconnFlag") ) 
-    i = getSetLeafValue(varValue,&(ptr->reconnFlag), (void *)ptr->reconnFlag , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->reconnFlag), (void *) CAST_INT_VOIDPTR ptr->reconnFlag , newVarValue, RE_INT);
   else  if (!strcmp(varName, "reconnSock") ) 
-    i = getSetLeafValue(varValue,&(ptr->reconnSock), (void *)ptr->reconnSock , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->reconnSock), (void *) CAST_INT_VOIDPTR ptr->reconnSock , newVarValue, RE_INT);
   else  if (!strcmp(varName, "reconnPort") ) 
-    i = getSetLeafValue(varValue,&(ptr->reconnPort), (void *)ptr->reconnPort , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->reconnPort), (void *) CAST_INT_VOIDPTR ptr->reconnPort , newVarValue, RE_INT);
   else  if (!strcmp(varName, "reconnAddr") ) 
     i = getSetLeafValue(varValue,&(ptr->reconnAddr),(void *) ptr->reconnAddr  , newVarValue, RE_STRDUP);
   else  if (!strcmp(varName, "cookie") ) 
-    i = getSetLeafValue(varValue,&(ptr->cookie), (void *) ptr->cookie, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->cookie), (void *)  CAST_INT_VOIDPTR ptr->cookie, newVarValue, RE_INT);
   else 
     return(UNDEFINED_VARIABLE_MAP_ERR);
   return(i);
@@ -399,13 +404,13 @@ getSetValFromDataObjInfo(char *varMap, dataObjInfo_t **inptr, char **varValue, v
     i = getSetLeafValue(varValue,&(ptr->dataOwnerZone), (void *) ptr->dataOwnerZone , newVarValue,RE_STR);
     /* *varValue = ptr->dataOwnerZone; */
   else  if (!strcmp(varName, "replNum") )
-    i = getSetLeafValue(varValue,&(ptr->replNum), (void *) ptr->replNum, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->replNum), (void *)  CAST_INT_VOIDPTR ptr->replNum, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->replNum); */
   else  if (!strcmp(varName, "replStatus") )
-    i = getSetLeafValue(varValue,&(ptr->replStatus), (void *) ptr->replStatus, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->replStatus), (void *)  CAST_INT_VOIDPTR ptr->replStatus, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->replStatus); */
   else  if (!strcmp(varName, "writeFlag") )
-    i = getSetLeafValue(varValue,&(ptr->writeFlag), (void *) ptr->writeFlag, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->writeFlag), (void *)  CAST_INT_VOIDPTR ptr->writeFlag, newVarValue, RE_INT);
   else  if (!strcmp(varName, "statusString") )
     i = getSetLeafValue(varValue,&(ptr->statusString), (void *) ptr->statusString , newVarValue,RE_STR);
     /* *varValue = ptr->statusString; */
@@ -416,7 +421,7 @@ getSetValFromDataObjInfo(char *varMap, dataObjInfo_t **inptr, char **varValue, v
     i = getSetLeafValue(varValue,&(ptr->collId), (void *) (long) ptr->collId, newVarValue, RE_LONG);
     /* sprintf(*varValue, "%lld",ptr->collId); */
   else  if (!strcmp(varName, "dataMapId") )
-    i = getSetLeafValue(varValue,&(ptr->dataMapId), (void *) ptr->dataMapId, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->dataMapId), (void *)  CAST_INT_VOIDPTR ptr->dataMapId, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->dataMapId); */
   else  if (!strcmp(varName, "dataComments") )
     i = getSetLeafValue(varValue,&(ptr->dataComments), (void *) ptr->dataComments , newVarValue,RE_STR);
@@ -434,7 +439,7 @@ getSetValFromDataObjInfo(char *varMap, dataObjInfo_t **inptr, char **varValue, v
     i = getSetLeafValue(varValue,&(ptr->dataAccess), (void *)ptr->dataAccess  , newVarValue,RE_STR);
     /* *varValue = ptr->dataAccess; */
   else  if (!strcmp(varName, "dataAccessInx") )
-    i = getSetLeafValue(varValue,&(ptr->dataAccessInx), (void *)ptr->dataAccessInx , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->dataAccessInx), (void *) CAST_INT_VOIDPTR ptr->dataAccessInx , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->dataAccessInx); */
   else  if (!strcmp(varName, "destRescName") )
     i = getSetLeafValue(varValue,&(ptr->destRescName), (void *) ptr->destRescName , newVarValue,RE_STR);
@@ -474,10 +479,10 @@ getSetValFromDataObjInp(char *varMap, dataObjInp_t  **inptr, char **varValue, vo
     i = getSetLeafValue(varValue,&(ptr->objPath), (void *) ptr->objPath , newVarValue,RE_STR);
     /* *varValue = ptr->objPath; */
   else  if (!strcmp(varName, "createMode") )
-    i = getSetLeafValue(varValue,&(ptr->createMode), (void *)ptr->createMode , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->createMode), (void *) CAST_INT_VOIDPTR ptr->createMode , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->createMode); */
   else  if (!strcmp(varName, "openFlags") )
-    i = getSetLeafValue(varValue,&(ptr->openFlags), (void *) ptr->openFlags, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->openFlags), (void *)  CAST_INT_VOIDPTR ptr->openFlags, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->openFlags); */
   else  if (!strcmp(varName, "offset") )
     i = getSetLeafValue(varValue,&(ptr->offset), (void *)(long) ptr->offset , newVarValue, RE_LONG);
@@ -486,10 +491,10 @@ getSetValFromDataObjInp(char *varMap, dataObjInp_t  **inptr, char **varValue, vo
     i = getSetLeafValue(varValue,&(ptr->dataSize), (void *) (long) ptr->dataSize, newVarValue, RE_LONG);
     /* sprintf(*varValue, "%lld",ptr->dataSize); */
   else  if (!strcmp(varName, "numThreads") )
-    i = getSetLeafValue(varValue,&(ptr->numThreads), (void *)ptr->numThreads , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->numThreads), (void *) CAST_INT_VOIDPTR ptr->numThreads , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->numThreads); */
   else  if (!strcmp(varName, "oprType") )
-    i = getSetLeafValue(varValue,&(ptr->oprType), (void *)ptr->oprType , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->oprType), (void *) CAST_INT_VOIDPTR ptr->oprType , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->oprType); */
   else  if (!strcmp(varName, "condInput") )
     i = getSetValFromKeyValPair(varMapCPtr, (void *) &(ptr->condInput),varValue, newVarValue);
@@ -520,7 +525,7 @@ getSetValFromDataOprInp(char *varMap, dataOprInp_t  **inptr, char **varValue, vo
   if (i != 0)
     return(i);
   if (!strcmp(varName, "oprType") )
-    i = getSetLeafValue(varValue,&(ptr->oprType), (void *)ptr->oprType , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->oprType), (void *) CAST_INT_VOIDPTR ptr->oprType , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->oprType); */
   else  if (!strcmp(varName, "offset") )
     i = getSetLeafValue(varValue,&(ptr->offset), (void *)(long)  ptr->offset, newVarValue, RE_LONG);
@@ -529,19 +534,19 @@ getSetValFromDataOprInp(char *varMap, dataOprInp_t  **inptr, char **varValue, vo
     i = getSetLeafValue(varValue,&(ptr->dataSize), (void *)(long) ptr->dataSize , newVarValue, RE_LONG);
     /* sprintf(*varValue, "%lld",ptr->dataSize); */
   else  if (!strcmp(varName, "numThreads") )
-    i = getSetLeafValue(varValue,&(ptr->numThreads), (void *) ptr->numThreads, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->numThreads), (void *)  CAST_INT_VOIDPTR ptr->numThreads, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->numThreads); */
   else  if (!strcmp(varName, "srcL3descInx") )
-    i = getSetLeafValue(varValue,&(ptr->srcL3descInx), (void *)ptr->srcL3descInx , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->srcL3descInx), (void *) CAST_INT_VOIDPTR ptr->srcL3descInx , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->srcL3descInx); */
   else  if (!strcmp(varName, "destL3descInx") )
-    i = getSetLeafValue(varValue,&(ptr->destL3descInx), (void *)ptr->destL3descInx , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->destL3descInx), (void *) CAST_INT_VOIDPTR ptr->destL3descInx , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->destL3descInx); */
   else  if (!strcmp(varName, "srcRescTypeInx") )
-    i = getSetLeafValue(varValue,&(ptr->srcRescTypeInx), (void *)ptr->srcRescTypeInx , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->srcRescTypeInx), (void *) CAST_INT_VOIDPTR ptr->srcRescTypeInx , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->srcRescTypeInx); */
   else  if (!strcmp(varName, "destRescTypeInx") )
-    i = getSetLeafValue(varValue,&(ptr->destRescTypeInx), (void *)ptr->destRescTypeInx , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->destRescTypeInx), (void *) CAST_INT_VOIDPTR ptr->destRescTypeInx , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->destRescTypeInx); */
   else  if (!strcmp(varName, "condInput") )
     i = getSetValFromKeyValPair(varMapCPtr, (void *)&(ptr->condInput),varValue, newVarValue);
@@ -589,22 +594,22 @@ getSetValFromRescInfo(char *varMap, rescInfo_t **inptr, char **varValue, void *n
     i = getSetLeafValue(varValue,&(ptr->rescType), (void *) ptr->rescType , newVarValue,RE_STR);
     /* *varValue = ptr->rescType; */
   else  if (!strcmp(varName, "rescTypeInx") )
-    i = getSetLeafValue(varValue,&(ptr->rescTypeInx), (void *)ptr->rescTypeInx , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->rescTypeInx), (void *) CAST_INT_VOIDPTR ptr->rescTypeInx , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->rescTypeInx); */
   else  if (!strcmp(varName, "rescClass") )
     i = getSetLeafValue(varValue,&(ptr->rescClass), (void *) ptr->rescClass , newVarValue,RE_STR);
     /* *varValue = ptr->rescClass; */
   else  if (!strcmp(varName, "rescClassInx") )
-    i = getSetLeafValue(varValue,&(ptr->rescClassInx), (void *) ptr->rescClassInx, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->rescClassInx), (void *)  CAST_INT_VOIDPTR ptr->rescClassInx, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->rescClassInx); */
   else  if (!strcmp(varName, "rescVaultPath") )
     i = getSetLeafValue(varValue,&(ptr->rescVaultPath), (void *)ptr->rescVaultPath  , newVarValue,RE_STR);
     /* *varValue = ptr->rescVaultPath; */
   else  if (!strcmp(varName, RESC_STATUS_KW) )
-    i = getSetLeafValue(varValue,&(ptr->rescStatus), (void *)ptr->rescStatus , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->rescStatus), (void *) CAST_INT_VOIDPTR ptr->rescStatus , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->numOpenPorts); */
   else  if (!strcmp(varName, "paraOpr") )
-    i = getSetLeafValue(varValue,&(ptr->paraOpr), (void *)ptr->paraOpr , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->paraOpr), (void *) CAST_INT_VOIDPTR ptr->paraOpr , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->paraOpr); */
   else  if (!strcmp(varName, "rescInfo") )
     i = getSetLeafValue(varValue,&(ptr->rescInfo), (void *) ptr->rescInfo , newVarValue,RE_STR);
@@ -711,7 +716,7 @@ getSetValFromUserInfo(char *varMap, userInfo_t **inptr, char **varValue, void *n
     i = getSetLeafValue(varValue,&(ptr->userType),(void *)  ptr->userType, newVarValue, RE_STR);
   /*   *varValue = ptr->userType;*/
   else  if (!strcmp(varName, "sysUid") )
-    i = getSetLeafValue(varValue,&(ptr->sysUid), (void *) ptr->sysUid, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->sysUid), (void *)  CAST_INT_VOIDPTR ptr->sysUid, newVarValue, RE_INT);
   /*   sprintf(*varValue, "%d",ptr->sysUid);*/
   else  if (!strcmp(varName, "authInfo") )
   {
@@ -764,7 +769,7 @@ getSetValFromCollInfo(char *varMap, collInfo_t **inptr, char **varValue, void *n
     i = getSetLeafValue(varValue,&(ptr->collOwnerZone), (void *)  ptr->collOwnerZone, newVarValue,RE_STR);
     /* *varValue = ptr->collOwnerZone; */
   else  if (!strcmp(varName, "collMapId") )
-    i = getSetLeafValue(varValue,&(ptr->collMapId), (void *) ptr->collMapId, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->collMapId), (void *)  CAST_INT_VOIDPTR ptr->collMapId, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->collMapId); */
   else  if (!strcmp(varName, "collComments") )
     i = getSetLeafValue(varValue,&(ptr->collComments), (void *) ptr->collComments , newVarValue,RE_STR);
@@ -785,7 +790,7 @@ getSetValFromCollInfo(char *varMap, collInfo_t **inptr, char **varValue, void *n
     i = getSetLeafValue(varValue,&(ptr->collAccess), (void *) ptr->collAccess , newVarValue,RE_STR);
     /* *varValue = ptr->collAccess; */
   else  if (!strcmp(varName, "collAccessInx") )
-    i = getSetLeafValue(varValue,&(ptr->collAccessInx), (void *) ptr->collAccessInx, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->collAccessInx), (void *)  CAST_INT_VOIDPTR ptr->collAccessInx, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->collAccessInx); */
   else  if (!strcmp(varName, "next") )
     i = getSetValFromCollInfo(varMapCPtr, &(ptr->next), varValue, newVarValue);
@@ -847,7 +852,7 @@ getSetValFromVersion(char *varMap, version_t **inptr, char **varValue, void *new
   if (i != 0)
     return(i);
   if (!strcmp(varName, "status") )
-    i = getSetLeafValue(varValue,&(ptr->status), (void *)ptr->status , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->status), (void *) CAST_INT_VOIDPTR ptr->status , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->status); */
   else  if (!strcmp(varName, "relVersion") )
     i = getSetLeafValue(varValue,&(ptr->relVersion), (void *) ptr->relVersion , newVarValue,RE_STR);
@@ -858,7 +863,7 @@ getSetValFromVersion(char *varMap, version_t **inptr, char **varValue, void *new
   else  if (!strcmp(varName, "apiVersion") )
     i = getSetLeafValue(varValue,&(ptr->reconnAddr), (void *) ptr->reconnAddr , newVarValue,RE_STR);
   else  if (!strcmp(varName, "apiVersion") )
-    i = getSetLeafValue(varValue,&(ptr->reconnPort), (void *) ptr->reconnPort , newVarValue,RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->reconnPort), (void *)  CAST_INT_VOIDPTR ptr->reconnPort , newVarValue,RE_INT);
   else 
     return(UNDEFINED_VARIABLE_MAP_ERR);
   return(i);
@@ -891,13 +896,13 @@ getSetValFromAuthInfo(char *varMap, authInfo_t **inptr, char **varValue, void *n
     i = getSetLeafValue(varValue,&(ptr->authScheme), (void *)ptr->authScheme  , newVarValue,RE_STR);
     /* *varValue = ptr->authScheme; */
   else  if (!strcmp(varName, "authFlag") )
-    i = getSetLeafValue(varValue,&(ptr->authFlag), (void *)ptr->authFlag , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->authFlag), (void *) CAST_INT_VOIDPTR ptr->authFlag , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->authFlag); */
   else  if (!strcmp(varName, "flag") )
-    i = getSetLeafValue(varValue,&(ptr->flag), (void *)ptr->flag , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->flag), (void *) CAST_INT_VOIDPTR ptr->flag , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->flag); */
   else  if (!strcmp(varName, "ppid") )
-    i = getSetLeafValue(varValue,&(ptr->ppid), (void *)ptr->ppid , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->ppid), (void *) CAST_INT_VOIDPTR ptr->ppid , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->ppid); */
   else  if (!strcmp(varName, "host") )
     i = getSetLeafValue(varValue,&(ptr->host), (void *)ptr->host  , newVarValue,RE_STR);
@@ -981,16 +986,16 @@ getSetValFromFileOpenInp(char *varMap, fileOpenInp_t **inptr, char **varValue, v
     i = getSetLeafValue(varValue,&(ptr->fileName), (void *) ptr->fileName , newVarValue,RE_STR);
     /* *varValue = ptr->fileName; */
   else  if (!strcmp(varName, "flags") )
-    i = getSetLeafValue(varValue,&(ptr->flags), (void *)ptr->flags , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->flags), (void *) CAST_INT_VOIDPTR ptr->flags , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->flags); */
   else  if (!strcmp(varName, "mode") )
-    i = getSetLeafValue(varValue,&(ptr->mode), (void *)ptr->mode , newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->mode), (void *) CAST_INT_VOIDPTR ptr->mode , newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->mode); */
   else  if (!strcmp(varName, "dataSize") )
     i = getSetLeafValue(varValue,&(ptr->dataSize), (void *)(long)  ptr->dataSize, newVarValue, RE_LONG);
     /* sprintf(*varValue, "%lld",ptr->dataSize); */
   else  if (!strcmp(varName, "otherFlags") )
-    i = getSetLeafValue(varValue,&(ptr->otherFlags), (void *) ptr->otherFlags, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->otherFlags), (void *)  CAST_INT_VOIDPTR ptr->otherFlags, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->otherFlags); */
   else 
     return(UNDEFINED_VARIABLE_MAP_ERR);
@@ -1027,7 +1032,7 @@ getSetValFromRodsHostAddr(char *varMap, rodsHostAddr_t **inptr, char **varValue,
     i = getSetLeafValue(varValue,&(ptr->zoneName), (void *) ptr->zoneName , newVarValue,RE_STR);
     /* *varValue = ptr->rodsZone; */
   else  if (!strcmp(varName, "portNum") )
-    i = getSetLeafValue(varValue,&(ptr->portNum), (void *) ptr->portNum, newVarValue, RE_INT);
+    i = getSetLeafValue(varValue,&(ptr->portNum), (void *)  CAST_INT_VOIDPTR   ptr->portNum, newVarValue, RE_INT);
     /* sprintf(*varValue, "%d",ptr->portNum); */
   else 
     return(UNDEFINED_VARIABLE_MAP_ERR);
