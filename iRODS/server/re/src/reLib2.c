@@ -750,7 +750,7 @@ executeRuleActionNew(char *inAction,  msParamArray_t *inMsParamArray, ruleExecIn
 int
 executeMyRuleAction(char *inAction,  msParamArray_t *inMsParamArray, ruleExecInfo_t *rei, int reiSaveFlag)
 {
-  int ii,j;
+  int ii,j = 0;
   /*funcPtr myFunc = NULL;*/
   /*int actionInx;*/
   /*int numOfStrArgs;*/

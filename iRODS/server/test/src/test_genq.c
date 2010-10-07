@@ -21,7 +21,7 @@ int doLs()
    int i1a[10];
    int i1b[10];
    int i2a[10];
-   int status;
+   int status = 0;
    char *condVal[2];
    char v1[BIG_STR];
    int i;

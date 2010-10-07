@@ -298,7 +298,7 @@ void *startMonScript(void *arg) {
 int checkIPaddress(char *IP, unsigned char IPcomp[IPV4]) {
 /* function to check if the input string is a valid IP address */
   const char *delimIP = ".";
-  char *eltstrIP, *IPclone;
+  char *eltstrIP, IPclone[MAX_NAME_LEN];
   int i, nelt = 0;
 
   strcpy(IPclone, IP);

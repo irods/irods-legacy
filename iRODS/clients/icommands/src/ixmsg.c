@@ -52,7 +52,7 @@ sendIxmsg( rcComm_t *conn, sendXmsgInp_t *sendXmsgInp){
 int
 main(int argc, char **argv)
 {
-    rcComm_t *conn;
+    rcComm_t *conn = NULL;
     int status;
     int mNum = 0;
     int tNum = 1;
