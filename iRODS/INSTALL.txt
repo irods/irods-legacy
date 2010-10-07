@@ -1,5 +1,5 @@
 		Scripts for installing and uninstalling iRODS
-			Last updated July 2010
+			Last updated Oct 2010
 
 
 The iRODS distribution uses several configuration files and shell/Perl
@@ -16,20 +16,18 @@ either PostgreSQL, Oracle, or MySQL to make some needed updates to
 tables (if any).  Assuming your iCAT database is named ICAT, this
 would be, for example:
 
-        psql ICAT < server/icat/patches/psg-patch-v2.3tov2.4.sql
+        psql ICAT < server/icat/patches/all-patch-v2.4tov2.4.1.sql
 
     or 
         sqlplus name@instance
-        @server/icat/patches/ora-patch-v2.3tov2.4.sql
+        @server/icat/patches/all-patch-v2.4tov2.4.1.sql
 
     or
-        mysql ICAT < server/icat/patches/mys-patch-v2.3tov2.4.sql
+        mysql ICAT < server/icat/patches/all-patch-v2.4tov2.4.1.sql
 
-For 2.4, these patch sql scripts drop some unused rule tables and
-recreate them in the current form.  Depending on your previous
-installation (whether you patched 2.2 to become 2.3 or installed 2.3
-from scratch), some of these tables may not exist, in which case you
-may need to remove those 'drop table' commands from the patch file.
+For 2.4.1, the patch sql script will just create an index that in some
+cases may not exist.  You you get an error about the relation already
+existing, you can ignore it.
 
 If you are upgrading from an older version, you'll need to apply the
 patch file for each released version that has one, in sequence.
