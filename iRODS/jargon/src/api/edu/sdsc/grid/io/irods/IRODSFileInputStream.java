@@ -325,6 +325,15 @@ public class IRODSFileInputStream extends RemoteFileInputStream {
 		}
 	}
 
+	public long seek(long n) throws IOException {
+		long seekVal = 
+		fileSystem.commands.fileSeek(fd, n,
+				GeneralRandomAccessFile.SEEK_CURRENT);
+		filePointer = seekVal;
+		return seekVal;
+		
+	}
+	
 	/**
 	 * Returns the number of bytes that can be read from this file input stream
 	 * without blocking.

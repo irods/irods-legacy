@@ -62,6 +62,7 @@ import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.irods.jargon.core.packinstr.CollInp;
 import org.irods.jargon.core.packinstr.DataObjInp;
 import org.irods.jargon.core.packinstr.IRodsPI;
+import org.irods.jargon.core.packinstr.OpenedDataObjInp;
 import org.irods.jargon.core.query.GenQueryClassicMidLevelService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1032,27 +1033,14 @@ public class IRODSCommands {
 	 */
 	long fileSeek(int fd, long seek, int whence) throws IOException {
 
-		if (whence == GeneralRandomAccessFile.SEEK_START
-				|| whence == GeneralRandomAccessFile.SEEK_CURRENT
-				|| whence == GeneralRandomAccessFile.SEEK_END) {
-			// ok
-		} else {
-			log
-					.error("Illegal Argument exception, whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
-			throw new IllegalArgumentException(
-					"whence value in seek must be SEEK_START, SEEK_CURRENT, or SEEK_END");
+		Tag message;
+		try {
+			OpenedDataObjInp openedDataObjInp = OpenedDataObjInp.instanceForFileSeek(seek, fd, whence);
+			message = irodsFunction(openedDataObjInp);
+		} catch (JargonException e) {
+			log.error("JargonException in file seek, will be rethrown to current contract IOException", e);
+			throw new IOException(e);
 		}
-
-		if (fd <= 0) {
-			log.error("no valid file handle provided");
-			throw new IllegalArgumentException("no valid file handle provided");
-		}
-
-		Tag message = new Tag(fileLseekInp_PI, new Tag[] {
-				new Tag(fileInx, fd), new Tag(offset, seek),
-				new Tag(IRODSConstants.whence, whence), });
-
-		message = irodsFunction(RODS_API_REQ, message, DATA_OBJ_LSEEK_AN);
 		return message.getTag(offset).getLongValue();
 	}
 

@@ -345,7 +345,7 @@ public class IRODSFileCommandsTest {
         
     }
     
-    @Test(expected=IRODSException.class)
+    @Test(expected=Exception.class)
     public final void testFileSeeInvalidFd() throws Exception {
     	// generate a local scratch file
         String testFileName = "testfileseek.txt";

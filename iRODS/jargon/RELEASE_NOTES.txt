@@ -3,8 +3,8 @@ Jargon 2.4.1 Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
-Date: 10/06/2010
-Release Version: 2.4.1 -Jargon 2.4.1 library
+Date: 10/08/2010
+Release Version: 2.4.1 - Jargon 2.4.1 library
 ================================================================================================
 Requirements
 
@@ -88,7 +88,7 @@ Added new method in IRODSFile - replicateToResourceGroup(String resourceGroup)
 Added a test.resource.group to the testing.properties file, and init code in the testsetup.sh file for unit testing of resource group command.
 
 ----------
-*Bug 112 - query to get a resource AVU on a resource on an iRODS 2.3 using jargon 2.3
+*Bug 112 - query to get a resource AVU on a resource on an iRODS 2.3 server
 Added test case for proper usage in resource queries
 
 ----------
@@ -97,6 +97,10 @@ Fixed ordering of AVU query components in GenQueryInp packing instruction sent t
 
 ---------
 *Bug fixed in parallel get file transfer for very large files, added read of flags from header to avoid reading garbage length on re-read of header.
+
+---------
+*Added new OpenedDataObjInp packing instruction for lseek operation, which was causing some byte order problems on Mac and iRODS2.4.
+
 
 ================================================================================================
 Outstanding Issues

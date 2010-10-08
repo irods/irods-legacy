@@ -49,7 +49,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import org.irods.jargon.core.exception.DataNotFoundException;
 import org.irods.jargon.core.exception.JargonException;
 import org.irods.jargon.core.exception.JargonRuntimeException;
 import org.irods.jargon.core.packinstr.ModAvuMetadataInp;
@@ -113,6 +112,9 @@ public class IRODSFile extends RemoteFile {
 	static final int WRITE_PERMISSIONS = 1120;
 
 	private static Logger log = LoggerFactory.getLogger(IRODSFile.class);
+	
+	MetaDataRecordList[] rl1, rl2;
+
 
 	/**
 	 * Connection to the iRODS server.
@@ -2124,7 +2126,6 @@ public class IRODSFile extends RemoteFile {
 		return (String[]) list.toArray(new String[0]);
 	}
 
-	MetaDataRecordList[] rl1, rl2;
 
 	/**
 	 * Returns a list of files in this directory, in groups of numbering

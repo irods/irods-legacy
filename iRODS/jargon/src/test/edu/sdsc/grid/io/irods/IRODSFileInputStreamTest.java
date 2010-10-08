@@ -111,6 +111,7 @@ public class IRODSFileInputStreamTest {
 
 		long leftToRead = (fileLengthInBytes - skipped);
 		long numberBytesReadAfterSkip = 0L;
+	
 
 		// read the rest
 
@@ -131,6 +132,8 @@ public class IRODSFileInputStreamTest {
 						"I did not skip and then read the remainder of the specified file",
 						fileLengthInBytes, skippedPlusRead);
 	}
+	
+	
 
 	@Test
 	public final void testRead() throws Exception {
