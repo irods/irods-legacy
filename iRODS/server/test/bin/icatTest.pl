@@ -109,6 +109,12 @@ $myZone=substr($cmdStdout, $ix+1);
 $F1a = "$F1" . "a";
 $F1b = "$F1" . "b";
 
+# Make sure we are in the irods home dir
+runCmd(0, "icd");
+# Clean up possible left over sub-process env (pwd) files, if any,
+# to avoid collision if process number matches
+runCmd(1, "rm -rf ~/.irods/.irodsEnv.*");
+
 runCmd(1, "irm -f $F1");
 runCmd(0, "iput $F1");
 runCmd(0, "imv $F1 $F1a");
