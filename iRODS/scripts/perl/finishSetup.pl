@@ -31,7 +31,7 @@ use Cwd;
 use Cwd "abs_path";
 use Config;
 
-$version{"finishSetup.pl"} = "March 2010";
+$version{"finishSetup.pl"} = "Oct 2010";
 
 
 
@@ -1048,7 +1048,7 @@ sub testDatabase()
 	printLog( "\nTesting database communications with test_cll...\n" );
 
 	my $test_cll = File::Spec->catfile( $serverTestBinDir, "test_cll" );
-	my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME $DATABASE_ADMIN_PASSWORD" );
+	my ($status,$output) = run( "$test_cll $DATABASE_ADMIN_NAME '$DATABASE_ADMIN_PASSWORD'" );
 	printLog( "    ", $output );
 
 	if ( $output !~ /The tests all completed normally/i )
@@ -2361,7 +2361,7 @@ sub scramblePassword($)
 	my ($password) = @_;
 
 	# Generate the scrambled form of the database password.
-	my ($status,$output) = run( "$iadmin spass $password $DB_KEY" );
+	my ($status,$output) = run( "$iadmin spass '$password' $DB_KEY" );
 	return undef if ( $status != 0 );	# Error
 
 	$output =~ /Scrambled form is:(.*)$/;
@@ -3482,7 +3482,7 @@ sub Oracle_sql($$)
 	$i = index($DATABASE_ADMIN_NAME, "@");
 	$connectArg = substr($DATABASE_ADMIN_NAME, 0, $i) . "/" . 
 		 $DATABASE_ADMIN_PASSWORD .  substr($DATABASE_ADMIN_NAME, $i);
-	return run( "$sqlplus $connectArg < $sqlFilename" );
+	return run( "$sqlplus '$connectArg' < $sqlFilename" );
 }
 
 #
