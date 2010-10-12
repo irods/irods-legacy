@@ -27,6 +27,7 @@
 #include "specColl.h"
 #include "resource.h"
 #include "miscServerFunct.h"
+#include "physPath.h"
 
 int
 rmTmpDirAll (char *myDir);
@@ -1288,6 +1289,10 @@ extractTarFileWithExec (int structFileInx)
 #else
      char *av[NAME_LEN];
 #endif
+#ifndef GNU_TAR
+    char tmpPath[MAX_NAME_LEN];
+#endif
+
     specColl_t *specColl = StructFileDesc[structFileInx].specColl;
 
     if (StructFileDesc[structFileInx].inuseFlag <= 0) {
@@ -1319,14 +1324,30 @@ extractTarFileWithExec (int structFileInx)
     }
 #else
     bzero (av, sizeof (av));
+#ifdef GNU_TAR
     av[0] = TAR_EXEC_PATH;
     av[1] = "-x";
     av[2] = "-f";
     av[3] = specColl->phyPath;
     av[4] = "-C";
     av[5] = specColl->cacheDir;
-
+#else	/* GNU_TAR */
+    mkdir (specColl->cacheDir, getDefDirMode ());
+    if (getcwd (tmpPath, MAX_NAME_LEN) == NULL) {
+        rodsLog (LOG_ERROR,
+          "extractTarFileWithExec:: getcwd failed. errno = %d", errno);
+	return SYS_EXEC_TAR_ERR - errno;
+    }
+    chdir (specColl->cacheDir);
+    av[0] = TAR_EXEC_PATH;
+    av[1] = "-xf";
+    av[2] = specColl->phyPath;
+#endif	/* GNU_TAR */
     status = forkAndExec (av);
+#ifndef GNU_TAR
+    chdir (tmpPath);
+#endif
+
 #endif
 
     return status;
@@ -1491,13 +1512,11 @@ bundleCacheDirWithExec (int structFileInx)
 #else
     bzero (av, sizeof (av));
     av[0] = TAR_EXEC_PATH;
-    av[1] = "-c";
-    av[2] = "-h";
-    av[3] = "-f";
-    av[4] = specColl->phyPath;
-    av[5] = "-C";
-    av[6] = specColl->cacheDir;
-    av[7] = ".";
+    av[1] = "-chf";
+    av[2] = specColl->phyPath;
+    av[3] = "-C";
+    av[4] = specColl->cacheDir;
+    av[5] = ".";
 
     status = forkAndExec (av);
 #endif
