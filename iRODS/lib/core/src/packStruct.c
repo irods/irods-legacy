@@ -793,8 +793,8 @@ resolveDepInArray (packItem_t *myPackedItem, packInstructArray_t *myPackTable)
 	      myPackTable);
 	    if (myPackedItem->dimSize[myDim] < 0) {
 		rodsLog (LOG_ERROR,
-		  "resolveDepInArray: resolveIntInItem error for %s",
-		  myPackedItem->name);
+		  "resolveDepInArray:resolveIntInItem error for %s, intName=%s",
+		  myPackedItem->name, buf);
                 return (SYS_PACK_INSTRUCT_FORMAT_ERR);
             }
 	    myPackedItem->dim++;
@@ -925,8 +925,8 @@ int packFlag, irodsProt_t irodsProt)
 	     irodsProt);
 	    if (status < 0) {
                 rodsLog (LOG_ERROR,
-                  "packNonpointerItem: strlen of %s > dim size, content: %s ",
-                  myPackedItem->name, *inPtr);
+                 "packNonpointerItem:strlen %d of %s > dim size %d,content:%s",
+                  strlen((char*)*inPtr), myPackedItem->name, maxStrLen, *inPtr);
 		return (status);
 	    }
 	}
