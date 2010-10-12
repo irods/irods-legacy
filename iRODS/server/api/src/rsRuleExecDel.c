@@ -16,8 +16,7 @@ rsRuleExecDel (rsComm_t *rsComm, ruleExecDelInp_t *ruleExecDelInp)
        return (SYS_INTERNAL_NULL_INPUT_ERR);
     }
 
-    status = getAndConnRcatHost(rsComm, MASTER_RCAT, NULL,
-                                &rodsServerHost);
+    status = getAndConnReHost (rsComm, &rodsServerHost);
     if (status < 0) {
        return(status);
     }
