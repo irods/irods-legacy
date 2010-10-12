@@ -24,7 +24,9 @@ rsCollCreate (rsComm_t *rsComm, collInp_t *collCreateInp)
     ruleExecInfo_t rei;
     collInfo_t collInfo;
     specCollCache_t *specCollCache = NULL;
+#ifdef RODS_CAT
     dataObjInfo_t *dataObjInfo = NULL;
+#endif
     
     resolveLinkedPath (rsComm, collCreateInp->collName, &specCollCache,
       &collCreateInp->condInput);
