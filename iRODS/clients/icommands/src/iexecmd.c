@@ -55,7 +55,7 @@ main(int argc, char **argv) {
 	*tmpPtr = '\0';
 	rstrcpy (execCmd.cmd, argv[optind], LONG_NAME_LEN);
 	tmpPtr ++;
-	rstrcpy (execCmd.cmdArgv, tmpPtr, MAX_NAME_LEN);    
+	rstrcpy (execCmd.cmdArgv, tmpPtr, HUGE_NAME_LEN);    
     } else {
         rstrcpy (execCmd.cmd, argv[optind], LONG_NAME_LEN);
     }

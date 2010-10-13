@@ -17,7 +17,7 @@
 #define CMD_DIR		"cmd"
 typedef struct {
     char cmd[LONG_NAME_LEN];
-    char cmdArgv[MAX_NAME_LEN];
+    char cmdArgv[HUGE_NAME_LEN];
     char execAddr[LONG_NAME_LEN];	/* if non empty, exec at this addr */
     char hintPath[MAX_NAME_LEN];	/* exec where is file is located */
     int addPathToArgv;			/* whether to add the resolved phy
@@ -31,7 +31,7 @@ typedef struct {
     int status;	    /* XXXXXX have to move status to back for 64 bit addr */
 } execCmdOut_t;
 
-#define ExecCmd_PI "str cmd[LONG_NAME_LEN]; str cmdArgv[MAX_NAME_LEN]; str execAddr[LONG_NAME_LEN]; str hintPath[MAX_NAME_LEN]; int addPathToArgv; struct KeyValPair_PI;"
+#define ExecCmd_PI "str cmd[LONG_NAME_LEN]; str cmdArgv[HUGE_NAME_LEN]; str execAddr[LONG_NAME_LEN]; str hintPath[MAX_NAME_LEN]; int addPathToArgv; struct KeyValPair_PI;"
 #define ExecCmdOut_PI "struct BinBytesBuf_PI; struct BinBytesBuf_PI; int status;" 
 
 #if defined(RODS_SERVER)

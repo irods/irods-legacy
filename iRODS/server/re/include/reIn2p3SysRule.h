@@ -47,18 +47,18 @@
 
 typedef struct {
   char cmd[LONG_NAME_LEN];
-  char cmdArgv[MAX_NAME_LEN];
+  char cmdArgv[HUGE_NAME_LEN];
   char execAddr[LONG_NAME_LEN];
   char hintPath[MAX_NAME_LEN];
   int threadId;
   int addPathToArgv;
-  char rescName[LONG_NAME_LEN];
+  char rescName[MAX_NAME_LEN];
   ruleExecInfo_t rei;
 } thrInp_t;
 
 typedef struct {
   char serverName[LONG_NAME_LEN];
-  char rescName[LONG_NAME_LEN];
+  char rescName[MAX_NAME_LEN];
   char rescType[LONG_NAME_LEN];
   char vaultPath[LONG_NAME_LEN];
 } monInfo_t;

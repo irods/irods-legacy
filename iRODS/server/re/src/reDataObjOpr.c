@@ -3164,7 +3164,7 @@ ruleExecInfo_t *rei)
     }
 
     if ((tmpPtr = parseMspForStr (inpParam2)) != NULL) {
-	rstrcpy (myExecCmdInp->cmdArgv, tmpPtr, MAX_NAME_LEN); 
+	rstrcpy (myExecCmdInp->cmdArgv, tmpPtr, HUGE_NAME_LEN); 
     }
 
     if ((tmpPtr = parseMspForStr (inpParam3)) != NULL) {

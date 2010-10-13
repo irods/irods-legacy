@@ -57,6 +57,7 @@
 /* MAX_NAME_LEN actually has space for a few extra characters to match
    the way it is often used in the code. */
 #define MAX_NAME_LEN   (MAX_PATH_ALLOWED+64)
+#define HUGE_NAME_LEN 100000
 
 #if 0
 /* XXXXX have to change it from 2700 to 2704 (8 bytes boundary) to get

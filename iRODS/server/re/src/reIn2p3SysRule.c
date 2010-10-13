@@ -197,7 +197,7 @@ int getListOfResc(rsComm_t *rsComm, char serverList[MAX_VALUE][MAX_NAME_LEN], in
           break;
           case 1:
           if ( index[j] != -1 ) {
-            rstrcpy(monList[index[j]].rescName, tResult, LONG_NAME_LEN);
+            rstrcpy(monList[index[j]].rescName, tResult, MAX_NAME_LEN);
           }
           break;
           case 2:
@@ -629,13 +629,13 @@ int msiServerMonPerf (msParam_t *verb, msParam_t *ptime, ruleExecInfo_t *rei) {
 		rstrcpy(thrInput[thrCount].hintPath, hintPath, MAX_NAME_LEN);
 		thrInput[thrCount].addPathToArgv = addPathToArgv;
 		thrInput[thrCount].threadId = thrCount;
-		rstrcpy(thrInput[thrCount].rescName, rescList[i].rescName, LONG_NAME_LEN);
+		rstrcpy(thrInput[thrCount].rescName, rescList[i].rescName, MAX_NAME_LEN);
 		memcpy(&(thrInput[thrCount].rei), rei, sizeof(ruleExecInfo_t));
 		thrCount += 1;
 	}
 	else {
-		rstrcat(thrInput[indx].rescName, ",", LONG_NAME_LEN);
-		rstrcat(thrInput[indx].rescName, rescList[i].rescName, LONG_NAME_LEN);
+		rstrcat(thrInput[indx].rescName, ",", MAX_NAME_LEN);
+		rstrcat(thrInput[indx].rescName, rescList[i].rescName, MAX_NAME_LEN);
 		if ( strcmp(rescList[i].rescType, "unix file system") == 0 ) {
 			strcat(thrInput[indx].cmdArgv, ",");
 			strcat(thrInput[indx].cmdArgv, rescList[i].vaultPath);

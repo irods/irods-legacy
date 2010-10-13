@@ -65,8 +65,8 @@ rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
 
 	if (execCmdInp->addPathToArgv > 0) {
 	    char tmpArgv[LONG_NAME_LEN];
-	    rstrcpy (tmpArgv, execCmdInp->cmdArgv, LONG_NAME_LEN);
-	    snprintf (execCmdInp->cmdArgv, LONG_NAME_LEN, "%s %s",
+	    rstrcpy (tmpArgv, execCmdInp->cmdArgv, HUGE_NAME_LEN);
+	    snprintf (execCmdInp->cmdArgv, HUGE_NAME_LEN, "%s %s",
 	      dataObjInfoHead->filePath, tmpArgv);
 	}
 	rstrcpy (addr.zoneName, dataObjInfoHead->rescInfo->zoneName, 
@@ -292,7 +292,7 @@ initCmdArg (char *av[], char *cmdArgv, char *cmdPath)
   int avInx = 0, i;
     char *startPtr, *curPtr;
     int quoteCnt, curLen;
-    char tmpCmdArgv[MAX_NAME_LEN];
+    char tmpCmdArgv[HUGE_NAME_LEN];
 
     av[avInx] = strdup (cmdPath);
     avInx++;
@@ -300,7 +300,7 @@ initCmdArg (char *av[], char *cmdArgv, char *cmdPath)
     /* parse cmdArgv */
 
     if (strlen (cmdArgv) > 0) {
-	rstrcpy (tmpCmdArgv, cmdArgv, MAX_NAME_LEN);
+	rstrcpy (tmpCmdArgv, cmdArgv, HUGE_NAME_LEN);
 	startPtr = curPtr = tmpCmdArgv;
 	quoteCnt = curLen = 0;
 	while (*curPtr != '\0') {

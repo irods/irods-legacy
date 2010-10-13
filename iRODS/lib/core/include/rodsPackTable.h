@@ -49,6 +49,7 @@ packConstantArray_t PackConstantTable[] = {
         {"OBJID_DIM", 2},
         {"H5S_MAX_RANK", 32},
         {"H5DATASPACE_MAX_RANK", 32},
+	{"HUGE_NAME_LEN", HUGE_NAME_LEN},
 	/* end of HDF5 */ 
         {PACK_TABLE_END_PI, 0},
 };
