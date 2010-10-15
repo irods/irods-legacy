@@ -9,7 +9,6 @@
 #ifndef UNIV_MSS_DRIVER_H
 #define UNIV_MSS_DRIVER_H
 
-#define DEFAULT_ACL 750 /* to be modified in the near future */
 #define UNIV_MSS_INTERF_SCRIPT "univMSSInterface.sh"
 
 #include "rods.h"
