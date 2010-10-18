@@ -394,3 +394,15 @@ filePathTypeInResc (rsComm_t *rsComm, char *fileName, rescInfo_t *rescInfo)
 	return UNKNOWN_OBJ_T;
     }
 }
+
+int
+bindStreamToIRods (rodsServerHost_t *rodsServerHost, int fd)
+{
+    int fileInx;
+
+    fileInx = allocAndFillFileDesc (rodsServerHost, STREAM_FILE_NAME, 
+      UNIX_FILE_TYPE, fd, DEFAULT_FILE_MODE);
+
+    return fileInx;
+}
+

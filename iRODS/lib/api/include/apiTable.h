@@ -346,6 +346,8 @@ apidef_t RcApiTable[] = {
       "BulkOprInp_PI", 1, NULL, 0, (funcPtr) RS_BULK_DATA_OBJ_PUT},
     {PROC_STAT_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "ProcStatInp_PI", 0, "GenQueryOut_PI", 0, (funcPtr) RS_PROC_STAT},
+    {STREAM_READ_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
+      "fileReadInp_PI", 0, NULL, 1, (funcPtr) RS_STREAM_READ},
     {REG_COLL_AN, RODS_API_VERSION, REMOTE_USER_AUTH, REMOTE_USER_AUTH, 
       "CollInpNew_PI", 0, NULL, 0, (funcPtr) RS_REG_COLL},
 #ifdef COMPAT_201

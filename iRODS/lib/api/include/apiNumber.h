@@ -118,6 +118,7 @@
 #define BULK_DATA_OBJ_REG_AN 			688
 #define BULK_DATA_OBJ_PUT_AN 			689
 #define PROC_STAT_AN 			690
+#define STREAM_READ_AN 			691
 
 /* 700 - 799 - Metadata API calls */
 #define GET_MISC_SVR_INFO_AN		700

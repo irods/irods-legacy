@@ -73,6 +73,7 @@ main(int argc, char **argv) {
          LONG_NAME_LEN);
 	execCmd.addPathToArgv = 1;
     }
+    addKeyVal (&execCmd.condInput, STREAM_STDOUT_KW, "");
 
     status = getRodsEnv (&myEnv);
 
@@ -107,7 +108,6 @@ main(int argc, char **argv) {
 	exit (4);
     }
 
-    rcDisconnect(conn);
 
     if (myRodsArgs.verbose == True) {
         printf ("rcExecCmd completed successfully.    Output \n\n");
@@ -116,6 +116,10 @@ main(int argc, char **argv) {
     if (execCmdOut != NULL) {
 	int i;
 	char *tmpPtr;
+	fileReadInp_t streamReadInp;
+	bytesBuf_t *streamReadOutBBuf;
+	int bytesRead;
+
         if (execCmdOut->stdoutBuf.buf != NULL) {
 	    tmpPtr = execCmdOut->stdoutBuf.buf;
 	    for (i = 0; i < execCmdOut->stdoutBuf.len; i++) {
@@ -130,7 +134,29 @@ main(int argc, char **argv) {
                 tmpPtr++;
             }
         }
+	if (execCmdOut->status > 0) {
+	    /* (execCmdOut->status is a stream descriptor */
+	    bzero (&streamReadInp, sizeof (streamReadInp));
+	    streamReadOutBBuf = &execCmdOut->stdoutBuf;
+	    if (streamReadOutBBuf->len < MAX_SZ_FOR_EXECMD_BUF) {
+		if (streamReadOutBBuf->buf != NULL) {
+		    free (streamReadOutBBuf->buf);
+		}
+		streamReadOutBBuf->buf = malloc (MAX_SZ_FOR_EXECMD_BUF);
+	    }
+	    streamReadOutBBuf->len = streamReadInp.len = MAX_SZ_FOR_EXECMD_BUF;
+	    streamReadInp.fileInx = execCmdOut->status;
+            while ((bytesRead = rcStreamRead (conn, &streamReadInp,
+              streamReadOutBBuf)) > 0) {
+                tmpPtr = streamReadOutBBuf->buf;
+                for (i = 0; i < bytesRead; i++) {
+                    fputc ((int)(*tmpPtr), stdout);
+                    tmpPtr++;
+                }
+	    }
+	}
     }
+    rcDisconnect(conn);
 
     exit(0);
 }

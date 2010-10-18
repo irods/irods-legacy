@@ -382,3 +382,6 @@ LIB_API_OBJS += $(libApiObjDir)/rcProcStat.o
 
 SVR_API_OBJS += $(svrApiObjDir)/rsDatabaseObjectAdmin.o
 LIB_API_OBJS += $(libApiObjDir)/rcDatabaseObjectAdmin.o
+
+SVR_API_OBJS += $(svrApiObjDir)/rsStreamRead.o
+LIB_API_OBJS += $(libApiObjDir)/rcStreamRead.o

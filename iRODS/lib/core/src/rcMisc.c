@@ -4104,7 +4104,7 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
 
     if (bytesBuf->len <= 0) {
 	/* use default */
-	buflen = META_STR_LEN;
+	buflen = INIT_SZ_FOR_EXECMD_BUF;
     } else {
 	/* sanity check */
 	buflen = bytesBuf->len;
@@ -4121,10 +4121,9 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
 
             bytesBuf->len += nbytes;
 	    if (buflen >= MAX_SZ_FOR_EXECMD_BUF) {
-                close (fd);
                 return (EXEC_CMD_OUTPUT_TOO_LARGE);
 	    } else {
-                buflen = 2 * buflen;
+                buflen = 4 * buflen;
                 if (buflen > MAX_SZ_FOR_EXECMD_BUF) {
 		    buflen = MAX_SZ_FOR_EXECMD_BUF;
 		}
@@ -4153,8 +4152,6 @@ readToByteBuf (int fd, bytesBuf_t *bytesBuf)
             break;
         }
     }
-    close (fd);
-
     if (nbytes < 0) {
         return (nbytes);
     } else {

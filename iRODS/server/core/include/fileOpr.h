@@ -21,6 +21,7 @@
 #define FD_FREE		0
 #define FD_INUSE	1
 
+#define STREAM_FILE_NAME	"stream"   /* a fake file name for stream */
 typedef struct {
     int inuseFlag;	/* whether the fileDesc is in use, 0=no */
     rodsServerHost_t *rodsServerHost;
@@ -69,5 +70,6 @@ int
 chkEmptyDir (int fileType, rsComm_t *rsComm, char *cacheDir);
 int
 filePathTypeInResc (rsComm_t *rsComm, char *fileName, rescInfo_t *rescInfo);
-
+int
+bindStreamToIRods (rodsServerHost_t *rodsServerHost, int fd);
 #endif	/* FILE_OPR_H */

@@ -124,8 +124,23 @@ execCmdOut_t **execCmdOut, rodsServerHost_t *rodsServerHost)
         rodsLog (LOG_ERROR,
          "remoteExecCmd: rcExecCmd failed for %s. status = %d",
           execCmdInp->cmd, status);
+    } else if (status > 0 &&
+      getValByKey (&execCmdInp->condInput, STREAM_STDOUT_KW) != NULL) {
+	int fileInx = status;
+        (*execCmdOut)->status = bindStreamToIRods (LocalServerHost, fileInx);
+        if ((*execCmdOut)->status < 0) {
+	    fileCloseInp_t remFileCloseInp;
+            rodsLog (LOG_ERROR,
+             "remoteExecCmd: bindStreamToIRods failed. status = %d",
+              (*execCmdOut)->status);
+            memset (&remFileCloseInp, 0, sizeof (remFileCloseInp));
+            remFileCloseInp.fileInx = fileInx;
+            rcFileClose (rodsServerHost->conn, &remFileCloseInp);
+	}
+	status = (*execCmdOut)->status;
+    } else {
+	status = 0;
     }
-
     return status;
 }
 
@@ -227,25 +242,44 @@ _rsExecCmd (rsComm_t *rsComm, execCmd_t *execCmdInp, execCmdOut_t **execCmdOut)
     close (statusFd[1]);
 #endif
 
+
     myExecCmdOut = *execCmdOut = malloc (sizeof (execCmdOut_t));
     memset (myExecCmdOut, 0, sizeof (execCmdOut_t));
 
     readToByteBuf (stdoutFd[0], &myExecCmdOut->stdoutBuf);
-    readToByteBuf (stderrFd[0], &myExecCmdOut->stderrBuf);
-    memset (&statusBuf, 0, sizeof (statusBuf));
-    readToByteBuf (statusFd[0], &statusBuf);
-    if (statusBuf.len == sizeof (int) + 1) {
-        myExecCmdOut->status = *((int *)statusBuf.buf);
-	free (statusBuf.buf);
-    }
-    childStatus = 0;
+    if (getValByKey (&execCmdInp->condInput, STREAM_STDOUT_KW) != NULL &&
+      myExecCmdOut->stdoutBuf.len >= MAX_SZ_FOR_EXECMD_BUF) {
+	/* more to come. don't close stdoutFd. close stderrFd and statusFd
+	 * because the child is not done */ 
+	close (stderrFd[0]);
+	close (statusFd[0]);
+	myExecCmdOut->status = bindStreamToIRods (LocalServerHost, stdoutFd[0]);
+	if (myExecCmdOut->status < 0) {
+            rodsLog (LOG_ERROR,
+             "_rsExecCmd: bindStreamToIRods failed. status = %d", 
+	      myExecCmdOut->status);
+	    close (stdoutFd[0]);
+	}
+    } else {
+	close (stdoutFd[0]);
+        readToByteBuf (stderrFd[0], &myExecCmdOut->stderrBuf);
+	close (stderrFd[0]);
+        memset (&statusBuf, 0, sizeof (statusBuf));
+        readToByteBuf (statusFd[0], &statusBuf);
+	close (statusFd[0]);
+        if (statusBuf.len == sizeof (int) + 1) {
+            myExecCmdOut->status = *((int *)statusBuf.buf);
+	    free (statusBuf.buf);
+        }
+        childStatus = 0;
 
 #ifndef windows_platform   /* UNIX */
-    status = waitpid (childPid, &childStatus, 0);
-    if (status >= 0 && myExecCmdOut->status >= 0 && childStatus != 0) {
-        rodsLog (LOG_ERROR,
-         "_rsExecCmd: waitpid status = %d, myExecCmdOut->status = %d, childStatus = %d", status, myExecCmdOut->status, childStatus);
-        myExecCmdOut->status = EXEC_CMD_ERROR;
+        status = waitpid (childPid, &childStatus, 0);
+        if (status >= 0 && myExecCmdOut->status >= 0 && childStatus != 0) {
+            rodsLog (LOG_ERROR,
+             "_rsExecCmd: waitpid status = %d, myExecCmdOut->status = %d, childStatus = %d", status, myExecCmdOut->status, childStatus);
+            myExecCmdOut->status = EXEC_CMD_ERROR;
+	}
     }
 #endif
     return (myExecCmdOut->status);

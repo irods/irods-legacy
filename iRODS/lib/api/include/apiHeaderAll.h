@@ -133,4 +133,5 @@
 #include "databaseObjInfo.h"
 #include "procStat.h"
 #include "databaseObjectAdmin.h"
+#include "streamRead.h"
 #endif	/* API_HEADER_ALL_H */
