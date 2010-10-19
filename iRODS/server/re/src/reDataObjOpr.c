@@ -3853,7 +3853,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
 }
 
 /**
- * \fn msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei)
+ * \fn msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *inpParam4, ruleExecInfo_t *rei)
  *
  * \brief Creates a tar object file from a target collection
  *
@@ -3875,7 +3875,8 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  * \param[in] inpParam1 - A StructFileExtAndRegInp_MS_T or a STR_MS_T which would be taken as dataObj path.
  * \param[in] inpParam2 - A STR_MS_T which specifies the target collection.
  * \param[in] inpParam3 - optional - A STR_MS_T which specifies the target resource.
- * \param[out] outParam - An INT_MS_T containing the status.
+ * \param[out] inpParam4 - optional - A STR_MS_T which specifies if the force flag is set. Set it to "force" if 
+                                      the force option is needed, otherwise no force option will be used.
  * \param[in,out] rei - The RuleExecInfo structure that is automatically
  *    handled by the rule engine. The user does not include rei as a
  *    parameter in the rule invocation.
@@ -3894,7 +3895,7 @@ msiTarFileExtract (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPar
  * \bug  no known bugs
 **/
 int 
-msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *outParam, ruleExecInfo_t *rei) 
+msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpParam3,  msParam_t *inpParam4, ruleExecInfo_t *rei) 
 {
     rsComm_t *rsComm;
     structFileExtAndRegInp_t structFileExtAndRegInp, 
@@ -3954,10 +3955,13 @@ msiTarFileCreate (msParam_t *inpParam1, msParam_t *inpParam2, msParam_t *inpPara
         (char *) inpParam3->inOutStruct);
     }
 
+    if ( strcmp (inpParam4->type, STR_MS_T) == 0 && inpParam4 != NULL &&
+       strcmp ( (char *) inpParam4->inOutStruct, "force") == 0) {
+        addKeyVal(&myStructFileExtAndRegInp->condInput, FORCE_FLAG_KW, "");
+    }
+
     /* tar file extraction */
     rei->status = rsStructFileBundle (rsComm, myStructFileExtAndRegInp);
-
-    fillIntInMsParam (outParam, rei->status);
 
     return (rei->status);
 
