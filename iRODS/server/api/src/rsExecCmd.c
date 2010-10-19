@@ -127,7 +127,7 @@ execCmdOut_t **execCmdOut, rodsServerHost_t *rodsServerHost)
     } else if (status > 0 &&
       getValByKey (&execCmdInp->condInput, STREAM_STDOUT_KW) != NULL) {
 	int fileInx = status;
-        (*execCmdOut)->status = bindStreamToIRods (LocalServerHost, fileInx);
+        (*execCmdOut)->status = bindStreamToIRods (rodsServerHost, fileInx);
         if ((*execCmdOut)->status < 0) {
 	    fileCloseInp_t remFileCloseInp;
             rodsLog (LOG_ERROR,
