@@ -21,7 +21,8 @@ import org.junit.runners.Suite;
   GeneralFileSystemTests.class,
   IRODSMidLevelServicesTest.class,
   IRODSQueryTests.class,
-  IRODSAccessObjectTests.class
+  IRODSAccessObjectTests.class,
+  HTTPTest.class
 })
 
 public class AllTests {

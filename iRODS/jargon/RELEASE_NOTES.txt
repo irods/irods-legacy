@@ -1,10 +1,10 @@
 
-Jargon 2.4.1 Release Notes
+Jargon 2.4.X Release Notes
 ================================================================================================
 
 Project: Jargon - IRODS Java API
 Date: 10/08/2010
-Release Version: 2.4.1 - Jargon 2.4.1 library
+Release Version: post release of Jargon 2.4.1 
 ================================================================================================
 Requirements
 
@@ -24,82 +24,9 @@ libraries
 ================================================================================================
 Features and Changes
 
-*The old Jargon Gui, has been removed
-
------------
-*Support added for extensible metadata. Extensible metadata may be defined in the extended_icat_data_properties, or may be defined in an arbitrary
-source that implements the ExtensibleMetaDataSource interface.  See classes in the org.irods.jargon.core.query package.  This involved significant revision
-of GenQuery processing code.
-
-----------
-*Partial implementation of GenUpdate functionality, this will require additional work in IRODS2.3 before it is usable.
-
-----------
-*fix for Bug 79 -  fix resource validation in IRODSFile.setResource to not use file-based query
-
-----------
-* Work in progress to add easier/enhanced query using iquest syntax and returning a resultset object.  This is based on work 
-in jargon-core, and should be treated as early access.  As the implementation moves forward in jargon-core, the genquery facilities
-in the classic Jargon API will get a port of the new facility.
-
------------
-*added support and began adding unit tests using mock objects
-
------------
-Refactoring
-
-*factoring classic GenQuery processing from IRODSCommands
-*add IRODSServerProperties object that describes the connected-to server
-*new irodsFunction() methods to prepare for factoring out packing instructions into individual implementation classes.
-*other code cleanup activities
-
------------
-*Bug 94  - add mkdirs() to create intermediate files - added mkdirs() capability to IRODSfile
-
------------
-*Bug 103  - add mod avu capability
-
-------------
-*Bug 104  - long value in MetaDataRecordList 
-
-------------
-*Bug 109 - NullPointerException possible from logging statement in IRODSMetaDataSet.java
-
-------------
-*Bug 110 - error when asking IRODSFile.exists with & in file name unit testing.  This is noted as an outstanding iRODS issue.  
-
-------------
-*made methods to retrieve misc server info public.
-
-------------
-*Bug 111 - Protocol exception returning binary (base64 encoded) data from execution of script 
-Test cases, updated exec command method signatures to clean up unnecessary parms
-
------------
-*Resource allows add and delete of resource AVU metadata as well as list of resource metadata.  Beginning to add 'jargon-core' style code into the 
-Jargon trunk.  Eventually, the two API will blend.
-
------------
-*added executeProxy() command to IRODSFileSystem that incudes hostname as a parameter
-
------------
-*Bug 113 - when there are three resources in the resource group, only two replicas are produced
-Added new method in IRODSFile - replicateToResourceGroup(String resourceGroup)
-Added a test.resource.group to the testing.properties file, and init code in the testsetup.sh file for unit testing of resource group command.
-
-----------
-*Bug 112 - query to get a resource AVU on a resource on an iRODS 2.3 server
-Added test case for proper usage in resource queries
-
-----------
-*Bug 114 - Bug 114 - performance of specific queries in Jargon 2.4 
-Fixed ordering of AVU query components in GenQueryInp packing instruction sent to iRODS to avoid pathological SQL
-
----------
-*Bug fixed in parallel get file transfer for very large files, added read of flags from header to avoid reading garbage length on re-read of header.
-
----------
-*Added new OpenedDataObjInp packing instruction for lseek operation, which was causing some byte order problems on Mac and iRODS2.4.
+*Bug 115 - copyFrom() for http files results in protocol exception 
+Normalized copyFrom and copyTo in the various file implementations, added unit tests.  There may be some subtle contract changes
+from this fix, but the code itself was not consistent.
 
 
 ================================================================================================

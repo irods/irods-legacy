@@ -539,4 +539,124 @@ public class HTTPFile extends RemoteFile {
 	public URL toURL() throws MalformedURLException {
 		return new URL(toString());
 	}
+	
+	/**
+	* Unsupported operation
+	 */
+	public void copyFrom(GeneralFile file) throws IOException {
+		throw new UnsupportedOperationException("output to an HTTP file is not supported");
+	}
+
+	/**
+	* Unsupported operation
+	 */
+	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
+			throws IOException {
+		throw new UnsupportedOperationException("output to an HTTP file is not supported");
+	
+	}
+	
+	/**
+	 * Copies this file to another file. This object is the source file. The
+	 * destination file is given as the argument. If the destination file, does
+	 * not exist a new one will be created. Otherwise the source file will be
+	 * appended to the destination file. Directories will be copied recursively.
+	 * 
+	 * @param file
+	 *            The file to receive the data.
+	 * @throws NullPointerException
+	 *             If file is null.
+	 * @throws IOException
+	 *             If an IOException occurs.
+	 */
+	public void copyTo(GeneralFile destinationFile) throws IOException {
+		copyTo(destinationFile, false);
+	}
+
+	/**
+	 * Copies this file to another file. This object is the source file. The
+	 * destination file is given as the argument. If the destination file, does
+	 * not exist a new one will be created. Otherwise the source file will be
+	 * appended to the destination file. Directories will be copied recursively.
+	 * 
+	 * @param destinationFile
+	 *            The file to receive the data.
+	 * @throws NullPointerException
+	 *             If file is null.
+	 * @throws IOException
+	 *             If an IOException occurs.
+	 */
+	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
+			throws IOException {
+		byte buffer[] = null;
+		GeneralFileInputStream in = null;
+		GeneralFileOutputStream out = null;
+		int n;
+
+		if (destinationFile == null) {
+			throw new NullPointerException();
+		}
+
+		if (isDirectory()) {
+			// recursive copy
+			GeneralFile[] fileList = listFiles();
+
+			destinationFile.mkdir();
+			if (fileList != null) {
+				for (int i = 0; i < fileList.length; i++) {
+					fileList[i].copyTo(FileFactory.newFile(destinationFile
+							.getFileSystem(),
+							destinationFile.getAbsolutePath(), fileList[i]
+									.getName()), forceOverwrite);
+				}
+			}
+		} else {
+			if (destinationFile.isDirectory()) {
+				// change the destination from a directory to a file
+				destinationFile = FileFactory.newFile(destinationFile,
+						getName());
+			}
+			long ilength = length();
+
+			in = FileFactory.newFileInputStream(this);
+			out = FileFactory.newFileOutputStream(destinationFile);
+
+			if (destinationFile.exists()) {
+				if (forceOverwrite) {
+					// eh, probably the best
+					destinationFile.delete();
+					out = FileFactory.newFileOutputStream(destinationFile);
+				} else {
+					// better if fails
+					throw new SecurityException(
+							"A destination file exists but overwrite is not specified");
+				}
+			}
+
+			if (ilength > BUFFER_MAX_SIZE) {
+				buffer = new byte[BUFFER_MAX_SIZE];
+				do {
+					n = in.read(buffer);
+					if (n >= 0)
+						ilength -= n;
+					else
+						throw new EOFException();
+					out.write(buffer, 0, n);
+				} while (ilength > BUFFER_MAX_SIZE);
+			}
+			buffer = new byte[(int) ilength];
+			do {
+				n = in.read(buffer);
+				if (n >= 0)
+					ilength -= n;
+				else
+					throw new EOFException();
+				out.write(buffer, 0, n);
+			} while (ilength > 0);
+
+			in.close();
+			out.close();
+		}
+	}
+
 }

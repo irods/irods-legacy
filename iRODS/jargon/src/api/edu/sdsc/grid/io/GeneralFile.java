@@ -48,9 +48,6 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
 import java.util.Vector;
 
 import org.slf4j.Logger;
@@ -268,6 +265,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * Finalizes the object by explicitly letting go of each of its internally
 	 * held values.
 	 */
+	@Override
 	protected void finalize() throws Throwable {
 		if (fileSystem != null)
 			fileSystem = null;
@@ -511,7 +509,7 @@ public class GeneralFile extends Object implements Comparable {
 
 			System.arraycopy(conditions, 0, iConditions, 0, conditionsLength);
 
-			fieldName = GeneralMetaData.DIRECTORY_NAME;
+			fieldName = StandardMetaData.DIRECTORY_NAME;
 			operator = MetaDataCondition.EQUAL;
 			value = getAbsolutePath();
 			iConditions[conditionsLength] = MetaDataSet.newCondition(fieldName,
@@ -521,13 +519,13 @@ public class GeneralFile extends Object implements Comparable {
 
 			System.arraycopy(conditions, 0, iConditions, 0, conditionsLength);
 
-			fieldName = GeneralMetaData.DIRECTORY_NAME;
+			fieldName = StandardMetaData.DIRECTORY_NAME;
 			operator = MetaDataCondition.EQUAL;
 			value = getParent();
 			iConditions[conditionsLength] = MetaDataSet.newCondition(fieldName,
 					operator, value);
 
-			fieldName = GeneralMetaData.FILE_NAME;
+			fieldName = StandardMetaData.FILE_NAME;
 			value = fileName;
 			iConditions[conditionsLength + 1] = MetaDataSet.newCondition(
 					fieldName, operator, value);
@@ -573,8 +571,8 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyTo(GeneralFile file) throws IOException {
-		copyTo(file, false);
+	public void copyTo(GeneralFile destinationFile) throws IOException {
+		copyTo(destinationFile, false);
 	}
 
 	/**
@@ -583,21 +581,21 @@ public class GeneralFile extends Object implements Comparable {
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
+	 * @param destinationFile
 	 *            The file to receive the data.
 	 * @throws NullPointerException
 	 *             If file is null.
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyTo(GeneralFile file, boolean forceOverwrite)
+	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
 			throws IOException {
 		byte buffer[] = null;
 		GeneralFileInputStream in = null;
 		GeneralFileOutputStream out = null;
 		int n;
 
-		if (file == null) {
+		if (destinationFile == null) {
 			throw new NullPointerException();
 		}
 
@@ -605,29 +603,29 @@ public class GeneralFile extends Object implements Comparable {
 			// recursive copy
 			GeneralFile[] fileList = listFiles();
 
-			file.mkdir();
+			destinationFile.mkdir();
 			if (fileList != null) {
 				for (int i = 0; i < fileList.length; i++) {
 					fileList[i].copyTo(FileFactory.newFile(
-							file.getFileSystem(), file.getAbsolutePath(),
+							destinationFile.getFileSystem(), destinationFile.getAbsolutePath(),
 							fileList[i].getName()), forceOverwrite);
 				}
 			}
 		} else {
-			if (file.isDirectory()) {
+			if (destinationFile.isDirectory()) {
 				// change the destination from a directory to a file
-				file = FileFactory.newFile(file, getName());
+				destinationFile = FileFactory.newFile(destinationFile, getName());
 			}
 			long ilength = length();
 
 			in = FileFactory.newFileInputStream(this);
-			out = FileFactory.newFileOutputStream(file);
+			out = FileFactory.newFileOutputStream(destinationFile);
 
-			if (file.exists()) {
+			if (destinationFile.exists()) {
 				if (forceOverwrite) {
 					// eh, probably the best
-					file.delete();
-					out = FileFactory.newFileOutputStream(file);
+					destinationFile.delete();
+					out = FileFactory.newFileOutputStream(destinationFile);
 				} else {
 					// better if fails
 					throw new SecurityException(
@@ -662,36 +660,36 @@ public class GeneralFile extends Object implements Comparable {
 	}
 
 	/**
-	 * Copies this file to another file. This object is the source file. The
-	 * destination file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file. The
+	 * source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
-	 *            The file to receive the data.
+	 * @param sourceFile
+	 *            The file that is the source of the data
 	 * @throws NullPointerException
 	 *             If file is null.
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile file) throws IOException {
-		copyFrom(file, false);
+	public void copyFrom(GeneralFile sourceFile) throws IOException {
+		copyFrom(sourceFile, false);
 	}
 
 	/**
-	 * Copies this file to another file. This object is the source file. The
-	 * destination file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file. The
+	 * source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
-	 *            The file to receive the data.
+	 * @param sourceFile
+	 *            The file that is the source of the data
 	 * @throws NullPointerException
 	 *             If file is null.
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile file, boolean forceOverwrite)
+	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
 			throws IOException {
 		/*
 		 * I didn't really want to have a .copyFrom(...), but without the
@@ -703,13 +701,13 @@ public class GeneralFile extends Object implements Comparable {
 		GeneralRandomAccessFile in = null;
 		GeneralRandomAccessFile out = null;
 
-		if (file == null) {
+		if (sourceFile == null) {
 			throw new NullPointerException();
 		}
 
-		if (file.isDirectory()) {
+		if (sourceFile.isDirectory()) {
 			// recursive copy
-			GeneralFile[] fileList = file.listFiles();
+			GeneralFile[] fileList = sourceFile.listFiles();
 
 			mkdir();
 			if (fileList != null) {
@@ -721,13 +719,13 @@ public class GeneralFile extends Object implements Comparable {
 		} else {
 			if (isDirectory()) {
 				// change the destination from a directory to a file
-				GeneralFile subFile = FileFactory.newFile(this, file.getName());
-				subFile.copyFrom(file);
+				GeneralFile subFile = FileFactory.newFile(this, sourceFile.getName());
+				subFile.copyFrom(sourceFile);
 				return;
 			}
-			long ilength = file.length();
+			long ilength = sourceFile.length();
 
-			in = FileFactory.newRandomAccessFile(file, "r");
+			in = FileFactory.newRandomAccessFile(sourceFile, "r");
 			out = FileFactory.newRandomAccessFile(this, "rw");
 
 			if (forceOverwrite) {
@@ -992,6 +990,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @throws IOException
 	 *             If a file could not be created
 	 */
+	@Deprecated
 	public static GeneralFile createTempFile(String prefix, String suffix)
 			throws IOException, IllegalArgumentException {
 		return createTempFile(prefix, suffix, null);
@@ -1111,6 +1110,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @return <code>true</code> if and only if the objects are the same;
 	 *         <code>false</code> otherwise
 	 */
+	@Override
 	public boolean equals(Object obj) {
 		throw new UnsupportedOperationException();
 	}
@@ -1406,6 +1406,7 @@ public class GeneralFile extends Object implements Comparable {
 	 * @return An array of <code>GeneralFile</code> objects denoting the
 	 *         available filesystem root.
 	 */
+	@Deprecated
 	public static GeneralFile[] listRoots() {
 		throw new UnsupportedOperationException();
 	}
@@ -1422,7 +1423,7 @@ public class GeneralFile extends Object implements Comparable {
 	 *         filesystem root, namely <code>"/"</code>.
 	 */
 	public static GeneralFile[] listRoots(GeneralFileSystem fileSystem) {
-		String[] roots = fileSystem.roots;
+		String[] roots = GeneralFileSystem.roots;
 		GeneralFile[] list = new GeneralFile[roots.length];
 		for (int i = 0; i < list.length; i++) {
 			list[i] = FileFactory.newFile(fileSystem, roots[i]);
@@ -1522,6 +1523,7 @@ public class GeneralFile extends Object implements Comparable {
 	/**
 	 * Returns the pathname string of this abstract pathname.
 	 */
+	@Override
 	public String toString() {
 		return getPath();
 	}

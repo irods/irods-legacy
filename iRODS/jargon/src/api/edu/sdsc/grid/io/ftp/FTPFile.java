@@ -250,16 +250,16 @@ public class FTPFile extends RemoteFile {
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
+	 * @param destinationFile
 	 *            The file to receive the data.
 	 * @throws NullPointerException
 	 *             If file is null.
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyTo(GeneralFile file, boolean forceOverwrite)
+	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
 			throws IOException {
-		if (file == null) {
+		if (destinationFile == null) {
 			throw new NullPointerException();
 		}
 
@@ -267,28 +267,28 @@ public class FTPFile extends RemoteFile {
 			// recursive copy
 			GeneralFile[] fileList = listFiles();
 
-			file.mkdir();
+			destinationFile.mkdir();
 			if (fileList != null) {
 				for (int i = 0; i < fileList.length; i++) {
 					fileList[i].copyTo(FileFactory.newFile(
-							file.getFileSystem(), file.getAbsolutePath(),
+							destinationFile.getFileSystem(), destinationFile.getAbsolutePath(),
 							fileList[i].getName()), forceOverwrite);
 				}
 			}
 		} else {
-			if (file.isDirectory()) {
+			if (destinationFile.isDirectory()) {
 				// change the destination from a directory to a file
-				file = FileFactory.newFile(file, getName());
+				destinationFile = FileFactory.newFile(destinationFile, getName());
 			}
 			try {
-				if (file instanceof LocalFile) {
-					ftpClient.get(getPath(), ((LocalFile) file).getFile());
-				} else if (file instanceof FTPFile) {
-					ftpClient.transfer(getPath(), ((FTPFile) file)
-							.getFTPClient(), file.getPath(), !forceOverwrite,
+				if (destinationFile instanceof LocalFile) {
+					ftpClient.get(getPath(), ((LocalFile) destinationFile).getFile());
+				} else if (destinationFile instanceof FTPFile) {
+					ftpClient.transfer(getPath(), ((FTPFile) destinationFile)
+							.getFTPClient(), destinationFile.getPath(), !forceOverwrite,
 							null);
 				} else {
-					super.copyTo(file);
+					super.copyTo(destinationFile);
 				}
 			} catch (FTPException e) {
 				IOException io = new IOException();
@@ -304,22 +304,22 @@ public class FTPFile extends RemoteFile {
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
+	 * @param sourceFile
 	 *            The file to receive the data.
 	 * @throws NullPointerException
 	 *             If file is null.
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(GeneralFile file, boolean forceOverwrite)
+	public void copyFrom(GeneralFile sourceFile, boolean forceOverwrite)
 			throws IOException {
-		if (file == null) {
+		if (sourceFile == null) {
 			throw new NullPointerException();
 		}
 
-		if (file.isDirectory()) {
+		if (sourceFile.isDirectory()) {
 			// recursive copy
-			GeneralFile[] fileList = file.listFiles();
+			GeneralFile[] fileList = sourceFile.listFiles();
 
 			mkdir();
 			if (fileList != null) {
@@ -331,19 +331,19 @@ public class FTPFile extends RemoteFile {
 		} else {
 			if (isDirectory()) {
 				// change the destination from a directory to a file
-				GeneralFile subFile = FileFactory.newFile(this, file.getName());
-				subFile.copyFrom(file);
+				GeneralFile subFile = FileFactory.newFile(this, sourceFile.getName());
+				subFile.copyFrom(sourceFile);
 				return;
 			}
 			try {
-				if (file instanceof LocalFile) {
-					ftpClient.put(((LocalFile) file).getFile(), getPath(),
+				if (sourceFile instanceof LocalFile) {
+					ftpClient.put(((LocalFile) sourceFile).getFile(), getPath(),
 							!forceOverwrite);
-				} else if (file instanceof FTPFile) {
-					ftpClient.transfer(file.getPath(), ftpClient, getPath(),
+				} else if (sourceFile instanceof FTPFile) {
+					ftpClient.transfer(sourceFile.getPath(), ftpClient, getPath(),
 							!forceOverwrite, null);
 				} else {
-					super.copyTo(file);
+					super.copyTo(sourceFile);
 				}
 			} catch (FTPException e) {
 				IOException io = new IOException();

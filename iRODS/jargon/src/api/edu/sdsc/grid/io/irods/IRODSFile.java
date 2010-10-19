@@ -590,7 +590,7 @@ public class IRODSFile extends RemoteFile {
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
+	 * @param destinationFile
 	 *            The file to receive the data.
 	 * @throws NullPointerException
 	 *             If file is null.
@@ -598,9 +598,9 @@ public class IRODSFile extends RemoteFile {
 	 *             If an IOException occurs.
 	 */
 
-	public void copyTo(GeneralFile file, boolean forceOverwrite)
+	public void copyTo(GeneralFile destinationFile, boolean forceOverwrite)
 			throws IOException {
-		copyTo(file, forceOverwrite, "");
+		copyTo(destinationFile, forceOverwrite, "");
 	}
 
 	/**
@@ -612,7 +612,7 @@ public class IRODSFile extends RemoteFile {
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
+	 * @param destinationFile
 	 *            {@link GeneralFile GeneralFile} is the local file that will be
 	 *            copied to
 	 * @param forceOverwrite
@@ -621,13 +621,15 @@ public class IRODSFile extends RemoteFile {
 	 *            which the source file will be copied.
 	 * @throws IOException
 	 */
-	public void copyTo(GeneralFile file, boolean forceOverwrite, String resource)
+	public void copyTo(GeneralFile destinationFile, final boolean forceOverwrite, final String resource)
 			throws IOException {
+		
 		if (log.isInfoEnabled()) {
 			log.info("copying file:" + this.getAbsolutePath() + " to file:"
-					+ file.getAbsolutePath());
+					+ destinationFile.getAbsolutePath());
 		}
-		if (file == null) {
+		
+		if (destinationFile == null) {
 			log.error("dest file is null");
 			throw new IllegalArgumentException("file cannot be null");
 		}
@@ -636,6 +638,7 @@ public class IRODSFile extends RemoteFile {
 			log.error("resource is null");
 			throw new IllegalArgumentException(
 					"resource cannot be null, set to blank if not used");
+			
 		}
 
 		if (isDirectory()) {
@@ -643,46 +646,46 @@ public class IRODSFile extends RemoteFile {
 			// recursive copy
 			GeneralFile[] fileList = listFilesNext(true);
 
-			file.mkdir();
+			destinationFile.mkdir();
 			while (fileList != null && fileList.length > 0) {
 				for (int i = 0; i < fileList.length; i++) {
 					fileList[i].copyTo(FileFactory.newFile(
-							file.getFileSystem(), file.getAbsolutePath(),
+							destinationFile.getFileSystem(), destinationFile.getAbsolutePath(),
 							fileList[i].getName()), forceOverwrite);
 				}
 				fileList = listFilesNext(false);
 			}
 		} else {
-			if (!forceOverwrite && file.isDirectory()) {
+			if (!forceOverwrite && destinationFile.isDirectory()) {
 				log.info("no force overwrite an dest file is directory");
 				// change the destination from a directory to a file
-				file = FileFactory.newFile(file, getName());
+				destinationFile = FileFactory.newFile(destinationFile, getName());
 			}
 			try {
-				if (file instanceof LocalFile) {
-					if (file.exists()) {
+				if (destinationFile instanceof LocalFile) {
+					if (destinationFile.exists()) {
 						if (forceOverwrite) {
 							log
 									.info("deleting a local file because forceOverwrite was specified");
-							file.delete();
+							destinationFile.delete();
 						} else {
 							log
 									.error("file:"
-											+ file.getAbsolutePath()
+											+ destinationFile.getAbsolutePath()
 											+ " already exists, and overwriting was not allowed");
 							throw new IOException(
 									"File exists and overwriting not allowed");
 						}
 					}
 
-					iRODSFileSystem.commands.get(this, file, resource);
+					iRODSFileSystem.commands.get(this, destinationFile, resource);
 
-				} else if (file instanceof IRODSFile) {
+				} else if (destinationFile instanceof IRODSFile) {
 					log.info("dest is an IRODS file");
-					iRODSFileSystem.commands.copy(this, (IRODSFile) file,
+					iRODSFileSystem.commands.copy(this, (IRODSFile) destinationFile,
 							forceOverwrite);
 				} else {
-					super.copyTo(file, forceOverwrite);
+					super.copyTo(destinationFile, forceOverwrite);
 				}
 			} catch (IRODSException e) {
 				log.error("IRODSException in coptyTo operation for file:"
@@ -695,31 +698,31 @@ public class IRODSFile extends RemoteFile {
 	}
 
 	/**
-	 * Copies this file to another file. This object is the source file. The
-	 * destination file is given as the argument. If the destination file, does
+	 * Copies this file to another file. This object is the destination file. The
+	 * source file is given as the argument. If the destination file, does
 	 * not exist a new one will be created. Otherwise the source file will be
 	 * appended to the destination file. Directories will be copied recursively.
 	 * 
-	 * @param file
+	 * @param sourceFile
 	 *            The file to receive the data.
 	 * @throws NullPointerException
 	 *             If file is null.
 	 * @throws IOException
 	 *             If an IOException occurs.
 	 */
-	public void copyFrom(final GeneralFile file, final boolean forceOverwrite)
+	public void copyFrom(final GeneralFile sourceFile, final boolean forceOverwrite)
 			throws IOException {
 		if (log.isInfoEnabled()) {
-			log.info("copy of:" + file.getAbsolutePath() + " to:"
+			log.info("copy of:" + sourceFile.getAbsolutePath() + " to:"
 					+ this.getAbsolutePath());
 		}
-		if (file == null) {
+		if (sourceFile == null) {
 			throw new NullPointerException();
 		}
 
-		if (file.isDirectory()) {
+		if (sourceFile.isDirectory()) {
 			// recursive copy
-			GeneralFile[] fileList = file.listFiles();
+			GeneralFile[] fileList = sourceFile.listFiles();
 
 			mkdir();
 			if (fileList != null) {
@@ -731,18 +734,18 @@ public class IRODSFile extends RemoteFile {
 		} else {
 			if (!forceOverwrite && isDirectory()) {
 				// change the destination from a directory to a file
-				GeneralFile subFile = FileFactory.newFile(this, file.getName());
-				subFile.copyFrom(file);
+				GeneralFile subFile = FileFactory.newFile(this, sourceFile.getName());
+				subFile.copyFrom(sourceFile);
 				return;
 			}
 			try {
-				if (file instanceof LocalFile) {
-					iRODSFileSystem.commands.put(file, this, forceOverwrite);
-				} else if (file instanceof IRODSFile) {
-					iRODSFileSystem.commands.copy((IRODSFile) file, this,
+				if (sourceFile instanceof LocalFile) {
+					iRODSFileSystem.commands.put(sourceFile, this, forceOverwrite);
+				} else if (sourceFile instanceof IRODSFile) {
+					iRODSFileSystem.commands.copy((IRODSFile) sourceFile, this,
 							forceOverwrite);
 				} else {
-					super.copyTo(file, forceOverwrite);
+					super.copyFrom(sourceFile, forceOverwrite);
 				}
 			} catch (IRODSException e) {
 				log
