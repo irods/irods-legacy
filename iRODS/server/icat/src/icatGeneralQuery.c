@@ -1234,6 +1234,7 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    int status;
    int useGroupBy;
    int N_col_meta_data_attr_name=0;
+   int N_col_meta_coll_attr_name=0;
 
    char combinedSQL[MAX_SQL_SIZE];
 #if ORA_ICAT
@@ -1301,6 +1302,9 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
       if (genQueryInp.sqlCondInp.inx[i]==COL_META_DATA_ATTR_NAME) {
 	 N_col_meta_data_attr_name++;
       }
+      if (genQueryInp.sqlCondInp.inx[i]==COL_META_COLL_ATTR_NAME) {
+	 N_col_meta_coll_attr_name++;
+      }
 /*
   Using an input condition, determine if the associated column is being
   requested to be cast as an int.  That is, if the input is n< n> or n=.
@@ -1356,6 +1360,11 @@ generateSQL(genQueryInp_t genQueryInp, char *resultingSQL,
    if (N_col_meta_data_attr_name > 1) {
       /* Need to do some special changes and additions for multi AVU query */
       handleMultiDataAVUConditions(N_col_meta_data_attr_name);
+   }
+
+   if (N_col_meta_coll_attr_name > 1) {
+      /* Multi AVU queries for collections not currently implemented */
+      return(CAT_INVALID_ARGUMENT);
    }
 
    if (debug) printf("selectSQL: %s\n",selectSQL);
