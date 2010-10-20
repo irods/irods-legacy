@@ -162,8 +162,9 @@ rescGrpInfo_t *rescGrpInfo)
                           L1desc[l1descInx].dataObjInfo->filePath, phyBunDir);
 		        /* need to reset subPhyPath since phyBunDir has 
 		         * changed */
-	                setSubPhyPath (phyBunDir, curSubFileCond.dataId,
-                          curSubFileCond.subPhyPath);
+			if (curSubFileCond.subPhyPath[0] != '\0')
+	                    setSubPhyPath (phyBunDir, curSubFileCond.dataId,
+                              curSubFileCond.subPhyPath);
 
                     }
 		}
